@@ -144,7 +144,7 @@ const isAlphabetic = (s: string): boolean => !!s.match(/^[a-zA-Z]+$/)
  * @param number 
  * @returns 
  */
-const calc_business_check_digit = (number: string): string =>{
+const calcBusinessCheckDigit = (number: string): string =>{
   const weights = [10, 4, 9, 3, 8, 2, 7, 1]
   const alpha = 'XMKECAWLJDB'.split('')
   const num_list = number.split('')
@@ -160,19 +160,24 @@ const calc_business_check_digit = (number: string): string =>{
  * Helper for Business UEN. 
  * Performs validation based on Business (ROB) numbers
  * @param number 
- * @returns number if Business UEN
+ * @returns true if valid Business UEN
  */
-const validate_business = (number: string): string  =>{
-  if (!isNumeric(number.slice(0,-1))){
-    return ""
+const validateBusiness = (number: string): boolean  =>{
+
+  const first8Char =  number.slice(0, -1)
+  if (isNumeric(first8Char) === false){
+    return false
   } 
-  if (!isAlphabetic(number.slice(-1))){
-    return ""
+
+  const checkSum =  number.slice(-1)
+  if (isAlphabetic(checkSum) === false){
+    return false
   }
-  if (number.slice(-1) !== calc_business_check_digit(number)){
-    return ""
+  
+  if (checkSum !== calcBusinessCheckDigit(number)){
+    return false
   }
-  return number
+  return true
 }
 
 /**
@@ -180,7 +185,7 @@ const validate_business = (number: string): string  =>{
  * @param number 
  * @returns 
  */
-const calc_local_company_check_digit = (number: string): string =>{
+const calcLocalCompanyCheckDigit = (number: string): string =>{
   const weights = [10, 8, 6, 4, 9, 7, 5, 3, 1]
   const alpha = 'ZKCMDNERGWH'.split('')
   const num_list = number.split('')
@@ -195,20 +200,25 @@ const calc_local_company_check_digit = (number: string): string =>{
 /**
  * Helper for local UEN. Validation baed on local company based (ROC) number
  * @param number 
- * @returns number if local company UEN
+ * @returns true if valid local company UEN
  */
-const validate_local_company = (number: string): string =>{
-  if (!isNumeric(number.slice(0, -1))){
-    return ""
+const validateLocalCompany = (number: string): boolean =>{
+  
+  const first9Char =  number.slice(0, -1)
+  if (isNumeric(first9Char) === false){
+    return false
   }
-   let current_year = new Date().getFullYear()
-  if (parseInt(number.slice(0, 4)) > current_year){
-    return ""
+   let currentYear = new Date().getFullYear()
+   const first4Char =  number.slice(0, 4)
+   if (parseInt(first4Char) > currentYear){
+    return false
   }
-  if (number.slice(-1) !== calc_local_company_check_digit(number)){
-    return ""
+
+  const checkSum =  number.slice(-1)
+  if (checkSum !== calcLocalCompanyCheckDigit(number)){
+    return false
   }
-  return number
+  return true
 }
 
 /**
@@ -216,7 +226,7 @@ const validate_local_company = (number: string): string =>{
  * @param number 
  * @returns 
  */
-const calc_other_check_digit = (number: string): string =>{
+const calcOtherCheckDigit = (number: string): string =>{
   const weights = [4, 3, 5, 3, 10, 2, 2, 5, 7]
   const alpha = 'ABCDEFGHJKLMNPQRSTUVWX0123456789'.split('')
   const num_list = number.split('')
@@ -234,31 +244,41 @@ const calc_other_check_digit = (number: string): string =>{
  * Helper for other UEN. Performs validation based on UEN in
  * VALID_ENTITY_TYPE_INDICATORS
  * @param number 
- * @returns number if other UEN
+ * @returns true if valid UEN
  */
-const validate_other = (number: string): string =>{
-  let rst = ['R', 'S', 'T'] 
-  if (rst.indexOf(number.slice(0,1)) === -1){
-    return ""
+const validateOther = (number: string): boolean =>{
+  const uenPrefix = ['R', 'S', 'T']
+  const firstChar =  number.slice(0,1)
+  if (uenPrefix.includes(firstChar) === false){
+    return false
   }
-  if (!isNumeric(number.slice(1,3))){
-    return ""
+
+  const chars2And3 = number.slice(1,3)
+  if (isNumeric(chars2And3) === false){
+    return false
   }
-  let curr_year = parseInt(new Date().getFullYear().toString().substring(-2))
-  let uen_year = parseInt(number.slice(1,3))
-  if (number.slice(0,1) === 'T' && uen_year > curr_year){
-    return ""
+ 
+  let currentYear = parseInt(new Date().getFullYear().toString().substring(-2))
+  let uenYear = parseInt(number.slice(1,3))
+  if (number.slice(0,1) === 'T' && uenYear > currentYear){
+    return false
   }
-  if (!VALID_ENTITY_TYPE_INDICATORS.has(number.slice(3,5))){
-    return ""
+
+  const chars4And5 = number.slice(3,5)
+  if (VALID_ENTITY_TYPE_INDICATORS.has(chars4And5) === false){
+    return false
   }
-  if (!isNumeric(number.slice(5,-1))){
-    return ""
+
+  const chars6To9 = number.slice(5,-1)
+  if (isNumeric(chars6To9) === false){
+    return false
   }
-  if (number.slice(-1) !== calc_other_check_digit(number)){
-    return ""
+
+  const checkSum = number.slice(-1)
+  if (checkSum !== calcOtherCheckDigit(number)){
+    return false
   }
-  return number
+  return true
 }
 
 /**
@@ -269,35 +289,21 @@ const validate_other = (number: string): string =>{
  * Local Comany UEN based on ROC
  * Other UEN.
  *  
- * @param number string that represemts the UEN
- * @returns number if UEN is valid
- */
-const validate = (number: string): string => {
-  number = standardise(number)
-  if (number.length !== 9 && number.length !== 10){
-    return ""
-  } 
-  if (number.length === 9){
-    return validate_business(number)
-  }
-  if (isNumeric(number.slice(0,1))){
-    return validate_local_company(number)
-  }
-  return validate_other(number)
-}
-
-/**
- * Validates whether a provided string value adheres to the UEN format
- * as provided by the Singapore Government. Wrapper for validate()
- * @param uen string of value to be validated
- * @returns True if uen is valid
+ * @param uen string that represents the UEN
+ * @returns true if UEN is valid
  */
 const isUenValid = (uen: string): boolean => {
-  uen = standardise(uen)
-  if (validate(uen) === uen){
-    return true
+  let number = standardise(uen)
+  if (number.length !== 9 && number.length !== 10){
+    return false
   } 
-  return false
+  if (number.length === 9){
+    return validateBusiness(number)
+  }
+  if (isNumeric(number.slice(0,1))){
+    return validateLocalCompany(number)
+  }
+  return validateOther(number)
 }
 
 export {isUenValid}
