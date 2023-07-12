@@ -60,8 +60,7 @@ export const FixedPaymentAmountField = ({
       </FormErrorMessage>
       {Number(input[DISPLAY_AMOUNT_FIELD_KEY]) > 1000 ? (
         <InlineMessage variant="warning" mt="2rem" useMarkdown>
-          You would need to issue your own invoice for amounts above S$1000.
-          [Learn more about this]({GUIDE_PAYMENTS_INVOICE_DIFFERENCES})
+          {`You would need to issue your own invoice for amounts above S$1000. [Learn more about this](${GUIDE_PAYMENTS_INVOICE_DIFFERENCES})`}
         </InlineMessage>
       ) : null}
     </FormControl>

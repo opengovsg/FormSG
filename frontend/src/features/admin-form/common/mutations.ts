@@ -28,7 +28,8 @@ import {
   submitStorageModeFormPreview,
   submitStorageModeFormPreviewWithFetch,
 } from '../common/AdminViewFormService'
-import { downloadFormFeedback } from '../responses/FeedbackPage/FeedbackService'
+import { downloadFormIssue } from '../responses/FeedbackPage/issue/IssueService'
+import { downloadFormReview } from '../responses/FeedbackPage/review/ReviewService'
 
 import { useCollaboratorWizard } from './components/CollaboratorModal/CollaboratorWizardContext'
 import { permissionsToRole } from './components/CollaboratorModal/utils'
@@ -57,6 +58,12 @@ export type MutateRemoveCollaboratorArgs = {
 export type DownloadFormFeedbackMutationArgs = {
   formId: string
   formTitle: string
+}
+
+export type DownloadFormIssuesMutationArgs = {
+  formId: string
+  formTitle: string
+  count: number | undefined
 }
 
 enum FormCollaboratorAction {
@@ -472,7 +479,7 @@ export const useFormFeedbackMutations = () => {
 
   const downloadFormFeedbackMutation = useMutation(
     ({ formId, formTitle }: DownloadFormFeedbackMutationArgs) =>
-      downloadFormFeedback(formId, formTitle),
+      downloadFormReview(formId, formTitle),
     {
       onSuccess: () => {
         toast({
@@ -484,4 +491,34 @@ export const useFormFeedbackMutations = () => {
   )
 
   return { downloadFormFeedbackMutation }
+}
+
+export const useFormIssueMutations = () => {
+  const toast = useToast({ status: 'success', isClosable: true })
+
+  const handleError = useCallback(
+    (error: Error) => {
+      toast.closeAll()
+      toast({
+        description: error.message,
+        status: 'danger',
+      })
+    },
+    [toast],
+  )
+
+  const downloadFormIssuesMutation = useMutation(
+    ({ formId, formTitle, count }: DownloadFormIssuesMutationArgs) =>
+      downloadFormIssue(formId, formTitle, count || 0),
+    {
+      onSuccess: () => {
+        toast({
+          description: 'Form issues download started',
+        })
+      },
+      onError: handleError,
+    },
+  )
+
+  return { downloadFormIssueMutation: downloadFormIssuesMutation }
 }
