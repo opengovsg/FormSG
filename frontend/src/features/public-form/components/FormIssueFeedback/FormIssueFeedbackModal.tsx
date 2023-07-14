@@ -98,10 +98,19 @@ export const FormIssueFeedbackModal = ({
             pr="4rem"
           >
             <Text textStyle={{ base: '1.25rem', md: '1.5rem' }}>
-              Have trouble filling out this form?
+              Report an issue
             </Text>
           </ModalHeader>
           <ModalBody>
+            <Text pb="1.5rem" textStyle="body-2" color="secondary.400" mt="0">
+              Fill this in only{' '}
+              <span style={{ fontWeight: 'bold' }}>
+                if you are experiencing issues and are unable to submit this
+                form
+              </span>
+              . If you would like to provide feedback, you can do so after
+              submitting the form.
+            </Text>
             <Stack>
               <FormControl isInvalid={!!errors.issue}>
                 <FormLabel
