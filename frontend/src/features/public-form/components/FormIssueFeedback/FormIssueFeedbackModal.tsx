@@ -102,7 +102,7 @@ export const FormIssueFeedbackModal = ({
             </Text>
           </ModalHeader>
           <ModalBody>
-            <Text pb="1.5rem" textStyle="body-2" color="secondary.400" mt="0">
+            <Text pb="1.5rem" textStyle="body-2" mt="0">
               Fill this in only{' '}
               <span style={{ fontWeight: 'bold' }}>
                 if you are experiencing issues and are unable to submit this
@@ -113,10 +113,7 @@ export const FormIssueFeedbackModal = ({
             </Text>
             <Stack>
               <FormControl isInvalid={!!errors.issue}>
-                <FormLabel
-                  isRequired={true}
-                  description={'This will be sent to the form creator.'}
-                >
+                <FormLabel isRequired={true}>
                   Please describe the issue you encountered.
                 </FormLabel>
                 <Textarea
@@ -130,12 +127,7 @@ export const FormIssueFeedbackModal = ({
               </FormControl>
 
               <FormControl isInvalid={!!errors.email}>
-                <FormLabel
-                  pt="1rem"
-                  description="Leave your email so the form creator can reach out to you if needed."
-                >
-                  Contact
-                </FormLabel>
+                <FormLabel pt="1rem">Contact</FormLabel>
                 <Input
                   type={BasicField.Email}
                   placeholder="me@example.com"
