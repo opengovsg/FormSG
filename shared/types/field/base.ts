@@ -54,7 +54,9 @@ export enum MyInfoAttribute {
   ChildBirthCertNo = 'childbirthcertno',
   ChildDateOfBirth = 'childdateofbirth',
   ChildVaxxStatus = 'childvaxxstatus',
-  ChildGender = 'childgender'
+  ChildGender = 'childgender',
+  ChildRace = 'childrace',
+  ChildSecondaryRace = 'childsecondaryrace',
 }
 
 // We need to write this manually otherwise TS merges the names and keys
@@ -63,14 +65,14 @@ export enum MyInfoChildAttributes {
   ChildBirthCertNo = 'childbirthcertno',
   ChildDateOfBirth = 'childdateofbirth',
   ChildVaxxStatus = 'childvaxxstatus',
-  ChildGender = 'childgender'
+  ChildGender = 'childgender',
+  ChildRace = 'childrace',
+  ChildSecondaryRace = 'childsecondaryrace',
 }
-export const MyInfoChildAttributesSorted = Object.values(MyInfoChildAttributes).sort()
 
 export type MyInfoChildData = Partial<{
   [key in MyInfoChildAttributes]: string[]
 }>
-
 
 export type AllowMyInfoBase = {
   myInfo?: {

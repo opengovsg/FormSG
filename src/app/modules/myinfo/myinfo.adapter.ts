@@ -10,7 +10,6 @@ import {
 import {
   MyInfoAttribute as InternalAttr,
   MyInfoChildAttributes,
-  MyInfoChildAttributesSorted,
   MyInfoChildData,
   MyInfoChildVaxxStatus,
   MyInfoDataTransformer,
@@ -221,6 +220,9 @@ const requirementToVaccinationEnum = (
     ? MyInfoChildVaxxStatus.ONEM3D
     : MyInfoChildVaxxStatus.Unknown
 }
+
+const MyInfoChildAttributesSorted = Object.values(MyInfoChildAttributes).sort()
+
 /**
  * Wrapper class for MyInfo data. Provides public methods to safely
  * extract the correct data by translating internal FormSG attributes
@@ -255,7 +257,7 @@ export class MyInfoData
     if (records === undefined) {
       return []
     }
-    // Note: need ?. operator because it above 21 children may
+    // Note: need ?. operator because above 21 children may
     // not have these fields.
     switch (childAttr) {
       case MyInfoChildAttributes.ChildName:
@@ -271,8 +273,14 @@ export class MyInfoData
         )
       case MyInfoChildAttributes.ChildGender:
         return records.map((c) => c?.sex?.desc ?? '')
-      default:
-        return []
+      case MyInfoChildAttributes.ChildRace:
+        return records.map((c) => c?.race?.desc ?? '')
+      case MyInfoChildAttributes.ChildSecondaryRace:
+        return records.map((c) => c?.secondaryrace?.desc ?? '')
+      default: {
+        const never: never = childAttr
+        return never
+      }
     }
   }
 

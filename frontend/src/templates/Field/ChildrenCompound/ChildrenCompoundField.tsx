@@ -335,7 +335,9 @@ const ChildrenBody = ({
               )
             }
             case MyInfoChildAttributes.ChildVaxxStatus:
-            case MyInfoChildAttributes.ChildGender: {
+            case MyInfoChildAttributes.ChildGender:
+            case MyInfoChildAttributes.ChildRace:
+            case MyInfoChildAttributes.ChildSecondaryRace: {
               return (
                 <div key={key}>
                   <FormLabel

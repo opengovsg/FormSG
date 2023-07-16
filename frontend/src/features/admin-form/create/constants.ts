@@ -342,4 +342,14 @@ export const MYINFO_FIELD_TO_DRAWER_META: {
     icon: BiCalendar,
     isSubmitted: true,
   },
+  [MyInfoAttribute.ChildRace]: {
+    label: 'Race',
+    icon: BiCalendar,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.ChildSecondaryRace]: {
+    label: 'Secondary Race',
+    icon: BiCalendar,
+    isSubmitted: true,
+  },
 }

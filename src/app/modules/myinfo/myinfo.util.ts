@@ -424,17 +424,12 @@ export const isMyInfoRelayState = (obj: unknown): obj is MyInfoRelayState =>
   ((hasProp(obj, 'encodedQuery') && typeof obj.encodedQuery === 'string') ||
     !hasProp(obj, 'encodedQuery'))
 
+const MyInfoChildAttributeSet = new Set(Object.values(MyInfoChildAttributes))
+
 export const isMyInfoChildrenBirthRecords = (
   attr: InternalAttr | undefined,
 ): boolean => {
-  return (
-    attr === InternalAttr.ChildrenBirthRecords ||
-    attr === InternalAttr.ChildName ||
-    attr === InternalAttr.ChildBirthCertNo ||
-    attr === InternalAttr.ChildDateOfBirth ||
-    attr === InternalAttr.ChildVaxxStatus ||
-    attr === InternalAttr.ChildGender
-  )
+  return MyInfoChildAttributeSet.has(attr as unknown as MyInfoChildAttributes)
 }
 
 /**

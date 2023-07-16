@@ -1,5 +1,10 @@
 import keyBy from 'lodash/keyBy'
-import { BasicField, MyInfoAttribute, MyInfoChildVaxxStatus, MyInfoField } from '../../../types/field'
+import {
+  BasicField,
+  MyInfoAttribute,
+  MyInfoChildVaxxStatus,
+  MyInfoField,
+} from '../../../types/field'
 import COUNTRIES from './myinfo-countries'
 import DIALECTS from './myinfo-dialects'
 import NATIONALITIES from './myinfo-nationalities'
@@ -312,13 +317,14 @@ export const types: MyInfoFieldBlock[] = [
     category: 'children',
     verified: ['SG', 'PR', 'F'],
     source: 'Immigration & Checkpoints Authority / Health Promotion Board',
-    description: 'The data of the form-filler\'s children. This field is verified by ICA and HPB for vaccination status.',
+    description:
+      "The data of the form-filler's children. This field is verified by ICA and HPB for vaccination status.",
     fieldType: BasicField.Children,
     previewValue: 'Child 1',
   },
   {
     name: MyInfoAttribute.ChildBirthCertNo,
-    value: 'Child\'s birth certificte number',
+    value: "Child's birth certificte number",
     category: 'children',
     verified: [],
     source: 'Immigration & Checkpoints Authority',
@@ -328,7 +334,7 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.ChildDateOfBirth,
-    value: 'Child\'s date of birth',
+    value: "Child's date of birth",
     category: 'children',
     verified: [],
     source: 'Immigration & Checkpoints Authority',
@@ -338,7 +344,7 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.ChildGender,
-    value: 'Child\'s gender',
+    value: "Child's gender",
     category: 'children',
     verified: [],
     source: 'Immigration & Checkpoints Authority',
@@ -349,7 +355,7 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.ChildVaxxStatus,
-    value: 'Child\'s vaccination status',
+    value: "Child's vaccination status",
     category: 'children',
     verified: [],
     source: 'Heath Promotion Board',
@@ -357,7 +363,29 @@ export const types: MyInfoFieldBlock[] = [
     fieldType: BasicField.Dropdown,
     fieldOptions: Object.values(MyInfoChildVaxxStatus),
     previewValue: MyInfoChildVaxxStatus.ONEM3D,
-  },  
+  },
+  {
+    name: MyInfoAttribute.ChildRace,
+    value: "Child's race",
+    category: 'children',
+    verified: [],
+    source: 'Immigration & Checkpoints Authority',
+    description: 'Race',
+    fieldType: BasicField.Dropdown,
+    fieldOptions: RACES,
+    previewValue: 'CHINESE',
+  },
+  {
+    name: MyInfoAttribute.ChildSecondaryRace,
+    value: "Child's secondary race",
+    category: 'children',
+    verified: [],
+    source: 'Immigration & Checkpoints Authority',
+    description: 'Secondary race',
+    fieldType: BasicField.Dropdown,
+    fieldOptions: RACES,
+    previewValue: 'CHINESE',
+  },
 ]
 
 export const MYINFO_ATTRIBUTE_MAP = keyBy(types, 'name')
