@@ -1,5 +1,5 @@
 import keyBy from 'lodash/keyBy'
-import { BasicField, MyInfoAttribute, MyInfoField } from '../../../types/field'
+import { BasicField, MyInfoAttribute, MyInfoChildVaxxStatus, MyInfoField } from '../../../types/field'
 import COUNTRIES from './myinfo-countries'
 import DIALECTS from './myinfo-dialects'
 import NATIONALITIES from './myinfo-nationalities'
@@ -314,7 +314,6 @@ export const types: MyInfoFieldBlock[] = [
     source: 'Immigration & Checkpoints Authority / Health Promotion Board',
     description: 'The data of the form-filler\'s children. This field is verified by ICA and HPB for vaccination status.',
     fieldType: BasicField.Children,
-    fieldOptions: ['Child 1', 'Child 2'],
     previewValue: 'Child 1',
   },
   {
@@ -345,7 +344,8 @@ export const types: MyInfoFieldBlock[] = [
     source: 'Immigration & Checkpoints Authority',
     description: 'Gender',
     fieldType: BasicField.ShortText,
-    previewValue: '',
+    fieldOptions: ['FEMALE', 'MALE', 'UNKNOWN'],
+    previewValue: 'MALE',
   },
   {
     name: MyInfoAttribute.ChildVaxxStatus,
@@ -355,7 +355,8 @@ export const types: MyInfoFieldBlock[] = [
     source: 'Heath Promotion Board',
     description: 'Vaccination status',
     fieldType: BasicField.Dropdown,
-    previewValue: '',
+    fieldOptions: Object.values(MyInfoChildVaxxStatus),
+    previewValue: MyInfoChildVaxxStatus.ONEM3D,
   },  
 ]
 

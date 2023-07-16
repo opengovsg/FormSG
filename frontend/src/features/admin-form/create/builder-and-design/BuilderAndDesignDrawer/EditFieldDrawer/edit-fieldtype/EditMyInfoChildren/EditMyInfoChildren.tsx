@@ -1,6 +1,16 @@
 import { Controller } from 'react-hook-form'
 import { BiCheck, BiData, BiX } from 'react-icons/bi'
-import { FormControl, HStack, Icon, Text, VStack } from '@chakra-ui/react'
+import {
+  Box,
+  Divider,
+  Flex,
+  FormControl,
+  HStack,
+  Icon,
+  StackDivider,
+  Text,
+  VStack,
+} from '@chakra-ui/react'
 import { extend } from 'lodash'
 
 import { MyInfoChildAttributes } from '~shared/types'
@@ -96,11 +106,11 @@ export const EditMyInfoChildren = ({
           </Text>
         </HStack>
       </VStack>
-      <VStack align="flex-start" spacing={8}>
-        <VStack align="flex-start">
-          <Text textStyle="subhead-1">
-            Collect the following child information
-          </Text>
+      <VStack align="flex-start">
+        <Text textStyle="subhead-1">
+          Collect the following child information
+        </Text>
+        <Box alignSelf="stretch">
           <Controller
             control={control}
             name="childrenSubFields"
@@ -123,15 +133,15 @@ export const EditMyInfoChildren = ({
               />
             )}
           />
-        </VStack>
-        <VStack align="flex-start">
-          <FormControl isReadOnly={isLoading}>
-            <Toggle
-              {...register('allowMultiple')}
-              label="Allow respondent to add multiple children"
-            />
-          </FormControl>
-        </VStack>
+        </Box>
+      </VStack>
+      <VStack align="flex-start">
+        <FormControl isReadOnly={isLoading}>
+          <Toggle
+            {...register('allowMultiple')}
+            label="Allow respondent to add multiple children"
+          />
+        </FormControl>
       </VStack>
       <VStack align="flex-start">
         <Text textStyle="subhead-1">Field details</Text>

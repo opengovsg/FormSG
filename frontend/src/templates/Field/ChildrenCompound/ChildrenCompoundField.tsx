@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import {
   FieldArrayWithId,
   useFieldArray,
@@ -12,7 +12,10 @@ import {
   Box,
   Divider,
   Flex,
+  HStack,
   Input as ChakraInput,
+  Spacer,
+  Text,
   VisuallyHidden,
   VStack,
 } from '@chakra-ui/react'
@@ -28,6 +31,7 @@ import {
 } from '~shared/types'
 
 import { Button } from '~components/Button/Button'
+import { DatePicker } from '~components/DatePicker'
 import { SingleSelect } from '~components/Dropdown/SingleSelect'
 import { FormLabel } from '~components/FormControl/FormLabel/FormLabel'
 import { IconButton } from '~components/IconButton/IconButton'
@@ -74,7 +78,6 @@ export const ChildrenCompoundField = ({
     },
   )
 
-  // Note: don't worry this doesn't trigger a re-render.
   useEffect(() => {
     if (schema.childrenSubFields) {
       formContext.setValue(
@@ -101,6 +104,9 @@ export const ChildrenCompoundField = ({
 
     return description
   }, [fields.length, schema.allowMultiple])
+
+  const numChild = fields.length ?? 0
+
   return (
     <FieldContainer
       schema={schema}
@@ -116,10 +122,10 @@ export const ChildrenCompoundField = ({
         aria-describedby={`children-desc-${schema._id}`}
         aria-labelledby={`${schema._id}-label`}
       >
-        {/* <div>Hello {JSON.stringify(watch(`${schema._id}.child`))}</div> */}
         <VStack align="stretch" role="list">
           {fields.map((field, currChildBodyIdx) => (
             <ChildrenBody
+              key={`body-${currChildBodyIdx}`}
               {...{
                 currChildBodyIdx,
                 schema,
@@ -135,17 +141,21 @@ export const ChildrenCompoundField = ({
           ))}
         </VStack>
         {schema.allowMultiple ? (
-          <Button
-            isDisabled={isSubmitting}
-            alignSelf="start"
-            leftIcon={<BiPlus />}
-            aria-label="Add another child"
-            onClick={() => {
-              append([''])
-            }}
-          >
-            Add another child
-          </Button>
+          <HStack>
+            <Button
+              isDisabled={isSubmitting}
+              alignSelf="start"
+              leftIcon={<BiPlus />}
+              aria-label="Add another child"
+              onClick={() => {
+                append([''])
+              }}
+            >
+              Add another child
+            </Button>
+            <Spacer />
+            <Text>{simplur`${numChild} child[|ren] added`}</Text>
+          </HStack>
         ) : null}
       </VStack>
     </FieldContainer>
@@ -190,11 +200,6 @@ const ChildrenBody = ({
   const { onChange: selectOnChange, ...selectRest } = register(childNamePath)
 
   const childName = watch(childNamePath) as unknown as string
-
-  const childVaxxOptions = useMemo(
-    () => Object.values(MyInfoChildVaxxStatus),
-    [],
-  )
 
   const allChilds = useMemo<string[]>(() => {
     if (myInfoChildrenBirthRecords === undefined) {
@@ -273,6 +278,7 @@ const ChildrenBody = ({
               items={[childName, ...namesNotSelected()].filter((e) => e !== '')}
               value={childName}
               isDisabled={isSubmitting}
+              initialIsOpen={true}
               onChange={(name) => {
                 // This is bad practice but we have no choice because our
                 // custom Select doesn't forward the event.
@@ -312,9 +318,7 @@ const ChildrenBody = ({
           }
           const isDisabled = isSubmitting || !!myInfoValue
           switch (subField) {
-            case MyInfoChildAttributes.ChildBirthCertNo:
-            case MyInfoChildAttributes.ChildGender:
-            case MyInfoChildAttributes.ChildDateOfBirth: {
+            case MyInfoChildAttributes.ChildBirthCertNo: {
               return (
                 <div key={key}>
                   <FormLabel
@@ -332,7 +336,8 @@ const ChildrenBody = ({
                 </div>
               )
             }
-            case MyInfoChildAttributes.ChildVaxxStatus: {
+            case MyInfoChildAttributes.ChildVaxxStatus:
+            case MyInfoChildAttributes.ChildGender: {
               return (
                 <div key={key}>
                   <FormLabel
@@ -344,7 +349,9 @@ const ChildrenBody = ({
                   <SingleSelect
                     {...register(fieldPath)}
                     value={value}
-                    items={childVaxxOptions}
+                    items={
+                      MYINFO_ATTRIBUTE_MAP[subField].fieldOptions as string[]
+                    }
                     onChange={(option) =>
                       // This is bad practice but we have no choice because our
                       // custom Select doesn't forward the event.
@@ -355,11 +362,40 @@ const ChildrenBody = ({
                 </div>
               )
             }
+            case MyInfoChildAttributes.ChildDateOfBirth: {
+              const { onChange, ...rest } = register(fieldPath)
+              return (
+                <div key={key}>
+                  <FormLabel
+                    useMarkdownForDescription={true}
+                    gridArea="formlabel"
+                  >
+                    {MYINFO_ATTRIBUTE_MAP[subField].description}
+                  </FormLabel>
+                  <DatePicker
+                    {...rest}
+                    inputValue={value}
+                    onInputValueChange={(date) => {
+                      setValue(fieldPath, date)
+                    }}
+                    colorScheme={`theme-${colorTheme}`}
+                    isDisabled={isDisabled}
+                  />
+                </div>
+              )
+            }
             default:
               return <div>Unsupported child subfield</div>
           }
         })}
-      <Divider />
+      {/* No divider on last child */}
+      {currChildBodyIdx < fields.length - 1 ? (
+        <>
+          <Spacer h="36px" />
+          <Divider />
+          <Spacer h="36px" />
+        </>
+      ) : null}
     </VStack>
   )
 }
