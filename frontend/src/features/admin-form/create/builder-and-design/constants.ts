@@ -1,4 +1,3 @@
-import { MYINFO_ATTRIBUTE_MAP } from '~shared/constants/field/myinfo'
 import {
   BasicField,
   ChildrenCompoundFieldBase,

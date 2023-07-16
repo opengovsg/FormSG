@@ -164,10 +164,6 @@ export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
         return <EditParagraph {...props} field={field} />
       case BasicField.Image:
         return <EditImage {...props} field={field} />
-      case BasicField.Children:
-      // Note: BasicField.Children's edit panel should
-      // only be a MyInfo edit panel. So this code path
-      // should not happen.
       default:
         return <div>TODO: Insert field options here</div>
     }

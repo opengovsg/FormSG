@@ -1,16 +1,6 @@
 import { Controller } from 'react-hook-form'
 import { BiCheck, BiData, BiX } from 'react-icons/bi'
-import {
-  Box,
-  Divider,
-  Flex,
-  FormControl,
-  HStack,
-  Icon,
-  StackDivider,
-  Text,
-  VStack,
-} from '@chakra-ui/react'
+import { Box, FormControl, HStack, Icon, Text, VStack } from '@chakra-ui/react'
 import { extend } from 'lodash'
 
 import { MyInfoChildAttributes } from '~shared/types'
