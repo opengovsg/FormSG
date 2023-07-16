@@ -95,7 +95,7 @@ export const MYINFO_DATEFIELD_META: MyInfoFieldMeta<DateFieldBase> = {
 
 export const MYINFO_CHILDRENFIELD_META: MyInfoFieldMeta<ChildrenCompoundFieldBase> =
   {
-    childrenSubFields: [],
+    childrenSubFields: [MyInfoChildAttributes.ChildName],
     allowMultiple: false,
   }
 
@@ -148,18 +148,3 @@ export const CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS: {
       label: MYINFO_FIELD_TO_DRAWER_META[value].label,
     }
   })
-
-export const MYINFO_CHILDREN_LABEL_TO_ATTRIBUTE: Record<
-  string,
-  MyInfoChildAttributes
-> = Object.fromEntries(
-  CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS.map((c) => [c.label, c.value]),
-)
-
-// TS can't detect Object.fromEntries properly for some reason
-export const MYINFO_CHILDREN_ATTRIBUTE_TO_LABEL: Record<
-  MyInfoChildAttributes,
-  string
-> = Object.fromEntries(
-  CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS.map((c) => [c.value, c.label]),
-)

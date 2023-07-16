@@ -14,6 +14,7 @@ export const UserBase = z.object({
   betaFlags: z
     .object({
       payment: z.boolean().optional(),
+      children: z.boolean().optional(),
     })
     .optional(),
   flags: z

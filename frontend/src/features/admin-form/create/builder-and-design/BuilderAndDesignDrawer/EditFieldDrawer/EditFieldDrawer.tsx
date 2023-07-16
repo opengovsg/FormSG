@@ -2,7 +2,6 @@ import { memo, useMemo } from 'react'
 
 import {
   BasicField,
-  ChildrenCompoundFieldBase,
   FieldCreateDto,
   MyInfoAttribute,
 } from '~shared/types/field'
@@ -12,6 +11,7 @@ import {
   MYINFO_FIELD_TO_DRAWER_META,
 } from '~features/admin-form/create/constants'
 import { isMyInfo } from '~features/myinfo/utils'
+import { useUser } from '~features/user/queries'
 
 import { useBuilderFields } from '../../BuilderAndDesignContent/useBuilderFields'
 import {
@@ -107,8 +107,12 @@ interface MemoFieldDrawerContentProps {
 
 export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
   ({ field, ...props }) => {
+    const { user } = useUser()
     if (isMyInfo(field)) {
-      if (field?.myInfo?.attr === MyInfoAttribute.ChildrenBirthRecords) {
+      if (
+        field?.myInfo?.attr === MyInfoAttribute.ChildrenBirthRecords &&
+        user?.betaFlags?.children
+      ) {
         return (
           <EditMyInfoChildren
             {...props}
