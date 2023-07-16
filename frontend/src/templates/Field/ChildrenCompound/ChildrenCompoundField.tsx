@@ -276,7 +276,7 @@ const ChildrenBody = ({
               items={[childName, ...namesNotSelected()].filter((e) => e !== '')}
               value={childName}
               isDisabled={isSubmitting}
-              initialIsOpen={!!childName}
+              initialIsOpen={!!myInfoChildrenBirthRecords?.childname}
               onChange={(name) => {
                 // This is bad practice but we have no choice because our
                 // custom Select doesn't forward the event.

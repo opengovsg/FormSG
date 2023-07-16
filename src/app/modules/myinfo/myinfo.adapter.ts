@@ -95,6 +95,10 @@ export const internalAttrToScope = (attr: InternalAttr): MyInfoScope => {
       return `${ExternalAttr.ChildrenBirthRecords}.vaccinationrequirements`
     case InternalAttr.ChildGender:
       return `${ExternalAttr.ChildrenBirthRecords}.sex`
+    case InternalAttr.ChildRace:
+      return `${ExternalAttr.ChildrenBirthRecords}.race`
+    case InternalAttr.ChildSecondaryRace:
+      return `${ExternalAttr.ChildrenBirthRecords}.secondaryrace`
   }
 }
 
@@ -161,6 +165,8 @@ export const internalAttrToExternal = (attr: InternalAttr): ExternalAttr => {
     case InternalAttr.ChildrenBirthRecords:
     case InternalAttr.ChildVaxxStatus:
     case InternalAttr.ChildGender:
+    case InternalAttr.ChildRace:
+    case InternalAttr.ChildSecondaryRace:
       return ExternalAttr.ChildrenBirthRecords
   }
 }
