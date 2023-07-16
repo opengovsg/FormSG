@@ -177,12 +177,20 @@ export const internalAttrListToScopes = (
 ): MyInfoScope[] => {
   // Always ask for consent for UinFin, even though it is not a form field
   const scopes = attrs.map(internalAttrToScope).concat(ExternalAttr.UinFin)
-  for (const attr of attrs) {
-    if (isMyInfoChildrenBirthRecords(attr)) {
-      scopes.push(ExternalAttr.ChildrenBirthRecords)
-      break
+  // Only for MockPass compatbility. For production we don't want to
+  // ask for the most general Children scope.
+  if (
+    process.env.NODE_ENV === 'development' ||
+    process.env.NODE_ENV === 'test'
+  ) {
+    for (const attr of attrs) {
+      if (isMyInfoChildrenBirthRecords(attr)) {
+        scopes.push(ExternalAttr.ChildrenBirthRecords)
+        break
+      }
     }
   }
+
   return scopes
 }
 
