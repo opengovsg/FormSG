@@ -4,7 +4,11 @@ import { Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 import { merge } from 'lodash'
 
-import { BasicField, MyInfoChildData } from '~shared/types/field'
+import {
+  BasicField,
+  MyInfoChildAttributes,
+  MyInfoChildData,
+} from '~shared/types/field'
 
 import Button from '~components/Button'
 
@@ -32,7 +36,7 @@ export default {
 } as Meta
 
 const baseSchema: ChildrenCompoundFieldSchema = {
-  childrenSubFields: [],
+  childrenSubFields: [MyInfoChildAttributes.ChildName],
   allowMultiple: false,
   title: '',
   description: '',
@@ -42,11 +46,11 @@ const baseSchema: ChildrenCompoundFieldSchema = {
   _id: '611b94dfbb9e300012f702a7',
 }
 
-interface StoryCheckboxFieldProps extends ChildrenCompoundFieldProps {
+interface StoryChildrenCompoundFieldProps extends ChildrenCompoundFieldProps {
   childrenBirthRecords: MyInfoChildData
 }
 
-const Template: Story<StoryCheckboxFieldProps> = ({
+const Template: Story<StoryChildrenCompoundFieldProps> = ({
   childrenBirthRecords,
   ...args
 }) => {
