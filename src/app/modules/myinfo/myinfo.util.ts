@@ -482,11 +482,11 @@ export const getMyInfoChildHashKey = (
  * @param hashes a map containing all the attributes mapped to hashes
  * @param myInfoResponsesMap the response to give to the user
  */
-function handleMyInfoChildHashResponse(
+export const handleMyInfoChildHashResponse = (
   field: ProcessedFieldResponse,
   hashes: IHashes,
   myInfoResponsesMap: MyInfoComparePromises,
-) {
+) => {
   const childField = field as ProcessedChildrenResponse
   const subFields = childField.childSubFieldsArray
   if (!subFields) {

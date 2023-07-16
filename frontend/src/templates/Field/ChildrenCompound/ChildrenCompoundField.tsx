@@ -265,9 +265,7 @@ const ChildrenBody = ({
       key={field.id}
     >
       <VStack spacing={0} align="stretch">
-        <FormLabel useMarkdownForDescription={true} gridArea="formlabel">
-          Child
-        </FormLabel>
+        <FormLabel gridArea="formlabel">Child</FormLabel>
         <Flex align="stretch" alignItems="stretch" justify="space-between">
           <Box flexGrow={10}>
             <SingleSelect
@@ -278,7 +276,7 @@ const ChildrenBody = ({
               items={[childName, ...namesNotSelected()].filter((e) => e !== '')}
               value={childName}
               isDisabled={isSubmitting}
-              initialIsOpen={true}
+              initialIsOpen={!!childName}
               onChange={(name) => {
                 // This is bad practice but we have no choice because our
                 // custom Select doesn't forward the event.
