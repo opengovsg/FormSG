@@ -43,6 +43,7 @@ export type Payment = {
   email: string
   amount: number
   paymentIntentId: string
+  gstEnabled: boolean
 
   // Payment status tracking
   webhookLog: Stripe.Event[]
