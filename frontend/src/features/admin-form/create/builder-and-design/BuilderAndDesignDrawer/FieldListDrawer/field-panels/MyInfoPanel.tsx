@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
+import { Link as ReactLink } from 'react-router-dom'
 import { Box, Text } from '@chakra-ui/react'
 
 import {
@@ -10,6 +11,7 @@ import {
 } from '~shared/types'
 
 import { GUIDE_EMAIL_MODE } from '~constants/links'
+import { ADMINFORM_SETTINGS_SINGPASS_SUBROUTE } from '~constants/routes'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 
@@ -169,7 +171,13 @@ const MyInfoText = ({
 
   if (isMyInfoDisabled) {
     return (
-      <Text>Enable MyInfo in the Settings tab to access these fields.</Text>
+      <Text>
+        Enable MyInfo in the{' '}
+        <Link as={ReactLink} to={ADMINFORM_SETTINGS_SINGPASS_SUBROUTE}>
+          Settings
+        </Link>{' '}
+        tab to access these fields.
+      </Text>
     )
   }
 

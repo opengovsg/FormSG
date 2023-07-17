@@ -37,3 +37,9 @@ export class PaymentChannelNotFoundError extends ApplicationError {
     super(message)
   }
 }
+
+export class GoGovError extends ApplicationError {
+  constructor(message = 'Error occurred when claiming GoGov link') {
+    super(message)
+  }
+}

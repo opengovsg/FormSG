@@ -14,7 +14,6 @@ import {
   ReconciliationEventsReportLine,
   ReconciliationReport,
 } from '../../../../shared/types'
-import { IPopulatedForm } from '../../../types'
 import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -33,7 +32,7 @@ import {
   StripeMetadataIncorrectEnvError,
 } from './stripe.errors'
 import * as StripeService from './stripe.service'
-import { convertToInvoiceFormat, mapRouteError } from './stripe.utils'
+import { mapRouteError } from './stripe.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -191,7 +190,7 @@ export const downloadPaymentInvoice: ControllerHandler<{
     PaymentService.findPaymentById(paymentId),
     FormService.retrieveFullFormById(formId).andThen(checkFormIsEncryptMode),
   ])
-    .map(([payment, populatedForm]) => {
+    .andThen(([payment, populatedForm]) => {
       logger.info({
         message: 'Found paymentId in payment document',
         meta: {
@@ -199,63 +198,14 @@ export const downloadPaymentInvoice: ControllerHandler<{
           payment,
         },
       })
-      if (!payment.completedPayment?.receiptUrl) {
-        return res
-          .status(StatusCodes.NOT_FOUND)
-          .send({ message: 'Receipt url not ready' })
-      }
-      // retrieve receiptURL as html
-      return (
-        axios
-          .get<string>(payment.completedPayment.receiptUrl)
-          // convert to pdf and return
-          .then((receiptUrlResponse) => {
-            const html = receiptUrlResponse.data
-            const agencyBusinessInfo = (populatedForm as IPopulatedForm).admin
-              .agency.business
-            const formBusinessInfo = populatedForm.business
-
-            const businessAddress = [
-              formBusinessInfo?.address,
-              agencyBusinessInfo?.address,
-            ].find(Boolean)
-
-            const businessGstRegNo = [
-              formBusinessInfo?.gstRegNo,
-              agencyBusinessInfo?.gstRegNo,
-            ].find(Boolean)
-
-            // we will still continute the invoice generation even if there's no address/gstregno
-            if (!businessAddress || !businessGstRegNo)
-              logger.warn({
-                message:
-                  'Some business info not available during invoice generation. Expecting either agency or form to have business info',
-                meta: {
-                  action: 'downloadPaymentInvoice',
-                  payment,
-                  agencyName: populatedForm.admin.agency.fullName,
-                  agencyBusinessInfo,
-                  formBusinessInfo,
-                },
-              })
-            const invoiceHtml = convertToInvoiceFormat(html, {
-              address: businessAddress || '',
-              gstRegNo: businessGstRegNo || '',
-              formTitle: populatedForm.title,
-              submissionId: payment.completedPayment?.submissionId || '',
-            })
-
-            const pdfBufferPromise = generatePdfFromHtml(invoiceHtml)
-            return pdfBufferPromise
-          })
-          .then((pdfBuffer) => {
-            res.set({
-              'Content-Type': 'application/pdf',
-              'Content-Disposition': `attachment; filename=${paymentId}-invoice.pdf`,
-            })
-            return res.status(StatusCodes.OK).send(pdfBuffer)
-          })
-      )
+      return StripeService.generatePaymentInvoice(payment, populatedForm)
+    })
+    .map((pdfBuffer) => {
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename=${paymentId}-invoice.pdf`,
+      })
+      return res.status(StatusCodes.OK).send(pdfBuffer)
     })
     .mapErr((error) => {
       logger.error({
@@ -345,10 +295,9 @@ const _handleConnectOauthCallback: ControllerHandler<
   unknown,
   unknown,
   unknown,
-  { code: string; state: string }
+  { code?: string; state: string }
 > = async (req, res) => {
   const { code, state } = req.query
-
   // Step 0: Extract state parameter previously signed and stored in cookies.
   // Compare state values to ensure that no tampering has occurred.
   const { stripeState } = req.signedCookies
@@ -359,9 +308,14 @@ const _handleConnectOauthCallback: ControllerHandler<
   }
 
   // Step 1: Retrieve formId from state.
+  // Redirect user back to payments page if code is undefined
   const formId = state.split('.')[0]
   const redirectUrl = `${config.app.appUrl}/admin/form/${formId}/settings/payments`
-  // Step 2: Retrieve currently logged in user.
+  if (!code) {
+    return res.redirect(redirectUrl)
+  }
+
+  // Step 2: Retrieve currently logged-in user.
   return (
     FormService.retrieveFullFormById(formId)
       .andThen(checkFormIsEncryptMode)
@@ -393,10 +347,12 @@ const _handleConnectOauthCallback: ControllerHandler<
   )
 }
 
+export const _handleConnectOauthCallbackForTest = _handleConnectOauthCallback
+
 export const handleConnectOauthCallback = [
   celebrate({
     [Segments.QUERY]: Joi.object({
-      code: Joi.string().required(),
+      code: Joi.string(),
       state: Joi.string().required(),
     }).unknown(true),
   }),

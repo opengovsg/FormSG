@@ -56,7 +56,6 @@ import * as SmsService from '../../../services/sms/sms.service'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
 import {
-  ApplicationError,
   DatabaseConflictError,
   DatabaseError,
   DatabasePayloadSizeError,
@@ -88,7 +87,7 @@ import {
   PREVIEW_CORPPASS_UINFIN,
   PREVIEW_SINGPASS_UINFIN,
 } from './admin-form.constants'
-import { EditFieldError } from './admin-form.errors'
+import { EditFieldError, GoGovError } from './admin-form.errors'
 import { updateSettingsValidator } from './admin-form.middlewares'
 import * as AdminFormService from './admin-form.service'
 import { PermissionLevel } from './admin-form.types'
@@ -2775,7 +2774,7 @@ export const handleSetGoLinkSuffix: ControllerHandler<
             },
           ),
           // TODO: fix error handling (https://linear.app/ogp/issue/FRM-901/improve-error-handling-when-calling-gogov-api)
-          () => new ApplicationError('Error occurred when claiming GoGov link'),
+          () => new GoGovError(),
         )
       })
       // Step 3: After obtaining GoGov link, save it to the form

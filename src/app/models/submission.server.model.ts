@@ -14,6 +14,7 @@ import {
   IEmailSubmissionSchema,
   IEncryptedSubmissionSchema,
   IEncryptSubmissionModel,
+  IPaymentSchema,
   IPopulatedWebhookSubmission,
   ISubmissionModel,
   ISubmissionSchema,
@@ -30,6 +31,35 @@ import { FORM_SCHEMA_ID } from './form.server.model'
 import { PAYMENT_SCHEMA_ID } from './payment.server.model'
 
 export const SUBMISSION_SCHEMA_ID = 'Submission'
+
+function createAggregateQueryWithPaymentsProjectionParams(matchParams: any) {
+  return [
+    {
+      $match: {
+        submissionType: SubmissionType.Encrypt,
+        ...matchParams,
+      },
+    },
+    {
+      $lookup: {
+        from: 'payments',
+        localField: 'paymentId',
+        foreignField: '_id',
+        as: 'payments',
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        created: 1,
+        'payments.payout': 1,
+        'payments.completedPayment': 1,
+        'payments.amount': 1,
+        'payments.email': 1,
+      },
+    },
+  ]
+}
 
 // Exported for use in pending submissions model
 export const SubmissionSchema = new Schema<ISubmissionSchema, ISubmissionModel>(
@@ -255,42 +285,41 @@ EncryptSubmissionSchema.statics.findSingleMetadata = function (
   formId: string,
   submissionId: string,
 ): Promise<StorageModeSubmissionMetadata | null> {
-  return (
-    this.findOne(
-      {
-        form: formId,
-        _id: submissionId,
-        submissionType: SubmissionType.Encrypt,
-      },
-      { created: 1 },
-    )
-      // Reading from primary to avoid any contention issues with bulk queries
-      // on secondary servers.
-      .read('primary')
-      .then((result) => {
-        if (!result) {
-          return null
-        }
-
-        // Build submissionMetadata object.
-        const metadata: StorageModeSubmissionMetadata = {
-          number: 1,
-          refNo: result._id,
-          submissionTime: moment(result.created)
-            .tz('Asia/Singapore')
-            .format('Do MMM YYYY, h:mm:ss a'),
-        }
-
-        return metadata
-      })
+  const pageResults: Promise<MetadataAggregateResult[]> = this.aggregate(
+    createAggregateQueryWithPaymentsProjectionParams({
+      form: mongoose.Types.ObjectId(formId),
+      _id: mongoose.Types.ObjectId(submissionId),
+    }),
   )
+    .limit(1)
+    .exec()
+
+  return Promise.resolve(pageResults).then((results) => {
+    if (!results || results.length <= 0) {
+      return null
+    }
+
+    const result = results[0]
+    const paymentMeta = result.payments?.[0]
+
+    // Build submissionMetadata object.
+    const metadata = buildSubmissionMetadata(result, 1, paymentMeta)
+
+    return metadata
+  })
 }
 
 /**
  * Unexported as the type is only used in {@see findAllMetadataByFormId} for
  * now.
  */
-type MetadataAggregateResult = Pick<ISubmissionSchema, '_id' | 'created'>
+type MetadataAggregateResult = Pick<ISubmissionSchema, '_id' | 'created'> & {
+  payments?: PaymentAggregates[]
+}
+type PaymentAggregates = Pick<
+  IPaymentSchema,
+  'amount' | 'payout' | 'completedPayment' | 'email'
+>
 
 EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
   formId: string,
@@ -306,14 +335,11 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
   count: number
 }> {
   const numToSkip = (page - 1) * pageSize
-
   // return documents within the page
-  const pageResults: Promise<MetadataAggregateResult[]> = this.find(
-    {
+  const pageResults: Promise<MetadataAggregateResult[]> = this.aggregate(
+    createAggregateQueryWithPaymentsProjectionParams({
       form: mongoose.Types.ObjectId(formId),
-      submissionType: SubmissionType.Encrypt,
-    },
-    { _id: 1, created: 1 },
+    }),
   )
     .sort({ created: -1 })
     .skip(numToSkip)
@@ -326,17 +352,16 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
       submissionType: SubmissionType.Encrypt,
     }).exec() ?? 0
 
-  return Promise.all([pageResults, count]).then(([result, count]) => {
+  return Promise.all([pageResults, count]).then(([results, count]) => {
     let currentNumber = count - numToSkip
 
-    const metadata = result.map((data) => {
-      const metadataEntry: StorageModeSubmissionMetadata = {
-        number: currentNumber,
-        refNo: data._id,
-        submissionTime: moment(data.created)
-          .tz('Asia/Singapore')
-          .format('Do MMM YYYY, h:mm:ss a'),
-      }
+    const metadata = results.map((result) => {
+      const paymentMeta = result.payments?.[0]
+      const metadataEntry = buildSubmissionMetadata(
+        result,
+        currentNumber,
+        paymentMeta,
+      )
 
       currentNumber--
       return metadataEntry
@@ -436,6 +461,33 @@ export const getEncryptSubmissionModel = (
   return db.model<IEncryptedSubmissionSchema, IEncryptSubmissionModel>(
     SubmissionType.Encrypt,
   )
+}
+
+const buildSubmissionMetadata = (
+  result: MetadataAggregateResult,
+  currentNumber: number,
+  paymentMeta?: PaymentAggregates,
+): StorageModeSubmissionMetadata => {
+  return {
+    number: currentNumber,
+    refNo: result._id,
+    submissionTime: moment(result.created)
+      .tz('Asia/Singapore')
+      .format('Do MMM YYYY, h:mm:ss a'),
+    payments: paymentMeta
+      ? {
+          payoutDate: paymentMeta.payout
+            ? moment(paymentMeta.payout.payoutDate)
+                .tz('Asia/Singapore')
+                .format('ddd, D MMM YYYY')
+            : null,
+
+          paymentAmt: paymentMeta.amount,
+          transactionFee: paymentMeta.completedPayment?.transactionFee ?? null,
+          email: paymentMeta.email,
+        }
+      : null,
+  }
 }
 
 export default getSubmissionModel

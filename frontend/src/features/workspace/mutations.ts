@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
 import { useNavigate } from 'react-router-dom'
 
+import { AdminFeedbackRating } from '~shared/types'
 import {
   CreateEmailFormBodyDto,
   CreateStorageFormBodyDto,
@@ -18,11 +19,13 @@ import { trackCreateFormFailed } from '~features/analytics/AnalyticsService'
 
 import { workspaceKeys } from './queries'
 import {
+  createAdminFeedback,
   createEmailModeForm,
   createStorageModeForm,
   deleteAdminForm,
   dupeEmailModeForm,
   dupeStorageModeForm,
+  updateAdminFeedback,
 } from './WorkspaceService'
 
 const useCommonHooks = () => {
@@ -150,4 +153,16 @@ export const useDeleteFormMutation = () => {
   )
 
   return { deleteFormMutation }
+}
+
+export const useAdminFeedbackMutation = () => {
+  const createAdminFeedbackMutation = useMutation(
+    (rating: AdminFeedbackRating) => createAdminFeedback(rating),
+  )
+  const updateAdminFeedbackMutation = useMutation(
+    ({ feedbackId, comment }: { feedbackId: string; comment: string }) =>
+      updateAdminFeedback(feedbackId, comment),
+  )
+
+  return { createAdminFeedbackMutation, updateAdminFeedbackMutation }
 }

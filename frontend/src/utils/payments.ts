@@ -11,3 +11,10 @@ export const dollarsToCents = (dollarStr: string) => {
   const tokens = dollarStr.trim().split('.')
   return Number(`${tokens[0]}${(tokens[1] ?? '').padEnd(2, '0')}`)
 }
+
+export const formatCurrency = new Intl.NumberFormat('en-SG', {
+  style: 'currency',
+  currency: 'SGD',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+}).format

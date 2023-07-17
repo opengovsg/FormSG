@@ -40,6 +40,11 @@ export type BaseFieldProps = {
    * Whether the MyInfo badge should be shown next to the question name.
    */
   showMyInfoBadge?: boolean
+
+  /**
+   * Optional specification for error message variant.
+   */
+  errorVariant?: 'white'
 }
 
 export interface FieldContainerProps extends BaseFieldProps {
@@ -51,6 +56,7 @@ export const FieldContainer = ({
   children,
   errorKey,
   showMyInfoBadge,
+  errorVariant,
 }: FieldContainerProps): JSX.Element => {
   const { errors, isSubmitting, isValid } = useFormState({ name: schema._id })
 
@@ -87,7 +93,9 @@ export const FieldContainer = ({
         )}
       </Grid>
       {children}
-      <FormErrorMessage>{error?.message}</FormErrorMessage>
+      <FormErrorMessage variant={errorVariant}>
+        {error?.message}
+      </FormErrorMessage>
     </FormControl>
   )
 }

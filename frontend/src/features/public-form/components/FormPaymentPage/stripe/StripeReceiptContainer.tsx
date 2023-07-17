@@ -7,13 +7,10 @@ import {
   FeedbackBlock,
   FeedbackFormInput,
 } from '../../FormEndPage/components/FeedbackBlock'
+import { PaymentStack } from '../components'
 import { useGetPaymentReceiptStatus } from '../queries'
 
-import {
-  DownloadReceiptBlock,
-  GenericMessageBlock,
-  PaymentStack,
-} from './components'
+import { DownloadReceiptBlock, GenericMessageBlock } from './components'
 
 export const StripeReceiptContainer = ({
   formId,
