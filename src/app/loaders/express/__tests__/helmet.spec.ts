@@ -31,6 +31,7 @@ describe('helmetMiddlewares', () => {
     fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com/'],
     scriptSrc: [
       "'self'",
+      'https://www.googletagmanager.com/',
       'https://ssl.google-analytics.com/',
       'https://www.google-analytics.com/',
       'https://www.tagmanager.google.com/',
