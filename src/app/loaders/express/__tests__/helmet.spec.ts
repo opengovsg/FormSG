@@ -31,7 +31,6 @@ describe('helmetMiddlewares', () => {
     fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com/'],
     scriptSrc: [
       "'self'",
-      'https://www.googletagmanager.com/',
       'https://ssl.google-analytics.com/',
       'https://www.google-analytics.com/',
       'https://www.tagmanager.google.com/',
@@ -40,7 +39,7 @@ describe('helmetMiddlewares', () => {
       'https://www.gstatic.com/recaptcha/releases/',
       'https://challenges.cloudflare.com',
       'https://js.stripe.com/v3',
-      'https://*.googletagmanager.com',
+      'https://*.googletagmanager.com/gtag/',
     ],
     connectSrc: [
       "'self'",
