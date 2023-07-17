@@ -98,17 +98,23 @@ export const FormIssueFeedbackModal = ({
             pr="4rem"
           >
             <Text textStyle={{ base: '1.25rem', md: '1.5rem' }}>
-              Have trouble filling out this form?
+              Report an issue
             </Text>
           </ModalHeader>
           <ModalBody>
+            <Text pb="1.5rem" textStyle="body-2" mt="0">
+              Fill this in only{' '}
+              <span style={{ fontWeight: 'bold' }}>
+                if you are experiencing issues and are unable to submit this
+                form
+              </span>
+              . If you would like to provide feedback, you can do so after
+              submitting the form.
+            </Text>
             <Stack>
               <FormControl isInvalid={!!errors.issue}>
-                <FormLabel
-                  isRequired={true}
-                  description={'This will be sent to the form creator.'}
-                >
-                  Please describe the issue you encountered.
+                <FormLabel isRequired={true}>
+                  Please describe the issue you encountered
                 </FormLabel>
                 <Textarea
                   {...register('issue', {
@@ -121,12 +127,7 @@ export const FormIssueFeedbackModal = ({
               </FormControl>
 
               <FormControl isInvalid={!!errors.email}>
-                <FormLabel
-                  pt="1rem"
-                  description="Leave your email so the form creator can reach out to you if needed."
-                >
-                  Contact
-                </FormLabel>
+                <FormLabel pt="1rem">Contact</FormLabel>
                 <Input
                   type={BasicField.Email}
                   placeholder="me@example.com"
