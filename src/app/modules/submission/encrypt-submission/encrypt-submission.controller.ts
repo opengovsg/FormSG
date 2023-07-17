@@ -429,6 +429,7 @@ const submitEncryptModeForm: ControllerHandler<
       amount,
       email: paymentReceiptEmail,
       responses: incomingSubmission.responses,
+      gstEnabled: form.payments_field.gst_enabled,
     })
     const paymentId = payment.id
 
