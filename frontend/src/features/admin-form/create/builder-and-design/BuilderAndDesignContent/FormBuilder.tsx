@@ -18,7 +18,7 @@ import { useAdminFormLogic } from '../../logic/hooks/useAdminFormLogic'
 import {
   setToInactiveSelector as setPaymentToInactiveSelector,
   usePaymentStore,
-} from '../BuilderAndDesignDrawer/FieldListDrawer/field-panels/PaymentPanel'
+} from '../BuilderAndDesignDrawer/FieldListDrawer/field-panels/usePaymentStore'
 import { FIELD_LIST_DROP_ID } from '../constants'
 import { DndPlaceholderProps } from '../types'
 import { isDirtySelector, useDirtyFieldStore } from '../useDirtyFieldStore'

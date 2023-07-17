@@ -59,7 +59,7 @@ import { useBuilderAndDesignContext } from '../../BuilderAndDesignContext'
 import {
   setToInactiveSelector as setPaymentToInactiveSelector,
   usePaymentStore,
-} from '../../BuilderAndDesignDrawer/FieldListDrawer/field-panels/PaymentPanel'
+} from '../../BuilderAndDesignDrawer/FieldListDrawer/field-panels/usePaymentStore'
 import { useDeleteFormField } from '../../mutations/useDeleteFormField'
 import { useDuplicateFormField } from '../../mutations/useDuplicateFormField'
 import { useCreateTabForm } from '../../useCreateTabForm'

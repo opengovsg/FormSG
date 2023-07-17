@@ -18,17 +18,13 @@ import Toggle from '~components/Toggle'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { FieldListTabIndex } from '~features/admin-form/create/builder-and-design/constants'
+import { useCreatePageSidebar } from '~features/admin-form/create/common'
 
-import {
-  CreatePageDrawerContentContainer,
-  useCreatePageSidebar,
-} from '../../../../../../common'
-import { FieldListTabIndex } from '../../../../../constants'
 import {
   setIsDirtySelector,
   useDirtyFieldStore,
-} from '../../../../../useDirtyFieldStore'
-import { FormFieldDrawerActions } from '../../../../EditFieldDrawer/edit-fieldtype/common/FormFieldDrawerActions'
+} from '../../../../useDirtyFieldStore'
 import {
   dataSelector,
   resetDataSelector,

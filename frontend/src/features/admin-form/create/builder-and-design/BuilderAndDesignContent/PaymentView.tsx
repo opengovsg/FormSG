@@ -16,18 +16,18 @@ import {
   CreatePageSidebarContextProps,
   useCreatePageSidebar,
 } from '../../common/CreatePageSidebarContext'
+import { dataSelector } from '../../end-page/useEndPageStore'
 import { useBuilderAndDesignContext } from '../BuilderAndDesignContext'
 import {
-  dataSelector,
   PaymentState,
   setToEditingPaymentSelector,
-  stateSelector,
   usePaymentStore,
-} from '../BuilderAndDesignDrawer/FieldListDrawer/field-panels/PaymentPanel'
+} from '../BuilderAndDesignDrawer/FieldListDrawer/field-panels/usePaymentStore'
 import { FieldListTabIndex } from '../constants'
 import {
   DesignState,
   setStateSelector as setDesignStateSelector,
+  stateSelector,
   useDesignStore,
 } from '../useDesignStore'
 import { isDirtySelector, useDirtyFieldStore } from '../useDirtyFieldStore'

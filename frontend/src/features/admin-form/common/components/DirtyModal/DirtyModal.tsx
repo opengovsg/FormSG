@@ -1,6 +1,6 @@
 import { UnsavedChangesModal } from '~templates/NavigationPrompt'
 
-import { usePaymentStore } from '~features/admin-form/create/builder-and-design/BuilderAndDesignDrawer/FieldListDrawer/field-panels/PaymentPanel'
+import { usePaymentStore } from '~features/admin-form/create/builder-and-design/BuilderAndDesignDrawer/FieldListDrawer/field-panels/usePaymentStore'
 import { FieldListTabIndex } from '~features/admin-form/create/builder-and-design/constants'
 import { useDesignStore } from '~features/admin-form/create/builder-and-design/useDesignStore'
 import { useFieldBuilderStore } from '~features/admin-form/create/builder-and-design/useFieldBuilderStore'

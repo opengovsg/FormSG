@@ -10,7 +10,7 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 
-import { FormPaymentsFieldV2, Product } from '~shared/types'
+import { FormPaymentsField, Product } from '~shared/types'
 
 import { centsToDollars } from '~utils/payments'
 import Button from '~components/Button'
@@ -19,12 +19,13 @@ import IconButton from '~components/IconButton'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 
-import { ProductModal } from '../ProductModal'
 import {
   dataSelector,
   setDataSelector,
   usePaymentStore,
 } from '../usePaymentStore'
+
+import { ProductModal } from './ProductModal'
 
 const ProductItem = ({
   product,
@@ -151,7 +152,7 @@ export const ProductServiceBoxv2 = ({
   const [editProduct, setEditProduct] = useState<Product | null>(null)
   if (!_paymentsData) return <></>
 
-  const paymentsData = _paymentsData as FormPaymentsFieldV2
+  const paymentsData = _paymentsData as FormPaymentsField
   const { products = [] } = paymentsData
 
   const handleSaveProduct = (newProduct: Product) => {
