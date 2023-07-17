@@ -1,6 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
-import { calculatePrice } from 'shared/utils/paymentProductPrice'
 
 import {
   FormPaymentsField,
@@ -11,6 +10,7 @@ import {
   SubmissionPaymentDto,
   SubmissionType,
 } from '../../../../../shared/types'
+import { calculatePrice } from '../../../../../shared/utils/paymentProductPrice'
 import {
   IEncryptedSubmissionSchema,
   ISubmissionSchema,

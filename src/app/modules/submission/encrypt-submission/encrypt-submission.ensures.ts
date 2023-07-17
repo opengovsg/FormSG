@@ -1,8 +1,8 @@
 import { StatusCodes } from 'http-status-codes'
-import { CaptchaTypes } from 'shared/types/captcha'
 
 import { IPopulatedEncryptedForm } from 'src/types'
 
+import { CaptchaTypes } from '../../../../../shared/types/captcha'
 import * as CaptchaService from '../../../services/captcha/captcha.service'
 import * as TurnstileService from '../../../services/turnstile/turnstile.service'
 import { Middleware } from '../../../utils/pipeline-middleware'
