@@ -200,6 +200,10 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
       enum: Object.values(PaymentType),
       default: PaymentType.Fixed,
     },
+    gst_enabled: {
+      type: Boolean,
+      default: false,
+    },
   },
 
   business: {
