@@ -1,8 +1,7 @@
 import { Helmet } from 'react-helmet-async'
 
 export const AppHelmet = (): JSX.Element => {
-  // const GATrackingID = process.env.REACT_APP_GA_TRACKING_ID
-  const GATrackingID = 'UA-130216930-3'
+  const GATrackingID = process.env.REACT_APP_GA_TRACKING_ID
   return (
     <Helmet titleTemplate="%s | FormSG" defer={false}>
       {GATrackingID ? (
