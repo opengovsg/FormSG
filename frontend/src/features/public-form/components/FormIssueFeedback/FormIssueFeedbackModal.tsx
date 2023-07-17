@@ -114,7 +114,7 @@ export const FormIssueFeedbackModal = ({
             <Stack>
               <FormControl isInvalid={!!errors.issue}>
                 <FormLabel isRequired={true}>
-                  Please describe the issue you encountered.
+                  Please describe the issue you encountered
                 </FormLabel>
                 <Textarea
                   {...register('issue', {
