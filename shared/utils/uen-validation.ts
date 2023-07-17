@@ -123,7 +123,7 @@ const VALID_ENTITY_TYPE_INDICATORS = new Set<string>([
  * @param s String
  * @returns True if string is numeric
  */
-const standardise = (s: string): string => s.toUpperCase().trim()
+const upperCaseAndTrim = (s: string): string => s.toUpperCase().trim()
 
 /**
  * Helper to check whether a string is numeric
@@ -165,12 +165,12 @@ const calcBusinessCheckDigit = (number: string): string =>{
 const validateBusiness = (number: string): boolean  =>{
 
   const first8Char =  number.slice(0, -1)
-  if (isNumeric(first8Char) === false){
+  if (!isNumeric(first8Char)){
     return false
   } 
 
   const checkSum =  number.slice(-1)
-  if (isAlphabetic(checkSum) === false){
+  if (!isAlphabetic(checkSum)){
     return false
   }
   
@@ -205,9 +205,10 @@ const calcLocalCompanyCheckDigit = (number: string): string =>{
 const validateLocalCompany = (number: string): boolean =>{
   
   const first9Char =  number.slice(0, -1)
-  if (isNumeric(first9Char) === false){
+  if (!isNumeric(first9Char)){
     return false
   }
+
    let currentYear = new Date().getFullYear()
    const first4Char =  number.slice(0, 4)
    if (parseInt(first4Char) > currentYear){
@@ -249,12 +250,12 @@ const calcOtherCheckDigit = (number: string): string =>{
 const validateOther = (number: string): boolean =>{
   const uenPrefix = ['R', 'S', 'T']
   const firstChar =  number.slice(0,1)
-  if (uenPrefix.includes(firstChar) === false){
+  if (!uenPrefix.includes(firstChar)){
     return false
   }
 
   const chars2And3 = number.slice(1,3)
-  if (isNumeric(chars2And3) === false){
+  if (!isNumeric(chars2And3)){
     return false
   }
  
@@ -265,12 +266,12 @@ const validateOther = (number: string): boolean =>{
   }
 
   const chars4And5 = number.slice(3,5)
-  if (VALID_ENTITY_TYPE_INDICATORS.has(chars4And5) === false){
+  if (!VALID_ENTITY_TYPE_INDICATORS.has(chars4And5)){
     return false
   }
 
   const chars6To9 = number.slice(5,-1)
-  if (isNumeric(chars6To9) === false){
+  if (!isNumeric(chars6To9)){
     return false
   }
 
@@ -293,16 +294,19 @@ const validateOther = (number: string): boolean =>{
  * @returns true if UEN is valid
  */
 const isUenValid = (uen: string): boolean => {
-  let number = standardise(uen)
+  let number = upperCaseAndTrim(uen)
   if (number.length !== 9 && number.length !== 10){
     return false
   } 
+
   if (number.length === 9){
     return validateBusiness(number)
   }
+  
   if (isNumeric(number.slice(0,1))){
     return validateLocalCompany(number)
   }
+  
   return validateOther(number)
 }
 

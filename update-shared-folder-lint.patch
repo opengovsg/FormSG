@@ -1,0 +1,15 @@
+diff --git a/package.json b/package.json
+index 69650d55..78ffbac4 100644
+--- a/package.json
++++ b/package.json
+@@ -42,8 +42,9 @@
+     "dev:backend": "tsnd --poll --respawn --transpile-only --inspect=0.0.0.0 --exit-child -r dotenv/config -- src/app/server.ts",
+     "dev:frontend": "npm run --prefix frontend start",
+     "lint": "eslint src/ --quiet --fix",
++    "lint:shared": "eslint shared/ --quiet --fix",
+     "lint:frontend": "npm run --prefix frontend lint",
+-    "lint-ci": "eslint src/ --quiet",
++    "lint-ci": "eslint src/ shared/ --quiet",
+     "version": "auto-changelog -p && git add CHANGELOG.md",
+     "prepare": "husky install",
+     "pre-commit": "lint-staged",
