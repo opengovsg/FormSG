@@ -39,7 +39,7 @@ describe('helmetMiddlewares', () => {
       'https://www.gstatic.com/recaptcha/releases/',
       'https://challenges.cloudflare.com',
       'https://js.stripe.com/v3',
-      'https://*.googletagmanager.com/gtag/',
+      'https://*.googletagmanager.com',
     ],
     connectSrc: [
       "'self'",
