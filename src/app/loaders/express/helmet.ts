@@ -49,6 +49,7 @@ const helmetMiddlewares = () => {
       'https://www.tagmanager.google.com/',
       'https://www.google.com/recaptcha/',
       'https://www.recaptcha.net/recaptcha/',
+      'https://www.gstatic.com/recaptcha/releases',
       'https://challenges.cloudflare.com',
       'https://js.stripe.com/v3',
     ],
