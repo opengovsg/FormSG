@@ -444,7 +444,7 @@ export const convertToInvoiceFormat = (
         )
         .replace(
           '<strong>Amount charged</strong>',
-          `<strong>Amount charged</strong><i>(includes GST)</i>'`,
+          `<strong>Amount charged</strong> <i>(includes GST)</i>`,
         )
     : commonEdits.replace(
         /Receipt (#[0-9-]+)/,
