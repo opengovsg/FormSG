@@ -27,29 +27,29 @@ type FormRegExpMatchArray = RegExpMatchArray & {
 
 const pathMapper = [
   {
-    regex: /^\/(?<formid>[0-9a-fA-F]{24})$/,
+    regex: /^\/(?<formid>[0-9a-fA-F]{24})\/?$/,
     getTarget: (m: FormRegExpMatchArray) => `/${m.groups.formid}`,
   },
   {
-    regex: /^\/(?<formid>[0-9a-fA-F]{24})\/admin$/,
+    regex: /^\/(?<formid>[0-9a-fA-F]{24})\/admin\/?$/,
     getTarget: (m: FormRegExpMatchArray) => `/admin/form/${m.groups.formid}`,
   },
   {
-    regex: /^\/(?<formid>[0-9a-fA-F]{24})\/preview$/,
+    regex: /^\/(?<formid>[0-9a-fA-F]{24})\/preview\/?$/,
     getTarget: (m: FormRegExpMatchArray) =>
       `/admin/form/${m.groups.formid}/preview`,
   },
   {
-    regex: /^\/(?<formid>[0-9a-fA-F]{24})\/use-template$/,
+    regex: /^\/(?<formid>[0-9a-fA-F]{24})\/use-template\/?$/,
     getTarget: (m: FormRegExpMatchArray) =>
       `/admin/form/${m.groups.formid}/${ADMINFORM_USETEMPLATE_ROUTE}`,
   },
   {
-    regex: /^\/forms$/,
+    regex: /^\/forms\/?$/,
     getTarget: (m: FormRegExpMatchArray) => `${DASHBOARD_ROUTE}`,
   },
   {
-    regex: /^\/examples$/,
+    regex: /^\/examples\/?$/,
     getTarget: (m: FormRegExpMatchArray) => `/examples`,
   },
 ]

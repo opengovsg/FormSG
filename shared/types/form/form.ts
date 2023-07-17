@@ -12,7 +12,7 @@ import {
 } from '../../constants/form'
 import { DateString } from '../generic'
 import { FormLogic, LogicDto } from './form_logic'
-import { PaymentChannel } from '../payment'
+import { PaymentChannel, PaymentType } from '../payment'
 import { Product } from './product'
 
 export type FormId = Opaque<string, 'FormId'>
@@ -52,6 +52,7 @@ export enum FormAuthType {
   CP = 'CP',
   MyInfo = 'MyInfo',
   SGID = 'SGID',
+  SGID_MyInfo = 'SGID_MyInfo',
 }
 
 export enum FormStatus {
@@ -76,19 +77,44 @@ export type FormPaymentsChannel = {
   publishable_key: string
 }
 
-export type FormPaymentsFieldBase = { enabled: boolean; description?: string }
-export type FormPaymentsFieldV1 = FormPaymentsFieldBase & {
+export interface PaymentTypeBase {
+  payment_type: PaymentType
+
   amount_cents?: number
-  version: 1
+  min_amount?: number
+  max_amount?: number
+
+  products?: Array<Product>
+  products_meta?: {
+    multi_product?: boolean
+  }
 }
-export type FormPaymentsFieldV2 = FormPaymentsFieldBase & {
+
+interface VariablePaymentsField extends PaymentTypeBase {
+  payment_type: PaymentType.Variable
+  min_amount: number
+  max_amount: number
+}
+
+interface FixedPaymentField extends PaymentTypeBase {
+  payment_type: PaymentType.Fixed
+  amount_cents: number
+}
+
+export interface ProductsPaymentField extends PaymentTypeBase {
+  payment_type: PaymentType.Products
   products: Array<Product>
   products_meta?: {
     multi_product: boolean
   }
-  version: 2
 }
-export type FormPaymentsField = FormPaymentsFieldV1 | FormPaymentsFieldV2
+
+export type FormPaymentsField =
+  | {
+      enabled: boolean
+      description?: string
+      name?: string
+    } & (VariablePaymentsField | FixedPaymentField | ProductsPaymentField)
 
 export type FormBusinessField = {
   address?: string
@@ -262,7 +288,7 @@ export type FormPermissionsDto = FormPermission[]
 export type PermissionsUpdateDto = FormPermission[]
 export type PaymentsUpdateDto = FormPaymentsField
 export type BusinessUpdateDto = FormBusinessField
-export type PaymentsProductUpdateDto = FormPaymentsFieldV2['products']
+export type PaymentsProductUpdateDto = ProductsPaymentField['products']
 
 export type SendFormOtpResponseDto = {
   otpPrefix: string

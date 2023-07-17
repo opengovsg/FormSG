@@ -50,3 +50,11 @@ export const MAX_DELAY_SECONDS = minutes(15)
  * number of seconds in the future, it will be sent.
  */
 export const DUE_TIME_TOLERANCE_SECONDS = minutes(1)
+
+/**
+ * WEBHOOK_MAX_CONTENT_LENGTH defined the max size of the http response content in bytes
+ * allowed by the webhook call. Given that the response of the webhook call is not used and does not
+ * impact our partner's processing of the call, we set this to 1MB, which should accommodate webhook responses.
+ *
+ */
+export const WEBHOOK_MAX_CONTENT_LENGTH = 1000000

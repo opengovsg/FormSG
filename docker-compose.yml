@@ -103,14 +103,21 @@ services:
       - REACT_MIGRATION_REMOVE_INFOBOX_THRESHOLD_RESPONDENT=101
       - REACT_MIGRATION_USE_FETCH_FOR_SUBMISSIONS=false
       # env vars for stripe payment integration
-      - PAYMENT_STRIPE_PUBLISHABLE_KEY=publishableKey
+      - PAYMENT_STRIPE_PUBLISHABLE_KEY
       # duplicate PAYMENT_STRIPE_SECRET_KEY to STRIPE_API_KEY in stripe-webhook-listener container
-      - PAYMENT_STRIPE_SECRET_KEY=secretKey
-      - PAYMENT_STRIPE_CLIENT_ID=clientId
-      - PAYMENT_STRIPE_WEBHOOK_SECRET=webhookSecret
-      - PAYMENT_MAX_PAYMENT_AMOUNT_CENTS=100000
+      - PAYMENT_STRIPE_SECRET_KEY
+      - PAYMENT_STRIPE_CLIENT_ID
+      - PAYMENT_STRIPE_WEBHOOK_SECRET
+      - PAYMENT_MAX_PAYMENT_AMOUNT_CENTS
       - PAYMENT_MIN_PAYMENT_AMOUNT_CENTS=50
       - SSM_ENV_SITE_NAME=development
+      - PAYMENT_GUIDE_LINK
+      # Cron secrets
+      - CRON_PAYMENT_API_SECRET=secretKey
+      # env vars for go integration
+      - GOGOV_API_KEY
+      # Bearer token API key format
+      - API_KEY_VERSION=v1
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git#v3.1.3
@@ -163,7 +170,7 @@ services:
     container_name: stripe-webhook-listener
     command: 'listen --api-key ${STRIPE_API_KEY} --device-name ${STRIPE_DEVICE_NAME} --forward-to host.docker.internal:5001/api/v3/notifications/stripe'
     environment:
-      - STRIPE_API_KEY=secretKey
+      - STRIPE_API_KEY
       - STRIPE_DEVICE_NAME=StripeWebhookListener
 
   mocktwilio:

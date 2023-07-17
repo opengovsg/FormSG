@@ -37,7 +37,6 @@ import { EditFieldActions } from '../../../../shared/constants'
 import {
   FormFieldSchema,
   FormLogicSchema,
-  IEncryptedFormDocument,
   IForm,
   IFormDocument,
   IFormSchema,
@@ -45,12 +44,9 @@ import {
 } from '../../../../types'
 import { EditFormFieldParams, FormUpdateParams } from '../../../../types/api'
 import config, { aws as AwsConfig } from '../../../config/config'
-import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getAgencyModel from '../../../models/agency.server.model'
-import getFormModel, {
-  getEncryptedFormModel,
-} from '../../../models/form.server.model'
+import getFormModel from '../../../models/form.server.model'
 import * as SmsService from '../../../services/sms/sms.service'
 import { twilioClientCache } from '../../../services/sms/sms.service'
 import { dotifyObject } from '../../../utils/dotify-object'
@@ -69,7 +65,6 @@ import {
   SecretsManagerNotFoundError,
   TwilioCacheError,
 } from '../../core/core.errors'
-import { InvalidPaymentAmountError } from '../../payments/payments.errors'
 import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
 import { SmsLimitExceededError } from '../../verification/verification.errors'
@@ -108,7 +103,6 @@ import {
 
 const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
-const EncryptedFormModel = getEncryptedFormModel(mongoose)
 const AgencyModel = getAgencyModel(mongoose)
 
 export const secretsManager = new SecretsManager({
@@ -1573,105 +1567,33 @@ const deleteTwilioTransaction = async (
   }
 }
 
-/**
- * Update the payments field of the given form
- * @param formId the id of the form to update the end page for
- * @param newPayments the new payments field to replace the current one
- * @returns ok(updated payments object) when update is successful
- * @returns err(FormNotFoundError) if form cannot be found
- * @returns err(PossibleDatabaseError) if start page update fails
- * @returns err(InvalidPaymentAmountError) if payment amount exceeds MAX_PAYMENT_AMOUNT
- */
-export const updatePayments = (
-  formId: string,
-  newPayments: PaymentsUpdateDto,
-): ResultAsync<
-  IEncryptedFormDocument['payments_field'],
-  PossibleDatabaseError | FormNotFoundError | InvalidPaymentAmountError
-> => {
-  const { enabled, version } = newPayments
-
-  // Check if payment amount exceeds maxPaymentAmountCents or below minPaymentAmountCents if the payment is enabled
-  if (version === 1 && enabled && newPayments.amount_cents !== undefined) {
-    const { amount_cents } = newPayments
-
-    if (
-      amount_cents > paymentConfig.maxPaymentAmountCents ||
-      amount_cents < paymentConfig.minPaymentAmountCents
-    ) {
-      return errAsync(new InvalidPaymentAmountError())
-    }
-  }
-
-  return ResultAsync.fromPromise(
-    EncryptedFormModel.updatePaymentsById(formId, newPayments),
-    (error) => {
-      logger.error({
-        message: 'Error occurred when updating form payments',
-        meta: {
-          action: 'updatePayments',
-          formId,
-          newPayments,
-        },
-        error,
-      })
-      return transformMongoError(error)
-    },
-  ).andThen((updatedForm) => {
-    if (!updatedForm) {
-      return errAsync(new FormNotFoundError())
-    }
-    return okAsync(updatedForm.payments_field)
+export const getGoLinkSuffix = (formId: string) => {
+  return ResultAsync.fromPromise(FormModel.getGoLinkSuffix(formId), (error) => {
+    logger.error({
+      message: 'Error occurred when retrieving go link suffix',
+      meta: {
+        action: 'getGoLinkSuffix',
+        formId,
+      },
+      error,
+    })
+    return transformMongoError(error)
   })
 }
 
-/**
- * Update the payments of the given form
- * @param formId the id of the form to update the end page for
- * @param newStartPage the new start page object to replace the current one
- * @returns ok(updated start page object) when update is successful
- * @returns err(FormNotFoundError) if form cannot be found
- * @returns err(PossibleDatabaseError) if start page update fails
- * @returns err(InvalidPaymentAmountError) if payment amount exceeds MAX_PAYMENT_AMOUNT
- */
-export const updatePaymentsProduct = (
-  formId: string,
-  newProducts: PaymentsProductUpdateDto,
-): ResultAsync<
-  IEncryptedFormDocument['payments_field'],
-  PossibleDatabaseError | FormNotFoundError | InvalidPaymentAmountError
-> => {
-  // TODO: should ensure if amounts_cents is within range for array
-  // const { enabled, amount_cents } = newProducts
-
-  // // Check if payment amount exceeds maxPaymentAmountCents or below minPaymentAmountCents if the payment is enabled
-  // if (enabled && amount_cents !== undefined) {
-  //   if (
-  //     amount_cents > paymentConfig.maxPaymentAmountCents ||
-  //     amount_cents < paymentConfig.minPaymentAmountCents
-  //   ) {
-  //     return errAsync(new InvalidPaymentAmountError())
-  //   }
-  // }
-
+export const setGoLinkSuffix = (formId: string, linkSuffix: string) => {
   return ResultAsync.fromPromise(
-    EncryptedFormModel.updatePaymentsProductById(formId, newProducts),
+    FormModel.setGoLinkSuffix(formId, linkSuffix),
     (error) => {
       logger.error({
-        message: 'Error occurred when updating form payments',
+        message: 'Error occurred when setting go link suffix',
         meta: {
-          action: 'updatePaymentsProduct',
+          action: 'setGoLinkSuffix',
           formId,
-          newProducts,
         },
         error,
       })
       return transformMongoError(error)
     },
-  ).andThen((updatedForm) => {
-    if (!updatedForm) {
-      return errAsync(new FormNotFoundError())
-    }
-    return okAsync(updatedForm.payments_field)
-  })
+  )
 }

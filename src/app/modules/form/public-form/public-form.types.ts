@@ -5,9 +5,3 @@ export type Metatags = {
   images: string[]
   twitterImage: string
 }
-
-export type RedirectParams = {
-  state?: 'preview' | 'template' | 'use-template'
-  // TODO(#144): Rename Id to formId after all routes have been updated.
-  formId: string
-}

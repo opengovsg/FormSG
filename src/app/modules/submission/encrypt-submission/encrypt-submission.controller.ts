@@ -11,7 +11,6 @@ import type { SetOptional } from 'type-fest'
 import {
   ErrorDto,
   FormAuthType,
-  FormPaymentsField,
   FormSubmissionMetadataQueryDto,
   Payment,
   PaymentChannel,
@@ -21,7 +20,6 @@ import {
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../../shared/types'
-import { calculatePrice } from '../../../../../shared/utils/paymentProductPrice'
 import {
   IPopulatedEncryptedForm,
   StripePaymentMetadataDto,
@@ -35,6 +33,7 @@ import getPaymentModel from '../../../models/payment.server.model'
 import { getEncryptPendingSubmissionModel } from '../../../models/pending_submission.server.model'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
+import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
 import { Pipeline } from '../../../utils/pipeline-middleware'
 import { createReqMeta } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
@@ -48,6 +47,7 @@ import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
+import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import {
   ensureFormWithinSubmissionLimits,
@@ -69,6 +69,7 @@ import {
 } from './encrypt-submission.service'
 import {
   createEncryptedSubmissionDto,
+  getPaymentAmount,
   mapRouteError,
 } from './encrypt-submission.utils'
 import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
@@ -87,6 +88,7 @@ type SubmitEncryptModeFormControllerHandlerType = ControllerHandler<
   EncryptSubmissionDto,
   { captchaResponse?: unknown }
 >
+
 const submitEncryptModeForm: SubmitEncryptModeFormControllerHandlerType =
   async (req, res) => {
     const { formId } = req.params
@@ -242,7 +244,7 @@ const submitEncryptModeForm: SubmitEncryptModeFormControllerHandlerType =
         break
       }
       case FormAuthType.SGID: {
-        const jwtPayloadResult = SgidService.extractSgidJwtPayload(
+        const jwtPayloadResult = SgidService.extractSgidSingpassJwtPayload(
           req.cookies.jwtSgid,
         )
         if (jwtPayloadResult.isErr()) {
@@ -343,38 +345,22 @@ const submitEncryptModeForm: SubmitEncryptModeFormControllerHandlerType =
         logMeta,
         formId,
         incomingSubmission,
-        submissionContent,
-        responseMetadata,
         paymentProducts,
+        responseMetadata,
+        submissionContent,
       })
     }
 
     return _createSubmission({
       req,
       res,
-      submissionContent,
       logMeta,
       formId,
-      responseMetadata,
       incomingSubmission,
+      responseMetadata,
+      submissionContent,
     })
   }
-
-const getAmount = (
-  payments_field: FormPaymentsField,
-  paymentProducts: StorageModeSubmissionContentDto['paymentProducts'],
-) => {
-  if (payments_field.version === 1) {
-    return payments_field.amount_cents
-  }
-
-  if (payments_field.version === 2) {
-    if (!paymentProducts || paymentProducts.length <= 0) {
-      return 0
-    }
-    return calculatePrice(paymentProducts)
-  }
-}
 
 const _createPaymentSubmission = async ({
   req,
@@ -393,9 +379,12 @@ const _createPaymentSubmission = async ({
   paymentProducts: StorageModeSubmissionContentDto['paymentProducts']
   [others: string]: any
 }) => {
-  const { payments_field } = form
-
-  const amount = getAmount(payments_field, paymentProducts)
+  const amount = getPaymentAmount(
+    form.payments_field,
+    req.body.payments,
+    paymentProducts,
+  )
+  // const amount = getAmount(payments_field, paymentProducts)
 
   // Step 0: Perform validation checks
   if (
@@ -628,6 +617,14 @@ const _createSubmission = async ({
     },
   })
 
+  // TODO 6395 make responseMetadata mandatory
+  if (responseMetadata) {
+    reportSubmissionResponseTime(responseMetadata, {
+      mode: 'encrypt',
+      payment: 'true',
+    })
+  }
+
   // Send success back to client
   res.json({
     message: 'Form submission successful.',
@@ -643,6 +640,7 @@ const _createSubmission = async ({
 
 export const handleEncryptedSubmission = [
   CaptchaMiddleware.validateCaptchaParams,
+  TurnstileMiddleware.validateTurnstileParams,
   EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
   submitEncryptModeForm,
 ] as ControllerHandler[]
@@ -798,109 +796,6 @@ export const streamEncryptedResponses: ControllerHandler<
 export const handleStreamEncryptedResponses = [
   validateDateRange,
   streamEncryptedResponses,
-] as ControllerHandler[]
-
-const validateSubmissionId = celebrate({
-  [Segments.QUERY]: {
-    submissionId: Joi.string()
-      .regex(/^[0-9a-fA-F]{24}$/)
-      .required(),
-  },
-})
-
-/**
- * Exported solely for testing
- * Handler for GET /:formId/adminform/submissions
- * @security session
- *
- * @returns 200 with encrypted submission data response
- * @returns 400 when form is not an encrypt mode form
- * @returns 403 when user does not have read permissions for form
- * @returns 404 when submissionId cannot be found in the database
- * @returns 404 when form cannot be found
- * @returns 410 when form is archived
- * @returns 422 when user in session cannot be retrieved from the database
- * @returns 500 when any errors occurs in database query, generating signed URL or retrieving payment data
- */
-export const getEncryptedResponseUsingQueryParams: ControllerHandler<
-  { formId: string },
-  StorageModeSubmissionDto | ErrorDto,
-  unknown,
-  { submissionId: string }
-> = async (req, res) => {
-  const sessionUserId = (req.session as AuthedSessionData).user._id
-  const { submissionId } = req.query
-  const { formId } = req.params
-
-  const logMeta = {
-    action: 'getEncryptedResponseUsingQueryParams',
-    submissionId,
-    sessionUserId,
-    formId,
-    ...createReqMeta(req),
-  }
-
-  logger.info({
-    message: 'Get encrypted response using submissionId start',
-    meta: logMeta,
-  })
-
-  return (
-    // Step 1: Retrieve logged in user.
-    getPopulatedUserById(sessionUserId)
-      // Step 2: Check whether user has read permissions to form.
-      .andThen((user) =>
-        getFormAfterPermissionChecks({
-          user,
-          formId,
-          level: PermissionLevel.Read,
-        }),
-      )
-      // Step 3: Check whether form is encrypt mode.
-      .andThen(checkFormIsEncryptMode)
-      // Step 4: Is encrypt mode form, retrieve submission data.
-      .andThen(() => getEncryptedSubmissionData(formId, submissionId))
-      // Step 5: Retrieve presigned URLs for attachments.
-      .andThen((submissionData) => {
-        // Remaining login duration in seconds.
-        const urlExpiry = (req.session?.cookie.maxAge ?? 0) / 1000
-        return transformAttachmentMetasToSignedUrls(
-          submissionData.attachmentMetadata,
-          urlExpiry,
-        ).map((presignedUrls) =>
-          createEncryptedSubmissionDto(submissionData, presignedUrls),
-        )
-      })
-      .map((responseData) => {
-        logger.info({
-          message: 'Get encrypted response using submissionId success',
-          meta: logMeta,
-        })
-        return res.json(responseData)
-      })
-      .mapErr((error) => {
-        logger.error({
-          message: 'Failure retrieving encrypted submission response',
-          meta: logMeta,
-          error,
-        })
-
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({
-          message: errorMessage,
-        })
-      })
-  )
-}
-
-/**
- * Handler for GET /:formId/adminform/submission
- * @deprecated in favour of handleGetEncryptedResponse
- * Exported as an array to ensure that the handler always a valid submissionId
- */
-export const handleGetEncryptedResponseUsingQueryParams = [
-  validateSubmissionId,
-  getEncryptedResponseUsingQueryParams,
 ] as ControllerHandler[]
 
 /**

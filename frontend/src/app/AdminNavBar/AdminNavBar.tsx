@@ -22,6 +22,7 @@ import {
   ROLLOUT_ANNOUNCEMENT_KEY_PREFIX,
 } from '~constants/localStorage'
 import { DASHBOARD_ROUTE } from '~constants/routes'
+import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { logout } from '~services/AuthService'
@@ -226,6 +227,7 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
   }, [hasSeenContactModal, onContactModalOpen, user, hasSeenAnnouncement])
 
   const handleLogout = useCallback(() => {
+    sessionStorage.removeItem(ADMIN_FEEDBACK_SESSION_KEY)
     logout()
     removeQuery()
     if (emergencyContactKey) {

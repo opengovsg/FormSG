@@ -41,6 +41,7 @@ import {
   LogicDto,
   LogicType,
   PaymentChannel,
+  PaymentType,
   StorageFormSettings,
 } from '../../../shared/types'
 import { reorder } from '../../../shared/utils/immutable-array-fns'
@@ -128,6 +129,9 @@ const formSchemaOptions: SchemaOptions = {
     updatedAt: 'lastModified',
   },
 }
+const isPositiveInteger = (val: number) => {
+  return val >= 0 && Number.isInteger(val)
+}
 
 const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   publicKey: {
@@ -163,14 +167,16 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
       trim: true,
       default: '',
     },
-    // unused for v2
+    name: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     amount_cents: {
       type: Number,
       default: 0,
       validate: {
-        validator: (amount_cents: number) => {
-          return amount_cents >= 0 && Number.isInteger(amount_cents)
-        },
+        validator: isPositiveInteger,
         message: 'amount_cents must be a non-negative integer.',
       },
     },
@@ -193,20 +199,18 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
         min_qty: {
           type: Number,
           required: false,
-          // TODO: validate higher than 0
+          validator: isPositiveInteger,
         },
         max_qty: {
           type: Number,
           required: false,
-          // TODO: validate higher than min_qty
+          validator: isPositiveInteger,
         },
         amount_cents: {
           type: Number,
           default: 0,
           validate: {
-            validator: (amount_cents: number) => {
-              return amount_cents >= 0 && Number.isInteger(amount_cents)
-            },
+            validator: isPositiveInteger,
             message: 'amount_cents must be a non-negative integer.',
           },
         },
@@ -218,8 +222,26 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
         default: false,
       },
     },
-    version: {
+    min_amount: {
       type: Number,
+      default: 0,
+      validate: {
+        validator: isPositiveInteger,
+        message: 'min_amount must be a non-negative integer.',
+      },
+    },
+    max_amount: {
+      type: Number,
+      default: 0,
+      validate: {
+        validator: isPositiveInteger,
+        message: 'max_amount must be a non-negative integer.',
+      },
+    },
+    payment_type: {
+      type: String,
+      enum: Object.values(PaymentType),
+      default: PaymentType.Fixed,
     },
   },
 
@@ -313,7 +335,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
             )
             return (
               myInfoFieldCount === 0 ||
-              (this.authType === FormAuthType.MyInfo &&
+              ((this.authType === FormAuthType.MyInfo ||
+                this.authType == FormAuthType.SGID_MyInfo) &&
                 this.responseMode === FormResponseMode.Email &&
                 myInfoFieldCount <= 30)
             )
@@ -538,6 +561,13 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         default: null,
         min: 1,
       },
+
+      goLinkSuffix: {
+        // GoGov link suffix
+        type: String,
+        required: false,
+        default: '',
+      },
     },
     formSchemaOptions,
   )
@@ -608,7 +638,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   // Method to return myInfo attributes
   FormSchema.methods.getUniqueMyInfoAttrs = function () {
-    if (this.authType !== FormAuthType.MyInfo) {
+    if (
+      this.authType !== FormAuthType.MyInfo &&
+      this.authType !== FormAuthType.SGID_MyInfo
+    ) {
       return []
     }
 
@@ -1022,6 +1055,21 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     })
       .read('secondary')
       .exec()
+  }
+
+  FormSchema.statics.getGoLinkSuffix = async function (formId: string) {
+    return this.findById(formId, 'goLinkSuffix').exec()
+  }
+
+  FormSchema.statics.setGoLinkSuffix = async function (
+    formId: string,
+    linkSuffix: string,
+  ) {
+    return this.findByIdAndUpdate(
+      formId,
+      { goLinkSuffix: linkSuffix },
+      { new: true, runValidators: true },
+    ).exec()
   }
 
   // Hooks

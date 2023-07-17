@@ -1,0 +1,24 @@
+{
+  "name": "form-payment-reconciliation",
+  "version": "1.0.0",
+  "description": "Lambda function for payment reconciliation",
+  "main": "index.js",
+  "scripts": {
+    "lambda:prep": "npm install --omit=dev && rm -rf dist && mkdir -p dist && zip -r dist/function.zip index.js src package.json node_modules",
+    "lambda:push:prod": "aws lambda update-function-code --function-name prod-form-payment-reconciliation --zip-file fileb://dist/function.zip 1>/dev/null",
+    "lambda:push:staging": "aws lambda update-function-code --function-name staging-form-payment-reconciliation --zip-file fileb://dist/function.zip 1>/dev/null",
+    "lambda:push:staging-alt": "aws lambda update-function-code --function-name staging-alt-form-payment-reconciliation --zip-file fileb://dist/function.zip 1>/dev/null",
+    "lambda:push:staging-alt2": "aws lambda update-function-code --function-name staging-alt2-form-payment-reconciliation --zip-file fileb://dist/function.zip 1>/dev/null",
+    "lambda:push:uat": "aws lambda update-function-code --function-name uat-form-payment-reconciliation --zip-file fileb://dist/function.zip 1>/dev/null",
+    "lambda:update:prod": "npm run lambda:prep && npm run lambda:push:prod",
+    "lambda:update:staging": "npm run lambda:prep && npm run lambda:push:staging",
+    "lambda:update:staging-alt": "npm run lambda:prep && npm run lambda:push:staging-alt",
+    "lambda:update:staging-alt2": "npm run lambda:prep && npm run lambda:push:staging-alt2",
+    "lambda:update:uat": "npm run lambda:prep && npm run lambda:push:uat"
+  },
+  "private": true,
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.347.1",
+    "@aws-sdk/client-ssm": "^3.347.1"
+  }
+}

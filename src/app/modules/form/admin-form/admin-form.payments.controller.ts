@@ -8,11 +8,12 @@ import { IEncryptedFormDocument } from 'src/types'
 import { featureFlags } from '../../../../../shared/constants'
 import {
   ErrorDto,
-  FormPaymentsFieldV2,
   PaymentChannel,
   PaymentsProductUpdateDto,
   PaymentsUpdateDto,
+  PaymentType,
 } from '../../../../../shared/types'
+import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
@@ -29,7 +30,7 @@ import { getPopulatedUserById } from '../../user/user.service'
 import * as UserService from '../../user/user.service'
 
 import { PaymentChannelNotFoundError } from './admin-form.errors'
-import * as AdminFormService from './admin-form.service'
+import * as AdminFormPaymentService from './admin-form.payments.service'
 import { PermissionLevel } from './admin-form.types'
 import { mapRouteError, verifyUserBetaflag } from './admin-form.utils'
 
@@ -236,7 +237,7 @@ export const handleValidatePaymentAccount: ControllerHandler<{
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const _handleUpdatePayments: ControllerHandler<
+const _handleUpdatePayments: ControllerHandler<
   { formId: string },
   IEncryptedFormDocument['payments_field'] | ErrorDto,
   PaymentsUpdateDto
@@ -295,7 +296,7 @@ export const _handleUpdatePayments: ControllerHandler<
           : ok(form),
       )
       // Step 4: User has permissions, proceed to allow updating of start page
-      .andThen(() => AdminFormService.updatePayments(formId, req.body))
+      .andThen(() => AdminFormPaymentService.updatePayments(formId, req.body))
       .map((updatedPayments) =>
         res.status(StatusCodes.OK).json(updatedPayments),
       )
@@ -313,7 +314,7 @@ export const _handleUpdatePayments: ControllerHandler<
 
 export const _handleUpdatePaymentsProduct: ControllerHandler<
   { formId: string },
-  FormPaymentsFieldV2['products'] | ErrorDto,
+  IEncryptedFormDocument['payments_field']['products'] | ErrorDto,
   PaymentsProductUpdateDto
 > = (req, res) => {
   const { formId } = req.params
@@ -340,12 +341,13 @@ export const _handleUpdatePaymentsProduct: ControllerHandler<
           : ok(form),
       )
       // Step 4: User has permissions, proceed to allow updating of start page
-      .andThen(() => AdminFormService.updatePaymentsProduct(formId, req.body))
-      .map((updatedPayments) =>
-        res
-          .status(StatusCodes.OK)
-          .json((updatedPayments as FormPaymentsFieldV2).products),
+      .andThen(() =>
+        AdminFormPaymentService.updatePaymentsProduct(formId, req.body),
       )
+      .map((updatedPayments) => {
+        if (updatedPayments.payment_type !== PaymentType.Products) return
+        return res.status(StatusCodes.OK).json(updatedPayments.products)
+      })
       .mapErr((error) => {
         logger.error({
           message: 'Error occurred when updating payments product',
@@ -363,64 +365,88 @@ export const _handleUpdatePaymentsProduct: ControllerHandler<
       })
   )
 }
+export const handleUpdatePaymentsForTest = _handleUpdatePayments
 
-/**
- * Handler for PUT /:formId/payment
- */
+const JoiInt = Joi.number().integer()
+const updatePaymentsValidator = celebrate({
+  [Segments.BODY]: {
+    enabled: Joi.boolean().required(),
+    payment_type: Joi.when('enabled', {
+      is: Joi.equal(true),
+      then: Joi.string()
+        .allow(...Object.values(PaymentType))
+        .required(),
+      otherwise: Joi.string().trim().allow(''),
+    }),
+    amount_cents: Joi.when('enabled', {
+      is: Joi.equal(true),
+      then: Joi.when('payment_type', {
+        is: Joi.equal(PaymentType.Fixed),
+        then: JoiInt.min(paymentConfig.minPaymentAmountCents)
+          .max(paymentConfig.maxPaymentAmountCents)
+          .required(),
+        otherwise: JoiInt,
+      }),
+      otherwise: JoiInt,
+    }),
 
-const PositiveIntWhenEnabledElseAnyInt = Joi.when('enabled', {
-  is: Joi.equal(true),
-  then: Joi.number().integer().positive().required(),
-  otherwise: Joi.number().integer(),
+    min_amount: Joi.when('enabled', {
+      is: Joi.equal(true),
+      then: Joi.when('payment_type', {
+        is: Joi.equal(PaymentType.Variable),
+        then: JoiInt.positive()
+          .min(paymentConfig.minPaymentAmountCents)
+          .required(),
+        otherwise: JoiInt,
+      }),
+      otherwise: JoiInt,
+    }),
+
+    max_amount: Joi.when('enabled', {
+      is: Joi.equal(true),
+      then: Joi.when('payment_type', {
+        is: Joi.equal(PaymentType.Variable),
+        then: JoiInt.positive()
+          .min(Joi.ref('min_amount'))
+          .max(paymentConfig.maxPaymentAmountCents)
+          .required(),
+        otherwise: JoiInt,
+      }),
+      otherwise: JoiInt,
+    }),
+
+    description: Joi.when('enabled', {
+      is: Joi.equal(true),
+      then: Joi.string().trim().allow(''),
+      otherwise: Joi.string().trim().allow(''),
+    }),
+    name: Joi.when('enabled', {
+      is: Joi.equal(true),
+      then: Joi.string().trim().required(),
+      otherwise: Joi.string().trim().allow(''),
+    }),
+
+    products_meta: Joi.when('enabled', {
+      is: Joi.equal(true),
+      then: Joi.when('payment_type', {
+        is: Joi.equal(PaymentType.Products),
+        then: Joi.required(),
+        otherwise: Joi.any(),
+      }),
+      otherwise: Joi.any(),
+    }),
+
+    products: Joi.when('enabled', {
+      is: Joi.equal(true),
+      then: Joi.when('payment_type', {
+        is: Joi.equal(PaymentType.Products),
+        then: Joi.required(),
+        otherwise: Joi.any(),
+      }),
+      otherwise: Joi.any(),
+    }),
+  },
 })
-
-export const handleUpdatePayments = [
-  celebrate({
-    [Segments.BODY]: {
-      // common fields
-      enabled: Joi.boolean().required(),
-      description: Joi.when('enabled', {
-        is: Joi.equal(true),
-        then: Joi.string().required(),
-        otherwise: Joi.string().allow(''),
-      }),
-
-      // v1 fields
-      amount_cents: Joi.when('version', {
-        switch: [
-          { is: 1, then: PositiveIntWhenEnabledElseAnyInt },
-          { is: 2, then: Joi.any() },
-        ],
-      }),
-      // end v1 fields
-
-      version: Joi.number().required(),
-      // v2 fields
-      products_meta: Joi.when('version', {
-        switch: [
-          { is: 1, then: Joi.any() },
-          {
-            is: 2,
-            then: {
-              multi_product: Joi.bool().required(),
-            },
-          },
-        ],
-      }),
-
-      products: Joi.when('version', {
-        switch: [
-          { is: 1, then: Joi.any() },
-          {
-            is: 2,
-            then: Joi.any(),
-          },
-        ],
-      }),
-    },
-  }),
-  _handleUpdatePayments,
-] as ControllerHandler[]
 
 /**
  * Handler for PUT /:formId/payment/products
@@ -435,3 +461,69 @@ export const handleUpdatePaymentsProduct = [
   // }),
   _handleUpdatePaymentsProduct,
 ] as ControllerHandler[]
+
+/**
+ * Handler for PUT /:formId/payment
+ */
+export const handleUpdatePayments = [
+  updatePaymentsValidator,
+  _handleUpdatePayments,
+] as ControllerHandler[]
+
+export const handleGetPaymentGuideLink: ControllerHandler = async (
+  req,
+  res,
+) => {
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  const logMeta = {
+    action: 'handleGetPaymentGuideLink',
+    ...createReqMeta(req),
+    userId: sessionUserId,
+  }
+
+  // If getFeatureFlag throws a DatabaseError, we want to log it, but respond
+  // to the client as if the flag is not found.
+  const featureFlagsListResult = await FeatureFlagService.getEnabledFlags()
+
+  let featureFlagEnabled = false
+
+  if (featureFlagsListResult.isErr()) {
+    logger.error({
+      message: 'Error occurred whilst retrieving enabled feature flags',
+      meta: logMeta,
+      error: featureFlagsListResult.error,
+    })
+  } else {
+    featureFlagEnabled = featureFlagsListResult.value.includes(
+      featureFlags.payment,
+    )
+  }
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      // Step 2: Check if user has 'payment' betaflag
+      .andThen((user) =>
+        featureFlagEnabled
+          ? ok(user)
+          : verifyUserBetaflag(user, featureFlags.payment),
+      )
+      // Step 3: User has permissions, proceed to get payment guide link
+      .map(() =>
+        res
+          .status(StatusCodes.OK)
+          .json(AdminFormPaymentService.getPaymentGuideLink()),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error checking if payment feature is enabled',
+          meta: logMeta,
+          error,
+        })
+
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}

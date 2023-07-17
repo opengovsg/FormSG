@@ -8,7 +8,9 @@ import { getBannerProps } from '~utils/getBannerProps'
 import { Banner } from '~components/Banner'
 
 import { useEnv } from '~features/env/queries'
+import { useUser } from '~features/user/queries'
 
+import AdminFeedbackContainer from './components/AdminFeedbackContainer'
 // TODO #4279: Remove after React rollout is complete
 import CreateFormModal from './components/CreateFormModal'
 import { WorkspacePageContent } from './components/WorkspacePageContent'
@@ -17,14 +19,13 @@ import { WorkspaceProvider } from './WorkspaceProvider'
 export const CONTAINER_MAXW = '69.5rem'
 
 export const WorkspacePage = (): JSX.Element => {
-  const { data: { siteBannerContentReact, adminBannerContentReact } = {} } =
-    useEnv()
+  const { data: { siteBannerContent, adminBannerContent } = {} } = useEnv()
+  const { user } = useUser()
 
-  // TODO (#4279): Revert back to non-react banners post-migration.
   const bannerContent = useMemo(
     // Use || instead of ?? so that we fall through even if previous banners are empty string.
-    () => siteBannerContentReact || adminBannerContentReact,
-    [adminBannerContentReact, siteBannerContentReact],
+    () => siteBannerContent || adminBannerContent,
+    [adminBannerContent, siteBannerContent],
   )
 
   const bannerProps = useMemo(
@@ -53,6 +54,7 @@ export const WorkspacePage = (): JSX.Element => {
           />
         </WorkspaceProvider>
       </Flex>
+      {user && <AdminFeedbackContainer userId={user._id} />}
     </>
   )
 }

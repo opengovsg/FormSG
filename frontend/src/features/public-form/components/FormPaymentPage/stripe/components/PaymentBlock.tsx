@@ -17,13 +17,17 @@ import Button from '~components/Button'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
-import { PaymentItemDetailsBlock } from './PaymentItemDetails'
+import { PaymentItemDetailsBlock } from '../../components/PaymentItemDetailsBlock'
 
 interface PaymentPageBlockProps {
   submissionId: string
   isRetry?: boolean
   focusOnMount?: boolean
   triggerPaymentStatusRefetch: () => void
+  paymentAmount: number
+  // null here due to payment_intent.description from stripe
+  paymentItemName?: string | null
+  paymentDescription?: string | null
 }
 
 interface StripeCheckoutFormProps {
@@ -124,6 +128,8 @@ export const StripePaymentBlock = ({
   focusOnMount,
   isRetry,
   triggerPaymentStatusRefetch,
+  paymentAmount,
+  paymentItemName,
 }: PaymentPageBlockProps): JSX.Element => {
   const { form } = usePublicFormContext()
 
@@ -158,15 +164,14 @@ export const StripePaymentBlock = ({
           <Text textStyle="h3" textColor="primary.500" mb="1rem">
             Payment
           </Text>
-          {/* TODO(ken): version 2 doesn't have design yet, might not be 100% compatible
-          as PaymentItemDetailsBlockv2 is the selector block */}
-          {form.payments_field.version === 1 ? (
-            <PaymentItemDetailsBlock
-              paymentItemName={form.payments_field?.description}
-              colorTheme={colorTheme}
-              paymentAmount={form.payments_field?.amount_cents}
-            />
-          ) : null}
+          <PaymentItemDetailsBlock
+            paymentItemName={
+              paymentItemName ? paymentItemName : form.payments_field.name
+            }
+            paymentDescription={form.payments_field.description}
+            colorTheme={colorTheme}
+            paymentAmount={paymentAmount}
+          />
         </Box>
         <StripeCheckoutForm
           colorTheme={colorTheme}

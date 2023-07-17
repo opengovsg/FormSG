@@ -21,7 +21,7 @@ export const FormPaymentPage = () => {
   if (!paymentId) throw new Error('No paymentId provided')
 
   return (
-    <PublicFormProvider formId={formId}>
+    <PublicFormProvider startTime={Date.now()} formId={formId}>
       <FormSectionsProvider>
         <Flex direction="column" css={fillMinHeightCss}>
           <FormBanner />

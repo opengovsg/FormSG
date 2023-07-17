@@ -1,11 +1,16 @@
 import axios from 'axios'
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
-import { errAsync, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import Stripe from 'stripe'
 
-import { IPopulatedForm } from 'src/types'
-
-import { ErrorDto, GetPaymentInfoDto } from '../../../../shared/types'
+import {
+  ErrorDto,
+  GetPaymentInfoDto,
+  IncompletePaymentsDto,
+  ReconciliationEventsReportLine,
+  ReconciliationReport,
+} from '../../../../shared/types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
@@ -18,9 +23,12 @@ import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt
 
 import { PaymentAccountInformationError } from './payments.errors'
 import * as PaymentService from './payments.service'
-import { StripeFetchError } from './stripe.errors'
+import {
+  StripeFetchError,
+  StripeMetadataIncorrectEnvError,
+} from './stripe.errors'
 import * as StripeService from './stripe.service'
-import { convertToInvoiceFormat, mapRouteError } from './stripe.utils'
+import { mapRouteError } from './stripe.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -85,7 +93,7 @@ export const downloadPaymentInvoice: ControllerHandler<{
     PaymentService.findPaymentById(paymentId),
     FormService.retrieveFullFormById(formId).andThen(checkFormIsEncryptMode),
   ])
-    .map(([payment, populatedForm]) => {
+    .andThen(([payment, populatedForm]) => {
       logger.info({
         message: 'Found paymentId in payment document',
         meta: {
@@ -93,63 +101,14 @@ export const downloadPaymentInvoice: ControllerHandler<{
           payment,
         },
       })
-      if (!payment.completedPayment?.receiptUrl) {
-        return res
-          .status(StatusCodes.NOT_FOUND)
-          .send({ message: 'Receipt url not ready' })
-      }
-      // retrieve receiptURL as html
-      return (
-        axios
-          .get<string>(payment.completedPayment.receiptUrl)
-          // convert to pdf and return
-          .then((receiptUrlResponse) => {
-            const html = receiptUrlResponse.data
-            const agencyBusinessInfo = (populatedForm as IPopulatedForm).admin
-              .agency.business
-            const formBusinessInfo = populatedForm.business
-
-            const businessAddress = [
-              formBusinessInfo?.address,
-              agencyBusinessInfo?.address,
-            ].find(Boolean)
-
-            const businessGstRegNo = [
-              formBusinessInfo?.gstRegNo,
-              agencyBusinessInfo?.gstRegNo,
-            ].find(Boolean)
-
-            // we will still continute the invoice generation even if there's no address/gstregno
-            if (!businessAddress || !businessGstRegNo)
-              logger.warn({
-                message:
-                  'Some business info not available during invoice generation. Expecting either agency or form to have business info',
-                meta: {
-                  action: 'downloadPaymentInvoice',
-                  payment,
-                  agencyName: populatedForm.admin.agency.fullName,
-                  agencyBusinessInfo,
-                  formBusinessInfo,
-                },
-              })
-            const invoiceHtml = convertToInvoiceFormat(html, {
-              address: businessAddress || '',
-              gstRegNo: businessGstRegNo || '',
-              formTitle: populatedForm.title,
-              submissionId: payment.completedPayment?.submissionId || '',
-            })
-
-            const pdfBufferPromise = generatePdfFromHtml(invoiceHtml)
-            return pdfBufferPromise
-          })
-          .then((pdfBuffer) => {
-            res.set({
-              'Content-Type': 'application/pdf',
-              'Content-Disposition': `attachment; filename=${paymentId}-invoice.pdf`,
-            })
-            return res.status(StatusCodes.OK).send(pdfBuffer)
-          })
-      )
+      return StripeService.generatePaymentInvoice(payment, populatedForm)
+    })
+    .map((pdfBuffer) => {
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename=${paymentId}-invoice.pdf`,
+      })
+      return res.status(StatusCodes.OK).send(pdfBuffer)
     })
     .mapErr((error) => {
       logger.error({
@@ -239,10 +198,9 @@ const _handleConnectOauthCallback: ControllerHandler<
   unknown,
   unknown,
   unknown,
-  { code: string; state: string }
+  { code?: string; state: string }
 > = async (req, res) => {
   const { code, state } = req.query
-
   // Step 0: Extract state parameter previously signed and stored in cookies.
   // Compare state values to ensure that no tampering has occurred.
   const { stripeState } = req.signedCookies
@@ -253,9 +211,14 @@ const _handleConnectOauthCallback: ControllerHandler<
   }
 
   // Step 1: Retrieve formId from state.
+  // Redirect user back to payments page if code is undefined
   const formId = state.split('.')[0]
   const redirectUrl = `${config.app.appUrl}/admin/form/${formId}/settings/payments`
-  // Step 2: Retrieve currently logged in user.
+  if (!code) {
+    return res.redirect(redirectUrl)
+  }
+
+  // Step 2: Retrieve currently logged-in user.
   return (
     FormService.retrieveFullFormById(formId)
       .andThen(checkFormIsEncryptMode)
@@ -287,10 +250,12 @@ const _handleConnectOauthCallback: ControllerHandler<
   )
 }
 
+export const _handleConnectOauthCallbackForTest = _handleConnectOauthCallback
+
 export const handleConnectOauthCallback = [
   celebrate({
     [Segments.QUERY]: Joi.object({
-      code: Joi.string().required(),
+      code: Joi.string(),
       state: Joi.string().required(),
     }).unknown(true),
   }),
@@ -364,4 +329,126 @@ export const getPaymentInfo: ControllerHandler<
       const { errorMessage, statusCode } = mapRouteError(error)
       return res.status(statusCode).json({ message: errorMessage })
     })
+}
+
+/**
+ * Handler for GET /payments/reconcile/incompletePayments
+ * Retrieves payments that are in Pending or Failed states
+ *
+ * @returns 200 with found payment records
+ * @returns 500 if there were unexpected errors in retrieving payment data
+ */
+export const getIncompletePayments: ControllerHandler<
+  never,
+  IncompletePaymentsDto | ErrorDto
+> = (_req, res) => {
+  return PaymentService.getIncompletePayments()
+    .andThen((payments) =>
+      ResultAsync.combine(
+        payments.map((payment) =>
+          okAsync({
+            stripeAccount: payment.targetAccountId,
+            paymentId: payment._id,
+          }),
+        ),
+      ),
+    )
+    .map((paymentMetas) => {
+      return res.status(StatusCodes.OK).json(paymentMetas)
+    })
+    .mapErr((error) => {
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ message: error.message })
+    })
+}
+
+/**
+ * Handler for POST /payments/reconcile/account/:stripeAccount?maxAgeHrs=<number>
+ * Fetches undelivered stripe webhooks and replays event for the supplied account
+ *
+ * @param {string} stripeAccount the Stripe account id of the account to be reconciles
+ * @body {string[]} paymentIds the list of payment ids to reconcile
+ * @query {number} (optional) maxAgeHrs the max age of events to attempt reconciliation for, in hours before now; if omitted, it is treated as infinite
+ *
+ * @returns 200 with two report arrays, one for event processing and another for payment status verification
+ * @returns 500 if there were unexpected errors in retrieving data from Stripe
+ */
+export const reconcileAccount: ControllerHandler<
+  { stripeAccount: string },
+  ReconciliationReport | ErrorDto,
+  { paymentIds: string[] },
+  { maxAgeHrs?: number }
+> = (req, res) => {
+  const { stripeAccount } = req.params
+  const { paymentIds } = req.body
+  const { maxAgeHrs } = req.query
+
+  const logMeta = {
+    action: 'reconcileAccount',
+    stripeAccount,
+    paymentIds,
+    maxAgeHrs,
+  }
+
+  logger.info({
+    message: 'Reconciling account started',
+    meta: logMeta,
+  })
+
+  const eventsReport: ReconciliationEventsReportLine[] = []
+
+  return StripeService.getUndeliveredStripeEventsForAccount(
+    stripeAccount,
+    maxAgeHrs,
+  )
+    .forEach(async (event) => {
+      logger.info({
+        message: 'Started processing Stripe event while reconciling account',
+        meta: { ...logMeta, event },
+      })
+
+      await StripeService.handleStripeEvent(event as Stripe.DiscriminatedEvent)
+        .andThen(() => {
+          logger.warn({
+            message:
+              'Successfully processed Stripe event while reconciling account',
+            meta: { ...logMeta, event },
+          })
+          eventsReport.push({ event })
+          return okAsync(undefined)
+        })
+        .orElse((error) => {
+          if (error instanceof StripeMetadataIncorrectEnvError) {
+            // Intercept this as it is not really an error. Ignore it as it was
+            // never meant for this environment anyway.
+            return okAsync(undefined)
+          }
+          logger.error({
+            message: 'Failed to process Stripe event while reconciling account',
+            meta: { ...logMeta, event },
+            error,
+          })
+          eventsReport.push({
+            event,
+            error: error.message,
+          })
+          return okAsync(undefined)
+        })
+    })
+    .andThen(() =>
+      // Validate all the associated payments with Stripe
+      ResultAsync.combineWithAllErrors(
+        paymentIds.map(StripeService.verifyPaymentStatusWithStripe),
+      ),
+    )
+    .match(
+      (reconciliationReport) =>
+        res.status(StatusCodes.OK).json({ eventsReport, reconciliationReport }),
+      (errors) => {
+        const errorsAsArray = errors instanceof Array ? errors : [errors]
+        const message = errorsAsArray.map((error) => error.message).join('; ')
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message })
+      },
+    )
 }

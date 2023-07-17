@@ -10,15 +10,14 @@ import InlineMessage from '~components/InlineMessage'
 
 import { useEnv } from '~features/env/queries'
 
-import { CreatePaymentIntentFailureBlock } from '../components/CreatePaymentIntentFailureBlock'
-import { PaymentSuccessSvgr } from '../components/PaymentSuccessSvgr'
+import {
+  CreatePaymentIntentFailureBlock,
+  PaymentStack,
+  PaymentSuccessSvgr,
+} from '../components'
 import { useGetPaymentInfo } from '../queries'
 
-import {
-  GenericMessageBlock,
-  PaymentStack,
-  StripePaymentBlock,
-} from './components'
+import { GenericMessageBlock, StripePaymentBlock } from './components'
 import { useGetPaymentStatusFromStripe } from './queries'
 import { StripeReceiptContainer } from './StripeReceiptContainer'
 import { getPaymentViewStates, PaymentViewStates } from './utils'
@@ -89,11 +88,13 @@ const StripePaymentContainer = ({
             <GenericMessageBlock
               submissionId={paymentInfoData.submissionId}
               title="Payment request was canceled."
-              subtitle="The payment request has been canceled. If any payment has been completed, the payment will be refunded."
+              subtitle="The payment request has timed out. No payment has been taken. Please submit the form again."
             />
           </PaymentStack>
         )
-      case PaymentViewStates.PendingPayment:
+      case PaymentViewStates.PendingPayment: {
+        // The item name is passed over to Stripe as PaymentIntent.description
+        const itemName = data?.paymentIntent?.description
         return (
           <>
             {secretEnv === 'production' ? null : (
@@ -107,10 +108,13 @@ const StripePaymentContainer = ({
               <StripePaymentBlock
                 submissionId={paymentInfoData.submissionId}
                 triggerPaymentStatusRefetch={() => setRefetchKey(Date.now())}
+                paymentAmount={data?.paymentIntent?.amount ?? 0}
+                paymentItemName={itemName}
               />
             </PaymentStack>
           </>
         )
+      }
       case PaymentViewStates.Processing:
         return (
           <PaymentStack>

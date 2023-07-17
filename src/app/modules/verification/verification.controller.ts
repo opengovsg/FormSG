@@ -16,6 +16,7 @@ import { setFormTags } from '../datadog/datadog.utils'
 import * as FormService from '../form/form.service'
 import { MyInfoService } from '../myinfo/myinfo.service'
 import * as MyInfoUtil from '../myinfo/myinfo.util'
+import { SGID_COOKIE_NAME } from '../sgid/sgid.constants'
 import { SgidService } from '../sgid/sgid.service'
 import { getOidcService } from '../spcp/spcp.oidc.service'
 
@@ -26,48 +27,7 @@ import { mapRouteError } from './verification.util'
 const logger = createLoggerWithLabel(module)
 
 /**
- * NOTE: Private handler for POST /transaction
- * When a form is loaded publicly, a transaction is created, and populated with the field ids of fields that are verifiable.
- * If no fields are verifiable, then it did not create a transaction and returns an empty object.
- * @deprecated in favour of handleCreateVerificationTransaction
- * @param req
- * @param res
- * @returns 201 - transaction is created
- * @returns 200 - transaction was not created as no fields were verifiable for the form
- */
-export const handleCreateTransaction: ControllerHandler<
-  never,
-  Transaction | ErrorDto,
-  { formId: string }
-> = async (req, res) => {
-  const { formId } = req.body
-  const logMeta = {
-    action: 'handleCreateTransaction',
-    formId,
-    ...createReqMeta(req),
-  }
-  return VerificationService.createTransaction(formId)
-    .map((transaction) => {
-      return transaction
-        ? res.status(StatusCodes.CREATED).json({
-            expireAt: transaction.expireAt,
-            transactionId: transaction._id,
-          })
-        : res.status(StatusCodes.OK).json({})
-    })
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error creating transaction',
-        meta: logMeta,
-        error,
-      })
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
-}
-
-/**
- * NOTE: Private handler for POST /forms/:formId/fieldverifications
+ * Handler for POST /forms/:formId/fieldverifications
  * When a form is loaded publicly, a transaction is created, and populated with the field ids of fields that are verifiable.
  * If no fields are verifiable, then it did not create a transaction and returns an empty object.
  * @param req
@@ -97,89 +57,6 @@ export const handleCreateVerificationTransaction: ControllerHandler<
     .mapErr((error) => {
       logger.error({
         message: 'Error creating transaction',
-        meta: logMeta,
-        error,
-      })
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
-}
-
-/**
- *  When user changes the input value in the verifiable field,
- *  we reset the field in the transaction, removing the previously saved signature.
- * @deprecated in favour of handleResetFieldVerification
- * @param req
- * @param res
- * @deprecated in favour of handleGenerateOtp
- */
-export const handleResetField: ControllerHandler<
-  { transactionId: string },
-  ErrorDto,
-  { fieldId: string }
-> = async (req, res) => {
-  const { transactionId } = req.params
-  const { fieldId } = req.body
-  const logMeta = {
-    action: 'handleResetField',
-    transactionId,
-    fieldId,
-    ...createReqMeta(req),
-  }
-  return VerificationService.resetFieldForTransaction({
-    transactionId,
-    fieldId,
-  })
-    .map(() => res.sendStatus(StatusCodes.OK))
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error resetting field in transaction',
-        meta: logMeta,
-        error,
-      })
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
-}
-
-/**
- * When user requests to verify a field, an otp is generated.
- * The current answer is signed, and the signature is also saved in the transaction, with the field id as the key.
- * @param req
- * @param res
- * @deprecated in favour of handleGenerateOtp
- */
-export const handleGetOtp: ControllerHandler<
-  { transactionId: string },
-  ErrorDto,
-  { answer: string; fieldId: string }
-> = async (req, res) => {
-  const { transactionId } = req.params
-  const { answer, fieldId } = req.body
-  const senderIp = getRequestIp(req)
-
-  const logMeta = {
-    action: 'handleGetOtp',
-    transactionId,
-    fieldId,
-    ...createReqMeta(req),
-  }
-  return generateOtpWithHash(logMeta, SALT_ROUNDS)
-    .andThen(({ otp, hashedOtp, otpPrefix }) =>
-      VerificationService.sendNewOtp({
-        hashedOtp,
-        otp,
-        otpPrefix,
-        recipient: answer,
-        transactionId,
-        senderIp,
-        fieldId,
-      }),
-    )
-    .map(() => res.sendStatus(StatusCodes.CREATED))
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error creating new OTP',
         meta: logMeta,
         error,
       })
@@ -264,7 +141,9 @@ export const _handleGenerateOtp: ControllerHandler<
               })
           }
           case FormAuthType.SGID:
-            return SgidService.extractSgidJwtPayload(req.cookies.jwtSgid)
+            return SgidService.extractSgidSingpassJwtPayload(
+              req.cookies[SGID_COOKIE_NAME],
+            )
               .map(() => form)
               .mapErr((error) => {
                 logger.error({
@@ -274,13 +153,16 @@ export const _handleGenerateOtp: ControllerHandler<
                 })
                 return error
               })
+          case FormAuthType.SGID_MyInfo:
           case FormAuthType.MyInfo:
-            return MyInfoUtil.extractMyInfoLoginJwt(req.cookies)
+            return MyInfoUtil.extractMyInfoLoginJwt(req.cookies, authType)
               .andThen(MyInfoService.verifyLoginJwt)
               .map(() => form)
               .mapErr((error) => {
                 logger.error({
-                  message: 'Failed to verify MyInfo hashes',
+                  message: `Failed to verify MyInfo${
+                    authType === FormAuthType.SGID_MyInfo ? '(over sgID)' : ''
+                  } hashes`,
                   meta: logMeta,
                   error,
                 })
@@ -345,44 +227,6 @@ export const handleGenerateOtp = [
   }),
   _handleGenerateOtp,
 ] as ControllerHandler[]
-
-/**
- * When user submits their otp for the field, the otp is validated.
- * If it is correct, we return the signature that was saved.
- * This signature will be appended to the response when the form is submitted.
- * @param req
- * @param res
- * @deprecated in favour of handleOtpVerification
- */
-export const handleVerifyOtp: ControllerHandler<
-  { transactionId: string },
-  string | ErrorDto,
-  { otp: string; fieldId: string }
-> = async (req, res) => {
-  const { transactionId } = req.params
-  const { fieldId, otp } = req.body
-  const logMeta = {
-    action: 'handleVerifyOtp',
-    transactionId,
-    fieldId,
-    ...createReqMeta(req),
-  }
-  return VerificationService.verifyOtp({
-    transactionId,
-    inputOtp: otp,
-    fieldId,
-  })
-    .map((signedData) => res.status(StatusCodes.OK).json(signedData))
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error verifying OTP',
-        meta: logMeta,
-        error,
-      })
-      const { statusCode, errorMessage } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
-}
 
 /**
  * NOTE: Exported solely for testing
@@ -457,7 +301,7 @@ export const handleOtpVerification = [
 ] as ControllerHandler[]
 
 /**
- * Handler for resetting the verification state of a field.
+ * Handler for resetting the verification state of a field for POST /forms/:formId/fieldverifications/:id/fields/:fieldId/reset
  * @param formId The id of the form to reset the field verification for
  * @param fieldId The id of the field to reset verification for
  * @param transactionId The transaction to reset

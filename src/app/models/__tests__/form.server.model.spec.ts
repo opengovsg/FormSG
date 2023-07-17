@@ -23,6 +23,7 @@ import {
   LogicDto,
   LogicType,
   PaymentChannel,
+  PaymentType,
 } from 'shared/types'
 
 import getFormModel, {
@@ -86,6 +87,7 @@ const FORM_DEFAULTS = {
   },
   status: 'PRIVATE',
   submissionLimit: null,
+  goLinkSuffix: '',
 }
 
 const PAYMENTS_DEFAULTS = {
@@ -97,7 +99,11 @@ const PAYMENTS_DEFAULTS = {
   payments_field: {
     enabled: false,
     description: '',
+    name: '',
     amount_cents: 0,
+    min_amount: 0,
+    max_amount: 0,
+    payment_type: PaymentType.Fixed,
   },
 }
 
@@ -813,6 +819,25 @@ describe('Form Model', () => {
         // Assert
         await expect(invalidForm.save()).rejects.toThrow(
           'amount_cents must be a non-negative integer.',
+        )
+      })
+
+      it('should reject when payment type is missing', async () => {
+        const invalidFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          payments_field: {
+            enabled: true,
+            amount_cents: 54.22,
+            description: 'some payment',
+            payment_type: null,
+          },
+        })
+
+        // Act
+        const invalidForm = new Form(invalidFormParams)
+
+        // Assert
+        await expect(invalidForm.save()).rejects.toThrow(
+          '`null` is not a valid enum value for path `payments_field.payment_type`',
         )
       })
     })

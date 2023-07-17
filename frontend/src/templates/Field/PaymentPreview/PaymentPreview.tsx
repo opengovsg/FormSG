@@ -6,8 +6,7 @@ import {
   EmailFieldBase,
   FormColorTheme,
   FormPaymentsField,
-  FormPaymentsFieldV1,
-  FormPaymentsFieldV2,
+  PaymentType,
 } from '~shared/types'
 
 import { EmailFieldInput } from '~templates/Field/Email'
@@ -17,8 +16,9 @@ import { VerifiableFieldBuilderContainer } from '~features/admin-form/create/bui
 import { getFieldCreationMeta } from '~features/admin-form/create/builder-and-design/utils/fieldCreation'
 import {
   PaymentItemDetailsBlock,
-  PaymentItemDetailsBlockV2,
-} from '~features/public-form/components/FormPaymentPage/stripe/components/PaymentItemDetails'
+  ProductPaymentItemDetailsBlock,
+  VariablePaymentItemDetailsBlock,
+} from '~features/public-form/components/FormPaymentPage/components'
 import {
   VerifiableEmailField,
   VerifiableEmailFieldSchema,
@@ -30,49 +30,45 @@ type PaymentPreviewProps = {
   isBuilder?: boolean
 }
 
-const PaymentPreviewV1 = ({
-  colorTheme,
+const PaymentItemDetailsElement = ({
+  colorTheme = FormColorTheme.Blue,
   paymentDetails,
-  sectionColor,
 }: {
-  colorTheme: FormColorTheme
-  paymentDetails: FormPaymentsFieldV1
-  sectionColor: ReturnType<typeof useSectionColor>
+  colorTheme?: FormColorTheme
+  paymentDetails: FormPaymentsField
 }) => {
-  return (
-    <>
-      <Box as="h2" mb="1rem" textStyle="h2" color={sectionColor}>
-        Payment
-      </Box>
-      <Box mb="2rem">
+  switch (paymentDetails.payment_type) {
+    case PaymentType.Variable: {
+      return (
+        <VariablePaymentItemDetailsBlock
+          paymentItemName={paymentDetails.name}
+          colorTheme={colorTheme}
+          paymentDescription={paymentDetails.description}
+          paymentMin={paymentDetails.min_amount}
+          paymentMax={paymentDetails.max_amount}
+        />
+      )
+    }
+    case PaymentType.Products: {
+      return (
+        <ProductPaymentItemDetailsBlock
+          paymentDetails={paymentDetails}
+          colorTheme={colorTheme}
+        />
+      )
+    }
+    case PaymentType.Fixed: // Fallthrough
+    default: {
+      return (
         <PaymentItemDetailsBlock
-          paymentItemName={paymentDetails.description}
+          paymentItemName={paymentDetails.name}
           colorTheme={colorTheme}
           paymentAmount={paymentDetails.amount_cents}
+          paymentDescription={paymentDetails.description}
         />
-      </Box>
-    </>
-  )
-}
-
-const PaymentPreviewV2 = (props: {
-  colorTheme: FormColorTheme
-  paymentDetails: FormPaymentsFieldV2
-  sectionColor: ReturnType<typeof useSectionColor>
-}) => {
-  return (
-    <>
-      <Box as="h2" mb="1rem" textStyle="h2" color={props.sectionColor}>
-        {props.paymentDetails.description}
-      </Box>
-      <Box mb="2rem">
-        <PaymentItemDetailsBlockV2
-          paymentDetails={props.paymentDetails}
-          colorTheme={props.colorTheme}
-        />
-      </Box>
-    </>
-  )
+      )
+    }
+  }
 }
 
 export const PaymentPreview = ({
@@ -80,7 +76,6 @@ export const PaymentPreview = ({
   paymentDetails,
   isBuilder,
 }: PaymentPreviewProps) => {
-  const sectionColor = useSectionColor(colorTheme)
   const emailFieldSchema: VerifiableEmailFieldSchema = {
     ...(getFieldCreationMeta(BasicField.Email) as EmailFieldBase),
     title: 'Email Address',
@@ -88,22 +83,23 @@ export const PaymentPreview = ({
     description: 'Proof of payment will be sent to this email',
     isVerifiable: true,
   }
+  const sectionColor = useSectionColor(colorTheme)
 
+  const title =
+    paymentDetails.payment_type === PaymentType.Products
+      ? paymentDetails.description
+      : 'Payment'
   return (
     <>
-      {paymentDetails.version === 1 ? (
-        <PaymentPreviewV1
+      <Box as="h2" mb="1rem" textStyle="h2" color={sectionColor}>
+        {title}
+      </Box>
+      <Box mb="2rem">
+        <PaymentItemDetailsElement
           paymentDetails={paymentDetails}
           colorTheme={colorTheme}
-          sectionColor={sectionColor}
         />
-      ) : (
-        <PaymentPreviewV2
-          paymentDetails={paymentDetails}
-          colorTheme={colorTheme}
-          sectionColor={sectionColor}
-        />
-      )}
+      </Box>
       {isBuilder ? (
         <VerifiableFieldBuilderContainer schema={emailFieldSchema}>
           <EmailFieldInput schema={emailFieldSchema} />

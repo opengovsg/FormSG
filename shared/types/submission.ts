@@ -2,7 +2,7 @@ import type { Opaque, RequireAtLeastOne } from 'type-fest'
 import { z } from 'zod'
 
 import { ErrorDto } from './core'
-import { FormFieldDto, MyInfoAttribute } from './field'
+import { FormFieldDto, MyInfoAttribute, PaymentFieldsDto } from './field'
 import { FormAuthType } from './form/form'
 import { DateString } from './generic'
 import { EmailResponse, FieldResponse, MobileResponse } from './response'
@@ -113,11 +113,19 @@ export type StorageModeSubmissionStreamDto = z.infer<
   typeof StorageModeSubmissionStreamDto
 >
 
+export type SubmissionPaymentMetadata = {
+  payoutDate: string | null
+  paymentAmt: number
+  transactionFee: number | null
+  email: string
+} | null
+
 export type StorageModeSubmissionMetadata = {
   number: number
   refNo: SubmissionId
   /** Not a DateString, format is `Do MMM YYYY, h:mm:ss a` */
   submissionTime: string
+  payments: SubmissionPaymentMetadata
 }
 
 export type StorageModeSubmissionMetadataList = {
@@ -186,6 +194,7 @@ export type StorageModeSubmissionContentDto = {
   paymentProducts?: Array<ProductItem>
   version: number
   responseMetadata?: ResponseMetadata
+  payments?: PaymentFieldsDto
 }
 
 export type PaymentSubmissionData = {

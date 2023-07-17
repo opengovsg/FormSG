@@ -1,7 +1,12 @@
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
+import { calculatePrice } from 'shared/utils/paymentProductPrice'
 
 import {
+  FormPaymentsField,
+  PaymentFieldsDto,
+  PaymentType,
+  StorageModeSubmissionContentDto,
   StorageModeSubmissionDto,
   SubmissionPaymentDto,
   SubmissionType,
@@ -20,6 +25,11 @@ import {
   MissingCaptchaError,
   VerifyCaptchaError,
 } from '../../../services/captcha/captcha.errors'
+import {
+  MissingTurnstileError,
+  TurnstileConnectionError,
+  VerifyTurnstileError,
+} from '../../../services/turnstile/turnstile.errors'
 import { genericMapRouteErrorTransform } from '../../../utils/error'
 import {
   AttachmentUploadError,
@@ -141,6 +151,24 @@ const errorMapper: MapRouteError = (
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: 'Captcha was missing. Please refresh and submit again.',
       }
+    case TurnstileConnectionError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage:
+          'Error connecting to Turnstile server . Please submit again in a few minutes.',
+      }
+    case VerifyTurnstileError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'Incorrect Turnstile parameters. Please refresh and submit again.',
+      }
+    case MissingTurnstileError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'Missing Turnstile challenge. Please refresh and submit again.',
+      }
     case MalformedParametersError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
@@ -235,5 +263,35 @@ export const createEncryptedSubmissionDto = (
     attachmentMetadata: attachmentPresignedUrls,
     payment,
     version: submissionData.version,
+  }
+}
+
+/**
+ * Retrieves payment amount by payment_type
+ * @param formPaymentFields data from the form
+ * @param incomingSubmissionPaymentFields data from responder's submission
+ */
+export const getPaymentAmount = (
+  formPaymentFields: FormPaymentsField, // fields that are from document.form
+  incomingSubmissionPaymentFields?: PaymentFieldsDto, // fields that are from incoming submission
+  paymentProducts?: StorageModeSubmissionContentDto['paymentProducts'],
+): number | undefined => {
+  // legacy payment forms may not have a payment type
+  const { payment_type } = formPaymentFields
+  switch (payment_type) {
+    case PaymentType.Fixed:
+      return formPaymentFields.amount_cents
+    case PaymentType.Variable:
+      return incomingSubmissionPaymentFields?.amount_cents
+    case PaymentType.Products:
+      if (!paymentProducts) {
+        return 0
+      }
+      return calculatePrice(paymentProducts)
+    default: {
+      // Force TS to emit an error if the cases above are not exhaustive
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const exhaustiveCheck: never = payment_type
+    }
   }
 }

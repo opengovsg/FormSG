@@ -1,4 +1,5 @@
 export const LANDING_ROUTE = '/'
+export const LANDING_PAYMENTS_ROUTE = '/payments'
 export const DASHBOARD_ROUTE = '/dashboard'
 export const LOGIN_ROUTE = '/login'
 
@@ -20,6 +21,10 @@ export const ADMINFORM_SETTINGS_SUBROUTE = 'settings'
 export const ADMINFORM_RESULTS_SUBROUTE = 'results'
 export const ADMINFORM_PREVIEW_ROUTE = 'preview'
 export const ADMINFORM_USETEMPLATE_ROUTE = 'use-template'
+
+// sub sub routes within settings
+export const ADMINFORM_SETTINGS_SINGPASS_SUBROUTE = `${ADMINFORM_SETTINGS_SUBROUTE}/singpass`
+export const ADMINFORM_SETTINGS_PAYMENTS_SUBROUTE = `${ADMINFORM_SETTINGS_SUBROUTE}/payments`
 
 /**
  * Regex for active path matching on adminform builder routes/subroutes.

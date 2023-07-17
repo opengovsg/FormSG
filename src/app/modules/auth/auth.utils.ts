@@ -1,7 +1,9 @@
 import { AuthedSessionData, SessionData } from 'express-session'
+import { IncomingHttpHeaders } from 'http'
 import { StatusCodes } from 'http-status-codes'
 
 import { MapRouteError } from '../../../types/routing'
+import { cronPaymentConfig } from '../../config/features/payment-cron.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import * as MailErrors from '../../services/mail/mail.errors'
 import { HashingError } from '../../utils/hash'
@@ -52,6 +54,39 @@ export const mapRouteError: MapRouteError = (error, coreErrorMessage) => {
   }
 }
 
+/**
+ * Handler to map ApplicationErrors to their correct status code and error
+ * messages.
+ * @param error The error to retrieve the status codes and error messages
+ * @param coreErrorMessage Any error message to return instead of the default core error message, if any
+ */
+export const mapRoutePublicApiError: MapRouteError = (error) => {
+  switch (error.constructor) {
+    case AuthErrors.InvalidTokenError:
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        errorMessage: error.message,
+      }
+    case AuthErrors.MissingTokenError:
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        errorMessage: error.message,
+      }
+    default:
+      logger.error({
+        message: 'Unknown route error observed',
+        meta: {
+          action: 'mapRouteError',
+        },
+        error,
+      })
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        errorMessage: 'Something went wrong. Please try again.',
+      }
+  }
+}
+
 export const isUserInSession = (
   session?: SessionData,
 ): session is AuthedSessionData => {
@@ -62,4 +97,8 @@ export const getUserIdFromSession = (
   session?: SessionData,
 ): string | undefined => {
   return session?.user?._id as string | undefined
+}
+
+export const isCronPaymentAuthValid = (header: IncomingHttpHeaders) => {
+  return header['x-formsg-cron-payment-secret'] === cronPaymentConfig.apiSecret
 }

@@ -3,7 +3,7 @@ import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { keyBy } from 'lodash'
 import mongoose from 'mongoose'
-import { ResultAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import { PaymentChannel, PaymentStatus, SubmissionType } from 'shared/types'
 import Stripe from 'stripe'
 
@@ -21,7 +21,9 @@ import {
 
 import { PaymentNotFoundError } from '../payments.errors'
 import * as PaymentsService from '../payments.service'
+import { StripeMetadataInvalidError } from '../stripe.errors'
 import * as StripeService from '../stripe.service'
+import * as StripeUtils from '../stripe.utils'
 
 const Payment = getPaymentModel(mongoose)
 const EncryptPendingSubmission = getEncryptPendingSubmissionModel(mongoose)
@@ -89,6 +91,24 @@ const MOCK_STRIPE_EVENTS = [
       },
     },
     type: 'payment_intent.payment_failed',
+  },
+  {
+    id: 'evt_PAYMENT_INTENT_CANCELED',
+    object: 'event',
+    created: 1677205663,
+    account: 'acct_MOCK_ACCOUNT_ID',
+    data: {
+      object: {
+        id: 'pi_MOCK_PAYMENT_INTENT',
+        object: 'payment_intent',
+        amount: 12345,
+        created: 1677205503,
+        latest_charge: 'ch_MOCK_FAILED_CHARGE',
+        metadata: MOCK_STRIPE_METADATA,
+        status: 'canceled',
+      },
+    },
+    type: 'payment_intent.canceled',
   },
   {
     id: 'evt_PAYMENT_INTENT_SUCCEEDED',
@@ -220,7 +240,7 @@ const MOCK_STRIPE_EVENTS = [
     },
     type: 'payout.canceled',
   },
-] as unknown as Stripe.Event[]
+] as unknown as Stripe.DiscriminatedEvent[]
 
 const MOCK_STRIPE_EVENTS_MAP = keyBy(MOCK_STRIPE_EVENTS, 'id')
 
@@ -280,7 +300,7 @@ describe('stripe.service', () => {
     })
     afterEach(() => jest.clearAllMocks())
 
-    it('should update the charge status from Pending to Failed when a charge.failed event is received', async () => {
+    it('should update the payment status from Pending to Failed when a charge.failed event is received', async () => {
       // Arrange
       // Inject the expected webhook logs and state into the payment object.
       await Payment.updateOne(
@@ -308,7 +328,43 @@ describe('stripe.service', () => {
       expect(updatedPayment!.chargeIdLatest).toEqual(chargeFailed.id)
     })
 
-    it('should update the charge status from Pending to Succeeded when a charge.succeeded event is received, move the pending submission to submissions', async () => {
+    it('should update the payment status from Pending to Canceled when a payment_intent.canceled event is received', async () => {
+      // Arrange
+      // Inject the expected webhook logs and state into the payment object.
+      await Payment.updateOne(
+        { _id: payment._id },
+        {
+          webhookLog: [
+            MOCK_STRIPE_EVENTS_MAP['evt_PAYMENT_INTENT_CREATED'],
+            MOCK_STRIPE_EVENTS_MAP['evt_CHARGE_FAILED'],
+            MOCK_STRIPE_EVENTS_MAP['evt_PAYMENT_INTENT_FAILED'],
+          ],
+        },
+      ).exec()
+
+      // Act
+      const eventPaymentIntentCanceled =
+        MOCK_STRIPE_EVENTS_MAP['evt_PAYMENT_INTENT_CANCELED']
+      const paymentIntentCanceled = eventPaymentIntentCanceled.data
+        .object as Stripe.PaymentIntent
+      const result = await StripeService.processStripeEvent(
+        String(payment._id),
+        eventPaymentIntentCanceled,
+      )
+
+      // Assert
+      expect(result.isOk()).toEqual(true)
+
+      const updatedPayment = await Payment.findById(payment.id)
+      expect(updatedPayment).toBeTruthy()
+
+      expect(updatedPayment!.status).toEqual(PaymentStatus.Canceled)
+      expect(updatedPayment!.chargeIdLatest).toEqual(
+        paymentIntentCanceled.latest_charge,
+      )
+    })
+
+    it('should update the payment status from Pending to Succeeded when a charge.succeeded event is received, move the pending submission to submissions', async () => {
       // Arrange
       // Mock Stripe API
       const transactionFee = 10
@@ -363,7 +419,7 @@ describe('stripe.service', () => {
       expect(updatedPayment!.chargeIdLatest).toEqual(chargeSucceeded.id)
     })
 
-    it('should update the charge status from Succeeded to Partially Refunded when a charge.refunded event is received for a partial refund', async () => {
+    it('should update the payment status from Succeeded to Partially Refunded when a charge.refunded event is received for a partial refund', async () => {
       // Arrange
       // Inject the expected webhook logs and state into the payment object.
       await Payment.updateOne(
@@ -406,7 +462,7 @@ describe('stripe.service', () => {
       expect(updatedPayment!.completedPayment).toBeTruthy()
     })
 
-    it('should update the charge status from Succeeded to Fully Refunded when a charge.refunded event is received for a full refund', async () => {
+    it('should update the payment status from Succeeded to Fully Refunded when a charge.refunded event is received for a full refund', async () => {
       // Arrange
       // Inject the expected webhook logs and state into the payment object.
       await Payment.updateOne(
@@ -449,7 +505,7 @@ describe('stripe.service', () => {
       expect(updatedPayment!.completedPayment).toBeTruthy()
     })
 
-    it('should update the charge status from Succeeded to Disputed when a charge.dispute.created event is received', async () => {
+    it('should update the payment status from Succeeded to Disputed when a charge.dispute.created event is received', async () => {
       // Arrange
       // Inject the expected webhook logs and state into the payment object.
       await Payment.updateOne(
@@ -648,6 +704,113 @@ describe('stripe.service', () => {
 
       // Assert
       expect(result._unsafeUnwrap()).toBe(expectedAccountId)
+    })
+  })
+
+  describe('handleStripeEvent', () => {
+    describe('with event.type of payout', () => {
+      beforeEach(() => jest.restoreAllMocks())
+
+      it('should return error result when call to stripe.balanceTransactions failed', async () => {
+        const balanceTransactionApiSpy = jest
+          .spyOn(stripe.balanceTransactions, 'list')
+          .mockImplementationOnce(
+            () =>
+              ({
+                autoPagingEach: () => Promise.reject('boom'),
+              } as unknown as Stripe.ApiListPromise<Stripe.BalanceTransaction>),
+          )
+        const processStripeEventSpy = jest.spyOn(
+          StripeService,
+          'processStripeEvent',
+        )
+
+        const result = await StripeService.handleStripeEvent(
+          MOCK_STRIPE_EVENTS_MAP['evt_PAYOUT_CREATED'],
+        )
+        expect(balanceTransactionApiSpy).toHaveBeenCalledOnce()
+        expect(processStripeEventSpy).not.toHaveBeenCalled()
+        expect(result.isErr()).toBeTrue()
+      })
+
+      it('should return error result when call to getMetadataPaymentId failed', async () => {
+        const balanceTransactionApiSpy = jest
+          .spyOn(stripe.balanceTransactions, 'list')
+          .mockImplementationOnce(
+            () =>
+              ({
+                autoPagingEach: (fn) => fn({ type: 'charge', source: {} }),
+              } as unknown as Stripe.ApiListPromise<Stripe.BalanceTransaction>),
+          )
+        const getMetadataPaymentIdSpy = jest
+          .spyOn(StripeUtils, 'getMetadataPaymentId')
+          .mockImplementation(() => err(new StripeMetadataInvalidError()))
+        const processStripeEventSpy = jest.spyOn(
+          StripeService,
+          'processStripeEvent',
+        )
+
+        const result = await StripeService.handleStripeEvent(
+          MOCK_STRIPE_EVENTS_MAP['evt_PAYOUT_CREATED'],
+        )
+
+        expect(balanceTransactionApiSpy).toHaveBeenCalledOnce()
+        expect(getMetadataPaymentIdSpy).toHaveBeenCalledOnce()
+        expect(processStripeEventSpy).not.toHaveBeenCalledOnce()
+        expect(result.isErr()).toBeTrue()
+      })
+
+      it('should return error result when call to processStripeEvent failed', async () => {
+        const balanceTransactionApiSpy = jest
+          .spyOn(stripe.balanceTransactions, 'list')
+          .mockImplementationOnce(
+            () =>
+              ({
+                autoPagingEach: (fn) => fn({ type: 'charge', source: {} }),
+              } as unknown as Stripe.ApiListPromise<Stripe.BalanceTransaction>),
+          )
+        const getMetadataPaymentIdSpy = jest
+          .spyOn(StripeUtils, 'getMetadataPaymentId')
+          .mockImplementation(() => ok('still gud'))
+        const processStripeEventSpy = jest
+          .spyOn(StripeService, 'processStripeEvent')
+          .mockImplementationOnce(() => errAsync(new PaymentNotFoundError()))
+
+        const result = await StripeService.handleStripeEvent(
+          MOCK_STRIPE_EVENTS_MAP['evt_PAYOUT_CREATED'],
+        )
+
+        expect(balanceTransactionApiSpy).toHaveBeenCalledOnce()
+        expect(getMetadataPaymentIdSpy).toHaveBeenCalledOnce()
+        expect(processStripeEventSpy).toHaveBeenCalledOnce()
+        expect(result.isErr()).toBeTrue()
+      })
+
+      it('should return ok result when there are no internal errors', async () => {
+        const balanceTransactionApiSpy = jest
+          .spyOn(stripe.balanceTransactions, 'list')
+          .mockImplementationOnce(
+            () =>
+              ({
+                autoPagingEach: (fn) => fn({ type: 'charge', source: {} }),
+              } as unknown as Stripe.ApiListPromise<Stripe.BalanceTransaction>),
+          )
+        const getMetadataPaymentIdSpy = jest
+          .spyOn(StripeUtils, 'getMetadataPaymentId')
+          .mockImplementation(() => ok('still gud'))
+        const processStripeEventSpy = jest
+          .spyOn(StripeService, 'processStripeEvent')
+          .mockImplementationOnce(() => okAsync(undefined))
+
+        const result = await StripeService.handleStripeEvent(
+          MOCK_STRIPE_EVENTS_MAP['evt_PAYOUT_CREATED'],
+        )
+
+        expect(balanceTransactionApiSpy).toHaveBeenCalledOnce()
+        expect(getMetadataPaymentIdSpy).toHaveBeenCalledOnce()
+        expect(processStripeEventSpy).toHaveBeenCalledOnce()
+        expect(result.isOk()).toBeTrue()
+      })
     })
   })
 })

@@ -3,6 +3,7 @@ import { Merge } from 'type-fest'
 import {
   PAYMENT_CONTACT_FIELD_ID,
   PAYMENT_PRODUCT_FIELD_ID,
+  PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID,
 } from '~shared/constants'
 import { ProductItem } from '~shared/types'
 import {
@@ -54,7 +55,8 @@ export type FormFieldValues = Record<
   FormFieldValue<FormFieldDto['fieldType']>
 > & {
   [PAYMENT_CONTACT_FIELD_ID]?: { value: string }
-  readonly [PAYMENT_PRODUCT_FIELD_ID]?: Array<ProductItem>
+  [PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]?: string
+  [PAYMENT_PRODUCT_FIELD_ID]?: Array<ProductItem>
 }
 
 export type AttachmentFieldInput = FieldInput<File>

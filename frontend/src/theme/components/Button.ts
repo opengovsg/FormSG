@@ -16,6 +16,7 @@ export type ThemeButtonVariant =
   | 'clear'
   | 'link'
   | 'inputAttached'
+  | 'inverseOutline'
 
 const genVariantSolidColours = (c: string) => {
   const defaultBackgrounds = {
@@ -151,6 +152,39 @@ const variantClear: SystemStyleFunction = (props) => {
   }
 }
 
+// Used where background is dark (e.g. in banners and payments landing page header)
+const variantInverseOutline: SystemStyleFunction = (props) => {
+  const { colorScheme: c, basecolorintensity } = props
+
+  return {
+    bg: 'transparent',
+    borderColor: 'white',
+    color: 'white',
+    px: '15px',
+    _focus: {
+      boxShadow: `0 0 0 4px var(--chakra-colors-${c}-${
+        basecolorintensity - 100
+      })`,
+    },
+    _disabled: {
+      color: `${c}.${basecolorintensity - 200}`,
+      opacity: 1,
+    },
+    _active: {
+      bg: `${c}.${basecolorintensity + 100}`,
+      _disabled: {
+        bg: 'transparent',
+      },
+    },
+    _hover: {
+      bg: `${c}.${basecolorintensity - 100}`,
+      _disabled: {
+        bg: 'transparent',
+      },
+    },
+  }
+}
+
 const variantOutlineReverse: SystemStyleFunction = (props) => {
   const { colorScheme: c, variant } = props
   const { borderColor, focusBorderColor } = genVariantOutlineColours(props)
@@ -269,6 +303,7 @@ export const Button = {
     clear: variantClear,
     link: variantLink,
     inputAttached: variantInputAttached,
+    inverseOutline: variantInverseOutline,
   },
   defaultProps: {
     variant: 'solid',
