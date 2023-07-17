@@ -406,9 +406,8 @@ export const useMutateFormPage = () => {
   )
 
   const paymentsMutation = useMutation(
-    (payments_field: PaymentsUpdateDto) => {
-      return updateFormPayments(formId, payments_field)
-    },
+    (payments_field: PaymentsUpdateDto) =>
+      updateFormPayments(formId, payments_field),
     {
       onSuccess: (newData) => {
         toast.closeAll()
