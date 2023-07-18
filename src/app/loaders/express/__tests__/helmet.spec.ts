@@ -39,7 +39,9 @@ describe('helmetMiddlewares', () => {
       'https://www.gstatic.com/recaptcha/releases/',
       'https://challenges.cloudflare.com',
       'https://js.stripe.com/v3',
-      'https://*.googletagmanager.com/gtag/',
+      // GA4 https://developers.google.com/tag-platform/tag-manager/web/csp
+      // Commenting out due to CSP bypass issues and we are not using GA4 yet.
+      // 'https://*.googletagmanager.com/',
     ],
     connectSrc: [
       "'self'",
