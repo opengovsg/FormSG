@@ -14,6 +14,7 @@ import {
   MyInfoChildVaxxStatus,
   MyInfoDataTransformer,
 } from '../../../../shared/types'
+import { createLoggerWithLabel } from '../../config/logger'
 
 import {
   formatAddress,
@@ -26,6 +27,7 @@ import {
 } from './myinfo.format'
 import { isMyInfoChildrenBirthRecords } from './myinfo.util'
 
+const logger = createLoggerWithLabel(module)
 /**
  * Converts an internal MyInfo attribute used in FormSG to a scope
  * which can be used to retrieve data from MyInfo.
@@ -241,6 +243,11 @@ export class MyInfoData
   #uinFin: string
 
   constructor(personData: IPersonResponse) {
+    logger.error({
+      message: 'MyInfo Data creation',
+      meta: { action: 'create myinfo data', personData },
+      error: new Error('hello'),
+    })
     this.#personData = personData.data
     this.#uinFin = personData.uinFin
   }
