@@ -40,14 +40,17 @@ const SGID_SUPPORTED: Set<MyInfoAttribute> = new Set([
   // This is disabled due to MyInfo and sgID-MyInfo not using the same
   // phone number formats.
   // MyInfoAttribute.MobileNo,
-  MyInfoAttribute.RegisteredAddress,
+  // This is disabled due to slight different formatting.
+  // We format the Myinfo response by separates lines in addresses with comma
+  // Whereas sgID separates each line with newline.
+  // MyInfoAttribute.RegisteredAddress,
 ])
 
 /**
  * If sgID is used, checks if the corresponding
  * MyInfo field is supported by sgID.
  */
-const sgidUnSupported = (
+const sgIDUnSupported = (
   form: AdminFormDto | undefined,
   fieldType: MyInfoAttribute,
 ): boolean =>
@@ -81,7 +84,7 @@ export const MyInfoFieldPanel = () => {
               {CREATE_MYINFO_PERSONAL_FIELDS_ORDERED.map((fieldType, index) => (
                 <DraggableMyInfoFieldListOption
                   index={index}
-                  isDisabled={isDisabled || sgidUnSupported(form, fieldType)}
+                  isDisabled={isDisabled || sgIDUnSupported(form, fieldType)}
                   key={index}
                   fieldType={fieldType}
                 />
@@ -98,7 +101,7 @@ export const MyInfoFieldPanel = () => {
               {CREATE_MYINFO_CONTACT_FIELDS_ORDERED.map((fieldType, index) => (
                 <DraggableMyInfoFieldListOption
                   index={index}
-                  isDisabled={isDisabled || sgidUnSupported(form, fieldType)}
+                  isDisabled={isDisabled || sgIDUnSupported(form, fieldType)}
                   key={index}
                   fieldType={fieldType}
                 />
@@ -116,7 +119,7 @@ export const MyInfoFieldPanel = () => {
                 (fieldType, index) => (
                   <DraggableMyInfoFieldListOption
                     index={index}
-                    isDisabled={isDisabled || sgidUnSupported(form, fieldType)}
+                    isDisabled={isDisabled || sgIDUnSupported(form, fieldType)}
                     key={index}
                     fieldType={fieldType}
                   />
@@ -134,7 +137,7 @@ export const MyInfoFieldPanel = () => {
               {CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED.map((fieldType, index) => (
                 <DraggableMyInfoFieldListOption
                   index={index}
-                  isDisabled={isDisabled || sgidUnSupported(form, fieldType)}
+                  isDisabled={isDisabled || sgIDUnSupported(form, fieldType)}
                   key={index}
                   fieldType={fieldType}
                 />

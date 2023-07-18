@@ -1,14 +1,26 @@
 import {
-  Fragment,
   KeyboardEventHandler,
   MouseEventHandler,
   useCallback,
   useMemo,
   useState,
 } from 'react'
-import { Box, Flex, Icon, Skeleton } from '@chakra-ui/react'
+import {
+  Box,
+  Divider,
+  Flex,
+  Icon,
+  Skeleton,
+  Text,
+  VStack,
+} from '@chakra-ui/react'
 
-import { FormAuthType, FormSettings, FormStatus } from '~shared/types/form'
+import {
+  FormAuthType,
+  FormResponseMode,
+  FormSettings,
+  FormStatus,
+} from '~shared/types/form'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { OGP_SGID } from '~constants/links'
@@ -23,10 +35,12 @@ import { isMyInfo } from '~features/myinfo/utils'
 import { useMutateFormSettings } from '../../mutations'
 
 import {
-  AUTHTYPE_TO_TEXT,
   CP_TOOLTIP,
-  SGID_TOOLTIP,
-  STORAGE_MODE_AUTHTYPES,
+  EMAIL_MODE_SGID_AUTHTYPES_ORDERED,
+  EMAIL_MODE_SINGPASS_AUTHTYPES_ORDERED,
+  NONE_AUTH_TEXT,
+  STORAGE_MODE_SGID_AUTHTYPES_ORDERED,
+  STORAGE_MODE_SINGPASS_AUTHTYPES_ORDERED,
 } from './constants'
 import { EsrvcIdBox } from './EsrvcIdBox'
 
@@ -45,16 +59,81 @@ interface AuthSettingsSectionProps {
   settings: FormSettings
 }
 
+const SGIDText = (): JSX.Element => {
+  return (
+    <>
+      <Text as="h3" textStyle="h3" color="secondary.500">
+        Singpass App-only
+      </Text>
+      <Text color="secondary.400">
+        Uses Singpass app QR code to authenticate. You will receive the
+        respondent's NRIC with each submission.{' '}
+        <Link
+          href={OGP_SGID}
+          isExternal
+          // Needed for link to open since there are nested onClicks
+          onClickCapture={(e) => e.stopPropagation()}
+        >
+          Learn more
+        </Link>
+      </Text>
+    </>
+  )
+}
+
+const SingpassText = (): JSX.Element => {
+  return (
+    <>
+      <Text as="h3" textStyle="h3" color="secondary.500">
+        Singpass
+      </Text>
+      <Text color="secondary.400">
+        You will need a Singpass e-service ID or Corppass e-service ID. For
+        queries and issues, contact spcp.transoffice@accenture.com.
+      </Text>
+    </>
+  )
+}
+
 export const AuthSettingsSectionSkeleton = (): JSX.Element => {
+  const singPassOptions: [FormAuthType, string][] = useMemo(() => {
+    return Object.entries(STORAGE_MODE_SINGPASS_AUTHTYPES_ORDERED) as [
+      FormAuthType,
+      string,
+    ][]
+  }, [])
+
+  const sgIDOptions: [FormAuthType, string][] = useMemo(() => {
+    return Object.entries(STORAGE_MODE_SGID_AUTHTYPES_ORDERED) as [
+      FormAuthType,
+      string,
+    ][]
+  }, [])
   return (
     <Radio.RadioGroup>
-      {Object.entries(STORAGE_MODE_AUTHTYPES).map(
-        ([authType, textToRender]) => (
-          <Radio isDisabled key={authType}>
-            <Skeleton>{textToRender}</Skeleton>
-          </Radio>
-        ),
-      )}
+      <VStack spacing={8} align="flex-start">
+        <Radio isDisabled>
+          <Skeleton>{NONE_AUTH_TEXT}</Skeleton>
+        </Radio>
+        <Divider />
+        <Box>
+          <SGIDText />
+          {sgIDOptions.map(([authType, textToRender]) => (
+            <Radio isDisabled key={authType}>
+              <Skeleton>{textToRender}</Skeleton>
+            </Radio>
+          ))}
+        </Box>
+        <Divider />
+        <Box>
+          <SingpassText />
+          {singPassOptions.map(([authType, textToRender]) => (
+            <Radio isDisabled key={authType}>
+              <Skeleton>{textToRender}</Skeleton>
+            </Radio>
+          ))}
+        </Box>
+      </VStack>
     </Radio.RadioGroup>
   )
 }
@@ -122,11 +201,20 @@ export const AuthSettingsSection = ({
     [isDisabled, mutateFormAuthType, settings.authType],
   )
 
-  const radioOptions: [FormAuthType, string][] = useMemo(() => {
-    return Object.entries(AUTHTYPE_TO_TEXT[settings.responseMode]) as [
-      FormAuthType,
-      string,
-    ][]
+  const singPassOptions: [FormAuthType, string][] = useMemo(() => {
+    return Object.entries(
+      settings.responseMode === FormResponseMode.Email
+        ? EMAIL_MODE_SINGPASS_AUTHTYPES_ORDERED
+        : STORAGE_MODE_SINGPASS_AUTHTYPES_ORDERED,
+    ) as [FormAuthType, string][]
+  }, [settings.responseMode])
+
+  const sgIDOptions: [FormAuthType, string][] = useMemo(() => {
+    return Object.entries(
+      settings.responseMode === FormResponseMode.Email
+        ? EMAIL_MODE_SGID_AUTHTYPES_ORDERED
+        : STORAGE_MODE_SGID_AUTHTYPES_ORDERED,
+    ) as [FormAuthType, string][]
   }, [settings.responseMode])
 
   return (
@@ -146,51 +234,68 @@ export const AuthSettingsSection = ({
         onKeyDown={handleEnterKeyDown}
         onChange={(e: FormAuthType) => setFocusedValue(e)}
       >
-        {radioOptions.map(([authType, text]) => (
-          <Fragment key={authType}>
-            <Box onClick={handleOptionClick(authType)}>
-              <Radio value={authType} isDisabled={isDisabled(authType)}>
-                <Flex align="center">
-                  {text}
-                  {authType === FormAuthType.SGID ? (
-                    <>
-                      <Tooltip
-                        label={SGID_TOOLTIP}
-                        placement="top"
-                        textAlign="center"
-                      >
-                        <Icon as={BxsHelpCircle} aria-hidden marginX="0.5rem" />
-                      </Tooltip>
-                      <Link
-                        href={OGP_SGID}
-                        isExternal
-                        // Needed for link to open since there are nested onClicks
-                        onClickCapture={(e) => e.stopPropagation()}
-                      >
-                        Contact us to find out more
-                      </Link>
-                    </>
+        <VStack spacing={8} align="flex-start">
+          <Box onClick={handleOptionClick(FormAuthType.NIL)}>
+            <Radio
+              value={FormAuthType.NIL}
+              isDisabled={isDisabled(FormAuthType.NIL)}
+            >
+              <Flex align="center">{NONE_AUTH_TEXT}</Flex>
+            </Radio>
+          </Box>
+          <Divider />
+          <Box>
+            <SGIDText />
+
+            {sgIDOptions.map(([authTypeStr, text]) => {
+              const authType = authTypeStr as FormAuthType
+              return (
+                <>
+                  <Box key={authType} onClick={handleOptionClick(authType)}>
+                    <Radio value={authType} isDisabled={isDisabled(authType)}>
+                      <Flex align="center">{text}</Flex>
+                    </Radio>
+                  </Box>
+                </>
+              )
+            })}
+          </Box>
+          <Divider />
+          <Box>
+            <SingpassText />
+
+            {singPassOptions.map(([authTypeStr, text]) => {
+              const authType = authTypeStr as FormAuthType
+              return (
+                <>
+                  <Box key={authType} onClick={handleOptionClick(authType)}>
+                    <Radio value={authType} isDisabled={isDisabled(authType)}>
+                      <Flex align="center">
+                        {text}
+                        {authType === FormAuthType.CP ? (
+                          <Tooltip
+                            label={CP_TOOLTIP}
+                            placement="top"
+                            textAlign="center"
+                          >
+                            <Icon as={BxsHelpCircle} aria-hidden ml="0.5rem" />
+                          </Tooltip>
+                        ) : null}
+                      </Flex>
+                    </Radio>
+                  </Box>
+                  {esrvcidRequired(authType) &&
+                  authType === settings.authType ? (
+                    <EsrvcIdBox
+                      settings={settings}
+                      isDisabled={isEsrvcIdBoxDisabled}
+                    />
                   ) : null}
-                  {authType === FormAuthType.CP ? (
-                    <Tooltip
-                      label={CP_TOOLTIP}
-                      placement="top"
-                      textAlign="center"
-                    >
-                      <Icon as={BxsHelpCircle} aria-hidden ml="0.5rem" />
-                    </Tooltip>
-                  ) : null}
-                </Flex>
-              </Radio>
-            </Box>
-            {esrvcidRequired(authType) && authType === settings.authType ? (
-              <EsrvcIdBox
-                settings={settings}
-                isDisabled={isEsrvcIdBoxDisabled}
-              />
-            ) : null}
-          </Fragment>
-        ))}
+                </>
+              )
+            })}
+          </Box>
+        </VStack>
       </Radio.RadioGroup>
     </Box>
   )

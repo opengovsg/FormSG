@@ -7,31 +7,39 @@ export type StorageFormAuthType =
   | FormAuthType.CP
   | FormAuthType.SGID
 
-export const STORAGE_MODE_AUTHTYPES: Record<StorageFormAuthType, string> = {
-  [FormAuthType.NIL]: 'None',
-  [FormAuthType.SP]: 'Singpass',
-  [FormAuthType.SGID]: 'Singpass App-only Login (Free)',
-  [FormAuthType.CP]: 'Singpass (Corporate)',
+export const NONE_AUTH_TEXT = 'None'
+const BASIC_AUTH_TEXT = 'Login only'
+const MYINFO_AUTH_TEXT = 'Login and capture MyInfo data'
+const CORP_AUTH_TEXT = 'Corporate login'
+
+export const STORAGE_MODE_SGID_AUTHTYPES_ORDERED: Partial<
+  Record<StorageFormAuthType, string>
+> = {
+  [FormAuthType.SGID]: BASIC_AUTH_TEXT,
 }
 
 // Not using STORAGE_MODE_AUTHTYPES due to wanting a different order.
-export const EMAIL_MODE_AUTHTYPES: Record<EmailFormAuthType, string> = {
-  [FormAuthType.NIL]: 'None',
-  [FormAuthType.SP]: 'Singpass',
-  [FormAuthType.SGID]: 'Singpass App-only Login (Free)',
-  [FormAuthType.MyInfo]: 'Singpass with MyInfo',
-  [FormAuthType.SGID_MyInfo]: 'Singpass App-only Login (Free) with MyInfo',
-  [FormAuthType.CP]: 'Singpass (Corporate)',
-}
-export const AUTHTYPE_TO_TEXT = {
-  [FormResponseMode.Email]: EMAIL_MODE_AUTHTYPES,
-  [FormResponseMode.Encrypt]: STORAGE_MODE_AUTHTYPES,
+export const STORAGE_MODE_SINGPASS_AUTHTYPES_ORDERED: Partial<
+  Record<StorageFormAuthType, string>
+> = {
+  [FormAuthType.SP]: BASIC_AUTH_TEXT,
+  [FormAuthType.CP]: CORP_AUTH_TEXT,
 }
 
-export const SGID_TOOLTIP = `Free Singpass authentication via Singpass app QR\
-  code login. Respondents must have the Singpass mobile app installed to log in\
-  and submit responses. Password login is not supported. Form admin will receive\
-  respondent's NRIC.`
+export const EMAIL_MODE_SGID_AUTHTYPES_ORDERED: Partial<
+  Record<EmailFormAuthType, string>
+> = {
+  [FormAuthType.SGID]: BASIC_AUTH_TEXT,
+  [FormAuthType.SGID_MyInfo]: MYINFO_AUTH_TEXT,
+}
+
+export const EMAIL_MODE_SINGPASS_AUTHTYPES_ORDERED: Partial<
+  Record<EmailFormAuthType, string>
+> = {
+  [FormAuthType.SP]: BASIC_AUTH_TEXT,
+  [FormAuthType.MyInfo]: MYINFO_AUTH_TEXT,
+  [FormAuthType.CP]: CORP_AUTH_TEXT,
+}
 
 export const CP_TOOLTIP = `Corppass no longer has its own login page, and now\
   uses Singpass to authenticate corporate users. You will still need a separate\
