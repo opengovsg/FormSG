@@ -27,6 +27,7 @@ import { OGP_SGID } from '~constants/links'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 import Radio from '~components/Radio'
+import { Tag } from '~components/Tag'
 import Tooltip from '~components/Tooltip'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -63,7 +64,7 @@ const SGIDText = (): JSX.Element => {
   return (
     <>
       <Text as="h3" textStyle="h3" color="secondary.500">
-        Singpass App-only
+        Singpass App-only <Tag variant="subtle">Free</Tag>
       </Text>
       <Text color="secondary.400">
         Uses Singpass app QR code to authenticate. You will receive the

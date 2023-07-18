@@ -299,7 +299,7 @@ const addAuthSettings = async (
 
   // Ensure that we are on the auth page
   await expect(
-    page.getByRole('heading', { name: 'Enable Singpass authentication' }),
+    page.getByRole('heading', { name: 'Singpass authentication' }),
   ).toBeVisible()
 
   const name = `Singpass${
