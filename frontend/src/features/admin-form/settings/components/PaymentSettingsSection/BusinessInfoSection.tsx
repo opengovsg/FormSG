@@ -90,12 +90,7 @@ const BusinessInfoBlock = ({
     <>
       {settings.payments_field.gst_enabled ? (
         <FormControl mb="2.5rem" isReadOnly={mutateFormBusiness.isLoading}>
-          <FormLabel
-            description="Leave blank to use your agency's GST Registration Number"
-            isRequired
-          >
-            GST Registration Number
-          </FormLabel>
+          <FormLabel isRequired>GST Registration Number</FormLabel>
           <BusinessFieldInput
             placeholder={agencyDefaults?.gstRegNo || ''}
             initialValue={settings.business?.gstRegNo || ''}
@@ -104,12 +99,7 @@ const BusinessInfoBlock = ({
         </FormControl>
       ) : null}
       <FormControl mb="2.5rem" isReadOnly={mutateFormBusiness.isLoading}>
-        <FormLabel
-          description="Leave blank to use your agency's business address"
-          isRequired
-        >
-          Business Address
-        </FormLabel>
+        <FormLabel isRequired>Business Address</FormLabel>
         <BusinessFieldInput
           placeholder={agencyDefaults?.address || ''}
           initialValue={settings.business?.address || ''}
