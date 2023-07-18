@@ -323,8 +323,6 @@ export const _handleUpdatePaymentsProduct: ControllerHandler<
   // Step 1: Retrieve currently logged in user.
   return (
     UserService.getPopulatedUserById(sessionUserId)
-      // Step 2: Check if user has 'payment' betaflag
-      .andThen((user) => verifyUserBetaflag(user, 'payment'))
       .andThen((user) =>
         // Step 2: Retrieve form with write permission check.
         AuthService.getFormAfterPermissionChecks({
@@ -345,7 +343,6 @@ export const _handleUpdatePaymentsProduct: ControllerHandler<
         AdminFormPaymentService.updatePaymentsProduct(formId, req.body),
       )
       .map((updatedPayments) => {
-        if (updatedPayments.payment_type !== PaymentType.Products) return
         return res.status(StatusCodes.OK).json(updatedPayments.products)
       })
       .mapErr((error) => {
