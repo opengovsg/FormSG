@@ -1,8 +1,9 @@
 /* eslint-disable */
 
 /**
- * Add gstEnabled flag to payments and forms collections and set the 
- * gstEnabled flag for all documents to true
+ * This script adds the `gstEnabled` flag to the payments collection and sets the flag for all existing documents to true. 
+ * It also adds the `gst_enabled` flag to the `payments_field` in the form collection, and sets the flag for all existing
+ * documents with a `payments_field` to true. 
  */
 
 // PAYMENTS COLLECTION
@@ -34,7 +35,7 @@ db
   .getCollection('payments')
   .countDocuments({ gstEnabled: { $exists: false } }) === 0
 
-  
+
 // FORM COLLECTION
 // BEFORE
 
