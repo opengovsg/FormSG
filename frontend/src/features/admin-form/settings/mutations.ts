@@ -37,6 +37,7 @@ import {
   updateFormTitle,
   updateFormWebhookRetries,
   updateFormWebhookUrl,
+  updateGstEnabledFlag,
   updateTwilioCredentials,
 } from './SettingsService'
 
@@ -303,6 +304,20 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateGST = useMutation(
+    (gstEnabledFlag: StorageFormSettings['payments_field']['gst_enabled']) =>
+      updateGstEnabledFlag(formId, gstEnabledFlag),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: `GST setting has been updated.`,
+        })
+      },
+      onError: handleError,
+    },
+  )
+
   return {
     mutateWebhookRetries,
     mutateFormWebhookUrl,
@@ -315,6 +330,7 @@ export const useMutateFormSettings = () => {
     mutateFormAuthType,
     mutateFormEsrvcId,
     mutateFormBusiness,
+    mutateGST,
   }
 }
 
