@@ -122,6 +122,7 @@
     "http-errors": "^2.0.0",
     "http-status-codes": "^2.2.0",
     "intl-tel-input": "~12.4.0",
+    "ip": "^1.1.8",
     "jose": "^4.13.1",
     "jsdom": "^21.1.1",
     "json-stringify-safe": "^5.0.1",
@@ -173,7 +174,7 @@
     "web-streams-polyfill": "^3.2.1",
     "whatwg-fetch": "^3.6.2",
     "winston": "^3.8.2",
-    "winston-cloudwatch": "^6.1.1",
+    "winston-cloudwatch": "^6.2.0",
     "zod": "^3.21.4"
   },
   "devDependencies": {
