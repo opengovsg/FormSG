@@ -76,6 +76,7 @@ describe('stripe.controller', () => {
       ...mockBusinessInfo,
       formTitle: mockFormTitle,
       submissionId: mockSubmissionId,
+      gstEnabled: false,
     }
     const mockForm = {
       _id: MOCK_FORM_ID,
@@ -111,6 +112,7 @@ describe('stripe.controller', () => {
           receiptUrl: 'http://form.gov.sg',
           submissionId: mockSubmissionId,
         },
+        gstEnabled: false,
       })
     })
     it('should generate return a pdf file when receipt url is present', async () => {
@@ -213,6 +215,7 @@ describe('stripe.controller', () => {
         completedPayment: {
           receiptUrl: 'http://form.gov.sg',
         },
+        gstEnabled: false,
       })
 
       const mockReq = expressHandler.mockRequest({
