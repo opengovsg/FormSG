@@ -409,30 +409,24 @@ export const convertToInvoiceFormat = (
     gstRegNo,
     formTitle,
     submissionId,
+    gstEnabled,
   }: {
     address: string
     gstRegNo: string
     formTitle: string
     submissionId: string
+    gstEnabled: boolean
   },
 ) => {
   // handle special characters in addresses
   const ADDRESS = encode(address)
   const GST_REG_NO = encode(gstRegNo)
 
-  const edited = receiptHtmlSource
+  const commonEdits = receiptHtmlSource
     .replace(/(<title>.*?)receipt(.*?<\/title>)/, '$1invoice$2')
     .replace(/Receipt from /g, 'Invoice from ')
-    .replace(
-      /Receipt (#[0-9-]+)/,
-      `Invoice $1<br /><br />GST Reg No: ${GST_REG_NO}<br />Address: ${ADDRESS}`,
-    )
     .replace(/Date paid/g, 'Invoice Date')
     .replace(/<br>\(This amount is inclusive of GST\)/, '')
-    .replace(
-      '<strong>Amount charged</strong>',
-      '<strong>Amount charged</strong> <i>(includes GST)</i>',
-    )
     .replace(
       /Something wrong with the email\? <a.+a>/,
       `FormSG Form: ${encode(formTitle)}<br />Response ID: ${submissionId}`,
@@ -442,7 +436,22 @@ export const convertToInvoiceFormat = (
       '<td class="st-Spacer st-Spacer--gutter" width="48"></td>',
     )
 
-  const dom = new JSDOM(edited)
+  const gstDependentEdits = gstEnabled
+    ? commonEdits
+        .replace(
+          /Receipt (#[0-9-]+)/,
+          `Invoice $1<br /><br />GST Reg No: ${GST_REG_NO}<br />Address: ${ADDRESS}`,
+        )
+        .replace(
+          '<strong>Amount charged</strong>',
+          `<strong>Amount charged</strong> <i>(includes GST)</i>`,
+        )
+    : commonEdits.replace(
+        /Receipt (#[0-9-]+)/,
+        `Invoice $1<br /><br />Address: ${ADDRESS}`,
+      )
+
+  const dom = new JSDOM(gstDependentEdits)
   const { document } = dom.window
 
   // select last 3 tables to remove, n = last index

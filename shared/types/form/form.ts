@@ -99,6 +99,7 @@ export type FormPaymentsField =
       enabled: boolean
       description?: string
       name?: string
+      gst_enabled?: boolean
     } & (VariablePaymentsField | FixedPaymentField)
 
 export type FormBusinessField = {

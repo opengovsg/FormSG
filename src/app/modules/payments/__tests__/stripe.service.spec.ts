@@ -281,6 +281,7 @@ describe('stripe.service', () => {
         status: PaymentStatus.Pending,
         paymentIntentId: 'pi_MOCK_PAYMENT_INTENT',
         email: 'formsg@tech.gov.sg',
+        gstEnabled: false,
       })
       await pendingSubmission.updateOne({
         paymentId: payment._id,
