@@ -8,16 +8,13 @@
 
 // PAYMENTS COLLECTION
 // BEFORE
-// Count total number of payments with no gstEnabled flag. This should be 0.
-db.getCollection('payments').countDocuments({ gstEnabled: { $size: 0 } }) === 0
-
 // Count total number of payments.
-const totalPayments = db.getCollection('payments').countDocuments({})
+db.getCollection('payments').countDocuments({})
 
 // Count total number of payments with no gstEnabled flag value. This should be equal to the total number of payments.
 db
   .getCollection('payments')
-  .countDocuments({ gstEnabled: { $exists: false } }) === totalPayments
+  .countDocuments({ gstEnabled: { $exists: false } })
 
 // UPDATE
 db.getCollection('payments').updateMany({}, [
@@ -28,19 +25,19 @@ db.getCollection('payments').updateMany({}, [
 // Count total number of payments with gstEnabled flag value. This should be equal to the total number of payments.
 db
   .getCollection('payments')
-  .countDocuments({ gstEnabled: { $exists: true } }) === totalPayments
+  .countDocuments({ gstEnabled: { $exists: true } })
 
 // Count total number of payments with no gstEnabled flag value. This should be equal to 0
 db
   .getCollection('payments')
-  .countDocuments({ gstEnabled: { $exists: false } }) === 0
+  .countDocuments({ gstEnabled: { $exists: false } })
 
 
 // FORM COLLECTION
 // BEFORE
 
 // Count number of forms that contains the payments_field property
-const totalPaymentForms = db.getCollection("forms").find(
+db.getCollection("forms").find(
     {payments_field: {$ne: null }},
 ).count()
 
