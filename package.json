@@ -173,7 +173,7 @@
     "web-streams-polyfill": "^3.2.1",
     "whatwg-fetch": "^3.6.2",
     "winston": "^3.8.2",
-    "winston-cloudwatch": "^6.2.0",
+    "winston-cloudwatch": "^6.1.1",
     "zod": "^3.21.4"
   },
   "devDependencies": {
