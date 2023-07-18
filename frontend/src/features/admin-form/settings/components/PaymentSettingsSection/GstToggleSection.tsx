@@ -8,7 +8,7 @@ import Toggle from '~components/Toggle'
 import { useMutateFormSettings } from '../../mutations'
 import { useAdminFormSettings } from '../../queries'
 
-export const FormGSTToggle = (): JSX.Element => {
+export const GstToggleSection = (): JSX.Element => {
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
@@ -28,8 +28,9 @@ export const FormGSTToggle = (): JSX.Element => {
       isLoadingSettings ||
       mutateGST.isLoading ||
       settings.responseMode !== FormResponseMode.Encrypt
-    )
+    ) {
       return
+    }
     const nextHasGst = !settings.payments_field.gst_enabled
     return mutateGST.mutate(nextHasGst)
   }, [isLoadingSettings, mutateGST, settings])
@@ -40,8 +41,8 @@ export const FormGSTToggle = (): JSX.Element => {
         mb="2.5rem"
         isLoading={mutateGST.isLoading}
         isChecked={hasGST}
-        label="Apply GST"
-        description="Include GST in the transaction amount"
+        label="GST applicable"
+        description="GST will be mentioned in proof of payment"
         onChange={() => handleToggleGST()}
       />
     </Skeleton>

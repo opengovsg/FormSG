@@ -24,7 +24,7 @@ import { useEnv } from '~features/env/queries'
 import { useAdminFormPayments, useAdminFormSettings } from '../../queries'
 
 import { BusinessInfoSection } from './BusinessInfoSection'
-import { FormGSTToggle } from './EnableGSTSection'
+import { GstToggleSection } from './GstToggleSection'
 import { usePaymentGuideLink } from './queries'
 import {
   StripeConnectButton,
@@ -232,7 +232,7 @@ export const PaymentSettingsSection = (): JSX.Element => {
           {hasPaymentCapabilities && (
             <>
               <Divider my="2.5rem" />
-              <FormGSTToggle />
+              <GstToggleSection />
               <BusinessInfoSection />
             </>
           )}
