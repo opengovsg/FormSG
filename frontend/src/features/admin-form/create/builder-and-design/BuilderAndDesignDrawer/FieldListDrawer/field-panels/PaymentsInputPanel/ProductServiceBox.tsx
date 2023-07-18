@@ -127,7 +127,12 @@ const ProductList = ({
   )
 }
 
-export const ProductServiceBoxv2 = ({
+/**
+ * By Products ProductServiceBox
+ * @param param0
+ * @returns
+ */
+export const ProductServiceBox = ({
   isLoading,
   errors,
   paymentIsEnabled,

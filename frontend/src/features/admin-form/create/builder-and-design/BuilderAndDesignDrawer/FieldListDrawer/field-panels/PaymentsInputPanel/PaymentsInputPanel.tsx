@@ -1,13 +1,25 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import {
+  Control,
   Controller,
+  FormState,
   UnpackNestedValue,
   useForm,
+  UseFormRegister,
+  UseFormSetValue,
   useWatch,
 } from 'react-hook-form'
 import { Link as ReactLink } from 'react-router-dom'
 import { useDebounce } from 'react-use'
-import { Box, FormControl, Link, Text, Textarea } from '@chakra-ui/react'
+import {
+  Box,
+  Divider,
+  FormControl,
+  Link,
+  Stack,
+  Text,
+  Textarea,
+} from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
 
 import {
@@ -30,10 +42,7 @@ import Input from '~components/Input'
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
 
-import {
-  CreatePageDrawerContentContainer,
-  useCreatePageSidebar,
-} from '../../../../../common'
+import { useCreatePageSidebar } from '../../../../../common'
 import { FieldListTabIndex } from '../../../../constants'
 import {
   setIsDirtySelector,
@@ -50,6 +59,7 @@ import {
 } from '../usePaymentStore'
 
 import { FixedPaymentAmountField } from './FixedPaymentAmountField'
+import { ProductServiceBox } from './ProductServiceBox'
 import { VariablePaymentAmountField } from './VariablePaymentAmountField'
 
 export type FormPaymentsInput = Omit<
@@ -59,6 +69,132 @@ export type FormPaymentsInput = Omit<
   display_amount: string
   display_min_amount: string
   display_max_amount: string
+}
+
+const PaymentInnerContainer = ({
+  children,
+}: {
+  children: React.ReactNode
+}): JSX.Element => {
+  return <Box px="1.5rem">{children}</Box>
+}
+const PaymentContainer = ({
+  children,
+}: {
+  children: React.ReactNode
+}): JSX.Element => {
+  return (
+    <Stack
+      py="2rem"
+      flexDir="column"
+      flex={1}
+      pos="relative"
+      overflow="auto"
+      divider={<Divider />}
+      spacing="2rem"
+    >
+      {children}
+    </Stack>
+  )
+}
+
+const ProductsPaymentSection = ({
+  isDisabled,
+  errors,
+  register,
+  setValue,
+  paymentsMutation,
+}: {
+  isDisabled: boolean
+  errors: FormState<FormPaymentsInput>['errors']
+  register: UseFormRegister<FormPaymentsInput>
+  setValue: UseFormSetValue<FormPaymentsInput>
+  paymentsMutation: ReturnType<typeof useMutateFormPage>['paymentsMutation']
+}) => {
+  return (
+    <>
+      <PaymentInnerContainer>
+        <FormControl
+          isReadOnly={paymentsMutation.isLoading}
+          isInvalid={!!errors.name}
+          isDisabled={isDisabled}
+          isRequired
+        >
+          <FormLabel>Title</FormLabel>
+          <Input
+            {...register('name', {
+              required: 'This field is required',
+            })}
+          />
+          <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
+        </FormControl>
+      </PaymentInnerContainer>
+      <Divider my="2rem" />
+      <PaymentInnerContainer>
+        <ProductServiceBox
+          isLoading={paymentsMutation.isLoading}
+          errors={errors}
+          paymentIsEnabled={!isDisabled}
+          setValue={(newProducts) => setValue('products', newProducts)}
+        />
+      </PaymentInnerContainer>
+    </>
+  )
+}
+
+const PaymentTypeSelector = ({
+  isEncryptMode,
+  control,
+  paymentsMutation,
+}: {
+  isEncryptMode: boolean
+  control: Control<FormPaymentsInput>
+  paymentsMutation: ReturnType<typeof useMutateFormPage>['paymentsMutation']
+}) => {
+  return (
+    <PaymentInnerContainer>
+      <FormControl
+        isRequired
+        isDisabled={!isEncryptMode} // only encrypt mode forms can be payment forms
+        isReadOnly={paymentsMutation.isLoading}
+      >
+        <FormLabel>Payment type</FormLabel>
+        <Controller
+          name={'payment_type'}
+          control={control}
+          render={({ field }) => (
+            <SingleSelect
+              isClearable={false}
+              placeholder="Select Payment Type"
+              fullWidth
+              items={[
+                {
+                  value: PaymentType.Fixed,
+                  label: 'Fixed amount (Deprecated)',
+                  disabled: true,
+                  description:
+                    'Payment amount is defined by form admin. Suitable for a product or service.',
+                },
+                {
+                  value: PaymentType.Variable,
+                  label: 'Variable amount',
+                  description:
+                    'Payment amount is defined by respondent. Suitable for donations or amounts unique to each respondent.',
+                },
+                {
+                  value: PaymentType.Products,
+                  label: 'Fixed amount (Products)',
+                  description:
+                    'Payment amount is defined by form admin. Suitable for a product or service.',
+                },
+              ]}
+              {...field}
+            />
+          )}
+        />
+      </FormControl>
+    </PaymentInnerContainer>
+  )
 }
 
 const PaymentInput = ({
@@ -99,6 +235,7 @@ const PaymentInput = ({
     formState: { errors, dirtyFields },
     control,
     handleSubmit,
+    setValue,
   } = useForm<FormPaymentsInput>({
     mode: 'onChange',
     defaultValues: {
@@ -169,91 +306,85 @@ const PaymentInput = ({
     )
   })
 
+  const isProducts = false
+
   return (
-    <CreatePageDrawerContentContainer>
-      <FormControl
-        isRequired
-        isDisabled={!isEncryptMode} // only encrypt mode forms can be payment forms
-        isReadOnly={paymentsMutation.isLoading}
-      >
-        <FormLabel>Payment type</FormLabel>
-        <Controller
-          name={'payment_type'}
-          control={control}
-          render={({ field }) => (
-            <SingleSelect
-              isClearable={false}
-              placeholder="Select Payment Type"
-              fullWidth
-              items={[
-                {
-                  value: PaymentType.Fixed,
-                  label: 'Fixed amount',
-                  description:
-                    'Payment amount is defined by form admin. Suitable for a product or service.',
-                },
-                {
-                  value: PaymentType.Variable,
-                  label: 'Variable amount',
-                  description:
-                    'Payment amount is defined by respondent. Suitable for donations or amounts unique to each respondent.',
-                },
-              ]}
-              {...field}
-            />
-          )}
-        />
-      </FormControl>
-      <FormControl
-        isReadOnly={paymentsMutation.isLoading}
-        isInvalid={!!errors.name}
-        isDisabled={isDisabled}
-        isRequired
-      >
-        <FormLabel description="This will be reflected on the proof of payment">
-          Product/service name
-        </FormLabel>
-        <Input
-          {...register('name', {
-            required: 'This field is required',
-          })}
-        />
-        <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
-      </FormControl>
-      <FormControl
-        isReadOnly={paymentsMutation.isLoading}
-        isDisabled={isDisabled}
-        isRequired
-      >
-        <FormLabel>Description</FormLabel>
-        <Textarea {...register('description')} />
-        <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
-      </FormControl>
-      {paymentsData?.payment_type === PaymentType.Variable ? (
-        <VariablePaymentAmountField
-          isLoading={paymentsMutation.isLoading}
-          errors={errors}
-          isDisabled={isDisabled}
-          control={control}
-          input={clonedWatchedInputs}
-        />
-      ) : (
-        <FixedPaymentAmountField
-          isLoading={paymentsMutation.isLoading}
-          errors={errors}
-          isDisabled={isDisabled}
-          control={control}
-          input={clonedWatchedInputs}
-        />
-      )}
-      <FormFieldDrawerActions
-        isLoading={paymentsMutation.isLoading}
-        handleClick={handleUpdatePayments}
-        handleCancel={handleClose}
-        buttonText="Save field"
-        isDisabled={isDisabled}
+    <PaymentContainer>
+      <PaymentTypeSelector
+        isEncryptMode={isEncryptMode}
+        control={control}
+        paymentsMutation={paymentsMutation}
       />
-    </CreatePageDrawerContentContainer>
+
+      {isProducts ? (
+        <ProductsPaymentSection
+          isDisabled={isDisabled}
+          errors={errors}
+          register={register}
+          paymentsMutation={paymentsMutation}
+          setValue={setValue}
+        />
+      ) : null}
+
+      {/* Ken: TODO refactor this to capture for non-product payment */}
+      <PaymentInnerContainer>
+        <FormControl
+          isReadOnly={paymentsMutation.isLoading}
+          isInvalid={!!errors.name}
+          isDisabled={isDisabled}
+          isRequired
+        >
+          <FormLabel description="This will be reflected on the proof of payment">
+            Product/service name
+          </FormLabel>
+          <Input
+            {...register('name', {
+              required: 'This field is required',
+            })}
+          />
+          <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
+        </FormControl>
+      </PaymentInnerContainer>
+      <PaymentInnerContainer>
+        <FormControl
+          isReadOnly={paymentsMutation.isLoading}
+          isDisabled={isDisabled}
+          isRequired
+        >
+          <FormLabel>Description</FormLabel>
+          <Textarea {...register('description')} />
+          <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
+        </FormControl>
+      </PaymentInnerContainer>
+      <PaymentInnerContainer>
+        {paymentsData?.payment_type === PaymentType.Variable ? (
+          <VariablePaymentAmountField
+            isLoading={paymentsMutation.isLoading}
+            errors={errors}
+            isDisabled={isDisabled}
+            control={control}
+            input={clonedWatchedInputs}
+          />
+        ) : (
+          <FixedPaymentAmountField
+            isLoading={paymentsMutation.isLoading}
+            errors={errors}
+            isDisabled={isDisabled}
+            control={control}
+            input={clonedWatchedInputs}
+          />
+        )}
+      </PaymentInnerContainer>
+      <PaymentInnerContainer>
+        <FormFieldDrawerActions
+          isLoading={paymentsMutation.isLoading}
+          handleClick={handleUpdatePayments}
+          handleCancel={handleClose}
+          buttonText="Save field"
+          isDisabled={isDisabled}
+        />
+      </PaymentInnerContainer>
+    </PaymentContainer>
   )
 }
 
