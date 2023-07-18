@@ -156,7 +156,7 @@ export const ChildrenCompoundField = ({
             <Spacer />
             <Text
               textStyle="body-2"
-              color="#69738E"
+              color="secondary.400"
             >{simplur`${numChild} child[|ren] added`}</Text>
           </HStack>
         ) : null}
