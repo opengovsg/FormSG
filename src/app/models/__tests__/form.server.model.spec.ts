@@ -104,7 +104,7 @@ const PAYMENTS_DEFAULTS = {
     min_amount: 0,
     max_amount: 0,
     payment_type: PaymentType.Fixed,
-    gst_enabled: false,
+    gst_enabled: true,
   },
 }
 
