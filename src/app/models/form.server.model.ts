@@ -202,7 +202,7 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
     },
     gst_enabled: {
       type: Boolean,
-      default: false,
+      default: true,
     },
   },
 
