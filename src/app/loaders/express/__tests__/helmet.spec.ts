@@ -40,8 +40,8 @@ describe('helmetMiddlewares', () => {
       'https://challenges.cloudflare.com',
       'https://js.stripe.com/v3',
       // GA4 https://developers.google.com/tag-platform/tag-manager/web/csp
-      // Commenting out due to CSP bypass issues and we are not using GA4 yet.
-      // 'https://*.googletagmanager.com/',
+      // not actively used yet, loading specific file due to CSP bypass issue
+      'https://*.googletagmanager.com/gtag/',
     ],
     connectSrc: [
       "'self'",
