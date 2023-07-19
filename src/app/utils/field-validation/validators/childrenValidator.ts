@@ -24,7 +24,7 @@ const childrenAnswerValidator: ChildrenValidator = (response) => {
   const { answerArray } = response
 
   return answerArray.length === 0
-    ? left(`CheckboxValidator:\t Answer is empty array`)
+    ? left(`ChildrenValidator:\t Answer is empty array`)
     : right(response)
 }
 
@@ -34,10 +34,10 @@ const childrenAnswerValidator: ChildrenValidator = (response) => {
  */
 const validChildAnswerFirstArray: ChildrenValidator = (response) => {
   const { answerArray } = response
-  const len = answerArray[0]?.length
-  return len !== undefined && len > 0
+  const first = answerArray[0]
+  return Array.isArray(first) && first.length > 0
     ? right(response)
-    : left(`CheckboxValidator:\t first subarray length is invalid`)
+    : left(`ChildrenValidator:\t first subarray length is invalid`)
 }
 
 /**
@@ -49,7 +49,18 @@ const validChildAnswerConsistency: ChildrenValidator = (response) => {
   const len = answerArray[0].length
   return answerArray.every((subArr) => subArr.length === len)
     ? right(response)
-    : left(`CheckboxValidator:\t inconsistent answer array subarrays`)
+    : left(`ChildrenValidator:\t inconsistent answer array subarrays`)
+}
+
+/**
+ * Returns a validation function to check if
+ * all the answers are non-empty.
+ */
+const validChildAnswersNonEmpty: ChildrenValidator = (response) => {
+  const { answerArray } = response
+  return answerArray.every((subArr) => subArr.every((val) => !!val.trim()))
+    ? right(response)
+    : left(`ChildrenValidator:\t inconsistent answer array subarrays`)
 }
 
 /**
@@ -62,7 +73,7 @@ const validChildAnswerAndSubFields: ChildrenValidator = (response) => {
   return childSubFieldsArray?.length === answerArray[0].length
     ? right(response)
     : left(
-        `CheckboxValidator:\t inconsistent child subfield and answer array length`,
+        `ChildrenValidator:\t inconsistent child subfield and answer array length`,
       )
 }
 
@@ -77,7 +88,7 @@ const validChildSubFieldsValidator: ChildrenValidatorConstructor =
     const attrs = new Set(Object.values(MyInfoChildAttributes))
     return childrenSubFields.every((subfield) => attrs.has(subfield))
       ? right(response)
-      : left(`CheckboxValidator:\t one or more subfields are invalid`)
+      : left(`ChildrenValidator:\t one or more subfields are invalid`)
   }
 
 /**
@@ -90,7 +101,7 @@ const validChildSubFieldsResponseValidator: ChildrenValidator = (response) => {
   const attrs = new Set(Object.values(MyInfoChildAttributes))
   return childSubFieldsArray?.every((subfield) => attrs.has(subfield))
     ? right(response)
-    : left(`CheckboxValidator:\t one or more subfields responses are invalid`)
+    : left(`ChildrenValidator:\t one or more subfields responses are invalid`)
 }
 
 /**
@@ -107,7 +118,7 @@ const validChildSubFieldsAndResponseSubFieldsMatch: ChildrenValidatorConstructor
     )
       ? right(response)
       : left(
-          `CheckboxValidator:\t one or more subfields responses do not match the field's`,
+          `ChildrenValidator:\t one or more subfields responses do not match the field's`,
         )
   }
 
@@ -121,6 +132,7 @@ export const constructChildrenValidator: ChildrenValidatorConstructor = (
     childrenAnswerValidator,
     chain(validChildAnswerFirstArray),
     chain(validChildAnswerConsistency),
+    chain(validChildAnswersNonEmpty),
     chain(validChildAnswerAndSubFields),
     chain(validChildSubFieldsValidator(childrenField)),
     chain(validChildSubFieldsAndResponseSubFieldsMatch(childrenField)),

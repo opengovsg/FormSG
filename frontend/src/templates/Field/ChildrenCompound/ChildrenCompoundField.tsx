@@ -31,6 +31,7 @@ import {
   MyInfoChildVaxxStatus,
 } from '~shared/types'
 
+import { createChildrenValidationRules } from '~utils/fieldValidation'
 import { Button } from '~components/Button/Button'
 import { DatePicker } from '~components/DatePicker'
 import { SingleSelect } from '~components/Dropdown/SingleSelect'
@@ -201,7 +202,16 @@ const ChildrenBody = ({
     () => `${schema._id}.child.${currChildBodyIdx}.0`,
     [schema._id, currChildBodyIdx],
   )
-  const { onChange: selectOnChange, ...selectRest } = register(childNamePath)
+
+  const validationRules = useMemo(
+    () => createChildrenValidationRules(schema),
+    [],
+  )
+
+  const { onChange: selectOnChange, ...selectRest } = register(
+    childNamePath,
+    validationRules,
+  )
 
   const childName = watch(childNamePath) as unknown as string
 
@@ -322,18 +332,14 @@ const ChildrenBody = ({
           switch (subField) {
             case MyInfoChildAttributes.ChildBirthCertNo: {
               return (
-                <FormControl
-                  key={key}
-                  isDisabled={isDisabled}
-                  isRequired={schema.required}
-                >
-                  <FormLabel
-                    useMarkdownForDescription={true}
-                    gridArea="formlabel"
-                  >
+                <FormControl key={key} isDisabled={isDisabled} isRequired>
+                  <FormLabel useMarkdownForDescription gridArea="formlabel">
                     {MYINFO_ATTRIBUTE_MAP[subField].description}
                   </FormLabel>
-                  <ChakraInput {...register(fieldPath)} value={value} />
+                  <ChakraInput
+                    {...register(fieldPath, validationRules)}
+                    value={value}
+                  />
                 </FormControl>
               )
             }
@@ -342,19 +348,12 @@ const ChildrenBody = ({
             case MyInfoChildAttributes.ChildRace:
             case MyInfoChildAttributes.ChildSecondaryRace: {
               return (
-                <FormControl
-                  key={key}
-                  isDisabled={isDisabled}
-                  isRequired={schema.required}
-                >
-                  <FormLabel
-                    useMarkdownForDescription={true}
-                    gridArea="formlabel"
-                  >
+                <FormControl key={key} isDisabled={isDisabled} isRequired>
+                  <FormLabel useMarkdownForDescription gridArea="formlabel">
                     {MYINFO_ATTRIBUTE_MAP[subField].description}
                   </FormLabel>
                   <SingleSelect
-                    {...register(fieldPath)}
+                    {...register(fieldPath, validationRules)}
                     value={value}
                     items={
                       MYINFO_ATTRIBUTE_MAP[subField].fieldOptions as string[]
@@ -364,23 +363,15 @@ const ChildrenBody = ({
                       // custom Select doesn't forward the event.
                       setValue(fieldPath, option)
                     }
-                    isDisabled={isDisabled}
                   />
                 </FormControl>
               )
             }
             case MyInfoChildAttributes.ChildDateOfBirth: {
-              const { onChange, ...rest } = register(fieldPath)
+              const { onChange, ...rest } = register(fieldPath, validationRules)
               return (
-                <FormControl
-                  key={key}
-                  isDisabled={isDisabled}
-                  isRequired={schema.required}
-                >
-                  <FormLabel
-                    useMarkdownForDescription={true}
-                    gridArea="formlabel"
-                  >
+                <FormControl key={key} isDisabled={isDisabled} isRequired>
+                  <FormLabel useMarkdownForDescription gridArea="formlabel">
                     {MYINFO_ATTRIBUTE_MAP[subField].description}
                   </FormLabel>
                   <DatePicker
@@ -390,7 +381,6 @@ const ChildrenBody = ({
                       setValue(fieldPath, date)
                     }}
                     colorScheme={`theme-${colorTheme}`}
-                    isDisabled={isDisabled}
                   />
                 </FormControl>
               )

@@ -80,6 +80,11 @@ function hashChildrenFieldValues(
   subFields.forEach((subField) => {
     const fieldArr = childrenBirthRecords[subField]
     fieldArr?.forEach((value, childIdx) => {
+      const childName =
+        childrenBirthRecords?.[MyInfoChildAttributes.ChildName]?.[childIdx]
+      if (childName === undefined) {
+        return
+      }
       // Skip all unknown vaccination statuses, let the user fill it in themselves.
       if (
         subField === MyInfoChildAttributes.ChildVaxxStatus &&
@@ -88,7 +93,7 @@ function hashChildrenFieldValues(
         return
       }
       readOnlyHashPromises[
-        getMyInfoChildHashKey(field._id, subField, childIdx)
+        getMyInfoChildHashKey(field._id, subField, childIdx, childName)
       ] = bcrypt.hash(value, HASH_SALT_ROUNDS)
     })
   })
@@ -137,12 +142,9 @@ const hasMyInfoAnswer = (
 
 const transformAnswer = (field: VisibleMyInfoResponse): string => {
   const answer = field.answer
-  switch (field.fieldType) {
-    case BasicField.Date:
-      return moment(new Date(answer)).format('YYYY-MM-DD')
-    default:
-      return field.answer
-  }
+  return field.fieldType === BasicField.Date
+    ? moment(new Date(answer)).format('YYYY-MM-DD')
+    : answer
 }
 
 const compareSingleHash = (
@@ -429,7 +431,10 @@ const MyInfoChildAttributeSet = new Set(Object.values(MyInfoChildAttributes))
 export const isMyInfoChildrenBirthRecords = (
   attr: InternalAttr | undefined,
 ): boolean => {
-  return MyInfoChildAttributeSet.has(attr as unknown as MyInfoChildAttributes)
+  return (
+    attr === InternalAttr.ChildrenBirthRecords ||
+    MyInfoChildAttributeSet.has(attr as unknown as MyInfoChildAttributes)
+  )
 }
 
 /**
@@ -462,8 +467,9 @@ export const getMyInfoChildHashKey = (
   fieldId: string,
   childAttr: MyInfoChildAttributes,
   childIdx: number,
+  childName: string,
 ): MyInfoChildKey => {
-  return `${MyInfoAttribute.ChildrenBirthRecords}.${fieldId}.${childAttr}.${childIdx}`
+  return `${MyInfoAttribute.ChildrenBirthRecords}.${fieldId}.${childAttr}.${childIdx}.${childName}`
 }
 
 /**
@@ -488,12 +494,15 @@ export const handleMyInfoChildHashResponse = (
     return
   }
   childField.answerArray.forEach((childAnswer, childIndex) => {
+    // Name should be first field for child answers
+    const childName = childAnswer[0]
     // Validate each answer (child)
     childAnswer.forEach((attrAnswer, subFieldIndex) => {
       const key = getMyInfoChildHashKey(
         field._id as string,
         subFields[subFieldIndex],
         childIndex,
+        childName,
       )
       const hash = hashes[key]
       // Intentional, to allow user-filled fields to pass through.
