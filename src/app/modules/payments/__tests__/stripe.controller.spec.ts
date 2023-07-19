@@ -129,7 +129,7 @@ describe('stripe.controller', () => {
         .mockResolvedValueOnce({ data: '<html>some html</html>' })
 
       const convertInvoiceSpy = jest
-        .spyOn(StripeUtils, 'convertToInvoiceFormat')
+        .spyOn(StripeUtils, 'convertToProofOfPaymentFormat')
         .mockReturnValueOnce('<html>some converted html</html>')
 
       const generatePdfFromHtmlSpy = jest
@@ -169,7 +169,7 @@ describe('stripe.controller', () => {
 
       const convertInvoiceSpy = jest.spyOn(
         StripeUtils,
-        'convertToInvoiceFormat',
+        'convertToProofOfPaymentFormat',
       )
 
       const generatePdfFromHtmlSpy = jest.spyOn(

@@ -399,10 +399,12 @@ export const computePayoutDetails = (
 }
 
 /**
- * Converts receipt sourced from Stripe into an invoice format
+ * Converts receipt sourced from Stripe into a proof of payment format
+ * If GST is applicable, 'Invoice' is used and the GST Reg No is reflected.
+ * If GST is not applicable, 'Receipt' is used.
  * @param receiptHtmlSource
  */
-export const convertToInvoiceFormat = (
+export const convertToProofOfPaymentFormat = (
   receiptHtmlSource: string,
   {
     address,

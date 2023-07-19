@@ -53,7 +53,7 @@ import {
 import {
   computePaymentState,
   computePayoutDetails,
-  convertToInvoiceFormat,
+  convertToProofOfPaymentFormat,
   getChargeIdFromNestedCharge,
   getMetadataPaymentId,
 } from './stripe.utils'
@@ -994,7 +994,7 @@ export const generatePaymentInvoice = (
           formBusinessInfo,
         },
       })
-    const invoiceHtml = convertToInvoiceFormat(html, {
+    const invoiceHtml = convertToProofOfPaymentFormat(html, {
       address: businessAddress || '',
       gstRegNo: businessGstRegNo || '',
       formTitle: populatedForm.title,
