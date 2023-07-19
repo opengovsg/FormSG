@@ -31,7 +31,7 @@ export class SgidServiceClass {
   createRedirectUrl() {
     return this.client.authorizationUrl(
       'icecream',
-      'openid publicofficerinfo.work_email',
+      'openid ogpofficerinfo.work_email',
       'icecream2',
     )
   }
