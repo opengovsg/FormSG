@@ -186,6 +186,8 @@ export const BASICFIELD_TO_DRAWER_META: {
   },
 }
 
+const BiDummyIcon = BiCalendar // random icon that is not actually shown in app
+
 export const MYINFO_FIELD_TO_DRAWER_META: {
   [key in MyInfoAttribute]: BuilderSidebarFieldMeta
 } = {
@@ -319,37 +321,37 @@ export const MYINFO_FIELD_TO_DRAWER_META: {
   // So they can be any placeholder.
   [MyInfoAttribute.ChildBirthCertNo]: {
     label: 'Birth Certificate Number',
-    icon: BiBook,
+    icon: BiDummyIcon,
     isSubmitted: true,
   },
   [MyInfoAttribute.ChildDateOfBirth]: {
     label: 'Date of Birth',
-    icon: BiCalendar,
+    icon: BiDummyIcon,
     isSubmitted: true,
   },
   [MyInfoAttribute.ChildName]: {
     label: 'Name',
-    icon: BiCalendar,
+    icon: BiDummyIcon,
     isSubmitted: true,
   },
   [MyInfoAttribute.ChildVaxxStatus]: {
     label: 'Vaccination Requirements',
-    icon: BiCalendar,
+    icon: BiDummyIcon,
     isSubmitted: true,
   },
   [MyInfoAttribute.ChildGender]: {
     label: 'Gender',
-    icon: BiCalendar,
+    icon: BiDummyIcon,
     isSubmitted: true,
   },
   [MyInfoAttribute.ChildRace]: {
     label: 'Race',
-    icon: BiCalendar,
+    icon: BiDummyIcon,
     isSubmitted: true,
   },
   [MyInfoAttribute.ChildSecondaryRace]: {
     label: 'Secondary Race',
-    icon: BiCalendar,
+    icon: BiDummyIcon,
     isSubmitted: true,
   },
 }

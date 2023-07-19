@@ -12,6 +12,7 @@ import {
   Box,
   Divider,
   Flex,
+  FormControl,
   HStack,
   Input as ChakraInput,
   Spacer,
@@ -89,7 +90,7 @@ export const ChildrenCompoundField = ({
 
   // Initialize with a single child section
   useEffect(() => {
-    if (!fields || !fields.length || fields.length === 0) {
+    if (!fields || !fields.length) {
       append([''])
     }
   }, [fields, append])
@@ -204,7 +205,7 @@ const ChildrenBody = ({
 
   const childName = watch(childNamePath) as unknown as string
 
-  const allChilds = useMemo<string[]>(() => {
+  const allChildren = useMemo<string[]>(() => {
     if (myInfoChildrenBirthRecords === undefined) {
       return []
     }
@@ -224,30 +225,30 @@ const ChildrenBody = ({
     if (myInfoChildrenBirthRecords === undefined) {
       return []
     }
-    const temp = allSelectedNames()
+    const temp = new Set(allSelectedNames())
     // We want all child names that haven't already been selected.
     // O(n^2) but n is small so it should be okay.
-    return allChilds.filter((name) => !temp.includes(name))
-  }, [myInfoChildrenBirthRecords, allChilds, allSelectedNames])
+    return allChildren.filter((name) => !temp.has(name))
+  }, [myInfoChildrenBirthRecords, allChildren, allSelectedNames])
+
+  const indexOfChild: number = useMemo(() => {
+    return (
+      myInfoChildrenBirthRecords?.[MyInfoChildAttributes.ChildName]?.indexOf(
+        childName,
+      ) ?? -1
+    )
+  }, [myInfoChildrenBirthRecords, childName])
 
   const getChildAttr = useCallback(
     (attr: MyInfoChildAttributes): string => {
       if (myInfoChildrenBirthRecords === undefined) {
         return ''
       }
-      // First find the child
-      const indexOfChild =
-        myInfoChildrenBirthRecords[MyInfoChildAttributes.ChildName]?.indexOf(
-          childName,
-        )
+
       if (indexOfChild === undefined || indexOfChild < 0) {
         return ''
       }
-      const lookup = myInfoChildrenBirthRecords[attr]
-      if (lookup === undefined) {
-        return ''
-      }
-      const result = lookup[indexOfChild]
+      const result = myInfoChildrenBirthRecords?.[attr]?.[indexOfChild]
       // Unknown basically means no result
       if (
         attr === MyInfoChildAttributes.ChildVaxxStatus &&
@@ -257,7 +258,7 @@ const ChildrenBody = ({
       }
       return result ?? ''
     },
-    [childName, myInfoChildrenBirthRecords],
+    [indexOfChild, myInfoChildrenBirthRecords],
   )
   return (
     <VStack
@@ -321,20 +322,19 @@ const ChildrenBody = ({
           switch (subField) {
             case MyInfoChildAttributes.ChildBirthCertNo: {
               return (
-                <div key={key}>
+                <FormControl
+                  key={key}
+                  isDisabled={isDisabled}
+                  isRequired={schema.required}
+                >
                   <FormLabel
                     useMarkdownForDescription={true}
                     gridArea="formlabel"
                   >
                     {MYINFO_ATTRIBUTE_MAP[subField].description}
                   </FormLabel>
-                  <ChakraInput
-                    {...register(fieldPath)}
-                    isDisabled={isDisabled}
-                    value={value}
-                    isRequired
-                  />
-                </div>
+                  <ChakraInput {...register(fieldPath)} value={value} />
+                </FormControl>
               )
             }
             case MyInfoChildAttributes.ChildVaxxStatus:
@@ -342,7 +342,11 @@ const ChildrenBody = ({
             case MyInfoChildAttributes.ChildRace:
             case MyInfoChildAttributes.ChildSecondaryRace: {
               return (
-                <div key={key}>
+                <FormControl
+                  key={key}
+                  isDisabled={isDisabled}
+                  isRequired={schema.required}
+                >
                   <FormLabel
                     useMarkdownForDescription={true}
                     gridArea="formlabel"
@@ -362,13 +366,17 @@ const ChildrenBody = ({
                     }
                     isDisabled={isDisabled}
                   />
-                </div>
+                </FormControl>
               )
             }
             case MyInfoChildAttributes.ChildDateOfBirth: {
               const { onChange, ...rest } = register(fieldPath)
               return (
-                <div key={key}>
+                <FormControl
+                  key={key}
+                  isDisabled={isDisabled}
+                  isRequired={schema.required}
+                >
                   <FormLabel
                     useMarkdownForDescription={true}
                     gridArea="formlabel"
@@ -384,7 +392,7 @@ const ChildrenBody = ({
                     colorScheme={`theme-${colorTheme}`}
                     isDisabled={isDisabled}
                   />
-                </div>
+                </FormControl>
               )
             }
             default:
