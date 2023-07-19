@@ -25,7 +25,6 @@ import {
   BasicFieldPanel,
   MyInfoFieldPanel,
   PaymentsInputPanel,
-  // PaymentsInputPanelV2,
 } from './field-panels'
 
 export const FieldListDrawer = (): JSX.Element => {
@@ -60,13 +59,6 @@ export const FieldListDrawer = (): JSX.Element => {
       isDisabled: isLoading,
       key: FieldListTabIndex.Payments,
     },
-    // {
-    //   header: 'Payments v2',
-    //   component: PaymentsInputPanelV2,
-    //   isHidden: !displayPayments,
-    //   isDisabled: isLoading,
-    //   key: FieldListTabIndex.PaymentsV2,
-    // },
   ].filter((tab) => !tab.isHidden)
 
   return (
