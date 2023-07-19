@@ -57,7 +57,7 @@ export const DownloadReceiptBlock = ({
           leftIcon={<BiDownload fontSize="1.5rem" />}
           onClick={handleInvoiceClick}
         >
-          Save payment invoice
+          Save proof of payment
         </Button>
       </>
     </GenericMessageBlock>

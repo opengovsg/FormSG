@@ -81,7 +81,7 @@ export const EndPageInput = ({
     title: 'Your payment has been made successfully.',
     paragraph: 'Your form has been submitted and payment has been made.',
     buttonLink: 'Default invoice link',
-    buttonText: 'Save payment invoice',
+    buttonText: 'Save proof of payment',
   }
 
   const {
