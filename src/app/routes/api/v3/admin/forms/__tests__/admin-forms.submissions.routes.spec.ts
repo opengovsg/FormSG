@@ -1242,6 +1242,7 @@ describe('admin-form.submissions.routes', () => {
         paymentIntentId: 'somePaymentIntentId',
         amount: 314159,
         email: 'someone@mail.com',
+        gstEnabled: false,
       })
       // Create 3 submissions
       const submissions = await Promise.all(
@@ -1355,6 +1356,7 @@ describe('admin-form.submissions.routes', () => {
         paymentIntentId: 'somePaymentIntentId',
         amount: 314159,
         email: 'someone@mail.com',
+        gstEnabled: false,
       })
       // Create 3 submissions
       const submissions = await Promise.all(

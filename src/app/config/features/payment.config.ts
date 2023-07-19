@@ -53,7 +53,7 @@ const paymentFeature: Schema<IPaymentFeature> = {
   maxPaymentAmountCents: {
     doc: 'Maximum amount that can be paid for a form',
     format: Number,
-    default: 100000000, // Arbitrary large payment amount we should be concerned about
+    default: 200 * 1000 * 100, // 200k, this is the maximum limit for paynow transactions
     env: 'PAYMENT_MAX_PAYMENT_AMOUNT_CENTS',
   },
   minPaymentAmountCents: {
