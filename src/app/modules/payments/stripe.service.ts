@@ -999,7 +999,7 @@ export const generatePaymentInvoice = (
       gstRegNo: businessGstRegNo || '',
       formTitle: populatedForm.title,
       submissionId: payment.completedPayment?.submissionId || '',
-      gstEnabled: payment.gstEnabled,
+      gstApplicable: payment.gstEnabled,
     })
 
     return ResultAsync.fromPromise(

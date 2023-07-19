@@ -409,13 +409,13 @@ export const convertToInvoiceFormat = (
     gstRegNo,
     formTitle,
     submissionId,
-    gstEnabled,
+    gstApplicable,
   }: {
     address: string
     gstRegNo: string
     formTitle: string
     submissionId: string
-    gstEnabled: boolean
+    gstApplicable: boolean
   },
 ) => {
   // handle special characters in addresses
@@ -423,9 +423,6 @@ export const convertToInvoiceFormat = (
   const GST_REG_NO = encode(gstRegNo)
 
   const commonEdits = receiptHtmlSource
-    .replace(/(<title>.*?)receipt(.*?<\/title>)/, '$1invoice$2')
-    .replace(/Receipt from /g, 'Invoice from ')
-    .replace(/Date paid/g, 'Invoice Date')
     .replace(/<br>\(This amount is inclusive of GST\)/, '')
     .replace(
       /Something wrong with the email\? <a.+a>/,
@@ -436,20 +433,27 @@ export const convertToInvoiceFormat = (
       '<td class="st-Spacer st-Spacer--gutter" width="48"></td>',
     )
 
-  const gstDependentEdits = gstEnabled
+  // If GST is applicable, 'Invoice' is used instead of 'Receipt'
+  const gstDependentEdits = gstApplicable
     ? commonEdits
+        .replace(/(<title>.*?)receipt(.*?<\/title>)/, '$1invoice$2')
+        .replace(/Receipt from /g, 'Invoice from ')
+
         .replace(
           /Receipt (#[0-9-]+)/,
           `Invoice $1<br /><br />GST Reg No: ${GST_REG_NO}<br />Address: ${ADDRESS}`,
         )
+        .replace(/Date paid/g, 'Invoice Date')
         .replace(
           '<strong>Amount charged</strong>',
           `<strong>Amount charged</strong> <i>(includes GST)</i>`,
         )
-    : commonEdits.replace(
-        /Receipt (#[0-9-]+)/,
-        `Invoice $1<br /><br />Address: ${ADDRESS}`,
-      )
+    : commonEdits
+        .replace(
+          /Receipt (#[0-9-]+)/,
+          `Receipt $1<br /><br />Address: ${ADDRESS}`,
+        )
+        .replace(/Date paid/g, 'Receipt Date')
 
   const dom = new JSDOM(gstDependentEdits)
   const { document } = dom.window
