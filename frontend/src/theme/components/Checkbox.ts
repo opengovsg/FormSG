@@ -118,7 +118,7 @@ const baseStyle: PartsStyleFunction<typeof parts> = ({
   },
 })
 
-const variantfullWidth: PartsStyleFunction<typeof parts> = (props) => {
+const variantFullWidth: PartsStyleFunction<typeof parts> = (props) => {
   return {
     label: {
       width: '100%',
@@ -126,7 +126,7 @@ const variantfullWidth: PartsStyleFunction<typeof parts> = (props) => {
   }
 }
 const variants = {
-  fullWidth: variantfullWidth,
+  fullWidth: variantFullWidth,
 }
 
 export const Checkbox = {
