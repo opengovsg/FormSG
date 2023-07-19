@@ -112,7 +112,7 @@ describe('stripe.controller', () => {
           receiptUrl: 'http://form.gov.sg',
           submissionId: mockSubmissionId,
         },
-        gstApplicable: false,
+        gstEnabled: false,
       })
     })
     it('should generate return a pdf file when receipt url is present', async () => {
