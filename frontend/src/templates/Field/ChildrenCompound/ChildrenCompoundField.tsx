@@ -205,7 +205,7 @@ const ChildrenBody = ({
 
   const validationRules = useMemo(
     () => createChildrenValidationRules(schema),
-    [],
+    [schema],
   )
 
   const { onChange: selectOnChange, ...selectRest } = register(

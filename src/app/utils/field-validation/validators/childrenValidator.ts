@@ -58,7 +58,9 @@ const validChildAnswerConsistency: ChildrenValidator = (response) => {
  */
 const validChildAnswersNonEmpty: ChildrenValidator = (response) => {
   const { answerArray } = response
-  return answerArray.every((subArr) => subArr.every((val) => !!val.trim()))
+  return answerArray.every((subArr) =>
+    subArr.every((val) => typeof val === 'string' && !!val.trim()),
+  )
     ? right(response)
     : left(`ChildrenValidator:\t inconsistent answer array subarrays`)
 }
