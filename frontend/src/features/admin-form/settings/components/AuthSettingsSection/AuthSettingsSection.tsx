@@ -9,8 +9,10 @@ import {
   Box,
   Divider,
   Flex,
+  HStack,
   Icon,
   Skeleton,
+  Spacer,
   Text,
   VStack,
 } from '@chakra-ui/react'
@@ -63,10 +65,14 @@ interface AuthSettingsSectionProps {
 const SGIDText = (): JSX.Element => {
   return (
     <>
-      <Text as="h3" textStyle="h3" color="secondary.500">
-        Singpass App-only <Tag variant="subtle">Free</Tag>
-      </Text>
-      <Text color="secondary.400">
+      <HStack flexDir="row" alignContent="flex-start" spacing={3}>
+        <Text as="h3" textStyle="h3" color="secondary.500">
+          Singpass App-only
+        </Text>
+        <Tag variant="subtle">Free</Tag>
+      </HStack>
+      <Spacer h="12px" />
+      <Text textStyle="body-2" color="secondary.400">
         Uses Singpass app QR code to authenticate. You will receive the
         respondent's NRIC with each submission.{' '}
         <Link
@@ -77,6 +83,7 @@ const SGIDText = (): JSX.Element => {
         >
           Learn more
         </Link>
+        <Spacer h="12px" />
       </Text>
     </>
   )
@@ -88,10 +95,12 @@ const SingpassText = (): JSX.Element => {
       <Text as="h3" textStyle="h3" color="secondary.500">
         Singpass
       </Text>
-      <Text color="secondary.400">
+      <Spacer h="12px" />
+      <Text textStyle="body-2" color="secondary.400">
         You will need a Singpass e-service ID or Corppass e-service ID. For
         queries and issues, contact spcp.transoffice@accenture.com.
       </Text>
+      <Spacer h="12px" />
     </>
   )
 }

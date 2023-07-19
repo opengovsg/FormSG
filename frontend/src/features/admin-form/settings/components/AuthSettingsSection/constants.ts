@@ -9,7 +9,7 @@ export type StorageFormAuthType =
 
 export const NONE_AUTH_TEXT = 'None'
 const BASIC_AUTH_TEXT = 'Login only'
-const MYINFO_AUTH_TEXT = 'Login and capture MyInfo data'
+const MYINFO_AUTH_TEXT = 'Login and capture Myinfo data'
 const CORP_AUTH_TEXT = 'Corporate login'
 
 export const STORAGE_MODE_SGID_AUTHTYPES_ORDERED: Partial<
