@@ -24,8 +24,12 @@ export class AuthSgidServiceClass {
       // If hostname is empty, use the default provided by sgid-client.
       hostname: hostname || undefined,
       ...sgidOptions,
-      privateKey: this.privateKey,
+      privateKey: this.privateKey?.replace(/\\n/gm, '\n'),
     })
+    // logger.info({
+    //   message: '',
+    //   meta: { action: '', privateKey: this.privateKey?.replace(/\\n/gm, '\n') },
+    // })
   }
 
   createRedirectUrl() {

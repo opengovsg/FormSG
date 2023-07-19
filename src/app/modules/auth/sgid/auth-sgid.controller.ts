@@ -24,9 +24,7 @@ export const handleLogin: ControllerHandler<
 
   await AuthSgidService.retrieveAccessToken(code)
     .andThen((data) => AuthSgidService.retrieveUserInfo(data))
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //@ts-ignore
-    .andThen(() => okAsync(data['ogpofficerinfo.work_email']))
+    .andThen(({ data }) => okAsync(data['ogpofficerinfo.work_email']))
     .andThen((email) =>
       AuthService.validateEmailDomain(email).andThen((agency) =>
         okAsync({
