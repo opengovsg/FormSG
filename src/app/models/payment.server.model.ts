@@ -96,7 +96,7 @@ const PaymentSchema = new Schema<IPaymentSchema, IPaymentModel>(
             required: true,
           },
           quantity: {
-            type: Boolean,
+            type: Number,
             required: true,
           },
           data: ProductItemSchema,
