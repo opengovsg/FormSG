@@ -1,8 +1,8 @@
-import { FC, useMemo, useState } from 'react'
+import { FC, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiLogInCircle } from 'react-icons/bi'
 import { useMutation } from 'react-query'
-import { Link as ReactLink } from 'react-router-dom'
+import { Link as ReactLink, useSearchParams } from 'react-router-dom'
 import { Box, chakra, Flex, GridItem, GridProps, Text } from '@chakra-ui/react'
 
 import { AppFooter } from '~/app/AppFooter'
@@ -13,22 +13,15 @@ import { LANDING_PAYMENTS_ROUTE, LANDING_ROUTE } from '~constants/routes'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { getBannerProps } from '~utils/getBannerProps'
 import { ApiService } from '~services/ApiService'
-import { sendLoginOtp, verifyLoginOtp } from '~services/AuthService'
 import { Banner } from '~components/Banner'
 import Button from '~components/Button'
 import { FeatureBanner } from '~components/FeatureBanner/FeatureBanner'
 import Link from '~components/Link'
 import { AppGrid } from '~templates/AppGrid'
 
-import {
-  trackAdminLogin,
-  trackAdminLoginFailure,
-} from '~features/analytics/AnalyticsService'
 import { useEnv } from '~features/env/queries'
 
-import { LoginForm, LoginFormInputs } from './components/LoginForm'
 import { LoginImageSvgr } from './components/LoginImageSvgr'
-import { OtpForm, OtpFormInputs } from './components/OtpForm'
 
 export type LoginOtpData = {
   email: string
@@ -101,10 +94,28 @@ const NonMobileSidebarGridArea: FC = ({ children }) => (
 )
 
 export const LoginPageSGID = (): JSX.Element => {
-  const { data: { siteBannerContent, isLoginBanner } = {} } = useEnv()
+  const [params] = useSearchParams()
+  console.log(params)
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //@ts-ignore
+  return !params.size ? <LoginPageSGIDPage /> : <LoginViaSGID />
+}
+
+export const LoginViaSGID = (): JSX.Element => {
+  const [params] = useSearchParams()
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
-  const [email, setEmail] = useState<string>()
-  const [otpPrefix, setOtpPrefix] = useState<string>('')
+
+  useEffect(() => {
+    ApiService.get(`/auth/sgid/login?${params.toString()}`).then(() =>
+      setIsAuthenticated(true),
+    )
+  }, [params, setIsAuthenticated])
+
+  return <></>
+}
+
+export const LoginPageSGIDPage = (): JSX.Element => {
+  const { data: { siteBannerContent, isLoginBanner } = {} } = useEnv()
   const { t } = useTranslation()
 
   const bannerContent = useMemo(
@@ -117,14 +128,6 @@ export const LoginPageSGID = (): JSX.Element => {
     () => getBannerProps(bannerContent),
     [bannerContent],
   )
-
-  const handleSendOtp = async ({ email }: LoginFormInputs) => {
-    const trimmedEmail = email.trim()
-    await sendLoginOtp(trimmedEmail).then(({ otpPrefix }) => {
-      setOtpPrefix(otpPrefix)
-      setEmail(trimmedEmail)
-    })
-  }
 
   const handleLoginMutation = useMutation(
     () => {
