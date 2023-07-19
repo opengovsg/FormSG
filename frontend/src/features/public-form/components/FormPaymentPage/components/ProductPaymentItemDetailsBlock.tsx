@@ -99,7 +99,7 @@ const PaymentItem = ({
             <ItemQuantity
               product={product}
               onChange={(qty: number) =>
-                onItemChange(product.data._id, product.selected, qty)
+                onItemChange(product.data._id, true, qty)
               }
             />
           </Flex>
@@ -186,7 +186,7 @@ export const ProductPaymentItemDetailsBlock = ({
           Total price
         </Text>
         <Text textStyle={'h4'} fontWeight="600" fontSize={'24px'}>
-          S${centsToDollars(totalPrice)}
+          S{formatCurrency(Number(centsToDollars(totalPrice)))}
         </Text>
       </Flex>
     </Stack>
