@@ -307,7 +307,8 @@ const addAuthSettings = async (
 
   const name = AUTHTYPE_TO_REAL_NAME[formSettings.authType]
 
-  await page.getByRole('radio', { name })
+  await page.locator(`input[type='radio'][aria-label='${name}']`)
+    .first()
     .click({ position: { x: 1, y: 1 } }) // Clicking the center of the sgid button launches the sgid contact form, put this here until we get rid of the link
 
   await expectToast(page, /form authentication successfully updated/i)
