@@ -48,11 +48,13 @@ export const CP_TOOLTIP = `Corppass no longer has its own login page, and now\
 // Visually, the FormAuthType texts are no different,
 // only the section they are under dinstiguishes them.
 // Thus, this is used for aria-labels to make Radio buttons easier to dinstiguish.
+// NOTE: Must be unique names for the sake of the test suite.
 export const AUTHTYPE_TO_REAL_NAME: Record<FormAuthType, string> = {
-  [FormAuthType.NIL]: 'None',
-  [FormAuthType.SP]: 'Singpass',
-  [FormAuthType.SGID]: 'Singpass App-only Login (Free)',
-  [FormAuthType.MyInfo]: 'Singpass with Myinfo',
-  [FormAuthType.CP]: 'Singpass (Corporate)',
-  [FormAuthType.SGID_MyInfo]: 'Singpass App-only Login with MyInfo (Free)',
+  [FormAuthType.NIL]: 'None radio button',
+  [FormAuthType.SP]: 'Singpass radio button',
+  [FormAuthType.SGID]: 'Singpass App-only Login (Free) radio button',
+  [FormAuthType.MyInfo]: 'Singpass with Myinfo radio button',
+  [FormAuthType.CP]: 'Singpass (Corporate) radio button',
+  [FormAuthType.SGID_MyInfo]:
+    'Singpass App-only Login with MyInfo (Free) radio button',
 }

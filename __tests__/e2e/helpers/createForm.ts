@@ -307,9 +307,7 @@ const addAuthSettings = async (
 
   const name = AUTHTYPE_TO_REAL_NAME[formSettings.authType]
 
-  await page
-    .locator('label', { has: page.getByRole('radio', { name }) })
-    .first() // Since 'Singpass' will match all radio options, pick the first matching one.
+  await page.getByRole('radio', { name })
     .click({ position: { x: 1, y: 1 } }) // Clicking the center of the sgid button launches the sgid contact form, put this here until we get rid of the link
 
   await expectToast(page, /form authentication successfully updated/i)
