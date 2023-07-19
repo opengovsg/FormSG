@@ -3,6 +3,7 @@ import { Mongoose, Schema } from 'mongoose'
 import { Payment, PaymentStatus } from '../../../shared/types'
 import { IPaymentModel, IPaymentSchema } from '../../types'
 
+import { ProductItemSchema } from './payments/productItemSchema'
 import { FORM_SCHEMA_ID } from './form.server.model'
 import { PENDING_SUBMISSION_SCHEMA_ID } from './pending_submission.server.model'
 import { SUBMISSION_SCHEMA_ID } from './submission.server.model'
@@ -85,6 +86,22 @@ const PaymentSchema = new Schema<IPaymentSchema, IPaymentModel>(
           required: true,
         },
       },
+    },
+
+    products: {
+      type: [
+        {
+          selected: {
+            type: Boolean,
+            required: true,
+          },
+          quantity: {
+            type: Boolean,
+            required: true,
+          },
+          data: ProductItemSchema,
+        },
+      ],
     },
   },
   {

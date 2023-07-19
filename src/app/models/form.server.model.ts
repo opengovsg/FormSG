@@ -31,7 +31,6 @@ import {
   FormLogoState,
   FormPaymentsChannel,
   FormPaymentsField,
-  FormPaymentsFieldV2,
   FormPermission,
   FormResponseMode,
   FormSettings,
@@ -68,6 +67,7 @@ import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
 import { validateWebhookUrl } from '../modules/webhook/webhook.validation'
 
+import { ProductItemSchema } from './payments/productItemSchema'
 import {
   BaseFieldSchema,
   createAttachmentFieldSchema,
@@ -97,6 +97,7 @@ import LogicSchema, {
 } from './form_logic.server.schema'
 import { CustomFormLogoSchema, FormLogoSchema } from './form_logo.server.schema'
 import getUserModel from './user.server.model'
+import { isPositiveInteger } from './utils'
 
 export const FORM_SCHEMA_ID = 'Form'
 
@@ -128,9 +129,6 @@ const formSchemaOptions: SchemaOptions = {
     createdAt: 'created',
     updatedAt: 'lastModified',
   },
-}
-const isPositiveInteger = (val: number) => {
-  return val >= 0 && Number.isInteger(val)
 }
 
 const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
@@ -180,42 +178,7 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
         message: 'amount_cents must be a non-negative integer.',
       },
     },
-    products: [
-      {
-        name: {
-          type: String,
-          trim: true,
-          default: '',
-        },
-        description: {
-          type: String,
-          trim: true,
-          default: '',
-        },
-        multi_qty: {
-          type: Boolean,
-          default: false,
-        },
-        min_qty: {
-          type: Number,
-          required: false,
-          validator: isPositiveInteger,
-        },
-        max_qty: {
-          type: Number,
-          required: false,
-          validator: isPositiveInteger,
-        },
-        amount_cents: {
-          type: Number,
-          default: 0,
-          validate: {
-            validator: isPositiveInteger,
-            message: 'amount_cents must be a non-negative integer.',
-          },
-        },
-      },
-    ],
+    products: [ProductItemSchema],
     products_meta: {
       multi_product: {
         type: Boolean,
@@ -1001,7 +964,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   FormSchema.statics.updatePaymentsProductById = async function (
     formId: string,
-    newProducts: FormPaymentsFieldV2['products'],
+    newProducts: FormPaymentsField['products'],
   ) {
     return this.findByIdAndUpdate(
       formId,

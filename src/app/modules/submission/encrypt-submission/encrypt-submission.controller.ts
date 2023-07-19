@@ -14,6 +14,7 @@ import {
   FormSubmissionMetadataQueryDto,
   Payment,
   PaymentChannel,
+  PaymentType,
   StorageModeSubmissionContentDto,
   StorageModeSubmissionDto,
   StorageModeSubmissionMetadataList,
@@ -384,7 +385,19 @@ const _createPaymentSubmission = async ({
     req.body.payments,
     paymentProducts,
   )
-  // const amount = getAmount(payments_field, paymentProducts)
+
+  const isPaymentTypeProducts =
+    form.payments_field.payment_type === PaymentType.Products
+
+  if (isPaymentTypeProducts)
+    logger.info({
+      message: 'Incoming payment by products',
+      meta: {
+        ...logMeta,
+        paymentProducts,
+        amount,
+      },
+    })
 
   // Step 0: Perform validation checks
   if (
@@ -423,6 +436,7 @@ const _createPaymentSubmission = async ({
     amount,
     email: paymentReceiptEmail,
     responses: incomingSubmission.responses,
+    ...(isPaymentTypeProducts ? { products: paymentProducts } : {}),
   })
   const paymentId = payment.id
 

@@ -1,4 +1,5 @@
 import Stripe from 'stripe'
+import { ProductItem } from './form'
 import { DateString } from './generic'
 
 // Stripe Charge status
@@ -54,6 +55,9 @@ export type Payment = {
 
   // Payout metadata
   payout?: PayoutMeta
+
+  // Purchased Products information
+  products?: ProductItem[]
 
   created: DateString
   lastModified: DateString
