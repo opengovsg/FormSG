@@ -24,6 +24,7 @@ import Tooltip from '~components/Tooltip'
 import {
   AttachmentField,
   CheckboxField,
+  ChildrenCompoundField,
   DateField,
   DecimalField,
   DropdownField,
@@ -495,5 +496,7 @@ const FieldRow = ({ field, ...rest }: FieldRowProps) => {
       return <YesNoField schema={field} {...rest} />
     case BasicField.Table:
       return <TableField schema={field} {...rest} />
+    case BasicField.Children:
+      return <ChildrenCompoundField schema={field} {...rest} />
   }
 }

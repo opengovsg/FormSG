@@ -7,6 +7,7 @@ import {
   ColumnResponse,
   ProcessedAttachmentResponse,
   ProcessedCheckboxResponse,
+  ProcessedChildrenResponse,
   ProcessedFieldResponse,
   ProcessedSingleAnswerResponse,
   ProcessedTableResponse,
@@ -33,6 +34,18 @@ export const isProcessedCheckboxResponse = (
     response.fieldType === BasicField.Checkbox &&
     'answerArray' in response &&
     isStringArray(response.answerArray)
+  )
+}
+
+export const isProcessedChildResponse = (
+  response: ProcessedFieldResponse,
+): response is ProcessedChildrenResponse => {
+  return (
+    response.fieldType === BasicField.Children &&
+    'answerArray' in response &&
+    response.answerArray.every((subArr) => isStringArray(subArr)) &&
+    'childSubFieldsArray' in response &&
+    isStringArray(response.childSubFieldsArray)
   )
 }
 

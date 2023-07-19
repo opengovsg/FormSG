@@ -60,7 +60,7 @@
     "@opengovsg/angular-legacy-sortablejs-maintained": "^1.0.0",
     "@opengovsg/angular-recaptcha-fallback": "^5.0.0",
     "@opengovsg/formsg-sdk": "^0.10.0",
-    "@opengovsg/myinfo-gov-client": "^4.0.2",
+    "@opengovsg/myinfo-gov-client": "^4.1.1",
     "@opengovsg/ng-file-upload": "^12.2.15",
     "@opengovsg/sgid-client": "1.0.4",
     "@sentry/browser": "^7.51.2",

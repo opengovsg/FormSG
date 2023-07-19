@@ -203,25 +203,36 @@ export const handleGetPublicForm: ControllerHandler<
             prefilledFields,
             spcpSession: { userName: myInfoData.getUinFin() },
             myInfoLoginCookie: createMyInfoLoginCookie(myInfoData.getUinFin()),
+            myInfoChildrenBirthRecords: myInfoData.getChildrenBirthRecords(
+              form.getUniqueMyInfoAttrs(),
+            ),
           }))
         })
-        .map(({ myInfoLoginCookie, prefilledFields, spcpSession }) => {
-          // Set the updated cookie accordingly and return the form back to the user
-          return res
-            .cookie(
-              MYINFO_LOGIN_COOKIE_NAME,
-              myInfoLoginCookie,
-              MYINFO_LOGIN_COOKIE_OPTIONS,
-            )
-            .json({
-              spcpSession,
-              form: {
-                ...publicForm,
-                form_fields: prefilledFields as FormFieldDto[],
-              },
-              isIntranetUser,
-            })
-        })
+        .map(
+          ({
+            myInfoLoginCookie,
+            prefilledFields,
+            spcpSession,
+            myInfoChildrenBirthRecords,
+          }) => {
+            // Set the updated cookie accordingly and return the form back to the user
+            return res
+              .cookie(
+                MYINFO_LOGIN_COOKIE_NAME,
+                myInfoLoginCookie,
+                MYINFO_LOGIN_COOKIE_OPTIONS,
+              )
+              .json({
+                spcpSession,
+                form: {
+                  ...publicForm,
+                  form_fields: prefilledFields as FormFieldDto[],
+                },
+                isIntranetUser,
+                myInfoChildrenBirthRecords,
+              })
+          },
+        )
         .mapErr((error) => {
           logger.error({
             message: 'MyInfo login error',
@@ -328,6 +339,7 @@ export const handleGetPublicFormSampleSubmission: ControllerHandler<
     formId,
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const formResult = await getFormIfPublic(formId)
   // Early return if form is not public or any error occurred.
   if (formResult.isErr()) {
