@@ -32,7 +32,7 @@ export const DownloadReceiptBlock = ({
 
   const handleInvoiceClick = () => {
     toast({
-      description: 'Invoice download started',
+      description: 'Proof of payment download started',
     })
     window.location.href = getPaymentInvoiceDownloadUrl(formId, paymentId)
   }
