@@ -203,7 +203,7 @@ export const downloadPaymentInvoice: ControllerHandler<{
     .map((pdfBuffer) => {
       res.set({
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename=${paymentId}-invoice.pdf`,
+        'Content-Disposition': `attachment; filename=${paymentId}-proofofpayment.pdf`,
       })
       return res.status(StatusCodes.OK).send(pdfBuffer)
     })
