@@ -431,7 +431,7 @@ export const useMutateFormPage = () => {
       onSuccess: (newData) => {
         toast.closeAll()
         queryClient.setQueryData<AdminStorageFormDto | undefined>(
-          adminFormKeys.id(formId),
+          adminFormKeys.products(formId, newData),
           (oldData) =>
             oldData
               ? {

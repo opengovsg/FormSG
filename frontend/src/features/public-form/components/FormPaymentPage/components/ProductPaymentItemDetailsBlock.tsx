@@ -161,9 +161,9 @@ export const ProductPaymentItemDetailsBlock = ({
 
   return (
     <Stack spacing="2rem">
-      {productItems.map((product) => (
+      {productItems.map((product, idx) => (
         <PaymentItem
-          key={product.data._id}
+          key={product.data._id || idx}
           product={product}
           colorTheme={colorTheme}
           onItemChange={handleItemChange}

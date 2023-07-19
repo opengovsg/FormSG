@@ -136,12 +136,12 @@ export const ProductServiceBox = ({
   isLoading,
   errors,
   paymentIsEnabled,
-  setValue,
+  updateProductListStore,
 }: {
   isLoading: boolean
   errors: any
   paymentIsEnabled: boolean
-  setValue: any
+  updateProductListStore: (value: Product[]) => void
 }) => {
   const { onOpen, onClose, isOpen } = useDisclosure({
     defaultIsOpen: false,
@@ -149,9 +149,8 @@ export const ProductServiceBox = ({
 
   const { paymentsProductMutation } = useMutateFormPage()
 
-  const { paymentsData: _paymentsData } = usePaymentStore((state) => ({
-    paymentsData: dataSelector(state),
-    setData: setDataSelector(state),
+  const { _paymentsData } = usePaymentStore((state) => ({
+    _paymentsData: dataSelector(state),
   }))
 
   const [editProduct, setEditProduct] = useState<Product | null>(null)
@@ -172,8 +171,9 @@ export const ProductServiceBox = ({
             ...products.slice(foundIdx + 1),
           ]
         : [...products, newProduct]
-    paymentsProductMutation.mutate(updatedProductList)
-    setValue(updatedProductList)
+    paymentsProductMutation.mutate(updatedProductList, {
+      onSuccess: updateProductListStore,
+    })
   }
 
   const handleDeleteProduct = (productToBeDeleted: Product) => {
@@ -184,8 +184,9 @@ export const ProductServiceBox = ({
       foundIdx >= 0
         ? [...products.slice(0, foundIdx), ...products.slice(foundIdx + 1)]
         : products
-    paymentsProductMutation.mutate(updatedProductList)
-    setValue(updatedProductList)
+    paymentsProductMutation.mutate(updatedProductList, {
+      onSuccess: updateProductListStore,
+    })
   }
 
   const handleOnOpen = (product: Product | null) => {

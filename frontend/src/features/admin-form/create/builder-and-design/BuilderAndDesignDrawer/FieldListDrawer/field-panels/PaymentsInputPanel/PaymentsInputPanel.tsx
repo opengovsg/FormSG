@@ -3,7 +3,6 @@ import {
   Control,
   Controller,
   FormState,
-  UnpackNestedValue,
   useForm,
   UseFormRegister,
   UseFormSetValue,
@@ -51,6 +50,7 @@ import {
 import { FormFieldDrawerActions } from '../../../EditFieldDrawer/edit-fieldtype/common/FormFieldDrawerActions'
 import {
   dataSelector,
+  PaymentStore,
   resetDataSelector,
   setDataSelector,
   setToEditingPaymentSelector,
@@ -135,7 +135,9 @@ const ProductsPaymentSection = ({
           isLoading={paymentsMutation.isLoading}
           errors={errors}
           paymentIsEnabled={!isDisabled}
-          setValue={(newProducts) => setValue('products', newProducts)}
+          updateProductListStore={(newProducts) =>
+            setValue('products', newProducts)
+          }
         />
       </PaymentInnerContainer>
     </>
@@ -170,8 +172,7 @@ const PaymentTypeSelector = ({
               items={[
                 {
                   value: PaymentType.Fixed,
-                  label: 'Fixed amount (Deprecated)',
-                  disabled: true,
+                  label: 'Fixed amount',
                   description:
                     'Payment amount is defined by form admin. Suitable for a product or service.',
                 },
@@ -183,7 +184,7 @@ const PaymentTypeSelector = ({
                 },
                 {
                   value: PaymentType.Products,
-                  label: 'Fixed amount (Products)',
+                  label: 'Payments by Products',
                   description:
                     'Payment amount is defined by form admin. Suitable for a product or service.',
                 },
@@ -197,7 +198,7 @@ const PaymentTypeSelector = ({
   )
 }
 
-const PaymentInput = ({
+const PaymentInputFields = ({
   isDisabled,
   isEncryptMode,
 }: {
@@ -273,17 +274,24 @@ const PaymentInput = ({
 
   const watchedInputs = useWatch({
     control: control,
-  }) as UnpackNestedValue<FormPaymentsInput>
+  }) as FormPaymentsInput
 
+  // trigger a re-render on children by failing the shallow comparator
   const clonedWatchedInputs = useMemo(
     () => cloneDeep(watchedInputs),
     [watchedInputs],
   )
 
-  useDebounce(() => handlePaymentsChanges(clonedWatchedInputs), 300, [
-    Object.values(clonedWatchedInputs),
-  ])
+  useDebounce(
+    () => handlePaymentsChanges(clonedWatchedInputs),
 
+    // {
+    // ...watchedInputs,
+    // products: watchedInputs.products,
+    // }
+    300,
+    [Object.values(clonedWatchedInputs)],
+  )
   const handleUpdatePayments = handleSubmit(() => {
     if (isDisabled || !paymentsData) {
       // do not mutate if payments is disabled or unavailable
@@ -306,7 +314,7 @@ const PaymentInput = ({
     )
   })
 
-  const isProducts = false
+  const isProducts = paymentsData?.payment_type === PaymentType.Products
 
   return (
     <PaymentContainer>
@@ -324,9 +332,50 @@ const PaymentInput = ({
           paymentsMutation={paymentsMutation}
           setValue={setValue}
         />
-      ) : null}
+      ) : (
+        <FixedAndVariablePaymentSection
+          isDisabled={isDisabled}
+          errors={errors}
+          register={register}
+          paymentsMutation={paymentsMutation}
+          paymentsData={paymentsData}
+          control={control}
+          formInputValues={clonedWatchedInputs}
+        />
+      )}
 
-      {/* Ken: TODO refactor this to capture for non-product payment */}
+      <PaymentInnerContainer>
+        <FormFieldDrawerActions
+          isLoading={paymentsMutation.isLoading}
+          handleClick={handleUpdatePayments}
+          handleCancel={handleClose}
+          buttonText="Save field"
+          isDisabled={isDisabled}
+        />
+      </PaymentInnerContainer>
+    </PaymentContainer>
+  )
+}
+
+const FixedAndVariablePaymentSection = ({
+  paymentsMutation,
+  errors,
+  isDisabled,
+  register,
+  paymentsData,
+  control,
+  formInputValues,
+}: {
+  formInputValues: FormPaymentsInput
+  control: Control<FormPaymentsInput>
+  errors: FormState<FormPaymentsInput>['errors']
+  isDisabled: boolean
+  paymentsData: PaymentStore['data']
+  paymentsMutation: ReturnType<typeof useMutateFormPage>['paymentsMutation']
+  register: UseFormRegister<FormPaymentsInput>
+}) => {
+  return (
+    <>
       <PaymentInnerContainer>
         <FormControl
           isReadOnly={paymentsMutation.isLoading}
@@ -345,6 +394,7 @@ const PaymentInput = ({
           <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
         </FormControl>
       </PaymentInnerContainer>
+      <Divider my="2rem" />
       <PaymentInnerContainer>
         <FormControl
           isReadOnly={paymentsMutation.isLoading}
@@ -356,6 +406,7 @@ const PaymentInput = ({
           <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
         </FormControl>
       </PaymentInnerContainer>
+      <Divider my="2rem" />
       <PaymentInnerContainer>
         {paymentsData?.payment_type === PaymentType.Variable ? (
           <VariablePaymentAmountField
@@ -363,7 +414,7 @@ const PaymentInput = ({
             errors={errors}
             isDisabled={isDisabled}
             control={control}
-            input={clonedWatchedInputs}
+            input={formInputValues}
           />
         ) : (
           <FixedPaymentAmountField
@@ -371,20 +422,11 @@ const PaymentInput = ({
             errors={errors}
             isDisabled={isDisabled}
             control={control}
-            input={clonedWatchedInputs}
+            input={formInputValues}
           />
         )}
       </PaymentInnerContainer>
-      <PaymentInnerContainer>
-        <FormFieldDrawerActions
-          isLoading={paymentsMutation.isLoading}
-          handleClick={handleUpdatePayments}
-          handleCancel={handleClose}
-          buttonText="Save field"
-          isDisabled={isDisabled}
-        />
-      </PaymentInnerContainer>
-    </PaymentContainer>
+    </>
   )
 }
 
@@ -443,7 +485,7 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
           <InlineMessage variant="info">{paymentDisabledMessage}</InlineMessage>
         </Box>
       )}
-      <PaymentInput
+      <PaymentInputFields
         isDisabled={isPaymentDisabled}
         isEncryptMode={isEncryptMode}
       />
