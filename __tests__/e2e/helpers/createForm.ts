@@ -5,9 +5,6 @@ import {
   BASICFIELD_TO_DRAWER_META,
   MYINFO_FIELD_TO_DRAWER_META,
 } from 'frontend/src/features/admin-form/create/constants'
-import {
-  AUTHTYPE_TO_REAL_NAME,
-} from 'frontend/src/features/admin-form/settings/components/AuthSettingsSection/constants'
 import { readFileSync } from 'fs'
 import {
   BasicField,
@@ -305,9 +302,9 @@ const addAuthSettings = async (
     page.getByRole('heading', { name: 'Singpass authentication' }),
   ).toBeVisible()
 
-  const name = AUTHTYPE_TO_REAL_NAME[formSettings.authType]
 
-  await page.locator(`input[type='radio'][aria-label='${name}']`)
+  await page
+    .locator('label', {has: page.locator(`input[type='radio'][value='${formSettings.authType}']`)})
     .first()
     .click({ position: { x: 1, y: 1 } }) // Clicking the center of the sgid button launches the sgid contact form, put this here until we get rid of the link
 
