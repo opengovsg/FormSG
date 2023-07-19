@@ -23,10 +23,7 @@ export const handleLogin: ControllerHandler = async (req, res) => {
     .andThen((data) => SgidService.retrieveUserInfo(data))
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
-    .andThen(() =>
-      //data['publicofficerinfo.work_email']
-      okAsync('justyn@open.gov.sg'),
-    )
+    .andThen(() => okAsync(data['publicofficerinfo.work_email']))
     .andThen((email) =>
       AuthService.validateEmailDomain(email).andThen((agency) =>
         okAsync({
