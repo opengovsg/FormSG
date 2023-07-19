@@ -14,7 +14,7 @@ import { SGIDScopeToValue } from '../../sgid/sgid.types'
 
 const logger = createLoggerWithLabel(module)
 
-export class SgidServiceClass {
+export class AuthSgidServiceClass {
   private client: SgidClient
   private privateKey: string
 
@@ -99,4 +99,4 @@ export class SgidServiceClass {
   }
 }
 
-export const SgidService = new SgidServiceClass(sgid)
+export const AuthSgidService = new AuthSgidServiceClass(sgid)

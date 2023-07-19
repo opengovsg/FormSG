@@ -1,7 +1,7 @@
 import { FC, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiLogInCircle } from 'react-icons/bi'
-import { useMutation } from 'react-query'
+import { useMutation, useQuery } from 'react-query'
 import { Link as ReactLink, useSearchParams } from 'react-router-dom'
 import { Box, chakra, Flex, GridItem, GridProps, Text } from '@chakra-ui/react'
 
@@ -105,11 +105,17 @@ export const LoginViaSGID = (): JSX.Element => {
   const [params] = useSearchParams()
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
 
-  useEffect(() => {
-    ApiService.get(`/auth/sgid/login?${params.toString()}`).then(() =>
-      setIsAuthenticated(true),
-    )
-  }, [params, setIsAuthenticated])
+  useQuery(
+    ['sgid/login'],
+    () => ApiService.get(`/auth/sgid/login?${params.toString()}`),
+    {
+      onSuccess: () => {
+        setIsAuthenticated(true)
+        window.location.assign('/dashboard')
+      },
+      retry: false,
+    },
+  )
 
   return <></>
 }

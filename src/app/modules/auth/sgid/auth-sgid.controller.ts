@@ -6,21 +6,24 @@ import * as UserService from '../../user/user.service'
 import * as AuthService from '../auth.service'
 import { SessionUser } from '../auth.types'
 
-import { SgidService } from './auth-sgid.service'
+import { AuthSgidService } from './auth-sgid.service'
 
 export const generateAuthUrl: ControllerHandler = async (req, res) => {
   return res
     .status(200)
-    .send({ redirectUrl: SgidService.createRedirectUrl().url })
+    .send({ redirectUrl: AuthSgidService.createRedirectUrl().url })
 }
 
-export const handleLogin: ControllerHandler = async (req, res) => {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
+export const handleLogin: ControllerHandler<
+  unknown,
+  unknown,
+  unknown,
+  { code: string }
+> = async (req, res) => {
   const { code } = req.query
 
-  await SgidService.retrieveAccessToken(code)
-    .andThen((data) => SgidService.retrieveUserInfo(data))
+  await AuthSgidService.retrieveAccessToken(code)
+    .andThen((data) => AuthSgidService.retrieveUserInfo(data))
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
     .andThen(() => okAsync(data['ogpofficerinfo.work_email']))
@@ -42,7 +45,7 @@ export const handleLogin: ControllerHandler = async (req, res) => {
       const { _id } = user.toObject() as SessionUser
       req.session.user = { _id }
 
-      return res.redirect('/dashboard')
+      return res.status(StatusCodes.OK).json(user)
     })
     // Step 3b: Error occured in one of the steps.
     .mapErr(() => {
