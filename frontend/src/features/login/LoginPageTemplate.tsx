@@ -1,20 +1,14 @@
-import { FC, useEffect, useMemo } from 'react'
+import { FC, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BiLogInCircle } from 'react-icons/bi'
-import { useMutation, useQuery } from 'react-query'
-import { Link as ReactLink, useSearchParams } from 'react-router-dom'
+import { Link as ReactLink } from 'react-router-dom'
 import { Box, chakra, Flex, GridItem, GridProps, Text } from '@chakra-ui/react'
 
 import { AppFooter } from '~/app/AppFooter'
 
 import { ReactComponent as BrandLogoSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
-import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { LANDING_PAYMENTS_ROUTE, LANDING_ROUTE } from '~constants/routes'
-import { useLocalStorage } from '~hooks/useLocalStorage'
 import { getBannerProps } from '~utils/getBannerProps'
-import { ApiService } from '~services/ApiService'
 import { Banner } from '~components/Banner'
-import Button from '~components/Button'
 import { FeatureBanner } from '~components/FeatureBanner/FeatureBanner'
 import Link from '~components/Link'
 import { AppGrid } from '~templates/AppGrid'
@@ -27,14 +21,14 @@ export type LoginOtpData = {
   email: string
 }
 
-const BrandLogo = chakra(BrandLogoSvg, {
+export const BrandLogo = chakra(BrandLogoSvg, {
   baseStyle: {
     h: { base: '1.5rem', lg: '2rem' },
   },
 })
 
 // Component for the split blue/white background.
-const BackgroundBox: FC = ({ children }) => (
+export const BackgroundBox: FC = ({ children }) => (
   <Flex
     flex={1}
     overflow={{ lg: 'auto' }}
@@ -49,12 +43,12 @@ const BackgroundBox: FC = ({ children }) => (
 )
 
 // Component that controls the various grid areas according to responsive breakpoints.
-const BaseGridLayout = (props: GridProps) => (
+export const BaseGridLayout = (props: GridProps) => (
   <AppGrid templateRows={{ md: 'auto 1fr auto', lg: '1fr auto' }} {...props} />
 )
 
 // Grid area styling for the login form.
-const LoginGridArea: FC = ({ children }) => (
+export const LoginGridArea: FC = ({ children }) => (
   <GridItem
     gridColumn={{ base: '1 / 5', md: '2 / 12', lg: '7 / 12' }}
     py="4rem"
@@ -66,7 +60,7 @@ const LoginGridArea: FC = ({ children }) => (
 )
 
 // Grid area styling for the footer.
-const FooterGridArea: FC = ({ children }) => (
+export const FooterGridArea: FC = ({ children }) => (
   <GridItem
     alignSelf="end"
     gridColumn={{ base: '1 / 5', md: '2 / 12' }}
@@ -77,7 +71,7 @@ const FooterGridArea: FC = ({ children }) => (
 )
 
 // Grid area styling for the left sidebar that only displays on tablet and desktop breakpoints.
-const NonMobileSidebarGridArea: FC = ({ children }) => (
+export const NonMobileSidebarGridArea: FC = ({ children }) => (
   <GridItem
     d={{ base: 'none', md: 'flex' }}
     gridColumn={{ md: '1 / 13', lg: '2 / 6' }}
@@ -93,34 +87,7 @@ const NonMobileSidebarGridArea: FC = ({ children }) => (
   />
 )
 
-export const LoginPageSGID = (): JSX.Element => {
-  const [params] = useSearchParams()
-  console.log(params)
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
-  return !params.size ? <LoginPageSGIDPage /> : <LoginViaSGID />
-}
-
-export const LoginViaSGID = (): JSX.Element => {
-  const [params] = useSearchParams()
-  const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
-
-  useQuery(
-    ['sgid/login'],
-    () => ApiService.get(`/auth/sgid/login?${params.toString()}`),
-    {
-      onSuccess: () => {
-        setIsAuthenticated(true)
-        window.location.assign('/dashboard')
-      },
-      retry: false,
-    },
-  )
-
-  return <></>
-}
-
-export const LoginPageSGIDPage = (): JSX.Element => {
+export const LoginPageTemplate: FC = ({ children }) => {
   const { data: { siteBannerContent, isLoginBanner } = {} } = useEnv()
   const { t } = useTranslation()
 
@@ -133,19 +100,6 @@ export const LoginPageSGIDPage = (): JSX.Element => {
   const bannerProps = useMemo(
     () => getBannerProps(bannerContent),
     [bannerContent],
-  )
-
-  const handleLoginMutation = useMutation(
-    () => {
-      return ApiService.get<{ redirectUrl: string }>(
-        `/auth/sgid/generateAuthUrl`,
-      ).then((res) => res.data)
-    },
-    {
-      onSuccess: (data) => {
-        window.location.assign(data.redirectUrl)
-      },
-    },
   )
 
   const bannerColorIntensity = 600
@@ -195,13 +149,7 @@ export const LoginPageSGIDPage = (): JSX.Element => {
                 </Text>
               </Box>
             </Flex>
-            <Button
-              rightIcon={<BiLogInCircle fontSize="1.5rem" />}
-              onClick={() => handleLoginMutation.mutate()}
-              isLoading={false}
-            >
-              Log in with Singpass app
-            </Button>
+            {children}
           </Box>
         </LoginGridArea>
       </BaseGridLayout>

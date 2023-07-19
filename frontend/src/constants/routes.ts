@@ -2,6 +2,7 @@ export const LANDING_ROUTE = '/'
 export const LANDING_PAYMENTS_ROUTE = '/payments'
 export const DASHBOARD_ROUTE = '/dashboard'
 export const LOGIN_ROUTE = '/login'
+export const LOGIN_SGID_SUBROUTE = 'sgid'
 
 export const TOU_ROUTE = '/terms'
 export const PRIVACY_POLICY_ROUTE = '/privacy'
