@@ -28,8 +28,6 @@ import {
   FormSettings,
   LogicDto,
   MobileFieldBase,
-  PaymentsProductUpdateDto,
-  PaymentsUpdateDto,
   SettingsUpdateDto,
   StartPageUpdateDto,
 } from '../../../../../shared/types'
