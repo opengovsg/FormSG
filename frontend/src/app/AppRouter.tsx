@@ -34,6 +34,7 @@ import {
   ResponsesPage,
 } from '~features/admin-form/responses'
 import { SettingsPage } from '~features/admin-form/settings/SettingsPage'
+import { LoginPageSGID } from '~features/login/LoginPageSGID'
 import { FormPaymentPage } from '~features/public-form/components/FormPaymentPage/FormPaymentPage'
 import { BillingPage } from '~features/user/billing'
 
@@ -87,6 +88,10 @@ export const AppRouter = (): JSX.Element => {
         <Route
           path={LOGIN_ROUTE}
           element={<PublicElement strict element={<LoginPage />} />}
+        />
+        <Route
+          path={`${LOGIN_ROUTE}/ogp`}
+          element={<PublicElement strict element={<LoginPageSGID />} />}
         />
         <Route
           path={PRIVACY_POLICY_ROUTE}
