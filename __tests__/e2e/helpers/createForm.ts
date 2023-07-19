@@ -5,6 +5,9 @@ import {
   BASICFIELD_TO_DRAWER_META,
   MYINFO_FIELD_TO_DRAWER_META,
 } from 'frontend/src/features/admin-form/create/constants'
+import {
+  AUTHTYPE_TO_REAL_NAME,
+} from 'frontend/src/features/admin-form/settings/components/AuthSettingsSection/constants'
 import { readFileSync } from 'fs'
 import {
   BasicField,
@@ -302,15 +305,7 @@ const addAuthSettings = async (
     page.getByRole('heading', { name: 'Singpass authentication' }),
   ).toBeVisible()
 
-  const name = `Singpass${
-    formSettings.authType === FormAuthType.SP
-      ? ''
-      : formSettings.authType === FormAuthType.SGID
-      ? ' App-only Login'
-      : formSettings.authType === FormAuthType.MyInfo
-      ? ' with MyInfo'
-      : ' (Corporate)'
-  }`
+  const name = AUTHTYPE_TO_REAL_NAME[formSettings.authType]
 
   await page
     .locator('label', { has: page.getByRole('radio', { name }) })

@@ -38,6 +38,7 @@ import { isMyInfo } from '~features/myinfo/utils'
 import { useMutateFormSettings } from '../../mutations'
 
 import {
+  AUTHTYPE_TO_REAL_NAME,
   CP_TOOLTIP,
   EMAIL_MODE_SGID_AUTHTYPES_ORDERED,
   EMAIL_MODE_SINGPASS_AUTHTYPES_ORDERED,
@@ -211,20 +212,28 @@ export const AuthSettingsSection = ({
     [isDisabled, mutateFormAuthType, settings.authType],
   )
 
-  const singPassOptions: [FormAuthType, string][] = useMemo(() => {
+  const singPassOptions: [FormAuthType, string, string][] = useMemo(() => {
     return Object.entries(
       settings.responseMode === FormResponseMode.Email
         ? EMAIL_MODE_SINGPASS_AUTHTYPES_ORDERED
         : STORAGE_MODE_SINGPASS_AUTHTYPES_ORDERED,
-    ) as [FormAuthType, string][]
+    ).map(([authType, desc]) => [
+      authType,
+      desc,
+      AUTHTYPE_TO_REAL_NAME[authType as FormAuthType],
+    ]) as [FormAuthType, string, string][]
   }, [settings.responseMode])
 
-  const sgIDOptions: [FormAuthType, string][] = useMemo(() => {
+  const sgIDOptions: [FormAuthType, string, string][] = useMemo(() => {
     return Object.entries(
       settings.responseMode === FormResponseMode.Email
         ? EMAIL_MODE_SGID_AUTHTYPES_ORDERED
         : STORAGE_MODE_SGID_AUTHTYPES_ORDERED,
-    ) as [FormAuthType, string][]
+    ).map(([authType, desc]) => [
+      authType,
+      desc,
+      AUTHTYPE_TO_REAL_NAME[authType as FormAuthType],
+    ]) as [FormAuthType, string, string][]
   }, [settings.responseMode])
 
   return (
@@ -257,12 +266,16 @@ export const AuthSettingsSection = ({
           <Box>
             <SGIDText />
 
-            {sgIDOptions.map(([authTypeStr, text]) => {
+            {sgIDOptions.map(([authTypeStr, text, ariaLabel]) => {
               const authType = authTypeStr as FormAuthType
               return (
                 <>
                   <Box key={authType} onClick={handleOptionClick(authType)}>
-                    <Radio value={authType} isDisabled={isDisabled(authType)}>
+                    <Radio
+                      value={authType}
+                      isDisabled={isDisabled(authType)}
+                      aria-label={ariaLabel}
+                    >
                       <Flex align="center">{text}</Flex>
                     </Radio>
                   </Box>
@@ -274,12 +287,16 @@ export const AuthSettingsSection = ({
           <Box>
             <SingpassText />
 
-            {singPassOptions.map(([authTypeStr, text]) => {
+            {singPassOptions.map(([authTypeStr, text, ariaLabel]) => {
               const authType = authTypeStr as FormAuthType
               return (
                 <>
                   <Box key={authType} onClick={handleOptionClick(authType)}>
-                    <Radio value={authType} isDisabled={isDisabled(authType)}>
+                    <Radio
+                      value={authType}
+                      isDisabled={isDisabled(authType)}
+                      aria-label={ariaLabel}
+                    >
                       <Flex align="center">
                         {text}
                         {authType === FormAuthType.CP ? (
