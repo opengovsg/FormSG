@@ -10,7 +10,7 @@ import {
 } from '~shared/types'
 import { calculatePrice } from '~shared/utils/paymentProductPrice'
 
-import { centsToDollars } from '~utils/payments'
+import { centsToDollars, formatCurrency } from '~utils/payments'
 import Checkbox from '~components/Checkbox'
 import { SingleSelect } from '~components/Dropdown/SingleSelect/SingleSelect'
 import Radio from '~components/Radio'
@@ -76,6 +76,7 @@ const PaymentItem = ({
       width="100%"
     >
       <ChoiceElement
+        isChecked={product.selected}
         onChange={() =>
           onItemChange(product.data._id, !product.selected, product.quantity)
         }
@@ -90,7 +91,10 @@ const PaymentItem = ({
           </Text>
           <Flex alignItems={'center'}>
             <Box flexGrow={1} as="h2" textStyle="h2">
-              S${centsToDollars(product.data.amount_cents ?? 0)}
+              S
+              {formatCurrency(
+                Number(centsToDollars(product.data.amount_cents ?? 0)),
+              )}
             </Box>
             <ItemQuantity
               product={product}
@@ -137,7 +141,8 @@ export const ProductPaymentItemDetailsBlock = ({
   }, [paymentDetails.products])
 
   const totalPrice = calculatePrice(productItems)
-  if (!paymentDetails.products) {
+  const productsMeta = paymentDetails.products_meta
+  if (!paymentDetails.products || productsMeta == null) {
     return <></>
   }
 
@@ -147,7 +152,12 @@ export const ProductPaymentItemDetailsBlock = ({
     selectedQuantity: number,
   ) => {
     const updatedProductItems = productItems.map((product) => {
-      if (product.data._id !== productId) return product
+      if (product.data._id !== productId) {
+        if (!paymentDetails.products_meta?.multi_product) {
+          return { ...product, selected: false }
+        }
+        return product
+      }
 
       return {
         ...product,
@@ -167,7 +177,7 @@ export const ProductPaymentItemDetailsBlock = ({
           product={product}
           colorTheme={colorTheme}
           onItemChange={handleItemChange}
-          isMultiSelect={true}
+          isMultiSelect={productsMeta.multi_product}
         />
       ))}
       <hr />

@@ -37,6 +37,7 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
+import Toggle from '~components/Toggle'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -139,6 +140,18 @@ const ProductsPaymentSection = ({
             setValue('products', newProducts)
           }
         />
+      </PaymentInnerContainer>
+      <Divider my="2rem" />
+      <PaymentInnerContainer>
+        <FormControl
+          isReadOnly={paymentsMutation.isLoading}
+          isDisabled={isDisabled}
+        >
+          <Toggle
+            {...register('products_meta.multi_product')}
+            label="Allow selection of multiple types of products/services"
+          />
+        </FormControl>
       </PaymentInnerContainer>
     </>
   )
