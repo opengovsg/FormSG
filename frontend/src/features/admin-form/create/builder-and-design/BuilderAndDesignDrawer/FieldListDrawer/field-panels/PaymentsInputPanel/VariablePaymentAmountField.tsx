@@ -32,23 +32,27 @@ export const VariablePaymentAmountField = ({
       minPaymentAmountCents = Number.MIN_SAFE_INTEGER,
     } = {},
   } = useEnv()
+
+  const minAmountInDollars = `S${formatCurrency(
+    Number(centsToDollars(minPaymentAmountCents)),
+  )}`
+  const maxAmountInDollars = `S${formatCurrency(
+    Number(centsToDollars(maxPaymentAmountCents)),
+  )}`
+
   const minAmountValidation: RegisterOptions<
     FormPaymentsInput,
     typeof MIN_FIELD_KEY
   > = usePaymentFieldValidation<FormPaymentsInput, typeof MIN_FIELD_KEY>({
     lesserThanCents: dollarsToCents(input[MAX_FIELD_KEY] || ''),
-    msgWhenEmpty: `The minimum amount is S${formatCurrency(
-      Number(centsToDollars(minPaymentAmountCents)),
-    )}`,
+    msgWhenEmpty: `The minimum amount is ${minAmountInDollars}`,
   })
   const maxAmountValidation: RegisterOptions<
     FormPaymentsInput,
     typeof MAX_FIELD_KEY
   > = usePaymentFieldValidation<FormPaymentsInput, typeof MAX_FIELD_KEY>({
     greaterThanCents: dollarsToCents(input[MIN_FIELD_KEY] || ''),
-    msgWhenEmpty: `The maximum amount is S${formatCurrency(
-      Number(centsToDollars(maxPaymentAmountCents)),
-    )}`,
+    msgWhenEmpty: `The maximum amount is ${maxAmountInDollars}`,
   })
   return (
     <FormControl
@@ -77,7 +81,7 @@ export const VariablePaymentAmountField = ({
                 flex={1}
                 step={0}
                 inputMode="decimal"
-                placeholder="S$0.50"
+                placeholder={minAmountInDollars}
                 {...field}
               />
             )}
@@ -97,7 +101,7 @@ export const VariablePaymentAmountField = ({
                 flex={1}
                 step={0}
                 inputMode="decimal"
-                placeholder="S$1,000,000"
+                placeholder={maxAmountInDollars}
                 {...field}
               />
             )}

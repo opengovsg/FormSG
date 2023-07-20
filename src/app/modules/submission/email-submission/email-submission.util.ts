@@ -1,7 +1,11 @@
 import { StatusCodes } from 'http-status-codes'
 import { compact, flattenDeep, sumBy } from 'lodash'
 
-import { BasicField, FormAuthType } from '../../../../../shared/types'
+import {
+  BasicField,
+  FormAuthType,
+  MyInfoAttribute,
+} from '../../../../../shared/types'
 import * as FileValidation from '../../../../../shared/utils/file-validation'
 import {
   EmailAdminDataField,
@@ -34,6 +38,7 @@ import {
 } from '../../../services/turnstile/turnstile.errors'
 import {
   isProcessedCheckboxResponse,
+  isProcessedChildResponse,
   isProcessedTableResponse,
 } from '../../../utils/field-validation/field-validation.guards'
 import {
@@ -56,6 +61,8 @@ import {
   MyInfoMissingHashError,
   MyInfoMissingLoginCookieError,
 } from '../../myinfo/myinfo.errors'
+import { MyInfoKey } from '../../myinfo/myinfo.types'
+import { getMyInfoChildHashKey } from '../../myinfo/myinfo.util'
 import {
   SgidInvalidJwtError,
   SgidMissingJwtError,
@@ -75,12 +82,14 @@ import {
 } from '../submission.errors'
 import {
   ProcessedCheckboxResponse,
+  ProcessedChildrenResponse,
   ProcessedFieldResponse,
   ProcessedTableResponse,
 } from '../submission.types'
 
 import {
   ATTACHMENT_PREFIX,
+  CHILD_PREFIX,
   MYINFO_PREFIX,
   TABLE_PREFIX,
   VERIFIED_PREFIX,
@@ -100,12 +109,12 @@ const logger = createLoggerWithLabel(module)
  * Determines the prefix for a question based on whether it is verified
  * by MyInfo.
  * @param response
- * @param hashedFields Hash for verifying MyInfo fields
+ * @param hashedFields Field ids of hashed fields.
  * @returns the prefix
  */
 const getMyInfoPrefix = (
   response: ResponseFormattedForEmail,
-  hashedFields: Set<string>,
+  hashedFields: Set<MyInfoKey>,
 ): string => {
   return !!response.myInfo?.attr && hashedFields.has(response._id)
     ? MYINFO_PREFIX
@@ -137,6 +146,8 @@ const getFieldTypePrefix = (response: ResponseFormattedForEmail): string => {
       return TABLE_PREFIX
     case BasicField.Attachment:
       return ATTACHMENT_PREFIX
+    case BasicField.Children:
+      return CHILD_PREFIX
     default:
       return ''
   }
@@ -212,6 +223,35 @@ export const getAnswerForCheckbox = (
     isUserVerified: response.isUserVerified,
     answer: response.answerArray.join(', '),
   }
+}
+
+export const getAnswersForChild = (
+  response: ProcessedChildrenResponse,
+): ResponseFormattedForEmail[] => {
+  const subFields = response.childSubFieldsArray
+  if (!subFields) {
+    return []
+  }
+  return response.answerArray.flatMap((arr, childIdx) => {
+    // First array element is always child name
+    const childName = arr[0]
+    return arr.map((answer, idx) => ({
+      _id: getMyInfoChildHashKey(
+        response._id,
+        subFields[idx],
+        childIdx,
+        childName,
+      ),
+      fieldType: response.fieldType,
+      question: `Child-${childIdx + 1}.${subFields[idx]}`,
+      myInfo: {
+        attr: subFields[idx] as unknown as MyInfoAttribute,
+      },
+      isVisible: response.isVisible,
+      isUserVerified: response.isUserVerified,
+      answer,
+    }))
+  })
 }
 
 /**
@@ -603,10 +643,10 @@ export const concatAttachmentsAndResponses = (
  */
 const createFormattedDataForOneField = <T extends EmailDataFields | undefined>(
   response: ProcessedFieldResponse,
-  hashedFields: Set<string>,
+  hashedFields: Set<MyInfoKey>,
   getFormattedFunction: (
     response: ResponseFormattedForEmail,
-    hashedFields: Set<string>,
+    hashedFields: Set<MyInfoKey>,
   ) => T,
 ): T[] => {
   if (isProcessedTableResponse(response)) {
@@ -616,6 +656,10 @@ const createFormattedDataForOneField = <T extends EmailDataFields | undefined>(
   } else if (isProcessedCheckboxResponse(response)) {
     const checkbox = getAnswerForCheckbox(response)
     return [getFormattedFunction(checkbox, hashedFields)]
+  } else if (isProcessedChildResponse(response)) {
+    return getAnswersForChild(response).map((childField) =>
+      getFormattedFunction(childField, hashedFields),
+    )
   } else {
     return [getFormattedFunction(response, hashedFields)]
   }
@@ -694,7 +738,7 @@ const getDataCollationFormattedResponse = (
  */
 const getFormFormattedResponse = (
   response: ResponseFormattedForEmail,
-  hashedFields: Set<string>,
+  hashedFields: Set<MyInfoKey>,
 ): EmailAdminDataField => {
   const { answer, fieldType } = response
   const answerSplitByNewLine = answer.split('\n')
@@ -727,12 +771,12 @@ const getAutoReplyFormattedResponse = (
 
 export class SubmissionEmailObj {
   parsedResponses: ProcessedFieldResponse[]
-  hashedFields: Set<string>
+  hashedFields: Set<MyInfoKey>
   authType: FormAuthType
 
   constructor(
     parsedResponses: ProcessedFieldResponse[],
-    hashedFields: Set<string> = new Set<string>(),
+    hashedFields: Set<MyInfoKey> = new Set<MyInfoKey>(),
     authType: FormAuthType,
   ) {
     this.parsedResponses = parsedResponses

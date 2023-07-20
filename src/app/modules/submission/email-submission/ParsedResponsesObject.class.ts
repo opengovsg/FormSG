@@ -1,6 +1,11 @@
 import { err, ok, Result } from 'neverthrow'
 
-import { FormAuthType, FormResponseMode } from '../../../../../shared/types'
+import {
+  ChildrenCompoundFieldBase,
+  FormAuthType,
+  FormResponseMode,
+  MyInfoAttribute,
+} from '../../../../../shared/types'
 import {
   FieldResponse,
   FormFieldSchema,
@@ -21,7 +26,10 @@ import {
   ProcessingError,
   ValidateFieldError,
 } from '../submission.errors'
-import { ProcessedFieldResponse } from '../submission.types'
+import {
+  ProcessedChildrenResponse,
+  ProcessedFieldResponse,
+} from '../submission.types'
 import { getFilteredResponses } from '../submission.utils'
 
 type NdiUserInfo =
@@ -159,6 +167,14 @@ export default class ParsedResponsesObject {
       // Inject myinfo to response if field is a myinfo field for downstream processing.
       if (formField.myInfo?.attr) {
         processingResponse.myInfo = formField.myInfo
+        if (formField.myInfo.attr === MyInfoAttribute.ChildrenBirthRecords) {
+          // eslint and prettier fight over the next line.
+          // eslint-disable-next-line @typescript-eslint/no-extra-semi
+          ;(
+            processingResponse as ProcessedChildrenResponse
+          ).childSubFieldsArray =
+            (formField as ChildrenCompoundFieldBase).childrenSubFields ?? []
+        }
       }
 
       // Error will be returned if the processed response is not valid.

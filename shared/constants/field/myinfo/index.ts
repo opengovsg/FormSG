@@ -1,5 +1,10 @@
 import keyBy from 'lodash/keyBy'
-import { BasicField, MyInfoAttribute, MyInfoField } from '../../../types/field'
+import {
+  BasicField,
+  MyInfoAttribute,
+  MyInfoChildVaxxStatus,
+  MyInfoField,
+} from '../../../types/field'
 import COUNTRIES from './myinfo-countries'
 import DIALECTS from './myinfo-dialects'
 import NATIONALITIES from './myinfo-nationalities'
@@ -305,6 +310,81 @@ export const types: MyInfoFieldBlock[] = [
     description: 'The mobile telephone number of the form-filler.',
     fieldType: BasicField.Mobile,
     previewValue: '98765432',
+  },
+  {
+    name: MyInfoAttribute.ChildrenBirthRecords,
+    value: 'Child records',
+    category: 'children',
+    verified: ['SG', 'PR', 'F'],
+    source: 'Immigration & Checkpoints Authority / Health Promotion Board',
+    description:
+      "The data of the form-filler's children. This field is verified by ICA and HPB for vaccination status.",
+    fieldType: BasicField.Children,
+    previewValue: 'Child 1',
+  },
+  {
+    name: MyInfoAttribute.ChildBirthCertNo,
+    value: "Child's birth certificte number",
+    category: 'children',
+    verified: [],
+    source: 'Immigration & Checkpoints Authority',
+    description: 'Birth certificate number',
+    fieldType: BasicField.ShortText,
+    previewValue: 'T1234567X',
+  },
+  {
+    name: MyInfoAttribute.ChildDateOfBirth,
+    value: "Child's date of birth",
+    category: 'children',
+    verified: [],
+    source: 'Immigration & Checkpoints Authority',
+    description: 'Date of birth',
+    fieldType: BasicField.ShortText,
+    previewValue: '2010-01-01',
+  },
+  {
+    name: MyInfoAttribute.ChildGender,
+    value: "Child's gender",
+    category: 'children',
+    verified: [],
+    source: 'Immigration & Checkpoints Authority',
+    description: 'Gender',
+    fieldType: BasicField.ShortText,
+    fieldOptions: ['FEMALE', 'MALE', 'UNKNOWN'],
+    previewValue: 'MALE',
+  },
+  {
+    name: MyInfoAttribute.ChildVaxxStatus,
+    value: "Child's vaccination status",
+    category: 'children',
+    verified: [],
+    source: 'Heath Promotion Board',
+    description: 'Vaccination status',
+    fieldType: BasicField.Dropdown,
+    fieldOptions: Object.values(MyInfoChildVaxxStatus),
+    previewValue: MyInfoChildVaxxStatus.ONEM3D,
+  },
+  {
+    name: MyInfoAttribute.ChildRace,
+    value: "Child's race",
+    category: 'children',
+    verified: [],
+    source: 'Immigration & Checkpoints Authority',
+    description: 'Race',
+    fieldType: BasicField.Dropdown,
+    fieldOptions: RACES,
+    previewValue: 'CHINESE',
+  },
+  {
+    name: MyInfoAttribute.ChildSecondaryRace,
+    value: "Child's secondary race",
+    category: 'children',
+    verified: [],
+    source: 'Immigration & Checkpoints Authority',
+    description: 'Secondary race',
+    fieldType: BasicField.Dropdown,
+    fieldOptions: RACES,
+    previewValue: 'CHINESE',
   },
 ]
 

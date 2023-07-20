@@ -1,5 +1,5 @@
 import { PublicUserDto, UserDto } from '../user'
-import { FormField, FormFieldDto } from '../field'
+import { FormField, FormFieldDto, MyInfoChildData } from '../field'
 
 import { FormLogo } from './form_logo'
 import type { Merge, Opaque, PartialDeep } from 'type-fest'
@@ -13,6 +13,7 @@ import {
 import { DateString } from '../generic'
 import { FormLogic, LogicDto } from './form_logic'
 import { PaymentChannel, PaymentType } from '../payment'
+import { MyInfoChildrenBirthRecords } from '@opengovsg/myinfo-gov-client'
 
 export type FormId = Opaque<string, 'FormId'>
 
@@ -99,6 +100,7 @@ export type FormPaymentsField =
       enabled: boolean
       description?: string
       name?: string
+      gst_enabled?: boolean
     } & (VariablePaymentsField | FixedPaymentField)
 
 export type FormBusinessField = {
@@ -223,6 +225,7 @@ export type PublicFormViewDto = {
   spcpSession?: SpcpSession
   isIntranetUser?: boolean
   myInfoError?: true
+  myInfoChildrenBirthRecords?: MyInfoChildData
 }
 
 export type PreviewFormViewDto = Pick<PublicFormViewDto, 'form' | 'spcpSession'>

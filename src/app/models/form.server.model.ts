@@ -65,12 +65,14 @@ import {
 import { IPopulatedUser, IUserSchema } from '../../types/user'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
+import { getMyInfoAttr } from '../modules/myinfo/myinfo.util'
 import { validateWebhookUrl } from '../modules/webhook/webhook.validation'
 
 import {
   BaseFieldSchema,
   createAttachmentFieldSchema,
   createCheckboxFieldSchema,
+  createchildrenCompoundFieldSchema,
   createDateFieldSchema,
   createDecimalFieldSchema,
   createDropdownFieldSchema,
@@ -199,6 +201,10 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
       type: String,
       enum: Object.values(PaymentType),
       default: PaymentType.Fixed,
+    },
+    gst_enabled: {
+      type: Boolean,
+      default: true,
     },
   },
 
@@ -543,6 +549,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     createAttachmentFieldSchema(),
   )
   FormFieldPath.discriminator(BasicField.Dropdown, createDropdownFieldSchema())
+  FormFieldPath.discriminator(
+    BasicField.Children,
+    createchildrenCompoundFieldSchema(),
+  )
   FormFieldPath.discriminator(BasicField.Radio, createRadioFieldSchema())
   FormFieldPath.discriminator(BasicField.Checkbox, createCheckboxFieldSchema())
   FormFieldPath.discriminator(
@@ -603,7 +613,13 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     }
 
     // Compact is used to remove undefined from array
-    return compact(uniq(this.form_fields?.map((field) => field.myInfo?.attr)))
+    return compact(
+      uniq(
+        this.form_fields?.flatMap((field) => {
+          return getMyInfoAttr(field)
+        }),
+      ),
+    )
   }
 
   // Return essential form creation parameters with the given properties
@@ -739,6 +755,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     const formFields = this.form_fields as Types.DocumentArray<IFieldSchema>
     // Must use undefined check since number can be 0; i.e. falsey.
     if (to !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       formFields.splice(to, 0, newField as any) // Typings are not complete for splice.
     } else {
       formFields.push(newField)
