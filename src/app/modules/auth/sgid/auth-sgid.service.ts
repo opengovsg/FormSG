@@ -50,6 +50,7 @@ export class AuthSgidServiceClass {
     const result = this.client.authorizationUrl(
       SGID_LOGIN_OAUTH_STATE,
       ['openid', SGID_OGP_WORK_EMAIL_SCOPE].join(' '),
+      null,
     )
     if (typeof result.url === 'string') {
       return ok(result.url)
@@ -74,23 +75,25 @@ export class AuthSgidServiceClass {
     { sub: string; accessToken: string },
     SgidFetchAccessTokenError
   > {
-    return ResultAsync.fromPromise(this.client.callback(code), (error) => {
-      logger.error({
-        message: 'Failed to retrieve access token from sgID',
-        meta: {
-          action: 'token',
-          code,
-        },
-        error,
-      })
-      return new SgidFetchAccessTokenError()
-    })
+    return ResultAsync.fromPromise(
+      this.client.callback(code, null),
+      (error) => {
+        logger.error({
+          message: 'Failed to retrieve access token from sgID',
+          meta: {
+            action: 'retrieveAccessToken',
+            code,
+          },
+          error,
+        })
+        return new SgidFetchAccessTokenError()
+      },
+    )
   }
 
   /**
-   * Given the OIDC access token from sgID, obtain the
-   * user's information (depending on OAuth scopes
-   * associated with the accessToken) and proxy id
+   * Given the OIDC access token from sgID, obtain the user's information
+   * (depending on OAuth scopes associated with the accessToken)
    * @param accessToken - the access token
    * @returns the authenticated OGP user's email
    */
@@ -105,7 +108,7 @@ export class AuthSgidServiceClass {
         logger.error({
           message: 'Failed to retrieve user info from sgID',
           meta: {
-            action: 'userInfo',
+            action: 'retrieveUserInfo',
             accessToken,
           },
           error,
