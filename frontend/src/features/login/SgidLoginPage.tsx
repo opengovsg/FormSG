@@ -1,14 +1,14 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { BiLogInCircle } from 'react-icons/bi'
 import { useMutation } from 'react-query'
 import { useSearchParams } from 'react-router-dom'
-import { StatusCodes } from 'http-status-codes'
 
 import { DASHBOARD_ROUTE } from '~constants/routes'
 import { useToast } from '~hooks/useToast'
 import { getSgidAuthUrl } from '~services/AuthService'
 import Button from '~components/Button'
 import { InlineMessage } from '~components/InlineMessage/InlineMessage'
+import { ToastStatus } from '~components/Toast/Toast'
 
 import { useUser } from '~features/user/queries'
 
@@ -18,16 +18,42 @@ export const SgidLoginPage = (): JSX.Element => {
   const [params] = useSearchParams()
   const toast = useToast({ isClosable: true })
 
-  const status = params.get('status')
-  const message = params.get('message')
+  const statusCode = params.get('status')
+  const toastSettings:
+    | {
+        toastStatus: ToastStatus
+        toastMessage: string
+      }
+    | undefined = useMemo(() => {
+    switch (statusCode) {
+      case null:
+        return
+      case '200':
+        return {
+          toastStatus: 'success',
+          toastMessage: 'Successfully logged in.',
+        }
+      case '401':
+        return {
+          toastStatus: 'danger',
+          toastMessage:
+            'Your SGID-linked work email does not belong to a whitelisted public service email domain. Please use OTP login instead.',
+        }
+      default:
+        return {
+          toastStatus: 'danger',
+          toastMessage: 'Something went wrong. Please try again later.',
+        }
+    }
+  }, [statusCode])
 
   useEffect(() => {
-    if (!status || !message) return
+    if (!toastSettings) return
     toast({
-      status: status === StatusCodes.OK.toString() ? 'success' : 'danger',
-      description: message,
+      status: toastSettings.toastStatus,
+      description: toastSettings.toastMessage,
     })
-  }, [message, status, toast])
+  }, [toastSettings, toast])
 
   const { user } = useUser()
 

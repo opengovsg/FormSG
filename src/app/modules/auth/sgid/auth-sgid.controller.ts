@@ -54,7 +54,7 @@ export const handleLogin: ControllerHandler<
 
   const coreErrorMessage = 'Failed to log in via SGID. Please try again later.'
 
-  let status, message
+  let status
 
   if (!code || state !== SGID_LOGIN_OAUTH_STATE) {
     logger.error({
@@ -64,7 +64,6 @@ export const handleLogin: ControllerHandler<
     })
 
     status = StatusCodes.BAD_REQUEST
-    message = 'Invalid query parameters'
   } else {
     await AuthSgidService.retrieveAccessToken(code)
       .andThen(({ accessToken }) =>
@@ -83,7 +82,6 @@ export const handleLogin: ControllerHandler<
           })
 
           status = StatusCodes.INTERNAL_SERVER_ERROR
-          message = coreErrorMessage
           return
         }
 
@@ -97,7 +95,6 @@ export const handleLogin: ControllerHandler<
 
         // Redirect user to the SGID login page
         status = StatusCodes.OK
-        message = 'Successfully logged in'
       })
       // Step 3b: Error occured in one of the steps.
       .mapErr((error) => {
@@ -107,15 +104,11 @@ export const handleLogin: ControllerHandler<
           error,
         })
 
-        const { errorMessage, statusCode } = mapRouteError(
-          error,
-          coreErrorMessage,
-        )
+        const { statusCode } = mapRouteError(error, coreErrorMessage)
 
         status = statusCode
-        message = errorMessage
       })
   }
 
-  return res.redirect(`/login/sgid?status=${status}&message=${message}`)
+  return res.redirect(`/login/sgid?status=${status}`)
 }
