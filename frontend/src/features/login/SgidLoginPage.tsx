@@ -16,44 +16,25 @@ import { LoginPageTemplate } from './LoginPageTemplate'
 
 export const SgidLoginPage = (): JSX.Element => {
   const [params] = useSearchParams()
-  const toast = useToast({ isClosable: true })
+  const toast = useToast({ isClosable: true, status: 'danger' })
 
   const statusCode = params.get('status')
-  const toastSettings:
-    | {
-        toastStatus: ToastStatus
-        toastMessage: string
-      }
-    | undefined = useMemo(() => {
+  const toastMessage = useMemo(() => {
     switch (statusCode) {
       case null:
-        return
       case '200':
-        return {
-          toastStatus: 'success',
-          toastMessage: 'Successfully logged in.',
-        }
+        return
       case '401':
-        return {
-          toastStatus: 'danger',
-          toastMessage:
-            'Your SGID-linked work email does not belong to a whitelisted public service email domain. Please use OTP login instead.',
-        }
+        return 'Your SGID-linked work email does not belong to a whitelisted public service email domain. Please use OTP login instead.'
       default:
-        return {
-          toastStatus: 'danger',
-          toastMessage: 'Something went wrong. Please try again later.',
-        }
+        return 'Something went wrong. Please try again later.'
     }
   }, [statusCode])
 
   useEffect(() => {
-    if (!toastSettings) return
-    toast({
-      status: toastSettings.toastStatus,
-      description: toastSettings.toastMessage,
-    })
-  }, [toastSettings, toast])
+    if (!toastMessage) return
+    toast({ description: toastMessage })
+  }, [toast, toastMessage])
 
   const { user } = useUser()
 
