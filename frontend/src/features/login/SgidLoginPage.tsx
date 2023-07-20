@@ -58,7 +58,7 @@ export const SgidLoginPage = (): JSX.Element => {
   const { user } = useUser()
 
   // If redirected back here but already authed, redirect to dashboard.
-  if (user) window.location.assign(DASHBOARD_ROUTE)
+  if (user) window.location.replace(DASHBOARD_ROUTE)
 
   const handleLoginMutation = useMutation(getSgidAuthUrl, {
     onSuccess: (data) => {

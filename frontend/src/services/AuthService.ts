@@ -46,7 +46,7 @@ export const verifyLoginOtp = async (params: {
  */
 export const getSgidAuthUrl = async (): Promise<GetSgidAuthUrlResponseDto> => {
   return ApiService.get<GetSgidAuthUrlResponseDto>(
-    `${AUTH_ENDPOINT}/sgid/authUrl`,
+    `${AUTH_ENDPOINT}/sgid/authurl`,
   ).then(({ data }) => data)
 }
 

@@ -4,6 +4,6 @@ import * as AuthSgidController from '../../../../modules/auth/sgid/auth-sgid.con
 
 export const AuthSGIDRouter = Router()
 
-AuthSGIDRouter.get('/authUrl', AuthSgidController.generateAuthUrl)
+AuthSGIDRouter.get('/authurl', AuthSgidController.generateAuthUrl)
 
 AuthSGIDRouter.get('/login', AuthSgidController.handleLogin)
