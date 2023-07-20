@@ -47,18 +47,18 @@ export class AuthSgidServiceClass {
       action: 'createRedirectUrl',
     }
 
-    const result = this.client.authorizationUrl(
-      SGID_LOGIN_OAUTH_STATE,
-      ['openid', SGID_OGP_WORK_EMAIL_SCOPE].join(' '),
-      null,
-    )
-    if (typeof result.url === 'string') {
+    try {
+      const result = this.client.authorizationUrl(
+        SGID_LOGIN_OAUTH_STATE,
+        ['openid', SGID_OGP_WORK_EMAIL_SCOPE].join(' '),
+        null,
+      )
       return ok(result.url)
-    } else {
+    } catch (error) {
       logger.error({
         message: 'Error while creating redirect URL',
         meta: logMeta,
-        error: result,
+        error,
       })
       return err(new SgidCreateRedirectUrlError())
     }
