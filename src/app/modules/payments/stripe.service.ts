@@ -559,7 +559,7 @@ export const handleStripeEvent = (
             { stripeAccount: event.account },
           )
           .autoPagingEach(async (balanceTransaction) => {
-            if (balanceTransaction.type !== 'charge') return
+            if (!['charge', 'payment'].includes(balanceTransaction.type)) return
 
             const charge = balanceTransaction.source as Stripe.Charge
             await getMetadataPaymentId(charge.metadata)
