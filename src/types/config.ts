@@ -127,7 +127,8 @@ export interface ISgidVarsSchema {
   clientSecret: string
   privateKeyPath: string
   publicKeyPath: string
-  redirectUri: string
+  formLoginRedirectUri: string
+  adminLoginRedirectUri: string
   cookieMaxAge: number
   cookieMaxAgePreserved: number
   cookieDomain: string

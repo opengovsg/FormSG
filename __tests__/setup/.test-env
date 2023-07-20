@@ -24,7 +24,8 @@ SINGPASS_ESRVC_ID=Test-eServiceId-Sp # Needed for MyInfo
 SGID_HOSTNAME=http://localhost:5156/sgid
 SGID_CLIENT_ID=sgidclientid
 SGID_CLIENT_SECRET=sgidclientsecret
-SGID_REDIRECT_URI=http://localhost:5000/sgid/login
+SGID_FORM_LOGIN_REDIRECT_URI=http://localhost:5000/sgid/login
+SGID_ADMIN_LOGIN_REDIRECT_URI=http://localhost:5000/api/v3/auth/sgid/login
 SGID_PRIVATE_KEY=./node_modules/@opengovsg/mockpass/static/certs/key.pem
 SGID_PUBLIC_KEY=./node_modules/@opengovsg/mockpass/static/certs/server.crt
 
@@ -73,13 +74,6 @@ APP_URL=http://localhost:5000
 
 SECRET_ENV=development
 INTRANET_IP_LIST_PATH=__tests__/setup/mock-intranet-ips.txt
-
-REACT_SWITCH_ENV_FEEDBACK_FORM_ID_ADMIN=62da6a569ee8e90143b5da26
-REACT_SWITCH_ENV_FEEDBACK_FORM_ID_RESPONDENT=62da6a569ee8e90143b5da26
-REACT_MIGRATION_ANGULAR_END_DATE=15 September 2022
-REACT_MIGRATION_RESP_ROLLOUT_EMAIL=100
-REACT_MIGRATION_RESP_ROLLOUT_STORAGE=100
-REACT_MIGRATION_ADMIN_ROLLOUT=100
 
 # Mockpass env vars
 MOCKPASS_NRIC=S9812379B
