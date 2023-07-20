@@ -172,6 +172,7 @@ export const EditConditionBlock = ({
     if (!currentSelectedField) return '9rem'
     switch (currentSelectedField.fieldType) {
       case BasicField.Dropdown:
+      case BasicField.Children:
       case BasicField.Radio:
       case BasicField.YesNo:
         return '9rem'

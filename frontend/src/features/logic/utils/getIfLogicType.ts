@@ -20,6 +20,7 @@ export const getIfLogicType = ({
         ? LogicIfValue.SingleSelect
         : LogicIfValue.MultiSelect
     }
+    case BasicField.Children:
     case BasicField.Rating:
     case BasicField.YesNo:
       return LogicIfValue.SingleSelect
