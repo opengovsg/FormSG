@@ -80,7 +80,7 @@ export const EndPageInput = ({
   const paymentDefaults = {
     title: 'Your payment has been made successfully.',
     paragraph: 'Your form has been submitted and payment has been made.',
-    buttonLink: 'Default invoice link',
+    buttonLink: 'Default proof of payment link',
     buttonText: 'Save proof of payment',
   }
 
