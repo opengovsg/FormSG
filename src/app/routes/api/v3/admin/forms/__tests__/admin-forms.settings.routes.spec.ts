@@ -136,7 +136,9 @@ describe('admin-form.settings.routes', () => {
       // Assert
       expect(response.status).toEqual(200)
       // Should have no changes
-      expect(response.body).toEqual(originalFormSettings)
+      expect(response.body).toEqual(
+        JSON.parse(JSON.stringify(originalFormSettings)),
+      )
     })
 
     it('should return 401 when user is not logged in', async () => {
