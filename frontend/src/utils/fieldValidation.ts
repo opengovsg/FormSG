@@ -48,7 +48,6 @@ import {
 import { DATE_PARSE_FORMAT } from '~templates/Field/Date/DateField'
 import {
   CheckboxFieldValues,
-  ChildrenCompoundFieldValues,
   SingleAnswerValue,
   VerifiableFieldValues,
 } from '~templates/Field/types'
