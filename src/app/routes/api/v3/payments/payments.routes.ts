@@ -21,23 +21,10 @@ PaymentsRouter.get(
 )
 
 /**
- * Downloads the receipt pdf
- * @route GET /payments/:formId/:paymentId/receipt/download
- *
- * @returns 200 with receipt attatchment as content in PDF
- * @returns 404 if receipt url doesn't exist or payment does not exist
- */
-PaymentsRouter.get(
-  '/:formId([a-fA-F0-9]{24})/:paymentId([a-fA-F0-9]{24})/receipt/download',
-  limitRate({ max: rateLimitConfig.downloadPaymentReceipt }),
-  StripeController.downloadPaymentReceipt,
-)
-
-/**
  * Downloads the invoice pdf
  * @route GET /payments/:formId/:paymentId/invoice/download
  *
- * @returns 200 with receipt attatchment as content in PDF
+ * @returns 200 with receipt attachment as content in PDF
  * @returns 404 if receipt url doesn't exist or payment does not exist
  */
 PaymentsRouter.get(
