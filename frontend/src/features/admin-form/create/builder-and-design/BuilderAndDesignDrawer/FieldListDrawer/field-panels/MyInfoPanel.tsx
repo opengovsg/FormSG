@@ -160,7 +160,9 @@ export const MyInfoFieldPanel = () => {
                   (fieldType, index) => (
                     <DraggableMyInfoFieldListOption
                       index={index}
-                      isDisabled={isDisabled}
+                      isDisabled={
+                        isDisabled || sgIDUnSupported(form, fieldType)
+                      }
                       key={index}
                       fieldType={fieldType}
                     />
