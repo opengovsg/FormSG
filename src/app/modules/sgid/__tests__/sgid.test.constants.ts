@@ -70,7 +70,7 @@ export const MOCK_OPTIONS = {
   clientSecret: 'client-secret',
   privateKeyPath: 'private-key',
   publicKeyPath: 'public-key',
-  hostname: '',
+  hostname: 'http://localhost:5156/',
   formLoginRedirectUri: MOCK_REDIRECT_URL,
   adminLoginRedirectUri: MOCK_REDIRECT_URL,
   cookieDomain: MOCK_COOKIE_SETTINGS.domain,
