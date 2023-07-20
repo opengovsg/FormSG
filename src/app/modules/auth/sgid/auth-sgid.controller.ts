@@ -110,5 +110,5 @@ export const handleLogin: ControllerHandler<
       })
   }
 
-  return res.redirect(`/login/sgid?status=${status}`)
+  return res.redirect(`/ogp-login?status=${status}`)
 }

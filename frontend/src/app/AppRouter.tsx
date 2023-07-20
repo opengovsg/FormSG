@@ -13,7 +13,7 @@ import {
   LANDING_PAYMENTS_ROUTE,
   LANDING_ROUTE,
   LOGIN_ROUTE,
-  LOGIN_SGID_SUBROUTE,
+  OGP_LOGIN_ROUTE,
   PAYMENT_PAGE_SUBROUTE,
   PRIVACY_POLICY_ROUTE,
   PUBLICFORM_ROUTE,
@@ -86,16 +86,14 @@ export const AppRouter = (): JSX.Element => {
           path={DASHBOARD_ROUTE}
           element={<PrivateElement element={<WorkspacePage />} />}
         />
-        <Route path={LOGIN_ROUTE}>
-          <Route
-            path=""
-            element={<PublicElement strict element={<LoginPage />} />}
-          />
-          <Route
-            path={LOGIN_SGID_SUBROUTE}
-            element={<PublicElement strict element={<SgidLoginPage />} />}
-          />
-        </Route>
+        <Route
+          path={LOGIN_ROUTE}
+          element={<PublicElement strict element={<LoginPage />} />}
+        />
+        <Route
+          path={OGP_LOGIN_ROUTE}
+          element={<PublicElement strict element={<SgidLoginPage />} />}
+        />
         <Route
           path={PRIVACY_POLICY_ROUTE}
           element={<PublicElement element={<PrivacyPolicyPage />} />}

@@ -8,7 +8,6 @@ import { useToast } from '~hooks/useToast'
 import { getSgidAuthUrl } from '~services/AuthService'
 import Button from '~components/Button'
 import { InlineMessage } from '~components/InlineMessage/InlineMessage'
-import { ToastStatus } from '~components/Toast/Toast'
 
 import { useUser } from '~features/user/queries'
 
