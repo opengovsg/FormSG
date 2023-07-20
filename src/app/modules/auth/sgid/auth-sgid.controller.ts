@@ -54,6 +54,8 @@ export const handleLogin: ControllerHandler<
 
   const coreErrorMessage = 'Failed to log in via SGID. Please try again later.'
 
+  let status, message
+
   if (!code || state !== SGID_LOGIN_OAUTH_STATE) {
     logger.error({
       message:
@@ -61,54 +63,59 @@ export const handleLogin: ControllerHandler<
       meta: logMeta,
     })
 
-    return res
-      .status(StatusCodes.BAD_REQUEST)
-      .json({ message: 'Invalid query parameters' })
-  }
+    status = StatusCodes.BAD_REQUEST
+    message = 'Invalid query parameters'
+  } else {
+    await AuthSgidService.retrieveAccessToken(code)
+      .andThen(({ accessToken }) =>
+        AuthSgidService.retrieveUserInfo(accessToken),
+      )
+      .andThen((email) =>
+        AuthService.validateEmailDomain(email).andThen((agency) =>
+          UserService.retrieveUser(email, agency._id),
+        ),
+      )
+      .map((user) => {
+        if (!req.session) {
+          logger.error({
+            message: 'Error logging in user; req.session is undefined',
+            meta: logMeta,
+          })
 
-  await AuthSgidService.retrieveAccessToken(code)
-    .andThen(({ accessToken }) => AuthSgidService.retrieveUserInfo(accessToken))
-    .andThen((email) =>
-      AuthService.validateEmailDomain(email).andThen((agency) =>
-        UserService.retrieveUser(email, agency._id),
-      ),
-    )
-    .map((user) => {
-      if (!req.session) {
-        logger.error({
-          message: 'Error logging in user; req.session is undefined',
+          status = StatusCodes.INTERNAL_SERVER_ERROR
+          message = coreErrorMessage
+          return
+        }
+
+        // Add user info to session.
+        const { _id } = user.toObject() as SessionUser
+        req.session.user = { _id }
+        logger.info({
+          message: `Successfully logged in user ${user._id}`,
           meta: logMeta,
         })
 
-        return res
-          .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .json({ message: coreErrorMessage })
-      }
-
-      // Add user info to session.
-      const { _id } = user.toObject() as SessionUser
-      req.session.user = { _id }
-      logger.info({
-        message: `Successfully logged in user ${user._id}`,
-        meta: logMeta,
+        // Redirect user to the SGID login page
+        status = StatusCodes.OK
+        message = 'Successfully logged in'
       })
+      // Step 3b: Error occured in one of the steps.
+      .mapErr((error) => {
+        logger.warn({
+          message: 'Error occurred when trying to log in via SGID',
+          meta: logMeta,
+          error,
+        })
 
-      // Redirect user to the SGID login page
-      return res.redirect('/login/sgid')
-    })
-    // Step 3b: Error occured in one of the steps.
-    .mapErr((error) => {
-      logger.warn({
-        message: 'Error occurred when trying to log in via SGID',
-        meta: logMeta,
-        error,
+        const { errorMessage, statusCode } = mapRouteError(
+          error,
+          coreErrorMessage,
+        )
+
+        status = statusCode
+        message = errorMessage
       })
+  }
 
-      const { errorMessage, statusCode } = mapRouteError(
-        error,
-        coreErrorMessage,
-      )
-
-      return res.sendStatus(statusCode).json({ message: errorMessage })
-    })
+  return res.redirect(`/login/sgid?status=${status}&message=${message}`)
 }
