@@ -66,7 +66,6 @@ export const MOCK_COOKIE_SETTINGS = {
 export const MOCK_NONCE = 'nonce'
 
 export const MOCK_OPTIONS = {
-  endpoint: 'http://localhost/',
   clientId: 'client-id',
   clientSecret: 'client-secret',
   privateKeyPath: 'private-key',
