@@ -52,7 +52,7 @@
     "postinstall:shared": "npm --prefix shared install"
   },
   "dependencies": {
-    "@aws-sdk/client-cloudwatch-logs": "^3.347.1",
+    "@aws-sdk/client-cloudwatch-logs": "^3.370.0",
     "@babel/runtime": "^7.20.13",
     "@faker-js/faker": "^8.0.1",
     "@joi/date": "^2.1.0",
