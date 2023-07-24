@@ -1,4 +1,4 @@
-import { Box, Flex, Text } from '@chakra-ui/react'
+import { Box, Divider, Flex, Text } from '@chakra-ui/react'
 
 import {
   ExtractTypeFromArray,
@@ -19,11 +19,13 @@ const LineItem = ({
   productItem: ExtractTypeFromArray<NonNullable<GetPaymentInfoDto['products']>>
 }) => {
   return (
-    <Flex justifyContent={'space-between'}>
+    <Flex textStyle={'body-2'} mb="1rem" justifyContent={'space-between'}>
       <Text>
-        {productItem.quantity} x {productItem.data.name}
+        {productItem.quantity}x {productItem.data.name}
       </Text>
-      <Text>S${centsToDollars(productItem.data.amount_cents)}</Text>
+      <Text>
+        S${centsToDollars(productItem.quantity * productItem.data.amount_cents)}
+      </Text>
     </Flex>
   )
 }
@@ -51,9 +53,13 @@ const ProductsPaymentSummary = ({
       {paymentInfoData.products.map((productItem) => {
         return <LineItem key={productItem.data._id} productItem={productItem} />
       })}
-      <Box as="h2" textStyle="h2">
-        Total: S${centsToDollars(paymentAmount ?? 0)}
-      </Box>
+      <Divider my="1rem" />
+      <Flex justifyContent="flex-end">
+        <Text mr="0.25rem" textStyle="body-1" alignSelf="flex-end">
+          Total:
+        </Text>
+        <Text textStyle="h4">S${centsToDollars(paymentAmount ?? 0)}</Text>
+      </Flex>
     </Box>
   )
 }
