@@ -17,16 +17,12 @@ import { Workspace } from '~shared/types/workspace'
 
 import { AdminNavBar } from '~/app/AdminNavBar/AdminNavBar'
 
-import {
-  EMERGENCY_CONTACT_KEY_PREFIX,
-  ROLLOUT_ANNOUNCEMENT_KEY_PREFIX,
-} from '~constants/localStorage'
 import { useIsMobile } from '~hooks/useIsMobile'
-import { useLocalStorage } from '~hooks/useLocalStorage'
+import { getBannerProps } from '~utils/getBannerProps'
+import { Banner } from '~components/Banner'
 
-import { RolloutAnnouncementModal } from '~features/rollout-announcement/RolloutAnnouncementModal'
-import { EmergencyContactModal } from '~features/user/emergency-contact/EmergencyContactModal'
-import { useUser, useUser } from '~features/user/queries'
+import { useEnv } from '~features/env/queries'
+import { useUser } from '~features/user/queries'
 import { WorkspaceContent } from '~features/workspace/WorkspaceContent'
 
 import AdminFeedbackContainer from './components/AdminFeedbackContainer'
@@ -39,49 +35,24 @@ import { WorkspaceProvider } from './WorkspaceProvider'
 
 export const WorkspacePage = (): JSX.Element => {
   const [currWorkspaceId, setCurrWorkspaceId] = useState<string>('')
+  const { data: { siteBannerContent, adminBannerContent } = {} } = useEnv()
 
   const createFormModal = useDisclosure()
   const mobileDrawer = useDisclosure()
   const isMobile = useIsMobile()
 
-  const { user, isLoading: isUserLoading } = useUser()
+  const { user } = useUser()
   const { data: dashboardForms, isLoading: isDashboardLoading } = useDashboard()
   const { data: workspaces, isLoading: isWorkspaceLoading } = useWorkspace()
-
-  const ROLLOUT_ANNOUNCEMENT_KEY = useMemo(
-    () => ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + user?._id,
-    [user],
-  )
-  const [hasSeenAnnouncement, setHasSeenAnnouncement] =
-    useLocalStorage<boolean>(ROLLOUT_ANNOUNCEMENT_KEY)
-
-  const isAnnouncementModalOpen = useMemo(
-    () => !isUserLoading && !hasSeenAnnouncement,
-    [isUserLoading, hasSeenAnnouncement],
-  )
-
-  const emergencyContactKey = useMemo(
-    () => (user?._id ? EMERGENCY_CONTACT_KEY_PREFIX + user._id : null),
-    [user],
-  )
 
   const bannerContent = useMemo(
     // Use || instead of ?? so that we fall through even if previous banners are empty string.
     () => siteBannerContent || adminBannerContent,
     [adminBannerContent, siteBannerContent],
   )
-
-  const [hasSeenEmergencyContact, setHasSeenEmergencyContact] =
-    useLocalStorage<boolean>(emergencyContactKey)
-
-  const isEmergencyContactModalOpen = useMemo(
-    () =>
-      !isUserLoading &&
-      // Open emergency contact modal after the rollout announcement modal
-      Boolean(hasSeenAnnouncement) &&
-      !hasSeenEmergencyContact &&
-      !user?.contact,
-    [isUserLoading, hasSeenAnnouncement, hasSeenEmergencyContact, user],
+  const bannerProps = useMemo(
+    () => getBannerProps(bannerContent),
+    [bannerContent],
   )
 
   const DEFAULT_WORKSPACE = useMemo(() => {
@@ -157,6 +128,11 @@ export const WorkspacePage = (): JSX.Element => {
         h="100vh"
       >
         <GridItem area="header">
+          {bannerProps ? (
+            <Banner useMarkdown variant={bannerProps.variant}>
+              {bannerProps.msg}
+            </Banner>
+          ) : null}
           <AdminNavBar />
         </GridItem>
         {isMobile && (
@@ -199,24 +175,6 @@ export const WorkspacePage = (): JSX.Element => {
           </WorkspaceProvider>
         </GridItem>
       </Grid>
-
-      <RolloutAnnouncementModal
-        onClose={() => setHasSeenAnnouncement(true)}
-        isOpen={isAnnouncementModalOpen}
-      />
-      <Flex direction="column" css={fillHeightCss}>
-        {bannerProps ? (
-          <Banner useMarkdown variant={bannerProps.variant}>
-            {bannerProps.msg}
-          </Banner>
-        ) : null}
-        <AdminNavBar />
-        <WorkspaceProvider>
-          <WorkspacePageContent
-            handleCreateFormModalOpen={createFormModalDisclosure.onOpen}
-          />
-        </WorkspaceProvider>
-      </Flex>
       {user && <AdminFeedbackContainer userId={user._id} />}
     </>
   )
