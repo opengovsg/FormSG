@@ -15,7 +15,7 @@ import { useSectionColor } from '~templates/Field/Section/SectionField'
 import { VerifiableFieldBuilderContainer } from '~features/admin-form/create/builder-and-design/BuilderAndDesignContent/FieldRow/VerifiableFieldBuilderContainer'
 import { getFieldCreationMeta } from '~features/admin-form/create/builder-and-design/utils/fieldCreation'
 import {
-  PaymentItemDetailsBlock,
+  FixedPaymentItemDetailsBlock,
   ProductPaymentItemDetailsBlock,
   VariablePaymentItemDetailsBlock,
 } from '~features/public-form/components/FormPaymentPage/components'
@@ -60,7 +60,7 @@ const PaymentItemDetailsElement = ({
     case PaymentType.Fixed: // Fallthrough
     default: {
       return (
-        <PaymentItemDetailsBlock
+        <FixedPaymentItemDetailsBlock
           paymentItemName={paymentDetails.name}
           colorTheme={colorTheme}
           paymentAmount={paymentDetails.amount_cents}
