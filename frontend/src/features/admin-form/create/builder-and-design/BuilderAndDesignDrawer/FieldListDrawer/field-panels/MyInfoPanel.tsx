@@ -10,7 +10,7 @@ import {
   MyInfoAttribute,
 } from '~shared/types'
 
-import { GUIDE_EMAIL_MODE } from '~constants/links'
+import { GUIDE_EMAIL_MODE, SGID_DATA_CATALOG } from '~constants/links'
 import { ADMINFORM_SETTINGS_SINGPASS_SUBROUTE } from '~constants/routes'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
@@ -220,7 +220,14 @@ const MyInfoText = ({
       {authType === FormAuthType.SGID_MyInfo
         ? 'Some MyInfo fields are not yet supported in your selected authentication type. '
         : `Only 30 MyInfo fields are allowed in Email mode (${numMyInfoFields}/30). `}
-      <Link isExternal href={GUIDE_EMAIL_MODE}>
+      <Link
+        isExternal
+        href={
+          authType === FormAuthType.SGID_MyInfo
+            ? SGID_DATA_CATALOG
+            : GUIDE_EMAIL_MODE
+        }
+      >
         Learn more
       </Link>
     </Text>

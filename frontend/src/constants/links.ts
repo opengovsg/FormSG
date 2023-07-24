@@ -37,6 +37,7 @@ export const GUIDE_PAYMENTS_ENTRY = 'https://go.gov.sg/formsg-payment-overview'
 export const GUIDE_PAYMENTS_INVOICE_DIFFERENCES =
   'https://go.gov.sg/formsg-payments-invoice-differences'
 export const ACCEPTED_FILETYPES_SPREADSHEET = 'https://go.gov.sg/formsg-cwl'
+export const SGID_DATA_CATALOG = 'https://docs.id.gov.sg/data-catalog'
 
 export const APP_FOOTER_LINKS = [
   { label: 'Guide', href: FORM_GUIDE },
