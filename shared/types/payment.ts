@@ -74,6 +74,7 @@ export type GetPaymentInfoDto = {
   publishableKey: string
   payment_intent_id: string
   submissionId: string
+  products: Payment['products']
 }
 
 export type IncompletePaymentsDto = {

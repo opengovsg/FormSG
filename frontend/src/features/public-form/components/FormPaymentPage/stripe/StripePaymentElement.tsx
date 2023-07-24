@@ -64,13 +64,15 @@ const StripePaymentContainer = ({
   if (!stripe) throw Promise.reject('Stripe is not ready')
 
   const [refetchKey, setRefetchKey] = useState<number>(0)
-  const { data } = useGetPaymentStatusFromStripe({
+  const { data: stripePaymentStatusResponse } = useGetPaymentStatusFromStripe({
     clientSecret: paymentInfoData.client_secret,
     stripe,
     refetchKey,
   })
 
-  const viewStates = getPaymentViewStates(data?.paymentIntent?.status)
+  const viewStates = getPaymentViewStates(
+    stripePaymentStatusResponse?.paymentIntent?.status,
+  )
 
   const renderViewState = () => {
     switch (viewStates) {
@@ -94,7 +96,7 @@ const StripePaymentContainer = ({
         )
       case PaymentViewStates.PendingPayment: {
         // The item name is passed over to Stripe as PaymentIntent.description
-        const itemName = data?.paymentIntent?.description
+        const itemName = stripePaymentStatusResponse?.paymentIntent?.description
         return (
           <>
             {secretEnv === 'production' ? null : (
@@ -106,9 +108,11 @@ const StripePaymentContainer = ({
             )}
             <PaymentStack>
               <StripePaymentBlock
-                submissionId={paymentInfoData.submissionId}
+                paymentInfoData={paymentInfoData}
                 triggerPaymentStatusRefetch={() => setRefetchKey(Date.now())}
-                paymentAmount={data?.paymentIntent?.amount ?? 0}
+                paymentAmount={
+                  stripePaymentStatusResponse?.paymentIntent?.amount ?? 0
+                }
                 paymentItemName={itemName}
               />
             </PaymentStack>
