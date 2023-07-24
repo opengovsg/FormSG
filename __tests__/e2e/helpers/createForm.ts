@@ -299,22 +299,13 @@ const addAuthSettings = async (
 
   // Ensure that we are on the auth page
   await expect(
-    page.getByRole('heading', { name: 'Enable Singpass authentication' }),
+    page.getByRole('heading', { name: 'Singpass authentication' }),
   ).toBeVisible()
 
-  const name = `Singpass${
-    formSettings.authType === FormAuthType.SP
-      ? ''
-      : formSettings.authType === FormAuthType.SGID
-      ? ' App-only Login'
-      : formSettings.authType === FormAuthType.MyInfo
-      ? ' with MyInfo'
-      : ' (Corporate)'
-  }`
 
   await page
-    .locator('label', { has: page.getByRole('radio', { name }) })
-    .first() // Since 'Singpass' will match all radio options, pick the first matching one.
+    .locator('label', {has: page.locator(`input[type='radio'][value='${formSettings.authType}']`)})
+    .first()
     .click({ position: { x: 1, y: 1 } }) // Clicking the center of the sgid button launches the sgid contact form, put this here until we get rid of the link
 
   await expectToast(page, /form authentication successfully updated/i)

@@ -4,7 +4,7 @@ import { CategoryHeader } from './components/CategoryHeader'
 export const SettingsAuthPage = (): JSX.Element => {
   return (
     <>
-      <CategoryHeader>Enable Singpass authentication</CategoryHeader>
+      <CategoryHeader>Singpass authentication</CategoryHeader>
       <AuthSettingsSection />
     </>
   )

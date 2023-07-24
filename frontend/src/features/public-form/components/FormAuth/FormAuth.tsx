@@ -42,6 +42,7 @@ export const FormAuth = ({ authType }: FormAuthProps): JSX.Element => {
             'Corporate entity login is required for this form.\nYour Singpass ID and corporate Entity ID will be included with your form submission.',
         }
       case FormAuthType.SGID:
+      case FormAuthType.SGID_MyInfo:
         return {
           authType: 'Singpass app',
           helpText:
