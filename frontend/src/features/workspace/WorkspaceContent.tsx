@@ -98,11 +98,9 @@ const useWorkspaceForms = () => {
 }
 
 export const WorkspaceContent = (): JSX.Element => {
-  // TODO (hans): Use workspaceId to fetch workspace data once API created (depends on final design decision)
   const {
     isLoading,
     totalFormCount,
-    paginatedData,
     currentPage,
     setPageNumber,
     createFormModalDisclosure,
@@ -130,12 +128,11 @@ export const WorkspaceContent = (): JSX.Element => {
           py="1rem"
         >
           <WorkspaceHeader
-            isLoading={isLoading}
             handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
           />
         </Container>
         <Box gridArea="main">
-          <WorkspaceFormRows rows={paginatedData} isLoading={isLoading} />
+          <WorkspaceFormRows />
         </Box>
         <Container
           gridArea="footer"

@@ -10,7 +10,6 @@ import {
   Grid,
   GridItem,
   Stack,
-  useBreakpointValue,
   useDisclosure,
 } from '@chakra-ui/react'
 
@@ -40,15 +39,9 @@ import { WorkspaceProvider } from './WorkspaceProvider'
 export const WorkspacePage = (): JSX.Element => {
   const [currWorkspaceId, setCurrWorkspaceId] = useState<string>('')
 
-  const shouldUseTopMenu = useBreakpointValue({
-    base: true,
-    xs: true,
-    md: true,
-    lg: false,
-  })
   const createFormModal = useDisclosure()
   const mobileDrawer = useDisclosure()
-  const { isMobile } = useIsMobile()
+  const isMobile = useIsMobile()
 
   const { user, isLoading: isUserLoading } = useUser()
   const { data: dashboardForms, isLoading: isDashboardLoading } = useDashboard()
@@ -161,7 +154,7 @@ export const WorkspacePage = (): JSX.Element => {
         <GridItem area="header">
           <AdminNavBar />
         </GridItem>
-        {shouldUseTopMenu && (
+        {isMobile && (
           <GridItem area="header2">
             <WorkspaceMenuHeader
               shouldShowMenuIcon
@@ -172,7 +165,7 @@ export const WorkspacePage = (): JSX.Element => {
             />
           </GridItem>
         )}
-        {!shouldUseTopMenu && (
+        {!isMobile && (
           <GridItem area="nav">
             <Box overflowY="scroll">
               <Stack

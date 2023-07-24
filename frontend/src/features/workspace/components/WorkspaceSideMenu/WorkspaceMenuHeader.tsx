@@ -50,7 +50,6 @@ export const WorkspaceMenuHeader = ({
           variant="clear"
           colorScheme="primary"
           color="secondary.500"
-          // TODO (hans): Implement add workspace modal view
           onClick={onOpen}
           icon={<BiPlus />}
           justifySelf="flex-end"
