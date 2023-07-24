@@ -20,8 +20,9 @@ export const WorkspaceMenuHeader = ({
   const { isOpen, onOpen, onClose } = useDisclosure({ defaultIsOpen: false })
   return (
     <Flex
-      justifyContent={{ base: 'inherit', md: 'space-between' }}
-      px={{ base: '1.5rem', md: '2rem' }}
+      justifyContent="space-between"
+      pl="2rem"
+      pr="0.5rem"
       mt={{ base: 0, lg: '1rem' }}
       {...props}
       alignItems="center"
