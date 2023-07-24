@@ -21,8 +21,8 @@ export const WorkspaceMenuHeader = ({
   return (
     <Flex
       justifyContent="space-between"
-      pl="2rem"
-      pr="0.5rem"
+      pl={{ base: '0rem', md: '2rem' }}
+      pr={{ base: '0rem', md: '0.5rem' }}
       mt={{ base: 0, lg: '1rem' }}
       {...props}
       alignItems="center"

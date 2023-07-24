@@ -113,14 +113,12 @@ export const WorkspacePage = (): JSX.Element => {
         <DrawerOverlay />
         <DrawerContent maxW="15.5rem">
           <DrawerHeader p={0}>
-            <Flex pt="1rem" px="1rem" alignItems="center">
+            <Flex pt="1rem" pl="1rem" pr="0.5rem" alignItems="center">
               <WorkspaceMenuHeader
                 onMenuClick={mobileDrawer.onClose}
                 shouldShowAddWorkspaceButton
                 shouldShowMenuIcon
-                justifyContent="space-between"
                 w="100%"
-                px={0}
               />
             </Flex>
           </DrawerHeader>
