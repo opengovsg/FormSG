@@ -74,11 +74,11 @@ export const EsrvcIdBox = ({
   const renderedHelperText = useMemo(() => {
     switch (settings.authType) {
       case FormAuthType.SP:
-        return `You will receive respondent’s NRIC with each submission. [Learn more](${GUIDE_SPCP_ESRVCID}).`
+        return `Find out [how to get your Singpass e-service ID](${GUIDE_SPCP_ESRVCID}).`
       case FormAuthType.CP:
-        return `Only respondents in entities registered with Corppass can submit the form. You will receive the respondent’s NRIC and entity’s UEN. [Learn more](${GUIDE_SPCP_ESRVCID}).`
+        return `Corppass now uses Singpass to authenticate corporate users. You will still need a separate **Corppass e-service ID**. Find out [how to get your Corppass e-service ID](${GUIDE_SPCP_ESRVCID}).`
       case FormAuthType.MyInfo:
-        return `You will receive respondent’s NRIC and Myinfo details with each submission. [Learn more](${GUIDE_SPCP_ESRVCID}).`
+        return `Find out [how to get your MyInfo e-service ID](${GUIDE_SPCP_ESRVCID}).`
       default:
         return ''
     }

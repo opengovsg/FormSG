@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
 import { Link as ReactLink } from 'react-router-dom'
 import { Box, Text } from '@chakra-ui/react'
@@ -76,6 +76,12 @@ export const MyInfoFieldPanel = () => {
     [form],
   )
   const isDisabled = isMyInfoDisabled || isLoading
+  const isDisabledCheck = useCallback(
+    (fieldType: MyInfoAttribute): boolean => {
+      return isDisabled || sgIDUnSupported(form, fieldType)
+    },
+    [form, isDisabled],
+  )
   const { user } = useUser()
 
   return (
@@ -88,7 +94,7 @@ export const MyInfoFieldPanel = () => {
               {CREATE_MYINFO_PERSONAL_FIELDS_ORDERED.map((fieldType, index) => (
                 <DraggableMyInfoFieldListOption
                   index={index}
-                  isDisabled={isDisabled || sgIDUnSupported(form, fieldType)}
+                  isDisabled={isDisabledCheck(fieldType)}
                   key={index}
                   fieldType={fieldType}
                 />
@@ -105,7 +111,7 @@ export const MyInfoFieldPanel = () => {
               {CREATE_MYINFO_CONTACT_FIELDS_ORDERED.map((fieldType, index) => (
                 <DraggableMyInfoFieldListOption
                   index={index}
-                  isDisabled={isDisabled || sgIDUnSupported(form, fieldType)}
+                  isDisabled={isDisabledCheck(fieldType)}
                   key={index}
                   fieldType={fieldType}
                 />
@@ -123,7 +129,7 @@ export const MyInfoFieldPanel = () => {
                 (fieldType, index) => (
                   <DraggableMyInfoFieldListOption
                     index={index}
-                    isDisabled={isDisabled || sgIDUnSupported(form, fieldType)}
+                    isDisabled={isDisabledCheck(fieldType)}
                     key={index}
                     fieldType={fieldType}
                   />
@@ -141,7 +147,7 @@ export const MyInfoFieldPanel = () => {
               {CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED.map((fieldType, index) => (
                 <DraggableMyInfoFieldListOption
                   index={index}
-                  isDisabled={isDisabled || sgIDUnSupported(form, fieldType)}
+                  isDisabled={isDisabledCheck(fieldType)}
                   key={index}
                   fieldType={fieldType}
                 />
@@ -160,9 +166,7 @@ export const MyInfoFieldPanel = () => {
                   (fieldType, index) => (
                     <DraggableMyInfoFieldListOption
                       index={index}
-                      isDisabled={
-                        isDisabled || sgIDUnSupported(form, fieldType)
-                      }
+                      isDisabled={isDisabledCheck(fieldType)}
                       key={index}
                       fieldType={fieldType}
                     />
