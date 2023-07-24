@@ -219,15 +219,9 @@ const MyInfoText = ({
     <Text>
       {authType === FormAuthType.SGID_MyInfo
         ? 'Some MyInfo fields are not yet supported in your selected authentication type. '
-        : `Only 30 MyInfo fields are allowed in Email mode (${numMyInfoFields}/30). `}
-      <Link
-        isExternal
-        href={
-          authType === FormAuthType.SGID_MyInfo
-            ? SGID_DATA_CATALOG
-            : GUIDE_EMAIL_MODE
-        }
-      >
+        : null}
+      {`Only 30 MyInfo fields are allowed in Email mode (${numMyInfoFields}/30). `}
+      <Link isExternal href={GUIDE_EMAIL_MODE}>
         Learn more
       </Link>
     </Text>
