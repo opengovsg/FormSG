@@ -185,31 +185,6 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: '',
       env: 'ADMIN_BANNER_CONTENT',
     },
-    // TODO (#4279): Delete these when react migration is over. Revert back to original banner variables in react frontend.
-    isGeneralMaintenanceReact: {
-      doc: 'Load env variable with General Maintenance banner text. For React only.',
-      format: String,
-      default: '',
-      env: 'IS_GENERAL_MAINTENANCE_REACT',
-    },
-    isLoginBannerReact: {
-      doc: 'The banner message on login page. Allows for HTML. For React only.',
-      format: String,
-      default: '',
-      env: 'IS_LOGIN_BANNER_REACT',
-    },
-    siteBannerContentReact: {
-      doc: 'The banner message to show on all pages. Allows for HTML. Will supersede all other banner content if it exists. For React only.',
-      format: String,
-      default: '',
-      env: 'SITE_BANNER_CONTENT_REACT',
-    },
-    adminBannerContentReact: {
-      doc: 'The banner message to show on on admin pages. Allows for HTML. For React only.',
-      format: String,
-      default: '',
-      env: 'ADMIN_BANNER_CONTENT_REACT',
-    },
   },
   formsgSdkMode: {
     doc: 'Inform SDK which public keys are to be used to sign, encrypt, or decrypt data that is passed to it',
@@ -338,6 +313,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 10,
       env: 'DOWNLOAD_PAYMENT_RECEIPT_RATE_LIMIT',
     },
+    publicApi: {
+      doc: 'Per-minute, per-IP, per-instance request limit for public APIs',
+      format: 'int',
+      default: 100,
+      env: 'PUBLIC_API_RATE_LIMIT',
+    },
   },
   reactMigration: {
     useFetchForSubmissions: {
@@ -346,6 +327,28 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       format: Boolean,
       default: false,
       env: 'REACT_MIGRATION_USE_FETCH_FOR_SUBMISSIONS',
+    },
+  },
+  publicApi: {
+    apiKeyVersion: {
+      doc: 'API key version',
+      format: String,
+      default: 'v1',
+      env: 'API_KEY_VERSION',
+    },
+  },
+  adminFeedback: {
+    adminFeedbackFieldThreshold: {
+      doc: 'Threshold of number of form fields in active form for admin to be eligible for admin feedback, default is 5',
+      format: Number,
+      default: 5,
+      env: 'ADMIN_FEEDBACK_FIELD_THRESHOLD',
+    },
+    adminFeedbackDisplayFrequency: {
+      doc: 'Frequency to display admin feedback, measured in miliseconds, default is 28days (1000(ms)*60(s)*60(min)*24(hrs)*28(days))',
+      format: Number,
+      default: 2419200000,
+      env: 'ADMIN_FEEDBACK_DISPLAY_FREQUENCY',
     },
   },
 }

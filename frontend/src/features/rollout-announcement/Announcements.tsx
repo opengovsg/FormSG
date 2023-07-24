@@ -1,3 +1,5 @@
+import { GUIDE_PAYMENTS_ENTRY } from '~constants/links'
+
 import PaymentsAnnouncementGraphic from './assets/payments.json'
 
 // When updating this, remember to update the ROLLOUT_ANNOUNCEMENT_KEY_PREFIX with the new date
@@ -7,8 +9,8 @@ export const NEW_FEATURES = [
     // Announcement date: 2023-05-31
     title: 'Collect payments on your form',
     description:
-      'Citizens can now pay for fees and services directly on your form! We integrate with Stripe to provide reliable payments and hassle-free reconciliations. Payment methods we support include credit card and PayNow.',
-    learnMoreLink: 'https://go.gov.sg/formsg-payment-overview',
+      'Citizens can now pay for fees and services directly on your form! We integrate with Stripe to provide reliable payments and hassle-free reconciliations. Payment methods we support include debit / credit cards and PayNow.',
+    learnMoreLink: GUIDE_PAYMENTS_ENTRY,
     animationData: PaymentsAnnouncementGraphic,
   },
 ]

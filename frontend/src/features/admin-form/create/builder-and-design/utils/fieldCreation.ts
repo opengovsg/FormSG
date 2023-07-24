@@ -4,12 +4,14 @@ import {
   BasicField,
   FieldCreateDto,
   MyInfoAttribute,
+  MyInfoChildAttributes,
   MyInfoField,
   RatingShape,
 } from '~shared/types/field'
 
 import { BASICFIELD_TO_DRAWER_META } from '../../constants'
 import {
+  MYINFO_CHILDRENFIELD_META,
   MYINFO_DATEFIELD_META,
   MYINFO_DROPDOWNFIELD_META,
   MYINFO_MOBILEFIELD_META,
@@ -182,11 +184,20 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
         minimumRows: 2,
       }
     }
+    case BasicField.Children: {
+      return {
+        fieldType,
+        ...baseMeta,
+      }
+    }
   }
 }
 
 export const getMyInfoFieldCreationMeta = (
-  myInfoAttribute: MyInfoAttribute,
+  myInfoAttribute: Exclude<
+    MyInfoAttribute,
+    MyInfoChildAttributes[keyof MyInfoChildAttributes]
+  >,
 ): MyInfoField => {
   const baseMeta: Pick<
     MyInfoField,
@@ -252,6 +263,14 @@ export const getMyInfoFieldCreationMeta = (
         ...baseMeta,
         fieldType: BasicField.Mobile,
         ...MYINFO_MOBILEFIELD_META,
+      }
+    }
+
+    case MyInfoAttribute.ChildrenBirthRecords: {
+      return {
+        ...baseMeta,
+        fieldType: BasicField.Children,
+        ...MYINFO_CHILDRENFIELD_META,
       }
     }
 

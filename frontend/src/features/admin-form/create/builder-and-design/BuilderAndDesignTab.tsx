@@ -23,6 +23,8 @@ import { BuilderAndDesignDrawer } from './BuilderAndDesignDrawer'
 import {
   BASIC_FIELDS_ORDERED,
   CREATE_FIELD_DROP_ID,
+  CREATE_MYINFO_CHILDREN_DROP_ID,
+  CREATE_MYINFO_CHILDREN_FIELDS_ORDERED,
   CREATE_MYINFO_CONTACT_DROP_ID,
   CREATE_MYINFO_CONTACT_FIELDS_ORDERED,
   CREATE_MYINFO_MARRIAGE_DROP_ID,
@@ -34,6 +36,7 @@ import {
   FIELD_LIST_DROP_ID,
 } from './constants'
 import { DeleteFieldModal } from './DeleteFieldModal'
+import { DeletePaymentModal } from './DeletePaymentModal'
 import { DndPlaceholderProps } from './types'
 import { useCreateTabForm } from './useCreateTabForm'
 import {
@@ -121,6 +124,15 @@ export const BuilderAndDesignTab = (): JSX.Element => {
           )
         }
 
+        case CREATE_MYINFO_CHILDREN_DROP_ID: {
+          return setToCreating(
+            getMyInfoFieldCreationMeta(
+              CREATE_MYINFO_CHILDREN_FIELDS_ORDERED[source.index],
+            ),
+            destination.index,
+          )
+        }
+
         case FIELD_LIST_DROP_ID: {
           if (destination.index === source.index) {
             return
@@ -137,6 +149,7 @@ export const BuilderAndDesignTab = (): JSX.Element => {
   )
 
   const deleteFieldModalDisclosure = useDisclosure()
+  const deletePaymentModalDisclosure = useDisclosure()
 
   return (
     <DragDropContext
@@ -147,11 +160,13 @@ export const BuilderAndDesignTab = (): JSX.Element => {
       <BuilderAndDesignContext.Provider
         value={{
           deleteFieldModalDisclosure,
+          deletePaymentModalDisclosure,
         }}
       >
         <BuilderAndDesignDrawer />
         <BuilderAndDesignContent placeholderProps={placeholderProps} />
         {deleteFieldModalDisclosure.isOpen && <DeleteFieldModal />}
+        {deletePaymentModalDisclosure.isOpen && <DeletePaymentModal />}
       </BuilderAndDesignContext.Provider>
     </DragDropContext>
   )

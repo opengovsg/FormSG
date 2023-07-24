@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef } from 'react'
 import { RegisterOptions } from 'react-hook-form'
 import { Box, FormControl, useMergeRefs } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
@@ -81,18 +81,8 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
     },
   })
 
-  const watchedIsVerifiable = watch('isVerifiable')
   const watchedHasAllowedEmailDomains = watch('hasAllowedEmailDomains')
   const watchedHasAutoReply = watch('autoReplyOptions.hasAutoReply')
-
-  // Use separate state for whether toggle is enabled so we can disable
-  // the toggle only after it is set to false. Otherwise, we get the
-  // following bug:
-  // 1. Enable both OTP verification and email domain validation
-  // 2. Disable OTP verification
-  // 3. Now hasAllowedEmailDomains is true but the toggle is disabled
-  const [isDomainToggleEnabled, setIsDomainToggleEnabled] =
-    useState(watchedIsVerifiable)
 
   const requiredValidationRule = useMemo(
     () => createBaseValidationRules({ required: true }),
@@ -108,15 +98,6 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
     hasAllowedEmailDomainsRef,
     allowedEmailDomainsRegister.ref,
   )
-  useEffect(() => {
-    // Verification must be enabled for domain validation
-    // We cannot simply use setValue as it does not update
-    // the UI
-    if (!watchedIsVerifiable && watchedHasAllowedEmailDomains) {
-      hasAllowedEmailDomainsRef.current?.click()
-    }
-    setIsDomainToggleEnabled(watchedIsVerifiable)
-  }, [watchedIsVerifiable, watchedHasAllowedEmailDomains])
 
   const emailDomainsValidation = useMemo<
     RegisterOptions<EditEmailInputs, 'allowedEmailDomains'>
@@ -130,6 +111,10 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
             new Set(split).size === split.length ||
             'Please remove duplicate email domains'
           )
+        },
+        noEmpty: (value) => {
+          const split = SPLIT_TEXTAREA_TRANSFORM.output(value)
+          return split.length > 0 || 'Please enter at least one email domain'
         },
         validEmailDomains: (value) => {
           const split = SPLIT_TEXTAREA_TRANSFORM.output(value)
@@ -186,8 +171,6 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
             {...allowedEmailDomainsRegister}
             ref={mergedAllowedEmailDomainsRef}
             label="Restrict email domains"
-            description="OTP verification needs to be enabled first"
-            isDisabled={!isDomainToggleEnabled}
           />
         </FormControl>
         {watchedHasAllowedEmailDomains && (

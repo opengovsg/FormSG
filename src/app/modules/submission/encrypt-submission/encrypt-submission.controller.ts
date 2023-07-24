@@ -19,6 +19,7 @@ import {
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../../shared/types'
+import { CaptchaTypes } from '../../../../../shared/types/captcha'
 import { StripePaymentMetadataDto } from '../../../../types'
 import { EncryptSubmissionDto } from '../../../../types/api'
 import config from '../../../config/config'
@@ -30,6 +31,8 @@ import { getEncryptPendingSubmissionModel } from '../../../models/pending_submis
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as CaptchaService from '../../../services/captcha/captcha.service'
+import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
+import * as TurnstileService from '../../../services/turnstile/turnstile.service'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import { MalformedParametersError } from '../../core/core.errors'
@@ -37,6 +40,7 @@ import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import * as FormService from '../../form/form.service'
+import { SGID_COOKIE_NAME } from '../../sgid/sgid.constants'
 import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
@@ -59,6 +63,7 @@ import {
 } from './encrypt-submission.service'
 import {
   createEncryptedSubmissionDto,
+  getPaymentAmount,
   mapRouteError,
 } from './encrypt-submission.utils'
 import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
@@ -75,7 +80,7 @@ const submitEncryptModeForm: ControllerHandler<
   { formId: string },
   SubmissionResponseDto | SubmissionErrorDto,
   EncryptSubmissionDto,
-  { captchaResponse?: unknown }
+  { captchaResponse?: unknown; captchaType?: unknown }
 > = async (req, res) => {
   const { formId } = req.params
 
@@ -143,21 +148,46 @@ const submitEncryptModeForm: ControllerHandler<
       })
     }
   }
-
   // Check captcha
   if (form.hasCaptcha) {
-    const captchaResult = await CaptchaService.verifyCaptchaResponse(
-      req.query.captchaResponse,
-      getRequestIp(req),
-    )
-    if (captchaResult.isErr()) {
-      logger.error({
-        message: 'Error while verifying captcha',
-        meta: logMeta,
-        error: captchaResult.error,
-      })
-      const { errorMessage, statusCode } = mapRouteError(captchaResult.error)
-      return res.status(statusCode).json({ message: errorMessage })
+    switch (req.query.captchaType) {
+      case CaptchaTypes.Turnstile: {
+        const turnstileResult = await TurnstileService.verifyTurnstileResponse(
+          req.query.captchaResponse,
+          getRequestIp(req),
+        )
+        if (turnstileResult.isErr()) {
+          logger.error({
+            message: 'Error while verifying turnstile',
+            meta: logMeta,
+            error: turnstileResult.error,
+          })
+          const { errorMessage, statusCode } = mapRouteError(
+            turnstileResult.error,
+          )
+          return res.status(statusCode).json({ message: errorMessage })
+        }
+        break
+      }
+      case CaptchaTypes.Recaptcha: // fallthrough, defaults to reCAPTCHA
+      default: {
+        const captchaResult = await CaptchaService.verifyCaptchaResponse(
+          req.query.captchaResponse,
+          getRequestIp(req),
+        )
+        if (captchaResult.isErr()) {
+          logger.error({
+            message: 'Error while verifying captcha',
+            meta: logMeta,
+            error: captchaResult.error,
+          })
+          const { errorMessage, statusCode } = mapRouteError(
+            captchaResult.error,
+          )
+          return res.status(statusCode).json({ message: errorMessage })
+        }
+        break
+      }
     }
   }
 
@@ -201,10 +231,12 @@ const submitEncryptModeForm: ControllerHandler<
   let userInfo
   const { authType } = form
   switch (authType) {
+    case FormAuthType.SGID_MyInfo:
     case FormAuthType.MyInfo: {
       logger.error({
-        message:
-          'Storage mode form is not allowed to have MyInfo authorisation',
+        message: `Storage mode form is not allowed to have MyInfo${
+          authType == FormAuthType.SGID_MyInfo ? '(over sgID)' : ''
+        } authorisation`,
         meta: logMeta,
       })
       const { errorMessage, statusCode } = mapRouteError(
@@ -260,8 +292,8 @@ const submitEncryptModeForm: ControllerHandler<
       break
     }
     case FormAuthType.SGID: {
-      const jwtPayloadResult = SgidService.extractSgidJwtPayload(
-        req.cookies.jwtSgid,
+      const jwtPayloadResult = SgidService.extractSgidSingpassJwtPayload(
+        req.cookies[SGID_COOKIE_NAME],
       )
       if (jwtPayloadResult.isErr()) {
         const { statusCode, errorMessage } = mapRouteError(
@@ -358,7 +390,8 @@ const submitEncryptModeForm: ControllerHandler<
      * Start of Payment Forms Submission Flow
      */
     // Step 0: Perform validation checks
-    const amount = form.payments_field.amount_cents
+    const amount = getPaymentAmount(form.payments_field, req.body.payments)
+
     if (
       !amount ||
       amount < paymentConfig.minPaymentAmountCents ||
@@ -396,6 +429,7 @@ const submitEncryptModeForm: ControllerHandler<
       amount,
       email: paymentReceiptEmail,
       responses: incomingSubmission.responses,
+      gstEnabled: form.payments_field.gst_enabled,
     })
     const paymentId = payment.id
 
@@ -458,7 +492,7 @@ const submitEncryptModeForm: ControllerHandler<
       automatic_payment_methods: {
         enabled: true,
       },
-      description: form.payments_field.description,
+      description: form.payments_field.name || form.payments_field.description,
       receipt_email: paymentReceiptEmail,
       metadata,
     }
@@ -610,6 +644,7 @@ const submitEncryptModeForm: ControllerHandler<
 
 export const handleEncryptedSubmission = [
   CaptchaMiddleware.validateCaptchaParams,
+  TurnstileMiddleware.validateTurnstileParams,
   EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
   submitEncryptModeForm,
 ] as ControllerHandler[]
@@ -765,109 +800,6 @@ export const streamEncryptedResponses: ControllerHandler<
 export const handleStreamEncryptedResponses = [
   validateDateRange,
   streamEncryptedResponses,
-] as ControllerHandler[]
-
-const validateSubmissionId = celebrate({
-  [Segments.QUERY]: {
-    submissionId: Joi.string()
-      .regex(/^[0-9a-fA-F]{24}$/)
-      .required(),
-  },
-})
-
-/**
- * Exported solely for testing
- * Handler for GET /:formId/adminform/submissions
- * @security session
- *
- * @returns 200 with encrypted submission data response
- * @returns 400 when form is not an encrypt mode form
- * @returns 403 when user does not have read permissions for form
- * @returns 404 when submissionId cannot be found in the database
- * @returns 404 when form cannot be found
- * @returns 410 when form is archived
- * @returns 422 when user in session cannot be retrieved from the database
- * @returns 500 when any errors occurs in database query, generating signed URL or retrieving payment data
- */
-export const getEncryptedResponseUsingQueryParams: ControllerHandler<
-  { formId: string },
-  StorageModeSubmissionDto | ErrorDto,
-  unknown,
-  { submissionId: string }
-> = async (req, res) => {
-  const sessionUserId = (req.session as AuthedSessionData).user._id
-  const { submissionId } = req.query
-  const { formId } = req.params
-
-  const logMeta = {
-    action: 'getEncryptedResponseUsingQueryParams',
-    submissionId,
-    sessionUserId,
-    formId,
-    ...createReqMeta(req),
-  }
-
-  logger.info({
-    message: 'Get encrypted response using submissionId start',
-    meta: logMeta,
-  })
-
-  return (
-    // Step 1: Retrieve logged in user.
-    getPopulatedUserById(sessionUserId)
-      // Step 2: Check whether user has read permissions to form.
-      .andThen((user) =>
-        getFormAfterPermissionChecks({
-          user,
-          formId,
-          level: PermissionLevel.Read,
-        }),
-      )
-      // Step 3: Check whether form is encrypt mode.
-      .andThen(checkFormIsEncryptMode)
-      // Step 4: Is encrypt mode form, retrieve submission data.
-      .andThen(() => getEncryptedSubmissionData(formId, submissionId))
-      // Step 5: Retrieve presigned URLs for attachments.
-      .andThen((submissionData) => {
-        // Remaining login duration in seconds.
-        const urlExpiry = (req.session?.cookie.maxAge ?? 0) / 1000
-        return transformAttachmentMetasToSignedUrls(
-          submissionData.attachmentMetadata,
-          urlExpiry,
-        ).map((presignedUrls) =>
-          createEncryptedSubmissionDto(submissionData, presignedUrls),
-        )
-      })
-      .map((responseData) => {
-        logger.info({
-          message: 'Get encrypted response using submissionId success',
-          meta: logMeta,
-        })
-        return res.json(responseData)
-      })
-      .mapErr((error) => {
-        logger.error({
-          message: 'Failure retrieving encrypted submission response',
-          meta: logMeta,
-          error,
-        })
-
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({
-          message: errorMessage,
-        })
-      })
-  )
-}
-
-/**
- * Handler for GET /:formId/adminform/submission
- * @deprecated in favour of handleGetEncryptedResponse
- * Exported as an array to ensure that the handler always a valid submissionId
- */
-export const handleGetEncryptedResponseUsingQueryParams = [
-  validateSubmissionId,
-  getEncryptedResponseUsingQueryParams,
 ] as ControllerHandler[]
 
 /**

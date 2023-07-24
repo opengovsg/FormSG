@@ -4,6 +4,7 @@ import _ from 'lodash'
 import { IPopulatedForm } from 'src/types'
 
 import { MOCK_COOKIE_AGE } from '../../myinfo/__tests__/myinfo.test.constants'
+import { SGID_MYINFO_NRIC_NUMBER_SCOPE } from '../sgid.constants'
 
 export const MOCK_TARGET = new ObjectId().toHexString()
 export const MOCK_DESTINATION = `/${MOCK_TARGET}`
@@ -32,7 +33,7 @@ export const MOCK_USER_INFO = {
 }
 
 export const MOCK_JWT_PAYLOAD = {
-  userName: MOCK_USER_INFO.data['myinfo.nric_number'],
+  userName: MOCK_USER_INFO.data[SGID_MYINFO_NRIC_NUMBER_SCOPE],
 }
 
 export const MOCK_SGID_FORM = {
@@ -65,12 +66,13 @@ export const MOCK_COOKIE_SETTINGS = {
 export const MOCK_NONCE = 'nonce'
 
 export const MOCK_OPTIONS = {
-  endpoint: 'http://localhost/',
   clientId: 'client-id',
   clientSecret: 'client-secret',
   privateKeyPath: 'private-key',
   publicKeyPath: 'public-key',
-  redirectUri: MOCK_REDIRECT_URL,
+  hostname: 'http://localhost:5156/',
+  formLoginRedirectUri: MOCK_REDIRECT_URL,
+  adminLoginRedirectUri: MOCK_REDIRECT_URL,
   cookieDomain: MOCK_COOKIE_SETTINGS.domain,
   cookieMaxAge: MOCK_COOKIE_AGE,
   cookieMaxAgePreserved: MOCK_COOKIE_AGE * 2,

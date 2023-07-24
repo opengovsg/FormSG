@@ -7,13 +7,10 @@ import {
   FeedbackBlock,
   FeedbackFormInput,
 } from '../../FormEndPage/components/FeedbackBlock'
+import { PaymentStack } from '../components'
 import { useGetPaymentReceiptStatus } from '../queries'
 
-import {
-  DownloadReceiptBlock,
-  GenericMessageBlock,
-  PaymentStack,
-} from './components'
+import { DownloadReceiptBlock, GenericMessageBlock } from './components'
 
 export const StripeReceiptContainer = ({
   formId,
@@ -58,7 +55,7 @@ export const StripeReceiptContainer = ({
       <PaymentStack>
         <GenericMessageBlock
           title="Your payment has been received."
-          subtitle="We are waiting to get your proof of payment from our payment provider. You may come back to the same link to download your invoice later."
+          subtitle="We are waiting to get your proof of payment from our payment provider. You may come back to the same link to download your proof of payment later."
           submissionId={submissionId}
         />
       </PaymentStack>

@@ -1,4 +1,8 @@
-import { FormAuthType, MyInfoAttribute } from '../../../../shared/types'
+import {
+  FormAuthType,
+  MyInfoAttribute,
+  MyInfoChildAttributes,
+} from '../../../../shared/types'
 import { Environment, IFormSchema, IMyInfo } from '../../../types'
 import { ISpcpMyInfo } from '../../config/features/spcp-myinfo.config'
 import { ProcessedFieldResponse } from '../submission/submission.types'
@@ -16,8 +20,15 @@ export interface IMyInfoRedirectURLArgs {
   encodedQuery?: string
 }
 
+// Field ID or a special key for a Child
+export type MyInfoKey = string | MyInfoChildKey
+
+// Field type, field ID, child attribute type, child index, child name
+export type MyInfoChildKey =
+  `${MyInfoAttribute.ChildrenBirthRecords}.${string}.${MyInfoChildAttributes}.${number}.${string}`
+
 export type MyInfoHashPromises = Partial<
-  Record<MyInfoAttribute, Promise<string>>
+  Record<MyInfoAttribute | MyInfoChildKey, Promise<string>>
 >
 
 export type VisibleMyInfoResponse = ProcessedFieldResponse & {
@@ -26,7 +37,10 @@ export type VisibleMyInfoResponse = ProcessedFieldResponse & {
   answer: string
 }
 
-export type MyInfoComparePromises = Map<string, Promise<boolean>>
+export type MyInfoComparePromises = Map<
+  string | MyInfoChildKey,
+  Promise<boolean>
+>
 
 export type MyInfoLoginCookiePayload = {
   uinFin: string

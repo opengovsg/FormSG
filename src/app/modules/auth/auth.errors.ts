@@ -13,3 +13,15 @@ export class InvalidOtpError extends ApplicationError {
     super(message)
   }
 }
+
+export class InvalidTokenError extends ApplicationError {
+  constructor(message = 'Invalid API Key') {
+    super(message)
+  }
+}
+
+export class MissingTokenError extends ApplicationError {
+  constructor(message = "User's API Key not found") {
+    super(message)
+  }
+}

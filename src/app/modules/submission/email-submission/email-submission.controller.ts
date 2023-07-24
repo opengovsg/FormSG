@@ -5,12 +5,15 @@ import {
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../../shared/types'
+import { CaptchaTypes } from '../../../../../shared/types/captcha'
 import { IPopulatedEmailForm } from '../../../../types'
 import { ParsedEmailModeSubmissionBody } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as CaptchaService from '../../../services/captcha/captcha.service'
 import MailService from '../../../services/mail/mail.service'
+import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
+import * as TurnstileService from '../../../services/turnstile/turnstile.service'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
@@ -21,6 +24,10 @@ import {
 } from '../../myinfo/myinfo.constants'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
+import {
+  SGID_COOKIE_NAME,
+  SGID_MYINFO_LOGIN_COOKIE_NAME,
+} from '../../sgid/sgid.constants'
 import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import * as EmailSubmissionMiddleware from '../email-submission/email-submission.middleware'
@@ -43,7 +50,7 @@ const submitEmailModeForm: ControllerHandler<
   { formId: string },
   SubmissionResponseDto | SubmissionErrorDto,
   ParsedEmailModeSubmissionBody,
-  { captchaResponse?: unknown }
+  { captchaResponse?: unknown; captchaType?: unknown }
 > = async (req, res) => {
   const { formId } = req.params
   const attachments = mapAttachmentsFromResponses(req.body.responses)
@@ -108,19 +115,39 @@ const submitEmailModeForm: ControllerHandler<
       .andThen((form) => {
         // Check the captcha
         if (form.hasCaptcha) {
-          return CaptchaService.verifyCaptchaResponse(
-            req.query.captchaResponse,
-            getRequestIp(req),
-          )
-            .map(() => form)
-            .mapErr((error) => {
-              logger.error({
-                message: 'Error while verifying captcha',
-                meta: logMeta,
-                error,
-              })
-              return error
-            })
+          switch (req.query.captchaType) {
+            case CaptchaTypes.Turnstile: {
+              return TurnstileService.verifyTurnstileResponse(
+                req.query.captchaResponse,
+                getRequestIp(req),
+              )
+                .map(() => form)
+                .mapErr((error) => {
+                  logger.error({
+                    message: 'Error while verifying turnstile captcha',
+                    meta: logMeta,
+                    error,
+                  })
+                  return error
+                })
+            }
+            case CaptchaTypes.Recaptcha: // fallthrough, defaults to recaptcha
+            default: {
+              return CaptchaService.verifyCaptchaResponse(
+                req.query.captchaResponse,
+                getRequestIp(req),
+              )
+                .map(() => form)
+                .mapErr((error) => {
+                  logger.error({
+                    message: 'Error while verifying captcha',
+                    meta: logMeta,
+                    error,
+                  })
+                  return error
+                })
+            }
+          }
         }
         return okAsync(form) as ResultAsync<IPopulatedEmailForm, never>
       })
@@ -202,8 +229,9 @@ const submitEmailModeForm: ControllerHandler<
                 return error
               })
           }
+          case FormAuthType.SGID_MyInfo:
           case FormAuthType.MyInfo:
-            return extractMyInfoLoginJwt(req.cookies)
+            return extractMyInfoLoginJwt(req.cookies, authType)
               .andThen(MyInfoService.verifyLoginJwt)
               .asyncAndThen(({ uinFin }) =>
                 MyInfoService.fetchMyInfoHashes(uinFin, formId)
@@ -227,14 +255,18 @@ const submitEmailModeForm: ControllerHandler<
               .mapErr((error) => {
                 spcpSubmissionFailure = true
                 logger.error({
-                  message: 'Error verifying MyInfo hashes',
+                  message: `Error verifying MyInfo${
+                    authType === FormAuthType.SGID_MyInfo ? '(over SGID)' : ''
+                  } hashes`,
                   meta: logMeta,
                   error,
                 })
                 return error
               })
           case FormAuthType.SGID:
-            return SgidService.extractSgidJwtPayload(req.cookies.jwtSgid)
+            return SgidService.extractSgidSingpassJwtPayload(
+              req.cookies[SGID_COOKIE_NAME],
+            )
               .map<IPopulatedEmailFormWithResponsesAndHash>(
                 ({ userName: uinFin }) => ({
                   form,
@@ -383,8 +415,13 @@ const submitEmailModeForm: ControllerHandler<
             })
           })
           // MyInfo access token is single-use, so clear it
+          // Similarly for sgID-MyInfo
           return res
             .clearCookie(MYINFO_LOGIN_COOKIE_NAME, MYINFO_LOGIN_COOKIE_OPTIONS)
+            .clearCookie(
+              SGID_MYINFO_LOGIN_COOKIE_NAME,
+              MYINFO_LOGIN_COOKIE_OPTIONS,
+            )
             .json({
               // Return the reply early to the submitter
               message: 'Form submission successful.',
@@ -403,7 +440,9 @@ const submitEmailModeForm: ControllerHandler<
 }
 
 export const handleEmailSubmission = [
+  // TODO: remove CaptchaMiddleware after extracting common components in Captcha and Turnstile
   CaptchaMiddleware.validateCaptchaParams,
+  TurnstileMiddleware.validateTurnstileParams,
   EmailSubmissionMiddleware.receiveEmailSubmission,
   EmailSubmissionMiddleware.validateResponseParams,
   submitEmailModeForm,

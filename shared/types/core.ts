@@ -20,16 +20,13 @@ export type ClientEnvVars = {
   logoBucketUrl: string // S3 bucket
   formsgSdkMode: 'staging' | 'production' | 'development' | 'test'
   captchaPublicKey: string // Recaptcha
+  turnstileSiteKey: string // Turnstile
   sentryConfigUrl: string // Sentry.IO
   isSPMaintenance: string // Singpass maintenance message
   isCPMaintenance: string // Corppass maintenance message
   myInfoBannerContent: string // MyInfo maintenance message
-  // TODO: remove after React rollout #4786, #4279
+  // TODO: remove after React rollout #4786
   GATrackingID: string | null
-  isGeneralMaintenanceReact: string
-  isLoginBannerReact: string
-  siteBannerContentReact: string
-  adminBannerContentReact: string
 
   spcpCookieDomain: string // Cookie domain used for removing spcp cookies
   stripePublishableKey: string
@@ -38,4 +35,7 @@ export type ClientEnvVars = {
   // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
   useFetchForSubmissions: boolean
   secretEnv: string
+  goGovBaseUrl: string
+  adminFeedbackFieldThreshold: number
+  adminFeedbackDisplayFrequency: number
 }

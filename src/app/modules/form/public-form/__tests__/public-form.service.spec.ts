@@ -103,6 +103,7 @@ describe('public-form.service', () => {
         formId: 'not-an-objectId',
         comment: MOCK_FORM_FEEDBACK.comment,
         rating: MOCK_FORM_FEEDBACK.rating,
+        submissionId: MOCK_FORM_FEEDBACK.submissionId,
       })
 
       // Assert

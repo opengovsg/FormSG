@@ -1,14 +1,18 @@
 import { useMemo } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
+import { Link as ReactLink } from 'react-router-dom'
 import { Box, Text } from '@chakra-ui/react'
 
 import { AdminFormDto, FormAuthType, FormResponseMode } from '~shared/types'
 
 import { GUIDE_EMAIL_MODE } from '~constants/links'
+import { ADMINFORM_SETTINGS_SINGPASS_SUBROUTE } from '~constants/routes'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 
 import {
+  CREATE_MYINFO_CHILDREN_DROP_ID,
+  CREATE_MYINFO_CHILDREN_FIELDS_ORDERED,
   CREATE_MYINFO_CONTACT_DROP_ID,
   CREATE_MYINFO_CONTACT_FIELDS_ORDERED,
   CREATE_MYINFO_MARRIAGE_DROP_ID,
@@ -19,6 +23,7 @@ import {
   CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
 } from '~features/admin-form/create/builder-and-design/constants'
 import { isMyInfo } from '~features/myinfo/utils'
+import { useUser } from '~features/user/queries'
 
 import { useCreateTabForm } from '../../../../builder-and-design/useCreateTabForm'
 import { DraggableMyInfoFieldListOption } from '../FieldListOption'
@@ -39,6 +44,7 @@ export const MyInfoFieldPanel = () => {
     [form],
   )
   const isDisabled = isMyInfoDisabled || isLoading
+  const { user } = useUser()
 
   return (
     <>
@@ -113,6 +119,27 @@ export const MyInfoFieldPanel = () => {
           </Box>
         )}
       </Droppable>
+      {user?.betaFlags?.children ? (
+        <Droppable isDropDisabled droppableId={CREATE_MYINFO_CHILDREN_DROP_ID}>
+          {(provided) => (
+            <Box ref={provided.innerRef} {...provided.droppableProps}>
+              <FieldSection label="Family (Children)">
+                {CREATE_MYINFO_CHILDREN_FIELDS_ORDERED.map(
+                  (fieldType, index) => (
+                    <DraggableMyInfoFieldListOption
+                      index={index}
+                      isDisabled={isDisabled}
+                      key={index}
+                      fieldType={fieldType}
+                    />
+                  ),
+                )}
+              </FieldSection>
+              <Box display="none">{provided.placeholder}</Box>
+            </Box>
+          )}
+        </Droppable>
+      ) : null}
     </>
   )
 }
@@ -139,7 +166,13 @@ const MyInfoText = ({
 
   if (isMyInfoDisabled) {
     return (
-      <Text>Enable MyInfo in the Settings tab to access these fields.</Text>
+      <Text>
+        Enable MyInfo in the{' '}
+        <Link as={ReactLink} to={ADMINFORM_SETTINGS_SINGPASS_SUBROUTE}>
+          Settings
+        </Link>{' '}
+        tab to access these fields.
+      </Text>
     )
   }
 

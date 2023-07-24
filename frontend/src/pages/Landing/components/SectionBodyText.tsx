@@ -15,7 +15,7 @@ export const SectionBodyText = ({
     styles: {
       text: {
         textStyle: 'body-1',
-        color: 'secondary.500',
+        color: props.color ?? 'secondary.500',
       },
     },
   })

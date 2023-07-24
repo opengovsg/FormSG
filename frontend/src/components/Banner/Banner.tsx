@@ -21,6 +21,7 @@ export interface BannerProps {
   children: string
   useMarkdown?: boolean
   showCloseButton?: boolean
+  bannerColor?: string
 }
 
 export const Banner = ({
@@ -28,6 +29,7 @@ export const Banner = ({
   children,
   useMarkdown = false,
   showCloseButton,
+  bannerColor,
 }: BannerProps): JSX.Element => {
   const { isOpen, onToggle } = useDisclosure({
     defaultIsOpen: true,
@@ -45,7 +47,12 @@ export const Banner = ({
 
   return (
     <Collapse style={{ overflow: 'visible' }} in={isOpen} animateOpacity>
-      <Box __css={styles.banner}>
+      <Box
+        __css={{
+          ...styles.banner,
+          ...(bannerColor ? { bgColor: bannerColor } : {}),
+        }}
+      >
         <Flex sx={styles.item}>
           <Flex>
             <Icon

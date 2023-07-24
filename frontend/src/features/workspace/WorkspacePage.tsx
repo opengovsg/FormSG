@@ -26,9 +26,10 @@ import { useLocalStorage } from '~hooks/useLocalStorage'
 
 import { RolloutAnnouncementModal } from '~features/rollout-announcement/RolloutAnnouncementModal'
 import { EmergencyContactModal } from '~features/user/emergency-contact/EmergencyContactModal'
-import { useUser } from '~features/user/queries'
+import { useUser, useUser } from '~features/user/queries'
 import { WorkspaceContent } from '~features/workspace/WorkspaceContent'
 
+import AdminFeedbackContainer from './components/AdminFeedbackContainer'
 import CreateFormModal from './components/CreateFormModal'
 import { EmptyWorkspace } from './components/EmptyWorkspace'
 import { WorkspaceMenuHeader } from './components/WorkspaceSideMenu/WorkspaceMenuHeader'
@@ -62,6 +63,12 @@ export const WorkspacePage = (): JSX.Element => {
   const emergencyContactKey = useMemo(
     () => (user?._id ? EMERGENCY_CONTACT_KEY_PREFIX + user._id : null),
     [user],
+  )
+
+  const bannerContent = useMemo(
+    // Use || instead of ?? so that we fall through even if previous banners are empty string.
+    () => siteBannerContent || adminBannerContent,
+    [adminBannerContent, siteBannerContent],
   )
 
   const [hasSeenEmergencyContact, setHasSeenEmergencyContact] =
@@ -197,10 +204,20 @@ export const WorkspacePage = (): JSX.Element => {
         onClose={() => setHasSeenAnnouncement(true)}
         isOpen={isAnnouncementModalOpen}
       />
-      <EmergencyContactModal
-        onClose={() => setHasSeenEmergencyContact(true)}
-        isOpen={isEmergencyContactModalOpen}
-      />
+      <Flex direction="column" css={fillHeightCss}>
+        {bannerProps ? (
+          <Banner useMarkdown variant={bannerProps.variant}>
+            {bannerProps.msg}
+          </Banner>
+        ) : null}
+        <AdminNavBar />
+        <WorkspaceProvider>
+          <WorkspacePageContent
+            handleCreateFormModalOpen={createFormModalDisclosure.onOpen}
+          />
+        </WorkspaceProvider>
+      </Flex>
+      {user && <AdminFeedbackContainer userId={user._id} />}
     </>
   )
 }

@@ -388,6 +388,13 @@ export interface IFormModel extends Model<IFormSchema> {
     updatedLogic: LogicDto,
   ): Promise<IFormSchema | null>
 
+  getGoLinkSuffix(formId: string): Promise<IFormDocument | null>
+
+  setGoLinkSuffix(
+    formId: string,
+    goLinkSuffix: string,
+  ): Promise<IFormDocument | null>
+
   archiveForms(
     formIds: IFormSchema['_id'][],
     /**

@@ -2,7 +2,7 @@ import { datadogLogs } from '@datadog/browser-logs'
 import { encode as encodeBase64 } from '@stablelib/base64'
 import { chain, forOwn, isEmpty, keyBy, omit, pick } from 'lodash'
 
-import { BasicField, FormFieldDto } from '~shared/types/field'
+import { BasicField, FormFieldDto, PaymentFieldsDto } from '~shared/types/field'
 import {
   EmailResponse,
   FieldResponse,
@@ -32,13 +32,21 @@ const ENCRYPT_VERSION = 1
  * @returns StorageModeSubmissionContentDto
  * @throw Error if form inputs are invalid.
  */
-export const createEncryptedSubmissionData = async (
-  formFields: FormFieldDto[],
-  formInputs: FormFieldValues,
-  publicKey: string,
-  responseMetadata?: ResponseMetadata,
-  paymentReceiptEmail?: string,
-): Promise<StorageModeSubmissionContentDto> => {
+export const createEncryptedSubmissionData = async ({
+  formFields,
+  formInputs,
+  publicKey,
+  responseMetadata,
+  paymentReceiptEmail,
+  payments,
+}: {
+  formFields: FormFieldDto[]
+  formInputs: FormFieldValues
+  publicKey: string
+  responseMetadata?: ResponseMetadata
+  paymentReceiptEmail?: string
+  payments?: PaymentFieldsDto
+}): Promise<StorageModeSubmissionContentDto> => {
   const responses = createResponsesArray(formFields, formInputs)
   const encryptedContent = formsgSdk.crypto.encrypt(responses, publicKey)
   // Edge case: We still send email/verifiable fields to the server in plaintext
@@ -59,6 +67,7 @@ export const createEncryptedSubmissionData = async (
     responses: filteredResponses,
     encryptedContent,
     paymentReceiptEmail,
+    payments,
     version: ENCRYPT_VERSION,
     responseMetadata,
   }

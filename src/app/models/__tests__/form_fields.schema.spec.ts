@@ -35,82 +35,221 @@ describe('Form Field Schema', () => {
   afterEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
 
-  describe('Short Text Field', () => {
-    describe('prefill', () => {
-      it('should allow creation of short text field with no prefill setting and populate prefill settings with default', async () => {
+  describe('Email Field', () => {
+    describe('restrict email domains', () => {
+      it('should allow email field with isVerifiable true and hasAllowedEmailDomains false with empty allowedEmailDomains', async () => {
         // Arrange
         const field = await createAndReturnFormField({
-          fieldType: BasicField.ShortText,
+          fieldType: BasicField.Email,
+          isVerifiable: true,
+          hasAllowedEmailDomains: false,
+          allowedEmailDomains: [],
         })
 
         // Assert
         const fieldObj = field.toObject()
-        expect(fieldObj).toHaveProperty('allowPrefill', false)
-        expect(fieldObj).toHaveProperty('lockPrefill', false)
+        expect(fieldObj).toHaveProperty('isVerifiable', true)
+        expect(fieldObj).toHaveProperty('hasAllowedEmailDomains', false)
+        expect(fieldObj).toHaveProperty('allowedEmailDomains', [])
       })
 
-      it('should allow creation of short text field with allowPrefill = false setting and populate lockPrefill settings with default', async () => {
+      it('should allow email field with isVerifiable true and hasAllowedEmailDomains true with non-empty allowedEmailDomains', async () => {
         // Arrange
         const field = await createAndReturnFormField({
-          fieldType: BasicField.ShortText,
-          allowPrefill: false,
+          fieldType: BasicField.Email,
+          isVerifiable: true,
+          hasAllowedEmailDomains: true,
+          allowedEmailDomains: ['@example.com'],
         })
 
         // Assert
         const fieldObj = field.toObject()
-        expect(fieldObj).toHaveProperty('allowPrefill', false)
-        expect(fieldObj).toHaveProperty('lockPrefill', false)
+        expect(fieldObj).toHaveProperty('isVerifiable', true)
+        expect(fieldObj).toHaveProperty('hasAllowedEmailDomains', true)
+        expect(fieldObj).toHaveProperty('allowedEmailDomains', ['@example.com'])
       })
 
-      it('should allow creation of short text field with allowPrefill = true setting and populate lockPrefill settings with default', async () => {
-        // Arrange
-        const field = await createAndReturnFormField({
-          fieldType: BasicField.ShortText,
-          allowPrefill: true,
-        })
-
-        // Assert
-        const fieldObj = field.toObject()
-        expect(fieldObj).toHaveProperty('allowPrefill', true)
-        expect(fieldObj).toHaveProperty('lockPrefill', false)
-      })
-
-      it('should allow creation of short text field with allowPrefill = true and lockPrefill = true settings', async () => {
-        // Arrange
-        const field = await createAndReturnFormField({
-          fieldType: BasicField.ShortText,
-          allowPrefill: true,
-          lockPrefill: true,
-        })
-
-        // Assert
-        const fieldObj = field.toObject()
-        expect(fieldObj).toHaveProperty('allowPrefill', true)
-        expect(fieldObj).toHaveProperty('lockPrefill', true)
-      })
-
-      it('should not allow creation of short text field with allowPrefill = false and lockPrefill = true settings', async () => {
+      it('should throw an error for email field with isVerifiable true and hasAllowedEmailDomains false with non-empty allowedEmailDomains', async () => {
         // Arrange
         const createField = async () => {
           const field = await createAndReturnFormField({
-            fieldType: BasicField.ShortText,
-            allowPrefill: false,
-            lockPrefill: true,
+            fieldType: BasicField.Email,
+            isVerifiable: true,
+            hasAllowedEmailDomains: false,
+            allowedEmailDomains: ['@example.com'],
           })
-
           return field
         }
 
-        // Act
-        const createFieldPromise = createField()
+        // Assert
+        await expect(createField).rejects.toThrow(
+          'List of allowed email domains should be empty if restrict email domains is disabled',
+        )
+      })
+
+      it('should throw an error for email field with isVerifiable true and hasAllowedEmailDomains true with empty allowedEmailDomains', async () => {
+        // Arrange
+        const createField = async () => {
+          const field = await createAndReturnFormField({
+            fieldType: BasicField.Email,
+            isVerifiable: true,
+            hasAllowedEmailDomains: true,
+            allowedEmailDomains: [],
+          })
+          return field
+        }
 
         // Assert
-        await expect(createFieldPromise).rejects.toThrow(
-          'Cannot lock prefill if prefill is not enabled',
+        await expect(createField).rejects.toThrow(
+          'List of allowed email domains should not be empty if restrict email domains is enabled',
         )
+      })
+
+      it('should allow email field with isVerifiable false and hasAllowedEmailDomains false with empty allowedEmailDomains', async () => {
+        // Arrange
+        const field = await createAndReturnFormField({
+          fieldType: BasicField.Email,
+          isVerifiable: false,
+          hasAllowedEmailDomains: false,
+          allowedEmailDomains: [],
+        })
+
+        // Assert
+        const fieldObj = field.toObject()
+        expect(fieldObj).toHaveProperty('isVerifiable', false)
+        expect(fieldObj).toHaveProperty('hasAllowedEmailDomains', false)
+        expect(fieldObj).toHaveProperty('allowedEmailDomains', [])
+      })
+
+      it('should throw an error for email field with isVerifiable false and hasAllowedEmailDomains false with non-empty allowedEmailDomains', async () => {
+        // Arrange
+        const createField = async () => {
+          const field = await createAndReturnFormField({
+            fieldType: BasicField.Email,
+            isVerifiable: false,
+            hasAllowedEmailDomains: false,
+            allowedEmailDomains: ['@example.com'],
+          })
+          return field
+        }
+
+        // Assert
+        await expect(createField).rejects.toThrow(
+          'List of allowed email domains should be empty if restrict email domains is disabled',
+        )
+      })
+
+      it('should throw an error for email field with isVerifiable false and hasAllowedEmailDomains true with empty allowedEmailDomains', async () => {
+        // Arrange
+        const createField = async () => {
+          const field = await createAndReturnFormField({
+            fieldType: BasicField.Email,
+            isVerifiable: false,
+            hasAllowedEmailDomains: true,
+            allowedEmailDomains: [],
+          })
+          return field
+        }
+
+        // Assert
+        await expect(createField).rejects.toThrow(
+          'List of allowed email domains should not be empty if restrict email domains is enabled',
+        )
+      })
+
+      it('should allow email field with isVerifiable false and hasAllowedEmailDomains true with non-empty allowedEmailDomains', async () => {
+        // Arrange
+        const field = await createAndReturnFormField({
+          fieldType: BasicField.Email,
+          isVerifiable: false,
+          hasAllowedEmailDomains: true,
+          allowedEmailDomains: ['@example.com'],
+        })
+
+        // Assert
+        const fieldObj = field.toObject()
+        expect(fieldObj).toHaveProperty('isVerifiable', false)
+        expect(fieldObj).toHaveProperty('hasAllowedEmailDomains', true)
+        expect(fieldObj).toHaveProperty('allowedEmailDomains', ['@example.com'])
       })
     })
   }),
+    describe('Short Text Field', () => {
+      describe('prefill', () => {
+        it('should allow creation of short text field with no prefill setting and populate prefill settings with default', async () => {
+          // Arrange
+          const field = await createAndReturnFormField({
+            fieldType: BasicField.ShortText,
+          })
+
+          // Assert
+          const fieldObj = field.toObject()
+          expect(fieldObj).toHaveProperty('allowPrefill', false)
+          expect(fieldObj).toHaveProperty('lockPrefill', false)
+        })
+
+        it('should allow creation of short text field with allowPrefill = false setting and populate lockPrefill settings with default', async () => {
+          // Arrange
+          const field = await createAndReturnFormField({
+            fieldType: BasicField.ShortText,
+            allowPrefill: false,
+          })
+
+          // Assert
+          const fieldObj = field.toObject()
+          expect(fieldObj).toHaveProperty('allowPrefill', false)
+          expect(fieldObj).toHaveProperty('lockPrefill', false)
+        })
+
+        it('should allow creation of short text field with allowPrefill = true setting and populate lockPrefill settings with default', async () => {
+          // Arrange
+          const field = await createAndReturnFormField({
+            fieldType: BasicField.ShortText,
+            allowPrefill: true,
+          })
+
+          // Assert
+          const fieldObj = field.toObject()
+          expect(fieldObj).toHaveProperty('allowPrefill', true)
+          expect(fieldObj).toHaveProperty('lockPrefill', false)
+        })
+
+        it('should allow creation of short text field with allowPrefill = true and lockPrefill = true settings', async () => {
+          // Arrange
+          const field = await createAndReturnFormField({
+            fieldType: BasicField.ShortText,
+            allowPrefill: true,
+            lockPrefill: true,
+          })
+
+          // Assert
+          const fieldObj = field.toObject()
+          expect(fieldObj).toHaveProperty('allowPrefill', true)
+          expect(fieldObj).toHaveProperty('lockPrefill', true)
+        })
+
+        it('should not allow creation of short text field with allowPrefill = false and lockPrefill = true settings', async () => {
+          // Arrange
+          const createField = async () => {
+            const field = await createAndReturnFormField({
+              fieldType: BasicField.ShortText,
+              allowPrefill: false,
+              lockPrefill: true,
+            })
+
+            return field
+          }
+
+          // Act
+          const createFieldPromise = createField()
+
+          // Assert
+          await expect(createFieldPromise).rejects.toThrow(
+            'Cannot lock prefill if prefill is not enabled',
+          )
+        })
+      })
+    }),
     describe('Methods', () => {
       describe('getQuestion', () => {
         it('should return field title when field type is not a table field', async () => {

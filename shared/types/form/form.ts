@@ -1,5 +1,5 @@
 import { PublicUserDto, UserDto } from '../user'
-import { FormField, FormFieldDto } from '../field'
+import { FormField, FormFieldDto, MyInfoChildData } from '../field'
 
 import { FormLogo } from './form_logo'
 import type { Merge, Opaque, PartialDeep } from 'type-fest'
@@ -12,7 +12,8 @@ import {
 } from '../../constants/form'
 import { DateString } from '../generic'
 import { FormLogic, LogicDto } from './form_logic'
-import { PaymentChannel } from '../payment'
+import { PaymentChannel, PaymentType } from '../payment'
+import { MyInfoChildrenBirthRecords } from '@opengovsg/myinfo-gov-client'
 
 export type FormId = Opaque<string, 'FormId'>
 
@@ -51,6 +52,7 @@ export enum FormAuthType {
   CP = 'CP',
   MyInfo = 'MyInfo',
   SGID = 'SGID',
+  SGID_MyInfo = 'SGID_MyInfo',
 }
 
 export enum FormStatus {
@@ -75,11 +77,31 @@ export type FormPaymentsChannel = {
   publishable_key: string
 }
 
-export type FormPaymentsField = {
-  enabled: boolean
+export interface PaymentTypeBase {
+  payment_type: PaymentType
+
   amount_cents?: number
-  description?: string
+  min_amount?: number
+  max_amount?: number
 }
+interface VariablePaymentsField extends PaymentTypeBase {
+  payment_type: PaymentType.Variable
+  min_amount: number
+  max_amount: number
+}
+
+interface FixedPaymentField extends PaymentTypeBase {
+  payment_type: PaymentType.Fixed
+  amount_cents: number
+}
+
+export type FormPaymentsField =
+  | {
+      enabled: boolean
+      description?: string
+      name?: string
+      gst_enabled?: boolean
+    } & (VariablePaymentsField | FixedPaymentField)
 
 export type FormBusinessField = {
   address?: string
@@ -203,6 +225,7 @@ export type PublicFormViewDto = {
   spcpSession?: SpcpSession
   isIntranetUser?: boolean
   myInfoError?: true
+  myInfoChildrenBirthRecords?: MyInfoChildData
 }
 
 export type PreviewFormViewDto = Pick<PublicFormViewDto, 'form' | 'spcpSession'>

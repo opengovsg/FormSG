@@ -15,7 +15,7 @@ const PAYMENT_STM_KEY = 'PAYMENT_STM_KEY'
  * In local storage, add a marker that a form submission and payment
  * has been submitted and is ongoing. The marker must be cleared when
  * the payment flow is complete. The marker also contains a eviction policy
- * of maxmium 1 day, that will be assess whenever this hook is used.
+ * of maximum 1 day, that will be assessed whenever this hook is used.
  *
  * Returns an array of three variables:
  *
