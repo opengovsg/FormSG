@@ -1029,6 +1029,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       { status: FormStatus.Archived },
       { session },
     ).read('primary')
+  }
+
   FormSchema.statics.getGoLinkSuffix = async function (formId: string) {
     return this.findById(formId, 'goLinkSuffix').exec()
   }

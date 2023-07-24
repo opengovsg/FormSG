@@ -39,7 +39,7 @@ const useCommonHooks = () => {
 
   const handleSuccess = useCallback(
     (data: Pick<FormDto, '_id'>) => {
-      queryClient.invalidateQueries(workspaceKeys.all)
+      queryClient.invalidateQueries(workspaceKeys.dashboard)
       navigate(`${ADMINFORM_ROUTE}/${data._id}`)
     },
     [navigate, queryClient],
@@ -130,7 +130,8 @@ export const useDeleteFormMutation = () => {
   const handleSuccess = useCallback(
     (formId: string) => {
       queryClient.invalidateQueries(adminFormKeys.id(formId))
-      queryClient.invalidateQueries(workspaceKeys.all)
+      queryClient.invalidateQueries(workspaceKeys.dashboard)
+      queryClient.invalidateQueries(workspaceKeys.workspaces)
       toast({
         status: 'success',
         description: 'The form has been successfully deleted.',
@@ -177,7 +178,7 @@ export const useWorkspaceMutations = () => {
 
   const handleSuccess = useCallback(
     (description: string) => {
-      queryClient.invalidateQueries(workspaceKeys.all)
+      queryClient.invalidateQueries(workspaceKeys.workspaces)
       toast({
         description: description,
       })

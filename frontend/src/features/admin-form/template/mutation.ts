@@ -28,7 +28,7 @@ const useCommonHooks = () => {
 
   const handleSuccess = useCallback(
     (data: Pick<FormDto, '_id'>) => {
-      queryClient.invalidateQueries(workspaceKeys.all)
+      queryClient.invalidateQueries(workspaceKeys.dashboard)
       navigate(`${ADMINFORM_ROUTE}/${data._id}`)
     },
     [navigate, queryClient],
