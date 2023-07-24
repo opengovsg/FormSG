@@ -170,24 +170,7 @@ export const AuthSettingsSection = ({
                       <Spacer w="18px" />
                       <Tag variant="subtle">Free</Tag>
                     </>
-                  ) : // <>
-                  //   <Tooltip
-                  //     label={SGID_TOOLTIP}
-                  //     placement="top"
-                  //     textAlign="center"
-                  //   >
-                  //     <Icon as={BxsHelpCircle} aria-hidden marginX="0.5rem" />
-                  //   </Tooltip>
-                  //   <Link
-                  //     href={OGP_SGID}
-                  //     isExternal
-                  //     // Needed for link to open since there are nested onClicks
-                  //     onClickCapture={(e) => e.stopPropagation()}
-                  //   >
-                  //     Contact us to find out more
-                  //   </Link>
-                  // </>
-                  null}
+                  ) : null}
                   {authType === FormAuthType.CP ? (
                     <Tooltip
                       label={CP_TOOLTIP}
