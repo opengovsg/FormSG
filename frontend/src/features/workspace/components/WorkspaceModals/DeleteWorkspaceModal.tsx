@@ -25,7 +25,6 @@ import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 export interface DeleteWorkspaceModalProps {
   isOpen: boolean
   onClose: () => void
-  workspaceId: string
 }
 
 const DELETE_OPTIONS = [
@@ -36,13 +35,7 @@ const DELETE_OPTIONS = [
 export const DeleteWorkspaceModal = ({
   isOpen,
   onClose,
-  workspaceId,
 }: DeleteWorkspaceModalProps): JSX.Element => {
-  const {
-    handleSubmit,
-    formState: { errors },
-    register,
-  } = useForm()
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
@@ -51,15 +44,17 @@ export const DeleteWorkspaceModal = ({
   const isMobile = useIsMobile()
 
   const { deleteWorkspaceMutation } = useWorkspaceMutations()
-  const { setCurrentWorkspace } = useWorkspaceContext()
+  const { setCurrentWorkspace, activeWorkspace } = useWorkspaceContext()
 
   // TODO: handle delete forms together with workspace
-  const handleDeleteWorkspace = handleSubmit(async (data) => {
-    await deleteWorkspaceMutation.mutateAsync({ destWorkspaceId: workspaceId })
+  const handleDeleteWorkspace = async () => {
+    await deleteWorkspaceMutation.mutateAsync({
+      destWorkspaceId: activeWorkspace._id,
+    })
     // reset workspace to default
     setCurrentWorkspace('')
     onClose()
-  })
+  }
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
@@ -68,29 +63,11 @@ export const DeleteWorkspaceModal = ({
         <ModalHeader>Delete workspace</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Text textStyle="body-2" color="secondary.500">
-            All responses associated to the forms or workspaces will be deleted.
-          </Text>
-          <FormControl isRequired isInvalid={!isEmpty(errors)}>
-            <Radio.RadioGroup mt="1.5rem">
-              {DELETE_OPTIONS.map((o, idx) => (
-                <Radio
-                  key={idx}
-                  value={o}
-                  isDisabled={idx === 1}
-                  {...register('radio', {
-                    required: {
-                      value: true,
-                      message: 'This field is required',
-                    },
-                  })}
-                >
-                  {o}
-                </Radio>
-              ))}
-            </Radio.RadioGroup>
-            <FormErrorMessage>{errors['radio']?.message}</FormErrorMessage>
-          </FormControl>
+          {activeWorkspace.formIds.length > 0 && (
+            <Text textStyle="body-2" color="secondary.500">
+              {`Remove ${activeWorkspace.formIds.length} form(s) from ${activeWorkspace.title} workspace and delete the workspace`}
+            </Text>
+          )}
         </ModalBody>
 
         <ModalFooter>
