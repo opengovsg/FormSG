@@ -6,8 +6,11 @@ import { PaymentStatus } from '../../../../shared/types'
 import { IPaymentSchema } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import getPaymentModel from '../../models/payment.server.model'
+import { MailSendError } from '../../services/mail/mail.errors'
 import MailService from '../../services/mail/mail.service'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
+import { InvalidDomainError } from '../auth/auth.errors'
+import * as AuthService from '../auth/auth.service'
 import { DatabaseError } from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'
 import { retrieveFormById } from '../form/form.service'
@@ -349,5 +352,13 @@ export const getIncompletePayments = (): ResultAsync<
       })
       return new DatabaseError()
     },
+  )
+}
+
+export const sendOnboardingEmailIfEligible = (
+  email: string,
+): ResultAsync<true, DatabaseError | InvalidDomainError | MailSendError> => {
+  return AuthService.validateEmailDomain(email).andThen(() =>
+    MailService.sendPaymentOnboardingEmail({ email }),
   )
 }

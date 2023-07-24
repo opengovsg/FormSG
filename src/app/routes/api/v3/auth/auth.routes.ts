@@ -4,6 +4,8 @@ import { rateLimitConfig } from '../../../../config/config'
 import * as AuthController from '../../../../modules/auth/auth.controller'
 import { limitRate } from '../../../../utils/limit-rate'
 
+import { AuthSGIDRouter } from './auth-sgid.routes'
+
 export const AuthRouter = Router()
 /**
  * Check if email domain is a valid agency
@@ -62,3 +64,5 @@ AuthRouter.post(
  * @returns 500 when the session fails to be destroyed
  */
 AuthRouter.get('/logout', AuthController.handleSignout)
+
+AuthRouter.use('/sgid', AuthSGIDRouter)

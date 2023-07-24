@@ -488,7 +488,10 @@ const addBasicField = async (
       }
     // Fall through to set "Options".
     case BasicField.Dropdown:
-      await page.getByLabel('Options').fill(field.fieldOptions.join('\n'))
+      await page
+        .getByLabel('Options')
+        .first()
+        .fill(field.fieldOptions.join('\n'))
       break
     case BasicField.Date:
       {

@@ -3,6 +3,7 @@ import { Controller, useFormContext } from 'react-hook-form'
 
 import { FormColorTheme } from '~shared/types'
 import { DateSelectedValidation } from '~shared/types/field'
+import { isDateAnInvalidDay } from '~shared/utils/date-validation'
 
 import {
   isDateAfterToday,
@@ -39,29 +40,34 @@ export const DateField = ({
   const isDateUnavailable = useCallback(
     (date: Date) => {
       const { selectedDateValidation } = schema.dateValidation
-      // All dates available.
-      if (!selectedDateValidation) return false
+      const selectedInvalidDays = schema.invalidDays ?? []
+      let isDateUnavailable = false
 
       switch (selectedDateValidation) {
         case DateSelectedValidation.NoPast:
-          return isDateBeforeToday(date)
+          isDateUnavailable = isDateBeforeToday(date)
+          break
         case DateSelectedValidation.NoFuture:
-          return isDateAfterToday(date)
+          isDateUnavailable = isDateAfterToday(date)
+          break
         case DateSelectedValidation.Custom: {
           const { customMinDate, customMaxDate } = schema.dateValidation
           // customMinDate and customMaxDate are in UTC from the server,
           // need to convert to local time but with the same date as UTC.
-          return isDateOutOfRange(
+          isDateUnavailable = isDateOutOfRange(
             date,
             loadDateFromNormalizedDate(customMinDate),
             loadDateFromNormalizedDate(customMaxDate),
           )
+          break
         }
         default:
-          return false
+          break
       }
+
+      return isDateUnavailable || isDateAnInvalidDay(date, selectedInvalidDays)
     },
-    [schema.dateValidation],
+    [schema.dateValidation, schema.invalidDays],
   )
 
   const { control } = useFormContext<SingleAnswerFieldInput>()

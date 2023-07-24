@@ -7,18 +7,12 @@ import path from 'path'
 import url from 'url'
 
 import config from '../../config/config'
-import { AuthRouter } from '../../modules/auth/auth.routes'
-import { ExamplesRouter } from '../../modules/examples/examples.routes'
-import { AdminFormsRouter } from '../../modules/form/admin-form/admin-form.routes'
-import { PublicFormRouter } from '../../modules/form/public-form/public-form.routes'
 import { FrontendRouter } from '../../modules/frontend/frontend.routes'
-import { FrontendRouter as OldFrontendRouter } from '../../modules/frontend-old/frontend.routes'
 import { MYINFO_ROUTER_PREFIX } from '../../modules/myinfo/myinfo.constants'
 import { MyInfoRouter } from '../../modules/myinfo/myinfo.routes'
 import { SgidRouter } from '../../modules/sgid/sgid.routes'
-import { SubmissionRouter } from '../../modules/submission/submission.routes'
-import { VfnRouter } from '../../modules/verification/verification.routes'
 import { ApiRouter } from '../../routes/api'
+import { LegacyRedirectRouter } from '../../routes/legacy-redirect'
 import { SpOidcJwksRouter } from '../../routes/singpass'
 import * as IntranetMiddleware from '../../services/intranet/intranet.middleware'
 
@@ -112,13 +106,6 @@ const loadExpressApp = async (connection: Connection) => {
   // Log intranet usage
   app.use(IntranetMiddleware.logIntranetUsage)
 
-  // Deprecated routes
-  app.use('/frontend', OldFrontendRouter)
-  app.use('/auth', AuthRouter)
-  app.use('/transaction', VfnRouter)
-  app.use('/examples', ExamplesRouter)
-  app.use('/v2/submissions', SubmissionRouter)
-
   // jwks endpoint for SP OIDC
   app.use('/singpass/.well-known/jwks.json', SpOidcJwksRouter)
   // Registered routes with sgID
@@ -126,11 +113,10 @@ const loadExpressApp = async (connection: Connection) => {
   // Use constant for registered routes with MyInfo servers
   app.use(MYINFO_ROUTER_PREFIX, MyInfoRouter)
 
-  // Deprecated routes, must be here since API starts with form id regex prefix.
-  app.use(AdminFormsRouter)
-  app.use(PublicFormRouter)
+  // Legacy frontend routes which may still be in use
+  app.use(LegacyRedirectRouter)
 
-  // New routes in preparation for API refactor.
+  // API routes
   app.use('/api', ApiRouter)
 
   // serve static assets. `dist/frontend` contains the root files as well as a `/static` folder

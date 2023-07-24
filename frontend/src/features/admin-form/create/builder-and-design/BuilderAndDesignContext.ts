@@ -3,6 +3,7 @@ import { UseDisclosureReturn } from '@chakra-ui/react'
 
 export type BuilderAndDesignContextProps = {
   deleteFieldModalDisclosure: UseDisclosureReturn
+  deletePaymentModalDisclosure: UseDisclosureReturn
 }
 
 export const BuilderAndDesignContext = createContext<

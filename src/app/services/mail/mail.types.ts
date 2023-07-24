@@ -115,3 +115,16 @@ type SmsVerificationTiers = {
   // Ensure that all tiers are covered
   smsWarningTiers: { [K in keyof typeof SMS_WARNING_TIERS]: string }
 }
+
+export type PaymentConfirmationData = {
+  appName: string
+  formTitle: string
+  submissionId: string
+  invoiceUrl: string
+}
+
+export type IssueReportedNotificationData = {
+  appName: string
+  formTitle: string
+  formResultUrl: string
+}

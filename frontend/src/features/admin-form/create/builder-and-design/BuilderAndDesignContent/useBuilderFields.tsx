@@ -9,6 +9,10 @@ import {
 } from '~shared/types/field'
 import { insertAt, replaceAt } from '~shared/utils/immutable-array-fns'
 
+import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'
+import { useSessionStorage } from '~hooks/useSessionStorage'
+
+import { useEnv } from '~features/env/queries'
 import { augmentWithMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
 
 import { PENDING_CREATE_FIELD_ID } from '../constants'
@@ -48,26 +52,51 @@ const getFormFieldsWhileEditing = (
     (ff) => ff._id === editingField._id,
   )
   if (editingFieldIndex < 0) return formFields
+
   return replaceAt(formFields, editingFieldIndex, editingField)
 }
 
 export const useBuilderFields = () => {
   const { data: formData, isLoading } = useCreateTabForm()
   const stateData = useFieldBuilderStore(stateDataSelector)
+  const [, setIsAdminFeedbackEligible] = useSessionStorage<boolean>(
+    ADMIN_FEEDBACK_SESSION_KEY,
+  )
+  const { data: { adminFeedbackFieldThreshold } = {} } = useEnv()
   const builderFields = useMemo(() => {
     let existingFields = formData?.form_fields
     if (isLoading || !existingFields) return null
     if (stateData.state === FieldBuilderState.EditingField) {
+      // check if existing fields meets threshold for admin feedback eligibility
+      if (
+        adminFeedbackFieldThreshold &&
+        existingFields.length >= adminFeedbackFieldThreshold
+      )
+        setIsAdminFeedbackEligible(true)
+
       existingFields = getFormFieldsWhileEditing(
         existingFields,
         stateData.field,
       )
     } else if (stateData.state === FieldBuilderState.CreatingField) {
+      // if existing fields is equal to threshold - 1, to include field being created
+      if (
+        adminFeedbackFieldThreshold &&
+        existingFields.length >= adminFeedbackFieldThreshold - 1
+      )
+        setIsAdminFeedbackEligible(true)
+
       existingFields = getFormFieldsWhileCreating(existingFields, stateData)
     }
 
     return existingFields.map(augmentWithMyInfo)
-  }, [formData?.form_fields, isLoading, stateData])
+  }, [
+    formData?.form_fields,
+    isLoading,
+    stateData,
+    setIsAdminFeedbackEligible,
+    adminFeedbackFieldThreshold,
+  ])
 
   return {
     builderFields,

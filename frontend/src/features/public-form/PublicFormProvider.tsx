@@ -15,7 +15,13 @@ import { differenceInMilliseconds, isPast } from 'date-fns'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
-import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
+import {
+  featureFlags,
+  PAYMENT_CONTACT_FIELD_ID,
+  PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID,
+} from '~shared/constants'
+import { PaymentType } from '~shared/types'
+import { CaptchaTypes } from '~shared/types/captcha'
 import {
   FormAuthType,
   FormResponseMode,
@@ -26,6 +32,7 @@ import { FORMID_REGEX } from '~constants/routes'
 import { useBrowserStm } from '~hooks/payments'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
+import { dollarsToCents } from '~utils/payments'
 import { HttpError } from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
 
@@ -34,14 +41,17 @@ import {
   trackReCaptchaOnError,
   trackSubmitForm,
   trackSubmitFormFailure,
+  trackTurnstileOnError,
   trackVisitPublicForm,
 } from '~features/analytics/AnalyticsService'
 import { useEnv } from '~features/env/queries'
+import { useIsFeatureEnabled } from '~features/feature-flags/queries'
 import { getPaymentPageUrl } from '~features/public-form/utils/urls'
 import {
   RecaptchaClosedError,
   useRecaptcha,
 } from '~features/recaptcha/useRecaptcha'
+import { useTurnstile } from '~features/turnstile/useTurnstile'
 import {
   FetchNewTransactionResponse,
   useTransactionMutations,
@@ -125,15 +135,56 @@ export const PublicFormProvider = ({
     }
   }, [submissionData])
 
-  const { data: { captchaPublicKey, useFetchForSubmissions } = {} } = useEnv(
-    /* enabled= */ !!data?.form.hasCaptcha,
+  const {
+    data: { captchaPublicKey, turnstileSiteKey, useFetchForSubmissions } = {},
+  } = useEnv(/* enabled= */ !!data?.form.hasCaptcha)
+
+  // Feature flag to control turnstile captcha rollout
+  // defaults to false
+  // todo: remove after full rollout
+  const enableTurnstileFeatureFlag = useIsFeatureEnabled(
+    featureFlags.turnstile,
+    false,
   )
-  const { hasLoaded, getCaptchaResponse, containerId } = useRecaptcha({
-    sitekey: data?.form.hasCaptcha ? captchaPublicKey : undefined,
+
+  let hasLoaded: boolean
+  let containerID: string
+  let captchaType: CaptchaTypes
+
+  const {
+    hasLoaded: hasTurnstileLoaded,
+    getTurnstileResponse,
+    containerID: turnstileContainerID,
+  } = useTurnstile({
+    sitekey: data?.form.hasCaptcha ? turnstileSiteKey : undefined,
+    enableUsage: enableTurnstileFeatureFlag,
   })
+
+  const {
+    hasLoaded: hasRecaptchaLoaded,
+    getCaptchaResponse,
+    containerId: recaptchaContainerID,
+  } = useRecaptcha({
+    sitekey: data?.form.hasCaptcha ? captchaPublicKey : undefined,
+    enableUsage: !enableTurnstileFeatureFlag,
+  })
+
+  if (enableTurnstileFeatureFlag) {
+    hasLoaded = hasTurnstileLoaded
+    containerID = turnstileContainerID
+    captchaType = CaptchaTypes.Turnstile
+  } else {
+    hasLoaded = hasRecaptchaLoaded
+    containerID = recaptchaContainerID
+    captchaType = CaptchaTypes.Recaptcha
+  }
 
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
     useCommonFormProvider(formId)
+
+  const isPaymentEnabled =
+    data?.form.responseMode === FormResponseMode.Encrypt &&
+    data.form.payments_field.enabled
 
   useEffect(() => {
     if (data?.myInfoError) {
@@ -203,25 +254,39 @@ export const PublicFormProvider = ({
   const navigate = useNavigate()
   const [, storePaymentMemory] = useBrowserStm(formId)
   const handleSubmitForm: SubmitHandler<
-    FormFieldValues & { [PAYMENT_CONTACT_FIELD_ID]?: { value: string } }
+    FormFieldValues & {
+      [PAYMENT_CONTACT_FIELD_ID]?: { value: string }
+      [PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]: string
+    }
   > = useCallback(
     async ({
       [PAYMENT_CONTACT_FIELD_ID]: paymentReceiptEmailField,
+      [PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]: paymentVariableInputAmountField,
       ...formInputs
     }) => {
       const { form } = data ?? {}
       if (!form) return
 
       let captchaResponse: string | null
-      try {
-        captchaResponse = await getCaptchaResponse()
-      } catch (error) {
-        if (error instanceof RecaptchaClosedError) {
-          // Do nothing if recaptcha is closed.
-          return
+
+      if (enableTurnstileFeatureFlag) {
+        try {
+          captchaResponse = await getTurnstileResponse()
+        } catch (error) {
+          trackTurnstileOnError(form)
+          return showErrorToast(error, form)
         }
-        trackReCaptchaOnError(form)
-        return showErrorToast(error, form)
+      } else {
+        try {
+          captchaResponse = await getCaptchaResponse()
+        } catch (error) {
+          if (error instanceof RecaptchaClosedError) {
+            // Do nothing if recaptcha is closed.
+            return
+          }
+          trackReCaptchaOnError(form)
+          return showErrorToast(error, form)
+        }
       }
 
       const formData = {
@@ -229,9 +294,12 @@ export const PublicFormProvider = ({
         formLogics: form.form_logics,
         formInputs,
         captchaResponse,
+        captchaType,
         responseMetadata: {
           responseTimeMs: differenceInMilliseconds(Date.now(), startTime),
-          numVisibleFields,
+          numVisibleFields: isPaymentEnabled
+            ? numVisibleFields + 1
+            : numVisibleFields,
         },
       }
 
@@ -346,7 +414,17 @@ export const PublicFormProvider = ({
                   ...formData,
                   publicKey: form.publicKey,
                   captchaResponse,
+                  captchaType,
                   paymentReceiptEmail: paymentReceiptEmailField?.value,
+                  ...(form.payments_field.payment_type === PaymentType.Variable
+                    ? {
+                        payments: {
+                          amount_cents: dollarsToCents(
+                            paymentVariableInputAmountField,
+                          ),
+                        },
+                      }
+                    : {}),
                 },
                 {
                   onSuccess: ({
@@ -389,80 +467,86 @@ export const PublicFormProvider = ({
           // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
           if (useFetchForSubmissions) {
             return submitStorageFormWithFetch()
-          } else {
-            datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
-              meta: {
-                ...logMeta,
-                responseMode: 'storage',
-                method: 'axios',
-              },
-            })
-
-            return (
-              submitStorageModeFormMutation
-                .mutateAsync(
-                  {
-                    ...formData,
-                    publicKey: form.publicKey,
-                    captchaResponse,
-                    paymentReceiptEmail: paymentReceiptEmailField?.value,
-                  },
-                  {
-                    onSuccess: ({
-                      submissionId,
-                      timestamp,
-                      // payment forms will have non-empty paymentData field
-                      paymentData,
-                    }) => {
-                      trackSubmitForm(form)
-
-                      if (paymentData) {
-                        navigate(
-                          getPaymentPageUrl(formId, paymentData.paymentId),
-                        )
-                        storePaymentMemory(paymentData.paymentId)
-                        return
-                      }
-                      setSubmissionData({
-                        id: submissionId,
-                        timestamp,
-                      })
-                    },
-                  },
-                )
-                // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
-                .catch(async (error) => {
-                  // TODO(#5826): Remove when we have resolved the Network Error
-                  datadogLogs.logger.warn(
-                    `handleSubmitForm: ${error.message}`,
-                    {
-                      meta: {
-                        ...logMeta,
-                        responseMode: 'storage',
-                        method: 'axios',
-                        error: {
-                          message: error.message,
-                          stack: error.stack,
-                        },
-                      },
-                    },
-                  )
-
-                  if (/Network Error/i.test(error.message)) {
-                    axiosDebugFlow()
-                    return submitStorageFormWithFetch()
-                  } else {
-                    showErrorToast(error, form)
-                  }
-                })
-            )
           }
+          datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
+            meta: {
+              ...logMeta,
+              responseMode: 'storage',
+              method: 'axios',
+            },
+          })
+
+          return (
+            submitStorageModeFormMutation
+              .mutateAsync(
+                {
+                  ...formData,
+                  publicKey: form.publicKey,
+                  captchaResponse,
+                  captchaType,
+                  paymentReceiptEmail: paymentReceiptEmailField?.value,
+                  ...(form.payments_field.payment_type === PaymentType.Variable
+                    ? {
+                        payments: {
+                          amount_cents: dollarsToCents(
+                            paymentVariableInputAmountField,
+                          ),
+                        },
+                      }
+                    : {}),
+                },
+                {
+                  onSuccess: ({
+                    submissionId,
+                    timestamp,
+                    // payment forms will have non-empty paymentData field
+                    paymentData,
+                  }) => {
+                    trackSubmitForm(form)
+
+                    if (paymentData) {
+                      navigate(getPaymentPageUrl(formId, paymentData.paymentId))
+                      storePaymentMemory(paymentData.paymentId)
+                      return
+                    }
+                    setSubmissionData({
+                      id: submissionId,
+                      timestamp,
+                    })
+                  },
+                },
+              )
+              // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
+              .catch(async (error) => {
+                // TODO(#5826): Remove when we have resolved the Network Error
+                datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
+                  meta: {
+                    ...logMeta,
+                    responseMode: 'storage',
+                    method: 'axios',
+                    error: {
+                      message: error.message,
+                      stack: error.stack,
+                    },
+                  },
+                })
+
+                if (/Network Error/i.test(error.message)) {
+                  axiosDebugFlow()
+                  return submitStorageFormWithFetch()
+                }
+                showErrorToast(error, form)
+              })
+          )
         }
       }
     },
     [
       data,
+      enableTurnstileFeatureFlag,
+      getTurnstileResponse,
       getCaptchaResponse,
+      captchaType,
       showErrorToast,
       submitEmailModeFormMutation,
       submitStorageModeFormMutation,
@@ -474,6 +558,7 @@ export const PublicFormProvider = ({
       useFetchForSubmissions,
       numVisibleFields,
       startTime,
+      isPaymentEnabled,
     ],
   )
 
@@ -492,10 +577,6 @@ export const PublicFormProvider = ({
     [data?.form, data?.spcpSession],
   )
 
-  const isPaymentEnabled =
-    data?.form.responseMode === FormResponseMode.Encrypt &&
-    data.form.payments_field.enabled
-
   if (isNotFormId) {
     return <NotFoundErrorPage />
   }
@@ -509,7 +590,7 @@ export const PublicFormProvider = ({
         error,
         submissionData,
         isAuthRequired,
-        captchaContainerId: containerId,
+        captchaContainerId: containerID,
         expiryInMs,
         isLoading: isLoading || (!!data?.form.hasCaptcha && !hasLoaded),
         isPaymentEnabled,

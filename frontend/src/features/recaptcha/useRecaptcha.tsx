@@ -24,6 +24,7 @@ interface UseRecaptchaProps extends RecaptchaBaseConfig {
   id?: string
   useRecaptchaNet?: boolean
   useEnterprise?: boolean
+  enableUsage: boolean
 }
 
 type RecaptchaConfig = RecaptchaBaseConfig & {
@@ -81,6 +82,7 @@ export const useRecaptcha = ({
   badge = 'inline',
   size = 'invisible',
   useRecaptchaNet = true,
+  enableUsage,
 }: UseRecaptchaProps) => {
   useScript(getRecaptchaUrl({ useEnterprise, useRecaptchaNet }))
 
@@ -169,8 +171,10 @@ export const useRecaptcha = ({
         'expired-callback': handleExpiry,
         'error-callback': handleError,
       }
-      const widget = grecaptcha?.render(containerId, renderProps)
-      setWidgetId(widget)
+      if (enableUsage) {
+        const widget = grecaptcha?.render(containerId, renderProps)
+        setWidgetId(widget)
+      }
     }
   }, [
     hasLoaded,
@@ -185,6 +189,7 @@ export const useRecaptcha = ({
     handleError,
     useEnterprise,
     grecaptcha,
+    enableUsage,
   ])
 
   /**

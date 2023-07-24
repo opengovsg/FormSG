@@ -12,6 +12,10 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
 
 import {
+  MyInfoAttribute as InternalAttr,
+  MyInfoChildData,
+} from '../../../../shared/types'
+import {
   Environment,
   IFieldSchema,
   IHashes,
@@ -27,6 +31,7 @@ import {
   AuthTypeMismatchError,
   FormAuthNoEsrvcIdError,
 } from '../form/form.errors'
+import { SGIDMyInfoData } from '../sgid/sgid.adapter'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import { internalAttrListToScopes, MyInfoData } from './myinfo.adapter'
@@ -47,13 +52,16 @@ import {
 import {
   IMyInfoRedirectURLArgs,
   IMyInfoServiceConfig,
+  MyInfoKey,
   MyInfoLoginCookiePayload,
   MyInfoRelayState,
 } from './myinfo.types'
 import {
   compareHashedValues,
   createRelayState,
+  getMyInfoAttr,
   hashFieldValues,
+  isMyInfoChildrenBirthRecords,
   isMyInfoLoginCookie,
   isMyInfoRelayState,
   validateMyInfoForm,
@@ -241,18 +249,29 @@ export class MyInfoServiceClass {
    */
   prefillAndSaveMyInfoFields(
     formId: string,
-    myInfoData: MyInfoData,
+    myInfoData: MyInfoData | SGIDMyInfoData,
     currFormFields: LeanDocument<IFieldSchema[]>,
   ): ResultAsync<PossiblyPrefilledField[], MyInfoHashingError | DatabaseError> {
+    const allChildAttrs: InternalAttr[] = []
     const prefilledFields = currFormFields.map((field) => {
-      if (!field.myInfo?.attr) return field
+      const myInfoAttr = getMyInfoAttr(field)
+      // Children field prefilling is handled by the frontend.
+      if (isMyInfoChildrenBirthRecords(field.myInfo?.attr)) {
+        // Compound field, explode subfields.
+        allChildAttrs.push(...(myInfoAttr as InternalAttr[]))
+        // This compound field is responsible for its own filling.
+        return field
+      }
 
-      const myInfoAttr = field.myInfo.attr
-      const { fieldValue, isReadOnly } =
-        myInfoData.getFieldValueForAttr(myInfoAttr)
+      if (myInfoAttr === undefined) {
+        return field
+      }
+
+      const { fieldValue, isReadOnly } = myInfoData.getFieldValueForAttr(
+        myInfoAttr as InternalAttr,
+      )
       const prefilledField = cloneDeep(field) as PossiblyPrefilledField
       prefilledField.fieldValue = fieldValue
-
       // Disable field
       prefilledField.disabled = isReadOnly
       return prefilledField
@@ -261,6 +280,9 @@ export class MyInfoServiceClass {
       myInfoData.getUinFin(),
       formId,
       prefilledFields,
+      myInfoData instanceof MyInfoData
+        ? myInfoData.getChildrenBirthRecords(allChildAttrs)
+        : undefined,
     ).map(() => prefilledFields)
   }
 
@@ -276,8 +298,12 @@ export class MyInfoServiceClass {
     uinFin: string,
     formId: string,
     prefilledFormFields: PossiblyPrefilledField[],
+    childrenBirthRecords?: MyInfoChildData,
   ): ResultAsync<IMyInfoHashSchema | null, MyInfoHashingError | DatabaseError> {
-    const readOnlyHashPromises = hashFieldValues(prefilledFormFields)
+    const readOnlyHashPromises = hashFieldValues(
+      prefilledFormFields,
+      childrenBirthRecords,
+    )
     return ResultAsync.fromPromise(
       Bluebird.props<IHashes>(readOnlyHashPromises),
       (error) => {
@@ -366,7 +392,10 @@ export class MyInfoServiceClass {
   checkMyInfoHashes(
     responses: ProcessedFieldResponse[],
     hashes: IHashes,
-  ): ResultAsync<Set<string>, MyInfoHashingError | MyInfoHashDidNotMatchError> {
+  ): ResultAsync<
+    Set<MyInfoKey>,
+    MyInfoHashingError | MyInfoHashDidNotMatchError
+  > {
     const comparisonPromises = compareHashedValues(responses, hashes)
     return ResultAsync.fromPromise(
       Bluebird.props(comparisonPromises),

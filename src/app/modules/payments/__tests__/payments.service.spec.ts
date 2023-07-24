@@ -1,15 +1,24 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
-import mongoose from 'mongoose'
+import mongoose, { Query } from 'mongoose'
 import { PaymentStatus } from 'shared/types'
 
+import getAgencyModel from 'src/app/models/agency.server.model'
 import getPaymentModel from 'src/app/models/payment.server.model'
 
+import { InvalidDomainError } from '../../auth/auth.errors'
 import { DatabaseError } from '../../core/core.errors'
 import * as PaymentsService from '../payments.service'
 
 const Payment = getPaymentModel(mongoose)
+const AgencyModel = getAgencyModel(mongoose)
 const MOCK_FORM_ID = new ObjectId().toHexString()
+
+jest.mock('nodemailer', () => ({
+  createTransport: jest.fn().mockReturnValue({
+    sendMail: jest.fn().mockResolvedValue(true),
+  }),
+}))
 
 describe('payments.service', () => {
   beforeEach(async () => {
@@ -35,6 +44,7 @@ describe('payments.service', () => {
         paymentIntentId: 'somePaymentIntentId',
         amount: 314159,
         email: 'someone@mail.com',
+        gstEnabled: false,
       })
 
       // Act
@@ -77,6 +87,7 @@ describe('payments.service', () => {
         amount: 314159,
         email: email,
         status: PaymentStatus.Succeeded,
+        gstEnabled: false,
       })
     })
     afterEach(() => jest.clearAllMocks())
@@ -105,6 +116,7 @@ describe('payments.service', () => {
         amount: 314159,
         email: email,
         status: PaymentStatus.Succeeded,
+        gstEnabled: false,
       })
       const result =
         await PaymentsService.findLatestSuccessfulPaymentByEmailAndFormId(
@@ -154,6 +166,7 @@ describe('payments.service', () => {
         amount: 314159,
         email: newEmail,
         status: PaymentStatus.Pending,
+        gstEnabled: false,
       })
       const result =
         await PaymentsService.findLatestSuccessfulPaymentByEmailAndFormId(
@@ -188,6 +201,7 @@ describe('payments.service', () => {
         targetAccountId: 'acct_MOCK_ID',
         formId: new ObjectId(),
         pendingSubmissionId: new ObjectId(),
+        gstEnabled: false,
       }
 
       await Payment.create({
@@ -242,6 +256,85 @@ describe('payments.service', () => {
       expect(result.isErr()).toBe(true)
       const incompletePaymentsErr = result._unsafeUnwrapErr()
       expect(incompletePaymentsErr).toBeInstanceOf(DatabaseError)
+    })
+  })
+
+  describe('sendOnboardingEmailIfEligible', () => {
+    const MOCK_AGENCY_DOMAIN = 'test.gov.sg'
+    const MOCK_VALID_EMAIL = `hello@${MOCK_AGENCY_DOMAIN}`
+
+    beforeEach(async () => {
+      await dbHandler.insertAgency({ mailDomain: MOCK_AGENCY_DOMAIN })
+    })
+
+    it('should send onboarding email if email domain is valid', async () => {
+      // Act
+      const result = await PaymentsService.sendOnboardingEmailIfEligible(
+        MOCK_VALID_EMAIL,
+      )
+
+      // Assert
+      expect(result.isOk()).toBeTrue()
+    })
+
+    it('should return DatabaseError if mongo query fails', async () => {
+      const execSpy = jest.fn().mockRejectedValueOnce(new Error('boom'))
+      jest.spyOn(AgencyModel, 'findOne').mockReturnValueOnce({
+        exec: execSpy,
+      } as unknown as Query<any, any>)
+
+      // Act
+      const result = await PaymentsService.sendOnboardingEmailIfEligible(
+        MOCK_VALID_EMAIL,
+      )
+
+      // Assert
+      expect(result.isErr()).toBeTrue()
+      const databaseErr = result._unsafeUnwrapErr()
+      expect(databaseErr).toBeInstanceOf(DatabaseError)
+    })
+
+    it('should return a InvalidDomainError if string is not an email', async () => {
+      // Act
+      const result = await PaymentsService.sendOnboardingEmailIfEligible(
+        'hello@world',
+      )
+
+      // Assert
+      expect(result.isErr()).toBeTrue()
+      const databaseErr = result._unsafeUnwrapErr()
+      expect(databaseErr).toBeInstanceOf(InvalidDomainError)
+    })
+
+    it('should return a InvalidDomainError if email domain is not whitelisted', async () => {
+      // Act
+      const result = await PaymentsService.sendOnboardingEmailIfEligible(
+        'hello@world.com',
+      )
+
+      // Assert
+      expect(result.isErr()).toBeTrue()
+      const databaseErr = result._unsafeUnwrapErr()
+      expect(databaseErr).toBeInstanceOf(InvalidDomainError)
+    })
+
+    it('should return a MailSendError if nodemailer failed to send mail', async () => {
+      // Arrange
+      jest.mock('nodemailer', () => ({
+        createTransport: jest.fn().mockReturnValue({
+          sendMail: jest.fn().mockRejectedValueOnce(false),
+        }),
+      }))
+
+      // Act
+      const result = await PaymentsService.sendOnboardingEmailIfEligible(
+        'hello@world.com',
+      )
+
+      // Assert
+      expect(result.isErr()).toBeTrue()
+      const databaseErr = result._unsafeUnwrapErr()
+      expect(databaseErr).toBeInstanceOf(InvalidDomainError)
     })
   })
 })

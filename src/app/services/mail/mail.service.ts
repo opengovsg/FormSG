@@ -36,8 +36,10 @@ import {
   BounceNotificationHtmlData,
   CollabSmsDisabledData,
   CollabSmsWarningData,
+  IssueReportedNotificationData,
   MailOptions,
   MailServiceParams,
+  PaymentConfirmationData,
   SendAutoReplyEmailsArgs,
   SendMailOptions,
   SendSingleAutoreplyMailArgs,
@@ -46,8 +48,10 @@ import {
   generateAutoreplyHtml,
   generateAutoreplyPdf,
   generateBounceNotificationHtml,
+  generateIssueReportedNotificationHtml,
   generateLoginOtpHtml,
   generatePaymentConfirmationHtml,
+  generatePaymentOnboardingHtml,
   generateSmsVerificationDisabledHtmlForAdmin,
   generateSmsVerificationDisabledHtmlForCollab,
   generateSmsVerificationWarningHtmlForAdmin,
@@ -788,7 +792,7 @@ export class MailService {
    * @param submissionId the response ID
    * @param formId the payment form ID
    * @param paymentId the payment ID
-   * @throws error if mail fails, to be handled by the caller
+   * @returns err(MailSendError) when there was an error in sending the mail
    */
   sendPaymentConfirmationEmail = ({
     email,
@@ -803,24 +807,49 @@ export class MailService {
     formId: string
     paymentId: string
   }): ResultAsync<true, MailSendError> => {
+    const htmlData: PaymentConfirmationData = {
+      formTitle: formTitle,
+      submissionId: submissionId,
+      appName: this.#appName,
+      invoiceUrl: `${this.#appUrl}/api/v3/${getPaymentInvoiceDownloadUrlPath(
+        formId,
+        paymentId,
+      )}`,
+    }
+    return generatePaymentConfirmationHtml({ htmlData }).andThen((html) => {
+      const mail: MailOptions = {
+        to: email,
+        from: this.#senderFromString,
+        subject: `Your payment on ${this.#appName} was successful`,
+        html: html,
+        headers: {
+          [EMAIL_HEADERS.emailType]: EmailType.PaymentConfirmation,
+        },
+      }
+      return this.#sendNodeMail(mail, { mailId: 'paymentConfirmation' })
+    })
+  }
+
+  /**
+   * Sends a payment onboarding email to a valid email
+   * @param email the recipient email address
+   * @returns err(MailSendError) when there was an error in sending the mail
+   */
+  sendPaymentOnboardingEmail = ({
+    email,
+  }: {
+    email: string
+  }): ResultAsync<true, MailSendError> => {
     const mail: MailOptions = {
       to: email,
       from: this.#senderFromString,
-      subject: `Your payment on ${this.#appName} was successful`,
-      html: generatePaymentConfirmationHtml({
-        appName: this.#appName,
-        formTitle,
-        submissionId,
-        invoiceUrl: `${this.#appUrl}/api/v3/${getPaymentInvoiceDownloadUrlPath(
-          formId,
-          paymentId,
-        )}`,
-      }),
+      subject: `Getting started with FormSG Payments`,
+      html: generatePaymentOnboardingHtml({ appName: this.#appName }),
       headers: {
-        [EMAIL_HEADERS.emailType]: EmailType.PaymentConfirmation,
+        [EMAIL_HEADERS.emailType]: EmailType.PaymentOnboarding,
       },
     }
-    return this.#sendNodeMail(mail, { mailId: 'paymentConfirmation' })
+    return this.#sendNodeMail(mail, { mailId: 'paymentOnboarding' })
   }
 
   // Utility method to send a warning mail to the collaborators of a form.
@@ -924,6 +953,41 @@ export class MailService {
           })
         },
       )
+    )
+  }
+
+  /**
+   * Sends a notification email to the admin of the given form for issue
+   * reported by the public users.
+   * @param form form object in which the issue is being reported
+   */
+  sendFormIssueReportedNotificationToAdmin = ({
+    form,
+  }: {
+    form: IPopulatedForm
+  }): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const htmlData: IssueReportedNotificationData = {
+      appName: this.#appName,
+      formTitle: form.title,
+      formResultUrl: `${this.#appUrl}/admin/form/${form._id}/results/feedback`,
+    }
+    return generateIssueReportedNotificationHtml({ htmlData }).andThen(
+      (html) => {
+        const mail: MailOptions = {
+          to: form.admin.email,
+          cc: form.permissionList.map(({ email }) => email),
+          from: this.#senderFromString,
+          subject: `Respondents are facing issues on ${form.title}`,
+          html: html,
+          headers: {
+            [EMAIL_HEADERS.emailType]: EmailType.IssueReportedNotification,
+          },
+        }
+        return this.#sendNodeMail(mail, {
+          formId: form._id.toString(),
+          mailId: 'issueReportedNotification',
+        })
+      },
     )
   }
 

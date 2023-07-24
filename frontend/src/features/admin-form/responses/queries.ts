@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useQuery, UseQueryResult } from 'react-query'
 import { useParams } from 'react-router-dom'
 
-import { FormFeedbackMetaDto } from '~shared/types'
+import { FormFeedbackMetaDto, FormIssueMetaDto } from '~shared/types'
 import {
   FormSubmissionMetadataQueryDto,
   StorageModeSubmissionMetadataList,
@@ -11,7 +11,8 @@ import {
 
 import { adminFormKeys } from '../common/queries'
 
-import { getFormFeedback } from './FeedbackPage/FeedbackService'
+import { getFormIssues } from './FeedbackPage/issue/IssueService'
+import { getFormFeedback } from './FeedbackPage/review/ReviewService'
 import { useStorageResponsesContext } from './ResponsesPage/storage/StorageResponsesContext'
 import {
   countFormSubmissions,
@@ -41,6 +42,10 @@ export const adminFormResponsesKeys = {
 export const adminFormFeedbackKeys = {
   base: [...adminFormKeys.base, 'feedback'] as const,
   id: (id: string) => [...adminFormFeedbackKeys.base, id] as const,
+}
+export const adminFormIssueKeys = {
+  base: [...adminFormKeys.base, 'issues'] as const,
+  id: (id: string) => [...adminFormIssueKeys.base, id] as const,
 }
 
 /**
@@ -110,4 +115,16 @@ export const useFormFeedback = (): UseQueryResult<FormFeedbackMetaDto> => {
     () => getFormFeedback(formId),
     { staleTime: 0 },
   )
+}
+
+/**
+ * @precondition Must be wrapped in a Router as `useParam` is used.
+ */
+export const useFormIssues = (): UseQueryResult<FormIssueMetaDto> => {
+  const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
+
+  return useQuery(adminFormIssueKeys.id(formId), () => getFormIssues(formId), {
+    staleTime: 0,
+  })
 }

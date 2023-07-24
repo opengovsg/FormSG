@@ -18,6 +18,12 @@ export const augmentWithMyInfo = ({
       field.fieldOptions = myInfoBlock.fieldOptions ?? []
       return field
     }
+    case BasicField.Children: {
+      if (!field.myInfo?.attr) return field
+      const myInfoBlock = MAP_ATTR_TO_NAME[field.myInfo.attr]
+      field.title = myInfoBlock.value
+      return field
+    }
     default:
       return field
   }

@@ -3,7 +3,7 @@ import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { keyBy } from 'lodash'
 import mongoose from 'mongoose'
-import { ResultAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
 import { PaymentChannel, PaymentStatus, SubmissionType } from 'shared/types'
 import Stripe from 'stripe'
 
@@ -21,7 +21,9 @@ import {
 
 import { PaymentNotFoundError } from '../payments.errors'
 import * as PaymentsService from '../payments.service'
+import { StripeMetadataInvalidError } from '../stripe.errors'
 import * as StripeService from '../stripe.service'
+import * as StripeUtils from '../stripe.utils'
 
 const Payment = getPaymentModel(mongoose)
 const EncryptPendingSubmission = getEncryptPendingSubmissionModel(mongoose)
@@ -238,7 +240,41 @@ const MOCK_STRIPE_EVENTS = [
     },
     type: 'payout.canceled',
   },
-] as unknown as Stripe.Event[]
+  {
+    id: 'evt_PAYOUT_PAID',
+    object: 'event',
+    created: 1688972601,
+    account: 'acct_MOCK_ACCOUNT_ID',
+    data: {
+      object: {
+        id: 'po_1NS4j4CJpScV6kYOpH4bAqkr',
+        object: 'payout',
+        amount: 161,
+        arrival_date: 1688947200,
+        automatic: true,
+        balance_transaction: 'txn_1NS4j4CJpScV6kYO6tdVcHWj',
+        created: 1688936462,
+        currency: 'sgd',
+        description: 'STRIPE PAYOUT',
+        destination: 'ba_1MogcfCJpScV6kYOtuuO39wX',
+        failure_balance_transaction: null,
+        failure_code: null,
+        failure_message: null,
+        livemode: true,
+        metadata: {},
+        method: 'standard',
+        original_payout: null,
+        reconciliation_status: 'completed',
+        reversed_by: null,
+        source_type: 'card',
+        statement_descriptor: null,
+        status: 'paid',
+        type: 'bank_account',
+      },
+    },
+    type: 'payout.paid',
+  },
+] as unknown as Stripe.DiscriminatedEvent[]
 
 const MOCK_STRIPE_EVENTS_MAP = keyBy(MOCK_STRIPE_EVENTS, 'id')
 
@@ -279,6 +315,7 @@ describe('stripe.service', () => {
         status: PaymentStatus.Pending,
         paymentIntentId: 'pi_MOCK_PAYMENT_INTENT',
         email: 'formsg@tech.gov.sg',
+        gstEnabled: false,
       })
       await pendingSubmission.updateOne({
         paymentId: payment._id,
@@ -702,6 +739,308 @@ describe('stripe.service', () => {
 
       // Assert
       expect(result._unsafeUnwrap()).toBe(expectedAccountId)
+    })
+  })
+
+  describe('handleStripeEvent', () => {
+    describe('with event.type of payout', () => {
+      beforeEach(() => jest.restoreAllMocks())
+
+      it('should return error result when call to stripe.balanceTransactions failed', async () => {
+        const balanceTransactionApiSpy = jest
+          .spyOn(stripe.balanceTransactions, 'list')
+          .mockImplementationOnce(
+            () =>
+              ({
+                autoPagingEach: () => Promise.reject('boom'),
+              } as unknown as Stripe.ApiListPromise<Stripe.BalanceTransaction>),
+          )
+        const processStripeEventSpy = jest.spyOn(
+          StripeService,
+          'processStripeEvent',
+        )
+
+        const result = await StripeService.handleStripeEvent(
+          MOCK_STRIPE_EVENTS_MAP['evt_PAYOUT_CREATED'],
+        )
+        expect(balanceTransactionApiSpy).toHaveBeenCalledOnce()
+        expect(processStripeEventSpy).not.toHaveBeenCalled()
+        expect(result.isErr()).toBeTrue()
+      })
+
+      it('should return error result when call to getMetadataPaymentId failed', async () => {
+        const balanceTransactionApiSpy = jest
+          .spyOn(stripe.balanceTransactions, 'list')
+          .mockImplementationOnce(
+            () =>
+              ({
+                autoPagingEach: (fn) => fn({ type: 'charge', source: {} }),
+              } as unknown as Stripe.ApiListPromise<Stripe.BalanceTransaction>),
+          )
+        const getMetadataPaymentIdSpy = jest
+          .spyOn(StripeUtils, 'getMetadataPaymentId')
+          .mockImplementation(() => err(new StripeMetadataInvalidError()))
+        const processStripeEventSpy = jest.spyOn(
+          StripeService,
+          'processStripeEvent',
+        )
+
+        const result = await StripeService.handleStripeEvent(
+          MOCK_STRIPE_EVENTS_MAP['evt_PAYOUT_CREATED'],
+        )
+
+        expect(balanceTransactionApiSpy).toHaveBeenCalledOnce()
+        expect(getMetadataPaymentIdSpy).toHaveBeenCalledOnce()
+        expect(processStripeEventSpy).not.toHaveBeenCalledOnce()
+        expect(result.isErr()).toBeTrue()
+      })
+
+      it('should return error result when call to processStripeEvent failed', async () => {
+        const balanceTransactionApiSpy = jest
+          .spyOn(stripe.balanceTransactions, 'list')
+          .mockImplementationOnce(
+            () =>
+              ({
+                autoPagingEach: (fn) => fn({ type: 'charge', source: {} }),
+              } as unknown as Stripe.ApiListPromise<Stripe.BalanceTransaction>),
+          )
+        const getMetadataPaymentIdSpy = jest
+          .spyOn(StripeUtils, 'getMetadataPaymentId')
+          .mockImplementation(() => ok('still gud'))
+        const processStripeEventSpy = jest
+          .spyOn(StripeService, 'processStripeEvent')
+          .mockImplementationOnce(() => errAsync(new PaymentNotFoundError()))
+
+        const result = await StripeService.handleStripeEvent(
+          MOCK_STRIPE_EVENTS_MAP['evt_PAYOUT_CREATED'],
+        )
+
+        expect(balanceTransactionApiSpy).toHaveBeenCalledOnce()
+        expect(getMetadataPaymentIdSpy).toHaveBeenCalledOnce()
+        expect(processStripeEventSpy).toHaveBeenCalledOnce()
+        expect(result.isErr()).toBeTrue()
+      })
+
+      it('should return ok result when there are no internal errors', async () => {
+        const balanceTransactionApiSpy = jest
+          .spyOn(stripe.balanceTransactions, 'list')
+          .mockImplementationOnce(
+            () =>
+              ({
+                autoPagingEach: (fn) => fn({ type: 'charge', source: {} }),
+              } as unknown as Stripe.ApiListPromise<Stripe.BalanceTransaction>),
+          )
+        const getMetadataPaymentIdSpy = jest
+          .spyOn(StripeUtils, 'getMetadataPaymentId')
+          .mockImplementation(() => ok('still gud'))
+        const processStripeEventSpy = jest
+          .spyOn(StripeService, 'processStripeEvent')
+          .mockImplementationOnce(() => okAsync(undefined))
+
+        const result = await StripeService.handleStripeEvent(
+          MOCK_STRIPE_EVENTS_MAP['evt_PAYOUT_CREATED'],
+        )
+
+        expect(balanceTransactionApiSpy).toHaveBeenCalledOnce()
+        expect(getMetadataPaymentIdSpy).toHaveBeenCalledOnce()
+        expect(processStripeEventSpy).toHaveBeenCalledOnce()
+        expect(result.isOk()).toBeTrue()
+      })
+
+      describe('with event.type of payout.paid', () => {
+        const chargesResponseType = {
+          type: 'charge',
+          amount: 53,
+          status: 'succeeded',
+          source: {
+            object: 'charge',
+            amount: 53,
+            amount_captured: 53,
+            payment_method_details: {
+              card: {
+                brand: 'visa',
+                checks: {
+                  address_line1_check: null,
+                  address_postal_code_check: null,
+                  cvc_check: 'pass',
+                },
+                country: 'SG',
+                exp_month: 12,
+                exp_year: 2024,
+                fingerprint: 'fingerprint',
+                funding: 'prepaid',
+                installments: null,
+                last4: '1234',
+                mandate: null,
+                network: 'visa',
+                network_token: {
+                  used: false,
+                },
+                three_d_secure: null,
+                wallet: null,
+              },
+              type: 'card',
+            },
+          },
+        } as Stripe.BalanceTransaction
+
+        const paymentResponseType = {
+          type: 'payment',
+          amount: 110,
+          status: 'succeeded',
+          source: {
+            id: 'py_3NR4JHCJpScV6kYO1UnwVvkM',
+            object: 'charge',
+            amount: 110,
+            amount_captured: 110,
+            payment_method_details: {
+              paynow: {
+                reference: '3NR4JHCJpScV6kYO1IZnPfoW',
+              },
+              type: 'paynow',
+            },
+          },
+        } as Stripe.BalanceTransaction
+
+        const payoutResponseType = {
+          type: 'payout',
+          amount: -161,
+          status: 'available',
+          source: {
+            id: 'po_1NS4j4CJpScV6kYOpH4bAqkr',
+            object: 'payout',
+            amount: 161,
+            arrival_date: 1688947200,
+            automatic: true,
+            balance_transaction: 'txn_1NS4j4CJpScV6kYO6tdVcHWj',
+            created: 1688936462,
+            currency: 'sgd',
+            description: 'STRIPE PAYOUT',
+            destination: 'ba_DESTINATION',
+            failure_balance_transaction: null,
+            failure_code: null,
+            failure_message: null,
+            livemode: true,
+            metadata: {},
+            method: 'standard',
+            original_payout: null,
+            reconciliation_status: 'completed',
+            reversed_by: null,
+            source_type: 'card',
+            statement_descriptor: null,
+            status: 'paid',
+            type: 'bank_account',
+          },
+        } as Stripe.BalanceTransaction
+
+        let createBalanceTransactionApiSpy: (
+          balanceTransactions: Array<Stripe.BalanceTransaction>,
+        ) => jest.SpyInstance<Stripe.ApiListPromise<Stripe.BalanceTransaction>>
+        let getMetadataPaymentIdSpy: jest.SpyInstance
+        let processStripeEventSpy: jest.SpyInstance
+
+        beforeEach(() => {
+          createBalanceTransactionApiSpy = (
+            balanceTransactionResponses: Array<Stripe.BalanceTransaction>,
+          ) =>
+            jest
+              .spyOn(stripe.balanceTransactions, 'list')
+              .mockImplementationOnce(
+                () =>
+                  ({
+                    autoPagingEach: (fn) => {
+                      balanceTransactionResponses.forEach((resp) => {
+                        if (!fn(resp)) return Promise.reject('fail case')
+                      })
+                      return Promise.resolve('pass')
+                    },
+                  } as unknown as Stripe.ApiListPromise<Stripe.BalanceTransaction>),
+              )
+          getMetadataPaymentIdSpy = jest
+            .spyOn(StripeUtils, 'getMetadataPaymentId')
+            .mockImplementation(() => ok('still gud'))
+          processStripeEventSpy = jest
+            .spyOn(StripeService, 'processStripeEvent')
+            .mockImplementationOnce(() => okAsync(undefined))
+        })
+
+        it('should not process payout transactions', async () => {
+          // Arrange
+          const balanceTransactionResponses = [
+            payoutResponseType,
+            payoutResponseType,
+          ]
+          const balanceTransactionApiSpy = createBalanceTransactionApiSpy(
+            balanceTransactionResponses,
+          )
+
+          // Act
+          const result = await StripeService.handleStripeEvent(
+            MOCK_STRIPE_EVENTS_MAP['evt_PAYOUT_PAID'],
+          )
+
+          // Assert
+          expect(balanceTransactionApiSpy).toHaveBeenCalledOnce()
+          expect(getMetadataPaymentIdSpy).toHaveBeenCalledTimes(0)
+          expect(processStripeEventSpy).toHaveBeenCalledTimes(0)
+          expect(result.isOk()).toBeTrue()
+        })
+
+        it('should ignore only payout transactions', async () => {
+          // Arrange
+          const balanceTransactionResponses = [
+            payoutResponseType,
+            chargesResponseType,
+            paymentResponseType,
+          ]
+          const balanceTransactionApiSpy = createBalanceTransactionApiSpy(
+            balanceTransactionResponses,
+          )
+          // excluding payout type
+          const expectedCallCount = balanceTransactionResponses.filter(
+            (resp) => resp.type !== 'payout',
+          ).length
+
+          // Act
+          const result = await StripeService.handleStripeEvent(
+            MOCK_STRIPE_EVENTS_MAP['evt_PAYOUT_PAID'],
+          )
+
+          // Assert
+          expect(balanceTransactionApiSpy).toHaveBeenCalledOnce()
+          expect(getMetadataPaymentIdSpy).toHaveBeenCalledTimes(
+            expectedCallCount,
+          )
+          expect(processStripeEventSpy).toHaveBeenCalledTimes(expectedCallCount)
+          expect(result.isOk()).toBeTrue()
+        })
+
+        it('should process all bank cards and paynow transactions', async () => {
+          // Arrange
+          const balanceTransactionResponses = [
+            chargesResponseType,
+            paymentResponseType,
+          ]
+          const balanceTransactionApiSpy = createBalanceTransactionApiSpy(
+            balanceTransactionResponses,
+          )
+
+          // Act
+          const result = await StripeService.handleStripeEvent(
+            MOCK_STRIPE_EVENTS_MAP['evt_PAYOUT_PAID'],
+          )
+
+          // Assert
+          expect(balanceTransactionApiSpy).toHaveBeenCalledOnce()
+          expect(getMetadataPaymentIdSpy).toHaveBeenCalledTimes(
+            balanceTransactionResponses.length,
+          )
+          expect(processStripeEventSpy).toHaveBeenCalledTimes(
+            balanceTransactionResponses.length,
+          )
+          expect(result.isOk()).toBeTrue()
+        })
+      })
     })
   })
 })

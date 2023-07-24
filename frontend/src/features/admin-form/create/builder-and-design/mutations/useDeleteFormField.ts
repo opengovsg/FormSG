@@ -2,12 +2,24 @@ import { useCallback } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 
-import { AdminFormDto } from '~shared/types/form'
+import { PaymentType } from '~shared/types'
+import {
+  AdminFormDto,
+  AdminStorageFormDto,
+  PaymentsUpdateDto,
+} from '~shared/types/form'
 
 import { useToast } from '~hooks/useToast'
 
+import { updateFormPayments } from '~features/admin-form/common/AdminFormPageService'
 import { adminFormKeys } from '~features/admin-form/common/queries'
 
+import {
+  PaymentState,
+  setToInactiveSelector as setPaymentToInactiveSelector,
+  stateSelector,
+  usePaymentStore,
+} from '../BuilderAndDesignDrawer/FieldListDrawer/field-panels/usePaymentStore'
 import { deleteSingleFormField } from '../UpdateFormFieldService'
 import {
   FieldBuilderState,
@@ -24,11 +36,27 @@ export const useDeleteFormField = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
+  const paymentDeleteDefault: PaymentsUpdateDto = {
+    enabled: false,
+    payment_type: PaymentType.Fixed,
+    amount_cents: 0,
+  }
+
   const { stateData, setToInactive } = useFieldBuilderStore(
     useCallback(
       (state) => ({
         stateData: stateDataSelector(state),
         setToInactive: setToInactiveSelector(state),
+      }),
+      [],
+    ),
+  )
+
+  const { paymentState, setPaymentToInactive } = usePaymentStore(
+    useCallback(
+      (state) => ({
+        paymentState: stateSelector(state),
+        setPaymentToInactive: setPaymentToInactiveSelector(state),
       }),
       [],
     ),
@@ -85,6 +113,34 @@ export const useDeleteFormField = () => {
     [toast],
   )
 
+  const deletePaymentFieldMutation = useMutation(
+    () => updateFormPayments(formId, paymentDeleteDefault),
+    {
+      onSuccess: (newData) => {
+        toast.closeAll()
+        if (paymentState !== PaymentState.EditingPayment) {
+          toast({
+            status: 'warning',
+            description:
+              'Something went wrong when deleting your field. Please refresh and try again.',
+          })
+          return
+        }
+        queryClient.setQueryData<AdminStorageFormDto | undefined>(
+          adminFormKeys.id(formId),
+          (oldData) => {
+            return oldData ? { ...oldData, payments_field: newData } : undefined
+          },
+        )
+        toast({
+          description: 'The payment was deleted.',
+        })
+        setPaymentToInactive()
+      },
+      onError: handleError,
+    },
+  )
+
   return {
     deleteFieldMutation: useMutation(
       (fieldId: string) =>
@@ -97,5 +153,6 @@ export const useDeleteFormField = () => {
         onError: handleError,
       },
     ),
+    deletePaymentFieldMutation,
   }
 }

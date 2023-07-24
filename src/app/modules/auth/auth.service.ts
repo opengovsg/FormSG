@@ -1,3 +1,5 @@
+import bcrypt from 'bcrypt'
+import crypto from 'crypto'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, Result, ResultAsync } from 'neverthrow'
 import validator from 'validator'
@@ -28,8 +30,15 @@ import {
   PrivateFormError,
 } from '../form/form.errors'
 import * as FormService from '../form/form.service'
+import { findUserById } from '../user/user.service'
 
-import { InvalidDomainError, InvalidOtpError } from './auth.errors'
+import {
+  InvalidDomainError,
+  InvalidOtpError,
+  InvalidTokenError,
+  MissingTokenError,
+} from './auth.errors'
+import { DEFAULT_SALT_ROUNDS } from './constants'
 
 const logger = createLoggerWithLabel(module)
 const TokenModel = getTokenModel(mongoose)
@@ -338,4 +347,51 @@ export const getFormIfPublic = (
   return FormService.retrieveFullFormById(formId).andThen((form) =>
     FormService.isFormPublic(form).map(() => form),
   )
+}
+
+/**
+ * Retrieves the user of the given API key
+ *
+ * @returns ok(IUserSchema) if the API key matches the hashed API key in the DB
+ * @returns err(DatabaseError) if database errors occurs whilst retrieving user
+ * @returns err(MissingUserError) if user does not exist in the database
+ */
+export const getUserByApiKey = (
+  userId: string,
+  token: string,
+): ResultAsync<IUserSchema, Error> => {
+  return findUserById(userId).andThen((user) => {
+    if (!user.apiToken?.keyHash) {
+      return errAsync(new MissingTokenError())
+    }
+    return compareHash(token, user.apiToken.keyHash).andThen((isHashMatch) => {
+      if (isHashMatch) return okAsync(user)
+      return errAsync(new InvalidTokenError())
+    })
+  })
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const getApiKeyHash = (apiKey: string): ResultAsync<string, HashingError> => {
+  return ResultAsync.fromPromise(
+    bcrypt.hash(apiKey, DEFAULT_SALT_ROUNDS),
+    (error) => {
+      logger.error({
+        message: 'bcrypt hash error',
+        meta: {
+          action: 'getApiKeyHash',
+        },
+        error,
+      })
+      return new HashingError()
+    },
+  ).map((hash) => `${hash}`)
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const generateApiKey = (user: IUserSchema): string => {
+  const key = crypto.randomBytes(32).toString('base64')
+  const apiEnv = config.publicApiConfig.apiEnv
+  const apiKeyVersion = config.publicApiConfig.apiKeyVersion
+  return `${apiEnv}_${apiKeyVersion}_${user._id}_${key}`
 }

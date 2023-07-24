@@ -1,184 +1,60 @@
-import { useMemo, useState } from 'react'
-import {
-  Box,
-  Drawer,
-  DrawerBody,
-  DrawerContent,
-  DrawerHeader,
-  DrawerOverlay,
-  Flex,
-  Grid,
-  GridItem,
-  Stack,
-  useBreakpointValue,
-  useDisclosure,
-} from '@chakra-ui/react'
+import { useMemo } from 'react'
+import { Flex, useDisclosure } from '@chakra-ui/react'
 
-import { AdminNavBar } from '~/app/AdminNavBar/AdminNavBar'
+import { AdminNavBar } from '~/app/AdminNavBar'
 
-import {
-  EMERGENCY_CONTACT_KEY_PREFIX,
-  ROLLOUT_ANNOUNCEMENT_KEY_PREFIX,
-} from '~constants/localStorage'
-import { useLocalStorage } from '~hooks/useLocalStorage'
+import { fillHeightCss } from '~utils/fillHeightCss'
+import { getBannerProps } from '~utils/getBannerProps'
+import { Banner } from '~components/Banner'
 
-import { RolloutAnnouncementModal } from '~features/rollout-announcement/RolloutAnnouncementModal'
-import { EmergencyContactModal } from '~features/user/emergency-contact/EmergencyContactModal'
+import { useEnv } from '~features/env/queries'
 import { useUser } from '~features/user/queries'
-import { WorkspaceContent } from '~features/workspace/WorkspaceContent'
 
+import AdminFeedbackContainer from './components/AdminFeedbackContainer'
+// TODO #4279: Remove after React rollout is complete
 import CreateFormModal from './components/CreateFormModal'
-import { EmptyWorkspace } from './components/EmptyWorkspace'
-import { WorkspaceMenuHeader } from './components/WorkspaceSideMenu/WorkspaceMenuHeader'
-import { WorkspaceMenuTabs } from './components/WorkspaceSideMenu/WorkspaceMenuTabs'
-import { useDashboard, useWorkspace } from './queries'
+import { WorkspacePageContent } from './components/WorkspacePageContent'
+import { WorkspaceProvider } from './WorkspaceProvider'
+
+export const CONTAINER_MAXW = '69.5rem'
 
 export const WorkspacePage = (): JSX.Element => {
-  const [currWorkspaceId, setCurrWorkspaceId] = useState<string>('')
+  const { data: { siteBannerContent, adminBannerContent } = {} } = useEnv()
+  const { user } = useUser()
 
-  const shouldUseTopMenu = useBreakpointValue({
-    base: true,
-    xs: true,
-    md: true,
-    lg: false,
-  })
-  const createFormModal = useDisclosure()
-  const mobileDrawer = useDisclosure()
-
-  const { user, isLoading: isUserLoading } = useUser()
-  const { data: dashboardForms, isLoading: isDashboardLoading } = useDashboard()
-  const { data: workspaces } = useWorkspace()
-
-  const ROLLOUT_ANNOUNCEMENT_KEY = useMemo(
-    () => ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + user?._id,
-    [user],
-  )
-  const [hasSeenAnnouncement, setHasSeenAnnouncement] =
-    useLocalStorage<boolean>(ROLLOUT_ANNOUNCEMENT_KEY)
-
-  const isAnnouncementModalOpen = useMemo(
-    () => !isUserLoading && !hasSeenAnnouncement,
-    [isUserLoading, hasSeenAnnouncement],
+  const bannerContent = useMemo(
+    // Use || instead of ?? so that we fall through even if previous banners are empty string.
+    () => siteBannerContent || adminBannerContent,
+    [adminBannerContent, siteBannerContent],
   )
 
-  const emergencyContactKey = useMemo(
-    () => (user?._id ? EMERGENCY_CONTACT_KEY_PREFIX + user._id : null),
-    [user],
+  const bannerProps = useMemo(
+    () => getBannerProps(bannerContent),
+    [bannerContent],
   )
 
-  const [hasSeenEmergencyContact, setHasSeenEmergencyContact] =
-    useLocalStorage<boolean>(emergencyContactKey)
-
-  const isEmergencyContactModalOpen = useMemo(
-    () =>
-      !isUserLoading &&
-      // Open emergency contact modal after the rollout announcement modal
-      Boolean(hasSeenAnnouncement) &&
-      !hasSeenEmergencyContact &&
-      !user?.contact,
-    [isUserLoading, hasSeenAnnouncement, hasSeenEmergencyContact, user],
-  )
-
-  if (dashboardForms?.length === 0) {
-    return (
-      <>
-        <CreateFormModal
-          isOpen={createFormModal.isOpen}
-          onClose={createFormModal.onClose}
-        />
-        <EmptyWorkspace
-          isLoading={isDashboardLoading}
-          handleOpenCreateFormModal={createFormModal.onOpen}
-        />
-      </>
-    )
-  }
+  const createFormModalDisclosure = useDisclosure()
 
   return (
     <>
-      <Drawer
-        placement="left"
-        onClose={mobileDrawer.onClose}
-        isOpen={mobileDrawer.isOpen}
-      >
-        <DrawerOverlay />
-        <DrawerContent maxW="15.5rem">
-          <DrawerHeader p={0}>
-            <Flex pt="1rem" px="1rem" alignItems="center">
-              <WorkspaceMenuHeader
-                onMenuClick={mobileDrawer.onClose}
-                shouldShowAddWorkspaceButton
-                shouldShowMenuIcon
-                justifyContent="space-between"
-                w="100%"
-                px={0}
-              />
-            </Flex>
-          </DrawerHeader>
-          <DrawerBody px={0} pt="1rem">
-            <WorkspaceMenuTabs
-              workspaces={workspaces ?? []}
-              currWorkspace={currWorkspaceId}
-              onClick={(id) => {
-                setCurrWorkspaceId(id)
-                mobileDrawer.onClose()
-              }}
-            />
-          </DrawerBody>
-        </DrawerContent>
-      </Drawer>
-
-      <Grid
-        templateAreas={`
-          "header header"
-          "nav main"
-        `}
-        gridTemplateRows={`auto 1fr`}
-        gridTemplateColumns={{
-          base: 'inherit',
-          lg: '15.5rem 1fr',
-        }}
-        h="100vh"
-      >
-        <GridItem area="header">
-          <AdminNavBar />
-        </GridItem>
-
-        {shouldUseTopMenu ? (
-          <WorkspaceMenuHeader
-            shouldShowMenuIcon
-            onMenuClick={mobileDrawer.onOpen}
-            borderBottom="1px"
-            borderBottomColor="neutral.300"
-            py="1rem"
+      <CreateFormModal
+        isOpen={createFormModalDisclosure.isOpen}
+        onClose={createFormModalDisclosure.onClose}
+      />
+      <Flex direction="column" css={fillHeightCss}>
+        {bannerProps ? (
+          <Banner useMarkdown variant={bannerProps.variant}>
+            {bannerProps.msg}
+          </Banner>
+        ) : null}
+        <AdminNavBar />
+        <WorkspaceProvider>
+          <WorkspacePageContent
+            handleCreateFormModalOpen={createFormModalDisclosure.onOpen}
           />
-        ) : (
-          <Box overflowY="scroll">
-            <Stack
-              borderRight="1px"
-              borderRightColor="neutral.300"
-              minH="100vh"
-            >
-              <WorkspaceMenuHeader shouldShowAddWorkspaceButton />
-              <WorkspaceMenuTabs
-                workspaces={workspaces ?? []}
-                currWorkspace={currWorkspaceId}
-                onClick={setCurrWorkspaceId}
-              />
-            </Stack>
-          </Box>
-        )}
-        <WorkspaceContent workspaceId={currWorkspaceId} />
-      </Grid>
-
-      <RolloutAnnouncementModal
-        onClose={() => setHasSeenAnnouncement(true)}
-        isOpen={isAnnouncementModalOpen}
-      />
-      <EmergencyContactModal
-        onClose={() => setHasSeenEmergencyContact(true)}
-        isOpen={isEmergencyContactModalOpen}
-      />
+        </WorkspaceProvider>
+      </Flex>
+      {user && <AdminFeedbackContainer userId={user._id} />}
     </>
   )
 }

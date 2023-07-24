@@ -1,17 +1,25 @@
 import convict, { Schema } from 'convict'
 
-export interface IStripe {
+import { PUBLIC_PAYMENTS_GUIDE_LINK } from '../../../../shared/constants'
+
+interface IStripe {
   defaultCurrency: string
   stripePublishableKey: string
   stripeSecretKey: string
   stripeClientID: string
   stripeWebhookSecret: string
+}
+interface IPaymentConfig {
+  defaultCurrency: string
   maxPaymentAmountCents: number
   minPaymentAmountCents: number
   guideLink: string
+  landingGuideLink: string
 }
 
-const paymentFeature: Schema<IStripe> = {
+interface IPaymentFeature extends IStripe, IPaymentConfig {}
+
+const paymentFeature: Schema<IPaymentFeature> = {
   defaultCurrency: {
     doc: 'Default currency for all payments',
     format: String,
@@ -45,7 +53,7 @@ const paymentFeature: Schema<IStripe> = {
   maxPaymentAmountCents: {
     doc: 'Maximum amount that can be paid for a form',
     format: Number,
-    default: 100000000, // Arbitrary large payment amount we should be concerned about
+    default: 200 * 1000 * 100, // 200k, this is the maximum limit for paynow transactions
     env: 'PAYMENT_MAX_PAYMENT_AMOUNT_CENTS',
   },
   minPaymentAmountCents: {
@@ -55,10 +63,16 @@ const paymentFeature: Schema<IStripe> = {
     env: 'PAYMENT_MIN_PAYMENT_AMOUNT_CENTS',
   },
   guideLink: {
-    doc: 'Link to payment guide',
+    doc: 'Link to payment guide (accessed through dashboard)',
     format: String,
-    default: 'https://go.gov.sg/formsg-guide-payments',
+    default: PUBLIC_PAYMENTS_GUIDE_LINK, // defaults to public guide
     env: 'PAYMENT_GUIDE_LINK',
+  },
+  landingGuideLink: {
+    doc: 'Link to payment guide for landing page self-onboarding (accessed through verified emails)',
+    format: String,
+    default: PUBLIC_PAYMENTS_GUIDE_LINK, // defaults to public guide
+    env: 'PAYMENT_LANDING_GUIDE_LINK',
   },
 }
 

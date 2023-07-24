@@ -40,6 +40,7 @@ import {
   LogicDto,
   LogicType,
   PaymentChannel,
+  PaymentType,
   StorageFormSettings,
 } from '../../../shared/types'
 import { reorder } from '../../../shared/utils/immutable-array-fns'
@@ -64,12 +65,14 @@ import {
 import { IPopulatedUser, IUserSchema } from '../../types/user'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
+import { getMyInfoAttr } from '../modules/myinfo/myinfo.util'
 import { validateWebhookUrl } from '../modules/webhook/webhook.validation'
 
 import {
   BaseFieldSchema,
   createAttachmentFieldSchema,
   createCheckboxFieldSchema,
+  createchildrenCompoundFieldSchema,
   createDateFieldSchema,
   createDecimalFieldSchema,
   createDropdownFieldSchema,
@@ -127,6 +130,9 @@ const formSchemaOptions: SchemaOptions = {
     updatedAt: 'lastModified',
   },
 }
+const isPositiveInteger = (val: number) => {
+  return val >= 0 && Number.isInteger(val)
+}
 
 const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   publicKey: {
@@ -162,15 +168,43 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
       trim: true,
       default: '',
     },
+    name: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     amount_cents: {
       type: Number,
       default: 0,
       validate: {
-        validator: (amount_cents: number) => {
-          return amount_cents >= 0 && Number.isInteger(amount_cents)
-        },
+        validator: isPositiveInteger,
         message: 'amount_cents must be a non-negative integer.',
       },
+    },
+    min_amount: {
+      type: Number,
+      default: 0,
+      validate: {
+        validator: isPositiveInteger,
+        message: 'min_amount must be a non-negative integer.',
+      },
+    },
+    max_amount: {
+      type: Number,
+      default: 0,
+      validate: {
+        validator: isPositiveInteger,
+        message: 'max_amount must be a non-negative integer.',
+      },
+    },
+    payment_type: {
+      type: String,
+      enum: Object.values(PaymentType),
+      default: PaymentType.Fixed,
+    },
+    gst_enabled: {
+      type: Boolean,
+      default: true,
     },
   },
 
@@ -264,7 +298,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
             )
             return (
               myInfoFieldCount === 0 ||
-              (this.authType === FormAuthType.MyInfo &&
+              ((this.authType === FormAuthType.MyInfo ||
+                this.authType == FormAuthType.SGID_MyInfo) &&
                 this.responseMode === FormResponseMode.Email &&
                 myInfoFieldCount <= 30)
             )
@@ -489,6 +524,13 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         default: null,
         min: 1,
       },
+
+      goLinkSuffix: {
+        // GoGov link suffix
+        type: String,
+        required: false,
+        default: '',
+      },
     },
     formSchemaOptions,
   )
@@ -507,6 +549,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     createAttachmentFieldSchema(),
   )
   FormFieldPath.discriminator(BasicField.Dropdown, createDropdownFieldSchema())
+  FormFieldPath.discriminator(
+    BasicField.Children,
+    createchildrenCompoundFieldSchema(),
+  )
   FormFieldPath.discriminator(BasicField.Radio, createRadioFieldSchema())
   FormFieldPath.discriminator(BasicField.Checkbox, createCheckboxFieldSchema())
   FormFieldPath.discriminator(
@@ -559,12 +605,21 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   // Method to return myInfo attributes
   FormSchema.methods.getUniqueMyInfoAttrs = function () {
-    if (this.authType !== FormAuthType.MyInfo) {
+    if (
+      this.authType !== FormAuthType.MyInfo &&
+      this.authType !== FormAuthType.SGID_MyInfo
+    ) {
       return []
     }
 
     // Compact is used to remove undefined from array
-    return compact(uniq(this.form_fields?.map((field) => field.myInfo?.attr)))
+    return compact(
+      uniq(
+        this.form_fields?.flatMap((field) => {
+          return getMyInfoAttr(field)
+        }),
+      ),
+    )
   }
 
   // Return essential form creation parameters with the given properties
@@ -700,6 +755,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     const formFields = this.form_fields as Types.DocumentArray<IFieldSchema>
     // Must use undefined check since number can be 0; i.e. falsey.
     if (to !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       formFields.splice(to, 0, newField as any) // Typings are not complete for splice.
     } else {
       formFields.push(newField)
@@ -962,6 +1018,21 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     })
       .read('secondary')
       .exec()
+  }
+
+  FormSchema.statics.getGoLinkSuffix = async function (formId: string) {
+    return this.findById(formId, 'goLinkSuffix').exec()
+  }
+
+  FormSchema.statics.setGoLinkSuffix = async function (
+    formId: string,
+    linkSuffix: string,
+  ) {
+    return this.findByIdAndUpdate(
+      formId,
+      { goLinkSuffix: linkSuffix },
+      { new: true, runValidators: true },
+    ).exec()
   }
 
   FormSchema.statics.archiveForms = async function (
