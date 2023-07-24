@@ -314,7 +314,7 @@ export const ALL_FIELDS: E2eFieldMetadata[] = [
   {
     title: 'Some UEN here please',
     fieldType: BasicField.Uen,
-    val: 'T09LL0001B',
+    val: 'T09SS0050A',
   },
   {
     title: 'Yes or No?',

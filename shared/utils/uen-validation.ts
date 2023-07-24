@@ -9,28 +9,15 @@
 
 /** General Comments:
  *
- * Type indicators created as a const Set<string>(). Maintain by adding new
- * codes here.
+ * UEN Type indicators created as a const Set<string>().
+ * Maintain by adding new codes in VALID_ENTITY_TYPE_INDICATORS.
  *
  * Arrow helper functions:
- * standardise -> convert to uppercase and remove whitespace
+ * UpperCaseandTrim -> convert to uppercase and remove whitespace
  * isNumeric and isAlphabetic are self explanatory.
  *
- * isUenValid is a wrapper over the validate function that serves as an
- * orchestrater for subsequent function calls. validate parses UEN and evaluates
- * if UEN is Business UEN based on ROB, Local Comany UEN based on ROC, or Other
- * UEN.
- *
- * Error Handling:
- * All invalid UEN numbers will returned an empty string that will be
- * percolated upwards to the isUenValid wrapper function, which will in turn
- * return false, thereby invalidating the UEN.
- *
- * The intent is unknown but I have kept to the original format of using
- * function expressions instead of function statements. I have also kept the
- * original format of using arrow functions as helpers but we might want to
- * consider refactoring them into functions for better readability and code
- * organisation.
+ * isUenValid parses UEN and evaluates if UEN is Business UEN based on ROB,
+ * Local Comany UEN based on ROC, or Other UEN.
  *
  */
 
