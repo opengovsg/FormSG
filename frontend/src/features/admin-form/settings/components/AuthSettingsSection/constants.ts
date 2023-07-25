@@ -27,7 +27,3 @@ export const AUTHTYPE_TO_TEXT = {
   [FormResponseMode.Email]: EMAIL_MODE_AUTHTYPES,
   [FormResponseMode.Encrypt]: STORAGE_MODE_AUTHTYPES,
 }
-
-export const CP_TOOLTIP = `Corppass no longer has its own login page, and now\
-  uses Singpass to authenticate corporate users. You will still need a separate\
-  Corppass e-service ID.`

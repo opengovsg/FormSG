@@ -6,28 +6,22 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { Box, Flex, Icon, Skeleton, Spacer, Text } from '@chakra-ui/react'
+import { Box, Flex, Skeleton, Spacer, Text } from '@chakra-ui/react'
 
 import { FormAuthType, FormSettings, FormStatus } from '~shared/types/form'
 
-import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { GUIDE_SPCP_ESRVCID } from '~constants/links'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 import Radio from '~components/Radio'
 import { Tag } from '~components/Tag'
-import Tooltip from '~components/Tooltip'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { isMyInfo } from '~features/myinfo/utils'
 
 import { useMutateFormSettings } from '../../mutations'
 
-import {
-  AUTHTYPE_TO_TEXT,
-  CP_TOOLTIP,
-  STORAGE_MODE_AUTHTYPES,
-} from './constants'
+import { AUTHTYPE_TO_TEXT, STORAGE_MODE_AUTHTYPES } from './constants'
 import { EsrvcIdBox } from './EsrvcIdBox'
 
 const esrvcidRequired = (authType: FormAuthType) => {
@@ -131,17 +125,7 @@ export const AuthSettingsSection = ({
 
   return (
     <Box>
-      {isFormPublic ? (
-        <InlineMessage mb="1.25rem">
-          To change authentication method, close your form to new responses.
-        </InlineMessage>
-      ) : containsMyInfoFields ? (
-        <InlineMessage mb="1.25rem">
-          Authentication method cannot be changed without first removing MyInfo
-          fields. You can still update your e-service ID.
-        </InlineMessage>
-      ) : null}
-      <Text textStyle="body-1" color="secondary.500">
+      <Text textStyle="body-1" color="secondary.500" marginBottom="2.5rem">
         Authenticate respondents by NRIC.{' '}
         <Link
           href={GUIDE_SPCP_ESRVCID}
@@ -151,8 +135,17 @@ export const AuthSettingsSection = ({
         >
           Learn more about Singpass authentication
         </Link>
-        <Spacer h="2.5rem" />
       </Text>
+      {isFormPublic ? (
+        <InlineMessage mb="1.25rem" marginBottom="2.5rem">
+          To change authentication method, close your form to new responses.
+        </InlineMessage>
+      ) : containsMyInfoFields ? (
+        <InlineMessage mb="1.25rem" marginBottom="2.5rem">
+          Authentication method cannot be changed without first removing MyInfo
+          fields. You can still update your e-service ID.
+        </InlineMessage>
+      ) : null}
       <Radio.RadioGroup
         value={settings.authType}
         onKeyDown={handleEnterKeyDown}
