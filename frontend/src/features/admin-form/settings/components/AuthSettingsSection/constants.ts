@@ -9,8 +9,8 @@ export type StorageFormAuthType =
 
 export const STORAGE_MODE_AUTHTYPES: Record<StorageFormAuthType, string> = {
   [FormAuthType.NIL]: 'None',
-  [FormAuthType.SP]: 'Singpass',
   [FormAuthType.SGID]: 'Singpass App-only Login',
+  [FormAuthType.SP]: 'Singpass',
   [FormAuthType.CP]: 'Singpass (Corporate)',
 }
 

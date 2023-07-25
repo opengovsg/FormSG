@@ -142,14 +142,14 @@ export const AuthSettingsSection = ({
         </InlineMessage>
       ) : null}
       <Text textStyle="body-1" color="secondary.500">
-        Authenticate form respondents by their NRIC with each submission.{' '}
+        Authenticate respondents by NRIC.{' '}
         <Link
           href={GUIDE_SPCP_ESRVCID}
           isExternal
           // Needed for link to open since there are nested onClicks
           onClickCapture={(e) => e.stopPropagation()}
         >
-          Learn more
+          Learn more about Singpass authentication
         </Link>
         <Spacer h="2.5rem" />
       </Text>
@@ -170,15 +170,6 @@ export const AuthSettingsSection = ({
                       <Spacer w="18px" />
                       <Tag variant="subtle">Free</Tag>
                     </>
-                  ) : null}
-                  {authType === FormAuthType.CP ? (
-                    <Tooltip
-                      label={CP_TOOLTIP}
-                      placement="top"
-                      textAlign="center"
-                    >
-                      <Icon as={BxsHelpCircle} aria-hidden ml="0.5rem" />
-                    </Tooltip>
                   ) : null}
                 </Flex>
               </Radio>

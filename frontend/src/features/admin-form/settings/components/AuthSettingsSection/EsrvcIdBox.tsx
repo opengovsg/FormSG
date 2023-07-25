@@ -71,6 +71,13 @@ export const EsrvcIdBox = ({
     }
   }, [settings.authType])
 
+  const placeHolder = useMemo(
+    () =>
+      `Enter ${
+        settings.authType === FormAuthType.CP ? 'Corppass' : 'Singpass'
+      } e-service ID`,
+    [settings.authType],
+  )
   return (
     <form onSubmit={onSubmit} onBlur={handleBlur}>
       <Stack ml="2.75rem" mb="1.25rem">
@@ -98,7 +105,7 @@ export const EsrvcIdBox = ({
                 })}
                 isDisabled={isDisabled}
                 isReadOnly={mutateFormEsrvcId.isLoading}
-                placeholder="Enter Singpass e-service ID"
+                placeholder={placeHolder}
               />
             </InputGroup>
             <FormErrorMessage>{errors.esrvcId?.message}</FormErrorMessage>
