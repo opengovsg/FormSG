@@ -1,8 +1,4 @@
-import {
-  BasicField,
-  MyInfoChildAttributes,
-  MyInfoableFieldBase,
-} from './base'
+import { BasicField, MyInfoChildAttributes, MyInfoableFieldBase } from './base'
 
 export interface ChildrenCompoundFieldBase extends MyInfoableFieldBase {
   fieldType: BasicField.Children

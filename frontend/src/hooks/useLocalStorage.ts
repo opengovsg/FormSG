@@ -11,7 +11,7 @@ export const useLocalStorage = <T>(
   // Get from local storage then
   // parse stored json or return initialValue
   const readValue = useCallback(() => {
-    // Prevent build error "window is undefined" but keep keep working
+    // Prevent build error "window is undefined" and keep it working
     if (typeof window === 'undefined') {
       return initialValue
     }

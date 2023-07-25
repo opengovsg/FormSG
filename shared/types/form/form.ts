@@ -13,7 +13,6 @@ import {
 import { DateString } from '../generic'
 import { FormLogic, LogicDto } from './form_logic'
 import { PaymentChannel, PaymentType } from '../payment'
-import { MyInfoChildrenBirthRecords } from '@opengovsg/myinfo-gov-client'
 
 export type FormId = Opaque<string, 'FormId'>
 
