@@ -11,7 +11,7 @@ import { Box, Flex, Icon, Skeleton, Spacer, Text } from '@chakra-ui/react'
 import { FormAuthType, FormSettings, FormStatus } from '~shared/types/form'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
-import { OGP_SGID } from '~constants/links'
+import { GUIDE_SPCP_ESRVCID } from '~constants/links'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 import Radio from '~components/Radio'
@@ -144,7 +144,7 @@ export const AuthSettingsSection = ({
       <Text textStyle="body-1" color="secondary.500">
         Authenticate form respondents by their NRIC with each submission.{' '}
         <Link
-          href={OGP_SGID}
+          href={GUIDE_SPCP_ESRVCID}
           isExternal
           // Needed for link to open since there are nested onClicks
           onClickCapture={(e) => e.stopPropagation()}

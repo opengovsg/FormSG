@@ -10,7 +10,7 @@ import {
   MyInfoAttribute,
 } from '~shared/types'
 
-import { GUIDE_EMAIL_MODE, SGID_DATA_CATALOG } from '~constants/links'
+import { GUIDE_EMAIL_MODE } from '~constants/links'
 import { ADMINFORM_SETTINGS_SINGPASS_SUBROUTE } from '~constants/routes'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
