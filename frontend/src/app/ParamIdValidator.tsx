@@ -11,12 +11,14 @@ interface ParamIdValidatorProps {
 export const ParamIdValidator = ({ element }: ParamIdValidatorProps) => {
   const { formId, submissionId, paymentId } = useParams()
 
+  const isInvalidMongoId = (id?: string) => id && !id.match(MONGODB_ID_REGEX)
+
   // Bootstrap route validation as suggested by React Router Docs:
   // https://reactrouter.com/en/main/start/faq#what-happened-to-regexp-routes-paths
   if (
-    (formId && !formId.match(MONGODB_ID_REGEX)) ||
-    (submissionId && !submissionId.match(MONGODB_ID_REGEX)) ||
-    (paymentId && !paymentId.match(MONGODB_ID_REGEX))
+    isInvalidMongoId(formId) ||
+    isInvalidMongoId(submissionId) ||
+    isInvalidMongoId(paymentId)
   )
     return <NotFoundErrorPage />
 
