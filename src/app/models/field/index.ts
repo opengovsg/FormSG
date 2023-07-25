@@ -1,6 +1,7 @@
 import createAttachmentFieldSchema from './attachmentField'
 import { BaseFieldSchema } from './baseField'
 import createCheckboxFieldSchema from './checkboxField'
+import createchildrenCompoundFieldSchema from './childrenCompoundField'
 import createDateFieldSchema from './dateField'
 import createDecimalFieldSchema from './decimalField'
 import createDropdownFieldSchema from './dropdownField'
@@ -41,5 +42,6 @@ export {
   createTableFieldSchema,
   createUenFieldSchema,
   createYesNoFieldSchema,
+  createchildrenCompoundFieldSchema,
   BaseFieldSchema,
 }

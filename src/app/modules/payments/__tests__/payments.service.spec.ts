@@ -44,6 +44,7 @@ describe('payments.service', () => {
         paymentIntentId: 'somePaymentIntentId',
         amount: 314159,
         email: 'someone@mail.com',
+        gstEnabled: false,
       })
 
       // Act
@@ -86,6 +87,7 @@ describe('payments.service', () => {
         amount: 314159,
         email: email,
         status: PaymentStatus.Succeeded,
+        gstEnabled: false,
       })
     })
     afterEach(() => jest.clearAllMocks())
@@ -114,6 +116,7 @@ describe('payments.service', () => {
         amount: 314159,
         email: email,
         status: PaymentStatus.Succeeded,
+        gstEnabled: false,
       })
       const result =
         await PaymentsService.findLatestSuccessfulPaymentByEmailAndFormId(
@@ -163,6 +166,7 @@ describe('payments.service', () => {
         amount: 314159,
         email: newEmail,
         status: PaymentStatus.Pending,
+        gstEnabled: false,
       })
       const result =
         await PaymentsService.findLatestSuccessfulPaymentByEmailAndFormId(
@@ -197,6 +201,7 @@ describe('payments.service', () => {
         targetAccountId: 'acct_MOCK_ID',
         formId: new ObjectId(),
         pendingSubmissionId: new ObjectId(),
+        gstEnabled: false,
       }
 
       await Payment.create({

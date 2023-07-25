@@ -42,6 +42,7 @@ describe('payments.controller', () => {
         completedPayment: {
           receiptUrl: 'http://form.gov.sg',
         },
+        gstEnabled: false,
       })
 
       const mockReq = expressHandler.mockRequest({
@@ -72,6 +73,7 @@ describe('payments.controller', () => {
         completedPayment: {
           receiptUrl: 'http://form.gov.sg',
         },
+        gstEnabled: false,
       })
 
       const mockReq = expressHandler.mockRequest({
@@ -101,6 +103,7 @@ describe('payments.controller', () => {
         completedPayment: {
           receiptUrl: 'http://form.gov.sg',
         },
+        gstEnabled: false,
       })
 
       const mockReq = expressHandler.mockRequest({
@@ -130,6 +133,7 @@ describe('payments.controller', () => {
         completedPayment: {
           receiptUrl: 'http://form.gov.sg',
         },
+        gstEnabled: false,
       })
 
       const mockReq = expressHandler.mockRequest({

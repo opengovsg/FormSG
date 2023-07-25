@@ -2,14 +2,24 @@ import bcrypt from 'bcrypt'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
 import moment from 'moment'
-import mongoose from 'mongoose'
+import mongoose, { LeanDocument } from 'mongoose'
 import { err, ok, Result } from 'neverthrow'
 import { v4 as uuidv4, validate as validateUUID } from 'uuid'
 
 import { types as myInfoTypes } from '../../../../shared/constants/field/myinfo'
-import { BasicField, FormAuthType } from '../../../../shared/types'
+import {
+  BasicField,
+  ChildrenCompoundFieldBase,
+  FormAuthType,
+  MyInfoAttribute as InternalAttr,
+  MyInfoAttribute,
+  MyInfoChildAttributes,
+  MyInfoChildData,
+  MyInfoChildVaxxStatus,
+} from '../../../../shared/types'
 import { hasProp } from '../../../../shared/utils/has-prop'
 import {
+  IFieldSchema,
   IFormSchema,
   IHashes,
   IMyInfo,
@@ -25,7 +35,10 @@ import {
   FormNotFoundError,
 } from '../form/form.errors'
 import { SGID_MYINFO_LOGIN_COOKIE_NAME } from '../sgid/sgid.constants'
-import { ProcessedFieldResponse } from '../submission/submission.types'
+import {
+  ProcessedChildrenResponse,
+  ProcessedFieldResponse,
+} from '../submission/submission.types'
 
 import { MYINFO_LOGIN_COOKIE_NAME } from './myinfo.constants'
 import {
@@ -39,6 +52,7 @@ import {
 import {
   MyInfoAuthCodeCookiePayload,
   MyInfoAuthCodeCookieState,
+  MyInfoChildKey,
   MyInfoComparePromises,
   MyInfoForm,
   MyInfoHashPromises,
@@ -51,6 +65,41 @@ const logger = createLoggerWithLabel(module)
 const HASH_SALT_ROUNDS = 1
 
 /**
+ * See hashFieldValues for usage.
+ *
+ * @param field
+ * @param childrenBirthRecords
+ * @param readOnlyHashPromises
+ */
+function hashChildrenFieldValues(
+  field: PossiblyPrefilledField,
+  childrenBirthRecords: MyInfoChildData,
+  readOnlyHashPromises: MyInfoHashPromises,
+) {
+  const subFields = getMyInfoAttr(field) as MyInfoChildAttributes[]
+  subFields.forEach((subField) => {
+    const fieldArr = childrenBirthRecords[subField]
+    fieldArr?.forEach((value, childIdx) => {
+      const childName =
+        childrenBirthRecords?.[MyInfoChildAttributes.ChildName]?.[childIdx]
+      if (childName === undefined) {
+        return
+      }
+      // Skip all unknown vaccination statuses, let the user fill it in themselves.
+      if (
+        subField === MyInfoChildAttributes.ChildVaxxStatus &&
+        value === MyInfoChildVaxxStatus.Unknown
+      ) {
+        return
+      }
+      readOnlyHashPromises[
+        getMyInfoChildHashKey(field._id, subField, childIdx, childName)
+      ] = bcrypt.hash(value, HASH_SALT_ROUNDS)
+    })
+  })
+}
+
+/**
  * Hashes field values which are prefilled and MyInfo-verified.
  * @param prefilledFormFields Fields with fieldValue prefilled using MyInfo and disabled
  * set to true if the prefilled value is MyInfo-verified
@@ -58,16 +107,26 @@ const HASH_SALT_ROUNDS = 1
  */
 export const hashFieldValues = (
   prefilledFormFields: PossiblyPrefilledField[],
+  childrenBirthRecords?: MyInfoChildData,
 ): MyInfoHashPromises => {
   const readOnlyHashPromises: MyInfoHashPromises = {}
 
   prefilledFormFields.forEach((field) => {
+    // For children fields, we need to explode their subfields.
+    if (
+      isMyInfoChildrenBirthRecords(field.myInfo?.attr) &&
+      childrenBirthRecords !== undefined
+    ) {
+      hashChildrenFieldValues(field, childrenBirthRecords, readOnlyHashPromises)
+      return
+    }
     if (!field.myInfo?.attr || !field.fieldValue || !field.disabled) return
     readOnlyHashPromises[field.myInfo.attr] = bcrypt.hash(
       field.fieldValue.toString(),
       HASH_SALT_ROUNDS,
     )
   })
+
   return readOnlyHashPromises
 }
 
@@ -109,6 +168,12 @@ export const compareHashedValues = (
   const myInfoResponsesMap: MyInfoComparePromises = new Map()
   responses.forEach((field) => {
     if (hasMyInfoAnswer(field)) {
+      // Children birth records have multiple possible hash values so they
+      // need to be checked one by one.
+      if (field.myInfo.attr === MyInfoAttribute.ChildrenBirthRecords) {
+        handleMyInfoChildHashResponse(field, hashes, myInfoResponsesMap)
+        return
+      }
       const hash = hashes[field.myInfo.attr]
       if (hash) {
         myInfoResponsesMap.set(field._id, compareSingleHash(hash, field))
@@ -360,3 +425,91 @@ export const isMyInfoRelayState = (obj: unknown): obj is MyInfoRelayState =>
   validateUUID(obj.uuid) &&
   ((hasProp(obj, 'encodedQuery') && typeof obj.encodedQuery === 'string') ||
     !hasProp(obj, 'encodedQuery'))
+
+const MyInfoChildAttributeSet = new Set(Object.values(MyInfoChildAttributes))
+
+export const isMyInfoChildrenBirthRecords = (
+  attr: InternalAttr | undefined,
+): boolean => {
+  return (
+    attr === InternalAttr.ChildrenBirthRecords ||
+    MyInfoChildAttributeSet.has(attr as unknown as MyInfoChildAttributes)
+  )
+}
+
+/**
+ * Helper to access a MyInfo attribute from a field.
+ *
+ * This helps to explode compound fields as well into its constituent subfields.
+ * @param field The field we want to access.
+ * @returns Either the MyInfoAttribute, or an array of MyInfoAttribute, or not found.
+ */
+export const getMyInfoAttr = (
+  field: IFieldSchema | LeanDocument<IFieldSchema>,
+): string | string[] | undefined => {
+  // Need to explode compound field.
+  if (field.myInfo?.attr === MyInfoAttribute.ChildrenBirthRecords) {
+    return (
+      (field as ChildrenCompoundFieldBase).childrenSubFields ?? ([] as string[])
+    )
+  }
+  return field.myInfo?.attr
+}
+
+/**
+ * Helper function to get a MyInfo child's hash key inside an IHashes.
+ *
+ * @param fieldId The ID of the field the Child response belongs to.
+ * @param childIdx The nth child to look for.
+ * @returns An IHashes-compatible key.
+ */
+export const getMyInfoChildHashKey = (
+  fieldId: string,
+  childAttr: MyInfoChildAttributes,
+  childIdx: number,
+  childName: string,
+): MyInfoChildKey => {
+  return `${MyInfoAttribute.ChildrenBirthRecords}.${fieldId}.${childAttr}.${childIdx}.${childName}`
+}
+
+/**
+ * This function is responsible for checking the validity of hashes of
+ * MyInfo Child fields.
+ *
+ * NOTE: if the hashes comparison fail, it assumes that it's a manually user
+ * inputted child. As such, it will just not indicate in the response
+ * that it is MyInfo verified.
+ * @param field the processed response
+ * @param hashes a map containing all the attributes mapped to hashes
+ * @param myInfoResponsesMap the response to give to the user
+ */
+export const handleMyInfoChildHashResponse = (
+  field: ProcessedFieldResponse,
+  hashes: IHashes,
+  myInfoResponsesMap: MyInfoComparePromises,
+) => {
+  const childField = field as ProcessedChildrenResponse
+  const subFields = childField.childSubFieldsArray
+  if (!subFields) {
+    return
+  }
+  childField.answerArray.forEach((childAnswer, childIndex) => {
+    // Name should be first field for child answers
+    const childName = childAnswer[0]
+    // Validate each answer (child)
+    childAnswer.forEach((attrAnswer, subFieldIndex) => {
+      const key = getMyInfoChildHashKey(
+        field._id as string,
+        subFields[subFieldIndex],
+        childIndex,
+        childName,
+      )
+      const hash = hashes[key]
+      // Intentional, to allow user-filled fields to pass through.
+      if (hash) {
+        myInfoResponsesMap.set(key, bcrypt.compare(attrAnswer, hash))
+      }
+    })
+  })
+  return
+}

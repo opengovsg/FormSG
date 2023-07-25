@@ -436,6 +436,7 @@ const _createPaymentSubmission = async ({
     amount,
     email: paymentReceiptEmail,
     responses: incomingSubmission.responses,
+    gstEnabled: form.payments_field.gst_enabled,
     ...(isPaymentTypeProducts ? { products: paymentProducts } : {}),
   })
   const paymentId = payment.id

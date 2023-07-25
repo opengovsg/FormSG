@@ -442,6 +442,10 @@ const updatePaymentsValidator = celebrate({
       }),
       otherwise: Joi.any(),
     }),
+    gst_enabled: Joi.when('enabled', {
+      is: Joi.equal(true),
+      then: Joi.boolean().required(),
+    }),
   },
 })
 

@@ -11,6 +11,8 @@ import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 
 import {
+  CREATE_MYINFO_CHILDREN_DROP_ID,
+  CREATE_MYINFO_CHILDREN_FIELDS_ORDERED,
   CREATE_MYINFO_CONTACT_DROP_ID,
   CREATE_MYINFO_CONTACT_FIELDS_ORDERED,
   CREATE_MYINFO_MARRIAGE_DROP_ID,
@@ -21,6 +23,7 @@ import {
   CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
 } from '~features/admin-form/create/builder-and-design/constants'
 import { isMyInfo } from '~features/myinfo/utils'
+import { useUser } from '~features/user/queries'
 
 import { useCreateTabForm } from '../../../../builder-and-design/useCreateTabForm'
 import { DraggableMyInfoFieldListOption } from '../FieldListOption'
@@ -41,6 +44,7 @@ export const MyInfoFieldPanel = () => {
     [form],
   )
   const isDisabled = isMyInfoDisabled || isLoading
+  const { user } = useUser()
 
   return (
     <>
@@ -115,6 +119,27 @@ export const MyInfoFieldPanel = () => {
           </Box>
         )}
       </Droppable>
+      {user?.betaFlags?.children ? (
+        <Droppable isDropDisabled droppableId={CREATE_MYINFO_CHILDREN_DROP_ID}>
+          {(provided) => (
+            <Box ref={provided.innerRef} {...provided.droppableProps}>
+              <FieldSection label="Family (Children)">
+                {CREATE_MYINFO_CHILDREN_FIELDS_ORDERED.map(
+                  (fieldType, index) => (
+                    <DraggableMyInfoFieldListOption
+                      index={index}
+                      isDisabled={isDisabled}
+                      key={index}
+                      fieldType={fieldType}
+                    />
+                  ),
+                )}
+              </FieldSection>
+              <Box display="none">{provided.placeholder}</Box>
+            </Box>
+          )}
+        </Droppable>
+      ) : null}
     </>
   )
 }
