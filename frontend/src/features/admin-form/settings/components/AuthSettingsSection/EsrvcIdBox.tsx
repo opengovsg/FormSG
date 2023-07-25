@@ -7,16 +7,14 @@ import {
   InputGroup,
   InputRightElement,
   Stack,
+  Text,
   VisuallyHidden,
 } from '@chakra-ui/react'
 
 import { FormAuthType, FormSettings } from '~shared/types/form'
 
-import { GUIDE_SPCP_ESRVCID } from '~constants/links'
-import { useMdComponents } from '~hooks/useMdComponents'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
-import { MarkdownText } from '~components/MarkdownText'
 import Spinner from '~components/Spinner'
 
 import { useMutateFormSettings } from '../../mutations'
@@ -45,15 +43,6 @@ export const EsrvcIdBox = ({
       esrvcId: initialEsrvcId,
     },
     mode: 'onChange',
-  })
-
-  const mdComponents = useMdComponents({
-    styles: {
-      text: {
-        textStyle: 'body-2',
-        color: 'secondary.400',
-      },
-    },
   })
 
   const onSubmit = handleSubmit(({ esrvcId }) => {
@@ -85,9 +74,9 @@ export const EsrvcIdBox = ({
   return (
     <form onSubmit={onSubmit} onBlur={handleBlur}>
       <Stack ml="2.75rem" mb="1.25rem">
-        <MarkdownText components={mdComponents}>
+        <Text textStyle="body-2" color="secondary.400">
           {renderedHelperText}
-        </MarkdownText>
+        </Text>
         <VisuallyHidden>
           <FormLabel htmlFor="esrvcId">e-service ID:</FormLabel>
         </VisuallyHidden>
