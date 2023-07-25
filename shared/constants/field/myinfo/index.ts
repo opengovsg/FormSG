@@ -318,7 +318,7 @@ export const types: MyInfoFieldBlock[] = [
     verified: ['SG', 'PR', 'F'],
     source: 'Immigration & Checkpoints Authority / Health Promotion Board',
     description:
-      "The data of the form-filler's children. This field is verified by ICA and HPB for vaccination status.",
+      "The data of the form-filler's children. Vaccination status is verified by HPB. All other data in this field is verified by ICA.",
     fieldType: BasicField.Children,
     previewValue: 'Child 1',
   },
