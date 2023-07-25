@@ -40,6 +40,7 @@ import { FormPaymentPage } from '~features/public-form/components/FormPaymentPag
 import { BillingPage } from '~features/user/billing'
 
 import { HashRouterElement } from './HashRouterElement'
+import { ParamIdValidator } from './ParamIdValidator'
 import { PrivateElement } from './PrivateElement'
 import { PublicElement } from './PublicElement'
 
@@ -109,20 +110,38 @@ export const AppRouter = (): JSX.Element => {
         <Route path={PUBLICFORM_ROUTE}>
           <Route
             index
-            element={<PublicElement element={<PublicFormPage />} />}
+            element={
+              <ParamIdValidator
+                element={<PublicElement element={<PublicFormPage />} />}
+              />
+            }
           />
           <Route
             path={USE_TEMPLATE_REDIRECT_SUBROUTE}
-            element={<PublicElement element={<UseTemplateRedirectPage />} />}
+            element={
+              <ParamIdValidator
+                element={
+                  <PublicElement element={<UseTemplateRedirectPage />} />
+                }
+              />
+            }
           />
           <Route
             path={PAYMENT_PAGE_SUBROUTE}
-            element={<PublicElement element={<FormPaymentPage />} />}
+            element={
+              <ParamIdValidator
+                element={<PublicElement element={<FormPaymentPage />} />}
+              />
+            }
           />
         </Route>
         <Route
           path={`${ADMINFORM_ROUTE}/:formId`}
-          element={<PrivateElement element={<AdminFormLayout />} />}
+          element={
+            <ParamIdValidator
+              element={<PrivateElement element={<AdminFormLayout />} />}
+            />
+          }
         >
           <Route index element={<CreatePage />} />
           <Route path={ADMINFORM_SETTINGS_SUBROUTE} element={<SettingsPage />}>
@@ -147,11 +166,19 @@ export const AppRouter = (): JSX.Element => {
         </Route>
         <Route
           path={`${ADMINFORM_ROUTE}/:formId/${ADMINFORM_PREVIEW_ROUTE}`}
-          element={<PrivateElement element={<PreviewFormPage />} />}
+          element={
+            <ParamIdValidator
+              element={<PrivateElement element={<PreviewFormPage />} />}
+            />
+          }
         />
         <Route
           path={`${ADMINFORM_ROUTE}/:formId/${ADMINFORM_USETEMPLATE_ROUTE}`}
-          element={<PrivateElement element={<TemplateFormPage />} />}
+          element={
+            <ParamIdValidator
+              element={<PrivateElement element={<TemplateFormPage />} />}
+            />
+          }
         />
         <Route path="*" element={<NotFoundErrorPage />} />
       </Routes>
