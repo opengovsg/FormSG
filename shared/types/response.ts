@@ -1,6 +1,6 @@
 import type { Opaque } from 'type-fest'
 import { z } from 'zod'
-import { BasicField, MyInfoAttribute, MyInfoChildAttributes } from './field'
+import { BasicField, MyInfoAttribute } from './field'
 
 const ResponseBase = z.object({
   myInfo: z.never().optional(),
