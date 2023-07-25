@@ -2,6 +2,7 @@ export const LANDING_ROUTE = '/'
 export const LANDING_PAYMENTS_ROUTE = '/payments'
 export const DASHBOARD_ROUTE = '/dashboard'
 export const LOGIN_ROUTE = '/login'
+export const OGP_LOGIN_ROUTE = '/ogp-login'
 
 export const TOU_ROUTE = '/terms'
 export const PRIVACY_POLICY_ROUTE = '/privacy'
@@ -12,7 +13,7 @@ export const BILLING_ROUTE = '/billing'
 // the regex in PublicFormPage.
 export const PUBLICFORM_ROUTE = '/:formId'
 export const USE_TEMPLATE_REDIRECT_SUBROUTE = 'use-template'
-export const FORMID_REGEX = /^([a-fA-F0-9]{24})$/
+export const MONGODB_ID_REGEX = /^([a-fA-F0-9]{24})$/
 
 export const ADMINFORM_ROUTE = '/admin/form'
 /** Build tab has no subroute, its the index admin form route. */
@@ -21,6 +22,10 @@ export const ADMINFORM_SETTINGS_SUBROUTE = 'settings'
 export const ADMINFORM_RESULTS_SUBROUTE = 'results'
 export const ADMINFORM_PREVIEW_ROUTE = 'preview'
 export const ADMINFORM_USETEMPLATE_ROUTE = 'use-template'
+
+// sub sub routes within settings
+export const ADMINFORM_SETTINGS_SINGPASS_SUBROUTE = `${ADMINFORM_SETTINGS_SUBROUTE}/singpass`
+export const ADMINFORM_SETTINGS_PAYMENTS_SUBROUTE = `${ADMINFORM_SETTINGS_SUBROUTE}/payments`
 
 /**
  * Regex for active path matching on adminform builder routes/subroutes.

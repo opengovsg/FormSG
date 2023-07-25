@@ -38,6 +38,10 @@ const PaymentSchema = new Schema<IPaymentSchema, IPaymentModel>(
       type: String,
       required: true,
     },
+    gstEnabled: {
+      type: Boolean,
+      required: true,
+    },
     responses: [],
 
     webhookLog: [],

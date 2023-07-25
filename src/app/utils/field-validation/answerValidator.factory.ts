@@ -6,12 +6,14 @@ import { ResponseValidator } from '../../../types/field/utils/validation'
 import {
   ProcessedAttachmentResponse,
   ProcessedCheckboxResponse,
+  ProcessedChildrenResponse,
   ProcessedSingleAnswerResponse,
   ProcessedTableResponse,
 } from '../../modules/submission/submission.types'
 
 import { constructAttachmentValidator } from './validators/attachmentValidator'
 import { constructCheckboxValidator } from './validators/checkboxValidator'
+import { constructChildrenValidator } from './validators/childrenValidator'
 import { constructCountryRegionValidator } from './validators/countryRegionValidator'
 import { constructDateValidator } from './validators/dateValidator'
 import { constructDecimalValidator } from './validators/decimalValidator'
@@ -89,6 +91,15 @@ export const constructCheckboxFieldValidator = (
 ): ResponseValidator<ProcessedCheckboxResponse> => {
   if (formField.fieldType === BasicField.Checkbox) {
     return constructCheckboxValidator(formField)
+  }
+  return () => left('Unsupported field type')
+}
+
+export const constructChildFieldValidator = (
+  formField: FieldValidationSchema,
+): ResponseValidator<ProcessedChildrenResponse> => {
+  if (formField.fieldType === BasicField.Children) {
+    return constructChildrenValidator(formField)
   }
   return () => left('Unsupported field type')
 }

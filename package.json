@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.60.0",
+  "version": "6.67.1",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -42,8 +42,9 @@
     "dev:backend": "tsnd --poll --respawn --transpile-only --inspect=0.0.0.0 --exit-child -r dotenv/config -- src/app/server.ts",
     "dev:frontend": "npm run --prefix frontend start",
     "lint": "eslint src/ --quiet --fix",
+    "lint:shared": "eslint shared/ --quiet --fix",
     "lint:frontend": "npm run --prefix frontend lint",
-    "lint-ci": "eslint src/ --quiet",
+    "lint-ci": "eslint src/ shared/ --quiet",
     "version": "auto-changelog -p && git add CHANGELOG.md",
     "prepare": "husky install",
     "pre-commit": "lint-staged",
@@ -60,9 +61,9 @@
     "@opengovsg/angular-legacy-sortablejs-maintained": "^1.0.0",
     "@opengovsg/angular-recaptcha-fallback": "^5.0.0",
     "@opengovsg/formsg-sdk": "^0.10.0",
-    "@opengovsg/myinfo-gov-client": "^4.0.2",
+    "@opengovsg/myinfo-gov-client": "^4.1.1",
     "@opengovsg/ng-file-upload": "^12.2.15",
-    "@opengovsg/sgid-client": "1.0.4",
+    "@opengovsg/sgid-client": "^1.0.4",
     "@sentry/browser": "^7.51.2",
     "@sentry/integrations": "^6.19.7",
     "@stablelib/base64": "^1.0.1",
@@ -122,6 +123,7 @@
     "http-errors": "^2.0.0",
     "http-status-codes": "^2.2.0",
     "intl-tel-input": "~12.4.0",
+    "ip": "^1.1.8",
     "jose": "^4.13.1",
     "jsdom": "^21.1.1",
     "json-stringify-safe": "^5.0.1",
@@ -135,7 +137,7 @@
     "moment-timezone": "0.5.41",
     "mongodb-memory-server-core": "^6.9.6",
     "mongodb-uri": "^0.9.7",
-    "mongoose": "^5.13.15",
+    "mongoose": "^5.13.20",
     "multiparty": ">=4.2.3",
     "nan": "^2.17.0",
     "neverthrow": "^6.0.0",
@@ -173,7 +175,7 @@
     "web-streams-polyfill": "^3.2.1",
     "whatwg-fetch": "^3.6.2",
     "winston": "^3.8.2",
-    "winston-cloudwatch": "^6.1.1",
+    "winston-cloudwatch": "^6.2.0",
     "zod": "^3.21.4"
   },
   "devDependencies": {

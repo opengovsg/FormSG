@@ -5,12 +5,15 @@ import {
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../../shared/types'
+import { CaptchaTypes } from '../../../../../shared/types/captcha'
 import { IPopulatedEmailForm } from '../../../../types'
 import { ParsedEmailModeSubmissionBody } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as CaptchaService from '../../../services/captcha/captcha.service'
 import MailService from '../../../services/mail/mail.service'
+import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
+import * as TurnstileService from '../../../services/turnstile/turnstile.service'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
@@ -47,7 +50,7 @@ const submitEmailModeForm: ControllerHandler<
   { formId: string },
   SubmissionResponseDto | SubmissionErrorDto,
   ParsedEmailModeSubmissionBody,
-  { captchaResponse?: unknown }
+  { captchaResponse?: unknown; captchaType?: unknown }
 > = async (req, res) => {
   const { formId } = req.params
   const attachments = mapAttachmentsFromResponses(req.body.responses)
@@ -112,19 +115,39 @@ const submitEmailModeForm: ControllerHandler<
       .andThen((form) => {
         // Check the captcha
         if (form.hasCaptcha) {
-          return CaptchaService.verifyCaptchaResponse(
-            req.query.captchaResponse,
-            getRequestIp(req),
-          )
-            .map(() => form)
-            .mapErr((error) => {
-              logger.error({
-                message: 'Error while verifying captcha',
-                meta: logMeta,
-                error,
-              })
-              return error
-            })
+          switch (req.query.captchaType) {
+            case CaptchaTypes.Turnstile: {
+              return TurnstileService.verifyTurnstileResponse(
+                req.query.captchaResponse,
+                getRequestIp(req),
+              )
+                .map(() => form)
+                .mapErr((error) => {
+                  logger.error({
+                    message: 'Error while verifying turnstile captcha',
+                    meta: logMeta,
+                    error,
+                  })
+                  return error
+                })
+            }
+            case CaptchaTypes.Recaptcha: // fallthrough, defaults to recaptcha
+            default: {
+              return CaptchaService.verifyCaptchaResponse(
+                req.query.captchaResponse,
+                getRequestIp(req),
+              )
+                .map(() => form)
+                .mapErr((error) => {
+                  logger.error({
+                    message: 'Error while verifying captcha',
+                    meta: logMeta,
+                    error,
+                  })
+                  return error
+                })
+            }
+          }
         }
         return okAsync(form) as ResultAsync<IPopulatedEmailForm, never>
       })
@@ -417,7 +440,9 @@ const submitEmailModeForm: ControllerHandler<
 }
 
 export const handleEmailSubmission = [
+  // TODO: remove CaptchaMiddleware after extracting common components in Captcha and Turnstile
   CaptchaMiddleware.validateCaptchaParams,
+  TurnstileMiddleware.validateTurnstileParams,
   EmailSubmissionMiddleware.receiveEmailSubmission,
   EmailSubmissionMiddleware.validateResponseParams,
   submitEmailModeForm,

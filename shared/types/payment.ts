@@ -17,6 +17,11 @@ export enum PaymentChannel {
   Stripe = 'Stripe',
   // for extensibility to future payment options
 }
+export enum PaymentType {
+  Fixed = 'Fixed',
+  Variable = 'Variable',
+  // Products = 'Products'
+}
 
 export type CompletedPaymentMeta = {
   paymentDate: Date
@@ -38,6 +43,7 @@ export type Payment = {
   email: string
   amount: number
   paymentIntentId: string
+  gstEnabled: boolean
 
   // Payment status tracking
   webhookLog: Stripe.Event[]

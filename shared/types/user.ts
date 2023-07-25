@@ -14,6 +14,7 @@ export const UserBase = z.object({
   betaFlags: z
     .object({
       payment: z.boolean().optional(),
+      children: z.boolean().optional(),
     })
     .optional(),
   flags: z
@@ -24,12 +25,12 @@ export const UserBase = z.object({
   updatedAt: z.date(),
   contact: z.string().optional(),
   apiToken: z
-  .object({
-    keyHash: z.string(),
-    createdAt: z.date(),
-    lastUsedAt: z.date().optional(),
-  })
-  .optional(),
+    .object({
+      keyHash: z.string(),
+      createdAt: z.date(),
+      lastUsedAt: z.date().optional(),
+    })
+    .optional(),
 })
 export type UserBase = z.infer<typeof UserBase>
 
@@ -64,4 +65,8 @@ export type VerifyUserContactOtpDto = {
 export type SendOtpResponseDto = {
   message: string
   otpPrefix: string
+}
+
+export type GetSgidAuthUrlResponseDto = {
+  redirectUrl: string
 }

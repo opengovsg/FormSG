@@ -399,50 +399,65 @@ export const computePayoutDetails = (
 }
 
 /**
- * Converts receipt sourced from Stripe into an invoice format
+ * Converts receipt sourced from Stripe into a proof of payment format
+ * If GST is applicable, 'Invoice' is used and the GST Reg No is reflected.
+ * If GST is not applicable, 'Receipt' is used.
  * @param receiptHtmlSource
  */
-export const convertToInvoiceFormat = (
+export const convertToProofOfPaymentFormat = (
   receiptHtmlSource: string,
   {
     address,
     gstRegNo,
     formTitle,
     submissionId,
+    gstApplicable,
   }: {
     address: string
     gstRegNo: string
     formTitle: string
     submissionId: string
+    gstApplicable: boolean
   },
 ) => {
   // handle special characters in addresses
   const ADDRESS = encode(address)
   const GST_REG_NO = encode(gstRegNo)
 
-  const edited = receiptHtmlSource
-    .replace(/(<title>.*?)receipt(.*?<\/title>)/, '$1invoice$2')
-    .replace(/Receipt from /g, 'Invoice from ')
-    .replace(
-      /Receipt (#[0-9-]+)/,
-      `Invoice $1<br /><br />GST Reg No: ${GST_REG_NO}<br />Address: ${ADDRESS}`,
-    )
-    .replace(/Date paid/g, 'Invoice Date')
+  const commonEdits = receiptHtmlSource
     .replace(/<br>\(This amount is inclusive of GST\)/, '')
     .replace(
-      '<strong>Amount charged</strong>',
-      '<strong>Amount charged</strong> <i>(includes GST)</i>',
-    )
-    .replace(
       /Something wrong with the email\? <a.+a>/,
-      `FormSG Form: ${formTitle}<br>Response ID: ${submissionId}`,
+      `FormSG Form: ${encode(formTitle)}<br />Response ID: ${submissionId}`,
     )
     .replace(
       /<td class="Spacer Spacer--gutter" width="64" .+<\/td>/,
       '<td class="st-Spacer st-Spacer--gutter" width="48"></td>',
     )
 
-  const dom = new JSDOM(edited)
+  // If GST is applicable, 'Invoice' is used instead of 'Receipt'
+  const gstDependentEdits = gstApplicable
+    ? commonEdits
+        .replace(/(<title>.*?)receipt(.*?<\/title>)/, '$1invoice$2')
+        .replace(/Receipt from /g, 'Invoice from ')
+
+        .replace(
+          /Receipt (#[0-9-]+)/,
+          `Invoice $1<br /><br />GST Reg No: ${GST_REG_NO}<br />Address: ${ADDRESS}`,
+        )
+        .replace(/Date paid/g, 'Invoice Date')
+        .replace(
+          '<strong>Amount charged</strong>',
+          `<strong>Amount charged</strong> <i>(includes GST)</i>`,
+        )
+    : commonEdits
+        .replace(
+          /Receipt (#[0-9-]+)/,
+          `Receipt $1<br /><br />Address: ${ADDRESS}`,
+        )
+        .replace(/Date paid/g, 'Receipt Date')
+
+  const dom = new JSDOM(gstDependentEdits)
   const { document } = dom.window
 
   // select last 3 tables to remove, n = last index

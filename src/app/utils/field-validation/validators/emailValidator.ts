@@ -32,11 +32,10 @@ const emailFormatValidator: EmailValidator = (response) => {
  */
 const makeEmailDomainValidator: EmailValidatorConstructor =
   (emailField) => (response) => {
-    const { isVerifiable, hasAllowedEmailDomains, allowedEmailDomains } =
-      emailField
+    const { hasAllowedEmailDomains, allowedEmailDomains } = emailField
     const { answer } = response
     const emailAddress = String(answer).trim()
-    if (!(isVerifiable && hasAllowedEmailDomains && allowedEmailDomains.length))
+    if (!(hasAllowedEmailDomains && allowedEmailDomains.length))
       return right(response)
     const emailDomain = ('@' + emailAddress.split('@').pop()).toLowerCase()
 

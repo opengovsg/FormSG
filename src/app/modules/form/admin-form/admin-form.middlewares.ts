@@ -32,6 +32,7 @@ export const updateSettingsValidator = celebrate({
       address: Joi.string().allow(''),
       gstRegNo: Joi.string().allow(''),
     }),
+    payments_field: Joi.object({ gst_enabled: Joi.boolean() }),
   })
     .min(1)
     .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),

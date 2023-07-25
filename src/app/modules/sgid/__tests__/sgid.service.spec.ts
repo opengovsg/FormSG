@@ -49,16 +49,21 @@ describe('sgid.service', () => {
   })
   describe('constructor', () => {
     it('should create an SgidClient correctly', () => {
-      const { endpoint, clientId, clientSecret, privateKeyPath, redirectUri } =
-        MOCK_OPTIONS
+      const {
+        hostname,
+        clientId,
+        clientSecret,
+        privateKeyPath,
+        formLoginRedirectUri,
+      } = MOCK_OPTIONS
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
       expect(SgidService).toBeInstanceOf(SgidServiceClass)
       expect(MockSgidClient).toHaveBeenCalledWith({
-        endpoint,
+        hostname,
         clientId,
         clientSecret,
         privateKey: privateKeyPath,
-        redirectUri,
+        redirectUri: formLoginRedirectUri,
       })
     })
   })

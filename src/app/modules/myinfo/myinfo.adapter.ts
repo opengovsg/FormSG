@@ -2,12 +2,16 @@ import {
   IPerson,
   IPersonResponse,
   MyInfoAttribute as ExternalAttr,
+  MyInfoChildBirthRecordBelow21,
   MyInfoScope,
   MyInfoSource,
 } from '@opengovsg/myinfo-gov-client'
 
 import {
   MyInfoAttribute as InternalAttr,
+  MyInfoChildAttributes,
+  MyInfoChildData,
+  MyInfoChildVaxxStatus,
   MyInfoDataTransformer,
 } from '../../../../shared/types'
 
@@ -20,6 +24,7 @@ import {
   formatVehicleNumbers,
   formatWorkpassStatus,
 } from './myinfo.format'
+import { isMyInfoChildrenBirthRecords } from './myinfo.util'
 
 /**
  * Converts an internal MyInfo attribute used in FormSG to a scope
@@ -78,6 +83,22 @@ export const internalAttrToScope = (attr: InternalAttr): MyInfoScope => {
       return ExternalAttr.MarriageDate
     case InternalAttr.DivorceDate:
       return ExternalAttr.DivorceDate
+    case InternalAttr.ChildrenBirthRecords:
+      return ExternalAttr.ChildrenBirthRecords
+    case InternalAttr.ChildName:
+      return `${ExternalAttr.ChildrenBirthRecords}.name`
+    case InternalAttr.ChildBirthCertNo:
+      return `${ExternalAttr.ChildrenBirthRecords}.birthcertno`
+    case InternalAttr.ChildDateOfBirth:
+      return `${ExternalAttr.ChildrenBirthRecords}.dob`
+    case InternalAttr.ChildVaxxStatus:
+      return `${ExternalAttr.ChildrenBirthRecords}.vaccinationrequirements`
+    case InternalAttr.ChildGender:
+      return `${ExternalAttr.ChildrenBirthRecords}.sex`
+    case InternalAttr.ChildRace:
+      return `${ExternalAttr.ChildrenBirthRecords}.race`
+    case InternalAttr.ChildSecondaryRace:
+      return `${ExternalAttr.ChildrenBirthRecords}.secondaryrace`
   }
 }
 
@@ -138,6 +159,15 @@ export const internalAttrToExternal = (attr: InternalAttr): ExternalAttr => {
       return ExternalAttr.MarriageDate
     case InternalAttr.DivorceDate:
       return ExternalAttr.DivorceDate
+    case InternalAttr.ChildName:
+    case InternalAttr.ChildBirthCertNo:
+    case InternalAttr.ChildDateOfBirth:
+    case InternalAttr.ChildrenBirthRecords:
+    case InternalAttr.ChildVaxxStatus:
+    case InternalAttr.ChildGender:
+    case InternalAttr.ChildRace:
+    case InternalAttr.ChildSecondaryRace:
+      return ExternalAttr.ChildrenBirthRecords
   }
 }
 
@@ -149,9 +179,55 @@ export const internalAttrToExternal = (attr: InternalAttr): ExternalAttr => {
  */
 export const internalAttrListToScopes = (
   attrs: InternalAttr[],
-): MyInfoScope[] =>
+): MyInfoScope[] => {
   // Always ask for consent for UinFin, even though it is not a form field
-  attrs.map(internalAttrToScope).concat(ExternalAttr.UinFin)
+  const scopes = attrs.map(internalAttrToScope).concat(ExternalAttr.UinFin)
+  // Only for MockPass compatbility. For production we don't want to
+  // ask for the most general Children scope.
+  if (
+    process.env.NODE_ENV === 'development' ||
+    process.env.NODE_ENV === 'test'
+  ) {
+    for (const attr of attrs) {
+      if (isMyInfoChildrenBirthRecords(attr)) {
+        scopes.push(ExternalAttr.ChildrenBirthRecords)
+        break
+      }
+    }
+  }
+
+  return scopes
+}
+
+/**
+ * Converts whatever preschool vaccination data
+ * we get directly from MyInfo to out internal representation.
+ *
+ * NOTE: As of the time of writing this, there is only one possible
+ * vaccination status code. So the array input doesn't matter
+ * and we can just output a single enum. However, if this changes
+ * in the future, we need to support multiple vaccination statuses.
+ *
+ * @param vaccinationRequirement The preschool child records vaccination requirements.
+ * @returns Vaccination status of the child. Unknown status should be treated as missing data.
+ */
+const requirementToVaccinationEnum = (
+  vaccinationRequirement:
+    | undefined
+    | {
+        requirement: { code: string; desc: string }
+        fulfilled: { value: boolean }
+      }[],
+): MyInfoChildVaxxStatus => {
+  if (vaccinationRequirement === undefined || !vaccinationRequirement.length) {
+    return MyInfoChildVaxxStatus.Unknown
+  }
+  return vaccinationRequirement.some((req) => req?.requirement?.code === '1M3D')
+    ? MyInfoChildVaxxStatus.ONEM3D
+    : MyInfoChildVaxxStatus.Unknown
+}
+
+const MyInfoChildAttributesSorted = Object.values(MyInfoChildAttributes).sort()
 
 /**
  * Wrapper class for MyInfo data. Provides public methods to safely
@@ -171,6 +247,64 @@ export class MyInfoData
 
   getUinFin(): string {
     return this.#uinFin
+  }
+
+  /**
+   * Accesses children birth records fields from MyInfo.
+   * These are special as they return an array of children for each
+   * scope type.
+   *
+   * @param childAttr The child attribute you're requesting.
+   * @returns Array of children's values.
+   */
+  #accessChildrenAttrFromMyInfo(childAttr: MyInfoChildAttributes): string[] {
+    const records = this.#personData
+      .childrenbirthrecords as Array<MyInfoChildBirthRecordBelow21>
+    if (records === undefined) {
+      return []
+    }
+    // Note: need ?. operator because above 21 children may
+    // not have these fields.
+    switch (childAttr) {
+      case MyInfoChildAttributes.ChildName:
+        return records.map((c) => c?.name?.value ?? '')
+      case MyInfoChildAttributes.ChildDateOfBirth:
+        return records.map((c) => c?.dob?.value ?? '')
+      case MyInfoChildAttributes.ChildBirthCertNo:
+        return records.map((c) => c?.birthcertno?.value ?? '')
+      case MyInfoChildAttributes.ChildVaxxStatus:
+        return records.map(
+          (c) =>
+            requirementToVaccinationEnum(c?.vaccinationrequirements) as string,
+        )
+      case MyInfoChildAttributes.ChildGender:
+        return records.map((c) => c?.sex?.desc ?? '')
+      case MyInfoChildAttributes.ChildRace:
+        return records.map((c) => c?.race?.desc ?? '')
+      case MyInfoChildAttributes.ChildSecondaryRace:
+        return records.map((c) => c?.secondaryrace?.desc ?? '')
+      default: {
+        const never: never = childAttr
+        return never
+      }
+    }
+  }
+
+  getChildrenBirthRecords(
+    allMyInfoAttrs: InternalAttr[],
+  ): MyInfoChildData | undefined {
+    if (this.#personData?.childrenbirthrecords === undefined) {
+      return
+    }
+    const myInfoAttrsSet = new Set(allMyInfoAttrs)
+
+    const result = Object.fromEntries(
+      MyInfoChildAttributesSorted
+        // Filter out records that aren't requested by our scope.
+        .filter((attr) => myInfoAttrsSet.has(attr as unknown as InternalAttr))
+        .map((attr) => [attr, this.#accessChildrenAttrFromMyInfo(attr)]),
+    )
+    return result
   }
 
   _formatFieldValue(attr: ExternalAttr): string | undefined {

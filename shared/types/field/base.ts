@@ -20,6 +20,7 @@ export enum BasicField {
   Nric = 'nric',
   Table = 'table',
   Uen = 'uen',
+  Children = 'children',
 }
 
 export enum MyInfoAttribute {
@@ -48,7 +49,31 @@ export enum MyInfoAttribute {
   DivorceDate = 'divorcedate',
   WorkpassStatus = 'workpassstatus',
   WorkpassExpiryDate = 'workpassexpirydate',
+  ChildrenBirthRecords = 'childrenbirthrecords',
+  // Children fields. MAKE SURE TO KEEP IN SYNC WITH MyInfoChildAttributes BELOW.
+  ChildName = 'childname',
+  ChildBirthCertNo = 'childbirthcertno',
+  ChildDateOfBirth = 'childdateofbirth',
+  ChildVaxxStatus = 'childvaxxstatus',
+  ChildGender = 'childgender',
+  ChildRace = 'childrace',
+  ChildSecondaryRace = 'childsecondaryrace',
 }
+
+// We need to write this manually otherwise TS merges the names and keys
+export enum MyInfoChildAttributes {
+  ChildName = 'childname',
+  ChildBirthCertNo = 'childbirthcertno',
+  ChildDateOfBirth = 'childdateofbirth',
+  ChildVaxxStatus = 'childvaxxstatus',
+  ChildGender = 'childgender',
+  ChildRace = 'childrace',
+  ChildSecondaryRace = 'childsecondaryrace',
+}
+
+export type MyInfoChildData = Partial<{
+  [key in MyInfoChildAttributes]: string[]
+}>
 
 export type AllowMyInfoBase = {
   myInfo?: {

@@ -6,28 +6,22 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { Box, Flex, Icon, Skeleton } from '@chakra-ui/react'
+import { Box, Flex, Skeleton, Spacer, Text } from '@chakra-ui/react'
 
 import { FormAuthType, FormSettings, FormStatus } from '~shared/types/form'
 
-import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
-import { OGP_SGID } from '~constants/links'
+import { GUIDE_SPCP_ESRVCID } from '~constants/links'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 import Radio from '~components/Radio'
-import Tooltip from '~components/Tooltip'
+import { Tag } from '~components/Tag'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { isMyInfo } from '~features/myinfo/utils'
 
 import { useMutateFormSettings } from '../../mutations'
 
-import {
-  AUTHTYPE_TO_TEXT,
-  CP_TOOLTIP,
-  SGID_TOOLTIP,
-  STORAGE_MODE_AUTHTYPES,
-} from './constants'
+import { AUTHTYPE_TO_TEXT, STORAGE_MODE_AUTHTYPES } from './constants'
 import { EsrvcIdBox } from './EsrvcIdBox'
 
 const esrvcidRequired = (authType: FormAuthType) => {
@@ -131,14 +125,31 @@ export const AuthSettingsSection = ({
 
   return (
     <Box>
+      <Text
+        textStyle="subhead-1"
+        color="secondary.500"
+        marginBottom="40px"
+        marginTop="40px"
+      >
+        Authenticate respondents by NRIC.{' '}
+        <Link
+          textStyle="subhead-1"
+          href={GUIDE_SPCP_ESRVCID}
+          isExternal
+          // Needed for link to open since there are nested onClicks
+          onClickCapture={(e) => e.stopPropagation()}
+        >
+          Learn more about Singpass authentication
+        </Link>
+      </Text>
       {isFormPublic ? (
-        <InlineMessage mb="1.25rem">
+        <InlineMessage marginBottom="16px">
           To change authentication method, close your form to new responses.
         </InlineMessage>
       ) : containsMyInfoFields ? (
-        <InlineMessage mb="1.25rem">
-          Authentication method cannot be changed without first removing MyInfo
-          fields. You can still update your e-service ID.
+        <InlineMessage marginBottom="16px">
+          To change authentication method, remove existing Myinfo fields on your
+          form. You can still update your e-service ID.
         </InlineMessage>
       ) : null}
       <Radio.RadioGroup
@@ -150,35 +161,16 @@ export const AuthSettingsSection = ({
           <Fragment key={authType}>
             <Box onClick={handleOptionClick(authType)}>
               <Radio value={authType} isDisabled={isDisabled(authType)}>
-                <Flex align="center">
+                <Flex>
                   {text}
-                  {authType === FormAuthType.SGID ? (
+                  {authType === FormAuthType.SGID ||
+                  authType === FormAuthType.SGID_MyInfo ? (
                     <>
-                      <Tooltip
-                        label={SGID_TOOLTIP}
-                        placement="top"
-                        textAlign="center"
-                      >
-                        <Icon as={BxsHelpCircle} aria-hidden marginX="0.5rem" />
-                      </Tooltip>
-                      <Link
-                        href={OGP_SGID}
-                        isExternal
-                        // Needed for link to open since there are nested onClicks
-                        onClickCapture={(e) => e.stopPropagation()}
-                      >
-                        Contact us to find out more
-                      </Link>
+                      <Spacer w="16px" />
+                      <Tag size="sm" variant="subtle">
+                        Free
+                      </Tag>
                     </>
-                  ) : null}
-                  {authType === FormAuthType.CP ? (
-                    <Tooltip
-                      label={CP_TOOLTIP}
-                      placement="top"
-                      textAlign="center"
-                    >
-                      <Icon as={BxsHelpCircle} aria-hidden ml="0.5rem" />
-                    </Tooltip>
                   ) : null}
                 </Flex>
               </Radio>

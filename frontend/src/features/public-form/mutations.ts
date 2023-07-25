@@ -1,6 +1,10 @@
 import { useMutation } from 'react-query'
 
-import { FormAuthType, SubmitFormFeedbackBodyDto } from '~shared/types/form'
+import {
+  FormAuthType,
+  SubmitFormFeedbackBodyDto,
+  SubmitFormIssueBodyDto,
+} from '~shared/types/form'
 
 import { useToast } from '~hooks/useToast'
 
@@ -12,6 +16,7 @@ import {
   submitEmailModeForm,
   submitEmailModeFormWithFetch,
   submitFormFeedback,
+  submitFormIssue,
   SubmitStorageFormArgs,
   submitStorageModeForm,
   submitStorageModeFormWithFetch,
@@ -105,4 +110,18 @@ export const usePublicFormMutations = (
     submitStorageModeFormFetchMutation,
     submitEmailModeFormFetchMutation,
   }
+}
+
+export const useSubmitFormIssueMutations = (formId: string) => {
+  const toast = useToast({ isClosable: true })
+
+  const submitFormIssueMutation = useMutation(
+    (args: SubmitFormIssueBodyDto) => submitFormIssue(formId, args),
+    {
+      onError: (error: Error) => {
+        toast({ status: 'danger', description: error.message })
+      },
+    },
+  )
+  return { submitFormIssueMutation }
 }

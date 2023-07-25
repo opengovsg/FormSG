@@ -6,6 +6,7 @@ import { FormColorTheme } from '~shared/types/form'
 import {
   AttachmentField,
   CheckboxField,
+  ChildrenCompoundField,
   CountryRegionField,
   DateField,
   DecimalField,
@@ -28,6 +29,7 @@ import {
 } from '~templates/Field'
 
 import { FormFieldWithQuestionNo } from '~features/form/types'
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 import {
   VerifiableEmailField,
   VerifiableEmailFieldSchema,
@@ -47,6 +49,7 @@ interface FieldFactoryProps {
 
 export const FieldFactory = memo(
   ({ field, ...rest }: FieldFactoryProps) => {
+    const { myInfoChildrenBirthRecords } = usePublicFormContext()
     switch (field.fieldType) {
       case BasicField.Section:
         return <SectionField schema={field} {...rest} />
@@ -106,6 +109,14 @@ export const FieldFactory = memo(
         return <ImageField schema={field} {...rest} />
       case BasicField.Table:
         return <TableField schema={field} {...rest} />
+      case BasicField.Children:
+        return (
+          <ChildrenCompoundField
+            schema={field}
+            myInfoChildrenBirthRecords={myInfoChildrenBirthRecords}
+            {...rest}
+          />
+        )
     }
   },
   (prevProps, nextProps) =>

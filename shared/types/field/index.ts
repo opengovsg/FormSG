@@ -1,6 +1,7 @@
 import type { AttachmentFieldBase } from './attachmentField'
 import type { CheckboxFieldBase } from './checkboxField'
 import type { CountryRegionFieldBase } from './countryRegionField'
+import type { ChildrenCompoundFieldBase } from './childrenCompoundField'
 import type { DateFieldBase } from './dateField'
 import type { DecimalFieldBase } from './decimalField'
 import type { DropdownFieldBase } from './dropdownField'
@@ -45,6 +46,7 @@ export * from './tableField'
 export * from './uenField'
 export * from './utils'
 export * from './yesNoField'
+export * from './childrenCompoundField'
 
 export type FormField =
   | AttachmentFieldBase
@@ -68,11 +70,16 @@ export type FormField =
   | TableFieldBase
   | UenFieldBase
   | YesNoFieldBase
+  | ChildrenCompoundFieldBase
 
 // These types are extended through using MyInfoableFieldBase
 // And might possibly be myInfo fields if the attribute is set
 export type MyInfoField = SetRequired<
-  DateFieldBase | DropdownFieldBase | MobileFieldBase | ShortTextFieldBase,
+  | DateFieldBase
+  | DropdownFieldBase
+  | MobileFieldBase
+  | ShortTextFieldBase
+  | ChildrenCompoundFieldBase,
   'myInfo'
 >
 
@@ -102,3 +109,7 @@ export type FieldCreateDto =
   | (FormField & { myInfo?: MyInfoField['myInfo'] })
   | MyInfoField
 export type FieldUpdateDto = FormFieldWithId
+
+type PaymentVariableAmountField = { amount_cents: number }
+
+export type PaymentFieldsDto = PaymentVariableAmountField

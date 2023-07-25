@@ -48,13 +48,17 @@ export class SgidServiceClass {
     privateKeyPath,
     publicKeyPath,
     hostname,
-    ...sgidOptions
+    formLoginRedirectUri: redirectUri,
+    clientId,
+    clientSecret,
   }: ISgidVarsSchema) {
     this.privateKey = fs.readFileSync(privateKeyPath, { encoding: 'utf8' })
     this.client = new SgidClient({
       // If hostname is empty, use the default provided by sgid-client.
       hostname: hostname || undefined,
-      ...sgidOptions,
+      clientId,
+      clientSecret,
+      redirectUri,
       privateKey: this.privateKey,
     })
     this.publicKey = fs.readFileSync(publicKeyPath)
@@ -80,6 +84,7 @@ export class SgidServiceClass {
     const state = encodedQuery
       ? `${formId},${rememberMe},${encodedQuery}`
       : `${formId},${rememberMe}`
+
     const logMeta = {
       action: 'createRedirectUrl',
       state,

@@ -92,6 +92,8 @@ export type Config = {
   secretEnv: string
   envSiteName: string
   publicApiConfig: PublicApiConfig
+  adminFeedbackFieldThreshold: number
+  adminFeedbackDisplayFrequency: number
 
   // Functions
   configureAws: () => Promise<void>
@@ -125,7 +127,8 @@ export interface ISgidVarsSchema {
   clientSecret: string
   privateKeyPath: string
   publicKeyPath: string
-  redirectUri: string
+  formLoginRedirectUri: string
+  adminLoginRedirectUri: string
   cookieMaxAge: number
   cookieMaxAgePreserved: number
   cookieDomain: string
@@ -175,6 +178,10 @@ export interface IOptionalVarsSchema {
   }
   publicApi: {
     apiKeyVersion: string
+  }
+  adminFeedback: {
+    adminFeedbackFieldThreshold: number
+    adminFeedbackDisplayFrequency: number
   }
 }
 

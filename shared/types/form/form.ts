@@ -1,5 +1,5 @@
 import { PublicUserDto, UserDto } from '../user'
-import { FormField, FormFieldDto } from '../field'
+import { FormField, FormFieldDto, MyInfoChildData } from '../field'
 
 import { FormLogo } from './form_logo'
 import type { Merge, Opaque, PartialDeep } from 'type-fest'
@@ -12,7 +12,7 @@ import {
 } from '../../constants/form'
 import { DateString } from '../generic'
 import { FormLogic, LogicDto } from './form_logic'
-import { PaymentChannel } from '../payment'
+import { PaymentChannel, PaymentType } from '../payment'
 
 export type FormId = Opaque<string, 'FormId'>
 
@@ -76,11 +76,31 @@ export type FormPaymentsChannel = {
   publishable_key: string
 }
 
-export type FormPaymentsField = {
-  enabled: boolean
+export interface PaymentTypeBase {
+  payment_type: PaymentType
+
   amount_cents?: number
-  description?: string
+  min_amount?: number
+  max_amount?: number
 }
+interface VariablePaymentsField extends PaymentTypeBase {
+  payment_type: PaymentType.Variable
+  min_amount: number
+  max_amount: number
+}
+
+interface FixedPaymentField extends PaymentTypeBase {
+  payment_type: PaymentType.Fixed
+  amount_cents: number
+}
+
+export type FormPaymentsField =
+  | {
+      enabled: boolean
+      description?: string
+      name?: string
+      gst_enabled?: boolean
+    } & (VariablePaymentsField | FixedPaymentField)
 
 export type FormBusinessField = {
   address?: string
@@ -159,7 +179,7 @@ export type PublicStorageFormDto = Merge<
     StorageFormDto,
     // Arrays like typeof list have numeric index signatures, so their number key
     // yields the union of all numerically-indexed properties.
-    typeof STORAGE_PUBLIC_FORM_FIELDS[number]
+    (typeof STORAGE_PUBLIC_FORM_FIELDS)[number]
   >,
   PublicFormBase
 >
@@ -169,7 +189,7 @@ export type PublicEmailFormDto = Merge<
     EmailFormDto,
     // Arrays like typeof list have numeric index signatures, so their number key
     // yields the union of all numerically-indexed properties.
-    typeof EMAIL_PUBLIC_FORM_FIELDS[number]
+    (typeof EMAIL_PUBLIC_FORM_FIELDS)[number]
   >,
   PublicFormBase
 >
@@ -178,11 +198,11 @@ export type PublicFormDto = PublicStorageFormDto | PublicEmailFormDto
 
 export type EmailFormSettings = Pick<
   EmailFormDto,
-  typeof EMAIL_FORM_SETTINGS_FIELDS[number]
+  (typeof EMAIL_FORM_SETTINGS_FIELDS)[number]
 >
 export type StorageFormSettings = Pick<
   StorageFormDto,
-  typeof STORAGE_FORM_SETTINGS_FIELDS[number]
+  (typeof STORAGE_FORM_SETTINGS_FIELDS)[number]
 >
 
 export type FormSettings = EmailFormSettings | StorageFormSettings
@@ -204,6 +224,7 @@ export type PublicFormViewDto = {
   spcpSession?: SpcpSession
   isIntranetUser?: boolean
   myInfoError?: true
+  myInfoChildrenBirthRecords?: MyInfoChildData
 }
 
 export type PreviewFormViewDto = Pick<PublicFormViewDto, 'form' | 'spcpSession'>
@@ -219,7 +240,7 @@ export type AdminFormViewDto = {
 
 export type AdminDashboardFormMetaDto = Pick<
   AdminFormDto,
-  typeof ADMIN_FORM_META_FIELDS[number]
+  (typeof ADMIN_FORM_META_FIELDS)[number]
 >
 
 export type DuplicateFormBodyDto = {

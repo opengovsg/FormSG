@@ -1,5 +1,4 @@
 export interface MyInfoDataTransformer<T, U> {
-
   /**
    * NRIC/FIN.
    */
@@ -15,15 +14,12 @@ export interface MyInfoDataTransformer<T, U> {
    * editable. The field is locked if it is government-verified and if it
    * does not contain marriage-related information (decision by SNDGO & MSF due to
    * overseas unregistered marriages).
-   * 
+   *
    * @param attr The field/attribute name directly obtained from the sgID
    *    information source.
-   * @param fieldValue FormSG field value. 
+   * @param fieldValue FormSG field value.
    */
-  _isDataReadOnly(
-    attr: T,
-    fieldValue: string | undefined,
-  ): boolean
+  _isDataReadOnly(attr: T, fieldValue: string | undefined): boolean
 
   /**
    * Retrieves the fieldValue for the givern internal

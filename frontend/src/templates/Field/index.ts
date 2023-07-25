@@ -1,5 +1,6 @@
 import AttachmentField from './Attachment'
 import CheckboxField from './Checkbox'
+import ChildrenCompoundField from './ChildrenCompound'
 import CountryRegionField from './CountryRegionField'
 import DateField from './Date'
 import DecimalField from './Decimal'
@@ -25,6 +26,7 @@ export * from './types'
 export {
   AttachmentField,
   CheckboxField,
+  ChildrenCompoundField,
   CountryRegionField,
   DateField,
   DecimalField,

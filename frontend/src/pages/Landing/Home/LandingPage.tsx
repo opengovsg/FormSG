@@ -31,7 +31,6 @@ import {
   FORM_GUIDE,
   GUIDE_ATTACHMENT_SIZE_LIMIT,
   GUIDE_E2EE,
-  GUIDE_PAYMENTS_PUBLIC,
   GUIDE_SECRET_KEY_LOSS,
   GUIDE_STORAGE_MODE,
   GUIDE_TRANSFER_OWNERSHIP,
@@ -40,7 +39,7 @@ import {
   OGP_FORMSG_COLLATE,
   OGP_FORMSG_REPO,
 } from '~constants/links'
-import { LOGIN_ROUTE } from '~constants/routes'
+import { LANDING_PAYMENTS_ROUTE, LOGIN_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
@@ -95,7 +94,7 @@ export const LandingPage = (): JSX.Element => {
       <FeatureBanner
         title="Introducing Payments"
         body="Citizens can now pay for fees and services directly on your form!"
-        learnMoreLink={GUIDE_PAYMENTS_PUBLIC}
+        learnMoreLink={LANDING_PAYMENTS_ROUTE}
       />
       <AppPublicHeader />
       <LandingSection bg="primary.100" pt={{ base: '2rem', md: 0 }} px="0">

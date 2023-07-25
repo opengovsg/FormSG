@@ -267,7 +267,7 @@ describe('Email field validation', () => {
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
-  it('should allow any valid email address when isVerifiable is true and hasAllowedEmailDomains is false, regardless of the cardinality of allowedEmailDomains', () => {
+  it('should allow any valid email address not in allowedEmailDomains when isVerifiable is true and hasAllowedEmailDomains is false, regardless of the cardinality of allowedEmailDomains', () => {
     const formField = {
       _id: 'abc123',
       fieldType: BasicField.Email,
@@ -295,7 +295,35 @@ describe('Email field validation', () => {
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
-  it('should allow any valid email address when isVerifiable is false and hasAllowedEmailDomains is true, regardless of the cardinality of allowedEmailDomains', () => {
+  it('should allow any email address with a domain in allowedEmailDomains when isVerifiable is true and hasAllowedEmailDomains is false, and allowedEmailDomains is not empty', () => {
+    const formField = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      globalId: 'random',
+      title: 'random',
+      required: true,
+      isVerifiable: true,
+      hasAllowedEmailDomains: false,
+      allowedEmailDomains: ['@example.com', '@test.gov.sg'],
+    } as OmitUnusedValidatorProps<IEmailFieldSchema>
+    const response = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      question: 'random',
+      isVisible: true,
+      answer: 'volunteer-testing@test.gov.sg',
+      signature: 'some signature',
+    } as SingleAnswerFieldResponse
+    const validateResult = validateField(
+      'formId',
+      formField,
+      response as ProcessedFieldResponse,
+    )
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should not allow email address which are not in allowedEmailDomains when isVerifiable is false and hasAllowedEmailDomains is true, if allowedEmailDomains is not empty', () => {
     const formField = {
       _id: 'abc123',
       fieldType: BasicField.Email,
@@ -318,10 +346,119 @@ describe('Email field validation', () => {
       formField,
       response as ProcessedFieldResponse,
     )
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
+  })
+
+  it('should allow email address which are in allowedEmailDomains when isVerifiable is false and hasAllowedEmailDomains is true, if allowedEmailDomains is not empty', () => {
+    const formField = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      globalId: 'random',
+      title: 'random',
+      required: true,
+      isVerifiable: false,
+      hasAllowedEmailDomains: true,
+      allowedEmailDomains: ['@example.com', '@test.gov.sg'],
+    } as OmitUnusedValidatorProps<IEmailFieldSchema>
+    const response = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      question: 'random',
+      isVisible: true,
+      answer: 'volunteer-testing@test.gov.sg',
+    } as SingleAnswerFieldResponse
+    const validateResult = validateField(
+      'formId',
+      formField,
+      response as ProcessedFieldResponse,
+    )
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
+  it('should allow any valid email address when isVerifiable is false and hasAllowedEmailDomains is true if allowedEmailDomains is empty', () => {
+    const formField = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      globalId: 'random',
+      title: 'random',
+      required: true,
+      isVerifiable: false,
+      hasAllowedEmailDomains: true,
+      allowedEmailDomains: [],
+    } as OmitUnusedValidatorProps<IEmailFieldSchema>
+    const response = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      question: 'random',
+      isVisible: true,
+      answer: 'volunteer-testing@test.gov.sg',
+    } as SingleAnswerFieldResponse
+    const validateResult = validateField(
+      'formId',
+      formField,
+      response as ProcessedFieldResponse,
+    )
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should allow any valid email address not in allowedEmailDomains when isVerifiable is false and hasAllowedEmailDomains is false and  allowedEmailDomains is not empty', () => {
+    const formField = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      globalId: 'random',
+      title: 'random',
+      required: true,
+      isVerifiable: false,
+      hasAllowedEmailDomains: false,
+      allowedEmailDomains: ['@example.com'],
+    } as OmitUnusedValidatorProps<IEmailFieldSchema>
+    const response = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      question: 'random',
+      isVisible: true,
+      answer: 'volunteer-testing@test.gov.sg',
+    } as SingleAnswerFieldResponse
+    const validateResult = validateField(
+      'formId',
+      formField,
+      response as ProcessedFieldResponse,
+    )
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should allow any valid email address  in allowedEmailDomains when isVerifiable is false and hasAllowedEmailDomains is false and  allowedEmailDomains is not empty', () => {
+    const formField = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      globalId: 'random',
+      title: 'random',
+      required: true,
+      isVerifiable: false,
+      hasAllowedEmailDomains: false,
+      allowedEmailDomains: ['@example.com', '@test.gov.sg'],
+    } as OmitUnusedValidatorProps<IEmailFieldSchema>
+    const response = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      question: 'random',
+      isVisible: true,
+      answer: 'volunteer-testing@test.gov.sg',
+    } as SingleAnswerFieldResponse
+    const validateResult = validateField(
+      'formId',
+      formField,
+      response as ProcessedFieldResponse,
+    )
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
   it('should disallow responses submitted for hidden fields', () => {
     const formField = {
       _id: 'abc123',
