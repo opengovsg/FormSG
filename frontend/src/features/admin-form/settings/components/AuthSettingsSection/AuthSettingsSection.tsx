@@ -125,7 +125,12 @@ export const AuthSettingsSection = ({
 
   return (
     <Box>
-      <Text textStyle="body-1" color="secondary.500" marginBottom="16px">
+      <Text
+        textStyle="body-1"
+        color="secondary.500"
+        marginBottom="40px"
+        marginTop="40px"
+      >
         Authenticate respondents by NRIC.{' '}
         <Link
           href={GUIDE_SPCP_ESRVCID}
