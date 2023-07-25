@@ -133,6 +133,7 @@ export const AuthSettingsSection = ({
       >
         Authenticate respondents by NRIC.{' '}
         <Link
+          textStyle="subhead-1"
           href={GUIDE_SPCP_ESRVCID}
           isExternal
           // Needed for link to open since there are nested onClicks
