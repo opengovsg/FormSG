@@ -18,9 +18,9 @@ export const STORAGE_MODE_AUTHTYPES: Record<StorageFormAuthType, string> = {
 export const EMAIL_MODE_AUTHTYPES: Record<EmailFormAuthType, string> = {
   [FormAuthType.NIL]: 'None',
   [FormAuthType.SGID]: 'Singpass App-only Login',
-  [FormAuthType.SGID_MyInfo]: 'Singpass App-only with MyInfo',
+  [FormAuthType.SGID_MyInfo]: 'Singpass App-only with Myinfo',
   [FormAuthType.SP]: 'Singpass',
-  [FormAuthType.MyInfo]: 'Singpass with MyInfo',
+  [FormAuthType.MyInfo]: 'Singpass with Myinfo',
   [FormAuthType.CP]: 'Singpass (Corporate)',
 }
 export const AUTHTYPE_TO_TEXT = {

@@ -125,7 +125,7 @@ export const AuthSettingsSection = ({
 
   return (
     <Box>
-      <Text textStyle="body-1" color="secondary.500" marginBottom="2.5rem">
+      <Text textStyle="body-1" color="secondary.500" marginBottom="16px">
         Authenticate respondents by NRIC.{' '}
         <Link
           href={GUIDE_SPCP_ESRVCID}
@@ -137,13 +137,13 @@ export const AuthSettingsSection = ({
         </Link>
       </Text>
       {isFormPublic ? (
-        <InlineMessage mb="1.25rem" marginBottom="2.5rem">
+        <InlineMessage marginBottom="16px">
           To change authentication method, close your form to new responses.
         </InlineMessage>
       ) : containsMyInfoFields ? (
-        <InlineMessage mb="1.25rem" marginBottom="2.5rem">
-          Authentication method cannot be changed without first removing MyInfo
-          fields. You can still update your e-service ID.
+        <InlineMessage marginBottom="16px">
+          To change authentication method, remove existing Myinfo fields on your
+          form. You can still update your e-service ID.
         </InlineMessage>
       ) : null}
       <Radio.RadioGroup
@@ -155,13 +155,15 @@ export const AuthSettingsSection = ({
           <Fragment key={authType}>
             <Box onClick={handleOptionClick(authType)}>
               <Radio value={authType} isDisabled={isDisabled(authType)}>
-                <Flex align="center">
+                <Flex>
                   {text}
                   {authType === FormAuthType.SGID ||
                   authType === FormAuthType.SGID_MyInfo ? (
                     <>
-                      <Spacer w="18px" />
-                      <Tag variant="subtle">Free</Tag>
+                      <Spacer w="16px" />
+                      <Tag size="sm" variant="subtle">
+                        Free
+                      </Tag>
                     </>
                   ) : null}
                 </Flex>
