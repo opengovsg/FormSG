@@ -42,10 +42,13 @@ const SGID_SUPPORTED: Set<MyInfoAttribute> = new Set([
   MyInfoAttribute.PassportExpiryDate,
   // This is disabled due to MyInfo and sgID-MyInfo not using the same
   // phone number formats.
+  // MyInfo phone numbers support country code, while sgID-MyInfo does not.
   // MyInfoAttribute.MobileNo,
-  // This is disabled due to slight different formatting.
+
+  // FRM-1189: This is disabled due to slight different formatting.
   // We format the Myinfo response by separates lines in addresses with comma
   // Whereas sgID separates each line with newline.
+  // This should be enabled in future work
   // MyInfoAttribute.RegisteredAddress,
 ])
 

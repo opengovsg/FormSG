@@ -126,7 +126,7 @@ export const AuthSettingsSection = ({
   return (
     <Box>
       <Text
-        textStyle="body-1"
+        textStyle="subhead-1"
         color="secondary.500"
         marginBottom="40px"
         marginTop="40px"
