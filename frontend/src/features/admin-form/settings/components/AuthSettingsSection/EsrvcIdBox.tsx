@@ -74,11 +74,9 @@ export const EsrvcIdBox = ({
   const renderedHelperText = useMemo(() => {
     switch (settings.authType) {
       case FormAuthType.SP:
-        return `Find out [how to get your Singpass e-service ID](${GUIDE_SPCP_ESRVCID}).`
       case FormAuthType.CP:
-        return `Corppass now uses Singpass to authenticate corporate users. You will still need a separate **Corppass e-service ID**. Find out [how to get your Corppass e-service ID](${GUIDE_SPCP_ESRVCID}).`
       case FormAuthType.MyInfo:
-        return `Find out [how to get your MyInfo e-service ID](${GUIDE_SPCP_ESRVCID}).`
+        return 'Contact spcp.transoffice@accenture.com for your e-service ID'
       default:
         return ''
     }
