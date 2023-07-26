@@ -93,13 +93,28 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
       }
     }
     case BasicField.LongText:
-    case BasicField.Number: {
       return {
         fieldType,
         ...baseMeta,
         ValidationOptions: {
           selectedValidation: null,
           customVal: null,
+        },
+      }
+    case BasicField.Number: {
+      return {
+        fieldType,
+        ...baseMeta,
+        ValidationOptions: {
+          selectedValidation: null,
+          LengthValidationOptions: {
+            selectedLengthValidation: null,
+            customVal: null,
+          },
+          RangeValidationOptions: {
+            rangeMinimum: null,
+            rangeMaximum: null,
+          },
         },
       }
     }

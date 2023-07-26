@@ -24,6 +24,7 @@ import {
   MobileFieldBase,
   NricFieldBase,
   NumberFieldBase,
+  NumberSelectedLengthValidation,
   NumberSelectedValidation,
   RadioFieldBase,
   RatingFieldBase,
@@ -206,33 +207,57 @@ export const createMobileValidationRules: ValidationRuleFnEmailAndMobile<
 export const createNumberValidationRules: ValidationRuleFn<NumberFieldBase> = (
   schema,
 ): RegisterOptions => {
-  const { selectedValidation, customVal } = schema.ValidationOptions
+  const { selectedValidation } = schema.ValidationOptions
+  const { selectedLengthValidation, customVal } =
+    schema.ValidationOptions.LengthValidationOptions
+  const { rangeMinimum, rangeMaximum } =
+    schema.ValidationOptions.RangeValidationOptions
 
   return {
     validate: {
       required: requiredSingleAnswerValidationFn(schema),
-      validNumber: (val?: string) => {
-        if (!val || !customVal) return true
+      validNumberLength: (val: string) => {
+        if (
+          selectedValidation !== NumberSelectedValidation.Length ||
+          !val ||
+          !customVal
+        )
+          return true
 
         const currLen = val.trim().length
 
-        switch (selectedValidation) {
-          case NumberSelectedValidation.Exact:
+        switch (selectedLengthValidation) {
+          case NumberSelectedLengthValidation.Exact:
             return (
               currLen === customVal ||
               simplur`Please enter ${customVal} digit[|s] (${currLen}/${customVal})`
             )
-          case NumberSelectedValidation.Min:
+          case NumberSelectedLengthValidation.Min:
             return (
               currLen >= customVal ||
               simplur`Please enter at least ${customVal} digit[|s] (${currLen}/${customVal})`
             )
-          case NumberSelectedValidation.Max:
+          case NumberSelectedLengthValidation.Max:
             return (
               currLen <= customVal ||
               simplur`Please enter at most ${customVal} digit[|s] (${currLen}/${customVal})`
             )
         }
+      },
+      validNumberRange: (val: string) => {
+        if (selectedValidation !== NumberSelectedValidation.Range || !val)
+          return true
+
+        const numVal = Number(val)
+        if (typeof rangeMinimum === 'number' && rangeMinimum > numVal) {
+          return `Please enter a number that has a minimum value of ${rangeMinimum}`
+        }
+
+        if (typeof rangeMaximum === 'number' && rangeMaximum < numVal) {
+          return `Please enter a number that has a maximum value of ${rangeMaximum}`
+        }
+
+        return true
       },
     },
   }
