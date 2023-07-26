@@ -135,10 +135,12 @@ export const PublicFormProvider = ({
     }
   }, [submissionData])
 
+  const enableCaptcha = !!data?.form.hasCaptcha && !data?.isIntranetUser
+
   // Only load catpcha if enabled on form and the user is not on GSIB
   const {
     data: { captchaPublicKey, turnstileSiteKey, useFetchForSubmissions } = {},
-  } = useEnv(/* enabled= */ !!data?.form.hasCaptcha && !data?.isIntranetUser)
+  } = useEnv(/* enabled= */ enableCaptcha)
 
   // Feature flag to control turnstile captcha rollout
   // defaults to false
@@ -157,7 +159,7 @@ export const PublicFormProvider = ({
     getTurnstileResponse,
     containerID: turnstileContainerID,
   } = useTurnstile({
-    sitekey: data?.form.hasCaptcha ? turnstileSiteKey : undefined,
+    sitekey: enableCaptcha ? turnstileSiteKey : undefined,
     enableUsage: enableTurnstileFeatureFlag,
   })
 
@@ -166,7 +168,7 @@ export const PublicFormProvider = ({
     getCaptchaResponse,
     containerId: recaptchaContainerID,
   } = useRecaptcha({
-    sitekey: data?.form.hasCaptcha ? captchaPublicKey : undefined,
+    sitekey: enableCaptcha ? captchaPublicKey : undefined,
     enableUsage: !enableTurnstileFeatureFlag,
   })
 
@@ -593,7 +595,7 @@ export const PublicFormProvider = ({
         isAuthRequired,
         captchaContainerId: containerID,
         expiryInMs,
-        isLoading: isLoading || (!!data?.form.hasCaptcha && !hasLoaded),
+        isLoading: isLoading || (!!enableCaptcha && !hasLoaded),
         isPaymentEnabled,
         isPreview: false,
         setNumVisibleFields,
