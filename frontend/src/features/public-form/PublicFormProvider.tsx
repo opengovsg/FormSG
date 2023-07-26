@@ -135,9 +135,9 @@ export const PublicFormProvider = ({
     }
   }, [submissionData])
 
+  // Only load catpcha if enabled on form and the user is not on GSIB
   const enableCaptcha = data && data.form.hasCaptcha && !data.isIntranetUser
 
-  // Only load catpcha if enabled on form and the user is not on GSIB
   const {
     data: { captchaPublicKey, turnstileSiteKey, useFetchForSubmissions } = {},
   } = useEnv(/* enabled= */ enableCaptcha)
