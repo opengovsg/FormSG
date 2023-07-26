@@ -148,8 +148,13 @@ const submitEncryptModeForm: ControllerHandler<
       })
     }
   }
-  // Check captcha
-  if (form.hasCaptcha) {
+  // Check if respondent is a GSIB user
+  const isIntranetUser = FormService.checkIsIntranetFormAccess(
+    getRequestIp(req),
+    form,
+  )
+  // Check captcha, provided user is not on GSIB
+  if (!isIntranetUser && form.hasCaptcha) {
     switch (req.query.captchaType) {
       case CaptchaTypes.Turnstile: {
         const turnstileResult = await TurnstileService.verifyTurnstileResponse(
