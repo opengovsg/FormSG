@@ -135,7 +135,7 @@ export const PublicFormProvider = ({
     }
   }, [submissionData])
 
-  const enableCaptcha = !!data?.form.hasCaptcha && !data?.isIntranetUser
+  const enableCaptcha = data && data.form.hasCaptcha && !data.isIntranetUser
 
   // Only load catpcha if enabled on form and the user is not on GSIB
   const {
