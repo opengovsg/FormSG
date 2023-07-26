@@ -22,7 +22,7 @@ const ItemQuantity = ({
   onChange,
 }: {
   product: ProductItem
-  onChange: any
+  onChange: (quantity: number) => void
 }) => {
   if (!product.data.multi_qty) {
     return <></>
@@ -41,7 +41,7 @@ const ItemQuantity = ({
         isClearable={false}
         items={qtyOptions}
         placeholder="Quantity"
-        onChange={onChange}
+        onChange={(val) => onChange(Number(val))}
         value={String(product.quantity)}
         name={'Quantity'}
         variant={'clear'}
@@ -98,9 +98,7 @@ const PaymentItem = ({
             </Box>
             <ItemQuantity
               product={product}
-              onChange={(qty: number) =>
-                onItemChange(product.data._id, true, qty)
-              }
+              onChange={(qty) => onItemChange(product.data._id, true, qty)}
             />
           </Flex>
         </Box>
