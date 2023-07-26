@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { FormState } from 'react-hook-form'
 import { BiEditAlt, BiPlus, BiTrash } from 'react-icons/bi'
 import {
   Box,
@@ -19,12 +20,9 @@ import IconButton from '~components/IconButton'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 
-import {
-  dataSelector,
-  setDataSelector,
-  usePaymentStore,
-} from '../usePaymentStore'
+import { dataSelector, usePaymentStore } from '../usePaymentStore'
 
+import { FormPaymentsInput } from './PaymentsInputPanel'
 import { ProductModal } from './ProductModal'
 
 const ProductItem = ({
@@ -139,7 +137,7 @@ export const ProductServiceBox = ({
   updateProductListStore,
 }: {
   isLoading: boolean
-  errors: any
+  errors: FormState<FormPaymentsInput>['errors']
   paymentIsEnabled: boolean
   updateProductListStore: (value: Product[]) => void
 }) => {

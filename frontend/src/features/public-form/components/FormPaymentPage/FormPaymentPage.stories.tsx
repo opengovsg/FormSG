@@ -18,7 +18,7 @@ import { GenericMessageBlock as GenericMessageBlockComponent } from './stripe/co
 import { StripeReceiptContainer } from './stripe/StripeReceiptContainer'
 import {
   CreatePaymentIntentFailureBlock,
-  PaymentItemDetailsBlock,
+  FixedPaymentItemDetailsBlock,
   PaymentStack,
 } from './components'
 import { FormPaymentPage } from './FormPaymentPage'
@@ -59,7 +59,7 @@ const Template: (children: React.ReactElement) => Story = (children) => () =>
   )
 
 export const PendingPaymentDetails = Template(
-  <PaymentItemDetailsBlock
+  <FixedPaymentItemDetailsBlock
     paymentItemName="Mock event registration"
     paymentDescription="Mock event description"
     paymentAmount={1000}
