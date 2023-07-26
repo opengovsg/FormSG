@@ -1,4 +1,8 @@
-import { SendOtpResponseDto, UserDto } from '~shared/types/user'
+import {
+  GetSgidAuthUrlResponseDto,
+  SendOtpResponseDto,
+  UserDto,
+} from '~shared/types/user'
 
 import { LOCAL_STORAGE_EVENT, LOGGED_IN_KEY } from '~constants/localStorage'
 
@@ -33,6 +37,17 @@ export const verifyLoginOtp = async (params: {
   return ApiService.post<UserDto>(`${AUTH_ENDPOINT}/otp/verify`, params).then(
     ({ data }) => data,
   )
+}
+
+/**
+ * Gets the SGID authentication endpoint URL
+ * @returns SGID login redirect url
+ * @throws Error on non 2xx response
+ */
+export const getSgidAuthUrl = async (): Promise<GetSgidAuthUrlResponseDto> => {
+  return ApiService.get<GetSgidAuthUrlResponseDto>(
+    `${AUTH_ENDPOINT}/sgid/authurl`,
+  ).then(({ data }) => data)
 }
 
 export const logout = async (): Promise<void> => {

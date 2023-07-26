@@ -76,6 +76,7 @@ describe('stripe.controller', () => {
       ...mockBusinessInfo,
       formTitle: mockFormTitle,
       submissionId: mockSubmissionId,
+      gstApplicable: false,
     }
     const mockForm = {
       _id: MOCK_FORM_ID,
@@ -111,6 +112,7 @@ describe('stripe.controller', () => {
           receiptUrl: 'http://form.gov.sg',
           submissionId: mockSubmissionId,
         },
+        gstEnabled: false,
       })
     })
     it('should generate return a pdf file when receipt url is present', async () => {
@@ -127,7 +129,7 @@ describe('stripe.controller', () => {
         .mockResolvedValueOnce({ data: '<html>some html</html>' })
 
       const convertInvoiceSpy = jest
-        .spyOn(StripeUtils, 'convertToInvoiceFormat')
+        .spyOn(StripeUtils, 'convertToProofOfPaymentFormat')
         .mockReturnValueOnce('<html>some converted html</html>')
 
       const generatePdfFromHtmlSpy = jest
@@ -167,7 +169,7 @@ describe('stripe.controller', () => {
 
       const convertInvoiceSpy = jest.spyOn(
         StripeUtils,
-        'convertToInvoiceFormat',
+        'convertToProofOfPaymentFormat',
       )
 
       const generatePdfFromHtmlSpy = jest.spyOn(
@@ -213,6 +215,7 @@ describe('stripe.controller', () => {
         completedPayment: {
           receiptUrl: 'http://form.gov.sg',
         },
+        gstEnabled: false,
       })
 
       const mockReq = expressHandler.mockRequest({

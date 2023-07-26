@@ -1,5 +1,5 @@
 import { PublicUserDto, UserDto } from '../user'
-import { FormField, FormFieldDto } from '../field'
+import { FormField, FormFieldDto, MyInfoChildData } from '../field'
 
 import { FormLogo } from './form_logo'
 import type { Merge, Opaque, PartialDeep } from 'type-fest'
@@ -114,6 +114,7 @@ export type FormPaymentsField =
       enabled: boolean
       description?: string
       name?: string
+      gst_enabled?: boolean
     } & (VariablePaymentsField | FixedPaymentField | ProductsPaymentField)
 
 export type FormBusinessField = {
@@ -238,6 +239,7 @@ export type PublicFormViewDto = {
   spcpSession?: SpcpSession
   isIntranetUser?: boolean
   myInfoError?: true
+  myInfoChildrenBirthRecords?: MyInfoChildData
 }
 
 export type PreviewFormViewDto = Pick<PublicFormViewDto, 'form' | 'spcpSession'>

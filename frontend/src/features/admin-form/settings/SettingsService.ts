@@ -119,6 +119,15 @@ export const updateBusinessInfo: UpdateStorageFormFn<'business'> = async (
   return updateFormSettings(formId, { business: newBusinessField })
 }
 
+export const updateGstEnabledFlag = async (
+  formId: string,
+  gstEnabledFlag: StorageFormSettings['payments_field']['gst_enabled'],
+) => {
+  return updateFormSettings(formId, {
+    payments_field: { gst_enabled: gstEnabledFlag },
+  })
+}
+
 /**
  * Internal function that calls the PATCH API.
  * @param formId the id of the form to update

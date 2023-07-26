@@ -6,7 +6,7 @@ on:
     branches: [develop, release-al2, master]
 jobs:
   test:
-    timeout-minutes: 60
+    timeout-minutes: 40
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -24,10 +24,13 @@ jobs:
         run: npm run build
       - name: Run Playwright tests (login)
         run: npx playwright test __tests__/e2e/login.spec.ts
+        timeout-minutes: 5
       - name: Run Playwright tests (email-submission)
         run: npx playwright test __tests__/e2e/email-submission.spec.ts
+        timeout-minutes: 15
       - name: Run Playwright tests (encrypt-submission)
         run: npx playwright test __tests__/e2e/encrypt-submission.spec.ts
+        timeout-minutes: 10
       - uses: actions/upload-artifact@v3
         if: always()
         with:

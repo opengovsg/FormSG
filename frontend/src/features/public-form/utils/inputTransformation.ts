@@ -5,6 +5,7 @@ import { BasicField, FormFieldDto } from '~shared/types/field'
 import {
   AttachmentResponse,
   CheckboxResponse,
+  ChildBirthRecordsResponse,
   FieldResponse,
   HeaderResponse,
   RadioResponse,
@@ -22,6 +23,8 @@ import {
   BaseFieldOutput,
   CheckboxFieldSchema,
   CheckboxFieldValues,
+  ChildrenCompoundFieldSchema,
+  ChildrenCompoundFieldValues,
   DateFieldSchema,
   EmailFieldSchema,
   FormFieldValue,
@@ -182,6 +185,16 @@ const transformToSectionOutput = (
   }
 }
 
+const transformToChildOutput = (
+  schema: ChildrenCompoundFieldSchema,
+  input: ChildrenCompoundFieldValues,
+): ChildBirthRecordsResponse => {
+  return {
+    ...pickBaseOutputFromSchema(schema),
+    answerArray: input.child,
+  }
+}
+
 /**
  * Transforms form inputs to their desire output shapes for sending to the server
  * @param field schema to retrieve base field info
@@ -248,5 +261,10 @@ export const transformInputsToOutputs = (
     case BasicField.Image:
       // No output needed.
       return undefined
+    case BasicField.Children:
+      return transformToChildOutput(
+        field,
+        input as FormFieldValue<typeof field.fieldType>,
+      )
   }
 }

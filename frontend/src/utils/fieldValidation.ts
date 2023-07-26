@@ -12,6 +12,7 @@ import {
   AttachmentFieldBase,
   BasicField,
   CheckboxFieldBase,
+  ChildrenCompoundFieldBase,
   DateFieldBase,
   DateSelectedValidation,
   DecimalFieldBase,
@@ -506,3 +507,16 @@ export const baseMobileValidationFn =
       isMobilePhoneNumber(inputValue) || 'Please enter a valid mobile number'
     )
   }
+
+export const createChildrenValidationRules: ValidationRuleFn<
+  ChildrenCompoundFieldBase
+> = (schema): RegisterOptions => {
+  return {
+    validate: {
+      required: (value: string) => {
+        if (!schema.required) return true
+        if (!value || !value.trim()) return REQUIRED_ERROR
+      },
+    },
+  }
+}

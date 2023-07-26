@@ -2,6 +2,7 @@ export const LANDING_ROUTE = '/'
 export const LANDING_PAYMENTS_ROUTE = '/payments'
 export const DASHBOARD_ROUTE = '/dashboard'
 export const LOGIN_ROUTE = '/login'
+export const OGP_LOGIN_ROUTE = '/ogp-login'
 
 export const TOU_ROUTE = '/terms'
 export const PRIVACY_POLICY_ROUTE = '/privacy'
@@ -12,7 +13,7 @@ export const BILLING_ROUTE = '/billing'
 // the regex in PublicFormPage.
 export const PUBLICFORM_ROUTE = '/:formId'
 export const USE_TEMPLATE_REDIRECT_SUBROUTE = 'use-template'
-export const FORMID_REGEX = /^([a-fA-F0-9]{24})$/
+export const MONGODB_ID_REGEX = /^([a-fA-F0-9]{24})$/
 
 export const ADMINFORM_ROUTE = '/admin/form'
 /** Build tab has no subroute, its the index admin form route. */

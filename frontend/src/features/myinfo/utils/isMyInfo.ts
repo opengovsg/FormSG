@@ -6,6 +6,7 @@ export const isMyInfo = (field: FormField): field is MyInfoField => {
     case BasicField.Dropdown:
     case BasicField.Mobile:
     case BasicField.ShortText:
+    case BasicField.Children:
       return !!field.myInfo
     default:
       return false

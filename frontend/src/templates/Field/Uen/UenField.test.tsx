@@ -38,12 +38,12 @@ describe('validation required', () => {
 
     // Act
     // Valid UEN
-    await user.type(input, '01234567A')
+    await user.type(input, '53333286M')
     await user.click(submitButton)
 
     // Assert
     // Should show success message.
-    const success = screen.getByText('You have submitted: 01234567A')
+    const success = screen.getByText('You have submitted: 53333286M')
     expect(success).not.toBeNull()
     const error = screen.queryByText('Please fill in required field')
     expect(error).toBeNull()
@@ -79,12 +79,12 @@ describe('validation optional', () => {
     expect(input.value).toBe('')
 
     // Act
-    await user.type(input, 'S01LP1234Z')
+    await user.type(input, '201707903G')
     await user.click(submitButton)
 
     // Assert
     // Should show success message.
-    const success = screen.getByText('You have submitted: S01LP1234Z')
+    const success = screen.getByText('You have submitted: 201707903G')
     expect(success).not.toBeNull()
     const error = screen.queryByText(REQUIRED_ERROR)
     expect(error).toBeNull()

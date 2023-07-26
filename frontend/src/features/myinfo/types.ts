@@ -13,6 +13,7 @@ export enum MyInfoDataSource {
   URA = 'Urban Redevelopment Authority',
   User = 'User-provided',
   MSFD = 'Ministry of Social and Family Development',
+  HPB = 'Health Promotion Board',
 }
 
 // Type for MyInfo field within the editor view

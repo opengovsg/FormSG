@@ -7,16 +7,14 @@ import {
   InputGroup,
   InputRightElement,
   Stack,
+  Text,
   VisuallyHidden,
 } from '@chakra-ui/react'
 
 import { FormAuthType, FormSettings } from '~shared/types/form'
 
-import { GUIDE_SPCP_ESRVCID } from '~constants/links'
-import { useMdComponents } from '~hooks/useMdComponents'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
-import { MarkdownText } from '~components/MarkdownText'
 import Spinner from '~components/Spinner'
 
 import { useMutateFormSettings } from '../../mutations'
@@ -47,15 +45,6 @@ export const EsrvcIdBox = ({
     mode: 'onChange',
   })
 
-  const mdComponents = useMdComponents({
-    styles: {
-      text: {
-        textStyle: 'body-2',
-        color: 'secondary.400',
-      },
-    },
-  })
-
   const onSubmit = handleSubmit(({ esrvcId }) => {
     if (esrvcId.trim() === initialEsrvcId) return
     return mutateFormEsrvcId.mutate(esrvcId.trim(), {
@@ -74,22 +63,27 @@ export const EsrvcIdBox = ({
   const renderedHelperText = useMemo(() => {
     switch (settings.authType) {
       case FormAuthType.SP:
-        return `Find out [how to get your Singpass e-service ID](${GUIDE_SPCP_ESRVCID}).`
       case FormAuthType.CP:
-        return `Corppass now uses Singpass to authenticate corporate users. You will still need a separate **Corppass e-service ID**. Find out [how to get your Corppass e-service ID](${GUIDE_SPCP_ESRVCID}).`
       case FormAuthType.MyInfo:
-        return `Find out [how to get your MyInfo e-service ID](${GUIDE_SPCP_ESRVCID}).`
+        return 'Contact spcp.transoffice@accenture.com for your e-service ID'
       default:
         return ''
     }
   }, [settings.authType])
 
+  const placeHolder = useMemo(
+    () =>
+      `Enter ${
+        settings.authType === FormAuthType.CP ? 'Corppass' : 'Singpass'
+      } e-service ID`,
+    [settings.authType],
+  )
   return (
     <form onSubmit={onSubmit} onBlur={handleBlur}>
       <Stack ml="2.75rem" mb="1.25rem">
-        <MarkdownText components={mdComponents}>
+        <Text textStyle="body-2" color="secondary.400">
           {renderedHelperText}
-        </MarkdownText>
+        </Text>
         <VisuallyHidden>
           <FormLabel htmlFor="esrvcId">e-service ID:</FormLabel>
         </VisuallyHidden>
@@ -111,7 +105,7 @@ export const EsrvcIdBox = ({
                 })}
                 isDisabled={isDisabled}
                 isReadOnly={mutateFormEsrvcId.isLoading}
-                placeholder="Enter Singpass e-service ID"
+                placeholder={placeHolder}
               />
             </InputGroup>
             <FormErrorMessage>{errors.esrvcId?.message}</FormErrorMessage>

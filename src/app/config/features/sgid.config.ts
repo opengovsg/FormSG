@@ -33,11 +33,17 @@ export const sgidVarsSchema: Schema<ISgidVarsSchema> = {
     default: null,
     env: 'SGID_PUBLIC_KEY',
   },
-  redirectUri: {
-    doc: 'The callback uri that sgID will pass the authorization code and state to',
+  formLoginRedirectUri: {
+    doc: 'The callback uri that sgID will pass the authorization code and state to for form logins',
     format: 'url',
     default: null,
-    env: 'SGID_REDIRECT_URI',
+    env: 'SGID_FORM_LOGIN_REDIRECT_URI',
+  },
+  adminLoginRedirectUri: {
+    doc: 'The callback uri that sgID will pass the authorization code and state to for admin application logins',
+    format: 'url',
+    default: null,
+    env: 'SGID_ADMIN_LOGIN_REDIRECT_URI',
   },
   cookieMaxAge: {
     doc: 'Max sgID cookie age with remember me unchecked',

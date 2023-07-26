@@ -1,10 +1,13 @@
 import { Document, Model } from 'mongoose'
 
 import { MyInfoAttribute } from '../../shared/types'
+import { MyInfoChildKey } from '../app/modules/myinfo/myinfo.types'
 
 import { IFormSchema } from './form'
 
-export type IHashes = Partial<{ [key in MyInfoAttribute]: string }>
+export type IHashes = Partial<{
+  [key in MyInfoAttribute | MyInfoChildKey]: string
+}>
 
 interface IMyInfoHash {
   uinFin: string

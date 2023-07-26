@@ -127,6 +127,18 @@ export const UenResponse = SingleAnswerResponse.extend({
 })
 export type UenResponse = z.infer<typeof UenResponse>
 
+export const ChildBirthRecordsResponse = ResponseBase.merge(
+  MyInfoResponseBase,
+).extend({
+  fieldType: z.literal(BasicField.Children),
+  // Basically same as Table
+  answerArray: z.array(z.array(z.string())) as unknown as z.Schema<string[][]>,
+})
+
+export type ChildBirthRecordsResponse = z.infer<
+  typeof ChildBirthRecordsResponse
+>
+
 export type FieldResponse =
   | HeaderResponse
   | EmailResponse
@@ -146,3 +158,4 @@ export type FieldResponse =
   | NricResponse
   | TableResponse
   | UenResponse
+  | ChildBirthRecordsResponse

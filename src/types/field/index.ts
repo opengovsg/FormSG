@@ -3,6 +3,7 @@ import type { ConditionalExcept, Merge } from 'type-fest'
 
 import type { IAttachmentFieldSchema } from './attachmentField'
 import type { ICheckboxFieldSchema } from './checkboxField'
+import type { IChildrenCompoundFieldSchema } from './childrenCompoundField'
 import type { IDateFieldSchema } from './dateField'
 import type { IDecimalFieldSchema } from './decimalField'
 import type { IDropdownFieldSchema } from './dropdownField'
@@ -44,6 +45,7 @@ export * from './statementField'
 export * from './tableField'
 export * from './uenField'
 export * from './yesNoField'
+export * from './childrenCompoundField'
 
 export enum SPCPFieldTitle {
   SpNric = 'SingPass Validated NRIC',
@@ -76,6 +78,7 @@ export type FormFieldSchema =
   | ITableFieldSchema
   | IUenFieldSchema
   | IYesNoFieldSchema
+  | IChildrenCompoundFieldSchema
 
 /**
  * Helper type to only retain from FormFieldSchema the props required to create
@@ -116,3 +119,4 @@ export type FieldValidationSchema =
   | OmitUnusedValidatorProps<ITableFieldSchema>
   | OmitUnusedValidatorProps<IUenFieldSchema>
   | OmitUnusedValidatorProps<IYesNoFieldSchema>
+  | OmitUnusedValidatorProps<IChildrenCompoundFieldSchema>

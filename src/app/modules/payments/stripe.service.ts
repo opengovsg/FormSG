@@ -53,7 +53,7 @@ import {
 import {
   computePaymentState,
   computePayoutDetails,
-  convertToInvoiceFormat,
+  convertToProofOfPaymentFormat,
   getChargeIdFromNestedCharge,
   getMetadataPaymentId,
 } from './stripe.utils'
@@ -559,7 +559,7 @@ export const handleStripeEvent = (
             { stripeAccount: event.account },
           )
           .autoPagingEach(async (balanceTransaction) => {
-            if (balanceTransaction.type !== 'charge') return
+            if (!['charge', 'payment'].includes(balanceTransaction.type)) return
 
             const charge = balanceTransaction.source as Stripe.Charge
             await getMetadataPaymentId(charge.metadata)
@@ -994,11 +994,12 @@ export const generatePaymentInvoice = (
           formBusinessInfo,
         },
       })
-    const invoiceHtml = convertToInvoiceFormat(html, {
+    const invoiceHtml = convertToProofOfPaymentFormat(html, {
       address: businessAddress || '',
       gstRegNo: businessGstRegNo || '',
       formTitle: populatedForm.title,
       submissionId: payment.completedPayment?.submissionId || '',
+      gstApplicable: payment.gstEnabled,
     })
 
     return ResultAsync.fromPromise(
