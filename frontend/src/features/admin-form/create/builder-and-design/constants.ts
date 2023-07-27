@@ -141,6 +141,9 @@ export const CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS: {
   label: string
 }[] = Object.values(MyInfoChildAttributes)
   .filter((e) => e !== MyInfoChildAttributes.ChildName)
+  // TODO awaiting approval from MyInfo to get child vaccination status.
+  // Disabling in the frontend for now.
+  .filter((e) => e !== MyInfoChildAttributes.ChildVaxxStatus)
   .map((value) => {
     return {
       value,

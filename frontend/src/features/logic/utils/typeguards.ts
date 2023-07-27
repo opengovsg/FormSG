@@ -45,6 +45,6 @@ export const isLogicableField = (args: {
 export const isValueStringArray = (
   value: FormCondition['value'],
 ): value is string[] => {
-  // use .some because of limitation of typecript in calling .every() on union of array types: https://github.com/microsoft/TypeScript/issues/44373
+  // use .some because of limitation of typescript in calling .every() on union of array types: https://github.com/microsoft/TypeScript/issues/44373
   return Array.isArray(value) && !value.some((v) => typeof v === 'number')
 }

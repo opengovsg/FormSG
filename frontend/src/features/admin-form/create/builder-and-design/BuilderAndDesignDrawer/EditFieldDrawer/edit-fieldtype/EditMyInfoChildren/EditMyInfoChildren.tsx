@@ -97,9 +97,7 @@ export const EditMyInfoChildren = ({
         </HStack>
       </VStack>
       <VStack align="flex-start">
-        <Text textStyle="subhead-1">
-          Collect the following child information
-        </Text>
+        <Text textStyle="subhead-1">Collect the following child data</Text>
         <Box alignSelf="stretch">
           <Controller
             control={control}

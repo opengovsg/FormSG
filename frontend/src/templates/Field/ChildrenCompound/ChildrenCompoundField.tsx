@@ -124,24 +124,27 @@ export const ChildrenCompoundField = ({
         aria-describedby={`children-desc-${schema._id}`}
         aria-labelledby={`${schema._id}-label`}
       >
-        <VStack align="stretch" role="list">
-          {fields.map((field, currChildBodyIdx) => (
-            <ChildrenBody
-              key={`body-${currChildBodyIdx}`}
-              {...{
-                currChildBodyIdx,
-                schema,
-                fields,
-                field,
-                colorTheme,
-                remove,
-                myInfoChildrenBirthRecords,
-                isSubmitting,
-                formContext,
-              }}
-            />
-          ))}
-        </VStack>
+        <>
+          <Spacer h="8px" />
+          <VStack align="stretch" role="list">
+            {fields.map((field, currChildBodyIdx) => (
+              <ChildrenBody
+                key={`body-${currChildBodyIdx}`}
+                {...{
+                  currChildBodyIdx,
+                  schema,
+                  fields,
+                  field,
+                  colorTheme,
+                  remove,
+                  myInfoChildrenBirthRecords,
+                  isSubmitting,
+                  formContext,
+                }}
+              />
+            ))}
+          </VStack>
+        </>
         {schema.allowMultiple ? (
           <HStack>
             <Button
@@ -376,7 +379,9 @@ const ChildrenBody = ({
                   </FormLabel>
                   <DatePicker
                     {...rest}
-                    inputValue={value}
+                    dateFormat="yyyy/MM/dd"
+                    // Convert MyInfo YYYY-MM-DD to YYYY/MM/DD
+                    inputValue={value?.replaceAll('-', '/')}
                     onInputValueChange={(date) => {
                       setValue(fieldPath, date)
                     }}

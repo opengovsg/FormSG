@@ -6,7 +6,7 @@ import { AdminFormDto, PreviewFormViewDto } from '~shared/types/form/form'
 
 import { ApiError } from '~typings/core'
 
-import { FORMID_REGEX } from '~constants/routes'
+import { MONGODB_ID_REGEX } from '~constants/routes'
 
 import { useUser } from '~features/user/queries'
 
@@ -134,7 +134,7 @@ export const usePreviewForm = (
     {
       // Treat preview form as static on load.
       staleTime: Infinity,
-      enabled: FORMID_REGEX.test(formId) && enabled,
+      enabled: MONGODB_ID_REGEX.test(formId) && enabled,
     },
   )
 }
@@ -150,7 +150,7 @@ export const useFormTemplate = (
     {
       // Treat preview form as static on load.
       staleTime: Infinity,
-      enabled: FORMID_REGEX.test(formId) && enabled,
+      enabled: MONGODB_ID_REGEX.test(formId) && enabled,
     },
   )
 }

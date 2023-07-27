@@ -4,7 +4,7 @@ import { PublicFormViewDto } from '~shared/types/form/form'
 
 import { ApiError } from '~typings/core'
 
-import { FORMID_REGEX } from '~constants/routes'
+import { MONGODB_ID_REGEX } from '~constants/routes'
 
 import { getPublicFormView } from './PublicFormService'
 
@@ -26,7 +26,7 @@ export const usePublicFormView = (
     {
       // Treat form as static on load.
       staleTime: Infinity,
-      enabled: FORMID_REGEX.test(formId) && enabled,
+      enabled: MONGODB_ID_REGEX.test(formId) && enabled,
     },
   )
 }

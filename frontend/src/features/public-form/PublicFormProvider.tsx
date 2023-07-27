@@ -28,7 +28,7 @@ import {
   PublicFormDto,
 } from '~shared/types/form'
 
-import { FORMID_REGEX } from '~constants/routes'
+import { MONGODB_ID_REGEX } from '~constants/routes'
 import { useBrowserStm } from '~hooks/payments'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
@@ -93,7 +93,7 @@ export function useCommonFormProvider(formId: string) {
     return vfnTransaction.transactionId
   }, [createTransactionMutation, vfnTransaction])
 
-  const isNotFormId = useMemo(() => !FORMID_REGEX.test(formId), [formId])
+  const isNotFormId = useMemo(() => !MONGODB_ID_REGEX.test(formId), [formId])
 
   const expiryInMs = useMemo(() => {
     if (!vfnTransaction?.expireAt) return null
@@ -135,9 +135,12 @@ export const PublicFormProvider = ({
     }
   }, [submissionData])
 
+  // Only load catpcha if enabled on form and the user is not on GSIB
+  const enableCaptcha = data && data.form.hasCaptcha && !data.isIntranetUser
+
   const {
     data: { captchaPublicKey, turnstileSiteKey, useFetchForSubmissions } = {},
-  } = useEnv(/* enabled= */ !!data?.form.hasCaptcha)
+  } = useEnv(/* enabled= */ enableCaptcha)
 
   // Feature flag to control turnstile captcha rollout
   // defaults to false
@@ -156,7 +159,7 @@ export const PublicFormProvider = ({
     getTurnstileResponse,
     containerID: turnstileContainerID,
   } = useTurnstile({
-    sitekey: data?.form.hasCaptcha ? turnstileSiteKey : undefined,
+    sitekey: enableCaptcha ? turnstileSiteKey : undefined,
     enableUsage: enableTurnstileFeatureFlag,
   })
 
@@ -165,7 +168,7 @@ export const PublicFormProvider = ({
     getCaptchaResponse,
     containerId: recaptchaContainerID,
   } = useRecaptcha({
-    sitekey: data?.form.hasCaptcha ? captchaPublicKey : undefined,
+    sitekey: enableCaptcha ? captchaPublicKey : undefined,
     enableUsage: !enableTurnstileFeatureFlag,
   })
 
@@ -592,7 +595,7 @@ export const PublicFormProvider = ({
         isAuthRequired,
         captchaContainerId: containerID,
         expiryInMs,
-        isLoading: isLoading || (!!data?.form.hasCaptcha && !hasLoaded),
+        isLoading: isLoading || (!!enableCaptcha && !hasLoaded),
         isPaymentEnabled,
         isPreview: false,
         setNumVisibleFields,

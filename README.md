@@ -197,7 +197,7 @@ npm run test:frontend
 #### End-to-end tests
 
 ```bash
-npm run test-e2e
+npm run test:e2e-v2
 ```
 
 will build both the frontend and backend then run our end-to-end tests. The tests are located at [`__tests__/e2e`](./__tests__/e2e). You will need to stop the Docker dev container to be able to run the end-to-end tests.
@@ -205,7 +205,7 @@ will build both the frontend and backend then run our end-to-end tests. The test
 If you do not need to rebuild the frontend and backend, you can run
 
 ```bash
-npm run test-e2e-ci
+npx playwright test
 ```
 
 #### Cross-browser testing
