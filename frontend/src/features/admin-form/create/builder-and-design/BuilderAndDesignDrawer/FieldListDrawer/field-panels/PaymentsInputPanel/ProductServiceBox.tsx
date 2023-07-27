@@ -11,8 +11,8 @@ import {
 } from '@chakra-ui/react'
 
 import { FormPaymentsField, Product } from '~shared/types'
+import { centsToDollars } from '~shared/utils/payments'
 
-import { centsToDollars } from '~utils/payments'
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'

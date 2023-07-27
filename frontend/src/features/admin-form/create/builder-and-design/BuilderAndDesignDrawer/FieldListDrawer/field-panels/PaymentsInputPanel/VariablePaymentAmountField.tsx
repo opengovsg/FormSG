@@ -1,8 +1,13 @@
 import { Controller, RegisterOptions, UseFormReturn } from 'react-hook-form'
 import { FormControl, HStack } from '@chakra-ui/react'
 
+import {
+  centsToDollars,
+  dollarsToCents,
+  formatCurrency,
+} from '~shared/utils/payments'
+
 import { usePaymentFieldValidation } from '~hooks/usePaymentFieldValidation'
-import { centsToDollars, dollarsToCents, formatCurrency } from '~utils/payments'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'

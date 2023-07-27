@@ -9,8 +9,8 @@ import {
   ProductsPaymentField,
 } from '~shared/types'
 import { calculatePrice } from '~shared/utils/paymentProductPrice'
+import { centsToDollars, formatCurrency } from '~shared/utils/payments'
 
-import { centsToDollars, formatCurrency } from '~utils/payments'
 import Checkbox from '~components/Checkbox'
 import { SingleSelect } from '~components/Dropdown/SingleSelect/SingleSelect'
 import Radio from '~components/Radio'

@@ -27,11 +27,11 @@ import {
   PaymentChannel,
   PaymentType,
 } from '~shared/types'
+import { centsToDollars, dollarsToCents } from '~shared/utils/payments'
 
 import { ADMINFORM_SETTINGS_PAYMENTS_SUBROUTE } from '~constants/routes'
 import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'
 import { useSessionStorage } from '~hooks/useSessionStorage'
-import { centsToDollars, dollarsToCents } from '~utils/payments'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
