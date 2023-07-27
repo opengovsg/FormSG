@@ -29,12 +29,12 @@ import {
   ProductItem,
   PublicFormDto,
 } from '~shared/types/form'
+import { dollarsToCents } from '~shared/utils/payments'
 
 import { MONGODB_ID_REGEX } from '~constants/routes'
 import { useBrowserStm } from '~hooks/payments'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
-import { dollarsToCents } from '~utils/payments'
 import { HttpError } from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
 
