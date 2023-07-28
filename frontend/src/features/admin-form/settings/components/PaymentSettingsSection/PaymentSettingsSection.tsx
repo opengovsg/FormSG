@@ -25,6 +25,7 @@ import { useAdminFormPayments, useAdminFormSettings } from '../../queries'
 
 import { BusinessInfoSection } from './BusinessInfoSection'
 import { GstToggleSection } from './GstToggleSection'
+import { PaymentMethodsSection } from './PaymentMethodsSection'
 import { usePaymentGuideLink } from './queries'
 import {
   StripeConnectButton,
@@ -234,6 +235,7 @@ export const PaymentSettingsSection = (): JSX.Element => {
               <Divider my="2.5rem" />
               <GstToggleSection />
               <BusinessInfoSection />
+              <PaymentMethodsSection />
             </>
           )}
         </Skeleton>
