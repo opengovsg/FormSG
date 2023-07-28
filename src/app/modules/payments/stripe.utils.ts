@@ -476,7 +476,8 @@ export const convertToProofOfPaymentFormat = (
       '<td class="st-Spacer st-Spacer--gutter" width="48"></td>',
     )
 
-  // Check if payment by products (instead of variable / fixed payments) is used. If yes, modify proof of payment
+  // Check if payment by products (instead of variable / fixed payments) is used - if yes, length
+  // of products array will be >0.
   const paymentByProductsEdits =
     products.length === 0
       ? commonEdits
@@ -494,7 +495,7 @@ export const convertToProofOfPaymentFormat = (
   const gstDependentEdits = gstApplicable
     ? paymentByProductsEdits
         .replace(/(<title>.*?)receipt(.*?<\/title>)/, '$1invoice$2')
-        .replace(/Receipt from /g, 'Invoice from')
+        .replace(/Receipt from /g, 'Invoice from ')
 
         .replace(
           /Receipt (#[0-9-]+)/,
