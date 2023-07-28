@@ -8,8 +8,7 @@ import {
   PaymentType,
   PublicFormDto,
 } from '~shared/types'
-
-import { centsToDollars } from '~utils/payments'
+import { centsToDollars } from '~shared/utils/payments'
 
 import { FixedPaymentItemDetailsBlock } from './FixedPaymentItemDetailsBlock'
 
