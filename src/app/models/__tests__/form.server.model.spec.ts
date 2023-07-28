@@ -105,6 +105,10 @@ const PAYMENTS_DEFAULTS = {
     max_amount: 0,
     payment_type: PaymentType.Fixed,
     gst_enabled: true,
+    products: [],
+    products_meta: {
+      multi_product: false,
+    },
   },
 }
 
