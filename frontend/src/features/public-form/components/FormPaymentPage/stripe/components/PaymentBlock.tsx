@@ -160,7 +160,7 @@ export const StripePaymentBlock = ({
           <VisuallyHidden aria-live="assertive">
             {submittedAriaText}
           </VisuallyHidden>
-          <Text textStyle="h3" textColor="primary.500" mb="1rem">
+          <Text textStyle="h3" textColor="primary.500" mb="2.25rem">
             Payment
           </Text>
           <PaymentItemDetailsBlock
