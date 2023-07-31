@@ -1,6 +1,4 @@
-import { useForm } from 'react-hook-form'
 import {
-  FormControl,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -12,12 +10,9 @@ import {
   Text,
   useBreakpointValue,
 } from '@chakra-ui/react'
-import { isEmpty } from 'lodash'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import Radio from '~components/Radio'
 
 import { useWorkspaceMutations } from '~features/workspace/mutations'
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
@@ -26,11 +21,6 @@ export interface DeleteWorkspaceModalProps {
   isOpen: boolean
   onClose: () => void
 }
-
-const DELETE_OPTIONS = [
-  'Delete Workspace only',
-  'Delete Workspace and all forms within',
-]
 
 export const DeleteWorkspaceModal = ({
   isOpen,
@@ -63,11 +53,11 @@ export const DeleteWorkspaceModal = ({
         <ModalHeader>Delete workspace</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          {activeWorkspace.formIds.length > 0 && (
-            <Text textStyle="body-2" color="secondary.500">
-              {`Remove ${activeWorkspace.formIds.length} form(s) from ${activeWorkspace.title} workspace and delete the workspace`}
-            </Text>
-          )}
+          <Text textStyle="body-2" color="secondary.500">
+            {activeWorkspace.formIds.length > 0
+              ? `Remove ${activeWorkspace.formIds.length} form(s) from ${activeWorkspace.title} workspace and delete the workspace`
+              : 'Are you sure you want to delete this workspace? This action cannot be undone.'}
+          </Text>
         </ModalBody>
 
         <ModalFooter>
