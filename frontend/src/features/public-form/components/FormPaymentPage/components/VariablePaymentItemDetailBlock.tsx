@@ -53,14 +53,14 @@ export const VariablePaymentItemDetailsField = ({
             />
           )}
         />
+        <Text textStyle="body-2" color="secondary.400" mt="0.5rem">
+          The minimum amount is {centsToDollarString(paymentMin)} and the
+          maximum amount is {centsToDollarString(paymentMax)}.
+        </Text>
         <FormErrorMessage>
           {errors[PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]?.message}
         </FormErrorMessage>
       </FormControl>
-      <Text textStyle="body-2" color="secondary.400" mt="0.5rem">
-        The minimum amount is {centsToDollarString(paymentMin)} and the maximum
-        amount is {centsToDollarString(paymentMax)}.
-      </Text>
     </Box>
   )
 }
