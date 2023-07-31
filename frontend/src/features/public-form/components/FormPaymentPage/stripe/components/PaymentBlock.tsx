@@ -103,7 +103,6 @@ const StripeCheckoutForm = ({
       <FormControl isInvalid={stripeMessage !== ''}>
         <PaymentElement
           onChange={(e) => {
-            console.log({ e })
             if (e.value.type === 'paynow') {
               setIsPayNow(true)
             } else {
