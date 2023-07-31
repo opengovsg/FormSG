@@ -113,8 +113,13 @@ const submitEmailModeForm: ControllerHandler<
           }),
       )
       .andThen((form) => {
-        // Check the captcha
-        if (form.hasCaptcha) {
+        // Check if respondent is a GSIB user
+        const isIntranetUser = FormService.checkIsIntranetFormAccess(
+          getRequestIp(req),
+          form,
+        )
+        // Check the captcha, provided user is not on GSIB
+        if (!isIntranetUser && form.hasCaptcha) {
           switch (req.query.captchaType) {
             case CaptchaTypes.Turnstile: {
               return TurnstileService.verifyTurnstileResponse(

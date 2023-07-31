@@ -1,4 +1,5 @@
-import axios from 'axios'
+// Use 'stripe-event-types' for better type discrimination.
+/// <reference types="stripe-event-types" />
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
@@ -14,7 +15,6 @@ import {
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
-import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
@@ -115,76 +115,6 @@ export const downloadPaymentInvoice: ControllerHandler<{
         message: 'Error retrieving invoice',
         meta: {
           action: 'downloadPaymentInvoice',
-          formId,
-          paymentId,
-        },
-        error,
-      })
-      return res.status(StatusCodes.NOT_FOUND).json({ message: error })
-    })
-}
-
-/**
- * Handler for GET /api/v3/payments/:formId/:paymentId/invoice/download
- * Receives Stripe webhooks and updates the database with transaction details.
- *
- * @returns 200 if webhook is successfully processed
- * @returns 404 if the PaymentId is not found
- * @returns 404 if the FormId is not found
- * @returns 404 if payment.completedPayment?.receiptUrl is not found
- */
-export const downloadPaymentReceipt: ControllerHandler<{
-  formId: string
-  paymentId: string
-}> = (req, res) => {
-  const { formId, paymentId } = req.params
-  logger.info({
-    message: 'downloadPaymentReceipt endpoint called',
-    meta: {
-      action: 'downloadPaymentReceipt',
-      formId,
-      paymentId,
-    },
-  })
-
-  return PaymentService.findPaymentById(paymentId)
-    .map((payment) => {
-      logger.info({
-        message: 'Found paymentId in payment document',
-        meta: {
-          action: 'downloadPaymentReceipt',
-          payment,
-        },
-      })
-      if (!payment.completedPayment?.receiptUrl) {
-        return res
-          .status(StatusCodes.NOT_FOUND)
-          .send({ message: 'Receipt url not ready' })
-      }
-      // retrieve receiptURL as html
-      return (
-        axios
-          .get<string>(payment.completedPayment.receiptUrl)
-          // convert to pdf and return
-          .then((receiptUrlResponse) => {
-            const html = receiptUrlResponse.data
-            const pdfBufferPromise = generatePdfFromHtml(html)
-            return pdfBufferPromise
-          })
-          .then((pdfBuffer) => {
-            res.set({
-              'Content-Type': 'application/pdf',
-              'Content-Disposition': `attachment; filename=${paymentId}-receipt.pdf`,
-            })
-            return res.status(StatusCodes.OK).send(pdfBuffer)
-          })
-      )
-    })
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error retrieving receipt',
-        meta: {
-          action: 'downloadPaymentReceipt',
           formId,
           paymentId,
         },

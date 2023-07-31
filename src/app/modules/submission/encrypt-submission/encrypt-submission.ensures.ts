@@ -41,6 +41,16 @@ export const ensureFormWithinSubmissionLimits: Middleware<
 export const ensureValidCaptcha: Middleware<
   FormSubmissionPipelineContext
 > = async ({ form, req, logMeta, res }, next) => {
+  // Check if respondent is a GSIB user
+  const isIntranetUser = FormService.checkIsIntranetFormAccess(
+    getRequestIp(req),
+    form,
+  )
+
+  if (isIntranetUser) {
+    return next()
+  }
+
   if (form.hasCaptcha) {
     switch (req.query.captchaType) {
       case CaptchaTypes.Turnstile: {
