@@ -1,4 +1,5 @@
-import { Controller, RegisterOptions, useForm } from 'react-hook-form'
+import { useMemo } from 'react'
+import { Controller, RegisterOptions, useForm, useWatch } from 'react-hook-form'
 import {
   Box,
   Button,
@@ -16,6 +17,7 @@ import {
   Stack,
   Textarea,
 } from '@chakra-ui/react'
+import { cloneDeep } from 'lodash'
 
 import { Product } from '~shared/types'
 import {
@@ -35,6 +37,9 @@ import { useEnv } from '~features/env/queries'
 type ProductInput = Product & {
   display_amount: string
 }
+
+const MIN_QTY_KEY = `min_qty`
+const MAX_QTY_KEY = `max_qty`
 export const ProductModal = ({
   onClose,
   onSaveProduct,
@@ -59,6 +64,16 @@ export const ProductModal = ({
           },
         }
       : undefined,
+  )
+
+  const watchedInputs = useWatch({
+    control,
+  }) as ProductInput
+
+  // trigger a re-render on children by failing the shallow comparator
+  const clonedWatchedInputs = useMemo(
+    () => cloneDeep(watchedInputs),
+    [watchedInputs],
   )
 
   const { data: { maxPaymentAmountCents, minPaymentAmountCents } = {} } =
@@ -102,6 +117,29 @@ export const ProductModal = ({
     onSaveProduct({ ...rest, amount_cents: dollarsToCents(display_amount) })
     onClose()
   })
+
+  const minQtyValidation: RegisterOptions<ProductInput, typeof MIN_QTY_KEY> = {
+    validate: (val) => {
+      if (val <= 0) {
+        return 'Please enter a value greater than 0'
+      }
+      if (val > clonedWatchedInputs[MAX_QTY_KEY]) {
+        return 'Please enter a value smaller than the maximum quantity'
+      }
+      return true
+    },
+  }
+  const maxQtyValidation: RegisterOptions<ProductInput, typeof MAX_QTY_KEY> = {
+    validate: (val) => {
+      if (val <= 0) {
+        return 'Please enter a value greater than 0'
+      }
+      if (val < clonedWatchedInputs[MIN_QTY_KEY]) {
+        return 'Please enter a value greater than the minimum quantity'
+      }
+      return true
+    },
+  }
 
   return (
     <Modal isOpen onClose={onClose}>
@@ -156,32 +194,62 @@ export const ProductModal = ({
             <Box>
               <FormControl>
                 <Toggle
-                  {...register('multi_qty', {
-                    // Retrigger validation to remove errors when payment is toggled from enabled -> disabled
-                    onChange: () => {
-                      //
-                    },
-                  })}
+                  {...register('multi_qty')}
                   description="Customise the range that users can select from"
                   label="Allow multiple quantities"
                 />
               </FormControl>
-              <FormControl hidden={!watchMultiQtyEnabled}>
+              <FormControl
+                hidden={!watchMultiQtyEnabled}
+                isInvalid={!!errors[MIN_QTY_KEY] || !!errors[MAX_QTY_KEY]}
+              >
                 <Flex flexDirection="row">
-                  <Input
+                  <FormControl
+                    isInvalid={!!errors[MIN_QTY_KEY]}
+                    isDisabled={!watchMultiQtyEnabled}
                     mr="0.5rem"
-                    {...register('min_qty', {
-                      required: watchMultiQtyEnabled,
-                    })}
-                    isInvalid={!!errors.min_qty}
-                  />
-                  <Input
-                    {...register('max_qty', {
-                      required: watchMultiQtyEnabled,
-                    })}
-                    isInvalid={!!errors.max_qty}
-                  />
+                  >
+                    <Controller
+                      name={MIN_QTY_KEY}
+                      control={control}
+                      rules={minQtyValidation}
+                      render={({ field }) => (
+                        <Input
+                          {...register(MIN_QTY_KEY, {
+                            required: watchMultiQtyEnabled,
+                          })}
+                          isInvalid={!!errors.min_qty}
+                          {...field}
+                        />
+                      )}
+                    />
+                  </FormControl>
+                  <FormControl
+                    isInvalid={!!errors[MAX_QTY_KEY]}
+                    isDisabled={!watchMultiQtyEnabled}
+                  >
+                    <Controller
+                      name={MAX_QTY_KEY}
+                      control={control}
+                      rules={maxQtyValidation}
+                      render={({ field }) => (
+                        <Input
+                          {...register(MAX_QTY_KEY, {
+                            required: watchMultiQtyEnabled,
+                          })}
+                          isInvalid={!!errors.max_qty}
+                          {...field}
+                        />
+                      )}
+                    />
+                  </FormControl>
                 </Flex>
+                <FormErrorMessage>
+                  {errors[MIN_QTY_KEY]?.message}
+                </FormErrorMessage>
+                <FormErrorMessage>
+                  {errors[MAX_QTY_KEY]?.message}
+                </FormErrorMessage>
               </FormControl>
             </Box>
           </Stack>

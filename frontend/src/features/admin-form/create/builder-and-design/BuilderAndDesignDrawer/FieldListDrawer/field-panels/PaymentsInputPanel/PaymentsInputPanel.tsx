@@ -286,7 +286,7 @@ const PaymentInputFields = ({
   )
 
   const watchedInputs = useWatch({
-    control: control,
+    control,
   }) as FormPaymentsInput
 
   // trigger a re-render on children by failing the shallow comparator
