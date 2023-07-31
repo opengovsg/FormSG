@@ -1,7 +1,7 @@
-import { Dispatch, SetStateAction, useMemo, useState } from 'react'
+import { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react'
 import fuzzysort from 'fuzzysort'
 
-import { FormStatus } from '~shared/types'
+import { FormId, FormStatus } from '~shared/types'
 import { Workspace } from '~shared/types/workspace'
 
 import { useDashboard, useWorkspace } from './queries'
@@ -102,6 +102,13 @@ export const WorkspaceProvider = ({
     [activeFilter, activeSearch],
   )
 
+  const getFormWorkspace = useCallback(
+    (formId: FormId) => {
+      return workspaces?.find((workspace) => workspace.formIds.includes(formId))
+    },
+    [workspaces],
+  )
+
   return (
     <WorkspaceContext.Provider
       value={{
@@ -117,6 +124,7 @@ export const WorkspaceProvider = ({
         activeWorkspace: activeWorkspace ? activeWorkspace : defaultWorkspace,
         workspaces,
         setCurrentWorkspace,
+        getFormWorkspace,
       }}
     >
       {children}

@@ -10,11 +10,19 @@ import {
   BiUserPlus,
 } from 'react-icons/bi'
 import { Link as ReactLink } from 'react-router-dom'
-import { ButtonGroup, Icon, MenuButton, MenuDivider } from '@chakra-ui/react'
+import {
+  ButtonGroup,
+  Flex,
+  Icon,
+  MenuButton,
+  MenuDivider,
+  Text,
+} from '@chakra-ui/react'
 
 import { AdminDashboardFormMetaDto } from '~shared/types'
 import { Workspace } from '~shared/types/workspace'
 
+import { BxCheck } from '~assets/icons'
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import Button from '~components/Button'
@@ -34,12 +42,14 @@ const MoveWorkspaceDropdown = ({
   formMeta: AdminDashboardFormMetaDto
 }) => {
   const { handleMoveForm } = useRowAction(formMeta)
-  const { workspaces } = useWorkspaceContext()
+  const { workspaces, getFormWorkspace } = useWorkspaceContext()
 
   const handleWorkspaceClick = (destWorkspace: Workspace) =>
     handleMoveForm(destWorkspace._id.toString(), destWorkspace.title)
 
   if (!workspaces) return null
+
+  const currFormWorkspace = getFormWorkspace(formMeta._id)
 
   return (
     <Menu.List>
@@ -56,7 +66,10 @@ const MoveWorkspaceDropdown = ({
           key={workspace._id}
           onClick={() => handleWorkspaceClick(workspace)}
         >
-          {workspace.title}
+          <Flex justifyContent="space-between" w="100%">
+            <Text textStyle="body-1">{workspace.title}</Text>
+            {workspace._id === currFormWorkspace?._id && <Icon as={BxCheck} />}
+          </Flex>
         </Menu.Item>
       ))}
     </Menu.List>
