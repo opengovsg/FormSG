@@ -118,7 +118,7 @@ export const WorkspacePage = (): JSX.Element => {
         templateAreas={`
           "header header"
           "header2 header2"
-          "nav main"
+          ${isMobile ? `"main main"` : `"nav main"`}
         `}
         gridTemplateRows={`auto 1fr`}
         gridTemplateColumns={{

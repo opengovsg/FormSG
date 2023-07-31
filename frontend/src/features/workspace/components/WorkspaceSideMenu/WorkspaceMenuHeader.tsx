@@ -22,7 +22,7 @@ export const WorkspaceMenuHeader = ({
     <Flex
       justifyContent="space-between"
       pl={{ base: '0rem', md: '2rem' }}
-      pr={{ base: '0rem', md: '0.5rem' }}
+      pr={{ base: '1rem', md: '1.5rem' }}
       mt={{ base: 0, lg: '1rem' }}
       {...props}
       alignItems="center"
