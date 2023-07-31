@@ -483,7 +483,7 @@ export const convertToProofOfPaymentFormat = (
       ? commonEdits
       : commonEdits
           .replace(
-            /<td class="Table-description Font Font--body".+">\n.+test\n.+<\/td>/,
+            /<td class="Table-description Font Font--body".+">\n.+\n.+<\/td>/,
             `${paymentByProductsDescription}`,
           )
           .replace(
