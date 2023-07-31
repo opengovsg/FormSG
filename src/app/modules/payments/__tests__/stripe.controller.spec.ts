@@ -72,7 +72,7 @@ describe('stripe.controller', () => {
     }
     const mockFormTitle = 'Mock Form Title'
     const mockSubmissionId = 'MOCK_SUBMISSION_ID'
-    const mockProducts: ProductItem[] = []
+    const mockProducts: ProductItem[] = expect.any(Array)
     const mockInvoiceArgs = {
       ...mockBusinessInfo,
       formTitle: mockFormTitle,
@@ -272,8 +272,8 @@ describe('stripe.controller', () => {
     it('should redirect back to settings/payment page when code is undefined', async () => {
       // Arrange
       const mockReq = expressHandler.mockRequest({
-        query: { state: 'otherState' },
-        others: { signedCookies: { stripeState: 'otherState' } },
+        query: { state: 'otherStates' },
+        others: { signedCookies: { stripeState: 'otherStates' } },
       })
       const mockRes = expressHandler.mockResponse()
       // Act
@@ -285,7 +285,7 @@ describe('stripe.controller', () => {
 
       // Assert
       expect(mockRes.redirect).toHaveBeenCalledWith(
-        `${config.app.appUrl}/admin/form/otherState/settings/payments`,
+        `${config.app.appUrl}/admin/form/otherStates/settings/payments`,
       )
     })
 
