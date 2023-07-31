@@ -336,7 +336,7 @@ export interface IFormModel extends Model<IFormSchema> {
     userEmail: IUserSchema['email'],
   ): Promise<AdminDashboardFormMetaDto[]>
 
-  getFormsOwnedByUserId(
+  retrieveFormsOwnedByUserId(
     userId: IUserSchema['_id'],
   ): Promise<AdminDashboardFormMetaDto[]>
 

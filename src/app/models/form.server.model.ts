@@ -881,7 +881,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   // Get all forms owned by the specified user ID.
-  FormDocumentSchema.statics.getFormsOwnedByUserId = async function (
+  FormDocumentSchema.statics.retrieveFormsOwnedByUserId = async function (
     userId: IUserSchema['_id'],
   ): Promise<AdminDashboardFormMetaDto[]> {
     return (

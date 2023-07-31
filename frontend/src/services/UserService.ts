@@ -50,7 +50,7 @@ export const transferOwnership = async (
 ): Promise<TransferOwnershipResponseDto> => {
   const { email } = request
   const ownedFormIds = await ApiService.get<AdminDashboardFormMetaDto[]>(
-    `${ADMIN_FORM_ENDPOINT}/owned`,
+    `${ADMIN_FORM_ENDPOINT}/mine`,
   ).then(({ data }) => {
     if (!Array.isArray(data) || !data.length) {
       return Promise.reject(

@@ -221,7 +221,7 @@ export const handleListDashboardForms: ControllerHandler<
 }
 
 /**
- * Handler for GET /owned endpoint.
+ * Handler for GET /mine endpoint.
  * @security session
  *
  * @returns 200 with list of forms user owns when list is retrieved successfully

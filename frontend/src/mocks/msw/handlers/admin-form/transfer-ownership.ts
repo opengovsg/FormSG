@@ -17,7 +17,7 @@ export const getOwnedForms = ({
   delay?: number | 'infinite'
 } = {}): ReturnType<typeof rest['get']> => {
   return rest.get<AdminDashboardFormMetaDto[]>(
-    '/api/v3/admin/forms/owned',
+    '/api/v3/admin/forms/mine',
     (req, res, ctx) => {
       return res(ctx.delay(delay), ctx.status(200), ctx.json(overrides ?? []))
     },

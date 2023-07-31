@@ -527,10 +527,10 @@ describe('admin-form.form.routes', () => {
     })
   })
 
-  describe('GET /admin/forms/owned', () => {
+  describe('GET /admin/forms/mine', () => {
     it('should return 200 with empty array when user has no owned forms', async () => {
       // Act
-      const response = await request.get('/admin/forms/owned')
+      const response = await request.get('/admin/forms/mine')
 
       // Assert
       expect(response.status).toEqual(200)
@@ -577,7 +577,7 @@ describe('admin-form.form.routes', () => {
       })
 
       // Act
-      const response = await request.get('/admin/forms/owned')
+      const response = await request.get('/admin/forms/mine')
 
       // Assert
       // Should only receive ownForm
@@ -604,7 +604,7 @@ describe('admin-form.form.routes', () => {
       await logoutSession(request)
 
       // Act
-      const response = await request.get('/admin/forms/owned')
+      const response = await request.get('/admin/forms/mine')
 
       // Assert
       expect(response.status).toEqual(401)
@@ -617,7 +617,7 @@ describe('admin-form.form.routes', () => {
       await dbHandler.clearCollection(UserModel.collection.name)
 
       // Act
-      const response = await request.get('/admin/forms/owned')
+      const response = await request.get('/admin/forms/mine')
 
       // Assert
       expect(response.status).toEqual(422)
@@ -628,11 +628,11 @@ describe('admin-form.form.routes', () => {
       // Arrange
       // Mock database error.
       jest
-        .spyOn(FormModel, 'getFormsOwnedByUserId')
+        .spyOn(FormModel, 'retrieveFormsOwnedByUserId')
         .mockRejectedValueOnce(new Error('something went wrong'))
 
       // Act
-      const response = await request.get('/admin/forms/owned')
+      const response = await request.get('/admin/forms/mine')
 
       // Assert
       expect(response.status).toEqual(500)

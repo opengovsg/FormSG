@@ -171,7 +171,7 @@ export const getOwnedForms = (
       // Step 2: Retrieve lists users are authorized to see.
       .andThen(() => {
         return ResultAsync.fromPromise(
-          FormModel.getFormsOwnedByUserId(userId),
+          FormModel.retrieveFormsOwnedByUserId(userId),
           (error) => {
             logger.error({
               message: 'Database error when retrieving admin owned forms',

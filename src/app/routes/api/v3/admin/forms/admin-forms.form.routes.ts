@@ -32,7 +32,7 @@ AdminFormsFormRouter.route('/')
    */
   .post(AdminFormController.handleCreateForm)
 
-AdminFormsFormRouter.route('/owned')
+AdminFormsFormRouter.route('/mine')
   /**
    * List the forms owned by the user
    * @security session
