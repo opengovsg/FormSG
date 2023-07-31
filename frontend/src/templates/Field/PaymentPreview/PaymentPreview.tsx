@@ -87,7 +87,7 @@ export const PaymentPreview = ({
 
   const title =
     paymentDetails.payment_type === PaymentType.Products
-      ? paymentDetails.description
+      ? paymentDetails.name
       : 'Payment'
   return (
     <>
