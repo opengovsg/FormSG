@@ -14,6 +14,8 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 
+import { Workspace } from '~shared/types/workspace'
+
 import { useIsMobile } from '~hooks/useIsMobile'
 import { WORKSPACE_TITLE_VALIDATION_RULES } from '~utils/workspaceValidation'
 import Button from '~components/Button'
@@ -21,7 +23,6 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
 
 import { useWorkspaceMutations } from '~features/workspace/mutations'
-import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
 type RenameWorkspaceInputProps = {
   title: string
@@ -30,14 +31,15 @@ type RenameWorkspaceInputProps = {
 export interface RenameWorkspaceModalProps {
   isOpen: boolean
   onClose: () => void
+  activeWorkspace: Workspace
 }
 
 export const RenameWorkspaceModal = ({
   isOpen,
   onClose,
+  activeWorkspace,
 }: RenameWorkspaceModalProps): JSX.Element => {
   const { updateWorkspaceTitleMutation } = useWorkspaceMutations()
-  const { activeWorkspace } = useWorkspaceContext()
   const {
     handleSubmit,
     formState: { errors },

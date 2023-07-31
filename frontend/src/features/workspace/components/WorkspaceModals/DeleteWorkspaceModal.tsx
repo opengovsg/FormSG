@@ -1,3 +1,4 @@
+import { Dispatch, SetStateAction } from 'react'
 import {
   Modal,
   ModalBody,
@@ -11,20 +12,25 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 
+import { Workspace } from '~shared/types/workspace'
+
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 
 import { useWorkspaceMutations } from '~features/workspace/mutations'
-import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
 export interface DeleteWorkspaceModalProps {
   isOpen: boolean
   onClose: () => void
+  activeWorkspace: Workspace
+  setCurrentWorkspace: Dispatch<SetStateAction<string>>
 }
 
 export const DeleteWorkspaceModal = ({
   isOpen,
   onClose,
+  activeWorkspace,
+  setCurrentWorkspace,
 }: DeleteWorkspaceModalProps): JSX.Element => {
   const modalSize = useBreakpointValue({
     base: 'mobile',
@@ -34,7 +40,6 @@ export const DeleteWorkspaceModal = ({
   const isMobile = useIsMobile()
 
   const { deleteWorkspaceMutation } = useWorkspaceMutations()
-  const { setCurrentWorkspace, activeWorkspace } = useWorkspaceContext()
 
   // TODO: handle delete forms together with workspace
   const handleDeleteWorkspace = async () => {

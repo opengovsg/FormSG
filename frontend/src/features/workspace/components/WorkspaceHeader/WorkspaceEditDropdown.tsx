@@ -10,7 +10,7 @@ import { DeleteWorkspaceModal } from '../WorkspaceModals/DeleteWorkspaceModal'
 import { RenameWorkspaceModal } from '../WorkspaceModals/RenameWorkspaceModal'
 
 export const WorkspaceEditDropdown = (): JSX.Element => {
-  const { activeWorkspace } = useWorkspaceContext()
+  const { activeWorkspace, setCurrentWorkspace } = useWorkspaceContext()
   const renameModal = useDisclosure()
   const deleteModal = useDisclosure()
 
@@ -19,11 +19,13 @@ export const WorkspaceEditDropdown = (): JSX.Element => {
       <RenameWorkspaceModal
         onClose={renameModal.onClose}
         isOpen={renameModal.isOpen}
+        activeWorkspace={activeWorkspace}
       />
       <DeleteWorkspaceModal
         onClose={deleteModal.onClose}
         isOpen={deleteModal.isOpen}
-        workspaceId={activeWorkspace._id.toString()}
+        activeWorkspace={activeWorkspace}
+        setCurrentWorkspace={setCurrentWorkspace}
       />
 
       <Menu placement="bottom-start">
