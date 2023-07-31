@@ -25,6 +25,9 @@ import { dataSelector, usePaymentStore } from '../usePaymentStore'
 import { FormPaymentsInput } from './PaymentsInputPanel'
 import { ProductModal } from './ProductModal'
 
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+const noop = () => {}
+
 const ProductItem = ({
   product,
   onEditClick,
@@ -67,10 +70,22 @@ const ProductItem = ({
   )
 }
 
-const AddProductButton = ({ onClick }: { onClick: () => void }) => {
+const AddProductButton = ({
+  isDisabled,
+  onClick,
+}: {
+  isDisabled: boolean
+  onClick: () => void
+}) => {
   return (
-    <Flex flexDirection="row" onClick={onClick} alignItems="center" mt="0.5rem">
+    <Flex
+      flexDirection="row"
+      onClick={isDisabled ? noop : onClick}
+      alignItems="center"
+      mt="0.5rem"
+    >
       <Button
+        isDisabled={isDisabled}
         leftIcon={<BiPlus />}
         color="primary.500"
         aria-label="Add"
@@ -86,10 +101,12 @@ const ProductList = ({
   products,
   handleAddOrEditClick,
   handleDeleteClick,
+  paymentIsEnabled,
 }: {
   products: Product[]
   handleAddOrEditClick: (product: Product | null) => void
   handleDeleteClick: (product: Product) => void
+  paymentIsEnabled: boolean
 }) => {
   if (products.length <= 0) {
     return (
@@ -103,7 +120,10 @@ const ProductList = ({
           </Text>
         </Box>
         <hr />
-        <AddProductButton onClick={() => handleAddOrEditClick(null)} />
+        <AddProductButton
+          isDisabled={!paymentIsEnabled}
+          onClick={() => handleAddOrEditClick(null)}
+        />
       </>
     )
   }
@@ -120,7 +140,10 @@ const ProductList = ({
         ))}
       </Stack>
       <hr />
-      <AddProductButton onClick={() => handleAddOrEditClick(null)} />
+      <AddProductButton
+        isDisabled={!paymentIsEnabled}
+        onClick={() => handleAddOrEditClick(null)}
+      />
     </>
   )
 }
@@ -214,6 +237,7 @@ export const ProductServiceBox = ({
       >
         <FormLabel>Product/service name</FormLabel>
         <ProductList
+          paymentIsEnabled={paymentIsEnabled}
           products={products}
           handleAddOrEditClick={handleOnOpen}
           handleDeleteClick={handleDeleteProduct}
