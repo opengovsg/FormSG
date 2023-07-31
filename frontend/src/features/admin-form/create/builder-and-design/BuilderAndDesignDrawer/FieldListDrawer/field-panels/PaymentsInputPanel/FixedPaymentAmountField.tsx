@@ -38,7 +38,7 @@ export const FixedPaymentAmountField = ({
       isInvalid={!!errors[DISPLAY_AMOUNT_FIELD_KEY]}
       isRequired
     >
-      <FormLabel isRequired description="Amount should include GST">
+      <FormLabel isRequired description="Including GST">
         Payment amount
       </FormLabel>
       <Controller

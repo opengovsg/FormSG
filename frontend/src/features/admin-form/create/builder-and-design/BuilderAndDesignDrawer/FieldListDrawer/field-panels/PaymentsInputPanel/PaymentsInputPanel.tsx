@@ -210,7 +210,7 @@ const PaymentInput = ({
         isDisabled={isDisabled}
         isRequired
       >
-        <FormLabel description="This will be reflected on the proof of payment">
+        <FormLabel description="This will appear on proof of payment">
           Product/service name
         </FormLabel>
         <Input

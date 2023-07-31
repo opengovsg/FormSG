@@ -62,7 +62,7 @@ export const VariablePaymentAmountField = ({
     >
       <FormLabel
         isRequired
-        description="Customise the amount that respondents are allowed to define"
+        description="Set the minimum and maximum amounts respondents can pay"
       >
         Payment amount limit
       </FormLabel>
