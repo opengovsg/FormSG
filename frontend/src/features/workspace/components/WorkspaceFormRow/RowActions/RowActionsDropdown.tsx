@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState } from 'react'
+import { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react'
 import {
   BiChevronLeft,
   BiChevronRight,
@@ -44,12 +44,18 @@ const MoveWorkspaceDropdown = ({
   const { handleMoveForm } = useRowAction(formMeta)
   const { workspaces, getFormWorkspace } = useWorkspaceContext()
 
-  const handleWorkspaceClick = (destWorkspace: Workspace) =>
-    handleMoveForm(destWorkspace._id.toString(), destWorkspace.title)
+  const handleWorkspaceClick = useCallback(
+    (destWorkspace: Workspace) =>
+      handleMoveForm(destWorkspace._id.toString(), destWorkspace.title),
+    [handleMoveForm],
+  )
+
+  const currFormWorkspace = useMemo(
+    () => getFormWorkspace(formMeta._id),
+    [formMeta, getFormWorkspace],
+  )
 
   if (!workspaces) return null
-
-  const currFormWorkspace = getFormWorkspace(formMeta._id)
 
   return (
     <Menu.List>
