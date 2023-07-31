@@ -226,7 +226,7 @@ const PaymentInput = ({
         isRequired
       >
         <FormLabel>Description</FormLabel>
-        <Textarea {...register('description')} />
+        <Input {...register('description')} />
         <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
       </FormControl>
       {paymentsData?.payment_type === PaymentType.Variable ? (
