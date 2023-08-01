@@ -63,7 +63,7 @@ export const useUserMutations = () => {
       },
       onError: (error: ApiError) => {
         failureToast({
-          description: error.message,
+          description: `${error.message}: Please try again.`,
         })
       },
     },
