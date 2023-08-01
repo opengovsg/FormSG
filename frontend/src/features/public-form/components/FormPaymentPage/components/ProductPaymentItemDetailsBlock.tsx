@@ -124,7 +124,7 @@ export const ProductPaymentItemDetailsBlock = ({
     validate: (value) => {
       const totalPrice = calculatePrice(value || [])
       if (totalPrice === 0) {
-        return 'Please select at least 1 product/service'
+        return 'Please select at least 1 option'
       }
     },
   })
