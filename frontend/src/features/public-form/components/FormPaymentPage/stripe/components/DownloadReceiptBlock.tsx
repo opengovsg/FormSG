@@ -5,6 +5,7 @@ import Button from '~components/Button'
 
 import { getPaymentInvoiceDownloadUrl } from '~features/public-form/utils/urls'
 
+import { CompletedPaymentSummary } from './CompletedPaymentSummary'
 import { GenericMessageBlock } from './GenericMessageBlock'
 
 type DownloadReceiptBlockProps = {
@@ -32,6 +33,7 @@ export const DownloadReceiptBlock = ({
       subtitle={'Your form has been submitted and payment has been made.'}
       submissionId={submissionId}
     >
+      {/* <CompletedPaymentSummary /> */}
       <>
         <Button
           mt="2.25rem"
