@@ -61,8 +61,8 @@ import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
-import * as EmailSubmissionMiddleware from '../email-submission/email-submission.middleware'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
+import * as ReceiveMiddleware from '../receiver/receiver.middleware'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import {
@@ -876,7 +876,7 @@ const encryptSubmission: ControllerHandler<
 export const handleStorageSubmission = [
   CaptchaMiddleware.validateCaptchaParams,
   TurnstileMiddleware.validateTurnstileParams,
-  EmailSubmissionMiddleware.receiveEmailSubmission,
+  ReceiveMiddleware.receiveSubmission,
   encryptSubmission,
   submitEncryptModeForm,
 ] as ControllerHandler[]
