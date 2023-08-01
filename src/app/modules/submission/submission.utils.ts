@@ -1,6 +1,11 @@
 import { differenceBy, intersectionBy, keyBy, uniqBy } from 'lodash'
 import { err, ok, Result } from 'neverthrow'
 
+import {
+  ParsedEmailAttachmentResponse,
+  ParsedEmailFormFieldResponse,
+} from 'src/types/api'
+
 import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
 import {
   BasicField,
@@ -154,4 +159,13 @@ export const getNormalisedResponseTime = (
   numVisibleFields: number,
 ) => {
   return (10 * responseTimeMs) / numVisibleFields
+}
+
+export const isAttachmentResponse = (
+  response: ParsedEmailFormFieldResponse,
+): response is ParsedEmailAttachmentResponse => {
+  return (
+    response.fieldType === BasicField.Attachment &&
+    response.content !== undefined
+  )
 }

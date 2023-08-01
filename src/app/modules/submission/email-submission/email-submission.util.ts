@@ -17,10 +17,7 @@ import {
   MapRouteError,
   SPCPFieldTitle,
 } from '../../../../types'
-import {
-  ParsedEmailAttachmentResponse,
-  ParsedEmailFormFieldResponse,
-} from '../../../../types/api'
+import { ParsedEmailFormFieldResponse } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
   CaptchaConnectionError,
@@ -86,6 +83,7 @@ import {
   ProcessedFieldResponse,
   ProcessedTableResponse,
 } from '../submission.types'
+import { isAttachmentResponse } from '../submission.utils'
 
 import {
   ATTACHMENT_PREFIX,
@@ -340,15 +338,6 @@ export const areAttachmentsMoreThan7MB = (
   // Check if total attachments size is < 7mb
   const totalAttachmentSize = sumBy(attachments, (a) => a.content.byteLength)
   return totalAttachmentSize > 7000000
-}
-
-const isAttachmentResponse = (
-  response: ParsedEmailFormFieldResponse,
-): response is ParsedEmailAttachmentResponse => {
-  return (
-    response.fieldType === BasicField.Attachment &&
-    response.content !== undefined
-  )
 }
 
 /**

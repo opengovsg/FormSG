@@ -33,8 +33,6 @@ import { StripePaymentMetadataDto } from '../../../../types'
 import {
   EncryptFormFieldResponse,
   EncryptSubmissionDto,
-  ParsedEmailAttachmentResponse,
-  ParsedEmailFormFieldResponse,
   ParsedEmailModeSubmissionBody,
 } from '../../../../types/api'
 import config from '../../../config/config'
@@ -63,6 +61,7 @@ import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
+import { isAttachmentResponse } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import {
@@ -671,19 +670,6 @@ export const handleEncryptedSubmission = [
   EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
   submitEncryptModeForm,
 ] as ControllerHandler[]
-
-/**
- * Reference implementation taken from frontend/src/features/public-form/utils/createSubmission.ts for purpose of demonstrating shifted encryption boundary.
- * TODO (Encrypt Boundary): Clean up ParsedEmailFormFieldResponse and ParsedEmailAttachmentResponse type so it can be used for both email mode and unencrypted storage mode
- */
-const isAttachmentResponse = (
-  response: ParsedEmailFormFieldResponse,
-): response is ParsedEmailAttachmentResponse => {
-  return (
-    response.fieldType === BasicField.Attachment &&
-    response.content !== undefined
-  )
-}
 
 /**
  * Reference implementation taken from frontend/src/features/public-form/utils/createSubmission.ts for purpose of demonstrating shifted encryption boundary.
