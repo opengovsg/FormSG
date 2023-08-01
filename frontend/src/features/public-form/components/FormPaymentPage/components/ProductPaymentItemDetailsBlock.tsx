@@ -37,11 +37,10 @@ const ItemQuantity = ({
     value: String(quantity),
   }))
   return (
-    <Box width="8rem">
+    <Box width="6rem">
       <SingleSelect
         isClearable={false}
         items={qtyOptions}
-        placeholder="Quantity"
         onChange={(val) => onChange(Number(val))}
         value={String(product.quantity)}
         name={'Quantity'}
@@ -145,7 +144,7 @@ export const ProductPaymentItemDetailsBlock = ({
       paymentDetails.products.map((product) => ({
         data: product,
         selected: false,
-        quantity: product.multi_qty ? 0 : 1,
+        quantity: product.multi_qty ? product.min_qty : 1,
       })),
     )
   }, [paymentDetails.products])
