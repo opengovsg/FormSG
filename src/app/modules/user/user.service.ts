@@ -226,6 +226,7 @@ export const getPopulatedUserById = (
 
   return ResultAsync.fromPromise(
     UserModel.findById(userId)
+      .select('-apiToken')
       .populate({
         path: 'agency',
         model: AGENCY_SCHEMA_ID,
