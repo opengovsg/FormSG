@@ -40,7 +40,7 @@ export const WorkspacePageContent = ({
     [isUserLoading, hasSeenAnnouncement],
   )
 
-  const dashboardMessage = `Introducing payments! Citizens can now pay for fees and services directly on your form. [Learn more](${GUIDE_PAYMENTS_ENTRY})`
+  const dashboardMessage = `Introducing payments! Respondents can now pay for fees and services directly on your form. [Learn more](${GUIDE_PAYMENTS_ENTRY})`
 
   return totalFormsCount === 0 ? (
     <EmptyWorkspace

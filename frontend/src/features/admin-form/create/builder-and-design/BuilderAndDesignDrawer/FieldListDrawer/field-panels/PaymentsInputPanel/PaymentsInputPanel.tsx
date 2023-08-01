@@ -7,7 +7,7 @@ import {
 } from 'react-hook-form'
 import { Link as ReactLink } from 'react-router-dom'
 import { useDebounce } from 'react-use'
-import { Box, FormControl, Link, Stack, Text, Textarea } from '@chakra-ui/react'
+import { Box, FormControl, Link, Stack, Text } from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
 
 import {
@@ -227,7 +227,7 @@ const PaymentInput = ({
           isRequired
         >
           <FormLabel>Description</FormLabel>
-          <Textarea {...register('description')} />
+          <Input {...register('description')} />
           <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
         </FormControl>
       </Stack>

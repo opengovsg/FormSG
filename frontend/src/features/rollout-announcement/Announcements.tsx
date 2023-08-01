@@ -9,7 +9,7 @@ export const NEW_FEATURES = [
     // Announcement date: 2023-05-31
     title: 'Collect payments on your form',
     description:
-      'Citizens can now pay for fees and services directly on your form! We integrate with Stripe to provide reliable payments and hassle-free reconciliations. Payment methods we support include debit / credit cards and PayNow.',
+      'Respondents can now pay for fees and services directly on your form! We integrate with Stripe to provide reliable payments and hassle-free reconciliations. Payment methods we support include debit / credit cards and PayNow.',
     learnMoreLink: GUIDE_PAYMENTS_ENTRY,
     animationData: PaymentsAnnouncementGraphic,
   },

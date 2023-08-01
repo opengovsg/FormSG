@@ -41,7 +41,7 @@ export const StripeConnectButton = ({
         onClick={onLinkAccountClick}
         colorScheme="primary"
       >
-        Connect with my Stripe account
+        Connect my Stripe account
       </Button>
     )
   } else {

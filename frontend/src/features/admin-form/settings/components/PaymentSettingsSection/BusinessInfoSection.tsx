@@ -24,12 +24,10 @@ import { useAdminFormSettings } from '../../queries'
 interface BusinessFieldInputProps {
   initialValue: string
   handleMutation: (newAddress: string) => void
-  placeholder: string
 }
 const BusinessFieldInput = ({
   initialValue,
   handleMutation,
-  placeholder,
 }: BusinessFieldInputProps): JSX.Element => {
   const [value, setValue] = useState(initialValue)
 
@@ -66,8 +64,6 @@ const BusinessFieldInput = ({
       onChange={handleValueChange}
       onKeyDown={handleKeydown}
       onBlur={handleBlur}
-      placeholder={placeholder}
-      _placeholder={{ opacity: 1 }}
     />
   )
 }
@@ -92,8 +88,9 @@ const BusinessInfoBlock = ({
         <FormControl mb="2.5rem" isReadOnly={mutateFormBusiness.isLoading}>
           <FormLabel isRequired>GST Registration Number</FormLabel>
           <BusinessFieldInput
-            placeholder={agencyDefaults?.gstRegNo || ''}
-            initialValue={settings.business?.gstRegNo || ''}
+            initialValue={
+              settings.business?.gstRegNo || agencyDefaults?.gstRegNo || ''
+            }
             handleMutation={handleGstRegNoMutation}
           />
         </FormControl>
@@ -101,8 +98,9 @@ const BusinessInfoBlock = ({
       <FormControl mb="2.5rem" isReadOnly={mutateFormBusiness.isLoading}>
         <FormLabel isRequired>Business Address</FormLabel>
         <BusinessFieldInput
-          placeholder={agencyDefaults?.address || ''}
-          initialValue={settings.business?.address || ''}
+          initialValue={
+            settings.business?.address || agencyDefaults?.address || ''
+          }
           handleMutation={handleAddressMutation}
         />
       </FormControl>
