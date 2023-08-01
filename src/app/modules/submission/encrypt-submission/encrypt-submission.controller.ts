@@ -664,6 +664,7 @@ const submitEncryptModeForm: ControllerHandler<
   )
 }
 
+// TODO (FRM-1232): remove endpoint after encryption boundary is shifted
 export const handleEncryptedSubmission = [
   CaptchaMiddleware.validateCaptchaParams,
   TurnstileMiddleware.validateTurnstileParams,

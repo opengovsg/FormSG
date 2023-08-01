@@ -30,6 +30,7 @@ PublicFormsSubmissionsRouter.route(
   EmailSubmissionController.handleEmailSubmission,
 )
 
+// TODO (FRM-1232): remove endpoint after encryption boundary is shifted
 /**
  * Submit a form response, validate submission params and stores the encrypted
  * contents.
