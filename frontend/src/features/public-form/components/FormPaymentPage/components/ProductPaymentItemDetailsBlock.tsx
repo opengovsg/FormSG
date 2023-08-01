@@ -108,14 +108,8 @@ const PaymentItem = ({
 }
 
 const isProductSelected = (productItems: Array<ProductItem>) => {
-  let isProductSelected = false
-  for (let i = 0; i < productItems.length; i++) {
-    if (productItems[i].selected) {
-      isProductSelected = true
-      break
-    }
-  }
-  return isProductSelected
+  const isSelected = productItems.some((item) => item.selected)
+  return isSelected
 }
 
 export const ProductPaymentItemDetailsBlock = ({
