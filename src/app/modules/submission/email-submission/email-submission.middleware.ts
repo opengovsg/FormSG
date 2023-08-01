@@ -1,54 +1,6 @@
 import { celebrate, Joi } from 'celebrate'
 
-import { BasicField, FieldResponse } from '../../../../../shared/types'
-import { createLoggerWithLabel } from '../../../config/logger'
-import { createReqMeta } from '../../../utils/request'
-import { ControllerHandler } from '../../core/core.types'
-
-import * as EmailSubmissionReceiver from './email-submission.receiver'
-import { mapRouteError } from './email-submission.util'
-
-const logger = createLoggerWithLabel(module)
-
-/**
- * Parses multipart-form data request. Parsed attachments are
- * placed into req.attachments and parsed fields are placed into
- * req.body.
- *
- * @param req - Express request object
- * @param res - Express response object
- * @param next - Express next middleware function
- */
-export const receiveEmailSubmission: ControllerHandler<
-  unknown,
-  { message: string },
-  { responses: FieldResponse[] }
-> = async (req, res, next) => {
-  const logMeta = {
-    action: 'receiveEmailSubmission',
-    ...createReqMeta(req),
-  }
-  return EmailSubmissionReceiver.createMultipartReceiver(req.headers)
-    .asyncAndThen((receiver) => {
-      const result =
-        EmailSubmissionReceiver.configureMultipartReceiver(receiver)
-      req.pipe(receiver)
-      return result
-    })
-    .map((parsed) => {
-      req.body = parsed
-      return next()
-    })
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error while receiving multipart data',
-        meta: logMeta,
-        error,
-      })
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
-    })
-}
+import { BasicField } from '../../../../../shared/types'
 
 /**
  * Celebrate validation for the email submissions endpoint.

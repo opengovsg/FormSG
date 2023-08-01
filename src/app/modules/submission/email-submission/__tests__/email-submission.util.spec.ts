@@ -13,12 +13,7 @@ import { ObjectId } from 'bson'
 import { readFileSync } from 'fs'
 import { cloneDeep, merge } from 'lodash'
 
-import {
-  FieldResponse,
-  IAttachmentResponse,
-  SingleAnswerFieldResponse,
-  SPCPFieldTitle,
-} from 'src/types'
+import { SingleAnswerFieldResponse, SPCPFieldTitle } from 'src/types'
 
 import { types as basicTypes } from '../../../../../../shared/constants/field/basic'
 import {
@@ -36,7 +31,6 @@ import {
 } from '../email-submission.constants'
 import { ResponseFormattedForEmail } from '../email-submission.types'
 import {
-  addAttachmentToResponses,
   areAttachmentsMoreThan7MB,
   getFormDataPrefixedQuestion,
   getInvalidFileExtensions,
@@ -193,66 +187,6 @@ describe('email-submission.util', () => {
     it('should return invalid extensions when given nested zips with invalid filetypes', async () => {
       const invalid = await getInvalidFileExtensions([zipNestedInvalid])
       expect(invalid).toEqual(['.a', '.oo'])
-    })
-  })
-
-  describe('addAttachmentToResponses', () => {
-    it('should add attachments to responses correctly when inputs are valid', () => {
-      const firstAttachment = validSingleFile
-      const secondAttachment = zipOnlyValid
-      const firstResponse = getResponse(
-        firstAttachment.fieldId,
-        firstAttachment.filename,
-      )
-      const secondResponse = getResponse(
-        secondAttachment.fieldId,
-        secondAttachment.filename,
-      )
-      addAttachmentToResponses(
-        [firstResponse, secondResponse],
-        [firstAttachment, secondAttachment],
-      )
-      expect(firstResponse.answer).toBe(firstAttachment.filename)
-      expect((firstResponse as unknown as IAttachmentResponse).filename).toBe(
-        firstAttachment.filename,
-      )
-      expect((firstResponse as unknown as IAttachmentResponse).content).toEqual(
-        firstAttachment.content,
-      )
-      expect(secondResponse.answer).toBe(secondAttachment.filename)
-      expect((secondResponse as unknown as IAttachmentResponse).filename).toBe(
-        secondAttachment.filename,
-      )
-      expect(
-        (secondResponse as unknown as IAttachmentResponse).content,
-      ).toEqual(secondAttachment.content)
-    })
-
-    it('should overwrite answer with filename when they are different', () => {
-      const attachment = validSingleFile
-      const response = getResponse(attachment.fieldId, MOCK_ANSWER)
-      addAttachmentToResponses([response], [attachment])
-      expect(response.answer).toBe(attachment.filename)
-      expect((response as unknown as IAttachmentResponse).filename).toBe(
-        attachment.filename,
-      )
-      expect((response as unknown as IAttachmentResponse).content).toEqual(
-        attachment.content,
-      )
-    })
-
-    it('should do nothing when responses are empty', () => {
-      const responses: FieldResponse[] = []
-      addAttachmentToResponses(responses, [validSingleFile])
-      expect(responses).toEqual([])
-    })
-
-    it('should do nothing when there are no attachments', () => {
-      const responses = [getResponse(validSingleFile.fieldId, MOCK_ANSWER)]
-      addAttachmentToResponses(responses, [])
-      expect(responses).toEqual([
-        getResponse(validSingleFile.fieldId, MOCK_ANSWER),
-      ])
     })
   })
 
