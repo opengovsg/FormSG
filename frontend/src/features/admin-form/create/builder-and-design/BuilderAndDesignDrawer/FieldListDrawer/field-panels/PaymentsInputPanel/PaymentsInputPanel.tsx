@@ -7,7 +7,7 @@ import {
 } from 'react-hook-form'
 import { Link as ReactLink } from 'react-router-dom'
 import { useDebounce } from 'react-use'
-import { Box, FormControl, Link, Text, Textarea } from '@chakra-ui/react'
+import { Box, FormControl, Link, Text } from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
 
 import {
