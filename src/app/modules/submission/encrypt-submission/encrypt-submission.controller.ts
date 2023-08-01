@@ -1,19 +1,28 @@
 import JoiDate from '@joi/date'
+import { encode as encodeBase64 } from '@stablelib/base64'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
+import { chain, keyBy, omit, pick } from 'lodash'
 import mongoose from 'mongoose'
 import { okAsync } from 'neverthrow'
 import Stripe from 'stripe'
 import type { SetOptional } from 'type-fest'
 
 import {
+  BasicField,
+  EmailResponse,
   ErrorDto,
+  FieldResponse,
   FormAuthType,
+  FormFieldDto,
   FormSubmissionMetadataQueryDto,
+  MobileResponse,
   Payment,
   PaymentChannel,
+  StorageModeAttachment,
+  StorageModeAttachmentsMap,
   StorageModeSubmissionDto,
   StorageModeSubmissionMetadataList,
   SubmissionErrorDto,
@@ -21,9 +30,16 @@ import {
 } from '../../../../../shared/types'
 import { CaptchaTypes } from '../../../../../shared/types/captcha'
 import { StripePaymentMetadataDto } from '../../../../types'
-import { EncryptSubmissionDto } from '../../../../types/api'
+import {
+  EncryptFormFieldResponse,
+  EncryptSubmissionDto,
+  ParsedEmailAttachmentResponse,
+  ParsedEmailFormFieldResponse,
+  ParsedEmailModeSubmissionBody,
+} from '../../../../types/api'
 import config from '../../../config/config'
 import { paymentConfig } from '../../../config/features/payment.config'
+import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { stripe } from '../../../loaders/stripe'
 import getPaymentModel from '../../../models/payment.server.model'
@@ -45,6 +61,7 @@ import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
+import * as EmailSubmissionMiddleware from '../email-submission/email-submission.middleware'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
@@ -651,6 +668,216 @@ export const handleEncryptedSubmission = [
   CaptchaMiddleware.validateCaptchaParams,
   TurnstileMiddleware.validateTurnstileParams,
   EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
+  submitEncryptModeForm,
+] as ControllerHandler[]
+
+/**
+ * Reference implementation taken from frontend/src/features/public-form/utils/createSubmission.ts for purpose of demonstrating shifted encryption boundary.
+ * TODO (Encrypt Boundary): Clean up ParsedEmailFormFieldResponse and ParsedEmailAttachmentResponse type so it can be used for both email mode and unencrypted storage mode
+ */
+const isAttachmentResponse = (
+  response: ParsedEmailFormFieldResponse,
+): response is ParsedEmailAttachmentResponse => {
+  return (
+    response.fieldType === BasicField.Attachment &&
+    response.content !== undefined
+  )
+}
+
+/**
+ * Reference implementation taken from frontend/src/features/public-form/utils/createSubmission.ts for purpose of demonstrating shifted encryption boundary.
+ */
+const encryptAttachment = async (
+  attachment: Buffer,
+  { id, publicKey }: { id: string; publicKey: string },
+): Promise<StorageModeAttachment & { id: string }> => {
+  let label
+
+  try {
+    label = 'Read file content'
+
+    const fileContentsView = new Uint8Array(attachment)
+
+    label = 'Encrypt content'
+    const encryptedAttachment = await formsgSdk.crypto.encryptFile(
+      fileContentsView,
+      publicKey,
+    )
+
+    label = 'Base64-encode encrypted content'
+    const encodedEncryptedAttachment = {
+      ...encryptedAttachment,
+      binary: encodeBase64(encryptedAttachment.binary),
+    }
+
+    return { id, encryptedFile: encodedEncryptedAttachment }
+  } catch (error) {
+    logger.error({
+      message: 'Error encrypting attachment',
+      meta: {
+        action: 'encryptAttachment',
+        label,
+        error,
+      },
+    })
+    throw error
+  }
+}
+
+/**
+ *  Reference implementation taken from frontend/src/features/public-form/utils/createSubmission.ts for purpose of demonstrating shifted encryption boundary.
+ */
+const getEncryptedAttachmentsMapFromAttachmentsMap = async (
+  attachmentsMap: Record<string, Buffer>,
+  publicKey: string,
+): Promise<StorageModeAttachmentsMap> => {
+  const attachmentPromises = Object.entries(attachmentsMap).map(
+    ([id, attachment]) => encryptAttachment(attachment, { id, publicKey }),
+  )
+
+  return Promise.all(attachmentPromises).then((encryptedAttachmentsMeta) =>
+    chain(encryptedAttachmentsMeta)
+      .keyBy('id')
+      // Remove id from object.
+      .mapValues((v) => omit(v, 'id'))
+      .value(),
+  )
+}
+
+/**
+ * Reference implementation taken from frontend/src/features/public-form/utils/createSubmission.ts for purpose of demonstrating shifted encryption boundary.
+ * Utility to filter out responses that should be sent to the server. This includes:
+ * 1. Email fields that have an autoreply enabled.
+ * 2. Verifiable fields to verify its signature on the backend.
+ */
+const filterSendableStorageModeResponses = (
+  formFields: FormFieldDto[],
+  responses: FieldResponse[],
+) => {
+  const mapFieldIdToField = keyBy(formFields, '_id')
+  return responses
+    .filter((r): r is EmailResponse | MobileResponse => {
+      switch (r.fieldType) {
+        case BasicField.Email: {
+          const field = mapFieldIdToField[r._id]
+          if (!field || field.fieldType !== r.fieldType) return false
+          // Only filter out fields with auto reply set to true, or if field is verifiable.
+          return field.autoReplyOptions.hasAutoReply || field.isVerifiable
+        }
+        case BasicField.Mobile: {
+          const field = mapFieldIdToField[r._id]
+          if (!field || field.fieldType !== r.fieldType) return false
+          return field.isVerifiable
+        }
+        default:
+          return false
+      }
+    })
+    .map((r) => pick(r, ['fieldType', '_id', 'answer', 'signature']))
+}
+
+/**
+ * Encrypt submission content before saving to DB.
+ */
+const encryptSubmission: ControllerHandler<
+  { formId: string },
+  SubmissionResponseDto | SubmissionErrorDto,
+  ParsedEmailModeSubmissionBody,
+  { captchaResponse?: unknown }
+> = async (req, res, next) => {
+  const { formId } = req.params
+
+  const logMeta = {
+    action: 'convertToEncryptMode',
+    ...createReqMeta(req),
+    formId,
+  }
+
+  // Retrieve form definition. TODO: extract this step when validation is added.
+  const formResult = await FormService.retrieveFullFormById(formId)
+  if (formResult.isErr()) {
+    logger.warn({
+      message: 'Failed to retrieve form from database',
+      meta: logMeta,
+      error: formResult.error,
+    })
+    const { errorMessage, statusCode } = mapRouteError(formResult.error)
+    return res.status(statusCode).json({ message: errorMessage })
+  }
+
+  // Retrieve public key.
+  const publicKey = formResult.value.publicKey
+
+  if (!publicKey) {
+    logger.warn({
+      message: 'Form does not have a public key',
+      meta: logMeta,
+    })
+    return res.status(400).json({
+      message: 'Form does not have a public key',
+    })
+  }
+
+  const attachmentsMap: Record<string, Buffer> = {}
+
+  // Populate attachment map
+  req.body.responses.filter(isAttachmentResponse).forEach((response) => {
+    const fieldId = response._id
+    attachmentsMap[fieldId] = response.content
+  })
+
+  const encryptedAttachments =
+    await getEncryptedAttachmentsMapFromAttachmentsMap(
+      attachmentsMap,
+      publicKey,
+    )
+
+  const filteredResponses = filterSendableStorageModeResponses(
+    formResult.value.form_fields as unknown as FormFieldDto[],
+    req.body.responses.map((response) => {
+      if (isAttachmentResponse(response)) {
+        return {
+          ...response,
+          filename: undefined,
+          content: undefined, //Strip out attachment content
+        }
+      } else {
+        return response
+      }
+    }),
+  )
+
+  const encryptedContent = formsgSdk.crypto.encrypt(
+    req.body.responses.map((response) => {
+      if (isAttachmentResponse(response)) {
+        return {
+          ...response,
+          filename: undefined,
+          content: undefined, //Strip out attachment content
+        }
+      } else {
+        return response
+      }
+    }),
+    publicKey,
+  )
+
+  const encryptedVersion = {
+    attachments: encryptedAttachments,
+    responses: filteredResponses as EncryptFormFieldResponse[],
+    encryptedContent,
+    version: 1,
+  }
+
+  req.body = encryptedVersion
+  return next()
+}
+
+export const handleStorageSubmission = [
+  CaptchaMiddleware.validateCaptchaParams,
+  TurnstileMiddleware.validateTurnstileParams,
+  EmailSubmissionMiddleware.receiveEmailSubmission,
+  encryptSubmission,
   submitEncryptModeForm,
 ] as ControllerHandler[]
 
