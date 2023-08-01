@@ -396,7 +396,13 @@ export const PublicFormProvider = ({
 
             return (
               submitEmailModeFormMutation
-                .mutateAsync(formData, { onSuccess })
+                .mutateAsync(
+                  {
+                    ...formData,
+                    formInputs: formInputsWithCountryRegionInUpperCase,
+                  },
+                  { onSuccess },
+                )
                 // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
                 .catch(async (error) => {
                   // TODO(#5826): Remove when we have resolved the Network Error
@@ -510,6 +516,7 @@ export const PublicFormProvider = ({
               .mutateAsync(
                 {
                   ...formData,
+                  formInputs: formInputsWithCountryRegionInUpperCase,
                   publicKey: form.publicKey,
                   captchaResponse,
                   captchaType,
