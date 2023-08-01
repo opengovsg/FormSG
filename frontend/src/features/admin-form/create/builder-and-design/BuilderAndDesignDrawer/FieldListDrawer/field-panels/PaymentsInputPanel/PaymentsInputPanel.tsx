@@ -7,7 +7,7 @@ import {
 } from 'react-hook-form'
 import { Link as ReactLink } from 'react-router-dom'
 import { useDebounce } from 'react-use'
-import { Box, FormControl, Link, Text, Textarea } from '@chakra-ui/react'
+import { Box, FormControl, Link, Stack, Text, Textarea } from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
 
 import {
@@ -204,31 +204,33 @@ const PaymentInput = ({
           )}
         />
       </FormControl>
-      <FormControl
-        isReadOnly={paymentsMutation.isLoading}
-        isInvalid={!!errors.name}
-        isDisabled={isDisabled}
-        isRequired
-      >
-        <FormLabel description="This will be reflected on the proof of payment">
-          Product/service name
-        </FormLabel>
-        <Input
-          {...register('name', {
-            required: 'This field is required',
-          })}
-        />
-        <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
-      </FormControl>
-      <FormControl
-        isReadOnly={paymentsMutation.isLoading}
-        isDisabled={isDisabled}
-        isRequired
-      >
-        <FormLabel>Description</FormLabel>
-        <Textarea {...register('description')} />
-        <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
-      </FormControl>
+      <Stack spacing="2rem">
+        <FormControl
+          isReadOnly={paymentsMutation.isLoading}
+          isInvalid={!!errors.name}
+          isDisabled={isDisabled}
+          isRequired
+        >
+          <FormLabel description="This will be reflected on the proof of payment">
+            Product/service name
+          </FormLabel>
+          <Input
+            {...register('name', {
+              required: 'This field is required',
+            })}
+          />
+          <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
+        </FormControl>
+        <FormControl
+          isReadOnly={paymentsMutation.isLoading}
+          isDisabled={isDisabled}
+          isRequired
+        >
+          <FormLabel>Description</FormLabel>
+          <Textarea {...register('description')} />
+          <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
+        </FormControl>
+      </Stack>
       {paymentsData?.payment_type === PaymentType.Variable ? (
         <VariablePaymentAmountField
           isLoading={paymentsMutation.isLoading}
