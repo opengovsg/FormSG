@@ -22,6 +22,10 @@ export const MOCK_ACCESS_TOKEN = 'mock-access-token'
 
 export const MOCK_SUBJECT = 'mock-subject-proxy-id'
 
+export const MOCK_CODE_VERIFIER = 'mock_code_verifier'
+
+export const MOCK_CODE_CHALLENGE = 'mock_code_challenge'
+
 export const MOCK_TOKEN_RESULT = {
   sub: MOCK_SUBJECT,
   accessToken: MOCK_ACCESS_TOKEN,

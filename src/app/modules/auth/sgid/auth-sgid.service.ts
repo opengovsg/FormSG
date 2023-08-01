@@ -42,17 +42,20 @@ export class AuthSgidServiceClass {
   /**
    * Create a URL to sgID which is used to redirect the user for authentication
    */
-  createRedirectUrl(): Result<string, SgidCreateRedirectUrlError> {
+  createRedirectUrl(
+    codeChallenge: string,
+  ): Result<string, SgidCreateRedirectUrlError> {
     const logMeta = {
       action: 'createRedirectUrl',
     }
 
     try {
-      const result = this.client.authorizationUrl(
-        SGID_LOGIN_OAUTH_STATE,
-        ['openid', SGID_OGP_WORK_EMAIL_SCOPE].join(' '),
-        null,
-      )
+      const result = this.client.authorizationUrl({
+        state: SGID_LOGIN_OAUTH_STATE,
+        scope: ['openid', SGID_OGP_WORK_EMAIL_SCOPE].join(' '),
+        nonce: null,
+        codeChallenge,
+      })
       return ok(result.url)
     } catch (error) {
       logger.error({
@@ -71,12 +74,13 @@ export class AuthSgidServiceClass {
    */
   retrieveAccessToken(
     code: string,
+    codeVerifier: string,
   ): ResultAsync<
     { sub: string; accessToken: string },
     SgidFetchAccessTokenError
   > {
     return ResultAsync.fromPromise(
-      this.client.callback(code, null),
+      this.client.callback({ code, nonce: null, codeVerifier }),
       (error) => {
         logger.error({
           message: 'Failed to retrieve access token from sgID',
@@ -99,10 +103,11 @@ export class AuthSgidServiceClass {
    */
   retrieveUserInfo(
     accessToken: string,
+    sub: string,
   ): ResultAsync<string, SgidFetchUserInfoError> {
     return ResultAsync.fromPromise(
       this.client
-        .userinfo(accessToken)
+        .userinfo({ accessToken, sub })
         .then(({ data }) => data[SGID_OGP_WORK_EMAIL_SCOPE]),
       (error) => {
         logger.error({

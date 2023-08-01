@@ -11,6 +11,11 @@ export const SGID_COOKIE_NAME = 'jwtSgid'
 export const SGID_MYINFO_COOKIE_NAME = 'jwtSgidMyInfo'
 
 /**
+ * Name of cookie containing the PKCE code verifier for sgID flow(s).
+ */
+export const SGID_CODE_VERIFIER_COOKIE_NAME = 'sgidCodeVerifier'
+
+/**
  * Name of cookie which contains state of sgID login, and NRIC
  * if login was successful.
  *

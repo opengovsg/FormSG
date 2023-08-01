@@ -1,3 +1,4 @@
+import { generatePkcePair } from '@opengovsg/sgid-client'
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import { err } from 'neverthrow'
@@ -33,6 +34,7 @@ import {
 } from '../../myinfo/myinfo.util'
 import { SGIDMyInfoData } from '../../sgid/sgid.adapter'
 import {
+  SGID_CODE_VERIFIER_COOKIE_NAME,
   SGID_COOKIE_NAME,
   SGID_MYINFO_COOKIE_NAME,
   SGID_MYINFO_LOGIN_COOKIE_NAME,
@@ -274,18 +276,26 @@ export const handleGetPublicForm: ControllerHandler<
           return res.json({ form: publicForm, isIntranetUser })
         })
     case FormAuthType.SGID_MyInfo: {
-      const accessTokenCookie = req.cookies[SGID_MYINFO_COOKIE_NAME]
-      if (!accessTokenCookie) {
+      console.log('content cookie: ', req.cookies[SGID_MYINFO_COOKIE_NAME])
+      const { jwt: accessToken = '', sub = '' } = JSON.parse(
+        req.cookies[SGID_MYINFO_COOKIE_NAME] ?? '{}',
+      )
+      console.log('accessTokenCookie: ', accessToken)
+      console.log('sub: ', sub)
+      console.log('first pass')
+      if (!accessToken) {
+        console.log('inside code block')
         return res.json({
           form: publicForm,
           isIntranetUser,
         })
       }
+      console.log('second pass')
       res.clearCookie(SGID_MYINFO_COOKIE_NAME)
       res.clearCookie(SGID_MYINFO_LOGIN_COOKIE_NAME)
-      return SgidService.extractSgidJwtMyInfoPayload(accessTokenCookie)
+      return SgidService.extractSgidJwtMyInfoPayload(accessToken)
         .asyncAndThen((auth) =>
-          SgidService.retrieveUserInfo({ accessToken: auth.accessToken }),
+          SgidService.retrieveUserInfo({ accessToken: auth.accessToken, sub }),
         )
         .andThen((userInfo) => {
           const data = new SGIDMyInfoData(userInfo.data)
@@ -456,19 +466,33 @@ export const _handleFormAuthRedirect: ControllerHandler<
         }
         case FormAuthType.SGID:
           return validateSgidForm(form).andThen(() => {
+            const { codeChallenge, codeVerifier } = generatePkcePair()
+            res.cookie(
+              SGID_CODE_VERIFIER_COOKIE_NAME,
+              codeVerifier,
+              SgidService.getCookieSettings(),
+            )
             return SgidService.createRedirectUrl(
               formId,
               Boolean(isPersistentLogin),
               [],
+              codeChallenge,
               encodedQuery,
             )
           })
         case FormAuthType.SGID_MyInfo:
           return validateSgidForm(form).andThen(() => {
+            const { codeChallenge, codeVerifier } = generatePkcePair()
+            res.cookie(
+              SGID_CODE_VERIFIER_COOKIE_NAME,
+              codeVerifier,
+              SgidService.getCookieSettings(),
+            )
             return SgidService.createRedirectUrl(
               formId,
               false,
               form.getUniqueMyInfoAttrs(),
+              codeChallenge,
               encodedQuery,
             )
           })
@@ -499,6 +523,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
         error,
       })
       const { statusCode, errorMessage } = mapFormAuthError(error)
+      res.clearCookie(SGID_CODE_VERIFIER_COOKIE_NAME)
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
