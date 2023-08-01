@@ -107,6 +107,17 @@ const PaymentItem = ({
   )
 }
 
+const isProductSelected = (productItems: Array<ProductItem>) => {
+  let isProductSelected = false
+  for (let i = 0; i < productItems.length; i++) {
+    if (productItems[i].selected) {
+      isProductSelected = true
+      break
+    }
+  }
+  return isProductSelected
+}
+
 export const ProductPaymentItemDetailsBlock = ({
   paymentDetails,
   colorTheme,
@@ -121,8 +132,9 @@ export const ProductPaymentItemDetailsBlock = ({
   } = useFormContext()
   register(PAYMENT_PRODUCT_FIELD_ID, {
     validate: (value) => {
-      const totalPrice = calculatePrice(value || [])
-      if (totalPrice === 0) {
+      // Check if at least 1 product is selected
+      const selected = isProductSelected(value || [])
+      if (!selected) {
         return 'Please select at least 1 option'
       }
     },
