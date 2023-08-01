@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useFormContext } from 'react-hook-form'
-import { Box, Flex, Stack, Text } from '@chakra-ui/react'
+import { Box, Divider, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 
 import { PAYMENT_PRODUCT_FIELD_ID } from '~shared/constants'
 import {
@@ -13,6 +13,7 @@ import { centsToDollars, formatCurrency } from '~shared/utils/payments'
 
 import Checkbox from '~components/Checkbox'
 import { SingleSelect } from '~components/Dropdown/SingleSelect/SingleSelect'
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio from '~components/Radio'
 
 import { generateIntRange } from './utils'
@@ -36,11 +37,10 @@ const ItemQuantity = ({
     value: String(quantity),
   }))
   return (
-    <Box width="8rem">
+    <Box width="6rem">
       <SingleSelect
         isClearable={false}
         items={qtyOptions}
-        placeholder="Quantity"
         onChange={(val) => onChange(Number(val))}
         value={String(product.quantity)}
         name={'Quantity'}
@@ -107,6 +107,11 @@ const PaymentItem = ({
   )
 }
 
+const isProductSelected = (productItems: Array<ProductItem>) => {
+  const isSelected = productItems.some((item) => item.selected)
+  return isSelected
+}
+
 export const ProductPaymentItemDetailsBlock = ({
   paymentDetails,
   colorTheme,
@@ -114,8 +119,20 @@ export const ProductPaymentItemDetailsBlock = ({
   paymentDetails: ProductsPaymentField
   colorTheme: FormColorTheme
 }) => {
-  const { register, setValue } = useFormContext()
-  register(PAYMENT_PRODUCT_FIELD_ID)
+  const {
+    register,
+    setValue,
+    formState: { errors },
+  } = useFormContext()
+  register(PAYMENT_PRODUCT_FIELD_ID, {
+    validate: (value) => {
+      // Check if at least 1 product is selected
+      const selected = isProductSelected(value || [])
+      if (!selected) {
+        return 'Please select at least 1 option'
+      }
+    },
+  })
 
   const [productItems, updateProductItems] = useState<Array<ProductItem>>(
     () => {
@@ -133,7 +150,7 @@ export const ProductPaymentItemDetailsBlock = ({
       paymentDetails.products.map((product) => ({
         data: product,
         selected: false,
-        quantity: product.multi_qty ? 0 : 1,
+        quantity: product.multi_qty ? product.min_qty : 1,
       })),
     )
   }, [paymentDetails.products])
@@ -169,16 +186,21 @@ export const ProductPaymentItemDetailsBlock = ({
 
   return (
     <Stack spacing="2rem">
-      {productItems.map((product, idx) => (
-        <PaymentItem
-          key={product.data._id || idx}
-          product={product}
-          colorTheme={colorTheme}
-          onItemChange={handleItemChange}
-          isMultiSelect={productsMeta.multi_product}
-        />
-      ))}
-      <hr />
+      <FormControl isInvalid={!!errors.payment_products}>
+        <Stack spacing="2rem">
+          {productItems.map((product, idx) => (
+            <PaymentItem
+              key={product.data._id || idx}
+              product={product}
+              colorTheme={colorTheme}
+              onItemChange={handleItemChange}
+              isMultiSelect={productsMeta.multi_product}
+            />
+          ))}
+        </Stack>
+        <FormErrorMessage>{errors?.payment_products?.message}</FormErrorMessage>
+        <Divider />
+      </FormControl>
       <Flex justifyContent={'end'}>
         <Text textAlign={'right'} mr={'1rem'}>
           Total price
