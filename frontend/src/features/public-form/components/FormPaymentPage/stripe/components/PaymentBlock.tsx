@@ -48,6 +48,7 @@ const StripeCheckoutForm = ({
   const [stripeMessage, setStripeMessage] = useState('')
   const [isStripeProcessing, setIsStripeProcessing] = useState(false)
   const [, , clearPaymentMemory] = useBrowserStm(formId)
+  const [isPaynow, setIsPayNow] = useState(false)
 
   useEffect(() => {
     if (isRetry) {
@@ -100,7 +101,15 @@ const StripeCheckoutForm = ({
   return (
     <form onSubmit={handleSubmit}>
       <FormControl isInvalid={stripeMessage !== ''}>
-        <PaymentElement />
+        <PaymentElement
+          onChange={(e) => {
+            if (e.value.type === 'paynow') {
+              setIsPayNow(true)
+            } else {
+              setIsPayNow(false)
+            }
+          }}
+        />
         {stripeMessage !== '' ? (
           <FormErrorMessage>
             {`${stripeMessage} No payment has been taken. Please try again.`}
@@ -116,7 +125,7 @@ const StripeCheckoutForm = ({
           isLoading={isStripeProcessing}
           mt="2.5rem"
         >
-          Submit payment
+          {isPaynow ? 'Scan PayNow QR code' : 'Submit payment'}
         </Button>
       </FormControl>
     </form>
@@ -160,7 +169,7 @@ export const StripePaymentBlock = ({
           <VisuallyHidden aria-live="assertive">
             {submittedAriaText}
           </VisuallyHidden>
-          <Text textStyle="h3" textColor="primary.500" mb="1rem">
+          <Text textStyle="h3" textColor="primary.500" mb="2.25rem">
             Payment
           </Text>
           <PaymentItemDetailsBlock

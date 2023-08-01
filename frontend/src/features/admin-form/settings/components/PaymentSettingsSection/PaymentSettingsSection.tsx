@@ -7,6 +7,7 @@ import {
   Icon,
   Skeleton,
   Text,
+  VStack,
 } from '@chakra-ui/react'
 
 import { FormResponseMode, PaymentChannel } from '~shared/types'
@@ -40,30 +41,39 @@ const BeforeConnectionInstructions = ({
   const { data: paymentGuideLink } = usePaymentGuideLink()
   if (isProductionEnv) {
     return (
-      <>
-        <InlineMessage variant="info" my="2rem">
+      <VStack spacing="2.5rem" alignItems="start">
+        <InlineMessage variant="info">
           <Text>
             Read{' '}
             <Link isExternal href={paymentGuideLink}>
               our guide
             </Link>{' '}
-            to learn more about onboarding to Stripe. To enjoy bulk tender
-            transaction rates,{' '}
-            <Link href={GUIDE_STRIPE_ONBOARDING} target="_blank">
-              use this form
-            </Link>{' '}
-            to submit your Stripe account ID and raise a purchase order to
-            Stripe.
+            to set up a Stripe account. If your agency already has a Stripe
+            account, you can connect it to this form.
           </Text>
         </InlineMessage>
+        <Text textStyle="h3" color="secondary.500">
+          Bulk transaction rates
+        </Text>
+        <Text>
+          To request bulk transaction rates for your payments, use{' '}
+          <Link href={GUIDE_STRIPE_ONBOARDING} target="_blank">
+            this form
+          </Link>{' '}
+          to contact us for assistance.{' '}
+          <Text as="b">
+            Without this step, you will be charged default transaction rates.
+          </Text>
+        </Text>
+
         {/* Stripe connect button should only be enabled when checkbox is checked. */}
         <Checkbox
           isChecked={allowConnect}
           mb="2rem"
           onChange={(e) => setAllowConnect(e.target.checked)}
         >
-          I understand that if I do not send my Stripe account ID and raise a
-          purchase order to Stripe, I will be paying default transaction rates.
+          I understand that I will be paying default transaction rates, unless I
+          have requested bulk transaction rates and received confirmation
         </Checkbox>
         <StripeConnectButton
           connectState={
@@ -72,7 +82,7 @@ const BeforeConnectionInstructions = ({
               : StripeConnectButtonStates.DISABLED
           }
         />
-      </>
+      </VStack>
     )
   } else {
     return (
