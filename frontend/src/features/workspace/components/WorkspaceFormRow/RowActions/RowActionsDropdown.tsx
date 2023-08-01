@@ -72,7 +72,7 @@ const MoveWorkspaceDropdown = ({
           key={workspace._id}
           onClick={() => handleWorkspaceClick(workspace)}
         >
-          <Flex justifyContent="space-between" w="100%">
+          <Flex justifyContent="space-between" w="100%" alignItems="center">
             <Text textStyle="body-1">{workspace.title}</Text>
             {workspace._id === currFormWorkspace?._id && <Icon as={BxCheck} />}
           </Flex>
