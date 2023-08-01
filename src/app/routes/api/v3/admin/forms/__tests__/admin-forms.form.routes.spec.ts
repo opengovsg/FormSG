@@ -110,9 +110,8 @@ describe('admin-form.form.routes', () => {
         admin: collabUser._id,
         permissionList: [{ email: defaultUser.email }],
       })
-      // Create already archived form, should not be fetched even though
-      // owner is defaultUser
-      await EmailFormModel.create({
+      // Create already archived form, should still be fetched
+      const ownFormArchived = await EmailFormModel.create({
         title: 'Archived form',
         emails: defaultUser.email,
         admin: defaultUser._id,
@@ -134,7 +133,7 @@ describe('admin-form.form.routes', () => {
       // Should only receive ownForm and collabForm
       const expected = await FormModel.find({
         _id: {
-          $in: [ownForm._id, collabForm._id],
+          $in: [ownForm._id, collabForm._id, ownFormArchived._id],
         },
       })
         .select('_id title admin lastModified status responseMode')
@@ -559,9 +558,8 @@ describe('admin-form.form.routes', () => {
         admin: collabUser._id,
         permissionList: [{ email: defaultUser.email }],
       })
-      // Create already archived form, should not be fetched even though
-      // owner is defaultUser
-      await EmailFormModel.create({
+      // Create already archived form, should still be fetched
+      const ownFormArchived = await EmailFormModel.create({
         title: 'Archived form',
         emails: defaultUser.email,
         admin: defaultUser._id,
@@ -583,7 +581,7 @@ describe('admin-form.form.routes', () => {
       // Should only receive ownForm
       const expected = await FormModel.find({
         _id: {
-          $in: [ownForm._id],
+          $in: [ownForm._id, ownFormArchived._id],
         },
       })
         .select('_id title admin lastModified status responseMode')
