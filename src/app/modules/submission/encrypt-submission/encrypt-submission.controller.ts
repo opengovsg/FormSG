@@ -389,15 +389,15 @@ const _createPaymentSubmission = async ({
   const isPaymentTypeProducts =
     form.payments_field.payment_type === PaymentType.Products
 
-  if (isPaymentTypeProducts)
-    logger.info({
-      message: 'Incoming payment by products',
-      meta: {
-        ...logMeta,
-        paymentProducts,
-        amount,
-      },
-    })
+  logger.info({
+    message: 'Incoming payments',
+    meta: {
+      ...logMeta,
+      paymentProducts,
+      paymentType: form.payments_field.payment_type,
+      amount,
+    },
+  })
 
   // Step 0: Perform validation checks
   if (
