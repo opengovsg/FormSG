@@ -792,6 +792,12 @@ const encryptSubmission: ControllerHandler<
     return res.status(statusCode).json({ message: errorMessage })
   }
 
+  if (!formResult.value.get('newEncryptionBoundary')) {
+    return res
+      .status(StatusCodes.FORBIDDEN)
+      .json({ message: 'This endpoint has not been enabled for this form.' })
+  }
+
   // Retrieve public key.
   const publicKey = formResult.value.publicKey
 
