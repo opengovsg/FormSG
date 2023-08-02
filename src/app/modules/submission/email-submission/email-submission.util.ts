@@ -17,7 +17,7 @@ import {
   MapRouteError,
   SPCPFieldTitle,
 } from '../../../../types'
-import { ParsedEmailFormFieldResponse } from '../../../../types/api'
+import { ParsedClearFormFieldResponse } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
   CaptchaConnectionError,
@@ -345,7 +345,7 @@ export const areAttachmentsMoreThan7MB = (
  * @param responses Form responses
  */
 export const mapAttachmentsFromResponses = (
-  responses: ParsedEmailFormFieldResponse[],
+  responses: ParsedClearFormFieldResponse[],
 ): IAttachmentInfo[] => {
   // look for attachments in parsedResponses
   // Could be undefined if it is not required, or hidden

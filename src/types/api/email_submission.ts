@@ -5,7 +5,7 @@ import {
   ResponseMetadata,
 } from '../../../shared/types'
 
-import { ParsedEmailFormFieldResponse } from './submission'
+import { ParsedClearFormFieldResponse } from './submission'
 
 /**
  * Email submission body after req.body's FormData has passed through the
@@ -14,7 +14,7 @@ import { ParsedEmailFormFieldResponse } from './submission'
 export type ParsedEmailModeSubmissionBody = Merge<
   EmailModeSubmissionContentDto,
   {
-    responses: ParsedEmailFormFieldResponse[]
+    responses: ParsedClearFormFieldResponse[]
     responseMetadata?: ResponseMetadata
   }
 >

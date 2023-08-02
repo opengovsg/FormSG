@@ -2,8 +2,8 @@ import { StatusCodes } from 'http-status-codes'
 
 import { IAttachmentInfo, MapRouteError } from '../../../../types'
 import {
-  ParsedEmailAttachmentResponse,
-  ParsedEmailFormFieldResponse,
+  ParsedClearAttachmentResponse,
+  ParsedClearFormFieldResponse,
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 
@@ -49,8 +49,8 @@ export const mapRouteError: MapRouteError = (error) => {
  */
 const isAttachmentResponseFromMap = (
   attachmentMap: Record<IAttachmentInfo['fieldId'], IAttachmentInfo>,
-  response: ParsedEmailFormFieldResponse,
-): response is ParsedEmailAttachmentResponse => {
+  response: ParsedClearFormFieldResponse,
+): response is ParsedClearAttachmentResponse => {
   return !!attachmentMap[response._id]
 }
 
@@ -64,7 +64,7 @@ const isAttachmentResponseFromMap = (
  * @returns void. Modifies responses in place.
  */
 export const addAttachmentToResponses = (
-  responses: ParsedEmailFormFieldResponse[],
+  responses: ParsedClearFormFieldResponse[],
   attachments: IAttachmentInfo[],
 ): void => {
   // Create a map of the attachments with fieldId as keys

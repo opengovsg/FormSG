@@ -33,7 +33,7 @@ import { StripePaymentMetadataDto } from '../../../../types'
 import {
   EncryptFormFieldResponse,
   EncryptSubmissionDto,
-  ParsedEmailModeSubmissionBody,
+  ParsedStorageModeSubmissionBody,
 } from '../../../../types/api'
 import config from '../../../config/config'
 import { paymentConfig } from '../../../config/features/payment.config'
@@ -769,7 +769,7 @@ const filterSendableStorageModeResponses = (
 const encryptSubmission: ControllerHandler<
   { formId: string },
   SubmissionResponseDto | SubmissionErrorDto,
-  ParsedEmailModeSubmissionBody,
+  ParsedStorageModeSubmissionBody,
   { captchaResponse?: unknown }
 > = async (req, res, next) => {
   const { formId } = req.params
@@ -853,7 +853,7 @@ const encryptSubmission: ControllerHandler<
     attachments: encryptedAttachments,
     responses: filteredResponses as EncryptFormFieldResponse[],
     encryptedContent,
-    version: 1,
+    version: req.body.version,
   }
 
   req.body = encryptedVersion
@@ -864,6 +864,7 @@ export const handleStorageSubmission = [
   CaptchaMiddleware.validateCaptchaParams,
   TurnstileMiddleware.validateTurnstileParams,
   ReceiverMiddleware.receiveSubmission,
+  EncryptSubmissionMiddleware.validateStorageSubmissionParams,
   encryptSubmission,
   submitEncryptModeForm,
 ] as ControllerHandler[]

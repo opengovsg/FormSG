@@ -2,8 +2,8 @@ import { differenceBy, intersectionBy, keyBy, uniqBy } from 'lodash'
 import { err, ok, Result } from 'neverthrow'
 
 import {
-  ParsedEmailAttachmentResponse,
-  ParsedEmailFormFieldResponse,
+  ParsedClearAttachmentResponse,
+  ParsedClearFormFieldResponse,
 } from 'src/types/api'
 
 import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
@@ -162,8 +162,8 @@ export const getNormalisedResponseTime = (
 }
 
 export const isAttachmentResponse = (
-  response: ParsedEmailFormFieldResponse,
-): response is ParsedEmailAttachmentResponse => {
+  response: ParsedClearFormFieldResponse,
+): response is ParsedClearAttachmentResponse => {
   return (
     response.fieldType === BasicField.Attachment &&
     response.content !== undefined
