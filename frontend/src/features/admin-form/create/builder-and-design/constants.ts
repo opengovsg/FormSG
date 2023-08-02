@@ -135,7 +135,6 @@ export enum FieldListTabIndex {
   Basic = 0,
   MyInfo,
   Payments,
-  PaymentsV2,
 }
 
 export const CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS: {
