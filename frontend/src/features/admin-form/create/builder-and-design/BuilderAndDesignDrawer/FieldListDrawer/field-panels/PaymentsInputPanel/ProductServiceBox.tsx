@@ -4,6 +4,7 @@ import { BiEditAlt, BiPlus, BiTrash } from 'react-icons/bi'
 import {
   Box,
   ButtonGroup,
+  Divider,
   Flex,
   FormControl,
   Stack,
@@ -119,7 +120,7 @@ const ProductList = ({
             Click 'Add' to configure your product/service
           </Text>
         </Box>
-        <hr />
+        <Divider />
         <AddProductButton
           isDisabled={!paymentIsEnabled}
           onClick={() => handleAddOrEditClick(null)}
@@ -139,7 +140,7 @@ const ProductList = ({
           />
         ))}
       </Stack>
-      <hr />
+      <Divider />
       <AddProductButton
         isDisabled={!paymentIsEnabled}
         onClick={() => handleAddOrEditClick(null)}
