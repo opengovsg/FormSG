@@ -161,10 +161,12 @@ const PaymentTypeSelector = ({
   isEncryptMode,
   control,
   paymentsMutation,
+  showFixedPaymentSelection,
 }: {
   isEncryptMode: boolean
   control: Control<FormPaymentsInput>
   paymentsMutation: ReturnType<typeof useMutateFormPage>['paymentsMutation']
+  showFixedPaymentSelection: boolean
 }) => {
   return (
     <PaymentInnerContainer>
@@ -183,12 +185,14 @@ const PaymentTypeSelector = ({
               placeholder="Select Payment Type"
               fullWidth
               items={[
-                {
-                  value: PaymentType.Fixed,
-                  label: 'Fixed amount',
-                  description:
-                    'Payment amount is defined by form admin. Suitable for a product or service.',
-                },
+                showFixedPaymentSelection
+                  ? {
+                      value: PaymentType.Fixed,
+                      label: 'Fixed amount',
+                      description:
+                        'Payment amount is defined by form admin. Suitable for a product or service.',
+                    }
+                  : null,
                 {
                   value: PaymentType.Variable,
                   label: 'Variable amount',
@@ -328,6 +332,7 @@ const PaymentInputFields = ({
   })
 
   const isProducts = paymentsData?.payment_type === PaymentType.Products
+  const isFixed = paymentsData?.payment_type === PaymentType.Fixed
 
   return (
     <PaymentContainer>
@@ -335,6 +340,7 @@ const PaymentInputFields = ({
         isEncryptMode={isEncryptMode}
         control={control}
         paymentsMutation={paymentsMutation}
+        showFixedPaymentSelection={isFixed}
       />
 
       {isProducts ? (
