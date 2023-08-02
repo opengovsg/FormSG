@@ -25,6 +25,7 @@ import {
   AttachmentField,
   CheckboxField,
   ChildrenCompoundField,
+  CountryRegionField,
   DateField,
   DecimalField,
   DropdownField,
@@ -482,6 +483,8 @@ const FieldRow = ({ field, ...rest }: FieldRowProps) => {
       return <DateField schema={field} {...rest} />
     case BasicField.Dropdown:
       return <DropdownField schema={field} {...rest} />
+    case BasicField.CountryRegion:
+      return <CountryRegionField schema={field} {...rest} />
     case BasicField.ShortText:
       return <ShortTextField schema={field} {...rest} />
     case BasicField.LongText:

@@ -1,5 +1,6 @@
 import type { AttachmentFieldBase } from './attachmentField'
 import type { CheckboxFieldBase } from './checkboxField'
+import type { CountryRegionFieldBase } from './countryRegionField'
 import type { ChildrenCompoundFieldBase } from './childrenCompoundField'
 import type { DateFieldBase } from './dateField'
 import type { DecimalFieldBase } from './decimalField'
@@ -24,9 +25,11 @@ import type { SetRequired } from 'type-fest'
 export * from './attachmentField'
 export * from './base'
 export * from './checkboxField'
+export * from './countryRegionField'
 export * from './dateField'
 export * from './decimalField'
 export * from './dropdownField'
+export * from './countryRegionField'
 export * from './emailField'
 export * from './homeNoField'
 export * from './imageField'
@@ -51,6 +54,7 @@ export type FormField =
   | DateFieldBase
   | DecimalFieldBase
   | DropdownFieldBase
+  | CountryRegionFieldBase
   | EmailFieldBase
   | HomenoFieldBase
   | ImageFieldBase

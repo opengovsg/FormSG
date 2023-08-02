@@ -1,5 +1,6 @@
 export * from './EditAttachment'
 export * from './EditCheckbox'
+export * from './EditCountryRegion'
 export * from './EditDate'
 export * from './EditDecimal'
 export * from './EditDropdown'
