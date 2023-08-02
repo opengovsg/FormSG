@@ -141,7 +141,7 @@ export const ProductModal = ({
       }
 
       if (val * clonedWatchedInputs.amount_cents > maxPaymentAmountCents) {
-        return 'Item and Quantity exceeded limit. Either lower your quantity or lower the per item cost.'
+        return 'Item and Quantity exceeded limit. Either lower your quantity or lower payment amount.'
       }
       if (val < clonedWatchedInputs[MIN_QTY_KEY]) {
         return 'Please enter a value greater than the minimum quantity'
