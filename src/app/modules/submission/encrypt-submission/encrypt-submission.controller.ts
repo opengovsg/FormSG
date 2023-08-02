@@ -143,11 +143,10 @@ const submitEncryptModeForm: SubmitEncryptModeFormControllerHandlerType =
     }
     const form = checkFormIsEncryptModeResult.value
 
-    const ensurePipeline = Pipeline(
+    const ensurePipeline = new Pipeline(
       ensurePublicForm,
       ensureValidCaptcha,
       ensureFormWithinSubmissionLimits,
-      // TODO(ken): ensureValidPaymentProducts
     )
 
     const hasEnsuredAll = await ensurePipeline.execute({
@@ -156,6 +155,7 @@ const submitEncryptModeForm: SubmitEncryptModeFormControllerHandlerType =
       req,
       res,
     })
+
     if (!hasEnsuredAll) {
       return
     }
