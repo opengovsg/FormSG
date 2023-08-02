@@ -153,20 +153,26 @@ export const ProductModal = ({
             divider={<Divider />}
           >
             <Stack>
-              <FormControl>
+              <FormControl isInvalid={!!errors.name}>
                 <FormLabel isRequired>Name</FormLabel>
                 <Input
-                  {...register('name', { required: true })}
+                  {...register('name', { required: 'This field is required' })}
                   isInvalid={!!errors.name}
                 />
+                <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
               </FormControl>
 
-              <FormControl>
+              <FormControl isInvalid={!!errors.description}>
                 <FormLabel isRequired>Description</FormLabel>
                 <Textarea
-                  {...register('description', { required: true })}
+                  {...register('description', {
+                    required: 'This field is required',
+                  })}
                   isInvalid={!!errors.description}
                 />
+                <FormErrorMessage>
+                  {errors.description?.message}
+                </FormErrorMessage>
               </FormControl>
 
               <FormControl isInvalid={!!errors.display_amount}>
