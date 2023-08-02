@@ -3,7 +3,7 @@ import { Product } from 'shared/types'
 
 import { isPositiveInteger } from '../utils'
 
-export const ProductItemSchema = new Schema<Product>({
+export const ProductSchema = new Schema<Product>({
   name: {
     type: String,
     trim: true,
