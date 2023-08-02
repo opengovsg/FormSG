@@ -454,13 +454,21 @@ const updatePaymentsValidator = celebrate({
  * Handler for PUT /:formId/payment/products
  */
 export const handleUpdatePaymentsProduct = [
-  // TODO: populate actual products
-  // celebrate({
-  //   [Segments.BODY]: {
-  //     // v2 fields
-  //     products: {} Joi.string().required(),
-  //   },
-  // }),
+  celebrate({
+    [Segments.BODY]: Joi.array().items(
+      Joi.object().keys({
+        name: Joi.string().required(),
+        description: Joi.string().required(),
+        multi_qty: Joi.boolean().required(),
+        min_qty: JoiInt.positive().required(),
+        max_qty: JoiInt.positive().required(),
+        amount_cents: JoiInt.min(paymentConfig.minPaymentAmountCents)
+          .max(paymentConfig.maxPaymentAmountCents)
+          .required(),
+        _id: Joi.string(),
+      }),
+    ),
+  }),
   _handleUpdatePaymentsProduct,
 ] as ControllerHandler[]
 
