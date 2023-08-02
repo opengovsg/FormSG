@@ -390,34 +390,34 @@ const FixedAndVariablePaymentSection = ({
   return (
     <>
       <PaymentInnerContainer>
-        <FormControl
-          isReadOnly={paymentsMutation.isLoading}
-          isInvalid={!!errors.name}
-          isDisabled={isDisabled}
-          isRequired
-        >
-          <FormLabel description="This will be reflected on the proof of payment">
-            Product/service name
-          </FormLabel>
-          <Input
-            {...register('name', {
-              required: 'This field is required',
-            })}
-          />
-          <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
-        </FormControl>
-      </PaymentInnerContainer>
-      <Divider my="2rem" />
-      <PaymentInnerContainer>
-        <FormControl
-          isReadOnly={paymentsMutation.isLoading}
-          isDisabled={isDisabled}
-          isRequired
-        >
-          <FormLabel>Description</FormLabel>
-          <Textarea {...register('description')} />
-          <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
-        </FormControl>
+        <Stack spacing="2rem">
+          <FormControl
+            isReadOnly={paymentsMutation.isLoading}
+            isInvalid={!!errors.name}
+            isDisabled={isDisabled}
+            isRequired
+          >
+            <FormLabel description="This will be reflected on the proof of payment">
+              Product/service name
+            </FormLabel>
+            <Input
+              {...register('name', {
+                required: 'This field is required',
+              })}
+            />
+            <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
+          </FormControl>
+
+          <FormControl
+            isReadOnly={paymentsMutation.isLoading}
+            isDisabled={isDisabled}
+            isRequired
+          >
+            <FormLabel>Description</FormLabel>
+            <Textarea {...register('description')} />
+            <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
+          </FormControl>
+        </Stack>
       </PaymentInnerContainer>
       <Divider my="2rem" />
       <PaymentInnerContainer>

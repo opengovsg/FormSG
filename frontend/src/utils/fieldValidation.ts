@@ -40,6 +40,7 @@ import {
 import { isUenValid } from '~shared/utils/uen-validation'
 
 import {
+  INVALID_COUNTRY_REGION_OPTION_ERROR,
   INVALID_DROPDOWN_OPTION_ERROR,
   INVALID_EMAIL_DOMAIN_ERROR,
   INVALID_EMAIL_ERROR,
@@ -129,19 +130,34 @@ export const createBaseValidationRules = (
 export const createDropdownValidationRules: ValidationRuleFn<
   DropdownFieldBase
 > = (schema): RegisterOptions => {
-  // TODO(#3360): Handle MyInfo dropdown validation
-  return {
-    validate: {
-      required: requiredSingleAnswerValidationFn(schema),
-      validOptions: (value: string) => {
-        if (!value) return
-        return (
-          schema.fieldOptions.includes(value) || INVALID_DROPDOWN_OPTION_ERROR
-        )
-      },
-    },
-  }
+  return createDropdownValidationRulesWithCustomErrorMessage(
+    INVALID_DROPDOWN_OPTION_ERROR,
+  )(schema)
 }
+
+export const createCountryRegionValidationRules: ValidationRuleFn<
+  DropdownFieldBase
+> = (schema): RegisterOptions => {
+  return createDropdownValidationRulesWithCustomErrorMessage(
+    INVALID_COUNTRY_REGION_OPTION_ERROR,
+  )(schema)
+}
+
+export const createDropdownValidationRulesWithCustomErrorMessage: (
+  errorMessage: string,
+) => ValidationRuleFn<DropdownFieldBase> =
+  (errorMessage) =>
+  (schema): RegisterOptions => {
+    return {
+      validate: {
+        required: requiredSingleAnswerValidationFn(schema),
+        validOptions: (value: string) => {
+          if (!value) return
+          return schema.fieldOptions.includes(value) || errorMessage
+        },
+      },
+    }
+  }
 
 export const createRatingValidationRules: ValidationRuleFn<RatingFieldBase> = (
   schema,

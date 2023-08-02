@@ -3,6 +3,7 @@ import {
   BasicField,
   CheckboxResponse,
   ChildBirthRecordsResponse,
+  CountryRegionResponse,
   DateResponse,
   DecimalResponse,
   DropdownResponse,
@@ -62,6 +63,8 @@ export const validateResponses = (responses: unknown): FieldResponse[] => {
         return DateResponse.parse(response)
       case BasicField.Dropdown:
         return DropdownResponse.parse(response)
+      case BasicField.CountryRegion:
+        return CountryRegionResponse.parse(response)
       case BasicField.Email:
         return EmailResponse.parse(response)
       case BasicField.HomeNo:

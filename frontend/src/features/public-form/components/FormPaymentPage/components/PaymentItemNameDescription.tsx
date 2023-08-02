@@ -15,7 +15,9 @@ const PaymentItemNameDescription = ({
         <Text textStyle="subhead-1">{paymentItemName}</Text>
       ) : null}
       {paymentDescription ? (
-        <Text textStyle="body-2">{paymentDescription}</Text>
+        <Text textStyle="body-2" color="secondary.400">
+          {paymentDescription}
+        </Text>
       ) : null}
     </Box>
   )

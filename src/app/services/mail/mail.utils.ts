@@ -292,12 +292,12 @@ export const generatePaymentOnboardingHtml = ({
   appName: string
 }): string => {
   return dedent`
-  <p>Dear Sir or Madam,</p>
-  <p>Thank you for your interest in our payments feature! <a href="${paymentConfig.landingGuideLink}">Download the file</a> to learn how to get started with payments today!</p>
+  <p>Dear Form admin,</p>
+  <p>Thank you for your interest in our payments feature! <a href="${paymentConfig.landingGuideLink}">Download our payments guide</a> to learn how to start collecting payments on your form today!</p>
   <p>If you have any questions regarding payments, feel free to reach out to support@form.gov.sg.</p>
   <p>Regards,
   <br/>
-  ${appName} team</p>
+  ${appName}</p>
   `
 }
 

@@ -1,9 +1,11 @@
 import { Controller, useFormContext } from 'react-hook-form'
-import { Box, FormControl, FormErrorMessage } from '@chakra-ui/react'
+import { Box, FormControl, FormErrorMessage, Text } from '@chakra-ui/react'
 
 import { PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID } from '~shared/constants'
 
 import MoneyInput from '~components/MoneyInput'
+
+import { centsToDollarString } from '~features/admin-form/responses/common/utils/getPaymentDataView'
 
 import { usePaymentFieldValidation } from '../../../../../hooks/usePaymentFieldValidation'
 
@@ -51,6 +53,10 @@ export const VariablePaymentItemDetailsBlock = ({
             />
           )}
         />
+        <Text textStyle="body-2" color="secondary.400" mt="0.5rem">
+          The minimum amount is {centsToDollarString(paymentMin)} and the
+          maximum amount is {centsToDollarString(paymentMax)}.
+        </Text>
         <FormErrorMessage>
           {errors[PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]?.message}
         </FormErrorMessage>
