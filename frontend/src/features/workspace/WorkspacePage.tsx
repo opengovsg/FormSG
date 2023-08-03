@@ -26,8 +26,6 @@ import { useUser } from '~features/user/queries'
 import { WorkspaceContent } from '~features/workspace/WorkspaceContent'
 
 import AdminFeedbackContainer from './components/AdminFeedbackContainer'
-import CreateFormModal from './components/CreateFormModal'
-import { EmptyWorkspace } from './components/EmptyWorkspace'
 import { WorkspaceMenuHeader } from './components/WorkspaceSideMenu/WorkspaceMenuHeader'
 import { WorkspaceMenuTabs } from './components/WorkspaceSideMenu/WorkspaceMenuTabs'
 import { useDashboard, useWorkspace } from './queries'
@@ -37,7 +35,6 @@ export const WorkspacePage = (): JSX.Element => {
   const [currWorkspaceId, setCurrWorkspaceId] = useState<string>('')
   const { data: { siteBannerContent, adminBannerContent } = {} } = useEnv()
 
-  const createFormModal = useDisclosure()
   const mobileDrawer = useDisclosure()
   const isMobile = useIsMobile()
 
@@ -65,21 +62,6 @@ export const WorkspacePage = (): JSX.Element => {
   }, [dashboardForms, user]) as Workspace
 
   if (isWorkspaceLoading || isDashboardLoading) return <></>
-
-  if (dashboardForms?.length === 0) {
-    return (
-      <>
-        <CreateFormModal
-          isOpen={createFormModal.isOpen}
-          onClose={createFormModal.onClose}
-        />
-        <EmptyWorkspace
-          isLoading={isDashboardLoading}
-          handleOpenCreateFormModal={createFormModal.onOpen}
-        />
-      </>
-    )
-  }
 
   return (
     <>

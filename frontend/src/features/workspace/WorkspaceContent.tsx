@@ -12,6 +12,7 @@ import { chunk } from 'lodash'
 import Pagination from '~components/Pagination'
 
 import CreateFormModal from './components/CreateFormModal'
+import { EmptyWorkspace } from './components/EmptyWorkspace'
 import { WorkspaceFormRows } from './components/WorkspaceFormRow'
 import { WorkspaceHeader } from './components/WorkspaceHeader'
 import { useDashboard } from './queries'
@@ -112,44 +113,51 @@ export const WorkspaceContent = (): JSX.Element => {
         isOpen={createFormModalDisclosure.isOpen}
         onClose={createFormModalDisclosure.onClose}
       />
-      <Grid
-        bg="neutral.100"
-        templateColumns="1fr"
-        templateRows="auto 1fr auto"
-        minH="100vh"
-        templateAreas="'header' 'main' 'footer'"
-        overflowY="scroll"
-      >
-        <Container
-          gridArea="header"
-          maxW={CONTAINER_MAXW}
-          borderBottom="1px solid var(--chakra-colors-neutral-300)"
-          px="2rem"
-          py="1rem"
+      {totalFormCount === 0 ? (
+        <EmptyWorkspace
+          handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
+          isLoading={isLoading}
+        />
+      ) : (
+        <Grid
+          bg="neutral.100"
+          templateColumns="1fr"
+          templateRows="auto 1fr auto"
+          minH="100vh"
+          templateAreas="'header' 'main' 'footer'"
+          overflowY="scroll"
         >
-          <WorkspaceHeader
-            handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
-          />
-        </Container>
-        <Box gridArea="main">
-          <WorkspaceFormRows />
-        </Box>
-        <Container
-          gridArea="footer"
-          py={{ base: '1rem', md: '3rem' }}
-          px="2rem"
-          maxW={CONTAINER_MAXW}
-          borderTop="1px solid var(--chakra-colors-neutral-300)"
-        >
-          <Pagination
-            isDisabled={isLoading}
-            currentPage={currentPage}
-            totalCount={totalFormCount ?? 0}
-            onPageChange={setPageNumber}
-            pageSize={PAGE_DEFAULTS.size}
-          />
-        </Container>
-      </Grid>
+          <Container
+            gridArea="header"
+            maxW={CONTAINER_MAXW}
+            borderBottom="1px solid var(--chakra-colors-neutral-300)"
+            px="2rem"
+            py="1rem"
+          >
+            <WorkspaceHeader
+              handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
+            />
+          </Container>
+          <Box gridArea="main">
+            <WorkspaceFormRows />
+          </Box>
+          <Container
+            gridArea="footer"
+            py={{ base: '1rem', md: '3rem' }}
+            px="2rem"
+            maxW={CONTAINER_MAXW}
+            borderTop="1px solid var(--chakra-colors-neutral-300)"
+          >
+            <Pagination
+              isDisabled={isLoading}
+              currentPage={currentPage}
+              totalCount={totalFormCount ?? 0}
+              onPageChange={setPageNumber}
+              pageSize={PAGE_DEFAULTS.size}
+            />
+          </Container>
+        </Grid>
+      )}
     </>
   )
 }
