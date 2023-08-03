@@ -747,6 +747,7 @@ describe('Form Model', () => {
           payments_field: {
             enabled: true,
             amount_cents: 50,
+            payment_type: PaymentType.Fixed,
             description: 'some payment',
           },
         })

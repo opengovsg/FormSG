@@ -68,12 +68,13 @@ import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
 import { getMyInfoAttr } from '../modules/myinfo/myinfo.util'
 import { validateWebhookUrl } from '../modules/webhook/webhook.validation'
 
-import { ProductItemSchema } from './payments/productItemSchema'
+import { ProductSchema } from './payments/productSchema'
 import {
   BaseFieldSchema,
   createAttachmentFieldSchema,
   createCheckboxFieldSchema,
   createchildrenCompoundFieldSchema,
+  createCountryRegionFieldSchema,
   createDateFieldSchema,
   createDecimalFieldSchema,
   createDropdownFieldSchema,
@@ -180,7 +181,7 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
         message: 'amount_cents must be a non-negative integer.',
       },
     },
-    products: [ProductItemSchema],
+    products: [ProductSchema],
     products_meta: {
       multi_product: {
         type: Boolean,
@@ -555,6 +556,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     createAttachmentFieldSchema(),
   )
   FormFieldPath.discriminator(BasicField.Dropdown, createDropdownFieldSchema())
+  FormFieldPath.discriminator(
+    BasicField.CountryRegion,
+    createCountryRegionFieldSchema(),
+  )
   FormFieldPath.discriminator(
     BasicField.Children,
     createchildrenCompoundFieldSchema(),

@@ -21,7 +21,7 @@ import {
   PAYMENT_PRODUCT_FIELD_ID,
   PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID,
 } from '~shared/constants'
-import { PaymentType } from '~shared/types'
+import { BasicField, PaymentType } from '~shared/types'
 import { CaptchaTypes } from '~shared/types/captcha'
 import {
   FormAuthType,
@@ -290,10 +290,32 @@ export const PublicFormProvider = ({
         }
       }
 
+      const countryRegionFieldIds = new Set(
+        form.form_fields
+          .filter((field) => field.fieldType === BasicField.CountryRegion)
+          .map((field) => field._id),
+      )
+      // We want users to see the country/region options in title-case but we also need the data in the backend to remain in upper-case.
+      // Country/region data in the backend needs to remain in upper-case so that they remain consistent with myinfo-countries.
+      const formInputsWithCountryRegionInUpperCase = Object.keys(
+        formInputs,
+      ).reduce((newFormInputs: typeof formInputs, fieldId) => {
+        const currentInput = formInputs[fieldId]
+        if (
+          countryRegionFieldIds.has(fieldId) &&
+          typeof currentInput === 'string'
+        ) {
+          newFormInputs[fieldId] = currentInput.toUpperCase()
+        } else {
+          newFormInputs[fieldId] = currentInput
+        }
+        return newFormInputs
+      }, {})
+
       const formData = {
         formFields: form.form_fields,
         formLogics: form.form_logics,
-        formInputs,
+        formInputs: formInputsWithCountryRegionInUpperCase,
         captchaResponse,
         captchaType,
         responseMetadata: {
@@ -337,7 +359,13 @@ export const PublicFormProvider = ({
             })
 
             return submitEmailModeFormFetchMutation
-              .mutateAsync(formData, { onSuccess })
+              .mutateAsync(
+                {
+                  ...formData,
+                  formInputs: formInputsWithCountryRegionInUpperCase,
+                },
+                { onSuccess },
+              )
               .catch(async (error) => {
                 datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
                   meta: {
@@ -369,7 +397,13 @@ export const PublicFormProvider = ({
 
             return (
               submitEmailModeFormMutation
-                .mutateAsync(formData, { onSuccess })
+                .mutateAsync(
+                  {
+                    ...formData,
+                    formInputs: formInputsWithCountryRegionInUpperCase,
+                  },
+                  { onSuccess },
+                )
                 // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
                 .catch(async (error) => {
                   // TODO(#5826): Remove when we have resolved the Network Error

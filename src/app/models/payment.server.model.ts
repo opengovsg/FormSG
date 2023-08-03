@@ -3,7 +3,7 @@ import { Mongoose, Schema } from 'mongoose'
 import { Payment, PaymentStatus, PaymentType } from '../../../shared/types'
 import { IPaymentModel, IPaymentSchema } from '../../types'
 
-import { ProductItemSchema } from './payments/productItemSchema'
+import { ProductSchema } from './payments/productSchema'
 import { FORM_SCHEMA_ID } from './form.server.model'
 import { PENDING_SUBMISSION_SCHEMA_ID } from './pending_submission.server.model'
 import { SUBMISSION_SCHEMA_ID } from './submission.server.model'
@@ -104,7 +104,7 @@ const PaymentSchema = new Schema<IPaymentSchema, IPaymentModel>(
             type: Number,
             required: true,
           },
-          data: ProductItemSchema,
+          data: ProductSchema,
         },
       ],
     },

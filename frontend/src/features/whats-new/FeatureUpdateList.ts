@@ -35,7 +35,7 @@ export const FEATURE_UPDATE_LIST: FeatureUpdateList = {
     {
       title: 'Collect payments on your form',
       date: new Date('31 May 2023 GMT+8'),
-      description: `Citizens can now pay for fees and services directly on your form! We integrate with Stripe to provide reliable payments and hassle-free reconciliations. Payment methods we support include debit / credit cards and PayNow. [Learn more](${GUIDE_PAYMENTS_ENTRY})`,
+      description: `Respondents can now pay for fees and services directly on your form! We integrate with Stripe to provide reliable payments and hassle-free reconciliations. Payment methods we support include debit / credit cards and PayNow. [Learn more](${GUIDE_PAYMENTS_ENTRY})`,
       image: {
         animationData: Animation1,
         alt: 'Collect payments on your form',

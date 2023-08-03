@@ -137,7 +137,7 @@ export const LandingPaymentsPage = (): JSX.Element => {
         <FeatureGridItem
           image={featureReconImg}
           title="Simple reconciliation"
-          description="Associate a payment reference ID with every form submission ID. Track payments and payouts in one dashboard."
+          description="Associate a payment reference ID with every form response ID. Track payments and payouts in one dashboard."
         />
         <FeatureGridItem
           image={featureTrustedImg}
@@ -205,7 +205,7 @@ export const LandingPaymentsPage = (): JSX.Element => {
           </HelpAccordionItem>
           <HelpAccordionItem title="How does reconciliation work?">
             <Text>
-              Each payment reference ID is associated with a form submission ID.
+              Each payment reference ID is associated with a form response ID.
               Payment and payout status can be viewed in your form response page
               as well as on the Stripe dashboard.
             </Text>
@@ -248,9 +248,9 @@ export const LandingPaymentsPage = (): JSX.Element => {
               Collect payments on your form
             </Text>
             <SectionBodyText color={mainSectionTextColour}>
-              Citizens can now pay for fees and services directly on your form.
-              Enter your agency email to receive our guide on how to get started
-              with payments.
+              Respondents can now pay for fees and services directly on your
+              form. Enter your agency email to receive our guide on how to get
+              started with payments.
             </SectionBodyText>
             <FormProvider {...formMethods}>
               <Flex alignItems="start" mt="2rem">

@@ -48,7 +48,7 @@ export const validateEncryptSubmissionParams = celebrate({
         }),
       )
       .optional(),
-    paymentProducts: Joi.any(),
+    paymentProducts: Joi.array().items(Joi.object()),
     paymentReceiptEmail: Joi.string(),
     payments: Joi.object({
       amount_cents: Joi.number()

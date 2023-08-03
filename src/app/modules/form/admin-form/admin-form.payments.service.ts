@@ -102,19 +102,16 @@ export const updatePaymentsProduct = (
   IEncryptedFormDocument['payments_field'],
   PossibleDatabaseError | FormNotFoundError | InvalidPaymentAmountError
 > => {
-  // TODO: should ensure if amounts_cents is within range for array
-  // const { enabled, amount_cents } = newProducts
-
-  // // Check if payment amount exceeds maxPaymentAmountCents or below minPaymentAmountCents if the payment is enabled
-  // if (enabled && amount_cents !== undefined) {
-  //   if (
-  //     amount_cents > paymentConfig.maxPaymentAmountCents ||
-  //     amount_cents < paymentConfig.minPaymentAmountCents
-  //   ) {
-  //     return errAsync(new InvalidPaymentAmountError())
-  //   }
-  // }
-
+  for (const product of newProducts) {
+    const maximumSelectableQtyCost = product.max_qty * product.amount_cents
+    if (maximumSelectableQtyCost > paymentConfig.maxPaymentAmountCents) {
+      return errAsync(
+        new InvalidPaymentAmountError(
+          'Item and Quantity exceeded limit. Either lower your quantity or lower payment amount.',
+        ),
+      )
+    }
+  }
   return ResultAsync.fromPromise(
     EncryptedFormModel.updatePaymentsProductById(formId, newProducts),
     (error) => {

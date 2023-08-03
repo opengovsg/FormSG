@@ -76,8 +76,12 @@ export const ProductModal = ({
     [watchedInputs],
   )
 
-  const { data: { maxPaymentAmountCents, minPaymentAmountCents } = {} } =
-    useEnv()
+  const {
+    data: {
+      maxPaymentAmountCents = Number.MAX_SAFE_INTEGER,
+      minPaymentAmountCents = Number.MIN_SAFE_INTEGER,
+    } = {},
+  } = useEnv()
 
   const amountValidation: RegisterOptions<ProductInput, 'display_amount'> = {
     validate: (val) => {
@@ -86,10 +90,7 @@ export const ProductModal = ({
       const validateMoney = /^\s*(\d+)(\.\d{0,2})?\s*$/.test(val ?? '')
       if (!validateMoney) return 'Please enter a valid payment amount'
 
-      const validateMin =
-        !!minPaymentAmountCents &&
-        !!val &&
-        dollarsToCents(val) >= minPaymentAmountCents
+      const validateMin = !!val && dollarsToCents(val) >= minPaymentAmountCents
       // Repeat the check on minPaymentAmountCents for correct typing
       if (!!minPaymentAmountCents && !validateMin) {
         return `Please enter a payment amount above ${formatCurrency(
@@ -97,15 +98,19 @@ export const ProductModal = ({
         )}`
       }
 
-      const validateMax =
-        !!maxPaymentAmountCents &&
-        !!val &&
-        dollarsToCents(val) <= maxPaymentAmountCents
+      const validateMax = !!val && dollarsToCents(val) <= maxPaymentAmountCents
       // Repeat the check on maxPaymentAmountCents for correct typing
       if (!!maxPaymentAmountCents && !validateMax) {
         return `Please enter a payment amount below ${formatCurrency(
           Number(centsToDollars(maxPaymentAmountCents)),
         )}`
+      }
+
+      if (
+        dollarsToCents(val) * clonedWatchedInputs.max_qty >
+        maxPaymentAmountCents
+      ) {
+        return 'Item and Quantity exceeded limit. Either lower your quantity or lower payment amount.'
       }
       return true
     },
@@ -134,6 +139,10 @@ export const ProductModal = ({
       if (val <= 0) {
         return 'Please enter a value greater than 0'
       }
+
+      if (val * clonedWatchedInputs.amount_cents > maxPaymentAmountCents) {
+        return 'Item and Quantity exceeded limit. Either lower your quantity or lower payment amount.'
+      }
       if (val < clonedWatchedInputs[MIN_QTY_KEY]) {
         return 'Please enter a value greater than the minimum quantity'
       }
@@ -153,20 +162,26 @@ export const ProductModal = ({
             divider={<Divider />}
           >
             <Stack>
-              <FormControl>
+              <FormControl isInvalid={!!errors.name}>
                 <FormLabel isRequired>Name</FormLabel>
                 <Input
-                  {...register('name', { required: true })}
+                  {...register('name', { required: 'This field is required' })}
                   isInvalid={!!errors.name}
                 />
+                <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
               </FormControl>
 
-              <FormControl>
+              <FormControl isInvalid={!!errors.description}>
                 <FormLabel isRequired>Description</FormLabel>
                 <Textarea
-                  {...register('description', { required: true })}
+                  {...register('description', {
+                    required: 'This field is required',
+                  })}
                   isInvalid={!!errors.description}
                 />
+                <FormErrorMessage>
+                  {errors.description?.message}
+                </FormErrorMessage>
               </FormControl>
 
               <FormControl isInvalid={!!errors.display_amount}>

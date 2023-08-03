@@ -19,6 +19,7 @@ export const BASIC_FIELDS_ORDERED = [
   BasicField.Radio,
   BasicField.Checkbox,
   BasicField.Dropdown,
+  BasicField.CountryRegion,
   BasicField.Section,
   BasicField.Statement,
   BasicField.YesNo,
@@ -134,7 +135,6 @@ export enum FieldListTabIndex {
   Basic = 0,
   MyInfo,
   Payments,
-  PaymentsV2,
 }
 
 export const CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS: {
