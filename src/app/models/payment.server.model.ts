@@ -132,7 +132,7 @@ const PaymentSchema = new Schema<IPaymentSchema, IPaymentModel>(
           message: 'amount_cents must be a non-negative integer.',
         },
       },
-      products: [ProductItemSchema],
+      products: [ProductSchema],
       products_meta: {
         multi_product: {
           type: Boolean,
