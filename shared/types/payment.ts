@@ -1,5 +1,5 @@
 import Stripe from 'stripe'
-import { ProductItem } from './form'
+import { FormPaymentsField, ProductItem } from './form'
 import { DateString } from './generic'
 
 // Stripe Charge status
@@ -60,6 +60,9 @@ export type Payment = {
   // Purchased Products information
   products?: ProductItem[]
 
+  // Snapshot of form payment fields at point of payment
+  payment_fields_snapshot: FormPaymentsField
+
   created: DateString
   lastModified: DateString
 }
@@ -76,6 +79,9 @@ export type GetPaymentInfoDto = {
   payment_intent_id: string
   submissionId: string
   products: Payment['products']
+  amount: Payment['amount']
+  payment_fields_snapshot: Payment['payment_fields_snapshot']
+  paymentDate?: Date
 }
 
 export type IncompletePaymentsDto = {
