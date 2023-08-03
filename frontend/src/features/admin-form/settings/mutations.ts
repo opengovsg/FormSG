@@ -148,6 +148,22 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateFormIssueNotification = useMutation(
+    (nextHasIssueNotification: boolean) =>
+      updateFormCaptcha(formId, nextHasIssueNotification),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: `Pre-submission Feedback Notification is now ${
+            newData.hasIssueNotification ? 'enabled' : 'disabled'
+          } on your form.`,
+        })
+      },
+      onError: handleError,
+    },
+  )
+
   const mutateFormTitle = useMutation(
     (nextTitle: string) => updateFormTitle(formId, nextTitle),
     {
@@ -325,6 +341,7 @@ export const useMutateFormSettings = () => {
     mutateFormLimit,
     mutateFormInactiveMessage,
     mutateFormCaptcha,
+    mutateFormIssueNotification,
     mutateFormEmails,
     mutateFormTitle,
     mutateFormAuthType,
