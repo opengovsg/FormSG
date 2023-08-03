@@ -137,6 +137,10 @@ const StripePaymentContainer = ({
               formId={formId}
               paymentId={paymentId}
               submissionId={paymentInfoData.submissionId}
+              amount={paymentInfoData.amount}
+              products={paymentInfoData.products || []}
+              paymentFieldsSnapshot={paymentInfoData.payment_fields_snapshot}
+              paymentDate={paymentInfoData.paymentDate}
             />
           </>
         )
