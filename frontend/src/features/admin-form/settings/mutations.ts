@@ -32,6 +32,7 @@ import {
   updateFormEmails,
   updateFormEsrvcId,
   updateFormInactiveMessage,
+  updateFormIssueNotification,
   updateFormLimit,
   updateFormStatus,
   updateFormTitle,
@@ -150,12 +151,12 @@ export const useMutateFormSettings = () => {
 
   const mutateFormIssueNotification = useMutation(
     (nextHasIssueNotification: boolean) =>
-      updateFormCaptcha(formId, nextHasIssueNotification),
+      updateFormIssueNotification(formId, nextHasIssueNotification),
     {
       onSuccess: (newData) => {
         handleSuccess({
           newData,
-          toastDescription: `Pre-submission Feedback Notification is now ${
+          toastDescription: `Email notifications for reports are now ${
             newData.hasIssueNotification ? 'enabled' : 'disabled'
           } on your form.`,
         })
