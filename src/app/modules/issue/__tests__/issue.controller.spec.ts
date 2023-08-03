@@ -38,6 +38,7 @@ describe('issue.controller', () => {
       status: FormStatus.Public,
       permissionList: [MOCK_ADMIN_EMAIL],
       admin: { email: MOCK_ADMIN_EMAIL },
+      hasIssueNotification: true,
     } as unknown as IPopulatedForm
 
     const MOCK_FORM_ISSUE = {} as unknown as IFormIssueSchema
