@@ -25,7 +25,7 @@ export const FormIssueNotificationToggle = (): JSX.Element => {
   }, [isLoadingSettings, mutateFormIssueNotification, settings])
 
   return (
-    <Skeleton isLoaded={!isLoadingSettings && !!settings}>
+    <Skeleton isLoaded={!isLoadingSettings}>
       <Toggle
         isLoading={mutateFormIssueNotification.isLoading}
         isChecked={hasIssueNotification}
