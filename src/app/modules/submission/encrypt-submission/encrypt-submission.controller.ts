@@ -828,17 +828,7 @@ const encryptSubmission: ControllerHandler<
 
   const filteredResponses = filterSendableStorageModeResponses(
     formResult.value.form_fields as unknown as FormFieldDto[],
-    req.body.responses.map((response) => {
-      if (isAttachmentResponse(response)) {
-        return {
-          ...response,
-          filename: undefined,
-          content: undefined, //Strip out attachment content
-        }
-      } else {
-        return response
-      }
-    }),
+    req.body.responses,
   )
 
   const encryptedContent = formsgSdk.crypto.encrypt(
