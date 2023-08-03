@@ -769,8 +769,7 @@ const filterSendableStorageModeResponses = (
 const encryptSubmission: ControllerHandler<
   { formId: string },
   SubmissionResponseDto | SubmissionErrorDto,
-  ParsedStorageModeSubmissionBody,
-  { captchaResponse?: unknown }
+  ParsedStorageModeSubmissionBody
 > = async (req, res, next) => {
   const { formId } = req.params
 
@@ -792,6 +791,8 @@ const encryptSubmission: ControllerHandler<
     return res.status(statusCode).json({ message: errorMessage })
   }
 
+  // Guardrail to prevent new endpoint from being used for regular storage mode forms.
+  // TODO (FRM-1232): remove this guardrail when encryption boundary is shifted.
   if (!formResult.value.get('newEncryptionBoundary')) {
     return res
       .status(StatusCodes.FORBIDDEN)
@@ -806,7 +807,7 @@ const encryptSubmission: ControllerHandler<
       message: 'Form does not have a public key',
       meta: logMeta,
     })
-    return res.status(400).json({
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: 'Form does not have a public key',
     })
   }
