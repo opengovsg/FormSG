@@ -23,14 +23,10 @@ type ResponseModeFilterParam = {
 
 // Exported for testing.
 export const getResponseModeFilter = (
-  responseMode: FormResponseMode,
+  encrypted: boolean,
 ): (<T extends ResponseModeFilterParam>(responses: T[]) => T[]) => {
-  switch (responseMode) {
-    case FormResponseMode.Email:
-      return emailResponseModeFilter
-    case FormResponseMode.Encrypt:
-      return encryptResponseModeFilter
-  }
+  if (encrypted) return encryptResponseModeFilter
+  else return emailResponseModeFilter
 }
 
 const emailResponseModeFilter = <T extends ResponseModeFilterParam>(
@@ -68,14 +64,10 @@ const encryptFormFieldModeFilter = <T extends FormField>(
 
 // Exported for testing.
 export const getFormFieldModeFilter = (
-  responseMode: FormResponseMode,
+  encrypted: boolean,
 ): (<T extends FormField>(responses: T[]) => T[]) => {
-  switch (responseMode) {
-    case FormResponseMode.Email:
-      return emailResponseModeFilter
-    case FormResponseMode.Encrypt:
-      return encryptFormFieldModeFilter
-  }
+  if (encrypted) return encryptFormFieldModeFilter
+  else return emailResponseModeFilter
 }
 
 /**
@@ -125,8 +117,14 @@ export const getFilteredResponses = (
   form: IFormDocument,
   responses: FieldResponse[],
 ): Result<FilteredResponse[], ConflictError> => {
-  const responseModeFilter = getResponseModeFilter(form.responseMode)
-  const formFieldModeFilter = getFormFieldModeFilter(form.responseMode)
+  const responseModeFilter = getResponseModeFilter(
+    form.responseMode === FormResponseMode.Encrypt &&
+      !form.get('newEncryptionBoundary'),
+  )
+  const formFieldModeFilter = getFormFieldModeFilter(
+    form.responseMode === FormResponseMode.Encrypt &&
+      !form.get('newEncryptionBoundary'),
+  )
 
   if (!form.form_fields) {
     return err(new ConflictError('Form fields are missing'))

@@ -54,6 +54,8 @@ import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
+import * as EmailSubmissionService from '../email-submission/email-submission.service'
+import ParsedResponsesObject from '../email-submission/ParsedResponsesObject.class'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
 import { getFilteredResponses, isAttachmentResponse } from '../submission.utils'
@@ -735,6 +737,31 @@ const submitStorageModeForm: ControllerHandler<
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: 'Form does not have a public key',
     })
+  }
+
+  const validSubmission = await EmailSubmissionService.validateAttachments(
+    req.body.responses,
+  )
+    .andThen(() =>
+      ParsedResponsesObject.parseResponses(
+        formResult.value,
+        req.body.responses,
+      ),
+    )
+    .map((parsedResponses) => ({ parsedResponses, form: formResult.value }))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error processing responses',
+        meta: logMeta,
+        error,
+      })
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({
+        message: errorMessage,
+      })
+    })
+  if (validSubmission.isErr()) {
+    return validSubmission.error
   }
 
   // Encrypt request body

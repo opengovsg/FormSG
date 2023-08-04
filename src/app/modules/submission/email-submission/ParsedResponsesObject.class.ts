@@ -152,7 +152,8 @@ export default class ParsedResponsesObject {
           // encrypt mode submissions with responses on unhidden fields
           // TODO(#780): Remove this once submission service is separated into
           // Email and Encrypted services
-          form.responseMode === FormResponseMode.Encrypt
+          form.responseMode === FormResponseMode.Encrypt &&
+          !form.get('newEncryptionBoundary')
             ? 'answer' in response &&
               typeof response.answer === 'string' &&
               response.answer.trim() !== ''
