@@ -126,14 +126,6 @@ const submitEncryptModeForm: ControllerHandler<
     return res.status(statusCode).json({ message: errorMessage })
   }
 
-  // Guardrail to prevent new endpoint from being used for regular storage mode forms.
-  // TODO (FRM-1232): remove this guardrail when encryption boundary is shifted.
-  if (!formResult.value.get('newEncryptionBoundary')) {
-    return res
-      .status(StatusCodes.FORBIDDEN)
-      .json({ message: 'This endpoint has not been enabled for this form.' })
-  }
-
   // Retrieve public key.
   const publicKey = formResult.value.publicKey
 
@@ -739,6 +731,7 @@ const submitStorageModeForm: ControllerHandler<
     })
   }
 
+  // Validate submission
   const validSubmission = await EmailSubmissionService.validateAttachments(
     req.body.responses,
   )
