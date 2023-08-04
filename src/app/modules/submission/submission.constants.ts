@@ -1,7 +1,7 @@
 import { Joi } from 'celebrate'
-import { BasicField } from 'shared/types'
 
-import { paymentConfig } from 'src/app/config/features/payment.config'
+import { BasicField } from '../../../../shared/types'
+import { paymentConfig } from '../../config/features/payment.config'
 
 export const sharedSubmissionParams = {
   responses: Joi.array()
