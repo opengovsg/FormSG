@@ -1,40 +1,10 @@
 import { celebrate, Joi } from 'celebrate'
 
-import { BasicField } from '../../../../../shared/types'
+import { sharedSubmissionParams } from '../submission.constants'
 
 /**
  * Celebrate validation for the email submissions endpoint.
  */
 export const validateResponseParams = celebrate({
-  body: Joi.object({
-    responses: Joi.array()
-      .items(
-        Joi.object()
-          .keys({
-            _id: Joi.string().required(),
-            question: Joi.string(),
-            fieldType: Joi.string()
-              .required()
-              .valid(...Object.values(BasicField)),
-            answer: Joi.string().allow(''),
-            answerArray: Joi.array(),
-            filename: Joi.string(),
-            content: Joi.binary(),
-            isHeader: Joi.boolean(),
-            myInfo: Joi.object(),
-            signature: Joi.string().allow(''),
-          })
-          .xor('answer', 'answerArray') // only answer or answerArray can be present at once
-          .with('filename', 'content'), // if filename is present, content must be present
-      )
-      .required(),
-    responseMetadata: Joi.object({
-      responseTimeMs: Joi.number(),
-      numVisibleFields: Joi.number(),
-    }),
-    /**
-     * @deprecated unused key, but frontend still sends it.
-     */
-    isPreview: Joi.boolean(),
-  }),
+  body: Joi.object(sharedSubmissionParams),
 })
