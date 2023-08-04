@@ -1,4 +1,4 @@
-import { FieldResponse } from '../../../../../shared/types'
+import { FieldResponse, FormResponseMode } from '../../../../../shared/types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import { ControllerHandler } from '../../core/core.types'
@@ -26,7 +26,8 @@ export const receiveSubmission: ControllerHandler<
     action: 'receiveSubmission',
     ...createReqMeta(req),
   }
-  return SubmissionReceiver.createMultipartReceiver(req.headers)
+  const emailMode = req.route.path.endsWith(`/${FormResponseMode.Email}`)
+  return SubmissionReceiver.createMultipartReceiver(req.headers, emailMode)
     .asyncAndThen((receiver) => {
       const result = SubmissionReceiver.configureMultipartReceiver(receiver)
       req.pipe(receiver)

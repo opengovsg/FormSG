@@ -23,6 +23,15 @@ const logger = createLoggerWithLabel(module)
 const hasContentTypeHeaders = (headers: IncomingHttpHeaders) => {
   return !!headers['content-type']
 }
+/**
+ * Returns the file size limit in MB based on whether request is an email-mode submission
+ * @param isEmailMode boolean flag of whether request is in email-mode
+ * @returns 7 if email mode, 20 if not
+ */
+const fileSizeLimit = (isEmailMode: boolean) => {
+  if (isEmailMode) return 7
+  else return 20
+}
 
 /**
  * Initialises a Busboy object to receive the submission stream
@@ -30,6 +39,7 @@ const hasContentTypeHeaders = (headers: IncomingHttpHeaders) => {
  */
 export const createMultipartReceiver = (
   headers: IncomingHttpHeaders,
+  isEmailMode: boolean,
 ): Result<Busboy.Busboy, InitialiseMultipartReceiverError> => {
   if (!hasContentTypeHeaders(headers)) {
     logger.error({
@@ -47,7 +57,7 @@ export const createMultipartReceiver = (
       headers,
       limits: {
         fieldSize: 3 * MB,
-        fileSize: 7 * MB,
+        fileSize: fileSizeLimit(isEmailMode) * MB,
       },
     })
     return ok(busboy)
