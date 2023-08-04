@@ -4,21 +4,16 @@ import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
-import { chain, keyBy, omit, pick } from 'lodash'
+import { chain, omit } from 'lodash'
 import mongoose from 'mongoose'
 import { okAsync } from 'neverthrow'
 import Stripe from 'stripe'
 import type { SetOptional } from 'type-fest'
 
 import {
-  BasicField,
-  EmailResponse,
   ErrorDto,
-  FieldResponse,
   FormAuthType,
-  FormFieldDto,
   FormSubmissionMetadataQueryDto,
-  MobileResponse,
   Payment,
   PaymentChannel,
   StorageModeAttachment,
@@ -61,7 +56,7 @@ import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
-import { isAttachmentResponse } from '../submission.utils'
+import { getFilteredResponses, isAttachmentResponse } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import {
@@ -671,9 +666,6 @@ export const handleEncryptedSubmission = [
   submitEncryptModeForm,
 ] as ControllerHandler[]
 
-/**
- * Reference implementation taken from frontend/src/features/public-form/utils/createSubmission.ts for purpose of demonstrating shifted encryption boundary.
- */
 const encryptAttachment = async (
   attachment: Buffer,
   { id, publicKey }: { id: string; publicKey: string },
@@ -711,9 +703,6 @@ const encryptAttachment = async (
   }
 }
 
-/**
- *  Reference implementation taken from frontend/src/features/public-form/utils/createSubmission.ts for purpose of demonstrating shifted encryption boundary.
- */
 const getEncryptedAttachmentsMapFromAttachmentsMap = async (
   attachmentsMap: Record<string, Buffer>,
   publicKey: string,
@@ -729,38 +718,6 @@ const getEncryptedAttachmentsMapFromAttachmentsMap = async (
       .mapValues((v) => omit(v, 'id'))
       .value(),
   )
-}
-
-/**
- * Reference implementation taken from frontend/src/features/public-form/utils/createSubmission.ts for purpose of demonstrating shifted encryption boundary.
- * Utility to filter out responses that should be sent to the server. This includes:
- * 1. Email fields that have an autoreply enabled.
- * 2. Verifiable fields to verify its signature on the backend.
- */
-const filterSendableStorageModeResponses = (
-  formFields: FormFieldDto[],
-  responses: FieldResponse[],
-) => {
-  const mapFieldIdToField = keyBy(formFields, '_id')
-  return responses
-    .filter((r): r is EmailResponse | MobileResponse => {
-      switch (r.fieldType) {
-        case BasicField.Email: {
-          const field = mapFieldIdToField[r._id]
-          if (!field || field.fieldType !== r.fieldType) return false
-          // Only filter out fields with auto reply set to true, or if field is verifiable.
-          return field.autoReplyOptions.hasAutoReply || field.isVerifiable
-        }
-        case BasicField.Mobile: {
-          const field = mapFieldIdToField[r._id]
-          if (!field || field.fieldType !== r.fieldType) return false
-          return field.isVerifiable
-        }
-        default:
-          return false
-      }
-    })
-    .map((r) => pick(r, ['fieldType', '_id', 'answer', 'signature']))
 }
 
 /**
@@ -826,10 +783,20 @@ const encryptSubmission: ControllerHandler<
       publicKey,
     )
 
-  const filteredResponses = filterSendableStorageModeResponses(
-    formResult.value.form_fields as unknown as FormFieldDto[],
+  const filteredResponses = getFilteredResponses(
+    formResult.value,
     req.body.responses,
   )
+
+  if (filteredResponses.isErr()) {
+    logger.warn({
+      message: filteredResponses.error.message,
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: filteredResponses.error.message,
+    })
+  }
 
   const encryptedContent = formsgSdk.crypto.encrypt(
     req.body.responses.map((response) => {
@@ -848,7 +815,7 @@ const encryptSubmission: ControllerHandler<
 
   const encryptedVersion = {
     attachments: encryptedAttachments,
-    responses: filteredResponses as EncryptFormFieldResponse[],
+    responses: filteredResponses.value as EncryptFormFieldResponse[],
     encryptedContent,
     version: req.body.version,
   }
