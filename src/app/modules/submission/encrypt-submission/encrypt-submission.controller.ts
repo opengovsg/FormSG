@@ -827,7 +827,7 @@ const encryptSubmission: ControllerHandler<
 export const handleStorageSubmission = [
   CaptchaMiddleware.validateCaptchaParams,
   TurnstileMiddleware.validateTurnstileParams,
-  ReceiverMiddleware.receiveSubmission,
+  ReceiverMiddleware.receiveStorageSubmission,
   EncryptSubmissionMiddleware.validateStorageSubmissionParams,
   encryptSubmission,
   submitEncryptModeForm,

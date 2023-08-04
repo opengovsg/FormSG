@@ -24,7 +24,7 @@ export type EncryptFormFieldResponse =
 
 /**
  * Storage submission body after req.body's FormData has passed through the
- * ReceiverMiddleware.receiveSubmission middleware.
+ * ReceiverMiddleware.receiveStorageSubmission middleware.
  */
 export type ParsedStorageModeSubmissionBody = ParsedEmailModeSubmissionBody & {
   version: number

@@ -449,7 +449,7 @@ export const handleEmailSubmission = [
   // TODO: remove CaptchaMiddleware after extracting common components in Captcha and Turnstile
   CaptchaMiddleware.validateCaptchaParams,
   TurnstileMiddleware.validateTurnstileParams,
-  ReceiverMiddleware.receiveSubmission,
+  ReceiverMiddleware.receiveEmailSubmission,
   EmailSubmissionMiddleware.validateResponseParams,
   submitEmailModeForm,
 ] as ControllerHandler[]

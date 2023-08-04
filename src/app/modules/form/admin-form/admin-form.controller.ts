@@ -1657,7 +1657,7 @@ export const submitEmailPreview: ControllerHandler<
 }
 
 export const handleEmailPreviewSubmission = [
-  ReceiverMiddleware.receiveSubmission,
+  ReceiverMiddleware.receiveEmailSubmission,
   EmailSubmissionMiddleware.validateResponseParams,
   submitEmailPreview,
 ] as ControllerHandler[]
