@@ -34,7 +34,6 @@ import {
   getFormDataPrefixedQuestion,
   getInvalidFileExtensions,
   getJsonPrefixedQuestion,
-  handleDuplicatesInAttachments,
   mapAttachmentsFromResponses,
   SubmissionEmailObj,
 } from '../email-submission.util'
@@ -210,26 +209,6 @@ describe('email-submission.util', () => {
       expect(
         areAttachmentsMoreThan7MB([modifiedBigFile1, modifiedBigFile2]),
       ).toBe(true)
-    })
-  })
-
-  // Note that if e.g. you have three attachments called abc.txt, abc.txt
-  // and 1-abc.txt, they will not be given unique names, i.e. one of the abc.txt
-  // will be renamed to 1-abc.txt so you end up with abc.txt, 1-abc.txt and 1-abc.txt.
-  describe('handleDuplicatesInAttachments', () => {
-    it('should make filenames unique by appending count when there are duplicates', () => {
-      const attachments = [
-        cloneDeep(validSingleFile),
-        cloneDeep(validSingleFile),
-        cloneDeep(validSingleFile),
-      ]
-      handleDuplicatesInAttachments(attachments)
-      const newFilenames = attachments.map((att) => att.filename)
-      // Expect uniqueness
-      expect(newFilenames.length).toBe(new Set(newFilenames).size)
-      expect(newFilenames).toContain(validSingleFile.filename)
-      expect(newFilenames).toContain(`1-${validSingleFile.filename}`)
-      expect(newFilenames).toContain(`2-${validSingleFile.filename}`)
     })
   })
 
