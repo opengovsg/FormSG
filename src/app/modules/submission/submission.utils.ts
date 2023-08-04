@@ -1,11 +1,6 @@
 import { differenceBy, intersectionBy, keyBy, uniqBy } from 'lodash'
 import { err, ok, Result } from 'neverthrow'
 
-import {
-  ParsedClearAttachmentResponse,
-  ParsedClearFormFieldResponse,
-} from 'src/types/api'
-
 import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
 import {
   BasicField,
@@ -13,6 +8,10 @@ import {
   FormResponseMode,
 } from '../../../../shared/types'
 import { FieldResponse, FormFieldSchema, IFormDocument } from '../../../types'
+import {
+  ParsedClearAttachmentResponse,
+  ParsedClearFormFieldResponse,
+} from '../../../types/api'
 import { AutoReplyMailData } from '../../services/mail/mail.types'
 
 import { ConflictError } from './submission.errors'

@@ -13,8 +13,6 @@ import { ObjectId } from 'bson'
 import { readFileSync } from 'fs'
 import { cloneDeep, merge } from 'lodash'
 
-import { SingleAnswerFieldResponse, SPCPFieldTitle } from 'src/types'
-
 import { types as basicTypes } from '../../../../../../shared/constants/field/basic'
 import {
   BasicField,
@@ -22,6 +20,7 @@ import {
   MyInfoAttribute,
   TableRow,
 } from '../../../../../../shared/types'
+import { SingleAnswerFieldResponse, SPCPFieldTitle } from '../../../../../types'
 import { ProcessedFieldResponse } from '../../submission.types'
 import {
   ATTACHMENT_PREFIX,

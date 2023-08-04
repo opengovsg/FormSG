@@ -6,8 +6,7 @@ import {
   FieldResponse,
   IAttachmentResponse,
   SingleAnswerFieldResponse,
-} from 'src/types'
-
+} from '../../../../../types'
 import { addAttachmentToResponses } from '../receiver.utils'
 
 const validSingleFile = {
