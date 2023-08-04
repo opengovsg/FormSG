@@ -9,37 +9,46 @@ import { sharedSubmissionParams } from '../submission.constants'
  */
 export const validateEncryptSubmissionParams = celebrate({
   [Segments.BODY]: Joi.object({
-    ...sharedSubmissionParams,
-    version: Joi.number().required(),
-  }),
-})
-
-/**
- * Celebrate middleware for verifying shape of encrypted submission
- */
-export const validateStorageSubmissionParams = celebrate({
-  [Segments.BODY]: Joi.object({
     responses: Joi.array()
       .items(
-        Joi.object()
-          .keys({
-            _id: Joi.string().required(),
-            question: Joi.string(),
-            fieldType: Joi.string()
-              .required()
-              .valid(...Object.values(BasicField)),
-            answer: Joi.string().allow(''),
-            answerArray: Joi.array(),
-            filename: Joi.string(),
-            content: Joi.binary(),
-            isHeader: Joi.boolean(),
-            myInfo: Joi.object(),
-            signature: Joi.string().allow(''),
-          })
-          .xor('answer', 'answerArray') // only answer or answerArray can be present at once
-          .with('filename', 'content'), // if filename is present, content must be present
+        Joi.object().keys({
+          _id: Joi.string().required(),
+          answer: Joi.string().allow('').required(),
+          fieldType: Joi.string()
+            .required()
+            .valid(...Object.values(BasicField)),
+          signature: Joi.string().allow(''),
+        }),
       )
       .required(),
+    encryptedContent: Joi.string()
+      .custom((value, helpers) => {
+        const parts = String(value).split(/;|:/)
+        if (
+          parts.length !== 3 ||
+          parts[0].length !== 44 || // public key
+          parts[1].length !== 32 || // nonce
+          !parts.every((part) => Joi.string().base64().validate(part))
+        ) {
+          return helpers.message({ custom: 'Invalid encryptedContent.' })
+        }
+        return value
+      }, 'encryptedContent')
+      .required(),
+    attachments: Joi.object()
+      .pattern(
+        /^[a-fA-F0-9]{24}$/,
+        Joi.object().keys({
+          encryptedFile: Joi.object()
+            .keys({
+              binary: Joi.string().required(),
+              nonce: Joi.string().required(),
+              submissionPublicKey: Joi.string().required(),
+            })
+            .required(),
+        }),
+      )
+      .optional(),
     paymentReceiptEmail: Joi.string(),
     payments: Joi.object({
       amount_cents: Joi.number()
@@ -53,5 +62,19 @@ export const validateStorageSubmissionParams = celebrate({
       responseTimeMs: Joi.number(),
       numVisibleFields: Joi.number(),
     }),
+    /**
+     * @deprecated unused key, but frontend may still send it.
+     */
+    isPreview: Joi.boolean(),
+  }),
+})
+
+/**
+ * Celebrate middleware for verifying shape of encrypted submission
+ */
+export const validateStorageSubmissionParams = celebrate({
+  [Segments.BODY]: Joi.object({
+    ...sharedSubmissionParams,
+    version: Joi.number().required(),
   }),
 })
