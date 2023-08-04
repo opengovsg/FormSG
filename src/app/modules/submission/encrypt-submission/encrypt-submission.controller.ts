@@ -6,7 +6,7 @@ import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { chain, omit } from 'lodash'
 import mongoose from 'mongoose'
-import { okAsync } from 'neverthrow'
+import { errAsync, okAsync } from 'neverthrow'
 import Stripe from 'stripe'
 import type { SetOptional } from 'type-fest'
 
@@ -24,7 +24,7 @@ import {
   SubmissionResponseDto,
 } from '../../../../../shared/types'
 import { CaptchaTypes } from '../../../../../shared/types/captcha'
-import { StripePaymentMetadataDto } from '../../../../types'
+import { IPopulatedForm, StripePaymentMetadataDto } from '../../../../types'
 import {
   EncryptFormFieldResponse,
   EncryptSubmissionDto,
@@ -123,6 +123,45 @@ const submitEncryptModeForm: ControllerHandler<
     const { errorMessage, statusCode } = mapRouteError(formResult.error)
     return res.status(statusCode).json({ message: errorMessage })
   }
+
+  // Guardrail to prevent new endpoint from being used for regular storage mode forms.
+  // TODO (FRM-1232): remove this guardrail when encryption boundary is shifted.
+  if (!formResult.value.get('newEncryptionBoundary')) {
+    return res
+      .status(StatusCodes.FORBIDDEN)
+      .json({ message: 'This endpoint has not been enabled for this form.' })
+  }
+
+  // Retrieve public key.
+  const publicKey = formResult.value.publicKey
+
+  if (!publicKey) {
+    logger.warn({
+      message: 'Form does not have a public key',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: 'Form does not have a public key',
+    })
+  }
+
+  // Encrypt request body
+  const encryptedBody = await encryptSubmission(
+    req.body,
+    publicKey,
+    formResult.value,
+  )
+  if (encryptedBody.isErr()) {
+    logger.warn({
+      message: encryptedBody.error.message,
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: encryptedBody.error.message,
+    })
+  }
+
+  req.body = encryptedBody.value
 
   setFormTags(formResult.value)
 
@@ -723,56 +762,15 @@ const getEncryptedAttachmentsMapFromAttachmentsMap = async (
 /**
  * Encrypt submission content before saving to DB.
  */
-const encryptSubmission: ControllerHandler<
-  { formId: string },
-  SubmissionResponseDto | SubmissionErrorDto,
-  ParsedStorageModeSubmissionBody
-> = async (req, res, next) => {
-  const { formId } = req.params
-
-  const logMeta = {
-    action: 'convertToEncryptMode',
-    ...createReqMeta(req),
-    formId,
-  }
-
-  // Retrieve form definition. TODO: extract this step when validation is added.
-  const formResult = await FormService.retrieveFullFormById(formId)
-  if (formResult.isErr()) {
-    logger.warn({
-      message: 'Failed to retrieve form from database',
-      meta: logMeta,
-      error: formResult.error,
-    })
-    const { errorMessage, statusCode } = mapRouteError(formResult.error)
-    return res.status(statusCode).json({ message: errorMessage })
-  }
-
-  // Guardrail to prevent new endpoint from being used for regular storage mode forms.
-  // TODO (FRM-1232): remove this guardrail when encryption boundary is shifted.
-  if (!formResult.value.get('newEncryptionBoundary')) {
-    return res
-      .status(StatusCodes.FORBIDDEN)
-      .json({ message: 'This endpoint has not been enabled for this form.' })
-  }
-
-  // Retrieve public key.
-  const publicKey = formResult.value.publicKey
-
-  if (!publicKey) {
-    logger.warn({
-      message: 'Form does not have a public key',
-      meta: logMeta,
-    })
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: 'Form does not have a public key',
-    })
-  }
-
+const encryptSubmission = async (
+  requestBody: ParsedStorageModeSubmissionBody,
+  publicKey: string,
+  form: IPopulatedForm,
+) => {
   const attachmentsMap: Record<string, Buffer> = {}
 
   // Populate attachment map
-  req.body.responses.filter(isAttachmentResponse).forEach((response) => {
+  requestBody.responses.filter(isAttachmentResponse).forEach((response) => {
     const fieldId = response._id
     attachmentsMap[fieldId] = response.content
   })
@@ -783,23 +781,21 @@ const encryptSubmission: ControllerHandler<
       publicKey,
     )
 
-  const filteredResponses = getFilteredResponses(
-    formResult.value,
-    req.body.responses,
-  )
+  const filteredResponses = getFilteredResponses(form, requestBody.responses)
 
   if (filteredResponses.isErr()) {
-    logger.warn({
-      message: filteredResponses.error.message,
-      meta: logMeta,
-    })
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: filteredResponses.error.message,
-    })
+    return errAsync(filteredResponses.error)
+    // logger.warn({
+    //   message: filteredResponses.error.message,
+    //   meta: logMeta,
+    // })
+    // return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+    //   message: filteredResponses.error.message,
+    // })
   }
 
   const encryptedContent = formsgSdk.crypto.encrypt(
-    req.body.responses.map((response) => {
+    requestBody.responses.map((response) => {
       if (isAttachmentResponse(response)) {
         return {
           ...response,
@@ -813,15 +809,14 @@ const encryptSubmission: ControllerHandler<
     publicKey,
   )
 
-  const encryptedVersion = {
+  const encryptedBody = {
     attachments: encryptedAttachments,
     responses: filteredResponses.value as EncryptFormFieldResponse[],
     encryptedContent,
-    version: req.body.version,
+    version: requestBody.version,
   }
 
-  req.body = encryptedVersion
-  return next()
+  return okAsync(encryptedBody)
 }
 
 export const handleStorageSubmission = [
@@ -829,7 +824,6 @@ export const handleStorageSubmission = [
   TurnstileMiddleware.validateTurnstileParams,
   ReceiverMiddleware.receiveStorageSubmission,
   EncryptSubmissionMiddleware.validateStorageSubmissionParams,
-  encryptSubmission,
   submitEncryptModeForm,
 ] as ControllerHandler[]
 
