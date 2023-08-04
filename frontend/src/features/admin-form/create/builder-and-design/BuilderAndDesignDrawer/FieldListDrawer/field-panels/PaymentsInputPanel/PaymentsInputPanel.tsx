@@ -299,16 +299,9 @@ const PaymentInputFields = ({
     [watchedInputs],
   )
 
-  useDebounce(
-    () => handlePaymentsChanges(clonedWatchedInputs),
-
-    // {
-    // ...watchedInputs,
-    // products: watchedInputs.products,
-    // }
-    300,
-    [Object.values(clonedWatchedInputs)],
-  )
+  useDebounce(() => handlePaymentsChanges(clonedWatchedInputs), 300, [
+    Object.values(clonedWatchedInputs),
+  ])
   const handleUpdatePayments = handleSubmit(() => {
     if (isDisabled || !paymentsData) {
       // do not mutate if payments is disabled or unavailable

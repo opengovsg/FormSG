@@ -16,7 +16,7 @@ type PipelineType<T> = {
  * based on some conditions.
  *
  * If the function accepts the condition, the next function in the pipeline will be
- * exceuted. If the function rejects the condition, the whole pipeline will be terminated.
+ * executed. If the function rejects the condition, the whole pipeline will be terminated.
  *
  * @example
  * import { ensureIsEven, ensureIsMultipleOfThree } from './ensures'
