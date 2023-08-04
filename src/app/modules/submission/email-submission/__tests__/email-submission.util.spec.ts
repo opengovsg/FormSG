@@ -13,13 +13,6 @@ import { ObjectId } from 'bson'
 import { readFileSync } from 'fs'
 import { cloneDeep, merge } from 'lodash'
 
-import {
-  FieldResponse,
-  IAttachmentResponse,
-  SingleAnswerFieldResponse,
-  SPCPFieldTitle,
-} from 'src/types'
-
 import { types as basicTypes } from '../../../../../../shared/constants/field/basic'
 import {
   BasicField,
@@ -27,6 +20,7 @@ import {
   MyInfoAttribute,
   TableRow,
 } from '../../../../../../shared/types'
+import { SingleAnswerFieldResponse, SPCPFieldTitle } from '../../../../../types'
 import { ProcessedFieldResponse } from '../../submission.types'
 import {
   ATTACHMENT_PREFIX,
@@ -36,12 +30,10 @@ import {
 } from '../email-submission.constants'
 import { ResponseFormattedForEmail } from '../email-submission.types'
 import {
-  addAttachmentToResponses,
   areAttachmentsMoreThan7MB,
   getFormDataPrefixedQuestion,
   getInvalidFileExtensions,
   getJsonPrefixedQuestion,
-  handleDuplicatesInAttachments,
   mapAttachmentsFromResponses,
   SubmissionEmailObj,
 } from '../email-submission.util'
@@ -196,66 +188,6 @@ describe('email-submission.util', () => {
     })
   })
 
-  describe('addAttachmentToResponses', () => {
-    it('should add attachments to responses correctly when inputs are valid', () => {
-      const firstAttachment = validSingleFile
-      const secondAttachment = zipOnlyValid
-      const firstResponse = getResponse(
-        firstAttachment.fieldId,
-        firstAttachment.filename,
-      )
-      const secondResponse = getResponse(
-        secondAttachment.fieldId,
-        secondAttachment.filename,
-      )
-      addAttachmentToResponses(
-        [firstResponse, secondResponse],
-        [firstAttachment, secondAttachment],
-      )
-      expect(firstResponse.answer).toBe(firstAttachment.filename)
-      expect((firstResponse as unknown as IAttachmentResponse).filename).toBe(
-        firstAttachment.filename,
-      )
-      expect((firstResponse as unknown as IAttachmentResponse).content).toEqual(
-        firstAttachment.content,
-      )
-      expect(secondResponse.answer).toBe(secondAttachment.filename)
-      expect((secondResponse as unknown as IAttachmentResponse).filename).toBe(
-        secondAttachment.filename,
-      )
-      expect(
-        (secondResponse as unknown as IAttachmentResponse).content,
-      ).toEqual(secondAttachment.content)
-    })
-
-    it('should overwrite answer with filename when they are different', () => {
-      const attachment = validSingleFile
-      const response = getResponse(attachment.fieldId, MOCK_ANSWER)
-      addAttachmentToResponses([response], [attachment])
-      expect(response.answer).toBe(attachment.filename)
-      expect((response as unknown as IAttachmentResponse).filename).toBe(
-        attachment.filename,
-      )
-      expect((response as unknown as IAttachmentResponse).content).toEqual(
-        attachment.content,
-      )
-    })
-
-    it('should do nothing when responses are empty', () => {
-      const responses: FieldResponse[] = []
-      addAttachmentToResponses(responses, [validSingleFile])
-      expect(responses).toEqual([])
-    })
-
-    it('should do nothing when there are no attachments', () => {
-      const responses = [getResponse(validSingleFile.fieldId, MOCK_ANSWER)]
-      addAttachmentToResponses(responses, [])
-      expect(responses).toEqual([
-        getResponse(validSingleFile.fieldId, MOCK_ANSWER),
-      ])
-    })
-  })
-
   describe('areAttachmentsMoreThan7MB', () => {
     it('should pass attachments when they are smaller than 7MB', () => {
       expect(areAttachmentsMoreThan7MB([validSingleFile, zipOnlyValid])).toBe(
@@ -277,26 +209,6 @@ describe('email-submission.util', () => {
       expect(
         areAttachmentsMoreThan7MB([modifiedBigFile1, modifiedBigFile2]),
       ).toBe(true)
-    })
-  })
-
-  // Note that if e.g. you have three attachments called abc.txt, abc.txt
-  // and 1-abc.txt, they will not be given unique names, i.e. one of the abc.txt
-  // will be renamed to 1-abc.txt so you end up with abc.txt, 1-abc.txt and 1-abc.txt.
-  describe('handleDuplicatesInAttachments', () => {
-    it('should make filenames unique by appending count when there are duplicates', () => {
-      const attachments = [
-        cloneDeep(validSingleFile),
-        cloneDeep(validSingleFile),
-        cloneDeep(validSingleFile),
-      ]
-      handleDuplicatesInAttachments(attachments)
-      const newFilenames = attachments.map((att) => att.filename)
-      // Expect uniqueness
-      expect(newFilenames.length).toBe(new Set(newFilenames).size)
-      expect(newFilenames).toContain(validSingleFile.filename)
-      expect(newFilenames).toContain(`1-${validSingleFile.filename}`)
-      expect(newFilenames).toContain(`2-${validSingleFile.filename}`)
     })
   })
 

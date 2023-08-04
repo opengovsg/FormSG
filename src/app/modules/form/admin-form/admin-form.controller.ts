@@ -75,6 +75,7 @@ import * as EncryptSubmissionMiddleware from '../../submission/encrypt-submissio
 import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
 import { mapRouteError as mapEncryptSubmissionError } from '../../submission/encrypt-submission/encrypt-submission.utils'
 import IncomingEncryptSubmission from '../../submission/encrypt-submission/IncomingEncryptSubmission.class'
+import * as ReceiverMiddleware from '../../submission/receiver/receiver.middleware'
 import * as SubmissionService from '../../submission/submission.service'
 import { extractEmailConfirmationData } from '../../submission/submission.utils'
 import * as UserService from '../../user/user.service'
@@ -1656,7 +1657,7 @@ export const submitEmailPreview: ControllerHandler<
 }
 
 export const handleEmailPreviewSubmission = [
-  EmailSubmissionMiddleware.receiveEmailSubmission,
+  ReceiverMiddleware.receiveEmailSubmission,
   EmailSubmissionMiddleware.validateResponseParams,
   submitEmailPreview,
 ] as ControllerHandler[]
