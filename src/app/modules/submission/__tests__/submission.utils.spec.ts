@@ -1,6 +1,6 @@
 import { getResponseModeFilter } from 'src/app/modules/submission/submission.utils'
 
-import { BasicField, FormResponseMode } from '../../../../../shared/types'
+import { BasicField } from '../../../../../shared/types'
 
 describe('submission.utils', () => {
   describe('getResponseModeFilter', () => {
@@ -8,9 +8,9 @@ describe('submission.utils', () => {
       fieldType,
     }))
 
-    it('should return emailMode filter when ResponseMode.Email is passed', async () => {
+    it('should return emailMode filter when encrypted=false is passed', async () => {
       // Act
-      const modeFilter = getResponseModeFilter(FormResponseMode.Email)
+      const modeFilter = getResponseModeFilter(false)
       const actual = modeFilter(ALL_FIELD_TYPES)
 
       // Assert
@@ -29,9 +29,9 @@ describe('submission.utils', () => {
       )
     })
 
-    it('should return encryptMode filter when ResponseMode.Encrypt is passed', async () => {
+    it('should return encryptMode filter when encrypted=true is passed', async () => {
       // Act
-      const modeFilter = getResponseModeFilter(FormResponseMode.Encrypt)
+      const modeFilter = getResponseModeFilter(true)
       const actual = modeFilter(ALL_FIELD_TYPES)
 
       // Assert
