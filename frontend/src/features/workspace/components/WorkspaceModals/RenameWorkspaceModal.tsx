@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import {
   FormControl,
@@ -13,11 +14,15 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 
+import { Workspace } from '~shared/types/workspace'
+
 import { useIsMobile } from '~hooks/useIsMobile'
 import { WORKSPACE_TITLE_VALIDATION_RULES } from '~utils/workspaceValidation'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
+
+import { useWorkspaceMutations } from '~features/workspace/mutations'
 
 type RenameWorkspaceInputProps = {
   title: string
@@ -26,21 +31,26 @@ type RenameWorkspaceInputProps = {
 export interface RenameWorkspaceModalProps {
   isOpen: boolean
   onClose: () => void
+  activeWorkspace: Workspace
 }
 
 export const RenameWorkspaceModal = ({
   isOpen,
   onClose,
+  activeWorkspace,
 }: RenameWorkspaceModalProps): JSX.Element => {
+  const { updateWorkspaceTitleMutation } = useWorkspaceMutations()
   const {
     handleSubmit,
     formState: { errors },
     register,
+    reset,
   } = useForm<RenameWorkspaceInputProps>({
     defaultValues: {
-      title: '',
+      title: activeWorkspace.title,
     },
   })
+
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
@@ -48,10 +58,19 @@ export const RenameWorkspaceModal = ({
   })
   const isMobile = useIsMobile()
 
-  // TODO (hans): Implement rename workspace functionality
   const handleRenameWorkspace = handleSubmit((data) => {
+    // no changes made
+    if (data.title === activeWorkspace.title) return onClose()
+    updateWorkspaceTitleMutation.mutateAsync({
+      title: data.title,
+      destWorkspaceId: activeWorkspace._id.toString(),
+    })
     onClose()
   })
+
+  useEffect(() => {
+    reset({ title: activeWorkspace.title })
+  }, [reset, activeWorkspace])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>

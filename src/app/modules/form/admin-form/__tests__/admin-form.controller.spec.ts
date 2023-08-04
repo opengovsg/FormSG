@@ -40,6 +40,7 @@ import * as SubmissionService from 'src/app/modules/submission/submission.servic
 import * as SubmissionUtils from 'src/app/modules/submission/submission.utils'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import { SmsLimitExceededError } from 'src/app/modules/verification/verification.errors'
+import * as WorkspaceService from 'src/app/modules/workspace/workspace.service'
 import {
   MailGenerationError,
   MailSendError,
@@ -141,6 +142,8 @@ jest.mock('src/app/services/mail/mail.service')
 const MockMailService = jest.mocked(MailService)
 jest.mock('../../../../services/sms/sms.service')
 const MockSmsService = jest.mocked(SmsService)
+jest.mock('src/app/modules/workspace/workspace.service.ts')
+const MockWorkspaceService = jest.mocked(WorkspaceService)
 
 describe('admin-form.controller', () => {
   beforeEach(() => jest.clearAllMocks())
@@ -2740,6 +2743,9 @@ describe('admin-form.controller', () => {
         okAsync(MOCK_FORM as IPopulatedForm),
       )
       MockAdminFormService.archiveForm.mockReturnValueOnce(okAsync(true))
+      MockWorkspaceService.removeFormFromAllWorkspaces.mockReturnValueOnce(
+        okAsync(true),
+      )
 
       // Act
       await AdminFormController.handleArchiveForm(MOCK_REQ, mockRes, jest.fn())

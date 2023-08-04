@@ -1,6 +1,5 @@
-import { useForm } from 'react-hook-form'
+import { Dispatch, SetStateAction } from 'react'
 import {
-  FormControl,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -12,32 +11,27 @@ import {
   Text,
   useBreakpointValue,
 } from '@chakra-ui/react'
-import { isEmpty } from 'lodash'
+
+import { Workspace } from '~shared/types/workspace'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import Radio from '~components/Radio'
+
+import { useWorkspaceMutations } from '~features/workspace/mutations'
 
 export interface DeleteWorkspaceModalProps {
   isOpen: boolean
   onClose: () => void
+  activeWorkspace: Workspace
+  setCurrentWorkspace: Dispatch<SetStateAction<string>>
 }
-
-const DELETE_OPTIONS = [
-  'Delete Workspace only',
-  'Delete Workspace and all forms within',
-]
 
 export const DeleteWorkspaceModal = ({
   isOpen,
   onClose,
+  activeWorkspace,
+  setCurrentWorkspace,
 }: DeleteWorkspaceModalProps): JSX.Element => {
-  const {
-    handleSubmit,
-    formState: { errors },
-    register,
-  } = useForm()
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
@@ -45,10 +39,17 @@ export const DeleteWorkspaceModal = ({
   })
   const isMobile = useIsMobile()
 
-  // TODO (hans): Implement delete workspace functionality
-  const handleDeleteWorkspace = handleSubmit((data) => {
+  const { deleteWorkspaceMutation } = useWorkspaceMutations()
+
+  // TODO: handle delete forms together with workspace
+  const handleDeleteWorkspace = async () => {
+    await deleteWorkspaceMutation.mutateAsync({
+      destWorkspaceId: activeWorkspace._id,
+    })
+    // reset workspace to default
+    setCurrentWorkspace('')
     onClose()
-  })
+  }
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
@@ -58,27 +59,10 @@ export const DeleteWorkspaceModal = ({
         <ModalCloseButton />
         <ModalBody>
           <Text textStyle="body-2" color="secondary.500">
-            All responses associated to the forms or workspaces will be deleted.
+            {activeWorkspace.formIds.length > 0
+              ? `Remove ${activeWorkspace.formIds.length} form(s) from ${activeWorkspace.title} workspace and delete the workspace`
+              : 'Are you sure you want to delete this workspace? This action cannot be undone.'}
           </Text>
-          <FormControl isRequired isInvalid={!isEmpty(errors)}>
-            <Radio.RadioGroup mt="1.5rem">
-              {DELETE_OPTIONS.map((o, idx) => (
-                <Radio
-                  key={idx}
-                  value={o}
-                  {...register('radio', {
-                    required: {
-                      value: true,
-                      message: 'This field is required',
-                    },
-                  })}
-                >
-                  {o}
-                </Radio>
-              ))}
-            </Radio.RadioGroup>
-            <FormErrorMessage>{errors['radio']?.message}</FormErrorMessage>
-          </FormControl>
         </ModalBody>
 
         <ModalFooter>

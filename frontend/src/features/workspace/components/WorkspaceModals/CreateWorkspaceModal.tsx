@@ -19,6 +19,8 @@ import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
 
+import { useWorkspaceMutations } from '~features/workspace/mutations'
+
 type CreateWorkspaceInputProps = {
   title: string
 }
@@ -48,8 +50,10 @@ export const CreateWorkspaceModal = ({
   })
   const isMobile = useIsMobile()
 
-  // TODO (hans): Implement create workspace functionality
+  const { createWorkspaceMutation } = useWorkspaceMutations()
+
   const handleCreateWorkspace = handleSubmit((data) => {
+    createWorkspaceMutation.mutateAsync(data)
     onClose()
   })
 

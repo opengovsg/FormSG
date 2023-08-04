@@ -1,7 +1,9 @@
 import { BiMenuAltLeft, BiPlus } from 'react-icons/bi'
-import { Flex, FlexProps, Text } from '@chakra-ui/react'
+import { Flex, FlexProps, Text, useDisclosure } from '@chakra-ui/react'
 
 import IconButton from '~components/IconButton'
+
+import { CreateWorkspaceModal } from '../WorkspaceModals/CreateWorkspaceModal'
 
 interface WorkspaceMenuHeaderProps extends FlexProps {
   onMenuClick?: () => void
@@ -14,42 +16,46 @@ export const WorkspaceMenuHeader = ({
   shouldShowMenuIcon = false,
   onMenuClick,
   ...props
-}: WorkspaceMenuHeaderProps): JSX.Element => (
-  <Flex
-    justifyContent={{ base: 'inherit', md: 'space-between' }}
-    px={{ base: '1.5rem', md: '2rem' }}
-    mt={{ base: 0, lg: '1rem' }}
-    {...props}
-    alignItems="center"
-  >
-    <Flex alignItems="center">
-      {shouldShowMenuIcon && (
+}: WorkspaceMenuHeaderProps): JSX.Element => {
+  const { isOpen, onOpen, onClose } = useDisclosure({ defaultIsOpen: false })
+  return (
+    <Flex
+      justifyContent="space-between"
+      pl={{ base: '0rem', md: '2rem' }}
+      pr={{ base: '1rem', md: '1.5rem' }}
+      mt={{ base: 0, lg: '1rem' }}
+      {...props}
+      alignItems="center"
+    >
+      <CreateWorkspaceModal isOpen={isOpen} onClose={onClose} />
+      <Flex alignItems="center">
+        {shouldShowMenuIcon && (
+          <IconButton
+            icon={<BiMenuAltLeft />}
+            onClick={() => onMenuClick && onMenuClick()}
+            aria-label="open workspace drawer"
+            variant="clear"
+            colorScheme="primary"
+            color="secondary.500"
+          />
+        )}
+        <Text textStyle="h4" color="secondary.700">
+          Workspaces
+        </Text>
+      </Flex>
+
+      {shouldShowAddWorkspaceButton && (
         <IconButton
-          icon={<BiMenuAltLeft />}
-          onClick={() => onMenuClick && onMenuClick()}
-          aria-label="open workspace drawer"
+          size="lg"
+          aria-label="Create new workspace"
           variant="clear"
           colorScheme="primary"
           color="secondary.500"
+          onClick={onOpen}
+          icon={<BiPlus />}
+          justifySelf="flex-end"
         />
       )}
-      <Text textStyle="h4" color="secondary.700">
-        Workspaces
-      </Text>
     </Flex>
-
-    {shouldShowAddWorkspaceButton && (
-      <IconButton
-        size="lg"
-        aria-label="Create new workspace"
-        variant="clear"
-        colorScheme="primary"
-        color="secondary.500"
-        // TODO (hans): Implement add workspace modal view
-        onClick={() => null}
-        icon={<BiPlus />}
-        justifySelf="flex-end"
-      />
-    )}
-  </Flex>
-)
+  )
+}

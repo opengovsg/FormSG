@@ -78,6 +78,7 @@ import IncomingEncryptSubmission from '../../submission/encrypt-submission/Incom
 import * as SubmissionService from '../../submission/submission.service'
 import { extractEmailConfirmationData } from '../../submission/submission.utils'
 import * as UserService from '../../user/user.service'
+import { removeFormFromAllWorkspaces } from '../../workspace/workspace.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 
@@ -805,6 +806,9 @@ export const handleArchiveForm: ControllerHandler<{ formId: string }> = async (
       )
       // Step 3: Currently logged in user has permissions to archive form.
       .andThen((formToArchive) => AdminFormService.archiveForm(formToArchive))
+      .andThen(() =>
+        removeFormFromAllWorkspaces({ formId, userId: sessionUserId }),
+      )
       .map(() => res.json({ message: 'Form has been archived' }))
       .mapErr((error) => {
         logger.warn({

@@ -1,8 +1,11 @@
-import { useMemo } from 'react'
+import { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react'
 import {
+  BiChevronRight,
   BiDotsHorizontalRounded,
   BiDuplicate,
   BiEditAlt,
+  BiFolder,
+  BiLeftArrowAlt,
   BiShareAlt,
   BiShow,
   BiTrash,
@@ -17,11 +20,20 @@ import {
   DrawerBody,
   DrawerContent,
   DrawerOverlay,
+  Flex,
+  Icon,
+  Text,
   useDisclosure,
 } from '@chakra-ui/react'
 
+import { AdminDashboardFormMetaDto } from '~shared/types'
+import { Workspace } from '~shared/types/workspace'
+
+import { BxCheck } from '~assets/icons'
 import Button, { ButtonProps } from '~components/Button'
 import IconButton from '~components/IconButton'
+
+import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
 import { RowActionsProps } from './RowActions'
 import { useRowAction } from './useRowAction'
@@ -34,6 +46,7 @@ export const RowActionsDrawer = ({
   formMeta,
 }: RowActionsProps): JSX.Element => {
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const [isMoveWorkspace, setIsMoveWorkspace] = useState(false)
 
   const {
     adminFormLink,
@@ -53,6 +66,10 @@ export const RowActionsDrawer = ({
     }),
     [],
   )
+
+  const handleMoveWorkspace = () => {
+    setIsMoveWorkspace(true)
+  }
 
   return (
     <Box display={{ md: 'none' }}>
@@ -74,57 +91,133 @@ export const RowActionsDrawer = ({
               variant="clear"
               colorScheme="secondary"
             >
-              <Button
-                as={ReactLink}
-                to={adminFormLink}
-                {...buttonProps}
-                leftIcon={<BiEditAlt fontSize="1.25rem" />}
-              >
-                Edit
-              </Button>
-              <Button
-                as={ReactLink}
-                to={previewFormLink}
-                target="_blank"
-                {...buttonProps}
-                leftIcon={<BiShow fontSize="1.25rem" />}
-              >
-                Preview
-              </Button>
-              <Button
-                {...buttonProps}
-                onClick={handleDuplicateForm}
-                leftIcon={<BiDuplicate fontSize="1.25rem" />}
-              >
-                Duplicate
-              </Button>
-              <Button
-                {...buttonProps}
-                onClick={handleShareForm}
-                leftIcon={<BiShareAlt fontSize="1.25rem" />}
-              >
-                Share form
-              </Button>
-              <Button
-                {...buttonProps}
-                onClick={handleCollaborators}
-                leftIcon={<BiUserPlus fontSize="1.25rem" />}
-              >
-                Manage form admins
-              </Button>
-              <Divider />
-              <Button
-                {...buttonProps}
-                onClick={handleDeleteForm}
-                color="danger.500"
-                leftIcon={<BiTrash fontSize="1.25rem" />}
-              >
-                Delete
-              </Button>
+              {isMoveWorkspace ? (
+                <MoveWorkspaceDrawer
+                  setIsMoveWorkspace={setIsMoveWorkspace}
+                  formMeta={formMeta}
+                  buttonProps={buttonProps}
+                />
+              ) : (
+                <>
+                  <Button
+                    as={ReactLink}
+                    to={adminFormLink}
+                    {...buttonProps}
+                    leftIcon={<BiEditAlt fontSize="1.25rem" />}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    as={ReactLink}
+                    to={previewFormLink}
+                    target="_blank"
+                    {...buttonProps}
+                    leftIcon={<BiShow fontSize="1.25rem" />}
+                  >
+                    Preview
+                  </Button>
+                  <Button
+                    {...buttonProps}
+                    onClick={handleDuplicateForm}
+                    leftIcon={<BiDuplicate fontSize="1.25rem" />}
+                  >
+                    Duplicate
+                  </Button>
+                  <Button
+                    {...buttonProps}
+                    onClick={handleShareForm}
+                    leftIcon={<BiShareAlt fontSize="1.25rem" />}
+                  >
+                    Share form
+                  </Button>
+                  <Button
+                    {...buttonProps}
+                    onClick={handleCollaborators}
+                    leftIcon={<BiUserPlus fontSize="1.25rem" />}
+                  >
+                    Manage form admins
+                  </Button>
+                  <Button
+                    {...buttonProps}
+                    onClick={handleMoveWorkspace}
+                    leftIcon={<BiFolder fontSize="1.25rem" />}
+                  >
+                    <Flex
+                      justifyContent="space-between"
+                      alignItems="center"
+                      w="100%"
+                    >
+                      <Text>Move to Workspace</Text>
+                      <BiChevronRight fontSize="1.25rem" />
+                    </Flex>
+                  </Button>
+                  <Divider />
+                  <Button
+                    {...buttonProps}
+                    onClick={handleDeleteForm}
+                    color="danger.500"
+                    leftIcon={<BiTrash fontSize="1.25rem" />}
+                  >
+                    Delete
+                  </Button>
+                </>
+              )}
             </ButtonGroup>
           </DrawerBody>
         </DrawerContent>
       </Drawer>
     </Box>
+  )
+}
+
+const MoveWorkspaceDrawer = ({
+  setIsMoveWorkspace,
+  formMeta,
+  buttonProps,
+}: {
+  setIsMoveWorkspace: Dispatch<SetStateAction<boolean>>
+  formMeta: AdminDashboardFormMetaDto
+  buttonProps: Partial<ButtonProps>
+}) => {
+  const { handleMoveForm } = useRowAction(formMeta)
+  const { workspaces, getFormWorkspace } = useWorkspaceContext()
+
+  const handleWorkspaceClick = useCallback(
+    (destWorkspace: Workspace) =>
+      handleMoveForm(destWorkspace._id.toString(), destWorkspace.title),
+    [handleMoveForm],
+  )
+
+  const currFormWorkspace = useMemo(
+    () => getFormWorkspace(formMeta._id),
+    [formMeta, getFormWorkspace],
+  )
+
+  if (!workspaces) return null
+
+  return (
+    <>
+      <Button
+        {...buttonProps}
+        textStyle="subhead-1"
+        onClick={() => setIsMoveWorkspace(false)}
+        leftIcon={<BiLeftArrowAlt fontSize="1.25rem" />}
+      >
+        Move to Workspace
+      </Button>
+      <Divider />
+      {workspaces.map((workspace) => (
+        <Button
+          {...buttonProps}
+          key={workspace._id}
+          onClick={() => handleWorkspaceClick(workspace)}
+        >
+          <Flex justifyContent="space-between" w="100%" alignItems="center">
+            <Text textStyle="body-1">{workspace.title}</Text>
+            {workspace._id === currFormWorkspace?._id && <Icon as={BxCheck} />}
+          </Flex>
+        </Button>
+      ))}
+    </>
   )
 }

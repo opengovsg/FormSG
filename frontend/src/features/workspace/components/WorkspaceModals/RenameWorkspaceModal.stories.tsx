@@ -1,6 +1,9 @@
 import { useDisclosure } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
+import { UserId } from '~shared/types'
+import { Workspace, WorkspaceId } from '~shared/types/workspace'
+
 import { userHandlers } from '~/mocks/msw/handlers/user'
 
 import { getMobileViewParameters } from '~utils/storybook'
@@ -23,12 +26,19 @@ export default {
 
 const Template: Story<RenameWorkspaceModalProps> = (args) => {
   const modalProps = useDisclosure({ defaultIsOpen: true })
+  const mockWorkspace: Workspace = {
+    _id: '' as WorkspaceId,
+    title: 'ImAWorkspace',
+    formIds: [],
+    admin: '' as UserId,
+  }
 
   return (
     <RenameWorkspaceModal
       {...args}
       {...modalProps}
       onClose={() => console.log('close modal')}
+      activeWorkspace={mockWorkspace}
     />
   )
 }
