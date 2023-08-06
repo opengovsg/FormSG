@@ -1,8 +1,6 @@
-import { AdminDashboardFormMetaDto, AdminFormViewDto } from '~shared/types'
 import {
   SendUserContactOtpDto,
   TransferOwnershipRequestDto,
-  TransferOwnershipResponseDto,
   UserDto,
   VerifyUserContactOtpDto,
 } from '~shared/types/user'
@@ -48,8 +46,8 @@ export const updateUserLastSeenFeatureUpdateVersion = async (
 export const transferOwnership = async (
   request: TransferOwnershipRequestDto,
 ): Promise<boolean> => {
-  const { newOwnerEmail } = request
+  const { email } = request
   return ApiService.post(`${ADMIN_FORM_ENDPOINT}/all-transfer-owner`, {
-    newOwnerEmail,
+    email,
   }).then(({ data }) => data)
 }

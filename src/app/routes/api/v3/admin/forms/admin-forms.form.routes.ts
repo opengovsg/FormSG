@@ -32,18 +32,6 @@ AdminFormsFormRouter.route('/')
    */
   .post(AdminFormController.handleCreateForm)
 
-AdminFormsFormRouter.route('/mine')
-  /**
-   * List the forms owned by the user
-   * @security session
-   *
-   * @returns 200 with a list of forms managed by the user
-   * @returns 401 when user is not logged in
-   * @returns 422 when user of given id cannnot be found in the database
-   * @returns 500 when database errors occur
-   */
-  .get(AdminFormController.handleListOwnedForms)
-
 AdminFormsFormRouter.route('/:formId([a-fA-F0-9]{24})')
   /**
    * Return the specified form to the user.
@@ -132,20 +120,17 @@ AdminFormsFormRouter.post(
  * Transfer all forms belonging to one user to another user
  * @security session
  *
- * @returns 200 with true if forms were successfully transferred
+ * @returns 200 with true if forms were successfully transferred to new owner
  * @returns 400 when Joi validation fails
  * @returns 400 when new owner is not in the database yet
  * @returns 400 when new owner is already current owner
  * @returns 401 when user does not exist in session
- * @returns 403 when user is not the current owner of the form
- * @returns 404 when form cannot be found
- * @returns 410 when form is archived
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
 AdminFormsFormRouter.post(
   '/all-transfer-owner',
-  AdminFormController.transferAllFormsOwnership,
+  AdminFormController.handleTransferAllFormsOwnership,
 )
 
 /**

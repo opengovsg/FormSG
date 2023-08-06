@@ -72,7 +72,7 @@ export type GetSgidAuthUrlResponseDto = {
 }
 
 export type TransferOwnershipRequestDto = {
-  newOwnerEmail: string
+  email: string
 }
 
 export type TransferOwnershipResponseDto = {

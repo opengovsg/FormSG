@@ -25,6 +25,7 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
 } from 'src/app/modules/core/core.errors'
+import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import { IAdminFeedbackSchema, IPopulatedForm, IUserSchema } from 'src/types'
 
 import {
@@ -527,83 +528,89 @@ describe('admin-form.form.routes', () => {
     })
   })
 
-  describe('GET /admin/forms/mine', () => {
-    it('should return 200 with empty array when user has no owned forms', async () => {
-      // Act
-      const response = await request.get('/admin/forms/mine')
-
-      // Assert
-      expect(response.status).toEqual(200)
-      expect(response.body).toEqual([])
-    })
-
-    it('should return 200 with a list of forms owned by the user', async () => {
+  describe('GET /admin/forms/all-transfer-owner', () => {
+    it('should return 200 with true if all forms were transferred to new owner', async () => {
       // Arrange
-      // Create separate user
-      const collabUser = (
+      const newOwner = (
         await dbHandler.insertFormCollectionReqs({
           userId: new ObjectId(),
-          mailName: 'collab-user',
-          shortName: 'collabUser',
+          mailName: 'new-owner',
+          shortName: 'newOwner',
         })
       ).user
 
-      const ownForm = await EmailFormModel.create({
-        title: 'Own form',
-        emails: [defaultUser.email],
-        admin: defaultUser._id,
-      })
-      await EncryptFormModel.create({
-        title: 'Collab form',
-        publicKey: 'some public key',
-        admin: collabUser._id,
-        permissionList: [{ email: defaultUser.email }],
-      })
-      // Create already archived form, should still be fetched
-      const ownFormArchived = await EmailFormModel.create({
-        title: 'Archived form',
-        emails: defaultUser.email,
-        admin: defaultUser._id,
-        status: FormStatus.Archived,
-      })
-      // Create form that user is not collaborator/admin of. Should not be
-      // fetched.
-      await EncryptFormModel.create({
-        title: 'Does not matter',
-        publicKey: 'abracadabra',
-        admin: collabUser._id,
-        // No permissions for anyone else.
-      })
-
       // Act
-      const response = await request.get('/admin/forms/mine')
+      const response = await request
+        .post(`/admin/forms/all-transfer-owner`)
+        .send({
+          email: newOwner.email,
+        })
 
       // Assert
-      // Should only receive ownForm
-      const expected = await FormModel.find({
-        _id: {
-          $in: [ownForm._id, ownFormArchived._id],
-        },
-      })
-        .select('_id title admin lastModified status responseMode')
-        .sort('-lastModified')
-        .populate({
-          path: 'admin',
-          populate: {
-            path: 'agency',
-          },
-        })
-        .lean()
-      expect(response.body).toEqual(jsonParseStringify(expected))
       expect(response.status).toEqual(200)
+      expect(response.body).toEqual(true)
+    })
+
+    it('should return 400 when body.email is an invalid email', async () => {
+      // Act
+      const response = await request
+        .post(`/admin/forms/all-transfer-owner`)
+        .send({ email: 'not an email' })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: { key: 'email', message: 'Please enter a valid email' },
+        }),
+      )
+    })
+
+    it('should return 400 when the new owner is not in the database', async () => {
+      // Arrange
+      const emailNotInDb = 'notindb@example.com'
+
+      // Act
+      const response = await request
+        .post(`/admin/forms/all-transfer-owner`)
+        .send({ email: emailNotInDb })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual({
+        message: `${emailNotInDb} must have logged in once before being added as Owner`,
+      })
+    })
+
+    it('should return 400 when the new owner is already the current owner', async () => {
+      // Act
+      const response = await request
+        .post(`/admin/forms/all-transfer-owner`)
+        .send({ email: defaultUser.email })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual({
+        message: 'You are already the owner of this form',
+      })
     })
 
     it('should return 401 when user is not logged in', async () => {
       // Arrange
+      const newOwner = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'new-owner',
+          shortName: 'newOwner',
+        })
+      ).user
+
       await logoutSession(request)
 
       // Act
-      const response = await request.get('/admin/forms/mine')
+      const response = await request
+        .post('/admin/forms/all-transfer-owner')
+        .send({ email: newOwner.email })
 
       // Assert
       expect(response.status).toEqual(401)
@@ -612,11 +619,20 @@ describe('admin-form.form.routes', () => {
 
     it('should return 422 when user of given id cannot be found in the database', async () => {
       // Arrange
+      const newOwner = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'new-owner',
+          shortName: 'newOwner',
+        })
+      ).user
       // Delete user after login.
       await dbHandler.clearCollection(UserModel.collection.name)
 
       // Act
-      const response = await request.get('/admin/forms/mine')
+      const response = await request
+        .post('/admin/forms/all-transfer-owner')
+        .send({ email: newOwner.email })
 
       // Assert
       expect(response.status).toEqual(422)
@@ -625,18 +641,28 @@ describe('admin-form.form.routes', () => {
 
     it('should return 500 when database errors occur', async () => {
       // Arrange
+      const newOwner = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'new-owner',
+          shortName: 'newOwner',
+        })
+      ).user
       // Mock database error.
+      const errorMsg = 'something went wrong'
       jest
-        .spyOn(FormModel, 'retrieveFormsOwnedByUserId')
-        .mockRejectedValueOnce(new Error('something went wrong'))
+        .spyOn(FormModel, 'transferAllFormsToNewOwner')
+        .mockRejectedValueOnce(new Error(errorMsg))
 
       // Act
-      const response = await request.get('/admin/forms/mine')
+      const response = await request
+        .post('/admin/forms/all-transfer-owner')
+        .send({ email: newOwner.email })
 
       // Assert
       expect(response.status).toEqual(500)
       expect(response.body).toEqual({
-        message: 'Something went wrong. Please try again.',
+        message: `${formatErrorRecoveryMessage(errorMsg)}`,
       })
     })
   })

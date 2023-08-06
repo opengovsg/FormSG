@@ -1,25 +1,25 @@
 import { rest } from 'msw'
 
-import {
-  AdminDashboardFormMetaDto,
-  AdminFormViewDto,
-  FormResponseMode,
-  FormStatus,
-} from '~shared/types'
+import { AdminFormViewDto, FormResponseMode, FormStatus } from '~shared/types'
 
 import { MOCK_USER } from '../user'
 
-export const getOwnedForms = ({
+export const transferAllFormsOwnership = ({
   overrides,
   delay = 0,
 }: {
-  overrides?: AdminDashboardFormMetaDto[]
+  overrides?: { status?: number; body?: { email: string } }
   delay?: number | 'infinite'
 } = {}): ReturnType<typeof rest['get']> => {
-  return rest.get<AdminDashboardFormMetaDto[]>(
-    '/api/v3/admin/forms/mine',
+  return rest.post<{ email: string }>(
+    '/api/v3/admin/forms/all-transfer-owner',
     (req, res, ctx) => {
-      return res(ctx.delay(delay), ctx.status(200), ctx.json(overrides ?? []))
+      const email = req.body.email
+      return res(
+        ctx.delay(delay),
+        ctx.status(200),
+        ctx.json(overrides?.body ?? { email: email }),
+      )
     },
   )
 }
