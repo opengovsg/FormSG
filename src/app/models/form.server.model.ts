@@ -725,6 +725,24 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.save()
   }
 
+  // Transfer ownership of multiple forms to another user
+  FormSchema.statics.transferAllFormsToNewOwner = async function (
+    currentOwner: IUserSchema,
+    newOwner: IUserSchema,
+  ) {
+    return this.updateMany(
+      {
+        admin: currentOwner._id,
+      },
+      {
+        $set: {
+          admin: newOwner._id,
+          'permissionList.currentOwner.email': newOwner.email,
+        },
+      },
+    ).exec()
+  }
+
   FormDocumentSchema.methods.updateFormCollaborators = async function (
     updatedPermissions: FormPermission[],
   ) {

@@ -129,6 +129,26 @@ AdminFormsFormRouter.post(
 )
 
 /**
+ * Transfer all forms belonging to one user to another user
+ * @security session
+ *
+ * @returns 200 with true if forms were successfully transferred
+ * @returns 400 when Joi validation fails
+ * @returns 400 when new owner is not in the database yet
+ * @returns 400 when new owner is already current owner
+ * @returns 401 when user does not exist in session
+ * @returns 403 when user is not the current owner of the form
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+AdminFormsFormRouter.post(
+  '/all-transfer-owner',
+  AdminFormController.transferAllFormsOwnership,
+)
+
+/**
  * Specific form field REST APIs
  */
 AdminFormsFormRouter.route(
