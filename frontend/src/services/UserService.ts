@@ -47,33 +47,9 @@ export const updateUserLastSeenFeatureUpdateVersion = async (
 
 export const transferOwnership = async (
   request: TransferOwnershipRequestDto,
-): Promise<TransferOwnershipResponseDto> => {
-  const { email } = request
-  const ownedFormIds = await ApiService.get<AdminDashboardFormMetaDto[]>(
-    `${ADMIN_FORM_ENDPOINT}/mine`,
-  ).then(({ data }) => {
-    if (!Array.isArray(data) || !data.length) {
-      return Promise.reject(
-        new Error(
-          'Failed to transfer ownership because no owned forms were found.',
-        ),
-      )
-    }
-    return data.map((formMetaDto) => formMetaDto._id)
-  })
-  return Promise.all(
-    ownedFormIds.map((formId: string) => {
-      return ApiService.post<AdminFormViewDto>(
-        `${ADMIN_FORM_ENDPOINT}/${formId}/collaborators/transfer-owner`,
-        { email },
-      )
-    }),
-  ).then((responses) => {
-    const formIds = responses.map((response) => response.data.form._id)
-    return {
-      email,
-      formIds,
-      error: '',
-    }
-  })
+): Promise<boolean> => {
+  const { newOwnerEmail } = request
+  return ApiService.post(`${ADMIN_FORM_ENDPOINT}/all-transfer-owner`, {
+    newOwnerEmail,
+  }).then(({ data }) => data)
 }
