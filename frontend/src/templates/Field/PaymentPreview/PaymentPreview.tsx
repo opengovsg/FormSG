@@ -74,7 +74,10 @@ export const PaymentPreview = ({
           <EmailFieldInput schema={emailFieldSchema} />
         </VerifiableFieldBuilderContainer>
       ) : (
-        <VerifiableEmailField schema={emailFieldSchema} />
+        <VerifiableEmailField
+          schema={emailFieldSchema}
+          colorTheme={colorTheme}
+        />
       )}
     </>
   )
