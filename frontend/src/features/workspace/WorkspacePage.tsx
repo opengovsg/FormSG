@@ -56,7 +56,7 @@ export const WorkspacePage = (): JSX.Element => {
     return {
       _id: '',
       title: 'All forms',
-      formIds: dashboardForms?.map(({ _id }) => _id),
+      formIds: dashboardForms ? dashboardForms.map(({ _id }) => _id) : [],
       admin: user?._id,
     }
   }, [dashboardForms, user]) as Workspace
