@@ -29,6 +29,7 @@ export const UserBase = z.object({
       keyHash: z.string(),
       createdAt: z.date(),
       lastUsedAt: z.date().optional(),
+      isPlatform: z.string().optional(),
     })
     .optional(),
 })

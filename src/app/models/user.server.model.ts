@@ -83,6 +83,9 @@ const compileUserModel = (db: Mongoose) => {
         },
         createdAt: Date,
         lastUsedAt: Date,
+        isPlatform: {
+          type: Boolean,
+        },
       },
     },
     {
