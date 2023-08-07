@@ -22,7 +22,7 @@ type DownloadReceiptBlockProps = {
   paymentDate?: Date
 }
 
-const PaymentSummaryItem = ({
+const PaymentSummaryRow = ({
   title,
   input,
 }: {
@@ -44,6 +44,14 @@ const PaymentSummaryItem = ({
   )
 }
 
+// Extract selected product names for payment by products
+const getProductNames = (products: ProductItem[]): string => {
+  return products
+    .filter((product) => product.selected)
+    .map((product) => `${product.quantity}x ${product.data.name}`)
+    .join(', ')
+}
+
 export const DownloadReceiptBlock = ({
   formId,
   submissionId,
@@ -56,16 +64,6 @@ export const DownloadReceiptBlock = ({
 }: DownloadReceiptBlockProps) => {
   const toast = useToast({ status: 'success', isClosable: true })
 
-  // Extract selected product names for payment by products
-  const extractProductNames = (products: ProductItem[]) => {
-    const productArray: string[] = []
-    products.forEach((product) => {
-      if (product.selected) {
-        productArray.push(`${product.quantity}x ${product.data.name}`)
-      }
-    })
-    return productArray.join(', ')
-  }
   const formattedAmount = useMemo(() => `S$${centsToDollars(amount)}`, [amount])
   const paymentTimestamp = useMemo(
     () =>
@@ -75,7 +73,7 @@ export const DownloadReceiptBlock = ({
     [paymentDate],
   )
   const productName =
-    paymentType === PaymentType.Products ? extractProductNames(products) : name
+    paymentType === PaymentType.Products ? getProductNames(products) : name
 
   const handleInvoiceClick = () => {
     toast({
@@ -97,10 +95,10 @@ export const DownloadReceiptBlock = ({
           <Text textStyle="h2" mb="0.5rem">
             Payment summary
           </Text>
-          <PaymentSummaryItem title="Product/service" input={productName} />
-          <PaymentSummaryItem title="Amount" input={formattedAmount} />
-          <PaymentSummaryItem title="Date" input={paymentTimestamp} />
-          <PaymentSummaryItem title="Response ID" input={submissionId} />
+          <PaymentSummaryRow title="Product/service" input={productName} />
+          <PaymentSummaryRow title="Amount" input={formattedAmount} />
+          <PaymentSummaryRow title="Date" input={paymentTimestamp} />
+          <PaymentSummaryRow title="Response ID" input={submissionId} />
         </Stack>
       </Stack>
 

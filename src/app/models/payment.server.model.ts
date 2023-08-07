@@ -108,7 +108,7 @@ const PaymentSchema = new Schema<IPaymentSchema, IPaymentModel>(
       ],
     },
 
-    payment_fields_snapshot: formPaymentsFieldSchema,
+    payment_fields_snapshot: { type: formPaymentsFieldSchema },
   },
   {
     timestamps: {
