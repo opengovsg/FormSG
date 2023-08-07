@@ -27,6 +27,8 @@ import {
   getMongoErrorMessage,
   transformMongoError,
 } from '../../utils/handle-mongo-error'
+import { InvalidDomainError } from '../auth/auth.errors'
+import * as AuthService from '../auth/auth.service'
 import { DatabaseError, DatabaseWriteConflictError } from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'
 import {
@@ -672,24 +674,59 @@ export const linkStripeAccountToForm = (
     accountId: string
     publishableKey: string
   },
-): ResultAsync<string, DatabaseError> =>
-  ResultAsync.fromPromise(
-    form.addPaymentAccountId({ accountId, publishableKey }),
+): ResultAsync<
+  string,
+  DatabaseError | StripeFetchError | StripeAccountError | InvalidDomainError
+> => {
+  return ResultAsync.fromPromise(
+    stripe.accounts.retrieve(accountId),
     (error) => {
-      const errMsg = 'Failed to update payment account id'
       logger.error({
-        message: errMsg,
-        meta: {
-          action: 'linkStripeAccountToForm',
-          stripeAccountId: accountId,
-          stripePublishableKey: publishableKey,
-          formId: form._id,
-        },
+        message: 'Error retriving Stripe account',
+        meta: { action: 'linkStripeAccountToForm', stripeAccountId: accountId },
         error,
       })
-      return new DatabaseError(errMsg)
+      return new StripeFetchError(String(error))
     },
-  ).map((updatedForm) => updatedForm.payments_channel.target_account_id)
+  )
+    .andThen((account) => {
+      // Check if the email domain is whitelisted
+      if (!account.email) {
+        logger.error({
+          message: 'Error retriving Stripe account email',
+          meta: {
+            action: 'linkStripeAccountToForm',
+            stripeAccountId: accountId,
+            account,
+          },
+        })
+        return errAsync(
+          new StripeAccountError('Stripe account email is missing'),
+        )
+      }
+      return AuthService.validateEmailDomain(account.email)
+    })
+    .andThen(() =>
+      ResultAsync.fromPromise(
+        form.addPaymentAccountId({ accountId, publishableKey }),
+        (error) => {
+          const errMsg = 'Failed to update payment account id'
+          logger.error({
+            message: errMsg,
+            meta: {
+              action: 'linkStripeAccountToForm',
+              stripeAccountId: accountId,
+              stripePublishableKey: publishableKey,
+              formId: form._id,
+            },
+            error,
+          })
+          return new DatabaseError(errMsg)
+        },
+      ),
+    )
+    .map((updatedForm) => updatedForm.payments_channel.target_account_id)
+}
 
 export const unlinkStripeAccountFromForm = (
   form: IPopulatedEncryptedForm,
