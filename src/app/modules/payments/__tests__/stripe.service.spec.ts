@@ -19,6 +19,8 @@ import {
   IPopulatedUser,
 } from 'src/types'
 
+import { InvalidDomainError } from '../../auth/auth.errors'
+import * as AuthService from '../../auth/auth.service'
 import { PaymentNotFoundError } from '../payments.errors'
 import * as PaymentsService from '../payments.service'
 import { StripeMetadataInvalidError } from '../stripe.errors'
@@ -689,6 +691,7 @@ describe('stripe.service', () => {
     })
   })
   describe('linkStripeAccountToForm', () => {
+    beforeEach(() => jest.restoreAllMocks())
     it('should call func to attach payment account information', async () => {
       // Arrange
       await dbHandler.insertFormCollectionReqs({
@@ -701,8 +704,18 @@ describe('stripe.service', () => {
       })
         .populate('admin')
         .execPopulate()) as IPopulatedEncryptedForm
-      const spiedFn = jest.spyOn(mockForm, 'addPaymentAccountId')
+      const addPaymentAccountIdSpy = jest.spyOn(mockForm, 'addPaymentAccountId')
       const expectedAccountId = 'accountId'
+      const stripeAccountsRetrieveApiSpy = jest
+        .spyOn(stripe.accounts, 'retrieve')
+        .mockReturnValueOnce(
+          Promise.resolve({
+            email: 'mockEmail',
+          } as unknown as Stripe.Response<Stripe.Account>),
+        )
+      const authServiceSpy = jest
+        .spyOn(AuthService, 'validateEmailDomain')
+        .mockReturnValue(okAsync(true) as any)
 
       // Act
       const result = await StripeService.linkStripeAccountToForm(mockForm, {
@@ -711,7 +724,9 @@ describe('stripe.service', () => {
       })
 
       // Assert
-      expect(spiedFn).toHaveBeenCalledTimes(1)
+      expect(stripeAccountsRetrieveApiSpy).toHaveBeenCalledTimes(1)
+      expect(authServiceSpy).toHaveBeenCalledTimes(1)
+      expect(addPaymentAccountIdSpy).toHaveBeenCalledTimes(1)
       expect(result._unsafeUnwrap()).toBe(expectedAccountId)
     })
 
@@ -730,6 +745,16 @@ describe('stripe.service', () => {
         channel: PaymentChannel.Stripe,
         publishable_key: 'publishableKey',
       }
+      const stripeAccountsRetrieveApiSpy = jest
+        .spyOn(stripe.accounts, 'retrieve')
+        .mockReturnValueOnce(
+          Promise.resolve({
+            email: 'mockEmail',
+          } as unknown as Stripe.Response<Stripe.Account>),
+        )
+      const authServiceSpy = jest
+        .spyOn(AuthService, 'validateEmailDomain')
+        .mockReturnValue(okAsync(true) as any)
 
       // Act
       const result = await StripeService.linkStripeAccountToForm(mockForm, {
@@ -739,6 +764,42 @@ describe('stripe.service', () => {
 
       // Assert
       expect(result._unsafeUnwrap()).toBe(expectedAccountId)
+      expect(stripeAccountsRetrieveApiSpy).toHaveBeenCalledTimes(1)
+      expect(authServiceSpy).toHaveBeenCalledTimes(1)
+    })
+
+    it('should not connect when stripe account email is not whitelisted', async () => {
+      // Arrange
+      const mockForm = (await new EncryptedForm({
+        admin: MOCK_USER,
+        title: 'Test Form',
+        publicKey: 'mockPublicKey',
+      }).execPopulate()) as IPopulatedEncryptedForm
+      const addPaymentAccountIdSpy = jest.spyOn(mockForm, 'addPaymentAccountId')
+
+      const stripeAccountsRetrieveApiSpy = jest
+        .spyOn(stripe.accounts, 'retrieve')
+        .mockReturnValueOnce(
+          Promise.resolve({
+            email: 'mockEmail',
+          } as unknown as Stripe.Response<Stripe.Account>),
+        )
+      const authServiceSpy = jest
+        .spyOn(AuthService, 'validateEmailDomain')
+        .mockReturnValue(errAsync(new InvalidDomainError()))
+
+      // Act
+      const result = await StripeService.linkStripeAccountToForm(mockForm, {
+        accountId: 'accountId',
+        publishableKey: 'publishableKey',
+      })
+
+      // Assert
+      expect(stripeAccountsRetrieveApiSpy).toHaveBeenCalledTimes(1)
+      expect(authServiceSpy).toHaveBeenCalledTimes(1)
+      expect(addPaymentAccountIdSpy).toHaveBeenCalledTimes(0)
+      expect(result.isErr()).toBeTrue()
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(InvalidDomainError)
     })
   })
 
