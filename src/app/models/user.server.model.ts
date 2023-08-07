@@ -144,10 +144,12 @@ const compileUserModel = (db: Mongoose) => {
         runValidators: true,
         setDefaultsOnInsert: true,
       },
-    ).populate({
-      path: 'agency',
-      model: AGENCY_SCHEMA_ID,
-    })
+    )
+      .select('-apiToken')
+      .populate({
+        path: 'agency',
+        model: AGENCY_SCHEMA_ID,
+      })
   }
 
   /**

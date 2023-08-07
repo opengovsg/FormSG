@@ -137,6 +137,7 @@ export const updateUserContact = (
       },
       { new: true },
     )
+      .select('-apiToken')
       .populate({
         path: 'agency',
         model: AGENCY_SCHEMA_ID,
@@ -186,6 +187,7 @@ export const updateUserLastSeenFeatureUpdateVersion = (
       },
       { new: true },
     )
+      .select('-apiToken')
       .populate({
         path: 'agency',
         model: AGENCY_SCHEMA_ID,
