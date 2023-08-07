@@ -20,6 +20,7 @@ export const updateSettingsValidator = celebrate({
     ),
     esrvcId: Joi.string().allow(''),
     hasCaptcha: Joi.boolean(),
+    hasIssueNotification: Joi.boolean(),
     inactiveMessage: Joi.string(),
     status: Joi.string().valid(...Object.values(FormStatus)),
     submissionLimit: Joi.number().allow(null),

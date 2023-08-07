@@ -432,6 +432,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         default: true,
       },
 
+      hasIssueNotification: {
+        type: Boolean,
+        default: true,
+      },
+
       authType: {
         type: String,
         enum: Object.values(FormAuthType),
