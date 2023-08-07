@@ -24,7 +24,7 @@ AdminFormsPlatformRouter.route('/:formId([a-fA-F0-9]{24})/webhooksettings')
    * @returns 500 when database error occurs
    */
   .get(
-    limitRate({ max: rateLimitConfig.publicApi }), //TODO: add platformApi rate limit config
+    limitRate({ max: rateLimitConfig.platformApi }),
     AdminFormController.handleGetWebhookSettings,
   )
 
@@ -47,4 +47,7 @@ AdminFormsPlatformRouter.route('/:formId([a-fA-F0-9]{24})/webhooksettings')
    * @returns 422 when user cannot be retrieved from the database
    * @returns 500 when database error occurs
    */
-  .patch(AdminFormController.handleUpdateWebhookSettings)
+  .patch(
+    limitRate({ max: rateLimitConfig.platformApi }),
+    AdminFormController.handleUpdateWebhookSettings,
+  )

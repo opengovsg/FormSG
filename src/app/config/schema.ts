@@ -319,6 +319,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 100,
       env: 'PUBLIC_API_RATE_LIMIT',
     },
+    platformApi: {
+      doc: 'Per-minute, per-IP, per-instance request limit for platform APIs',
+      format: 'int',
+      default: 100,
+      env: 'PLATFORM_API_RATE_LIMIT',
+    },
   },
   reactMigration: {
     useFetchForSubmissions: {
