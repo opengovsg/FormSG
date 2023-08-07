@@ -1,13 +1,12 @@
 import { Mongoose, Schema } from 'mongoose'
 
-import { Payment, PaymentStatus, PaymentType } from '../../../shared/types'
+import { Payment, PaymentStatus } from '../../../shared/types'
 import { IPaymentModel, IPaymentSchema } from '../../types'
 
 import { ProductSchema } from './payments/productSchema'
-import { FORM_SCHEMA_ID } from './form.server.model'
+import { FORM_SCHEMA_ID, formPaymentsFieldSchema } from './form.server.model'
 import { PENDING_SUBMISSION_SCHEMA_ID } from './pending_submission.server.model'
 import { SUBMISSION_SCHEMA_ID } from './submission.server.model'
-import { isPositiveInteger } from './utils'
 
 export const PAYMENT_SCHEMA_ID = 'Payment'
 
@@ -109,62 +108,7 @@ const PaymentSchema = new Schema<IPaymentSchema, IPaymentModel>(
       ],
     },
 
-    payment_fields_snapshot: {
-      enabled: {
-        type: Boolean,
-        default: false,
-      },
-      description: {
-        type: String,
-        trim: true,
-        default: '',
-      },
-      name: {
-        type: String,
-        trim: true,
-        default: '',
-      },
-      amount_cents: {
-        type: Number,
-        default: 0,
-        validate: {
-          validator: isPositiveInteger,
-          message: 'amount_cents must be a non-negative integer.',
-        },
-      },
-      products: [ProductSchema],
-      products_meta: {
-        multi_product: {
-          type: Boolean,
-          default: false,
-        },
-      },
-      min_amount: {
-        type: Number,
-        default: 0,
-        validate: {
-          validator: isPositiveInteger,
-          message: 'min_amount must be a non-negative integer.',
-        },
-      },
-      max_amount: {
-        type: Number,
-        default: 0,
-        validate: {
-          validator: isPositiveInteger,
-          message: 'max_amount must be a non-negative integer.',
-        },
-      },
-      payment_type: {
-        type: String,
-        enum: Object.values(PaymentType),
-        default: PaymentType.Fixed,
-      },
-      gst_enabled: {
-        type: Boolean,
-        default: true,
-      },
-    },
+    payment_fields_snapshot: formPaymentsFieldSchema,
   },
   {
     timestamps: {
