@@ -5,43 +5,18 @@ import {
   NumberValidationOptions,
 } from '../../../../shared/types'
 import { INumberFieldSchema } from '../../../types'
-import { WithCustomMinMax } from '../../../types/field/utils/virtuals'
 
 import { MyInfoSchema } from './baseField'
 
 const createNumberFieldSchema = () => {
-  const ValidationOptionsSchema = new Schema<
-    WithCustomMinMax<NumberValidationOptions>
-  >(
-    {
-      customVal: {
-        type: Number,
-      },
-      selectedValidation: {
-        type: String,
-        enum: [...Object.values(NumberSelectedValidation), null],
-      },
+  const ValidationOptionsSchema = new Schema<NumberValidationOptions>({
+    customVal: {
+      type: Number,
     },
-    {
-      // TODO: Remove virtuals (#2039)
-      toJSON: {
-        virtuals: true,
-      },
+    selectedValidation: {
+      type: String,
+      enum: [...Object.values(NumberSelectedValidation), null],
     },
-  )
-
-  // Virtuals to allow for backwards compatibility after customMin and customMax were removed as part of #408
-  // TODO: Remove virtuals (#2039)
-  ValidationOptionsSchema.virtual('customMin').get(function (
-    this: NumberValidationOptions,
-  ) {
-    return this.customVal
-  })
-
-  ValidationOptionsSchema.virtual('customMax').get(function (
-    this: NumberValidationOptions,
-  ) {
-    return this.customVal
   })
 
   const NumberFieldSchema = new Schema<INumberFieldSchema>({
