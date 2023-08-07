@@ -208,7 +208,17 @@ export type StorageFormSettings = Pick<
 
 export type FormSettings = EmailFormSettings | StorageFormSettings
 
+export type FormWebhookSettings = Pick<FormSettings, 'webhook'>
+
+export type FormWebhookResponseModeSettings = Pick<
+  FormSettings,
+  'webhook' | 'responseMode'
+>
 export type SettingsUpdateDto = PartialDeep<FormSettings>
+
+export type WebhookSettingsUpdateDto = Pick<SettingsUpdateDto, 'webhook'> & {
+  userEmail: string
+}
 
 /**
  * Misnomer. More of a public form auth session.

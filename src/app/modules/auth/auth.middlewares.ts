@@ -5,11 +5,15 @@ import { StatusCodes } from 'http-status-codes'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
+import { UNAUTHORIZED_USER_MESSAGE } from '../user/user.constant'
+import { getPopulatedUserById } from '../user/user.service'
 
 import { getUserByApiKey } from './auth.service'
 import {
+  getUserIdFromSession,
   isCronPaymentAuthValid,
   isUserInSession,
+  mapRouteError,
   mapRoutePublicApiError,
 } from './auth.utils'
 
@@ -182,3 +186,45 @@ export const authenticateApiKey: ControllerHandler = (req, res, next) => {
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
+
+/**
+ * Middleware that only allows users with a valid bearer token and isPlatform flag to pass through to the next handler
+ */
+const isPlatformApiUser: ControllerHandler = (req, res, next) => {
+  const sessionUserId = getUserIdFromSession(req.session)
+  if (!sessionUserId) {
+    return res.status(StatusCodes.UNAUTHORIZED).json(UNAUTHORIZED_USER_MESSAGE)
+  }
+  return getPopulatedUserById(sessionUserId)
+    .map((retrievedUser) => {
+      if (!retrievedUser) {
+        return res
+          .status(StatusCodes.UNAUTHORIZED)
+          .json(UNAUTHORIZED_USER_MESSAGE)
+      }
+      if (!retrievedUser.apiToken?.isPlatform) {
+        return res
+          .status(StatusCodes.UNAUTHORIZED)
+          .json({ message: 'User is not a platform' })
+      }
+      return next()
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred whilst retrieving user',
+        meta: {
+          action: 'isPlatformApiUser',
+          userId: sessionUserId,
+        },
+        error,
+      })
+
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+export const authenticateApiKeyPlatformUser = [
+  authenticateApiKey,
+  isPlatformApiUser,
+] as ControllerHandler[]

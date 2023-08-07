@@ -4,9 +4,15 @@ import {
   FormAuthType,
   FormStatus,
   SettingsUpdateDto,
+  WebhookSettingsUpdateDto,
 } from '../../../../../shared/types'
 
 import { verifyValidUnicodeString } from './admin-form.utils'
+
+const webhookSettingsValidator = Joi.object({
+  url: Joi.string().uri().allow(''),
+  isRetryEnabled: Joi.boolean(),
+}).min(1)
 
 /**
  * Joi validator for PATCH /forms/:formId/settings route.
@@ -25,10 +31,7 @@ export const updateSettingsValidator = celebrate({
     status: Joi.string().valid(...Object.values(FormStatus)),
     submissionLimit: Joi.number().allow(null),
     title: Joi.string(),
-    webhook: Joi.object({
-      url: Joi.string().uri().allow(''),
-      isRetryEnabled: Joi.boolean(),
-    }).min(1),
+    webhook: webhookSettingsValidator,
     business: Joi.object({
       address: Joi.string().allow(''),
       gstRegNo: Joi.string().allow(''),
@@ -37,4 +40,14 @@ export const updateSettingsValidator = celebrate({
   })
     .min(1)
     .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),
+})
+
+/**
+ * Joi validator for PATCH api/platform/v1/admin/forms/:formId/webhookSettings route.
+ */
+export const updateWebhookSettingsValidator = celebrate({
+  [Segments.BODY]: Joi.object<WebhookSettingsUpdateDto>({
+    userEmail: Joi.string(),
+    webhook: webhookSettingsValidator,
+  }),
 })
