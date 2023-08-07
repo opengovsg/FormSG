@@ -216,62 +216,6 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   },
 
   payments_field: formPaymentsFieldSchema,
-  // {
-  //   enabled: {
-  //     type: Boolean,
-  //     default: false,
-  //   },
-  //   description: {
-  //     type: String,
-  //     trim: true,
-  //     default: '',
-  //   },
-  //   name: {
-  //     type: String,
-  //     trim: true,
-  //     default: '',
-  //   },
-  //   amount_cents: {
-  //     type: Number,
-  //     default: 0,
-  //     validate: {
-  //       validator: isPositiveInteger,
-  //       message: 'amount_cents must be a non-negative integer.',
-  //     },
-  //   },
-  //   products: [ProductSchema],
-  //   products_meta: {
-  //     multi_product: {
-  //       type: Boolean,
-  //       default: false,
-  //     },
-  //   },
-  //   min_amount: {
-  //     type: Number,
-  //     default: 0,
-  //     validate: {
-  //       validator: isPositiveInteger,
-  //       message: 'min_amount must be a non-negative integer.',
-  //     },
-  //   },
-  //   max_amount: {
-  //     type: Number,
-  //     default: 0,
-  //     validate: {
-  //       validator: isPositiveInteger,
-  //       message: 'max_amount must be a non-negative integer.',
-  //     },
-  //   },
-  //   payment_type: {
-  //     type: String,
-  //     enum: Object.values(PaymentType),
-  //     default: PaymentType.Fixed,
-  //   },
-  //   gst_enabled: {
-  //     type: Boolean,
-  //     default: true,
-  //   },
-  // },
 
   business: {
     type: {
