@@ -1376,19 +1376,20 @@ describe('Form Model', () => {
           'status',
           'responseMode',
         ]
+        const adminKeysToPick = ['_id', 'agency', 'email']
         const expected = orderBy(
           [
             // Should return form with admin themselves.
             merge(pick(userOwnedForm.toObject(), keysToPick), {
-              admin: populatedAdmin.toObject(),
+              admin: pick(populatedAdmin.toObject(), adminKeysToPick),
             }),
             // Should return form where admin has write permission.
             merge(pick(userWritePermissionForm.toObject(), keysToPick), {
-              admin: diffPopulatedAdmin.toObject(),
+              admin: pick(diffPopulatedAdmin.toObject(), adminKeysToPick),
             }),
             // Should return form where admin has read permission.
             merge(pick(userReadPermissionForm.toObject(), keysToPick), {
-              admin: diffPopulatedAdmin.toObject(),
+              admin: pick(diffPopulatedAdmin.toObject(), adminKeysToPick),
             }),
           ],
           'lastModified',

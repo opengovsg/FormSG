@@ -141,6 +141,7 @@ describe('admin-form.form.routes', () => {
         .sort('-lastModified')
         .populate({
           path: 'admin',
+          select: { agency: 1, email: 1 },
           populate: {
             path: 'agency',
           },
