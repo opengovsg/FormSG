@@ -8,6 +8,10 @@ import {
   FormResponseMode,
 } from '../../../../shared/types'
 import { FieldResponse, FormFieldSchema, IFormDocument } from '../../../types'
+import {
+  ParsedClearAttachmentResponse,
+  ParsedClearFormFieldResponse,
+} from '../../../types/api'
 import { AutoReplyMailData } from '../../services/mail/mail.types'
 
 import { ConflictError } from './submission.errors'
@@ -154,4 +158,13 @@ export const getNormalisedResponseTime = (
   numVisibleFields: number,
 ) => {
   return (10 * responseTimeMs) / numVisibleFields
+}
+
+export const isAttachmentResponse = (
+  response: ParsedClearFormFieldResponse,
+): response is ParsedClearAttachmentResponse => {
+  return (
+    response.fieldType === BasicField.Attachment &&
+    response.content !== undefined
+  )
 }

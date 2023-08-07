@@ -6,12 +6,12 @@ import {
 import {
   EncryptAttachmentResponse,
   EncryptFormFieldResponse,
-  ParsedEmailAttachmentResponse,
-  ParsedEmailFormFieldResponse,
+  ParsedClearAttachmentResponse,
+  ParsedClearFormFieldResponse,
 } from '../api'
 
 export type IAttachmentResponse =
-  | ParsedEmailAttachmentResponse
+  | ParsedClearAttachmentResponse
   | EncryptAttachmentResponse
 
 export type SingleAnswerFieldResponse =
@@ -23,7 +23,7 @@ export type SingleAnswerFieldResponse =
       | ChildBirthRecordsResponse
     >
   | Exclude<
-      ParsedEmailFormFieldResponse,
+      ParsedClearFormFieldResponse,
       | TableResponse
       | CheckboxResponse
       | IAttachmentResponse
@@ -32,4 +32,4 @@ export type SingleAnswerFieldResponse =
 
 export type FieldResponse =
   | EncryptFormFieldResponse
-  | ParsedEmailFormFieldResponse
+  | ParsedClearFormFieldResponse

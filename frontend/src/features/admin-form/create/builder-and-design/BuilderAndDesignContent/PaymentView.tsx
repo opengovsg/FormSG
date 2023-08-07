@@ -11,6 +11,7 @@ import Tooltip from '~components/Tooltip'
 import { PaymentPreview } from '~templates/Field/PaymentPreview/PaymentPreview'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { useDesignColorTheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorTheme'
 
 import {
   CreatePageSidebarContextProps,
@@ -59,6 +60,7 @@ export const PaymentView = () => {
   })
 
   const paymentRef = useRef<HTMLDivElement | null>(null)
+  const colourTheme = useDesignColorTheme()
 
   useEffect(() => {
     if (paymentState === PaymentState.EditingPayment) {
@@ -113,7 +115,7 @@ export const PaymentView = () => {
           >
             <Box p={{ base: '0.75rem', md: '1.5rem' }}>
               <PaymentPreview
-                colorTheme={form?.startPage.colorTheme}
+                colorTheme={colourTheme}
                 paymentDetails={paymentDetailsWithPlaceholderPreview}
                 isBuilder
               />

@@ -93,7 +93,7 @@ export const LandingPage = (): JSX.Element => {
     <>
       <FeatureBanner
         title="Introducing Payments"
-        body="Citizens can now pay for fees and services directly on your form!"
+        body="Respondents can now pay for fees and services directly on your form!"
         learnMoreLink={LANDING_PAYMENTS_ROUTE}
       />
       <AppPublicHeader />
@@ -447,7 +447,7 @@ export const LandingPage = (): JSX.Element => {
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={3} />
-                  Build and share form link with citizens
+                  Build and share form link with respondents
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={4} />

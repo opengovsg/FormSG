@@ -21,10 +21,9 @@ export const DropdownField = ({
   colorTheme = FormColorTheme.Blue,
   ...fieldContainerProps
 }: DropdownFieldProps): JSX.Element => {
-  const validationRules = useMemo(
-    () => createDropdownValidationRules(schema),
-    [schema],
-  )
+  const rules = useMemo(() => {
+    return createDropdownValidationRules(schema)
+  }, [schema])
 
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
@@ -32,7 +31,7 @@ export const DropdownField = ({
     <FieldContainer schema={schema} {...fieldContainerProps}>
       <Controller
         control={control}
-        rules={validationRules}
+        rules={rules}
         name={schema._id}
         defaultValue=""
         render={({ field }) => (

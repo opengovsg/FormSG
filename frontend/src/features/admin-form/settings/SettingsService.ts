@@ -56,6 +56,14 @@ export const updateFormCaptcha: UpdateFormFn<'hasCaptcha'> = async (
   return updateFormSettings(formId, { hasCaptcha: newHasCaptcha })
 }
 
+export const updateFormIssueNotification: UpdateFormFn<
+  'hasIssueNotification'
+> = async (formId, newHasIssueNotifcation) => {
+  return updateFormSettings(formId, {
+    hasIssueNotification: newHasIssueNotifcation,
+  })
+}
+
 export const updateFormInactiveMessage: UpdateFormFn<
   'inactiveMessage'
 > = async (formId, newMessage) => {

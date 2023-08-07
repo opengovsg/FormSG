@@ -13,8 +13,8 @@ import { BasicField } from '../../../../../../shared/types'
 import {
   InitialiseMultipartReceiverError,
   MultipartError,
-} from '../email-submission.errors'
-import * as EmailSubmissionReceiver from '../email-submission.receiver'
+} from '../receiver.errors'
+import * as EmailSubmissionReceiver from '../receiver.service'
 
 jest.mock('busboy')
 const MockBusboy = jest.mocked(Busboy)
@@ -44,57 +44,119 @@ const VALID_UTF8_FILE_CONTENT = readFileSync(
   `${VALID_FILE_PATH}${VALID_UTF8_FILENAME}`,
 )
 
-describe('email-submission.receiver', () => {
+describe('receiver.service', () => {
   beforeEach(() => {
     MockBusboy.mockReset()
   })
   describe('createMultipartReceiver', () => {
-    it('should call Busboy constructor with the correct params', () => {
-      MockBusboy.mockReturnValueOnce(MOCK_BUSBOY)
+    describe('email submissions', () => {
+      it('should call Busboy constructor with the correct params', () => {
+        MockBusboy.mockReturnValueOnce(MOCK_BUSBOY)
 
-      const result =
-        EmailSubmissionReceiver.createMultipartReceiver(MOCK_HEADERS)
+        const result = EmailSubmissionReceiver.createMultipartReceiver(
+          MOCK_HEADERS,
+          true,
+        )
 
-      expect(MockBusboy).toHaveBeenCalledWith({
-        headers: MOCK_HEADERS,
-        limits: {
-          fieldSize: 3 * MB,
-          fileSize: 7 * MB,
-        },
+        expect(MockBusboy).toHaveBeenCalledWith({
+          headers: MOCK_HEADERS,
+          limits: {
+            fieldSize: 3 * MB,
+            fileSize: 7 * MB,
+          },
+        })
+        expect(result._unsafeUnwrap()).toEqual(MOCK_BUSBOY)
       })
-      expect(result._unsafeUnwrap()).toEqual(MOCK_BUSBOY)
+
+      it('should return error headers are missing content-type key-value', () => {
+        const result = EmailSubmissionReceiver.createMultipartReceiver(
+          omit(MOCK_HEADERS, 'content-type'),
+          true,
+        )
+
+        // Should have failed type guard and not have been called.
+        expect(MockBusboy).not.toHaveBeenCalled()
+        expect(result._unsafeUnwrapErr()).toEqual(
+          new InitialiseMultipartReceiverError(),
+        )
+      })
+
+      it('should return error when busboy constructor errors', () => {
+        MockBusboy.mockImplementationOnce(() => {
+          throw new Error()
+        })
+
+        const result = EmailSubmissionReceiver.createMultipartReceiver(
+          MOCK_HEADERS,
+          true,
+        )
+
+        expect(MockBusboy).toHaveBeenCalledWith({
+          headers: MOCK_HEADERS,
+          limits: {
+            fieldSize: 3 * MB,
+            fileSize: 7 * MB,
+          },
+        })
+        expect(result._unsafeUnwrapErr()).toEqual(
+          new InitialiseMultipartReceiverError(),
+        )
+      })
     })
 
-    it('should return error headers are missing content-type key-value', () => {
-      const result = EmailSubmissionReceiver.createMultipartReceiver(
-        omit(MOCK_HEADERS, 'content-type'),
-      )
+    describe('storage submissions', () => {
+      it('should call Busboy constructor with the correct params', () => {
+        MockBusboy.mockReturnValueOnce(MOCK_BUSBOY)
 
-      // Should have failed type guard and not have been called.
-      expect(MockBusboy).not.toHaveBeenCalled()
-      expect(result._unsafeUnwrapErr()).toEqual(
-        new InitialiseMultipartReceiverError(),
-      )
-    })
+        const result = EmailSubmissionReceiver.createMultipartReceiver(
+          MOCK_HEADERS,
+          false,
+        )
 
-    it('should return error when busboy constructor errors', () => {
-      MockBusboy.mockImplementationOnce(() => {
-        throw new Error()
+        expect(MockBusboy).toHaveBeenCalledWith({
+          headers: MOCK_HEADERS,
+          limits: {
+            fieldSize: 3 * MB,
+            fileSize: 20 * MB,
+          },
+        })
+        expect(result._unsafeUnwrap()).toEqual(MOCK_BUSBOY)
       })
 
-      const result =
-        EmailSubmissionReceiver.createMultipartReceiver(MOCK_HEADERS)
+      it('should return error headers are missing content-type key-value', () => {
+        const result = EmailSubmissionReceiver.createMultipartReceiver(
+          omit(MOCK_HEADERS, 'content-type'),
+          false,
+        )
 
-      expect(MockBusboy).toHaveBeenCalledWith({
-        headers: MOCK_HEADERS,
-        limits: {
-          fieldSize: 3 * MB,
-          fileSize: 7 * MB,
-        },
+        // Should have failed type guard and not have been called.
+        expect(MockBusboy).not.toHaveBeenCalled()
+        expect(result._unsafeUnwrapErr()).toEqual(
+          new InitialiseMultipartReceiverError(),
+        )
       })
-      expect(result._unsafeUnwrapErr()).toEqual(
-        new InitialiseMultipartReceiverError(),
-      )
+
+      it('should return error when busboy constructor errors', () => {
+        MockBusboy.mockImplementationOnce(() => {
+          throw new Error()
+        })
+
+        const result = EmailSubmissionReceiver.createMultipartReceiver(
+          MOCK_HEADERS,
+          false,
+        )
+
+        expect(MockBusboy).toHaveBeenCalledWith({
+          headers: MOCK_HEADERS,
+          limits: {
+            fieldSize: 3 * MB,
+            fileSize: 20 * MB,
+          },
+        })
+        expect(result._unsafeUnwrapErr()).toEqual(
+          new InitialiseMultipartReceiverError(),
+        )
+      })
     })
   })
 

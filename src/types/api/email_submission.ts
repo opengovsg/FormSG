@@ -1,23 +1,11 @@
 import type { Merge } from 'type-fest'
 
 import {
-  AttachmentResponse,
   EmailModeSubmissionContentDto,
-  FieldResponse,
   ResponseMetadata,
 } from '../../../shared/types'
 
-/**
- * AttachmentResponses with additional server injected metadata on email forms.
- */
-export type ParsedEmailAttachmentResponse = AttachmentResponse & {
-  filename: string
-  content: Buffer
-}
-
-export type ParsedEmailFormFieldResponse =
-  | Exclude<FieldResponse, AttachmentResponse>
-  | ParsedEmailAttachmentResponse
+import { ParsedClearFormFieldResponse } from './submission'
 
 /**
  * Email submission body after req.body's FormData has passed through the
@@ -26,7 +14,7 @@ export type ParsedEmailFormFieldResponse =
 export type ParsedEmailModeSubmissionBody = Merge<
   EmailModeSubmissionContentDto,
   {
-    responses: ParsedEmailFormFieldResponse[]
+    responses: ParsedClearFormFieldResponse[]
     responseMetadata?: ResponseMetadata
   }
 >

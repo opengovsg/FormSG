@@ -1,6 +1,6 @@
 import { getResponseModeFilter } from 'src/app/modules/submission/submission.utils'
 
-import { BasicField, FormResponseMode } from '../../../../../../shared/types'
+import { BasicField, FormResponseMode } from '../../../../../shared/types'
 
 describe('submission.utils', () => {
   describe('getResponseModeFilter', () => {

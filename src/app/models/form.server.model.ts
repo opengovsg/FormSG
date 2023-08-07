@@ -73,6 +73,7 @@ import {
   createAttachmentFieldSchema,
   createCheckboxFieldSchema,
   createchildrenCompoundFieldSchema,
+  createCountryRegionFieldSchema,
   createDateFieldSchema,
   createDecimalFieldSchema,
   createDropdownFieldSchema,
@@ -431,6 +432,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         default: true,
       },
 
+      hasIssueNotification: {
+        type: Boolean,
+        default: true,
+      },
+
       authType: {
         type: String,
         enum: Object.values(FormAuthType),
@@ -549,6 +555,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     createAttachmentFieldSchema(),
   )
   FormFieldPath.discriminator(BasicField.Dropdown, createDropdownFieldSchema())
+  FormFieldPath.discriminator(
+    BasicField.CountryRegion,
+    createCountryRegionFieldSchema(),
+  )
   FormFieldPath.discriminator(
     BasicField.Children,
     createchildrenCompoundFieldSchema(),

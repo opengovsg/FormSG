@@ -9,7 +9,8 @@ type PaymentDataViewItem = {
 }
 
 /** Utility functions for prettifying the output of the payment data view. */
-const centsToDollarString = (cents: number) => `S$${(cents / 100).toFixed(2)}`
+export const centsToDollarString = (cents: number) =>
+  `S$${(cents / 100).toFixed(2)}`
 const toSentenceCase = (str: string) =>
   `${str.charAt(0).toUpperCase()}${str.substring(1).toLowerCase()}`
     // replace underscores with a space
