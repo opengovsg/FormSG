@@ -4,7 +4,7 @@ import { Payment, PaymentStatus } from '../../../shared/types'
 import { IPaymentModel, IPaymentSchema } from '../../types'
 
 import { ProductSchema } from './payments/productSchema'
-import { FORM_SCHEMA_ID } from './form.server.model'
+import { FORM_SCHEMA_ID, formPaymentsFieldSchema } from './form.server.model'
 import { PENDING_SUBMISSION_SCHEMA_ID } from './pending_submission.server.model'
 import { SUBMISSION_SCHEMA_ID } from './submission.server.model'
 
@@ -107,6 +107,8 @@ const PaymentSchema = new Schema<IPaymentSchema, IPaymentModel>(
         },
       ],
     },
+
+    payment_fields_snapshot: { type: formPaymentsFieldSchema },
   },
   {
     timestamps: {

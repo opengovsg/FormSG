@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react'
-import { useToast } from '@chakra-ui/react'
+import { Stack, useToast } from '@chakra-ui/react'
+
+import { FormPaymentsField, ProductItem } from '~shared/types'
 
 import { usePublicFormMutations } from '~features/public-form/mutations'
 
@@ -16,10 +18,18 @@ export const StripeReceiptContainer = ({
   formId,
   submissionId,
   paymentId,
+  amount,
+  products,
+  paymentFieldsSnapshot,
+  paymentDate,
 }: {
   formId: string
   submissionId: string
   paymentId: string
+  amount: number
+  products: ProductItem[]
+  paymentFieldsSnapshot: FormPaymentsField
+  paymentDate?: Date
 }) => {
   const { data, isLoading, error } = useGetPaymentReceiptStatus(
     formId,
@@ -65,15 +75,24 @@ export const StripeReceiptContainer = ({
     /**
      * PaymentStack is explictly added in this component due to https://github.com/chakra-ui/chakra-ui/issues/6757
      */
-    <PaymentStack>
-      <DownloadReceiptBlock
-        formId={formId}
-        submissionId={submissionId}
-        paymentId={paymentId}
-      />
-      {!isFeedbackSubmitted && (
-        <FeedbackBlock onSubmit={handleSubmitFeedback} />
-      )}
-    </PaymentStack>
+    <Stack spacing="1.5rem">
+      <PaymentStack>
+        <DownloadReceiptBlock
+          formId={formId}
+          submissionId={submissionId}
+          paymentId={paymentId}
+          amount={amount}
+          products={products}
+          paymentType={paymentFieldsSnapshot.payment_type}
+          name={paymentFieldsSnapshot.name || ''}
+          paymentDate={paymentDate}
+        />
+      </PaymentStack>
+      <PaymentStack>
+        {!isFeedbackSubmitted && (
+          <FeedbackBlock onSubmit={handleSubmitFeedback} />
+        )}
+      </PaymentStack>
+    </Stack>
   )
 }

@@ -252,6 +252,9 @@ export const getPaymentInfo: ControllerHandler<
               payment_intent_id: payment.paymentIntentId,
               submissionId: payment.pendingSubmissionId,
               products: payment.products,
+              amount: payment.amount,
+              payment_fields_snapshot: payment.payment_fields_snapshot,
+              paymentDate: payment.completedPayment?.paymentDate,
             })
           })
         })
