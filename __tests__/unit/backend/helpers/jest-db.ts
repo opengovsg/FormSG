@@ -1,5 +1,5 @@
 import MemoryDatabaseServer from '__tests__/setup/database'
-import { ObjectID } from 'bson'
+import { ObjectID } from 'bson-ext'
 import mongoose from 'mongoose'
 import { FormResponseMode } from 'shared/types'
 
