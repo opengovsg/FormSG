@@ -1014,12 +1014,9 @@ export const handleCopyTemplateForm: ControllerHandler<
  * Handler for POST /admin/forms/all-transfer-owner.
  * @security session
  *
- * @returns 200 with updated form with transferred owners
+ * @returns 200 with true if transfer was successful
  * @returns 400 when new owner is not in the database yet
  * @returns 400 when new owner is already current owner
- * @returns 403 when user is not the current owner of the form
- * @returns 404 when form cannot be found
- * @returns 410 when form is archived
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
@@ -1036,7 +1033,7 @@ export const transferAllFormsOwnership: ControllerHandler<
     UserService.getPopulatedUserById(sessionUserId)
       .andThen((user) =>
         // Step 2: Transfer all forms to new owner
-        AdminFormService.transferAllFormsToNewOwner(user.email, newOwnerEmail),
+        AdminFormService.transferAllFormsOwnership(user, newOwnerEmail),
       )
       .map((data) => {
         return res.status(StatusCodes.OK).json(data)
