@@ -463,6 +463,12 @@ describe('encrypt-submission.controller', () => {
         number: 2,
         refNo: mockSubmissionId,
         submissionTime: 'some submission time',
+        payments: {
+          payoutDate: null,
+          paymentAmt: 0,
+          transactionFee: null,
+          email: '',
+        },
       }
 
       MockEncryptSubService.getSubmissionMetadata.mockReturnValueOnce(

@@ -1,5 +1,6 @@
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { ObjectId } from 'bson-ext'
+import { merge, omit } from 'lodash'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 
 import { FormStatus } from '../../../../../shared/types'
@@ -38,6 +39,7 @@ describe('issue.controller', () => {
       status: FormStatus.Public,
       permissionList: [MOCK_ADMIN_EMAIL],
       admin: { email: MOCK_ADMIN_EMAIL },
+      hasIssueNotification: true,
     } as unknown as IPopulatedForm
 
     const MOCK_FORM_ISSUE = {} as unknown as IFormIssueSchema
@@ -133,6 +135,34 @@ describe('issue.controller', () => {
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(200)
       expect(MockIssueService.notifyFormAdmin).toHaveBeenCalledTimes(1)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'Successfully submitted issue.',
+      })
+    })
+
+    it('should return ok without sending email if notification is off', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const mockFormWithoutNoti = merge(
+        omit(MOCK_FORM, 'hasIssueNotification'),
+        { hasIssueNotification: false },
+      )
+      MockFormService.retrieveFormKeysById.mockReturnValueOnce(
+        okAsync(mockFormWithoutNoti),
+      )
+      MockFormService.isFormPublic.mockReturnValueOnce(ok(true))
+      MockIssueService.insertFormIssue.mockReturnValueOnce(
+        okAsync(MOCK_FORM_ISSUE),
+      )
+      // Act
+      await FormIssueController.submitFormIssueForTesting(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(MockIssueService.notifyFormAdmin).toHaveBeenCalledTimes(0)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Successfully submitted issue.',
       })

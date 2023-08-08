@@ -28,6 +28,7 @@ import {
 import {
   EditAttachment,
   EditCheckbox,
+  EditCountryRegion,
   EditDate,
   EditDecimal,
   EditDropdown,
@@ -130,6 +131,8 @@ export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
         return <EditCheckbox {...props} field={field} />
       case BasicField.Dropdown:
         return <EditDropdown {...props} field={field} />
+      case BasicField.CountryRegion:
+        return <EditCountryRegion {...props} field={field} />
       case BasicField.Mobile:
         return <EditMobile {...props} field={field} />
       case BasicField.HomeNo:

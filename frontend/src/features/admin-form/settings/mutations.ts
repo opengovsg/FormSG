@@ -32,6 +32,7 @@ import {
   updateFormEmails,
   updateFormEsrvcId,
   updateFormInactiveMessage,
+  updateFormIssueNotification,
   updateFormLimit,
   updateFormStatus,
   updateFormTitle,
@@ -141,6 +142,22 @@ export const useMutateFormSettings = () => {
           newData,
           toastDescription: `reCAPTCHA is now ${
             newData.hasCaptcha ? 'enabled' : 'disabled'
+          } on your form.`,
+        })
+      },
+      onError: handleError,
+    },
+  )
+
+  const mutateFormIssueNotification = useMutation(
+    (nextHasIssueNotification: boolean) =>
+      updateFormIssueNotification(formId, nextHasIssueNotification),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: `Email notifications for reports are now ${
+            newData.hasIssueNotification ? 'enabled' : 'disabled'
           } on your form.`,
         })
       },
@@ -325,6 +342,7 @@ export const useMutateFormSettings = () => {
     mutateFormLimit,
     mutateFormInactiveMessage,
     mutateFormCaptcha,
+    mutateFormIssueNotification,
     mutateFormEmails,
     mutateFormTitle,
     mutateFormAuthType,

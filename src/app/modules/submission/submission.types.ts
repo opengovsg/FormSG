@@ -9,7 +9,7 @@ import {
 } from '../../../../shared/types'
 import {
   EncryptAttachmentResponse,
-  ParsedEmailAttachmentResponse,
+  ParsedClearAttachmentResponse,
 } from '../../../types/api'
 import { FormFieldSchema } from '../../../types/field'
 import {
@@ -67,7 +67,7 @@ export type ProcessedChildrenResponse = ChildBirthRecordsResponse &
  * Storage mode attachment response is the default response.
  */
 export type ProcessedAttachmentResponse = (
-  | ParsedEmailAttachmentResponse
+  | ParsedClearAttachmentResponse
   | EncryptAttachmentResponse
 ) &
   ProcessedResponse

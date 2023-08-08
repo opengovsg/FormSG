@@ -199,12 +199,12 @@ const transformToChildOutput = (
  * Transforms form inputs to their desire output shapes for sending to the server
  * @param field schema to retrieve base field info
  * @param input the input corresponding to the field in the form
- * @returns If field type does not need an output, `undefined` is returned. Otherwise returns the transformed output.
+ * @returns If field type does not need an output, `null` is returned. Otherwise returns the transformed output.
  */
 export const transformInputsToOutputs = (
   field: FormFieldDto,
   input: FormFieldValue,
-): FieldResponse | undefined => {
+): FieldResponse | null => {
   switch (field.fieldType) {
     case BasicField.Section:
       return transformToSectionOutput(field)
@@ -250,6 +250,7 @@ export const transformInputsToOutputs = (
     case BasicField.LongText:
     case BasicField.HomeNo:
     case BasicField.Dropdown:
+    case BasicField.CountryRegion:
     case BasicField.Rating:
     case BasicField.Nric:
     case BasicField.Uen:
@@ -260,7 +261,7 @@ export const transformInputsToOutputs = (
     case BasicField.Statement:
     case BasicField.Image:
       // No output needed.
-      return undefined
+      return null
     case BasicField.Children:
       return transformToChildOutput(
         field,

@@ -78,6 +78,7 @@ const FORM_DEFAULTS = {
     buttonText: 'Submit another response',
   },
   hasCaptcha: true,
+  hasIssueNotification: true,
   form_fields: [],
   form_logics: [],
   permissionList: [],
