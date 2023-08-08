@@ -107,6 +107,12 @@ export const BASICFIELD_TO_DRAWER_META: {
     isSubmitted: true,
   },
 
+  [BasicField.CountryRegion]: {
+    label: 'Country/Region',
+    icon: BiFlag,
+    isSubmitted: true,
+  },
+
   [BasicField.Email]: {
     label: 'Email',
     icon: BiMailSend,

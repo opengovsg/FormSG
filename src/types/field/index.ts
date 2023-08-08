@@ -4,6 +4,7 @@ import type { ConditionalExcept, Merge } from 'type-fest'
 import type { IAttachmentFieldSchema } from './attachmentField'
 import type { ICheckboxFieldSchema } from './checkboxField'
 import type { IChildrenCompoundFieldSchema } from './childrenCompoundField'
+import type { ICountryRegionFieldSchema } from './countryRegionField'
 import type { IDateFieldSchema } from './dateField'
 import type { IDecimalFieldSchema } from './decimalField'
 import type { IDropdownFieldSchema } from './dropdownField'
@@ -29,6 +30,7 @@ export * from './checkboxField'
 export * from './dateField'
 export * from './decimalField'
 export * from './dropdownField'
+export * from './countryRegionField'
 export * from './emailField'
 export * from './homeNoField'
 export * from './imageField'
@@ -63,6 +65,7 @@ export type FormFieldSchema =
   | IDateFieldSchema
   | IDecimalFieldSchema
   | IDropdownFieldSchema
+  | ICountryRegionFieldSchema
   | IEmailFieldSchema
   | IHomenoFieldSchema
   | IImageFieldSchema
@@ -104,6 +107,7 @@ export type FieldValidationSchema =
   | OmitUnusedValidatorProps<IDateFieldSchema>
   | OmitUnusedValidatorProps<IDecimalFieldSchema>
   | OmitUnusedValidatorProps<IDropdownFieldSchema>
+  | OmitUnusedValidatorProps<ICountryRegionFieldSchema>
   | OmitUnusedValidatorProps<IEmailFieldSchema>
   | OmitUnusedValidatorProps<IHomenoFieldSchema>
   | OmitUnusedValidatorProps<IImageFieldSchema>
