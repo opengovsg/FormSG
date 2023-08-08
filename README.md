@@ -48,7 +48,7 @@ Notable features include:
 - 19 different form field types, including attachments, tables, email and mobile
 - Verified email and mobile phone fields via integrations with Twilio and AWS SES
 - Automatic emailing of submissions for forms built with Email Mode
-- End-to-end encryption for forms built with Storage Mode
+- Encryption for data collected on forms built with Storage Mode
 - (Singapore government agencies only) Citizen authentication with [SingPass](https://www.singpass.gov.sg/singpass/common/aboutus)
 - (Singapore government agencies only) Citizen authentication with [sgID](https://www.id.gov.sg/)
 - (Singapore government agencies only) Corporate authentication with [CorpPass](https://www.corppass.gov.sg/corppass/common/aboutus)
