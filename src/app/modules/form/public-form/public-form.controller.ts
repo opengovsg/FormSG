@@ -276,21 +276,15 @@ export const handleGetPublicForm: ControllerHandler<
           return res.json({ form: publicForm, isIntranetUser })
         })
     case FormAuthType.SGID_MyInfo: {
-      console.log('content cookie: ', req.cookies[SGID_MYINFO_COOKIE_NAME])
       const { jwt: accessToken = '', sub = '' } = JSON.parse(
         req.cookies[SGID_MYINFO_COOKIE_NAME] ?? '{}',
       )
-      console.log('accessTokenCookie: ', accessToken)
-      console.log('sub: ', sub)
-      console.log('first pass')
       if (!accessToken) {
-        console.log('inside code block')
         return res.json({
           form: publicForm,
           isIntranetUser,
         })
       }
-      console.log('second pass')
       res.clearCookie(SGID_MYINFO_COOKIE_NAME)
       res.clearCookie(SGID_MYINFO_LOGIN_COOKIE_NAME)
       return SgidService.extractSgidJwtMyInfoPayload(accessToken)
