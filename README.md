@@ -48,20 +48,13 @@ Notable features include:
 - 19 different form field types, including attachments, tables, email and mobile
 - Verified email and mobile phone fields via integrations with Twilio and AWS SES
 - Automatic emailing of submissions for forms built with Email Mode
-- End-to-end encryption for forms built with Storage Mode
+- Encryption for data collected on forms built with Storage Mode
 - (Singapore government agencies only) Citizen authentication with [SingPass](https://www.singpass.gov.sg/singpass/common/aboutus)
 - (Singapore government agencies only) Citizen authentication with [sgID](https://www.id.gov.sg/)
 - (Singapore government agencies only) Corporate authentication with [CorpPass](https://www.corppass.gov.sg/corppass/common/aboutus)
 - (Singapore government agencies only) Automatic prefill of verified data with [MyInfo](https://www.singpass.gov.sg/myinfo/common/aboutus)
 - Webhooks functionality via the official [FormSG JavaScript SDK](https://github.com/opengovsg/formsg-sdk) and contributor-supported [FormSG Ruby SDK](https://github.com/opengovsg/formsg-ruby-sdk)
-
-The current product roadmap includes:
-
-- (in progress) Frontend rewrite from [AngularJS](https://angularjs.org/) to [React](https://reactjs.org/)
-- Enabling payments on forms
-- Electronic signatures
-- Notifications to form admins for Storage mode submissions
-- Integration with vault.gov.sg
+- Variable amount and Itemised payments on forms with [stripe](https://stripe.com) integration
 
 ## Local Development (Docker)
 

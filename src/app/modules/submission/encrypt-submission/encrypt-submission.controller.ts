@@ -1,8 +1,10 @@
 import JoiDate from '@joi/date'
+import { encode as encodeBase64 } from '@stablelib/base64'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
+import { chain, omit } from 'lodash'
 import mongoose from 'mongoose'
 import { okAsync } from 'neverthrow'
 import Stripe from 'stripe'
@@ -15,6 +17,8 @@ import {
   Payment,
   PaymentChannel,
   PaymentType,
+  StorageModeAttachment,
+  StorageModeAttachmentsMap,
   StorageModeSubmissionContentDto,
   StorageModeSubmissionDto,
   StorageModeSubmissionMetadataList,
@@ -25,9 +29,14 @@ import {
   IPopulatedEncryptedForm,
   StripePaymentMetadataDto,
 } from '../../../../types'
-import { EncryptSubmissionDto } from '../../../../types/api'
+import {
+  EncryptFormFieldResponse,
+  EncryptSubmissionDto,
+  ParsedStorageModeSubmissionBody,
+} from '../../../../types/api'
 import config from '../../../config/config'
 import { paymentConfig } from '../../../config/features/payment.config'
+import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { stripe } from '../../../loaders/stripe'
 import getPaymentModel from '../../../models/payment.server.model'
@@ -48,6 +57,8 @@ import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
+import * as ReceiverMiddleware from '../receiver/receiver.middleware'
+import { getFilteredResponses, isAttachmentResponse } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import {
@@ -654,10 +665,178 @@ const _createSubmission = async ({
   )
 }
 
+// TODO (FRM-1232): remove endpoint after encryption boundary is shifted
 export const handleEncryptedSubmission = [
   CaptchaMiddleware.validateCaptchaParams,
   TurnstileMiddleware.validateTurnstileParams,
   EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
+  submitEncryptModeForm,
+] as ControllerHandler[]
+
+const encryptAttachment = async (
+  attachment: Buffer,
+  { id, publicKey }: { id: string; publicKey: string },
+): Promise<StorageModeAttachment & { id: string }> => {
+  let label
+
+  try {
+    label = 'Read file content'
+
+    const fileContentsView = new Uint8Array(attachment)
+
+    label = 'Encrypt content'
+    const encryptedAttachment = await formsgSdk.crypto.encryptFile(
+      fileContentsView,
+      publicKey,
+    )
+
+    label = 'Base64-encode encrypted content'
+    const encodedEncryptedAttachment = {
+      ...encryptedAttachment,
+      binary: encodeBase64(encryptedAttachment.binary),
+    }
+
+    return { id, encryptedFile: encodedEncryptedAttachment }
+  } catch (error) {
+    logger.error({
+      message: 'Error encrypting attachment',
+      meta: {
+        action: 'encryptAttachment',
+        label,
+        error,
+      },
+    })
+    throw error
+  }
+}
+
+const getEncryptedAttachmentsMapFromAttachmentsMap = async (
+  attachmentsMap: Record<string, Buffer>,
+  publicKey: string,
+): Promise<StorageModeAttachmentsMap> => {
+  const attachmentPromises = Object.entries(attachmentsMap).map(
+    ([id, attachment]) => encryptAttachment(attachment, { id, publicKey }),
+  )
+
+  return Promise.all(attachmentPromises).then((encryptedAttachmentsMeta) =>
+    chain(encryptedAttachmentsMeta)
+      .keyBy('id')
+      // Remove id from object.
+      .mapValues((v) => omit(v, 'id'))
+      .value(),
+  )
+}
+
+/**
+ * Encrypt submission content before saving to DB.
+ */
+const encryptSubmission: ControllerHandler<
+  { formId: string },
+  SubmissionResponseDto | SubmissionErrorDto,
+  ParsedStorageModeSubmissionBody
+> = async (req, res, next) => {
+  const { formId } = req.params
+
+  const logMeta = {
+    action: 'convertToEncryptMode',
+    ...createReqMeta(req),
+    formId,
+  }
+
+  // Retrieve form definition. TODO: extract this step when validation is added.
+  const formResult = await FormService.retrieveFullFormById(formId)
+  if (formResult.isErr()) {
+    logger.warn({
+      message: 'Failed to retrieve form from database',
+      meta: logMeta,
+      error: formResult.error,
+    })
+    const { errorMessage, statusCode } = mapRouteError(formResult.error)
+    return res.status(statusCode).json({ message: errorMessage })
+  }
+
+  // Guardrail to prevent new endpoint from being used for regular storage mode forms.
+  // TODO (FRM-1232): remove this guardrail when encryption boundary is shifted.
+  if (!formResult.value.get('newEncryptionBoundary')) {
+    return res
+      .status(StatusCodes.FORBIDDEN)
+      .json({ message: 'This endpoint has not been enabled for this form.' })
+  }
+
+  // Retrieve public key.
+  const publicKey = formResult.value.publicKey
+
+  if (!publicKey) {
+    logger.warn({
+      message: 'Form does not have a public key',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: 'Form does not have a public key',
+    })
+  }
+
+  const attachmentsMap: Record<string, Buffer> = {}
+
+  // Populate attachment map
+  req.body.responses.filter(isAttachmentResponse).forEach((response) => {
+    const fieldId = response._id
+    attachmentsMap[fieldId] = response.content
+  })
+
+  const encryptedAttachments =
+    await getEncryptedAttachmentsMapFromAttachmentsMap(
+      attachmentsMap,
+      publicKey,
+    )
+
+  const filteredResponses = getFilteredResponses(
+    formResult.value,
+    req.body.responses,
+  )
+
+  if (filteredResponses.isErr()) {
+    logger.warn({
+      message: filteredResponses.error.message,
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: filteredResponses.error.message,
+    })
+  }
+
+  const encryptedContent = formsgSdk.crypto.encrypt(
+    req.body.responses.map((response) => {
+      if (isAttachmentResponse(response)) {
+        return {
+          ...response,
+          filename: undefined,
+          content: undefined, //Strip out attachment content
+        }
+      } else {
+        return response
+      }
+    }),
+    publicKey,
+  )
+
+  const encryptedVersion = {
+    attachments: encryptedAttachments,
+    responses: filteredResponses.value as EncryptFormFieldResponse[],
+    encryptedContent,
+    version: req.body.version,
+  }
+
+  req.body = encryptedVersion
+  return next()
+}
+
+export const handleStorageSubmission = [
+  CaptchaMiddleware.validateCaptchaParams,
+  TurnstileMiddleware.validateTurnstileParams,
+  ReceiverMiddleware.receiveStorageSubmission,
+  EncryptSubmissionMiddleware.validateStorageSubmissionParams,
+  encryptSubmission,
   submitEncryptModeForm,
 ] as ControllerHandler[]
 

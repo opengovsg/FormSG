@@ -101,11 +101,17 @@ export const PaymentPreview = ({
         />
       </Box>
       {isBuilder ? (
-        <VerifiableFieldBuilderContainer schema={emailFieldSchema}>
+        <VerifiableFieldBuilderContainer
+          schema={emailFieldSchema}
+          colorTheme={colorTheme}
+        >
           <EmailFieldInput schema={emailFieldSchema} />
         </VerifiableFieldBuilderContainer>
       ) : (
-        <VerifiableEmailField schema={emailFieldSchema} />
+        <VerifiableEmailField
+          schema={emailFieldSchema}
+          colorTheme={colorTheme}
+        />
       )}
     </>
   )

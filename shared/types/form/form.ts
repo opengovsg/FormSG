@@ -134,6 +134,7 @@ export interface FormBase {
   endPage: FormEndPage
 
   hasCaptcha: boolean
+  hasIssueNotification: boolean
   authType: FormAuthType
 
   status: FormStatus

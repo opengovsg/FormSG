@@ -152,6 +152,7 @@ const getAttachmentsMap = (
   return attachmentsMap
 }
 
+// TODO (FRM-1232): Remove once encryption boundary has been shifted.
 /**
  * Utility to filter out responses that should be sent to the server. This includes:
  * 1. Email fields that have an autoreply enabled.
