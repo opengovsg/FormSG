@@ -30,6 +30,7 @@ import { getPopulatedUserById } from '../../user/user.service'
 import * as UserService from '../../user/user.service'
 
 import { PaymentChannelNotFoundError } from './admin-form.errors'
+import { JoiPaymentProduct } from './admin-form.payments.constants'
 import * as AdminFormPaymentService from './admin-form.payments.service'
 import { PermissionLevel } from './admin-form.types'
 import { mapRouteError, verifyUserBetaflag } from './admin-form.utils'
@@ -437,7 +438,7 @@ const updatePaymentsValidator = celebrate({
       is: Joi.equal(true),
       then: Joi.when('payment_type', {
         is: Joi.equal(PaymentType.Products),
-        then: Joi.required(),
+        then: Joi.array().items(JoiPaymentProduct).required(),
         otherwise: Joi.any(),
       }),
       otherwise: Joi.any(),
@@ -455,19 +456,7 @@ const updatePaymentsValidator = celebrate({
  */
 export const handleUpdatePaymentsProduct = [
   celebrate({
-    [Segments.BODY]: Joi.array().items(
-      Joi.object().keys({
-        name: Joi.string().required(),
-        description: Joi.string().required(),
-        multi_qty: Joi.boolean().required(),
-        min_qty: JoiInt.positive().required(),
-        max_qty: JoiInt.positive().required(),
-        amount_cents: JoiInt.min(paymentConfig.minPaymentAmountCents)
-          .max(paymentConfig.maxPaymentAmountCents)
-          .required(),
-        _id: Joi.string(),
-      }),
-    ),
+    [Segments.BODY]: Joi.array().items(JoiPaymentProduct),
   }),
   _handleUpdatePaymentsProduct,
 ] as ControllerHandler[]
