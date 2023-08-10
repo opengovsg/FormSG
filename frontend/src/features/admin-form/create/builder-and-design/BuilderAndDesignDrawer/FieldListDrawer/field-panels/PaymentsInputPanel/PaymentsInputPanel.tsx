@@ -185,26 +185,28 @@ const PaymentTypeSelector = ({
               placeholder="Select Payment Type"
               fullWidth
               items={[
-                showFixedPaymentSelection
-                  ? {
-                      value: PaymentType.Fixed,
-                      label: 'Fixed amount',
-                      description:
-                        'Payment amount is defined by form admin. Suitable for a product or service.',
-                    }
-                  : null,
-                {
-                  value: PaymentType.Variable,
-                  label: 'Variable amount',
-                  description:
-                    'Payment amount is defined by respondent. Suitable for donations or amounts unique to each respondent.',
-                },
                 {
                   value: PaymentType.Products,
-                  label: 'Payments by Products',
+                  label: 'Product or service',
                   description:
-                    'Payment amount is defined by form admin. Suitable for a product or service.',
+                    'Respondents pay based on products or services they select. e.g. Courses, tickets with tiered prices',
                 },
+                {
+                  value: PaymentType.Variable,
+                  label: 'Respondents choose what to pay',
+                  description:
+                    'Respondents enter the amount to pay. e.g. Donations, fines',
+                },
+                ...(showFixedPaymentSelection
+                  ? [
+                      {
+                        value: PaymentType.Fixed,
+                        label: 'Fixed amount',
+                        description:
+                          'Every respondent pays the same amount, as set by the admin. e.g. Flat-rate tickets',
+                      },
+                    ]
+                  : []),
               ]}
               {...field}
             />
@@ -493,7 +495,7 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
   return (
     <>
       {isPaymentDisabled && (
-        <Box px="1.5rem" pt="2rem" pb="1.5rem">
+        <Box px="1.5rem" pt="2rem">
           <InlineMessage variant="info">{paymentDisabledMessage}</InlineMessage>
         </Box>
       )}
