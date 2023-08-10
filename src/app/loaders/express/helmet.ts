@@ -1,9 +1,13 @@
 import { RequestHandler } from 'express'
-import helmet from 'helmet'
-import { ContentSecurityPolicyOptions } from 'helmet/dist/types/middlewares/content-security-policy'
+import helmet, { HelmetOptions } from 'helmet'
 
 import config from '../../config/config'
 import { sentryConfig } from '../../config/features/sentry.config'
+
+type ContentSecurityPolicyOptions = Exclude<
+  HelmetOptions['contentSecurityPolicy'],
+  boolean | undefined
+>
 
 const helmetMiddlewares = () => {
   // Only add the "Strict-Transport-Security" header if request is https.
