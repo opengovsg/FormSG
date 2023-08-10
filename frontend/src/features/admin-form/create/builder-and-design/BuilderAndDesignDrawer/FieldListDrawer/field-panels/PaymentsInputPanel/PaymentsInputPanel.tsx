@@ -6,6 +6,7 @@ import {
   useForm,
   UseFormRegister,
   UseFormSetValue,
+  UseFormWatch,
   useWatch,
 } from 'react-hook-form'
 import { Link as ReactLink } from 'react-router-dom'
@@ -101,17 +102,22 @@ const PaymentContainer = ({
 
 const ProductsPaymentSection = ({
   isDisabled,
+  isSelectionDisabled,
   errors,
   register,
   setValue,
   paymentsMutation,
+  watch,
 }: {
   isDisabled: boolean
+  isSelectionDisabled: boolean
   errors: FormState<FormPaymentsInput>['errors']
   register: UseFormRegister<FormPaymentsInput>
   setValue: UseFormSetValue<FormPaymentsInput>
+  watch: UseFormWatch<FormPaymentsInput>
   paymentsMutation: ReturnType<typeof useMutateFormPage>['paymentsMutation']
 }) => {
+  const watchMultiQtyEnabled = watch('products_meta.multi_product')
   return (
     <>
       <PaymentInnerContainer>
@@ -119,20 +125,26 @@ const ProductsPaymentSection = ({
           isLoading={paymentsMutation.isLoading}
           errors={errors}
           paymentIsEnabled={!isDisabled}
-          updateProductListStore={(newProducts) =>
+          updateProductListStore={(newProducts) => {
+            if (newProducts.length <= 1) {
+              setValue('products_meta.multi_product', false)
+            }
             setValue('products', newProducts)
-          }
+          }}
         />
       </PaymentInnerContainer>
       <Divider my="2rem" />
       <PaymentInnerContainer>
         <FormControl
           isReadOnly={paymentsMutation.isLoading}
-          isDisabled={isDisabled}
+          isDisabled={isDisabled || isSelectionDisabled}
         >
           <Toggle
-            {...register('products_meta.multi_product')}
+            {...register('products_meta.multi_product', {
+              value: watchMultiQtyEnabled,
+            })}
             label="Allow selection of multiple types of products/services"
+            isChecked={watchMultiQtyEnabled} // component is not re-mounted, need to override internal <Checkbox /> state
           />
         </FormControl>
       </PaymentInnerContainer>
@@ -239,6 +251,7 @@ const PaymentInputFields = ({
     control,
     handleSubmit,
     setValue,
+    watch,
   } = useForm<FormPaymentsInput>({
     mode: 'onChange',
     defaultValues: {
@@ -269,7 +282,7 @@ const PaymentInputFields = ({
         min_amount: dollarsToCents(display_min_amount ?? '0'),
         max_amount: dollarsToCents(display_max_amount ?? '0'),
         amount_cents: dollarsToCents(display_amount ?? '0'),
-      })
+      } as FormPaymentsField)
     },
     [setData],
   )
@@ -328,6 +341,8 @@ const PaymentInputFields = ({
           register={register}
           paymentsMutation={paymentsMutation}
           setValue={setValue}
+          isSelectionDisabled={paymentsData.products.length <= 1}
+          watch={watch}
         />
       ) : (
         <FixedAndVariablePaymentSection
