@@ -78,6 +78,7 @@ const compileUserModel = (db: Mongoose) => {
         lastSeenFeatureUpdateVersion: Number,
       },
       apiToken: {
+        select: false,
         keyHash: {
           type: String,
         },
@@ -144,12 +145,10 @@ const compileUserModel = (db: Mongoose) => {
         runValidators: true,
         setDefaultsOnInsert: true,
       },
-    )
-      .select('-apiToken')
-      .populate({
-        path: 'agency',
-        model: AGENCY_SCHEMA_ID,
-      })
+    ).populate({
+      path: 'agency',
+      model: AGENCY_SCHEMA_ID,
+    })
   }
 
   /**
