@@ -137,7 +137,6 @@ export const updateUserContact = (
       },
       { new: true },
     )
-
       .populate({
         path: 'agency',
         model: AGENCY_SCHEMA_ID,
@@ -187,7 +186,6 @@ export const updateUserLastSeenFeatureUpdateVersion = (
       },
       { new: true },
     )
-
       .populate({
         path: 'agency',
         model: AGENCY_SCHEMA_ID,
@@ -228,7 +226,6 @@ export const getPopulatedUserById = (
 
   return ResultAsync.fromPromise(
     UserModel.findById(userId)
-
       .populate({
         path: 'agency',
         model: AGENCY_SCHEMA_ID,
