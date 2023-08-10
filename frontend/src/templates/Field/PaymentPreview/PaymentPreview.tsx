@@ -24,6 +24,8 @@ import {
   VerifiableEmailFieldSchema,
 } from '~features/verifiable-fields/Email'
 
+import { PRODUCT_ITEM_PLACEHOLDER } from './constants'
+
 type PaymentPreviewProps = {
   colorTheme?: FormColorTheme
   paymentDetails: FormPaymentsField
@@ -86,6 +88,13 @@ export const PaymentPreview = ({
   const sectionColor = useSectionColor(colorTheme)
 
   const title = 'Payment'
+  const _paymentDetails =
+    isBuilder && paymentDetails.products?.length === 0
+      ? {
+          ...paymentDetails,
+          products: [PRODUCT_ITEM_PLACEHOLDER],
+        }
+      : paymentDetails
   return (
     <>
       <Box as="h2" mb="2.25rem" textStyle="h2" color={sectionColor}>
@@ -93,7 +102,7 @@ export const PaymentPreview = ({
       </Box>
       <Box mb="2rem">
         <PaymentItemDetailsElement
-          paymentDetails={paymentDetails}
+          paymentDetails={_paymentDetails}
           colorTheme={colorTheme}
         />
       </Box>
