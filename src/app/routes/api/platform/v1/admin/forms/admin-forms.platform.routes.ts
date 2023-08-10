@@ -18,8 +18,8 @@ AdminFormsPlatformRouter.route('/:formId([a-fA-F0-9]{24})/webhooksettings')
    * @param body the user email
    *
    * @returns 200 with latest form settings
-   * @returns 401 when current user is not logged in
-   * @returns 403 when current user does not have permissions to obtain form settings
+   * @returns 401 when current user does not provide a valid API key, or is not a platform user
+   * @returns 403 when the user email does not have permissions to obtain form settings
    * @returns 404 when form to retrieve settings for cannot be found
    * @returns 500 when database error occurs
    */
@@ -37,14 +37,14 @@ AdminFormsPlatformRouter.route('/:formId([a-fA-F0-9]{24})/webhooksettings')
    * @consumes application/json
    * @returns 200 with latest form settings on successful update
    * @returns 400 when given body fails Joi validation
-   * @returns 401 when current user is not logged in
-   * @returns 403 when current user does not have permissions to update form settings
+   * @returns 401 when current user does not provide a valid API key, or is not a platform user
+   * @returns 403 when user email does not have permissions to update form settings
    * @returns 404 when form to update settings for cannot be found
    * @returns 409 when saving form settings incurs a conflict in the database
    * @returns 410 when updating settings for archived form
    * @returns 413 when updating settings causes form to be too large to be saved in the database
    * @returns 422 when an invalid settings update is attempted on the form
-   * @returns 422 when user cannot be retrieved from the database
+   * @returns 422 when user from user email cannot be retrieved from the database
    * @returns 500 when database error occurs
    */
   .patch(

@@ -1370,13 +1370,13 @@ export const handleUpdateSettings = [
  *
  * @returns 200 with updated form settings
  * @returns 400 when body is malformed; can happen when email parameter is passed for encrypt-mode forms
- * @returns 403 when current user does not have permissions to update form settings
+ * @returns 403 when user email does not have permissions to update form settings
  * @returns 404 when form to update settings for cannot be found
  * @returns 409 when saving form settings incurs a conflict in the database
  * @returns 410 when updating settings for archived form
  * @returns 413 when updating settings causes form to be too large to be saved in the database
  * @returns 422 when an invalid settings update is attempted on the form
- * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 422 when user from user email cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
 export const handleUpdateWebhookSettings = [
@@ -1447,7 +1447,6 @@ export const _handleUpdateFormField: ControllerHandler<
  * @security session
  *
  * @returns 200 with latest form settings on successful update
- * @returns 401 when current user is not logged in
  * @returns 403 when current user does not have permissions to obtain form settings
  * @returns 404 when form to retrieve settings for cannot be found
  * @returns 409 when saving form settings incurs a conflict in the database
@@ -1493,7 +1492,6 @@ export const handleGetSettings: ControllerHandler<
  * @returns 401 when current user is not logged in
  * @returns 403 when current user does not have permissions to obtain form settings
  * @returns 404 when form to retrieve settings for cannot be found
- * @returns 409 when saving form settings incurs a conflict in the database
  * @returns 500 when database error occurs
  */
 export const handleGetWebhookSettings: ControllerHandler<
