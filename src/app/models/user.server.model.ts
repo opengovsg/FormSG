@@ -79,11 +79,13 @@ const compileUserModel = (db: Mongoose) => {
       },
       apiToken: {
         select: false,
-        keyHash: {
-          type: String,
+        type: {
+          keyHash: {
+            type: String,
+          },
+          createdAt: Date,
+          lastUsedAt: Date,
         },
-        createdAt: Date,
-        lastUsedAt: Date,
       },
     },
     {
@@ -161,7 +163,8 @@ const compileUserModel = (db: Mongoose) => {
     return this.find()
       .where('email')
       .in(emails)
-      .select('email contact -_id')
+      .select('-_id')
+      .select('email contact')
       .lean()
       .exec()
   }
