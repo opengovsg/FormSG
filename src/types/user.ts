@@ -26,6 +26,11 @@ export interface IUserSchema extends IUser, Document, PublicView<PublicUser> {}
 
 export type IUserSchemaWithoutApi = Omit<IUserSchema, 'apiToken'>
 
+export type UserApiToken = {
+  keyHash: string
+  createdAt: Date
+  lastUsedAt: Date
+}
 export interface IUserModel extends Model<IUserSchema> {
   /**
    * Upsert into User collection with given email and agencyId.
