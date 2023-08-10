@@ -116,9 +116,6 @@ const ProductList = ({
           <Text textStyle="subhead-1" pb="0.25rem" color="secondary.500">
             You haven't added any product/service
           </Text>
-          <Text textStyle="caption-1" color="secondary.500">
-            Click 'Add' to configure your product/service
-          </Text>
         </Box>
         <Divider />
         <AddProductButton

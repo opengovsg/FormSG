@@ -162,8 +162,13 @@ export const ProductModal = ({
             divider={<Divider />}
           >
             <Stack>
-              <FormControl isInvalid={!!errors.name}>
-                <FormLabel isRequired>Name</FormLabel>
+              <FormControl isInvalid={!!errors.name} pb="1.5rem">
+                <FormLabel
+                  isRequired
+                  description="This will appear on proof of payment"
+                >
+                  Product/service name
+                </FormLabel>
                 <Input
                   {...register('name', { required: 'This field is required' })}
                   isInvalid={!!errors.name}
@@ -172,11 +177,9 @@ export const ProductModal = ({
               </FormControl>
 
               <FormControl isInvalid={!!errors.description}>
-                <FormLabel isRequired>Description</FormLabel>
-                <Textarea
-                  {...register('description', {
-                    required: 'This field is required',
-                  })}
+                <FormLabel>Description</FormLabel>
+                <Input
+                  {...register('description')}
                   isInvalid={!!errors.description}
                 />
                 <FormErrorMessage>
@@ -184,8 +187,11 @@ export const ProductModal = ({
                 </FormErrorMessage>
               </FormControl>
 
+              <Divider py="1.5rem" />
               <FormControl isInvalid={!!errors.display_amount}>
-                <FormLabel isRequired>Payment Amount</FormLabel>
+                <FormLabel isRequired description="Including GST">
+                  Amount
+                </FormLabel>
                 <Controller
                   name="display_amount"
                   control={control}
@@ -197,7 +203,6 @@ export const ProductModal = ({
                       inputMode="decimal"
                       placeholder="0.00"
                       {...field}
-                      sx={{ input: { textAlign: 'right' } }}
                     />
                   )}
                 />

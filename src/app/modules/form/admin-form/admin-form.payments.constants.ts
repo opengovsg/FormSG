@@ -5,7 +5,7 @@ import { paymentConfig } from '../../../config/features/payment.config'
 const JoiInt = Joi.number().integer()
 export const JoiPaymentProduct = Joi.object().keys({
   name: Joi.string().required(),
-  description: Joi.string().required(),
+  description: Joi.string().allow(''),
   multi_qty: Joi.boolean().required(),
   min_qty: Joi.when('multi_qty', {
     is: Joi.equal(true),

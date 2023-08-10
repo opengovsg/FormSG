@@ -83,10 +83,8 @@ const PaymentItem = ({
         variant="fullWidth"
       >
         <Box flexGrow={1}>
-          <Text textStyle="body-1" mb="0.5rem">
-            {product.data.name}
-          </Text>
-          <Text textStyle="body-1" mb="0.5rem">
+          <Text textStyle="subhead-1">{product.data.name}</Text>
+          <Text textStyle="body-2" mb="0.5rem">
             {product.data.description}
           </Text>
           <Flex alignItems={'center'}>
