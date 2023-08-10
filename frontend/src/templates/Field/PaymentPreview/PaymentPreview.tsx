@@ -85,10 +85,7 @@ export const PaymentPreview = ({
   }
   const sectionColor = useSectionColor(colorTheme)
 
-  const title =
-    paymentDetails.payment_type === PaymentType.Products
-      ? paymentDetails.name
-      : 'Payment'
+  const title = 'Payment'
   return (
     <>
       <Box as="h2" mb="2.25rem" textStyle="h2" color={sectionColor}>

@@ -115,23 +115,6 @@ const ProductsPaymentSection = ({
   return (
     <>
       <PaymentInnerContainer>
-        <FormControl
-          isReadOnly={paymentsMutation.isLoading}
-          isInvalid={!!errors.name}
-          isDisabled={isDisabled}
-          isRequired
-        >
-          <FormLabel>Title</FormLabel>
-          <Input
-            {...register('name', {
-              required: 'This field is required',
-            })}
-          />
-          <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
-        </FormControl>
-      </PaymentInnerContainer>
-      <Divider my="2rem" />
-      <PaymentInnerContainer>
         <ProductServiceBox
           isLoading={paymentsMutation.isLoading}
           errors={errors}
