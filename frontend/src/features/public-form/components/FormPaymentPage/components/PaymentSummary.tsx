@@ -20,7 +20,7 @@ const LineItem = ({
   return (
     <Flex textStyle={'body-2'} mb="1rem" justifyContent={'space-between'}>
       <Text>
-        {productItem.quantity}x {productItem.data.name}
+        {productItem.data.name} x {productItem.quantity}
       </Text>
       <Text>
         S${centsToDollars(productItem.quantity * productItem.data.amount_cents)}
