@@ -34,10 +34,10 @@ const PaymentSummaryRow = ({
       direction={{ base: 'column', md: 'row' }}
       spacing={{ base: 0, md: '1.5rem' }}
     >
-      <Text textStyle="body-2" width="6.5rem" color="#848484">
+      <Text textStyle="body-2" width="6.5rem" color="content.medium">
         {title}
       </Text>
-      <Text textStyle="body-2" color="#474747">
+      <Text textStyle="body-2" color="content.default">
         {input}
       </Text>
     </Stack>
@@ -84,15 +84,17 @@ export const DownloadReceiptBlock = ({
   return (
     <Box>
       <Stack spacing="2rem">
-        <Stack tabIndex={-1} spacing="1rem">
-          <Text textStyle="h2">Your payment has been made successfully.</Text>
-          <Text textStyle="subhead-1">
+        <Stack tabIndex={-1} spacing="0.75rem">
+          <Text textStyle="h2" color="content.strong">
+            Your payment has been made successfully.
+          </Text>
+          <Text textStyle="subhead-1" color="content.strong">
             Your form has been submitted and payment has been made.
           </Text>
         </Stack>
         <Divider />
         <Stack>
-          <Text textStyle="h2" mb="0.5rem">
+          <Text textStyle="h2" mb="0.5rem" color="content.strong">
             Payment summary
           </Text>
           <PaymentSummaryRow title="Product/service" input={productName} />
