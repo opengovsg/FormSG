@@ -112,8 +112,8 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
             customVal: null,
           },
           RangeValidationOptions: {
-            rangeMinimum: null,
-            rangeMaximum: null,
+            customMin: null,
+            customMax: null,
           },
         },
       }

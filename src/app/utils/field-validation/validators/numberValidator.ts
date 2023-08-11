@@ -92,15 +92,13 @@ const getNumberLengthValidator: NumberValidatorConstructor = (numberField) => {
  * Returns a validation function to check if number is
  * within the number range specified.
  */
-const numberRangeValidator: NumberValidatorConstructor =
+const getNumberRangeValidator: NumberValidatorConstructor =
   (numberField) => (response) => {
     const val = Number(response.answer)
-    const { rangeMinimum, rangeMaximum } =
+    const { customMin, customMax } =
       numberField.ValidationOptions.RangeValidationOptions
-    const isWithinMinimum =
-      typeof rangeMinimum === 'number' && rangeMinimum <= val
-    const isWithinMaximum =
-      typeof rangeMaximum === 'number' && val <= rangeMaximum
+    const isWithinMinimum = !!customMin && customMin <= val
+    const isWithinMaximum = !!customMax && val <= customMax
 
     return isWithinMinimum && isWithinMaximum
       ? right(response)
@@ -116,7 +114,7 @@ const getNumberValidator: NumberValidatorConstructor = (numberField) => {
     case NumberSelectedValidation.Length:
       return getNumberLengthValidator(numberField)
     case NumberSelectedValidation.Range:
-      return numberRangeValidator(numberField)
+      return getNumberRangeValidator(numberField)
     default:
       return right
   }

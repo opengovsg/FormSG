@@ -11,28 +11,28 @@ import { MyInfoSchema } from './baseField'
 
 const createNumberFieldSchema = () => {
   const ValidationOptionsSchema = new Schema<NumberValidationOptions>({
-      selectedValidation: {
+    selectedValidation: {
+      type: String,
+      enum: [...Object.values(NumberSelectedValidation), null],
+    },
+    LengthValidationOptions: {
+      customVal: {
+        type: Number,
+      },
+      selectedLengthValidation: {
         type: String,
-        enum: [...Object.values(NumberSelectedValidation), null],
+        enum: [...Object.values(NumberSelectedLengthValidation), null],
       },
-      LengthValidationOptions: {
-        customVal: {
-          type: Number,
-        },
-        selectedLengthValidation: {
-          type: String,
-          enum: [...Object.values(NumberSelectedLengthValidation), null],
-        },
+    },
+    RangeValidationOptions: {
+      customMin: {
+        type: Number,
       },
-      RangeValidationOptions: {
-        rangeMinimum: {
-          type: Number,
-        },
-        rangeMaximum: {
-          type: Number,
-        },
+      customMax: {
+        type: Number,
       },
-    })
+    },
+  })
 
   const NumberFieldSchema = new Schema<INumberFieldSchema>({
     myInfo: MyInfoSchema,
@@ -46,8 +46,8 @@ const createNumberFieldSchema = () => {
           selectedLengthValidation: null,
         },
         RangeValidationOptions: {
-          rangeMinimum: null,
-          rangeMaximum: null,
+          customMin: null,
+          customMax: null,
         },
       },
     },

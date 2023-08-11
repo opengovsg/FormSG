@@ -1,8 +1,8 @@
 import { BasicField, MyInfoableFieldBase } from './base'
 
 export enum NumberSelectedValidation {
-  Length = 'Character Length',
-  Range = 'Number Range',
+  Length = 'Length',
+  Range = 'Range',
 }
 
 export enum NumberSelectedLengthValidation {
@@ -13,12 +13,12 @@ export enum NumberSelectedLengthValidation {
 
 export type NumberLengthValidationOptions = {
   customVal: number | null
-  selectedLengthValidation: NumberSelectedLengthValidation | '' | null
+  selectedLengthValidation: NumberSelectedLengthValidation | null
 }
 
 export type NumberRangeValidationOptions = {
-  rangeMinimum: number | null
-  rangeMaximum: number | null
+  customMin: number | null
+  customMax: number | null
 }
 
 export type NumberValidationOptions = {

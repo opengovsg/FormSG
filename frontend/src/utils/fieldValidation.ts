@@ -210,7 +210,7 @@ export const createNumberValidationRules: ValidationRuleFn<NumberFieldBase> = (
   const { selectedValidation } = schema.ValidationOptions
   const { selectedLengthValidation, customVal } =
     schema.ValidationOptions.LengthValidationOptions
-  const { rangeMinimum, rangeMaximum } =
+  const { customMin, customMax } =
     schema.ValidationOptions.RangeValidationOptions
 
   return {
@@ -249,19 +249,19 @@ export const createNumberValidationRules: ValidationRuleFn<NumberFieldBase> = (
           return true
 
         const numVal = Number(val)
-        const hasMinimum = typeof rangeMinimum === 'number'
-        const hasMaximum = typeof rangeMaximum === 'number'
+        const hasMinimum = !!customMin
+        const hasMaximum = !!customMax
         const isOutsideRange =
-          (hasMinimum && rangeMinimum > numVal) ||
-          (hasMaximum && rangeMaximum < numVal)
+          (hasMinimum && customMin > numVal) ||
+          (hasMaximum && customMax < numVal)
 
         if (!isOutsideRange) return true
         else if (hasMinimum && hasMaximum) {
-          return `Please enter a number within the range ${rangeMinimum} to ${rangeMaximum}`
+          return `Please enter a number within the range ${customMin} to ${customMax}`
         } else if (hasMinimum) {
-          return `Please enter a number that has a minimum value of ${rangeMinimum}`
+          return `Please enter a number that has a minimum value of ${customMin}`
         } else if (hasMaximum) {
-          return `Please enter a number that has a maximum value of ${rangeMaximum}`
+          return `Please enter a number that has a maximum value of ${customMax}`
         }
       },
     },
