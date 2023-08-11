@@ -6,7 +6,7 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import { UNAUTHORIZED_USER_MESSAGE } from '../user/user.constant'
-import { getPopulatedUserById } from '../user/user.service'
+import { getPopulatedApiUserById } from '../user/user.service'
 
 import { getUserByApiKey } from './auth.service'
 import {
@@ -195,7 +195,7 @@ const isPlatformApiUser: ControllerHandler = (req, res, next) => {
   if (!sessionUserId) {
     return res.status(StatusCodes.UNAUTHORIZED).json(UNAUTHORIZED_USER_MESSAGE)
   }
-  return getPopulatedUserById(sessionUserId)
+  return getPopulatedApiUserById(sessionUserId)
     .map((retrievedUser) => {
       if (!retrievedUser) {
         return res
