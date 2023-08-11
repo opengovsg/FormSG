@@ -197,8 +197,8 @@ export const ProductPaymentItemDetailsBlock = ({
           ))}
         </Stack>
         <FormErrorMessage>{errors?.payment_products?.message}</FormErrorMessage>
-        <Divider />
       </FormControl>
+      <Divider />
       <Flex justifyContent={'end'}>
         <Text textAlign={'right'} mr={'1rem'}>
           Total price
