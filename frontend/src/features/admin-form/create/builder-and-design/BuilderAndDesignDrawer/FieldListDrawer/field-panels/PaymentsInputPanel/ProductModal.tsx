@@ -1,5 +1,4 @@
-import { useMemo } from 'react'
-import { Controller, RegisterOptions, useForm, useWatch } from 'react-hook-form'
+import { Controller, RegisterOptions, useForm } from 'react-hook-form'
 import {
   Box,
   Button,
@@ -15,9 +14,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Stack,
-  Textarea,
 } from '@chakra-ui/react'
-import { cloneDeep } from 'lodash'
 
 import { Product } from '~shared/types'
 import {
@@ -40,6 +37,7 @@ type ProductInput = Product & {
 
 const MIN_QTY_KEY = `min_qty`
 const MAX_QTY_KEY = `max_qty`
+const DISPLAY_AMOUNT_KEY = 'display_amount'
 export const ProductModal = ({
   onClose,
   onSaveProduct,
@@ -55,26 +53,20 @@ export const ProductModal = ({
     control,
     watch,
     formState: { errors },
-  } = useForm<ProductInput>(
-    product
+    trigger,
+    getValues,
+  } = useForm<ProductInput>({
+    defaultValues: product
       ? {
-          defaultValues: {
-            ...product,
-            display_amount: centsToDollars(product.amount_cents ?? 0),
-          },
+          ...product,
+          display_amount: centsToDollars(product.amount_cents ?? 0),
         }
-      : undefined,
-  )
-
-  const watchedInputs = useWatch({
-    control,
-  }) as ProductInput
-
-  // trigger a re-render on children by failing the shallow comparator
-  const clonedWatchedInputs = useMemo(
-    () => cloneDeep(watchedInputs),
-    [watchedInputs],
-  )
+      : {
+          min_qty: 1,
+          max_qty: 99,
+        },
+    mode: 'all',
+  })
 
   const {
     data: {
@@ -83,7 +75,10 @@ export const ProductModal = ({
     } = {},
   } = useEnv()
 
-  const amountValidation: RegisterOptions<ProductInput, 'display_amount'> = {
+  const amountValidation: RegisterOptions<
+    ProductInput,
+    typeof DISPLAY_AMOUNT_KEY
+  > = {
     validate: (val) => {
       // Validate that it is a money value.
       // Regex allows leading and trailing spaces, max 2dp
@@ -105,13 +100,6 @@ export const ProductModal = ({
           Number(centsToDollars(maxPaymentAmountCents)),
         )}`
       }
-
-      if (
-        dollarsToCents(val) * clonedWatchedInputs.max_qty >
-        maxPaymentAmountCents
-      ) {
-        return 'Item and Quantity exceeded limit. Either lower your quantity or lower payment amount.'
-      }
       return true
     },
   }
@@ -128,7 +116,7 @@ export const ProductModal = ({
       if (val <= 0) {
         return 'Please enter a value greater than 0'
       }
-      if (val > clonedWatchedInputs[MAX_QTY_KEY]) {
+      if (val > getValues(MAX_QTY_KEY)) {
         return 'Please enter a value smaller than the maximum quantity'
       }
       return true
@@ -140,10 +128,13 @@ export const ProductModal = ({
         return 'Please enter a value greater than 0'
       }
 
-      if (val * clonedWatchedInputs.amount_cents > maxPaymentAmountCents) {
-        return 'Item and Quantity exceeded limit. Either lower your quantity or lower payment amount.'
+      const amount = dollarsToCents(getValues(DISPLAY_AMOUNT_KEY))
+
+      if (val * amount > maxPaymentAmountCents) {
+        const maxQty = Math.floor(maxPaymentAmountCents / amount)
+        return `The maximum quantity is ${maxQty}`
       }
-      if (val < clonedWatchedInputs[MIN_QTY_KEY]) {
+      if (val < getValues(MIN_QTY_KEY)) {
         return 'Please enter a value greater than the minimum quantity'
       }
       return true
@@ -155,12 +146,9 @@ export const ProductModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader>Add product/service</ModalHeader>
+        <ModalHeader>{product ? 'Edit' : 'Add'} product/service</ModalHeader>
         <ModalBody>
-          <Stack
-            spacing={{ base: '1.5rem', md: '2.25rem' }}
-            divider={<Divider />}
-          >
+          <Stack spacing={{ base: '1rem', md: '1.5rem' }} divider={<Divider />}>
             <Stack>
               <FormControl isInvalid={!!errors.name} pb="1.5rem">
                 <FormLabel
@@ -186,14 +174,14 @@ export const ProductModal = ({
                   {errors.description?.message}
                 </FormErrorMessage>
               </FormControl>
-
-              <Divider py="1.5rem" />
+            </Stack>
+            <Stack>
               <FormControl isInvalid={!!errors.display_amount}>
                 <FormLabel isRequired description="Including GST">
                   Amount
                 </FormLabel>
                 <Controller
-                  name="display_amount"
+                  name={DISPLAY_AMOUNT_KEY}
                   control={control}
                   rules={amountValidation}
                   render={({ field }) => (
@@ -203,6 +191,10 @@ export const ProductModal = ({
                       inputMode="decimal"
                       placeholder="0.00"
                       {...field}
+                      onChange={(e) => {
+                        field.onChange(e)
+                        trigger([MIN_QTY_KEY, MAX_QTY_KEY, DISPLAY_AMOUNT_KEY])
+                      }}
                     />
                   )}
                 />
@@ -215,20 +207,21 @@ export const ProductModal = ({
               <FormControl>
                 <Toggle
                   {...register('multi_qty')}
-                  description="Customise the range that users can select from"
-                  label="Allow multiple quantities"
+                  label="Quantity limit"
+                  description="Set the minimum and maximum quantities respondents can select"
                 />
               </FormControl>
               <FormControl
                 hidden={!watchMultiQtyEnabled}
                 isInvalid={!!errors[MIN_QTY_KEY] || !!errors[MAX_QTY_KEY]}
               >
-                <Flex flexDirection="row">
+                <Flex flexDirection="row" mt="0.5rem">
                   <FormControl
                     isInvalid={!!errors[MIN_QTY_KEY]}
                     isDisabled={!watchMultiQtyEnabled}
                     mr="0.5rem"
                   >
+                    <FormLabel isRequired>Minimum quantity</FormLabel>
                     <Controller
                       name={MIN_QTY_KEY}
                       control={control}
@@ -238,8 +231,16 @@ export const ProductModal = ({
                           {...register(MIN_QTY_KEY, {
                             required: watchMultiQtyEnabled,
                           })}
-                          isInvalid={!!errors.min_qty}
+                          isInvalid={!!errors[MIN_QTY_KEY]}
                           {...field}
+                          onChange={(e) => {
+                            field.onChange(e)
+                            trigger([
+                              MIN_QTY_KEY,
+                              MAX_QTY_KEY,
+                              DISPLAY_AMOUNT_KEY,
+                            ])
+                          }}
                         />
                       )}
                     />
@@ -248,6 +249,7 @@ export const ProductModal = ({
                     isInvalid={!!errors[MAX_QTY_KEY]}
                     isDisabled={!watchMultiQtyEnabled}
                   >
+                    <FormLabel isRequired>Maximum quantity</FormLabel>
                     <Controller
                       name={MAX_QTY_KEY}
                       control={control}
@@ -257,8 +259,17 @@ export const ProductModal = ({
                           {...register(MAX_QTY_KEY, {
                             required: watchMultiQtyEnabled,
                           })}
-                          isInvalid={!!errors.max_qty}
+                          isInvalid={!!errors[MAX_QTY_KEY]}
+                          placeholder={'99'}
                           {...field}
+                          onChange={(e) => {
+                            field.onChange(e)
+                            trigger([
+                              MIN_QTY_KEY,
+                              MAX_QTY_KEY,
+                              DISPLAY_AMOUNT_KEY,
+                            ])
+                          }}
                         />
                       )}
                     />
@@ -279,7 +290,11 @@ export const ProductModal = ({
             <Button variant="clear" onClick={onClose}>
               Cancel
             </Button>
-            <Button loadingText="Saving" onClick={handleSaveProduct}>
+            <Button
+              loadingText="Saving"
+              onClick={handleSaveProduct}
+              isDisabled={Object.keys(errors).length > 0}
+            >
               Save product
             </Button>
           </ButtonGroup>
