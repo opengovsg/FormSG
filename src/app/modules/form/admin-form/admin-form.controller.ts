@@ -1310,6 +1310,18 @@ export const _handleUpdateWebhookSettings: ControllerHandler<
   const { userEmail } = req.body
   const settingsToPatch = req.body
 
+  logger.info({
+    message: 'User attempting to update webhook settings',
+    meta: {
+      action: '_handleUpdateWebhookSettings',
+      ...createReqMeta(req),
+      reqBody: req.body,
+      formId,
+      userEmail,
+      settingsToPatch,
+    },
+  })
+
   // Step 1: Retrieve currently logged in user.
   return UserService.findUserByEmail(userEmail)
     .andThen((user) =>
@@ -1501,6 +1513,17 @@ export const handleGetWebhookSettings: ControllerHandler<
 > = (req, res) => {
   const { formId } = req.params
   const { userEmail } = req.body
+
+  logger.info({
+    message: 'User attempting to get webhook settings',
+    meta: {
+      action: 'handleGetWebhookSettings',
+      ...createReqMeta(req),
+      reqBody: req.body,
+      formId,
+      userEmail,
+    },
+  })
 
   return UserService.findUserByEmail(userEmail)
     .andThen((user) =>
