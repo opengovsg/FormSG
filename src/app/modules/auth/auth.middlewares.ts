@@ -167,7 +167,6 @@ export const authenticateApiKey: ControllerHandler = (req, res, next) => {
     meta: {
       action: 'authenticateApiKey',
       userId: apiKeyMatch.groups.userId,
-      token: bearerMatch.groups.token,
     },
   })
   return getUserByApiKey(apiKeyMatch.groups.userId, bearerMatch.groups.token)
