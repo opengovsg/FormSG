@@ -51,7 +51,7 @@ export const App = (): JSX.Element => {
         <Inspector
           // props see docs:
           // https://github.com/zthxxx/react-dev-inspector#inspector-component-props
-          keys={['control', 'shift', 'command', 'c']}
+          keys={['control', 'shift', 'c']}
           disableLaunchEditor={true}
           onClickElement={({ codeInfo }: InspectParams) => {
             if (!codeInfo?.absolutePath) return
