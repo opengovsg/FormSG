@@ -366,6 +366,38 @@ describe('user.service', () => {
       expect(actualResult._unsafeUnwrap()?.toObject()).toEqual(expected)
     })
 
+    it('should return populated user without apiToken property', async () => {
+      // Arrange
+      const MOCK_USER_ID = new ObjectID()
+      const MOCK_EMAIL_DOMAIN = `api${ALLOWED_DOMAIN}`
+      const { agency, user } = await dbHandler.insertFormCollectionReqs({
+        userId: MOCK_USER_ID,
+        mailDomain: MOCK_EMAIL_DOMAIN,
+        apiToken: {
+          keyHash: 'apiTokenKeyHashExample',
+          createdAt: new Date(Date.now()),
+          lastUsedAt: new Date(Date.now()),
+        },
+      })
+
+      // Expected result should not contain apiToken property
+      const userWithoutApiToken = {
+        ...user.toObject(),
+      }
+      delete userWithoutApiToken['apiToken']
+      const expected = {
+        ...userWithoutApiToken,
+        agency: agency.toObject(),
+      }
+
+      // Act
+      const actualResult = await UserService.getPopulatedUserById(MOCK_USER_ID)
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()?.toObject()).toEqual(expected)
+    })
+
     it('should return populated user with last seen feature update version successfully', async () => {
       const mockUserIdWithLastSeenFeatureUpdate = new ObjectID()
       const { agency, user } = await dbHandler.insertFormCollectionReqs({

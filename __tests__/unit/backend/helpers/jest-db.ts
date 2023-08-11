@@ -24,6 +24,7 @@ import {
   IPopulatedForm,
   ISubmissionSchema,
   IUserSchema,
+  UserApiToken,
 } from 'src/types'
 
 /**
@@ -88,11 +89,13 @@ const insertUser = async ({
   userId,
   mailDomain = 'test.gov.sg',
   mailName = 'test',
+  apiToken,
 }: {
   agencyId: ObjectID
   userId?: ObjectID
   mailName?: string
   mailDomain?: string
+  apiToken?: UserApiToken
 }): Promise<IUserSchema> => {
   const User = getUserModel(mongoose)
 
@@ -100,6 +103,7 @@ const insertUser = async ({
     email: `${mailName}@${mailDomain}`,
     _id: userId,
     agency: agencyId,
+    apiToken: apiToken,
   })
 }
 
@@ -116,6 +120,7 @@ const insertFormCollectionReqs = async ({
   shortName = 'govtest',
   flags,
   betaFlags,
+  apiToken,
 }: {
   userId?: ObjectID
   mailName?: string
@@ -123,6 +128,7 @@ const insertFormCollectionReqs = async ({
   shortName?: string
   flags?: { lastSeenFeatureUpdateVersion: number }
   betaFlags?: IUserSchema['betaFlags']
+  apiToken?: UserApiToken
 } = {}): Promise<{
   agency: AgencyDocument
   user: IUserSchema
@@ -137,6 +143,7 @@ const insertFormCollectionReqs = async ({
     agency: agency._id,
     flags,
     betaFlags,
+    apiToken,
   })
 
   return { agency, user }
