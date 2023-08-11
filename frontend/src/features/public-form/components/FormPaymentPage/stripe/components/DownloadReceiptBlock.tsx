@@ -106,6 +106,7 @@ export const DownloadReceiptBlock = ({
 
       <Button
         mt="2.75rem"
+        width={{ base: '100%', md: 'auto' }}
         leftIcon={<BiDownload fontSize="1.5rem" />}
         onClick={handleInvoiceClick}
       >
