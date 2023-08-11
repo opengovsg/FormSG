@@ -42,7 +42,7 @@ export const FeedbackBlock = ({
     <Flex justify="center">
       <chakra.form w="100%" maxW="100%" noValidate onSubmit={handleFormSubmit}>
         <FormControl isInvalid={!!errors.rating} id="rating">
-          <FormLabel isRequired>
+          <FormLabel isRequired color="content.strong">
             How was your form filling experience today?
           </FormLabel>
           <Controller
