@@ -13,10 +13,11 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Skeleton,
   Stack,
 } from '@chakra-ui/react'
 
-import { Product } from '~shared/types'
+import { Product, StorageFormSettings } from '~shared/types'
 import {
   centsToDollars,
   dollarsToCents,
@@ -29,6 +30,7 @@ import Input from '~components/Input'
 import MoneyInput from '~components/MoneyInput'
 import Toggle from '~components/Toggle'
 
+import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 import { useEnv } from '~features/env/queries'
 
 type ProductInput = Product & {
@@ -74,6 +76,11 @@ export const ProductModal = ({
       minPaymentAmountCents = Number.MIN_SAFE_INTEGER,
     } = {},
   } = useEnv()
+
+  const { data: settings, isLoading: isLoadingSettings } =
+    useAdminFormSettings()
+  const hasGST =
+    (settings as StorageFormSettings)?.payments_field.gst_enabled ?? false
 
   const amountValidation: RegisterOptions<
     ProductInput,
@@ -175,11 +182,17 @@ export const ProductModal = ({
                 </FormErrorMessage>
               </FormControl>
             </Stack>
-            <Stack>
-              <FormControl isInvalid={!!errors.display_amount}>
-                <FormLabel isRequired description="Including GST">
+
+            <FormControl isInvalid={!!errors.display_amount}>
+              <Skeleton isLoaded={!isLoadingSettings}>
+                <FormLabel
+                  isRequired
+                  description={hasGST ? 'Including GST' : undefined}
+                >
                   Amount
                 </FormLabel>
+              </Skeleton>
+              <Skeleton isLoaded={!isLoadingSettings}>
                 <Controller
                   name={DISPLAY_AMOUNT_KEY}
                   control={control}
@@ -201,8 +214,8 @@ export const ProductModal = ({
                 <FormErrorMessage>
                   {errors.display_amount?.message}
                 </FormErrorMessage>
-              </FormControl>
-            </Stack>
+              </Skeleton>
+            </FormControl>
             <Box>
               <FormControl>
                 <Toggle
