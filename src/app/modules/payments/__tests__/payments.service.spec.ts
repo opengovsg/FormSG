@@ -1,5 +1,6 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
+import moment from 'moment-timezone'
 import mongoose, { Query } from 'mongoose'
 import { PaymentStatus } from 'shared/types'
 
@@ -88,6 +89,9 @@ describe('payments.service', () => {
         email: email,
         status: PaymentStatus.Succeeded,
         gstEnabled: false,
+        completedPayment: {
+          paymentDate: moment().utc().toDate(),
+        },
       })
     })
     afterEach(() => jest.clearAllMocks())
@@ -104,11 +108,9 @@ describe('payments.service', () => {
       expect(result.isOk()).toBeTrue()
     })
 
-    it('should return the latest payment based on id creation', async () => {
-      const latestId = new ObjectId()
-      // create the latest payment object
+    it('should return the latest payment based on completed payment date', async () => {
+      // create a payment object with an older successful payment date
       await Payment.create({
-        _id: latestId,
         formId: MOCK_FORM_ID,
         targetAccountId: 'acct_MOCK_ACCOUNT_ID',
         pendingSubmissionId: new ObjectId(),
@@ -117,7 +119,11 @@ describe('payments.service', () => {
         email: email,
         status: PaymentStatus.Succeeded,
         gstEnabled: false,
+        completedPayment: {
+          paymentDate: moment().utc().subtract(1, 'days').toDate(),
+        },
       })
+
       const result =
         await PaymentsService.findLatestSuccessfulPaymentByEmailAndFormId(
           email,
@@ -126,7 +132,7 @@ describe('payments.service', () => {
 
       // Assert latest payment document
       result.map((payment) => {
-        expect(payment.id).toEqual(latestId.toHexString())
+        expect(payment.id).toEqual(expectedObjectId.toHexString())
       })
 
       // Assert
@@ -167,6 +173,29 @@ describe('payments.service', () => {
         email: newEmail,
         status: PaymentStatus.Pending,
         gstEnabled: false,
+      })
+      const result =
+        await PaymentsService.findLatestSuccessfulPaymentByEmailAndFormId(
+          newEmail,
+          newFormId,
+        )
+      expect(result.isErr()).toBeTrue()
+    })
+    it('should return with error if there is no successful payments for the email and formId within the last 30 days', async () => {
+      const newEmail = 'new@new.com'
+      const newFormId = new ObjectId().toHexString()
+      await Payment.create({
+        formId: newFormId,
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
+        pendingSubmissionId: new ObjectId(),
+        paymentIntentId: 'somePaymentIntentId',
+        amount: 314159,
+        email: newEmail,
+        status: PaymentStatus.Succeeded,
+        gstEnabled: false,
+        completedPayment: {
+          paymentDate: moment().subtract(31, 'days').utc().toDate(),
+        },
       })
       const result =
         await PaymentsService.findLatestSuccessfulPaymentByEmailAndFormId(
