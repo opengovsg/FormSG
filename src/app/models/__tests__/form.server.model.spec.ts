@@ -104,7 +104,7 @@ const PAYMENTS_DEFAULTS = {
     amount_cents: 0,
     min_amount: 0,
     max_amount: 0,
-    payment_type: PaymentType.Fixed,
+    payment_type: PaymentType.Products,
     gst_enabled: true,
     products: [],
     products_meta: {
@@ -748,7 +748,7 @@ describe('Form Model', () => {
           payments_field: {
             enabled: true,
             amount_cents: 50,
-            payment_type: PaymentType.Fixed,
+            payment_type: PaymentType.Products,
             description: 'some payment',
           },
         })
