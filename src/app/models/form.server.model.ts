@@ -183,7 +183,7 @@ export const formPaymentsFieldSchema = {
   payment_type: {
     type: String,
     enum: Object.values(PaymentType),
-    default: PaymentType.Fixed,
+    default: PaymentType.Products,
   },
   gst_enabled: {
     type: Boolean,
