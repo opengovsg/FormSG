@@ -687,9 +687,9 @@ export const linkStripeAccountToForm = (
     formId: form._id,
   }
 
-  // If getFeatureFlag throws a DatabaseError, we want to log it, but respond
-  // to the client as if the flag is not found.
   return getFeatureFlag(featureFlags.validateStripeEmailDomain, {
+    // If getFeatureFlag throws a DatabaseError, we want to log it, but respond
+    // to the client as if the flag is not found.
     defaultValue: false,
     logMeta,
   })
