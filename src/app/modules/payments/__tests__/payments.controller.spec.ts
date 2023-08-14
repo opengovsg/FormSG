@@ -65,6 +65,7 @@ describe('payments.controller', () => {
     })
     it('should return 200 and the latest payment record id if there are multiple successful payments', async () => {
       const email = 'formsg@tech.gov.sg'
+      const now = moment().utc()
 
       // create 2 payments with different payment dates but same email
       const latestPayment = await Payment.create({
@@ -77,7 +78,7 @@ describe('payments.controller', () => {
         email: email,
         completedPayment: {
           receiptUrl: 'http://form.gov.sg',
-          paymentDate: moment().utc().toDate(),
+          paymentDate: now.toDate(),
         },
         gstEnabled: false,
       })
@@ -91,7 +92,7 @@ describe('payments.controller', () => {
         email: email,
         completedPayment: {
           receiptUrl: 'http://form.gov.sg',
-          paymentDate: moment().utc().subtract(1, 'hour').toDate(),
+          paymentDate: now.subtract(1, 'hour').toDate(),
         },
         gstEnabled: false,
       })
@@ -124,7 +125,7 @@ describe('payments.controller', () => {
         email: email,
         completedPayment: {
           receiptUrl: 'http://form.gov.sg',
-          paymentDate: new Date(moment().subtract(31, 'days').toDate()),
+          paymentDate: moment().subtract(31, 'days').toDate(),
         },
         gstEnabled: false,
       })

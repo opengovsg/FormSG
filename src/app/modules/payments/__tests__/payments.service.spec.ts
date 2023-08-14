@@ -76,6 +76,7 @@ describe('payments.service', () => {
   describe('findLatestSuccessfulPaymentByEmailAndFormId', () => {
     const expectedObjectId = new ObjectId()
     const email = 'someone@mail.com'
+    const now = moment().utc()
 
     beforeEach(async () => {
       await dbHandler.clearCollection(Payment.collection.name)
@@ -90,7 +91,7 @@ describe('payments.service', () => {
         status: PaymentStatus.Succeeded,
         gstEnabled: false,
         completedPayment: {
-          paymentDate: moment().utc().toDate(),
+          paymentDate: now.toDate(),
         },
       })
     })
@@ -120,7 +121,7 @@ describe('payments.service', () => {
         status: PaymentStatus.Succeeded,
         gstEnabled: false,
         completedPayment: {
-          paymentDate: moment().utc().subtract(1, 'days').toDate(),
+          paymentDate: now.subtract(1, 'days').toDate(),
         },
       })
 
