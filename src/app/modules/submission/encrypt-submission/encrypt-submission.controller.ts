@@ -166,13 +166,9 @@ const submitEncryptModeForm: ControllerHandler<
       error: formPublicResult.error,
     })
     const { statusCode, errorMessage } = mapRouteError(formPublicResult.error)
-    if (statusCode === StatusCodes.GONE) {
-      return res.sendStatus(statusCode)
-    } else {
-      return res.status(statusCode).json({
-        message: errorMessage,
-      })
-    }
+    return res.status(statusCode).json({
+      message: errorMessage,
+    })
   }
   // Check if respondent is a GSIB user
   const isIntranetUser = FormService.checkIsIntranetFormAccess(
@@ -802,13 +798,9 @@ const submitStorageModeForm: ControllerHandler<
       error: formPublicResult.error,
     })
     const { statusCode, errorMessage } = mapRouteError(formPublicResult.error)
-    if (statusCode === StatusCodes.GONE) {
-      return res.sendStatus(statusCode)
-    } else {
-      return res.status(statusCode).json({
-        message: errorMessage,
-      })
-    }
+    return res.status(statusCode).json({
+      message: errorMessage,
+    })
   }
   // Check if respondent is a GSIB user
   const isIntranetUser = FormService.checkIsIntranetFormAccess(
