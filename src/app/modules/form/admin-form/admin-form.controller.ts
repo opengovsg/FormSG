@@ -93,6 +93,7 @@ import {
 } from './admin-form.constants'
 import { EditFieldError, GoGovError } from './admin-form.errors'
 import {
+  getWebhookSettingsValidator,
   updateSettingsValidator,
   updateWebhookSettingsValidator,
 } from './admin-form.middlewares'
@@ -1304,11 +1305,10 @@ export const _handleUpdateSettings: ControllerHandler<
 export const _handleUpdateWebhookSettings: ControllerHandler<
   { formId: string },
   FormWebhookSettings | ErrorDto,
-  WebhookSettingsUpdateDto & { userEmail: string }
+  WebhookSettingsUpdateDto
 > = (req, res) => {
   const { formId } = req.params
-  const { userEmail } = req.body
-  const settingsToPatch = req.body
+  const { userEmail, webhook: webhookSettings } = req.body
 
   logger.info({
     message: 'User attempting to update webhook settings',
@@ -1318,7 +1318,7 @@ export const _handleUpdateWebhookSettings: ControllerHandler<
       reqBody: req.body,
       formId,
       userEmail,
-      settingsToPatch,
+      webhookSettings,
     },
   })
 
@@ -1333,7 +1333,9 @@ export const _handleUpdateWebhookSettings: ControllerHandler<
       }),
     )
     .andThen((retrievedForm) =>
-      AdminFormService.updateFormSettings(retrievedForm, settingsToPatch),
+      AdminFormService.updateFormSettings(retrievedForm, {
+        webhook: webhookSettings,
+      }),
     )
     .map((updatedSettings) => {
       const webhookSettings = { webhook: updatedSettings.webhook }
@@ -1347,7 +1349,7 @@ export const _handleUpdateWebhookSettings: ControllerHandler<
           ...createReqMeta(req),
           userEmail,
           formId,
-          settingsKeysToUpdate: Object.keys(settingsToPatch),
+          settingsKeysToUpdate: Object.keys(webhookSettings),
         },
         error,
       })
@@ -1381,7 +1383,7 @@ export const handleUpdateSettings = [
  * @security session
  *
  * @returns 200 with updated form settings
- * @returns 400 when body is malformed; can happen when email parameter is passed for encrypt-mode forms
+ * @returns 400 when body is malformed
  * @returns 403 when user email does not have permissions to update form settings
  * @returns 404 when form to update settings for cannot be found
  * @returns 409 when saving form settings incurs a conflict in the database
@@ -1498,15 +1500,16 @@ export const handleGetSettings: ControllerHandler<
 }
 
 /**
- * Handler for GET api/platform/v1/admin/forms/:formId/webhookSettings.
+ * Handler for POST api/platform/v1/admin/forms/:formId/webhooksettings.
  *
  * @returns 200 with latest webhook and response mode settings
  * @returns 401 when current user is not logged in
  * @returns 403 when current user does not have permissions to obtain form settings
  * @returns 404 when form to retrieve settings for cannot be found
+ * @returns 422 when user from user email cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleGetWebhookSettings: ControllerHandler<
+export const _handleGetWebhookSettings: ControllerHandler<
   { formId: string },
   FormWebhookResponseModeSettings | ErrorDto,
   { userEmail: string }
@@ -1552,6 +1555,23 @@ export const handleGetWebhookSettings: ControllerHandler<
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
+
+/**
+ * Handler for POST api/platform/v1/admin/forms/:formId/webhooksettings.
+ * @security session
+ *
+ * @returns 200 with latest webhook and response mode settings
+ * @returns 400 when body is malformed
+ * @returns 401 when current user is not logged in
+ * @returns 403 when user email does not have permissions to obtain form settings
+ * @returns 404 when form to retrieve settings for cannot be found
+ * @returns 422 when user from user email cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleGetWebhookSettings = [
+  getWebhookSettingsValidator,
+  _handleGetWebhookSettings,
+] as ControllerHandler[]
 
 /**
  * Handler for POST /v2/submissions/encrypt/preview/:formId.

@@ -43,11 +43,20 @@ export const updateSettingsValidator = celebrate({
 })
 
 /**
- * Joi validator for PATCH api/platform/v1/admin/forms/:formId/webhookSettings route.
+ * Joi validator for PATCH api/platform/v1/admin/forms/:formId/webhooksettings route.
  */
 export const updateWebhookSettingsValidator = celebrate({
   [Segments.BODY]: Joi.object<WebhookSettingsUpdateDto>({
     userEmail: Joi.string().email().required(),
     webhook: webhookSettingsValidator,
+  }),
+})
+
+/**
+ * Joi validator for POST api/platform/v1/admin/forms/:formId/webhooksettings route.
+ */
+export const getWebhookSettingsValidator = celebrate({
+  [Segments.BODY]: Joi.object<{ userEmail: string }>({
+    userEmail: Joi.string().email().required(),
   }),
 })

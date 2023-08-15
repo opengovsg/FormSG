@@ -216,7 +216,7 @@ export type FormWebhookResponseModeSettings = Pick<
 >
 export type SettingsUpdateDto = PartialDeep<FormSettings>
 
-export type WebhookSettingsUpdateDto = Pick<SettingsUpdateDto, 'webhook'> & {
+export type WebhookSettingsUpdateDto = Pick<FormSettings, 'webhook'> & {
   userEmail: string
 }
 

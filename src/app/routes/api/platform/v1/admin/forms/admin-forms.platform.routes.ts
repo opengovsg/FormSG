@@ -14,16 +14,18 @@ AdminFormsPlatformRouter.route('/:formId([a-fA-F0-9]{24})/webhooksettings')
   /**
    * Retrieve the webhook and response mode settings of the specified form
    * @security bearer
-   * @route GET /admin/forms/:formId/settings
+   * @route POST /admin/forms/:formId/webhooksettings
    * @param body the user email
    *
    * @returns 200 with latest form settings
+   * @returns 400 when given body fails Joi validation
    * @returns 401 when current user does not provide a valid API key, or is not a platform user
    * @returns 403 when the user email does not have permissions to obtain form settings
    * @returns 404 when form to retrieve settings for cannot be found
+   * @returns 422 when user from user email cannot be retrieved from the database
    * @returns 500 when database error occurs
    */
-  .get(
+  .post(
     limitRate({ max: rateLimitConfig.platformApi }),
     AdminFormController.handleGetWebhookSettings,
   )
