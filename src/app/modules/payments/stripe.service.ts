@@ -1000,6 +1000,7 @@ export const generatePaymentInvoice = (
       formTitle: populatedForm.title,
       submissionId: payment.completedPayment?.submissionId || '',
       gstApplicable: payment.gstEnabled,
+      products: payment.products || [],
     })
 
     return ResultAsync.fromPromise(

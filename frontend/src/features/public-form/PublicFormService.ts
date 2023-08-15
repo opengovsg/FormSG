@@ -1,6 +1,7 @@
 import { SubmitFormIssueBodyDto, SuccessMessageDto } from '~shared/types'
 import { FormFieldDto, PaymentFieldsDto } from '~shared/types/field'
 import {
+  ProductItem,
   PublicFormAuthLogoutDto,
   PublicFormAuthRedirectDto,
   SubmitFormFeedbackBodyDto,
@@ -83,11 +84,14 @@ export type SubmitEmailFormArgs = {
   formLogics: FormDto['form_logics']
   formInputs: FormFieldValues
   responseMetadata?: ResponseMetadata
-  paymentReceiptEmail?: string
-  payments?: PaymentFieldsDto
 }
 
-export type SubmitStorageFormArgs = SubmitEmailFormArgs & { publicKey: string }
+export type SubmitStorageFormArgs = SubmitEmailFormArgs & {
+  publicKey: string
+  paymentReceiptEmail?: string
+  paymentProducts?: Array<ProductItem>
+  payments?: PaymentFieldsDto
+}
 
 export const submitEmailModeForm = async ({
   formFields,
@@ -131,6 +135,7 @@ export const submitStorageModeForm = async ({
   captchaType = '',
   paymentReceiptEmail,
   responseMetadata,
+  paymentProducts,
   payments,
 }: SubmitStorageFormArgs) => {
   const filteredInputs = filterHiddenInputs({
@@ -145,6 +150,7 @@ export const submitStorageModeForm = async ({
     responseMetadata,
     paymentReceiptEmail,
     payments,
+    paymentProducts,
   })
   return ApiService.post<SubmissionResponseDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/encrypt`,
@@ -210,6 +216,7 @@ export const submitStorageModeFormWithFetch = async ({
   captchaType = '',
   paymentReceiptEmail,
   responseMetadata,
+  paymentProducts,
   payments,
 }: SubmitStorageFormArgs) => {
   const filteredInputs = filterHiddenInputs({
@@ -224,6 +231,7 @@ export const submitStorageModeFormWithFetch = async ({
     responseMetadata,
     paymentReceiptEmail,
     payments,
+    paymentProducts,
   })
 
   // Add captcha response to query string

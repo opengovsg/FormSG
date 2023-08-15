@@ -5,7 +5,7 @@ import { ObjectId } from 'bson'
 import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync } from 'neverthrow'
-import { PaymentStatus, SubmissionType } from 'shared/types'
+import { PaymentStatus, ProductItem, SubmissionType } from 'shared/types'
 import Stripe from 'stripe'
 import { MarkRequired } from 'ts-essentials'
 
@@ -72,11 +72,13 @@ describe('stripe.controller', () => {
     }
     const mockFormTitle = 'Mock Form Title'
     const mockSubmissionId = 'MOCK_SUBMISSION_ID'
+    const mockProducts: ProductItem[] = expect.any(Array)
     const mockInvoiceArgs = {
       ...mockBusinessInfo,
       formTitle: mockFormTitle,
       submissionId: mockSubmissionId,
       gstApplicable: false,
+      products: mockProducts,
     }
     const mockForm = {
       _id: MOCK_FORM_ID,
@@ -226,8 +228,8 @@ describe('stripe.controller', () => {
     it('should redirect back to settings/payment page when code is undefined', async () => {
       // Arrange
       const mockReq = expressHandler.mockRequest({
-        query: { state: 'otherState' },
-        others: { signedCookies: { stripeState: 'otherState' } },
+        query: { state: 'otherStates' },
+        others: { signedCookies: { stripeState: 'otherStates' } },
       })
       const mockRes = expressHandler.mockResponse()
       // Act
@@ -239,7 +241,7 @@ describe('stripe.controller', () => {
 
       // Assert
       expect(mockRes.redirect).toHaveBeenCalledWith(
-        `${config.app.appUrl}/admin/form/otherState/settings/payments`,
+        `${config.app.appUrl}/admin/form/otherStates/settings/payments`,
       )
     })
 

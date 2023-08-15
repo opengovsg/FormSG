@@ -10,6 +10,7 @@ import {
 } from '@chakra-ui/react'
 import { PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
 
+import { GetPaymentInfoDto } from '~shared/types'
 import { FormColorTheme, FormResponseMode } from '~shared/types/form'
 
 import { useBrowserStm } from '~hooks/payments'
@@ -17,17 +18,16 @@ import Button from '~components/Button'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
-import { PaymentItemDetailsBlock } from '../../components/PaymentItemDetailsBlock'
+import { PaymentSummary } from '../../components'
 
 interface PaymentPageBlockProps {
-  submissionId: string
+  paymentInfoData: GetPaymentInfoDto
   isRetry?: boolean
   focusOnMount?: boolean
   triggerPaymentStatusRefetch: () => void
   paymentAmount: number
   // null here due to payment_intent.description from stripe
   paymentItemName?: string | null
-  paymentDescription?: string | null
 }
 
 interface StripeCheckoutFormProps {
@@ -133,7 +133,7 @@ const StripeCheckoutForm = ({
 }
 
 export const StripePaymentBlock = ({
-  submissionId,
+  paymentInfoData,
   focusOnMount,
   isRetry,
   triggerPaymentStatusRefetch,
@@ -162,6 +162,7 @@ export const StripePaymentBlock = ({
   if (!form || form.responseMode !== FormResponseMode.Encrypt) {
     return <></>
   }
+
   return (
     <Flex flexDir="column">
       <Stack tabIndex={-1} ref={focusRef} spacing="1rem">
@@ -172,13 +173,12 @@ export const StripePaymentBlock = ({
           <Text textStyle="h3" textColor="primary.500" mb="2.25rem">
             Payment
           </Text>
-          <PaymentItemDetailsBlock
-            paymentItemName={
-              paymentItemName ? paymentItemName : form.payments_field.name
-            }
-            paymentDescription={form.payments_field.description}
+          <PaymentSummary
+            form={form}
+            paymentInfoData={paymentInfoData}
             colorTheme={colorTheme}
             paymentAmount={paymentAmount}
+            paymentItemName={paymentItemName}
           />
         </Box>
         <StripeCheckoutForm
@@ -186,7 +186,9 @@ export const StripePaymentBlock = ({
           isRetry={isRetry}
           triggerPaymentStatusRefetch={triggerPaymentStatusRefetch}
         />
-        <Text textColor="secondary.300">Response ID: {submissionId}</Text>
+        <Text textColor="secondary.300">
+          Response ID: {paymentInfoData.submissionId}
+        </Text>
       </Stack>
     </Flex>
   )
