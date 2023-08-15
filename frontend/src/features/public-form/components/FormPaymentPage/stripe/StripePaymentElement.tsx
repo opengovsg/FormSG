@@ -140,7 +140,6 @@ const StripePaymentContainer = ({
               amount={paymentInfoData.amount}
               products={paymentInfoData.products || []}
               paymentFieldsSnapshot={paymentInfoData.payment_fields_snapshot}
-              paymentDate={paymentInfoData.paymentDate}
             />
           </>
         )

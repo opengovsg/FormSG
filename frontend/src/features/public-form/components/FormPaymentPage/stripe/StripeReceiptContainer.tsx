@@ -21,7 +21,6 @@ export const StripeReceiptContainer = ({
   amount,
   products,
   paymentFieldsSnapshot,
-  paymentDate,
 }: {
   formId: string
   submissionId: string
@@ -29,12 +28,12 @@ export const StripeReceiptContainer = ({
   amount: number
   products: ProductItem[]
   paymentFieldsSnapshot: FormPaymentsField
-  paymentDate?: Date
 }) => {
-  const { data, isLoading, error } = useGetPaymentReceiptStatus(
-    formId,
-    paymentId,
-  )
+  const {
+    data: paymentReceiptStatus,
+    isLoading,
+    error,
+  } = useGetPaymentReceiptStatus(formId, paymentId)
 
   const toast = useToast()
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
@@ -60,7 +59,7 @@ export const StripeReceiptContainer = ({
     [submitFormFeedbackMutation, toast],
   )
 
-  if (isLoading || error || !data) {
+  if (isLoading || error || !paymentReceiptStatus?.isReady) {
     return (
       <PaymentStack>
         <GenericMessageBlock
@@ -85,7 +84,7 @@ export const StripeReceiptContainer = ({
           products={products}
           paymentType={paymentFieldsSnapshot.payment_type}
           name={paymentFieldsSnapshot.name || ''}
-          paymentDate={paymentDate}
+          paymentDate={paymentReceiptStatus.paymentDate}
         />
       </PaymentStack>
       <PaymentStack>
