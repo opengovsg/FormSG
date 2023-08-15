@@ -258,7 +258,9 @@ export const getPaymentInfo: ControllerHandler<
               submissionId: payment.pendingSubmissionId,
               products: payment.products,
               amount: payment.amount,
-              payment_fields_snapshot: payment.payment_fields_snapshot,
+              // Empty {} is returned for backwards compatibility during migration.
+              // Can be removed after set-payment-fields-snapshot.js script has been completely executed
+              payment_fields_snapshot: payment.payment_fields_snapshot || {},
             })
           })
         })
