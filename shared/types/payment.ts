@@ -71,6 +71,7 @@ export type PaymentDto = Payment & { _id: string }
 
 export type PaymentReceiptStatusDto = {
   isReady: boolean
+  paymentDate: Date | null
 }
 
 export type GetPaymentInfoDto = {
@@ -81,7 +82,6 @@ export type GetPaymentInfoDto = {
   products: Payment['products']
   amount: Payment['amount']
   payment_fields_snapshot: Payment['payment_fields_snapshot']
-  paymentDate?: Date
 }
 
 export type IncompletePaymentsDto = {

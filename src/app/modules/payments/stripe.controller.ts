@@ -57,9 +57,14 @@ export const checkPaymentReceiptStatus: ControllerHandler<{
       })
 
       if (!payment.completedPayment?.receiptUrl) {
-        return res.status(StatusCodes.NOT_FOUND).json({ isReady: false })
+        return res
+          .status(StatusCodes.NOT_FOUND)
+          .json({ isReady: false, paymentDate: null })
       }
-      return res.status(StatusCodes.OK).json({ isReady: true })
+      return res.status(StatusCodes.OK).json({
+        isReady: true,
+        paymentDate: payment.completedPayment?.paymentDate,
+      })
     })
     .mapErr((error) => {
       return res.status(StatusCodes.NOT_FOUND).json({ message: error })
@@ -254,7 +259,6 @@ export const getPaymentInfo: ControllerHandler<
               products: payment.products,
               amount: payment.amount,
               payment_fields_snapshot: payment.payment_fields_snapshot,
-              paymentDate: payment.completedPayment?.paymentDate,
             })
           })
         })

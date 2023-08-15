@@ -19,7 +19,7 @@ type DownloadReceiptBlockProps = {
   products: ProductItem[]
   paymentType?: PaymentType
   name: string
-  paymentDate?: Date
+  paymentDate: Date | null
 }
 
 const PaymentSummaryRow = ({
