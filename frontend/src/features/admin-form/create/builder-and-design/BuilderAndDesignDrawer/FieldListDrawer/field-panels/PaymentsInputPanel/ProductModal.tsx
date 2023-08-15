@@ -95,7 +95,7 @@ export const ProductModal = ({
       const validateMin = !!val && dollarsToCents(val) >= minPaymentAmountCents
       // Repeat the check on minPaymentAmountCents for correct typing
       if (!!minPaymentAmountCents && !validateMin) {
-        return `Please enter a payment amount above ${formatCurrency(
+        return `The maximum amount is ${formatCurrency(
           Number(centsToDollars(minPaymentAmountCents)),
         )}`
       }
@@ -103,7 +103,7 @@ export const ProductModal = ({
       const validateMax = !!val && dollarsToCents(val) <= maxPaymentAmountCents
       // Repeat the check on maxPaymentAmountCents for correct typing
       if (!!maxPaymentAmountCents && !validateMax) {
-        return `Please enter a payment amount below ${formatCurrency(
+        return `The maximum amount is ${formatCurrency(
           Number(centsToDollars(maxPaymentAmountCents)),
         )}`
       }
