@@ -387,7 +387,7 @@ describe('admin-form.payment.service', () => {
         })
         const updatedProducts = [
           {
-            multi_qty: true,
+            multi_qty: false,
             max_qty: 11,
             amount_cents: 10,
           },
@@ -406,7 +406,36 @@ describe('admin-form.payment.service', () => {
             updatedProducts,
           )
 
-        expect(putSpy).not.toHaveBeenCalled()
+        expect(putSpy).toHaveBeenCalledOnce()
+        expect(actualResult.isOk()).toBeTrue()
+      })
+      it('should allow updates when product * max qty is below max amount', async () => {
+        jest.replaceProperty(PaymentConfig, 'paymentConfig', {
+          ...PaymentConfig.paymentConfig,
+          maxPaymentAmountCents: 100,
+        })
+        const updatedProducts = [
+          {
+            multi_qty: false,
+            max_qty: 9,
+            amount_cents: 10,
+          },
+        ] as PaymentsProductUpdateDto
+
+        const putSpy = jest
+          .spyOn(EncryptFormModel, 'updatePaymentsProductById')
+          .mockResolvedValueOnce({
+            payments_field: {},
+          } as unknown as IEncryptedFormDocument)
+
+        // Act
+        const actualResult =
+          await AdminFormPaymentService.updatePaymentsProduct(
+            mockFormId,
+            updatedProducts,
+          )
+
+        expect(putSpy).toHaveBeenCalledOnce()
         expect(actualResult.isOk()).toBeTrue()
       })
     })
