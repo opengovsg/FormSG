@@ -120,6 +120,7 @@ export const ProductModal = ({
 
   const minQtyValidation: RegisterOptions<ProductInput, typeof MIN_QTY_KEY> = {
     validate: (val) => {
+      if (!getValues('multi_qty')) return true
       if (val <= 0) {
         return 'Please enter a value greater than 0'
       }
@@ -131,6 +132,7 @@ export const ProductModal = ({
   }
   const maxQtyValidation: RegisterOptions<ProductInput, typeof MAX_QTY_KEY> = {
     validate: (val) => {
+      if (!getValues('multi_qty')) return true
       if (val <= 0) {
         return 'Please enter a value greater than 0'
       }
@@ -218,10 +220,21 @@ export const ProductModal = ({
             </FormControl>
             <Box>
               <FormControl>
-                <Toggle
-                  {...register('multi_qty')}
-                  label="Quantity limit"
-                  description="Set the minimum and maximum quantities respondents can select"
+                <Controller
+                  name={'multi_qty'}
+                  control={control}
+                  render={({ field: { value, onChange, ...rest } }) => (
+                    <Toggle
+                      {...rest}
+                      isChecked={value}
+                      onChange={(e) => {
+                        onChange(e)
+                        trigger([MIN_QTY_KEY, MAX_QTY_KEY, DISPLAY_AMOUNT_KEY])
+                      }}
+                      label="Quantity limit"
+                      description="Set the minimum and maximum quantities respondents can select"
+                    />
+                  )}
                 />
               </FormControl>
               <FormControl
