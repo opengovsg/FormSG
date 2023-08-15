@@ -4,11 +4,11 @@ import axios from 'axios'
 import cuid from 'cuid'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
-import { featureFlags } from 'shared/constants'
 import Stripe from 'stripe'
 import { MarkRequired } from 'ts-essentials'
 import isURL from 'validator/lib/isURL'
 
+import { featureFlags } from '../../../../shared/constants'
 import {
   PaymentStatus,
   ReconciliationReportLine,
