@@ -1309,6 +1309,7 @@ export const _handleUpdateWebhookSettings: ControllerHandler<
 > = (req, res) => {
   const { formId } = req.params
   const { userEmail, webhook: webhookSettings } = req.body
+  const authedUserId = (req.session as AuthedSessionData).user._id
 
   logger.info({
     message: 'User attempting to update webhook settings',
@@ -1323,7 +1324,7 @@ export const _handleUpdateWebhookSettings: ControllerHandler<
   })
 
   // Step 1: Retrieve currently logged in user.
-  return UserService.findUserByEmail(userEmail)
+  return UserService.findUserById(authedUserId)
     .andThen((user) =>
       // Step 2: Retrieve form with write permission check.
       AuthService.getFormAfterPermissionChecks({
@@ -1516,6 +1517,7 @@ export const _handleGetWebhookSettings: ControllerHandler<
 > = (req, res) => {
   const { formId } = req.params
   const { userEmail } = req.body
+  const authedUserId = (req.session as AuthedSessionData).user._id
 
   logger.info({
     message: 'User attempting to get webhook settings',
@@ -1528,7 +1530,7 @@ export const _handleGetWebhookSettings: ControllerHandler<
     },
   })
 
-  return UserService.findUserByEmail(userEmail)
+  return UserService.findUserById(authedUserId)
     .andThen((user) =>
       // Retrieve form for settings as well as for permissions checking
       FormService.retrieveFullFormById(formId).map((form) => ({

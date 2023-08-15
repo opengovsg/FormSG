@@ -47,7 +47,7 @@ export const updateSettingsValidator = celebrate({
  */
 export const updateWebhookSettingsValidator = celebrate({
   [Segments.BODY]: Joi.object<WebhookSettingsUpdateDto>({
-    userEmail: Joi.string().email().required(),
+    userEmail: Joi.string().email().optional(),
     webhook: webhookSettingsValidator,
   }),
 })
@@ -57,6 +57,6 @@ export const updateWebhookSettingsValidator = celebrate({
  */
 export const getWebhookSettingsValidator = celebrate({
   [Segments.BODY]: Joi.object<{ userEmail: string }>({
-    userEmail: Joi.string().email().required(),
+    userEmail: Joi.string().email().optional(),
   }),
 })
