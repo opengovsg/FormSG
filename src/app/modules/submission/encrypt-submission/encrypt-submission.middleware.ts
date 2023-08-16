@@ -10,11 +10,9 @@ import {
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../../shared/types'
-import { IPopulatedEncryptedForm, IPopulatedForm } from '../../../../types'
 import {
   EncryptFormFieldResponse,
-  EncryptSubmissionDto,
-  ParsedStorageModeSubmissionBody,
+  StorageModeSubmissionBodyWithContext,
 } from '../../../../types/api'
 import { paymentConfig } from '../../../config/features/payment.config'
 import formsgSdk from '../../../config/formsg-sdk'
@@ -27,6 +25,11 @@ import ParsedResponsesObject from '../email-submission/ParsedResponsesObject.cla
 import { sharedSubmissionParams } from '../submission.constants'
 import { getFilteredResponses, isAttachmentResponse } from '../submission.utils'
 
+import {
+  FormDefinitionNotRetrievedError,
+  FormMissingPublicKeyError,
+  FormsgReqBodyExistsError,
+} from './encrypt-submission.errors'
 import { checkFormIsEncryptMode } from './encrypt-submission.service'
 import { mapRouteError } from './encrypt-submission.utils'
 
@@ -35,14 +38,8 @@ export const logger = createLoggerWithLabel(module)
 export type EncryptSubmissionMiddlewareHandler = ControllerHandler<
   { formId: string },
   SubmissionResponseDto | SubmissionErrorDto,
-  ParsedStorageModeSubmissionBody,
-  { captchaResponse?: unknown; captchaType?: unknown },
-  {
-    formDef: IPopulatedForm
-    encryptedFormDef: IPopulatedEncryptedForm
-    encryptedPayload: EncryptSubmissionDto
-    publicKey: string
-  }
+  StorageModeSubmissionBodyWithContext,
+  { captchaResponse?: unknown; captchaType?: unknown }
 >
 
 /**
@@ -120,6 +117,18 @@ export const validateStorageSubmissionParams = celebrate({
   }),
 })
 
+export const createFormsgReqBody: EncryptSubmissionMiddlewareHandler = async (
+  req,
+  res,
+  next,
+) => {
+  if (req.body.formsg) return new FormsgReqBodyExistsError()
+  else {
+    req.body.formsg = {}
+    return next()
+  }
+}
+
 export const retrieveForm: EncryptSubmissionMiddlewareHandler = async (
   req,
   res,
@@ -145,7 +154,7 @@ export const retrieveForm: EncryptSubmissionMiddlewareHandler = async (
     return res.status(statusCode).json({ message: errorMessage })
   }
 
-  res.locals.formDef = formResult.value
+  req.body.formsg.formDef = formResult.value
   return next()
 }
 
@@ -154,7 +163,9 @@ export const checkPublicKey: EncryptSubmissionMiddlewareHandler = async (
   res,
   next,
 ) => {
-  const formDef = res.locals.formDef
+  const formDef = req.body.formsg.formDef
+
+  if (!formDef) return new FormDefinitionNotRetrievedError()
 
   const logMeta = {
     action: 'checkPublicKey',
@@ -175,8 +186,6 @@ export const checkPublicKey: EncryptSubmissionMiddlewareHandler = async (
     })
   }
 
-  res.locals.publicKey = publicKey
-
   return next()
 }
 
@@ -185,15 +194,17 @@ export const checkEncryptMode: EncryptSubmissionMiddlewareHandler = async (
   res,
   next,
 ) => {
-  const formRetrieved = res.locals.formDef
+  const formDef = req.body.formsg.formDef
+
+  if (!formDef) return new FormDefinitionNotRetrievedError()
 
   const logMeta = {
     action: 'checkEncryptMode',
     ...createReqMeta(req),
-    formId: formRetrieved.id,
+    formId: formDef.id,
   }
 
-  const checkFormIsEncryptModeResult = checkFormIsEncryptMode(formRetrieved)
+  const checkFormIsEncryptModeResult = checkFormIsEncryptMode(formDef)
   if (checkFormIsEncryptModeResult.isErr()) {
     logger.error({
       message:
@@ -207,7 +218,8 @@ export const checkEncryptMode: EncryptSubmissionMiddlewareHandler = async (
       message: errorMessage,
     })
   }
-  res.locals.encryptedFormDef = checkFormIsEncryptModeResult.value
+
+  req.body.formsg.encryptedFormDef = checkFormIsEncryptModeResult.value
   return next()
 }
 
@@ -217,7 +229,11 @@ export const checkEncryptMode: EncryptSubmissionMiddlewareHandler = async (
  */
 export const checkNewBoundaryEnabled: EncryptSubmissionMiddlewareHandler =
   async (req, res, next) => {
-    if (!res.locals.formDef.get('newEncryptionBoundary')) {
+    const formDef = req.body.formsg.formDef
+
+    if (!formDef) return new FormDefinitionNotRetrievedError()
+
+    if (!formDef.get('newEncryptionBoundary')) {
       return res
         .status(StatusCodes.FORBIDDEN)
         .json({ message: 'This endpoint has not been enabled for this form.' })
@@ -231,7 +247,10 @@ export const validateSubmission: EncryptSubmissionMiddlewareHandler = async (
   res,
   next,
 ) => {
-  const formDef = res.locals.formDef
+  const formDef = req.body.formsg.formDef
+
+  if (!formDef) return new FormDefinitionNotRetrievedError()
+
   const logMeta = {
     action: 'validateSubmission',
     ...createReqMeta(req),
@@ -320,8 +339,12 @@ export const encryptSubmission: EncryptSubmissionMiddlewareHandler = async (
   next,
 ) => {
   const formId = req.params.formId
-  const formDef = res.locals.formDef
-  const publicKey = res.locals.publicKey
+  const formDef = req.body.formsg.formDef
+  if (!formDef) return new FormDefinitionNotRetrievedError()
+
+  const publicKey = formDef.publicKey
+  if (!publicKey) return new FormMissingPublicKeyError()
+
   const attachmentsMap: Record<string, Buffer> = {}
 
   const logMeta = {
@@ -371,7 +394,7 @@ export const encryptSubmission: EncryptSubmissionMiddlewareHandler = async (
     publicKey,
   )
 
-  res.locals.encryptedPayload = {
+  req.body.formsg.encryptedPayload = {
     attachments: encryptedAttachments,
     responses: filteredResponses.value as EncryptFormFieldResponse[],
     encryptedContent,

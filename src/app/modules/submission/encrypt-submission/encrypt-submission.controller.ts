@@ -48,6 +48,11 @@ import {
   ensureIsValidCaptcha,
 } from './encrypt-submission.ensures'
 import {
+  EncryptedFormDefinitionNotRetrievedError,
+  EncryptedPayloadNotFoundError,
+  FormDefinitionNotRetrievedError,
+} from './encrypt-submission.errors'
+import {
   addPaymentDataStream,
   checkFormIsEncryptMode,
   getEncryptedSubmissionData,
@@ -96,11 +101,13 @@ const submitEncryptModeForm: EncryptSubmissionMiddleware.EncryptSubmissionMiddle
       formId,
     }
 
-    const formDef = res.locals.formDef
+    const formDef = req.body.formsg.formDef
+    if (!formDef) return new FormDefinitionNotRetrievedError()
 
     setFormTags(formDef)
 
-    const form = res.locals.encryptedFormDef
+    const encryptedFormDef = req.body.formsg.encryptedFormDef
+    if (!encryptedFormDef) return new EncryptedFormDefinitionNotRetrievedError()
 
     const ensurePipeline = Pipeline(
       ensureIsPublicForm,
@@ -109,7 +116,7 @@ const submitEncryptModeForm: EncryptSubmissionMiddleware.EncryptSubmissionMiddle
     )
 
     const hasEnsuredAll = await ensurePipeline.execute({
-      form,
+      form: encryptedFormDef,
       logMeta,
       req,
       res,
@@ -118,12 +125,13 @@ const submitEncryptModeForm: EncryptSubmissionMiddleware.EncryptSubmissionMiddle
       return
     }
 
-    const encryptedPayload = res.locals.encryptedPayload
+    const encryptedPayload = req.body.formsg.encryptedPayload
+    if (!encryptedPayload) return new EncryptedPayloadNotFoundError()
 
     // Create Incoming Submission
     const { encryptedContent, responses, responseMetadata } = encryptedPayload
     const incomingSubmissionResult = IncomingEncryptSubmission.init(
-      form,
+      encryptedFormDef,
       responses,
       encryptedContent,
     )
@@ -140,7 +148,7 @@ const submitEncryptModeForm: EncryptSubmissionMiddleware.EncryptSubmissionMiddle
     // Checks if user is SPCP-authenticated before allowing submission
     let uinFin
     let userInfo
-    const { authType } = form
+    const { authType } = encryptedFormDef
     switch (authType) {
       case FormAuthType.SGID_MyInfo:
       case FormAuthType.MyInfo: {
@@ -228,18 +236,18 @@ const submitEncryptModeForm: EncryptSubmissionMiddleware.EncryptSubmissionMiddle
     // Encrypt Verified SPCP Fields
     let verified
     if (
-      form.authType === FormAuthType.SP ||
-      form.authType === FormAuthType.CP ||
-      form.authType === FormAuthType.SGID
+      encryptedFormDef.authType === FormAuthType.SP ||
+      encryptedFormDef.authType === FormAuthType.CP ||
+      encryptedFormDef.authType === FormAuthType.SGID
     ) {
       const encryptVerifiedContentResult =
         VerifiedContentService.getVerifiedContent({
-          type: form.authType,
+          type: encryptedFormDef.authType,
           data: { uinFin, userInfo },
         }).andThen((verifiedContent) =>
           VerifiedContentService.encryptVerifiedContent({
             verifiedContent,
-            formPublicKey: form.publicKey,
+            formPublicKey: encryptedFormDef.publicKey,
           }),
         )
 
@@ -265,7 +273,7 @@ const submitEncryptModeForm: EncryptSubmissionMiddleware.EncryptSubmissionMiddle
 
     if (encryptedPayload.attachments) {
       const attachmentUploadResult = await uploadAttachments(
-        form._id,
+        encryptedFormDef._id,
         encryptedPayload.attachments,
       )
 
@@ -282,9 +290,9 @@ const submitEncryptModeForm: EncryptSubmissionMiddleware.EncryptSubmissionMiddle
     }
 
     const submissionContent = {
-      form: form._id,
-      authType: form.authType,
-      myInfoFields: form.getUniqueMyInfoAttrs(),
+      form: encryptedFormDef._id,
+      authType: encryptedFormDef.authType,
+      myInfoFields: encryptedFormDef.getUniqueMyInfoAttrs(),
       encryptedContent: incomingSubmission.encryptedContent,
       verifiedContent: verified,
       attachmentMetadata,
@@ -294,15 +302,15 @@ const submitEncryptModeForm: EncryptSubmissionMiddleware.EncryptSubmissionMiddle
 
     // Handle submissions for payments forms
     if (
-      form.payments_field?.enabled &&
-      form.payments_channel.channel === PaymentChannel.Stripe
+      encryptedFormDef.payments_field?.enabled &&
+      encryptedFormDef.payments_channel.channel === PaymentChannel.Stripe
     ) {
       /**
        * Start of Payment Forms Submission Flow
        */
       // Step 0: Perform validation checks
       const amount = getPaymentAmount(
-        form.payments_field,
+        encryptedFormDef.payments_field,
         encryptedPayload.payments,
       )
 
@@ -335,7 +343,8 @@ const submitEncryptModeForm: EncryptSubmissionMiddleware.EncryptSubmissionMiddle
         })
       }
 
-      const targetAccountId = form.payments_channel.target_account_id
+      const targetAccountId =
+        encryptedFormDef.payments_channel.target_account_id
 
       // Step 1: Create payment without payment intent id and pending submission id.
       const payment = new Payment({
@@ -344,7 +353,7 @@ const submitEncryptModeForm: EncryptSubmissionMiddleware.EncryptSubmissionMiddle
         amount,
         email: paymentReceiptEmail,
         responses: incomingSubmission.responses,
-        gstEnabled: form.payments_field.gst_enabled,
+        gstEnabled: encryptedFormDef.payments_field.gst_enabled,
       })
       const paymentId = payment.id
 
@@ -393,7 +402,7 @@ const submitEncryptModeForm: EncryptSubmissionMiddleware.EncryptSubmissionMiddle
       // Stripe requires the amount to be an integer in the smallest currency unit (i.e. cents)
       const metadata: StripePaymentMetadataDto = {
         env: config.envSiteName,
-        formTitle: form.title,
+        formTitle: encryptedFormDef.title,
         formId,
         submissionId: pendingSubmissionId,
         paymentId,
@@ -408,7 +417,8 @@ const submitEncryptModeForm: EncryptSubmissionMiddleware.EncryptSubmissionMiddle
           enabled: true,
         },
         description:
-          form.payments_field.name || form.payments_field.description,
+          encryptedFormDef.payments_field.name ||
+          encryptedFormDef.payments_field.description,
         receipt_email: paymentReceiptEmail,
         metadata,
       }
@@ -563,6 +573,7 @@ export const handleEncryptedSubmission = [
   CaptchaMiddleware.validateCaptchaParams,
   TurnstileMiddleware.validateTurnstileParams,
   EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
+  EncryptSubmissionMiddleware.createFormsgReqBody,
   EncryptSubmissionMiddleware.retrieveForm,
   EncryptSubmissionMiddleware.checkPublicKey,
   EncryptSubmissionMiddleware.checkEncryptMode,
@@ -574,6 +585,7 @@ export const handleStorageSubmission = [
   TurnstileMiddleware.validateTurnstileParams,
   ReceiverMiddleware.receiveStorageSubmission,
   EncryptSubmissionMiddleware.validateStorageSubmissionParams,
+  EncryptSubmissionMiddleware.createFormsgReqBody,
   EncryptSubmissionMiddleware.retrieveForm,
   EncryptSubmissionMiddleware.checkNewBoundaryEnabled,
   EncryptSubmissionMiddleware.checkPublicKey,
