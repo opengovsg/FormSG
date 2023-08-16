@@ -23,13 +23,13 @@ type ResponseModeFilterParam = {
 
 // Exported for testing.
 export const getResponseModeFilter = (
-  encrypted: boolean,
+  isEncrypted: boolean,
 ): (<T extends ResponseModeFilterParam>(responses: T[]) => T[]) => {
-  if (encrypted) return encryptResponseModeFilter
-  else return emailResponseModeFilter
+  if (isEncrypted) return encryptedResponseModeFilter
+  else return clearResponseModeFilter
 }
 
-const emailResponseModeFilter = <T extends ResponseModeFilterParam>(
+const clearResponseModeFilter = <T extends ResponseModeFilterParam>(
   responses: T[],
 ) => {
   return responses.filter(
@@ -37,7 +37,7 @@ const emailResponseModeFilter = <T extends ResponseModeFilterParam>(
   )
 }
 
-const encryptResponseModeFilter = <T extends ResponseModeFilterParam>(
+const encryptedResponseModeFilter = <T extends ResponseModeFilterParam>(
   responses: T[] = [],
 ) => {
   // To filter for autoreply-able fields.
@@ -46,7 +46,7 @@ const encryptResponseModeFilter = <T extends ResponseModeFilterParam>(
   )
 }
 
-const encryptFormFieldModeFilter = <T extends FormField>(
+const encryptedFormFieldModeFilter = <T extends FormField>(
   responses: T[] = [],
 ) => {
   // To filter for autoreply-able fields.
@@ -64,10 +64,10 @@ const encryptFormFieldModeFilter = <T extends FormField>(
 
 // Exported for testing.
 export const getFormFieldModeFilter = (
-  encrypted: boolean,
+  isEncrypted: boolean,
 ): (<T extends FormField>(responses: T[]) => T[]) => {
-  if (encrypted) return encryptFormFieldModeFilter
-  else return emailResponseModeFilter
+  if (isEncrypted) return encryptedFormFieldModeFilter
+  else return clearResponseModeFilter
 }
 
 /**
