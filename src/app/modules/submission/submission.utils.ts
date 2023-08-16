@@ -122,14 +122,11 @@ export const getFilteredResponses = (
   form: IFormDocument,
   responses: FieldResponse[],
 ): Result<FilteredResponse[], ConflictError> => {
-  const responseModeFilter = getResponseModeFilter(
+  const isEncryptedMode =
     form.responseMode === FormResponseMode.Encrypt &&
-      !form.get(newEncryptionBoundaryFlag),
-  )
-  const formFieldModeFilter = getFormFieldModeFilter(
-    form.responseMode === FormResponseMode.Encrypt &&
-      !form.get(newEncryptionBoundaryFlag),
-  )
+    !form.get(newEncryptionBoundaryFlag)
+  const responseModeFilter = getResponseModeFilter(isEncryptedMode)
+  const formFieldModeFilter = getFormFieldModeFilter(isEncryptedMode)
 
   if (!form.form_fields) {
     return err(new ConflictError('Form fields are missing'))
