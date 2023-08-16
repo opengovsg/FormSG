@@ -22,6 +22,7 @@ type ResponseModeFilterParam = {
   fieldType: BasicField
 }
 
+// TODO (FRM-1232): Refactor once encryption boundary has been shifted.
 // Exported for testing.
 export const getResponseModeFilter = (
   isEncrypted: boolean,
@@ -38,6 +39,7 @@ const clearResponseModeFilter = <T extends ResponseModeFilterParam>(
   )
 }
 
+// TODO (FRM-1232): Remove once encryption boundary has been shifted.
 const encryptedResponseModeFilter = <T extends ResponseModeFilterParam>(
   responses: T[] = [],
 ) => {
@@ -47,6 +49,7 @@ const encryptedResponseModeFilter = <T extends ResponseModeFilterParam>(
   )
 }
 
+// TODO (FRM-1232): Remove once encryption boundary has been shifted.
 const encryptedFormFieldModeFilter = <T extends FormField>(
   responses: T[] = [],
 ) => {
@@ -63,6 +66,7 @@ const encryptedFormFieldModeFilter = <T extends FormField>(
   })
 }
 
+// TODO (FRM-1232): Refactor once encryption boundary has been shifted.
 // Exported for testing.
 export const getFormFieldModeFilter = (
   isEncrypted: boolean,
