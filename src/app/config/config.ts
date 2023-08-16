@@ -74,6 +74,8 @@ const s3BucketUrlVars = convict(s3BucketUrlSchema)
     staticAssetsBucketUrl: `${awsEndpoint}/${basicVars.awsConfig.staticAssetsS3Bucket}`,
     // NOTE THE TRAILING / AT THE END OF THIS URL! This is only for attachments!
     attachmentBucketUrl: `${awsEndpoint}/${basicVars.awsConfig.attachmentS3Bucket}/`,
+    virusScannerQuarantineS3BucketUrl: `${awsEndpoint}/${basicVars.awsConfig.virusScannerQuarantineS3Bucket}`,
+    virusScannerCleanS3BucketUrl: `${awsEndpoint}/${basicVars.awsConfig.virusScannerCleanS3Bucket}`,
   })
   .validate({ allowed: 'strict' })
   .getProperties()

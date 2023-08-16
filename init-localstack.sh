@@ -27,4 +27,8 @@ awslocal s3 mb s3://$LOGO_S3_BUCKET
 awslocal s3 mb s3://$ATTACHMENT_S3_BUCKET
 awslocal s3 mb s3://$STATIC_ASSETS_S3_BUCKET
 
+# Buckets for virus scanner
+awslocal s3 mb s3://$VIRUS_SCANNER_QUARANTINE_S3_BUCKET
+awslocal s3 mb s3://$VIRUS_SCANNER_CLEAN_S3_BUCKET  
+
 set +x
