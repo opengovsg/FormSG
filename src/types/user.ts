@@ -24,6 +24,13 @@ export type UserContactView = Pick<IUser, 'email' | 'contact'>
 
 export interface IUserSchema extends IUser, Document, PublicView<PublicUser> {}
 
+export type IUserSchemaWithoutApi = Omit<IUserSchema, 'apiToken'>
+
+export type UserApiToken = {
+  keyHash: string
+  createdAt: Date
+  lastUsedAt: Date
+}
 export interface IUserModel extends Model<IUserSchema> {
   /**
    * Upsert into User collection with given email and agencyId.
@@ -44,7 +51,7 @@ export interface IUserModel extends Model<IUserSchema> {
   findContactNumbersByEmails: (emails: string[]) => Promise<UserContactView[]>
 }
 
-export interface IPopulatedUser extends IUserSchema {
+export interface IPopulatedUser extends Omit<IUserSchema, 'apiToken'> {
   _id: any
   agency: AgencyDocument
 }

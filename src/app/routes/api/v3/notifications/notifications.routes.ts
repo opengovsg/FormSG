@@ -1,6 +1,6 @@
 import { Router } from 'express'
 
-import { handleStripeEventFromWebhook } from '../../../../modules/payments/stripe.controller'
+import { handleStripeEventUpdates } from '../../../../modules/payments/stripe.events.controller'
 import { handleTwilioSmsUpdates } from '../../../../modules/twilio/twilio.controller'
 
 import { BouncesRouter } from './bounces'
@@ -30,4 +30,4 @@ NotificationsRouter.post('/twilio', handleTwilioSmsUpdates)
  * @returns 200 when message succesfully received and logged
  * @returns 400 when request is not coming from Stripe or request body s invalid
  */
-NotificationsRouter.post('/stripe', handleStripeEventFromWebhook)
+NotificationsRouter.post('/stripe', handleStripeEventUpdates)

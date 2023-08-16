@@ -384,6 +384,11 @@ export interface IFormModel extends Model<IFormSchema> {
     newPayments: FormPaymentsField,
   ): Promise<IEncryptedFormDocument | null>
 
+  updatePaymentsProductById(
+    formId: string,
+    newProducts: FormPaymentsField['products'],
+  ): Promise<IEncryptedFormDocument | null>
+
   updateFormLogic(
     formId: string,
     logicId: string,

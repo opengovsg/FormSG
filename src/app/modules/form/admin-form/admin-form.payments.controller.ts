@@ -9,6 +9,7 @@ import { featureFlags } from '../../../../../shared/constants'
 import {
   ErrorDto,
   PaymentChannel,
+  PaymentsProductUpdateDto,
   PaymentsUpdateDto,
   PaymentType,
 } from '../../../../../shared/types'
@@ -29,6 +30,7 @@ import { getPopulatedUserById } from '../../user/user.service'
 import * as UserService from '../../user/user.service'
 
 import { PaymentChannelNotFoundError } from './admin-form.errors'
+import { JoiPaymentProduct } from './admin-form.payments.constants'
 import * as AdminFormPaymentService from './admin-form.payments.service'
 import { PermissionLevel } from './admin-form.types'
 import { mapRouteError, verifyUserBetaflag } from './admin-form.utils'
@@ -311,6 +313,56 @@ const _handleUpdatePayments: ControllerHandler<
   )
 }
 
+export const _handleUpdatePaymentsProduct: ControllerHandler<
+  { formId: string },
+  IEncryptedFormDocument['payments_field']['products'] | ErrorDto,
+  PaymentsProductUpdateDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      .andThen(checkFormIsEncryptMode)
+      // Step 3: Check that the payment form has a stripe account connected
+      .andThen((form) =>
+        form.payments_channel.channel === PaymentChannel.Unconnected
+          ? err(new PaymentChannelNotFoundError())
+          : ok(form),
+      )
+      // Step 4: User has permissions, proceed to allow updating of start page
+      .andThen(() =>
+        AdminFormPaymentService.updatePaymentsProduct(formId, req.body),
+      )
+      .map((updatedPayments) => {
+        return res.status(StatusCodes.OK).json(updatedPayments.products)
+      })
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when updating payments product',
+          meta: {
+            action: '_handleUpdatePaymentsProduct',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            body: req.body,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
 export const handleUpdatePaymentsForTest = _handleUpdatePayments
 
 const JoiInt = Joi.number().integer()
@@ -368,15 +420,50 @@ const updatePaymentsValidator = celebrate({
     }),
     name: Joi.when('enabled', {
       is: Joi.equal(true),
-      then: Joi.string().trim().required(),
+      then: Joi.when('payment_type', {
+        is: Joi.equal(PaymentType.Products),
+        then: Joi.any(),
+        otherwise: Joi.string().trim().required(),
+      }),
       otherwise: Joi.string().trim().allow(''),
     }),
+
+    products_meta: Joi.when('enabled', {
+      is: Joi.equal(true),
+      then: Joi.when('payment_type', {
+        is: Joi.equal(PaymentType.Products),
+        then: Joi.required(),
+        otherwise: Joi.any(),
+      }),
+      otherwise: Joi.any(),
+    }),
+
+    products: Joi.when('enabled', {
+      is: Joi.equal(true),
+      then: Joi.when('payment_type', {
+        is: Joi.equal(PaymentType.Products),
+        then: Joi.array().items(JoiPaymentProduct).required(),
+        otherwise: Joi.any(),
+      }),
+      otherwise: Joi.any(),
+    }),
+
     gst_enabled: Joi.when('enabled', {
       is: Joi.equal(true),
       then: Joi.boolean().required(),
     }),
   },
 })
+
+/**
+ * Handler for PUT /:formId/payment/products
+ */
+export const handleUpdatePaymentsProduct = [
+  celebrate({
+    [Segments.BODY]: Joi.array().items(JoiPaymentProduct),
+  }),
+  _handleUpdatePaymentsProduct,
+] as ControllerHandler[]
 
 /**
  * Handler for PUT /:formId/payment

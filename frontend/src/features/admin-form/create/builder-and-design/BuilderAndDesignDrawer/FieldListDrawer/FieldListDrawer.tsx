@@ -19,6 +19,7 @@ import { useUser } from '~features/user/queries'
 
 import { useCreateTabForm } from '../../../builder-and-design/useCreateTabForm'
 import { CreatePageDrawerCloseButton } from '../../../common'
+import { FieldListTabIndex } from '../../constants'
 
 import {
   BasicFieldPanel,
@@ -35,6 +36,30 @@ export const FieldListDrawer = (): JSX.Element => {
 
   const displayPayments =
     user?.betaFlags?.payment || flags?.has(featureFlags.payment)
+
+  const tabsDataList = [
+    {
+      header: 'Basic',
+      component: BasicFieldPanel,
+      isHidden: false,
+      isDisabled: isLoading,
+      key: FieldListTabIndex.Basic,
+    },
+    {
+      header: 'MyInfo',
+      component: MyInfoFieldPanel,
+      isHidden: false,
+      isDisabled: isLoading,
+      key: FieldListTabIndex.MyInfo,
+    },
+    {
+      header: 'Payments',
+      component: PaymentsInputPanel,
+      isHidden: !displayPayments,
+      isDisabled: isLoading,
+      key: FieldListTabIndex.Payments,
+    },
+  ].filter((tab) => !tab.isHidden)
 
   return (
     <Tabs
@@ -54,24 +79,20 @@ export const FieldListDrawer = (): JSX.Element => {
           <CreatePageDrawerCloseButton />
         </Flex>
         <TabList mx="-0.25rem" w="100%">
-          <Tab isDisabled={isLoading}>Basic</Tab>
-          <Tab isDisabled={isLoading}>MyInfo</Tab>
-          {displayPayments && <Tab isDisabled={isLoading}>Payments</Tab>}
+          {tabsDataList.map((tab) => (
+            <Tab key={tab.key} isDisabled={tab.isDisabled}>
+              {tab.header}
+            </Tab>
+          ))}
         </TabList>
         <Divider w="auto" mx="-1.5rem" />
       </Box>
       <TabPanels pb="1rem" flex={1} overflowY="auto">
-        <TabPanel>
-          <BasicFieldPanel />
-        </TabPanel>
-        <TabPanel>
-          <MyInfoFieldPanel />
-        </TabPanel>
-        {displayPayments && (
-          <TabPanel>
-            <PaymentsInputPanel />
+        {tabsDataList.map((tab) => (
+          <TabPanel key={tab.key}>
+            <tab.component />
           </TabPanel>
-        )}
+        ))}
       </TabPanels>
     </Tabs>
   )

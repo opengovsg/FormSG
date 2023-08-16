@@ -1,7 +1,7 @@
 import React from 'react'
 import { Meta, Story } from '@storybook/react'
 
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme, PaymentType } from '~shared/types'
 
 import { envHandlers } from '~/mocks/msw/handlers/env'
 import {
@@ -18,7 +18,7 @@ import { GenericMessageBlock as GenericMessageBlockComponent } from './stripe/co
 import { StripeReceiptContainer } from './stripe/StripeReceiptContainer'
 import {
   CreatePaymentIntentFailureBlock,
-  PaymentItemDetailsBlock,
+  FixedPaymentItemDetailsBlock,
   PaymentStack,
 } from './components'
 import { FormPaymentPage } from './FormPaymentPage'
@@ -59,7 +59,7 @@ const Template: (children: React.ReactElement) => Story = (children) => () =>
   )
 
 export const PendingPaymentDetails = Template(
-  <PaymentItemDetailsBlock
+  <FixedPaymentItemDetailsBlock
     paymentItemName="Mock event registration"
     paymentDescription="Mock event description"
     paymentAmount={1000}
@@ -84,6 +84,17 @@ export const CompleteWithoutReceipt = Template(
     formId="61540ece3d4a6e50ac0cc6ff"
     submissionId="MOCK_SUBMISSION_ID"
     paymentId="MOCK_PAYMENT_ID"
+    amount={60}
+    products={[]}
+    paymentFieldsSnapshot={{
+      enabled: true,
+      name: 'productName',
+      gst_enabled: true,
+      payment_type: PaymentType.Variable,
+      min_amount: 50,
+      max_amount: 200,
+    }}
+    paymentDate={new Date(Date.now())}
   />,
 ).bind({})
 CompleteWithoutReceipt.parameters = {
@@ -98,6 +109,17 @@ export const CompleteWithReceipt = Template(
     formId="61540ece3d4a6e50ac0cc6ff"
     submissionId="MOCK_SUBMISSION_ID"
     paymentId="MOCK_PAYMENT_ID"
+    amount={60}
+    products={[]}
+    paymentFieldsSnapshot={{
+      enabled: true,
+      name: 'productName',
+      gst_enabled: true,
+      payment_type: PaymentType.Variable,
+      min_amount: 50,
+      max_amount: 200,
+    }}
+    paymentDate={new Date(Date.now())}
   />,
 ).bind({})
 CompleteWithReceipt.parameters = {

@@ -137,8 +137,31 @@ const variantOutline: PartsStyleFunction<typeof parts> = (props) => {
   }
 }
 
+const variantClear: PartsStyleFunction<typeof parts> = (props) => {
+  const _variantOutline = variantOutline(props)
+  return {
+    ..._variantOutline,
+    field: merge(_variantOutline.field, {
+      justifyContent: 'end',
+      bg: 'transparent',
+      color: 'black',
+      borderColor: 'transparent',
+      _placeholder: {
+        color: 'black',
+      },
+      _hover: {
+        borderColor: 'primary.500',
+      },
+    }),
+    inputStack: {
+      justifyContent: 'end',
+    },
+  }
+}
+
 const variants = {
   outline: variantOutline,
+  clear: variantClear,
 }
 
 export const SingleSelect = {

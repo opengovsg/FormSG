@@ -18,6 +18,7 @@ import simplur from 'simplur'
 import {
   featureFlags,
   PAYMENT_CONTACT_FIELD_ID,
+  PAYMENT_PRODUCT_FIELD_ID,
   PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID,
 } from '~shared/constants'
 import { BasicField, PaymentType } from '~shared/types'
@@ -25,14 +26,15 @@ import { CaptchaTypes } from '~shared/types/captcha'
 import {
   FormAuthType,
   FormResponseMode,
+  ProductItem,
   PublicFormDto,
 } from '~shared/types/form'
+import { dollarsToCents } from '~shared/utils/payments'
 
 import { MONGODB_ID_REGEX } from '~constants/routes'
 import { useBrowserStm } from '~hooks/payments'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
-import { dollarsToCents } from '~utils/payments'
 import { HttpError } from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
 
@@ -256,15 +258,11 @@ export const PublicFormProvider = ({
 
   const navigate = useNavigate()
   const [, storePaymentMemory] = useBrowserStm(formId)
-  const handleSubmitForm: SubmitHandler<
-    FormFieldValues & {
-      [PAYMENT_CONTACT_FIELD_ID]?: { value: string }
-      [PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]: string
-    }
-  > = useCallback(
+  const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
     async ({
       [PAYMENT_CONTACT_FIELD_ID]: paymentReceiptEmailField,
       [PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]: paymentVariableInputAmountField,
+      [PAYMENT_PRODUCT_FIELD_ID]: paymentProducts,
       ...formInputs
     }) => {
       const { form } = data ?? {}
@@ -292,20 +290,6 @@ export const PublicFormProvider = ({
         }
       }
 
-      const formData = {
-        formFields: form.form_fields,
-        formLogics: form.form_logics,
-        formInputs,
-        captchaResponse,
-        captchaType,
-        responseMetadata: {
-          responseTimeMs: differenceInMilliseconds(Date.now(), startTime),
-          numVisibleFields: isPaymentEnabled
-            ? numVisibleFields + 1
-            : numVisibleFields,
-        },
-      }
-
       const countryRegionFieldIds = new Set(
         form.form_fields
           .filter((field) => field.fieldType === BasicField.CountryRegion)
@@ -327,6 +311,20 @@ export const PublicFormProvider = ({
         }
         return newFormInputs
       }, {})
+
+      const formData = {
+        formFields: form.form_fields,
+        formLogics: form.form_logics,
+        formInputs: formInputsWithCountryRegionInUpperCase,
+        captchaResponse,
+        captchaType,
+        responseMetadata: {
+          responseTimeMs: differenceInMilliseconds(Date.now(), startTime),
+          numVisibleFields: isPaymentEnabled
+            ? numVisibleFields + 1
+            : numVisibleFields,
+        },
+      }
 
       const logMeta = {
         action: 'handleSubmitForm',
@@ -436,6 +434,27 @@ export const PublicFormProvider = ({
         case FormResponseMode.Encrypt: {
           // Using mutateAsync so react-hook-form goes into loading state.
 
+          const formPaymentData: {
+            paymentReceiptEmail: string | undefined
+            paymentProducts: Array<ProductItem> | undefined
+            payments?: { amount_cents: number } | undefined
+          } = {
+            paymentReceiptEmail: paymentReceiptEmailField?.value,
+            paymentProducts: paymentProducts?.filter<ProductItem>(
+              (product): product is ProductItem =>
+                product.selected && product.quantity > 0,
+            ),
+            ...(form.payments_field.payment_type === PaymentType.Variable
+              ? {
+                  payments: {
+                    amount_cents: dollarsToCents(
+                      paymentVariableInputAmountField ?? '0',
+                    ),
+                  },
+                }
+              : {}),
+          }
+
           const submitStorageFormWithFetch = function () {
             datadogLogs.logger.info(`handleSubmitForm: submitting via fetch`, {
               meta: {
@@ -449,20 +468,8 @@ export const PublicFormProvider = ({
               .mutateAsync(
                 {
                   ...formData,
-                  formInputs: formInputsWithCountryRegionInUpperCase,
+                  ...formPaymentData,
                   publicKey: form.publicKey,
-                  captchaResponse,
-                  captchaType,
-                  paymentReceiptEmail: paymentReceiptEmailField?.value,
-                  ...(form.payments_field.payment_type === PaymentType.Variable
-                    ? {
-                        payments: {
-                          amount_cents: dollarsToCents(
-                            paymentVariableInputAmountField,
-                          ),
-                        },
-                      }
-                    : {}),
                 },
                 {
                   onSuccess: ({
@@ -519,20 +526,8 @@ export const PublicFormProvider = ({
               .mutateAsync(
                 {
                   ...formData,
-                  formInputs: formInputsWithCountryRegionInUpperCase,
+                  ...formPaymentData,
                   publicKey: form.publicKey,
-                  captchaResponse,
-                  captchaType,
-                  paymentReceiptEmail: paymentReceiptEmailField?.value,
-                  ...(form.payments_field.payment_type === PaymentType.Variable
-                    ? {
-                        payments: {
-                          amount_cents: dollarsToCents(
-                            paymentVariableInputAmountField,
-                          ),
-                        },
-                      }
-                    : {}),
                 },
                 {
                   onSuccess: ({
