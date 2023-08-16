@@ -212,25 +212,40 @@ const isPlatformApiUser: ControllerHandler<
         // 2. User is a platform but has no userEmail provided
         return next()
       } else {
-        return UserService.findUserByEmail(userEmail).map((emailUser) => {
-          if (!emailUser) {
-            return res
-              .status(StatusCodes.UNPROCESSABLE_ENTITY)
-              .json('User not found')
-          }
-          logger.info({
-            message: 'API user is a platform',
-            meta: {
-              action: 'isPlatformApiUser',
-              ...createReqMeta(req),
-              reqBody: req.body,
-              apiUser: sessionUserId,
-              userEmail,
-            },
+        return UserService.findUserByEmail(userEmail)
+          .map((emailUser) => {
+            if (!emailUser) {
+              return res
+                .status(StatusCodes.UNPROCESSABLE_ENTITY)
+                .json('User not found')
+            }
+            logger.info({
+              message: 'API user is a platform',
+              meta: {
+                action: 'isPlatformApiUser',
+                ...createReqMeta(req),
+                reqBody: req.body,
+                apiUser: sessionUserId,
+                userEmail,
+              },
+            })
+            req.session.user = { _id: emailUser._id }
+            return next()
           })
-          req.session.user = { _id: emailUser._id }
-          return next()
-        })
+          .mapErr((error) => {
+            logger.error({
+              message: 'Error occurred whilst retrieving user from userEmail',
+              meta: {
+                action: 'isPlatformApiUser',
+                apiUser: sessionUserId,
+                userEmail,
+              },
+              error,
+            })
+
+            const { errorMessage, statusCode } = mapRouteError(error)
+            return res.status(statusCode).json({ message: errorMessage })
+          })
       }
     })
     .mapErr((error) => {
