@@ -829,16 +829,27 @@ export const updateFormCollaborators = (
       // after checking that collaborator exists
       // remove forms from workspaces for collaborators that were removed
       .andThen(() => {
-        removedCollaboratorEmails.map(async (collaborator) => {
-          await UserService.findUserByEmail(collaborator.email).map(
-            async (user) =>
-              await removeFormFromAllWorkspaces({
-                formId: form._id,
-                userId: user._id,
-              }),
-          )
-        })
-        return okAsync(undefined)
+        return ResultAsync.fromPromise(
+          Promise.all(
+            removedCollaboratorEmails.map(async (collaborator) => {
+              await UserService.findUserByEmail(collaborator.email).map(
+                async (user) =>
+                  await removeFormFromAllWorkspaces({
+                    formId: form._id,
+                    userId: user._id,
+                  }),
+              )
+            }),
+          ),
+          (error) => {
+            logger.error({
+              message: 'Error encountered while removing forms from workspaces',
+              meta: logMeta,
+              error,
+            })
+            return transformMongoError(error)
+          },
+        )
       })
       .andThen(() =>
         ResultAsync.fromPromise(
