@@ -64,7 +64,7 @@ const MoveWorkspaceDropdown = ({
         onClick={() => setIsMoveWorkspace(false)}
         icon={<BiChevronLeft fontSize="1.25rem" />}
       >
-        Move to Workspace
+        Back
       </Menu.Item>
       <Menu.Divider aria-hidden borderColor="neutral.300"></Menu.Divider>
       {workspaces.map((workspace) => (
@@ -72,9 +72,13 @@ const MoveWorkspaceDropdown = ({
           key={workspace._id}
           onClick={() => handleWorkspaceClick(workspace)}
         >
-          <Flex justifyContent="space-between" w="100%" alignItems="center">
-            <Text textStyle="body-1">{workspace.title}</Text>
-            {workspace._id === currFormWorkspace?._id && <Icon as={BxCheck} />}
+          <Flex justifyContent="space-between" w="242px" alignItems="center">
+            <Text textStyle="body-1" noOfLines={1}>
+              {workspace.title}
+            </Text>
+            {workspace._id === currFormWorkspace?._id && (
+              <Icon as={BxCheck} ml="0.25rem" />
+            )}
           </Flex>
         </Menu.Item>
       ))}
@@ -173,7 +177,7 @@ export const RowActionsDropdown = ({
                 onClick={handleMoveWorkspace}
                 icon={<BiFolder fontSize="1.25rem" />}
               >
-                Move to Workspace
+                Move to Folder
                 <Icon
                   ml="2.5rem"
                   as={BiChevronRight}

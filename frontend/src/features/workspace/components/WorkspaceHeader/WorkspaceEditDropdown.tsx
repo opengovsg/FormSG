@@ -39,14 +39,11 @@ export const WorkspaceEditDropdown = (): JSX.Element => {
               icon={<BiDotsHorizontalRounded />}
               variant="clear"
               colorScheme="secondary"
+              ml="0.25rem"
             />
             <Menu.List>
-              <Menu.Item onClick={renameModal.onOpen}>
-                Rename workspace
-              </Menu.Item>
-              <Menu.Item onClick={deleteModal.onOpen}>
-                Delete workspace
-              </Menu.Item>
+              <Menu.Item onClick={renameModal.onOpen}>Rename folder</Menu.Item>
+              <Menu.Item onClick={deleteModal.onOpen}>Delete folder</Menu.Item>
             </Menu.List>
           </>
         )}

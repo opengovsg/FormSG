@@ -76,10 +76,10 @@ export const RenameWorkspaceModal = ({
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Rename workspace</ModalHeader>
+        <ModalHeader>Rename Folder</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Text textStyle="subhead-1">Workspace name</Text>
+          <Text textStyle="subhead-1">Folder name</Text>
           <FormControl isRequired isInvalid={!!errors.title}>
             <Input
               mt="0.75rem"
@@ -108,7 +108,7 @@ export const RenameWorkspaceModal = ({
               Cancel
             </Button>
             <Button onClick={handleRenameWorkspace} isFullWidth={isMobile}>
-              Rename workspace
+              Rename folder
             </Button>
           </Stack>
         </ModalFooter>

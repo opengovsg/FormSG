@@ -55,13 +55,13 @@ export const DeleteWorkspaceModal = ({
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Delete workspace</ModalHeader>
+        <ModalHeader>Delete folder</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <Text textStyle="body-2" color="secondary.500">
             {activeWorkspace.formIds.length > 0
-              ? `Remove ${activeWorkspace.formIds.length} form(s) from ${activeWorkspace.title} workspace and delete the workspace`
-              : 'Are you sure you want to delete this workspace? This action cannot be undone.'}
+              ? `Remove ${activeWorkspace.formIds.length} form(s) from ${activeWorkspace.title} and delete the folder? This action cannot be undone.`
+              : 'Are you sure you want to delete this folder? This action cannot be undone.'}
           </Text>
         </ModalBody>
 
@@ -87,7 +87,7 @@ export const DeleteWorkspaceModal = ({
               colorScheme="danger"
               isFullWidth={isMobile}
             >
-              Yes, delete workspace
+              Yes, delete folder
             </Button>
           </Stack>
         </ModalFooter>

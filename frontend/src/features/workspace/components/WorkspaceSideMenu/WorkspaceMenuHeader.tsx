@@ -40,7 +40,7 @@ export const WorkspaceMenuHeader = ({
           />
         )}
         <Text textStyle="h4" color="secondary.700">
-          Workspaces
+          Folders
         </Text>
       </Flex>
 

@@ -143,19 +143,9 @@ export const WorkspaceContent = (): JSX.Element => {
           </Box>
           <Container
             gridArea="footer"
-            py={{ base: '1rem', md: '3rem' }}
-            px="2rem"
+            pt={{ base: '1rem', md: '1.5rem' }}
             maxW={CONTAINER_MAXW}
-            borderTop="1px solid var(--chakra-colors-neutral-300)"
-          >
-            <Pagination
-              isDisabled={isLoading}
-              currentPage={currentPage}
-              totalCount={totalFormCount ?? 0}
-              onPageChange={setPageNumber}
-              pageSize={PAGE_DEFAULTS.size}
-            />
-          </Container>
+          />
         </Grid>
       )}
     </>

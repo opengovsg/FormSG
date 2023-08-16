@@ -88,7 +88,14 @@ export const WorkspaceHeader = ({
         alignSelf="center"
       >
         <Skeleton isLoaded={!isLoading} alignSelf="center">
-          <Text as="h2" textStyle="h2" display="flex" color="secondary.500">
+          <Text
+            as="h2"
+            textStyle="h2"
+            display="flex"
+            color="secondary.500"
+            noOfLines={1}
+            maxW="540px"
+          >
             {headerText}
           </Text>
         </Skeleton>
