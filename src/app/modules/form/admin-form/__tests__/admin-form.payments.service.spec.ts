@@ -1,6 +1,10 @@
 import { ObjectId } from 'bson-ext'
 import mongoose from 'mongoose'
-import { PaymentsUpdateDto, PaymentType } from 'shared/types'
+import {
+  PaymentsProductUpdateDto,
+  PaymentsUpdateDto,
+  PaymentType,
+} from 'shared/types'
 
 import * as PaymentConfig from 'src/app/config/features/payment.config'
 import { getEncryptedFormModel } from 'src/app/models/form.server.model'
@@ -52,7 +56,7 @@ describe('admin-form.payment.service', () => {
         )
 
         // Assert
-        expect(actualResult.isErr()).toEqual(true)
+        expect(actualResult.isErr()).toBeTrue()
         expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
           InvalidPaymentAmountError,
         )
@@ -76,7 +80,7 @@ describe('admin-form.payment.service', () => {
         )
 
         // Assert
-        expect(actualResult.isErr()).toEqual(true)
+        expect(actualResult.isErr()).toBeTrue()
         expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
           InvalidPaymentAmountError,
         )
@@ -99,7 +103,7 @@ describe('admin-form.payment.service', () => {
         // Assert
         expect(putSpy).toHaveBeenCalledWith(mockFormId, updatedPaymentSettings)
 
-        expect(actualResult.isOk()).toEqual(true)
+        expect(actualResult.isOk()).toBeTrue()
         // Should equal updatedPaymentSettings obj
         expect(actualResult._unsafeUnwrap()).toEqual(updatedPaymentSettings)
       })
@@ -118,7 +122,7 @@ describe('admin-form.payment.service', () => {
 
         // Assert
         expect(putSpy).toHaveBeenCalledWith(mockFormId, updatedPaymentSettings)
-        expect(actualResult.isErr()).toEqual(true)
+        expect(actualResult.isErr()).toBeTrue()
         expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
       })
 
@@ -136,7 +140,7 @@ describe('admin-form.payment.service', () => {
 
         // Assert
         expect(putSpy).toHaveBeenCalledWith(mockFormId, updatedPaymentSettings)
-        expect(actualResult.isErr()).toEqual(true)
+        expect(actualResult.isErr()).toBeTrue()
         expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
           FormNotFoundError,
         )
@@ -182,7 +186,7 @@ describe('admin-form.payment.service', () => {
           mockFormId,
           updatedPaymentSettingsMaxAboveMin,
         )
-        expect(actualResult.isOk()).toEqual(true)
+        expect(actualResult.isOk()).toBeTrue()
         expect(actualResult._unsafeUnwrap()).toEqual(
           updatedPaymentSettingsMaxAboveMin,
         )
@@ -215,7 +219,7 @@ describe('admin-form.payment.service', () => {
           mockFormId,
           updatedPaymentSettingsMaxAboveMin,
         )
-        expect(actualResult.isOk()).toEqual(true)
+        expect(actualResult.isOk()).toBeTrue()
         expect(actualResult._unsafeUnwrap()).toEqual(
           updatedPaymentSettingsMaxAboveMin,
         )
@@ -237,7 +241,7 @@ describe('admin-form.payment.service', () => {
 
         // Assert
         expect(putSpy).not.toHaveBeenCalled()
-        expect(actualResult.isErr()).toEqual(true)
+        expect(actualResult.isErr()).toBeTrue()
         expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
           InvalidPaymentAmountError,
         )
@@ -254,18 +258,185 @@ describe('admin-form.payment.service', () => {
           max_amount: 1000,
         } as PaymentsUpdateDto
 
+        const putSpy = jest.spyOn(EncryptFormModel, 'updatePaymentsById')
         // Act
         const actualResult = await AdminFormPaymentService.updatePayments(
           mockFormId,
           updatedPaymentSettingsBelow,
         )
 
-        const putSpy = jest.spyOn(EncryptFormModel, 'updatePaymentsById')
         expect(putSpy).not.toHaveBeenCalled()
-        expect(actualResult.isErr()).toEqual(true)
+        expect(actualResult.isErr()).toBeTrue()
         expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
           InvalidPaymentAmountError,
         )
+      })
+    })
+  })
+
+  describe('updatePaymentsProduct', () => {
+    const mockFormId = new ObjectId().toString()
+
+    describe('with multi qty enabled', () => {
+      beforeEach(() => {
+        jest.clearAllMocks()
+      })
+
+      it('should allow updates when product * max qty is below max amount', async () => {
+        jest.replaceProperty(PaymentConfig, 'paymentConfig', {
+          ...PaymentConfig.paymentConfig,
+          maxPaymentAmountCents: 100,
+        })
+        const updatedProducts = [
+          {
+            multi_qty: true,
+            max_qty: 9,
+            amount_cents: 10,
+          },
+        ] as PaymentsProductUpdateDto
+
+        const putSpy = jest
+          .spyOn(EncryptFormModel, 'updatePaymentsProductById')
+          .mockResolvedValueOnce({
+            payments_field: {},
+          } as unknown as IEncryptedFormDocument)
+
+        // Act
+        const actualResult =
+          await AdminFormPaymentService.updatePaymentsProduct(
+            mockFormId,
+            updatedProducts,
+          )
+
+        expect(putSpy).toHaveBeenCalledOnce()
+        expect(actualResult.isOk()).toBeTrue()
+      })
+
+      it('should allow updates when product * max qty is at max amount', async () => {
+        jest.replaceProperty(PaymentConfig, 'paymentConfig', {
+          ...PaymentConfig.paymentConfig,
+          maxPaymentAmountCents: 100,
+        })
+        const updatedProducts = [
+          {
+            multi_qty: true,
+            max_qty: 10,
+            amount_cents: 10,
+          },
+        ] as PaymentsProductUpdateDto
+
+        const putSpy = jest
+          .spyOn(EncryptFormModel, 'updatePaymentsProductById')
+          .mockResolvedValueOnce({
+            payments_field: {},
+          } as unknown as IEncryptedFormDocument)
+
+        // Act
+        const actualResult =
+          await AdminFormPaymentService.updatePaymentsProduct(
+            mockFormId,
+            updatedProducts,
+          )
+
+        expect(putSpy).toHaveBeenCalled()
+        expect(actualResult.isOk()).toBeTrue()
+      })
+
+      it('should disallow updates when product * max qty exceeds max amount', async () => {
+        jest.replaceProperty(PaymentConfig, 'paymentConfig', {
+          ...PaymentConfig.paymentConfig,
+          maxPaymentAmountCents: 100,
+        })
+        const updatedProducts = [
+          {
+            multi_qty: true,
+            max_qty: 11,
+            amount_cents: 10,
+          },
+        ] as PaymentsProductUpdateDto
+
+        const putSpy = jest
+          .spyOn(EncryptFormModel, 'updatePaymentsProductById')
+          .mockResolvedValueOnce({
+            payments_field: {},
+          } as unknown as IEncryptedFormDocument)
+
+        // Act
+        const actualResult =
+          await AdminFormPaymentService.updatePaymentsProduct(
+            mockFormId,
+            updatedProducts,
+          )
+
+        expect(putSpy).not.toHaveBeenCalled()
+        expect(actualResult.isErr()).toBeTrue()
+        expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+          InvalidPaymentAmountError,
+        )
+      })
+    })
+
+    describe('with multi qty disabled', () => {
+      beforeEach(() => {
+        jest.clearAllMocks()
+      })
+      it('should allow updates when product * max qty possibly exceeds max amount', async () => {
+        jest.replaceProperty(PaymentConfig, 'paymentConfig', {
+          ...PaymentConfig.paymentConfig,
+          maxPaymentAmountCents: 100,
+        })
+        const updatedProducts = [
+          {
+            multi_qty: false,
+            max_qty: 11,
+            amount_cents: 10,
+          },
+        ] as PaymentsProductUpdateDto
+
+        const putSpy = jest
+          .spyOn(EncryptFormModel, 'updatePaymentsProductById')
+          .mockResolvedValueOnce({
+            payments_field: {},
+          } as unknown as IEncryptedFormDocument)
+
+        // Act
+        const actualResult =
+          await AdminFormPaymentService.updatePaymentsProduct(
+            mockFormId,
+            updatedProducts,
+          )
+
+        expect(putSpy).toHaveBeenCalledOnce()
+        expect(actualResult.isOk()).toBeTrue()
+      })
+      it('should allow updates when product * max qty is below max amount', async () => {
+        jest.replaceProperty(PaymentConfig, 'paymentConfig', {
+          ...PaymentConfig.paymentConfig,
+          maxPaymentAmountCents: 100,
+        })
+        const updatedProducts = [
+          {
+            multi_qty: false,
+            max_qty: 9,
+            amount_cents: 10,
+          },
+        ] as PaymentsProductUpdateDto
+
+        const putSpy = jest
+          .spyOn(EncryptFormModel, 'updatePaymentsProductById')
+          .mockResolvedValueOnce({
+            payments_field: {},
+          } as unknown as IEncryptedFormDocument)
+
+        // Act
+        const actualResult =
+          await AdminFormPaymentService.updatePaymentsProduct(
+            mockFormId,
+            updatedProducts,
+          )
+
+        expect(putSpy).toHaveBeenCalledOnce()
+        expect(actualResult.isOk()).toBeTrue()
       })
     })
   })

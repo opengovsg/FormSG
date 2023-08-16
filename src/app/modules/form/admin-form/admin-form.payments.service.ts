@@ -103,7 +103,9 @@ export const updatePaymentsProduct = (
   PossibleDatabaseError | FormNotFoundError | InvalidPaymentAmountError
 > => {
   for (const product of newProducts) {
-    const maximumSelectableQtyCost = product.max_qty * product.amount_cents
+    // treat as a single item purchase if multi_qty is false
+    const qtyModifier = product.multi_qty ? product.max_qty : 1
+    const maximumSelectableQtyCost = qtyModifier * product.amount_cents
     if (maximumSelectableQtyCost > paymentConfig.maxPaymentAmountCents) {
       return errAsync(
         new InvalidPaymentAmountError(
