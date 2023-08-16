@@ -9,6 +9,7 @@ interface WorkspaceTabProps extends FlexProps {
   numForms: number
   isSelected: boolean
   onClick: () => void
+  isDefault?: boolean
 }
 
 const WorkspaceTab = ({
@@ -16,6 +17,7 @@ const WorkspaceTab = ({
   numForms,
   isSelected,
   onClick,
+  isDefault = false,
   ...props
 }: WorkspaceTabProps): JSX.Element => {
   const styles = isSelected
@@ -44,13 +46,19 @@ const WorkspaceTab = ({
       {...props}
     >
       <Text
-        textStyle={isSelected ? 'subhead-2' : 'body-2'}
+        textStyle={
+          isDefault ? 'subhead-3' : isSelected ? 'subhead-2' : 'body-2'
+        }
         whiteSpace="nowrap"
         isTruncated
       >
         {label}
       </Text>
-      <Text textStyle={isSelected ? 'subhead-2' : 'body-2'}>
+      <Text
+        textStyle={
+          isDefault ? 'subhead-2' : isSelected ? 'subhead-2' : 'body-2'
+        }
+      >
         {truncateLargeNumberWithPlus(numForms)}
       </Text>
     </Flex>
@@ -77,6 +85,7 @@ export const WorkspaceMenuTabs = ({
       numForms={defaultWorkspace.formIds.length}
       isSelected={defaultWorkspace._id === currWorkspace}
       onClick={() => onClick(defaultWorkspace._id)}
+      isDefault
     />
     {workspaces.map((workspace: WorkspaceDto) => (
       <WorkspaceTab
