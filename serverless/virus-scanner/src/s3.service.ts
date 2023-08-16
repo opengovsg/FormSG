@@ -1,7 +1,6 @@
 import {
   GetObjectCommand,
-  PutObjectTaggingCommand,
-  PutObjectTaggingCommandInput,
+  PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3'
 import pino from 'pino'
@@ -76,49 +75,51 @@ export class S3Service {
     }
   }
 
-  async updateIsMaliciousTag({
+  async putS3FileStream({
     bucketName,
     objectKey,
-    isMaliciousTagValue,
+    body,
   }: {
     bucketName: string
     objectKey: string
-    isMaliciousTagValue: string
+    body: internal.Readable
   }) {
-    const input: PutObjectTaggingCommandInput = {
-      Bucket: bucketName,
-      Key: objectKey,
-      Tagging: { TagSet: [{ Key: 'isMalicious', Value: isMaliciousTagValue }] },
-    }
     this.logger.info(
       {
-        objectKey,
         bucketName,
-        isMaliciousTagValue,
+        objectKey,
       },
-      'updating isMalicious tag',
+      'Putting document to s3',
     )
 
     try {
-      await this.s3Client.send(new PutObjectTaggingCommand(input))
+      await this.s3Client.send(
+        new PutObjectCommand({
+          Key: objectKey,
+          Bucket: bucketName,
+          Body: body,
+        }),
+      )
+
       this.logger.info(
         {
-          objectKey,
           bucketName,
-          isMaliciousTagValue,
+          objectKey,
         },
-        'updated tag to object',
+        'Put document to s3',
       )
     } catch (error) {
       this.logger.error(
         {
-          objectKey,
           bucketName,
-          isMaliciousTagValue,
+          objectKey,
+          error,
         },
-        'error updating tag to object',
+        'Failed to put object to s3',
       )
+
       throw error
     }
   }
+  
 }
