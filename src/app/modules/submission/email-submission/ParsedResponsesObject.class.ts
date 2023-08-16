@@ -21,6 +21,7 @@ import {
   createCorppassParsedResponses,
   createSingpassParsedResponses,
 } from '../../spcp/spcp.util'
+import { newEncryptionBoundaryFlag } from '../encrypt-submission/encrypt-submission.constants'
 import {
   ConflictError,
   ProcessingError,
@@ -153,7 +154,7 @@ export default class ParsedResponsesObject {
           // TODO(#780): Remove this once submission service is separated into
           // Email and Encrypted services
           form.responseMode === FormResponseMode.Encrypt &&
-          !form.get('newEncryptionBoundary')
+          !form.get(newEncryptionBoundaryFlag)
             ? 'answer' in response &&
               typeof response.answer === 'string' &&
               response.answer.trim() !== ''

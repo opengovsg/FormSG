@@ -25,6 +25,7 @@ import ParsedResponsesObject from '../email-submission/ParsedResponsesObject.cla
 import { sharedSubmissionParams } from '../submission.constants'
 import { getFilteredResponses, isAttachmentResponse } from '../submission.utils'
 
+import { newEncryptionBoundaryFlag } from './encrypt-submission.constants'
 import {
   FormDefinitionNotRetrievedError,
   FormMissingPublicKeyError,
@@ -233,7 +234,7 @@ export const checkNewBoundaryEnabled: EncryptSubmissionMiddlewareHandler =
 
     if (!formDef) return res.send(new FormDefinitionNotRetrievedError())
 
-    if (!formDef.get('newEncryptionBoundary')) {
+    if (!formDef.get(newEncryptionBoundaryFlag)) {
       return res
         .status(StatusCodes.FORBIDDEN)
         .json({ message: 'This endpoint has not been enabled for this form.' })

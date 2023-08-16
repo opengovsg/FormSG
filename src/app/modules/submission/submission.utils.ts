@@ -14,6 +14,7 @@ import {
 } from '../../../types/api'
 import { AutoReplyMailData } from '../../services/mail/mail.types'
 
+import { newEncryptionBoundaryFlag } from './encrypt-submission/encrypt-submission.constants'
 import { ConflictError } from './submission.errors'
 import { FilteredResponse } from './submission.types'
 
@@ -119,11 +120,11 @@ export const getFilteredResponses = (
 ): Result<FilteredResponse[], ConflictError> => {
   const responseModeFilter = getResponseModeFilter(
     form.responseMode === FormResponseMode.Encrypt &&
-      !form.get('newEncryptionBoundary'),
+      !form.get(newEncryptionBoundaryFlag),
   )
   const formFieldModeFilter = getFormFieldModeFilter(
     form.responseMode === FormResponseMode.Encrypt &&
-      !form.get('newEncryptionBoundary'),
+      !form.get(newEncryptionBoundaryFlag),
   )
 
   if (!form.form_fields) {
