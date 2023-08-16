@@ -72,7 +72,11 @@ const MoveWorkspaceDropdown = ({
           key={workspace._id}
           onClick={() => handleWorkspaceClick(workspace)}
         >
-          <Flex justifyContent="space-between" w="242px" alignItems="center">
+          <Flex
+            justifyContent="space-between"
+            w="15.125rem"
+            alignItems="center"
+          >
             <Text textStyle="body-1" noOfLines={1}>
               {workspace.title}
             </Text>

@@ -18,7 +18,7 @@ import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 import { MobileWorkspaceSearchbar } from '../WorkspaceSearchbar/MobileWorkspaceSearchbar'
 import { WorkspaceSearchbar } from '../WorkspaceSearchbar/WorkspaceSearchbar'
 
-import { WorkspaceEditDropdown } from './WorkspaceEditDropdown'
+import { WorkspaceEditMenu } from './WorkspaceEditMenu'
 
 export interface WorkspaceHeaderProps {
   handleOpenCreateFormModal: () => void
@@ -94,14 +94,14 @@ export const WorkspaceHeader = ({
             display="flex"
             color="secondary.500"
             noOfLines={1}
-            maxW="540px"
+            maxW="33.75rem"
           >
             {headerText}
           </Text>
         </Skeleton>
         {activeWorkspace._id && (
           <Skeleton isLoaded={!isLoading}>
-            <WorkspaceEditDropdown />
+            <WorkspaceEditMenu />
           </Skeleton>
         )}
       </Flex>
