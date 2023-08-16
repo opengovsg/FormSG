@@ -135,12 +135,11 @@ export const ProductModal = ({
   const maxQtyValidation: RegisterOptions<ProductInput, typeof MAX_QTY_KEY> = {
     validate: (val) => {
       if (!getValues(MULTI_QTY_KEY)) return true
-      if (!getValues(DISPLAY_AMOUNT_KEY)) return true
       if (val <= 0) {
         return 'Please enter a value greater than 0'
       }
 
-      const amount = dollarsToCents(getValues(DISPLAY_AMOUNT_KEY))
+      const amount = dollarsToCents(getValues(DISPLAY_AMOUNT_KEY) ?? '')
 
       if (val * amount > maxPaymentAmountCents) {
         const maxQty = Math.floor(maxPaymentAmountCents / amount)
