@@ -52,7 +52,7 @@ export const WorkspaceHeader = ({
     () =>
       hasActiveSearchOrFilter
         ? simplur`Showing ${displayedFormsCount} of ${totalFormsCount} form[|s]`
-        : `${activeWorkspace.title} (${totalFormsCount})`,
+        : `${activeWorkspace.title}`,
     [
       displayedFormsCount,
       hasActiveSearchOrFilter,
@@ -88,16 +88,16 @@ export const WorkspaceHeader = ({
         alignSelf="center"
       >
         <Skeleton isLoaded={!isLoading} alignSelf="center">
-          <Text
-            as="h2"
-            textStyle="h2"
-            display="flex"
-            color="secondary.500"
-            noOfLines={1}
-            maxW="33.75rem"
-          >
-            {headerText}
-          </Text>
+          <Flex maxW="30.5rem">
+            <Text textStyle="h2" color="secondary.500" noOfLines={1}>
+              {headerText}
+            </Text>
+            {!hasActiveSearchOrFilter && (
+              <Text textStyle="h2" color="secondary.500">
+                &nbsp;({totalFormsCount})
+              </Text>
+            )}
+          </Flex>
         </Skeleton>
         {activeWorkspace._id && (
           <Skeleton isLoaded={!isLoading}>
