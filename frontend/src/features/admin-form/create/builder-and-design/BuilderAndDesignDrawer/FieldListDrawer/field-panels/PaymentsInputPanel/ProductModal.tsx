@@ -40,6 +40,7 @@ type ProductInput = Product & {
 const MIN_QTY_KEY = `min_qty`
 const MAX_QTY_KEY = `max_qty`
 const DISPLAY_AMOUNT_KEY = 'display_amount'
+const MULTI_QTY_KEY = 'multi_qty'
 export const ProductModal = ({
   onClose,
   onSaveProduct,
@@ -64,8 +65,9 @@ export const ProductModal = ({
           display_amount: centsToDollars(product.amount_cents ?? 0),
         }
       : {
-          min_qty: 1,
-          max_qty: 99,
+          [MULTI_QTY_KEY]: false,
+          [MIN_QTY_KEY]: 1,
+          [MAX_QTY_KEY]: 99,
         },
     mode: 'all',
   })
@@ -111,7 +113,7 @@ export const ProductModal = ({
     },
   }
 
-  const watchMultiQtyEnabled = watch('multi_qty', product?.multi_qty ?? false)
+  const watchMultiQtyEnabled = watch(MULTI_QTY_KEY, product?.multi_qty ?? false)
   const handleSaveProduct = handleSubmit((product) => {
     const { display_amount, ...rest } = product
     onSaveProduct({ ...rest, amount_cents: dollarsToCents(display_amount) })
@@ -120,7 +122,7 @@ export const ProductModal = ({
 
   const minQtyValidation: RegisterOptions<ProductInput, typeof MIN_QTY_KEY> = {
     validate: (val) => {
-      if (!getValues('multi_qty')) return true
+      if (!getValues(MULTI_QTY_KEY)) return true
       if (val <= 0) {
         return 'Please enter a value greater than 0'
       }
@@ -132,7 +134,8 @@ export const ProductModal = ({
   }
   const maxQtyValidation: RegisterOptions<ProductInput, typeof MAX_QTY_KEY> = {
     validate: (val) => {
-      if (!getValues('multi_qty')) return true
+      if (!getValues(MULTI_QTY_KEY)) return true
+      if (!getValues(DISPLAY_AMOUNT_KEY)) return true
       if (val <= 0) {
         return 'Please enter a value greater than 0'
       }
@@ -221,7 +224,7 @@ export const ProductModal = ({
             <Box>
               <FormControl>
                 <Controller
-                  name={'multi_qty'}
+                  name={MULTI_QTY_KEY}
                   control={control}
                   render={({ field: { value, onChange, ...rest } }) => (
                     <Toggle
