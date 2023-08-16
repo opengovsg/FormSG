@@ -13,6 +13,7 @@ import {
 import { DateString } from '../generic'
 import { FormLogic, LogicDto } from './form_logic'
 import { PaymentChannel, PaymentType } from '../payment'
+import { Product } from './product'
 
 export type FormId = Opaque<string, 'FormId'>
 
@@ -82,7 +83,13 @@ export interface PaymentTypeBase {
   amount_cents?: number
   min_amount?: number
   max_amount?: number
+
+  products?: Array<Product>
+  products_meta?: {
+    multi_product?: boolean
+  }
 }
+
 interface VariablePaymentsField extends PaymentTypeBase {
   payment_type: PaymentType.Variable
   min_amount: number
@@ -94,13 +101,21 @@ interface FixedPaymentField extends PaymentTypeBase {
   amount_cents: number
 }
 
+export interface ProductsPaymentField extends PaymentTypeBase {
+  payment_type: PaymentType.Products
+  products: Array<Product>
+  products_meta?: {
+    multi_product: boolean
+  }
+}
+
 export type FormPaymentsField =
   | {
       enabled: boolean
       description?: string
       name?: string
       gst_enabled?: boolean
-    } & (VariablePaymentsField | FixedPaymentField)
+    } & (VariablePaymentsField | FixedPaymentField | ProductsPaymentField)
 
 export type FormBusinessField = {
   address?: string
@@ -276,6 +291,7 @@ export type FormPermissionsDto = FormPermission[]
 export type PermissionsUpdateDto = FormPermission[]
 export type PaymentsUpdateDto = FormPaymentsField
 export type BusinessUpdateDto = FormBusinessField
+export type PaymentsProductUpdateDto = ProductsPaymentField['products']
 
 export type SendFormOtpResponseDto = {
   otpPrefix: string

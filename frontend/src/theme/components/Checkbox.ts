@@ -118,6 +118,17 @@ const baseStyle: PartsStyleFunction<typeof parts> = ({
   },
 })
 
+const variantFullWidth: PartsStyleFunction<typeof parts> = (props) => {
+  return {
+    label: {
+      width: '100%',
+    },
+  }
+}
+const variants = {
+  fullWidth: variantFullWidth,
+}
+
 export const Checkbox = {
   parts: parts.keys,
   baseStyle,
@@ -128,6 +139,7 @@ export const Checkbox = {
       icon: { fontSize: '1rem' },
     },
   },
+  variants,
   defaultProps: {
     colorScheme: 'primary',
   },

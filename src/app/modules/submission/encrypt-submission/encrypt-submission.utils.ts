@@ -5,10 +5,12 @@ import {
   FormPaymentsField,
   PaymentFieldsDto,
   PaymentType,
+  StorageModeSubmissionContentDto,
   StorageModeSubmissionDto,
   SubmissionPaymentDto,
   SubmissionType,
 } from '../../../../../shared/types'
+import { calculatePrice } from '../../../../../shared/utils/paymentProductPrice'
 import {
   IEncryptedSubmissionSchema,
   ISubmissionSchema,
@@ -272,6 +274,7 @@ export const createEncryptedSubmissionDto = (
 export const getPaymentAmount = (
   formPaymentFields: FormPaymentsField, // fields that are from document.form
   incomingSubmissionPaymentFields?: PaymentFieldsDto, // fields that are from incoming submission
+  paymentProducts?: StorageModeSubmissionContentDto['paymentProducts'],
 ): number | undefined => {
   // legacy payment forms may not have a payment type
   const { payment_type } = formPaymentFields
@@ -280,7 +283,11 @@ export const getPaymentAmount = (
       return formPaymentFields.amount_cents
     case PaymentType.Variable:
       return incomingSubmissionPaymentFields?.amount_cents
-
+    case PaymentType.Products:
+      if (!paymentProducts) {
+        return 0
+      }
+      return calculatePrice(paymentProducts)
     default: {
       // Force TS to emit an error if the cases above are not exhaustive
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
