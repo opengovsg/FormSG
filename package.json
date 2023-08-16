@@ -65,7 +65,6 @@
     "@sentry/integrations": "^6.19.7",
     "@stablelib/base64": "^1.0.1",
     "@stoplight/prism-cli": "^4.10.6",
-    "@types/bson": "4.0.4",
     "abortcontroller-polyfill": "^1.7.5",
     "aws-info": "^1.2.0",
     "aws-sdk": "^2.1354.0",
