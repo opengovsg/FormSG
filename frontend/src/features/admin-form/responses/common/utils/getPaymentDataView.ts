@@ -70,6 +70,14 @@ export const getPaymentDataView = (
       value: centsToDollarString(payment.amount),
     },
     {
+      key: 'products',
+      name: 'Product/service',
+      value:
+        payment.products
+          ?.map(({ name, quantity }) => `${name} x ${quantity}`)
+          .join(', ') || '-',
+    },
+    {
       key: 'paymentDate',
       name: 'Payment date and time',
       value: payment.paymentDate,
