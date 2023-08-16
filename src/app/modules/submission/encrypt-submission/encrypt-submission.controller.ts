@@ -6,9 +6,8 @@ import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { chain, omit } from 'lodash'
 import mongoose from 'mongoose'
-import { errAsync, okAsync } from 'neverthrow'
+import { okAsync } from 'neverthrow'
 import Stripe from 'stripe'
-import type { SetOptional } from 'type-fest'
 
 import {
   ErrorDto,
@@ -23,7 +22,11 @@ import {
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../../shared/types'
-import { IPopulatedForm, StripePaymentMetadataDto } from '../../../../types'
+import {
+  IPopulatedEncryptedForm,
+  IPopulatedForm,
+  StripePaymentMetadataDto,
+} from '../../../../types'
 import {
   EncryptFormFieldResponse,
   EncryptSubmissionDto,
@@ -96,7 +99,12 @@ const submitEncryptModeForm: ControllerHandler<
   { formId: string },
   SubmissionResponseDto | SubmissionErrorDto,
   EncryptSubmissionDto,
-  { captchaResponse?: unknown; captchaType?: unknown }
+  { captchaResponse?: unknown; captchaType?: unknown },
+  {
+    formDef: IPopulatedForm
+    encryptedFormDef: IPopulatedEncryptedForm
+    encryptedPayload: EncryptSubmissionDto
+  }
 > = async (req, res) => {
   const { formId } = req.params
 
@@ -117,48 +125,11 @@ const submitEncryptModeForm: ControllerHandler<
     formId,
   }
 
-  // Retrieve form
-  const formResult = await FormService.retrieveFullFormById(formId)
-  if (formResult.isErr()) {
-    logger.warn({
-      message: 'Failed to retrieve form from database',
-      meta: logMeta,
-      error: formResult.error,
-    })
-    const { errorMessage, statusCode } = mapRouteError(formResult.error)
-    return res.status(statusCode).json({ message: errorMessage })
-  }
+  const formDef = res.locals.formDef
 
-  // Retrieve public key.
-  const publicKey = formResult.value.publicKey
+  setFormTags(formDef)
 
-  if (!publicKey) {
-    logger.warn({
-      message: 'Form does not have a public key',
-      meta: logMeta,
-    })
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: 'Form does not have a public key',
-    })
-  }
-
-  setFormTags(formResult.value)
-
-  const checkFormIsEncryptModeResult = checkFormIsEncryptMode(formResult.value)
-  if (checkFormIsEncryptModeResult.isErr()) {
-    logger.error({
-      message:
-        'Trying to submit non-encrypt mode submission on encrypt-form submission endpoint',
-      meta: logMeta,
-    })
-    const { statusCode, errorMessage } = mapRouteError(
-      checkFormIsEncryptModeResult.error,
-    )
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
-  }
-  const form = checkFormIsEncryptModeResult.value
+  const form = res.locals.encryptedFormDef
 
   const ensurePipeline = Pipeline(
     ensureIsPublicForm,
@@ -176,8 +147,10 @@ const submitEncryptModeForm: ControllerHandler<
     return
   }
 
+  const encryptedPayload = res.locals.encryptedPayload
+
   // Create Incoming Submission
-  const { encryptedContent, responses, responseMetadata } = req.body
+  const { encryptedContent, responses, responseMetadata } = encryptedPayload
   const incomingSubmissionResult = IncomingEncryptSubmission.init(
     form,
     responses,
@@ -192,8 +165,6 @@ const submitEncryptModeForm: ControllerHandler<
     })
   }
   const incomingSubmission = incomingSubmissionResult.value
-
-  delete (req.body as SetOptional<EncryptSubmissionDto, 'responses'>).responses
 
   // Checks if user is SPCP-authenticated before allowing submission
   let uinFin
@@ -321,10 +292,10 @@ const submitEncryptModeForm: ControllerHandler<
   // Save Responses to Database
   let attachmentMetadata = new Map<string, string>()
 
-  if (req.body.attachments) {
+  if (encryptedPayload.attachments) {
     const attachmentUploadResult = await uploadAttachments(
       form._id,
-      req.body.attachments,
+      encryptedPayload.attachments,
     )
 
     if (attachmentUploadResult.isErr()) {
@@ -346,7 +317,7 @@ const submitEncryptModeForm: ControllerHandler<
     encryptedContent: incomingSubmission.encryptedContent,
     verifiedContent: verified,
     attachmentMetadata,
-    version: req.body.version,
+    version: encryptedPayload.version,
     responseMetadata,
   }
 
@@ -359,7 +330,10 @@ const submitEncryptModeForm: ControllerHandler<
      * Start of Payment Forms Submission Flow
      */
     // Step 0: Perform validation checks
-    const amount = getPaymentAmount(form.payments_field, req.body.payments)
+    const amount = getPaymentAmount(
+      form.payments_field,
+      encryptedPayload.payments,
+    )
 
     if (
       !amount ||
@@ -376,7 +350,8 @@ const submitEncryptModeForm: ControllerHandler<
       })
     }
 
-    const paymentReceiptEmail = req.body.paymentReceiptEmail?.toLowerCase()
+    const paymentReceiptEmail =
+      encryptedPayload.paymentReceiptEmail?.toLowerCase()
     if (!paymentReceiptEmail) {
       logger.error({
         message:
@@ -611,27 +586,17 @@ const submitEncryptModeForm: ControllerHandler<
   )
 }
 
-const submitStorageModeForm: ControllerHandler<
+const retrieveForm: ControllerHandler<
   { formId: string },
-  SubmissionResponseDto | SubmissionErrorDto,
-  EncryptSubmissionDto,
-  { captchaResponse?: unknown; captchaType?: unknown }
-> = async (req, res) => {
+  unknown,
+  unknown,
+  unknown,
+  { formDef: IPopulatedForm }
+> = async (req, res, next) => {
   const { formId } = req.params
 
-  if ('isPreview' in req.body) {
-    logger.info({
-      message:
-        'isPreview is still being sent when submitting encrypt mode form',
-      meta: {
-        action: 'submitStorageModeForm',
-        type: 'deprecatedCheck',
-      },
-    })
-  }
-
   const logMeta = {
-    action: 'submitStorageModeForm',
+    action: 'retrieveForm',
     ...createReqMeta(req),
     formId,
   }
@@ -648,16 +613,27 @@ const submitStorageModeForm: ControllerHandler<
     return res.status(statusCode).json({ message: errorMessage })
   }
 
-  // Guardrail to prevent new endpoint from being used for regular storage mode forms.
-  // TODO (FRM-1232): remove this guardrail when encryption boundary is shifted.
-  if (!formResult.value.get('newEncryptionBoundary')) {
-    return res
-      .status(StatusCodes.FORBIDDEN)
-      .json({ message: 'This endpoint has not been enabled for this form.' })
+  res.locals.formDef = formResult.value
+  return next()
+}
+
+const checkPublicKey: ControllerHandler<
+  unknown,
+  unknown,
+  unknown,
+  unknown,
+  { formDef: IPopulatedForm; publicKey: string }
+> = async (req, res, next) => {
+  const formDef = res.locals.formDef
+
+  const logMeta = {
+    action: 'checkPublicKey',
+    ...createReqMeta(req),
+    formId: formDef.id,
   }
 
   // Retrieve public key.
-  const publicKey = formResult.value.publicKey
+  const publicKey = formDef.publicKey
 
   if (!publicKey) {
     logger.warn({
@@ -669,53 +645,27 @@ const submitStorageModeForm: ControllerHandler<
     })
   }
 
-  // Validate submission
-  const validSubmission = await EmailSubmissionService.validateAttachments(
-    req.body.responses,
-  )
-    .andThen(() =>
-      ParsedResponsesObject.parseResponses(
-        formResult.value,
-        req.body.responses,
-      ),
-    )
-    .map((parsedResponses) => ({ parsedResponses, form: formResult.value }))
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error processing responses',
-        meta: logMeta,
-        error,
-      })
-      const { statusCode, errorMessage } = mapRouteError(error)
-      return res.status(statusCode).json({
-        message: errorMessage,
-      })
-    })
-  if (validSubmission.isErr()) {
-    return validSubmission.error
+  res.locals.publicKey = publicKey
+
+  return next()
+}
+
+const checkEncryptMode: ControllerHandler<
+  unknown,
+  unknown,
+  unknown,
+  unknown,
+  { formDef: IPopulatedForm; encryptedFormDef: IPopulatedEncryptedForm }
+> = async (req, res, next) => {
+  const formRetrieved = res.locals.formDef
+
+  const logMeta = {
+    action: 'checkEncryptMode',
+    ...createReqMeta(req),
+    formId: formRetrieved.id,
   }
 
-  // Encrypt request body
-  const encryptedBody = await encryptSubmission(
-    req.body,
-    publicKey,
-    formResult.value,
-  )
-  if (encryptedBody.isErr()) {
-    logger.warn({
-      message: encryptedBody.error.message,
-      meta: logMeta,
-    })
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: encryptedBody.error.message,
-    })
-  }
-
-  req.body = encryptedBody.value
-
-  setFormTags(formResult.value)
-
-  const checkFormIsEncryptModeResult = checkFormIsEncryptMode(formResult.value)
+  const checkFormIsEncryptModeResult = checkFormIsEncryptMode(formRetrieved)
   if (checkFormIsEncryptModeResult.isErr()) {
     logger.error({
       message:
@@ -729,457 +679,61 @@ const submitStorageModeForm: ControllerHandler<
       message: errorMessage,
     })
   }
-  const form = checkFormIsEncryptModeResult.value
+  res.locals.encryptedFormDef = checkFormIsEncryptModeResult.value
+  return next()
+}
 
-  const ensurePipeline = Pipeline(
-    ensureIsPublicForm,
-    ensureIsValidCaptcha,
-    ensureIsFormWithinSubmissionLimits,
-  )
-
-  const hasEnsuredAll = await ensurePipeline.execute({
-    form,
-    logMeta,
-    req,
-    res,
-  })
-  if (!hasEnsuredAll) {
-    return
+/**
+ * Guardrail to prevent new endpoint from being used for regular storage mode forms.
+ * TODO (FRM-1232): remove this guardrail when encryption boundary is shifted.
+ */
+const checkNewBoundaryEnabled: ControllerHandler<
+  unknown,
+  unknown,
+  unknown,
+  unknown,
+  { formDef: IPopulatedForm }
+> = async (req, res, next) => {
+  if (!res.locals.formDef.get('newEncryptionBoundary')) {
+    return res
+      .status(StatusCodes.FORBIDDEN)
+      .json({ message: 'This endpoint has not been enabled for this form.' })
   }
 
-  // Create Incoming Submission
-  const { encryptedContent, responses, responseMetadata } = req.body
-  const incomingSubmissionResult = IncomingEncryptSubmission.init(
-    form,
-    responses,
-    encryptedContent,
-  )
-  if (incomingSubmissionResult.isErr()) {
-    const { statusCode, errorMessage } = mapRouteError(
-      incomingSubmissionResult.error,
+  return next()
+}
+
+const validateSubmission: ControllerHandler<
+  { formId: string },
+  SubmissionResponseDto | SubmissionErrorDto,
+  EncryptSubmissionDto,
+  { captchaResponse?: unknown; captchaType?: unknown },
+  { formDef: IPopulatedForm; encryptedFormDef: IPopulatedEncryptedForm }
+> = async (req, res, next) => {
+  const formDef = res.locals.formDef
+  const logMeta = {
+    action: 'validateSubmission',
+    ...createReqMeta(req),
+    formId: formDef.id,
+  }
+
+  // Validate submission
+  return await EmailSubmissionService.validateAttachments(req.body.responses)
+    .andThen(() =>
+      ParsedResponsesObject.parseResponses(formDef, req.body.responses),
     )
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
-  }
-  const incomingSubmission = incomingSubmissionResult.value
-
-  delete (req.body as SetOptional<EncryptSubmissionDto, 'responses'>).responses
-
-  // Checks if user is SPCP-authenticated before allowing submission
-  let uinFin
-  let userInfo
-  const { authType } = form
-  switch (authType) {
-    case FormAuthType.SGID_MyInfo:
-    case FormAuthType.MyInfo: {
+    .map(() => next())
+    .mapErr((error) => {
       logger.error({
-        message: `Storage mode form is not allowed to have MyInfo${
-          authType == FormAuthType.SGID_MyInfo ? '(over sgID)' : ''
-        } authorisation`,
-        meta: logMeta,
-      })
-      const { errorMessage, statusCode } = mapRouteError(
-        new MalformedParametersError(
-          'Storage mode form is not allowed to have MyInfo authType',
-        ),
-      )
-      return res.status(statusCode).json({ message: errorMessage })
-    }
-    case FormAuthType.SP: {
-      const oidcService = getOidcService(FormAuthType.SP)
-      const jwtPayloadResult = await oidcService
-        .extractJwt(req.cookies)
-        .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
-      if (jwtPayloadResult.isErr()) {
-        const { statusCode, errorMessage } = mapRouteError(
-          jwtPayloadResult.error,
-        )
-        logger.error({
-          message: 'Failed to verify Singpass JWT with auth client',
-          meta: logMeta,
-          error: jwtPayloadResult.error,
-        })
-        return res.status(statusCode).json({
-          message: errorMessage,
-          spcpSubmissionFailure: true,
-        })
-      }
-      uinFin = jwtPayloadResult.value.userName
-      break
-    }
-    case FormAuthType.CP: {
-      const oidcService = getOidcService(FormAuthType.CP)
-      const jwtPayloadResult = await oidcService
-        .extractJwt(req.cookies)
-        .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
-      if (jwtPayloadResult.isErr()) {
-        const { statusCode, errorMessage } = mapRouteError(
-          jwtPayloadResult.error,
-        )
-        logger.error({
-          message: 'Failed to verify Corppass JWT with auth client',
-          meta: logMeta,
-          error: jwtPayloadResult.error,
-        })
-        return res.status(statusCode).json({
-          message: errorMessage,
-          spcpSubmissionFailure: true,
-        })
-      }
-      uinFin = jwtPayloadResult.value.userName
-      userInfo = jwtPayloadResult.value.userInfo
-      break
-    }
-    case FormAuthType.SGID: {
-      const jwtPayloadResult = SgidService.extractSgidSingpassJwtPayload(
-        req.cookies[SGID_COOKIE_NAME],
-      )
-      if (jwtPayloadResult.isErr()) {
-        const { statusCode, errorMessage } = mapRouteError(
-          jwtPayloadResult.error,
-        )
-        logger.error({
-          message: 'Failed to verify sgID JWT with auth client',
-          meta: logMeta,
-          error: jwtPayloadResult.error,
-        })
-        return res.status(statusCode).json({
-          message: errorMessage,
-          spcpSubmissionFailure: true,
-        })
-      }
-      uinFin = jwtPayloadResult.value.userName
-      break
-    }
-  }
-
-  // Encrypt Verified SPCP Fields
-  let verified
-  if (
-    form.authType === FormAuthType.SP ||
-    form.authType === FormAuthType.CP ||
-    form.authType === FormAuthType.SGID
-  ) {
-    const encryptVerifiedContentResult =
-      VerifiedContentService.getVerifiedContent({
-        type: form.authType,
-        data: { uinFin, userInfo },
-      }).andThen((verifiedContent) =>
-        VerifiedContentService.encryptVerifiedContent({
-          verifiedContent,
-          formPublicKey: form.publicKey,
-        }),
-      )
-
-    if (encryptVerifiedContentResult.isErr()) {
-      const { error } = encryptVerifiedContentResult
-      logger.error({
-        message: 'Unable to encrypt verified content',
+        message: 'Error processing responses',
         meta: logMeta,
         error,
       })
-
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: 'Invalid data was found. Please submit again.' })
-    } else {
-      // No errors, set local variable to the encrypted string.
-      verified = encryptVerifiedContentResult.value
-    }
-  }
-
-  // Save Responses to Database
-  let attachmentMetadata = new Map<string, string>()
-
-  if (req.body.attachments) {
-    const attachmentUploadResult = await uploadAttachments(
-      form._id,
-      req.body.attachments,
-    )
-
-    if (attachmentUploadResult.isErr()) {
-      const { statusCode, errorMessage } = mapRouteError(
-        attachmentUploadResult.error,
-      )
+      const { statusCode, errorMessage } = mapRouteError(error)
       return res.status(statusCode).json({
         message: errorMessage,
       })
-    } else {
-      attachmentMetadata = attachmentUploadResult.value
-    }
-  }
-
-  const submissionContent = {
-    form: form._id,
-    authType: form.authType,
-    myInfoFields: form.getUniqueMyInfoAttrs(),
-    encryptedContent: incomingSubmission.encryptedContent,
-    verifiedContent: verified,
-    attachmentMetadata,
-    version: req.body.version,
-    responseMetadata,
-  }
-
-  // Handle submissions for payments forms
-  if (
-    form.payments_field?.enabled &&
-    form.payments_channel.channel === PaymentChannel.Stripe
-  ) {
-    /**
-     * Start of Payment Forms Submission Flow
-     */
-    // Step 0: Perform validation checks
-    const amount = getPaymentAmount(form.payments_field, req.body.payments)
-
-    if (
-      !amount ||
-      amount < paymentConfig.minPaymentAmountCents ||
-      amount > paymentConfig.maxPaymentAmountCents
-    ) {
-      logger.error({
-        message: 'Error when creating payment: amount is not within bounds',
-        meta: logMeta,
-      })
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message:
-          "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
-      })
-    }
-
-    const paymentReceiptEmail = req.body.paymentReceiptEmail?.toLowerCase()
-    if (!paymentReceiptEmail) {
-      logger.error({
-        message:
-          'Error when creating payment: payment receipt email not provided.',
-        meta: logMeta,
-      })
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message:
-          "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
-      })
-    }
-
-    const targetAccountId = form.payments_channel.target_account_id
-
-    // Step 1: Create payment without payment intent id and pending submission id.
-    const payment = new Payment({
-      formId,
-      targetAccountId,
-      amount,
-      email: paymentReceiptEmail,
-      responses: incomingSubmission.responses,
-      gstEnabled: form.payments_field.gst_enabled,
     })
-    const paymentId = payment.id
-
-    // Step 2: Create and save pending submission.
-    const pendingSubmission = new EncryptPendingSubmission({
-      ...submissionContent,
-      paymentId,
-    })
-
-    try {
-      await pendingSubmission.save()
-    } catch (err) {
-      logger.error({
-        message: 'Encrypt pending submission save error',
-        meta: {
-          action: 'onEncryptSubmissionFailure',
-          ...createReqMeta(req),
-        },
-        error: err,
-      })
-      // Block the submission so that user can try to resubmit
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message:
-          'Could not save pending submission. For assistance, please contact the person who asked you to fill in this form.',
-      })
-    }
-
-    const pendingSubmissionId = pendingSubmission.id
-    logger.info({
-      message: 'Created pending submission in DB',
-      meta: {
-        ...logMeta,
-        pendingSubmissionId,
-        responseMetadata,
-      },
-    })
-
-    // TODO 6395 make responseMetadata mandatory
-    if (responseMetadata) {
-      reportSubmissionResponseTime(responseMetadata, {
-        mode: 'encrypt',
-        payment: 'false',
-      })
-    }
-    // Step 3: Create the payment intent via API call to stripe.
-    // Stripe requires the amount to be an integer in the smallest currency unit (i.e. cents)
-    const metadata: StripePaymentMetadataDto = {
-      env: config.envSiteName,
-      formTitle: form.title,
-      formId,
-      submissionId: pendingSubmissionId,
-      paymentId,
-      paymentContactEmail: paymentReceiptEmail,
-    }
-
-    const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
-      amount,
-      currency: paymentConfig.defaultCurrency,
-      // determine payment methods available based on stripe settings
-      automatic_payment_methods: {
-        enabled: true,
-      },
-      description: form.payments_field.name || form.payments_field.description,
-      receipt_email: paymentReceiptEmail,
-      metadata,
-    }
-
-    let paymentIntent
-    try {
-      paymentIntent = await stripe.paymentIntents.create(
-        createPaymentIntentParams,
-        { stripeAccount: targetAccountId },
-      )
-    } catch (err) {
-      logger.error({
-        message: 'Error when creating payment intent',
-        meta: {
-          ...logMeta,
-          pendingSubmissionId,
-          createPaymentIntentParams,
-        },
-        error: err,
-      })
-      // Return a 502 error here since the issue was with Stripe.
-      return res.status(StatusCodes.BAD_GATEWAY).json({
-        message:
-          'There was a problem creating the payment intent. Please try again.',
-      })
-    }
-
-    const paymentIntentId = paymentIntent.id
-    logger.info({
-      message: 'Created payment intent from Stripe',
-      meta: {
-        ...logMeta,
-        pendingSubmissionId,
-        paymentIntentId,
-      },
-    })
-
-    // Step 4: Update payment document with payment intent id and pending submission id, and save it.
-    payment.paymentIntentId = paymentIntentId
-    payment.pendingSubmissionId = pendingSubmissionId
-    try {
-      await payment.save()
-    } catch (err) {
-      logger.error({
-        message: 'Error updating payment document with payment intent id',
-        meta: {
-          ...logMeta,
-          pendingSubmissionId,
-          paymentIntentId,
-        },
-        error: err,
-      })
-      // Cancel the payment intent if saving the document fails.
-      try {
-        await stripe.paymentIntents.cancel(paymentIntent.id, {
-          stripeAccount: targetAccountId,
-        })
-      } catch (stripeErr) {
-        logger.error({
-          message: 'Failed to cancel Stripe payment intent',
-          meta: {
-            ...logMeta,
-            pendingSubmissionId,
-            paymentIntentId,
-          },
-          error: err,
-        })
-      }
-      // Regardless of whether the cancellation succeeded or failed, block the
-      // submission so that user can try to resubmit
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message:
-          'There was a problem updating the payment document. Please try again.',
-      })
-    }
-
-    logger.info({
-      message: 'Saved payment document to DB',
-      meta: {
-        ...logMeta,
-        pendingSubmissionId,
-        paymentIntentId,
-        paymentId,
-      },
-    })
-
-    return res.json({
-      message: 'Form submission successful',
-      submissionId: pendingSubmissionId,
-      timestamp: (pendingSubmission.created || new Date()).getTime(),
-      paymentData: { paymentId },
-    })
-  }
-  /**
-   * End of Payment Forms Submission Flow
-   */
-
-  const submission = new EncryptSubmission(submissionContent)
-
-  try {
-    await submission.save()
-  } catch (err) {
-    logger.error({
-      message: 'Encrypt submission save error',
-      meta: {
-        action: 'onEncryptSubmissionFailure',
-        ...createReqMeta(req),
-      },
-      error: err,
-    })
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message:
-        'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
-      submissionId: submission._id,
-    })
-  }
-
-  const submissionId = submission.id
-  logger.info({
-    message: 'Saved submission to MongoDB',
-    meta: {
-      ...logMeta,
-      submissionId,
-      formId,
-      responseMetadata,
-    },
-  })
-
-  // TODO 6395 make responseMetadata mandatory
-  if (responseMetadata) {
-    reportSubmissionResponseTime(responseMetadata, {
-      mode: 'encrypt',
-      payment: 'true',
-    })
-  }
-
-  // Send success back to client
-  res.json({
-    message: 'Form submission successful.',
-    submissionId,
-    timestamp: (submission.created || new Date()).getTime(),
-  })
-
-  return await performEncryptPostSubmissionActions(
-    submission,
-    incomingSubmission.responses,
-  )
 }
 
 // TODO (FRM-1232): remove endpoint after encryption boundary is shifted
@@ -1187,6 +741,9 @@ export const handleEncryptedSubmission = [
   CaptchaMiddleware.validateCaptchaParams,
   TurnstileMiddleware.validateTurnstileParams,
   EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
+  retrieveForm,
+  checkPublicKey,
+  checkEncryptMode,
   submitEncryptModeForm,
 ] as ControllerHandler[]
 
@@ -1247,15 +804,31 @@ const getEncryptedAttachmentsMapFromAttachmentsMap = async (
 /**
  * Encrypt submission content before saving to DB.
  */
-const encryptSubmission = async (
-  requestBody: ParsedStorageModeSubmissionBody,
-  publicKey: string,
-  form: IPopulatedForm,
-) => {
+const encryptSubmission: ControllerHandler<
+  { formId: string },
+  SubmissionResponseDto | SubmissionErrorDto,
+  ParsedStorageModeSubmissionBody,
+  unknown,
+  {
+    formDef: IPopulatedForm
+    encryptedFormDef: IPopulatedEncryptedForm
+    publicKey: string
+    encryptedPayload: EncryptSubmissionDto
+  }
+> = async (req, res, next) => {
+  const formId = req.params.formId
+  const formDef = res.locals.formDef
+  const publicKey = res.locals.publicKey
   const attachmentsMap: Record<string, Buffer> = {}
 
+  const logMeta = {
+    action: 'encryptSubmission',
+    ...createReqMeta(req),
+    formId,
+  }
+
   // Populate attachment map
-  requestBody.responses.filter(isAttachmentResponse).forEach((response) => {
+  req.body.responses.filter(isAttachmentResponse).forEach((response) => {
     const fieldId = response._id
     attachmentsMap[fieldId] = response.content
   })
@@ -1266,42 +839,43 @@ const encryptSubmission = async (
       publicKey,
     )
 
-  const filteredResponses = getFilteredResponses(form, requestBody.responses)
+  const filteredResponses = getFilteredResponses(formDef, req.body.responses)
 
   if (filteredResponses.isErr()) {
-    return errAsync(filteredResponses.error)
-    // logger.warn({
-    //   message: filteredResponses.error.message,
-    //   meta: logMeta,
-    // })
-    // return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-    //   message: filteredResponses.error.message,
-    // })
+    logger.warn({
+      message: filteredResponses.error.message,
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: filteredResponses.error.message,
+    })
   }
 
-  const encryptedContent = formsgSdk.crypto.encrypt(
-    requestBody.responses.map((response) => {
-      if (isAttachmentResponse(response)) {
-        return {
-          ...response,
-          filename: undefined,
-          content: undefined, //Strip out attachment content
-        }
-      } else {
-        return response
+  const strippedBodyResponses = req.body.responses.map((response) => {
+    if (isAttachmentResponse(response)) {
+      return {
+        ...response,
+        filename: undefined,
+        content: undefined, //Strip out attachment content
       }
-    }),
+    } else {
+      return response
+    }
+  })
+
+  const encryptedContent = formsgSdk.crypto.encrypt(
+    strippedBodyResponses,
     publicKey,
   )
 
-  const encryptedBody = {
+  res.locals.encryptedPayload = {
     attachments: encryptedAttachments,
     responses: filteredResponses.value as EncryptFormFieldResponse[],
     encryptedContent,
-    version: requestBody.version,
+    version: req.body.version,
   }
 
-  return okAsync(encryptedBody)
+  return next()
 }
 
 export const handleStorageSubmission = [
@@ -1309,7 +883,13 @@ export const handleStorageSubmission = [
   TurnstileMiddleware.validateTurnstileParams,
   ReceiverMiddleware.receiveStorageSubmission,
   EncryptSubmissionMiddleware.validateStorageSubmissionParams,
-  submitStorageModeForm,
+  retrieveForm,
+  checkNewBoundaryEnabled,
+  checkPublicKey,
+  validateSubmission,
+  encryptSubmission,
+  checkEncryptMode,
+  submitEncryptModeForm,
 ] as ControllerHandler[]
 
 // Validates that the ending date >= starting date
