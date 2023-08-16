@@ -1,0 +1,13 @@
+version: '3'
+services:
+  clamav-scanner:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      args:
+        IS_LAMBDA: "false"
+    expose:
+      - '8080'
+    ports:
+      - '9999:8080'
+    env_file: ./.env

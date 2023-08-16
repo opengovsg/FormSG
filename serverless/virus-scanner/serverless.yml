@@ -1,0 +1,40 @@
+service: virus-scanner
+frameworkVersion: "3"
+useDotenv: true
+provider:
+  name: aws
+  region: ap-southeast-1
+  stage: ${opt:stage}
+  iam:
+    role:
+      statements:
+        # Allow functions to read/write objects in a bucket
+        - Effect: Allow
+          Action:
+            - 's3:GetObject'
+            - 's3:PutObjectTagging'
+          Resource:
+            - 'arn:aws:s3:::${env:S3_BUCKET_NAME}/*'
+  ecr:
+    images:
+      virus-scanner:
+        path: ./
+        platform: linux/amd64
+
+functions:
+  virus-scanner:
+    image:
+      name: virus-scanner
+    # max timeout per invocation
+    timeout: 300
+    # allocate more memory as the default 1028 MB size will cause lambda to crash
+    memorySize: 2048
+    events:
+      - s3:
+          bucket: ${env:S3_BUCKET_NAME}
+          event: s3:ObjectCreated:*
+          existing: true
+
+plugins:
+  # required so that env variables are loaded in functions
+  - serverless-dotenv-plugin

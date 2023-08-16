@@ -1,0 +1,36 @@
+{
+  "name": "virus-scanner",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "env": "ENV=${ENV:-'development'} node scripts/envLoader.mjs",
+    "build": "tsc",
+    "tsc": "tsc",
+    "dev": "npm run env && docker-compose -f docker-compose.dev.yml up",
+    "deploy": "npm run env && sls deploy --stage ${ENV:-'staging'} --conceal",
+    "package": "npm run env && sls package --stage ${ENV:-'staging'}"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-ssm": "^3.363.0",
+    "@aws-sdk/client-s3": "^3.363.0",
+    "aws-lambda-ric": "^2.1.0",
+    "axios": "^0.27.2",
+    "clamscan": "^2.1.2",
+    "convict": "^6.2.4",
+    "pino": "^8.1.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.101",
+    "@types/clamscan": "^2.0.2",
+    "@types/convict": "^6.1.1",
+    "@types/node": "^18.0.1",
+    "@types/pino": "^7.0.5",
+    "@types/watch": "^1.0.3",
+    "dotenv-cli": "^6.0.0",
+    "serverless": "^3.19.0",
+    "serverless-dotenv-plugin": "^4.0.1",
+    "typescript": "^4.7.4"
+  }
+}
