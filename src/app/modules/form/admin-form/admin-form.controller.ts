@@ -1380,7 +1380,7 @@ export const handleUpdateSettings = [
 ] as ControllerHandler[]
 
 /**
- * Handler for PATCH api/platform/v1/admin/forms/:formId/webhooksettings.
+ * Handler for PATCH api/public/v1/admin/forms/:formId/webhooksettings.
  * @security session
  *
  * @returns 200 with updated form settings
@@ -1501,7 +1501,7 @@ export const handleGetSettings: ControllerHandler<
 }
 
 /**
- * Handler for POST api/platform/v1/admin/forms/:formId/webhooksettings.
+ * Handler for POST api/public/v1/admin/forms/:formId/webhooksettings.
  *
  * @returns 200 with latest webhook and response mode settings
  * @returns 401 when current user is not logged in
@@ -1559,7 +1559,7 @@ export const _handleGetWebhookSettings: ControllerHandler<
 }
 
 /**
- * Handler for POST api/platform/v1/admin/forms/:formId/webhooksettings.
+ * Handler for POST api/public/v1/admin/forms/:formId/webhooksettings.
  * @security session
  *
  * @returns 200 with latest webhook and response mode settings
