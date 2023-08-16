@@ -122,7 +122,7 @@ export const createFormsgReqBody: EncryptSubmissionMiddlewareHandler = async (
   res,
   next,
 ) => {
-  if (req.body.formsg) return new FormsgReqBodyExistsError()
+  if (req.body.formsg) return res.send(new FormsgReqBodyExistsError())
   else {
     req.body.formsg = {}
     return next()
@@ -165,7 +165,7 @@ export const checkPublicKey: EncryptSubmissionMiddlewareHandler = async (
 ) => {
   const formDef = req.body.formsg.formDef
 
-  if (!formDef) return new FormDefinitionNotRetrievedError()
+  if (!formDef) return res.send(new FormDefinitionNotRetrievedError())
 
   const logMeta = {
     action: 'checkPublicKey',
@@ -196,7 +196,7 @@ export const checkEncryptMode: EncryptSubmissionMiddlewareHandler = async (
 ) => {
   const formDef = req.body.formsg.formDef
 
-  if (!formDef) return new FormDefinitionNotRetrievedError()
+  if (!formDef) return res.send(new FormDefinitionNotRetrievedError())
 
   const logMeta = {
     action: 'checkEncryptMode',
@@ -231,7 +231,7 @@ export const checkNewBoundaryEnabled: EncryptSubmissionMiddlewareHandler =
   async (req, res, next) => {
     const formDef = req.body.formsg.formDef
 
-    if (!formDef) return new FormDefinitionNotRetrievedError()
+    if (!formDef) return res.send(new FormDefinitionNotRetrievedError())
 
     if (!formDef.get('newEncryptionBoundary')) {
       return res
@@ -249,7 +249,7 @@ export const validateSubmission: EncryptSubmissionMiddlewareHandler = async (
 ) => {
   const formDef = req.body.formsg.formDef
 
-  if (!formDef) return new FormDefinitionNotRetrievedError()
+  if (!formDef) return res.send(new FormDefinitionNotRetrievedError())
 
   const logMeta = {
     action: 'validateSubmission',
@@ -340,10 +340,10 @@ export const encryptSubmission: EncryptSubmissionMiddlewareHandler = async (
 ) => {
   const formId = req.params.formId
   const formDef = req.body.formsg.formDef
-  if (!formDef) return new FormDefinitionNotRetrievedError()
+  if (!formDef) return res.send(new FormDefinitionNotRetrievedError())
 
   const publicKey = formDef.publicKey
-  if (!publicKey) return new FormMissingPublicKeyError()
+  if (!publicKey) return res.send(new FormMissingPublicKeyError())
 
   const attachmentsMap: Record<string, Buffer> = {}
 

@@ -102,12 +102,13 @@ const submitEncryptModeForm: EncryptSubmissionMiddleware.EncryptSubmissionMiddle
     }
 
     const formDef = req.body.formsg.formDef
-    if (!formDef) return new FormDefinitionNotRetrievedError()
+    if (!formDef) return res.send(new FormDefinitionNotRetrievedError())
 
     setFormTags(formDef)
 
     const encryptedFormDef = req.body.formsg.encryptedFormDef
-    if (!encryptedFormDef) return new EncryptedFormDefinitionNotRetrievedError()
+    if (!encryptedFormDef)
+      return res.send(new EncryptedFormDefinitionNotRetrievedError())
 
     const ensurePipeline = Pipeline(
       ensureIsPublicForm,
@@ -126,7 +127,7 @@ const submitEncryptModeForm: EncryptSubmissionMiddleware.EncryptSubmissionMiddle
     }
 
     const encryptedPayload = req.body.formsg.encryptedPayload
-    if (!encryptedPayload) return new EncryptedPayloadNotFoundError()
+    if (!encryptedPayload) return res.send(new EncryptedPayloadNotFoundError())
 
     // Create Incoming Submission
     const { encryptedContent, responses, responseMetadata } = encryptedPayload
@@ -586,7 +587,7 @@ export const handleStorageSubmission = [
   ReceiverMiddleware.receiveStorageSubmission,
   EncryptSubmissionMiddleware.validateStorageSubmissionParams,
   EncryptSubmissionMiddleware.createFormsgReqBody,
-  EncryptSubmissionMiddleware.retrieveForm,
+  // EncryptSubmissionMiddleware.retrieveForm,
   EncryptSubmissionMiddleware.checkNewBoundaryEnabled,
   EncryptSubmissionMiddleware.checkPublicKey,
   EncryptSubmissionMiddleware.validateSubmission,
