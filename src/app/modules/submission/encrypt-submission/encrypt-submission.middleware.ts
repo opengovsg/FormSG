@@ -7,19 +7,12 @@ import {
   BasicField,
   StorageModeAttachment,
   StorageModeAttachmentsMap,
-  SubmissionErrorDto,
-  SubmissionResponseDto,
 } from '../../../../../shared/types'
-import {
-  EncryptFormFieldResponse,
-  EncryptSubmissionDtoWithContext,
-  StorageModeSubmissionBodyWithContext,
-} from '../../../../types/api'
+import { EncryptFormFieldResponse } from '../../../../types/api'
 import { paymentConfig } from '../../../config/features/payment.config'
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
-import { ControllerHandler } from '../../core/core.types'
 import { JoiPaymentProduct } from '../../form/admin-form/admin-form.payments.constants'
 import * as FormService from '../../form/form.service'
 import * as EmailSubmissionService from '../email-submission/email-submission.service'
@@ -35,16 +28,14 @@ import {
   FormsgReqBodyExistsError,
 } from './encrypt-submission.errors'
 import { checkFormIsEncryptMode } from './encrypt-submission.service'
+import {
+  EncryptSubmissionMiddlewareHandlerType,
+  SharedSubmissionMiddlewareHandlerType,
+  StorageSubmissionMiddlewareHandlerType,
+} from './encrypt-submission.types'
 import { mapRouteError } from './encrypt-submission.utils'
 
 export const logger = createLoggerWithLabel(module)
-
-export type EncryptSubmissionMiddlewareHandler = ControllerHandler<
-  { formId: string },
-  SubmissionResponseDto | SubmissionErrorDto,
-  StorageModeSubmissionBodyWithContext,
-  { captchaResponse?: unknown; captchaType?: unknown }
->
 
 const JoiInt = Joi.number().integer()
 /**
@@ -129,19 +120,16 @@ export const validateStorageSubmissionParams = celebrate({
   }),
 })
 
-export const createFormsgReqBody: EncryptSubmissionMiddlewareHandler = async (
-  req,
-  res,
-  next,
-) => {
-  if (req.body.formsg) return res.send(new FormsgReqBodyExistsError())
-  else {
-    req.body.formsg = {}
-    return next()
+export const createFormsgReqBody: SharedSubmissionMiddlewareHandlerType =
+  async (req, res, next) => {
+    if (req.body.formsg) return res.send(new FormsgReqBodyExistsError())
+    else {
+      req.body.formsg = {}
+      return next()
+    }
   }
-}
 
-export const retrieveForm: EncryptSubmissionMiddlewareHandler = async (
+export const retrieveForm: SharedSubmissionMiddlewareHandlerType = async (
   req,
   res,
   next,
@@ -170,7 +158,7 @@ export const retrieveForm: EncryptSubmissionMiddlewareHandler = async (
   return next()
 }
 
-export const checkPublicKey: EncryptSubmissionMiddlewareHandler = async (
+export const checkPublicKey: SharedSubmissionMiddlewareHandlerType = async (
   req,
   res,
   next,
@@ -201,7 +189,7 @@ export const checkPublicKey: EncryptSubmissionMiddlewareHandler = async (
   return next()
 }
 
-export const checkEncryptMode: EncryptSubmissionMiddlewareHandler = async (
+export const checkEncryptMode: SharedSubmissionMiddlewareHandlerType = async (
   req,
   res,
   next,
@@ -239,7 +227,7 @@ export const checkEncryptMode: EncryptSubmissionMiddlewareHandler = async (
  * Guardrail to prevent new endpoint from being used for regular storage mode forms.
  * TODO (FRM-1232): remove this guardrail when encryption boundary is shifted.
  */
-export const checkNewBoundaryEnabled: EncryptSubmissionMiddlewareHandler =
+export const checkNewBoundaryEnabled: SharedSubmissionMiddlewareHandlerType =
   async (req, res, next) => {
     const formDef = req.body.formsg.formDef
 
@@ -254,39 +242,36 @@ export const checkNewBoundaryEnabled: EncryptSubmissionMiddlewareHandler =
     return next()
   }
 
-export const validateSubmission: EncryptSubmissionMiddlewareHandler = async (
-  req,
-  res,
-  next,
-) => {
-  const formDef = req.body.formsg.formDef
+export const validateSubmission: StorageSubmissionMiddlewareHandlerType =
+  async (req, res, next) => {
+    const formDef = req.body.formsg.formDef
 
-  if (!formDef) return res.send(new FormDefinitionNotRetrievedError())
+    if (!formDef) return res.send(new FormDefinitionNotRetrievedError())
 
-  const logMeta = {
-    action: 'validateSubmission',
-    ...createReqMeta(req),
-    formId: formDef.id,
+    const logMeta = {
+      action: 'validateSubmission',
+      ...createReqMeta(req),
+      formId: formDef.id,
+    }
+
+    // Validate submission
+    return await EmailSubmissionService.validateAttachments(req.body.responses)
+      .andThen(() =>
+        ParsedResponsesObject.parseResponses(formDef, req.body.responses),
+      )
+      .map(() => next())
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error processing responses',
+          meta: logMeta,
+          error,
+        })
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({
+          message: errorMessage,
+        })
+      })
   }
-
-  // Validate submission
-  return await EmailSubmissionService.validateAttachments(req.body.responses)
-    .andThen(() =>
-      ParsedResponsesObject.parseResponses(formDef, req.body.responses),
-    )
-    .map(() => next())
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error processing responses',
-        meta: logMeta,
-        error,
-      })
-      const { statusCode, errorMessage } = mapRouteError(error)
-      return res.status(statusCode).json({
-        message: errorMessage,
-      })
-    })
-}
 
 const encryptAttachment = async (
   attachment: Buffer,
@@ -345,7 +330,7 @@ const getEncryptedAttachmentsMapFromAttachmentsMap = async (
 /**
  * Encrypt submission content before saving to DB.
  */
-export const encryptSubmission: EncryptSubmissionMiddlewareHandler = async (
+export const encryptSubmission: StorageSubmissionMiddlewareHandlerType = async (
   req,
   res,
   next,
@@ -420,21 +405,17 @@ export const encryptSubmission: EncryptSubmissionMiddlewareHandler = async (
  * Moves encrypted payload present in req.body to req.body.formsg.encryptedPayload.
  * Should only be used for the old storage mode submission endpoint (/api/v3/forms/:formId/submissions/encrypt).
  */
-export const moveEncryptedPayload: ControllerHandler<
-  { formId: string },
-  SubmissionResponseDto | SubmissionErrorDto,
-  EncryptSubmissionDtoWithContext,
-  { captchaResponse?: unknown; captchaType?: unknown }
-> = async (req, res, next) => {
-  if (req.body.formsg.encryptedPayload) {
-    return res.send(new EncryptedPayloadExistsError())
+export const moveEncryptedPayload: EncryptSubmissionMiddlewareHandlerType =
+  async (req, res, next) => {
+    if (req.body.formsg.encryptedPayload) {
+      return res.send(new EncryptedPayloadExistsError())
+    }
+
+    const reqBody = req.body
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { formsg: _, ...originalReqBody } = reqBody
+    const encryptedPayload = reqBody.formsg.encryptedPayload ?? originalReqBody
+
+    req.body.formsg.encryptedPayload = encryptedPayload
+    return next()
   }
-
-  const reqBody = req.body
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { formsg: _, ...originalReqBody } = reqBody
-  const encryptedPayload = reqBody.formsg.encryptedPayload ?? originalReqBody
-
-  req.body.formsg.encryptedPayload = encryptedPayload
-  return next()
-}
