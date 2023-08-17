@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Box, Container, Grid, useDisclosure } from '@chakra-ui/react'
 
+import { GUIDE_PAYMENTS_ENTRY } from '~constants/links'
 import { ROLLOUT_ANNOUNCEMENT_KEY_PREFIX } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import InlineMessage from '~components/InlineMessage'
@@ -17,7 +18,8 @@ import { useWorkspaceContext } from './WorkspaceContext'
 export const CONTAINER_MAXW = '69.5rem'
 
 export const WorkspaceContent = (): JSX.Element => {
-  const { isLoading, totalFormsCount, activeWorkspace } = useWorkspaceContext()
+  const { isLoading, totalFormsCount, isDefaultWorkspace } =
+    useWorkspaceContext()
   const createFormModalDisclosure = useDisclosure()
   const { user, isLoading: isUserLoading } = useUser()
 
@@ -45,6 +47,7 @@ export const WorkspaceContent = (): JSX.Element => {
         <EmptyWorkspace
           handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
           isLoading={isLoading}
+          isFolder={!isDefaultWorkspace}
         />
       ) : (
         <Grid

@@ -125,6 +125,7 @@ export const WorkspaceProvider = ({
         workspaces,
         setCurrentWorkspace,
         getFormWorkspace,
+        isDefaultWorkspace: !activeWorkspace,
       }}
     >
       {children}
