@@ -442,7 +442,7 @@ const updatePaymentsValidator = celebrate({
       is: Joi.equal(true),
       then: Joi.when('payment_type', {
         is: Joi.equal(PaymentType.Products),
-        then: Joi.array().items(JoiPaymentProduct).required(),
+        then: Joi.array().items(JoiPaymentProduct).required().min(1),
         otherwise: Joi.any(),
       }),
       otherwise: Joi.any(),
