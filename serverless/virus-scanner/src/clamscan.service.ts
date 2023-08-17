@@ -17,14 +17,6 @@ export async function scanFileStream(
     },
   })
 
-  const { isInfected: isMalicious, viruses: virusMetadata } =
-    await scanner.scanStream(s3Stream)
-
-  logger.info('Finished scanning file stream', {
-    isMalicious,
-    virusMetadata,
-  })
-
   // create a writable stream to memory
   const outputStream = new Stream.Writable()
   const outputBufferArr: Uint8Array[] = []
@@ -34,33 +26,42 @@ export async function scanFileStream(
 
   s3Stream.pipe(outputStream)
 
-  return new Promise((resolve, reject) => {
-    outputStream
-      .on('finish', () => {
-        logger.info('Finished piping file stream to output stream', {
-          isMalicious,
-          virusMetadata,
-        })
+  return scanner.scanStream(s3Stream).then((result) => {
+    const { isInfected: isMalicious, viruses: virusMetadata } = result
 
-        if (isMalicious === true) {
-          resolve({
+    logger.info('Finished scanning file stream', {
+      isMalicious,
+      virusMetadata,
+    })
+
+    return new Promise((resolve, reject) => {
+      outputStream
+        .on('finish', () => {
+          logger.info('Finished piping file stream to output stream', {
             isMalicious,
             virusMetadata,
           })
-        } else {
-          resolve({
-            isMalicious,
-            cleanFile: Buffer.concat(outputBufferArr),
-          })
-        }
-      })
-      .on('error', (err) => {
-        logger.error('Error piping file stream to output stream', {
-          isMalicious,
-          virusMetadata,
-          err,
+
+          if (isMalicious === true) {
+            resolve({
+              isMalicious,
+              virusMetadata,
+            })
+          } else {
+            resolve({
+              isMalicious,
+              cleanFile: Buffer.concat(outputBufferArr),
+            })
+          }
         })
-        reject(err)
-      })
+        .on('error', (err) => {
+          logger.error('Error piping file stream to output stream', {
+            isMalicious,
+            virusMetadata,
+            err,
+          })
+          reject(err)
+        })
+    })
   })
 }
