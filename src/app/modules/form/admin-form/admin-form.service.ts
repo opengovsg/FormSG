@@ -67,6 +67,7 @@ import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
 import { SmsLimitExceededError } from '../../verification/verification.errors'
 import { hasAdminExceededFreeSmsLimit } from '../../verification/verification.util'
+import { removeFormFromAllWorkspaces } from '../../workspace/workspace.service'
 import {
   FormNotFoundError,
   LogicNotFoundError,
@@ -790,46 +791,81 @@ export const updateFormCollaborators = (
     )
     .map((collaborator) => collaborator.email)
 
-  return ResultAsync.fromPromise(
-    // Check that all updated collaborator domains exist in the Agency collection.
-    Promise.all(
-      updatedCollaboratorEmails.map(async (email) => {
-        const emailDomain = email.split('@').pop()
-        const result = await AgencyModel.findOne({ emailDomain })
-        return !!result
-      }),
+  // find removed collaborators (i.e. collaborators in the original list)
+  // but has been removed in the updated list
+  const removedCollaboratorEmails = form.permissionList.filter((collaborator) =>
+    updatedCollaborators.every(
+      (newCollaborator) => collaborator.email !== newCollaborator.email,
     ),
-    (error) => {
-      logger.error({
-        message: 'Error encountered while validating new form collaborators',
-        meta: logMeta,
-        error,
-      })
-      return transformMongoError(error)
-    },
   )
-    .andThen((doNewCollaboratorsExist) => {
-      const falseIdx = doNewCollaboratorsExist.findIndex((exists) => !exists)
-      return falseIdx < 0
-        ? okAsync(undefined)
-        : errAsync(
-            new InvalidCollaboratorError(updatedCollaboratorEmails[falseIdx]),
-          )
-    })
-    .andThen(() =>
-      ResultAsync.fromPromise(
-        form.updateFormCollaborators(updatedCollaborators),
-        (error) => {
-          logger.error({
-            message: 'Error encountered while updating form collaborators',
-            meta: logMeta,
-            error,
-          })
-          return transformMongoError(error)
-        },
+
+  return (
+    ResultAsync.fromPromise(
+      // Check that all updated collaborator domains exist in the Agency collection.
+      Promise.all(
+        updatedCollaboratorEmails.map(async (email) => {
+          const emailDomain = email.split('@').pop()
+          const result = await AgencyModel.findOne({ emailDomain })
+          return !!result
+        }),
       ),
+      (error) => {
+        logger.error({
+          message: 'Error encountered while validating new form collaborators',
+          meta: logMeta,
+          error,
+        })
+        return transformMongoError(error)
+      },
     )
-    .andThen(({ permissionList }) => okAsync(permissionList))
+      .andThen((doNewCollaboratorsExist) => {
+        const falseIdx = doNewCollaboratorsExist.findIndex((exists) => !exists)
+        return falseIdx < 0
+          ? okAsync(undefined)
+          : errAsync(
+              new InvalidCollaboratorError(updatedCollaboratorEmails[falseIdx]),
+            )
+      })
+      // after checking that collaborator exists
+      // remove forms from workspaces for collaborators that were removed
+      .andThen(() => {
+        return ResultAsync.fromPromise(
+          Promise.all(
+            removedCollaboratorEmails.map(async (collaborator) => {
+              await UserService.findUserByEmail(collaborator.email).map(
+                async (user) =>
+                  await removeFormFromAllWorkspaces({
+                    formId: form._id,
+                    userId: user._id,
+                  }),
+              )
+            }),
+          ),
+          (error) => {
+            logger.error({
+              message: 'Error encountered while removing forms from workspaces',
+              meta: logMeta,
+              error,
+            })
+            return transformMongoError(error)
+          },
+        )
+      })
+      .andThen(() =>
+        ResultAsync.fromPromise(
+          form.updateFormCollaborators(updatedCollaborators),
+          (error) => {
+            logger.error({
+              message: 'Error encountered while updating form collaborators',
+              meta: logMeta,
+              error,
+            })
+            return transformMongoError(error)
+          },
+        ),
+      )
+      .andThen(({ permissionList }) => okAsync(permissionList))
+  )
 }
 
 /**
