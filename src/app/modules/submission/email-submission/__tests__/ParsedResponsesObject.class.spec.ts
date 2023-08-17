@@ -15,13 +15,13 @@ import {
   IFormDocument,
   IPreventSubmitLogicSchema,
 } from '../../../../../types'
+import ParsedResponsesObject from '../../ParsedResponsesObject.class'
 import {
   ConflictError,
   ProcessingError,
   ValidateFieldError,
 } from '../../submission.errors'
 import { ProcessedFieldResponse } from '../../submission.types'
-import ParsedResponsesObject from '../ParsedResponsesObject.class'
 
 describe('ParsedResponsesObject', () => {
   it('should return list of parsed responses for email form submission successfully', async () => {

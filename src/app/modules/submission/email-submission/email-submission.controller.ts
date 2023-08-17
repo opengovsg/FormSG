@@ -31,6 +31,7 @@ import {
 import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import * as EmailSubmissionMiddleware from '../email-submission/email-submission.middleware'
+import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
 import * as SubmissionService from '../submission.service'
 import { extractEmailConfirmationData } from '../submission.utils'
@@ -43,7 +44,6 @@ import {
   mapRouteError,
   SubmissionEmailObj,
 } from './email-submission.util'
-import ParsedResponsesObject from './ParsedResponsesObject.class'
 
 const logger = createLoggerWithLabel(module)
 

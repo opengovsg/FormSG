@@ -15,9 +15,9 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import { JoiPaymentProduct } from '../../form/admin-form/admin-form.payments.constants'
 import * as FormService from '../../form/form.service'
-import * as EmailSubmissionService from '../email-submission/email-submission.service'
-import ParsedResponsesObject from '../email-submission/ParsedResponsesObject.class'
+import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import { sharedSubmissionParams } from '../submission.constants'
+import * as SubmissionService from '../submission.service'
 import { getFilteredResponses, isAttachmentResponse } from '../submission.utils'
 
 import { newEncryptionBoundaryFlag } from './encrypt-submission.constants'
@@ -255,7 +255,7 @@ export const validateSubmission: StorageSubmissionMiddlewareHandlerType =
     }
 
     // Validate submission
-    return await EmailSubmissionService.validateAttachments(req.body.responses)
+    return await SubmissionService.validateAttachments(req.body.responses)
       .andThen(() =>
         ParsedResponsesObject.parseResponses(formDef, req.body.responses),
       )

@@ -2,6 +2,8 @@ import omit from 'lodash/omit'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
+import { ParsedClearFormFieldResponse } from 'src/types/api'
+
 import {
   EmailRespondentConfirmationField,
   IAttachmentInfo,
@@ -26,10 +28,17 @@ import {
 import { InvalidSubmissionIdError } from '../feedback/feedback.errors'
 
 import {
+  AttachmentTooLargeError,
+  InvalidFileExtensionError,
   PendingSubmissionNotFoundError,
   SendEmailConfirmationError,
   SubmissionNotFoundError,
 } from './submission.errors'
+import {
+  areAttachmentsMoreThan7MB,
+  getInvalidFileExtensions,
+  mapAttachmentsFromResponses,
+} from './submission.utils'
 
 const logger = createLoggerWithLabel(module)
 const SubmissionModel = getSubmissionModel(mongoose)
@@ -317,4 +326,49 @@ export const copyPendingSubmissionToSubmissions = (
         })
       })
     })
+}
+
+/**
+ * Validates that the attachments in a submission do not violate form-level
+ * constraints e.g. form-wide attachment size limit.
+ * @param parsedResponses Unprocessed responses
+ * @returns okAsync(true) if validation passes
+ * @returns errAsync(InvalidFileExtensionError) if invalid file extensions are found
+ * @returns errAsync(AttachmentTooLargeError) if total attachment size exceeds 7MB
+ */
+export const validateAttachments = (
+  parsedResponses: ParsedClearFormFieldResponse[],
+): ResultAsync<true, InvalidFileExtensionError | AttachmentTooLargeError> => {
+  const logMeta = { action: 'validateAttachments' }
+  const attachments = mapAttachmentsFromResponses(parsedResponses)
+  if (areAttachmentsMoreThan7MB(attachments)) {
+    logger.error({
+      message: 'Attachment size is too large',
+      meta: logMeta,
+    })
+    return errAsync(new AttachmentTooLargeError())
+  }
+  return ResultAsync.fromPromise(
+    getInvalidFileExtensions(attachments),
+    (error) => {
+      logger.error({
+        message: 'Error while validating attachment file extensions',
+        meta: logMeta,
+        error,
+      })
+      return new InvalidFileExtensionError()
+    },
+  ).andThen((invalidExtensions) => {
+    if (invalidExtensions.length > 0) {
+      logger.error({
+        message: 'Invalid file extensions found',
+        meta: {
+          ...logMeta,
+          invalidExtensions,
+        },
+      })
+      return errAsync(new InvalidFileExtensionError())
+    }
+    return okAsync(true as const)
+  })
 }

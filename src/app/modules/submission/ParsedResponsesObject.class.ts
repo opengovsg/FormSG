@@ -5,33 +5,30 @@ import {
   FormAuthType,
   FormResponseMode,
   MyInfoAttribute,
-} from '../../../../../shared/types'
-import {
-  FieldResponse,
-  FormFieldSchema,
-  IFormDocument,
-} from '../../../../types'
-import { validateField } from '../../../utils/field-validation'
+} from '../../../../shared/types'
+import { FieldResponse, FormFieldSchema, IFormDocument } from '../../../types'
+import { validateField } from '../../utils/field-validation'
 import {
   getLogicUnitPreventingSubmit,
   getVisibleFieldIds,
-} from '../../../utils/logic-adaptor'
-import { createSgidParsedResponses } from '../../sgid/sgid.util'
+} from '../../utils/logic-adaptor'
+import { createSgidParsedResponses } from '../sgid/sgid.util'
 import {
   createCorppassParsedResponses,
   createSingpassParsedResponses,
-} from '../../spcp/spcp.util'
-import { newEncryptionBoundaryFlag } from '../encrypt-submission/encrypt-submission.constants'
+} from '../spcp/spcp.util'
+
+import { newEncryptionBoundaryFlag } from './encrypt-submission/encrypt-submission.constants'
 import {
   ConflictError,
   ProcessingError,
   ValidateFieldError,
-} from '../submission.errors'
+} from './submission.errors'
 import {
   ProcessedChildrenResponse,
   ProcessedFieldResponse,
-} from '../submission.types'
-import { getFilteredResponses } from '../submission.utils'
+} from './submission.types'
+import { getFilteredResponses } from './submission.utils'
 
 type NdiUserInfo =
   | {

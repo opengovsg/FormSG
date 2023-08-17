@@ -80,7 +80,7 @@ import {
 } from '../../../../../../shared/types'
 import { smsConfig } from '../../../../config/features/sms.config'
 import * as SmsService from '../../../../services/sms/sms.service'
-import ParsedResponsesObject from '../../../submission/email-submission/ParsedResponsesObject.class'
+import ParsedResponsesObject from '../../../submission/ParsedResponsesObject.class'
 import * as UserService from '../../../user/user.service'
 import {
   ForbiddenFormError,

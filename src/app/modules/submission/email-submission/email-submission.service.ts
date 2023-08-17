@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import mongoose from 'mongoose'
-import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import { err, ok, Result, ResultAsync } from 'neverthrow'
 
 import {
   BasicField,
@@ -15,7 +15,6 @@ import {
   IPopulatedEmailForm,
   IPopulatedForm,
 } from '../../../../types'
-import { ParsedClearFormFieldResponse } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEmailSubmissionModel } from '../../../models/submission.server.model'
 import { DatabaseError } from '../../core/core.errors'
@@ -29,66 +28,12 @@ import {
   KEY_LENGTH,
   SALT_LENGTH,
 } from './email-submission.constants'
-import {
-  AttachmentTooLargeError,
-  InvalidFileExtensionError,
-  SubmissionHashError,
-} from './email-submission.errors'
+import { SubmissionHashError } from './email-submission.errors'
 import { SubmissionHash } from './email-submission.types'
-import {
-  areAttachmentsMoreThan7MB,
-  concatAttachmentsAndResponses,
-  getInvalidFileExtensions,
-  mapAttachmentsFromResponses,
-} from './email-submission.util'
+import { concatAttachmentsAndResponses } from './email-submission.util'
 
 const EmailSubmissionModel = getEmailSubmissionModel(mongoose)
 const logger = createLoggerWithLabel(module)
-
-/**
- * Validates that the attachments in a submission do not violate form-level
- * constraints e.g. form-wide attachment size limit.
- * @param parsedResponses Unprocessed responses
- * @returns okAsync(true) if validation passes
- * @returns errAsync(InvalidFileExtensionError) if invalid file extensions are found
- * @returns errAsync(AttachmentTooLargeError) if total attachment size exceeds 7MB
- */
-export const validateAttachments = (
-  parsedResponses: ParsedClearFormFieldResponse[],
-): ResultAsync<true, InvalidFileExtensionError | AttachmentTooLargeError> => {
-  const logMeta = { action: 'validateAttachments' }
-  const attachments = mapAttachmentsFromResponses(parsedResponses)
-  if (areAttachmentsMoreThan7MB(attachments)) {
-    logger.error({
-      message: 'Attachment size is too large',
-      meta: logMeta,
-    })
-    return errAsync(new AttachmentTooLargeError())
-  }
-  return ResultAsync.fromPromise(
-    getInvalidFileExtensions(attachments),
-    (error) => {
-      logger.error({
-        message: 'Error while validating attachment file extensions',
-        meta: logMeta,
-        error,
-      })
-      return new InvalidFileExtensionError()
-    },
-  ).andThen((invalidExtensions) => {
-    if (invalidExtensions.length > 0) {
-      logger.error({
-        message: 'Invalid file extensions found',
-        meta: {
-          ...logMeta,
-          invalidExtensions,
-        },
-      })
-      return errAsync(new InvalidFileExtensionError())
-    }
-    return okAsync(true as const)
-  })
-}
 
 /**
  * Creates hash of a submission

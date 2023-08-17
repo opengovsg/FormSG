@@ -1,4 +1,11 @@
-import { differenceBy, intersectionBy, keyBy, uniqBy } from 'lodash'
+import {
+  differenceBy,
+  flattenDeep,
+  intersectionBy,
+  keyBy,
+  sumBy,
+  uniqBy,
+} from 'lodash'
 import { err, ok, Result } from 'neverthrow'
 
 import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
@@ -7,7 +14,13 @@ import {
   FormField,
   FormResponseMode,
 } from '../../../../shared/types'
-import { FieldResponse, FormFieldSchema, IFormDocument } from '../../../types'
+import * as FileValidation from '../../../../shared/utils/file-validation'
+import {
+  FieldResponse,
+  FormFieldSchema,
+  IAttachmentInfo,
+  IFormDocument,
+} from '../../../types'
 import {
   ParsedClearAttachmentResponse,
   ParsedClearFormFieldResponse,
@@ -167,4 +180,62 @@ export const isAttachmentResponse = (
     response.fieldType === BasicField.Attachment &&
     response.content !== undefined
   )
+}
+
+/**
+ * Checks an array of attachments to see ensure that every
+ * one of them is valid. The validity is determined by an
+ * internal isInvalidFileExtension checker function, and
+ * zip files are checked recursively.
+ *
+ * @param attachments - Array of file objects
+ * @returns Whether all attachments are valid
+ */
+export const getInvalidFileExtensions = (
+  attachments: IAttachmentInfo[],
+): Promise<string[]> => {
+  // Turn it into an array of promises that each resolve
+  // to an array of file extensions that are invalid (if any)
+  const promises = attachments.map((attachment) => {
+    const extension = FileValidation.getFileExtension(attachment.filename)
+    if (FileValidation.isInvalidFileExtension(extension)) {
+      return Promise.resolve([extension])
+    }
+    if (extension !== '.zip') return Promise.resolve([])
+    return FileValidation.getInvalidFileExtensionsInZip(
+      'nodebuffer',
+      attachment.content,
+    )
+  })
+
+  return Promise.all(promises).then((results) => flattenDeep(results))
+}
+
+/**
+ * Checks whether the total size of attachments exceeds 7MB
+ * @param attachments List of attachments
+ * @returns true if total attachment size exceeds 7MB
+ */
+export const areAttachmentsMoreThan7MB = (
+  attachments: IAttachmentInfo[],
+): boolean => {
+  // Check if total attachments size is < 7mb
+  const totalAttachmentSize = sumBy(attachments, (a) => a.content.byteLength)
+  return totalAttachmentSize > 7000000
+}
+
+/**
+ * Extracts attachment fields from form responses
+ * @param responses Form responses
+ */
+export const mapAttachmentsFromResponses = (
+  responses: ParsedClearFormFieldResponse[],
+): IAttachmentInfo[] => {
+  // look for attachments in parsedResponses
+  // Could be undefined if it is not required, or hidden
+  return responses.filter(isAttachmentResponse).map((response) => ({
+    fieldId: response._id,
+    filename: response.filename,
+    content: response.content,
+  }))
 }
