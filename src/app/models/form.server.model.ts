@@ -18,6 +18,7 @@ import {
   MB,
   STORAGE_FORM_SETTINGS_FIELDS,
   STORAGE_PUBLIC_FORM_FIELDS,
+  WEBHOOK_SETTINGS_FIELDS,
 } from '../../../shared/constants'
 import {
   AdminDashboardFormMetaDto,
@@ -36,6 +37,8 @@ import {
   FormSettings,
   FormStartPage,
   FormStatus,
+  FormWebhookResponseModeSettings,
+  FormWebhookSettings,
   LogicConditionState,
   LogicDto,
   LogicType,
@@ -707,6 +710,15 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
     return formSettings
   }
+
+  FormDocumentSchema.methods.getWebhookAndResponseModeSettings =
+    function (): FormWebhookSettings {
+      const formSettings = pick(
+        this,
+        WEBHOOK_SETTINGS_FIELDS,
+      ) as FormWebhookResponseModeSettings
+      return formSettings
+    }
 
   FormDocumentSchema.methods.getPublicView = function (): PublicForm {
     const basePublicView =
