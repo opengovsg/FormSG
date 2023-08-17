@@ -1,5 +1,5 @@
 service: virus-scanner
-frameworkVersion: "3"
+frameworkVersion: '3'
 useDotenv: true
 provider:
   name: aws
@@ -12,9 +12,10 @@ provider:
         - Effect: Allow
           Action:
             - 's3:GetObject'
-            - 's3:PutObjectTagging'
+            - 's3:PutObject'
           Resource:
-            - 'arn:aws:s3:::${env:S3_BUCKET_NAME}/*'
+            - 'arn:aws:s3:::${env:VIRUS_SCANNER_QUARANTINE_S3_BUCKET}/*'
+            - 'arn:aws:s3:::${env:VIRUS_SCANNER_CLEAN_S3_BUCKET}/*'
   ecr:
     images:
       virus-scanner:
@@ -29,11 +30,6 @@ functions:
     timeout: 300
     # allocate more memory as the default 1028 MB size will cause lambda to crash
     memorySize: 2048
-    events:
-      - s3:
-          bucket: ${env:S3_BUCKET_NAME}
-          event: s3:ObjectCreated:*
-          existing: true
 
 plugins:
   # required so that env variables are loaded in functions
