@@ -12,6 +12,7 @@ import {
 } from '../../../../../shared/types'
 import {
   EncryptFormFieldResponse,
+  EncryptSubmissionDtoWithContext,
   StorageModeSubmissionBodyWithContext,
 } from '../../../../types/api'
 import { paymentConfig } from '../../../config/features/payment.config'
@@ -28,6 +29,7 @@ import { getFilteredResponses, isAttachmentResponse } from '../submission.utils'
 
 import { newEncryptionBoundaryFlag } from './encrypt-submission.constants'
 import {
+  EncryptedPayloadExistsError,
   FormDefinitionNotRetrievedError,
   FormMissingPublicKeyError,
   FormsgReqBodyExistsError,
@@ -411,5 +413,28 @@ export const encryptSubmission: EncryptSubmissionMiddlewareHandler = async (
     version: req.body.version,
   }
 
+  return next()
+}
+
+/**
+ * Moves encrypted payload present in req.body to req.body.formsg.encryptedPayload.
+ * Should only be used for the old storage mode submission endpoint (/api/v3/forms/:formId/submissions/encrypt).
+ */
+export const moveEncryptedPayload: ControllerHandler<
+  { formId: string },
+  SubmissionResponseDto | SubmissionErrorDto,
+  EncryptSubmissionDtoWithContext,
+  { captchaResponse?: unknown; captchaType?: unknown }
+> = async (req, res, next) => {
+  if (req.body.formsg.encryptedPayload) {
+    return res.send(new EncryptedPayloadExistsError())
+  }
+
+  const reqBody = req.body
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { formsg: _, ...originalReqBody } = reqBody
+  const encryptedPayload = reqBody.formsg.encryptedPayload ?? originalReqBody
+
+  req.body.formsg.encryptedPayload = encryptedPayload
   return next()
 }

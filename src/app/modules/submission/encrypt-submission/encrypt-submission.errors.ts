@@ -39,3 +39,11 @@ export class FormsgReqBodyExistsError extends ApplicationError {
     super(message)
   }
 }
+
+export class EncryptedPayloadExistsError extends ApplicationError {
+  constructor(
+    message = 'Encrypted payload already exists in req.body.formsg. Please check that you are not overwriting it.',
+  ) {
+    super(message)
+  }
+}

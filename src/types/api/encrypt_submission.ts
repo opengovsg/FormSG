@@ -39,3 +39,11 @@ export type StorageModeSubmissionBodyWithContext =
       encryptedFormDef?: IPopulatedEncryptedForm
     }
   }
+
+export type EncryptSubmissionDtoWithContext = EncryptSubmissionDto & {
+  formsg: {
+    formDef?: IPopulatedForm
+    encryptedPayload?: EncryptSubmissionDto
+    encryptedFormDef?: IPopulatedEncryptedForm
+  }
+}

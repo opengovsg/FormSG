@@ -637,6 +637,7 @@ export const handleEncryptedSubmission = [
   EncryptSubmissionMiddleware.createFormsgReqBody,
   EncryptSubmissionMiddleware.retrieveForm,
   EncryptSubmissionMiddleware.checkPublicKey,
+  EncryptSubmissionMiddleware.moveEncryptedPayload,
   EncryptSubmissionMiddleware.checkEncryptMode,
   submitEncryptModeForm,
 ] as ControllerHandler[]
