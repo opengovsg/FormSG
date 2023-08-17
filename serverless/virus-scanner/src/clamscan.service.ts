@@ -2,10 +2,7 @@ import NodeClam from 'clamscan'
 import internal, { Stream } from 'stream'
 
 import { getLambdaLogger } from './logger'
-
-type ScanFileStreamResult =
-  | { isMalicious: true; virusMetadata: string[] }
-  | { isMalicious: false; cleanFile: Buffer }
+import { ScanFileStreamResult } from './types'
 
 export async function scanFileStream(
   s3Stream: internal.Readable,

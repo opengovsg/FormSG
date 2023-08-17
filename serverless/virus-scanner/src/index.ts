@@ -1,28 +1,11 @@
 import { APIGatewayProxyResult } from 'aws-lambda'
 import crypto from 'crypto'
-import { has } from 'lodash'
 
 import { scanFileStream } from './clamscan.service'
 import { config } from './config'
 import { getLambdaLogger } from './logger'
 import { S3Service } from './s3.service'
-
-/**
- * Typeguard for checking if the body has a key
- * @param body
- * @returns boolean
- */
-type KeyBody = {
-  key: string
-}
-const isBodyWithKey = (body: unknown): body is KeyBody => {
-  return (
-    typeof body === 'object' &&
-    !!body &&
-    has(body, 'key') &&
-    typeof (body as KeyBody).key === 'string'
-  )
-}
+import { isBodyWithKey } from './types'
 
 export const handler = async (
   event: unknown,
