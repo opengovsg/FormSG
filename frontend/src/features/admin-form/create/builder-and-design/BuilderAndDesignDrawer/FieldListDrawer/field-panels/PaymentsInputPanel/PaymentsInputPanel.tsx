@@ -324,7 +324,8 @@ const PaymentInputFields = ({
 
   const isProducts = paymentsData?.payment_type === PaymentType.Products
   const isFixed = paymentsData?.payment_type === PaymentType.Fixed
-
+  const isSavingDisabled =
+    isDisabled || (isProducts && paymentsData.products.length <= 0)
   return (
     <PaymentContainer>
       <PaymentTypeSelector
@@ -362,7 +363,7 @@ const PaymentInputFields = ({
           handleClick={handleUpdatePayments}
           handleCancel={handleClose}
           buttonText="Save field"
-          isDisabled={isDisabled}
+          isDisabled={isSavingDisabled}
         />
       </PaymentInnerContainer>
     </PaymentContainer>
