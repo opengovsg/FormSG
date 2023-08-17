@@ -545,6 +545,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         required: false,
         default: '',
       },
+
+      newEncryptionBoundary: {
+        type: Boolean,
+        default: false,
+      },
     },
     formSchemaOptions,
   )

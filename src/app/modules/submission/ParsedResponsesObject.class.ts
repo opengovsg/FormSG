@@ -141,6 +141,7 @@ export default class ParsedResponsesObject {
 
       const processingResponse: ProcessedFieldResponse = {
         ...response,
+        isVisible: visibleFieldIds.value.has(responseId),
         question: formField.getQuestion(),
       }
 
