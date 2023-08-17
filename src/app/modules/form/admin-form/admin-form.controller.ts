@@ -66,7 +66,6 @@ import * as FeedbackService from '../../feedback/feedback.service'
 import * as EmailSubmissionMiddleware from '../../submission/email-submission/email-submission.middleware'
 import * as EmailSubmissionService from '../../submission/email-submission/email-submission.service'
 import {
-  mapAttachmentsFromResponses,
   mapRouteError as mapEmailSubmissionError,
   SubmissionEmailObj,
 } from '../../submission/email-submission/email-submission.util'
@@ -77,7 +76,10 @@ import IncomingEncryptSubmission from '../../submission/encrypt-submission/Incom
 import ParsedResponsesObject from '../../submission/ParsedResponsesObject.class'
 import * as ReceiverMiddleware from '../../submission/receiver/receiver.middleware'
 import * as SubmissionService from '../../submission/submission.service'
-import { extractEmailConfirmationData } from '../../submission/submission.utils'
+import {
+  extractEmailConfirmationData,
+  mapAttachmentsFromResponses,
+} from '../../submission/submission.utils'
 import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
@@ -1561,10 +1563,9 @@ export const submitEmailPreview: ControllerHandler<
   }
   const form = formResult.value
 
-  const parsedResponsesResult =
-    await EmailSubmissionService.validateAttachments(responses).andThen(() =>
-      ParsedResponsesObject.parseResponses(form, responses),
-    )
+  const parsedResponsesResult = await SubmissionService.validateAttachments(
+    responses,
+  ).andThen(() => ParsedResponsesObject.parseResponses(form, responses))
   if (parsedResponsesResult.isErr()) {
     logger.error({
       message: 'Error while parsing responses for preview submission',

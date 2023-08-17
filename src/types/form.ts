@@ -68,6 +68,7 @@ type FormDefaultableKey =
   | 'submissionLimit'
   | 'isListed'
   | 'webhook'
+  | 'newEncryptionBoundary'
 
 export type IForm = Merge<
   SetOptional<FormBase, FormDefaultableKey>,
@@ -110,6 +111,8 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
 
   created?: Date
   lastModified?: Date
+
+  newEncryptionBoundary?: boolean
 
   /**
    * Replaces the field corresponding to given id to given new field

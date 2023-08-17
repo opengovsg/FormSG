@@ -11,8 +11,6 @@ import {
 import { FilteredResponse, ValidatedFieldMap } from '../submission.types'
 import { getFilteredResponses } from '../submission.utils'
 
-import { newEncryptionBoundaryFlag } from './encrypt-submission.constants'
-
 export default class IncomingEncryptSubmission extends IncomingSubmission {
   public readonly encryptedContent: string
   private constructor({
@@ -40,9 +38,7 @@ export default class IncomingEncryptSubmission extends IncomingSubmission {
   > {
     return checkIsEncryptedEncoding(encryptedContent)
       .andThen(() => {
-        const newEncryptionBoundary: boolean = form.get(
-          newEncryptionBoundaryFlag,
-        )
+        const newEncryptionBoundary = !!form.newEncryptionBoundary
         if (newEncryptionBoundary) return ok(responses as FilteredResponse[])
         else return getFilteredResponses(form, responses)
       })

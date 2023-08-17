@@ -34,16 +34,15 @@ import * as EmailSubmissionMiddleware from '../email-submission/email-submission
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
 import * as SubmissionService from '../submission.service'
-import { extractEmailConfirmationData } from '../submission.utils'
+import {
+  extractEmailConfirmationData,
+  mapAttachmentsFromResponses,
+} from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import * as EmailSubmissionService from './email-submission.service'
 import { IPopulatedEmailFormWithResponsesAndHash } from './email-submission.types'
-import {
-  mapAttachmentsFromResponses,
-  mapRouteError,
-  SubmissionEmailObj,
-} from './email-submission.util'
+import { mapRouteError, SubmissionEmailObj } from './email-submission.util'
 
 const logger = createLoggerWithLabel(module)
 
@@ -173,7 +172,7 @@ const submitEmailModeForm: ControllerHandler<
       )
       .andThen((form) =>
         // Validate responses
-        EmailSubmissionService.validateAttachments(req.body.responses)
+        SubmissionService.validateAttachments(req.body.responses)
           .andThen(() =>
             ParsedResponsesObject.parseResponses(form, req.body.responses),
           )

@@ -20,17 +20,15 @@ import {
   DatabaseValidationError,
 } from 'src/app/modules/core/core.errors'
 import * as FeedbackService from 'src/app/modules/feedback/feedback.service'
-import {
-  AttachmentTooLargeError,
-  InvalidFileExtensionError,
-} from 'src/app/modules/submission/email-submission/email-submission.errors'
 import * as EmailSubmissionService from 'src/app/modules/submission/email-submission/email-submission.service'
 import * as EmailSubmissionUtil from 'src/app/modules/submission/email-submission/email-submission.util'
 import * as EncryptSubmissionService from 'src/app/modules/submission/encrypt-submission/encrypt-submission.service'
 import IncomingEncryptSubmission from 'src/app/modules/submission/encrypt-submission/IncomingEncryptSubmission.class'
 import {
+  AttachmentTooLargeError,
   ConflictError,
   InvalidEncodingError,
+  InvalidFileExtensionError,
   ProcessingError,
   ResponseModeError,
   SendEmailConfirmationError,
@@ -131,7 +129,7 @@ jest.mock('src/app/modules/submission/submission.utils')
 const MockSubmissionUtils = jest.mocked(SubmissionUtils)
 jest.mock('../admin-form.service')
 const MockAdminFormService = jest.mocked(AdminFormService)
-jest.mock('../../../submission/email-submission/ParsedResponsesObject.class')
+jest.mock('../../../submission/ParsedResponsesObject.class')
 const MockParsedResponsesObject = jest.mocked(ParsedResponsesObject)
 jest.mock('../../form.service')
 const MockFormService = jest.mocked(FormService)
@@ -5139,9 +5137,8 @@ describe('admin-form.controller', () => {
       MockEmailSubmissionService.checkFormIsEmailMode.mockReturnValue(
         ok(MOCK_FORM),
       )
-      MockEmailSubmissionService.validateAttachments.mockReturnValue(
-        okAsync(true),
-      )
+      MockSubmissionUtils.mapAttachmentsFromResponses.mockReturnValue([])
+      MockSubmissionService.validateAttachments.mockReturnValue(okAsync(true))
       // @ts-ignore
       MockParsedResponsesObject.mockClear()
       MockParsedResponsesObject.parseResponses.mockReturnValue(
@@ -5202,9 +5199,9 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.checkFormIsEmailMode,
       ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(
-        MockEmailSubmissionService.validateAttachments,
-      ).toHaveBeenCalledWith(MOCK_RESPONSES)
+      expect(MockSubmissionService.validateAttachments).toHaveBeenCalledWith(
+        MOCK_RESPONSES,
+      )
       expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
@@ -5269,9 +5266,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.checkFormIsEmailMode,
       ).not.toHaveBeenCalled()
-      expect(
-        MockEmailSubmissionService.validateAttachments,
-      ).not.toHaveBeenCalled()
+      expect(MockSubmissionService.validateAttachments).not.toHaveBeenCalled()
       expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
@@ -5318,9 +5313,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.checkFormIsEmailMode,
       ).not.toHaveBeenCalled()
-      expect(
-        MockEmailSubmissionService.validateAttachments,
-      ).not.toHaveBeenCalled()
+      expect(MockSubmissionService.validateAttachments).not.toHaveBeenCalled()
       expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
@@ -5371,9 +5364,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.checkFormIsEmailMode,
       ).not.toHaveBeenCalled()
-      expect(
-        MockEmailSubmissionService.validateAttachments,
-      ).not.toHaveBeenCalled()
+      expect(MockSubmissionService.validateAttachments).not.toHaveBeenCalled()
       expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
@@ -5424,9 +5415,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.checkFormIsEmailMode,
       ).not.toHaveBeenCalled()
-      expect(
-        MockEmailSubmissionService.validateAttachments,
-      ).not.toHaveBeenCalled()
+      expect(MockSubmissionService.validateAttachments).not.toHaveBeenCalled()
       expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
@@ -5477,9 +5466,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.checkFormIsEmailMode,
       ).not.toHaveBeenCalled()
-      expect(
-        MockEmailSubmissionService.validateAttachments,
-      ).not.toHaveBeenCalled()
+      expect(MockSubmissionService.validateAttachments).not.toHaveBeenCalled()
       expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
@@ -5530,9 +5517,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.checkFormIsEmailMode,
       ).not.toHaveBeenCalled()
-      expect(
-        MockEmailSubmissionService.validateAttachments,
-      ).not.toHaveBeenCalled()
+      expect(MockSubmissionService.validateAttachments).not.toHaveBeenCalled()
       expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
@@ -5588,9 +5573,7 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.checkFormIsEmailMode,
       ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(
-        MockEmailSubmissionService.validateAttachments,
-      ).not.toHaveBeenCalled()
+      expect(MockSubmissionService.validateAttachments).not.toHaveBeenCalled()
       expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
@@ -5610,7 +5593,7 @@ describe('admin-form.controller', () => {
     })
 
     it('should return 400 when attachments are invalid', async () => {
-      MockEmailSubmissionService.validateAttachments.mockReturnValueOnce(
+      MockSubmissionService.validateAttachments.mockReturnValueOnce(
         errAsync(new InvalidFileExtensionError()),
       )
       const mockReq = expressHandler.mockRequest({
@@ -5641,9 +5624,9 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.checkFormIsEmailMode,
       ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(
-        MockEmailSubmissionService.validateAttachments,
-      ).toHaveBeenCalledWith(MOCK_RESPONSES)
+      expect(MockSubmissionService.validateAttachments).toHaveBeenCalledWith(
+        MOCK_RESPONSES,
+      )
       expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
@@ -5663,7 +5646,7 @@ describe('admin-form.controller', () => {
     })
 
     it('should return 400 when attachments are too large', async () => {
-      MockEmailSubmissionService.validateAttachments.mockReturnValueOnce(
+      MockSubmissionService.validateAttachments.mockReturnValueOnce(
         errAsync(new AttachmentTooLargeError()),
       )
       const mockReq = expressHandler.mockRequest({
@@ -5694,9 +5677,9 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.checkFormIsEmailMode,
       ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(
-        MockEmailSubmissionService.validateAttachments,
-      ).toHaveBeenCalledWith(MOCK_RESPONSES)
+      expect(MockSubmissionService.validateAttachments).toHaveBeenCalledWith(
+        MOCK_RESPONSES,
+      )
       expect(MockParsedResponsesObject.parseResponses).not.toHaveBeenCalled()
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
@@ -5747,9 +5730,9 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.checkFormIsEmailMode,
       ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(
-        MockEmailSubmissionService.validateAttachments,
-      ).toHaveBeenCalledWith(MOCK_RESPONSES)
+      expect(MockSubmissionService.validateAttachments).toHaveBeenCalledWith(
+        MOCK_RESPONSES,
+      )
       expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
@@ -5803,9 +5786,9 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.checkFormIsEmailMode,
       ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(
-        MockEmailSubmissionService.validateAttachments,
-      ).toHaveBeenCalledWith(MOCK_RESPONSES)
+      expect(MockSubmissionService.validateAttachments).toHaveBeenCalledWith(
+        MOCK_RESPONSES,
+      )
       expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
@@ -5859,9 +5842,9 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.checkFormIsEmailMode,
       ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(
-        MockEmailSubmissionService.validateAttachments,
-      ).toHaveBeenCalledWith(MOCK_RESPONSES)
+      expect(MockSubmissionService.validateAttachments).toHaveBeenCalledWith(
+        MOCK_RESPONSES,
+      )
       expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
@@ -5915,9 +5898,9 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.checkFormIsEmailMode,
       ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(
-        MockEmailSubmissionService.validateAttachments,
-      ).toHaveBeenCalledWith(MOCK_RESPONSES)
+      expect(MockSubmissionService.validateAttachments).toHaveBeenCalledWith(
+        MOCK_RESPONSES,
+      )
       expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
@@ -5980,9 +5963,9 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.checkFormIsEmailMode,
       ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(
-        MockEmailSubmissionService.validateAttachments,
-      ).toHaveBeenCalledWith(MOCK_RESPONSES)
+      expect(MockSubmissionService.validateAttachments).toHaveBeenCalledWith(
+        MOCK_RESPONSES,
+      )
       expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
@@ -6045,9 +6028,9 @@ describe('admin-form.controller', () => {
       expect(
         MockEmailSubmissionService.checkFormIsEmailMode,
       ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(
-        MockEmailSubmissionService.validateAttachments,
-      ).toHaveBeenCalledWith(MOCK_RESPONSES)
+      expect(MockSubmissionService.validateAttachments).toHaveBeenCalledWith(
+        MOCK_RESPONSES,
+      )
       expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,

@@ -150,6 +150,8 @@ export interface FormBase {
   webhook: FormWebhook
 
   responseMode: FormResponseMode
+
+  newEncryptionBoundary: boolean
 }
 
 export interface EmailFormBase extends FormBase {
