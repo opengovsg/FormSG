@@ -6,7 +6,7 @@
     "env": "ENV=${ENV:-'development'} node scripts/envLoader.mjs",
     "build": "tsc",
     "tsc": "tsc",
-    "dev": "npm run env && docker-compose -f docker-compose.dev.yml up",
+    "dev": "npm run env && docker-compose -f docker-compose.dev.yml up --build",
     "deploy": "npm run env && sls deploy --stage ${ENV:-'staging'} --conceal",
     "package": "npm run env && sls package --stage ${ENV:-'staging'}"
   },
