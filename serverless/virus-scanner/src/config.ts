@@ -16,26 +16,12 @@ export const config = convict({
   virusScannerQuarantineS3Bucket: {
     env: 'VIRUS_SCANNER_QUARANTINE_S3_BUCKET',
     format: String,
-    default: ''
+    default: '',
   },
   virusScannerCleanS3Bucket: {
     env: 'VIRUS_SCANNER_CLEAN_S3_BUCKET',
     format: String,
-    default: ''
-  },
-  backend: {
-    url: {
-      env: 'BACKEND_API_URL',
-      default: 'http://host.docker.internal:8080/api',
-      format: String,
-    },
-    apiKey: {
-      env: 'BACKEND_API_KEY',
-      required: true,
-      sensitive: true,
-      default: '',
-      format: String,
-    },
+    default: '',
   },
 })
   .validate()
