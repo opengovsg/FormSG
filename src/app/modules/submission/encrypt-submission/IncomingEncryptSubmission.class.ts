@@ -38,8 +38,8 @@ export default class IncomingEncryptSubmission extends IncomingSubmission {
   > {
     return checkIsEncryptedEncoding(encryptedContent)
       .andThen(() => {
-        const newEncryptionBoundary = !!form.newEncryptionBoundary
-        if (newEncryptionBoundary) return ok(responses as FilteredResponse[])
+        if (form.newEncryptionBoundary)
+          return ok(responses as FilteredResponse[])
         else return getFilteredResponses(form, responses)
       })
       .andThen((filteredResponses) =>

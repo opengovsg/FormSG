@@ -78,6 +78,111 @@ describe('IncomingEncryptSubmission', () => {
     expect(initResult._unsafeUnwrap().responses).toEqual(responses)
   })
 
+  it('should filter responses when new encryption boundary flag is off', () => {
+    mockCheckIsEncryptedEncoding.mockReturnValueOnce(ok(true))
+    const mobileField = generateDefaultField(BasicField.Mobile, {
+      isVerifiable: true,
+    })
+    const emailField = generateDefaultField(BasicField.Email, {
+      isVerifiable: true,
+      autoReplyOptions: {
+        hasAutoReply: true,
+        autoReplySubject: 'subject',
+        autoReplySender: 'sender@test.gov.sg',
+        autoReplyMessage: 'message',
+        includeFormSummary: false,
+      },
+    })
+    const basicFormFields = [mobileField, emailField]
+    const mobileResponse = generateSingleAnswerResponse(
+      mobileField,
+      '+6587654321',
+      'signature',
+    )
+    const emailResponse = generateSingleAnswerResponse(
+      emailField,
+      'test@example.com',
+      'signature',
+    )
+    const responses = [mobileResponse, emailResponse]
+    const basicFieldVals = Object.values(BasicField).filter((v) =>
+      isNaN(Number(v)),
+    )
+    basicFieldVals.forEach((value) => {
+      if (
+        value === BasicField.Mobile ||
+        value === BasicField.Email ||
+        value === BasicField.Attachment ||
+        value === BasicField.Table ||
+        value === BasicField.Checkbox
+      )
+        return
+      const field = generateDefaultField(value)
+      basicFormFields.push(field)
+      responses.push(generateSingleAnswerResponse(field))
+    })
+    const initResult = IncomingEncryptSubmission.init(
+      {
+        responseMode: FormResponseMode.Encrypt,
+        form_fields: basicFormFields,
+        newEncryptionBoundary: false,
+      } as unknown as IPopulatedEncryptedForm,
+      responses,
+      '',
+    )
+    const filteredResponses = [mobileResponse, emailResponse]
+    expect(initResult._unsafeUnwrap().responses).toEqual(filteredResponses)
+  })
+
+  it('should not filter responses when new encryption boundary flag is on', () => {
+    mockCheckIsEncryptedEncoding.mockReturnValueOnce(ok(true))
+    const mobileField = generateDefaultField(BasicField.Mobile, {
+      isVerifiable: true,
+    })
+    const emailField = generateDefaultField(BasicField.Email, {
+      isVerifiable: true,
+      autoReplyOptions: {
+        hasAutoReply: true,
+        autoReplySubject: 'subject',
+        autoReplySender: 'sender@test.gov.sg',
+        autoReplyMessage: 'message',
+        includeFormSummary: false,
+      },
+    })
+    const yesNoField = generateDefaultField(BasicField.YesNo)
+    const ratingField = generateDefaultField(BasicField.Rating)
+    const basicFormFields = [mobileField, emailField, yesNoField, ratingField]
+    const mobileResponse = generateSingleAnswerResponse(
+      mobileField,
+      '+6587654321',
+      'signature',
+    )
+    const emailResponse = generateSingleAnswerResponse(
+      emailField,
+      'test@example.com',
+      'signature',
+    )
+    const yesNoResponse = generateSingleAnswerResponse(yesNoField, 'Yes')
+    const ratingResponse = generateSingleAnswerResponse(ratingField, '5')
+    const responses = [
+      mobileResponse,
+      emailResponse,
+      yesNoResponse,
+      ratingResponse,
+    ]
+    const filteredResponses = responses
+    const initResult = IncomingEncryptSubmission.init(
+      {
+        responseMode: FormResponseMode.Encrypt,
+        form_fields: basicFormFields,
+        newEncryptionBoundary: true,
+      } as unknown as IPopulatedEncryptedForm,
+      responses,
+      '',
+    )
+    expect(initResult._unsafeUnwrap().responses).toEqual(filteredResponses)
+  })
+
   it('should fail when responses are missing', () => {
     mockCheckIsEncryptedEncoding.mockReturnValueOnce(ok(true))
     const mobileField = generateDefaultField(BasicField.Mobile, {
