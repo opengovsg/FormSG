@@ -13,10 +13,15 @@ import {
   FormSubmissionMetadataQueryDto,
   Payment,
   PaymentChannel,
+  PaymentType,
+  StorageModeSubmissionContentDto,
   StorageModeSubmissionDto,
   StorageModeSubmissionMetadataList,
 } from '../../../../../shared/types'
-import { StripePaymentMetadataDto } from '../../../../types'
+import {
+  IPopulatedEncryptedForm,
+  StripePaymentMetadataDto,
+} from '../../../../types'
 import config from '../../../config/config'
 import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -33,7 +38,6 @@ import { MalformedParametersError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
-import { SGID_COOKIE_NAME } from '../../sgid/sgid.constants'
 import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
@@ -43,9 +47,9 @@ import * as ReceiverMiddleware from '../receiver/receiver.middleware'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import {
-  ensureIsFormWithinSubmissionLimits,
-  ensureIsPublicForm,
-  ensureIsValidCaptcha,
+  ensureFormWithinSubmissionLimits,
+  ensurePublicForm,
+  ensureValidCaptcha,
 } from './encrypt-submission.ensures'
 import {
   EncryptedFormDefinitionNotRetrievedError,
@@ -106,33 +110,32 @@ const submitEncryptModeForm: EncryptSubmissionMiddleware.EncryptSubmissionMiddle
 
     setFormTags(formDef)
 
-    const encryptedFormDef = req.body.formsg.encryptedFormDef
-    if (!encryptedFormDef)
-      return res.send(new EncryptedFormDefinitionNotRetrievedError())
+    const form = req.body.formsg.encryptedFormDef
+    if (!form) return res.send(new EncryptedFormDefinitionNotRetrievedError())
 
-    const ensurePipeline = Pipeline(
-      ensureIsPublicForm,
-      ensureIsValidCaptcha,
-      ensureIsFormWithinSubmissionLimits,
+    const ensurePipeline = new Pipeline(
+      ensurePublicForm,
+      ensureValidCaptcha,
+      ensureFormWithinSubmissionLimits,
     )
 
     const hasEnsuredAll = await ensurePipeline.execute({
-      form: encryptedFormDef,
+      form,
       logMeta,
       req,
       res,
     })
-    if (!hasEnsuredAll) {
-      return
-    }
+
+    if (!hasEnsuredAll) return
 
     const encryptedPayload = req.body.formsg.encryptedPayload
     if (!encryptedPayload) return res.send(new EncryptedPayloadNotFoundError())
 
     // Create Incoming Submission
-    const { encryptedContent, responses, responseMetadata } = encryptedPayload
+    const { encryptedContent, responses, responseMetadata, paymentProducts } =
+      encryptedPayload
     const incomingSubmissionResult = IncomingEncryptSubmission.init(
-      encryptedFormDef,
+      form,
       responses,
       encryptedContent,
     )
@@ -146,17 +149,18 @@ const submitEncryptModeForm: EncryptSubmissionMiddleware.EncryptSubmissionMiddle
     }
     const incomingSubmission = incomingSubmissionResult.value
 
+    // delete (req.body as SetOptional<EncryptSubmissionDto, 'responses'>)
+    //   .responses
+
     // Checks if user is SPCP-authenticated before allowing submission
     let uinFin
     let userInfo
-    const { authType } = encryptedFormDef
+    const { authType } = formDef
     switch (authType) {
-      case FormAuthType.SGID_MyInfo:
       case FormAuthType.MyInfo: {
         logger.error({
-          message: `Storage mode form is not allowed to have MyInfo${
-            authType == FormAuthType.SGID_MyInfo ? '(over sgID)' : ''
-          } authorisation`,
+          message:
+            'Storage mode form is not allowed to have MyInfo authorisation',
           meta: logMeta,
         })
         const { errorMessage, statusCode } = mapRouteError(
@@ -213,7 +217,7 @@ const submitEncryptModeForm: EncryptSubmissionMiddleware.EncryptSubmissionMiddle
       }
       case FormAuthType.SGID: {
         const jwtPayloadResult = SgidService.extractSgidSingpassJwtPayload(
-          req.cookies[SGID_COOKIE_NAME],
+          req.cookies.jwtSgid,
         )
         if (jwtPayloadResult.isErr()) {
           const { statusCode, errorMessage } = mapRouteError(
@@ -237,18 +241,18 @@ const submitEncryptModeForm: EncryptSubmissionMiddleware.EncryptSubmissionMiddle
     // Encrypt Verified SPCP Fields
     let verified
     if (
-      encryptedFormDef.authType === FormAuthType.SP ||
-      encryptedFormDef.authType === FormAuthType.CP ||
-      encryptedFormDef.authType === FormAuthType.SGID
+      form.authType === FormAuthType.SP ||
+      form.authType === FormAuthType.CP ||
+      form.authType === FormAuthType.SGID
     ) {
       const encryptVerifiedContentResult =
         VerifiedContentService.getVerifiedContent({
-          type: encryptedFormDef.authType,
+          type: form.authType,
           data: { uinFin, userInfo },
         }).andThen((verifiedContent) =>
           VerifiedContentService.encryptVerifiedContent({
             verifiedContent,
-            formPublicKey: encryptedFormDef.publicKey,
+            formPublicKey: form.publicKey,
           }),
         )
 
@@ -274,7 +278,7 @@ const submitEncryptModeForm: EncryptSubmissionMiddleware.EncryptSubmissionMiddle
 
     if (encryptedPayload.attachments) {
       const attachmentUploadResult = await uploadAttachments(
-        encryptedFormDef._id,
+        form._id,
         encryptedPayload.attachments,
       )
 
@@ -291,283 +295,339 @@ const submitEncryptModeForm: EncryptSubmissionMiddleware.EncryptSubmissionMiddle
     }
 
     const submissionContent = {
-      form: encryptedFormDef._id,
-      authType: encryptedFormDef.authType,
-      myInfoFields: encryptedFormDef.getUniqueMyInfoAttrs(),
+      form: form._id,
+      authType: form.authType,
+      myInfoFields: form.getUniqueMyInfoAttrs(),
       encryptedContent: incomingSubmission.encryptedContent,
       verifiedContent: verified,
       attachmentMetadata,
-      version: encryptedPayload.version,
+      version: req.body.version,
       responseMetadata,
     }
 
     // Handle submissions for payments forms
     if (
-      encryptedFormDef.payments_field?.enabled &&
-      encryptedFormDef.payments_channel.channel === PaymentChannel.Stripe
+      form.payments_field?.enabled &&
+      form.payments_channel.channel === PaymentChannel.Stripe
     ) {
-      /**
-       * Start of Payment Forms Submission Flow
-       */
-      // Step 0: Perform validation checks
-      const amount = getPaymentAmount(
-        encryptedFormDef.payments_field,
-        encryptedPayload.payments,
-      )
-
-      if (
-        !amount ||
-        amount < paymentConfig.minPaymentAmountCents ||
-        amount > paymentConfig.maxPaymentAmountCents
-      ) {
-        logger.error({
-          message: 'Error when creating payment: amount is not within bounds',
-          meta: logMeta,
-        })
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-          message:
-            "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
-        })
-      }
-
-      const paymentReceiptEmail =
-        encryptedPayload.paymentReceiptEmail?.toLowerCase()
-      if (!paymentReceiptEmail) {
-        logger.error({
-          message:
-            'Error when creating payment: payment receipt email not provided.',
-          meta: logMeta,
-        })
-        return res.status(StatusCodes.BAD_REQUEST).json({
-          message:
-            "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
-        })
-      }
-
-      const targetAccountId =
-        encryptedFormDef.payments_channel.target_account_id
-
-      // Step 1: Create payment without payment intent id and pending submission id.
-      const payment = new Payment({
+      return _createPaymentSubmission({
+        req,
+        res,
+        form,
+        logMeta,
         formId,
-        targetAccountId,
-        amount,
-        email: paymentReceiptEmail,
-        responses: incomingSubmission.responses,
-        gstEnabled: encryptedFormDef.payments_field.gst_enabled,
-      })
-      const paymentId = payment.id
-
-      // Step 2: Create and save pending submission.
-      const pendingSubmission = new EncryptPendingSubmission({
-        ...submissionContent,
-        paymentId,
-      })
-
-      try {
-        await pendingSubmission.save()
-      } catch (err) {
-        logger.error({
-          message: 'Encrypt pending submission save error',
-          meta: {
-            action: 'onEncryptSubmissionFailure',
-            ...createReqMeta(req),
-          },
-          error: err,
-        })
-        // Block the submission so that user can try to resubmit
-        return res.status(StatusCodes.BAD_REQUEST).json({
-          message:
-            'Could not save pending submission. For assistance, please contact the person who asked you to fill in this form.',
-        })
-      }
-
-      const pendingSubmissionId = pendingSubmission.id
-      logger.info({
-        message: 'Created pending submission in DB',
-        meta: {
-          ...logMeta,
-          pendingSubmissionId,
-          responseMetadata,
-        },
-      })
-
-      // TODO 6395 make responseMetadata mandatory
-      if (responseMetadata) {
-        reportSubmissionResponseTime(responseMetadata, {
-          mode: 'encrypt',
-          payment: 'false',
-        })
-      }
-      // Step 3: Create the payment intent via API call to stripe.
-      // Stripe requires the amount to be an integer in the smallest currency unit (i.e. cents)
-      const metadata: StripePaymentMetadataDto = {
-        env: config.envSiteName,
-        formTitle: encryptedFormDef.title,
-        formId,
-        submissionId: pendingSubmissionId,
-        paymentId,
-        paymentContactEmail: paymentReceiptEmail,
-      }
-
-      const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
-        amount,
-        currency: paymentConfig.defaultCurrency,
-        // determine payment methods available based on stripe settings
-        automatic_payment_methods: {
-          enabled: true,
-        },
-        description:
-          encryptedFormDef.payments_field.name ||
-          encryptedFormDef.payments_field.description,
-        receipt_email: paymentReceiptEmail,
-        metadata,
-      }
-
-      let paymentIntent
-      try {
-        paymentIntent = await stripe.paymentIntents.create(
-          createPaymentIntentParams,
-          { stripeAccount: targetAccountId },
-        )
-      } catch (err) {
-        logger.error({
-          message: 'Error when creating payment intent',
-          meta: {
-            ...logMeta,
-            pendingSubmissionId,
-            createPaymentIntentParams,
-          },
-          error: err,
-        })
-        // Return a 502 error here since the issue was with Stripe.
-        return res.status(StatusCodes.BAD_GATEWAY).json({
-          message:
-            'There was a problem creating the payment intent. Please try again.',
-        })
-      }
-
-      const paymentIntentId = paymentIntent.id
-      logger.info({
-        message: 'Created payment intent from Stripe',
-        meta: {
-          ...logMeta,
-          pendingSubmissionId,
-          paymentIntentId,
-        },
-      })
-
-      // Step 4: Update payment document with payment intent id and pending submission id, and save it.
-      payment.paymentIntentId = paymentIntentId
-      payment.pendingSubmissionId = pendingSubmissionId
-      try {
-        await payment.save()
-      } catch (err) {
-        logger.error({
-          message: 'Error updating payment document with payment intent id',
-          meta: {
-            ...logMeta,
-            pendingSubmissionId,
-            paymentIntentId,
-          },
-          error: err,
-        })
-        // Cancel the payment intent if saving the document fails.
-        try {
-          await stripe.paymentIntents.cancel(paymentIntent.id, {
-            stripeAccount: targetAccountId,
-          })
-        } catch (stripeErr) {
-          logger.error({
-            message: 'Failed to cancel Stripe payment intent',
-            meta: {
-              ...logMeta,
-              pendingSubmissionId,
-              paymentIntentId,
-            },
-            error: err,
-          })
-        }
-        // Regardless of whether the cancellation succeeded or failed, block the
-        // submission so that user can try to resubmit
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-          message:
-            'There was a problem updating the payment document. Please try again.',
-        })
-      }
-
-      logger.info({
-        message: 'Saved payment document to DB',
-        meta: {
-          ...logMeta,
-          pendingSubmissionId,
-          paymentIntentId,
-          paymentId,
-        },
-      })
-
-      return res.json({
-        message: 'Form submission successful',
-        submissionId: pendingSubmissionId,
-        timestamp: (pendingSubmission.created || new Date()).getTime(),
-        paymentData: { paymentId },
+        incomingSubmission,
+        paymentProducts,
+        responseMetadata,
+        submissionContent,
       })
     }
-    /**
-     * End of Payment Forms Submission Flow
-     */
 
-    const submission = new EncryptSubmission(submissionContent)
+    return _createSubmission({
+      req,
+      res,
+      logMeta,
+      formId,
+      incomingSubmission,
+      responseMetadata,
+      submissionContent,
+    })
+  }
 
+const _createPaymentSubmission = async ({
+  req,
+  res,
+  form,
+  logMeta,
+  formId,
+  incomingSubmission,
+  submissionContent,
+  responseMetadata,
+  paymentProducts,
+}: {
+  req: Parameters<EncryptSubmissionMiddleware.EncryptSubmissionMiddlewareHandler>[0]
+  res: Parameters<EncryptSubmissionMiddleware.EncryptSubmissionMiddlewareHandler>[1]
+  form: IPopulatedEncryptedForm
+  paymentProducts: StorageModeSubmissionContentDto['paymentProducts']
+  [others: string]: any
+}) => {
+  const encryptedPayload = req.body.formsg.encryptedPayload
+  if (!encryptedPayload) return res.send(new EncryptedPayloadNotFoundError())
+
+  const amount = getPaymentAmount(
+    form.payments_field,
+    encryptedPayload.payments,
+    paymentProducts,
+  )
+
+  const isPaymentTypeProducts =
+    form.payments_field.payment_type === PaymentType.Products
+
+  logger.info({
+    message: 'Incoming payments',
+    meta: {
+      ...logMeta,
+      paymentProducts,
+      paymentType: form.payments_field.payment_type,
+      amount,
+    },
+  })
+
+  // Step 0: Perform validation checks
+  if (
+    !amount ||
+    amount < paymentConfig.minPaymentAmountCents ||
+    amount > paymentConfig.maxPaymentAmountCents
+  ) {
+    logger.error({
+      message: 'Error when creating payment: amount is not within bounds',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message:
+        "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+    })
+  }
+  const paymentReceiptEmail =
+    encryptedPayload.paymentReceiptEmail?.toLowerCase()
+  if (!paymentReceiptEmail) {
+    logger.error({
+      message:
+        'Error when creating payment: payment receipt email not provided.',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message:
+        "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+    })
+  }
+
+  const targetAccountId = form.payments_channel.target_account_id
+
+  // Step 1: Create payment without payment intent id and pending submission id.
+  const payment = new Payment({
+    formId,
+    targetAccountId,
+    amount,
+    email: paymentReceiptEmail,
+    responses: incomingSubmission.responses,
+    ...(isPaymentTypeProducts ? { products: paymentProducts } : {}),
+    gstEnabled: form.payments_field.gst_enabled,
+    payment_fields_snapshot: form.payments_field,
+  })
+  const paymentId = payment.id
+
+  // Step 2: Create and save pending submission.
+  const pendingSubmission = new EncryptPendingSubmission({
+    ...submissionContent,
+    paymentId,
+  })
+
+  try {
+    await pendingSubmission.save()
+  } catch (err) {
+    logger.error({
+      message: 'Encrypt pending submission save error',
+      meta: {
+        action: 'onEncryptSubmissionFailure',
+        ...createReqMeta(req),
+      },
+      error: err,
+    })
+    // Block the submission so that user can try to resubmit
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message:
+        'Could not save pending submission. For assistance, please contact the person who asked you to fill in this form.',
+    })
+  }
+
+  const pendingSubmissionId = pendingSubmission.id
+  logger.info({
+    message: 'Created pending submission in DB',
+    meta: {
+      ...logMeta,
+      pendingSubmissionId,
+      responseMetadata,
+    },
+  })
+
+  // Step 3: Create the payment intent via API call to stripe.
+  // Stripe requires the amount to be an integer in the smallest currency unit (i.e. cents)
+  const metadata: StripePaymentMetadataDto = {
+    env: config.envSiteName,
+    formTitle: form.title,
+    formId,
+    submissionId: pendingSubmissionId,
+    paymentId,
+    paymentContactEmail: paymentReceiptEmail,
+  }
+
+  const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
+    amount,
+    currency: paymentConfig.defaultCurrency,
+    // determine payment methods available based on stripe settings
+    automatic_payment_methods: {
+      enabled: true,
+    },
+    description: form.payments_field.description,
+    receipt_email: paymentReceiptEmail,
+    metadata,
+  }
+
+  let paymentIntent
+  try {
+    paymentIntent = await stripe.paymentIntents.create(
+      createPaymentIntentParams,
+      { stripeAccount: targetAccountId },
+    )
+  } catch (err) {
+    logger.error({
+      message: 'Error when creating payment intent',
+      meta: {
+        ...logMeta,
+        pendingSubmissionId,
+        createPaymentIntentParams,
+      },
+      error: err,
+    })
+    // Return a 502 error here since the issue was with Stripe.
+    return res.status(StatusCodes.BAD_GATEWAY).json({
+      message:
+        'There was a problem creating the payment intent. Please try again.',
+    })
+  }
+
+  const paymentIntentId = paymentIntent.id
+  logger.info({
+    message: 'Created payment intent from Stripe',
+    meta: {
+      ...logMeta,
+      pendingSubmissionId,
+      paymentIntentId,
+    },
+  })
+
+  // Step 4: Update payment document with payment intent id and pending submission id, and save it.
+  payment.paymentIntentId = paymentIntentId
+  payment.pendingSubmissionId = pendingSubmissionId
+  try {
+    await payment.save()
+  } catch (err) {
+    logger.error({
+      message: 'Error updating payment document with payment intent id',
+      meta: {
+        ...logMeta,
+        pendingSubmissionId,
+        paymentIntentId,
+      },
+      error: err,
+    })
+    // Cancel the payment intent if saving the document fails.
     try {
-      await submission.save()
-    } catch (err) {
+      await stripe.paymentIntents.cancel(paymentIntent.id, {
+        stripeAccount: targetAccountId,
+      })
+    } catch (stripeErr) {
       logger.error({
-        message: 'Encrypt submission save error',
+        message: 'Failed to cancel Stripe payment intent',
         meta: {
-          action: 'onEncryptSubmissionFailure',
-          ...createReqMeta(req),
+          ...logMeta,
+          pendingSubmissionId,
+          paymentIntentId,
         },
         error: err,
       })
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message:
-          'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
-        submissionId: submission._id,
-      })
     }
-
-    const submissionId = submission.id
-    logger.info({
-      message: 'Saved submission to MongoDB',
-      meta: {
-        ...logMeta,
-        submissionId,
-        formId,
-        responseMetadata,
-      },
+    // Regardless of whether the cancellation succeeded or failed, block the
+    // submission so that user can try to resubmit
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message:
+        'There was a problem updating the payment document. Please try again.',
     })
-
-    // TODO 6395 make responseMetadata mandatory
-    if (responseMetadata) {
-      reportSubmissionResponseTime(responseMetadata, {
-        mode: 'encrypt',
-        payment: 'true',
-      })
-    }
-
-    // Send success back to client
-    res.json({
-      message: 'Form submission successful.',
-      submissionId,
-      timestamp: (submission.created || new Date()).getTime(),
-    })
-
-    return await performEncryptPostSubmissionActions(
-      submission,
-      incomingSubmission.responses,
-    )
   }
+
+  logger.info({
+    message: 'Saved payment document to DB',
+    meta: {
+      ...logMeta,
+      pendingSubmissionId,
+      paymentIntentId,
+      paymentId,
+    },
+  })
+
+  return res.json({
+    message: 'Form submission successful',
+    submissionId: pendingSubmissionId,
+    timestamp: (pendingSubmission.created || new Date()).getTime(),
+    paymentData: { paymentId },
+  })
+}
+
+const _createSubmission = async ({
+  req,
+  res,
+  submissionContent,
+  logMeta,
+  formId,
+  responseMetadata,
+  incomingSubmission,
+}: {
+  req: Parameters<EncryptSubmissionMiddleware.EncryptSubmissionMiddlewareHandler>[0]
+  res: Parameters<EncryptSubmissionMiddleware.EncryptSubmissionMiddlewareHandler>[1]
+  [others: string]: any
+}) => {
+  const submission = new EncryptSubmission(submissionContent)
+
+  try {
+    await submission.save()
+  } catch (err) {
+    logger.error({
+      message: 'Encrypt submission save error',
+      meta: {
+        action: 'onEncryptSubmissionFailure',
+        ...createReqMeta(req),
+      },
+      error: err,
+    })
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message:
+        'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
+      submissionId: submission._id,
+    })
+  }
+
+  const submissionId = submission.id
+  logger.info({
+    message: 'Saved submission to MongoDB',
+    meta: {
+      ...logMeta,
+      submissionId,
+      formId,
+      responseMetadata,
+    },
+  })
+
+  // TODO 6395 make responseMetadata mandatory
+  if (responseMetadata) {
+    reportSubmissionResponseTime(responseMetadata, {
+      mode: 'encrypt',
+      payment: 'true',
+    })
+  }
+
+  // Send success back to client
+  res.json({
+    message: 'Form submission successful.',
+    submissionId,
+    timestamp: (submission.created || new Date()).getTime(),
+  })
+
+  return await performEncryptPostSubmissionActions(
+    submission,
+    incomingSubmission.responses,
+  )
+}
 
 // TODO (FRM-1232): remove endpoint after encryption boundary is shifted
 export const handleEncryptedSubmission = [

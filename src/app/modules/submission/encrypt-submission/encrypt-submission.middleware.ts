@@ -19,6 +19,7 @@ import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import { ControllerHandler } from '../../core/core.types'
+import { JoiPaymentProduct } from '../../form/admin-form/admin-form.payments.constants'
 import * as FormService from '../../form/form.service'
 import * as EmailSubmissionService from '../email-submission/email-submission.service'
 import ParsedResponsesObject from '../email-submission/ParsedResponsesObject.class'
@@ -43,6 +44,7 @@ export type EncryptSubmissionMiddlewareHandler = ControllerHandler<
   { captchaResponse?: unknown; captchaType?: unknown }
 >
 
+const JoiInt = Joi.number().integer()
 /**
  * Celebrate middleware for verifying shape of encrypted submission
  */
@@ -88,6 +90,13 @@ export const validateEncryptSubmissionParams = celebrate({
         }),
       )
       .optional(),
+    paymentProducts: Joi.array().items(
+      Joi.object().keys({
+        data: JoiPaymentProduct.required(),
+        selected: Joi.boolean(),
+        quantity: JoiInt.positive().required(),
+      }),
+    ),
     paymentReceiptEmail: Joi.string(),
     payments: Joi.object({
       amount_cents: Joi.number()

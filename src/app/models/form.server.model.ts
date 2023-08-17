@@ -68,6 +68,7 @@ import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
 import { getMyInfoAttr } from '../modules/myinfo/myinfo.util'
 import { validateWebhookUrl } from '../modules/webhook/webhook.validation'
 
+import { ProductSchema } from './payments/productSchema'
 import {
   BaseFieldSchema,
   createAttachmentFieldSchema,
@@ -99,6 +100,7 @@ import LogicSchema, {
 } from './form_logic.server.schema'
 import { CustomFormLogoSchema, FormLogoSchema } from './form_logo.server.schema'
 import getUserModel from './user.server.model'
+import { isPositiveInteger } from './utils'
 
 export const FORM_SCHEMA_ID = 'Form'
 
@@ -131,8 +133,62 @@ const formSchemaOptions: SchemaOptions = {
     updatedAt: 'lastModified',
   },
 }
-const isPositiveInteger = (val: number) => {
-  return val >= 0 && Number.isInteger(val)
+
+export const formPaymentsFieldSchema = {
+  enabled: {
+    type: Boolean,
+    default: false,
+  },
+  description: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  name: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  amount_cents: {
+    type: Number,
+    default: 0,
+    validate: {
+      validator: isPositiveInteger,
+      message: 'amount_cents must be a non-negative integer.',
+    },
+  },
+  products: [ProductSchema],
+  products_meta: {
+    multi_product: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  min_amount: {
+    type: Number,
+    default: 0,
+    validate: {
+      validator: isPositiveInteger,
+      message: 'min_amount must be a non-negative integer.',
+    },
+  },
+  max_amount: {
+    type: Number,
+    default: 0,
+    validate: {
+      validator: isPositiveInteger,
+      message: 'max_amount must be a non-negative integer.',
+    },
+  },
+  payment_type: {
+    type: String,
+    enum: Object.values(PaymentType),
+    default: PaymentType.Products,
+  },
+  gst_enabled: {
+    type: Boolean,
+    default: true,
+  },
 }
 
 const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
@@ -159,55 +215,7 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
     },
   },
 
-  payments_field: {
-    enabled: {
-      type: Boolean,
-      default: false,
-    },
-    description: {
-      type: String,
-      trim: true,
-      default: '',
-    },
-    name: {
-      type: String,
-      trim: true,
-      default: '',
-    },
-    amount_cents: {
-      type: Number,
-      default: 0,
-      validate: {
-        validator: isPositiveInteger,
-        message: 'amount_cents must be a non-negative integer.',
-      },
-    },
-    min_amount: {
-      type: Number,
-      default: 0,
-      validate: {
-        validator: isPositiveInteger,
-        message: 'min_amount must be a non-negative integer.',
-      },
-    },
-    max_amount: {
-      type: Number,
-      default: 0,
-      validate: {
-        validator: isPositiveInteger,
-        message: 'max_amount must be a non-negative integer.',
-      },
-    },
-    payment_type: {
-      type: String,
-      enum: Object.values(PaymentType),
-      default: PaymentType.Fixed,
-    },
-    gst_enabled: {
-      type: Boolean,
-      default: true,
-    },
-  },
+  payments_field: formPaymentsFieldSchema,
 
   business: {
     type: {
@@ -428,6 +436,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       },
 
       hasCaptcha: {
+        type: Boolean,
+        default: true,
+      },
+
+      hasIssueNotification: {
         type: Boolean,
         default: true,
       },
@@ -974,6 +987,17 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.findByIdAndUpdate(
       formId,
       { payments_field: newPayments },
+      { new: true, runValidators: true },
+    ).exec()
+  }
+
+  FormSchema.statics.updatePaymentsProductById = async function (
+    formId: string,
+    newProducts: FormPaymentsField['products'],
+  ) {
+    return this.findByIdAndUpdate(
+      formId,
+      { 'payments_field.products': newProducts },
       { new: true, runValidators: true },
     ).exec()
   }

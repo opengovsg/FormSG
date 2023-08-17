@@ -61,6 +61,7 @@ type FormDefaultableKey =
   | 'startPage'
   | 'endPage'
   | 'hasCaptcha'
+  | 'hasIssueNotification'
   | 'authType'
   | 'status'
   | 'inactiveMessage'
@@ -250,6 +251,7 @@ interface IFormBaseDocument<T extends IFormSchema> {
   form_logics: NonNullable<T['form_logics']>
   permissionList: NonNullable<T['permissionList']>
   hasCaptcha: NonNullable<T['hasCaptcha']>
+  hasIssueNotification: NonNullable<T['hasIssueNotification']>
   authType: NonNullable<T['authType']>
   status: NonNullable<T['status']>
   inactiveMessage: NonNullable<T['inactiveMessage']>
@@ -380,6 +382,11 @@ export interface IFormModel extends Model<IFormSchema> {
   updatePaymentsById(
     formId: string,
     newPayments: FormPaymentsField,
+  ): Promise<IEncryptedFormDocument | null>
+
+  updatePaymentsProductById(
+    formId: string,
+    newProducts: FormPaymentsField['products'],
   ): Promise<IEncryptedFormDocument | null>
 
   updateFormLogic(

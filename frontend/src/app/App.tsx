@@ -1,3 +1,5 @@
+import React from 'react'
+import { Inspector, InspectParams } from 'react-dev-inspector'
 import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
@@ -40,18 +42,40 @@ datadogLogs.init({
   sampleRate: 100,
 })
 
-export const App = (): JSX.Element => (
-  <HelmetProvider>
-    <QueryClientProvider client={queryClient}>
-      <ReactQueryDevtools initialIsOpen={false} />
-      <AppHelmet />
-      <BrowserRouter>
-        <ChakraProvider theme={theme} resetCSS>
-          <AuthProvider>
-            <AppRouter />
-          </AuthProvider>
-        </ChakraProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
-  </HelmetProvider>
-)
+export const App = (): JSX.Element => {
+  const isDev = process.env.NODE_ENV === 'development'
+
+  return (
+    <>
+      {isDev && (
+        <Inspector
+          // props see docs:
+          // https://github.com/zthxxx/react-dev-inspector#inspector-component-props
+          keys={['control', 'shift', 'c']}
+          disableLaunchEditor={true}
+          onClickElement={({ codeInfo }: InspectParams) => {
+            if (!codeInfo?.absolutePath) return
+            const { absolutePath, lineNumber, columnNumber } = codeInfo
+            // you can change the url protocol if you are using in Web IDE
+            window.open(
+              `vscode://file/${absolutePath}:${lineNumber}:${columnNumber}`,
+            )
+          }}
+        />
+      )}
+      <HelmetProvider>
+        <QueryClientProvider client={queryClient}>
+          <ReactQueryDevtools initialIsOpen={false} />
+          <AppHelmet />
+          <BrowserRouter>
+            <ChakraProvider theme={theme} resetCSS>
+              <AuthProvider>
+                <AppRouter />
+              </AuthProvider>
+            </ChakraProvider>
+          </BrowserRouter>
+        </QueryClientProvider>
+      </HelmetProvider>
+    </>
+  )
+}

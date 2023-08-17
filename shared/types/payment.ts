@@ -1,4 +1,5 @@
 import Stripe from 'stripe'
+import { FormPaymentsField, ProductItem } from './form'
 import { DateString } from './generic'
 
 // Stripe Charge status
@@ -20,7 +21,7 @@ export enum PaymentChannel {
 export enum PaymentType {
   Fixed = 'Fixed',
   Variable = 'Variable',
-  // Products = 'Products'
+  Products = 'Products',
 }
 
 export type CompletedPaymentMeta = {
@@ -56,6 +57,12 @@ export type Payment = {
   // Payout metadata
   payout?: PayoutMeta
 
+  // Purchased Products information
+  products?: ProductItem[]
+
+  // Snapshot of form payment fields at point of payment
+  payment_fields_snapshot: FormPaymentsField
+
   created: DateString
   lastModified: DateString
 }
@@ -64,6 +71,7 @@ export type PaymentDto = Payment & { _id: string }
 
 export type PaymentReceiptStatusDto = {
   isReady: boolean
+  paymentDate: Date | null
 }
 
 export type GetPaymentInfoDto = {
@@ -71,6 +79,9 @@ export type GetPaymentInfoDto = {
   publishableKey: string
   payment_intent_id: string
   submissionId: string
+  products: Payment['products']
+  amount: Payment['amount']
+  payment_fields_snapshot: Payment['payment_fields_snapshot']
 }
 
 export type IncompletePaymentsDto = {

@@ -12,7 +12,7 @@ import { usePaymentFieldValidation } from '../../../../../hooks/usePaymentFieldV
 import PaymentItemNameDescription from './PaymentItemNameDescription'
 import { VariableItemDetailProps } from './types'
 
-export const VariablePaymentItemDetailsField = ({
+export const VariablePaymentItemDetailsBlock = ({
   paymentDescription,
   paymentItemName,
   paymentMin,

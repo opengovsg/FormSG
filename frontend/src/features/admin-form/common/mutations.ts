@@ -8,6 +8,7 @@ import {
   EndPageUpdateDto,
   FormPermission,
   FormPermissionsDto,
+  PaymentsProductUpdateDto,
   PaymentsUpdateDto,
   StartPageUpdateDto,
 } from '~shared/types/form/form'
@@ -35,6 +36,7 @@ import { useCollaboratorWizard } from './components/CollaboratorModal/Collaborat
 import { permissionsToRole } from './components/CollaboratorModal/utils'
 import {
   updateFormEndPage,
+  updateFormPaymentProducts,
   updateFormPayments,
   updateFormStartPage,
 } from './AdminFormPageService'
@@ -422,10 +424,38 @@ export const useMutateFormPage = () => {
     },
   )
 
+  const paymentsProductMutation = useMutation(
+    (products: PaymentsProductUpdateDto) =>
+      updateFormPaymentProducts(formId, products),
+    {
+      onSuccess: (newData) => {
+        toast.closeAll()
+        queryClient.setQueryData<AdminStorageFormDto | undefined>(
+          adminFormKeys.products(formId, newData),
+          (oldData) =>
+            oldData
+              ? {
+                  ...oldData,
+                  payments_field: {
+                    ...oldData.payments_field,
+                    products: newData,
+                  },
+                }
+              : undefined,
+        )
+        toast({
+          description: 'Payments product was updated.',
+        })
+      },
+      onError: handleError,
+    },
+  )
+
   return {
     startPageMutation,
     endPageMutation,
     paymentsMutation,
+    paymentsProductMutation,
   }
 }
 

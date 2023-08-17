@@ -55,6 +55,7 @@ const submitFormIssue: ControllerHandler<
     'permissionList',
     'status',
     'title',
+    'hasIssueNotification',
   ])
     .andThen((form) => FormService.isFormPublic(form).map(() => form))
     .andThen((form) =>
@@ -63,7 +64,9 @@ const submitFormIssue: ControllerHandler<
         issue,
         email,
       }).map(async (formIssue) => {
-        await notifyFormAdmin({ form, formIssue })
+        if (form.hasIssueNotification) {
+          await notifyFormAdmin({ form, formIssue })
+        }
       }),
     )
     .map(async () => {
