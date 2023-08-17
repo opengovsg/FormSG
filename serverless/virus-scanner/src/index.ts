@@ -1,5 +1,6 @@
 import { APIGatewayProxyResult } from 'aws-lambda'
 import crypto from 'crypto'
+import { StatusCodes } from 'http-status-codes'
 
 import { scanFileStream } from './clamscan.service'
 import { config } from './config'
@@ -20,7 +21,7 @@ export const handler = async (
       event,
     })
     return {
-      statusCode: 400,
+      statusCode: StatusCodes.BAD_REQUEST,
       body: JSON.stringify({
         message: 'Missing key in body',
       }),
@@ -55,7 +56,7 @@ export const handler = async (
       quarantineFileKey,
     })
     return {
-      statusCode: 400,
+      statusCode: StatusCodes.BAD_REQUEST,
       body: JSON.stringify({
         message: 'Malicious file detected',
         fileKey: quarantineFileKey,
@@ -82,7 +83,7 @@ export const handler = async (
     })
 
     return {
-      statusCode: 200,
+      statusCode: StatusCodes.OK,
       body: JSON.stringify({
         message: 'File scan completed',
         cleanFileKey,
