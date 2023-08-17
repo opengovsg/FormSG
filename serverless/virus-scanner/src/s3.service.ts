@@ -44,7 +44,6 @@ export class S3Service {
     )
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const { Body: body } = await this.s3Client.send(
         new GetObjectCommand({
           Key: objectKey,

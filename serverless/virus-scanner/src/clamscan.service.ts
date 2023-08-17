@@ -3,12 +3,9 @@ import internal, { Stream } from 'stream'
 
 import { getLambdaLogger } from './logger'
 
-type ScanFileStreamResult = {
-  isMalicious: boolean
-  virusMetadata: string[]
-  // cleanFile only if isMalicious is false
-  cleanFile?: Buffer
-}
+type ScanFileStreamResult =
+  | { isMalicious: true; virusMetadata: string[] }
+  | { isMalicious: false; cleanFile: Buffer }
 
 export async function scanFileStream(
   s3Stream: internal.Readable,
@@ -47,14 +44,18 @@ export async function scanFileStream(
           isMalicious,
           virusMetadata,
         })
-        resolve({
-          isMalicious,
-          virusMetadata,
-          // Include cleanFile only if isMalicious is false
-          ...(!isMalicious
-            ? {}
-            : { cleanFile: Buffer.concat(outputBufferArr) }),
-        })
+
+        if (isMalicious === true) {
+          resolve({
+            isMalicious,
+            virusMetadata,
+          })
+        } else {
+          resolve({
+            isMalicious,
+            cleanFile: Buffer.concat(outputBufferArr),
+          })
+        }
       })
       .on('error', (err) => {
         logger.error('Error piping file stream to output stream', {
