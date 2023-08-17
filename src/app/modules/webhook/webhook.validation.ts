@@ -3,8 +3,11 @@ import ip from 'ip'
 
 import { isValidHttpsUrl } from '../../../../shared/utils/url-validation'
 import config from '../../config/config'
+import { createLoggerWithLabel } from '../../config/logger'
 
 import { WebhookValidationError } from './webhook.errors'
+
+const logger = createLoggerWithLabel(module)
 
 /**
  * Checks that a URL is valid for use in webhooks.
@@ -13,6 +16,10 @@ import { WebhookValidationError } from './webhook.errors'
  * @throws {WebhookValidationError} If URL is invalid so webhook should not be attempted.
  */
 export const validateWebhookUrl = (webhookUrl: string): Promise<void> => {
+  const logMeta = {
+    action: 'validateWebhookUrl',
+    webhookUrl,
+  }
   return new Promise((resolve, reject) => {
     if (!isValidHttpsUrl(webhookUrl)) {
       return reject(
@@ -54,7 +61,12 @@ export const validateWebhookUrl = (webhookUrl: string): Promise<void> => {
         }
         return resolve()
       })
-      .catch(() => {
+      .catch((error) => {
+        logger.error({
+          message: 'Webhook URL failed validation',
+          meta: logMeta,
+          error,
+        })
         return reject(
           new WebhookValidationError(
             `Error encountered during DNS resolution for webhook URL: ${webhookUrl}.` +

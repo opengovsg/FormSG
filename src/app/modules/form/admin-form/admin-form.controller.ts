@@ -29,6 +29,8 @@ import {
   FormLogoState,
   FormResponseMode,
   FormSettings,
+  FormWebhookResponseModeSettings,
+  FormWebhookSettings,
   LogicConditionState,
   LogicDto,
   LogicIfValue,
@@ -41,6 +43,7 @@ import {
   SmsCountsDto,
   StartPageUpdateDto,
   SubmissionCountQueryDto,
+  WebhookSettingsUpdateDto,
 } from '../../../../../shared/types'
 import { IForm, IFormDocument, IPopulatedForm } from '../../../../types'
 import {
@@ -89,7 +92,11 @@ import {
   PREVIEW_SINGPASS_UINFIN,
 } from './admin-form.constants'
 import { EditFieldError, GoGovError } from './admin-form.errors'
-import { updateSettingsValidator } from './admin-form.middlewares'
+import {
+  getWebhookSettingsValidator,
+  updateSettingsValidator,
+  updateWebhookSettingsValidator,
+} from './admin-form.middlewares'
 import * as AdminFormService from './admin-form.service'
 import { PermissionLevel } from './admin-form.types'
 import { mapRouteError, verifyValidUnicodeString } from './admin-form.utils'
@@ -1295,6 +1302,63 @@ export const _handleUpdateSettings: ControllerHandler<
     })
 }
 
+export const _handleUpdateWebhookSettings: ControllerHandler<
+  { formId: string },
+  FormWebhookSettings | ErrorDto,
+  WebhookSettingsUpdateDto
+> = (req, res) => {
+  const { formId } = req.params
+  const { userEmail, webhook: webhookSettings } = req.body
+  const authedUserId = (req.session as AuthedSessionData).user._id
+
+  logger.info({
+    message: 'User attempting to update webhook settings',
+    meta: {
+      action: '_handleUpdateWebhookSettings',
+      ...createReqMeta(req),
+      reqBody: req.body,
+      formId,
+      userEmail,
+      webhookSettings,
+    },
+  })
+
+  // Step 1: Retrieve currently logged in user.
+  return UserService.findUserById(authedUserId)
+    .andThen((user) =>
+      // Step 2: Retrieve form with write permission check.
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((retrievedForm) =>
+      AdminFormService.updateFormSettings(retrievedForm, {
+        webhook: webhookSettings,
+      }),
+    )
+    .map((updatedSettings) => {
+      const webhookSettings = { webhook: updatedSettings.webhook }
+      res.status(StatusCodes.OK).json(webhookSettings)
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when updating form settings',
+        meta: {
+          action: 'handleUpdateWebhookSettings',
+          ...createReqMeta(req),
+          userEmail,
+          formId,
+          settingsKeysToUpdate: Object.keys(webhookSettings),
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
 /**
  * Handler for PATCH /forms/:formId/settings.
  * @security session
@@ -1313,6 +1377,26 @@ export const _handleUpdateSettings: ControllerHandler<
 export const handleUpdateSettings = [
   updateSettingsValidator,
   _handleUpdateSettings,
+] as ControllerHandler[]
+
+/**
+ * Handler for PATCH api/public/v1/admin/forms/:formId/webhooksettings.
+ * @security session
+ *
+ * @returns 200 with updated form settings
+ * @returns 400 when body is malformed
+ * @returns 403 when user email does not have permissions to update form settings
+ * @returns 404 when form to update settings for cannot be found
+ * @returns 409 when saving form settings incurs a conflict in the database
+ * @returns 410 when updating settings for archived form
+ * @returns 413 when updating settings causes form to be too large to be saved in the database
+ * @returns 422 when an invalid settings update is attempted on the form
+ * @returns 422 when user from user email cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleUpdateWebhookSettings = [
+  updateWebhookSettingsValidator,
+  _handleUpdateWebhookSettings,
 ] as ControllerHandler[]
 
 /**
@@ -1378,7 +1462,6 @@ export const _handleUpdateFormField: ControllerHandler<
  * @security session
  *
  * @returns 200 with latest form settings on successful update
- * @returns 401 when current user is not logged in
  * @returns 403 when current user does not have permissions to obtain form settings
  * @returns 404 when form to retrieve settings for cannot be found
  * @returns 409 when saving form settings incurs a conflict in the database
@@ -1416,6 +1499,81 @@ export const handleGetSettings: ControllerHandler<
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
+
+/**
+ * Handler for POST api/public/v1/admin/forms/:formId/webhooksettings.
+ *
+ * @returns 200 with latest webhook and response mode settings
+ * @returns 401 when current user is not logged in
+ * @returns 403 when current user does not have permissions to obtain form settings
+ * @returns 404 when form to retrieve settings for cannot be found
+ * @returns 422 when user from user email cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const _handleGetWebhookSettings: ControllerHandler<
+  { formId: string },
+  FormWebhookResponseModeSettings | ErrorDto,
+  { userEmail: string }
+> = (req, res) => {
+  const { formId } = req.params
+  const { userEmail } = req.body
+  const authedUserId = (req.session as AuthedSessionData).user._id
+
+  logger.info({
+    message: 'User attempting to get webhook settings',
+    meta: {
+      action: 'handleGetWebhookSettings',
+      ...createReqMeta(req),
+      reqBody: req.body,
+      formId,
+      userEmail,
+    },
+  })
+
+  return UserService.findUserById(authedUserId)
+    .andThen((user) =>
+      // Retrieve form for settings as well as for permissions checking
+      FormService.retrieveFullFormById(formId).map((form) => ({
+        form,
+        user,
+      })),
+    )
+    .andThen(AuthService.checkFormForPermissions(PermissionLevel.Read))
+    .map((form) =>
+      res.status(StatusCodes.OK).json(form.getWebhookAndResponseModeSettings()),
+    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when retrieving form settings',
+        meta: {
+          action: 'handleGetWebhookSettings',
+          ...createReqMeta(req),
+          userEmail,
+          formId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
+ * Handler for POST api/public/v1/admin/forms/:formId/webhooksettings.
+ * @security session
+ *
+ * @returns 200 with latest webhook and response mode settings
+ * @returns 400 when body is malformed
+ * @returns 401 when current user is not logged in
+ * @returns 403 when user email does not have permissions to obtain form settings
+ * @returns 404 when form to retrieve settings for cannot be found
+ * @returns 422 when user from user email cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleGetWebhookSettings = [
+  getWebhookSettingsValidator,
+  _handleGetWebhookSettings,
+] as ControllerHandler[]
 
 /**
  * Handler for POST /v2/submissions/encrypt/preview/:formId.

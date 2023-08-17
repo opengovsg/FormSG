@@ -40,6 +40,7 @@ type ProductInput = Product & {
 const MIN_QTY_KEY = `min_qty`
 const MAX_QTY_KEY = `max_qty`
 const DISPLAY_AMOUNT_KEY = 'display_amount'
+const MULTI_QTY_KEY = 'multi_qty'
 export const ProductModal = ({
   onClose,
   onSaveProduct,
@@ -64,8 +65,9 @@ export const ProductModal = ({
           display_amount: centsToDollars(product.amount_cents ?? 0),
         }
       : {
-          min_qty: 1,
-          max_qty: 99,
+          [MULTI_QTY_KEY]: false,
+          [MIN_QTY_KEY]: 1,
+          [MAX_QTY_KEY]: 99,
         },
     mode: 'all',
   })
@@ -95,7 +97,7 @@ export const ProductModal = ({
       const validateMin = !!val && dollarsToCents(val) >= minPaymentAmountCents
       // Repeat the check on minPaymentAmountCents for correct typing
       if (!!minPaymentAmountCents && !validateMin) {
-        return `Please enter a payment amount above ${formatCurrency(
+        return `The maximum amount is ${formatCurrency(
           Number(centsToDollars(minPaymentAmountCents)),
         )}`
       }
@@ -103,7 +105,7 @@ export const ProductModal = ({
       const validateMax = !!val && dollarsToCents(val) <= maxPaymentAmountCents
       // Repeat the check on maxPaymentAmountCents for correct typing
       if (!!maxPaymentAmountCents && !validateMax) {
-        return `Please enter a payment amount below ${formatCurrency(
+        return `The maximum amount is ${formatCurrency(
           Number(centsToDollars(maxPaymentAmountCents)),
         )}`
       }
@@ -111,7 +113,7 @@ export const ProductModal = ({
     },
   }
 
-  const watchMultiQtyEnabled = watch('multi_qty', product?.multi_qty ?? false)
+  const watchMultiQtyEnabled = watch(MULTI_QTY_KEY, product?.multi_qty ?? false)
   const handleSaveProduct = handleSubmit((product) => {
     const { display_amount, ...rest } = product
     onSaveProduct({ ...rest, amount_cents: dollarsToCents(display_amount) })
@@ -120,6 +122,7 @@ export const ProductModal = ({
 
   const minQtyValidation: RegisterOptions<ProductInput, typeof MIN_QTY_KEY> = {
     validate: (val) => {
+      if (!getValues(MULTI_QTY_KEY)) return true
       if (val <= 0) {
         return 'Please enter a value greater than 0'
       }
@@ -131,11 +134,12 @@ export const ProductModal = ({
   }
   const maxQtyValidation: RegisterOptions<ProductInput, typeof MAX_QTY_KEY> = {
     validate: (val) => {
+      if (!getValues(MULTI_QTY_KEY)) return true
       if (val <= 0) {
         return 'Please enter a value greater than 0'
       }
 
-      const amount = dollarsToCents(getValues(DISPLAY_AMOUNT_KEY))
+      const amount = dollarsToCents(getValues(DISPLAY_AMOUNT_KEY) ?? '')
 
       if (val * amount > maxPaymentAmountCents) {
         const maxQty = Math.floor(maxPaymentAmountCents / amount)
@@ -218,10 +222,21 @@ export const ProductModal = ({
             </FormControl>
             <Box>
               <FormControl>
-                <Toggle
-                  {...register('multi_qty')}
-                  label="Quantity limit"
-                  description="Set the minimum and maximum quantities respondents can select"
+                <Controller
+                  name={MULTI_QTY_KEY}
+                  control={control}
+                  render={({ field: { value, onChange, ...rest } }) => (
+                    <Toggle
+                      {...rest}
+                      isChecked={value}
+                      onChange={(e) => {
+                        onChange(e)
+                        trigger([MIN_QTY_KEY, MAX_QTY_KEY, DISPLAY_AMOUNT_KEY])
+                      }}
+                      label="Quantity limit"
+                      description="Set the minimum and maximum quantities respondents can select"
+                    />
+                  )}
                 />
               </FormControl>
               <FormControl

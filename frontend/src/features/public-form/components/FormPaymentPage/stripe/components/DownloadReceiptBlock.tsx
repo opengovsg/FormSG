@@ -48,7 +48,7 @@ const PaymentSummaryRow = ({
 const getProductNames = (products: ProductItem[]): string => {
   return products
     .filter((product) => product.selected)
-    .map((product) => `${product.quantity}x ${product.data.name}`)
+    .map((product) => `${product.data.name} x ${product.quantity}`)
     .join(', ')
 }
 

@@ -317,6 +317,12 @@ export const getSubmissionPaymentDto = (
       id: payment._id,
       paymentIntentId: payment.paymentIntentId,
       email: payment.email,
+      products: payment.products
+        ?.filter((product) => product.selected)
+        .map((product) => ({
+          name: product.data.name,
+          quantity: product.quantity,
+        })),
       amount: payment.amount,
       status: payment.status,
 
