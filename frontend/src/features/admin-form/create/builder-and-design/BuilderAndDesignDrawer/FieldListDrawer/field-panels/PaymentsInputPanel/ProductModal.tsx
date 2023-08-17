@@ -89,15 +89,20 @@ export const ProductModal = ({
     typeof DISPLAY_AMOUNT_KEY
   > = {
     validate: (val) => {
-      // Validate that it is a money value.
-      // Regex allows leading and trailing spaces, max 2dp
+      // // Validate that it is a money value.
+      // // Regex allows leading and trailing spaces, max 2dp
       const validateMoney = /^\s*(\d+)(\.\d{0,2})?\s*$/.test(val ?? '')
-      if (!validateMoney) return 'Please enter a valid payment amount'
+      if (!validateMoney)
+        return `Enter an amount between S${formatCurrency(
+          Number(centsToDollars(minPaymentAmountCents)),
+        )} and S${formatCurrency(
+          Number(centsToDollars(maxPaymentAmountCents)),
+        )}`
 
       const validateMin = !!val && dollarsToCents(val) >= minPaymentAmountCents
       // Repeat the check on minPaymentAmountCents for correct typing
       if (!!minPaymentAmountCents && !validateMin) {
-        return `The maximum amount is ${formatCurrency(
+        return `The maximum amount is S${formatCurrency(
           Number(centsToDollars(minPaymentAmountCents)),
         )}`
       }
@@ -105,7 +110,7 @@ export const ProductModal = ({
       const validateMax = !!val && dollarsToCents(val) <= maxPaymentAmountCents
       // Repeat the check on maxPaymentAmountCents for correct typing
       if (!!maxPaymentAmountCents && !validateMax) {
-        return `The maximum amount is ${formatCurrency(
+        return `The maximum amount is S${formatCurrency(
           Number(centsToDollars(maxPaymentAmountCents)),
         )}`
       }
@@ -124,10 +129,10 @@ export const ProductModal = ({
     validate: (val) => {
       if (!getValues(MULTI_QTY_KEY)) return true
       if (val <= 0) {
-        return 'Please enter a value greater than 0'
+        return 'Enter a value greater than 0'
       }
       if (val > getValues(MAX_QTY_KEY)) {
-        return 'Please enter a value smaller than the maximum quantity'
+        return 'Enter a value smaller than the maximum quantity'
       }
       return true
     },
@@ -136,17 +141,22 @@ export const ProductModal = ({
     validate: (val) => {
       if (!getValues(MULTI_QTY_KEY)) return true
       if (val <= 0) {
-        return 'Please enter a value greater than 0'
+        return 'Enter a value greater than 0'
       }
 
       const amount = dollarsToCents(getValues(DISPLAY_AMOUNT_KEY) ?? '')
 
       if (val * amount > maxPaymentAmountCents) {
         const maxQty = Math.floor(maxPaymentAmountCents / amount)
-        return `The maximum quantity is ${maxQty}`
+        if (maxQty <= 0) {
+          return `Quantity limit could not be set because amount is above S${formatCurrency(
+            Number(centsToDollars(maxPaymentAmountCents)),
+          )}`
+        }
+        return `The maximum quantity for this amount is ${maxQty}`
       }
       if (val < getValues(MIN_QTY_KEY)) {
-        return 'Please enter a value greater than the minimum quantity'
+        return 'Enter a value greater than the minimum quantity'
       }
       return true
     },
@@ -257,9 +267,12 @@ export const ProductModal = ({
                       render={({ field }) => (
                         <Input
                           {...register(MIN_QTY_KEY, {
-                            required: watchMultiQtyEnabled,
+                            required:
+                              watchMultiQtyEnabled &&
+                              'The minimum quantity is 1',
                           })}
                           isInvalid={!!errors[MIN_QTY_KEY]}
+                          placeholder={'1'}
                           {...field}
                           onChange={(e) => {
                             field.onChange(e)
@@ -285,7 +298,9 @@ export const ProductModal = ({
                       render={({ field }) => (
                         <Input
                           {...register(MAX_QTY_KEY, {
-                            required: watchMultiQtyEnabled,
+                            required:
+                              watchMultiQtyEnabled &&
+                              'Enter a maximum quantity',
                           })}
                           isInvalid={!!errors[MAX_QTY_KEY]}
                           placeholder={'99'}
