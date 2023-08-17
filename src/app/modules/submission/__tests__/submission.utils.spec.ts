@@ -14,7 +14,7 @@ describe('submission.utils', () => {
       const actual = modeFilter(ALL_FIELD_TYPES)
 
       // Assert
-      expect(modeFilter.name).toEqual('emailResponseModeFilter')
+      expect(modeFilter.name).toEqual('clearResponseModeFilter')
       // Should filter out image and statement fields in email mode.
       const typesToBeFiltered = [BasicField.Image, BasicField.Statement]
       typesToBeFiltered.forEach((fieldType) => {
@@ -35,7 +35,7 @@ describe('submission.utils', () => {
       const actual = modeFilter(ALL_FIELD_TYPES)
 
       // Assert
-      expect(modeFilter.name).toEqual('encryptResponseModeFilter')
+      expect(modeFilter.name).toEqual('encryptedResponseModeFilter')
       // Should only return verifiable fields.
       expect(actual).toEqual(
         expect.arrayContaining([
