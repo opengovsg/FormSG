@@ -441,7 +441,27 @@ export const transferAllFormsOwnership = (
       // Step 2: Perform form ownership transfer.
       .andThen((newOwner) =>
         ResultAsync.fromPromise(
-          FormModel.transferAllFormsToNewOwner(currentOwner, newOwner),
+          FormModel.removeNewOwnerFromPermissionListForAllCurrentOwnerForms(
+            currentOwner,
+            newOwner,
+          ).then(() => newOwner),
+          (error) => {
+            logger.error({
+              message:
+                'Error occurred whilst removing new owner from permission list for current owner forms',
+              meta: logMeta,
+              error,
+            })
+
+            return new DatabaseError(getMongoErrorMessage(error))
+          },
+        ),
+      )
+      .andThen((newOwner) =>
+        ResultAsync.fromPromise(
+          FormModel.transferAllFormsToNewOwner(currentOwner, newOwner).then(
+            () => newOwner,
+          ),
           (error) => {
             logger.error({
               message: 'Error occurred whilst transferring form ownership',

@@ -411,6 +411,11 @@ export interface IFormModel extends Model<IFormSchema> {
     currentOwner: IUserSchema,
     newOwner: IUserSchema,
   ): Promise<T>
+
+  removeNewOwnerFromPermissionListForAllCurrentOwnerForms<T = IFormSchema>(
+    currentOwner: IUserSchema,
+    newOwner: IUserSchema,
+  ): Promise<T>
 }
 
 export type IEncryptedFormModel = Model<IEncryptedFormSchema> & IFormModel

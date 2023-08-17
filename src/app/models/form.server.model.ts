@@ -747,11 +747,30 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       {
         $set: {
           admin: newOwner._id,
-          'permissionList.currentOwner.email': newOwner.email,
+        },
+        $addToSet: {
+          permissionList: { email: currentOwner.email, write: true },
         },
       },
     ).exec()
   }
+
+  // Add form collaborator
+  FormSchema.statics.removeNewOwnerFromPermissionListForAllCurrentOwnerForms =
+    async function (currentOwner: IUserSchema, newOwner: IUserSchema) {
+      return this.updateMany(
+        {
+          admin: currentOwner._id,
+        },
+        {
+          $pull: {
+            permissionList: {
+              email: { $in: [newOwner.email] },
+            },
+          },
+        },
+      ).exec()
+    }
 
   FormDocumentSchema.methods.updateFormCollaborators = async function (
     updatedPermissions: FormPermission[],
