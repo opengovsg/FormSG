@@ -1,6 +1,8 @@
 import NodeClam from 'clamscan'
 import internal, { Stream } from 'stream'
 
+import { getLambdaLogger } from './logger'
+
 type ScanFileStreamResult = {
   isMalicious: boolean
   virusMetadata: string[]
@@ -11,6 +13,10 @@ type ScanFileStreamResult = {
 export async function scanFileStream(
   s3Stream: internal.Readable,
 ): Promise<ScanFileStreamResult> {
+  const logger = getLambdaLogger('scanFileStream')
+
+  logger.info('Scanning file stream')
+
   const scanner = await new NodeClam().init({
     clamdscan: {
       socket: '/tmp/clamd.ctl',
@@ -19,6 +25,11 @@ export async function scanFileStream(
 
   const { isInfected: isMalicious, viruses: virusMetadata } =
     await scanner.scanStream(s3Stream)
+
+  logger.info('Finished scanning file stream', {
+    isMalicious,
+    virusMetadata,
+  })
 
   // create a writable stream to memory
   const outputStream = new Stream.Writable()
@@ -32,6 +43,10 @@ export async function scanFileStream(
   return new Promise((resolve, reject) => {
     outputStream
       .on('finish', () => {
+        logger.info('Finished piping file stream to output stream', {
+          isMalicious,
+          virusMetadata,
+        })
         resolve({
           isMalicious,
           virusMetadata,
@@ -42,6 +57,11 @@ export async function scanFileStream(
         })
       })
       .on('error', (err) => {
+        logger.error('Error piping file stream to output stream', {
+          isMalicious,
+          virusMetadata,
+          err,
+        })
         reject(err)
       })
   })
