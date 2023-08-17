@@ -75,14 +75,14 @@ export class S3Service {
     }
   }
 
-  async putS3FileStream({
+  async putS3File({
     bucketName,
     objectKey,
     body,
   }: {
     bucketName: string
     objectKey: string
-    body: internal.Readable
+    body: Buffer
   }) {
     this.logger.info(
       {
@@ -121,5 +121,4 @@ export class S3Service {
       throw error
     }
   }
-  
 }
