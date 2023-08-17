@@ -1,111 +1,39 @@
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useState,
-} from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useMemo } from 'react'
 import { Box, Container, Grid, useDisclosure } from '@chakra-ui/react'
-import { chunk } from 'lodash'
 
-import Pagination from '~components/Pagination'
+import { ROLLOUT_ANNOUNCEMENT_KEY_PREFIX } from '~constants/localStorage'
+import { useLocalStorage } from '~hooks/useLocalStorage'
+import InlineMessage from '~components/InlineMessage'
+
+import { RolloutAnnouncementModal } from '~features/rollout-announcement/RolloutAnnouncementModal'
+import { useUser } from '~features/user/queries'
 
 import CreateFormModal from './components/CreateFormModal'
 import { EmptyWorkspace } from './components/EmptyWorkspace'
 import { WorkspaceFormRows } from './components/WorkspaceFormRow'
 import { WorkspaceHeader } from './components/WorkspaceHeader'
-import { useDashboard } from './queries'
-
-const PAGE_DEFAULTS = {
-  size: 20,
-  pageNumber: 1,
-}
+import { useWorkspaceContext } from './WorkspaceContext'
 
 export const CONTAINER_MAXW = '69.5rem'
-const VALID_NUM_ARG_RE = /^[1-9]\d*$/
-
-const useWorkspaceForms = () => {
-  const { data: dashboardForms, isLoading } = useDashboard()
-  const [searchParams, setSearchParams] = useSearchParams()
-  const [sortedForms, setSortedForms] = useState(dashboardForms)
-  const [isManipulating, setIsManipulating] = useState(false)
-
-  const createFormModalDisclosure = useDisclosure()
-
-  const pageParam = searchParams.get('page') ?? ''
-  const sizeParam = searchParams.get('size') ?? ''
-
-  const currentPage = VALID_NUM_ARG_RE.test(pageParam)
-    ? parseInt(pageParam)
-    : PAGE_DEFAULTS.pageNumber
-  const pageSize = VALID_NUM_ARG_RE.test(sizeParam)
-    ? parseInt(sizeParam)
-    : PAGE_DEFAULTS.size
-  const sort = searchParams.get('sort')
-
-  const setSortOrder = useCallback(
-    (sort: string) => {
-      setSearchParams({ sort })
-    },
-    [setSearchParams],
-  )
-
-  const setPageNumber = useCallback(
-    (page: number) => {
-      setSearchParams({ page: String(page) })
-    },
-    [setSearchParams],
-  )
-
-  useEffect(() => {
-    setIsManipulating(true)
-    // TODO: Perform actual sorts
-    setIsManipulating(false)
-    setSortedForms(dashboardForms)
-
-    // Only run when sort changes
-  }, [dashboardForms, sort])
-
-  const chunkedData = useMemo(
-    () => chunk(sortedForms, pageSize),
-    [pageSize, sortedForms],
-  )
-
-  useLayoutEffect(() => {
-    /**
-     * Scroll to top on workspace page on change. Use scrollTo(0,0) instead of a ref on workspace container
-     * because mobile view has headers on top of the workspace container
-     */
-    window.scrollTo(0, 0)
-  }, [currentPage])
-
-  const paginatedData = useMemo(() => {
-    if (currentPage < 1 || currentPage > chunkedData.length) {
-      return []
-    }
-    return chunkedData[currentPage - 1]
-  }, [chunkedData, currentPage])
-
-  return {
-    isLoading: isLoading || isManipulating,
-    currentPage,
-    totalFormCount: dashboardForms?.length,
-    paginatedData,
-    setPageNumber,
-    setSortOrder,
-    createFormModalDisclosure,
-  }
-}
 
 export const WorkspaceContent = (): JSX.Element => {
-  const {
-    isLoading,
-    totalFormCount,
-    currentPage,
-    setPageNumber,
-    createFormModalDisclosure,
-  } = useWorkspaceForms()
+  const { isLoading, totalFormsCount, activeWorkspace } = useWorkspaceContext()
+  const createFormModalDisclosure = useDisclosure()
+  const { user, isLoading: isUserLoading } = useUser()
+
+  const ROLLOUT_ANNOUNCEMENT_KEY = useMemo(
+    () => ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + user?._id,
+    [user],
+  )
+  const [hasSeenAnnouncement, setHasSeenAnnouncement] =
+    useLocalStorage<boolean>(ROLLOUT_ANNOUNCEMENT_KEY, false)
+
+  const isAnnouncementModalOpen = useMemo(
+    () => !isUserLoading && hasSeenAnnouncement === false,
+    [isUserLoading, hasSeenAnnouncement],
+  )
+
+  const dashboardMessage = `Introducing payments! Citizens can now pay for fees and services directly on your form. [Learn more](${GUIDE_PAYMENTS_ENTRY})`
 
   return (
     <>
@@ -113,7 +41,7 @@ export const WorkspaceContent = (): JSX.Element => {
         isOpen={createFormModalDisclosure.isOpen}
         onClose={createFormModalDisclosure.onClose}
       />
-      {totalFormCount === 0 ? (
+      {totalFormsCount === 0 ? (
         <EmptyWorkspace
           handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
           isLoading={isLoading}
@@ -134,11 +62,18 @@ export const WorkspaceContent = (): JSX.Element => {
             px="2rem"
             py="1rem"
           >
+            <InlineMessage useMarkdown mb="2rem" mx="-2rem">
+              {dashboardMessage}
+            </InlineMessage>
             <WorkspaceHeader
               handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
             />
           </Container>
           <Box gridArea="main">
+            <RolloutAnnouncementModal
+              onClose={() => setHasSeenAnnouncement(true)}
+              isOpen={isAnnouncementModalOpen}
+            />
             <WorkspaceFormRows />
           </Box>
           <Container
