@@ -92,6 +92,8 @@ export class CsvRecord {
         return '000000000000000000000009'
       case 'payoutDate':
         return '00000000000000000000000a'
+      case 'products':
+        return '00000000000000000000000b'
     }
   }
 

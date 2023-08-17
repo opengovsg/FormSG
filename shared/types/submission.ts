@@ -76,6 +76,14 @@ export const SubmissionPaymentDto = z.object({
   id: z.string(),
   paymentIntentId: z.string(),
   email: z.string(),
+  products: z
+    .array(
+      z.object({
+        name: z.string(),
+        quantity: z.number(),
+      }),
+    )
+    .optional(),
   amount: z.number(),
   status: z.nativeEnum(PaymentStatus),
 
