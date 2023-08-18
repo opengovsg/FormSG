@@ -41,7 +41,7 @@ const WorkspaceTab = ({
         textColor: 'primary.500',
       }}
       onClick={onClick}
-      aria-label={`${label} workspace tab`}
+      aria-label={`${label} folder tab`}
       {...styles}
       {...props}
     >
