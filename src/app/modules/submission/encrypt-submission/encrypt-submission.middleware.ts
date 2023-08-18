@@ -20,7 +20,6 @@ import { sharedSubmissionParams } from '../submission.constants'
 import * as SubmissionService from '../submission.service'
 import { getFilteredResponses, isAttachmentResponse } from '../submission.utils'
 
-import { newEncryptionBoundaryFlag } from './encrypt-submission.constants'
 import {
   EncryptedPayloadExistsError,
   FormDefinitionNotRetrievedError,
@@ -233,7 +232,7 @@ export const checkNewBoundaryEnabled: SharedSubmissionMiddlewareHandlerType =
 
     if (!formDef) return res.send(new FormDefinitionNotRetrievedError())
 
-    if (!formDef.get(newEncryptionBoundaryFlag)) {
+    if (!formDef.newEncryptionBoundary) {
       return res
         .status(StatusCodes.FORBIDDEN)
         .json({ message: 'This endpoint has not been enabled for this form.' })
