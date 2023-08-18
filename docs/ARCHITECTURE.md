@@ -48,7 +48,7 @@ to security on FormSG.
 
 - Management of forms is restricted to form creators. In storage mode, form creators
   can add other public servants as form editors. In email mode, form creators can
-  specify a whitelist of email addresses which will receive all form responses.
+  specify an allowlist of email addresses which will receive all form responses.
 
 #### Notable Points
 

@@ -89,10 +89,10 @@ export const handleSendOnboardingEmail: ControllerHandler<
     .mapErr((error) => {
       if (error instanceof InvalidDomainError) {
         logger.info({
-          message: 'Email domain is not whitelisted for onboarding email',
+          message: 'Email domain is not allowlisted for onboarding email',
           meta: logMeta,
         })
-        // If email domain is not whitelisted, return 403
+        // If email domain is not allowlisted, return 403
         return res.sendStatus(StatusCodes.FORBIDDEN)
       } else if (error instanceof MailSendError) {
         // Mail send error

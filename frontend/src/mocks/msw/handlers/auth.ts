@@ -11,7 +11,7 @@ export const otpGenerationResponse = ({
         ctx.status(isInvalid ? 401 : 200),
         ctx.json(
           isInvalid
-            ? 'This is not a whitelisted public service email domain. Please log in with your official government or government-linked email address.'
+            ? 'This is not an allowlisted public service email domain. Please log in with your official government or government-linked email address.'
             : `OTP sent to ${req.body.email}`,
         ),
       )

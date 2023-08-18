@@ -183,7 +183,7 @@ describe('payments.controller', () => {
       expect(mockRes.sendStatus).toHaveBeenCalledWith(StatusCodes.OK)
     })
 
-    it('should return 403 if email domain is not whitelisted', async () => {
+    it('should return 403 if email domain is not allowlisted', async () => {
       // Arrange
       const mockReq = expressHandler.mockRequest({
         body: { email: 'jest-always-mocks@me.sad' },

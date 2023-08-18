@@ -24,7 +24,7 @@ test.describe('login', () => {
 
     // Ensure error message is seen
     await expect(
-      page.getByText('This is not a whitelisted public service email domain.'),
+      page.getByText('This is not an allowlisted public service email domain.'),
     ).toBeVisible()
   })
 

@@ -24,7 +24,7 @@ export const SgidLoginPage = (): JSX.Element => {
       case '200':
         return
       case '401':
-        return 'Your SGID-linked work email does not belong to a whitelisted public service email domain. Please use OTP login instead.'
+        return 'Your SGID-linked work email does not belong to an allowlisted public service email domain. Please use OTP login instead.'
       default:
         return 'Something went wrong. Please try again later.'
     }

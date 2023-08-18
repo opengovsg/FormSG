@@ -160,7 +160,7 @@ export const useMutateCollaborators = () => {
         switch (error.code) {
           case 422:
             errorMessage = requestEmail
-              ? `${requestEmail} is not part of a whitelisted agency`
+              ? `${requestEmail} is not part of a allowlisted agency`
               : `An unexpected error 422 happened`
             break
           case 400:

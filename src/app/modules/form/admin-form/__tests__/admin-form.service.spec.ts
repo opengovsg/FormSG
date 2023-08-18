@@ -1778,7 +1778,7 @@ describe('admin-form.service', () => {
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(ApplicationError)
     })
 
-    it('should return InvalidCollaboratorError when the new collaborator has a non-whitelisted email', async () => {
+    it('should return InvalidCollaboratorError when the new collaborator has a non-allowlisted email', async () => {
       // Arrange
       const findAgencySpy = jest.spyOn(AgencyModel, 'findOne')
       findAgencySpy.mockResolvedValueOnce(null)

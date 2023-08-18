@@ -74,7 +74,7 @@ describe('auth.routes', () => {
       // Assert
       expect(response.status).toEqual(401)
       expect(response.body).toEqual(
-        'This is not a whitelisted public service email domain. Please log in with your official government or government-linked email address.',
+        'This is not an allowlisted public service email domain. Please log in with your official government or government-linked email address.',
       )
     })
 
@@ -187,7 +187,7 @@ describe('auth.routes', () => {
       expect(response.status).toEqual(401)
       expect(response.body).toEqual({
         message:
-          'This is not a whitelisted public service email domain. Please log in with your official government or government-linked email address.',
+          'This is not an allowlisted public service email domain. Please log in with your official government or government-linked email address.',
       })
     })
 
@@ -398,7 +398,7 @@ describe('auth.routes', () => {
       // Assert
       expect(response.status).toEqual(401)
       expect(response.body).toEqual(
-        'This is not a whitelisted public service email domain. Please log in with your official government or government-linked email address.',
+        'This is not an allowlisted public service email domain. Please log in with your official government or government-linked email address.',
       )
     })
 

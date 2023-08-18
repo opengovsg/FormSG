@@ -29,7 +29,7 @@ DevOps
 Network
 
 - AWS VPC (with peering preferred) for managed database hosted by MongoDB Atlas
-- AWS NAT Gateway (for static IP whitelisting with SingPass)
+- AWS NAT Gateway (for static IP allowlisting with SingPass)
 
 Database
 

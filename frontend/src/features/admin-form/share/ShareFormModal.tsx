@@ -105,11 +105,11 @@ export const ShareFormModal = ({
   const { data: flags } = useFeatureFlags()
   const displayGoLink = flags?.has(featureFlags.goLinks)
 
-  // Hard-coded .gov.sg whitelist for GoGov integration
-  const gogovWhiteListed = '.gov.sg'
+  // Hard-coded .gov.sg allowlist for GoGov integration
+  const gogovAllowListed = '.gov.sg'
   const { user } = useUser()
-  const whitelisted = useMemo(
-    () => user?.email.endsWith(gogovWhiteListed),
+  const allowlisted = useMemo(
+    () => user?.email.endsWith(gogovAllowListed),
     [user?.email],
   )
 
@@ -327,7 +327,7 @@ export const ShareFormModal = ({
               <TabPanel>
                 <FormLinkSection />
                 {/* GoLinkSection */}
-                {(displayGoLink && whitelisted) ||
+                {(displayGoLink && allowlisted) ||
                 goLinkSuffixData?.goLinkSuffix ? (
                   <FormControl mt="1rem">
                     <FormLabel

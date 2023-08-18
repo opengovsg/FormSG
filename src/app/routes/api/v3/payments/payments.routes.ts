@@ -111,7 +111,7 @@ PaymentsRouter.use('/reconcile', ProtectedPaymentsRouter)
  * @route POST /payments/onboarding
  *
  * @returns 200 if onboarding email sent
- * @returns 403 if email domain is not whitelisted
+ * @returns 403 if email domain is not allowlisted
  * @returns 400 if email sending fails
  * @returns 500 when database error occurs
  */

@@ -306,7 +306,7 @@ describe('payments.service', () => {
       expect(databaseErr).toBeInstanceOf(InvalidDomainError)
     })
 
-    it('should return a InvalidDomainError if email domain is not whitelisted', async () => {
+    it('should return a InvalidDomainError if email domain is not allowlisted', async () => {
       // Act
       const result = await PaymentsService.sendOnboardingEmailIfEligible(
         'hello@world.com',

@@ -765,7 +765,7 @@ export const updateForm = (
  *
  * @returns ok(collaborators) if form updates successfully
  * @returns err(PossibleDatabaseError) if any database errors occurs
- * @returns err(InvalidCollaboratorError) if a newly-added collaborator email is not whitelisted
+ * @returns err(InvalidCollaboratorError) if a newly-added collaborator email is not allowlisted
  */
 export const updateFormCollaborators = (
   form: IPopulatedForm,
