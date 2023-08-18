@@ -38,8 +38,8 @@ export const useDeleteFormField = () => {
 
   const paymentDeleteDefault: PaymentsUpdateDto = {
     enabled: false,
-    payment_type: PaymentType.Fixed,
-    amount_cents: 0,
+    payment_type: PaymentType.Products,
+    products: [],
   }
 
   const { stateData, setToInactive } = useFieldBuilderStore(

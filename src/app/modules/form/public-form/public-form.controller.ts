@@ -1,6 +1,6 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
-import { err } from 'neverthrow'
+import { err, ok, Result } from 'neverthrow'
 import { UnreachableCaseError } from 'ts-essentials'
 
 import {
@@ -33,11 +33,16 @@ import {
 } from '../../myinfo/myinfo.util'
 import { SGIDMyInfoData } from '../../sgid/sgid.adapter'
 import {
+  SGID_CODE_VERIFIER_COOKIE_NAME,
   SGID_COOKIE_NAME,
   SGID_MYINFO_COOKIE_NAME,
   SGID_MYINFO_LOGIN_COOKIE_NAME,
 } from '../../sgid/sgid.constants'
-import { SgidInvalidJwtError, SgidVerifyJwtError } from '../../sgid/sgid.errors'
+import {
+  SgidInvalidJwtError,
+  SgidMalformedMyInfoCookieError,
+  SgidVerifyJwtError,
+} from '../../sgid/sgid.errors'
 import { SgidService } from '../../sgid/sgid.service'
 import { validateSgidForm } from '../../sgid/sgid.util'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
@@ -274,53 +279,79 @@ export const handleGetPublicForm: ControllerHandler<
           return res.json({ form: publicForm, isIntranetUser })
         })
     case FormAuthType.SGID_MyInfo: {
-      const accessTokenCookie = req.cookies[SGID_MYINFO_COOKIE_NAME]
-      if (!accessTokenCookie) {
-        return res.json({
-          form: publicForm,
-          isIntranetUser,
-        })
-      }
-      res.clearCookie(SGID_MYINFO_COOKIE_NAME)
-      res.clearCookie(SGID_MYINFO_LOGIN_COOKIE_NAME)
-      return SgidService.extractSgidJwtMyInfoPayload(accessTokenCookie)
-        .asyncAndThen((auth) =>
-          SgidService.retrieveUserInfo({ accessToken: auth.accessToken }),
-        )
-        .andThen((userInfo) => {
-          const data = new SGIDMyInfoData(userInfo.data)
-          return MyInfoService.prefillAndSaveMyInfoFields(
-            form._id,
-            data,
-            form.toJSON().form_fields,
-          ).map((prefilledFields) => {
-            return res
-              .cookie(
-                SGID_MYINFO_LOGIN_COOKIE_NAME,
-                createMyInfoLoginCookie(data.getUinFin()),
-                MYINFO_LOGIN_COOKIE_OPTIONS,
-              )
-              .json({
-                form: {
-                  ...publicForm,
-                  form_fields: prefilledFields as FormFieldDto[],
-                },
-                spcpSession: { userName: data.getUinFin() },
-                isIntranetUser,
-              })
-          })
-        })
-        .mapErr((error) => {
+      const parseSgidMyInfoCookie = Result.fromThrowable(
+        () =>
+          JSON.parse(req.cookies[SGID_MYINFO_COOKIE_NAME] ?? '{}') as {
+            jwt?: string
+            sub?: string
+          },
+        (error) => {
           logger.error({
-            message: 'sgID: MyInfo login error',
+            message: 'Error while calling JSON.parse on SGID MyInfo cookie',
             meta: logMeta,
             error,
           })
-          return res.json({
+          return new SgidMalformedMyInfoCookieError()
+        },
+      )
+      return parseSgidMyInfoCookie()
+        .mapErr(() =>
+          res.json({
             form: publicForm,
-            myInfoError: true,
             isIntranetUser,
-          })
+          }),
+        )
+        .map(({ jwt: accessToken = '', sub = '' }) => {
+          if (!accessToken) {
+            return res.json({
+              form: publicForm,
+              isIntranetUser,
+            })
+          }
+          res.clearCookie(SGID_MYINFO_COOKIE_NAME)
+          res.clearCookie(SGID_MYINFO_LOGIN_COOKIE_NAME)
+          return SgidService.extractSgidJwtMyInfoPayload(accessToken)
+            .asyncAndThen((auth) =>
+              SgidService.retrieveUserInfo({
+                accessToken: auth.accessToken,
+                sub,
+              }),
+            )
+            .andThen((userInfo) => {
+              const data = new SGIDMyInfoData(userInfo.data)
+              return MyInfoService.prefillAndSaveMyInfoFields(
+                form._id,
+                data,
+                form.toJSON().form_fields,
+              ).map((prefilledFields) => {
+                return res
+                  .cookie(
+                    SGID_MYINFO_LOGIN_COOKIE_NAME,
+                    createMyInfoLoginCookie(data.getUinFin()),
+                    MYINFO_LOGIN_COOKIE_OPTIONS,
+                  )
+                  .json({
+                    form: {
+                      ...publicForm,
+                      form_fields: prefilledFields as FormFieldDto[],
+                    },
+                    spcpSession: { userName: data.getUinFin() },
+                    isIntranetUser,
+                  })
+              })
+            })
+            .mapErr((error) => {
+              logger.error({
+                message: 'sgID: MyInfo login error',
+                meta: logMeta,
+                error,
+              })
+              return res.json({
+                form: publicForm,
+                myInfoError: true,
+                isIntranetUser,
+              })
+            })
         })
     }
     default:
@@ -455,23 +486,41 @@ export const _handleFormAuthRedirect: ControllerHandler<
           })
         }
         case FormAuthType.SGID:
-          return validateSgidForm(form).andThen(() => {
-            return SgidService.createRedirectUrl(
-              formId,
-              Boolean(isPersistentLogin),
-              [],
-              encodedQuery,
+          return validateSgidForm(form)
+            .andThen(() =>
+              SgidService.createRedirectUrl(
+                formId,
+                Boolean(isPersistentLogin),
+                [],
+                encodedQuery,
+              ),
             )
-          })
+            .andThen(({ redirectUrl, codeVerifier }) => {
+              res.cookie(
+                SGID_CODE_VERIFIER_COOKIE_NAME,
+                codeVerifier,
+                SgidService.getCookieSettings(),
+              )
+              return ok(redirectUrl)
+            })
         case FormAuthType.SGID_MyInfo:
-          return validateSgidForm(form).andThen(() => {
-            return SgidService.createRedirectUrl(
-              formId,
-              false,
-              form.getUniqueMyInfoAttrs(),
-              encodedQuery,
+          return validateSgidForm(form)
+            .andThen(() =>
+              SgidService.createRedirectUrl(
+                formId,
+                false,
+                form.getUniqueMyInfoAttrs(),
+                encodedQuery,
+              ),
             )
-          })
+            .andThen(({ redirectUrl, codeVerifier }) => {
+              res.cookie(
+                SGID_CODE_VERIFIER_COOKIE_NAME,
+                codeVerifier,
+                SgidService.getCookieSettings(),
+              )
+              return ok(redirectUrl)
+            })
         default:
           return err<never, AuthTypeMismatchError>(
             new AuthTypeMismatchError(form.authType),
@@ -499,6 +548,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
         error,
       })
       const { statusCode, errorMessage } = mapFormAuthError(error)
+      res.clearCookie(SGID_CODE_VERIFIER_COOKIE_NAME)
       return res.status(statusCode).json({ message: errorMessage })
     })
 }

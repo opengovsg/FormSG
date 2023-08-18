@@ -13,6 +13,7 @@ import {
   IAttachmentFieldSchema,
   IAttachmentResponse,
   ICheckboxFieldSchema,
+  ICountryRegionFieldSchema,
   IDateFieldSchema,
   IDecimalFieldSchema,
   IDropdownFieldSchema,
@@ -117,6 +118,12 @@ export const generateDefaultField = (
         getQuestion: () => defaultParams.title,
         ...customParams,
       } as IDropdownFieldSchema
+    case BasicField.CountryRegion:
+      return {
+        ...defaultParams,
+        getQuestion: () => defaultParams.title,
+        ...customParams,
+      } as ICountryRegionFieldSchema
     case BasicField.Decimal:
       return {
         ...defaultParams,

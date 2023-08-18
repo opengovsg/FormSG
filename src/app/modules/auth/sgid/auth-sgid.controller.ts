@@ -4,6 +4,7 @@ import { ErrorDto, GetSgidAuthUrlResponseDto } from 'shared/types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import { ControllerHandler } from '../../core/core.types'
+import { SGID_CODE_VERIFIER_COOKIE_NAME } from '../../sgid/sgid.constants'
 import * as UserService from '../../user/user.service'
 import * as AuthService from '../auth.service'
 import { SessionUser } from '../auth.types'
@@ -23,17 +24,25 @@ export const generateAuthUrl: ControllerHandler<
   }
 
   return AuthSgidService.createRedirectUrl()
-    .map((redirectUrl) => res.status(StatusCodes.OK).send({ redirectUrl }))
+    .map(({ redirectUrl, codeVerifier }) =>
+      res
+        .status(StatusCodes.OK)
+        .cookie(SGID_CODE_VERIFIER_COOKIE_NAME, codeVerifier)
+        .send({ redirectUrl }),
+    )
     .mapErr((error) => {
       logger.error({
         message: 'Failed to generate SGID auth url',
         meta: logMeta,
         error,
       })
-      return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message:
-          'Generating SGID authentication url failed. Please try again later.',
-      })
+      return res
+        .sendStatus(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({
+          message:
+            'Generating SGID authentication url failed. Please try again later.',
+        })
+        .clearCookie(SGID_CODE_VERIFIER_COOKIE_NAME)
     })
 }
 
@@ -44,6 +53,8 @@ export const handleLogin: ControllerHandler<
   { code: string; state: string }
 > = async (req, res) => {
   const { code, state } = req.query
+  const codeVerifier = req.cookies[SGID_CODE_VERIFIER_COOKIE_NAME]
+  res.clearCookie(SGID_CODE_VERIFIER_COOKIE_NAME)
 
   const logMeta = {
     action: 'handleLogin',
@@ -64,10 +75,17 @@ export const handleLogin: ControllerHandler<
     })
 
     status = StatusCodes.BAD_REQUEST
+  } else if (!codeVerifier) {
+    logger.error({
+      message: 'Error logging in via sgID: code verifier cookie is empty',
+      meta: logMeta,
+    })
+
+    status = StatusCodes.BAD_REQUEST
   } else {
-    await AuthSgidService.retrieveAccessToken(code)
-      .andThen(({ accessToken }) =>
-        AuthSgidService.retrieveUserInfo(accessToken),
+    await AuthSgidService.retrieveAccessToken(code, codeVerifier)
+      .andThen(({ accessToken, sub }) =>
+        AuthSgidService.retrieveUserInfo(accessToken, sub),
       )
       .andThen((email) =>
         AuthService.validateEmailDomain(email).andThen((agency) =>

@@ -1,5 +1,5 @@
 import { radioAnatomy } from '@chakra-ui/anatomy'
-import { getColor } from '@chakra-ui/theme-tools'
+import { getColor, PartsStyleFunction } from '@chakra-ui/theme-tools'
 
 import { ComponentMultiStyleConfig } from '~theme/types'
 
@@ -20,8 +20,19 @@ const parts = radioAnatomy.extend(
   'othersRadio',
 )
 
+const variantFullWidth: PartsStyleFunction<typeof parts> = (props) => {
+  return {
+    label: {
+      width: '100%',
+    },
+  }
+}
+const variants = {
+  fullWidth: variantFullWidth,
+}
 export const Radio: ComponentMultiStyleConfig<typeof parts> = {
   parts: parts.keys,
+  variants,
   baseStyle: ({ colorScheme: c, theme }) => ({
     control: {
       // Keep bg when printing.

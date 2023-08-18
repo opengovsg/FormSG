@@ -7,6 +7,7 @@ import { FormAuthType } from './form/form'
 import { DateString } from './generic'
 import { EmailResponse, FieldResponse, MobileResponse } from './response'
 import { PaymentStatus } from './payment'
+import { ProductItem } from './form'
 export type SubmissionId = Opaque<string, 'SubmissionId'>
 export const SubmissionId = z.string() as unknown as z.Schema<SubmissionId>
 
@@ -75,6 +76,14 @@ export const SubmissionPaymentDto = z.object({
   id: z.string(),
   paymentIntentId: z.string(),
   email: z.string(),
+  products: z
+    .array(
+      z.object({
+        name: z.string(),
+        quantity: z.number(),
+      }),
+    )
+    .optional(),
   amount: z.number(),
   status: z.nativeEnum(PaymentStatus),
 
@@ -190,6 +199,7 @@ export type StorageModeSubmissionContentDto = {
   encryptedContent: string
   attachments?: StorageModeAttachmentsMap
   paymentReceiptEmail?: string
+  paymentProducts?: Array<ProductItem>
   version: number
   responseMetadata?: ResponseMetadata
   payments?: PaymentFieldsDto

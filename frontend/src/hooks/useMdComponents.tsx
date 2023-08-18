@@ -84,7 +84,7 @@ export const useMdComponents = ({
       a: ({ node, ...props }) => {
         const { href } = props
         const isExternal =
-          typeof href === 'string' && !href.startsWith(window.location.origin)
+          (href && !href.startsWith(window.location.origin)) || false
 
         return <Link {...props} isExternal={isExternal} {...linkStyles} />
       },

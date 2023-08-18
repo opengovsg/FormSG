@@ -30,7 +30,7 @@ import {
   PrivateFormError,
 } from '../form/form.errors'
 import * as FormService from '../form/form.service'
-import { findUserById } from '../user/user.service'
+import { findApiUserById } from '../user/user.service'
 
 import {
   InvalidDomainError,
@@ -360,7 +360,7 @@ export const getUserByApiKey = (
   userId: string,
   token: string,
 ): ResultAsync<IUserSchema, Error> => {
-  return findUserById(userId).andThen((user) => {
+  return findApiUserById(userId).andThen((user) => {
     if (!user.apiToken?.keyHash) {
       return errAsync(new MissingTokenError())
     }

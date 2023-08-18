@@ -5,7 +5,7 @@ import { ObjectId } from 'bson'
 import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync } from 'neverthrow'
-import { PaymentStatus, SubmissionType } from 'shared/types'
+import { PaymentStatus, ProductItem, SubmissionType } from 'shared/types'
 import Stripe from 'stripe'
 import { MarkRequired } from 'ts-essentials'
 
@@ -72,11 +72,13 @@ describe('stripe.controller', () => {
     }
     const mockFormTitle = 'Mock Form Title'
     const mockSubmissionId = 'MOCK_SUBMISSION_ID'
+    const mockProducts: ProductItem[] = expect.any(Array)
     const mockInvoiceArgs = {
       ...mockBusinessInfo,
       formTitle: mockFormTitle,
       submissionId: mockSubmissionId,
       gstApplicable: false,
+      products: mockProducts,
     }
     const mockForm = {
       _id: MOCK_FORM_ID,
@@ -192,50 +194,6 @@ describe('stripe.controller', () => {
     })
   })
 
-  describe('downloadReceiptInvoice', () => {
-    beforeEach(async () => {
-      await dbHandler.clearCollection(Payment.collection.name)
-      await dbHandler.clearCollection(EncryptPendingSubmission.collection.name)
-    })
-    it('should generate return a pdf file when receipt url is present', async () => {
-      const pendingSubmission = await EncryptPendingSubmission.create({
-        submissionType: SubmissionType.Encrypt,
-        form: MOCK_FORM_ID,
-        encryptedContent: 'some random encrypted content',
-        version: 1,
-      })
-      const payment = await Payment.create({
-        formId: MOCK_FORM_ID,
-        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
-        pendingSubmissionId: pendingSubmission._id,
-        amount: 12345,
-        status: PaymentStatus.Succeeded,
-        paymentIntentId: 'pi_MOCK_PAYMENT_INTENT',
-        email: 'formsg@tech.gov.sg',
-        completedPayment: {
-          receiptUrl: 'http://form.gov.sg',
-        },
-        gstEnabled: false,
-      })
-
-      const mockReq = expressHandler.mockRequest({
-        params: { formId: 'test@example.com', paymentId: payment._id },
-      })
-      const mockRes = expressHandler.mockResponse()
-      const axiosSpy = jest
-        .spyOn(axios, 'get')
-        .mockResolvedValueOnce({ data: '<html>>some html</html>' })
-
-      // Act
-      await StripeController.downloadPaymentReceipt(mockReq, mockRes, jest.fn())
-
-      // Assert
-      expect(mockRes.status).toHaveBeenCalledWith(200)
-      expect(mockRes.send).toHaveBeenCalledOnce()
-      expect(axiosSpy).toHaveBeenCalledOnce()
-    })
-  })
-
   describe('_handleConnectOauthCallback', () => {
     beforeEach(async () => {
       await dbHandler.clearCollection(Payment.collection.name)
@@ -270,8 +228,8 @@ describe('stripe.controller', () => {
     it('should redirect back to settings/payment page when code is undefined', async () => {
       // Arrange
       const mockReq = expressHandler.mockRequest({
-        query: { state: 'otherState' },
-        others: { signedCookies: { stripeState: 'otherState' } },
+        query: { state: 'otherStates' },
+        others: { signedCookies: { stripeState: 'otherStates' } },
       })
       const mockRes = expressHandler.mockResponse()
       // Act
@@ -283,7 +241,7 @@ describe('stripe.controller', () => {
 
       // Assert
       expect(mockRes.redirect).toHaveBeenCalledWith(
-        `${config.app.appUrl}/admin/form/otherState/settings/payments`,
+        `${config.app.appUrl}/admin/form/otherStates/settings/payments`,
       )
     })
 

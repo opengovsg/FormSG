@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react'
-import { useToast } from '@chakra-ui/react'
+import { Stack, useToast } from '@chakra-ui/react'
+
+import { FormPaymentsField, ProductItem } from '~shared/types'
 
 import { usePublicFormMutations } from '~features/public-form/mutations'
 
@@ -16,15 +18,22 @@ export const StripeReceiptContainer = ({
   formId,
   submissionId,
   paymentId,
+  amount,
+  products,
+  paymentFieldsSnapshot,
 }: {
   formId: string
   submissionId: string
   paymentId: string
+  amount: number
+  products: ProductItem[]
+  paymentFieldsSnapshot: FormPaymentsField
 }) => {
-  const { data, isLoading, error } = useGetPaymentReceiptStatus(
-    formId,
-    paymentId,
-  )
+  const {
+    data: paymentReceiptStatus,
+    isLoading,
+    error,
+  } = useGetPaymentReceiptStatus(formId, paymentId)
 
   const toast = useToast()
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
@@ -50,7 +59,7 @@ export const StripeReceiptContainer = ({
     [submitFormFeedbackMutation, toast],
   )
 
-  if (isLoading || error || !data) {
+  if (isLoading || error || !paymentReceiptStatus?.isReady) {
     return (
       <PaymentStack>
         <GenericMessageBlock
@@ -65,15 +74,24 @@ export const StripeReceiptContainer = ({
     /**
      * PaymentStack is explictly added in this component due to https://github.com/chakra-ui/chakra-ui/issues/6757
      */
-    <PaymentStack>
-      <DownloadReceiptBlock
-        formId={formId}
-        submissionId={submissionId}
-        paymentId={paymentId}
-      />
-      {!isFeedbackSubmitted && (
-        <FeedbackBlock onSubmit={handleSubmitFeedback} />
-      )}
-    </PaymentStack>
+    <Stack spacing="1.5rem">
+      <PaymentStack>
+        <DownloadReceiptBlock
+          formId={formId}
+          submissionId={submissionId}
+          paymentId={paymentId}
+          amount={amount}
+          products={products}
+          paymentType={paymentFieldsSnapshot.payment_type}
+          name={paymentFieldsSnapshot.name || ''}
+          paymentDate={paymentReceiptStatus.paymentDate}
+        />
+      </PaymentStack>
+      <PaymentStack>
+        {!isFeedbackSubmitted && (
+          <FeedbackBlock onSubmit={handleSubmitFeedback} />
+        )}
+      </PaymentStack>
+    </Stack>
   )
 }

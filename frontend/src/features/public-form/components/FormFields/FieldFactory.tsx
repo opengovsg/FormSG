@@ -7,6 +7,7 @@ import {
   AttachmentField,
   CheckboxField,
   ChildrenCompoundField,
+  CountryRegionField,
   DateField,
   DecimalField,
   DropdownField,
@@ -70,6 +71,8 @@ export const FieldFactory = memo(
         return <YesNoField schema={field} {...rest} />
       case BasicField.Dropdown:
         return <DropdownField schema={field} {...rest} />
+      case BasicField.CountryRegion:
+        return <CountryRegionField schema={field} {...rest} />
       case BasicField.Date:
         return <DateField schema={field} {...rest} />
       case BasicField.Uen:

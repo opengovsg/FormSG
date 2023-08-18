@@ -81,7 +81,7 @@ services:
       - MYINFO_CLIENT_ID=mockClientId
       - MYINFO_CLIENT_SECRET=mockClientSecret
       - MYINFO_JWT_SECRET=mockJwtSecret
-      - SGID_HOSTNAME=http://localhost:5156/sgid
+      - SGID_HOSTNAME=http://localhost:5156
       - SGID_CLIENT_ID=sgidclientid
       - SGID_CLIENT_SECRET=sgidclientsecret
       - SGID_ADMIN_LOGIN_REDIRECT_URI=http://localhost:5001/api/v3/auth/sgid/login
@@ -121,7 +121,7 @@ services:
       - API_KEY_VERSION=v1
 
   mockpass:
-    build: https://github.com/opengovsg/mockpass.git#v3.1.3
+    build: https://github.com/opengovsg/mockpass.git#v4.0.4
     depends_on:
       - backend
     environment:

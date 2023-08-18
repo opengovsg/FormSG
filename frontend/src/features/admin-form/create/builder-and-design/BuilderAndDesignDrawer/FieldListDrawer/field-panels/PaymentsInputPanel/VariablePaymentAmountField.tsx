@@ -1,8 +1,13 @@
 import { Controller, RegisterOptions, UseFormReturn } from 'react-hook-form'
 import { FormControl, HStack } from '@chakra-ui/react'
 
+import {
+  centsToDollars,
+  dollarsToCents,
+  formatCurrency,
+} from '~shared/utils/payments'
+
 import { usePaymentFieldValidation } from '~hooks/usePaymentFieldValidation'
-import { centsToDollars, dollarsToCents, formatCurrency } from '~utils/payments'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
@@ -59,10 +64,11 @@ export const VariablePaymentAmountField = ({
       isReadOnly={isLoading}
       // these invalid checks are required to trigger FormErrorMessage to display
       isInvalid={!!errors[MIN_FIELD_KEY]?.message || !!errors[MAX_FIELD_KEY]}
+      isDisabled={isDisabled}
     >
       <FormLabel
         isRequired
-        description="Customise the amount that respondents are allowed to define"
+        description="Set the minimum and maximum amounts respondents can pay"
       >
         Payment amount limit
       </FormLabel>
@@ -71,7 +77,7 @@ export const VariablePaymentAmountField = ({
           isInvalid={!!errors[MIN_FIELD_KEY]}
           isDisabled={isDisabled}
         >
-          <FormLabel isRequired>Minimum Amount</FormLabel>
+          <FormLabel isRequired>Minimum amount</FormLabel>
           <Controller
             name={MIN_FIELD_KEY}
             control={control}
@@ -91,7 +97,7 @@ export const VariablePaymentAmountField = ({
           isInvalid={!!errors[MAX_FIELD_KEY]}
           isDisabled={isDisabled}
         >
-          <FormLabel isRequired>Maximum Amount</FormLabel>
+          <FormLabel isRequired>Maximum amount</FormLabel>
           <Controller
             name={MAX_FIELD_KEY}
             control={control}

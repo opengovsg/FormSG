@@ -1,8 +1,27 @@
 /**
  * Validate entity-type indicators, as per
- * https://www.uen.gov.sg/ueninternet/faces/pages/admin/aboutUEN.jspx and additional input
+ * https://www.uen.gov.sg/ueninternet/faces/pages/admin/aboutUEN.jspx
+ * https://www.oecd.org/tax/automatic-exchange/crs-implementation-and-assistance/tax-identification-numbers/Singapore-TIN.pdf
+ *
+ * with code modified from https://github.com/arthurdejong/python-stdnum/blob/master/stdnum/sg/uen.py
+ * See credits.md for details on copyright
  */
-const VALID_ENTITY_TYPE_INDICATORS = new Set([
+
+/** General Comments:
+ *
+ * UEN Type indicators created as a const Set<string>().
+ * Maintain by adding new codes in VALID_ENTITY_TYPE_INDICATORS.
+ *
+ * Arrow helper functions:
+ * UpperCaseandTrim -> convert to uppercase and remove whitespace
+ * isNumeric and isAlphabetic are self explanatory.
+ *
+ * isUenValid parses UEN and evaluates if UEN is Business UEN based on ROB,
+ * Local Comany UEN based on ROC, or Other UEN.
+ *
+ */
+
+const VALID_ENTITY_TYPE_INDICATORS = new Set<string>([
   // ACRA
   'BN',
   'LP',
@@ -80,7 +99,17 @@ const VALID_ENTITY_TYPE_INDICATORS = new Set([
   // SNDGO
   'GA',
   'GB',
+
+  // Foreign Entities
+  'UF',
 ])
+
+/**
+ * Helper to standardise format - uppercase and without whitespace
+ * @param s String
+ * @returns True if string is numeric
+ */
+const upperCaseAndTrim = (s: string): string => s.toUpperCase().trim()
 
 /**
  * Helper to check whether a string is numeric
@@ -97,72 +126,174 @@ const isNumeric = (s: string): boolean => !!s.match(/^[0-9]+$/)
 const isAlphabetic = (s: string): boolean => !!s.match(/^[a-zA-Z]+$/)
 
 /**
- * Validates whether a provided string value adheres to the UIN/FIN format
- * as provided on the Singapore Government's National Registration Identity Card.
- * @param value The value to be validated
+ * Helper for business checksum
+ * @param number
+ * @returns
  */
-export const isUenValid = (uen: string): boolean => {
-  // allow lowercase strings
-  uen = uen.toUpperCase()
+const calcBusinessCheckDigit = (number: string): string => {
+  const weights = [10, 4, 9, 3, 8, 2, 7, 1]
+  const alpha = 'XMKECAWLJDB'.split('')
+  const num_list = number.split('')
+  let sum = 0
 
-  // check if uen is 9 or 10 digits
-  if (uen.length < 9 || uen.length > 10) {
+  for (let i = 0; i < weights.length; i++) {
+    sum += parseInt(num_list[i]) * weights[i]
+  }
+  return alpha[sum % 11]
+}
+
+/**
+ * Helper for Business UEN.
+ * Performs validation based on Business (ROB) numbers
+ * @param number
+ * @returns true if valid Business UEN
+ */
+const validateBusiness = (number: string): boolean => {
+  const first8Char = number.slice(0, -1)
+  if (!isNumeric(first8Char)) {
     return false
   }
 
-  // (A) Businesses registered with ACRA
-  if (uen.length === 9) {
-    // check that last character is a letter
-    const lastChar = uen[uen.length - 1]
-    if (!isAlphabetic(lastChar)) {
-      return false
-    }
-
-    // check that first 8 letters are all numbers
-    const first8Chars = uen.slice(0, 8)
-    if (!isNumeric(first8Chars)) {
-      return false
-    }
-
-    // (A) Businesses registered with ACRA (SUCCESS)
-    return true
-  }
-
-  // Length is 10
-  // check that last character is a letter
-  const lastChar = uen[uen.length - 1]
-  if (!isAlphabetic(lastChar)) {
+  const checkSum = number.slice(-1)
+  if (!isAlphabetic(checkSum)) {
     return false
   }
 
-  // (B) Local companies registered with ACRA
-  const first4Chars = uen.slice(0, 4)
-  if (isNumeric(first4Chars)) {
-    // if first 4 are digits then next 5 must be digits too
-    const next5Chars = uen.slice(4, 9)
-    return isNumeric(next5Chars)
+  if (checkSum !== calcBusinessCheckDigit(number)) {
+    return false
   }
+  return true
+}
 
-  // (C) All other entities which will be issued new UEN
-  // check that 1st letter is either T or S or R
-  const firstChar = uen[0]
-  if (!['T', 'S', 'R'].includes(firstChar)) {
+/**
+ * Helper for local company checksum
+ * @param number
+ * @returns
+ */
+const calcLocalCompanyCheckDigit = (number: string): string => {
+  const weights = [10, 8, 6, 4, 9, 7, 5, 3, 1]
+  const alpha = 'ZKCMDNERGWH'.split('')
+  const num_list = number.split('')
+  let sum = 0
+
+  for (let i = 0; i < weights.length; i++) {
+    sum += parseInt(num_list[i]) * weights[i]
+  }
+  return alpha[sum % 11]
+}
+
+/**
+ * Helper for local UEN. Validation baed on local company based (ROC) number
+ * @param number
+ * @returns true if valid local company UEN
+ */
+const validateLocalCompany = (number: string): boolean => {
+  const first9Char = number.slice(0, -1)
+  if (!isNumeric(first9Char)) {
     return false
   }
 
-  // check that 2nd and 3rd letters are numbers only
-  const chars2And3 = uen.slice(1, 3)
+  const currentYear = new Date().getFullYear()
+  const first4Char = number.slice(0, 4)
+  if (parseInt(first4Char) > currentYear) {
+    return false
+  }
+
+  const checkSum = number.slice(-1)
+  if (checkSum !== calcLocalCompanyCheckDigit(number)) {
+    return false
+  }
+  return true
+}
+
+/**
+ * Helper for others checksum
+ * @param number
+ * @returns
+ */
+const calcOtherCheckDigit = (number: string): string => {
+  const weights = [4, 3, 5, 3, 10, 2, 2, 5, 7]
+  const alpha = 'ABCDEFGHJKLMNPQRSTUVWX0123456789'.split('')
+  const num_list = number.split('')
+  let sum = 0
+
+  for (let i = 0; i < weights.length; i++) {
+    const n = num_list[i]
+    sum += alpha.indexOf(n) * weights[i]
+  }
+
+  return alpha[(sum - 5) % 11]
+}
+
+/**
+ * Helper for other UEN. Performs validation based on UEN in
+ * VALID_ENTITY_TYPE_INDICATORS
+ * @param number
+ * @returns true if valid UEN
+ */
+const validateOther = (number: string): boolean => {
+  const uenPrefix = ['R', 'S', 'T']
+  const firstChar = number.slice(0, 1)
+  if (!uenPrefix.includes(firstChar)) {
+    return false
+  }
+
+  const chars2And3 = number.slice(1, 3)
   if (!isNumeric(chars2And3)) {
     return false
   }
 
-  // check entity-type indicator
-  const entityTypeIndicator = uen.slice(3, 5)
-  if (!VALID_ENTITY_TYPE_INDICATORS.has(entityTypeIndicator)) {
+  const currentYear = parseInt(
+    new Date().getFullYear().toString().substring(-2),
+  )
+  const uenYear = parseInt(number.slice(1, 3))
+  if (number.slice(0, 1) === 'T' && uenYear > currentYear) {
     return false
   }
 
-  // check that 6th to 9th letters are numbers only
-  const chars5To8 = uen.slice(5, 9)
-  return isNumeric(chars5To8)
+  const chars4And5 = number.slice(3, 5)
+  if (!VALID_ENTITY_TYPE_INDICATORS.has(chars4And5)) {
+    return false
+  }
+
+  const chars6To9 = number.slice(5, -1)
+  if (!isNumeric(chars6To9)) {
+    return false
+  }
+
+  const checkSum = number.slice(-1)
+  if (checkSum !== calcOtherCheckDigit(number)) {
+    return false
+  }
+  return true
 }
+
+/**
+ * Heart of the validation function. Parses given UEN and decide which function
+ * to call base on the perceived UEN type.
+ *
+ * Business UEN based on ROB
+ * Local Comany UEN based on ROC
+ * Other UEN.
+ *
+ * @param uen string that represents the UEN
+ * @returns true if UEN is valid
+ */
+const isUenValid = (uen: string): boolean => {
+  const number = upperCaseAndTrim(uen)
+  if (number.length !== 9 && number.length !== 10) {
+    return false
+  }
+
+  if (number.length === 9) {
+    return validateBusiness(number)
+  }
+
+  if (isNumeric(number.slice(0, 1))) {
+    return validateLocalCompany(number)
+  }
+
+  return validateOther(number)
+}
+
+export { isUenValid }

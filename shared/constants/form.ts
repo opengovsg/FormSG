@@ -6,6 +6,7 @@ const PUBLIC_FORM_FIELDS = <const>[
   'form_fields',
   'form_logics',
   'hasCaptcha',
+  'hasIssueNotification',
   'startPage',
   'status',
   'title',
@@ -25,6 +26,7 @@ const FORM_SETTINGS_FIELDS = <const>[
   'authType',
   'esrvcId',
   'hasCaptcha',
+  'hasIssueNotification',
   'inactiveMessage',
   'status',
   'submissionLimit',
@@ -44,6 +46,8 @@ export const STORAGE_FORM_SETTINGS_FIELDS = <const>[
   'business',
 ]
 
+export const WEBHOOK_SETTINGS_FIELDS = <const>['responseMode', 'webhook']
+
 export const ADMIN_FORM_META_FIELDS = <const>[
   'admin',
   'title',
@@ -54,5 +58,6 @@ export const ADMIN_FORM_META_FIELDS = <const>[
 ]
 
 export const PAYMENT_CONTACT_FIELD_ID = 'payment_contact_field'
+export const PAYMENT_PRODUCT_FIELD_ID = 'payment_products'
 export const PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID =
   'payment_variable_input_amount_field_id'

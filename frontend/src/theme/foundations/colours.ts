@@ -16,6 +16,7 @@ export type ThemeColorScheme =
   | 'theme-brown'
   | 'white'
   | 'subtle'
+  | 'content'
 
 /**
  * Available color schemes to use for form field colors
@@ -193,5 +194,11 @@ export const colours: { [k in ThemeColorScheme]: Record<string, string> } = {
     600: primaryColourPalette[200],
     700: primaryColourPalette[300],
     800: primaryColourPalette[500],
+  },
+  // TODO FRM-1251: Remove when we have the full colour mapping to OGP DS
+  content: {
+    strong: '#2E2E2E',
+    medium: '#848484',
+    default: '#474747',
   },
 }

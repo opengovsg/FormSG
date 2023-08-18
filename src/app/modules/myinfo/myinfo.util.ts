@@ -92,6 +92,9 @@ function hashChildrenFieldValues(
       ) {
         return
       }
+      if (!value) {
+        return
+      }
       readOnlyHashPromises[
         getMyInfoChildHashKey(field._id, subField, childIdx, childName)
       ] = bcrypt.hash(value, HASH_SALT_ROUNDS)

@@ -1,6 +1,5 @@
 import { StorageModeSubmissionMetadata } from '~shared/types'
-
-import { centsToDollars } from '~utils/payments'
+import { centsToDollars } from '~shared/utils/payments'
 
 import { getNetAmount } from '../utils'
 

@@ -29,12 +29,12 @@ import {
   AutoReplyOptions,
   BasicField,
   SubmissionType,
-} from '../../../../../../shared/types'
+} from '../../../../../shared/types'
 import {
   PendingSubmissionNotFoundError,
   SendEmailConfirmationError,
-} from '../../submission.errors'
-import { extractEmailConfirmationData } from '../../submission.utils'
+} from '../submission.errors'
+import { extractEmailConfirmationData } from '../submission.utils'
 
 jest.mock('src/app/services/mail/mail.service')
 const MockMailService = jest.mocked(MailService)

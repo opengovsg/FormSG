@@ -15,13 +15,16 @@ import { useSectionColor } from '~templates/Field/Section/SectionField'
 import { VerifiableFieldBuilderContainer } from '~features/admin-form/create/builder-and-design/BuilderAndDesignContent/FieldRow/VerifiableFieldBuilderContainer'
 import { getFieldCreationMeta } from '~features/admin-form/create/builder-and-design/utils/fieldCreation'
 import {
-  PaymentItemDetailsBlock,
-  VariablePaymentItemDetailsField,
+  FixedPaymentItemDetailsBlock,
+  ProductPaymentItemDetailsBlock,
+  VariablePaymentItemDetailsBlock,
 } from '~features/public-form/components/FormPaymentPage/components'
 import {
   VerifiableEmailField,
   VerifiableEmailFieldSchema,
 } from '~features/verifiable-fields/Email'
+
+import { PRODUCT_ITEM_PLACEHOLDER } from './constants'
 
 type PaymentPreviewProps = {
   colorTheme?: FormColorTheme
@@ -29,12 +32,52 @@ type PaymentPreviewProps = {
   isBuilder?: boolean
 }
 
+const PaymentItemDetailsElement = ({
+  colorTheme = FormColorTheme.Blue,
+  paymentDetails,
+}: {
+  colorTheme?: FormColorTheme
+  paymentDetails: FormPaymentsField
+}) => {
+  switch (paymentDetails.payment_type) {
+    case PaymentType.Variable: {
+      return (
+        <VariablePaymentItemDetailsBlock
+          paymentItemName={paymentDetails.name}
+          colorTheme={colorTheme}
+          paymentDescription={paymentDetails.description}
+          paymentMin={paymentDetails.min_amount}
+          paymentMax={paymentDetails.max_amount}
+        />
+      )
+    }
+    case PaymentType.Products: {
+      return (
+        <ProductPaymentItemDetailsBlock
+          paymentDetails={paymentDetails}
+          colorTheme={colorTheme}
+        />
+      )
+    }
+    case PaymentType.Fixed: // Fallthrough
+    default: {
+      return (
+        <FixedPaymentItemDetailsBlock
+          paymentItemName={paymentDetails.name}
+          colorTheme={colorTheme}
+          paymentAmount={paymentDetails.amount_cents}
+          paymentDescription={paymentDetails.description}
+        />
+      )
+    }
+  }
+}
+
 export const PaymentPreview = ({
   colorTheme = FormColorTheme.Blue,
   paymentDetails,
   isBuilder,
 }: PaymentPreviewProps) => {
-  const sectionColor = useSectionColor(colorTheme)
   const emailFieldSchema: VerifiableEmailFieldSchema = {
     ...(getFieldCreationMeta(BasicField.Email) as EmailFieldBase),
     title: 'Email Address',
@@ -42,36 +85,39 @@ export const PaymentPreview = ({
     description: 'Proof of payment will be sent to this email',
     isVerifiable: true,
   }
+  const sectionColor = useSectionColor(colorTheme)
 
+  const title = 'Payment'
+  const _paymentDetails =
+    isBuilder && paymentDetails.products?.length === 0
+      ? {
+          ...paymentDetails,
+          products: [PRODUCT_ITEM_PLACEHOLDER],
+        }
+      : paymentDetails
   return (
     <>
-      <Box as="h2" mb="1rem" textStyle="h2" color={sectionColor}>
-        Payment
+      <Box as="h2" mb="2.25rem" textStyle="h2" color={sectionColor}>
+        {title}
       </Box>
       <Box mb="2rem">
-        {paymentDetails.payment_type === PaymentType.Variable ? (
-          <VariablePaymentItemDetailsField
-            paymentItemName={paymentDetails.name}
-            colorTheme={colorTheme}
-            paymentDescription={paymentDetails.description}
-            paymentMin={paymentDetails.min_amount}
-            paymentMax={paymentDetails.max_amount}
-          />
-        ) : (
-          <PaymentItemDetailsBlock
-            paymentItemName={paymentDetails.name}
-            colorTheme={colorTheme}
-            paymentAmount={paymentDetails.amount_cents}
-            paymentDescription={paymentDetails.description}
-          />
-        )}
+        <PaymentItemDetailsElement
+          paymentDetails={_paymentDetails}
+          colorTheme={colorTheme}
+        />
       </Box>
       {isBuilder ? (
-        <VerifiableFieldBuilderContainer schema={emailFieldSchema}>
+        <VerifiableFieldBuilderContainer
+          schema={emailFieldSchema}
+          colorTheme={colorTheme}
+        >
           <EmailFieldInput schema={emailFieldSchema} />
         </VerifiableFieldBuilderContainer>
       ) : (
-        <VerifiableEmailField schema={emailFieldSchema} />
+        <VerifiableEmailField
+          schema={emailFieldSchema}
+          colorTheme={colorTheme}
+        />
       )}
     </>
   )

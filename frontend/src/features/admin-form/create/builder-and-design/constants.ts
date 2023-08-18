@@ -19,6 +19,7 @@ export const BASIC_FIELDS_ORDERED = [
   BasicField.Radio,
   BasicField.Checkbox,
   BasicField.Dropdown,
+  BasicField.CountryRegion,
   BasicField.Section,
   BasicField.Statement,
   BasicField.YesNo,
@@ -131,7 +132,7 @@ export const FIELD_LIST_DROP_ID = 'formFieldList'
 export const PENDING_CREATE_FIELD_ID = 'FIELD-PENDING-CREATION'
 
 export enum FieldListTabIndex {
-  Basic,
+  Basic = 0,
   MyInfo,
   Payments,
 }
@@ -141,6 +142,9 @@ export const CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS: {
   label: string
 }[] = Object.values(MyInfoChildAttributes)
   .filter((e) => e !== MyInfoChildAttributes.ChildName)
+  // TODO awaiting approval from MyInfo to get child vaccination status.
+  // Disabling in the frontend for now.
+  .filter((e) => e !== MyInfoChildAttributes.ChildVaxxStatus)
   .map((value) => {
     return {
       value,

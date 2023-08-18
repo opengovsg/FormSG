@@ -9,7 +9,8 @@ type PaymentDataViewItem = {
 }
 
 /** Utility functions for prettifying the output of the payment data view. */
-const centsToDollarString = (cents: number) => `S$${(cents / 100).toFixed(2)}`
+export const centsToDollarString = (cents: number) =>
+  `S$${(cents / 100).toFixed(2)}`
 const toSentenceCase = (str: string) =>
   `${str.charAt(0).toUpperCase()}${str.substring(1).toLowerCase()}`
     // replace underscores with a space
@@ -67,6 +68,14 @@ export const getPaymentDataView = (
       key: 'amount',
       name: 'Payment amount',
       value: centsToDollarString(payment.amount),
+    },
+    {
+      key: 'products',
+      name: 'Product/service',
+      value:
+        payment.products
+          ?.map(({ name, quantity }) => `${name} x ${quantity}`)
+          .join(', ') || '-',
     },
     {
       key: 'paymentDate',

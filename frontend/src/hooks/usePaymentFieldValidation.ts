@@ -1,6 +1,10 @@
 import { FieldPath, FieldValues, RegisterOptions } from 'react-hook-form'
 
-import { centsToDollars, dollarsToCents, formatCurrency } from '~utils/payments'
+import {
+  centsToDollars,
+  dollarsToCents,
+  formatCurrency,
+} from '~shared/utils/payments'
 
 import { useEnv } from '~features/env/queries'
 

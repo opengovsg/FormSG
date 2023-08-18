@@ -10,8 +10,7 @@ import {
 import { Flex, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
 
 import { FormResponseMode, StorageModeSubmissionMetadata } from '~shared/types'
-
-import { centsToDollars } from '~utils/payments'
+import { centsToDollars } from '~shared/utils/payments'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 

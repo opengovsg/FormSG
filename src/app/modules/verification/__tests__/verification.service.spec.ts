@@ -15,6 +15,7 @@ MockLoggerModule.createLoggerWithLabel.mockReturnValue(mockLogger)
 
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-data'
 import { PAYMENT_CONTACT_FIELD_ID } from 'shared/constants'
 
 import { smsConfig } from 'src/app/config/features/sms.config'
@@ -314,7 +315,7 @@ describe('Verification service', () => {
           MOCK_SIGNED_DATA,
         )
 
-        mockTransactionSuccessful = JSON.parse(JSON.stringify(mockTransaction))
+        mockTransactionSuccessful = jsonParseStringify(mockTransaction)
         mockTransactionSuccessful.fields[0].signedData = MOCK_SIGNED_DATA
         mockTransactionSuccessful.fields[0].hashedOtp = MOCK_HASHED_OTP
         mockTransactionSuccessful.fields[0].otpRequests = 1
@@ -586,7 +587,7 @@ describe('Verification service', () => {
           MOCK_SIGNED_DATA,
         )
 
-        mockTransactionSuccessful = JSON.parse(JSON.stringify(mockTransaction))
+        mockTransactionSuccessful = jsonParseStringify(mockTransaction)
         mockTransactionSuccessful.paymentField.signedData = MOCK_SIGNED_DATA
         mockTransactionSuccessful.paymentField.hashedOtp = MOCK_HASHED_OTP
         mockTransactionSuccessful.paymentField.otpRequests = 1

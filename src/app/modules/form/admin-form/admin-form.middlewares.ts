@@ -4,9 +4,15 @@ import {
   FormAuthType,
   FormStatus,
   SettingsUpdateDto,
+  WebhookSettingsUpdateDto,
 } from '../../../../../shared/types'
 
 import { verifyValidUnicodeString } from './admin-form.utils'
+
+const webhookSettingsValidator = Joi.object({
+  url: Joi.string().uri().allow(''),
+  isRetryEnabled: Joi.boolean(),
+}).min(1)
 
 /**
  * Joi validator for PATCH /forms/:formId/settings route.
@@ -20,14 +26,12 @@ export const updateSettingsValidator = celebrate({
     ),
     esrvcId: Joi.string().allow(''),
     hasCaptcha: Joi.boolean(),
+    hasIssueNotification: Joi.boolean(),
     inactiveMessage: Joi.string(),
     status: Joi.string().valid(...Object.values(FormStatus)),
     submissionLimit: Joi.number().allow(null),
     title: Joi.string(),
-    webhook: Joi.object({
-      url: Joi.string().uri().allow(''),
-      isRetryEnabled: Joi.boolean(),
-    }).min(1),
+    webhook: webhookSettingsValidator,
     business: Joi.object({
       address: Joi.string().allow(''),
       gstRegNo: Joi.string().allow(''),
@@ -36,4 +40,23 @@ export const updateSettingsValidator = celebrate({
   })
     .min(1)
     .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),
+})
+
+/**
+ * Joi validator for PATCH api/public/v1/admin/forms/:formId/webhooksettings route.
+ */
+export const updateWebhookSettingsValidator = celebrate({
+  [Segments.BODY]: Joi.object<WebhookSettingsUpdateDto>({
+    userEmail: Joi.string().email().optional(),
+    webhook: webhookSettingsValidator,
+  }),
+})
+
+/**
+ * Joi validator for POST api/public/v1/admin/forms/:formId/webhooksettings route.
+ */
+export const getWebhookSettingsValidator = celebrate({
+  [Segments.BODY]: Joi.object<{ userEmail: string }>({
+    userEmail: Joi.string().email().optional(),
+  }),
 })

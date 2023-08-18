@@ -18,21 +18,23 @@ import simplur from 'simplur'
 import {
   featureFlags,
   PAYMENT_CONTACT_FIELD_ID,
+  PAYMENT_PRODUCT_FIELD_ID,
   PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID,
 } from '~shared/constants'
-import { PaymentType } from '~shared/types'
+import { BasicField, PaymentType } from '~shared/types'
 import { CaptchaTypes } from '~shared/types/captcha'
 import {
   FormAuthType,
   FormResponseMode,
+  ProductItem,
   PublicFormDto,
 } from '~shared/types/form'
+import { dollarsToCents } from '~shared/utils/payments'
 
-import { FORMID_REGEX } from '~constants/routes'
+import { MONGODB_ID_REGEX } from '~constants/routes'
 import { useBrowserStm } from '~hooks/payments'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
-import { dollarsToCents } from '~utils/payments'
 import { HttpError } from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
 
@@ -93,7 +95,7 @@ export function useCommonFormProvider(formId: string) {
     return vfnTransaction.transactionId
   }, [createTransactionMutation, vfnTransaction])
 
-  const isNotFormId = useMemo(() => !FORMID_REGEX.test(formId), [formId])
+  const isNotFormId = useMemo(() => !MONGODB_ID_REGEX.test(formId), [formId])
 
   const expiryInMs = useMemo(() => {
     if (!vfnTransaction?.expireAt) return null
@@ -135,9 +137,12 @@ export const PublicFormProvider = ({
     }
   }, [submissionData])
 
+  // Only load catpcha if enabled on form and the user is not on GSIB
+  const enableCaptcha = data && data.form.hasCaptcha && !data.isIntranetUser
+
   const {
     data: { captchaPublicKey, turnstileSiteKey, useFetchForSubmissions } = {},
-  } = useEnv(/* enabled= */ !!data?.form.hasCaptcha)
+  } = useEnv(/* enabled= */ enableCaptcha)
 
   // Feature flag to control turnstile captcha rollout
   // defaults to false
@@ -156,7 +161,7 @@ export const PublicFormProvider = ({
     getTurnstileResponse,
     containerID: turnstileContainerID,
   } = useTurnstile({
-    sitekey: data?.form.hasCaptcha ? turnstileSiteKey : undefined,
+    sitekey: enableCaptcha ? turnstileSiteKey : undefined,
     enableUsage: enableTurnstileFeatureFlag,
   })
 
@@ -165,7 +170,7 @@ export const PublicFormProvider = ({
     getCaptchaResponse,
     containerId: recaptchaContainerID,
   } = useRecaptcha({
-    sitekey: data?.form.hasCaptcha ? captchaPublicKey : undefined,
+    sitekey: enableCaptcha ? captchaPublicKey : undefined,
     enableUsage: !enableTurnstileFeatureFlag,
   })
 
@@ -253,15 +258,11 @@ export const PublicFormProvider = ({
 
   const navigate = useNavigate()
   const [, storePaymentMemory] = useBrowserStm(formId)
-  const handleSubmitForm: SubmitHandler<
-    FormFieldValues & {
-      [PAYMENT_CONTACT_FIELD_ID]?: { value: string }
-      [PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]: string
-    }
-  > = useCallback(
+  const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
     async ({
       [PAYMENT_CONTACT_FIELD_ID]: paymentReceiptEmailField,
       [PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]: paymentVariableInputAmountField,
+      [PAYMENT_PRODUCT_FIELD_ID]: paymentProducts,
       ...formInputs
     }) => {
       const { form } = data ?? {}
@@ -289,10 +290,32 @@ export const PublicFormProvider = ({
         }
       }
 
+      const countryRegionFieldIds = new Set(
+        form.form_fields
+          .filter((field) => field.fieldType === BasicField.CountryRegion)
+          .map((field) => field._id),
+      )
+      // We want users to see the country/region options in title-case but we also need the data in the backend to remain in upper-case.
+      // Country/region data in the backend needs to remain in upper-case so that they remain consistent with myinfo-countries.
+      const formInputsWithCountryRegionInUpperCase = Object.keys(
+        formInputs,
+      ).reduce((newFormInputs: typeof formInputs, fieldId) => {
+        const currentInput = formInputs[fieldId]
+        if (
+          countryRegionFieldIds.has(fieldId) &&
+          typeof currentInput === 'string'
+        ) {
+          newFormInputs[fieldId] = currentInput.toUpperCase()
+        } else {
+          newFormInputs[fieldId] = currentInput
+        }
+        return newFormInputs
+      }, {})
+
       const formData = {
         formFields: form.form_fields,
         formLogics: form.form_logics,
-        formInputs,
+        formInputs: formInputsWithCountryRegionInUpperCase,
         captchaResponse,
         captchaType,
         responseMetadata: {
@@ -336,7 +359,13 @@ export const PublicFormProvider = ({
             })
 
             return submitEmailModeFormFetchMutation
-              .mutateAsync(formData, { onSuccess })
+              .mutateAsync(
+                {
+                  ...formData,
+                  formInputs: formInputsWithCountryRegionInUpperCase,
+                },
+                { onSuccess },
+              )
               .catch(async (error) => {
                 datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
                   meta: {
@@ -368,7 +397,13 @@ export const PublicFormProvider = ({
 
             return (
               submitEmailModeFormMutation
-                .mutateAsync(formData, { onSuccess })
+                .mutateAsync(
+                  {
+                    ...formData,
+                    formInputs: formInputsWithCountryRegionInUpperCase,
+                  },
+                  { onSuccess },
+                )
                 // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
                 .catch(async (error) => {
                   // TODO(#5826): Remove when we have resolved the Network Error
@@ -399,6 +434,27 @@ export const PublicFormProvider = ({
         case FormResponseMode.Encrypt: {
           // Using mutateAsync so react-hook-form goes into loading state.
 
+          const formPaymentData: {
+            paymentReceiptEmail: string | undefined
+            paymentProducts: Array<ProductItem> | undefined
+            payments?: { amount_cents: number } | undefined
+          } = {
+            paymentReceiptEmail: paymentReceiptEmailField?.value,
+            paymentProducts: paymentProducts?.filter<ProductItem>(
+              (product): product is ProductItem =>
+                product.selected && product.quantity > 0,
+            ),
+            ...(form.payments_field.payment_type === PaymentType.Variable
+              ? {
+                  payments: {
+                    amount_cents: dollarsToCents(
+                      paymentVariableInputAmountField ?? '0',
+                    ),
+                  },
+                }
+              : {}),
+          }
+
           const submitStorageFormWithFetch = function () {
             datadogLogs.logger.info(`handleSubmitForm: submitting via fetch`, {
               meta: {
@@ -412,19 +468,8 @@ export const PublicFormProvider = ({
               .mutateAsync(
                 {
                   ...formData,
+                  ...formPaymentData,
                   publicKey: form.publicKey,
-                  captchaResponse,
-                  captchaType,
-                  paymentReceiptEmail: paymentReceiptEmailField?.value,
-                  ...(form.payments_field.payment_type === PaymentType.Variable
-                    ? {
-                        payments: {
-                          amount_cents: dollarsToCents(
-                            paymentVariableInputAmountField,
-                          ),
-                        },
-                      }
-                    : {}),
                 },
                 {
                   onSuccess: ({
@@ -481,19 +526,8 @@ export const PublicFormProvider = ({
               .mutateAsync(
                 {
                   ...formData,
+                  ...formPaymentData,
                   publicKey: form.publicKey,
-                  captchaResponse,
-                  captchaType,
-                  paymentReceiptEmail: paymentReceiptEmailField?.value,
-                  ...(form.payments_field.payment_type === PaymentType.Variable
-                    ? {
-                        payments: {
-                          amount_cents: dollarsToCents(
-                            paymentVariableInputAmountField,
-                          ),
-                        },
-                      }
-                    : {}),
                 },
                 {
                   onSuccess: ({
@@ -592,7 +626,7 @@ export const PublicFormProvider = ({
         isAuthRequired,
         captchaContainerId: containerID,
         expiryInMs,
-        isLoading: isLoading || (!!data?.form.hasCaptcha && !hasLoaded),
+        isLoading: isLoading || (!!enableCaptcha && !hasLoaded),
         isPaymentEnabled,
         isPreview: false,
         setNumVisibleFields,

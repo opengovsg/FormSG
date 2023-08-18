@@ -92,11 +92,11 @@ ValidationOptional.args = {
 export const ValidationInvalidUen = Template.bind({})
 ValidationInvalidUen.args = {
   schema: baseSchema,
-  defaultValue: 'RS1LP1234Z',
+  defaultValue: '0123456789',
 }
 
 export const ValidationValidUen = Template.bind({})
 ValidationValidUen.args = {
   schema: baseSchema,
-  defaultValue: '01234567A',
+  defaultValue: '53333286M',
 }

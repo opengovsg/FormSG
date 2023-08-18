@@ -1,7 +1,11 @@
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
-import { PaymentsUpdateDto, PaymentType } from '../../../../../shared/types'
+import {
+  PaymentsProductUpdateDto,
+  PaymentsUpdateDto,
+  PaymentType,
+} from '../../../../../shared/types'
 import { IEncryptedFormDocument } from '../../../../types'
 import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -80,4 +84,54 @@ export const updatePayments = (
 
 export const getPaymentGuideLink = (): string => {
   return paymentConfig.guideLink
+}
+
+/**
+ * Update the payments of the given form
+ * @param formId the id of the form to update the end page for
+ * @param newStartPage the new start page object to replace the current one
+ * @returns ok(updated start page object) when update is successful
+ * @returns err(FormNotFoundError) if form cannot be found
+ * @returns err(PossibleDatabaseError) if start page update fails
+ * @returns err(InvalidPaymentAmountError) if payment amount exceeds MAX_PAYMENT_AMOUNT
+ */
+export const updatePaymentsProduct = (
+  formId: string,
+  newProducts: PaymentsProductUpdateDto,
+): ResultAsync<
+  IEncryptedFormDocument['payments_field'],
+  PossibleDatabaseError | FormNotFoundError | InvalidPaymentAmountError
+> => {
+  for (const product of newProducts) {
+    // treat as a single item purchase if multi_qty is false
+    const qtyModifier = product.multi_qty ? product.max_qty : 1
+    const maximumSelectableQtyCost = qtyModifier * product.amount_cents
+    if (maximumSelectableQtyCost > paymentConfig.maxPaymentAmountCents) {
+      return errAsync(
+        new InvalidPaymentAmountError(
+          'Item and Quantity exceeded limit. Either lower your quantity or lower payment amount.',
+        ),
+      )
+    }
+  }
+  return ResultAsync.fromPromise(
+    EncryptedFormModel.updatePaymentsProductById(formId, newProducts),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when updating form payments',
+        meta: {
+          action: 'updatePaymentsProduct',
+          formId,
+          newProducts,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync(updatedForm.payments_field)
+  })
 }

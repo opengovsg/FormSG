@@ -5,11 +5,15 @@ import { StatusCodes } from 'http-status-codes'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
+import { UNAUTHORIZED_USER_MESSAGE } from '../user/user.constant'
+import * as UserService from '../user/user.service'
 
 import { getUserByApiKey } from './auth.service'
 import {
+  getUserIdFromSession,
   isCronPaymentAuthValid,
   isUserInSession,
+  mapRouteError,
   mapRoutePublicApiError,
 } from './auth.utils'
 
@@ -163,7 +167,6 @@ export const authenticateApiKey: ControllerHandler = (req, res, next) => {
     meta: {
       action: 'authenticateApiKey',
       userId: apiKeyMatch.groups.userId,
-      token: bearerMatch.groups.token,
     },
   })
   return getUserByApiKey(apiKeyMatch.groups.userId, bearerMatch.groups.token)
@@ -182,3 +185,85 @@ export const authenticateApiKey: ControllerHandler = (req, res, next) => {
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
+
+/**
+ * Middleware that checks if user is a platform user
+ */
+const isPlatformApiUser: ControllerHandler<
+  unknown,
+  unknown,
+  { userEmail: string }
+> = (req, res, next) => {
+  const { userEmail } = req.body
+  const sessionUserId = getUserIdFromSession(req.session)
+  if (!sessionUserId) {
+    return res.status(StatusCodes.UNAUTHORIZED).json(UNAUTHORIZED_USER_MESSAGE)
+  }
+  return UserService.getPopulatedApiUserById(sessionUserId)
+    .map((retrievedUser) => {
+      if (!retrievedUser) {
+        return res
+          .status(StatusCodes.UNAUTHORIZED)
+          .json(UNAUTHORIZED_USER_MESSAGE)
+      }
+      if (!retrievedUser.apiToken?.isPlatform || !userEmail) {
+        // Exit this middleware if
+        // 1. User is not a platform
+        // 2. User is a platform but has no userEmail provided
+        return next()
+      } else {
+        return UserService.findUserByEmail(userEmail)
+          .map((emailUser) => {
+            if (!emailUser) {
+              return res
+                .status(StatusCodes.UNPROCESSABLE_ENTITY)
+                .json('User not found')
+            }
+            logger.info({
+              message: 'API user is a platform',
+              meta: {
+                action: 'isPlatformApiUser',
+                ...createReqMeta(req),
+                reqBody: req.body,
+                apiUser: sessionUserId,
+                userEmail,
+              },
+            })
+            req.session.user = { _id: emailUser._id }
+            return next()
+          })
+          .mapErr((error) => {
+            logger.error({
+              message: 'Error occurred whilst retrieving user from userEmail',
+              meta: {
+                action: 'isPlatformApiUser',
+                apiUser: sessionUserId,
+                userEmail,
+              },
+              error,
+            })
+
+            const { errorMessage, statusCode } = mapRouteError(error)
+            return res.status(statusCode).json({ message: errorMessage })
+          })
+      }
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred whilst retrieving user',
+        meta: {
+          action: 'isPlatformApiUser',
+          userId: sessionUserId,
+        },
+        error,
+      })
+
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+export const authenticateApiKeyAndPlatform = [
+  authenticateApiKey,
+  isPlatformApiUser,
+] as ControllerHandler[]

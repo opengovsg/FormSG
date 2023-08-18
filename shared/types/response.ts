@@ -1,6 +1,6 @@
 import type { Opaque } from 'type-fest'
 import { z } from 'zod'
-import { BasicField, MyInfoAttribute, MyInfoChildAttributes } from './field'
+import { BasicField, MyInfoAttribute } from './field'
 
 const ResponseBase = z.object({
   myInfo: z.never().optional(),
@@ -78,6 +78,11 @@ export const DropdownResponse = MyInfoableSingleResponse.extend({
 })
 export type DropdownResponse = z.infer<typeof DropdownResponse>
 
+export const CountryRegionResponse = MyInfoableSingleResponse.extend({
+  fieldType: z.literal(BasicField.CountryRegion),
+})
+export type CountryRegionResponse = z.infer<typeof CountryRegionResponse>
+
 export const YesNoResponse = SingleAnswerResponse.extend({
   fieldType: z.literal(BasicField.YesNo),
 })
@@ -149,6 +154,7 @@ export type FieldResponse =
   | ShortTextResponse
   | LongTextResponse
   | DropdownResponse
+  | CountryRegionResponse
   | YesNoResponse
   | CheckboxResponse
   | RadioResponse

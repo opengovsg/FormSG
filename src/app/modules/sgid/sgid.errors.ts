@@ -24,6 +24,12 @@ export class SgidFetchUserInfoError extends ApplicationError {
   }
 }
 
+export class SgidMalformedMyInfoCookieError extends ApplicationError {
+  constructor(message = 'SGID MyInfo cookie is malformed') {
+    super(message)
+  }
+}
+
 /**
  * JWT could not be decoded.
  */
