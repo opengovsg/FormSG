@@ -5,8 +5,11 @@ import {
 } from '../../../../../shared/types'
 import { IPopulatedEncryptedForm } from '../../../../types'
 import {
-  EncryptSubmissionDtoWithContext,
-  StorageModeSubmissionBodyWithContext,
+  EncryptSubmissionBodyWithContextDto,
+  EncryptSubmissionDto,
+  FormsgContentOptionalSubmissionDto,
+  ParsedStorageModeSubmissionBody,
+  StorageModeSubmissionBodyWithContextDto,
 } from '../../../../types/api'
 import { ControllerHandler } from '../../core/core.types'
 import { ProcessedFieldResponse } from '../submission.types'
@@ -29,23 +32,25 @@ export type SaveEncryptSubmissionParams = {
   attachmentMetadata?: Map<string, string>
 }
 
-export type SharedSubmissionMiddlewareHandlerType = ControllerHandler<
+export type createFormsgAndRetrieveFormMiddlewareHandlerType =
+  ControllerHandler<
+    { formId: string },
+    SubmissionResponseDto | SubmissionErrorDto,
+    (ParsedStorageModeSubmissionBody | EncryptSubmissionDto) &
+      FormsgContentOptionalSubmissionDto,
+    { captchaResponse?: unknown; captchaType?: unknown }
+  >
+
+export type StorageSubmissionMiddlewareHandlerType = ControllerHandler<
   { formId: string },
   SubmissionResponseDto | SubmissionErrorDto,
-  StorageModeSubmissionBodyWithContext | EncryptSubmissionDtoWithContext,
+  StorageModeSubmissionBodyWithContextDto,
   { captchaResponse?: unknown; captchaType?: unknown }
 >
 
 export type EncryptSubmissionMiddlewareHandlerType = ControllerHandler<
   { formId: string },
   SubmissionResponseDto | SubmissionErrorDto,
-  EncryptSubmissionDtoWithContext,
-  { captchaResponse?: unknown; captchaType?: unknown }
->
-
-export type StorageSubmissionMiddlewareHandlerType = ControllerHandler<
-  { formId: string },
-  SubmissionResponseDto | SubmissionErrorDto,
-  StorageModeSubmissionBodyWithContext,
+  EncryptSubmissionBodyWithContextDto,
   { captchaResponse?: unknown; captchaType?: unknown }
 >

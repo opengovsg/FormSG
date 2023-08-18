@@ -31,19 +31,24 @@ export type ParsedStorageModeSubmissionBody = ParsedEmailModeSubmissionBody & {
   version: number
 }
 
-export type StorageModeSubmissionBodyWithContext =
-  ParsedStorageModeSubmissionBody & {
-    formsg: {
-      formDef?: IPopulatedForm
-      encryptedPayload?: EncryptSubmissionDto
-      encryptedFormDef?: IPopulatedEncryptedForm
-    }
-  }
+export type StorageModeSubmissionBodyWithContextDto =
+  ParsedStorageModeSubmissionBody & FormsgSetSubmissionDto
 
-export type EncryptSubmissionDtoWithContext = EncryptSubmissionDto & {
+export type EncryptSubmissionBodyWithContextDto = EncryptSubmissionDto &
+  FormsgSetSubmissionDto
+
+export type FormsgContentOptionalSubmissionDto = {
   formsg: {
     formDef?: IPopulatedForm
     encryptedPayload?: EncryptSubmissionDto
     encryptedFormDef?: IPopulatedEncryptedForm
+  }
+}
+
+export type FormsgSetSubmissionDto = {
+  formsg: {
+    formDef: IPopulatedForm
+    encryptedPayload: EncryptSubmissionDto
+    encryptedFormDef: IPopulatedEncryptedForm
   }
 }

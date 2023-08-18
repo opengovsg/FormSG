@@ -1,8 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 
-import { IPopulatedEncryptedForm } from 'src/types'
-
 import { CaptchaTypes } from '../../../../../shared/types/captcha'
+import { IPopulatedForm } from '../../../../types'
 import * as CaptchaService from '../../../services/captcha/captcha.service'
 import * as TurnstileService from '../../../services/turnstile/turnstile.service'
 import { Middleware } from '../../../utils/pipeline-middleware'
@@ -16,7 +15,7 @@ type FormSubmissionPipelineContext = {
   req: any
   res: any
   logMeta: { [other: string]: any; action: string }
-  form: IPopulatedEncryptedForm
+  form: IPopulatedForm
 }
 
 export const ensureFormWithinSubmissionLimits: Middleware<
@@ -38,6 +37,7 @@ export const ensureFormWithinSubmissionLimits: Middleware<
   }
   return next()
 }
+
 export const ensureValidCaptcha: Middleware<
   FormSubmissionPipelineContext
 > = async ({ form, req, logMeta, res }, next) => {
@@ -95,6 +95,7 @@ export const ensureValidCaptcha: Middleware<
 
   return next()
 }
+
 export const ensurePublicForm: Middleware<FormSubmissionPipelineContext> = (
   { form, logMeta, res },
   next,

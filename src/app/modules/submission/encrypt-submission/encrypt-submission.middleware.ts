@@ -22,14 +22,12 @@ import { getFilteredResponses, isAttachmentResponse } from '../submission.utils'
 
 import {
   EncryptedPayloadExistsError,
-  FormDefinitionNotRetrievedError,
-  FormMissingPublicKeyError,
   FormsgReqBodyExistsError,
 } from './encrypt-submission.errors'
 import { checkFormIsEncryptMode } from './encrypt-submission.service'
 import {
+  createFormsgAndRetrieveFormMiddlewareHandlerType,
   EncryptSubmissionMiddlewareHandlerType,
-  SharedSubmissionMiddlewareHandlerType,
   StorageSubmissionMiddlewareHandlerType,
 } from './encrypt-submission.types'
 import { mapRouteError } from './encrypt-submission.utils'
@@ -119,118 +117,13 @@ export const validateStorageSubmissionParams = celebrate({
   }),
 })
 
-export const createFormsgReqBody: SharedSubmissionMiddlewareHandlerType =
-  async (req, res, next) => {
-    if (req.body.formsg) return res.send(new FormsgReqBodyExistsError())
-    else {
-      req.body.formsg = {}
-      return next()
-    }
-  }
-
-export const retrieveForm: SharedSubmissionMiddlewareHandlerType = async (
-  req,
-  res,
-  next,
-) => {
-  const { formId } = req.params
-
-  const logMeta = {
-    action: 'retrieveForm',
-    ...createReqMeta(req),
-    formId,
-  }
-
-  // Retrieve form
-  const formResult = await FormService.retrieveFullFormById(formId)
-  if (formResult.isErr()) {
-    logger.warn({
-      message: 'Failed to retrieve form from database',
-      meta: logMeta,
-      error: formResult.error,
-    })
-    const { errorMessage, statusCode } = mapRouteError(formResult.error)
-    return res.status(statusCode).json({ message: errorMessage })
-  }
-
-  req.body.formsg.formDef = formResult.value
-  return next()
-}
-
-export const checkPublicKey: SharedSubmissionMiddlewareHandlerType = async (
-  req,
-  res,
-  next,
-) => {
-  const formDef = req.body.formsg.formDef
-
-  if (!formDef) return res.send(new FormDefinitionNotRetrievedError())
-
-  const logMeta = {
-    action: 'checkPublicKey',
-    ...createReqMeta(req),
-    formId: formDef.id,
-  }
-
-  // Retrieve public key.
-  const publicKey = formDef.publicKey
-
-  if (!publicKey) {
-    logger.warn({
-      message: 'Form does not have a public key',
-      meta: logMeta,
-    })
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: 'Form does not have a public key',
-    })
-  }
-
-  return next()
-}
-
-export const checkEncryptMode: SharedSubmissionMiddlewareHandlerType = async (
-  req,
-  res,
-  next,
-) => {
-  const formDef = req.body.formsg.formDef
-
-  if (!formDef) return res.send(new FormDefinitionNotRetrievedError())
-
-  const logMeta = {
-    action: 'checkEncryptMode',
-    ...createReqMeta(req),
-    formId: formDef.id,
-  }
-
-  const checkFormIsEncryptModeResult = checkFormIsEncryptMode(formDef)
-  if (checkFormIsEncryptModeResult.isErr()) {
-    logger.error({
-      message:
-        'Trying to submit non-encrypt mode submission on encrypt-form submission endpoint',
-      meta: logMeta,
-    })
-    const { statusCode, errorMessage } = mapRouteError(
-      checkFormIsEncryptModeResult.error,
-    )
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
-  }
-
-  req.body.formsg.encryptedFormDef = checkFormIsEncryptModeResult.value
-  return next()
-}
-
 /**
  * Guardrail to prevent new endpoint from being used for regular storage mode forms.
  * TODO (FRM-1232): remove this guardrail when encryption boundary is shifted.
  */
-export const checkNewBoundaryEnabled: SharedSubmissionMiddlewareHandlerType =
+export const checkNewBoundaryEnabled: StorageSubmissionMiddlewareHandlerType =
   async (req, res, next) => {
     const formDef = req.body.formsg.formDef
-
-    if (!formDef) return res.send(new FormDefinitionNotRetrievedError())
 
     if (!formDef.newEncryptionBoundary) {
       return res
@@ -244,8 +137,6 @@ export const checkNewBoundaryEnabled: SharedSubmissionMiddlewareHandlerType =
 export const validateSubmission: StorageSubmissionMiddlewareHandlerType =
   async (req, res, next) => {
     const formDef = req.body.formsg.formDef
-
-    if (!formDef) return res.send(new FormDefinitionNotRetrievedError())
 
     const logMeta = {
       action: 'validateSubmission',
@@ -338,11 +229,8 @@ export const encryptSubmission: StorageSubmissionMiddlewareHandlerType = async (
   next,
 ) => {
   const formId = req.params.formId
-  const formDef = req.body.formsg.formDef
-  if (!formDef) return res.send(new FormDefinitionNotRetrievedError())
-
-  const publicKey = formDef.publicKey
-  if (!publicKey) return res.send(new FormMissingPublicKeyError())
+  const encryptedFormDef = req.body.formsg.encryptedFormDef
+  const publicKey = encryptedFormDef.publicKey
 
   const attachmentsMap: Record<string, Buffer> = {}
 
@@ -364,7 +252,10 @@ export const encryptSubmission: StorageSubmissionMiddlewareHandlerType = async (
       publicKey,
     )
 
-  const filteredResponses = getFilteredResponses(formDef, req.body.responses)
+  const filteredResponses = getFilteredResponses(
+    encryptedFormDef,
+    req.body.responses,
+  )
 
   if (filteredResponses.isErr()) {
     logger.warn({
@@ -419,5 +310,70 @@ export const moveEncryptedPayload: EncryptSubmissionMiddlewareHandlerType =
     const encryptedPayload = reqBody.formsg.encryptedPayload ?? originalReqBody
 
     req.body.formsg.encryptedPayload = encryptedPayload
+    return next()
+  }
+
+export const createFormsgAndRetrieveForm: createFormsgAndRetrieveFormMiddlewareHandlerType =
+  async (req, res, next) => {
+    const { formId } = req.params
+
+    const logMeta = {
+      action: 'createFormsgAndRetrieveForm',
+      ...createReqMeta(req),
+      formId,
+    }
+
+    // Step 1: Create formsg namespace in req.body
+    if (req.body.formsg) return res.send(new FormsgReqBodyExistsError())
+    else {
+      req.body.formsg = {}
+    }
+
+    // Step 2a: Retrieve form
+    const formResult = await FormService.retrieveFullFormById(formId)
+    if (formResult.isErr()) {
+      logger.warn({
+        message: 'Failed to retrieve form from database',
+        meta: logMeta,
+        error: formResult.error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(formResult.error)
+      return res.status(statusCode).json({ message: errorMessage })
+    }
+
+    // Step 2b: Set formsg.formDef in req.body
+    const formDef = formResult.value
+    req.body.formsg.formDef = formDef
+
+    // Step 3a: Check if form is encrypt mode
+    const checkFormIsEncryptModeResult = checkFormIsEncryptMode(formDef)
+    if (checkFormIsEncryptModeResult.isErr()) {
+      logger.error({
+        message:
+          'Trying to submit non-encrypt mode submission on encrypt-form submission endpoint',
+        meta: logMeta,
+      })
+      const { statusCode, errorMessage } = mapRouteError(
+        checkFormIsEncryptModeResult.error,
+      )
+      return res.status(statusCode).json({
+        message: errorMessage,
+      })
+    }
+
+    // Step 3b: Set formsg.encryptedFormDef in req.body
+    req.body.formsg.encryptedFormDef = checkFormIsEncryptModeResult.value
+
+    // Step 4: Check if form has public key
+    if (!formDef.publicKey) {
+      logger.warn({
+        message: 'Form does not have a public key',
+        meta: logMeta,
+      })
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Form does not have a public key',
+      })
+    }
+
     return next()
   }

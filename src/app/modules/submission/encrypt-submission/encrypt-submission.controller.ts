@@ -17,11 +17,14 @@ import {
   StorageModeSubmissionContentDto,
   StorageModeSubmissionDto,
   StorageModeSubmissionMetadataList,
+  SubmissionErrorDto,
+  SubmissionResponseDto,
 } from '../../../../../shared/types'
 import {
   IPopulatedEncryptedForm,
   StripePaymentMetadataDto,
 } from '../../../../types'
+import { FormsgSetSubmissionDto } from '../../../../types/api'
 import config from '../../../config/config'
 import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -52,11 +55,6 @@ import {
   ensureValidCaptcha,
 } from './encrypt-submission.ensures'
 import {
-  EncryptedFormDefinitionNotRetrievedError,
-  EncryptedPayloadNotFoundError,
-  FormDefinitionNotRetrievedError,
-} from './encrypt-submission.errors'
-import {
   addPaymentDataStream,
   checkFormIsEncryptMode,
   getEncryptedSubmissionData,
@@ -69,7 +67,6 @@ import {
   transformAttachmentMetaStream,
   uploadAttachments,
 } from './encrypt-submission.service'
-import { SharedSubmissionMiddlewareHandlerType } from './encrypt-submission.types'
 import {
   createEncryptedSubmissionDto,
   getPaymentAmount,
@@ -85,7 +82,13 @@ const Payment = getPaymentModel(mongoose)
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
 const Joi = BaseJoi.extend(JoiDate)
 
-const submitEncryptModeForm: SharedSubmissionMiddlewareHandlerType = async (
+type SubmitEncryptModeFormHandlerType = ControllerHandler<
+  { formId: string },
+  SubmissionResponseDto | SubmissionErrorDto,
+  FormsgSetSubmissionDto
+>
+
+const submitEncryptModeForm: SubmitEncryptModeFormHandlerType = async (
   req,
   res,
 ) => {
@@ -109,12 +112,9 @@ const submitEncryptModeForm: SharedSubmissionMiddlewareHandlerType = async (
   }
 
   const formDef = req.body.formsg.formDef
-  if (!formDef) return res.send(new FormDefinitionNotRetrievedError())
+  const form = req.body.formsg.encryptedFormDef
 
   setFormTags(formDef)
-
-  const form = req.body.formsg.encryptedFormDef
-  if (!form) return res.send(new EncryptedFormDefinitionNotRetrievedError())
 
   const ensurePipeline = new Pipeline(
     ensurePublicForm,
@@ -132,7 +132,6 @@ const submitEncryptModeForm: SharedSubmissionMiddlewareHandlerType = async (
   if (!hasEnsuredAll) return
 
   const encryptedPayload = req.body.formsg.encryptedPayload
-  if (!encryptedPayload) return res.send(new EncryptedPayloadNotFoundError())
 
   // Create Incoming Submission
   const { encryptedContent, responses, responseMetadata, paymentProducts } =
@@ -304,7 +303,7 @@ const submitEncryptModeForm: SharedSubmissionMiddlewareHandlerType = async (
     encryptedContent: incomingSubmission.encryptedContent,
     verifiedContent: verified,
     attachmentMetadata,
-    version: req.body.version,
+    version: req.body.formsg.encryptedPayload.version,
     responseMetadata,
   }
 
@@ -348,14 +347,13 @@ const _createPaymentSubmission = async ({
   responseMetadata,
   paymentProducts,
 }: {
-  req: Parameters<SharedSubmissionMiddlewareHandlerType>[0]
-  res: Parameters<SharedSubmissionMiddlewareHandlerType>[1]
+  req: Parameters<SubmitEncryptModeFormHandlerType>[0]
+  res: Parameters<SubmitEncryptModeFormHandlerType>[1]
   form: IPopulatedEncryptedForm
   paymentProducts: StorageModeSubmissionContentDto['paymentProducts']
   [others: string]: any
 }) => {
   const encryptedPayload = req.body.formsg.encryptedPayload
-  if (!encryptedPayload) return res.send(new EncryptedPayloadNotFoundError())
 
   const amount = getPaymentAmount(
     form.payments_field,
@@ -576,8 +574,8 @@ const _createSubmission = async ({
   responseMetadata,
   incomingSubmission,
 }: {
-  req: Parameters<SharedSubmissionMiddlewareHandlerType>[0]
-  res: Parameters<SharedSubmissionMiddlewareHandlerType>[1]
+  req: Parameters<SubmitEncryptModeFormHandlerType>[0]
+  res: Parameters<SubmitEncryptModeFormHandlerType>[1]
   [others: string]: any
 }) => {
   const submission = new EncryptSubmission(submissionContent)
@@ -637,11 +635,8 @@ export const handleEncryptedSubmission = [
   CaptchaMiddleware.validateCaptchaParams,
   TurnstileMiddleware.validateTurnstileParams,
   EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
-  EncryptSubmissionMiddleware.createFormsgReqBody,
-  EncryptSubmissionMiddleware.retrieveForm,
-  EncryptSubmissionMiddleware.checkPublicKey,
+  EncryptSubmissionMiddleware.createFormsgAndRetrieveForm,
   EncryptSubmissionMiddleware.moveEncryptedPayload,
-  EncryptSubmissionMiddleware.checkEncryptMode,
   submitEncryptModeForm,
 ] as ControllerHandler[]
 
@@ -650,13 +645,10 @@ export const handleStorageSubmission = [
   TurnstileMiddleware.validateTurnstileParams,
   ReceiverMiddleware.receiveStorageSubmission,
   EncryptSubmissionMiddleware.validateStorageSubmissionParams,
-  EncryptSubmissionMiddleware.createFormsgReqBody,
-  EncryptSubmissionMiddleware.retrieveForm,
+  EncryptSubmissionMiddleware.createFormsgAndRetrieveForm,
   EncryptSubmissionMiddleware.checkNewBoundaryEnabled,
-  EncryptSubmissionMiddleware.checkPublicKey,
   EncryptSubmissionMiddleware.validateSubmission,
   EncryptSubmissionMiddleware.encryptSubmission,
-  EncryptSubmissionMiddleware.checkEncryptMode,
   submitEncryptModeForm,
 ] as ControllerHandler[]
 
