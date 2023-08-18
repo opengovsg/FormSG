@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { SgidClient } from '@opengovsg/sgid-client'
+import { generatePkcePair, SgidClient } from '@opengovsg/sgid-client'
 import fs from 'fs'
 import Jwt from 'jsonwebtoken'
 import { MyInfoAttribute } from 'shared/types'
@@ -71,20 +71,28 @@ describe('sgid.service', () => {
     })
   })
   describe('createRedirectUrl', () => {
-    it('should return a string if ok', () => {
+    it('should return the redirect url if ok', () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
+      const mockGeneratePkcePair = jest.mocked(generatePkcePair)
       const sgidClient = jest.mocked(MockSgidClient.mock.instances[0])
+      mockGeneratePkcePair.mockReturnValue({
+        codeChallenge: MOCK_CODE_CHALLENGE,
+        codeVerifier: MOCK_CODE_VERIFIER,
+      })
       sgidClient.authorizationUrl.mockReturnValue({
         url: MOCK_REDIRECT_URL,
         nonce: MOCK_NONCE,
       })
-      const url = SgidService.createRedirectUrl(
+      const result = SgidService.createRedirectUrl(
         MOCK_DESTINATION,
         MOCK_REMEMBER_ME,
         SGID_DEFAULT_ATTR_LIST,
         MOCK_CODE_CHALLENGE,
       )
-      expect(url._unsafeUnwrap()).toEqual(MOCK_REDIRECT_URL)
+      const unwrappedResult = result._unsafeUnwrap()
+      expect(unwrappedResult).toHaveProperty('redirectUrl', MOCK_REDIRECT_URL)
+      expect(unwrappedResult).toHaveProperty('codeVerifier', MOCK_CODE_VERIFIER)
+      expect(mockGeneratePkcePair).toHaveBeenCalledOnce()
       expect(sgidClient.authorizationUrl).toHaveBeenCalledWith({
         state: MOCK_STATE,
         scope: SGID_SINGPASS_SCOPE,
@@ -95,18 +103,26 @@ describe('sgid.service', () => {
 
     it('should extract additional OAuth scopes from MyInfo', () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
+      const mockGeneratePkcePair = jest.mocked(generatePkcePair)
       const sgidClient = jest.mocked(MockSgidClient.mock.instances[0])
+      mockGeneratePkcePair.mockReturnValue({
+        codeChallenge: MOCK_CODE_CHALLENGE,
+        codeVerifier: MOCK_CODE_VERIFIER,
+      })
       sgidClient.authorizationUrl.mockReturnValue({
         url: MOCK_REDIRECT_URL,
         nonce: MOCK_NONCE,
       })
-      const url = SgidService.createRedirectUrl(
+      const result = SgidService.createRedirectUrl(
         MOCK_DESTINATION,
         MOCK_REMEMBER_ME,
         [MyInfoAttribute.RegisteredAddress, MyInfoAttribute.PassportExpiryDate],
         MOCK_CODE_CHALLENGE,
       )
-      expect(url._unsafeUnwrap()).toEqual(MOCK_REDIRECT_URL)
+      const unwrappedResult = result._unsafeUnwrap()
+      expect(unwrappedResult).toHaveProperty('redirectUrl', MOCK_REDIRECT_URL)
+      expect(unwrappedResult).toHaveProperty('codeVerifier', MOCK_CODE_VERIFIER)
+      expect(mockGeneratePkcePair).toHaveBeenCalledOnce()
       expect(sgidClient.authorizationUrl).toHaveBeenCalledWith({
         state: MOCK_STATE,
         scope:
@@ -118,20 +134,27 @@ describe('sgid.service', () => {
 
     it('should return error if not ok', () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
+      const mockGeneratePkcePair = jest.mocked(generatePkcePair)
       const sgidClient = jest.mocked(MockSgidClient.mock.instances[0])
+      mockGeneratePkcePair.mockReturnValue({
+        codeChallenge: MOCK_CODE_CHALLENGE,
+        codeVerifier: MOCK_CODE_VERIFIER,
+      })
       sgidClient.authorizationUrl.mockReturnValue({
         // @ts-ignore
         url: undefined,
         nonce: MOCK_NONCE,
       })
-      const url = SgidService.createRedirectUrl(
+      const result = SgidService.createRedirectUrl(
         MOCK_DESTINATION,
         MOCK_REMEMBER_ME,
         SGID_DEFAULT_ATTR_LIST,
         MOCK_CODE_CHALLENGE,
       )
-      expect(url._unsafeUnwrapErr()).toBeInstanceOf(SgidCreateRedirectUrlError)
-
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        SgidCreateRedirectUrlError,
+      )
+      expect(mockGeneratePkcePair).toHaveBeenCalledOnce()
       expect(sgidClient.authorizationUrl).toHaveBeenCalledWith({
         state: MOCK_STATE,
         scope: 'openid myinfo.nric_number',
