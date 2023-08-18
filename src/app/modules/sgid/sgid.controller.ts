@@ -68,7 +68,6 @@ export const handleLogin: ControllerHandler<
     return res.redirect(target)
   }
 
-  // const codeVerifier = req.cookies.get(SGID_CODE_VERIFIER_COOKIE_NAME)
   const codeVerifier = req.cookies[SGID_CODE_VERIFIER_COOKIE_NAME]
   if (!codeVerifier) {
     logger.error({

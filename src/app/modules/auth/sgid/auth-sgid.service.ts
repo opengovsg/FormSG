@@ -1,4 +1,4 @@
-import { SgidClient } from '@opengovsg/sgid-client'
+import { generatePkcePair, SgidClient } from '@opengovsg/sgid-client'
 import fs from 'fs'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
 
@@ -41,13 +41,17 @@ export class AuthSgidServiceClass {
 
   /**
    * Create a URL to sgID which is used to redirect the user for authentication
+   * @returns The redirectUrl and the associated code verifier
    */
-  createRedirectUrl(
-    codeChallenge: string,
-  ): Result<string, SgidCreateRedirectUrlError> {
+  createRedirectUrl(): Result<
+    { redirectUrl: string; codeVerifier: string },
+    SgidCreateRedirectUrlError
+  > {
     const logMeta = {
       action: 'createRedirectUrl',
     }
+
+    const { codeChallenge, codeVerifier } = generatePkcePair()
 
     try {
       const result = this.client.authorizationUrl({
@@ -56,7 +60,7 @@ export class AuthSgidServiceClass {
         nonce: null,
         codeChallenge,
       })
-      return ok(result.url)
+      return ok({ redirectUrl: result.url, codeVerifier })
     } catch (error) {
       logger.error({
         message: 'Error while creating redirect URL',

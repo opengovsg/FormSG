@@ -1,4 +1,4 @@
-import { SgidClient } from '@opengovsg/sgid-client'
+import { generatePkcePair, SgidClient } from '@opengovsg/sgid-client'
 import fs from 'fs'
 import Jwt from 'jsonwebtoken'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
@@ -74,14 +74,17 @@ export class SgidServiceClass {
    * @param requestedAttributes - sgID attributes requested by this form
    * @param encodedQuery base64 encoded queryId for frontend to retrieve stored query params (usually contains prefilled form information)
    * for an extended period of time
+   * @returns The redirectUrl and the associated code verifier
    */
   createRedirectUrl(
     formId: string,
     rememberMe: boolean,
     requestedAttributes: InternalAttr[],
-    codeChallenge: string,
     encodedQuery?: string,
-  ): Result<string, SgidCreateRedirectUrlError> {
+  ): Result<
+    { redirectUrl: string; codeVerifier: string },
+    SgidCreateRedirectUrlError
+  > {
     const state = encodedQuery
       ? `${formId},${rememberMe},${encodedQuery}`
       : `${formId},${rememberMe}`
@@ -91,6 +94,7 @@ export class SgidServiceClass {
       state,
     }
     const scopes = internalAttrListToScopes(requestedAttributes)
+    const { codeChallenge, codeVerifier } = generatePkcePair()
     const result = this.client.authorizationUrl({
       state,
       scope: scopes,
@@ -98,7 +102,7 @@ export class SgidServiceClass {
       codeChallenge,
     })
     if (typeof result.url === 'string') {
-      return ok(result.url)
+      return ok({ redirectUrl: result.url, codeVerifier })
     } else {
       logger.error({
         message: 'Error while creating redirect URL',

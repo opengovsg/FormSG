@@ -1,4 +1,3 @@
-import { generatePkcePair } from '@opengovsg/sgid-client'
 import { StatusCodes } from 'http-status-codes'
 import { ErrorDto, GetSgidAuthUrlResponseDto } from 'shared/types'
 
@@ -24,10 +23,8 @@ export const generateAuthUrl: ControllerHandler<
     ...createReqMeta(req),
   }
 
-  const { codeChallenge, codeVerifier } = generatePkcePair()
-
-  return AuthSgidService.createRedirectUrl(codeChallenge)
-    .map((redirectUrl) =>
+  return AuthSgidService.createRedirectUrl()
+    .map(({ redirectUrl, codeVerifier }) =>
       res
         .status(StatusCodes.OK)
         .cookie(SGID_CODE_VERIFIER_COOKIE_NAME, codeVerifier)
