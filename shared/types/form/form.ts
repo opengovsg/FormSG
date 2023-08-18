@@ -151,7 +151,7 @@ export interface FormBase {
 
   responseMode: FormResponseMode
 
-  newEncryptionBoundary: boolean
+  newEncryptionBoundary?: boolean
 }
 
 export interface EmailFormBase extends FormBase {
@@ -165,6 +165,7 @@ export interface StorageFormBase extends FormBase {
   payments_channel: FormPaymentsChannel
   payments_field: FormPaymentsField
   business?: FormBusinessField
+  newEncryptionBoundary?: boolean
 }
 
 /**

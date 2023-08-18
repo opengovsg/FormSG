@@ -223,6 +223,11 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
       gstRegNo: { type: String, required: true, trim: true },
     },
   },
+
+  newEncryptionBoundary: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const EncryptedFormDocumentSchema =
@@ -544,11 +549,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         type: String,
         required: false,
         default: '',
-      },
-
-      newEncryptionBoundary: {
-        type: Boolean,
-        default: false,
       },
     },
     formSchemaOptions,

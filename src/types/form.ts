@@ -68,7 +68,6 @@ type FormDefaultableKey =
   | 'submissionLimit'
   | 'isListed'
   | 'webhook'
-  | 'newEncryptionBoundary'
 
 export type IForm = Merge<
   SetOptional<FormBase, FormDefaultableKey>,
@@ -289,6 +288,7 @@ export interface IEncryptedForm extends IForm {
   payments_field: FormPaymentsField
   business?: FormBusinessField
   emails?: never
+  newEncryptionBoundary?: boolean
 }
 
 export type IEncryptedFormSchema = IEncryptedForm & IFormSchema
@@ -300,6 +300,7 @@ export interface IEmailForm extends IForm {
   // strings to string array.
   emails: string[] | string
   publicKey?: never
+  newEncryptionBoundary?: never
 }
 
 export type IEmailFormSchema = IEmailForm & IFormSchema
