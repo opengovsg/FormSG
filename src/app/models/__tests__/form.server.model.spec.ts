@@ -89,7 +89,6 @@ const FORM_DEFAULTS = {
   status: 'PRIVATE',
   submissionLimit: null,
   goLinkSuffix: '',
-  newEncryptionBoundary: false,
 }
 
 const PAYMENTS_DEFAULTS = {
@@ -432,7 +431,7 @@ describe('Form Model', () => {
 
     describe('Encrypted form schema', () => {
       const ENCRYPT_FORM_DEFAULTS = merge(
-        { responseMode: 'encrypt' },
+        { responseMode: 'encrypt', newEncryptionBoundary: false },
         FORM_DEFAULTS,
         PAYMENTS_DEFAULTS,
       )
