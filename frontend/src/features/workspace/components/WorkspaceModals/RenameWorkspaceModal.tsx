@@ -76,7 +76,7 @@ export const RenameWorkspaceModal = ({
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Rename Folder</ModalHeader>
+        <ModalHeader>Rename folder</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <Text textStyle="subhead-1">Folder name</Text>

@@ -197,7 +197,7 @@ export const useWorkspaceMutations = () => {
   const createWorkspaceMutation = useMutation(
     (params: { title: string }) => createWorkspace(params),
     {
-      onSuccess: () => handleSuccess('New Folder Created.'),
+      onSuccess: () => handleSuccess('New folder created.'),
       onError: handleError,
     },
   )
@@ -219,7 +219,7 @@ export const useWorkspaceMutations = () => {
     (params: { title: string; destWorkspaceId: string }) =>
       updateWorkspaceTitle(params),
     {
-      onSuccess: () => handleSuccess('Your Folder has been renamed'),
+      onSuccess: () => handleSuccess('Your folder has been renamed'),
       onError: handleError,
     },
   )
@@ -227,7 +227,7 @@ export const useWorkspaceMutations = () => {
   const deleteWorkspaceMutation = useMutation(
     (params: { destWorkspaceId: string }) => deleteWorkspace(params),
     {
-      onSuccess: () => handleSuccess('Your Folder has been deleted'),
+      onSuccess: () => handleSuccess('Your folder has been deleted'),
       onError: handleError,
     },
   )

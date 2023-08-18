@@ -37,7 +37,7 @@ export const EmptyWorkspace = ({
       </Text>
       <Text textStyle="body-1" color="secondary.500">
         {isFolder
-          ? 'Organise your forms by grouping them in to folders'
+          ? 'Organise your forms by grouping them into folders'
           : 'Get started by creating a new form'}
       </Text>
       {!isFolder && (
