@@ -151,9 +151,6 @@ const submitEncryptModeForm: SubmitEncryptModeFormHandlerType = async (
   }
   const incomingSubmission = incomingSubmissionResult.value
 
-  // delete (req.body as SetOptional<EncryptSubmissionDto, 'responses'>)
-  //   .responses
-
   // Checks if user is SPCP-authenticated before allowing submission
   let uinFin
   let userInfo
