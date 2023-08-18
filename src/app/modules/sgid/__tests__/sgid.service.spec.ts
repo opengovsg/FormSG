@@ -87,7 +87,6 @@ describe('sgid.service', () => {
         MOCK_DESTINATION,
         MOCK_REMEMBER_ME,
         SGID_DEFAULT_ATTR_LIST,
-        MOCK_CODE_CHALLENGE,
       )
       const unwrappedResult = result._unsafeUnwrap()
       expect(unwrappedResult).toHaveProperty('redirectUrl', MOCK_REDIRECT_URL)
@@ -117,7 +116,6 @@ describe('sgid.service', () => {
         MOCK_DESTINATION,
         MOCK_REMEMBER_ME,
         [MyInfoAttribute.RegisteredAddress, MyInfoAttribute.PassportExpiryDate],
-        MOCK_CODE_CHALLENGE,
       )
       const unwrappedResult = result._unsafeUnwrap()
       expect(unwrappedResult).toHaveProperty('redirectUrl', MOCK_REDIRECT_URL)
@@ -149,7 +147,6 @@ describe('sgid.service', () => {
         MOCK_DESTINATION,
         MOCK_REMEMBER_ME,
         SGID_DEFAULT_ATTR_LIST,
-        MOCK_CODE_CHALLENGE,
       )
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(
         SgidCreateRedirectUrlError,
