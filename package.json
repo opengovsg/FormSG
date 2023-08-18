@@ -59,7 +59,6 @@
     "@joi/date": "^2.1.0",
     "@opengovsg/formsg-sdk": "^0.10.0",
     "@opengovsg/myinfo-gov-client": "^4.1.1",
-    "@opengovsg/ng-file-upload": "^12.2.15",
     "@opengovsg/sgid-client": "^2.0.0",
     "@sentry/browser": "^7.51.2",
     "@sentry/integrations": "^6.19.7",
