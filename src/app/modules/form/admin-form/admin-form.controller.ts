@@ -1565,6 +1565,7 @@ export const submitEmailPreview: ControllerHandler<
 
   const parsedResponsesResult = await SubmissionService.validateAttachments(
     responses,
+    form.responseMode === FormResponseMode.Email,
   ).andThen(() => ParsedResponsesObject.parseResponses(form, responses))
   if (parsedResponsesResult.isErr()) {
     logger.error({

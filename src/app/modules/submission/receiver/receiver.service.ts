@@ -5,6 +5,7 @@ import { err, ok, Result, ResultAsync } from 'neverthrow'
 import { MB } from '../../../../../shared/constants/file'
 import { IAttachmentInfo } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
+import { fileSizeLimit } from '../submission.utils'
 
 import {
   InitialiseMultipartReceiverError,
@@ -22,15 +23,6 @@ const logger = createLoggerWithLabel(module)
 
 const hasContentTypeHeaders = (headers: IncomingHttpHeaders) => {
   return !!headers['content-type']
-}
-/**
- * Returns the file size limit in MB based on whether request is an email-mode submission
- * @param isEmailMode boolean flag of whether request is in email-mode
- * @returns 7 if email mode, 20 if not
- */
-const fileSizeLimit = (isEmailMode: boolean) => {
-  if (isEmailMode) return 7
-  else return 20
 }
 
 /**

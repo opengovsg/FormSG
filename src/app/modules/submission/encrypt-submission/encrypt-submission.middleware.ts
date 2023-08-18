@@ -255,7 +255,10 @@ export const validateSubmission: StorageSubmissionMiddlewareHandlerType =
     }
 
     // Validate submission
-    return await SubmissionService.validateAttachments(req.body.responses)
+    return await SubmissionService.validateAttachments(
+      req.body.responses,
+      false,
+    )
       .andThen(() =>
         ParsedResponsesObject.parseResponses(formDef, req.body.responses),
       )

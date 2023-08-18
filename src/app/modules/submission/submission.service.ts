@@ -35,7 +35,7 @@ import {
   SubmissionNotFoundError,
 } from './submission.errors'
 import {
-  areAttachmentsMoreThan7MB,
+  areAttachmentsMoreThanLimit,
   getInvalidFileExtensions,
   mapAttachmentsFromResponses,
 } from './submission.utils'
@@ -338,10 +338,11 @@ export const copyPendingSubmissionToSubmissions = (
  */
 export const validateAttachments = (
   parsedResponses: ParsedClearFormFieldResponse[],
+  isEmailMode: boolean,
 ): ResultAsync<true, InvalidFileExtensionError | AttachmentTooLargeError> => {
   const logMeta = { action: 'validateAttachments' }
   const attachments = mapAttachmentsFromResponses(parsedResponses)
-  if (areAttachmentsMoreThan7MB(attachments)) {
+  if (areAttachmentsMoreThanLimit(attachments, isEmailMode)) {
     logger.error({
       message: 'Attachment size is too large',
       meta: logMeta,
@@ -367,6 +368,7 @@ export const validateAttachments = (
           invalidExtensions,
         },
       })
+      console.log('invalidExtensions', invalidExtensions)
       return errAsync(new InvalidFileExtensionError())
     }
     return okAsync(true as const)

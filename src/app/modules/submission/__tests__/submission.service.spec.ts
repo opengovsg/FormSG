@@ -910,7 +910,7 @@ describe('submission.service', () => {
   })
 
   describe('validateAttachments', () => {
-    it('should reject submissions when attachments are more than 7MB', async () => {
+    it('should reject email mode submissions when attachments are more than 7MB', async () => {
       const processedResponse1 = generateNewAttachmentResponse({
         content: Buffer.alloc(3000001),
       })
@@ -928,10 +928,54 @@ describe('submission.service', () => {
         'isUserVerified',
       ])
 
-      const result = await SubmissionService.validateAttachments([
-        response1,
-        response2,
+      const result = await SubmissionService.validateAttachments(
+        [response1, response2],
+        true,
+      )
+      expect(result._unsafeUnwrapErr()).toEqual(new AttachmentTooLargeError())
+    })
+
+    it('should accept storage mode submissions when attachments are more than 7MB', async () => {
+      const processedResponse1 = generateNewAttachmentResponse({
+        content: Buffer.alloc(7000001),
+        filename: 'moreThan7MB.jpg',
+      })
+
+      // Omit attributes only present in processed fields
+      const response1 = omit(processedResponse1, [
+        'isVisible',
+        'isUserVerified',
       ])
+
+      const result = await SubmissionService.validateAttachments(
+        [response1],
+        false,
+      )
+      expect(result._unsafeUnwrap()).toBeTrue()
+    })
+
+    it('should reject storage mode submissions when attachments are more than 20MB', async () => {
+      const processedResponse1 = generateNewAttachmentResponse({
+        content: Buffer.alloc(10000001),
+      })
+      const processedResponse2 = generateNewAttachmentResponse({
+        content: Buffer.alloc(10000000),
+      })
+
+      // Omit attributes only present in processed fields
+      const response1 = omit(processedResponse1, [
+        'isVisible',
+        'isUserVerified',
+      ])
+      const response2 = omit(processedResponse2, [
+        'isVisible',
+        'isUserVerified',
+      ])
+
+      const result = await SubmissionService.validateAttachments(
+        [response1, response2],
+        false,
+      )
       expect(result._unsafeUnwrapErr()).toEqual(new AttachmentTooLargeError())
     })
 
@@ -947,7 +991,10 @@ describe('submission.service', () => {
         'isUserVerified',
       ])
 
-      const result = await SubmissionService.validateAttachments([response1])
+      const result = await SubmissionService.validateAttachments(
+        [response1],
+        true,
+      )
       expect(result._unsafeUnwrapErr()).toEqual(new InvalidFileExtensionError())
     })
 
@@ -965,7 +1012,10 @@ describe('submission.service', () => {
         'isUserVerified',
       ])
 
-      const result = await SubmissionService.validateAttachments([response1])
+      const result = await SubmissionService.validateAttachments(
+        [response1],
+        true,
+      )
       expect(result._unsafeUnwrapErr()).toEqual(new InvalidFileExtensionError())
     })
 
@@ -981,7 +1031,10 @@ describe('submission.service', () => {
         'isUserVerified',
       ])
 
-      const result = await SubmissionService.validateAttachments([response1])
+      const result = await SubmissionService.validateAttachments(
+        [response1],
+        true,
+      )
       expect(result._unsafeUnwrap()).toEqual(true)
     })
 
@@ -999,7 +1052,10 @@ describe('submission.service', () => {
         'isUserVerified',
       ])
 
-      const result = await SubmissionService.validateAttachments([response1])
+      const result = await SubmissionService.validateAttachments(
+        [response1],
+        true,
+      )
       expect(result._unsafeUnwrap()).toEqual(true)
     })
   })
