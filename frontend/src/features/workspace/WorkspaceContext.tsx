@@ -19,6 +19,7 @@ export interface WorkspaceContextProps {
   workspaces?: Workspace[]
   setCurrentWorkspace: Dispatch<SetStateAction<string>>
   getFormWorkspace: (formId: FormId) => Workspace | undefined
+  isDefaultWorkspace: boolean
 }
 
 export const WorkspaceContext = createContext<

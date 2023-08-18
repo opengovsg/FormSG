@@ -147,7 +147,7 @@ export const RowActionsDrawer = ({
                       alignItems="center"
                       w="100%"
                     >
-                      <Text>Move to Workspace</Text>
+                      <Text>Move to Folder</Text>
                       <BiChevronRight fontSize="1.25rem" />
                     </Flex>
                   </Button>
@@ -203,7 +203,7 @@ const MoveWorkspaceDrawer = ({
         onClick={() => setIsMoveWorkspace(false)}
         leftIcon={<BiLeftArrowAlt fontSize="1.25rem" />}
       >
-        Move to Workspace
+        Back
       </Button>
       <Divider />
       {workspaces.map((workspace) => (
@@ -213,7 +213,9 @@ const MoveWorkspaceDrawer = ({
           onClick={() => handleWorkspaceClick(workspace)}
         >
           <Flex justifyContent="space-between" w="100%" alignItems="center">
-            <Text textStyle="body-1">{workspace.title}</Text>
+            <Text textStyle="body-1" noOfLines={1}>
+              {workspace.title}
+            </Text>
             {workspace._id === currFormWorkspace?._id && <Icon as={BxCheck} />}
           </Flex>
         </Button>

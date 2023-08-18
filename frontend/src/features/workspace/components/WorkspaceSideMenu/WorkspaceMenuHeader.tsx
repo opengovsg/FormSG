@@ -33,21 +33,21 @@ export const WorkspaceMenuHeader = ({
           <IconButton
             icon={<BiMenuAltLeft />}
             onClick={() => onMenuClick && onMenuClick()}
-            aria-label="open workspace drawer"
+            aria-label="open folder drawer"
             variant="clear"
             colorScheme="primary"
             color="secondary.500"
           />
         )}
         <Text textStyle="h4" color="secondary.700">
-          Workspaces
+          Folders
         </Text>
       </Flex>
 
       {shouldShowAddWorkspaceButton && (
         <IconButton
           size="lg"
-          aria-label="Create new workspace"
+          aria-label="Create new folder"
           variant="clear"
           colorScheme="primary"
           color="secondary.500"
