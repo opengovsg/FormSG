@@ -36,10 +36,26 @@ export const handler = async (
   // Retrieve from S3
   const s3Client = new S3Service(config.isTestOrDev, logger)
 
-  const s3ReadableStream = await s3Client.getS3FileStream({
-    bucketName: quarantineBucket,
-    objectKey: quarantineFileKey,
-  })
+  let s3ReadableStream
+  try {
+    s3ReadableStream = await s3Client.getS3FileStream({
+      bucketName: quarantineBucket,
+      objectKey: quarantineFileKey,
+    })
+  } catch (error) {
+    logger.error({
+      message: 'File not found',
+      error,
+      quarantineFileKey,
+    })
+    return {
+      statusCode: StatusCodes.NOT_FOUND,
+      body: JSON.stringify({
+        message: 'File not found',
+        fileKey: quarantineFileKey,
+      }),
+    }
+  }
 
   // Scan file
 
