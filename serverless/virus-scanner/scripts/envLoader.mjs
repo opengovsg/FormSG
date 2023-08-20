@@ -1,4 +1,4 @@
-import { GetParametersByPathCommand, SSMClient } from '@aws-sdk/client-ssm'
+import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm'
 import fs from 'fs'
 import { exit } from 'process'
 
@@ -8,8 +8,8 @@ const SHORT_ENV_MAP = {
   development: 'dev',
   prod: 'prod',
   production: 'prod',
-  stg: 'stg',
-  staging: 'stg',
+  stg: 'staging',
+  staging: 'staging',
   test: 'test',
   testing: 'test',
   uat: 'uat',
@@ -30,47 +30,20 @@ async function saveAllParameters() {
     exit(0)
   }
   const client = new SSMClient({ region: 'ap-southeast-1' })
-  const prefix = `/virus-scanner-${SHORT_ENV_MAP[process.env.ENV]}/`
-  const params = {}
+  const parameterName = `${SHORT_ENV_MAP[process.env.ENV]}-virus-scanner`
 
-  let nextToken
+  const res = await client.send(
+    new GetParameterCommand({
+      Name: parameterName,
+    }),
+  )
 
-  do {
-    // Handle pagination (max 10 params per call)
-    const res = await client.send(
-      new GetParametersByPathCommand({
-        Path: prefix,
-        Recursive: true,
-        WithDecryption: true,
-        ...(nextToken ? { NextToken: nextToken } : {}),
-      }),
-    )
+  const parameterString = (res.Parameter?.Value ?? '')
 
-    console.log('res:', res)
-    console.log('JSON.stringify(res):', JSON.stringify(res))
+  // Add on NODE_ENV
+  const parameterStringWithNodeEnv = parameterString.concat(`\nNODE_ENV=${process.env.ENV}`)
 
-    for (const parameter of res.Parameters ?? []) {
-      const paramName = parameter.Name.slice(prefix.length)
-      const isStringList = parameter.Type === 'StringList'
-      params[paramName] = isStringList
-        ? `[${parameter.Value.split(',').map((x) => `"${x}"`)}]`
-        : parameter.Value
-    }
-
-    nextToken = res.NextToken
-  } while (nextToken)
-
-  // format strings, JSON strings, and StringList appropriately
-  const envString = Object.entries(params)
-    .map(([k, v]) => {
-      const strippedValue = v.replace(/\s/g, '')
-      const looksLikeJson = strippedValue.includes('{')
-      return looksLikeJson ? `${k}=${strippedValue}` : `${k}='${strippedValue}'`
-    })
-    .join('\n')
-    .concat(`\nNODE_ENV=${process.env.ENV}`)
-
-  await fs.promises.writeFile(`.env.${process.env.ENV}`, envString)
+  await fs.promises.writeFile(`.env.${process.env.ENV}`, parameterStringWithNodeEnv)
 }
 
 await saveAllParameters()
