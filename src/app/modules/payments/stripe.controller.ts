@@ -7,8 +7,8 @@ import querystring from 'querystring'
 import Stripe from 'stripe'
 
 import {
+  DISALLOW_CONNECT_NON_WHITELIST_STRIPE_ACCOUNT,
   ERROR_QUERY_PARAM_KEY,
-  INVALID_DOMAIN_ERROR,
 } from '../../../../shared/constants'
 import {
   ErrorDto,
@@ -188,7 +188,8 @@ const _handleConnectOauthCallback: ControllerHandler<
         })
         if (error.constructor === InvalidDomainError) {
           const queryString = querystring.stringify({
-            [ERROR_QUERY_PARAM_KEY]: INVALID_DOMAIN_ERROR,
+            [ERROR_QUERY_PARAM_KEY]:
+              DISALLOW_CONNECT_NON_WHITELIST_STRIPE_ACCOUNT,
           })
           return res.redirect(redirectUrl + '?' + queryString)
         }
