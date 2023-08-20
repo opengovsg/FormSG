@@ -30,6 +30,11 @@ functions:
     timeout: 300
     # allocate more memory as the default 1028 MB size will cause lambda to crash
     memorySize: 2048
+    # Provision concurrency so at least one instance always hot
+    # https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/#provisioned-concurrency
+    # 1 for staging, 5 for prod
+    provisionedConcurrency: ${self:provider.stage === 'production' ? 5 : 1}
+
 
 plugins:
   # required so that env variables are loaded in functions
