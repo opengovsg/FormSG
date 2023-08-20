@@ -694,39 +694,41 @@ export const linkStripeAccountToForm = (
     logMeta,
   })
     .andThen((shouldValidateStripeEmailDomain) => {
-      if (shouldValidateStripeEmailDomain) {
-        return ResultAsync.fromPromise(
-          stripe.accounts.retrieve(accountId),
-          (error) => {
-            logger.error({
-              message: 'Error retriving Stripe account',
-              meta: {
-                action: 'linkStripeAccountToForm',
-                stripeAccountId: accountId,
-              },
-              error,
-            })
-            return new StripeFetchError(String(error))
-          },
-        ).andThen((account) => {
-          // Check if the email domain is whitelisted
-          if (!account.email) {
-            logger.error({
-              message: 'Error retriving Stripe account email',
-              meta: {
-                action: 'linkStripeAccountToForm',
-                stripeAccountId: accountId,
-                account,
-              },
-            })
-            return errAsync(
-              new StripeAccountError('Stripe account email is missing'),
-            )
-          }
-          return AuthService.validateEmailDomain(account.email)
-        })
+      if (!shouldValidateStripeEmailDomain) {
+        // skip validation
+        return okAsync(undefined)
       }
-      return okAsync(undefined)
+
+      return ResultAsync.fromPromise(
+        stripe.accounts.retrieve(accountId),
+        (error) => {
+          logger.error({
+            message: 'Error retriving Stripe account',
+            meta: {
+              action: 'linkStripeAccountToForm',
+              stripeAccountId: accountId,
+            },
+            error,
+          })
+          return new StripeFetchError(String(error))
+        },
+      ).andThen((account) => {
+        // Check if the email domain is whitelisted
+        if (!account.email) {
+          logger.error({
+            message: 'Error retriving Stripe account email',
+            meta: {
+              action: 'linkStripeAccountToForm',
+              stripeAccountId: accountId,
+              account,
+            },
+          })
+          return errAsync(
+            new StripeAccountError('Stripe account email is missing'),
+          )
+        }
+        return AuthService.validateEmailDomain(account.email)
+      })
     })
     .andThen(() =>
       ResultAsync.fromPromise(
