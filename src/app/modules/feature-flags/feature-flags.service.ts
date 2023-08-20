@@ -27,7 +27,7 @@ export const getEnabledFlags = (): ResultAsync<string[], DatabaseError> => {
 
 /**
  * Wrapper over getEnabledFlags function to gracefully handle errors
- * and returns the `options.defaultValue` instead.
+ * and returns the `options.fallbackValue` instead.
  *
  * @example
  * ```
@@ -35,24 +35,24 @@ export const getEnabledFlags = (): ResultAsync<string[], DatabaseError> => {
  *  action: 'linkStripeAccountToForm',
  * }
  * return getFeatureFlag(featureFlags.validateStripeEmailDomain, {
- *  defaultValue: false,
+ *  fallbackValue: false,
  *  logMeta,
  * })
  *.andThen((shouldValidateStripeEmailDomain) => ...)
  *```
  *
  * @param flag
- * @param options.defaultValue the value in the event that there's an error retrieving the feature flag
- * @returns boolean that represents the status of the feature flag or the default value
+ * @param options.fallbackValue the value to fall back to in the event that there's an error retrieving the feature flag
+ * @returns boolean that represents the status of the feature flag or the fallback value
  */
 export const getFeatureFlag = (
   flag: keyof typeof featureFlags,
   options?: {
-    defaultValue?: boolean
+    fallbackValue?: boolean
     logMeta?: CustomLoggerParams['meta']
   },
 ): ResultAsync<boolean, DatabaseError> => {
-  const _defaultValue = options?.defaultValue ?? false
+  const _fallbackValue = options?.fallbackValue ?? false
   return getEnabledFlags()
     .andThen((featureFlagsListResult) =>
       okAsync(featureFlagsListResult.includes(flag)),
@@ -67,6 +67,6 @@ export const getFeatureFlag = (
             },
         error,
       })
-      return okAsync(_defaultValue)
+      return okAsync(_fallbackValue)
     })
 }
