@@ -46,6 +46,9 @@ async function saveAllParameters() {
       }),
     )
 
+    console.log('res:', res)
+    console.log('JSON.stringify(res):', JSON.stringify(res))
+
     for (const parameter of res.Parameters ?? []) {
       const paramName = parameter.Name.slice(prefix.length)
       const isStringList = parameter.Type === 'StringList'
