@@ -30,7 +30,7 @@ async function saveAllParameters() {
     exit(0)
   }
   const client = new SSMClient({ region: 'ap-southeast-1' })
-  const prefix = `/${SHORT_ENV_MAP[process.env.ENV]}/virus-scanner/`
+  const prefix = `/virus-scanner/${SHORT_ENV_MAP[process.env.ENV]}/`
   const params = {}
 
   let nextToken
