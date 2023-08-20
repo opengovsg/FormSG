@@ -30,7 +30,7 @@ async function saveAllParameters() {
     exit(0)
   }
   const client = new SSMClient({ region: 'ap-southeast-1' })
-  const parameterName = `${SHORT_ENV_MAP[process.env.ENV]}-virus-scanner`
+  const parameterName = `/virus-scanner/${SHORT_ENV_MAP[process.env.ENV]}`
 
   const res = await client.send(
     new GetParameterCommand({
