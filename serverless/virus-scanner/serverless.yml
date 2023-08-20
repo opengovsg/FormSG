@@ -1,10 +1,19 @@
 service: virus-scanner
 frameworkVersion: '3'
 useDotenv: true
+custom:
+  currentStage: ${opt:stage}
+  serverlessIfElse:
+    - If: '"${opt:stage}" == "production"'
+      Set:
+        - provider.provisionedConcurrency: 5
+      ElseSet:
+        - provider.provisionedConcurrency: 1
 provider:
   name: aws
   region: ap-southeast-1
   stage: ${opt:stage}
+  provisionedConcurrency: 0
   iam:
     role:
       statements:
@@ -33,9 +42,10 @@ functions:
     # Provision concurrency so at least one instance always hot
     # https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/#provisioned-concurrency
     # 1 for staging, 5 for prod
-    provisionedConcurrency: ${self:provider.stage === 'production' ? 5 : 1}
+    provisionedConcurrency: ${self:provider.provisionedConcurrency}
 
 
 plugins:
   # required so that env variables are loaded in functions
   - serverless-dotenv-plugin
+  - serverless-plugin-ifelse
