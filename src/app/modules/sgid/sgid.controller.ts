@@ -8,6 +8,7 @@ import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 
 import {
+  SGID_CODE_VERIFIER_COOKIE_NAME,
   SGID_COOKIE_NAME,
   SGID_MYINFO_COOKIE_NAME,
   SGID_MYINFO_NRIC_NUMBER_SCOPE,
@@ -66,10 +67,23 @@ export const handleLogin: ControllerHandler<
     res.cookie('isLoginError', true)
     return res.redirect(target)
   }
+
+  const codeVerifier = req.cookies[SGID_CODE_VERIFIER_COOKIE_NAME]
+  if (!codeVerifier) {
+    logger.error({
+      message: 'Error logging in via sgID: code verifier cookie is empty',
+      meta,
+    })
+    res.cookie('isLoginError', true)
+    return res.redirect(target)
+  }
+  res.clearCookie(SGID_CODE_VERIFIER_COOKIE_NAME)
+
   if (form.authType === FormAuthType.SGID_MyInfo) {
-    const jwtResult = await SgidService.retrieveAccessToken(code).andThen(
-      (data) => SgidService.createSgidMyInfoJwt(data.accessToken),
-    )
+    const jwtResult = await SgidService.retrieveAccessToken(
+      code,
+      codeVerifier,
+    ).andThen((data) => SgidService.createSgidMyInfoJwt(data))
 
     if (jwtResult.isErr()) {
       logger.error({
@@ -81,8 +95,8 @@ export const handleLogin: ControllerHandler<
       return res.redirect(target)
     }
 
-    const { maxAge, jwt } = jwtResult.value
-    res.cookie(SGID_MYINFO_COOKIE_NAME, jwt, {
+    const { maxAge, jwt, sub } = jwtResult.value
+    res.cookie(SGID_MYINFO_COOKIE_NAME, JSON.stringify({ jwt, sub }), {
       maxAge,
       httpOnly: true,
       sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
@@ -92,7 +106,7 @@ export const handleLogin: ControllerHandler<
     return res.redirect(target)
   }
 
-  const jwtResult = await SgidService.retrieveAccessToken(code)
+  const jwtResult = await SgidService.retrieveAccessToken(code, codeVerifier)
     .andThen((data) => SgidService.retrieveUserInfo(data))
     .andThen(({ data }) =>
       SgidService.createSgidSingpassJwt(

@@ -55,3 +55,8 @@ export interface IPopulatedUser extends Omit<IUserSchema, 'apiToken'> {
   _id: any
   agency: AgencyDocument
 }
+
+export interface IPopulatedApiUser extends IUserSchema {
+  _id: any
+  agency: AgencyDocument
+}

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { SgidClient } from '@opengovsg/sgid-client'
+import { generatePkcePair, SgidClient } from '@opengovsg/sgid-client'
 import fs from 'fs'
 import Jwt from 'jsonwebtoken'
 import { MyInfoAttribute } from 'shared/types'
@@ -19,6 +19,8 @@ import { SgidServiceClass } from '../sgid.service'
 import {
   MOCK_ACCESS_TOKEN,
   MOCK_AUTH_CODE,
+  MOCK_CODE_CHALLENGE,
+  MOCK_CODE_VERIFIER,
   MOCK_DESTINATION,
   MOCK_JWT,
   MOCK_JWT_PAYLOAD,
@@ -27,6 +29,7 @@ import {
   MOCK_REDIRECT_URL,
   MOCK_REMEMBER_ME,
   MOCK_STATE,
+  MOCK_SUBJECT,
   MOCK_TOKEN_RESULT,
   MOCK_USER_INFO,
 } from './sgid.test.constants'
@@ -68,65 +71,93 @@ describe('sgid.service', () => {
     })
   })
   describe('createRedirectUrl', () => {
-    it('should return a string if ok', () => {
+    it('should return the redirect url if ok', () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
+      const mockGeneratePkcePair = jest.mocked(generatePkcePair)
       const sgidClient = jest.mocked(MockSgidClient.mock.instances[0])
+      mockGeneratePkcePair.mockReturnValue({
+        codeChallenge: MOCK_CODE_CHALLENGE,
+        codeVerifier: MOCK_CODE_VERIFIER,
+      })
       sgidClient.authorizationUrl.mockReturnValue({
         url: MOCK_REDIRECT_URL,
         nonce: MOCK_NONCE,
       })
-      const url = SgidService.createRedirectUrl(
+      const result = SgidService.createRedirectUrl(
         MOCK_DESTINATION,
         MOCK_REMEMBER_ME,
         SGID_DEFAULT_ATTR_LIST,
       )
-      expect(url._unsafeUnwrap()).toEqual(MOCK_REDIRECT_URL)
-      expect(sgidClient.authorizationUrl).toHaveBeenCalledWith(
-        MOCK_STATE,
-        SGID_SINGPASS_SCOPE,
-        null,
-      )
+      const unwrappedResult = result._unsafeUnwrap()
+      expect(unwrappedResult).toHaveProperty('redirectUrl', MOCK_REDIRECT_URL)
+      expect(unwrappedResult).toHaveProperty('codeVerifier', MOCK_CODE_VERIFIER)
+      expect(mockGeneratePkcePair).toHaveBeenCalledOnce()
+      expect(sgidClient.authorizationUrl).toHaveBeenCalledWith({
+        state: MOCK_STATE,
+        scope: SGID_SINGPASS_SCOPE,
+        nonce: null,
+        codeChallenge: MOCK_CODE_CHALLENGE,
+      })
     })
 
     it('should extract additional OAuth scopes from MyInfo', () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
+      const mockGeneratePkcePair = jest.mocked(generatePkcePair)
       const sgidClient = jest.mocked(MockSgidClient.mock.instances[0])
+      mockGeneratePkcePair.mockReturnValue({
+        codeChallenge: MOCK_CODE_CHALLENGE,
+        codeVerifier: MOCK_CODE_VERIFIER,
+      })
       sgidClient.authorizationUrl.mockReturnValue({
         url: MOCK_REDIRECT_URL,
         nonce: MOCK_NONCE,
       })
-      const url = SgidService.createRedirectUrl(
+      const result = SgidService.createRedirectUrl(
         MOCK_DESTINATION,
         MOCK_REMEMBER_ME,
         [MyInfoAttribute.RegisteredAddress, MyInfoAttribute.PassportExpiryDate],
       )
-      expect(url._unsafeUnwrap()).toEqual(MOCK_REDIRECT_URL)
-      expect(sgidClient.authorizationUrl).toHaveBeenCalledWith(
-        MOCK_STATE,
-        'openid myinfo.nric_number myinfo.registered_address myinfo.passport_expiry_date',
-        null,
-      )
+      const unwrappedResult = result._unsafeUnwrap()
+      expect(unwrappedResult).toHaveProperty('redirectUrl', MOCK_REDIRECT_URL)
+      expect(unwrappedResult).toHaveProperty('codeVerifier', MOCK_CODE_VERIFIER)
+      expect(mockGeneratePkcePair).toHaveBeenCalledOnce()
+      expect(sgidClient.authorizationUrl).toHaveBeenCalledWith({
+        state: MOCK_STATE,
+        scope:
+          'openid myinfo.nric_number myinfo.registered_address myinfo.passport_expiry_date',
+        nonce: null,
+        codeChallenge: MOCK_CODE_CHALLENGE,
+      })
     })
 
     it('should return error if not ok', () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
+      const mockGeneratePkcePair = jest.mocked(generatePkcePair)
       const sgidClient = jest.mocked(MockSgidClient.mock.instances[0])
+      mockGeneratePkcePair.mockReturnValue({
+        codeChallenge: MOCK_CODE_CHALLENGE,
+        codeVerifier: MOCK_CODE_VERIFIER,
+      })
       sgidClient.authorizationUrl.mockReturnValue({
         // @ts-ignore
         url: undefined,
         nonce: MOCK_NONCE,
       })
-      const url = SgidService.createRedirectUrl(
+      const result = SgidService.createRedirectUrl(
         MOCK_DESTINATION,
         MOCK_REMEMBER_ME,
         SGID_DEFAULT_ATTR_LIST,
       )
-      expect(url._unsafeUnwrapErr()).toBeInstanceOf(SgidCreateRedirectUrlError)
-      expect(sgidClient.authorizationUrl).toHaveBeenCalledWith(
-        MOCK_STATE,
-        SGID_SINGPASS_SCOPE,
-        null,
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        SgidCreateRedirectUrlError,
       )
+      expect(mockGeneratePkcePair).toHaveBeenCalledOnce()
+      expect(sgidClient.authorizationUrl).toHaveBeenCalledWith({
+        state: MOCK_STATE,
+        scope: 'openid myinfo.nric_number',
+        nonce: null,
+        codeChallenge: MOCK_CODE_CHALLENGE,
+      })
     })
   })
   describe('parseState', () => {
@@ -149,19 +180,33 @@ describe('sgid.service', () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
       const sgidClient = jest.mocked(MockSgidClient.mock.instances[0])
       sgidClient.callback.mockResolvedValue(MOCK_TOKEN_RESULT)
-      const result = await SgidService.retrieveAccessToken(MOCK_AUTH_CODE)
+      const result = await SgidService.retrieveAccessToken(
+        MOCK_AUTH_CODE,
+        MOCK_CODE_VERIFIER,
+      )
       expect(result._unsafeUnwrap()).toStrictEqual(MOCK_TOKEN_RESULT)
-      expect(sgidClient.callback).toHaveBeenCalledWith(MOCK_AUTH_CODE, null)
+      expect(sgidClient.callback).toHaveBeenCalledWith({
+        code: MOCK_AUTH_CODE,
+        nonce: null,
+        codeVerifier: MOCK_CODE_VERIFIER,
+      })
     })
     it('should return error on error', async () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
       const sgidClient = jest.mocked(MockSgidClient.mock.instances[0])
       sgidClient.callback.mockRejectedValue(new Error())
-      const result = await SgidService.retrieveAccessToken(MOCK_AUTH_CODE)
+      const result = await SgidService.retrieveAccessToken(
+        MOCK_AUTH_CODE,
+        MOCK_CODE_VERIFIER,
+      )
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(
         SgidFetchAccessTokenError,
       )
-      expect(sgidClient.callback).toHaveBeenCalledWith(MOCK_AUTH_CODE, null)
+      expect(sgidClient.callback).toHaveBeenCalledWith({
+        code: MOCK_AUTH_CODE,
+        nonce: null,
+        codeVerifier: MOCK_CODE_VERIFIER,
+      })
     })
   })
   describe('userInfo', () => {
@@ -178,9 +223,13 @@ describe('sgid.service', () => {
       sgidClient.userinfo.mockResolvedValue(mockUserInfoWithAdditional)
       const result = await SgidService.retrieveUserInfo({
         accessToken: MOCK_ACCESS_TOKEN,
+        sub: MOCK_SUBJECT,
       })
       expect(result._unsafeUnwrap()).toStrictEqual(mockUserInfoWithAdditional)
-      expect(sgidClient.userinfo).toHaveBeenCalledWith(MOCK_ACCESS_TOKEN)
+      expect(sgidClient.userinfo).toHaveBeenCalledWith({
+        accessToken: MOCK_ACCESS_TOKEN,
+        sub: MOCK_SUBJECT,
+      })
     })
     it('should return error on error', async () => {
       const SgidService = new SgidServiceClass(MOCK_OPTIONS)
@@ -188,9 +237,13 @@ describe('sgid.service', () => {
       sgidClient.userinfo.mockRejectedValue(new Error())
       const result = await SgidService.retrieveUserInfo({
         accessToken: MOCK_ACCESS_TOKEN,
+        sub: MOCK_SUBJECT,
       })
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(SgidFetchUserInfoError)
-      expect(sgidClient.userinfo).toHaveBeenCalledWith(MOCK_ACCESS_TOKEN)
+      expect(sgidClient.userinfo).toHaveBeenCalledWith({
+        accessToken: MOCK_ACCESS_TOKEN,
+        sub: MOCK_SUBJECT,
+      })
     })
   })
   describe('createJwt', () => {

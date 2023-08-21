@@ -33,10 +33,12 @@ const ProductItem = ({
   product,
   onEditClick,
   onDeleteClick,
+  isDisabled,
 }: {
   product: Product
   onEditClick: () => void
   onDeleteClick: () => void
+  isDisabled: boolean
 }) => {
   return (
     <>
@@ -53,12 +55,14 @@ const ProductItem = ({
 
           <ButtonGroup variant="clear" colorScheme="secondary" spacing={0}>
             <IconButton
+              isDisabled={isDisabled}
               icon={<BiEditAlt type="solid" />}
               color="primary.500"
               aria-label={'Edit'}
               onClick={onEditClick}
             />
             <IconButton
+              isDisabled={isDisabled}
               icon={<BiTrash />}
               color="danger.500"
               aria-label={'Delete'}
@@ -132,6 +136,7 @@ const ProductList = ({
           <ProductItem
             key={idx}
             product={productDetail}
+            isDisabled={!paymentIsEnabled}
             onEditClick={() => handleAddOrEditClick(productDetail)}
             onDeleteClick={() => handleDeleteClick(productDetail)}
           />

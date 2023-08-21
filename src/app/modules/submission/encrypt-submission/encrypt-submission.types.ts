@@ -1,5 +1,4 @@
 import {
-  StorageModeAttachmentsMap,
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../../shared/types'
@@ -12,15 +11,6 @@ import {
   StorageModeSubmissionBodyWithContextDto,
 } from '../../../../types/api'
 import { ControllerHandler } from '../../core/core.types'
-import { ProcessedFieldResponse } from '../submission.types'
-
-export type EncryptSubmissionBodyAfterProcess = {
-  encryptedContent: string
-  attachments?: StorageModeAttachmentsMap
-  isPreview: boolean
-  version: number
-  parsedResponses: ProcessedFieldResponse[]
-}
 
 export type AttachmentMetadata = Map<string, string>
 

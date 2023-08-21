@@ -22,6 +22,7 @@ import {
   FormPermission,
   FormSettings,
   FormStartPage,
+  FormWebhookResponseModeSettings,
   LogicDto,
   MyInfoAttribute,
   PublicFormDto,
@@ -183,6 +184,10 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
    * Retrieve form settings.
    */
   getSettings(): FormSettings
+  /**
+   * Retrieve form webhook settings.
+   */
+  getWebhookAndResponseModeSettings(): FormWebhookResponseModeSettings
   /**
    * Archives form.
    * @returns form that has been archived

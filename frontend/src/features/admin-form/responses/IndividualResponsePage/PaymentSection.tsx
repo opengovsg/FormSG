@@ -56,6 +56,7 @@ export const PaymentSection = ({
           </Box>
           <PaymentDataItem {...paymentDataMap['paymentIntentId']} isMonospace />
           <PaymentDataItem {...paymentDataMap['amount']} />
+          <PaymentDataItem {...paymentDataMap['products']} />
           <PaymentDataItem {...paymentDataMap['paymentDate']} />
           <Box py="0.75rem">
             <Divider />

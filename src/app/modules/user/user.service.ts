@@ -5,6 +5,7 @@ import validator from 'validator'
 import {
   IAdminVerificationDoc,
   IAgencySchema,
+  IPopulatedApiUser,
   IPopulatedUser,
   IUserSchema,
   UpsertOtpParams,
@@ -253,6 +254,50 @@ export const getPopulatedUserById = (
 }
 
 /**
+ * Retrieved the user with populated references by given id.
+ * @param userId the id of the user to retrieve
+ * @returns ok(populated user document) if user exists
+ * @returns err(MissingUserError) if user document cannot be retrieved with given id
+ * @returns err(DatabaseError) if any errors occur whilst querying the database
+ */
+export const getPopulatedApiUserById = (
+  userId: IUserSchema['_id'],
+): ResultAsync<IPopulatedApiUser, DatabaseError | MissingUserError> => {
+  const logMeta = {
+    action: 'getPopulatedApiUserById',
+    userId,
+  }
+
+  return ResultAsync.fromPromise(
+    UserModel.findById(userId)
+      .select('email agency apiToken')
+      .populate({
+        path: 'agency',
+        model: AGENCY_SCHEMA_ID,
+      })
+      .exec(),
+    (error) => {
+      logger.error({
+        message: 'Database error when retrieving populated API user by id',
+        meta: logMeta,
+        error,
+      })
+
+      return new DatabaseError()
+    },
+  ).andThen((retrievedUser) => {
+    if (!retrievedUser) {
+      logger.warn({
+        message: 'Unable to retrieve API user',
+        meta: logMeta,
+      })
+      return errAsync(new MissingUserError())
+    }
+    return okAsync(retrievedUser as IPopulatedApiUser)
+  })
+}
+
+/**
  * Retrieves the user with the given email. If the user does not yet exist, a
  * new user document is created and returned.
  * @param email the email of the user to retrieve
@@ -312,6 +357,37 @@ export const findUserById = (
     })
     return new DatabaseError()
   }).andThen((admin) => {
+    if (!admin) {
+      return errAsync(new MissingUserError())
+    }
+    return okAsync(admin)
+  })
+}
+
+/**
+ * Retrieves the user with the given id.
+ * @param userId the id of the user to retrieve
+ * @returns ok(user document) if retrieval is successful
+ * @returns err(DatabaseError) if database errors occurs whilst retrieving user
+ * @returns err(MissingUserError) if user does not exist in the database
+ */
+export const findApiUserById = (
+  userId: string,
+): ResultAsync<IUserSchema, MissingUserError | DatabaseError> => {
+  return ResultAsync.fromPromise(
+    UserModel.findById(userId).select('apiToken').exec(),
+    (error) => {
+      logger.error({
+        message: 'Database find user error',
+        meta: {
+          action: 'findUserById',
+          userId,
+        },
+        error,
+      })
+      return new DatabaseError()
+    },
+  ).andThen((admin) => {
     if (!admin) {
       return errAsync(new MissingUserError())
     }
