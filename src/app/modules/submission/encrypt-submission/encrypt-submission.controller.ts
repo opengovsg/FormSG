@@ -52,6 +52,7 @@ import {
   ensurePublicForm,
   ensureValidCaptcha,
 } from './encrypt-submission.ensures'
+import { SubmissionFailedError } from './encrypt-submission.errors'
 import {
   addPaymentDataStream,
   checkFormIsEncryptMode,
@@ -114,7 +115,12 @@ const submitEncryptModeForm = async (
     res,
   })
 
-  if (!hasEnsuredAll) return
+  if (!hasEnsuredAll && !res.headersSent) {
+    const { errorMessage, statusCode } = mapRouteError(
+      new SubmissionFailedError(),
+    )
+    return res.status(statusCode).json({ message: errorMessage })
+  }
 
   const encryptedPayload = req.formsg.encryptedPayload
 

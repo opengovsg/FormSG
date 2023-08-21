@@ -15,3 +15,11 @@ export class EncryptedPayloadExistsError extends ApplicationError {
     super(message)
   }
 }
+
+export class SubmissionFailedError extends ApplicationError {
+  constructor(
+    message = 'The form submission could not be processed. Please try again.',
+  ) {
+    super(message)
+  }
+}
