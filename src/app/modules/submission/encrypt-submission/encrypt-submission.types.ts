@@ -4,11 +4,10 @@ import {
 } from '../../../../../shared/types'
 import { IPopulatedEncryptedForm } from '../../../../types'
 import {
-  EncryptSubmissionBodyWithContextDto,
   EncryptSubmissionDto,
-  FormsgContentOptionalSubmissionDto,
+  FormLoadedDto,
+  FormsgCompleteDto,
   ParsedStorageModeSubmissionBody,
-  StorageModeSubmissionBodyWithContextDto,
 } from '../../../../types/api'
 import { ControllerHandler } from '../../core/core.types'
 
@@ -22,25 +21,45 @@ export type SaveEncryptSubmissionParams = {
   attachmentMetadata?: Map<string, string>
 }
 
-export type createFormsgAndRetrieveFormMiddlewareHandlerType =
+export type CreateFormsgAndRetrieveFormMiddlewareHandlerType =
   ControllerHandler<
     { formId: string },
     SubmissionResponseDto | SubmissionErrorDto,
-    (ParsedStorageModeSubmissionBody | EncryptSubmissionDto) &
-      FormsgContentOptionalSubmissionDto,
+    ParsedStorageModeSubmissionBody | EncryptSubmissionDto,
     { captchaResponse?: unknown; captchaType?: unknown }
   >
+
+export type CreateFormsgAndRetrieveFormMiddlewareHandlerRequest =
+  Parameters<CreateFormsgAndRetrieveFormMiddlewareHandlerType>[0] & {
+    formsg?: FormLoadedDto
+  }
 
 export type StorageSubmissionMiddlewareHandlerType = ControllerHandler<
   { formId: string },
   SubmissionResponseDto | SubmissionErrorDto,
-  StorageModeSubmissionBodyWithContextDto,
+  ParsedStorageModeSubmissionBody,
   { captchaResponse?: unknown; captchaType?: unknown }
 >
+
+export type StorageSubmissionMiddlewareHandlerRequest =
+  Parameters<StorageSubmissionMiddlewareHandlerType>[0] & {
+    formsg: FormLoadedDto
+  }
 
 export type EncryptSubmissionMiddlewareHandlerType = ControllerHandler<
   { formId: string },
   SubmissionResponseDto | SubmissionErrorDto,
-  EncryptSubmissionBodyWithContextDto,
+  EncryptSubmissionDto,
   { captchaResponse?: unknown; captchaType?: unknown }
 >
+
+export type EncryptSubmissionMiddlewareHandlerRequest =
+  Parameters<EncryptSubmissionMiddlewareHandlerType>[0] & FormsgCompleteDto
+
+export type SubmitEncryptModeFormHandlerType = ControllerHandler<
+  { formId: string },
+  SubmissionResponseDto | SubmissionErrorDto
+>
+
+export type SubmitEncryptModeFormHandlerRequest =
+  Parameters<SubmitEncryptModeFormHandlerType>[0] & FormsgCompleteDto

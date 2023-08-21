@@ -2,7 +2,7 @@ import { ApplicationError } from '../../core/core.errors'
 
 export class FormsgReqBodyExistsError extends ApplicationError {
   constructor(
-    message = 'The formsg key already exists in the request body. Please check that you are not overwriting the request body.',
+    message = 'The formsg key already exists in request. Please check that you are not overwriting it.',
   ) {
     super(message)
   }
@@ -10,7 +10,7 @@ export class FormsgReqBodyExistsError extends ApplicationError {
 
 export class EncryptedPayloadExistsError extends ApplicationError {
   constructor(
-    message = 'Encrypted payload already exists in req.body.formsg. Please check that you are not overwriting it.',
+    message = 'Encrypted payload already exists in req.formsg. Please check that you are not overwriting it.',
   ) {
     super(message)
   }

@@ -8,7 +8,7 @@ import {
   StorageModeAttachment,
   StorageModeAttachmentsMap,
 } from '../../../../../shared/types'
-import { EncryptFormFieldResponse } from '../../../../types/api'
+import { EncryptFormFieldResponse, FormLoadedDto } from '../../../../types/api'
 import { paymentConfig } from '../../../config/features/payment.config'
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -26,8 +26,11 @@ import {
 } from './encrypt-submission.errors'
 import { checkFormIsEncryptMode } from './encrypt-submission.service'
 import {
-  createFormsgAndRetrieveFormMiddlewareHandlerType,
+  CreateFormsgAndRetrieveFormMiddlewareHandlerRequest,
+  CreateFormsgAndRetrieveFormMiddlewareHandlerType,
+  EncryptSubmissionMiddlewareHandlerRequest,
   EncryptSubmissionMiddlewareHandlerType,
+  StorageSubmissionMiddlewareHandlerRequest,
   StorageSubmissionMiddlewareHandlerType,
 } from './encrypt-submission.types'
 import { mapRouteError } from './encrypt-submission.utils'
@@ -121,50 +124,56 @@ export const validateStorageSubmissionParams = celebrate({
  * Guardrail to prevent new endpoint from being used for regular storage mode forms.
  * TODO (FRM-1232): remove this guardrail when encryption boundary is shifted.
  */
-export const checkNewBoundaryEnabled: StorageSubmissionMiddlewareHandlerType =
-  async (req, res, next) => {
-    const formDef = req.body.formsg.formDef
+export const checkNewBoundaryEnabled = async (
+  req: StorageSubmissionMiddlewareHandlerRequest,
+  res: Parameters<StorageSubmissionMiddlewareHandlerType>[1],
+  next: Parameters<StorageSubmissionMiddlewareHandlerType>[2],
+) => {
+  const formDef = req.formsg.formDef
 
-    if (!formDef.encryptionBoundaryShift) {
-      return res
-        .status(StatusCodes.FORBIDDEN)
-        .json({ message: 'This endpoint has not been enabled for this form.' })
-    }
-
-    return next()
+  if (!formDef.encryptionBoundaryShift) {
+    return res
+      .status(StatusCodes.FORBIDDEN)
+      .json({ message: 'This endpoint has not been enabled for this form.' })
   }
 
-export const validateSubmission: StorageSubmissionMiddlewareHandlerType =
-  async (req, res, next) => {
-    const formDef = req.body.formsg.formDef
+  return next()
+}
 
-    const logMeta = {
-      action: 'validateSubmission',
-      ...createReqMeta(req),
-      formId: formDef.id,
-    }
+export const validateSubmission = async (
+  req: StorageSubmissionMiddlewareHandlerRequest,
+  res: Parameters<StorageSubmissionMiddlewareHandlerType>[1],
+  next: Parameters<StorageSubmissionMiddlewareHandlerType>[2],
+) => {
+  const formDef = req.formsg.formDef
 
-    // Validate submission
-    return await SubmissionService.validateAttachments(
-      req.body.responses,
-      formDef.responseMode,
+  const logMeta = {
+    action: 'validateSubmission',
+    ...createReqMeta(req),
+    formId: formDef.id,
+  }
+
+  // Validate submission
+  return await SubmissionService.validateAttachments(
+    req.body.responses,
+    formDef.responseMode,
+  )
+    .andThen(() =>
+      ParsedResponsesObject.parseResponses(formDef, req.body.responses),
     )
-      .andThen(() =>
-        ParsedResponsesObject.parseResponses(formDef, req.body.responses),
-      )
-      .map(() => next())
-      .mapErr((error) => {
-        logger.error({
-          message: 'Error processing responses',
-          meta: logMeta,
-          error,
-        })
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({
-          message: errorMessage,
-        })
+    .map(() => next())
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error processing responses',
+        meta: logMeta,
+        error,
       })
-  }
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({
+        message: errorMessage,
+      })
+    })
+}
 
 const encryptAttachment = async (
   attachment: Buffer,
@@ -223,13 +232,13 @@ const getEncryptedAttachmentsMapFromAttachmentsMap = async (
 /**
  * Encrypt submission content before saving to DB.
  */
-export const encryptSubmission: StorageSubmissionMiddlewareHandlerType = async (
-  req,
-  res,
-  next,
+export const encryptSubmission = async (
+  req: StorageSubmissionMiddlewareHandlerRequest,
+  res: Parameters<StorageSubmissionMiddlewareHandlerType>[1],
+  next: Parameters<StorageSubmissionMiddlewareHandlerType>[2],
 ) => {
   const formId = req.params.formId
-  const encryptedFormDef = req.body.formsg.encryptedFormDef
+  const encryptedFormDef = req.formsg.encryptedFormDef
   const publicKey = encryptedFormDef.publicKey
 
   const attachmentsMap: Record<string, Buffer> = {}
@@ -284,7 +293,7 @@ export const encryptSubmission: StorageSubmissionMiddlewareHandlerType = async (
     publicKey,
   )
 
-  req.body.formsg.encryptedPayload = {
+  req.formsg.encryptedPayload = {
     attachments: encryptedAttachments,
     responses: filteredResponses.value as EncryptFormFieldResponse[],
     encryptedContent,
@@ -295,85 +304,86 @@ export const encryptSubmission: StorageSubmissionMiddlewareHandlerType = async (
 }
 
 /**
- * Moves encrypted payload present in req.body to req.body.formsg.encryptedPayload.
+ * Moves encrypted payload present in req.body to req.formsg.encryptedPayload.
  * Should only be used for the old storage mode submission endpoint (/api/v3/forms/:formId/submissions/encrypt).
  */
-export const moveEncryptedPayload: EncryptSubmissionMiddlewareHandlerType =
-  async (req, res, next) => {
-    if (req.body.formsg.encryptedPayload) {
-      return res.send(new EncryptedPayloadExistsError())
-    }
-
-    const reqBody = req.body
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { formsg: _, ...originalReqBody } = reqBody
-    const encryptedPayload = reqBody.formsg.encryptedPayload ?? originalReqBody
-
-    req.body.formsg.encryptedPayload = encryptedPayload
-    return next()
+export const moveEncryptedPayload = async (
+  req: EncryptSubmissionMiddlewareHandlerRequest,
+  res: Parameters<EncryptSubmissionMiddlewareHandlerType>[1],
+  next: Parameters<EncryptSubmissionMiddlewareHandlerType>[2],
+) => {
+  if (req.formsg.encryptedPayload) {
+    return res.send(new EncryptedPayloadExistsError())
   }
 
-export const createFormsgAndRetrieveForm: createFormsgAndRetrieveFormMiddlewareHandlerType =
-  async (req, res, next) => {
-    const { formId } = req.params
+  req.formsg.encryptedPayload = req.body
+  return next()
+}
 
-    const logMeta = {
-      action: 'createFormsgAndRetrieveForm',
-      ...createReqMeta(req),
-      formId,
-    }
+export const createFormsgAndRetrieveForm = async (
+  req: CreateFormsgAndRetrieveFormMiddlewareHandlerRequest,
+  res: Parameters<CreateFormsgAndRetrieveFormMiddlewareHandlerType>[1],
+  next: Parameters<CreateFormsgAndRetrieveFormMiddlewareHandlerType>[2],
+) => {
+  const { formId } = req.params
 
-    // Step 1: Create formsg namespace in req.body
-    if (req.body.formsg) return res.send(new FormsgReqBodyExistsError())
-    else {
-      req.body.formsg = {}
-    }
-
-    // Step 2a: Retrieve form
-    const formResult = await FormService.retrieveFullFormById(formId)
-    if (formResult.isErr()) {
-      logger.warn({
-        message: 'Failed to retrieve form from database',
-        meta: logMeta,
-        error: formResult.error,
-      })
-      const { errorMessage, statusCode } = mapRouteError(formResult.error)
-      return res.status(statusCode).json({ message: errorMessage })
-    }
-
-    // Step 2b: Set formsg.formDef in req.body
-    const formDef = formResult.value
-    req.body.formsg.formDef = formDef
-
-    // Step 3a: Check if form is encrypt mode
-    const checkFormIsEncryptModeResult = checkFormIsEncryptMode(formDef)
-    if (checkFormIsEncryptModeResult.isErr()) {
-      logger.error({
-        message:
-          'Trying to submit non-encrypt mode submission on encrypt-form submission endpoint',
-        meta: logMeta,
-      })
-      const { statusCode, errorMessage } = mapRouteError(
-        checkFormIsEncryptModeResult.error,
-      )
-      return res.status(statusCode).json({
-        message: errorMessage,
-      })
-    }
-
-    // Step 3b: Set formsg.encryptedFormDef in req.body
-    req.body.formsg.encryptedFormDef = checkFormIsEncryptModeResult.value
-
-    // Step 4: Check if form has public key
-    if (!formDef.publicKey) {
-      logger.warn({
-        message: 'Form does not have a public key',
-        meta: logMeta,
-      })
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: 'Form does not have a public key',
-      })
-    }
-
-    return next()
+  const logMeta = {
+    action: 'createFormsgAndRetrieveForm',
+    ...createReqMeta(req),
+    formId,
   }
+
+  // Step 1: Create formsg namespace in req.body
+  if (req.formsg) return res.send(new FormsgReqBodyExistsError())
+  const formsg = {} as FormLoadedDto
+
+  // Step 2a: Retrieve form
+  const formResult = await FormService.retrieveFullFormById(formId)
+  if (formResult.isErr()) {
+    logger.warn({
+      message: 'Failed to retrieve form from database',
+      meta: logMeta,
+      error: formResult.error,
+    })
+    const { errorMessage, statusCode } = mapRouteError(formResult.error)
+    return res.status(statusCode).json({ message: errorMessage })
+  }
+
+  // Step 2b: Set formsg.formDef in req.body
+  const formDef = formResult.value
+  formsg.formDef = formDef
+
+  // Step 3a: Check if form is encrypt mode
+  const checkFormIsEncryptModeResult = checkFormIsEncryptMode(formDef)
+  if (checkFormIsEncryptModeResult.isErr()) {
+    logger.error({
+      message:
+        'Trying to submit non-encrypt mode submission on encrypt-form submission endpoint',
+      meta: logMeta,
+    })
+    const { statusCode, errorMessage } = mapRouteError(
+      checkFormIsEncryptModeResult.error,
+    )
+    return res.status(statusCode).json({
+      message: errorMessage,
+    })
+  }
+
+  // Step 3b: Set formsg.encryptedFormDef in req.body
+  formsg.encryptedFormDef = checkFormIsEncryptModeResult.value
+
+  // Step 4: Check if form has public key
+  if (!formDef.publicKey) {
+    logger.warn({
+      message: 'Form does not have a public key',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: 'Form does not have a public key',
+    })
+  }
+
+  req.formsg = formsg
+
+  return next()
+}

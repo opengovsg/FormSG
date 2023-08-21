@@ -17,14 +17,12 @@ import {
   StorageModeSubmissionContentDto,
   StorageModeSubmissionDto,
   StorageModeSubmissionMetadataList,
-  SubmissionErrorDto,
-  SubmissionResponseDto,
 } from '../../../../../shared/types'
 import {
   IPopulatedEncryptedForm,
   StripePaymentMetadataDto,
 } from '../../../../types'
-import { FormsgSetSubmissionDto } from '../../../../types/api'
+import { FormsgCompleteDto } from '../../../../types/api'
 import config from '../../../config/config'
 import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -68,6 +66,10 @@ import {
   uploadAttachments,
 } from './encrypt-submission.service'
 import {
+  SubmitEncryptModeFormHandlerRequest,
+  SubmitEncryptModeFormHandlerType,
+} from './encrypt-submission.types'
+import {
   createEncryptedSubmissionDto,
   getPaymentAmount,
   mapRouteError,
@@ -82,15 +84,9 @@ const Payment = getPaymentModel(mongoose)
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
 const Joi = BaseJoi.extend(JoiDate)
 
-type SubmitEncryptModeFormHandlerType = ControllerHandler<
-  { formId: string },
-  SubmissionResponseDto | SubmissionErrorDto,
-  FormsgSetSubmissionDto
->
-
-const submitEncryptModeForm: SubmitEncryptModeFormHandlerType = async (
-  req,
-  res,
+const submitEncryptModeForm = async (
+  req: SubmitEncryptModeFormHandlerRequest,
+  res: Parameters<SubmitEncryptModeFormHandlerType>[1],
 ) => {
   const { formId } = req.params
 
@@ -100,8 +96,8 @@ const submitEncryptModeForm: SubmitEncryptModeFormHandlerType = async (
     formId,
   }
 
-  const formDef = req.body.formsg.formDef
-  const form = req.body.formsg.encryptedFormDef
+  const formDef = req.formsg.formDef
+  const form = req.formsg.encryptedFormDef
 
   setFormTags(formDef)
 
@@ -125,7 +121,7 @@ const submitEncryptModeForm: SubmitEncryptModeFormHandlerType = async (
     })
   }
 
-  const encryptedPayload = req.body.formsg.encryptedPayload
+  const encryptedPayload = req.formsg.encryptedPayload
 
   // Create Incoming Submission
   const { encryptedContent, responses, responseMetadata, paymentProducts } =
@@ -294,7 +290,7 @@ const submitEncryptModeForm: SubmitEncryptModeFormHandlerType = async (
     encryptedContent: incomingSubmission.encryptedContent,
     verifiedContent: verified,
     attachmentMetadata,
-    version: req.body.formsg.encryptedPayload.version,
+    version: req.formsg.encryptedPayload.version,
     responseMetadata,
   }
 
@@ -338,13 +334,13 @@ const _createPaymentSubmission = async ({
   responseMetadata,
   paymentProducts,
 }: {
-  req: Parameters<SubmitEncryptModeFormHandlerType>[0]
+  req: Parameters<SubmitEncryptModeFormHandlerType>[0] & FormsgCompleteDto
   res: Parameters<SubmitEncryptModeFormHandlerType>[1]
   form: IPopulatedEncryptedForm
   paymentProducts: StorageModeSubmissionContentDto['paymentProducts']
   [others: string]: any
 }) => {
-  const encryptedPayload = req.body.formsg.encryptedPayload
+  const encryptedPayload = req.formsg.encryptedPayload
 
   const amount = getPaymentAmount(
     form.payments_field,
