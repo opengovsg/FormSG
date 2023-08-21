@@ -224,7 +224,7 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
     },
   },
 
-  newEncryptionBoundary: {
+  encryptionBoundaryShift: {
     type: Boolean,
     default: false,
   },

@@ -125,7 +125,7 @@ export const checkNewBoundaryEnabled: StorageSubmissionMiddlewareHandlerType =
   async (req, res, next) => {
     const formDef = req.body.formsg.formDef
 
-    if (!formDef.newEncryptionBoundary) {
+    if (!formDef.encryptionBoundaryShift) {
       return res
         .status(StatusCodes.FORBIDDEN)
         .json({ message: 'This endpoint has not been enabled for this form.' })

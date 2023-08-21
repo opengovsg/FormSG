@@ -152,7 +152,7 @@ export const getFilteredResponses = (
 ): Result<FilteredResponse[], ConflictError> => {
   const isEncryptedMode =
     form.responseMode === FormResponseMode.Encrypt &&
-    !form.newEncryptionBoundary
+    !form.encryptionBoundaryShift
   const responseModeFilter = getResponseModeFilter(isEncryptedMode)
   const formFieldModeFilter = getFormFieldModeFilter(isEncryptedMode)
 

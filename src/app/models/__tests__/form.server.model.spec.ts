@@ -431,7 +431,7 @@ describe('Form Model', () => {
 
     describe('Encrypted form schema', () => {
       const ENCRYPT_FORM_DEFAULTS = merge(
-        { responseMode: 'encrypt', newEncryptionBoundary: false },
+        { responseMode: 'encrypt', encryptionBoundaryShift: false },
         FORM_DEFAULTS,
         PAYMENTS_DEFAULTS,
       )

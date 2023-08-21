@@ -111,7 +111,7 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   created?: Date
   lastModified?: Date
 
-  newEncryptionBoundary?: boolean
+  encryptionBoundaryShift?: boolean
 
   /**
    * Replaces the field corresponding to given id to given new field
@@ -299,7 +299,7 @@ export interface IEmailForm extends IForm {
   // strings to string array.
   emails: string[] | string
   publicKey?: never
-  newEncryptionBoundary?: never
+  encryptionBoundaryShift?: never
 }
 
 export type IEmailFormSchema = IEmailForm & IFormSchema

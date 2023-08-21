@@ -151,13 +151,13 @@ export interface FormBase {
 
   responseMode: FormResponseMode
 
-  newEncryptionBoundary?: boolean
+  encryptionBoundaryShift?: boolean
 }
 
 export interface EmailFormBase extends FormBase {
   responseMode: FormResponseMode.Email
   emails: string[]
-  newEncryptionBoundary?: never
+  encryptionBoundaryShift?: never
 }
 
 export interface StorageFormBase extends FormBase {

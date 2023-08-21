@@ -125,7 +125,7 @@ describe('IncomingEncryptSubmission', () => {
       {
         responseMode: FormResponseMode.Encrypt,
         form_fields: basicFormFields,
-        newEncryptionBoundary: false,
+        encryptionBoundaryShift: false,
       } as unknown as IPopulatedEncryptedForm,
       responses,
       '',
@@ -175,7 +175,7 @@ describe('IncomingEncryptSubmission', () => {
       {
         responseMode: FormResponseMode.Encrypt,
         form_fields: basicFormFields,
-        newEncryptionBoundary: true,
+        encryptionBoundaryShift: true,
       } as unknown as IPopulatedEncryptedForm,
       responses,
       '',
