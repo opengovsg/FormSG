@@ -1,5 +1,3 @@
-import { StatusCodes } from 'http-status-codes'
-
 import { CaptchaTypes } from '../../../../../shared/types/captcha'
 import { IPopulatedForm } from '../../../../types'
 import * as CaptchaService from '../../../services/captcha/captcha.service'
@@ -108,9 +106,6 @@ export const ensurePublicForm: Middleware<FormSubmissionPipelineContext> = (
       error: formPublicResult.error,
     })
     const { statusCode, errorMessage } = mapRouteError(formPublicResult.error)
-    if (statusCode === StatusCodes.GONE) {
-      return res.sendStatus(statusCode)
-    }
     return res.status(statusCode).json({
       message: errorMessage,
     })
