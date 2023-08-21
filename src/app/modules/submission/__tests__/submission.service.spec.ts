@@ -30,6 +30,7 @@ import {
 import {
   AutoReplyOptions,
   BasicField,
+  FormResponseMode,
   SubmissionType,
 } from '../../../../../shared/types'
 import {
@@ -930,7 +931,7 @@ describe('submission.service', () => {
 
       const result = await SubmissionService.validateAttachments(
         [response1, response2],
-        true,
+        FormResponseMode.Email,
       )
       expect(result._unsafeUnwrapErr()).toEqual(new AttachmentTooLargeError())
     })
@@ -949,7 +950,7 @@ describe('submission.service', () => {
 
       const result = await SubmissionService.validateAttachments(
         [response1],
-        false,
+        FormResponseMode.Encrypt,
       )
       expect(result._unsafeUnwrap()).toBeTrue()
     })
@@ -974,7 +975,7 @@ describe('submission.service', () => {
 
       const result = await SubmissionService.validateAttachments(
         [response1, response2],
-        false,
+        FormResponseMode.Encrypt,
       )
       expect(result._unsafeUnwrapErr()).toEqual(new AttachmentTooLargeError())
     })
@@ -993,7 +994,7 @@ describe('submission.service', () => {
 
       const result = await SubmissionService.validateAttachments(
         [response1],
-        true,
+        FormResponseMode.Email,
       )
       expect(result._unsafeUnwrapErr()).toEqual(new InvalidFileExtensionError())
     })
@@ -1014,7 +1015,7 @@ describe('submission.service', () => {
 
       const result = await SubmissionService.validateAttachments(
         [response1],
-        true,
+        FormResponseMode.Email,
       )
       expect(result._unsafeUnwrapErr()).toEqual(new InvalidFileExtensionError())
     })
@@ -1033,7 +1034,7 @@ describe('submission.service', () => {
 
       const result = await SubmissionService.validateAttachments(
         [response1],
-        true,
+        FormResponseMode.Email,
       )
       expect(result._unsafeUnwrap()).toEqual(true)
     })
@@ -1054,7 +1055,7 @@ describe('submission.service', () => {
 
       const result = await SubmissionService.validateAttachments(
         [response1],
-        true,
+        FormResponseMode.Email,
       )
       expect(result._unsafeUnwrap()).toEqual(true)
     })

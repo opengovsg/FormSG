@@ -1,6 +1,7 @@
 import Busboy from 'busboy'
 import { IncomingHttpHeaders } from 'http'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
+import { FormResponseMode } from 'shared/types'
 
 import { MB } from '../../../../../shared/constants/file'
 import { IAttachmentInfo } from '../../../../types'
@@ -31,7 +32,7 @@ const hasContentTypeHeaders = (headers: IncomingHttpHeaders) => {
  */
 export const createMultipartReceiver = (
   headers: IncomingHttpHeaders,
-  isEmailMode: boolean,
+  responseMode: FormResponseMode,
 ): Result<Busboy.Busboy, InitialiseMultipartReceiverError> => {
   if (!hasContentTypeHeaders(headers)) {
     logger.error({
@@ -49,7 +50,7 @@ export const createMultipartReceiver = (
       headers,
       limits: {
         fieldSize: 3 * MB,
-        fileSize: fileSizeLimit(isEmailMode) * MB,
+        fileSize: fileSizeLimit(responseMode) * MB,
       },
     })
     return ok(busboy)

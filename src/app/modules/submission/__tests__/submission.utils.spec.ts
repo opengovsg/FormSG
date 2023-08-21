@@ -2,7 +2,7 @@ import { ObjectId } from 'bson'
 import { readFileSync } from 'fs'
 import { cloneDeep, merge } from 'lodash'
 
-import { BasicField } from '../../../../../shared/types'
+import { BasicField, FormResponseMode } from '../../../../../shared/types'
 import { SingleAnswerFieldResponse } from '../../../../types'
 import {
   areAttachmentsMoreThanLimit,
@@ -199,14 +199,22 @@ describe('submission.utils', () => {
     describe('email mode', () => {
       it('should pass attachments when they are smaller than 7MB', () => {
         expect(
-          areAttachmentsMoreThanLimit([validSingleFile, zipOnlyValid], true),
+          areAttachmentsMoreThanLimit(
+            [validSingleFile, zipOnlyValid],
+            FormResponseMode.Email,
+          ),
         ).toBe(false)
       })
 
       it('should fail when a single attachment is larger than 7MB', () => {
         const modifiedBigFile = cloneDeep(validSingleFile)
         modifiedBigFile.content = Buffer.alloc(7000001)
-        expect(areAttachmentsMoreThanLimit([modifiedBigFile], true)).toBe(true)
+        expect(
+          areAttachmentsMoreThanLimit(
+            [modifiedBigFile],
+            FormResponseMode.Email,
+          ),
+        ).toBe(true)
       })
 
       it('should fail when attachments add up to more than 7MB', () => {
@@ -217,7 +225,7 @@ describe('submission.utils', () => {
         expect(
           areAttachmentsMoreThanLimit(
             [modifiedBigFile1, modifiedBigFile2],
-            true,
+            FormResponseMode.Email,
           ),
         ).toBe(true)
       })
@@ -225,14 +233,22 @@ describe('submission.utils', () => {
     describe('storage mode', () => {
       it('should pass attachments when they are smaller than 20MB', () => {
         expect(
-          areAttachmentsMoreThanLimit([validSingleFile, zipOnlyValid], false),
+          areAttachmentsMoreThanLimit(
+            [validSingleFile, zipOnlyValid],
+            FormResponseMode.Encrypt,
+          ),
         ).toBe(false)
       })
 
       it('should fail when a single attachment is larger than 20MB', () => {
         const modifiedBigFile = cloneDeep(validSingleFile)
         modifiedBigFile.content = Buffer.alloc(20000001)
-        expect(areAttachmentsMoreThanLimit([modifiedBigFile], false)).toBe(true)
+        expect(
+          areAttachmentsMoreThanLimit(
+            [modifiedBigFile],
+            FormResponseMode.Encrypt,
+          ),
+        ).toBe(true)
       })
 
       it('should fail when attachments add up to more than 20MB', () => {
@@ -243,7 +259,7 @@ describe('submission.utils', () => {
         expect(
           areAttachmentsMoreThanLimit(
             [modifiedBigFile1, modifiedBigFile2],
-            false,
+            FormResponseMode.Encrypt,
           ),
         ).toBe(true)
       })

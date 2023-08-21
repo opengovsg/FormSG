@@ -1,6 +1,7 @@
 import omit from 'lodash/omit'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { FormResponseMode } from 'shared/types'
 
 import { ParsedClearFormFieldResponse } from 'src/types/api'
 
@@ -338,11 +339,11 @@ export const copyPendingSubmissionToSubmissions = (
  */
 export const validateAttachments = (
   parsedResponses: ParsedClearFormFieldResponse[],
-  isEmailMode: boolean,
+  responseMode: FormResponseMode,
 ): ResultAsync<true, InvalidFileExtensionError | AttachmentTooLargeError> => {
   const logMeta = { action: 'validateAttachments' }
   const attachments = mapAttachmentsFromResponses(parsedResponses)
-  if (areAttachmentsMoreThanLimit(attachments, isEmailMode)) {
+  if (areAttachmentsMoreThanLimit(attachments, responseMode)) {
     logger.error({
       message: 'Attachment size is too large',
       meta: logMeta,

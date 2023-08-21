@@ -172,7 +172,10 @@ const submitEmailModeForm: ControllerHandler<
       )
       .andThen((form) =>
         // Validate responses
-        SubmissionService.validateAttachments(req.body.responses, true)
+        SubmissionService.validateAttachments(
+          req.body.responses,
+          form.responseMode,
+        )
           .andThen(() =>
             ParsedResponsesObject.parseResponses(form, req.body.responses),
           )

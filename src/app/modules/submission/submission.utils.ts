@@ -41,9 +41,13 @@ const mbMultiplier = 1000000
  * @param isEmailMode boolean flag of whether request is in email-mode
  * @returns 7 if email mode, 20 if not
  */
-export const fileSizeLimit = (isEmailMode: boolean) => {
-  if (isEmailMode) return 7
-  else return 20
+export const fileSizeLimit = (responseMode: FormResponseMode) => {
+  switch (responseMode) {
+    case FormResponseMode.Email:
+      return 7
+    case FormResponseMode.Encrypt:
+      return 20
+  }
 }
 
 // TODO (FRM-1232): Refactor once encryption boundary has been shifted.
@@ -229,11 +233,11 @@ export const getInvalidFileExtensions = (
  */
 export const areAttachmentsMoreThanLimit = (
   attachments: IAttachmentInfo[],
-  isEmailMode: boolean,
+  responseMode: FormResponseMode,
 ): boolean => {
   // Check if total attachments size is < 7mb
   const totalAttachmentSize = sumBy(attachments, (a) => a.content.byteLength)
-  return totalAttachmentSize > mbMultiplier * fileSizeLimit(isEmailMode)
+  return totalAttachmentSize > mbMultiplier * fileSizeLimit(responseMode)
 }
 
 /**
