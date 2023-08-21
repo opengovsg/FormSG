@@ -288,7 +288,6 @@ export interface IEncryptedForm extends IForm {
   payments_field: FormPaymentsField
   business?: FormBusinessField
   emails?: never
-  newEncryptionBoundary?: boolean
 }
 
 export type IEncryptedFormSchema = IEncryptedForm & IFormSchema

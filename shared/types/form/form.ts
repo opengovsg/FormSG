@@ -157,6 +157,7 @@ export interface FormBase {
 export interface EmailFormBase extends FormBase {
   responseMode: FormResponseMode.Email
   emails: string[]
+  newEncryptionBoundary?: never
 }
 
 export interface StorageFormBase extends FormBase {
@@ -165,7 +166,6 @@ export interface StorageFormBase extends FormBase {
   payments_channel: FormPaymentsChannel
   payments_field: FormPaymentsField
   business?: FormBusinessField
-  newEncryptionBoundary?: boolean
 }
 
 /**
