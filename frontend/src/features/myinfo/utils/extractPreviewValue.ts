@@ -2,11 +2,12 @@ import { format, parse } from 'date-fns'
 
 import { BasicField, MyInfoPrefilledFormField } from '~shared/types'
 
-import { DATE_PARSE_FORMAT } from '~templates/Field/Date/DateField'
+import {
+  DATE_PARSE_FORMAT,
+  MYINFO_DATE_FORMAT,
+} from '~templates/Field/Date/DateField'
 
 type PrefilledMyInfoValue = string | { value: string }
-
-const MYINFO_DATE_FORMAT = 'yyyy-MM-dd'
 
 export const extractPreviewValue = ({
   fieldType,
