@@ -1,5 +1,6 @@
 import { encode as encodeBase64 } from '@stablelib/base64'
 import { celebrate, Joi, Segments } from 'celebrate'
+import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { chain, omit } from 'lodash'
 
@@ -127,7 +128,7 @@ export const validateStorageSubmissionParams = celebrate({
 export const checkNewBoundaryEnabled = async (
   req: StorageSubmissionMiddlewareHandlerRequest,
   res: Parameters<StorageSubmissionMiddlewareHandlerType>[1],
-  next: Parameters<StorageSubmissionMiddlewareHandlerType>[2],
+  next: NextFunction,
 ) => {
   const formDef = req.formsg.formDef
 
@@ -143,7 +144,7 @@ export const checkNewBoundaryEnabled = async (
 export const validateSubmission = async (
   req: StorageSubmissionMiddlewareHandlerRequest,
   res: Parameters<StorageSubmissionMiddlewareHandlerType>[1],
-  next: Parameters<StorageSubmissionMiddlewareHandlerType>[2],
+  next: NextFunction,
 ) => {
   const formDef = req.formsg.formDef
 
@@ -235,7 +236,7 @@ const getEncryptedAttachmentsMapFromAttachmentsMap = async (
 export const encryptSubmission = async (
   req: StorageSubmissionMiddlewareHandlerRequest,
   res: Parameters<StorageSubmissionMiddlewareHandlerType>[1],
-  next: Parameters<StorageSubmissionMiddlewareHandlerType>[2],
+  next: NextFunction,
 ) => {
   const formId = req.params.formId
   const encryptedFormDef = req.formsg.encryptedFormDef
@@ -310,7 +311,7 @@ export const encryptSubmission = async (
 export const moveEncryptedPayload = async (
   req: EncryptSubmissionMiddlewareHandlerRequest,
   res: Parameters<EncryptSubmissionMiddlewareHandlerType>[1],
-  next: Parameters<EncryptSubmissionMiddlewareHandlerType>[2],
+  next: NextFunction,
 ) => {
   if (req.formsg.encryptedPayload) {
     return res.send(new EncryptedPayloadExistsError())
@@ -323,7 +324,7 @@ export const moveEncryptedPayload = async (
 export const createFormsgAndRetrieveForm = async (
   req: CreateFormsgAndRetrieveFormMiddlewareHandlerRequest,
   res: Parameters<CreateFormsgAndRetrieveFormMiddlewareHandlerType>[1],
-  next: Parameters<CreateFormsgAndRetrieveFormMiddlewareHandlerType>[2],
+  next: NextFunction,
 ) => {
   const { formId } = req.params
 
