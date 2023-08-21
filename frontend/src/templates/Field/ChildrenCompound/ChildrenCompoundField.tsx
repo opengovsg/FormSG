@@ -20,6 +20,7 @@ import {
   VisuallyHidden,
   VStack,
 } from '@chakra-ui/react'
+import { format, parse } from 'date-fns'
 import simplur from 'simplur'
 
 import { MYINFO_ATTRIBUTE_MAP } from '~shared/constants/field/myinfo'
@@ -38,6 +39,11 @@ import { SingleSelect } from '~components/Dropdown/SingleSelect'
 import { FormLabel } from '~components/FormControl/FormLabel/FormLabel'
 import { IconButton } from '~components/IconButton/IconButton'
 
+import {
+  DATE_DISPLAY_FORMAT,
+  DATE_PARSE_FORMAT,
+  MYINFO_DATE_FORMAT,
+} from '../Date/DateField'
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import {
   ChildrenCompoundFieldInputs,
@@ -321,15 +327,29 @@ const ChildrenBody = ({
         .map((subField, index) => {
           // First index taken by name.
           index += 1
+          let myInfoFormattedValue
           const key = `${field.id}+${index}`
           const fieldPath = `${schema._id}.child.${currChildBodyIdx}.${index}`
           const myInfoValue = getChildAttr(subField)
+          if (
+            subField === MyInfoChildAttributes.ChildDateOfBirth &&
+            myInfoValue
+          ) {
+            myInfoFormattedValue = format(
+              parse(myInfoValue, MYINFO_DATE_FORMAT, new Date()),
+              DATE_PARSE_FORMAT,
+            )
+            console.log('myInfoValue: ', myInfoValue)
+            console.log('myInfoFormattedValue: ', myInfoFormattedValue)
+          } else {
+            myInfoFormattedValue = myInfoValue
+          }
           const value = watch(fieldPath) as unknown as string
-          if (myInfoValue && value !== myInfoValue) {
+          if (myInfoFormattedValue && value !== myInfoFormattedValue) {
             // We need to do this as the underlying data is not updated
             // by the field's value, but rather by onChange, which we did
             // not trigger via prefill.
-            setValue(fieldPath, myInfoValue)
+            setValue(fieldPath, myInfoFormattedValue)
           }
           const isDisabled = isSubmitting || !!myInfoValue
           switch (subField) {
@@ -372,6 +392,7 @@ const ChildrenBody = ({
             }
             case MyInfoChildAttributes.ChildDateOfBirth: {
               const { onChange, ...rest } = register(fieldPath, validationRules)
+              console.log(value)
               return (
                 <FormControl key={key} isDisabled={isDisabled} isRequired>
                   <FormLabel useMarkdownForDescription gridArea="formlabel">
@@ -379,9 +400,12 @@ const ChildrenBody = ({
                   </FormLabel>
                   <DatePicker
                     {...rest}
-                    dateFormat="yyyy/MM/dd"
+                    displayFormat={DATE_DISPLAY_FORMAT}
+                    dateFormat={DATE_PARSE_FORMAT}
+                    // dateFormat="yyyy/MM/dd"
                     // Convert MyInfo YYYY-MM-DD to YYYY/MM/DD
-                    inputValue={value?.replaceAll('-', '/')}
+                    // inputValue={value?.replaceAll('-', '/')}
+                    inputValue={value}
                     onInputValueChange={(date) => {
                       setValue(fieldPath, date)
                     }}
