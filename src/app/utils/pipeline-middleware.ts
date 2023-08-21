@@ -1,10 +1,15 @@
-type Next = () => Promise<void> | void
+import { ApplicationError } from '../modules/core/core.errors'
 
-export type Middleware<T> = (context: T, next: Next) => Promise<void> | void
+type Next = () => Promise<void | ApplicationError> | void | ApplicationError
+
+export type Middleware<T> = (
+  context: T,
+  next: Next,
+) => Promise<void | ApplicationError> | void | ApplicationError
 
 type PipelineType<T> = {
   push: (...middlewares: Middleware<T>[]) => void
-  execute: (context: T) => Promise<boolean>
+  execute: (context: T) => Promise<ApplicationError | void>
   getLength: () => number
 }
 
@@ -68,7 +73,7 @@ export class Pipeline<T> {
   execute: PipelineType<T>['execute'] = async (context) => {
     let prevIndex = -1
 
-    const runner = async (index: number): Promise<void> => {
+    const runner = async (index: number): Promise<void | ApplicationError> => {
       if (index === prevIndex) {
         // eslint-disable-next-line typesafe/no-throw-sync-func
         throw new Error('next() called multiple times')
@@ -79,13 +84,14 @@ export class Pipeline<T> {
       const middleware = this.queue[index]
 
       if (middleware) {
-        await middleware(context, () => {
+        const error = await middleware(context, () => {
           return runner(index + 1)
         })
+        if (error) return error
       }
     }
 
-    await runner(0)
-    return prevIndex === this.getLength()
+    const error = await runner(0)
+    return error
   }
 }
