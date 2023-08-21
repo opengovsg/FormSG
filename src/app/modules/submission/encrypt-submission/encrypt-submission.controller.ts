@@ -107,19 +107,14 @@ const submitEncryptModeForm = async (
     ensureFormWithinSubmissionLimits,
   )
 
-  const ensuresError = await ensurePipeline.execute({
+  const hasEnsuredAll = await ensurePipeline.execute({
     form,
     logMeta,
     req,
     res,
   })
 
-  if (ensuresError) {
-    const { errorMessage, statusCode } = mapRouteError(ensuresError)
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
-  }
+  if (!hasEnsuredAll) return
 
   const encryptedPayload = req.formsg.encryptedPayload
 

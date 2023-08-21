@@ -7,6 +7,7 @@ import { getRequestIp } from '../../../utils/request'
 import * as FormService from '../../form/form.service'
 
 import { logger } from './encrypt-submission.controller'
+import { mapRouteError } from './encrypt-submission.utils'
 
 type FormSubmissionPipelineContext = {
   req: any
@@ -17,7 +18,7 @@ type FormSubmissionPipelineContext = {
 
 export const ensureFormWithinSubmissionLimits: Middleware<
   FormSubmissionPipelineContext
-> = async ({ logMeta, form }, next) => {
+> = async ({ logMeta, res, form }, next) => {
   const formSubmissionLimitResult =
     await FormService.checkFormSubmissionLimitAndDeactivateForm(form)
   if (formSubmissionLimitResult.isErr()) {
@@ -27,14 +28,17 @@ export const ensureFormWithinSubmissionLimits: Middleware<
       meta: logMeta,
       error: formSubmissionLimitResult.error,
     })
-    return formSubmissionLimitResult.error
+    const { statusCode } = mapRouteError(formSubmissionLimitResult.error)
+    return res.status(statusCode).json({
+      message: form.inactiveMessage,
+    })
   }
   return next()
 }
 
 export const ensureValidCaptcha: Middleware<
   FormSubmissionPipelineContext
-> = async ({ form, req, logMeta }, next) => {
+> = async ({ form, req, logMeta, res }, next) => {
   // Check if respondent is a GSIB user
   const isIntranetUser = FormService.checkIsIntranetFormAccess(
     getRequestIp(req),
@@ -58,7 +62,10 @@ export const ensureValidCaptcha: Middleware<
             meta: logMeta,
             error: turnstileResult.error,
           })
-          return turnstileResult.error
+          const { errorMessage, statusCode } = mapRouteError(
+            turnstileResult.error,
+          )
+          return res.status(statusCode).json({ message: errorMessage })
         }
         break
       }
@@ -74,7 +81,10 @@ export const ensureValidCaptcha: Middleware<
             meta: logMeta,
             error: captchaResult.error,
           })
-          return captchaResult.error
+          const { errorMessage, statusCode } = mapRouteError(
+            captchaResult.error,
+          )
+          return res.status(statusCode).json({ message: errorMessage })
         }
         break
       }
@@ -85,7 +95,7 @@ export const ensureValidCaptcha: Middleware<
 }
 
 export const ensurePublicForm: Middleware<FormSubmissionPipelineContext> = (
-  { form, logMeta },
+  { form, logMeta, res },
   next,
 ) => {
   const formPublicResult = FormService.isFormPublic(form)
@@ -95,7 +105,10 @@ export const ensurePublicForm: Middleware<FormSubmissionPipelineContext> = (
       meta: logMeta,
       error: formPublicResult.error,
     })
-    return formPublicResult.error
+    const { statusCode, errorMessage } = mapRouteError(formPublicResult.error)
+    return res.status(statusCode).json({
+      message: errorMessage,
+    })
   }
   return next()
 }
