@@ -89,8 +89,8 @@ export const ProductModal = ({
     typeof DISPLAY_AMOUNT_KEY
   > = {
     validate: (val) => {
-      // // Validate that it is a money value.
-      // // Regex allows leading and trailing spaces, max 2dp
+      // Validate that it is a money value.
+      // Regex allows leading and trailing spaces, max 2dp
       const validateMoney = /^\s*(\d+)(\.\d{0,2})?\s*$/.test(val ?? '')
       if (!validateMoney)
         return `Enter an amount between S${formatCurrency(
