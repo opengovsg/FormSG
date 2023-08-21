@@ -105,17 +105,6 @@ const submitEncryptModeForm: SubmitEncryptModeFormControllerHandlerType =
   async (req, res) => {
     const { formId } = req.params
 
-    if ('isPreview' in req.body) {
-      logger.info({
-        message:
-          'isPreview is still being sent when submitting encrypt mode form',
-        meta: {
-          action: 'submitEncryptModeForm',
-          type: 'deprecatedCheck',
-        },
-      })
-    }
-
     const logMeta = {
       action: 'submitEncryptModeForm',
       ...createReqMeta(req),
