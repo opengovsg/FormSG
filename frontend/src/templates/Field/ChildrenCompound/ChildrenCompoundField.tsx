@@ -401,8 +401,8 @@ const ChildrenBody = ({
                   <DatePicker
                     {...rest}
                     displayFormat={DATE_DISPLAY_FORMAT}
-                    dateFormat={DATE_PARSE_FORMAT}
-                    // dateFormat="yyyy/MM/dd"
+                    // dateFormat={DATE_PARSE_FORMAT}
+                    dateFormat="yyyy/MM/dd"
                     // Convert MyInfo YYYY-MM-DD to YYYY/MM/DD
                     // inputValue={value?.replaceAll('-', '/')}
                     inputValue={value}
