@@ -8,6 +8,7 @@ import {
 } from '../../../../types/field'
 import { ResponseValidator } from '../../../../types/field/utils/validation'
 import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
+import { getEmailDomainFromEmail } from '../../email-domain'
 
 import { makeSignatureValidator, notEmptySingleAnswerResponse } from './common'
 
@@ -37,7 +38,9 @@ const makeEmailDomainValidator: EmailValidatorConstructor =
     const emailAddress = String(answer).trim()
     if (!(hasAllowedEmailDomains && allowedEmailDomains.length))
       return right(response)
-    const emailDomain = ('@' + emailAddress.split('@').pop()).toLowerCase()
+    const emailDomain = (
+      '@' + getEmailDomainFromEmail(emailAddress)
+    ).toLowerCase()
 
     return allowedEmailDomains.some(
       (domain) => domain.toLowerCase() === emailDomain,

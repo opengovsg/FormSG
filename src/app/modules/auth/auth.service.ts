@@ -4,6 +4,8 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync, Result, ResultAsync } from 'neverthrow'
 import validator from 'validator'
 
+import { getEmailDomainFromEmail } from 'src/app/utils/email-domain'
+
 import { SUPPORT_FORM_LINK } from '../../../../shared/constants/links'
 import {
   AgencyDocument,
@@ -62,7 +64,7 @@ export const validateEmailDomain = (
     return errAsync(new InvalidDomainError())
   }
 
-  const emailDomain = email.split('@').pop()
+  const emailDomain = getEmailDomainFromEmail(email)
   return ResultAsync.fromPromise(
     AgencyModel.findOne({ emailDomain }).exec(),
     (error) => {

@@ -1058,7 +1058,19 @@ export const transferFormOwnership: ControllerHandler<
         AdminFormService.transferFormOwnership(retrievedForm, newOwnerEmail),
       )
       // Success, return updated form.
-      .map((updatedPopulatedForm) => res.json({ form: updatedPopulatedForm }))
+      .map((updatedPopulatedForm) => {
+        logger.info({
+          message: 'Form ownership transferred',
+          meta: {
+            action: 'transferFormOwnership',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            newOwnerEmail,
+          },
+        })
+        return res.json({ form: updatedPopulatedForm })
+      })
       // Some error occurred earlier in the chain.
       .mapErr((error) => {
         logger.error({

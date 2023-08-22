@@ -10,6 +10,8 @@ import mongoose, { ClientSession } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import type { Except, Merge } from 'type-fest'
 
+import { getEmailDomainFromEmail } from 'src/app/utils/email-domain'
+
 import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
@@ -321,75 +323,104 @@ export const transferFormOwnership = (
     newOwnerEmail,
   }
 
-  return (
-    // Step 1: Retrieve current owner of form to transfer.
-    UserService.findUserById(String(currentForm.admin._id))
-      .andThen((currentOwner) => {
-        // No need to transfer form ownership if new and current owners are
-        // the same.
-        if (newOwnerEmail.toLowerCase() === currentOwner.email.toLowerCase()) {
-          return errAsync(
-            new TransferOwnershipError(
-              'You are already the owner of this form',
-            ),
-          )
-        }
-        return okAsync(currentOwner)
+  const emailDomain = getEmailDomainFromEmail(newOwnerEmail)
+  return ResultAsync.fromPromise(
+    AgencyModel.findOne({ emailDomain }),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while validating new form owner',
+        meta: logMeta,
+        error,
       })
-      .andThen((currentOwner) =>
-        // Step 2: Retrieve user document for new owner.
-        UserService.findUserByEmail(newOwnerEmail)
-          .mapErr((error) => {
-            logger.error({
-              message:
-                'Error occurred whilst finding new owner email to transfer ownership to',
-              meta: logMeta,
-              error,
-            })
-
-            // Override MissingUserError with more specific message if new owner
-            // cannot be found.
-            if (error instanceof MissingUserError) {
-              return new TransferOwnershipError(
-                `${newOwnerEmail} must have logged in once before being added as Owner`,
-              )
-            }
-            return error
-          })
-          // Step 3: Perform form ownership transfer.
-          .andThen((newOwner) =>
-            ResultAsync.fromPromise(
-              currentForm.transferOwner<IPopulatedForm>(currentOwner, newOwner),
-              (error) => {
-                logger.error({
-                  message: 'Error occurred whilst transferring form ownership',
-                  meta: logMeta,
-                  error,
-                })
-
-                return new DatabaseError(getMongoErrorMessage(error))
-              },
-            ),
-          ),
-      )
-      // Step 4: Populate updated form.
-      .andThen((updatedForm) =>
-        ResultAsync.fromPromise(
-          updatedForm
-            .populate({ path: 'admin', populate: { path: 'agency' } })
-            .execPopulate(),
-          (error) => {
-            logger.error({
-              message: 'Error occurred whilst populating form with admin',
-              meta: logMeta,
-              error,
-            })
-
-            return new DatabaseError(getMongoErrorMessage(error))
-          },
-        ),
-      )
+      return transformMongoError(error)
+    },
   )
+    .andThen((result) => {
+      if (!result) {
+        return errAsync(
+          new TransferOwnershipError(
+            `The new owner email (${newOwnerEmail}) is not from a whitelisted domain`,
+          ),
+        )
+      }
+      return okAsync(undefined)
+    })
+
+    .andThen(() =>
+      // Step 1: Retrieve current owner of form to transfer.
+      UserService.findUserById(String(currentForm.admin._id))
+        .andThen((currentOwner) => {
+          // No need to transfer form ownership if new and current owners are
+          // the same.
+          if (
+            newOwnerEmail.toLowerCase() === currentOwner.email.toLowerCase()
+          ) {
+            return errAsync(
+              new TransferOwnershipError(
+                'You are already the owner of this form',
+              ),
+            )
+          }
+          return okAsync(currentOwner)
+        })
+        .andThen((currentOwner) =>
+          // Step 2: Retrieve user document for new owner.
+          UserService.findUserByEmail(newOwnerEmail)
+            .mapErr((error) => {
+              logger.error({
+                message:
+                  'Error occurred whilst finding new owner email to transfer ownership to',
+                meta: logMeta,
+                error,
+              })
+
+              // Override MissingUserError with more specific message if new owner
+              // cannot be found.
+              if (error instanceof MissingUserError) {
+                return new TransferOwnershipError(
+                  `${newOwnerEmail} must have logged in once before being added as Owner`,
+                )
+              }
+              return error
+            })
+            // Step 3: Perform form ownership transfer.
+            .andThen((newOwner) =>
+              ResultAsync.fromPromise(
+                currentForm.transferOwner<IPopulatedForm>(
+                  currentOwner,
+                  newOwner,
+                ),
+                (error) => {
+                  logger.error({
+                    message:
+                      'Error occurred whilst transferring form ownership',
+                    meta: logMeta,
+                    error,
+                  })
+
+                  return new DatabaseError(getMongoErrorMessage(error))
+                },
+              ),
+            ),
+        )
+        // Step 4: Populate updated form.
+        .andThen((updatedForm) =>
+          ResultAsync.fromPromise(
+            updatedForm
+              .populate({ path: 'admin', populate: { path: 'agency' } })
+              .execPopulate(),
+            (error) => {
+              logger.error({
+                message: 'Error occurred whilst populating form with admin',
+                meta: logMeta,
+                error,
+              })
+
+              return new DatabaseError(getMongoErrorMessage(error))
+            },
+          ),
+        ),
+    )
 }
 
 /**
@@ -794,7 +825,7 @@ export const updateFormCollaborators = (
     // Check that all updated collaborator domains exist in the Agency collection.
     Promise.all(
       updatedCollaboratorEmails.map(async (email) => {
-        const emailDomain = email.split('@').pop()
+        const emailDomain = getEmailDomainFromEmail(email)
         const result = await AgencyModel.findOne({ emailDomain })
         return !!result
       }),

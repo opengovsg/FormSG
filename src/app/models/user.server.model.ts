@@ -10,6 +10,7 @@ import {
   IUserSchema,
   PublicUser,
 } from '../../types'
+import { getEmailDomainFromEmail } from '../utils/email-domain'
 
 import getAgencyModel, { AGENCY_SCHEMA_ID } from './agency.server.model'
 
@@ -36,7 +37,7 @@ const compileUserModel = (db: Mongoose) => {
               return false
             }
 
-            const emailDomain = value.split('@').pop()
+            const emailDomain = getEmailDomainFromEmail(value)
             try {
               const agency = await Agency.findOne({ emailDomain })
               return !!agency
