@@ -1,4 +1,5 @@
 import { has } from 'lodash'
+import internal from 'stream'
 
 /**
  * Typeguard for checking if the event body has a key
@@ -20,16 +21,22 @@ export const isBodyWithKey = (body: unknown): body is KeyBody => {
 
 export type ScanFileStreamResult =
   | { isMalicious: true; virusMetadata: string[] }
-  | { isMalicious: false; cleanFile: Buffer }
+  | { isMalicious: false }
 
 export type GetDeleteS3FileStreamParams = {
   bucketName: string
   objectKey: string
 }
 
+export type GetS3FileStreamResult = {
+  body: internal.Readable
+  versionId: string
+}
+
 export type MoveS3FileParams = {
   sourceBucketName: string
   sourceObjectKey: string
+  sourceObjectVersionId: string
   destinationBucketName: string
   destinationObjectKey: string
 }

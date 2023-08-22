@@ -5,9 +5,12 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3'
 import pino from 'pino'
-import internal from 'stream'
 
-import { GetDeleteS3FileStreamParams, MoveS3FileParams } from './types'
+import {
+  GetDeleteS3FileStreamParams,
+  GetS3FileStreamResult,
+  MoveS3FileParams,
+} from './types'
 
 export class S3Service {
   private readonly s3Client: S3Client
@@ -31,10 +34,10 @@ export class S3Service {
     }
   }
 
-  async getS3FileStream({
+  async getS3FileStreamWithVersionId({
     bucketName,
     objectKey,
-  }: GetDeleteS3FileStreamParams) {
+  }: GetDeleteS3FileStreamParams): Promise<GetS3FileStreamResult> {
     this.logger.info(
       {
         bucketName,
@@ -44,12 +47,16 @@ export class S3Service {
     )
 
     try {
-      const { Body: body } = await this.s3Client.send(
+      const { Body: body, VersionId: versionId } = await this.s3Client.send(
         new GetObjectCommand({
           Key: objectKey,
           Bucket: bucketName,
         }),
       )
+
+      if (!versionId) {
+        throw new Error('VersionId is empty')
+      }
 
       this.logger.info(
         {
@@ -59,7 +66,7 @@ export class S3Service {
         'Retrieved document from s3',
       )
 
-      return body as internal.Readable
+      return { body, versionId } as GetS3FileStreamResult
     } catch (error) {
       this.logger.error(
         {
@@ -115,6 +122,7 @@ export class S3Service {
   async moveS3File({
     sourceBucketName,
     sourceObjectKey,
+    sourceObjectVersionId,
     destinationBucketName,
     destinationObjectKey,
   }: MoveS3FileParams) {
@@ -122,6 +130,7 @@ export class S3Service {
       {
         sourceBucketName,
         sourceObjectKey,
+        sourceObjectVersionId,
         destinationBucketName,
         destinationObjectKey,
       },
@@ -133,7 +142,7 @@ export class S3Service {
         new CopyObjectCommand({
           Key: destinationObjectKey,
           Bucket: destinationBucketName,
-          CopySource: `${sourceBucketName}/${sourceObjectKey}`,
+          CopySource: `${sourceBucketName}/${sourceObjectKey}?versionId=${sourceObjectVersionId}`,
         }),
       )
 
@@ -141,6 +150,7 @@ export class S3Service {
         new DeleteObjectCommand({
           Key: sourceObjectKey,
           Bucket: sourceBucketName,
+          VersionId: sourceObjectVersionId,
         }),
       )
 
@@ -148,6 +158,7 @@ export class S3Service {
         {
           sourceBucketName,
           sourceObjectKey,
+          sourceObjectVersionId,
           destinationBucketName,
           destinationObjectKey,
         },
@@ -158,6 +169,7 @@ export class S3Service {
         {
           sourceBucketName,
           sourceObjectKey,
+          sourceObjectVersionId,
           destinationBucketName,
           destinationObjectKey,
           error,

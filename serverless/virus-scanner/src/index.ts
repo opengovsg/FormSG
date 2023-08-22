@@ -62,7 +62,7 @@ export const handler = async (
 
   let s3ReadableStream
   try {
-    s3ReadableStream = await s3Client.getS3FileStream({
+    s3ReadableStream = await s3Client.getS3FileStreamWithVersionId({
       bucketName: quarantineBucket,
       objectKey: quarantineFileKey,
     })
@@ -83,7 +83,9 @@ export const handler = async (
 
   // Scan file
 
-  const scanResult = await scanFileStream(s3ReadableStream)
+  const { body, versionId } = s3ReadableStream
+
+  const scanResult = await scanFileStream(body)
   const { isMalicious } = scanResult
 
   // If malicious, log and delete
@@ -115,11 +117,13 @@ export const handler = async (
     logger.info({
       message: 'clean file detected',
       key: quarantineFileKey,
+      versionId,
     })
 
     await s3Client.moveS3File({
       sourceBucketName: quarantineBucket,
       sourceObjectKey: quarantineFileKey,
+      sourceObjectVersionId: versionId,
       destinationBucketName: cleanBucket,
       destinationObjectKey: cleanFileKey,
     })
