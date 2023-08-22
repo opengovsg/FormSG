@@ -20,7 +20,8 @@
     "clamscan": "^2.1.2",
     "convict": "^6.2.4",
     "http-status-codes": "^2.2.0",
-    "pino": "^8.1.0"
+    "pino": "^8.1.0",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.101",

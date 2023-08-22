@@ -1,6 +1,7 @@
 import { APIGatewayProxyResult } from 'aws-lambda'
 import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
+import uuid from 'uuid'
 
 import { scanFileStream } from './clamscan.service'
 import { config } from './config'
@@ -24,6 +25,19 @@ export const handler = async (
       statusCode: StatusCodes.BAD_REQUEST,
       body: JSON.stringify({
         message: 'Missing key in body',
+      }),
+    }
+  }
+
+  if (!uuid.validate(event.key)) {
+    logger.warn({
+      message: 'Invalid key',
+      event,
+    })
+    return {
+      statusCode: StatusCodes.BAD_REQUEST,
+      body: JSON.stringify({
+        message: 'Invalid key',
       }),
     }
   }
