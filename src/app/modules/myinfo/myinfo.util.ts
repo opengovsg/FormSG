@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt'
+import { format, parse } from 'date-fns'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
 import moment from 'moment'
@@ -79,6 +80,7 @@ function hashChildrenFieldValues(
   const subFields = getMyInfoAttr(field) as MyInfoChildAttributes[]
   subFields.forEach((subField) => {
     const fieldArr = childrenBirthRecords[subField]
+    let myInfoFormattedValue: string
     fieldArr?.forEach((value, childIdx) => {
       const childName =
         childrenBirthRecords?.[MyInfoChildAttributes.ChildName]?.[childIdx]
@@ -95,9 +97,16 @@ function hashChildrenFieldValues(
       if (!value) {
         return
       }
+      if (subField === MyInfoChildAttributes.ChildDateOfBirth) {
+        myInfoFormattedValue = format(
+          parse(value, 'yyyy-MM-dd', new Date()),
+          'dd/MM/yyyy',
+        )
+        return
+      }
       readOnlyHashPromises[
         getMyInfoChildHashKey(field._id, subField, childIdx, childName)
-      ] = bcrypt.hash(value, HASH_SALT_ROUNDS)
+      ] = bcrypt.hash(myInfoFormattedValue ?? value, HASH_SALT_ROUNDS)
     })
   })
 }

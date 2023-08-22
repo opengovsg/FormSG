@@ -345,11 +345,11 @@ const ChildrenBody = ({
             myInfoFormattedValue = myInfoValue
           }
           const value = watch(fieldPath) as unknown as string
-          if (myInfoValue && value !== myInfoValue) {
+          if (myInfoFormattedValue && value !== myInfoFormattedValue) {
             // We need to do this as the underlying data is not updated
             // by the field's value, but rather by onChange, which we did
             // not trigger via prefill.
-            setValue(fieldPath, myInfoValue)
+            setValue(fieldPath, myInfoFormattedValue)
           }
           const isDisabled = isSubmitting || !!myInfoValue
           switch (subField) {
@@ -406,6 +406,7 @@ const ChildrenBody = ({
                     // Convert MyInfo YYYY-MM-DD to YYYY/MM/DD
                     inputValue={value?.replaceAll('-', '/')}
                     // inputValue={value}
+                    defaultInputValue={value ? myInfoFormattedValue : ''}
                     onInputValueChange={(date) => {
                       setValue(fieldPath, date)
                     }}

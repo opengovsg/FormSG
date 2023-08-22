@@ -80,6 +80,7 @@ export const FormFields = ({
 
       // Use prefill value if exists.
       if (fieldPrefillMap[field._id]) {
+        console.log('prefill value exists: ', fieldPrefillMap[field._id])
         acc[field._id] = fieldPrefillMap[field._id].prefillValue
         return acc
       }
