@@ -20,7 +20,6 @@ export const FormFieldDrawerActions = ({
   isDisabled,
 }: FormFieldDrawerActionsProps): JSX.Element => {
   const isMobile = useIsMobile()
-  const isSavingDisabled = isDisabled || isLoading
 
   return (
     <Stack
@@ -31,7 +30,7 @@ export const FormFieldDrawerActions = ({
     >
       <Button
         isFullWidth={isMobile}
-        isDisabled={isSavingDisabled}
+        isDisabled={isDisabled}
         isLoading={isLoading}
         onClick={handleClick}
       >
