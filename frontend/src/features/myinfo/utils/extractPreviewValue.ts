@@ -22,6 +22,7 @@ export const extractPreviewValue = ({
         value: fieldValue,
       }
     case BasicField.Date:
+      console.log('BasicField.Date fieldValue: ', fieldValue)
       return format(
         parse(fieldValue, MYINFO_DATE_FORMAT, new Date()),
         DATE_PARSE_FORMAT,

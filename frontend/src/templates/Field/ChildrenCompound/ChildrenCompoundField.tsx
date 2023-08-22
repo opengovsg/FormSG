@@ -404,8 +404,8 @@ const ChildrenBody = ({
                     // dateFormat={DATE_PARSE_FORMAT}
                     dateFormat="yyyy/MM/dd"
                     // Convert MyInfo YYYY-MM-DD to YYYY/MM/DD
-                    // inputValue={value?.replaceAll('-', '/')}
-                    inputValue={value}
+                    inputValue={value?.replaceAll('-', '/')}
+                    // inputValue={value}
                     onInputValueChange={(date) => {
                       setValue(fieldPath, date)
                     }}
