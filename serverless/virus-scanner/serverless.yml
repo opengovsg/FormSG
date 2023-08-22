@@ -21,9 +21,13 @@ provider:
         - Effect: Allow
           Action:
             - 's3:GetObject'
-            - 's3:PutObject'
+            - 's3:DeleteObject'
           Resource:
             - 'arn:aws:s3:::${env:VIRUS_SCANNER_QUARANTINE_S3_BUCKET}/*'
+        - Effect: Allow
+          Action:
+            - 's3:PutObject'
+          Resource:
             - 'arn:aws:s3:::${env:VIRUS_SCANNER_CLEAN_S3_BUCKET}/*'
   ecr:
     images:
@@ -43,7 +47,6 @@ functions:
     # https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/#provisioned-concurrency
     # 1 for staging, 5 for prod
     provisionedConcurrency: ${self:provider.provisionedConcurrency}
-
 
 plugins:
   # required so that env variables are loaded in functions
