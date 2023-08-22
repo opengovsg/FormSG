@@ -71,3 +71,13 @@ export type SendOtpResponseDto = {
 export type GetSgidAuthUrlResponseDto = {
   redirectUrl: string
 }
+
+export type TransferOwnershipRequestDto = {
+  email: string
+}
+
+export type TransferOwnershipResponseDto = {
+  email: string
+  formIds: string[]
+  error: string
+}

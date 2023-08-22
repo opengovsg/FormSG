@@ -1021,6 +1021,57 @@ export const handleCopyTemplateForm: ControllerHandler<
 }
 
 /**
+ * Handler for POST /admin/forms/all-transfer-owner.
+ * @security session
+ *
+ * @returns 200 with true if transfer was successful
+ * @returns 400 when new owner is not in the database yet
+ * @returns 400 when new owner is already current owner
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const transferAllFormsOwnership: ControllerHandler<
+  unknown,
+  unknown,
+  { email: string }
+> = (req, res) => {
+  const { email: newOwnerEmail } = req.body
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Transfer all forms to new owner
+        AdminFormService.transferAllFormsOwnership(user, newOwnerEmail),
+      )
+      .map((data) => {
+        return res.status(StatusCodes.OK).json(data)
+      })
+      // Some error occurred earlier in the chain.
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred whilst transferring all forms ownership',
+          meta: {
+            action: 'transferAllFormsOwnership',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            newOwnerEmail,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+export const handleTransferAllFormsOwnership = [
+  transferFormOwnershipValidator,
+  transferAllFormsOwnership,
+] as ControllerHandler[]
+
+/**
  * Handler for POST /{formId}/adminform/transfer-owner.
  * @security session
  *

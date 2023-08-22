@@ -208,6 +208,219 @@ describe('admin-form.controller', () => {
     })
   })
 
+  describe('transferAllFormsOwnership', () => {
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+
+    const MOCK_NEW_OWNER_EMAIL = 'updatedUser@example.com'
+
+    const MOCK_REQ = expressHandler.mockRequest({
+      body: {
+        email: MOCK_NEW_OWNER_EMAIL,
+      },
+      session: {
+        user: {
+          _id: MOCK_USER_ID,
+        },
+      },
+    })
+
+    it('should return 200 with true', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAdminFormService.transferAllFormsOwnership.mockReturnValueOnce(
+        okAsync(true),
+      )
+      // Act
+      await AdminFormController.transferAllFormsOwnership(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      // Check all arguments of called services.
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(
+        MockAdminFormService.transferAllFormsOwnership,
+      ).toHaveBeenCalledWith(MOCK_USER, MOCK_NEW_OWNER_EMAIL)
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith(true)
+    })
+
+    it('should return 400 when new owner is not in the database yet', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const mockErrorString = `${MOCK_NEW_OWNER_EMAIL} must have logged in once before being added as Owner`
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      // Mock error returned when owner is not in db.
+      MockAdminFormService.transferAllFormsOwnership.mockReturnValueOnce(
+        errAsync(new TransferOwnershipError(mockErrorString)),
+      )
+
+      // Act
+      await AdminFormController.transferAllFormsOwnership(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      // Check all arguments of called services.
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(
+        MockAdminFormService.transferAllFormsOwnership,
+      ).toHaveBeenCalledWith(MOCK_USER, MOCK_NEW_OWNER_EMAIL)
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
+    })
+
+    it('should return 400 when new owner is already current owner', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const mockErrorString = 'You are already the owner of this form'
+      const MOCK_ERROR_REQ = expressHandler.mockRequest({
+        body: {
+          email: MOCK_USER.email,
+        },
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+      })
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      // Mock error returned when owner is not in db.
+      MockAdminFormService.transferAllFormsOwnership.mockReturnValueOnce(
+        errAsync(new TransferOwnershipError(mockErrorString)),
+      )
+
+      // Act
+      await AdminFormController.transferAllFormsOwnership(
+        MOCK_ERROR_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      // Check all arguments of called services.
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(
+        MockAdminFormService.transferAllFormsOwnership,
+      ).toHaveBeenCalledWith(MOCK_USER, MOCK_USER.email)
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
+    })
+
+    it('should return 422 when user in session cannot be retrieved from the database', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const mockErrorString = 'user not found in db'
+      // Mock error returned when user cannot be found in db.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new MissingUserError(mockErrorString)),
+      )
+
+      // Act
+      await AdminFormController.transferAllFormsOwnership(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      // Check all arguments of called services.
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(
+        MockAdminFormService.transferAllFormsOwnership,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(422)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
+    })
+
+    it('should return 500 when database error occurs when retrieving logged in user', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const mockErrorString = 'db error oh no'
+      // Mock db error.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        errAsync(new DatabaseError(mockErrorString)),
+      )
+
+      // Act
+      await AdminFormController.transferAllFormsOwnership(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      // Check all arguments of called services.
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+
+      expect(
+        MockAdminFormService.transferAllFormsOwnership,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
+    })
+    it('should return 500 when database error occurs when transferring form ownership', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const mockErrorString = 'db not found'
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      // Mock db error when transferring form ownership.
+      MockAdminFormService.transferAllFormsOwnership.mockReturnValueOnce(
+        errAsync(new DatabaseError(mockErrorString)),
+      )
+
+      // Act
+      await AdminFormController.transferAllFormsOwnership(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      // Check all arguments of called services.
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(
+        MockAdminFormService.transferAllFormsOwnership,
+      ).toHaveBeenCalledWith(MOCK_USER, MOCK_NEW_OWNER_EMAIL)
+      expect(mockRes.status).toHaveBeenCalledWith(500)
+      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
+    })
+  })
+
   describe('createForm', () => {
     const MOCK_USER_ID = new ObjectId()
     const MOCK_USER = {

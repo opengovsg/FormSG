@@ -39,6 +39,7 @@ import {
   IFormDocument,
   IFormSchema,
   IPopulatedForm,
+  IPopulatedUser,
 } from '../../../../types'
 import { EditFormFieldParams, FormUpdateParams } from '../../../../types/api'
 import config, { aws as AwsConfig } from '../../../config/config'
@@ -327,7 +328,10 @@ export const transferFormOwnership = (
       .andThen((currentOwner) => {
         // No need to transfer form ownership if new and current owners are
         // the same.
-        if (newOwnerEmail.toLowerCase() === currentOwner.email.toLowerCase()) {
+        if (
+          newOwnerEmail.trim().toLowerCase() ===
+          currentOwner.email.trim().toLowerCase()
+        ) {
           return errAsync(
             new TransferOwnershipError(
               'You are already the owner of this form',
@@ -389,6 +393,91 @@ export const transferFormOwnership = (
           },
         ),
       )
+  )
+}
+
+/**
+ * Transfer all forms belonging to the current owner to a new email.
+ * @param currentOwnerEmail the email of the current owner
+ * @param newOwnerEmail the email of the new owner to transfer to
+ *
+ * @return ok(true) if transfer is successful
+ * @return err(MissingUserError) if the current form admin cannot be found
+ * @return err(TransferOwnershipError) if new owner cannot be found in the database or new owner email is same as current owner
+ * @return err(DatabaseError) if any database errors like missing admin of current owner occurs
+ */
+export const transferAllFormsOwnership = (
+  currentOwner: IPopulatedUser,
+  newOwnerEmail: string,
+): ResultAsync<boolean, TransferOwnershipError | DatabaseError> => {
+  const logMeta = {
+    action: 'transferAllFormsOwnership',
+    currentOwner,
+    newOwnerEmail,
+  }
+
+  if (newOwnerEmail.toLowerCase() === currentOwner.email.toLowerCase()) {
+    return errAsync(
+      new TransferOwnershipError('You are already the owner of this form'),
+    )
+  }
+
+  return (
+    // Step 1: Retrieve user document for new owner.
+    UserService.findUserByEmail(newOwnerEmail)
+      .mapErr((error) => {
+        logger.error({
+          message:
+            'Error occurred whilst finding new owner email to transfer ownership to',
+          meta: logMeta,
+          error,
+        })
+        // Override MissingUserError with more specific message if new owner
+        // cannot be found.
+        if (error instanceof MissingUserError) {
+          return new TransferOwnershipError(
+            `${newOwnerEmail} must have logged in once before being added as Owner`,
+          )
+        }
+        return error
+      })
+      // Step 2: Perform form ownership transfer.
+      .andThen((newOwner) =>
+        ResultAsync.fromPromise(
+          FormModel.removeNewOwnerFromPermissionListForAllCurrentOwnerForms(
+            currentOwner,
+            newOwner,
+          ).then(() => newOwner),
+          (error) => {
+            logger.error({
+              message:
+                'Error occurred whilst removing new owner from permission list for current owner forms',
+              meta: logMeta,
+              error,
+            })
+
+            return new DatabaseError(getMongoErrorMessage(error))
+          },
+        ),
+      )
+      .andThen((newOwner) =>
+        ResultAsync.fromPromise(
+          FormModel.transferAllFormsToNewOwner(currentOwner, newOwner).then(
+            () => newOwner,
+          ),
+          (error) => {
+            logger.error({
+              message: 'Error occurred whilst transferring form ownership',
+              meta: logMeta,
+              error,
+            })
+
+            return new DatabaseError(getMongoErrorMessage(error))
+          },
+        ),
+      )
+      // Step 3: On success, return true
+      .map(() => true)
   )
 }
 

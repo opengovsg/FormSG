@@ -25,6 +25,7 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
 } from 'src/app/modules/core/core.errors'
+import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import { IAdminFeedbackSchema, IPopulatedForm, IUserSchema } from 'src/types'
 
 import {
@@ -523,6 +524,145 @@ describe('admin-form.form.routes', () => {
       expect(response.status).toEqual(500)
       expect(response.body).toEqual({
         message: databaseError.message,
+      })
+    })
+  })
+
+  describe('GET /admin/forms/all-transfer-owner', () => {
+    it('should return 200 with true if all forms were transferred to new owner', async () => {
+      // Arrange
+      const newOwner = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'new-owner',
+          shortName: 'newOwner',
+        })
+      ).user
+
+      // Act
+      const response = await request
+        .post(`/admin/forms/all-transfer-owner`)
+        .send({
+          email: newOwner.email,
+        })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(true)
+    })
+
+    it('should return 400 when body.email is an invalid email', async () => {
+      // Act
+      const response = await request
+        .post(`/admin/forms/all-transfer-owner`)
+        .send({ email: 'not an email' })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: { key: 'email', message: 'Please enter a valid email' },
+        }),
+      )
+    })
+
+    it('should return 400 when the new owner is not in the database', async () => {
+      // Arrange
+      const emailNotInDb = 'notindb@example.com'
+
+      // Act
+      const response = await request
+        .post(`/admin/forms/all-transfer-owner`)
+        .send({ email: emailNotInDb })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual({
+        message: `${emailNotInDb} must have logged in once before being added as Owner`,
+      })
+    })
+
+    it('should return 400 when the new owner is already the current owner', async () => {
+      // Act
+      const response = await request
+        .post(`/admin/forms/all-transfer-owner`)
+        .send({ email: defaultUser.email })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual({
+        message: 'You are already the owner of this form',
+      })
+    })
+
+    it('should return 401 when user is not logged in', async () => {
+      // Arrange
+      const newOwner = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'new-owner',
+          shortName: 'newOwner',
+        })
+      ).user
+
+      await logoutSession(request)
+
+      // Act
+      const response = await request
+        .post('/admin/forms/all-transfer-owner')
+        .send({ email: newOwner.email })
+
+      // Assert
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 422 when user of given id cannot be found in the database', async () => {
+      // Arrange
+      const newOwner = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'new-owner',
+          shortName: 'newOwner',
+        })
+      ).user
+      // Delete user after login.
+      await dbHandler.clearCollection(UserModel.collection.name)
+
+      // Act
+      const response = await request
+        .post('/admin/forms/all-transfer-owner')
+        .send({ email: newOwner.email })
+
+      // Assert
+      expect(response.status).toEqual(422)
+      expect(response.body).toEqual({ message: 'User not found' })
+    })
+
+    it('should return 500 when database errors occur', async () => {
+      // Arrange
+      const newOwner = (
+        await dbHandler.insertFormCollectionReqs({
+          userId: new ObjectId(),
+          mailName: 'new-owner',
+          shortName: 'newOwner',
+        })
+      ).user
+      // Mock database error.
+      const errorMsg = 'something went wrong'
+      jest
+        .spyOn(FormModel, 'transferAllFormsToNewOwner')
+        .mockRejectedValueOnce(new Error(errorMsg))
+
+      // Act
+      const response = await request
+        .post('/admin/forms/all-transfer-owner')
+        .send({ email: newOwner.email })
+
+      // Assert
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: `${formatErrorRecoveryMessage(errorMsg)}`,
       })
     })
   })
