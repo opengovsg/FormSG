@@ -1,7 +1,7 @@
 import { APIGatewayProxyResult } from 'aws-lambda'
 import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
-import uuid from 'uuid'
+import { validate } from 'uuid'
 
 import { scanFileStream } from './clamscan.service'
 import { config } from './config'
@@ -9,6 +9,16 @@ import { getLambdaLogger } from './logger'
 import { S3Service } from './s3.service'
 import { isBodyWithKey } from './types'
 
+/**
+ * Handler for virus scanner lambda
+ * To invoke handle locally, send POST request to http://localhost:9999/2015-03-31/functions/function/invocations with the following request body:
+ * { "key": <object key>}
+ * @param event
+ * @returns 200 with clean file key if clean
+ * @returns 400 if malicious
+ * @returns 400 if body is missing key
+ * @returns 404 if file not found
+ */
 export const handler = async (
   event: unknown,
 ): Promise<APIGatewayProxyResult> => {
@@ -29,7 +39,7 @@ export const handler = async (
     }
   }
 
-  if (!uuid.validate(event.key)) {
+  if (!validate(event.key)) {
     logger.warn({
       message: 'Invalid key',
       event,
@@ -92,6 +102,7 @@ export const handler = async (
         fileKey: quarantineFileKey,
       }),
     }
+    // If clean, move to clean bucket with randomised key and return
   } else {
     const cleanFileKey = crypto.randomUUID()
     logger.info({
