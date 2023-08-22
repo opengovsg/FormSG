@@ -1,10 +1,13 @@
 import {
+  DeleteObjectCommand,
   GetObjectCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3'
 import pino from 'pino'
 import internal from 'stream'
+
+import { GetDeleteS3FileStreamParams } from './types'
 
 export class S3Service {
   private readonly s3Client: S3Client
@@ -31,10 +34,7 @@ export class S3Service {
   async getS3FileStream({
     bucketName,
     objectKey,
-  }: {
-    bucketName: string
-    objectKey: string
-  }) {
+  }: GetDeleteS3FileStreamParams) {
     this.logger.info(
       {
         bucketName,
@@ -68,6 +68,44 @@ export class S3Service {
           error,
         },
         'Failed to get object from s3',
+      )
+
+      throw error
+    }
+  }
+
+  async deleteS3File({ bucketName, objectKey }: GetDeleteS3FileStreamParams) {
+    this.logger.info(
+      {
+        bucketName,
+        objectKey,
+      },
+      'Deleting document from s3',
+    )
+
+    try {
+      await this.s3Client.send(
+        new DeleteObjectCommand({
+          Key: objectKey,
+          Bucket: bucketName,
+        }),
+      )
+
+      this.logger.info(
+        {
+          bucketName,
+          objectKey,
+        },
+        'Deleted document from s3',
+      )
+    } catch (error) {
+      this.logger.error(
+        {
+          bucketName,
+          objectKey,
+          error,
+        },
+        'Failed to delete object from s3',
       )
 
       throw error

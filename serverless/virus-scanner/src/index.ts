@@ -86,21 +86,27 @@ export const handler = async (
   const scanResult = await scanFileStream(s3ReadableStream)
   const { isMalicious } = scanResult
 
-  // Move to clean bucket if clean
+  // If malicious, log and delete
   if (isMalicious) {
     const { virusMetadata } = scanResult
 
     logger.error({
       message: 'malicious file detected!!',
       virusMetadata,
-      quarantineFileKey,
+      key: quarantineFileKey,
     })
+
+    // Delete from quarantine bucket
+    await s3Client.deleteS3File({
+      bucketName: quarantineBucket,
+      objectKey: quarantineFileKey,
+    })
+
     return {
       statusCode: StatusCodes.BAD_REQUEST,
       body: JSON.stringify({
         message: 'Malicious file detected',
-        fileKey: quarantineFileKey,
-        virusMetadata,
+        key: quarantineFileKey,
       }),
     }
     // If clean, move to clean bucket with randomised key and return
@@ -108,7 +114,7 @@ export const handler = async (
     const cleanFileKey = crypto.randomUUID()
     logger.info({
       message: 'clean file detected',
-      cleanFileKey,
+      key: cleanFileKey,
     })
 
     const { cleanFile } = scanResult
