@@ -102,7 +102,7 @@ export const ProductModal = ({
       const validateMin = !!val && dollarsToCents(val) >= minPaymentAmountCents
       // Repeat the check on minPaymentAmountCents for correct typing
       if (!!minPaymentAmountCents && !validateMin) {
-        return `The maximum amount is S${formatCurrency(
+        return `The minimum amount is S${formatCurrency(
           Number(centsToDollars(minPaymentAmountCents)),
         )}`
       }
