@@ -1,13 +1,13 @@
 import {
+  CopyObjectCommand,
   DeleteObjectCommand,
   GetObjectCommand,
-  PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3'
 import pino from 'pino'
 import internal from 'stream'
 
-import { GetDeleteS3FileStreamParams } from './types'
+import { GetDeleteS3FileStreamParams, MoveS3FileParams } from './types'
 
 export class S3Service {
   private readonly s3Client: S3Client
@@ -112,47 +112,66 @@ export class S3Service {
     }
   }
 
-  async putS3File({
-    bucketName,
-    objectKey,
-    body,
-  }: {
-    bucketName: string
-    objectKey: string
-    body: Buffer
-  }) {
+  async moveS3File({
+    sourceBucketName,
+    sourceObjectKey,
+    sourceVersionId,
+    destinationBucketName,
+    destinationObjectKey,
+  }: MoveS3FileParams) {
     this.logger.info(
       {
-        bucketName,
-        objectKey,
+        sourceBucketName,
+        sourceObjectKey,
+        sourceVersionId,
+        destinationBucketName,
+        destinationObjectKey,
       },
-      'Putting document to s3',
+      'Moving document in s3',
     )
 
     try {
+      const { VersionId: destinationVersionId } = await this.s3Client.send(
+        new CopyObjectCommand({
+          Key: destinationObjectKey,
+          Bucket: destinationBucketName,
+          CopySource: `${sourceBucketName}/${sourceObjectKey}`,
+          CopySourceIfMatch: sourceVersionId,
+        }),
+      )
+
       await this.s3Client.send(
-        new PutObjectCommand({
-          Key: objectKey,
-          Bucket: bucketName,
-          Body: body,
+        new DeleteObjectCommand({
+          Key: sourceObjectKey,
+          Bucket: sourceBucketName,
+          VersionId: sourceVersionId,
         }),
       )
 
       this.logger.info(
         {
-          bucketName,
-          objectKey,
+          sourceBucketName,
+          sourceObjectKey,
+          sourceVersionId,
+          destinationBucketName,
+          destinationObjectKey,
+          destinationVersionId,
         },
-        'Put document to s3',
+        'Moved document in s3',
       )
+
+      return destinationVersionId
     } catch (error) {
       this.logger.error(
         {
-          bucketName,
-          objectKey,
+          sourceBucketName,
+          sourceObjectKey,
+          sourceVersionId,
+          destinationBucketName,
+          destinationObjectKey,
           error,
         },
-        'Failed to put object to s3',
+        'Failed to move object in s3',
       )
 
       throw error
