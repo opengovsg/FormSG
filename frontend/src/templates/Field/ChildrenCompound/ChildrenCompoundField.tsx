@@ -345,11 +345,11 @@ const ChildrenBody = ({
             myInfoFormattedValue = myInfoValue
           }
           const value = watch(fieldPath) as unknown as string
-          if (myInfoFormattedValue && value !== myInfoFormattedValue) {
+          if (myInfoValue && value !== myInfoValue) {
             // We need to do this as the underlying data is not updated
             // by the field's value, but rather by onChange, which we did
             // not trigger via prefill.
-            setValue(fieldPath, myInfoFormattedValue)
+            setValue(fieldPath, myInfoValue)
           }
           const isDisabled = isSubmitting || !!myInfoValue
           switch (subField) {
