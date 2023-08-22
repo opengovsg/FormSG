@@ -6,8 +6,6 @@ import {
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import crypto from 'crypto'
-import { readFileSync } from 'fs'
-import { omit } from 'lodash'
 import mongoose from 'mongoose'
 
 import { getEmailSubmissionModel } from 'src/app/models/submission.server.model'
@@ -31,10 +29,6 @@ import {
   KEY_LENGTH,
   SALT_LENGTH,
 } from '../email-submission.constants'
-import {
-  AttachmentTooLargeError,
-  InvalidFileExtensionError,
-} from '../email-submission.errors'
 import * as EmailSubmissionService from '../email-submission.service'
 
 type ResolvedValue<T> = T extends PromiseLike<infer U> ? U | T : never
@@ -76,109 +70,6 @@ describe('email-submission.service', () => {
       expect(result.responseHash).toEqual(MOCK_RESPONSE_HASH)
       expect(result.responseSalt).toEqual(MOCK_RESPONSE_SALT)
       expect(foundInDatabase).toBeNull()
-    })
-  })
-
-  describe('validateAttachments', () => {
-    it('should reject submissions when attachments are more than 7MB', async () => {
-      const processedResponse1 = generateNewAttachmentResponse({
-        content: Buffer.alloc(3000001),
-      })
-      const processedResponse2 = generateNewAttachmentResponse({
-        content: Buffer.alloc(4000000),
-      })
-
-      // Omit attributes only present in processed fields
-      const response1 = omit(processedResponse1, [
-        'isVisible',
-        'isUserVerified',
-      ])
-      const response2 = omit(processedResponse2, [
-        'isVisible',
-        'isUserVerified',
-      ])
-
-      const result = await EmailSubmissionService.validateAttachments([
-        response1,
-        response2,
-      ])
-      expect(result._unsafeUnwrapErr()).toEqual(new AttachmentTooLargeError())
-    })
-
-    it('should reject submissions when file types are invalid', async () => {
-      const processedResponse1 = generateNewAttachmentResponse({
-        content: readFileSync('./__tests__/unit/backend/resources/invalid.py'),
-        filename: 'invalid.py',
-      })
-
-      // Omit attributes only present in processed fields
-      const response1 = omit(processedResponse1, [
-        'isVisible',
-        'isUserVerified',
-      ])
-
-      const result = await EmailSubmissionService.validateAttachments([
-        response1,
-      ])
-      expect(result._unsafeUnwrapErr()).toEqual(new InvalidFileExtensionError())
-    })
-
-    it('should reject submissions when there are invalid file types in zip', async () => {
-      const processedResponse1 = generateNewAttachmentResponse({
-        content: readFileSync(
-          './__tests__/unit/backend/resources/nestedInvalid.zip',
-        ),
-        filename: 'nestedInvalid.zip',
-      })
-
-      // Omit attributes only present in processed fields
-      const response1 = omit(processedResponse1, [
-        'isVisible',
-        'isUserVerified',
-      ])
-
-      const result = await EmailSubmissionService.validateAttachments([
-        response1,
-      ])
-      expect(result._unsafeUnwrapErr()).toEqual(new InvalidFileExtensionError())
-    })
-
-    it('should accept submissions when file types are valid', async () => {
-      const processedResponse1 = generateNewAttachmentResponse({
-        content: readFileSync('./__tests__/unit/backend/resources/govtech.jpg'),
-        filename: 'govtech.jpg',
-      })
-
-      // Omit attributes only present in processed fields
-      const response1 = omit(processedResponse1, [
-        'isVisible',
-        'isUserVerified',
-      ])
-
-      const result = await EmailSubmissionService.validateAttachments([
-        response1,
-      ])
-      expect(result._unsafeUnwrap()).toEqual(true)
-    })
-
-    it('should accept submissions when file types in zip are valid', async () => {
-      const processedResponse1 = generateNewAttachmentResponse({
-        content: readFileSync(
-          './__tests__/unit/backend/resources/nestedValid.zip',
-        ),
-        filename: 'nestedValid.zip',
-      })
-
-      // Omit attributes only present in processed fields
-      const response1 = omit(processedResponse1, [
-        'isVisible',
-        'isUserVerified',
-      ])
-
-      const result = await EmailSubmissionService.validateAttachments([
-        response1,
-      ])
-      expect(result._unsafeUnwrap()).toEqual(true)
     })
   })
 

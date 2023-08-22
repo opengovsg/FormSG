@@ -155,12 +155,14 @@ export const generateDefaultField = (
           shape: 'Heart',
           steps: 5,
         },
+        getQuestion: () => defaultParams.title,
         ...customParams,
       } as IRatingFieldSchema
     case BasicField.Date:
       return {
         ...defaultParams,
         invalidDays: [],
+        getQuestion: () => defaultParams.title,
         ...customParams,
       } as IDateFieldSchema
     default:

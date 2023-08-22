@@ -69,18 +69,20 @@ import * as FeedbackService from '../../feedback/feedback.service'
 import * as EmailSubmissionMiddleware from '../../submission/email-submission/email-submission.middleware'
 import * as EmailSubmissionService from '../../submission/email-submission/email-submission.service'
 import {
-  mapAttachmentsFromResponses,
   mapRouteError as mapEmailSubmissionError,
   SubmissionEmailObj,
 } from '../../submission/email-submission/email-submission.util'
-import ParsedResponsesObject from '../../submission/email-submission/ParsedResponsesObject.class'
 import * as EncryptSubmissionMiddleware from '../../submission/encrypt-submission/encrypt-submission.middleware'
 import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
 import { mapRouteError as mapEncryptSubmissionError } from '../../submission/encrypt-submission/encrypt-submission.utils'
 import IncomingEncryptSubmission from '../../submission/encrypt-submission/IncomingEncryptSubmission.class'
+import ParsedResponsesObject from '../../submission/ParsedResponsesObject.class'
 import * as ReceiverMiddleware from '../../submission/receiver/receiver.middleware'
 import * as SubmissionService from '../../submission/submission.service'
-import { extractEmailConfirmationData } from '../../submission/submission.utils'
+import {
+  extractEmailConfirmationData,
+  mapAttachmentsFromResponses,
+} from '../../submission/submission.utils'
 import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
@@ -1719,10 +1721,10 @@ export const submitEmailPreview: ControllerHandler<
   }
   const form = formResult.value
 
-  const parsedResponsesResult =
-    await EmailSubmissionService.validateAttachments(responses).andThen(() =>
-      ParsedResponsesObject.parseResponses(form, responses),
-    )
+  const parsedResponsesResult = await SubmissionService.validateAttachments(
+    responses,
+    form.responseMode,
+  ).andThen(() => ParsedResponsesObject.parseResponses(form, responses))
   if (parsedResponsesResult.isErr()) {
     logger.error({
       message: 'Error while parsing responses for preview submission',

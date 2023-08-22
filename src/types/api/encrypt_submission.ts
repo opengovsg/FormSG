@@ -5,6 +5,7 @@ import {
   FieldResponse,
   StorageModeSubmissionContentDto,
 } from '../../../shared/types'
+import { IPopulatedEncryptedForm, IPopulatedForm } from '../form'
 
 import { ParsedEmailModeSubmissionBody } from './email_submission'
 
@@ -28,4 +29,21 @@ export type EncryptFormFieldResponse =
  */
 export type ParsedStorageModeSubmissionBody = ParsedEmailModeSubmissionBody & {
   version: number
+}
+
+export type FormLoadedDto = {
+  formDef: IPopulatedForm
+  encryptedFormDef: IPopulatedEncryptedForm
+}
+
+export type EncryptingPayloadDto = {
+  formsg: FormLoadedDto & {
+    encryptedPayload?: EncryptSubmissionDto
+  }
+}
+
+export type FormsgCompleteDto = {
+  formsg: FormLoadedDto & {
+    encryptedPayload: EncryptSubmissionDto
+  }
 }
