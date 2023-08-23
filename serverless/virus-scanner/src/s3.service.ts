@@ -150,7 +150,6 @@ export class S3Service {
         new DeleteObjectCommand({
           Key: sourceObjectKey,
           Bucket: sourceBucketName,
-          VersionId: sourceObjectVersionId,
         }),
       )
 
