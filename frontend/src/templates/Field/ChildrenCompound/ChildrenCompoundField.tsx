@@ -23,6 +23,13 @@ import {
 import { format, parse } from 'date-fns'
 import simplur from 'simplur'
 
+import {
+  ChildrenCompoundFieldInputs,
+  ChildrenCompoundFieldSchema,
+  DATE_DISPLAY_FORMAT,
+  DATE_PARSE_FORMAT,
+  MYINFO_DATE_FORMAT,
+} from '~shared/constants/dates'
 import { MYINFO_ATTRIBUTE_MAP } from '~shared/constants/field/myinfo'
 import {
   FormColorTheme,
@@ -39,16 +46,7 @@ import { SingleSelect } from '~components/Dropdown/SingleSelect'
 import { FormLabel } from '~components/FormControl/FormLabel/FormLabel'
 import { IconButton } from '~components/IconButton/IconButton'
 
-import {
-  DATE_DISPLAY_FORMAT,
-  DATE_PARSE_FORMAT,
-  MYINFO_DATE_FORMAT,
-} from '../Date/DateField'
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
-import {
-  ChildrenCompoundFieldInputs,
-  ChildrenCompoundFieldSchema,
-} from '../types'
 
 export interface ChildrenCompoundFieldProps extends BaseFieldProps {
   schema: ChildrenCompoundFieldSchema
@@ -327,20 +325,21 @@ const ChildrenBody = ({
         .map((subField, index) => {
           // First index taken by name.
           index += 1
-          let myInfoFormattedValue
           const key = `${field.id}+${index}`
           const fieldPath = `${schema._id}.child.${currChildBodyIdx}.${index}`
           const myInfoValue = getChildAttr(subField)
+          let myInfoFormattedValue
+
           if (
             subField === MyInfoChildAttributes.ChildDateOfBirth &&
             myInfoValue
           ) {
+            // We want to format the date by converting the value from a myinfo format to
+            // a format used by our date fields
             myInfoFormattedValue = format(
               parse(myInfoValue, MYINFO_DATE_FORMAT, new Date()),
               DATE_PARSE_FORMAT,
             )
-            console.log('myInfoValue: ', myInfoValue)
-            console.log('myInfoFormattedValue: ', myInfoFormattedValue)
           } else {
             myInfoFormattedValue = myInfoValue
           }
@@ -392,7 +391,6 @@ const ChildrenBody = ({
             }
             case MyInfoChildAttributes.ChildDateOfBirth: {
               const { onChange, ...rest } = register(fieldPath, validationRules)
-              console.log(value)
               return (
                 <FormControl key={key} isDisabled={isDisabled} isRequired>
                   <FormLabel useMarkdownForDescription gridArea="formlabel">
@@ -402,11 +400,10 @@ const ChildrenBody = ({
                     {...rest}
                     displayFormat={DATE_DISPLAY_FORMAT}
                     // dateFormat={DATE_PARSE_FORMAT}
-                    dateFormat="yyyy/MM/dd"
+                    // dateFormat="yyyy/MM/dd"
                     // Convert MyInfo YYYY-MM-DD to YYYY/MM/DD
-                    inputValue={value?.replaceAll('-', '/')}
-                    // inputValue={value}
-                    defaultInputValue={value ? myInfoFormattedValue : ''}
+                    // inputValue={value?.replaceAll('-', '/')}
+                    inputValue={value}
                     onInputValueChange={(date) => {
                       setValue(fieldPath, date)
                     }}
