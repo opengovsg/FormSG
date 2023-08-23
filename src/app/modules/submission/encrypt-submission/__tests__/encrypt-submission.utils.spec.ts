@@ -4,12 +4,13 @@ import { cloneDeep } from 'lodash'
 import moment from 'moment-timezone'
 import { FormPaymentsField, PaymentType } from 'shared/types'
 
-import { SubmissionData } from 'src/types'
+import { IPopulatedEncryptedForm, SubmissionData } from 'src/types'
 
 import { handleDuplicatesInAttachments } from '../../receiver/receiver.utils'
 import {
   createEncryptedSubmissionDto,
   getPaymentAmount,
+  getPaymentIntentDescription,
 } from '../encrypt-submission.utils'
 
 const validSingleFile = {
@@ -99,6 +100,80 @@ describe('encrypt-submission.utils', () => {
       expect(newFilenames).toContain(validSingleFile.filename)
       expect(newFilenames).toContain(`1-${validSingleFile.filename}`)
       expect(newFilenames).toContain(`2-${validSingleFile.filename}`)
+    })
+  })
+
+  describe('getPaymentIntentDescription', () => {
+    it('should description for Fixed Payments Type', () => {
+      const expectedValue = 'expectedValue'
+      const formData = {
+        payments_field: {
+          payment_type: PaymentType.Fixed,
+          description: expectedValue,
+          name: 'name',
+        },
+      } as unknown as IPopulatedEncryptedForm
+
+      const products: any = [{}]
+
+      const result = getPaymentIntentDescription(formData, products)
+
+      expect(result).toEqual(expectedValue)
+    })
+    it('should return name for Variable Payment Type', () => {
+      const expectedValue = 'expectedValue'
+      const formData = {
+        payments_field: {
+          payment_type: PaymentType.Variable,
+          description: 'description',
+          name: expectedValue,
+        },
+      } as unknown as IPopulatedEncryptedForm
+
+      const products: any = [{}]
+
+      const result = getPaymentIntentDescription(formData, products)
+
+      expect(result).toEqual(expectedValue)
+    })
+
+    it('should return product names for Products Payment Type', () => {
+      const expectedValue = 'expectedValue'
+      const formData = {
+        payments_field: {
+          payment_type: PaymentType.Products,
+          description: 'description',
+          name: expectedValue,
+        },
+      } as unknown as IPopulatedEncryptedForm
+
+      const products: any = [
+        { data: { name: 'name1' }, quantity: 1 },
+        { data: { name: 'name2' }, quantity: 2 },
+      ]
+
+      const result = getPaymentIntentDescription(formData, products)
+
+      expect(result).toContain('name1')
+      expect(result).toContain('name2')
+    })
+
+    it('should return form title for Products Payment Type when there are no products', () => {
+      const expectedValue = 'formTitle'
+      const formData = {
+        payments_field: {
+          payment_type: PaymentType.Products,
+          description: 'description',
+          name: 'name',
+        },
+        title: expectedValue,
+      } as unknown as IPopulatedEncryptedForm
+
+      const products: any = null
+
+      const result = getPaymentIntentDescription(formData, products)
+
+      expect(result).toContain(expectedValue)
     })
   })
 })

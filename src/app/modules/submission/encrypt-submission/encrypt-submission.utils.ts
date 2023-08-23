@@ -320,7 +320,7 @@ export const getPaymentIntentDescription = (
   const formPaymentFields = form.payments_field
   switch (formPaymentFields.payment_type) {
     case PaymentType.Fixed:
-      // legacy behaviour to keep fixed payments as it is
+      // legacy behaviour of fixed payments where the product name is referred as description
       return formPaymentFields.description
     case PaymentType.Variable:
       return formPaymentFields.name
