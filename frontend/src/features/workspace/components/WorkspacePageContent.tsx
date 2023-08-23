@@ -40,6 +40,7 @@ export const WorkspacePageContent = ({
     [isUserLoading, hasSeenAnnouncement],
   )
 
+  // TODO: change dashboard message to env var
   const dashboardMessage = `FormSG encryption is changing to make it more secure. This won't affect data/security classifications, and no action is needed from you. [Learn more](${GUIDE_ENCRYPTION_BOUNDARY_SHIFT})`
 
   return totalFormsCount === 0 ? (
