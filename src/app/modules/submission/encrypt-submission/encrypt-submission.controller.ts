@@ -451,6 +451,22 @@ const _createPaymentSubmission = async ({
     paymentContactEmail: paymentReceiptEmail,
   }
 
+  const getPaymentIntentDescription = () => {
+    switch (form.payments_field.payment_type) {
+      case PaymentType.Fixed:
+        // legacy behaviour to keep fixed payments as it is
+        return form.payments_field.description
+      case PaymentType.Variable:
+        return form.payments_field.name
+      case PaymentType.Products: {
+        if (!paymentProducts) return form.title
+        const productDescriptions = paymentProducts
+          .map((product) => `${product.data.name} x ${product.quantity}`)
+          .join(', ')
+        return productDescriptions
+      }
+    }
+  }
   const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
     amount,
     currency: paymentConfig.defaultCurrency,
@@ -458,7 +474,7 @@ const _createPaymentSubmission = async ({
     automatic_payment_methods: {
       enabled: true,
     },
-    description: form.payments_field.description,
+    description: getPaymentIntentDescription(),
     receipt_email: paymentReceiptEmail,
     metadata,
   }
