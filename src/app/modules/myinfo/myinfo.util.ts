@@ -1,5 +1,4 @@
 import bcrypt from 'bcrypt'
-import { format, parse } from 'date-fns'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
 import moment from 'moment'
@@ -18,6 +17,7 @@ import {
   MyInfoChildData,
   MyInfoChildVaxxStatus,
 } from '../../../../shared/types'
+import { formatMyinfoDate } from '../../../../shared/utils/dates'
 import { hasProp } from '../../../../shared/utils/has-prop'
 import {
   IFieldSchema,
@@ -82,6 +82,7 @@ function hashChildrenFieldValues(
     const fieldArr = childrenBirthRecords[subField]
     let myInfoFormattedValue: string
     fieldArr?.forEach((value, childIdx) => {
+      myInfoFormattedValue = value
       const childName =
         childrenBirthRecords?.[MyInfoChildAttributes.ChildName]?.[childIdx]
       if (childName === undefined) {
@@ -97,16 +98,16 @@ function hashChildrenFieldValues(
       if (!value) {
         return
       }
+      // Child's DOB is processed different from non-child Myinfo dates
+      // We have to return value in the the same date format as the frontend
+      // Hence we format it here
       if (subField === MyInfoChildAttributes.ChildDateOfBirth) {
-        myInfoFormattedValue = format(
-          parse(value, 'yyyy-MM-dd', new Date()),
-          'dd/MM/yyyy',
-        )
+        myInfoFormattedValue = formatMyinfoDate(value)
         return
       }
       readOnlyHashPromises[
         getMyInfoChildHashKey(field._id, subField, childIdx, childName)
-      ] = bcrypt.hash(myInfoFormattedValue ?? value, HASH_SALT_ROUNDS)
+      ] = bcrypt.hash(myInfoFormattedValue, HASH_SALT_ROUNDS)
     })
   })
 }

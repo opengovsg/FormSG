@@ -38,6 +38,7 @@ import {
   MyInfoChildData,
   MyInfoChildVaxxStatus,
 } from '~shared/types'
+import { formatMyinfoDate } from '~shared/utils/dates'
 
 import { createChildrenValidationRules } from '~utils/fieldValidation'
 import { Button } from '~components/Button/Button'
@@ -336,10 +337,7 @@ const ChildrenBody = ({
           ) {
             // We want to format the date by converting the value from a myinfo format to
             // a format used by our date fields
-            myInfoFormattedValue = format(
-              parse(myInfoValue, MYINFO_DATE_FORMAT, new Date()),
-              DATE_PARSE_FORMAT,
-            )
+            myInfoFormattedValue = formatMyinfoDate(myInfoValue)
           } else {
             myInfoFormattedValue = myInfoValue
           }
@@ -399,10 +397,6 @@ const ChildrenBody = ({
                   <DatePicker
                     {...rest}
                     displayFormat={DATE_DISPLAY_FORMAT}
-                    // dateFormat={DATE_PARSE_FORMAT}
-                    // dateFormat="yyyy/MM/dd"
-                    // Convert MyInfo YYYY-MM-DD to YYYY/MM/DD
-                    // inputValue={value?.replaceAll('-', '/')}
                     inputValue={value}
                     onInputValueChange={(date) => {
                       setValue(fieldPath, date)
