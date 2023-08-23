@@ -125,6 +125,12 @@ export const handler = async (
       body: cleanFile,
     })
 
+    // Delete from quarantine bucket
+    await s3Client.deleteS3File({
+      bucketName: quarantineBucket,
+      objectKey: quarantineFileKey,
+    })
+
     logger.info({
       message: 'returning key to client',
       cleanFileKey,
