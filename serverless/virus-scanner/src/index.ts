@@ -109,6 +109,7 @@ export const handler = async (
       body: JSON.stringify({
         message: 'Malicious file detected',
         key: quarantineFileKey,
+        virusMetadata,
       }),
     }
     // If clean, move to clean bucket with randomised key and return
