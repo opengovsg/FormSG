@@ -30,7 +30,6 @@ export type GetDeleteS3FileStreamParams = {
 export type MoveS3FileParams = {
   sourceBucketName: string
   sourceObjectKey: string
-  sourceVersionId: string
   destinationBucketName: string
   destinationObjectKey: string
 }

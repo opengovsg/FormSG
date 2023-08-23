@@ -115,27 +115,18 @@ export const handler = async (
     logger.info({
       message: 'clean file detected',
       key: quarantineFileKey,
-      versionId: quarantineFileVersionId,
     })
 
-    const cleanFileVersionId = await s3Client.moveS3File({
+    await s3Client.moveS3File({
       sourceBucketName: quarantineBucket,
       sourceObjectKey: quarantineFileKey,
-      sourceVersionId: quarantineFileVersionId,
       destinationBucketName: cleanBucket,
       destinationObjectKey: cleanFileKey,
-    })
-
-    // Delete from quarantine bucket
-    await s3Client.deleteS3File({
-      bucketName: quarantineBucket,
-      objectKey: quarantineFileKey,
     })
 
     logger.info({
       message: 'clean file moved to clean bucket',
       cleanFileKey,
-      cleanFileVersionId,
     })
 
     return {
@@ -143,7 +134,6 @@ export const handler = async (
       body: JSON.stringify({
         message: 'File scan completed',
         cleanFileKey,
-        cleanFileVersionId,
       }),
     }
   }

@@ -115,7 +115,6 @@ export class S3Service {
   async moveS3File({
     sourceBucketName,
     sourceObjectKey,
-    sourceVersionId,
     destinationBucketName,
     destinationObjectKey,
   }: MoveS3FileParams) {
@@ -123,7 +122,6 @@ export class S3Service {
       {
         sourceBucketName,
         sourceObjectKey,
-        sourceVersionId,
         destinationBucketName,
         destinationObjectKey,
       },
@@ -131,12 +129,11 @@ export class S3Service {
     )
 
     try {
-      const { VersionId: destinationVersionId } = await this.s3Client.send(
+      await this.s3Client.send(
         new CopyObjectCommand({
           Key: destinationObjectKey,
           Bucket: destinationBucketName,
           CopySource: `${sourceBucketName}/${sourceObjectKey}`,
-          CopySourceIfMatch: sourceVersionId,
         }),
       )
 
@@ -144,7 +141,6 @@ export class S3Service {
         new DeleteObjectCommand({
           Key: sourceObjectKey,
           Bucket: sourceBucketName,
-          VersionId: sourceVersionId,
         }),
       )
 
@@ -152,21 +148,16 @@ export class S3Service {
         {
           sourceBucketName,
           sourceObjectKey,
-          sourceVersionId,
           destinationBucketName,
           destinationObjectKey,
-          destinationVersionId,
         },
         'Moved document in s3',
       )
-
-      return destinationVersionId
     } catch (error) {
       this.logger.error(
         {
           sourceBucketName,
           sourceObjectKey,
-          sourceVersionId,
           destinationBucketName,
           destinationObjectKey,
           error,
