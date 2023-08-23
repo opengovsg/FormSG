@@ -20,13 +20,17 @@ provider:
         # Allow functions to read/write objects in a bucket
         - Effect: Allow
           Action:
+            # Both GetObject and GetObjectTagging required for copy
             - 's3:GetObject'
+            - 's3:GetObjectTagging'
             - 's3:DeleteObject'
           Resource:
             - 'arn:aws:s3:::${env:VIRUS_SCANNER_QUARANTINE_S3_BUCKET}/*'
         - Effect: Allow
           Action:
+            # Both PutObject and PutObjectTagging required for copy
             - 's3:PutObject'
+            - 's3:PutObjectTagging'
           Resource:
             - 'arn:aws:s3:::${env:VIRUS_SCANNER_CLEAN_S3_BUCKET}/*'
   ecr:
