@@ -1,10 +1,12 @@
 import {
   generateDefaultField,
+  generateNewAttachmentResponse,
   generateNewSingleAnswerResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
-import { times } from 'lodash'
+import { readFileSync } from 'fs'
+import { omit, times } from 'lodash'
 import mongoose from 'mongoose'
 import { ok } from 'neverthrow'
 
@@ -28,9 +30,12 @@ import {
 import {
   AutoReplyOptions,
   BasicField,
+  FormResponseMode,
   SubmissionType,
 } from '../../../../../shared/types'
 import {
+  AttachmentTooLargeError,
+  InvalidFileExtensionError,
   PendingSubmissionNotFoundError,
   SendEmailConfirmationError,
 } from '../submission.errors'
@@ -902,6 +907,157 @@ describe('submission.service', () => {
       )
       expect(result.isErr()).toEqual(true)
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+    })
+  })
+
+  describe('validateAttachments', () => {
+    it('should reject email mode submissions when attachments are more than 7MB', async () => {
+      const processedResponse1 = generateNewAttachmentResponse({
+        content: Buffer.alloc(3000001),
+      })
+      const processedResponse2 = generateNewAttachmentResponse({
+        content: Buffer.alloc(4000000),
+      })
+
+      // Omit attributes only present in processed fields
+      const response1 = omit(processedResponse1, [
+        'isVisible',
+        'isUserVerified',
+      ])
+      const response2 = omit(processedResponse2, [
+        'isVisible',
+        'isUserVerified',
+      ])
+
+      const result = await SubmissionService.validateAttachments(
+        [response1, response2],
+        FormResponseMode.Email,
+      )
+      expect(result._unsafeUnwrapErr()).toEqual(new AttachmentTooLargeError())
+    })
+
+    it('should accept storage mode submissions when attachments are more than 7MB', async () => {
+      const processedResponse1 = generateNewAttachmentResponse({
+        content: Buffer.alloc(7000001),
+        filename: 'moreThan7MB.jpg',
+      })
+
+      // Omit attributes only present in processed fields
+      const response1 = omit(processedResponse1, [
+        'isVisible',
+        'isUserVerified',
+      ])
+
+      const result = await SubmissionService.validateAttachments(
+        [response1],
+        FormResponseMode.Encrypt,
+      )
+      expect(result._unsafeUnwrap()).toBeTrue()
+    })
+
+    it('should reject storage mode submissions when attachments are more than 20MB', async () => {
+      const processedResponse1 = generateNewAttachmentResponse({
+        content: Buffer.alloc(10000001),
+      })
+      const processedResponse2 = generateNewAttachmentResponse({
+        content: Buffer.alloc(10000000),
+      })
+
+      // Omit attributes only present in processed fields
+      const response1 = omit(processedResponse1, [
+        'isVisible',
+        'isUserVerified',
+      ])
+      const response2 = omit(processedResponse2, [
+        'isVisible',
+        'isUserVerified',
+      ])
+
+      const result = await SubmissionService.validateAttachments(
+        [response1, response2],
+        FormResponseMode.Encrypt,
+      )
+      expect(result._unsafeUnwrapErr()).toEqual(new AttachmentTooLargeError())
+    })
+
+    it('should reject submissions when file types are invalid', async () => {
+      const processedResponse1 = generateNewAttachmentResponse({
+        content: readFileSync('./__tests__/unit/backend/resources/invalid.py'),
+        filename: 'invalid.py',
+      })
+
+      // Omit attributes only present in processed fields
+      const response1 = omit(processedResponse1, [
+        'isVisible',
+        'isUserVerified',
+      ])
+
+      const result = await SubmissionService.validateAttachments(
+        [response1],
+        FormResponseMode.Email,
+      )
+      expect(result._unsafeUnwrapErr()).toEqual(new InvalidFileExtensionError())
+    })
+
+    it('should reject submissions when there are invalid file types in zip', async () => {
+      const processedResponse1 = generateNewAttachmentResponse({
+        content: readFileSync(
+          './__tests__/unit/backend/resources/nestedInvalid.zip',
+        ),
+        filename: 'nestedInvalid.zip',
+      })
+
+      // Omit attributes only present in processed fields
+      const response1 = omit(processedResponse1, [
+        'isVisible',
+        'isUserVerified',
+      ])
+
+      const result = await SubmissionService.validateAttachments(
+        [response1],
+        FormResponseMode.Email,
+      )
+      expect(result._unsafeUnwrapErr()).toEqual(new InvalidFileExtensionError())
+    })
+
+    it('should accept submissions when file types are valid', async () => {
+      const processedResponse1 = generateNewAttachmentResponse({
+        content: readFileSync('./__tests__/unit/backend/resources/govtech.jpg'),
+        filename: 'govtech.jpg',
+      })
+
+      // Omit attributes only present in processed fields
+      const response1 = omit(processedResponse1, [
+        'isVisible',
+        'isUserVerified',
+      ])
+
+      const result = await SubmissionService.validateAttachments(
+        [response1],
+        FormResponseMode.Email,
+      )
+      expect(result._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should accept submissions when file types in zip are valid', async () => {
+      const processedResponse1 = generateNewAttachmentResponse({
+        content: readFileSync(
+          './__tests__/unit/backend/resources/nestedValid.zip',
+        ),
+        filename: 'nestedValid.zip',
+      })
+
+      // Omit attributes only present in processed fields
+      const response1 = omit(processedResponse1, [
+        'isVisible',
+        'isUserVerified',
+      ])
+
+      const result = await SubmissionService.validateAttachments(
+        [response1],
+        FormResponseMode.Email,
+      )
+      expect(result._unsafeUnwrap()).toEqual(true)
     })
   })
 })

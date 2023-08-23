@@ -2,7 +2,7 @@ import { Busboy } from 'busboy'
 import { NextFunction, Request, Response } from 'express-serve-static-core'
 import { Result } from 'neverthrow'
 
-import { FieldResponse } from '../../../../../shared/types'
+import { FieldResponse, FormResponseMode } from '../../../../../shared/types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import { ControllerHandler } from '../../core/core.types'
@@ -32,7 +32,10 @@ export const receiveEmailSubmission: ControllerHandler<
     req,
     res,
     next,
-    SubmissionReceiver.createMultipartReceiver(req.headers, true),
+    SubmissionReceiver.createMultipartReceiver(
+      req.headers,
+      FormResponseMode.Email,
+    ),
   )
 }
 
@@ -55,7 +58,10 @@ export const receiveStorageSubmission: ControllerHandler<
     req,
     res,
     next,
-    SubmissionReceiver.createMultipartReceiver(req.headers, false),
+    SubmissionReceiver.createMultipartReceiver(
+      req.headers,
+      FormResponseMode.Encrypt,
+    ),
   )
 }
 

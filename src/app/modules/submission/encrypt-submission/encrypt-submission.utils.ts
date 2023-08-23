@@ -69,6 +69,8 @@ import {
   ValidateFieldError,
 } from '../submission.errors'
 
+import { SubmissionFailedError } from './encrypt-submission.errors'
+
 const logger = createLoggerWithLabel(module)
 
 /**
@@ -212,6 +214,11 @@ const errorMapper: MapRouteError = (
     case EmptyErrorFieldError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
+      }
+    case SubmissionFailedError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
       }
     default:

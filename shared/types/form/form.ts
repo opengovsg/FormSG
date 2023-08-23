@@ -150,11 +150,14 @@ export interface FormBase {
   webhook: FormWebhook
 
   responseMode: FormResponseMode
+
+  encryptionBoundaryShift?: boolean
 }
 
 export interface EmailFormBase extends FormBase {
   responseMode: FormResponseMode.Email
   emails: string[]
+  encryptionBoundaryShift?: never
 }
 
 export interface StorageFormBase extends FormBase {

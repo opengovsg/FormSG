@@ -9,7 +9,7 @@ import { IncomingHttpHeaders } from 'http'
 import { omit, pick } from 'lodash'
 
 import { MB } from '../../../../../../shared/constants/file'
-import { BasicField } from '../../../../../../shared/types'
+import { BasicField, FormResponseMode } from '../../../../../../shared/types'
 import {
   InitialiseMultipartReceiverError,
   MultipartError,
@@ -55,7 +55,7 @@ describe('receiver.service', () => {
 
         const result = EmailSubmissionReceiver.createMultipartReceiver(
           MOCK_HEADERS,
-          true,
+          FormResponseMode.Email,
         )
 
         expect(MockBusboy).toHaveBeenCalledWith({
@@ -71,7 +71,7 @@ describe('receiver.service', () => {
       it('should return error headers are missing content-type key-value', () => {
         const result = EmailSubmissionReceiver.createMultipartReceiver(
           omit(MOCK_HEADERS, 'content-type'),
-          true,
+          FormResponseMode.Email,
         )
 
         // Should have failed type guard and not have been called.
@@ -88,7 +88,7 @@ describe('receiver.service', () => {
 
         const result = EmailSubmissionReceiver.createMultipartReceiver(
           MOCK_HEADERS,
-          true,
+          FormResponseMode.Email,
         )
 
         expect(MockBusboy).toHaveBeenCalledWith({
@@ -110,7 +110,7 @@ describe('receiver.service', () => {
 
         const result = EmailSubmissionReceiver.createMultipartReceiver(
           MOCK_HEADERS,
-          false,
+          FormResponseMode.Encrypt,
         )
 
         expect(MockBusboy).toHaveBeenCalledWith({
@@ -126,7 +126,7 @@ describe('receiver.service', () => {
       it('should return error headers are missing content-type key-value', () => {
         const result = EmailSubmissionReceiver.createMultipartReceiver(
           omit(MOCK_HEADERS, 'content-type'),
-          false,
+          FormResponseMode.Encrypt,
         )
 
         // Should have failed type guard and not have been called.
@@ -143,7 +143,7 @@ describe('receiver.service', () => {
 
         const result = EmailSubmissionReceiver.createMultipartReceiver(
           MOCK_HEADERS,
-          false,
+          FormResponseMode.Encrypt,
         )
 
         expect(MockBusboy).toHaveBeenCalledWith({

@@ -226,6 +226,11 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
       gstRegNo: { type: String, required: true, trim: true },
     },
   },
+
+  encryptionBoundaryShift: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const EncryptedFormDocumentSchema =
@@ -755,6 +760,43 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.save()
   }
 
+  // Transfer ownership of multiple forms to another user
+  FormSchema.statics.transferAllFormsToNewOwner = async function (
+    currentOwner: IUserSchema,
+    newOwner: IUserSchema,
+  ) {
+    return this.updateMany(
+      {
+        admin: currentOwner._id,
+      },
+      {
+        $set: {
+          admin: newOwner._id,
+        },
+        $addToSet: {
+          permissionList: { email: currentOwner.email, write: true },
+        },
+      },
+    ).exec()
+  }
+
+  // Add form collaborator
+  FormSchema.statics.removeNewOwnerFromPermissionListForAllCurrentOwnerForms =
+    async function (currentOwner: IUserSchema, newOwner: IUserSchema) {
+      return this.updateMany(
+        {
+          admin: currentOwner._id,
+        },
+        {
+          $pull: {
+            permissionList: {
+              email: { $in: [newOwner.email] },
+            },
+          },
+        },
+      ).exec()
+    }
+
   FormDocumentSchema.methods.updateFormCollaborators = async function (
     updatedPermissions: FormPermission[],
   ) {
@@ -892,6 +934,33 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         // Filter out archived forms.
         .where('status')
         .ne(FormStatus.Archived)
+        // Project selected fields.
+        // `responseMode` is a discriminator key and is returned regardless,
+        // selection is made for explicitness.
+        // `_id` is also returned regardless and selection is made for
+        // explicitness.
+        .select(ADMIN_FORM_META_FIELDS.join(' '))
+        .sort('-lastModified')
+        .populate({
+          path: 'admin',
+          populate: {
+            path: 'agency',
+          },
+        })
+        .lean()
+        .exec()
+    )
+  }
+
+  // Get all forms owned by the specified user ID.
+  FormDocumentSchema.statics.retrieveFormsOwnedByUserId = async function (
+    userId: IUserSchema['_id'],
+  ): Promise<AdminDashboardFormMetaDto[]> {
+    return (
+      this.find()
+        // List forms when either the user is an admin only.
+        .where('admin')
+        .eq(userId)
         // Project selected fields.
         // `responseMode` is a discriminator key and is returned regardless,
         // selection is made for explicitness.

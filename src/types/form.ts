@@ -112,6 +112,8 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   created?: Date
   lastModified?: Date
 
+  encryptionBoundaryShift?: boolean
+
   /**
    * Replaces the field corresponding to given id to given new field
    * @param fieldId the id of the field to update
@@ -302,6 +304,7 @@ export interface IEmailForm extends IForm {
   // strings to string array.
   emails: string[] | string
   publicKey?: never
+  encryptionBoundaryShift?: never
 }
 
 export type IEmailFormSchema = IEmailForm & IFormSchema
@@ -341,6 +344,10 @@ export interface IFormModel extends Model<IFormSchema> {
   getMetaByUserIdOrEmail(
     userId: IUserSchema['_id'],
     userEmail: IUserSchema['email'],
+  ): Promise<AdminDashboardFormMetaDto[]>
+
+  retrieveFormsOwnedByUserId(
+    userId: IUserSchema['_id'],
   ): Promise<AdminDashboardFormMetaDto[]>
 
   disableSmsVerificationsForUser(
@@ -406,6 +413,22 @@ export interface IFormModel extends Model<IFormSchema> {
     formId: string,
     goLinkSuffix: string,
   ): Promise<IFormDocument | null>
+
+  /**
+   * Transfer ownership of the form to another user.
+   * @param currentOwner the current owner of the form. The owner is retrieved outside of the method to force validation to be performed correctly.
+   * @param newOwner the new owner of the form. Similarly retrieved outside of method to force correct validation.
+   * @returns
+   */
+  transferAllFormsToNewOwner<T = IFormSchema>(
+    currentOwner: IUserSchema,
+    newOwner: IUserSchema,
+  ): Promise<T>
+
+  removeNewOwnerFromPermissionListForAllCurrentOwnerForms<T = IFormSchema>(
+    currentOwner: IUserSchema,
+    newOwner: IUserSchema,
+  ): Promise<T>
 }
 
 export type IEncryptedFormModel = Model<IEncryptedFormSchema> & IFormModel

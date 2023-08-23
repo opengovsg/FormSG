@@ -1,4 +1,4 @@
-import { Result } from 'neverthrow'
+import { ok, Result } from 'neverthrow'
 
 import { FieldResponse, IPopulatedEncryptedForm } from '../../../../types'
 import { checkIsEncryptedEncoding } from '../../../utils/encryption'
@@ -37,7 +37,11 @@ export default class IncomingEncryptSubmission extends IncomingSubmission {
     ProcessingError | ConflictError | ValidateFieldError[]
   > {
     return checkIsEncryptedEncoding(encryptedContent)
-      .andThen(() => getFilteredResponses(form, responses))
+      .andThen(() => {
+        if (form.encryptionBoundaryShift)
+          return ok(responses as FilteredResponse[])
+        else return getFilteredResponses(form, responses)
+      })
       .andThen((filteredResponses) =>
         this.getFieldMap(form, filteredResponses).map((fieldMap) => ({
           responses: filteredResponses,

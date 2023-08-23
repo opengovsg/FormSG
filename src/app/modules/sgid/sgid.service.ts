@@ -1,4 +1,4 @@
-import { SgidClient } from '@opengovsg/sgid-client'
+import { generatePkcePair, SgidClient } from '@opengovsg/sgid-client'
 import fs from 'fs'
 import Jwt from 'jsonwebtoken'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
@@ -74,13 +74,17 @@ export class SgidServiceClass {
    * @param requestedAttributes - sgID attributes requested by this form
    * @param encodedQuery base64 encoded queryId for frontend to retrieve stored query params (usually contains prefilled form information)
    * for an extended period of time
+   * @returns The redirectUrl and the associated code verifier
    */
   createRedirectUrl(
     formId: string,
     rememberMe: boolean,
     requestedAttributes: InternalAttr[],
     encodedQuery?: string,
-  ): Result<string, SgidCreateRedirectUrlError> {
+  ): Result<
+    { redirectUrl: string; codeVerifier: string },
+    SgidCreateRedirectUrlError
+  > {
     const state = encodedQuery
       ? `${formId},${rememberMe},${encodedQuery}`
       : `${formId},${rememberMe}`
@@ -90,9 +94,15 @@ export class SgidServiceClass {
       state,
     }
     const scopes = internalAttrListToScopes(requestedAttributes)
-    const result = this.client.authorizationUrl(state, scopes, null)
+    const { codeChallenge, codeVerifier } = generatePkcePair()
+    const result = this.client.authorizationUrl({
+      state,
+      scope: scopes,
+      nonce: null,
+      codeChallenge,
+    })
     if (typeof result.url === 'string') {
-      return ok(result.url)
+      return ok({ redirectUrl: result.url, codeVerifier })
     } else {
       logger.error({
         message: 'Error while creating redirect URL',
@@ -152,12 +162,13 @@ export class SgidServiceClass {
    */
   retrieveAccessToken(
     code: string,
+    codeVerifier: string,
   ): ResultAsync<
     { sub: string; accessToken: string },
     SgidFetchAccessTokenError
   > {
     return ResultAsync.fromPromise(
-      this.client.callback(code, null),
+      this.client.callback({ code, nonce: null, codeVerifier }),
       (error) => {
         logger.error({
           message: 'Failed to retrieve access token from sgID',
@@ -180,14 +191,16 @@ export class SgidServiceClass {
    */
   retrieveUserInfo({
     accessToken,
+    sub,
   }: {
     accessToken: string
+    sub: string
   }): ResultAsync<
     { sub: string; data: SGIDScopeToValue },
     SgidFetchUserInfoError
   > {
     return ResultAsync.fromPromise(
-      this.client.userinfo(accessToken).then(({ sub, data }) => {
+      this.client.userinfo({ accessToken, sub }).then(({ sub, data }) => {
         return {
           sub,
           data,
@@ -241,9 +254,13 @@ export class SgidServiceClass {
    * Note: sgID access token is tied to the sgID OAuth scopes requested.
    * @param accessToken - sgID access token
    */
-  createSgidMyInfoJwt(
-    accessToken: string,
-  ): Result<{ jwt: string; maxAge: number }, ApplicationError> {
+  createSgidMyInfoJwt({
+    sub,
+    accessToken,
+  }: {
+    sub: string
+    accessToken: string
+  }): Result<{ jwt: string; maxAge: number; sub: string }, ApplicationError> {
     const payload: SGIDJwtAccessPayload = { accessToken }
     const maxAge = this.cookieMaxAge
     const jwt = Jwt.sign(payload, this.privateKey, {
@@ -251,6 +268,7 @@ export class SgidServiceClass {
       expiresIn: maxAge / 1000,
     })
     return ok({
+      sub,
       jwt,
       maxAge,
     })

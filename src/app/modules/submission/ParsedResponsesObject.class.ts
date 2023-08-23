@@ -3,34 +3,30 @@ import { err, ok, Result } from 'neverthrow'
 import {
   ChildrenCompoundFieldBase,
   FormAuthType,
-  FormResponseMode,
   MyInfoAttribute,
-} from '../../../../../shared/types'
-import {
-  FieldResponse,
-  FormFieldSchema,
-  IFormDocument,
-} from '../../../../types'
-import { validateField } from '../../../utils/field-validation'
+} from '../../../../shared/types'
+import { FieldResponse, FormFieldSchema, IFormDocument } from '../../../types'
+import { validateField } from '../../utils/field-validation'
 import {
   getLogicUnitPreventingSubmit,
   getVisibleFieldIds,
-} from '../../../utils/logic-adaptor'
-import { createSgidParsedResponses } from '../../sgid/sgid.util'
+} from '../../utils/logic-adaptor'
+import { createSgidParsedResponses } from '../sgid/sgid.util'
 import {
   createCorppassParsedResponses,
   createSingpassParsedResponses,
-} from '../../spcp/spcp.util'
+} from '../spcp/spcp.util'
+
 import {
   ConflictError,
   ProcessingError,
   ValidateFieldError,
-} from '../submission.errors'
+} from './submission.errors'
 import {
   ProcessedChildrenResponse,
   ProcessedFieldResponse,
-} from '../submission.types'
-import { getFilteredResponses } from '../submission.utils'
+} from './submission.types'
+import { getFilteredResponses } from './submission.utils'
 
 type NdiUserInfo =
   | {
@@ -145,18 +141,7 @@ export default class ParsedResponsesObject {
 
       const processingResponse: ProcessedFieldResponse = {
         ...response,
-        isVisible:
-          // Set isVisible as true for Encrypt mode if there is a response for mobile and email field
-          // Because we cannot tell if the field is unhidden by logic
-          // This prevents downstream validateField from incorrectly preventing
-          // encrypt mode submissions with responses on unhidden fields
-          // TODO(#780): Remove this once submission service is separated into
-          // Email and Encrypted services
-          form.responseMode === FormResponseMode.Encrypt
-            ? 'answer' in response &&
-              typeof response.answer === 'string' &&
-              response.answer.trim() !== ''
-            : visibleFieldIds.value.has(responseId),
+        isVisible: visibleFieldIds.value.has(responseId),
         question: formField.getQuestion(),
       }
 
