@@ -80,7 +80,7 @@ export const PaymentPreview = ({
 }: PaymentPreviewProps) => {
   const emailFieldSchema: VerifiableEmailFieldSchema = {
     ...(getFieldCreationMeta(BasicField.Email) as EmailFieldBase),
-    title: 'Email Address',
+    title: 'Email address',
     _id: PAYMENT_CONTACT_FIELD_ID,
     description: 'Proof of payment will be sent to this email',
     isVerifiable: true,
