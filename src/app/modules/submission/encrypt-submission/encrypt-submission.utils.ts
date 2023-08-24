@@ -318,7 +318,8 @@ export const getPaymentIntentDescription = (
   paymentProducts?: StorageModeSubmissionContentDto['paymentProducts'],
 ) => {
   const formPaymentFields = form.payments_field
-  switch (formPaymentFields.payment_type) {
+  const { payment_type } = formPaymentFields
+  switch (payment_type) {
     case PaymentType.Fixed:
       // legacy behaviour of fixed payments where the product name is referred as description
       return formPaymentFields.description
@@ -330,6 +331,11 @@ export const getPaymentIntentDescription = (
         .map((product) => `${product.data.name} x ${product.quantity}`)
         .join(', ')
       return productDescriptions
+    }
+    default: {
+      // Force TS to emit an error if the cases above are not exhaustive
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const exhaustiveCheck: never = payment_type
     }
   }
 }
