@@ -22,4 +22,5 @@ jobs:
     uses: ./.github/workflows/aws-deploy-scanner.yml
     with:
       environment: 'staging'
+      concurrency: 1
     secrets: inherit

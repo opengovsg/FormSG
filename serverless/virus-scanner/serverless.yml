@@ -1,19 +1,11 @@
 service: virus-scanner
 frameworkVersion: '3'
 useDotenv: true
-custom:
-  currentStage: ${opt:stage}
-  serverlessIfElse:
-    - If: '"${opt:stage}" == "production"'
-      Set:
-        - provider.provisionedConcurrency: 5
-      ElseSet:
-        - provider.provisionedConcurrency: 1
 provider:
   name: aws
   region: ap-southeast-1
   stage: ${opt:stage}
-  provisionedConcurrency: 0
+  provisionedConcurrency: ${opt:provisionedConcurrency}
   iam:
     role:
       statements:
@@ -56,4 +48,3 @@ functions:
 plugins:
   # required so that env variables are loaded in functions
   - serverless-dotenv-plugin
-  - serverless-plugin-ifelse

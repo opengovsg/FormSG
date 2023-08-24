@@ -7,6 +7,10 @@ on:
         description: 'Deployment environment'
         required: true
         type: string
+      concurrency:
+        description: 'Provisioned concurrency'
+        required: true
+        type: number
 
 permissions:
   id-token: write
@@ -56,4 +60,5 @@ jobs:
         working-directory: ./serverless/virus-scanner
         env:
           ENV: ${{ inputs.environment }}
+          CONCURRENCY: ${{ inputs.concurrency }}
         run: npm run deploy
