@@ -8,7 +8,7 @@
     "tsc": "tsc",
     "dev": "npm run env && docker-compose -f docker-compose.dev.yml up --build",
     "deploy": "npm run env && sls deploy --stage ${ENV:-'staging'} --provisionedConcurrency ${CONCURRENCY:-5} --conceal",
-    "package": "npm run env && sls package --stage ${ENV:-'staging'}"
+    "package": "npm run env && sls package --stage --provisionedConcurrency ${CONCURRENCY:-5} ${ENV:-'staging'}"
   },
   "author": "",
   "license": "ISC",
