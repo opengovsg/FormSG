@@ -5,7 +5,7 @@ provider:
   name: aws
   region: ap-southeast-1
   stage: ${opt:stage}
-  provisionedConcurrency: ${opt:provisionedConcurrency}
+  provisionedConcurrency: ${param:provisionedConcurrency}
   iam:
     role:
       statements:
