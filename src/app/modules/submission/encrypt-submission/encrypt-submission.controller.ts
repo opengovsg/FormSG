@@ -73,6 +73,7 @@ import {
 import {
   createEncryptedSubmissionDto,
   getPaymentAmount,
+  getPaymentIntentDescription,
   mapRouteError,
 } from './encrypt-submission.utils'
 import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
@@ -461,7 +462,7 @@ const _createPaymentSubmission = async ({
     automatic_payment_methods: {
       enabled: true,
     },
-    description: form.payments_field.description,
+    description: getPaymentIntentDescription(form, paymentProducts),
     receipt_email: paymentReceiptEmail,
     metadata,
   }
