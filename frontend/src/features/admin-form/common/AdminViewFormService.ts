@@ -23,7 +23,7 @@ import {
   SubmitStorageFormArgs,
 } from '~features/public-form/PublicFormService'
 import {
-  createEmailSubmissionFormData,
+  createClearSubmissionFormData,
   createEncryptedSubmissionData,
   filterHiddenInputs,
 } from '~features/public-form/utils'
@@ -166,7 +166,7 @@ export const submitEmailModeFormPreview = async ({
     formInputs,
     formLogics,
   })
-  const formData = createEmailSubmissionFormData(formFields, filteredInputs)
+  const formData = createClearSubmissionFormData(formFields, filteredInputs)
 
   return ApiService.post<SubmissionResponseDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/email`,
@@ -216,7 +216,7 @@ export const submitEmailModeFormPreviewWithFetch = async ({
     formInputs,
     formLogics,
   })
-  const formData = createEmailSubmissionFormData(formFields, filteredInputs)
+  const formData = createClearSubmissionFormData(formFields, filteredInputs)
 
   const response = await fetch(
     `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/email`,

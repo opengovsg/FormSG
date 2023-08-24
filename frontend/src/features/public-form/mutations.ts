@@ -19,6 +19,7 @@ import {
   submitFormIssue,
   SubmitStorageFormArgs,
   submitStorageModeForm,
+  submitStorageModeFormV2,
   submitStorageModeFormWithFetch,
 } from './PublicFormService'
 
@@ -76,7 +77,8 @@ export const usePublicFormMutations = (
 
   const submitStorageModeFormMutation = useMutation(
     (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
-      return submitStorageModeForm({ ...args, formId })
+      // return submitStorageModeForm({ ...args, formId })
+      return submitStorageModeFormV2({ ...args, formId })
     },
   )
 

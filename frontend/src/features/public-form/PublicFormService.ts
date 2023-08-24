@@ -25,7 +25,7 @@ import {
 import { FormFieldValues } from '~templates/Field'
 
 import {
-  createEmailSubmissionFormData,
+  createClearSubmissionFormData,
   createEncryptedSubmissionData,
 } from './utils/createSubmission'
 import { filterHiddenInputs } from './utils/filterHiddenInputs'
@@ -93,6 +93,12 @@ export type SubmitStorageFormArgs = SubmitEmailFormArgs & {
   payments?: PaymentFieldsDto
 }
 
+export type SubmitStorageFormV2Args = SubmitEmailFormArgs & {
+  paymentReceiptEmail?: string
+  paymentProducts?: Array<ProductItem>
+  payments?: PaymentFieldsDto
+}
+
 export const submitEmailModeForm = async ({
   formFields,
   formLogics,
@@ -107,7 +113,7 @@ export const submitEmailModeForm = async ({
     formInputs,
     formLogics,
   })
-  const formData = createEmailSubmissionFormData(
+  const formData = createClearSubmissionFormData(
     formFields,
     filteredInputs,
     responseMetadata,
@@ -164,6 +170,49 @@ export const submitStorageModeForm = async ({
   ).then(({ data }) => data)
 }
 
+export const submitStorageModeFormV2 = async ({
+  formFields,
+  formLogics,
+  formInputs,
+  formId,
+  publicKey,
+  captchaResponse = null,
+  captchaType = '',
+  paymentReceiptEmail,
+  responseMetadata,
+  paymentProducts,
+  payments,
+}: SubmitStorageFormArgs) => {
+  const filteredInputs = filterHiddenInputs({
+    formFields,
+    formInputs,
+    formLogics,
+  })
+
+  const formData = createClearSubmissionFormData(
+    formFields,
+    filteredInputs,
+    responseMetadata,
+    {
+      paymentReceiptEmail,
+      paymentProducts,
+      payments,
+      version: 2,
+    },
+  )
+
+  return ApiService.post<SubmissionResponseDto>(
+    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/storage`,
+    formData,
+    {
+      params: {
+        captchaResponse: String(captchaResponse),
+        captchaType: captchaType,
+      },
+    },
+  ).then(({ data }) => data)
+}
+
 // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
 export const submitEmailModeFormWithFetch = async ({
   formFields,
@@ -179,7 +228,7 @@ export const submitEmailModeFormWithFetch = async ({
     formInputs,
     formLogics,
   })
-  const formData = createEmailSubmissionFormData(
+  const formData = createClearSubmissionFormData(
     formFields,
     filteredInputs,
     responseMetadata,
