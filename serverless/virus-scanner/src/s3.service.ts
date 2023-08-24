@@ -54,6 +54,10 @@ export class S3Service {
         }),
       )
 
+      if (!body) {
+        throw new Error('Body is empty')
+      }
+
       if (!versionId) {
         throw new Error('VersionId is empty')
       }
