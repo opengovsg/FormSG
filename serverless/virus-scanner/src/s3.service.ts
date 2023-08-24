@@ -7,7 +7,8 @@ import {
 import pino from 'pino'
 
 import {
-  GetDeleteS3FileStreamParams,
+  DeleteS3FileParams,
+  GetS3FileStreamParams,
   GetS3FileStreamResult,
   MoveS3FileParams,
 } from './types'
@@ -37,7 +38,7 @@ export class S3Service {
   async getS3FileStreamWithVersionId({
     bucketName,
     objectKey,
-  }: GetDeleteS3FileStreamParams): Promise<GetS3FileStreamResult> {
+  }: GetS3FileStreamParams): Promise<GetS3FileStreamResult> {
     this.logger.info(
       {
         bucketName,
@@ -85,11 +86,12 @@ export class S3Service {
     }
   }
 
-  async deleteS3File({ bucketName, objectKey }: GetDeleteS3FileStreamParams) {
+  async deleteS3File({ bucketName, objectKey, versionId }: DeleteS3FileParams) {
     this.logger.info(
       {
         bucketName,
         objectKey,
+        versionId,
       },
       'Deleting document from s3',
     )
@@ -99,6 +101,7 @@ export class S3Service {
         new DeleteObjectCommand({
           Key: objectKey,
           Bucket: bucketName,
+          VersionId: versionId,
         }),
       )
 

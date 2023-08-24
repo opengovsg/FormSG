@@ -103,6 +103,7 @@ export const handler = async (
       await s3Client.deleteS3File({
         bucketName: quarantineBucket,
         objectKey: quarantineFileKey,
+        versionId,
       })
     } catch (error) {
       // Log but do not halt execution as we still want to return 400 for malicious file

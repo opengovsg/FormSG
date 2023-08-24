@@ -23,9 +23,15 @@ export type ScanFileStreamResult =
   | { isMalicious: true; virusMetadata: string[] }
   | { isMalicious: false }
 
-export type GetDeleteS3FileStreamParams = {
+export type GetS3FileStreamParams = {
   bucketName: string
   objectKey: string
+}
+
+export type DeleteS3FileParams = {
+  bucketName: string
+  objectKey: string
+  versionId: string
 }
 
 export type GetS3FileStreamResult = {
