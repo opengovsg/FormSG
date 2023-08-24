@@ -99,10 +99,19 @@ export const handler = async (
     })
 
     // Delete from quarantine bucket
-    await s3Client.deleteS3File({
-      bucketName: quarantineBucket,
-      objectKey: quarantineFileKey,
-    })
+    try {
+      await s3Client.deleteS3File({
+        bucketName: quarantineBucket,
+        objectKey: quarantineFileKey,
+      })
+    } catch (error) {
+      // Log but do not halt execution as we still want to return 400 for malicious file
+      logger.error({
+        message: 'Failed to delete file from quarantine bucket',
+        error,
+        key: quarantineFileKey,
+      })
+    }
 
     return {
       statusCode: StatusCodes.BAD_REQUEST,
@@ -120,14 +129,29 @@ export const handler = async (
       key: quarantineFileKey,
       versionId,
     })
-
-    await s3Client.moveS3File({
-      sourceBucketName: quarantineBucket,
-      sourceObjectKey: quarantineFileKey,
-      sourceObjectVersionId: versionId,
-      destinationBucketName: cleanBucket,
-      destinationObjectKey: cleanFileKey,
-    })
+    try {
+      await s3Client.moveS3File({
+        sourceBucketName: quarantineBucket,
+        sourceObjectKey: quarantineFileKey,
+        sourceObjectVersionId: versionId,
+        destinationBucketName: cleanBucket,
+        destinationObjectKey: cleanFileKey,
+      })
+    } catch (error) {
+      logger.error({
+        message: 'Failed to move file to clean bucket',
+        error,
+        bucket: quarantineBucket,
+        key: quarantineFileKey,
+      })
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        body: JSON.stringify({
+          message: 'Failed to move file to clean bucket',
+          key: quarantineFileKey,
+        }),
+      }
+    }
 
     logger.info({
       message: 'clean file moved to clean bucket',
