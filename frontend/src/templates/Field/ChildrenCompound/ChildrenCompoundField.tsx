@@ -20,15 +20,12 @@ import {
   VisuallyHidden,
   VStack,
 } from '@chakra-ui/react'
-import { format, parse } from 'date-fns'
 import simplur from 'simplur'
 
 import {
   ChildrenCompoundFieldInputs,
   ChildrenCompoundFieldSchema,
   DATE_DISPLAY_FORMAT,
-  DATE_PARSE_FORMAT,
-  MYINFO_DATE_FORMAT,
 } from '~shared/constants/dates'
 import { MYINFO_ATTRIBUTE_MAP } from '~shared/constants/field/myinfo'
 import {
