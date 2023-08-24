@@ -13,6 +13,7 @@ import {
 import { calculatePrice } from '../../../../../shared/utils/paymentProductPrice'
 import {
   IEncryptedSubmissionSchema,
+  IPopulatedEncryptedForm,
   ISubmissionSchema,
   MapRouteErrors,
   SubmissionData,
@@ -295,6 +296,42 @@ export const getPaymentAmount = (
         return 0
       }
       return calculatePrice(paymentProducts)
+    default: {
+      // Force TS to emit an error if the cases above are not exhaustive
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const exhaustiveCheck: never = payment_type
+    }
+  }
+}
+
+/**
+ * Retrieves payment description by payment_type
+ *
+ * - `Fixed Payments` references the description to as legacy behaviour
+ * - `Variable Payments` references the name
+ * - `Products` references the product name and quantity separated by a comma
+ * @param form
+ * @param paymentProducts
+ */
+export const getPaymentIntentDescription = (
+  form: IPopulatedEncryptedForm,
+  paymentProducts?: StorageModeSubmissionContentDto['paymentProducts'],
+) => {
+  const formPaymentFields = form.payments_field
+  const { payment_type } = formPaymentFields
+  switch (payment_type) {
+    case PaymentType.Fixed:
+      // legacy behaviour of fixed payments where the product name is referred as description
+      return formPaymentFields.description
+    case PaymentType.Variable:
+      return formPaymentFields.name
+    case PaymentType.Products: {
+      if (!paymentProducts) return form.title
+      const productDescriptions = paymentProducts
+        .map((product) => `${product.data.name} x ${product.quantity}`)
+        .join(', ')
+      return productDescriptions
+    }
     default: {
       // Force TS to emit an error if the cases above are not exhaustive
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

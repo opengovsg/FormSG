@@ -73,6 +73,7 @@ import {
 import {
   createEncryptedSubmissionDto,
   getPaymentAmount,
+  getPaymentIntentDescription,
   mapRouteError,
 } from './encrypt-submission.utils'
 import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
@@ -115,11 +116,14 @@ const submitEncryptModeForm = async (
     res,
   })
 
-  if (!hasEnsuredAll && !res.headersSent) {
-    const { errorMessage, statusCode } = mapRouteError(
-      new SubmissionFailedError(),
-    )
-    return res.status(statusCode).json({ message: errorMessage })
+  if (!hasEnsuredAll) {
+    if (!res.headersSent) {
+      const { errorMessage, statusCode } = mapRouteError(
+        new SubmissionFailedError(),
+      )
+      return res.status(statusCode).json({ message: errorMessage })
+    }
+    return // required to stop submission processing
   }
 
   const encryptedPayload = req.formsg.encryptedPayload
@@ -458,7 +462,7 @@ const _createPaymentSubmission = async ({
     automatic_payment_methods: {
       enabled: true,
     },
-    description: form.payments_field.description,
+    description: getPaymentIntentDescription(form, paymentProducts),
     receipt_email: paymentReceiptEmail,
     metadata,
   }
