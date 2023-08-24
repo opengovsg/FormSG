@@ -138,24 +138,25 @@ describe('encrypt-submission.utils', () => {
     })
 
     it('should return product names for Products Payment Type', () => {
-      const expectedValue = 'expectedValue'
+      const expectedItemName1 = 'expectedItemName1'
+      const expectedItemName2 = 'expectedItemName2'
       const formData = {
         payments_field: {
           payment_type: PaymentType.Products,
           description: 'description',
-          name: expectedValue,
+          name: 'name',
         },
       } as unknown as IPopulatedEncryptedForm
 
       const products: any = [
-        { data: { name: 'name1' }, quantity: 1 },
-        { data: { name: 'name2' }, quantity: 2 },
+        { data: { name: expectedItemName1 }, quantity: 1 },
+        { data: { name: expectedItemName2 }, quantity: 2 },
       ]
 
       const result = getPaymentIntentDescription(formData, products)
 
-      expect(result).toContain('name1')
-      expect(result).toContain('name2')
+      expect(result).toContain(expectedItemName1)
+      expect(result).toContain(expectedItemName2)
     })
 
     it('should return form title for Products Payment Type when there are no products', () => {
