@@ -121,7 +121,8 @@ const submitEncryptModeForm = async (
         new SubmissionFailedError(),
       )
       return res.status(statusCode).json({ message: errorMessage })
-    } else return // required to stop submission processing
+    }
+    return // required to stop submission processing
   }
 
   const encryptedPayload = req.formsg.encryptedPayload
