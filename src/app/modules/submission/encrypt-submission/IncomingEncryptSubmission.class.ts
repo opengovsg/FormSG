@@ -60,9 +60,12 @@ export default class IncomingEncryptSubmission extends IncomingSubmission {
 
   responseVisibilityPredicate(response: FieldResponse): boolean {
     return (
-      'answer' in response &&
-      typeof response.answer === 'string' &&
-      response.answer.trim() !== ''
+      ('answer' in response &&
+        typeof response.answer === 'string' &&
+        response.answer.trim() !== '') ||
+      ('answerArray' in response &&
+        typeof response.answerArray === 'object' &&
+        response.answerArray.length > 0)
     )
   }
 }
