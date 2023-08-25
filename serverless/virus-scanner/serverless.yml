@@ -5,7 +5,6 @@ provider:
   name: aws
   region: ap-southeast-1
   stage: ${opt:stage}
-  provisionedConcurrency: ${param:provisionedConcurrency}
   iam:
     role:
       statements:
@@ -43,7 +42,7 @@ functions:
     # Provision concurrency so at least one instance always hot
     # https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/#provisioned-concurrency
     # 1 for staging, 5 for prod
-    provisionedConcurrency: ${self:provider.provisionedConcurrency}
+    provisionedConcurrency: ${param:provisionedConcurrency}
 
 plugins:
   # required so that env variables are loaded in functions

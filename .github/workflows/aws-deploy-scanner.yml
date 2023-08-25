@@ -7,7 +7,7 @@ on:
         description: 'Deployment environment'
         required: true
         type: string
-      concurrency:
+      provisionedConcurrency:
         description: 'Provisioned concurrency'
         required: true
         type: number
@@ -60,5 +60,5 @@ jobs:
         working-directory: ./serverless/virus-scanner
         env:
           ENV: ${{ inputs.environment }}
-          CONCURRENCY: ${{ inputs.concurrency }}
+          CONCURRENCY: ${{ inputs.provisionedConcurrency }}
         run: npm run deploy
