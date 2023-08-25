@@ -50,7 +50,7 @@
     "react-dropzone": "^11.4.2",
     "react-focus-lock": "^2.7.1",
     "react-helmet-async": "^1.2.3",
-    "react-hook-form": "^7.28.0",
+    "react-hook-form": "^7.45.2",
     "react-i18next": "^11.16.7",
     "react-icons": "^4.3.1",
     "react-input-mask": "^3.0.0-alpha.2",
