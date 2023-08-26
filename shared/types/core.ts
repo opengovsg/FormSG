@@ -38,4 +38,5 @@ export type ClientEnvVars = {
   goGovBaseUrl: string
   adminFeedbackFieldThreshold: number
   adminFeedbackDisplayFrequency: number
+  growthbookClientKey: string
 }

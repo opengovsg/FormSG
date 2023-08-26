@@ -119,6 +119,8 @@ services:
       - GOGOV_API_KEY
       # Bearer token API key format
       - API_KEY_VERSION=v1
+      # env vars for growthbook
+      - GROWTHBOOK_CLIENT_KEY
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git#v4.0.4

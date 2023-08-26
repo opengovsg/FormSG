@@ -175,14 +175,13 @@ export const submitStorageModeFormV2 = async ({
   formLogics,
   formInputs,
   formId,
-  publicKey,
   captchaResponse = null,
   captchaType = '',
   paymentReceiptEmail,
   responseMetadata,
   paymentProducts,
   payments,
-}: SubmitStorageFormArgs) => {
+}: SubmitStorageFormV2Args) => {
   const filteredInputs = filterHiddenInputs({
     formFields,
     formInputs,

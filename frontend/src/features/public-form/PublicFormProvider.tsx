@@ -11,6 +11,7 @@ import { SubmitHandler } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
+import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 import get from 'lodash/get'
 import simplur from 'simplur'
@@ -128,6 +129,28 @@ export const PublicFormProvider = ({
     formId,
     // Stop querying once submissionData is present.
     /* enabled= */ !submissionData,
+  )
+
+  const growthbook = useGrowthBook()
+  useEffect(() => {
+    if (growthbook) {
+      // Load features from the GrowthBook API
+      growthbook.loadFeatures({ autoRefresh: true })
+    }
+  }, [growthbook])
+
+  useEffect(() => {
+    if (growthbook) {
+      growthbook.setAttributes({
+        // Only update the `formId` attribute, keep the rest the same
+        ...growthbook.getAttributes(),
+        formId,
+      })
+    }
+  }, [growthbook, formId])
+
+  const routeToNewStorageModeSubmission = useFeatureIsOn(
+    featureFlags.encryptionBoundaryShift,
   )
 
   // Scroll to top of page when user has finished their submission.
@@ -252,7 +275,12 @@ export const PublicFormProvider = ({
     submitStorageModeFormMutation,
     submitEmailModeFormFetchMutation,
     submitStorageModeFormFetchMutation,
+    submitStorageModeFormV2Mutation,
   } = usePublicFormMutations(formId, submissionData?.id ?? '')
+
+  const submitStorageModeVnMutation = routeToNewStorageModeSubmission
+    ? submitStorageModeFormV2Mutation
+    : submitStorageModeFormMutation
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
@@ -522,7 +550,7 @@ export const PublicFormProvider = ({
           })
 
           return (
-            submitStorageModeFormMutation
+            submitStorageModeVnMutation
               .mutateAsync(
                 {
                   ...formData,
@@ -583,7 +611,7 @@ export const PublicFormProvider = ({
       captchaType,
       showErrorToast,
       submitEmailModeFormMutation,
-      submitStorageModeFormMutation,
+      submitStorageModeVnMutation,
       formId,
       navigate,
       storePaymentMemory,

@@ -77,7 +77,12 @@ export const usePublicFormMutations = (
 
   const submitStorageModeFormMutation = useMutation(
     (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
-      // return submitStorageModeForm({ ...args, formId })
+      return submitStorageModeForm({ ...args, formId })
+    },
+  )
+
+  const submitStorageModeFormV2Mutation = useMutation(
+    (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
       return submitStorageModeFormV2({ ...args, formId })
     },
   )
@@ -111,6 +116,7 @@ export const usePublicFormMutations = (
     submitFormFeedbackMutation,
     submitStorageModeFormFetchMutation,
     submitEmailModeFormFetchMutation,
+    submitStorageModeFormV2Mutation,
   }
 }
 
