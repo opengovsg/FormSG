@@ -1,26 +1,20 @@
 import { Context } from 'aws-lambda'
 import pino, { Logger, LoggerOptions as PinoLoggerOptions } from 'pino'
 
-// TODO (AUSTIN): This is a temporary workaround solution. The logger is duplicate from common/core and integration
-// The reason for this dupe is because we are containerising this function within this package, and we cannot refer to parent packages if we want serverless.yml to exist within
-// This folder
 type LoggerOptions = {
   service: string
-  prettyPrint?: boolean
-  redact?: PinoLoggerOptions['redact']
+  prettyPrint?: ConstrainBoolean
   mixin?: PinoLoggerOptions['mixin']
 }
 
 function createBaseLogger({
   service,
   prettyPrint,
-  redact,
   mixin,
 }: LoggerOptions): Logger {
   const defaults: PinoLoggerOptions = {
     name: service,
     messageKey: 'message',
-    redact,
     nestedKey: 'payload', // Any objects passed to logger will be nested in payload, so they don't pollute metadata
     base: undefined, // Disable logging of host and pid
     prettyPrint: prettyPrint ? { colorize: true } : undefined,
@@ -63,25 +57,6 @@ export function getLambdaLogger(
 ): LambdaLogger {
   const logger = createBaseLogger({
     service: functionName,
-    redact: {
-      paths: [
-        'event.headers["x-api-key"]',
-        'event.multiValueHeaders["x-api-key"]',
-        'event.requestContext.*.apiKey',
-      ],
-      censor: (rawValue: string | string[], _) => {
-        if (typeof rawValue === 'string') {
-          return (
-            '*'.repeat(rawValue.length - 6) +
-            rawValue.slice(rawValue.length - 6)
-          )
-        }
-
-        return rawValue.map(
-          (val) => '*'.repeat(val.length - 6) + val.slice(val.length - 6),
-        )
-      },
-    },
     prettyPrint,
     mixin: () => ({ reqId: contextStore.context?.awsRequestId }),
   }) as LambdaLogger

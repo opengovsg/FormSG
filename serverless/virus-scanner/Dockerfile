@@ -25,6 +25,7 @@ RUN npm ci
 RUN sed -i 's/LogFile \/var\/log\/clamav\/clamav.log/LogFile \/tmp\/clamav.log/g' /etc/clamav/clamd.conf
 RUN sed -i 's/LocalSocket \/var\/run\/clamav\/clamd.ctl/LocalSocket \/tmp\/clamd.ctl/g' /etc/clamav/clamd.conf
 
+# !! Below comment was taken from care360 repo where the virus scanner was forked from!!
 # This is a hack to give the default lambda user permissions write access to the Local UNIX socketfile and logfile
 # The appropriate GID (990) and User (sbx_user1051) to add was found out through logging the user info at lambda runtime
 # GID and User is assumed to be deterministic and hence can be hardcoded
