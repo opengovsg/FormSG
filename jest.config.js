@@ -10,7 +10,11 @@ module.exports = {
     '<rootDir>/node_modules/',
     '<rootDir>/frontend',
   ],
-  collectCoverageFrom: ['./src/**/*.{ts,js}', '!**/__tests__/**'],
+  collectCoverageFrom: [
+    './src/**/*.{ts,js}',
+    './serverless/**/*.{ts,js}',
+    '!**/__tests__/**',
+  ],
   coveragePathIgnorePatterns: ['./node_modules/', './tests'],
   coverageReporters: ['lcov', 'text'],
   coverageThreshold: {
