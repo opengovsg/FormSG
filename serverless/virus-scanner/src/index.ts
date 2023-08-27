@@ -67,7 +67,7 @@ export const handler = async (
       objectKey: quarantineFileKey,
     })
   } catch (error) {
-    logger.error({
+    logger.warn({
       message: 'File not found',
       error,
       quarantineFileKey,
@@ -110,7 +110,7 @@ export const handler = async (
     const { virusMetadata } = scanResult
 
     logger.error({
-      message: 'malicious file detected!!',
+      message: 'Malicious file detected',
       virusMetadata,
       key: quarantineFileKey,
     })
