@@ -85,7 +85,24 @@ export const handler = async (
 
   const { body, versionId } = s3ReadableStream
 
-  const scanResult = await scanFileStream(body)
+  let scanResult
+  try {
+    scanResult = await scanFileStream(body)
+  } catch (error) {
+    logger.error({
+      message: 'Failed to scan file',
+      error,
+      quarantineFileKey,
+    })
+    return {
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      body: JSON.stringify({
+        message: 'Failed to scan file',
+        key: quarantineFileKey,
+      }),
+    }
+  }
+
   const { isMalicious } = scanResult
 
   // If malicious, log and delete
