@@ -149,7 +149,7 @@ describe('S3Service', () => {
       )
     })
 
-    it('should throw error if version id is empty', async () => {
+    it('should throw error and log if version id is empty', async () => {
       // Arrange
       const mockS3Service = new S3Service(true, mockLogger)
       getResult = {
