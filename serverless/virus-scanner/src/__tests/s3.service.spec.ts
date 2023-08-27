@@ -1,8 +1,8 @@
 // Unit tests for s3.service
 
 import { CopyObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
-import { Logger } from 'pino'
 
+import * as LoggerService from '../logger'
 import { S3Service } from '../s3.service'
 
 // Mock S3Client
@@ -32,17 +32,24 @@ jest.mock('@aws-sdk/client-s3', () => {
 })
 
 // Mock logger
-const mockLogger = {
-  info: jest.fn(),
-  error: jest.fn(),
-} as unknown as Logger
+const MockLoggerService = jest.mocked(LoggerService)
+const mockLoggerInfo = jest.fn()
+const mockLoggerWarn = jest.fn()
+const mockLoggerError = jest.fn()
+
+MockLoggerService.getLambdaLogger = jest.fn().mockReturnValue({
+  info: mockLoggerInfo,
+  warn: mockLoggerWarn,
+  error: mockLoggerError,
+})
+const mockLogger = MockLoggerService.getLambdaLogger('virus-scanner')
 
 describe('S3Service', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
   describe('moveS3File', () => {
-    it('should move file to clean bucket', async () => {
+    it('should move file to clean bucket and log', async () => {
       // Arrange
       const mockS3Service = new S3Service(true, mockLogger)
 
@@ -71,6 +78,30 @@ describe('S3Service', () => {
         Bucket: 'sourceBucketName',
         VersionId: 'sourceObjectVersionId',
       })
+
+      expect(mockLoggerInfo).toHaveBeenCalledTimes(2)
+      expect(mockLoggerInfo).toHaveBeenNthCalledWith(
+        1,
+        {
+          sourceBucketName: 'sourceBucketName',
+          sourceObjectKey: 'sourceObjectKey',
+          sourceObjectVersionId: 'sourceObjectVersionId',
+          destinationBucketName: 'destinationBucketName',
+          destinationObjectKey: 'destinationObjectKey',
+        },
+        'Moving document in s3',
+      )
+      expect(mockLoggerInfo).toHaveBeenNthCalledWith(
+        2,
+        {
+          sourceBucketName: 'sourceBucketName',
+          sourceObjectKey: 'sourceObjectKey',
+          sourceObjectVersionId: 'sourceObjectVersionId',
+          destinationBucketName: 'destinationBucketName',
+          destinationObjectKey: 'destinationObjectKey',
+        },
+        'Moved document in s3',
+      )
     })
   })
   describe('getS3FileStreamWithVersionId', () => {
@@ -91,7 +122,7 @@ describe('S3Service', () => {
       })
     })
 
-    it('should throw error if body is empty', async () => {
+    it('should throw error and log if body is empty', async () => {
       // Arrange
       const mockS3Service = new S3Service(true, mockLogger)
       getResult = {
@@ -106,6 +137,16 @@ describe('S3Service', () => {
           objectKey: 'objectKey',
         }),
       ).rejects.toThrow('Body is empty')
+
+      expect(mockLoggerError).toHaveBeenCalledTimes(1)
+      expect(mockLoggerError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          bucketName: 'bucketName',
+          objectKey: 'objectKey',
+          error: new Error('Body is empty'),
+        }),
+        'Failed to get object from s3',
+      )
     })
 
     it('should throw error if version id is empty', async () => {
@@ -123,11 +164,21 @@ describe('S3Service', () => {
           objectKey: 'objectKey',
         }),
       ).rejects.toThrow('VersionId is empty')
+
+      expect(mockLoggerError).toHaveBeenCalledTimes(1)
+      expect(mockLoggerError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          bucketName: 'bucketName',
+          objectKey: 'objectKey',
+          error: new Error('VersionId is empty'),
+        }),
+        'Failed to get object from s3',
+      )
     })
   })
 
   describe('deleteS3File', () => {
-    it('should delete file', async () => {
+    it('should delete file and log', async () => {
       // Arrange
       const mockS3Service = new S3Service(true, mockLogger)
 
@@ -145,6 +196,24 @@ describe('S3Service', () => {
         Bucket: 'bucketName',
         VersionId: 'versionId',
       })
+      expect(mockLoggerInfo).toHaveBeenCalledTimes(2)
+      expect(mockLoggerInfo).toHaveBeenNthCalledWith(
+        1,
+        {
+          bucketName: 'bucketName',
+          objectKey: 'objectKey',
+          versionId: 'versionId',
+        },
+        'Deleting document from s3',
+      )
+      expect(mockLoggerInfo).toHaveBeenNthCalledWith(
+        2,
+        {
+          bucketName: 'bucketName',
+          objectKey: 'objectKey',
+        },
+        'Deleted document from s3',
+      )
     })
   })
 })
