@@ -63,7 +63,7 @@
     "@sentry/browser": "^7.51.2",
     "@sentry/integrations": "^6.19.7",
     "@stablelib/base64": "^1.0.1",
-    "@stoplight/prism-cli": "^4.10.6",
+    "@stoplight/prism-cli": "^5.3.1",
     "abortcontroller-polyfill": "^1.7.5",
     "aws-info": "^1.2.0",
     "aws-sdk": "^2.1354.0",
