@@ -166,7 +166,10 @@ export const submitEmailModeFormPreview = async ({
     formInputs,
     formLogics,
   })
-  const formData = createClearSubmissionFormData(formFields, filteredInputs)
+  const formData = createClearSubmissionFormData({
+    formFields,
+    formInputs: filteredInputs,
+  })
 
   return ApiService.post<SubmissionResponseDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/email`,
@@ -216,7 +219,10 @@ export const submitEmailModeFormPreviewWithFetch = async ({
     formInputs,
     formLogics,
   })
-  const formData = createClearSubmissionFormData(formFields, filteredInputs)
+  const formData = createClearSubmissionFormData({
+    formFields,
+    formInputs: filteredInputs,
+  })
 
   const response = await fetch(
     `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/email`,

@@ -32,6 +32,8 @@ import { filterHiddenInputs } from './utils/filterHiddenInputs'
 
 export const PUBLIC_FORMS_ENDPOINT = '/forms'
 
+const ENCRYPTION_BOUNDARY_SHIFT_ENCRYPTION_VERSION = 2
+
 /**
  * Gets public view of form, along with any
  * identify information obtained from Singpass/Corppass/MyInfo.
@@ -113,11 +115,11 @@ export const submitEmailModeForm = async ({
     formInputs,
     formLogics,
   })
-  const formData = createClearSubmissionFormData(
+  const formData = createClearSubmissionFormData({
     formFields,
-    filteredInputs,
+    formInputs: filteredInputs,
     responseMetadata,
-  )
+  })
 
   return ApiService.post<SubmissionResponseDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/email`,
@@ -188,17 +190,15 @@ export const submitStorageModeFormV2 = async ({
     formLogics,
   })
 
-  const formData = createClearSubmissionFormData(
+  const formData = createClearSubmissionFormData({
     formFields,
-    filteredInputs,
+    formInputs: filteredInputs,
     responseMetadata,
-    {
-      paymentReceiptEmail,
-      paymentProducts,
-      payments,
-      version: 2,
-    },
-  )
+    paymentReceiptEmail,
+    paymentProducts,
+    payments,
+    version: ENCRYPTION_BOUNDARY_SHIFT_ENCRYPTION_VERSION,
+  })
 
   return ApiService.post<SubmissionResponseDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/storage`,
@@ -227,11 +227,11 @@ export const submitEmailModeFormWithFetch = async ({
     formInputs,
     formLogics,
   })
-  const formData = createClearSubmissionFormData(
+  const formData = createClearSubmissionFormData({
     formFields,
-    filteredInputs,
+    formInputs: filteredInputs,
     responseMetadata,
-  )
+  })
 
   // Add captcha response to query string
   const queryString = new URLSearchParams({
