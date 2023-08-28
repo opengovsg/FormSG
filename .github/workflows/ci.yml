@@ -113,7 +113,7 @@ jobs:
           node-version: 14
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
-      - run: npm ci
+      - run: npm ci && npm ci --prefix serverless/virus-scanner
       - run: npm run test:backend
       - name: Coveralls
         uses: coverallsapp/github-action@master
