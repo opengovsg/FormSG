@@ -229,7 +229,7 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
 
   encryptionBoundaryShift: {
     type: Boolean,
-    default: false,
+    default: true,
   },
 })
 
