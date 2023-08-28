@@ -22,7 +22,8 @@ const SHORT_ENV_MAP = {
 async function saveAllParameters() {
   console.log(`Retrieving parameters for ENV=${process.env.ENV}`)
 
-  if (process.env.ENV === 'development') {
+  const devEnvs = ['dev', 'develop', 'development']
+  if (devEnvs.includes(process.env.ENV)) {
     console.log('In develop mode! Not fetching from SSM param store.')
     console.log(
       'Please reference .env.example to populate .env.development file for development environment',
