@@ -64,7 +64,7 @@ export default class IncomingEncryptSubmission extends IncomingSubmission {
         typeof response.answer === 'string' &&
         response.answer.trim() !== '') ||
       ('answerArray' in response &&
-        typeof response.answerArray === 'object' &&
+        Array.isArray(response.answerArray) &&
         response.answerArray.length > 0)
     )
   }
