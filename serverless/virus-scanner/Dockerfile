@@ -30,7 +30,7 @@ RUN sed -i 's/LocalSocket \/var\/run\/clamav\/clamd.ctl/LocalSocket \/tmp\/clamd
 # The appropriate GID (990) and User (sbx_user1051) to add was found out through logging the user info at lambda runtime
 # GID and User is assumed to be deterministic and hence can be hardcoded
 # An alternative would be to get the current user + group details at runtime at the app level code, then run clamd
-# TODO (Austin): If the function breaks in the future because GID / User is non-deterministic, experiment with executing command at app runtime
+# If the function breaks in the future because GID / User is non-deterministic, experiment with executing command at app runtime
 ARG IS_LAMBDA="true"
 RUN if [ "${IS_LAMBDA}" = "true" ]; then  \
   sed -i "s/LocalSocketGroup clamav/LocalSocketGroup 990/g" /etc/clamav/clamd.conf; \
