@@ -70,6 +70,15 @@ const getSize = (value: string): PartsStyleObject<typeof parts> => {
           insetEnd: '1.5rem',
         },
       }
+    case 'sticky-bottom':
+      return {
+        dialogContainer: {
+          flexFlow: 'wrap-reverse',
+        },
+        dialog: {
+          mb: '0rem',
+        },
+      }
     default:
       return {
         dialog: { maxW: '42.5rem' },
@@ -100,6 +109,7 @@ const sizes = {
   mobile: getSize('mobile'),
   md: getSize('md'),
   full: getSize('full'),
+  'sticky-bottom': getSize('sticky-bottom'),
 }
 
 export const Modal = {
