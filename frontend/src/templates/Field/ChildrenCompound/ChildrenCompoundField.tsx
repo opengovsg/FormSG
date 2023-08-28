@@ -326,18 +326,14 @@ const ChildrenBody = ({
           const key = `${field.id}+${index}`
           const fieldPath = `${schema._id}.child.${currChildBodyIdx}.${index}`
           const myInfoValue = getChildAttr(subField)
-          let myInfoFormattedValue
 
-          if (
-            subField === MyInfoChildAttributes.ChildDateOfBirth &&
-            myInfoValue
-          ) {
-            // We want to format the date by converting the value from a myinfo format to
-            // a format used by our date fields
-            myInfoFormattedValue = formatMyinfoDate(myInfoValue)
-          } else {
-            myInfoFormattedValue = myInfoValue
-          }
+          // We want to format the date by converting the value from a myinfo format to
+          // a format used by our date fields
+          const myInfoFormattedValue =
+            subField === MyInfoChildAttributes.ChildDateOfBirth && myInfoValue
+              ? formatMyinfoDate(myInfoValue)
+              : myInfoValue
+
           const value = watch(fieldPath) as unknown as string
           if (myInfoFormattedValue && value !== myInfoFormattedValue) {
             // We need to do this as the underlying data is not updated
