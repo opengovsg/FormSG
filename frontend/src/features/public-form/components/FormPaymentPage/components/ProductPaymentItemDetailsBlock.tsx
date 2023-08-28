@@ -74,7 +74,6 @@ const PaymentItem = ({
       borderWidth="1px"
       borderColor={`theme-${colorTheme}.300`}
       borderRadius="4px"
-      p="0.7rem"
       width="100%"
     >
       <ChoiceElement
@@ -83,6 +82,7 @@ const PaymentItem = ({
           onItemChange(product.data._id, !product.selected, product.quantity)
         }
         variant="fullWidth"
+        p="1rem"
       >
         <Box flexGrow={1}>
           <Text textStyle="subhead-1">{product.data.name}</Text>
