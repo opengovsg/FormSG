@@ -1,6 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useFormContext } from 'react-hook-form'
-import { Box, Divider, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
+import {
+  Box,
+  Divider,
+  Flex,
+  FormControl,
+  Stack,
+  Text,
+  useDisclosure,
+} from '@chakra-ui/react'
 
 import { PAYMENT_PRODUCT_FIELD_ID } from '~shared/constants'
 import {
@@ -11,44 +19,38 @@ import {
 import { calculatePrice } from '~shared/utils/paymentProductPrice'
 import { centsToDollars, formatCurrency } from '~shared/utils/payments'
 
+import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
+import Button from '~components/Button'
 import Checkbox from '~components/Checkbox'
-import { SingleSelect } from '~components/Dropdown/SingleSelect/SingleSelect'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio from '~components/Radio'
 
-import { generateIntRange } from './utils'
+import PaymentQuantityModal from './PaymentQuantityModal'
 
-const ItemQuantity = ({
+const ItemQuantityButton = ({
   product,
-  onChange,
+  onClick,
 }: {
   product: ProductItem
-  onChange: (quantity: number) => void
+  onClick: () => void
 }) => {
   if (!product.data.multi_qty) {
     return <></>
   }
-
-  const qtyOptions = generateIntRange(
-    product.data.min_qty,
-    product.data.max_qty,
-  ).map((quantity) => ({
-    label: String(quantity),
-    value: String(quantity),
-  }))
   return (
-    <Box width="6rem">
-      <SingleSelect
-        isClearable={false}
-        items={qtyOptions}
-        onChange={(val) => onChange(Number(val))}
-        value={String(product.quantity)}
-        name={'Quantity'}
-        variant={'clear'}
-      />
+    <Box minWidth="6.75rem" height="2.75rem" onClick={onClick}>
+      <Button
+        rightIcon={<BxsChevronDown fontSize="1.5rem" />}
+        colorScheme="secondary"
+        aria-label="Change"
+        variant="clear"
+      >
+        Qty: {product.quantity}
+      </Button>
     </Box>
   )
 }
+
 const PaymentItem = ({
   product,
   colorTheme,
@@ -65,7 +67,7 @@ const PaymentItem = ({
   isMultiSelect: boolean
 }) => {
   const ChoiceElement = isMultiSelect ? Checkbox : Radio
-
+  const paymentQuantityModalDisclosure = useDisclosure()
   return (
     <Box
       backgroundColor={`theme-${colorTheme}.100`}
@@ -94,13 +96,27 @@ const PaymentItem = ({
                 Number(centsToDollars(product.data.amount_cents ?? 0)),
               )}
             </Box>
-            <ItemQuantity
+            <ItemQuantityButton
               product={product}
-              onChange={(qty) => onItemChange(product.data._id, true, qty)}
+              onClick={paymentQuantityModalDisclosure.onOpen}
             />
           </Flex>
         </Box>
       </ChoiceElement>
+
+      <PaymentQuantityModal
+        isOpen={paymentQuantityModalDisclosure.isOpen}
+        itemName={product.data.name}
+        onCancel={paymentQuantityModalDisclosure.onClose}
+        initialQty={product.quantity || 1}
+        onSubmit={(qty) => {
+          paymentQuantityModalDisclosure.onClose()
+          onItemChange(product.data._id, true, qty)
+        }}
+        onClose={paymentQuantityModalDisclosure.onClose}
+        minQty={product.data.min_qty}
+        maxQty={product.data.max_qty}
+      />
     </Box>
   )
 }
