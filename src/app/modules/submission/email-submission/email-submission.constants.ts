@@ -1,4 +1,4 @@
-// Prefixes in response emails
+// Prefixes in response emails, a space is included after the [field] for formatting
 export const MYINFO_PREFIX = '[MyInfo] '
 export const VERIFIED_PREFIX = '[verified] '
 export const TABLE_PREFIX = '[table] '
