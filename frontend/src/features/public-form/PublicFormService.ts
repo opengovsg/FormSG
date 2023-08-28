@@ -172,7 +172,7 @@ export const submitStorageModeForm = async ({
   ).then(({ data }) => data)
 }
 
-export const submitStorageModeFormV2 = async ({
+export const submitStorageModeClearForm = async ({
   formFields,
   formLogics,
   formInputs,
@@ -210,6 +210,55 @@ export const submitStorageModeFormV2 = async ({
       },
     },
   ).then(({ data }) => data)
+}
+
+// TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
+export const submitStorageModeClearFormWithFetch = async ({
+  formFields,
+  formLogics,
+  formInputs,
+  formId,
+  captchaResponse = null,
+  captchaType = '',
+  paymentReceiptEmail,
+  responseMetadata,
+  paymentProducts,
+  payments,
+}: SubmitStorageFormClearArgs) => {
+  const filteredInputs = filterHiddenInputs({
+    formFields,
+    formInputs,
+    formLogics,
+  })
+
+  const formData = createClearSubmissionFormData({
+    formFields,
+    formInputs: filteredInputs,
+    responseMetadata,
+    paymentReceiptEmail,
+    paymentProducts,
+    payments,
+    version: ENCRYPTION_BOUNDARY_SHIFT_ENCRYPTION_VERSION,
+  })
+
+  // Add captcha response to query string
+  const queryString = new URLSearchParams({
+    captchaResponse: String(captchaResponse),
+    captchaType,
+  }).toString()
+
+  const response = await fetch(
+    `${API_BASE_URL}${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/storage?${queryString}`,
+    {
+      method: 'POST',
+      body: formData,
+      headers: {
+        Accept: 'application/json',
+      },
+    },
+  )
+
+  return processFetchResponse(response)
 }
 
 // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved

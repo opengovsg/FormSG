@@ -18,8 +18,9 @@ import {
   submitFormFeedback,
   submitFormIssue,
   SubmitStorageFormArgs,
+  submitStorageModeClearForm,
+  submitStorageModeClearFormWithFetch,
   submitStorageModeForm,
-  submitStorageModeFormV2,
   submitStorageModeFormWithFetch,
 } from './PublicFormService'
 
@@ -81,9 +82,9 @@ export const usePublicFormMutations = (
     },
   )
 
-  const submitStorageModeFormV2Mutation = useMutation(
+  const submitStorageModeClearFormMutation = useMutation(
     (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
-      return submitStorageModeFormV2({ ...args, formId })
+      return submitStorageModeClearForm({ ...args, formId })
     },
   )
 
@@ -97,6 +98,12 @@ export const usePublicFormMutations = (
   const submitStorageModeFormFetchMutation = useMutation(
     (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
       return submitStorageModeFormWithFetch({ ...args, formId })
+    },
+  )
+
+  const submitStorageModeClearFormFetchMutation = useMutation(
+    (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
+      return submitStorageModeClearFormWithFetch({ ...args, formId })
     },
   )
 
@@ -116,7 +123,8 @@ export const usePublicFormMutations = (
     submitFormFeedbackMutation,
     submitStorageModeFormFetchMutation,
     submitEmailModeFormFetchMutation,
-    submitStorageModeFormV2Mutation,
+    submitStorageModeClearFormMutation,
+    submitStorageModeClearFormFetchMutation,
   }
 }
 

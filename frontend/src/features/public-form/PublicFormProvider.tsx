@@ -275,11 +275,12 @@ export const PublicFormProvider = ({
     submitStorageModeFormMutation,
     submitEmailModeFormFetchMutation,
     submitStorageModeFormFetchMutation,
-    submitStorageModeFormV2Mutation,
+    submitStorageModeClearFormMutation,
+    submitStorageModeClearFormFetchMutation,
   } = usePublicFormMutations(formId, submissionData?.id ?? '')
 
   const submitStorageModeVnMutation = routeToNewStorageModeSubmission
-    ? submitStorageModeFormV2Mutation
+    ? submitStorageModeClearFormMutation
     : submitStorageModeFormMutation
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
@@ -492,7 +493,12 @@ export const PublicFormProvider = ({
               },
             })
 
-            return submitStorageModeFormFetchMutation
+            const submitStorageModeVnFetchMutation =
+              routeToNewStorageModeSubmission
+                ? submitStorageModeClearFormFetchMutation
+                : submitStorageModeFormFetchMutation
+
+            return submitStorageModeVnFetchMutation
               .mutateAsync(
                 {
                   ...formData,
