@@ -84,11 +84,16 @@ export default class ParsedResponsesObject {
   static parseResponses(
     form: IFormDocument,
     responses: FieldResponse[],
+    encryptionBoundaryShiftEnabled: boolean,
   ): Result<
     ParsedResponsesObject,
     ProcessingError | ConflictError | ValidateFieldError
   > {
-    const filteredResponsesResult = getFilteredResponses(form, responses)
+    const filteredResponsesResult = getFilteredResponses(
+      form,
+      responses,
+      encryptionBoundaryShiftEnabled,
+    )
     if (filteredResponsesResult.isErr()) {
       return err(filteredResponsesResult.error)
     }

@@ -163,7 +163,11 @@ export const validateSubmission = async (
     formDef.responseMode,
   )
     .andThen(() =>
-      ParsedResponsesObject.parseResponses(formDef, req.body.responses),
+      ParsedResponsesObject.parseResponses(
+        formDef,
+        req.body.responses,
+        req.formsg.featureFlags.includes(featureFlags.encryptionBoundaryShift),
+      ),
     )
     .map(() => next())
     .mapErr((error) => {
