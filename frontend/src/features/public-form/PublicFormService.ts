@@ -93,7 +93,7 @@ export type SubmitStorageFormArgs = SubmitEmailFormArgs & {
   payments?: PaymentFieldsDto
 }
 
-export type SubmitStorageFormV2Args = SubmitEmailFormArgs & {
+export type SubmitStorageFormClearArgs = SubmitEmailFormArgs & {
   paymentReceiptEmail?: string
   paymentProducts?: Array<ProductItem>
   payments?: PaymentFieldsDto
@@ -181,7 +181,7 @@ export const submitStorageModeFormV2 = async ({
   responseMetadata,
   paymentProducts,
   payments,
-}: SubmitStorageFormV2Args) => {
+}: SubmitStorageFormClearArgs) => {
   const filteredInputs = filterHiddenInputs({
     formFields,
     formInputs,
