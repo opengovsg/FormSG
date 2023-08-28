@@ -20,6 +20,13 @@ const SHORT_ENV_MAP = {
 // It emulates the loading of SSM which Lambda will do.
 // This file is not meant to be used in a deployment and is .mjs so we can use top-level await
 async function saveAllParameters() {
+
+  // If process.env.ENV is not a key in SHORT_ENV_MAP, then it is not a valid environment
+  if (!Object.keys(SHORT_ENV_MAP).includes(process.env.ENV)) {
+    console.log(`Invalid ENV=${process.env.ENV}. Must be a valid env in SHORT_ENV_MAP`)
+    exit(1)
+  }
+
   console.log(`Retrieving parameters for ENV=${process.env.ENV}`)
 
   const devEnvs = ['dev', 'develop', 'development']
