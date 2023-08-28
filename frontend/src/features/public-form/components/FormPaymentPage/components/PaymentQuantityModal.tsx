@@ -73,7 +73,7 @@ const PaymentQuantityModal = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      size={isMobile ? 'sticky-bottom' : 'sm'}
+      size={isMobile ? 'align-bottom' : 'sm'}
     >
       <ModalOverlay />
       <ModalContent>

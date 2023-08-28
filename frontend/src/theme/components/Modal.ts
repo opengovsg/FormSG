@@ -70,7 +70,7 @@ const getSize = (value: string): PartsStyleObject<typeof parts> => {
           insetEnd: '1.5rem',
         },
       }
-    case 'sticky-bottom':
+    case 'align-bottom':
       return {
         dialogContainer: {
           flexFlow: 'wrap-reverse',
@@ -109,7 +109,7 @@ const sizes = {
   mobile: getSize('mobile'),
   md: getSize('md'),
   full: getSize('full'),
-  'sticky-bottom': getSize('sticky-bottom'),
+  'align-bottom': getSize('align-bottom'),
 }
 
 export const Modal = {
