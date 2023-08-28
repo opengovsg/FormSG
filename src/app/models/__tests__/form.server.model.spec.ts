@@ -55,6 +55,7 @@ const MOCK_ENCRYPTED_FORM_PARAMS = {
   ...MOCK_FORM_PARAMS,
   publicKey: 'mockPublicKey',
   responseMode: FormResponseMode.Encrypt,
+  encryptionBoundaryShift: true,
 }
 const MOCK_EMAIL_FORM_PARAMS = {
   ...MOCK_FORM_PARAMS,
