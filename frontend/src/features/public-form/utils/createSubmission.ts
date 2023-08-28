@@ -86,7 +86,7 @@ export const createClearSubmissionFormData = (
   formFields: FormFieldDto[],
   formInputs: FormFieldValues,
   responseMetadata?: ResponseMetadata,
-  setBody?: {
+  additionalBodyFields?: {
     paymentReceiptEmail?: string
     paymentProducts?: ProductItem[]
     payments?: PaymentFieldsDto
@@ -100,7 +100,7 @@ export const createClearSubmissionFormData = (
   const formData = new FormData()
   formData.append(
     'body',
-    JSON.stringify({ responses, responseMetadata, ...setBody }),
+    JSON.stringify({ responses, responseMetadata, ...additionalBodyFields }),
   )
 
   if (!isEmpty(attachments)) {
