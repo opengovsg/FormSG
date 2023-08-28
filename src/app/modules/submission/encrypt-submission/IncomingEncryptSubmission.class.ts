@@ -32,15 +32,16 @@ export default class IncomingEncryptSubmission extends IncomingSubmission {
     form: IPopulatedEncryptedForm,
     responses: FieldResponse[],
     encryptedContent: string,
+    encryptionBoundaryShiftEnabled: boolean,
   ): Result<
     IncomingEncryptSubmission,
     ProcessingError | ConflictError | ValidateFieldError[]
   > {
     return checkIsEncryptedEncoding(encryptedContent)
       .andThen(() => {
-        if (form.encryptionBoundaryShift)
+        if (encryptionBoundaryShiftEnabled)
           return ok(responses as FilteredResponse[])
-        else return getFilteredResponses(form, responses)
+        else return getFilteredResponses(form, responses, false)
       })
       .andThen((filteredResponses) =>
         this.getFieldMap(form, filteredResponses).map((fieldMap) => ({
