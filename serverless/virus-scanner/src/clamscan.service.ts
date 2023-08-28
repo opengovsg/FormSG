@@ -20,7 +20,7 @@ export async function scanFileStream(
   const { isInfected: isMalicious, viruses: virusMetadata } =
     await scanner.scanStream(s3Stream)
 
-  return isMalicious === true
+  return isMalicious
     ? {
         isMalicious,
         virusMetadata,
