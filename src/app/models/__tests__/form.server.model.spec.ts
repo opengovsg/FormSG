@@ -55,7 +55,6 @@ const MOCK_ENCRYPTED_FORM_PARAMS = {
   ...MOCK_FORM_PARAMS,
   publicKey: 'mockPublicKey',
   responseMode: FormResponseMode.Encrypt,
-  encryptionBoundaryShift: true,
 }
 const MOCK_EMAIL_FORM_PARAMS = {
   ...MOCK_FORM_PARAMS,
@@ -432,7 +431,7 @@ describe('Form Model', () => {
 
     describe('Encrypted form schema', () => {
       const ENCRYPT_FORM_DEFAULTS = merge(
-        { responseMode: 'encrypt', encryptionBoundaryShift: false },
+        { responseMode: 'encrypt' },
         FORM_DEFAULTS,
         PAYMENTS_DEFAULTS,
       )
