@@ -187,11 +187,21 @@ const transformToSectionOutput = (
 
 const transformToChildOutput = (
   schema: ChildrenCompoundFieldSchema,
-  input: ChildrenCompoundFieldValues,
+  input?: ChildrenCompoundFieldValues,
 ): ChildBirthRecordsResponse => {
+  console.log('transformToChildOutput: ', input)
+  console.log('transformToChildOutput schema: ', schema)
+  const noOfChildrenSubFields = schema.childrenSubFields?.length ?? 1
+  let answerArray: string[][]
+  if (input !== undefined && input.child) {
+    answerArray = input.child
+  } else {
+    answerArray = [Array(noOfChildrenSubFields).fill('')]
+  }
+  console.log('transformToChildOutput answerArray: ', answerArray)
   return {
     ...pickBaseOutputFromSchema(schema),
-    answerArray: input.child,
+    answerArray,
   }
 }
 
