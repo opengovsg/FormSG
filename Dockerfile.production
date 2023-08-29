@@ -95,7 +95,7 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 # This package is needed to render Chinese characters in autoreply PDFs
-RUN echo @edge http://nl.alpinelinux.org/alpine/edge/main >> /etc/apk/repositories && apk add font-wqy-zenhei@edge
+RUN echo @edge http://dl.cdn.alpinelinux.org/alpine/edge/main >> /etc/apk/repositories && apk add font-wqy-zenhei@edge
 ENV CHROMIUM_BIN=/usr/bin/chromium-browser
 
 # Run as non-privileged user
