@@ -68,6 +68,7 @@ const helmetMiddlewares = () => {
       'https://*.google-analytics.com', // GA4 https://developers.google.com/tag-platform/tag-manager/web/csp
       'https://*.analytics.google.com',
       'https://*.googletagmanager.com',
+      // Stricer CSP policy than defined in the docs: https://docs.growthbook.io/app/visual#security-requirements
       'https://cdn.growthbook.io/api/features/',
       'https://cdn.growthbook.io/sub/',
     ],
