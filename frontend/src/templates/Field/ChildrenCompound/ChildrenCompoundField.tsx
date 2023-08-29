@@ -22,6 +22,11 @@ import {
 } from '@chakra-ui/react'
 import simplur from 'simplur'
 
+import {
+  ChildrenCompoundFieldInputs,
+  ChildrenCompoundFieldSchema,
+  DATE_DISPLAY_FORMAT,
+} from '~shared/constants/dates'
 import { MYINFO_ATTRIBUTE_MAP } from '~shared/constants/field/myinfo'
 import {
   FormColorTheme,
@@ -30,6 +35,7 @@ import {
   MyInfoChildData,
   MyInfoChildVaxxStatus,
 } from '~shared/types'
+import { formatMyinfoDate } from '~shared/utils/dates'
 
 import { createChildrenValidationRules } from '~utils/fieldValidation'
 import { Button } from '~components/Button/Button'
@@ -39,10 +45,6 @@ import { FormLabel } from '~components/FormControl/FormLabel/FormLabel'
 import { IconButton } from '~components/IconButton/IconButton'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
-import {
-  ChildrenCompoundFieldInputs,
-  ChildrenCompoundFieldSchema,
-} from '../types'
 
 export interface ChildrenCompoundFieldProps extends BaseFieldProps {
   schema: ChildrenCompoundFieldSchema
@@ -324,12 +326,20 @@ const ChildrenBody = ({
           const key = `${field.id}+${index}`
           const fieldPath = `${schema._id}.child.${currChildBodyIdx}.${index}`
           const myInfoValue = getChildAttr(subField)
+
+          // We want to format the date by converting the value from a myinfo format to
+          // a format used by our date fields
+          const myInfoFormattedValue =
+            subField === MyInfoChildAttributes.ChildDateOfBirth && myInfoValue
+              ? formatMyinfoDate(myInfoValue)
+              : myInfoValue
+
           const value = watch(fieldPath) as unknown as string
-          if (myInfoValue && value !== myInfoValue) {
+          if (myInfoFormattedValue && value !== myInfoFormattedValue) {
             // We need to do this as the underlying data is not updated
             // by the field's value, but rather by onChange, which we did
             // not trigger via prefill.
-            setValue(fieldPath, myInfoValue)
+            setValue(fieldPath, myInfoFormattedValue)
           }
           const isDisabled = isSubmitting || !!myInfoValue
           switch (subField) {
@@ -379,9 +389,8 @@ const ChildrenBody = ({
                   </FormLabel>
                   <DatePicker
                     {...rest}
-                    dateFormat="yyyy/MM/dd"
-                    // Convert MyInfo YYYY-MM-DD to YYYY/MM/DD
-                    inputValue={value?.replaceAll('-', '/')}
+                    displayFormat={DATE_DISPLAY_FORMAT}
+                    inputValue={value}
                     onInputValueChange={(date) => {
                       setValue(fieldPath, date)
                     }}

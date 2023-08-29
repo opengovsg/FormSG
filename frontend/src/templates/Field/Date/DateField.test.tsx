@@ -3,9 +3,10 @@ import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { addDays, isBefore, lightFormat } from 'date-fns'
 
+import { DATE_DISPLAY_FORMAT } from '~shared/constants/dates'
+
 import { REQUIRED_ERROR } from '~constants/validation'
 
-import { DATE_DISPLAY_FORMAT } from './DateField'
 import * as stories from './DateField.stories'
 
 const {

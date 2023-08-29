@@ -8,6 +8,7 @@ import { identity } from 'lodash'
 import simplur from 'simplur'
 import validator from 'validator'
 
+import { DATE_PARSE_FORMAT } from '~shared/constants/dates'
 import {
   AttachmentFieldBase,
   BasicField,
@@ -46,7 +47,6 @@ import {
   INVALID_EMAIL_ERROR,
   REQUIRED_ERROR,
 } from '~constants/validation'
-import { DATE_PARSE_FORMAT } from '~templates/Field/Date/DateField'
 import {
   CheckboxFieldValues,
   SingleAnswerValue,
