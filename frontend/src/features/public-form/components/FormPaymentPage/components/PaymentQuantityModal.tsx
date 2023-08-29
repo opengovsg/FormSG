@@ -97,7 +97,7 @@ const PaymentQuantityModal = ({
                 colorScheme="secondary"
                 isDisabled={quantity <= minQty}
                 onClick={() =>
-                  setValue('quantity', quantity ? quantity - 1 : 1)
+                  setValue('quantity', quantity ? quantity - 1 : minQty)
                 }
               />
               <Controller
@@ -120,7 +120,7 @@ const PaymentQuantityModal = ({
                     textAlign="center"
                   />
                 )}
-              ></Controller>
+              />
               <IconButton
                 icon={<BiPlus />}
                 variant="clear"
@@ -128,7 +128,7 @@ const PaymentQuantityModal = ({
                 colorScheme="secondary"
                 isDisabled={quantity >= maxQty}
                 onClick={() =>
-                  setValue('quantity', quantity ? quantity + 1 : 1)
+                  setValue('quantity', quantity ? quantity + 1 : minQty)
                 }
               />
             </HStack>

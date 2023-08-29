@@ -1,6 +1,6 @@
 import { Box, Flex, Text, useDisclosure } from '@chakra-ui/react'
 
-import { FormColorTheme, ProductItem } from '~shared/types'
+import { ProductItem } from '~shared/types'
 import { centsToDollars, formatCurrency } from '~shared/utils/payments'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
@@ -84,7 +84,7 @@ export const PaymentCard = ({
         isOpen={paymentQuantityModalDisclosure.isOpen}
         itemName={product.data.name}
         onCancel={paymentQuantityModalDisclosure.onClose}
-        initialQty={product.quantity || 1}
+        initialQty={product.quantity || product.data.min_qty}
         onSubmit={(qty) => {
           paymentQuantityModalDisclosure.onClose()
           onItemChange(product.data._id, true, qty)
