@@ -45,6 +45,8 @@ const PaymentQuantityModal = ({
     control,
     setValue,
     watch,
+    trigger,
+    resetField,
   } = useForm<{ quantity: number | '' }>({
     defaultValues: { quantity: initialQty },
     mode: 'onChange',
@@ -54,7 +56,7 @@ const PaymentQuantityModal = ({
   const positiveIntegerValidationRule = {
     validate: (val: number | '') => {
       if (!val) {
-        return 'Please enter a quantity'
+        return `Minimum quantity is ${minQty}`
       }
       if (!Number.isInteger(val)) {
         return 'Please enter a whole number'
@@ -63,7 +65,7 @@ const PaymentQuantityModal = ({
         return `Minimum quantity is ${minQty}`
       }
       if (val > maxQty) {
-        return `Maximum quantity ${maxQty}`
+        return `Maximum quantity is ${maxQty}`
       }
       return true
     },
@@ -73,7 +75,10 @@ const PaymentQuantityModal = ({
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={() => {
+        onClose()
+        resetField('quantity')
+      }}
       size={isMobile ? 'selector-bottom' : 'selector'}
     >
       <ModalOverlay />
@@ -127,9 +132,10 @@ const PaymentQuantityModal = ({
                 aria-label="Increment"
                 colorScheme="secondary"
                 isDisabled={quantity >= maxQty}
-                onClick={() =>
+                onClick={() => {
                   setValue('quantity', quantity ? quantity + 1 : minQty)
-                }
+                  trigger('quantity')
+                }}
               />
             </HStack>
             <FormErrorMessage>{errors.quantity?.message}</FormErrorMessage>
@@ -143,9 +149,7 @@ const PaymentQuantityModal = ({
             <Button
               isDisabled={Boolean(errors.quantity)}
               loadingText="Saving"
-              onClick={() => {
-                onSubmit(quantity || 1)
-              }}
+              onClick={() => onSubmit(quantity || 1)}
             >
               Update
             </Button>
