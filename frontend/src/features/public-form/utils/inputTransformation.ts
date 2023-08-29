@@ -189,8 +189,6 @@ const transformToChildOutput = (
   schema: ChildrenCompoundFieldSchema,
   input?: ChildrenCompoundFieldValues,
 ): ChildBirthRecordsResponse => {
-  console.log('transformToChildOutput: ', input)
-  console.log('transformToChildOutput schema: ', schema)
   const noOfChildrenSubFields = schema.childrenSubFields?.length ?? 1
   let answerArray: string[][]
   if (input !== undefined && input.child) {
@@ -198,7 +196,6 @@ const transformToChildOutput = (
   } else {
     answerArray = [Array(noOfChildrenSubFields).fill('')]
   }
-  console.log('transformToChildOutput answerArray: ', answerArray)
   return {
     ...pickBaseOutputFromSchema(schema),
     answerArray,

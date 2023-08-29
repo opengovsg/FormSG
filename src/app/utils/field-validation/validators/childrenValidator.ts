@@ -34,13 +34,15 @@ const childrenAnswerValidator: ChildrenValidator = (response) => {
  * Returns a validation function to check if the
  * that the first answer subarray has length > 0.
  */
-// const validChildAnswerFirstArray: ChildrenValidator = (response) => {
-//   const { answerArray } = response
-//   const first = answerArray[0]
-//   return Array.isArray(first) && first.length > 0
-//     ? right(response)
-//     : left(`ChildrenValidator:\t first subarray length is invalid`)
-// }
+const validChildAnswerFirstArray: ChildrenValidator = (response) => {
+  const { answerArray } = response
+  const first = answerArray[0]
+  return Array.isArray(first) && first.length > 0
+    ? right(response)
+    : left(
+        `ChildrenValidator (validChildAnswerFirstArray):\t first subarray length is invalid`,
+      )
+}
 
 /**
  * Returns a validation function to check if the
@@ -59,17 +61,25 @@ const validChildAnswerConsistency: ChildrenValidator = (response) => {
 
 /**
  * Returns a validation function to check if
- * all the answers are non-empty if first answer subarray has length > 0
+ * all the answers are non-empty if first answer subarray has length > 0 and a child is selected
  */
-// const validChildAnswersNonEmpty: ChildrenValidator = (response) => {
-//   const { answerArray } = response
-//   const first = answerArray[0]
-//   return answerArray.every((subArr) =>
-//     subArr.every((val) => typeof val === 'string' && !!val.trim()),
-//   )
-//     ? right(response)
-//     : left(`ChildrenValidator:\t inconsistent answer array subarrays`)
-// }
+const validChildAnswersNonEmpty: ChildrenValidator = (response) => {
+  const { childSubFieldsArray, answerArray } = response
+  const noOfChildrenSubFields = childSubFieldsArray?.length ?? 1
+  const noChildSelectedAnswerArray = Array(noOfChildrenSubFields).fill('')
+  const first = answerArray[0]
+  return Array.isArray(first) &&
+    first.length > 0 &&
+    first[0] !== noChildSelectedAnswerArray[0]
+    ? answerArray.every((subArr) =>
+        subArr.every((val) => typeof val === 'string' && !!val.trim()),
+      )
+      ? right(response)
+      : left(
+          `ChildrenValidator (validChildAnswersNonEmpty):\t inconsistent answer array subarrays`,
+        )
+    : right(response)
+}
 
 /**
  * Returns a validation function to check if the
@@ -142,9 +152,9 @@ export const constructChildrenValidator: ChildrenValidatorConstructor = (
 ) =>
   flow(
     childrenAnswerValidator,
-    // chain(validChildAnswerFirstArray),
+    chain(validChildAnswerFirstArray),
     chain(validChildAnswerConsistency),
-    // chain(validChildAnswersNonEmpty),
+    chain(validChildAnswersNonEmpty),
     chain(validChildAnswerAndSubFields),
     chain(validChildSubFieldsValidator(childrenField)),
     chain(validChildSubFieldsAndResponseSubFieldsMatch(childrenField)),
