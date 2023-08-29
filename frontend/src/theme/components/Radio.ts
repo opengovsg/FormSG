@@ -22,6 +22,9 @@ const parts = radioAnatomy.extend(
 
 const variantFullWidth: PartsStyleFunction<typeof parts> = (props) => {
   return {
+    container: {
+      borderRadius: '4px',
+    },
     label: {
       width: '100%',
     },

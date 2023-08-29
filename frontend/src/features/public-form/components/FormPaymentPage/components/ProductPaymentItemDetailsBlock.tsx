@@ -69,13 +69,7 @@ const PaymentItem = ({
   const ChoiceElement = isMultiSelect ? Checkbox : Radio
   const paymentQuantityModalDisclosure = useDisclosure()
   return (
-    <Box
-      backgroundColor={`theme-${colorTheme}.100`}
-      borderWidth="1px"
-      borderColor={`theme-${colorTheme}.300`}
-      borderRadius="4px"
-      width="100%"
-    >
+    <Box w="100%">
       <ChoiceElement
         isChecked={product.selected}
         onChange={() =>
@@ -83,14 +77,15 @@ const PaymentItem = ({
         }
         variant="fullWidth"
         p="1rem"
+        minH="6.75rem"
       >
         <Box flexGrow={1}>
           <Text textStyle="subhead-1">{product.data.name}</Text>
-          <Text textStyle="body-2" mb="0.5rem">
+          <Text textStyle="h3" mb="0.5rem">
             {product.data.description}
           </Text>
           <Flex alignItems={'center'}>
-            <Box flexGrow={1} as="h2" textStyle="h2">
+            <Box flexGrow={1} as="h2" textStyle="h3">
               S
               {formatCurrency(
                 Number(centsToDollars(product.data.amount_cents ?? 0)),
@@ -199,9 +194,9 @@ export const ProductPaymentItemDetailsBlock = ({
   }
 
   return (
-    <Stack spacing="2rem">
+    <Stack spacing="2.25rem">
       <FormControl isInvalid={!!errors.payment_products}>
-        <Stack spacing="2rem">
+        <Stack spacing="1rem" divider={<Divider />}>
           {productItems.map((product, idx) => (
             <PaymentItem
               key={product.data._id || idx}
@@ -215,11 +210,11 @@ export const ProductPaymentItemDetailsBlock = ({
         <FormErrorMessage>{errors?.payment_products?.message}</FormErrorMessage>
       </FormControl>
       <Divider />
-      <Flex justifyContent={'end'}>
-        <Text textAlign={'right'} mr={'1rem'}>
-          Total price
+      <Flex justifyContent={'end'} alignItems="baseline">
+        <Text textAlign={'right'} mr={'0.5rem'} justifySelf="end">
+          Total:
         </Text>
-        <Text textStyle={'h4'} fontWeight="600" fontSize={'24px'}>
+        <Text textStyle={'h2'}>
           S{formatCurrency(Number(centsToDollars(totalPrice)))}
         </Text>
       </Flex>

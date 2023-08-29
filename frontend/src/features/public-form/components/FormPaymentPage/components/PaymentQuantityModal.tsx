@@ -4,21 +4,22 @@ import {
   Button,
   ButtonGroup,
   FormControl,
-  FormErrorMessage,
   HStack,
   Input,
   Modal,
   ModalBody,
-  ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Text,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import IconButton from '~components/IconButton'
+import { ModalCloseButton } from '~components/Modal'
 
 interface PaymentQuantityModalProps
   extends Pick<UseDisclosureReturn, 'onClose' | 'isOpen'> {
@@ -73,12 +74,19 @@ const PaymentQuantityModal = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      size={isMobile ? 'align-bottom' : 'sm'}
+      size={isMobile ? 'selector-bottom' : 'selector'}
     >
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader>Update quantity for {itemName}</ModalHeader>
+        <ModalHeader>
+          <Text textStyle="h2" mb="1rem">
+            Update quantity
+          </Text>
+          <Text textStyle="body-2" color="content.medium">
+            {itemName}
+          </Text>
+        </ModalHeader>
         <ModalBody>
           <FormControl isInvalid={Boolean(errors.quantity)}>
             <HStack spacing={'1.5rem'} justify="center">
@@ -107,6 +115,7 @@ const PaymentQuantityModal = ({
                       }
                       field.onChange(Number(e.target.value))
                     }}
+                    inputMode="numeric"
                     type="number"
                     textAlign="center"
                   />

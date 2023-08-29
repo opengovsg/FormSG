@@ -120,6 +120,9 @@ const baseStyle: PartsStyleFunction<typeof parts> = ({
 
 const variantFullWidth: PartsStyleFunction<typeof parts> = (props) => {
   return {
+    container: {
+      borderRadius: '4px',
+    },
     label: {
       width: '100%',
     },
