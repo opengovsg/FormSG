@@ -18,30 +18,24 @@ console.log('=== before ===')
 const totalDocs = formsCollection.countDocuments()
 console.log('total # of documents:', totalDocs);
 
-// # of documents with encryptionBoundaryShift set to true
-const docsSetToTrueBefore = formsCollection.countDocuments({ encryptionBoundaryShift: true })
-console.log('# of documents with encryptionBoundaryShift set true:', docsSetToTrueBefore);
-
-// # of documents to modify
-console.log('# of documents to modify:', totalDocs - docsSetToTrueBefore);
+// # of documents with encryptionBoundaryShift set
+const docsSetBefore = formsCollection.countDocuments({ encryptionBoundaryShift: { $exists: true } })
+console.log('# of documents with encryptionBoundaryShift set:', docsSetBefore);
 
 
 // set documents
 formsCollection.updateMany(
   {},
   {
-    $set: { encryptionBoundaryShift: true }
+    $unset: { encryptionBoundaryShift: true }
   }
 );
 
 console.log('=== after ===')
 
 // # of documents with encryptionBoundaryShift set to true (should match # of documents to modify)
-const docsSetToTrueAfter = formsCollection.countDocuments({ encryptionBoundaryShift: true })
-console.log('# of documents with encryptionBoundaryShift set true:', docsSetToTrueAfter);
-
-// # of documents to modify
-console.log('# of documents left:', totalDocs - docsSetToTrueAfter);
+const docsSetAfter = formsCollection.countDocuments({ encryptionBoundaryShift: { $exists: true } })
+console.log('# of documents with encryptionBoundaryShift set:', docsSetAfter);
 
 session.abortTransaction();
 // session.commitTransaction();
