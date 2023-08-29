@@ -36,12 +36,10 @@ const ItemQuantityButton = ({
 
 export const PaymentCard = ({
   product,
-  colorTheme,
   onItemChange,
   isMultiSelect,
 }: {
   product: ProductItem
-  colorTheme: FormColorTheme
   onItemChange: (
     productId: string,
     isSelected: boolean,

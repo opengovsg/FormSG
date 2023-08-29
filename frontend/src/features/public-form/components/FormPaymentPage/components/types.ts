@@ -4,9 +4,7 @@ export interface PaymentItemNameDescriptionProps {
   paymentItemName: string | undefined
   paymentDescription: string | undefined
 }
-interface PaymentItemDetailsProps extends PaymentItemNameDescriptionProps {
-  colorTheme: FormColorTheme
-}
+type PaymentItemDetailsProps = PaymentItemNameDescriptionProps
 
 export interface VariableItemDetailProps extends PaymentItemDetailsProps {
   paymentMin: number
@@ -14,5 +12,6 @@ export interface VariableItemDetailProps extends PaymentItemDetailsProps {
 }
 
 export interface FixedItemDetailProps extends PaymentItemDetailsProps {
+  colorTheme: FormColorTheme
   paymentAmount: number | undefined
 }
