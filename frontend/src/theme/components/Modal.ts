@@ -87,17 +87,8 @@ const getSize = (value: string): PartsStyleObject<typeof parts> => {
           px: '1.5rem',
         },
         footer: {
-          p: '1.5rem',
-        },
-      }
-    case 'selector-bottom':
-      return {
-        dialogContainer: {
-          flexFlow: 'wrap-reverse',
-        },
-        dialog: {
-          mb: '0rem',
-          borderEndRadius: '0px',
+          m: '1.5rem',
+          p: 0,
         },
       }
     default:
@@ -126,11 +117,24 @@ const getSize = (value: string): PartsStyleObject<typeof parts> => {
   }
 }
 
+const variants = {
+  bottom: {
+    dialogContainer: {
+      flexFlow: 'wrap-reverse',
+    },
+    dialog: {
+      mb: '0rem',
+      borderBottomRadius: '0px',
+      maxW: '100%',
+    },
+  },
+}
+
 const sizes = {
   mobile: getSize('mobile'),
   md: getSize('md'),
   full: getSize('full'),
-  'selector-bottom': getSize('selector-bottom'),
+  // 'selector-bottom': getSize('selector-bottom'),
   selector: getSize('selector'),
 }
 
@@ -138,4 +142,5 @@ export const Modal = {
   parts: parts.keys,
   baseStyle,
   sizes,
+  variants,
 }

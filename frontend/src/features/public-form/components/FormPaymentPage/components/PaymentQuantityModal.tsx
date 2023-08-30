@@ -1,8 +1,8 @@
 import { Controller, useForm } from 'react-hook-form'
 import { BiMinus, BiPlus } from 'react-icons/bi'
 import {
+  Box,
   Button,
-  ButtonGroup,
   FormControl,
   HStack,
   Input,
@@ -12,6 +12,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Stack,
   Text,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
@@ -79,13 +80,14 @@ const PaymentQuantityModal = ({
         onClose()
         resetField('quantity')
       }}
-      size={isMobile ? 'selector-bottom' : 'selector'}
+      size="selector"
+      variant={isMobile ? 'bottom' : 'default'}
     >
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
         <ModalHeader>
-          <Text textStyle="h2" mb="1rem">
+          <Text textStyle={isMobile ? 'h3' : 'h2'} mb="1rem">
             Update quantity
           </Text>
           <Text textStyle="body-2" color="content.medium">
@@ -139,22 +141,33 @@ const PaymentQuantityModal = ({
                 }}
               />
             </HStack>
-            <FormErrorMessage>{errors.quantity?.message}</FormErrorMessage>
+            <Box mt="1rem">
+              <FormErrorMessage mb="0">
+                {errors.quantity?.message}
+              </FormErrorMessage>
+            </Box>
           </FormControl>
         </ModalBody>
         <ModalFooter>
-          <ButtonGroup>
-            <Button variant="clear" onClick={onClose} colorScheme="secondary">
-              Cancel
-            </Button>
+          <Stack
+            flex={1}
+            spacing="1rem"
+            direction={{ base: 'row', md: 'row-reverse' }}
+          >
             <Button
               isDisabled={Boolean(errors.quantity)}
               loadingText="Saving"
               onClick={() => onSubmit(quantity || 1)}
+              isFullWidth={isMobile}
             >
               Update
             </Button>
-          </ButtonGroup>
+            {!isMobile ? (
+              <Button variant="clear" onClick={onClose} colorScheme="secondary">
+                Cancel
+              </Button>
+            ) : null}
+          </Stack>
         </ModalFooter>
       </ModalContent>
     </Modal>
