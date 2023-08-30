@@ -32,6 +32,8 @@ import { filterHiddenInputs } from './utils/filterHiddenInputs'
 
 export const PUBLIC_FORMS_ENDPOINT = '/forms'
 
+// Encryption boundary shift RFC: https://docs.google.com/document/d/1VmNXS_xYY2Yg30AwVqzdndBp5yRJGSDsyjBnH51ktyc/edit?usp=sharing
+// Encryption boundary shift implementation PR: https://github.com/opengovsg/FormSG/pull/6587
 const ENCRYPTION_BOUNDARY_SHIFT_ENCRYPTION_VERSION = 2
 
 /**
