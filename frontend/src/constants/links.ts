@@ -1,7 +1,5 @@
 import { PRIVACY_POLICY_ROUTE, TOU_ROUTE } from './routes'
 
-export const GROWTHBOOK_API_HOST_PATH = '/api/v1/proxy/growthbook'
-
 export const CONTACT_US = 'https://go.gov.sg/formsg-support'
 export const FEATURE_REQUEST = 'https://go.gov.sg/form-featurerequest'
 export const REPORT_VULNERABILITY = 'https://go.gov.sg/report-vulnerability'
@@ -86,3 +84,6 @@ export const OGP_SGID = 'https://go.gov.sg/sgid-formsg'
 export const OGP_FORMSG_REPO = 'https://github.com/opengovsg/formsg'
 
 export const FORMSG_UAT = 'https://uat.form.gov.sg'
+
+export const GROWTHBOOK_DEV_PROXY =
+  'https://proxy-growthbook-stg.formsg.workers.dev'

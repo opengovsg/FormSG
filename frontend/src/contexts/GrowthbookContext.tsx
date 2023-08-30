@@ -10,13 +10,13 @@ import { useEnv } from '~features/env/queries'
  * child component that calls `useAuth()`.
  */
 export const GrowthBookProvider = ({ children }: { children: ReactNode }) => {
-  const { data: { growthbookClientKey, formsgSdkMode } = {} } = useEnv()
+  const { data: { growthbookClientKey } = {} } = useEnv()
 
   return (
     <BaseGrowthBookProvider
       growthbook={
         growthbookClientKey
-          ? createGrowthbookInstance(growthbookClientKey, formsgSdkMode)
+          ? createGrowthbookInstance(growthbookClientKey)
           : undefined
       }
     >
