@@ -27,6 +27,7 @@ const variantFullWidth: PartsStyleFunction<typeof parts> = (props) => {
     },
     label: {
       width: '100%',
+      alignSelf: 'flex-start',
     },
   }
 }
