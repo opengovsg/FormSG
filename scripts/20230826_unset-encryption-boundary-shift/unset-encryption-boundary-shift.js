@@ -25,7 +25,7 @@ console.log('# of documents with encryptionBoundaryShift set:', docsSetBefore);
 
 // set documents
 formsCollection.updateMany(
-  {},
+  { encryptionBoundaryShift: { $exists: true } },
   {
     $unset: { encryptionBoundaryShift: true }
   }
