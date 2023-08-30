@@ -191,7 +191,7 @@ const transformToChildOutput = (
 ): ChildBirthRecordsResponse => {
   const noOfChildrenSubFields = schema.childrenSubFields?.length ?? 1
   let answerArray: string[][]
-  if (input !== undefined && input.child) {
+  if (input?.child) {
     answerArray = input.child
   } else {
     answerArray = [Array(noOfChildrenSubFields).fill('')]
