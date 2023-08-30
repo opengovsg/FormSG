@@ -6,13 +6,16 @@ export const createGrowthbookInstance = (
   clientKey: string,
   formsgSdkMode?: 'staging' | 'production' | 'development' | 'test',
 ) => {
+  const isDev = process.env.NODE_ENV === 'development'
+
   return new GrowthBook({
     apiHost: `${
-      process.env.REACT_APP_URL ??
-      'https://proxy-growthbook-stg.formsg.workers.dev'
+      isDev
+        ? 'https://proxy-growthbook-stg.formsg.workers.dev'
+        : process.env.REACT_APP_URL
     }${GROWTHBOOK_API_HOST_PATH}`,
     clientKey: clientKey,
     // Enable easier debugging during development
-    enableDevMode: formsgSdkMode === 'development',
+    enableDevMode: isDev,
   })
 }
