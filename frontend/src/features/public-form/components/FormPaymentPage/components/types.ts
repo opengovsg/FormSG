@@ -1,4 +1,4 @@
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme, ProductsPaymentField } from '~shared/types'
 
 export interface PaymentItemNameDescriptionProps {
   paymentItemName: string | undefined
@@ -14,4 +14,9 @@ export interface VariableItemDetailProps extends PaymentItemDetailsProps {
 export interface FixedItemDetailProps extends PaymentItemDetailsProps {
   colorTheme: FormColorTheme
   paymentAmount: number | undefined
+}
+
+export interface ProductItemDetailProps {
+  colorTheme: FormColorTheme
+  paymentDetails: ProductsPaymentField
 }

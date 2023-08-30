@@ -1,6 +1,6 @@
 import { Box, Flex, Text, useDisclosure } from '@chakra-ui/react'
 
-import { ProductItem } from '~shared/types'
+import { FormColorTheme, ProductItem } from '~shared/types'
 import { centsToDollars, formatCurrency } from '~shared/utils/payments'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
@@ -38,6 +38,7 @@ export const ProductPaymentCard = ({
   product,
   onItemChange,
   isMultiSelect,
+  colorTheme,
 }: {
   product: ProductItem
   onItemChange: (
@@ -46,12 +47,14 @@ export const ProductPaymentCard = ({
     selectedQuantity: number,
   ) => void
   isMultiSelect: boolean
+  colorTheme: FormColorTheme
 }) => {
   const ChoiceElement = isMultiSelect ? Checkbox : Radio
   const paymentQuantityModalDisclosure = useDisclosure()
   return (
     <Box w="100%">
       <ChoiceElement
+        colorScheme={`theme-${colorTheme}`}
         isChecked={product.selected}
         onChange={() =>
           onItemChange(product.data._id, !product.selected, product.quantity)

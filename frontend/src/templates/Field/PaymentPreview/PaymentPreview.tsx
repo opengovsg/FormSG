@@ -51,7 +51,12 @@ const PaymentItemDetailsElement = ({
       )
     }
     case PaymentType.Products: {
-      return <ProductPaymentItemDetailsBlock paymentDetails={paymentDetails} />
+      return (
+        <ProductPaymentItemDetailsBlock
+          colorTheme={colorTheme}
+          paymentDetails={paymentDetails}
+        />
+      )
     }
     case PaymentType.Fixed: // Fallthrough
     default: {

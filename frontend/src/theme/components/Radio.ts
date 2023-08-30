@@ -25,10 +25,13 @@ const variantFullWidth: PartsStyleFunction<typeof parts> = (props) => {
     container: {
       borderRadius: '4px',
       _hover: {
-        bg: `#E5E9F8`,
+        bg: `${getColor(props.theme, `${props.colorScheme}.200`)}`,
       },
       _focusWithin: {
-        boxShadow: `inset 0 0 0 0.125rem #445FCD`,
+        boxShadow: `inset 0 0 0 0.125rem ${getColor(
+          props.theme,
+          `${props.colorScheme}.500`,
+        )}`,
       },
     },
     label: {

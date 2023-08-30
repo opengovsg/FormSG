@@ -3,13 +3,14 @@ import { useFormContext } from 'react-hook-form'
 import { Divider, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 
 import { PAYMENT_PRODUCT_FIELD_ID } from '~shared/constants'
-import { ProductItem, ProductsPaymentField } from '~shared/types'
+import { ProductItem } from '~shared/types'
 import { calculatePrice } from '~shared/utils/paymentProductPrice'
 import { centsToDollars, formatCurrency } from '~shared/utils/payments'
 
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 
 import { ProductPaymentCard } from './ProductPaymentCard'
+import { ProductItemDetailProps } from './types'
 
 const isProductSelected = (productItems: Array<ProductItem>) => {
   const isSelected = productItems.some((item) => item.selected)
@@ -18,9 +19,8 @@ const isProductSelected = (productItems: Array<ProductItem>) => {
 
 export const ProductPaymentItemDetailsBlock = ({
   paymentDetails,
-}: {
-  paymentDetails: ProductsPaymentField
-}) => {
+  colorTheme,
+}: ProductItemDetailProps) => {
   const {
     register,
     setValue,
@@ -92,6 +92,7 @@ export const ProductPaymentItemDetailsBlock = ({
         <Stack spacing="1rem" divider={<Divider />}>
           {productItems.map((product, idx) => (
             <ProductPaymentCard
+              colorTheme={colorTheme}
               key={product.data._id || idx}
               product={product}
               onItemChange={handleItemChange}
