@@ -61,8 +61,10 @@ export const PaymentCard = ({
         minH="6.75rem"
       >
         <Box flexGrow={1}>
-          <Text textStyle="subhead-1">{product.data.name}</Text>
-          <Text textStyle="h3" mb="0.5rem">
+          <Text textStyle="h3" lineHeight="1.5rem">
+            {product.data.name}
+          </Text>
+          <Text textStyle="body-1" mb="0.5rem">
             {product.data.description}
           </Text>
           <Flex alignItems={'center'}>
