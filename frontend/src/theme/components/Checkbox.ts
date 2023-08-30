@@ -131,6 +131,9 @@ const variantFullWidth: PartsStyleFunction<typeof parts> = (props) => {
           `${props.colorScheme}.500`,
         )}`,
       },
+      _checked: {
+        bg: `${getColor(props.theme, `${props.colorScheme}.200`)}`,
+      },
     },
     label: {
       width: '100%',
