@@ -103,11 +103,11 @@ export const ProductPaymentItemDetailsBlock = ({
         <FormErrorMessage>{errors?.payment_products?.message}</FormErrorMessage>
       </FormControl>
       <Divider />
-      <Flex justifyContent={'end'} alignItems="baseline">
-        <Text textAlign={'right'} mr={'0.5rem'} justifySelf="end">
+      <Flex justifyContent="end" alignItems="baseline">
+        <Text textAlign="right" mr="0.5rem" justifySelf="end">
           Total:
         </Text>
-        <Text textStyle={'h2'}>
+        <Text textStyle="h2">
           S{formatCurrency(Number(centsToDollars(totalPrice)))}
         </Text>
       </Flex>
