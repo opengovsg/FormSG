@@ -141,11 +141,9 @@ const PaymentQuantityModal = ({
                 }}
               />
             </HStack>
-            <Box mt="1rem">
-              <FormErrorMessage mb="0">
-                {errors.quantity?.message}
-              </FormErrorMessage>
-            </Box>
+            <FormErrorMessage marginTop="1rem" marginBottom="0">
+              {errors.quantity?.message}
+            </FormErrorMessage>
           </FormControl>
         </ModalBody>
         <ModalFooter>
