@@ -820,7 +820,7 @@ describe('stripe.service', () => {
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(InvalidDomainError)
     })
 
-    it('should not check email whitelsiting if feature flag is disabled', async () => {
+    it('should not check email whitelistingw if feature flag is disabled', async () => {
       // Arrange
       const mockForm = (await new EncryptedForm({
         admin: MOCK_USER,
