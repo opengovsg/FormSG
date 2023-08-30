@@ -34,7 +34,7 @@ const ItemQuantityButton = ({
   )
 }
 
-export const PaymentCard = ({
+export const ProductPaymentCard = ({
   product,
   onItemChange,
   isMultiSelect,

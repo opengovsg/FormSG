@@ -9,7 +9,7 @@ import { centsToDollars, formatCurrency } from '~shared/utils/payments'
 
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 
-import { PaymentCard } from './PaymentCard'
+import { ProductPaymentCard } from './ProductPaymentCard'
 
 const isProductSelected = (productItems: Array<ProductItem>) => {
   const isSelected = productItems.some((item) => item.selected)
@@ -91,7 +91,7 @@ export const ProductPaymentItemDetailsBlock = ({
       <FormControl isInvalid={!!errors.payment_products}>
         <Stack spacing="1rem" divider={<Divider />}>
           {productItems.map((product, idx) => (
-            <PaymentCard
+            <ProductPaymentCard
               key={product.data._id || idx}
               product={product}
               onItemChange={handleItemChange}
