@@ -65,12 +65,18 @@ const validChildAnswerConsistency: ChildrenValidator = (response) => {
  */
 const validChildAnswersNonEmpty: ChildrenValidator = (response) => {
   const { childSubFieldsArray, answerArray } = response
+  const first = answerArray[0]
+
+  // Account for the case where no child is selected
   const noOfChildrenSubFields = childSubFieldsArray?.length ?? 1
   const noChildSelectedAnswerArray = Array(noOfChildrenSubFields).fill('')
-  const first = answerArray[0]
+  // Similar to transformToChildOutput in inputTransformation, this is a string of empty strings (which represents number of children subfields).
+  const noChildSelectedAnswer = noChildSelectedAnswerArray[0]
+
   return Array.isArray(first) &&
     first.length > 0 &&
-    first[0] !== noChildSelectedAnswerArray[0]
+    // Check that at least 1 child is selected
+    first[0] !== noChildSelectedAnswer
     ? answerArray.every((subArr) =>
         subArr.every((val) => typeof val === 'string' && !!val.trim()),
       )
