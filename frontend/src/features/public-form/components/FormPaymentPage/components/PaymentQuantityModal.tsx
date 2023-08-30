@@ -101,9 +101,10 @@ const PaymentQuantityModal = ({
                 aria-label="Decrement"
                 colorScheme="secondary"
                 isDisabled={quantity <= minQty}
-                onClick={() =>
+                onClick={() => {
                   setValue('quantity', quantity ? quantity - 1 : minQty)
-                }
+                  trigger('quantity')
+                }}
               />
               <Controller
                 name="quantity"
