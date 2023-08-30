@@ -4,6 +4,7 @@ import { Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 import { addDays, lightFormat, parse } from 'date-fns'
 
+import { DATE_DISPLAY_FORMAT } from '~shared/constants/dates'
 import {
   BasicField,
   DateSelectedValidation,
@@ -15,11 +16,7 @@ import Button from '~components/Button'
 
 import { DateFieldSchema } from '../types'
 
-import {
-  DATE_DISPLAY_FORMAT,
-  DateField as DateFieldComponent,
-  DateFieldProps,
-} from './DateField'
+import { DateField as DateFieldComponent, DateFieldProps } from './DateField'
 
 const MOCKED_TODAY_DATE_STRING = '13/12/2021'
 const MOCKED_TODAY_DATE = parse(

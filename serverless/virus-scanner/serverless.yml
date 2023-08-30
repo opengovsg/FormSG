@@ -1,0 +1,50 @@
+service: virus-scanner
+frameworkVersion: '3'
+useDotenv: true
+provider:
+  name: aws
+  region: ap-southeast-1
+  stage: ${opt:stage}
+  iam:
+    role:
+      statements:
+        # Allow functions to read/write objects in a bucket
+        - Effect: Allow
+          Action:
+            # Both GetObject and GetObjectTagging required for copy
+            - 's3:GetObject'
+            - 's3:GetObjectTagging'
+            - 's3:GetObjectVersion'
+            - 's3:DeleteObject'
+            - 's3:DeleteObjectVersion'
+          Resource:
+            - 'arn:aws:s3:::${env:VIRUS_SCANNER_QUARANTINE_S3_BUCKET}/*'
+        - Effect: Allow
+          Action:
+            # Both PutObject and PutObjectTagging required for copy
+            - 's3:PutObject'
+            - 's3:PutObjectTagging'
+          Resource:
+            - 'arn:aws:s3:::${env:VIRUS_SCANNER_CLEAN_S3_BUCKET}/*'
+  ecr:
+    images:
+      virus-scanner:
+        path: ./
+        platform: linux/amd64
+
+functions:
+  virus-scanner:
+    image:
+      name: virus-scanner
+    # max timeout per invocation
+    timeout: 300
+    # allocate more memory as the default 1028 MB size will cause lambda to crash
+    memorySize: 2048
+    # Provision concurrency so at least one instance always hot
+    # https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/#provisioned-concurrency
+    # 1 for staging, 5 for prod
+    provisionedConcurrency: ${param:provisionedConcurrency}
+
+plugins:
+  # required so that env variables are loaded in functions
+  - serverless-dotenv-plugin

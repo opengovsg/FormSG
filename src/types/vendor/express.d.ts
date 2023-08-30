@@ -1,6 +1,7 @@
 import { RateLimitInfo } from 'express-rate-limit'
 
-import { IUserSchema } from 'src/types'
+import { EncryptSubmissionDto } from '../api'
+import { IPopulatedEncryptedForm, IPopulatedForm, IUserSchema } from '../types'
 
 declare global {
   namespace Express {
@@ -19,6 +20,14 @@ declare global {
        * @see https://github.com/nfriedly/express-rate-limit#request-api
        */
       rateLimit: RateLimitInfo
+      /**
+       * This property is added by storage mode submission middlewares to store context shared between middlewares.
+       */
+      formsg?: {
+        formDef?: IPopulatedForm
+        encryptedPayload?: EncryptSubmissionDto
+        encryptedFormDef?: IPopulatedEncryptedForm
+      }
     }
   }
 }

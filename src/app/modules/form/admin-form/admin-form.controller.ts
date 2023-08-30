@@ -69,18 +69,20 @@ import * as FeedbackService from '../../feedback/feedback.service'
 import * as EmailSubmissionMiddleware from '../../submission/email-submission/email-submission.middleware'
 import * as EmailSubmissionService from '../../submission/email-submission/email-submission.service'
 import {
-  mapAttachmentsFromResponses,
   mapRouteError as mapEmailSubmissionError,
   SubmissionEmailObj,
 } from '../../submission/email-submission/email-submission.util'
-import ParsedResponsesObject from '../../submission/email-submission/ParsedResponsesObject.class'
 import * as EncryptSubmissionMiddleware from '../../submission/encrypt-submission/encrypt-submission.middleware'
 import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
 import { mapRouteError as mapEncryptSubmissionError } from '../../submission/encrypt-submission/encrypt-submission.utils'
 import IncomingEncryptSubmission from '../../submission/encrypt-submission/IncomingEncryptSubmission.class'
+import ParsedResponsesObject from '../../submission/ParsedResponsesObject.class'
 import * as ReceiverMiddleware from '../../submission/receiver/receiver.middleware'
 import * as SubmissionService from '../../submission/submission.service'
-import { extractEmailConfirmationData } from '../../submission/submission.utils'
+import {
+  extractEmailConfirmationData,
+  mapAttachmentsFromResponses,
+} from '../../submission/submission.utils'
 import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
@@ -1019,6 +1021,57 @@ export const handleCopyTemplateForm: ControllerHandler<
 }
 
 /**
+ * Handler for POST /admin/forms/all-transfer-owner.
+ * @security session
+ *
+ * @returns 200 with true if transfer was successful
+ * @returns 400 when new owner is not in the database yet
+ * @returns 400 when new owner is already current owner
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const transferAllFormsOwnership: ControllerHandler<
+  unknown,
+  unknown,
+  { email: string }
+> = (req, res) => {
+  const { email: newOwnerEmail } = req.body
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Transfer all forms to new owner
+        AdminFormService.transferAllFormsOwnership(user, newOwnerEmail),
+      )
+      .map((data) => {
+        return res.status(StatusCodes.OK).json(data)
+      })
+      // Some error occurred earlier in the chain.
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred whilst transferring all forms ownership',
+          meta: {
+            action: 'transferAllFormsOwnership',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            newOwnerEmail,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+export const handleTransferAllFormsOwnership = [
+  transferFormOwnershipValidator,
+  transferAllFormsOwnership,
+] as ControllerHandler[]
+
+/**
  * Handler for POST /{formId}/adminform/transfer-owner.
  * @security session
  *
@@ -1719,10 +1772,10 @@ export const submitEmailPreview: ControllerHandler<
   }
   const form = formResult.value
 
-  const parsedResponsesResult =
-    await EmailSubmissionService.validateAttachments(responses).andThen(() =>
-      ParsedResponsesObject.parseResponses(form, responses),
-    )
+  const parsedResponsesResult = await SubmissionService.validateAttachments(
+    responses,
+    form.responseMode,
+  ).andThen(() => ParsedResponsesObject.parseResponses(form, responses))
   if (parsedResponsesResult.isErr()) {
     logger.error({
       message: 'Error while parsing responses for preview submission',

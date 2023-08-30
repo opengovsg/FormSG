@@ -1,11 +1,13 @@
 import {
   SendUserContactOtpDto,
+  TransferOwnershipRequestDto,
   UserDto,
   VerifyUserContactOtpDto,
 } from '~shared/types/user'
 
 import { ApiService } from './ApiService'
 
+const ADMIN_FORM_ENDPOINT = '/admin/forms'
 const USER_ENDPOINT = '/user'
 
 /**
@@ -39,4 +41,13 @@ export const updateUserLastSeenFeatureUpdateVersion = async (
     `${USER_ENDPOINT}/flag/new-features-last-seen`,
     { version },
   ).then(({ data }) => data)
+}
+
+export const transferOwnership = async (
+  request: TransferOwnershipRequestDto,
+): Promise<boolean> => {
+  const { email } = request
+  return ApiService.post(`${ADMIN_FORM_ENDPOINT}/all-transfer-owner`, {
+    email,
+  }).then(({ data }) => data)
 }

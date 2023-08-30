@@ -1,4 +1,4 @@
-import { BiCheck } from 'react-icons/bi'
+import { BiCheck, BiInfoCircle } from 'react-icons/bi'
 import { IconType } from 'react-icons/lib'
 import { Box, Divider, Flex, Icon, Link, Text } from '@chakra-ui/react'
 import { keyBy } from 'lodash'
@@ -6,6 +6,7 @@ import { keyBy } from 'lodash'
 import { PaymentStatus, SubmissionPaymentDto } from '~shared/types'
 
 import { Tag } from '~components/Tag'
+import Tooltip from '~components/Tooltip'
 
 import { getPaymentDataView } from '../common/utils/getPaymentDataView'
 
@@ -65,7 +66,7 @@ export const PaymentSection = ({
         </Flex>
       </Flex>
       <Flex flexDir="column" gap="1.25rem">
-        <PaymentDataHeader name="Payout" {...payoutTagProps} />
+        <PayoutDataHeader name="Payout to bank account" {...payoutTagProps} />
         <Flex flexDir="column" gap="0.75rem">
           <PaymentDataItem {...paymentDataMap['payoutId']} isMonospace />
           <PaymentDataItem {...paymentDataMap['payoutDate']} />
@@ -82,17 +83,46 @@ type PaymentDataHeaderProps = {
   rightIcon?: IconType
 }
 
+const PayoutDataHeader = ({
+  name,
+  label,
+  colorScheme,
+  rightIcon,
+}: PaymentDataHeaderProps) => (
+  <Flex gap="1rem">
+    <Flex>
+      <Text textStyle="h2" as="h2" color="primary.500">
+        {name}
+      </Text>
+
+      <Tooltip
+        placement="top"
+        label="This is when money collected gets deposited into your bank account.
+        Depending on payment method, payouts happen 1 - 3 working days after a respondent makes payment."
+      >
+        <Flex justify="center" align="center">
+          <Icon as={BiInfoCircle} fontSize="1.5rem" ml="0.5rem" />
+        </Flex>
+      </Tooltip>
+    </Flex>
+    <Tag colorScheme={colorScheme} pointerEvents="none">
+      <Text textStyle="caption-1">{label}</Text>
+      {rightIcon && <Icon as={rightIcon} ml="0.25rem" />}
+    </Tag>
+  </Flex>
+)
+
 const PaymentDataHeader = ({
   name,
   label,
   colorScheme,
   rightIcon,
 }: PaymentDataHeaderProps) => (
-  <Flex gap="1.5rem">
+  <Flex gap="1rem">
     <Text textStyle="h2" as="h2" color="primary.500">
       {name}
     </Text>
-    <Tag colorScheme={colorScheme}>
+    <Tag colorScheme={colorScheme} pointerEvents="none">
       <Text textStyle="caption-1">{label}</Text>
       {rightIcon && <Icon as={rightIcon} ml="0.25rem" />}
     </Tag>

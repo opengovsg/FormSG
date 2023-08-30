@@ -1,0 +1,64 @@
+name: AWS Deploy Scanner
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: string
+      provisionedConcurrency:
+        description: 'Provisioned concurrency'
+        required: true
+        type: number
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  virus-scanner:
+    name: virus scanner serverless
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code from specified branch if it is a scheduled run
+        uses: actions/checkout@v3
+        if: ${{ github.event_name == 'schedule' }}
+        with:
+          ref: ${{ inputs.environment }}
+
+      - name: Checkout source code
+        uses: actions/checkout@v3
+        if: ${{ github.event_name != 'schedule' }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Cache Node.js modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.OS }}-node-scanner-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.OS }}-node-scanner-
+            ${{ runner.OS }}-node-
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1.7.0
+        with:
+          role-to-assume: ${{ secrets.AWS_CI_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Install node dependencies
+        working-directory: ./serverless/virus-scanner
+        run: npm ci
+
+      - name: Deploy with Serverless Framework
+        working-directory: ./serverless/virus-scanner
+        env:
+          ENV: ${{ inputs.environment }}
+          CONCURRENCY: ${{ inputs.provisionedConcurrency }}
+        run: npm run deploy

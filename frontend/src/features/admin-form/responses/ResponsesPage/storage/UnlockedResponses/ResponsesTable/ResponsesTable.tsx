@@ -24,15 +24,15 @@ const RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: '#',
     accessor: 'number',
-    minWidth: 80, // minWidth is only used as a limit for resizing
-    width: 80, // width is used for both the flex-basis and flex-grow
+    minWidth: 20, // minWidth is only used as a limit for resizing
+    width: 20, // width is used for both the flex-basis and flex-grow
     maxWidth: 100, // maxWidth is only used as a limit for resizing
   },
   {
     Header: 'Response ID',
     accessor: 'refNo',
-    minWidth: 200,
-    width: 300,
+    minWidth: 100,
+    width: 100,
     maxWidth: 240, // maxWidth is only used as a limit for resizing
   },
   {
@@ -57,26 +57,19 @@ const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
   },
 
   {
-    Header: 'Paid Amount', //  (amt responder paid)
+    Header: 'Paid Amount (S$)', //  (amt responder paid)
     accessor: ({ payments }) => {
       if (!payments) {
         return ''
       }
-      return `S$${centsToDollars(payments.paymentAmt)}`
+      return `${centsToDollars(payments.paymentAmt)}`
     },
     minWidth: 50,
     width: 75,
   },
 
   {
-    Header: 'Net Amount', //  (amt they receive in bank)
-    accessor: ({ payments }) => getNetAmount(payments),
-    minWidth: 50,
-    width: 75,
-  },
-
-  {
-    Header: 'Fees', //  (paid - net)
+    Header: 'Fees (S$)', //  (paid - net)
     accessor: ({ payments }) => {
       if (!payments?.transactionFee) {
         return ''
@@ -85,11 +78,19 @@ const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
         return ''
       }
 
-      return `S$${centsToDollars(payments.transactionFee)}`
+      return `${centsToDollars(payments.transactionFee)}`
     },
     minWidth: 50,
     width: 75,
   },
+
+  {
+    Header: 'Net Amount (S$)', //  (amt they receive in bank)
+    accessor: ({ payments }) => getNetAmount(payments),
+    minWidth: 50,
+    width: 75,
+  },
+
   {
     Header: 'Payout Date',
     accessor: ({ payments }) => {

@@ -16,7 +16,7 @@ export const getNetAmount = (
   const grossAmt = centsToDollars(payments.paymentAmt - payments.transactionFee)
   const isFinalTransactionFee = payments.payoutDate
   if (!isFinalTransactionFee) {
-    return `Est. S$${grossAmt}`
+    return `Est. ${grossAmt}`
   }
-  return `S$${grossAmt}`
+  return `${grossAmt}`
 }

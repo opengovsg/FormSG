@@ -2,9 +2,8 @@ import { ResponseMetadata } from 'shared/types'
 
 import { FieldResponse, IPopulatedEmailForm } from '../../../../types'
 import { MyInfoKey } from '../../myinfo/myinfo.types'
+import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import { ProcessedResponse } from '../submission.types'
-
-import ParsedResponsesObject from './ParsedResponsesObject.class'
 
 // When a response has been formatted for email, all answerArray
 // should have been converted to answer
