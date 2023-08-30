@@ -1572,18 +1572,27 @@ export const _handleGetWebhookSettings: ControllerHandler<
   const { userEmail } = req.body
   const authedUserId = (req.session as AuthedSessionData).user._id
 
+  const logMeta = {
+    action: 'handleGetWebhookSettings',
+    ...createReqMeta(req),
+    userEmail,
+    formId,
+  }
+
   logger.info({
     message: 'User attempting to get webhook settings',
-    meta: {
-      action: 'handleGetWebhookSettings',
-      ...createReqMeta(req),
-      reqBody: req.body,
-      formId,
-      userEmail,
-    },
+    meta: logMeta,
   })
 
   return UserService.findUserById(authedUserId)
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when retrieving user from database',
+        meta: logMeta,
+        error,
+      })
+      return error
+    })
     .andThen((user) =>
       // Retrieve form for settings as well as for permissions checking
       FormService.retrieveFullFormById(formId).map((form) => ({
@@ -1598,12 +1607,7 @@ export const _handleGetWebhookSettings: ControllerHandler<
     .mapErr((error) => {
       logger.error({
         message: 'Error occurred when retrieving form settings',
-        meta: {
-          action: 'handleGetWebhookSettings',
-          ...createReqMeta(req),
-          userEmail,
-          formId,
-        },
+        meta: logMeta,
         error,
       })
       const { errorMessage, statusCode } = mapRouteError(error)
