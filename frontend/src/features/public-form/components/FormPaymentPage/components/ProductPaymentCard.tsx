@@ -71,7 +71,7 @@ export const ProductPaymentCard = ({
             <Box flexGrow={1} as="h2" textStyle="h3">
               S
               {formatCurrency(
-                Number(centsToDollars(product.data.amount_cents ?? 0)),
+                Number(centsToDollars(product.data.amount_cents)),
               )}
             </Box>
             <ItemQuantityButton
