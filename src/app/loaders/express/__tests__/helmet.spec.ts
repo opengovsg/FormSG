@@ -55,8 +55,6 @@ describe('helmetMiddlewares', () => {
       'https://*.google-analytics.com',
       'https://*.analytics.google.com',
       'https://*.googletagmanager.com',
-      'https://cdn.growthbook.io/api/features/',
-      'https://cdn.growthbook.io/sub/',
     ],
     frameSrc: [
       "'self'",
