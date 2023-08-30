@@ -122,6 +122,12 @@ const variantFullWidth: PartsStyleFunction<typeof parts> = (props) => {
   return {
     container: {
       borderRadius: '4px',
+      _hover: {
+        bg: `#E5E9F8`,
+      },
+      _focusWithin: {
+        boxShadow: `inset 0 0 0 0.125rem #445FCD`,
+      },
     },
     label: {
       width: '100%',
