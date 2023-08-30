@@ -1,6 +1,7 @@
 import { PRIVACY_POLICY_ROUTE, TOU_ROUTE } from './routes'
 
-export const GROWTHBOOK_API_HOST = 'https://cdn.growthbook.io'
+export const GROWTHBOOK_API_HOST =
+  'https://staging.form.gov.sg/api/v3/proxy/growthbook'
 
 export const CONTACT_US = 'https://go.gov.sg/formsg-support'
 export const FEATURE_REQUEST = 'https://go.gov.sg/form-featurerequest'
