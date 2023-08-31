@@ -120,8 +120,27 @@ const baseStyle: PartsStyleFunction<typeof parts> = ({
 
 const variantFullWidth: PartsStyleFunction<typeof parts> = (props) => {
   return {
+    container: {
+      borderRadius: '4px',
+      _hover: {
+        bg: `${getColor(props.theme, `${props.colorScheme}.100`)}`,
+      },
+      _active: {
+        bg: `${getColor(props.theme, `${props.colorScheme}.200`)}`,
+      },
+      _checked: {
+        bg: `${getColor(props.theme, `${props.colorScheme}.300`)}`,
+      },
+      _focusWithin: {
+        boxShadow: `inset 0 0 0 0.125rem ${getColor(
+          props.theme,
+          `${props.colorScheme}.500`,
+        )}`,
+      },
+    },
     label: {
       width: '100%',
+      alignSelf: 'flex-start',
     },
   }
 }

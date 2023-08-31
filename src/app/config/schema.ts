@@ -93,6 +93,18 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
       default: null,
       env: 'STATIC_ASSETS_S3_BUCKET',
     },
+    virusScannerQuarantineS3Bucket: {
+      doc: 'S3 Bucket to quarantine files for virus scanning',
+      format: String,
+      default: null,
+      env: 'VIRUS_SCANNER_QUARANTINE_S3_BUCKET',
+    },
+    virusScannerCleanS3Bucket: {
+      doc: 'S3 Bucket to store files that have been scanned and are clean',
+      format: String,
+      default: null,
+      env: 'VIRUS_SCANNER_CLEAN_S3_BUCKET',
+    },
   },
   core: {
     sessionSecret: {
@@ -451,6 +463,18 @@ export const loadS3BucketUrlSchema = ({
     },
     staticAssetsBucketUrl: {
       doc: 'Url of static assets S3 bucket.',
+      format: (val) =>
+        validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
+      default: null,
+    },
+    virusScannerQuarantineS3BucketUrl: {
+      doc: 'Url of virus scanner quarantine S3 bucket.',
+      format: (val) =>
+        validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
+      default: null,
+    },
+    virusScannerCleanS3BucketUrl: {
+      doc: 'Url of virus scanner clean S3 bucket.',
       format: (val) =>
         validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
       default: null,

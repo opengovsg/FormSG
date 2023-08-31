@@ -44,7 +44,6 @@ const PaymentItemDetailsElement = ({
       return (
         <VariablePaymentItemDetailsBlock
           paymentItemName={paymentDetails.name}
-          colorTheme={colorTheme}
           paymentDescription={paymentDetails.description}
           paymentMin={paymentDetails.min_amount}
           paymentMax={paymentDetails.max_amount}
@@ -54,8 +53,8 @@ const PaymentItemDetailsElement = ({
     case PaymentType.Products: {
       return (
         <ProductPaymentItemDetailsBlock
-          paymentDetails={paymentDetails}
           colorTheme={colorTheme}
+          paymentDetails={paymentDetails}
         />
       )
     }

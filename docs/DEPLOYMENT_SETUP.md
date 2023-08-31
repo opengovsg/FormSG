@@ -204,17 +204,19 @@ SITE_BANNER_CONTENT=hello:This is an invalid banner type, and the full text will
 
 #### AWS services
 
-| Variable                      | Description                                                                                                                         |
-| :---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `AWS_REGION`                  | AWS region.                                                                                                                         |
-| `AWS_ACCESS_KEY_ID`           | AWS IAM access key ID used to access S3.                                                                                            |
-| `AWS_SECRET_ACCESS_KEY`       | AWS IAM access secret used to access S3.                                                                                            |
-| `AWS_ENDPOINT`                | AWS S3 bucket endpoint.                                                                                                             |
-| `IMAGE_S3_BUCKET`             | Name of S3 bucket for image field uploads.                                                                                          |
-| `STATIC_ASSETS_S3_BUCKET`     | Name of S3 bucket for static assets.                                                                                                |
-| `LOGO_S3_BUCKET`              | Name of S3 bucket for form logo uploads.                                                                                            |
-| `ATTACHMENT_S3_BUCKET`        | Name of S3 bucket for attachment uploads on Storage Mode.                                                                           |
-| `CUSTOM_CLOUDWATCH_LOG_GROUP` | Name of CloudWatch log group to send custom logs. Use this if you want some logs to have custom settings, e.g. shorter expiry time. |
+| Variable                             | Description                                                                                                                         |
+| :----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `AWS_REGION`                         | AWS region.                                                                                                                         |
+| `AWS_ACCESS_KEY_ID`                  | AWS IAM access key ID used to access S3.                                                                                            |
+| `AWS_SECRET_ACCESS_KEY`              | AWS IAM access secret used to access S3.                                                                                            |
+| `AWS_ENDPOINT`                       | AWS S3 bucket endpoint.                                                                                                             |
+| `IMAGE_S3_BUCKET`                    | Name of S3 bucket for image field uploads.                                                                                          |
+| `STATIC_ASSETS_S3_BUCKET`            | Name of S3 bucket for static assets.                                                                                                |
+| `LOGO_S3_BUCKET`                     | Name of S3 bucket for form logo uploads.                                                                                            |
+| `VIRUS_SCANNER_QUARANTINE_S3_BUCKET` | Name of S3 bucket for quarantined files.                                                                                            |
+| `VIRUS_SCANNER_CLEAN_S3_BUCKET`      | Name of S3 bucket for clean files.                                                                                                  |
+| `ATTACHMENT_S3_BUCKET`               | Name of S3 bucket for attachment uploads on Storage Mode.                                                                           |
+| `CUSTOM_CLOUDWATCH_LOG_GROUP`        | Name of CloudWatch log group to send custom logs. Use this if you want some logs to have custom settings, e.g. shorter expiry time. |
 
 #### [FormSG JavaScript SDK](https://www.npmjs.com/package/@opengovsg/formsg-sdk)
 
