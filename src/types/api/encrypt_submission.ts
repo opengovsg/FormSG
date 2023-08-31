@@ -32,6 +32,7 @@ export type ParsedStorageModeSubmissionBody = ParsedEmailModeSubmissionBody & {
 }
 
 export type FormLoadedDto = {
+  featureFlags: string[]
   formDef: IPopulatedForm
   encryptedFormDef: IPopulatedEncryptedForm
 }

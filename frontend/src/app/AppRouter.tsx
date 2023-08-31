@@ -1,6 +1,7 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { Box } from '@chakra-ui/react'
+import { useGrowthBook } from '@growthbook/growthbook-react'
 
 import {
   ADMINFORM_PREVIEW_ROUTE,
@@ -72,6 +73,14 @@ const WithSuspense = ({ children }: { children: React.ReactNode }) => (
 )
 
 export const AppRouter = (): JSX.Element => {
+  const growthbook = useGrowthBook()
+  useEffect(() => {
+    if (growthbook) {
+      // Load features from the GrowthBook API
+      growthbook.loadFeatures({ autoRefresh: true })
+    }
+  }, [growthbook])
+
   return (
     <WithSuspense>
       <Routes>

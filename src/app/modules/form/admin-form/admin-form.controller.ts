@@ -1679,7 +1679,7 @@ export const submitEncryptPreview: ControllerHandler<
       }),
     )
     .andThen((form) =>
-      IncomingEncryptSubmission.init(form, responses, encryptedContent)
+      IncomingEncryptSubmission.init(form, responses, encryptedContent, true) // set as true as there's no need to gate anything if the its not a real submission
         .map((incomingSubmission) => ({ incomingSubmission, form }))
         .mapErr((error) => {
           logger.error({
@@ -1779,7 +1779,7 @@ export const submitEmailPreview: ControllerHandler<
   const parsedResponsesResult = await SubmissionService.validateAttachments(
     responses,
     form.responseMode,
-  ).andThen(() => ParsedResponsesObject.parseResponses(form, responses))
+  ).andThen(() => ParsedResponsesObject.parseResponses(form, responses, false)) // email mode submissions (esp previews) does not need to use encryption boundary shift code
   if (parsedResponsesResult.isErr()) {
     logger.error({
       message: 'Error while parsing responses for preview submission',
