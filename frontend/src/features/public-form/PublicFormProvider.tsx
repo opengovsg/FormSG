@@ -132,12 +132,6 @@ export const PublicFormProvider = ({
   )
 
   const growthbook = useGrowthBook()
-  useEffect(() => {
-    if (growthbook) {
-      // Load features from the GrowthBook API
-      growthbook.loadFeatures({ autoRefresh: true })
-    }
-  }, [growthbook])
 
   useEffect(() => {
     if (growthbook) {
