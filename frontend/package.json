@@ -1,6 +1,6 @@
 {
   "name": "form-frontend",
-  "version": "6.73.0",
+  "version": "6.74.0",
   "homepage": ".",
   "private": true,
   "dependencies": {
@@ -10,6 +10,7 @@
     "@emotion/react": "^11.7.0",
     "@emotion/styled": "^11.6.0",
     "@floating-ui/react-dom-interactions": "^0.9.3",
+    "@growthbook/growthbook-react": "^0.17.0",
     "@opengovsg/formsg-sdk": "^0.10.0",
     "@stablelib/base64": "^1.0.1",
     "@stripe/react-stripe-js": "^1.15.0",

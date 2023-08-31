@@ -7,6 +7,7 @@ import mongoose from 'mongoose'
 import { okAsync } from 'neverthrow'
 import Stripe from 'stripe'
 
+import { featureFlags } from '../../../../../shared/constants'
 import {
   ErrorDto,
   FormAuthType,
@@ -135,6 +136,7 @@ const submitEncryptModeForm = async (
     form,
     responses,
     encryptedContent,
+    req.formsg.featureFlags.includes(featureFlags.encryptionBoundaryShift),
   )
   if (incomingSubmissionResult.isErr()) {
     const { statusCode, errorMessage } = mapRouteError(

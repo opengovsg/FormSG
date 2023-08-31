@@ -74,6 +74,7 @@ describe('IncomingEncryptSubmission', () => {
       } as unknown as IPopulatedEncryptedForm,
       responses,
       '',
+      false,
     )
     expect(initResult._unsafeUnwrap().responses).toEqual(responses)
   })
@@ -125,10 +126,10 @@ describe('IncomingEncryptSubmission', () => {
       {
         responseMode: FormResponseMode.Encrypt,
         form_fields: basicFormFields,
-        encryptionBoundaryShift: false,
       } as unknown as IPopulatedEncryptedForm,
       responses,
       '',
+      false,
     )
     const filteredResponses = [mobileResponse, emailResponse]
     expect(initResult._unsafeUnwrap().responses).toEqual(filteredResponses)
@@ -175,10 +176,10 @@ describe('IncomingEncryptSubmission', () => {
       {
         responseMode: FormResponseMode.Encrypt,
         form_fields: basicFormFields,
-        encryptionBoundaryShift: true,
       } as unknown as IPopulatedEncryptedForm,
       responses,
       '',
+      true,
     )
     expect(initResult._unsafeUnwrap().responses).toEqual(filteredResponses)
   })
@@ -211,6 +212,7 @@ describe('IncomingEncryptSubmission', () => {
       } as unknown as IPopulatedEncryptedForm,
       responses,
       '',
+      false,
     )
     expect(initResult._unsafeUnwrapErr()).toEqual(
       new ConflictError('Some form fields are missing'),
@@ -258,6 +260,7 @@ describe('IncomingEncryptSubmission', () => {
       } as unknown as IPopulatedEncryptedForm,
       responses,
       '',
+      false,
     )
 
     expect(result.isOk()).toEqual(true)
@@ -280,6 +283,7 @@ describe('IncomingEncryptSubmission', () => {
       } as unknown as IPopulatedEncryptedForm,
       [mobileResponse],
       '',
+      false,
     )
 
     expect(result.isErr()).toEqual(true)
@@ -305,6 +309,7 @@ describe('IncomingEncryptSubmission', () => {
       } as unknown as IPopulatedEncryptedForm,
       [],
       '',
+      false,
     )
 
     expect(result.isErr()).toEqual(true)

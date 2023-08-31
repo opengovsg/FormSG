@@ -3,4 +3,5 @@ export const featureFlags = {
   goLinks: 'goLinks' as const,
   turnstile: 'turnstile' as const,
   validateStripeEmailDomain: 'validateStripeEmailDomain' as const,
+  encryptionBoundaryShift: 'encryption-boundary-shift' as const,
 }

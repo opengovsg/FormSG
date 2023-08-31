@@ -1572,18 +1572,27 @@ export const _handleGetWebhookSettings: ControllerHandler<
   const { userEmail } = req.body
   const authedUserId = (req.session as AuthedSessionData).user._id
 
+  const logMeta = {
+    action: 'handleGetWebhookSettings',
+    ...createReqMeta(req),
+    userEmail,
+    formId,
+  }
+
   logger.info({
     message: 'User attempting to get webhook settings',
-    meta: {
-      action: 'handleGetWebhookSettings',
-      ...createReqMeta(req),
-      reqBody: req.body,
-      formId,
-      userEmail,
-    },
+    meta: logMeta,
   })
 
   return UserService.findUserById(authedUserId)
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when retrieving user from database',
+        meta: logMeta,
+        error,
+      })
+      return error
+    })
     .andThen((user) =>
       // Retrieve form for settings as well as for permissions checking
       FormService.retrieveFullFormById(formId).map((form) => ({
@@ -1598,12 +1607,7 @@ export const _handleGetWebhookSettings: ControllerHandler<
     .mapErr((error) => {
       logger.error({
         message: 'Error occurred when retrieving form settings',
-        meta: {
-          action: 'handleGetWebhookSettings',
-          ...createReqMeta(req),
-          userEmail,
-          formId,
-        },
+        meta: logMeta,
         error,
       })
       const { errorMessage, statusCode } = mapRouteError(error)
@@ -1675,7 +1679,7 @@ export const submitEncryptPreview: ControllerHandler<
       }),
     )
     .andThen((form) =>
-      IncomingEncryptSubmission.init(form, responses, encryptedContent)
+      IncomingEncryptSubmission.init(form, responses, encryptedContent, true) // set as true as there's no need to gate anything if the its not a real submission
         .map((incomingSubmission) => ({ incomingSubmission, form }))
         .mapErr((error) => {
           logger.error({
@@ -1775,7 +1779,7 @@ export const submitEmailPreview: ControllerHandler<
   const parsedResponsesResult = await SubmissionService.validateAttachments(
     responses,
     form.responseMode,
-  ).andThen(() => ParsedResponsesObject.parseResponses(form, responses))
+  ).andThen(() => ParsedResponsesObject.parseResponses(form, responses, false)) // email mode submissions (esp previews) does not need to use encryption boundary shift code
   if (parsedResponsesResult.isErr()) {
     logger.error({
       message: 'Error while parsing responses for preview submission',
