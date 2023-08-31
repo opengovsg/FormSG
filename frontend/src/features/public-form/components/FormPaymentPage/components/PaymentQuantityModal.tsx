@@ -1,7 +1,6 @@
 import { Controller, useForm } from 'react-hook-form'
 import { BiMinus, BiPlus } from 'react-icons/bi'
 import {
-  Box,
   Button,
   FormControl,
   HStack,
@@ -76,9 +75,9 @@ const PaymentQuantityModal = ({
   return (
     <Modal
       isOpen={isOpen}
-      onClose={() => {
-        onClose()
-        resetField('quantity')
+      onClose={onClose}
+      onCloseComplete={() => {
+        resetField('quantity', { defaultValue: initialQty })
       }}
       size="selector"
       variant={isMobile ? 'bottom' : 'default'}
