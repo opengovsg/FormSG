@@ -251,17 +251,21 @@ export const createNumberValidationRules: ValidationRuleFn<NumberFieldBase> = (
         const numVal = Number(val)
         const hasMinimum = !!customMin
         const hasMaximum = !!customMax
-        const isOutsideRange =
-          (hasMinimum && customMin > numVal) ||
-          (hasMaximum && customMax < numVal)
+        const isInRange =
+          !(hasMinimum && numVal < customMin) &&
+          !(hasMaximum && numVal > customMax)
 
-        if (!isOutsideRange) return true
-        else if (hasMinimum && hasMaximum) {
-          return `Please enter a number within the range ${customMin} to ${customMax}`
-        } else if (hasMinimum) {
-          return `Please enter a number that has a minimum value of ${customMin}`
-        } else if (hasMaximum) {
-          return `Please enter a number that has a maximum value of ${customMax}`
+        if (isInRange) {
+          return true
+        }
+        if (hasMinimum && hasMaximum) {
+          return `Please enter a number between ${customMin} and ${customMax}`
+        }
+        if (hasMinimum) {
+          return `Please enter a number that is at least ${customMin}`
+        }
+        if (hasMaximum) {
+          return `Please enter a number that is at most ${customMax}`
         }
       },
     },
