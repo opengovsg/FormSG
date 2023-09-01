@@ -1,4 +1,5 @@
 import JoiDate from '@joi/date'
+import { S3 } from 'aws-sdk'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
@@ -58,6 +59,7 @@ import {
   addPaymentDataStream,
   checkFormIsEncryptMode,
   getEncryptedSubmissionData,
+  getPutQuarantinePresignedUrls,
   getSubmissionCursor,
   getSubmissionMetadata,
   getSubmissionMetadataList,
@@ -993,3 +995,12 @@ export const handleGetMetadata = [
   }),
   getMetadata,
 ] as ControllerHandler[]
+
+export const handleGetS3PresignedUrl: ControllerHandler<
+  unknown,
+  Record<string, S3.PresignedPost>,
+  Record<string, number>
+> = async (req, res) => {
+  const presignedUrls = getPutQuarantinePresignedUrls(req.body)
+  return res.json(presignedUrls)
+}

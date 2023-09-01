@@ -65,3 +65,10 @@ PublicFormsSubmissionsRouter.route(
   limitRate({ max: rateLimitConfig.submissions }),
   EncryptSubmissionController.handleStorageSubmission,
 )
+
+PublicFormsSubmissionsRouter.route(
+  '/:formId([a-fA-F0-9]{24})/submissions/storage/attachments',
+).post(
+  limitRate({ max: rateLimitConfig.submissions }),
+  EncryptSubmissionController.handleGetS3PresignedUrl,
+)

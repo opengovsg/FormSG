@@ -1,4 +1,4 @@
-import { ManagedUpload } from 'aws-sdk/clients/s3'
+import { ManagedUpload, PresignedPost } from 'aws-sdk/clients/s3'
 import Bluebird from 'bluebird'
 import crypto from 'crypto'
 import moment from 'moment'
@@ -529,4 +529,20 @@ export const performEncryptPostSubmissionActions = (
         return error
       })
     })
+}
+
+export const getPutQuarantinePresignedUrls = (
+  attachmentSizes: Record<string, number>,
+) => {
+  const attachmentPresignedData: Record<string, PresignedPost> = {}
+  for (const [id, contentLength] of Object.entries(attachmentSizes)) {
+    const presignedPostData = AwsConfig.s3.createPresignedPost({
+      Bucket: AwsConfig.virusScannerQuarantineS3Bucket,
+      Fields: { key: crypto.randomUUID() },
+      Expires: 5 * 60, // expires in 5 minutes
+      Conditions: [['content-length-range', 0, contentLength]],
+    })
+    attachmentPresignedData[id] = presignedPostData
+  }
+  return attachmentPresignedData
 }
