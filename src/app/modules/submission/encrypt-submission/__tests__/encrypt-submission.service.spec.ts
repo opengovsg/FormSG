@@ -29,7 +29,10 @@ import {
 import { aws as AwsConfig } from '../../../../config/config'
 import * as PaymentsService from '../../../payments/payments.service'
 import { SubmissionNotFoundError } from '../../submission.errors'
-import { CreatePresignedPostError } from '../encrypt-submission.errors'
+import {
+  CreatePresignedPostError,
+  InvalidFieldIdError,
+} from '../encrypt-submission.errors'
 import {
   addPaymentDataStream,
   createEncryptSubmissionWithoutSave,
@@ -1027,9 +1030,11 @@ describe('encrypt-submission.service', () => {
   })
 
   describe('getPutQuarantinePresignedUrls', () => {
+    const fieldId1 = new mongoose.Types.ObjectId() as unknown as string
+    const fieldId2 = new mongoose.Types.ObjectId() as unknown as string
     const MOCK_ATTACHMENT_SIZES = {
-      test_file_1: 1,
-      test_file_2: 2,
+      [fieldId1]: 1,
+      [fieldId2]: 2,
     }
 
     const REGEX_UUID =
@@ -1073,17 +1078,15 @@ describe('encrypt-submission.service', () => {
         ],
       ])
       const actualResultValue = actualResult._unsafeUnwrap()
-      expect(actualResultValue.test_file_1).toEqual(expectedPresignedPostData)
-      expect(actualResultValue.test_file_2).toEqual(expectedPresignedPostData)
       expect(actualResultValue).toEqual(
         expect.objectContaining({
-          test_file_1: expectedPresignedPostData,
-          test_file_2: expectedPresignedPostData,
+          [fieldId1]: expectedPresignedPostData,
+          [fieldId2]: expectedPresignedPostData,
         }),
       )
     })
 
-    it('should return Error when aws.s3.createPresignedPost throws error', async () => {
+    it('should return CreatePresignedPostError when aws.s3.createPresignedPost throws error', async () => {
       // Arrange
       const awsSpy = jest
         .spyOn(aws.s3, 'createPresignedPost')
@@ -1106,6 +1109,19 @@ describe('encrypt-submission.service', () => {
         Expires: 5 * 60, // expires in 5 minutes
         Conditions: [['content-length-range', 0, 1]],
       })
+    })
+
+    it('should return InvalidFieldIdError keys are not valid mongodb object ids', async () => {
+      // Arrange
+      const awsSpy = jest.spyOn(aws.s3, 'createPresignedPost')
+
+      // Act
+      const actualResult = getQuarantinePresignedPostData({ test_file_1: 1 })
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(awsSpy).not.toHaveBeenCalled()
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidFieldIdError())
     })
   })
 })
