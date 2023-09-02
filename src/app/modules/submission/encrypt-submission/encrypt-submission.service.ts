@@ -50,6 +50,7 @@ import {
 import { sendEmailConfirmations } from '../submission.service'
 import { extractEmailConfirmationData } from '../submission.utils'
 
+import { CreatePresignedPostError } from './encrypt-submission.errors'
 import {
   AttachmentMetadata,
   SaveEncryptSubmissionParams,
@@ -533,16 +534,27 @@ export const performEncryptPostSubmissionActions = (
 
 export const getPutQuarantinePresignedUrls = (
   attachmentSizes: Record<string, number>,
-) => {
+): Result<Record<string, PresignedPost>, unknown> => {
   const attachmentPresignedData: Record<string, PresignedPost> = {}
-  for (const [id, contentLength] of Object.entries(attachmentSizes)) {
-    const presignedPostData = AwsConfig.s3.createPresignedPost({
-      Bucket: AwsConfig.virusScannerQuarantineS3Bucket,
-      Fields: { key: crypto.randomUUID() },
-      Expires: 5 * 60, // expires in 5 minutes
-      Conditions: [['content-length-range', 0, contentLength]],
+  try {
+    for (const [id, contentLength] of Object.entries(attachmentSizes)) {
+      const presignedPostData = AwsConfig.s3.createPresignedPost({
+        Bucket: AwsConfig.virusScannerQuarantineS3Bucket,
+        Fields: { key: crypto.randomUUID() },
+        Expires: 5 * 60, // expires in 5 minutes
+        Conditions: [['content-length-range', 0, contentLength]],
+      })
+      attachmentPresignedData[id] = presignedPostData
+    }
+    return ok(attachmentPresignedData)
+  } catch (error) {
+    logger.error({
+      message: 'Error while generating presigned URLs',
+      meta: {
+        action: 'getPutQuarantinePresignedUrls',
+      },
+      error,
     })
-    attachmentPresignedData[id] = presignedPostData
+    return err(new CreatePresignedPostError())
   }
-  return attachmentPresignedData
 }

@@ -23,3 +23,11 @@ export class SubmissionFailedError extends ApplicationError {
     super(message)
   }
 }
+
+export class CreatePresignedPostError extends ApplicationError {
+  constructor(
+    message = 'Could not create presigned post data. Please try again.',
+  ) {
+    super(message)
+  }
+}

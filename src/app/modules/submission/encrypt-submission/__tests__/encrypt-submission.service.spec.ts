@@ -26,12 +26,15 @@ import {
   StorageModeSubmissionMetadata,
   SubmissionId,
 } from '../../../../../../shared/types'
+import { aws as AwsConfig } from '../../../../config/config'
 import * as PaymentsService from '../../../payments/payments.service'
 import { SubmissionNotFoundError } from '../../submission.errors'
+import { CreatePresignedPostError } from '../encrypt-submission.errors'
 import {
   addPaymentDataStream,
   createEncryptSubmissionWithoutSave,
   getEncryptedSubmissionData,
+  getPutQuarantinePresignedUrls,
   getSubmissionCursor,
   getSubmissionMetadata,
   getSubmissionMetadataList,
@@ -865,6 +868,12 @@ describe('encrypt-submission.service', () => {
         number: 200,
         refNo: mockSubmissionId as SubmissionId,
         submissionTime: 'some submission time',
+        payments: {
+          paymentAmt: 0,
+          email: '',
+          payoutDate: null,
+          transactionFee: null,
+        },
       }
       const getMetaSpy = jest
         .spyOn(EncryptSubmission, 'findSingleMetadata')
@@ -876,7 +885,7 @@ describe('encrypt-submission.service', () => {
         mockSubmissionId,
       )
 
-      // Arrange
+      // Assert
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(expectedMetadata)
       expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, mockSubmissionId)
@@ -892,7 +901,7 @@ describe('encrypt-submission.service', () => {
         invalidSubmissionId,
       )
 
-      // Arrange
+      // Assert
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(null)
     })
@@ -910,7 +919,7 @@ describe('encrypt-submission.service', () => {
         mockSubmissionId,
       )
 
-      // Arrange
+      // Assert
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(null)
       expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, mockSubmissionId)
@@ -930,7 +939,7 @@ describe('encrypt-submission.service', () => {
         mockSubmissionId,
       )
 
-      // Arrange
+      // Assert
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new DatabaseError(formatErrorRecoveryMessage(mockErrorString)),
@@ -961,7 +970,7 @@ describe('encrypt-submission.service', () => {
       // Act
       const actualResult = await getSubmissionMetadataList(MOCK_FORM_ID)
 
-      // Arrange
+      // Assert
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(expectedResult)
       expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, { page: undefined })
@@ -990,7 +999,7 @@ describe('encrypt-submission.service', () => {
         mockPageNumber,
       )
 
-      // Arrange
+      // Assert
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(expectedResult)
       expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, {
@@ -1008,12 +1017,95 @@ describe('encrypt-submission.service', () => {
       // Act
       const actualResult = await getSubmissionMetadataList(MOCK_FORM_ID)
 
-      // Arrange
+      // Assert
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new DatabaseError(formatErrorRecoveryMessage(mockErrorString)),
       )
       expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, { page: undefined })
+    })
+  })
+
+  describe('getPutQuarantinePresignedUrls', () => {
+    const MOCK_ATTACHMENT_SIZES = {
+      test_file_1: 1,
+      test_file_2: 2,
+    }
+
+    const REGEX_UUID =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+    it('should return presigned post data', async () => {
+      // Arrange
+      const awsSpy = jest.spyOn(aws.s3, 'createPresignedPost')
+      const expectedCalledWithSubset = {
+        Bucket: AwsConfig.virusScannerQuarantineS3Bucket,
+        Fields: { key: expect.stringMatching(REGEX_UUID) },
+        Expires: 5 * 60, // expires in 5 minutes
+      }
+      const expectedPresignedPostData = expect.objectContaining({
+        url: `${AwsConfig.endPoint}/${AwsConfig.virusScannerQuarantineS3Bucket}`,
+        fields: expect.objectContaining({
+          key: expect.stringMatching(REGEX_UUID),
+          bucket: AwsConfig.virusScannerQuarantineS3Bucket,
+          'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
+        }),
+      })
+
+      // Act
+      const actualResult = getPutQuarantinePresignedUrls(MOCK_ATTACHMENT_SIZES)
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(awsSpy).toHaveBeenCalledTimes(2)
+      expect(awsSpy.mock.calls).toEqual([
+        [
+          {
+            ...expectedCalledWithSubset,
+            Conditions: [['content-length-range', 0, 1]],
+          },
+        ],
+        [
+          {
+            ...expectedCalledWithSubset,
+            Conditions: [['content-length-range', 0, 2]],
+          },
+        ],
+      ])
+      const actualResultValue = actualResult._unsafeUnwrap()
+      expect(actualResultValue.test_file_1).toEqual(expectedPresignedPostData)
+      expect(actualResultValue.test_file_2).toEqual(expectedPresignedPostData)
+      expect(actualResultValue).toEqual(
+        expect.objectContaining({
+          test_file_1: expectedPresignedPostData,
+          test_file_2: expectedPresignedPostData,
+        }),
+      )
+    })
+
+    it('should return Error when aws.s3.createPresignedPost throws error', async () => {
+      // Arrange
+      const awsSpy = jest
+        .spyOn(aws.s3, 'createPresignedPost')
+        .mockImplementationOnce(() => {
+          throw new Error('some error')
+        })
+
+      // Act
+      const actualResult = getPutQuarantinePresignedUrls(MOCK_ATTACHMENT_SIZES)
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(awsSpy).toHaveBeenCalledTimes(1)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new CreatePresignedPostError(),
+      )
+      expect(awsSpy).toHaveBeenCalledWith({
+        Bucket: AwsConfig.virusScannerQuarantineS3Bucket,
+        Fields: { key: expect.stringMatching(REGEX_UUID) },
+        Expires: 5 * 60, // expires in 5 minutes
+        Conditions: [['content-length-range', 0, 1]],
+      })
     })
   })
 })

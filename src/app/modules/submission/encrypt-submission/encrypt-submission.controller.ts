@@ -998,9 +998,12 @@ export const handleGetMetadata = [
 
 export const handleGetS3PresignedUrl: ControllerHandler<
   unknown,
-  Record<string, S3.PresignedPost>,
+  Record<string, S3.PresignedPost> | ErrorDto,
   Record<string, number>
 > = async (req, res) => {
-  const presignedUrls = getPutQuarantinePresignedUrls(req.body)
-  return res.json(presignedUrls)
+  return getPutQuarantinePresignedUrls(req.body)
+    .map((presignedUrls) => res.json(presignedUrls))
+    .mapErr(() =>
+      res.status(StatusCodes.BAD_REQUEST).send({ message: 'error' }),
+    )
 }
