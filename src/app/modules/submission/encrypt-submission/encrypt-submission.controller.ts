@@ -59,7 +59,7 @@ import {
   addPaymentDataStream,
   checkFormIsEncryptMode,
   getEncryptedSubmissionData,
-  getPutQuarantinePresignedUrls,
+  getQuarantinePresignedPostData,
   getSubmissionCursor,
   getSubmissionMetadata,
   getSubmissionMetadataList,
@@ -996,12 +996,12 @@ export const handleGetMetadata = [
   getMetadata,
 ] as ControllerHandler[]
 
-export const handleGetS3PresignedUrl: ControllerHandler<
+export const handleGetS3PresignedPostData: ControllerHandler<
   unknown,
   Record<string, S3.PresignedPost> | ErrorDto,
   Record<string, number>
 > = async (req, res) => {
-  return getPutQuarantinePresignedUrls(req.body)
+  return getQuarantinePresignedPostData(req.body)
     .map((presignedUrls) => res.json(presignedUrls))
     .mapErr(() =>
       res.status(StatusCodes.BAD_REQUEST).send({ message: 'error' }),

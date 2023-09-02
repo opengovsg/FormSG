@@ -532,7 +532,7 @@ export const performEncryptPostSubmissionActions = (
     })
 }
 
-export const getPutQuarantinePresignedUrls = (
+export const getQuarantinePresignedPostData = (
   attachmentSizes: Record<string, number>,
 ): Result<Record<string, PresignedPost>, unknown> => {
   const attachmentPresignedData: Record<string, PresignedPost> = {}

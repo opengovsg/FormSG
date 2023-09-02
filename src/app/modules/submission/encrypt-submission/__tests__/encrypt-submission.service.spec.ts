@@ -34,7 +34,7 @@ import {
   addPaymentDataStream,
   createEncryptSubmissionWithoutSave,
   getEncryptedSubmissionData,
-  getPutQuarantinePresignedUrls,
+  getQuarantinePresignedPostData,
   getSubmissionCursor,
   getSubmissionMetadata,
   getSubmissionMetadataList,
@@ -1053,7 +1053,7 @@ describe('encrypt-submission.service', () => {
       })
 
       // Act
-      const actualResult = getPutQuarantinePresignedUrls(MOCK_ATTACHMENT_SIZES)
+      const actualResult = getQuarantinePresignedPostData(MOCK_ATTACHMENT_SIZES)
 
       // Assert
       expect(actualResult.isOk()).toEqual(true)
@@ -1092,7 +1092,7 @@ describe('encrypt-submission.service', () => {
         })
 
       // Act
-      const actualResult = getPutQuarantinePresignedUrls(MOCK_ATTACHMENT_SIZES)
+      const actualResult = getQuarantinePresignedPostData(MOCK_ATTACHMENT_SIZES)
 
       // Assert
       expect(actualResult.isErr()).toEqual(true)
