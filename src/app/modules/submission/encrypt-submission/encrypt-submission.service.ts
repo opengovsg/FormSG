@@ -50,7 +50,10 @@ import {
 import { sendEmailConfirmations } from '../submission.service'
 import { extractEmailConfirmationData } from '../submission.utils'
 
-import { CreatePresignedPostError } from './encrypt-submission.errors'
+import {
+  CreatePresignedPostError,
+  InvalidFieldIdError,
+} from './encrypt-submission.errors'
 import {
   AttachmentMetadata,
   SaveEncryptSubmissionParams,
@@ -538,6 +541,7 @@ export const getQuarantinePresignedPostData = (
   const attachmentPresignedData: Record<string, PresignedPost> = {}
   try {
     for (const [id, contentLength] of Object.entries(attachmentSizes)) {
+      if (!mongoose.isValidObjectId(id)) return err(new InvalidFieldIdError())
       const presignedPostData = AwsConfig.s3.createPresignedPost({
         Bucket: AwsConfig.virusScannerQuarantineS3Bucket,
         Fields: { key: crypto.randomUUID() },
