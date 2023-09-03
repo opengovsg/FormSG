@@ -67,7 +67,7 @@ PublicFormsSubmissionsRouter.route(
 )
 
 PublicFormsSubmissionsRouter.route(
-  '/:formId([a-fA-F0-9]{24})/submissions/storage/presigned-post-data',
+  '/:formId([a-fA-F0-9]{24})/submissions/storage/get-s3-presigned-post-data',
 ).post(
   limitRate({ max: rateLimitConfig.submissions }),
   EncryptSubmissionController.handleGetS3PresignedPostData,
