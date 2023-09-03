@@ -537,7 +537,10 @@ export const performEncryptPostSubmissionActions = (
 
 export const getQuarantinePresignedPostData = (
   attachmentSizes: Record<string, number>,
-): Result<Record<string, PresignedPost>, unknown> => {
+): Result<
+  Record<string, PresignedPost>,
+  InvalidFieldIdError | CreatePresignedPostError
+> => {
   const attachmentPresignedData: Record<string, PresignedPost> = {}
   try {
     for (const [id, contentLength] of Object.entries(attachmentSizes)) {

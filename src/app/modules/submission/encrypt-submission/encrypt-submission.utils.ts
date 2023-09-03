@@ -70,7 +70,11 @@ import {
   ValidateFieldError,
 } from '../submission.errors'
 
-import { SubmissionFailedError } from './encrypt-submission.errors'
+import {
+  CreatePresignedPostError,
+  InvalidFieldIdError,
+  SubmissionFailedError,
+} from './encrypt-submission.errors'
 
 const logger = createLoggerWithLabel(module)
 
@@ -218,8 +222,14 @@ const errorMapper: MapRouteError = (
         errorMessage: error.message,
       }
     case SubmissionFailedError:
+    case InvalidFieldIdError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
+    case CreatePresignedPostError:
+      return {
+        statusCode: StatusCodes.BAD_GATEWAY,
         errorMessage: error.message,
       }
     default:
