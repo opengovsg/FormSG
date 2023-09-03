@@ -1106,7 +1106,7 @@ describe('encrypt-submission.service', () => {
       expect(awsSpy).toHaveBeenCalledWith({
         Bucket: AwsConfig.virusScannerQuarantineS3Bucket,
         Fields: { key: expect.stringMatching(REGEX_UUID) },
-        Expires: 5 * 60, // expires in 5 minutes
+        Expires: 1 * 60, // expires in 1 minutes
         Conditions: [['content-length-range', 0, 1]],
       })
     })
