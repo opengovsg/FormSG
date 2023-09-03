@@ -34,7 +34,7 @@ type ResponseModeFilterParam = {
   fieldType: BasicField
 }
 
-const mbMultiplier = 1000000
+const MB_MULTIPLIER = 1000000
 
 /**
  * Returns the file size limit in MB based on whether request is an email-mode submission
@@ -227,6 +227,10 @@ export const getInvalidFileExtensions = (
   return Promise.all(promises).then((results) => flattenDeep(results))
 }
 
+export const fileSizeLimitBytes = (responseMode: FormResponseMode) => {
+  return MB_MULTIPLIER * fileSizeLimit(responseMode)
+}
+
 /**
  * Checks whether the total size of attachments exceeds 7MB
  * @param attachments List of attachments
@@ -238,7 +242,7 @@ export const areAttachmentsMoreThanLimit = (
 ): boolean => {
   // Check if total attachments size is < 7mb
   const totalAttachmentSize = sumBy(attachments, (a) => a.content.byteLength)
-  return totalAttachmentSize > mbMultiplier * fileSizeLimit(responseMode)
+  return totalAttachmentSize > fileSizeLimitBytes(responseMode)
 }
 
 /**

@@ -1,5 +1,4 @@
 import JoiDate from '@joi/date'
-import { S3 } from 'aws-sdk'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
@@ -12,6 +11,7 @@ import { featureFlags } from '../../../../../shared/constants'
 import {
   ErrorDto,
   FormAuthType,
+  FormResponseMode,
   FormSubmissionMetadataQueryDto,
   Payment,
   PaymentChannel,
@@ -47,6 +47,7 @@ import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
+import { fileSizeLimitBytes } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import {
@@ -70,6 +71,8 @@ import {
   uploadAttachments,
 } from './encrypt-submission.service'
 import {
+  AttachmentPresignedPostDataMapType,
+  AttachmentSizeMapType,
   SubmitEncryptModeFormHandlerRequest,
   SubmitEncryptModeFormHandlerType,
 } from './encrypt-submission.types'
@@ -996,10 +999,10 @@ export const handleGetMetadata = [
   getMetadata,
 ] as ControllerHandler[]
 
-export const handleGetS3PresignedPostData: ControllerHandler<
+export const getS3PresignedPostData: ControllerHandler<
   unknown,
-  Record<string, S3.PresignedPost> | ErrorDto,
-  Record<string, number>
+  AttachmentPresignedPostDataMapType[] | ErrorDto,
+  AttachmentSizeMapType[]
 > = async (req, res) => {
   const logMeta = {
     action: 'handleGetS3PresignedPostData',
@@ -1026,3 +1029,22 @@ export const handleGetS3PresignedPostData: ControllerHandler<
       })
     })
 }
+
+// Handler for POST /:formId/submissions/storage/get-s3-presigned-post-data
+export const handleGetS3PresignedPostData = [
+  celebrate({
+    [Segments.BODY]: Joi.array()
+      .items(
+        Joi.object().keys({
+          id: Joi.string()
+            .regex(/^[0-9a-fA-F]{24}$/) // IDs should be MongoDB ObjectIDs
+            .required(),
+          size: Joi.number()
+            .max(fileSizeLimitBytes(FormResponseMode.Encrypt)) // Max attachment size is 20MB
+            .required(),
+        }),
+      )
+      .unique('id'), // IDs of each array item should be unique
+  }),
+  getS3PresignedPostData,
+] as ControllerHandler[]

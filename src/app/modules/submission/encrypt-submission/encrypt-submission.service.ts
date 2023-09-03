@@ -1,4 +1,4 @@
-import { ManagedUpload, PresignedPost } from 'aws-sdk/clients/s3'
+import { ManagedUpload } from 'aws-sdk/clients/s3'
 import Bluebird from 'bluebird'
 import crypto from 'crypto'
 import moment from 'moment'
@@ -48,14 +48,20 @@ import {
   SubmissionNotFoundError,
 } from '../submission.errors'
 import { sendEmailConfirmations } from '../submission.service'
-import { extractEmailConfirmationData } from '../submission.utils'
+import {
+  extractEmailConfirmationData,
+  fileSizeLimitBytes,
+} from '../submission.utils'
 
 import {
+  AttachmentSizeLimitExceededError,
   CreatePresignedPostError,
   InvalidFieldIdError,
 } from './encrypt-submission.errors'
 import {
   AttachmentMetadata,
+  AttachmentPresignedPostDataMapType,
+  AttachmentSizeMapType,
   SaveEncryptSubmissionParams,
 } from './encrypt-submission.types'
 
@@ -536,22 +542,27 @@ export const performEncryptPostSubmissionActions = (
 }
 
 export const getQuarantinePresignedPostData = (
-  attachmentSizes: Record<string, number>,
+  attachmentSizes: AttachmentSizeMapType[],
 ): Result<
-  Record<string, PresignedPost>,
+  AttachmentPresignedPostDataMapType[],
   InvalidFieldIdError | CreatePresignedPostError
 > => {
-  const attachmentPresignedData: Record<string, PresignedPost> = {}
+  const attachmentPresignedData: AttachmentPresignedPostDataMapType[] = []
+  const totalAttachmentSizeLimit = fileSizeLimitBytes(FormResponseMode.Encrypt)
+  let totalAttachmentSize = 0
   try {
-    for (const [id, contentLength] of Object.entries(attachmentSizes)) {
+    for (const { id, size } of attachmentSizes) {
       if (!mongoose.isValidObjectId(id)) return err(new InvalidFieldIdError())
+      totalAttachmentSize += size
+      if (totalAttachmentSize > totalAttachmentSizeLimit)
+        return err(new AttachmentSizeLimitExceededError())
       const presignedPostData = AwsConfig.s3.createPresignedPost({
         Bucket: AwsConfig.virusScannerQuarantineS3Bucket,
         Fields: { key: crypto.randomUUID() },
         Expires: 1 * 60, // expires in 1 minutes
-        Conditions: [['content-length-range', 0, contentLength]],
+        Conditions: [['content-length-range', 0, size]],
       })
-      attachmentPresignedData[id] = presignedPostData
+      attachmentPresignedData.push({ id, presignedPostData })
     }
     return ok(attachmentPresignedData)
   } catch (error) {

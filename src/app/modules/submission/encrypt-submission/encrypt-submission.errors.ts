@@ -1,4 +1,6 @@
+import { FormResponseMode } from '../../../../../shared/types'
 import { ApplicationError } from '../../core/core.errors'
+import { fileSizeLimit } from '../submission.utils'
 
 export class FormsgReqBodyExistsError extends ApplicationError {
   constructor(
@@ -35,6 +37,16 @@ export class CreatePresignedPostError extends ApplicationError {
 export class InvalidFieldIdError extends ApplicationError {
   constructor(
     message = 'Invalid field id. Field id should be a valid MongoDB ObjectId.',
+  ) {
+    super(message)
+  }
+}
+
+export class AttachmentSizeLimitExceededError extends ApplicationError {
+  constructor(
+    message = `Total attachment size exceeds ${fileSizeLimit(
+      FormResponseMode.Encrypt,
+    )}MB. Please reduce your total attachment size and try again.`,
   ) {
     super(message)
   }

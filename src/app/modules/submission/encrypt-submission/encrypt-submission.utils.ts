@@ -71,6 +71,7 @@ import {
 } from '../submission.errors'
 
 import {
+  AttachmentSizeLimitExceededError,
   CreatePresignedPostError,
   InvalidFieldIdError,
   SubmissionFailedError,
@@ -223,6 +224,7 @@ const errorMapper: MapRouteError = (
       }
     case SubmissionFailedError:
     case InvalidFieldIdError:
+    case AttachmentSizeLimitExceededError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
