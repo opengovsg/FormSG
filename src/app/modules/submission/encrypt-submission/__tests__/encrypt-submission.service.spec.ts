@@ -30,6 +30,7 @@ import { aws as AwsConfig } from '../../../../config/config'
 import * as PaymentsService from '../../../payments/payments.service'
 import { SubmissionNotFoundError } from '../../submission.errors'
 import {
+  AttachmentSizeLimitExceededError,
   CreatePresignedPostError,
   InvalidFieldIdError,
 } from '../encrypt-submission.errors'
@@ -1030,12 +1031,12 @@ describe('encrypt-submission.service', () => {
   })
 
   describe('getPutQuarantinePresignedUrls', () => {
-    const fieldId1 = new mongoose.Types.ObjectId() as unknown as string
-    const fieldId2 = new mongoose.Types.ObjectId() as unknown as string
-    const MOCK_ATTACHMENT_SIZES = {
-      [fieldId1]: 1,
-      [fieldId2]: 2,
-    }
+    const fieldId1 = new mongoose.Types.ObjectId()
+    const fieldId2 = new mongoose.Types.ObjectId()
+    const MOCK_ATTACHMENT_SIZES = [
+      { id: fieldId1, size: 1 },
+      { id: fieldId2, size: 2 },
+    ]
 
     const REGEX_UUID =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -1079,10 +1080,10 @@ describe('encrypt-submission.service', () => {
       ])
       const actualResultValue = actualResult._unsafeUnwrap()
       expect(actualResultValue).toEqual(
-        expect.objectContaining({
-          [fieldId1]: expectedPresignedPostData,
-          [fieldId2]: expectedPresignedPostData,
-        }),
+        expect.objectContaining([
+          { id: fieldId1, presignedPostData: expectedPresignedPostData },
+          { id: fieldId2, presignedPostData: expectedPresignedPostData },
+        ]),
       )
     })
 
@@ -1111,17 +1112,37 @@ describe('encrypt-submission.service', () => {
       })
     })
 
-    it('should return InvalidFieldIdError keys are not valid mongodb object ids', async () => {
+    it('should return InvalidFieldIdError when ids are not valid mongodb object ids', async () => {
       // Arrange
       const awsSpy = jest.spyOn(aws.s3, 'createPresignedPost')
 
       // Act
-      const actualResult = getQuarantinePresignedPostData({ test_file_1: 1 })
+      const actualResult = getQuarantinePresignedPostData([
+        { id: 'test_file_1' as unknown as ObjectId, size: 1 },
+      ])
 
       // Assert
       expect(actualResult.isErr()).toEqual(true)
       expect(awsSpy).not.toHaveBeenCalled()
       expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidFieldIdError())
+    })
+
+    it('should return AttachmentSizeLimitExceededError when total attachment size has exceeded 20MB', async () => {
+      // Arrange
+      const awsSpy = jest.spyOn(aws.s3, 'createPresignedPost')
+
+      // Act
+      const actualResult = getQuarantinePresignedPostData([
+        { id: fieldId1, size: 2 },
+        { id: fieldId2, size: 19999999 },
+      ])
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(awsSpy).toHaveBeenCalledTimes(1)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new AttachmentSizeLimitExceededError(),
+      )
     })
   })
 })
