@@ -1046,7 +1046,7 @@ describe('encrypt-submission.service', () => {
       const expectedCalledWithSubset = {
         Bucket: AwsConfig.virusScannerQuarantineS3Bucket,
         Fields: { key: expect.stringMatching(REGEX_UUID) },
-        Expires: 5 * 60, // expires in 5 minutes
+        Expires: 1 * 60, // expires in 1 minutes
       }
       const expectedPresignedPostData = expect.objectContaining({
         url: `${AwsConfig.endPoint}/${AwsConfig.virusScannerQuarantineS3Bucket}`,

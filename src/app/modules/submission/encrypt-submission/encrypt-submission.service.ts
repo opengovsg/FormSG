@@ -545,7 +545,7 @@ export const getQuarantinePresignedPostData = (
       const presignedPostData = AwsConfig.s3.createPresignedPost({
         Bucket: AwsConfig.virusScannerQuarantineS3Bucket,
         Fields: { key: crypto.randomUUID() },
-        Expires: 5 * 60, // expires in 5 minutes
+        Expires: 1 * 60, // expires in 1 minutes
         Conditions: [['content-length-range', 0, contentLength]],
       })
       attachmentPresignedData[id] = presignedPostData
