@@ -2,6 +2,7 @@ import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { ObjectId } from 'bson'
 import { StatusCodes } from 'http-status-codes'
+import moment from 'moment-timezone'
 import mongoose from 'mongoose'
 import { PaymentStatus } from 'shared/types'
 
@@ -41,6 +42,7 @@ describe('payments.controller', () => {
         email: email,
         completedPayment: {
           receiptUrl: 'http://form.gov.sg',
+          paymentDate: new Date(),
         },
         gstEnabled: false,
       })
@@ -60,6 +62,87 @@ describe('payments.controller', () => {
       )
       expect(mockRes.status).toHaveBeenCalledWith(200)
       expect(mockRes.send).toHaveBeenCalledOnce()
+    })
+    it('should return 200 and the latest payment record id if there are multiple successful payments', async () => {
+      const email = 'formsg@tech.gov.sg'
+      const now = moment().utc()
+
+      // create 2 payments with different payment dates but same email
+      const latestPayment = await Payment.create({
+        formId: MOCK_FORM_ID,
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
+        pendingSubmissionId: new ObjectId(),
+        amount: 12345,
+        status: PaymentStatus.Succeeded,
+        paymentIntentId: 'pi_MOCK_PAYMENT_INTENT',
+        email: email,
+        completedPayment: {
+          receiptUrl: 'http://form.gov.sg',
+          paymentDate: now.toDate(),
+        },
+        gstEnabled: false,
+      })
+      await Payment.create({
+        formId: MOCK_FORM_ID,
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
+        pendingSubmissionId: new ObjectId(),
+        amount: 12345,
+        status: PaymentStatus.Succeeded,
+        paymentIntentId: 'pi_MOCK_PAYMENT_INTENT',
+        email: email,
+        completedPayment: {
+          receiptUrl: 'http://form.gov.sg',
+          paymentDate: now.subtract(1, 'hour').toDate(),
+        },
+        gstEnabled: false,
+      })
+
+      const mockReq = expressHandler.mockRequest({
+        params: { formId: MOCK_FORM_ID },
+        body: { email },
+      })
+
+      const mockRes = expressHandler.mockResponse()
+
+      await PaymentsController.handleGetPreviousPaymentId(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.send).toHaveBeenCalledWith(latestPayment._id)
+    })
+    it('should return 404 if there are no successful payments made within the alst 30 days', async () => {
+      const email = 'formsg@tech.gov.sg'
+
+      await Payment.create({
+        formId: MOCK_FORM_ID,
+        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
+        pendingSubmissionId: new ObjectId(),
+        amount: 12345,
+        status: PaymentStatus.Succeeded,
+        paymentIntentId: 'pi_MOCK_PAYMENT_INTENT',
+        email: email,
+        completedPayment: {
+          receiptUrl: 'http://form.gov.sg',
+          paymentDate: moment().subtract(31, 'days').toDate(),
+        },
+        gstEnabled: false,
+      })
+
+      const mockReq = expressHandler.mockRequest({
+        params: { formId: MOCK_FORM_ID },
+        body: { email },
+      })
+
+      const mockRes = expressHandler.mockResponse()
+
+      await PaymentsController.handleGetPreviousPaymentId(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+      expect(mockRes.sendStatus).toHaveBeenCalledWith(404)
     })
     it('should return 404 if there are no previous payments by the specific email', async () => {
       const payment = await Payment.create({
