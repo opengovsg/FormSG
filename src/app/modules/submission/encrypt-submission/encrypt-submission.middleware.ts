@@ -322,6 +322,9 @@ export const encryptSubmission = async (
     responses: filteredResponses.value as EncryptFormFieldResponse[],
     encryptedContent,
     version: req.body.version,
+    paymentProducts: req.body.paymentProducts,
+    paymentReceiptEmail: req.body.paymentReceiptEmail,
+    payments: req.body.payments,
   }
 
   return next()
