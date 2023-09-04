@@ -15,12 +15,15 @@ import {
   PublicApiConfig,
 } from '../../types'
 
+import { createLoggerWithLabel } from './logger'
 import {
   compulsoryVarsSchema,
   loadS3BucketUrlSchema,
   optionalVarsSchema,
   prodOnlyVarsSchema,
 } from './schema'
+
+const logger = createLoggerWithLabel(module)
 
 // Load and validate optional configuration values
 // If environment variables are not present, defaults are loaded
@@ -189,10 +192,23 @@ const configureAws = async () => {
   if (!isDev) {
     const getCredentials = () => {
       return new Promise<void>((resolve, reject) => {
-        aws.config.getCredentials((err) => {
-          if (err) {
-            reject(err)
+        aws.config.getCredentials((error) => {
+          if (error) {
+            logger.error({
+              message: 'Error while configuring AWS credentials',
+              meta: {
+                action: 'aws.config.getCredentials',
+              },
+              error,
+            })
+            reject(error)
           } else {
+            logger.info({
+              message: 'Successfully retrieved AWS credentials',
+              meta: {
+                action: 'aws.config.getCredentials',
+              },
+            })
             resolve()
           }
         })
@@ -200,10 +216,24 @@ const configureAws = async () => {
     }
     await getCredentials()
     if (!aws.config.credentials?.accessKeyId) {
-      throw new Error(`AWS Access Key Id is missing`)
+      const errorMessage = 'AWS Access Key Id is missing'
+      logger.error({
+        message: errorMessage,
+        meta: {
+          action: 'aws.config.getCredentials',
+        },
+      })
+      throw new Error(errorMessage)
     }
     if (!aws.config.credentials?.secretAccessKey) {
-      throw new Error(`AWS Secret Access Key is missing`)
+      const errorMessage = 'AWS Secret Access Key is missing'
+      logger.error({
+        message: errorMessage,
+        meta: {
+          action: 'aws.config.getCredentials',
+        },
+      })
+      throw new Error(errorMessage)
     }
   }
 }
