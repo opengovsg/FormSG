@@ -12,7 +12,17 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
 
 import {
+  myInfoCountries,
+  myInfoDialects,
+  myInfoHdbTypes,
+  myInfoHousingTypes,
+  myInfoNationalities,
+  myInfoOccupations,
+  myInfoRaces,
+} from '../../../../shared/constants/field/myinfo'
+import {
   MyInfoAttribute as InternalAttr,
+  MyInfoAttribute,
   MyInfoChildData,
 } from '../../../../shared/types'
 import {
@@ -270,6 +280,59 @@ export class MyInfoServiceClass {
       const { fieldValue, isReadOnly } = myInfoData.getFieldValueForAttr(
         myInfoAttr as InternalAttr,
       )
+
+      const isFieldValueInMyinfoListCheck = (
+        fieldValue: string,
+        myInfoAttr: string | string[],
+        myInfoList: string[],
+      ) => {
+        const isFieldValueInMyinfoList = myInfoList.includes(fieldValue)
+        if (!isFieldValueInMyinfoList) {
+          logger.error({
+            message: 'Myinfo field value not found in existing list',
+            meta: {
+              action: 'prefillAndSaveMyInfoFields',
+              myInfoFieldValue: fieldValue,
+              myInfoAttr,
+            },
+          })
+        }
+      }
+
+      if (fieldValue) {
+        if (myInfoAttr === MyInfoAttribute.Occupation) {
+          isFieldValueInMyinfoListCheck(
+            fieldValue,
+            myInfoAttr,
+            myInfoOccupations,
+          )
+        } else if (
+          myInfoAttr === MyInfoAttribute.Race ||
+          myInfoAttr === MyInfoAttribute.ChildRace ||
+          myInfoAttr === MyInfoAttribute.ChildSecondaryRace
+        ) {
+          isFieldValueInMyinfoListCheck(fieldValue, myInfoAttr, myInfoRaces)
+        } else if (myInfoAttr === MyInfoAttribute.Nationality) {
+          isFieldValueInMyinfoListCheck(
+            fieldValue,
+            myInfoAttr,
+            myInfoNationalities,
+          )
+        } else if (myInfoAttr === MyInfoAttribute.Dialect) {
+          isFieldValueInMyinfoListCheck(fieldValue, myInfoAttr, myInfoDialects)
+        } else if (myInfoAttr === MyInfoAttribute.BirthCountry) {
+          isFieldValueInMyinfoListCheck(fieldValue, myInfoAttr, myInfoCountries)
+        } else if (myInfoAttr === MyInfoAttribute.HousingType) {
+          isFieldValueInMyinfoListCheck(
+            fieldValue,
+            myInfoAttr,
+            myInfoHousingTypes,
+          )
+        } else if (myInfoAttr === MyInfoAttribute.HdbType) {
+          isFieldValueInMyinfoListCheck(fieldValue, myInfoAttr, myInfoHdbTypes)
+        }
+      }
+
       const prefilledField = cloneDeep(field) as PossiblyPrefilledField
       prefilledField.fieldValue = fieldValue
       // Disable field
