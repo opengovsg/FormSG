@@ -3,6 +3,8 @@ import type { Merge } from 'type-fest'
 import {
   AttachmentResponse,
   FieldResponse,
+  PaymentFieldsDto,
+  ProductItem,
   StorageModeSubmissionContentDto,
 } from '../../../shared/types'
 import { IPopulatedEncryptedForm, IPopulatedForm } from '../form'
@@ -28,10 +30,14 @@ export type EncryptFormFieldResponse =
  * ReceiverMiddleware.receiveStorageSubmission middleware.
  */
 export type ParsedStorageModeSubmissionBody = ParsedEmailModeSubmissionBody & {
+  paymentProducts?: Array<ProductItem>
+  paymentReceiptEmail?: string
+  payments?: PaymentFieldsDto
   version: number
 }
 
 export type FormLoadedDto = {
+  featureFlags: string[]
   formDef: IPopulatedForm
   encryptedFormDef: IPopulatedEncryptedForm
 }

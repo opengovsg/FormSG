@@ -18,6 +18,8 @@ import {
   submitFormFeedback,
   submitFormIssue,
   SubmitStorageFormArgs,
+  submitStorageModeClearForm,
+  submitStorageModeClearFormWithFetch,
   submitStorageModeForm,
   submitStorageModeFormWithFetch,
 } from './PublicFormService'
@@ -80,6 +82,12 @@ export const usePublicFormMutations = (
     },
   )
 
+  const submitStorageModeClearFormMutation = useMutation(
+    (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
+      return submitStorageModeClearForm({ ...args, formId })
+    },
+  )
+
   // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
   const submitEmailModeFormFetchMutation = useMutation(
     (args: Omit<SubmitEmailFormArgs, 'formId'>) => {
@@ -90,6 +98,12 @@ export const usePublicFormMutations = (
   const submitStorageModeFormFetchMutation = useMutation(
     (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
       return submitStorageModeFormWithFetch({ ...args, formId })
+    },
+  )
+
+  const submitStorageModeClearFormFetchMutation = useMutation(
+    (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
+      return submitStorageModeClearFormWithFetch({ ...args, formId })
     },
   )
 
@@ -109,6 +123,8 @@ export const usePublicFormMutations = (
     submitFormFeedbackMutation,
     submitStorageModeFormFetchMutation,
     submitEmailModeFormFetchMutation,
+    submitStorageModeClearFormMutation,
+    submitStorageModeClearFormFetchMutation,
   }
 }
 

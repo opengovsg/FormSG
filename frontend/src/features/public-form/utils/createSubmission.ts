@@ -77,21 +77,42 @@ export const createEncryptedSubmissionData = async ({
   }
 }
 
+type CreateEmailSubmissionFormDataArgs = {
+  formFields: FormFieldDto[]
+  formInputs: FormFieldValues
+  responseMetadata?: ResponseMetadata
+}
+
+type CreateStorageSubmissionFormDataArgs = CreateEmailSubmissionFormDataArgs & {
+  paymentReceiptEmail?: string
+  paymentProducts?: ProductItem[]
+  payments?: PaymentFieldsDto
+  version: number
+}
+
 /**
+ * Used for both Email mode submissions and Storage mode submissions after encryption boundary shift.
  * @returns formData containing form responses and attachments.
  * @throws Error if form inputs are invalid.
  */
-export const createEmailSubmissionFormData = (
-  formFields: FormFieldDto[],
-  formInputs: FormFieldValues,
-  responseMetadata?: ResponseMetadata,
+export const createClearSubmissionFormData = (
+  formDataArgs:
+    | CreateEmailSubmissionFormDataArgs
+    | CreateStorageSubmissionFormDataArgs,
 ) => {
+  const { formFields, formInputs, ...formDataArgsRest } = formDataArgs
   const responses = createResponsesArray(formFields, formInputs)
   const attachments = getAttachmentsMap(formFields, formInputs)
 
   // Convert content to FormData object.
   const formData = new FormData()
-  formData.append('body', JSON.stringify({ responses, responseMetadata }))
+  formData.append(
+    'body',
+    JSON.stringify({
+      responses,
+      ...formDataArgsRest,
+    }),
+  )
 
   if (!isEmpty(attachments)) {
     forOwn(attachments, (attachment, fieldId) => {

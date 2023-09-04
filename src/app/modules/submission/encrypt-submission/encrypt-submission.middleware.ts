@@ -4,6 +4,7 @@ import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { chain, omit } from 'lodash'
 
+import { featureFlags } from '../../../../../shared/constants'
 import {
   BasicField,
   StorageModeAttachment,
@@ -14,6 +15,7 @@ import { paymentConfig } from '../../../config/features/payment.config'
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
+import * as FeatureFlagService from '../../feature-flags/feature-flags.service'
 import { JoiPaymentProduct } from '../../form/admin-form/admin-form.payments.constants'
 import * as FormService from '../../form/form.service'
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
@@ -117,6 +119,21 @@ export const validateEncryptSubmissionParams = celebrate({
 export const validateStorageSubmissionParams = celebrate({
   [Segments.BODY]: Joi.object({
     ...sharedSubmissionParams,
+    paymentProducts: Joi.array().items(
+      Joi.object().keys({
+        data: JoiPaymentProduct.required(),
+        selected: Joi.boolean(),
+        quantity: JoiInt.positive().required(),
+      }),
+    ),
+    paymentReceiptEmail: Joi.string(),
+    payments: Joi.object({
+      amount_cents: Joi.number()
+        .integer()
+        .positive()
+        .min(paymentConfig.minPaymentAmountCents)
+        .max(paymentConfig.maxPaymentAmountCents),
+    }),
     version: Joi.number().required(),
   }),
 })
@@ -130,9 +147,10 @@ export const checkNewBoundaryEnabled = async (
   res: Parameters<StorageSubmissionMiddlewareHandlerType>[1],
   next: NextFunction,
 ) => {
-  const formDef = req.formsg.formDef
-
-  if (!formDef.encryptionBoundaryShift) {
+  const newBoundaryEnabled = req.formsg.featureFlags.includes(
+    featureFlags.encryptionBoundaryShift,
+  )
+  if (!newBoundaryEnabled) {
     return res
       .status(StatusCodes.FORBIDDEN)
       .json({ message: 'This endpoint has not been enabled for this form.' })
@@ -160,7 +178,11 @@ export const validateSubmission = async (
     formDef.responseMode,
   )
     .andThen(() =>
-      ParsedResponsesObject.parseResponses(formDef, req.body.responses),
+      ParsedResponsesObject.parseResponses(
+        formDef,
+        req.body.responses,
+        req.formsg.featureFlags.includes(featureFlags.encryptionBoundaryShift),
+      ),
     )
     .map(() => next())
     .mapErr((error) => {
@@ -265,6 +287,7 @@ export const encryptSubmission = async (
   const filteredResponses = getFilteredResponses(
     encryptedFormDef,
     req.body.responses,
+    req.formsg.featureFlags.includes(featureFlags.encryptionBoundaryShift),
   )
 
   if (filteredResponses.isErr()) {
@@ -299,6 +322,9 @@ export const encryptSubmission = async (
     responses: filteredResponses.value as EncryptFormFieldResponse[],
     encryptedContent,
     version: req.body.version,
+    paymentProducts: req.body.paymentProducts,
+    paymentReceiptEmail: req.body.paymentReceiptEmail,
+    payments: req.body.payments,
   }
 
   return next()
@@ -338,7 +364,20 @@ export const createFormsgAndRetrieveForm = async (
   if (req.formsg) return res.send(new FormsgReqBodyExistsError())
   const formsg = {} as FormLoadedDto
 
-  // Step 2a: Retrieve form
+  // Step 2: Retrieve feature flags
+  const featureFlagsListResult = await FeatureFlagService.getEnabledFlags()
+
+  if (featureFlagsListResult.isErr()) {
+    logger.error({
+      message: 'Error occurred whilst retrieving enabled feature flags',
+      meta: logMeta,
+      error: featureFlagsListResult.error,
+    })
+  } else {
+    formsg.featureFlags = featureFlagsListResult.value
+  }
+
+  // Step 3a: Retrieve form
   const formResult = await FormService.retrieveFullFormById(formId)
   if (formResult.isErr()) {
     logger.warn({
@@ -350,11 +389,11 @@ export const createFormsgAndRetrieveForm = async (
     return res.status(statusCode).json({ message: errorMessage })
   }
 
-  // Step 2b: Set formsg.formDef in req.body
+  // Step 3b: Set formsg.formDef in req.body
   const formDef = formResult.value
   formsg.formDef = formDef
 
-  // Step 3a: Check if form is encrypt mode
+  // Step 4a: Check if form is encrypt mode
   const checkFormIsEncryptModeResult = checkFormIsEncryptMode(formDef)
   if (checkFormIsEncryptModeResult.isErr()) {
     logger.error({
@@ -370,10 +409,10 @@ export const createFormsgAndRetrieveForm = async (
     })
   }
 
-  // Step 3b: Set formsg.encryptedFormDef in req.body
+  // Step 4b: Set formsg.encryptedFormDef in req.body
   formsg.encryptedFormDef = checkFormIsEncryptModeResult.value
 
-  // Step 4: Check if form has public key
+  // Step 5: Check if form has public key
   if (!formDef.publicKey) {
     logger.warn({
       message: 'Form does not have a public key',

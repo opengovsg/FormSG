@@ -178,7 +178,11 @@ const submitEmailModeForm: ControllerHandler<
           form.responseMode,
         )
           .andThen(() =>
-            ParsedResponsesObject.parseResponses(form, req.body.responses),
+            ParsedResponsesObject.parseResponses(
+              form,
+              req.body.responses,
+              false, // email mode submissions do not need to use encryption boundary shift code
+            ),
           )
           .map((parsedResponses) => ({ parsedResponses, form }))
           .mapErr((error) => {

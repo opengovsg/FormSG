@@ -3,8 +3,13 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import querystring from 'querystring'
 import Stripe from 'stripe'
 
+import {
+  DISALLOW_CONNECT_NON_WHITELIST_STRIPE_ACCOUNT,
+  ERROR_QUERY_PARAM_KEY,
+} from '../../../../shared/constants'
 import {
   ErrorDto,
   GetPaymentInfoDto,
@@ -16,6 +21,7 @@ import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
 import { createReqMeta } from '../../utils/request'
+import { InvalidDomainError } from '../auth/auth.errors'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 import * as PendingSubmissionModel from '../pending-submission/pending-submission.service'
@@ -180,6 +186,13 @@ const _handleConnectOauthCallback: ControllerHandler<
           },
           error,
         })
+        if (error.constructor === InvalidDomainError) {
+          const queryString = querystring.stringify({
+            [ERROR_QUERY_PARAM_KEY]:
+              DISALLOW_CONNECT_NON_WHITELIST_STRIPE_ACCOUNT,
+          })
+          return res.redirect(redirectUrl + '?' + queryString)
+        }
         return res.redirect(redirectUrl)
       })
   )
