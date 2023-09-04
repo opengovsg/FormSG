@@ -38,7 +38,7 @@ import {
 } from './encrypt-submission.types'
 import { mapRouteError } from './encrypt-submission.utils'
 
-export const logger = createLoggerWithLabel(module)
+const logger = createLoggerWithLabel(module)
 
 const JoiInt = Joi.number().integer()
 /**

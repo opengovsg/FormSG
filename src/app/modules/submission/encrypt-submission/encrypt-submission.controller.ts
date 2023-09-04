@@ -84,7 +84,7 @@ import {
 } from './encrypt-submission.utils'
 import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
 
-export const logger = createLoggerWithLabel(module)
+const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 const EncryptPendingSubmission = getEncryptPendingSubmissionModel(mongoose)
 const Payment = getPaymentModel(mongoose)
