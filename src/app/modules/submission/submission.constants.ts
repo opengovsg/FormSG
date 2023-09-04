@@ -1,7 +1,6 @@
 import { Joi } from 'celebrate'
 
 import { BasicField } from '../../../../shared/types'
-import { paymentConfig } from '../../config/features/payment.config'
 
 export const sharedSubmissionParams = {
   responses: Joi.array()
@@ -25,14 +24,6 @@ export const sharedSubmissionParams = {
         .with('filename', 'content'), // if filename is present, content must be present
     )
     .required(),
-  paymentReceiptEmail: Joi.string(),
-  payments: Joi.object({
-    amount_cents: Joi.number()
-      .integer()
-      .positive()
-      .min(paymentConfig.minPaymentAmountCents)
-      .max(paymentConfig.maxPaymentAmountCents),
-  }),
   responseMetadata: Joi.object({
     responseTimeMs: Joi.number(),
     numVisibleFields: Joi.number(),

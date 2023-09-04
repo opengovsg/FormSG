@@ -119,6 +119,21 @@ export const validateEncryptSubmissionParams = celebrate({
 export const validateStorageSubmissionParams = celebrate({
   [Segments.BODY]: Joi.object({
     ...sharedSubmissionParams,
+    paymentProducts: Joi.array().items(
+      Joi.object().keys({
+        data: JoiPaymentProduct.required(),
+        selected: Joi.boolean(),
+        quantity: JoiInt.positive().required(),
+      }),
+    ),
+    paymentReceiptEmail: Joi.string(),
+    payments: Joi.object({
+      amount_cents: Joi.number()
+        .integer()
+        .positive()
+        .min(paymentConfig.minPaymentAmountCents)
+        .max(paymentConfig.maxPaymentAmountCents),
+    }),
     version: Joi.number().required(),
   }),
 })
