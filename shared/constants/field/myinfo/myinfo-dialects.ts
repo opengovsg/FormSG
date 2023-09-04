@@ -1,4 +1,4 @@
-const myInfoDialects = [
+export const myInfoDialects = [
   'AKAN',
   'ALBANIAN',
   'AMHARIC',

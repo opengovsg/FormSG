@@ -10,6 +10,16 @@ import DIALECTS from './myinfo-dialects'
 import NATIONALITIES from './myinfo-nationalities'
 import OCCUPATIONS from './myinfo-occupations'
 import RACES from './myinfo-races'
+import HOUSING_TYPES from './myinfo-housing-types'
+import HDB_TYPES from './myinfo-hdb-types'
+
+export * from './myinfo-countries'
+export * from './myinfo-dialects'
+export * from './myinfo-nationalities'
+export * from './myinfo-occupations'
+export * from './myinfo-races'
+export * from './myinfo-hdb-types'
+export * from './myinfo-housing-types'
 
 export type MyInfoVerifiedType = 'SG' | 'PR' | 'F'
 
@@ -131,14 +141,7 @@ export const types: MyInfoFieldBlock[] = [
     description:
       'The type of housing that the form-filler lives in. This information is verified by HDB for public housing, and by URA for private housing.',
     fieldType: BasicField.Dropdown,
-    fieldOptions: [
-      'APARTMENT',
-      'CONDOMINIUM',
-      'DETACHED HOUSE',
-      'EXECUTIVE CONDOMINIUM',
-      'SEMI-DETACHED HOUSE',
-      'TERRACE HOUSE',
-    ],
+    fieldOptions: HOUSING_TYPES,
     previewValue: 'DETACHED HOUSE',
   },
   {
@@ -149,15 +152,7 @@ export const types: MyInfoFieldBlock[] = [
     source: 'Housing Development Board',
     description: 'The type of HDB flat that the form-filler lives in.',
     fieldType: BasicField.Dropdown,
-    fieldOptions: [
-      '1-ROOM FLAT (HDB)',
-      '2-ROOM FLAT (HDB)',
-      '3-ROOM FLAT (HDB)',
-      '4-ROOM FLAT (HDB)',
-      '5-ROOM FLAT (HDB)',
-      'EXECUTIVE FLAT (HDB)',
-      'STUDIO APARTMENT (HDB)',
-    ],
+    fieldOptions: HDB_TYPES,
     previewValue: 'EXECUTIVE FLAT (HDB)',
   },
   {

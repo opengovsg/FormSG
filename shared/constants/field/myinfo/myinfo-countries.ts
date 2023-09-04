@@ -1,4 +1,4 @@
-const myInfoCountries = [
+export const myInfoCountries = [
   'AFGHANISTAN',
   'ALBANIA',
   'ALGERIA',
