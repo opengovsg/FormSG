@@ -217,6 +217,57 @@ Scripts for common tasks in MongoDB can be found [here](docs/MONGODB.md).
 
 Please contact FormSG (support@form.gov.sg) for any details.
 
+## Database Alternatives
+
+### Migrating from Mongoose ODM to Prisma ORM
+
+Currently our FormSG uses Mongoose as the Object-Document Mapping (ODM) to MongoDB. This means that our code is strongly coupled with MongoDB as Mongoose solely supports it.
+
+In order to use a different database with FormSG we will have to first migrate from Mongoose to other object modelling libraries. One of which is Prisma.
+
+Prisma is an Object-Relational Mapping (ORM) library that can also be used as the object model for MongoDB. Prisma is compatible with various other relational databases like Cockroach DB
+
+Please follow this [guide](https://www.prisma.io/docs/guides/migrate-to-prisma/migrate-from-mongoose#overview-of-the-migration-process) by Prisma to migrate from Mongoose
+
+The guide has 4 primary steps
+
+1. Install Prisma CLI
+2. Introspect the current MongoDB for the data model
+   1. For this section, Prisma’s introspection should be able to create prisma models that will replace our `server.model.ts` for each collection
+   2. Additionally, as Prisma is relational, we could add relations between our various documents. One good relation to add will be `form` many to one `user` on the `[form.email](http://form.email)` field.
+3. Install Prisma Client
+4. Replace Mongoose Queries with Prisma Client
+   1. This step will likely take the most refactoring efforts
+   2. This will include most files in `formsg/src` ending with `service.ts`
+   3. Including test files ending with `service.spec.ts`
+
+#### Replacing MongoDB with CockroachDB
+
+Thereafter, we could set up CockroachDB which is a distributed SQL DB
+
+Please follow the quick start guide by [CockroachDB](https://www.cockroachlabs.com/docs/cockroachcloud/quickstart)
+
+1. To replace the local development instance, you can follow this [guide](https://www.cockroachlabs.com/docs/stable/start-a-local-cluster-in-docker-mac)
+2. As FormSG uses Docker for local development, you will have to replace the `mongoDB` container from `docker-compose.yml` to the `cockroachDB` version in pt 1
+
+Then connect to [CockroachDB](https://www.prisma.io/docs/getting-started/setup-prisma/add-to-existing-project/relational-databases/connect-your-database-typescript-postgresql)
+
+By changing the DB url in `.env` to the one from your CockroachDB `DATABASE_URL="YOUR_COCKROACH_DB_URL"`
+
+1. For local development, if you replaced the DB as per above, you should not need to modify the ports as it will still be hosted on `localhost:27017`
+
+#### Other Prisma supported DBs
+
+You can potentially replace MongoDB with various other relational databases as supported by Prisma in this [list](https://www.prisma.io/docs/reference/database-reference/supported-databases)
+
+### Other potential DB migrations
+
+It is also possible to migrate from Mongoose to [Ottoman](https://ottomanjs.com/), which is another ODM.
+
+The process will be simpler than migrating to Prisma, but Ottoman is more restrictive and can only be used together with Couchbase, which is also a noSQL DB like MongoDB.
+
+You can refer to this [guide](https://www.couchbase.com/blog/migrate-mongodb-mongoose-couchbase-ottoman/) to migrate from Mongoose to Ottoman and then replace MongoDB with Couchbase
+
 ## Acknowledgements
 
 FormSG acknowledges the work done by [Arielle Baldwynn](https://github.com/whitef0x0) to build and maintain [TellForm](https://github.com/tellform), on which FormSG is based.
