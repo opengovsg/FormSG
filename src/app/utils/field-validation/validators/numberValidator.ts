@@ -97,8 +97,8 @@ const rangeValidator: NumberValidatorConstructor =
     const val = Number(response.answer)
     const { customMin, customMax } =
       numberField.ValidationOptions.RangeValidationOptions
-    const isWithinMinimum = !!customMin && customMin <= val
-    const isWithinMaximum = !!customMax && val <= customMax
+    const isWithinMinimum = customMin !== null && customMin <= val
+    const isWithinMaximum = customMax !== null && val <= customMax
 
     return isWithinMinimum && isWithinMaximum
       ? right(response)

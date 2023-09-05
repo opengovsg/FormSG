@@ -34,7 +34,6 @@ const EDIT_NUMBER_FIELD_KEYS = ['title', 'description', 'required'] as const
 enum NumberSelectedValidationInputs {
   Length = 'Number of characters allowed',
   Range = 'Range of values allowed',
-  None = 'None',
 }
 
 type EditNumberInputs = Pick<
@@ -68,7 +67,7 @@ const transformNumberFieldToEditForm = (
       ? NumberSelectedValidationInputs.Length
       : selectedValidation === NumberSelectedValidation.Range
       ? NumberSelectedValidationInputs.Range
-      : NumberSelectedValidationInputs.None
+      : ('' as const)
 
   const nextLengthValidationOptions = {
     selectedLengthValidation:
@@ -206,21 +205,23 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
     () => ({
       validate: {
         // Validate that at least one of customMin/customMax is specified
-        hasRange: (val) => {
+        hasRange: (customMin) => {
           const customMax = getValues(
             'ValidationOptions.RangeValidationOptions.customMax',
           )
-          return customMax !== '' || val !== '' || 'Please enter range values'
+          return (
+            customMax !== '' || customMin !== '' || 'Please enter range values'
+          )
         },
-        hasValidRange: (val) => {
+        hasValidRange: (customMin) => {
           const customMax = getValues(
             'ValidationOptions.RangeValidationOptions.customMax',
           )
 
           return (
             customMax === '' ||
-            val === '' ||
-            val <= customMax ||
+            customMin === '' ||
+            customMin <= customMax ||
             'Minimum must be less than maximum'
           )
         },
@@ -292,9 +293,6 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
         />
         {watchedSelectedValidation === NumberSelectedValidationInputs.Range && (
           <>
-            <FormLabel isRequired mt="0.5rem">
-              Minimum and/or maximum value
-            </FormLabel>
             <SimpleGrid
               mt="0.5rem"
               columns={{ base: 2, md: 1, lg: 2 }}
@@ -340,9 +338,6 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
         {watchedSelectedValidation ===
           NumberSelectedValidationInputs.Length && (
           <>
-            <FormLabel isRequired mt="0.5rem">
-              Number of characters allowed
-            </FormLabel>
             <SimpleGrid
               mt="0.5rem"
               columns={{ base: 2, md: 1, lg: 2 }}
