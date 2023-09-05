@@ -187,14 +187,17 @@ export const validateSubmission = async (
     .map(() => next())
     .mapErr((error) => {
       logger.error({
-        message: 'Error processing responses',
+        message:
+          'Error processing responses, but proceeding with submission as submission have been validated client-side',
         meta: logMeta,
         error,
       })
-      const { statusCode, errorMessage } = mapRouteError(error)
-      return res.status(statusCode).json({
-        message: errorMessage,
-      })
+      // TODO(FRM-1318): Uncomment to harden submission validation after validation has similar error rates as email mode forms.
+      // const { statusCode, errorMessage } = mapRouteError(error)
+      // return res.status(statusCode).json({
+      //   message: errorMessage,
+      // })
+      return next()
     })
 }
 
