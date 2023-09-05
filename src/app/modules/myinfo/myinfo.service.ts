@@ -281,6 +281,7 @@ export class MyInfoServiceClass {
         myInfoAttr as InternalAttr,
       )
 
+      // Add logging to check if Myinfo field value exists in our constants lists
       const isFieldValueInMyinfoListCheck = (
         fieldValue: string,
         myInfoAttr: string | string[],
@@ -299,6 +300,7 @@ export class MyInfoServiceClass {
         }
       }
 
+      // Check if field value exists in our constants lists
       if (fieldValue) {
         if (myInfoAttr === MyInfoAttribute.Occupation) {
           isFieldValueInMyinfoListCheck(
