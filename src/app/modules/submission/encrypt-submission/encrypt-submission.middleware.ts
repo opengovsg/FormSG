@@ -195,7 +195,7 @@ export const validateSubmission = async (
       // TODO(FRM-1318): Set DB flag to true to harden submission validation after validation has similar error rates as email mode forms.
       if (
         req.formsg.featureFlags.includes(
-          featureFlags.encryptionBoundaryShiftValidation,
+          featureFlags.encryptionBoundaryShiftHardValidation,
         )
       ) {
         const { statusCode, errorMessage } = mapRouteError(error)
