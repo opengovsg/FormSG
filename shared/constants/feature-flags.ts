@@ -4,4 +4,6 @@ export const featureFlags = {
   turnstile: 'turnstile' as const,
   validateStripeEmailDomain: 'validateStripeEmailDomain' as const,
   encryptionBoundaryShift: 'encryption-boundary-shift' as const,
+  encryptionBoundaryShiftValidation:
+    'encryption-boundary-shift-validation' as const,
 }
