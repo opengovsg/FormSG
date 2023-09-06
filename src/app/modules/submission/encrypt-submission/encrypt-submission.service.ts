@@ -550,14 +550,6 @@ export const getQuarantinePresignedPostData = (
   const attachmentPresignedData: AttachmentPresignedPostDataMapType[] = []
   const totalAttachmentSizeLimit = fileSizeLimitBytes(FormResponseMode.Encrypt)
   let totalAttachmentSize = 0
-  logger.info({
-    message: 'Creating presigned post data for attachments',
-    meta: {
-      action: 'getQuarantinePresignedPostData',
-      bucket: AwsConfig.virusScannerQuarantineS3Bucket,
-      attachmentSizes,
-    },
-  })
   try {
     for (const { id, size } of attachmentSizes) {
       if (!mongoose.isValidObjectId(id)) return err(new InvalidFieldIdError())
