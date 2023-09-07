@@ -238,7 +238,7 @@ export const ProductServiceBox = ({
         isDisabled={!paymentIsEnabled}
         isRequired
       >
-        <FormLabel>Product/service name</FormLabel>
+        <FormLabel>Product/service</FormLabel>
         <ProductList
           paymentIsEnabled={paymentIsEnabled}
           products={products}
