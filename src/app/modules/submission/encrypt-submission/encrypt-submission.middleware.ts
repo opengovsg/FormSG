@@ -10,7 +10,11 @@ import {
   StorageModeAttachment,
   StorageModeAttachmentsMap,
 } from '../../../../../shared/types'
-import { EncryptFormFieldResponse, FormLoadedDto } from '../../../../types/api'
+import {
+  EncryptAttachmentResponse,
+  EncryptFormFieldResponse,
+  FormLoadedDto,
+} from '../../../../types/api'
 import { paymentConfig } from '../../../config/features/payment.config'
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -21,7 +25,7 @@ import * as FormService from '../../form/form.service'
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import { sharedSubmissionParams } from '../submission.constants'
 import * as SubmissionService from '../submission.service'
-import { getFilteredResponses, isAttachmentResponse } from '../submission.utils'
+import { isAttachmentResponse } from '../submission.utils'
 
 import {
   EncryptedPayloadExistsError,
@@ -35,6 +39,7 @@ import {
   EncryptSubmissionMiddlewareHandlerType,
   StorageSubmissionMiddlewareHandlerRequest,
   StorageSubmissionMiddlewareHandlerType,
+  ValidateSubmissionMiddlewareHandlerRequest,
 } from './encrypt-submission.types'
 import { mapRouteError } from './encrypt-submission.utils'
 
@@ -160,7 +165,7 @@ export const checkNewBoundaryEnabled = async (
 }
 
 export const validateSubmission = async (
-  req: StorageSubmissionMiddlewareHandlerRequest,
+  req: ValidateSubmissionMiddlewareHandlerRequest,
   res: Parameters<StorageSubmissionMiddlewareHandlerType>[1],
   next: NextFunction,
 ) => {
@@ -184,7 +189,23 @@ export const validateSubmission = async (
         req.formsg.featureFlags.includes(featureFlags.encryptionBoundaryShift),
       ),
     )
-    .map(() => next())
+    .map((payload) => {
+      const responses = [] as EncryptFormFieldResponse[]
+      for (const response of payload.getAllResponses()) {
+        if (response.isVisible) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { isVisible: _, ...rest } = response
+          if (!isAttachmentResponse(rest)) responses.push(rest)
+          else {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { filename: __, content: ___, ...restAttachments } = rest
+            responses.push({ ...restAttachments } as EncryptAttachmentResponse)
+          }
+        }
+      }
+      req.formsg.filteredResponses = responses
+      return next()
+    })
     .mapErr((error) => {
       // TODO(FRM-1318): Set DB flag to true to harden submission validation after validation has similar error rates as email mode forms.
       if (
@@ -274,17 +295,10 @@ export const encryptSubmission = async (
   res: Parameters<StorageSubmissionMiddlewareHandlerType>[1],
   next: NextFunction,
 ) => {
-  const formId = req.params.formId
   const encryptedFormDef = req.formsg.encryptedFormDef
   const publicKey = encryptedFormDef.publicKey
 
   const attachmentsMap: Record<string, Buffer> = {}
-
-  const logMeta = {
-    action: 'encryptSubmission',
-    ...createReqMeta(req),
-    formId,
-  }
 
   // Populate attachment map
   req.body.responses.filter(isAttachmentResponse).forEach((response) => {
@@ -297,22 +311,6 @@ export const encryptSubmission = async (
       attachmentsMap,
       publicKey,
     )
-
-  const filteredResponses = getFilteredResponses(
-    encryptedFormDef,
-    req.body.responses,
-    req.formsg.featureFlags.includes(featureFlags.encryptionBoundaryShift),
-  )
-
-  if (filteredResponses.isErr()) {
-    logger.warn({
-      message: filteredResponses.error.message,
-      meta: logMeta,
-    })
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: filteredResponses.error.message,
-    })
-  }
 
   const strippedBodyResponses = req.body.responses.map((response) => {
     if (isAttachmentResponse(response)) {
@@ -333,7 +331,7 @@ export const encryptSubmission = async (
 
   req.formsg.encryptedPayload = {
     attachments: encryptedAttachments,
-    responses: filteredResponses.value as EncryptFormFieldResponse[],
+    responses: req.formsg.filteredResponses,
     encryptedContent,
     version: req.body.version,
     paymentProducts: req.body.paymentProducts,

@@ -23,7 +23,7 @@ import {
   IPopulatedEncryptedForm,
   StripePaymentMetadataDto,
 } from '../../../../types'
-import { FormsgCompleteDto } from '../../../../types/api'
+import { FormCompleteDto } from '../../../../types/api'
 import config from '../../../config/config'
 import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -341,7 +341,9 @@ const _createPaymentSubmission = async ({
   responseMetadata,
   paymentProducts,
 }: {
-  req: Parameters<SubmitEncryptModeFormHandlerType>[0] & FormsgCompleteDto
+  req: Parameters<SubmitEncryptModeFormHandlerType>[0] & {
+    formsg: FormCompleteDto
+  }
   res: Parameters<SubmitEncryptModeFormHandlerType>[1]
   form: IPopulatedEncryptedForm
   paymentProducts: StorageModeSubmissionContentDto['paymentProducts']
