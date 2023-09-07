@@ -1,6 +1,6 @@
 {
   "name": "form-frontend",
-  "version": "6.75.0",
+  "version": "6.76.0",
   "homepage": ".",
   "private": true,
   "dependencies": {
