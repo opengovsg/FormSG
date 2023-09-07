@@ -44,7 +44,7 @@ type EditNumberInputs = Pick<
     selectedValidation: NumberSelectedValidationInputs | ''
     LengthValidationOptions: {
       customVal: number | ''
-      selectedLengthValidation: NumberSelectedLengthValidation
+      selectedLengthValidation: NumberSelectedLengthValidation | ''
     }
     RangeValidationOptions: {
       customMin: number | ''
@@ -71,8 +71,7 @@ const transformNumberFieldToEditForm = (
 
   const nextLengthValidationOptions = {
     selectedLengthValidation:
-      LengthValidationOptions.selectedLengthValidation ||
-      NumberSelectedLengthValidation.Min,
+      LengthValidationOptions.selectedLengthValidation || ('' as const),
     customVal:
       (!!LengthValidationOptions.selectedLengthValidation &&
         LengthValidationOptions.customVal) ||
@@ -174,7 +173,7 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
     'ValidationOptions.LengthValidationOptions.selectedLengthValidation',
   )
 
-  const LengthCustomValValidationOptions: RegisterOptions<
+  const lengthCustomValValidationOptions: RegisterOptions<
     EditNumberInputs,
     'ValidationOptions.LengthValidationOptions.customVal'
   > = useMemo(
@@ -198,7 +197,7 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
 
   // We use the customMin field to perform cross-field validation for
   // the number range
-  const RangeMinimumValidationOptions: RegisterOptions<
+  const rangeMinimumValidationOptions: RegisterOptions<
     EditNumberInputs,
     'ValidationOptions.RangeValidationOptions.customMin'
   > = useMemo(
@@ -221,7 +220,7 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
           return (
             customMax === '' ||
             customMin === '' ||
-            customMin <= customMax ||
+            customMin < customMax ||
             'Minimum must be less than maximum'
           )
         },
@@ -234,7 +233,7 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
     [getValues],
   )
 
-  const RangeMaximumValidationOptions: RegisterOptions<
+  const rangeMaximumValidationOptions: RegisterOptions<
     EditNumberInputs,
     'ValidationOptions.RangeValidationOptions.customMax'
   > = useMemo(
@@ -247,10 +246,15 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
     [],
   )
 
-  // Effect to clear validation option errors when selection limit is toggled off.
+  // Effect to clear validation errors and inputs
+  // when the selected validation is cleared.
   useEffect(() => {
     if (!watchedSelectedValidation) {
       clearErrors('ValidationOptions')
+      setValue(
+        'ValidationOptions.LengthValidationOptions.selectedLengthValidation',
+        '',
+      )
       setValue('ValidationOptions.LengthValidationOptions.customVal', '')
       setValue('ValidationOptions.RangeValidationOptions.customMin', '')
       setValue('ValidationOptions.RangeValidationOptions.customMax', '')
@@ -301,7 +305,7 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
               <Controller
                 name="ValidationOptions.RangeValidationOptions.customMin"
                 control={control}
-                rules={RangeMinimumValidationOptions}
+                rules={rangeMinimumValidationOptions}
                 render={({ field: { onChange, ...rest } }) => (
                   <NumberInput
                     inputMode="numeric"
@@ -315,7 +319,7 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
               <Controller
                 name="ValidationOptions.RangeValidationOptions.customMax"
                 control={control}
-                rules={RangeMaximumValidationOptions}
+                rules={rangeMaximumValidationOptions}
                 render={({ field: { onChange, ...rest } }) => (
                   <NumberInput
                     inputMode="numeric"
@@ -357,7 +361,7 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
               <Controller
                 name="ValidationOptions.LengthValidationOptions.customVal"
                 control={control}
-                rules={LengthCustomValValidationOptions}
+                rules={lengthCustomValValidationOptions}
                 render={({ field: { onChange, ...rest } }) => (
                   <NumberInput
                     flex={1}

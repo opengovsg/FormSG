@@ -250,14 +250,14 @@ export const createNumberValidationRules: ValidationRuleFn<NumberFieldBase> = (
 
         const numVal = parseInt(val)
         if (Number.isNaN(numVal)) {
-          return 'Please enter a valid number!'
+          return 'Please enter a valid number'
         }
 
         const hasMinimum = customMin !== null
         const hasMaximum = customMax !== null
-        const isInRange =
-          !(hasMinimum && numVal < customMin) &&
-          !(hasMaximum && numVal > customMax)
+        const satisfiesMinimum = !hasMinimum || customMin <= numVal
+        const satisfiesMaximum = !hasMaximum || numVal <= customMax
+        const isInRange = satisfiesMinimum && satisfiesMaximum
 
         if (isInRange) {
           return true

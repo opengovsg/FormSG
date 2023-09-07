@@ -94,11 +94,12 @@ const getNumberLengthValidator: NumberValidatorConstructor = (numberField) => {
  */
 const rangeValidator: NumberValidatorConstructor =
   (numberField) => (response) => {
+    // Chained validators ensure that the cast to Number is valid
     const val = Number(response.answer)
     const { customMin, customMax } =
       numberField.ValidationOptions.RangeValidationOptions
-    const isWithinMinimum = customMin !== null && customMin <= val
-    const isWithinMaximum = customMax !== null && val <= customMax
+    const isWithinMinimum = customMin === null || customMin <= val
+    const isWithinMaximum = customMax === null || val <= customMax
 
     return isWithinMinimum && isWithinMaximum
       ? right(response)
