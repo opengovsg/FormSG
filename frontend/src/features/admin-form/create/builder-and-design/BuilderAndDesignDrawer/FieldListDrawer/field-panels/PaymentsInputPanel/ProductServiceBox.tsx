@@ -48,9 +48,28 @@ const ProductItem = ({
             <Text textStyle="subhead-1" pb="0.25rem" color="secondary.500">
               {product.name}
             </Text>
-            <Text textStyle="caption-1" color="secondary.500">
-              ${centsToDollars(product.amount_cents)}
-            </Text>
+            <Flex gap="1rem">
+              <Flex flexDir="column">
+                <Text textStyle="caption-1" color="content.medium">
+                  Amount
+                </Text>
+                {product.multi_qty && (
+                  <Text textStyle="caption-1" color="content.medium">
+                    Quantity limit
+                  </Text>
+                )}
+              </Flex>
+              <Flex flexDir="column">
+                <Text textStyle="caption-1" color="secondary.500">
+                  S${centsToDollars(product.amount_cents)}
+                </Text>
+                {product.multi_qty && (
+                  <Text textStyle="caption-1" color="secondary.500">
+                    between {product.min_qty} to {product.max_qty}
+                  </Text>
+                )}
+              </Flex>
+            </Flex>
           </Box>
 
           <ButtonGroup variant="clear" colorScheme="secondary" spacing={0}>
