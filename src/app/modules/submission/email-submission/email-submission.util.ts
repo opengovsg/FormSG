@@ -234,7 +234,7 @@ export const getAnswersForChild = (
         childName,
       ),
       fieldType: response.fieldType,
-      question: `Child-${childIdx + 1}.${subFields[idx]}`,
+      question: `Child.${subFields[idx]}`,
       myInfo: {
         attr: subFields[idx] as unknown as MyInfoAttribute,
       },
