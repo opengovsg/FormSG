@@ -41,6 +41,12 @@ const MIN_QTY_KEY = `min_qty`
 const MAX_QTY_KEY = `max_qty`
 const DISPLAY_AMOUNT_KEY = 'display_amount'
 const MULTI_QTY_KEY = 'multi_qty'
+
+const parseIntElseNull = (val: string) => {
+  const parsed = parseInt(val, 10)
+  return Number.isNaN(parsed) ? null : parsed
+}
+
 export const ProductModal = ({
   onClose,
   onSaveProduct,
@@ -129,14 +135,16 @@ export const ProductModal = ({
     validate: (valStr: string) => {
       if (!getValues(MULTI_QTY_KEY)) return true
 
-      const valNumber = parseInt(valStr, 10)
-      if (Number.isNaN(valNumber)) {
+      const valNumber = parseIntElseNull(valStr)
+      if (!valNumber || valNumber <= 0) {
         return 'Enter a value greater than 0'
       }
-      if (valNumber <= 0) {
-        return 'Enter a value greater than 0'
-      }
-      if (valNumber > getValues(MAX_QTY_KEY)) {
+
+      const maxNumber =
+        parseIntElseNull(getValues(MAX_QTY_KEY) as unknown as string) ||
+        Number.MAX_SAFE_INTEGER
+
+      if (valNumber > maxNumber) {
         return 'Enter a value smaller than the maximum quantity'
       }
       return true
@@ -145,11 +153,9 @@ export const ProductModal = ({
   const maxQtyValidation: RegisterOptions = {
     validate: (valStr: string) => {
       if (!getValues(MULTI_QTY_KEY)) return true
-      const valNumber = parseInt(valStr, 10)
-      if (Number.isNaN(valNumber)) {
-        return 'Enter a value greater than 0'
-      }
-      if (valNumber <= 0) {
+
+      const valNumber = parseIntElseNull(valStr)
+      if (!valNumber || valNumber <= 0) {
         return 'Enter a value greater than 0'
       }
 
@@ -164,7 +170,11 @@ export const ProductModal = ({
         }
         return `The maximum quantity for this amount is ${maxQty}`
       }
-      if (valNumber < getValues(MIN_QTY_KEY)) {
+      const minNumber =
+        parseIntElseNull(getValues(MIN_QTY_KEY) as unknown as string) ||
+        Number.MIN_SAFE_INTEGER
+
+      if (valNumber < minNumber) {
         return 'Enter a value greater than the minimum quantity'
       }
       return true
