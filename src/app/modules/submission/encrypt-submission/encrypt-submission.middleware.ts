@@ -189,9 +189,9 @@ export const validateSubmission = async (
         req.formsg.featureFlags.includes(featureFlags.encryptionBoundaryShift),
       ),
     )
-    .map((payload) => {
+    .map((parsedResponses) => {
       const responses = [] as EncryptFormFieldResponse[]
-      for (const response of payload.getAllResponses()) {
+      for (const response of parsedResponses.getAllResponses()) {
         if (response.isVisible) {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { isVisible: _, ...rest } = response
