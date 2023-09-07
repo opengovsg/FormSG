@@ -125,28 +125,37 @@ export const ProductModal = ({
     onClose()
   })
 
-  const minQtyValidation: RegisterOptions<ProductInput, typeof MIN_QTY_KEY> = {
-    validate: (val) => {
+  const minQtyValidation: RegisterOptions = {
+    validate: (valStr: string) => {
       if (!getValues(MULTI_QTY_KEY)) return true
-      if (val <= 0) {
+
+      const valNumber = parseInt(valStr, 10)
+      if (Number.isNaN(valNumber)) {
         return 'Enter a value greater than 0'
       }
-      if (val > getValues(MAX_QTY_KEY)) {
+      if (valNumber <= 0) {
+        return 'Enter a value greater than 0'
+      }
+      if (valNumber > getValues(MAX_QTY_KEY)) {
         return 'Enter a value smaller than the maximum quantity'
       }
       return true
     },
   }
-  const maxQtyValidation: RegisterOptions<ProductInput, typeof MAX_QTY_KEY> = {
-    validate: (val) => {
+  const maxQtyValidation: RegisterOptions = {
+    validate: (valStr: string) => {
       if (!getValues(MULTI_QTY_KEY)) return true
-      if (val <= 0) {
+      const valNumber = parseInt(valStr, 10)
+      if (Number.isNaN(valNumber)) {
+        return 'Enter a value greater than 0'
+      }
+      if (valNumber <= 0) {
         return 'Enter a value greater than 0'
       }
 
       const amount = dollarsToCents(getValues(DISPLAY_AMOUNT_KEY) ?? '')
 
-      if (val * amount > maxPaymentAmountCents) {
+      if (valNumber * amount > maxPaymentAmountCents) {
         const maxQty = Math.floor(maxPaymentAmountCents / amount)
         if (maxQty <= 0) {
           return `Quantity limit could not be set because amount is above S${formatCurrency(
@@ -155,13 +164,14 @@ export const ProductModal = ({
         }
         return `The maximum quantity for this amount is ${maxQty}`
       }
-      if (val < getValues(MIN_QTY_KEY)) {
+      if (valNumber < getValues(MIN_QTY_KEY)) {
         return 'Enter a value greater than the minimum quantity'
       }
       return true
     },
   }
 
+  console.log(getValues([MULTI_QTY_KEY, MIN_QTY_KEY, MAX_QTY_KEY]))
   return (
     <Modal isOpen onClose={onClose}>
       <ModalOverlay />
