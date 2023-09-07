@@ -21,7 +21,6 @@ import {
   VerifiableResponseIdSet,
   VisibleResponseIdSet,
 } from './submission.types'
-import { isAttachmentResponse } from './submission.utils'
 
 export abstract class IncomingSubmission {
   private readonly visibleFieldIds: Result<FieldIdSet, ProcessingError>
@@ -170,20 +169,15 @@ export abstract class IncomingSubmission {
       return err(new ProcessingError('Submission prevented by form logic'))
     }
 
-    const validationResultList = [] as Result<true, ValidateFieldError>[]
-    for (const response of this.responses) {
-      // Skip over attachment responses as they have been stripped at this point
-      // and fields have been validated in the validateSubmission middleware.
-      if (!isAttachmentResponse(response)) {
-        const responseId = String(response._id)
-        const formField = this.fieldMap[responseId]
-        return validateField(
-          this.form._id,
-          formField,
-          this.getLegacyProcessedFieldResponse(response),
-        )
-      }
-    }
+    const validationResultList = this.responses.map((response) => {
+      const responseId = String(response._id)
+      const formField = this.fieldMap[responseId]
+      return validateField(
+        this.form._id,
+        formField,
+        this.getLegacyProcessedFieldResponse(response),
+      )
+    })
 
     const validationResultCombined =
       Result.combineWithAllErrors(validationResultList)

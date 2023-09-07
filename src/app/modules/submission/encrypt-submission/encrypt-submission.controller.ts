@@ -128,7 +128,7 @@ const submitEncryptModeForm = async (
   const encryptedPayload = req.formsg.encryptedPayload
 
   // Create Incoming Submission
-  const { encryptedContent, responses, responseMetadata, paymentProducts } =
+  const { encryptedContent, responseMetadata, paymentProducts } =
     encryptedPayload
 
   // Checks if user is SPCP-authenticated before allowing submission
@@ -295,7 +295,7 @@ const submitEncryptModeForm = async (
       form,
       logMeta,
       formId,
-      responses,
+      responses: req.formsg.filteredResponses,
       paymentProducts,
       responseMetadata,
       submissionContent,
@@ -307,7 +307,7 @@ const submitEncryptModeForm = async (
     res,
     logMeta,
     formId,
-    responses,
+    responses: req.formsg.filteredResponses,
     responseMetadata,
     submissionContent,
   })

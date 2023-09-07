@@ -173,9 +173,9 @@ export const validateStorageSubmission = async (
   const formDef = req.formsg.formDef
 
   const logMeta = {
-    action: 'validateSubmission',
+    action: 'validateStorageSubmission',
     ...createReqMeta(req),
-    formId: formDef.id,
+    formId: formDef._id.toString(),
   }
 
   // Validate submission
@@ -204,7 +204,7 @@ export const validateStorageSubmission = async (
           }
         }
       }
-      // req.formsg.filteredResponses = responses
+      req.formsg.filteredResponses = responses
       return next()
     })
     .mapErr((error) => {
@@ -230,6 +230,7 @@ export const validateStorageSubmission = async (
         meta: logMeta,
         error,
       })
+      req.formsg.filteredResponses = req.body.responses
       return next()
     })
 }
@@ -374,6 +375,12 @@ export const validateEncryptSubmission = async (
   const responses = req.body.responses
   const encryptedContent = req.body.encryptedContent
 
+  const logMeta = {
+    action: 'validateEncryptSubmission',
+    ...createReqMeta(req),
+    formId: form._id.toString(),
+  }
+
   const incomingSubmissionResult = IncomingEncryptSubmission.init(
     form,
     responses,
@@ -381,6 +388,11 @@ export const validateEncryptSubmission = async (
     req.formsg.featureFlags.includes(featureFlags.encryptionBoundaryShift),
   )
   if (incomingSubmissionResult.isErr()) {
+    logger.error({
+      message: 'Error in getting parsed responses for encrypt submission',
+      meta: logMeta,
+      error: incomingSubmissionResult.error,
+    })
     const { statusCode, errorMessage } = mapRouteError(
       incomingSubmissionResult.error,
     )
@@ -388,6 +400,13 @@ export const validateEncryptSubmission = async (
       message: errorMessage,
     })
   }
+
+  logger.info({
+    message: 'Successfully parsed responses for encrypt submission',
+    meta: logMeta,
+  })
+
+  req.formsg.filteredResponses = incomingSubmissionResult.value.responses
 
   return next()
 }

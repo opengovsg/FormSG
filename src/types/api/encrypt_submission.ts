@@ -12,6 +12,7 @@ import {
 import { IPopulatedEncryptedForm, IPopulatedForm } from '../form'
 
 import { ParsedEmailModeSubmissionBody } from './email_submission'
+import { ParsedClearFormFieldResponse } from './submission'
 
 export type EncryptSubmissionDto = Merge<
   StorageModeSubmissionContentDto,
@@ -45,7 +46,7 @@ export type FormLoadedDto = {
 }
 
 export type FormFilteredResponseDto = FormLoadedDto & {
-  filteredResponses: EncryptFormFieldResponse[]
+  filteredResponses: ParsedClearFormFieldResponse[]
 }
 
 export type FormCompleteDto = FormFilteredResponseDto & {
