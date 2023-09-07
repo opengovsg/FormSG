@@ -181,7 +181,6 @@ export const ProductModal = ({
     },
   }
 
-  console.log(getValues([MULTI_QTY_KEY, MIN_QTY_KEY, MAX_QTY_KEY]))
   return (
     <Modal isOpen onClose={onClose}>
       <ModalOverlay />
