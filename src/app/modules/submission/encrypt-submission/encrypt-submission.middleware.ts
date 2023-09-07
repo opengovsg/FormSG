@@ -42,6 +42,7 @@ import {
   ValidateSubmissionMiddlewareHandlerRequest,
 } from './encrypt-submission.types'
 import { mapRouteError } from './encrypt-submission.utils'
+import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
 
 export const logger = createLoggerWithLabel(module)
 
@@ -164,7 +165,7 @@ export const checkNewBoundaryEnabled = async (
   return next()
 }
 
-export const validateSubmission = async (
+export const validateStorageSubmission = async (
   req: ValidateSubmissionMiddlewareHandlerRequest,
   res: Parameters<StorageSubmissionMiddlewareHandlerType>[1],
   next: NextFunction,
@@ -203,7 +204,7 @@ export const validateSubmission = async (
           }
         }
       }
-      req.formsg.filteredResponses = responses
+      // req.formsg.filteredResponses = responses
       return next()
     })
     .mapErr((error) => {
@@ -331,7 +332,8 @@ export const encryptSubmission = async (
 
   req.formsg.encryptedPayload = {
     attachments: encryptedAttachments,
-    responses: req.formsg.filteredResponses,
+    // filteredResponses might not have been loaded due to validation errors, default to req.body.responses
+    responses: req.formsg.filteredResponses ?? req.body.responses,
     encryptedContent,
     version: req.body.version,
     paymentProducts: req.body.paymentProducts,
@@ -356,6 +358,37 @@ export const moveEncryptedPayload = async (
   }
 
   req.formsg.encryptedPayload = req.body
+  return next()
+}
+
+/**
+ * Moves encrypted payload present in req.body to req.formsg.encryptedPayload.
+ * Should only be used for the old storage mode submission endpoint (/api/v3/forms/:formId/submissions/encrypt).
+ */
+export const validateEncryptSubmission = async (
+  req: EncryptSubmissionMiddlewareHandlerRequest,
+  res: Parameters<EncryptSubmissionMiddlewareHandlerType>[1],
+  next: NextFunction,
+) => {
+  const form = req.formsg.encryptedFormDef
+  const responses = req.body.responses
+  const encryptedContent = req.body.encryptedContent
+
+  const incomingSubmissionResult = IncomingEncryptSubmission.init(
+    form,
+    responses,
+    encryptedContent,
+    req.formsg.featureFlags.includes(featureFlags.encryptionBoundaryShift),
+  )
+  if (incomingSubmissionResult.isErr()) {
+    const { statusCode, errorMessage } = mapRouteError(
+      incomingSubmissionResult.error,
+    )
+    return res.status(statusCode).json({
+      message: errorMessage,
+    })
+  }
+
   return next()
 }
 

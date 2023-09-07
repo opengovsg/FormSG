@@ -7,7 +7,6 @@ import mongoose from 'mongoose'
 import { okAsync } from 'neverthrow'
 import Stripe from 'stripe'
 
-import { featureFlags } from '../../../../../shared/constants'
 import {
   ErrorDto,
   FormAuthType,
@@ -77,7 +76,6 @@ import {
   getPaymentIntentDescription,
   mapRouteError,
 } from './encrypt-submission.utils'
-import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
 
 export const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
@@ -132,21 +130,6 @@ const submitEncryptModeForm = async (
   // Create Incoming Submission
   const { encryptedContent, responses, responseMetadata, paymentProducts } =
     encryptedPayload
-  const incomingSubmissionResult = IncomingEncryptSubmission.init(
-    form,
-    responses,
-    encryptedContent,
-    req.formsg.featureFlags.includes(featureFlags.encryptionBoundaryShift),
-  )
-  if (incomingSubmissionResult.isErr()) {
-    const { statusCode, errorMessage } = mapRouteError(
-      incomingSubmissionResult.error,
-    )
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
-  }
-  const incomingSubmission = incomingSubmissionResult.value
 
   // Checks if user is SPCP-authenticated before allowing submission
   let uinFin
@@ -294,7 +277,7 @@ const submitEncryptModeForm = async (
     form: form._id,
     authType: form.authType,
     myInfoFields: form.getUniqueMyInfoAttrs(),
-    encryptedContent: incomingSubmission.encryptedContent,
+    encryptedContent: encryptedContent,
     verifiedContent: verified,
     attachmentMetadata,
     version: req.formsg.encryptedPayload.version,
@@ -312,7 +295,7 @@ const submitEncryptModeForm = async (
       form,
       logMeta,
       formId,
-      incomingSubmission,
+      responses,
       paymentProducts,
       responseMetadata,
       submissionContent,
@@ -324,7 +307,7 @@ const submitEncryptModeForm = async (
     res,
     logMeta,
     formId,
-    incomingSubmission,
+    responses,
     responseMetadata,
     submissionContent,
   })
@@ -336,7 +319,7 @@ const _createPaymentSubmission = async ({
   form,
   logMeta,
   formId,
-  incomingSubmission,
+  responses,
   submissionContent,
   responseMetadata,
   paymentProducts,
@@ -407,7 +390,7 @@ const _createPaymentSubmission = async ({
     targetAccountId,
     amount,
     email: paymentReceiptEmail,
-    responses: incomingSubmission.responses,
+    responses,
     ...(isPaymentTypeProducts ? { products: paymentProducts } : {}),
     gstEnabled: form.payments_field.gst_enabled,
     payment_fields_snapshot: form.payments_field,
@@ -568,7 +551,7 @@ const _createSubmission = async ({
   logMeta,
   formId,
   responseMetadata,
-  incomingSubmission,
+  responses,
 }: {
   req: Parameters<SubmitEncryptModeFormHandlerType>[0]
   res: Parameters<SubmitEncryptModeFormHandlerType>[1]
@@ -620,10 +603,7 @@ const _createSubmission = async ({
     timestamp: (submission.created || new Date()).getTime(),
   })
 
-  return await performEncryptPostSubmissionActions(
-    submission,
-    incomingSubmission.responses,
-  )
+  return await performEncryptPostSubmissionActions(submission, responses)
 }
 
 // TODO (FRM-1232): remove endpoint after encryption boundary is shifted
@@ -632,6 +612,7 @@ export const handleEncryptedSubmission = [
   TurnstileMiddleware.validateTurnstileParams,
   EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
   EncryptSubmissionMiddleware.createFormsgAndRetrieveForm,
+  EncryptSubmissionMiddleware.validateEncryptSubmission,
   EncryptSubmissionMiddleware.moveEncryptedPayload,
   submitEncryptModeForm,
 ] as ControllerHandler[]
@@ -643,7 +624,7 @@ export const handleStorageSubmission = [
   EncryptSubmissionMiddleware.validateStorageSubmissionParams,
   EncryptSubmissionMiddleware.createFormsgAndRetrieveForm,
   EncryptSubmissionMiddleware.checkNewBoundaryEnabled,
-  EncryptSubmissionMiddleware.validateSubmission,
+  EncryptSubmissionMiddleware.validateStorageSubmission,
   EncryptSubmissionMiddleware.encryptSubmission,
   submitEncryptModeForm,
 ] as ControllerHandler[]

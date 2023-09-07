@@ -84,7 +84,7 @@ export default class ParsedResponsesObject {
   static parseResponses(
     form: IFormDocument,
     responses: FieldResponse[],
-    encryptionBoundaryShiftEnabled: boolean,
+    encryptionBoundaryShiftEnabled: boolean, // true only in validateSubmission middleware, which is used only for new storage submission endpoint
   ): Result<
     ParsedResponsesObject,
     ProcessingError | ConflictError | ValidateFieldError
