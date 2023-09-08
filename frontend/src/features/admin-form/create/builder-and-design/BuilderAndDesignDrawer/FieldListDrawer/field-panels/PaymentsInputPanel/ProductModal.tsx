@@ -43,8 +43,8 @@ const DISPLAY_AMOUNT_KEY = 'display_amount'
 const MULTI_QTY_KEY = 'multi_qty'
 
 const parseIntElseNull = (val: string) => {
-  const parsed = parseInt(val, 10)
-  return Number.isNaN(parsed) ? null : parsed
+  const parsedInt = parseInt(val, 10)
+  return Number.isNaN(parsedInt) ? null : parsedInt
 }
 
 export const ProductModal = ({
