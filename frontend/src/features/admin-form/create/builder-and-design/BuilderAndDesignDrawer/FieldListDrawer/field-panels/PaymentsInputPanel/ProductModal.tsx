@@ -41,6 +41,12 @@ const MIN_QTY_KEY = `min_qty`
 const MAX_QTY_KEY = `max_qty`
 const DISPLAY_AMOUNT_KEY = 'display_amount'
 const MULTI_QTY_KEY = 'multi_qty'
+
+const parseIntElseNull = (val: string) => {
+  const parsedInt = parseInt(val, 10)
+  return Number.isNaN(parsedInt) ? null : parsedInt
+}
+
 export const ProductModal = ({
   onClose,
   onSaveProduct,
@@ -125,28 +131,37 @@ export const ProductModal = ({
     onClose()
   })
 
-  const minQtyValidation: RegisterOptions<ProductInput, typeof MIN_QTY_KEY> = {
-    validate: (val) => {
+  const minQtyValidation: RegisterOptions = {
+    validate: (valStr: string) => {
       if (!getValues(MULTI_QTY_KEY)) return true
-      if (val <= 0) {
+
+      const valNumber = parseIntElseNull(valStr)
+      if (!valNumber || valNumber <= 0) {
         return 'Enter a value greater than 0'
       }
-      if (val > getValues(MAX_QTY_KEY)) {
+
+      const maxNumber =
+        parseIntElseNull(getValues(MAX_QTY_KEY) as unknown as string) ||
+        Number.MAX_SAFE_INTEGER
+
+      if (valNumber > maxNumber) {
         return 'Enter a value smaller than the maximum quantity'
       }
       return true
     },
   }
-  const maxQtyValidation: RegisterOptions<ProductInput, typeof MAX_QTY_KEY> = {
-    validate: (val) => {
+  const maxQtyValidation: RegisterOptions = {
+    validate: (valStr: string) => {
       if (!getValues(MULTI_QTY_KEY)) return true
-      if (val <= 0) {
+
+      const valNumber = parseIntElseNull(valStr)
+      if (!valNumber || valNumber <= 0) {
         return 'Enter a value greater than 0'
       }
 
       const amount = dollarsToCents(getValues(DISPLAY_AMOUNT_KEY) ?? '')
 
-      if (val * amount > maxPaymentAmountCents) {
+      if (valNumber * amount > maxPaymentAmountCents) {
         const maxQty = Math.floor(maxPaymentAmountCents / amount)
         if (maxQty <= 0) {
           return `Quantity limit could not be set because amount is above S${formatCurrency(
@@ -155,7 +170,11 @@ export const ProductModal = ({
         }
         return `The maximum quantity for this amount is ${maxQty}`
       }
-      if (val < getValues(MIN_QTY_KEY)) {
+      const minNumber =
+        parseIntElseNull(getValues(MIN_QTY_KEY) as unknown as string) ||
+        Number.MIN_SAFE_INTEGER
+
+      if (valNumber < minNumber) {
         return 'Enter a value greater than the minimum quantity'
       }
       return true
