@@ -333,8 +333,7 @@ export const encryptSubmission = async (
 
   req.formsg.encryptedPayload = {
     attachments: encryptedAttachments,
-    // filteredResponses might not have been loaded due to validation errors, default to req.body.responses
-    responses: req.formsg.filteredResponses ?? req.body.responses,
+    responses: req.formsg.filteredResponses,
     encryptedContent,
     version: req.body.version,
     paymentProducts: req.body.paymentProducts,
