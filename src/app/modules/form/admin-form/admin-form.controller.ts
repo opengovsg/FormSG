@@ -1679,7 +1679,7 @@ export const submitEncryptPreview: ControllerHandler<
       }),
     )
     .andThen((form) =>
-      IncomingEncryptSubmission.init(form, responses, encryptedContent, true) // set as true as there's no need to gate anything if the its not a real submission
+      IncomingEncryptSubmission.init(form, responses, encryptedContent)
         .map((incomingSubmission) => ({ incomingSubmission, form }))
         .mapErr((error) => {
           logger.error({

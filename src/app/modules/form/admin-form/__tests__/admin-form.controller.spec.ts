@@ -6398,7 +6398,6 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_RESPONSES,
         MOCK_ENCRYPTED_CONTENT,
-        true,
       )
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
@@ -6801,7 +6800,6 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_RESPONSES,
         MOCK_ENCRYPTED_CONTENT,
-        true,
       )
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
@@ -6855,7 +6853,6 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_RESPONSES,
         MOCK_ENCRYPTED_CONTENT,
-        true,
       )
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
@@ -6909,7 +6906,6 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_RESPONSES,
         MOCK_ENCRYPTED_CONTENT,
-        true,
       )
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
@@ -6963,7 +6959,6 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_RESPONSES,
         MOCK_ENCRYPTED_CONTENT,
-        true,
       )
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,

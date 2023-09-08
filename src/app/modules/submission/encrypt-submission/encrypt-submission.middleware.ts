@@ -384,7 +384,6 @@ export const validateEncryptSubmission = async (
     form,
     responses,
     encryptedContent,
-    req.formsg.featureFlags.includes(featureFlags.encryptionBoundaryShift),
   )
   if (incomingSubmissionResult.isErr()) {
     logger.error({
