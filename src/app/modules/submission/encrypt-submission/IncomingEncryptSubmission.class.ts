@@ -37,7 +37,7 @@ export default class IncomingEncryptSubmission extends IncomingSubmission {
     ProcessingError | ConflictError | ValidateFieldError[]
   > {
     return checkIsEncryptedEncoding(encryptedContent)
-      .andThen(() => getFilteredResponses(form, responses, false))
+      .andThen(() => getFilteredResponses(form, responses, true))
       .andThen((filteredResponses) =>
         this.getFieldMap(form, filteredResponses).map((fieldMap) => ({
           responses: filteredResponses,

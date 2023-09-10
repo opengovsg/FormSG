@@ -188,11 +188,7 @@ export const validateStorageSubmission = async (
     formDef.responseMode,
   )
     .andThen(() =>
-      ParsedResponsesObject.parseResponses(
-        formDef,
-        req.body.responses,
-        req.formsg.featureFlags.includes(featureFlags.encryptionBoundaryShift),
-      ),
+      ParsedResponsesObject.parseResponses(formDef, req.body.responses),
     )
     .map((parsedResponses) => {
       const responses = [] as EncryptFormFieldResponse[]

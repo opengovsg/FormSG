@@ -1779,7 +1779,7 @@ export const submitEmailPreview: ControllerHandler<
   const parsedResponsesResult = await SubmissionService.validateAttachments(
     responses,
     form.responseMode,
-  ).andThen(() => ParsedResponsesObject.parseResponses(form, responses, false)) // email mode submissions (esp previews) does not need to use encryption boundary shift code
+  ).andThen(() => ParsedResponsesObject.parseResponses(form, responses))
   if (parsedResponsesResult.isErr()) {
     logger.error({
       message: 'Error while parsing responses for preview submission',

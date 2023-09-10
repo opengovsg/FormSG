@@ -5420,7 +5420,6 @@ describe('admin-form.controller', () => {
       expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
-        false,
       )
       expect(MockAdminFormService.extractMyInfoFieldIds).toHaveBeenCalledWith(
         MOCK_FORM.form_fields,
@@ -5955,7 +5954,6 @@ describe('admin-form.controller', () => {
       expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
-        false,
       )
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
@@ -6013,7 +6011,6 @@ describe('admin-form.controller', () => {
       expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
-        false,
       )
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
@@ -6071,7 +6068,6 @@ describe('admin-form.controller', () => {
       expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
-        false,
       )
       expect(MockAdminFormService.extractMyInfoFieldIds).not.toHaveBeenCalled()
       expect(
@@ -6129,7 +6125,6 @@ describe('admin-form.controller', () => {
       expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
-        false,
       )
       expect(MockAdminFormService.extractMyInfoFieldIds).toHaveBeenCalledWith(
         MOCK_FORM.form_fields,
@@ -6196,7 +6191,6 @@ describe('admin-form.controller', () => {
       expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
-        false,
       )
       expect(MockAdminFormService.extractMyInfoFieldIds).toHaveBeenCalledWith(
         MOCK_FORM.form_fields,
@@ -6263,7 +6257,6 @@ describe('admin-form.controller', () => {
       expect(MockParsedResponsesObject.parseResponses).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_RESPONSES,
-        false,
       )
       expect(MockAdminFormService.extractMyInfoFieldIds).toHaveBeenCalledWith(
         MOCK_FORM.form_fields,
