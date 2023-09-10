@@ -165,6 +165,10 @@ export const checkNewBoundaryEnabled = async (
   return next()
 }
 
+/**
+ * Validates storage submissions to the new endpoint (/api/v3/forms/:formId/submissions/storage).
+ * This uses the same validators as email mode submissions.
+ */
 export const validateStorageSubmission = async (
   req: ValidateSubmissionMiddlewareHandlerRequest,
   res: Parameters<StorageSubmissionMiddlewareHandlerType>[1],
@@ -362,7 +366,7 @@ export const moveEncryptedPayload = async (
 }
 
 /**
- * Moves encrypted payload present in req.body to req.formsg.encryptedPayload.
+ * Validates mobile and email fields for storage submissions on the old endpoint.
  * Should only be used for the old storage mode submission endpoint (/api/v3/forms/:formId/submissions/encrypt).
  */
 export const validateEncryptSubmission = async (
@@ -409,6 +413,9 @@ export const validateEncryptSubmission = async (
   return next()
 }
 
+/**
+ * Creates formsg namespace in req.body and populates it with featureFlags, formDef and encryptedFormDef.
+ */
 export const createFormsgAndRetrieveForm = async (
   req: CreateFormsgAndRetrieveFormMiddlewareHandlerRequest,
   res: Parameters<CreateFormsgAndRetrieveFormMiddlewareHandlerType>[1],
