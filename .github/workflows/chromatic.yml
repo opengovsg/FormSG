@@ -47,7 +47,7 @@ jobs:
           node-version: 14
           cache: 'npm'
       - name: Install dependencies
-        run: rm -rf /home/runner/work/FormSG/FormSG/frontend/node_modules && npm i
+        run: rm -rf node_modules/ && npm i
         # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
         uses: chromaui/action@v1
