@@ -74,7 +74,6 @@ describe('IncomingEncryptSubmission', () => {
       } as unknown as IPopulatedEncryptedForm,
       responses,
       '',
-      false,
     )
     expect(initResult._unsafeUnwrap().responses).toEqual(responses)
   })
@@ -129,58 +128,8 @@ describe('IncomingEncryptSubmission', () => {
       } as unknown as IPopulatedEncryptedForm,
       responses,
       '',
-      false,
     )
     const filteredResponses = [mobileResponse, emailResponse]
-    expect(initResult._unsafeUnwrap().responses).toEqual(filteredResponses)
-  })
-
-  it('should not filter responses when new encryption boundary flag is on', () => {
-    mockCheckIsEncryptedEncoding.mockReturnValueOnce(ok(true))
-    const mobileField = generateDefaultField(BasicField.Mobile, {
-      isVerifiable: true,
-    })
-    const emailField = generateDefaultField(BasicField.Email, {
-      isVerifiable: true,
-      autoReplyOptions: {
-        hasAutoReply: true,
-        autoReplySubject: 'subject',
-        autoReplySender: 'sender@test.gov.sg',
-        autoReplyMessage: 'message',
-        includeFormSummary: false,
-      },
-    })
-    const yesNoField = generateDefaultField(BasicField.YesNo)
-    const ratingField = generateDefaultField(BasicField.Rating)
-    const basicFormFields = [mobileField, emailField, yesNoField, ratingField]
-    const mobileResponse = generateSingleAnswerResponse(
-      mobileField,
-      '+6587654321',
-      'signature',
-    )
-    const emailResponse = generateSingleAnswerResponse(
-      emailField,
-      'test@example.com',
-      'signature',
-    )
-    const yesNoResponse = generateSingleAnswerResponse(yesNoField, 'Yes')
-    const ratingResponse = generateSingleAnswerResponse(ratingField, '5')
-    const responses = [
-      mobileResponse,
-      emailResponse,
-      yesNoResponse,
-      ratingResponse,
-    ]
-    const filteredResponses = responses
-    const initResult = IncomingEncryptSubmission.init(
-      {
-        responseMode: FormResponseMode.Encrypt,
-        form_fields: basicFormFields,
-      } as unknown as IPopulatedEncryptedForm,
-      responses,
-      '',
-      true,
-    )
     expect(initResult._unsafeUnwrap().responses).toEqual(filteredResponses)
   })
 
@@ -212,7 +161,6 @@ describe('IncomingEncryptSubmission', () => {
       } as unknown as IPopulatedEncryptedForm,
       responses,
       '',
-      false,
     )
     expect(initResult._unsafeUnwrapErr()).toEqual(
       new ConflictError('Some form fields are missing'),
@@ -260,7 +208,6 @@ describe('IncomingEncryptSubmission', () => {
       } as unknown as IPopulatedEncryptedForm,
       responses,
       '',
-      false,
     )
 
     expect(result.isOk()).toEqual(true)
@@ -283,7 +230,6 @@ describe('IncomingEncryptSubmission', () => {
       } as unknown as IPopulatedEncryptedForm,
       [mobileResponse],
       '',
-      false,
     )
 
     expect(result.isErr()).toEqual(true)
@@ -309,7 +255,6 @@ describe('IncomingEncryptSubmission', () => {
       } as unknown as IPopulatedEncryptedForm,
       [],
       '',
-      false,
     )
 
     expect(result.isErr()).toEqual(true)
