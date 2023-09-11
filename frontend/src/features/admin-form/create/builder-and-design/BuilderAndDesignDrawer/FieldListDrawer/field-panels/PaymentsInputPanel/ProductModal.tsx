@@ -2,7 +2,6 @@ import { Controller, RegisterOptions, useForm } from 'react-hook-form'
 import {
   Box,
   Button,
-  ButtonGroup,
   Divider,
   Flex,
   FormControl,
@@ -15,6 +14,7 @@ import {
   ModalOverlay,
   Skeleton,
   Stack,
+  useBreakpointValue,
 } from '@chakra-ui/react'
 
 import { Product, StorageFormSettings } from '~shared/types'
@@ -24,6 +24,7 @@ import {
   formatCurrency,
 } from '~shared/utils/payments'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
@@ -71,6 +72,8 @@ export const ProductModal = ({
         },
     mode: 'all',
   })
+
+  const isMobile = useIsMobile()
 
   const {
     data: {
@@ -161,9 +164,14 @@ export const ProductModal = ({
       return true
     },
   }
+  const modalSize = useBreakpointValue({
+    base: 'mobile',
+    xs: 'mobile',
+    md: 'md',
+  })
 
   return (
-    <Modal isOpen onClose={onClose}>
+    <Modal isOpen onClose={onClose} size={modalSize}>
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
@@ -329,18 +337,23 @@ export const ProductModal = ({
           </Stack>
         </ModalBody>
         <ModalFooter>
-          <ButtonGroup>
-            <Button variant="clear" onClick={onClose}>
+          <Stack
+            w="100%"
+            direction={{ base: 'column-reverse', md: 'row' }}
+            justifyContent={{ md: 'right' }}
+          >
+            <Button variant="clear" onClick={onClose} isFullWidth={isMobile}>
               Cancel
             </Button>
             <Button
               loadingText="Saving"
               onClick={handleSaveProduct}
               isDisabled={Object.keys(errors).length > 0}
+              isFullWidth={isMobile}
             >
               Save product
             </Button>
-          </ButtonGroup>
+          </Stack>
         </ModalFooter>
       </ModalContent>
     </Modal>
