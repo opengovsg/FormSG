@@ -255,7 +255,6 @@ export class MyInfoServiceClass {
     currFormFields: LeanDocument<IFieldSchema[]>,
   ): ResultAsync<PossiblyPrefilledField[], MyInfoHashingError | DatabaseError> {
     const allChildAttrs: InternalAttr[] = []
-
     const prefilledFields = currFormFields.map((field) => {
       const myInfoAttr = getMyInfoAttr(field)
       // Children field prefilling is handled by the frontend.
