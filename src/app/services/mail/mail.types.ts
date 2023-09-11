@@ -121,6 +121,7 @@ export type PaymentConfirmationData = {
   formTitle: string
   submissionId: string
   invoiceUrl: string
+  amountPaid: number
 }
 
 export type IssueReportedNotificationData = {
