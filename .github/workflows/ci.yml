@@ -37,7 +37,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
       - run: npm ci
@@ -51,7 +51,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
       - run: npm ci
@@ -76,7 +76,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
       - run: npm ci
@@ -91,7 +91,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
       - run: npm ci
@@ -110,7 +110,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
       - run: npm ci && npm ci --prefix serverless/virus-scanner
@@ -129,7 +129,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
       - run: npm ci
