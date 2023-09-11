@@ -47,8 +47,6 @@ jobs:
           cache: 'npm'
       - name: Set NODE_OPTIONS
         run: export NODE_OPTIONS=--openssl-legacy-provider
-      - name: Fresh installation of webpack5
-        run: npx sb init --builder webpack5
       - name: Install dependencies
         run: npm i
         # 👇 Adds Chromatic as a step in the workflow
