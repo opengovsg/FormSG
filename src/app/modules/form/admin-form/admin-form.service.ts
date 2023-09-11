@@ -10,6 +10,8 @@ import mongoose, { ClientSession } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import type { Except, Merge } from 'type-fest'
 
+import { createPresignedPostDataPromise } from 'src/app/utils/aws-s3'
+
 import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
@@ -175,34 +177,16 @@ const createPresignedPostUrl = (
     )
   }
 
-  const presignedPostUrlPromise = new Promise<PresignedPost>(
-    (resolve, reject) => {
-      AwsConfig.s3.createPresignedPost(
-        {
-          Bucket: bucketName,
-          Expires: PRESIGNED_POST_EXPIRY_SECS,
-          Conditions: [
-            // Content length restrictions: 0 to MAX_UPLOAD_FILE_SIZE.
-            ['content-length-range', 0, MAX_UPLOAD_FILE_SIZE],
-          ],
-          Fields: {
-            acl: 'public-read',
-            key: fileId,
-            'Content-MD5': fileMd5Hash,
-            'Content-Type': fileType,
-          },
-        },
-        (err, data) => {
-          if (err) {
-            return reject(err)
-          }
-          return resolve(data)
-        },
-      )
-    },
-  )
+  const presignedPostUrlPromise = createPresignedPostDataPromise({
+    bucketName,
+    expiresSeconds: PRESIGNED_POST_EXPIRY_SECS,
+    size: MAX_UPLOAD_FILE_SIZE,
+    key: fileId,
+    fileMd5Hash,
+    fileType,
+  })
 
-  return ResultAsync.fromPromise(presignedPostUrlPromise, (error) => {
+  return presignedPostUrlPromise.mapErr((error) => {
     logger.error({
       message: 'Error encountered when creating presigned POST URL',
       meta: {

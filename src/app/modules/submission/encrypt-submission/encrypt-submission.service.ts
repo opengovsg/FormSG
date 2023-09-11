@@ -1,10 +1,12 @@
-import { ManagedUpload, PresignedPost } from 'aws-sdk/clients/s3'
+import { ManagedUpload } from 'aws-sdk/clients/s3'
 import Bluebird from 'bluebird'
 import crypto from 'crypto'
 import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Transform } from 'stream'
+
+import { createPresignedPostDataPromise } from 'src/app/utils/aws-s3'
 
 import {
   FormResponseMode,
@@ -541,41 +543,6 @@ export const performEncryptPostSubmissionActions = (
     })
 }
 
-const createPresignedPostDataPromise = (size: number) => {
-  return ResultAsync.fromPromise(
-    new Promise<PresignedPost>((resolve, reject) => {
-      AwsConfig.s3.createPresignedPost(
-        {
-          Bucket: AwsConfig.virusScannerQuarantineS3Bucket,
-          Expires: 1 * 60, // expires in 1 minutes,
-          Conditions: [
-            // Content length restrictions: 0 to MAX_UPLOAD_FILE_SIZE.
-            ['content-length-range', 0, size],
-          ],
-          Fields: { key: crypto.randomUUID() },
-        },
-        (err, data) => {
-          if (err) {
-            return reject(err)
-          }
-          return resolve(data)
-        },
-      )
-    }),
-    (error) => {
-      logger.error({
-        message: 'Error encountered when creating presigned POST data',
-        meta: {
-          action: 'createPresignedPostDataPromise',
-        },
-        error,
-      })
-
-      return new CreatePresignedPostError()
-    },
-  )
-}
-
 export const getQuarantinePresignedPostData = async (
   attachmentSizes: AttachmentSizeMapType[],
 ): Promise<
@@ -593,7 +560,11 @@ export const getQuarantinePresignedPostData = async (
     if (totalAttachmentSize > totalAttachmentSizeLimit)
       return err(new AttachmentSizeLimitExceededError())
 
-    const presignedPostDataResult = await createPresignedPostDataPromise(size)
+    const presignedPostDataResult = await createPresignedPostDataPromise({
+      bucketName: AwsConfig.virusScannerQuarantineS3Bucket,
+      expiresSeconds: 1 * 60, // expires in 1 minute,
+      size,
+    })
 
     if (presignedPostDataResult.isErr())
       return err(presignedPostDataResult.error)
