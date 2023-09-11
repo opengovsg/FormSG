@@ -1008,13 +1008,13 @@ export const getS3PresignedPostData: ControllerHandler<
     action: 'handleGetS3PresignedPostData',
     ...createReqMeta(req),
   }
-  return getQuarantinePresignedPostData(req.body)
+  return (await getQuarantinePresignedPostData(req.body))
     .map((presignedUrls) => {
       logger.info({
         message: 'Successfully retrieved quarantine presigned post data.',
         meta: logMeta,
       })
-      res.json(presignedUrls)
+      return res.json(presignedUrls)
     })
     .mapErr((error) => {
       logger.error({
@@ -1022,7 +1022,6 @@ export const getS3PresignedPostData: ControllerHandler<
         meta: logMeta,
         error,
       })
-
       const { statusCode, errorMessage } = mapRouteError(error)
       return res.status(statusCode).json({
         message: errorMessage,

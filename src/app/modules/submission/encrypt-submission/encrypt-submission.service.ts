@@ -1,4 +1,4 @@
-import { ManagedUpload } from 'aws-sdk/clients/s3'
+import { ManagedUpload, PresignedPost } from 'aws-sdk/clients/s3'
 import Bluebird from 'bluebird'
 import crypto from 'crypto'
 import moment from 'moment'
@@ -541,38 +541,67 @@ export const performEncryptPostSubmissionActions = (
     })
 }
 
-export const getQuarantinePresignedPostData = (
+const createPresignedPostDataPromise = (size: number) => {
+  return ResultAsync.fromPromise(
+    new Promise<PresignedPost>((resolve, reject) => {
+      AwsConfig.s3.createPresignedPost(
+        {
+          Bucket: AwsConfig.virusScannerQuarantineS3Bucket,
+          Expires: 1 * 60, // expires in 1 minutes,
+          Conditions: [
+            // Content length restrictions: 0 to MAX_UPLOAD_FILE_SIZE.
+            ['content-length-range', 0, size],
+          ],
+          Fields: { key: crypto.randomUUID() },
+        },
+        (err, data) => {
+          if (err) {
+            return reject(err)
+          }
+          return resolve(data)
+        },
+      )
+    }),
+    (error) => {
+      logger.error({
+        message: 'Error encountered when creating presigned POST data',
+        meta: {
+          action: 'createPresignedPostDataPromise',
+        },
+        error,
+      })
+
+      return new CreatePresignedPostError()
+    },
+  )
+}
+
+export const getQuarantinePresignedPostData = async (
   attachmentSizes: AttachmentSizeMapType[],
-): Result<
-  AttachmentPresignedPostDataMapType[],
-  InvalidFieldIdError | CreatePresignedPostError
+): Promise<
+  Result<
+    AttachmentPresignedPostDataMapType[],
+    CreatePresignedPostError | InvalidFieldIdError
+  >
 > => {
   const attachmentPresignedData: AttachmentPresignedPostDataMapType[] = []
   const totalAttachmentSizeLimit = fileSizeLimitBytes(FormResponseMode.Encrypt)
   let totalAttachmentSize = 0
-  try {
-    for (const { id, size } of attachmentSizes) {
-      if (!mongoose.isValidObjectId(id)) return err(new InvalidFieldIdError())
-      totalAttachmentSize += size
-      if (totalAttachmentSize > totalAttachmentSizeLimit)
-        return err(new AttachmentSizeLimitExceededError())
-      const presignedPostData = AwsConfig.s3.createPresignedPost({
-        Bucket: AwsConfig.virusScannerQuarantineS3Bucket,
-        Fields: { key: crypto.randomUUID() },
-        Expires: 1 * 60, // expires in 1 minutes
-        Conditions: [['content-length-range', 0, size]],
-      })
-      attachmentPresignedData.push({ id, presignedPostData })
-    }
-    return ok(attachmentPresignedData)
-  } catch (error) {
-    logger.error({
-      message: 'Error while generating presigned URLs',
-      meta: {
-        action: 'getPutQuarantinePresignedUrls',
-      },
-      error,
+  for (const { id, size } of attachmentSizes) {
+    if (!mongoose.isValidObjectId(id)) return err(new InvalidFieldIdError())
+    totalAttachmentSize += size
+    if (totalAttachmentSize > totalAttachmentSizeLimit)
+      return err(new AttachmentSizeLimitExceededError())
+
+    const presignedPostDataResult = await createPresignedPostDataPromise(size)
+
+    if (presignedPostDataResult.isErr())
+      return err(presignedPostDataResult.error)
+
+    attachmentPresignedData.push({
+      id,
+      presignedPostData: presignedPostDataResult.value,
     })
-    return err(new CreatePresignedPostError())
   }
+  return ok(attachmentPresignedData)
 }
