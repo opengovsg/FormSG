@@ -7,5 +7,3 @@ export const myInfoHdbTypes = [
   'EXECUTIVE FLAT (HDB)',
   'STUDIO APARTMENT (HDB)',
 ]
-
-export default myInfoHdbTypes

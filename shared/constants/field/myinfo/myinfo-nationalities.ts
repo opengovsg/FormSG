@@ -206,5 +206,3 @@ export const myInfoNationalities = [
   'ZAMBIAN',
   'ZIMBABWEAN',
 ]
-
-export default myInfoNationalities

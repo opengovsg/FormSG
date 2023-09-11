@@ -6,5 +6,3 @@ export const myInfoHousingTypes = [
   'SEMI-DETACHED HOUSE',
   'TERRACE HOUSE',
 ]
-
-export default myInfoHousingTypes

@@ -254,5 +254,3 @@ export const myInfoCountries = [
   'ZAMBIA',
   'ZIMBABWE',
 ]
-
-export default myInfoCountries

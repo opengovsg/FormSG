@@ -5,13 +5,13 @@ import {
   MyInfoChildVaxxStatus,
   MyInfoField,
 } from '../../../types/field'
-import COUNTRIES from './myinfo-countries'
-import DIALECTS from './myinfo-dialects'
-import NATIONALITIES from './myinfo-nationalities'
-import OCCUPATIONS from './myinfo-occupations'
-import RACES from './myinfo-races'
-import HOUSING_TYPES from './myinfo-housing-types'
-import HDB_TYPES from './myinfo-hdb-types'
+import { myInfoCountries } from './myinfo-countries'
+import { myInfoDialects } from './myinfo-dialects'
+import { myInfoNationalities } from './myinfo-nationalities'
+import { myInfoOccupations } from './myinfo-occupations'
+import { myInfoRaces } from './myinfo-races'
+import { myInfoHousingTypes } from './myinfo-housing-types'
+import { myInfoHdbTypes } from './myinfo-hdb-types'
 
 export * from './myinfo-countries'
 export * from './myinfo-dialects'
@@ -83,7 +83,7 @@ export const types: MyInfoFieldBlock[] = [
     description:
       'The race of the form-filler. This field is verified by ICA for Singaporean/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
     fieldType: BasicField.Dropdown,
-    fieldOptions: RACES,
+    fieldOptions: myInfoRaces,
     previewValue: 'CHINESE',
   },
   {
@@ -95,7 +95,7 @@ export const types: MyInfoFieldBlock[] = [
     description:
       'The nationality of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
     fieldType: BasicField.Dropdown,
-    fieldOptions: NATIONALITIES,
+    fieldOptions: myInfoNationalities,
     previewValue: 'SINGAPORE CITIZEN',
   },
   {
@@ -107,7 +107,7 @@ export const types: MyInfoFieldBlock[] = [
     description:
       'The birth country of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
     fieldType: BasicField.Dropdown,
-    fieldOptions: COUNTRIES,
+    fieldOptions: myInfoCountries,
     previewValue: 'SINGAPORE',
   },
   {
@@ -129,7 +129,7 @@ export const types: MyInfoFieldBlock[] = [
     source: 'Immigration and Checkpoints Authority',
     description: 'The dialect group of the form-filler.',
     fieldType: BasicField.Dropdown,
-    fieldOptions: DIALECTS,
+    fieldOptions: myInfoDialects,
     previewValue: 'HOKKIEN',
   },
   {
@@ -141,7 +141,7 @@ export const types: MyInfoFieldBlock[] = [
     description:
       'The type of housing that the form-filler lives in. This information is verified by HDB for public housing, and by URA for private housing.',
     fieldType: BasicField.Dropdown,
-    fieldOptions: HOUSING_TYPES,
+    fieldOptions: myInfoHousingTypes,
     previewValue: 'DETACHED HOUSE',
   },
   {
@@ -152,7 +152,7 @@ export const types: MyInfoFieldBlock[] = [
     source: 'Housing Development Board',
     description: 'The type of HDB flat that the form-filler lives in.',
     fieldType: BasicField.Dropdown,
-    fieldOptions: HDB_TYPES,
+    fieldOptions: myInfoHdbTypes,
     previewValue: 'EXECUTIVE FLAT (HDB)',
   },
   {
@@ -196,7 +196,7 @@ export const types: MyInfoFieldBlock[] = [
     description:
       'The country of marriage of the form-filler. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
     fieldType: BasicField.Dropdown,
-    fieldOptions: COUNTRIES,
+    fieldOptions: myInfoCountries,
     previewValue: 'SINGAPORE',
   },
   {
@@ -218,7 +218,7 @@ export const types: MyInfoFieldBlock[] = [
     description:
       'The occupation of the form-filler. Verified for foreigners with Singpass only.',
     fieldType: BasicField.Dropdown,
-    fieldOptions: OCCUPATIONS,
+    fieldOptions: myInfoOccupations,
     previewValue: 'MANAGING DIRECTOR/CHIEF EXECUTIVE OFFICER',
   },
   {
@@ -367,7 +367,7 @@ export const types: MyInfoFieldBlock[] = [
     source: 'Immigration & Checkpoints Authority',
     description: 'Race',
     fieldType: BasicField.Dropdown,
-    fieldOptions: RACES,
+    fieldOptions: myInfoRaces,
     previewValue: 'CHINESE',
   },
   {
@@ -378,7 +378,7 @@ export const types: MyInfoFieldBlock[] = [
     source: 'Immigration & Checkpoints Authority',
     description: 'Secondary race',
     fieldType: BasicField.Dropdown,
-    fieldOptions: RACES,
+    fieldOptions: myInfoRaces,
     previewValue: 'CHINESE',
   },
 ]

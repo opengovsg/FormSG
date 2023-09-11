@@ -53,7 +53,7 @@ export const myInfoRaces = [
   'CEYLON MOOR',
   'CEYLONESE',
   'CHAMORRO',
-  'CHINESE',
+  // 'CHINESE',
   'COCOS',
   'CORNISH',
   'CREOLE',
@@ -226,5 +226,3 @@ export const myInfoRaces = [
   'YUGOSLAV',
   'ZIMBABWEAN',
 ]
-
-export default myInfoRaces

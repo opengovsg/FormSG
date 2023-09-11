@@ -146,5 +146,3 @@ export const myInfoDialects = [
   'WENCHOW',
   'YIDDISH',
 ]
-
-export default myInfoDialects
