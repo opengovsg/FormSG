@@ -35,7 +35,6 @@ jobs:
 
   chromatic-deployment:
     needs: changes
-    if: ${{ needs.changes.outputs.frontend == 'true' }}
     # Operating System
     runs-on: ubuntu-latest
     # Job steps
