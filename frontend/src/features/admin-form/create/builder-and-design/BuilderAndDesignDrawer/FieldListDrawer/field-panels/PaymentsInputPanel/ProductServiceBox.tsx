@@ -8,7 +8,12 @@ import {
   Flex,
   FormControl,
   Stack,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
   Text,
+  Tr,
   useDisclosure,
 } from '@chakra-ui/react'
 
@@ -48,28 +53,62 @@ const ProductItem = ({
             <Text textStyle="subhead-1" pb="0.25rem" color="secondary.500">
               {product.name}
             </Text>
-            <Flex gap="1rem">
-              <Flex flexDir="column">
-                <Text textStyle="caption-1" color="content.medium">
-                  Amount
-                </Text>
-                {product.multi_qty && (
-                  <Text textStyle="caption-1" color="content.medium">
-                    Quantity limit
-                  </Text>
-                )}
-              </Flex>
-              <Flex flexDir="column">
-                <Text textStyle="caption-1" color="secondary.500">
-                  S${centsToDollars(product.amount_cents)}
-                </Text>
-                {product.multi_qty && (
-                  <Text textStyle="caption-1" color="secondary.500">
-                    between {product.min_qty} to {product.max_qty}
-                  </Text>
-                )}
-              </Flex>
-            </Flex>
+            <TableContainer>
+              <Table
+                style={{
+                  borderCollapse: 'separate',
+                  borderSpacing: '0 0',
+                }}
+              >
+                <Tbody>
+                  <Tr>
+                    <Td
+                      py="0"
+                      pl="0"
+                      pr="1rem"
+                      borderBottom="0"
+                      textAlign="left"
+                      textStyle="caption-1"
+                      color="content.medium"
+                      w="1%"
+                    >
+                      Amount
+                    </Td>
+                    <Td
+                      p="0"
+                      borderBottom="0"
+                      textStyle="caption-1"
+                      color="secondary.500"
+                    >
+                      S${centsToDollars(product.amount_cents)}
+                    </Td>
+                  </Tr>
+                  {product.multi_qty && (
+                    <Tr>
+                      <Td
+                        py="0"
+                        pl="0"
+                        pr="1rem"
+                        borderBottom="0"
+                        textStyle="caption-1"
+                        color="content.medium"
+                        w="1%"
+                      >
+                        Quantity limit
+                      </Td>
+                      <Td
+                        p="0"
+                        borderBottom="0"
+                        textStyle="caption-1"
+                        color="secondary.500"
+                      >
+                        between {product.min_qty} to {product.max_qty}
+                      </Td>
+                    </Tr>
+                  )}
+                </Tbody>
+              </Table>
+            </TableContainer>
           </Box>
 
           <ButtonGroup variant="clear" colorScheme="secondary" spacing={0}>
