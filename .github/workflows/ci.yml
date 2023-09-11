@@ -54,6 +54,7 @@ jobs:
           node-version: 18
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
+      - run: export NODE_OPTIONS=--openssl-legacy-provider
       - run: npm ci
       - run: npm run build
         env:
