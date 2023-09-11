@@ -999,7 +999,7 @@ export const handleGetMetadata = [
   getMetadata,
 ] as ControllerHandler[]
 
-export const getS3PresignedPostData: ControllerHandler<
+const getS3PresignedPostData: ControllerHandler<
   unknown,
   AttachmentPresignedPostDataMapType[] | ErrorDto,
   AttachmentSizeMapType[]
