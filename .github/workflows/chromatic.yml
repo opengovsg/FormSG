@@ -46,7 +46,7 @@ jobs:
           node-version: 18
           cache: 'npm'
       - name: Install dependencies
-        run: rm -rf node_modules/ && export NODE_OPTIONS=--openssl-legacy-provider && npm ci
+        run: npm ci --legacy-peer-deps
         # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
         uses: chromaui/action@v1
