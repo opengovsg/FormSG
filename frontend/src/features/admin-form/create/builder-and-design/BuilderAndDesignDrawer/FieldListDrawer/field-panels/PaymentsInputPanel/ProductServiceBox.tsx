@@ -1,10 +1,19 @@
 import { useState } from 'react'
 import { FormState } from 'react-hook-form'
-import { BiEditAlt, BiPlus, BiTrash } from 'react-icons/bi'
+import {
+  BiDotsHorizontalRounded,
+  BiEditAlt,
+  BiPlus,
+  BiTrash,
+} from 'react-icons/bi'
 import {
   Box,
   ButtonGroup,
   Divider,
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerOverlay,
   Flex,
   FormControl,
   Stack,
@@ -20,6 +29,7 @@ import {
 import { FormPaymentsField, Product } from '~shared/types'
 import { centsToDollars } from '~shared/utils/payments'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'
@@ -45,14 +55,23 @@ const ProductItem = ({
   onDeleteClick: () => void
   isDisabled: boolean
 }) => {
+  const isMobile = useIsMobile()
   return (
     <>
       <Box px="1rem" py="1rem" backgroundColor={'#F8F9FD'}>
         <Flex justifyContent="center">
           <Box flexGrow={1}>
-            <Text textStyle="subhead-1" pb="0.25rem" color="secondary.500">
-              {product.name}
-            </Text>
+            <Flex justifyContent="space-between">
+              <Text textStyle="subhead-1" pb="0.25rem" color="secondary.500">
+                {product.name}
+              </Text>
+              {isMobile && (
+                <MobileProductItemMenu
+                  onDeleteClick={onDeleteClick}
+                  onEditClick={onEditClick}
+                />
+              )}
+            </Flex>
             <TableContainer>
               <Table
                 style={{
@@ -111,25 +130,80 @@ const ProductItem = ({
             </TableContainer>
           </Box>
 
-          <ButtonGroup variant="clear" colorScheme="secondary" spacing={0}>
-            <IconButton
-              isDisabled={isDisabled}
-              icon={<BiEditAlt type="solid" />}
-              color="primary.500"
-              aria-label={'Edit'}
-              onClick={onEditClick}
-            />
-            <IconButton
-              isDisabled={isDisabled}
-              icon={<BiTrash />}
-              color="danger.500"
-              aria-label={'Delete'}
-              onClick={onDeleteClick}
-            />
-          </ButtonGroup>
+          {!isMobile && (
+            <ButtonGroup variant="clear" colorScheme="secondary" spacing={0}>
+              <IconButton
+                isDisabled={isDisabled}
+                icon={<BiEditAlt type="solid" />}
+                color="primary.500"
+                aria-label={'Edit'}
+                onClick={onEditClick}
+              />
+              <IconButton
+                isDisabled={isDisabled}
+                icon={<BiTrash />}
+                color="danger.500"
+                aria-label={'Delete'}
+                onClick={onDeleteClick}
+              />
+            </ButtonGroup>
+          )}
         </Flex>
       </Box>
     </>
+  )
+}
+
+const MobileProductItemMenu = ({
+  onEditClick,
+  onDeleteClick,
+}: {
+  onEditClick: () => void
+  onDeleteClick: () => void
+}) => {
+  const { isOpen, onOpen, onClose } = useDisclosure()
+
+  return (
+    <Box display={{ md: 'none' }}>
+      <IconButton
+        variant="clear"
+        aria-label="More options"
+        icon={<BiDotsHorizontalRounded fontSize="1.25rem" />}
+        onClick={onOpen}
+        size="xs"
+      />
+      <Drawer placement="bottom" onClose={onClose} isOpen={isOpen}>
+        <DrawerOverlay />
+        <DrawerContent borderTopRadius="0.25rem">
+          <DrawerBody px={0} py="0.5rem">
+            <ButtonGroup
+              flexDir="column"
+              spacing={0}
+              w="100%"
+              variant="clear"
+              colorScheme="secondary"
+            >
+              <Button
+                onClick={onEditClick}
+                leftIcon={<BiEditAlt fontSize="1.25rem" />}
+                justifyContent="left"
+              >
+                Edit
+              </Button>
+              <Divider />
+              <Button
+                onClick={onDeleteClick}
+                color="danger.500"
+                leftIcon={<BiTrash fontSize="1.25rem" />}
+                justifyContent="left"
+              >
+                Delete
+              </Button>
+            </ButtonGroup>
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
+    </Box>
   )
 }
 
