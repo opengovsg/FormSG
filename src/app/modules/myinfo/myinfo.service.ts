@@ -12,17 +12,7 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import CircuitBreaker from 'opossum'
 
 import {
-  myInfoCountries,
-  myInfoDialects,
-  myInfoHdbTypes,
-  myInfoHousingTypes,
-  myInfoNationalities,
-  myInfoOccupations,
-  myInfoRaces,
-} from '../../../../shared/constants/field/myinfo'
-import {
   MyInfoAttribute as InternalAttr,
-  MyInfoAttribute,
   MyInfoChildData,
 } from '../../../../shared/types'
 import {
@@ -70,7 +60,9 @@ import {
   compareHashedValues,
   createRelayState,
   getMyInfoAttr,
+  getMyInfoAttributeConstantsList,
   hashFieldValues,
+  isFieldValueInMyinfoList,
   isMyInfoChildrenBirthRecords,
   isMyInfoLoginCookie,
   isMyInfoRelayState,
@@ -263,6 +255,7 @@ export class MyInfoServiceClass {
     currFormFields: LeanDocument<IFieldSchema[]>,
   ): ResultAsync<PossiblyPrefilledField[], MyInfoHashingError | DatabaseError> {
     const allChildAttrs: InternalAttr[] = []
+
     const prefilledFields = currFormFields.map((field) => {
       const myInfoAttr = getMyInfoAttr(field)
       // Children field prefilling is handled by the frontend.
@@ -281,57 +274,11 @@ export class MyInfoServiceClass {
         myInfoAttr as InternalAttr,
       )
 
-      // Add logging to check if Myinfo field value exists in our constants lists
-      const isFieldValueInMyinfoListCheck = (
-        fieldValue: string,
-        myInfoAttr: string | string[],
-        myInfoList: string[],
-      ) => {
-        const isFieldValueInMyinfoList = myInfoList.includes(fieldValue)
-        if (!isFieldValueInMyinfoList) {
-          logger.error({
-            message: 'Myinfo field value not found in existing list',
-            meta: {
-              action: 'prefillAndSaveMyInfoFields',
-              myInfoFieldValue: fieldValue,
-              myInfoAttr,
-            },
-          })
-        }
-      }
-
-      // Check if field value exists in our constants lists
+      // Check if field value exists in our constants lists. If it doesn't, log the error
       if (fieldValue) {
-        if (myInfoAttr === MyInfoAttribute.Occupation) {
-          isFieldValueInMyinfoListCheck(
-            fieldValue,
-            myInfoAttr,
-            myInfoOccupations,
-          )
-        } else if (
-          myInfoAttr === MyInfoAttribute.Race ||
-          myInfoAttr === MyInfoAttribute.ChildRace ||
-          myInfoAttr === MyInfoAttribute.ChildSecondaryRace
-        ) {
-          isFieldValueInMyinfoListCheck(fieldValue, myInfoAttr, myInfoRaces)
-        } else if (myInfoAttr === MyInfoAttribute.Nationality) {
-          isFieldValueInMyinfoListCheck(
-            fieldValue,
-            myInfoAttr,
-            myInfoNationalities,
-          )
-        } else if (myInfoAttr === MyInfoAttribute.Dialect) {
-          isFieldValueInMyinfoListCheck(fieldValue, myInfoAttr, myInfoDialects)
-        } else if (myInfoAttr === MyInfoAttribute.BirthCountry) {
-          isFieldValueInMyinfoListCheck(fieldValue, myInfoAttr, myInfoCountries)
-        } else if (myInfoAttr === MyInfoAttribute.HousingType) {
-          isFieldValueInMyinfoListCheck(
-            fieldValue,
-            myInfoAttr,
-            myInfoHousingTypes,
-          )
-        } else if (myInfoAttr === MyInfoAttribute.HdbType) {
-          isFieldValueInMyinfoListCheck(fieldValue, myInfoAttr, myInfoHdbTypes)
+        const myInfoConstantsList = getMyInfoAttributeConstantsList(myInfoAttr)
+        if (myInfoConstantsList) {
+          isFieldValueInMyinfoList(fieldValue, myInfoAttr, myInfoConstantsList)
         }
       }
 
