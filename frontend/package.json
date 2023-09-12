@@ -185,6 +185,7 @@
     "patch-package": "^6.4.7",
     "prettier": "^2.5.1",
     "puppeteer": "^13.0.0",
+    "react-refresh": "^0.14.0",
     "react-scripts": "^4.0.3",
     "resize-observer-polyfill": "^1.5.1",
     "rimraf": "^3.0.2",
