@@ -574,7 +574,7 @@ export const getMyInfoAttributeConstantsList = (
  * @param myInfoList
  */
 
-export const isFieldValueInMyinfoList = (
+export const logIfFieldValueNotInMyinfoList = (
   fieldValue: string,
   myInfoAttr: string | string[],
   myInfoList: string[],

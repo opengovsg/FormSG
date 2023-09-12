@@ -62,10 +62,10 @@ import {
   getMyInfoAttr,
   getMyInfoAttributeConstantsList,
   hashFieldValues,
-  isFieldValueInMyinfoList,
   isMyInfoChildrenBirthRecords,
   isMyInfoLoginCookie,
   isMyInfoRelayState,
+  logIfFieldValueNotInMyinfoList,
   validateMyInfoForm,
 } from './myinfo.util'
 import getMyInfoHashModel from './myinfo_hash.model'
@@ -277,7 +277,11 @@ export class MyInfoServiceClass {
       if (fieldValue) {
         const myInfoConstantsList = getMyInfoAttributeConstantsList(myInfoAttr)
         if (myInfoConstantsList) {
-          isFieldValueInMyinfoList(fieldValue, myInfoAttr, myInfoConstantsList)
+          logIfFieldValueNotInMyinfoList(
+            fieldValue,
+            myInfoAttr,
+            myInfoConstantsList,
+          )
         }
       }
 
