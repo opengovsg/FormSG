@@ -6,8 +6,6 @@ import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Transform } from 'stream'
 
-import { createPresignedPostDataPromise } from 'src/app/utils/aws-s3'
-
 import {
   FormResponseMode,
   StorageModeSubmissionMetadata,
@@ -25,6 +23,7 @@ import {
 import { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
+import { createPresignedPostDataPromise } from '../../../utils/aws-s3'
 import { isMalformedDate } from '../../../utils/date'
 import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
 import {
