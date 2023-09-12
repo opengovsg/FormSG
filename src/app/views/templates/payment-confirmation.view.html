@@ -6,6 +6,28 @@
       body {
         font-family: 'Inter', sans-serif;
       }
+      .body-1 {
+        font-style: normal;
+        font-weight: 400;
+        font-size: 16px;
+        line-height: 24px;
+        letter-spacing: -0.011em;
+        font-feature-settings: 'tnum' on, 'lnum' on, 'cv05' on;
+      }
+      .subhead-1 {
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 24px;
+        letter-spacing: -0.011em;
+        font-feature-settings: 'tnum' on, 'lnum' on, 'cv05' on;
+      }
+      .subhead-2 {
+        font-weight: 500;
+        font-size: 14px;
+        line-height: 20px;
+        letter-spacing: -0.006em;
+        font-feature-settings: 'tnum' on, 'lnum' on, 'cv05' on;
+      }
     </style>
   </head>
   <body
@@ -22,6 +44,7 @@
         margin-right: auto;
         margin-bottom: auto;
         margin-top: 48px;
+        border-radius: 16px;
       "
     >
       <p>
@@ -36,29 +59,28 @@
           letter-spacing: -0.019em;
           font-feature-settings: 'cv05' on, 'cv10' on;
 
-          color: #1b1f2c;
+          color: #2c2e34;
           margin-bottom: 32px;
         "
       >
         Your payment on <%= formTitle %> has been received successfully.
       </p>
-      <div
-        style="
-          font-style: normal;
-          font-weight: 400;
-          font-size: 16px;
-          line-height: 24px;
-          letter-spacing: -0.006em;
-
-          color: #474747;
-
-          margin-bottom: 32px;
-        "
-      >
-        <p style="margin: 0px">Form: <%= formTitle %></p>
-        <p style="margin: 0px">Response ID: <%= submissionId %></p>
-        <p style="margin: 0px">Amount paid: S$<%= amountPaid %></p>
-        <p>Please visit the link below for your proof of payment.</p>
+      <div style="color: #454953; margin-bottom: 32px">
+        <p style="margin: 0px">
+          <span class="body-1">Form:</span>
+          <span class="subhead-1"> <%= formTitle %></span>
+        </p>
+        <p style="margin: 0px">
+          <span class="body-1">Response ID:</span>
+          <span class="subhead-1"> <%= submissionId %></span>
+        </p>
+        <p style="margin: 0px">
+          <span class="body-1">Amount paid:</span>
+          <span class="subhead-1"> S$<%= amountPaid %></span>
+        </p>
+        <p class="body-1">
+          Please visit the link below for your proof of payment.
+        </p>
       </div>
       <a href="<%= invoiceUrl %>" style="color: #fff; text-decoration: none">
         <button
@@ -79,43 +101,19 @@
 
             color: #ffffff;
 
-            margin-bottom: 32px;
+            margin-bottom: 36px;
           "
         >
           View proof of payment
         </button>
       </a>
       <hr style="border-top: 1px" />
-      <div style="margin-top: 32px">
-        <p
-          style="
-            font-style: normal;
-            font-weight: 500;
-            font-size: 14px;
-            line-height: 20px;
-            letter-spacing: -0.006em;
-            font-feature-settings: 'cv05' on, 'cv10' on;
-
-            /* color/base/content/default */
-            color: #474747;
-          "
-        >
+      <div style="margin-top: 36px">
+        <p style="color: #454953" class="subhead-2">
           If you are having trouble with the button above, copy and paste the
           link below into your browser:
         </p>
-        <p
-          style="
-            color: #445fcd;
-            word-wrap: break-word;
-
-            font-style: normal;
-            font-weight: 500;
-            font-size: 14px;
-            line-height: 20px;
-            letter-spacing: -0.006em;
-            font-feature-settings: 'cv05' on, 'cv10' on;
-          "
-        >
+        <p style="color: #445fcd; word-wrap: break-word" class="subhead-2">
           <%= invoiceUrl %>
         </p>
       </div>
