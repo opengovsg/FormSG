@@ -8336,5 +8336,3 @@ export const myInfoOccupations = [
   'YOUTH RESIDENTIAL ASSISTANT',
   'YOUTH WORKER',
 ]
-
-export default myInfoOccupations
