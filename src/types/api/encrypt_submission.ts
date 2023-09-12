@@ -1,5 +1,7 @@
 import type { Merge } from 'type-fest'
 
+import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
+
 import {
   AttachmentResponse,
   FieldResponse,
@@ -10,10 +12,11 @@ import {
 import { IPopulatedEncryptedForm, IPopulatedForm } from '../form'
 
 import { ParsedEmailModeSubmissionBody } from './email_submission'
+import { ParsedClearFormFieldResponse } from './submission'
 
 export type EncryptSubmissionDto = Merge<
   StorageModeSubmissionContentDto,
-  { responses: EncryptFormFieldResponse[] }
+  { responses: EncryptFormFieldResponse[] | ProcessedFieldResponse[] }
 >
 
 export type EncryptAttachmentResponse = AttachmentResponse & {
@@ -42,14 +45,10 @@ export type FormLoadedDto = {
   encryptedFormDef: IPopulatedEncryptedForm
 }
 
-export type EncryptingPayloadDto = {
-  formsg: FormLoadedDto & {
-    encryptedPayload?: EncryptSubmissionDto
-  }
+export type FormFilteredResponseDto = FormLoadedDto & {
+  filteredResponses: ParsedClearFormFieldResponse[]
 }
 
-export type FormsgCompleteDto = {
-  formsg: FormLoadedDto & {
-    encryptedPayload: EncryptSubmissionDto
-  }
+export type FormCompleteDto = FormFilteredResponseDto & {
+  encryptedPayload: EncryptSubmissionDto
 }
