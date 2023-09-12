@@ -13,17 +13,14 @@
         margin-left: auto;
         margin-right: auto;
         margin-bottom: auto;
-        margin-top: auto;
+        margin-top: 48px;
       "
     >
       <p>
-        <img width="72px" src="https://file.go.gov.sg/form-logo.png" />
+        <img width="94.14px" src="https://file.go.gov.sg/form-logo.png" />
       </p>
       <p
         style="
-          width: 411px;
-          height: 64px;
-
           font-family: 'Inter';
           font-style: normal;
           font-weight: 600;
@@ -57,34 +54,49 @@
         <p style="margin: 0px">Amount paid: S$<%= amountPaid %></p>
         <p>Please visit the link below for your proof of payment.</p>
       </div>
-      <button
-        style="
-          background: #445fcd;
-          border: 1px solid #445fcd;
-          border-radius: 4px;
+      <a href="<%= invoiceUrl %>" style="color: #fff; text-decoration: none">
+        <button
+          style="
+            background: #445fcd;
+            border: 1px solid #445fcd;
+            border-radius: 4px;
 
-          width: 100%;
-          height: 56px;
+            width: 100%;
+            height: 56px;
 
-          font-family: 'Inter';
-          font-style: normal;
-          font-weight: 500;
-          font-size: 16px;
-          line-height: 24px;
-          text-align: center;
-          letter-spacing: -0.006em;
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 500;
+            font-size: 16px;
+            line-height: 24px;
+            text-align: center;
+            letter-spacing: -0.006em;
 
-          color: #ffffff;
+            color: #ffffff;
 
-          margin-bottom: 32px;
-        "
-        onclick="window.location.href='<%= invoiceUrl %>'"
-      >
-        View proof of payment
-      </button>
+            margin-bottom: 32px;
+          "
+        >
+          View proof of payment
+        </button>
+      </a>
       <hr style="border-top: 1px" />
       <div style="margin-top: 32px">
-        <p>
+        <p
+          style="
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 500;
+            font-size: 14px;
+            line-height: 20px;
+            /* or 143% */
+            letter-spacing: -0.006em;
+            font-feature-settings: 'cv05' on, 'cv10' on;
+
+            /* color/base/content/default */
+            color: #474747;
+          "
+        >
           If you are having trouble with the button above, copy and paste the
           link below into your browser:
         </p>
