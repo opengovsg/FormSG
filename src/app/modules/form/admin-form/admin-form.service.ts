@@ -181,6 +181,7 @@ const createPresignedPostUrl = (
     expiresSeconds: PRESIGNED_POST_EXPIRY_SECS,
     size: MAX_UPLOAD_FILE_SIZE,
     key: fileId,
+    acl: 'public-read',
     fileMd5Hash,
     fileType,
   })

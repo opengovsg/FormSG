@@ -22,6 +22,7 @@ type CreatePresignedPostDataParams = {
   key?: string
   fileMd5Hash?: string
   fileType?: string
+  acl?: string
 }
 
 export const createPresignedPostDataPromise = (
@@ -39,6 +40,7 @@ export const createPresignedPostDataPromise = (
           ],
           Fields: {
             key: params.key ?? crypto.randomUUID(),
+            ...(params.acl ? { acl: params.acl } : undefined),
             ...(params.fileMd5Hash
               ? { 'Content-MD5': params.fileMd5Hash }
               : undefined),
