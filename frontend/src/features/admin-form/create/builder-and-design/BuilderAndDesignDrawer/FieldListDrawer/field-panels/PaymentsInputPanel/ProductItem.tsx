@@ -39,7 +39,7 @@ export const ProductItem = ({
   return (
     <>
       <Box px="1rem" py="1rem" backgroundColor={'#F8F9FD'}>
-        <Flex justifyContent="center">
+        <Flex justifyContent="center" alignItems="center">
           <Box flexGrow={1}>
             <Flex justifyContent="space-between">
               <Text textStyle="subhead-1" pb="0.25rem" color="secondary.500">
@@ -69,7 +69,7 @@ export const ProductItem = ({
                       borderBottom="0"
                       textAlign="left"
                       textStyle="caption-1"
-                      color="content.medium"
+                      color="secondary.400"
                       w="1%"
                     >
                       Amount
@@ -91,7 +91,7 @@ export const ProductItem = ({
                         pr="1rem"
                         borderBottom="0"
                         textStyle="caption-1"
-                        color="content.medium"
+                        color="secondary.400"
                         w="1%"
                       >
                         Quantity limit
