@@ -2980,8 +2980,7 @@ export const handleSetGoLinkSuffix: ControllerHandler<
           axios.post(
             `${goGovBaseUrl}/api/v1/admin/urls`,
             {
-              //longUrl: `${process.env.APP_URL}/${formId}`,
-              longUrl: 'https://staging.form.gov.sg/64ddae6917df8a001264f1a7',
+              longUrl: `${process.env.APP_URL}/${formId}`,
               shortUrl: linkSuffix,
               email: adminEmail,
             },
@@ -3005,7 +3004,7 @@ export const handleSetGoLinkSuffix: ControllerHandler<
       })
       // Step 3: After obtaining GoGov link, save it to the form
       .andThen(() => AdminFormService.setGoLinkSuffix(formId, linkSuffix))
-      .map((data) => res.status(StatusCodes.OK).json(data))
+      .map(() => res.sendStatus(StatusCodes.OK))
       .mapErr((error) => {
         logger.error({
           message: 'Error occurred when setting GoGov link suffix',
