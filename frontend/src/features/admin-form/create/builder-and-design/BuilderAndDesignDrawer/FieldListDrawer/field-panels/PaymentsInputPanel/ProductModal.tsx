@@ -178,7 +178,7 @@ export const ProductModal = ({
         <ModalHeader>{product ? 'Edit' : 'Add'} product/service</ModalHeader>
         <ModalBody>
           <Stack spacing={{ base: '1rem', md: '1.5rem' }} divider={<Divider />}>
-            <Stack>
+            <Stack mb="0.5rem">
               <FormControl isInvalid={!!errors.name} pb="1.5rem">
                 <FormLabel
                   isRequired
@@ -205,40 +205,46 @@ export const ProductModal = ({
               </FormControl>
             </Stack>
 
-            <FormControl isInvalid={!!errors.display_amount}>
-              <Skeleton isLoaded={!isLoadingSettings}>
-                <FormLabel
-                  isRequired
-                  description={hasGST ? 'Including GST' : undefined}
-                >
-                  Amount
-                </FormLabel>
-              </Skeleton>
-              <Skeleton isLoaded={!isLoadingSettings}>
-                <Controller
-                  name={DISPLAY_AMOUNT_KEY}
-                  control={control}
-                  rules={amountValidation}
-                  render={({ field }) => (
-                    <MoneyInput
-                      flex={1}
-                      step={0}
-                      inputMode="decimal"
-                      placeholder="0.00"
-                      {...field}
-                      onChange={(e) => {
-                        field.onChange(e)
-                        trigger([MIN_QTY_KEY, MAX_QTY_KEY, DISPLAY_AMOUNT_KEY])
-                      }}
-                    />
-                  )}
-                />
-                <FormErrorMessage>
-                  {errors.display_amount?.message}
-                </FormErrorMessage>
-              </Skeleton>
-            </FormControl>
-            <Box>
+            <Box my="0.5rem">
+              <FormControl isInvalid={!!errors.display_amount}>
+                <Skeleton isLoaded={!isLoadingSettings}>
+                  <FormLabel
+                    isRequired
+                    description={hasGST ? 'Including GST' : undefined}
+                  >
+                    Amount
+                  </FormLabel>
+                </Skeleton>
+                <Skeleton isLoaded={!isLoadingSettings}>
+                  <Controller
+                    name={DISPLAY_AMOUNT_KEY}
+                    control={control}
+                    rules={amountValidation}
+                    render={({ field }) => (
+                      <MoneyInput
+                        flex={1}
+                        step={0}
+                        inputMode="decimal"
+                        placeholder="0.00"
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e)
+                          trigger([
+                            MIN_QTY_KEY,
+                            MAX_QTY_KEY,
+                            DISPLAY_AMOUNT_KEY,
+                          ])
+                        }}
+                      />
+                    )}
+                  />
+                  <FormErrorMessage>
+                    {errors.display_amount?.message}
+                  </FormErrorMessage>
+                </Skeleton>
+              </FormControl>
+            </Box>
+            <Box mt="0.5rem">
               <FormControl>
                 <Controller
                   name={MULTI_QTY_KEY}
