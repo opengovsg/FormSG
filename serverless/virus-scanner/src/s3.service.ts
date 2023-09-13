@@ -132,7 +132,7 @@ export class S3Service {
     sourceObjectVersionId,
     destinationBucketName,
     destinationObjectKey,
-  }: MoveS3FileParams) {
+  }: MoveS3FileParams): Promise<string> {
     this.logger.info(
       {
         sourceBucketName,
@@ -145,13 +145,28 @@ export class S3Service {
     )
 
     try {
-      await this.s3Client.send(
+      const { VersionId } = await this.s3Client.send(
         new CopyObjectCommand({
           Key: destinationObjectKey,
           Bucket: destinationBucketName,
           CopySource: `${sourceBucketName}/${sourceObjectKey}?versionId=${sourceObjectVersionId}`,
         }),
       )
+
+      if (!VersionId) {
+        this.logger.error(
+          {
+            sourceBucketName,
+            sourceObjectKey,
+            sourceObjectVersionId,
+            destinationBucketName,
+            destinationObjectKey,
+          },
+          'VersionId is empty after copying object in s3',
+        )
+
+        throw new Error('VersionId is empty')
+      }
 
       await this.s3Client.send(
         new DeleteObjectCommand({
@@ -168,9 +183,12 @@ export class S3Service {
           sourceObjectVersionId,
           destinationBucketName,
           destinationObjectKey,
+          destinationVersionId: VersionId,
         },
         'Moved document in s3',
       )
+
+      return VersionId
     } catch (error) {
       this.logger.error(
         {

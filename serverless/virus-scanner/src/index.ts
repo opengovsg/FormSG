@@ -147,8 +147,11 @@ export const handler = async (
       key: quarantineFileKey,
       versionId,
     })
+
+    let destinationVersionId: string
+
     try {
-      await s3Client.moveS3File({
+      destinationVersionId = await s3Client.moveS3File({
         sourceBucketName: quarantineBucket,
         sourceObjectKey: quarantineFileKey,
         sourceObjectVersionId: versionId,
@@ -174,6 +177,7 @@ export const handler = async (
     logger.info({
       message: 'clean file moved to clean bucket',
       cleanFileKey,
+      destinationVersionId,
     })
 
     return {
@@ -181,6 +185,7 @@ export const handler = async (
       body: JSON.stringify({
         message: 'File scan completed',
         cleanFileKey,
+        destinationVersionId,
       }),
     }
   }
