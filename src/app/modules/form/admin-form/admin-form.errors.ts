@@ -74,6 +74,7 @@ export class GoGovBadGatewayError extends GoGovError {
 }
 
 export class GoGovServerError extends GoGovError {
+  // Default error message will be shown if not AxiosError
   constructor(message = 'Unexpected error occured when claiming GoGov link') {
     super(message)
   }

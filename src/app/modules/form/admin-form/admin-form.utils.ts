@@ -529,9 +529,10 @@ export const mapGoGovErrors = (error: AxiosError): GoGovError => {
 
   switch (error.response?.status) {
     case StatusCodes.BAD_REQUEST:
-      // There can be two types of Bad Request from GoGov
+      // There can be three types of Bad Request from GoGov
       // Short link already exists, which returns type=ShortUrlError
       // Or validation error, which does not contain type
+      // Or if url is not https (like localhost), however, this should not happen as we prepend the app url in admin-form-controller
       // TODO: Verify with GoGov team on response data shape
       return (error.response.data as GoGovReturnedData).type
         ? new GoGovAlreadyExistError()
