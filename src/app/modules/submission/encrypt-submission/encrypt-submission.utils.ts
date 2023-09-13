@@ -42,7 +42,6 @@ import {
   EmptyErrorFieldError,
   MalformedParametersError,
 } from '../../core/core.errors'
-import { CreatePresignedUrlError } from '../../form/admin-form/admin-form.errors'
 import {
   ForbiddenFormError,
   FormDeletedError,
@@ -215,7 +214,7 @@ const errorMapper: MapRouteError = (
           'The form has been updated. Please refresh and submit again.',
       }
     case PaymentNotFoundError:
-    case CreatePresignedUrlError:
+    case CreatePresignedPostError:
     case DatabaseError:
     case EmptyErrorFieldError:
       return {
@@ -227,11 +226,6 @@ const errorMapper: MapRouteError = (
     case AttachmentSizeLimitExceededError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
-        errorMessage: error.message,
-      }
-    case CreatePresignedPostError:
-      return {
-        statusCode: StatusCodes.BAD_GATEWAY,
         errorMessage: error.message,
       }
     default:

@@ -91,7 +91,6 @@ import {
 } from './../../../services/sms/sms.types'
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
-  CreatePresignedUrlError,
   EditFieldError,
   FieldNotFoundError,
   InvalidCollaboratorError,
@@ -214,13 +213,13 @@ const createPresignedPostUrl = (
  *
  * @returns ok(presigned post url) when creation is successful
  * @returns err(InvalidFileTypeError) when given file type is not supported
- * @returns err(CreatePresignedUrlError) when errors occurs on S3 side whilst creating presigned post url.
+ * @returns err(CreatePresignedPostError) when errors occurs on S3 side whilst creating presigned post url.
  */
 export const createPresignedPostUrlForImages = (
   uploadParams: PresignedPostUrlParams,
 ): ResultAsync<
   PresignedPost,
-  InvalidFileTypeError | CreatePresignedUrlError
+  InvalidFileTypeError | CreatePresignedPostError
 > => {
   return createPresignedPostUrl(AwsConfig.imageS3Bucket, uploadParams)
 }
@@ -234,13 +233,13 @@ export const createPresignedPostUrlForImages = (
  *
  * @returns ok(presigned post url) when creation is successful
  * @returns err(InvalidFileTypeError) when given file type is not supported
- * @returns err(CreatePresignedUrlError) when errors occurs on S3 side whilst creating presigned post url.
+ * @returns err(CreatePresignedPostError) when errors occurs on S3 side whilst creating presigned post url.
  */
 export const createPresignedPostUrlForLogos = (
   uploadParams: PresignedPostUrlParams,
 ): ResultAsync<
   PresignedPost,
-  InvalidFileTypeError | CreatePresignedUrlError
+  InvalidFileTypeError | CreatePresignedPostError
 > => {
   return createPresignedPostUrl(AwsConfig.logoS3Bucket, uploadParams)
 }

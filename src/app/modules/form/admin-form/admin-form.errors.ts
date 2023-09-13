@@ -1,14 +1,7 @@
-import { CreatePresignedPostError } from '../../../utils/aws-s3'
 import { ApplicationError } from '../../core/core.errors'
 
 export class InvalidFileTypeError extends ApplicationError {
   constructor(message = 'Unsupported file type') {
-    super(message)
-  }
-}
-
-export class CreatePresignedUrlError extends CreatePresignedPostError {
-  constructor(message: string) {
     super(message)
   }
 }

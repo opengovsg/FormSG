@@ -12,7 +12,6 @@ import {
   DatabaseError,
   MalformedParametersError,
 } from 'src/app/modules/core/core.errors'
-import { CreatePresignedUrlError } from 'src/app/modules/form/admin-form/admin-form.errors'
 import { PaymentNotFoundError } from 'src/app/modules/payments/payments.errors'
 import { CreatePresignedPostError } from 'src/app/utils/aws-s3'
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
@@ -840,7 +839,7 @@ describe('encrypt-submission.service', () => {
       expect(awsSpy).not.toHaveBeenCalled()
     })
 
-    it('should return CreatePresignedUrlError when error occurs during the signed url creation process', async () => {
+    it('should return CreatePresignedPostError when error occurs during the signed url creation process', async () => {
       // Arrange
       jest
         .spyOn(aws.s3, 'getSignedUrlPromise')
@@ -857,7 +856,7 @@ describe('encrypt-submission.service', () => {
       expect(actualResult.isErr()).toEqual(true)
       // Should reject even if there are some passing promises.
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new CreatePresignedUrlError('Failed to create attachment URL'),
+        new CreatePresignedPostError('Failed to create attachment URL'),
       )
     })
   })

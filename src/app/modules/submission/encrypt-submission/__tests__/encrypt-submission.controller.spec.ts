@@ -4,7 +4,7 @@ import { err, errAsync, ok, okAsync } from 'neverthrow'
 
 import * as AuthService from 'src/app/modules/auth/auth.service'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
-import { CreatePresignedUrlError } from 'src/app/modules/form/admin-form/admin-form.errors'
+import { CreatePresignedPostError } from 'src/app/modules/form/admin-form/admin-form.errors'
 import { PermissionLevel } from 'src/app/modules/form/admin-form/admin-form.types'
 import {
   ForbiddenFormError,
@@ -357,7 +357,7 @@ describe('encrypt-submission.controller', () => {
         okAsync({} as SubmissionData),
       )
       MockEncryptSubService.transformAttachmentMetasToSignedUrls.mockReturnValueOnce(
-        errAsync(new CreatePresignedUrlError(mockErrorString)),
+        errAsync(new CreatePresignedPostError(mockErrorString)),
       )
 
       const mockRes = expressHandler.mockResponse()

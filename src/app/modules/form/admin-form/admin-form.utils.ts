@@ -16,6 +16,7 @@ import { FormFieldSchema, IPopulatedForm, IUserSchema } from '../../../../types'
 import { EditFormFieldParams } from '../../../../types/api'
 import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
+import { CreatePresignedPostError } from '../../../utils/aws-s3'
 import { isPossibleEmailFieldSchema } from '../../../utils/field-validation/field-validation.guards'
 import {
   ApplicationError,
@@ -46,7 +47,6 @@ import {
 import { UNICODE_ESCAPED_REGEX } from '../form.utils'
 
 import {
-  CreatePresignedUrlError,
   EditFieldError,
   FieldNotFoundError,
   GoGovError,
@@ -80,7 +80,7 @@ export const mapRouteError = (
         errorMessage: error.message,
       }
     case InvalidFileTypeError:
-    case CreatePresignedUrlError:
+    case CreatePresignedPostError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,

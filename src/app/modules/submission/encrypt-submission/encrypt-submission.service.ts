@@ -35,7 +35,6 @@ import {
   MalformedParametersError,
   PossibleDatabaseError,
 } from '../../core/core.errors'
-import { CreatePresignedUrlError } from '../../form/admin-form/admin-form.errors'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
 import { isFormEncryptMode } from '../../form/form.utils'
@@ -360,12 +359,12 @@ export const getSubmissionPaymentDto = (
  * @param attachmentMetadata the metadata to transform
  * @param urlValidDuration the duration the S3 signed url will be valid for
  * @returns ok(map with object path replaced with their signed url counterparts)
- * @returns err(CreatePresignedUrlError) if any of the signed url creation processes results in an error
+ * @returns err(CreatePresignedPostError) if any of the signed url creation processes results in an error
  */
 export const transformAttachmentMetasToSignedUrls = (
   attachmentMetadata: Map<string, string> | undefined,
   urlValidDuration: number,
-): ResultAsync<Record<string, string>, CreatePresignedUrlError> => {
+): ResultAsync<Record<string, string>, CreatePresignedPostError> => {
   if (!attachmentMetadata) {
     return okAsync({})
   }
@@ -394,7 +393,7 @@ export const transformAttachmentMetasToSignedUrls = (
         error,
       })
 
-      return new CreatePresignedUrlError('Failed to create attachment URL')
+      return new CreatePresignedPostError('Failed to create attachment URL')
     },
   )
 }
