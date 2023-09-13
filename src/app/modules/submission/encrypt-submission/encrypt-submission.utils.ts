@@ -31,6 +31,7 @@ import {
   TurnstileConnectionError,
   VerifyTurnstileError,
 } from '../../../services/turnstile/turnstile.errors'
+import { CreatePresignedPostError } from '../../../utils/aws-s3'
 import { genericMapRouteErrorTransform } from '../../../utils/error'
 import {
   AttachmentUploadError,
@@ -72,7 +73,6 @@ import {
 
 import {
   AttachmentSizeLimitExceededError,
-  CreatePresignedPostError,
   InvalidFieldIdError,
   SubmissionFailedError,
 } from './encrypt-submission.errors'

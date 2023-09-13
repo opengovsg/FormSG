@@ -1,3 +1,4 @@
+import { CreatePresignedPostError } from '../../../utils/aws-s3'
 import { ApplicationError } from '../../core/core.errors'
 
 export class InvalidFileTypeError extends ApplicationError {
@@ -6,7 +7,7 @@ export class InvalidFileTypeError extends ApplicationError {
   }
 }
 
-export class CreatePresignedUrlError extends ApplicationError {
+export class CreatePresignedUrlError extends CreatePresignedPostError {
   constructor(message: string) {
     super(message)
   }

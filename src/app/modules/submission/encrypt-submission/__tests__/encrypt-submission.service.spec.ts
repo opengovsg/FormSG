@@ -14,6 +14,7 @@ import {
 } from 'src/app/modules/core/core.errors'
 import { CreatePresignedUrlError } from 'src/app/modules/form/admin-form/admin-form.errors'
 import { PaymentNotFoundError } from 'src/app/modules/payments/payments.errors'
+import { CreatePresignedPostError } from 'src/app/utils/aws-s3'
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import {
   IPaymentSchema,
@@ -31,7 +32,6 @@ import * as PaymentsService from '../../../payments/payments.service'
 import { SubmissionNotFoundError } from '../../submission.errors'
 import {
   AttachmentSizeLimitExceededError,
-  CreatePresignedPostError,
   InvalidFieldIdError,
 } from '../encrypt-submission.errors'
 import {
@@ -1059,7 +1059,9 @@ describe('encrypt-submission.service', () => {
       })
 
       // Act
-      const actualResult = getQuarantinePresignedPostData(MOCK_ATTACHMENT_SIZES)
+      const actualResult = await getQuarantinePresignedPostData(
+        MOCK_ATTACHMENT_SIZES,
+      )
 
       // Assert
       expect(actualResult.isOk()).toEqual(true)
@@ -1096,7 +1098,9 @@ describe('encrypt-submission.service', () => {
         })
 
       // Act
-      const actualResult = getQuarantinePresignedPostData(MOCK_ATTACHMENT_SIZES)
+      const actualResult = await getQuarantinePresignedPostData(
+        MOCK_ATTACHMENT_SIZES,
+      )
 
       // Assert
       expect(actualResult.isErr()).toEqual(true)
@@ -1117,7 +1121,7 @@ describe('encrypt-submission.service', () => {
       const awsSpy = jest.spyOn(aws.s3, 'createPresignedPost')
 
       // Act
-      const actualResult = getQuarantinePresignedPostData([
+      const actualResult = await getQuarantinePresignedPostData([
         { id: 'test_file_1' as unknown as ObjectId, size: 1 },
       ])
 
@@ -1132,7 +1136,7 @@ describe('encrypt-submission.service', () => {
       const awsSpy = jest.spyOn(aws.s3, 'createPresignedPost')
 
       // Act
-      const actualResult = getQuarantinePresignedPostData([
+      const actualResult = await getQuarantinePresignedPostData([
         { id: fieldId1, size: 2 },
         { id: fieldId2, size: 19999999 },
       ])

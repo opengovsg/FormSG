@@ -8,7 +8,7 @@ import { ApplicationError } from '../modules/core/core.errors'
 
 const logger = createLoggerWithLabel(module)
 
-class CreatePresignedPostError extends ApplicationError {
+export class CreatePresignedPostError extends ApplicationError {
   constructor(
     message = 'Could not create presigned post data. Please try again.',
   ) {

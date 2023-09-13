@@ -26,14 +26,6 @@ export class SubmissionFailedError extends ApplicationError {
   }
 }
 
-export class CreatePresignedPostError extends ApplicationError {
-  constructor(
-    message = 'Could not create presigned post data. Please try again.',
-  ) {
-    super(message)
-  }
-}
-
 export class InvalidFieldIdError extends ApplicationError {
   constructor(
     message = 'Invalid field id. Field id should be a valid MongoDB ObjectId.',
