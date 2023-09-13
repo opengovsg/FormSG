@@ -62,50 +62,15 @@ export const ProductItem = ({
                 }}
               >
                 <Tbody>
-                  <Tr>
-                    <Td
-                      py="0"
-                      pl="0"
-                      pr="1rem"
-                      borderBottom="0"
-                      textAlign="left"
-                      textStyle={{ base: 'caption-1', md: 'body-2' }}
-                      color="secondary.400"
-                      w="1%"
-                    >
-                      Amount
-                    </Td>
-                    <Td
-                      p="0"
-                      borderBottom="0"
-                      textStyle={{ base: 'caption-1', md: 'body-2' }}
-                      color="secondary.500"
-                    >
-                      S${centsToDollars(product.amount_cents)}
-                    </Td>
-                  </Tr>
+                  <ProductItemTableContent
+                    label="Amount"
+                    value={`S$${centsToDollars(product.amount_cents)}`}
+                  />
                   {product.multi_qty && (
-                    <Tr>
-                      <Td
-                        py="0"
-                        pl="0"
-                        pr="1rem"
-                        borderBottom="0"
-                        textStyle={{ base: 'caption-1', md: 'body-2' }}
-                        color="secondary.400"
-                        w="1%"
-                      >
-                        Quantity limit
-                      </Td>
-                      <Td
-                        p="0"
-                        borderBottom="0"
-                        textStyle={{ base: 'caption-1', md: 'body-2' }}
-                        color="secondary.500"
-                      >
-                        between {product.min_qty} to {product.max_qty}
-                      </Td>
-                    </Tr>
+                    <ProductItemTableContent
+                      label="Quantity limit"
+                      value={`between ${product.min_qty} to ${product.max_qty}`}
+                    />
                   )}
                 </Tbody>
               </Table>
@@ -217,5 +182,37 @@ const MobileProductItemMenu = ({
         </DrawerContent>
       </Drawer>
     </Box>
+  )
+}
+
+const ProductItemTableContent = ({
+  label,
+  value,
+}: {
+  label: string
+  value: string
+}) => {
+  return (
+    <Tr>
+      <Td
+        py="0"
+        pl="0"
+        pr="1rem"
+        borderBottom="0"
+        textStyle={{ base: 'caption-1', md: 'body-2' }}
+        color="secondary.400"
+        w="1%"
+      >
+        {label}
+      </Td>
+      <Td
+        p="0"
+        borderBottom="0"
+        textStyle={{ base: 'caption-1', md: 'body-2' }}
+        color="secondary.500"
+      >
+        {value}
+      </Td>
+    </Tr>
   )
 }
