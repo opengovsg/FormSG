@@ -35,7 +35,6 @@ import {
   MalformedParametersError,
   PossibleDatabaseError,
 } from '../../core/core.errors'
-import { PRESIGNED_POST_EXPIRY_SECS } from '../../form/admin-form/admin-form.constants'
 import { CreatePresignedUrlError } from '../../form/admin-form/admin-form.errors'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
@@ -58,6 +57,7 @@ import {
   fileSizeLimitBytes,
 } from '../submission.utils'
 
+import { PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS } from './encrypt-submission.constants'
 import {
   AttachmentSizeLimitExceededError,
   InvalidFieldIdError,
@@ -564,7 +564,7 @@ export const getQuarantinePresignedPostData = async (
 
     const presignedPostDataResult = await createPresignedPostDataPromise({
       bucketName: AwsConfig.virusScannerQuarantineS3Bucket,
-      expiresSeconds: PRESIGNED_POST_EXPIRY_SECS,
+      expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
       size,
     })
 
