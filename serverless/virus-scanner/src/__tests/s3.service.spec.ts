@@ -5,10 +5,11 @@ import { CopyObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
 import * as LoggerService from '../logger'
 import { S3Service } from '../s3.service'
 
+const VersionId = 'mockObjectVersionId'
 // Mock S3Client
 let getResult = {
   Body: 'mockBody',
-  VersionId: 'mockObjectVersionId',
+  VersionId,
 }
 jest.mock('@aws-sdk/client-s3', () => {
   return {
@@ -20,7 +21,7 @@ jest.mock('@aws-sdk/client-s3', () => {
       }
     }),
     CopyObjectCommand: jest.fn().mockImplementation(() => {
-      return
+      return { VersionId }
     }),
     DeleteObjectCommand: jest.fn().mockImplementation(() => {
       return
@@ -99,6 +100,7 @@ describe('S3Service', () => {
           sourceObjectVersionId: 'sourceObjectVersionId',
           destinationBucketName: 'destinationBucketName',
           destinationObjectKey: 'destinationObjectKey',
+          destinationVersionId: 'mockObjectVersionId',
         },
         'Moved document in s3',
       )
