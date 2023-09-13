@@ -1,8 +1,6 @@
 import { Controller, RegisterOptions, useForm } from 'react-hook-form'
 import {
   Box,
-  Button,
-  ButtonGroup,
   Divider,
   Flex,
   FormControl,
@@ -15,6 +13,7 @@ import {
   ModalOverlay,
   Skeleton,
   Stack,
+  useBreakpointValue,
 } from '@chakra-ui/react'
 
 import { Product, StorageFormSettings } from '~shared/types'
@@ -24,6 +23,8 @@ import {
   formatCurrency,
 } from '~shared/utils/payments'
 
+import { useIsMobile } from '~hooks/useIsMobile'
+import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
@@ -77,6 +78,8 @@ export const ProductModal = ({
         },
     mode: 'all',
   })
+
+  const isMobile = useIsMobile()
 
   const {
     data: {
@@ -180,16 +183,21 @@ export const ProductModal = ({
       return true
     },
   }
+  const modalSize = useBreakpointValue({
+    base: 'mobile',
+    xs: 'mobile',
+    md: 'md',
+  })
 
   return (
-    <Modal isOpen onClose={onClose}>
+    <Modal isOpen onClose={onClose} size={modalSize}>
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
         <ModalHeader>{product ? 'Edit' : 'Add'} product/service</ModalHeader>
         <ModalBody>
           <Stack spacing={{ base: '1rem', md: '1.5rem' }} divider={<Divider />}>
-            <Stack>
+            <Stack mb="0.5rem">
               <FormControl isInvalid={!!errors.name} pb="1.5rem">
                 <FormLabel
                   isRequired
@@ -216,40 +224,46 @@ export const ProductModal = ({
               </FormControl>
             </Stack>
 
-            <FormControl isInvalid={!!errors.display_amount}>
-              <Skeleton isLoaded={!isLoadingSettings}>
-                <FormLabel
-                  isRequired
-                  description={hasGST ? 'Including GST' : undefined}
-                >
-                  Amount
-                </FormLabel>
-              </Skeleton>
-              <Skeleton isLoaded={!isLoadingSettings}>
-                <Controller
-                  name={DISPLAY_AMOUNT_KEY}
-                  control={control}
-                  rules={amountValidation}
-                  render={({ field }) => (
-                    <MoneyInput
-                      flex={1}
-                      step={0}
-                      inputMode="decimal"
-                      placeholder="0.00"
-                      {...field}
-                      onChange={(e) => {
-                        field.onChange(e)
-                        trigger([MIN_QTY_KEY, MAX_QTY_KEY, DISPLAY_AMOUNT_KEY])
-                      }}
-                    />
-                  )}
-                />
-                <FormErrorMessage>
-                  {errors.display_amount?.message}
-                </FormErrorMessage>
-              </Skeleton>
-            </FormControl>
-            <Box>
+            <Box my="0.5rem">
+              <FormControl isInvalid={!!errors.display_amount}>
+                <Skeleton isLoaded={!isLoadingSettings}>
+                  <FormLabel
+                    isRequired
+                    description={hasGST ? 'Including GST' : undefined}
+                  >
+                    Amount
+                  </FormLabel>
+                </Skeleton>
+                <Skeleton isLoaded={!isLoadingSettings}>
+                  <Controller
+                    name={DISPLAY_AMOUNT_KEY}
+                    control={control}
+                    rules={amountValidation}
+                    render={({ field }) => (
+                      <MoneyInput
+                        flex={1}
+                        step={0}
+                        inputMode="decimal"
+                        placeholder="0.00"
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e)
+                          trigger([
+                            MIN_QTY_KEY,
+                            MAX_QTY_KEY,
+                            DISPLAY_AMOUNT_KEY,
+                          ])
+                        }}
+                      />
+                    )}
+                  />
+                  <FormErrorMessage>
+                    {errors.display_amount?.message}
+                  </FormErrorMessage>
+                </Skeleton>
+              </FormControl>
+            </Box>
+            <Box mt="0.5rem">
               <FormControl>
                 <Controller
                   name={MULTI_QTY_KEY}
@@ -348,18 +362,23 @@ export const ProductModal = ({
           </Stack>
         </ModalBody>
         <ModalFooter>
-          <ButtonGroup>
-            <Button variant="clear" onClick={onClose}>
+          <Stack
+            w="100%"
+            direction={{ base: 'column-reverse', md: 'row' }}
+            justifyContent={{ md: 'right' }}
+          >
+            <Button variant="clear" onClick={onClose} isFullWidth={isMobile}>
               Cancel
             </Button>
             <Button
               loadingText="Saving"
               onClick={handleSaveProduct}
               isDisabled={Object.keys(errors).length > 0}
+              isFullWidth={isMobile}
             >
               Save product
             </Button>
-          </ButtonGroup>
+          </Stack>
         </ModalFooter>
       </ModalContent>
     </Modal>
