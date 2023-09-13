@@ -1,3 +1,4 @@
+import { AxiosError } from 'axios'
 import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
 import { v4 as uuidv4 } from 'uuid'
@@ -49,7 +50,12 @@ import {
   CreatePresignedUrlError,
   EditFieldError,
   FieldNotFoundError,
+  GoGovAlreadyExistError,
+  GoGovBadGatewayError,
   GoGovError,
+  GoGovRequestLimitError,
+  GoGovServerError,
+  GoGovValidationError,
   InvalidCollaboratorError,
   InvalidFileTypeError,
   PaymentChannelNotFoundError,
@@ -516,4 +522,31 @@ export const verifyUserBetaflag = (
           `User ${user.email} is not authorized to access ${betaFlag} beta features`,
         ),
       )
+}
+
+export const mapGoGovErrors = (error: AxiosError): GoGovError => {
+  type GoGovReturnedData = { message: string; type?: string }
+
+  switch (error.response?.status) {
+    case StatusCodes.BAD_REQUEST:
+      // There can be two types of Bad Request from GoGov
+      // Short link already exists, which returns type=ShortUrlError
+      // Or validation error, which does not contain type
+      // TODO: Verify with GoGov team on response data shape
+      return (error.response.data as GoGovReturnedData).type
+        ? new GoGovAlreadyExistError()
+        : new GoGovValidationError()
+    case StatusCodes.TOO_MANY_REQUESTS:
+      return new GoGovRequestLimitError()
+    // For gogov API this is equivalent to Request Failed
+    case StatusCodes.PAYMENT_REQUIRED:
+      return new GoGovBadGatewayError()
+    // All other cases will default to 500 error
+    default:
+      return new GoGovServerError(
+        `GoGov server returned ${error.response?.status} error code with ${
+          (error.response?.data as GoGovReturnedData).message
+        } message`,
+      )
+  }
 }
