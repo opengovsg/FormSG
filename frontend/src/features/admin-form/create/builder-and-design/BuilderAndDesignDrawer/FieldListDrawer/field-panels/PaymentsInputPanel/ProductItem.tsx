@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { BiDotsHorizontalRounded, BiEditAlt, BiTrash } from 'react-icons/bi'
 import {
   Box,
@@ -21,7 +22,7 @@ import { Product } from '~shared/types'
 import { centsToDollars } from '~shared/utils/payments'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
+import Button, { ButtonProps } from '~components/Button'
 import IconButton from '~components/IconButton'
 
 export const ProductItem = ({
@@ -68,7 +69,7 @@ export const ProductItem = ({
                       pr="1rem"
                       borderBottom="0"
                       textAlign="left"
-                      textStyle="caption-1"
+                      textStyle={{ base: 'caption-1', md: 'body-2' }}
                       color="secondary.400"
                       w="1%"
                     >
@@ -77,7 +78,7 @@ export const ProductItem = ({
                     <Td
                       p="0"
                       borderBottom="0"
-                      textStyle="caption-1"
+                      textStyle={{ base: 'caption-1', md: 'body-2' }}
                       color="secondary.500"
                     >
                       S${centsToDollars(product.amount_cents)}
@@ -90,7 +91,7 @@ export const ProductItem = ({
                         pl="0"
                         pr="1rem"
                         borderBottom="0"
-                        textStyle="caption-1"
+                        textStyle={{ base: 'caption-1', md: 'body-2' }}
                         color="secondary.400"
                         w="1%"
                       >
@@ -99,7 +100,7 @@ export const ProductItem = ({
                       <Td
                         p="0"
                         borderBottom="0"
-                        textStyle="caption-1"
+                        textStyle={{ base: 'caption-1', md: 'body-2' }}
                         color="secondary.500"
                       >
                         between {product.min_qty} to {product.max_qty}
@@ -164,6 +165,16 @@ const MobileProductItemMenu = ({
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure()
 
+  const buttonProps: Partial<ButtonProps> = useMemo(
+    () => ({
+      isFullWidth: true,
+      iconSpacing: '1rem',
+      justifyContent: 'flex-start',
+      textStyle: 'body-1',
+    }),
+    [],
+  )
+
   return (
     <Box display={{ md: 'none' }}>
       <IconButton
@@ -188,7 +199,7 @@ const MobileProductItemMenu = ({
               <Button
                 onClick={onEditClick}
                 leftIcon={<BiEditAlt fontSize="1.25rem" />}
-                justifyContent="left"
+                {...buttonProps}
               >
                 Edit
               </Button>
@@ -197,7 +208,7 @@ const MobileProductItemMenu = ({
                 onClick={onDeleteClick}
                 color="danger.500"
                 leftIcon={<BiTrash fontSize="1.25rem" />}
-                justifyContent="left"
+                {...buttonProps}
               >
                 Delete
               </Button>

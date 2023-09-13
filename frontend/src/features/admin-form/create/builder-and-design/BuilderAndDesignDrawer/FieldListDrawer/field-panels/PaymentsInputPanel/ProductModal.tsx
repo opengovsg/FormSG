@@ -1,7 +1,6 @@
 import { Controller, RegisterOptions, useForm } from 'react-hook-form'
 import {
   Box,
-  Button,
   Divider,
   Flex,
   FormControl,
@@ -25,6 +24,7 @@ import {
 } from '~shared/utils/payments'
 
 import { useIsMobile } from '~hooks/useIsMobile'
+import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
