@@ -8,8 +8,9 @@ import {
 import { IPopulatedEncryptedForm } from '../../../../types'
 import {
   EncryptSubmissionDto,
+  FormCompleteDto,
+  FormFilteredResponseDto,
   FormLoadedDto,
-  FormsgCompleteDto,
   ParsedStorageModeSubmissionBody,
 } from '../../../../types/api'
 import { ControllerHandler } from '../../core/core.types'
@@ -46,7 +47,12 @@ export type StorageSubmissionMiddlewareHandlerType = ControllerHandler<
 
 export type StorageSubmissionMiddlewareHandlerRequest =
   Parameters<StorageSubmissionMiddlewareHandlerType>[0] & {
-    formsg: FormLoadedDto
+    formsg: FormCompleteDto
+  }
+
+export type ValidateSubmissionMiddlewareHandlerRequest =
+  Parameters<CreateFormsgAndRetrieveFormMiddlewareHandlerType>[0] & {
+    formsg: FormFilteredResponseDto
   }
 
 export type EncryptSubmissionMiddlewareHandlerType = ControllerHandler<
@@ -57,7 +63,9 @@ export type EncryptSubmissionMiddlewareHandlerType = ControllerHandler<
 >
 
 export type EncryptSubmissionMiddlewareHandlerRequest =
-  Parameters<EncryptSubmissionMiddlewareHandlerType>[0] & FormsgCompleteDto
+  Parameters<EncryptSubmissionMiddlewareHandlerType>[0] & {
+    formsg: FormCompleteDto
+  }
 
 export type SubmitEncryptModeFormHandlerType = ControllerHandler<
   { formId: string },
@@ -65,7 +73,7 @@ export type SubmitEncryptModeFormHandlerType = ControllerHandler<
 >
 
 export type SubmitEncryptModeFormHandlerRequest =
-  Parameters<SubmitEncryptModeFormHandlerType>[0] & FormsgCompleteDto
+  Parameters<SubmitEncryptModeFormHandlerType>[0] & { formsg: FormCompleteDto }
 
 export type AttachmentSizeMapType = {
   id: ObjectId

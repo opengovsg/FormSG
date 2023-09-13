@@ -369,7 +369,6 @@ export const validateAttachments = (
           invalidExtensions,
         },
       })
-      console.log('invalidExtensions', invalidExtensions)
       return errAsync(new InvalidFileExtensionError())
     }
     return okAsync(true as const)

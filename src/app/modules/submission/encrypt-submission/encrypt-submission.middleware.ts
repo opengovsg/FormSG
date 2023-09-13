@@ -10,7 +10,11 @@ import {
   StorageModeAttachment,
   StorageModeAttachmentsMap,
 } from '../../../../../shared/types'
-import { EncryptFormFieldResponse, FormLoadedDto } from '../../../../types/api'
+import {
+  EncryptAttachmentResponse,
+  EncryptFormFieldResponse,
+  FormLoadedDto,
+} from '../../../../types/api'
 import { paymentConfig } from '../../../config/features/payment.config'
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -21,7 +25,7 @@ import * as FormService from '../../form/form.service'
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import { sharedSubmissionParams } from '../submission.constants'
 import * as SubmissionService from '../submission.service'
-import { getFilteredResponses, isAttachmentResponse } from '../submission.utils'
+import { isAttachmentResponse } from '../submission.utils'
 
 import {
   EncryptedPayloadExistsError,
@@ -35,8 +39,10 @@ import {
   EncryptSubmissionMiddlewareHandlerType,
   StorageSubmissionMiddlewareHandlerRequest,
   StorageSubmissionMiddlewareHandlerType,
+  ValidateSubmissionMiddlewareHandlerRequest,
 } from './encrypt-submission.types'
 import { mapRouteError } from './encrypt-submission.utils'
+import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
 
 const logger = createLoggerWithLabel(module)
 
@@ -119,6 +125,21 @@ export const validateEncryptSubmissionParams = celebrate({
 export const validateStorageSubmissionParams = celebrate({
   [Segments.BODY]: Joi.object({
     ...sharedSubmissionParams,
+    paymentProducts: Joi.array().items(
+      Joi.object().keys({
+        data: JoiPaymentProduct.required(),
+        selected: Joi.boolean(),
+        quantity: JoiInt.positive().required(),
+      }),
+    ),
+    paymentReceiptEmail: Joi.string(),
+    payments: Joi.object({
+      amount_cents: Joi.number()
+        .integer()
+        .positive()
+        .min(paymentConfig.minPaymentAmountCents)
+        .max(paymentConfig.maxPaymentAmountCents),
+    }),
     version: Joi.number().required(),
   }),
 })
@@ -144,17 +165,21 @@ export const checkNewBoundaryEnabled = async (
   return next()
 }
 
-export const validateSubmission = async (
-  req: StorageSubmissionMiddlewareHandlerRequest,
+/**
+ * Validates storage submissions to the new endpoint (/api/v3/forms/:formId/submissions/storage).
+ * This uses the same validators as email mode submissions.
+ */
+export const validateStorageSubmission = async (
+  req: ValidateSubmissionMiddlewareHandlerRequest,
   res: Parameters<StorageSubmissionMiddlewareHandlerType>[1],
   next: NextFunction,
 ) => {
   const formDef = req.formsg.formDef
 
   const logMeta = {
-    action: 'validateSubmission',
+    action: 'validateStorageSubmission',
     ...createReqMeta(req),
-    formId: formDef.id,
+    formId: formDef._id.toString(),
   }
 
   // Validate submission
@@ -163,23 +188,50 @@ export const validateSubmission = async (
     formDef.responseMode,
   )
     .andThen(() =>
-      ParsedResponsesObject.parseResponses(
-        formDef,
-        req.body.responses,
-        req.formsg.featureFlags.includes(featureFlags.encryptionBoundaryShift),
-      ),
+      ParsedResponsesObject.parseResponses(formDef, req.body.responses),
     )
-    .map(() => next())
+    .map((parsedResponses) => {
+      const responses = [] as EncryptFormFieldResponse[]
+      for (const response of parsedResponses.getAllResponses()) {
+        if (response.isVisible) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { isVisible: _, ...rest } = response
+          if (!isAttachmentResponse(rest)) responses.push(rest)
+          else {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { filename: __, content: ___, ...restAttachments } = rest
+            responses.push({ ...restAttachments } as EncryptAttachmentResponse)
+          }
+        }
+      }
+      req.formsg.filteredResponses = responses
+      return next()
+    })
     .mapErr((error) => {
-      logger.error({
-        message: 'Error processing responses',
+      // TODO(FRM-1318): Set DB flag to true to harden submission validation after validation has similar error rates as email mode forms.
+      if (
+        req.formsg.featureFlags.includes(
+          featureFlags.encryptionBoundaryShiftHardValidation,
+        )
+      ) {
+        logger.error({
+          message: 'Error processing responses',
+          meta: logMeta,
+          error,
+        })
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({
+          message: errorMessage,
+        })
+      }
+      logger.warn({
+        message:
+          'Error processing responses, but proceeding with submission as submission have been validated client-side',
         meta: logMeta,
         error,
       })
-      const { statusCode, errorMessage } = mapRouteError(error)
-      return res.status(statusCode).json({
-        message: errorMessage,
-      })
+      req.formsg.filteredResponses = req.body.responses
+      return next()
     })
 }
 
@@ -245,17 +297,10 @@ export const encryptSubmission = async (
   res: Parameters<StorageSubmissionMiddlewareHandlerType>[1],
   next: NextFunction,
 ) => {
-  const formId = req.params.formId
   const encryptedFormDef = req.formsg.encryptedFormDef
   const publicKey = encryptedFormDef.publicKey
 
   const attachmentsMap: Record<string, Buffer> = {}
-
-  const logMeta = {
-    action: 'encryptSubmission',
-    ...createReqMeta(req),
-    formId,
-  }
 
   // Populate attachment map
   req.body.responses.filter(isAttachmentResponse).forEach((response) => {
@@ -268,22 +313,6 @@ export const encryptSubmission = async (
       attachmentsMap,
       publicKey,
     )
-
-  const filteredResponses = getFilteredResponses(
-    encryptedFormDef,
-    req.body.responses,
-    req.formsg.featureFlags.includes(featureFlags.encryptionBoundaryShift),
-  )
-
-  if (filteredResponses.isErr()) {
-    logger.warn({
-      message: filteredResponses.error.message,
-      meta: logMeta,
-    })
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: filteredResponses.error.message,
-    })
-  }
 
   const strippedBodyResponses = req.body.responses.map((response) => {
     if (isAttachmentResponse(response)) {
@@ -304,9 +333,12 @@ export const encryptSubmission = async (
 
   req.formsg.encryptedPayload = {
     attachments: encryptedAttachments,
-    responses: filteredResponses.value as EncryptFormFieldResponse[],
+    responses: req.formsg.filteredResponses,
     encryptedContent,
     version: req.body.version,
+    paymentProducts: req.body.paymentProducts,
+    paymentReceiptEmail: req.body.paymentReceiptEmail,
+    payments: req.body.payments,
   }
 
   return next()
@@ -329,6 +361,57 @@ export const moveEncryptedPayload = async (
   return next()
 }
 
+/**
+ * Validates mobile and email fields for storage submissions on the old endpoint.
+ * Should only be used for the old storage mode submission endpoint (/api/v3/forms/:formId/submissions/encrypt).
+ */
+export const validateEncryptSubmission = async (
+  req: EncryptSubmissionMiddlewareHandlerRequest,
+  res: Parameters<EncryptSubmissionMiddlewareHandlerType>[1],
+  next: NextFunction,
+) => {
+  const form = req.formsg.encryptedFormDef
+  const responses = req.body.responses
+  const encryptedContent = req.body.encryptedContent
+
+  const logMeta = {
+    action: 'validateEncryptSubmission',
+    ...createReqMeta(req),
+    formId: form._id.toString(),
+  }
+
+  const incomingSubmissionResult = IncomingEncryptSubmission.init(
+    form,
+    responses,
+    encryptedContent,
+  )
+  if (incomingSubmissionResult.isErr()) {
+    logger.error({
+      message: 'Error in getting parsed responses for encrypt submission',
+      meta: logMeta,
+      error: incomingSubmissionResult.error,
+    })
+    const { statusCode, errorMessage } = mapRouteError(
+      incomingSubmissionResult.error,
+    )
+    return res.status(statusCode).json({
+      message: errorMessage,
+    })
+  }
+
+  logger.info({
+    message: 'Successfully parsed responses for encrypt submission',
+    meta: logMeta,
+  })
+
+  req.formsg.filteredResponses = incomingSubmissionResult.value.responses
+
+  return next()
+}
+
+/**
+ * Creates formsg namespace in req.body and populates it with featureFlags, formDef and encryptedFormDef.
+ */
 export const createFormsgAndRetrieveForm = async (
   req: CreateFormsgAndRetrieveFormMiddlewareHandlerRequest,
   res: Parameters<CreateFormsgAndRetrieveFormMiddlewareHandlerType>[1],

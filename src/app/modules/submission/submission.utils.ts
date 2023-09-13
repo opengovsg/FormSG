@@ -149,11 +149,8 @@ export const extractEmailConfirmationData = (
 export const getFilteredResponses = (
   form: IFormDocument,
   responses: FieldResponse[],
-  encryptionBoundaryShiftEnabled: boolean,
+  isEncryptedMode: boolean,
 ): Result<FilteredResponse[], ConflictError> => {
-  const isEncryptedMode =
-    form.responseMode === FormResponseMode.Encrypt &&
-    !encryptionBoundaryShiftEnabled
   const responseModeFilter = getResponseModeFilter(isEncryptedMode)
   const formFieldModeFilter = getFormFieldModeFilter(isEncryptedMode)
 
