@@ -63,7 +63,9 @@ export const PublicFormPaymentResumeModal = (): JSX.Element => {
         <ModalOverlay />
         <ModalContent>
           <ModalCloseButton onClick={handleStartOver} />
-          <ModalHeader pb={'2rem'}>Restore previous session?</ModalHeader>
+          <ModalHeader pb={'2rem'} w="90%">
+            Restore previous session?
+          </ModalHeader>
           <ModalBody flexGrow={0}>
             We noticed an incomplete session on this form. You can restore your
             previous session and complete payment.
