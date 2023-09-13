@@ -1,9 +1,5 @@
 name: Deploy to production
 
-concurrency:
-  group: ${{ github.ref }}
-  cancel-in-progress: true
-
 permissions:
   id-token: write
   contents: read
@@ -11,7 +7,7 @@ permissions:
 on:
   push:
     branches:
-      - production
+      - release-al2
   # schedule builds for 12:00AM GMT+8 everyday to get latest virus definitions
   schedule:
     - cron: '0 16 * * *'

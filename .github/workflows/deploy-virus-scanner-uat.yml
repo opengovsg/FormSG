@@ -1,9 +1,5 @@
 name: Deploy to uat
 
-concurrency:
-  group: ${{ github.ref }}
-  cancel-in-progress: true
-
 permissions:
   id-token: write
   contents: read
