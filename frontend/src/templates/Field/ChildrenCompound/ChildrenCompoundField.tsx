@@ -271,6 +271,14 @@ const ChildrenBody = ({
       ) {
         return ''
       }
+      // We use the childname to indicate if there is a child below 21.
+      // If the childname is an empty string, it means there is no child below 21.
+      // As our definition of child in FormSG means child below 21, we want to
+      // return empty strings for other child attributes even if their value is populated by myinfo
+      // if there is no childname.
+      if (myInfoChildrenBirthRecords.childname?.[0] === '') {
+        return ''
+      }
       return result ?? ''
     },
     [indexOfChild, myInfoChildrenBirthRecords],
