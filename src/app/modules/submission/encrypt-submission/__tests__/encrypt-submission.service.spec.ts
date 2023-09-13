@@ -1029,7 +1029,7 @@ describe('encrypt-submission.service', () => {
     })
   })
 
-  describe('getPutQuarantinePresignedUrls', () => {
+  describe('getQuarantinePresignedPostData', () => {
     const fieldId1 = new mongoose.Types.ObjectId()
     const fieldId2 = new mongoose.Types.ObjectId()
     const MOCK_ATTACHMENT_SIZES = [
@@ -1071,12 +1071,14 @@ describe('encrypt-submission.service', () => {
             ...expectedCalledWithSubset,
             Conditions: [['content-length-range', 0, 1]],
           },
+          expect.any(Function), // anonymous error handling function
         ],
         [
           {
             ...expectedCalledWithSubset,
             Conditions: [['content-length-range', 0, 2]],
           },
+          expect.any(Function), // anonymous error handling function
         ],
       ])
       const actualResultValue = actualResult._unsafeUnwrap()
@@ -1107,12 +1109,15 @@ describe('encrypt-submission.service', () => {
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new CreatePresignedPostError(),
       )
-      expect(awsSpy).toHaveBeenCalledWith({
-        Bucket: AwsConfig.virusScannerQuarantineS3Bucket,
-        Fields: { key: expect.stringMatching(REGEX_UUID) },
-        Expires: 1 * 60, // expires in 1 minutes
-        Conditions: [['content-length-range', 0, 1]],
-      })
+      expect(awsSpy).toHaveBeenCalledWith(
+        {
+          Bucket: AwsConfig.virusScannerQuarantineS3Bucket,
+          Fields: { key: expect.stringMatching(REGEX_UUID) },
+          Expires: 1 * 60, // expires in 1 minutes
+          Conditions: [['content-length-range', 0, 1]],
+        },
+        expect.any(Function), // anonymous error handling function
+      )
     })
 
     it('should return InvalidFieldIdError when ids are not valid mongodb object ids', async () => {

@@ -4,7 +4,6 @@ import { err, errAsync, ok, okAsync } from 'neverthrow'
 
 import * as AuthService from 'src/app/modules/auth/auth.service'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
-import { CreatePresignedPostError } from 'src/app/modules/form/admin-form/admin-form.errors'
 import { PermissionLevel } from 'src/app/modules/form/admin-form/admin-form.types'
 import {
   ForbiddenFormError,
@@ -14,6 +13,7 @@ import {
 import { PaymentNotFoundError } from 'src/app/modules/payments/payments.errors'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
+import { CreatePresignedPostError } from 'src/app/utils/aws-s3'
 import {
   IPopulatedEncryptedForm,
   IPopulatedForm,
