@@ -93,7 +93,7 @@ import {
   PREVIEW_CORPPASS_UINFIN,
   PREVIEW_SINGPASS_UINFIN,
 } from './admin-form.constants'
-import { EditFieldError, GoGovError } from './admin-form.errors'
+import { EditFieldError, GoGovServerError } from './admin-form.errors'
 import {
   getWebhookSettingsValidator,
   updateSettingsValidator,
@@ -101,7 +101,11 @@ import {
 } from './admin-form.middlewares'
 import * as AdminFormService from './admin-form.service'
 import { PermissionLevel } from './admin-form.types'
-import { mapRouteError, verifyValidUnicodeString } from './admin-form.utils'
+import {
+  mapGoGovErrors,
+  mapRouteError,
+  verifyValidUnicodeString,
+} from './admin-form.utils'
 
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
 const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
@@ -2976,7 +2980,8 @@ export const handleSetGoLinkSuffix: ControllerHandler<
           axios.post(
             `${goGovBaseUrl}/api/v1/admin/urls`,
             {
-              longUrl: `${process.env.APP_URL}/${formId}`,
+              //longUrl: `${process.env.APP_URL}/${formId}`,
+              longUrl: 'https://staging.form.gov.sg/64ddae6917df8a001264f1a7',
               shortUrl: linkSuffix,
               email: adminEmail,
             },
@@ -2989,8 +2994,13 @@ export const handleSetGoLinkSuffix: ControllerHandler<
               },
             },
           ),
-          // TODO: fix error handling (https://linear.app/ogp/issue/FRM-901/improve-error-handling-when-calling-gogov-api)
-          () => new GoGovError(),
+          (error) => {
+            if (axios.isAxiosError(error)) {
+              return mapGoGovErrors(error)
+            }
+
+            return new GoGovServerError()
+          },
         )
       })
       // Step 3: After obtaining GoGov link, save it to the form
