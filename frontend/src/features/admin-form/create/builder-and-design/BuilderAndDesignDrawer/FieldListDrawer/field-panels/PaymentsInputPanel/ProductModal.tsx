@@ -8,7 +8,6 @@ import {
   FormControl,
   Modal,
   ModalBody,
-  ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalHeader,
@@ -27,6 +26,7 @@ import {
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
+import { ModalCloseButton } from '~components/Modal'
 import MoneyInput from '~components/MoneyInput'
 import Toggle from '~components/Toggle'
 

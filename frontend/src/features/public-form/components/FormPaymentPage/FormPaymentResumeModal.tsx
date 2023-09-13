@@ -14,6 +14,7 @@ import { useBrowserStm } from '~hooks/payments'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import ButtonGroup from '~components/ButtonGroup'
+import { ModalCloseButton } from '~components/Modal'
 
 import { getPaymentPageUrl } from '~features/public-form/utils/urls'
 
@@ -61,6 +62,7 @@ export const PublicFormPaymentResumeModal = (): JSX.Element => {
       >
         <ModalOverlay />
         <ModalContent>
+          <ModalCloseButton />
           <ModalHeader pb={'2rem'}>Restore previous session?</ModalHeader>
           <ModalBody flexGrow={0}>
             We noticed an incomplete session on this form. You can restore your

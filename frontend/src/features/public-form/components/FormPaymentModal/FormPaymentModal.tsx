@@ -2,7 +2,6 @@ import { MouseEvent, MouseEventHandler } from 'react'
 import {
   Modal,
   ModalBody,
-  ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalHeader,
@@ -12,6 +11,7 @@ import {
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import ButtonGroup from '~components/ButtonGroup'
+import { ModalCloseButton } from '~components/Modal'
 
 type FormPaymentModalProps = {
   onSubmit: MouseEventHandler<HTMLButtonElement> | undefined

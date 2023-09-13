@@ -4,7 +4,6 @@ import {
   Link,
   Modal,
   ModalBody,
-  ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalHeader,
@@ -15,6 +14,7 @@ import {
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import ButtonGroup from '~components/ButtonGroup'
+import { ModalCloseButton } from '~components/Modal'
 
 import { getPaymentPageUrl } from '~features/public-form/utils/urls'
 
