@@ -39,7 +39,7 @@ export const FormPaymentModal = ({
       <Modal isOpen onClose={onClose} size={isMobile ? 'full' : undefined}>
         <ModalOverlay />
         <ModalContent>
-          {!isMobile && <ModalCloseButton />}
+          <ModalCloseButton />
           <ModalHeader pb={'2rem'}>You are about to make payment</ModalHeader>
           <ModalBody flexGrow={0}>
             Please ensure that your form information is accurate. You will not

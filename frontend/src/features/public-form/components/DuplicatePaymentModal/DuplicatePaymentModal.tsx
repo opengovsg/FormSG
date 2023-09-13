@@ -49,7 +49,7 @@ export const DuplicatePaymentModal = ({
       <Modal isOpen onClose={onClose} size={isMobile ? 'full' : undefined}>
         <ModalOverlay />
         <ModalContent>
-          {!isMobile && <ModalCloseButton />}
+          <ModalCloseButton />
           <ModalHeader pb={'2rem'}>Proceed to pay again?</ModalHeader>
           <ModalBody flexGrow={0}>
             <Stack>
