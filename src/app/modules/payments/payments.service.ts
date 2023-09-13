@@ -269,10 +269,11 @@ export const performPaymentPostSubmissionActions = (
             formId: form._id,
             submissionId,
             email: payment.email,
+            paymentAmount: payment.amount,
           }))
       )
     })
-    .andThen(({ formTitle, formId, submissionId, email }) => {
+    .andThen(({ formTitle, formId, submissionId, email, paymentAmount }) => {
       logger.info({
         message: 'Sending payment confirmation email',
         meta: { ...logMeta, submissionId, email },
@@ -284,6 +285,7 @@ export const performPaymentPostSubmissionActions = (
         submissionId,
         formId,
         paymentId,
+        paymentAmount,
       })
         .andThen(() => okAsync(undefined))
         .orElse(() => {
