@@ -6,6 +6,7 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 import session, { Session } from 'supertest-session'
 
+import { aws } from 'src/app/config/config'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import * as FeatureFlagsService from 'src/app/modules/feature-flags/feature-flags.service'
 import { FormFieldSchema } from 'src/types'
@@ -1237,7 +1238,7 @@ describe('public-form.submissions.routes', () => {
     const FILE_MAP_2 = { id: '64ed84a35ac23100636a00af', size: 19999999 }
     const VALID_PAYLOAD = [FILE_MAP_1, FILE_MAP_2]
 
-    it('should return 400 when payload is not an array', async () => {
+    it('should return 400 if payload is not an array', async () => {
       const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
           esrvcId: 'mockEsrvcId',
@@ -1267,7 +1268,7 @@ describe('public-form.submissions.routes', () => {
       })
     })
 
-    it('should return 400 when id is invalid', async () => {
+    it('should return 400 if id is invalid', async () => {
       const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
           esrvcId: 'mockEsrvcId',
@@ -1302,7 +1303,7 @@ describe('public-form.submissions.routes', () => {
       })
     })
 
-    it('should return 400 when size of a file is higher than the limit (20MB)', async () => {
+    it('should return 400 if size of a file is higher than the limit (20MB)', async () => {
       const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
           esrvcId: 'mockEsrvcId',
@@ -1312,14 +1313,16 @@ describe('public-form.submissions.routes', () => {
         },
       })
 
-      const INVALID_ID_PAYLOAD = JSON.parse(JSON.stringify(VALID_PAYLOAD))
-      INVALID_ID_PAYLOAD[1].size += 10000000
+      const INVALID_FILE_SIZE_PAYLOAD = JSON.parse(
+        JSON.stringify(VALID_PAYLOAD),
+      )
+      INVALID_FILE_SIZE_PAYLOAD[1].size += 10000000
 
       const response = await request
         .post(
           `/forms/${form._id}/submissions/storage/get-s3-presigned-post-data`,
         )
-        .send(INVALID_ID_PAYLOAD)
+        .send(INVALID_FILE_SIZE_PAYLOAD)
 
       expect(response.status).toBe(400)
       expect(response.body).toEqual({
@@ -1336,7 +1339,7 @@ describe('public-form.submissions.routes', () => {
       })
     })
 
-    it('should return 400 when size of total file size is higher than the limit (20MB)', async () => {
+    it('should return 400 if size of total file size is higher than the limit (20MB)', async () => {
       const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
           esrvcId: 'mockEsrvcId',
@@ -1346,14 +1349,16 @@ describe('public-form.submissions.routes', () => {
         },
       })
 
-      const INVALID_ID_PAYLOAD = JSON.parse(JSON.stringify(VALID_PAYLOAD))
-      INVALID_ID_PAYLOAD[0].size += 1
+      const INVALID_TOTAL_FILE_SIZE_PAYLOAD = JSON.parse(
+        JSON.stringify(VALID_PAYLOAD),
+      )
+      INVALID_TOTAL_FILE_SIZE_PAYLOAD[0].size += 1
 
       const response = await request
         .post(
           `/forms/${form._id}/submissions/storage/get-s3-presigned-post-data`,
         )
-        .send(INVALID_ID_PAYLOAD)
+        .send(INVALID_TOTAL_FILE_SIZE_PAYLOAD)
 
       expect(response.status).toBe(400)
       expect(response.body).toEqual({
@@ -1370,7 +1375,7 @@ describe('public-form.submissions.routes', () => {
       })
     })
 
-    it('should return 400 when virus scanning has not been enabled', async () => {
+    it('should return 400 if virus scanning has not been enabled', async () => {
       const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
           esrvcId: 'mockEsrvcId',
@@ -1422,7 +1427,36 @@ describe('public-form.submissions.routes', () => {
       })
     })
 
-    it('should return 200 with presigned post data when virus scanning is enabled', async () => {
+    it('should return 500 if creating of presigned post data fails', async () => {
+      const { form } = await dbHandler.insertEncryptForm({
+        formOptions: {
+          esrvcId: 'mockEsrvcId',
+          authType: FormAuthType.CP,
+          hasCaptcha: false,
+          status: FormStatus.Public,
+        },
+      })
+
+      jest
+        .spyOn(FeatureFlagsService, 'getFeatureFlag')
+        .mockReturnValue(okAsync(true))
+      jest.spyOn(aws.s3, 'createPresignedPost').mockImplementationOnce(() => {
+        throw new Error('some error')
+      })
+
+      const response = await request
+        .post(
+          `/forms/${form._id}/submissions/storage/get-s3-presigned-post-data`,
+        )
+        .send(VALID_PAYLOAD)
+
+      expect(response.status).toBe(500)
+      expect(response.body).toEqual({
+        message: 'Could not create presigned post data. Please try again.',
+      })
+    })
+
+    it('should return 200 with presigned post data if virus scanning is enabled', async () => {
       const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
           esrvcId: 'mockEsrvcId',
