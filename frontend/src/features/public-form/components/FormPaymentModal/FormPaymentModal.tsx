@@ -2,7 +2,6 @@ import { MouseEvent, MouseEventHandler } from 'react'
 import {
   Modal,
   ModalBody,
-  ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalHeader,
@@ -12,6 +11,7 @@ import {
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import ButtonGroup from '~components/ButtonGroup'
+import { ModalCloseButton } from '~components/Modal'
 
 type FormPaymentModalProps = {
   onSubmit: MouseEventHandler<HTMLButtonElement> | undefined
@@ -39,7 +39,7 @@ export const FormPaymentModal = ({
       <Modal isOpen onClose={onClose} size={isMobile ? 'full' : undefined}>
         <ModalOverlay />
         <ModalContent>
-          {!isMobile && <ModalCloseButton />}
+          <ModalCloseButton />
           <ModalHeader pb={'2rem'}>You are about to make payment</ModalHeader>
           <ModalBody flexGrow={0}>
             Please ensure that your form information is accurate. You will not

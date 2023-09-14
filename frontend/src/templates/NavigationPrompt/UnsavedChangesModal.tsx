@@ -2,7 +2,6 @@ import {
   Button,
   Modal,
   ModalBody,
-  ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalHeader,
@@ -13,6 +12,7 @@ import {
 } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
+import { ModalCloseButton } from '~components/Modal'
 
 export interface UnsavedChangesModalProps extends Omit<ModalProps, 'children'> {
   onConfirm: () => void
