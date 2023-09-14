@@ -6,6 +6,7 @@ import {
   Divider,
   FormControl,
   FormHelperText,
+  HStack,
   InputGroup,
   InputLeftAddon,
   InputRightElement,
@@ -61,7 +62,7 @@ type goLinkHelperTextType = {
 
 const goLinkClaimSuccessHelperText: goLinkHelperTextType = {
   color: 'success.700',
-  icon: <BxsCheckCircle />,
+  icon: <BxsCheckCircle fontSize="1rem" />,
   text: (
     <Text>
       You have successfully claimed this link. This link will appear in your{' '}
@@ -77,7 +78,7 @@ const getGoLinkClaimFailureHelperText = (
 ): goLinkHelperTextType => {
   return {
     color: 'danger.500',
-    icon: <BxsErrorCircle />,
+    icon: <BxsErrorCircle fontSize="1rem" />,
     text: <Text>{text}</Text>,
   }
 }
@@ -209,7 +210,7 @@ export const ShareFormModal = ({
       setClaimGoLoading(false)
 
       let errMessage =
-        'Something went wrong, please refresh the page. If this issue persists, contact us at support@form.gov.sg.'
+        'Something went wrong. Try refreshing this page. If this issue persists, contact support@form.gov.sg.'
 
       if (err instanceof HttpError && err.code === StatusCodes.BAD_REQUEST)
         errMessage =
@@ -386,11 +387,12 @@ export const ShareFormModal = ({
                         )}
                       </Stack>
                       {goLinkHelperText && (
+                        // padding on icon box to emulate padding form <Text>
                         <FormHelperText color={goLinkHelperText.color}>
-                          <Stack direction="row" align="center">
-                            <Box>{goLinkHelperText.icon}</Box>
+                          <HStack alignItems="flex-start">
+                            <Box py="2px">{goLinkHelperText.icon}</Box>
                             <Box>{goLinkHelperText.text}</Box>
-                          </Stack>
+                          </HStack>
                         </FormHelperText>
                       )}
                     </Skeleton>
