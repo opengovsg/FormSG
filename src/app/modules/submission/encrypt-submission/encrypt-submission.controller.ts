@@ -982,6 +982,13 @@ export const handleGetMetadata = [
   getMetadata,
 ] as ControllerHandler[]
 
+/**
+ * Handler for POST /:formId/submissions/storage/get-s3-presigned-post-data
+ * Used by handleGetS3PresignedPostData after joi validation
+ * @returns 200 with array of presigned post data
+ * @returns 400 if ids are invalid or total file size exceeds 20MB
+ * @returns 500 if presigned post data cannot be retrieved or any other errors occur
+ */
 const getS3PresignedPostData: ControllerHandler<
   unknown,
   AttachmentPresignedPostDataMapType[] | ErrorDto,
