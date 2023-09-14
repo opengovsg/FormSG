@@ -182,9 +182,33 @@ export const mapRouteError = (
         statusCode: StatusCodes.FORBIDDEN,
         errorMessage: error.message,
       }
-    case GoGovError:
+    case GoGovAlreadyExistError:
+    case GoGovValidationError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
+    case GoGovRequestLimitError:
+      return {
+        statusCode: StatusCodes.TOO_MANY_REQUESTS,
+        errorMessage: error.message,
+      }
+    case GoGovBadGatewayError:
+      return {
+        statusCode: StatusCodes.BAD_GATEWAY,
+        errorMessage: error.message,
+      }
+    case GoGovError:
+    case GoGovServerError:
+      logger.error({
+        message: 'GoGov server error observed',
+        meta: {
+          action: 'mapRouteError',
+        },
+        error,
+      })
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: error.message,
       }
     default:
@@ -524,8 +548,14 @@ export const verifyUserBetaflag = (
       )
 }
 
+// Utility method to map an axios error to a GoGovError
 export const mapGoGovErrors = (error: AxiosError): GoGovError => {
   type GoGovReturnedData = { message: string; type?: string }
+  // Hard coded error message from GoGov for URL Bad Request
+  // TODO: Verify with GoGov team if error response data can be different from general short link error
+  const urlFormatError = 'Only HTTPS URLs are allowed'
+
+  const responseData = error.response?.data as GoGovReturnedData
 
   switch (error.response?.status) {
     case StatusCodes.BAD_REQUEST:
@@ -534,8 +564,12 @@ export const mapGoGovErrors = (error: AxiosError): GoGovError => {
       // Or validation error, which does not contain type
       // Or if url is not https (like localhost), however, this should not happen as we prepend the app url in admin-form-controller
       // TODO: Verify with GoGov team on response data shape
-      return (error.response.data as GoGovReturnedData).type
+      return responseData.type
         ? new GoGovAlreadyExistError()
+        : responseData.message.includes(urlFormatError)
+        ? new GoGovServerError(
+            'GoGov server returned 400 for URL formatting error',
+          )
         : new GoGovValidationError()
     case StatusCodes.TOO_MANY_REQUESTS:
       return new GoGovRequestLimitError()
