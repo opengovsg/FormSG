@@ -575,12 +575,12 @@ export const getQuarantinePresignedPostData = async (
           })
       }),
     ).then((results) => {
-      const cleanedResults = []
+      const okResults = []
       for (const result of results) {
         if (result.isErr()) return result.error
-        cleanedResults.push(result.value)
+        okResults.push(result.value)
       }
-      return cleanedResults
+      return okResults
     }),
     (error) => {
       logger.error({
