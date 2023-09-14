@@ -550,16 +550,22 @@ export const getQuarantinePresignedPostData = (
   AttachmentPresignedPostDataMapType[],
   CreatePresignedPostError
 > => {
+  // List of attachments is looped over twice to avoid side effects of mutating variables
+  // to check if the attachment limits have been exceeded.
+
+  // Step 1: Check for the total attachment size
   const totalAttachmentSizeLimit = fileSizeLimitBytes(FormResponseMode.Encrypt)
-  let totalAttachmentSize = 0
+  const totalAttachmentSize = attachmentSizes
+    .map(({ size }) => size)
+    .reduce((prev, next) => prev + next)
+  if (totalAttachmentSize > totalAttachmentSizeLimit)
+    return errAsync(new AttachmentSizeLimitExceededError())
+
+  // Step 2: Create presigned post data for each attachment
   return ResultAsync.combine(
     attachmentSizes.map(({ id, size }) => {
       if (!mongoose.isValidObjectId(id))
         return errAsync(new InvalidFieldIdError())
-
-      totalAttachmentSize += size
-      if (totalAttachmentSize > totalAttachmentSizeLimit)
-        return errAsync(new AttachmentSizeLimitExceededError())
 
       return createPresignedPostDataPromise({
         bucketName: AwsConfig.virusScannerQuarantineS3Bucket,
