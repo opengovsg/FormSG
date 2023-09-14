@@ -998,7 +998,8 @@ const getS3PresignedPostData: ControllerHandler<
     action: 'handleGetS3PresignedPostData',
     ...createReqMeta(req),
   }
-  return (await getQuarantinePresignedPostData(req.body))
+
+  return getQuarantinePresignedPostData(req.body)
     .map((presignedUrls) => {
       logger.info({
         message: 'Successfully retrieved quarantine presigned post data.',

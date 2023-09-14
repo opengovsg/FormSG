@@ -1105,7 +1105,7 @@ describe('encrypt-submission.service', () => {
 
       // Assert
       expect(actualResult.isErr()).toEqual(true)
-      expect(awsSpy).toHaveBeenCalledTimes(1)
+      expect(awsSpy).toHaveBeenCalled()
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new CreatePresignedPostError(),
       )

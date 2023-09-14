@@ -544,62 +544,31 @@ export const performEncryptPostSubmissionActions = (
     })
 }
 
-export const getQuarantinePresignedPostData = async (
+export const getQuarantinePresignedPostData = (
   attachmentSizes: AttachmentSizeMapType[],
-): Promise<
-  Result<AttachmentPresignedPostDataMapType[], CreatePresignedPostError>
+): ResultAsync<
+  AttachmentPresignedPostDataMapType[],
+  CreatePresignedPostError
 > => {
   const totalAttachmentSizeLimit = fileSizeLimitBytes(FormResponseMode.Encrypt)
   let totalAttachmentSize = 0
-  return await ResultAsync.fromPromise(
-    // rethrow errors in Promise.all so that they are all collected in the error function
-    Promise.all(
-      attachmentSizes.map(async ({ id, size }) => {
-        if (!mongoose.isValidObjectId(id)) throw new InvalidFieldIdError()
+  return ResultAsync.combine(
+    attachmentSizes.map(({ id, size }) => {
+      if (!mongoose.isValidObjectId(id))
+        return errAsync(new InvalidFieldIdError())
 
-        totalAttachmentSize += size
-        if (totalAttachmentSize > totalAttachmentSizeLimit)
-          throw new AttachmentSizeLimitExceededError()
+      totalAttachmentSize += size
+      if (totalAttachmentSize > totalAttachmentSizeLimit)
+        return errAsync(new AttachmentSizeLimitExceededError())
 
-        return createPresignedPostDataPromise({
-          bucketName: AwsConfig.virusScannerQuarantineS3Bucket,
-          expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
-          size,
-        })
-          .map((presignedPostData) => ({
-            id,
-            presignedPostData,
-          }))
-          .mapErr((error) => {
-            throw error
-          })
-      }),
-    ).then((results) => {
-      const okResults = []
-      for (const result of results) {
-        if (result.isErr()) return result.error
-        okResults.push(result.value)
-      }
-      return okResults
+      return createPresignedPostDataPromise({
+        bucketName: AwsConfig.virusScannerQuarantineS3Bucket,
+        expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
+        size,
+      }).map((presignedPostData) => ({
+        id,
+        presignedPostData,
+      }))
     }),
-    (error) => {
-      logger.error({
-        message:
-          'Error encountered when getting quarantine presigned POST data',
-        meta: {
-          action: 'getQuarantinePresignedPostData',
-        },
-        error,
-      })
-
-      if (
-        error instanceof InvalidFieldIdError ||
-        error instanceof AttachmentSizeLimitExceededError ||
-        error instanceof CreatePresignedPostError
-      )
-        return error
-
-      return new CreatePresignedPostError()
-    },
   )
 }
