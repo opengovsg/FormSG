@@ -547,33 +547,59 @@ export const performEncryptPostSubmissionActions = (
 export const getQuarantinePresignedPostData = async (
   attachmentSizes: AttachmentSizeMapType[],
 ): Promise<
-  Result<
-    AttachmentPresignedPostDataMapType[],
-    CreatePresignedPostError | InvalidFieldIdError
-  >
+  Result<AttachmentPresignedPostDataMapType[], CreatePresignedPostError>
 > => {
-  const attachmentPresignedData: AttachmentPresignedPostDataMapType[] = []
   const totalAttachmentSizeLimit = fileSizeLimitBytes(FormResponseMode.Encrypt)
   let totalAttachmentSize = 0
-  for (const { id, size } of attachmentSizes) {
-    if (!mongoose.isValidObjectId(id)) return err(new InvalidFieldIdError())
-    totalAttachmentSize += size
-    if (totalAttachmentSize > totalAttachmentSizeLimit)
-      return err(new AttachmentSizeLimitExceededError())
+  return await ResultAsync.fromPromise(
+    // rethrow errors in Promise.all so that they are all collected in the error function
+    Promise.all(
+      attachmentSizes.map(async ({ id, size }) => {
+        if (!mongoose.isValidObjectId(id)) throw new InvalidFieldIdError()
 
-    const presignedPostDataResult = await createPresignedPostDataPromise({
-      bucketName: AwsConfig.virusScannerQuarantineS3Bucket,
-      expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
-      size,
-    })
+        totalAttachmentSize += size
+        if (totalAttachmentSize > totalAttachmentSizeLimit)
+          throw new AttachmentSizeLimitExceededError()
 
-    if (presignedPostDataResult.isErr())
-      return err(presignedPostDataResult.error)
+        return createPresignedPostDataPromise({
+          bucketName: AwsConfig.virusScannerQuarantineS3Bucket,
+          expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
+          size,
+        })
+          .map((presignedPostData) => ({
+            id,
+            presignedPostData,
+          }))
+          .mapErr((error) => {
+            throw error
+          })
+      }),
+    ).then((results) => {
+      const cleanedResults = []
+      for (const result of results) {
+        if (result.isErr()) return result.error
+        cleanedResults.push(result.value)
+      }
+      return cleanedResults
+    }),
+    (error) => {
+      logger.error({
+        message:
+          'Error encountered when getting quarantine presigned POST data',
+        meta: {
+          action: 'getQuarantinePresignedPostData',
+        },
+        error,
+      })
 
-    attachmentPresignedData.push({
-      id,
-      presignedPostData: presignedPostDataResult.value,
-    })
-  }
-  return ok(attachmentPresignedData)
+      if (
+        error instanceof InvalidFieldIdError ||
+        error instanceof AttachmentSizeLimitExceededError ||
+        error instanceof CreatePresignedPostError
+      )
+        return error
+
+      return new CreatePresignedPostError()
+    },
+  )
 }
