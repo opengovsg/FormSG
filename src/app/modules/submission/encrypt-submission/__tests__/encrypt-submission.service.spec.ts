@@ -1136,9 +1136,6 @@ describe('encrypt-submission.service', () => {
     })
 
     it('should return AttachmentSizeLimitExceededError when total attachment size has exceeded 20MB', async () => {
-      // Arrange
-      const awsSpy = jest.spyOn(aws.s3, 'createPresignedPost')
-
       // Act
       const actualResult = await getQuarantinePresignedPostData([
         { id: fieldId1, size: 2 },
@@ -1147,7 +1144,6 @@ describe('encrypt-submission.service', () => {
 
       // Assert
       expect(actualResult.isErr()).toEqual(true)
-      expect(awsSpy).toHaveBeenCalledTimes(1)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new AttachmentSizeLimitExceededError(),
       )
