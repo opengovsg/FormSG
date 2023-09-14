@@ -228,32 +228,46 @@ export const validateStorageSubmission = async (
       req.formsg.filteredResponses = responses
       return next()
     })
-    .mapErr((error) => {
-      // TODO(FRM-1318): Set DB flag to true to harden submission validation after validation has similar error rates as email mode forms.
-      if (
-        req.formsg.featureFlags.includes(
-          featureFlags.encryptionBoundaryShiftHardValidation,
-        )
-      ) {
-        logger.error({
-          message: 'Error processing responses',
-          meta: logMeta,
-          error,
+    // TODO(FRM-1318): Set DB flag to true to harden submission validation after validation has similar error rates as email mode forms.
+    .mapErr((error) =>
+      FeatureFlagService.getFeatureFlag(
+        featureFlags.encryptionBoundaryShiftHardValidation,
+      )
+        .map((hardValidationEnabled) => {
+          if (hardValidationEnabled) {
+            logger.error({
+              message: 'Error processing responses',
+              meta: logMeta,
+              error,
+            })
+            const { statusCode, errorMessage } = mapRouteError(error)
+            return res.status(statusCode).json({
+              message: errorMessage,
+            })
+          }
+
+          logger.warn({
+            message:
+              'Error processing responses, but proceeding with submission as submission have been validated client-side',
+            meta: logMeta,
+            error,
+          })
+
+          req.formsg.filteredResponses = req.body.responses
+          return next()
         })
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({
-          message: errorMessage,
-        })
-      }
-      logger.warn({
-        message:
-          'Error processing responses, but proceeding with submission as submission have been validated client-side',
-        meta: logMeta,
-        error,
-      })
-      req.formsg.filteredResponses = req.body.responses
-      return next()
-    })
+        .mapErr((error) => {
+          logger.error({
+            message: 'Error retrieving feature flags.',
+            meta: logMeta,
+            error,
+          })
+          const { statusCode, errorMessage } = mapRouteError(error)
+          return res.status(statusCode).send({
+            message: errorMessage,
+          })
+        }),
+    )
 }
 
 const encryptAttachment = async (
@@ -450,20 +464,7 @@ export const createFormsgAndRetrieveForm = async (
   if (req.formsg) return res.send(new FormsgReqBodyExistsError())
   const formsg = {} as FormLoadedDto
 
-  // Step 2: Retrieve feature flags
-  const featureFlagsListResult = await FeatureFlagService.getEnabledFlags()
-
-  if (featureFlagsListResult.isErr()) {
-    logger.error({
-      message: 'Error occurred whilst retrieving enabled feature flags',
-      meta: logMeta,
-      error: featureFlagsListResult.error,
-    })
-  } else {
-    formsg.featureFlags = featureFlagsListResult.value
-  }
-
-  // Step 3a: Retrieve form
+  // Step 2a: Retrieve form
   const formResult = await FormService.retrieveFullFormById(formId)
   if (formResult.isErr()) {
     logger.warn({
@@ -475,11 +476,11 @@ export const createFormsgAndRetrieveForm = async (
     return res.status(statusCode).json({ message: errorMessage })
   }
 
-  // Step 3b: Set formsg.formDef in req.body
+  // Step 2b: Set formsg.formDef in req.body
   const formDef = formResult.value
   formsg.formDef = formDef
 
-  // Step 4a: Check if form is encrypt mode
+  // Step 3a: Check if form is encrypt mode
   const checkFormIsEncryptModeResult = checkFormIsEncryptMode(formDef)
   if (checkFormIsEncryptModeResult.isErr()) {
     logger.error({
@@ -495,10 +496,10 @@ export const createFormsgAndRetrieveForm = async (
     })
   }
 
-  // Step 4b: Set formsg.encryptedFormDef in req.body
+  // Step 3b: Set formsg.encryptedFormDef in req.body
   formsg.encryptedFormDef = checkFormIsEncryptModeResult.value
 
-  // Step 5: Check if form has public key
+  // Step 4: Check if form has public key
   if (!formDef.publicKey) {
     logger.warn({
       message: 'Form does not have a public key',
