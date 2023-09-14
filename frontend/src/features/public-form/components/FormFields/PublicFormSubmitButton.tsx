@@ -114,7 +114,7 @@ export const PublicFormSubmitButton = ({
           : 'Submit now'}
       </Button>
       {preventSubmissionLogic ? (
-        <InlineMessage variant="warning">
+        <InlineMessage useMarkdown variant="warning">
           {preventSubmissionLogic.preventSubmitMessage}
         </InlineMessage>
       ) : null}
