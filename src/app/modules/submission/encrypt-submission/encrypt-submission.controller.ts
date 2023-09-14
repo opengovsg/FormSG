@@ -46,7 +46,7 @@ import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
-import { fileSizeLimitBytes } from '../submission.utils'
+import { fileSizeLimit, fileSizeLimitBytes } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import {
@@ -1012,6 +1012,23 @@ const getS3PresignedPostData: ControllerHandler<
     })
 }
 
+/**
+ * Custom validation function for Joi to validate that the sum of 'size' in the array of objects
+ * is less than or equal to total file size limit (20MB).
+ */
+const validateFileSizeSum = (
+  value: { size: number }[],
+  helpers: { error: (arg0: string) => null },
+) => {
+  const sum = value.reduce((acc, curr) => acc + curr.size, 0)
+
+  if (sum <= fileSizeLimitBytes(FormResponseMode.Encrypt)) {
+    return value // Return the validated value if the sum of 'size' is less than or equal to 10
+  } else {
+    return helpers.error('size.limit') // Return an error if the sum of 'size' is greater than 10
+  }
+}
+
 // Handler for POST /:formId/submissions/storage/get-s3-presigned-post-data
 export const handleGetS3PresignedPostData = [
   celebrate({
@@ -1026,7 +1043,14 @@ export const handleGetS3PresignedPostData = [
             .required(),
         }),
       )
-      .unique('id'), // IDs of each array item should be unique
+      .unique('id') // IDs of each array item should be unique
+      .custom(validateFileSizeSum, 'Custom validation for total file size') // Custom validation to check for total file size
+      .messages({
+        'size.limit': `Total file size exceeds ${fileSizeLimit(
+          FormResponseMode.Encrypt,
+        )}MB`, // Custom error message for total file size
+        'array.unique': 'Duplicate id(s) found', // Custom error message for duplicate IDs
+      }),
   }),
   getS3PresignedPostData,
 ] as ControllerHandler[]
