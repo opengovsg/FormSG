@@ -1065,9 +1065,9 @@ const validateFileSizeSum = (
   const sum = value.reduce((acc, curr) => acc + curr.size, 0)
 
   if (sum <= fileSizeLimitBytes(FormResponseMode.Encrypt)) {
-    return value // Return the validated value if the sum of 'size' is less than or equal to 10
+    return value // Return the validated value if the sum of 'size' is less than or equal to limit
   } else {
-    return helpers.error('size.limit') // Return an error if the sum of 'size' is greater than 10
+    return helpers.error('size.limit') // Return an error if the sum of 'size' is greater than limit
   }
 }
 
