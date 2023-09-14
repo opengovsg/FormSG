@@ -7,6 +7,7 @@ import mongoose from 'mongoose'
 import { okAsync } from 'neverthrow'
 import Stripe from 'stripe'
 
+import { featureFlags } from '../../../../../shared/constants'
 import {
   ErrorDto,
   FormAuthType,
@@ -39,6 +40,7 @@ import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import { MalformedParametersError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
+import { getFeatureFlag } from '../../feature-flags/feature-flags.service'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
@@ -54,7 +56,10 @@ import {
   ensurePublicForm,
   ensureValidCaptcha,
 } from './encrypt-submission.ensures'
-import { SubmissionFailedError } from './encrypt-submission.errors'
+import {
+  FeatureDisabledError,
+  SubmissionFailedError,
+} from './encrypt-submission.errors'
 import {
   addPaymentDataStream,
   checkFormIsEncryptMode,
@@ -999,17 +1004,25 @@ const getS3PresignedPostData: ControllerHandler<
     ...createReqMeta(req),
   }
 
-  return getQuarantinePresignedPostData(req.body)
-    .map((presignedUrls) => {
-      logger.info({
-        message: 'Successfully retrieved quarantine presigned post data.',
-        meta: logMeta,
-      })
-      return res.json(presignedUrls)
+  return getFeatureFlag(featureFlags.encryptionBoundaryShiftVirusScanner)
+    .map((virusScannerEnabled) => {
+      if (!virusScannerEnabled) {
+        logger.warn({
+          message: 'Virus scanning has not been enabled.',
+          meta: logMeta,
+        })
+
+        const { statusCode, errorMessage } = mapRouteError(
+          new FeatureDisabledError(),
+        )
+        return res.status(statusCode).json({
+          message: errorMessage,
+        })
+      }
     })
     .mapErr((error) => {
       logger.error({
-        message: 'Failure getting quarantine presigned post data.',
+        message: 'Error retrieving feature flags.',
         meta: logMeta,
         error,
       })
@@ -1018,6 +1031,27 @@ const getS3PresignedPostData: ControllerHandler<
         message: errorMessage,
       })
     })
+    .andThen(() =>
+      getQuarantinePresignedPostData(req.body)
+        .map((presignedUrls) => {
+          logger.info({
+            message: 'Successfully retrieved quarantine presigned post data.',
+            meta: logMeta,
+          })
+          return res.json(presignedUrls)
+        })
+        .mapErr((error) => {
+          logger.error({
+            message: 'Failure getting quarantine presigned post data.',
+            meta: logMeta,
+            error,
+          })
+          const { statusCode, errorMessage } = mapRouteError(error)
+          return res.status(statusCode).json({
+            message: errorMessage,
+          })
+        }),
+    )
 }
 
 /**

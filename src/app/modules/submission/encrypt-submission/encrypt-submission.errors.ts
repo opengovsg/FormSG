@@ -43,3 +43,9 @@ export class AttachmentSizeLimitExceededError extends ApplicationError {
     super(message)
   }
 }
+
+export class FeatureDisabledError extends ApplicationError {
+  constructor(message = 'This feature is disabled.') {
+    super(message)
+  }
+}

@@ -72,6 +72,7 @@ import {
 
 import {
   AttachmentSizeLimitExceededError,
+  FeatureDisabledError,
   InvalidFieldIdError,
   SubmissionFailedError,
 } from './encrypt-submission.errors'
@@ -224,6 +225,7 @@ const errorMapper: MapRouteError = (
     case SubmissionFailedError:
     case InvalidFieldIdError:
     case AttachmentSizeLimitExceededError:
+    case FeatureDisabledError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
