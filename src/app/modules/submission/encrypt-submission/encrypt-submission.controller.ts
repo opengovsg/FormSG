@@ -993,8 +993,9 @@ export const handleGetMetadata = [
  * @returns 200 with array of presigned post data
  * @returns 400 if ids are invalid or total file size exceeds 20MB
  * @returns 500 if presigned post data cannot be retrieved or any other errors occur
+ * Exported for testing
  */
-const getS3PresignedPostData: ControllerHandler<
+export const getS3PresignedPostData: ControllerHandler<
   unknown,
   AttachmentPresignedPostDataMapType[] | ErrorDto,
   AttachmentSizeMapType[]
@@ -1026,7 +1027,7 @@ const getS3PresignedPostData: ControllerHandler<
             message: 'Successfully retrieved quarantine presigned post data.',
             meta: logMeta,
           })
-          return res.send(presignedUrls)
+          return res.status(StatusCodes.OK).send(presignedUrls)
         })
         .mapErr((error) => {
           logger.error({
