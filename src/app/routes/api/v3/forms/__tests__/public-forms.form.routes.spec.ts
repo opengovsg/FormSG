@@ -7,7 +7,6 @@ import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
 import { DatabaseError } from 'src/app/modules/core/core.errors'
-import { createSampleSubmissionData } from 'src/app/modules/form/form.service'
 import {
   MOCK_ACCESS_TOKEN,
   MOCK_AUTH_CODE,
@@ -331,9 +330,6 @@ describe('public-form.form.routes', () => {
       const formFields = fullForm?.getPublicView().form_fields
       if (!formFields) return
       const expectedSampleData = {}
-      for (const field of formFields) {
-        createSampleSubmissionData(expectedSampleData, field)
-      }
       const expectedResponseBody = JSON.parse(
         JSON.stringify({
           responses: expectedSampleData,

@@ -1015,30 +1015,18 @@ const getS3PresignedPostData: ControllerHandler<
         const { statusCode, errorMessage } = mapRouteError(
           new FeatureDisabledError(),
         )
-        return res.status(statusCode).json({
+        return res.status(statusCode).send({
           message: errorMessage,
         })
       }
-    })
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error retrieving feature flags.',
-        meta: logMeta,
-        error,
-      })
-      const { statusCode, errorMessage } = mapRouteError(error)
-      return res.status(statusCode).json({
-        message: errorMessage,
-      })
-    })
-    .andThen(() =>
-      getQuarantinePresignedPostData(req.body)
+
+      return getQuarantinePresignedPostData(req.body)
         .map((presignedUrls) => {
           logger.info({
             message: 'Successfully retrieved quarantine presigned post data.',
             meta: logMeta,
           })
-          return res.json(presignedUrls)
+          return res.send(presignedUrls)
         })
         .mapErr((error) => {
           logger.error({
@@ -1047,11 +1035,22 @@ const getS3PresignedPostData: ControllerHandler<
             error,
           })
           const { statusCode, errorMessage } = mapRouteError(error)
-          return res.status(statusCode).json({
+          return res.status(statusCode).send({
             message: errorMessage,
           })
-        }),
-    )
+        })
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error retrieving feature flags.',
+        meta: logMeta,
+        error,
+      })
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).send({
+        message: errorMessage,
+      })
+    })
 }
 
 /**
