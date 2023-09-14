@@ -387,7 +387,7 @@ export const ShareFormModal = ({
                         )}
                       </Stack>
                       {goLinkHelperText && (
-                        // padding on icon box to emulate padding form <Text>
+                        // padding on icon box to emulate padding from <Text>
                         <FormHelperText color={goLinkHelperText.color}>
                           <HStack alignItems="flex-start">
                             <Box py="2px">{goLinkHelperText.icon}</Box>
