@@ -153,16 +153,37 @@ export const checkNewBoundaryEnabled = async (
   res: Parameters<StorageSubmissionMiddlewareHandlerType>[1],
   next: NextFunction,
 ) => {
-  const newBoundaryEnabled = req.formsg.featureFlags.includes(
-    featureFlags.encryptionBoundaryShift,
-  )
-  if (!newBoundaryEnabled) {
-    return res
-      .status(StatusCodes.FORBIDDEN)
-      .json({ message: 'This endpoint has not been enabled for this form.' })
+  const logMeta = {
+    action: 'checkNewBoundaryEnabled',
+    ...createReqMeta(req),
   }
 
-  return next()
+  return FeatureFlagService.getFeatureFlag(featureFlags.encryptionBoundaryShift)
+    .map((newBoundaryEnabled) => {
+      if (!newBoundaryEnabled) {
+        logger.warn({
+          message: 'Encryption boundary shift is not enabled.',
+          meta: logMeta,
+        })
+
+        return res.status(StatusCodes.FORBIDDEN).json({
+          message: 'This endpoint has not been enabled for this form.',
+        })
+      }
+
+      return next()
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error retrieving feature flags.',
+        meta: logMeta,
+        error,
+      })
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).send({
+        message: errorMessage,
+      })
+    })
 }
 
 /**

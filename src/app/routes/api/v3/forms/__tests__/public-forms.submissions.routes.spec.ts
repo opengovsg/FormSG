@@ -1504,4 +1504,438 @@ describe('public-form.submissions.routes', () => {
       ])
     })
   })
+
+  describe('POST /forms/:formId/submissions/storage', () => {
+    describe('Joi validation', () => {
+      beforeEach(() => {
+        jest
+          .spyOn(FeatureFlagsService, 'getFeatureFlag')
+          .mockReturnValue(okAsync(true))
+      })
+
+      it('should return 403 when feature flag has not been enabled', async () => {
+        // Arrange
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            esrvcId: 'mockEsrvcId',
+            hasCaptcha: false,
+            status: FormStatus.Public,
+          },
+        })
+
+        jest
+          .spyOn(FeatureFlagsService, 'getFeatureFlag')
+          .mockReturnValueOnce(okAsync(false))
+
+        // Act
+        const response = await request
+          .post(`/forms/${form._id}/submissions/storage`)
+          // MOCK_RESPONSE contains all required keys
+          .field(
+            'body',
+            JSON.stringify({
+              responses: [MOCK_TEXTFIELD_RESPONSE],
+              version: 2,
+            }),
+          )
+          .query({ captchaResponse: 'null', captchaType: '' })
+
+        // Assert
+        expect(response.status).toBe(403)
+        expect(response.body).toEqual({
+          message: 'This endpoint has not been enabled for this form.',
+        })
+      })
+
+      it('should return 200 when submission is valid', async () => {
+        // Arrange
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            esrvcId: 'mockEsrvcId',
+            hasCaptcha: false,
+            status: FormStatus.Public,
+          },
+        })
+
+        // Act
+        const response = await request
+          .post(`/forms/${form._id}/submissions/storage`)
+          // MOCK_RESPONSE contains all required keys
+          .field(
+            'body',
+            JSON.stringify({
+              responses: [MOCK_TEXTFIELD_RESPONSE],
+              version: 2,
+            }),
+          )
+          .query({ captchaResponse: 'null', captchaType: '' })
+
+        // Assert
+        expect(response.status).toBe(200)
+        expect(response.body).toEqual({
+          message: 'Form submission successful.',
+          submissionId: expect.any(String),
+          timestamp: expect.any(Number),
+        })
+      })
+
+      it('should return 200 when answer is empty string for optional field', async () => {
+        // Arrange
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            esrvcId: 'mockEsrvcId',
+            hasCaptcha: false,
+            status: FormStatus.Public,
+            form_fields: [
+              { ...MOCK_TEXT_FIELD, required: false } as FormFieldSchema,
+            ],
+          },
+        })
+
+        // Act
+        const response = await request
+          .post(`/forms/${form._id}/submissions/storage`)
+          .field(
+            'body',
+            JSON.stringify({
+              responses: [{ ...MOCK_TEXTFIELD_RESPONSE, answer: '' }],
+              version: 2,
+            }),
+          )
+          .query({ captchaResponse: 'null', captchaType: '' })
+
+        // Assert
+        expect(response.status).toBe(200)
+        expect(response.body).toEqual({
+          message: 'Form submission successful.',
+          submissionId: expect.any(String),
+          timestamp: expect.any(Number),
+        })
+      })
+
+      it('should return 200 when response has isHeader key', async () => {
+        // Arrange
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            hasCaptcha: false,
+            status: FormStatus.Public,
+            form_fields: [MOCK_SECTION_FIELD],
+          },
+        })
+
+        // Act
+        const response = await request
+          .post(`/forms/${form._id}/submissions/storage`)
+          .field(
+            'body',
+            JSON.stringify({
+              responses: [{ ...MOCK_SECTION_RESPONSE, isHeader: true }],
+              version: 2,
+            }),
+          )
+          .query({ captchaResponse: 'null', captchaType: '' })
+
+        // Assert
+        expect(response.status).toBe(200)
+        expect(response.body).toEqual({
+          message: 'Form submission successful.',
+          submissionId: expect.any(String),
+          timestamp: expect.any(Number),
+        })
+      })
+
+      it('should return 200 when signature is empty string for optional verified field', async () => {
+        // Arrange
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            hasCaptcha: false,
+            status: FormStatus.Public,
+            form_fields: [MOCK_OPTIONAL_VERIFIED_FIELD],
+          },
+        })
+
+        // Act
+        const response = await request
+          .post(`/forms/${form._id}/submissions/storage`)
+          .field(
+            'body',
+            JSON.stringify({
+              responses: [
+                { ...MOCK_OPTIONAL_VERIFIED_RESPONSE, signature: '' },
+              ],
+              version: 2,
+            }),
+          )
+          .query({ captchaResponse: 'null', captchaType: '' })
+
+        // Assert
+        expect(response.status).toBe(200)
+        expect(response.body).toEqual({
+          message: 'Form submission successful.',
+          submissionId: expect.any(String),
+          timestamp: expect.any(Number),
+        })
+      })
+
+      it('should return 200 when response has answerArray and no answer', async () => {
+        // Arrange
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            hasCaptcha: false,
+            status: FormStatus.Public,
+            form_fields: [MOCK_CHECKBOX_FIELD],
+          },
+        })
+
+        // Act
+        const response = await request
+          .post(`/forms/${form._id}/submissions/storage`)
+          .field(
+            'body',
+            JSON.stringify({
+              responses: [MOCK_CHECKBOX_RESPONSE],
+              version: 2,
+            }),
+          )
+          .query({ captchaResponse: 'null', captchaType: '' })
+
+        // Assert
+        expect(response.status).toBe(200)
+        expect(response.body).toEqual({
+          message: 'Form submission successful.',
+          submissionId: expect.any(String),
+          timestamp: expect.any(Number),
+        })
+      })
+
+      it('should return 400 when version key is missing', async () => {
+        // Arrange
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            hasCaptcha: false,
+            status: FormStatus.Public,
+          },
+        })
+
+        // Act
+        const response = await request
+          .post(`/forms/${form._id}/submissions/storage`)
+          // Note missing responses
+          .field(
+            'body',
+            JSON.stringify({ responses: [MOCK_TEXTFIELD_RESPONSE] }),
+          )
+          .query({ captchaResponse: 'null', captchaType: '' })
+
+        // Assert
+        expect(response.status).toBe(400)
+        expect(response.body.message).toEqual('Validation failed')
+      })
+
+      it('should return 400 when responses key is missing', async () => {
+        // Arrange
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            hasCaptcha: false,
+            status: FormStatus.Public,
+          },
+        })
+
+        // Act
+        const response = await request
+          .post(`/forms/${form._id}/submissions/storage`)
+          // Note missing responses
+          .field('body', JSON.stringify({ version: 2 }))
+          .query({ captchaResponse: 'null', captchaType: '' })
+
+        // Assert
+        expect(response.status).toBe(400)
+        expect(response.body.message).toEqual('Validation failed')
+      })
+
+      it('should return 400 when response is missing _id', async () => {
+        // Arrange
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            hasCaptcha: false,
+            status: FormStatus.Public,
+          },
+        })
+
+        // Act
+        const response = await request
+          .post(`/forms/${form._id}/submissions/storage`)
+          .field(
+            'body',
+            JSON.stringify({
+              responses: [omit(MOCK_TEXTFIELD_RESPONSE, '_id')],
+              version: 2,
+            }),
+          )
+          .query({ captchaResponse: 'null', captchaType: '' })
+
+        // Assert
+        expect(response.status).toBe(400)
+        expect(response.body.message).toEqual('Validation failed')
+      })
+
+      it('should return 400 when response is missing fieldType', async () => {
+        // Arrange
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            hasCaptcha: false,
+            status: FormStatus.Public,
+          },
+        })
+
+        // Act
+        const response = await request
+          .post(`/forms/${form._id}/submissions/storage`)
+          .field(
+            'body',
+            JSON.stringify({
+              responses: [omit(MOCK_TEXTFIELD_RESPONSE, 'fieldType')],
+              version: 2,
+            }),
+          )
+          .query({ captchaResponse: 'null', captchaType: '' })
+
+        // Assert
+        expect(response.status).toBe(400)
+        expect(response.body.message).toEqual('Validation failed')
+      })
+
+      it('should return 400 when response has invalid fieldType', async () => {
+        // Arrange
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            hasCaptcha: false,
+            status: FormStatus.Public,
+          },
+        })
+
+        // Act
+        const response = await request
+          .post(`/forms/${form._id}/submissions/storage`)
+          .field(
+            'body',
+            JSON.stringify({
+              responses: [
+                { ...MOCK_TEXTFIELD_RESPONSE, fieldType: 'definitelyInvalid' },
+              ],
+              version: 2,
+            }),
+          )
+          .query({ captchaResponse: 'null', captchaType: '' })
+
+        // Assert
+        expect(response.status).toBe(400)
+        expect(response.body.message).toEqual('Validation failed')
+      })
+
+      it('should return 400 when response is missing answer', async () => {
+        // Arrange
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            hasCaptcha: false,
+            status: FormStatus.Public,
+          },
+        })
+
+        // Act
+        const response = await request
+          .post(`/forms/${form._id}/submissions/storage`)
+          .field(
+            'body',
+            JSON.stringify({
+              responses: [omit(MOCK_TEXTFIELD_RESPONSE, 'answer')],
+              version: 2,
+            }),
+          )
+          .query({ captchaResponse: 'null', captchaType: '' })
+
+        // Assert
+        expect(response.status).toBe(400)
+        expect(response.body.message).toEqual('Validation failed')
+      })
+
+      it('should return 400 when response has both answer and answerArray', async () => {
+        // Arrange
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            hasCaptcha: false,
+            status: FormStatus.Public,
+          },
+        })
+
+        // Act
+        const response = await request
+          .post(`/forms/${form._id}/submissions/storage`)
+          .field(
+            'body',
+            JSON.stringify({
+              responses: [{ ...MOCK_TEXTFIELD_RESPONSE, answerArray: [] }],
+              version: 2,
+            }),
+          )
+          .query({ captchaResponse: 'null', captchaType: '' })
+
+        // Assert
+        expect(response.status).toBe(400)
+        expect(response.body.message).toEqual('Validation failed')
+      })
+
+      it('should return 400 when attachment response has filename but not content', async () => {
+        // Arrange
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            hasCaptcha: false,
+            status: FormStatus.Public,
+          },
+        })
+
+        // Act
+        const response = await request
+          .post(`/forms/${form._id}/submissions/storage`)
+          .field(
+            'body',
+            JSON.stringify({
+              responses: [omit(MOCK_ATTACHMENT_RESPONSE), 'content'],
+              version: 2,
+            }),
+          )
+          .query({ captchaResponse: 'null', captchaType: '' })
+
+        // Assert
+        expect(response.status).toBe(400)
+        expect(response.body.message).toEqual('Validation failed')
+      })
+
+      it('should return 400 when attachment response has content but not filename', async () => {
+        // Arrange
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            hasCaptcha: false,
+            status: FormStatus.Public,
+          },
+        })
+
+        // Act
+        const response = await request
+          .post(`/forms/${form._id}/submissions/storage`)
+          .field(
+            'body',
+            JSON.stringify({
+              responses: [omit(MOCK_ATTACHMENT_RESPONSE), 'filename'],
+              version: 2,
+            }),
+          )
+          .query({ captchaResponse: 'null', captchaType: '' })
+
+        // Assert
+        expect(response.status).toBe(400)
+        expect(response.body.message).toEqual('Validation failed')
+      })
+    })
+  })
 })
