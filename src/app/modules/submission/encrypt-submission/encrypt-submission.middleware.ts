@@ -158,32 +158,22 @@ export const checkNewBoundaryEnabled = async (
     ...createReqMeta(req),
   }
 
-  return FeatureFlagService.getFeatureFlag(featureFlags.encryptionBoundaryShift)
-    .map((newBoundaryEnabled) => {
-      if (!newBoundaryEnabled) {
-        logger.warn({
-          message: 'Encryption boundary shift is not enabled.',
-          meta: logMeta,
-        })
+  const newBoundaryEnabled = req.formsg.featureFlags.includes(
+    featureFlags.encryptionBoundaryShift,
+  )
 
-        return res.status(StatusCodes.FORBIDDEN).json({
-          message: 'This endpoint has not been enabled for this form.',
-        })
-      }
+  if (!newBoundaryEnabled) {
+    logger.warn({
+      message: 'Encryption boundary shift is not enabled.',
+      meta: logMeta,
+    })
 
-      return next()
-    })
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error retrieving feature flags.',
-        meta: logMeta,
-        error,
-      })
-      const { statusCode, errorMessage } = mapRouteError(error)
-      return res.status(statusCode).send({
-        message: errorMessage,
-      })
-    })
+    return res
+      .status(StatusCodes.FORBIDDEN)
+      .json({ message: 'This endpoint has not been enabled for this form.' })
+  }
+
+  return next()
 }
 
 /**
@@ -228,46 +218,32 @@ export const validateStorageSubmission = async (
       req.formsg.filteredResponses = responses
       return next()
     })
-    // TODO(FRM-1318): Set DB flag to true to harden submission validation after validation has similar error rates as email mode forms.
-    .mapErr((error) =>
-      FeatureFlagService.getFeatureFlag(
-        featureFlags.encryptionBoundaryShiftHardValidation,
-      )
-        .map((hardValidationEnabled) => {
-          if (hardValidationEnabled) {
-            logger.error({
-              message: 'Error processing responses',
-              meta: logMeta,
-              error,
-            })
-            const { statusCode, errorMessage } = mapRouteError(error)
-            return res.status(statusCode).json({
-              message: errorMessage,
-            })
-          }
-
-          logger.warn({
-            message:
-              'Error processing responses, but proceeding with submission as submission have been validated client-side',
-            meta: logMeta,
-            error,
-          })
-
-          req.formsg.filteredResponses = req.body.responses
-          return next()
+    .mapErr((error) => {
+      // TODO(FRM-1318): Set DB flag to true to harden submission validation after validation has similar error rates as email mode forms.
+      if (
+        req.formsg.featureFlags.includes(
+          featureFlags.encryptionBoundaryShiftHardValidation,
+        )
+      ) {
+        logger.error({
+          message: 'Error processing responses',
+          meta: logMeta,
+          error,
         })
-        .mapErr((error) => {
-          logger.error({
-            message: 'Error retrieving feature flags.',
-            meta: logMeta,
-            error,
-          })
-          const { statusCode, errorMessage } = mapRouteError(error)
-          return res.status(statusCode).send({
-            message: errorMessage,
-          })
-        }),
-    )
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({
+          message: errorMessage,
+        })
+      }
+      logger.warn({
+        message:
+          'Error processing responses, but proceeding with submission as submission have been validated client-side',
+        meta: logMeta,
+        error,
+      })
+      req.formsg.filteredResponses = req.body.responses
+      return next()
+    })
 }
 
 const encryptAttachment = async (
@@ -464,7 +440,20 @@ export const createFormsgAndRetrieveForm = async (
   if (req.formsg) return res.send(new FormsgReqBodyExistsError())
   const formsg = {} as FormLoadedDto
 
-  // Step 2a: Retrieve form
+  // Step 2: Retrieve feature flags
+  const featureFlagsListResult = await FeatureFlagService.getEnabledFlags()
+
+  if (featureFlagsListResult.isErr()) {
+    logger.error({
+      message: 'Error occurred whilst retrieving enabled feature flags',
+      meta: logMeta,
+      error: featureFlagsListResult.error,
+    })
+  } else {
+    formsg.featureFlags = featureFlagsListResult.value
+  }
+
+  // Step 3a: Retrieve form
   const formResult = await FormService.retrieveFullFormById(formId)
   if (formResult.isErr()) {
     logger.warn({
@@ -476,11 +465,11 @@ export const createFormsgAndRetrieveForm = async (
     return res.status(statusCode).json({ message: errorMessage })
   }
 
-  // Step 2b: Set formsg.formDef in req.body
+  // Step 3b: Set formsg.formDef in req.body
   const formDef = formResult.value
   formsg.formDef = formDef
 
-  // Step 3a: Check if form is encrypt mode
+  // Step 4a: Check if form is encrypt mode
   const checkFormIsEncryptModeResult = checkFormIsEncryptMode(formDef)
   if (checkFormIsEncryptModeResult.isErr()) {
     logger.error({
@@ -496,10 +485,10 @@ export const createFormsgAndRetrieveForm = async (
     })
   }
 
-  // Step 3b: Set formsg.encryptedFormDef in req.body
+  // Step 4b: Set formsg.encryptedFormDef in req.body
   formsg.encryptedFormDef = checkFormIsEncryptModeResult.value
 
-  // Step 4: Check if form has public key
+  // Step 5: Check if form has public key
   if (!formDef.publicKey) {
     logger.warn({
       message: 'Form does not have a public key',

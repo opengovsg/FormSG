@@ -1001,7 +1001,7 @@ export const getS3PresignedPostData: ControllerHandler<
   AttachmentSizeMapType[]
 > = async (req, res) => {
   const logMeta = {
-    action: 'handleGetS3PresignedPostData',
+    action: 'getS3PresignedPostData',
     ...createReqMeta(req),
   }
 

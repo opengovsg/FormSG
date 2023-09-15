@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 import { omit } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
+import { featureFlags } from 'shared/constants'
 import session, { Session } from 'supertest-session'
 
 import { aws } from 'src/app/config/config'
@@ -1509,8 +1510,8 @@ describe('public-form.submissions.routes', () => {
     describe('Joi validation', () => {
       beforeEach(() => {
         jest
-          .spyOn(FeatureFlagsService, 'getFeatureFlag')
-          .mockReturnValue(okAsync(true))
+          .spyOn(FeatureFlagsService, 'getEnabledFlags')
+          .mockReturnValue(okAsync([featureFlags.encryptionBoundaryShift]))
       })
 
       it('should return 403 when feature flag has not been enabled', async () => {
@@ -1524,8 +1525,8 @@ describe('public-form.submissions.routes', () => {
         })
 
         jest
-          .spyOn(FeatureFlagsService, 'getFeatureFlag')
-          .mockReturnValueOnce(okAsync(false))
+          .spyOn(FeatureFlagsService, 'getEnabledFlags')
+          .mockReturnValueOnce(okAsync([]))
 
         // Act
         const response = await request
@@ -1945,8 +1946,8 @@ describe('public-form.submissions.routes', () => {
       }
       beforeEach(() => {
         jest
-          .spyOn(FeatureFlagsService, 'getFeatureFlag')
-          .mockReturnValue(okAsync(true))
+          .spyOn(FeatureFlagsService, 'getEnabledFlags')
+          .mockReturnValue(okAsync([featureFlags.encryptionBoundaryShift]))
       })
 
       describe('SingPass', () => {

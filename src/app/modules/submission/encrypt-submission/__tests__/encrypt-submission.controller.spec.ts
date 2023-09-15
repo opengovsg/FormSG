@@ -919,6 +919,7 @@ describe('encrypt-submission.controller', () => {
       expect(mockRes.send).toHaveBeenCalledWith(MOCK_PRESIGNED_URLS)
     })
   })
+
   describe('streamEncryptedResponses', () => {
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()
