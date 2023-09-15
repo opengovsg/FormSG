@@ -27,7 +27,11 @@ import {
 import dedent from 'dedent'
 import { StatusCodes } from 'http-status-codes'
 
-import { featureFlags, GO_VALIDATION_ERROR_MESSAGE } from '~shared/constants'
+import {
+  featureFlags,
+  GO_ALREADY_EXIST_ERROR_MESSAGE,
+  GO_VALIDATION_ERROR_MESSAGE,
+} from '~shared/constants'
 
 import { BxsCheckCircle, BxsErrorCircle } from '~/assets/icons'
 
@@ -72,6 +76,12 @@ const goLinkClaimSuccessHelperText: goLinkHelperTextType = {
     </Text>
   ),
 }
+
+const GO_VALIDATION_FAILED_HELPER_TEXT =
+  'Short links should only consist of lowercase letters, numbers and hyphens.'
+const GO_ALREADY_EXIST_HELPER_TEXT = 'Short link is already in use.'
+const GO_UNEXPECTED_ERROR_HELPER_TEXT =
+  'Something went wrong. Try refreshing this page. If this issue persists, contact support@form.gov.sg.'
 
 const getGoLinkClaimFailureHelperText = (
   text: string,
@@ -209,14 +219,19 @@ export const ShareFormModal = ({
     } catch (err) {
       setClaimGoLoading(false)
 
-      let errMessage =
-        'Something went wrong. Try refreshing this page. If this issue persists, contact support@form.gov.sg.'
+      let errMessage = GO_UNEXPECTED_ERROR_HELPER_TEXT
 
       if (err instanceof HttpError && err.code === StatusCodes.BAD_REQUEST)
-        errMessage =
-          err.message === GO_VALIDATION_ERROR_MESSAGE
-            ? 'Short links should only consist of lowercase letters, numbers and hyphens.'
-            : 'Short link is already in use.'
+        switch (err.message) {
+          case GO_VALIDATION_ERROR_MESSAGE:
+            errMessage = GO_VALIDATION_FAILED_HELPER_TEXT
+            break
+          case GO_ALREADY_EXIST_ERROR_MESSAGE:
+            errMessage = GO_ALREADY_EXIST_HELPER_TEXT
+            break
+          default:
+          // will use unexpected error text
+        }
 
       setGoLinkHelperText(getGoLinkClaimFailureHelperText(errMessage))
       return
