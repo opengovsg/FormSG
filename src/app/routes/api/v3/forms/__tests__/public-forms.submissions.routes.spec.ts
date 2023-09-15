@@ -1376,7 +1376,7 @@ describe('public-form.submissions.routes', () => {
       })
     })
 
-    it('should return 400 if virus scanning has not been enabled', async () => {
+    it('should return 403 if virus scanning has not been enabled', async () => {
       const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
           esrvcId: 'mockEsrvcId',
@@ -1396,7 +1396,7 @@ describe('public-form.submissions.routes', () => {
         )
         .send(VALID_PAYLOAD)
 
-      expect(response.status).toBe(400)
+      expect(response.status).toBe(403)
       expect(response.body).toEqual({
         message: 'This feature is disabled.',
       })
