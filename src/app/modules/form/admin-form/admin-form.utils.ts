@@ -563,14 +563,14 @@ export const mapGoGovErrors = (error: AxiosError): GoGovError => {
       // Short link already exists, which returns type=ShortUrlError
       // Or validation error, which does not contain type
       // Or if url is not https (like localhost), however, this should not happen as we prepend the app url in admin-form-controller
-      // TODO: Verify with GoGov team on response data shape
+      // TODO: Update the conditional when GoGov upgrades their return type shape
       return responseData.type
         ? new GoGovAlreadyExistError()
-        : responseData.message.includes(urlFormatError)
-        ? new GoGovServerError(
+        : !responseData.message.includes(urlFormatError)
+        ? new GoGovValidationError()
+        : new GoGovServerError(
             'GoGov server returned 400 for URL formatting error',
           )
-        : new GoGovValidationError()
     case StatusCodes.TOO_MANY_REQUESTS:
       return new GoGovRequestLimitError()
     // For gogov API this is equivalent to Request Failed
