@@ -12,8 +12,8 @@ import {
   DatabaseError,
   MalformedParametersError,
 } from 'src/app/modules/core/core.errors'
-import { CreatePresignedUrlError } from 'src/app/modules/form/admin-form/admin-form.errors'
 import { PaymentNotFoundError } from 'src/app/modules/payments/payments.errors'
+import { CreatePresignedPostError } from 'src/app/utils/aws-s3'
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import {
   IPaymentSchema,
@@ -26,12 +26,18 @@ import {
   StorageModeSubmissionMetadata,
   SubmissionId,
 } from '../../../../../../shared/types'
+import { aws as AwsConfig } from '../../../../config/config'
 import * as PaymentsService from '../../../payments/payments.service'
 import { SubmissionNotFoundError } from '../../submission.errors'
+import {
+  AttachmentSizeLimitExceededError,
+  InvalidFieldIdError,
+} from '../encrypt-submission.errors'
 import {
   addPaymentDataStream,
   createEncryptSubmissionWithoutSave,
   getEncryptedSubmissionData,
+  getQuarantinePresignedPostData,
   getSubmissionCursor,
   getSubmissionMetadata,
   getSubmissionMetadataList,
@@ -833,7 +839,7 @@ describe('encrypt-submission.service', () => {
       expect(awsSpy).not.toHaveBeenCalled()
     })
 
-    it('should return CreatePresignedUrlError when error occurs during the signed url creation process', async () => {
+    it('should return CreatePresignedPostError when error occurs during the signed url creation process', async () => {
       // Arrange
       jest
         .spyOn(aws.s3, 'getSignedUrlPromise')
@@ -850,7 +856,7 @@ describe('encrypt-submission.service', () => {
       expect(actualResult.isErr()).toEqual(true)
       // Should reject even if there are some passing promises.
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new CreatePresignedUrlError('Failed to create attachment URL'),
+        new CreatePresignedPostError('Failed to create attachment URL'),
       )
     })
   })
@@ -865,6 +871,12 @@ describe('encrypt-submission.service', () => {
         number: 200,
         refNo: mockSubmissionId as SubmissionId,
         submissionTime: 'some submission time',
+        payments: {
+          paymentAmt: 0,
+          email: '',
+          payoutDate: null,
+          transactionFee: null,
+        },
       }
       const getMetaSpy = jest
         .spyOn(EncryptSubmission, 'findSingleMetadata')
@@ -876,7 +888,7 @@ describe('encrypt-submission.service', () => {
         mockSubmissionId,
       )
 
-      // Arrange
+      // Assert
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(expectedMetadata)
       expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, mockSubmissionId)
@@ -892,7 +904,7 @@ describe('encrypt-submission.service', () => {
         invalidSubmissionId,
       )
 
-      // Arrange
+      // Assert
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(null)
     })
@@ -910,7 +922,7 @@ describe('encrypt-submission.service', () => {
         mockSubmissionId,
       )
 
-      // Arrange
+      // Assert
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(null)
       expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, mockSubmissionId)
@@ -930,7 +942,7 @@ describe('encrypt-submission.service', () => {
         mockSubmissionId,
       )
 
-      // Arrange
+      // Assert
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new DatabaseError(formatErrorRecoveryMessage(mockErrorString)),
@@ -961,7 +973,7 @@ describe('encrypt-submission.service', () => {
       // Act
       const actualResult = await getSubmissionMetadataList(MOCK_FORM_ID)
 
-      // Arrange
+      // Assert
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(expectedResult)
       expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, { page: undefined })
@@ -990,7 +1002,7 @@ describe('encrypt-submission.service', () => {
         mockPageNumber,
       )
 
-      // Arrange
+      // Assert
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(expectedResult)
       expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, {
@@ -1008,12 +1020,133 @@ describe('encrypt-submission.service', () => {
       // Act
       const actualResult = await getSubmissionMetadataList(MOCK_FORM_ID)
 
-      // Arrange
+      // Assert
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new DatabaseError(formatErrorRecoveryMessage(mockErrorString)),
       )
       expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, { page: undefined })
+    })
+  })
+
+  describe('getQuarantinePresignedPostData', () => {
+    const fieldId1 = new mongoose.Types.ObjectId()
+    const fieldId2 = new mongoose.Types.ObjectId()
+    const MOCK_ATTACHMENT_SIZES = [
+      { id: fieldId1, size: 1 },
+      { id: fieldId2, size: 2 },
+    ]
+
+    const REGEX_UUID =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+    it('should return presigned post data', async () => {
+      // Arrange
+      const awsSpy = jest.spyOn(aws.s3, 'createPresignedPost')
+      const expectedCalledWithSubset = {
+        Bucket: AwsConfig.virusScannerQuarantineS3Bucket,
+        Fields: { key: expect.stringMatching(REGEX_UUID) },
+        Expires: 1 * 60, // expires in 1 minutes
+      }
+      const expectedPresignedPostData = expect.objectContaining({
+        url: `${AwsConfig.endPoint}/${AwsConfig.virusScannerQuarantineS3Bucket}`,
+        fields: expect.objectContaining({
+          key: expect.stringMatching(REGEX_UUID),
+          bucket: AwsConfig.virusScannerQuarantineS3Bucket,
+          'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
+        }),
+      })
+
+      // Act
+      const actualResult = await getQuarantinePresignedPostData(
+        MOCK_ATTACHMENT_SIZES,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(awsSpy).toHaveBeenCalledTimes(2)
+      expect(awsSpy.mock.calls).toEqual([
+        [
+          {
+            ...expectedCalledWithSubset,
+            Conditions: [['content-length-range', 0, 1]],
+          },
+          expect.any(Function), // anonymous error handling function
+        ],
+        [
+          {
+            ...expectedCalledWithSubset,
+            Conditions: [['content-length-range', 0, 2]],
+          },
+          expect.any(Function), // anonymous error handling function
+        ],
+      ])
+      const actualResultValue = actualResult._unsafeUnwrap()
+      expect(actualResultValue).toEqual(
+        expect.objectContaining([
+          { id: fieldId1, presignedPostData: expectedPresignedPostData },
+          { id: fieldId2, presignedPostData: expectedPresignedPostData },
+        ]),
+      )
+    })
+
+    it('should return CreatePresignedPostError when aws.s3.createPresignedPost throws error', async () => {
+      // Arrange
+      const awsSpy = jest
+        .spyOn(aws.s3, 'createPresignedPost')
+        .mockImplementationOnce(() => {
+          throw new Error('some error')
+        })
+
+      // Act
+      const actualResult = await getQuarantinePresignedPostData(
+        MOCK_ATTACHMENT_SIZES,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(awsSpy).toHaveBeenCalled()
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new CreatePresignedPostError(),
+      )
+      expect(awsSpy).toHaveBeenCalledWith(
+        {
+          Bucket: AwsConfig.virusScannerQuarantineS3Bucket,
+          Fields: { key: expect.stringMatching(REGEX_UUID) },
+          Expires: 1 * 60, // expires in 1 minutes
+          Conditions: [['content-length-range', 0, 1]],
+        },
+        expect.any(Function), // anonymous error handling function
+      )
+    })
+
+    it('should return InvalidFieldIdError when ids are not valid mongodb object ids', async () => {
+      // Arrange
+      const awsSpy = jest.spyOn(aws.s3, 'createPresignedPost')
+
+      // Act
+      const actualResult = await getQuarantinePresignedPostData([
+        { id: 'test_file_1' as unknown as ObjectId, size: 1 },
+      ])
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(awsSpy).not.toHaveBeenCalled()
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidFieldIdError())
+    })
+
+    it('should return AttachmentSizeLimitExceededError when total attachment size has exceeded 20MB', async () => {
+      // Act
+      const actualResult = await getQuarantinePresignedPostData([
+        { id: fieldId1, size: 2 },
+        { id: fieldId2, size: 19999999 },
+      ])
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new AttachmentSizeLimitExceededError(),
+      )
     })
   })
 })

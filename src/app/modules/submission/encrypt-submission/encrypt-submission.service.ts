@@ -23,6 +23,10 @@ import {
 import { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
+import {
+  createPresignedPostDataPromise,
+  CreatePresignedPostError,
+} from '../../../utils/aws-s3'
 import { isMalformedDate } from '../../../utils/date'
 import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
 import {
@@ -31,7 +35,6 @@ import {
   MalformedParametersError,
   PossibleDatabaseError,
 } from '../../core/core.errors'
-import { CreatePresignedUrlError } from '../../form/admin-form/admin-form.errors'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
 import { isFormEncryptMode } from '../../form/form.utils'
@@ -48,10 +51,20 @@ import {
   SubmissionNotFoundError,
 } from '../submission.errors'
 import { sendEmailConfirmations } from '../submission.service'
-import { extractEmailConfirmationData } from '../submission.utils'
+import {
+  extractEmailConfirmationData,
+  fileSizeLimitBytes,
+} from '../submission.utils'
 
+import { PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS } from './encrypt-submission.constants'
+import {
+  AttachmentSizeLimitExceededError,
+  InvalidFieldIdError,
+} from './encrypt-submission.errors'
 import {
   AttachmentMetadata,
+  AttachmentPresignedPostDataMapType,
+  AttachmentSizeMapType,
   SaveEncryptSubmissionParams,
 } from './encrypt-submission.types'
 
@@ -346,12 +359,12 @@ export const getSubmissionPaymentDto = (
  * @param attachmentMetadata the metadata to transform
  * @param urlValidDuration the duration the S3 signed url will be valid for
  * @returns ok(map with object path replaced with their signed url counterparts)
- * @returns err(CreatePresignedUrlError) if any of the signed url creation processes results in an error
+ * @returns err(CreatePresignedPostError) if any of the signed url creation processes results in an error
  */
 export const transformAttachmentMetasToSignedUrls = (
   attachmentMetadata: Map<string, string> | undefined,
   urlValidDuration: number,
-): ResultAsync<Record<string, string>, CreatePresignedUrlError> => {
+): ResultAsync<Record<string, string>, CreatePresignedPostError> => {
   if (!attachmentMetadata) {
     return okAsync({})
   }
@@ -380,7 +393,7 @@ export const transformAttachmentMetasToSignedUrls = (
         error,
       })
 
-      return new CreatePresignedUrlError('Failed to create attachment URL')
+      return new CreatePresignedPostError('Failed to create attachment URL')
     },
   )
 }
@@ -529,4 +542,39 @@ export const performEncryptPostSubmissionActions = (
         return error
       })
     })
+}
+
+export const getQuarantinePresignedPostData = (
+  attachmentSizes: AttachmentSizeMapType[],
+): ResultAsync<
+  AttachmentPresignedPostDataMapType[],
+  CreatePresignedPostError
+> => {
+  // List of attachments is looped over twice to avoid side effects of mutating variables
+  // to check if the attachment limits have been exceeded.
+
+  // Step 1: Check for the total attachment size
+  const totalAttachmentSizeLimit = fileSizeLimitBytes(FormResponseMode.Encrypt)
+  const totalAttachmentSize = attachmentSizes
+    .map(({ size }) => size)
+    .reduce((prev, next) => prev + next)
+  if (totalAttachmentSize > totalAttachmentSizeLimit)
+    return errAsync(new AttachmentSizeLimitExceededError())
+
+  // Step 2: Create presigned post data for each attachment
+  return ResultAsync.combine(
+    attachmentSizes.map(({ id, size }) => {
+      if (!mongoose.isValidObjectId(id))
+        return errAsync(new InvalidFieldIdError())
+
+      return createPresignedPostDataPromise({
+        bucketName: AwsConfig.virusScannerQuarantineS3Bucket,
+        expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
+        size,
+      }).map((presignedPostData) => ({
+        id,
+        presignedPostData,
+      }))
+    }),
+  )
 }

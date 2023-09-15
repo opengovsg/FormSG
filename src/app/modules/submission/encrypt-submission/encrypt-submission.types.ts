@@ -1,3 +1,6 @@
+import { PresignedPost } from 'aws-sdk/clients/s3'
+import { ObjectId } from 'mongodb'
+
 import {
   SubmissionErrorDto,
   SubmissionResponseDto,
@@ -71,3 +74,13 @@ export type SubmitEncryptModeFormHandlerType = ControllerHandler<
 
 export type SubmitEncryptModeFormHandlerRequest =
   Parameters<SubmitEncryptModeFormHandlerType>[0] & { formsg: FormCompleteDto }
+
+export type AttachmentSizeMapType = {
+  id: ObjectId
+  size: number
+}
+
+export type AttachmentPresignedPostDataMapType = {
+  id: ObjectId
+  presignedPostData: PresignedPost
+}

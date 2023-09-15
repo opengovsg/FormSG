@@ -44,7 +44,7 @@ import {
 import { mapRouteError } from './encrypt-submission.utils'
 import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
 
-export const logger = createLoggerWithLabel(module)
+const logger = createLoggerWithLabel(module)
 
 const JoiInt = Joi.number().integer()
 /**
@@ -153,10 +153,21 @@ export const checkNewBoundaryEnabled = async (
   res: Parameters<StorageSubmissionMiddlewareHandlerType>[1],
   next: NextFunction,
 ) => {
+  const logMeta = {
+    action: 'checkNewBoundaryEnabled',
+    ...createReqMeta(req),
+  }
+
   const newBoundaryEnabled = req.formsg.featureFlags.includes(
     featureFlags.encryptionBoundaryShift,
   )
+
   if (!newBoundaryEnabled) {
+    logger.warn({
+      message: 'Encryption boundary shift is not enabled.',
+      meta: logMeta,
+    })
+
     return res
       .status(StatusCodes.FORBIDDEN)
       .json({ message: 'This endpoint has not been enabled for this form.' })

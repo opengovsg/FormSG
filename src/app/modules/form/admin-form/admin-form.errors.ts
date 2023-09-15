@@ -6,12 +6,6 @@ export class InvalidFileTypeError extends ApplicationError {
   }
 }
 
-export class CreatePresignedUrlError extends ApplicationError {
-  constructor(message: string) {
-    super(message)
-  }
-}
-
 export class EditFieldError extends ApplicationError {
   constructor(message: string) {
     super(message)
