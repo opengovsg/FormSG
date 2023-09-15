@@ -60,7 +60,7 @@ RUN --mount=type=secret,id=dd_api_key \
 RUN npm prune --production --legacy-peer-deps
 
 # This stage builds the final container
-FROM node:hydrogen-alpine3.16
+FROM node:hydrogen-alpine3.18
 LABEL maintainer=FormSG<formsg@data.gov.sg>
 WORKDIR /opt/formsg
 
