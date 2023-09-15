@@ -16,6 +16,7 @@ export const sharedSubmissionParams = {
           answerArray: Joi.array(),
           filename: Joi.string(),
           content: Joi.binary(),
+          fileKey: Joi.string(), // quarantine bucket object key where file has been uploaded to
           isHeader: Joi.boolean(),
           myInfo: Joi.object(),
           signature: Joi.string().allow(''),
