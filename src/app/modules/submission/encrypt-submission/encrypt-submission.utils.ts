@@ -127,6 +127,7 @@ const errorMapper: MapRouteError = (
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
       }
+    case FeatureDisabledError:
     case ForbiddenFormError:
       return {
         statusCode: StatusCodes.FORBIDDEN,
@@ -225,7 +226,6 @@ const errorMapper: MapRouteError = (
     case SubmissionFailedError:
     case InvalidFieldIdError:
     case AttachmentSizeLimitExceededError:
-    case FeatureDisabledError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
