@@ -1,4 +1,4 @@
-FROM node:hydrogen-alpine3.16
+FROM node:hydrogen-alpine3.18
 LABEL maintainer=FormSG<formsg@data.gov.sg>
 
 WORKDIR /opt/formsg
