@@ -879,7 +879,7 @@ describe('encrypt-submission.controller', () => {
       await getS3PresignedPostData(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
-      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
     })
 
     it('should return 500 if getFeatureFlag returns okAsync(true) but getQuarantinePresignedPostData returns errAsync(CreatePresignedPostError)', async () => {
