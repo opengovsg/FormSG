@@ -75,12 +75,11 @@ export const ChildrenCompoundField = ({
     name: schema._id,
   })
 
-  const { fields, append, remove } = useFieldArray<ChildrenCompoundFieldInputs>(
-    {
+  const { fields, append, update, remove } =
+    useFieldArray<ChildrenCompoundFieldInputs>({
       control: formContext.control,
       name: `${schema._id}.child`,
-    },
-  )
+    })
 
   useEffect(() => {
     if (schema.childrenSubFields) {
@@ -94,9 +93,9 @@ export const ChildrenCompoundField = ({
   // Initialize with a single child section
   useEffect(() => {
     if (!fields || !fields.length) {
-      append([''])
+      update(0, '')
     }
-  }, [fields, append])
+  }, [fields, update])
 
   const ariaChildrenDescription = useMemo(() => {
     let description = simplur`This is a children field. There [is|are] ${fields.length} child[|ren].`
@@ -295,7 +294,8 @@ const ChildrenBody = ({
               items={[childName, ...namesNotSelected()].filter((e) => e !== '')}
               value={childName}
               isDisabled={isSubmitting}
-              initialIsOpen={!!myInfoChildrenBirthRecords?.childname}
+              // initialIsOpen={false}
+              // initialIsOpen={!!myInfoChildrenBirthRecords?.childname}
               onChange={(name) => {
                 // This is bad practice but we have no choice because our
                 // custom Select doesn't forward the event.
