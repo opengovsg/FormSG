@@ -8,15 +8,19 @@ import { validateField } from 'src/app/utils/field-validation'
 
 import {
   BasicField,
+  NumberSelectedLengthValidation,
   NumberSelectedValidation,
 } from '../../../../../../shared/types'
 
 describe('Number field validation', () => {
-  it('should allow number with valid maximum', () => {
+  it('should allow number with valid maximum length', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: NumberSelectedValidation.Max,
-        customVal: 2,
+        selectedValidation: NumberSelectedValidation.Length,
+        LengthValidationOptions: {
+          selectedLengthValidation: NumberSelectedLengthValidation.Max,
+          customVal: 2,
+        },
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -28,11 +32,14 @@ describe('Number field validation', () => {
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
-  it('should allow number with valid maximum (inclusive)', () => {
+  it('should allow number with valid maximum length (inclusive)', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: NumberSelectedValidation.Max,
-        customVal: 2,
+        selectedValidation: NumberSelectedValidation.Length,
+        LengthValidationOptions: {
+          selectedLengthValidation: NumberSelectedLengthValidation.Max,
+          customVal: 2,
+        },
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -43,11 +50,14 @@ describe('Number field validation', () => {
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
-  it('should disallow number with invalid maximum', () => {
+  it('should disallow number with invalid maximum length', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: NumberSelectedValidation.Max,
-        customVal: 2,
+        selectedValidation: NumberSelectedValidation.Length,
+        LengthValidationOptions: {
+          selectedLengthValidation: NumberSelectedLengthValidation.Max,
+          customVal: 2,
+        },
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -60,11 +70,14 @@ describe('Number field validation', () => {
     )
   })
 
-  it('should allow number with valid minimum', () => {
+  it('should allow number with valid minimum length', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: NumberSelectedValidation.Min,
-        customVal: 2,
+        selectedValidation: NumberSelectedValidation.Length,
+        LengthValidationOptions: {
+          selectedLengthValidation: NumberSelectedLengthValidation.Min,
+          customVal: 2,
+        },
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -75,11 +88,14 @@ describe('Number field validation', () => {
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
-  it('should allow number with valid minimum (inclusive)', () => {
+  it('should allow number with valid minimum length (inclusive)', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: NumberSelectedValidation.Min,
-        customVal: 2,
+        selectedValidation: NumberSelectedValidation.Length,
+        LengthValidationOptions: {
+          selectedLengthValidation: NumberSelectedLengthValidation.Min,
+          customVal: 2,
+        },
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -90,11 +106,14 @@ describe('Number field validation', () => {
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
-  it('should allow number with valid exact', () => {
+  it('should allow number with valid exact length', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: NumberSelectedValidation.Exact,
-        customVal: 2,
+        selectedValidation: NumberSelectedValidation.Length,
+        LengthValidationOptions: {
+          selectedLengthValidation: NumberSelectedLengthValidation.Exact,
+          customVal: 2,
+        },
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -105,11 +124,14 @@ describe('Number field validation', () => {
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
-  it('should disallow number with invalid exact', () => {
+  it('should disallow number with invalid exact length', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: NumberSelectedValidation.Exact,
-        customVal: 2,
+        selectedValidation: NumberSelectedValidation.Length,
+        LengthValidationOptions: {
+          selectedLengthValidation: NumberSelectedLengthValidation.Exact,
+          customVal: 2,
+        },
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -122,11 +144,14 @@ describe('Number field validation', () => {
     )
   })
 
-  it('should allow number with maximum left undefined', () => {
+  it('should allow number with maximum length left undefined', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: NumberSelectedValidation.Max,
-        customVal: null,
+        selectedValidation: NumberSelectedValidation.Length,
+        LengthValidationOptions: {
+          selectedLengthValidation: NumberSelectedLengthValidation.Max,
+          customVal: null,
+        },
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -137,11 +162,14 @@ describe('Number field validation', () => {
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
-  it('should allow number with minimum left undefined', () => {
+  it('should allow number with minimum length left undefined', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: NumberSelectedValidation.Min,
-        customVal: null,
+        selectedValidation: NumberSelectedValidation.Length,
+        LengthValidationOptions: {
+          selectedLengthValidation: NumberSelectedLengthValidation.Min,
+          customVal: null,
+        },
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -152,11 +180,14 @@ describe('Number field validation', () => {
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
-  it('should allow number with exact undefined', () => {
+  it('should disallow number with exact length undefined', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
-        selectedValidation: NumberSelectedValidation.Exact,
-        customVal: null,
+        selectedValidation: NumberSelectedValidation.Length,
+        LengthValidationOptions: {
+          selectedLengthValidation: NumberSelectedLengthValidation.Exact,
+          customVal: null,
+        },
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -171,7 +202,10 @@ describe('Number field validation', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: null,
-        customVal: null,
+        LengthValidationOptions: {
+          selectedLengthValidation: null,
+          customVal: null,
+        },
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -186,7 +220,10 @@ describe('Number field validation', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: null,
-        customVal: null,
+        LengthValidationOptions: {
+          selectedLengthValidation: null,
+          customVal: null,
+        },
       },
       required: false,
     })
@@ -202,7 +239,10 @@ describe('Number field validation', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: null,
-        customVal: null,
+        LengthValidationOptions: {
+          selectedLengthValidation: null,
+          customVal: null,
+        },
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -217,7 +257,10 @@ describe('Number field validation', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: null,
-        customVal: null,
+        LengthValidationOptions: {
+          selectedLengthValidation: null,
+          customVal: null,
+        },
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -234,7 +277,10 @@ describe('Number field validation', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: null,
-        customVal: null,
+        LengthValidationOptions: {
+          selectedLengthValidation: null,
+          customVal: null,
+        },
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
@@ -244,11 +290,15 @@ describe('Number field validation', () => {
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
+
   it('should disallow responses submitted for hidden fields', () => {
     const formField = generateDefaultField(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: null,
-        customVal: null,
+        LengthValidationOptions: {
+          selectedLengthValidation: null,
+          customVal: null,
+        },
       },
     })
     const response = generateNewSingleAnswerResponse(BasicField.Number, {
