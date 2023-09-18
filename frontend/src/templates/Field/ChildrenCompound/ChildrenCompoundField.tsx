@@ -22,11 +22,7 @@ import {
 } from '@chakra-ui/react'
 import simplur from 'simplur'
 
-import {
-  ChildrenCompoundFieldInputs,
-  ChildrenCompoundFieldSchema,
-  DATE_DISPLAY_FORMAT,
-} from '~shared/constants/dates'
+import { DATE_DISPLAY_FORMAT } from '~shared/constants/dates'
 import { MYINFO_ATTRIBUTE_MAP } from '~shared/constants/field/myinfo'
 import {
   FormColorTheme,
@@ -45,6 +41,10 @@ import { FormLabel } from '~components/FormControl/FormLabel/FormLabel'
 import { IconButton } from '~components/IconButton/IconButton'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
+import {
+  ChildrenCompoundFieldInputs,
+  ChildrenCompoundFieldSchema,
+} from '../types'
 
 export interface ChildrenCompoundFieldProps extends BaseFieldProps {
   schema: ChildrenCompoundFieldSchema
@@ -246,6 +246,14 @@ const ChildrenBody = ({
     return allChildren.filter((name) => !temp.has(name))
   }, [myInfoChildrenBirthRecords, allChildren, allSelectedNames])
 
+  const childNameValues = useMemo(() => {
+    return [childName, ...namesNotSelected()].filter((name) => {
+      if (name === '' || name === undefined) {
+        return false
+      } else return true
+    })
+  }, [childName, namesNotSelected])
+
   const indexOfChild: number = useMemo(() => {
     return (
       myInfoChildrenBirthRecords?.[MyInfoChildAttributes.ChildName]?.indexOf(
@@ -263,6 +271,16 @@ const ChildrenBody = ({
       if (indexOfChild === undefined || indexOfChild < 0) {
         return ''
       }
+
+      // We use the childname to check if the parent has a child above 21.
+      // If the childname is an empty string, it represents a child above 21.
+      // As our definition of child in FormSG means child below 21, we want to
+      // return empty strings for other child attributes even if their value is populated by myinfo
+      // if there is no childname.
+      if (myInfoChildrenBirthRecords.childname?.[indexOfChild] === '') {
+        return ''
+      }
+
       const result = myInfoChildrenBirthRecords?.[attr]?.[indexOfChild]
       // Unknown basically means no result
       if (
@@ -292,7 +310,7 @@ const ChildrenBody = ({
               {...selectRest}
               placeholder={"Select your child's name"}
               colorScheme={`theme-${colorTheme}`}
-              items={[childName, ...namesNotSelected()].filter((e) => e !== '')}
+              items={childNameValues}
               value={childName}
               isDisabled={isSubmitting}
               onChange={(name) => {
