@@ -196,6 +196,18 @@ export const isAttachmentResponse = (
 }
 
 /**
+ * Checks if a response is a quarantined attachment response to be processed by the virus scanner.
+ */
+export const isQuarantinedAttachmentResponse = (
+  response: ParsedClearFormFieldResponse,
+): response is ParsedClearAttachmentResponse => {
+  return (
+    response.fieldType === BasicField.Attachment &&
+    response.fileKey !== undefined
+  )
+}
+
+/**
  * Checks an array of attachments to see ensure that every
  * one of them is valid. The validity is determined by an
  * internal isInvalidFileExtension checker function, and

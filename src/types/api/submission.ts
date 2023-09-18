@@ -6,6 +6,7 @@ import { AttachmentResponse, FieldResponse } from '../../../shared/types'
 export type ParsedClearAttachmentResponse = AttachmentResponse & {
   filename: string
   content: Buffer
+  fileKey?: string
 }
 
 export type ParsedClearFormFieldResponse =

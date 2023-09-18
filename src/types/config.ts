@@ -1,3 +1,4 @@
+import { Lambda } from '@aws-sdk/client-lambda'
 import { PackageMode } from '@opengovsg/formsg-sdk/dist/types'
 import aws from 'aws-sdk'
 import { SessionOptions } from 'express-session'
@@ -39,6 +40,8 @@ export type AwsConfig = {
   virusScannerCleanS3Bucket: string
   s3: aws.S3
   endPoint: string
+  virusScannerLambda: Lambda // using aws-sdk-v3
+  virusScannerLambdaFunctionName: string
 }
 
 export type MailConfig = {
@@ -159,6 +162,7 @@ export interface IOptionalVarsSchema {
   awsConfig: {
     region: string
     customCloudWatchGroup: string
+    virusScannerLambdaFunctionName: string
   }
   mail: {
     from: string

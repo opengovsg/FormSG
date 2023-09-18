@@ -31,7 +31,10 @@ import {
   EncryptedPayloadExistsError,
   FormsgReqBodyExistsError,
 } from './encrypt-submission.errors'
-import { checkFormIsEncryptMode } from './encrypt-submission.service'
+import {
+  checkFormIsEncryptMode,
+  triggerVirusScanning,
+} from './encrypt-submission.service'
 import {
   CreateFormsgAndRetrieveFormMiddlewareHandlerRequest,
   CreateFormsgAndRetrieveFormMiddlewareHandlerType,
@@ -172,6 +175,58 @@ export const checkNewBoundaryEnabled = async (
       .status(StatusCodes.FORBIDDEN)
       .json({ message: 'This endpoint has not been enabled for this form.' })
   }
+
+  return next()
+}
+
+/**
+ * Guardrail to prevent virus scanner code from being run if not enabled on frontend.
+ * TODO (FRM-1232): remove this guardrail when encryption boundary is shifted.
+ */
+export const checkAttachmentQuarantineKeys = async (
+  req: StorageSubmissionMiddlewareHandlerRequest,
+  res: Parameters<StorageSubmissionMiddlewareHandlerType>[1],
+  next: NextFunction,
+) => {
+  const logMeta = {
+    action: 'checkAttachmentQuarantineKeys',
+    ...createReqMeta(req),
+  }
+
+  // Step 1: If virus scanner is not enabled, skip this middleware.
+
+  const virusScannerEnabled = req.formsg.featureFlags.includes(
+    featureFlags.encryptionBoundaryShiftVirusScanner,
+  )
+
+  if (!virusScannerEnabled) {
+    logger.warn({
+      message: 'Virus scanner is not enabled.',
+      meta: logMeta,
+    })
+
+    return next()
+  }
+
+  // // Step 2: If virus scanner is enabled, check if quarantine keys for attachments are present. Quarantine keys
+  // // should only be present if the virus scanner is enabled on the frontend.
+  // // If not, skip this middleware.
+
+  // let quarantineKeysPresent = false
+
+  // for (const response of req.body.responses) {
+  //   if (isQuarantinedAttachmentResponse(response)) quarantineKeysPresent = true
+  // }
+
+  // if (!quarantineKeysPresent) return next()
+
+  // At this point, virus scanner is enabled and quarantine keys are present. This means that both the FE and BE
+  // have virus scanning enabled.
+
+  // Step 3: Trigger lambda to scan attachments.
+  triggerVirusScanning('16ca3303-743a-4cec-ab20-3d10042d88ce')
+
+  // Step 4: Retrieve attachments from the clean bucket.
 
   return next()
 }

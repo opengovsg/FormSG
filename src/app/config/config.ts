@@ -1,3 +1,4 @@
+import { Lambda } from '@aws-sdk/client-lambda'
 import aws from 'aws-sdk'
 import convict from 'convict'
 import { SessionOptions } from 'express-session'
@@ -89,10 +90,14 @@ const s3 = new aws.S3({
   s3ForcePathStyle: isDev ? true : undefined,
 })
 
+// using aws-sdk v3
+const virusScannerLambda = new Lambda({ region: basicVars.awsConfig.region })
+
 const awsConfig: AwsConfig = {
   ...s3BucketUrlVars,
   ...basicVars.awsConfig,
   s3,
+  virusScannerLambda,
 }
 
 let dbUri: string | undefined

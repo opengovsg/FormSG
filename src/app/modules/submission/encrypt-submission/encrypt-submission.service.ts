@@ -578,3 +578,30 @@ export const getQuarantinePresignedPostData = (
     }),
   )
 }
+
+export const triggerVirusScanning = (quarantineFileKey: string) => {
+  return AwsConfig.virusScannerLambda.invoke(
+    {
+      FunctionName: AwsConfig.virusScannerLambdaFunctionName,
+      Payload: JSON.stringify({ key: quarantineFileKey }),
+    },
+    (error, data) => {
+      if (error) {
+        logger.error({
+          message: 'Error invoking lambda function',
+          meta: {
+            action: 'triggerVirusScanning',
+          },
+          error,
+        })
+      }
+      logger.info({
+        message: 'Successfully invoked lambda function',
+        meta: {
+          action: 'triggerVirusScanning',
+          data,
+        },
+      })
+    },
+  )
+}
