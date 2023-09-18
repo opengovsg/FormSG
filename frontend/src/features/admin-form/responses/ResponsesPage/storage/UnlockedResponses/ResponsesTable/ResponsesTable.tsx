@@ -50,7 +50,7 @@ const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
       if (!payments?.email) {
         return ''
       }
-      return payments.email + payments.email
+      return payments.email
     },
     minWidth: 250,
     width: 250,
