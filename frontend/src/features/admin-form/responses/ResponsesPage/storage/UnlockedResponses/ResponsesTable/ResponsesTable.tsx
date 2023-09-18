@@ -24,21 +24,21 @@ const RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: '#',
     accessor: 'number',
-    minWidth: 20, // minWidth is only used as a limit for resizing
-    width: 20, // width is used for both the flex-basis and flex-grow
+    minWidth: 80, // minWidth is only used as a limit for resizing
+    width: 80, // width is used for both the flex-basis and flex-grow
     maxWidth: 100, // maxWidth is only used as a limit for resizing
   },
   {
     Header: 'Response ID',
     accessor: 'refNo',
-    minWidth: 100,
-    width: 100,
+    minWidth: 300,
+    width: 300,
     maxWidth: 240, // maxWidth is only used as a limit for resizing
   },
   {
     Header: 'Timestamp',
     accessor: 'submissionTime',
-    minWidth: 200,
+    minWidth: 250,
     width: 250,
     disableResizing: true,
   },
@@ -50,10 +50,10 @@ const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
       if (!payments?.email) {
         return ''
       }
-      return payments.email
+      return payments.email + payments.email
     },
-    minWidth: 50,
-    width: 150,
+    minWidth: 250,
+    width: 250,
   },
 
   {
@@ -64,8 +64,8 @@ const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
       }
       return `${centsToDollars(payments.paymentAmt)}`
     },
-    minWidth: 50,
-    width: 75,
+    minWidth: 150,
+    width: 150,
   },
 
   {
@@ -80,15 +80,15 @@ const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
 
       return `${centsToDollars(payments.transactionFee)}`
     },
-    minWidth: 50,
-    width: 75,
+    minWidth: 150,
+    width: 150,
   },
 
   {
     Header: 'Net Amount (S$)', //  (amt they receive in bank)
     accessor: ({ payments }) => getNetAmount(payments),
-    minWidth: 50,
-    width: 75,
+    minWidth: 150,
+    width: 150,
   },
 
   {
@@ -99,8 +99,9 @@ const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
       }
       return payments.payoutDate
     },
-    minWidth: 50,
+    minWidth: 150,
     width: 150,
+    disableResizing: true,
   },
 ]
 
@@ -184,7 +185,6 @@ export const ResponsesTable = () => {
       as="div"
       variant="solid"
       colorScheme="secondary"
-      width={isPaymentsForm ? '100vw' : undefined}
       {...getTableProps()}
     >
       <Thead as="div" pos="sticky" top={0}>
