@@ -75,11 +75,12 @@ export const ChildrenCompoundField = ({
     name: schema._id,
   })
 
-  const { fields, append, update, remove } =
-    useFieldArray<ChildrenCompoundFieldInputs>({
+  const { fields, append, remove } = useFieldArray<ChildrenCompoundFieldInputs>(
+    {
       control: formContext.control,
       name: `${schema._id}.child`,
-    })
+    },
+  )
 
   useEffect(() => {
     if (schema.childrenSubFields) {
@@ -93,9 +94,9 @@ export const ChildrenCompoundField = ({
   // Initialize with a single child section
   useEffect(() => {
     if (!fields || !fields.length) {
-      update(0, '')
+      append([''], { shouldFocus: false })
     }
-  }, [fields, update])
+  }, [fields, append])
 
   const ariaChildrenDescription = useMemo(() => {
     let description = simplur`This is a children field. There [is|are] ${fields.length} child[|ren].`
