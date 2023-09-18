@@ -246,6 +246,14 @@ const ChildrenBody = ({
     return allChildren.filter((name) => !temp.has(name))
   }, [myInfoChildrenBirthRecords, allChildren, allSelectedNames])
 
+  const childNameValues = useMemo(() => {
+    return [childName, ...namesNotSelected()].filter((name) => {
+      if (name === '' || name === undefined) {
+        return false
+      } else return true
+    })
+  }, [childName, namesNotSelected])
+
   const indexOfChild: number = useMemo(() => {
     return (
       myInfoChildrenBirthRecords?.[MyInfoChildAttributes.ChildName]?.indexOf(
@@ -263,20 +271,22 @@ const ChildrenBody = ({
       if (indexOfChild === undefined || indexOfChild < 0) {
         return ''
       }
+
+      // We use the childname to check if the parent has a child above 21.
+      // If the childname is an empty string, it represents a child above 21.
+      // As our definition of child in FormSG means child below 21, we want to
+      // return empty strings for other child attributes even if their value is populated by myinfo
+      // if there is no childname.
+      if (myInfoChildrenBirthRecords.childname?.[indexOfChild] === '') {
+        return ''
+      }
+
       const result = myInfoChildrenBirthRecords?.[attr]?.[indexOfChild]
       // Unknown basically means no result
       if (
         attr === MyInfoChildAttributes.ChildVaxxStatus &&
         result === MyInfoChildVaxxStatus.Unknown
       ) {
-        return ''
-      }
-      // We use the childname to indicate if there is a child below 21.
-      // If the childname is an empty string, it means there is no child below 21.
-      // As our definition of child in FormSG means child below 21, we want to
-      // return empty strings for other child attributes even if their value is populated by myinfo
-      // if there is no childname.
-      if (myInfoChildrenBirthRecords.childname?.[0] === '') {
         return ''
       }
       return result ?? ''
@@ -300,7 +310,7 @@ const ChildrenBody = ({
               {...selectRest}
               placeholder={"Select your child's name"}
               colorScheme={`theme-${colorTheme}`}
-              items={[childName, ...namesNotSelected()].filter((e) => e !== '')}
+              items={childNameValues}
               value={childName}
               isDisabled={isSubmitting}
               initialIsOpen={!!myInfoChildrenBirthRecords?.childname}
