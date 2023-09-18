@@ -22,11 +22,7 @@ import {
 } from '@chakra-ui/react'
 import simplur from 'simplur'
 
-import {
-  ChildrenCompoundFieldInputs,
-  ChildrenCompoundFieldSchema,
-  DATE_DISPLAY_FORMAT,
-} from '~shared/constants/dates'
+import { DATE_DISPLAY_FORMAT } from '~shared/constants/dates'
 import { MYINFO_ATTRIBUTE_MAP } from '~shared/constants/field/myinfo'
 import {
   FormColorTheme,
@@ -45,6 +41,10 @@ import { FormLabel } from '~components/FormControl/FormLabel/FormLabel'
 import { IconButton } from '~components/IconButton/IconButton'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
+import {
+  ChildrenCompoundFieldInputs,
+  ChildrenCompoundFieldSchema,
+} from '../types'
 
 export interface ChildrenCompoundFieldProps extends BaseFieldProps {
   schema: ChildrenCompoundFieldSchema
