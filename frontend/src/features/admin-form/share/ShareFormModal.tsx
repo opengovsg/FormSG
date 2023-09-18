@@ -6,6 +6,7 @@ import {
   Divider,
   FormControl,
   FormHelperText,
+  HStack,
   InputGroup,
   InputLeftAddon,
   InputRightElement,
@@ -24,8 +25,13 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 import dedent from 'dedent'
+import { StatusCodes } from 'http-status-codes'
 
-import { featureFlags } from '~shared/constants'
+import {
+  featureFlags,
+  GO_ALREADY_EXIST_ERROR_MESSAGE,
+  GO_VALIDATION_ERROR_MESSAGE,
+} from '~shared/constants'
 
 import { BxsCheckCircle, BxsErrorCircle } from '~/assets/icons'
 
@@ -34,6 +40,7 @@ import {
   ADMINFORM_SETTINGS_SUBROUTE,
   ADMINFORM_USETEMPLATE_ROUTE,
 } from '~constants/routes'
+import { HttpError } from '~services/ApiService'
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'
@@ -59,7 +66,7 @@ type goLinkHelperTextType = {
 
 const goLinkClaimSuccessHelperText: goLinkHelperTextType = {
   color: 'success.700',
-  icon: <BxsCheckCircle />,
+  icon: <BxsCheckCircle fontSize="1rem" />,
   text: (
     <Text>
       You have successfully claimed this link. This link will appear in your{' '}
@@ -70,10 +77,20 @@ const goLinkClaimSuccessHelperText: goLinkHelperTextType = {
   ),
 }
 
-const goLinkClaimFailureHelperText: goLinkHelperTextType = {
-  color: 'danger.500',
-  icon: <BxsErrorCircle />,
-  text: <Text>Short link is already in use.</Text>,
+const GO_VALIDATION_FAILED_HELPER_TEXT =
+  'Short links should only consist of lowercase letters, numbers and hyphens.'
+const GO_ALREADY_EXIST_HELPER_TEXT = 'Short link is already in use.'
+const GO_UNEXPECTED_ERROR_HELPER_TEXT =
+  'Something went wrong. Try refreshing this page. If this issue persists, contact support@form.gov.sg.'
+
+const getGoLinkClaimFailureHelperText = (
+  text: string,
+): goLinkHelperTextType => {
+  return {
+    color: 'danger.500',
+    icon: <BxsErrorCircle fontSize="1rem" />,
+    text: <Text>{text}</Text>,
+  }
 }
 
 export interface ShareFormModalProps {
@@ -201,7 +218,22 @@ export const ShareFormModal = ({
       return
     } catch (err) {
       setClaimGoLoading(false)
-      setGoLinkHelperText(goLinkClaimFailureHelperText)
+
+      let errMessage = GO_UNEXPECTED_ERROR_HELPER_TEXT
+
+      if (err instanceof HttpError && err.code === StatusCodes.BAD_REQUEST)
+        switch (err.message) {
+          case GO_VALIDATION_ERROR_MESSAGE:
+            errMessage = GO_VALIDATION_FAILED_HELPER_TEXT
+            break
+          case GO_ALREADY_EXIST_ERROR_MESSAGE:
+            errMessage = GO_ALREADY_EXIST_HELPER_TEXT
+            break
+          default:
+          // will use unexpected error text
+        }
+
+      setGoLinkHelperText(getGoLinkClaimFailureHelperText(errMessage))
       return
     }
   }, [user, claimGoLinkMutation, goLinkSuffixInput, formId])
@@ -370,11 +402,12 @@ export const ShareFormModal = ({
                         )}
                       </Stack>
                       {goLinkHelperText && (
+                        // padding on icon box to emulate padding from <Text>
                         <FormHelperText color={goLinkHelperText.color}>
-                          <Stack direction="row" align="center">
-                            <Box>{goLinkHelperText.icon}</Box>
+                          <HStack alignItems="flex-start">
+                            <Box py="2px">{goLinkHelperText.icon}</Box>
                             <Box>{goLinkHelperText.text}</Box>
-                          </Stack>
+                          </HStack>
                         </FormHelperText>
                       )}
                     </Skeleton>
