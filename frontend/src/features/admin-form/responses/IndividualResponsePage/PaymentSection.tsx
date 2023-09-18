@@ -101,7 +101,7 @@ const PayoutDataHeader = ({
         Depending on payment method, payouts happen 1 - 3 working days after a respondent makes payment."
       >
         <Flex justify="center" align="center">
-          <Icon as={BiInfoCircle} fontSize="1.5rem" ml="0.5rem" />
+          <Icon as={BiInfoCircle} fontSize="1.25rem" ml="0.5rem" />
         </Flex>
       </Tooltip>
     </Flex>
