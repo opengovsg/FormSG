@@ -91,7 +91,10 @@ const s3 = new aws.S3({
 })
 
 // using aws-sdk v3
-const virusScannerLambda = new Lambda({ region: basicVars.awsConfig.region })
+const virusScannerLambda = new Lambda({
+  region: basicVars.awsConfig.region,
+  ...(isDev ? { endpoint: 'http://host.docker.internal:9999' } : undefined),
+})
 
 const awsConfig: AwsConfig = {
   ...s3BucketUrlVars,

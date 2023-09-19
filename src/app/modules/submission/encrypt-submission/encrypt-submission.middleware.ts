@@ -3,7 +3,7 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { chain, omit } from 'lodash'
-import { okAsync, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import { featureFlags } from '../../../../../shared/constants'
 import {
@@ -193,7 +193,7 @@ export const scanAttachments = async (
   next: NextFunction,
 ) => {
   const logMeta = {
-    action: 'checkAttachmentQuarantineKeys',
+    action: 'scanAttachments',
     ...createReqMeta(req),
   }
 
@@ -225,29 +225,45 @@ export const scanAttachments = async (
   const triggerLambdaResult = await ResultAsync.combine(
     req.body.responses.map((response) => {
       if (isQuarantinedAttachmentResponse(response)) {
-        return triggerVirusScanning(response.answer).map((data) => {
-          const returnPayload = JSON.parse(
+        return triggerVirusScanning(response.filename).andThen((data) => {
+          const { statusCode, body } = JSON.parse(
             Buffer.from(data?.Payload ?? '').toString(),
           ) as {
             statusCode: number
-            body: {
-              message: string
-              cleanFileKey: string
-              destinationVersionId: string
-            }
+            body: string
+          }
+          const parsedBody = JSON.parse(body)
+          const returnPayload = {
+            statusCode,
+            body: parsedBody,
           }
           logger.info({
             message: 'Successfully invoked lambda function',
             meta: {
               ...logMeta,
               responseMetadata: data?.$metadata,
-              statusCode: data?.StatusCode,
               returnPayload,
             },
           })
+
+          // If return payload is not OK, either file cannot be found or virus scan failed. This should be
+          // treated as a fatal error we should investigate.
+          if (statusCode !== StatusCodes.OK) {
+            logger.warn({
+              message: 'Some lambda invocations failed',
+              meta: {
+                ...logMeta,
+                responseMetadata: data?.$metadata,
+                returnPayload,
+              },
+            })
+            return errAsync(returnPayload)
+          }
+
           return okAsync(returnPayload)
         })
       }
+      // If response is not an attachment, return ok.
       return okAsync(true)
     }),
   )
