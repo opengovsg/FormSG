@@ -231,7 +231,11 @@ export const scanAttachments = async (
             meta: {
               ...logMeta,
               responseMetadata: data?.$metadata,
-              returnPayload: data?.Payload,
+              returnPayload: Buffer.from(data?.Payload ?? '').toString(),
+              logResult: Buffer.from(
+                data?.LogResult ?? '',
+                'base64',
+              ).toString(),
             },
           })
           return okAsync(true)
