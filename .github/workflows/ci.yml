@@ -68,7 +68,7 @@ jobs:
           key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json') }}
       - run: npm run build
         env:
-          NODE_OPTIONS: '--max-old-space-size=2048 --openssl-legacy-provider'
+          NODE_OPTIONS: '--max-old-space-size=4096 --openssl-legacy-provider'
       - name: Upload build files
         uses: actions/upload-artifact@v2
         if: always()
