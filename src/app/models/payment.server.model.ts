@@ -76,8 +76,10 @@ const PaymentSchema = new Schema<IPaymentSchema, IPaymentModel>(
           type: String,
           required: true,
         },
-        receiptUrlS3: {
-          type: String,
+        hasS3ReceiptUrl: {
+          type: Boolean,
+          required: true,
+          default: false,
         },
       },
     },

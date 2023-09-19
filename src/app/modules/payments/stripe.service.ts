@@ -1024,11 +1024,21 @@ const getPaymentProofObjectPath = (payment: IPaymentSchema) => {
  * @returns ok(undefined) if no errors are thrown while uploading to s3
  * @returns err(InvoiceUploadS3Error) if an error is thrown while uploading to s3
  */
-const storePaymentProofInS3 = (
+const _storePaymentProofInS3 = (
   payment: IPaymentSchema,
   pdfbuffer: Buffer,
 ): ResultAsync<undefined, PaymentProofUploadS3Error> => {
   const objectPath = getPaymentProofObjectPath(payment)
+
+  logger.info({
+    message: 'Uploading payment proof to s3',
+    meta: {
+      action: '_storePaymentProofInS3',
+      paymentId: payment._id,
+      objectPath,
+    },
+  })
+
   return ResultAsync.fromPromise(
     AwsConfig.s3
       .upload({
@@ -1049,9 +1059,30 @@ const storePaymentProofInS3 = (
       })
       return new PaymentProofUploadS3Error()
     },
-  ).map(() => {
-    return undefined
-  })
+  )
+    .map(() => {
+      if (payment.completedPayment) {
+        payment.completedPayment = {
+          ...payment.completedPayment,
+          hasS3ReceiptUrl: true,
+        }
+      }
+      return ResultAsync.fromPromise(payment.save(), (error) => {
+        logger.error({
+          message: 'Error occured whilst updating payment',
+          meta: {
+            action: 'storePaymentProofInS3',
+            paymentId: payment._id,
+            objectPath,
+          },
+          error,
+        })
+        return new PaymentProofUploadS3Error()
+      })
+    })
+    .map(() => {
+      return undefined
+    })
 }
 
 /**
@@ -1063,11 +1094,20 @@ const storePaymentProofInS3 = (
  * @returns ok(string) which represents the presigned url if no errors are thrown while generating the presigned url
  * @returns err(InvoicePresignS3Error) if an error is thrown while generating the presigned link
  */
-const getPaymentProofPresignedS3Url = (
+const _getPaymentProofPresignedS3Url = (
   payment: IPaymentSchema,
 ): ResultAsync<string, PaymentProofPresignS3Error> => {
   const dayInSeconds = 24 * 60 * 60
   const objectPath = getPaymentProofObjectPath(payment)
+
+  logger.info({
+    message: 'Generating payment proof presigned s3 link',
+    meta: {
+      action: '_getPaymentProofPresignedS3Url',
+      paymentId: payment._id,
+      objectPath,
+    },
+  })
   return ResultAsync.fromPromise(
     AwsConfig.s3.getSignedUrlPromise('getObject', {
       Bucket: AwsConfig.paymentProofS3Bucket,
@@ -1152,11 +1192,10 @@ export const generatePaymentInvoiceUrl = (
   string,
   StripeFetchError | PaymentProofUploadS3Error | PaymentProofPresignS3Error
 > => {
-  const hasInvoiceS3Url = payment.completedPayment?.invoiceS3Url
-  if (!hasInvoiceS3Url) {
+  if (!payment.completedPayment?.hasS3ReceiptUrl) {
     return generatePaymentInvoiceAsPdf(payment, populatedForm)
-      .andThen((pdfBuffer) => storePaymentProofInS3(payment, pdfBuffer))
-      .andThen(() => getPaymentProofPresignedS3Url(payment))
+      .andThen((pdfBuffer) => _storePaymentProofInS3(payment, pdfBuffer))
+      .andThen(() => _getPaymentProofPresignedS3Url(payment))
   }
-  return getPaymentProofPresignedS3Url(payment)
+  return _getPaymentProofPresignedS3Url(payment)
 }

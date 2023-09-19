@@ -29,7 +29,7 @@ export type CompletedPaymentMeta = {
   submissionId: string
   transactionFee: number
   receiptUrl: string
-  invoiceS3Url: string
+  hasS3ReceiptUrl: boolean
 }
 
 export type PayoutMeta = {
