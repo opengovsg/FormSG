@@ -49,3 +49,9 @@ export class FeatureDisabledError extends ApplicationError {
     super(message)
   }
 }
+
+export class VirusScanFailedError extends ApplicationError {
+  constructor(message = 'Virus scan failed. Please try again.') {
+    super(message)
+  }
+}

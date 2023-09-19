@@ -3,6 +3,7 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { chain, omit } from 'lodash'
+import { okAsync, ResultAsync } from 'neverthrow'
 
 import { featureFlags } from '../../../../../shared/constants'
 import {
@@ -25,7 +26,10 @@ import * as FormService from '../../form/form.service'
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import { sharedSubmissionParams } from '../submission.constants'
 import * as SubmissionService from '../submission.service'
-import { isAttachmentResponse } from '../submission.utils'
+import {
+  isAttachmentResponse,
+  isQuarantinedAttachmentResponse,
+} from '../submission.utils'
 
 import {
   EncryptedPayloadExistsError,
@@ -183,7 +187,7 @@ export const checkNewBoundaryEnabled = async (
  * Guardrail to prevent virus scanner code from being run if not enabled on frontend.
  * TODO (FRM-1232): remove this guardrail when encryption boundary is shifted.
  */
-export const checkAttachmentQuarantineKeys = async (
+export const scanAttachments = async (
   req: StorageSubmissionMiddlewareHandlerRequest,
   res: Parameters<StorageSubmissionMiddlewareHandlerType>[1],
   next: NextFunction,
@@ -208,25 +212,49 @@ export const checkAttachmentQuarantineKeys = async (
     return next()
   }
 
-  // // Step 2: If virus scanner is enabled, check if quarantine keys for attachments are present. Quarantine keys
-  // // should only be present if the virus scanner is enabled on the frontend.
-  // // If not, skip this middleware.
+  // Step 2: If virus scanner is enabled, check if storage submission v2.1+. Storage submission v2.1 onwards
+  // should have virus scanning enabled. If not, skip this middleware.
+  // Note: Version number is sent by the frontend and should only be >=2.1 if virus scanning is enabled on the frontend.
 
-  // let quarantineKeysPresent = false
+  if (req.body.version < 2.1) return next()
 
-  // for (const response of req.body.responses) {
-  //   if (isQuarantinedAttachmentResponse(response)) quarantineKeysPresent = true
-  // }
-
-  // if (!quarantineKeysPresent) return next()
-
-  // At this point, virus scanner is enabled and quarantine keys are present. This means that both the FE and BE
+  // At this point, virus scanner is enabled and storage submission v2.1+. This means that both the FE and BE
   // have virus scanning enabled.
 
   // Step 3: Trigger lambda to scan attachments.
-  triggerVirusScanning('16ca3303-743a-4cec-ab20-3d10042d88ce')
+  const triggerLambdaResult = await ResultAsync.combine(
+    req.body.responses.map((response) => {
+      if (isQuarantinedAttachmentResponse(response)) {
+        return triggerVirusScanning(response.answer).map((data) => {
+          logger.info({
+            message: 'Successfully invoked lambda function',
+            meta: {
+              ...logMeta,
+              responseMetadata: data?.$metadata,
+            },
+          })
+          return okAsync(true)
+        })
+      }
+      return okAsync(true)
+    }),
+  )
 
-  // Step 4: Retrieve attachments from the clean bucket.
+  // If any of the lambda invocations failed, return an errored response.
+  if (triggerLambdaResult.isErr()) {
+    logger.error({
+      message: 'Error scanning attachments',
+      meta: logMeta,
+      error: triggerLambdaResult.error,
+    })
+
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
+      message:
+        'Something went wrong while scanning your attachments. Please try again.',
+    })
+  }
+
+  // TODO(FRM-1302): Step 4: Retrieve attachments from the clean bucket.
 
   return next()
 }

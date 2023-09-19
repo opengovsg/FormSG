@@ -201,10 +201,7 @@ export const isAttachmentResponse = (
 export const isQuarantinedAttachmentResponse = (
   response: ParsedClearFormFieldResponse,
 ): response is ParsedClearAttachmentResponse => {
-  return (
-    response.fieldType === BasicField.Attachment &&
-    response.fileKey !== undefined
-  )
+  return response.fieldType === BasicField.Attachment
 }
 
 /**

@@ -60,6 +60,7 @@ import { PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS } from './encrypt-submission.cons
 import {
   AttachmentSizeLimitExceededError,
   InvalidFieldIdError,
+  VirusScanFailedError,
 } from './encrypt-submission.errors'
 import {
   AttachmentMetadata,
@@ -580,28 +581,21 @@ export const getQuarantinePresignedPostData = (
 }
 
 export const triggerVirusScanning = (quarantineFileKey: string) => {
-  return AwsConfig.virusScannerLambda.invoke(
-    {
+  return ResultAsync.fromPromise(
+    AwsConfig.virusScannerLambda.invoke({
       FunctionName: AwsConfig.virusScannerLambdaFunctionName,
       Payload: JSON.stringify({ key: quarantineFileKey }),
-    },
-    (error, data) => {
-      if (error) {
-        logger.error({
-          message: 'Error invoking lambda function',
-          meta: {
-            action: 'triggerVirusScanning',
-          },
-          error,
-        })
-      }
-      logger.info({
-        message: 'Successfully invoked lambda function',
+    }),
+    (error) => {
+      logger.error({
+        message: 'Error encountered when invoking virus scanning lambda',
         meta: {
           action: 'triggerVirusScanning',
-          data,
         },
+        error,
       })
+
+      return new VirusScanFailedError()
     },
   )
 }
