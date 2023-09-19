@@ -231,6 +231,7 @@ export const scanAttachments = async (
             meta: {
               ...logMeta,
               responseMetadata: data?.$metadata,
+              returnPayload: data?.Payload,
             },
           })
           return okAsync(true)
