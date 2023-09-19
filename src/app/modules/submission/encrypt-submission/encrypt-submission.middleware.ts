@@ -226,19 +226,26 @@ export const scanAttachments = async (
     req.body.responses.map((response) => {
       if (isQuarantinedAttachmentResponse(response)) {
         return triggerVirusScanning(response.answer).map((data) => {
+          const returnPayload = JSON.parse(
+            Buffer.from(data?.Payload ?? '').toString(),
+          ) as {
+            statusCode: number
+            body: {
+              message: string
+              cleanFileKey: string
+              destinationVersionId: string
+            }
+          }
           logger.info({
             message: 'Successfully invoked lambda function',
             meta: {
               ...logMeta,
               responseMetadata: data?.$metadata,
-              returnPayload: Buffer.from(data?.Payload ?? '').toString(),
-              logResult: Buffer.from(
-                data?.LogResult ?? '',
-                'base64',
-              ).toString(),
+              statusCode: data?.StatusCode,
+              returnPayload,
             },
           })
-          return okAsync(true)
+          return okAsync(returnPayload)
         })
       }
       return okAsync(true)
