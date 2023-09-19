@@ -52,22 +52,8 @@ export const receiveEmailSubmission: ControllerHandler<
 export const receiveStorageSubmission: ControllerHandler<
   unknown,
   { message: string },
-  { responses: FieldResponse[]; version: number }
+  { responses: FieldResponse[] }
 > = async (req, res, next) => {
-  if (req.body.version >= 2.1) {
-    const logMeta = {
-      action: 'receiveSubmission',
-      ...createReqMeta(req),
-    }
-
-    logger.info({
-      message: 'Skipping multipart receiver since storage submission v2.1+',
-      meta: logMeta,
-    })
-
-    return next()
-  }
-
   return receiveSubmission(
     req,
     res,
