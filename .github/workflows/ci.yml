@@ -29,6 +29,7 @@ jobs:
               - src/**
               - package.json
               - package-lock.json
+            
 
   install:
     runs-on: ubuntu-latest
@@ -57,7 +58,7 @@ jobs:
       - run: npm ci
       - run: npm run build
         env:
-          NODE_OPTIONS: '--max-old-space-size=4096 --openssl-legacy-provider'
+          NODE_OPTIONS: '--max-old-space-size=2048 --openssl-legacy-provider'
       - name: Upload build files
         uses: actions/upload-artifact@v2
         if: always()
