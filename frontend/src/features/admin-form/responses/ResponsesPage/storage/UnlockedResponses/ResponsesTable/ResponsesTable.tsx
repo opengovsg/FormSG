@@ -99,8 +99,8 @@ const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
       }
       return payments.payoutDate
     },
-    minWidth: 150,
-    width: 150,
+    minWidth: 200,
+    width: 200,
     disableResizing: true,
   },
 ]
