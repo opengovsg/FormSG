@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import {
   FieldArrayWithId,
+  FieldError,
   useFieldArray,
   UseFieldArrayRemove,
   useFormContext,
@@ -20,6 +21,7 @@ import {
   VisuallyHidden,
   VStack,
 } from '@chakra-ui/react'
+import { get } from 'lodash'
 import simplur from 'simplur'
 
 import { DATE_DISPLAY_FORMAT } from '~shared/constants/dates'
@@ -37,6 +39,7 @@ import { createChildrenValidationRules } from '~utils/fieldValidation'
 import { Button } from '~components/Button/Button'
 import { DatePicker } from '~components/DatePicker'
 import { SingleSelect } from '~components/Dropdown/SingleSelect'
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import { FormLabel } from '~components/FormControl/FormLabel/FormLabel'
 import { IconButton } from '~components/IconButton/IconButton'
 
@@ -71,9 +74,12 @@ export const ChildrenCompoundField = ({
   )
 
   const formContext = useFormContext<ChildrenCompoundFieldInputs>()
-  const { isSubmitting } = useFormState<ChildrenCompoundFieldInputs>({
+  const { isSubmitting, errors } = useFormState<ChildrenCompoundFieldInputs>({
     name: schema._id,
   })
+  const error: FieldError[][] | undefined =
+    get(errors, schema._id)?.child ?? undefined
+  const childError: FieldError[] | undefined = error ? error[0] : undefined
 
   const { fields, append, remove } = useFieldArray<ChildrenCompoundFieldInputs>(
     {
@@ -142,6 +148,7 @@ export const ChildrenCompoundField = ({
                   myInfoChildrenBirthRecords,
                   isSubmitting,
                   formContext,
+                  error: childError,
                 }}
               />
             ))}
@@ -188,6 +195,7 @@ interface ChildrenBodyProps {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   formContext: UseFormReturn<ChildrenCompoundFieldInputs, any>
+  error: FieldError[] | undefined
 }
 
 const ChildrenBody = ({
@@ -200,8 +208,12 @@ const ChildrenBody = ({
   myInfoChildrenBirthRecords,
   isSubmitting,
   formContext,
+  error,
 }: ChildrenBodyProps): JSX.Element => {
   const { register, getValues, setValue, watch } = formContext
+
+  // Child name error will always be the first element of the error array
+  const childNameError = error ? error[0] : undefined
 
   const childNamePath = useMemo(
     () => `${schema._id}.child.${currChildBodyIdx}.0`,
@@ -305,20 +317,23 @@ const ChildrenBody = ({
         <FormLabel gridArea="formlabel">Child</FormLabel>
         <Flex align="stretch" alignItems="stretch" justify="space-between">
           <Box flexGrow={10}>
-            <SingleSelect
-              isRequired
-              {...selectRest}
-              placeholder={"Select your child's name"}
-              colorScheme={`theme-${colorTheme}`}
-              items={childNameValues}
-              value={childName}
-              isDisabled={isSubmitting}
-              onChange={(name) => {
-                // This is bad practice but we have no choice because our
-                // custom Select doesn't forward the event.
-                setValue(childNamePath, name)
-              }}
-            />
+            <FormControl key={field.id} isRequired isInvalid={!!childNameError}>
+              <SingleSelect
+                isRequired
+                {...selectRest}
+                placeholder={"Select your child's name"}
+                colorScheme={`theme-${colorTheme}`}
+                items={childNameValues}
+                value={childName}
+                isDisabled={isSubmitting}
+                onChange={(name) => {
+                  // This is bad practice but we have no choice because our
+                  // custom Select doesn't forward the event.
+                  setValue(childNamePath, name)
+                }}
+              />
+              <FormErrorMessage>{childNameError?.message}</FormErrorMessage>
+            </FormControl>
           </Box>
           <IconButton
             variant="clear"
@@ -343,6 +358,7 @@ const ChildrenBody = ({
           const key = `${field.id}+${index}`
           const fieldPath = `${schema._id}.child.${currChildBodyIdx}.${index}`
           const myInfoValue = getChildAttr(subField)
+          const childrenSubFieldError = error ? error[index] : undefined
 
           // We want to format the date by converting the value from a myinfo format to
           // a format used by our date fields
@@ -362,7 +378,12 @@ const ChildrenBody = ({
           switch (subField) {
             case MyInfoChildAttributes.ChildBirthCertNo: {
               return (
-                <FormControl key={key} isDisabled={isDisabled} isRequired>
+                <FormControl
+                  key={key}
+                  isDisabled={isDisabled}
+                  isRequired
+                  isInvalid={!!childrenSubFieldError}
+                >
                   <FormLabel useMarkdownForDescription gridArea="formlabel">
                     {MYINFO_ATTRIBUTE_MAP[subField].description}
                   </FormLabel>
@@ -370,6 +391,9 @@ const ChildrenBody = ({
                     {...register(fieldPath, validationRules)}
                     value={value}
                   />
+                  <FormErrorMessage>
+                    {childrenSubFieldError?.message}
+                  </FormErrorMessage>
                 </FormControl>
               )
             }
@@ -378,7 +402,12 @@ const ChildrenBody = ({
             case MyInfoChildAttributes.ChildRace:
             case MyInfoChildAttributes.ChildSecondaryRace: {
               return (
-                <FormControl key={key} isDisabled={isDisabled} isRequired>
+                <FormControl
+                  key={key}
+                  isDisabled={isDisabled}
+                  isRequired
+                  isInvalid={!!childrenSubFieldError}
+                >
                   <FormLabel useMarkdownForDescription gridArea="formlabel">
                     {MYINFO_ATTRIBUTE_MAP[subField].description}
                   </FormLabel>
@@ -394,13 +423,21 @@ const ChildrenBody = ({
                       setValue(fieldPath, option)
                     }
                   />
+                  <FormErrorMessage>
+                    {childrenSubFieldError?.message}
+                  </FormErrorMessage>
                 </FormControl>
               )
             }
             case MyInfoChildAttributes.ChildDateOfBirth: {
               const { onChange, ...rest } = register(fieldPath, validationRules)
               return (
-                <FormControl key={key} isDisabled={isDisabled} isRequired>
+                <FormControl
+                  key={key}
+                  isDisabled={isDisabled}
+                  isRequired
+                  isInvalid={!!childrenSubFieldError}
+                >
                   <FormLabel useMarkdownForDescription gridArea="formlabel">
                     {MYINFO_ATTRIBUTE_MAP[subField].description}
                   </FormLabel>
@@ -413,6 +450,9 @@ const ChildrenBody = ({
                     }}
                     colorScheme={`theme-${colorTheme}`}
                   />
+                  <FormErrorMessage>
+                    {childrenSubFieldError?.message}
+                  </FormErrorMessage>
                 </FormControl>
               )
             }
