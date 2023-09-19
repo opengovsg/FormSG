@@ -5,7 +5,7 @@ import { keyBy } from 'lodash'
 
 import { PaymentStatus, SubmissionPaymentDto } from '~shared/types'
 
-import { Tag } from '~components/Tag'
+import Badge from '~components/Badge'
 import Tooltip from '~components/Tooltip'
 
 import { getPaymentDataView } from '../common/utils/getPaymentDataView'
@@ -89,7 +89,7 @@ const PayoutDataHeader = ({
   colorScheme,
   rightIcon,
 }: PaymentDataHeaderProps) => (
-  <Flex gap="1rem">
+  <Flex gap="1rem" align="center">
     <Flex>
       <Text textStyle="h2" as="h2" color="primary.500">
         {name}
@@ -105,10 +105,15 @@ const PayoutDataHeader = ({
         </Flex>
       </Tooltip>
     </Flex>
-    <Tag colorScheme={colorScheme} pointerEvents="none">
-      <Text textStyle="caption-1">{label}</Text>
+    <Badge
+      colorScheme={colorScheme}
+      display="flex"
+      variant="subtle"
+      alignItems="center"
+    >
+      {label}
       {rightIcon && <Icon as={rightIcon} ml="0.25rem" />}
-    </Tag>
+    </Badge>
   </Flex>
 )
 
@@ -118,14 +123,19 @@ const PaymentDataHeader = ({
   colorScheme,
   rightIcon,
 }: PaymentDataHeaderProps) => (
-  <Flex gap="1rem">
+  <Flex gap="1rem" align="center">
     <Text textStyle="h2" as="h2" color="primary.500">
       {name}
     </Text>
-    <Tag colorScheme={colorScheme} pointerEvents="none">
-      <Text textStyle="caption-1">{label}</Text>
+    <Badge
+      colorScheme={colorScheme}
+      display="flex"
+      variant="subtle"
+      alignItems="center"
+    >
+      {label}
       {rightIcon && <Icon as={rightIcon} ml="0.25rem" />}
-    </Tag>
+    </Badge>
   </Flex>
 )
 
