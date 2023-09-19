@@ -136,7 +136,7 @@ export type ChildrenCompoundFieldValues = {
   // Each subarray represents one child value
   // e.g.
   // child : [['NAME', 'T12345678Z', 'VACCINATED'], ... ]
-  // cildFields: [name, bc number, vaxx status]
+  // childFields: [name, bc number, vaxx status]
   child: string[][]
   // Array of attribute names
   childFields: MyInfoChildAttributes[]
