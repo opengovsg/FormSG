@@ -1,6 +1,7 @@
 import { ManagedUpload } from 'aws-sdk/clients/s3'
 import Bluebird from 'bluebird'
 import crypto from 'crypto'
+import { StatusCodes } from 'http-status-codes'
 import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -580,7 +581,19 @@ export const getQuarantinePresignedPostData = (
   )
 }
 
+/**
+ * Invokes lambda to scan the file in the quarantine bucket for viruses.
+ * @param quarantineFileKey object key of the file in the quarantine bucket
+ * @returns okAsync(returnPayload) if file has been successfully scanned with status 200 OK
+ * @returns errAsync(returnPayload) if lambda invocation failed or file cannot be found
+ */
 export const triggerVirusScanning = (quarantineFileKey: string) => {
+  const logMeta = {
+    action: 'triggerVirusScanning',
+    meta: {
+      quarantineFileKey,
+    },
+  }
   return ResultAsync.fromPromise(
     AwsConfig.virusScannerLambda.invoke({
       FunctionName: AwsConfig.virusScannerLambdaFunctionName,
@@ -589,13 +602,48 @@ export const triggerVirusScanning = (quarantineFileKey: string) => {
     (error) => {
       logger.error({
         message: 'Error encountered when invoking virus scanning lambda',
-        meta: {
-          action: 'triggerVirusScanning',
-        },
+        meta: logMeta,
         error,
       })
 
       return new VirusScanFailedError()
     },
-  )
+  ).andThen((data) => {
+    const { statusCode, body } = JSON.parse(
+      Buffer.from(data?.Payload ?? '').toString(),
+    ) as {
+      statusCode: number
+      body: string
+    }
+    const parsedBody = JSON.parse(body)
+    const returnPayload = {
+      statusCode,
+      body: parsedBody,
+    }
+    // Note: returnPayload.statusCode and data?.$metadata.statusCode are different.
+    logger.info({
+      message: 'Successfully invoked lambda function',
+      meta: {
+        ...logMeta,
+        responseMetadata: data?.$metadata,
+        returnPayload,
+      },
+    })
+
+    // If return payload is not OK, either file cannot be found or virus scan failed. This should be
+    // treated as a fatal error and we should investigate.
+    if (statusCode !== StatusCodes.OK) {
+      logger.warn({
+        message: 'Some lambda invocations failed',
+        meta: {
+          ...logMeta,
+          responseMetadata: data?.$metadata,
+          returnPayload,
+        },
+      })
+      return errAsync(returnPayload)
+    }
+
+    return okAsync(returnPayload)
+  })
 }

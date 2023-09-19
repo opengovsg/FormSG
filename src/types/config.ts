@@ -40,7 +40,7 @@ export type AwsConfig = {
   virusScannerCleanS3Bucket: string
   s3: aws.S3
   endPoint: string
-  virusScannerLambda: Lambda // using aws-sdk-v3
+  virusScannerLambda: Lambda // using aws-sdk-v3 (FRM-993)
   virusScannerLambdaFunctionName: string
 }
 

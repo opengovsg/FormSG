@@ -3,7 +3,7 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { chain, omit } from 'lodash'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { okAsync, ResultAsync } from 'neverthrow'
 
 import { featureFlags } from '../../../../../shared/constants'
 import {
@@ -184,10 +184,9 @@ export const checkNewBoundaryEnabled = async (
 }
 
 /**
- * Guardrail to prevent virus scanner code from being run if not enabled on frontend.
- * TODO (FRM-1232): remove this guardrail when encryption boundary is shifted.
+ * Scan attachments on quarantine bucket and retrieve attachments from the clean bucket.
  */
-export const scanAttachments = async (
+export const scanAndRetrieveAttachments = async (
   req: StorageSubmissionMiddlewareHandlerRequest,
   res: Parameters<StorageSubmissionMiddlewareHandlerType>[1],
   next: NextFunction,
@@ -197,6 +196,7 @@ export const scanAttachments = async (
     ...createReqMeta(req),
   }
 
+  // TODO (FRM-1413): remove this guardrail when virus scanning has completed rollout.
   // Step 1: If virus scanner is not enabled, skip this middleware.
 
   const virusScannerEnabled = req.formsg.featureFlags.includes(
@@ -212,6 +212,7 @@ export const scanAttachments = async (
     return next()
   }
 
+  // TODO (FRM-1413): remove this guardrail when virus scanning has completed rollout.
   // Step 2: If virus scanner is enabled, check if storage submission v2.1+. Storage submission v2.1 onwards
   // should have virus scanning enabled. If not, skip this middleware.
   // Note: Version number is sent by the frontend and should only be >=2.1 if virus scanning is enabled on the frontend.
@@ -225,43 +226,7 @@ export const scanAttachments = async (
   const triggerLambdaResult = await ResultAsync.combine(
     req.body.responses.map((response) => {
       if (isQuarantinedAttachmentResponse(response)) {
-        return triggerVirusScanning(response.filename).andThen((data) => {
-          const { statusCode, body } = JSON.parse(
-            Buffer.from(data?.Payload ?? '').toString(),
-          ) as {
-            statusCode: number
-            body: string
-          }
-          const parsedBody = JSON.parse(body)
-          const returnPayload = {
-            statusCode,
-            body: parsedBody,
-          }
-          logger.info({
-            message: 'Successfully invoked lambda function',
-            meta: {
-              ...logMeta,
-              responseMetadata: data?.$metadata,
-              returnPayload,
-            },
-          })
-
-          // If return payload is not OK, either file cannot be found or virus scan failed. This should be
-          // treated as a fatal error we should investigate.
-          if (statusCode !== StatusCodes.OK) {
-            logger.warn({
-              message: 'Some lambda invocations failed',
-              meta: {
-                ...logMeta,
-                responseMetadata: data?.$metadata,
-                returnPayload,
-              },
-            })
-            return errAsync(returnPayload)
-          }
-
-          return okAsync(returnPayload)
-        })
+        return triggerVirusScanning(response.filename)
       }
       // If response is not an attachment, return ok.
       return okAsync(true)
