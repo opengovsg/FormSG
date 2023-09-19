@@ -19,7 +19,7 @@ import {
   IPopulatedEncryptedForm,
   IPopulatedForm,
 } from '../../../types'
-import config from '../../config/config'
+import config, { aws as AwsConfig } from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
@@ -42,6 +42,8 @@ import {
   ConfirmedPaymentNotFoundError,
   PaymentAlreadyConfirmedError,
   PaymentNotFoundError,
+  PaymentProofPresignS3Error,
+  PaymentProofUploadS3Error,
 } from './payments.errors'
 import * as PaymentsService from './payments.service'
 import {
@@ -1009,7 +1011,85 @@ export const verifyPaymentStatusWithStripe = (
     })
 }
 
-export const generatePaymentInvoice = (
+const getPaymentProofObjectPath = (payment: IPaymentSchema) => {
+  return payment.formId + '/' + payment._id + '.pdf'
+}
+
+/**
+ * Function that stores payment proof into s3
+ *
+ * @param {IPaymentSchema} payment the payment object, used to form the object path
+ * @param {Buffer} pdfBuffer the pdf to store into s3
+ *
+ * @returns ok(undefined) if no errors are thrown while uploading to s3
+ * @returns err(InvoiceUploadS3Error) if an error is thrown while uploading to s3
+ */
+const storePaymentProofInS3 = (
+  payment: IPaymentSchema,
+  pdfbuffer: Buffer,
+): ResultAsync<undefined, PaymentProofUploadS3Error> => {
+  const objectPath = getPaymentProofObjectPath(payment)
+  return ResultAsync.fromPromise(
+    AwsConfig.s3
+      .upload({
+        Bucket: AwsConfig.paymentProofS3Bucket,
+        Key: objectPath,
+        Body: Buffer.from(pdfbuffer),
+      })
+      .promise(),
+    (error) => {
+      logger.error({
+        message: 'Error occured whilst uploading pdfBuffer to S3',
+        meta: {
+          action: 'storePaymentProofInS3',
+          paymentId: payment._id,
+          objectPath,
+        },
+        error,
+      })
+      return new PaymentProofUploadS3Error()
+    },
+  ).map(() => {
+    return undefined
+  })
+}
+
+/**
+ * Function to generates a presigned url for payment proof stored in s3
+ * Presigned link expires in 30 days
+ *
+ * @param {IPaymentSchema} payment the payment object, used to form the object path
+ *
+ * @returns ok(string) which represents the presigned url if no errors are thrown while generating the presigned url
+ * @returns err(InvoicePresignS3Error) if an error is thrown while generating the presigned link
+ */
+const getPaymentProofPresignedS3Url = (
+  payment: IPaymentSchema,
+): ResultAsync<string, PaymentProofPresignS3Error> => {
+  const dayInSeconds = 24 * 60 * 60
+  const objectPath = getPaymentProofObjectPath(payment)
+  return ResultAsync.fromPromise(
+    AwsConfig.s3.getSignedUrlPromise('getObject', {
+      Bucket: AwsConfig.paymentProofS3Bucket,
+      Key: objectPath,
+      Expires: 30 * dayInSeconds,
+    }),
+    (error) => {
+      logger.error({
+        message: 'Error occured whilst retrieving signed URL from S3',
+        meta: {
+          action: 'getPresignedS3Invoice',
+          paymentId: payment._id,
+          objectPath,
+        },
+        error,
+      })
+      return new PaymentProofPresignS3Error()
+    },
+  )
+}
+
+const generatePaymentInvoiceAsPdf = (
   payment: IPaymentSchema,
   populatedForm: IPopulatedEncryptedForm,
 ): ResultAsync<Buffer, StripeFetchError> => {
@@ -1063,4 +1143,20 @@ export const generatePaymentInvoice = (
       (error) => new StripeFetchError(String(error)),
     )
   })
+}
+
+export const generatePaymentInvoiceUrl = (
+  payment: IPaymentSchema,
+  populatedForm: IPopulatedEncryptedForm,
+): ResultAsync<
+  string,
+  StripeFetchError | PaymentProofUploadS3Error | PaymentProofPresignS3Error
+> => {
+  const hasInvoiceS3Url = payment.completedPayment?.invoiceS3Url
+  if (!hasInvoiceS3Url) {
+    return generatePaymentInvoiceAsPdf(payment, populatedForm)
+      .andThen((pdfBuffer) => storePaymentProofInS3(payment, pdfBuffer))
+      .andThen(() => getPaymentProofPresignedS3Url(payment))
+  }
+  return getPaymentProofPresignedS3Url(payment)
 }

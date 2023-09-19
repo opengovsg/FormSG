@@ -112,14 +112,10 @@ export const downloadPaymentInvoice: ControllerHandler<{
           payment,
         },
       })
-      return StripeService.generatePaymentInvoice(payment, populatedForm)
+      return StripeService.generatePaymentInvoiceUrl(payment, populatedForm)
     })
-    .map((pdfBuffer) => {
-      res.set({
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename=${paymentId}-proofofpayment.pdf`,
-      })
-      return res.status(StatusCodes.OK).send(pdfBuffer)
+    .map((pdfUrl) => {
+      return res.redirect(pdfUrl)
     })
     .mapErr((error) => {
       logger.error({

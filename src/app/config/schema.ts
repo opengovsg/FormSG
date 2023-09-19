@@ -87,6 +87,12 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
       default: null,
       env: 'ATTACHMENT_S3_BUCKET',
     },
+    paymentProofS3Bucket: {
+      doc: 'S3 Bucket to upload payment proof to',
+      format: String,
+      default: null,
+      env: 'PAYMENT_PROOF_S3_BUCKET',
+    },
     staticAssetsS3Bucket: {
       doc: 'S3 Bucket containing static assets',
       format: String,
