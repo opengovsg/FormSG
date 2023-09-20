@@ -1129,15 +1129,36 @@ const _getPaymentProofPresignedS3Url = (
   )
 }
 
-const generatePaymentInvoiceAsPdf = (
+const _retrieveReceiptUrlFromStripe = (
+  payment: IPaymentSchema,
+): ResultAsync<string, StripeFetchError> => {
+  return ResultAsync.fromPromise(
+    stripe.paymentIntents.retrieve(
+      payment.paymentIntentId,
+      { expand: ['latest_charge'] },
+      { stripeAccount: payment.targetAccountId },
+    ),
+    (error) => new StripeFetchError(String(error)),
+  ).andThen((paymentIntent) => {
+    const receiptUrl = (paymentIntent.latest_charge as Stripe.Charge)
+      .receipt_url
+    if (!receiptUrl) {
+      return errAsync(new StripeFetchError('Receipt url not found'))
+    }
+    return ok(receiptUrl)
+  })
+}
+
+const _generatePaymentInvoiceAsPdf = (
   payment: IPaymentSchema,
   populatedForm: IPopulatedEncryptedForm,
+  receiptUrl: string,
 ): ResultAsync<Buffer, StripeFetchError> => {
   if (!payment.completedPayment?.receiptUrl) {
     return errAsync(new StripeFetchError('Receipt url not ready'))
   }
   return ResultAsync.fromPromise(
-    axios.get<string>(payment.completedPayment.receiptUrl),
+    axios.get<string>(receiptUrl),
     (error) => new StripeFetchError(String(error)),
   ).andThen((receiptUrlResponse) => {
     // retrieve receiptURL as html
@@ -1193,7 +1214,10 @@ export const generatePaymentInvoiceUrl = (
   StripeFetchError | PaymentProofUploadS3Error | PaymentProofPresignS3Error
 > => {
   if (!payment.completedPayment?.hasS3ReceiptUrl) {
-    return generatePaymentInvoiceAsPdf(payment, populatedForm)
+    return _retrieveReceiptUrlFromStripe(payment)
+      .andThen((receiptUrl) =>
+        _generatePaymentInvoiceAsPdf(payment, populatedForm, receiptUrl),
+      )
       .andThen((pdfBuffer) => _storePaymentProofInS3(payment, pdfBuffer))
       .andThen(() => _getPaymentProofPresignedS3Url(payment))
   }
