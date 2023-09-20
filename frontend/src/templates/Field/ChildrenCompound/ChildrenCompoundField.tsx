@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import {
   FieldArrayWithId,
   FieldError,
@@ -78,7 +78,9 @@ export const ChildrenCompoundField = ({
     name: schema._id,
   })
   const error: FieldError[][] | undefined = get(errors, schema._id)?.child
+  console.log('error: ', error)
   const childError: FieldError[] | undefined = error ? error[0] : undefined
+  console.log('childError: ', childError)
 
   const { fields, append, remove } = useFieldArray<ChildrenCompoundFieldInputs>(
     {
@@ -212,7 +214,7 @@ const ChildrenBody = ({
   const { register, getValues, setValue, watch } = formContext
 
   // Child name error will always be the first element of the error array
-  const childNameError = error ? error[0] : undefined
+  // const childNameError = error ? error[0] : undefined
 
   const childNamePath = useMemo(
     () => `${schema._id}.child.${currChildBodyIdx}.0`,
@@ -224,10 +226,18 @@ const ChildrenBody = ({
     [schema],
   )
 
-  const { onChange: selectOnChange, ...selectRest } = register(
-    childNamePath,
-    validationRules,
-  )
+  const {
+    ref: childNameRegisterRef,
+    onChange: selectOnChange,
+    ...selectRest
+  } = register(childNamePath, validationRules)
+  console.log('childNameRegisterRef: ', childNameRegisterRef)
+
+  const childNameRef = useRef<HTMLInputElement | null>(null)
+  console.log('childNameRef', childNameRef.current)
+  const childNameError = error
+    ? error.filter((e) => e.ref === childNameRef.current)
+    : undefined
 
   const childName = watch(childNamePath) as unknown as string
 
@@ -329,6 +339,12 @@ const ChildrenBody = ({
                   // This is bad practice but we have no choice because our
                   // custom Select doesn't forward the event.
                   setValue(childNamePath, name, { shouldValidate: true })
+                }}
+                ref={(e) => {
+                  childNameRegisterRef(e)
+                  if (e) {
+                    childNameRef.current = e
+                  }
                 }}
               />
               <FormErrorMessage>{childNameError?.message}</FormErrorMessage>
