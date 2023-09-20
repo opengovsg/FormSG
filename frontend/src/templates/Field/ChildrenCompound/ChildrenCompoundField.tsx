@@ -231,12 +231,18 @@ const ChildrenBody = ({
     onChange: selectOnChange,
     ...selectRest
   } = register(childNamePath, validationRules)
-  console.log('childNameRegisterRef: ', childNameRegisterRef)
+  console.log(
+    'childNameRegisterRef: ',
+    error?.map((e) => e.ref?.id),
+  )
 
   const childNameRef = useRef<HTMLInputElement | null>(null)
-  console.log('childNameRef', childNameRef.current)
+  console.log('>>>>>>>>>33333')
+  console.log('childNameRef', childNameRef.current?.id)
   const childNameError = error
-    ? error.filter((e) => e.ref === childNameRef.current)
+    ? error.find(
+        (e) => (e.ref as HTMLInputElement)?.id === childNameRef.current?.id,
+      )
     : undefined
 
   const childName = watch(childNamePath) as unknown as string
