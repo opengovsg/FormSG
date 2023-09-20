@@ -226,7 +226,7 @@ export const scanAndRetrieveAttachments = async (
   const triggerLambdaResult = await ResultAsync.combine(
     req.body.responses.map((response) => {
       if (isQuarantinedAttachmentResponse(response)) {
-        return triggerVirusScanning(response.filename)
+        return triggerVirusScanning(response.answer)
       }
       // If response is not an attachment, return ok.
       return okAsync(true)
