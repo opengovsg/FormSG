@@ -77,8 +77,7 @@ export const ChildrenCompoundField = ({
   const { isSubmitting, errors } = useFormState<ChildrenCompoundFieldInputs>({
     name: schema._id,
   })
-  const error: FieldError[][] | undefined =
-    get(errors, schema._id)?.child ?? undefined
+  const error: FieldError[][] | undefined = get(errors, schema._id)?.child
   const childError: FieldError[] | undefined = error ? error[0] : undefined
 
   const { fields, append, remove } = useFieldArray<ChildrenCompoundFieldInputs>(
@@ -329,7 +328,7 @@ const ChildrenBody = ({
                 onChange={(name) => {
                   // This is bad practice but we have no choice because our
                   // custom Select doesn't forward the event.
-                  setValue(childNamePath, name)
+                  setValue(childNamePath, name, { shouldValidate: true })
                 }}
               />
               <FormErrorMessage>{childNameError?.message}</FormErrorMessage>
@@ -372,7 +371,7 @@ const ChildrenBody = ({
             // We need to do this as the underlying data is not updated
             // by the field's value, but rather by onChange, which we did
             // not trigger via prefill.
-            setValue(fieldPath, myInfoFormattedValue)
+            setValue(fieldPath, myInfoFormattedValue, { shouldValidate: true })
           }
           const isDisabled = isSubmitting || !!myInfoValue
           switch (subField) {
@@ -420,7 +419,7 @@ const ChildrenBody = ({
                     onChange={(option) =>
                       // This is bad practice but we have no choice because our
                       // custom Select doesn't forward the event.
-                      setValue(fieldPath, option)
+                      setValue(fieldPath, option, { shouldValidate: true })
                     }
                   />
                   <FormErrorMessage>
@@ -446,7 +445,7 @@ const ChildrenBody = ({
                     displayFormat={DATE_DISPLAY_FORMAT}
                     inputValue={value}
                     onInputValueChange={(date) => {
-                      setValue(fieldPath, date)
+                      setValue(fieldPath, date, { shouldValidate: true })
                     }}
                     colorScheme={`theme-${colorTheme}`}
                   />
