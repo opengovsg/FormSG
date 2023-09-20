@@ -50,7 +50,9 @@ export const DuplicatePaymentModal = ({
         <ModalOverlay />
         <ModalContent>
           <ModalCloseButton />
-          <ModalHeader pb={'2rem'}>Proceed to pay again?</ModalHeader>
+          <ModalHeader pb={'2rem'} w="90%">
+            Proceed to pay again?
+          </ModalHeader>
           <ModalBody flexGrow={0}>
             <Stack>
               <Text>
