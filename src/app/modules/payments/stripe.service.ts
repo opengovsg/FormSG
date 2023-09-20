@@ -1036,6 +1036,7 @@ const _storePaymentProofInS3 = (
       action: '_storePaymentProofInS3',
       paymentId: payment._id,
       objectPath,
+      bucket: AwsConfig.paymentProofS3Bucket,
     },
   })
 

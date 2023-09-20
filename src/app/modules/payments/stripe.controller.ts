@@ -115,6 +115,14 @@ export const downloadPaymentInvoice: ControllerHandler<{
       return StripeService.generatePaymentInvoiceUrl(payment, populatedForm)
     })
     .map((pdfUrl) => {
+      logger.info({
+        message: `received generated payment invoice url, redirecting to ${pdfUrl}`,
+        meta: {
+          action: 'downloadPaymentInvoice',
+          formId,
+          paymentId,
+        },
+      })
       return res.redirect(pdfUrl)
     })
     .mapErr((error) => {
