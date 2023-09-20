@@ -8,6 +8,7 @@ import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Transform } from 'stream'
+import { validate } from 'uuid'
 
 import {
   FormResponseMode,
@@ -693,6 +694,16 @@ export const triggerVirusScanning = (
     action: 'triggerVirusScanning',
     quarantineFileKey,
   }
+
+  if (!validate(quarantineFileKey)) {
+    logger.error({
+      message: 'Invalid quarantine file key - not a valid uuid',
+      meta: logMeta,
+    })
+
+    return errAsync(new VirusScanFailedError())
+  }
+
   return ResultAsync.fromPromise(
     AwsConfig.virusScannerLambda.invoke({
       FunctionName: AwsConfig.virusScannerLambdaFunctionName,

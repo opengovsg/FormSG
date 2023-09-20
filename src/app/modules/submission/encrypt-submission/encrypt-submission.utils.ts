@@ -75,6 +75,7 @@ import {
   FeatureDisabledError,
   InvalidFieldIdError,
   SubmissionFailedError,
+  VirusScanFailedError,
 } from './encrypt-submission.errors'
 
 const logger = createLoggerWithLabel(module)
@@ -219,6 +220,7 @@ const errorMapper: MapRouteError = (
     case CreatePresignedPostError:
     case DatabaseError:
     case EmptyErrorFieldError:
+    case VirusScanFailedError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: error.message,
