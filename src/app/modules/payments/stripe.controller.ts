@@ -123,8 +123,7 @@ export const downloadPaymentInvoice: ControllerHandler<{
           paymentId,
         },
       })
-      return res.status(StatusCodes.OK).json({ message: pdfUrl })
-      // return res.redirect(pdfUrl)
+      return res.redirect(pdfUrl)
     })
     .mapErr((error) => {
       logger.error({
