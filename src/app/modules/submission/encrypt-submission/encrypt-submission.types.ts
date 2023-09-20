@@ -1,4 +1,5 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
+import { StatusCodes } from 'http-status-codes'
 import { ObjectId } from 'mongodb'
 
 import {
@@ -83,4 +84,19 @@ export type AttachmentSizeMapType = {
 export type AttachmentPresignedPostDataMapType = {
   id: ObjectId
   presignedPostData: PresignedPost
+}
+
+export type ParseVirusScannerLambdaPayloadOkType = {
+  statusCode: StatusCodes.OK
+  body: {
+    cleanFileKey: string
+    destinationVersionId: string
+  }
+}
+
+export type ParseVirusScannerLambdaPayloadErrType = {
+  statusCode: number // custom status codes might be sent by the lambda
+  body: {
+    message: string
+  }
 }
