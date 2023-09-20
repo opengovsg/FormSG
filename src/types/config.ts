@@ -125,6 +125,7 @@ export interface ICompulsoryVarsSchema {
     attachmentS3Bucket: string
     virusScannerQuarantineS3Bucket: string
     virusScannerCleanS3Bucket: string
+    paymentProofS3Bucket: string
   }
 }
 
@@ -199,5 +200,6 @@ export interface IBucketUrlSchema {
   staticAssetsBucketUrl: string
   virusScannerQuarantineS3BucketUrl: string
   virusScannerCleanS3BucketUrl: string
+  paymentProofS3BucketUrl: string
   endPoint: string
 }
