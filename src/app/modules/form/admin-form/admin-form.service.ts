@@ -48,6 +48,10 @@ import getAgencyModel from '../../../models/agency.server.model'
 import getFormModel from '../../../models/form.server.model'
 import * as SmsService from '../../../services/sms/sms.service'
 import { twilioClientCache } from '../../../services/sms/sms.service'
+import {
+  createPresignedPostDataPromise,
+  CreatePresignedPostError,
+} from '../../../utils/aws-s3'
 import { dotifyObject } from '../../../utils/dotify-object'
 import { isVerifiableMobileField } from '../../../utils/field-validation/field-validation.guards'
 import {
@@ -87,7 +91,6 @@ import {
 } from './../../../services/sms/sms.types'
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
-  CreatePresignedUrlError,
   EditFieldError,
   FieldNotFoundError,
   InvalidCollaboratorError,
@@ -167,7 +170,7 @@ const createPresignedPostUrl = (
   { fileId, fileMd5Hash, fileType }: PresignedPostUrlParams,
 ): ResultAsync<
   PresignedPost,
-  InvalidFileTypeError | CreatePresignedUrlError
+  InvalidFileTypeError | CreatePresignedPostError
 > => {
   if (!VALID_UPLOAD_FILE_TYPES.includes(fileType)) {
     return errAsync(
@@ -175,34 +178,17 @@ const createPresignedPostUrl = (
     )
   }
 
-  const presignedPostUrlPromise = new Promise<PresignedPost>(
-    (resolve, reject) => {
-      AwsConfig.s3.createPresignedPost(
-        {
-          Bucket: bucketName,
-          Expires: PRESIGNED_POST_EXPIRY_SECS,
-          Conditions: [
-            // Content length restrictions: 0 to MAX_UPLOAD_FILE_SIZE.
-            ['content-length-range', 0, MAX_UPLOAD_FILE_SIZE],
-          ],
-          Fields: {
-            acl: 'public-read',
-            key: fileId,
-            'Content-MD5': fileMd5Hash,
-            'Content-Type': fileType,
-          },
-        },
-        (err, data) => {
-          if (err) {
-            return reject(err)
-          }
-          return resolve(data)
-        },
-      )
-    },
-  )
+  const presignedPostUrlPromise = createPresignedPostDataPromise({
+    bucketName,
+    expiresSeconds: PRESIGNED_POST_EXPIRY_SECS,
+    size: MAX_UPLOAD_FILE_SIZE,
+    key: fileId,
+    acl: 'public-read',
+    fileMd5Hash,
+    fileType,
+  })
 
-  return ResultAsync.fromPromise(presignedPostUrlPromise, (error) => {
+  return presignedPostUrlPromise.mapErr((error) => {
     logger.error({
       message: 'Error encountered when creating presigned POST URL',
       meta: {
@@ -214,7 +200,7 @@ const createPresignedPostUrl = (
       error,
     })
 
-    return new CreatePresignedUrlError('Error occurred whilst uploading file')
+    return new CreatePresignedPostError('Error occurred whilst uploading file')
   })
 }
 
@@ -227,13 +213,13 @@ const createPresignedPostUrl = (
  *
  * @returns ok(presigned post url) when creation is successful
  * @returns err(InvalidFileTypeError) when given file type is not supported
- * @returns err(CreatePresignedUrlError) when errors occurs on S3 side whilst creating presigned post url.
+ * @returns err(CreatePresignedPostError) when errors occurs on S3 side whilst creating presigned post url.
  */
 export const createPresignedPostUrlForImages = (
   uploadParams: PresignedPostUrlParams,
 ): ResultAsync<
   PresignedPost,
-  InvalidFileTypeError | CreatePresignedUrlError
+  InvalidFileTypeError | CreatePresignedPostError
 > => {
   return createPresignedPostUrl(AwsConfig.imageS3Bucket, uploadParams)
 }
@@ -247,13 +233,13 @@ export const createPresignedPostUrlForImages = (
  *
  * @returns ok(presigned post url) when creation is successful
  * @returns err(InvalidFileTypeError) when given file type is not supported
- * @returns err(CreatePresignedUrlError) when errors occurs on S3 side whilst creating presigned post url.
+ * @returns err(CreatePresignedPostError) when errors occurs on S3 side whilst creating presigned post url.
  */
 export const createPresignedPostUrlForLogos = (
   uploadParams: PresignedPostUrlParams,
 ): ResultAsync<
   PresignedPost,
-  InvalidFileTypeError | CreatePresignedUrlError
+  InvalidFileTypeError | CreatePresignedPostError
 > => {
   return createPresignedPostUrl(AwsConfig.logoS3Bucket, uploadParams)
 }

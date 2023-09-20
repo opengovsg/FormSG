@@ -2,16 +2,17 @@ import {
   Button,
   Modal,
   ModalBody,
-  ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalHeader,
   ModalOverlay,
   ModalProps,
   Stack,
+  useBreakpointValue,
 } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
+import { ModalCloseButton } from '~components/Modal'
 
 export interface UnsavedChangesModalProps extends Omit<ModalProps, 'children'> {
   onConfirm: () => void
@@ -41,6 +42,11 @@ export const UnsavedChangesModal = ({
   cancelButtonText = 'No, stay on page',
   ...modalProps
 }: UnsavedChangesModalProps): JSX.Element => {
+  const modalSize = useBreakpointValue({
+    base: 'mobile',
+    xs: 'mobile',
+    md: 'md',
+  })
   const isMobile = useIsMobile()
 
   return (
@@ -48,6 +54,7 @@ export const UnsavedChangesModal = ({
       isOpen={isOpen}
       onClose={onClose}
       returnFocusOnClose={returnFocusOnClose}
+      size={modalSize}
       {...modalProps}
     >
       <ModalOverlay />

@@ -7,9 +7,11 @@ import mongoose from 'mongoose'
 import { okAsync } from 'neverthrow'
 import Stripe from 'stripe'
 
+import { featureFlags } from '../../../../../shared/constants'
 import {
   ErrorDto,
   FormAuthType,
+  FormResponseMode,
   FormSubmissionMetadataQueryDto,
   Payment,
   PaymentChannel,
@@ -38,6 +40,7 @@ import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import { MalformedParametersError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
+import { getFeatureFlag } from '../../feature-flags/feature-flags.service'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
@@ -45,6 +48,7 @@ import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
+import { fileSizeLimit, fileSizeLimitBytes } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import {
@@ -52,11 +56,15 @@ import {
   ensurePublicForm,
   ensureValidCaptcha,
 } from './encrypt-submission.ensures'
-import { SubmissionFailedError } from './encrypt-submission.errors'
+import {
+  FeatureDisabledError,
+  SubmissionFailedError,
+} from './encrypt-submission.errors'
 import {
   addPaymentDataStream,
   checkFormIsEncryptMode,
   getEncryptedSubmissionData,
+  getQuarantinePresignedPostData,
   getSubmissionCursor,
   getSubmissionMetadata,
   getSubmissionMetadataList,
@@ -67,6 +75,8 @@ import {
   uploadAttachments,
 } from './encrypt-submission.service'
 import {
+  AttachmentPresignedPostDataMapType,
+  AttachmentSizeMapType,
   SubmitEncryptModeFormHandlerRequest,
   SubmitEncryptModeFormHandlerType,
 } from './encrypt-submission.types'
@@ -77,7 +87,7 @@ import {
   mapRouteError,
 } from './encrypt-submission.utils'
 
-export const logger = createLoggerWithLabel(module)
+const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 const EncryptPendingSubmission = getEncryptPendingSubmissionModel(mongoose)
 const Payment = getPaymentModel(mongoose)
@@ -975,4 +985,114 @@ export const handleGetMetadata = [
     },
   }),
   getMetadata,
+] as ControllerHandler[]
+
+/**
+ * Handler for POST /:formId/submissions/storage/get-s3-presigned-post-data
+ * Used by handleGetS3PresignedPostData after joi validation
+ * @returns 200 with array of presigned post data
+ * @returns 400 if ids are invalid or total file size exceeds 20MB
+ * @returns 500 if presigned post data cannot be retrieved or any other errors occur
+ * Exported for testing
+ */
+export const getS3PresignedPostData: ControllerHandler<
+  unknown,
+  AttachmentPresignedPostDataMapType[] | ErrorDto,
+  AttachmentSizeMapType[]
+> = async (req, res) => {
+  const logMeta = {
+    action: 'getS3PresignedPostData',
+    ...createReqMeta(req),
+  }
+
+  return getFeatureFlag(featureFlags.encryptionBoundaryShiftVirusScanner)
+    .map((virusScannerEnabled) => {
+      if (!virusScannerEnabled) {
+        logger.warn({
+          message: 'Virus scanning has not been enabled.',
+          meta: logMeta,
+        })
+
+        const { statusCode, errorMessage } = mapRouteError(
+          new FeatureDisabledError(),
+        )
+        return res.status(statusCode).send({
+          message: errorMessage,
+        })
+      }
+
+      return getQuarantinePresignedPostData(req.body)
+        .map((presignedUrls) => {
+          logger.info({
+            message: 'Successfully retrieved quarantine presigned post data.',
+            meta: logMeta,
+          })
+          return res.status(StatusCodes.OK).send(presignedUrls)
+        })
+        .mapErr((error) => {
+          logger.error({
+            message: 'Failure getting quarantine presigned post data.',
+            meta: logMeta,
+            error,
+          })
+          const { statusCode, errorMessage } = mapRouteError(error)
+          return res.status(statusCode).send({
+            message: errorMessage,
+          })
+        })
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error retrieving feature flags.',
+        meta: logMeta,
+        error,
+      })
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).send({
+        message: errorMessage,
+      })
+    })
+}
+
+/**
+ * Custom validation function for Joi to validate that the sum of 'size' in the array of objects
+ * is less than or equal to total file size limit (20MB).
+ */
+const validateFileSizeSum = (
+  value: { size: number }[],
+  helpers: { error: (arg0: string) => null },
+) => {
+  const sum = value.reduce((acc, curr) => acc + curr.size, 0)
+
+  if (sum <= fileSizeLimitBytes(FormResponseMode.Encrypt)) {
+    return value // Return the validated value if the sum of 'size' is less than or equal to limit
+  } else {
+    return helpers.error('size.limit') // Return an error if the sum of 'size' is greater than limit
+  }
+}
+
+// Handler for POST /:formId/submissions/storage/get-s3-presigned-post-data
+export const handleGetS3PresignedPostData = [
+  celebrate({
+    [Segments.BODY]: Joi.array()
+      .items(
+        Joi.object().keys({
+          id: Joi.string()
+            .regex(/^[0-9a-fA-F]{24}$/) // IDs should be MongoDB ObjectIDs
+            .required(),
+          size: Joi.number()
+            .max(fileSizeLimitBytes(FormResponseMode.Encrypt)) // Max attachment size is 20MB
+            .required(),
+        }),
+      )
+      .unique('id') // IDs of each array item should be unique
+      .custom(validateFileSizeSum, 'Custom validation for total file size') // Custom validation to check for total file size
+      .messages({
+        'size.limit': `Total file size exceeds ${fileSizeLimit(
+          FormResponseMode.Encrypt,
+        )}MB`, // Custom error message for total file size
+        'array.unique': 'Duplicate id(s) found', // Custom error message for duplicate IDs
+      }),
+  }),
+  getS3PresignedPostData,
 ] as ControllerHandler[]

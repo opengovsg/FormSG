@@ -6,4 +6,6 @@ export const featureFlags = {
   encryptionBoundaryShift: 'encryption-boundary-shift' as const,
   encryptionBoundaryShiftHardValidation:
     'encryption-boundary-shift-hard-validation' as const,
+  encryptionBoundaryShiftVirusScanner:
+    'encryption-boundary-shift-virus-scanner' as const,
 }

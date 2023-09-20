@@ -6,6 +6,7 @@ import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
 
+import { centsToDollars } from '../../../../shared/utils/payments'
 import { getPaymentInvoiceDownloadUrlPath } from '../../../../shared/utils/urls'
 import {
   HASH_EXPIRE_AFTER_SECONDS,
@@ -800,12 +801,14 @@ export class MailService {
     submissionId,
     formId,
     paymentId,
+    paymentAmount,
   }: {
     email: string
     formTitle: string
     submissionId: string
     formId: string
     paymentId: string
+    paymentAmount: number
   }): ResultAsync<true, MailSendError> => {
     const htmlData: PaymentConfirmationData = {
       formTitle: formTitle,
@@ -815,6 +818,7 @@ export class MailService {
         formId,
         paymentId,
       )}`,
+      amountPaid: centsToDollars(paymentAmount),
     }
     return generatePaymentConfirmationHtml({ htmlData }).andThen((html) => {
       const mail: MailOptions = {

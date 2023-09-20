@@ -44,6 +44,7 @@ import {
 } from 'src/app/services/mail/mail.errors'
 import MailService from 'src/app/services/mail/mail.service'
 import { TwilioCredentials } from 'src/app/services/sms/sms.types'
+import { CreatePresignedPostError } from 'src/app/utils/aws-s3'
 import { EditFieldActions } from 'src/shared/constants'
 import {
   FormFieldSchema,
@@ -91,7 +92,6 @@ import {
 import * as FormService from '../../form.service'
 import * as AdminFormController from '../admin-form.controller'
 import {
-  CreatePresignedUrlError,
   EditFieldError,
   FieldNotFoundError,
   InvalidFileTypeError,
@@ -1225,7 +1225,7 @@ describe('admin-form.controller', () => {
       })
     })
 
-    it('should return 400 when CreatePresignedUrlError is returned when creating presigned POST URL', async () => {
+    it('should return 400 when CreatePresignedPostError is returned when creating presigned POST URL', async () => {
       // Arrange
       // Mock various services to return expected results.
       MockUserService.getPopulatedUserById.mockReturnValueOnce(
@@ -1238,7 +1238,7 @@ describe('admin-form.controller', () => {
       const mockErrorString = 'creating presigned post url failed, oh no'
       const mockRes = expressHandler.mockResponse()
       MockAdminFormService.createPresignedPostUrlForImages.mockReturnValueOnce(
-        errAsync(new CreatePresignedUrlError(mockErrorString)),
+        errAsync(new CreatePresignedPostError(mockErrorString)),
       )
 
       // Act
@@ -1460,7 +1460,7 @@ describe('admin-form.controller', () => {
       })
     })
 
-    it('should return 400 when CreatePresignedUrlError is returned when creating presigned POST URL', async () => {
+    it('should return 400 when CreatePresignedPostError is returned when creating presigned POST URL', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
       // Mock error
@@ -1473,7 +1473,7 @@ describe('admin-form.controller', () => {
         okAsync(MOCK_FORM),
       )
       MockAdminFormService.createPresignedPostUrlForLogos.mockReturnValueOnce(
-        errAsync(new CreatePresignedUrlError(mockErrorString)),
+        errAsync(new CreatePresignedPostError(mockErrorString)),
       )
 
       // Act

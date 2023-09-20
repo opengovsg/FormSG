@@ -1,4 +1,4 @@
-const myInfoRaces = [
+export const myInfoRaces = [
   'ACHEHNESE',
   'AFGHAN',
   'AFRICAN',
@@ -226,5 +226,3 @@ const myInfoRaces = [
   'YUGOSLAV',
   'ZIMBABWEAN',
 ]
-
-export default myInfoRaces

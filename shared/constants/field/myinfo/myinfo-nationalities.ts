@@ -1,4 +1,4 @@
-const myInfoNationalities = [
+export const myInfoNationalities = [
   'AFGHAN',
   'ALBANIAN',
   'ALGERIAN',
@@ -206,5 +206,3 @@ const myInfoNationalities = [
   'ZAMBIAN',
   'ZIMBABWEAN',
 ]
-
-export default myInfoNationalities

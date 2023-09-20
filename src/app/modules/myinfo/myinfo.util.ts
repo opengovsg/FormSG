@@ -6,7 +6,16 @@ import mongoose, { LeanDocument } from 'mongoose'
 import { err, ok, Result } from 'neverthrow'
 import { v4 as uuidv4, validate as validateUUID } from 'uuid'
 
-import { types as myInfoTypes } from '../../../../shared/constants/field/myinfo'
+import {
+  myInfoCountries,
+  myInfoDialects,
+  myInfoHdbTypes,
+  myInfoHousingTypes,
+  myInfoNationalities,
+  myInfoOccupations,
+  myInfoRaces,
+  types as myInfoTypes,
+} from '../../../../shared/constants/field/myinfo'
 import {
   BasicField,
   ChildrenCompoundFieldBase,
@@ -525,4 +534,60 @@ export const handleMyInfoChildHashResponse = (
     })
   })
   return
+}
+
+/**
+ * This function is responsible for mapping a myInfo attribute to
+ * an existing myInfo constants list
+ *
+ * @param myInfoAttr the myInfo attribute
+ */
+export const getMyInfoAttributeConstantsList = (
+  myInfoAttr: string | string[],
+) => {
+  switch (myInfoAttr) {
+    case MyInfoAttribute.Occupation:
+      return myInfoOccupations
+    case MyInfoAttribute.Race:
+    case MyInfoAttribute.ChildRace:
+    case MyInfoAttribute.ChildSecondaryRace:
+      return myInfoRaces
+    case MyInfoAttribute.Nationality:
+      return myInfoNationalities
+    case MyInfoAttribute.Dialect:
+      return myInfoDialects
+    case MyInfoAttribute.BirthCountry:
+      return myInfoCountries
+    case MyInfoAttribute.HousingType:
+      return myInfoHousingTypes
+    case MyInfoAttribute.HdbType:
+      return myInfoHdbTypes
+    default:
+      return
+  }
+}
+
+/**
+ * Add logging to check if myInfo field value exists in a myInfo constants list
+ * @param fieldValue
+ * @param myInfoAttr
+ * @param myInfoList
+ */
+
+export const logIfFieldValueNotInMyinfoList = (
+  fieldValue: string,
+  myInfoAttr: string | string[],
+  myInfoList: string[],
+) => {
+  const isFieldValueInMyinfoList = myInfoList.includes(fieldValue)
+  if (!isFieldValueInMyinfoList) {
+    logger.error({
+      message: 'Myinfo field value not found in existing Myinfo constants list',
+      meta: {
+        action: 'prefillAndSaveMyInfoFields',
+        myInfoFieldValue: fieldValue,
+        myInfoAttr,
+      },
+    })
+  }
 }

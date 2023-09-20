@@ -31,6 +31,7 @@ import {
   TurnstileConnectionError,
   VerifyTurnstileError,
 } from '../../../services/turnstile/turnstile.errors'
+import { CreatePresignedPostError } from '../../../utils/aws-s3'
 import { genericMapRouteErrorTransform } from '../../../utils/error'
 import {
   AttachmentUploadError,
@@ -41,7 +42,6 @@ import {
   EmptyErrorFieldError,
   MalformedParametersError,
 } from '../../core/core.errors'
-import { CreatePresignedUrlError } from '../../form/admin-form/admin-form.errors'
 import {
   ForbiddenFormError,
   FormDeletedError,
@@ -70,7 +70,12 @@ import {
   ValidateFieldError,
 } from '../submission.errors'
 
-import { SubmissionFailedError } from './encrypt-submission.errors'
+import {
+  AttachmentSizeLimitExceededError,
+  FeatureDisabledError,
+  InvalidFieldIdError,
+  SubmissionFailedError,
+} from './encrypt-submission.errors'
 
 const logger = createLoggerWithLabel(module)
 
@@ -122,6 +127,7 @@ const errorMapper: MapRouteError = (
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
       }
+    case FeatureDisabledError:
     case ForbiddenFormError:
       return {
         statusCode: StatusCodes.FORBIDDEN,
@@ -210,7 +216,7 @@ const errorMapper: MapRouteError = (
           'The form has been updated. Please refresh and submit again.',
       }
     case PaymentNotFoundError:
-    case CreatePresignedUrlError:
+    case CreatePresignedPostError:
     case DatabaseError:
     case EmptyErrorFieldError:
       return {
@@ -218,6 +224,8 @@ const errorMapper: MapRouteError = (
         errorMessage: error.message,
       }
     case SubmissionFailedError:
+    case InvalidFieldIdError:
+    case AttachmentSizeLimitExceededError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,

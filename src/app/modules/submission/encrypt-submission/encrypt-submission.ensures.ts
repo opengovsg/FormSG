@@ -1,13 +1,15 @@
 import { CaptchaTypes } from '../../../../../shared/types/captcha'
 import { IPopulatedForm } from '../../../../types'
+import { createLoggerWithLabel } from '../../../config/logger'
 import * as CaptchaService from '../../../services/captcha/captcha.service'
 import * as TurnstileService from '../../../services/turnstile/turnstile.service'
 import { Middleware } from '../../../utils/pipeline-middleware'
 import { getRequestIp } from '../../../utils/request'
 import * as FormService from '../../form/form.service'
 
-import { logger } from './encrypt-submission.controller'
 import { mapRouteError } from './encrypt-submission.utils'
+
+const logger = createLoggerWithLabel(module)
 
 type FormSubmissionPipelineContext = {
   req: any

@@ -18,7 +18,7 @@ import { VariableItemDetailProps } from './types'
 export const VariablePaymentItemDetailsBlock = ({
   paymentDescription,
   paymentItemName,
-  paymentMin,
+  paymentMin: _paymentMin,
   paymentMax: _paymentMax,
 }: VariableItemDetailProps): JSX.Element => {
   const {
@@ -26,9 +26,14 @@ export const VariablePaymentItemDetailsBlock = ({
     formState: { errors },
   } = useFormContext()
 
-  const { data: { maxPaymentAmountCents = Number.MAX_SAFE_INTEGER } = {} } =
-    useEnv()
+  const {
+    data: {
+      maxPaymentAmountCents = Number.MAX_SAFE_INTEGER,
+      minPaymentAmountCents = Number.MAX_SAFE_INTEGER,
+    } = {},
+  } = useEnv()
   const paymentMax = _paymentMax || maxPaymentAmountCents
+  const paymentMin = _paymentMin || minPaymentAmountCents
   const amountValidation = usePaymentFieldValidation<
     {
       [PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]: string
