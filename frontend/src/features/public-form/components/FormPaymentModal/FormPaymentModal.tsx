@@ -40,7 +40,9 @@ export const FormPaymentModal = ({
         <ModalOverlay />
         <ModalContent>
           <ModalCloseButton />
-          <ModalHeader pb={'2rem'}>You are about to make payment</ModalHeader>
+          <ModalHeader pb={'2rem'} w="90%">
+            You are about to make payment
+          </ModalHeader>
           <ModalBody flexGrow={0}>
             Please ensure that your form information is accurate. You will not
             be able to edit your form after you proceed.
