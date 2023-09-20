@@ -192,7 +192,7 @@ export const scanAndRetrieveAttachments = async (
   next: NextFunction,
 ) => {
   const logMeta = {
-    action: 'scanAttachments',
+    action: 'scanAndRetrieveAttachments',
     ...createReqMeta(req),
   }
 
