@@ -79,6 +79,7 @@ export const addAttachmentToResponses = (
     responses.forEach((response) => {
       if (isAttachmentResponseFromMap(attachmentMap, response)) {
         const file = attachmentMap[response._id]
+        response.answer = file.filename
         response.filename = file.filename
         response.content = file.content
       }
