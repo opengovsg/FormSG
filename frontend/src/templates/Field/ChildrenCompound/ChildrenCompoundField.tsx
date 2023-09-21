@@ -211,9 +211,6 @@ const ChildrenBody = ({
 }: ChildrenBodyProps): JSX.Element => {
   const { register, getValues, setValue, watch } = formContext
 
-  // Child name error will always be the first element of the error array
-  // const childNameError = error ? error[0] : undefined
-
   const childNamePath = useMemo(
     () => `${schema._id}.child.${currChildBodyIdx}.0`,
     [schema._id, currChildBodyIdx],
