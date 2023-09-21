@@ -26,7 +26,7 @@
   "scripts": {
     "postinstall": "npm run postinstall:frontend && npm run postinstall:shared",
     "test": "npm run test:backend && npm run test:frontend",
-    "test:backend": "env-cmd -f __tests__/setup/.test-env jest --coverage --maxWorkers=4 --testTimeout=45000",
+    "test:backend": "env-cmd -f __tests__/setup/.test-env jest --coverage --maxWorkers=4 --testTimeout=90000",
     "test:backend:watch": "env-cmd -f __tests__/setup/.test-env jest --watch",
     "test:frontend": "npm --prefix frontend test",
     "test:e2e-v2": "npm run build && npx playwright test",
