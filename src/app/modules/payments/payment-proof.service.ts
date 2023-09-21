@@ -110,7 +110,8 @@ export const _storePaymentProofInS3 = (
  * @Exported only for testing purposes
  *
  * Function to generates a presigned url for payment proof stored in s3
- * Presigned link expires in 30 days
+ *
+ * Presigned link expires in 1 day; URL is returned as a redirected immediate download link, thus the link is not meant to be long lasting
  *
  * @param {IPaymentSchema} payment the payment object, used to form the object path
  *
@@ -134,7 +135,6 @@ export const _getPaymentProofPresignedS3Url = (
     AwsConfig.s3.getSignedUrlPromise('getObject', {
       Bucket: AwsConfig.paymentProofS3Bucket,
       Key: objectPath,
-      // URL is returned as a redirected immediate download link, thus the link is not meant to be long lasting
       Expires: 1 * dayInSeconds,
     }),
     (error) => {
