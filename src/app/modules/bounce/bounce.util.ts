@@ -83,3 +83,16 @@ export const extractSuccessfulSmsRecipients = (
     (recipient) => !failedRecipients.includes(recipient.contact),
   )
 }
+
+/**
+ * Correctly parse emails provided in SNS bounce notification commonHeaders.to
+ * field.
+ * SNS notifications commonHeaders can have multiple emails comma-separated in
+ * one value of the array, evidenced in the notification examples:
+ * https://docs.aws.amazon.com/ses/latest/dg/notification-examples.html
+ * @param emails Array of emails or comma-separated emails
+ * @returns array of single-valued emails
+ */
+export const parseBounceNotificationCommonHeadersToEmails = (
+  emails: string[],
+) => emails.flatMap((emails) => emails.split(',').map((email) => email.trim()))

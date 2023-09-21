@@ -10,9 +10,16 @@ import {
   UserContactView,
 } from '../../../types'
 import { bounceLifeSpan } from '../../config/config'
+import { createLoggerWithLabel } from '../../config/logger'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
 
-import { hasEmailBeenDelivered, hasEmailBounced } from './bounce.util'
+import {
+  hasEmailBeenDelivered,
+  hasEmailBounced,
+  parseBounceNotificationCommonHeadersToEmails,
+} from './bounce.util'
+
+const logger = createLoggerWithLabel(module)
 
 export const BOUNCE_SCHEMA_ID = 'Bounce'
 
@@ -80,19 +87,29 @@ BounceSchema.statics.fromSnsNotification = function (
   snsInfo: IEmailNotification,
   formId: string,
 ): IBounceSchema {
-  const bounces: ISingleBounce[] = snsInfo.mail.commonHeaders.to.map(
-    (email) => {
-      if (hasEmailBounced(snsInfo, email)) {
-        return {
-          email,
-          hasBounced: true,
-          bounceType: snsInfo.bounce.bounceType,
-        }
-      } else {
-        return { email, hasBounced: false }
-      }
-    },
+  const emailsArray = parseBounceNotificationCommonHeadersToEmails(
+    snsInfo.mail.commonHeaders.to,
   )
+  const bounces: ISingleBounce[] = emailsArray.map((email) => {
+    if (!validator.isEmail(email)) {
+      logger.warn({
+        message: 'Bounce notification contains value that is not a valid email',
+        meta: {
+          action: 'BounceSchema.statics.fromSnsNotification',
+          email,
+        },
+      })
+    }
+    if (hasEmailBounced(snsInfo, email)) {
+      return {
+        email,
+        hasBounced: true,
+        bounceType: snsInfo.bounce.bounceType,
+      }
+    } else {
+      return { email, hasBounced: false }
+    }
+  })
   return new this({ formId, bounces })
 }
 
@@ -104,8 +121,12 @@ BounceSchema.statics.fromSnsNotification = function (
 BounceSchema.methods.updateBounceInfo = function (
   snsInfo: IEmailNotification,
 ): IBounceSchema {
+  // Correctly parse the emails from commonHeaders.to
+  const emailsArray = parseBounceNotificationCommonHeadersToEmails(
+    snsInfo.mail.commonHeaders.to,
+  )
   // First, get rid of outdated emails
-  const latestRecipients = new Set(snsInfo.mail.commonHeaders.to)
+  const latestRecipients = new Set(emailsArray)
   this.bounces = this.bounces.filter((bounceInfo) =>
     latestRecipients.has(bounceInfo.email),
   )
@@ -116,7 +137,16 @@ BounceSchema.methods.updateBounceInfo = function (
   // (does the notification confirm delivery/bounce for this email) *
   // (does bouncesByEmail contain this email) *
   // (does bouncesByEmail currently say this email has bounced)
-  snsInfo.mail.commonHeaders.to.forEach((email) => {
+  emailsArray.forEach((email) => {
+    if (!validator.isEmail(email)) {
+      logger.warn({
+        message: 'Bounce notification contains value that is not a valid email',
+        meta: {
+          action: 'BounceSchema.methods.updateBounceInfo',
+          email,
+        },
+      })
+    }
     if (hasEmailBounced(snsInfo, email)) {
       bouncesByEmail[email] = {
         email,
