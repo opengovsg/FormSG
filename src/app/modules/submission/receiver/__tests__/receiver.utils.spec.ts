@@ -64,6 +64,19 @@ describe('email-submission.util', () => {
       ).toEqual(secondAttachment.content)
     })
 
+    it('should overwrite answer with filename when they are different', () => {
+      const attachment = validSingleFile
+      const response = getResponse(attachment.fieldId, MOCK_ANSWER)
+      addAttachmentToResponses([response], [attachment])
+      expect(response.answer).toBe(attachment.filename)
+      expect((response as unknown as IAttachmentResponse).filename).toBe(
+        attachment.filename,
+      )
+      expect((response as unknown as IAttachmentResponse).content).toEqual(
+        attachment.content,
+      )
+    })
+
     it('should do nothing when responses are empty', () => {
       const responses: FieldResponse[] = []
       addAttachmentToResponses(responses, [validSingleFile])

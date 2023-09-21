@@ -192,13 +192,14 @@ describe('receiver.service', () => {
       const result = await resultPromise
       expect(result._unsafeUnwrap()).toEqual({
         responses: [
-          expect.objectContaining({
+          {
             _id: mockResponse._id,
             question: mockResponse.question,
+            answer: VALID_UTF8_FILENAME,
             fieldType: mockResponse.fieldType,
             filename: VALID_UTF8_FILENAME,
             content: Buffer.concat([VALID_UTF8_FILE_CONTENT]),
-          }),
+          },
         ],
       })
     })
@@ -234,13 +235,14 @@ describe('receiver.service', () => {
       const result = await resultPromise
       expect(result._unsafeUnwrap()).toEqual({
         responses: [
-          expect.objectContaining({
+          {
             _id: mockResponse._id,
             question: mockResponse.question,
+            answer: VALID_FILENAME_1,
             fieldType: mockResponse.fieldType,
             filename: VALID_FILENAME_1,
             content: Buffer.concat([VALID_FILE_CONTENT_1]),
-          }),
+          },
         ],
       })
     })
@@ -280,13 +282,14 @@ describe('receiver.service', () => {
       const result = await resultPromise
       expect(result._unsafeUnwrap()).toEqual({
         responses: [
-          expect.objectContaining({
+          {
             _id: mockAttachment._id,
             question: mockAttachment.question,
+            answer: VALID_FILENAME_1,
             fieldType: mockAttachment.fieldType,
             filename: VALID_FILENAME_1,
             content: Buffer.concat([VALID_FILE_CONTENT_1]),
-          }),
+          },
           {
             _id: mockTextField._id,
             question: mockTextField.question,
@@ -407,20 +410,22 @@ describe('receiver.service', () => {
       const result = await resultPromise
       expect(result._unsafeUnwrap()).toEqual({
         responses: [
-          expect.objectContaining({
+          {
             _id: mockResponse1._id,
             question: mockResponse1.question,
+            answer: `1-${VALID_FILENAME_1}`,
             fieldType: mockResponse1.fieldType,
             filename: `1-${VALID_FILENAME_1}`,
             content: Buffer.concat([VALID_FILE_CONTENT_1]),
-          }),
-          expect.objectContaining({
+          },
+          {
             _id: mockResponse2._id,
             question: mockResponse2.question,
+            answer: VALID_FILENAME_1,
             fieldType: mockResponse2.fieldType,
             filename: VALID_FILENAME_1,
             content: Buffer.concat([VALID_FILE_CONTENT_1]),
-          }),
+          },
         ],
       })
     })
