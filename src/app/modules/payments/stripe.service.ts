@@ -14,6 +14,7 @@ import {
   ReconciliationReportLine,
 } from '../../../../shared/types'
 import {
+  ICompletedPaymentSchema,
   IEncryptedFormSchema,
   IPaymentSchema,
   IPopulatedEncryptedForm,
@@ -1011,7 +1012,9 @@ export const verifyPaymentStatusWithStripe = (
     })
 }
 
-const getPaymentProofObjectPath = (payment: IPaymentSchema) => {
+const getPaymentProofObjectPath = (
+  payment: Pick<IPaymentSchema, 'formId' | '_id'>,
+) => {
   return payment.formId + '/' + payment._id + '.pdf'
 }
 
@@ -1025,8 +1028,8 @@ const getPaymentProofObjectPath = (payment: IPaymentSchema) => {
  * @returns err(InvoiceUploadS3Error) if an error is thrown while uploading to s3
  */
 const _storePaymentProofInS3 = (
-  payment: IPaymentSchema,
-  pdfbuffer: Buffer,
+  payment: ICompletedPaymentSchema,
+  pdfBuffer: Buffer,
 ): ResultAsync<undefined, PaymentProofUploadS3Error> => {
   const objectPath = getPaymentProofObjectPath(payment)
 
@@ -1045,7 +1048,7 @@ const _storePaymentProofInS3 = (
       .upload({
         Bucket: AwsConfig.paymentProofS3Bucket,
         Key: objectPath,
-        Body: Buffer.from(pdfbuffer),
+        Body: Buffer.from(pdfBuffer),
       })
       .promise(),
     (error) => {
@@ -1062,12 +1065,11 @@ const _storePaymentProofInS3 = (
     },
   )
     .map(() => {
-      if (payment.completedPayment) {
-        payment.completedPayment = {
-          ...payment.completedPayment,
-          hasS3ReceiptUrl: true,
-        }
+      payment.completedPayment = {
+        ...payment.completedPayment,
+        hasS3ReceiptUrl: true,
       }
+
       return ResultAsync.fromPromise(payment.save(), (error) => {
         logger.error({
           message: 'Error occured whilst updating payment',
@@ -1131,7 +1133,7 @@ const _getPaymentProofPresignedS3Url = (
 }
 
 const _retrieveReceiptUrlFromStripe = (
-  payment: IPaymentSchema,
+  payment: ICompletedPaymentSchema,
 ): ResultAsync<string, StripeFetchError> => {
   return ResultAsync.fromPromise(
     stripe.paymentIntents.retrieve(
@@ -1151,7 +1153,7 @@ const _retrieveReceiptUrlFromStripe = (
 }
 
 const _generatePaymentInvoiceAsPdf = (
-  payment: IPaymentSchema,
+  payment: ICompletedPaymentSchema,
   populatedForm: IPopulatedEncryptedForm,
   receiptUrl: string,
 ): ResultAsync<Buffer, StripeFetchError> => {
@@ -1207,6 +1209,15 @@ const _generatePaymentInvoiceAsPdf = (
   })
 }
 
+const isStripeReceiptReady = (
+  payment: IPaymentSchema,
+): ResultAsync<ICompletedPaymentSchema, StripeFetchError> => {
+  if (!payment.completedPayment?.receiptUrl) {
+    return errAsync(new StripeFetchError('Receipt url not ready'))
+  }
+  return okAsync(payment as ICompletedPaymentSchema)
+}
+
 export const generatePaymentInvoiceUrl = (
   payment: IPaymentSchema,
   populatedForm: IPopulatedEncryptedForm,
@@ -1215,12 +1226,20 @@ export const generatePaymentInvoiceUrl = (
   StripeFetchError | PaymentProofUploadS3Error | PaymentProofPresignS3Error
 > => {
   if (!payment.completedPayment?.hasS3ReceiptUrl) {
-    return _retrieveReceiptUrlFromStripe(payment)
-      .andThen((receiptUrl) =>
-        _generatePaymentInvoiceAsPdf(payment, populatedForm, receiptUrl),
-      )
-      .andThen((pdfBuffer) => _storePaymentProofInS3(payment, pdfBuffer))
-      .andThen(() => _getPaymentProofPresignedS3Url(payment))
+    return isStripeReceiptReady(payment).andThen((completedPayment) =>
+      _retrieveReceiptUrlFromStripe(completedPayment)
+        .andThen((receiptUrl) =>
+          _generatePaymentInvoiceAsPdf(
+            completedPayment,
+            populatedForm,
+            receiptUrl,
+          ),
+        )
+        .andThen((pdfBuffer) =>
+          _storePaymentProofInS3(completedPayment, pdfBuffer),
+        )
+        .andThen(() => _getPaymentProofPresignedS3Url(completedPayment)),
+    )
   }
   return _getPaymentProofPresignedS3Url(payment)
 }

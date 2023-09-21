@@ -11,6 +11,10 @@ export interface IPaymentSchema extends Payment, Document {
   responses: any[]
 }
 
+export interface ICompletedPaymentSchema extends IPaymentSchema {
+  completedPayment: NonNullable<IPaymentSchema['completedPayment']>
+}
+
 export interface IPaymentModel extends Model<IPaymentSchema> {
   /**
    * Gets payment documents by status
