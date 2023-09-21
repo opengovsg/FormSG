@@ -150,6 +150,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 'https://form.gov.sg',
       env: 'APP_URL',
     },
+    feAppUrl: {
+      doc: 'For local dev use only - frontend app url',
+      format: 'url',
+      default: 'https://form.gov.sg',
+      env: 'FE_APP_URL',
+    },
     keywords: {
       doc: 'Application keywords in meta tag',
       format: String,
