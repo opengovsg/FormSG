@@ -1030,7 +1030,7 @@ const getPaymentProofObjectPath = (
 const _storePaymentProofInS3 = (
   payment: ICompletedPaymentSchema,
   pdfBuffer: Buffer,
-): ResultAsync<undefined, PaymentProofUploadS3Error> => {
+): ResultAsync<true, PaymentProofUploadS3Error> => {
   const objectPath = getPaymentProofObjectPath(payment)
 
   logger.info({
@@ -1084,7 +1084,7 @@ const _storePaymentProofInS3 = (
       })
     })
     .map(() => {
-      return undefined
+      return true
     })
 }
 
