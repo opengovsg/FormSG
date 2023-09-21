@@ -38,6 +38,7 @@ export const downloadPaymentInvoice: ControllerHandler<{
     FormService.retrieveFullFormById(formId).andThen(checkFormIsEncryptMode),
   ])
     .andThen(([payment, populatedForm]) => {
+      console.log('<<<<<<')
       logger.info({
         message: 'Found paymentId in payment document',
         meta: {
@@ -62,6 +63,7 @@ export const downloadPaymentInvoice: ControllerHandler<{
       return res.redirect(pdfUrl)
     })
     .mapErr((error) => {
+      console.log('>>>>>>>>>?')
       logger.error({
         message: 'Error retrieving invoice',
         meta: {

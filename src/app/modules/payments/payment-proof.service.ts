@@ -14,11 +14,13 @@ import { dayInSeconds } from '../../constants/time'
 import { stripe } from '../../loaders/stripe'
 import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
 
-import { getPaymentProofS3ObjectPath } from './payment-proof.utils'
 import {
+  InvoicePdfGenerationError,
   PaymentProofPresignS3Error,
   PaymentProofUploadS3Error,
-} from './payments.errors'
+} from './payment-proof.errors'
+import { getPaymentProofS3ObjectPath } from './payment-proof.utils'
+import {} from './payments.errors'
 import { StripeFetchError } from './stripe.errors'
 import { convertToProofOfPaymentFormat } from './stripe.utils'
 
@@ -33,6 +35,8 @@ export const checkStripeReceiptIsReady = (
 }
 
 /**
+ * @Exported only for testing purposes
+ *
  * Function that stores payment proof into s3
  *
  * @param {IPaymentSchema} payment the payment object, used to form the object path
@@ -41,7 +45,7 @@ export const checkStripeReceiptIsReady = (
  * @returns ok(undefined) if no errors are thrown while uploading to s3
  * @returns err(InvoiceUploadS3Error) if an error is thrown while uploading to s3
  */
-const _storePaymentProofInS3 = (
+export const _storePaymentProofInS3 = (
   payment: ICompletedPaymentSchema,
   pdfBuffer: Buffer,
 ): ResultAsync<true, PaymentProofUploadS3Error> => {
@@ -103,6 +107,8 @@ const _storePaymentProofInS3 = (
 }
 
 /**
+ * @Exported only for testing purposes
+ *
  * Function to generates a presigned url for payment proof stored in s3
  * Presigned link expires in 30 days
  *
@@ -111,7 +117,7 @@ const _storePaymentProofInS3 = (
  * @returns ok(string) which represents the presigned url if no errors are thrown while generating the presigned url
  * @returns err(InvoicePresignS3Error) if an error is thrown while generating the presigned link
  */
-const _getPaymentProofPresignedS3Url = (
+export const _getPaymentProofPresignedS3Url = (
   payment: IPaymentSchema,
 ): ResultAsync<string, PaymentProofPresignS3Error> => {
   const objectPath = getPaymentProofS3ObjectPath(payment)
@@ -146,7 +152,10 @@ const _getPaymentProofPresignedS3Url = (
   )
 }
 
-const _retrieveReceiptUrlFromStripe = (
+/**
+ * @Exported only for testing purposes
+ */
+export const _retrieveReceiptUrlFromStripe = (
   payment: ICompletedPaymentSchema,
 ): ResultAsync<string, StripeFetchError> => {
   return ResultAsync.fromPromise(
@@ -160,7 +169,9 @@ const _retrieveReceiptUrlFromStripe = (
     const receiptUrl = (paymentIntent.latest_charge as Stripe.Charge)
       .receipt_url
     if (!receiptUrl) {
-      return errAsync(new StripeFetchError('Receipt url not found'))
+      return errAsync(
+        new StripeFetchError('Receipt url not found in stripe latest_charge'),
+      )
     }
     return ok(receiptUrl)
   })
@@ -170,7 +181,7 @@ const _generatePaymentInvoiceAsPdf = (
   payment: ICompletedPaymentSchema,
   populatedForm: IPopulatedEncryptedForm,
   receiptUrl: string,
-): ResultAsync<Buffer, StripeFetchError> => {
+): ResultAsync<Buffer, StripeFetchError | InvoicePdfGenerationError> => {
   if (!payment.completedPayment?.receiptUrl) {
     return errAsync(new StripeFetchError('Receipt url not ready'))
   }
@@ -218,7 +229,7 @@ const _generatePaymentInvoiceAsPdf = (
 
     return ResultAsync.fromPromise(
       generatePdfFromHtml(invoiceHtml),
-      (error) => new StripeFetchError(String(error)),
+      (error) => new InvoicePdfGenerationError(String(error)),
     )
   })
 }
@@ -228,9 +239,12 @@ export const generatePaymentInvoiceUrl = (
   populatedForm: IPopulatedEncryptedForm,
 ): ResultAsync<
   string,
-  StripeFetchError | PaymentProofUploadS3Error | PaymentProofPresignS3Error
+  | StripeFetchError
+  | PaymentProofUploadS3Error
+  | PaymentProofPresignS3Error
+  | InvoicePdfGenerationError
 > => {
-  if (!payment.completedPayment?.hasS3ReceiptUrl) {
+  if (!payment.completedPayment?.hasReceiptStoredInS3) {
     return checkStripeReceiptIsReady(payment).andThen((completedPayment) =>
       _retrieveReceiptUrlFromStripe(completedPayment)
         .andThen((receiptUrl) =>
