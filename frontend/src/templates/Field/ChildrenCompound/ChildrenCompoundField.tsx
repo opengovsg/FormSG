@@ -78,9 +78,7 @@ export const ChildrenCompoundField = ({
     name: schema._id,
   })
   const error: FieldError[][] | undefined = get(errors, schema._id)?.child
-  console.log('error: ', error)
   const childError: FieldError[] | undefined = error ? error[0] : undefined
-  console.log('childError: ', childError)
 
   const { fields, append, remove } = useFieldArray<ChildrenCompoundFieldInputs>(
     {
@@ -231,17 +229,12 @@ const ChildrenBody = ({
     onChange: selectOnChange,
     ...selectRest
   } = register(childNamePath, validationRules)
-  console.log(
-    'childNameRegisterRef: ',
-    error?.map((e) => e.ref?.id),
-  )
 
   const childNameRef = useRef<HTMLInputElement | null>(null)
-  console.log('>>>>>>>>>33333')
-  console.log('childNameRef', childNameRef.current?.id)
+
   const childNameError = error
     ? error.find(
-        (e) => (e.ref as HTMLInputElement)?.id === childNameRef.current?.id,
+        (e) => (e?.ref as HTMLInputElement)?.id === childNameRef.current?.id,
       )
     : undefined
 
