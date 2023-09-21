@@ -64,6 +64,7 @@ import { PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS } from './encrypt-submission.cons
 import {
   AttachmentSizeLimitExceededError,
   InvalidFieldIdError,
+  JsonParseFailedError,
   VirusScanFailedError,
 } from './encrypt-submission.errors'
 import {
@@ -594,6 +595,17 @@ const parseVirusScannerLambdaPayloadError = {
   body: { message: 'Unexpected payload from virus scanning lambda' },
 }
 
+const safeJSONParse = Result.fromThrowable(JSON.parse, (error) => {
+  logger.error({
+    message: 'Error while calling JSON.parse on MyInfo relay state',
+    meta: {
+      action: 'safeJSONParse',
+      error,
+    },
+  })
+  return new JsonParseFailedError()
+})
+
 /**
  * Parses the payload from the virus scanning lambda.
  * @param payload the payload from the virus scanning lambda
@@ -611,22 +623,55 @@ const parseVirusScannerLambdaPayload = (
     action: 'parseVirusScannerLambdaPayload',
     payload,
   }
-  const parsedPayload = JSON.parse(Buffer.from(payload).toString()) as {
+
+  // Step 1: Parse whole payload received from lamda in to an object
+  const parsedPayloadResult = safeJSONParse(Buffer.from(payload).toString())
+  if (parsedPayloadResult.isErr()) {
+    logger.error({
+      message:
+        'Error parsing payload from virus scanner lambda - payload JSON parsing failed',
+      meta: logMeta,
+    })
+
+    return err(parseVirusScannerLambdaPayloadError)
+  }
+
+  const parsedPayload = parsedPayloadResult.value as {
     statusCode: number
     body: string
   }
+
+  // Step 2a: Check if statusCode and body (unparsed) are of the correct types
   if (
-    parsedPayload &&
     typeof parsedPayload.statusCode === 'number' &&
     typeof parsedPayload.body === 'string'
   ) {
-    const parsedBody = JSON.parse(parsedPayload.body)
+    // Step 3: Parse body into an object
+    const parsedBodyResult = safeJSONParse(
+      Buffer.from(parsedPayload.body).toString(),
+    )
+    if (parsedBodyResult.isErr()) {
+      logger.error({
+        message:
+          'Error parsing payload from virus scanner lambda - payload JSON parsing failed',
+        meta: logMeta,
+      })
+
+      return err(parseVirusScannerLambdaPayloadError)
+    }
+
+    // Step 4a: If statusCode is 200, check if the body is of the correct type
     if (parsedPayload.statusCode === StatusCodes.OK) {
+      const parsedBody = parsedBodyResult.value as {
+        cleanFileKey: string
+        destinationVersionId: string
+      }
+
       if (
-        parsedBody &&
         typeof parsedBody.cleanFileKey === 'string' &&
         typeof parsedBody.destinationVersionId === 'string'
       ) {
+        // Step 5: If body is of the correct type, return ok with cleanFileKey and destinationVersionId
         const result = {
           statusCode: parsedPayload.statusCode as StatusCodes.OK,
           body: parsedBody,
@@ -651,7 +696,10 @@ const parseVirusScannerLambdaPayload = (
       return err(parseVirusScannerLambdaPayloadError)
     }
 
-    if (parsedBody && typeof parsedBody.message === 'string') {
+    // Step 4b: If statusCode is not 200, check if the body is of the correct type (errored message)
+    const parsedBody = parsedBodyResult.value as { message: string }
+
+    if (typeof parsedBody.message === 'string') {
       logger.info({
         message: 'Successfully parsed error payload from virus scanning lambda',
         meta: logMeta,
@@ -671,6 +719,8 @@ const parseVirusScannerLambdaPayload = (
 
     return err(parseVirusScannerLambdaPayloadError)
   }
+
+  // Step 2b: Return error if statusCode and body (unparsed) are of the wrong types
 
   logger.error({
     message:

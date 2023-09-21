@@ -55,3 +55,9 @@ export class VirusScanFailedError extends ApplicationError {
     super(message)
   }
 }
+
+export class JsonParseFailedError extends ApplicationError {
+  constructor(message = 'JSON parsing failed. Please try again.') {
+    super(message)
+  }
+}
