@@ -184,7 +184,9 @@ export const checkNewBoundaryEnabled = async (
 }
 
 /**
+ * !! Do NOT enable `encryption-boundary-shift-virus-scanner` feature flag until this has been completely implemented. !!
  * Scan attachments on quarantine bucket and retrieve attachments from the clean bucket.
+ * Note: Downloading of attachments from the clean bucket is not implemented yet. See Step 4.
  */
 export const scanAndRetrieveAttachments = async (
   req: StorageSubmissionMiddlewareHandlerRequest,

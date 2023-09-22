@@ -7,6 +7,7 @@ import { StatusCodes } from 'http-status-codes'
 import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import { hasProp } from 'shared/utils/has-prop'
 import { Transform } from 'stream'
 import { validate } from 'uuid'
 
@@ -606,6 +607,40 @@ const safeJSONParse = Result.fromThrowable(JSON.parse, (error) => {
   return new JsonParseFailedError()
 })
 
+// Helper function to check if the payload is of the expected structure
+const payloadIsExpectedStructure = (parsedPayload: unknown) => {
+  return (
+    typeof parsedPayload === 'object' &&
+    !!parsedPayload &&
+    hasProp(parsedPayload, 'statusCode') &&
+    typeof parsedPayload.statusCode === 'number' &&
+    hasProp(parsedPayload, 'body') &&
+    typeof parsedPayload.body === 'string'
+  )
+}
+
+// Helper function to check if the body is of the expected structure for OK status code
+const bodyIsExpectedOkStructure = (parsedBody: unknown) => {
+  return (
+    typeof parsedBody === 'object' &&
+    !!parsedBody &&
+    hasProp(parsedBody, 'cleanFileKey') &&
+    typeof parsedBody.cleanFileKey === 'string' &&
+    hasProp(parsedBody, 'destinationVersionId') &&
+    typeof parsedBody.destinationVersionId === 'string'
+  )
+}
+
+// Helper function to check if the body is of the expected structure for non-OK status code
+const bodyIsExpectedErrStructure = (parsedBody: unknown) => {
+  return (
+    typeof parsedBody === 'object' &&
+    !!parsedBody &&
+    hasProp(parsedBody, 'message') &&
+    typeof parsedBody.message === 'string'
+  )
+}
+
 /**
  * Parses the payload from the virus scanning lambda.
  * @param payload the payload from the virus scanning lambda
@@ -636,16 +671,10 @@ const parseVirusScannerLambdaPayload = (
     return err(parseVirusScannerLambdaPayloadError)
   }
 
-  const parsedPayload = parsedPayloadResult.value as {
-    statusCode: number
-    body: string
-  }
+  const parsedPayload = parsedPayloadResult.value
 
   // Step 2a: Check if statusCode and body (unparsed) are of the correct types
-  if (
-    typeof parsedPayload.statusCode === 'number' &&
-    typeof parsedPayload.body === 'string'
-  ) {
+  if (payloadIsExpectedStructure(parsedPayload)) {
     // Step 3: Parse body into an object
     const parsedBodyResult = safeJSONParse(
       Buffer.from(parsedPayload.body).toString(),
@@ -662,15 +691,9 @@ const parseVirusScannerLambdaPayload = (
 
     // Step 4a: If statusCode is 200, check if the body is of the correct type
     if (parsedPayload.statusCode === StatusCodes.OK) {
-      const parsedBody = parsedBodyResult.value as {
-        cleanFileKey: string
-        destinationVersionId: string
-      }
+      const parsedBody = parsedBodyResult.value
 
-      if (
-        typeof parsedBody.cleanFileKey === 'string' &&
-        typeof parsedBody.destinationVersionId === 'string'
-      ) {
+      if (bodyIsExpectedOkStructure(parsedBody)) {
         // Step 5: If body is of the correct type, return ok with cleanFileKey and destinationVersionId
         const result = {
           statusCode: parsedPayload.statusCode as StatusCodes.OK,
@@ -697,9 +720,9 @@ const parseVirusScannerLambdaPayload = (
     }
 
     // Step 4b: If statusCode is not 200, check if the body is of the correct type (errored message)
-    const parsedBody = parsedBodyResult.value as { message: string }
+    const parsedBody = parsedBodyResult.value
 
-    if (typeof parsedBody.message === 'string') {
+    if (bodyIsExpectedErrStructure(parsedBody)) {
       logger.info({
         message: 'Successfully parsed error payload from virus scanning lambda',
         meta: logMeta,
