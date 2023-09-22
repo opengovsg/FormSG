@@ -218,12 +218,14 @@ export const getAnswerForCheckbox = (
 
 export const getAnswersForChild = (
   response: ProcessedChildrenResponse,
+  childIdx: number,
 ): ResponseFormattedForEmail[] => {
   const subFields = response.childSubFieldsArray
   if (!subFields) {
     return []
   }
-  return response.answerArray.flatMap((arr, childIdx) => {
+  return response.answerArray.flatMap((arr) => {
+    console.log('arr: ', arr)
     // First array element is always child name
     const childName = arr[0]
     return arr.map((answer, idx) => ({
@@ -234,7 +236,7 @@ export const getAnswersForChild = (
         childName,
       ),
       fieldType: response.fieldType,
-      question: `Child.${subFields[idx]}`,
+      question: `Child-${childIdx + 1}.${subFields[idx]}`,
       myInfo: {
         attr: subFields[idx] as unknown as MyInfoAttribute,
       },
@@ -474,6 +476,7 @@ export const concatAttachmentsAndResponses = (
  * @param hashedFields Used if formatting function is getFormFormattedResponse to provide
  * [verified] field to admin
  * @param getFormattedFunction The formatting function to use
+ * @param childIdx The index of the current child, if the field is a MyInfo child field
  * @returns EmailRespondentConfirmationField[], EmailDataCollationToolField[] or
  * EmailAdminDataField[] depending on which formatting function is used
  */
@@ -484,20 +487,28 @@ const createFormattedDataForOneField = <T extends EmailDataFields | undefined>(
     response: ResponseFormattedForEmail,
     hashedFields: Set<MyInfoKey>,
   ) => T,
-): T[] => {
+  childIdx: number,
+): { isChild?: boolean; fieldResponse: T[] } => {
   if (isProcessedTableResponse(response)) {
-    return getAnswerRowsForTable(response).map((row) =>
-      getFormattedFunction(row, hashedFields),
-    )
+    return {
+      fieldResponse: getAnswerRowsForTable(response).map((row) =>
+        getFormattedFunction(row, hashedFields),
+      ),
+    }
   } else if (isProcessedCheckboxResponse(response)) {
     const checkbox = getAnswerForCheckbox(response)
-    return [getFormattedFunction(checkbox, hashedFields)]
+    return { fieldResponse: [getFormattedFunction(checkbox, hashedFields)] }
   } else if (isProcessedChildResponse(response)) {
-    return getAnswersForChild(response).map((childField) =>
-      getFormattedFunction(childField, hashedFields),
-    )
+    console.log('childresponse: ', response)
+    console.log('childIdx: ', childIdx)
+    return {
+      isChild: true,
+      fieldResponse: getAnswersForChild(response, childIdx).map((childField) =>
+        getFormattedFunction(childField, hashedFields),
+      ),
+    }
   } else {
-    return [getFormattedFunction(response, hashedFields)]
+    return { fieldResponse: [getFormattedFunction(response, hashedFields)] }
   }
 }
 
@@ -624,13 +635,20 @@ export class SubmissionEmailObj {
    * Getter function to return dataCollationData which is used for data collation tool
    */
   get dataCollationData(): EmailDataCollationToolField[] {
+    let childIdx = 0
     const dataCollationFormattedData = this.parsedResponses.flatMap(
-      (response) =>
-        createFormattedDataForOneField(
+      (response) => {
+        const { isChild, fieldResponse } = createFormattedDataForOneField(
           response,
           this.hashedFields,
           getDataCollationFormattedResponse,
-        ),
+          childIdx,
+        )
+        if (isChild) {
+          childIdx++
+        }
+        return fieldResponse
+      },
     )
 
     // Compact is necessary because getDataCollationFormattedResponse
@@ -643,16 +661,22 @@ export class SubmissionEmailObj {
    * If FormAuthType is CP, return a masked version
    */
   get autoReplyData(): EmailRespondentConfirmationField[] {
+    let childIdx = 0
     // Compact is necessary because getAutoReplyFormattedResponse
     // will return undefined for non-visible fields
     const unmaskedAutoReplyData = compact(
-      this.parsedResponses.flatMap((response) =>
-        createFormattedDataForOneField(
+      this.parsedResponses.flatMap((response) => {
+        const { isChild, fieldResponse } = createFormattedDataForOneField(
           response,
           this.hashedFields,
           getAutoReplyFormattedResponse,
-        ),
-      ),
+          childIdx,
+        )
+        if (isChild) {
+          childIdx++
+        }
+        return fieldResponse
+      }),
     )
 
     return this.authType === FormAuthType.CP
@@ -663,12 +687,20 @@ export class SubmissionEmailObj {
    * Getter function to return formData which is used to send responses to admin
    */
   get formData(): EmailAdminDataField[] {
-    return this.parsedResponses.flatMap((response) =>
-      createFormattedDataForOneField(
+    let childIdx = 0
+    const responses = this.parsedResponses.flatMap((response) => {
+      const { isChild, fieldResponse } = createFormattedDataForOneField(
         response,
         this.hashedFields,
         getFormFormattedResponse,
-      ),
-    )
+        childIdx,
+      )
+      if (isChild) {
+        childIdx++
+      }
+      return fieldResponse
+    })
+    console.log('childIdx: ', childIdx)
+    return responses
   }
 }
