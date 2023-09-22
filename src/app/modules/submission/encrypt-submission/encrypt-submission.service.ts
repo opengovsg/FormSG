@@ -65,6 +65,7 @@ import { PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS } from './encrypt-submission.cons
 import {
   AttachmentSizeLimitExceededError,
   InvalidFieldIdError,
+  InvalidQuarantineFileKeyError,
   JsonParseFailedError,
   VirusScanFailedError,
 } from './encrypt-submission.errors'
@@ -774,7 +775,7 @@ export const triggerVirusScanning = (
       meta: logMeta,
     })
 
-    return errAsync(new VirusScanFailedError())
+    return errAsync(new InvalidQuarantineFileKeyError())
   }
 
   return ResultAsync.fromPromise(
