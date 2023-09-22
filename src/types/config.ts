@@ -16,6 +16,7 @@ export type AppConfig = {
   title: string
   description: string
   appUrl: string
+  feAppUrl: string
   keywords: string
   images: string[]
   twitterImage: string

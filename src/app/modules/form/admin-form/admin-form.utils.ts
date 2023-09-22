@@ -1,3 +1,4 @@
+import { AxiosError } from 'axios'
 import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
 import { v4 as uuidv4 } from 'uuid'
@@ -49,7 +50,12 @@ import { UNICODE_ESCAPED_REGEX } from '../form.utils'
 import {
   EditFieldError,
   FieldNotFoundError,
+  GoGovAlreadyExistError,
+  GoGovBadGatewayError,
   GoGovError,
+  GoGovRequestLimitError,
+  GoGovServerError,
+  GoGovValidationError,
   InvalidCollaboratorError,
   InvalidFileTypeError,
   PaymentChannelNotFoundError,
@@ -176,9 +182,33 @@ export const mapRouteError = (
         statusCode: StatusCodes.FORBIDDEN,
         errorMessage: error.message,
       }
-    case GoGovError:
+    case GoGovAlreadyExistError:
+    case GoGovValidationError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
+    case GoGovRequestLimitError:
+      return {
+        statusCode: StatusCodes.TOO_MANY_REQUESTS,
+        errorMessage: error.message,
+      }
+    case GoGovBadGatewayError:
+      return {
+        statusCode: StatusCodes.BAD_GATEWAY,
+        errorMessage: error.message,
+      }
+    case GoGovError:
+    case GoGovServerError:
+      logger.error({
+        message: 'GoGov server error observed',
+        meta: {
+          action: 'mapRouteError',
+        },
+        error,
+      })
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: error.message,
       }
     default:
@@ -516,4 +546,42 @@ export const verifyUserBetaflag = (
           `User ${user.email} is not authorized to access ${betaFlag} beta features`,
         ),
       )
+}
+
+// Utility method to map an axios error to a GoGovError
+export const mapGoGovErrors = (error: AxiosError): GoGovError => {
+  type GoGovReturnedData = { message: string; type?: string }
+  // Hard coded error message from GoGov for URL Bad Request
+  // TODO: Verify with GoGov team if error response data can be different from general short link error
+  const urlFormatError = 'Only HTTPS URLs are allowed'
+
+  const responseData = error.response?.data as GoGovReturnedData
+
+  switch (error.response?.status) {
+    case StatusCodes.BAD_REQUEST:
+      // There can be three types of Bad Request from GoGov
+      // Short link already exists, which returns type=ShortUrlError
+      // Or validation error, which does not contain type
+      // Or if url is not https (like localhost), however, this should not happen as we prepend the app url in admin-form-controller
+      // TODO: Update the conditional when GoGov upgrades their return type shape
+      return responseData.type
+        ? new GoGovAlreadyExistError()
+        : !responseData.message.includes(urlFormatError)
+        ? new GoGovValidationError()
+        : new GoGovServerError(
+            'GoGov server returned 400 for URL formatting error',
+          )
+    case StatusCodes.TOO_MANY_REQUESTS:
+      return new GoGovRequestLimitError()
+    // For gogov API this is equivalent to Request Failed
+    case StatusCodes.PAYMENT_REQUIRED:
+      return new GoGovBadGatewayError()
+    // All other cases will default to 500 error
+    default:
+      return new GoGovServerError(
+        `GoGov server returned ${error.response?.status} error code with ${
+          (error.response?.data as GoGovReturnedData).message
+        } message`,
+      )
+  }
 }
