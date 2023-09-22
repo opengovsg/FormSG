@@ -7,7 +7,6 @@ import { StatusCodes } from 'http-status-codes'
 import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
-import { hasProp } from 'shared/utils/has-prop'
 import { Transform } from 'stream'
 import { validate } from 'uuid'
 
@@ -17,6 +16,7 @@ import {
   StorageModeSubmissionMetadataList,
   SubmissionPaymentDto,
 } from '../../../../../shared/types'
+import { hasProp } from '../../../../../shared/utils/has-prop'
 import {
   FieldResponse,
   IEncryptedSubmissionSchema,
