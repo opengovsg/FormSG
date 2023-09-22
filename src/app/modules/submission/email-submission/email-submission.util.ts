@@ -225,7 +225,6 @@ export const getAnswersForChild = (
     return []
   }
   return response.answerArray.flatMap((arr) => {
-    console.log('arr: ', arr)
     // First array element is always child name
     const childName = arr[0]
     return arr.map((answer, idx) => ({
@@ -494,8 +493,6 @@ const createFormattedDataForOneField = <T extends EmailDataFields | undefined>(
     const checkbox = getAnswerForCheckbox(response)
     return { fieldResponse: [getFormattedFunction(checkbox, hashedFields)] }
   } else if (isProcessedChildResponse(response)) {
-    console.log('childresponse: ', response)
-    console.log('childIdx: ', childIdx)
     return {
       isChild: true,
       fieldResponse: getAnswersForChild(response, childIdx).map((childField) =>
@@ -695,7 +692,6 @@ export class SubmissionEmailObj {
       }
       return fieldResponse
     })
-    console.log('childIdx: ', childIdx)
     return responses
   }
 }
