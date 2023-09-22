@@ -32,6 +32,7 @@ import { SubmissionNotFoundError } from '../../submission.errors'
 import {
   AttachmentSizeLimitExceededError,
   InvalidFieldIdError,
+  InvalidQuarantineFileKeyError,
   VirusScanFailedError,
 } from '../encrypt-submission.errors'
 import {
@@ -1174,7 +1175,7 @@ describe('encrypt-submission.service', () => {
       expect(awsSpy).not.toHaveBeenCalled()
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new VirusScanFailedError(),
+        new InvalidQuarantineFileKeyError(),
       )
     })
 
