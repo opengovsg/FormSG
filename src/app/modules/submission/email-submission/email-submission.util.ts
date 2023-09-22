@@ -229,12 +229,7 @@ export const getAnswersForChild = (
     // First array element is always child name
     const childName = arr[0]
     return arr.map((answer, idx) => ({
-      _id: getMyInfoChildHashKey(
-        response._id,
-        subFields[idx],
-        childIdx,
-        childName,
-      ),
+      _id: getMyInfoChildHashKey(response._id, subFields[idx], childName),
       fieldType: response.fieldType,
       question: `Child-${childIdx + 1}.${subFields[idx]}`,
       myInfo: {
