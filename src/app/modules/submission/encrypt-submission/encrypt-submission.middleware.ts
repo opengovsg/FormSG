@@ -3,6 +3,7 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { chain, omit } from 'lodash'
+import { okAsync, ResultAsync } from 'neverthrow'
 
 import { featureFlags } from '../../../../../shared/constants'
 import {
@@ -25,13 +26,19 @@ import * as FormService from '../../form/form.service'
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import { sharedSubmissionParams } from '../submission.constants'
 import * as SubmissionService from '../submission.service'
-import { isAttachmentResponse } from '../submission.utils'
+import {
+  isAttachmentResponse,
+  isQuarantinedAttachmentResponse,
+} from '../submission.utils'
 
 import {
   EncryptedPayloadExistsError,
   FormsgReqBodyExistsError,
 } from './encrypt-submission.errors'
-import { checkFormIsEncryptMode } from './encrypt-submission.service'
+import {
+  checkFormIsEncryptMode,
+  triggerVirusScanning,
+} from './encrypt-submission.service'
 import {
   CreateFormsgAndRetrieveFormMiddlewareHandlerRequest,
   CreateFormsgAndRetrieveFormMiddlewareHandlerType,
@@ -172,6 +179,77 @@ export const checkNewBoundaryEnabled = async (
       .status(StatusCodes.FORBIDDEN)
       .json({ message: 'This endpoint has not been enabled for this form.' })
   }
+
+  return next()
+}
+
+/**
+ * !! Do NOT enable `encryption-boundary-shift-virus-scanner` feature flag until this has been completely implemented. !!
+ * Scan attachments on quarantine bucket and retrieve attachments from the clean bucket.
+ * Note: Downloading of attachments from the clean bucket is not implemented yet. See Step 4.
+ */
+export const scanAndRetrieveAttachments = async (
+  req: StorageSubmissionMiddlewareHandlerRequest,
+  res: Parameters<StorageSubmissionMiddlewareHandlerType>[1],
+  next: NextFunction,
+) => {
+  const logMeta = {
+    action: 'scanAndRetrieveAttachments',
+    ...createReqMeta(req),
+  }
+
+  // TODO (FRM-1413): remove this guardrail when virus scanning has completed rollout.
+  // Step 1: If virus scanner is not enabled, skip this middleware.
+
+  const virusScannerEnabled = req.formsg.featureFlags.includes(
+    featureFlags.encryptionBoundaryShiftVirusScanner,
+  )
+
+  if (!virusScannerEnabled) {
+    logger.warn({
+      message: 'Virus scanner is not enabled.',
+      meta: logMeta,
+    })
+
+    return next()
+  }
+
+  // TODO (FRM-1413): remove this guardrail when virus scanning has completed rollout.
+  // Step 2: If virus scanner is enabled, check if storage submission v2.1+. Storage submission v2.1 onwards
+  // should have virus scanning enabled. If not, skip this middleware.
+  // Note: Version number is sent by the frontend and should only be >=2.1 if virus scanning is enabled on the frontend.
+
+  if (req.body.version < 2.1) return next()
+
+  // At this point, virus scanner is enabled and storage submission v2.1+. This means that both the FE and BE
+  // have virus scanning enabled.
+
+  // Step 3: Trigger lambda to scan attachments.
+  const triggerLambdaResult = await ResultAsync.combine(
+    req.body.responses.map((response) => {
+      if (isQuarantinedAttachmentResponse(response)) {
+        return triggerVirusScanning(response.answer)
+      }
+      // If response is not an attachment, return ok.
+      return okAsync(true)
+    }),
+  )
+
+  // If any of the lambda invocations failed, return an errored response.
+  if (triggerLambdaResult.isErr()) {
+    logger.error({
+      message: 'Error scanning attachments',
+      meta: logMeta,
+      error: triggerLambdaResult.error,
+    })
+
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
+      message:
+        'Something went wrong while scanning your attachments. Please try again.',
+    })
+  }
+
+  // TODO(FRM-1302): Step 4: Retrieve attachments from the clean bucket.
 
   return next()
 }

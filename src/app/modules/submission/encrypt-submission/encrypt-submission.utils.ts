@@ -74,7 +74,9 @@ import {
   AttachmentSizeLimitExceededError,
   FeatureDisabledError,
   InvalidFieldIdError,
+  InvalidQuarantineFileKeyError,
   SubmissionFailedError,
+  VirusScanFailedError,
 } from './encrypt-submission.errors'
 
 const logger = createLoggerWithLabel(module)
@@ -219,6 +221,7 @@ const errorMapper: MapRouteError = (
     case CreatePresignedPostError:
     case DatabaseError:
     case EmptyErrorFieldError:
+    case VirusScanFailedError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: error.message,
@@ -226,6 +229,7 @@ const errorMapper: MapRouteError = (
     case SubmissionFailedError:
     case InvalidFieldIdError:
     case AttachmentSizeLimitExceededError:
+    case InvalidQuarantineFileKeyError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
