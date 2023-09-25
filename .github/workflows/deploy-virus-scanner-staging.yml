@@ -23,4 +23,5 @@ jobs:
     with:
       environment: 'staging'
       provisionedConcurrency: 1
+      checkoutBranch: 'staging'
     secrets: inherit
