@@ -279,6 +279,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: '',
       env: 'CUSTOM_CLOUDWATCH_LOG_GROUP',
     },
+    virusScannerLambdaFunctionName: {
+      doc: 'Virus scanner lambda function name',
+      format: String,
+      default: '',
+      env: 'VIRUS_SCANNER_LAMBDA_FUNCTION_NAME',
+    },
   },
   core: {
     port: {

@@ -1,10 +1,14 @@
+import { InvokeCommandOutput } from '@aws-sdk/client-lambda'
+import { Uint8ArrayBlobAdapter } from '@smithy/util-stream/dist-types/blob/Uint8ArrayBlobAdapter'
 import { ManagedUpload } from 'aws-sdk/clients/s3'
 import Bluebird from 'bluebird'
 import crypto from 'crypto'
+import { StatusCodes } from 'http-status-codes'
 import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Transform } from 'stream'
+import { validate } from 'uuid'
 
 import {
   FormResponseMode,
@@ -60,11 +64,19 @@ import { PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS } from './encrypt-submission.cons
 import {
   AttachmentSizeLimitExceededError,
   InvalidFieldIdError,
+  InvalidQuarantineFileKeyError,
+  JsonParseFailedError,
+  VirusScanFailedError,
 } from './encrypt-submission.errors'
 import {
   AttachmentMetadata,
   AttachmentPresignedPostDataMapType,
   AttachmentSizeMapType,
+  bodyIsExpectedErrStructure,
+  bodyIsExpectedOkStructure,
+  ParseVirusScannerLambdaPayloadErrType,
+  ParseVirusScannerLambdaPayloadOkType,
+  payloadIsExpectedStructure,
   SaveEncryptSubmissionParams,
 } from './encrypt-submission.types'
 
@@ -577,4 +589,200 @@ export const getQuarantinePresignedPostData = (
       }))
     }),
   )
+}
+
+/**
+ * Catch all error for parsing the payload from the virus scanning lambda.
+ */
+const parseVirusScannerLambdaPayloadError = {
+  statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+  body: { message: 'Unexpected payload from virus scanning lambda' },
+}
+
+const safeJSONParse = Result.fromThrowable(JSON.parse, (error) => {
+  logger.error({
+    message: 'Error while calling JSON.parse on MyInfo relay state',
+    meta: {
+      action: 'safeJSONParse',
+      error,
+    },
+  })
+  return new JsonParseFailedError()
+})
+
+/**
+ * Parses the payload from the virus scanning lambda.
+ * @param payload the payload from the virus scanning lambda
+ * @returns ok(returnPayload) if payload is successfully parsed and virus scanning is successful
+ * @returns err(returnPayload) if payload is successfully parsed and virus scanning is unsuccessful
+ * @returns err(returnPayload) if payload cannot be parsed
+ */
+const parseVirusScannerLambdaPayload = (
+  payload: Uint8ArrayBlobAdapter,
+): Result<
+  ParseVirusScannerLambdaPayloadOkType,
+  ParseVirusScannerLambdaPayloadErrType
+> => {
+  const logMeta = {
+    action: 'parseVirusScannerLambdaPayload',
+    payload,
+  }
+
+  // Step 1: Parse whole payload received from lamda in to an object
+  const parsedPayloadResult = safeJSONParse(Buffer.from(payload).toString())
+  if (parsedPayloadResult.isErr()) {
+    logger.error({
+      message:
+        'Error parsing payload from virus scanner lambda - payload JSON parsing failed',
+      meta: logMeta,
+    })
+
+    return err(parseVirusScannerLambdaPayloadError)
+  }
+
+  const parsedPayload = payloadIsExpectedStructure(parsedPayloadResult.value)
+
+  // Step 2a: Check if statusCode and body (unparsed) are of the correct types
+  if (parsedPayload) {
+    // Step 3: Parse body into an object
+    const parsedBodyResult = safeJSONParse(
+      Buffer.from(parsedPayload.body).toString(),
+    )
+    if (parsedBodyResult.isErr()) {
+      logger.error({
+        message:
+          'Error parsing payload from virus scanner lambda - payload JSON parsing failed',
+        meta: logMeta,
+      })
+
+      return err(parseVirusScannerLambdaPayloadError)
+    }
+
+    // Step 4a: If statusCode is 200, check if the body is of the correct type
+    if (parsedPayload.statusCode === StatusCodes.OK) {
+      const parsedBody = bodyIsExpectedOkStructure(parsedBodyResult.value)
+
+      if (parsedBody) {
+        // Step 5: If body is of the correct type, return ok with cleanFileKey and destinationVersionId
+        const result = {
+          statusCode: parsedPayload.statusCode as StatusCodes.OK,
+          body: parsedBody,
+        }
+        logger.info({
+          message:
+            'Successfully parsed success payload from virus scanning lambda',
+          meta: {
+            ...logMeta,
+            result,
+          },
+        })
+        return ok(result)
+      }
+
+      logger.error({
+        message:
+          'Error parsing payload when statusCode is 200 from virus scanning lambda',
+        meta: logMeta,
+      })
+
+      return err(parseVirusScannerLambdaPayloadError)
+    }
+
+    // Step 4b: If statusCode is not 200, check if the body is of the correct type (errored message)
+    const parsedBody = bodyIsExpectedErrStructure(parsedBodyResult.value)
+
+    if (parsedBody) {
+      logger.info({
+        message: 'Successfully parsed error payload from virus scanning lambda',
+        meta: logMeta,
+      })
+
+      return err({
+        statusCode: parsedPayload.statusCode,
+        body: parsedBody,
+      })
+    }
+
+    logger.error({
+      message:
+        'Error parsing payload when statusCode is number and body is string from virus scanning lambda',
+      meta: logMeta,
+    })
+
+    return err(parseVirusScannerLambdaPayloadError)
+  }
+
+  // Step 2b: Return error if statusCode and body (unparsed) are of the wrong types
+
+  logger.error({
+    message:
+      'Error parsing payload from virus scanner lambda - parsedPayload is undefined or wrong statusCode or body type',
+    meta: logMeta,
+  })
+
+  return err(parseVirusScannerLambdaPayloadError)
+}
+
+/**
+ * Invokes lambda to scan the file in the quarantine bucket for viruses.
+ * @param quarantineFileKey object key of the file in the quarantine bucket
+ * @returns okAsync(returnPayload) if file has been successfully scanned with status 200 OK
+ * @returns errAsync(returnPayload) if lambda invocation failed or file cannot be found
+ */
+export const triggerVirusScanning = (
+  quarantineFileKey: string,
+): ResultAsync<ParseVirusScannerLambdaPayloadOkType, VirusScanFailedError> => {
+  const logMeta = {
+    action: 'triggerVirusScanning',
+    quarantineFileKey,
+  }
+
+  if (!validate(quarantineFileKey)) {
+    logger.error({
+      message: 'Invalid quarantine file key - not a valid uuid',
+      meta: logMeta,
+    })
+
+    return errAsync(new InvalidQuarantineFileKeyError())
+  }
+
+  return ResultAsync.fromPromise(
+    AwsConfig.virusScannerLambda.invoke({
+      FunctionName: AwsConfig.virusScannerLambdaFunctionName,
+      Payload: JSON.stringify({ key: quarantineFileKey }),
+    }),
+    (error) => {
+      logger.error({
+        message: 'Error encountered when invoking virus scanning lambda',
+        meta: logMeta,
+        error,
+      })
+
+      return new VirusScanFailedError()
+    },
+  ).andThen((data: InvokeCommandOutput) => {
+    if (data && data.Payload)
+      return parseVirusScannerLambdaPayload(data.Payload).mapErr((error) => {
+        logger.error({
+          message:
+            'Error returned from virus scanning lambda or parsing lambda output',
+          meta: logMeta,
+          error,
+        })
+
+        return new VirusScanFailedError()
+      })
+
+    // if data or data.Payload is undefined
+    logger.error({
+      message: 'data or data.Payload from virus scanner lambda is undefined',
+      meta: logMeta,
+      error: {
+        statusCode: parseVirusScannerLambdaPayloadError.statusCode,
+        message: parseVirusScannerLambdaPayloadError.body.message,
+      },
+    })
+
+    return errAsync(new VirusScanFailedError())
+  })
 }
