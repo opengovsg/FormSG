@@ -5,10 +5,7 @@ import {
   NumberSelectedLengthValidation,
   NumberSelectedValidation,
 } from '../../../../../shared/types'
-import {
-  INumberFieldSchema,
-  OmitUnusedValidatorProps,
-} from '../../../../types/field'
+import { INumberFieldSchema, OmitUnusedValidatorProps } from '../../../../types'
 import { ResponseValidator } from '../../../../types/field/utils/validation'
 import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
 
@@ -77,6 +74,7 @@ const getNumberLengthValidator: NumberValidatorConstructor = (numberField) => {
     numberField.ValidationOptions.LengthValidationOptions
       .selectedLengthValidation
   ) {
+    // Assume that the validation options are valid (customVal exists).
     case NumberSelectedLengthValidation.Min:
       return minLengthValidator(numberField)
     case NumberSelectedLengthValidation.Max:
@@ -96,6 +94,7 @@ const rangeValidator: NumberValidatorConstructor =
   (numberField) => (response) => {
     // Chained validators ensure that the cast to Number is valid
     const val = Number(response.answer)
+    // Assume that the range passed in validation options is valid
     const { customMin, customMax } =
       numberField.ValidationOptions.RangeValidationOptions
     const isWithinMinimum = customMin === null || customMin <= val
