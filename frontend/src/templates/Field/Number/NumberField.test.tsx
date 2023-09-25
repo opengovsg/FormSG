@@ -3,7 +3,10 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { merge } from 'lodash'
 
-import { NumberSelectedValidation } from '~shared/types/field'
+import {
+  NumberSelectedLengthValidation,
+  NumberSelectedValidation,
+} from '~shared/types/field'
 
 import * as stories from './NumberField.stories'
 
@@ -91,7 +94,7 @@ describe('validation optional', () => {
   })
 })
 
-describe('text validation', () => {
+describe('length validation', () => {
   describe('NumberSelectedValidation.Min', () => {
     it('renders error when field input length is < minimum length when submitted', async () => {
       // Arrange
@@ -100,8 +103,15 @@ describe('text validation', () => {
       // and make validation options explicit.
       const schema = merge({}, ValidationRequired.args?.schema, {
         ValidationOptions: {
-          customVal: 8,
-          selectedValidation: NumberSelectedValidation.Min,
+          selectedValidation: NumberSelectedValidation.Length,
+          LengthValidationOptions: {
+            selectedLengthValidation: NumberSelectedLengthValidation.Min,
+            customVal: 8,
+          },
+          RangeValidationOptions: {
+            customMin: null,
+            customMax: null,
+          },
         },
       })
       render(<ValidationRequired schema={schema} />)
@@ -128,8 +138,15 @@ describe('text validation', () => {
       const user = userEvent.setup()
       const schema = merge({}, ValidationRequired.args?.schema, {
         ValidationOptions: {
-          customVal: 2,
-          selectedValidation: NumberSelectedValidation.Min,
+          selectedValidation: NumberSelectedValidation.Length,
+          LengthValidationOptions: {
+            selectedLengthValidation: NumberSelectedLengthValidation.Min,
+            customVal: 2,
+          },
+          RangeValidationOptions: {
+            customMin: null,
+            customMax: null,
+          },
         },
       })
       render(<ValidationRequired schema={schema} />)
@@ -152,14 +169,21 @@ describe('text validation', () => {
     })
   })
 
-  describe('TextSelectedValidation.Maximum', () => {
+  describe('NumberSelectedLengthValidation.Maximum', () => {
     it('renders error when field input length is > maximum length when submitted', async () => {
       // Arrange
       const user = userEvent.setup()
       const schema = merge({}, ValidationRequired.args?.schema, {
         ValidationOptions: {
-          customVal: 2,
-          selectedValidation: NumberSelectedValidation.Max,
+          selectedValidation: NumberSelectedValidation.Length,
+          LengthValidationOptions: {
+            selectedLengthValidation: NumberSelectedLengthValidation.Max,
+            customVal: 2,
+          },
+          RangeValidationOptions: {
+            customMin: null,
+            customMax: null,
+          },
         },
       })
       // Using ValidationRequired base story to render the field without any value.
@@ -187,8 +211,15 @@ describe('text validation', () => {
       const user = userEvent.setup()
       const schema = merge({}, ValidationRequired.args?.schema, {
         ValidationOptions: {
-          customVal: 3,
-          selectedValidation: NumberSelectedValidation.Max,
+          selectedValidation: NumberSelectedValidation.Length,
+          LengthValidationOptions: {
+            selectedLengthValidation: NumberSelectedLengthValidation.Max,
+            customVal: 3,
+          },
+          RangeValidationOptions: {
+            customMin: null,
+            customMax: null,
+          },
         },
       })
       render(<ValidationRequired schema={schema} />)
@@ -211,14 +242,21 @@ describe('text validation', () => {
     })
   })
 
-  describe('TextSelectedValidation.Exact', () => {
+  describe('NumberSelectedLengthValidation.Exact', () => {
     it('renders error when field input length not exact length when submitted', async () => {
       // Arrange
       const user = userEvent.setup()
       const schema = merge({}, ValidationRequired.args?.schema, {
         ValidationOptions: {
-          customVal: 3,
-          selectedValidation: NumberSelectedValidation.Exact,
+          selectedValidation: NumberSelectedValidation.Length,
+          LengthValidationOptions: {
+            selectedLengthValidation: NumberSelectedLengthValidation.Exact,
+            customVal: 3,
+          },
+          RangeValidationOptions: {
+            customMin: null,
+            customMax: null,
+          },
         },
       })
       // Using ValidationRequired base story to render the field without any value.
@@ -246,8 +284,15 @@ describe('text validation', () => {
       const user = userEvent.setup()
       const schema = merge({}, ValidationRequired.args?.schema, {
         ValidationOptions: {
-          customVal: 5,
-          selectedValidation: NumberSelectedValidation.Exact,
+          selectedValidation: NumberSelectedValidation.Length,
+          LengthValidationOptions: {
+            selectedLengthValidation: NumberSelectedLengthValidation.Exact,
+            customVal: 5,
+          },
+          RangeValidationOptions: {
+            customMin: null,
+            customMax: null,
+          },
         },
       })
       render(<ValidationRequired schema={schema} />)
