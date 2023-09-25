@@ -50,10 +50,8 @@ export class FeatureDisabledError extends ApplicationError {
   }
 }
 
-export class InvalidQuarantineFileKeyError extends ApplicationError {
-  constructor(
-    message = 'Invalid quarantine file key. Quarantine file key should be a valid UUID.',
-  ) {
+export class InvalidFileKeyError extends ApplicationError {
+  constructor(message = 'Invalid file key. File keys should be valid UUIDs.') {
     super(message)
   }
 }

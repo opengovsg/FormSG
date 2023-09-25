@@ -65,7 +65,7 @@ import {
   AttachmentSizeLimitExceededError,
   DownloadCleanFileFailedError,
   InvalidFieldIdError,
-  InvalidQuarantineFileKeyError,
+  InvalidFileKeyError,
   JsonParseFailedError,
   VirusScanFailedError,
 } from './encrypt-submission.errors'
@@ -744,7 +744,7 @@ export const triggerVirusScanning = (
       meta: logMeta,
     })
 
-    return errAsync(new InvalidQuarantineFileKeyError())
+    return errAsync(new InvalidFileKeyError())
   }
 
   return ResultAsync.fromPromise(
@@ -800,6 +800,15 @@ export const downloadCleanFile = (cleanFileKey: string, versionId: string) => {
     action: 'downloadCleanFile',
     cleanFileKey,
     versionId,
+  }
+
+  if (!validate(cleanFileKey)) {
+    logger.error({
+      message: 'Invalid file key - not a valid uuid',
+      meta: logMeta,
+    })
+
+    return errAsync(new InvalidFileKeyError())
   }
 
   let buffer = Buffer.alloc(0)

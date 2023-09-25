@@ -33,7 +33,7 @@ import {
   AttachmentSizeLimitExceededError,
   DownloadCleanFileFailedError,
   InvalidFieldIdError,
-  InvalidQuarantineFileKeyError,
+  InvalidFileKeyError,
   VirusScanFailedError,
 } from '../encrypt-submission.errors'
 import {
@@ -1176,9 +1176,7 @@ describe('encrypt-submission.service', () => {
       // Assert
       expect(awsSpy).not.toHaveBeenCalled()
       expect(actualResult.isErr()).toEqual(true)
-      expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new InvalidQuarantineFileKeyError(),
-      )
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidFileKeyError())
     })
 
     it('should return errAsync when lambda invocation fails', async () => {
@@ -1473,13 +1471,28 @@ describe('encrypt-submission.service', () => {
   })
 
   describe('downloadCleanFile', () => {
+    const MOCK_VALID_UUID = '0f3d2e22-d2aa-44f8-965a-27e46102936e'
+    it('should return errAsync(InvalidFileKeyError) if cleanFileKey is invalid', async () => {
+      // Arrange
+      const awsSpy = jest.spyOn(aws.s3, 'getObject')
+
+      // Act
+      // empty string for version id to simulate failure
+      const actualResult = await downloadCleanFile('invalid-key', '')
+
+      // Assert
+      expect(awsSpy).not.toHaveBeenCalled()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidFileKeyError())
+    })
+
     it('should return errAsync(DownloadCleanFileFailedError) if file download failed', async () => {
       // Arrange
       const awsSpy = jest.spyOn(aws.s3, 'getObject')
 
       // Act
-      // empty strings for invalid keys and version ids
-      const actualResult = await downloadCleanFile('', '')
+      // empty string for version id to simulate failure
+      const actualResult = await downloadCleanFile(MOCK_VALID_UUID, '')
 
       // Assert
       expect(awsSpy).toHaveBeenCalledOnce()
@@ -1510,12 +1523,11 @@ describe('encrypt-submission.service', () => {
         .spyOn(aws.s3, 'getObject')
         .mockImplementationOnce(mockGetObject)
 
-      const cleanFileKey = 'your-clean-file-key'
       const versionId = 'your-version-id'
 
       // Act
       // empty strings for invalid keys and version ids
-      const actualResult = await downloadCleanFile(cleanFileKey, versionId)
+      const actualResult = await downloadCleanFile(MOCK_VALID_UUID, versionId)
 
       // Assert
       expect(awsSpy).toHaveBeenCalledOnce()
