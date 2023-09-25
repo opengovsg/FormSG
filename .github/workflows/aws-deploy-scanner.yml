@@ -11,6 +11,10 @@ on:
         description: 'Provisioned concurrency'
         required: true
         type: number
+      checkoutBranch:
+        description: 'Branch to checkout code from'
+        required: true
+        type: string
 
 permissions:
   id-token: write
@@ -22,15 +26,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout source code from specified branch if it is a scheduled run
+      - name: Checkout source code from specified checkout branch
         uses: actions/checkout@v3
-        if: ${{ github.event_name == 'schedule' }}
         with:
-          ref: ${{ inputs.environment }}
-
-      - name: Checkout source code
-        uses: actions/checkout@v3
-        if: ${{ github.event_name != 'schedule' }}
+          ref: ${{ inputs.checkoutBranch }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
