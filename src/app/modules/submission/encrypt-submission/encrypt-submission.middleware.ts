@@ -3,7 +3,7 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { chain, omit } from 'lodash'
-import { okAsync, ResultAsync } from 'neverthrow'
+import { okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { featureFlags } from '../../../../../shared/constants'
 import {
@@ -15,6 +15,7 @@ import {
   EncryptAttachmentResponse,
   EncryptFormFieldResponse,
   FormLoadedDto,
+  ParsedClearAttachmentResponse,
 } from '../../../../types/api'
 import { paymentConfig } from '../../../config/features/payment.config'
 import formsgSdk from '../../../config/formsg-sdk'
@@ -34,9 +35,11 @@ import {
 import {
   EncryptedPayloadExistsError,
   FormsgReqBodyExistsError,
+  VirusScanFailedError,
 } from './encrypt-submission.errors'
 import {
   checkFormIsEncryptMode,
+  downloadCleanFile,
   triggerVirusScanning,
 } from './encrypt-submission.service'
 import {
@@ -44,6 +47,7 @@ import {
   CreateFormsgAndRetrieveFormMiddlewareHandlerType,
   EncryptSubmissionMiddlewareHandlerRequest,
   EncryptSubmissionMiddlewareHandlerType,
+  ParseVirusScannerLambdaPayloadOkBody,
   StorageSubmissionMiddlewareHandlerRequest,
   StorageSubmissionMiddlewareHandlerType,
   ValidateSubmissionMiddlewareHandlerRequest,
@@ -225,13 +229,26 @@ export const scanAndRetrieveAttachments = async (
   // have virus scanning enabled.
 
   // Step 3: Trigger lambda to scan attachments.
-  const triggerLambdaResult = await ResultAsync.combine(
+  const triggerLambdaResult: Result<
+    (
+      | false
+      | {
+          response: ParsedClearAttachmentResponse
+          cleanFile: ParseVirusScannerLambdaPayloadOkBody
+        }
+    )[],
+    VirusScanFailedError
+  > = await ResultAsync.combine(
     req.body.responses.map((response) => {
       if (isQuarantinedAttachmentResponse(response)) {
-        return triggerVirusScanning(response.answer)
+        return triggerVirusScanning(response.filename).map((result) => ({
+          response,
+          cleanFile: result.body,
+        }))
       }
+
       // If response is not an attachment, return ok.
-      return okAsync(true)
+      return okAsync(false as const)
     }),
   )
 
@@ -243,13 +260,69 @@ export const scanAndRetrieveAttachments = async (
       error: triggerLambdaResult.error,
     })
 
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
-      message:
-        'Something went wrong while scanning your attachments. Please try again.',
+    const { statusCode, errorMessage } = mapRouteError(
+      triggerLambdaResult.error,
+    )
+    return res.status(statusCode).json({
+      message: errorMessage,
     })
   }
 
-  // TODO(FRM-1302): Step 4: Retrieve attachments from the clean bucket.
+  // const getBody = (response: GetObjectCommandOutput) => {
+  //   return response.Body && (response.Body as Readable);
+  // }
+
+  // const bodyToBuffer = (body: S3.Body) => {
+  //   let buffer: Buffer
+  //   if (body instanceof Uint8Array || body instanceof Blob) {
+  //     buffer = Buffer.from(body)
+  //   } else if (
+  //     typeof body === 'string' ||
+  //     body instanceof Readable ||
+  //     body instanceof ReadableStream
+  //   ) {
+  //     const chunks: Uint8Array[] = []
+  //     for await (const chunk of body) {
+  //       chunks.push(chunk instanceof Buffer ? chunk : Buffer.from(chunk))
+  //     }
+  //     buffer = Buffer.concat(chunks)
+  //   } else {
+  //     throw new Error('Invalid type for S3 object Body')
+  //   }
+  // }
+
+  // Step 4: Retrieve attachments from the clean bucket.
+  const downloadCleanFilesResult = await ResultAsync.combine(
+    triggerLambdaResult.value.map((isAttachment) => {
+      if (isAttachment) {
+        // Retrieve attachment from clean bucket.
+        return downloadCleanFile(
+          isAttachment.cleanFile.cleanFileKey,
+          isAttachment.cleanFile.destinationVersionId,
+        ).map((result) => {
+          isAttachment.response.content = result
+          return true
+        })
+      }
+
+      return okAsync(false as const)
+    }),
+  )
+
+  if (downloadCleanFilesResult.isErr()) {
+    logger.error({
+      message: 'Error downloading clean attachments',
+      meta: logMeta,
+      error: downloadCleanFilesResult.error,
+    })
+
+    const { statusCode, errorMessage } = mapRouteError(
+      downloadCleanFilesResult.error,
+    )
+    return res.status(statusCode).json({
+      message: errorMessage,
+    })
+  }
 
   return next()
 }
@@ -507,6 +580,8 @@ export const createFormsgAndRetrieveForm = async (
   next: NextFunction,
 ) => {
   const { formId } = req.params
+
+  console.log('createFormsgAndRetrieveForm req.body.version', req.body.version)
 
   const logMeta = {
     action: 'createFormsgAndRetrieveForm',

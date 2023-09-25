@@ -69,3 +69,11 @@ export class JsonParseFailedError extends ApplicationError {
     super(message)
   }
 }
+
+export class DownloadCleanFileFailedError extends ApplicationError {
+  constructor(
+    message = 'Attempt to download clean file failed. Please try again.',
+  ) {
+    super(message)
+  }
+}

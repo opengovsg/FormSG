@@ -7,7 +7,7 @@ import { StatusCodes } from 'http-status-codes'
 import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
-import { Transform } from 'stream'
+import { Transform, Writable } from 'stream'
 import { validate } from 'uuid'
 
 import {
@@ -63,6 +63,7 @@ import {
 import { PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS } from './encrypt-submission.constants'
 import {
   AttachmentSizeLimitExceededError,
+  DownloadCleanFileFailedError,
   InvalidFieldIdError,
   InvalidQuarantineFileKeyError,
   JsonParseFailedError,
@@ -785,4 +786,71 @@ export const triggerVirusScanning = (
 
     return errAsync(new VirusScanFailedError())
   })
+}
+
+export const downloadCleanFile = (cleanFileKey: string, versionId: string) => {
+  const logMeta = {
+    action: 'downloadCleanFile',
+    cleanFileKey,
+    versionId,
+  }
+
+  let buffer = Buffer.alloc(0)
+
+  const writeStream = new Writable({
+    write(chunk, encoding, callback) {
+      buffer = Buffer.concat([buffer, chunk])
+      callback()
+    },
+  })
+
+  const readStream = AwsConfig.s3
+    .getObject({
+      Bucket: AwsConfig.virusScannerCleanS3Bucket,
+      Key: cleanFileKey,
+      VersionId: versionId,
+    })
+    .createReadStream()
+
+  readStream.pipe(writeStream)
+
+  return ResultAsync.fromPromise(
+    new Promise<Buffer>((resolve, reject) => {
+      readStream.on('end', () => {
+        resolve(buffer)
+      })
+
+      readStream.on('error', (error) => {
+        reject(error)
+      })
+    }),
+    (error) => {
+      logger.error({
+        message: 'Error encountered when downloading file from clean bucket',
+        meta: logMeta,
+        error,
+      })
+
+      return new DownloadCleanFileFailedError()
+    },
+  )
+
+  // return ResultAsync.fromPromise(
+  //   AwsConfig.s3
+  //     .getObject({
+  //       Bucket: AwsConfig.virusScannerCleanS3Bucket,
+  //       Key: cleanFileKey,
+  //       VersionId: versionId,
+  //     })
+  //     .promise(),
+  //   (error) => {
+  //     logger.error({
+  //       message: 'Error encountered when invoking virus scanning lambda',
+  //       meta: logMeta,
+  //       error,
+  //     })
+
+  //     return new DownloadCleanFileFailedError()
+  //   },
+  // )
 }

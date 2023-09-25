@@ -152,7 +152,11 @@ export const configureMultipartReceiver = (
         .on('close', () => {
           if (body) {
             handleDuplicatesInAttachments(attachments)
-            addAttachmentToResponses(body.responses, attachments)
+            addAttachmentToResponses(
+              body.responses,
+              attachments,
+              (body.version ?? 0) >= 2.1,
+            )
             return resolve(body)
           } else {
             // if body is not defined, the Promise would have been rejected elsewhere.
