@@ -72,6 +72,7 @@ import {
 
 import {
   AttachmentSizeLimitExceededError,
+  DownloadCleanFileFailedError,
   FeatureDisabledError,
   InvalidFieldIdError,
   InvalidQuarantineFileKeyError,
@@ -222,6 +223,7 @@ const errorMapper: MapRouteError = (
     case DatabaseError:
     case EmptyErrorFieldError:
     case VirusScanFailedError:
+    case DownloadCleanFileFailedError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: error.message,
