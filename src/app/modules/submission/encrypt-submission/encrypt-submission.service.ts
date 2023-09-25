@@ -804,7 +804,7 @@ export const downloadCleanFile = (cleanFileKey: string, versionId: string) => {
 
   if (!validate(cleanFileKey)) {
     logger.error({
-      message: 'Invalid file key - not a valid uuid',
+      message: 'Invalid clean file key - not a valid uuid',
       meta: logMeta,
     })
 
