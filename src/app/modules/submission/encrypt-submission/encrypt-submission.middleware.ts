@@ -268,29 +268,6 @@ export const scanAndRetrieveAttachments = async (
     })
   }
 
-  // const getBody = (response: GetObjectCommandOutput) => {
-  //   return response.Body && (response.Body as Readable);
-  // }
-
-  // const bodyToBuffer = (body: S3.Body) => {
-  //   let buffer: Buffer
-  //   if (body instanceof Uint8Array || body instanceof Blob) {
-  //     buffer = Buffer.from(body)
-  //   } else if (
-  //     typeof body === 'string' ||
-  //     body instanceof Readable ||
-  //     body instanceof ReadableStream
-  //   ) {
-  //     const chunks: Uint8Array[] = []
-  //     for await (const chunk of body) {
-  //       chunks.push(chunk instanceof Buffer ? chunk : Buffer.from(chunk))
-  //     }
-  //     buffer = Buffer.concat(chunks)
-  //   } else {
-  //     throw new Error('Invalid type for S3 object Body')
-  //   }
-  // }
-
   // Step 4: Retrieve attachments from the clean bucket.
   const downloadCleanFilesResult = await ResultAsync.combine(
     triggerLambdaResult.value.map((isAttachment) => {
@@ -300,11 +277,13 @@ export const scanAndRetrieveAttachments = async (
           isAttachment.cleanFile.cleanFileKey,
           isAttachment.cleanFile.destinationVersionId,
         ).map((result) => {
+          // Replace content with file retreived from clean bucket.
           isAttachment.response.content = result
-          return true
-        })
+          return true // Return true to indicate that the download was successful.
+        }) // If any downloads error out, it will short circuit and return the first error.
       }
 
+      // If response is not an attachment, return okAsync(false).
       return okAsync(false as const)
     }),
   )
@@ -580,8 +559,6 @@ export const createFormsgAndRetrieveForm = async (
   next: NextFunction,
 ) => {
   const { formId } = req.params
-
-  console.log('createFormsgAndRetrieveForm req.body.version', req.body.version)
 
   const logMeta = {
     action: 'createFormsgAndRetrieveForm',

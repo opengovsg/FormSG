@@ -788,6 +788,13 @@ export const triggerVirusScanning = (
   })
 }
 
+/**
+ * Downloads file from clean bucket
+ * @param cleanFileKey object key of the file in the clean bucket
+ * @param versionId id for versioning of the file in the clean bucket
+ * @returns okAsync(buffer) if file has been successfully downloaded from the clean bucket
+ * @returns errAsync(DownloadCleanFileFailedError) if file download failed
+ */
 export const downloadCleanFile = (cleanFileKey: string, versionId: string) => {
   const logMeta = {
     action: 'downloadCleanFile',
@@ -834,23 +841,4 @@ export const downloadCleanFile = (cleanFileKey: string, versionId: string) => {
       return new DownloadCleanFileFailedError()
     },
   )
-
-  // return ResultAsync.fromPromise(
-  //   AwsConfig.s3
-  //     .getObject({
-  //       Bucket: AwsConfig.virusScannerCleanS3Bucket,
-  //       Key: cleanFileKey,
-  //       VersionId: versionId,
-  //     })
-  //     .promise(),
-  //   (error) => {
-  //     logger.error({
-  //       message: 'Error encountered when invoking virus scanning lambda',
-  //       meta: logMeta,
-  //       error,
-  //     })
-
-  //     return new DownloadCleanFileFailedError()
-  //   },
-  // )
 }

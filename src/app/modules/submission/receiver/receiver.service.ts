@@ -155,6 +155,10 @@ export const configureMultipartReceiver = (
             addAttachmentToResponses(
               body.responses,
               attachments,
+              // default to 0 for email mode forms where version is undefined
+              // TODO (FRM-1413): change to a version existence guardrail when
+              // virus scanning has completed rollout, so that virus scanning
+              // cannot be bypassed on storage mode submissions.
               (body.version ?? 0) >= 2.1,
             )
             return resolve(body)
