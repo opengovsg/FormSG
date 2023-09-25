@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:hydrogen-alpine3.18 as build
+FROM node:hydrogen-alpine3.16 as build
 
 # node-modules-builder stage installs/compiles the node_modules folder
 # Python version must be specified starting in alpine3.12
@@ -60,7 +60,7 @@ RUN --mount=type=secret,id=dd_api_key \
 RUN npm prune --production --legacy-peer-deps
 
 # This stage builds the final container
-FROM node:hydrogen-alpine3.18
+FROM node:hydrogen-alpine3.16
 LABEL maintainer=FormSG<formsg@data.gov.sg>
 WORKDIR /opt/formsg
 
@@ -81,7 +81,7 @@ RUN mv /opt/formsg/dist/backend/shared /opt/formsg/
 # https://www.npmjs.com/package/puppeteer-core?activeTab=versions for corresponding versions
 
 RUN apk add --no-cache \
-    chromium=115.0.5790.170-r0 \
+    chromium=102.0.5005.182-r0 \
     nss \
     freetype \
     freetype-dev \
