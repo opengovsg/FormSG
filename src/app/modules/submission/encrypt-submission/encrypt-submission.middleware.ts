@@ -241,7 +241,7 @@ export const scanAndRetrieveAttachments = async (
   > = await ResultAsync.combine(
     req.body.responses.map((response) => {
       if (isQuarantinedAttachmentResponse(response)) {
-        return triggerVirusScanning(response.filename).map((result) => ({
+        return triggerVirusScanning(response.answer).map((result) => ({
           response,
           cleanFile: result.body,
         }))
@@ -279,6 +279,8 @@ export const scanAndRetrieveAttachments = async (
         ).map((result) => {
           // Replace content with file retreived from clean bucket.
           isAttachment.response.content = result
+          // Replace answer with filename.
+          isAttachment.response.answer = isAttachment.response.filename
           return true // Return true to indicate that the download was successful.
         }) // If any downloads error out, it will short circuit and return the first error.
       }
