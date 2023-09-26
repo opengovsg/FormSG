@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { compact } from 'lodash'
 
+import { MYINFO_ATTRIBUTE_MAP } from '../../../../../shared/constants/field/myinfo'
 import {
   BasicField,
   FormAuthType,
@@ -224,17 +225,23 @@ export const getAnswersForChild = (
   return response.answerArray.flatMap((arr) => {
     // First array element is always child name
     const childName = arr[0]
-    return arr.map((answer, idx) => ({
-      _id: getMyInfoChildHashKey(response._id, subFields[idx], childName),
-      fieldType: response.fieldType,
-      question: `Child-${childIdx + 1}.${subFields[idx]}`,
-      myInfo: {
-        attr: subFields[idx] as unknown as MyInfoAttribute,
-      },
-      isVisible: response.isVisible,
-      isUserVerified: response.isUserVerified,
-      answer,
-    }))
+    return arr.map((answer, idx) => {
+      const subfield = subFields[idx]
+      return {
+        _id: getMyInfoChildHashKey(response._id, subFields[idx], childName),
+        fieldType: response.fieldType,
+        // question: `Child-${childIdx + 1}.${subFields[idx]}`,
+        question: `Child ${childIdx + 1} ${
+          MYINFO_ATTRIBUTE_MAP[subfield].description
+        }`,
+        myInfo: {
+          attr: subFields[idx] as unknown as MyInfoAttribute,
+        },
+        isVisible: response.isVisible,
+        isUserVerified: response.isUserVerified,
+        answer,
+      }
+    })
   })
 }
 
