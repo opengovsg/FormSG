@@ -4,7 +4,7 @@ import { ObjectId } from 'bson-ext'
 import { clone, omit } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
-import { PassThrough, Transform } from 'stream'
+import { PassThrough, Readable, Transform } from 'stream'
 
 import { aws } from 'src/app/config/config'
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
@@ -31,13 +31,15 @@ import * as PaymentsService from '../../../payments/payments.service'
 import { SubmissionNotFoundError } from '../../submission.errors'
 import {
   AttachmentSizeLimitExceededError,
+  DownloadCleanFileFailedError,
   InvalidFieldIdError,
-  InvalidQuarantineFileKeyError,
+  InvalidFileKeyError,
   VirusScanFailedError,
 } from '../encrypt-submission.errors'
 import {
   addPaymentDataStream,
   createEncryptSubmissionWithoutSave,
+  downloadCleanFile,
   getEncryptedSubmissionData,
   getQuarantinePresignedPostData,
   getSubmissionCursor,
@@ -1174,9 +1176,7 @@ describe('encrypt-submission.service', () => {
       // Assert
       expect(awsSpy).not.toHaveBeenCalled()
       expect(actualResult.isErr()).toEqual(true)
-      expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new InvalidQuarantineFileKeyError(),
-      )
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidFileKeyError())
     })
 
     it('should return errAsync when lambda invocation fails', async () => {
@@ -1467,6 +1467,72 @@ describe('encrypt-submission.service', () => {
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new VirusScanFailedError(),
       )
+    })
+  })
+
+  describe('downloadCleanFile', () => {
+    const MOCK_VALID_UUID = '0f3d2e22-d2aa-44f8-965a-27e46102936e'
+    it('should return errAsync(InvalidFileKeyError) if cleanFileKey is invalid', async () => {
+      // Arrange
+      const awsSpy = jest.spyOn(aws.s3, 'getObject')
+
+      // Act
+      // empty string for version id to simulate failure
+      const actualResult = await downloadCleanFile('invalid-key', '')
+
+      // Assert
+      expect(awsSpy).not.toHaveBeenCalled()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidFileKeyError())
+    })
+
+    it('should return errAsync(DownloadCleanFileFailedError) if file download failed', async () => {
+      // Arrange
+      const awsSpy = jest.spyOn(aws.s3, 'getObject')
+
+      // Act
+      // empty string for version id to simulate failure
+      const actualResult = await downloadCleanFile(MOCK_VALID_UUID, '')
+
+      // Assert
+      expect(awsSpy).toHaveBeenCalledOnce()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new DownloadCleanFileFailedError(),
+      )
+    })
+
+    it('should return okAsync(buffer) if file has been successfully downloaded from the clean bucket', async () => {
+      // Arrange
+      const content = 'Mock file with a lot of text content!'
+      // Define a custom mock function for getObject
+      const mockGetObject = jest.fn().mockReturnValue({
+        createReadStream: () => {
+          // Create a readable stream with the desired content
+          const readStream = new Readable({
+            read() {
+              this.push(content)
+              this.push(null) // Indicates the end of the stream
+            },
+          })
+          return readStream
+        },
+      })
+
+      const awsSpy = jest
+        .spyOn(aws.s3, 'getObject')
+        .mockImplementationOnce(mockGetObject)
+
+      const versionId = 'your-version-id'
+
+      // Act
+      // empty strings for invalid keys and version ids
+      const actualResult = await downloadCleanFile(MOCK_VALID_UUID, versionId)
+
+      // Assert
+      expect(awsSpy).toHaveBeenCalledOnce()
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap().toString()).toEqual(content)
     })
   })
 })
