@@ -86,7 +86,6 @@ import {
 
 import {
   ATTACHMENT_PREFIX,
-  CHILD_PREFIX,
   MYINFO_PREFIX,
   TABLE_PREFIX,
   VERIFIED_PREFIX,
@@ -137,8 +136,6 @@ const getFieldTypePrefix = (response: ResponseFormattedForEmail): string => {
       return TABLE_PREFIX
     case BasicField.Attachment:
       return ATTACHMENT_PREFIX
-    case BasicField.Children:
-      return CHILD_PREFIX
     default:
       return ''
   }
