@@ -230,7 +230,6 @@ export const getAnswersForChild = (
       return {
         _id: getMyInfoChildHashKey(response._id, subFields[idx], childName),
         fieldType: response.fieldType,
-        // question: `Child-${childIdx + 1}.${subFields[idx]}`,
         question: `Child ${childIdx + 1} ${
           MYINFO_ATTRIBUTE_MAP[subfield].description
         }`,
