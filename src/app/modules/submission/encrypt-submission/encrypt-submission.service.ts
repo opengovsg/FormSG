@@ -814,7 +814,7 @@ export const downloadCleanFile = (cleanFileKey: string, versionId: string) => {
   let buffer = Buffer.alloc(0)
 
   const writeStream = new Writable({
-    write(chunk, encoding, callback) {
+    write(chunk, _encoding, callback) {
       buffer = Buffer.concat([buffer, chunk])
       callback()
     },
