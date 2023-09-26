@@ -15,6 +15,7 @@ import {
   EncryptAttachmentResponse,
   EncryptFormFieldResponse,
   FormLoadedDto,
+  ParsedClearFormFieldResponse,
 } from '../../../../types/api'
 import { paymentConfig } from '../../../config/features/payment.config'
 import formsgSdk from '../../../config/formsg-sdk'
@@ -229,9 +230,10 @@ export const scanAndRetrieveAttachments = async (
 
   // Step 3 + 4: For each attachment, trigger lambda to scan and if it succeeds, retrieve attachment from clean bucket. Do this asynchronously.
   const scanAndRetrieveFilesResult: Result<
-    boolean[], // true for attachment fields, false for non-attachment fields.
+    ParsedClearFormFieldResponse[], // true for attachment fields, false for non-attachment fields.
     VirusScanFailedError | DownloadCleanFileFailedError
   > = await ResultAsync.combine(
+    // If any scans or downloads error out, it will short circuit and return the first error.
     req.body.responses.map((response) => {
       if (isQuarantinedAttachmentResponse(response)) {
         // Step 3: Trigger lambda to scan attachments.
@@ -239,25 +241,23 @@ export const scanAndRetrieveAttachments = async (
           triggerVirusScanning(response.answer)
             .map((lambdaOutput) => lambdaOutput.body)
             // Step 4: Retrieve attachments from the clean bucket.
-            .andThen(
-              (cleanAttachment) =>
-                // Retrieve attachment from clean bucket.
-                downloadCleanFile(
-                  cleanAttachment.cleanFileKey,
-                  cleanAttachment.destinationVersionId,
-                ).map((attachmentBuffer) => {
-                  // Replace content with file retreived from clean bucket.
-                  response.content = attachmentBuffer
-                  // Replace answer with filename.
-                  response.answer = response.filename
-                  return true // Return true to indicate that the download was successful.
-                }), // If any downloads error out, it will short circuit and return the first error.
+            .andThen((cleanAttachment) =>
+              // Retrieve attachment from clean bucket.
+              downloadCleanFile(
+                cleanAttachment.cleanFileKey,
+                cleanAttachment.destinationVersionId,
+              ).map((attachmentBuffer) => ({
+                ...response,
+                // Replace content with attachmentBuffer and answer with filename.
+                content: attachmentBuffer,
+                answer: response.filename,
+              })),
             )
         )
       }
 
-      // If response is not an attachment, return false.
-      return okAsync(false)
+      // If field is not an attachment, return original response.
+      return okAsync(response)
     }),
   )
 
@@ -275,6 +275,9 @@ export const scanAndRetrieveAttachments = async (
       message: errorMessage,
     })
   }
+
+  // Step 5: Replace req.body.responses with the new responses with populated attachments.
+  req.body.responses = scanAndRetrieveFilesResult.value
 
   return next()
 }
