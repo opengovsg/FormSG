@@ -15,7 +15,6 @@ import {
   EncryptAttachmentResponse,
   EncryptFormFieldResponse,
   FormLoadedDto,
-  ParsedClearAttachmentResponse,
 } from '../../../../types/api'
 import { paymentConfig } from '../../../config/features/payment.config'
 import formsgSdk from '../../../config/formsg-sdk'
@@ -33,6 +32,7 @@ import {
 } from '../submission.utils'
 
 import {
+  DownloadCleanFileFailedError,
   EncryptedPayloadExistsError,
   FormsgReqBodyExistsError,
   VirusScanFailedError,
@@ -47,7 +47,6 @@ import {
   CreateFormsgAndRetrieveFormMiddlewareHandlerType,
   EncryptSubmissionMiddlewareHandlerRequest,
   EncryptSubmissionMiddlewareHandlerType,
-  ParseVirusScannerLambdaPayloadOkBody,
   StorageSubmissionMiddlewareHandlerRequest,
   StorageSubmissionMiddlewareHandlerType,
   ValidateSubmissionMiddlewareHandlerRequest,
@@ -228,77 +227,49 @@ export const scanAndRetrieveAttachments = async (
   // At this point, virus scanner is enabled and storage submission v2.1+. This means that both the FE and BE
   // have virus scanning enabled.
 
-  // Step 3: Trigger lambda to scan attachments.
-  const triggerLambdaResult: Result<
-    (
-      | false
-      | {
-          response: ParsedClearAttachmentResponse
-          cleanFile: ParseVirusScannerLambdaPayloadOkBody
-        }
-    )[],
-    VirusScanFailedError
+  // Step 3 + 4: For each attachment, trigger lambda to scan and if it succeeds, retrieve attachment from clean bucket. Do this asynchronously.
+  const scanAndRetrieveFilesResult: Result<
+    boolean[], // true for attachment fields, false for non-attachment fields.
+    VirusScanFailedError | DownloadCleanFileFailedError
   > = await ResultAsync.combine(
     req.body.responses.map((response) => {
       if (isQuarantinedAttachmentResponse(response)) {
-        return triggerVirusScanning(response.answer).map((result) => ({
-          response,
-          cleanFile: result.body,
-        }))
+        // Step 3: Trigger lambda to scan attachments.
+        return (
+          triggerVirusScanning(response.answer)
+            .map((lambdaOutput) => lambdaOutput.body)
+            // Step 4: Retrieve attachments from the clean bucket.
+            .andThen(
+              (cleanAttachment) =>
+                // Retrieve attachment from clean bucket.
+                downloadCleanFile(
+                  cleanAttachment.cleanFileKey,
+                  cleanAttachment.destinationVersionId,
+                ).map((attachmentBuffer) => {
+                  // Replace content with file retreived from clean bucket.
+                  response.content = attachmentBuffer
+                  // Replace answer with filename.
+                  response.answer = response.filename
+                  return true // Return true to indicate that the download was successful.
+                }), // If any downloads error out, it will short circuit and return the first error.
+            )
+        )
       }
 
-      // If response is not an attachment, return ok.
-      return okAsync(false as const)
+      // If response is not an attachment, return false.
+      return okAsync(false)
     }),
   )
 
-  // If any of the lambda invocations failed, return an errored response.
-  if (triggerLambdaResult.isErr()) {
+  if (scanAndRetrieveFilesResult.isErr()) {
     logger.error({
-      message: 'Error scanning attachments',
+      message: 'Error scanning and downloading clean attachments',
       meta: logMeta,
-      error: triggerLambdaResult.error,
+      error: scanAndRetrieveFilesResult.error,
     })
 
     const { statusCode, errorMessage } = mapRouteError(
-      triggerLambdaResult.error,
-    )
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
-  }
-
-  // Step 4: Retrieve attachments from the clean bucket.
-  const downloadCleanFilesResult = await ResultAsync.combine(
-    triggerLambdaResult.value.map((isAttachment) => {
-      if (isAttachment) {
-        // Retrieve attachment from clean bucket.
-        return downloadCleanFile(
-          isAttachment.cleanFile.cleanFileKey,
-          isAttachment.cleanFile.destinationVersionId,
-        ).map((result) => {
-          // Replace content with file retreived from clean bucket.
-          isAttachment.response.content = result
-          // Replace answer with filename.
-          isAttachment.response.answer = isAttachment.response.filename
-          return true // Return true to indicate that the download was successful.
-        }) // If any downloads error out, it will short circuit and return the first error.
-      }
-
-      // If response is not an attachment, return okAsync(false).
-      return okAsync(false as const)
-    }),
-  )
-
-  if (downloadCleanFilesResult.isErr()) {
-    logger.error({
-      message: 'Error downloading clean attachments',
-      meta: logMeta,
-      error: downloadCleanFilesResult.error,
-    })
-
-    const { statusCode, errorMessage } = mapRouteError(
-      downloadCleanFilesResult.error,
+      scanAndRetrieveFilesResult.error,
     )
     return res.status(statusCode).json({
       message: errorMessage,
