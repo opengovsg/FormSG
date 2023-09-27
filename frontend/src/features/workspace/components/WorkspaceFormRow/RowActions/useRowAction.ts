@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
 import { AdminDashboardFormMetaDto } from '~shared/types/form/form'
+import { Workspace } from '~shared/types/workspace'
 
 import { ADMINFORM_PREVIEW_ROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 
@@ -16,7 +17,10 @@ type UseRowActionReturn = {
   handleCollaborators: () => void
   handleDeleteForm: () => void
   handleShareForm: () => void
-  handleMoveForm: (destWorkspaceId: string, destWorkspaceTitle: string) => void
+  handleWorkspaceClick: (
+    destWorkspace: Workspace,
+    currFormWorkspace?: Workspace,
+  ) => void
   isFormAdmin: boolean
 }
 
@@ -24,7 +28,8 @@ export const useRowAction = (
   formMeta: AdminDashboardFormMetaDto,
 ): UseRowActionReturn => {
   const { user } = useUser()
-  const { moveWorkspaceMutation } = useWorkspaceMutations()
+  const { moveWorkspaceMutation, deleteFormFromWorkspacesMutation } =
+    useWorkspaceMutations()
 
   const {
     onOpenDupeFormModal,
@@ -79,6 +84,21 @@ export const useRowAction = (
     [formMeta, moveWorkspaceMutation],
   )
 
+  const handleRemoveFormFromWorkspaces = useCallback(async () => {
+    await deleteFormFromWorkspacesMutation.mutateAsync({
+      formId: formMeta._id.toString(),
+    })
+  }, [formMeta, deleteFormFromWorkspacesMutation])
+
+  const handleWorkspaceClick = useCallback(
+    (destWorkspace: Workspace, currFormWorkspace?: Workspace) => {
+      if (destWorkspace._id === currFormWorkspace?._id)
+        handleRemoveFormFromWorkspaces()
+      else handleMoveForm(destWorkspace._id.toString(), destWorkspace.title)
+    },
+    [handleMoveForm, handleRemoveFormFromWorkspaces],
+  )
+
   return {
     adminFormLink,
     previewFormLink,
@@ -86,7 +106,7 @@ export const useRowAction = (
     handleDuplicateForm,
     handleCollaborators,
     handleDeleteForm,
-    handleMoveForm,
+    handleWorkspaceClick,
     isFormAdmin,
   }
 }

@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react'
+import { Dispatch, SetStateAction, useMemo, useState } from 'react'
 import {
   BiChevronRight,
   BiDotsHorizontalRounded,
@@ -27,7 +27,6 @@ import {
 } from '@chakra-ui/react'
 
 import { AdminDashboardFormMetaDto } from '~shared/types'
-import { Workspace } from '~shared/types/workspace'
 
 import { BxCheck } from '~assets/icons'
 import Button, { ButtonProps } from '~components/Button'
@@ -179,14 +178,8 @@ const MoveWorkspaceDrawer = ({
   formMeta: AdminDashboardFormMetaDto
   buttonProps: Partial<ButtonProps>
 }) => {
-  const { handleMoveForm } = useRowAction(formMeta)
+  const { handleWorkspaceClick } = useRowAction(formMeta)
   const { workspaces, getFormWorkspace } = useWorkspaceContext()
-
-  const handleWorkspaceClick = useCallback(
-    (destWorkspace: Workspace) =>
-      handleMoveForm(destWorkspace._id.toString(), destWorkspace.title),
-    [handleMoveForm],
-  )
 
   const currFormWorkspace = useMemo(
     () => getFormWorkspace(formMeta._id),
@@ -210,7 +203,7 @@ const MoveWorkspaceDrawer = ({
         <Button
           {...buttonProps}
           key={workspace._id}
-          onClick={() => handleWorkspaceClick(workspace)}
+          onClick={() => handleWorkspaceClick(workspace, currFormWorkspace)}
         >
           <Flex justifyContent="space-between" w="100%" alignItems="center">
             <Text textStyle="body-1" noOfLines={1}>

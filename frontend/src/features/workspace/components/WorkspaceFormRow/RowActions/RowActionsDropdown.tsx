@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react'
+import { Dispatch, SetStateAction, useMemo, useState } from 'react'
 import {
   BiChevronLeft,
   BiChevronRight,
@@ -20,7 +20,6 @@ import {
 } from '@chakra-ui/react'
 
 import { AdminDashboardFormMetaDto } from '~shared/types'
-import { Workspace } from '~shared/types/workspace'
 
 import { BxCheck } from '~assets/icons'
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
@@ -41,14 +40,8 @@ const MoveWorkspaceDropdown = ({
   setIsMoveWorkspace: Dispatch<SetStateAction<boolean>>
   formMeta: AdminDashboardFormMetaDto
 }) => {
-  const { handleMoveForm } = useRowAction(formMeta)
+  const { handleWorkspaceClick } = useRowAction(formMeta)
   const { workspaces, getFormWorkspace } = useWorkspaceContext()
-
-  const handleWorkspaceClick = useCallback(
-    (destWorkspace: Workspace) =>
-      handleMoveForm(destWorkspace._id.toString(), destWorkspace.title),
-    [handleMoveForm],
-  )
 
   const currFormWorkspace = useMemo(
     () => getFormWorkspace(formMeta._id),
@@ -70,7 +63,7 @@ const MoveWorkspaceDropdown = ({
       {workspaces.map((workspace) => (
         <Menu.Item
           key={workspace._id}
-          onClick={() => handleWorkspaceClick(workspace)}
+          onClick={() => handleWorkspaceClick(workspace, currFormWorkspace)}
         >
           <Flex
             justifyContent="space-between"
