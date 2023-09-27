@@ -235,6 +235,10 @@ describe('stripe.controller', () => {
         .spyOn(PaymentProofService, '_retrieveReceiptUrlFromStripe')
         .mockReturnValueOnce(okAsync('https://form.gov.sg'))
 
+      const storePaymentProofInS3Spy = jest
+        .spyOn(PaymentProofService, '_storePaymentProofInS3')
+        .mockReturnValueOnce(okAsync(true))
+
       const mockRedirectUrl = 'mockRedirectUrl'
       const getPaymentProofPresignedS3UrlSpy = jest
         .spyOn(PaymentProofService, '_getPaymentProofPresignedS3Url')
@@ -255,6 +259,7 @@ describe('stripe.controller', () => {
       expect(axiosSpy).toHaveBeenCalledOnce()
       expect(convertInvoiceSpy).toHaveBeenCalledOnce()
       expect(generatePdfFromHtmlSpy).toHaveBeenCalledOnce()
+      expect(storePaymentProofInS3Spy).toHaveBeenCalledOnce()
       expect(getPaymentProofPresignedS3UrlSpy).toHaveBeenCalledOnce()
       expect(mockRes.redirect).toHaveBeenCalledWith(mockRedirectUrl)
     })
