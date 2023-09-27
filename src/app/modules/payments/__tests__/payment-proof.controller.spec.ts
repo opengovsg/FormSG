@@ -173,7 +173,7 @@ describe('stripe.controller', () => {
 
       const generatePdfFromHtmlSpy = jest
         .spyOn(ConvertHtmlToPdf, 'generatePdfFromHtml')
-        .mockReturnValueOnce(Promise.resolve(Buffer.from('123')))
+        .mockResolvedValueOnce(Buffer.from('123'))
 
       const retrieveReceiptUrlFromStripeSpy = jest
         .spyOn(PaymentProofService, '_retrieveReceiptUrlFromStripe')
@@ -229,7 +229,7 @@ describe('stripe.controller', () => {
 
       const generatePdfFromHtmlSpy = jest
         .spyOn(ConvertHtmlToPdf, 'generatePdfFromHtml')
-        .mockReturnValueOnce(Promise.resolve(Buffer.from('123')))
+        .mockResolvedValueOnce(Buffer.from('123'))
 
       const retrieveReceiptUrlFromStripeSpy = jest
         .spyOn(PaymentProofService, '_retrieveReceiptUrlFromStripe')

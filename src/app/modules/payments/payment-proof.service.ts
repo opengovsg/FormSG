@@ -20,7 +20,6 @@ import {
   PaymentProofUploadS3Error,
 } from './payment-proof.errors'
 import { getPaymentProofS3ObjectPath } from './payment-proof.utils'
-import {} from './payments.errors'
 import { StripeFetchError } from './stripe.errors'
 import { convertToProofOfPaymentFormat } from './stripe.utils'
 
