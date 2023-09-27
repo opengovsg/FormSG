@@ -25,6 +25,7 @@ import {
   createStorageModeForm,
   createWorkspace,
   deleteAdminForm,
+  deleteFormFromWorkspaces,
   deleteWorkspace,
   dupeEmailModeForm,
   dupeStorageModeForm,
@@ -234,10 +235,20 @@ export const useWorkspaceMutations = () => {
     },
   )
 
+  const deleteFormFromWorkspacesMutation = useMutation(
+    (params: { formId: string }) => deleteFormFromWorkspaces(params),
+    {
+      onSuccess: () =>
+        handleSuccess('Your form has been removed from the folder'),
+      onError: handleError,
+    },
+  )
+
   return {
     createWorkspaceMutation,
     moveWorkspaceMutation,
     updateWorkspaceTitleMutation,
     deleteWorkspaceMutation,
+    deleteFormFromWorkspacesMutation,
   }
 }
