@@ -4,7 +4,6 @@ import {
   Link,
   Modal,
   ModalBody,
-  ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalHeader,
@@ -15,6 +14,7 @@ import {
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import ButtonGroup from '~components/ButtonGroup'
+import { ModalCloseButton } from '~components/Modal'
 
 import { getPaymentPageUrl } from '~features/public-form/utils/urls'
 
@@ -49,8 +49,10 @@ export const DuplicatePaymentModal = ({
       <Modal isOpen onClose={onClose} size={isMobile ? 'full' : undefined}>
         <ModalOverlay />
         <ModalContent>
-          {!isMobile && <ModalCloseButton />}
-          <ModalHeader pb={'2rem'}>Proceed to pay again?</ModalHeader>
+          <ModalCloseButton />
+          <ModalHeader pb={'2rem'} w="90%">
+            Proceed to pay again?
+          </ModalHeader>
           <ModalBody flexGrow={0}>
             <Stack>
               <Text>

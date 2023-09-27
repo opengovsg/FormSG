@@ -4,7 +4,6 @@ import { useSwipeable } from 'react-swipeable'
 import {
   Flex,
   Modal,
-  ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalOverlay,
@@ -13,6 +12,7 @@ import {
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
+import { ModalCloseButton } from '~components/Modal'
 
 import { ProgressIndicator } from '../../components/ProgressIndicator/ProgressIndicator'
 

@@ -1,12 +1,126 @@
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
-  <body>
-    <p>Hello there,</p>
-    <p>
-      Your payment on <%= appName %> form: <%= formTitle %> has been received
-      successfully. Your response ID is <%= submissionId %> and your proof of
-      payment can be found <a href="<%= invoiceUrl %>">here</a>.
-    </p>
-    <p>Regards,<br /><%= appName %> team</p>
+  <head>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+      body {
+        font-family: 'Inter', sans-serif;
+      }
+      .body-1 {
+        font-style: normal;
+        font-weight: 400;
+        font-size: 16px;
+        line-height: 24px;
+        letter-spacing: -0.011em;
+        font-feature-settings: 'tnum' on, 'lnum' on, 'cv05' on;
+      }
+      .subhead-1 {
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 24px;
+        letter-spacing: -0.011em;
+        font-feature-settings: 'tnum' on, 'lnum' on, 'cv05' on;
+      }
+      .subhead-2 {
+        font-weight: 500;
+        font-size: 14px;
+        line-height: 20px;
+        letter-spacing: -0.006em;
+        font-feature-settings: 'tnum' on, 'lnum' on, 'cv05' on;
+      }
+    </style>
+  </head>
+  <body
+    class="clean-body u_body"
+    style="margin: 0; padding: 0; background-color: #f8f9fd"
+  >
+    <div
+      class="u-row-container"
+      style="
+        padding: 48px;
+        background-color: #ffffff;
+        width: 507px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: auto;
+        margin-top: 48px;
+        border-radius: 16px;
+      "
+    >
+      <p>
+        <img
+          width="120px"
+          src="https://file.go.gov.sg/formslogotransparent.png"
+        />
+      </p>
+      <p
+        style="
+          font-style: normal;
+          font-weight: 600;
+          font-size: 24px;
+          line-height: 32px;
+          letter-spacing: -0.019em;
+          font-feature-settings: 'cv05' on, 'cv10' on;
+
+          color: #2e2e2e;
+          margin-bottom: 32px;
+          margin-top: 36px;
+        "
+      >
+        Your payment on <%= formTitle %> has been received successfully.
+      </p>
+      <div style="color: #474747; margin-bottom: 32px">
+        <p style="margin: 0px">
+          <span class="body-1">Form:</span>
+          <span class="subhead-1"> <%= formTitle %></span>
+        </p>
+        <p style="margin: 0px">
+          <span class="body-1">Response ID:</span>
+          <span class="subhead-1"> <%= submissionId %></span>
+        </p>
+        <p style="margin: 0px">
+          <span class="body-1">Amount paid:</span>
+          <span class="subhead-1"> S$<%= amountPaid %></span>
+        </p>
+        <p class="body-1">
+          Please visit the link below for your proof of payment.
+        </p>
+      </div>
+      <a href="<%= invoiceUrl %>" style="color: #fff; text-decoration: none">
+        <button
+          style="
+            background: #445fcd;
+            border: 1px solid #445fcd;
+            border-radius: 4px;
+
+            width: 100%;
+            height: 56px;
+
+            font-style: normal;
+            font-weight: 500;
+            font-size: 16px;
+            line-height: 24px;
+            text-align: center;
+            letter-spacing: -0.006em;
+
+            color: #ffffff;
+
+            margin-bottom: 36px;
+          "
+        >
+          View proof of payment
+        </button>
+      </a>
+      <hr style="border-top: 1px" />
+      <div style="margin-top: 36px">
+        <p style="color: #474747" class="subhead-2">
+          If you are having trouble with the button above, copy and paste the
+          link below into your browser:
+        </p>
+        <p style="color: #445fcd; word-wrap: break-word" class="subhead-2">
+          <%= invoiceUrl %>
+        </p>
+      </div>
+    </div>
   </body>
 </html>

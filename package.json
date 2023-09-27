@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.71.0",
+  "version": "6.78.2",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -38,8 +38,9 @@
     "copyfiles:backend": "copyfiles -u 1 src/**/*.html dist/backend/src",
     "clean": "rimraf dist/",
     "start": "node -r dotenv/config src/app/server.js",
-    "dev": "concurrently -k -p \"[{name}]\" -n \"api,client\" -c  \"yellow.bold,green.bold\" \"docker-compose up\" \"npm run dev:frontend\"",
+    "dev": "concurrently -k -p \"[{name}]\" -n \"api,client,virus-scanner\" -c  \"yellow.bold,green.bold,blue.bold\" \"docker-compose up\" \"npm run dev:frontend\" \"npm --prefix serverless/virus-scanner run dev\"",
     "dev:backend": "tsnd --poll --respawn --transpile-only --inspect=0.0.0.0 --exit-child -r dotenv/config -- src/app/server.ts",
+    "dev:virus-scanner": "concurrently -k -p \"[{name}]\" -n \"api,virus-scanner\" -c  \"yellow.bold,blue.bold\" \"docker-compose up\" \"npm --prefix serverless/virus-scanner run dev\"",
     "dev:frontend": "npm run --prefix frontend start",
     "lint": "eslint src/ --quiet --fix",
     "lint:shared": "eslint shared/ --quiet --fix",
@@ -54,6 +55,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-cloudwatch-logs": "^3.347.1",
+    "@aws-sdk/client-lambda": "^3.414.0",
     "@babel/runtime": "^7.20.13",
     "@faker-js/faker": "^8.0.1",
     "@joi/date": "^2.1.0",

@@ -3,6 +3,7 @@ import config from '../../config/config'
 import { captchaConfig } from '../../config/features/captcha.config'
 import { goGovConfig } from '../../config/features/gogov.config'
 import { googleAnalyticsConfig } from '../../config/features/google-analytics.config'
+import { growthbookConfig } from '../../config/features/growthbook.config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { sentryConfig } from '../../config/features/sentry.config'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
@@ -40,5 +41,7 @@ export const getClientEnvVars = (): ClientEnvVars => {
     // Used for admin feedback in frontend
     adminFeedbackFieldThreshold: config.adminFeedbackFieldThreshold,
     adminFeedbackDisplayFrequency: config.adminFeedbackDisplayFrequency,
+
+    growthbookClientKey: growthbookConfig.growthbookClientKey,
   }
 }

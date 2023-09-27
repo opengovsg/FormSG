@@ -1,6 +1,7 @@
 import { format, parse } from 'date-fns'
 import { times } from 'lodash'
 
+import { DATE_PARSE_FORMAT } from '~shared/constants/dates'
 import { BasicField, FormFieldDto } from '~shared/types/field'
 import {
   AttachmentResponse,
@@ -15,7 +16,6 @@ import {
 import { removeAt } from '~shared/utils/immutable-array-fns'
 
 import { CHECKBOX_OTHERS_INPUT_VALUE } from '~templates/Field/Checkbox/CheckboxField'
-import { DATE_PARSE_FORMAT } from '~templates/Field/Date/DateField'
 import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/RadioField'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 import {
@@ -187,11 +187,18 @@ const transformToSectionOutput = (
 
 const transformToChildOutput = (
   schema: ChildrenCompoundFieldSchema,
-  input: ChildrenCompoundFieldValues,
+  input?: ChildrenCompoundFieldValues,
 ): ChildBirthRecordsResponse => {
+  const noOfChildrenSubFields = schema.childrenSubFields?.length ?? 1
+  let answerArray: string[][]
+  if (input?.child) {
+    answerArray = input.child
+  } else {
+    answerArray = [Array(noOfChildrenSubFields).fill('')]
+  }
   return {
     ...pickBaseOutputFromSchema(schema),
-    answerArray: input.child,
+    answerArray,
   }
 }
 

@@ -25,12 +25,16 @@ import {
 import { FormFieldValues } from '~templates/Field'
 
 import {
-  createEmailSubmissionFormData,
+  createClearSubmissionFormData,
   createEncryptedSubmissionData,
 } from './utils/createSubmission'
 import { filterHiddenInputs } from './utils/filterHiddenInputs'
 
 export const PUBLIC_FORMS_ENDPOINT = '/forms'
+
+// Encryption boundary shift RFC: https://docs.google.com/document/d/1VmNXS_xYY2Yg30AwVqzdndBp5yRJGSDsyjBnH51ktyc/edit?usp=sharing
+// Encryption boundary shift implementation PR: https://github.com/opengovsg/FormSG/pull/6587
+const ENCRYPTION_BOUNDARY_SHIFT_ENCRYPTION_VERSION = 2
 
 /**
  * Gets public view of form, along with any
@@ -93,6 +97,12 @@ export type SubmitStorageFormArgs = SubmitEmailFormArgs & {
   payments?: PaymentFieldsDto
 }
 
+export type SubmitStorageFormClearArgs = SubmitEmailFormArgs & {
+  paymentReceiptEmail?: string
+  paymentProducts?: Array<ProductItem>
+  payments?: PaymentFieldsDto
+}
+
 export const submitEmailModeForm = async ({
   formFields,
   formLogics,
@@ -107,11 +117,11 @@ export const submitEmailModeForm = async ({
     formInputs,
     formLogics,
   })
-  const formData = createEmailSubmissionFormData(
+  const formData = createClearSubmissionFormData({
     formFields,
-    filteredInputs,
+    formInputs: filteredInputs,
     responseMetadata,
-  )
+  })
 
   return ApiService.post<SubmissionResponseDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/email`,
@@ -164,6 +174,95 @@ export const submitStorageModeForm = async ({
   ).then(({ data }) => data)
 }
 
+export const submitStorageModeClearForm = async ({
+  formFields,
+  formLogics,
+  formInputs,
+  formId,
+  captchaResponse = null,
+  captchaType = '',
+  paymentReceiptEmail,
+  responseMetadata,
+  paymentProducts,
+  payments,
+}: SubmitStorageFormClearArgs) => {
+  const filteredInputs = filterHiddenInputs({
+    formFields,
+    formInputs,
+    formLogics,
+  })
+
+  const formData = createClearSubmissionFormData({
+    formFields,
+    formInputs: filteredInputs,
+    responseMetadata,
+    paymentReceiptEmail,
+    paymentProducts,
+    payments,
+    version: ENCRYPTION_BOUNDARY_SHIFT_ENCRYPTION_VERSION,
+  })
+
+  return ApiService.post<SubmissionResponseDto>(
+    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/storage`,
+    formData,
+    {
+      params: {
+        captchaResponse: String(captchaResponse),
+        captchaType: captchaType,
+      },
+    },
+  ).then(({ data }) => data)
+}
+
+// TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
+export const submitStorageModeClearFormWithFetch = async ({
+  formFields,
+  formLogics,
+  formInputs,
+  formId,
+  captchaResponse = null,
+  captchaType = '',
+  paymentReceiptEmail,
+  responseMetadata,
+  paymentProducts,
+  payments,
+}: SubmitStorageFormClearArgs) => {
+  const filteredInputs = filterHiddenInputs({
+    formFields,
+    formInputs,
+    formLogics,
+  })
+
+  const formData = createClearSubmissionFormData({
+    formFields,
+    formInputs: filteredInputs,
+    responseMetadata,
+    paymentReceiptEmail,
+    paymentProducts,
+    payments,
+    version: ENCRYPTION_BOUNDARY_SHIFT_ENCRYPTION_VERSION,
+  })
+
+  // Add captcha response to query string
+  const queryString = new URLSearchParams({
+    captchaResponse: String(captchaResponse),
+    captchaType,
+  }).toString()
+
+  const response = await fetch(
+    `${API_BASE_URL}${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/storage?${queryString}`,
+    {
+      method: 'POST',
+      body: formData,
+      headers: {
+        Accept: 'application/json',
+      },
+    },
+  )
+
+  return processFetchResponse(response)
+}
+
 // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
 export const submitEmailModeFormWithFetch = async ({
   formFields,
@@ -179,11 +278,11 @@ export const submitEmailModeFormWithFetch = async ({
     formInputs,
     formLogics,
   })
-  const formData = createEmailSubmissionFormData(
+  const formData = createClearSubmissionFormData({
     formFields,
-    filteredInputs,
+    formInputs: filteredInputs,
     responseMetadata,
-  )
+  })
 
   // Add captcha response to query string
   const queryString = new URLSearchParams({

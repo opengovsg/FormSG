@@ -1580,6 +1580,7 @@ describe('mail.service', () => {
     const MOCK_SUBMISSION_ID = 'mockSubmissionId'
     const MOCK_FORM_ID = 'mockFormId'
     const MOCK_PAYMENT_ID = 'mockPaymentId'
+    const MOCK_PAYMENT_AMOUNT = 100
 
     it('should send payment confirmation emails successfully', async () => {
       // Act
@@ -1589,6 +1590,7 @@ describe('mail.service', () => {
         submissionId: MOCK_SUBMISSION_ID,
         formId: MOCK_FORM_ID,
         paymentId: MOCK_PAYMENT_ID,
+        paymentAmount: MOCK_PAYMENT_AMOUNT,
       })
 
       // Assert
@@ -1605,6 +1607,7 @@ describe('mail.service', () => {
         submissionId: MOCK_SUBMISSION_ID,
         formId: MOCK_FORM_ID,
         paymentId: MOCK_PAYMENT_ID,
+        paymentAmount: MOCK_PAYMENT_AMOUNT,
       })
 
       // Assert

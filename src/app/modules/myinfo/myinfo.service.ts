@@ -60,10 +60,12 @@ import {
   compareHashedValues,
   createRelayState,
   getMyInfoAttr,
+  getMyInfoAttributeConstantsList,
   hashFieldValues,
   isMyInfoChildrenBirthRecords,
   isMyInfoLoginCookie,
   isMyInfoRelayState,
+  logIfFieldValueNotInMyinfoList,
   validateMyInfoForm,
 } from './myinfo.util'
 import getMyInfoHashModel from './myinfo_hash.model'
@@ -270,6 +272,19 @@ export class MyInfoServiceClass {
       const { fieldValue, isReadOnly } = myInfoData.getFieldValueForAttr(
         myInfoAttr as InternalAttr,
       )
+
+      // Check if field value exists in our constants lists. If it doesn't, log the error
+      if (fieldValue) {
+        const myInfoConstantsList = getMyInfoAttributeConstantsList(myInfoAttr)
+        if (myInfoConstantsList) {
+          logIfFieldValueNotInMyinfoList(
+            fieldValue,
+            myInfoAttr,
+            myInfoConstantsList,
+          )
+        }
+      }
+
       const prefilledField = cloneDeep(field) as PossiblyPrefilledField
       prefilledField.fieldValue = fieldValue
       // Disable field

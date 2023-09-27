@@ -39,6 +39,7 @@ import {
   IFormDocument,
   IFormSchema,
   IPopulatedForm,
+  IPopulatedUser,
 } from '../../../../types'
 import { EditFormFieldParams, FormUpdateParams } from '../../../../types/api'
 import config, { aws as AwsConfig } from '../../../config/config'
@@ -47,6 +48,10 @@ import getAgencyModel from '../../../models/agency.server.model'
 import getFormModel from '../../../models/form.server.model'
 import * as SmsService from '../../../services/sms/sms.service'
 import { twilioClientCache } from '../../../services/sms/sms.service'
+import {
+  createPresignedPostDataPromise,
+  CreatePresignedPostError,
+} from '../../../utils/aws-s3'
 import { dotifyObject } from '../../../utils/dotify-object'
 import { isVerifiableMobileField } from '../../../utils/field-validation/field-validation.guards'
 import {
@@ -87,7 +92,6 @@ import {
 } from './../../../services/sms/sms.types'
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
-  CreatePresignedUrlError,
   EditFieldError,
   FieldNotFoundError,
   InvalidCollaboratorError,
@@ -167,7 +171,7 @@ const createPresignedPostUrl = (
   { fileId, fileMd5Hash, fileType }: PresignedPostUrlParams,
 ): ResultAsync<
   PresignedPost,
-  InvalidFileTypeError | CreatePresignedUrlError
+  InvalidFileTypeError | CreatePresignedPostError
 > => {
   if (!VALID_UPLOAD_FILE_TYPES.includes(fileType)) {
     return errAsync(
@@ -175,34 +179,17 @@ const createPresignedPostUrl = (
     )
   }
 
-  const presignedPostUrlPromise = new Promise<PresignedPost>(
-    (resolve, reject) => {
-      AwsConfig.s3.createPresignedPost(
-        {
-          Bucket: bucketName,
-          Expires: PRESIGNED_POST_EXPIRY_SECS,
-          Conditions: [
-            // Content length restrictions: 0 to MAX_UPLOAD_FILE_SIZE.
-            ['content-length-range', 0, MAX_UPLOAD_FILE_SIZE],
-          ],
-          Fields: {
-            acl: 'public-read',
-            key: fileId,
-            'Content-MD5': fileMd5Hash,
-            'Content-Type': fileType,
-          },
-        },
-        (err, data) => {
-          if (err) {
-            return reject(err)
-          }
-          return resolve(data)
-        },
-      )
-    },
-  )
+  const presignedPostUrlPromise = createPresignedPostDataPromise({
+    bucketName,
+    expiresSeconds: PRESIGNED_POST_EXPIRY_SECS,
+    size: MAX_UPLOAD_FILE_SIZE,
+    key: fileId,
+    acl: 'public-read',
+    fileMd5Hash,
+    fileType,
+  })
 
-  return ResultAsync.fromPromise(presignedPostUrlPromise, (error) => {
+  return presignedPostUrlPromise.mapErr((error) => {
     logger.error({
       message: 'Error encountered when creating presigned POST URL',
       meta: {
@@ -214,7 +201,7 @@ const createPresignedPostUrl = (
       error,
     })
 
-    return new CreatePresignedUrlError('Error occurred whilst uploading file')
+    return new CreatePresignedPostError('Error occurred whilst uploading file')
   })
 }
 
@@ -227,13 +214,13 @@ const createPresignedPostUrl = (
  *
  * @returns ok(presigned post url) when creation is successful
  * @returns err(InvalidFileTypeError) when given file type is not supported
- * @returns err(CreatePresignedUrlError) when errors occurs on S3 side whilst creating presigned post url.
+ * @returns err(CreatePresignedPostError) when errors occurs on S3 side whilst creating presigned post url.
  */
 export const createPresignedPostUrlForImages = (
   uploadParams: PresignedPostUrlParams,
 ): ResultAsync<
   PresignedPost,
-  InvalidFileTypeError | CreatePresignedUrlError
+  InvalidFileTypeError | CreatePresignedPostError
 > => {
   return createPresignedPostUrl(AwsConfig.imageS3Bucket, uploadParams)
 }
@@ -247,13 +234,13 @@ export const createPresignedPostUrlForImages = (
  *
  * @returns ok(presigned post url) when creation is successful
  * @returns err(InvalidFileTypeError) when given file type is not supported
- * @returns err(CreatePresignedUrlError) when errors occurs on S3 side whilst creating presigned post url.
+ * @returns err(CreatePresignedPostError) when errors occurs on S3 side whilst creating presigned post url.
  */
 export const createPresignedPostUrlForLogos = (
   uploadParams: PresignedPostUrlParams,
 ): ResultAsync<
   PresignedPost,
-  InvalidFileTypeError | CreatePresignedUrlError
+  InvalidFileTypeError | CreatePresignedPostError
 > => {
   return createPresignedPostUrl(AwsConfig.logoS3Bucket, uploadParams)
 }
@@ -328,7 +315,10 @@ export const transferFormOwnership = (
       .andThen((currentOwner) => {
         // No need to transfer form ownership if new and current owners are
         // the same.
-        if (newOwnerEmail.toLowerCase() === currentOwner.email.toLowerCase()) {
+        if (
+          newOwnerEmail.trim().toLowerCase() ===
+          currentOwner.email.trim().toLowerCase()
+        ) {
           return errAsync(
             new TransferOwnershipError(
               'You are already the owner of this form',
@@ -390,6 +380,91 @@ export const transferFormOwnership = (
           },
         ),
       )
+  )
+}
+
+/**
+ * Transfer all forms belonging to the current owner to a new email.
+ * @param currentOwnerEmail the email of the current owner
+ * @param newOwnerEmail the email of the new owner to transfer to
+ *
+ * @return ok(true) if transfer is successful
+ * @return err(MissingUserError) if the current form admin cannot be found
+ * @return err(TransferOwnershipError) if new owner cannot be found in the database or new owner email is same as current owner
+ * @return err(DatabaseError) if any database errors like missing admin of current owner occurs
+ */
+export const transferAllFormsOwnership = (
+  currentOwner: IPopulatedUser,
+  newOwnerEmail: string,
+): ResultAsync<boolean, TransferOwnershipError | DatabaseError> => {
+  const logMeta = {
+    action: 'transferAllFormsOwnership',
+    currentOwner,
+    newOwnerEmail,
+  }
+
+  if (newOwnerEmail.toLowerCase() === currentOwner.email.toLowerCase()) {
+    return errAsync(
+      new TransferOwnershipError('You are already the owner of this form'),
+    )
+  }
+
+  return (
+    // Step 1: Retrieve user document for new owner.
+    UserService.findUserByEmail(newOwnerEmail)
+      .mapErr((error) => {
+        logger.error({
+          message:
+            'Error occurred whilst finding new owner email to transfer ownership to',
+          meta: logMeta,
+          error,
+        })
+        // Override MissingUserError with more specific message if new owner
+        // cannot be found.
+        if (error instanceof MissingUserError) {
+          return new TransferOwnershipError(
+            `${newOwnerEmail} must have logged in once before being added as Owner`,
+          )
+        }
+        return error
+      })
+      // Step 2: Perform form ownership transfer.
+      .andThen((newOwner) =>
+        ResultAsync.fromPromise(
+          FormModel.removeNewOwnerFromPermissionListForAllCurrentOwnerForms(
+            currentOwner,
+            newOwner,
+          ).then(() => newOwner),
+          (error) => {
+            logger.error({
+              message:
+                'Error occurred whilst removing new owner from permission list for current owner forms',
+              meta: logMeta,
+              error,
+            })
+
+            return new DatabaseError(getMongoErrorMessage(error))
+          },
+        ),
+      )
+      .andThen((newOwner) =>
+        ResultAsync.fromPromise(
+          FormModel.transferAllFormsToNewOwner(currentOwner, newOwner).then(
+            () => newOwner,
+          ),
+          (error) => {
+            logger.error({
+              message: 'Error occurred whilst transferring form ownership',
+              meta: logMeta,
+              error,
+            })
+
+            return new DatabaseError(getMongoErrorMessage(error))
+          },
+        ),
+      )
+      // Step 3: On success, return true
+      .map(() => true)
   )
 }
 

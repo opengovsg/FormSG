@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import { FormState } from 'react-hook-form'
-import { BiEditAlt, BiPlus, BiTrash } from 'react-icons/bi'
+import { BiPlus } from 'react-icons/bi'
 import {
   Box,
-  ButtonGroup,
   Divider,
   Flex,
   FormControl,
@@ -13,67 +12,20 @@ import {
 } from '@chakra-ui/react'
 
 import { FormPaymentsField, Product } from '~shared/types'
-import { centsToDollars } from '~shared/utils/payments'
 
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
-import IconButton from '~components/IconButton'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 
 import { dataSelector, usePaymentStore } from '../usePaymentStore'
 
 import { FormPaymentsInput } from './PaymentsInputPanel'
+import { ProductItem } from './ProductItem'
 import { ProductModal } from './ProductModal'
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {}
-
-const ProductItem = ({
-  product,
-  onEditClick,
-  onDeleteClick,
-  isDisabled,
-}: {
-  product: Product
-  onEditClick: () => void
-  onDeleteClick: () => void
-  isDisabled: boolean
-}) => {
-  return (
-    <>
-      <Box px="1rem" py="1rem" backgroundColor={'#F8F9FD'}>
-        <Flex justifyContent="center">
-          <Box flexGrow={1}>
-            <Text textStyle="subhead-1" pb="0.25rem" color="secondary.500">
-              {product.name}
-            </Text>
-            <Text textStyle="caption-1" color="secondary.500">
-              ${centsToDollars(product.amount_cents)}
-            </Text>
-          </Box>
-
-          <ButtonGroup variant="clear" colorScheme="secondary" spacing={0}>
-            <IconButton
-              isDisabled={isDisabled}
-              icon={<BiEditAlt type="solid" />}
-              color="primary.500"
-              aria-label={'Edit'}
-              onClick={onEditClick}
-            />
-            <IconButton
-              isDisabled={isDisabled}
-              icon={<BiTrash />}
-              color="danger.500"
-              aria-label={'Delete'}
-              onClick={onDeleteClick}
-            />
-          </ButtonGroup>
-        </Flex>
-      </Box>
-    </>
-  )
-}
 
 const AddProductButton = ({
   isDisabled,
@@ -238,7 +190,7 @@ export const ProductServiceBox = ({
         isDisabled={!paymentIsEnabled}
         isRequired
       >
-        <FormLabel>Product/service name</FormLabel>
+        <FormLabel>Product/service</FormLabel>
         <ProductList
           paymentIsEnabled={paymentIsEnabled}
           products={products}

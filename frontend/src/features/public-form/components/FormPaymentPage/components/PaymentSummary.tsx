@@ -53,11 +53,11 @@ const ProductsPaymentSummary = ({
         return <LineItem key={productItem.data._id} productItem={productItem} />
       })}
       <Divider my="1rem" />
-      <Flex justifyContent="flex-end">
-        <Text mr="0.25rem" textStyle="body-1" alignSelf="flex-end">
+      <Flex justifyContent="end" alignItems="baseline">
+        <Text textAlign="right" mr="0.5rem" justifySelf="end">
           Total:
         </Text>
-        <Text textStyle="h4">S${centsToDollars(paymentAmount ?? 0)}</Text>
+        <Text textStyle="h2">S${centsToDollars(paymentAmount ?? 0)}</Text>
       </Flex>
     </Box>
   )

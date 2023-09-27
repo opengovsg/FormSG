@@ -78,7 +78,7 @@ describe('admin-form.settings.routes', () => {
 
       const settingsToUpdate: SettingsUpdateDto = {
         webhook: {
-          url: 'https://example.com',
+          url: 'https://staging.form.gov.sg',
         },
       }
       expect(formToUpdate.webhook).not.toEqual(settingsToUpdate.webhook)

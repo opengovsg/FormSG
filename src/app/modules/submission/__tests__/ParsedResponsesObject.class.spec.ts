@@ -2,26 +2,26 @@ import {
   generateDefaultField,
   generateProcessedSingleAnswerResponse,
   generateSingleAnswerResponse,
-} from '../../../../../../__tests__/unit/backend/helpers/generate-form-data'
+} from '../../../../../__tests__/unit/backend/helpers/generate-form-data'
 import {
   BasicField,
   FormResponseMode,
   LogicType,
   MyInfoAttribute,
-} from '../../../../../../shared/types'
-import * as LogicUtil from '../../../../../shared/util/logic'
+} from '../../../../../shared/types'
+import * as LogicUtil from '../../../../shared/util/logic'
 import {
   FormFieldSchema,
   IFormDocument,
   IPreventSubmitLogicSchema,
-} from '../../../../../types'
+} from '../../../../types'
+import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import {
   ConflictError,
   ProcessingError,
   ValidateFieldError,
-} from '../../submission.errors'
-import { ProcessedFieldResponse } from '../../submission.types'
-import ParsedResponsesObject from '../ParsedResponsesObject.class'
+} from '../submission.errors'
+import { ProcessedFieldResponse } from '../submission.types'
 
 describe('ParsedResponsesObject', () => {
   it('should return list of parsed responses for email form submission successfully', async () => {

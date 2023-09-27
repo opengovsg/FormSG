@@ -6,7 +6,16 @@ import mongoose, { LeanDocument } from 'mongoose'
 import { err, ok, Result } from 'neverthrow'
 import { v4 as uuidv4, validate as validateUUID } from 'uuid'
 
-import { types as myInfoTypes } from '../../../../shared/constants/field/myinfo'
+import {
+  myInfoCountries,
+  myInfoDialects,
+  myInfoHdbTypes,
+  myInfoHousingTypes,
+  myInfoNationalities,
+  myInfoOccupations,
+  myInfoRaces,
+  types as myInfoTypes,
+} from '../../../../shared/constants/field/myinfo'
 import {
   BasicField,
   ChildrenCompoundFieldBase,
@@ -17,6 +26,7 @@ import {
   MyInfoChildData,
   MyInfoChildVaxxStatus,
 } from '../../../../shared/types'
+import { formatMyinfoDate } from '../../../../shared/utils/dates'
 import { hasProp } from '../../../../shared/utils/has-prop'
 import {
   IFieldSchema,
@@ -79,7 +89,9 @@ function hashChildrenFieldValues(
   const subFields = getMyInfoAttr(field) as MyInfoChildAttributes[]
   subFields.forEach((subField) => {
     const fieldArr = childrenBirthRecords[subField]
+    let myInfoFormattedValue: string
     fieldArr?.forEach((value, childIdx) => {
+      myInfoFormattedValue = value
       const childName =
         childrenBirthRecords?.[MyInfoChildAttributes.ChildName]?.[childIdx]
       if (childName === undefined) {
@@ -95,9 +107,16 @@ function hashChildrenFieldValues(
       if (!value) {
         return
       }
+      // Child's DOB is processed different from non-child Myinfo dates
+      // We have to return value in the the same date format as the frontend
+      // Hence we format it here
+      if (subField === MyInfoChildAttributes.ChildDateOfBirth) {
+        myInfoFormattedValue = formatMyinfoDate(value)
+        return
+      }
       readOnlyHashPromises[
         getMyInfoChildHashKey(field._id, subField, childIdx, childName)
-      ] = bcrypt.hash(value, HASH_SALT_ROUNDS)
+      ] = bcrypt.hash(myInfoFormattedValue, HASH_SALT_ROUNDS)
     })
   })
 }
@@ -515,4 +534,60 @@ export const handleMyInfoChildHashResponse = (
     })
   })
   return
+}
+
+/**
+ * This function is responsible for mapping a myInfo attribute to
+ * an existing myInfo constants list
+ *
+ * @param myInfoAttr the myInfo attribute
+ */
+export const getMyInfoAttributeConstantsList = (
+  myInfoAttr: string | string[],
+) => {
+  switch (myInfoAttr) {
+    case MyInfoAttribute.Occupation:
+      return myInfoOccupations
+    case MyInfoAttribute.Race:
+    case MyInfoAttribute.ChildRace:
+    case MyInfoAttribute.ChildSecondaryRace:
+      return myInfoRaces
+    case MyInfoAttribute.Nationality:
+      return myInfoNationalities
+    case MyInfoAttribute.Dialect:
+      return myInfoDialects
+    case MyInfoAttribute.BirthCountry:
+      return myInfoCountries
+    case MyInfoAttribute.HousingType:
+      return myInfoHousingTypes
+    case MyInfoAttribute.HdbType:
+      return myInfoHdbTypes
+    default:
+      return
+  }
+}
+
+/**
+ * Add logging to check if myInfo field value exists in a myInfo constants list
+ * @param fieldValue
+ * @param myInfoAttr
+ * @param myInfoList
+ */
+
+export const logIfFieldValueNotInMyinfoList = (
+  fieldValue: string,
+  myInfoAttr: string | string[],
+  myInfoList: string[],
+) => {
+  const isFieldValueInMyinfoList = myInfoList.includes(fieldValue)
+  if (!isFieldValueInMyinfoList) {
+    logger.error({
+      message: 'Myinfo field value not found in existing Myinfo constants list',
+      meta: {
+        action: 'prefillAndSaveMyInfoFields',
+        myInfoFieldValue: fieldValue,
+        myInfoAttr,
+      },
+    })
+  }
 }

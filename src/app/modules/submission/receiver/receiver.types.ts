@@ -4,4 +4,5 @@ import { FieldResponse } from '../../../../types'
 export interface ParsedMultipartForm {
   responses: FieldResponse[]
   responseMetadata: ResponseMetadata
+  version?: number
 }

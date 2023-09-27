@@ -50,7 +50,7 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 # Chinese fonts
-RUN echo @edge http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories && apk add wqy-zenhei@edge
+RUN echo @edge http://dl-cdn.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories && apk add wqy-zenhei@edge
 
 # Avoid using globs as there seems to be some inconsistency in the way dockerfile handles globs
 # * https://github.com/moby/moby/issues/15858 

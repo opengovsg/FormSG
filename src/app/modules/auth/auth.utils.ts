@@ -8,6 +8,7 @@ import { createLoggerWithLabel } from '../../config/logger'
 import * as MailErrors from '../../services/mail/mail.errors'
 import { HashingError } from '../../utils/hash'
 import * as CoreErrors from '../core/core.errors'
+import * as UserErrors from '../user/user.errors'
 
 import * as AuthErrors from './auth.errors'
 
@@ -26,6 +27,7 @@ export const mapRouteError: MapRouteError = (error, coreErrorMessage) => {
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage: error.message,
       }
+    case UserErrors.MissingUserError:
     case AuthErrors.InvalidOtpError:
       return {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,

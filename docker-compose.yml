@@ -20,10 +20,13 @@ services:
       - DB_HOST=mongodb://database:27017/formsg
       - APP_NAME=FormSG
       - APP_URL=http://localhost:5001
+      - FE_APP_URL=http://localhost:3000
       - ATTACHMENT_S3_BUCKET=local-attachment-bucket
       - IMAGE_S3_BUCKET=local-image-bucket
       - LOGO_S3_BUCKET=local-logo-bucket
       - STATIC_ASSETS_S3_BUCKET=local-static-assets-bucket
+      - VIRUS_SCANNER_QUARANTINE_S3_BUCKET=local-virus-scanner-quarantine-bucket
+      - VIRUS_SCANNER_CLEAN_S3_BUCKET=local-virus-scanner-clean-bucket
       - FORMSG_SDK_MODE=development
       - BOUNCE_LIFE_SPAN=86400000
       - AWS_ACCESS_KEY_ID=fakeKey
@@ -113,12 +116,17 @@ services:
       - PAYMENT_MIN_PAYMENT_AMOUNT_CENTS=50
       - SSM_ENV_SITE_NAME=development
       - PAYMENT_GUIDE_LINK
+      - PAYMENT_LANDING_GUIDE_LINK
       # Cron secrets
       - CRON_PAYMENT_API_SECRET=secretKey
       # env vars for go integration
       - GOGOV_API_KEY
       # Bearer token API key format
       - API_KEY_VERSION=v1
+      # env vars for growthbook
+      - GROWTHBOOK_CLIENT_KEY
+      # env vars for virus scanner
+      - VIRUS_SCANNER_LAMBDA_FUNCTION_NAME=function
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git#v4.0.4

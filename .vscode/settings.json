@@ -16,5 +16,10 @@
     },
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "markdown.extension.toc.omittedFromToc": {
+    "README.md": [
+      "## Table of Contents"
+  ]
+  }
 }

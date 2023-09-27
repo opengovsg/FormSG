@@ -14,7 +14,7 @@ export const claimGoLink = async (
   linkSuffix: string,
   formId: string,
   adminEmail: string,
-): Promise<unknown> => {
+): Promise<void> => {
   return ApiService.post(`${ADMIN_FORM_ENDPOINT}/${formId}/${GOGOV_ENDPOINT}`, {
     linkSuffix,
     adminEmail,

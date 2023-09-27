@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
+import { DATE_DISPLAY_FORMAT, DATE_PARSE_FORMAT } from '~shared/constants/dates'
 import { FormColorTheme } from '~shared/types'
 import { DateSelectedValidation } from '~shared/types/field'
 import { isDateAnInvalidDay } from '~shared/utils/date-validation'
@@ -16,9 +17,6 @@ import { DatePicker } from '~components/DatePicker'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { DateFieldSchema, SingleAnswerFieldInput } from '../types'
-
-export const DATE_DISPLAY_FORMAT = 'dd/MM/yyyy'
-export const DATE_PARSE_FORMAT = 'dd/MM/yyyy'
 
 export interface DateFieldProps extends BaseFieldProps {
   schema: DateFieldSchema

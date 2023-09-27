@@ -69,18 +69,20 @@ import * as FeedbackService from '../../feedback/feedback.service'
 import * as EmailSubmissionMiddleware from '../../submission/email-submission/email-submission.middleware'
 import * as EmailSubmissionService from '../../submission/email-submission/email-submission.service'
 import {
-  mapAttachmentsFromResponses,
   mapRouteError as mapEmailSubmissionError,
   SubmissionEmailObj,
 } from '../../submission/email-submission/email-submission.util'
-import ParsedResponsesObject from '../../submission/email-submission/ParsedResponsesObject.class'
 import * as EncryptSubmissionMiddleware from '../../submission/encrypt-submission/encrypt-submission.middleware'
 import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
 import { mapRouteError as mapEncryptSubmissionError } from '../../submission/encrypt-submission/encrypt-submission.utils'
 import IncomingEncryptSubmission from '../../submission/encrypt-submission/IncomingEncryptSubmission.class'
+import ParsedResponsesObject from '../../submission/ParsedResponsesObject.class'
 import * as ReceiverMiddleware from '../../submission/receiver/receiver.middleware'
 import * as SubmissionService from '../../submission/submission.service'
-import { extractEmailConfirmationData } from '../../submission/submission.utils'
+import {
+  extractEmailConfirmationData,
+  mapAttachmentsFromResponses,
+} from '../../submission/submission.utils'
 import * as UserService from '../../user/user.service'
 import { removeFormFromAllWorkspaces } from '../../workspace/workspace.service'
 import { PrivateFormError } from '../form.errors'
@@ -92,7 +94,7 @@ import {
   PREVIEW_CORPPASS_UINFIN,
   PREVIEW_SINGPASS_UINFIN,
 } from './admin-form.constants'
-import { EditFieldError, GoGovError } from './admin-form.errors'
+import { EditFieldError, GoGovServerError } from './admin-form.errors'
 import {
   getWebhookSettingsValidator,
   updateSettingsValidator,
@@ -100,7 +102,11 @@ import {
 } from './admin-form.middlewares'
 import * as AdminFormService from './admin-form.service'
 import { PermissionLevel } from './admin-form.types'
-import { mapRouteError, verifyValidUnicodeString } from './admin-form.utils'
+import {
+  mapGoGovErrors,
+  mapRouteError,
+  verifyValidUnicodeString,
+} from './admin-form.utils'
 
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
 const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
@@ -1023,6 +1029,57 @@ export const handleCopyTemplateForm: ControllerHandler<
 }
 
 /**
+ * Handler for POST /admin/forms/all-transfer-owner.
+ * @security session
+ *
+ * @returns 200 with true if transfer was successful
+ * @returns 400 when new owner is not in the database yet
+ * @returns 400 when new owner is already current owner
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const transferAllFormsOwnership: ControllerHandler<
+  unknown,
+  unknown,
+  { email: string }
+> = (req, res) => {
+  const { email: newOwnerEmail } = req.body
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Transfer all forms to new owner
+        AdminFormService.transferAllFormsOwnership(user, newOwnerEmail),
+      )
+      .map((data) => {
+        return res.status(StatusCodes.OK).json(data)
+      })
+      // Some error occurred earlier in the chain.
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred whilst transferring all forms ownership',
+          meta: {
+            action: 'transferAllFormsOwnership',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            newOwnerEmail,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+export const handleTransferAllFormsOwnership = [
+  transferFormOwnershipValidator,
+  transferAllFormsOwnership,
+] as ControllerHandler[]
+
+/**
  * Handler for POST /{formId}/adminform/transfer-owner.
  * @security session
  *
@@ -1523,18 +1580,27 @@ export const _handleGetWebhookSettings: ControllerHandler<
   const { userEmail } = req.body
   const authedUserId = (req.session as AuthedSessionData).user._id
 
+  const logMeta = {
+    action: 'handleGetWebhookSettings',
+    ...createReqMeta(req),
+    userEmail,
+    formId,
+  }
+
   logger.info({
     message: 'User attempting to get webhook settings',
-    meta: {
-      action: 'handleGetWebhookSettings',
-      ...createReqMeta(req),
-      reqBody: req.body,
-      formId,
-      userEmail,
-    },
+    meta: logMeta,
   })
 
   return UserService.findUserById(authedUserId)
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when retrieving user from database',
+        meta: logMeta,
+        error,
+      })
+      return error
+    })
     .andThen((user) =>
       // Retrieve form for settings as well as for permissions checking
       FormService.retrieveFullFormById(formId).map((form) => ({
@@ -1549,12 +1615,7 @@ export const _handleGetWebhookSettings: ControllerHandler<
     .mapErr((error) => {
       logger.error({
         message: 'Error occurred when retrieving form settings',
-        meta: {
-          action: 'handleGetWebhookSettings',
-          ...createReqMeta(req),
-          userEmail,
-          formId,
-        },
+        meta: logMeta,
         error,
       })
       const { errorMessage, statusCode } = mapRouteError(error)
@@ -1723,10 +1784,10 @@ export const submitEmailPreview: ControllerHandler<
   }
   const form = formResult.value
 
-  const parsedResponsesResult =
-    await EmailSubmissionService.validateAttachments(responses).andThen(() =>
-      ParsedResponsesObject.parseResponses(form, responses),
-    )
+  const parsedResponsesResult = await SubmissionService.validateAttachments(
+    responses,
+    form.responseMode,
+  ).andThen(() => ParsedResponsesObject.parseResponses(form, responses))
   if (parsedResponsesResult.isErr()) {
     logger.error({
       message: 'Error while parsing responses for preview submission',
@@ -2936,13 +2997,18 @@ export const handleSetGoLinkSuffix: ControllerHandler<
               },
             },
           ),
-          // TODO: fix error handling (https://linear.app/ogp/issue/FRM-901/improve-error-handling-when-calling-gogov-api)
-          () => new GoGovError(),
+          (error) => {
+            if (axios.isAxiosError(error)) {
+              return mapGoGovErrors(error)
+            }
+
+            return new GoGovServerError()
+          },
         )
       })
       // Step 3: After obtaining GoGov link, save it to the form
       .andThen(() => AdminFormService.setGoLinkSuffix(formId, linkSuffix))
-      .map((data) => res.status(StatusCodes.OK).json(data))
+      .map(() => res.sendStatus(StatusCodes.OK))
       .mapErr((error) => {
         logger.error({
           message: 'Error occurred when setting GoGov link suffix',

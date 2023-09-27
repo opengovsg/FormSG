@@ -72,3 +72,21 @@ export class ResponseModeError extends ApplicationError {
     )
   }
 }
+
+/**
+ * Attachment greater than size limit
+ */
+export class AttachmentTooLargeError extends ApplicationError {
+  constructor(message = 'Attachment size limit exceeded') {
+    super(message)
+  }
+}
+
+/**
+ * Generic error for errors thrown while receiving multipart form data
+ */
+export class InvalidFileExtensionError extends ApplicationError {
+  constructor(message = 'Invalid file extension found in attachment') {
+    super(message)
+  }
+}

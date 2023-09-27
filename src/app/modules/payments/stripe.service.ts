@@ -8,6 +8,7 @@ import Stripe from 'stripe'
 import { MarkRequired } from 'ts-essentials'
 import isURL from 'validator/lib/isURL'
 
+import { featureFlags } from '../../../../shared/constants'
 import {
   PaymentStatus,
   ReconciliationReportLine,
@@ -27,7 +28,10 @@ import {
   getMongoErrorMessage,
   transformMongoError,
 } from '../../utils/handle-mongo-error'
+import { InvalidDomainError } from '../auth/auth.errors'
+import * as AuthService from '../auth/auth.service'
 import { DatabaseError, DatabaseWriteConflictError } from '../core/core.errors'
+import { getFeatureFlag } from '../feature-flags/feature-flags.service'
 import { FormNotFoundError } from '../form/form.errors'
 import {
   PendingSubmissionNotFoundError,
@@ -672,24 +676,75 @@ export const linkStripeAccountToForm = (
     accountId: string
     publishableKey: string
   },
-): ResultAsync<string, DatabaseError> =>
-  ResultAsync.fromPromise(
-    form.addPaymentAccountId({ accountId, publishableKey }),
-    (error) => {
-      const errMsg = 'Failed to update payment account id'
-      logger.error({
-        message: errMsg,
-        meta: {
-          action: 'linkStripeAccountToForm',
-          stripeAccountId: accountId,
-          stripePublishableKey: publishableKey,
-          formId: form._id,
+): ResultAsync<
+  string,
+  DatabaseError | StripeFetchError | StripeAccountError | InvalidDomainError
+> => {
+  const logMeta = {
+    action: 'linkStripeAccountToForm',
+    stripeAccountId: accountId,
+    stripePublishableKey: publishableKey,
+    formId: form._id,
+  }
+
+  return getFeatureFlag(featureFlags.validateStripeEmailDomain, {
+    // If getFeatureFlag throws a DatabaseError, we want to log it, but respond
+    // to the client as if the flag is not found.
+    fallbackValue: false,
+    logMeta,
+  })
+    .andThen((shouldValidateStripeEmailDomain) => {
+      if (!shouldValidateStripeEmailDomain) {
+        // skip validation
+        return okAsync(undefined)
+      }
+
+      return ResultAsync.fromPromise(
+        stripe.accounts.retrieve(accountId),
+        (error) => {
+          logger.error({
+            message: 'Error retriving Stripe account',
+            meta: {
+              action: 'linkStripeAccountToForm',
+              stripeAccountId: accountId,
+            },
+            error,
+          })
+          return new StripeFetchError(String(error))
         },
-        error,
+      ).andThen((account) => {
+        // Check if the email domain is whitelisted
+        if (!account.email) {
+          logger.error({
+            message: 'Error retriving Stripe account email',
+            meta: {
+              action: 'linkStripeAccountToForm',
+              stripeAccountId: accountId,
+              account,
+            },
+          })
+          return errAsync(
+            new StripeAccountError('Stripe account email is missing'),
+          )
+        }
+        return AuthService.validateEmailDomain(account.email)
       })
-      return new DatabaseError(errMsg)
-    },
-  ).map((updatedForm) => updatedForm.payments_channel.target_account_id)
+    })
+    .andThen(() =>
+      ResultAsync.fromPromise(
+        form.addPaymentAccountId({ accountId, publishableKey }),
+        (error) => {
+          const errMsg = 'Failed to update payment account id'
+          logger.error({
+            message: errMsg,
+            meta: logMeta,
+            error,
+          })
+          return new DatabaseError(errMsg)
+        },
+      ).map((updatedForm) => updatedForm.payments_channel.target_account_id),
+    )
+}
 
 export const unlinkStripeAccountFromForm = (
   form: IPopulatedEncryptedForm,

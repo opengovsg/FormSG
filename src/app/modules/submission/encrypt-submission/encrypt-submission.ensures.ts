@@ -1,22 +1,21 @@
-import { StatusCodes } from 'http-status-codes'
-
-import { IPopulatedEncryptedForm } from 'src/types'
-
 import { CaptchaTypes } from '../../../../../shared/types/captcha'
+import { IPopulatedForm } from '../../../../types'
+import { createLoggerWithLabel } from '../../../config/logger'
 import * as CaptchaService from '../../../services/captcha/captcha.service'
 import * as TurnstileService from '../../../services/turnstile/turnstile.service'
 import { Middleware } from '../../../utils/pipeline-middleware'
 import { getRequestIp } from '../../../utils/request'
 import * as FormService from '../../form/form.service'
 
-import { logger } from './encrypt-submission.controller'
 import { mapRouteError } from './encrypt-submission.utils'
+
+const logger = createLoggerWithLabel(module)
 
 type FormSubmissionPipelineContext = {
   req: any
   res: any
   logMeta: { [other: string]: any; action: string }
-  form: IPopulatedEncryptedForm
+  form: IPopulatedForm
 }
 
 export const ensureFormWithinSubmissionLimits: Middleware<
@@ -38,6 +37,7 @@ export const ensureFormWithinSubmissionLimits: Middleware<
   }
   return next()
 }
+
 export const ensureValidCaptcha: Middleware<
   FormSubmissionPipelineContext
 > = async ({ form, req, logMeta, res }, next) => {
@@ -95,6 +95,7 @@ export const ensureValidCaptcha: Middleware<
 
   return next()
 }
+
 export const ensurePublicForm: Middleware<FormSubmissionPipelineContext> = (
   { form, logMeta, res },
   next,
@@ -107,9 +108,6 @@ export const ensurePublicForm: Middleware<FormSubmissionPipelineContext> = (
       error: formPublicResult.error,
     })
     const { statusCode, errorMessage } = mapRouteError(formPublicResult.error)
-    if (statusCode === StatusCodes.GONE) {
-      return res.sendStatus(statusCode)
-    }
     return res.status(statusCode).json({
       message: errorMessage,
     })
