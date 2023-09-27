@@ -146,19 +146,6 @@ const deleteWorkspaceTransaction = async ({
     .finally(() => session.endSession())
 }
 
-export const getForms = (
-  workspaceId: string,
-): ResultAsync<any, DatabaseError> => {
-  return okAsync({ workspaceId: workspaceId })
-}
-
-export const deleteForms = (
-  workspaceId: string,
-  formIds: string[],
-): ResultAsync<any, DatabaseError> => {
-  return okAsync({ workspaceId: workspaceId, formIds: formIds })
-}
-
 export const moveForms = ({
   userId,
   destWorkspaceId,

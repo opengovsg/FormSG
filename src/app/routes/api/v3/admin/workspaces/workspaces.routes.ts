@@ -6,13 +6,9 @@ import {
 } from '../../../../../modules/auth/auth.middlewares'
 import * as WorkspaceController from '../../../../../modules/workspace/workspace.controller'
 
-import { WorkspacesFormRouter } from './workspaces.form.routes'
-
 export const WorkspacesRouter = Router()
 WorkspacesRouter.use(withUserAuthentication)
 WorkspacesRouter.use(logAdminAction)
-
-WorkspacesRouter.use(WorkspacesFormRouter)
 
 WorkspacesRouter.route('/')
   /**
