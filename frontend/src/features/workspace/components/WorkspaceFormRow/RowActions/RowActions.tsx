@@ -23,7 +23,7 @@ export const RowActions = (props: RowActionsProps): JSX.Element => {
   return (
     <Box
       pos="absolute"
-      right="2rem"
+      right="4rem"
       top={{ md: '1.5rem' }}
       bottom={{ base: '1.5rem', md: 'initial' }}
     >

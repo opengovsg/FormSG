@@ -1,6 +1,5 @@
 import { Box, Divider, Flex, Stack, Text } from '@chakra-ui/react'
 
-import { CONTAINER_MAXW } from '~features/workspace/WorkspaceContent'
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
 import { WorkspaceFormRow } from './WorkspaceFormRow'
@@ -10,7 +9,7 @@ import { WorkspaceRowsProvider } from './WorkspaceRowsContext'
 
 const WorkspaceFormRowsSkeleton = () => {
   return (
-    <Stack maxW={CONTAINER_MAXW} m="auto" spacing={0} divider={<Divider />}>
+    <Stack m="auto" spacing={0} divider={<Divider />}>
       <WorkspaceFormRowSkeleton />
       <WorkspaceFormRowSkeleton />
       <WorkspaceFormRowSkeleton />
@@ -51,9 +50,9 @@ export const WorkspaceFormRows = (): JSX.Element => {
 
   return (
     <WorkspaceRowsProvider>
-      <Stack maxW={CONTAINER_MAXW} m="auto" spacing={0} divider={<Divider />}>
+      <Stack m="auto" spacing={0} divider={<Divider />}>
         {displayedForms.map((meta) => (
-          <WorkspaceFormRow px="2rem" key={meta._id} formMeta={meta} />
+          <WorkspaceFormRow px="4rem" key={meta._id} formMeta={meta} />
         ))}
       </Stack>
     </WorkspaceRowsProvider>

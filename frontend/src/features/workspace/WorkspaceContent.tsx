@@ -18,8 +18,6 @@ import { WorkspaceFormRows } from './components/WorkspaceFormRow'
 import { WorkspaceHeader } from './components/WorkspaceHeader'
 import { useWorkspaceContext } from './WorkspaceContext'
 
-export const CONTAINER_MAXW = '69.5rem'
-
 export const WorkspaceContent = (): JSX.Element => {
   const { isLoading, totalFormsCount, isDefaultWorkspace } =
     useWorkspaceContext()
@@ -57,18 +55,23 @@ export const WorkspaceContent = (): JSX.Element => {
           templateColumns="1fr"
           templateRows="auto 1fr auto"
           minH="100vh"
-          templateAreas="'header' 'main' 'footer'"
+          templateAreas=" 'header' 'main'"
           overflowY="scroll"
         >
           <Container
             gridArea="header"
-            maxW={CONTAINER_MAXW}
+            maxW="100%"
             borderBottom="1px solid var(--chakra-colors-neutral-300)"
-            px="2rem"
+            px="4rem"
             py="1rem"
           >
             {isDefaultWorkspace && (
-              <InlineMessage useMarkdown mb="2rem" mx="-2rem">
+              <InlineMessage
+                useMarkdown
+                mb="2rem"
+                mx="-2rem"
+                justifyContent="center"
+              >
                 {dashboardMessage}
               </InlineMessage>
             )}
@@ -88,11 +91,7 @@ export const WorkspaceContent = (): JSX.Element => {
             </Box>
           )}
 
-          <Container
-            gridArea="footer"
-            pt={{ base: '1rem', md: '1.5rem' }}
-            maxW={CONTAINER_MAXW}
-          />
+          <Container pt={{ base: '1rem', md: '1.5rem' }} />
         </Grid>
       )}
     </>
