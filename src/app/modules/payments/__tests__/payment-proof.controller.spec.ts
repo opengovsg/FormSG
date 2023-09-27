@@ -83,7 +83,7 @@ describe('stripe.controller', () => {
         paymentIntentId: 'pi_MOCK_PAYMENT_INTENT',
         email: 'formsg@tech.gov.sg',
         completedPayment: {
-          receiptUrl: 'http://form.gov.sg',
+          receiptUrl: 'https://form.gov.sg',
           submissionId: mockSubmissionId,
         },
         gstEnabled: false,
@@ -134,7 +134,7 @@ describe('stripe.controller', () => {
 
       const retrieveReceiptUrlFromStripeSpy = jest
         .spyOn(PaymentProofService, '_retrieveReceiptUrlFromStripe')
-        .mockReturnValueOnce(okAsync('http://form.gov.sg'))
+        .mockReturnValueOnce(okAsync('https://form.gov.sg'))
 
       // Act
       await PaymentProofController.downloadPaymentInvoice(
@@ -177,7 +177,7 @@ describe('stripe.controller', () => {
 
       const retrieveReceiptUrlFromStripeSpy = jest
         .spyOn(PaymentProofService, '_retrieveReceiptUrlFromStripe')
-        .mockReturnValueOnce(okAsync('http://form.gov.sg'))
+        .mockReturnValueOnce(okAsync('https://form.gov.sg'))
 
       const storePaymentProofInS3Spy = jest
         .spyOn(PaymentProofService, '_storePaymentProofInS3')
@@ -233,7 +233,7 @@ describe('stripe.controller', () => {
 
       const retrieveReceiptUrlFromStripeSpy = jest
         .spyOn(PaymentProofService, '_retrieveReceiptUrlFromStripe')
-        .mockReturnValueOnce(okAsync('http://form.gov.sg'))
+        .mockReturnValueOnce(okAsync('https://form.gov.sg'))
 
       const mockRedirectUrl = 'mockRedirectUrl'
       const getPaymentProofPresignedS3UrlSpy = jest
