@@ -112,7 +112,6 @@ function hashChildrenFieldValues(
       // Hence we format it here
       if (subField === MyInfoChildAttributes.ChildDateOfBirth) {
         myInfoFormattedValue = formatMyinfoDate(value)
-        return
       }
       readOnlyHashPromises[
         getMyInfoChildHashKey(field._id, subField, childIdx, childName)
