@@ -1,22 +1,15 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
-import axios from 'axios'
 import { ObjectId } from 'bson'
 import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync } from 'neverthrow'
-import { PaymentStatus, ProductItem, SubmissionType } from 'shared/types'
 import Stripe from 'stripe'
 import { MarkRequired } from 'ts-essentials'
 
 import getPaymentModel from 'src/app/models/payment.server.model'
 import { getEncryptPendingSubmissionModel } from 'src/app/models/pending_submission.server.model'
-import * as ConvertHtmlToPdf from 'src/app/utils/convert-html-to-pdf'
-import {
-  IPaymentSchema,
-  IPopulatedEncryptedForm,
-  IPopulatedForm,
-} from 'src/types'
+import { IPopulatedEncryptedForm, IPopulatedForm } from 'src/types'
 
 import config from '../../../config/config'
 import { FormNotFoundError } from '../../form/form.errors'
@@ -24,14 +17,12 @@ import * as FormService from '../../form/form.service'
 import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
 import * as StripeController from '../stripe.controller'
 import * as StripeService from '../stripe.service'
-import * as StripeUtils from '../stripe.utils'
 
 const Payment = getPaymentModel(mongoose)
 const EncryptPendingSubmission = getEncryptPendingSubmissionModel(mongoose)
 
 const MOCK_FORM_ID = new ObjectId().toHexString()
 
-jest.mock('axios')
 jest.mock('src/app/modules/payments/stripe.utils')
 jest.mock('src/app/utils/convert-html-to-pdf')
 
@@ -44,7 +35,7 @@ jest.mock('../../form/form.service')
 const MockFormService = jest.mocked(FormService)
 
 jest.mock('src/app/modules/payments/stripe.service', () => {
-  const allAutoMocked = jest.createMockFromModule(
+  const allAutoMocked = jest.createMockFromModule<typeof StripeService>(
     'src/app/modules/payments/stripe.service',
   )
   const actual = jest.requireActual('src/app/modules/payments/stripe.service')
@@ -64,135 +55,6 @@ describe('stripe.controller', () => {
   beforeAll(async () => await dbHandler.connect())
   afterAll(async () => await dbHandler.closeDatabase())
   beforeEach(() => jest.clearAllMocks())
-
-  describe('downloadPaymentInvoice', () => {
-    const mockBusinessInfo = {
-      address: 'localhost',
-      gstRegNo: 'G123456',
-    }
-    const mockFormTitle = 'Mock Form Title'
-    const mockSubmissionId = 'MOCK_SUBMISSION_ID'
-    const mockProducts: ProductItem[] = expect.any(Array)
-    const mockInvoiceArgs = {
-      ...mockBusinessInfo,
-      formTitle: mockFormTitle,
-      submissionId: mockSubmissionId,
-      gstApplicable: false,
-      products: mockProducts,
-    }
-    const mockForm = {
-      _id: MOCK_FORM_ID,
-      admin: {
-        agency: {
-          business: mockBusinessInfo,
-        },
-      },
-      title: mockFormTitle,
-    } as IPopulatedForm
-
-    let payment: IPaymentSchema
-
-    beforeEach(async () => {
-      await dbHandler.clearCollection(Payment.collection.name)
-      await dbHandler.clearCollection(EncryptPendingSubmission.collection.name)
-      const pendingSubmission = await EncryptPendingSubmission.create({
-        submissionType: SubmissionType.Encrypt,
-        form: MOCK_FORM_ID,
-        encryptedContent: 'some random encrypted content',
-        version: 1,
-      })
-
-      payment = await Payment.create({
-        formId: mockForm._id,
-        targetAccountId: 'acct_MOCK_ACCOUNT_ID',
-        pendingSubmissionId: pendingSubmission._id,
-        amount: 12345,
-        status: PaymentStatus.Succeeded,
-        paymentIntentId: 'pi_MOCK_PAYMENT_INTENT',
-        email: 'formsg@tech.gov.sg',
-        completedPayment: {
-          receiptUrl: 'http://form.gov.sg',
-          submissionId: mockSubmissionId,
-        },
-        gstEnabled: false,
-      })
-    })
-    it('should generate return a pdf file when receipt url is present', async () => {
-      MockFormService.retrieveFullFormById.mockReturnValue(okAsync(mockForm))
-      MockEncryptSubmissionService.checkFormIsEncryptMode.mockReturnValue(
-        ok(mockForm as IPopulatedEncryptedForm),
-      )
-      const mockReq = expressHandler.mockRequest({
-        params: { formId: mockForm._id, paymentId: payment._id },
-      })
-      const mockRes = expressHandler.mockResponse()
-      const axiosSpy = jest
-        .spyOn(axios, 'get')
-        .mockResolvedValueOnce({ data: '<html>some html</html>' })
-
-      const convertInvoiceSpy = jest
-        .spyOn(StripeUtils, 'convertToProofOfPaymentFormat')
-        .mockReturnValueOnce('<html>some converted html</html>')
-
-      const generatePdfFromHtmlSpy = jest
-        .spyOn(ConvertHtmlToPdf, 'generatePdfFromHtml')
-        .mockReturnValueOnce(Promise.resolve(Buffer.from('123')))
-
-      // Act
-      await StripeController.downloadPaymentInvoice(mockReq, mockRes, jest.fn())
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-        mockForm._id,
-      )
-
-      // Assert
-      expect(axiosSpy).toHaveBeenCalledOnce()
-      expect(convertInvoiceSpy).toHaveBeenCalledWith(
-        expect.any(String),
-        mockInvoiceArgs,
-      )
-      expect(generatePdfFromHtmlSpy).toHaveBeenCalledWith(expect.any(String))
-      expect(mockRes.send).toHaveBeenCalledOnce()
-      expect(mockRes.status).toHaveBeenCalledWith(200)
-    })
-
-    it('should return 404 if StripeService returns error', async () => {
-      MockFormService.retrieveFullFormById.mockReturnValue(okAsync(mockForm))
-      MockEncryptSubmissionService.checkFormIsEncryptMode.mockReturnValue(
-        ok(mockForm as IPopulatedEncryptedForm),
-      )
-
-      const mockReq = expressHandler.mockRequest({
-        params: { formId: mockForm._id, paymentId: payment._id },
-      })
-      const mockRes = expressHandler.mockResponse()
-      const axiosSpy = jest
-        .spyOn(axios, 'get')
-        .mockRejectedValueOnce({ data: '<html>missing resource</html>' })
-
-      const convertInvoiceSpy = jest.spyOn(
-        StripeUtils,
-        'convertToProofOfPaymentFormat',
-      )
-
-      const generatePdfFromHtmlSpy = jest.spyOn(
-        ConvertHtmlToPdf,
-        'generatePdfFromHtml',
-      )
-
-      // Act
-      await StripeController.downloadPaymentInvoice(mockReq, mockRes, jest.fn())
-      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
-        mockForm._id,
-      )
-
-      // Assert
-      expect(axiosSpy).toHaveBeenCalledOnce()
-      expect(convertInvoiceSpy).not.toHaveBeenCalled()
-      expect(generatePdfFromHtmlSpy).not.toHaveBeenCalled()
-      expect(mockRes.json).toHaveBeenCalledOnce()
-      expect(mockRes.status).toHaveBeenCalledWith(404)
-    })
-  })
 
   describe('_handleConnectOauthCallback', () => {
     beforeEach(async () => {

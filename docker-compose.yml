@@ -22,6 +22,7 @@ services:
       - APP_URL=http://localhost:5001
       - FE_APP_URL=http://localhost:3000
       - ATTACHMENT_S3_BUCKET=local-attachment-bucket
+      - PAYMENT_PROOF_S3_BUCKET=local-payment-proof-bucket
       - IMAGE_S3_BUCKET=local-image-bucket
       - LOGO_S3_BUCKET=local-logo-bucket
       - STATIC_ASSETS_S3_BUCKET=local-static-assets-bucket

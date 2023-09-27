@@ -2,6 +2,7 @@ import { Router } from 'express'
 
 import { rateLimitConfig } from '../../../../config/config'
 import { withCronPaymentSecretAuthentication } from '../../../../modules/auth/auth.middlewares'
+import * as PaymentProofController from '../../../../modules/payments/payment-proof.controller'
 import * as PaymentsController from '../../../../modules/payments/payments.controller'
 import * as StripeController from '../../../../modules/payments/stripe.controller'
 import { limitRate } from '../../../../utils/limit-rate'
@@ -30,7 +31,7 @@ PaymentsRouter.get(
 PaymentsRouter.get(
   '/:formId([a-fA-F0-9]{24})/:paymentId([a-fA-F0-9]{24})/invoice/download',
   limitRate({ max: rateLimitConfig.downloadPaymentReceipt }),
-  StripeController.downloadPaymentInvoice,
+  PaymentProofController.downloadPaymentInvoice,
 )
 
 PaymentsRouter.get(
