@@ -301,3 +301,31 @@ export const moveFormsToWorkspace: ControllerHandler<
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
+
+export const deleteFormFromWorkspaces: ControllerHandler<
+  { formId: string },
+  void | ErrorDto
+> = async (req, res) => {
+  const userId = (req.session as AuthedSessionData).user._id
+  const { formId } = req.params
+
+  return WorkspaceService.removeFormFromAllWorkspaces({
+    formId,
+    userId,
+  })
+    .map(() => res.sendStatus(StatusCodes.OK))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error deleting forms from all workspaces',
+        meta: {
+          action: 'deleteFormFromWorkspaces',
+          formId,
+          userId,
+        },
+        error,
+      })
+
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}

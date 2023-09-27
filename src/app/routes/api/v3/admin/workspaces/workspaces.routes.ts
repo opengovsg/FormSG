@@ -81,3 +81,19 @@ WorkspacesRouter.route('/move')
    * @returns 500 when database errors occur
    */
   .post(WorkspaceController.moveFormsToWorkspace)
+
+WorkspacesRouter.route('/form/:formId([a-fA-F0-9]{24})')
+  /**
+   * Remove a form from all workspaces.
+   *
+   * By default a form should only belong to one workspace.
+   * @security session
+   *
+   * @returns 200 if form is successfully removed
+   * @returns 401 when user is not logged in
+   * @returns 403 when user does not have permissions to update the source or destination workspace
+   * @returns 404 when the form does not exist
+   * @returns 422 when user of given id cannnot be found in the database
+   * @returns 500 when database errors occur
+   */
+  .delete(WorkspaceController.deleteFormFromWorkspaces)
