@@ -51,6 +51,7 @@ const WorkspaceTab = ({
         }
         whiteSpace="nowrap"
         isTruncated
+        mr="2rem"
       >
         {label}
       </Text>

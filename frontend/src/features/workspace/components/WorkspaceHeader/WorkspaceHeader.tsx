@@ -109,13 +109,15 @@ export const WorkspaceHeader = ({
       {isDesktop ? (
         // Combination box used in desktop mode.
         <Box gridArea="searchFilter">
-          <WorkspaceSearchbar
-            placeholder="Search by title"
-            value={activeSearch}
-            onChange={setActiveSearch}
-            filterValue={activeFilter}
-            onFilter={setActiveFilter}
-          />
+          {totalFormsCount ? (
+            <WorkspaceSearchbar
+              placeholder="Search by title"
+              value={activeSearch}
+              onChange={setActiveSearch}
+              filterValue={activeFilter}
+              onFilter={setActiveFilter}
+            />
+          ) : null}
         </Box>
       ) : (
         <MobileWorkspaceSearchbar
