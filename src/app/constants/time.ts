@@ -1,1 +1,1 @@
-export const dayInSeconds = 24 * 60 * 60
+export const DAY_IN_SECONDS = 24 * 60 * 60

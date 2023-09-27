@@ -10,7 +10,7 @@ import {
 } from '../../../types'
 import { aws as AwsConfig } from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
-import { dayInSeconds } from '../../constants/time'
+import { DAY_IN_SECONDS } from '../../constants/time'
 import { stripe } from '../../loaders/stripe'
 import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
 
@@ -135,7 +135,7 @@ export const _getPaymentProofPresignedS3Url = (
     AwsConfig.s3.getSignedUrlPromise('getObject', {
       Bucket: AwsConfig.paymentProofS3Bucket,
       Key: objectPath,
-      Expires: 1 * dayInSeconds,
+      Expires: 1 * DAY_IN_SECONDS,
     }),
     (error) => {
       logger.error({
