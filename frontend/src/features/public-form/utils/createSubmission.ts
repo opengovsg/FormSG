@@ -2,6 +2,7 @@ import { datadogLogs } from '@datadog/browser-logs'
 import { encode as encodeBase64 } from '@stablelib/base64'
 import { chain, forOwn, isEmpty, keyBy, omit, pick } from 'lodash'
 
+import { E2EE_SUBMISSION_VERSION } from '~shared/constants'
 import { ProductItem } from '~shared/types'
 import { BasicField, FormFieldDto, PaymentFieldsDto } from '~shared/types/field'
 import {
@@ -23,11 +24,6 @@ import { AttachmentFieldSchema, FormFieldValues } from '~templates/Field'
 
 import { transformInputsToOutputs } from './inputTransformation'
 import { validateResponses } from './validateResponses'
-
-// The current encrypt version to assign to the encrypted submission.
-// This is needed if we ever break backwards compatibility with
-// end-to-end encryption
-const ENCRYPT_VERSION = 1
 
 /**
  * @returns StorageModeSubmissionContentDto
@@ -72,7 +68,7 @@ export const createEncryptedSubmissionData = async ({
     paymentReceiptEmail,
     paymentProducts,
     payments,
-    version: ENCRYPT_VERSION,
+    version: E2EE_SUBMISSION_VERSION,
     responseMetadata,
   }
 }

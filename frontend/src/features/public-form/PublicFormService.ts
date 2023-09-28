@@ -1,3 +1,4 @@
+import { ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION } from '~shared/constants'
 import { SubmitFormIssueBodyDto, SuccessMessageDto } from '~shared/types'
 import { FormFieldDto, PaymentFieldsDto } from '~shared/types/field'
 import {
@@ -31,10 +32,6 @@ import {
 import { filterHiddenInputs } from './utils/filterHiddenInputs'
 
 export const PUBLIC_FORMS_ENDPOINT = '/forms'
-
-// Encryption boundary shift RFC: https://docs.google.com/document/d/1VmNXS_xYY2Yg30AwVqzdndBp5yRJGSDsyjBnH51ktyc/edit?usp=sharing
-// Encryption boundary shift implementation PR: https://github.com/opengovsg/FormSG/pull/6587
-const ENCRYPTION_BOUNDARY_SHIFT_ENCRYPTION_VERSION = 2
 
 /**
  * Gets public view of form, along with any
@@ -101,6 +98,7 @@ export type SubmitStorageFormClearArgs = SubmitEmailFormArgs & {
   paymentReceiptEmail?: string
   paymentProducts?: Array<ProductItem>
   payments?: PaymentFieldsDto
+  version: number
 }
 
 export const submitEmailModeForm = async ({
@@ -185,6 +183,7 @@ export const submitStorageModeClearForm = async ({
   responseMetadata,
   paymentProducts,
   payments,
+  version = ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION,
 }: SubmitStorageFormClearArgs) => {
   const filteredInputs = filterHiddenInputs({
     formFields,
@@ -199,7 +198,7 @@ export const submitStorageModeClearForm = async ({
     paymentReceiptEmail,
     paymentProducts,
     payments,
-    version: ENCRYPTION_BOUNDARY_SHIFT_ENCRYPTION_VERSION,
+    version,
   })
 
   return ApiService.post<SubmissionResponseDto>(
@@ -226,6 +225,7 @@ export const submitStorageModeClearFormWithFetch = async ({
   responseMetadata,
   paymentProducts,
   payments,
+  version = ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION,
 }: SubmitStorageFormClearArgs) => {
   const filteredInputs = filterHiddenInputs({
     formFields,
@@ -240,7 +240,7 @@ export const submitStorageModeClearFormWithFetch = async ({
     paymentReceiptEmail,
     paymentProducts,
     payments,
-    version: ENCRYPTION_BOUNDARY_SHIFT_ENCRYPTION_VERSION,
+    version,
   })
 
   // Add captcha response to query string

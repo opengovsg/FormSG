@@ -17,10 +17,12 @@ import get from 'lodash/get'
 import simplur from 'simplur'
 
 import {
+  ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION,
   featureFlags,
   PAYMENT_CONTACT_FIELD_ID,
   PAYMENT_PRODUCT_FIELD_ID,
   PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID,
+  VIRUS_SCANNER_SUBMISSION_VERSION,
 } from '~shared/constants'
 import { BasicField, PaymentType } from '~shared/types'
 import { CaptchaTypes } from '~shared/types/captcha'
@@ -264,6 +266,10 @@ export const PublicFormProvider = ({
     }
   }, [data?.form.form_fields, toast, vfnToastIdRef])
 
+  const enableVirusScanner = useFeatureIsOn(
+    featureFlags.encryptionBoundaryShiftVirusScanner,
+  )
+
   const {
     submitEmailModeFormMutation,
     submitStorageModeFormMutation,
@@ -498,6 +504,9 @@ export const PublicFormProvider = ({
                   ...formData,
                   ...formPaymentData,
                   publicKey: form.publicKey,
+                  version: enableVirusScanner
+                    ? VIRUS_SCANNER_SUBMISSION_VERSION
+                    : ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION,
                 },
                 {
                   onSuccess: ({
@@ -556,6 +565,9 @@ export const PublicFormProvider = ({
                   ...formData,
                   ...formPaymentData,
                   publicKey: form.publicKey,
+                  version: enableVirusScanner
+                    ? VIRUS_SCANNER_SUBMISSION_VERSION
+                    : ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION,
                 },
                 {
                   onSuccess: ({
