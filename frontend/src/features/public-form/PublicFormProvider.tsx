@@ -504,9 +504,6 @@ export const PublicFormProvider = ({
                   ...formData,
                   ...formPaymentData,
                   publicKey: form.publicKey,
-                  version: enableVirusScanner
-                    ? VIRUS_SCANNER_SUBMISSION_VERSION
-                    : ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION,
                 },
                 {
                   onSuccess: ({
@@ -565,9 +562,6 @@ export const PublicFormProvider = ({
                   ...formData,
                   ...formPaymentData,
                   publicKey: form.publicKey,
-                  version: enableVirusScanner
-                    ? VIRUS_SCANNER_SUBMISSION_VERSION
-                    : ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION,
                 },
                 {
                   onSuccess: ({

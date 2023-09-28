@@ -98,7 +98,7 @@ export type SubmitStorageFormClearArgs = SubmitEmailFormArgs & {
   paymentReceiptEmail?: string
   paymentProducts?: Array<ProductItem>
   payments?: PaymentFieldsDto
-  version: number
+  version?: number
 }
 
 export const submitEmailModeForm = async ({
