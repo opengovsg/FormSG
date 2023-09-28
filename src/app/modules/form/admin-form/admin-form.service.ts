@@ -559,12 +559,14 @@ const createFormInWorkspaceTransaction = async (
  * @param originalForm the form to be duplicated
  * @param newAdminId the id of the admin of the duplicated form
  * @param overrideParams params to override in the duplicated form; e.g. the new emails or public key of the form.
+ * @param workspaceId the id of the workspace to duplicate the form into
  * @returns the newly created duplicated form
  */
 export const duplicateForm = (
   originalForm: IFormDocument,
   newAdminId: string,
   overrideParams: DuplicateFormBodyDto,
+  workspaceId?: string,
 ): ResultAsync<IFormDocument, FormNotFoundError | DatabaseError> => {
   const overrideProps = processDuplicateOverrideProps(
     overrideParams,
@@ -583,6 +585,25 @@ export const duplicateForm = (
   }
 
   const duplicateParams = originalForm.getDuplicateParams(overrideProps)
+
+  if (workspaceId)
+    return ResultAsync.fromPromise(
+      createFormInWorkspaceTransaction(duplicateParams, workspaceId),
+      (error) => {
+        logger.error({
+          message: 'Error encountered while duplicating form into a workspace',
+          meta: {
+            action: 'duplicateForm',
+            duplicateParams,
+            newAdminId,
+            workspaceId,
+          },
+          error,
+        })
+
+        return new DatabaseError(getMongoErrorMessage(error))
+      },
+    )
 
   return ResultAsync.fromPromise(
     FormModel.create(duplicateParams) as Promise<IFormDocument>,

@@ -155,7 +155,8 @@ const createFormValidator = celebrate({
 })
 
 const duplicateFormValidator = celebrate({
-  [Segments.BODY]: BaseJoi.object<DuplicateFormBodyDto>({
+  // uses CreateFormBodyDto as that is the shape of the data used in client's WorkspaceService
+  [Segments.BODY]: BaseJoi.object<CreateFormBodyDto>({
     // Require valid responsesMode field.
     responseMode: Joi.string()
       .valid(...Object.values(FormResponseMode))
@@ -181,6 +182,7 @@ const duplicateFormValidator = celebrate({
         is: FormResponseMode.Encrypt,
         then: Joi.string().required().disallow(''),
       }),
+    workspaceId: Joi.string().allow(''),
   }),
 })
 
@@ -858,11 +860,11 @@ export const handleArchiveForm: ControllerHandler<{ formId: string }> = async (
 export const duplicateAdminForm: ControllerHandler<
   { formId: string },
   unknown,
-  DuplicateFormBodyDto
+  CreateFormBodyDto
 > = (req, res) => {
   const { formId } = req.params
   const userId = (req.session as AuthedSessionData).user._id
-  const overrideParams = req.body
+  const { workspaceId, ...overrideParams } = req.body
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -880,6 +882,7 @@ export const duplicateAdminForm: ControllerHandler<
               originalForm,
               userId,
               overrideParams,
+              workspaceId,
             ),
           )
           // Step 4: Retrieve dashboard view of duplicated form.
