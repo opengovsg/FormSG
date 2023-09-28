@@ -285,11 +285,12 @@ export type DuplicateFormBodyDto = {
 export type CreateEmailFormBodyDto = Pick<
   EmailFormDto,
   'emails' | 'responseMode' | 'title'
->
+> & { workspaceId?: string }
+
 export type CreateStorageFormBodyDto = Pick<
   StorageFormDto,
   'publicKey' | 'responseMode' | 'title'
->
+> & { workspaceId?: string }
 
 export type CreateFormBodyDto =
   | CreateEmailFormBodyDto

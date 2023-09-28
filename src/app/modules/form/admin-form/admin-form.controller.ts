@@ -1157,7 +1157,9 @@ export const createForm: ControllerHandler<
   DeserializeTransform<FormDto> | ErrorDto,
   { form: CreateFormBodyDto }
 > = async (req, res) => {
-  const { form: formParams } = req.body
+  const {
+    form: { workspaceId, ...formParams },
+  } = req.body
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return (
@@ -1165,7 +1167,13 @@ export const createForm: ControllerHandler<
     UserService.findUserById(sessionUserId)
       // Step 2: Create form with given params and set admin to logged in user.
       .andThen((user) =>
-        AdminFormService.createForm({ ...formParams, admin: user._id }),
+        AdminFormService.createForm(
+          {
+            ...formParams,
+            admin: user._id,
+          },
+          workspaceId,
+        ),
       )
       .map((createdForm) => {
         return res

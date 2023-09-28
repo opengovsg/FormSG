@@ -6,6 +6,7 @@ import { FormResponseMode } from '~shared/types'
 import formsgSdk from '~utils/formSdk'
 
 import { useCreateFormMutations } from '~features/workspace/mutations'
+import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
 import {
   CreateFormFlowStates,
@@ -61,6 +62,8 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
   const { createEmailModeFormMutation, createStorageModeFormMutation } =
     useCreateFormMutations()
 
+  const { activeWorkspace } = useWorkspaceContext()
+
   const handleCreateStorageModeForm = handleSubmit(
     ({ title, responseMode }) => {
       if (responseMode !== FormResponseMode.Encrypt) return
@@ -69,6 +72,7 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
         title,
         responseMode,
         publicKey: keypair.publicKey,
+        workspaceId: activeWorkspace._id,
       })
     },
   )
@@ -79,6 +83,7 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
         emails: inputs.emails.filter(Boolean),
         title: inputs.title,
         responseMode: inputs.responseMode,
+        workspaceId: activeWorkspace._id,
       })
     }
     setCurrentStep([CreateFormFlowStates.Landing, 1])
