@@ -207,7 +207,6 @@ export const deleteWorkspace: ControllerHandler<
  * @returns 200 with a list of remaining forms in the source workspace
  * @returns 403 when user does not have permissions to update the source or destination workspace
  * @returns 404 when the workspace does not exist or belong to the user
- * @returns 422 when user of given id cannnot be found in the database
  * @returns 500 when database errors occur
  */
 export const moveFormsToWorkspace: ControllerHandler<
@@ -254,6 +253,14 @@ export const moveFormsToWorkspace: ControllerHandler<
     })
 }
 
+/**
+ * Handler for DELETE /workspace/form/formId
+ * @security session
+ *
+ * @returns 200 if form is successfully removed
+ * @returns 401 when user is not logged in
+ * @returns 500 when database errors occur
+ */
 export const deleteFormFromWorkspaces: ControllerHandler<
   { formId: string },
   void | ErrorDto

@@ -518,4 +518,58 @@ describe('workspaces.routes', () => {
       })
     })
   })
+  describe('DELETE /workspaces/form/:formId', () => {
+    const FORM_ID_TO_REMOVE = new ObjectId().toHexString()
+    const DELETE_FORM_FROM_WORKSPACE_ENDPOINT = `/workspaces/form/${FORM_ID_TO_REMOVE}`
+    const mockWorkspaceDocWithFormToRemove = {
+      ...MOCK_WORKSPACE_DOC,
+      formIds: [FORM_ID_TO_REMOVE],
+    }
+
+    it('should return 200 when the form is successfully removed from all workspaces', async () => {
+      await WorkspaceModel.create(mockWorkspaceDocWithFormToRemove)
+
+      jest
+        .spyOn(WorkspaceModel, 'removeFormIdsFromAllWorkspaces')
+        .mockImplementationOnce(async () => {
+          await WorkspaceModel.updateOne(
+            { _id: MOCK_WORKSPACE_ID },
+            { $set: { formIds: [] } },
+          )
+        })
+        .mockResolvedValueOnce()
+
+      const response = await request.delete(DELETE_FORM_FROM_WORKSPACE_ENDPOINT)
+
+      expect(response.status).toEqual(200)
+      expect(
+        WorkspaceModel.removeFormIdsFromAllWorkspaces,
+      ).toHaveBeenCalledOnce()
+    })
+
+    it('should return 401 when user is not logged in', async () => {
+      await logoutSession(request)
+      const response = await request.delete(DELETE_FORM_FROM_WORKSPACE_ENDPOINT)
+
+      expect(response.status).toEqual(401)
+      expect(response.body).toEqual({ message: 'User is unauthorized.' })
+    })
+
+    it('should return 500 when database errors occur for removing form from workspace', async () => {
+      await WorkspaceModel.create(MOCK_WORKSPACE_DOC)
+
+      const mockErrorMessage = 'something went wrong'
+
+      jest
+        .spyOn(WorkspaceModel, 'removeFormIdsFromAllWorkspaces')
+        .mockRejectedValueOnce(new Error(mockErrorMessage))
+
+      const response = await request.delete(DELETE_FORM_FROM_WORKSPACE_ENDPOINT)
+
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        message: formatErrorRecoveryMessage(mockErrorMessage),
+      })
+    })
+  })
 })
