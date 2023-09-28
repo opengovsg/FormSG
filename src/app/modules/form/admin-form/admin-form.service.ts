@@ -72,6 +72,7 @@ import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
 import { SmsLimitExceededError } from '../../verification/verification.errors'
 import { hasAdminExceededFreeSmsLimit } from '../../verification/verification.util'
+import * as WorkspaceService from '../../workspace/workspace.service'
 import { removeFormFromAllWorkspaces } from '../../workspace/workspace.service'
 import {
   FormNotFoundError,
@@ -477,6 +478,7 @@ export const transferAllFormsOwnership = (
  */
 export const createForm = (
   formParams: Merge<IForm, { admin: string }>,
+  workspaceId?: string,
 ): ResultAsync<
   IFormDocument,
   | DatabaseError
@@ -484,14 +486,34 @@ export const createForm = (
   | DatabaseConflictError
   | DatabasePayloadSizeError
 > => {
+  const logMeta = {
+    action: 'createForm',
+    formParams,
+  }
+  if (workspaceId)
+    return ResultAsync.fromPromise(
+      createFormInWorkspaceTransaction(formParams, workspaceId),
+      (error) => {
+        logger.error({
+          message:
+            'Database error encountered when creating form and moving it to workspace',
+          meta: {
+            ...logMeta,
+            workspaceId,
+          },
+          error,
+        })
+
+        return transformMongoError(error)
+      },
+    )
   return ResultAsync.fromPromise(
     FormModel.create(formParams) as Promise<IFormDocument>,
     (error) => {
       logger.error({
         message: 'Database error encountered when creating form',
         meta: {
-          action: 'createForm',
-          formParams,
+          ...logMeta,
         },
         error,
       })
@@ -499,6 +521,26 @@ export const createForm = (
       return transformMongoError(error)
     },
   )
+}
+
+// Helper method to create form and move it into a specified workspace
+// error handling will be done in parent createForm method
+const createFormInWorkspaceTransaction = async (
+  formParams: Merge<IForm, { admin: string }>,
+  workspaceId: string,
+): Promise<IFormDocument> => {
+  const session = await FormModel.startSession()
+  return session
+    .withTransaction(async () => {
+      const form = (await FormModel.create(formParams)) as IFormDocument
+      await WorkspaceService.moveForms({
+        userId: form.admin,
+        destWorkspaceId: workspaceId,
+        formIds: [form._id],
+      })
+      return new Promise(() => form)
+    })
+    .finally(() => session.endSession)
 }
 
 /**
