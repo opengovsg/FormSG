@@ -46,6 +46,7 @@ import config, { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getAgencyModel from '../../../models/agency.server.model'
 import getFormModel from '../../../models/form.server.model'
+import { getWorkspaceModel } from '../../../models/workspace.server.model'
 import * as SmsService from '../../../services/sms/sms.service'
 import { twilioClientCache } from '../../../services/sms/sms.service'
 import {
@@ -72,7 +73,6 @@ import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
 import { SmsLimitExceededError } from '../../verification/verification.errors'
 import { hasAdminExceededFreeSmsLimit } from '../../verification/verification.util'
-import * as WorkspaceService from '../../workspace/workspace.service'
 import { removeFormFromAllWorkspaces } from '../../workspace/workspace.service'
 import {
   FormNotFoundError,
@@ -108,6 +108,7 @@ import {
 const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
 const AgencyModel = getAgencyModel(mongoose)
+const WorkspaceModel = getWorkspaceModel(mongoose)
 
 export const secretsManager = new SecretsManager({
   region: config.aws.region,
@@ -490,6 +491,7 @@ export const createForm = (
     action: 'createForm',
     formParams,
   }
+
   if (workspaceId)
     return ResultAsync.fromPromise(
       createFormInWorkspaceTransaction(formParams, workspaceId),
@@ -529,17 +531,26 @@ const createFormInWorkspaceTransaction = async (
   formParams: Merge<IForm, { admin: string }>,
   workspaceId: string,
 ): Promise<IFormDocument> => {
-  const session = await FormModel.startSession()
+  let form: IFormDocument
+  const session = await mongoose.startSession()
   return session
     .withTransaction(async () => {
-      const form = (await FormModel.create(formParams)) as IFormDocument
-      await WorkspaceService.moveForms({
-        userId: form.admin,
-        destWorkspaceId: workspaceId,
-        formIds: [form._id],
+      form = (await FormModel.create(formParams)) as IFormDocument
+      logger.info({
+        message: 'creating form into workspace transaction',
+        meta: {
+          action: 'transaction',
+          formId: form._id,
+          workspaceId,
+        },
       })
-      return new Promise(() => form)
+      await WorkspaceModel.addFormIdsToWorkspace({
+        workspaceId,
+        formIds: [form._id],
+        session,
+      })
     })
+    .then(() => form)
     .finally(() => session.endSession)
 }
 
