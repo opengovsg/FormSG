@@ -84,7 +84,7 @@ import {
   mapAttachmentsFromResponses,
 } from '../../submission/submission.utils'
 import * as UserService from '../../user/user.service'
-import { removeFormFromAllWorkspaces } from '../../workspace/workspace.service'
+import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 
@@ -824,7 +824,10 @@ export const handleArchiveForm: ControllerHandler<{ formId: string }> = async (
       // Step 3: Currently logged in user has permissions to archive form.
       .andThen((formToArchive) => AdminFormService.archiveForm(formToArchive))
       .andThen(() =>
-        removeFormFromAllWorkspaces({ formId, userId: sessionUserId }),
+        removeFormsFromAllWorkspaces({
+          formIds: [formId],
+          userId: sessionUserId,
+        }),
       )
       .map(() => res.json({ message: 'Form has been archived' }))
       .mapErr((error) => {

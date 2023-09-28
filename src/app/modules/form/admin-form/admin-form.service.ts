@@ -73,7 +73,7 @@ import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
 import { SmsLimitExceededError } from '../../verification/verification.errors'
 import { hasAdminExceededFreeSmsLimit } from '../../verification/verification.util'
-import { removeFormFromAllWorkspaces } from '../../workspace/workspace.service'
+import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
 import {
   FormNotFoundError,
   LogicNotFoundError,
@@ -997,8 +997,8 @@ export const updateFormCollaborators = (
             removedCollaboratorEmails.map(async (collaborator) => {
               await UserService.findUserByEmail(collaborator.email).map(
                 async (user) =>
-                  await removeFormFromAllWorkspaces({
-                    formId: form._id,
+                  await removeFormsFromAllWorkspaces({
+                    formIds: [form._id],
                     userId: user._id,
                   }),
               )
