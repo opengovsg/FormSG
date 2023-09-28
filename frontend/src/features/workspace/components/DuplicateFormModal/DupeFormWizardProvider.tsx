@@ -5,8 +5,9 @@ import { FormResponseMode } from '~shared/types'
 import { usePreviewForm } from '~features/admin-form/common/queries'
 import { isMyInfo } from '~features/myinfo/utils'
 import { useDuplicateFormMutations } from '~features/workspace/mutations'
-import { useWorkspace } from '~features/workspace/queries'
+import { useDashboard } from '~features/workspace/queries'
 import { makeDuplicateFormTitle } from '~features/workspace/utils/createDuplicateFormTitle'
+import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
 import {
   CreateFormFlowStates,
@@ -17,7 +18,7 @@ import { useCommonFormWizardProvider } from '../CreateFormModal/CreateFormWizard
 import { useWorkspaceRowsContext } from '../WorkspaceFormRow/WorkspaceRowsContext'
 
 export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
-  const { data: dashboardForms, isLoading: isWorkspaceLoading } = useWorkspace()
+  const { data: dashboardForms, isLoading: isWorkspaceLoading } = useDashboard()
   const { activeFormMeta } = useWorkspaceRowsContext()
   const { data: previewFormData, isLoading: isPreviewFormLoading } =
     usePreviewForm(
@@ -69,6 +70,8 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
   const { dupeEmailModeFormMutation, dupeStorageModeFormMutation } =
     useDuplicateFormMutations()
 
+  const { activeWorkspace } = useWorkspaceContext()
+
   const handleCreateStorageModeForm = handleSubmit(
     ({ title, responseMode }) => {
       if (responseMode !== FormResponseMode.Encrypt || !activeFormMeta?._id)
@@ -79,6 +82,7 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
         title,
         responseMode,
         publicKey: keypair.publicKey,
+        workspaceId: activeWorkspace._id,
       })
     },
   )
@@ -91,6 +95,7 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
         emails: inputs.emails.filter(Boolean),
         title: inputs.title,
         responseMode: inputs.responseMode,
+        workspaceId: activeWorkspace._id,
       })
     }
     setCurrentStep([CreateFormFlowStates.Landing, 1])
