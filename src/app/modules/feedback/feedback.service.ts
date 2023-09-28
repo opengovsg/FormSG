@@ -1,6 +1,6 @@
 import { isEmpty } from 'lodash'
 import moment from 'moment-timezone'
-import mongoose from 'mongoose'
+import mongoose, { Cursor as QueryCursor, QueryOptions } from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import {
@@ -52,7 +52,7 @@ export const getFormFeedbackCount = (
  */
 export const getFormFeedbackStream = (
   formId: string,
-): mongoose.QueryCursor<IFormFeedbackSchema> => {
+): QueryCursor<IFormFeedbackSchema, QueryOptions<IFormFeedbackSchema>> => {
   return FormFeedbackModel.getFeedbackCursorByFormId(formId)
 }
 

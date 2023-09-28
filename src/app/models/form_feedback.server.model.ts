@@ -1,4 +1,4 @@
-import { Mongoose, QueryCursor, Schema } from 'mongoose'
+import { Cursor as QueryCursor, Mongoose, QueryOptions, Schema } from 'mongoose'
 
 import { IFormFeedbackModel, IFormFeedbackSchema } from '../../types'
 
@@ -51,7 +51,7 @@ FormFeedbackSchema.index({
  */
 FormFeedbackSchema.statics.getFeedbackCursorByFormId = function (
   formId: string,
-): QueryCursor<IFormFeedbackSchema> {
+): QueryCursor<IFormFeedbackSchema, QueryOptions<IFormFeedbackSchema>> {
   return this.find({ formId }).batchSize(2000).read('secondary').lean().cursor()
 }
 

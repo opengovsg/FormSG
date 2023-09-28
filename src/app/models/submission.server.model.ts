@@ -1,5 +1,10 @@
 import moment from 'moment-timezone'
-import mongoose, { Mongoose, QueryCursor, Schema } from 'mongoose'
+import mongoose, {
+  Cursor as QueryCursor,
+  Mongoose,
+  QueryOptions,
+  Schema,
+} from 'mongoose'
 
 import {
   FormAuthType,
@@ -260,8 +265,8 @@ EncryptSubmissionSchema.statics.findSingleMetadata = function (
     {
       $match: {
         submissionType: SubmissionType.Encrypt,
-        form: mongoose.Types.ObjectId(formId),
-        _id: mongoose.Types.ObjectId(submissionId),
+        form: new mongoose.Types.ObjectId(formId),
+        _id: new mongoose.Types.ObjectId(submissionId),
       },
     },
     { $limit: 1 },
@@ -328,7 +333,7 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
   const numToSkip = (page - 1) * pageSize
   // return documents within the page
   const pageResults: Promise<MetadataAggregateResult[]> = this.aggregate([
-    { $match: { form: mongoose.Types.ObjectId(formId) } },
+    { $match: { form: new mongoose.Types.ObjectId(formId) } },
     { $sort: { created: -1 } },
     { $skip: numToSkip },
     { $limit: pageSize },
@@ -354,7 +359,7 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
 
   const count =
     this.countDocuments({
-      form: mongoose.Types.ObjectId(formId),
+      form: new mongoose.Types.ObjectId(formId),
       submissionType: SubmissionType.Encrypt,
     }).exec() ?? 0
 
@@ -386,7 +391,7 @@ EncryptSubmissionSchema.statics.getSubmissionCursorByFormId = function (
     startDate?: string
     endDate?: string
   } = {},
-): QueryCursor<SubmissionCursorData> {
+): QueryCursor<SubmissionCursorData, QueryOptions<IEncryptedSubmissionSchema>> {
   const streamQuery = {
     form: formId,
     ...createQueryWithDateParam(dateRange?.startDate, dateRange?.endDate),
@@ -406,7 +411,10 @@ EncryptSubmissionSchema.statics.getSubmissionCursorByFormId = function (
       .read('secondary')
       .lean()
       // Override typing as Map is converted to Object once passed through `lean()`.
-      .cursor() as QueryCursor<SubmissionCursorData>
+      .cursor() as QueryCursor<
+      SubmissionCursorData,
+      QueryOptions<IEncryptedSubmissionSchema>
+    >
   )
 }
 
