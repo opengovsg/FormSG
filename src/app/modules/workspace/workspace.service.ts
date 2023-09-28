@@ -240,24 +240,24 @@ export const verifyWorkspaceAdmin = (
   return okAsync(true as const)
 }
 
-export const removeFormFromAllWorkspaces = ({
-  formId,
+export const removeFormsFromAllWorkspaces = ({
+  formIds,
   userId,
 }: {
-  formId: string
+  formIds: string[]
   userId: string
 }): ResultAsync<true, DatabaseError> => {
   return ResultAsync.fromPromise(
     WorkspaceModel.removeFormIdsFromAllWorkspaces({
       admin: userId,
-      formIds: [formId],
+      formIds,
     }),
     (error) => {
       logger.error({
         message: 'Database error encountered when archiving form',
         meta: {
           action: 'archiveForm',
-          formId,
+          formIds,
           userId,
         },
         error,

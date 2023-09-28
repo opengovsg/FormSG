@@ -78,12 +78,12 @@ export const deleteWorkspace = async ({
   return ApiService.delete(`${ADMIN_WORKSPACES_ENDPOINT}/${destWorkspaceId}`)
 }
 
-export const deleteFormFromWorkspaces = async ({
-  formId,
+export const removeFormsFromWorkspaces = async ({
+  formIds,
 }: {
-  formId: string
+  formIds: string[]
 }): Promise<void> => {
-  return ApiService.delete(`${ADMIN_WORKSPACES_ENDPOINT}/form/${formId}`)
+  return ApiService.post(`${ADMIN_WORKSPACES_ENDPOINT}/remove`, { formIds })
 }
 
 export const createEmailModeForm = async (

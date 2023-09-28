@@ -28,7 +28,7 @@ export const useRowAction = (
   formMeta: AdminDashboardFormMetaDto,
 ): UseRowActionReturn => {
   const { user } = useUser()
-  const { moveWorkspaceMutation, deleteFormFromWorkspacesMutation } =
+  const { moveWorkspaceMutation, removeFormFromWorkspacesMutation } =
     useWorkspaceMutations()
 
   const {
@@ -85,10 +85,10 @@ export const useRowAction = (
   )
 
   const handleRemoveFormFromWorkspaces = useCallback(async () => {
-    await deleteFormFromWorkspacesMutation.mutateAsync({
+    await removeFormFromWorkspacesMutation.mutateAsync({
       formId: formMeta._id.toString(),
     })
-  }, [formMeta, deleteFormFromWorkspacesMutation])
+  }, [formMeta, removeFormFromWorkspacesMutation])
 
   const handleWorkspaceClick = useCallback(
     (destWorkspace: Workspace, currFormWorkspace?: Workspace) => {

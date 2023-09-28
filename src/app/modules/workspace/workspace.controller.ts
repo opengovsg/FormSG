@@ -254,22 +254,23 @@ export const moveFormsToWorkspace: ControllerHandler<
 }
 
 /**
- * Handler for DELETE /workspace/form/formId
+ * Handler for POST /workspace/remove
  * @security session
  *
  * @returns 200 if form is successfully removed
  * @returns 401 when user is not logged in
  * @returns 500 when database errors occur
  */
-export const deleteFormFromWorkspaces: ControllerHandler<
-  { formId: string },
-  void | ErrorDto
+export const removeFormsFromWorkspaces: ControllerHandler<
+  unknown,
+  void | ErrorDto,
+  { formIds: string[] }
 > = async (req, res) => {
   const userId = (req.session as AuthedSessionData).user._id
-  const { formId } = req.params
+  const { formIds } = req.body
 
-  return WorkspaceService.removeFormFromAllWorkspaces({
-    formId,
+  return WorkspaceService.removeFormsFromAllWorkspaces({
+    formIds,
     userId,
   })
     .map(() => res.sendStatus(StatusCodes.OK))
@@ -278,7 +279,7 @@ export const deleteFormFromWorkspaces: ControllerHandler<
         message: 'Error deleting forms from all workspaces',
         meta: {
           action: 'deleteFormFromWorkspaces',
-          formId,
+          formIds,
           userId,
         },
         error,
