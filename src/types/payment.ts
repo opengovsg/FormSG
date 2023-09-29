@@ -3,7 +3,14 @@ import Stripe from 'stripe'
 
 import { Payment } from '../../shared/types/payment'
 
+import { IFormSchema } from './form'
+import { IPendingSubmissionSchema } from './submission'
+
 export interface IPaymentSchema extends Payment, Document {
+  // overwrites the id type of Payment to be Schema.Types.ObjectId in mongoose
+  pendingSubmissionId: IPendingSubmissionSchema['_id']
+  formId: IFormSchema['_id']
+
   /**
    * Additional field to store responses for sending email confirmations post-payment.
    * Will be used to store FilteredResponse[], allows for population.
