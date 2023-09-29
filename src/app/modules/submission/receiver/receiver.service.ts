@@ -152,7 +152,15 @@ export const configureMultipartReceiver = (
         .on('close', () => {
           if (body) {
             handleDuplicatesInAttachments(attachments)
-            addAttachmentToResponses(body.responses, attachments)
+            addAttachmentToResponses(
+              body.responses,
+              attachments,
+              // default to 0 for email mode forms where version is undefined
+              // TODO (FRM-1413): change to a version existence guardrail when
+              // virus scanning has completed rollout, so that virus scanning
+              // cannot be bypassed on storage mode submissions.
+              (body.version ?? 0) >= 2.1,
+            )
             return resolve(body)
           } else {
             // if body is not defined, the Promise would have been rejected elsewhere.

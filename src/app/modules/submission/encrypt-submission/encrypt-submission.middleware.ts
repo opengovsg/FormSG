@@ -3,7 +3,7 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { chain, omit } from 'lodash'
-import { okAsync, ResultAsync } from 'neverthrow'
+import { okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { featureFlags } from '../../../../../shared/constants'
 import {
@@ -15,6 +15,7 @@ import {
   EncryptAttachmentResponse,
   EncryptFormFieldResponse,
   FormLoadedDto,
+  ParsedClearFormFieldResponse,
 } from '../../../../types/api'
 import { paymentConfig } from '../../../config/features/payment.config'
 import formsgSdk from '../../../config/formsg-sdk'
@@ -32,11 +33,14 @@ import {
 } from '../submission.utils'
 
 import {
+  DownloadCleanFileFailedError,
   EncryptedPayloadExistsError,
   FormsgReqBodyExistsError,
+  VirusScanFailedError,
 } from './encrypt-submission.errors'
 import {
   checkFormIsEncryptMode,
+  downloadCleanFile,
   triggerVirusScanning,
 } from './encrypt-submission.service'
 import {
@@ -224,32 +228,56 @@ export const scanAndRetrieveAttachments = async (
   // At this point, virus scanner is enabled and storage submission v2.1+. This means that both the FE and BE
   // have virus scanning enabled.
 
-  // Step 3: Trigger lambda to scan attachments.
-  const triggerLambdaResult = await ResultAsync.combine(
+  // Step 3 + 4: For each attachment, trigger lambda to scan and if it succeeds, retrieve attachment from clean bucket. Do this asynchronously.
+  const scanAndRetrieveFilesResult: Result<
+    ParsedClearFormFieldResponse[], // true for attachment fields, false for non-attachment fields.
+    VirusScanFailedError | DownloadCleanFileFailedError
+  > = await ResultAsync.combine(
+    // If any scans or downloads error out, it will short circuit and return the first error.
     req.body.responses.map((response) => {
       if (isQuarantinedAttachmentResponse(response)) {
-        return triggerVirusScanning(response.answer)
+        // Step 3: Trigger lambda to scan attachments.
+        return (
+          triggerVirusScanning(response.answer)
+            .map((lambdaOutput) => lambdaOutput.body)
+            // Step 4: Retrieve attachments from the clean bucket.
+            .andThen((cleanAttachment) =>
+              // Retrieve attachment from clean bucket.
+              downloadCleanFile(
+                cleanAttachment.cleanFileKey,
+                cleanAttachment.destinationVersionId,
+              ).map((attachmentBuffer) => ({
+                ...response,
+                // Replace content with attachmentBuffer and answer with filename.
+                content: attachmentBuffer,
+                answer: response.filename,
+              })),
+            )
+        )
       }
-      // If response is not an attachment, return ok.
-      return okAsync(true)
+
+      // If field is not an attachment, return original response.
+      return okAsync(response)
     }),
   )
 
-  // If any of the lambda invocations failed, return an errored response.
-  if (triggerLambdaResult.isErr()) {
+  if (scanAndRetrieveFilesResult.isErr()) {
     logger.error({
-      message: 'Error scanning attachments',
+      message: 'Error scanning and downloading clean attachments',
       meta: logMeta,
-      error: triggerLambdaResult.error,
+      error: scanAndRetrieveFilesResult.error,
     })
 
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
-      message:
-        'Something went wrong while scanning your attachments. Please try again.',
+    const { statusCode, errorMessage } = mapRouteError(
+      scanAndRetrieveFilesResult.error,
+    )
+    return res.status(statusCode).json({
+      message: errorMessage,
     })
   }
 
-  // TODO(FRM-1302): Step 4: Retrieve attachments from the clean bucket.
+  // Step 5: Replace req.body.responses with the new responses with populated attachments.
+  req.body.responses = scanAndRetrieveFilesResult.value
 
   return next()
 }

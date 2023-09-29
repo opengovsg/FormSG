@@ -7,7 +7,7 @@ import { StatusCodes } from 'http-status-codes'
 import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
-import { Transform } from 'stream'
+import { Transform, Writable } from 'stream'
 import { validate } from 'uuid'
 
 import {
@@ -63,8 +63,9 @@ import {
 import { PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS } from './encrypt-submission.constants'
 import {
   AttachmentSizeLimitExceededError,
+  DownloadCleanFileFailedError,
   InvalidFieldIdError,
-  InvalidQuarantineFileKeyError,
+  InvalidFileKeyError,
   JsonParseFailedError,
   VirusScanFailedError,
 } from './encrypt-submission.errors'
@@ -743,7 +744,7 @@ export const triggerVirusScanning = (
       meta: logMeta,
     })
 
-    return errAsync(new InvalidQuarantineFileKeyError())
+    return errAsync(new InvalidFileKeyError())
   }
 
   return ResultAsync.fromPromise(
@@ -785,4 +786,68 @@ export const triggerVirusScanning = (
 
     return errAsync(new VirusScanFailedError())
   })
+}
+
+/**
+ * Downloads file from clean bucket
+ * @param cleanFileKey object key of the file in the clean bucket
+ * @param versionId id for versioning of the file in the clean bucket
+ * @returns okAsync(buffer) if file has been successfully downloaded from the clean bucket
+ * @returns errAsync(DownloadCleanFileFailedError) if file download failed
+ */
+export const downloadCleanFile = (cleanFileKey: string, versionId: string) => {
+  const logMeta = {
+    action: 'downloadCleanFile',
+    cleanFileKey,
+    versionId,
+  }
+
+  if (!validate(cleanFileKey)) {
+    logger.error({
+      message: 'Invalid clean file key - not a valid uuid',
+      meta: logMeta,
+    })
+
+    return errAsync(new InvalidFileKeyError())
+  }
+
+  let buffer = Buffer.alloc(0)
+
+  const writeStream = new Writable({
+    write(chunk, _encoding, callback) {
+      buffer = Buffer.concat([buffer, chunk])
+      callback()
+    },
+  })
+
+  const readStream = AwsConfig.s3
+    .getObject({
+      Bucket: AwsConfig.virusScannerCleanS3Bucket,
+      Key: cleanFileKey,
+      VersionId: versionId,
+    })
+    .createReadStream()
+
+  readStream.pipe(writeStream)
+
+  return ResultAsync.fromPromise(
+    new Promise<Buffer>((resolve, reject) => {
+      readStream.on('end', () => {
+        resolve(buffer)
+      })
+
+      readStream.on('error', (error) => {
+        reject(error)
+      })
+    }),
+    (error) => {
+      logger.error({
+        message: 'Error encountered when downloading file from clean bucket',
+        meta: logMeta,
+        error,
+      })
+
+      return new DownloadCleanFileFailedError()
+    },
+  )
 }

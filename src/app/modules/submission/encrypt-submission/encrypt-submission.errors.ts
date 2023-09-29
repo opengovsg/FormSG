@@ -50,10 +50,8 @@ export class FeatureDisabledError extends ApplicationError {
   }
 }
 
-export class InvalidQuarantineFileKeyError extends ApplicationError {
-  constructor(
-    message = 'Invalid quarantine file key. Quarantine file key should be a valid UUID.',
-  ) {
+export class InvalidFileKeyError extends ApplicationError {
+  constructor(message = 'Invalid file key. File keys should be valid UUIDs.') {
     super(message)
   }
 }
@@ -66,6 +64,14 @@ export class VirusScanFailedError extends ApplicationError {
 
 export class JsonParseFailedError extends ApplicationError {
   constructor(message = 'JSON parsing failed. Please try again.') {
+    super(message)
+  }
+}
+
+export class DownloadCleanFileFailedError extends ApplicationError {
+  constructor(
+    message = 'Attempt to download clean file failed. Please try again.',
+  ) {
     super(message)
   }
 }

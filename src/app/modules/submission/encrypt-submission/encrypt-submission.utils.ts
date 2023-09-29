@@ -72,9 +72,10 @@ import {
 
 import {
   AttachmentSizeLimitExceededError,
+  DownloadCleanFileFailedError,
   FeatureDisabledError,
   InvalidFieldIdError,
-  InvalidQuarantineFileKeyError,
+  InvalidFileKeyError,
   SubmissionFailedError,
   VirusScanFailedError,
 } from './encrypt-submission.errors'
@@ -222,6 +223,7 @@ const errorMapper: MapRouteError = (
     case DatabaseError:
     case EmptyErrorFieldError:
     case VirusScanFailedError:
+    case DownloadCleanFileFailedError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: error.message,
@@ -229,7 +231,7 @@ const errorMapper: MapRouteError = (
     case SubmissionFailedError:
     case InvalidFieldIdError:
     case AttachmentSizeLimitExceededError:
-    case InvalidQuarantineFileKeyError:
+    case InvalidFileKeyError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
