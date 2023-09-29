@@ -412,19 +412,18 @@ describe('user.routes', () => {
 
       // Act
       // Attempt invalid OTP for MAX_OTP_ATTEMPTS.
-      const verifyPromises = []
+      // This has to be performed sequentially due to ECONNRESET issue on supertest
+      // https://github.com/ladjs/supertest/issues/709
+      const results = []
       for (let i = 0; i < UserService.MAX_OTP_ATTEMPTS; i++) {
-        verifyPromises.push(
-          session.post('/user/contact/otp/verify').send({
-            contact: VALID_CONTACT,
-            otp: invalidOtp,
-            userId: defaultUser._id,
-          }),
-        )
+        const response = await session.post('/user/contact/otp/verify').send({
+          contact: VALID_CONTACT,
+          otp: invalidOtp,
+          userId: defaultUser._id,
+        })
+        results.push(pick(response, ['status', 'body']))
       }
-      const results = (await Promise.all(verifyPromises)).map((resolve) =>
-        pick(resolve, ['status', 'body']),
-      )
+
       // Should be all invalid OTP responses.
       expect(results).toEqual(
         Array(UserService.MAX_OTP_ATTEMPTS).fill({
