@@ -87,6 +87,7 @@ export type IForm = Merge<
     // string type is allowed due to a setter on the form schema that transforms
     // strings to string array.
     emails?: string[] | string
+    goLinkSuffix?: string
   }
 >
 
