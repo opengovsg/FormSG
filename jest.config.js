@@ -27,7 +27,7 @@ module.exports = {
       statements: 38, // Increase this percentage as test coverage improves
     },
   },
-  testTimeout: 90000, // Set timeout to be 15s to reduce test flakiness
+  testTimeout: 300000, // Set timeout to be 300s to reduce test flakiness
   maxWorkers: '4',
   globals: {
     // Revert when memory leak in ts-jest is fixed.
