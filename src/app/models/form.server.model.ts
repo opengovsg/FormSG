@@ -270,14 +270,14 @@ const EmailFormSchema = new Schema<IEmailFormSchema, IEmailFormModel>({
       },
     ],
     set: transformEmails,
-    validate: {
-      validator: (v: string[]) => {
+    validate: [
+      (v: string[]) => {
         if (!Array.isArray(v)) return false
         if (v.length === 0) return false
         return v.every((email) => validator.isEmail(email))
       },
-      message: 'Please provide valid email addresses',
-    },
+      'Please provide valid email addresses',
+    ],
     // Mongoose v5 only checks if the type is an array, not whether the array
     // is non-empty.
     required: true,
@@ -292,7 +292,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     {
       title: {
         type: String,
-        required: 'Form name cannot be blank',
+        required: [true, 'Form name cannot be blank'],
         minlength: [4, 'Form name must be at least 4 characters'],
         maxlength: [200, 'Form name can have a maximum of 200 characters'],
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -980,7 +980,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     logicId: string,
   ): Promise<IFormSchema | null> {
     return this.findByIdAndUpdate(
-      mongoose.Types.ObjectId(formId),
+      formId,
       {
         $pull: { form_logics: { _id: logicId } },
       },

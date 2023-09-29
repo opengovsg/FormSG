@@ -28,7 +28,7 @@ const compileUserModel = (db: Mongoose) => {
         // @ts-ignore
         trim: true,
         unique: true,
-        required: 'Please enter your email',
+        required: [true, 'Please enter your email'],
         validate: {
           // Check if email entered exists in the Agency collection
           validator: async (value: string) => {
