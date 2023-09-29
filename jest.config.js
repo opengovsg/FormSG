@@ -28,7 +28,7 @@ module.exports = {
     },
   },
   testTimeout: 90000, // Set timeout to be 15s to reduce test flakiness
-  maxWorkers: '50%',
+  maxWorkers: '4',
   globals: {
     // Revert when memory leak in ts-jest is fixed.
     // See https://github.com/kulshekhar/ts-jest/issues/1967.
