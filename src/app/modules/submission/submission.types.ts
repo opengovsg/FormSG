@@ -59,7 +59,10 @@ export type ProcessedSingleAnswerResponse<
 export type ProcessedCheckboxResponse = CheckboxResponse & ProcessedResponse
 export type ProcessedTableResponse = TableResponse & ProcessedResponse
 export type ProcessedChildrenResponse = ChildBirthRecordsResponse &
-  ProcessedResponse & { childSubFieldsArray?: MyInfoChildAttributes[] }
+  ProcessedResponse & {
+    childSubFieldsArray?: MyInfoChildAttributes[]
+    childIdx?: number
+  }
 /**
  * Can be either email or storage mode attachment response.
  * Email mode attachment response in the server will have extra metadata injected
