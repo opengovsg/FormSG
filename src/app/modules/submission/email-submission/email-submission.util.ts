@@ -228,7 +228,12 @@ export const getAnswersForChild = (
     return arr.map((answer, idx) => {
       const subfield = subFields[idx]
       return {
-        _id: getMyInfoChildHashKey(response._id, subFields[idx], childName),
+        _id: getMyInfoChildHashKey(
+          response._id,
+          subFields[idx],
+          childIdx,
+          childName,
+        ),
         fieldType: response.fieldType,
         // qnChildIdx represents the index of the MyInfo field
         // childIdx represents the index of the child in this MyInfo field

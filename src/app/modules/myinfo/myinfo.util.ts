@@ -114,7 +114,7 @@ function hashChildrenFieldValues(
         myInfoFormattedValue = formatMyinfoDate(value)
       }
       readOnlyHashPromises[
-        getMyInfoChildHashKey(field._id, subField, childName)
+        getMyInfoChildHashKey(field._id, subField, childIdx, childName)
       ] = bcrypt.hash(myInfoFormattedValue, HASH_SALT_ROUNDS)
     })
   })
@@ -486,9 +486,10 @@ export const getMyInfoAttr = (
 export const getMyInfoChildHashKey = (
   fieldId: string,
   childAttr: MyInfoChildAttributes,
+  childIdx: number,
   childName: string,
 ): MyInfoChildKey => {
-  return `${MyInfoAttribute.ChildrenBirthRecords}.${fieldId}.${childAttr}.${childName}`
+  return `${MyInfoAttribute.ChildrenBirthRecords}.${fieldId}.${childAttr}.${childIdx}.${childName}`
 }
 
 /**
@@ -512,7 +513,7 @@ export const handleMyInfoChildHashResponse = (
   if (!subFields) {
     return
   }
-  childField.answerArray.forEach((childAnswer) => {
+  childField.answerArray.forEach((childAnswer, childIndex) => {
     // Name should be first field for child answers
     const childName = childAnswer[0]
     // Validate each answer (child)
@@ -520,6 +521,7 @@ export const handleMyInfoChildHashResponse = (
       const key = getMyInfoChildHashKey(
         field._id as string,
         subFields[subFieldIndex],
+        childIndex,
         childName,
       )
       const hash = hashes[key]
