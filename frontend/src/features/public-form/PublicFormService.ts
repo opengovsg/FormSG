@@ -1,7 +1,10 @@
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import axios from 'axios'
 
-import { ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION } from '~shared/constants'
+import {
+  ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION,
+  VIRUS_SCANNER_SUBMISSION_VERSION,
+} from '~shared/constants'
 import { SubmitFormIssueBodyDto, SuccessMessageDto } from '~shared/types'
 import {
   AttachmentPresignedPostDataMapType,
@@ -35,6 +38,7 @@ import { FormFieldValues } from '~templates/Field'
 
 import {
   createClearSubmissionFormData,
+  createClearSubmissionWithVirusScanningFormData,
   createEncryptedSubmissionData,
   getAttachmentsMap,
 } from './utils/createSubmission'
@@ -109,6 +113,16 @@ export type SubmitStorageFormClearArgs = SubmitEmailFormArgs & {
   payments?: PaymentFieldsDto
   version?: number
 }
+
+export type FieldIdToQuarantineKeyType = {
+  fieldId: string
+  quarantineBucketKey: string
+}
+
+export type SubmitStorageFormWithVirusScanningArgs =
+  SubmitStorageFormClearArgs & {
+    fieldIdToQuarantineKeyMap: FieldIdToQuarantineKeyType[]
+  }
 
 export const submitEmailModeForm = async ({
   formFields,
@@ -192,7 +206,6 @@ export const submitStorageModeClearForm = async ({
   responseMetadata,
   paymentProducts,
   payments,
-  version = ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION,
 }: SubmitStorageFormClearArgs) => {
   const filteredInputs = filterHiddenInputs({
     formFields,
@@ -207,7 +220,7 @@ export const submitStorageModeClearForm = async ({
     paymentReceiptEmail,
     paymentProducts,
     payments,
-    version,
+    version: ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION,
   })
 
   return ApiService.post<SubmissionResponseDto>(
@@ -234,7 +247,6 @@ export const submitStorageModeClearFormWithFetch = async ({
   responseMetadata,
   paymentProducts,
   payments,
-  version = ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION,
 }: SubmitStorageFormClearArgs) => {
   const filteredInputs = filterHiddenInputs({
     formFields,
@@ -249,7 +261,7 @@ export const submitStorageModeClearFormWithFetch = async ({
     paymentReceiptEmail,
     paymentProducts,
     payments,
-    version,
+    version: ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION,
   })
 
   // Add captcha response to query string
@@ -270,6 +282,50 @@ export const submitStorageModeClearFormWithFetch = async ({
   )
 
   return processFetchResponse(response)
+}
+
+export const submitStorageModeClearFormWithVirusScanning = async ({
+  formFields,
+  formLogics,
+  formInputs,
+  formId,
+  captchaResponse = null,
+  captchaType = '',
+  paymentReceiptEmail,
+  responseMetadata,
+  paymentProducts,
+  payments,
+  fieldIdToQuarantineKeyMap,
+}: SubmitStorageFormWithVirusScanningArgs) => {
+  const filteredInputs = filterHiddenInputs({
+    formFields,
+    formInputs,
+    formLogics,
+  })
+
+  const formData = createClearSubmissionWithVirusScanningFormData(
+    {
+      formFields,
+      formInputs: filteredInputs,
+      responseMetadata,
+      paymentReceiptEmail,
+      paymentProducts,
+      payments,
+      version: VIRUS_SCANNER_SUBMISSION_VERSION,
+    },
+    fieldIdToQuarantineKeyMap,
+  )
+
+  return ApiService.post<SubmissionResponseDto>(
+    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/storage`,
+    formData,
+    {
+      params: {
+        captchaResponse: String(captchaResponse),
+        captchaType: captchaType,
+      },
+    },
+  ).then(({ data }) => data)
 }
 
 // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved

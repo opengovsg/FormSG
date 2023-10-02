@@ -17,12 +17,10 @@ import get from 'lodash/get'
 import simplur from 'simplur'
 
 import {
-  ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION,
   featureFlags,
   PAYMENT_CONTACT_FIELD_ID,
   PAYMENT_PRODUCT_FIELD_ID,
   PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID,
-  VIRUS_SCANNER_SUBMISSION_VERSION,
 } from '~shared/constants'
 import { BasicField, PaymentType } from '~shared/types'
 import { CaptchaTypes } from '~shared/types/captcha'
@@ -560,8 +558,23 @@ export const PublicFormProvider = ({
             return (
               submitStorageModeClearFormWithVirusScanningMutation
                 .mutateAsync(formData, {
-                  onSuccess: async (presignedUrls) => {
-                    console.log('presignedUrls', presignedUrls)
+                  onSuccess: ({
+                    submissionId,
+                    timestamp,
+                    // payment forms will have non-empty paymentData field
+                    paymentData,
+                  }) => {
+                    trackSubmitForm(form)
+
+                    if (paymentData) {
+                      navigate(getPaymentPageUrl(formId, paymentData.paymentId))
+                      storePaymentMemory(paymentData.paymentId)
+                      return
+                    }
+                    setSubmissionData({
+                      id: submissionId,
+                      timestamp,
+                    })
                   },
                 })
                 // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.

@@ -22,6 +22,8 @@ import fileArrayBuffer from '~/utils/fileArrayBuffer'
 import formsgSdk from '~utils/formSdk'
 import { AttachmentFieldSchema, FormFieldValues } from '~templates/Field'
 
+import { FieldIdToQuarantineKeyType } from '../PublicFormService'
+
 import { transformInputsToOutputs } from './inputTransformation'
 import { validateResponses } from './validateResponses'
 
@@ -114,6 +116,56 @@ export const createClearSubmissionFormData = (
     forOwn(attachments, (attachment, fieldId) => {
       if (attachment) {
         formData.append(attachment.name, attachment, fieldId)
+      }
+    })
+  }
+
+  return formData
+}
+
+export const createClearSubmissionWithVirusScanningFormData = (
+  formDataArgs:
+    | CreateEmailSubmissionFormDataArgs
+    | CreateStorageSubmissionFormDataArgs,
+  fieldIdToQuarantineKeyMap: FieldIdToQuarantineKeyType[],
+) => {
+  const { formFields, formInputs, ...formDataArgsRest } = formDataArgs
+  const responses = createResponsesArray(formFields, formInputs).map(
+    (response) => {
+      if (response.fieldType === BasicField.Attachment && response.answer) {
+        const fieldIdToQuarantineKeyEntry = fieldIdToQuarantineKeyMap.find(
+          (v) => v.fieldId === response._id,
+        )
+        if (!fieldIdToQuarantineKeyEntry)
+          throw new Error(
+            `Attachment response with fieldId ${response._id} not found among attachments uploaded to quarantine bucket`,
+          )
+        response.answer = fieldIdToQuarantineKeyEntry.quarantineBucketKey
+      }
+      return response
+    },
+  )
+  const attachments = getAttachmentsMap(formFields, formInputs)
+
+  // Convert content to FormData object.
+  const formData = new FormData()
+  formData.append(
+    'body',
+    JSON.stringify({
+      responses,
+      ...formDataArgsRest,
+    }),
+  )
+
+  if (!isEmpty(attachments)) {
+    forOwn(attachments, (attachment, fieldId) => {
+      if (attachment) {
+        formData.append(
+          attachment.name,
+          // Set content as empty array buffer.
+          new File([], attachment.name, { type: attachment.type }),
+          fieldId,
+        )
       }
     })
   }
