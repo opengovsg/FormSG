@@ -5,13 +5,13 @@ import Bluebird from 'bluebird'
 import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment'
-import { ObjectId } from 'mongodb'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { Transform, Writable } from 'stream'
 import { validate } from 'uuid'
 
 import {
+  AttachmentPresignedPostDataMapType,
   AttachmentSizeMapType,
   FormResponseMode,
   StorageModeSubmissionMetadata,
@@ -73,7 +73,6 @@ import {
 } from './encrypt-submission.errors'
 import {
   AttachmentMetadata,
-  AttachmentPresignedPostDataMapType,
   bodyIsExpectedErrStructure,
   bodyIsExpectedOkStructure,
   ParseVirusScannerLambdaPayloadErrType,
@@ -582,15 +581,12 @@ export const getQuarantinePresignedPostData = (
       if (!mongoose.isValidObjectId(id))
         return errAsync(new InvalidFieldIdError())
 
-      // Create a new ObjectId from the string id
-      const objectId = new ObjectId(id)
-
       return createPresignedPostDataPromise({
         bucketName: AwsConfig.virusScannerQuarantineS3Bucket,
         expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
         size,
       }).map((presignedPostData) => ({
-        id: objectId,
+        id,
         presignedPostData,
       }))
     }),

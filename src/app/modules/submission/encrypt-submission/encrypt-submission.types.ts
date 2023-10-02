@@ -1,6 +1,4 @@
-import { PresignedPost } from 'aws-sdk/clients/s3'
 import { StatusCodes } from 'http-status-codes'
-import { ObjectId } from 'mongodb'
 
 import {
   SubmissionErrorDto,
@@ -76,11 +74,6 @@ export type SubmitEncryptModeFormHandlerType = ControllerHandler<
 
 export type SubmitEncryptModeFormHandlerRequest =
   Parameters<SubmitEncryptModeFormHandlerType>[0] & { formsg: FormCompleteDto }
-
-export type AttachmentPresignedPostDataMapType = {
-  id: ObjectId
-  presignedPostData: PresignedPost
-}
 
 export type ParseVirusScannerLambdaPayloadBeforeBodyIsParsed = {
   statusCode: number

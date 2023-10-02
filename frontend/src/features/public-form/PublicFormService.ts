@@ -1,6 +1,7 @@
 import { ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION } from '~shared/constants'
 import { SubmitFormIssueBodyDto, SuccessMessageDto } from '~shared/types'
 import {
+  AttachmentPresignedPostDataMapType,
   AttachmentSizeMapType,
   FormFieldDto,
   PaymentFieldsDto,
@@ -401,7 +402,11 @@ export const getAttachmentPresignedPostData = async ({
   formFields,
   formInputs,
   formId,
-}: SubmitStorageFormClearArgs) => {
+}: {
+  formFields: FormFieldDto[]
+  formInputs: FormFieldValues
+  formId: string
+}) => {
   const attachmentsMap = getAttachmentsMap(formFields, formInputs)
   const attachmentSizes: AttachmentSizeMapType[] = []
   for (const id in attachmentsMap) {
@@ -411,7 +416,7 @@ export const getAttachmentPresignedPostData = async ({
     attachmentSizes.push({ id, size: attachmentsMap[id].size })
   }
 
-  return ApiService.post<SubmissionResponseDto>(
+  return ApiService.post<AttachmentPresignedPostDataMapType[]>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/storage/get-s3-presigned-post-data`,
     attachmentSizes,
   ).then(({ data }) => data)
