@@ -458,17 +458,16 @@ describe('auth.routes', () => {
 
       // Act
       // Attempt invalid OTP for MAX_OTP_ATTEMPTS.
-      const verifyPromises = []
+      // This has to be performed sequentially due to ECONNRESET issue on supertest
+      // https://github.com/ladjs/supertest/issues/709
+      const results = []
       for (let i = 0; i < AuthService.MAX_OTP_ATTEMPTS; i++) {
-        verifyPromises.push(
-          request
-            .post('/auth/otp/verify')
-            .send({ email: VALID_EMAIL, otp: invalidOtp }),
-        )
+        const response = await request
+          .post('/auth/otp/verify')
+          .send({ email: VALID_EMAIL, otp: invalidOtp })
+        results.push(pick(response, ['status', 'body']))
       }
-      const results = (await Promise.all(verifyPromises)).map((resolve) =>
-        pick(resolve, ['status', 'body']),
-      )
+
       // Should be all invalid OTP responses.
       expect(results).toEqual(
         Array(AuthService.MAX_OTP_ATTEMPTS).fill({

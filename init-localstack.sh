@@ -34,4 +34,7 @@ awslocal s3api put-bucket-versioning --bucket $VIRUS_SCANNER_QUARANTINE_S3_BUCKE
 awslocal s3 mb s3://$VIRUS_SCANNER_CLEAN_S3_BUCKET 
 awslocal s3api put-bucket-versioning --bucket $VIRUS_SCANNER_CLEAN_S3_BUCKET   --versioning-configuration Status=Enabled
 
+# Buckets for payment proof
+awslocal s3 mb s3://$PAYMENT_PROOF_S3_BUCKET
+
 set +x

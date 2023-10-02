@@ -77,6 +77,7 @@ const s3BucketUrlVars = convict(s3BucketUrlSchema)
     attachmentBucketUrl: `${awsEndpoint}/${basicVars.awsConfig.attachmentS3Bucket}/`,
     virusScannerQuarantineS3BucketUrl: `${awsEndpoint}/${basicVars.awsConfig.virusScannerQuarantineS3Bucket}`,
     virusScannerCleanS3BucketUrl: `${awsEndpoint}/${basicVars.awsConfig.virusScannerCleanS3Bucket}`,
+    paymentProofS3BucketUrl: `${awsEndpoint}/${basicVars.awsConfig.paymentProofS3Bucket}`,
   })
   .validate({ allowed: 'strict' })
   .getProperties()

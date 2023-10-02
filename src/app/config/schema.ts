@@ -87,6 +87,12 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
       default: null,
       env: 'ATTACHMENT_S3_BUCKET',
     },
+    paymentProofS3Bucket: {
+      doc: 'S3 Bucket to upload payment proof to',
+      format: String,
+      default: null,
+      env: 'PAYMENT_PROOF_S3_BUCKET',
+    },
     staticAssetsS3Bucket: {
       doc: 'S3 Bucket containing static assets',
       format: String,
@@ -487,6 +493,12 @@ export const loadS3BucketUrlSchema = ({
     },
     virusScannerCleanS3BucketUrl: {
       doc: 'Url of virus scanner clean S3 bucket.',
+      format: (val) =>
+        validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
+      default: null,
+    },
+    paymentProofS3BucketUrl: {
+      doc: 'Url of payment proof S3 bucket.',
       format: (val) =>
         validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
       default: null,
