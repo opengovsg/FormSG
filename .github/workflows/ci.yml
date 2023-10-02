@@ -29,7 +29,6 @@ jobs:
               - src/**
               - package.json
               - package-lock.json
-            
 
   install:
     runs-on: ubuntu-latest
@@ -96,7 +95,10 @@ jobs:
         with:
           path: '**/node_modules'
           key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json') }}
-      - run: npm run test:frontend
+      - name: Run frontend test
+        env:
+          NODE_OPTIONS: --max-old-space-size=2048
+        run: npm run test:frontend
 
   frontend_lint:
     needs: [changes, install]
