@@ -15,7 +15,8 @@ import {
 const logger = createLoggerWithLabel(module)
 
 export const SGID_LOGIN_OAUTH_STATE = 'login'
-const SGID_OGP_WORK_EMAIL_SCOPE = 'ogpofficerinfo.work_email'
+const SGID_POCDEX_PUBLIC_OFFICER_EMPLOYMENTS_SCOPE =
+  'pocdex.public_officer_employments'
 
 export class AuthSgidServiceClass {
   private client: SgidClient
@@ -56,7 +57,9 @@ export class AuthSgidServiceClass {
     try {
       const result = this.client.authorizationUrl({
         state: SGID_LOGIN_OAUTH_STATE,
-        scope: ['openid', SGID_OGP_WORK_EMAIL_SCOPE].join(' '),
+        scope: ['openid', SGID_POCDEX_PUBLIC_OFFICER_EMPLOYMENTS_SCOPE].join(
+          ' ',
+        ),
         nonce: null,
         codeChallenge,
       })
@@ -110,9 +113,14 @@ export class AuthSgidServiceClass {
     sub: string,
   ): ResultAsync<string, SgidFetchUserInfoError> {
     return ResultAsync.fromPromise(
-      this.client
-        .userinfo({ accessToken, sub })
-        .then(({ data }) => data[SGID_OGP_WORK_EMAIL_SCOPE]),
+      this.client.userinfo({ accessToken, sub }).then(({ data }) => {
+        const parsedResp = JSON.parse(
+          data[SGID_POCDEX_PUBLIC_OFFICER_EMPLOYMENTS_SCOPE],
+        )
+
+        // #TODO: need to handle multi-employment
+        return parsedResp[0].workEmail
+      }),
       (error) => {
         logger.error({
           message: 'Failed to retrieve user info from sgID',
