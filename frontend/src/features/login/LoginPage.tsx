@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Stack } from '@chakra-ui/react'
 
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
@@ -10,7 +11,9 @@ import {
 } from '~features/analytics/AnalyticsService'
 
 import { LoginForm, LoginFormInputs } from './components/LoginForm'
+import { OrDivider } from './components/OrDivider'
 import { OtpForm, OtpFormInputs } from './components/OtpForm'
+import { SgidLoginButton } from './components/SgidLoginButton'
 import { LoginPageTemplate } from './LoginPageTemplate'
 
 export type LoginOtpData = {
@@ -60,7 +63,11 @@ export const LoginPage = (): JSX.Element => {
   return (
     <LoginPageTemplate>
       {!email ? (
-        <LoginForm onSubmit={handleSendOtp} />
+        <Stack spacing="2rem">
+          <LoginForm onSubmit={handleSendOtp} />
+          <OrDivider />
+          <SgidLoginButton />
+        </Stack>
       ) : (
         <OtpForm
           email={email}
