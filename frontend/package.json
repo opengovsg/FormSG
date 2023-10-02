@@ -102,7 +102,7 @@
     "start": "env-cmd -f .buildtime-env craco --openssl-legacy-provider start",
     "build": "npm run build:dd-chunk && cross-env CI=false BUILD_PATH='../dist/frontend' INLINE_RUNTIME_CHUNK=false SKIP_PREFLIGHT_CHECK=true craco build && cd ../ && cp -rf frontend/static/js dist/frontend/static",
     "build:dd-chunk": "webpack --config webpack.dd.config.js",
-    "test": "cross-env SKIP_PREFLIGHT_CHECK=true craco test --silent",
+    "test": "cross-env SKIP_PREFLIGHT_CHECK=true craco test --silent --timeout=5000",
     "eject": "react-scripts eject",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",

@@ -4,5 +4,4 @@ const esModules = ['react-markdown'].join('|')
 
 module.exports = {
   transformIgnorePatterns: [`node_modules/(?!${esModules})/`],
-  testTimeout: 5000,
 }
