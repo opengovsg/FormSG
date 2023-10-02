@@ -134,12 +134,20 @@ export const usePublicFormMutations = (
               if (!(attachmentFile instanceof File))
                 throw new Error('Field is not attachment')
 
+              const uploadResponse = await uploadAttachmentToQuarantine(
+                presignedPostData.presignedPostData,
+                attachmentFile,
+              )
+
+              // // If status code is not 200-299, throw error
+              if (uploadResponse.status < 200 || uploadResponse.status > 299)
+                throw new Error(
+                  `Attachment upload failed - ${uploadResponse.statusText}`,
+                )
+
               return {
                 fieldId: presignedPostData.id,
-                uploadResponse: await uploadAttachmentToQuarantine(
-                  presignedPostData.presignedPostData,
-                  attachmentFile,
-                ),
+                uploadResponse,
               }
             }),
           ),
