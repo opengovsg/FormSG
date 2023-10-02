@@ -24,6 +24,7 @@ import {
   submitStorageModeClearFormWithFetch,
   submitStorageModeForm,
   submitStorageModeFormWithFetch,
+  uploadAttachmentToQuarantine,
 } from './PublicFormService'
 
 export const usePublicAuthMutations = (formId: string) => {
@@ -119,9 +120,30 @@ export const usePublicFormMutations = (
     },
   )
 
-  const getAttachmentPresignedPostDataMutation = useMutation(
+  const submitStorageModeClearFormWithVirusScanningMutation = useMutation(
     (args: Omit<SubmitStorageFormClearArgs, 'formId'>) => {
-      return getAttachmentPresignedPostData({ ...args, formId })
+      // Step 1: Get presigned post data for all attachment fields
+      return getAttachmentPresignedPostData({ ...args, formId }).then(
+        // Step 2: Upload attachments to quarantine bucket asynchronously
+        (presignedPostDataList) =>
+          Promise.all(
+            presignedPostDataList.map(async (presignedPostData) => {
+              const attachmentFile = args.formInputs[presignedPostData.id]
+
+              // Check if response is a File object (from an attachment field)
+              if (!(attachmentFile instanceof File))
+                throw new Error('Field is not attachment')
+
+              return {
+                fieldId: presignedPostData.id,
+                uploadResponse: await uploadAttachmentToQuarantine(
+                  presignedPostData.presignedPostData,
+                  attachmentFile,
+                ),
+              }
+            }),
+          ),
+      )
     },
   )
 
@@ -133,7 +155,7 @@ export const usePublicFormMutations = (
     submitEmailModeFormFetchMutation,
     submitStorageModeClearFormMutation,
     submitStorageModeClearFormFetchMutation,
-    getAttachmentPresignedPostDataMutation,
+    submitStorageModeClearFormWithVirusScanningMutation,
   }
 }
 

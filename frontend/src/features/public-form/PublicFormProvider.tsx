@@ -277,7 +277,7 @@ export const PublicFormProvider = ({
     submitStorageModeFormFetchMutation,
     submitStorageModeClearFormMutation,
     submitStorageModeClearFormFetchMutation,
-    getAttachmentPresignedPostDataMutation,
+    submitStorageModeClearFormWithVirusScanningMutation,
   } = usePublicFormMutations(formId, submissionData?.id ?? '')
 
   const submitStorageModeVnMutation = routeToNewStorageModeSubmission
@@ -558,7 +558,7 @@ export const PublicFormProvider = ({
 
           if (enableVirusScanner) {
             return (
-              getAttachmentPresignedPostDataMutation
+              submitStorageModeClearFormWithVirusScanningMutation
                 .mutateAsync(formData, {
                   onSuccess: async (presignedUrls) => {
                     console.log('presignedUrls', presignedUrls)

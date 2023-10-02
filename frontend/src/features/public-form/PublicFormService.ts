@@ -1,3 +1,6 @@
+import { PresignedPost } from 'aws-sdk/clients/s3'
+import axios from 'axios'
+
 import { ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION } from '~shared/constants'
 import { SubmitFormIssueBodyDto, SuccessMessageDto } from '~shared/types'
 import {
@@ -420,4 +423,14 @@ export const getAttachmentPresignedPostData = async ({
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/storage/get-s3-presigned-post-data`,
     attachmentSizes,
   ).then(({ data }) => data)
+}
+
+export const uploadAttachmentToQuarantine = async (
+  presignedPost: PresignedPost,
+  file: File,
+) => {
+  return await axios.postForm(presignedPost.url, {
+    ...presignedPost.fields,
+    file,
+  })
 }
