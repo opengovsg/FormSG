@@ -554,7 +554,7 @@ export const PublicFormProvider = ({
             },
           })
 
-          if (enableVirusScanner) {
+          if (routeToNewStorageModeSubmission && enableVirusScanner) {
             return (
               submitStorageModeClearFormWithVirusScanningMutation
                 .mutateAsync(formData, {
