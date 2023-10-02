@@ -12,19 +12,31 @@ import {
 
 import { SgidPublicOfficerEmployment } from '~shared/types/auth'
 
+import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { DASHBOARD_ROUTE, LOGIN_ROUTE } from '~constants/routes'
+import { useLocalStorage } from '~hooks/useLocalStorage'
+import { ApiService } from '~services/ApiService'
 
 import { useUser } from '~features/user/queries'
 
-import { useSgidProfiles } from './queries'
+import { SGID_PROFILES_ENDPOINT, useSgidProfiles } from './queries'
 
 export const LoginCallbackPage = (): JSX.Element => {
   const profilesResponse = useSgidProfiles()
-
+  const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const { user } = useUser()
 
   // If redirected back here but already authed, redirect to dashboard.
   if (user) window.location.replace(DASHBOARD_ROUTE)
+
+  const handleSetProfile = (profile: SgidPublicOfficerEmployment) => {
+    return ApiService.post<void>(SGID_PROFILES_ENDPOINT, {
+      workEmail: profile.workEmail,
+    }).then(() => {
+      window.location.assign(DASHBOARD_ROUTE)
+      setIsAuthenticated(true)
+    })
+  }
 
   return (
     <Flex flex={1} justify="center" align="center" background="primary.100">
@@ -44,7 +56,11 @@ export const LoginCallbackPage = (): JSX.Element => {
           <SkeletonText noOfLines={3} />
         ) : (
           profilesResponse.data?.profiles.map((profile) => (
-            <ProfileItem profile={profile} key={profile.workEmail} />
+            <ProfileItem
+              profile={profile}
+              key={profile.workEmail}
+              onClick={() => handleSetProfile(profile)}
+            />
           ))
         )}
         <Link as={ReactLink} to={LOGIN_ROUTE}>
@@ -55,9 +71,15 @@ export const LoginCallbackPage = (): JSX.Element => {
   )
 }
 
-const ProfileItem = ({ profile }: { profile: SgidPublicOfficerEmployment }) => {
+const ProfileItem = ({
+  profile,
+  onClick,
+}: {
+  profile: SgidPublicOfficerEmployment
+  onClick: () => void
+}) => {
   return (
-    <Flex align="center">
+    <Flex align="center" cursor="pointer" onClick={onClick}>
       <Box>
         <Text
           textStyle="subhead-2"

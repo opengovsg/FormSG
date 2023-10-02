@@ -19,8 +19,8 @@ AuthSGIDRouter.get('/login/callback', AuthSgidController.handleLoginCallback)
 
 /**
  * Sets the selected user profile
- * Uses post request to select the workemail from the request body
- * @route POST /sgid/auth/profile
+ * Uses get request to retrieve available profiles
+ * @route POST /sgid/auth/profiles
  *
  * @returns 200 with redirect to /dashboard if workemail is valid
  * @returns 500 when database error occurs
@@ -30,9 +30,9 @@ AuthSGIDRouter.get('/profiles', AuthSgidController.getProfiles)
 /**
  * Sets the selected user profile
  * Uses post request to select the workemail from the request body
- * @route POST /sgid/auth/profile
+ * @route POST /sgid/auth/profiles
  *
  * @returns 200 with redirect to /dashboard if workemail is valid
  * @returns 500 when database error occurs
  */
-AuthSGIDRouter.post('/profile', AuthSgidController.setProfile)
+AuthSGIDRouter.post('/profiles', AuthSgidController.setProfile)

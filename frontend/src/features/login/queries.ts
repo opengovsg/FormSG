@@ -6,7 +6,7 @@ import { ApiError } from '~typings/core'
 
 import { ApiService } from '~services/ApiService'
 
-const SGID_PROFILES_ENDPOINT = 'auth/sgid/profiles'
+export const SGID_PROFILES_ENDPOINT = '/auth/sgid/profiles'
 
 export const useSgidProfiles = (): UseQueryResult<
   SgidProfilesDto,
