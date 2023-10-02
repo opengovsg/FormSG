@@ -14,3 +14,8 @@ export interface AttachmentFieldBase extends FieldBase {
   fieldType: BasicField.Attachment
   attachmentSize: AttachmentSize
 }
+
+export type AttachmentSizeMapType = {
+  id: string
+  size: number
+}

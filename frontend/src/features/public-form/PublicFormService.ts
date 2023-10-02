@@ -1,6 +1,10 @@
 import { ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION } from '~shared/constants'
 import { SubmitFormIssueBodyDto, SuccessMessageDto } from '~shared/types'
-import { FormFieldDto, PaymentFieldsDto } from '~shared/types/field'
+import {
+  AttachmentSizeMapType,
+  FormFieldDto,
+  PaymentFieldsDto,
+} from '~shared/types/field'
 import {
   ProductItem,
   PublicFormAuthLogoutDto,
@@ -28,6 +32,7 @@ import { FormFieldValues } from '~templates/Field'
 import {
   createClearSubmissionFormData,
   createEncryptedSubmissionData,
+  getAttachmentsMap,
 } from './utils/createSubmission'
 import { filterHiddenInputs } from './utils/filterHiddenInputs'
 
@@ -385,5 +390,29 @@ export const submitFormIssue = async (
   return ApiService.post<SuccessMessageDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/issue`,
     issueToPost,
+  ).then(({ data }) => data)
+}
+
+/**
+ * Get presigned post data for attachments.
+ * @returns presigned post data for attachments.
+ */
+export const getAttachmentPresignedPostData = async ({
+  formFields,
+  formInputs,
+  formId,
+}: SubmitStorageFormClearArgs) => {
+  const attachmentsMap = getAttachmentsMap(formFields, formInputs)
+  const attachmentSizes: AttachmentSizeMapType[] = []
+  for (const id in attachmentsMap) {
+    // Check if id is a valid ObjectId. mongoose.isValidaObjectId cannot be used as it will throw a Reference Error.
+    const isValidObjectId = new RegExp(/^[0-9a-fA-F]{24}$/).test(id)
+    if (!isValidObjectId) throw new Error(`Invalid attachment id: ${id}`) // TODO: better error message?
+    attachmentSizes.push({ id, size: attachmentsMap[id].size })
+  }
+
+  return ApiService.post<SubmissionResponseDto>(
+    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/storage/get-s3-presigned-post-data`,
+    attachmentSizes,
   ).then(({ data }) => data)
 }

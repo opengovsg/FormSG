@@ -24,6 +24,7 @@ import {
 } from 'src/types'
 
 import {
+  AttachmentSizeMapType,
   FormResponseMode,
   StorageModeSubmissionMetadata,
   SubmissionId,
@@ -40,10 +41,7 @@ import {
   streamEncryptedResponses,
 } from '../encrypt-submission.controller'
 import * as EncryptSubmissionService from '../encrypt-submission.service'
-import {
-  AttachmentPresignedPostDataMapType,
-  AttachmentSizeMapType,
-} from '../encrypt-submission.types'
+import { AttachmentPresignedPostDataMapType } from '../encrypt-submission.types'
 
 jest.mock(
   'src/app/modules/submission/encrypt-submission/encrypt-submission.service',

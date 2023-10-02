@@ -152,7 +152,7 @@ const getEncryptedAttachmentsMap = async (
   )
 }
 
-const getAttachmentsMap = (
+export const getAttachmentsMap = (
   formFields: FormFieldDto[],
   formInputs: FormFieldValues,
 ): Record<string, File> => {

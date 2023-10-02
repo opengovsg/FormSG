@@ -10,6 +10,7 @@ import { useToast } from '~hooks/useToast'
 
 import { useStorePrefillQuery } from './hooks/useStorePrefillQuery'
 import {
+  getAttachmentPresignedPostData,
   getPublicFormAuthRedirectUrl,
   logoutPublicForm,
   SubmitEmailFormArgs,
@@ -118,6 +119,12 @@ export const usePublicFormMutations = (
     },
   )
 
+  const getAttachmentPresignedPostDataMutation = useMutation(
+    (args: Omit<SubmitStorageFormClearArgs, 'formId'>) => {
+      return getAttachmentPresignedPostData({ ...args, formId })
+    },
+  )
+
   return {
     submitEmailModeFormMutation,
     submitStorageModeFormMutation,
@@ -126,6 +133,7 @@ export const usePublicFormMutations = (
     submitEmailModeFormFetchMutation,
     submitStorageModeClearFormMutation,
     submitStorageModeClearFormFetchMutation,
+    getAttachmentPresignedPostDataMutation,
   }
 }
 

@@ -277,6 +277,7 @@ export const PublicFormProvider = ({
     submitStorageModeFormFetchMutation,
     submitStorageModeClearFormMutation,
     submitStorageModeClearFormFetchMutation,
+    getAttachmentPresignedPostDataMutation,
   } = usePublicFormMutations(formId, submissionData?.id ?? '')
 
   const submitStorageModeVnMutation = routeToNewStorageModeSubmission
@@ -554,6 +555,41 @@ export const PublicFormProvider = ({
               method: 'axios',
             },
           })
+
+          if (enableVirusScanner) {
+            return (
+              getAttachmentPresignedPostDataMutation
+                .mutateAsync(formData, {
+                  onSuccess: async (presignedUrls) => {
+                    console.log('presignedUrls', presignedUrls)
+                  },
+                })
+                // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
+                .catch(async (error) => {
+                  // TODO(#5826): Remove when we have resolved the Network Error
+                  datadogLogs.logger.warn(
+                    `handleSubmitForm: ${error.message}`,
+                    {
+                      meta: {
+                        ...logMeta,
+                        responseMode: 'storage',
+                        method: 'axios',
+                        error: {
+                          message: error.message,
+                          stack: error.stack,
+                        },
+                      },
+                    },
+                  )
+
+                  if (/Network Error/i.test(error.message)) {
+                    axiosDebugFlow()
+                    return submitStorageFormWithFetch()
+                  }
+                  showErrorToast(error, form)
+                })
+            )
+          }
 
           return (
             submitStorageModeVnMutation
