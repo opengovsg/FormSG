@@ -4,7 +4,7 @@ export const OrDivider = (): JSX.Element => {
   return (
     <HStack spacing="2.5rem">
       <Divider />
-      <Text color="content.medium">or</Text>
+      <Text>or</Text>
       <Divider />
     </HStack>
   )
