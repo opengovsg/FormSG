@@ -465,10 +465,13 @@ describe('admin-form.controller', () => {
       expect(MockUserService.findUserById).toHaveBeenCalledWith(
         MOCK_REQ.session?.user?._id,
       )
-      expect(MockAdminFormService.createForm).toHaveBeenCalledWith({
-        ...MOCK_FORM_PARAMS,
-        admin: MOCK_USER._id,
-      })
+      expect(MockAdminFormService.createForm).toHaveBeenCalledWith(
+        {
+          ...MOCK_FORM_PARAMS,
+          admin: MOCK_USER._id,
+        },
+        undefined,
+      )
     })
 
     it('should return 409 on DatabaseConflictError', async () => {
@@ -489,10 +492,13 @@ describe('admin-form.controller', () => {
       expect(MockUserService.findUserById).toHaveBeenCalledWith(
         MOCK_REQ.session?.user?._id,
       )
-      expect(MockAdminFormService.createForm).toHaveBeenCalledWith({
-        ...MOCK_FORM_PARAMS,
-        admin: MOCK_USER._id,
-      })
+      expect(MockAdminFormService.createForm).toHaveBeenCalledWith(
+        {
+          ...MOCK_FORM_PARAMS,
+          admin: MOCK_USER._id,
+        },
+        undefined,
+      )
     })
 
     it('should return 413 on DatabasePayloadSizeError', async () => {
@@ -513,10 +519,13 @@ describe('admin-form.controller', () => {
       expect(MockUserService.findUserById).toHaveBeenCalledWith(
         MOCK_REQ.session?.user?._id,
       )
-      expect(MockAdminFormService.createForm).toHaveBeenCalledWith({
-        ...MOCK_FORM_PARAMS,
-        admin: MOCK_USER._id,
-      })
+      expect(MockAdminFormService.createForm).toHaveBeenCalledWith(
+        {
+          ...MOCK_FORM_PARAMS,
+          admin: MOCK_USER._id,
+        },
+        undefined,
+      )
     })
 
     it('should return 422 on DatabaseValidationError', async () => {
@@ -537,10 +546,13 @@ describe('admin-form.controller', () => {
       expect(MockUserService.findUserById).toHaveBeenCalledWith(
         MOCK_REQ.session?.user?._id,
       )
-      expect(MockAdminFormService.createForm).toHaveBeenCalledWith({
-        ...MOCK_FORM_PARAMS,
-        admin: MOCK_USER._id,
-      })
+      expect(MockAdminFormService.createForm).toHaveBeenCalledWith(
+        {
+          ...MOCK_FORM_PARAMS,
+          admin: MOCK_USER._id,
+        },
+        undefined,
+      )
     })
 
     it('should return 422 on MissingUserError', async () => {
@@ -580,31 +592,38 @@ describe('admin-form.controller', () => {
       expect(MockUserService.findUserById).toHaveBeenCalledWith(
         MOCK_REQ.session?.user?._id,
       )
-      expect(MockAdminFormService.createForm).toHaveBeenCalledWith({
-        ...MOCK_FORM_PARAMS,
-        admin: MOCK_USER._id,
-      })
+      expect(MockAdminFormService.createForm).toHaveBeenCalledWith(
+        {
+          ...MOCK_FORM_PARAMS,
+          admin: MOCK_USER._id,
+        },
+        undefined,
+      )
     })
 
-    it('should return 500 when database error occurs during user retrieval', async () => {
-      // Arrange
-      const mockErrorString = 'db ded'
-      const mockRes = expressHandler.mockResponse()
-      MockUserService.findUserById.mockReturnValueOnce(
-        errAsync(new DatabaseError(mockErrorString)),
-      )
+    it(
+      'should return 500 when database error occurs during user retrieval',
+      async () => {
+        // Arrange
+        const mockErrorString = 'db ded'
+        const mockRes = expressHandler.mockResponse()
+        MockUserService.findUserById.mockReturnValueOnce(
+          errAsync(new DatabaseError(mockErrorString)),
+        )
 
-      // Act
-      await AdminFormController.createForm(MOCK_REQ, mockRes, jest.fn())
+        // Act
+        await AdminFormController.createForm(MOCK_REQ, mockRes, jest.fn())
 
-      // Assert
-      expect(mockRes.status).toHaveBeenCalledWith(500)
-      expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
-      expect(MockUserService.findUserById).toHaveBeenCalledWith(
-        MOCK_REQ.session?.user?._id,
-      )
-      expect(MockAdminFormService.createForm).not.toHaveBeenCalled()
-    })
+        // Assert
+        expect(mockRes.status).toHaveBeenCalledWith(500)
+        expect(mockRes.json).toHaveBeenCalledWith({ message: mockErrorString })
+        expect(MockUserService.findUserById).toHaveBeenCalledWith(
+          MOCK_REQ.session?.user?._id,
+        )
+        expect(MockAdminFormService.createForm).not.toHaveBeenCalled()
+      },
+      undefined,
+    )
   })
 
   describe('handleGetAdminForm', () => {
@@ -3233,7 +3252,7 @@ describe('admin-form.controller', () => {
           _id: MOCK_USER_ID,
         },
       },
-      body: {} as DuplicateFormBodyDto,
+      body: {} as CreateFormBodyDto,
     })
 
     it('should return duplicated form view on duplicate success', async () => {
@@ -3282,6 +3301,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
+        undefined,
       )
     })
 
@@ -3350,6 +3370,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
+        undefined,
       )
     })
 
@@ -3484,6 +3505,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_USER_ID,
         expectedParams,
+        undefined,
       )
     })
   })
