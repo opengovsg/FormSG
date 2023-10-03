@@ -474,6 +474,44 @@ describe('admin-form.controller', () => {
       )
     })
 
+    it('should return 200 with created form into a workspace', async () => {
+      // Arrange
+      const mockWorkspaceId = new ObjectId().toHexString()
+      const mockReqWithWorkspaceId = expressHandler.mockRequest({
+        session: {
+          user: {
+            _id: MOCK_USER_ID,
+          },
+        },
+        body: {
+          form: { ...MOCK_FORM_PARAMS, workspaceId: mockWorkspaceId },
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      MockUserService.findUserById.mockReturnValueOnce(okAsync(MOCK_USER))
+      MockAdminFormService.createForm.mockReturnValueOnce(okAsync(MOCK_FORM))
+
+      // Act
+      await AdminFormController.createForm(
+        mockReqWithWorkspaceId,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.json).toHaveBeenCalledWith(MOCK_FORM)
+      expect(MockUserService.findUserById).toHaveBeenCalledWith(
+        MOCK_REQ.session?.user?._id,
+      )
+      expect(MockAdminFormService.createForm).toHaveBeenCalledWith(
+        {
+          ...MOCK_FORM_PARAMS,
+          admin: MOCK_USER._id,
+        },
+        mockWorkspaceId,
+      )
+    })
+
     it('should return 409 on DatabaseConflictError', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
@@ -3302,6 +3340,57 @@ describe('admin-form.controller', () => {
         MOCK_USER_ID,
         expectedParams,
         undefined,
+      )
+    })
+
+    it('should return duplicated form view on duplicate success into a workspace', async () => {
+      // Arrange
+      const mockWorkspaceId = new ObjectId().toHexString()
+      const expectedParams: DuplicateFormBodyDto = {
+        responseMode: FormResponseMode.Encrypt,
+        publicKey: 'some public key',
+        title: 'mock title',
+      }
+      const mockDupedFormView = {
+        title: 'mock view',
+      } as AdminDashboardFormMetaDto
+      const mockDupedForm = merge({}, MOCK_FORM, {
+        title: 'duped form with new title',
+        _id: new ObjectId(),
+        getDashboardView: jest.fn().mockReturnValue(mockDupedFormView),
+      })
+      const mockRes = expressHandler.mockResponse()
+      const mockReqWithParams = merge({}, MOCK_REQ, {
+        body: { workspaceId: mockWorkspaceId, ...expectedParams },
+      })
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      MockAdminFormService.duplicateForm.mockReturnValueOnce(
+        okAsync(mockDupedForm),
+      )
+
+      // Act
+      await AdminFormController.duplicateAdminForm(
+        mockReqWithParams,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.status).not.toHaveBeenCalled()
+      expect(mockRes.json).toHaveBeenCalledWith(mockDupedFormView)
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockAdminFormService.duplicateForm).toHaveBeenCalledWith(
+        MOCK_FORM,
+        MOCK_USER_ID,
+        expectedParams,
+        mockWorkspaceId,
       )
     })
 
