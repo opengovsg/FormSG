@@ -57,7 +57,9 @@ export class InvalidFileKeyError extends ApplicationError {
 }
 
 export class VirusScanFailedError extends ApplicationError {
-  constructor(message = 'Virus scan failed. Please try again.') {
+  constructor(
+    message = 'Your attachment(s) has failed our virus scan. Try creating and uploading your attachment(s) again.',
+  ) {
     super(message)
   }
 }
