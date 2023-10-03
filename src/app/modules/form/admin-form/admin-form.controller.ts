@@ -29,6 +29,8 @@ import {
   FormLogoState,
   FormResponseMode,
   FormSettings,
+  FormWebhookResponseModeSettings,
+  FormWebhookSettings,
   LogicConditionState,
   LogicDto,
   LogicIfValue,
@@ -41,6 +43,7 @@ import {
   SmsCountsDto,
   StartPageUpdateDto,
   SubmissionCountQueryDto,
+  WebhookSettingsUpdateDto,
 } from '../../../../../shared/types'
 import { IForm, IFormDocument, IPopulatedForm } from '../../../../types'
 import {
@@ -66,18 +69,20 @@ import * as FeedbackService from '../../feedback/feedback.service'
 import * as EmailSubmissionMiddleware from '../../submission/email-submission/email-submission.middleware'
 import * as EmailSubmissionService from '../../submission/email-submission/email-submission.service'
 import {
-  mapAttachmentsFromResponses,
   mapRouteError as mapEmailSubmissionError,
   SubmissionEmailObj,
 } from '../../submission/email-submission/email-submission.util'
-import ParsedResponsesObject from '../../submission/email-submission/ParsedResponsesObject.class'
 import * as EncryptSubmissionMiddleware from '../../submission/encrypt-submission/encrypt-submission.middleware'
 import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
 import { mapRouteError as mapEncryptSubmissionError } from '../../submission/encrypt-submission/encrypt-submission.utils'
 import IncomingEncryptSubmission from '../../submission/encrypt-submission/IncomingEncryptSubmission.class'
+import ParsedResponsesObject from '../../submission/ParsedResponsesObject.class'
 import * as ReceiverMiddleware from '../../submission/receiver/receiver.middleware'
 import * as SubmissionService from '../../submission/submission.service'
-import { extractEmailConfirmationData } from '../../submission/submission.utils'
+import {
+  extractEmailConfirmationData,
+  mapAttachmentsFromResponses,
+} from '../../submission/submission.utils'
 import * as UserService from '../../user/user.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
@@ -88,11 +93,19 @@ import {
   PREVIEW_CORPPASS_UINFIN,
   PREVIEW_SINGPASS_UINFIN,
 } from './admin-form.constants'
-import { EditFieldError, GoGovError } from './admin-form.errors'
-import { updateSettingsValidator } from './admin-form.middlewares'
+import { EditFieldError, GoGovServerError } from './admin-form.errors'
+import {
+  getWebhookSettingsValidator,
+  updateSettingsValidator,
+  updateWebhookSettingsValidator,
+} from './admin-form.middlewares'
 import * as AdminFormService from './admin-form.service'
 import { PermissionLevel } from './admin-form.types'
-import { mapRouteError, verifyValidUnicodeString } from './admin-form.utils'
+import {
+  mapGoGovErrors,
+  mapRouteError,
+  verifyValidUnicodeString,
+} from './admin-form.utils'
 
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
 const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
@@ -1012,6 +1025,57 @@ export const handleCopyTemplateForm: ControllerHandler<
 }
 
 /**
+ * Handler for POST /admin/forms/all-transfer-owner.
+ * @security session
+ *
+ * @returns 200 with true if transfer was successful
+ * @returns 400 when new owner is not in the database yet
+ * @returns 400 when new owner is already current owner
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const transferAllFormsOwnership: ControllerHandler<
+  unknown,
+  unknown,
+  { email: string }
+> = (req, res) => {
+  const { email: newOwnerEmail } = req.body
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return (
+    // Step 1: Retrieve currently logged in user.
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Transfer all forms to new owner
+        AdminFormService.transferAllFormsOwnership(user, newOwnerEmail),
+      )
+      .map((data) => {
+        return res.status(StatusCodes.OK).json(data)
+      })
+      // Some error occurred earlier in the chain.
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred whilst transferring all forms ownership',
+          meta: {
+            action: 'transferAllFormsOwnership',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            newOwnerEmail,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+export const handleTransferAllFormsOwnership = [
+  transferFormOwnershipValidator,
+  transferAllFormsOwnership,
+] as ControllerHandler[]
+
+/**
  * Handler for POST /{formId}/adminform/transfer-owner.
  * @security session
  *
@@ -1295,6 +1359,63 @@ export const _handleUpdateSettings: ControllerHandler<
     })
 }
 
+export const _handleUpdateWebhookSettings: ControllerHandler<
+  { formId: string },
+  FormWebhookSettings | ErrorDto,
+  WebhookSettingsUpdateDto
+> = (req, res) => {
+  const { formId } = req.params
+  const { userEmail, webhook: webhookSettings } = req.body
+  const authedUserId = (req.session as AuthedSessionData).user._id
+
+  logger.info({
+    message: 'User attempting to update webhook settings',
+    meta: {
+      action: '_handleUpdateWebhookSettings',
+      ...createReqMeta(req),
+      reqBody: req.body,
+      formId,
+      userEmail,
+      webhookSettings,
+    },
+  })
+
+  // Step 1: Retrieve currently logged in user.
+  return UserService.findUserById(authedUserId)
+    .andThen((user) =>
+      // Step 2: Retrieve form with write permission check.
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((retrievedForm) =>
+      AdminFormService.updateFormSettings(retrievedForm, {
+        webhook: webhookSettings,
+      }),
+    )
+    .map((updatedSettings) => {
+      const webhookSettings = { webhook: updatedSettings.webhook }
+      res.status(StatusCodes.OK).json(webhookSettings)
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when updating form settings',
+        meta: {
+          action: 'handleUpdateWebhookSettings',
+          ...createReqMeta(req),
+          userEmail,
+          formId,
+          settingsKeysToUpdate: Object.keys(webhookSettings),
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
 /**
  * Handler for PATCH /forms/:formId/settings.
  * @security session
@@ -1313,6 +1434,26 @@ export const _handleUpdateSettings: ControllerHandler<
 export const handleUpdateSettings = [
   updateSettingsValidator,
   _handleUpdateSettings,
+] as ControllerHandler[]
+
+/**
+ * Handler for PATCH api/public/v1/admin/forms/:formId/webhooksettings.
+ * @security session
+ *
+ * @returns 200 with updated form settings
+ * @returns 400 when body is malformed
+ * @returns 403 when user email does not have permissions to update form settings
+ * @returns 404 when form to update settings for cannot be found
+ * @returns 409 when saving form settings incurs a conflict in the database
+ * @returns 410 when updating settings for archived form
+ * @returns 413 when updating settings causes form to be too large to be saved in the database
+ * @returns 422 when an invalid settings update is attempted on the form
+ * @returns 422 when user from user email cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleUpdateWebhookSettings = [
+  updateWebhookSettingsValidator,
+  _handleUpdateWebhookSettings,
 ] as ControllerHandler[]
 
 /**
@@ -1378,7 +1519,6 @@ export const _handleUpdateFormField: ControllerHandler<
  * @security session
  *
  * @returns 200 with latest form settings on successful update
- * @returns 401 when current user is not logged in
  * @returns 403 when current user does not have permissions to obtain form settings
  * @returns 404 when form to retrieve settings for cannot be found
  * @returns 409 when saving form settings incurs a conflict in the database
@@ -1416,6 +1556,85 @@ export const handleGetSettings: ControllerHandler<
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
+
+/**
+ * Handler for POST api/public/v1/admin/forms/:formId/webhooksettings.
+ *
+ * @returns 200 with latest webhook and response mode settings
+ * @returns 401 when current user is not logged in
+ * @returns 403 when current user does not have permissions to obtain form settings
+ * @returns 404 when form to retrieve settings for cannot be found
+ * @returns 422 when user from user email cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const _handleGetWebhookSettings: ControllerHandler<
+  { formId: string },
+  FormWebhookResponseModeSettings | ErrorDto,
+  { userEmail: string }
+> = (req, res) => {
+  const { formId } = req.params
+  const { userEmail } = req.body
+  const authedUserId = (req.session as AuthedSessionData).user._id
+
+  const logMeta = {
+    action: 'handleGetWebhookSettings',
+    ...createReqMeta(req),
+    userEmail,
+    formId,
+  }
+
+  logger.info({
+    message: 'User attempting to get webhook settings',
+    meta: logMeta,
+  })
+
+  return UserService.findUserById(authedUserId)
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when retrieving user from database',
+        meta: logMeta,
+        error,
+      })
+      return error
+    })
+    .andThen((user) =>
+      // Retrieve form for settings as well as for permissions checking
+      FormService.retrieveFullFormById(formId).map((form) => ({
+        form,
+        user,
+      })),
+    )
+    .andThen(AuthService.checkFormForPermissions(PermissionLevel.Read))
+    .map((form) =>
+      res.status(StatusCodes.OK).json(form.getWebhookAndResponseModeSettings()),
+    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when retrieving form settings',
+        meta: logMeta,
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
+ * Handler for POST api/public/v1/admin/forms/:formId/webhooksettings.
+ * @security session
+ *
+ * @returns 200 with latest webhook and response mode settings
+ * @returns 400 when body is malformed
+ * @returns 401 when current user is not logged in
+ * @returns 403 when user email does not have permissions to obtain form settings
+ * @returns 404 when form to retrieve settings for cannot be found
+ * @returns 422 when user from user email cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleGetWebhookSettings = [
+  getWebhookSettingsValidator,
+  _handleGetWebhookSettings,
+] as ControllerHandler[]
 
 /**
  * Handler for POST /v2/submissions/encrypt/preview/:formId.
@@ -1561,10 +1780,10 @@ export const submitEmailPreview: ControllerHandler<
   }
   const form = formResult.value
 
-  const parsedResponsesResult =
-    await EmailSubmissionService.validateAttachments(responses).andThen(() =>
-      ParsedResponsesObject.parseResponses(form, responses),
-    )
+  const parsedResponsesResult = await SubmissionService.validateAttachments(
+    responses,
+    form.responseMode,
+  ).andThen(() => ParsedResponsesObject.parseResponses(form, responses))
   if (parsedResponsesResult.isErr()) {
     logger.error({
       message: 'Error while parsing responses for preview submission',
@@ -2774,13 +2993,18 @@ export const handleSetGoLinkSuffix: ControllerHandler<
               },
             },
           ),
-          // TODO: fix error handling (https://linear.app/ogp/issue/FRM-901/improve-error-handling-when-calling-gogov-api)
-          () => new GoGovError(),
+          (error) => {
+            if (axios.isAxiosError(error)) {
+              return mapGoGovErrors(error)
+            }
+
+            return new GoGovServerError()
+          },
         )
       })
       // Step 3: After obtaining GoGov link, save it to the form
       .andThen(() => AdminFormService.setGoLinkSuffix(formId, linkSuffix))
-      .map((data) => res.status(StatusCodes.OK).json(data))
+      .map(() => res.sendStatus(StatusCodes.OK))
       .mapErr((error) => {
         logger.error({
           message: 'Error occurred when setting GoGov link suffix',

@@ -1,9 +1,9 @@
-// Prefixes in response emails
+// Prefixes in response emails, a space is included after the [field] for formatting
 export const MYINFO_PREFIX = '[MyInfo] '
 export const VERIFIED_PREFIX = '[verified] '
 export const TABLE_PREFIX = '[table] '
 export const ATTACHMENT_PREFIX = '[attachment] '
-export const CHILD_PREFIX = '[child]'
+export const CHILD_PREFIX = '[child] '
 
 // Parameters for hashing submissions
 export const SALT_LENGTH = 32

@@ -87,11 +87,29 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
       default: null,
       env: 'ATTACHMENT_S3_BUCKET',
     },
+    paymentProofS3Bucket: {
+      doc: 'S3 Bucket to upload payment proof to',
+      format: String,
+      default: null,
+      env: 'PAYMENT_PROOF_S3_BUCKET',
+    },
     staticAssetsS3Bucket: {
       doc: 'S3 Bucket containing static assets',
       format: String,
       default: null,
       env: 'STATIC_ASSETS_S3_BUCKET',
+    },
+    virusScannerQuarantineS3Bucket: {
+      doc: 'S3 Bucket to quarantine files for virus scanning',
+      format: String,
+      default: null,
+      env: 'VIRUS_SCANNER_QUARANTINE_S3_BUCKET',
+    },
+    virusScannerCleanS3Bucket: {
+      doc: 'S3 Bucket to store files that have been scanned and are clean',
+      format: String,
+      default: null,
+      env: 'VIRUS_SCANNER_CLEAN_S3_BUCKET',
     },
   },
   core: {
@@ -137,6 +155,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       format: 'url',
       default: 'https://form.gov.sg',
       env: 'APP_URL',
+    },
+    feAppUrl: {
+      doc: 'For local dev use only - frontend app url',
+      format: 'url',
+      default: 'https://form.gov.sg',
+      env: 'FE_APP_URL',
     },
     keywords: {
       doc: 'Application keywords in meta tag',
@@ -261,6 +285,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: '',
       env: 'CUSTOM_CLOUDWATCH_LOG_GROUP',
     },
+    virusScannerLambdaFunctionName: {
+      doc: 'Virus scanner lambda function name',
+      format: String,
+      default: '',
+      env: 'VIRUS_SCANNER_LAMBDA_FUNCTION_NAME',
+    },
   },
   core: {
     port: {
@@ -318,6 +348,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       format: 'int',
       default: 100,
       env: 'PUBLIC_API_RATE_LIMIT',
+    },
+    platformApi: {
+      doc: 'Per-minute, per-IP, per-instance request limit for platform APIs',
+      format: 'int',
+      default: 100,
+      env: 'PLATFORM_API_RATE_LIMIT',
     },
   },
   reactMigration: {
@@ -445,6 +481,24 @@ export const loadS3BucketUrlSchema = ({
     },
     staticAssetsBucketUrl: {
       doc: 'Url of static assets S3 bucket.',
+      format: (val) =>
+        validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
+      default: null,
+    },
+    virusScannerQuarantineS3BucketUrl: {
+      doc: 'Url of virus scanner quarantine S3 bucket.',
+      format: (val) =>
+        validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
+      default: null,
+    },
+    virusScannerCleanS3BucketUrl: {
+      doc: 'Url of virus scanner clean S3 bucket.',
+      format: (val) =>
+        validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
+      default: null,
+    },
+    paymentProofS3BucketUrl: {
+      doc: 'Url of payment proof S3 bucket.',
       format: (val) =>
         validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
       default: null,

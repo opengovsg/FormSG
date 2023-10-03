@@ -1,0 +1,23 @@
+name: Deploy to uat
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  push:
+    branches:
+      - uat
+  # schedule builds for 12:00AM GMT+8 everyday to get latest virus definitions
+  schedule:
+    - cron: '0 16 * * *'
+
+jobs:
+  deploy-scanner:
+    name: Deploy Scanner
+    uses: ./.github/workflows/aws-deploy-scanner.yml
+    with:
+      environment: 'uat'
+      provisionedConcurrency: 1
+      checkoutBranch: 'uat'
+    secrets: inherit

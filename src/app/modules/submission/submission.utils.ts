@@ -1,4 +1,11 @@
-import { differenceBy, intersectionBy, keyBy, uniqBy } from 'lodash'
+import {
+  differenceBy,
+  flattenDeep,
+  intersectionBy,
+  keyBy,
+  sumBy,
+  uniqBy,
+} from 'lodash'
 import { err, ok, Result } from 'neverthrow'
 
 import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
@@ -7,7 +14,13 @@ import {
   FormField,
   FormResponseMode,
 } from '../../../../shared/types'
-import { FieldResponse, FormFieldSchema, IFormDocument } from '../../../types'
+import * as FileValidation from '../../../../shared/utils/file-validation'
+import {
+  FieldResponse,
+  FormFieldSchema,
+  IAttachmentInfo,
+  IFormDocument,
+} from '../../../types'
 import {
   ParsedClearAttachmentResponse,
   ParsedClearFormFieldResponse,
@@ -21,19 +34,32 @@ type ResponseModeFilterParam = {
   fieldType: BasicField
 }
 
-// Exported for testing.
-export const getResponseModeFilter = (
-  responseMode: FormResponseMode,
-): (<T extends ResponseModeFilterParam>(responses: T[]) => T[]) => {
+const MB_MULTIPLIER = 1000000
+
+/**
+ * Returns the file size limit in MB based on whether request is an email-mode submission
+ * @param isEmailMode boolean flag of whether request is in email-mode
+ * @returns 7 if email mode, 20 if not
+ */
+export const fileSizeLimit = (responseMode: FormResponseMode) => {
   switch (responseMode) {
     case FormResponseMode.Email:
-      return emailResponseModeFilter
+      return 7
     case FormResponseMode.Encrypt:
-      return encryptResponseModeFilter
+      return 20
   }
 }
 
-const emailResponseModeFilter = <T extends ResponseModeFilterParam>(
+// TODO (FRM-1232): Refactor once encryption boundary has been shifted.
+// Exported for testing.
+export const getResponseModeFilter = (
+  isEncrypted: boolean,
+): (<T extends ResponseModeFilterParam>(responses: T[]) => T[]) => {
+  if (isEncrypted) return encryptedResponseModeFilter
+  else return clearResponseModeFilter
+}
+
+const clearResponseModeFilter = <T extends ResponseModeFilterParam>(
   responses: T[],
 ) => {
   return responses.filter(
@@ -41,7 +67,8 @@ const emailResponseModeFilter = <T extends ResponseModeFilterParam>(
   )
 }
 
-const encryptResponseModeFilter = <T extends ResponseModeFilterParam>(
+// TODO (FRM-1232): Remove once encryption boundary has been shifted.
+const encryptedResponseModeFilter = <T extends ResponseModeFilterParam>(
   responses: T[] = [],
 ) => {
   // To filter for autoreply-able fields.
@@ -50,7 +77,8 @@ const encryptResponseModeFilter = <T extends ResponseModeFilterParam>(
   )
 }
 
-const encryptFormFieldModeFilter = <T extends FormField>(
+// TODO (FRM-1232): Remove once encryption boundary has been shifted.
+const encryptedFormFieldModeFilter = <T extends FormField>(
   responses: T[] = [],
 ) => {
   // To filter for autoreply-able fields.
@@ -66,16 +94,13 @@ const encryptFormFieldModeFilter = <T extends FormField>(
   })
 }
 
+// TODO (FRM-1232): Refactor once encryption boundary has been shifted.
 // Exported for testing.
 export const getFormFieldModeFilter = (
-  responseMode: FormResponseMode,
+  isEncrypted: boolean,
 ): (<T extends FormField>(responses: T[]) => T[]) => {
-  switch (responseMode) {
-    case FormResponseMode.Email:
-      return emailResponseModeFilter
-    case FormResponseMode.Encrypt:
-      return encryptFormFieldModeFilter
-  }
+  if (isEncrypted) return encryptedFormFieldModeFilter
+  else return clearResponseModeFilter
 }
 
 /**
@@ -124,9 +149,10 @@ export const extractEmailConfirmationData = (
 export const getFilteredResponses = (
   form: IFormDocument,
   responses: FieldResponse[],
+  isEncryptedMode: boolean,
 ): Result<FilteredResponse[], ConflictError> => {
-  const responseModeFilter = getResponseModeFilter(form.responseMode)
-  const formFieldModeFilter = getFormFieldModeFilter(form.responseMode)
+  const responseModeFilter = getResponseModeFilter(isEncryptedMode)
+  const formFieldModeFilter = getFormFieldModeFilter(isEncryptedMode)
 
   if (!form.form_fields) {
     return err(new ConflictError('Form fields are missing'))
@@ -167,4 +193,76 @@ export const isAttachmentResponse = (
     response.fieldType === BasicField.Attachment &&
     response.content !== undefined
   )
+}
+
+/**
+ * Checks if a response is a quarantined attachment response to be processed by the virus scanner.
+ */
+export const isQuarantinedAttachmentResponse = (
+  response: ParsedClearFormFieldResponse,
+): response is ParsedClearAttachmentResponse => {
+  return response.fieldType === BasicField.Attachment && response.answer !== ''
+}
+
+/**
+ * Checks an array of attachments to see ensure that every
+ * one of them is valid. The validity is determined by an
+ * internal isInvalidFileExtension checker function, and
+ * zip files are checked recursively.
+ *
+ * @param attachments - Array of file objects
+ * @returns Whether all attachments are valid
+ */
+export const getInvalidFileExtensions = (
+  attachments: IAttachmentInfo[],
+): Promise<string[]> => {
+  // Turn it into an array of promises that each resolve
+  // to an array of file extensions that are invalid (if any)
+  const promises = attachments.map((attachment) => {
+    const extension = FileValidation.getFileExtension(attachment.filename)
+    if (FileValidation.isInvalidFileExtension(extension)) {
+      return Promise.resolve([extension])
+    }
+    if (extension !== '.zip') return Promise.resolve([])
+    return FileValidation.getInvalidFileExtensionsInZip(
+      'nodebuffer',
+      attachment.content,
+    )
+  })
+
+  return Promise.all(promises).then((results) => flattenDeep(results))
+}
+
+export const fileSizeLimitBytes = (responseMode: FormResponseMode) => {
+  return MB_MULTIPLIER * fileSizeLimit(responseMode)
+}
+
+/**
+ * Checks whether the total size of attachments exceeds 7MB
+ * @param attachments List of attachments
+ * @returns true if total attachment size exceeds 7MB
+ */
+export const areAttachmentsMoreThanLimit = (
+  attachments: IAttachmentInfo[],
+  responseMode: FormResponseMode,
+): boolean => {
+  // Check if total attachments size is < 7mb
+  const totalAttachmentSize = sumBy(attachments, (a) => a.content.byteLength)
+  return totalAttachmentSize > fileSizeLimitBytes(responseMode)
+}
+
+/**
+ * Extracts attachment fields from form responses
+ * @param responses Form responses
+ */
+export const mapAttachmentsFromResponses = (
+  responses: ParsedClearFormFieldResponse[],
+): IAttachmentInfo[] => {
+  // look for attachments in parsedResponses
+  // Could be undefined if it is not required, or hidden
+  return responses.filter(isAttachmentResponse).map((response) => ({
+    fieldId: response._id,
+    filename: response.filename,
+    content: response.content,
+  }))
 }

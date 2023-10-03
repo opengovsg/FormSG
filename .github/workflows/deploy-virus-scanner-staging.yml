@@ -1,0 +1,27 @@
+name: Deploy to staging
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  push:
+    branches:
+      - staging
+  # schedule builds for 12:00AM GMT+8 everyday to get latest virus definitions
+  schedule:
+    - cron: '0 16 * * *'
+
+jobs:
+  deploy-scanner:
+    name: Deploy Scanner
+    uses: ./.github/workflows/aws-deploy-scanner.yml
+    with:
+      environment: 'staging'
+      provisionedConcurrency: 1
+      checkoutBranch: 'staging'
+    secrets: inherit

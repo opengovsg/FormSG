@@ -23,6 +23,7 @@ import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
 import { SmsLimitExceededError } from 'src/app/modules/verification/verification.errors'
 import { TwilioCredentials } from 'src/app/services/sms/sms.types'
+import { CreatePresignedPostError } from 'src/app/utils/aws-s3'
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import { EditFieldActions } from 'src/shared/constants'
 import {
@@ -64,7 +65,6 @@ import {
   TransferOwnershipError,
 } from '../../form.errors'
 import {
-  CreatePresignedUrlError,
   EditFieldError,
   FieldNotFoundError,
   InvalidCollaboratorError,
@@ -231,7 +231,7 @@ describe('admin-form.service', () => {
       )
     })
 
-    it('should return CreatePresignedUrlError when error occurs whilst creating presigned POST URL', async () => {
+    it('should return CreatePresignedPostError when error occurs whilst creating presigned POST URL', async () => {
       // Arrange
       // Mock external service failure.
       const s3Spy = jest
@@ -258,7 +258,7 @@ describe('admin-form.service', () => {
       )
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new CreatePresignedUrlError('Error occurred whilst uploading file'),
+        new CreatePresignedPostError('Error occurred whilst uploading file'),
       )
     })
   })
@@ -324,7 +324,7 @@ describe('admin-form.service', () => {
       )
     })
 
-    it('should return CreatePresignedUrlError when error occurs whilst creating presigned POST URL', async () => {
+    it('should return CreatePresignedPostError when error occurs whilst creating presigned POST URL', async () => {
       // Arrange
       // Mock external service failure.
       const s3Spy = jest
@@ -351,7 +351,7 @@ describe('admin-form.service', () => {
       )
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new CreatePresignedUrlError('Error occurred whilst uploading file'),
+        new CreatePresignedPostError('Error occurred whilst uploading file'),
       )
     })
   })

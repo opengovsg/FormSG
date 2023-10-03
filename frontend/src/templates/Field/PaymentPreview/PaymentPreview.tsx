@@ -44,7 +44,6 @@ const PaymentItemDetailsElement = ({
       return (
         <VariablePaymentItemDetailsBlock
           paymentItemName={paymentDetails.name}
-          colorTheme={colorTheme}
           paymentDescription={paymentDetails.description}
           paymentMin={paymentDetails.min_amount}
           paymentMax={paymentDetails.max_amount}
@@ -54,8 +53,8 @@ const PaymentItemDetailsElement = ({
     case PaymentType.Products: {
       return (
         <ProductPaymentItemDetailsBlock
-          paymentDetails={paymentDetails}
           colorTheme={colorTheme}
+          paymentDetails={paymentDetails}
         />
       )
     }
@@ -80,7 +79,7 @@ export const PaymentPreview = ({
 }: PaymentPreviewProps) => {
   const emailFieldSchema: VerifiableEmailFieldSchema = {
     ...(getFieldCreationMeta(BasicField.Email) as EmailFieldBase),
-    title: 'Email Address',
+    title: 'Email address',
     _id: PAYMENT_CONTACT_FIELD_ID,
     description: 'Proof of payment will be sent to this email',
     isVerifiable: true,

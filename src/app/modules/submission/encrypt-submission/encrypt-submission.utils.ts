@@ -13,6 +13,7 @@ import {
 import { calculatePrice } from '../../../../../shared/utils/paymentProductPrice'
 import {
   IEncryptedSubmissionSchema,
+  IPopulatedEncryptedForm,
   ISubmissionSchema,
   MapRouteErrors,
   SubmissionData,
@@ -30,6 +31,7 @@ import {
   TurnstileConnectionError,
   VerifyTurnstileError,
 } from '../../../services/turnstile/turnstile.errors'
+import { CreatePresignedPostError } from '../../../utils/aws-s3'
 import { genericMapRouteErrorTransform } from '../../../utils/error'
 import {
   AttachmentUploadError,
@@ -40,7 +42,6 @@ import {
   EmptyErrorFieldError,
   MalformedParametersError,
 } from '../../core/core.errors'
-import { CreatePresignedUrlError } from '../../form/admin-form/admin-form.errors'
 import {
   ForbiddenFormError,
   FormDeletedError,
@@ -68,6 +69,16 @@ import {
   SubmissionNotFoundError,
   ValidateFieldError,
 } from '../submission.errors'
+
+import {
+  AttachmentSizeLimitExceededError,
+  DownloadCleanFileFailedError,
+  FeatureDisabledError,
+  InvalidFieldIdError,
+  InvalidFileKeyError,
+  SubmissionFailedError,
+  VirusScanFailedError,
+} from './encrypt-submission.errors'
 
 const logger = createLoggerWithLabel(module)
 
@@ -119,6 +130,7 @@ const errorMapper: MapRouteError = (
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
       }
+    case FeatureDisabledError:
     case ForbiddenFormError:
       return {
         statusCode: StatusCodes.FORBIDDEN,
@@ -207,11 +219,21 @@ const errorMapper: MapRouteError = (
           'The form has been updated. Please refresh and submit again.',
       }
     case PaymentNotFoundError:
-    case CreatePresignedUrlError:
+    case CreatePresignedPostError:
     case DatabaseError:
     case EmptyErrorFieldError:
+    case VirusScanFailedError:
+    case DownloadCleanFileFailedError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
+      }
+    case SubmissionFailedError:
+    case InvalidFieldIdError:
+    case AttachmentSizeLimitExceededError:
+    case InvalidFileKeyError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
       }
     default:
@@ -288,6 +310,42 @@ export const getPaymentAmount = (
         return 0
       }
       return calculatePrice(paymentProducts)
+    default: {
+      // Force TS to emit an error if the cases above are not exhaustive
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const exhaustiveCheck: never = payment_type
+    }
+  }
+}
+
+/**
+ * Retrieves payment description by payment_type
+ *
+ * - `Fixed Payments` references the description to as legacy behaviour
+ * - `Variable Payments` references the name
+ * - `Products` references the product name and quantity separated by a comma
+ * @param form
+ * @param paymentProducts
+ */
+export const getPaymentIntentDescription = (
+  form: IPopulatedEncryptedForm,
+  paymentProducts?: StorageModeSubmissionContentDto['paymentProducts'],
+) => {
+  const formPaymentFields = form.payments_field
+  const { payment_type } = formPaymentFields
+  switch (payment_type) {
+    case PaymentType.Fixed:
+      // legacy behaviour of fixed payments where the product name is referred as description
+      return formPaymentFields.description
+    case PaymentType.Variable:
+      return formPaymentFields.name
+    case PaymentType.Products: {
+      if (!paymentProducts) return form.title
+      const productDescriptions = paymentProducts
+        .map((product) => `${product.data.name} x ${product.quantity}`)
+        .join(', ')
+      return productDescriptions
+    }
     default: {
       // Force TS to emit an error if the cases above are not exhaustive
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

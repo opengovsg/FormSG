@@ -138,7 +138,7 @@ export const BASICFIELD_TO_DRAWER_META: {
   },
 
   [BasicField.Nric]: {
-    label: 'NRIC',
+    label: 'NRIC/FIN',
     icon: BiUser,
     isSubmitted: true,
   },

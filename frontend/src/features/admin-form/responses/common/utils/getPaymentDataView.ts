@@ -55,7 +55,7 @@ export const getPaymentDataView = (
     { key: 'email', name: 'Payer', value: payment.email },
     {
       key: 'receiptUrl',
-      name: 'Invoice',
+      name: 'Proof of Payment',
       value: getFullInvoiceDownloadUrl(hostOrigin, formId, payment.id),
     },
 
@@ -68,6 +68,14 @@ export const getPaymentDataView = (
       key: 'amount',
       name: 'Payment amount',
       value: centsToDollarString(payment.amount),
+    },
+    {
+      key: 'products',
+      name: 'Product/service',
+      value:
+        payment.products
+          ?.map(({ name, quantity }) => `${name} x ${quantity}`)
+          .join(', ') || '-',
     },
     {
       key: 'paymentDate',

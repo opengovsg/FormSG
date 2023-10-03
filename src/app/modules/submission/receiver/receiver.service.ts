@@ -1,10 +1,12 @@
 import Busboy from 'busboy'
 import { IncomingHttpHeaders } from 'http'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
+import { FormResponseMode } from 'shared/types'
 
 import { MB } from '../../../../../shared/constants/file'
 import { IAttachmentInfo } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
+import { fileSizeLimit } from '../submission.utils'
 
 import {
   InitialiseMultipartReceiverError,
@@ -23,15 +25,6 @@ const logger = createLoggerWithLabel(module)
 const hasContentTypeHeaders = (headers: IncomingHttpHeaders) => {
   return !!headers['content-type']
 }
-/**
- * Returns the file size limit in MB based on whether request is an email-mode submission
- * @param isEmailMode boolean flag of whether request is in email-mode
- * @returns 7 if email mode, 20 if not
- */
-const fileSizeLimit = (isEmailMode: boolean) => {
-  if (isEmailMode) return 7
-  else return 20
-}
 
 /**
  * Initialises a Busboy object to receive the submission stream
@@ -39,7 +32,7 @@ const fileSizeLimit = (isEmailMode: boolean) => {
  */
 export const createMultipartReceiver = (
   headers: IncomingHttpHeaders,
-  isEmailMode: boolean,
+  responseMode: FormResponseMode,
 ): Result<Busboy.Busboy, InitialiseMultipartReceiverError> => {
   if (!hasContentTypeHeaders(headers)) {
     logger.error({
@@ -57,7 +50,7 @@ export const createMultipartReceiver = (
       headers,
       limits: {
         fieldSize: 3 * MB,
-        fileSize: fileSizeLimit(isEmailMode) * MB,
+        fileSize: fileSizeLimit(responseMode) * MB,
       },
     })
     return ok(busboy)
@@ -159,7 +152,15 @@ export const configureMultipartReceiver = (
         .on('close', () => {
           if (body) {
             handleDuplicatesInAttachments(attachments)
-            addAttachmentToResponses(body.responses, attachments)
+            addAttachmentToResponses(
+              body.responses,
+              attachments,
+              // default to 0 for email mode forms where version is undefined
+              // TODO (FRM-1413): change to a version existence guardrail when
+              // virus scanning has completed rollout, so that virus scanning
+              // cannot be bypassed on storage mode submissions.
+              (body.version ?? 0) >= 2.1,
+            )
             return resolve(body)
           } else {
             // if body is not defined, the Promise would have been rejected elsewhere.

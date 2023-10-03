@@ -1,10 +1,14 @@
+import { InvokeCommandOutput } from '@aws-sdk/client-lambda'
+import { Uint8ArrayBlobAdapter } from '@smithy/util-stream/dist-types/blob/Uint8ArrayBlobAdapter'
 import { ManagedUpload } from 'aws-sdk/clients/s3'
 import Bluebird from 'bluebird'
 import crypto from 'crypto'
+import { StatusCodes } from 'http-status-codes'
 import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
-import { Transform } from 'stream'
+import { Transform, Writable } from 'stream'
+import { validate } from 'uuid'
 
 import {
   FormResponseMode,
@@ -23,6 +27,10 @@ import {
 import { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
+import {
+  createPresignedPostDataPromise,
+  CreatePresignedPostError,
+} from '../../../utils/aws-s3'
 import { isMalformedDate } from '../../../utils/date'
 import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
 import {
@@ -31,7 +39,6 @@ import {
   MalformedParametersError,
   PossibleDatabaseError,
 } from '../../core/core.errors'
-import { CreatePresignedUrlError } from '../../form/admin-form/admin-form.errors'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
 import { isFormEncryptMode } from '../../form/form.utils'
@@ -48,10 +55,29 @@ import {
   SubmissionNotFoundError,
 } from '../submission.errors'
 import { sendEmailConfirmations } from '../submission.service'
-import { extractEmailConfirmationData } from '../submission.utils'
+import {
+  extractEmailConfirmationData,
+  fileSizeLimitBytes,
+} from '../submission.utils'
 
+import { PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS } from './encrypt-submission.constants'
+import {
+  AttachmentSizeLimitExceededError,
+  DownloadCleanFileFailedError,
+  InvalidFieldIdError,
+  InvalidFileKeyError,
+  JsonParseFailedError,
+  VirusScanFailedError,
+} from './encrypt-submission.errors'
 import {
   AttachmentMetadata,
+  AttachmentPresignedPostDataMapType,
+  AttachmentSizeMapType,
+  bodyIsExpectedErrStructure,
+  bodyIsExpectedOkStructure,
+  ParseVirusScannerLambdaPayloadErrType,
+  ParseVirusScannerLambdaPayloadOkType,
+  payloadIsExpectedStructure,
   SaveEncryptSubmissionParams,
 } from './encrypt-submission.types'
 
@@ -317,6 +343,12 @@ export const getSubmissionPaymentDto = (
       id: payment._id,
       paymentIntentId: payment.paymentIntentId,
       email: payment.email,
+      products: payment.products
+        ?.filter((product) => product.selected)
+        .map((product) => ({
+          name: product.data.name,
+          quantity: product.quantity,
+        })),
       amount: payment.amount,
       status: payment.status,
 
@@ -340,12 +372,12 @@ export const getSubmissionPaymentDto = (
  * @param attachmentMetadata the metadata to transform
  * @param urlValidDuration the duration the S3 signed url will be valid for
  * @returns ok(map with object path replaced with their signed url counterparts)
- * @returns err(CreatePresignedUrlError) if any of the signed url creation processes results in an error
+ * @returns err(CreatePresignedPostError) if any of the signed url creation processes results in an error
  */
 export const transformAttachmentMetasToSignedUrls = (
   attachmentMetadata: Map<string, string> | undefined,
   urlValidDuration: number,
-): ResultAsync<Record<string, string>, CreatePresignedUrlError> => {
+): ResultAsync<Record<string, string>, CreatePresignedPostError> => {
   if (!attachmentMetadata) {
     return okAsync({})
   }
@@ -374,7 +406,7 @@ export const transformAttachmentMetasToSignedUrls = (
         error,
       })
 
-      return new CreatePresignedUrlError('Failed to create attachment URL')
+      return new CreatePresignedPostError('Failed to create attachment URL')
     },
   )
 }
@@ -523,4 +555,299 @@ export const performEncryptPostSubmissionActions = (
         return error
       })
     })
+}
+
+export const getQuarantinePresignedPostData = (
+  attachmentSizes: AttachmentSizeMapType[],
+): ResultAsync<
+  AttachmentPresignedPostDataMapType[],
+  CreatePresignedPostError
+> => {
+  // List of attachments is looped over twice to avoid side effects of mutating variables
+  // to check if the attachment limits have been exceeded.
+
+  // Step 1: Check for the total attachment size
+  const totalAttachmentSizeLimit = fileSizeLimitBytes(FormResponseMode.Encrypt)
+  const totalAttachmentSize = attachmentSizes
+    .map(({ size }) => size)
+    .reduce((prev, next) => prev + next)
+  if (totalAttachmentSize > totalAttachmentSizeLimit)
+    return errAsync(new AttachmentSizeLimitExceededError())
+
+  // Step 2: Create presigned post data for each attachment
+  return ResultAsync.combine(
+    attachmentSizes.map(({ id, size }) => {
+      if (!mongoose.isValidObjectId(id))
+        return errAsync(new InvalidFieldIdError())
+
+      return createPresignedPostDataPromise({
+        bucketName: AwsConfig.virusScannerQuarantineS3Bucket,
+        expiresSeconds: PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
+        size,
+      }).map((presignedPostData) => ({
+        id,
+        presignedPostData,
+      }))
+    }),
+  )
+}
+
+/**
+ * Catch all error for parsing the payload from the virus scanning lambda.
+ */
+const parseVirusScannerLambdaPayloadError = {
+  statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+  body: { message: 'Unexpected payload from virus scanning lambda' },
+}
+
+const safeJSONParse = Result.fromThrowable(JSON.parse, (error) => {
+  logger.error({
+    message: 'Error while calling JSON.parse on MyInfo relay state',
+    meta: {
+      action: 'safeJSONParse',
+      error,
+    },
+  })
+  return new JsonParseFailedError()
+})
+
+/**
+ * Parses the payload from the virus scanning lambda.
+ * @param payload the payload from the virus scanning lambda
+ * @returns ok(returnPayload) if payload is successfully parsed and virus scanning is successful
+ * @returns err(returnPayload) if payload is successfully parsed and virus scanning is unsuccessful
+ * @returns err(returnPayload) if payload cannot be parsed
+ */
+const parseVirusScannerLambdaPayload = (
+  payload: Uint8ArrayBlobAdapter,
+): Result<
+  ParseVirusScannerLambdaPayloadOkType,
+  ParseVirusScannerLambdaPayloadErrType
+> => {
+  const logMeta = {
+    action: 'parseVirusScannerLambdaPayload',
+    payload,
+  }
+
+  // Step 1: Parse whole payload received from lamda in to an object
+  const parsedPayloadResult = safeJSONParse(Buffer.from(payload).toString())
+  if (parsedPayloadResult.isErr()) {
+    logger.error({
+      message:
+        'Error parsing payload from virus scanner lambda - payload JSON parsing failed',
+      meta: logMeta,
+    })
+
+    return err(parseVirusScannerLambdaPayloadError)
+  }
+
+  const parsedPayload = payloadIsExpectedStructure(parsedPayloadResult.value)
+
+  // Step 2a: Check if statusCode and body (unparsed) are of the correct types
+  if (parsedPayload) {
+    // Step 3: Parse body into an object
+    const parsedBodyResult = safeJSONParse(
+      Buffer.from(parsedPayload.body).toString(),
+    )
+    if (parsedBodyResult.isErr()) {
+      logger.error({
+        message:
+          'Error parsing payload from virus scanner lambda - payload JSON parsing failed',
+        meta: logMeta,
+      })
+
+      return err(parseVirusScannerLambdaPayloadError)
+    }
+
+    // Step 4a: If statusCode is 200, check if the body is of the correct type
+    if (parsedPayload.statusCode === StatusCodes.OK) {
+      const parsedBody = bodyIsExpectedOkStructure(parsedBodyResult.value)
+
+      if (parsedBody) {
+        // Step 5: If body is of the correct type, return ok with cleanFileKey and destinationVersionId
+        const result = {
+          statusCode: parsedPayload.statusCode as StatusCodes.OK,
+          body: parsedBody,
+        }
+        logger.info({
+          message:
+            'Successfully parsed success payload from virus scanning lambda',
+          meta: {
+            ...logMeta,
+            result,
+          },
+        })
+        return ok(result)
+      }
+
+      logger.error({
+        message:
+          'Error parsing payload when statusCode is 200 from virus scanning lambda',
+        meta: logMeta,
+      })
+
+      return err(parseVirusScannerLambdaPayloadError)
+    }
+
+    // Step 4b: If statusCode is not 200, check if the body is of the correct type (errored message)
+    const parsedBody = bodyIsExpectedErrStructure(parsedBodyResult.value)
+
+    if (parsedBody) {
+      logger.info({
+        message: 'Successfully parsed error payload from virus scanning lambda',
+        meta: logMeta,
+      })
+
+      return err({
+        statusCode: parsedPayload.statusCode,
+        body: parsedBody,
+      })
+    }
+
+    logger.error({
+      message:
+        'Error parsing payload when statusCode is number and body is string from virus scanning lambda',
+      meta: logMeta,
+    })
+
+    return err(parseVirusScannerLambdaPayloadError)
+  }
+
+  // Step 2b: Return error if statusCode and body (unparsed) are of the wrong types
+
+  logger.error({
+    message:
+      'Error parsing payload from virus scanner lambda - parsedPayload is undefined or wrong statusCode or body type',
+    meta: logMeta,
+  })
+
+  return err(parseVirusScannerLambdaPayloadError)
+}
+
+/**
+ * Invokes lambda to scan the file in the quarantine bucket for viruses.
+ * @param quarantineFileKey object key of the file in the quarantine bucket
+ * @returns okAsync(returnPayload) if file has been successfully scanned with status 200 OK
+ * @returns errAsync(returnPayload) if lambda invocation failed or file cannot be found
+ */
+export const triggerVirusScanning = (
+  quarantineFileKey: string,
+): ResultAsync<ParseVirusScannerLambdaPayloadOkType, VirusScanFailedError> => {
+  const logMeta = {
+    action: 'triggerVirusScanning',
+    quarantineFileKey,
+  }
+
+  if (!validate(quarantineFileKey)) {
+    logger.error({
+      message: 'Invalid quarantine file key - not a valid uuid',
+      meta: logMeta,
+    })
+
+    return errAsync(new InvalidFileKeyError())
+  }
+
+  return ResultAsync.fromPromise(
+    AwsConfig.virusScannerLambda.invoke({
+      FunctionName: AwsConfig.virusScannerLambdaFunctionName,
+      Payload: JSON.stringify({ key: quarantineFileKey }),
+    }),
+    (error) => {
+      logger.error({
+        message: 'Error encountered when invoking virus scanning lambda',
+        meta: logMeta,
+        error,
+      })
+
+      return new VirusScanFailedError()
+    },
+  ).andThen((data: InvokeCommandOutput) => {
+    if (data && data.Payload)
+      return parseVirusScannerLambdaPayload(data.Payload).mapErr((error) => {
+        logger.error({
+          message:
+            'Error returned from virus scanning lambda or parsing lambda output',
+          meta: logMeta,
+          error,
+        })
+
+        return new VirusScanFailedError()
+      })
+
+    // if data or data.Payload is undefined
+    logger.error({
+      message: 'data or data.Payload from virus scanner lambda is undefined',
+      meta: logMeta,
+      error: {
+        statusCode: parseVirusScannerLambdaPayloadError.statusCode,
+        message: parseVirusScannerLambdaPayloadError.body.message,
+      },
+    })
+
+    return errAsync(new VirusScanFailedError())
+  })
+}
+
+/**
+ * Downloads file from clean bucket
+ * @param cleanFileKey object key of the file in the clean bucket
+ * @param versionId id for versioning of the file in the clean bucket
+ * @returns okAsync(buffer) if file has been successfully downloaded from the clean bucket
+ * @returns errAsync(DownloadCleanFileFailedError) if file download failed
+ */
+export const downloadCleanFile = (cleanFileKey: string, versionId: string) => {
+  const logMeta = {
+    action: 'downloadCleanFile',
+    cleanFileKey,
+    versionId,
+  }
+
+  if (!validate(cleanFileKey)) {
+    logger.error({
+      message: 'Invalid clean file key - not a valid uuid',
+      meta: logMeta,
+    })
+
+    return errAsync(new InvalidFileKeyError())
+  }
+
+  let buffer = Buffer.alloc(0)
+
+  const writeStream = new Writable({
+    write(chunk, _encoding, callback) {
+      buffer = Buffer.concat([buffer, chunk])
+      callback()
+    },
+  })
+
+  const readStream = AwsConfig.s3
+    .getObject({
+      Bucket: AwsConfig.virusScannerCleanS3Bucket,
+      Key: cleanFileKey,
+      VersionId: versionId,
+    })
+    .createReadStream()
+
+  readStream.pipe(writeStream)
+
+  return ResultAsync.fromPromise(
+    new Promise<Buffer>((resolve, reject) => {
+      readStream.on('end', () => {
+        resolve(buffer)
+      })
+
+      readStream.on('error', (error) => {
+        reject(error)
+      })
+    }),
+    (error) => {
+      logger.error({
+        message: 'Error encountered when downloading file from clean bucket',
+        meta: logMeta,
+        error,
+      })
+
+      return new DownloadCleanFileFailedError()
+    },
+  )
 }

@@ -1,3 +1,4 @@
+import moment from 'moment-timezone'
 import { ObjectId } from 'mongodb'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
@@ -182,6 +183,7 @@ export const confirmPaymentPendingSubmission = (
         paymentDate,
         receiptUrl,
         transactionFee,
+        hasReceiptStoredInS3: false,
       }
       return okAsync(payment)
     })
@@ -268,10 +270,11 @@ export const performPaymentPostSubmissionActions = (
             formId: form._id,
             submissionId,
             email: payment.email,
+            paymentAmount: payment.amount,
           }))
       )
     })
-    .andThen(({ formTitle, formId, submissionId, email }) => {
+    .andThen(({ formTitle, formId, submissionId, email, paymentAmount }) => {
       logger.info({
         message: 'Sending payment confirmation email',
         meta: { ...logMeta, submissionId, email },
@@ -283,6 +286,7 @@ export const performPaymentPostSubmissionActions = (
         submissionId,
         formId,
         paymentId,
+        paymentAmount,
       })
         .andThen(() => okAsync(undefined))
         .orElse(() => {
@@ -312,8 +316,11 @@ export const findLatestSuccessfulPaymentByEmailAndFormId = (
       email: email,
       formId: formId,
       status: PaymentStatus.Succeeded,
+      'completedPayment.paymentDate': {
+        $gt: moment().subtract(30, 'days').utc().toDate(),
+      },
     })
-      .sort({ _id: -1 })
+      .sort({ 'completedPayment.paymentDate': -1 })
       .exec(),
     (error) => {
       logger.error({

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   As,
   Divider,
@@ -10,6 +11,10 @@ import {
   VStack,
 } from '@chakra-ui/react'
 
+import {
+  DISALLOW_CONNECT_NON_WHITELIST_STRIPE_ACCOUNT,
+  ERROR_QUERY_PARAM_KEY,
+} from '~shared/constants'
 import { FormResponseMode, PaymentChannel } from '~shared/types'
 
 import { BxsCheckCircle, BxsError, BxsInfoCircle } from '~assets/icons'
@@ -39,6 +44,27 @@ const BeforeConnectionInstructions = ({
 }): JSX.Element => {
   const [allowConnect, setAllowConnect] = useState(false)
   const { data: paymentGuideLink } = usePaymentGuideLink()
+  const [searchParams] = useSearchParams()
+
+  const queryParams = Object.fromEntries([...searchParams])
+  const isInvalidDomain =
+    queryParams[ERROR_QUERY_PARAM_KEY] ===
+    DISALLOW_CONNECT_NON_WHITELIST_STRIPE_ACCOUNT
+
+  if (isInvalidDomain) {
+    return (
+      <>
+        <InlineMessage variant="error" my="2rem">
+          <Text>
+            Your Stripe account could not be connected because it was created
+            with a non-whitelisted email domain. Try reconnecting an account
+            that was created with a whitelisted email domain.
+          </Text>
+        </InlineMessage>
+        <StripeConnectButton connectState={StripeConnectButtonStates.ENABLED} />
+      </>
+    )
+  }
   if (isProductionEnv) {
     return (
       <VStack spacing="2.5rem" alignItems="start">
@@ -84,19 +110,19 @@ const BeforeConnectionInstructions = ({
         />
       </VStack>
     )
-  } else {
-    return (
-      <>
-        <InlineMessage variant="info" my="2rem">
-          <Text>
-            You are currently in test mode. You can choose to skip connecting a
-            Stripe account after clicking the button below.
-          </Text>
-        </InlineMessage>
-        <StripeConnectButton connectState={StripeConnectButtonStates.ENABLED} />
-      </>
-    )
   }
+
+  return (
+    <>
+      <InlineMessage variant="info" my="2rem">
+        <Text>
+          You are currently in test mode. You can choose to skip connecting a
+          Stripe account after clicking the button below.
+        </Text>
+      </InlineMessage>
+      <StripeConnectButton connectState={StripeConnectButtonStates.ENABLED} />
+    </>
+  )
 }
 
 const ConnectionStatusText = ({

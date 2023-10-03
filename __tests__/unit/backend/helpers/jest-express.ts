@@ -6,6 +6,7 @@ const mockRequest = <P extends Record<string, string>, B, Q = any>({
   session,
   query,
   secure,
+  cookies,
   others = {},
 }: {
   params?: P
@@ -13,6 +14,7 @@ const mockRequest = <P extends Record<string, string>, B, Q = any>({
   session?: Record<string, unknown>
   query?: Q
   secure?: boolean
+  cookies?: Record<string, string>
   others?: Partial<Omit<Record<keyof Request, unknown>, 'query'>>
 } = {}): Request<P, unknown, B, Q & Request['query']> => {
   return {
@@ -21,6 +23,7 @@ const mockRequest = <P extends Record<string, string>, B, Q = any>({
     session: session ?? {},
     query: query ?? {},
     secure: secure ?? true,
+    cookies: cookies ?? {},
     get(name: string) {
       if (name === 'cf-connecting-ip') return 'MOCK_IP'
       return undefined
@@ -47,6 +50,7 @@ const mockResponse = (
     redirect: jest.fn(),
     cookie: jest.fn(),
     set: jest.fn(),
+    clearCookie: jest.fn(),
     ...extraArgs,
   }
   return mockRes as Response

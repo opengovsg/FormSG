@@ -9,7 +9,10 @@ import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.co
 
 import { ApplicationError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
-import { SGID_COOKIE_NAME } from '../sgid.constants'
+import {
+  SGID_CODE_VERIFIER_COOKIE_NAME,
+  SGID_COOKIE_NAME,
+} from '../sgid.constants'
 import {
   SgidFetchAccessTokenError,
   SgidFetchUserInfoError,
@@ -20,6 +23,7 @@ import { SgidService as RealSgidService } from '../sgid.service'
 
 import {
   MOCK_AUTH_CODE,
+  MOCK_CODE_VERIFIER,
   MOCK_COOKIE_SETTINGS,
   MOCK_DESTINATION,
   MOCK_JWT,
@@ -44,7 +48,7 @@ const app = setupApp('/sgid', SgidRouter)
 
 const MOCK_LOGIN_QUERY = { code: MOCK_AUTH_CODE, state: MOCK_STATE }
 
-describe('sgid.controller', () => {
+describe('sgid.routes', () => {
   beforeEach(() => jest.clearAllMocks())
   afterAll(() => jest.clearAllMocks())
   const LOGIN_ROUTE = '/sgid/login'
@@ -54,6 +58,7 @@ describe('sgid.controller', () => {
         ok({
           formId: MOCK_TARGET,
           rememberMe: MOCK_REMEMBER_ME,
+          decodedQuery: '',
         }),
       )
       FormService.retrieveFullFormById.mockReturnValue(okAsync(MOCK_SGID_FORM))
@@ -72,6 +77,10 @@ describe('sgid.controller', () => {
       const response = await session(app)
         .get(LOGIN_ROUTE)
         .query({ state: MOCK_LOGIN_QUERY.state })
+        .set(
+          'cookie',
+          `${SGID_CODE_VERIFIER_COOKIE_NAME}=${MOCK_CODE_VERIFIER}`,
+        )
 
       expect(response.status).toBe(400)
       expect(response.body).toEqual(
@@ -91,6 +100,10 @@ describe('sgid.controller', () => {
       const response = await session(app)
         .get(LOGIN_ROUTE)
         .query({ code: MOCK_LOGIN_QUERY.code })
+        .set(
+          'cookie',
+          `${SGID_CODE_VERIFIER_COOKIE_NAME}=${MOCK_CODE_VERIFIER}`,
+        )
 
       expect(response.status).toBe(400)
       expect(response.body).toEqual(
@@ -110,6 +123,10 @@ describe('sgid.controller', () => {
       const response = await session(app)
         .get(LOGIN_ROUTE)
         .query(MOCK_LOGIN_QUERY)
+        .set(
+          'cookie',
+          `${SGID_CODE_VERIFIER_COOKIE_NAME}=${MOCK_CODE_VERIFIER}`,
+        )
 
       expect(response.status).toBe(400)
 
@@ -139,6 +156,25 @@ describe('sgid.controller', () => {
       expect(sgidService.getCookieSettings).not.toHaveBeenCalled()
     })
 
+    it('should set isLoginError cookie and redirect when code verifier cookie is missing', async () => {
+      const response = await session(app)
+        .get(LOGIN_ROUTE)
+        .query(MOCK_LOGIN_QUERY)
+
+      expect(response.headers['set-cookie']).toEqual([
+        expect.stringContaining('isLoginError=true'),
+      ])
+      expect(response.status).toBe(302)
+      expect(response.headers['location']).toEqual(MOCK_DESTINATION)
+
+      expect(sgidService.parseState).toHaveBeenCalledWith(MOCK_STATE)
+      expect(FormService.retrieveFullFormById).toHaveBeenCalledWith(MOCK_TARGET)
+      expect(sgidService.retrieveAccessToken).not.toHaveBeenCalled()
+      expect(sgidService.retrieveUserInfo).not.toHaveBeenCalled()
+      expect(sgidService.createSgidSingpassJwt).not.toHaveBeenCalled()
+      expect(sgidService.getCookieSettings).not.toHaveBeenCalled()
+    })
+
     it('should set isLoginError cookie and redirect when form has wrong auth type', async () => {
       FormService.retrieveFullFormById.mockReturnValue(
         // Note that this is a SingPass form
@@ -147,6 +183,10 @@ describe('sgid.controller', () => {
       const response = await session(app)
         .get(LOGIN_ROUTE)
         .query(MOCK_LOGIN_QUERY)
+        .set(
+          'cookie',
+          `${SGID_CODE_VERIFIER_COOKIE_NAME}=${MOCK_CODE_VERIFIER}`,
+        )
 
       expect(response.headers['set-cookie']).toEqual([
         expect.stringContaining('isLoginError=true'),
@@ -169,8 +209,13 @@ describe('sgid.controller', () => {
       const response = await session(app)
         .get(LOGIN_ROUTE)
         .query(MOCK_LOGIN_QUERY)
+        .set(
+          'cookie',
+          `${SGID_CODE_VERIFIER_COOKIE_NAME}=${MOCK_CODE_VERIFIER}`,
+        )
 
       expect(response.headers['set-cookie']).toEqual([
+        expect.stringContaining('sgidCodeVerifier=;'),
         expect.stringContaining('isLoginError=true'),
       ])
       expect(response.status).toBe(302)
@@ -180,6 +225,7 @@ describe('sgid.controller', () => {
       expect(FormService.retrieveFullFormById).toHaveBeenCalledWith(MOCK_TARGET)
       expect(sgidService.retrieveAccessToken).toHaveBeenCalledWith(
         MOCK_AUTH_CODE,
+        MOCK_CODE_VERIFIER,
       )
       expect(sgidService.retrieveUserInfo).not.toHaveBeenCalled()
       expect(sgidService.createSgidSingpassJwt).not.toHaveBeenCalled()
@@ -193,8 +239,13 @@ describe('sgid.controller', () => {
       const response = await session(app)
         .get(LOGIN_ROUTE)
         .query(MOCK_LOGIN_QUERY)
+        .set(
+          'cookie',
+          `${SGID_CODE_VERIFIER_COOKIE_NAME}=${MOCK_CODE_VERIFIER}`,
+        )
 
       expect(response.headers['set-cookie']).toEqual([
+        expect.stringContaining('sgidCodeVerifier=;'),
         expect.stringContaining('isLoginError=true'),
       ])
       expect(response.status).toBe(302)
@@ -204,6 +255,7 @@ describe('sgid.controller', () => {
       expect(FormService.retrieveFullFormById).toHaveBeenCalledWith(MOCK_TARGET)
       expect(sgidService.retrieveAccessToken).toHaveBeenCalledWith(
         MOCK_AUTH_CODE,
+        MOCK_CODE_VERIFIER,
       )
       expect(sgidService.retrieveUserInfo).toHaveBeenCalledWith(
         MOCK_TOKEN_RESULT,
@@ -219,8 +271,13 @@ describe('sgid.controller', () => {
       const response = await session(app)
         .get(LOGIN_ROUTE)
         .query(MOCK_LOGIN_QUERY)
+        .set(
+          'cookie',
+          `${SGID_CODE_VERIFIER_COOKIE_NAME}=${MOCK_CODE_VERIFIER}`,
+        )
 
       expect(response.headers['set-cookie']).toEqual([
+        expect.stringContaining('sgidCodeVerifier=;'),
         expect.stringContaining('isLoginError=true'),
       ])
       expect(response.status).toBe(302)
@@ -230,6 +287,7 @@ describe('sgid.controller', () => {
       expect(FormService.retrieveFullFormById).toHaveBeenCalledWith(MOCK_TARGET)
       expect(sgidService.retrieveAccessToken).toHaveBeenCalledWith(
         MOCK_AUTH_CODE,
+        MOCK_CODE_VERIFIER,
       )
       expect(sgidService.retrieveUserInfo).toHaveBeenCalledWith(
         MOCK_TOKEN_RESULT,
@@ -244,8 +302,14 @@ describe('sgid.controller', () => {
       const response = await session(app)
         .get(LOGIN_ROUTE)
         .query(MOCK_LOGIN_QUERY)
+        .set(
+          'cookie',
+          `${SGID_CODE_VERIFIER_COOKIE_NAME}=${MOCK_CODE_VERIFIER}`,
+        )
 
       expect(response.headers['set-cookie']).toEqual([
+        // code_verifier cookie is cleared after being retrieved
+        expect.stringContaining(`${SGID_CODE_VERIFIER_COOKIE_NAME}=;`),
         expect.stringContaining(`${SGID_COOKIE_NAME}=${MOCK_JWT}`),
       ])
       expect(response.status).toBe(302)
@@ -255,6 +319,7 @@ describe('sgid.controller', () => {
       expect(FormService.retrieveFullFormById).toHaveBeenCalledWith(MOCK_TARGET)
       expect(sgidService.retrieveAccessToken).toHaveBeenCalledWith(
         MOCK_AUTH_CODE,
+        MOCK_CODE_VERIFIER,
       )
       expect(sgidService.retrieveUserInfo).toHaveBeenCalledWith(
         MOCK_TOKEN_RESULT,

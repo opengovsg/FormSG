@@ -35,6 +35,8 @@ export const GUIDE_STRIPE_ONBOARDING = 'https://go.gov.sg/formsg-payments'
 export const GUIDE_PAYMENTS_ENTRY = 'https://go.gov.sg/formsg-payment-overview'
 export const GUIDE_PAYMENTS_INVOICE_DIFFERENCES =
   'https://go.gov.sg/formsg-payments-invoice-differences'
+export const GUIDE_ENCRYPTION_BOUNDARY_SHIFT =
+  'https://guide.form.gov.sg/faq/faq/storage-mode-virus-scanning-and-content-validation'
 export const ACCEPTED_FILETYPES_SPREADSHEET = 'https://go.gov.sg/formsg-cwl'
 
 export const APP_FOOTER_LINKS = [
@@ -82,3 +84,6 @@ export const OGP_SGID = 'https://go.gov.sg/sgid-formsg'
 export const OGP_FORMSG_REPO = 'https://github.com/opengovsg/formsg'
 
 export const FORMSG_UAT = 'https://uat.form.gov.sg'
+
+export const GROWTHBOOK_DEV_PROXY =
+  'https://proxy-growthbook-stg.formsg.workers.dev'

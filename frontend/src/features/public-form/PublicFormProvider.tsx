@@ -11,6 +11,7 @@ import { SubmitHandler } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
+import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 import get from 'lodash/get'
 import simplur from 'simplur'
@@ -128,6 +129,22 @@ export const PublicFormProvider = ({
     formId,
     // Stop querying once submissionData is present.
     /* enabled= */ !submissionData,
+  )
+
+  const growthbook = useGrowthBook()
+
+  useEffect(() => {
+    if (growthbook) {
+      growthbook.setAttributes({
+        // Only update the `formId` attribute, keep the rest the same
+        ...growthbook.getAttributes(),
+        formId,
+      })
+    }
+  }, [growthbook, formId])
+
+  const routeToNewStorageModeSubmission = useFeatureIsOn(
+    featureFlags.encryptionBoundaryShift,
   )
 
   // Scroll to top of page when user has finished their submission.
@@ -252,7 +269,13 @@ export const PublicFormProvider = ({
     submitStorageModeFormMutation,
     submitEmailModeFormFetchMutation,
     submitStorageModeFormFetchMutation,
+    submitStorageModeClearFormMutation,
+    submitStorageModeClearFormFetchMutation,
   } = usePublicFormMutations(formId, submissionData?.id ?? '')
+
+  const submitStorageModeVnMutation = routeToNewStorageModeSubmission
+    ? submitStorageModeClearFormMutation
+    : submitStorageModeFormMutation
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
@@ -464,7 +487,12 @@ export const PublicFormProvider = ({
               },
             })
 
-            return submitStorageModeFormFetchMutation
+            const submitStorageModeVnFetchMutation =
+              routeToNewStorageModeSubmission
+                ? submitStorageModeClearFormFetchMutation
+                : submitStorageModeFormFetchMutation
+
+            return submitStorageModeVnFetchMutation
               .mutateAsync(
                 {
                   ...formData,
@@ -522,7 +550,7 @@ export const PublicFormProvider = ({
           })
 
           return (
-            submitStorageModeFormMutation
+            submitStorageModeVnMutation
               .mutateAsync(
                 {
                   ...formData,
@@ -578,21 +606,23 @@ export const PublicFormProvider = ({
     [
       data,
       enableTurnstileFeatureFlag,
-      getTurnstileResponse,
-      getCaptchaResponse,
       captchaType,
-      showErrorToast,
-      submitEmailModeFormMutation,
-      submitStorageModeFormMutation,
-      formId,
-      navigate,
-      storePaymentMemory,
-      submitEmailModeFormFetchMutation,
-      submitStorageModeFormFetchMutation,
-      useFetchForSubmissions,
-      numVisibleFields,
       startTime,
       isPaymentEnabled,
+      numVisibleFields,
+      useFetchForSubmissions,
+      getTurnstileResponse,
+      showErrorToast,
+      getCaptchaResponse,
+      submitEmailModeFormFetchMutation,
+      submitEmailModeFormMutation,
+      submitStorageModeVnMutation,
+      routeToNewStorageModeSubmission,
+      submitStorageModeClearFormFetchMutation,
+      submitStorageModeFormFetchMutation,
+      navigate,
+      formId,
+      storePaymentMemory,
     ],
   )
 

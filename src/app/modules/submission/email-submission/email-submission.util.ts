@@ -1,12 +1,11 @@
 import { StatusCodes } from 'http-status-codes'
-import { compact, flattenDeep, sumBy } from 'lodash'
+import { compact } from 'lodash'
 
 import {
   BasicField,
   FormAuthType,
   MyInfoAttribute,
 } from '../../../../../shared/types'
-import * as FileValidation from '../../../../../shared/utils/file-validation'
 import {
   EmailAdminDataField,
   EmailDataCollationToolField,
@@ -17,7 +16,6 @@ import {
   MapRouteError,
   SPCPFieldTitle,
 } from '../../../../types'
-import { ParsedClearFormFieldResponse } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
   CaptchaConnectionError,
@@ -72,7 +70,9 @@ import {
 } from '../../spcp/spcp.errors'
 import { MissingUserError } from '../../user/user.errors'
 import {
+  AttachmentTooLargeError,
   ConflictError,
+  InvalidFileExtensionError,
   ProcessingError,
   ResponseModeError,
   ValidateFieldError,
@@ -83,7 +83,6 @@ import {
   ProcessedFieldResponse,
   ProcessedTableResponse,
 } from '../submission.types'
-import { isAttachmentResponse } from '../submission.utils'
 
 import {
   ATTACHMENT_PREFIX,
@@ -92,11 +91,7 @@ import {
   TABLE_PREFIX,
   VERIFIED_PREFIX,
 } from './email-submission.constants'
-import {
-  AttachmentTooLargeError,
-  InvalidFileExtensionError,
-  SubmissionHashError,
-} from './email-submission.errors'
+import { SubmissionHashError } from './email-submission.errors'
 import { ResponseFormattedForEmail } from './email-submission.types'
 
 const logger = createLoggerWithLabel(module)
@@ -239,7 +234,7 @@ export const getAnswersForChild = (
         childName,
       ),
       fieldType: response.fieldType,
-      question: `Child-${childIdx + 1}.${subFields[idx]}`,
+      question: `Child.${subFields[idx]}`,
       myInfo: {
         attr: subFields[idx] as unknown as MyInfoAttribute,
       },
@@ -296,64 +291,6 @@ export const getFormattedResponse = (
     dataCollationData,
     formData,
   }
-}
-
-/**
- * Checks an array of attachments to see ensure that every
- * one of them is valid. The validity is determined by an
- * internal isInvalidFileExtension checker function, and
- * zip files are checked recursively.
- *
- * @param attachments - Array of file objects
- * @returns Whether all attachments are valid
- */
-export const getInvalidFileExtensions = (
-  attachments: IAttachmentInfo[],
-): Promise<string[]> => {
-  // Turn it into an array of promises that each resolve
-  // to an array of file extensions that are invalid (if any)
-  const promises = attachments.map((attachment) => {
-    const extension = FileValidation.getFileExtension(attachment.filename)
-    if (FileValidation.isInvalidFileExtension(extension)) {
-      return Promise.resolve([extension])
-    }
-    if (extension !== '.zip') return Promise.resolve([])
-    return FileValidation.getInvalidFileExtensionsInZip(
-      'nodebuffer',
-      attachment.content,
-    )
-  })
-
-  return Promise.all(promises).then((results) => flattenDeep(results))
-}
-
-/**
- * Checks whether the total size of attachments exceeds 7MB
- * @param attachments List of attachments
- * @returns true if total attachment size exceeds 7MB
- */
-export const areAttachmentsMoreThan7MB = (
-  attachments: IAttachmentInfo[],
-): boolean => {
-  // Check if total attachments size is < 7mb
-  const totalAttachmentSize = sumBy(attachments, (a) => a.content.byteLength)
-  return totalAttachmentSize > 7000000
-}
-
-/**
- * Extracts attachment fields from form responses
- * @param responses Form responses
- */
-export const mapAttachmentsFromResponses = (
-  responses: ParsedClearFormFieldResponse[],
-): IAttachmentInfo[] => {
-  // look for attachments in parsedResponses
-  // Could be undefined if it is not required, or hidden
-  return responses.filter(isAttachmentResponse).map((response) => ({
-    fieldId: response._id,
-    filename: response.filename,
-    content: response.content,
-  }))
 }
 
 export const mapRouteError: MapRouteError = (error) => {

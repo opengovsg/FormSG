@@ -1,0 +1,23 @@
+name: Deploy to production
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  push:
+    branches:
+      - release-al2
+  # schedule builds for 12:00AM GMT+8 everyday to get latest virus definitions
+  schedule:
+    - cron: '0 16 * * *'
+
+jobs:
+  deploy-scanner:
+    name: Deploy Scanner
+    uses: ./.github/workflows/aws-deploy-scanner.yml
+    with:
+      environment: 'production'
+      provisionedConcurrency: 5
+      checkoutBranch: 'release-al2'
+    secrets: inherit

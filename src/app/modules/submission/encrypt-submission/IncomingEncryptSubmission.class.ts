@@ -37,7 +37,7 @@ export default class IncomingEncryptSubmission extends IncomingSubmission {
     ProcessingError | ConflictError | ValidateFieldError[]
   > {
     return checkIsEncryptedEncoding(encryptedContent)
-      .andThen(() => getFilteredResponses(form, responses))
+      .andThen(() => getFilteredResponses(form, responses, true))
       .andThen((filteredResponses) =>
         this.getFieldMap(form, filteredResponses).map((fieldMap) => ({
           responses: filteredResponses,
@@ -56,9 +56,12 @@ export default class IncomingEncryptSubmission extends IncomingSubmission {
 
   responseVisibilityPredicate(response: FieldResponse): boolean {
     return (
-      'answer' in response &&
-      typeof response.answer === 'string' &&
-      response.answer.trim() !== ''
+      ('answer' in response &&
+        typeof response.answer === 'string' &&
+        response.answer.trim() !== '') ||
+      ('answerArray' in response &&
+        Array.isArray(response.answerArray) &&
+        response.answerArray.length > 0)
     )
   }
 }

@@ -1,11 +1,14 @@
 import { Controller, useFormContext } from 'react-hook-form'
-import { Box, FormControl, FormErrorMessage, Text } from '@chakra-ui/react'
+import { Box, FormControl, Text } from '@chakra-ui/react'
 
 import { PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID } from '~shared/constants'
+import { centsToDollars, formatCurrency } from '~shared/utils/payments'
 
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import MoneyInput from '~components/MoneyInput'
 
 import { centsToDollarString } from '~features/admin-form/responses/common/utils/getPaymentDataView'
+import { useEnv } from '~features/env/queries'
 
 import { usePaymentFieldValidation } from '../../../../../hooks/usePaymentFieldValidation'
 
@@ -15,19 +18,32 @@ import { VariableItemDetailProps } from './types'
 export const VariablePaymentItemDetailsBlock = ({
   paymentDescription,
   paymentItemName,
-  paymentMin,
-  paymentMax,
+  paymentMin: _paymentMin,
+  paymentMax: _paymentMax,
 }: VariableItemDetailProps): JSX.Element => {
   const {
     control,
     formState: { errors },
   } = useFormContext()
+
+  const {
+    data: {
+      maxPaymentAmountCents = Number.MAX_SAFE_INTEGER,
+      minPaymentAmountCents = Number.MAX_SAFE_INTEGER,
+    } = {},
+  } = useEnv()
+  const paymentMax = _paymentMax || maxPaymentAmountCents
+  const paymentMin = _paymentMin || minPaymentAmountCents
   const amountValidation = usePaymentFieldValidation<
     {
       [PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]: string
     },
     typeof PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID
   >({ lesserThanCents: paymentMax, greaterThanCents: paymentMin })
+
+  const amountHint = `Enter an amount between ${centsToDollarString(
+    paymentMin,
+  )} and S${formatCurrency(Number(centsToDollars(paymentMax)))}.`
 
   return (
     <Box>
@@ -53,13 +69,14 @@ export const VariablePaymentItemDetailsBlock = ({
             />
           )}
         />
-        <Text textStyle="body-2" color="secondary.400" mt="0.5rem">
-          The minimum amount is {centsToDollarString(paymentMin)} and the
-          maximum amount is {centsToDollarString(paymentMax)}.
-        </Text>
-        <FormErrorMessage>
-          {errors[PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]?.message}
-        </FormErrorMessage>
+
+        {errors[PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]?.message ? (
+          <FormErrorMessage>{amountHint}</FormErrorMessage>
+        ) : (
+          <Text textStyle="body-2" color="secondary.400" mt="0.5rem">
+            {amountHint}
+          </Text>
+        )}
       </FormControl>
     </Box>
   )

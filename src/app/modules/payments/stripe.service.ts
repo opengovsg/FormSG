@@ -1,6 +1,5 @@
 // Use 'stripe-event-types' for better type discrimination.
 /// <reference types="stripe-event-types" />
-import axios from 'axios'
 import cuid from 'cuid'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
@@ -8,6 +7,7 @@ import Stripe from 'stripe'
 import { MarkRequired } from 'ts-essentials'
 import isURL from 'validator/lib/isURL'
 
+import { featureFlags } from '../../../../shared/constants'
 import {
   PaymentStatus,
   ReconciliationReportLine,
@@ -16,18 +16,19 @@ import {
   IEncryptedFormSchema,
   IPaymentSchema,
   IPopulatedEncryptedForm,
-  IPopulatedForm,
 } from '../../../types'
 import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
-import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
 import {
   getMongoErrorMessage,
   transformMongoError,
 } from '../../utils/handle-mongo-error'
+import { InvalidDomainError } from '../auth/auth.errors'
+import * as AuthService from '../auth/auth.service'
 import { DatabaseError, DatabaseWriteConflictError } from '../core/core.errors'
+import { getFeatureFlag } from '../feature-flags/feature-flags.service'
 import { FormNotFoundError } from '../form/form.errors'
 import {
   PendingSubmissionNotFoundError,
@@ -53,7 +54,6 @@ import {
 import {
   computePaymentState,
   computePayoutDetails,
-  convertToProofOfPaymentFormat,
   getChargeIdFromNestedCharge,
   getMetadataPaymentId,
 } from './stripe.utils'
@@ -672,24 +672,75 @@ export const linkStripeAccountToForm = (
     accountId: string
     publishableKey: string
   },
-): ResultAsync<string, DatabaseError> =>
-  ResultAsync.fromPromise(
-    form.addPaymentAccountId({ accountId, publishableKey }),
-    (error) => {
-      const errMsg = 'Failed to update payment account id'
-      logger.error({
-        message: errMsg,
-        meta: {
-          action: 'linkStripeAccountToForm',
-          stripeAccountId: accountId,
-          stripePublishableKey: publishableKey,
-          formId: form._id,
+): ResultAsync<
+  string,
+  DatabaseError | StripeFetchError | StripeAccountError | InvalidDomainError
+> => {
+  const logMeta = {
+    action: 'linkStripeAccountToForm',
+    stripeAccountId: accountId,
+    stripePublishableKey: publishableKey,
+    formId: form._id,
+  }
+
+  return getFeatureFlag(featureFlags.validateStripeEmailDomain, {
+    // If getFeatureFlag throws a DatabaseError, we want to log it, but respond
+    // to the client as if the flag is not found.
+    fallbackValue: false,
+    logMeta,
+  })
+    .andThen((shouldValidateStripeEmailDomain) => {
+      if (!shouldValidateStripeEmailDomain) {
+        // skip validation
+        return okAsync(undefined)
+      }
+
+      return ResultAsync.fromPromise(
+        stripe.accounts.retrieve(accountId),
+        (error) => {
+          logger.error({
+            message: 'Error retriving Stripe account',
+            meta: {
+              action: 'linkStripeAccountToForm',
+              stripeAccountId: accountId,
+            },
+            error,
+          })
+          return new StripeFetchError(String(error))
         },
-        error,
+      ).andThen((account) => {
+        // Check if the email domain is whitelisted
+        if (!account.email) {
+          logger.error({
+            message: 'Error retriving Stripe account email',
+            meta: {
+              action: 'linkStripeAccountToForm',
+              stripeAccountId: accountId,
+              account,
+            },
+          })
+          return errAsync(
+            new StripeAccountError('Stripe account email is missing'),
+          )
+        }
+        return AuthService.validateEmailDomain(account.email)
       })
-      return new DatabaseError(errMsg)
-    },
-  ).map((updatedForm) => updatedForm.payments_channel.target_account_id)
+    })
+    .andThen(() =>
+      ResultAsync.fromPromise(
+        form.addPaymentAccountId({ accountId, publishableKey }),
+        (error) => {
+          const errMsg = 'Failed to update payment account id'
+          logger.error({
+            message: errMsg,
+            meta: logMeta,
+            error,
+          })
+          return new DatabaseError(errMsg)
+        },
+      ).map((updatedForm) => updatedForm.payments_channel.target_account_id),
+    )
+}
 
 export const unlinkStripeAccountFromForm = (
   form: IPopulatedEncryptedForm,
@@ -952,60 +1003,4 @@ export const verifyPaymentStatusWithStripe = (
           })
       }
     })
-}
-
-export const generatePaymentInvoice = (
-  payment: IPaymentSchema,
-  populatedForm: IPopulatedEncryptedForm,
-): ResultAsync<Buffer, StripeFetchError> => {
-  if (!payment.completedPayment?.receiptUrl) {
-    return errAsync(new StripeFetchError('Receipt url not ready'))
-  }
-  return ResultAsync.fromPromise(
-    axios.get<string>(payment.completedPayment.receiptUrl),
-    (error) => new StripeFetchError(String(error)),
-  ).andThen((receiptUrlResponse) => {
-    // retrieve receiptURL as html
-    const html = receiptUrlResponse.data
-    const agencyBusinessInfo = (populatedForm as IPopulatedForm).admin.agency
-      .business
-    const formBusinessInfo = populatedForm.business
-
-    const businessAddress = [
-      formBusinessInfo?.address,
-      agencyBusinessInfo?.address,
-    ].find(Boolean)
-
-    const businessGstRegNo = [
-      formBusinessInfo?.gstRegNo,
-      agencyBusinessInfo?.gstRegNo,
-    ].find(Boolean)
-
-    // we will still continute the invoice generation even if there's no address/gstregno
-    if (!businessAddress || !businessGstRegNo)
-      logger.warn({
-        message:
-          'Some business info not available during invoice generation. Expecting either agency or form to have business info',
-        meta: {
-          action: 'downloadPaymentInvoice',
-          payment,
-          agencyName: populatedForm.admin.agency.fullName,
-          agencyBusinessInfo,
-          formBusinessInfo,
-        },
-      })
-    const invoiceHtml = convertToProofOfPaymentFormat(html, {
-      address: businessAddress || '',
-      gstRegNo: businessGstRegNo || '',
-      formTitle: populatedForm.title,
-      submissionId: payment.completedPayment?.submissionId || '',
-      gstApplicable: payment.gstEnabled,
-      products: payment.products || [],
-    })
-
-    return ResultAsync.fromPromise(
-      generatePdfFromHtml(invoiceHtml),
-      (error) => new StripeFetchError(String(error)),
-    )
-  })
 }

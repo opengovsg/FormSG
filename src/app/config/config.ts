@@ -1,3 +1,4 @@
+import { Lambda } from '@aws-sdk/client-lambda'
 import aws from 'aws-sdk'
 import convict from 'convict'
 import { SessionOptions } from 'express-session'
@@ -74,6 +75,9 @@ const s3BucketUrlVars = convict(s3BucketUrlSchema)
     staticAssetsBucketUrl: `${awsEndpoint}/${basicVars.awsConfig.staticAssetsS3Bucket}`,
     // NOTE THE TRAILING / AT THE END OF THIS URL! This is only for attachments!
     attachmentBucketUrl: `${awsEndpoint}/${basicVars.awsConfig.attachmentS3Bucket}/`,
+    virusScannerQuarantineS3BucketUrl: `${awsEndpoint}/${basicVars.awsConfig.virusScannerQuarantineS3Bucket}`,
+    virusScannerCleanS3BucketUrl: `${awsEndpoint}/${basicVars.awsConfig.virusScannerCleanS3Bucket}`,
+    paymentProofS3BucketUrl: `${awsEndpoint}/${basicVars.awsConfig.paymentProofS3Bucket}`,
   })
   .validate({ allowed: 'strict' })
   .getProperties()
@@ -87,10 +91,20 @@ const s3 = new aws.S3({
   s3ForcePathStyle: isDev ? true : undefined,
 })
 
+// using aws-sdk v3 (FRM-993)
+const virusScannerLambda = new Lambda({
+  region: basicVars.awsConfig.region,
+  // Endpoint is set for development mode to point to the separate docker container running the lambda function.
+  // host.docker.internal is a special DNS name which resolves to the internal IP address used by the host.
+  // Reference: https://docs.docker.com/desktop/networking/#i-want-to-connect-from-a-container-to-a-service-on-the-host
+  ...(isDev ? { endpoint: 'http://host.docker.internal:9999' } : undefined),
+})
+
 const awsConfig: AwsConfig = {
   ...s3BucketUrlVars,
   ...basicVars.awsConfig,
   s3,
+  virusScannerLambda,
 }
 
 let dbUri: string | undefined

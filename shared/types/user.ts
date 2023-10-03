@@ -29,6 +29,7 @@ export const UserBase = z.object({
       keyHash: z.string(),
       createdAt: z.date(),
       lastUsedAt: z.date().optional(),
+      isPlatform: z.boolean().optional(),
     })
     .optional(),
 })
@@ -69,4 +70,14 @@ export type SendOtpResponseDto = {
 
 export type GetSgidAuthUrlResponseDto = {
   redirectUrl: string
+}
+
+export type TransferOwnershipRequestDto = {
+  email: string
+}
+
+export type TransferOwnershipResponseDto = {
+  email: string
+  formIds: string[]
+  error: string
 }

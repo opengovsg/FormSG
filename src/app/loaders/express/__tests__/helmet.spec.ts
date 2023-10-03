@@ -52,6 +52,7 @@ describe('helmetMiddlewares', () => {
       config.aws.attachmentBucketUrl,
       config.aws.imageBucketUrl,
       config.aws.logoBucketUrl,
+      config.aws.virusScannerQuarantineS3Bucket,
       'https://*.google-analytics.com',
       'https://*.analytics.google.com',
       'https://*.googletagmanager.com',

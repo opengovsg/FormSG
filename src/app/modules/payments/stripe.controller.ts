@@ -3,8 +3,13 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import querystring from 'querystring'
 import Stripe from 'stripe'
 
+import {
+  DISALLOW_CONNECT_NON_WHITELIST_STRIPE_ACCOUNT,
+  ERROR_QUERY_PARAM_KEY,
+} from '../../../../shared/constants'
 import {
   ErrorDto,
   GetPaymentInfoDto,
@@ -16,6 +21,7 @@ import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
 import { createReqMeta } from '../../utils/request'
+import { InvalidDomainError } from '../auth/auth.errors'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 import * as PendingSubmissionModel from '../pending-submission/pending-submission.service'
@@ -71,64 +77,6 @@ export const checkPaymentReceiptStatus: ControllerHandler<{
     })
 }
 
-/**
- * Handler for GET /api/v3/payments/:formId/:paymentId/invoice/download
- * Receives Stripe webhooks and updates the database with transaction details.
- *
- * @returns 200 if webhook is successfully processed
- * @returns 404 if the PaymentId is not found
- * @returns 404 if the FormId is not found
- * @returns 404 if payment.completedPayment?.receiptUrl is not found
- */
-export const downloadPaymentInvoice: ControllerHandler<{
-  formId: string
-  paymentId: string
-}> = (req, res) => {
-  const { formId, paymentId } = req.params
-  logger.info({
-    message: 'downloadPaymentInvoice endpoint called',
-    meta: {
-      action: 'downloadPaymentInvoice',
-      formId,
-      paymentId,
-    },
-  })
-
-  return ResultAsync.combine([
-    PaymentService.findPaymentById(paymentId),
-    FormService.retrieveFullFormById(formId).andThen(checkFormIsEncryptMode),
-  ])
-    .andThen(([payment, populatedForm]) => {
-      logger.info({
-        message: 'Found paymentId in payment document',
-        meta: {
-          action: 'downloadPaymentInvoice',
-          payment,
-        },
-      })
-      return StripeService.generatePaymentInvoice(payment, populatedForm)
-    })
-    .map((pdfBuffer) => {
-      res.set({
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename=${paymentId}-proofofpayment.pdf`,
-      })
-      return res.status(StatusCodes.OK).send(pdfBuffer)
-    })
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error retrieving invoice',
-        meta: {
-          action: 'downloadPaymentInvoice',
-          formId,
-          paymentId,
-        },
-        error,
-      })
-      return res.status(StatusCodes.NOT_FOUND).json({ message: error })
-    })
-}
-
 const _handleConnectOauthCallback: ControllerHandler<
   unknown,
   unknown,
@@ -180,6 +128,13 @@ const _handleConnectOauthCallback: ControllerHandler<
           },
           error,
         })
+        if (error.constructor === InvalidDomainError) {
+          const queryString = querystring.stringify({
+            [ERROR_QUERY_PARAM_KEY]:
+              DISALLOW_CONNECT_NON_WHITELIST_STRIPE_ACCOUNT,
+          })
+          return res.redirect(redirectUrl + '?' + queryString)
+        }
         return res.redirect(redirectUrl)
       })
   )

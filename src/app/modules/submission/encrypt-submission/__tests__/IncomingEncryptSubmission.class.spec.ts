@@ -78,6 +78,61 @@ describe('IncomingEncryptSubmission', () => {
     expect(initResult._unsafeUnwrap().responses).toEqual(responses)
   })
 
+  it('should filter responses when new encryption boundary flag is off', () => {
+    mockCheckIsEncryptedEncoding.mockReturnValueOnce(ok(true))
+    const mobileField = generateDefaultField(BasicField.Mobile, {
+      isVerifiable: true,
+    })
+    const emailField = generateDefaultField(BasicField.Email, {
+      isVerifiable: true,
+      autoReplyOptions: {
+        hasAutoReply: true,
+        autoReplySubject: 'subject',
+        autoReplySender: 'sender@test.gov.sg',
+        autoReplyMessage: 'message',
+        includeFormSummary: false,
+      },
+    })
+    const basicFormFields = [mobileField, emailField]
+    const mobileResponse = generateSingleAnswerResponse(
+      mobileField,
+      '+6587654321',
+      'signature',
+    )
+    const emailResponse = generateSingleAnswerResponse(
+      emailField,
+      'test@example.com',
+      'signature',
+    )
+    const responses = [mobileResponse, emailResponse]
+    const basicFieldVals = Object.values(BasicField).filter((v) =>
+      isNaN(Number(v)),
+    )
+    basicFieldVals.forEach((value) => {
+      if (
+        value === BasicField.Mobile ||
+        value === BasicField.Email ||
+        value === BasicField.Attachment ||
+        value === BasicField.Table ||
+        value === BasicField.Checkbox
+      )
+        return
+      const field = generateDefaultField(value)
+      basicFormFields.push(field)
+      responses.push(generateSingleAnswerResponse(field))
+    })
+    const initResult = IncomingEncryptSubmission.init(
+      {
+        responseMode: FormResponseMode.Encrypt,
+        form_fields: basicFormFields,
+      } as unknown as IPopulatedEncryptedForm,
+      responses,
+      '',
+    )
+    const filteredResponses = [mobileResponse, emailResponse]
+    expect(initResult._unsafeUnwrap().responses).toEqual(filteredResponses)
+  })
+
   it('should fail when responses are missing', () => {
     mockCheckIsEncryptedEncoding.mockReturnValueOnce(ok(true))
     const mobileField = generateDefaultField(BasicField.Mobile, {
