@@ -525,9 +525,10 @@ export const createForm = (
   )
 }
 
-// Helper method to create form and move it into a specified workspace
-// error handling will be done in parent createForm method
-const createFormInWorkspaceTransaction = async (
+// Helper method to create form and move it into a specified workspace,
+// error handling will be done in parent createForm method.
+// Exported for testing
+export const createFormInWorkspaceTransaction = async (
   formParams: Merge<IForm, { admin: string }>,
   workspaceId: string,
 ): Promise<IFormDocument> => {
@@ -535,23 +536,36 @@ const createFormInWorkspaceTransaction = async (
   const session = await mongoose.startSession()
   return session
     .withTransaction(async () => {
-      form = (await FormModel.create(formParams)) as IFormDocument
-      logger.info({
-        message: 'creating form into workspace transaction',
-        meta: {
-          action: 'transaction',
-          formId: form._id,
-          workspaceId,
-        },
-      })
-      await WorkspaceModel.addFormIdsToWorkspace({
+      form = await processCreateFormInWorkspace(
+        formParams,
         workspaceId,
-        formIds: [form._id],
         session,
-      })
+      )
     })
     .then(() => form)
     .finally(() => session.endSession)
+}
+
+export const processCreateFormInWorkspace = async (
+  formParams: Merge<IForm, { admin: string }>,
+  workspaceId: string,
+  session?: ClientSession,
+): Promise<IFormDocument> => {
+  // in order to take Mongoose.SaveOptions as a parameter with session
+  // we have to use the create type with array docs input
+  // https://mongoosejs.com/docs/5.x/docs/transactions.html
+  // hence we have to hard access the first element of the array
+  const form = (
+    await FormModel.create([formParams], {
+      session,
+    })
+  )[0] as IFormDocument
+  await WorkspaceModel.addFormIdsToWorkspace({
+    workspaceId,
+    formIds: [form._id],
+    session,
+  })
+  return form
 }
 
 /**
