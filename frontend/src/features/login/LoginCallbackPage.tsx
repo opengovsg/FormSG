@@ -5,29 +5,79 @@ import {
   Divider,
   Flex,
   Link,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   SkeletonText,
   Stack,
   Text,
+  useDisclosure,
+  UseDisclosureReturn,
 } from '@chakra-ui/react'
 
 import { SgidPublicOfficerEmployment } from '~shared/types/auth'
 
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { DASHBOARD_ROUTE, LOGIN_ROUTE } from '~constants/routes'
+import { useIsMobile } from '~hooks/useIsMobile'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { ApiService } from '~services/ApiService'
+import Button from '~components/Button'
+import { ModalCloseButton } from '~components/Modal'
 
 import { useUser } from '~features/user/queries'
 
 import { SGID_PROFILES_ENDPOINT, useSgidProfiles } from './queries'
 
+type ErrorDisclosureProps = Pick<UseDisclosureReturn, 'onClose' | 'isOpen'>
+const ErrorDisclosure = (errorDisclosure: ErrorDisclosureProps) => {
+  const isMobile = useIsMobile()
+  return (
+    <Modal
+      isOpen={errorDisclosure.isOpen}
+      onClose={() => {
+        errorDisclosure.onClose()
+        console.log('close', errorDisclosure.isOpen)
+      }}
+    >
+      <ModalOverlay />
+      <ModalContent>
+        <ModalCloseButton />
+        <ModalHeader>Singpass login isn’t available to you yet</ModalHeader>
+        <ModalBody>
+          <Stack>
+            <Text>
+              It is progressively being made available to organisations. In the
+              meantime, please log in using your email address.
+            </Text>
+          </Stack>
+        </ModalBody>
+        <ModalFooter>
+          <Button
+            isFullWidth={isMobile}
+            onClick={() => window.location.assign(LOGIN_ROUTE)}
+          >
+            Back to login
+          </Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  )
+}
 export const LoginCallbackPage = (): JSX.Element => {
   const profilesResponse = useSgidProfiles()
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const { user } = useUser()
 
+  const errorDisclosure = useDisclosure({ defaultIsOpen: true })
+
   // If redirected back here but already authed, redirect to dashboard.
   if (user) window.location.replace(DASHBOARD_ROUTE)
+  // User doesn't have any profiles, should reattempt to login
+  if (profilesResponse.error) window.location.replace(LOGIN_ROUTE)
 
   const handleSetProfile = (profile: SgidPublicOfficerEmployment) => {
     return ApiService.post<void>(SGID_PROFILES_ENDPOINT, {
@@ -67,6 +117,7 @@ export const LoginCallbackPage = (): JSX.Element => {
           Or, login manually using email and OTP
         </Link>
       </Stack>
+      <ErrorDisclosure {...errorDisclosure} />
     </Flex>
   )
 }
