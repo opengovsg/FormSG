@@ -70,7 +70,7 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
   const { dupeEmailModeFormMutation, dupeStorageModeFormMutation } =
     useDuplicateFormMutations()
 
-  const { activeWorkspace } = useWorkspaceContext()
+  const { activeWorkspace, isDefaultWorkspace } = useWorkspaceContext()
 
   const handleCreateStorageModeForm = handleSubmit(
     ({ title, responseMode }) => {
@@ -82,7 +82,8 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
         title,
         responseMode,
         publicKey: keypair.publicKey,
-        workspaceId: activeWorkspace._id,
+        // do not mutate with workspaceId if it is 'All Forms'
+        workspaceId: isDefaultWorkspace ? undefined : activeWorkspace._id,
       })
     },
   )
