@@ -37,7 +37,12 @@ import { FieldSection } from './FieldSection'
 
 const SGID_SUPPORTED: Set<MyInfoAttribute> = new Set([
   MyInfoAttribute.Name,
+  MyInfoAttribute.Sex,
   MyInfoAttribute.DateOfBirth,
+  MyInfoAttribute.Race,
+  MyInfoAttribute.Nationality,
+  MyInfoAttribute.HousingType,
+  MyInfoAttribute.HdbType,
   MyInfoAttribute.PassportNumber,
   MyInfoAttribute.PassportExpiryDate,
   // This is disabled due to MyInfo and sgID-MyInfo not using the same

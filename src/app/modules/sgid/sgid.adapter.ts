@@ -13,8 +13,18 @@ export const internalAttrToScope = (attr: InternalAttr): ExternalAttr => {
   switch (attr) {
     case InternalAttr.Name:
       return ExternalAttr.Name
+    case InternalAttr.Sex:
+      return ExternalAttr.Sex
     case InternalAttr.DateOfBirth:
       return ExternalAttr.DateOfBirth
+    case InternalAttr.Race:
+      return ExternalAttr.Race
+    case InternalAttr.Nationality:
+      return ExternalAttr.Nationality
+    case InternalAttr.HousingType:
+      return ExternalAttr.HousingType
+    case InternalAttr.HdbType:
+      return ExternalAttr.HdbType
     case InternalAttr.PassportNumber:
       return ExternalAttr.PassportNumber
     case InternalAttr.PassportExpiryDate:
@@ -44,8 +54,18 @@ const internalAttrToSGIDExternal = (
   switch (attr) {
     case InternalAttr.Name:
       return ExternalAttr.Name
+    case InternalAttr.Sex:
+      return ExternalAttr.Sex
     case InternalAttr.DateOfBirth:
       return ExternalAttr.DateOfBirth
+    case InternalAttr.Race:
+      return ExternalAttr.Race
+    case InternalAttr.Nationality:
+      return ExternalAttr.Nationality
+    case InternalAttr.HousingType:
+      return ExternalAttr.HousingType
+    case InternalAttr.HdbType:
+      return ExternalAttr.HdbType
     case InternalAttr.PassportNumber:
       return ExternalAttr.PassportNumber
     case InternalAttr.PassportExpiryDate:
@@ -83,6 +103,7 @@ export class SGIDMyInfoData
    * @returns the formatted field.
    */
   _formatFieldValue(attr: ExternalAttr): string | undefined {
+    console.log('sgid payload: ', this.#payload)
     return this.#payload[attr]
   }
 
@@ -104,6 +125,11 @@ export class SGIDMyInfoData
       case ExternalAttr.PassportNumber:
       case ExternalAttr.DateOfBirth:
       case ExternalAttr.PassportExpiryDate:
+      case ExternalAttr.Sex:
+      case ExternalAttr.Race:
+      case ExternalAttr.Nationality:
+      case ExternalAttr.HousingType:
+      case ExternalAttr.HdbType:
         return !!data
       // Fall back to leaving field editable as data shape is unknown.
       default:

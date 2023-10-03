@@ -36,4 +36,9 @@ export enum SGIDScope {
   MobileNumber = 'myinfo.mobile_number',
   Email = 'myinfo.email',
   RegisteredAddress = 'myinfo.registered_address',
+  Sex = 'myinfo.sex',
+  Race = 'myinfo.race',
+  Nationality = 'myinfo.nationality',
+  HousingType = 'myinfo.housingtype',
+  HdbType = 'myinfo.hdbtype',
 }
