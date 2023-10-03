@@ -551,6 +551,7 @@ export const PublicFormProvider = ({
             },
           })
 
+          // TODO (FRM-1413): Move to main return statement once virus scanner has been fully rolled out
           if (enableEncryptionBoundaryShift && enableVirusScanner) {
             return (
               submitStorageModeClearFormWithVirusScanningMutation
@@ -578,7 +579,7 @@ export const PublicFormProvider = ({
                 .catch(async (error) => {
                   // TODO(#5826): Remove when we have resolved the Network Error
                   datadogLogs.logger.warn(
-                    `handleSubmitForm: ${error.message}`,
+                    `handleSubmitForm: submit with virus scan - ${error.message}`,
                     {
                       meta: {
                         ...logMeta,
@@ -592,6 +593,7 @@ export const PublicFormProvider = ({
                     },
                   )
 
+                  // defaults to the safest option of storage submission without virus scanning
                   if (/Network Error/i.test(error.message)) {
                     axiosDebugFlow()
                     return submitStorageFormWithFetch(
