@@ -12,7 +12,8 @@ export const useSgidProfiles = (): UseQueryResult<
   SgidProfilesDto,
   ApiError
 > => {
-  return useQuery<SgidProfilesDto, ApiError>(['sgidProfiles'], () => {
-    return ApiService.get(SGID_PROFILES_ENDPOINT).then(({ data }) => data)
+  return useQuery<SgidProfilesDto, ApiError>(['sgidProfiles'], async () => {
+    const { data } = await ApiService.get(SGID_PROFILES_ENDPOINT)
+    return data
   })
 }
