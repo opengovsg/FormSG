@@ -143,7 +143,7 @@ export const PublicFormProvider = ({
     }
   }, [growthbook, formId])
 
-  const routeToNewStorageModeSubmission = useFeatureIsOn(
+  const enableEncryptionBoundaryShift = useFeatureIsOn(
     featureFlags.encryptionBoundaryShift,
   )
 
@@ -277,10 +277,6 @@ export const PublicFormProvider = ({
     submitStorageModeClearFormFetchMutation,
     submitStorageModeClearFormWithVirusScanningMutation,
   } = usePublicFormMutations(formId, submissionData?.id ?? '')
-
-  const submitStorageModeVnMutation = routeToNewStorageModeSubmission
-    ? submitStorageModeClearFormMutation
-    : submitStorageModeFormMutation
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
@@ -483,7 +479,9 @@ export const PublicFormProvider = ({
               : {}),
           }
 
-          const submitStorageFormWithFetch = function () {
+          const submitStorageFormWithFetch = function (
+            routeToNewStorageModeSubmission: boolean,
+          ) {
             datadogLogs.logger.info(`handleSubmitForm: submitting via fetch`, {
               meta: {
                 ...logMeta,
@@ -492,12 +490,11 @@ export const PublicFormProvider = ({
               },
             })
 
-            const submitStorageModeVnFetchMutation =
+            return (
               routeToNewStorageModeSubmission
                 ? submitStorageModeClearFormFetchMutation
                 : submitStorageModeFormFetchMutation
-
-            return submitStorageModeVnFetchMutation
+            )
               .mutateAsync(
                 {
                   ...formData,
@@ -544,7 +541,7 @@ export const PublicFormProvider = ({
 
           // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
           if (useFetchForSubmissions) {
-            return submitStorageFormWithFetch()
+            return submitStorageFormWithFetch(enableEncryptionBoundaryShift)
           }
           datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
             meta: {
@@ -554,7 +551,7 @@ export const PublicFormProvider = ({
             },
           })
 
-          if (routeToNewStorageModeSubmission && enableVirusScanner) {
+          if (enableEncryptionBoundaryShift && enableVirusScanner) {
             return (
               submitStorageModeClearFormWithVirusScanningMutation
                 .mutateAsync(formData, {
@@ -597,7 +594,9 @@ export const PublicFormProvider = ({
 
                   if (/Network Error/i.test(error.message)) {
                     axiosDebugFlow()
-                    return submitStorageFormWithFetch()
+                    return submitStorageFormWithFetch(
+                      enableEncryptionBoundaryShift,
+                    )
                   }
                   showErrorToast(error, form)
                 })
@@ -605,7 +604,11 @@ export const PublicFormProvider = ({
           }
 
           return (
-            submitStorageModeVnMutation
+            (
+              enableEncryptionBoundaryShift
+                ? submitStorageModeClearFormMutation
+                : submitStorageModeFormMutation
+            )
               .mutateAsync(
                 {
                   ...formData,
@@ -650,7 +653,9 @@ export const PublicFormProvider = ({
 
                 if (/Network Error/i.test(error.message)) {
                   axiosDebugFlow()
-                  return submitStorageFormWithFetch()
+                  return submitStorageFormWithFetch(
+                    enableEncryptionBoundaryShift,
+                  )
                 }
                 showErrorToast(error, form)
               })
@@ -671,8 +676,7 @@ export const PublicFormProvider = ({
       getCaptchaResponse,
       submitEmailModeFormFetchMutation,
       submitEmailModeFormMutation,
-      submitStorageModeVnMutation,
-      routeToNewStorageModeSubmission,
+      enableEncryptionBoundaryShift,
       submitStorageModeClearFormFetchMutation,
       submitStorageModeFormFetchMutation,
       navigate,
