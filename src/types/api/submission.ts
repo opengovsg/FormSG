@@ -1,7 +1,7 @@
 import { AttachmentResponse, FieldResponse } from '../../../shared/types'
 
 /**
- * AttachmentResponses with additional server injected metadata on email forms.
+ * AttachmentResponses with additional server injected metadata on email and storage v2+ forms.
  */
 export type ParsedClearAttachmentResponse = AttachmentResponse & {
   filename: string

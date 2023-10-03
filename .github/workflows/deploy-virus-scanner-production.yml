@@ -19,4 +19,5 @@ jobs:
     with:
       environment: 'production'
       provisionedConcurrency: 5
+      checkoutBranch: 'release-al2'
     secrets: inherit

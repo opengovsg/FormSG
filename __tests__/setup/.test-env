@@ -60,6 +60,7 @@ ATTACHMENT_S3_BUCKET=local-attachment-bucket
 STATIC_ASSETS_S3_BUCKET=local-static-assets-bucket
 VIRUS_SCANNER_QUARANTINE_S3_BUCKET=local-virus-scanner-quarantine-bucket
 VIRUS_SCANNER_CLEAN_S3_BUCKET=local-virus-scanner-clean-bucket
+PAYMENT_PROOF_S3_BUCKET=local-payment-proof-bucket
 NODE_ENV=test
 FORMSG_SDK_MODE=test
 

@@ -66,6 +66,7 @@ const isAttachmentResponseFromMap = (
 export const addAttachmentToResponses = (
   responses: ParsedClearFormFieldResponse[],
   attachments: IAttachmentInfo[],
+  isVirusScannerEnabled: boolean,
 ): void => {
   // Create a map of the attachments with fieldId as keys
   const attachmentMap: Record<IAttachmentInfo['fieldId'], IAttachmentInfo> =
@@ -79,9 +80,11 @@ export const addAttachmentToResponses = (
     responses.forEach((response) => {
       if (isAttachmentResponseFromMap(attachmentMap, response)) {
         const file = attachmentMap[response._id]
-        response.answer = file.filename
         response.filename = file.filename
         response.content = file.content
+        if (!isVirusScannerEnabled) {
+          response.answer = file.filename
+        }
       }
     })
   }

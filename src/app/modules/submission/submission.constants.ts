@@ -14,7 +14,7 @@ export const sharedSubmissionParams = {
             .valid(...Object.values(BasicField)),
           answer: Joi.string().allow(''),
           answerArray: Joi.array(),
-          filename: Joi.string(),
+          filename: Joi.string(), // filename or quarantine bucket object key where file has been uploaded to
           content: Joi.binary(),
           isHeader: Joi.boolean(),
           myInfo: Joi.object(),

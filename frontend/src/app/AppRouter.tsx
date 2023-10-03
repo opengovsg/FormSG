@@ -77,7 +77,7 @@ export const AppRouter = (): JSX.Element => {
   useEffect(() => {
     if (growthbook) {
       // Load features from the GrowthBook API
-      growthbook.loadFeatures({ autoRefresh: true })
+      growthbook.loadFeatures()
     }
   }, [growthbook])
 

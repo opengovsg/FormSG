@@ -4,7 +4,7 @@ import { ObjectId } from 'bson-ext'
 import { clone, omit } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
-import { PassThrough, Transform } from 'stream'
+import { PassThrough, Readable, Transform } from 'stream'
 
 import { aws } from 'src/app/config/config'
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
@@ -31,11 +31,15 @@ import * as PaymentsService from '../../../payments/payments.service'
 import { SubmissionNotFoundError } from '../../submission.errors'
 import {
   AttachmentSizeLimitExceededError,
+  DownloadCleanFileFailedError,
   InvalidFieldIdError,
+  InvalidFileKeyError,
+  VirusScanFailedError,
 } from '../encrypt-submission.errors'
 import {
   addPaymentDataStream,
   createEncryptSubmissionWithoutSave,
+  downloadCleanFile,
   getEncryptedSubmissionData,
   getQuarantinePresignedPostData,
   getSubmissionCursor,
@@ -44,6 +48,7 @@ import {
   getSubmissionPaymentDto,
   transformAttachmentMetasToSignedUrls,
   transformAttachmentMetaStream,
+  triggerVirusScanning,
 } from '../encrypt-submission.service'
 
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
@@ -1147,6 +1152,387 @@ describe('encrypt-submission.service', () => {
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new AttachmentSizeLimitExceededError(),
       )
+    })
+  })
+
+  describe('triggerVirusScanning', () => {
+    const MOCK_VALID_FILE_KEY = '1b90195b-ce8a-4590-810b-04ebaef8e4dd'
+    const MOCK_SUCCESS_BODY_PAYLOAD = {
+      cleanFileKey: 'cleanFileKey',
+      destinationVersionId: 'destinationVersionId',
+    }
+    it('should return errAsync when quarantine file key is not a valid uuid', async () => {
+      // Arrange
+      const awsSpy = jest
+        .spyOn(aws.virusScannerLambda, 'invoke')
+        .mockImplementationOnce(() => {
+          return Promise.reject()
+        })
+      const mockQuarantineFileKey = 'not a uuid'
+
+      // Act
+      const actualResult = await triggerVirusScanning(mockQuarantineFileKey)
+
+      // Assert
+      expect(awsSpy).not.toHaveBeenCalled()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidFileKeyError())
+    })
+
+    it('should return errAsync when lambda invocation fails', async () => {
+      // Arrange
+      const awsSpy = jest
+        .spyOn(aws.virusScannerLambda, 'invoke')
+        .mockImplementationOnce(() => {
+          return Promise.reject()
+        })
+
+      // Act
+      const actualResult = await triggerVirusScanning(MOCK_VALID_FILE_KEY)
+
+      // Assert
+      expect(awsSpy).toHaveBeenCalledOnce()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new VirusScanFailedError(),
+      )
+    })
+
+    it('should return errAsync when data is undefined', async () => {
+      // Arrange
+      const awsSpy = jest
+        .spyOn(aws.virusScannerLambda, 'invoke')
+        .mockImplementationOnce(() => {
+          return Promise.resolve(undefined)
+        })
+
+      // Act
+      const actualResult = await triggerVirusScanning(MOCK_VALID_FILE_KEY)
+
+      // Assert
+      expect(awsSpy).toHaveBeenCalledOnce()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new VirusScanFailedError(),
+      )
+    })
+
+    it('should return errAsync when data.Payload is undefined', async () => {
+      // Arrange
+      const awsSpy = jest
+        .spyOn(aws.virusScannerLambda, 'invoke')
+        .mockImplementationOnce(() => {
+          return Promise.resolve({ Payload: undefined })
+        })
+
+      // Act
+      const actualResult = await triggerVirusScanning(MOCK_VALID_FILE_KEY)
+
+      // Assert
+      expect(awsSpy).toHaveBeenCalledOnce()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new VirusScanFailedError(),
+      )
+    })
+
+    it('should return okAsync with cleanFileKey and destinationVersionId when data.Payload successful', async () => {
+      // Arrange
+      const successPayload = {
+        statusCode: 200,
+        body: JSON.stringify(MOCK_SUCCESS_BODY_PAYLOAD),
+      }
+      const awsSpy = jest
+        .spyOn(aws.virusScannerLambda, 'invoke')
+        .mockImplementationOnce(() => {
+          return Promise.resolve({
+            Payload: JSON.stringify(successPayload),
+          })
+        })
+      const expectedSuccessOutput = {
+        statusCode: 200,
+        body: MOCK_SUCCESS_BODY_PAYLOAD,
+      }
+
+      // Act
+      const actualResult = await triggerVirusScanning(MOCK_VALID_FILE_KEY)
+
+      // Assert
+      expect(awsSpy).toHaveBeenCalledOnce()
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedSuccessOutput)
+    })
+
+    it('should return errAsync if payload cannot be parsed', async () => {
+      // Arrange
+      const awsSpy = jest
+        .spyOn(aws.virusScannerLambda, 'invoke')
+        .mockImplementationOnce(() => {
+          return Promise.resolve({
+            Payload: '{',
+          })
+        })
+
+      // Act
+      const actualResult = await triggerVirusScanning(MOCK_VALID_FILE_KEY)
+
+      // Assert
+      expect(awsSpy).toHaveBeenCalledOnce()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new VirusScanFailedError(),
+      )
+    })
+
+    it('should return errAsync if payload.statusCode is not a number', async () => {
+      // Arrange
+      const successPayload = {
+        statusCode: 'two hundred', // not a number
+        body: JSON.stringify(MOCK_SUCCESS_BODY_PAYLOAD),
+      }
+      const awsSpy = jest
+        .spyOn(aws.virusScannerLambda, 'invoke')
+        .mockImplementationOnce(() => {
+          return Promise.resolve({
+            Payload: JSON.stringify(successPayload),
+          })
+        })
+
+      // Act
+      const actualResult = await triggerVirusScanning(MOCK_VALID_FILE_KEY)
+
+      // Assert
+      expect(awsSpy).toHaveBeenCalledOnce()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new VirusScanFailedError(),
+      )
+    })
+
+    it('should return errAsync if payload.body is not a string', async () => {
+      // Arrange
+      const successPayload = {
+        statusCode: 200,
+        body: 2023, // not a string
+      }
+      const awsSpy = jest
+        .spyOn(aws.virusScannerLambda, 'invoke')
+        .mockImplementationOnce(() => {
+          return Promise.resolve({
+            Payload: JSON.stringify(successPayload),
+          })
+        })
+
+      // Act
+      const actualResult = await triggerVirusScanning(MOCK_VALID_FILE_KEY)
+
+      // Assert
+      expect(awsSpy).toHaveBeenCalledOnce()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new VirusScanFailedError(),
+      )
+    })
+
+    it('should return errAsync if payload body cannot be parsed', async () => {
+      // Arrange
+      const invalidSuccessPayload = {
+        statusCode: 200,
+        body: '}',
+      }
+      const awsSpy = jest
+        .spyOn(aws.virusScannerLambda, 'invoke')
+        .mockImplementationOnce(() => {
+          return Promise.resolve({
+            Payload: JSON.stringify(invalidSuccessPayload),
+          })
+        })
+
+      // Act
+      const actualResult = await triggerVirusScanning(MOCK_VALID_FILE_KEY)
+
+      // Assert
+      expect(awsSpy).toHaveBeenCalledOnce()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new VirusScanFailedError(),
+      )
+    })
+
+    it('should return errAsync if cleanFileKey is not a string', async () => {
+      // Arrange
+      const invalidSuccessPayload = {
+        statusCode: 200,
+        body: {
+          ...MOCK_SUCCESS_BODY_PAYLOAD,
+          cleanFileKey: true, // not a string
+        },
+      }
+      const awsSpy = jest
+        .spyOn(aws.virusScannerLambda, 'invoke')
+        .mockImplementationOnce(() => {
+          return Promise.resolve({
+            Payload: JSON.stringify(invalidSuccessPayload),
+          })
+        })
+
+      // Act
+      const actualResult = await triggerVirusScanning(MOCK_VALID_FILE_KEY)
+
+      // Assert
+      expect(awsSpy).toHaveBeenCalledOnce()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new VirusScanFailedError(),
+      )
+    })
+
+    it('should return errAsync if destinationVersionId is not a string', async () => {
+      // Arrange
+      const invalidSuccessPayload = {
+        statusCode: 200,
+        body: {
+          ...MOCK_SUCCESS_BODY_PAYLOAD,
+          destinationVersionId: 2023, // not a string
+        },
+      }
+      const awsSpy = jest
+        .spyOn(aws.virusScannerLambda, 'invoke')
+        .mockImplementationOnce(() => {
+          return Promise.resolve({
+            Payload: JSON.stringify(invalidSuccessPayload),
+          })
+        })
+
+      // Act
+      const actualResult = await triggerVirusScanning(MOCK_VALID_FILE_KEY)
+
+      // Assert
+      expect(awsSpy).toHaveBeenCalledOnce()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new VirusScanFailedError(),
+      )
+    })
+
+    it('should return errAsync if lambda returns an errored response (e.g. file not found)', async () => {
+      // Arrange
+      const failurePayload = {
+        statusCode: 200,
+        body: JSON.stringify({
+          message: 'File not found',
+        }),
+      }
+      const awsSpy = jest
+        .spyOn(aws.virusScannerLambda, 'invoke')
+        .mockImplementationOnce(() => {
+          return Promise.resolve({
+            Payload: JSON.stringify(failurePayload),
+          })
+        })
+
+      // Act
+      const actualResult = await triggerVirusScanning(MOCK_VALID_FILE_KEY)
+
+      // Assert
+      expect(awsSpy).toHaveBeenCalledOnce()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new VirusScanFailedError(),
+      )
+    })
+
+    it("should return errAsync if the lambda's errored response is not in the right format", async () => {
+      // Arrange
+      const failurePayload = {
+        statusCode: 200,
+        body: JSON.stringify({
+          message: true, // not a string
+        }),
+      }
+      const awsSpy = jest
+        .spyOn(aws.virusScannerLambda, 'invoke')
+        .mockImplementationOnce(() => {
+          return Promise.resolve({
+            Payload: JSON.stringify(failurePayload),
+          })
+        })
+
+      // Act
+      const actualResult = await triggerVirusScanning(MOCK_VALID_FILE_KEY)
+
+      // Assert
+      expect(awsSpy).toHaveBeenCalledOnce()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new VirusScanFailedError(),
+      )
+    })
+  })
+
+  describe('downloadCleanFile', () => {
+    const MOCK_VALID_UUID = '0f3d2e22-d2aa-44f8-965a-27e46102936e'
+    it('should return errAsync(InvalidFileKeyError) if cleanFileKey is invalid', async () => {
+      // Arrange
+      const awsSpy = jest.spyOn(aws.s3, 'getObject')
+
+      // Act
+      // empty string for version id to simulate failure
+      const actualResult = await downloadCleanFile('invalid-key', '')
+
+      // Assert
+      expect(awsSpy).not.toHaveBeenCalled()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidFileKeyError())
+    })
+
+    it('should return errAsync(DownloadCleanFileFailedError) if file download failed', async () => {
+      // Arrange
+      const awsSpy = jest.spyOn(aws.s3, 'getObject')
+
+      // Act
+      // empty string for version id to simulate failure
+      const actualResult = await downloadCleanFile(MOCK_VALID_UUID, '')
+
+      // Assert
+      expect(awsSpy).toHaveBeenCalledOnce()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new DownloadCleanFileFailedError(),
+      )
+    })
+
+    it('should return okAsync(buffer) if file has been successfully downloaded from the clean bucket', async () => {
+      // Arrange
+      const content = 'Mock file with a lot of text content!'
+      // Define a custom mock function for getObject
+      const mockGetObject = jest.fn().mockReturnValue({
+        createReadStream: () => {
+          // Create a readable stream with the desired content
+          const readStream = new Readable({
+            read() {
+              this.push(content)
+              this.push(null) // Indicates the end of the stream
+            },
+          })
+          return readStream
+        },
+      })
+
+      const awsSpy = jest
+        .spyOn(aws.s3, 'getObject')
+        .mockImplementationOnce(mockGetObject)
+
+      const versionId = 'your-version-id'
+
+      // Act
+      // empty strings for invalid keys and version ids
+      const actualResult = await downloadCleanFile(MOCK_VALID_UUID, versionId)
+
+      // Assert
+      expect(awsSpy).toHaveBeenCalledOnce()
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap().toString()).toEqual(content)
     })
   })
 })

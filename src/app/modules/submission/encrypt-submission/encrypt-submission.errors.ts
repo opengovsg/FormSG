@@ -49,3 +49,29 @@ export class FeatureDisabledError extends ApplicationError {
     super(message)
   }
 }
+
+export class InvalidFileKeyError extends ApplicationError {
+  constructor(message = 'Invalid file key. File keys should be valid UUIDs.') {
+    super(message)
+  }
+}
+
+export class VirusScanFailedError extends ApplicationError {
+  constructor(message = 'Virus scan failed. Please try again.') {
+    super(message)
+  }
+}
+
+export class JsonParseFailedError extends ApplicationError {
+  constructor(message = 'JSON parsing failed. Please try again.') {
+    super(message)
+  }
+}
+
+export class DownloadCleanFileFailedError extends ApplicationError {
+  constructor(
+    message = 'Attempt to download clean file failed. Please try again.',
+  ) {
+    super(message)
+  }
+}

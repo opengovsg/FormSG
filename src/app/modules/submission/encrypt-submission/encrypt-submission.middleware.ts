@@ -3,6 +3,7 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { chain, omit } from 'lodash'
+import { okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { featureFlags } from '../../../../../shared/constants'
 import {
@@ -14,6 +15,7 @@ import {
   EncryptAttachmentResponse,
   EncryptFormFieldResponse,
   FormLoadedDto,
+  ParsedClearFormFieldResponse,
 } from '../../../../types/api'
 import { paymentConfig } from '../../../config/features/payment.config'
 import formsgSdk from '../../../config/formsg-sdk'
@@ -25,13 +27,22 @@ import * as FormService from '../../form/form.service'
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import { sharedSubmissionParams } from '../submission.constants'
 import * as SubmissionService from '../submission.service'
-import { isAttachmentResponse } from '../submission.utils'
+import {
+  isAttachmentResponse,
+  isQuarantinedAttachmentResponse,
+} from '../submission.utils'
 
 import {
+  DownloadCleanFileFailedError,
   EncryptedPayloadExistsError,
   FormsgReqBodyExistsError,
+  VirusScanFailedError,
 } from './encrypt-submission.errors'
-import { checkFormIsEncryptMode } from './encrypt-submission.service'
+import {
+  checkFormIsEncryptMode,
+  downloadCleanFile,
+  triggerVirusScanning,
+} from './encrypt-submission.service'
 import {
   CreateFormsgAndRetrieveFormMiddlewareHandlerRequest,
   CreateFormsgAndRetrieveFormMiddlewareHandlerType,
@@ -172,6 +183,101 @@ export const checkNewBoundaryEnabled = async (
       .status(StatusCodes.FORBIDDEN)
       .json({ message: 'This endpoint has not been enabled for this form.' })
   }
+
+  return next()
+}
+
+/**
+ * !! Do NOT enable `encryption-boundary-shift-virus-scanner` feature flag until this has been completely implemented. !!
+ * Scan attachments on quarantine bucket and retrieve attachments from the clean bucket.
+ * Note: Downloading of attachments from the clean bucket is not implemented yet. See Step 4.
+ */
+export const scanAndRetrieveAttachments = async (
+  req: StorageSubmissionMiddlewareHandlerRequest,
+  res: Parameters<StorageSubmissionMiddlewareHandlerType>[1],
+  next: NextFunction,
+) => {
+  const logMeta = {
+    action: 'scanAndRetrieveAttachments',
+    ...createReqMeta(req),
+  }
+
+  // TODO (FRM-1413): remove this guardrail when virus scanning has completed rollout.
+  // Step 1: If virus scanner is not enabled, skip this middleware.
+
+  const virusScannerEnabled = req.formsg.featureFlags.includes(
+    featureFlags.encryptionBoundaryShiftVirusScanner,
+  )
+
+  if (!virusScannerEnabled) {
+    logger.warn({
+      message: 'Virus scanner is not enabled.',
+      meta: logMeta,
+    })
+
+    return next()
+  }
+
+  // TODO (FRM-1413): remove this guardrail when virus scanning has completed rollout.
+  // Step 2: If virus scanner is enabled, check if storage submission v2.1+. Storage submission v2.1 onwards
+  // should have virus scanning enabled. If not, skip this middleware.
+  // Note: Version number is sent by the frontend and should only be >=2.1 if virus scanning is enabled on the frontend.
+
+  if (req.body.version < 2.1) return next()
+
+  // At this point, virus scanner is enabled and storage submission v2.1+. This means that both the FE and BE
+  // have virus scanning enabled.
+
+  // Step 3 + 4: For each attachment, trigger lambda to scan and if it succeeds, retrieve attachment from clean bucket. Do this asynchronously.
+  const scanAndRetrieveFilesResult: Result<
+    ParsedClearFormFieldResponse[], // true for attachment fields, false for non-attachment fields.
+    VirusScanFailedError | DownloadCleanFileFailedError
+  > = await ResultAsync.combine(
+    // If any scans or downloads error out, it will short circuit and return the first error.
+    req.body.responses.map((response) => {
+      if (isQuarantinedAttachmentResponse(response)) {
+        // Step 3: Trigger lambda to scan attachments.
+        return (
+          triggerVirusScanning(response.answer)
+            .map((lambdaOutput) => lambdaOutput.body)
+            // Step 4: Retrieve attachments from the clean bucket.
+            .andThen((cleanAttachment) =>
+              // Retrieve attachment from clean bucket.
+              downloadCleanFile(
+                cleanAttachment.cleanFileKey,
+                cleanAttachment.destinationVersionId,
+              ).map((attachmentBuffer) => ({
+                ...response,
+                // Replace content with attachmentBuffer and answer with filename.
+                content: attachmentBuffer,
+                answer: response.filename,
+              })),
+            )
+        )
+      }
+
+      // If field is not an attachment, return original response.
+      return okAsync(response)
+    }),
+  )
+
+  if (scanAndRetrieveFilesResult.isErr()) {
+    logger.error({
+      message: 'Error scanning and downloading clean attachments',
+      meta: logMeta,
+      error: scanAndRetrieveFilesResult.error,
+    })
+
+    const { statusCode, errorMessage } = mapRouteError(
+      scanAndRetrieveFilesResult.error,
+    )
+    return res.status(statusCode).json({
+      message: errorMessage,
+    })
+  }
+
+  // Step 5: Replace req.body.responses with the new responses with populated attachments.
+  req.body.responses = scanAndRetrieveFilesResult.value
 
   return next()
 }

@@ -1,6 +1,8 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 
+import { Environment } from '../../../types'
+import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
@@ -139,11 +141,17 @@ export const loginToMyInfo: ControllerHandler<
   }
   const { formId, encodedQuery } = parseStateResult.value
 
-  let redirectDestination = `/${formId}`
+  // For local dev, we need to specify the frontend app URL as this is different from the backend's app URL
+  const redirectDestinationRaw =
+    process.env.NODE_ENV === Environment.Dev
+      ? `${config.app.feAppUrl}/${formId}`
+      : `/${formId}`
+
+  let redirectDestination = redirectDestinationRaw
 
   if (encodedQuery) {
     try {
-      redirectDestination = `/${formId}?${Buffer.from(
+      redirectDestination = `${redirectDestinationRaw}?${Buffer.from(
         encodedQuery,
         'base64',
       ).toString('utf8')}`

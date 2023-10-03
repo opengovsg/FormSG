@@ -1,3 +1,4 @@
+import { Lambda } from '@aws-sdk/client-lambda'
 import { PackageMode } from '@opengovsg/formsg-sdk/dist/types'
 import aws from 'aws-sdk'
 import { SessionOptions } from 'express-session'
@@ -16,6 +17,7 @@ export type AppConfig = {
   title: string
   description: string
   appUrl: string
+  feAppUrl: string
   keywords: string
   images: string[]
   twitterImage: string
@@ -30,6 +32,7 @@ export type AwsConfig = {
   imageS3Bucket: string
   logoS3Bucket: string
   attachmentS3Bucket: string
+  paymentProofS3Bucket: string
   region: string
   logoBucketUrl: string
   imageBucketUrl: string
@@ -39,6 +42,8 @@ export type AwsConfig = {
   virusScannerCleanS3Bucket: string
   s3: aws.S3
   endPoint: string
+  virusScannerLambda: Lambda // using aws-sdk-v3 (FRM-993)
+  virusScannerLambdaFunctionName: string
 }
 
 export type MailConfig = {
@@ -124,6 +129,7 @@ export interface ICompulsoryVarsSchema {
     attachmentS3Bucket: string
     virusScannerQuarantineS3Bucket: string
     virusScannerCleanS3Bucket: string
+    paymentProofS3Bucket: string
   }
 }
 
@@ -159,6 +165,7 @@ export interface IOptionalVarsSchema {
   awsConfig: {
     region: string
     customCloudWatchGroup: string
+    virusScannerLambdaFunctionName: string
   }
   mail: {
     from: string
@@ -198,5 +205,6 @@ export interface IBucketUrlSchema {
   staticAssetsBucketUrl: string
   virusScannerQuarantineS3BucketUrl: string
   virusScannerCleanS3BucketUrl: string
+  paymentProofS3BucketUrl: string
   endPoint: string
 }
