@@ -81,6 +81,8 @@ jobs:
           cache-dependency-path: '**/package-lock.json'
       - run: npm ci
       - run: npm run test:frontend
+        env:
+          NODE_OPTIONS: '--max-old-space-size=4096'
 
   frontend_lint:
     needs: [changes, install]
