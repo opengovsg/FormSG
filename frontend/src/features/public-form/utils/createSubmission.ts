@@ -123,6 +123,11 @@ export const createClearSubmissionFormData = (
   return formData
 }
 
+/**
+ * Used for Storage mode submissions v2.1+ (after virus scanning).
+ * @returns formData containing form responses and attachments.
+ * @throws Error if form inputs are invalid or contain malicious attachment(s).
+ */
 export const createClearSubmissionWithVirusScanningFormData = (
   formDataArgs:
     | CreateEmailSubmissionFormDataArgs
@@ -133,6 +138,7 @@ export const createClearSubmissionWithVirusScanningFormData = (
   const responses = createResponsesArray(formFields, formInputs).map(
     (response) => {
       if (response.fieldType === BasicField.Attachment && response.answer) {
+        // for each attachment response, find the corresponding quarantine bucket key
         const fieldIdToQuarantineKeyEntry = fieldIdToQuarantineKeyMap.find(
           (v) => v.fieldId === response._id,
         )
@@ -140,6 +146,7 @@ export const createClearSubmissionWithVirusScanningFormData = (
           throw new Error(
             `Attachment response with fieldId ${response._id} not found among attachments uploaded to quarantine bucket`,
           )
+        // set response.answer as the quarantine bucket key
         response.answer = fieldIdToQuarantineKeyEntry.quarantineBucketKey
       }
       return response
