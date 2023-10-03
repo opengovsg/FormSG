@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { BiChevronRight } from 'react-icons/bi'
 import { Link as ReactLink } from 'react-router-dom'
 import {
@@ -32,27 +33,43 @@ import { useUser } from '~features/user/queries'
 
 import { SGID_PROFILES_ENDPOINT, useSgidProfiles } from './queries'
 
+type ModalErrorMessages = {
+  header: string
+  body: string
+  cta: string
+}
+
+const MODAL_ERRORS: Record<string, ModalErrorMessages> = {
+  NO_WORKEMAIL: {
+    header: "Singpass login isn't available to you yet",
+    body: 'It is progressively being made available to organisations. In the meantime, please log in using your email address.',
+    cta: 'Back to login',
+  },
+  INVALID_WORKEMAIL: {
+    header: "You don't have access to this service",
+    body: 'It may be available only to select organisations or authorised individuals. If you believe you should have access to this service, please contact us.',
+    cta: 'Choose another account',
+  },
+}
 type ErrorDisclosureProps = Pick<UseDisclosureReturn, 'onClose' | 'isOpen'>
-const ErrorDisclosure = (errorDisclosure: ErrorDisclosureProps) => {
+const ErrorDisclosure = (
+  props: {
+    errorMessages: ModalErrorMessages | undefined
+  } & ErrorDisclosureProps,
+) => {
   const isMobile = useIsMobile()
+  if (!props.errorMessages) {
+    return null
+  }
   return (
-    <Modal
-      isOpen={errorDisclosure.isOpen}
-      onClose={() => {
-        errorDisclosure.onClose()
-        console.log('close', errorDisclosure.isOpen)
-      }}
-    >
+    <Modal isOpen={props.isOpen} onClose={() => props.onClose()}>
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader>Singpass login isn’t available to you yet</ModalHeader>
+        <ModalHeader>{props.errorMessages.header}</ModalHeader>
         <ModalBody>
           <Stack>
-            <Text>
-              It is progressively being made available to organisations. In the
-              meantime, please log in using your email address.
-            </Text>
+            <Text>{props.errorMessages.body}</Text>
           </Stack>
         </ModalBody>
         <ModalFooter>
@@ -60,7 +77,7 @@ const ErrorDisclosure = (errorDisclosure: ErrorDisclosureProps) => {
             isFullWidth={isMobile}
             onClick={() => window.location.assign(LOGIN_ROUTE)}
           >
-            Back to login
+            {props.errorMessages.cta}
           </Button>
         </ModalFooter>
       </ModalContent>
@@ -71,21 +88,31 @@ export const LoginCallbackPage = (): JSX.Element => {
   const profilesResponse = useSgidProfiles()
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const { user } = useUser()
+  const [errorContext, setErrorContext] = useState<
+    ModalErrorMessages | undefined
+  >()
 
-  const errorDisclosure = useDisclosure({ defaultIsOpen: true })
+  const errorDisclosure = useDisclosure()
 
   // If redirected back here but already authed, redirect to dashboard.
   if (user) window.location.replace(DASHBOARD_ROUTE)
   // User doesn't have any profiles, should reattempt to login
   if (profilesResponse.error) window.location.replace(LOGIN_ROUTE)
 
-  const handleSetProfile = (profile: SgidPublicOfficerEmployment) => {
-    return ApiService.post<void>(SGID_PROFILES_ENDPOINT, {
+  useEffect(() => {
+    if (profilesResponse.data?.profiles.length === 0) {
+      errorDisclosure.onOpen()
+      setErrorContext(MODAL_ERRORS.NO_WORKEMAIL)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profilesResponse.data?.profiles.length])
+
+  const handleSetProfile = async (profile: SgidPublicOfficerEmployment) => {
+    await ApiService.post<void>(SGID_PROFILES_ENDPOINT, {
       workEmail: profile.workEmail,
-    }).then(() => {
-      window.location.assign(DASHBOARD_ROUTE)
-      setIsAuthenticated(true)
     })
+    window.location.assign(DASHBOARD_ROUTE)
+    setIsAuthenticated(true)
   }
 
   return (
@@ -96,11 +123,13 @@ export const LoginCallbackPage = (): JSX.Element => {
         borderRadius="0.5rem"
         border="1px"
         borderColor="neutral.200"
-        gap="1.75rem"
+        gap="1rem"
         background="white"
         divider={<Divider />}
       >
-        <Text textStyle="h4">Choose an account to continue to FormSG</Text>
+        <Text textStyle="h2" marginBottom="0.5rem" color="secondary.700">
+          Choose an account to continue to FormSG
+        </Text>
 
         {!profilesResponse.data ? (
           <SkeletonText noOfLines={3} />
@@ -113,11 +142,24 @@ export const LoginCallbackPage = (): JSX.Element => {
             />
           ))
         )}
-        <Link as={ReactLink} to={LOGIN_ROUTE}>
+
+        {profilesResponse.data?.profiles.map((profile) => (
+          <ProfileItem
+            profile={profile}
+            key={profile.workEmail}
+            onClick={() => handleSetProfile(profile)}
+          />
+        ))}
+        <Link
+          marginTop="0.5rem"
+          textStyle="caption-1"
+          as={ReactLink}
+          to={LOGIN_ROUTE}
+        >
           Or, login manually using email and OTP
         </Link>
       </Stack>
-      <ErrorDisclosure {...errorDisclosure} />
+      <ErrorDisclosure {...errorDisclosure} errorMessages={errorContext} />
     </Flex>
   )
 }
@@ -134,23 +176,25 @@ const ProfileItem = ({
       <Box>
         <Text
           textStyle="subhead-2"
-          color="content.strong"
+          color="secondary.700"
           marginBottom="0.25rem"
         >
           {profile.workEmail}
         </Text>
         <Text
           textStyle="caption-2"
-          color="content.medium"
+          color="secondary.400"
           marginBottom="0.25rem"
         >
           {[profile.agencyName, profile.departmentName].join(', ')}
         </Text>
-        <Text textStyle="caption-2" color="content.medium">
+        <Text textStyle="caption-2" color="secondary.400">
           {profile.employmentTitle}
         </Text>
       </Box>
-      <BiChevronRight fontSize="1.5rem" />
+      <Box marginLeft="0.5rem">
+        <BiChevronRight fontSize="1.5rem" />
+      </Box>
     </Flex>
   )
 }
