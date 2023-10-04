@@ -114,8 +114,18 @@ export class SGIDMyInfoData
   }
 
   /**
-   * Refer to the myInfo data catalogue to see which fields should be read-only
-   * and which fields should be editable by the user.
+   * SGID only returns verified MyInfo fields, unless the field contains marriage-related information
+   * (decision by SNDGO & MSF due to overseas unregistered marriages).
+   * An empty myInfo field will always evaluate
+   * to false so that the field can be filled by form-filler.
+   *
+   * The affected marriage fields are:
+   * - marital
+   * - marriagedate
+   * - divorcedate
+   * - countryofmarriage
+   * - marriagecertno
+   *
    * @param attr sgID MyInfo OAuth scope.
    * @param fieldValue FormSG field value.
    * @returns Whether the data/field should be readonly.
@@ -137,6 +147,8 @@ export class SGIDMyInfoData
       case ExternalAttr.HousingType:
       case ExternalAttr.HdbType:
         return !!data
+      // Fields required to always be editable according to MyInfo docs
+      // case ExternalAttr.MaritalStatus:
       // Fall back to leaving field editable as data shape is unknown.
       default:
         return false
@@ -161,7 +173,7 @@ export class SGIDMyInfoData
     const fieldValue = this._formatFieldValue(externalAttr)
     return {
       fieldValue,
-      isReadOnly: true,
+      isReadOnly: this._isDataReadOnly(externalAttr, fieldValue),
     }
   }
 }
