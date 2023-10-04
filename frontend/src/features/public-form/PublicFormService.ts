@@ -453,18 +453,12 @@ export const submitFormIssue = async (
   ).then(({ data }) => data)
 }
 
-/**
- * Get presigned post data for attachments.
- * @returns presigned post data for attachments.
- */
-export const getAttachmentPresignedPostData = async ({
+export const getAttachmentSizes = async ({
   formFields,
   formInputs,
-  formId,
 }: {
   formFields: FormFieldDto[]
   formInputs: FormFieldValues
-  formId: string
 }) => {
   const attachmentsMap = getAttachmentsMap(formFields, formInputs)
   const attachmentSizes: AttachmentSizeMapType[] = []
@@ -474,7 +468,20 @@ export const getAttachmentPresignedPostData = async ({
     if (!isValidObjectId) throw new Error(`Invalid attachment id: ${id}`) // TODO: better error message?
     attachmentSizes.push({ id, size: attachmentsMap[id].size })
   }
+  return attachmentSizes
+}
 
+/**
+ * Get presigned post data for attachments.
+ * @returns presigned post data for attachments.
+ */
+export const getAttachmentPresignedPostData = async ({
+  attachmentSizes,
+  formId,
+}: {
+  attachmentSizes: AttachmentSizeMapType[]
+  formId: string
+}) => {
   return ApiService.post<AttachmentPresignedPostDataMapType[]>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/storage/get-s3-presigned-post-data`,
     attachmentSizes,

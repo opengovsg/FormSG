@@ -12,6 +12,7 @@ import { useStorePrefillQuery } from './hooks/useStorePrefillQuery'
 import {
   FieldIdToQuarantineKeyType,
   getAttachmentPresignedPostData,
+  getAttachmentSizes,
   getPublicFormAuthRedirectUrl,
   logoutPublicForm,
   SubmitEmailFormArgs,
@@ -123,10 +124,19 @@ export const usePublicFormMutations = (
   )
 
   const submitStorageModeClearFormWithVirusScanningMutation = useMutation(
-    (args: Omit<SubmitStorageFormClearArgs, 'formId'>) => {
+    async (args: Omit<SubmitStorageFormClearArgs, 'formId'>) => {
+      const attachmentSizes = await getAttachmentSizes(args)
+      // If there are no attachments, submit form without virus scanning by passing in empty list
+      if (attachmentSizes.length === 0) {
+        return submitStorageModeClearFormWithVirusScanning({
+          ...args,
+          fieldIdToQuarantineKeyMap: [],
+          formId,
+        })
+      }
       // Step 1: Get presigned post data for all attachment fields
       return (
-        getAttachmentPresignedPostData({ ...args, formId })
+        getAttachmentPresignedPostData({ ...args, formId, attachmentSizes })
           .then(
             // Step 2: Upload attachments to quarantine bucket asynchronously
             (fieldToPresignedPostDataMap) =>
