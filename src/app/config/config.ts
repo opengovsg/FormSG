@@ -104,7 +104,6 @@ const awsConfig: AwsConfig = {
   ...basicVars.awsConfig,
   s3,
   virusScannerLambda,
-  // virusScannerQuarantineS3Bucket: 'dud',
 }
 
 let dbUri: string | undefined
