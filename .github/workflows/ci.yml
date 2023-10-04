@@ -156,7 +156,9 @@ jobs:
       - run: npm ci --prefix serverless/virus-scanner
       - run: npm run test:backend:ci
         env:
-          NODE_OPTIONS: '--max-old-space-size=4096'
+          # https://nodejs.org/api/cli.html#--max-old-space-sizesize-in-megabytes
+          # Recommends to be 3/4 of available memory, our runner has 7GB of memory and 0.75 * 1024 maps to 5376MB
+          NODE_OPTIONS: '--max-old-space-size=5376'
       - name: Coveralls
         uses: coverallsapp/github-action@master
         with:
