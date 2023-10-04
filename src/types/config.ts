@@ -205,7 +205,6 @@ export interface IBucketUrlSchema {
   imageBucketUrl: string
   staticAssetsBucketUrl: string
   virusScannerQuarantineS3BucketUrl: string
-  virusScannerCleanS3BucketUrl: string
   paymentProofS3BucketUrl: string
   endPoint: string
 }
