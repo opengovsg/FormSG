@@ -259,10 +259,10 @@ const syncVirusScanning = async (
     if (isQuarantinedAttachmentResponse(response)) {
       // await to pause for...of loop until the virus scanning and downloading of clean file is completed.
       results.push(await triggerVirusScanThenDownloadCleanFileChain(response))
+    } else {
+      // If field is not an attachment, return original response.
+      results.push(ok(response))
     }
-
-    // If field is not an attachment, return original response.
-    results.push(ok(response))
   }
   return results
 }
