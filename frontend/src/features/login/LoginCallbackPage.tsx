@@ -143,13 +143,6 @@ export const LoginCallbackPage = (): JSX.Element => {
           ))
         )}
 
-        {profilesResponse.data?.profiles.map((profile) => (
-          <ProfileItem
-            profile={profile}
-            key={profile.workEmail}
-            onClick={() => handleSetProfile(profile)}
-          />
-        ))}
         <Link
           marginTop="0.5rem"
           textStyle="caption-1"
