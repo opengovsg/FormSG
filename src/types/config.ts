@@ -38,6 +38,7 @@ export type AwsConfig = {
   imageBucketUrl: string
   attachmentBucketUrl: string
   staticAssetsBucketUrl: string
+  virusScannerQuarantineS3BucketUrl: string
   virusScannerQuarantineS3Bucket: string
   virusScannerCleanS3Bucket: string
   s3: aws.S3
