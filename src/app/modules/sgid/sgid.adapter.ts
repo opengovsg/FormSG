@@ -7,6 +7,7 @@ import {
   SGID_MYINFO_NRIC_NUMBER_SCOPE,
   SGIDScope as ExternalAttr,
 } from './sgid.constants'
+import { formatAddress } from './sgid.format'
 import { SGIDScopeToValue } from './sgid.types'
 
 export const internalAttrToScope = (attr: InternalAttr): ExternalAttr => {
@@ -103,8 +104,13 @@ export class SGIDMyInfoData
    * @returns the formatted field.
    */
   _formatFieldValue(attr: ExternalAttr): string | undefined {
-    console.log('sgid payload: ', this.#payload)
-    return this.#payload[attr]
+    console.log('sgid payload attr: ', this.#payload[attr])
+    switch (attr) {
+      case ExternalAttr.RegisteredAddress:
+        return formatAddress(this.#payload[attr])
+      default:
+        return this.#payload[attr]
+    }
   }
 
   /**
