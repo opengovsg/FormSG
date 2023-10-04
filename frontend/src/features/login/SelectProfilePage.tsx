@@ -84,7 +84,7 @@ const ErrorDisclosure = (
     </Modal>
   )
 }
-export const LoginCallbackPage = (): JSX.Element => {
+export const SelectProfilePage = (): JSX.Element => {
   const profilesResponse = useSgidProfiles()
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const { user } = useUser()

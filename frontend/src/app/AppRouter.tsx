@@ -36,7 +36,7 @@ import {
   ResponsesPage,
 } from '~features/admin-form/responses'
 import { SettingsPage } from '~features/admin-form/settings/SettingsPage'
-import { LoginCallbackPage } from '~features/login'
+import { SelectProfilePage } from '~features/login'
 import { FormPaymentPage } from '~features/public-form/components/FormPaymentPage/FormPaymentPage'
 import { BillingPage } from '~features/user/billing'
 
@@ -102,7 +102,7 @@ export const AppRouter = (): JSX.Element => {
         />
         <Route
           path={LOGIN_CALLBACK_ROUTE}
-          element={<PublicElement strict element={<LoginCallbackPage />} />}
+          element={<PublicElement strict element={<SelectProfilePage />} />}
         />
         <Route
           path={PRIVACY_POLICY_ROUTE}
