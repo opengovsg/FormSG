@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { compact } from 'lodash'
 
+import { MYINFO_ATTRIBUTE_MAP } from '../../../../../shared/constants/field/myinfo'
 import {
   BasicField,
   FormAuthType,
@@ -86,7 +87,6 @@ import {
 
 import {
   ATTACHMENT_PREFIX,
-  CHILD_PREFIX,
   MYINFO_PREFIX,
   TABLE_PREFIX,
   VERIFIED_PREFIX,
@@ -137,8 +137,6 @@ const getFieldTypePrefix = (response: ResponseFormattedForEmail): string => {
       return TABLE_PREFIX
     case BasicField.Attachment:
       return ATTACHMENT_PREFIX
-    case BasicField.Children:
-      return CHILD_PREFIX
     default:
       return ''
   }
@@ -220,28 +218,37 @@ export const getAnswersForChild = (
   response: ProcessedChildrenResponse,
 ): ResponseFormattedForEmail[] => {
   const subFields = response.childSubFieldsArray
+  const qnChildIdx = response.childIdx ?? 0
   if (!subFields) {
     return []
   }
   return response.answerArray.flatMap((arr, childIdx) => {
     // First array element is always child name
     const childName = arr[0]
-    return arr.map((answer, idx) => ({
-      _id: getMyInfoChildHashKey(
-        response._id,
-        subFields[idx],
-        childIdx,
-        childName,
-      ),
-      fieldType: response.fieldType,
-      question: `Child.${subFields[idx]}`,
-      myInfo: {
-        attr: subFields[idx] as unknown as MyInfoAttribute,
-      },
-      isVisible: response.isVisible,
-      isUserVerified: response.isUserVerified,
-      answer,
-    }))
+    return arr.map((answer, idx) => {
+      const subfield = subFields[idx]
+      return {
+        _id: getMyInfoChildHashKey(
+          response._id,
+          subFields[idx],
+          childIdx,
+          childName,
+        ),
+        fieldType: response.fieldType,
+        // qnChildIdx represents the index of the MyInfo field
+        // childIdx represents the index of the child in this MyInfo field
+        // as there might be >1 child for each MyInfo child field if "Add another child" is used
+        question: `Child ${qnChildIdx + childIdx + 1} ${
+          MYINFO_ATTRIBUTE_MAP[subfield].description
+        }`,
+        myInfo: {
+          attr: subFields[idx] as unknown as MyInfoAttribute,
+        },
+        isVisible: response.isVisible,
+        isUserVerified: response.isUserVerified,
+        answer,
+      }
+    })
   })
 }
 

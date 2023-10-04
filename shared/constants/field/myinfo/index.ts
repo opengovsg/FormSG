@@ -318,6 +318,16 @@ export const types: MyInfoFieldBlock[] = [
     previewValue: 'Child 1',
   },
   {
+    name: MyInfoAttribute.ChildName,
+    value: "Child's name",
+    category: 'children',
+    verified: ['SG', 'PR', 'F'],
+    source: 'Immigration & Checkpoints Authority / Health Promotion Board',
+    description: 'Name',
+    fieldType: BasicField.Children,
+    previewValue: 'PHUA CHU KING',
+  },
+  {
     name: MyInfoAttribute.ChildBirthCertNo,
     value: "Child's birth certificte number",
     category: 'children',

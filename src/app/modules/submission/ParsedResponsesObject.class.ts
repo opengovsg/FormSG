@@ -130,6 +130,7 @@ export default class ParsedResponsesObject {
 
     // Validate each field in the form and inject metadata into the responses.
     const processedResponses = []
+    let childIdx = 0
     for (const response of filteredResponses) {
       const responseId = response._id
       const formField = fieldMap[responseId]
@@ -159,6 +160,15 @@ export default class ParsedResponsesObject {
             processingResponse as ProcessedChildrenResponse
           ).childSubFieldsArray =
             (formField as ChildrenCompoundFieldBase).childrenSubFields ?? []
+          ;(processingResponse as ProcessedChildrenResponse).childIdx = childIdx
+          // 1 MyInfo child field might contain more than 1 child, represented by the length of the answerArray
+          // This happens when the button "Add another child" is used to add >= 1 child
+          const noOfChildrenInQn =
+            (processingResponse as ProcessedChildrenResponse).answerArray
+              ?.length ?? 0
+          // We increment the childIdx by the number of children in the qn, instead of just 1
+          // to account for the case where the MyInfo child field contains more than 1 child
+          childIdx += noOfChildrenInQn
         }
       }
 
