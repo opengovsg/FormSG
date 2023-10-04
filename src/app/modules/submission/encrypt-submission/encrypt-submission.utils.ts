@@ -62,8 +62,10 @@ import {
 } from '../../spcp/spcp.errors'
 import { MissingUserError } from '../../user/user.errors'
 import {
+  AttachmentTooLargeError,
   ConflictError,
   InvalidEncodingError,
+  InvalidFileExtensionError,
   ProcessingError,
   ResponseModeError,
   SubmissionNotFoundError,
@@ -205,6 +207,8 @@ const errorMapper: MapRouteError = (
       }
     case ValidateFieldError:
     case DatabaseValidationError:
+    case InvalidFileExtensionError:
+    case AttachmentTooLargeError:
     case ProcessingError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,

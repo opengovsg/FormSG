@@ -20,6 +20,7 @@ import {
   IHomenoFieldSchema,
   IImageFieldSchema,
   IMobileFieldSchema,
+  INumberFieldSchema,
   IRatingFieldSchema,
   IShortTextFieldSchema,
   ITableFieldSchema,
@@ -165,6 +166,23 @@ export const generateDefaultField = (
         getQuestion: () => defaultParams.title,
         ...customParams,
       } as IDateFieldSchema
+    case BasicField.Number:
+      return {
+        ...defaultParams,
+        ValidationOptions: {
+          selectedValidation: null,
+          LengthValidationOptions: {
+            selectedLengthValidation: null,
+            customVal: null,
+          },
+          RangeValidationOptions: {
+            customMin: null,
+            customMax: null,
+          },
+        },
+        getQuestion: () => defaultParams.title,
+        ...customParams,
+      } as INumberFieldSchema
     default:
       return {
         ...defaultParams,

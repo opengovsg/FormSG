@@ -481,7 +481,6 @@ export const getMyInfoAttr = (
  * Helper function to get a MyInfo child's hash key inside an IHashes.
  *
  * @param fieldId The ID of the field the Child response belongs to.
- * @param childIdx The nth child to look for.
  * @returns An IHashes-compatible key.
  */
 export const getMyInfoChildHashKey = (

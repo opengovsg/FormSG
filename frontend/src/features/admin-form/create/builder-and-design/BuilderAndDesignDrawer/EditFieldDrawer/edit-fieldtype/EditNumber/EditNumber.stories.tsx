@@ -3,6 +3,7 @@ import { Meta, Story } from '@storybook/react'
 import {
   BasicField,
   NumberFieldBase,
+  NumberSelectedLengthValidation,
   NumberSelectedValidation,
 } from '~shared/types'
 
@@ -14,8 +15,15 @@ const DEFAULT_NUMBER_FIELD: NumberFieldBase = {
   title: 'Storybook Number',
   description: 'Some description',
   ValidationOptions: {
-    customVal: null,
     selectedValidation: null,
+    LengthValidationOptions: {
+      selectedLengthValidation: null,
+      customVal: null,
+    },
+    RangeValidationOptions: {
+      customMin: null,
+      customMax: null,
+    },
   },
   required: true,
   disabled: false,
@@ -60,8 +68,15 @@ WithCustomVal.args = {
   field: {
     ...DEFAULT_NUMBER_FIELD,
     ValidationOptions: {
-      customVal: 3,
-      selectedValidation: NumberSelectedValidation.Exact,
+      selectedValidation: NumberSelectedValidation.Length,
+      LengthValidationOptions: {
+        selectedLengthValidation: NumberSelectedLengthValidation.Exact,
+        customVal: 3,
+      },
+      RangeValidationOptions: {
+        customMin: null,
+        customMax: null,
+      },
     },
   },
 }
