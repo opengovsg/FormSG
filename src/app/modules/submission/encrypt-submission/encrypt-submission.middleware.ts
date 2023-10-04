@@ -38,6 +38,7 @@ import {
   DownloadCleanFileFailedError,
   EncryptedPayloadExistsError,
   FormsgReqBodyExistsError,
+  MaliciousFileDetectedError,
   VirusScanFailedError,
 } from './encrypt-submission.errors'
 import {
@@ -198,10 +199,17 @@ const triggerVirusScanThenDownloadCleanFileChain = (
   response: ParsedClearAttachmentResponse,
 ): ResultAsync<
   ParsedClearAttachmentResponse,
-  VirusScanFailedError | DownloadCleanFileFailedError
+  | VirusScanFailedError
+  | DownloadCleanFileFailedError
+  | MaliciousFileDetectedError
 > =>
   // Step 3: Trigger lambda to scan attachments.
   triggerVirusScanning(response.answer)
+    .mapErr((error) => {
+      if (error instanceof MaliciousFileDetectedError)
+        return new MaliciousFileDetectedError(response.filename)
+      return error
+    })
     .map((lambdaOutput) => lambdaOutput.body)
     // Step 4: Retrieve attachments from the clean bucket.
     .andThen((cleanAttachment) =>
@@ -226,7 +234,9 @@ const asyncVirusScanning = (
   responses: ParsedClearFormFieldResponse[],
 ): ResultAsync<
   ParsedClearFormFieldResponse,
-  VirusScanFailedError | DownloadCleanFileFailedError
+  | VirusScanFailedError
+  | DownloadCleanFileFailedError
+  | MaliciousFileDetectedError
 >[] => {
   return responses.map((response) => {
     if (isQuarantinedAttachmentResponse(response)) {
@@ -248,7 +258,9 @@ const devModeSyncVirusScanning = async (
 ): Promise<
   Result<
     ParsedClearFormFieldResponse,
-    VirusScanFailedError | DownloadCleanFileFailedError
+    | VirusScanFailedError
+    | DownloadCleanFileFailedError
+    | MaliciousFileDetectedError
   >[]
 > => {
   const results: Result<
@@ -316,7 +328,9 @@ export const scanAndRetrieveAttachments = async (
   // Step 3 + 4: For each attachment, trigger lambda to scan and if it succeeds, retrieve attachment from clean bucket. Do this asynchronously.
   const scanAndRetrieveFilesResult: Result<
     ParsedClearFormFieldResponse[], // true for attachment fields, false for non-attachment fields.
-    VirusScanFailedError | DownloadCleanFileFailedError
+    | VirusScanFailedError
+    | DownloadCleanFileFailedError
+    | MaliciousFileDetectedError
   > =
     // On the local development environment, there is only 1 lambda and the virus scanning service WILL CRASH if multiple lambda invocations are
     // attempted at the same time. Reference: https://www.notion.so/opengov/Encryption-Boundary-Shift-the-journey-so-far-dfc6e15fc65f45eba3dd6a9af48eebea?pvs=4#d0944ba61aad45ce988ed0474f131e59

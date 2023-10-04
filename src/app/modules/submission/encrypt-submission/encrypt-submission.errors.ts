@@ -83,9 +83,11 @@ export class ParseVirusScannerLambdaPayloadError extends ApplicationError {
 }
 
 export class MaliciousFileDetectedError extends ApplicationError {
-  constructor(
-    message = 'Your attachment(s) has failed our virus scan. Try creating and uploading it again.',
-  ) {
-    super(message)
+  constructor(filename?: string) {
+    super(
+      `Your ${
+        filename ? `file "${filename}"` : 'attachments(s)'
+      } has failed our virus scan. Try to create and upload it again.`,
+    )
   }
 }

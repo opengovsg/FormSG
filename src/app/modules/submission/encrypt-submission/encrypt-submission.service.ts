@@ -728,7 +728,10 @@ const parseVirusScannerLambdaPayload = (
  */
 export const triggerVirusScanning = (
   quarantineFileKey: string,
-): ResultAsync<ParseVirusScannerLambdaPayloadOkType, VirusScanFailedError> => {
+): ResultAsync<
+  ParseVirusScannerLambdaPayloadOkType,
+  VirusScanFailedError | MaliciousFileDetectedError
+> => {
   const logMeta = {
     action: 'triggerVirusScanning',
     quarantineFileKey,
