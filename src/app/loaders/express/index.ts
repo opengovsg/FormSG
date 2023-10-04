@@ -119,14 +119,16 @@ const loadExpressApp = async (connection: Connection) => {
   // API routes
   app.use('/api', ApiRouter)
 
-  app.get('/.well-known', catchNonExistentStaticRoutesMiddleware)
   // serve static assets. `dist/frontend` contains the root files as well as a `/static` folder
   // express.static calls next() if the file is not found
   app.use(express.static(path.resolve('dist/frontend'), { index: false }))
 
   // If requests for known static asset patterns were not served by
   // the static handlers above, middleware should try to fetch from s3 static bucket or else return 404s
-  app.get(/^\/(public|static)\//, catchNonExistentStaticRoutesMiddleware)
+  app.get(
+    /^\/(public|static|\.well-known)\//,
+    catchNonExistentStaticRoutesMiddleware,
+  )
 
   // Requests for root files (e.g. /robots.txt or /favicon.ico) that were
   // not served statically above will also return 404
