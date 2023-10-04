@@ -48,6 +48,13 @@ export const generateAuthUrl: ControllerHandler<
     })
 }
 
+/**
+ * Handler for GET /api/v3/auth/sgid/login/callback endpoint.
+ *
+ * @return 200 with redirect to frontend /login/callback if there are no errors
+ * @return 400 when code or state is not provided, or state is incorrect
+ * @return 500 when processing the code verifier cookie fails, or when an unknown error occurs
+ */
 export const handleLoginCallback: ControllerHandler<
   unknown,
   ErrorDto | undefined,
@@ -126,6 +133,13 @@ export const handleLoginCallback: ControllerHandler<
     })
 }
 
+/**
+ * Handler for GET /api/v3/auth/sgid/profiles endpoint.
+ *
+ * @return 200 with list of profiles
+ * @return 400 when session or profile is invalid
+ * @return 401 when session has expired
+ */
 export const getProfiles: ControllerHandler<
   unknown,
   SgidProfilesDto,
@@ -165,6 +179,14 @@ export const getProfiles: ControllerHandler<
     .json({ profiles: req.session.sgid.profiles })
 }
 
+/**
+ * Handler for POST /api/v3/auth/sgid/profiles endpoint.
+ *
+ * @return 200 when OTP has been been successfully sent
+ * @return 400 when session, profile, or workEmail is invalid
+ * @return 401 when email domain is not whitelisted
+ * @return 500 when unknown errors occurs during email validation, or creating the new account
+ */
 export const setProfile: ControllerHandler<
   unknown,
   { message: string } | ErrorDto,
@@ -194,6 +216,8 @@ export const setProfile: ControllerHandler<
     })
     return res.status(StatusCodes.BAD_REQUEST).json({ message })
   }
+
+  return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Unauthorized' })
 
   const selectedProfile = req.session.sgid.profiles.find(
     (profile) => profile.workEmail === req.body.workEmail,
