@@ -19,12 +19,14 @@ import {
   UseDisclosureReturn,
 } from '@chakra-ui/react'
 
+import { SUPPORT_FORM_LINK } from '~shared/constants'
 import { SgidPublicOfficerEmployment } from '~shared/types/auth'
 
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { DASHBOARD_ROUTE, LOGIN_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useLocalStorage } from '~hooks/useLocalStorage'
+import { useToast } from '~hooks/useToast'
 import { ApiService } from '~services/ApiService'
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
@@ -33,25 +35,41 @@ import { useUser } from '~features/user/queries'
 
 import { SGID_PROFILES_ENDPOINT, useSgidProfiles } from './queries'
 
+type ErrorDisclosureProps = Pick<UseDisclosureReturn, 'onClose' | 'isOpen'>
 type ModalErrorMessages = {
+  hideCloseButton?: boolean
   header: string
-  body: string
+  body: string | (() => React.ReactElement)
   cta: string
+  onCtaClick: (disclosureProps: ErrorDisclosureProps) => void
 }
 
 const MODAL_ERRORS: Record<string, ModalErrorMessages> = {
   NO_WORKEMAIL: {
+    hideCloseButton: true,
     header: "Singpass login isn't available to you yet",
     body: 'It is progressively being made available to organisations. In the meantime, please log in using your email address.',
     cta: 'Back to login',
+    onCtaClick: () => window.location.assign(LOGIN_ROUTE),
   },
   INVALID_WORKEMAIL: {
     header: "You don't have access to this service",
-    body: 'It may be available only to select organisations or authorised individuals. If you believe you should have access to this service, please contact us.',
+    body: () => (
+      <Text>
+        It may be available only to select organisations or authorised
+        individuals. If you believe you should have access to this service,
+        please{' '}
+        <Link isExternal href={SUPPORT_FORM_LINK}>
+          contact us
+        </Link>
+        .
+      </Text>
+    ),
     cta: 'Choose another account',
+    onCtaClick: (disclosureProps) => disclosureProps.onClose(),
   },
 }
-type ErrorDisclosureProps = Pick<UseDisclosureReturn, 'onClose' | 'isOpen'>
+
 const ErrorDisclosure = (
   props: {
     errorMessages: ModalErrorMessages | undefined
@@ -61,23 +79,25 @@ const ErrorDisclosure = (
   if (!props.errorMessages) {
     return null
   }
+  const { errorMessages, ...disclosureProps } = props
+  const { onCtaClick, body, cta, hideCloseButton, header } = errorMessages
   return (
     <Modal isOpen={props.isOpen} onClose={() => props.onClose()}>
       <ModalOverlay />
       <ModalContent>
-        <ModalCloseButton />
-        <ModalHeader>{props.errorMessages.header}</ModalHeader>
+        {!hideCloseButton ? <ModalCloseButton /> : null}
+        <ModalHeader>{header}</ModalHeader>
         <ModalBody>
           <Stack>
-            <Text>{props.errorMessages.body}</Text>
+            {typeof body === 'function' ? body() : <Text>{body}</Text>}
           </Stack>
         </ModalBody>
         <ModalFooter>
           <Button
             isFullWidth={isMobile}
-            onClick={() => window.location.assign(LOGIN_ROUTE)}
+            onClick={() => onCtaClick(disclosureProps)}
           >
-            {props.errorMessages.cta}
+            {cta}
           </Button>
         </ModalFooter>
       </ModalContent>
@@ -93,6 +113,7 @@ export const SelectProfilePage = (): JSX.Element => {
   >()
 
   const errorDisclosure = useDisclosure()
+  const toast = useToast({ isClosable: true, status: 'danger' })
 
   // If redirected back here but already authed, redirect to dashboard.
   if (user) window.location.replace(DASHBOARD_ROUTE)
@@ -108,11 +129,22 @@ export const SelectProfilePage = (): JSX.Element => {
   }, [profilesResponse.data?.profiles.length])
 
   const handleSetProfile = async (profile: SgidPublicOfficerEmployment) => {
-    await ApiService.post<void>(SGID_PROFILES_ENDPOINT, {
+    ApiService.post<void>(SGID_PROFILES_ENDPOINT, {
       workEmail: profile.workEmail,
     })
-    window.location.assign(DASHBOARD_ROUTE)
-    setIsAuthenticated(true)
+      .then(() => {
+        window.location.assign(DASHBOARD_ROUTE)
+        setIsAuthenticated(true)
+      })
+      .catch((err) => {
+        console.log({ err })
+        if (err.code === 401) {
+          errorDisclosure.onOpen()
+          setErrorContext(MODAL_ERRORS.INVALID_WORKEMAIL)
+          return
+        }
+        toast({ description: 'Something went wrong. Please try again later.' })
+      })
   }
 
   return (
