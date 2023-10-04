@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Stack } from '@chakra-ui/react'
 
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
+import { useToast } from '~hooks/useToast'
 import { sendLoginOtp, verifyLoginOtp } from '~services/AuthService'
 
 import {
@@ -24,6 +26,27 @@ export const LoginPage = (): JSX.Element => {
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const [email, setEmail] = useState<string>()
   const [otpPrefix, setOtpPrefix] = useState<string>('')
+
+  const [params] = useSearchParams()
+  const toast = useToast({ isClosable: true, status: 'danger' })
+
+  const statusCode = params.get('status')
+  const toastMessage = useMemo(() => {
+    switch (statusCode) {
+      case null:
+      case '200':
+        return
+      case '401':
+        return 'Your sgID login session has expired. Please login again.'
+      default:
+        return 'Something went wrong. Please try again later.'
+    }
+  }, [statusCode])
+
+  useEffect(() => {
+    if (!toastMessage) return
+    toast({ description: toastMessage })
+  }, [toast, toastMessage])
 
   const handleSendOtp = async ({ email }: LoginFormInputs) => {
     const trimmedEmail = email.trim()
