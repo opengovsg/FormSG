@@ -283,6 +283,7 @@ export const submitStorageModeClearFormWithFetch = async ({
   return processFetchResponse(response)
 }
 
+// Submit storage mode form with virus scanning (storage v2.1+)
 export const submitStorageModeClearFormWithVirusScanning = async ({
   formFields,
   formLogics,
