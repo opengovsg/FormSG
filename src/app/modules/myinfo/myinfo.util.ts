@@ -44,12 +44,14 @@ import {
   FormAuthNoEsrvcIdError,
   FormNotFoundError,
 } from '../form/form.errors'
+import { SGIDMyInfoData } from '../sgid/sgid.adapter'
 import { SGID_MYINFO_LOGIN_COOKIE_NAME } from '../sgid/sgid.constants'
 import {
   ProcessedChildrenResponse,
   ProcessedFieldResponse,
 } from '../submission/submission.types'
 
+import { MyInfoData } from './myinfo.adapter'
 import { MYINFO_LOGIN_COOKIE_NAME } from './myinfo.constants'
 import {
   MyInfoCookieStateError,
@@ -542,7 +544,7 @@ export const handleMyInfoChildHashResponse = (
  */
 export const getMyInfoAttributeConstantsList = (
   myInfoAttr: string | string[],
-) => {
+): string[] | undefined => {
   switch (myInfoAttr) {
     case MyInfoAttribute.Occupation:
       return myInfoOccupations
@@ -576,8 +578,11 @@ export const logIfFieldValueNotInMyinfoList = (
   fieldValue: string,
   myInfoAttr: string | string[],
   myInfoList: string[],
+  myInfoData: MyInfoData | SGIDMyInfoData,
 ) => {
   const isFieldValueInMyinfoList = myInfoList.includes(fieldValue)
+  const myInfoSouce =
+    myInfoData instanceof MyInfoData ? 'Singpass MyInfo' : 'SGID MyInfo'
   if (!isFieldValueInMyinfoList) {
     logger.error({
       message: 'Myinfo field value not found in existing Myinfo constants list',
@@ -585,6 +590,7 @@ export const logIfFieldValueNotInMyinfoList = (
         action: 'prefillAndSaveMyInfoFields',
         myInfoFieldValue: fieldValue,
         myInfoAttr,
+        myInfoSouce,
       },
     })
   }
