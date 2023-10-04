@@ -3,7 +3,11 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
-import { BasicField, NumberSelectedValidation } from '~shared/types/field'
+import {
+  BasicField,
+  NumberSelectedLengthValidation,
+  NumberSelectedValidation,
+} from '~shared/types/field'
 
 import Button from '~components/Button'
 
@@ -37,8 +41,15 @@ const baseSchema: NumberFieldSchema = {
   disabled: false,
   fieldType: BasicField.Number,
   ValidationOptions: {
-    customVal: null,
     selectedValidation: null,
+    LengthValidationOptions: {
+      selectedLengthValidation: null,
+      customVal: null,
+    },
+    RangeValidationOptions: {
+      customMin: null,
+      customMax: null,
+    },
   },
   _id: '611b94dfbb9e300012f702a7',
   questionNumber: 1,
@@ -102,8 +113,15 @@ ValidationExact3Length.args = {
   schema: {
     ...baseSchema,
     ValidationOptions: {
-      customVal: 3,
-      selectedValidation: NumberSelectedValidation.Exact,
+      selectedValidation: NumberSelectedValidation.Length,
+      LengthValidationOptions: {
+        selectedLengthValidation: NumberSelectedLengthValidation.Exact,
+        customVal: 3,
+      },
+      RangeValidationOptions: {
+        customMin: null,
+        customMax: null,
+      },
     },
   },
   defaultValue: '1234',
@@ -113,8 +131,15 @@ ValidationMin6Length.args = {
   schema: {
     ...baseSchema,
     ValidationOptions: {
-      customVal: 6,
-      selectedValidation: NumberSelectedValidation.Min,
+      selectedValidation: NumberSelectedValidation.Length,
+      LengthValidationOptions: {
+        selectedLengthValidation: NumberSelectedLengthValidation.Min,
+        customVal: 6,
+      },
+      RangeValidationOptions: {
+        customMin: null,
+        customMax: null,
+      },
     },
   },
   defaultValue: '123',
@@ -125,8 +150,15 @@ ValidationMax1Length.args = {
   schema: {
     ...baseSchema,
     ValidationOptions: {
-      customVal: 1,
-      selectedValidation: NumberSelectedValidation.Max,
+      selectedValidation: NumberSelectedValidation.Length,
+      LengthValidationOptions: {
+        selectedLengthValidation: NumberSelectedLengthValidation.Max,
+        customVal: 1,
+      },
+      RangeValidationOptions: {
+        customMin: null,
+        customMax: null,
+      },
     },
   },
   defaultValue: '67574',

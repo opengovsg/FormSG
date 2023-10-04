@@ -93,7 +93,14 @@ const TEST_SUBMISSION_DISABLED_BY_CHAINED_LOGIC_FORMFIELDS: E2eFieldMetadata[] =
       fieldType: BasicField.Number,
       ValidationOptions: {
         selectedValidation: null,
-        customVal: null,
+        LengthValidationOptions: {
+          selectedLengthValidation: null,
+          customVal: null,
+        },
+        RangeValidationOptions: {
+          customMin: null,
+          customMax: null,
+        },
       },
       val: '10',
     },
