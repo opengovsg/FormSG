@@ -57,9 +57,7 @@ export class InvalidFileKeyError extends ApplicationError {
 }
 
 export class VirusScanFailedError extends ApplicationError {
-  constructor(
-    message = 'Your attachment(s) has failed our virus scan. Try creating and uploading it again.',
-  ) {
+  constructor(message = 'Virus scan failed. Please try again.') {
     super(message)
   }
 }
@@ -73,6 +71,20 @@ export class JsonParseFailedError extends ApplicationError {
 export class DownloadCleanFileFailedError extends ApplicationError {
   constructor(
     message = 'Attempt to download clean file failed. Please try again.',
+  ) {
+    super(message)
+  }
+}
+
+export class ParseVirusScannerLambdaPayloadError extends ApplicationError {
+  constructor(message = 'Unexpected payload from virus scanning lambda.') {
+    super(message)
+  }
+}
+
+export class MaliciousFileDetectedError extends ApplicationError {
+  constructor(
+    message = 'Your attachment(s) has failed our virus scan. Try creating and uploading it again.',
   ) {
     super(message)
   }

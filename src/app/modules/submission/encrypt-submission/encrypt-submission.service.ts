@@ -69,6 +69,8 @@ import {
   InvalidFieldIdError,
   InvalidFileKeyError,
   JsonParseFailedError,
+  MaliciousFileDetectedError,
+  ParseVirusScannerLambdaPayloadError,
   VirusScanFailedError,
 } from './encrypt-submission.errors'
 import {
@@ -593,14 +595,6 @@ export const getQuarantinePresignedPostData = (
   )
 }
 
-/**
- * Catch all error for parsing the payload from the virus scanning lambda.
- */
-const parseVirusScannerLambdaPayloadError = {
-  statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-  body: { message: 'Unexpected payload from virus scanning lambda' },
-}
-
 const safeJSONParse = Result.fromThrowable(JSON.parse, (error) => {
   logger.error({
     message: 'Error while calling JSON.parse on MyInfo relay state',
@@ -639,7 +633,7 @@ const parseVirusScannerLambdaPayload = (
       meta: logMeta,
     })
 
-    return err(parseVirusScannerLambdaPayloadError)
+    return err(new ParseVirusScannerLambdaPayloadError())
   }
 
   const parsedPayload = payloadIsExpectedStructure(parsedPayloadResult.value)
@@ -657,7 +651,7 @@ const parseVirusScannerLambdaPayload = (
         meta: logMeta,
       })
 
-      return err(parseVirusScannerLambdaPayloadError)
+      return err(new ParseVirusScannerLambdaPayloadError())
     }
 
     // Step 4a: If statusCode is 200, check if the body is of the correct type
@@ -687,7 +681,7 @@ const parseVirusScannerLambdaPayload = (
         meta: logMeta,
       })
 
-      return err(parseVirusScannerLambdaPayloadError)
+      return err(new ParseVirusScannerLambdaPayloadError())
     }
 
     // Step 4b: If statusCode is not 200, check if the body is of the correct type (errored message)
@@ -699,6 +693,7 @@ const parseVirusScannerLambdaPayload = (
         meta: logMeta,
       })
 
+      // Only place where error from virus scanning lambda is returned
       return err({
         statusCode: parsedPayload.statusCode,
         body: parsedBody,
@@ -711,7 +706,7 @@ const parseVirusScannerLambdaPayload = (
       meta: logMeta,
     })
 
-    return err(parseVirusScannerLambdaPayloadError)
+    return err(new ParseVirusScannerLambdaPayloadError())
   }
 
   // Step 2b: Return error if statusCode and body (unparsed) are of the wrong types
@@ -722,7 +717,7 @@ const parseVirusScannerLambdaPayload = (
     meta: logMeta,
   })
 
-  return err(parseVirusScannerLambdaPayloadError)
+  return err(new ParseVirusScannerLambdaPayloadError())
 }
 
 /**
@@ -769,23 +764,23 @@ export const triggerVirusScanning = (
           message:
             'Error returned from virus scanning lambda or parsing lambda output',
           meta: logMeta,
-          error,
+          error: error,
         })
 
-        return new VirusScanFailedError()
+        if (error instanceof ParseVirusScannerLambdaPayloadError) return error
+        else if (error.statusCode !== StatusCodes.BAD_REQUEST)
+          return new VirusScanFailedError()
+
+        return new MaliciousFileDetectedError()
       })
 
     // if data or data.Payload is undefined
     logger.error({
       message: 'data or data.Payload from virus scanner lambda is undefined',
       meta: logMeta,
-      error: {
-        statusCode: parseVirusScannerLambdaPayloadError.statusCode,
-        message: parseVirusScannerLambdaPayloadError.body.message,
-      },
     })
 
-    return errAsync(new VirusScanFailedError())
+    return errAsync(new ParseVirusScannerLambdaPayloadError())
   })
 }
 

@@ -15,6 +15,8 @@ import {
 } from '../../../../types/api'
 import { ControllerHandler } from '../../core/core.types'
 
+import { ParseVirusScannerLambdaPayloadError } from './encrypt-submission.errors'
+
 export type AttachmentMetadata = Map<string, string>
 
 export type SaveEncryptSubmissionParams = {
@@ -94,10 +96,12 @@ export type ParseVirusScannerLambdaPayloadErrBody = {
   message: string
 }
 
-export type ParseVirusScannerLambdaPayloadErrType = {
-  statusCode: number // custom status codes might be sent by the lambda
-  body: ParseVirusScannerLambdaPayloadErrBody
-}
+export type ParseVirusScannerLambdaPayloadErrType =
+  | {
+      statusCode: number // custom status codes might be sent by the lambda
+      body: ParseVirusScannerLambdaPayloadErrBody
+    }
+  | ParseVirusScannerLambdaPayloadError
 
 // Helper function to check if the payload is of the expected structure
 export const payloadIsExpectedStructure = (
