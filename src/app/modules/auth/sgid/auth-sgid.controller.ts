@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes'
 import { ErrorDto, GetSgidAuthUrlResponseDto } from 'shared/types'
 import { SgidProfilesDto } from 'shared/types/auth'
 
+import { resolveRedirectionUrl } from '../../../../app/utils/urls'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import { ControllerHandler } from '../../core/core.types'
@@ -74,7 +75,7 @@ export const handleLoginCallback: ControllerHandler<
     })
 
     const status = StatusCodes.BAD_REQUEST
-    res.redirect(`/login?status=${status}`)
+    res.redirect(resolveRedirectionUrl(`/login?status=${status}`))
     return
   }
   if (!codeVerifier) {
@@ -84,7 +85,7 @@ export const handleLoginCallback: ControllerHandler<
     })
 
     const status = StatusCodes.BAD_REQUEST
-    res.redirect(`/login?status=${status}`)
+    res.redirect(resolveRedirectionUrl(`/login?status=${status}`))
     return
   }
   if (!req.session) {
@@ -94,7 +95,7 @@ export const handleLoginCallback: ControllerHandler<
     })
 
     const status = StatusCodes.INTERNAL_SERVER_ERROR
-    res.redirect(`/login?status=${status}`)
+    res.redirect(resolveRedirectionUrl(`/login?status=${status}`))
     return
   }
 
@@ -106,7 +107,7 @@ export const handleLoginCallback: ControllerHandler<
       req.session.sgid = { profiles }
 
       // User needs to select profile that will be used for the login
-      res.redirect(`/login/select-profile`)
+      res.redirect(resolveRedirectionUrl(`/login/select-profile`))
       return
     })
     .mapErr((error) => {
@@ -118,7 +119,7 @@ export const handleLoginCallback: ControllerHandler<
 
       const { statusCode } = mapRouteError(error, coreErrorMessage)
 
-      res.redirect(`/login?status=${statusCode}`)
+      res.redirect(resolveRedirectionUrl(`/login?status=${statusCode}`))
       return
     })
 }
