@@ -243,7 +243,7 @@ const asyncVirusScanning = (
  * @param responses all responses in the storage submissions v2.1+ request.
  * @returns all responses with clean attachments and their filename populated for any attachment fields.
  */
-const syncVirusScanning = async (
+const devModeSyncVirusScanning = async (
   responses: ParsedClearFormFieldResponse[],
 ): Promise<
   Result<
@@ -318,7 +318,7 @@ export const scanAndRetrieveAttachments = async (
     // run the virus scanning asynchronously for better performance (lower latency).
     // Note on .combine: if any scans or downloads error out, it will short circuit and return the first error.
     isDev
-      ? Result.combine(await syncVirusScanning(req.body.responses))
+      ? Result.combine(await devModeSyncVirusScanning(req.body.responses))
       : await ResultAsync.combine(asyncVirusScanning(req.body.responses))
 
   if (scanAndRetrieveFilesResult.isErr()) {
