@@ -217,8 +217,6 @@ export const setProfile: ControllerHandler<
     return res.status(StatusCodes.BAD_REQUEST).json({ message })
   }
 
-  return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Unauthorized' })
-
   const selectedProfile = req.session.sgid.profiles.find(
     (profile) => profile.workEmail === req.body.workEmail,
   )
