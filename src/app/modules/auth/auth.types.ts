@@ -8,4 +8,5 @@ export type SgidSessionUser = IPopulatedUser & SgidUser
 
 export type SgidUser = {
   profiles: SgidPublicOfficerEmploymentList
+  expiry: number
 }

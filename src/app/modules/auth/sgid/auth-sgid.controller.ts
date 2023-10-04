@@ -104,7 +104,9 @@ export const handleLoginCallback: ControllerHandler<
       AuthSgidService.retrieveUserInfo(accessToken, sub),
     )
     .map((profiles) => {
-      req.session.sgid = { profiles }
+      // expire profiles after 5 minutes to avoid situations where login-jacking when
+      // the previous user navigated away without selecting a profile
+      req.session.sgid = { profiles, expiry: Date.now() + 1000 * 60 * 5 }
 
       // User needs to select profile that will be used for the login
       res.redirect(resolveRedirectionUrl(`/login/select-profile`))
@@ -147,6 +149,15 @@ export const getProfiles: ControllerHandler<
       meta: logMeta,
     })
     return res.status(StatusCodes.BAD_REQUEST).send()
+  }
+
+  if (req.session.sgid.expiry < Date.now()) {
+    logger.info({
+      message: 'Error logging in via sgID: session has expired',
+      meta: logMeta,
+    })
+    res.redirect(StatusCodes.UNAUTHORIZED, resolveRedirectionUrl(`/login`))
+    return
   }
 
   return res
