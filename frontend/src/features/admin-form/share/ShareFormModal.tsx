@@ -240,7 +240,7 @@ export const ShareFormModal = ({
       setGoLinkHelperText(getGoLinkClaimFailureHelperText(errMessage))
       return
     }
-  }, [user, claimGoLinkMutation, goLinkSuffixInput, formId])
+  }, [user, claimGoLinkMutation, goLinkSuffixInput])
 
   const FormLinkSection = () => (
     <FormControl isReadOnly>
