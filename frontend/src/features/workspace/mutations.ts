@@ -6,6 +6,7 @@ import { AdminFeedbackRating } from '~shared/types'
 import {
   CreateEmailFormBodyDto,
   CreateStorageFormBodyDto,
+  DuplicateFormBodyDto,
   FormDto,
 } from '~shared/types/form/form'
 
@@ -95,7 +96,7 @@ export const useDuplicateFormMutations = () => {
   const dupeEmailModeFormMutation = useMutation<
     FormDto,
     ApiError,
-    CreateEmailFormBodyDto & { formIdToDuplicate: string }
+    DuplicateFormBodyDto & { formIdToDuplicate: string }
   >(
     ({ formIdToDuplicate, ...params }) =>
       dupeEmailModeForm(formIdToDuplicate, params),
@@ -108,7 +109,7 @@ export const useDuplicateFormMutations = () => {
   const dupeStorageModeFormMutation = useMutation<
     FormDto,
     ApiError,
-    CreateStorageFormBodyDto & { formIdToDuplicate: string }
+    DuplicateFormBodyDto & { formIdToDuplicate: string }
   >(
     ({ formIdToDuplicate, ...params }) =>
       dupeStorageModeForm(formIdToDuplicate, params),

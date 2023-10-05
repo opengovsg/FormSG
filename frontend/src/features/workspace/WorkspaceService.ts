@@ -3,6 +3,7 @@ import {
   AdminDashboardFormMetaDto,
   CreateEmailFormBodyDto,
   CreateStorageFormBodyDto,
+  DuplicateFormBodyDto,
   FormDto,
 } from '~shared/types/form/form'
 import { WorkspaceDto } from '~shared/types/workspace'
@@ -95,7 +96,7 @@ export const createStorageModeForm = async (
 
 export const dupeEmailModeForm = async (
   formId: string,
-  body: CreateEmailFormBodyDto,
+  body: DuplicateFormBodyDto,
 ): Promise<FormDto> => {
   return ApiService.post<FormDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/duplicate`,
@@ -105,7 +106,7 @@ export const dupeEmailModeForm = async (
 
 export const dupeStorageModeForm = async (
   formId: string,
-  body: CreateStorageFormBodyDto,
+  body: DuplicateFormBodyDto,
 ): Promise<FormDto> => {
   return ApiService.post<FormDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/duplicate`,
