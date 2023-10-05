@@ -189,7 +189,7 @@ export const ShareFormModal = ({
   const [claimGoLoading, setClaimGoLoading] = useState(false)
 
   useEffect(() => {
-    if (goLinkSuffixData?.goLinkSuffix && formId) {
+    if (goLinkSuffixData?.goLinkSuffix) {
       setGoLinkSaved(true)
       setGoLinkSuffixInput(goLinkSuffixData?.goLinkSuffix ?? '')
       setGoLinkHelperText(goLinkClaimSuccessHelperText)
@@ -199,9 +199,9 @@ export const ShareFormModal = ({
       setGoLinkSuffixInput('')
       setGoLinkHelperText(undefined)
     }
-  }, [goLinkSuffixData?.goLinkSuffix, formId])
+  }, [goLinkSuffixData?.goLinkSuffix])
 
-  const { claimGoLinkMutation } = useListShortenerMutations()
+  const { claimGoLinkMutation } = useListShortenerMutations(formId ?? '')
 
   const [goLinkHelperText, setGoLinkHelperText] = useState<
     goLinkHelperTextType | undefined
@@ -214,7 +214,6 @@ export const ShareFormModal = ({
       setClaimGoLoading(true)
       await claimGoLinkMutation.mutateAsync({
         linkSuffix: goLinkSuffixInput,
-        formId: formId ?? '',
         adminEmail: user.email,
       })
       setClaimGoLoading(false)
