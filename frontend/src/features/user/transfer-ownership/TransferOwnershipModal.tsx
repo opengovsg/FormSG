@@ -59,14 +59,14 @@ const useModalState = ({ onClose, reset, trigger }) => {
     reset()
     trigger()
     onClose()
-  }, [page, email])
+  }, [reset, trigger, onClose])
 
   const onNext: SubmitHandler<TransferOwnershipInputs> = useCallback(
     ({ email }) => {
       setEmail(email)
       setPage(1)
     },
-    [page, email],
+    [],
   )
 
   const onConfirm = useCallback(() => {
@@ -80,7 +80,7 @@ const useModalState = ({ onClose, reset, trigger }) => {
         },
       },
     )
-  }, [page, email, user])
+  }, [user, transferOwnershipMutation, email, resetModal, refetch])
 
   useEffect(() => {
     trigger()
