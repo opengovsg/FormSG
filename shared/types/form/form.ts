@@ -269,7 +269,7 @@ export type AdminDashboardFormMetaDto = Pick<
   typeof ADMIN_FORM_META_FIELDS[number]
 >
 
-export type DuplicateFormBodyDto = {
+export type DuplicateFormOverwriteDto = {
   title: string
 } & (
   | {
@@ -281,6 +281,10 @@ export type DuplicateFormBodyDto = {
       publicKey: string
     }
 )
+
+export type DuplicateFormBodyDto = DuplicateFormOverwriteDto & {
+  workspaceId?: string
+}
 
 export type CreateEmailFormBodyDto = Pick<
   EmailFormDto,

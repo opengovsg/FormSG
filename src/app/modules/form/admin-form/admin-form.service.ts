@@ -18,7 +18,7 @@ import { MYINFO_ATTRIBUTE_MAP } from '../../../../../shared/constants/field/myin
 import {
   AdminDashboardFormMetaDto,
   BasicField,
-  DuplicateFormBodyDto,
+  DuplicateFormOverwriteDto,
   EndPageUpdateDto,
   FieldCreateDto,
   FieldUpdateDto,
@@ -579,7 +579,7 @@ export const processCreateFormInWorkspace = async (
 export const duplicateForm = (
   originalForm: IFormDocument,
   newAdminId: string,
-  overrideParams: DuplicateFormBodyDto,
+  overrideParams: DuplicateFormOverwriteDto,
   workspaceId?: string,
 ): ResultAsync<IFormDocument, FormNotFoundError | DatabaseError> => {
   const overrideProps = processDuplicateOverrideProps(

@@ -146,6 +146,7 @@ const createFormValidator = celebrate({
             is: FormResponseMode.Encrypt,
             then: Joi.string().required().disallow(''),
           }),
+        workspaceId: Joi.string(),
       })
       .required()
       // Allow other form schema keys to be passed for form creation.
@@ -156,7 +157,7 @@ const createFormValidator = celebrate({
 
 const duplicateFormValidator = celebrate({
   // uses CreateFormBodyDto as that is the shape of the data used in client's WorkspaceService
-  [Segments.BODY]: BaseJoi.object<CreateFormBodyDto>({
+  [Segments.BODY]: BaseJoi.object<DuplicateFormBodyDto>({
     // Require valid responsesMode field.
     responseMode: Joi.string()
       .valid(...Object.values(FormResponseMode))
@@ -182,7 +183,7 @@ const duplicateFormValidator = celebrate({
         is: FormResponseMode.Encrypt,
         then: Joi.string().required().disallow(''),
       }),
-    workspaceId: Joi.string().allow(''),
+    workspaceId: Joi.string(),
   }),
 })
 
@@ -860,7 +861,7 @@ export const handleArchiveForm: ControllerHandler<{ formId: string }> = async (
 export const duplicateAdminForm: ControllerHandler<
   { formId: string },
   unknown,
-  CreateFormBodyDto
+  DuplicateFormBodyDto
 > = (req, res) => {
   const { formId } = req.params
   const userId = (req.session as AuthedSessionData).user._id
