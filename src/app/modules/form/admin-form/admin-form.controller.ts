@@ -45,7 +45,7 @@ import {
   SubmissionCountQueryDto,
   WebhookSettingsUpdateDto,
 } from '../../../../../shared/types'
-import { IForm, IFormDocument, IPopulatedForm } from '../../../../types'
+import { IFormDocument, IPopulatedForm } from '../../../../types'
 import {
   EncryptSubmissionDto,
   FormUpdateParams,
@@ -116,7 +116,7 @@ const logger = createLoggerWithLabel(module)
 // Validators
 const createFormValidator = celebrate({
   [Segments.BODY]: {
-    form: BaseJoi.object<Omit<IForm, 'admin'>>()
+    form: BaseJoi.object<CreateFormBodyDto>()
       .keys({
         // Require valid responsesMode field.
         responseMode: Joi.string()
