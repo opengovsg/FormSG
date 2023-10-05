@@ -1,5 +1,17 @@
+import { PresignedPost } from 'aws-sdk/clients/s3'
+import axios from 'axios'
+
+import {
+  ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION,
+  VIRUS_SCANNER_SUBMISSION_VERSION,
+} from '~shared/constants'
 import { SubmitFormIssueBodyDto, SuccessMessageDto } from '~shared/types'
-import { FormFieldDto, PaymentFieldsDto } from '~shared/types/field'
+import {
+  AttachmentPresignedPostDataMapType,
+  AttachmentSizeMapType,
+  FormFieldDto,
+  PaymentFieldsDto,
+} from '~shared/types/field'
 import {
   ProductItem,
   PublicFormAuthLogoutDto,
@@ -26,15 +38,13 @@ import { FormFieldValues } from '~templates/Field'
 
 import {
   createClearSubmissionFormData,
+  createClearSubmissionWithVirusScanningFormData,
   createEncryptedSubmissionData,
+  getAttachmentsMap,
 } from './utils/createSubmission'
 import { filterHiddenInputs } from './utils/filterHiddenInputs'
 
 export const PUBLIC_FORMS_ENDPOINT = '/forms'
-
-// Encryption boundary shift RFC: https://docs.google.com/document/d/1VmNXS_xYY2Yg30AwVqzdndBp5yRJGSDsyjBnH51ktyc/edit?usp=sharing
-// Encryption boundary shift implementation PR: https://github.com/opengovsg/FormSG/pull/6587
-const ENCRYPTION_BOUNDARY_SHIFT_ENCRYPTION_VERSION = 2
 
 /**
  * Gets public view of form, along with any
@@ -102,6 +112,16 @@ export type SubmitStorageFormClearArgs = SubmitEmailFormArgs & {
   paymentProducts?: Array<ProductItem>
   payments?: PaymentFieldsDto
 }
+
+export type FieldIdToQuarantineKeyType = {
+  fieldId: string
+  quarantineBucketKey: string
+}
+
+export type SubmitStorageFormWithVirusScanningArgs =
+  SubmitStorageFormClearArgs & {
+    fieldIdToQuarantineKeyMap: FieldIdToQuarantineKeyType[]
+  }
 
 export const submitEmailModeForm = async ({
   formFields,
@@ -199,7 +219,7 @@ export const submitStorageModeClearForm = async ({
     paymentReceiptEmail,
     paymentProducts,
     payments,
-    version: ENCRYPTION_BOUNDARY_SHIFT_ENCRYPTION_VERSION,
+    version: ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION,
   })
 
   return ApiService.post<SubmissionResponseDto>(
@@ -240,7 +260,7 @@ export const submitStorageModeClearFormWithFetch = async ({
     paymentReceiptEmail,
     paymentProducts,
     payments,
-    version: ENCRYPTION_BOUNDARY_SHIFT_ENCRYPTION_VERSION,
+    version: ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION,
   })
 
   // Add captcha response to query string
@@ -261,6 +281,51 @@ export const submitStorageModeClearFormWithFetch = async ({
   )
 
   return processFetchResponse(response)
+}
+
+// Submit storage mode form with virus scanning (storage v2.1+)
+export const submitStorageModeClearFormWithVirusScanning = async ({
+  formFields,
+  formLogics,
+  formInputs,
+  formId,
+  captchaResponse = null,
+  captchaType = '',
+  paymentReceiptEmail,
+  responseMetadata,
+  paymentProducts,
+  payments,
+  fieldIdToQuarantineKeyMap,
+}: SubmitStorageFormWithVirusScanningArgs) => {
+  const filteredInputs = filterHiddenInputs({
+    formFields,
+    formInputs,
+    formLogics,
+  })
+
+  const formData = createClearSubmissionWithVirusScanningFormData(
+    {
+      formFields,
+      formInputs: filteredInputs,
+      responseMetadata,
+      paymentReceiptEmail,
+      paymentProducts,
+      payments,
+      version: VIRUS_SCANNER_SUBMISSION_VERSION,
+    },
+    fieldIdToQuarantineKeyMap,
+  )
+
+  return ApiService.post<SubmissionResponseDto>(
+    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/storage`,
+    formData,
+    {
+      params: {
+        captchaResponse: String(captchaResponse),
+        captchaType: captchaType,
+      },
+    },
+  ).then(({ data }) => data)
 }
 
 // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
@@ -386,4 +451,49 @@ export const submitFormIssue = async (
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/issue`,
     issueToPost,
   ).then(({ data }) => data)
+}
+
+export const getAttachmentSizes = async ({
+  formFields,
+  formInputs,
+}: {
+  formFields: FormFieldDto[]
+  formInputs: FormFieldValues
+}) => {
+  const attachmentsMap = getAttachmentsMap(formFields, formInputs)
+  const attachmentSizes: AttachmentSizeMapType[] = []
+  for (const id in attachmentsMap) {
+    // Check if id is a valid ObjectId. mongoose.isValidaObjectId cannot be used as it will throw a Reference Error.
+    const isValidObjectId = new RegExp(/^[0-9a-fA-F]{24}$/).test(id)
+    if (!isValidObjectId) throw new Error(`Invalid attachment id: ${id}`)
+    attachmentSizes.push({ id, size: attachmentsMap[id].size })
+  }
+  return attachmentSizes
+}
+
+/**
+ * Get presigned post data for attachments.
+ * @returns presigned post data for attachments.
+ */
+export const getAttachmentPresignedPostData = async ({
+  attachmentSizes,
+  formId,
+}: {
+  attachmentSizes: AttachmentSizeMapType[]
+  formId: string
+}) => {
+  return ApiService.post<AttachmentPresignedPostDataMapType[]>(
+    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/storage/get-s3-presigned-post-data`,
+    attachmentSizes,
+  ).then(({ data }) => data)
+}
+
+export const uploadAttachmentToQuarantine = async (
+  presignedPost: PresignedPost,
+  file: File,
+) => {
+  return await axios.postForm(presignedPost.url, {
+    ...presignedPost.fields,
+    file,
+  })
 }

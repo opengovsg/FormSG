@@ -38,6 +38,7 @@ export type AwsConfig = {
   imageBucketUrl: string
   attachmentBucketUrl: string
   staticAssetsBucketUrl: string
+  virusScannerQuarantineS3BucketUrl: string
   virusScannerQuarantineS3Bucket: string
   virusScannerCleanS3Bucket: string
   s3: aws.S3
@@ -204,7 +205,6 @@ export interface IBucketUrlSchema {
   imageBucketUrl: string
   staticAssetsBucketUrl: string
   virusScannerQuarantineS3BucketUrl: string
-  virusScannerCleanS3BucketUrl: string
   paymentProofS3BucketUrl: string
   endPoint: string
 }
