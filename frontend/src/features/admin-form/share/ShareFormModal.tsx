@@ -189,12 +189,17 @@ export const ShareFormModal = ({
   const [claimGoLoading, setClaimGoLoading] = useState(false)
 
   useEffect(() => {
-    if (goLinkSuffixData?.goLinkSuffix) {
+    if (goLinkSuffixData?.goLinkSuffix && formId) {
       setGoLinkSaved(true)
       setGoLinkSuffixInput(goLinkSuffixData?.goLinkSuffix ?? '')
       setGoLinkHelperText(goLinkClaimSuccessHelperText)
+    } else {
+      // if go link data do not exist for current form, reset the states
+      setGoLinkSaved(false)
+      setGoLinkSuffixInput('')
+      setGoLinkHelperText(undefined)
     }
-  }, [goLinkSuffixData?.goLinkSuffix])
+  }, [goLinkSuffixData?.goLinkSuffix, formId])
 
   const { claimGoLinkMutation } = useListShortenerMutations()
 
