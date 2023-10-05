@@ -73,7 +73,7 @@ export const MyInfoFieldPanel = () => {
   useEffect(() => {
     if (growthbook) {
       growthbook.setAttributes({
-        // Only update the `adminEmail` attribute, keep the rest the same
+        // Only update the `adminEmail` and `adminAgency` attributes, keep the rest the same
         ...growthbook.getAttributes(),
         adminEmail: user?.email,
         adminAgency: user?.agency,
@@ -89,18 +89,21 @@ export const MyInfoFieldPanel = () => {
       : SGID_SUPPORTED_V1
   }, [showNewSgidMyInfoFields])
 
-  const SGID_SUPPORTED: Set<MyInfoAttribute> = new Set(SGID_SUPPORTED_FINAL)
-
   /**
    * If sgID is used, checks if the corresponding
    * MyInfo field is supported by sgID.
    */
-  const sgIDUnSupported = (
-    form: AdminFormDto | undefined,
-    fieldType: MyInfoAttribute,
-  ): boolean =>
-    form?.authType === FormAuthType.SGID_MyInfo &&
-    !SGID_SUPPORTED.has(fieldType)
+  const sgIDUnSupported = useCallback(
+    (form: AdminFormDto | undefined, fieldType: MyInfoAttribute): boolean => {
+      const SGID_SUPPORTED: Set<MyInfoAttribute> = new Set(SGID_SUPPORTED_FINAL)
+
+      return (
+        form?.authType === FormAuthType.SGID_MyInfo &&
+        !SGID_SUPPORTED.has(fieldType)
+      )
+    },
+    [SGID_SUPPORTED_FINAL],
+  )
 
   // myInfo should be disabled if
   // 1. form response mode is not email mode
@@ -121,7 +124,7 @@ export const MyInfoFieldPanel = () => {
     (fieldType: MyInfoAttribute): boolean => {
       return isDisabled || sgIDUnSupported(form, fieldType)
     },
-    [form, isDisabled],
+    [form, isDisabled, sgIDUnSupported],
   )
 
   return (
