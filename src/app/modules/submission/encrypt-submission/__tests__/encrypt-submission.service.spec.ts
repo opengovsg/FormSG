@@ -34,6 +34,7 @@ import {
   DownloadCleanFileFailedError,
   InvalidFieldIdError,
   InvalidFileKeyError,
+  ParseVirusScannerLambdaPayloadError,
   VirusScanFailedError,
 } from '../encrypt-submission.errors'
 import {
@@ -1035,8 +1036,8 @@ describe('encrypt-submission.service', () => {
   })
 
   describe('getQuarantinePresignedPostData', () => {
-    const fieldId1 = new mongoose.Types.ObjectId()
-    const fieldId2 = new mongoose.Types.ObjectId()
+    const fieldId1 = new mongoose.Types.ObjectId().toHexString()
+    const fieldId2 = new mongoose.Types.ObjectId().toHexString()
     const MOCK_ATTACHMENT_SIZES = [
       { id: fieldId1, size: 1 },
       { id: fieldId2, size: 2 },
@@ -1131,7 +1132,7 @@ describe('encrypt-submission.service', () => {
 
       // Act
       const actualResult = await getQuarantinePresignedPostData([
-        { id: 'test_file_1' as unknown as ObjectId, size: 1 },
+        { id: 'test_file_1', size: 1 },
       ])
 
       // Assert
@@ -1213,7 +1214,7 @@ describe('encrypt-submission.service', () => {
       expect(awsSpy).toHaveBeenCalledOnce()
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new VirusScanFailedError(),
+        new ParseVirusScannerLambdaPayloadError(),
       )
     })
 
@@ -1232,7 +1233,7 @@ describe('encrypt-submission.service', () => {
       expect(awsSpy).toHaveBeenCalledOnce()
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new VirusScanFailedError(),
+        new ParseVirusScannerLambdaPayloadError(),
       )
     })
 
@@ -1280,7 +1281,7 @@ describe('encrypt-submission.service', () => {
       expect(awsSpy).toHaveBeenCalledOnce()
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new VirusScanFailedError(),
+        new ParseVirusScannerLambdaPayloadError(),
       )
     })
 
@@ -1305,7 +1306,7 @@ describe('encrypt-submission.service', () => {
       expect(awsSpy).toHaveBeenCalledOnce()
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new VirusScanFailedError(),
+        new ParseVirusScannerLambdaPayloadError(),
       )
     })
 
@@ -1330,7 +1331,7 @@ describe('encrypt-submission.service', () => {
       expect(awsSpy).toHaveBeenCalledOnce()
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new VirusScanFailedError(),
+        new ParseVirusScannerLambdaPayloadError(),
       )
     })
 
@@ -1355,7 +1356,7 @@ describe('encrypt-submission.service', () => {
       expect(awsSpy).toHaveBeenCalledOnce()
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new VirusScanFailedError(),
+        new ParseVirusScannerLambdaPayloadError(),
       )
     })
 
@@ -1383,7 +1384,7 @@ describe('encrypt-submission.service', () => {
       expect(awsSpy).toHaveBeenCalledOnce()
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new VirusScanFailedError(),
+        new ParseVirusScannerLambdaPayloadError(),
       )
     })
 
@@ -1411,14 +1412,14 @@ describe('encrypt-submission.service', () => {
       expect(awsSpy).toHaveBeenCalledOnce()
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new VirusScanFailedError(),
+        new ParseVirusScannerLambdaPayloadError(),
       )
     })
 
     it('should return errAsync if lambda returns an errored response (e.g. file not found)', async () => {
       // Arrange
       const failurePayload = {
-        statusCode: 200,
+        statusCode: 404,
         body: JSON.stringify({
           message: 'File not found',
         }),
@@ -1465,7 +1466,7 @@ describe('encrypt-submission.service', () => {
       expect(awsSpy).toHaveBeenCalledOnce()
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new VirusScanFailedError(),
+        new ParseVirusScannerLambdaPayloadError(),
       )
     })
   })
