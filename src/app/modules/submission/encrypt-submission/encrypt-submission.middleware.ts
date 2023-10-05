@@ -3,7 +3,7 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { chain, omit } from 'lodash'
-import { err, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import { ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { featureFlags } from '../../../../../shared/constants'
 import {
@@ -272,11 +272,8 @@ const devModeSyncVirusScanning = async (
       // await to pause for...of loop until the virus scanning and downloading of clean file is completed.
       const attachmentResponse =
         await triggerVirusScanThenDownloadCleanFileChain(response)
-      if (attachmentResponse.isErr()) {
-        results.push(err(attachmentResponse.error))
-        break
-      }
       results.push(attachmentResponse)
+      if (attachmentResponse.isErr()) break
     } else {
       // If field is not an attachment, return original response.
       results.push(ok(response))
