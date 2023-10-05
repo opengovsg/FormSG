@@ -72,6 +72,10 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
 
   const { activeWorkspace, isDefaultWorkspace } = useWorkspaceContext()
 
+  // do not mutate with workspaceId if it is 'All Forms' (default workspace)
+  // as the default workspace contains an empty string as workspaceId
+  const workspaceId = isDefaultWorkspace ? undefined : activeWorkspace._id
+
   const handleCreateStorageModeForm = handleSubmit(
     ({ title, responseMode }) => {
       if (responseMode !== FormResponseMode.Encrypt || !activeFormMeta?._id)
@@ -82,8 +86,7 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
         title,
         responseMode,
         publicKey: keypair.publicKey,
-        // do not mutate with workspaceId if it is 'All Forms'
-        workspaceId: isDefaultWorkspace ? undefined : activeWorkspace._id,
+        workspaceId,
       })
     },
   )
@@ -96,7 +99,7 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
         emails: inputs.emails.filter(Boolean),
         title: inputs.title,
         responseMode: inputs.responseMode,
-        workspaceId: activeWorkspace._id,
+        workspaceId,
       })
     }
     setCurrentStep([CreateFormFlowStates.Landing, 1])
