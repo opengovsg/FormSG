@@ -1,8 +1,10 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
 import { Link as ReactLink } from 'react-router-dom'
 import { Box, Text } from '@chakra-ui/react'
+import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 
+import { featureFlags } from '~shared/constants'
 import {
   AdminFormDto,
   FormAuthType,
@@ -35,35 +37,65 @@ import { DraggableMyInfoFieldListOption } from '../FieldListOption'
 
 import { FieldSection } from './FieldSection'
 
-const SGID_SUPPORTED: Set<MyInfoAttribute> = new Set([
+const SGID_SUPPORTED_V1 = [
   MyInfoAttribute.Name,
-  MyInfoAttribute.Sex,
   MyInfoAttribute.DateOfBirth,
-  MyInfoAttribute.Race,
-  MyInfoAttribute.Nationality,
-  MyInfoAttribute.HousingType,
-  MyInfoAttribute.HdbType,
   MyInfoAttribute.PassportNumber,
   MyInfoAttribute.PassportExpiryDate,
   // This is disabled due to MyInfo and sgID-MyInfo not using the same
   // phone number formats.
   // MyInfo phone numbers support country code, while sgID-MyInfo does not.
   // MyInfoAttribute.MobileNo,
+]
+const SGID_SUPPORTED_V2 = [
+  MyInfoAttribute.Sex,
+  MyInfoAttribute.Race,
+  MyInfoAttribute.Nationality,
+  MyInfoAttribute.HousingType,
+  MyInfoAttribute.HdbType,
   MyInfoAttribute.RegisteredAddress,
-])
-
-/**
- * If sgID is used, checks if the corresponding
- * MyInfo field is supported by sgID.
- */
-const sgIDUnSupported = (
-  form: AdminFormDto | undefined,
-  fieldType: MyInfoAttribute,
-): boolean =>
-  form?.authType === FormAuthType.SGID_MyInfo && !SGID_SUPPORTED.has(fieldType)
+]
 
 export const MyInfoFieldPanel = () => {
   const { data: form, isLoading } = useCreateTabForm()
+
+  const { user } = useUser()
+
+  // FRM-1444: Remove once rollout is 100% and stable
+  const growthbook = useGrowthBook()
+
+  useEffect(() => {
+    if (growthbook) {
+      growthbook.setAttributes({
+        // Only update the `adminEmail` attribute, keep the rest the same
+        ...growthbook.getAttributes(),
+        adminEmail: user?.email,
+        adminAgency: user?.agency,
+      })
+    }
+  }, [growthbook, user])
+
+  const showNewSgidMyInfoFields = useFeatureIsOn(featureFlags.myinfoSgid)
+
+  const SGID_SUPPORTED_FINAL = useMemo(() => {
+    return showNewSgidMyInfoFields
+      ? SGID_SUPPORTED_V1.concat(SGID_SUPPORTED_V2)
+      : SGID_SUPPORTED_V1
+  }, [showNewSgidMyInfoFields])
+
+  const SGID_SUPPORTED: Set<MyInfoAttribute> = new Set(SGID_SUPPORTED_FINAL)
+
+  /**
+   * If sgID is used, checks if the corresponding
+   * MyInfo field is supported by sgID.
+   */
+  const sgIDUnSupported = (
+    form: AdminFormDto | undefined,
+    fieldType: MyInfoAttribute,
+  ): boolean =>
+    form?.authType === FormAuthType.SGID_MyInfo &&
+    !SGID_SUPPORTED.has(fieldType)
+
   // myInfo should be disabled if
   // 1. form response mode is not email mode
   // 2. form auth type is not myInfo
@@ -85,7 +117,6 @@ export const MyInfoFieldPanel = () => {
     },
     [form, isDisabled],
   )
-  const { user } = useUser()
 
   return (
     <>
