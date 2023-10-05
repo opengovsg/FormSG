@@ -1,6 +1,4 @@
-import { PresignedPost } from 'aws-sdk/clients/s3'
 import { StatusCodes } from 'http-status-codes'
-import { ObjectId } from 'mongodb'
 
 import {
   SubmissionErrorDto,
@@ -16,6 +14,8 @@ import {
   ParsedStorageModeSubmissionBody,
 } from '../../../../types/api'
 import { ControllerHandler } from '../../core/core.types'
+
+import { ParseVirusScannerLambdaPayloadError } from './encrypt-submission.errors'
 
 export type AttachmentMetadata = Map<string, string>
 
@@ -77,16 +77,6 @@ export type SubmitEncryptModeFormHandlerType = ControllerHandler<
 export type SubmitEncryptModeFormHandlerRequest =
   Parameters<SubmitEncryptModeFormHandlerType>[0] & { formsg: FormCompleteDto }
 
-export type AttachmentSizeMapType = {
-  id: ObjectId
-  size: number
-}
-
-export type AttachmentPresignedPostDataMapType = {
-  id: ObjectId
-  presignedPostData: PresignedPost
-}
-
 export type ParseVirusScannerLambdaPayloadBeforeBodyIsParsed = {
   statusCode: number
   body: string
@@ -106,10 +96,12 @@ export type ParseVirusScannerLambdaPayloadErrBody = {
   message: string
 }
 
-export type ParseVirusScannerLambdaPayloadErrType = {
-  statusCode: number // custom status codes might be sent by the lambda
-  body: ParseVirusScannerLambdaPayloadErrBody
-}
+export type ParseVirusScannerLambdaPayloadErrType =
+  | {
+      statusCode: number // custom status codes might be sent by the lambda
+      body: ParseVirusScannerLambdaPayloadErrBody
+    }
+  | ParseVirusScannerLambdaPayloadError
 
 // Helper function to check if the payload is of the expected structure
 export const payloadIsExpectedStructure = (

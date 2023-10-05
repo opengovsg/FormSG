@@ -78,6 +78,7 @@ import {
   FeatureDisabledError,
   InvalidFieldIdError,
   InvalidFileKeyError,
+  MaliciousFileDetectedError,
   SubmissionFailedError,
   VirusScanFailedError,
 } from './encrypt-submission.errors'
@@ -236,6 +237,7 @@ const errorMapper: MapRouteError = (
     case InvalidFieldIdError:
     case AttachmentSizeLimitExceededError:
     case InvalidFileKeyError:
+    case MaliciousFileDetectedError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,

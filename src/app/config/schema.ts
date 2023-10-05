@@ -491,12 +491,6 @@ export const loadS3BucketUrlSchema = ({
         validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
       default: null,
     },
-    virusScannerCleanS3BucketUrl: {
-      doc: 'Url of virus scanner clean S3 bucket.',
-      format: (val) =>
-        validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
-      default: null,
-    },
     paymentProofS3BucketUrl: {
       doc: 'Url of payment proof S3 bucket.',
       format: (val) =>

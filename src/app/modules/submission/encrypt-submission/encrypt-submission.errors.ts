@@ -75,3 +75,19 @@ export class DownloadCleanFileFailedError extends ApplicationError {
     super(message)
   }
 }
+
+export class ParseVirusScannerLambdaPayloadError extends ApplicationError {
+  constructor(message = 'Unexpected payload from virus scanning lambda.') {
+    super(message)
+  }
+}
+
+export class MaliciousFileDetectedError extends ApplicationError {
+  constructor(filename?: string) {
+    super(
+      `Your ${
+        filename ? `file "${filename}"` : 'attachments(s)'
+      } has failed our virus scan. Try to create and upload it again.`,
+    )
+  }
+}

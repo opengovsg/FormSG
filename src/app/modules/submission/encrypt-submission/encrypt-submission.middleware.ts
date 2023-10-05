@@ -3,7 +3,7 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { chain, omit } from 'lodash'
-import { okAsync, Result, ResultAsync } from 'neverthrow'
+import { ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { featureFlags } from '../../../../../shared/constants'
 import {
@@ -15,8 +15,10 @@ import {
   EncryptAttachmentResponse,
   EncryptFormFieldResponse,
   FormLoadedDto,
+  ParsedClearAttachmentResponse,
   ParsedClearFormFieldResponse,
 } from '../../../../types/api'
+import { isDev } from '../../../config/config'
 import { paymentConfig } from '../../../config/features/payment.config'
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -36,6 +38,7 @@ import {
   DownloadCleanFileFailedError,
   EncryptedPayloadExistsError,
   FormsgReqBodyExistsError,
+  MaliciousFileDetectedError,
   VirusScanFailedError,
 } from './encrypt-submission.errors'
 import {
@@ -188,7 +191,98 @@ export const checkNewBoundaryEnabled = async (
 }
 
 /**
- * !! Do NOT enable `encryption-boundary-shift-virus-scanner` feature flag until this has been completely implemented. !!
+ * Helper function to trigger virus scanning and download clean file.
+ * @param response quarantined attachment response from storage submissions v2.1+.
+ * @returns modified response with content replaced with clean file buffer and answer replaced with filename.
+ */
+const triggerVirusScanThenDownloadCleanFileChain = (
+  response: ParsedClearAttachmentResponse,
+): ResultAsync<
+  ParsedClearAttachmentResponse,
+  | VirusScanFailedError
+  | DownloadCleanFileFailedError
+  | MaliciousFileDetectedError
+> =>
+  // Step 3: Trigger lambda to scan attachments.
+  triggerVirusScanning(response.answer)
+    .mapErr((error) => {
+      if (error instanceof MaliciousFileDetectedError)
+        return new MaliciousFileDetectedError(response.filename)
+      return error
+    })
+    .map((lambdaOutput) => lambdaOutput.body)
+    // Step 4: Retrieve attachments from the clean bucket.
+    .andThen((cleanAttachment) =>
+      // Retrieve attachment from clean bucket.
+      downloadCleanFile(
+        cleanAttachment.cleanFileKey,
+        cleanAttachment.destinationVersionId,
+      ).map((attachmentBuffer) => ({
+        ...response,
+        // Replace content with attachmentBuffer and answer with filename.
+        content: attachmentBuffer,
+        answer: response.filename,
+      })),
+    )
+
+/**
+ * Asynchronous virus scanning for storage submissions v2.1+. This is used for non-dev environments.
+ * @param responses all responses in the storage submissions v2.1+ request.
+ * @returns all responses with clean attachments and their filename populated for any attachment fields.
+ */
+const asyncVirusScanning = (
+  responses: ParsedClearFormFieldResponse[],
+): ResultAsync<
+  ParsedClearFormFieldResponse,
+  | VirusScanFailedError
+  | DownloadCleanFileFailedError
+  | MaliciousFileDetectedError
+>[] => {
+  return responses.map((response) => {
+    if (isQuarantinedAttachmentResponse(response)) {
+      return triggerVirusScanThenDownloadCleanFileChain(response)
+    }
+
+    // If field is not an attachment, return original response.
+    return okAsync(response)
+  })
+}
+
+/**
+ * Synchronous virus scanning for storage submissions v2.1+. This is used for dev environment.
+ * @param responses all responses in the storage submissions v2.1+ request.
+ * @returns all responses with clean attachments and their filename populated for any attachment fields.
+ */
+const devModeSyncVirusScanning = async (
+  responses: ParsedClearFormFieldResponse[],
+): Promise<
+  Result<
+    ParsedClearFormFieldResponse,
+    | VirusScanFailedError
+    | DownloadCleanFileFailedError
+    | MaliciousFileDetectedError
+  >[]
+> => {
+  const results: Result<
+    ParsedClearFormFieldResponse,
+    VirusScanFailedError | DownloadCleanFileFailedError
+  >[] = []
+  for (const response of responses) {
+    if (isQuarantinedAttachmentResponse(response)) {
+      // await to pause for...of loop until the virus scanning and downloading of clean file is completed.
+      const attachmentResponse =
+        await triggerVirusScanThenDownloadCleanFileChain(response)
+      results.push(attachmentResponse)
+      if (attachmentResponse.isErr()) break
+    } else {
+      // If field is not an attachment, return original response.
+      results.push(ok(response))
+    }
+  }
+  return results
+}
+
+/**
  * Scan attachments on quarantine bucket and retrieve attachments from the clean bucket.
  * Note: Downloading of attachments from the clean bucket is not implemented yet. See Step 4.
  */
@@ -231,35 +325,18 @@ export const scanAndRetrieveAttachments = async (
   // Step 3 + 4: For each attachment, trigger lambda to scan and if it succeeds, retrieve attachment from clean bucket. Do this asynchronously.
   const scanAndRetrieveFilesResult: Result<
     ParsedClearFormFieldResponse[], // true for attachment fields, false for non-attachment fields.
-    VirusScanFailedError | DownloadCleanFileFailedError
-  > = await ResultAsync.combine(
-    // If any scans or downloads error out, it will short circuit and return the first error.
-    req.body.responses.map((response) => {
-      if (isQuarantinedAttachmentResponse(response)) {
-        // Step 3: Trigger lambda to scan attachments.
-        return (
-          triggerVirusScanning(response.answer)
-            .map((lambdaOutput) => lambdaOutput.body)
-            // Step 4: Retrieve attachments from the clean bucket.
-            .andThen((cleanAttachment) =>
-              // Retrieve attachment from clean bucket.
-              downloadCleanFile(
-                cleanAttachment.cleanFileKey,
-                cleanAttachment.destinationVersionId,
-              ).map((attachmentBuffer) => ({
-                ...response,
-                // Replace content with attachmentBuffer and answer with filename.
-                content: attachmentBuffer,
-                answer: response.filename,
-              })),
-            )
-        )
-      }
-
-      // If field is not an attachment, return original response.
-      return okAsync(response)
-    }),
-  )
+    | VirusScanFailedError
+    | DownloadCleanFileFailedError
+    | MaliciousFileDetectedError
+  > =
+    // On the local development environment, there is only 1 lambda and the virus scanning service WILL CRASH if multiple lambda invocations are
+    // attempted at the same time. Reference: https://www.notion.so/opengov/Encryption-Boundary-Shift-the-journey-so-far-dfc6e15fc65f45eba3dd6a9af48eebea?pvs=4#d0944ba61aad45ce988ed0474f131e59
+    // As such, in dev mode, we want to run the virus scanning synchronously. In non-dev mode, as we'll be using the lambdas on AWS, we should
+    // run the virus scanning asynchronously for better performance (lower latency).
+    // Note on .combine: if any scans or downloads error out, it will short circuit and return the first error.
+    isDev
+      ? Result.combine(await devModeSyncVirusScanning(req.body.responses))
+      : await ResultAsync.combine(asyncVirusScanning(req.body.responses))
 
   if (scanAndRetrieveFilesResult.isErr()) {
     logger.error({

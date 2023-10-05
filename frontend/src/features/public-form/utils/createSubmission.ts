@@ -2,6 +2,7 @@ import { datadogLogs } from '@datadog/browser-logs'
 import { encode as encodeBase64 } from '@stablelib/base64'
 import { chain, forOwn, isEmpty, keyBy, omit, pick } from 'lodash'
 
+import { E2EE_SUBMISSION_VERSION } from '~shared/constants'
 import { ProductItem } from '~shared/types'
 import { BasicField, FormFieldDto, PaymentFieldsDto } from '~shared/types/field'
 import {
@@ -21,13 +22,10 @@ import fileArrayBuffer from '~/utils/fileArrayBuffer'
 import formsgSdk from '~utils/formSdk'
 import { AttachmentFieldSchema, FormFieldValues } from '~templates/Field'
 
+import { FieldIdToQuarantineKeyType } from '../PublicFormService'
+
 import { transformInputsToOutputs } from './inputTransformation'
 import { validateResponses } from './validateResponses'
-
-// The current encrypt version to assign to the encrypted submission.
-// This is needed if we ever break backwards compatibility with
-// end-to-end encryption
-const ENCRYPT_VERSION = 1
 
 /**
  * @returns StorageModeSubmissionContentDto
@@ -72,7 +70,7 @@ export const createEncryptedSubmissionData = async ({
     paymentReceiptEmail,
     paymentProducts,
     payments,
-    version: ENCRYPT_VERSION,
+    version: E2EE_SUBMISSION_VERSION,
     responseMetadata,
   }
 }
@@ -125,6 +123,63 @@ export const createClearSubmissionFormData = (
   return formData
 }
 
+/**
+ * Used for Storage mode submissions v2.1+ (after virus scanning).
+ * @returns formData containing form responses and attachments.
+ * @throws Error if form inputs are invalid or contain malicious attachment(s).
+ */
+export const createClearSubmissionWithVirusScanningFormData = (
+  formDataArgs:
+    | CreateEmailSubmissionFormDataArgs
+    | CreateStorageSubmissionFormDataArgs,
+  fieldIdToQuarantineKeyMap: FieldIdToQuarantineKeyType[],
+) => {
+  const { formFields, formInputs, ...formDataArgsRest } = formDataArgs
+  const responses = createResponsesArray(formFields, formInputs).map(
+    (response) => {
+      if (response.fieldType === BasicField.Attachment && response.answer) {
+        // for each attachment response, find the corresponding quarantine bucket key
+        const fieldIdToQuarantineKeyEntry = fieldIdToQuarantineKeyMap.find(
+          (v) => v.fieldId === response._id,
+        )
+        if (!fieldIdToQuarantineKeyEntry)
+          throw new Error(
+            `Attachment response with fieldId ${response._id} not found among attachments uploaded to quarantine bucket`,
+          )
+        // set response.answer as the quarantine bucket key
+        response.answer = fieldIdToQuarantineKeyEntry.quarantineBucketKey
+      }
+      return response
+    },
+  )
+  const attachments = getAttachmentsMap(formFields, formInputs)
+
+  // Convert content to FormData object.
+  const formData = new FormData()
+  formData.append(
+    'body',
+    JSON.stringify({
+      responses,
+      ...formDataArgsRest,
+    }),
+  )
+
+  if (!isEmpty(attachments)) {
+    forOwn(attachments, (attachment, fieldId) => {
+      if (attachment) {
+        formData.append(
+          attachment.name,
+          // Set content as empty array buffer.
+          new File([], attachment.name, { type: attachment.type }),
+          fieldId,
+        )
+      }
+    })
+  }
+
+  return formData
+}
+
 const createResponsesArray = (
   formFields: FormFieldDto[],
   formInputs: FormFieldValues,
@@ -156,7 +211,7 @@ const getEncryptedAttachmentsMap = async (
   )
 }
 
-const getAttachmentsMap = (
+export const getAttachmentsMap = (
   formFields: FormFieldDto[],
   formInputs: FormFieldValues,
 ): Record<string, File> => {
