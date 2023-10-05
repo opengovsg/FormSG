@@ -579,25 +579,6 @@ export const PublicFormProvider = ({
                     timestamp,
                   })
                 },
-                onError: (error) => {
-                  // TODO(#5826): Remove when we have resolved the Network Error
-                  datadogLogs.logger.warn(
-                    `handleSubmitForm: submit with virus scan`,
-                    {
-                      meta: {
-                        ...logMeta,
-                        responseMode: 'storage',
-                        method: 'axios',
-                        error,
-                      },
-                    },
-                  )
-
-                  // defaults to the safest option of storage submission without virus scanning
-                  return submitStorageFormWithFetch(
-                    enableEncryptionBoundaryShift,
-                  )
-                },
               },
             )
           }
