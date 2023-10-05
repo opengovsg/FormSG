@@ -558,55 +558,46 @@ export const PublicFormProvider = ({
 
           // TODO (FRM-1413): Move to main return statement once virus scanner has been fully rolled out
           if (enableEncryptionBoundaryShift && enableVirusScanner) {
-            return (
-              submitStorageModeClearFormWithVirusScanningMutation
-                .mutateAsync(formData, {
-                  onSuccess: ({
-                    submissionId,
-                    timestamp,
-                    // payment forms will have non-empty paymentData field
-                    paymentData,
-                  }) => {
-                    trackSubmitForm(form)
+            return submitStorageModeClearFormWithVirusScanningMutation.mutateAsync(
+              formData,
+              {
+                onSuccess: ({
+                  submissionId,
+                  timestamp,
+                  // payment forms will have non-empty paymentData field
+                  paymentData,
+                }) => {
+                  trackSubmitForm(form)
 
-                    if (paymentData) {
-                      navigate(getPaymentPageUrl(formId, paymentData.paymentId))
-                      storePaymentMemory(paymentData.paymentId)
-                      return
-                    }
-                    setSubmissionData({
-                      id: submissionId,
-                      timestamp,
-                    })
-                  },
-                })
-                // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
-                .catch(async (error) => {
+                  if (paymentData) {
+                    navigate(getPaymentPageUrl(formId, paymentData.paymentId))
+                    storePaymentMemory(paymentData.paymentId)
+                    return
+                  }
+                  setSubmissionData({
+                    id: submissionId,
+                    timestamp,
+                  })
+                },
+                onError: (error) => {
                   // TODO(#5826): Remove when we have resolved the Network Error
                   datadogLogs.logger.warn(
-                    `handleSubmitForm: submit with virus scan - ${error.message}`,
+                    `handleSubmitForm: submit with virus scan`,
                     {
                       meta: {
                         ...logMeta,
                         responseMode: 'storage',
                         method: 'axios',
-                        error: {
-                          message: error.message,
-                          stack: error.stack,
-                        },
+                        error,
                       },
                     },
                   )
 
-                  // defaults to the safest option of storage submission without virus scanning
-                  if (/Network Error/i.test(error.message)) {
-                    axiosDebugFlow()
-                    return submitStorageFormWithFetch(
-                      enableEncryptionBoundaryShift,
-                    )
-                  }
-                  showErrorToast(error, form)
-                })
+                  return submitStorageFormWithFetch(
+                    enableEncryptionBoundaryShift,
+                  )
+                },
+              },
             )
           }
 
