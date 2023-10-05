@@ -593,6 +593,7 @@ export const PublicFormProvider = ({
                     },
                   )
 
+                  // defaults to the safest option of storage submission without virus scanning
                   return submitStorageFormWithFetch(
                     enableEncryptionBoundaryShift,
                   )
