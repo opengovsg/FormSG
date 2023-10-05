@@ -54,6 +54,12 @@ const SGID_SUPPORTED_V2 = [
   MyInfoAttribute.HousingType,
   MyInfoAttribute.HdbType,
   MyInfoAttribute.RegisteredAddress,
+  MyInfoAttribute.BirthCountry,
+  MyInfoAttribute.VehicleNo,
+  MyInfoAttribute.Employment,
+  MyInfoAttribute.WorkpassStatus,
+  MyInfoAttribute.Marital,
+  MyInfoAttribute.MobileNo,
 ]
 
 export const MyInfoFieldPanel = () => {

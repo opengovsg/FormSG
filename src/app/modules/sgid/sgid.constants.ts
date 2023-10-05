@@ -33,7 +33,6 @@ export enum SGIDScope {
   DateOfBirth = 'myinfo.date_of_birth',
   PassportNumber = 'myinfo.passport_number',
   PassportExpiryDate = 'myinfo.passport_expiry_date',
-  MobileNumber = 'myinfo.mobile_number',
   Email = 'myinfo.email',
   RegisteredAddress = 'myinfo.registered_address',
   Sex = 'myinfo.sex',
@@ -41,4 +40,11 @@ export enum SGIDScope {
   Nationality = 'myinfo.nationality',
   HousingType = 'myinfo.housingtype',
   HdbType = 'myinfo.hdbtype',
+  BirthCountry = 'myinfo.birth_country',
+  VehicleNo = 'myinfo.vehicles',
+  Employment = 'myinfo.name_of_employer',
+  WorkpassStatus = 'myinfo.workpass_status',
+  WorkpassExpiryDate = 'myinfo.workpass_expiry_date',
+  MaritalStatus = 'myinfo.marital_status',
+  MobileNoWithPrefix = 'myinfo.mobile_number_with_prefix', // SGID also has another myinfo.mobile_number field, but this is without the country code prefix
 }

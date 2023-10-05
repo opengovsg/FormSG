@@ -2,6 +2,7 @@ import {
   MyInfoAttribute as InternalAttr,
   MyInfoDataTransformer,
 } from '../../../../shared/types'
+import { formatVehicleNumbers } from '../myinfo/myinfo.format'
 
 import {
   SGID_MYINFO_NRIC_NUMBER_SCOPE,
@@ -30,10 +31,22 @@ export const internalAttrToScope = (attr: InternalAttr): ExternalAttr => {
       return ExternalAttr.PassportNumber
     case InternalAttr.PassportExpiryDate:
       return ExternalAttr.PassportExpiryDate
-    case InternalAttr.MobileNo:
-      return ExternalAttr.MobileNumber
     case InternalAttr.RegisteredAddress:
       return ExternalAttr.RegisteredAddress
+    case InternalAttr.BirthCountry:
+      return ExternalAttr.BirthCountry
+    case InternalAttr.VehicleNo:
+      return ExternalAttr.VehicleNo
+    case InternalAttr.Employment:
+      return ExternalAttr.Employment
+    case InternalAttr.WorkpassStatus:
+      return ExternalAttr.WorkpassStatus
+    case InternalAttr.WorkpassExpiryDate:
+      return ExternalAttr.WorkpassExpiryDate
+    case InternalAttr.Marital:
+      return ExternalAttr.MaritalStatus
+    case InternalAttr.MobileNo:
+      return ExternalAttr.MobileNoWithPrefix
     default:
       // This should be removed once sgID reaches parity with MyInfo.
       // For now, the returned value will be automatically filtered
@@ -72,9 +85,21 @@ const internalAttrToSGIDExternal = (
     case InternalAttr.PassportExpiryDate:
       return ExternalAttr.PassportExpiryDate
     case InternalAttr.MobileNo:
-      return ExternalAttr.MobileNumber
+      return ExternalAttr.MobileNoWithPrefix
     case InternalAttr.RegisteredAddress:
       return ExternalAttr.RegisteredAddress
+    case InternalAttr.BirthCountry:
+      return ExternalAttr.BirthCountry
+    case InternalAttr.VehicleNo:
+      return ExternalAttr.VehicleNo
+    case InternalAttr.Employment:
+      return ExternalAttr.Employment
+    case InternalAttr.WorkpassStatus:
+      return ExternalAttr.WorkpassStatus
+    case InternalAttr.WorkpassExpiryDate:
+      return ExternalAttr.WorkpassExpiryDate
+    case InternalAttr.Marital:
+      return ExternalAttr.MaritalStatus
     default:
       return undefined
   }
@@ -108,6 +133,8 @@ export class SGIDMyInfoData
     switch (attr) {
       case ExternalAttr.RegisteredAddress:
         return formatAddress(this.#payload[attr])
+      case ExternalAttr.VehicleNo:
+        return formatVehicleNumbers(this.#payload[attr])
       default:
         return this.#payload[attr]
     }
@@ -135,7 +162,7 @@ export class SGIDMyInfoData
     if (!data || !fieldValue) return false
 
     switch (attr) {
-      case ExternalAttr.MobileNumber:
+      case ExternalAttr.MobileNoWithPrefix:
       case ExternalAttr.RegisteredAddress:
       case ExternalAttr.Name:
       case ExternalAttr.PassportNumber:
@@ -146,9 +173,15 @@ export class SGIDMyInfoData
       case ExternalAttr.Nationality:
       case ExternalAttr.HousingType:
       case ExternalAttr.HdbType:
+      case ExternalAttr.BirthCountry:
+      case ExternalAttr.VehicleNo:
+      case ExternalAttr.Employment:
+      case ExternalAttr.WorkpassStatus:
+      case ExternalAttr.WorkpassExpiryDate:
         return !!data
       // Fields required to always be editable according to MyInfo docs
-      // case ExternalAttr.MaritalStatus:
+      case ExternalAttr.MaritalStatus:
+        return false
       // Fall back to leaving field editable as data shape is unknown.
       default:
         return false
