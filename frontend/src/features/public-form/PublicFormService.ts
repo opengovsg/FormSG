@@ -465,7 +465,7 @@ export const getAttachmentSizes = async ({
   for (const id in attachmentsMap) {
     // Check if id is a valid ObjectId. mongoose.isValidaObjectId cannot be used as it will throw a Reference Error.
     const isValidObjectId = new RegExp(/^[0-9a-fA-F]{24}$/).test(id)
-    if (!isValidObjectId) throw new Error(`Invalid attachment id: ${id}`) // TODO: better error message?
+    if (!isValidObjectId) throw new Error(`Invalid attachment id: ${id}`)
     attachmentSizes.push({ id, size: attachmentsMap[id].size })
   }
   return attachmentSizes
