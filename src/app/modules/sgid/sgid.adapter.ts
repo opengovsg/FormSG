@@ -2,13 +2,12 @@ import {
   MyInfoAttribute as InternalAttr,
   MyInfoDataTransformer,
 } from '../../../../shared/types'
-import { formatVehicleNumbers } from '../myinfo/myinfo.format'
 
 import {
   SGID_MYINFO_NRIC_NUMBER_SCOPE,
   SGIDScope as ExternalAttr,
 } from './sgid.constants'
-import { formatAddress } from './sgid.format'
+import { formatAddress, formatVehicles } from './sgid.format'
 import { SGIDScopeToValue } from './sgid.types'
 
 export const internalAttrToScope = (attr: InternalAttr): ExternalAttr => {
@@ -134,7 +133,7 @@ export class SGIDMyInfoData
       case ExternalAttr.RegisteredAddress:
         return formatAddress(this.#payload[attr])
       case ExternalAttr.VehicleNo:
-        return formatVehicleNumbers(this.#payload[attr])
+        return formatVehicles(this.#payload[attr])
       default:
         return this.#payload[attr]
     }
