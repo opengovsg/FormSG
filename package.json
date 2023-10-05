@@ -27,6 +27,7 @@
     "postinstall": "npm run postinstall:frontend && npm run postinstall:shared",
     "test": "npm run test:backend && npm run test:frontend",
     "test:backend": "env-cmd -f __tests__/setup/.test-env jest",
+    "test:backend:ci": "env-cmd -f __tests__/setup/.test-env jest --maxWorkers=2 --logHeapUsage --workerIdleMemoryLimit=0.2",
     "test:backend:watch": "env-cmd -f __tests__/setup/.test-env jest --watch",
     "test:frontend": "npm --prefix frontend test",
     "test:e2e-v2": "npm run build && npx playwright test",

@@ -154,7 +154,7 @@ jobs:
           path: '**/node_modules'
           key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json') }}
       - run: npm ci --prefix serverless/virus-scanner
-      - run: npm run test:backend
+      - run: npm run test:backend:ci
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
       - name: Coveralls
