@@ -572,7 +572,7 @@ export const getQuarantinePresignedPostData = (
   const totalAttachmentSizeLimit = fileSizeLimitBytes(FormResponseMode.Encrypt)
   const totalAttachmentSize = attachmentSizes
     .map(({ size }) => size)
-    .reduce((prev, next) => prev + next)
+    .reduce((prev, next) => prev + next, 0)
   if (totalAttachmentSize > totalAttachmentSizeLimit)
     return errAsync(new AttachmentSizeLimitExceededError())
 
