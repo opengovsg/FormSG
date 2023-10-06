@@ -193,8 +193,9 @@ export const ShareFormModal = ({
       setGoLinkSaved(true)
       setGoLinkSuffixInput(goLinkSuffixData?.goLinkSuffix ?? '')
       setGoLinkHelperText(goLinkClaimSuccessHelperText)
-    } else {
-      // if go link data do not exist for current form, reset the states
+    }
+    return () => {
+      // before unmount or after any changes to goLinkSuffix, will reset the states first
       setGoLinkSaved(false)
       setGoLinkSuffixInput('')
       setGoLinkHelperText(undefined)
