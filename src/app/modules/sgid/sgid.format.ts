@@ -22,7 +22,7 @@ export const formatAddress = (addr: string): string => {
  * @returns Formatted address is comma separated, same as the output of formatAddress in myinfo.format.ts
  */
 export const formatVehicles = (vehicles: string): string => {
-  if (vehicles) {
+  if (vehicles && vehicles !== '[]') {
     try {
       const vehiclesObject = JSON.parse(vehicles)
       const vehicleNos = vehiclesObject

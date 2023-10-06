@@ -161,7 +161,8 @@ export class SGIDMyInfoData
    */
   _isDataReadOnly(attr: ExternalAttr, fieldValue: string | undefined): boolean {
     const data = this.#payload[attr]
-    if (!data || !fieldValue) return false
+    if (!data || !fieldValue || fieldValue === 'NA' || data === 'NA')
+      return false
 
     switch (attr) {
       case ExternalAttr.MobileNoWithPrefix:
