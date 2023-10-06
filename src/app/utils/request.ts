@@ -42,5 +42,7 @@ export const createReqMeta = <R extends LooseRequest>(req: R): ReqMeta => {
     url: req.baseUrl + req.path,
     urlWithQueryParams: req.originalUrl,
     headers: req.headers,
+    // endpointVersion is only present in requests to storage submission endpoints
+    ...(req.body.version && { endpointVersion: req.body.version }),
   }
 }
