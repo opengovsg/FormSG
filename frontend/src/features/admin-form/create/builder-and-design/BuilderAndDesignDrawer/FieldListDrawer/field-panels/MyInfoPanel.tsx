@@ -76,7 +76,7 @@ export const MyInfoFieldPanel = () => {
         // Only update the `adminEmail` and `adminAgency` attributes, keep the rest the same
         ...growthbook.getAttributes(),
         adminEmail: user?.email,
-        adminAgency: user?.agency,
+        adminAgency: user?.agency.shortName,
       })
     }
   }, [growthbook, user])
