@@ -305,7 +305,7 @@ export const scanAndRetrieveAttachments = async (
 
   if (!virusScannerEnabled) {
     logger.warn({
-      message: 'Virus scanner is not enabled.',
+      message: 'Virus scanner is not enabled on BE.',
       meta: logMeta,
     })
 
@@ -317,7 +317,18 @@ export const scanAndRetrieveAttachments = async (
   // should have virus scanning enabled. If not, skip this middleware.
   // Note: Version number is sent by the frontend and should only be >=2.1 if virus scanning is enabled on the frontend.
 
-  if (req.body.version < 2.1) return next()
+  if (req.body.version < 2.1) {
+    logger.warn({
+      message: 'Virus scanner is not enabled on FE.',
+      meta: logMeta,
+    })
+    return next()
+  }
+
+  logger.info({
+    message: 'Virus scanner is enabled on both BE and FE.',
+    meta: logMeta,
+  })
 
   // At this point, virus scanner is enabled and storage submission v2.1+. This means that both the FE and BE
   // have virus scanning enabled.
