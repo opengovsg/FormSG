@@ -353,6 +353,11 @@ export const scanAndRetrieveAttachments = async (
     })
   }
 
+  logger.info({
+    message: 'Successfully scanned and downloaded clean attachments',
+    meta: logMeta,
+  })
+
   // Step 5: Replace req.body.responses with the new responses with populated attachments.
   req.body.responses = scanAndRetrieveFilesResult.value
 
