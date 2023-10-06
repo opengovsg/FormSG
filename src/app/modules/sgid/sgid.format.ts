@@ -1,3 +1,7 @@
+import { createLoggerWithLabel } from '../../config/logger'
+
+const logger = createLoggerWithLabel(module)
+
 /**
  * Formats SGID MyInfo attribute as address.
  * SGID MyInfo multi-line address are newline-separated, while MyInfo multi-line addresses are comma-separated
@@ -18,11 +22,23 @@ export const formatAddress = (addr: string): string => {
  * @returns Formatted address is comma separated, same as the output of formatAddress in myinfo.format.ts
  */
 export const formatVehicles = (vehicles: string): string => {
-  const vehiclesObject = JSON.parse(vehicles)
-  return (
-    vehiclesObject
-      //TODO: obtain vehicle type from SGID
-      .map((vehicle: any) => vehicle['vehicle_number'])
-      .join(', ')
-  )
+  if (vehicles) {
+    try {
+      const vehiclesObject = JSON.parse(vehicles)
+      const vehicleNos = vehiclesObject
+        //TODO: obtain vehicle type from SGID
+        .map((vehicle: any) => vehicle['vehicle_number'])
+        .join(', ')
+      return vehicleNos
+    } catch (error) {
+      logger.error({
+        message: 'Failed to parse vehicles',
+        meta: { action: 'formatVehicles', vehicles },
+        error,
+      })
+      return ''
+    }
+  } else {
+    return ''
+  }
 }

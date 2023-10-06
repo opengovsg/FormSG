@@ -2,6 +2,7 @@ import {
   MyInfoAttribute as InternalAttr,
   MyInfoDataTransformer,
 } from '../../../../shared/types'
+import { createLoggerWithLabel } from '../../config/logger'
 
 import {
   SGID_MYINFO_NRIC_NUMBER_SCOPE,
@@ -9,6 +10,8 @@ import {
 } from './sgid.constants'
 import { formatAddress, formatVehicles } from './sgid.format'
 import { SGIDScopeToValue } from './sgid.types'
+
+const logger = createLoggerWithLabel(module)
 
 export const internalAttrToScope = (attr: InternalAttr): ExternalAttr => {
   switch (attr) {
@@ -203,6 +206,15 @@ export class SGIDMyInfoData
       }
     }
     const fieldValue = this._formatFieldValue(externalAttr)
+    console.log('fieldValue: ', fieldValue, externalAttr)
+    logger.info({
+      message: 'get field value',
+      meta: {
+        action: 'getFieldValueForAttr',
+        fieldValue,
+        externalAttr,
+      },
+    })
     return {
       fieldValue,
       isReadOnly: this._isDataReadOnly(externalAttr, fieldValue),
