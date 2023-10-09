@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useQuery } from 'react-query'
 import { useParams } from 'react-router-dom'
 import { Box, Flex, Grid, Skeleton, Stack, Text } from '@chakra-ui/react'
@@ -88,6 +88,7 @@ export const UnlockedResponses = (): JSX.Element => {
           })
         }),
       ),
+    { refetchInterval: 1000 },
   )
 
   const countToUse = useMemo(
@@ -114,17 +115,30 @@ export const UnlockedResponses = (): JSX.Element => {
   }
   type MOEClasses = MOEClass[]
 
+  type responseCountByClass = {
+    className: string
+    count: number
+  }
+
+  const responseNRICs = data?.map((response) => {
+    return response?.responses[0].answer ?? ''
+  })
+
   const generateResponseCountByClass = (nric: string[]) => {
     // Application logic
 
-    const result = []
-    HARDCODED_MOE_DATA.forEach((classData) => {
+    const results = HARDCODED_MOE_DATA.map((classData) => {
       const { class: className, students } = classData
       const count = students.filter((student) =>
         nric.includes(student.nric),
       ).length
-      result.push({ className, count })
+
+      return { className, count }
     })
+
+    // Add render logic
+    // Return a table with the header 'Classes' and 'Responses'
+    // and populate with className and count
   }
 
   return (
@@ -143,8 +157,9 @@ export const UnlockedResponses = (): JSX.Element => {
         {/* Plugin code goes here */}
         {/* Assume that 1) NRIC/FIN is first field */}
         <Flex flexDir="row" justifyContent={'space-between'}>
-          <Text>{JSON.stringify(data)}</Text>
-          <Text>COlumn 2</Text>
+          {/* <Text>{JSON.stringify(data)}</Text> */}
+          {/* <Text>COlumn 2</Text> */}
+          {generateResponseCountByClass(responseNRICs || [])}
         </Flex>
         {/* End of plugin code */}
         <Stack
