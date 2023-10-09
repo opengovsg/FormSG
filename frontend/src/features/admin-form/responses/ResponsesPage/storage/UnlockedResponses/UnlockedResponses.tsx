@@ -1,4 +1,6 @@
 import { useMemo } from 'react'
+import { useQuery } from 'react-query'
+import { useParams } from 'react-router-dom'
 import { Box, Flex, Grid, Skeleton, Stack, Text } from '@chakra-ui/react'
 import { format, isValid } from 'date-fns'
 import simplur from 'simplur'
@@ -9,6 +11,7 @@ import { DateRangeValue } from '~components/Calendar'
 import { DateRangePicker } from '~components/DateRangePicker'
 import Pagination from '~components/Pagination'
 
+import { getDecryptedSubmissionById } from '../../../AdminSubmissionsService'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 
 import { DownloadButton } from './DownloadButton'
@@ -45,6 +48,18 @@ const transform = {
   },
 }
 
+// Mock MOE data
+const HARDCODED_MOE_DATA = [
+  {
+    class: '1A',
+    students: [
+      { nric: 'S1234567D', name: 'ah boy' },
+      { nric: 'S1234568D', name: 'another boy' },
+    ],
+  },
+  { class: '1B', students: [{ nric: 'S1234432E', name: 'ah girl' }] },
+]
+
 export const UnlockedResponses = (): JSX.Element => {
   const {
     currentPage,
@@ -55,7 +70,25 @@ export const UnlockedResponses = (): JSX.Element => {
     submissionId,
     setSubmissionId,
     isAnyFetching,
+    metadata,
   } = useUnlockedResponses()
+
+  const { secretKey } = useStorageResponsesContext()
+  const { formId } = useParams()
+
+  const { data } = useQuery(
+    ['decryptedResponse', { formId, submissionId, secretKey }],
+    async () =>
+      await Promise.all(
+        metadata.map((response) => {
+          return getDecryptedSubmissionById({
+            formId: formId || '',
+            submissionId: response.refNo,
+            secretKey,
+          })
+        }),
+      ),
+  )
 
   const countToUse = useMemo(
     () => (submissionId ? filteredCount : count),
@@ -72,6 +105,28 @@ export const UnlockedResponses = (): JSX.Element => {
     [submissionId, filteredCount, count],
   )
 
+  console.log('submissionId:', submissionId)
+
+  type Student = { nric: string; name: string }
+  type MOEClass = {
+    class: string
+    students: Student[]
+  }
+  type MOEClasses = MOEClass[]
+
+  const generateResponseCountByClass = (nric: string[]) => {
+    // Application logic
+
+    const result = []
+    HARDCODED_MOE_DATA.forEach((classData) => {
+      const { class: className, students } = classData
+      const count = students.filter((student) =>
+        nric.includes(student.nric),
+      ).length
+      result.push({ className, count })
+    })
+  }
+
   return (
     <Flex flexDir="column" h="100%">
       <Grid
@@ -85,6 +140,13 @@ export const UnlockedResponses = (): JSX.Element => {
           lg: "'submissions search export'",
         }}
       >
+        {/* Plugin code goes here */}
+        {/* Assume that 1) NRIC/FIN is first field */}
+        <Flex flexDir="row" justifyContent={'space-between'}>
+          <Text>{JSON.stringify(data)}</Text>
+          <Text>COlumn 2</Text>
+        </Flex>
+        {/* End of plugin code */}
         <Stack
           align="center"
           spacing="1rem"
