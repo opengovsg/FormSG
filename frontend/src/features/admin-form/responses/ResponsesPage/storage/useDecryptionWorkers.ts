@@ -178,6 +178,10 @@ const useDecryptionWorkers = ({
                     break
                   case CsvRecordStatus.Ok: {
                     try {
+                      console.log(
+                        'injectedData usedecryptionworker: ',
+                        injectedData,
+                      )
                       // Inject here
                       csvGenerator.addRecord(
                         decryptResult.submissionData,

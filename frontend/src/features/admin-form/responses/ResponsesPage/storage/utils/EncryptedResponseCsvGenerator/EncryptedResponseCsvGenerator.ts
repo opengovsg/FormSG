@@ -49,7 +49,7 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
    */
   addRecord(
     { record, created, submissionId }: DecryptedSubmissionData,
-    { injectedData }: { injectedData: SubmittedStudentsForInjection },
+    injectedData: SubmittedStudentsForInjection,
   ): void {
     // First pass, create object with { [fieldId]: question } from
     // decryptedContent to get all the questions.
@@ -84,7 +84,7 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     console.log('NRIC:', NRIC)
     console.log('fieldRecords[1]:', fieldRecords[1])
 
-    console.log('injectedData:', injectedData)
+    console.log('injectedData csvgen:', injectedData)
     console.log('JSON.stringify:', JSON.stringify(fieldRecords))
     const relevantRecord = injectedData.find(
       (record) => record.nric === NRIC,
@@ -95,8 +95,8 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     this.unprocessed.push({
       created,
       submissionId,
-      record: keyBy(fieldRecords, (fieldRecord) => fieldRecord.id),
       childRecord: relevantRecord,
+      record: keyBy(fieldRecords, (fieldRecord) => fieldRecord.id),
     })
   }
 
@@ -109,7 +109,7 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     if (this.hasBeenProcessed) return
 
     // Create a header row in CSV using the fieldIdToQuestion map.
-    const headers = ['Response ID', 'Timestamp']
+    const headers = ['Response ID', 'Timestamp', 'ChildName']
     this.fieldIdToQuestion.forEach((value, fieldId) => {
       for (let i = 0; i < this.fieldIdToNumCols[fieldId]; i++) {
         headers.push(value.question)
@@ -130,7 +130,7 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
       const row = [up.submissionId, formattedDate, up.childRecord.name]
 
       this.fieldIdToQuestion.forEach((_question, fieldId) => {
-        const numCols = this.fieldIdToNumCols[fieldId] + 1
+        const numCols = this.fieldIdToNumCols[fieldId]
         for (let colIndex = 0; colIndex < numCols; colIndex++) {
           row.push(this._extractAnswer(up.record, fieldId, colIndex))
         }

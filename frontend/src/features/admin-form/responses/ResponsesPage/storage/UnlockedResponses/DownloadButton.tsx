@@ -19,9 +19,11 @@ import { DownloadWithAttachmentModal } from './DownloadWithAttachmentModal'
 import { ProgressModal } from './ProgressModal'
 import { SubmittedStudentsForInjection } from './UnlockedResponses'
 
-export const DownloadButton = (
-  injectedData: SubmittedStudentsForInjection,
-): JSX.Element => {
+export const DownloadButton = ({
+  injectedData,
+}: {
+  injectedData: SubmittedStudentsForInjection
+}): JSX.Element => {
   const {
     isOpen: isDownloadModalOpen,
     onClose: onDownloadModalClose,

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
 import { useParams } from 'react-router-dom'
 import {
@@ -109,7 +109,7 @@ export const UnlockedResponses = (): JSX.Element => {
   const { secretKey } = useStorageResponsesContext()
   const { formId } = useParams()
 
-  const { data } = useQuery(
+  const { data: responses, isLoading: isResponseLoading } = useQuery(
     ['decryptedResponse', { formId, submissionId, secretKey }],
     async () =>
       await Promise.all(
@@ -121,9 +121,12 @@ export const UnlockedResponses = (): JSX.Element => {
           })
         }),
       ),
-    { refetchInterval: 1000 },
+    { enabled: !!(metadata && formId) },
   )
+  console.log('metadata: ', !!(metadata && formId))
+  console.log('isResponseLoading: ', isResponseLoading)
 
+  console.log('responses: ', responses)
   const countToUse = useMemo(
     () => (submissionId ? filteredCount : count),
     [submissionId, filteredCount, count],
@@ -139,11 +142,14 @@ export const UnlockedResponses = (): JSX.Element => {
     [submissionId, filteredCount, count],
   )
 
-  console.log('submissionId:', submissionId)
-
-  const responseNRICs = data?.map((response) => {
-    return response?.responses[0].answer ?? ''
-  })
+  const responseNRICs = useMemo(
+    () =>
+      responses?.map((response) => {
+        return response?.responses[0].answer ?? ''
+      }),
+    [responses],
+  )
+  console.log('responseNRICs: ', responseNRICs)
 
   const [selectedClass, setSelectedClass] = useState('')
 
@@ -167,13 +173,13 @@ export const UnlockedResponses = (): JSX.Element => {
     return submittedStudentsForInjection
   }
 
-  const generateResponseCountByClass = (nric: string[]) => {
+  const generateResponseCountByClass = (NRICs: string[]) => {
     // Application logic
 
     const results = HARDCODED_MOE_DATA.map((classData) => {
       const { class: className, students } = classData
       const submittedStudents = students.filter((student) =>
-        nric.includes(student.nric),
+        NRICs.includes(student.nric),
       )
 
       const count = submittedStudents.length

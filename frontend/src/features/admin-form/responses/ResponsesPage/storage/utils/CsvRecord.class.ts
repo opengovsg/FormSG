@@ -33,6 +33,7 @@ export class CsvRecord {
     public form: string,
     public hostOrigin: string,
     public paymentData?: SubmissionPaymentDto,
+    public additionalData?: any,
   ) {
     this.#statusMessage = status
     this.#record = []
