@@ -581,16 +581,19 @@ export const logIfFieldValueNotInMyinfoList = (
   myInfoData: MyInfoData | SGIDMyInfoData,
 ) => {
   const isFieldValueInMyinfoList = myInfoList.includes(fieldValue)
-  const myInfoSouce =
+  const myInfoSource =
     myInfoData instanceof MyInfoData ? 'Singpass MyInfo' : 'SGID MyInfo'
-  if (!isFieldValueInMyinfoList) {
+  // SGID returns NA instead of empty field values, we don't need this to be logged
+  // as this is expected behaviour
+  const isNAFromSgid = myInfoAttr === 'SGID MyInfo' && fieldValue === 'NA'
+  if (!isNAFromSgid || !isFieldValueInMyinfoList) {
     logger.error({
       message: 'Myinfo field value not found in existing Myinfo constants list',
       meta: {
         action: 'prefillAndSaveMyInfoFields',
         myInfoFieldValue: fieldValue,
         myInfoAttr,
-        myInfoSouce,
+        myInfoSource,
       },
     })
   }
