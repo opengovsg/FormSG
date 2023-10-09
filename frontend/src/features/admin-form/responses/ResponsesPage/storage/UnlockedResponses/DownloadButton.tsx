@@ -17,8 +17,11 @@ import useDecryptionWorkers from '../useDecryptionWorkers'
 
 import { DownloadWithAttachmentModal } from './DownloadWithAttachmentModal'
 import { ProgressModal } from './ProgressModal'
+import { SubmittedStudentsForInjection } from './UnlockedResponses'
 
-export const DownloadButton = (): JSX.Element => {
+export const DownloadButton = (
+  injectedData: SubmittedStudentsForInjection,
+): JSX.Element => {
   const {
     isOpen: isDownloadModalOpen,
     onClose: onDownloadModalClose,
@@ -62,6 +65,7 @@ export const DownloadButton = (): JSX.Element => {
 
   const { handleExportCsvMutation, abortDecryption } = useDecryptionWorkers({
     onProgress: setDownloadCount,
+    injectedData,
     mutateProps: {
       onMutate: () => {
         // Reset metadata if it exists.

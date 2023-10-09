@@ -6,6 +6,10 @@ import type { Merge } from 'type-fest'
 
 import { CsvGenerator } from '../../../../common/utils'
 import type { DecryptedSubmissionData } from '../../types'
+import {
+  SubmittedStudentForInjection,
+  SubmittedStudentsForInjection,
+} from '../../UnlockedResponses/UnlockedResponses'
 import type { Response } from '../csv-response-classes'
 import { getDecryptedResponseInstance } from '../getDecryptedResponseInstance'
 import { processFormulaInjectionText } from '../processFormulaInjection'
@@ -13,7 +17,7 @@ import { processFormulaInjectionText } from '../processFormulaInjection'
 type UnprocessedRecord = Merge<
   DecryptedSubmissionData,
   { record: Dictionary<Response> }
->
+> & { childRecord: SubmittedStudentForInjection }
 
 export class EncryptedResponseCsvGenerator extends CsvGenerator {
   hasBeenProcessed: boolean
@@ -43,7 +47,10 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
    * Extracts information from input record, rearranges record and then adds an UnprocessedRecord to `this.unprocessed`
    * @throws Error when trying to convert record into a response instance. Should be caught in submissions client factory.
    */
-  addRecord({ record, created, submissionId }: DecryptedSubmissionData): void {
+  addRecord(
+    { record, created, submissionId }: DecryptedSubmissionData,
+    { injectedData }: { injectedData: SubmittedStudentsForInjection },
+  ): void {
     // First pass, create object with { [fieldId]: question } from
     // decryptedContent to get all the questions.
     const fieldRecords = record.map((content) => {
@@ -72,11 +79,24 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
       return fieldRecord
     })
 
+    // find relevant record by NRIC
+    const NRIC = fieldRecords[1].getAnswer()
+    console.log('NRIC:', NRIC)
+    console.log('fieldRecords[1]:', fieldRecords[1])
+
+    console.log('injectedData:', injectedData)
+    console.log('JSON.stringify:', JSON.stringify(fieldRecords))
+    const relevantRecord = injectedData.find(
+      (record) => record.nric === NRIC,
+    ) as SubmittedStudentForInjection
+
+    console.log('relevantRecord:', relevantRecord)
     // Rearrange record to be an object identified by field ID.
     this.unprocessed.push({
       created,
       submissionId,
       record: keyBy(fieldRecords, (fieldRecord) => fieldRecord.id),
+      childRecord: relevantRecord,
     })
   }
 
@@ -107,10 +127,10 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
             'dd MMM yyyy hh:mm:ss a',
           )
         : up.created
-      const row = [up.submissionId, formattedDate]
+      const row = [up.submissionId, formattedDate, up.childRecord.name]
 
       this.fieldIdToQuestion.forEach((_question, fieldId) => {
-        const numCols = this.fieldIdToNumCols[fieldId]
+        const numCols = this.fieldIdToNumCols[fieldId] + 1
         for (let colIndex = 0; colIndex < numCols; colIndex++) {
           row.push(this._extractAnswer(up.record, fieldId, colIndex))
         }

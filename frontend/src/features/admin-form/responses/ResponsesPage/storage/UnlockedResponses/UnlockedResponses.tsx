@@ -1,7 +1,21 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
 import { useParams } from 'react-router-dom'
-import { Box, Flex, Grid, Skeleton, Stack, Text } from '@chakra-ui/react'
+import {
+  Box,
+  Flex,
+  Grid,
+  HStack,
+  Skeleton,
+  Stack,
+  Table,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+} from '@chakra-ui/react'
 import { format, isValid } from 'date-fns'
 import simplur from 'simplur'
 
@@ -52,13 +66,32 @@ const transform = {
 const HARDCODED_MOE_DATA = [
   {
     class: '1A',
+    school: 'Red Rose Primary School',
+    level: 'Primary 4',
     students: [
-      { nric: 'S1234567D', name: 'ah boy' },
-      { nric: 'S1234568D', name: 'another boy' },
+      { register_no: '111', nric: 'S1234567D', name: 'ah boy' },
+      { register_no: '112', nric: 'S1234568B', name: 'another boy' },
     ],
   },
-  { class: '1B', students: [{ nric: 'S1234432E', name: 'ah girl' }] },
+  {
+    class: '1B',
+    school: 'Red Rose Primary School',
+    level: 'Primary 4',
+    students: [
+      { register_no: '113', nric: 'S1234432E', name: 'ah girl' },
+      { register_no: '114', nric: 'S1234499F', name: 'another girl' },
+    ],
+  },
 ]
+
+export type SubmittedStudentsForInjection = {
+  register_no: string
+  nric: string
+  name: string
+  className: string
+  school: string
+  level: string
+}[]
 
 export const UnlockedResponses = (): JSX.Element => {
   const {
@@ -108,37 +141,107 @@ export const UnlockedResponses = (): JSX.Element => {
 
   console.log('submissionId:', submissionId)
 
-  type Student = { nric: string; name: string }
-  type MOEClass = {
-    class: string
-    students: Student[]
-  }
-  type MOEClasses = MOEClass[]
-
-  type responseCountByClass = {
-    className: string
-    count: number
-  }
-
   const responseNRICs = data?.map((response) => {
     return response?.responses[0].answer ?? ''
   })
+
+  const [selectedClass, setSelectedClass] = useState('')
+
+  const generateSubmittedStudentsForInjection = (
+    nric: string[],
+  ): SubmittedStudentsForInjection => {
+    const submittedStudentsForInjection = HARDCODED_MOE_DATA.map(
+      (classData) => {
+        const { class: className, school, level, students } = classData
+        const submittedStudents = students.filter((student) =>
+          nric.includes(student.nric),
+        )
+
+        const submittedStudentsByRow = submittedStudents.map((answer) => {
+          return { ...answer, className, school, level }
+        })
+
+        return submittedStudentsByRow
+      },
+    ).flat()
+    return submittedStudentsForInjection
+  }
 
   const generateResponseCountByClass = (nric: string[]) => {
     // Application logic
 
     const results = HARDCODED_MOE_DATA.map((classData) => {
       const { class: className, students } = classData
-      const count = students.filter((student) =>
+      const submittedStudents = students.filter((student) =>
         nric.includes(student.nric),
-      ).length
+      )
 
-      return { className, count }
+      const count = submittedStudents.length
+
+      return { className, count, submittedStudents }
     })
 
     // Add render logic
     // Return a table with the header 'Classes' and 'Responses'
     // and populate with className and count
+    return (
+      <HStack>
+        <Table>
+          <Thead>
+            <Tr>
+              <Th>Class</Th>
+              <Th>Responses</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {results.map((result) => {
+              const { className, count } = result
+              return (
+                // turn grey on hover
+                <Tr
+                  _hover={{ bgColor: 'secondary.100' }}
+                  onClick={() => {
+                    setSelectedClass(className)
+                  }}
+                >
+                  <Td>{className}</Td>
+                  <Td>{count}</Td>
+                </Tr>
+              )
+            })}
+          </Tbody>
+        </Table>
+        <Text>Selected Class: {selectedClass}</Text>
+        {selectedClass ? (
+          <Table
+
+          // display students in selected class
+          >
+            <Thead>
+              <Tr>
+                <Th>Respondents</Th>
+                <Th>Class</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {results
+                .filter((result) => result.className === selectedClass)
+                .map((classResult) => {
+                  const { submittedStudents, className } = classResult
+                  return submittedStudents.map((student) => {
+                    return (
+                      <Tr>
+                        <Td>{student.name}</Td>
+                        <Td>{className}</Td>
+                      </Tr>
+                    )
+                  })
+                })}
+            </Tbody>
+          </Table>
+        ) : null}
+      </HStack>
+    )
   }
 
   return (
@@ -198,7 +301,11 @@ export const UnlockedResponses = (): JSX.Element => {
               setDateRange(transform.output(nextDateRange))
             }
           />
-          <DownloadButton />
+          <DownloadButton
+            injectedData={generateSubmittedStudentsForInjection(
+              responseNRICs || [],
+            )}
+          />
         </Stack>
       </Grid>
 

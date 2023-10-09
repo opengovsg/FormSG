@@ -12,6 +12,7 @@ import {
 } from '~features/analytics/AnalyticsService'
 import { useUser } from '~features/user/queries'
 
+import { SubmittedStudentsForInjection } from './UnlockedResponses/UnlockedResponses'
 import { downloadResponseAttachment } from './utils/downloadCsv'
 import { EncryptedResponseCsvGenerator } from './utils/EncryptedResponseCsvGenerator'
 import {
@@ -45,11 +46,13 @@ interface UseDecryptionWorkersProps {
     DownloadEncryptedParams,
     unknown
   >
+  injectedData: SubmittedStudentsForInjection
 }
 
 const useDecryptionWorkers = ({
   onProgress,
   mutateProps,
+  injectedData,
 }: UseDecryptionWorkersProps) => {
   const [workers, setWorkers] = useState<CleanableDecryptionWorkerApi[]>([])
   const abortControllerRef = useRef(new AbortController())
@@ -175,7 +178,11 @@ const useDecryptionWorkers = ({
                     break
                   case CsvRecordStatus.Ok: {
                     try {
-                      csvGenerator.addRecord(decryptResult.submissionData)
+                      // Inject here
+                      csvGenerator.addRecord(
+                        decryptResult.submissionData,
+                        injectedData,
+                      )
                       receivedRecordCount++
                     } catch (e) {
                       errorCount++
