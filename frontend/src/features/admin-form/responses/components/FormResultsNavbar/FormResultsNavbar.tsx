@@ -5,6 +5,7 @@ import { Flex } from '@chakra-ui/react'
 import {
   ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX,
   RESULTS_FEEDBACK_SUBROUTE,
+  RESULTS_INSIGHTS_SUBROUTE,
   RESULTS_RESPONSES_SUBROUTE,
 } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
@@ -59,6 +60,12 @@ export const FormResultsNavbar = (): JSX.Element => {
           isActive={checkTabActive(RESULTS_FEEDBACK_SUBROUTE)}
         >
           Feedback
+        </NavigationTab>
+        <NavigationTab
+          to={RESULTS_INSIGHTS_SUBROUTE}
+          isActive={checkTabActive(RESULTS_INSIGHTS_SUBROUTE)}
+        >
+          Insights
         </NavigationTab>
       </NavigationTabList>
     </Flex>
