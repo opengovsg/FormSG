@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom'
 
 import { useToast } from '~hooks/useToast'
 
-import { getAllEncryptedSubmission } from '../AdminSubmissionsService'
+import { getAllDecryptedSubmission } from '../AdminSubmissionsService'
 import { adminFormResponsesKeys } from '../queries'
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
 
@@ -24,7 +24,7 @@ export const useAllSubmissionData = () => {
 
   return useQuery(
     adminFormResponsesKeys.id(formId),
-    () => getAllEncryptedSubmission({ formId }),
+    () => getAllDecryptedSubmission({ formId, secretKey }),
     {
       // Will never update once fetched.
       staleTime: Infinity,

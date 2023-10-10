@@ -10,7 +10,6 @@ import {
   SecretKeyVerification,
   useStorageResponsesContext,
 } from '../ResponsesPage/storage'
-import { useUnlockedResponses } from '../ResponsesPage/storage/UnlockedResponses/UnlockedResponsesProvider'
 
 import { useAllSubmissionData } from './queries'
 

@@ -1,5 +1,6 @@
 import {
   FormSubmissionMetadataQueryDto,
+  StorageModeSubmissionBase,
   StorageModeSubmissionDto,
   StorageModeSubmissionMetadataList,
   SubmissionCountQueryDto,
@@ -101,12 +102,32 @@ export const getDecryptedSubmissionById = async ({
   }
 }
 
-export const getAllEncryptedSubmission = async ({
-  formId,
-}: {
-  formId: string
-}) => {
-  return ApiService.get<StorageModeSubmissionDto[]>(
+const getAllEncryptedSubmission = async ({ formId }: { formId: string }) => {
+  return ApiService.get<StorageModeSubmissionBase[]>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/submissions`,
   ).then(({ data }) => data)
+}
+
+export const getAllDecryptedSubmission = async ({
+  formId,
+  secretKey,
+}: {
+  formId: string
+  secretKey?: string
+}) => {
+  if (!secretKey) return
+
+  const allEncryptedData = await getAllEncryptedSubmission({ formId })
+
+  return allEncryptedData.map((encryptedData) => {
+    const decryptedContent = formsgSdk.crypto.decrypt(secretKey, {
+      encryptedContent: encryptedData.encryptedContent,
+      verifiedContent: encryptedData.verifiedContent,
+      version: encryptedData.version,
+    })
+
+    if (!decryptedContent) throw new Error('Could not decrypt the response')
+
+    return decryptedContent
+  })
 }
