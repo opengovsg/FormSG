@@ -44,5 +44,12 @@ const InternalInsights = () => {
   const { data } = useAllSubmissionData()
   console.log(data)
 
+  const { data: form } = useAdminForm()
+  console.log(form?.form_fields)
+
+  // For each form field in form
+  // Aggregate submission data based on _id
+  // Render into react google charts
+
   return <></>
 }
