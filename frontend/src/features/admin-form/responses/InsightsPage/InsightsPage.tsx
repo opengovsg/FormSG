@@ -1,4 +1,5 @@
 import { Chart, GoogleChartWrapperChartType } from 'react-google-charts'
+import { Divider, VStack } from '@chakra-ui/react'
 
 import { FormResponseMode } from '~shared/types/form'
 
@@ -56,9 +57,10 @@ const InternalInsights = () => {
           console.log(field)
           hashMap.set(field.answer, (hashMap.get(field.answer) || 0) + 1)
         } else if (field._id === id && field.answerArray) {
-          field.answerArray.forEach((answer) =>
-            hashMap.set(answer, (hashMap.get(answer) || 0) + 1),
-          )
+          field.answerArray.forEach((answer) => {
+            if (typeof answer === 'string')
+              return hashMap.set(answer, (hashMap.get(answer) || 0) + 1)
+          })
         }
       })
     })
@@ -71,7 +73,7 @@ const InternalInsights = () => {
   // Render into react google charts
 
   return (
-    <>
+    <VStack divider={<Divider />} gap="1.5rem">
       {form?.form_fields.map((formField, idx) => {
         const dataValues = aggregateSubmissionData(formField._id)
         // add header to values
@@ -85,7 +87,7 @@ const InternalInsights = () => {
           />
         )
       })}
-    </>
+    </VStack>
   )
 }
 
