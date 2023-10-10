@@ -17,24 +17,33 @@ type OpenAIResponse = {
   }[]
 }
 
-const OPENAI_ENDPOINT = 'https://api.openai.com/v1/engines/davinci/completions'
+const OPENAI_ENDPOINT = 'https://api.openai.com/v1/chat/completions'
 const API_KEY = 'YOUR_OPENAI_API_KEY' // Replace with your OpenAI API key
 
-async function callOpenAI(request: OpenAIRequest): Promise<OpenAIResponse> {
+export async function callOpenAI(
+  request: OpenAIRequest,
+): Promise<OpenAIResponse> {
   const headers = {
     Authorization: `Bearer ${API_KEY}`,
     'Content-Type': 'application/json',
-    'User-Agent': 'YOUR_APP_NAME', // Replace with your app's name or identifier
+    // 'User-Agent': 'YOUR_APP_NAME', // Replace with your app's name or identifier
   }
+
+  // console.log('request', request)
 
   try {
     const response = await axios.post<OpenAIResponse>(
       OPENAI_ENDPOINT,
-      request,
+      {
+        model: 'gpt-3.5-turbo',
+        messages: [{ role: 'user', content: 'hihi i need help' }],
+        temperature: 0.1,
+      },
       {
         headers,
       },
     )
+    console.log('response', response)
     return response.data
   } catch (error) {
     if (axios.isAxiosError(error)) {

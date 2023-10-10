@@ -1,5 +1,6 @@
 import { Router } from 'express'
 
+import { ReformRouter } from './admin/forms/admin-forms.reform.routes'
 import { AdminRouter } from './admin'
 import { AnalyticsRouter } from './analytics'
 import { AuthRouter } from './auth'
@@ -27,3 +28,4 @@ V3Router.use('/singpass', SingpassOidcRouter)
 V3Router.use('/corppass', CorppassOidcRouter)
 V3Router.use('/payments', PaymentsRouter)
 V3Router.use('/feature-flags', FeatureFlagsRouter)
+V3Router.use('/reform', ReformRouter)

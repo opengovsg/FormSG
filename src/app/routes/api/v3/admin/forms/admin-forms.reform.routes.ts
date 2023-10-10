@@ -1,10 +1,12 @@
 import { Router } from 'express'
 
-export const AdminFormsReformRouter = Router()
+import { callOpenAI } from '../../../../../modules/reform/reform.controller'
 
-AdminFormsReformRouter.route('/create')
+export const ReformRouter = Router()
 
-AdminFormsReformRouter.route('/migrate')
+ReformRouter.post('/create', callOpenAI)
+
+ReformRouter.get('/migrate')
 
 // reuse POST /admin/form
-// AdminFormsReformRouter.route('/save')
+// ReformRouter.route('/save')
