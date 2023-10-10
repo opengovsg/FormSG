@@ -1,10 +1,13 @@
 import axios from 'axios'
 
-type OpenAIRequest = {
-  prompt: string
-  max_tokens?: number
-  // ... any other parameters you wish to set
-}
+// import { Response } from 'express-serve-static-core'
+import { ControllerHandler } from '../core/core.types'
+
+// type OpenAIRequest = {
+//   prompt: string
+//   max_tokens?: number
+//   // ... any other parameters you wish to set
+// }
 
 type OpenAIResponse = {
   id: string
@@ -20,9 +23,7 @@ type OpenAIResponse = {
 const OPENAI_ENDPOINT = 'https://api.openai.com/v1/chat/completions'
 const API_KEY = 'YOUR_OPENAI_API_KEY' // Replace with your OpenAI API key
 
-export async function callOpenAI(
-  request: OpenAIRequest,
-): Promise<OpenAIResponse> {
+export const callOpenAI: ControllerHandler = async (req, res) => {
   const headers = {
     Authorization: `Bearer ${API_KEY}`,
     'Content-Type': 'application/json',
@@ -44,7 +45,7 @@ export async function callOpenAI(
       },
     )
     console.log('response', response)
-    return response.data
+    return res.send(response.data)
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.log(error)
