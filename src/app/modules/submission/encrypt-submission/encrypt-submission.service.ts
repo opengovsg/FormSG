@@ -17,6 +17,7 @@ import {
   StorageModeSubmissionMetadata,
   StorageModeSubmissionMetadataList,
   SubmissionPaymentDto,
+  SubmissionType,
 } from '../../../../../shared/types'
 import {
   FieldResponse,
@@ -325,7 +326,10 @@ export const getEncryptedSubmissionData = (
 
 export const getAllEncryptedSubmissionData = (formId: string) => {
   return ResultAsync.fromPromise(
-    EncryptSubmissionModel.find({ formId }),
+    EncryptSubmissionModel.find({
+      form: formId,
+      submissionType: SubmissionType.Encrypt,
+    }),
     (error) => {
       logger.error({
         message: 'Failure retrieving encrypted submission from database',
