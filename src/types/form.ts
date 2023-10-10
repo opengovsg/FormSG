@@ -12,6 +12,7 @@ import type { Merge, SetOptional } from 'type-fest'
 
 import {
   AdminDashboardFormMetaDto,
+  DirectoryFormDto,
   FormBase,
   FormBusinessField,
   FormEndPage,
@@ -29,6 +30,7 @@ import {
 } from '../../shared/types'
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
 
+import { IAgencySchema } from './agency'
 import { PublicView } from './database'
 import { FormFieldSchema } from './field'
 import { FormLogicSchema } from './form_logic'
@@ -346,6 +348,10 @@ export interface IFormModel extends Model<IFormSchema> {
   retrieveFormsOwnedByUserId(
     userId: IUserSchema['_id'],
   ): Promise<AdminDashboardFormMetaDto[]>
+
+  retrieveFormsOwnedByAgencyId(
+    agencyId: IAgencySchema['_id'],
+  ): Promise<DirectoryFormDto[]>
 
   disableSmsVerificationsForUser(
     userId: IUserSchema['_id'],

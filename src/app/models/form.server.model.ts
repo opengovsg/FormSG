@@ -23,6 +23,7 @@ import {
 import {
   AdminDashboardFormMetaDto,
   BasicField,
+  DirectoryFormDto,
   EmailFormSettings,
   FormAuthType,
   FormColorTheme,
@@ -51,6 +52,7 @@ import { getApplicableIfStates } from '../../shared/util/logic'
 import {
   FormLogicSchema,
   FormOtpData,
+  IAgencySchema,
   IEmailFormModel,
   IEmailFormSchema,
   IEncryptedFormDocument,
@@ -970,6 +972,42 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           },
         })
         .lean()
+        .exec()
+    )
+  }
+
+  // Get all forms owned by the specified agency.
+  FormDocumentSchema.statics.retrieveFormsOwnedByAgencyId = async function (
+    agencyId: IAgencySchema['_id'],
+  ): Promise<DirectoryFormDto[]> {
+    return (
+      this
+        // .find()
+        //   .populate({
+        //     path: 'admin',
+        //   })
+        //   .match({
+        //     'admin.0.agency': agencyId,
+        //   })
+        .aggregate([
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'admin',
+              foreignField: '_id',
+              as: 'admin',
+            },
+          },
+          {
+            $match: {
+              'admin.0.agency': agencyId,
+              status: FormStatus.Public,
+            },
+          },
+        ])
+        .project({
+          title: 1,
+        })
         .exec()
     )
   }

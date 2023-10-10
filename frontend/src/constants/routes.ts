@@ -4,6 +4,8 @@ export const DASHBOARD_ROUTE = '/dashboard'
 export const LOGIN_ROUTE = '/login'
 export const OGP_LOGIN_ROUTE = '/ogp-login'
 
+export const DIRECTORY_ROUTE = '/directory'
+
 export const TOU_ROUTE = '/terms'
 export const PRIVACY_POLICY_ROUTE = '/privacy'
 

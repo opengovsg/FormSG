@@ -6,6 +6,7 @@ import { AuthRouter } from './auth'
 import { BillingsRouter } from './billings'
 import { ClientRouter } from './client'
 import { CorppassOidcRouter } from './corppass'
+import { DirectoryRouter } from './directory'
 import { FeatureFlagsRouter } from './feature-flags'
 import { PublicFormsRouter } from './forms'
 import { NotificationsRouter } from './notifications'
@@ -27,3 +28,4 @@ V3Router.use('/singpass', SingpassOidcRouter)
 V3Router.use('/corppass', CorppassOidcRouter)
 V3Router.use('/payments', PaymentsRouter)
 V3Router.use('/feature-flags', FeatureFlagsRouter)
+V3Router.use('/directory', DirectoryRouter)
