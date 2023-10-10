@@ -175,8 +175,10 @@ export const AppRouter = (): JSX.Element => {
             />
             <Route
               path={RESULTS_INSIGHTS_SUBROUTE}
-              element={<InsightsPage />}
-            />
+              element={<ResponsesLayout />}
+            >
+              <Route index element={<InsightsPage />} />
+            </Route>
           </Route>
         </Route>
         <Route
