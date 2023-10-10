@@ -1,13 +1,9 @@
 import axios from 'axios'
 
-// import { Response } from 'express-serve-static-core'
 import { ControllerHandler } from '../core/core.types'
 
-// type OpenAIRequest = {
-//   prompt: string
-//   max_tokens?: number
-//   // ... any other parameters you wish to set
-// }
+import { sampleFormFields } from './reform.constants'
+import { schemaPromptBuilder, userPromptBuilder } from './reform.service'
 
 type OpenAIResponse = {
   id: string
@@ -23,28 +19,35 @@ type OpenAIResponse = {
 const OPENAI_ENDPOINT = 'https://api.openai.com/v1/chat/completions'
 const API_KEY = 'YOUR_OPENAI_API_KEY' // Replace with your OpenAI API key
 
-export const callOpenAI: ControllerHandler = async (req, res) => {
+export const callOpenAI: ControllerHandler<
+  unknown,
+  unknown,
+  { purpose: string }
+> = async (req, res) => {
   const headers = {
     Authorization: `Bearer ${API_KEY}`,
     'Content-Type': 'application/json',
-    // 'User-Agent': 'YOUR_APP_NAME', // Replace with your app's name or identifier
   }
-
-  // console.log('request', request)
 
   try {
     const response = await axios.post<OpenAIResponse>(
       OPENAI_ENDPOINT,
       {
         model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: 'hihi i need help' }],
-        temperature: 0.1,
+        messages: [
+          { role: 'system', content: schemaPromptBuilder(sampleFormFields) },
+          { role: 'user', content: userPromptBuilder(req.body.purpose) },
+        ],
       },
       {
-        headers,
+        headers: {
+          ...headers,
+          // Required due to bug introduced in axios 1.2.1: https://github.com/axios/axios/issues/5346
+          // TODO: remove when axios is upgraded to 1.2.2
+          'Accept-Encoding': 'gzip,deflate,compress',
+        },
       },
     )
-    console.log('response', response)
     return res.send(response.data)
   } catch (error) {
     if (axios.isAxiosError(error)) {
