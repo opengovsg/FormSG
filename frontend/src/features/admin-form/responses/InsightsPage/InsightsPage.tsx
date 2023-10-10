@@ -1,6 +1,7 @@
 import { Chart, GoogleChartWrapperChartType } from 'react-google-charts'
 import { Divider, VStack } from '@chakra-ui/react'
 
+import { BasicField } from '~shared/types'
 import { FormResponseMode } from '~shared/types/form'
 
 import { useToast } from '~hooks/useToast'
@@ -81,7 +82,7 @@ const InternalInsights = () => {
         return (
           <FormChart
             title={formField.title}
-            chartType="PieChart"
+            chartType={FIELD_TO_CHART.get(formField.fieldType) || 'PieChart'}
             data={dataValues}
             key={idx}
           />
@@ -104,3 +105,9 @@ const FormChart = ({
     <Chart data={data} chartType={chartType} options={{ title }} width="100%" />
   )
 }
+
+const FIELD_TO_CHART = new Map<BasicField, GoogleChartWrapperChartType>([
+  [BasicField.Rating, 'ColumnChart'],
+  [BasicField.Radio, 'PieChart'],
+  [BasicField.Checkbox, 'BarChart'],
+])
