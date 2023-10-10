@@ -12,6 +12,8 @@ import {
 } from '../ResponsesPage/storage'
 import { useUnlockedResponses } from '../ResponsesPage/storage/UnlockedResponses/UnlockedResponsesProvider'
 
+import { useAllSubmissionData } from './queries'
+
 export const InsightsPage = (): JSX.Element => {
   const { data: form, isLoading } = useAdminForm()
   const { totalResponsesCount, secretKey } = useStorageResponsesContext()
@@ -40,7 +42,8 @@ export const InsightsPage = (): JSX.Element => {
 }
 
 const InternalInsights = () => {
-  const {} = useUnlockedResponses()
+  const { data } = useAllSubmissionData()
+  console.log(data)
 
   return <></>
 }
