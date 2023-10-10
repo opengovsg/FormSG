@@ -100,3 +100,13 @@ export const getDecryptedSubmissionById = async ({
     responses: processedContent,
   }
 }
+
+export const getAllEncryptedSubmission = async ({
+  formId,
+}: {
+  formId: string
+}) => {
+  return ApiService.get<StorageModeSubmissionDto[]>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/submissions`,
+  ).then(({ data }) => data)
+}

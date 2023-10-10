@@ -23,6 +23,7 @@ import {
   StorageModeSubmissionMetadataList,
 } from '../../../../../shared/types'
 import {
+  IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
   StripePaymentMetadataDto,
 } from '../../../../types'
@@ -65,6 +66,7 @@ import {
 import {
   addPaymentDataStream,
   checkFormIsEncryptMode,
+  getAllEncryptedSubmissionData,
   getEncryptedSubmissionData,
   getQuarantinePresignedPostData,
   getSubmissionCursor,
@@ -869,6 +871,65 @@ export const handleGetEncryptedResponse: ControllerHandler<
           ),
         )
       })
+      .map((responseData) => {
+        logger.info({
+          message: 'Get encrypted response using submissionId success',
+          meta: logMeta,
+        })
+        return res.json(responseData)
+      })
+      .mapErr((error) => {
+        logger.error({
+          message: 'Failure retrieving encrypted submission response',
+          meta: logMeta,
+          error,
+        })
+
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({
+          message: errorMessage,
+        })
+      })
+  )
+}
+
+export const handleGetAllEncryptedResponse: ControllerHandler<
+  { formId: string },
+  IEncryptedSubmissionSchema[] | ErrorDto
+> = async (req, res) => {
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+  const { formId } = req.params
+
+  const logMeta = {
+    action: 'handleGetAllEncryptedResponse',
+
+    formId,
+    sessionUserId,
+    ...createReqMeta(req),
+  }
+
+  logger.info({
+    message: 'Get all encrypted response start',
+    meta: logMeta,
+  })
+
+  return (
+    // Step 1: Retrieve logged in user.
+    getPopulatedUserById(sessionUserId)
+      // Step 2: Check whether user has read permissions to form.
+      .andThen((user) =>
+        getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Read,
+        }),
+      )
+      // Step 3: Check whether form is encrypt mode.
+      .andThen(checkFormIsEncryptMode)
+      // Step 4: Is encrypt mode form, retrieve submission data.
+      .andThen(() => getAllEncryptedSubmissionData(formId))
+      // Step 5: If there is an associated payment, get the payment details.
+
       .map((responseData) => {
         logger.info({
           message: 'Get encrypted response using submissionId success',

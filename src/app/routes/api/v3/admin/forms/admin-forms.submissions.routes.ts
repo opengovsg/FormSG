@@ -80,3 +80,11 @@ AdminFormsSubmissionsRouter.get(
   '/:formId([a-fA-F0-9]{24})/submissions/metadata',
   EncryptSubmissionController.handleGetMetadata,
 )
+
+/**
+ * Retrieve all encrypted response form a form
+ */
+AdminFormsSubmissionsRouter.get(
+  '/:formId([a-fA-F0-9]{24})/submissions',
+  EncryptSubmissionController.handleGetAllEncryptedResponse,
+)

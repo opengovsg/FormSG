@@ -323,6 +323,24 @@ export const getEncryptedSubmissionData = (
   })
 }
 
+export const getAllEncryptedSubmissionData = (formId: string) => {
+  return ResultAsync.fromPromise(
+    EncryptSubmissionModel.find({ formId }),
+    (error) => {
+      logger.error({
+        message: 'Failure retrieving encrypted submission from database',
+        meta: {
+          action: 'getEncryptedSubmissionData',
+          formId,
+        },
+        error,
+      })
+
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  )
+}
+
 /**
  * Gets completed payment details associated with a particular submission for a
  * given paymentId.
