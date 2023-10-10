@@ -1,3 +1,5 @@
+import { Chart, GoogleChartWrapperChartType } from 'react-google-charts'
+
 import { FormResponseMode } from '~shared/types/form'
 
 import { useToast } from '~hooks/useToast'
@@ -41,15 +43,62 @@ export const InsightsPage = (): JSX.Element => {
 }
 
 const InternalInsights = () => {
-  const { data } = useAllSubmissionData()
-  console.log(data)
-
+  const { data: encryptedContent } = useAllSubmissionData()
   const { data: form } = useAdminForm()
-  console.log(form?.form_fields)
+
+  const aggregateSubmissionData = (id: string): [string, number | string][] => {
+    const hashMap = new Map<string, number>()
+
+    // use key-value pair for faster
+    encryptedContent?.forEach((content) => {
+      content.responses.forEach((field) => {
+        if (field._id === id && field.answer) {
+          console.log(field)
+          hashMap.set(field.answer, (hashMap.get(field.answer) || 0) + 1)
+        } else if (field._id === id && field.answerArray) {
+          field.answerArray.forEach((answer) =>
+            hashMap.set(answer, (hashMap.get(answer) || 0) + 1),
+          )
+        }
+      })
+    })
+    console.log(hashMap)
+    return Array.from(hashMap)
+  }
 
   // For each form field in form
   // Aggregate submission data based on _id
   // Render into react google charts
 
-  return <></>
+  return (
+    <>
+      {form?.form_fields.map((formField, idx) => {
+        const dataValues = aggregateSubmissionData(formField._id)
+        // add header to values
+        dataValues.unshift(['Answer', 'Count'])
+        return (
+          <FormChart
+            title={formField.title}
+            chartType="PieChart"
+            data={dataValues}
+            key={idx}
+          />
+        )
+      })}
+    </>
+  )
+}
+
+const FormChart = ({
+  title,
+  chartType,
+  data,
+}: {
+  title: string
+  chartType: GoogleChartWrapperChartType
+  data: [string, number | string][]
+}) => {
+  return (
+    <Chart data={data} chartType={chartType} options={{ title }} width="100%" />
+  )
 }
