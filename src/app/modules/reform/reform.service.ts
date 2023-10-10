@@ -4,8 +4,17 @@ export const schemaPromptBuilder = (schema: any) => {
   return prompt
 }
 
-export const userPromptBuilder = (userInput: string) => {
-  const prompt = `Help me generate a form to ${userInput}.
-  Present the required information in JSON (list of form field schemas), in the form of "---\nJSON schema: <JSON>\n---".`
+export const formFieldsPromptBuilder = (purpose: string, questions: string) => {
+  const prompt = `Help me generate a form to ${purpose}.\n
+  I have the following list of questions:\n
+  ${questions}\n\n
+  Present the questions as form fields in JSON (list of form field schemas), in the form of "---\nJSON schema: <JSON>\n---".`
+  return prompt
+}
+
+export const questionListPromptBuilder = (purpose: string) => {
+  const prompt = `I am a public officer who wants to create a form to ${purpose}.\n
+  Give me a list of questions I should have in my form, in the form of
+  "---\nQuestion 1: <question>\nQuestion 2: <question>\n---".`
   return prompt
 }

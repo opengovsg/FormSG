@@ -4,7 +4,7 @@ import { callOpenAI } from '../../../../../modules/reform/reform.controller'
 
 export const ReformRouter = Router()
 
-ReformRouter.post('/create', callOpenAI)
+ReformRouter.post('/create/list', callOpenAI)
 
 ReformRouter.get('/migrate')
 

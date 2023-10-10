@@ -2,8 +2,15 @@ import axios from 'axios'
 
 import { ControllerHandler } from '../core/core.types'
 
-import { sampleFormFields } from './reform.constants'
-import { schemaPromptBuilder, userPromptBuilder } from './reform.service'
+import {
+  OPENAI_API_KEY,
+  OPENAI_ENDPOINT,
+  sampleFormFields,
+} from './reform.constants'
+import {
+  questionListPromptBuilder,
+  schemaPromptBuilder,
+} from './reform.service'
 
 type OpenAIResponse = {
   id: string
@@ -11,13 +18,19 @@ type OpenAIResponse = {
   created: number
   model: string
   choices: {
-    text: string
     index: number
+    message: {
+      role: string
+      content: string
+    }
+    finish_reason: string
   }[]
+  usage: {
+    prompt_tokens: number
+    completion_tokens: number
+    total_tokens: number
+  }
 }
-
-const OPENAI_ENDPOINT = 'https://api.openai.com/v1/chat/completions'
-const API_KEY = 'YOUR_OPENAI_API_KEY' // Replace with your OpenAI API key
 
 export const callOpenAI: ControllerHandler<
   unknown,
@@ -25,7 +38,7 @@ export const callOpenAI: ControllerHandler<
   { purpose: string }
 > = async (req, res) => {
   const headers = {
-    Authorization: `Bearer ${API_KEY}`,
+    Authorization: `Bearer ${OPENAI_API_KEY}`,
     'Content-Type': 'application/json',
   }
 
@@ -36,7 +49,10 @@ export const callOpenAI: ControllerHandler<
         model: 'gpt-3.5-turbo',
         messages: [
           { role: 'system', content: schemaPromptBuilder(sampleFormFields) },
-          { role: 'user', content: userPromptBuilder(req.body.purpose) },
+          {
+            role: 'user',
+            content: questionListPromptBuilder(req.body.purpose),
+          },
         ],
       },
       {
@@ -48,7 +64,7 @@ export const callOpenAI: ControllerHandler<
         },
       },
     )
-    return res.send(response.data)
+    return res.send(response.data.choices[0].message)
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.log(error)
