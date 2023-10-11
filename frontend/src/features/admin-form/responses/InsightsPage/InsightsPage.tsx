@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react'
 import { Chart, GoogleChartWrapperChartType } from 'react-google-charts'
 import ReactWordcloud from 'react-wordcloud'
 import { Divider, Text, VStack } from '@chakra-ui/react'
@@ -7,6 +8,7 @@ import { BasicField, FormFieldDto } from '~shared/types'
 import { FormResponseMode } from '~shared/types/form'
 
 import { useToast } from '~hooks/useToast'
+import Button from '~components/Button'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
@@ -96,12 +98,10 @@ const InternalInsights = () => {
             const wordLower = wordNoPunc.toLowerCase()
             hashMap.set(wordLower, (hashMap.get(wordLower) || 0) + 1)
           })
-          hashMap.forEach((val, key) =>
-            resultArr.push({ text: key, value: val }),
-          )
         }
       })
     })
+    hashMap.forEach((val, key) => resultArr.push({ text: key, value: val }))
     return resultArr
   }
 
@@ -121,11 +121,7 @@ const InternalInsights = () => {
           )
         }
 
-        let dataValues = aggregateSubmissionData(formField._id, formField)
-
-        if (formField.fieldType === BasicField.Date) {
-          dataValues = dataValues.map((data) => [new Date(data[0]), data[1]])
-        }
+        const dataValues = aggregateSubmissionData(formField._id, formField)
 
         let mean = undefined
         if (formField.fieldType === BasicField.Rating) {
@@ -138,26 +134,12 @@ const InternalInsights = () => {
         // add header to values
         dataValues.unshift(['Answer', 'Count'])
 
-        if (formField.fieldType === BasicField.Checkbox || BasicField.Rating)
-          dataValues.map((val, idx) => {
-            if (val[1] === 'Count') {
-              val.push({ role: 'style' })
-            } else {
-              val.push(
-                '#' +
-                  (0x1000000 + Math.random() * 0xffffff)
-                    .toString(16)
-                    .substr(1, 6),
-              )
-            }
-          })
-
         if (!FIELD_TO_CHART.get(formField.fieldType)) return null
 
         return (
           <FormChart
             title={`${idx + 1}. ${formField.title}`}
-            chartType={FIELD_TO_CHART.get(formField.fieldType) || 'PieChart'}
+            formField={formField}
             data={dataValues}
             key={idx}
             mean={mean}
@@ -170,15 +152,37 @@ const InternalInsights = () => {
 
 const FormChart = ({
   title,
-  chartType,
+  formField,
   data,
   mean,
 }: {
   title: string
-  chartType: GoogleChartWrapperChartType
+  formField: FormFieldDto
   data: [string, number | string][]
   mean?: number
 }) => {
+  const [isTable, setIsTable] = useState(false)
+
+  const chartType: GoogleChartWrapperChartType = useMemo(() => {
+    if (isTable) return 'Table'
+    return FIELD_TO_CHART.get(formField.fieldType) || 'PieChart'
+  }, [isTable, formField])
+
+  if (
+    !isTable &&
+    (formField.fieldType === BasicField.Checkbox || BasicField.Rating)
+  )
+    data.map((val, idx) => {
+      if (val[1] === 'Count') {
+        val.push({ role: 'style' })
+      } else {
+        val.push(
+          '#' +
+            (0x1000000 + Math.random() * 0xffffff).toString(16).substr(1, 6),
+        )
+      }
+    })
+
   const options = {
     legend: { position: chartType === 'PieChart' ? undefined : 'none' },
     chartArea: { width: '50%' },
@@ -187,7 +191,11 @@ const FormChart = ({
     <VStack w="100%" gap="0">
       <Text textStyle="h4">{title}</Text>
       <Chart data={data} chartType={chartType} options={options} width="100%" />
-      {mean && <Text textStyle="h4">Average: {mean}</Text>}
+      {mean && (
+        <Text textStyle="h4">
+          Average: {Math.round((mean + Number.EPSILON) * 100) / 100}
+        </Text>
+      )}
     </VStack>
   )
 }
