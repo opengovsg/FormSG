@@ -32,12 +32,14 @@ export const generateQnsList: ControllerHandler<
       messages: messages,
       model: 'gpt-4',
     })
-    return res.send([...messages, chatCompletion.choices[0].message])
+    return res
+      .status(200)
+      .json([...messages, chatCompletion.choices[0].message])
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.log(error)
     }
-    throw error
+    return res.status(500).send({ message: error })
   }
 }
 
@@ -66,12 +68,12 @@ export const generateFormFields: ControllerHandler<
       messages: messages,
       model: 'gpt-4',
     })
-    console.log(chatCompletion.choices[0].message)
+    return res.status(200).json(chatCompletion.choices[0].message)
     return res.send(chatCompletion.choices[0].message)
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.log(error)
     }
-    throw error
+    return res.status(500).send({ message: error })
   }
 }
