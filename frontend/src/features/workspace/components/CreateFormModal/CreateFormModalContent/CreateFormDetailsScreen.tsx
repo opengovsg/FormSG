@@ -102,7 +102,10 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
 
   const navigate = useNavigate()
 
+  const [isCreatingForm, setIsCreatingForm] = useState(false)
+
   const handleCreateFormFromQnsList = useCallback(() => {
+    setIsCreatingForm(true)
     return getFormFieldsMutation.mutate(
       {
         purpose,
@@ -115,6 +118,9 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
         onSuccess: (data) => {
           console.log(data)
           navigate(`${ADMINFORM_ROUTE}/${data._id}`)
+        },
+        onSettled: () => {
+          setIsCreatingForm(false)
         },
       },
     )
@@ -248,13 +254,18 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
                     <Spacer />
                     <Button
                       onClick={handlePurposeEnter}
-                      isDisabled={isFetchingQuestions}
+                      isLoading={isFetchingQuestions}
                     >
                       Enter
                     </Button>
                   </Stack>
                 </Skeleton>
               </FormControl>
+              {isFetchingQuestions ? (
+                <Text>
+                  Generating list of questions, this will take ~1 min.
+                </Text>
+              ) : null}
               {qnsList ? (
                 <FormControl isRequired mb="2.25rem">
                   <FormLabel>
@@ -267,10 +278,11 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
                   </Skeleton>
                 </FormControl>
               ) : null}
+              {isCreatingForm ? <Text>This will take ~3 mins...</Text> : null}
               <Button
                 rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
                 type="submit"
-                isLoading={isLoading}
+                isLoading={isCreatingForm}
                 isDisabled={!qnsList}
                 onClick={handleCreateFormFromQnsList}
                 isFullWidth
