@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Chart, GoogleChartWrapperChartType } from 'react-google-charts'
+import { BiBarChartAlt2, BiTable } from 'react-icons/bi'
 import ReactWordcloud from 'react-wordcloud'
 import {
   Divider,
@@ -21,8 +22,7 @@ import { BasicField, FormFieldDto } from '~shared/types'
 import { FormResponseMode } from '~shared/types/form'
 
 import { useToast } from '~hooks/useToast'
-import Button from '~components/Button'
-import Toggle from '~components/Toggle'
+import IconButton from '~components/IconButton'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
@@ -211,9 +211,23 @@ const FormChart = ({
   }
   return (
     <VStack w="100%" gap="0">
-      <Flex>
+      <Flex alignItems="center" gap="0.5rem">
         <Text textStyle="h4">{title}</Text>
-        <Switch onChange={() => setIsTable(!isTable)} />
+        <IconButton
+          aria-label="chart"
+          onClick={() => setIsTable(false)}
+          icon={<BiBarChartAlt2 />}
+          variant="clear"
+          isActive={!isTable}
+        />
+
+        <IconButton
+          aria-label="table"
+          onClick={() => setIsTable(true)}
+          icon={<BiTable />}
+          variant="clear"
+          isActive={isTable}
+        />
       </Flex>
       {isTable ? (
         <TableChart data={data} />
