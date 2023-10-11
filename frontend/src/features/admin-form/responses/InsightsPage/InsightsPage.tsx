@@ -115,7 +115,7 @@ const InternalInsights = () => {
           const words = aggregateWordCloud(formField._id)
           return (
             <VStack w="100%" gap="0">
-              <Text textStyle="h4">{formField.title}</Text>
+              <Text textStyle="h4">{`${idx + 1}. ${formField.title}`}</Text>
               <ReactWordcloud key={idx} words={words} />
             </VStack>
           )
@@ -156,7 +156,7 @@ const InternalInsights = () => {
 
         return (
           <FormChart
-            title={formField.title}
+            title={`${idx + 1}. ${formField.title}`}
             chartType={FIELD_TO_CHART.get(formField.fieldType) || 'PieChart'}
             data={dataValues}
             key={idx}
