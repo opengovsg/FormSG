@@ -34,6 +34,7 @@ import { parseModelOutput } from '~features/admin-form/reform/utils'
 import { useUser } from '~features/user/queries'
 import { useCreateFormMutations } from '~features/workspace/mutations'
 
+import { Attachment } from '../../Attachment/Attachment'
 import { useCreateFormWizard } from '../CreateFormWizardContext'
 
 import { EmailFormRecipientsInput } from './EmailFormRecipientsInput'
@@ -136,6 +137,17 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
     qnsList,
     user?.email,
   ])
+
+  const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined)
+
+  const handleFileUpload = (file: any) => {
+    setSelectedFile(file)
+    console.log('Uploaded file:', file)
+  }
+
+  const handleFileUploadError = (error: any) => {
+    console.log('Error:', error)
+  }
 
   return (
     <>
@@ -265,6 +277,19 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
                     </Button>
                   </Stack>
                 </Skeleton>
+              </FormControl>
+              <FormControl isRequired mb="2.25rem">
+                <FormLabel>
+                  Alternatively, upload a PDF form you would like to convert
+                </FormLabel>
+                <Attachment
+                  onChange={handleFileUpload}
+                  onError={handleFileUploadError}
+                  value={selectedFile}
+                  maxSize={2000000} // 2MB
+                  name="file-upload"
+                  accept=".pdf"
+                ></Attachment>
               </FormControl>
               {isFetchingQuestions ? (
                 <Text>
