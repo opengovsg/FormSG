@@ -14,6 +14,7 @@ import Pagination from '~components/Pagination'
 
 import Button from '../../../../../../components/Button'
 import { MOEResultsComponent } from '../../../../../../plugins'
+import { MOEAuthComponent } from '../../../../../../plugins/MOEAuthComponent'
 import { getDecryptedSubmissionById } from '../../../AdminSubmissionsService'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 
@@ -116,6 +117,9 @@ export const UnlockedResponses = (): JSX.Element => {
 
   return (
     <Flex flexDir="column" h="100%">
+      {isPluginConnected ? null : (
+        <MOEAuthComponent setIsPluginConnected={setIsPluginConnected} />
+      )}
       <Grid
         mb="1rem"
         alignItems="end"
@@ -130,6 +134,7 @@ export const UnlockedResponses = (): JSX.Element => {
         {/* Plugin code goes here */}
         {decryptedResponses && isPluginConnected && pluginComponent.render()}
         {/* End of plugin code */}
+
         <Stack
           align="center"
           spacing="1rem"
@@ -141,15 +146,7 @@ export const UnlockedResponses = (): JSX.Element => {
               <Text as="span" color="primary.500">
                 {countToUse?.toLocaleString()}
               </Text>
-              {prettifiedResponsesCount} {'    '}
-              <Button
-                variant="clear"
-                rightIcon={<Icon as={BiData} fontSize="1.5rem" />}
-                onClick={() => setIsPluginConnected(true)}
-              >
-                {/* underline text */}
-                <Text as="u">Connect to MOE Database</Text>
-              </Button>
+              {prettifiedResponsesCount}
             </Text>
           </Skeleton>
         </Stack>
