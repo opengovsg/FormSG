@@ -128,6 +128,6 @@ export const getAllDecryptedSubmission = async ({
 
     if (!decryptedContent) throw new Error('Could not decrypt the response')
 
-    return decryptedContent
+    return { ...decryptedContent, submissionTime: encryptedData.created }
   })
 }

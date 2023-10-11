@@ -101,6 +101,22 @@ const InternalInsights = () => {
   const { data: form } = useAdminForm()
   const { dateRange, setDateRange } = useStorageResponsesContext()
 
+  const filteredEncryptedData = useMemo(() => {
+    if (!encryptedContent) return []
+    if (dateRange.length === 2) {
+      const resultArr: typeof encryptedContent = []
+      encryptedContent.forEach((content) => {
+        if (
+          Date.parse(content.submissionTime) >= Date.parse(dateRange[0]) &&
+          Date.parse(content.submissionTime) <= Date.parse(dateRange[1])
+        )
+          resultArr.push(content)
+      })
+      return resultArr
+    }
+    return encryptedContent
+  }, [encryptedContent, dateRange])
+
   const aggregateSubmissionData = (
     id: string,
     formField: FormFieldDto,
@@ -112,7 +128,7 @@ const InternalInsights = () => {
       }
     }
 
-    encryptedContent?.forEach((content) => {
+    filteredEncryptedData?.forEach((content) => {
       content.responses.forEach((field) => {
         if (field._id === id && field.answer) {
           hashMap.set(field.answer, (hashMap.get(field.answer) || 0) + 1)
@@ -134,7 +150,7 @@ const InternalInsights = () => {
     const resultArr: Word[] = []
 
     // use key-value pair for faster
-    encryptedContent?.forEach((content) => {
+    filteredEncryptedData?.forEach((content) => {
       content.responses.forEach((field) => {
         if (field._id === id && field.answer) {
           const answerArray = field.answer.split(' ')
@@ -153,12 +169,10 @@ const InternalInsights = () => {
 
   const prettifiedResponsesCount = useMemo(
     () =>
-      encryptedContent
-        ? dateRange.length
-          ? simplur` ${[encryptedContent.length ?? 0]}result[|s] found`
-          : simplur` ${[encryptedContent.length ?? 0]}response[|s] to date`
-        : `responses`,
-    [encryptedContent, dateRange],
+      dateRange.length
+        ? simplur` ${[filteredEncryptedData.length ?? 0]}result[|s] found`
+        : simplur` ${[filteredEncryptedData.length ?? 0]}response[|s] to date`,
+    [filteredEncryptedData, dateRange],
   )
 
   return (
@@ -176,7 +190,7 @@ const InternalInsights = () => {
       >
         <Text textStyle="h4" mb="0.5rem">
           <Text as="span" color="primary.500">
-            {encryptedContent ? encryptedContent.length : 0}
+            {filteredEncryptedData.length}
           </Text>
           {prettifiedResponsesCount}
         </Text>
@@ -190,6 +204,7 @@ const InternalInsights = () => {
       <Divider mb="1.5rem" border="2px" borderColor="gray.200" />
       <VStack divider={<Divider />} gap="1.5rem">
         {form?.form_fields.map((formField, idx) => {
+          if (filteredEncryptedData.length === 0) return null
           if (
             formField.fieldType === BasicField.ShortText ||
             formField.fieldType === BasicField.LongText
@@ -218,7 +233,11 @@ const InternalInsights = () => {
           // add header to values
           dataValues.unshift(['Answer', 'Count'])
 
-          if (!FIELD_TO_CHART.get(formField.fieldType)) return null
+          if (
+            !FIELD_TO_CHART.get(formField.fieldType) ||
+            dataValues.length <= 1
+          )
+            return null
 
           return (
             <FormChart
