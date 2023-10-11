@@ -3,7 +3,7 @@ import ReactWordcloud from 'react-wordcloud'
 import { Divider, Text, VStack } from '@chakra-ui/react'
 import { removeStopwords } from 'stopword'
 
-import { BasicField } from '~shared/types'
+import { BasicField, FormFieldDto } from '~shared/types'
 import { FormResponseMode } from '~shared/types/form'
 
 import { useToast } from '~hooks/useToast'
@@ -52,8 +52,16 @@ const InternalInsights = () => {
   const { data: encryptedContent } = useAllSubmissionData()
   const { data: form } = useAdminForm()
 
-  const aggregateSubmissionData = (id: string): [string, number | string][] => {
+  const aggregateSubmissionData = (
+    id: string,
+    formField: FormFieldDto,
+  ): [string, number | string][] => {
     const hashMap = new Map<string, number>()
+    if (formField.fieldType === BasicField.Rating) {
+      for (let i = 1; i <= formField.ratingOptions.steps; i += 1) {
+        hashMap.set(String(i), 0)
+      }
+    }
 
     // use key-value pair for faster
     encryptedContent?.forEach((content) => {
@@ -68,6 +76,7 @@ const InternalInsights = () => {
         }
       })
     })
+
     return Array.from(hashMap)
   }
 
@@ -104,7 +113,6 @@ const InternalInsights = () => {
           formField.fieldType === BasicField.LongText
         ) {
           const words = aggregateWordCloud(formField._id)
-          console.log(words)
           return (
             <VStack w="100%" gap="0">
               <Text textStyle="h4">{formField.title}</Text>
@@ -113,7 +121,7 @@ const InternalInsights = () => {
           )
         }
 
-        let dataValues = aggregateSubmissionData(formField._id)
+        let dataValues = aggregateSubmissionData(formField._id, formField)
 
         if (formField.fieldType === BasicField.Date) {
           dataValues = dataValues.map((data) => [new Date(data[0]), data[1]])
