@@ -116,7 +116,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
         prevMessages,
         questions: qnsList,
         formName,
-        email: user?.email ?? 'huiqing@open.gov.sg',
+        email: user?.email ?? 'example@open.gov.sg',
       },
       {
         onSuccess: (data) => {
@@ -250,7 +250,9 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
                 ) : null}
               </FormControl>
               <FormControl isRequired mb="2.25rem">
-                <FormLabel>I want to create a form that...</FormLabel>
+                <FormLabel description="e.g. I want to create a form that collect personal details">
+                  I want to create a form that...
+                </FormLabel>
                 <Skeleton isLoaded={!isFetching}>
                   <Stack direction="row">
                     <Input value={purpose} onChange={handlePurposeChange} />

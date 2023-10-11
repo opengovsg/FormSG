@@ -90,7 +90,7 @@ export const sampleFormFields = [
       includeFormSummary: '<boolean>',
     },
     isVerifiable: '<boolean>',
-    hasAllowedEmailDomains: '<boolean>',
+    hasAllowedEmailDomains: false as const,
     allowedEmailDomains: [],
     title: '<string>',
     description: '<string>',

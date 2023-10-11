@@ -8,7 +8,7 @@ export const formFieldsPromptBuilder = (purpose: string, questions: string) => {
   const prompt = `Help me generate a form that ${purpose}.\n
   I have the following list of questions:\n
   ${questions}\n\n
-  Present the questions as form fields in JSON (list of form field schemas), in the form of "---\n<JSON schema; array of form fields>\n---".`
+  Present the questions as form fields in JSON (list of form field schemas), in the form of "---\n<JSON schema; array of form fields>\n---" without any code blocks.`
   return prompt
 }
 
