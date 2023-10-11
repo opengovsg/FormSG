@@ -115,6 +115,7 @@ export class MOEResultsComponent extends PluginComponent {
               return (
                 // turn grey on hover
                 <Tr
+                  key={className}
                   _hover={{ bgColor: 'secondary.100' }}
                   onClick={() => {
                     this.handleRowClick(className)
@@ -147,7 +148,7 @@ export class MOEResultsComponent extends PluginComponent {
                   const { submittedStudents, className } = classResult
                   return submittedStudents.map((student) => {
                     return (
-                      <Tr>
+                      <Tr key={student.name}>
                         <Td>{student.name}</Td>
                         <Td>{className}</Td>
                       </Tr>

@@ -281,7 +281,7 @@ export const UnlockedResponses = (): JSX.Element => {
         {/* <Flex flexDir="row" justifyContent={'space-between'}>
           {generateResponseCountByClass(responseNRICs || [])}
         </Flex> */}
-        {isDecryptedResponsesLoading ? <></> : pluginComponent.render()}
+        {decryptedResponses && pluginComponent.render()}
         {/* End of plugin code */}
         <Stack
           align="center"
