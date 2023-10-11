@@ -188,7 +188,7 @@ export const FormHeader = ({
               {title ?? 'Loading title'}
             </Text>
           </Skeleton>
-          {estTimeString && (
+          {/* {estTimeString && (
             <Flex align="flex-start" justify="center" mt="0.875rem">
               <Icon
                 as={BxsTimeFive}
@@ -200,7 +200,7 @@ export const FormHeader = ({
                 {estTimeString}
               </Text>
             </Flex>
-          )}
+          )} */}
           {loggedInId ? (
             <Button
               mt="2.25rem"

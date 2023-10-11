@@ -96,7 +96,7 @@ export const PublicFormSubmitButton = ({
           />
         )
       ) : null}
-      <Button
+      {/* <Button
         isFullWidth={isMobile}
         w="100%"
         colorScheme={`theme-${colorTheme}` as ThemeColorScheme}
@@ -112,7 +112,7 @@ export const PublicFormSubmitButton = ({
           : isPaymentEnabled
           ? 'Proceed to pay'
           : 'Submit now'}
-      </Button>
+      </Button> */}
       {preventSubmissionLogic ? (
         <InlineMessage variant="warning">
           {preventSubmissionLogic.preventSubmitMessage}

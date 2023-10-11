@@ -29,6 +29,7 @@ import {
   BiIdCard,
   BiImage,
   BiInfinite,
+  BiLink,
   BiMailSend,
   BiMap,
   BiMobile,
@@ -59,6 +60,11 @@ type BuilderSidebarFieldMeta = {
 export const BASICFIELD_TO_DRAWER_META: {
   [key in BasicField]: BuilderSidebarFieldMeta
 } = {
+  [BasicField.Link]: {
+    label: 'Link',
+    icon: BiLink,
+    isSubmitted: false,
+  },
   [BasicField.Image]: {
     label: 'Image',
     icon: BiImage,

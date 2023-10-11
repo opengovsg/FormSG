@@ -212,6 +212,14 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
         ...baseMeta,
       }
     }
+    case BasicField.Link: {
+      return {
+        fieldType,
+        url: '',
+        ...baseMeta,
+        title: '',
+      }
+    }
   }
 }
 

@@ -168,7 +168,7 @@ export const FormBuilder = ({
           pt={{ base: '1rem', md: 0 }}
           px={{ base: '1rem', md: '1.5rem', lg: '2.5rem' }}
         >
-          <Skeleton isLoaded={!isLoading} mb="1.5rem" maxW="57rem" width="100%">
+          {/* <Skeleton isLoaded={!isLoading} mb="1.5rem" maxW="57rem" width="100%">
             <Button
               _hover={{ bg: 'primary.200' }}
               py="1.5rem"
@@ -182,7 +182,7 @@ export const FormBuilder = ({
             >
               Customise Thank you page
             </Button>
-          </Skeleton>
+          </Skeleton> */}
         </Flex>
       </Stack>
     </Flex>

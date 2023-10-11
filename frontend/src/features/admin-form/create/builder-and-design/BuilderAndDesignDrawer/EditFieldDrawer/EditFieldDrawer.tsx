@@ -36,6 +36,7 @@ import {
   EditHeader,
   EditHomeno,
   EditImage,
+  EditLink,
   EditLongText,
   EditMobile,
   EditMyInfo,
@@ -167,6 +168,8 @@ export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
         return <EditParagraph {...props} field={field} />
       case BasicField.Image:
         return <EditImage {...props} field={field} />
+      case BasicField.Link:
+        return <EditLink {...props} field={field} />
       default:
         return <div>TODO: Insert field options here</div>
     }

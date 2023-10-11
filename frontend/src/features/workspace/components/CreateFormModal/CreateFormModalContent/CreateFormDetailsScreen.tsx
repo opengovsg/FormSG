@@ -51,13 +51,13 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
     <>
       <ModalHeader color="secondary.700">
         <Container maxW="42.5rem" p={0}>
-          {modalHeader}
+          Set up your directory
         </Container>
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap">
         <Container maxW="42.5rem" p={0}>
           <FormControl isRequired isInvalid={!!errors.title} mb="2.25rem">
-            <FormLabel useMarkdownForDescription>Form name</FormLabel>
+            <FormLabel useMarkdownForDescription>Directory name</FormLabel>
             <Skeleton isLoaded={!isFetching}>
               <Input
                 autoFocus
@@ -72,9 +72,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             ) : null}
           </FormControl>
           <FormControl isRequired isInvalid={!!errors.responseMode} mb="2.5rem">
-            <FormLabel>
-              How do you want to receive your form responses?
-            </FormLabel>
+            <FormLabel>Who would be able to view this directory?</FormLabel>
             <Skeleton isLoaded={!isFetching}>
               <Controller
                 name="responseMode"
@@ -96,7 +94,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
               this point.`}
             </InlineMessage>
           )}
-          {responseModeValue === FormResponseMode.Email && (
+          {/* {responseModeValue === FormResponseMode.Email && (
             <FormControl isRequired isInvalid={!!errors.emails} mb="2.25rem">
               <FormLabel
                 useMarkdownForDescription
@@ -106,7 +104,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
               </FormLabel>
               <EmailFormRecipientsInput />
             </FormControl>
-          )}
+          )} */}
           <Button
             rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
             type="submit"

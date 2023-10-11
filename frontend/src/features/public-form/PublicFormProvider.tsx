@@ -187,24 +187,24 @@ export const PublicFormProvider = ({
     enableUsage: enableTurnstileFeatureFlag,
   })
 
-  const {
-    hasLoaded: hasRecaptchaLoaded,
-    getCaptchaResponse,
-    containerId: recaptchaContainerID,
-  } = useRecaptcha({
-    sitekey: enableCaptcha ? captchaPublicKey : undefined,
-    enableUsage: !enableTurnstileFeatureFlag,
-  })
+  // const {
+  //   hasLoaded: hasRecaptchaLoaded,
+  //   getCaptchaResponse,
+  //   containerId: recaptchaContainerID,
+  // } = useRecaptcha({
+  //   sitekey: enableCaptcha ? captchaPublicKey : undefined,
+  //   enableUsage: !enableTurnstileFeatureFlag,
+  // })
 
-  if (enableTurnstileFeatureFlag) {
-    hasLoaded = hasTurnstileLoaded
-    containerID = turnstileContainerID
-    captchaType = CaptchaTypes.Turnstile
-  } else {
-    hasLoaded = hasRecaptchaLoaded
-    containerID = recaptchaContainerID
-    captchaType = CaptchaTypes.Recaptcha
-  }
+  // if (enableTurnstileFeatureFlag) {
+  //   hasLoaded = hasTurnstileLoaded
+  //   containerID = turnstileContainerID
+  //   captchaType = CaptchaTypes.Turnstile
+  // } else {
+  //   hasLoaded = hasRecaptchaLoaded
+  //   containerID = recaptchaContainerID
+  //   captchaType = CaptchaTypes.Recaptcha
+  // }
 
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
     useCommonFormProvider(formId)
@@ -297,27 +297,27 @@ export const PublicFormProvider = ({
       const { form } = data ?? {}
       if (!form) return
 
-      let captchaResponse: string | null
+      // let captchaResponse: string | null
 
-      if (enableTurnstileFeatureFlag) {
-        try {
-          captchaResponse = await getTurnstileResponse()
-        } catch (error) {
-          trackTurnstileOnError(form)
-          return showErrorToast(error, form)
-        }
-      } else {
-        try {
-          captchaResponse = await getCaptchaResponse()
-        } catch (error) {
-          if (error instanceof RecaptchaClosedError) {
-            // Do nothing if recaptcha is closed.
-            return
-          }
-          trackReCaptchaOnError(form)
-          return showErrorToast(error, form)
-        }
-      }
+      // if (enableTurnstileFeatureFlag) {
+      //   try {
+      //     captchaResponse = await getTurnstileResponse()
+      //   } catch (error) {
+      //     trackTurnstileOnError(form)
+      //     return showErrorToast(error, form)
+      //   }
+      // } else {
+      //   try {
+      //     captchaResponse = await getCaptchaResponse()
+      //   } catch (error) {
+      //     if (error instanceof RecaptchaClosedError) {
+      //       // Do nothing if recaptcha is closed.
+      //       return
+      //     }
+      //     trackReCaptchaOnError(form)
+      //     return showErrorToast(error, form)
+      //   }
+      // }
 
       const countryRegionFieldIds = new Set(
         form.form_fields
@@ -345,7 +345,7 @@ export const PublicFormProvider = ({
         formFields: form.form_fields,
         formLogics: form.form_logics,
         formInputs: formInputsWithCountryRegionInUpperCase,
-        captchaResponse,
+        // captchaResponse,
         captchaType,
         responseMetadata: {
           responseTimeMs: differenceInMilliseconds(Date.now(), startTime),
@@ -665,14 +665,14 @@ export const PublicFormProvider = ({
     [
       data,
       enableTurnstileFeatureFlag,
-      captchaType,
+      // captchaType,
       startTime,
       isPaymentEnabled,
       numVisibleFields,
       useFetchForSubmissions,
       getTurnstileResponse,
       showErrorToast,
-      getCaptchaResponse,
+      // getCaptchaResponse,
       submitEmailModeFormFetchMutation,
       submitEmailModeFormMutation,
       enableEncryptionBoundaryShift,
@@ -712,9 +712,9 @@ export const PublicFormProvider = ({
         error,
         submissionData,
         isAuthRequired,
-        captchaContainerId: containerID,
+        // captchaContainerId: containerID,
         expiryInMs,
-        isLoading: isLoading || (!!enableCaptcha && !hasLoaded),
+        isLoading: isLoading || (!!enableCaptcha && false),
         isPaymentEnabled,
         isPreview: false,
         setNumVisibleFields,

@@ -18,6 +18,7 @@ import {
   FormFieldWithId,
   HomenoFieldBase,
   ImageFieldBase,
+  LinkFieldBase,
   LongTextFieldBase,
   MobileFieldBase,
   MyInfoChildAttributes,
@@ -145,6 +146,7 @@ export type ChildrenCompoundFieldValues = {
 // Various schemas used by different fields
 export type SectionFieldSchema = FormFieldWithId<SectionFieldBase>
 export type ParagraphFieldSchema = FormFieldWithId<StatementFieldBase>
+export type LinkFieldSchema = FormFieldWithId<LinkFieldBase>
 export type ImageFieldSchema = FormFieldWithId<ImageFieldBase>
 
 // With question number

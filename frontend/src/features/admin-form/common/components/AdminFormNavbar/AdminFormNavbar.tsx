@@ -148,7 +148,7 @@ export const AdminFormNavbar = ({
       >
         <AdminFormNavbarBreadcrumbs formInfo={formInfo} />
       </GridItem>
-      <NavigationTabList
+      {/* <NavigationTabList
         variant={tabResponsiveVariant}
         ref={ref}
         onMouseDown={onMouseDown}
@@ -180,7 +180,7 @@ export const AdminFormNavbar = ({
         >
           Results
         </NavigationTab>
-      </NavigationTabList>
+      </NavigationTabList> */}
       <Flex
         py="0.625rem"
         pl="1rem"
@@ -201,15 +201,15 @@ export const AdminFormNavbar = ({
             {renderLastModified}
           </Flex>
           <ButtonGroup spacing="0.5rem" isDisabled={!formInfo}>
-            <Tooltip label="Manage collaborators">
+            {/* <Tooltip label="Manage collaborators">
               <IconButton
                 aria-label="Manage collaborators"
                 variant="outline"
                 onClick={handleAddCollabButtonClick}
                 icon={<BiUserPlus />}
               />
-            </Tooltip>
-            <Tooltip label="Preview form">
+            </Tooltip> */}
+            {/* <Tooltip label="Preview form">
               <IconButton
                 as={ReactLink}
                 aria-label="Preview form"
@@ -218,7 +218,7 @@ export const AdminFormNavbar = ({
                 target="_blank"
                 icon={<BiShow />}
               />
-            </Tooltip>
+            </Tooltip> */}
             <Tooltip label="Share your form link">
               <Button onClick={handleShareButtonClick}>Share</Button>
             </Tooltip>

@@ -32,6 +32,7 @@ import {
   EmailField,
   HomeNoField,
   ImageField,
+  LinkField,
   LongTextField,
   MobileField,
   NricField,
@@ -501,5 +502,7 @@ const FieldRow = ({ field, ...rest }: FieldRowProps) => {
       return <TableField schema={field} {...rest} />
     case BasicField.Children:
       return <ChildrenCompoundField schema={field} {...rest} />
+    case BasicField.Link:
+      return <LinkField schema={field} {...rest} />
   }
 }

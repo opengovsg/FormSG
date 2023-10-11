@@ -84,6 +84,7 @@ import {
   createEmailFieldSchema,
   createHomenoFieldSchema,
   createImageFieldSchema,
+  createLinkFieldSchema,
   createLongTextFieldSchema,
   createMobileFieldSchema,
   createNricFieldSchema,
@@ -481,7 +482,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       status: {
         type: String,
         enum: Object.values(FormStatus),
-        default: FormStatus.Private,
+        // default: FormStatus.Private,
+        default: FormStatus.Public,
         set: function (this: IFormSchema, v: FormStatus) {
           if (
             this.status === FormStatus.Private &&
@@ -589,6 +591,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormFieldPath.discriminator(BasicField.Date, createDateFieldSchema())
   FormFieldPath.discriminator(BasicField.Nric, createNricFieldSchema())
   FormFieldPath.discriminator(BasicField.Uen, createUenFieldSchema())
+  FormFieldPath.discriminator(BasicField.Link, createLinkFieldSchema())
   FormFieldPath.discriminator(BasicField.YesNo, createYesNoFieldSchema())
   FormFieldPath.discriminator(
     BasicField.Statement,

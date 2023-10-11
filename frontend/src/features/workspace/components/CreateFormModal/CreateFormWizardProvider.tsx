@@ -64,24 +64,29 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
   const handleCreateStorageModeForm = handleSubmit(
     ({ title, responseMode }) => {
       if (responseMode !== FormResponseMode.Encrypt) return
-
-      return createStorageModeFormMutation.mutate({
-        title,
-        responseMode,
-        publicKey: keypair.publicKey,
-      })
+      // setCurrentStep([CreateFormFlowStates.Landing, 1])
+      // return createEmailModeFormMutation.mutate({
+      //   emails: ['ken@open.gov.sg'], // hardcoded
+      //   title,
+      //   responseMode: FormResponseMode.Directory,
+      // })
+      // return createEmailModeFormMutation.mutate({
+      //   title,
+      //   responseMode,
+      //   publicKey: keypair.publicKey,
+      // })
     },
   )
 
   const handleDetailsSubmit = handleSubmit((inputs) => {
-    if (inputs.responseMode === FormResponseMode.Email) {
-      return createEmailModeFormMutation.mutate({
-        emails: inputs.emails.filter(Boolean),
-        title: inputs.title,
-        responseMode: inputs.responseMode,
-      })
-    }
-    setCurrentStep([CreateFormFlowStates.Landing, 1])
+    // if (inputs.responseMode === FormResponseMode.Email) {
+    return createEmailModeFormMutation.mutate({
+      emails: ['ken@open.gov.sg'], // hardcoded
+      title: inputs.title,
+      responseMode: FormResponseMode.Email, // hardcoded as email
+    })
+    // }
+    // setCurrentStep([CreateFormFlowStates.Landing, 1])
   })
 
   return {

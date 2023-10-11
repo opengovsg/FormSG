@@ -179,8 +179,8 @@ export const DesignInput = (): JSX.Element | null => {
   const handleUpdateDesign = handleSubmit(
     async (startPageData: FormStartPageInput) => {
       const { logo, attachment, estTimeTaken, ...rest } = startPageData
-      const estTimeTakenTransformed =
-        estTimeTaken === '' ? undefined : estTimeTaken
+      // set to 1 to pass validation
+      const estTimeTakenTransformed = estTimeTaken === '' ? 1 : estTimeTaken
       if (logo.state !== FormLogoState.Custom) {
         startPageMutation.mutate(
           {
@@ -326,7 +326,7 @@ export const DesignInput = (): JSX.Element | null => {
         <FormErrorMessage>{errors.colorTheme?.message}</FormErrorMessage>
       </FormControl>
 
-      <FormControl
+      {/* <FormControl
         isReadOnly={startPageMutation.isLoading}
         isInvalid={!!errors.estTimeTaken}
         onFocus={setToEditingHeader}
@@ -351,7 +351,7 @@ export const DesignInput = (): JSX.Element | null => {
           )}
         />
         <FormErrorMessage>{errors.estTimeTaken?.message}</FormErrorMessage>
-      </FormControl>
+      </FormControl> */}
 
       <FormControl
         isReadOnly={startPageMutation.isLoading}

@@ -9,6 +9,7 @@ import createDropdownFieldSchema from './dropdownField'
 import createEmailFieldSchema from './emailField'
 import createHomenoFieldSchema from './homeNoField'
 import createImageFieldSchema from './imageField'
+import createLinkFieldSchema from './linkField'
 import createLongTextFieldSchema from './longTextField'
 import createMobileFieldSchema from './mobileField'
 import createNricFieldSchema from './nricField'
@@ -45,5 +46,6 @@ export {
   createUenFieldSchema,
   createYesNoFieldSchema,
   createchildrenCompoundFieldSchema,
+  createLinkFieldSchema,
   BaseFieldSchema,
 }

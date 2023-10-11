@@ -8,6 +8,7 @@ import DropdownField from './Dropdown'
 import EmailField from './Email'
 import HomeNoField from './HomeNo'
 import ImageField from './Image'
+import LinkField from './LinkField'
 import LongTextField from './LongText'
 import MobileField from './Mobile'
 import NricField from './Nric'
@@ -34,6 +35,7 @@ export {
   EmailField,
   HomeNoField,
   ImageField,
+  LinkField,
   LongTextField,
   MobileField,
   NricField,

@@ -187,8 +187,8 @@ export const EditImage = ({ field }: EditImageProps): JSX.Element => {
         isReadOnly={isLoading || isSubmitting}
         isInvalid={!!errors.description}
       >
-        <FormLabel isRequired>Description</FormLabel>
-        <Textarea {...register('description', requiredValidationRule)} />
+        <FormLabel>Description</FormLabel>
+        <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
       <FormFieldDrawerActions

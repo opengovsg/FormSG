@@ -14,6 +14,7 @@ import {
   EmailField,
   HomeNoField,
   ImageField,
+  LinkField,
   LongTextField,
   MobileField,
   NricField,
@@ -117,6 +118,8 @@ export const FieldFactory = memo(
             {...rest}
           />
         )
+      case BasicField.Link:
+        return <LinkField schema={field} {...rest} />
     }
   },
   (prevProps, nextProps) =>

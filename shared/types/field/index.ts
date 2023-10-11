@@ -18,6 +18,7 @@ import type { SectionFieldBase } from './sectionField'
 import type { ShortTextFieldBase } from './shortTextField'
 import type { StatementFieldBase } from './statementField'
 import type { TableFieldBase, TableFieldDto } from './tableField'
+import type { LinkFieldBase } from './linkField'
 import type { UenFieldBase } from './uenField'
 import type { YesNoFieldBase } from './yesNoField'
 import type { SetRequired } from 'type-fest'
@@ -47,6 +48,7 @@ export * from './uenField'
 export * from './utils'
 export * from './yesNoField'
 export * from './childrenCompoundField'
+export * from './linkField'
 
 export type FormField =
   | AttachmentFieldBase
@@ -71,6 +73,7 @@ export type FormField =
   | UenFieldBase
   | YesNoFieldBase
   | ChildrenCompoundFieldBase
+  | LinkFieldBase
 
 // These types are extended through using MyInfoableFieldBase
 // And might possibly be myInfo fields if the attribute is set

@@ -12,6 +12,8 @@ KEY=$(git diff --cached --name-only -z $against | xargs -0 cat | perl -nle'print
 # Regex for secret check can be found here: https://aws.amazon.com/blogs/security/a-safer-way-to-distribute-aws-credentials-to-ec2/
 
 if [ "$KEY_ID" != "" -o "$KEY" != "" ]; then
+    echo $KEY_ID
+    echo $KEY
     echo "Found patterns for AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY"
     echo "Please check your code and remove API keys."
     exit 1

@@ -1,5 +1,5 @@
-import { BiHomeAlt } from 'react-icons/bi'
-import { Link as ReactLink } from 'react-router-dom'
+import { BiArrowBack, BiChevronLeft, BiHomeAlt } from 'react-icons/bi'
+import { Link as ReactLink, useNavigate } from 'react-router-dom'
 import { Icon, Skeleton, Stack, Text } from '@chakra-ui/react'
 
 import { DASHBOARD_ROUTE } from '~constants/routes'
@@ -14,7 +14,7 @@ export const AdminFormNavbarBreadcrumbs = ({
   formInfo,
 }: AdminFormNavbarDetailsProps): JSX.Element => {
   const isMobile = useIsMobile()
-
+  const navigate = useNavigate()
   return (
     // One day, in a distant future, when we upgrade to Chakra v2, this could be an
     // actual chakra Breadcrumb component. Until that day comes, I'm just doing this.
@@ -25,7 +25,14 @@ export const AdminFormNavbarBreadcrumbs = ({
       textStyle="body-1"
       overflow="hidden"
       spacing="0.5rem"
+      align="center"
     >
+      <Icon
+        onClick={() => navigate(DASHBOARD_ROUTE)}
+        as={BiChevronLeft}
+        sx={{ width: '1.5rem', height: '1.5rem', color: 'primary.500' }}
+        // aria-label={'back to dashboard'}
+      />
       <Link
         as={ReactLink}
         whiteSpace="nowrap"
@@ -35,9 +42,9 @@ export const AdminFormNavbarBreadcrumbs = ({
         {isMobile ? <Icon as={BiHomeAlt} /> : 'All forms'}
       </Link>
 
-      <Text color="secondary.300">/</Text>
+      {/* <Text color="secondary.300">/</Text> */}
 
-      <Skeleton overflow="hidden" isLoaded={!!formInfo}>
+      {/* <Skeleton overflow="hidden" isLoaded={!!formInfo}>
         <Text
           whiteSpace="nowrap"
           textOverflow="ellipsis"
@@ -46,7 +53,7 @@ export const AdminFormNavbarBreadcrumbs = ({
         >
           {formInfo ? formInfo.title : 'Loading...'}
         </Text>
-      </Skeleton>
+      </Skeleton> */}
     </Stack>
   )
 }

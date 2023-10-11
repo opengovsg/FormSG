@@ -240,7 +240,7 @@ export const ShareFormModal = ({
 
   const FormLinkSection = () => (
     <FormControl isReadOnly>
-      <FormLabel isRequired>Form link</FormLabel>
+      <FormLabel isRequired>Directory link</FormLabel>
       <Skeleton isLoaded={!!formId}>
         <Stack direction="row" align="center">
           <InputGroup>
@@ -332,7 +332,7 @@ export const ShareFormModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader color="secondary.700">Share form</ModalHeader>
+        <ModalHeader color="secondary.700">Share directory</ModalHeader>
         <ModalBody whiteSpace="pre-wrap">
           {isFormPrivate ? (
             <InlineMessage variant="warning" mb="1rem">
@@ -351,7 +351,7 @@ export const ShareFormModal = ({
               <TabList mx="-0.25rem" w="100%">
                 <Tab>Link</Tab>
                 <Tab>Template</Tab>
-                <Tab>Embed</Tab>
+                {/* <Tab>Embed</Tab> */}
               </TabList>
               <Divider w="auto" />
             </Box>
@@ -417,9 +417,9 @@ export const ShareFormModal = ({
               <TabPanel>
                 <TemplateSection />
               </TabPanel>
-              <TabPanel>
-                <EmbedSection />
-              </TabPanel>
+              {/* <TabPanel>
+              <EmbedSection />
+              </TabPanel> */}
             </TabPanels>
           </Tabs>
         </ModalBody>

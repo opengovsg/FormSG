@@ -89,7 +89,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           isActive={activeTab === DrawerTabs.Design}
           id={FEATURE_TOUR[1].id}
         />
-        <DrawerTabIcon
+        {/* <DrawerTabIcon
           label="Add logic"
           icon={<BiGitMerge fontSize="1.5rem" />}
           onClick={handleDrawerLogicClick}
@@ -102,7 +102,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           onClick={handleDrawerEndpageClick}
           isActive={activeTab === DrawerTabs.EndPage}
           id={FEATURE_TOUR[3].id}
-        />
+        /> */}
       </Stack>
       <Tooltip label="Help" placement="right">
         <IconButton

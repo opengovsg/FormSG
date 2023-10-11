@@ -1,4 +1,4 @@
-import { BiLockAlt, BiMailSend } from 'react-icons/bi'
+import { BiHappyHeartEyes, BiLockAlt, BiMailSend } from 'react-icons/bi'
 import { forwardRef, Stack, UnorderedList } from '@chakra-ui/react'
 
 import { FormResponseMode } from '~shared/types/form/form'
@@ -34,7 +34,7 @@ export const FormResponseOptions = forwardRef<
     <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
       <Tile
         variant="complex"
-        icon={BiLockAlt}
+        icon={BiHappyHeartEyes}
         badge={<Badge colorScheme="success">Recommended</Badge>}
         isActive={value === FormResponseMode.Encrypt}
         isDisabled={containsMyInfoFields}
@@ -42,35 +42,40 @@ export const FormResponseOptions = forwardRef<
         isFullWidth
         flex={1}
       >
-        <Tile.Title>Storage Mode</Tile.Title>
-        <Tile.Subtitle>View or download responses in FormSG</Tile.Subtitle>
-        <OptionDescription
+        <Tile.Title>Public Mode</Tile.Title>
+        <Tile.Subtitle>
+          Anyone with the link would be able to view the directory listing
+        </Tile.Subtitle>
+        {/* <OptionDescription
           listItems={[
             'Attachments: up to 20MB per form',
             'Up to Restricted and Sensitive (Normal) data',
             'Supports webhooks for responses',
             'Supports payments',
           ]}
-        />
+        /> */}
       </Tile>
       <Tile
         ref={ref}
         variant="complex"
-        icon={BiMailSend}
+        icon={BiLockAlt}
         isActive={value === FormResponseMode.Email}
         onClick={() => onChange(FormResponseMode.Email)}
         isFullWidth
         flex={1}
       >
-        <Tile.Title>Email Mode</Tile.Title>
-        <Tile.Subtitle>Receive responses in your inbox</Tile.Subtitle>
-        <OptionDescription
+        <Tile.Title>Private Mode</Tile.Title>
+        <Tile.Subtitle>
+          Only users who are logged in with your agency domain can view the
+          directory listing
+        </Tile.Subtitle>
+        {/* <OptionDescription
           listItems={[
             'Attachments: up to 7MB per form',
             'Up to Restricted and Sensitive (High) data',
             'Supports MyInfo fields',
           ]}
-        />
+        /> */}
       </Tile>
     </Stack>
   )

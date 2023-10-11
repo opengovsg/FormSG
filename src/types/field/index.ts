@@ -11,6 +11,7 @@ import type { IDropdownFieldSchema } from './dropdownField'
 import type { IEmailFieldSchema } from './emailField'
 import type { IHomenoFieldSchema } from './homeNoField'
 import type { IImageFieldSchema } from './imageField'
+import type { ILinkFieldSchema } from './linkField'
 import type { ILongTextFieldSchema } from './longTextField'
 import type { IMobileFieldSchema } from './mobileField'
 import type { INricFieldSchema } from './nricField'
@@ -48,6 +49,7 @@ export * from './tableField'
 export * from './uenField'
 export * from './yesNoField'
 export * from './childrenCompoundField'
+export * from './linkField'
 
 export enum SPCPFieldTitle {
   SpNric = 'SingPass Validated NRIC',
@@ -82,6 +84,7 @@ export type FormFieldSchema =
   | IUenFieldSchema
   | IYesNoFieldSchema
   | IChildrenCompoundFieldSchema
+  | ILinkFieldSchema
 
 /**
  * Helper type to only retain from FormFieldSchema the props required to create
@@ -124,3 +127,4 @@ export type FieldValidationSchema =
   | OmitUnusedValidatorProps<IUenFieldSchema>
   | OmitUnusedValidatorProps<IYesNoFieldSchema>
   | OmitUnusedValidatorProps<IChildrenCompoundFieldSchema>
+  | OmitUnusedValidatorProps<ILinkFieldSchema>

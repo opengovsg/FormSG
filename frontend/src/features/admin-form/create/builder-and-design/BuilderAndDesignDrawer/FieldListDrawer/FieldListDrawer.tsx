@@ -48,14 +48,14 @@ export const FieldListDrawer = (): JSX.Element => {
     {
       header: 'MyInfo',
       component: MyInfoFieldPanel,
-      isHidden: false,
+      isHidden: false || true,
       isDisabled: isLoading,
       key: FieldListTabIndex.MyInfo,
     },
     {
       header: 'Payments',
       component: PaymentsInputPanel,
-      isHidden: !displayPayments,
+      isHidden: !displayPayments || true,
       isDisabled: isLoading,
       key: FieldListTabIndex.Payments,
     },
@@ -74,17 +74,17 @@ export const FieldListDrawer = (): JSX.Element => {
       <Box pt="1rem" px="1.5rem" bg="white">
         <Flex justify="space-between">
           <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
-            Fields
+            Elements
           </Text>
           <CreatePageDrawerCloseButton />
         </Flex>
-        <TabList mx="-0.25rem" w="100%">
+        {/* <TabList mx="-0.25rem" w="100%">
           {tabsDataList.map((tab) => (
             <Tab key={tab.key} isDisabled={tab.isDisabled}>
               {tab.header}
             </Tab>
           ))}
-        </TabList>
+        </TabList> */}
         <Divider w="auto" mx="-1.5rem" />
       </Box>
       <TabPanels pb="1rem" flex={1} overflowY="auto">
