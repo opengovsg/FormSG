@@ -81,7 +81,7 @@ export class MOEResultsComponent extends PluginComponent {
     return result
   }
 
-  // This is for the CSV download
+  // This is for CSV download
   generateSubmittedStudentsForInjection() {
     const identifiers = this.getResponseIdentifiers()
     const submittedStudentsForInjection = this.MOEData.map((classData) => {
@@ -100,6 +100,7 @@ export class MOEResultsComponent extends PluginComponent {
     return submittedStudentsForInjection
   }
 
+  // This is for CSV download
   generateCSVFieldNames() {
     const fieldNames = [
       'Register No.',
@@ -118,7 +119,7 @@ export class MOEResultsComponent extends PluginComponent {
     const results = this.MOEData.map((classData) => {
       const { class: className, students } = classData
       const submittedStudents = students.filter((student) =>
-        identifiers.includes(student.nric),
+        identifiers.includes(student.identifier),
       )
 
       const count = submittedStudents.length
@@ -197,6 +198,7 @@ export class MOEResultsComponent extends PluginComponent {
 
   render(): JSX.Element {
     const responseIdentifiers = this.getResponseIdentifiers()
+    console.log('responsedata:', this.responseData)
     return <>{this.generateResponseCountByClass(responseIdentifiers)}</>
   }
 }

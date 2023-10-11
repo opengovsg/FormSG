@@ -2,7 +2,20 @@ import { useMemo, useState } from 'react'
 import { BiData } from 'react-icons/bi'
 import { useQuery } from 'react-query'
 import { useParams } from 'react-router-dom'
-import { Box, Flex, Grid, Icon, Skeleton, Stack, Text } from '@chakra-ui/react'
+import {
+  Box,
+  Flex,
+  Grid,
+  Icon,
+  Skeleton,
+  Stack,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+  Text,
+} from '@chakra-ui/react'
 import { format, isValid } from 'date-fns'
 import simplur from 'simplur'
 
@@ -131,10 +144,6 @@ export const UnlockedResponses = (): JSX.Element => {
           lg: "'submissions search export'",
         }}
       >
-        {/* Plugin code goes here */}
-        {decryptedResponses && isPluginConnected && pluginComponent.render()}
-        {/* End of plugin code */}
-
         <Stack
           align="center"
           spacing="1rem"
@@ -182,18 +191,48 @@ export const UnlockedResponses = (): JSX.Element => {
         </Stack>
       </Grid>
 
-      <Box mb="3rem" overflow="auto" flex={1}>
-        <ResponsesTable />
-      </Box>
+      {isPluginConnected ? (
+        <Tabs>
+          <TabList>
+            <Tab>All responses</Tab>
+            <Tab>Responses with agency data</Tab>
+          </TabList>
 
-      <Box display={isLoading || countToUse === 0 ? 'none' : ''}>
-        <Pagination
-          totalCount={countToUse ?? 0}
-          currentPage={currentPage ?? 1} //1-indexed
-          pageSize={10}
-          onPageChange={setCurrentPage}
-        />
-      </Box>
+          <TabPanels>
+            <TabPanel>
+              <Box my="3rem" overflow="auto" flex={1}>
+                <ResponsesTable />
+              </Box>
+            </TabPanel>
+            <TabPanel>
+              {/* Plugin code goes here */}
+              {decryptedResponses &&
+                isPluginConnected &&
+                pluginComponent.render()}
+              {/* End of plugin code */}
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
+      ) : (
+        <></>
+      )}
+
+      {!isPluginConnected && (
+        <>
+          <Box mb="3rem" overflow="auto" flex={1}>
+            <ResponsesTable />
+          </Box>
+
+          <Box display={isLoading || countToUse === 0 ? 'none' : ''}>
+            <Pagination
+              totalCount={countToUse ?? 0}
+              currentPage={currentPage ?? 1} //1-indexed
+              pageSize={10}
+              onPageChange={setCurrentPage}
+            />
+          </Box>
+        </>
+      )}
     </Flex>
   )
 }
