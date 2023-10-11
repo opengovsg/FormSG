@@ -2,22 +2,7 @@ import { useMemo, useState } from 'react'
 import { BiData } from 'react-icons/bi'
 import { useQuery } from 'react-query'
 import { useParams } from 'react-router-dom'
-import {
-  Box,
-  Flex,
-  Grid,
-  HStack,
-  Icon,
-  Skeleton,
-  Stack,
-  Table,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
-} from '@chakra-ui/react'
+import { Box, Flex, Grid, Icon, Skeleton, Stack, Text } from '@chakra-ui/react'
 import { format, isValid } from 'date-fns'
 import simplur from 'simplur'
 
@@ -28,7 +13,6 @@ import { DateRangePicker } from '~components/DateRangePicker'
 import Pagination from '~components/Pagination'
 
 import Button from '../../../../../../components/Button'
-import Link from '../../../../../../components/Link'
 import { MOEResultsComponent } from '../../../../../../plugins'
 import { getDecryptedSubmissionById } from '../../../AdminSubmissionsService'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
@@ -67,37 +51,6 @@ const transform = {
   },
 }
 
-// Mock MOE data
-const HARDCODED_MOE_DATA = [
-  {
-    class: '1A',
-    school: 'Red Rose Primary School',
-    level: 'Primary 4',
-    students: [
-      { register_no: '111', nric: 'S1234567D', name: 'ah boy' },
-      { register_no: '112', nric: 'S1234568B', name: 'another boy' },
-    ],
-  },
-  {
-    class: '1B',
-    school: 'Red Rose Primary School',
-    level: 'Primary 4',
-    students: [
-      { register_no: '113', nric: 'S1234432E', name: 'ah girl' },
-      { register_no: '114', nric: 'S1234499F', name: 'another girl' },
-    ],
-  },
-]
-
-export type SubmittedStudentsForInjection = {
-  register_no: string
-  nric: string
-  name: string
-  className: string
-  school: string
-  level: string
-}[]
-
 export const UnlockedResponses = (): JSX.Element => {
   const {
     currentPage,
@@ -114,27 +67,22 @@ export const UnlockedResponses = (): JSX.Element => {
   const { secretKey } = useStorageResponsesContext()
   const { formId } = useParams()
 
-  const { data: decryptedResponses, isLoading: isDecryptedResponsesLoading } =
-    useQuery(
-      ['decryptedResponse', { formId }],
-      async () =>
-        await Promise.all(
-          metadata.map((response) => {
-            return getDecryptedSubmissionById({
-              formId: formId || '',
-              submissionId: response.refNo,
-              secretKey,
-            })
-          }),
-        ),
-      {
-        enabled: !!(metadata.length && formId),
-      },
-    )
-
-  // console.log('metadata: ', !!(metadata && formId))
-  // console.log('isResponseLoading: ', isResponseLoading)
-  // console.log('responses: ', responses)
+  const { data: decryptedResponses } = useQuery(
+    ['decryptedResponse', { formId }],
+    async () =>
+      await Promise.all(
+        metadata.map((response) => {
+          return getDecryptedSubmissionById({
+            formId: formId || '',
+            submissionId: response.refNo,
+            secretKey,
+          })
+        }),
+      ),
+    {
+      enabled: !!(metadata.length && formId),
+    },
+  )
 
   const countToUse = useMemo(
     () => (submissionId ? filteredCount : count),
@@ -151,112 +99,8 @@ export const UnlockedResponses = (): JSX.Element => {
     [submissionId, filteredCount, count],
   )
 
-  const responseNRICs = useMemo(
-    () =>
-      decryptedResponses?.map((response) => {
-        return response?.responses[0].answer ?? ''
-      }),
-    [decryptedResponses],
-  )
-  console.log('responseNRICs: ', responseNRICs)
-
-  const generateSubmittedStudentsForInjection = (
-    nric: string[],
-  ): SubmittedStudentsForInjection => {
-    const submittedStudentsForInjection = HARDCODED_MOE_DATA.map(
-      (classData) => {
-        const { class: className, school, level, students } = classData
-        const submittedStudents = students.filter((student) =>
-          nric.includes(student.nric),
-        )
-
-        const submittedStudentsByRow = submittedStudents.map((answer) => {
-          return { ...answer, className, school, level }
-        })
-
-        return submittedStudentsByRow
-      },
-    ).flat()
-    return submittedStudentsForInjection
-  }
-
-  const generateResponseCountByClass = (NRICs: string[]) => {
-    // Application logic
-
-    const results = HARDCODED_MOE_DATA.map((classData) => {
-      const { class: className, students } = classData
-      const submittedStudents = students.filter((student) =>
-        NRICs.includes(student.nric),
-      )
-
-      const count = submittedStudents.length
-
-      return { className, count, submittedStudents }
-    })
-
-    // Add render logic
-    // Return a table with the header 'Classes' and 'Responses'
-    // and populate with className and count
-    return (
-      <HStack>
-        <Table>
-          <Thead>
-            <Tr>
-              <Th>Class</Th>
-              <Th>Responses</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {results.map((result) => {
-              const { className, count } = result
-              return (
-                // turn grey on hover
-                <Tr
-                  _hover={{ bgColor: 'secondary.100' }}
-                  onClick={() => {
-                    setSelectedClass(className)
-                  }}
-                >
-                  <Td>{className}</Td>
-                  <Td>{count}</Td>
-                </Tr>
-              )
-            })}
-          </Tbody>
-        </Table>
-        <Text>Selected Class: {selectedClass}</Text>
-        {selectedClass ? (
-          <Table
-
-          // display students in selected class
-          >
-            <Thead>
-              <Tr>
-                <Th>Respondents</Th>
-                <Th>Class</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {results
-                .filter((result) => result.className === selectedClass)
-                .map((classResult) => {
-                  const { submittedStudents, className } = classResult
-                  return submittedStudents.map((student) => {
-                    return (
-                      <Tr>
-                        <Td>{student.name}</Td>
-                        <Td>{className}</Td>
-                      </Tr>
-                    )
-                  })
-                })}
-            </Tbody>
-          </Table>
-        ) : null}
-      </HStack>
-    )
-  }
-
+  // FOR PLUGINS
+  const [isPluginConnected, setIsPluginConnected] = useState(false)
   const [pluginSelectedState, setPluginSelectedState] = useState('')
 
   const pluginComponent = new MOEResultsComponent(
@@ -266,6 +110,9 @@ export const UnlockedResponses = (): JSX.Element => {
   )
 
   pluginComponent.initialise()
+  const pluginComponentDataForCSV =
+    pluginComponent.generateSubmittedStudentsForInjection()
+  const pluginCSVAdditionalFieldNames = pluginComponent.generateCSVFieldNames()
 
   return (
     <Flex flexDir="column" h="100%">
@@ -281,11 +128,7 @@ export const UnlockedResponses = (): JSX.Element => {
         }}
       >
         {/* Plugin code goes here */}
-        {/* Assume that 1) NRIC/FIN is first field */}
-        {/* <Flex flexDir="row" justifyContent={'space-between'}>
-          {generateResponseCountByClass(responseNRICs || [])}
-        </Flex> */}
-        {decryptedResponses && pluginComponent.render()}
+        {decryptedResponses && isPluginConnected && pluginComponent.render()}
         {/* End of plugin code */}
         <Stack
           align="center"
@@ -302,6 +145,7 @@ export const UnlockedResponses = (): JSX.Element => {
               <Button
                 variant="clear"
                 rightIcon={<Icon as={BiData} fontSize="1.5rem" />}
+                onClick={() => setIsPluginConnected(true)}
               >
                 {/* underline text */}
                 <Text as="u">Connect to MOE Database</Text>
@@ -331,9 +175,12 @@ export const UnlockedResponses = (): JSX.Element => {
             }
           />
           <DownloadButton
-            injectedData={generateSubmittedStudentsForInjection(
-              responseNRICs || [],
-            )}
+            injectedDataFromPlugin={
+              isPluginConnected ? pluginComponentDataForCSV : undefined
+            }
+            injectedCSVHeadersFromPlugin={
+              isPluginConnected ? pluginCSVAdditionalFieldNames : undefined
+            }
           />
         </Stack>
       </Grid>

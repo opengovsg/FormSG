@@ -6,10 +6,6 @@ import type { Merge } from 'type-fest'
 
 import { CsvGenerator } from '../../../../common/utils'
 import type { DecryptedSubmissionData } from '../../types'
-import {
-  SubmittedStudentForInjection,
-  SubmittedStudentsForInjection,
-} from '../../UnlockedResponses/UnlockedResponses'
 import type { Response } from '../csv-response-classes'
 import { getDecryptedResponseInstance } from '../getDecryptedResponseInstance'
 import { processFormulaInjectionText } from '../processFormulaInjection'
@@ -17,7 +13,7 @@ import { processFormulaInjectionText } from '../processFormulaInjection'
 type UnprocessedRecord = Merge<
   DecryptedSubmissionData,
   { record: Dictionary<Response> }
-> & { childRecord: SubmittedStudentForInjection }
+> & { pluginRecord?: any }
 
 export class EncryptedResponseCsvGenerator extends CsvGenerator {
   hasBeenProcessed: boolean
@@ -25,8 +21,13 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
   fieldIdToQuestion: Map<string, { created: string; question: string }>
   fieldIdToNumCols: Record<string, number>
   unprocessed: UnprocessedRecord[]
+  injectedCSVHeadersFromPlugin: string[]
 
-  constructor(expectedNumberOfRecords: number, numOfMetaDataRows: number) {
+  constructor(
+    expectedNumberOfRecords: number,
+    numOfMetaDataRows: number,
+    injectedCSVHeadersFromPlugin: string[],
+  ) {
     super(expectedNumberOfRecords, numOfMetaDataRows)
 
     this.hasBeenProcessed = false
@@ -34,6 +35,7 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     this.fieldIdToQuestion = new Map()
     this.fieldIdToNumCols = {}
     this.unprocessed = []
+    this.injectedCSVHeadersFromPlugin = injectedCSVHeadersFromPlugin ?? ''
   }
 
   /**
@@ -49,7 +51,8 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
    */
   addRecord(
     { record, created, submissionId }: DecryptedSubmissionData,
-    injectedData: SubmittedStudentsForInjection,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    injectedData: any,
   ): void {
     // First pass, create object with { [fieldId]: question } from
     // decryptedContent to get all the questions.
@@ -79,23 +82,20 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
       return fieldRecord
     })
 
-    // find relevant record by NRIC
-    const NRIC = fieldRecords[1].getAnswer()
-    console.log('NRIC:', NRIC)
-    console.log('fieldRecords[1]:', fieldRecords[1])
-
-    console.log('injectedData csvgen:', injectedData)
-    console.log('JSON.stringify:', JSON.stringify(fieldRecords))
-    const relevantRecord = injectedData.find(
-      (record) => record.nric === NRIC,
-    ) as SubmittedStudentForInjection
+    // FOR PLUGIN: Find relevant record by identifier (e.g. NRIC)
+    // We assume that the identifier is the first field in the form
+    const identifier = fieldRecords[1].getAnswer()
+    // record.identifier is the identifier field
+    const relevantRecord = injectedData?.find(
+      (record) => record.identifier === identifier,
+    )
 
     console.log('relevantRecord:', relevantRecord)
     // Rearrange record to be an object identified by field ID.
     this.unprocessed.push({
       created,
       submissionId,
-      childRecord: relevantRecord,
+      pluginRecord: relevantRecord,
       record: keyBy(fieldRecords, (fieldRecord) => fieldRecord.id),
     })
   }
@@ -108,8 +108,14 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
   process(): void {
     if (this.hasBeenProcessed) return
 
+    // FOR PLUGIN: inject CSV headers if plugin exists with form
+
     // Create a header row in CSV using the fieldIdToQuestion map.
-    const headers = ['Response ID', 'Timestamp', 'ChildName']
+    const headers = [
+      'Response ID',
+      'Timestamp',
+      ...this.injectedCSVHeadersFromPlugin,
+    ]
     this.fieldIdToQuestion.forEach((value, fieldId) => {
       for (let i = 0; i < this.fieldIdToNumCols[fieldId]; i++) {
         headers.push(value.question)
@@ -127,7 +133,11 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
             'dd MMM yyyy hh:mm:ss a',
           )
         : up.created
-      const row = [up.submissionId, formattedDate, up.childRecord.name]
+      const row = [
+        up.submissionId,
+        formattedDate,
+        ...Object.values(up.pluginRecord ?? ''),
+      ]
 
       this.fieldIdToQuestion.forEach((_question, fieldId) => {
         const numCols = this.fieldIdToNumCols[fieldId]

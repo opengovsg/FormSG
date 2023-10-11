@@ -12,7 +12,6 @@ import {
 } from '~features/analytics/AnalyticsService'
 import { useUser } from '~features/user/queries'
 
-import { SubmittedStudentsForInjection } from './UnlockedResponses/UnlockedResponses'
 import { downloadResponseAttachment } from './utils/downloadCsv'
 import { EncryptedResponseCsvGenerator } from './utils/EncryptedResponseCsvGenerator'
 import {
@@ -46,13 +45,15 @@ interface UseDecryptionWorkersProps {
     DownloadEncryptedParams,
     unknown
   >
-  injectedData: SubmittedStudentsForInjection
+  injectedDataFromPlugin: any
+  injectedCSVHeadersFromPlugin: any
 }
 
 const useDecryptionWorkers = ({
   onProgress,
   mutateProps,
-  injectedData,
+  injectedDataFromPlugin,
+  injectedCSVHeadersFromPlugin,
 }: UseDecryptionWorkersProps) => {
   const [workers, setWorkers] = useState<CleanableDecryptionWorkerApi[]>([])
   const abortControllerRef = useRef(new AbortController())
@@ -132,6 +133,7 @@ const useDecryptionWorkers = ({
       const csvGenerator = new EncryptedResponseCsvGenerator(
         responsesCount,
         NUM_OF_METADATA_ROWS,
+        injectedCSVHeadersFromPlugin,
       )
 
       const stream = await getEncryptedResponsesStream(
@@ -180,12 +182,12 @@ const useDecryptionWorkers = ({
                     try {
                       console.log(
                         'injectedData usedecryptionworker: ',
-                        injectedData,
+                        injectedDataFromPlugin,
                       )
                       // Inject here
                       csvGenerator.addRecord(
                         decryptResult.submissionData,
-                        injectedData,
+                        injectedDataFromPlugin,
                       )
                       receivedRecordCount++
                     } catch (e) {
@@ -333,7 +335,7 @@ const useDecryptionWorkers = ({
           })
       })
     },
-    [adminForm, onProgress, user?._id, workers],
+    [adminForm, injectedDataFromPlugin, onProgress, user?._id, workers],
   )
 
   const handleExportCsvMutation = useMutation(

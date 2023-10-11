@@ -17,12 +17,15 @@ import useDecryptionWorkers from '../useDecryptionWorkers'
 
 import { DownloadWithAttachmentModal } from './DownloadWithAttachmentModal'
 import { ProgressModal } from './ProgressModal'
-import { SubmittedStudentsForInjection } from './UnlockedResponses'
 
 export const DownloadButton = ({
-  injectedData,
+  injectedDataFromPlugin,
+  injectedCSVHeadersFromPlugin,
 }: {
-  injectedData: SubmittedStudentsForInjection
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  injectedDataFromPlugin: any //take in injected data from plugin
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  injectedCSVHeadersFromPlugin: any
 }): JSX.Element => {
   const {
     isOpen: isDownloadModalOpen,
@@ -67,7 +70,8 @@ export const DownloadButton = ({
 
   const { handleExportCsvMutation, abortDecryption } = useDecryptionWorkers({
     onProgress: setDownloadCount,
-    injectedData,
+    injectedDataFromPlugin,
+    injectedCSVHeadersFromPlugin,
     mutateProps: {
       onMutate: () => {
         // Reset metadata if it exists.
