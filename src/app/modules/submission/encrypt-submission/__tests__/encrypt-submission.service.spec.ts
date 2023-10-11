@@ -1438,9 +1438,7 @@ describe('encrypt-submission.service', () => {
       // Assert
       expect(awsSpy).toHaveBeenCalledOnce()
       expect(actualResult.isErr()).toEqual(true)
-      expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new VirusScanFailedError(),
-      )
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidFileKeyError())
     })
 
     it("should return errAsync if the lambda's errored response is not in the right format", async () => {
