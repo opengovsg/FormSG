@@ -55,6 +55,7 @@ const helmetMiddlewares = () => {
       // GA4 https://developers.google.com/tag-platform/tag-manager/web/csp
       // not actively used yet, loading specific files due to CSP bypass issue
       'https://*.googletagmanager.com/gtag/',
+      'https://www.gstatic.com/charts/',
     ],
     connectSrc: [
       "'self'",
@@ -83,6 +84,7 @@ const helmetMiddlewares = () => {
       'https://www.recaptcha.net/recaptcha/',
       'https://www.gstatic.com/recaptcha/',
       'https://www.gstatic.cn/',
+      'https://www.gstatic.com/charts/',
       "'unsafe-inline'",
     ],
     workerSrc: [
