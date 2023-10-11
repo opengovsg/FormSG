@@ -772,7 +772,9 @@ export const triggerVirusScanning = (
 
         if (error instanceof ParseVirusScannerLambdaPayloadError) return error
         else if (error.statusCode === StatusCodes.NOT_FOUND)
-          return new InvalidFileKeyError()
+          return new InvalidFileKeyError(
+            'Invalid file key. The file must be uploaded first.',
+          )
         else if (error.statusCode !== StatusCodes.BAD_REQUEST)
           return new VirusScanFailedError()
 
