@@ -9,7 +9,6 @@ import { datadogLogs } from '@datadog/browser-logs'
 import { theme } from '~theme/index'
 import { AuthProvider } from '~contexts/AuthContext'
 import { GrowthBookProvider } from '~contexts/GrowthbookContext'
-import { PluginsProvider } from '~contexts/PluginsContext'
 import { HttpError } from '~services/ApiService'
 
 import { AppHelmet } from './AppHelmet'
@@ -72,9 +71,7 @@ export const App = (): JSX.Element => {
             <ChakraProvider theme={theme} resetCSS>
               <AuthProvider>
                 <GrowthBookProvider>
-                  <PluginsProvider>
-                    <AppRouter />
-                  </PluginsProvider>
+                  <AppRouter />
                 </GrowthBookProvider>
               </AuthProvider>
             </ChakraProvider>

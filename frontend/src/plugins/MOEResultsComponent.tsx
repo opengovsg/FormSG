@@ -1,5 +1,7 @@
 import { HStack, Table, Tbody, Td, Text, Th, Thead, Tr } from '@chakra-ui/react'
 
+import formPluginDataStore from '~contexts/PluginsSingleton'
+
 import { PluginComponent } from './PluginComponent.class'
 
 export class MOEResultsComponent extends PluginComponent {
@@ -41,7 +43,13 @@ export class MOEResultsComponent extends PluginComponent {
         ],
       },
     ]
-    // set MOEData
+    // send MOE data to singleton
+
+    formPluginDataStore.addPlugin({
+      name: 'MOEResultsComponent',
+      data: HARDCODED_MOE_DATA,
+    })
+
     this.MOEData = HARDCODED_MOE_DATA
     // setState({ responseData, studentData }) // this is passed in from the parent
   }
