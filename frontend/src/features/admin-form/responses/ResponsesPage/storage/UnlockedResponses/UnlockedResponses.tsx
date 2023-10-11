@@ -110,20 +110,24 @@ export const UnlockedResponses = (): JSX.Element => {
   const { secretKey } = useStorageResponsesContext()
   const { formId } = useParams()
 
-  const { data: responses, isLoading: isResponseLoading } = useQuery(
-    ['decryptedResponse', { formId, submissionId, secretKey }],
-    async () =>
-      await Promise.all(
-        metadata.map((response) => {
-          return getDecryptedSubmissionById({
-            formId: formId || '',
-            submissionId: response.refNo,
-            secretKey,
-          })
-        }),
-      ),
-    { enabled: !!(metadata && formId), refetchInterval: 1000 },
-  )
+  const { data: decryptedResponses, isLoading: isDecryptedResponsesLoading } =
+    useQuery(
+      ['decryptedResponse', { formId }],
+      async () =>
+        await Promise.all(
+          metadata.map((response) => {
+            return getDecryptedSubmissionById({
+              formId: formId || '',
+              submissionId: response.refNo,
+              secretKey,
+            })
+          }),
+        ),
+      {
+        enabled: !!(metadata.length && formId),
+      },
+    )
+
   // console.log('metadata: ', !!(metadata && formId))
   // console.log('isResponseLoading: ', isResponseLoading)
   // console.log('responses: ', responses)
@@ -145,10 +149,10 @@ export const UnlockedResponses = (): JSX.Element => {
 
   const responseNRICs = useMemo(
     () =>
-      responses?.map((response) => {
+      decryptedResponses?.map((response) => {
         return response?.responses[0].answer ?? ''
       }),
-    [responses],
+    [decryptedResponses],
   )
   console.log('responseNRICs: ', responseNRICs)
 
@@ -252,7 +256,7 @@ export const UnlockedResponses = (): JSX.Element => {
   const [pluginSelectedState, setPluginSelectedState] = useState('')
 
   const pluginComponent = new MOEResultsComponent(
-    responses,
+    decryptedResponses,
     pluginSelectedState,
     setPluginSelectedState,
   )
@@ -277,7 +281,7 @@ export const UnlockedResponses = (): JSX.Element => {
         {/* <Flex flexDir="row" justifyContent={'space-between'}>
           {generateResponseCountByClass(responseNRICs || [])}
         </Flex> */}
-        {responses && pluginComponent.render()}
+        {isDecryptedResponsesLoading ? <></> : pluginComponent.render()}
         {/* End of plugin code */}
         <Stack
           align="center"
