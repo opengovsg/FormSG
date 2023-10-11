@@ -126,10 +126,12 @@ const InternalInsights = () => {
         let mean = undefined
         if (formField.fieldType === BasicField.Rating) {
           mean = 0
+          let count = 0
           dataValues.forEach((data) => {
             mean += Number(data[0]) * Number(data[1])
+            count += Number(data[1])
           })
-          mean = mean / dataValues.length
+          mean = mean / count
         }
         // add header to values
         dataValues.unshift(['Answer', 'Count'])
@@ -186,6 +188,12 @@ const FormChart = ({
   const options = {
     legend: { position: chartType === 'PieChart' ? undefined : 'none' },
     chartArea: { width: '50%' },
+    hAxis: {
+      minValue: 0,
+    },
+    vAxis: {
+      minValue: 0,
+    },
   }
   return (
     <VStack w="100%" gap="0">
