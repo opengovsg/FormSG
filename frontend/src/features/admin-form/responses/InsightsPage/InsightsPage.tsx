@@ -5,7 +5,6 @@ import ReactWordcloud from 'react-wordcloud'
 import {
   Divider,
   Flex,
-  Switch,
   Table,
   TableContainer,
   Tbody,
@@ -16,12 +15,15 @@ import {
   Tr,
   VStack,
 } from '@chakra-ui/react'
+import { format, isValid } from 'date-fns'
 import { removeStopwords } from 'stopword'
 
-import { BasicField, FormFieldDto } from '~shared/types'
+import { BasicField, DateString, FormFieldDto } from '~shared/types'
 import { FormResponseMode } from '~shared/types/form'
 
 import { useToast } from '~hooks/useToast'
+import { DateRangeValue } from '~components/Calendar'
+import { DateRangePicker } from '~components/DateRangePicker'
 import IconButton from '~components/IconButton'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -34,6 +36,35 @@ import {
 } from '../ResponsesPage/storage'
 
 import { useAllSubmissionData } from './queries'
+
+const transform = {
+  input: (range: DateString[]) => {
+    const [start, end] = range
+    // Convert to Date objects
+    const startDate = new Date(start)
+    const endDate = new Date(end)
+    const result: (Date | null)[] = [null, null]
+    // Check if dates are valid
+    if (isValid(startDate)) {
+      result[0] = startDate
+    }
+    if (isValid(endDate)) {
+      result[1] = endDate
+    }
+    return result as DateRangeValue
+  },
+  output: (range: DateRangeValue) => {
+    const [start, end] = range
+    const result: DateString[] = []
+    if (start) {
+      result.push(format(start, 'yyyy-MM-dd') as DateString)
+    }
+    if (end) {
+      result.push(format(end, 'yyyy-MM-dd') as DateString)
+    }
+    return result
+  },
+}
 
 export const InsightsPage = (): JSX.Element => {
   const { data: form, isLoading } = useAdminForm()
@@ -67,6 +98,7 @@ type Word = { text: string; value: number }
 const InternalInsights = () => {
   const { data: encryptedContent } = useAllSubmissionData()
   const { data: form } = useAdminForm()
+  const { dateRange, setDateRange } = useStorageResponsesContext()
 
   const aggregateSubmissionData = (
     id: string,
@@ -121,6 +153,20 @@ const InternalInsights = () => {
 
   return (
     <VStack divider={<Divider />} gap="1.5rem">
+      <Flex
+        direction={{ base: 'column', sm: 'row' }}
+        justifySelf={{ base: 'start', sm: 'end' }}
+        gridArea="export"
+        maxW="100%"
+        mb="1rem"
+      >
+        <DateRangePicker
+          value={transform.input(dateRange)}
+          onChange={(nextDateRange) =>
+            setDateRange(transform.output(nextDateRange))
+          }
+        />
+      </Flex>
       {form?.form_fields.map((formField, idx) => {
         if (
           formField.fieldType === BasicField.ShortText ||
@@ -211,8 +257,10 @@ const FormChart = ({
   }
   return (
     <VStack w="100%" gap="0">
-      <Flex alignItems="center" gap="0.5rem">
-        <Text textStyle="h4">{title}</Text>
+      <Flex alignItems="center">
+        <Text textStyle="h4" mr="1rem">
+          {title}
+        </Text>
         <IconButton
           aria-label="chart"
           onClick={() => setIsTable(false)}
