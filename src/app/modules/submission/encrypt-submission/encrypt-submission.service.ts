@@ -771,6 +771,8 @@ export const triggerVirusScanning = (
         })
 
         if (error instanceof ParseVirusScannerLambdaPayloadError) return error
+        else if (error.statusCode === StatusCodes.NOT_FOUND)
+          return new InvalidFileKeyError()
         else if (error.statusCode !== StatusCodes.BAD_REQUEST)
           return new VirusScanFailedError()
 
