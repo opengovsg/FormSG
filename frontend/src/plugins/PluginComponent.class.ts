@@ -24,21 +24,3 @@ export abstract class PluginComponent {
     return {}
   }
 }
-
-// export class MOEResultsComponent extends PluginComponent {
-//     async initialize() {
-//         // fetch stuff?
-//         setState({responseData, studentData}) // this is passed in from the parent
-//     }
-
-//     render(state: string) {
-//         // if (state.currenState === NO_AUTH) {
-//         //     return <AuthComponent />
-//         // }
-//         return (<Text></Text>)
-//     }
-// }
-
-// // parent
-
-// // componetData = [SomeComponent#1, SomeComponent#2]
