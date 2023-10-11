@@ -24,6 +24,7 @@
   },
   "include": [
     "src/**/*",
-    ".storybook/**/*"
+    ".storybook/**/*",
+    "src/plugins"
   ]
 }

@@ -25,6 +25,7 @@ import { DateRangeValue } from '~components/Calendar'
 import { DateRangePicker } from '~components/DateRangePicker'
 import Pagination from '~components/Pagination'
 
+import { MOEResultsComponent } from '../../../../../../plugins'
 import { getDecryptedSubmissionById } from '../../../AdminSubmissionsService'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 
@@ -121,12 +122,12 @@ export const UnlockedResponses = (): JSX.Element => {
           })
         }),
       ),
-    { enabled: !!(metadata && formId) },
+    { enabled: !!(metadata && formId), refetchInterval: 1000 },
   )
-  console.log('metadata: ', !!(metadata && formId))
-  console.log('isResponseLoading: ', isResponseLoading)
+  // console.log('metadata: ', !!(metadata && formId))
+  // console.log('isResponseLoading: ', isResponseLoading)
+  // console.log('responses: ', responses)
 
-  console.log('responses: ', responses)
   const countToUse = useMemo(
     () => (submissionId ? filteredCount : count),
     [submissionId, filteredCount, count],
@@ -150,8 +151,6 @@ export const UnlockedResponses = (): JSX.Element => {
     [responses],
   )
   console.log('responseNRICs: ', responseNRICs)
-
-  const [selectedClass, setSelectedClass] = useState('')
 
   const generateSubmittedStudentsForInjection = (
     nric: string[],
@@ -250,6 +249,16 @@ export const UnlockedResponses = (): JSX.Element => {
     )
   }
 
+  const [pluginSelectedState, setPluginSelectedState] = useState('')
+
+  const pluginComponent = new MOEResultsComponent(
+    responses,
+    pluginSelectedState,
+    setPluginSelectedState,
+  )
+
+  pluginComponent.initialise()
+
   return (
     <Flex flexDir="column" h="100%">
       <Grid
@@ -265,11 +274,10 @@ export const UnlockedResponses = (): JSX.Element => {
       >
         {/* Plugin code goes here */}
         {/* Assume that 1) NRIC/FIN is first field */}
-        <Flex flexDir="row" justifyContent={'space-between'}>
-          {/* <Text>{JSON.stringify(data)}</Text> */}
-          {/* <Text>COlumn 2</Text> */}
+        {/* <Flex flexDir="row" justifyContent={'space-between'}>
           {generateResponseCountByClass(responseNRICs || [])}
-        </Flex>
+        </Flex> */}
+        {responses && pluginComponent.render()}
         {/* End of plugin code */}
         <Stack
           align="center"
