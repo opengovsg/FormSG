@@ -5,7 +5,10 @@ import { StatusCodes } from 'http-status-codes'
 import { chain, omit } from 'lodash'
 import { ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import { featureFlags } from '../../../../../shared/constants'
+import {
+  featureFlags,
+  VIRUS_SCANNER_SUBMISSION_VERSION,
+} from '../../../../../shared/constants'
 import {
   BasicField,
   StorageModeAttachment,
@@ -317,7 +320,7 @@ export const scanAndRetrieveAttachments = async (
   // should have virus scanning enabled. If not, skip this middleware.
   // Note: Version number is sent by the frontend and should only be >=2.1 if virus scanning is enabled on the frontend.
 
-  if (req.body.version < 2.1) {
+  if (req.body.version < VIRUS_SCANNER_SUBMISSION_VERSION) {
     logger.warn({
       message: 'Virus scanner is not enabled on FE.',
       meta: logMeta,

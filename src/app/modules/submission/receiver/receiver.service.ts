@@ -1,6 +1,7 @@
 import Busboy from 'busboy'
 import { IncomingHttpHeaders } from 'http'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
+import { VIRUS_SCANNER_SUBMISSION_VERSION } from 'shared/constants'
 import { FormResponseMode } from 'shared/types'
 
 import { MB } from '../../../../../shared/constants/file'
@@ -159,7 +160,7 @@ export const configureMultipartReceiver = (
               // TODO (FRM-1413): change to a version existence guardrail when
               // virus scanning has completed rollout, so that virus scanning
               // cannot be bypassed on storage mode submissions.
-              (body.version ?? 0) >= 2.1,
+              (body.version ?? 0) >= VIRUS_SCANNER_SUBMISSION_VERSION,
             )
             return resolve(body)
           } else {
