@@ -559,7 +559,10 @@ export const PublicFormProvider = ({
           // TODO (FRM-1413): Move to main return statement once virus scanner has been fully rolled out
           if (enableEncryptionBoundaryShift && enableVirusScanner) {
             return submitStorageModeClearFormWithVirusScanningMutation.mutateAsync(
-              formData,
+              {
+                ...formData,
+                ...formPaymentData,
+              },
               {
                 onSuccess: ({
                   submissionId,
