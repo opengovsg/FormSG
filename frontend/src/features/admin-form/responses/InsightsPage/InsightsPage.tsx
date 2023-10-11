@@ -1,7 +1,20 @@
 import { useMemo, useState } from 'react'
 import { Chart, GoogleChartWrapperChartType } from 'react-google-charts'
 import ReactWordcloud from 'react-wordcloud'
-import { Divider, Text, VStack } from '@chakra-ui/react'
+import {
+  Divider,
+  Flex,
+  Switch,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+  VStack,
+} from '@chakra-ui/react'
 import { removeStopwords } from 'stopword'
 
 import { BasicField, FormFieldDto } from '~shared/types'
@@ -9,6 +22,7 @@ import { FormResponseMode } from '~shared/types/form'
 
 import { useToast } from '~hooks/useToast'
 import Button from '~components/Button'
+import Toggle from '~components/Toggle'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
@@ -197,8 +211,20 @@ const FormChart = ({
   }
   return (
     <VStack w="100%" gap="0">
-      <Text textStyle="h4">{title}</Text>
-      <Chart data={data} chartType={chartType} options={options} width="100%" />
+      <Flex>
+        <Text textStyle="h4">{title}</Text>
+        <Switch onChange={() => setIsTable(!isTable)} />
+      </Flex>
+      {isTable ? (
+        <TableChart data={data} />
+      ) : (
+        <Chart
+          data={data}
+          chartType={chartType}
+          options={options}
+          width="100%"
+        />
+      )}
       {mean && (
         <Text textStyle="h4">
           Average: {Math.round((mean + Number.EPSILON) * 100) / 100}
@@ -216,3 +242,40 @@ const FIELD_TO_CHART = new Map<BasicField, GoogleChartWrapperChartType>([
   [BasicField.CountryRegion, 'PieChart'],
   [BasicField.YesNo, 'PieChart'],
 ])
+
+const TableChart = ({ data }: { data: [string, number | string][] }) => {
+  return (
+    <TableContainer>
+      <Table variant="simple" my="1rem">
+        <Thead>
+          <Tr>
+            <Th>Answer</Th>
+            <Th isNumeric>Count</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {data.map((val) => {
+            if (typeof val[1] === 'number')
+              return <TableChartRows answer={val[0]} value={Number(val[1])} />
+            return null
+          })}
+        </Tbody>
+      </Table>
+    </TableContainer>
+  )
+}
+
+const TableChartRows = ({
+  answer,
+  value,
+}: {
+  answer: string
+  value: number
+}) => {
+  return (
+    <Tr>
+      <Td>{answer}</Td>
+      <Td>{value}</Td>
+    </Tr>
+  )
+}
