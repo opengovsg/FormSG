@@ -387,6 +387,14 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       env: 'ADMIN_FEEDBACK_DISPLAY_FREQUENCY',
     },
   },
+  reform: {
+    openaiApiKey: {
+      doc: 'OpenAI API key',
+      format: String,
+      default: '',
+      env: 'OPENAI_API_KEY',
+    },
+  },
 }
 
 export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {

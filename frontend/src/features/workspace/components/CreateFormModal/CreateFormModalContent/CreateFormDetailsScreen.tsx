@@ -104,6 +104,10 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
 
   const [isCreatingForm, setIsCreatingForm] = useState(false)
 
+  const handleQuestionsChange = (event: {
+    target: { value: SetStateAction<string> }
+  }) => setQnsList(event.target.value)
+
   const handleCreateFormFromQnsList = useCallback(() => {
     setIsCreatingForm(true)
     return getFormFieldsMutation.mutate(
@@ -273,7 +277,10 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
                   </FormLabel>
                   <Skeleton isLoaded={!isFetching}>
                     <Stack direction="row">
-                      <Textarea value={qnsList} />
+                      <Textarea
+                        value={qnsList}
+                        onChange={handleQuestionsChange}
+                      />
                     </Stack>
                   </Skeleton>
                 </FormControl>

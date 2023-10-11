@@ -1,5 +1,4 @@
 export const OPENAI_ENDPOINT = 'https://api.openai.com/v1/chat/completions'
-export const OPENAI_API_KEY = 'api key' // Replace with your OpenAI API key
 
 export const sampleFormFields = [
   {

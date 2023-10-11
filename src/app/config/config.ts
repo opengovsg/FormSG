@@ -256,6 +256,7 @@ const config: Config = {
     basicVars.adminFeedback.adminFeedbackFieldThreshold,
   adminFeedbackDisplayFrequency:
     basicVars.adminFeedback.adminFeedbackDisplayFrequency,
+  openaiApiKey: basicVars.reform.openaiApiKey,
 }
 
 export = config

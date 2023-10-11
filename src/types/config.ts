@@ -103,6 +103,7 @@ export type Config = {
   publicApiConfig: PublicApiConfig
   adminFeedbackFieldThreshold: number
   adminFeedbackDisplayFrequency: number
+  openaiApiKey: string
 
   // Functions
   configureAws: () => Promise<void>
@@ -196,6 +197,9 @@ export interface IOptionalVarsSchema {
   adminFeedback: {
     adminFeedbackFieldThreshold: number
     adminFeedbackDisplayFrequency: number
+  }
+  reform: {
+    openaiApiKey: string
   }
 }
 

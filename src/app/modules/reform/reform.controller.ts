@@ -2,16 +2,17 @@ import axios from 'axios'
 import OpenAI from 'openai'
 import { ChatCompletionMessageParam } from 'openai/src/resources/chat/completions'
 
+import config from '../../config/config'
 import { ControllerHandler } from '../core/core.types'
 
-import { OPENAI_API_KEY, sampleFormFields } from './reform.constants'
+import { sampleFormFields } from './reform.constants'
 import {
   formFieldsPromptBuilder,
   questionListPromptBuilder,
   schemaPromptBuilder,
 } from './reform.service'
 
-const openai = new OpenAI({ apiKey: OPENAI_API_KEY })
+const openai = new OpenAI({ apiKey: config.openaiApiKey })
 
 export const generateQnsList: ControllerHandler<
   unknown,
