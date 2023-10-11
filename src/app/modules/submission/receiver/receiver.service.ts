@@ -1,9 +1,9 @@
 import Busboy from 'busboy'
 import { IncomingHttpHeaders } from 'http'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
-import { VIRUS_SCANNER_SUBMISSION_VERSION } from 'shared/constants'
 import { FormResponseMode } from 'shared/types'
 
+import { VIRUS_SCANNER_SUBMISSION_VERSION } from '../../../../../shared/constants'
 import { MB } from '../../../../../shared/constants/file'
 import { IAttachmentInfo } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
