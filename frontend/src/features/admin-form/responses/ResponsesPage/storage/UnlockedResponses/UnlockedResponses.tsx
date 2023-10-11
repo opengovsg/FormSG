@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { BiData } from 'react-icons/bi'
 import { useQuery } from 'react-query'
 import { useParams } from 'react-router-dom'
 import {
@@ -6,6 +7,7 @@ import {
   Flex,
   Grid,
   HStack,
+  Icon,
   Skeleton,
   Stack,
   Table,
@@ -25,6 +27,8 @@ import { DateRangeValue } from '~components/Calendar'
 import { DateRangePicker } from '~components/DateRangePicker'
 import Pagination from '~components/Pagination'
 
+import Button from '../../../../../../components/Button'
+import Link from '../../../../../../components/Link'
 import { MOEResultsComponent } from '../../../../../../plugins'
 import { getDecryptedSubmissionById } from '../../../AdminSubmissionsService'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
@@ -290,7 +294,14 @@ export const UnlockedResponses = (): JSX.Element => {
               <Text as="span" color="primary.500">
                 {countToUse?.toLocaleString()}
               </Text>
-              {prettifiedResponsesCount}
+              {prettifiedResponsesCount} {'    '}
+              <Button
+                variant="clear"
+                rightIcon={<Icon as={BiData} fontSize="1.5rem" />}
+              >
+                {/* underline text */}
+                <Text as="u">Connect to MOE Database</Text>
+              </Button>
             </Text>
           </Skeleton>
         </Stack>
