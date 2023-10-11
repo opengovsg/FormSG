@@ -1,4 +1,3 @@
-import React from 'react'
 import { Inspector, InspectParams } from 'react-dev-inspector'
 import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from 'react-query'
@@ -10,6 +9,7 @@ import { datadogLogs } from '@datadog/browser-logs'
 import { theme } from '~theme/index'
 import { AuthProvider } from '~contexts/AuthContext'
 import { GrowthBookProvider } from '~contexts/GrowthbookContext'
+import { PluginsProvider } from '~contexts/PluginsContext'
 import { HttpError } from '~services/ApiService'
 
 import { AppHelmet } from './AppHelmet'
@@ -72,7 +72,9 @@ export const App = (): JSX.Element => {
             <ChakraProvider theme={theme} resetCSS>
               <AuthProvider>
                 <GrowthBookProvider>
-                  <AppRouter />
+                  <PluginsProvider>
+                    <AppRouter />
+                  </PluginsProvider>
                 </GrowthBookProvider>
               </AuthProvider>
             </ChakraProvider>
