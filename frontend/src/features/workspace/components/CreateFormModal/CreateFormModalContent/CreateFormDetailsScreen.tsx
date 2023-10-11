@@ -120,7 +120,6 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
       },
       {
         onSuccess: (data) => {
-          console.log(data)
           navigate(`${ADMINFORM_ROUTE}/${data._id}`)
         },
         onSettled: () => {
