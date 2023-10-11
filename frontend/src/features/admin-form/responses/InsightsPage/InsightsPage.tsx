@@ -144,7 +144,7 @@ const InternalInsights = () => {
             }
           })
 
-        if (!FIELD_TO_CHART.get(formField.fieldType)) return <></>
+        if (!FIELD_TO_CHART.get(formField.fieldType)) return null
 
         return (
           <FormChart
