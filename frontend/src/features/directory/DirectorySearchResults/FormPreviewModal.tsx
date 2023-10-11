@@ -5,6 +5,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  useBreakpointValue,
 } from '@chakra-ui/react'
 
 import Button from '~components/Button'
@@ -21,12 +22,18 @@ export const FormPreviewModal = ({
   onClose,
   formId,
 }: FormPreviewModalProps) => {
+  const modalSize = useBreakpointValue({
+    base: 'mobile',
+    xs: 'mobile',
+    md: 'md',
+  })
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader color="secondary.700">Submit this form</ModalHeader>
+        <ModalHeader color="secondary.700">Submit form</ModalHeader>
         <ModalBody>
           <iframe
             title={formId}
@@ -38,7 +45,7 @@ export const FormPreviewModal = ({
         </ModalBody>
         <ModalFooter>
           <Button onClick={() => window.open(`/${formId}`)}>
-            Open form in a new page
+            Open form in a new tab
           </Button>
         </ModalFooter>
       </ModalContent>

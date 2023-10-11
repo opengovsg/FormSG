@@ -26,7 +26,7 @@ export const DirectoryPage = (): JSX.Element => {
   )
 
   return (
-    <Flex direction="column" css={fillHeightCss}>
+    <Flex bg="neutral.100" direction="column" css={fillHeightCss}>
       {bannerProps ? (
         <Banner useMarkdown variant={bannerProps.variant}>
           {bannerProps.msg}
@@ -36,7 +36,6 @@ export const DirectoryPage = (): JSX.Element => {
         flexDir="column"
         px="2rem"
         py="1rem"
-        bg="neutral.100"
         css={fillHeightCss}
         maxW={CONTAINER_MAXW}
       >

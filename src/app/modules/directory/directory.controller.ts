@@ -7,6 +7,7 @@ import {
   getAgencyByShortName,
   getAgencyForms,
   getAllAgencies,
+  sortAgencyFormsByNumberOfRecentSubmissions,
 } from './directory.service'
 import { mapRouteError } from './directory.utils'
 
@@ -24,6 +25,7 @@ export const handleGetAgencies: ControllerHandler = async (req, res) => {
         agencies.map((agency) => ({
           fullName: agency.fullName,
           shortName: agency.shortName,
+          logo: agency.logo,
         })),
       )
     })
@@ -46,6 +48,7 @@ export const handleGetAgencyForms: ControllerHandler<{
   const shortName = req.params.agencyShortName
   return getAgencyByShortName(shortName)
     .andThen(getAgencyForms)
+    .andThen(sortAgencyFormsByNumberOfRecentSubmissions)
     .map((forms) => res.json(forms))
     .mapErr((error) => {
       const { statusCode, errorMessage } = mapRouteError(error)

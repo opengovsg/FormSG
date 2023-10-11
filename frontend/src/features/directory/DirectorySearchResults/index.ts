@@ -1,1 +1,1 @@
-export { DirectorySearchResults } from './DirectorySearchResults'
+export { DirectoryResults } from './DirectoryResults'

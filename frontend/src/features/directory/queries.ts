@@ -23,7 +23,9 @@ export const useDirectoryAgencies = (): UseQueryResult<
 export const useAgencyForms = (
   agency: string,
 ): UseQueryResult<DirectoryFormDto[], ApiError> => {
-  return useQuery(directoryKeys.agencies, () => getAgencyForms(agency), {
-    staleTime: 5000,
-  })
+  return useQuery(
+    directoryKeys.agencyForms(agency),
+    () => getAgencyForms(agency),
+    { staleTime: 5000 },
+  )
 }
