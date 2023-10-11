@@ -16,7 +16,7 @@ import {
 const logger = createLoggerWithLabel(module)
 export const SGID_LOGIN_OAUTH_STATE = 'login'
 const SGID_POCDEX_PUBLIC_OFFICER_EMPLOYMENTS_SCOPE =
-  'pocdex.public_officer_employments'
+  'pocdex.public_officer_details'
 
 export class AuthSgidServiceClass {
   private client: SgidClient
