@@ -11,6 +11,3 @@ ReformRouter.post('/create/questions-list', generateQnsList)
 ReformRouter.post('/create/form', generateFormFields)
 
 ReformRouter.get('/migrate')
-
-// reuse POST /admin/form
-// ReformRouter.route('/save')
