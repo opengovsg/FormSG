@@ -16,6 +16,7 @@ import {
   VStack,
 } from '@chakra-ui/react'
 import { format, isValid } from 'date-fns'
+import simplur from 'simplur'
 import { removeStopwords } from 'stopword'
 
 import { BasicField, DateString, FormFieldDto } from '~shared/types'
@@ -111,7 +112,6 @@ const InternalInsights = () => {
       }
     }
 
-    // use key-value pair for faster
     encryptedContent?.forEach((content) => {
       content.responses.forEach((field) => {
         if (field._id === id && field.answer) {
@@ -151,15 +151,35 @@ const InternalInsights = () => {
     return resultArr
   }
 
+  const prettifiedResponsesCount = useMemo(
+    () =>
+      encryptedContent
+        ? dateRange.length
+          ? simplur` ${[encryptedContent.length ?? 0]}result[|s] found`
+          : simplur` ${[encryptedContent.length ?? 0]}response[|s] to date`
+        : `responses`,
+    [encryptedContent, dateRange],
+  )
+
   return (
-    <VStack divider={<Divider />} gap="1.5rem">
+    <>
       <Flex
         direction={{ base: 'column', sm: 'row' }}
         justifySelf={{ base: 'start', sm: 'end' }}
-        gridArea="export"
+        alignSelf="center"
         maxW="100%"
-        mb="1rem"
+        mb={{ base: '0', md: '1rem' }}
+        alignItems="center"
+        justifyContent="space-between"
+        w="100%"
+        gap="1rem"
       >
+        <Text textStyle="h4" mb="0.5rem">
+          <Text as="span" color="primary.500">
+            {encryptedContent ? encryptedContent.length : 0}
+          </Text>
+          {prettifiedResponsesCount}
+        </Text>
         <DateRangePicker
           value={transform.input(dateRange)}
           onChange={(nextDateRange) =>
@@ -167,48 +187,51 @@ const InternalInsights = () => {
           }
         />
       </Flex>
-      {form?.form_fields.map((formField, idx) => {
-        if (
-          formField.fieldType === BasicField.ShortText ||
-          formField.fieldType === BasicField.LongText
-        ) {
-          const words = aggregateWordCloud(formField._id)
+      <Divider mb="1.5rem" border="2px" borderColor="gray.200" />
+      <VStack divider={<Divider />} gap="1.5rem">
+        {form?.form_fields.map((formField, idx) => {
+          if (
+            formField.fieldType === BasicField.ShortText ||
+            formField.fieldType === BasicField.LongText
+          ) {
+            const words = aggregateWordCloud(formField._id)
+            return (
+              <VStack w="100%" gap="0">
+                <Text textStyle="h4">{`${idx + 1}. ${formField.title}`}</Text>
+                <ReactWordcloud key={idx} words={words} />
+              </VStack>
+            )
+          }
+
+          const dataValues = aggregateSubmissionData(formField._id, formField)
+
+          let mean = undefined
+          if (formField.fieldType === BasicField.Rating) {
+            mean = 0
+            let count = 0
+            dataValues.forEach((data) => {
+              mean += Number(data[0]) * Number(data[1])
+              count += Number(data[1])
+            })
+            mean = mean / count
+          }
+          // add header to values
+          dataValues.unshift(['Answer', 'Count'])
+
+          if (!FIELD_TO_CHART.get(formField.fieldType)) return null
+
           return (
-            <VStack w="100%" gap="0">
-              <Text textStyle="h4">{`${idx + 1}. ${formField.title}`}</Text>
-              <ReactWordcloud key={idx} words={words} />
-            </VStack>
+            <FormChart
+              title={`${idx + 1}. ${formField.title}`}
+              formField={formField}
+              data={dataValues}
+              key={idx}
+              mean={mean}
+            />
           )
-        }
-
-        const dataValues = aggregateSubmissionData(formField._id, formField)
-
-        let mean = undefined
-        if (formField.fieldType === BasicField.Rating) {
-          mean = 0
-          let count = 0
-          dataValues.forEach((data) => {
-            mean += Number(data[0]) * Number(data[1])
-            count += Number(data[1])
-          })
-          mean = mean / count
-        }
-        // add header to values
-        dataValues.unshift(['Answer', 'Count'])
-
-        if (!FIELD_TO_CHART.get(formField.fieldType)) return null
-
-        return (
-          <FormChart
-            title={`${idx + 1}. ${formField.title}`}
-            formField={formField}
-            data={dataValues}
-            key={idx}
-            mean={mean}
-          />
-        )
-      })}
-    </VStack>
+        })}
+      </VStack>
+    </>
   )
 }
 
