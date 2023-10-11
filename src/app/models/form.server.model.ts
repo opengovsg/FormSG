@@ -980,36 +980,27 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormDocumentSchema.statics.retrieveFormsOwnedByAgencyId = async function (
     agencyId: IAgencySchema['_id'],
   ): Promise<DirectoryFormDto[]> {
-    return (
-      this
-        // .find()
-        //   .populate({
-        //     path: 'admin',
-        //   })
-        //   .match({
-        //     'admin.0.agency': agencyId,
-        //   })
-        .aggregate([
-          {
-            $lookup: {
-              from: 'users',
-              localField: 'admin',
-              foreignField: '_id',
-              as: 'admin',
-            },
-          },
-          {
-            $match: {
-              'admin.0.agency': agencyId,
-              status: FormStatus.Public,
-            },
-          },
-        ])
-        .project({
-          title: 1,
-        })
-        .exec()
-    )
+    return this.aggregate([
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'admin',
+          foreignField: '_id',
+          as: 'admin',
+        },
+      },
+      {
+        $match: {
+          'admin.0.agency': agencyId,
+          status: FormStatus.Public,
+        },
+      },
+    ])
+      .project({
+        title: 1,
+        startPage: 1,
+      })
+      .exec()
   }
 
   // Deletes specified form logic.

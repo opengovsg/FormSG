@@ -9,4 +9,5 @@ export type DirectoryAgencyDto = {
 export type DirectoryFormDto = {
   _id: FormDto['_id']
   title: FormDto['title']
+  startPage: FormDto['startPage']
 }

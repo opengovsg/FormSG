@@ -8,6 +8,7 @@ import {
   getAgencyForms,
   getAllAgencies,
 } from './directory.service'
+import { mapRouteError } from './directory.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -36,6 +37,7 @@ export const handleGetAgencies: ControllerHandler = async (req, res) => {
 /**
  * Controller for returning forms owned by a given agency to be listed
  * @returns 200
+ * @returns 404 if agency is not found
  * @returns 500 if a database error occurs
  */
 export const handleGetAgencyForms: ControllerHandler<{
@@ -46,15 +48,15 @@ export const handleGetAgencyForms: ControllerHandler<{
     .andThen(getAgencyForms)
     .map((forms) => res.json(forms))
     .mapErr((error) => {
+      const { statusCode, errorMessage } = mapRouteError(error)
       logger.error({
-        message: 'halp',
+        message:
+          'Error occurred while getting agency forms for directory lookup',
         meta: {
           action: 'handleGetAgencyForms',
         },
         error,
       })
-      return res
-        .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ message: error.message })
+      return res.status(statusCode).json({ message: errorMessage })
     })
 }

@@ -14,8 +14,9 @@ DirectoryRouter.get('/agencies', DirectoryController.handleGetAgencies)
 
 /**
  * Retrieves the the list of public forms belonging to an agency.
- * @route GET /api/v3/directory/agencies/:agency
+ * @route GET /api/v3/directory/agencies/:agencyShortName
  * @returns 200
+ * @returns 404 if agency is not found
  * @returns 500 if a database error occurs
  */
 DirectoryRouter.get(

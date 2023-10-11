@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Flex } from '@chakra-ui/react'
+import { Container, Flex } from '@chakra-ui/react'
 
 import { fillHeightCss } from '~utils/fillHeightCss'
 import { getBannerProps } from '~utils/getBannerProps'
@@ -32,17 +32,16 @@ export const DirectoryPage = (): JSX.Element => {
           {bannerProps.msg}
         </Banner>
       ) : null}
-      <Flex
-        justify="flex-start"
+      <Container
         flexDir="column"
-        align="center"
         px="2rem"
         py="1rem"
         bg="neutral.100"
         css={fillHeightCss}
+        maxW={CONTAINER_MAXW}
       >
         <DirectoryPageContent />
-      </Flex>
+      </Container>
     </Flex>
   )
 }
