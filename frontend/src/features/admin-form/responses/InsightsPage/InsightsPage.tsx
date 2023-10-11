@@ -1,5 +1,5 @@
 import { Chart, GoogleChartWrapperChartType } from 'react-google-charts'
-import { Divider, VStack } from '@chakra-ui/react'
+import { Divider, Text, VStack } from '@chakra-ui/react'
 
 import { BasicField } from '~shared/types'
 import { FormResponseMode } from '~shared/types/form'
@@ -76,15 +76,53 @@ const InternalInsights = () => {
   return (
     <VStack divider={<Divider />} gap="1.5rem">
       {form?.form_fields.map((formField, idx) => {
-        const dataValues = aggregateSubmissionData(formField._id)
+        let dataValues = aggregateSubmissionData(formField._id)
+
+        if (formField.fieldType === BasicField.Date) {
+          dataValues = dataValues.map((data) => [new Date(data[0]), data[1]])
+        }
+
+        let mean = undefined
+        if (formField.fieldType === BasicField.Rating) {
+          mean = 0
+          dataValues.forEach((data) => {
+            mean += Number(data[0]) * Number(data[1])
+          })
+          mean = mean / dataValues.length
+        }
         // add header to values
         dataValues.unshift(['Answer', 'Count'])
+
+        if (formField.fieldType === BasicField.Checkbox || BasicField.Rating)
+          dataValues.map((val, idx) => {
+            if (val[1] === 'Count') {
+              val.push({ role: 'style' })
+              val.push({
+                sourceColumn: 0,
+                role: 'annotation',
+                type: 'string',
+                calc: 'stringify',
+              })
+            } else {
+              val.push(
+                '#' +
+                  (0x1000000 + Math.random() * 0xffffff)
+                    .toString(16)
+                    .substr(1, 6),
+              )
+              val.push(null)
+            }
+          })
+
+        if (!FIELD_TO_CHART.get(formField.fieldType)) return <></>
+
         return (
           <FormChart
             title={formField.title}
             chartType={FIELD_TO_CHART.get(formField.fieldType) || 'PieChart'}
             data={dataValues}
             key={idx}
+            mean={mean}
           />
         )
       })}
@@ -96,13 +134,22 @@ const FormChart = ({
   title,
   chartType,
   data,
+  mean,
 }: {
   title: string
   chartType: GoogleChartWrapperChartType
   data: [string, number | string][]
+  mean?: number
 }) => {
+  const options = {
+    title,
+    legend: { position: chartType === 'PieChart' ? undefined : 'none' },
+  }
   return (
-    <Chart data={data} chartType={chartType} options={{ title }} width="100%" />
+    <VStack w="100%" gap="0">
+      <Chart data={data} chartType={chartType} options={options} width="100%" />
+      {mean && <Text textStyle="h2">Average: {mean}</Text>}
+    </VStack>
   )
 }
 
@@ -110,4 +157,7 @@ const FIELD_TO_CHART = new Map<BasicField, GoogleChartWrapperChartType>([
   [BasicField.Rating, 'ColumnChart'],
   [BasicField.Radio, 'PieChart'],
   [BasicField.Checkbox, 'BarChart'],
+  [BasicField.Dropdown, 'PieChart'],
+  [BasicField.CountryRegion, 'PieChart'],
+  [BasicField.YesNo, 'PieChart'],
 ])
