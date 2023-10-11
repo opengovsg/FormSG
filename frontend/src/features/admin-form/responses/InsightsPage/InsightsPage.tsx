@@ -1,5 +1,7 @@
 import { Chart, GoogleChartWrapperChartType } from 'react-google-charts'
+import ReactWordcloud from 'react-wordcloud'
 import { Divider, Text, VStack } from '@chakra-ui/react'
+import { removeStopwords } from 'stopword'
 
 import { BasicField } from '~shared/types'
 import { FormResponseMode } from '~shared/types/form'
@@ -44,6 +46,8 @@ export const InsightsPage = (): JSX.Element => {
   return secretKey ? <InternalInsights /> : <SecretKeyVerification />
 }
 
+type Word = { text: string; value: number }
+
 const InternalInsights = () => {
   const { data: encryptedContent } = useAllSubmissionData()
   const { data: form } = useAdminForm()
@@ -55,7 +59,6 @@ const InternalInsights = () => {
     encryptedContent?.forEach((content) => {
       content.responses.forEach((field) => {
         if (field._id === id && field.answer) {
-          console.log(field)
           hashMap.set(field.answer, (hashMap.get(field.answer) || 0) + 1)
         } else if (field._id === id && field.answerArray) {
           field.answerArray.forEach((answer) => {
@@ -65,17 +68,51 @@ const InternalInsights = () => {
         }
       })
     })
-    console.log(hashMap)
     return Array.from(hashMap)
   }
 
-  // For each form field in form
-  // Aggregate submission data based on _id
-  // Render into react google charts
+  const aggregateWordCloud = (id: string): Word[] => {
+    const hashMap = new Map<string, number>()
+
+    const resultArr: Word[] = []
+
+    // use key-value pair for faster
+    encryptedContent?.forEach((content) => {
+      content.responses.forEach((field) => {
+        if (field._id === id && field.answer) {
+          const answerArray = field.answer.split(' ')
+          const ansNoStopW = removeStopwords(answerArray)
+          ansNoStopW.forEach((word) => {
+            const wordNoPunc = word.replace(/\W|_/g, '')
+            const wordLower = wordNoPunc.toLowerCase()
+            hashMap.set(wordLower, (hashMap.get(wordLower) || 0) + 1)
+          })
+          hashMap.forEach((val, key) =>
+            resultArr.push({ text: key, value: val }),
+          )
+        }
+      })
+    })
+    return resultArr
+  }
 
   return (
     <VStack divider={<Divider />} gap="1.5rem">
       {form?.form_fields.map((formField, idx) => {
+        if (
+          formField.fieldType === BasicField.ShortText ||
+          formField.fieldType === BasicField.LongText
+        ) {
+          const words = aggregateWordCloud(formField._id)
+          console.log(words)
+          return (
+            <VStack w="100%" gap="0">
+              <Text textStyle="h4">{formField.title}</Text>
+              <ReactWordcloud key={idx} words={words} />
+            </VStack>
+          )
+        }
+
         let dataValues = aggregateSubmissionData(formField._id)
 
         if (formField.fieldType === BasicField.Date) {
@@ -97,12 +134,6 @@ const InternalInsights = () => {
           dataValues.map((val, idx) => {
             if (val[1] === 'Count') {
               val.push({ role: 'style' })
-              val.push({
-                sourceColumn: 0,
-                role: 'annotation',
-                type: 'string',
-                calc: 'stringify',
-              })
             } else {
               val.push(
                 '#' +
@@ -110,7 +141,6 @@ const InternalInsights = () => {
                     .toString(16)
                     .substr(1, 6),
               )
-              val.push(null)
             }
           })
 
@@ -142,13 +172,14 @@ const FormChart = ({
   mean?: number
 }) => {
   const options = {
-    title,
     legend: { position: chartType === 'PieChart' ? undefined : 'none' },
+    chartArea: { width: '50%' },
   }
   return (
     <VStack w="100%" gap="0">
+      <Text textStyle="h4">{title}</Text>
       <Chart data={data} chartType={chartType} options={options} width="100%" />
-      {mean && <Text textStyle="h2">Average: {mean}</Text>}
+      {mean && <Text textStyle="h4">Average: {mean}</Text>}
     </VStack>
   )
 }
