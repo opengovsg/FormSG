@@ -1,12 +1,10 @@
 import { useMemo, useState } from 'react'
-import { BiData } from 'react-icons/bi'
 import { useQuery } from 'react-query'
 import { useParams } from 'react-router-dom'
 import {
   Box,
   Flex,
   Grid,
-  Icon,
   Skeleton,
   Stack,
   Tab,
@@ -25,7 +23,6 @@ import { DateRangeValue } from '~components/Calendar'
 import { DateRangePicker } from '~components/DateRangePicker'
 import Pagination from '~components/Pagination'
 
-import Button from '../../../../../../components/Button'
 import { MOEResultsComponent } from '../../../../../../plugins'
 import { MOEAuthComponent } from '../../../../../../plugins/MOEAuthComponent'
 import { getDecryptedSubmissionById } from '../../../AdminSubmissionsService'

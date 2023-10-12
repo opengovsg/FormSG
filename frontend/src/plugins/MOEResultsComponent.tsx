@@ -76,7 +76,7 @@ export class MOEResultsComponent extends PluginComponent {
     const submittedStudentsForInjection = this.MOEData.map((classData) => {
       const { class: className, school, level, students } = classData
       const submittedStudents = students.filter((student) =>
-        identifiers.includes(student.nric),
+        identifiers.includes(student.identifier),
       )
 
       const submittedStudentsByRow = submittedStudents.map((answer) => {
