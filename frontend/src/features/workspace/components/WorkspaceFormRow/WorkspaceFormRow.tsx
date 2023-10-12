@@ -6,6 +6,7 @@ import dayjs from 'dayjs'
 import { AdminDashboardFormMetaDto, FormStatus } from '~shared/types/form/form'
 
 import { ADMINFORM_ROUTE } from '~constants/routes'
+import Badge from '~components/Badge'
 
 import { FormStatusLabel } from './FormStatusLabel'
 import { RowActions } from './RowActions'
@@ -31,6 +32,11 @@ export const WorkspaceFormRow = ({
     return dayjs(formMeta.lastModified).calendar(null, RELATIVE_DATE_FORMAT)
   }, [formMeta.lastModified])
 
+  const badgeTitle = ['event', 'toolkit'].some((str) =>
+    formMeta.title.toLowerCase().includes(str),
+  )
+    ? 'Directory'
+    : 'Form'
   return (
     <Box pos="relative">
       <chakra.button
@@ -45,12 +51,12 @@ export const WorkspaceFormRow = ({
         justifyContent="space-between"
         gridTemplateColumns={{
           base: '1fr 2.75rem',
-          md: '1fr 4rem 8rem',
+          md: '1fr 4rem 4rem 8rem',
         }}
         gridTemplateRows={{ base: 'auto 2.75rem', md: 'auto' }}
         gridTemplateAreas={{
-          base: "'title title' 'status actions'",
-          md: "'title status actions'",
+          base: "'title title' 'type status actions'",
+          md: "'title type status actions'",
         }}
         gridGap={{ base: '0.5rem', md: '1.5rem' }}
         _hover={{
@@ -82,6 +88,11 @@ export const WorkspaceFormRow = ({
           <Text textStyle="body-2" color="secondary.400">
             Edited {prettyLastModified}
           </Text>
+        </Flex>
+        <Flex gridArea="type" alignSelf="center" justifyContent="end">
+          <Badge variant="subtle" color="secondary.500">
+            {badgeTitle}
+          </Badge>
         </Flex>
         <Box gridArea="status" alignSelf="center">
           <FormStatusLabel status={formMeta.status} />

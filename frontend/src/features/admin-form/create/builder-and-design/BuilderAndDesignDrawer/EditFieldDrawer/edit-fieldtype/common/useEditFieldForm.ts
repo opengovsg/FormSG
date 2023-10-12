@@ -191,7 +191,7 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
   )
 
   const buttonText = useMemo(
-    () => (isPendingField ? 'Create field' : 'Save field'),
+    () => (isPendingField ? 'Create element' : 'Save element'),
     [isPendingField],
   )
 

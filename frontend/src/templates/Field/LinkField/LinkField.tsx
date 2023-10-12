@@ -1,5 +1,5 @@
 import { BiLink } from 'react-icons/bi'
-import { Box, chakra, Flex, Icon, Stack, Text } from '@chakra-ui/react'
+import { Box, chakra, Flex, Icon, Image, Stack, Text } from '@chakra-ui/react'
 
 import { ReactComponent as BrandMarkSvg } from '~assets/svgs/brand/brand-mark-colour.svg'
 import { ReactComponent as GoGovSvg } from '~assets/svgs/brand/go-gov.svg'
@@ -8,6 +8,8 @@ import { MarkdownText } from '~components/MarkdownText'
 
 import { BaseFieldProps } from '../FieldContainer'
 import { LinkFieldSchema } from '../types'
+
+import { getAgencyLogo } from './logoUtils'
 
 export interface LinkFieldProps extends BaseFieldProps {
   schema: LinkFieldSchema
@@ -20,6 +22,10 @@ const LOCALHOST_REGEX = new RegExp(/localhost/)
 const getUrlIcon = (url: string) => {
   try {
     const { hostname } = new URL(url)
+    // const agencyLogo = getAgencyLogo(hostname)
+    // if (agencyLogo) {
+    //   return <Image src={agencyLogo} />
+    // }
     if (FORMSG_REGEX.test(hostname) || LOCALHOST_REGEX.test(hostname)) {
       return chakra(BrandMarkSvg)
     }

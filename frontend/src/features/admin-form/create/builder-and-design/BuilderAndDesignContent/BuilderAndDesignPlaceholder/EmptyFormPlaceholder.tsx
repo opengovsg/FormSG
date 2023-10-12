@@ -25,7 +25,7 @@ export const EmptyFormPlaceholder = forwardRef<
 
   const placeholderText = useMemo(() => {
     if (isDraggingOver) {
-      return 'Drop your field here'
+      return 'Drop your elements here'
     }
     return isMobile
       ? 'Tap here to add a field'

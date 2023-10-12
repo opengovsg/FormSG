@@ -36,7 +36,7 @@ export const BuilderAndDesignPlaceholder = ({
             justify="center"
             align="center"
           >
-            <Text textStyle="subhead-2">Drop your field here</Text>
+            <Text textStyle="subhead-2">Drop your elements here</Text>
           </Flex>
         )
     }
