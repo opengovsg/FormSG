@@ -24,14 +24,14 @@ const RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: 'Name',
     accessor: 'name',
-    minWidth: 80, // minWidth is only used as a limit for resizing
+    minWidth: 200, // minWidth is only used as a limit for resizing
     width: 80, // width is used for both the flex-basis and flex-grow
     maxWidth: 100, // maxWidth is only used as a limit for resizing
   },
   {
     Header: 'Response ID',
     accessor: 'refNo',
-    minWidth: 300,
+    minWidth: 200,
     width: 300,
     maxWidth: 240, // maxWidth is only used as a limit for resizing
   },
@@ -139,8 +139,6 @@ export const MOEResponsesTable = (filteredResponses) => {
   // }, [filteredMetadata, metadata, submissionId])
 
   const metadataToUse = filteredResponses.filteredResponses
-  console.log('filteredResponses:', filteredResponses.filteredResponses)
-  // console.log('metadataToUse:', metadataToUse)
   const {
     prepareRow,
     getTableProps,

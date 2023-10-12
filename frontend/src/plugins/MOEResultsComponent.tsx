@@ -147,8 +147,8 @@ export class MOEResultsComponent extends PluginComponent {
     // Return a table with the header 'Classes' and 'Responses'
     // and populate with className and count
     return (
-      <HStack>
-        <Table variant="solid" colorScheme="secondary" maxW="20rem">
+      <HStack alignItems="start">
+        <Table variant="solid" colorScheme="secondary" maxW="10rem">
           <Thead>
             <Tr>
               <Th>Class</Th>
@@ -169,6 +169,7 @@ export class MOEResultsComponent extends PluginComponent {
                   onClick={() => {
                     this.handleRowClick(className)
                   }}
+                  bg={this.selectedClass === className ? 'primary.200' : ''}
                 >
                   <Td>{className}</Td>
                   <Td>{count}</Td>
@@ -215,7 +216,6 @@ export class MOEResultsComponent extends PluginComponent {
 
   render(): JSX.Element {
     const responseIdentifiers = this.getResponseIdentifiers()
-    console.log('responsedata:', this.responseData)
     return <>{this.generateResponseCountByClass(responseIdentifiers)}</>
   }
 }
