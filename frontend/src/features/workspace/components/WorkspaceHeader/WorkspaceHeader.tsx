@@ -1,17 +1,35 @@
 import { useMemo } from 'react'
-import { BiPlus } from 'react-icons/bi'
+import {
+  BiDirections,
+  BiDuplicate,
+  BiFile,
+  BiPlus,
+  BiShareAlt,
+  BiShow,
+  BiTrash,
+  BiUserPlus,
+} from 'react-icons/bi'
+import {} from 'react-icons/io'
+import { Link as ReactLink } from 'react-router-dom'
 import {
   Box,
+  ButtonGroup,
   Flex,
   Grid,
+  MenuButton,
+  MenuDivider,
   Skeleton,
   Text,
   useDisclosure,
 } from '@chakra-ui/react'
 import simplur from 'simplur'
 
+import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
+import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import { useIsDesktop, useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
+import IconButton from '~components/IconButton'
+import Menu from '~components/Menu'
 
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
@@ -111,15 +129,71 @@ export const WorkspaceHeader = ({
         />
       )}
 
-      <Button
+      {/* <Button
         gridArea="create"
         isFullWidth={isMobile}
         isDisabled={isLoading}
         onClick={handleOpenCreateFormModal}
-        leftIcon={<BiPlus fontSize="1.5rem" />}
+        rightIcon={<BiPlus fontSize="1.5rem" />}
       >
-        Create form
-      </Button>
+        Create
+      </Button> */}
+      <ButtonActionDropdown
+        handleOpenCreateFormModal={handleOpenCreateFormModal}
+      />
     </Grid>
+  )
+}
+
+const ButtonActionDropdown = ({ handleOpenCreateFormModal }) => {
+  return (
+    <Menu
+      placement="bottom-end"
+      // Prevents massive render load when there are a ton of rows
+      isLazy
+    >
+      {({ isOpen }) => (
+        <>
+          <ButtonGroup
+            isAttached
+            variant="outline"
+            colorScheme="secondary"
+            display={{ base: 'none', md: 'flex' }}
+          >
+            <Button
+              // to={adminFormLink}
+              onClick={handleOpenCreateFormModal}
+              px="1.5rem"
+              mr="-1px"
+              borderEndRadius={0}
+            >
+              Create
+            </Button>
+            <MenuButton
+              as={IconButton}
+              borderStartRadius={0}
+              _active={{ bg: 'secondary.100' }}
+              isActive={isOpen}
+              aria-label="More actions"
+              icon={isOpen ? <BxsChevronUp /> : <BxsChevronDown />}
+            />
+          </ButtonGroup>
+          <Menu.List>
+            <Menu.Item
+              onClick={handleOpenCreateFormModal}
+              icon={<BiFile fontSize="1.25rem" />}
+            >
+              Form
+            </Menu.Item>
+            <Menu.Item
+              onClick={handleOpenCreateFormModal}
+              icon={<BiDirections fontSize="1.25rem" />}
+            >
+              Directory
+            </Menu.Item>
+          </Menu.List>
+        </>
+      )}
+    </Menu>
   )
 }
