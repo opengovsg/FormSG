@@ -107,6 +107,7 @@ const InternalInsights = () => {
       const resultArr: typeof encryptedContent = []
       encryptedContent.forEach((content) => {
         if (
+          content.submissionTime &&
           Date.parse(content.submissionTime) >= Date.parse(dateRange[0]) &&
           Date.parse(content.submissionTime) <= Date.parse(dateRange[1])
         )
@@ -169,7 +170,7 @@ const InternalInsights = () => {
 
   const prettifiedResponsesCount = useMemo(
     () =>
-      dateRange.length
+      dateRange.length === 2
         ? simplur` ${[filteredEncryptedData.length ?? 0]}result[|s] found`
         : simplur` ${[filteredEncryptedData.length ?? 0]}response[|s] to date`,
     [filteredEncryptedData, dateRange],
@@ -232,10 +233,10 @@ const InternalInsights = () => {
           }
           // add header to values
           dataValues.unshift(['Answer', 'Count'])
-
           if (
             !FIELD_TO_CHART.get(formField.fieldType) ||
-            dataValues.length <= 1
+            dataValues.length <= 1 ||
+            Number.isNaN(mean)
           )
             return null
 
@@ -276,7 +277,7 @@ const FormChart = ({
     !isTable &&
     (formField.fieldType === BasicField.Checkbox || BasicField.Rating)
   )
-    data.map((val, idx) => {
+    data.forEach((val) => {
       if (val[1] === 'Count') {
         val.push({ role: 'style' })
       } else {
