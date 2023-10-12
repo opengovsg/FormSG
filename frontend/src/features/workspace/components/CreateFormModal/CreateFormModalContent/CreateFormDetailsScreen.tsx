@@ -17,8 +17,6 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-// import { getDocument, pdfjs } from 'pdfjs-dist'
-// import pdfjsworker from 'pdfjs-dist/build/pdf.worker.entry'
 import { FormResponseMode } from '~shared/types/form/form'
 
 import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
@@ -169,6 +167,10 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             console.log(data)
             setQnsList(parseModelOutput(data[data.length - 1].content))
             setPrevMessages(data)
+            setIsProgress(false)
+          },
+          onError(error) {
+            console.log(error)
             setIsProgress(false)
           },
         })
