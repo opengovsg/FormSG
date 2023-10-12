@@ -17,6 +17,7 @@ import simplur from 'simplur'
 
 import { DateString } from '~shared/types'
 
+import formPluginDataStore from '~contexts/PluginsSingleton'
 import { DateRangeValue } from '~components/Calendar'
 import { DateRangePicker } from '~components/DateRangePicker'
 import Pagination from '~components/Pagination'
@@ -157,6 +158,13 @@ export const UnlockedResponses = (): JSX.Element => {
       setPluginCSVAdditionalFieldNames(pluginComponent.generateCSVFieldNames())
     }
   }, [isPluginConnected])
+
+  useEffect(() => {
+    if (formPluginDataStore.MOEResultsComponentData?.storedData) {
+      setIsPluginConnected(true)
+    }
+  })
+
   return (
     <Flex flexDir="column" h="100%">
       {isPluginConnected ? null : (
