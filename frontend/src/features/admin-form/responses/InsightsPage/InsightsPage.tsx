@@ -15,7 +15,7 @@ import {
   Tr,
   VStack,
 } from '@chakra-ui/react'
-import { format, isValid } from 'date-fns'
+import { addDays, format, isValid } from 'date-fns'
 import simplur from 'simplur'
 import { removeStopwords } from 'stopword'
 
@@ -109,7 +109,8 @@ const InternalInsights = () => {
         if (
           content.submissionTime &&
           Date.parse(content.submissionTime) >= Date.parse(dateRange[0]) &&
-          Date.parse(content.submissionTime) <= Date.parse(dateRange[1])
+          Date.parse(content.submissionTime) <=
+            addDays(Date.parse(dateRange[1]), 1).getTime()
         )
           resultArr.push(content)
       })
@@ -188,6 +189,7 @@ const InternalInsights = () => {
         justifyContent="space-between"
         w="100%"
         gap="1rem"
+        mb="2.5rem"
       >
         <Text textStyle="h4" mb="0.5rem">
           <Text as="span" color="primary.500">
@@ -202,7 +204,6 @@ const InternalInsights = () => {
           }
         />
       </Flex>
-      <Divider mb="1.5rem" border="2px" borderColor="gray.200" />
       <VStack divider={<Divider />} gap="1.5rem">
         {form?.form_fields.map((formField, idx) => {
           if (filteredEncryptedData.length === 0) return null
@@ -212,7 +213,7 @@ const InternalInsights = () => {
           ) {
             const words = aggregateWordCloud(formField._id)
             return (
-              <VStack w="100%" gap="0">
+              <VStack w="100%" gap="0" key={idx}>
                 <Text textStyle="h4">{`${idx + 1}. ${formField.title}`}</Text>
                 <ReactWordcloud key={idx} words={words} />
               </VStack>
@@ -300,25 +301,27 @@ const FormChart = ({
   }
   return (
     <VStack w="100%" gap="0">
-      <Flex alignItems="center">
+      <Flex alignItems="center" justifyContent="space-between" w="100%">
         <Text textStyle="h4" mr="1rem">
           {title}
         </Text>
-        <IconButton
-          aria-label="chart"
-          onClick={() => setIsTable(false)}
-          icon={<BiBarChartAlt2 />}
-          variant="clear"
-          isActive={!isTable}
-        />
+        <Flex gap="0.5rem">
+          <IconButton
+            aria-label="chart"
+            onClick={() => setIsTable(false)}
+            icon={<BiBarChartAlt2 />}
+            variant="clear"
+            isActive={!isTable}
+          />
 
-        <IconButton
-          aria-label="table"
-          onClick={() => setIsTable(true)}
-          icon={<BiTable />}
-          variant="clear"
-          isActive={isTable}
-        />
+          <IconButton
+            aria-label="table"
+            onClick={() => setIsTable(true)}
+            icon={<BiTable />}
+            variant="clear"
+            isActive={isTable}
+          />
+        </Flex>
       </Flex>
       {isTable ? (
         <TableChart data={data} />
@@ -328,6 +331,7 @@ const FormChart = ({
           chartType={chartType}
           options={options}
           width="100%"
+          h="400px"
         />
       )}
       {mean && (
@@ -359,9 +363,15 @@ const TableChart = ({ data }: { data: [string, number | string][] }) => {
           </Tr>
         </Thead>
         <Tbody>
-          {data.map((val) => {
+          {data.map((val, idx) => {
             if (typeof val[1] === 'number')
-              return <TableChartRows answer={val[0]} value={Number(val[1])} />
+              return (
+                <TableChartRows
+                  answer={val[0]}
+                  value={Number(val[1])}
+                  key={idx}
+                />
+              )
             return null
           })}
         </Tbody>
