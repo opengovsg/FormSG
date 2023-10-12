@@ -1,10 +1,14 @@
 import { useSearchParam } from 'react-use'
 
+import { DirectoryResults } from './DirectoryResults'
 import { DirectorySearch } from './DirectorySearch'
-import { DirectoryResults } from './DirectorySearchResults'
 
 export const DirectoryPageContent = () => {
   const agency = useSearchParam('agency')
 
-  return agency ? <DirectoryResults agency={agency} /> : <DirectorySearch />
+  return agency ? (
+    <DirectoryResults agencyShortName={agency} />
+  ) : (
+    <DirectorySearch />
+  )
 }

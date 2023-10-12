@@ -1,15 +1,14 @@
 import { useMemo } from 'react'
-import { Container, Flex } from '@chakra-ui/react'
+import { Box, Flex } from '@chakra-ui/react'
 
-import { fillHeightCss } from '~utils/fillHeightCss'
+import { AppFooter } from '~/app/AppFooter'
+
 import { getBannerProps } from '~utils/getBannerProps'
 import { Banner } from '~components/Banner'
 
 import { useEnv } from '~features/env/queries'
 
 import { DirectoryPageContent } from './DirectoryPageContent'
-
-export const CONTAINER_MAXW = '69.5rem'
 
 export const DirectoryPage = (): JSX.Element => {
   const { data: { siteBannerContent } = {} } = useEnv()
@@ -26,21 +25,16 @@ export const DirectoryPage = (): JSX.Element => {
   )
 
   return (
-    <Flex bg="neutral.100" direction="column" css={fillHeightCss}>
+    <Flex flexDir="column" bg="neutral.100" h="100%">
       {bannerProps ? (
         <Banner useMarkdown variant={bannerProps.variant}>
           {bannerProps.msg}
         </Banner>
       ) : null}
-      <Container
-        flexDir="column"
-        px="2rem"
-        py="1rem"
-        css={fillHeightCss}
-        maxW={CONTAINER_MAXW}
-      >
-        <DirectoryPageContent />
-      </Container>
+      <DirectoryPageContent />
+      <Box bgColor="primary.100">
+        <AppFooter />
+      </Box>
     </Flex>
   )
 }
