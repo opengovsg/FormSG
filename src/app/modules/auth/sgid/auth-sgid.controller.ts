@@ -218,7 +218,7 @@ export const setProfile: ControllerHandler<
   }
 
   const selectedProfile = req.session.sgid.profiles.find(
-    (profile) => profile.workEmail === req.body.workEmail,
+    (profile) => profile.work_email === req.body.workEmail,
   )
   if (!selectedProfile) {
     const message = 'Error logging in via sgID: selected profile is invalid'
@@ -229,9 +229,9 @@ export const setProfile: ControllerHandler<
     return res.status(StatusCodes.BAD_REQUEST).json({ message })
   }
 
-  await AuthService.validateEmailDomain(selectedProfile.workEmail)
+  await AuthService.validateEmailDomain(selectedProfile.work_email)
     .andThen((agency) =>
-      UserService.retrieveUser(selectedProfile.workEmail, agency._id),
+      UserService.retrieveUser(selectedProfile.work_email, agency._id),
     )
     .map((user) => {
       // Add user info to session.

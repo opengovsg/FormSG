@@ -134,7 +134,7 @@ export class AuthSgidServiceClass {
       // Ensure that all emails are in lowercase
       const cleanedProfile = employments.map((employment) => ({
         ...employment,
-        workEmail: employment.workEmail.toLowerCase(),
+        work_email: employment.work_email.toLowerCase(),
       }))
 
       return ok(cleanedProfile)

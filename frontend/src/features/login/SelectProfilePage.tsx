@@ -130,7 +130,7 @@ export const SelectProfilePage = (): JSX.Element => {
 
   const handleSetProfile = async (profile: SgidPublicOfficerEmployment) => {
     ApiService.post<void>(SGID_PROFILES_ENDPOINT, {
-      workEmail: profile.workEmail,
+      workEmail: profile.work_email,
     })
       .then(() => {
         window.location.assign(DASHBOARD_ROUTE)
@@ -169,7 +169,7 @@ export const SelectProfilePage = (): JSX.Element => {
           profilesResponse.data?.profiles.map((profile) => (
             <ProfileItem
               profile={profile}
-              key={profile.workEmail}
+              key={profile.work_email}
               onClick={() => handleSetProfile(profile)}
             />
           ))
@@ -204,17 +204,17 @@ const ProfileItem = ({
           color="secondary.700"
           marginBottom="0.25rem"
         >
-          {profile.workEmail}
+          {profile.work_email}
         </Text>
         <Text
           textStyle="caption-2"
           color="secondary.400"
           marginBottom="0.25rem"
         >
-          {[profile.agencyName, profile.departmentName].join(', ')}
+          {[profile.agency_name, profile.department_name].join(', ')}
         </Text>
         <Text textStyle="caption-2" color="secondary.400">
-          {profile.employmentTitle}
+          {profile.employment_title}
         </Text>
       </Box>
       <Box marginLeft="0.5rem">
