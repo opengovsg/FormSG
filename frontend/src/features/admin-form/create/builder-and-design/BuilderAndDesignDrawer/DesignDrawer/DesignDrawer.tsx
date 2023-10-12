@@ -352,7 +352,7 @@ export const DesignInput = (): JSX.Element | null => {
         />
         <FormErrorMessage>{errors.estTimeTaken?.message}</FormErrorMessage>
       </FormControl> */}
-
+      {/* 
       <FormControl
         isReadOnly={startPageMutation.isLoading}
         isInvalid={!!errors.paragraph}
@@ -363,7 +363,7 @@ export const DesignInput = (): JSX.Element | null => {
           {...register('paragraph')}
         />
         <FormErrorMessage>{errors.paragraph?.message}</FormErrorMessage>
-      </FormControl>
+      </FormControl> */}
 
       <FormFieldDrawerActions
         isLoading={startPageMutation.isLoading}
@@ -435,7 +435,7 @@ export const DesignDrawer = ({
       <Box pt="1rem" px="1.5rem" bg="white">
         <Flex justify="space-between">
           <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
-            Edit header and instructions
+            Edit logo and theme color
           </Text>
           <CreatePageDrawerCloseButton />
         </Flex>

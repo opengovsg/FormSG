@@ -76,7 +76,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
     >
       <Stack spacing="0.5rem">
         <DrawerTabIcon
-          label="Add fields"
+          label="Add elements"
           icon={<BxsWidget fontSize="1.5rem" />}
           onClick={handleDrawerBuilderClick}
           isActive={activeTab === DrawerTabs.Builder}

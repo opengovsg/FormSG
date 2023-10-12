@@ -156,7 +156,7 @@ const ButtonActionDropdown = ({ handleOpenCreateFormModal }) => {
         <>
           <ButtonGroup
             isAttached
-            variant="outline"
+            // variant="outline"
             colorScheme="secondary"
             display={{ base: 'none', md: 'flex' }}
           >
