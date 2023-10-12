@@ -56,10 +56,11 @@ export const generateFormFields: ControllerHandler<
   }
 > = async (req, res) => {
   try {
-    const prevMessages = req.body.prevMessages as ChatCompletionMessageParam[]
+    // const prevMessages = req.body.prevMessages as ChatCompletionMessageParam[]
 
     const messages: ChatCompletionMessageParam[] = [
-      ...prevMessages,
+      // ...prevMessages,
+      { role: 'system', content: schemaPromptBuilder(sampleFormFields) },
       {
         role: 'user',
         content: formFieldsPromptBuilder(
