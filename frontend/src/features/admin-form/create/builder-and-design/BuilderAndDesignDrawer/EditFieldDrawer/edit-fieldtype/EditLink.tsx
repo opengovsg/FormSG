@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { FormControl } from '@chakra-ui/react'
 import { extend } from 'lodash'
+import validator from 'validator'
 
 import { LinkFieldBase, StatementFieldBase } from '~shared/types/field'
 
@@ -19,6 +20,19 @@ import { useEditFieldForm } from './common/useEditFieldForm'
 type EditLinkProps = EditFieldProps<LinkFieldBase>
 
 type EditLinkInputs = Pick<LinkFieldBase, 'url' | 'description' | 'title'>
+
+const linkValidation = (inputValue?: string) => {
+  console.log({ inputValue })
+  if (!inputValue) return true
+  const trimmedInputValue = inputValue.trim()
+
+  // Valid url check
+  if (!validator.isURL(trimmedInputValue, { require_protocol: true }))
+    return 'Please enter a valid url (http:// or https://)'
+
+  // Passed all error validation.
+  return true
+}
 
 export const EditLink = ({ field }: EditLinkProps): JSX.Element => {
   const {
@@ -41,8 +55,10 @@ export const EditLink = ({ field }: EditLinkProps): JSX.Element => {
     },
   })
 
-  const requiredValidationRule = useMemo(
-    () => createBaseValidationRules({ required: true }),
+  const linkValidationRule = useMemo(
+    () => ({
+      validate: linkValidation,
+    }),
     [],
   )
 
@@ -50,7 +66,7 @@ export const EditLink = ({ field }: EditLinkProps): JSX.Element => {
     <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.url}>
         <FormLabel>Link</FormLabel>
-        <Input autoFocus {...register('url', requiredValidationRule)} />
+        <Input autoFocus {...register('url', linkValidationRule)} />
         <FormErrorMessage>{errors?.url?.message}</FormErrorMessage>
       </FormControl>
       <FormControl isReadOnly={isLoading} isInvalid={!!errors.title}>
