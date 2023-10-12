@@ -285,8 +285,7 @@ export type DuplicateFormBodyDto = {
 export type CreateEmailFormBodyDto = Pick<
   EmailFormDto,
   'emails' | 'responseMode' | 'title'
-> &
-  Partial<EmailFormDto>
+> & { form_fields?: FormFieldDto[] }
 export type CreateStorageFormBodyDto = Pick<
   StorageFormDto,
   'publicKey' | 'responseMode' | 'title'
