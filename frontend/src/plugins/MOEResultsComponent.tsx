@@ -45,11 +45,6 @@ export class MOEResultsComponent extends PluginComponent {
     ]
     // send MOE data to singleton
 
-    formPluginDataStore.addPlugin({
-      name: 'MOEResultsComponent',
-      data: HARDCODED_MOE_DATA,
-    })
-
     this.MOEData = HARDCODED_MOE_DATA
     // setState({ responseData, studentData }) // this is passed in from the parent
   }
