@@ -45,7 +45,12 @@ import {
   SubmissionCountQueryDto,
   WebhookSettingsUpdateDto,
 } from '../../../../../shared/types'
-import { IForm, IFormDocument, IPopulatedForm } from '../../../../types'
+import {
+  FormFieldSchema,
+  IForm,
+  IFormDocument,
+  IPopulatedForm,
+} from '../../../../types'
 import {
   EncryptSubmissionDto,
   FormUpdateParams,
@@ -1161,7 +1166,16 @@ export const createForm: ControllerHandler<
     UserService.findUserById(sessionUserId)
       // Step 2: Create form with given params and set admin to logged in user.
       .andThen((user) =>
-        AdminFormService.createForm({ ...formParams, admin: user._id }),
+        AdminFormService.createForm({
+          ...formParams,
+          admin: user._id,
+          ...(formParams.responseMode === FormResponseMode.Email
+            ? {
+                form_fields:
+                  formParams.form_fields as unknown as FormFieldSchema[],
+              }
+            : { form_fields: undefined }),
+        }),
       )
       .map((createdForm) => {
         return res
