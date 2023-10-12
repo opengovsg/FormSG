@@ -1,4 +1,14 @@
-import { HStack, Table, Tbody, Td, Text, Th, Thead, Tr } from '@chakra-ui/react'
+import {
+  Box,
+  HStack,
+  Table,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+} from '@chakra-ui/react'
 
 import formPluginDataStore from '~contexts/PluginsSingleton'
 
@@ -116,7 +126,7 @@ export class MOEResultsComponent extends PluginComponent {
     // and populate with className and count
     return (
       <HStack>
-        <Table as="div" variant="solid" colorScheme="secondary">
+        <Table variant="solid" colorScheme="secondary" maxW="20rem">
           <Thead>
             <Tr>
               <Th>Class</Th>
@@ -145,6 +155,7 @@ export class MOEResultsComponent extends PluginComponent {
             })}
           </Tbody>
         </Table>
+
         <Text>Selected Class: {this.selectedClass}</Text>
         {this.selectedClass ? (
           <Table
