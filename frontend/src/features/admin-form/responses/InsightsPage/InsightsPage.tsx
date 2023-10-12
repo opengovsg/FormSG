@@ -211,6 +211,7 @@ const InternalInsights = () => {
             formField.fieldType === BasicField.LongText
           ) {
             const words = aggregateWordCloud(formField._id)
+            if (!words.length) return null
             return (
               <VStack w="100%" gap="0" key={idx}>
                 <Text textStyle="h4">{`${idx + 1}. ${formField.title}`}</Text>
