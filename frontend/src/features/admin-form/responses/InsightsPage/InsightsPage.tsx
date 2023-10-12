@@ -214,7 +214,9 @@ const InternalInsights = () => {
             if (!words.length) return null
             return (
               <VStack w="100%" gap="0" key={idx}>
-                <Text textStyle="h4">{`${idx + 1}. ${formField.title}`}</Text>
+                <Text textStyle="h4" alignSelf="flex-start">{`${idx + 1}. ${
+                  formField.title
+                }`}</Text>
                 <ReactWordcloud key={idx} words={words} />
               </VStack>
             )
