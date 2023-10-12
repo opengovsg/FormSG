@@ -184,12 +184,11 @@ const InternalInsights = () => {
         justifySelf={{ base: 'start', sm: 'end' }}
         alignSelf="center"
         maxW="100%"
-        mb={{ base: '0', md: '1rem' }}
-        alignItems="center"
+        mb="2.5rem"
+        alignItems={{ base: 'flex-start', md: 'center' }}
         justifyContent="space-between"
         w="100%"
         gap="1rem"
-        mb="2.5rem"
       >
         <Text textStyle="h4" mb="0.5rem">
           <Text as="span" color="primary.500">
@@ -292,12 +291,6 @@ const FormChart = ({
   const options = {
     legend: { position: chartType === 'PieChart' ? undefined : 'none' },
     chartArea: { width: '50%' },
-    hAxis: {
-      minValue: 0,
-    },
-    vAxis: {
-      minValue: 0,
-    },
   }
   return (
     <VStack w="100%" gap="0">
@@ -331,7 +324,7 @@ const FormChart = ({
           chartType={chartType}
           options={options}
           width="100%"
-          h="400px"
+          height="400px"
         />
       )}
       {mean && (
