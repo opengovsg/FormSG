@@ -1,6 +1,6 @@
 import {
   FormSubmissionMetadataQueryDto,
-  StorageModeSubmissionBase,
+  StorageModeInsightsDto,
   StorageModeSubmissionDto,
   StorageModeSubmissionMetadataList,
   SubmissionCountQueryDto,
@@ -103,7 +103,7 @@ export const getDecryptedSubmissionById = async ({
 }
 
 const getAllEncryptedSubmission = async ({ formId }: { formId: string }) => {
-  return ApiService.get<StorageModeSubmissionBase[]>(
+  return ApiService.get<StorageModeInsightsDto[]>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/submissions`,
   ).then(({ data }) => data)
 }
