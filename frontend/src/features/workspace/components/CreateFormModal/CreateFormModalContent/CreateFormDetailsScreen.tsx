@@ -10,6 +10,7 @@ import {
   FormControl,
   ModalBody,
   ModalHeader,
+  Progress,
   Skeleton,
   Spacer,
   Stack,
@@ -144,15 +145,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
   ])
 
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined)
-
-  function fileToArrayBuffer(file: File) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = (event) => resolve(reader.result)
-      reader.onerror = (error) => reject(error)
-      reader.readAsArrayBuffer(file)
-    })
-  }
+  const [isProgress, setIsProgress] = useState<boolean>(false)
 
   let pdfjs
   ;(async function () {
@@ -163,6 +156,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
 
   const handleFileUpload = async (file: any) => {
     setSelectedFile(file)
+    setIsProgress(true)
     if (file !== undefined) {
       console.log('Uploaded file:', file)
       const arrayBuffer = await fileToArrayBuffer(file)
@@ -175,12 +169,17 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             console.log(data)
             setQnsList(parseModelOutput(data[data.length - 1].content))
             setPrevMessages(data)
+            setIsProgress(false)
           },
         })
       } catch (e) {
         console.log(e)
       }
     }
+  }
+
+  const handleFileUploadError = (error: any) => {
+    console.log('Error:', error)
   }
   async function pdfToText(data: any) {
     const loadingTask = pdfjs.getDocument(data)
@@ -198,8 +197,13 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
     return combinedText.trim()
   }
 
-  const handleFileUploadError = (error: any) => {
-    console.log('Error:', error)
+  function fileToArrayBuffer(file: File) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = (event) => resolve(reader.result)
+      reader.onerror = (error) => reject(error)
+      reader.readAsArrayBuffer(file)
+    })
   }
 
   return (
@@ -343,6 +347,9 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
                   name="file-upload"
                   accept=".pdf"
                 ></Attachment>
+                {isProgress ? (
+                  <Progress size="md" isIndeterminate></Progress>
+                ) : null}
               </FormControl>
               {isFetchingQuestions ? (
                 <Text>

@@ -37,13 +37,13 @@ export const AttachmentFileInfo = ({
           {readableFileSize}
         </Text>
       </Flex>
-      <IconButton
-        variant="clear"
-        colorScheme="danger"
-        aria-label="Click to remove file"
-        icon={<BiTrash />}
-        onClick={handleRemoveFile}
-      />
+      {/*<IconButton*/}
+      {/*  variant="clear"*/}
+      {/*  colorScheme="danger"*/}
+      {/*  aria-label="Click to remove file"*/}
+      {/*  icon={<BiTrash />}*/}
+      {/*  onClick={handleRemoveFile}*/}
+      {/*/>*/}
     </Flex>
   )
 }
