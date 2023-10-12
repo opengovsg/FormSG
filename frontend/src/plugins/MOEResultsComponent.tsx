@@ -31,8 +31,10 @@ export class MOEResultsComponent extends PluginComponent {
         school: 'Red Rose Primary School',
         level: 'Primary 4',
         students: [
-          { register_no: '111', identifier: 'S1234567D', name: 'ah boy' },
-          { register_no: '112', identifier: 'S1234568B', name: 'another boy' },
+          { register_no: '1', identifier: 'S1234567D', name: 'Ken Lee' },
+          { register_no: '2', identifier: 'S1234432E', name: 'Lin Huiqing' },
+          { register_no: '3', identifier: 'T1735002H', name: 'Sebastian Wong' },
+          { register_no: '4', identifier: 'T2593835B', name: 'Kenneth Chang' },
         ],
       },
       {
@@ -40,8 +42,8 @@ export class MOEResultsComponent extends PluginComponent {
         school: 'Red Rose Primary School',
         level: 'Primary 4',
         students: [
-          { register_no: '113', identifier: 'S1234432E', name: 'ah girl' },
-          { register_no: '114', identifier: 'S1234499F', name: 'another girl' },
+          { register_no: '1', identifier: 'S1234499F', name: 'Justyn Oh' },
+          { register_no: '2', identifier: 'T1591751I', name: 'Stacey Tan' },
         ],
       },
     ]
