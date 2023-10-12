@@ -157,7 +157,7 @@ export const sampleFormFields = [
     required: '<boolean>',
     disabled: '<boolean>',
     fieldType: 'attachment',
-    attachmentSize: '1',
+    attachmentSize: '<1|2|3|4|7>',
   },
   {
     title: '<string>',

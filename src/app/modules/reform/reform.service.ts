@@ -21,7 +21,7 @@ export const formFieldsPromptBuilder = (
   I have the following list of questions:
   ${questions}
 
-  Present the questions as form fields in JSON (list of form field schemas), in the form of "${expectedFormFieldSchemaFormat}" without any code blocks.`
+  Present the questions as form fields in JSON (list of form field schemas), in the form of "${expectedFormFieldSchemaFormat}" as defined by the system, without any code blocks. Please keep any null values in the schema as null.`
   return prompt
 }
 
