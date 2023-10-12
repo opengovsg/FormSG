@@ -3,15 +3,13 @@ import { useQuery } from 'react-query'
 import { useParams } from 'react-router-dom'
 import {
   Box,
+  Button,
+  ButtonGroup,
+  ButtonProps,
   Flex,
   Grid,
   Skeleton,
   Stack,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
   Text,
 } from '@chakra-ui/react'
 import { format, isValid } from 'date-fns'
@@ -60,6 +58,26 @@ const transform = {
     }
     return result
   },
+}
+
+enum ResponsesViewType {
+  All = 'All',
+  Agency = 'Agency',
+}
+
+const getResponsesViewTypeButtonProps = (
+  selectedResponsesView: ResponsesViewType,
+  responsesViewType: ResponsesViewType,
+): ButtonProps => {
+  return selectedResponsesView === responsesViewType
+    ? {
+        colorScheme: 'primary',
+        isActive: true,
+      }
+    : {
+        colorScheme: 'secondary',
+        isActive: false,
+      }
 }
 
 export const UnlockedResponses = (): JSX.Element => {
@@ -113,6 +131,8 @@ export const UnlockedResponses = (): JSX.Element => {
   // FOR PLUGINS
   const [isPluginConnected, setIsPluginConnected] = useState(false)
   const [pluginSelectedState, setPluginSelectedState] = useState('')
+  const [currentResponsesViewType, setCurrentResponsesViewType] =
+    useState<ResponsesViewType>(ResponsesViewType.All)
 
   const pluginComponent = new MOEResultsComponent(
     decryptedResponses,
@@ -189,29 +209,42 @@ export const UnlockedResponses = (): JSX.Element => {
       </Grid>
 
       {isPluginConnected ? (
-        <Tabs>
-          <TabList>
-            <Tab>All responses</Tab>
-            <Tab>Responses with agency data</Tab>
-          </TabList>
-
-          <TabPanels>
-            <TabPanel>
-              <Box my="3rem" overflow="auto" flex={1}>
-                <ResponsesTable />
-              </Box>
-            </TabPanel>
-            <TabPanel>
-              <Box my="3rem">
-                {/* Plugin code goes here */}
-                {decryptedResponses &&
-                  isPluginConnected &&
-                  pluginComponent.render()}
-                {/* End of plugin code */}
-              </Box>
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
+        <>
+          <ButtonGroup gridArea="feedbackType" isAttached variant="outline">
+            <Button
+              {...getResponsesViewTypeButtonProps(
+                currentResponsesViewType,
+                ResponsesViewType.All,
+              )}
+              sx={{ borderRightWidth: '0px' }}
+              onClick={() => setCurrentResponsesViewType(ResponsesViewType.All)}
+            >
+              All responses
+            </Button>
+            <Button
+              {...getResponsesViewTypeButtonProps(
+                currentResponsesViewType,
+                ResponsesViewType.Agency,
+              )}
+              onClick={() =>
+                setCurrentResponsesViewType(ResponsesViewType.Agency)
+              }
+            >
+              Responses by agency
+            </Button>
+          </ButtonGroup>
+          <Box my="3rem" overflow="auto" flex={1}>
+            {currentResponsesViewType === ResponsesViewType.All ? (
+              <ResponsesTable />
+            ) : (
+              // Plugin code goes here
+              decryptedResponses &&
+              isPluginConnected &&
+              pluginComponent.render()
+              // End of plugin code
+            )}
+          </Box>
+        </>
       ) : (
         <></>
       )}
