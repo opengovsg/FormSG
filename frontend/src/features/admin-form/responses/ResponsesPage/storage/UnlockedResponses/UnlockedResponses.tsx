@@ -205,11 +205,13 @@ export const UnlockedResponses = (): JSX.Element => {
               </Box>
             </TabPanel>
             <TabPanel>
-              {/* Plugin code goes here */}
-              {decryptedResponses &&
-                isPluginConnected &&
-                pluginComponent.render()}
-              {/* End of plugin code */}
+              <Box my="3rem">
+                {/* Plugin code goes here */}
+                {decryptedResponses &&
+                  isPluginConnected &&
+                  pluginComponent.render()}
+                {/* End of plugin code */}
+              </Box>
             </TabPanel>
           </TabPanels>
         </Tabs>

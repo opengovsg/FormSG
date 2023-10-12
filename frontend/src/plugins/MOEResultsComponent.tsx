@@ -1,15 +1,4 @@
-import {
-  Divider,
-  HStack,
-  Table,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
-  VStack,
-} from '@chakra-ui/react'
+import { HStack, Table, Tbody, Td, Text, Th, Thead, Tr } from '@chakra-ui/react'
 
 import formPluginDataStore from '~contexts/PluginsSingleton'
 
@@ -131,68 +120,66 @@ export class MOEResultsComponent extends PluginComponent {
     // Return a table with the header 'Classes' and 'Responses'
     // and populate with className and count
     return (
-      <VStack align="self-start">
-        <Text>Breakdown by class</Text>
-        <HStack>
-          <Table>
+      <HStack>
+        <Table as="div" variant="solid" colorScheme="secondary">
+          <Thead>
+            <Tr>
+              <Th>Class</Th>
+              <Th>Number of submissions</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {results.map((result) => {
+              const { className, count } = result
+              return (
+                <Tr
+                  key={className}
+                  cursor="pointer"
+                  _hover={{ bgColor: 'secondary.100' }}
+                  _active={{
+                    bg: 'primary.200',
+                  }}
+                  onClick={() => {
+                    this.handleRowClick(className)
+                  }}
+                >
+                  <Td>{className}</Td>
+                  <Td>{count}</Td>
+                </Tr>
+              )
+            })}
+          </Tbody>
+        </Table>
+        <Text>Selected Class: {this.selectedClass}</Text>
+        {this.selectedClass ? (
+          <Table
+
+          // display students in selected class
+          >
             <Thead>
               <Tr>
+                <Th>Respondents</Th>
                 <Th>Class</Th>
-                <Th>Responses</Th>
               </Tr>
             </Thead>
             <Tbody>
-              {results.map((result) => {
-                const { className, count } = result
-                return (
-                  // turn grey on hover
-                  <Tr
-                    key={className}
-                    _hover={{ bgColor: 'secondary.100' }}
-                    onClick={() => {
-                      this.handleRowClick(className)
-                      console.log('selectedClass: ', this.selectedClass)
-                    }}
-                  >
-                    <Td>{className}</Td>
-                    <Td>{count}</Td>
-                  </Tr>
-                )
-              })}
+              {results
+                .filter((result) => result.className === this.selectedClass)
+                .map((classResult) => {
+                  const { submittedStudents, className } = classResult
+                  return submittedStudents.map((student) => {
+                    return (
+                      <Tr key={student.name}>
+                        <Td>{student.name}</Td>
+                        <Td>{className}</Td>
+                      </Tr>
+                    )
+                  })
+                })}
             </Tbody>
           </Table>
-          <Text>Selected Class: {this.selectedClass}</Text>
-          {this.selectedClass ? (
-            <Table
-
-            // display students in selected class
-            >
-              <Thead>
-                <Tr>
-                  <Th>Respondents</Th>
-                  <Th>Class</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {results
-                  .filter((result) => result.className === this.selectedClass)
-                  .map((classResult) => {
-                    const { submittedStudents, className } = classResult
-                    return submittedStudents.map((student) => {
-                      return (
-                        <Tr key={student.name}>
-                          <Td>{student.name}</Td>
-                          <Td>{className}</Td>
-                        </Tr>
-                      )
-                    })
-                  })}
-              </Tbody>
-            </Table>
-          ) : null}
-        </HStack>
-        <Divider />
-      </VStack>
+        ) : null}
+      </HStack>
     )
   }
 
