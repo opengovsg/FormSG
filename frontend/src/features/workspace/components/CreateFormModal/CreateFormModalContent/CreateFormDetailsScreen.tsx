@@ -16,6 +16,8 @@ import {
   Text,
 } from '@chakra-ui/react'
 
+// import { getDocument, pdfjs } from 'pdfjs-dist'
+// import pdfjsworker from 'pdfjs-dist/build/pdf.worker.entry'
 import { FormResponseMode } from '~shared/types/form/form'
 
 import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
@@ -140,9 +142,48 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
 
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined)
 
-  const handleFileUpload = (file: any) => {
+  function fileToArrayBuffer(file: File) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = (event) => resolve(reader.result)
+      reader.onerror = (error) => reject(error)
+      reader.readAsArrayBuffer(file)
+    })
+  }
+
+  let pdfjs
+  ;(async function () {
+    pdfjs = await import('pdfjs-dist/build/pdf')
+    const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry')
+    pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker
+  })()
+
+  const handleFileUpload = async (file: any) => {
     setSelectedFile(file)
     console.log('Uploaded file:', file)
+    const arrayBuffer = await fileToArrayBuffer(file)
+    console.log('ArrayBuffer:', arrayBuffer)
+    try {
+      const text = await pdfToText(arrayBuffer)
+      console.log(text)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+  async function pdfToText(data: any) {
+    const loadingTask = pdfjs.getDocument(data)
+    const pdf = await loadingTask.promise
+
+    let combinedText = ''
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i)
+      const content = await page.getTextContent()
+      const text = content.items.map((item) => item.str).join(' ')
+      combinedText += text + '\n\n' // Adding two new lines to separate pages.
+    }
+    console.log(combinedText.trim())
+    return combinedText.trim()
   }
 
   const handleFileUploadError = (error: any) => {
