@@ -17,26 +17,27 @@ export const formFieldsPromptBuilder = (
 ) => {
   const prompt = `${
     purpose ? `Help me generate a form that ${purpose}. ` : ''
-  }This form has the name ${formName}.\n
-  I have the following list of questions:\n
-  ${questions}\n\n
+  }This form has the name ${formName}.
+  I have the following list of questions:
+  ${questions}
+
   Present the questions as form fields in JSON (list of form field schemas), in the form of "${expectedFormFieldSchemaFormat}" without any code blocks.`
   return prompt
 }
 
 export const questionListPromptBuilder = (purpose: string) => {
-  const prompt = `I am a public officer who wants to create a form that ${purpose}.\n
-  Give me a list of content / questions I should have in my form built with this form builder, in the form of
-  "${expectedQuestionsListFormat}".`
+  const prompt = `I am a public officer who wants to create a form that ${purpose}.
+  Give me a list of content / questions I should have in my form built with this form builder, in the form of "${expectedQuestionsListFormat}".`
   return prompt
 }
 
 export const migratePromptBuilder = (parsedContent: string) => {
-  const prompt = `Help me generate the corresponding JSON form fields from content parsed from a PDF document.\n
-  Here is the parsed content from the PDF document (wrapped in triple quotes):\n
-  """\n
-  ${parsedContent}\n
-  """\n
+  const prompt = `Help me generate the corresponding JSON form fields from content parsed from a PDF document.
+  Here is the parsed content from the PDF document (wrapped in triple quotes):
+  """
+  ${parsedContent}
+  """
+
   Based on the parsed content, extract content that should be added to the form builder form and present them as a list, in the form of "${expectedQuestionsListFormat}".`
   return prompt
 }
