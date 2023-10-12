@@ -10,11 +10,13 @@ export const getFormFields = async (
   prevMessages: { role: string; content: string }[],
   purpose: string,
   questions: string,
+  formName: string,
 ): Promise<any> => {
   return await ApiService.post<any>(`/reform/create/form`, {
     prevMessages,
     purpose,
     questions,
+    formName,
   }).then(({ data }) => data)
 }
 

@@ -34,7 +34,7 @@ export const useReformMutations = () => {
       formName: string
       email: string
     }) =>
-      await getFormFields(prevMessages, purpose, questions).then(
+      await getFormFields(prevMessages, purpose, questions, formName).then(
         async (data) => {
           console.log(data)
           const formFields = JSON.parse(parseModelOutput(data.content))

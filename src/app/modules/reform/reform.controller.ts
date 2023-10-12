@@ -51,6 +51,7 @@ export const generateFormFields: ControllerHandler<
     prevMessages: { role: string; content: string }[]
     purpose: string
     questions: string
+    formName: string
   }
 > = async (req, res) => {
   try {
@@ -60,7 +61,11 @@ export const generateFormFields: ControllerHandler<
       ...prevMessages,
       {
         role: 'user',
-        content: formFieldsPromptBuilder(req.body.purpose, req.body.questions),
+        content: formFieldsPromptBuilder(
+          req.body.purpose,
+          req.body.questions,
+          req.body.formName,
+        ),
       },
     ]
     const chatCompletion = await openai.chat.completions.create({
@@ -95,7 +100,9 @@ export const generateFormFieldsFromParsedPdf: ControllerHandler<
       messages,
       model: 'gpt-4',
     })
-    return res.status(200).json(chatCompletion.choices[0].message)
+    return res
+      .status(200)
+      .json([...messages, chatCompletion.choices[0].message])
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.log(error)

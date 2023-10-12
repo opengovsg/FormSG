@@ -173,7 +173,8 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
         getQuestionsListFromPdfMutation.mutate(text, {
           onSuccess: (data) => {
             console.log(data)
-            setQnsList(parseModelOutput(data.content))
+            setQnsList(parseModelOutput(data[data.length - 1].content))
+            setPrevMessages(data)
           },
         })
       } catch (e) {
