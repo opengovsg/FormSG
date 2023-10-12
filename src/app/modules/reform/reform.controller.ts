@@ -14,6 +14,7 @@ import {
 } from './reform.service'
 
 const openai = new OpenAI({ apiKey: config.openaiApiKey })
+const model = 'gpt-4'
 
 export const generateQnsList: ControllerHandler<
   unknown,
@@ -31,7 +32,7 @@ export const generateQnsList: ControllerHandler<
   try {
     const chatCompletion = await openai.chat.completions.create({
       messages,
-      model: 'gpt-4',
+      model,
     })
     return res
       .status(200)
@@ -70,7 +71,7 @@ export const generateFormFields: ControllerHandler<
     ]
     const chatCompletion = await openai.chat.completions.create({
       messages,
-      model: 'gpt-4',
+      model,
     })
     return res.status(200).json(chatCompletion.choices[0].message)
   } catch (error) {
@@ -98,7 +99,7 @@ export const generateFormFieldsFromParsedPdf: ControllerHandler<
     ]
     const chatCompletion = await openai.chat.completions.create({
       messages,
-      model: 'gpt-4',
+      model,
     })
     return res
       .status(200)
