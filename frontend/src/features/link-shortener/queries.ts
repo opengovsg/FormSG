@@ -3,7 +3,6 @@ import { useQuery, UseQueryResult } from 'react-query'
 import { getGoLinkSuffix } from './GoGovService'
 
 export const goGovKeys = {
-  all: ['gogov'] as const,
   id: (id: string) => ['gogov', id] as const,
 }
 
