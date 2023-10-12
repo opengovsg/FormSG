@@ -52,9 +52,7 @@ export const MOEAuthComponent = ({
 
   const [isLoading, setIsLoading] = useState(false)
 
-  const toast = useToast({
-    status: 'info',
-  })
+  const toast = useToast()
 
   return (
     <>

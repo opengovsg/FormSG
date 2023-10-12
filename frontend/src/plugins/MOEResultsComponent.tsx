@@ -53,7 +53,6 @@ export class MOEResultsComponent extends PluginComponent {
         ],
       },
     ]
-    // send MOE data to singleton
 
     this.MOEData = HARDCODED_MOE_DATA
     // setState({ responseData, studentData }) // this is passed in from the parent
@@ -156,7 +155,6 @@ export class MOEResultsComponent extends PluginComponent {
           </Tbody>
         </Table>
 
-        <Text>Selected Class: {this.selectedClass}</Text>
         {this.selectedClass ? (
           <Table
 

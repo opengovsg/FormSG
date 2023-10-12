@@ -19,7 +19,7 @@ class FormPluginDataStore {
     return this.pluginData[name]
   }
 
-  updatePluginData(name: string, data: any) {
+  updatePluginData({ name, data }: FormPluginData) {
     this.pluginData[name] = data
   }
 }
