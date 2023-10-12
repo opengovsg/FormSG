@@ -1,17 +1,9 @@
-import {
-  Box,
-  HStack,
-  Table,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
-} from '@chakra-ui/react'
+import { HStack, Table, Tbody, Td, Text, Th, Thead, Tr } from '@chakra-ui/react'
+import { response } from 'msw'
 
 import formPluginDataStore from '~contexts/PluginsSingleton'
 
+import { MOEResponsesTable } from './MOEResponsesTable'
 import { PluginComponent } from './PluginComponent.class'
 
 export class MOEResultsComponent extends PluginComponent {
@@ -106,6 +98,28 @@ export class MOEResultsComponent extends PluginComponent {
     return fieldNames
   }
 
+  getResponsesByClass(selectedClass: boolean) {
+    return this.responseData.map((response) => {
+      const responseIdentifier = response.responses[0].answer
+      const studentFromClass = this.MOEData.map((classData) => {
+        // if (classData.class !== selectedClass) return {}
+        const { students } = classData
+        const student = students.find(
+          (student) => student.identifier === responseIdentifier,
+        )
+        if (student) return { ...student, className: classData.class }
+      })
+      const filteredStudentFromClass = studentFromClass.filter((student) => {
+        return student !== undefined
+      })[0] // }) //   return student.className === selectedClass // .filter((student) => {
+      return {
+        ...response,
+        name: filteredStudentFromClass.name,
+        className: filteredStudentFromClass.className,
+      }
+    })
+  }
+
   generateResponseCountByClass(identifiers: string[]) {
     // Application logic
 
@@ -119,6 +133,15 @@ export class MOEResultsComponent extends PluginComponent {
 
       return { className, count, submittedStudents }
     })
+
+    const filteredClassResponses = this.getResponsesByClass(
+      this.selectedClass,
+    ).filter((response) => {
+      return response.className === this.selectedClass
+    })
+
+    // filter response data by responseidentifiers
+    // add additional MOE data to response data
 
     // Add render logic
     // Return a table with the header 'Classes' and 'Responses'
@@ -154,7 +177,7 @@ export class MOEResultsComponent extends PluginComponent {
             })}
           </Tbody>
         </Table>
-
+        {/* <Text>Selected Class: {this.selectedClass}</Text>
         {this.selectedClass ? (
           <Table
 
@@ -182,7 +205,10 @@ export class MOEResultsComponent extends PluginComponent {
                 })}
             </Tbody>
           </Table>
-        ) : null}
+        ) : null} */}
+        {this.selectedClass && (
+          <MOEResponsesTable filteredResponses={filteredClassResponses} />
+        )}
       </HStack>
     )
   }
