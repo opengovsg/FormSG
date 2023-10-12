@@ -160,14 +160,16 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
 
   const handleFileUpload = async (file: any) => {
     setSelectedFile(file)
-    console.log('Uploaded file:', file)
-    const arrayBuffer = await fileToArrayBuffer(file)
-    console.log('ArrayBuffer:', arrayBuffer)
-    try {
-      const text = await pdfToText(arrayBuffer)
-      console.log(text)
-    } catch (e) {
-      console.log(e)
+    if (file !== undefined) {
+      console.log('Uploaded file:', file)
+      const arrayBuffer = await fileToArrayBuffer(file)
+      console.log('ArrayBuffer:', arrayBuffer)
+      try {
+        const text = await pdfToText(arrayBuffer)
+        console.log(text)
+      } catch (e) {
+        console.log(e)
+      }
     }
   }
   async function pdfToText(data: any) {
