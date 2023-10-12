@@ -27,19 +27,7 @@ const HARDCODED_MOE_DATA = [
     class: '1A',
     school: 'Red Rose Primary School',
     level: 'Primary 4',
-    students: [
-      { register_no: '111', identifier: 'S1234567D', name: 'ah boy' },
-      { register_no: '112', identifier: 'S1234568B', name: 'another boy' },
-    ],
-  },
-  {
-    class: '1B',
-    school: 'Red Rose Primary School',
-    level: 'Primary 4',
-    students: [
-      { register_no: '113', identifier: 'S1234432E', name: 'ah girl' },
-      { register_no: '114', identifier: 'S1234499F', name: 'another girl' },
-    ],
+    students: [{ register_no: '1', identifier: 'S1234567D', name: 'Ken Lee' }],
   },
 ]
 
@@ -93,10 +81,10 @@ export const MOEAuthComponent = ({
                 onClick={() => {
                   // wait for 1 seconds
                   setIsLoading(true)
-                  formPluginDataStore.addPlugin({
-                    name: 'MOEResultsComponent',
-                    data: HARDCODED_MOE_DATA,
-                  })
+                  formPluginDataStore.MOEResultsComponentData = {
+                    storedData: HARDCODED_MOE_DATA,
+                  }
+
                   setTimeout(() => {
                     setIsPluginConnected(true)
                     setIsLoading(false)

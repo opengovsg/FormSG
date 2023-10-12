@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
 import { useParams } from 'react-router-dom'
 import {
@@ -141,10 +141,22 @@ export const UnlockedResponses = (): JSX.Element => {
   )
 
   pluginComponent.initialise()
-  const pluginComponentDataForCSV =
-    pluginComponent.generateSubmittedStudentsForInjection()
-  const pluginCSVAdditionalFieldNames = pluginComponent.generateCSVFieldNames()
 
+  const [pluginComponentDataForCSV, setPluginComponentDataForCSV] = useState(
+    pluginComponent.generateSubmittedStudentsForInjection(),
+  )
+  const [pluginCSVAdditionalFieldNames, setPluginCSVAdditionalFieldNames] =
+    useState(pluginComponent.generateCSVFieldNames())
+
+  useEffect(() => {
+    if (isPluginConnected) {
+      pluginComponent.refresh()
+      setPluginComponentDataForCSV(
+        pluginComponent.generateSubmittedStudentsForInjection(),
+      )
+      setPluginCSVAdditionalFieldNames(pluginComponent.generateCSVFieldNames())
+    }
+  }, [isPluginConnected])
   return (
     <Flex flexDir="column" h="100%">
       {isPluginConnected ? null : (

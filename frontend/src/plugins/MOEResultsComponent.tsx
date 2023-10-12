@@ -25,7 +25,7 @@ export class MOEResultsComponent extends PluginComponent {
 
   async initialise() {
     // fetch data from external DB?
-    const HARDCODED_MOE_DATA = [
+    const SAMPLE_MOE_DATA = [
       {
         class: '1A',
         school: 'Red Rose Primary School',
@@ -48,8 +48,12 @@ export class MOEResultsComponent extends PluginComponent {
       },
     ]
 
-    this.MOEData = HARDCODED_MOE_DATA
+    this.MOEData = SAMPLE_MOE_DATA
     // setState({ responseData, studentData }) // this is passed in from the parent
+  }
+
+  refresh() {
+    this.MOEData = formPluginDataStore.MOEResultsComponentData.storedData
   }
 
   handleRowClick(selectedClass: any) {
