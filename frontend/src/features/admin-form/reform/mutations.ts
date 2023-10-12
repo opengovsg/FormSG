@@ -4,12 +4,20 @@ import { FormResponseMode } from '~shared/types'
 
 import { createEmailModeForm } from '~features/workspace/WorkspaceService'
 
-import { getFormFields, getQuestionsList } from './ReformService'
+import {
+  getFormFields,
+  getQuestionsList,
+  getQuestionsListFromPdf,
+} from './ReformService'
 import { parseModelOutput } from './utils'
 
 export const useReformMutations = () => {
   const getQuestionsListMutation = useMutation((purpose: string) =>
     getQuestionsList(purpose),
+  )
+
+  const getQuestionsListFromPdfMutation = useMutation(
+    (parsedPdfContent: string) => getQuestionsListFromPdf(parsedPdfContent),
   )
 
   const getFormFieldsMutation = useMutation(
@@ -43,5 +51,6 @@ export const useReformMutations = () => {
   return {
     getQuestionsListMutation,
     getFormFieldsMutation,
+    getQuestionsListFromPdfMutation,
   }
 }

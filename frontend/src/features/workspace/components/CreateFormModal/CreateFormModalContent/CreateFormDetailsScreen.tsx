@@ -71,8 +71,11 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
     target: { value: SetStateAction<string> }
   }) => setPurpose(event.target.value)
 
-  const { getQuestionsListMutation, getFormFieldsMutation } =
-    useReformMutations()
+  const {
+    getQuestionsListMutation,
+    getFormFieldsMutation,
+    getQuestionsListFromPdfMutation,
+  } = useReformMutations()
 
   const [isFetchingQuestions, setIsFetchingQuestions] = useState(false)
 
@@ -167,6 +170,12 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
       try {
         const text = await pdfToText(arrayBuffer)
         console.log(text)
+        getQuestionsListFromPdfMutation.mutate(text, {
+          onSuccess: (data) => {
+            console.log(data)
+            setQnsList(parseModelOutput(data.content))
+          },
+        })
       } catch (e) {
         console.log(e)
       }

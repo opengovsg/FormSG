@@ -17,3 +17,11 @@ export const getFormFields = async (
     questions,
   }).then(({ data }) => data)
 }
+
+export const getQuestionsListFromPdf = async (
+  parsedPdfContent: string,
+): Promise<any> => {
+  return await ApiService.post<any>(`/reform/migrate`, {
+    parsedPdfContent,
+  }).then(({ data }) => data)
+}
