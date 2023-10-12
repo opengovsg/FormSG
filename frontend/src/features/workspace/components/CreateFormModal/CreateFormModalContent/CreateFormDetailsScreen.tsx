@@ -1,8 +1,7 @@
-import { SetStateAction, useCallback, useState } from 'react'
+import { useState } from 'react'
 import { Controller } from 'react-hook-form'
 import { BiRightArrowAlt } from 'react-icons/bi'
 import { FaMagic } from 'react-icons/fa'
-import { useNavigate } from 'react-router-dom'
 import {
   Center,
   Container,
@@ -10,17 +9,14 @@ import {
   FormControl,
   ModalBody,
   ModalHeader,
-  Progress,
   Skeleton,
   Spacer,
-  Stack,
   Text,
 } from '@chakra-ui/react'
 
 import { FormResponseMode } from '~shared/types/form/form'
 
 import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
-import { ADMINFORM_ROUTE } from '~constants/routes'
 import { FORM_TITLE_VALIDATION_RULES } from '~utils/formValidation'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -28,16 +24,10 @@ import FormFieldMessage from '~components/FormControl/FormFieldMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
-import Textarea from '~components/Textarea'
 
-import { useReformMutations } from '~features/admin-form/reform/mutations'
-import { parseModelOutput } from '~features/admin-form/reform/utils'
-import { useUser } from '~features/user/queries'
-import { useCreateFormMutations } from '~features/workspace/mutations'
-
-import { Attachment } from '../../Attachment/Attachment'
 import { useCreateFormWizard } from '../CreateFormWizardContext'
 
+import { CreateReformScreen } from './CreateReformScreen'
 import { EmailFormRecipientsInput } from './EmailFormRecipientsInput'
 import { FormResponseOptions } from './FormResponseOptions'
 
@@ -64,151 +54,8 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
   const responseModeValue = watch('responseMode')
 
   const [standardFlow, setStandardFlow] = useState(true)
-  const [purpose, setPurpose] = useState('')
 
-  const handlePurposeChange = (event: {
-    target: { value: SetStateAction<string> }
-  }) => setPurpose(event.target.value)
-
-  const {
-    getQuestionsListMutation,
-    getFormFieldsMutation,
-    getQuestionsListFromPdfMutation,
-  } = useReformMutations()
-
-  const [isFetchingQuestions, setIsFetchingQuestions] = useState(false)
-
-  const [qnsList, setQnsList] = useState('')
-
-  const [prevMessages, setPrevMessages] = useState<
-    { role: string; content: string }[]
-  >([])
-
-  const handlePurposeEnter = useCallback(() => {
-    setIsFetchingQuestions(true)
-    return getQuestionsListMutation.mutate(purpose, {
-      onSuccess: (data) => {
-        setQnsList(parseModelOutput(data[data.length - 1].content))
-        setPrevMessages(data)
-      },
-      onSettled: () => {
-        setIsFetchingQuestions(false)
-      },
-    })
-  }, [getQuestionsListMutation, purpose])
-
-  const [formName, setFormName] = useState('')
-
-  const handleFormNameChange = (event: {
-    target: { value: SetStateAction<string> }
-  }) => setFormName(event.target.value)
-
-  const { user } = useUser()
-
-  const navigate = useNavigate()
-
-  const [isCreatingForm, setIsCreatingForm] = useState(false)
-
-  const handleQuestionsChange = (event: {
-    target: { value: SetStateAction<string> }
-  }) => setQnsList(event.target.value)
-
-  const handleCreateFormFromQnsList = useCallback(() => {
-    setIsCreatingForm(true)
-    return getFormFieldsMutation.mutate(
-      {
-        purpose,
-        prevMessages,
-        questions: qnsList,
-        formName,
-        email: user?.email ?? 'example@open.gov.sg',
-      },
-      {
-        onSuccess: (data) => {
-          navigate(`${ADMINFORM_ROUTE}/${data._id}`)
-        },
-        onSettled: () => {
-          setIsCreatingForm(false)
-        },
-      },
-    )
-  }, [
-    formName,
-    getFormFieldsMutation,
-    navigate,
-    prevMessages,
-    purpose,
-    qnsList,
-    user?.email,
-  ])
-
-  const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined)
-  const [isProgress, setIsProgress] = useState<boolean>(false)
-
-  let pdfjs
-  ;(async function () {
-    pdfjs = await import('pdfjs-dist/build/pdf')
-    const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry')
-    pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker
-  })()
-
-  const handleFileUpload = async (file: any) => {
-    setSelectedFile(file)
-    setIsProgress(true)
-    if (file !== undefined) {
-      console.log('Uploaded file:', file)
-      const arrayBuffer = await fileToArrayBuffer(file)
-      console.log('ArrayBuffer:', arrayBuffer)
-      try {
-        const text = await pdfToText(arrayBuffer)
-        console.log(text)
-        getQuestionsListFromPdfMutation.mutate(text, {
-          onSuccess: (data) => {
-            console.log(data)
-            setQnsList(parseModelOutput(data[data.length - 1].content))
-            setPrevMessages(data)
-            setIsProgress(false)
-          },
-          onError(error) {
-            console.log(error)
-            setIsProgress(false)
-          },
-        })
-      } catch (e) {
-        console.log(e)
-      }
-    }
-  }
-
-  const handleFileUploadError = (error: any) => {
-    console.log('Error:', error)
-  }
-  async function pdfToText(data: any) {
-    const loadingTask = pdfjs.getDocument(data)
-    const pdf = await loadingTask.promise
-
-    let combinedText = ''
-
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i)
-      const content = await page.getTextContent()
-      const text = content.items.map((item) => item.str).join(' ')
-      combinedText += text + '\n\n' // Adding two new lines to separate pages.
-    }
-    console.log(combinedText.trim())
-    return combinedText.trim()
-  }
-
-  function fileToArrayBuffer(file: File) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = (event) => resolve(reader.result)
-      reader.onerror = (error) => reject(error)
-      reader.readAsArrayBuffer(file)
-    })
-  }
-
-  return (
+  return standardFlow ? (
     <>
       <ModalHeader color="secondary.700">
         <Container maxW="42.5rem" p={0}>
@@ -218,176 +65,90 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             </Center>
             <Spacer />
             <Button
-              rightIcon={standardFlow ? <FaMagic /> : <BiRightArrowAlt />}
-              onClick={() => setStandardFlow(!standardFlow)}
+              rightIcon={<FaMagic />}
+              onClick={() => setStandardFlow(false)}
+              variant="outline"
             >
-              <Text lineHeight="1.5rem">
-                {standardFlow ? 'Build with AI' : 'Go back'}
-              </Text>
+              <Text lineHeight="1.5rem">Build with AI</Text>
             </Button>
           </Flex>
         </Container>
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap">
         <Container maxW="42.5rem" p={0}>
-          {standardFlow ? (
-            <Flex direction="column">
-              <FormControl isRequired isInvalid={!!errors.title} mb="2.25rem">
-                <FormLabel useMarkdownForDescription>Form name</FormLabel>
-                <Skeleton isLoaded={!isFetching}>
-                  <Input
-                    autoFocus
-                    {...register('title', FORM_TITLE_VALIDATION_RULES)}
-                  />
-                </Skeleton>
-                <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
-                {titleInputValue?.length > FORM_TITLE_LENGTH_WARNING ? (
-                  <FormFieldMessage>
-                    It is advised to use a shorter, more succinct form name.
-                  </FormFieldMessage>
-                ) : null}
-              </FormControl>
-              <FormControl
-                isRequired
-                isInvalid={!!errors.responseMode}
-                mb="2.5rem"
-              >
-                <FormLabel>
-                  How do you want to receive your form responses?
-                </FormLabel>
-                <Skeleton isLoaded={!isFetching}>
-                  <Controller
-                    name="responseMode"
-                    control={control}
-                    render={({ field }) => (
-                      <FormResponseOptions
-                        containsMyInfoFields={containsMyInfoFields}
-                        {...field}
-                      />
-                    )}
-                    rules={{ required: 'Please select a form response mode' }}
-                  />
-                </Skeleton>
-                <FormErrorMessage>
-                  {errors.responseMode?.message}
-                </FormErrorMessage>
-              </FormControl>
-              {containsMyInfoFields && (
-                <InlineMessage useMarkdown mt="-1rem" mb="1rem">
-                  {`This form contains MyInfo fields. Only **Email** mode is supported at
+          <Flex direction="column">
+            <FormControl isRequired isInvalid={!!errors.title} mb="2.25rem">
+              <FormLabel useMarkdownForDescription>Form name</FormLabel>
+              <Skeleton isLoaded={!isFetching}>
+                <Input
+                  autoFocus
+                  {...register('title', FORM_TITLE_VALIDATION_RULES)}
+                />
+              </Skeleton>
+              <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
+              {titleInputValue?.length > FORM_TITLE_LENGTH_WARNING ? (
+                <FormFieldMessage>
+                  It is advised to use a shorter, more succinct form name.
+                </FormFieldMessage>
+              ) : null}
+            </FormControl>
+            <FormControl
+              isRequired
+              isInvalid={!!errors.responseMode}
+              mb="2.5rem"
+            >
+              <FormLabel>
+                How do you want to receive your form responses?
+              </FormLabel>
+              <Skeleton isLoaded={!isFetching}>
+                <Controller
+                  name="responseMode"
+                  control={control}
+                  render={({ field }) => (
+                    <FormResponseOptions
+                      containsMyInfoFields={containsMyInfoFields}
+                      {...field}
+                    />
+                  )}
+                  rules={{ required: 'Please select a form response mode' }}
+                />
+              </Skeleton>
+              <FormErrorMessage>
+                {errors.responseMode?.message}
+              </FormErrorMessage>
+            </FormControl>
+            {containsMyInfoFields && (
+              <InlineMessage useMarkdown mt="-1rem" mb="1rem">
+                {`This form contains MyInfo fields. Only **Email** mode is supported at
               this point.`}
-                </InlineMessage>
-              )}
-              {responseModeValue === FormResponseMode.Email && (
-                <FormControl
-                  isRequired
-                  isInvalid={!!errors.emails}
-                  mb="2.25rem"
+              </InlineMessage>
+            )}
+            {responseModeValue === FormResponseMode.Email && (
+              <FormControl isRequired isInvalid={!!errors.emails} mb="2.25rem">
+                <FormLabel
+                  useMarkdownForDescription
+                  description={`Specify up to 30 emails. [How to guard against bounce emails](${GUIDE_PREVENT_EMAIL_BOUNCE}).`}
                 >
-                  <FormLabel
-                    useMarkdownForDescription
-                    description={`Specify up to 30 emails. [How to guard against bounce emails](${GUIDE_PREVENT_EMAIL_BOUNCE}).`}
-                  >
-                    Emails where responses will be sent
-                  </FormLabel>
-                  <EmailFormRecipientsInput />
-                </FormControl>
-              )}
-              <Button
-                rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
-                type="submit"
-                isLoading={isLoading}
-                isDisabled={isFetching}
-                onClick={handleDetailsSubmit}
-                isFullWidth
-              >
-                <Text lineHeight="1.5rem">Next step</Text>
-              </Button>
-            </Flex>
-          ) : (
-            <Flex direction="column">
-              <FormControl isRequired mb="2.25rem">
-                <FormLabel description="You can change this later.">
-                  Form name
+                  Emails where responses will be sent
                 </FormLabel>
-                <Skeleton isLoaded={!isFetching}>
-                  <Input value={formName} onChange={handleFormNameChange} />
-                </Skeleton>
-                <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
-                {titleInputValue?.length > FORM_TITLE_LENGTH_WARNING ? (
-                  <FormFieldMessage>
-                    It is advised to use a shorter, more succinct form name.
-                  </FormFieldMessage>
-                ) : null}
+                <EmailFormRecipientsInput />
               </FormControl>
-              <FormControl isRequired mb="2.25rem">
-                <FormLabel description="e.g. I want to create a form that collect personal details">
-                  I want to create a form that...
-                </FormLabel>
-                <Skeleton isLoaded={!isFetching}>
-                  <Stack direction="row">
-                    <Input value={purpose} onChange={handlePurposeChange} />
-                    <Spacer />
-                    <Button
-                      onClick={handlePurposeEnter}
-                      isLoading={isFetchingQuestions}
-                    >
-                      Enter
-                    </Button>
-                  </Stack>
-                </Skeleton>
-              </FormControl>
-              <FormControl isRequired mb="2.25rem">
-                <FormLabel>
-                  Alternatively, upload a PDF form you would like to convert
-                </FormLabel>
-                <Attachment
-                  onChange={handleFileUpload}
-                  onError={handleFileUploadError}
-                  value={selectedFile}
-                  maxSize={2000000} // 2MB
-                  name="file-upload"
-                  accept=".pdf"
-                ></Attachment>
-                {isProgress ? (
-                  <Progress size="md" isIndeterminate></Progress>
-                ) : null}
-              </FormControl>
-              {isFetchingQuestions ? (
-                <Text>
-                  Generating list of questions, this will take ~1 min.
-                </Text>
-              ) : null}
-              {qnsList ? (
-                <FormControl isRequired mb="2.25rem">
-                  <FormLabel>
-                    These are the questions the form should have:
-                  </FormLabel>
-                  <Skeleton isLoaded={!isFetching}>
-                    <Stack direction="row">
-                      <Textarea
-                        value={qnsList}
-                        onChange={handleQuestionsChange}
-                      />
-                    </Stack>
-                  </Skeleton>
-                </FormControl>
-              ) : null}
-              {isCreatingForm ? <Text>This will take ~3 mins...</Text> : null}
-              <Button
-                rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
-                type="submit"
-                isLoading={isCreatingForm}
-                isDisabled={!qnsList}
-                onClick={handleCreateFormFromQnsList}
-                isFullWidth
-              >
-                <Text lineHeight="1.5rem">Next step</Text>
-              </Button>
-            </Flex>
-          )}
+            )}
+            <Button
+              rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
+              type="submit"
+              isLoading={isLoading}
+              isDisabled={isFetching}
+              onClick={handleDetailsSubmit}
+              isFullWidth
+            >
+              <Text lineHeight="1.5rem">Next step</Text>
+            </Button>
+          </Flex>
         </Container>
       </ModalBody>
     </>
+  ) : (
+    <CreateReformScreen setStandardFlow={setStandardFlow} />
   )
 }
