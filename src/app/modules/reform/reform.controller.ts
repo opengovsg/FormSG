@@ -8,6 +8,7 @@ import { ControllerHandler } from '../core/core.types'
 import { sampleFormFields } from './reform.constants'
 import {
   formFieldsPromptBuilder,
+  migratePromptBuilder,
   questionListPromptBuilder,
   schemaPromptBuilder,
 } from './reform.service'
@@ -29,7 +30,7 @@ export const generateQnsList: ControllerHandler<
 
   try {
     const chatCompletion = await openai.chat.completions.create({
-      messages: messages,
+      messages,
       model: 'gpt-4',
     })
     return res
@@ -53,9 +54,7 @@ export const generateFormFields: ControllerHandler<
   }
 > = async (req, res) => {
   try {
-    const prevMessages = [
-      ...req.body.prevMessages,
-    ] as ChatCompletionMessageParam[]
+    const prevMessages = req.body.prevMessages as ChatCompletionMessageParam[]
 
     const messages: ChatCompletionMessageParam[] = [
       ...prevMessages,
@@ -65,11 +64,38 @@ export const generateFormFields: ControllerHandler<
       },
     ]
     const chatCompletion = await openai.chat.completions.create({
-      messages: messages,
+      messages,
       model: 'gpt-4',
     })
     return res.status(200).json(chatCompletion.choices[0].message)
-    return res.send(chatCompletion.choices[0].message)
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.log(error)
+    }
+    return res.status(500).send({ message: error })
+  }
+}
+
+export const generateFormFieldsFromParsedPdf: ControllerHandler<
+  unknown,
+  unknown,
+  {
+    parsedPdfContent: string
+  }
+> = async (req, res) => {
+  try {
+    const messages: ChatCompletionMessageParam[] = [
+      { role: 'system', content: schemaPromptBuilder(sampleFormFields) },
+      {
+        role: 'user',
+        content: migratePromptBuilder(req.body.parsedPdfContent),
+      },
+    ]
+    const chatCompletion = await openai.chat.completions.create({
+      messages,
+      model: 'gpt-4',
+    })
+    return res.status(200).json(chatCompletion.choices[0].message)
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.log(error)
