@@ -29,11 +29,9 @@ export const FormChart = ({
 }) => {
   const [isTable, setIsTable] = useState(false)
 
-  console.log(data)
-
   const dataToRender = useMemo(() => {
     // deep copy of the data
-    const renderArray = data.map((val) => [...val])
+    const renderArray = data.map((val) => [...val] as [string, number | string])
     renderArray.unshift(['Answer', 'Count'])
     // append random color as styling to the data
     if (
@@ -55,8 +53,6 @@ export const FormChart = ({
       })
     return renderArray
   }, [data, formField.fieldType, isTable])
-
-  console.log(dataToRender)
 
   const chartType: GoogleChartWrapperChartType = useMemo(() => {
     if (isTable) return 'Table'
