@@ -7,7 +7,7 @@ const expectedQuestionsListFormat =
 export const schemaPromptBuilder = (schema: any) => {
   const prompt = `I am a form builder that has the possible form field schemas in the following list:\n
   ${JSON.stringify(schema)}
-  Please keep any null values in the schema as null, and false values in the schema as false.`
+  Please keep any null values in the schema as null, and false values in the schema as false. Strictly include all keys in the schema and respect the data types, even if they are null or false.`
   return prompt
 }
 
