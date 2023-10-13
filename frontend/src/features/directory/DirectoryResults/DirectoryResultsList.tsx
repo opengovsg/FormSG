@@ -89,11 +89,11 @@ export const DirectoryResultsList = ({
                   <Text textStyle="caption-2">{startPage.paragraph}</Text>
                 </Flex>
               ))}
+          <Box alignSelf="center">
+            <DirectoryResultsListPagination {...usePaginationProps} />
+          </Box>
         </Stack>
       )}
-      <Box alignSelf="center">
-        <DirectoryResultsListPagination {...usePaginationProps} />
-      </Box>
       <FormPreviewModal isOpen={isOpen} onClose={onClose} formId={formId} />
     </>
   )

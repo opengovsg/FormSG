@@ -19,7 +19,7 @@ export const DirectoryResultsAgencyHeader = ({
       gap="2rem"
       alignItems="center"
     >
-      <Skeleton isLoaded={!isLoading} w="8rem">
+      <Skeleton isLoaded={!isLoading} minW="8rem">
         <Image
           src={logo}
           bgColor="white"

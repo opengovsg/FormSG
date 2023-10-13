@@ -46,6 +46,7 @@ export const DirectoryResultsStickyNavbar = ({
       <Flex flexShrink={1} width="100%">
         <Searchbar
           isExpandable={false}
+          isDisabled={isLoading}
           placeholder={
             isLoading ? 'Loading...' : `Search forms from ${agencyName}`
           }
