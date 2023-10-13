@@ -43,7 +43,11 @@ export const DirectoryResults = ({
           logo={agency?.logo}
           fullName={agency?.fullName}
         />
-        <Flex flexDir="column" gap="1rem" px="8rem">
+        <Flex
+          flexDir="column"
+          gap="1rem"
+          px={{ base: '2rem', md: '5.5rem', lg: '8rem' }}
+        >
           <DirectoryResultsList
             agencyShortName={agencyShortName}
             searchValue={searchValue}

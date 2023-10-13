@@ -14,16 +14,16 @@ export const DirectoryResultsAgencyHeader = ({
   return (
     <Flex
       bgColor="primary.100"
-      px="8rem"
-      py="4rem"
-      gap="2rem"
+      px={{ base: '2rem', md: '5.5rem', lg: '8rem' }}
+      py={{ base: '2rem', md: '4rem' }}
+      gap={{ base: '1rem', md: '2rem' }}
       alignItems="center"
     >
-      <Skeleton isLoaded={!isLoading} minW="8rem">
+      <Skeleton isLoaded={!isLoading} minW={{ base: '4rem', md: '8rem' }}>
         <Image
           src={logo}
           bgColor="white"
-          h="8rem"
+          h={{ base: '6rem', md: '8rem' }}
           p="0.5rem"
           border="1px"
           borderColor="primary.500"
@@ -31,7 +31,7 @@ export const DirectoryResultsAgencyHeader = ({
         />
       </Skeleton>
       <Skeleton isLoaded={!isLoading} minH="2rem" minW="12rem">
-        <Text as="h2" textStyle="h2">
+        <Text as="h2" textStyle={{ base: 'h3', md: 'h2' }}>
           {fullName}
         </Text>
       </Skeleton>

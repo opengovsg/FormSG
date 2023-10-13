@@ -1,6 +1,7 @@
-import { Box, chakra, Flex, Skeleton, Text } from '@chakra-ui/react'
+import { chakra, Flex, Skeleton, Text } from '@chakra-ui/react'
 
 import { ReactComponent as BrandLogoSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
+import { useIsMobile } from '~hooks/useIsMobile'
 import Searchbar from '~components/Searchbar'
 
 const BrandLogo = chakra(BrandLogoSvg, {
@@ -20,6 +21,7 @@ export const DirectoryResultsStickyNavbar = ({
   searchValue,
   setSearchValue,
 }: DirectoryResultsStickyNavbarProps) => {
+  const isMobile = useIsMobile()
   return (
     <Flex
       justify="space-between"
@@ -35,12 +37,19 @@ export const DirectoryResultsStickyNavbar = ({
       zIndex={10}
     >
       <Flex flexShrink={0} gap="1rem" align="center">
-        <Box pr="1rem" borderRight="1px" borderRightColor="secondary.300">
-          <BrandLogo />
-        </Box>
-        <Skeleton isLoaded={!isLoading} minH="1rem" minW="12rem">
-          <Text textStyle="subhead-3">{agencyName}</Text>
-        </Skeleton>
+        <BrandLogo />
+        {isMobile || (
+          <Skeleton
+            pl="1rem"
+            borderLeft="1px"
+            borderLeftColor="secondary.300"
+            isLoaded={!isLoading}
+            minH="1rem"
+            minW="12rem"
+          >
+            <Text textStyle="subhead-3">{agencyName}</Text>
+          </Skeleton>
+        )}
       </Flex>
 
       <Flex flexShrink={1} width="100%">
