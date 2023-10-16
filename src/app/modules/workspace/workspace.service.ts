@@ -254,9 +254,10 @@ export const removeFormsFromAllWorkspaces = ({
     }),
     (error) => {
       logger.error({
-        message: 'Database error encountered when archiving form',
+        message:
+          'Database error encountered when removing forms from all workspaces',
         meta: {
-          action: 'archiveForm',
+          action: 'removeFormsFromAllWorkspaces',
           formIds,
           userId,
         },

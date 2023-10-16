@@ -240,7 +240,7 @@ export const moveFormsToWorkspace: ControllerHandler<
       logger.error({
         message: 'Error moving forms to another workspace',
         meta: {
-          action: 'moveForms',
+          action: 'moveFormsToWorkspace',
           destWorkspaceId,
           formIds,
           userId,
@@ -276,9 +276,9 @@ export const removeFormsFromWorkspaces: ControllerHandler<
     .map(() => res.sendStatus(StatusCodes.OK))
     .mapErr((error) => {
       logger.error({
-        message: 'Error deleting forms from all workspaces',
+        message: 'Error removing forms from all workspaces',
         meta: {
-          action: 'deleteFormFromWorkspaces',
+          action: 'removeFormsFromWorkspaces',
           formIds,
           userId,
         },
