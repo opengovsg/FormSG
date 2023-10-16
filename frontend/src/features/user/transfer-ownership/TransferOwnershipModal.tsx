@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
-import { SubmitHandler, useForm } from 'react-hook-form'
+import {
+  SubmitHandler,
+  useForm,
+  UseFormReset,
+  UseFormTrigger,
+} from 'react-hook-form'
 import {
   Button,
   ButtonGroup,
@@ -38,7 +43,22 @@ type TransferOwnershipInputs = {
   email: string
 }
 
-const useModalState = ({ onClose, reset, trigger }) => {
+const useModalState = ({
+  onClose,
+  reset,
+  trigger,
+}: {
+  onClose: () => void
+  reset: UseFormReset<TransferOwnershipInputs>
+  trigger: UseFormTrigger<TransferOwnershipInputs>
+}): {
+  page: number
+  email: string
+  isOwnEmail: (value: string) => boolean
+  resetModal: () => void
+  onNext: SubmitHandler<TransferOwnershipInputs>
+  onConfirm: () => void
+} => {
   const { refetch } = useWorkspace()
 
   const [page, setPage] = useState(0)
@@ -49,7 +69,7 @@ const useModalState = ({ onClose, reset, trigger }) => {
 
   const isOwnEmail = useCallback(
     (value: string) => {
-      return user?.email && value.toLowerCase() === user.email
+      return user?.email ? value.toLowerCase() === user.email : false
     },
     [user?.email],
   )
@@ -85,12 +105,9 @@ const useModalState = ({ onClose, reset, trigger }) => {
 
   useEffect(() => {
     trigger()
-  }, [])
+  }, [trigger])
 
-  return [
-    { page, email },
-    { isOwnEmail, resetModal, onNext, onConfirm },
-  ]
+  return { page, email, isOwnEmail, resetModal, onNext, onConfirm }
 }
 
 export const TransferOwnershipModal = ({
@@ -106,7 +123,7 @@ export const TransferOwnershipModal = ({
   } = useForm<TransferOwnershipInputs>({
     mode: 'onChange',
   })
-  const [{ page, email }, { isOwnEmail, resetModal, onNext, onConfirm }] =
+  const { page, email, isOwnEmail, resetModal, onNext, onConfirm } =
     useModalState({
       onClose,
       reset,
@@ -120,14 +137,14 @@ export const TransferOwnershipModal = ({
   })
 
   return (
-    <Modal size={modalSize} isOpen={isOpen} onClose={resetModal!}>
+    <Modal size={modalSize} isOpen={isOpen} onClose={resetModal}>
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
         <ModalHeader color="secondary.700">Transfer all forms</ModalHeader>
         <ModalBody whiteSpace="pre-wrap" pb="3.25rem">
           {page === 0 && (
-            <form onSubmit={handleSubmit(onNext!)}>
+            <form onSubmit={handleSubmit(onNext)}>
               <FormControl isInvalid={!!errors['email']}>
                 <FormLabel>
                   Transfer ownership of all forms
@@ -146,7 +163,7 @@ export const TransferOwnershipModal = ({
                         return INVALID_EMAIL_ERROR
                       }
                       return (
-                        !isOwnEmail!(value) || CANNOT_TRANSFER_OWNERSHIP_TO_SELF
+                        !isOwnEmail(value) || CANNOT_TRANSFER_OWNERSHIP_TO_SELF
                       )
                     },
                   })}
