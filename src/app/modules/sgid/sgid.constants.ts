@@ -46,5 +46,5 @@ export enum SGIDScope {
   WorkpassStatus = 'myinfo.workpass_status',
   WorkpassExpiryDate = 'myinfo.workpass_expiry_date',
   MaritalStatus = 'myinfo.marital_status',
-  MobileNoWithPrefix = 'myinfo.mobile_number_with_prefix', // SGID also has another myinfo.mobile_number field, but this is without the country code prefix
+  MobileNoWithPrefix = 'myinfo.mobile_number_with_prefix', // SGID also has another myinfo.mobile_number field that does not contain the country code prefix
 }

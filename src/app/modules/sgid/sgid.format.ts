@@ -27,7 +27,7 @@ export const formatVehicles = (vehicles: string): string => {
       const vehiclesObject = JSON.parse(vehicles)
       const vehicleNos = vehiclesObject
         //TODO: obtain vehicle type from SGID
-        .map((vehicle: any) => vehicle['vehicle_number'])
+        .map((vehicle: { vehicle_number: string }) => vehicle['vehicle_number'])
         .join(', ')
       return vehicleNos
     } catch (error) {

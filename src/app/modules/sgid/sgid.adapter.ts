@@ -147,6 +147,7 @@ export class SGIDMyInfoData
    * (decision by SNDGO & MSF due to overseas unregistered marriages).
    * An empty myInfo field will always evaluate
    * to false so that the field can be filled by form-filler.
+   * SGID returns 'NA' for field values that do not exist (vs empty string returned by Singpass MyInfo)
    *
    * The affected marriage fields are:
    * - marital
@@ -207,7 +208,6 @@ export class SGIDMyInfoData
       }
     }
     const fieldValue = this._formatFieldValue(externalAttr)
-    console.log('fieldValue: ', fieldValue, externalAttr)
     logger.info({
       message: 'get field value',
       meta: {
