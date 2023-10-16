@@ -18,6 +18,7 @@ import {
   useDisclosure,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
+import { StatusCodes } from 'http-status-codes'
 
 import { SUPPORT_FORM_LINK } from '~shared/constants'
 import { SgidPublicOfficerEmployment } from '~shared/types/auth'
@@ -137,7 +138,7 @@ export const SelectProfilePage = (): JSX.Element => {
       })
       .catch((err) => {
         console.log({ err })
-        if (err.code === 401) {
+        if (err.code === StatusCodes.UNAUTHORIZED) {
           errorDisclosure.onOpen()
           setErrorContext(MODAL_ERRORS.INVALID_WORKEMAIL)
           return

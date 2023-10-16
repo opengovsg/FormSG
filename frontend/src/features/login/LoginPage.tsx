@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Stack } from '@chakra-ui/react'
+import { StatusCodes } from 'http-status-codes'
 
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
@@ -34,9 +35,9 @@ export const LoginPage = (): JSX.Element => {
   const toastMessage = useMemo(() => {
     switch (statusCode) {
       case null:
-      case '200':
+      case StatusCodes.OK.toString():
         return
-      case '401':
+      case StatusCodes.UNAUTHORIZED.toString():
         return 'Your sgID login session has expired. Please login again.'
       default:
         return 'Something went wrong. Please try again later.'
