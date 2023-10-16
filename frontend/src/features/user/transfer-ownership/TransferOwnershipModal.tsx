@@ -80,7 +80,8 @@ const useModalState = ({ onClose, reset, trigger }) => {
         },
       },
     )
-  }, [user, transferOwnershipMutation, email, resetModal, refetch])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, transferOwnershipMutation, email])
 
   useEffect(() => {
     trigger()
