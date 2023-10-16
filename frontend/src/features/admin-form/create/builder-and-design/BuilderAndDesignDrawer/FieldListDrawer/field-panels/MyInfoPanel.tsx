@@ -48,6 +48,7 @@ const SGID_SUPPORTED_V1 = [
   // MyInfoAttribute.MobileNo,
 ]
 const SGID_SUPPORTED_V2 = [
+  ...SGID_SUPPORTED_V1,
   MyInfoAttribute.Sex,
   MyInfoAttribute.Race,
   MyInfoAttribute.Nationality,
@@ -81,13 +82,11 @@ export const MyInfoFieldPanel = () => {
     }
   }, [growthbook, user])
 
-  const showNewSgidMyInfoFields = useFeatureIsOn(featureFlags.myinfoSgid)
+  const showSgidMyInfoV2 = useFeatureIsOn(featureFlags.myinfoSgid)
 
-  const SGID_SUPPORTED_FINAL = useMemo(() => {
-    return showNewSgidMyInfoFields
-      ? SGID_SUPPORTED_V1.concat(SGID_SUPPORTED_V2)
-      : SGID_SUPPORTED_V1
-  }, [showNewSgidMyInfoFields])
+  const sgidSupportedFinal = useMemo(() => {
+    return showSgidMyInfoV2 ? SGID_SUPPORTED_V2 : SGID_SUPPORTED_V1
+  }, [showSgidMyInfoV2])
 
   /**
    * If sgID is used, checks if the corresponding
@@ -95,14 +94,14 @@ export const MyInfoFieldPanel = () => {
    */
   const sgIDUnSupported = useCallback(
     (form: AdminFormDto | undefined, fieldType: MyInfoAttribute): boolean => {
-      const SGID_SUPPORTED: Set<MyInfoAttribute> = new Set(SGID_SUPPORTED_FINAL)
+      const sgidSupported: Set<MyInfoAttribute> = new Set(sgidSupportedFinal)
 
       return (
         form?.authType === FormAuthType.SGID_MyInfo &&
-        !SGID_SUPPORTED.has(fieldType)
+        !sgidSupported.has(fieldType)
       )
     },
-    [SGID_SUPPORTED_FINAL],
+    [sgidSupportedFinal],
   )
 
   // myInfo should be disabled if
