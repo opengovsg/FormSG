@@ -48,7 +48,7 @@ export const internalAttrToScope = (attr: InternalAttr): ExternalAttr => {
     case InternalAttr.Marital:
       return ExternalAttr.MaritalStatus
     case InternalAttr.MobileNo:
-      return ExternalAttr.MobileNoWithPrefix
+      return ExternalAttr.MobileNoWithCountryCode
     default:
       // This should be removed once sgID reaches parity with MyInfo.
       // For now, the returned value will be automatically filtered
@@ -87,7 +87,7 @@ const internalAttrToSGIDExternal = (
     case InternalAttr.PassportExpiryDate:
       return ExternalAttr.PassportExpiryDate
     case InternalAttr.MobileNo:
-      return ExternalAttr.MobileNoWithPrefix
+      return ExternalAttr.MobileNoWithCountryCode
     case InternalAttr.RegisteredAddress:
       return ExternalAttr.RegisteredAddress
     case InternalAttr.BirthCountry:
@@ -165,7 +165,7 @@ export class SGIDMyInfoData
       return false
 
     switch (attr) {
-      case ExternalAttr.MobileNoWithPrefix:
+      case ExternalAttr.MobileNoWithCountryCode:
       case ExternalAttr.RegisteredAddress:
       case ExternalAttr.Name:
       case ExternalAttr.PassportNumber:

@@ -48,5 +48,5 @@ export enum SGIDScope {
   MaritalStatus = 'myinfo.marital_status',
   // SGID also has another myinfo.mobile_number field that does not contain the country code prefix.
   // We use the one that contains prefix, as this matches our mobile number form field.
-  MobileNoWithPrefix = 'myinfo.mobile_number_with_prefix',
+  MobileNoWithCountryCode = 'myinfo.mobile_number_with_country_code',
 }
