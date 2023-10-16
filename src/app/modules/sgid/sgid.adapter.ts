@@ -131,7 +131,6 @@ export class SGIDMyInfoData
    * @returns the formatted field.
    */
   _formatFieldValue(attr: ExternalAttr): string | undefined {
-    console.log('sgid payload attr: ', this.#payload[attr])
     switch (attr) {
       case ExternalAttr.RegisteredAddress:
         return formatAddress(this.#payload[attr])
