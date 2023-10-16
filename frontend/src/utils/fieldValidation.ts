@@ -383,7 +383,7 @@ export const createNricValidationRules: ValidationRuleFn<NricFieldBase> = (
         return (
           isNricValid(val) ||
           isMFinSeriesValid(val) ||
-          'Please enter a valid NRIC'
+          'Please enter a valid NRIC/FIN'
         )
       },
     },

@@ -113,7 +113,7 @@ describe('NRIC validation', () => {
 
     // Assert
     // Should show error message.
-    const error = screen.getByText('Please enter a valid NRIC')
+    const error = screen.getByText('Please enter a valid NRIC/FIN')
     expect(error).not.toBeNull()
   })
 })
