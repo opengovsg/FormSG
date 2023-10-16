@@ -18,7 +18,7 @@ import { MYINFO_ATTRIBUTE_MAP } from '../../../../../shared/constants/field/myin
 import {
   AdminDashboardFormMetaDto,
   BasicField,
-  DuplicateFormBodyDto,
+  DuplicateFormOverwriteDto,
   EndPageUpdateDto,
   FieldCreateDto,
   FieldUpdateDto,
@@ -46,6 +46,7 @@ import config, { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getAgencyModel from '../../../models/agency.server.model'
 import getFormModel from '../../../models/form.server.model'
+import { getWorkspaceModel } from '../../../models/workspace.server.model'
 import * as SmsService from '../../../services/sms/sms.service'
 import { twilioClientCache } from '../../../services/sms/sms.service'
 import {
@@ -107,6 +108,7 @@ import {
 const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
 const AgencyModel = getAgencyModel(mongoose)
+const WorkspaceModel = getWorkspaceModel(mongoose)
 
 export const secretsManager = new SecretsManager({
   region: config.aws.region,
@@ -477,6 +479,7 @@ export const transferAllFormsOwnership = (
  */
 export const createForm = (
   formParams: Merge<IForm, { admin: string }>,
+  workspaceId?: string,
 ): ResultAsync<
   IFormDocument,
   | DatabaseError
@@ -484,14 +487,35 @@ export const createForm = (
   | DatabaseConflictError
   | DatabasePayloadSizeError
 > => {
+  const logMeta = {
+    action: 'createForm',
+    formParams,
+  }
+
+  if (workspaceId)
+    return ResultAsync.fromPromise(
+      createFormInWorkspaceTransaction(formParams, workspaceId),
+      (error) => {
+        logger.error({
+          message:
+            'Database error encountered when creating form and moving it to workspace',
+          meta: {
+            ...logMeta,
+            workspaceId,
+          },
+          error,
+        })
+
+        return transformMongoError(error)
+      },
+    )
   return ResultAsync.fromPromise(
     FormModel.create(formParams) as Promise<IFormDocument>,
     (error) => {
       logger.error({
         message: 'Database error encountered when creating form',
         meta: {
-          action: 'createForm',
-          formParams,
+          ...logMeta,
         },
         error,
       })
@@ -501,17 +525,62 @@ export const createForm = (
   )
 }
 
+// Helper method to create form and move it into a specified workspace,
+// error handling will be done in parent createForm method.
+// Exported for testing
+export const createFormInWorkspaceTransaction = async (
+  formParams: Merge<IForm, { admin: string }>,
+  workspaceId: string,
+): Promise<IFormDocument> => {
+  let form: IFormDocument
+  const session = await mongoose.startSession()
+  return session
+    .withTransaction(async () => {
+      form = await processCreateFormInWorkspace(
+        formParams,
+        workspaceId,
+        session,
+      )
+    })
+    .then(() => form)
+    .finally(() => session.endSession)
+}
+
+export const processCreateFormInWorkspace = async (
+  formParams: Merge<IForm, { admin: string }>,
+  workspaceId: string,
+  session?: ClientSession,
+): Promise<IFormDocument> => {
+  // in order to take Mongoose.SaveOptions as a parameter with session
+  // we have to use the create type with array docs input
+  // https://mongoosejs.com/docs/5.x/docs/transactions.html
+  // hence we have to hard access the first element of the array
+  const form = (
+    await FormModel.create([formParams], {
+      session,
+    })
+  )[0] as IFormDocument
+  await WorkspaceModel.addFormIdsToWorkspace({
+    workspaceId,
+    formIds: [form._id],
+    session,
+  })
+  return form
+}
+
 /**
  * Duplicates given formId and replace owner with newAdminId.
  * @param originalForm the form to be duplicated
  * @param newAdminId the id of the admin of the duplicated form
  * @param overrideParams params to override in the duplicated form; e.g. the new emails or public key of the form.
+ * @param workspaceId the id of the workspace to duplicate the form into
  * @returns the newly created duplicated form
  */
 export const duplicateForm = (
   originalForm: IFormDocument,
   newAdminId: string,
-  overrideParams: DuplicateFormBodyDto,
+  overrideParams: DuplicateFormOverwriteDto,
+  workspaceId?: string,
 ): ResultAsync<IFormDocument, FormNotFoundError | DatabaseError> => {
   const overrideProps = processDuplicateOverrideProps(
     overrideParams,
@@ -530,6 +599,25 @@ export const duplicateForm = (
   }
 
   const duplicateParams = originalForm.getDuplicateParams(overrideProps)
+
+  if (workspaceId)
+    return ResultAsync.fromPromise(
+      createFormInWorkspaceTransaction(duplicateParams, workspaceId),
+      (error) => {
+        logger.error({
+          message: 'Error encountered while duplicating form into a workspace',
+          meta: {
+            action: 'duplicateForm',
+            duplicateParams,
+            newAdminId,
+            workspaceId,
+          },
+          error,
+        })
+
+        return new DatabaseError(getMongoErrorMessage(error))
+      },
+    )
 
   return ResultAsync.fromPromise(
     FormModel.create(duplicateParams) as Promise<IFormDocument>,
