@@ -35,7 +35,7 @@ export const SgidLoginButton = (): JSX.Element => {
       <Text>
         For{' '}
         <Link isExternal href={SGID_VALID_ORG_PAGE}>
-          select organization
+          select agencies
         </Link>
       </Text>
     </VStack>

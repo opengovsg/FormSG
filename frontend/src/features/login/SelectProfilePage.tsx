@@ -48,7 +48,7 @@ const MODAL_ERRORS: Record<string, ModalErrorMessages> = {
   NO_WORKEMAIL: {
     hideCloseButton: true,
     header: "Singpass login isn't available to you yet",
-    body: 'It is progressively being made available to organisations. In the meantime, please log in using your email address.',
+    body: 'It is progressively being made available to agencies. In the meantime, please log in using your email address.',
     cta: 'Back to login',
     onCtaClick: () => window.location.assign(LOGIN_ROUTE),
   },
@@ -56,9 +56,8 @@ const MODAL_ERRORS: Record<string, ModalErrorMessages> = {
     header: "You don't have access to this service",
     body: () => (
       <Text>
-        It may be available only to select organisations or authorised
-        individuals. If you believe you should have access to this service,
-        please{' '}
+        It may be available only to select agencies or authorised individuals.
+        If you believe you should have access to this service, please{' '}
         <Link isExternal href={SUPPORT_FORM_LINK}>
           contact us
         </Link>
