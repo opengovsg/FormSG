@@ -188,6 +188,14 @@ export class SGIDMyInfoData
         return false
       // Fall back to leaving field editable as data shape is unknown.
       default:
+        logger.error({
+          message: 'Unknown attribute found in SGID MyInfo field',
+          meta: {
+            action: '_isDataReadOnly',
+            fieldValue,
+            attr,
+          },
+        })
         return false
     }
   }
