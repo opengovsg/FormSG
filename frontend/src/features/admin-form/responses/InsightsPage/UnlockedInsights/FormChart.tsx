@@ -36,8 +36,9 @@ export const FormChart = ({
     // append random color as styling to the data
     if (
       !isTable &&
-      // Bar and column charts require specific color styles to be passed into data array
-      (formField.fieldType === BasicField.Checkbox || BasicField.Rating)
+      // Checkbox bar chart should have different colors
+      // But rating does not
+      formField.fieldType === BasicField.Checkbox
     )
       renderArray.forEach((val) => {
         if (val[1] === 'Count') {
