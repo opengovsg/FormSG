@@ -127,17 +127,21 @@ export class SGIDMyInfoData
   /**
    * Placeholder. For now, there are not enough public fields in
    * sgID's MyInfo catalog to require significant formatting.
+   * SGID returns 'NA' for field values that do not exist (vs empty string returned by Singpass MyInfo)
    * @param attr sgID's MyInfo OAuth scope.
    * @returns the formatted field.
    */
   _formatFieldValue(attr: ExternalAttr): string | undefined {
+    const fieldValue = this.#payload[attr]
     switch (attr) {
       case ExternalAttr.RegisteredAddress:
-        return formatAddress(this.#payload[attr])
+        return formatAddress(fieldValue)
       case ExternalAttr.VehicleNo:
-        return formatVehicles(this.#payload[attr])
+        return formatVehicles(fieldValue)
       default:
-        return this.#payload[attr]
+        // SGID returns NA if they do not have the value. We want to return an empty string instead,
+        // so that this can be processed by our frontend in the same way as Singpass MyInfo
+        return fieldValue === 'NA' ? '' : fieldValue
     }
   }
 
@@ -146,7 +150,6 @@ export class SGIDMyInfoData
    * (decision by SNDGO & MSF due to overseas unregistered marriages).
    * An empty myInfo field will always evaluate
    * to false so that the field can be filled by form-filler.
-   * SGID returns 'NA' for field values that do not exist (vs empty string returned by Singpass MyInfo)
    *
    * The affected marriage fields are:
    * - marital
@@ -161,8 +164,7 @@ export class SGIDMyInfoData
    */
   _isDataReadOnly(attr: ExternalAttr, fieldValue: string | undefined): boolean {
     const data = this.#payload[attr]
-    if (!data || !fieldValue || fieldValue === 'NA' || data === 'NA')
-      return false
+    if (!data || !fieldValue) return false
 
     switch (attr) {
       case ExternalAttr.MobileNoWithCountryCode:
