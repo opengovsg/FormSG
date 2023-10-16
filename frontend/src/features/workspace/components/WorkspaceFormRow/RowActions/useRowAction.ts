@@ -17,10 +17,8 @@ type UseRowActionReturn = {
   handleCollaborators: () => void
   handleDeleteForm: () => void
   handleShareForm: () => void
-  handleWorkspaceClick: (
-    destWorkspace: Workspace,
-    currFormWorkspace?: Workspace,
-  ) => void
+  handleRemoveFormFromWorkspaces: () => void
+  handleMoveForm: (destWorkspaceId: string, destWorkspaceTitle: string) => void
   isFormAdmin: boolean
 }
 
@@ -90,15 +88,6 @@ export const useRowAction = (
     })
   }, [formMeta, removeFormFromWorkspacesMutation])
 
-  const handleWorkspaceClick = useCallback(
-    (destWorkspace: Workspace, currFormWorkspace?: Workspace) => {
-      if (destWorkspace._id === currFormWorkspace?._id)
-        handleRemoveFormFromWorkspaces()
-      else handleMoveForm(destWorkspace._id.toString(), destWorkspace.title)
-    },
-    [handleMoveForm, handleRemoveFormFromWorkspaces],
-  )
-
   return {
     adminFormLink,
     previewFormLink,
@@ -107,6 +96,8 @@ export const useRowAction = (
     handleCollaborators,
     handleDeleteForm,
     handleWorkspaceClick,
+    handleRemoveFormFromWorkspaces,
+    handleMoveForm,
     isFormAdmin,
   }
 }

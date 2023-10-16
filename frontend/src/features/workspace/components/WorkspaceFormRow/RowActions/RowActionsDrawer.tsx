@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useMemo, useState } from 'react'
+import { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react'
 import {
   BiChevronRight,
   BiDotsHorizontalRounded,
@@ -27,6 +27,7 @@ import {
 } from '@chakra-ui/react'
 
 import { AdminDashboardFormMetaDto } from '~shared/types'
+import { Workspace } from '~shared/types/workspace'
 
 import { BxCheck } from '~assets/icons'
 import Button, { ButtonProps } from '~components/Button'
@@ -178,12 +179,24 @@ const MoveWorkspaceDrawer = ({
   formMeta: AdminDashboardFormMetaDto
   buttonProps: Partial<ButtonProps>
 }) => {
-  const { handleWorkspaceClick } = useRowAction(formMeta)
+  const { handleRemoveFormFromWorkspaces, handleMoveForm } =
+    useRowAction(formMeta)
   const { workspaces, getFormWorkspace } = useWorkspaceContext()
 
   const currFormWorkspace = useMemo(
     () => getFormWorkspace(formMeta._id),
     [formMeta, getFormWorkspace],
+  )
+
+  // if workspace selected is current workspace, delete
+  // else move to selected workspace
+  const handleWorkspaceAction = useCallback(
+    (destWorkspace: Workspace, currFormWorkspace?: Workspace) => {
+      if (destWorkspace._id === currFormWorkspace?._id)
+        handleRemoveFormFromWorkspaces()
+      else handleMoveForm(destWorkspace._id.toString(), destWorkspace.title)
+    },
+    [handleMoveForm, handleRemoveFormFromWorkspaces],
   )
 
   if (!workspaces) return null
@@ -203,7 +216,7 @@ const MoveWorkspaceDrawer = ({
         <Button
           {...buttonProps}
           key={workspace._id}
-          onClick={() => handleWorkspaceClick(workspace, currFormWorkspace)}
+          onClick={() => handleWorkspaceAction(workspace, currFormWorkspace)}
         >
           <Flex justifyContent="space-between" w="100%" alignItems="center">
             <Text textStyle="body-1" noOfLines={1}>
