@@ -17,7 +17,7 @@ interface EmptyWorkspaceProps extends EmptyWorkspacePage {
   subText: string
 }
 
-const EmptyWorkspace = ({
+export const EmptyWorkspace = ({
   isLoading,
   handleOpenCreateFormModal,
   title,
@@ -60,23 +60,3 @@ const EmptyWorkspace = ({
     </Flex>
   )
 }
-
-export const EmptyDefaultWorkspace = ({
-  isLoading,
-  handleOpenCreateFormModal,
-}: EmptyWorkspacePage) => (
-  <EmptyWorkspace
-    isLoading={isLoading}
-    handleOpenCreateFormModal={handleOpenCreateFormModal}
-    title={"You don't have any forms yet"}
-    subText={'Get started by creating a new form'}
-  />
-)
-
-export const EmptyNewWorkspace = ({ isLoading }: EmptyWorkspacePage) => (
-  <EmptyWorkspace
-    isLoading={isLoading}
-    title={'You don’t have any forms in this folder yet'}
-    subText={'Organise your forms by grouping them into folders'}
-  />
-)
