@@ -1,7 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
 import { AdminDashboardFormMetaDto } from '~shared/types/form/form'
-import { Workspace } from '~shared/types/workspace'
 
 import { ADMINFORM_PREVIEW_ROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 
@@ -95,7 +94,6 @@ export const useRowAction = (
     handleDuplicateForm,
     handleCollaborators,
     handleDeleteForm,
-    handleWorkspaceClick,
     handleRemoveFormFromWorkspaces,
     handleMoveForm,
     isFormAdmin,
