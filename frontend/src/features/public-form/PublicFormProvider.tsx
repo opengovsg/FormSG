@@ -676,11 +676,15 @@ export const PublicFormProvider = ({
       submitEmailModeFormFetchMutation,
       submitEmailModeFormMutation,
       enableEncryptionBoundaryShift,
+      enableVirusScanner,
+      submitStorageModeClearFormMutation,
+      submitStorageModeFormMutation,
       submitStorageModeClearFormFetchMutation,
       submitStorageModeFormFetchMutation,
       navigate,
       formId,
       storePaymentMemory,
+      submitStorageModeClearFormWithVirusScanningMutation,
     ],
   )
 
