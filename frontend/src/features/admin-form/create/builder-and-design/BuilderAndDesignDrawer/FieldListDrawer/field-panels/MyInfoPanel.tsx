@@ -267,9 +267,6 @@ const MyInfoText = ({
 
   return (
     <Text>
-      {authType === FormAuthType.SGID_MyInfo
-        ? 'Some MyInfo fields are not yet supported in your selected authentication type. '
-        : null}
       {`Only 30 MyInfo fields are allowed in Email mode (${numMyInfoFields}/30). `}
       <Link isExternal href={GUIDE_EMAIL_MODE}>
         Learn more
