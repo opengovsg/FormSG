@@ -312,12 +312,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
               myInfoFieldCount === 0 ||
               ((this.authType === FormAuthType.MyInfo ||
                 this.authType == FormAuthType.SGID_MyInfo) &&
-                this.responseMode === FormResponseMode.Email &&
                 myInfoFieldCount <= 30)
             )
           },
           message:
-            'Check that your form is MyInfo-authenticated, is an email mode form and has 30 or fewer MyInfo fields.',
+            'Check that your form is MyInfo-authenticatedand has 30 or fewer MyInfo fields.',
         },
       },
       form_logics: {

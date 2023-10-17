@@ -6,12 +6,14 @@ export type StorageFormAuthType =
   | FormAuthType.SP
   | FormAuthType.CP
   | FormAuthType.SGID
+  | FormAuthType.MyInfo
 
 export const STORAGE_MODE_AUTHTYPES: Record<StorageFormAuthType, string> = {
   [FormAuthType.NIL]: 'None',
   [FormAuthType.SGID]: 'Singpass App-only Login',
   [FormAuthType.SP]: 'Singpass',
   [FormAuthType.CP]: 'Singpass (Corporate)',
+  [FormAuthType.MyInfo]: 'Singpass with Myinfo',
 }
 
 // Not using STORAGE_MODE_AUTHTYPES due to wanting a different order.
