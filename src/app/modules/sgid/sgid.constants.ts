@@ -41,6 +41,7 @@ export enum SGIDScope {
   HousingType = 'myinfo.housingtype',
   HdbType = 'myinfo.hdbtype',
   BirthCountry = 'myinfo.birth_country',
+  ResidentialStatus = 'myinfo.residentialstatus',
   VehicleNo = 'myinfo.vehicles',
   Employment = 'myinfo.name_of_employer',
   WorkpassStatus = 'myinfo.workpass_status',

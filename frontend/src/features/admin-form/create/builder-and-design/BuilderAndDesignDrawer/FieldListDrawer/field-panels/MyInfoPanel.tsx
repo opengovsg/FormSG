@@ -61,6 +61,8 @@ const SGID_SUPPORTED_V2 = [
   MyInfoAttribute.WorkpassStatus,
   MyInfoAttribute.Marital,
   MyInfoAttribute.MobileNo,
+  MyInfoAttribute.WorkpassExpiryDate,
+  MyInfoAttribute.ResidentialStatus,
 ]
 
 export const MyInfoFieldPanel = () => {
