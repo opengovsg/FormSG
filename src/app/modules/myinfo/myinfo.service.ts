@@ -281,6 +281,7 @@ export class MyInfoServiceClass {
             fieldValue,
             myInfoAttr,
             myInfoConstantsList,
+            myInfoData,
           )
         }
       }
