@@ -46,6 +46,7 @@ jobs:
         with:
           node-version: 18
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
       - name: Install dependencies
         run: npm i
         # 👇 Adds Chromatic as a step in the workflow
