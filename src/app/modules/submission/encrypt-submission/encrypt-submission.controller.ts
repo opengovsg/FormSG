@@ -39,7 +39,6 @@ import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.midd
 import { Pipeline } from '../../../utils/pipeline-middleware'
 import { createReqMeta } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
-import { MalformedParametersError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
 import { getFeatureFlag } from '../../feature-flags/feature-flags.service'
@@ -146,19 +145,6 @@ const submitEncryptModeForm = async (
   let userInfo
   const { authType } = formDef
   switch (authType) {
-    case FormAuthType.MyInfo: {
-      logger.error({
-        message:
-          'Storage mode form is not allowed to have MyInfo authorisation',
-        meta: logMeta,
-      })
-      const { errorMessage, statusCode } = mapRouteError(
-        new MalformedParametersError(
-          'Storage mode form is not allowed to have MyInfo authType',
-        ),
-      )
-      return res.status(statusCode).json({ message: errorMessage })
-    }
     case FormAuthType.SP: {
       const oidcService = getOidcService(FormAuthType.SP)
       const jwtPayloadResult = await oidcService
