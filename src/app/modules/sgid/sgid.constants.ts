@@ -41,6 +41,7 @@ export enum SGIDScope {
   HousingType = 'myinfo.housingtype',
   HdbType = 'myinfo.hdbtype',
   BirthCountry = 'myinfo.birth_country',
+  ResidentialStatus = 'myinfo.residentialstatus',
   VehicleNo = 'myinfo.vehicles',
   Employment = 'myinfo.name_of_employer',
   WorkpassStatus = 'myinfo.workpass_status',
@@ -49,4 +50,10 @@ export enum SGIDScope {
   // SGID also has another myinfo.mobile_number field that does not contain the country code prefix.
   // We use the one that contains prefix, as this matches our mobile number form field.
   MobileNoWithCountryCode = 'myinfo.mobile_number_with_country_code',
+  Dialect = 'myinfo.dialect',
+  Occupation = 'myinfo.occupation',
+  CountryOfMarriage = 'myinfo.country_of_marriage',
+  MarriageCertNo = 'myinfo.marriage_certificate_number',
+  MarriageDate = 'myinfo.marriage_date',
+  DivorceDate = 'myinfo.divorce_date',
 }

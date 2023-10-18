@@ -49,6 +49,20 @@ export const internalAttrToScope = (attr: InternalAttr): ExternalAttr => {
       return ExternalAttr.MaritalStatus
     case InternalAttr.MobileNo:
       return ExternalAttr.MobileNoWithCountryCode
+    case InternalAttr.ResidentialStatus:
+      return ExternalAttr.ResidentialStatus
+    case InternalAttr.Dialect:
+      return ExternalAttr.Dialect
+    case InternalAttr.Occupation:
+      return ExternalAttr.Occupation
+    case InternalAttr.CountryOfMarriage:
+      return ExternalAttr.CountryOfMarriage
+    case InternalAttr.MarriageCertNo:
+      return ExternalAttr.MarriageCertNo
+    case InternalAttr.MarriageDate:
+      return ExternalAttr.MarriageDate
+    case InternalAttr.DivorceDate:
+      return ExternalAttr.DivorceDate
     default:
       // This should be removed once sgID reaches parity with MyInfo.
       // For now, the returned value will be automatically filtered
@@ -92,6 +106,8 @@ const internalAttrToSGIDExternal = (
       return ExternalAttr.RegisteredAddress
     case InternalAttr.BirthCountry:
       return ExternalAttr.BirthCountry
+    case InternalAttr.ResidentialStatus:
+      return ExternalAttr.ResidentialStatus
     case InternalAttr.VehicleNo:
       return ExternalAttr.VehicleNo
     case InternalAttr.Employment:
@@ -102,6 +118,18 @@ const internalAttrToSGIDExternal = (
       return ExternalAttr.WorkpassExpiryDate
     case InternalAttr.Marital:
       return ExternalAttr.MaritalStatus
+    case InternalAttr.Dialect:
+      return ExternalAttr.Dialect
+    case InternalAttr.Occupation:
+      return ExternalAttr.Occupation
+    case InternalAttr.CountryOfMarriage:
+      return ExternalAttr.CountryOfMarriage
+    case InternalAttr.MarriageCertNo:
+      return ExternalAttr.MarriageCertNo
+    case InternalAttr.MarriageDate:
+      return ExternalAttr.MarriageDate
+    case InternalAttr.DivorceDate:
+      return ExternalAttr.DivorceDate
     default:
       return undefined
   }
@@ -172,6 +200,7 @@ export class SGIDMyInfoData
       case ExternalAttr.Name:
       case ExternalAttr.PassportNumber:
       case ExternalAttr.DateOfBirth:
+      case ExternalAttr.ResidentialStatus:
       case ExternalAttr.PassportExpiryDate:
       case ExternalAttr.Sex:
       case ExternalAttr.Race:
@@ -183,9 +212,15 @@ export class SGIDMyInfoData
       case ExternalAttr.Employment:
       case ExternalAttr.WorkpassStatus:
       case ExternalAttr.WorkpassExpiryDate:
+      case ExternalAttr.Dialect:
+      case ExternalAttr.Occupation:
         return !!data
       // Fields required to always be editable according to MyInfo docs
       case ExternalAttr.MaritalStatus:
+      case ExternalAttr.CountryOfMarriage:
+      case ExternalAttr.MarriageCertNo:
+      case ExternalAttr.MarriageDate:
+      case ExternalAttr.DivorceDate:
         return false
       // Fall back to leaving field editable as data shape is unknown.
       default:
