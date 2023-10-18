@@ -18,6 +18,6 @@ jobs:
     uses: ./.github/workflows/aws-deploy-scanner.yml
     with:
       environment: 'production'
-      provisionedConcurrency: 5
+      provisionedConcurrency: 10
       checkoutBranch: 'release-al2'
     secrets: inherit
