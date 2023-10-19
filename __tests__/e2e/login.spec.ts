@@ -20,10 +20,7 @@ test.describe('login', () => {
       .getByRole('textbox', { name: /log in/i })
       .fill('user@non-white-listed-agency.com')
 
-    await page
-      .getByRole('button', { name: /log in/i })
-      .first()
-      .click()
+    await page.getByRole('button', { name: /log in/i }).click()
 
     // Ensure error message is seen
     await expect(
@@ -39,10 +36,7 @@ test.describe('login', () => {
     await expect(page).toHaveURL(LOGIN_PAGE)
 
     await page.getByRole('textbox', { name: /log in/i }).fill(legitUserEmail)
-    await page
-      .getByRole('button', { name: /log in/i })
-      .first()
-      .click()
+    await page.getByRole('button', { name: /log in/i }).click()
 
     // Ensure OTP success message is seen
     await expect(
@@ -67,10 +61,7 @@ test.describe('login', () => {
     await expect(page).toHaveURL(LOGIN_PAGE)
 
     await page.getByRole('textbox', { name: /log in/i }).fill(legitUserEmail)
-    await page
-      .getByRole('button', { name: /log in/i })
-      .first()
-      .click()
+    await page.getByRole('button', { name: /log in/i }).click()
 
     // Ensure OTP success message is seen
     await expect(

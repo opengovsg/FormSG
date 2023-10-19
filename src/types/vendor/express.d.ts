@@ -1,6 +1,5 @@
 import { RateLimitInfo } from 'express-rate-limit'
 
-import { SgidUser } from '../../app/modules/auth/auth.types'
 import { EncryptSubmissionDto } from '../api'
 import { IPopulatedEncryptedForm, IPopulatedForm, IUserSchema } from '../types'
 
@@ -38,7 +37,6 @@ declare module 'express-session' {
     user?: {
       _id: IUserSchema['_id']
     }
-    sgid?: SgidUser
   }
 
   export interface AuthedSessionData extends SessionData {

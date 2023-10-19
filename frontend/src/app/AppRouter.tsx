@@ -13,8 +13,8 @@ import {
   DASHBOARD_ROUTE,
   LANDING_PAYMENTS_ROUTE,
   LANDING_ROUTE,
-  LOGIN_CALLBACK_ROUTE,
   LOGIN_ROUTE,
+  OGP_LOGIN_ROUTE,
   PAYMENT_PAGE_SUBROUTE,
   PRIVACY_POLICY_ROUTE,
   PUBLICFORM_ROUTE,
@@ -36,7 +36,7 @@ import {
   ResponsesPage,
 } from '~features/admin-form/responses'
 import { SettingsPage } from '~features/admin-form/settings/SettingsPage'
-import { SelectProfilePage } from '~features/login'
+import { SgidLoginPage } from '~features/login'
 import { FormPaymentPage } from '~features/public-form/components/FormPaymentPage/FormPaymentPage'
 import { BillingPage } from '~features/user/billing'
 
@@ -101,8 +101,8 @@ export const AppRouter = (): JSX.Element => {
           element={<PublicElement strict element={<LoginPage />} />}
         />
         <Route
-          path={LOGIN_CALLBACK_ROUTE}
-          element={<PublicElement strict element={<SelectProfilePage />} />}
+          path={OGP_LOGIN_ROUTE}
+          element={<PublicElement strict element={<SgidLoginPage />} />}
         />
         <Route
           path={PRIVACY_POLICY_ROUTE}

@@ -1,2 +1,2 @@
 export { LoginPage as default } from './LoginPage'
-export { SelectProfilePage } from './SelectProfilePage'
+export { SgidLoginPage } from './SgidLoginPage'
