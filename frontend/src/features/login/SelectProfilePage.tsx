@@ -39,6 +39,7 @@ import { SGID_PROFILES_ENDPOINT, useSgidProfiles } from './queries'
 type ErrorDisclosureProps = Pick<UseDisclosureReturn, 'onClose' | 'isOpen'>
 type ModalErrorMessages = {
   hideCloseButton?: boolean
+  preventBackdropDismissal?: boolean
   header: string
   body: string | (() => React.ReactElement)
   cta: string
@@ -48,6 +49,7 @@ type ModalErrorMessages = {
 const MODAL_ERRORS: Record<string, ModalErrorMessages> = {
   NO_WORKEMAIL: {
     hideCloseButton: true,
+    preventBackdropDismissal: true,
     header: "Singpass login isn't available to you yet",
     body: 'It is progressively being made available to agencies. In the meantime, please log in using your email address.',
     cta: 'Back to login',
@@ -80,9 +82,20 @@ const ErrorDisclosure = (
     return null
   }
   const { errorMessages, ...disclosureProps } = props
-  const { onCtaClick, body, cta, hideCloseButton, header } = errorMessages
+  const {
+    onCtaClick,
+    body,
+    cta,
+    hideCloseButton,
+    header,
+    preventBackdropDismissal,
+  } = errorMessages
   return (
-    <Modal isOpen={props.isOpen} onClose={() => props.onClose()}>
+    <Modal
+      isOpen={props.isOpen}
+      onClose={() => props.onClose()}
+      closeOnOverlayClick={!preventBackdropDismissal}
+    >
       <ModalOverlay />
       <ModalContent>
         {!hideCloseButton ? <ModalCloseButton /> : null}

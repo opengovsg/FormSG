@@ -39,7 +39,7 @@ export const generateAuthUrl: ControllerHandler<
         error,
       })
       return res
-        .sendStatus(StatusCodes.INTERNAL_SERVER_ERROR)
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .json({
           message:
             'Generating SGID authentication url failed. Please try again later.',
@@ -229,7 +229,7 @@ export const setProfile: ControllerHandler<
     return res.status(StatusCodes.BAD_REQUEST).json({ message })
   }
 
-  await AuthService.validateEmailDomain(selectedProfile.work_email)
+  return AuthService.validateEmailDomain(selectedProfile.work_email)
     .andThen((agency) =>
       UserService.retrieveUser(selectedProfile.work_email, agency._id),
     )
@@ -241,6 +241,7 @@ export const setProfile: ControllerHandler<
         message: `Successfully logged in user ${user._id}`,
         meta: logMeta,
       })
+      return res.status(StatusCodes.OK).json({ message: 'Ok' })
     })
     .mapErr((error) => {
       const message = 'Error occurred when trying to log in via SGID'
@@ -254,6 +255,4 @@ export const setProfile: ControllerHandler<
 
       return res.status(statusCode).json({ message })
     })
-
-  return res.status(StatusCodes.OK).json({ message: 'Ok' })
 }
