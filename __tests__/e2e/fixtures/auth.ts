@@ -25,7 +25,10 @@ export const test = baseTest.extend({
       await page.goto(LOGIN_PAGE)
 
       await page.getByRole('textbox', { name: /log in/i }).fill(ADMIN_EMAIL)
-      await page.getByRole('button', { name: /log in/i }).click()
+      await page
+        .getByRole('button', { name: /log in/i })
+        .first()
+        .click()
 
       // Ensure OTP success message is seen
       await expect(

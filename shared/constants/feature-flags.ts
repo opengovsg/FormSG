@@ -8,4 +8,5 @@ export const featureFlags = {
     'encryption-boundary-shift-hard-validation' as const,
   encryptionBoundaryShiftVirusScanner:
     'encryption-boundary-shift-virus-scanner' as const,
+  myinfoSgid: 'myinfo-sgid' as const,
 }

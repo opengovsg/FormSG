@@ -2,6 +2,7 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 
 import { FormAuthType } from '../../../../shared/types'
+import { Environment } from '../../../types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
@@ -38,7 +39,15 @@ export const handleLogin: ControllerHandler<
   }
 
   const { formId, rememberMe, decodedQuery } = parsedState.value
-  const target = decodedQuery ? `/${formId}${decodedQuery}` : `/${formId}`
+
+  // For local dev, we need to specify the frontend app URL as this is different from the backend's app URL
+  const redirectTargetRaw =
+    process.env.NODE_ENV === Environment.Dev
+      ? `${config.app.feAppUrl}/${formId}`
+      : `/${formId}`
+  const target = decodedQuery
+    ? `${redirectTargetRaw}${decodedQuery}`
+    : `${redirectTargetRaw}`
 
   const formResult = await FormService.retrieveFullFormById(formId)
   if (formResult.isErr()) {
