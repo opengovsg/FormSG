@@ -625,23 +625,26 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   // Methods
 
   // Method to return myInfo attributes
-  FormSchema.methods.getUniqueMyInfoAttrs = function () {
-    if (
-      this.authType !== FormAuthType.MyInfo &&
-      this.authType !== FormAuthType.SGID_MyInfo
-    ) {
-      return []
-    }
+  FormSchema.method<IFormSchema>(
+    'getUniqueMyInfoAttrs',
+    function getUniqueMyInfoAttrs() {
+      if (
+        this.authType !== FormAuthType.MyInfo &&
+        this.authType !== FormAuthType.SGID_MyInfo
+      ) {
+        return []
+      }
 
-    // Compact is used to remove undefined from array
-    return compact(
-      uniq(
-        this.form_fields?.flatMap((field) => {
-          return getMyInfoAttr(field)
-        }),
-      ),
-    )
-  }
+      // Compact is used to remove undefined from array
+      return compact(
+        uniq(
+          this.form_fields?.flatMap((field) => {
+            return getMyInfoAttr(field)
+          }),
+        ),
+      )
+    },
+  )
 
   // Return essential form creation parameters with the given properties
   FormSchema.methods.getDuplicateParams = function (
@@ -702,14 +705,14 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     }
   }
 
-  FormDocumentSchema.methods.getSettings = function (): FormSettings {
+  FormDocumentSchema.method('getSettings', function (): FormSettings {
     const formSettings =
       this.responseMode === FormResponseMode.Encrypt
         ? (pick(this, STORAGE_FORM_SETTINGS_FIELDS) as StorageFormSettings)
         : (pick(this, EMAIL_FORM_SETTINGS_FIELDS) as EmailFormSettings)
 
     return formSettings
-  }
+  })
 
   FormDocumentSchema.methods.getWebhookAndResponseModeSettings =
     function (): FormWebhookSettings {
@@ -739,21 +742,21 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   // Transfer ownership of the form to another user
-  FormDocumentSchema.methods.transferOwner = async function (
-    currentOwner: IUserSchema,
-    newOwner: IUserSchema,
-  ) {
-    // Update form's admin to new owner's id.
-    this.admin = newOwner._id
+  FormDocumentSchema.method<IFormDocument>(
+    'transferOwner',
+    async function (currentOwner: IUserSchema, newOwner: IUserSchema) {
+      // Update form's admin to new owner's id.
+      this.admin = newOwner._id
 
-    // Remove new owner from perm list and include previous owner as an editor.
-    this.permissionList = this.permissionList.filter(
-      (item) => item.email !== newOwner.email,
-    )
-    this.permissionList.push({ email: currentOwner.email, write: true })
+      // Remove new owner from perm list and include previous owner as an editor.
+      this.permissionList = this.permissionList.filter(
+        (item) => item.email !== newOwner.email,
+      )
+      this.permissionList.push({ email: currentOwner.email, write: true })
 
-    return this.save()
-  }
+      return this.save()
+    },
+  )
 
   // Transfer ownership of multiple forms to another user
   FormSchema.statics.transferAllFormsToNewOwner = async function (
@@ -830,42 +833,40 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.save()
   }
 
-  FormDocumentSchema.methods.duplicateFormFieldByIdAndIndex = function (
-    fieldId: string,
-    insertionIndex: number,
-  ) {
-    const fieldToDuplicate = getFormFieldById(this.form_fields, fieldId)
-    if (!fieldToDuplicate) return Promise.resolve(null)
-    const duplicatedField = omit(fieldToDuplicate, ['_id', 'globalId'])
+  FormDocumentSchema.method<IFormDocument>(
+    'duplicateFormFieldByIdAndIndex',
+    function (fieldId: string, insertionIndex: number) {
+      const fieldToDuplicate = getFormFieldById(this.form_fields, fieldId)
+      if (!fieldToDuplicate) return Promise.resolve(null)
+      const duplicatedField = omit(fieldToDuplicate, ['_id', 'globalId'])
 
-    // eslint-disable-next-line @typescript-eslint/no-extra-semi
-    ;(this.form_fields as Types.DocumentArray<IFieldSchema>).splice(
-      insertionIndex,
-      0,
-      duplicatedField,
-    )
-    return this.save()
-  }
+      this.form_fields.splice(insertionIndex, 0, duplicatedField)
+      return this.save()
+    },
+  )
 
-  FormDocumentSchema.methods.reorderFormFieldById = function (
-    fieldId: string,
-    newPosition: number,
-  ): Promise<IFormDocument | null> {
-    const existingFieldPosition = this.form_fields.findIndex(
-      (f) => String(f._id) === fieldId,
-    )
+  FormDocumentSchema.method<IFormDocument>(
+    'reorderFormFieldById',
+    function (
+      fieldId: string,
+      newPosition: number,
+    ): Promise<IFormDocument | null> {
+      const existingFieldPosition = this.form_fields.findIndex(
+        (f) => String(f._id) === fieldId,
+      )
 
-    if (existingFieldPosition === -1) return Promise.resolve(null)
+      if (existingFieldPosition === -1) return Promise.resolve(null)
 
-    // Exist, reorder form fields and save.
-    const updatedFormFields = reorder(
-      this.form_fields,
-      existingFieldPosition,
-      newPosition,
-    )
-    this.form_fields = updatedFormFields
-    return this.save()
-  }
+      // Exist, reorder form fields and save.
+      const updatedFormFields = reorder(
+        this.form_fields,
+        existingFieldPosition,
+        newPosition,
+      )
+      this.form_fields = updatedFormFields
+      return this.save()
+    },
+  )
 
   // Statics
   // Method to retrieve data for OTP verification
