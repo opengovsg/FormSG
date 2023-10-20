@@ -163,7 +163,7 @@ export const SelectProfilePage = (): JSX.Element => {
   return (
     <Flex flex={1} justify="center" align="center" background="primary.100">
       <Stack
-        maxWidth="24.5rem"
+        width={{ base: '24.5rem', lg: '42.5rem' }}
         padding="2rem"
         borderRadius="0.5rem"
         border="1px"
@@ -211,7 +211,7 @@ const ProfileItem = ({
 }) => {
   return (
     <Flex align="center" cursor="pointer" onClick={onClick}>
-      <Box>
+      <Box flexGrow={1}>
         <Text
           textStyle="subhead-2"
           color="secondary.700"
