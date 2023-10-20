@@ -4,7 +4,7 @@ import {
 } from '__tests__/integration/helpers/express-auth'
 import { setupApp } from '__tests__/integration/helpers/express-setup'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import { ObjectId } from 'bson-ext'
+import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'

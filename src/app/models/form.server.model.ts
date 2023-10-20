@@ -1,4 +1,4 @@
-import BSON, { ObjectId } from 'bson-ext'
+import BSON, { ObjectId } from 'bson'
 import { compact, omit, pick, uniq } from 'lodash'
 import mongoose, {
   ClientSession,

@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson-ext'
+import { ObjectId } from 'bson'
 import { Document, Model } from 'mongoose'
 import type { SetOptional } from 'type-fest'
 

@@ -6,7 +6,7 @@ import {
 import { setupApp } from '__tests__/integration/helpers/express-setup'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-data'
-import { ObjectId } from 'bson-ext'
+import { ObjectId } from 'bson'
 import { ObjectID } from 'mongodb'
 import mongoose from 'mongoose'
 import supertest, { Session } from 'supertest-session'

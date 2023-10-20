@@ -1,5 +1,5 @@
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
-import { ObjectId } from 'bson-ext'
+import { ObjectId } from 'bson'
 import { merge, omit } from 'lodash'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 

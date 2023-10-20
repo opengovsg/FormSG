@@ -1,5 +1,5 @@
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
-import { ObjectId } from 'bson-ext'
+import { ObjectId } from 'bson'
 import { Types } from 'mongoose'
 
 import { FormFieldSchema } from 'src/types'
