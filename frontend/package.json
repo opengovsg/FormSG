@@ -40,7 +40,7 @@
     "inter-ui": "^3.19.3",
     "intl-messageformat": "^9.13.0",
     "jszip": "^3.10.0",
-    "libphonenumber-js": "^1.9.44",
+    "libphonenumber-js": "^1.10.45",
     "lodash": "^4.17.21",
     "lottie-web": "^5.9.4",
     "p-queue": "^7.2.0",
