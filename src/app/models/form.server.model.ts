@@ -744,7 +744,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   // Transfer ownership of the form to another user
   FormDocumentSchema.method<IFormDocument>(
     'transferOwner',
-    async function (currentOwner: IUserSchema, newOwner: IUserSchema) {
+    async function transferOwner(
+      currentOwner: IUserSchema,
+      newOwner: IUserSchema,
+    ) {
       // Update form's admin to new owner's id.
       this.admin = newOwner._id
 
@@ -847,7 +850,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
   FormDocumentSchema.method<IFormDocument>(
     'reorderFormFieldById',
-    function (
+    function reorderFormFieldById(
       fieldId: string,
       newPosition: number,
     ): Promise<IFormDocument | null> {
