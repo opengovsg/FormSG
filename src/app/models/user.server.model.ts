@@ -114,7 +114,10 @@ const compileUserModel = (db: Mongoose) => {
     'save',
     function (err: Error, _doc: unknown, next: (err?: CallbackError) => void) {
       if (err) {
-        if (err.name === 'MongoError' && (err as MongoError)?.code === 11000) {
+        if (
+          ['MongoError', 'MongoServerError'].includes(err.name) &&
+          (err as MongoError)?.code === 11000
+        ) {
           next(new Error('Account already exists with this email'))
         } else {
           next(err)
