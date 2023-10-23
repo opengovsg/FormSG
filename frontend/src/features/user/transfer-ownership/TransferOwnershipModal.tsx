@@ -51,6 +51,7 @@ type UseModalStateReturn = {
   onNext: SubmitHandler<TransferOwnershipInputs>
   onConfirm: () => void
 }
+
 const useModalState = ({
   onClose,
   reset,
@@ -101,8 +102,7 @@ const useModalState = ({
         },
       },
     )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, transferOwnershipMutation, email])
+  }, [user, transferOwnershipMutation, email, resetModal, refetch])
 
   useEffect(() => {
     trigger()
