@@ -107,7 +107,7 @@ export const WorkspacePage = (): JSX.Element => {
         gridTemplateRows={`auto 1fr`}
         gridTemplateColumns={{
           base: 'inherit',
-          lg: '15.5rem 1fr',
+          md: '15.5rem 1fr',
         }}
         h="100vh"
       >
