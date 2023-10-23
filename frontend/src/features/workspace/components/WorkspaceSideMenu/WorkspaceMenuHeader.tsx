@@ -27,7 +27,7 @@ export const WorkspaceMenuHeader = ({
       {...props}
       alignItems="center"
     >
-      <CreateWorkspaceModal isOpen={isOpen} onClose={onClose} />
+      {isOpen && <CreateWorkspaceModal isOpen={isOpen} onClose={onClose} />}
       <Flex alignItems="center">
         {shouldShowMenuIcon && (
           <IconButton
