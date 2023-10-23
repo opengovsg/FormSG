@@ -451,30 +451,61 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         type: String,
         enum: Object.values(FormAuthType),
         default: FormAuthType.NIL,
-        set: function (this: IFormSchema, v: FormAuthType) {
-          // TODO (#1222): Convert to validator
-          // Do not allow authType to be changed if form is published
-          if (this.authType !== v && this.status === FormStatus.Public) {
-            return this.authType
-            // Singpass/Corppass/SGID authentication is available for both email
-            // and storage mode
-            // Important - this case must come before the MyInfo + storage
-            // mode case, or else we may accidentally set Singpass/Corppass/SGID
-            // storage mode forms to FormAuthType.NIL
-          } else if (
-            [FormAuthType.SP, FormAuthType.CP, FormAuthType.SGID].includes(v)
-          ) {
-            return v
-          } else if (
-            this.responseMode === FormResponseMode.Encrypt &&
-            // MyInfo is not available for storage mode
-            v === FormAuthType.MyInfo
-          ) {
-            return FormAuthType.NIL
-          } else {
-            return v
-          }
+        validate: {
+          validator: function (this: IFormSchema, v: FormAuthType) {
+            // Do not allow authType to be changed if form is published
+            if (this.authType !== v && this.status === FormStatus.Public) {
+              return false
+              // Singpass/Corppass/SGID/MyInfo authentication is available for both email
+              // and storage mode
+              // Important - this case must come before the SGID MyInfo + storage
+              // mode case, or else we may accidentally set Singpass/Corppass/SGID/MyInfo
+              // storage mode forms to FormAuthType.NIL
+            } else if (
+              [
+                FormAuthType.SP,
+                FormAuthType.CP,
+                FormAuthType.SGID,
+                FormAuthType.MyInfo,
+                FormAuthType.NIL,
+              ].includes(v)
+            ) {
+              return true
+            } else if (
+              this.responseMode === FormResponseMode.Encrypt &&
+              // SGID MyInfo is not available for storage mode
+              v === FormAuthType.SGID_MyInfo
+            ) {
+              return false
+            } else {
+              return true
+            }
+          },
         },
+        // set: function (this: IFormSchema, v: FormAuthType) {
+        //   // TODO (#1222): Convert to validator
+        //   // Do not allow authType to be changed if form is published
+        //   if (this.authType !== v && this.status === FormStatus.Public) {
+        //     return this.authType
+        //     // Singpass/Corppass/SGID authentication is available for both email
+        //     // and storage mode
+        //     // Important - this case must come before the MyInfo + storage
+        //     // mode case, or else we may accidentally set Singpass/Corppass/SGID
+        //     // storage mode forms to FormAuthType.NIL
+        //   } else if (
+        //     [FormAuthType.SP, FormAuthType.CP, FormAuthType.SGID].includes(v)
+        //   ) {
+        //     return v
+        //   } else if (
+        //     this.responseMode === FormResponseMode.Encrypt &&
+        //     // MyInfo is not available for storage mode
+        //     v === FormAuthType.MyInfo
+        //   ) {
+        //     return FormAuthType.NIL
+        //   } else {
+        //     return v
+        //   }
+        // },
       },
 
       status: {
