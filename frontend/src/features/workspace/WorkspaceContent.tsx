@@ -62,7 +62,7 @@ export const WorkspaceContent = (): JSX.Element => {
             gridArea="header"
             maxW="100%"
             borderBottom="1px solid var(--chakra-colors-neutral-300)"
-            px="4rem"
+            px={{ base: '2rem', md: '4rem' }}
             py="1rem"
           >
             {isDefaultWorkspace && (

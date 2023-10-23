@@ -52,7 +52,11 @@ export const WorkspaceFormRows = (): JSX.Element => {
     <WorkspaceRowsProvider>
       <Stack m="auto" spacing={0} divider={<Divider />}>
         {displayedForms.map((meta) => (
-          <WorkspaceFormRow px="4rem" key={meta._id} formMeta={meta} />
+          <WorkspaceFormRow
+            px={{ base: '2rem', md: '4rem' }}
+            key={meta._id}
+            formMeta={meta}
+          />
         ))}
       </Stack>
     </WorkspaceRowsProvider>
