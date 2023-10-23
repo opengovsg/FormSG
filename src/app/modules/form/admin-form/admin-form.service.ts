@@ -368,9 +368,7 @@ export const transferFormOwnership = (
       // Step 4: Populate updated form.
       .andThen((updatedForm) =>
         ResultAsync.fromPromise(
-          updatedForm
-            .populate({ path: 'admin', populate: { path: 'agency' } })
-            .execPopulate(),
+          updatedForm.populate({ path: 'admin', populate: { path: 'agency' } }),
           (error) => {
             logger.error({
               message: 'Error occurred whilst populating form with admin',
