@@ -16,6 +16,7 @@ type UseRowActionReturn = {
   handleCollaborators: () => void
   handleDeleteForm: () => void
   handleShareForm: () => void
+  handleRemoveFormFromWorkspaces: () => void
   handleMoveForm: (destWorkspaceId: string, destWorkspaceTitle: string) => void
   isFormAdmin: boolean
 }
@@ -24,7 +25,8 @@ export const useRowAction = (
   formMeta: AdminDashboardFormMetaDto,
 ): UseRowActionReturn => {
   const { user } = useUser()
-  const { moveWorkspaceMutation } = useWorkspaceMutations()
+  const { moveWorkspaceMutation, removeFormFromWorkspacesMutation } =
+    useWorkspaceMutations()
 
   const {
     onOpenDupeFormModal,
@@ -79,6 +81,12 @@ export const useRowAction = (
     [formMeta, moveWorkspaceMutation],
   )
 
+  const handleRemoveFormFromWorkspaces = useCallback(async () => {
+    await removeFormFromWorkspacesMutation.mutateAsync({
+      formId: formMeta._id.toString(),
+    })
+  }, [formMeta, removeFormFromWorkspacesMutation])
+
   return {
     adminFormLink,
     previewFormLink,
@@ -86,6 +94,7 @@ export const useRowAction = (
     handleDuplicateForm,
     handleCollaborators,
     handleDeleteForm,
+    handleRemoveFormFromWorkspaces,
     handleMoveForm,
     isFormAdmin,
   }

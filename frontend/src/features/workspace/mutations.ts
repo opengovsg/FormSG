@@ -29,6 +29,7 @@ import {
   dupeEmailModeForm,
   dupeStorageModeForm,
   moveFormsToWorkspace,
+  removeFormsFromWorkspaces,
   updateAdminFeedback,
   updateWorkspaceTitle,
 } from './WorkspaceService'
@@ -234,10 +235,23 @@ export const useWorkspaceMutations = () => {
     },
   )
 
+  // to remove a singular form mutation
+  // can be extended to remove multiple forms from workspaces
+  const removeFormFromWorkspacesMutation = useMutation(
+    (params: { formId: string }) =>
+      removeFormsFromWorkspaces({ formIds: [params.formId] }),
+    {
+      onSuccess: () =>
+        handleSuccess('Your form has been removed from the folder'),
+      onError: handleError,
+    },
+  )
+
   return {
     createWorkspaceMutation,
     moveWorkspaceMutation,
     updateWorkspaceTitleMutation,
     deleteWorkspaceMutation,
+    removeFormFromWorkspacesMutation,
   }
 }

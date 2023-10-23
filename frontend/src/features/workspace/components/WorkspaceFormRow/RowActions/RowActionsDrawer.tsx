@@ -179,18 +179,24 @@ const MoveWorkspaceDrawer = ({
   formMeta: AdminDashboardFormMetaDto
   buttonProps: Partial<ButtonProps>
 }) => {
-  const { handleMoveForm } = useRowAction(formMeta)
+  const { handleRemoveFormFromWorkspaces, handleMoveForm } =
+    useRowAction(formMeta)
   const { workspaces, getFormWorkspace } = useWorkspaceContext()
-
-  const handleWorkspaceClick = useCallback(
-    (destWorkspace: Workspace) =>
-      handleMoveForm(destWorkspace._id.toString(), destWorkspace.title),
-    [handleMoveForm],
-  )
 
   const currFormWorkspace = useMemo(
     () => getFormWorkspace(formMeta._id),
     [formMeta, getFormWorkspace],
+  )
+
+  // if workspace selected is current workspace, delete
+  // else move to selected workspace
+  const handleWorkspaceAction = useCallback(
+    (destWorkspace: Workspace, currFormWorkspace?: Workspace) => {
+      if (destWorkspace._id === currFormWorkspace?._id)
+        handleRemoveFormFromWorkspaces()
+      else handleMoveForm(destWorkspace._id.toString(), destWorkspace.title)
+    },
+    [handleMoveForm, handleRemoveFormFromWorkspaces],
   )
 
   if (!workspaces) return null
@@ -210,7 +216,7 @@ const MoveWorkspaceDrawer = ({
         <Button
           {...buttonProps}
           key={workspace._id}
-          onClick={() => handleWorkspaceClick(workspace)}
+          onClick={() => handleWorkspaceAction(workspace, currFormWorkspace)}
         >
           <Flex justifyContent="space-between" w="100%" alignItems="center">
             <Text textStyle="body-1" noOfLines={1}>

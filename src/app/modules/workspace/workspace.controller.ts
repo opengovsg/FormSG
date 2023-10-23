@@ -201,61 +201,12 @@ export const deleteWorkspace: ControllerHandler<
 }
 
 /**
- * Handler for GET /workspaces/:workspaceId/forms endpoint
- * @security session
- *
- * @returns 200 with a list of forms in the workspace
- * @returns 404 when the workspace does not exist or belong to the user
- * @returns 422 when user of given id cannnot be found in the database
- * @returns 500 when database errors occur
- */
-export const getForms: ControllerHandler<
-  { workspaceId: string },
-  unknown,
-  any | ErrorDto
-> = async (req, res) => {
-  const { workspaceId } = req.params
-
-  return WorkspaceService.getForms(workspaceId)
-    .map((forms) => res.status(StatusCodes.OK).json(forms))
-    .mapErr((err) =>
-      res.status(StatusCodes.BAD_REQUEST).json({ message: err.message }),
-    )
-}
-
-/**
- * Handler for DELETE /workspaces/:workspaceId/forms endpoint
- * @security session
- *
- * @returns 200 with a list of remaining forms in the workspace
- * @returns 404 when the workspace does not exist or belong to the user
- * @returns 422 when user of given id cannnot be found in the database
- * @returns 500 when database errors occur
- */
-export const deleteForms: ControllerHandler<
-  { workspaceId: string },
-  unknown,
-  any | ErrorDto,
-  { formIds: any[] }
-> = async (req, res) => {
-  const { workspaceId } = req.params
-  const { formIds } = req.body
-
-  return WorkspaceService.deleteForms(workspaceId, formIds)
-    .map((forms) => res.status(StatusCodes.OK).json(forms))
-    .mapErr((err) =>
-      res.status(StatusCodes.BAD_REQUEST).json({ message: err.message }),
-    )
-}
-
-/**
  * Handler for POST /workspaces/:workspaceId/forms/move endpoint
  * @security session
  *
  * @returns 200 with a list of remaining forms in the source workspace
  * @returns 403 when user does not have permissions to update the source or destination workspace
  * @returns 404 when the workspace does not exist or belong to the user
- * @returns 422 when user of given id cannnot be found in the database
  * @returns 500 when database errors occur
  */
 export const moveFormsToWorkspace: ControllerHandler<
@@ -289,8 +240,45 @@ export const moveFormsToWorkspace: ControllerHandler<
       logger.error({
         message: 'Error moving forms to another workspace',
         meta: {
-          action: 'moveForms',
+          action: 'moveFormsToWorkspace',
           destWorkspaceId,
+          formIds,
+          userId,
+        },
+        error,
+      })
+
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
+ * Handler for POST /workspace/remove
+ * @security session
+ *
+ * @returns 200 if form is successfully removed
+ * @returns 401 when user is not logged in
+ * @returns 500 when database errors occur
+ */
+export const removeFormsFromWorkspaces: ControllerHandler<
+  unknown,
+  void | ErrorDto,
+  { formIds: string[] }
+> = async (req, res) => {
+  const userId = (req.session as AuthedSessionData).user._id
+  const { formIds } = req.body
+
+  return WorkspaceService.removeFormsFromAllWorkspaces({
+    formIds,
+    userId,
+  })
+    .map(() => res.sendStatus(StatusCodes.OK))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error removing forms from all workspaces',
+        meta: {
+          action: 'removeFormsFromWorkspaces',
           formIds,
           userId,
         },

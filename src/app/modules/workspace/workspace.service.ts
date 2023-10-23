@@ -146,19 +146,6 @@ const deleteWorkspaceTransaction = async ({
     .finally(() => session.endSession())
 }
 
-export const getForms = (
-  workspaceId: string,
-): ResultAsync<any, DatabaseError> => {
-  return okAsync({ workspaceId: workspaceId })
-}
-
-export const deleteForms = (
-  workspaceId: string,
-  formIds: string[],
-): ResultAsync<any, DatabaseError> => {
-  return okAsync({ workspaceId: workspaceId, formIds: formIds })
-}
-
 export const moveForms = ({
   userId,
   destWorkspaceId,
@@ -253,24 +240,25 @@ export const verifyWorkspaceAdmin = (
   return okAsync(true as const)
 }
 
-export const removeFormFromAllWorkspaces = ({
-  formId,
+export const removeFormsFromAllWorkspaces = ({
+  formIds,
   userId,
 }: {
-  formId: string
+  formIds: string[]
   userId: string
 }): ResultAsync<true, DatabaseError> => {
   return ResultAsync.fromPromise(
     WorkspaceModel.removeFormIdsFromAllWorkspaces({
       admin: userId,
-      formIds: [formId],
+      formIds,
     }),
     (error) => {
       logger.error({
-        message: 'Database error encountered when archiving form',
+        message:
+          'Database error encountered when removing forms from all workspaces',
         meta: {
-          action: 'archiveForm',
-          formId,
+          action: 'removeFormsFromAllWorkspaces',
+          formIds,
           userId,
         },
         error,

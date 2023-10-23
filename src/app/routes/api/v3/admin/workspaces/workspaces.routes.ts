@@ -6,13 +6,9 @@ import {
 } from '../../../../../modules/auth/auth.middlewares'
 import * as WorkspaceController from '../../../../../modules/workspace/workspace.controller'
 
-import { WorkspacesFormRouter } from './workspaces.form.routes'
-
 export const WorkspacesRouter = Router()
 WorkspacesRouter.use(withUserAuthentication)
 WorkspacesRouter.use(logAdminAction)
-
-WorkspacesRouter.use(WorkspacesFormRouter)
 
 WorkspacesRouter.route('/')
   /**
@@ -77,7 +73,19 @@ WorkspacesRouter.route('/move')
    * @returns 401 when user is not logged in
    * @returns 403 when user does not have permissions to update the source or destination workspace
    * @returns 404 when the source or destination workspace does not exist
-   * @returns 422 when user of given id cannnot be found in the database
    * @returns 500 when database errors occur
    */
   .post(WorkspaceController.moveFormsToWorkspace)
+
+WorkspacesRouter.route('/remove')
+  /**
+   * Remove a list of forms form all workspaces
+   *
+   * By default a form should only belong to one workspace.
+   * @security session
+   *
+   * @returns 200 if form is successfully removed
+   * @returns 401 when user is not logged in
+   * @returns 500 when database errors occur
+   */
+  .post(WorkspaceController.removeFormsFromWorkspaces)

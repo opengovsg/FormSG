@@ -10,12 +10,13 @@ import { RolloutAnnouncementModal } from '~features/rollout-announcement/Rollout
 import { useUser } from '~features/user/queries'
 
 import CreateFormModal from './components/CreateFormModal'
-import { EmptyWorkspace } from './components/EmptyWorkspace'
+import {
+  EmptyDefaultWorkspace,
+  EmptyNewWorkspace,
+} from './components/EmptyWorkspace'
 import { WorkspaceFormRows } from './components/WorkspaceFormRow'
 import { WorkspaceHeader } from './components/WorkspaceHeader'
 import { useWorkspaceContext } from './WorkspaceContext'
-
-export const CONTAINER_MAXW = '69.5rem'
 
 export const WorkspaceContent = (): JSX.Element => {
   const { isLoading, totalFormsCount, isDefaultWorkspace } =
@@ -43,11 +44,10 @@ export const WorkspaceContent = (): JSX.Element => {
         isOpen={createFormModalDisclosure.isOpen}
         onClose={createFormModalDisclosure.onClose}
       />
-      {totalFormsCount === 0 ? (
-        <EmptyWorkspace
+      {totalFormsCount === 0 && isDefaultWorkspace ? (
+        <EmptyDefaultWorkspace
           handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
           isLoading={isLoading}
-          isFolder={!isDefaultWorkspace}
         />
       ) : (
         <Grid
@@ -55,35 +55,43 @@ export const WorkspaceContent = (): JSX.Element => {
           templateColumns="1fr"
           templateRows="auto 1fr auto"
           minH="100vh"
-          templateAreas="'header' 'main' 'footer'"
+          templateAreas=" 'header' 'main'"
           overflowY="scroll"
         >
           <Container
             gridArea="header"
-            maxW={CONTAINER_MAXW}
+            maxW="100%"
             borderBottom="1px solid var(--chakra-colors-neutral-300)"
-            px="2rem"
+            px={{ base: '2rem', md: '4rem' }}
             py="1rem"
           >
-            <InlineMessage useMarkdown mb="2rem" mx="-2rem">
-              {dashboardMessage}
-            </InlineMessage>
+            {isDefaultWorkspace && (
+              <InlineMessage
+                useMarkdown
+                mb="2rem"
+                mx="-2rem"
+                justifyContent="center"
+              >
+                {dashboardMessage}
+              </InlineMessage>
+            )}
             <WorkspaceHeader
               handleOpenCreateFormModal={createFormModalDisclosure.onOpen}
             />
           </Container>
-          <Box gridArea="main">
-            <RolloutAnnouncementModal
-              onClose={() => setHasSeenAnnouncement(true)}
-              isOpen={isAnnouncementModalOpen}
-            />
-            <WorkspaceFormRows />
-          </Box>
-          <Container
-            gridArea="footer"
-            pt={{ base: '1rem', md: '1.5rem' }}
-            maxW={CONTAINER_MAXW}
-          />
+          {totalFormsCount === 0 && !isDefaultWorkspace ? (
+            <EmptyNewWorkspace isLoading={isLoading} />
+          ) : (
+            <Box gridArea="main">
+              <RolloutAnnouncementModal
+                onClose={() => setHasSeenAnnouncement(true)}
+                isOpen={isAnnouncementModalOpen}
+              />
+              <WorkspaceFormRows />
+            </Box>
+          )}
+
+          <Container pt={{ base: '1rem', md: '1.5rem' }} />
         </Grid>
       )}
     </>

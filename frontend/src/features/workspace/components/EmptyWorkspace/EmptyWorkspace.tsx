@@ -1,5 +1,5 @@
 import { BiPlus } from 'react-icons/bi'
-import { Box, Flex, Text } from '@chakra-ui/react'
+import { Flex, Text } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import { fillHeightCss } from '~utils/fillHeightCss'
@@ -9,15 +9,20 @@ import { EmptyWorkspaceSvgr } from './EmptyWorkspaceSvgr'
 
 export interface EmptyWorkspacePage {
   isLoading: boolean
-  handleOpenCreateFormModal: () => void
-  isFolder?: boolean
+  handleOpenCreateFormModal?: () => void
+}
+
+interface EmptyWorkspaceProps extends EmptyWorkspacePage {
+  title: string
+  subText: string
 }
 
 export const EmptyWorkspace = ({
   isLoading,
   handleOpenCreateFormModal,
-  isFolder,
-}: EmptyWorkspacePage): JSX.Element => {
+  title,
+  subText,
+}: EmptyWorkspaceProps): JSX.Element => {
   const isMobile = useIsMobile()
 
   return (
@@ -31,16 +36,12 @@ export const EmptyWorkspace = ({
       css={fillHeightCss}
     >
       <Text as="h2" textStyle="h2" color="primary.500" mb="1rem">
-        {isFolder
-          ? 'You don’t have any forms in this folder yet'
-          : "You don't have any forms yet"}
+        {title}
       </Text>
       <Text textStyle="body-1" color="secondary.500">
-        {isFolder
-          ? 'Organise your forms by grouping them into folders'
-          : 'Get started by creating a new form'}
+        {subText}
       </Text>
-      {!isFolder && (
+      {!!handleOpenCreateFormModal && (
         <Button
           isFullWidth={isMobile}
           isDisabled={isLoading}

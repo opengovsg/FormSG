@@ -3011,7 +3011,7 @@ describe('admin-form.controller', () => {
         okAsync(MOCK_FORM as IPopulatedForm),
       )
       MockAdminFormService.archiveForm.mockReturnValueOnce(okAsync(true))
-      MockWorkspaceService.removeFormFromAllWorkspaces.mockReturnValueOnce(
+      MockWorkspaceService.removeFormsFromAllWorkspaces.mockReturnValueOnce(
         okAsync(true),
       )
 

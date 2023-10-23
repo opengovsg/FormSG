@@ -41,18 +41,24 @@ const MoveWorkspaceDropdown = ({
   setIsMoveWorkspace: Dispatch<SetStateAction<boolean>>
   formMeta: AdminDashboardFormMetaDto
 }) => {
-  const { handleMoveForm } = useRowAction(formMeta)
+  const { handleMoveForm, handleRemoveFormFromWorkspaces } =
+    useRowAction(formMeta)
   const { workspaces, getFormWorkspace } = useWorkspaceContext()
-
-  const handleWorkspaceClick = useCallback(
-    (destWorkspace: Workspace) =>
-      handleMoveForm(destWorkspace._id.toString(), destWorkspace.title),
-    [handleMoveForm],
-  )
 
   const currFormWorkspace = useMemo(
     () => getFormWorkspace(formMeta._id),
     [formMeta, getFormWorkspace],
+  )
+
+  // if workspace selected is current workspace, delete
+  // else move to selected workspace
+  const handleWorkspaceAction = useCallback(
+    (destWorkspace: Workspace, currFormWorkspace?: Workspace) => {
+      if (destWorkspace._id === currFormWorkspace?._id)
+        handleRemoveFormFromWorkspaces()
+      else handleMoveForm(destWorkspace._id.toString(), destWorkspace.title)
+    },
+    [handleMoveForm, handleRemoveFormFromWorkspaces],
   )
 
   if (!workspaces) return null
@@ -70,7 +76,7 @@ const MoveWorkspaceDropdown = ({
       {workspaces.map((workspace) => (
         <Menu.Item
           key={workspace._id}
-          onClick={() => handleWorkspaceClick(workspace)}
+          onClick={() => handleWorkspaceAction(workspace, currFormWorkspace)}
         >
           <Flex
             justifyContent="space-between"
