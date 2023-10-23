@@ -9,7 +9,7 @@ import { NewFeatureTag } from './NewFeatureTag'
 interface NewFeatureContentProps {
   title: string
   description: string
-  learnMoreLink: string
+  learnMoreLink?: string
   animationData: AnimationConfigWithData['animationData']
 }
 
@@ -34,9 +34,11 @@ export const NewFeatureContent = (props: {
       <ModalBody whiteSpace="pre-wrap">
         <Text textStyle="body-1" color="secondary.500">
           {description}{' '}
-          <Link isExternal href={learnMoreLink}>
-            Learn more
-          </Link>
+          {!!learnMoreLink && (
+            <Link isExternal href={learnMoreLink}>
+              Learn more
+            </Link>
+          )}
         </Text>
       </ModalBody>
     </>

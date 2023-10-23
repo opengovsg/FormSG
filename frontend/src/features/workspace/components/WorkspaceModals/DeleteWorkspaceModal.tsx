@@ -61,8 +61,8 @@ export const DeleteWorkspaceModal = ({
           {activeWorkspace.formIds.length > 0 ? (
             <Text textStyle="body-2" color="secondary.500">
               Remove {activeWorkspace.formIds.length} form(s) from&nbsp;
-              <strong>{activeWorkspace.title}</strong> and delete the folder?
-              This action cannot be undone
+              {activeWorkspace.title} and delete the folder? This action cannot
+              be undone
             </Text>
           ) : (
             <Text textStyle="body-2" color="secondary.500">

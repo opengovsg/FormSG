@@ -1,10 +1,18 @@
 import { GUIDE_PAYMENTS_ENTRY } from '~constants/links'
 
+import FoldersAnnouncementGraphic from './assets/folders.json'
 import PaymentsAnnouncementGraphic from './assets/payments.json'
 
 // When updating this, remember to update the ROLLOUT_ANNOUNCEMENT_KEY_PREFIX with the new date
 // so admins will see new announcements.
 export const NEW_FEATURES = [
+  {
+    // Announcement date: 2023-10-25
+    title: 'Introducing Folders!',
+    description:
+      'Say hello to a new way of managing your forms! Create folders and organise your forms to find them easily later.',
+    animationData: FoldersAnnouncementGraphic,
+  },
   {
     // Announcement date: 2023-05-31
     title: 'Collect payments on your form',
