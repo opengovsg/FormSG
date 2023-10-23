@@ -49,6 +49,7 @@ import {
 import { reorder } from '../../../shared/utils/immutable-array-fns'
 import { getApplicableIfStates } from '../../shared/util/logic'
 import {
+  FormFieldSchema,
   FormLogicSchema,
   FormOtpData,
   IEmailFormModel,
@@ -841,7 +842,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     function (fieldId: string, insertionIndex: number) {
       const fieldToDuplicate = getFormFieldById(this.form_fields, fieldId)
       if (!fieldToDuplicate) return Promise.resolve(null)
-      const duplicatedField = omit(fieldToDuplicate, ['_id', 'globalId'])
+      const duplicatedField = omit(fieldToDuplicate, [
+        '_id',
+        'globalId',
+      ]) as FormFieldSchema
 
       this.form_fields.splice(insertionIndex, 0, duplicatedField)
       return this.save()
