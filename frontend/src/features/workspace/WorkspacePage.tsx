@@ -65,36 +65,38 @@ export const WorkspacePage = (): JSX.Element => {
 
   return (
     <>
-      <Drawer
-        placement="left"
-        onClose={mobileDrawer.onClose}
-        isOpen={mobileDrawer.isOpen}
-      >
-        <DrawerOverlay />
-        <DrawerContent maxW="15.5rem">
-          <DrawerHeader p={0}>
-            <Flex pt="1rem" pl="1rem" pr="0.5rem" alignItems="center">
-              <WorkspaceMenuHeader
-                onMenuClick={mobileDrawer.onClose}
-                shouldShowAddWorkspaceButton
-                shouldShowMenuIcon
-                w="100%"
+      {isMobile && (
+        <Drawer
+          placement="left"
+          onClose={mobileDrawer.onClose}
+          isOpen={mobileDrawer.isOpen}
+        >
+          <DrawerOverlay />
+          <DrawerContent maxW="15.5rem">
+            <DrawerHeader p={0}>
+              <Flex pt="1rem" pl="1rem" pr="0.5rem" alignItems="center">
+                <WorkspaceMenuHeader
+                  onMenuClick={mobileDrawer.onClose}
+                  shouldShowAddWorkspaceButton
+                  shouldShowMenuIcon
+                  w="100%"
+                />
+              </Flex>
+            </DrawerHeader>
+            <DrawerBody px={0} pt="1rem">
+              <WorkspaceMenuTabs
+                workspaces={workspaces ?? []}
+                currWorkspace={currWorkspaceId}
+                onClick={(id) => {
+                  setCurrWorkspaceId(id)
+                  mobileDrawer.onClose()
+                }}
+                defaultWorkspace={DEFAULT_WORKSPACE}
               />
-            </Flex>
-          </DrawerHeader>
-          <DrawerBody px={0} pt="1rem">
-            <WorkspaceMenuTabs
-              workspaces={workspaces ?? []}
-              currWorkspace={currWorkspaceId}
-              onClick={(id) => {
-                setCurrWorkspaceId(id)
-                mobileDrawer.onClose()
-              }}
-              defaultWorkspace={DEFAULT_WORKSPACE}
-            />
-          </DrawerBody>
-        </DrawerContent>
-      </Drawer>
+            </DrawerBody>
+          </DrawerContent>
+        </Drawer>
+      )}
 
       <Grid
         templateAreas={`
@@ -129,13 +131,9 @@ export const WorkspacePage = (): JSX.Element => {
           </GridItem>
         )}
         {!isMobile && (
-          <GridItem area="nav">
+          <GridItem area="nav" borderRight="1px" borderRightColor="neutral.300">
             <Box overflowY="scroll">
-              <Stack
-                borderRight="1px"
-                borderRightColor="neutral.300"
-                minH="100vh"
-              >
+              <Stack minH="100vh">
                 <WorkspaceMenuHeader shouldShowAddWorkspaceButton />
                 <WorkspaceMenuTabs
                   workspaces={workspaces ?? []}
