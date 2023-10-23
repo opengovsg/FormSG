@@ -4,7 +4,6 @@ import {
   LeanDocument,
   Model,
   ToObjectOptions,
-  Types,
   UpdateWriteOpResult,
 } from 'mongoose'
 import { DeepRequired } from 'ts-essentials'
@@ -107,8 +106,8 @@ export type PickDuplicateForm = Pick<
 >
 
 export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
-  form_fields?: Types.DocumentArray<FormFieldSchema> | FormFieldSchema[]
-  form_logics?: Types.DocumentArray<FormLogicSchema> | FormLogicSchema[]
+  form_fields?: FormFieldSchema[]
+  form_logics?: FormLogicSchema[]
 
   created?: Date
   lastModified?: Date
