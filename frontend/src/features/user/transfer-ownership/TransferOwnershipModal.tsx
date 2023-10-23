@@ -43,6 +43,14 @@ type TransferOwnershipInputs = {
   email: string
 }
 
+type UseModalStateReturn = {
+  page: number
+  email: string
+  isOwnEmail: (value: string) => boolean
+  resetModal: () => void
+  onNext: SubmitHandler<TransferOwnershipInputs>
+  onConfirm: () => void
+}
 const useModalState = ({
   onClose,
   reset,
@@ -51,14 +59,7 @@ const useModalState = ({
   onClose: () => void
   reset: UseFormReset<TransferOwnershipInputs>
   trigger: UseFormTrigger<TransferOwnershipInputs>
-}): {
-  page: number
-  email: string
-  isOwnEmail: (value: string) => boolean
-  resetModal: () => void
-  onNext: SubmitHandler<TransferOwnershipInputs>
-  onConfirm: () => void
-} => {
+}): UseModalStateReturn => {
   const { refetch } = useWorkspace()
 
   const [page, setPage] = useState(0)
