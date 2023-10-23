@@ -17,7 +17,7 @@ export const LOCAL_STORAGE_EVENT = 'local-storage'
  * Key to store whether a user has seen the rollout announcements before.
  */
 export const ROLLOUT_ANNOUNCEMENT_KEY_PREFIX =
-  'has-seen-rollout-announcement-20230531b-'
+  'has-seen-rollout-announcement-20231025-'
 
 /**
  * Key to store whether the admin has seen the feature tour in localStorage.
