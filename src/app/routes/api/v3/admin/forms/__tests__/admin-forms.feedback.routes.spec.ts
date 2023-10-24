@@ -6,8 +6,7 @@ import {
 import { setupApp } from '__tests__/integration/helpers/express-setup'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-data'
-import { ObjectId } from 'bson-ext'
-import mongoose, { ObjectID } from 'mongoose'
+import mongoose, { Types } from 'mongoose'
 import supertest, { Session } from 'supertest-session'
 
 import { getEncryptedFormModel } from 'src/app/models/form.server.model'
@@ -85,13 +84,13 @@ describe('admin-form.feedback.routes', () => {
           formId: formForFeedback._id,
           rating: 5,
           comment: 'nice',
-          submissionId: new ObjectID().toHexString(),
+          submissionId: new Types.ObjectId().toHexString(),
         },
         {
           formId: formForFeedback._id,
           rating: 2,
           comment: 'not nice',
-          submissionId: new ObjectID().toHexString(),
+          submissionId: new Types.ObjectId().toHexString(),
         },
       ]
       await insertFormFeedback(formFeedbacks[0])
@@ -149,7 +148,7 @@ describe('admin-form.feedback.routes', () => {
       // Arrange
       const anotherUser = (
         await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new Types.ObjectId(),
           mailName: 'some-user',
           shortName: 'someUser',
         })
@@ -179,7 +178,7 @@ describe('admin-form.feedback.routes', () => {
     it('should return 404 when form cannot be found', async () => {
       // Act
       const response = await request.get(
-        `/admin/forms/${new ObjectId()}/feedback`,
+        `/admin/forms/${new Types.ObjectId()}/feedback`,
       )
 
       // Assert
@@ -275,13 +274,13 @@ describe('admin-form.feedback.routes', () => {
           formId: formForFeedback._id,
           rating: 5,
           comment: 'nice',
-          submissionId: new ObjectID().toHexString(),
+          submissionId: new Types.ObjectId().toHexString(),
         },
         {
           formId: formForFeedback._id,
           rating: 2,
           comment: 'not nice',
-          submissionId: new ObjectID().toHexString(),
+          submissionId: new Types.ObjectId().toHexString(),
         },
       ]
       await insertFormFeedback(formFeedbacks[0])
@@ -315,7 +314,7 @@ describe('admin-form.feedback.routes', () => {
       // Arrange
       const anotherUser = (
         await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new Types.ObjectId(),
           mailName: 'some-user',
           shortName: 'someUser',
         })
@@ -345,7 +344,7 @@ describe('admin-form.feedback.routes', () => {
     it('should return 404 when form cannot be found', async () => {
       // Act
       const response = await request.get(
-        `/admin/forms/${new ObjectId()}/feedback/count`,
+        `/admin/forms/${new Types.ObjectId()}/feedback/count`,
       )
 
       // Assert
@@ -429,13 +428,13 @@ describe('admin-form.feedback.routes', () => {
           formId: formForFeedback._id,
           rating: 5,
           comment: 'nice',
-          submissionId: new ObjectID().toHexString(),
+          submissionId: new Types.ObjectId().toHexString(),
         },
         {
           formId: formForFeedback._id,
           rating: 2,
           comment: 'not nice',
-          submissionId: new ObjectID().toHexString(),
+          submissionId: new Types.ObjectId().toHexString(),
         },
       ]
       await insertFormFeedback(formFeedbacks[0])
@@ -492,7 +491,7 @@ describe('admin-form.feedback.routes', () => {
       // Arrange
       const anotherUser = (
         await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new Types.ObjectId(),
           mailName: 'some-user',
           shortName: 'someUser',
         })
@@ -522,7 +521,7 @@ describe('admin-form.feedback.routes', () => {
     it('should return 404 when form cannot be found', async () => {
       // Act
       const response = await request.get(
-        `/admin/forms/${new ObjectId()}/feedback/download`,
+        `/admin/forms/${new Types.ObjectId()}/feedback/download`,
       )
 
       // Assert
