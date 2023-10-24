@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson-ext'
+import { ObjectId } from 'bson'
 import { isEmpty } from 'lodash'
 import moment from 'moment-timezone'
 import mongoose, { Cursor as QueryCursor, QueryOptions } from 'mongoose'

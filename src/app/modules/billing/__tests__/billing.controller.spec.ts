@@ -1,5 +1,5 @@
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
-import { ObjectId } from 'bson-ext'
+import { ObjectId } from 'bson'
 import moment from 'moment-timezone'
 import { errAsync, okAsync } from 'neverthrow'
 

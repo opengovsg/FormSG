@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson-ext'
+import { ObjectId } from 'bson'
 import { readFileSync } from 'fs'
 import { cloneDeep } from 'lodash'
 import moment from 'moment-timezone'

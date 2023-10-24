@@ -1,5 +1,5 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import { ObjectId } from 'bson-ext'
+import { ObjectId } from 'bson'
 import { compareAsc } from 'date-fns'
 import { omit, times } from 'lodash'
 import moment from 'moment-timezone'
