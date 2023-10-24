@@ -43,6 +43,8 @@ describe('payments.controller', () => {
         completedPayment: {
           receiptUrl: 'http://form.gov.sg',
           paymentDate: new Date(),
+          submissionId: new ObjectId().toHexString(),
+          transactionFee: 0,
         },
         gstEnabled: false,
       })
@@ -79,6 +81,9 @@ describe('payments.controller', () => {
         completedPayment: {
           receiptUrl: 'http://form.gov.sg',
           paymentDate: now.toDate(),
+
+          submissionId: new ObjectId().toHexString(),
+          transactionFee: 0,
         },
         gstEnabled: false,
       })
@@ -93,6 +98,9 @@ describe('payments.controller', () => {
         completedPayment: {
           receiptUrl: 'http://form.gov.sg',
           paymentDate: now.subtract(1, 'hour').toDate(),
+
+          submissionId: new ObjectId().toHexString(),
+          transactionFee: 0,
         },
         gstEnabled: false,
       })
@@ -126,6 +134,9 @@ describe('payments.controller', () => {
         completedPayment: {
           receiptUrl: 'http://form.gov.sg',
           paymentDate: moment().subtract(31, 'days').toDate(),
+
+          submissionId: new ObjectId().toHexString(),
+          transactionFee: 0,
         },
         gstEnabled: false,
       })
@@ -155,6 +166,10 @@ describe('payments.controller', () => {
         email: 'formsg@tech.gov.sg',
         completedPayment: {
           receiptUrl: 'http://form.gov.sg',
+
+          submissionId: new ObjectId().toHexString(),
+          paymentDate: moment().subtract(31, 'days').utc().toDate(),
+          transactionFee: 0,
         },
         gstEnabled: false,
       })
@@ -185,6 +200,10 @@ describe('payments.controller', () => {
         email: 'formsg@tech.gov.sg',
         completedPayment: {
           receiptUrl: 'http://form.gov.sg',
+
+          submissionId: new ObjectId().toHexString(),
+          paymentDate: moment().subtract(31, 'days').utc().toDate(),
+          transactionFee: 0,
         },
         gstEnabled: false,
       })
@@ -215,6 +234,10 @@ describe('payments.controller', () => {
         email: 'formsg@tech.gov.sg',
         completedPayment: {
           receiptUrl: 'http://form.gov.sg',
+
+          submissionId: new ObjectId().toHexString(),
+          paymentDate: moment().subtract(31, 'days').utc().toDate(),
+          transactionFee: 0,
         },
         gstEnabled: false,
       })
