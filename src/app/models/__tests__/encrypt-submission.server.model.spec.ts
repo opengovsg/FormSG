@@ -1,8 +1,7 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import { ObjectId } from 'bson'
 import { pick, times } from 'lodash'
 import moment from 'moment-timezone'
-import mongoose from 'mongoose'
+import mongoose, { Types } from 'mongoose'
 import { StorageModeSubmissionMetadata, SubmissionType } from 'shared/types'
 
 import getSubmissionModel, {
@@ -26,7 +25,7 @@ describe('Encrypt Submission Model', () => {
     describe('findSingleMetadata', () => {
       it('should return submission metadata', async () => {
         // Arrange
-        const validFormId = new ObjectId().toHexString()
+        const validFormId = new Types.ObjectId().toHexString()
         const createdDate = new Date()
         // Add valid encrypt submission.
         const validSubmission = await EncryptSubmission.create({
@@ -58,7 +57,7 @@ describe('Encrypt Submission Model', () => {
 
       it('should return null when submission is of SubmissionType.Email', async () => {
         // Arrange
-        const validFormId = new ObjectId().toHexString()
+        const validFormId = new Types.ObjectId().toHexString()
         // Add email submission.
         const validSubmission = await Submission.create({
           form: validFormId,
@@ -81,8 +80,8 @@ describe('Encrypt Submission Model', () => {
 
       it('should return null if no submission metadata is retrieved', async () => {
         // Arrange
-        const validFormId = new ObjectId().toHexString()
-        const invalidSubmissionId = new ObjectId().toHexString()
+        const validFormId = new Types.ObjectId().toHexString()
+        const invalidSubmissionId = new Types.ObjectId().toHexString()
         // Act
         const result = await EncryptSubmission.findSingleMetadata(
           validFormId,
@@ -95,7 +94,7 @@ describe('Encrypt Submission Model', () => {
     })
 
     describe('findAllMetadataByFormId', () => {
-      const VALID_FORM_ID = new ObjectId().toHexString()
+      const VALID_FORM_ID = new Types.ObjectId().toHexString()
       const MOCK_CREATED_DATES_ASC = [
         new Date('2020-01-01'),
         new Date('2020-02-02'),
@@ -262,7 +261,7 @@ describe('Encrypt Submission Model', () => {
 
       it('should return empty metadata array when formId has no metadata', async () => {
         // Arrange
-        const formIdWithNoSubmissions = new ObjectId().toHexString()
+        const formIdWithNoSubmissions = new Types.ObjectId().toHexString()
         // Act
         const actual = await EncryptSubmission.findAllMetadataByFormId(
           formIdWithNoSubmissions,
@@ -282,7 +281,7 @@ describe('Encrypt Submission Model', () => {
     describe('getSubmissionCursorByFormId', () => {
       it('should return cursor that contains all the submissions', async () => {
         // Arrange
-        const validFormId = new ObjectId().toHexString()
+        const validFormId = new Types.ObjectId().toHexString()
         const validSubmission = await EncryptSubmission.create({
           submissionType: SubmissionType.Encrypt,
           form: validFormId,
@@ -317,7 +316,7 @@ describe('Encrypt Submission Model', () => {
 
       it('should return cursor even if no submissions are found', async () => {
         // Arrange
-        const invalidFormId = new ObjectId().toHexString()
+        const invalidFormId = new Types.ObjectId().toHexString()
 
         // Act
         const actualCursor = EncryptSubmission.getSubmissionCursorByFormId(
@@ -339,7 +338,7 @@ describe('Encrypt Submission Model', () => {
     describe('findEncryptedSubmissionById', () => {
       it('should return correct submission by its id', async () => {
         // Arrange
-        const validFormId = new ObjectId().toHexString()
+        const validFormId = new Types.ObjectId().toHexString()
         const validSubmission = await EncryptSubmission.create({
           submissionType: SubmissionType.Encrypt,
           form: validFormId,
@@ -371,8 +370,8 @@ describe('Encrypt Submission Model', () => {
       it('should return null when submission id does not exist', async () => {
         // Arrange
         // Form ID does not matter.
-        const formId = new ObjectId().toHexString()
-        const invalidSubmissionId = new ObjectId().toHexString()
+        const formId = new Types.ObjectId().toHexString()
+        const invalidSubmissionId = new Types.ObjectId().toHexString()
 
         // Act
         const actual = await EncryptSubmission.findEncryptedSubmissionById(
@@ -386,7 +385,7 @@ describe('Encrypt Submission Model', () => {
 
       it('should return null when type of submission with given id is not SubmissionType.Encrypt', async () => {
         // Arrange
-        const validFormId = new ObjectId().toHexString()
+        const validFormId = new Types.ObjectId().toHexString()
         const validEmailSubmission = await EmailSubmission.create({
           submissionType: SubmissionType.Email,
           form: validFormId,

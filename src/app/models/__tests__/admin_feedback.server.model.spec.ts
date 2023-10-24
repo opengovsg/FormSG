@@ -1,7 +1,6 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import { ObjectId } from 'bson'
 import { omit } from 'lodash'
-import mongoose from 'mongoose'
+import mongoose, { Types } from 'mongoose'
 
 import { IAdminFeedback } from 'src/types'
 
@@ -16,7 +15,7 @@ describe('form_feedback.server.model', () => {
 
   describe('Schema', () => {
     const DEFAULT_PARAMS: IAdminFeedback = {
-      userId: new ObjectId(),
+      userId: new Types.ObjectId(),
       rating: 1,
       comment: 'feedback comment',
     }

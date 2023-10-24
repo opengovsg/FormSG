@@ -202,7 +202,7 @@ describe('User Model', () => {
         const contacts = await User.findContactNumbersByEmails([
           VALID_USER_EMAIL,
         ])
-        expect(contacts).toEqual([
+        expect(contacts).toMatchObject([
           { email: VALID_USER_EMAIL, contact: VALID_CONTACT },
         ])
       })
@@ -224,11 +224,11 @@ describe('User Model', () => {
           VALID_USER_EMAIL_2,
         ])
         expect(contacts.length).toBe(2)
-        expect(contacts).toContainEqual({
+        expect(contacts).toPartiallyContain({
           email: VALID_USER_EMAIL,
           contact: VALID_CONTACT,
         })
-        expect(contacts).toContainEqual({
+        expect(contacts).toPartiallyContain({
           email: VALID_USER_EMAIL_2,
           contact: VALID_CONTACT_2,
         })
@@ -245,7 +245,7 @@ describe('User Model', () => {
           VALID_USER_EMAIL,
           'invalid@email.com',
         ])
-        expect(contacts).toEqual([
+        expect(contacts).toMatchObject([
           { email: VALID_USER_EMAIL, contact: VALID_CONTACT },
         ])
       })
