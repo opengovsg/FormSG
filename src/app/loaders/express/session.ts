@@ -15,6 +15,7 @@ const sessionMiddlewares = (connection: Connection): RequestHandler[] => {
     cookie: config.cookieSettings,
     name: 'connect.sid',
     store: MongoStore.create({
+      // @ts-expect-error Property 'isConnected' is missing in type
       client: connection.getClient(),
     }),
   })
