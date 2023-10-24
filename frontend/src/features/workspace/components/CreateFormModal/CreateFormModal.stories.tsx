@@ -52,11 +52,19 @@ const Template: Story<CreateFormModalProps> = (args) => {
   const modalProps = useDisclosure({ defaultIsOpen: true })
 
   return (
-    <CreateFormModal
-      {...args}
-      {...modalProps}
-      onClose={() => console.log('close modal')}
-    />
+    <WorkspaceProvider
+      currentWorkspace={MOCK_DEFAULT_WORKSPACE._id}
+      defaultWorkspace={MOCK_DEFAULT_WORKSPACE}
+      setCurrentWorkspace={() => {
+        return
+      }}
+    >
+      <CreateFormModal
+        {...args}
+        {...modalProps}
+        onClose={() => console.log('close modal')}
+      />
+    </WorkspaceProvider>
   )
 }
 export const Default = Template.bind({})
