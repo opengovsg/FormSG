@@ -137,6 +137,7 @@ export const WorkspaceHeader = ({
         isDisabled={isLoading}
         onClick={handleOpenCreateFormModal}
         leftIcon={<BiPlus fontSize="1.5rem" />}
+        minW="154px"
       >
         Create form
       </Button>
