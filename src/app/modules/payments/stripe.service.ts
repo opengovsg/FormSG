@@ -394,11 +394,11 @@ export const processStripeEvent = (
       },
     )
       .andThen(() => {
-        session.endSession()
+        void session.endSession()
         return okAsync(undefined)
       })
       .orElse((err) => {
-        session.endSession()
+        void session.endSession()
         return errAsync(err)
       }),
   )
