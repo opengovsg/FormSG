@@ -99,14 +99,12 @@ describe('admin-form.preview.routes', () => {
 
       // Assert
       const expectedForm = (
-        await formToPreview
-          .populate({
-            path: 'admin',
-            populate: {
-              path: 'agency',
-            },
-          })
-          .execPopulate()
+        await formToPreview.populate({
+          path: 'admin',
+          populate: {
+            path: 'agency',
+          },
+        })
       ).getPublicView()
       expect(response.status).toEqual(200)
       expect(response.body).toEqual({
@@ -138,14 +136,12 @@ describe('admin-form.preview.routes', () => {
 
       // Assert
       const expectedForm = (
-        await collabFormToPreview
-          .populate({
-            path: 'admin',
-            populate: {
-              path: 'agency',
-            },
-          })
-          .execPopulate()
+        await collabFormToPreview.populate({
+          path: 'admin',
+          populate: {
+            path: 'agency',
+          },
+        })
       ).getPublicView()
       expect(response.status).toEqual(200)
       expect(response.body).toEqual({ form: jsonParseStringify(expectedForm) })

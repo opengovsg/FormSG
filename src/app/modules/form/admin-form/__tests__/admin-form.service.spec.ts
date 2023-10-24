@@ -638,9 +638,7 @@ describe('admin-form.service', () => {
         emails: [MOCK_NEW_OWNER_EMAIL],
         responseMode: FormResponseMode.Email,
         title: 'some mock form',
-        populate: jest.fn().mockReturnValue({
-          execPopulate: jest.fn().mockResolvedValue(expectedPopulateResult),
-        }),
+        populate: jest.fn().mockResolvedValue(expectedPopulateResult),
       } as unknown as IFormSchema
 
       const mockValidForm = {
@@ -815,12 +813,7 @@ describe('admin-form.service', () => {
         emails: [MOCK_NEW_OWNER_EMAIL],
         responseMode: FormResponseMode.Email,
         title: 'some mock form',
-        populate: jest.fn().mockReturnValue({
-          // Mock populate error.
-          execPopulate: jest
-            .fn()
-            .mockRejectedValue(new Error(mockPopulateErrorStr)),
-        }),
+        populate: jest.fn().mockRejectedValue(new Error(mockPopulateErrorStr)),
       } as unknown as IFormSchema
 
       const mockValidForm = {
@@ -1670,7 +1663,7 @@ describe('admin-form.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(mockEmailForm)
 
       expect(UPDATE_SPY).toHaveBeenCalledWith(
-        mockEmailForm._id,
+        String(mockEmailForm._id),
         {
           $pull: { form_logics: { _id: logicId } },
         },
@@ -1707,7 +1700,7 @@ describe('admin-form.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(mockEncryptForm)
 
       expect(UPDATE_SPY).toHaveBeenCalledWith(
-        mockEncryptForm._id,
+        String(mockEncryptForm._id),
         {
           $pull: { form_logics: { _id: logicId } },
         },
