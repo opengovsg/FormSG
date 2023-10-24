@@ -1,4 +1,4 @@
-import BSON, { ObjectId } from 'bson-ext'
+import { calculateObjectSize, ObjectId } from 'bson'
 import { compact, omit, pick, uniq } from 'lodash'
 import mongoose, {
   ClientSession,
@@ -108,22 +108,22 @@ import { isPositiveInteger } from './utils'
 
 export const FORM_SCHEMA_ID = 'Form'
 
-const bson = new BSON([
-  BSON.Binary,
-  BSON.Code,
-  BSON.DBRef,
-  BSON.Decimal128,
-  BSON.Double,
-  BSON.Int32,
-  BSON.Long,
-  BSON.Map,
-  BSON.MaxKey,
-  BSON.MinKey,
-  BSON.ObjectId,
-  BSON.BSONRegExp,
-  BSON.Symbol,
-  BSON.Timestamp,
-])
+// const bson = new BSON([
+//   BSON.Binary,
+//   BSON.Code,
+//   BSON.DBRef,
+//   BSON.Decimal128,
+//   BSON.Double,
+//   BSON.Int32,
+//   BSON.Long,
+//   BSON.Map,
+//   BSON.MaxKey,
+//   BSON.MinKey,
+//   BSON.ObjectId,
+//   BSON.BSONRegExp,
+//   BSON.Symbol,
+//   BSON.Timestamp,
+// ])
 
 const formSchemaOptions: SchemaOptions = {
   id: false,
@@ -1161,7 +1161,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   // Hooks
   FormSchema.pre<IFormSchema>('validate', function (next) {
     // Reject save if form document is too large
-    if (bson.calculateObjectSize(this) > 10 * MB) {
+    if (calculateObjectSize(this) > 10 * MB) {
       const err = new Error('Form size exceeded.')
       err.name = 'FormSizeError'
       return next(err)
