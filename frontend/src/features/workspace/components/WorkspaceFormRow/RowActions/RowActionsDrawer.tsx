@@ -67,6 +67,11 @@ export const RowActionsDrawer = ({
     [],
   )
 
+  const handleClose = () => {
+    setIsMoveWorkspace(false)
+    onClose()
+  }
+
   const handleMoveWorkspace = () => {
     setIsMoveWorkspace(true)
   }
@@ -79,7 +84,7 @@ export const RowActionsDrawer = ({
         icon={<BiDotsHorizontalRounded fontSize="1.25rem" />}
         onClick={onOpen}
       />
-      <Drawer placement="bottom" onClose={onClose} isOpen={isOpen}>
+      <Drawer placement="bottom" onClose={handleClose} isOpen={isOpen}>
         <DrawerOverlay />
         <DrawerContent borderTopRadius="0.25rem">
           <DrawerBody px={0} py="0.5rem">
