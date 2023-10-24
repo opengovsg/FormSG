@@ -108,23 +108,6 @@ import { isPositiveInteger } from './utils'
 
 export const FORM_SCHEMA_ID = 'Form'
 
-// const bson = new BSON([
-//   BSON.Binary,
-//   BSON.Code,
-//   BSON.DBRef,
-//   BSON.Decimal128,
-//   BSON.Double,
-//   BSON.Int32,
-//   BSON.Long,
-//   BSON.Map,
-//   BSON.MaxKey,
-//   BSON.MinKey,
-//   BSON.ObjectId,
-//   BSON.BSONRegExp,
-//   BSON.Symbol,
-//   BSON.Timestamp,
-// ])
-
 const formSchemaOptions: SchemaOptions = {
   id: false,
   toJSON: {
