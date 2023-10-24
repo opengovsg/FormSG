@@ -10,6 +10,9 @@ import { useToast } from '~hooks/useToast'
 
 import { useStorePrefillQuery } from './hooks/useStorePrefillQuery'
 import {
+  FieldIdToQuarantineKeyType,
+  getAttachmentPresignedPostData,
+  getAttachmentSizes,
   getPublicFormAuthRedirectUrl,
   logoutPublicForm,
   SubmitEmailFormArgs,
@@ -18,10 +21,13 @@ import {
   submitFormFeedback,
   submitFormIssue,
   SubmitStorageFormArgs,
+  SubmitStorageFormClearArgs,
   submitStorageModeClearForm,
   submitStorageModeClearFormWithFetch,
+  submitStorageModeClearFormWithVirusScanning,
   submitStorageModeForm,
   submitStorageModeFormWithFetch,
+  uploadAttachmentToQuarantine,
 } from './PublicFormService'
 
 export const usePublicAuthMutations = (formId: string) => {
@@ -83,7 +89,7 @@ export const usePublicFormMutations = (
   )
 
   const submitStorageModeClearFormMutation = useMutation(
-    (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
+    (args: Omit<SubmitStorageFormClearArgs, 'formId'>) => {
       return submitStorageModeClearForm({ ...args, formId })
     },
   )
@@ -102,7 +108,7 @@ export const usePublicFormMutations = (
   )
 
   const submitStorageModeClearFormFetchMutation = useMutation(
-    (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
+    (args: Omit<SubmitStorageFormClearArgs, 'formId'>) => {
       return submitStorageModeClearFormWithFetch({ ...args, formId })
     },
   )
@@ -117,6 +123,75 @@ export const usePublicFormMutations = (
     },
   )
 
+  const submitStorageModeClearFormWithVirusScanningMutation = useMutation(
+    async (args: Omit<SubmitStorageFormClearArgs, 'formId'>) => {
+      const attachmentSizes = await getAttachmentSizes(args)
+      // If there are no attachments, submit form without virus scanning by passing in empty list
+      if (attachmentSizes.length === 0) {
+        return submitStorageModeClearFormWithVirusScanning({
+          ...args,
+          fieldIdToQuarantineKeyMap: [],
+          formId,
+        })
+      }
+      // Step 1: Get presigned post data for all attachment fields
+      return (
+        getAttachmentPresignedPostData({ ...args, formId, attachmentSizes })
+          .then(
+            // Step 2: Upload attachments to quarantine bucket asynchronously
+            (fieldToPresignedPostDataMap) =>
+              Promise.all(
+                fieldToPresignedPostDataMap.map(
+                  async (fieldToPresignedPostData) => {
+                    const attachmentFile =
+                      args.formInputs[fieldToPresignedPostData.id]
+
+                    // Check if response is a File object (from an attachment field)
+                    if (!(attachmentFile instanceof File))
+                      throw new Error('Field is not attachment')
+
+                    const uploadResponse = await uploadAttachmentToQuarantine(
+                      fieldToPresignedPostData.presignedPostData,
+                      attachmentFile,
+                    )
+
+                    // If status code is not 200-299, throw error
+                    if (
+                      uploadResponse.status < 200 ||
+                      uploadResponse.status > 299
+                    )
+                      throw new Error(
+                        `Attachment upload failed - ${uploadResponse.statusText}`,
+                      )
+
+                    const quarantineBucketKey =
+                      fieldToPresignedPostData.presignedPostData.fields.key
+
+                    if (!quarantineBucketKey)
+                      throw new Error(
+                        'key is not defined in presigned post data',
+                      )
+
+                    return {
+                      fieldId: fieldToPresignedPostData.id,
+                      quarantineBucketKey,
+                    } as FieldIdToQuarantineKeyType
+                  },
+                ),
+              ),
+          )
+          // Step 3: Submit form with keys to quarantine bucket attachments
+          .then((fieldIdToQuarantineKeyMap) => {
+            return submitStorageModeClearFormWithVirusScanning({
+              ...args,
+              fieldIdToQuarantineKeyMap,
+              formId,
+            })
+          })
+      )
+    },
+  )
+
   return {
     submitEmailModeFormMutation,
     submitStorageModeFormMutation,
@@ -125,6 +200,7 @@ export const usePublicFormMutations = (
     submitEmailModeFormFetchMutation,
     submitStorageModeClearFormMutation,
     submitStorageModeClearFormFetchMutation,
+    submitStorageModeClearFormWithVirusScanningMutation,
   }
 }
 

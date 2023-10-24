@@ -183,6 +183,7 @@ export const confirmPaymentPendingSubmission = (
         paymentDate,
         receiptUrl,
         transactionFee,
+        hasReceiptStoredInS3: false,
       }
       return okAsync(payment)
     })

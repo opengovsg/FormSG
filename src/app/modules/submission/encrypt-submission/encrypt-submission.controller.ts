@@ -9,6 +9,8 @@ import Stripe from 'stripe'
 
 import { featureFlags } from '../../../../../shared/constants'
 import {
+  AttachmentPresignedPostDataMapType,
+  AttachmentSizeMapType,
   ErrorDto,
   FormAuthType,
   FormResponseMode,
@@ -75,8 +77,6 @@ import {
   uploadAttachments,
 } from './encrypt-submission.service'
 import {
-  AttachmentPresignedPostDataMapType,
-  AttachmentSizeMapType,
   SubmitEncryptModeFormHandlerRequest,
   SubmitEncryptModeFormHandlerType,
 } from './encrypt-submission.types'

@@ -1,16 +1,14 @@
 import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { FormControl, Stack, useBreakpointValue } from '@chakra-ui/react'
+import { FormControl, Stack } from '@chakra-ui/react'
 import isEmail from 'validator/lib/isEmail'
 
-import { FORM_GUIDE } from '~constants/links'
 import { INVALID_EMAIL_ERROR } from '~constants/validation'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
-import Link from '~components/Link'
 
 export type LoginFormInputs = {
   email: string
@@ -35,8 +33,6 @@ export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
       setError('email', { type: 'server', message: e.message })
     })
   }
-
-  const isMobile = useBreakpointValue({ base: true, xs: true, lg: false })
 
   return (
     <form onSubmit={handleSubmit(onSubmitForm)}>
@@ -70,16 +66,9 @@ export const LoginForm = ({ onSubmit }: LoginFormProps): JSX.Element => {
         spacing="1.5rem"
         align="center"
       >
-        <Button
-          isFullWidth={isMobile}
-          isLoading={formState.isSubmitting}
-          type="submit"
-        >
+        <Button isFullWidth isLoading={formState.isSubmitting} type="submit">
           {t('features.login.components.LoginForm.login')}
         </Button>
-        <Link isExternal variant="standalone" href={FORM_GUIDE}>
-          {t('features.login.components.LoginForm.haveAQuestion')}
-        </Link>
       </Stack>
     </form>
   )

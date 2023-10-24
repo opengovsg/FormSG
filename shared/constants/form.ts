@@ -61,3 +61,12 @@ export const PAYMENT_CONTACT_FIELD_ID = 'payment_contact_field'
 export const PAYMENT_PRODUCT_FIELD_ID = 'payment_products'
 export const PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID =
   'payment_variable_input_amount_field_id'
+
+// The current encrypt version to assign to the encrypted submission.
+// This is needed if we ever break backwards compatibility with
+// end-to-end encryption
+export const E2EE_SUBMISSION_VERSION = 1
+// Encryption boundary shift RFC: https://docs.google.com/document/d/1VmNXS_xYY2Yg30AwVqzdndBp5yRJGSDsyjBnH51ktyc/edit?usp=sharing
+// Encryption boundary shift implementation PR: https://github.com/opengovsg/FormSG/pull/6587
+export const ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION = 2
+export const VIRUS_SCANNER_SUBMISSION_VERSION = 2.1

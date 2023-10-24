@@ -3,7 +3,11 @@ import { Controller, RegisterOptions } from 'react-hook-form'
 import { FormControl, SimpleGrid } from '@chakra-ui/react'
 import { extend, isEmpty, pick } from 'lodash'
 
-import { NumberFieldBase, NumberSelectedValidation } from '~shared/types/field'
+import {
+  NumberFieldBase,
+  NumberSelectedLengthValidation,
+  NumberSelectedValidation,
+} from '~shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown'
@@ -25,30 +29,67 @@ type EditNumberProps = EditFieldProps<NumberFieldBase>
 
 const EDIT_NUMBER_FIELD_KEYS = ['title', 'description', 'required'] as const
 
+// As we want to keep the values in the shared type simple,
+// we create a separate enum for frontend options and transform them as needed
+enum NumberSelectedValidationInputs {
+  Length = 'Number of characters allowed',
+  Range = 'Range of values allowed',
+}
+
 type EditNumberInputs = Pick<
   NumberFieldBase,
   typeof EDIT_NUMBER_FIELD_KEYS[number]
 > & {
   ValidationOptions: {
-    selectedValidation: NumberSelectedValidation | ''
-    customVal: number | ''
+    selectedValidation: NumberSelectedValidationInputs | ''
+    LengthValidationOptions: {
+      customVal: number | ''
+      selectedLengthValidation: NumberSelectedLengthValidation | ''
+    }
+    RangeValidationOptions: {
+      customMin: number | ''
+      customMax: number | ''
+    }
   }
 }
 
 const transformNumberFieldToEditForm = (
   field: NumberFieldBase,
 ): EditNumberInputs => {
-  const nextValidationOptions = {
-    selectedValidation:
-      field.ValidationOptions.selectedValidation || ('' as const),
+  const {
+    selectedValidation,
+    LengthValidationOptions,
+    RangeValidationOptions,
+  } = field.ValidationOptions
+
+  const nextSelectedValidation =
+    selectedValidation === NumberSelectedValidation.Length
+      ? NumberSelectedValidationInputs.Length
+      : selectedValidation === NumberSelectedValidation.Range
+      ? NumberSelectedValidationInputs.Range
+      : ('' as const)
+
+  const nextLengthValidationOptions = {
+    selectedLengthValidation:
+      LengthValidationOptions.selectedLengthValidation || ('' as const),
     customVal:
-      (!!field.ValidationOptions.selectedValidation &&
-        field.ValidationOptions.customVal) ||
+      (!!LengthValidationOptions.selectedLengthValidation &&
+        LengthValidationOptions.customVal) ||
       ('' as const),
   }
+
+  const nextRangeValidationOptions = {
+    customMin: RangeValidationOptions.customMin || ('' as const),
+    customMax: RangeValidationOptions.customMax || ('' as const),
+  }
+
   return {
     ...pick(field, EDIT_NUMBER_FIELD_KEYS),
-    ValidationOptions: nextValidationOptions,
+    ValidationOptions: {
+      selectedValidation: nextSelectedValidation,
+      LengthValidationOptions: nextLengthValidationOptions,
+      RangeValidationOptions: nextRangeValidationOptions,
+    },
   }
 }
 
@@ -56,13 +97,43 @@ const transformNumberEditFormToField = (
   inputs: EditNumberInputs,
   originalField: NumberFieldBase,
 ): NumberFieldBase => {
-  const nextValidationOptions =
-    inputs.ValidationOptions.selectedValidation === ''
-      ? {
-          selectedValidation: null,
-          customVal: null,
+  const {
+    selectedValidation,
+    LengthValidationOptions,
+    RangeValidationOptions,
+  } = inputs.ValidationOptions
+
+  const hasSelectedLengthValidationOption =
+    selectedValidation === NumberSelectedValidationInputs.Length
+
+  const nextSelectedValidation =
+    selectedValidation === NumberSelectedValidationInputs.Length
+      ? NumberSelectedValidation.Length
+      : selectedValidation === NumberSelectedValidationInputs.Range
+      ? NumberSelectedValidation.Range
+      : null
+
+  const nextLengthValidationOptions = hasSelectedLengthValidationOption
+    ? LengthValidationOptions
+    : {
+        selectedLengthValidation: null,
+        customVal: null,
+      }
+
+  const nextRangeValidationOptions =
+    selectedValidation === NumberSelectedValidationInputs.Range
+      ? RangeValidationOptions
+      : {
+          customMin: null,
+          customMax: null,
         }
-      : inputs.ValidationOptions
+
+  const nextValidationOptions = {
+    selectedValidation: nextSelectedValidation,
+    LengthValidationOptions: nextLengthValidationOptions,
+    RangeValidationOptions: nextRangeValidationOptions,
+  }
+
   return extend({}, originalField, inputs, {
     ValidationOptions: nextValidationOptions,
   })
@@ -98,23 +169,39 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
     'ValidationOptions.selectedValidation',
   )
 
-  const customValValidationOptions: RegisterOptions<
+  const watchedSelectedLengthValidation = watch(
+    'ValidationOptions.LengthValidationOptions.selectedLengthValidation',
+  )
+
+  const selectedLengthValidationOptions: RegisterOptions<
     EditNumberInputs,
-    'ValidationOptions.customVal'
+    'ValidationOptions.LengthValidationOptions.selectedLengthValidation'
+  > = useMemo(
+    () => ({
+      required: {
+        value: true,
+        message: 'Please select a validation type',
+      },
+    }),
+    [],
+  )
+
+  const customValLengthValidationOptions: RegisterOptions<
+    EditNumberInputs,
+    'ValidationOptions.LengthValidationOptions.customVal'
   > = useMemo(
     () => ({
       // customVal is required if there is selected validation.
       validate: {
-        hasValidation: (val) => {
+        hasValidation: (customVal) => {
+          const selectedLengthValidation = getValues(
+            'ValidationOptions.LengthValidationOptions.selectedLengthValidation',
+          )
           return (
-            !!val ||
-            !getValues('ValidationOptions.selectedValidation') ||
+            selectedLengthValidation === '' ||
+            customVal !== '' ||
             'Please enter number of characters'
           )
-        },
-        validNumber: (val) => {
-          // Check whether input is a valid number, avoid e
-          return !isNaN(Number(val)) || 'Please enter a valid number'
         },
       },
       min: {
@@ -129,11 +216,69 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
     [getValues],
   )
 
-  // Effect to clear validation option errors when selection limit is toggled off.
+  // We use the customMin field to perform cross-field validation for
+  // the number range
+  const customMinRangeValidationOptions: RegisterOptions<
+    EditNumberInputs,
+    'ValidationOptions.RangeValidationOptions.customMin'
+  > = useMemo(
+    () => ({
+      validate: {
+        // Validate that at least one of customMin/customMax is specified
+        hasRange: (customMin) => {
+          const customMax = getValues(
+            'ValidationOptions.RangeValidationOptions.customMax',
+          )
+          return (
+            customMax !== '' || customMin !== '' || 'Please enter range values'
+          )
+        },
+        hasValidRange: (customMin) => {
+          const customMax = getValues(
+            'ValidationOptions.RangeValidationOptions.customMax',
+          )
+
+          return (
+            customMax === '' ||
+            customMin === '' ||
+            customMin < customMax ||
+            'Minimum must be less than maximum'
+          )
+        },
+      },
+      min: {
+        value: 1,
+        message: 'Minimum cannot be 0',
+      },
+    }),
+    [getValues],
+  )
+
+  const customMaxRangeValidationOptions: RegisterOptions<
+    EditNumberInputs,
+    'ValidationOptions.RangeValidationOptions.customMax'
+  > = useMemo(
+    () => ({
+      min: {
+        value: 1,
+        message: 'Maximum cannot be 0',
+      },
+    }),
+    [],
+  )
+
   useEffect(() => {
+    // Effect to clear validation errors and inputs
+    // when the selected validation is cleared.
     if (!watchedSelectedValidation) {
       clearErrors('ValidationOptions')
-      setValue('ValidationOptions.customVal', '')
+      setValue(
+        'ValidationOptions.LengthValidationOptions.selectedLengthValidation',
+        '',
+      )
+      setValue('ValidationOptions.LengthValidationOptions.customVal', '')
+      setValue('ValidationOptions.RangeValidationOptions.customMin', '')
+      setValue('ValidationOptions.RangeValidationOptions.customMax', '')
     }
   }, [clearErrors, setValue, watchedSelectedValidation])
 
@@ -160,42 +305,109 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
         isReadOnly={isLoading}
         isInvalid={!isEmpty(errors.ValidationOptions)}
       >
-        <FormLabel isRequired>Number of characters allowed</FormLabel>
-        <SimpleGrid
-          mt="0.5rem"
-          columns={{ base: 2, md: 1, lg: 2 }}
-          spacing="0.5rem"
-        >
-          <Controller
-            name="ValidationOptions.selectedValidation"
-            control={control}
-            render={({ field }) => (
-              <SingleSelect
-                items={Object.values(NumberSelectedValidation)}
-                {...field}
+        <FormLabel id={'ValidationOptions.selectedValidation-label'} isRequired>
+          Field restriction
+        </FormLabel>
+        <Controller
+          name="ValidationOptions.selectedValidation"
+          control={control}
+          render={({ field }) => (
+            <SingleSelect
+              items={Object.values(NumberSelectedValidationInputs)}
+              {...field}
+            />
+          )}
+        />
+        {watchedSelectedValidation ===
+          NumberSelectedValidationInputs.Length && (
+          <>
+            <SimpleGrid
+              mt="0.5rem"
+              columns={{ base: 2, md: 1, lg: 2 }}
+              spacing="0.5rem"
+            >
+              <Controller
+                name="ValidationOptions.LengthValidationOptions.selectedLengthValidation"
+                control={control}
+                rules={selectedLengthValidationOptions}
+                render={({ field }) => (
+                  <SingleSelect
+                    items={Object.values(NumberSelectedLengthValidation)}
+                    placeholder={'Length restriction'}
+                    isClearable={false}
+                    {...field}
+                  />
+                )}
               />
-            )}
-          />
-          <Controller
-            name="ValidationOptions.customVal"
-            control={control}
-            rules={customValValidationOptions}
-            render={({ field: { onChange, ...rest } }) => (
-              <NumberInput
-                flex={1}
-                inputMode="numeric"
-                showSteppers={false}
-                placeholder="Number of characters"
-                isDisabled={!watchedSelectedValidation}
-                onChange={validateNumberInput(onChange)}
-                {...rest}
+              <Controller
+                name="ValidationOptions.LengthValidationOptions.customVal"
+                control={control}
+                rules={customValLengthValidationOptions}
+                render={({ field: { onChange, ...rest } }) => (
+                  <NumberInput
+                    flex={1}
+                    inputMode="numeric"
+                    showSteppers={false}
+                    placeholder="Number of characters"
+                    isDisabled={!watchedSelectedLengthValidation}
+                    onChange={validateNumberInput(onChange)}
+                    {...rest}
+                  />
+                )}
               />
-            )}
-          />
-        </SimpleGrid>
-        <FormErrorMessage>
-          {errors?.ValidationOptions?.customVal?.message}
-        </FormErrorMessage>
+            </SimpleGrid>
+            <FormErrorMessage>
+              {errors?.ValidationOptions?.LengthValidationOptions
+                ?.selectedLengthValidation?.message ||
+                errors?.ValidationOptions?.LengthValidationOptions?.customVal
+                  ?.message}
+            </FormErrorMessage>
+          </>
+        )}
+        {watchedSelectedValidation === NumberSelectedValidationInputs.Range && (
+          <>
+            <SimpleGrid
+              mt="0.5rem"
+              columns={{ base: 2, md: 1, lg: 2 }}
+              spacing="0.5rem"
+            >
+              <Controller
+                name="ValidationOptions.RangeValidationOptions.customMin"
+                control={control}
+                rules={customMinRangeValidationOptions}
+                render={({ field: { onChange, ...rest } }) => (
+                  <NumberInput
+                    inputMode="numeric"
+                    showSteppers={false}
+                    placeholder="Minimum value"
+                    onChange={validateNumberInput(onChange)}
+                    {...rest}
+                  />
+                )}
+              />
+              <Controller
+                name="ValidationOptions.RangeValidationOptions.customMax"
+                control={control}
+                rules={customMaxRangeValidationOptions}
+                render={({ field: { onChange, ...rest } }) => (
+                  <NumberInput
+                    inputMode="numeric"
+                    showSteppers={false}
+                    placeholder="Maximum value"
+                    onChange={validateNumberInput(onChange)}
+                    {...rest}
+                  />
+                )}
+              />
+            </SimpleGrid>
+            <FormErrorMessage>
+              {errors?.ValidationOptions?.RangeValidationOptions?.customMin
+                ?.message ||
+                errors?.ValidationOptions?.RangeValidationOptions?.customMax
+                  ?.message}
+            </FormErrorMessage>
+          </>
+        )}
       </FormControl>
       <FormFieldDrawerActions
         isLoading={isLoading}

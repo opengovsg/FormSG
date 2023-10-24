@@ -168,10 +168,15 @@ export const BASE_FORM = {
     {
       ValidationOptions: {
         _id: '6148614ee2fb650012928dd9',
-        customVal: null,
         selectedValidation: null,
-        customMin: null,
-        customMax: null,
+        LengthValidationOptions: {
+          selectedLengthValidation: null,
+          customVal: null,
+        },
+        RangeValidationOptions: {
+          customMin: null,
+          customMax: null,
+        },
         id: '6148614ee2fb650012928dd9',
       },
       title: 'Number',

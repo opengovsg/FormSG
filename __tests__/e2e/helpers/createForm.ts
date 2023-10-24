@@ -15,6 +15,7 @@ import {
   LogicConditionState,
   LogicType,
   MyInfoAttribute,
+  NumberSelectedValidation,
 } from 'shared/types'
 
 import { IFormModel, IFormSchema } from 'src/types'
@@ -559,7 +560,6 @@ const addBasicField = async (
       await page.setInputFiles('input[type="file"]', field.path)
       break
     case BasicField.LongText:
-    case BasicField.Number:
     case BasicField.ShortText:
       if (field.ValidationOptions.selectedValidation) {
         // Select from dropdown
@@ -582,6 +582,60 @@ const addBasicField = async (
     case BasicField.Mobile:
       if (field.allowIntlNumbers) {
         await page.getByText('Allow international numbers').click()
+      }
+      break
+    case BasicField.Number:
+      if (field.ValidationOptions.selectedValidation) {
+        // We need to transform the backend values to frontend input values
+        const selectedValidationInput =
+          field.ValidationOptions.selectedValidation ===
+          NumberSelectedValidation.Length
+            ? 'Number of characters allowed'
+            : 'Range of values allowed'
+
+        await fillDropdown(
+          page,
+          page.getByRole('combobox', { name: 'Field restriction' }),
+          selectedValidationInput,
+        )
+
+        if (
+          field.ValidationOptions.selectedValidation ===
+            NumberSelectedValidation.Length &&
+          field.ValidationOptions.LengthValidationOptions
+            .selectedLengthValidation
+        ) {
+          await fillDropdown(
+            page,
+            page.getByPlaceholder('Length restriction'),
+            field.ValidationOptions.LengthValidationOptions
+              .selectedLengthValidation,
+          )
+
+          if (field.ValidationOptions.LengthValidationOptions.customVal) {
+            await page
+              .getByPlaceholder('Number of characters')
+              .nth(1)
+              .fill(
+                field.ValidationOptions.LengthValidationOptions.customVal.toString(),
+              )
+          }
+        }
+
+        if (
+          field.ValidationOptions.selectedValidation ===
+          NumberSelectedValidation.Range
+        ) {
+          const customMin =
+            field.ValidationOptions.RangeValidationOptions.customMin?.toString() ??
+            ('' as const)
+          const customMax =
+            field.ValidationOptions.RangeValidationOptions.customMax?.toString() ??
+            ('' as const)
+
+          await page.getByPlaceholder('Minimum value').nth(1).fill(customMin)
+          await page.getByPlaceholder('Maximum value').nth(1).fill(customMax)
+        }
       }
       break
     case BasicField.Rating:

@@ -17,6 +17,8 @@ import {
   MyInfoAttribute,
   NricFieldBase,
   NumberFieldBase,
+  NumberSelectedLengthValidation,
+  NumberSelectedValidation,
   RadioFieldBase,
   RatingFieldBase,
   RatingShape,
@@ -246,9 +248,48 @@ export const ALL_FIELDS: E2eFieldMetadata[] = [
     fieldType: BasicField.Number,
     ValidationOptions: {
       selectedValidation: null,
-      customVal: null,
+      LengthValidationOptions: {
+        selectedLengthValidation: null,
+        customVal: null,
+      },
+      RangeValidationOptions: {
+        customMin: null,
+        customMax: null,
+      },
     },
     val: '42',
+  },
+  {
+    title: 'Number field character length validation',
+    fieldType: BasicField.Number,
+    ValidationOptions: {
+      selectedValidation: NumberSelectedValidation.Length,
+      LengthValidationOptions: {
+        selectedLengthValidation: NumberSelectedLengthValidation.Exact,
+        customVal: 5,
+      },
+      RangeValidationOptions: {
+        customMin: null,
+        customMax: null,
+      },
+    },
+    val: '12345',
+  },
+  {
+    title: 'Number field range validation',
+    fieldType: BasicField.Number,
+    ValidationOptions: {
+      selectedValidation: NumberSelectedValidation.Range,
+      LengthValidationOptions: {
+        selectedLengthValidation: null,
+        customVal: null,
+      },
+      RangeValidationOptions: {
+        customMin: 2,
+        customMax: 4,
+      },
+    },
+    val: '3',
   },
   {
     title: 'Mother Tongue Language',

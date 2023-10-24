@@ -1,6 +1,5 @@
 // Use 'stripe-event-types' for better type discrimination.
 /// <reference types="stripe-event-types" />
-import axios from 'axios'
 import cuid from 'cuid'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync, ResultAsync } from 'neverthrow'
@@ -17,13 +16,11 @@ import {
   IEncryptedFormSchema,
   IPaymentSchema,
   IPopulatedEncryptedForm,
-  IPopulatedForm,
 } from '../../../types'
 import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
-import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
 import {
   getMongoErrorMessage,
   transformMongoError,
@@ -57,7 +54,6 @@ import {
 import {
   computePaymentState,
   computePayoutDetails,
-  convertToProofOfPaymentFormat,
   getChargeIdFromNestedCharge,
   getMetadataPaymentId,
 } from './stripe.utils'
@@ -1007,60 +1003,4 @@ export const verifyPaymentStatusWithStripe = (
           })
       }
     })
-}
-
-export const generatePaymentInvoice = (
-  payment: IPaymentSchema,
-  populatedForm: IPopulatedEncryptedForm,
-): ResultAsync<Buffer, StripeFetchError> => {
-  if (!payment.completedPayment?.receiptUrl) {
-    return errAsync(new StripeFetchError('Receipt url not ready'))
-  }
-  return ResultAsync.fromPromise(
-    axios.get<string>(payment.completedPayment.receiptUrl),
-    (error) => new StripeFetchError(String(error)),
-  ).andThen((receiptUrlResponse) => {
-    // retrieve receiptURL as html
-    const html = receiptUrlResponse.data
-    const agencyBusinessInfo = (populatedForm as IPopulatedForm).admin.agency
-      .business
-    const formBusinessInfo = populatedForm.business
-
-    const businessAddress = [
-      formBusinessInfo?.address,
-      agencyBusinessInfo?.address,
-    ].find(Boolean)
-
-    const businessGstRegNo = [
-      formBusinessInfo?.gstRegNo,
-      agencyBusinessInfo?.gstRegNo,
-    ].find(Boolean)
-
-    // we will still continute the invoice generation even if there's no address/gstregno
-    if (!businessAddress || !businessGstRegNo)
-      logger.warn({
-        message:
-          'Some business info not available during invoice generation. Expecting either agency or form to have business info',
-        meta: {
-          action: 'downloadPaymentInvoice',
-          payment,
-          agencyName: populatedForm.admin.agency.fullName,
-          agencyBusinessInfo,
-          formBusinessInfo,
-        },
-      })
-    const invoiceHtml = convertToProofOfPaymentFormat(html, {
-      address: businessAddress || '',
-      gstRegNo: businessGstRegNo || '',
-      formTitle: populatedForm.title,
-      submissionId: payment.completedPayment?.submissionId || '',
-      gstApplicable: payment.gstEnabled,
-      products: payment.products || [],
-    })
-
-    return ResultAsync.fromPromise(
-      generatePdfFromHtml(invoiceHtml),
-      (error) => new StripeFetchError(String(error)),
-    )
-  })
 }

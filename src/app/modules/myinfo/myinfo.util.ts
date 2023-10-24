@@ -44,12 +44,14 @@ import {
   FormAuthNoEsrvcIdError,
   FormNotFoundError,
 } from '../form/form.errors'
+import { SGIDMyInfoData } from '../sgid/sgid.adapter'
 import { SGID_MYINFO_LOGIN_COOKIE_NAME } from '../sgid/sgid.constants'
 import {
   ProcessedChildrenResponse,
   ProcessedFieldResponse,
 } from '../submission/submission.types'
 
+import { MyInfoData } from './myinfo.adapter'
 import { MYINFO_LOGIN_COOKIE_NAME } from './myinfo.constants'
 import {
   MyInfoCookieStateError,
@@ -112,7 +114,6 @@ function hashChildrenFieldValues(
       // Hence we format it here
       if (subField === MyInfoChildAttributes.ChildDateOfBirth) {
         myInfoFormattedValue = formatMyinfoDate(value)
-        return
       }
       readOnlyHashPromises[
         getMyInfoChildHashKey(field._id, subField, childIdx, childName)
@@ -482,7 +483,6 @@ export const getMyInfoAttr = (
  * Helper function to get a MyInfo child's hash key inside an IHashes.
  *
  * @param fieldId The ID of the field the Child response belongs to.
- * @param childIdx The nth child to look for.
  * @returns An IHashes-compatible key.
  */
 export const getMyInfoChildHashKey = (
@@ -544,7 +544,7 @@ export const handleMyInfoChildHashResponse = (
  */
 export const getMyInfoAttributeConstantsList = (
   myInfoAttr: string | string[],
-) => {
+): string[] | undefined => {
   switch (myInfoAttr) {
     case MyInfoAttribute.Occupation:
       return myInfoOccupations
@@ -578,15 +578,22 @@ export const logIfFieldValueNotInMyinfoList = (
   fieldValue: string,
   myInfoAttr: string | string[],
   myInfoList: string[],
+  myInfoData: MyInfoData | SGIDMyInfoData,
 ) => {
   const isFieldValueInMyinfoList = myInfoList.includes(fieldValue)
-  if (!isFieldValueInMyinfoList) {
+  const myInfoSource =
+    myInfoData instanceof MyInfoData ? 'Singpass MyInfo' : 'SGID MyInfo'
+  // SGID returns NA instead of empty field values, we don't need this to be logged
+  // as this is expected behaviour
+  const isNAFromSgid = myInfoAttr === 'SGID MyInfo' && fieldValue === 'NA'
+  if (!isNAFromSgid || !isFieldValueInMyinfoList) {
     logger.error({
       message: 'Myinfo field value not found in existing Myinfo constants list',
       meta: {
         action: 'prefillAndSaveMyInfoFields',
         myInfoFieldValue: fieldValue,
         myInfoAttr,
+        myInfoSource,
       },
     })
   }

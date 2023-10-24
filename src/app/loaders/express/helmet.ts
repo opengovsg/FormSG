@@ -65,7 +65,7 @@ const helmetMiddlewares = () => {
       config.aws.attachmentBucketUrl, // Attachment downloads
       config.aws.imageBucketUrl, // Image field
       config.aws.logoBucketUrl, // Form logo
-      config.aws.virusScannerQuarantineS3Bucket, // Virus scanning
+      config.aws.virusScannerQuarantineS3BucketUrl, // Virus scanning
       'https://*.google-analytics.com', // GA4 https://developers.google.com/tag-platform/tag-manager/web/csp
       'https://*.analytics.google.com',
       'https://*.googletagmanager.com',

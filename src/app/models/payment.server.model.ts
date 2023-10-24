@@ -76,6 +76,11 @@ const PaymentSchema = new Schema<IPaymentSchema, IPaymentModel>(
           type: String,
           required: true,
         },
+        hasReceiptStoredInS3: {
+          type: Boolean,
+          required: true,
+          default: false,
+        },
       },
     },
 

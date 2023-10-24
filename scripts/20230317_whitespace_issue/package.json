@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bson": "^5.1.0",
+    "bson": "^5.4.0",
     "lodash": "^4.17.21",
     "mongodb": "^5.8.0"
   }

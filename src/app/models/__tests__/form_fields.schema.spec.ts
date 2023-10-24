@@ -1,7 +1,12 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectID } from 'bson'
 import mongoose from 'mongoose'
-import { BasicField, FormResponseMode } from 'shared/types'
+import {
+  BasicField,
+  FormResponseMode,
+  NumberSelectedLengthValidation,
+  NumberSelectedValidation,
+} from 'shared/types'
 
 import getFormModel from 'src/app/models/form.server.model'
 import { IFieldSchema } from 'src/types'
@@ -173,135 +178,227 @@ describe('Form Field Schema', () => {
         expect(fieldObj).toHaveProperty('allowedEmailDomains', ['@example.com'])
       })
     })
-  }),
-    describe('Short Text Field', () => {
-      describe('prefill', () => {
-        it('should allow creation of short text field with no prefill setting and populate prefill settings with default', async () => {
-          // Arrange
-          const field = await createAndReturnFormField({
-            fieldType: BasicField.ShortText,
-          })
+  })
 
-          // Assert
-          const fieldObj = field.toObject()
-          expect(fieldObj).toHaveProperty('allowPrefill', false)
-          expect(fieldObj).toHaveProperty('lockPrefill', false)
+  describe('Short Text Field', () => {
+    describe('prefill', () => {
+      it('should allow creation of short text field with no prefill setting and populate prefill settings with default', async () => {
+        // Arrange
+        const field = await createAndReturnFormField({
+          fieldType: BasicField.ShortText,
         })
 
-        it('should allow creation of short text field with allowPrefill = false setting and populate lockPrefill settings with default', async () => {
-          // Arrange
+        // Assert
+        const fieldObj = field.toObject()
+        expect(fieldObj).toHaveProperty('allowPrefill', false)
+        expect(fieldObj).toHaveProperty('lockPrefill', false)
+      })
+
+      it('should allow creation of short text field with allowPrefill = false setting and populate lockPrefill settings with default', async () => {
+        // Arrange
+        const field = await createAndReturnFormField({
+          fieldType: BasicField.ShortText,
+          allowPrefill: false,
+        })
+
+        // Assert
+        const fieldObj = field.toObject()
+        expect(fieldObj).toHaveProperty('allowPrefill', false)
+        expect(fieldObj).toHaveProperty('lockPrefill', false)
+      })
+
+      it('should allow creation of short text field with allowPrefill = true setting and populate lockPrefill settings with default', async () => {
+        // Arrange
+        const field = await createAndReturnFormField({
+          fieldType: BasicField.ShortText,
+          allowPrefill: true,
+        })
+
+        // Assert
+        const fieldObj = field.toObject()
+        expect(fieldObj).toHaveProperty('allowPrefill', true)
+        expect(fieldObj).toHaveProperty('lockPrefill', false)
+      })
+
+      it('should allow creation of short text field with allowPrefill = true and lockPrefill = true settings', async () => {
+        // Arrange
+        const field = await createAndReturnFormField({
+          fieldType: BasicField.ShortText,
+          allowPrefill: true,
+          lockPrefill: true,
+        })
+
+        // Assert
+        const fieldObj = field.toObject()
+        expect(fieldObj).toHaveProperty('allowPrefill', true)
+        expect(fieldObj).toHaveProperty('lockPrefill', true)
+      })
+
+      it('should not allow creation of short text field with allowPrefill = false and lockPrefill = true settings', async () => {
+        // Arrange
+        const createField = async () => {
           const field = await createAndReturnFormField({
             fieldType: BasicField.ShortText,
             allowPrefill: false,
-          })
-
-          // Assert
-          const fieldObj = field.toObject()
-          expect(fieldObj).toHaveProperty('allowPrefill', false)
-          expect(fieldObj).toHaveProperty('lockPrefill', false)
-        })
-
-        it('should allow creation of short text field with allowPrefill = true setting and populate lockPrefill settings with default', async () => {
-          // Arrange
-          const field = await createAndReturnFormField({
-            fieldType: BasicField.ShortText,
-            allowPrefill: true,
-          })
-
-          // Assert
-          const fieldObj = field.toObject()
-          expect(fieldObj).toHaveProperty('allowPrefill', true)
-          expect(fieldObj).toHaveProperty('lockPrefill', false)
-        })
-
-        it('should allow creation of short text field with allowPrefill = true and lockPrefill = true settings', async () => {
-          // Arrange
-          const field = await createAndReturnFormField({
-            fieldType: BasicField.ShortText,
-            allowPrefill: true,
             lockPrefill: true,
           })
 
-          // Assert
-          const fieldObj = field.toObject()
-          expect(fieldObj).toHaveProperty('allowPrefill', true)
-          expect(fieldObj).toHaveProperty('lockPrefill', true)
-        })
+          return field
+        }
 
-        it('should not allow creation of short text field with allowPrefill = false and lockPrefill = true settings', async () => {
-          // Arrange
-          const createField = async () => {
-            const field = await createAndReturnFormField({
-              fieldType: BasicField.ShortText,
-              allowPrefill: false,
-              lockPrefill: true,
-            })
+        // Act
+        const createFieldPromise = createField()
 
-            return field
-          }
-
-          // Act
-          const createFieldPromise = createField()
-
-          // Assert
-          await expect(createFieldPromise).rejects.toThrow(
-            'Cannot lock prefill if prefill is not enabled',
-          )
-        })
-      })
-    }),
-    describe('Methods', () => {
-      describe('getQuestion', () => {
-        it('should return field title when field type is not a table field', async () => {
-          // Arrange
-          // Get all field types
-          const fieldTypes = Object.values(BasicField)
-          for (const fieldType of fieldTypes) {
-            if (fieldType === BasicField.Table) return
-
-            // Act
-            const fieldTitle = `test ${fieldType} field title`
-            const field = await createAndReturnFormField({
-              fieldType,
-              title: fieldTitle,
-            })
-
-            // Assert
-            expect(field.getQuestion()).toEqual(fieldTitle)
-          }
-        })
-
-        it('should return table title concatenated with all column titles when field type is a table field', async () => {
-          // Arrange
-          const tableFieldParams = {
-            title: 'testTableTitle',
-            minimumRows: 1,
-            columns: [
-              {
-                title: 'Test Column Title 1',
-                required: true,
-                columnType: 'textfield',
-              },
-              {
-                title: 'Test Column Title 2',
-                required: true,
-                columnType: 'dropdown',
-              },
-            ],
-            fieldType: 'table',
-          }
-
-          // Act
-          const tableField = await createAndReturnFormField(tableFieldParams)
-
-          // Assert
-          const expectedQuestionString = `${
-            tableFieldParams.title
-          } (${tableFieldParams.columns.map((col) => col.title).join(', ')})`
-          expect(tableField.getQuestion()).toEqual(expectedQuestionString)
-        })
+        // Assert
+        await expect(createFieldPromise).rejects.toThrow(
+          'Cannot lock prefill if prefill is not enabled',
+        )
       })
     })
+  })
+
+  describe('Number Field', () => {
+    it('should allow creation of default number field', async () => {
+      const defaultNumberValidationOptions = {
+        ValidationOptions: {
+          selectedValidation: null,
+          LengthValidationOptions: {
+            selectedLengthValidation: null,
+            customVal: null,
+          },
+          RangeValidationOptions: {
+            customMin: null,
+            customMax: null,
+          },
+        },
+      }
+
+      const createDefaultNumberField = async () =>
+        await createAndReturnFormField({
+          fieldType: BasicField.Number,
+        })
+
+      await expect(createDefaultNumberField()).resolves.toMatchObject(
+        defaultNumberValidationOptions,
+      )
+    })
+
+    it('should not allow creation of number field with selectedLengthValidation but no customVal', async () => {
+      const createInvalidNumberField = async () =>
+        await createAndReturnFormField({
+          fieldType: BasicField.Number,
+          ValidationOptions: {
+            selectedValidation: NumberSelectedValidation.Length,
+            LengthValidationOptions: {
+              selectedLengthValidation: NumberSelectedLengthValidation.Min,
+            },
+          },
+        })
+
+      await expect(createInvalidNumberField()).rejects.toThrow(
+        'Please enter a customVal',
+      )
+    })
+
+    it('should not allow creation of number field with selectedValidation.Length but no selectedLengthValidation', async () => {
+      const createInvalidNumberField = async () =>
+        await createAndReturnFormField({
+          fieldType: BasicField.Number,
+          ValidationOptions: {
+            selectedValidation: NumberSelectedValidation.Length,
+          },
+        })
+
+      await expect(createInvalidNumberField()).rejects.toThrow(
+        'Please select the type of length validation',
+      )
+    })
+
+    it('should not allow creation of number field with selected range validation but invalid range', async () => {
+      const createInvalidNumberField = async () =>
+        await createAndReturnFormField({
+          fieldType: BasicField.Number,
+          ValidationOptions: {
+            selectedValidation: NumberSelectedValidation.Range,
+            RangeValidationOptions: {
+              customMin: 10,
+              customMax: 5,
+            },
+          },
+        })
+
+      await expect(createInvalidNumberField()).rejects.toThrow(
+        'Please enter a valid range',
+      )
+    })
+
+    it('should not allow creation of number field with selected range validation but missing range', async () => {
+      const createInvalidNumberField = async () =>
+        await createAndReturnFormField({
+          fieldType: BasicField.Number,
+          ValidationOptions: {
+            selectedValidation: NumberSelectedValidation.Range,
+          },
+        })
+
+      await expect(createInvalidNumberField()).rejects.toThrow(
+        'Please enter a valid range',
+      )
+    })
+  })
+
+  describe('Methods', () => {
+    describe('getQuestion', () => {
+      it('should return field title when field type is not a table field', async () => {
+        // Arrange
+        // Get all field types
+        const fieldTypes = Object.values(BasicField)
+        for (const fieldType of fieldTypes) {
+          if (fieldType === BasicField.Table) return
+
+          // Act
+          const fieldTitle = `test ${fieldType} field title`
+          const field = await createAndReturnFormField({
+            fieldType,
+            title: fieldTitle,
+          })
+
+          // Assert
+          expect(field.getQuestion()).toEqual(fieldTitle)
+        }
+      })
+
+      it('should return table title concatenated with all column titles when field type is a table field', async () => {
+        // Arrange
+        const tableFieldParams = {
+          title: 'testTableTitle',
+          minimumRows: 1,
+          columns: [
+            {
+              title: 'Test Column Title 1',
+              required: true,
+              columnType: 'textfield',
+            },
+            {
+              title: 'Test Column Title 2',
+              required: true,
+              columnType: 'dropdown',
+            },
+          ],
+          fieldType: 'table',
+        }
+
+        // Act
+        const tableField = await createAndReturnFormField(tableFieldParams)
+
+        // Assert
+        const expectedQuestionString = `${
+          tableFieldParams.title
+        } (${tableFieldParams.columns.map((col) => col.title).join(', ')})`
+        expect(tableField.getQuestion()).toEqual(expectedQuestionString)
+      })
+    })
+  })
 })
 
 const createAndReturnFormField = async (

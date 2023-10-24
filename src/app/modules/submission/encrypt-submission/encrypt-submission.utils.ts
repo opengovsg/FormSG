@@ -62,8 +62,10 @@ import {
 } from '../../spcp/spcp.errors'
 import { MissingUserError } from '../../user/user.errors'
 import {
+  AttachmentTooLargeError,
   ConflictError,
   InvalidEncodingError,
+  InvalidFileExtensionError,
   ProcessingError,
   ResponseModeError,
   SubmissionNotFoundError,
@@ -76,6 +78,7 @@ import {
   FeatureDisabledError,
   InvalidFieldIdError,
   InvalidFileKeyError,
+  MaliciousFileDetectedError,
   SubmissionFailedError,
   VirusScanFailedError,
 } from './encrypt-submission.errors'
@@ -205,6 +208,8 @@ const errorMapper: MapRouteError = (
       }
     case ValidateFieldError:
     case DatabaseValidationError:
+    case InvalidFileExtensionError:
+    case AttachmentTooLargeError:
     case ProcessingError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
@@ -232,6 +237,7 @@ const errorMapper: MapRouteError = (
     case InvalidFieldIdError:
     case AttachmentSizeLimitExceededError:
     case InvalidFileKeyError:
+    case MaliciousFileDetectedError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,

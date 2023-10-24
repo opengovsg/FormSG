@@ -37,9 +37,14 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
+      - name: Cache Node modules
+        uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json') }}
       - run: npm ci
 
   build:
@@ -51,13 +56,18 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
-      - run: npm ci
+      # Load cached node_modules
+      - name: Cache Node modules
+        uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json') }}
       - run: npm run build
         env:
-          NODE_OPTIONS: '--max-old-space-size=4096'
+          NODE_OPTIONS: '--max-old-space-size=4096 --openssl-legacy-provider'
       - name: Upload build files
         uses: actions/upload-artifact@v2
         if: always()
@@ -76,11 +86,19 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
-      - run: npm ci
-      - run: npm run test:frontend
+      # Load cached node_modules
+      - name: Cache Node modules
+        uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+      - name: Run frontend test
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm run test:frontend
 
   frontend_lint:
     needs: [changes, install]
@@ -91,10 +109,15 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
-      - run: npm ci
+      # Load cached node_modules
+      - name: Cache Node modules
+        uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json') }}
       - run: npm run lint:frontend
 
   backend_test:
@@ -102,6 +125,17 @@ jobs:
     if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
+      # prevent CI from failing when worker runs out of memory
+      # https://github.com/actions/runner-images/discussions/7188#discussioncomment-6750749
+      - name: Increase swapfile
+        run: |
+          df -h
+          sudo swapoff -a
+          sudo fallocate -l 15G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+          sudo swapon --show
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v3
         if: always()
@@ -110,11 +144,19 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
-      - run: npm ci && npm ci --prefix serverless/virus-scanner
-      - run: npm run test:backend
+      # Load cached node_modules
+      - name: Cache Node modules
+        uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+      - run: npm ci --prefix serverless/virus-scanner
+      - run: npm run test:backend:ci
+        env:
+          NODE_OPTIONS: '--max-old-space-size=4096'
       - name: Coveralls
         uses: coverallsapp/github-action@master
         with:
@@ -129,9 +171,14 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
-      - run: npm ci
+      # Load cached node_modules
+      - name: Cache Node modules
+        uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json') }}
       - run: npm run lint-ci
       - run: npm_config_mode=yes npx lockfile-lint --type npm --path package.json --validate-https --allowed-hosts npm

@@ -120,8 +120,15 @@ export const MOCK_FORM_FIELDS: FormFieldDto[] = [
   },
   {
     ValidationOptions: {
-      customVal: null,
       selectedValidation: null,
+      LengthValidationOptions: {
+        selectedLengthValidation: null,
+        customVal: null,
+      },
+      RangeValidationOptions: {
+        customMin: null,
+        customMax: null,
+      },
     },
     title: 'Number',
     description: '',

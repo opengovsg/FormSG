@@ -1,6 +1,8 @@
 import { StatusCodes } from 'http-status-codes'
 import { ErrorDto, GetSgidAuthUrlResponseDto } from 'shared/types'
+import { SgidProfilesDto } from 'shared/types/auth'
 
+import { resolveRedirectionUrl } from '../../../../app/utils/urls'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import { ControllerHandler } from '../../core/core.types'
@@ -37,7 +39,7 @@ export const generateAuthUrl: ControllerHandler<
         error,
       })
       return res
-        .sendStatus(StatusCodes.INTERNAL_SERVER_ERROR)
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .json({
           message:
             'Generating SGID authentication url failed. Please try again later.',
@@ -46,7 +48,14 @@ export const generateAuthUrl: ControllerHandler<
     })
 }
 
-export const handleLogin: ControllerHandler<
+/**
+ * Handler for GET /api/v3/auth/sgid/login/callback endpoint.
+ *
+ * @return 200 with redirect to frontend /login/callback if there are no errors
+ * @return 400 when code or state is not provided, or state is incorrect
+ * @return 500 when processing the code verifier cookie fails, or when an unknown error occurs
+ */
+export const handleLoginCallback: ControllerHandler<
   unknown,
   ErrorDto | undefined,
   unknown,
@@ -57,15 +66,13 @@ export const handleLogin: ControllerHandler<
   res.clearCookie(SGID_CODE_VERIFIER_COOKIE_NAME)
 
   const logMeta = {
-    action: 'handleLogin',
+    action: 'handleLoginCallback',
     code,
     state,
     ...createReqMeta(req),
   }
 
   const coreErrorMessage = 'Failed to log in via SGID. Please try again later.'
-
-  let status
 
   if (!code || state !== SGID_LOGIN_OAUTH_STATE) {
     logger.error({
@@ -74,59 +81,178 @@ export const handleLogin: ControllerHandler<
       meta: logMeta,
     })
 
-    status = StatusCodes.BAD_REQUEST
-  } else if (!codeVerifier) {
+    const status = StatusCodes.BAD_REQUEST
+    res.redirect(resolveRedirectionUrl(`/login?status=${status}`))
+    return
+  }
+  if (!codeVerifier) {
     logger.error({
       message: 'Error logging in via sgID: code verifier cookie is empty',
       meta: logMeta,
     })
 
-    status = StatusCodes.BAD_REQUEST
-  } else {
-    await AuthSgidService.retrieveAccessToken(code, codeVerifier)
-      .andThen(({ accessToken, sub }) =>
-        AuthSgidService.retrieveUserInfo(accessToken, sub),
-      )
-      .andThen((email) =>
-        AuthService.validateEmailDomain(email).andThen((agency) =>
-          UserService.retrieveUser(email, agency._id),
-        ),
-      )
-      .map((user) => {
-        if (!req.session) {
-          logger.error({
-            message: 'Error logging in user; req.session is undefined',
-            meta: logMeta,
-          })
+    const status = StatusCodes.BAD_REQUEST
+    res.redirect(resolveRedirectionUrl(`/login?status=${status}`))
+    return
+  }
+  if (!req.session) {
+    logger.error({
+      message: 'Error logging in user; req.session is undefined',
+      meta: logMeta,
+    })
 
-          status = StatusCodes.INTERNAL_SERVER_ERROR
-          return
-        }
-
-        // Add user info to session.
-        const { _id } = user.toObject() as SessionUser
-        req.session.user = { _id }
-        logger.info({
-          message: `Successfully logged in user ${user._id}`,
-          meta: logMeta,
-        })
-
-        // Redirect user to the SGID login page
-        status = StatusCodes.OK
-      })
-      // Step 3b: Error occured in one of the steps.
-      .mapErr((error) => {
-        logger.warn({
-          message: 'Error occurred when trying to log in via SGID',
-          meta: logMeta,
-          error,
-        })
-
-        const { statusCode } = mapRouteError(error, coreErrorMessage)
-
-        status = statusCode
-      })
+    const status = StatusCodes.INTERNAL_SERVER_ERROR
+    res.redirect(resolveRedirectionUrl(`/login?status=${status}`))
+    return
   }
 
-  return res.redirect(`/ogp-login?status=${status}`)
+  await AuthSgidService.retrieveAccessToken(code, codeVerifier)
+    .andThen(({ accessToken, sub }) =>
+      AuthSgidService.retrieveUserInfo(accessToken, sub),
+    )
+    .map((profiles) => {
+      // expire profiles after 5 minutes to avoid situations where login-jacking when
+      // the previous user navigated away without selecting a profile
+      req.session.sgid = { profiles, expiry: Date.now() + 1000 * 60 * 5 }
+
+      // User needs to select profile that will be used for the login
+      res.redirect(resolveRedirectionUrl(`/login/select-profile`))
+      return
+    })
+    .mapErr((error) => {
+      logger.warn({
+        message: 'Error occurred when trying to log in via SGID',
+        meta: logMeta,
+        error,
+      })
+
+      const { statusCode } = mapRouteError(error, coreErrorMessage)
+
+      res.redirect(resolveRedirectionUrl(`/login?status=${statusCode}`))
+      return
+    })
+}
+
+/**
+ * Handler for GET /api/v3/auth/sgid/profiles endpoint.
+ *
+ * @return 200 with list of profiles
+ * @return 400 when session or profile is invalid
+ * @return 401 when session has expired
+ */
+export const getProfiles: ControllerHandler<
+  unknown,
+  SgidProfilesDto,
+  unknown
+> = async (req, res) => {
+  const logMeta = {
+    action: 'getProfiles',
+    ...createReqMeta(req),
+  }
+  if (!req.session) {
+    logger.error({
+      message: 'Error logging in via sgID: session is invalid',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.BAD_REQUEST).send()
+  }
+
+  if (!req.session.sgid?.profiles) {
+    logger.error({
+      message: 'Error logging in via sgID: profile is invalid',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.BAD_REQUEST).send()
+  }
+
+  if (req.session.sgid.expiry < Date.now()) {
+    logger.info({
+      message: 'Error logging in via sgID: session has expired',
+      meta: logMeta,
+    })
+    res.redirect(StatusCodes.UNAUTHORIZED, resolveRedirectionUrl(`/login`))
+    return
+  }
+
+  return res
+    .status(StatusCodes.OK)
+    .json({ profiles: req.session.sgid.profiles })
+}
+
+/**
+ * Handler for POST /api/v3/auth/sgid/profiles endpoint.
+ *
+ * @return 200 when OTP has been been successfully sent
+ * @return 400 when session, profile, or workEmail is invalid
+ * @return 401 when email domain is not whitelisted
+ * @return 500 when unknown errors occurs during email validation, or creating the new account
+ */
+export const setProfile: ControllerHandler<
+  unknown,
+  { message: string } | ErrorDto,
+  { workEmail: string }
+> = async (req, res) => {
+  const logMeta = {
+    action: 'setProfile',
+    ...createReqMeta(req),
+  }
+
+  const coreErrorMessage = 'Failed to log in via SGID. Please try again later.'
+
+  if (!req.session) {
+    const message = 'Error logging in via sgID: session is invalid'
+    logger.error({
+      message,
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.BAD_REQUEST).json({ message })
+  }
+
+  if (!req.session.sgid?.profiles) {
+    const message = 'Error logging in via sgID: profile is invalid'
+    logger.error({
+      message,
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.BAD_REQUEST).json({ message })
+  }
+
+  const selectedProfile = req.session.sgid.profiles.find(
+    (profile) => profile.work_email === req.body.workEmail,
+  )
+  if (!selectedProfile) {
+    const message = 'Error logging in via sgID: selected profile is invalid'
+    logger.error({
+      message,
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.BAD_REQUEST).json({ message })
+  }
+
+  return AuthService.validateEmailDomain(selectedProfile.work_email)
+    .andThen((agency) =>
+      UserService.retrieveUser(selectedProfile.work_email, agency._id),
+    )
+    .map((user) => {
+      // Add user info to session.
+      const { _id } = user.toObject() as SessionUser
+      req.session.user = { _id }
+      logger.info({
+        message: `Successfully logged in user ${user._id}`,
+        meta: logMeta,
+      })
+      return res.status(StatusCodes.OK).json({ message: 'Ok' })
+    })
+    .mapErr((error) => {
+      const message = 'Error occurred when trying to log in via SGID'
+      logger.warn({
+        message,
+        meta: logMeta,
+        error,
+      })
+
+      const { statusCode } = mapRouteError(error, coreErrorMessage)
+
+      return res.status(statusCode).json({ message })
+    })
 }
