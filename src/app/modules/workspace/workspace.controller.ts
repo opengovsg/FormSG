@@ -15,7 +15,7 @@ const logger = createLoggerWithLabel(module)
 // Validators
 const workspaceTitleValidator = celebrate({
   [Segments.BODY]: {
-    title: Joi.string().min(4).max(50).required(),
+    title: Joi.string().min(4).max(25).required(),
   },
 })
 

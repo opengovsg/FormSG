@@ -25,7 +25,7 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
         ],
         required: 'Workspace title cannot be blank',
         minlength: [4, 'Workspace title must be at least 4 characters'],
-        maxlength: [50, 'Workspace title can have a maximum of 50 characters'],
+        maxlength: [25, 'Workspace title can have a maximum of 30 characters'],
         trim: true,
       },
       admin: {
