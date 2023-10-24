@@ -132,7 +132,7 @@ export const WorkspacePage = (): JSX.Element => {
         )}
         {!isMobile && (
           <GridItem area="nav" borderRight="1px" borderRightColor="neutral.300">
-            <Box overflowY="scroll">
+            <Box overflowY="auto">
               <Stack minH="100vh">
                 <WorkspaceMenuHeader shouldShowAddWorkspaceButton />
                 <WorkspaceMenuTabs
