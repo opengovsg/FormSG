@@ -8,7 +8,6 @@ class MemoryDatabaseServer {
         checkMD5: true,
       },
       instance: {},
-      autoStart: false,
     })
   }
 
@@ -21,7 +20,8 @@ class MemoryDatabaseServer {
   }
 
   getConnectionString() {
-    return this.mongod.getUri(true)
+    const randomUri = +new Date()
+    return this.mongod.getUri(randomUri.toString())
   }
 }
 

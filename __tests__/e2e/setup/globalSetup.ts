@@ -27,14 +27,6 @@ async function globalSetup(): Promise<void> {
 
   // The following is to make sure the database is clean before an test starts
   await mongoose.connect(process.env.MONGO_URI, {
-    // Avoid using deprecated URL string parser in MongoDB driver
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    // Avoid using deprecated collection.ensureIndex internally
-    useCreateIndex: true,
-    // upgrade to mongo driver's native findOneAndUpdate function instead of
-    // findAndModify.
-    useFindAndModify: false,
     promiseLibrary: global.Promise,
   })
   await mongoose.disconnect()

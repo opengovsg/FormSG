@@ -11,11 +11,8 @@ const spec = (path: string): any => {
 /**
  * Connects to mongo-memory-server instance.
  */
-export const makeMongooseFixtures = async (): Promise<mongoose.Connection> => {
-  const connection = await mongoose.createConnection(dbUri, {
-    reconnectTries: 5,
-    useNewUrlParser: true,
-  })
+export const makeMongooseFixtures = (): mongoose.Connection => {
+  const connection = mongoose.createConnection(dbUri)
   return connection
 }
 
