@@ -42,7 +42,7 @@ let FeatureFlags: IFeatureFlagModel
 test.describe('Storage form submission', () => {
   test.beforeAll(async () => {
     // Create models
-    db = makeMongooseFixtures()
+    db = await makeMongooseFixtures()
     Form = makeModel(db, 'form.server.model', 'Form')
     // TODO(FRM-1232): Remove this once old storage submission endpoint (/submissions/encrypt) is removed
     // Add feature flag model and set encryption boundary shift to true
