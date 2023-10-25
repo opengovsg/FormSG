@@ -1140,7 +1140,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   FormSchema.statics.archiveForms = async function (
-    formIds: IFormSchema['_id'],
+    formIds: IFormSchema['_id'][],
     session?: ClientSession,
   ) {
     return await this.updateMany(
