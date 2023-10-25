@@ -20,8 +20,8 @@ class MemoryDatabaseServer {
   }
 
   getConnectionString() {
-    const randomUri = +new Date()
-    return this.mongod.getUri(randomUri.toString())
+    const uniqueUri = +new Date()
+    return this.mongod.getUri(uniqueUri.toString())
   }
 }
 
