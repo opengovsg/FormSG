@@ -1,8 +1,9 @@
-import { ModalBody, ModalHeader, Text } from '@chakra-ui/react'
-import { AnimationConfigWithData } from 'lottie-web'
+import { Image, ModalBody, ModalHeader, Text } from '@chakra-ui/react'
 
 import Link from '~components/Link'
 import { LottieAnimation } from '~templates/LottieAnimation'
+
+import { FeatureUpdateImage } from '~features/whats-new/FeatureUpdateList'
 
 import { NewFeatureTag } from './NewFeatureTag'
 
@@ -10,23 +11,27 @@ interface NewFeatureContentProps {
   title: string
   description: string
   learnMoreLink?: string
-  animationData: AnimationConfigWithData['animationData']
+  image: FeatureUpdateImage
 }
 
 export const NewFeatureContent = (props: {
   content: NewFeatureContentProps
 }): JSX.Element => {
-  const { title, description, animationData, learnMoreLink } = props.content
+  const { title, description, image, learnMoreLink } = props.content
 
   return (
     <>
-      <LottieAnimation
-        bg="primary.100"
-        pt="4.5rem"
-        height={{ base: '30vh', md: 'initial' }}
-        animationData={animationData}
-        preserveAspectRatio="xMidYMax slice"
-      />
+      {image?.animationData ? (
+        <LottieAnimation
+          bg="primary.100"
+          pt="4.5rem"
+          height={{ base: '30vh', md: 'initial' }}
+          animationData={image.animationData}
+          preserveAspectRatio="xMidYMax slice"
+        />
+      ) : (
+        <Image width="100%" src={image.url} alt={image.alt} />
+      )}
       <ModalHeader>
         <NewFeatureTag />
         <Text mt="0.625rem">{title}</Text>

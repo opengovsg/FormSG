@@ -1,6 +1,7 @@
 import { GUIDE_PAYMENTS_ENTRY } from '~constants/links'
 
-import FoldersAnnouncementGraphic from './assets/folders.json'
+import foldersDashboard from '../whats-new/assets/folders_dashboard.svg'
+
 import PaymentsAnnouncementGraphic from './assets/payments.json'
 
 // When updating this, remember to update the ROLLOUT_ANNOUNCEMENT_KEY_PREFIX with the new date
@@ -11,7 +12,10 @@ export const NEW_FEATURES = [
     title: 'Introducing Folders!',
     description:
       'Say hello to a new way of managing your forms! Create folders and organise your forms to find them easily later.',
-    animationData: FoldersAnnouncementGraphic,
+    image: {
+      url: foldersDashboard,
+      alt: 'Dashboard page with folders',
+    },
   },
   {
     // Announcement date: 2023-05-31
@@ -19,6 +23,9 @@ export const NEW_FEATURES = [
     description:
       'Respondents can now pay for fees and services directly on your form! We integrate with Stripe to provide reliable payments and hassle-free reconciliations. Payment methods we support include debit / credit cards and PayNow.',
     learnMoreLink: GUIDE_PAYMENTS_ENTRY,
-    animationData: PaymentsAnnouncementGraphic,
+    image: {
+      animationData: PaymentsAnnouncementGraphic,
+      alt: 'Collect payments on your form',
+    },
   },
 ]
