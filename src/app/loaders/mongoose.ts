@@ -37,8 +37,10 @@ export default async (): Promise<Connection> => {
       },
     })
 
+    await mongod.start()
     // Store the uri to connect to later on
-    config.db.uri = await mongod.getUri()
+    const uniqueUri = +new Date()
+    config.db.uri = mongod.getUri(uniqueUri.toString())
   }
 
   // Actually connect to the database
