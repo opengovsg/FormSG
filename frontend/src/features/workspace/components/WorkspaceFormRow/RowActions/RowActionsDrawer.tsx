@@ -113,16 +113,18 @@ export const RowActionsDrawer = ({
               >
                 Manage form admins
               </Button>
-              <Divider />
               {isFormAdmin && (
-                <Button
-                  {...buttonProps}
-                  onClick={handleDeleteForm}
-                  color="danger.500"
-                  leftIcon={<BiTrash fontSize="1.25rem" />}
-                >
-                  Delete
-                </Button>
+                <>
+                  <Divider />
+                  <Button
+                    {...buttonProps}
+                    onClick={handleDeleteForm}
+                    color="danger.500"
+                    leftIcon={<BiTrash fontSize="1.25rem" />}
+                  >
+                    Delete
+                  </Button>
+                </>
               )}
             </ButtonGroup>
           </DrawerBody>
