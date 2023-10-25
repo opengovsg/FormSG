@@ -1,6 +1,10 @@
 import { ClientSession, Mongoose, Schema } from 'mongoose'
 
 import {
+  WORKSPACE_MAX_TITLE_LENGTH,
+  WORKSPACE_MIN_TITLE_LENGTH,
+} from '../../../shared/constants'
+import {
   IFormSchema,
   IUserSchema,
   IWorkspaceModel,
@@ -24,8 +28,14 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
           'Workspace title cannot contain special characters',
         ],
         required: 'Workspace title cannot be blank',
-        minlength: [4, 'Workspace title must be at least 4 characters'],
-        maxlength: [25, 'Workspace title can have a maximum of 30 characters'],
+        minlength: [
+          WORKSPACE_MIN_TITLE_LENGTH,
+          `Workspace title must be at least ${WORKSPACE_MIN_TITLE_LENGTH} characters`,
+        ],
+        maxlength: [
+          WORKSPACE_MAX_TITLE_LENGTH,
+          `Workspace title can have a maximum of ${WORKSPACE_MAX_TITLE_LENGTH} characters`,
+        ],
         trim: true,
       },
       admin: {
