@@ -48,7 +48,7 @@ test.describe('Email form submission', () => {
   })
   test.afterAll(async () => {
     // Clean up db
-    db.models = {}
+    await db.dropDatabase()
     await db.close()
   })
 
