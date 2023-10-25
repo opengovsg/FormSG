@@ -57,6 +57,7 @@ export const fileSizeLimit = (responseMode: FormResponseMode) => {
     case FormResponseMode.Email:
       return 7
     case FormResponseMode.Encrypt:
+    case FormResponseMode.Multirespondent:
       return 20
   }
 }
