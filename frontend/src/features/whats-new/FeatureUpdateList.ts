@@ -3,10 +3,10 @@ import { JsonObject, RequireExactlyOne } from 'type-fest'
 
 import { GUIDE_PAYMENTS_ENTRY } from '~constants/links'
 
-import Animation1 from './assets/1-folders.json'
 import Animation2 from './assets/2-payments.json'
 import Animation3 from './assets/3-search-and-filter.json'
 import Animation4 from './assets/4-dnd.json'
+import foldersDashboard from './assets/folders_dashboard.svg'
 
 export type FeatureUpdateImage = RequireExactlyOne<
   {
@@ -38,7 +38,7 @@ export const FEATURE_UPDATE_LIST: FeatureUpdateList = {
       date: new Date('25 Oct 2023 GMT+8'),
       description: `Say hello to a new way of managing your forms! Create folders and organise your forms to find them easily later.`,
       image: {
-        animationData: Animation1,
+        url: foldersDashboard,
         alt: 'Introducing Folders!',
       },
     },
