@@ -2,8 +2,8 @@ import { GUIDE_PAYMENTS_ENTRY } from '~constants/links'
 
 import { FeatureUpdateImage } from '~features/whats-new/FeatureUpdateList'
 
+import foldersDashboard from '../../whats-new/assets/folders_dashboard.svg'
 import PaymentsAnnouncementGraphic from '../assets/payments.json'
-import foldersDashboard from '../whats-new/assets/folders_dashboard.svg'
 
 export interface NewFeature {
   title: string
