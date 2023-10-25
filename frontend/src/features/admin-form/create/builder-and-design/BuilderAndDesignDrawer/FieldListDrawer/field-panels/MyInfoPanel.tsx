@@ -90,7 +90,8 @@ export const MyInfoFieldPanel = () => {
     }
   }, [growthbook, user])
 
-  const showSgidMyInfoV2 = useFeatureIsOn(featureFlags.myinfoSgid)
+  // show MyInfo V2 if feature is set to false or null
+  const showSgidMyInfoV2 = !useFeatureIsOn(featureFlags.myinfoSgid)
 
   const sgidSupportedFinal = useMemo(() => {
     return showSgidMyInfoV2 ? SGID_SUPPORTED_V2 : SGID_SUPPORTED_V1
