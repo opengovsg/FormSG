@@ -45,7 +45,7 @@ import {
   SubmissionCountQueryDto,
   WebhookSettingsUpdateDto,
 } from '../../../../../shared/types'
-import { IForm, IFormDocument, IPopulatedForm } from '../../../../types'
+import { IFormDocument, IPopulatedForm } from '../../../../types'
 import {
   EncryptSubmissionDto,
   FormUpdateParams,
@@ -84,6 +84,7 @@ import {
   mapAttachmentsFromResponses,
 } from '../../submission/submission.utils'
 import * as UserService from '../../user/user.service'
+import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 
@@ -115,7 +116,7 @@ const logger = createLoggerWithLabel(module)
 // Validators
 const createFormValidator = celebrate({
   [Segments.BODY]: {
-    form: BaseJoi.object<Omit<IForm, 'admin'>>()
+    form: BaseJoi.object<CreateFormBodyDto>()
       .keys({
         // Require valid responsesMode field.
         responseMode: Joi.string()
@@ -145,6 +146,7 @@ const createFormValidator = celebrate({
             is: FormResponseMode.Encrypt,
             then: Joi.string().required().disallow(''),
           }),
+        workspaceId: Joi.string(),
       })
       .required()
       // Allow other form schema keys to be passed for form creation.
@@ -154,6 +156,7 @@ const createFormValidator = celebrate({
 })
 
 const duplicateFormValidator = celebrate({
+  // uses CreateFormBodyDto as that is the shape of the data used in client's WorkspaceService
   [Segments.BODY]: BaseJoi.object<DuplicateFormBodyDto>({
     // Require valid responsesMode field.
     responseMode: Joi.string()
@@ -180,6 +183,7 @@ const duplicateFormValidator = celebrate({
         is: FormResponseMode.Encrypt,
         then: Joi.string().required().disallow(''),
       }),
+    workspaceId: Joi.string(),
   }),
 })
 
@@ -819,6 +823,12 @@ export const handleArchiveForm: ControllerHandler<{ formId: string }> = async (
       )
       // Step 3: Currently logged in user has permissions to archive form.
       .andThen((formToArchive) => AdminFormService.archiveForm(formToArchive))
+      .andThen(() =>
+        removeFormsFromAllWorkspaces({
+          formIds: [formId],
+          userId: sessionUserId,
+        }),
+      )
       .map(() => res.json({ message: 'Form has been archived' }))
       .mapErr((error) => {
         logger.warn({
@@ -858,7 +868,7 @@ export const duplicateAdminForm: ControllerHandler<
 > = (req, res) => {
   const { formId } = req.params
   const userId = (req.session as AuthedSessionData).user._id
-  const overrideParams = req.body
+  const { workspaceId, ...overrideParams } = req.body
 
   return (
     // Step 1: Retrieve currently logged in user.
@@ -876,6 +886,7 @@ export const duplicateAdminForm: ControllerHandler<
               originalForm,
               userId,
               overrideParams,
+              workspaceId,
             ),
           )
           // Step 4: Retrieve dashboard view of duplicated form.
@@ -1153,7 +1164,9 @@ export const createForm: ControllerHandler<
   DeserializeTransform<FormDto> | ErrorDto,
   { form: CreateFormBodyDto }
 > = async (req, res) => {
-  const { form: formParams } = req.body
+  const {
+    form: { workspaceId, ...formParams },
+  } = req.body
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
   return (
@@ -1161,7 +1174,13 @@ export const createForm: ControllerHandler<
     UserService.findUserById(sessionUserId)
       // Step 2: Create form with given params and set admin to logged in user.
       .andThen((user) =>
-        AdminFormService.createForm({ ...formParams, admin: user._id }),
+        AdminFormService.createForm(
+          {
+            ...formParams,
+            admin: user._id,
+          },
+          workspaceId,
+        ),
       )
       .map((createdForm) => {
         return res

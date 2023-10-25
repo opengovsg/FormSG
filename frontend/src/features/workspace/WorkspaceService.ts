@@ -3,12 +3,15 @@ import {
   AdminDashboardFormMetaDto,
   CreateEmailFormBodyDto,
   CreateStorageFormBodyDto,
+  DuplicateFormBodyDto,
   FormDto,
 } from '~shared/types/form/form'
+import { WorkspaceDto } from '~shared/types/workspace'
 
 import { ApiService } from '~services/ApiService'
 
 export const ADMIN_FORM_ENDPOINT = '/admin/forms'
+const ADMIN_WORKSPACES_ENDPOINT = '/admin/workspaces'
 
 /**
  * Gets metadata for all forms in dashboard view i.e. forms which user
@@ -21,6 +24,66 @@ export const getDashboardView = async (): Promise<
   return ApiService.get<AdminDashboardFormMetaDto[]>(
     `${ADMIN_FORM_ENDPOINT}`,
   ).then(({ data }) => data)
+}
+
+export const getWorkspacesView = async (): Promise<WorkspaceDto[]> => {
+  return ApiService.get<WorkspaceDto[]>(`${ADMIN_WORKSPACES_ENDPOINT}`).then(
+    ({ data }) => data,
+  )
+}
+
+export const createWorkspace = async ({
+  title,
+}: {
+  title: string
+}): Promise<WorkspaceDto> => {
+  return ApiService.post<WorkspaceDto>(`${ADMIN_WORKSPACES_ENDPOINT}`, {
+    title,
+  }).then(({ data }) => data)
+}
+
+export const moveFormsToWorkspace = async ({
+  formIds,
+  destWorkspaceId,
+}: {
+  formIds: string[]
+  destWorkspaceId: string
+}): Promise<string[]> => {
+  return ApiService.post<string[]>(`${ADMIN_WORKSPACES_ENDPOINT}/move`, {
+    formIds,
+    destWorkspaceId,
+  }).then(({ data }) => data)
+}
+
+export const updateWorkspaceTitle = async ({
+  title,
+  destWorkspaceId,
+}: {
+  title: string
+  destWorkspaceId: string
+}): Promise<WorkspaceDto> => {
+  return ApiService.put<WorkspaceDto>(
+    `${ADMIN_WORKSPACES_ENDPOINT}/${destWorkspaceId}/title`,
+    {
+      title,
+    },
+  ).then(({ data }) => data)
+}
+
+export const deleteWorkspace = async ({
+  destWorkspaceId,
+}: {
+  destWorkspaceId: string
+}): Promise<void> => {
+  return ApiService.delete(`${ADMIN_WORKSPACES_ENDPOINT}/${destWorkspaceId}`)
+}
+
+export const removeFormsFromWorkspaces = async ({
+  formIds,
+}: {
+  formIds: string[]
+}): Promise<void> => {
+  return ApiService.post(`${ADMIN_WORKSPACES_ENDPOINT}/remove`, { formIds })
 }
 
 export const createEmailModeForm = async (
@@ -41,7 +104,7 @@ export const createStorageModeForm = async (
 
 export const dupeEmailModeForm = async (
   formId: string,
-  body: CreateEmailFormBodyDto,
+  body: DuplicateFormBodyDto,
 ): Promise<FormDto> => {
   return ApiService.post<FormDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/duplicate`,
@@ -51,7 +114,7 @@ export const dupeEmailModeForm = async (
 
 export const dupeStorageModeForm = async (
   formId: string,
-  body: CreateStorageFormBodyDto,
+  body: DuplicateFormBodyDto,
 ): Promise<FormDto> => {
   return ApiService.post<FormDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/duplicate`,

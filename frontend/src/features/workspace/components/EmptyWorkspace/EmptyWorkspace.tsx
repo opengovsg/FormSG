@@ -9,13 +9,20 @@ import { EmptyWorkspaceSvgr } from './EmptyWorkspaceSvgr'
 
 export interface EmptyWorkspacePage {
   isLoading: boolean
-  handleOpenCreateFormModal: () => void
+  handleOpenCreateFormModal?: () => void
+}
+
+interface EmptyWorkspaceProps extends EmptyWorkspacePage {
+  title: string
+  subText: string
 }
 
 export const EmptyWorkspace = ({
   isLoading,
   handleOpenCreateFormModal,
-}: EmptyWorkspacePage): JSX.Element => {
+  title,
+  subText,
+}: EmptyWorkspaceProps): JSX.Element => {
   const isMobile = useIsMobile()
 
   return (
@@ -24,28 +31,33 @@ export const EmptyWorkspace = ({
       flexDir="column"
       align="center"
       px="2rem"
-      py="1rem"
+      py="4rem"
       bg="neutral.100"
       css={fillHeightCss}
     >
-      <Text as="h2" textStyle="h2" color="primary.500" mb="1rem">
-        You don't have any forms yet
-      </Text>
       <Text
-        textStyle="body-1"
-        color="secondary.500"
-        mb={{ base: '2.5rem', md: '2rem' }}
+        as="h2"
+        textStyle="h2"
+        color="primary.500"
+        mb="1rem"
+        textAlign="center"
       >
-        Get started by creating a new form
+        {title}
       </Text>
-      <Button
-        isFullWidth={isMobile}
-        isDisabled={isLoading}
-        onClick={handleOpenCreateFormModal}
-        leftIcon={<BiPlus fontSize="1.5rem" />}
-      >
-        Create form
-      </Button>
+      <Text textStyle="body-1" color="secondary.500" textAlign="center">
+        {subText}
+      </Text>
+      {!!handleOpenCreateFormModal && (
+        <Button
+          isFullWidth={isMobile}
+          isDisabled={isLoading}
+          onClick={handleOpenCreateFormModal}
+          leftIcon={<BiPlus fontSize="1.5rem" />}
+          mt={{ base: '2.5rem', md: '2rem' }}
+        >
+          Create form
+        </Button>
+      )}
       <EmptyWorkspaceSvgr
         mt={{ base: '2.5rem', md: '3.5rem' }}
         w={{ base: '184px', md: '354px' }}
