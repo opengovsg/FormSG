@@ -206,8 +206,8 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
 
   business: {
     type: {
-      address: { type: String, required: true, trim: true },
-      gstRegNo: { type: String, required: true, trim: true },
+      address: { type: String, default: '', trim: true },
+      gstRegNo: { type: String, default: '', trim: true },
     },
   },
 })
