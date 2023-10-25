@@ -8,6 +8,7 @@ import Animation3 from './assets/3-search-and-filter.json'
 import Animation4 from './assets/4-dnd.json'
 import foldersDashboard from './assets/folders_dashboard.svg'
 
+// image can either be a static image (using url) or an animation (using animationData)
 export type FeatureUpdateImage = RequireExactlyOne<
   {
     alt: string

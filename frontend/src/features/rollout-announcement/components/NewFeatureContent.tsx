@@ -3,19 +3,11 @@ import { Image, ModalBody, ModalHeader, Text } from '@chakra-ui/react'
 import Link from '~components/Link'
 import { LottieAnimation } from '~templates/LottieAnimation'
 
-import { FeatureUpdateImage } from '~features/whats-new/FeatureUpdateList'
-
+import { NewFeature } from './AnnouncementsFeatureList'
 import { NewFeatureTag } from './NewFeatureTag'
 
-interface NewFeatureContentProps {
-  title: string
-  description: string
-  learnMoreLink?: string
-  image: FeatureUpdateImage
-}
-
 export const NewFeatureContent = (props: {
-  content: NewFeatureContentProps
+  content: NewFeature
 }): JSX.Element => {
   const { title, description, image, learnMoreLink } = props.content
 

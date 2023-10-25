@@ -1,12 +1,19 @@
 import { GUIDE_PAYMENTS_ENTRY } from '~constants/links'
 
+import { FeatureUpdateImage } from '~features/whats-new/FeatureUpdateList'
+
+import PaymentsAnnouncementGraphic from '../assets/payments.json'
 import foldersDashboard from '../whats-new/assets/folders_dashboard.svg'
 
-import PaymentsAnnouncementGraphic from './assets/payments.json'
-
+export interface NewFeature {
+  title: string
+  description: string
+  learnMoreLink?: string
+  image: FeatureUpdateImage
+}
 // When updating this, remember to update the ROLLOUT_ANNOUNCEMENT_KEY_PREFIX with the new date
 // so admins will see new announcements.
-export const NEW_FEATURES = [
+export const NEW_FEATURES: NewFeature[] = [
   {
     // Announcement date: 2023-10-25
     title: 'Introducing Folders!',
