@@ -40,16 +40,13 @@ export const FormChart = ({
       // But rating does not
       formField.fieldType === BasicField.Checkbox
     )
-      renderArray.forEach((val) => {
+      renderArray.forEach((val, index) => {
         if (val[1] === 'Count') {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           val.push({ role: 'style' })
         } else {
-          val.push(
-            '#' +
-              (0x1000000 + Math.random() * 0xffffff).toString(16).substr(1, 6),
-          )
+          val.push(colorArray[index % colorArray.length])
         }
       })
     return renderArray
@@ -127,3 +124,37 @@ const RatingsAverageText = ({
     </Text>
   )
 }
+
+// colour palette for charts
+const colorArray: string[] = [
+  '#FF5733', // Red
+  '#33FF57', // Green
+  '#3357FF', // Blue
+  '#FF33A1', // Pink
+  '#FF8C33', // Orange
+  '#A833FF', // Purple
+  '#33FFF6', // Cyan
+  '#D4FF33', // Lime
+  '#FF335E', // Rose
+  '#33FF90', // Mint
+  '#7A33FF', // Lavender
+  '#FF3362', // Watermelon
+  '#FFB833', // Tangerine
+  '#33FFAB', // Aquamarine
+  '#5133FF', // Indigo
+  '#FF334F', // Tomato
+  '#33E4FF', // Sky blue
+  '#FF33D1', // Magenta
+  '#78FF33', // Spring green
+  '#FF3355', // Crimson
+  '#FF6633', // Vermilion
+  '#33FFC1', // Turquoise
+  '#9933FF', // Grape
+  '#FF3388', // Raspberry
+  '#33FF48', // Shamrock
+  '#FF3344', // Scarlet
+  '#33FFDE', // Azure
+  '#AC33FF', // Orchid
+  '#FF33BB', // Cerise
+  '#33FF6C', // Emerald
+]
