@@ -1,6 +1,7 @@
-import { createContext, useContext } from 'react'
+import { createContext, Dispatch, SetStateAction, useContext } from 'react'
 
-import { AdminDashboardFormMetaDto } from '~shared/types'
+import { AdminDashboardFormMetaDto, FormId } from '~shared/types'
+import { Workspace } from '~shared/types/workspace'
 
 import { FilterOption } from './types'
 
@@ -14,6 +15,11 @@ export interface WorkspaceContextProps {
   activeFilter: FilterOption
   setActiveFilter: (filterOption: FilterOption) => void
   hasActiveSearchOrFilter: boolean
+  activeWorkspace: Workspace
+  workspaces?: Workspace[]
+  setCurrentWorkspace: Dispatch<SetStateAction<string>>
+  getFormWorkspace: (formId: FormId) => Workspace | undefined
+  isDefaultWorkspace: boolean
 }
 
 export const WorkspaceContext = createContext<
