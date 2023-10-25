@@ -14,8 +14,9 @@ async function globalSetup(): Promise<void> {
         checkMD5: true,
       },
     })
-
-    const uri = await mongod.getUri(true)
+    await mongod.start()
+    const uriPath = +new Date()
+    const uri = mongod.getUri(uriPath.toString())
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(global as any).__MONGOINSTANCE = mongod
     process.env.MONGO_URI = `${uri.slice(0, uri.lastIndexOf('/'))}/${
