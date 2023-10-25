@@ -4,6 +4,10 @@ import { StatusCodes } from 'http-status-codes'
 import { ErrorDto } from 'shared/types'
 import { WorkspaceDto } from 'shared/types/workspace'
 
+import {
+  WORKSPACE_MAX_TITLE_LENGTH,
+  WORKSPACE_MIN_TITLE_LENGTH,
+} from '../../../../shared/constants'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 
@@ -15,7 +19,10 @@ const logger = createLoggerWithLabel(module)
 // Validators
 const workspaceTitleValidator = celebrate({
   [Segments.BODY]: {
-    title: Joi.string().min(4).max(50).required(),
+    title: Joi.string()
+      .min(WORKSPACE_MIN_TITLE_LENGTH)
+      .max(WORKSPACE_MAX_TITLE_LENGTH)
+      .required(),
   },
 })
 

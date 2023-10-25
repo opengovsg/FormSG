@@ -1,13 +1,15 @@
 import { UseControllerProps } from 'react-hook-form'
 
-const MAX_TITLE_LENGTH = 50
-const MIN_TITLE_LENGTH = 4
+import {
+  WORKSPACE_MAX_TITLE_LENGTH,
+  WORKSPACE_MIN_TITLE_LENGTH,
+} from '~shared/constants'
 
 export const WORKSPACE_TITLE_VALIDATION_RULES: UseControllerProps['rules'] = {
   required: 'Folder name is required',
   maxLength: {
-    value: MAX_TITLE_LENGTH,
-    message: `Folder name should contain less than ${MAX_TITLE_LENGTH} characters`,
+    value: WORKSPACE_MAX_TITLE_LENGTH,
+    message: `Folder name should contain less than ${WORKSPACE_MAX_TITLE_LENGTH} characters`,
   },
   pattern: {
     value: /^[a-zA-Z0-9_\-./() &`;'"]*$/,
@@ -16,8 +18,8 @@ export const WORKSPACE_TITLE_VALIDATION_RULES: UseControllerProps['rules'] = {
   validate: {
     trimMinLength: (value: string) => {
       return (
-        value.trim().length >= MIN_TITLE_LENGTH ||
-        `Folder name should contain more than ${MIN_TITLE_LENGTH} characters`
+        value.trim().length >= WORKSPACE_MIN_TITLE_LENGTH ||
+        `Folder name should contain more than ${WORKSPACE_MIN_TITLE_LENGTH} characters`
       )
     },
   },

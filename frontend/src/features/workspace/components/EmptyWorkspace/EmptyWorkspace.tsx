@@ -35,10 +35,16 @@ export const EmptyWorkspace = ({
       bg="neutral.100"
       css={fillHeightCss}
     >
-      <Text as="h2" textStyle="h2" color="primary.500" mb="1rem">
+      <Text
+        as="h2"
+        textStyle="h2"
+        color="primary.500"
+        mb="1rem"
+        textAlign="center"
+      >
         {title}
       </Text>
-      <Text textStyle="body-1" color="secondary.500">
+      <Text textStyle="body-1" color="secondary.500" textAlign="center">
         {subText}
       </Text>
       {!!handleOpenCreateFormModal && (

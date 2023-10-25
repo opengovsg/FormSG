@@ -30,11 +30,13 @@ export const WorkspaceEditMenu = (): JSX.Element => {
 
   return (
     <>
-      <RenameWorkspaceModal
-        onClose={renameModal.onClose}
-        isOpen={renameModal.isOpen}
-        activeWorkspace={activeWorkspace}
-      />
+      {renameModal.isOpen && (
+        <RenameWorkspaceModal
+          onClose={renameModal.onClose}
+          isOpen={renameModal.isOpen}
+          activeWorkspace={activeWorkspace}
+        />
+      )}
       <DeleteWorkspaceModal
         onClose={deleteModal.onClose}
         isOpen={deleteModal.isOpen}

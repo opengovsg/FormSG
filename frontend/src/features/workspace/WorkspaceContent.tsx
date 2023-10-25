@@ -56,7 +56,7 @@ export const WorkspaceContent = (): JSX.Element => {
           templateRows="auto 1fr auto"
           minH="100vh"
           templateAreas=" 'header' 'main'"
-          overflowY="scroll"
+          overflowY="auto"
         >
           <Container
             gridArea="header"
