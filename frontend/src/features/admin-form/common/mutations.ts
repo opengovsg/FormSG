@@ -333,8 +333,7 @@ export const useMutateCollaborators = () => {
 
         // Remove all related queries from cache.
         queryClient.removeQueries(adminFormKeys.id(formId))
-        queryClient.invalidateQueries(workspaceKeys.dashboard)
-        queryClient.invalidateQueries(workspaceKeys.workspaces)
+        queryClient.invalidateQueries(workspaceKeys.all)
 
         navigate(DASHBOARD_ROUTE)
       },

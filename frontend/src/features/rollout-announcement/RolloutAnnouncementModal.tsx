@@ -16,8 +16,8 @@ import { ModalCloseButton } from '~components/Modal'
 
 import { ProgressIndicator } from '../../components/ProgressIndicator/ProgressIndicator'
 
-import { NEW_FEATURES } from './components/AnnouncementsFeatureList'
 import { NewFeatureContent } from './components/NewFeatureContent'
+import { NEW_FEATURES } from './Announcements'
 
 interface RolloutAnnouncementModalProps {
   isOpen: boolean
