@@ -29,7 +29,7 @@ import { isSgidJwtAccessPayload, isSgidJwtSingpassPayload } from './sgid.util'
 
 const logger = createLoggerWithLabel(module)
 
-const JWT_ALGORITHM = 'RS256'
+const JWT_ALGORITHM = 'HS256'
 
 export class SgidServiceClass {
   private client: SgidClient
@@ -333,7 +333,7 @@ export class SgidServiceClass {
         return err(new SgidMissingJwtError())
       }
 
-      const payload = Jwt.verify(jwtSgid, this.publicKey, {
+      const payload = Jwt.verify(jwtSgid, this.privateKey, {
         algorithms: [JWT_ALGORITHM],
       })
 
