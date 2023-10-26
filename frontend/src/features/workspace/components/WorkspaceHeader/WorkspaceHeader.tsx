@@ -18,14 +18,12 @@ import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 import { MobileWorkspaceSearchbar } from '../WorkspaceSearchbar/MobileWorkspaceSearchbar'
 import { WorkspaceSearchbar } from '../WorkspaceSearchbar/WorkspaceSearchbar'
 
-import { WorkspaceEditMenu } from './WorkspaceEditMenu'
-
 export interface WorkspaceHeaderProps {
   handleOpenCreateFormModal: () => void
 }
 
 /**
- * Header for editing workspace, or updating the sort order of listed forms, etc.
+ * Header for listing number of forms, or updating the sort order of listed forms, etc.
  */
 export const WorkspaceHeader = ({
   handleOpenCreateFormModal,
@@ -42,7 +40,6 @@ export const WorkspaceHeader = ({
     activeFilter,
     setActiveFilter,
     hasActiveSearchOrFilter,
-    activeWorkspace,
   } = useWorkspaceContext()
 
   const { isOpen: isSearchExpanded, onToggle: onToggleSearchExpansion } =
@@ -52,13 +49,8 @@ export const WorkspaceHeader = ({
     () =>
       hasActiveSearchOrFilter
         ? simplur`Showing ${displayedFormsCount} of ${totalFormsCount} form[|s]`
-        : `${activeWorkspace.title}`,
-    [
-      displayedFormsCount,
-      hasActiveSearchOrFilter,
-      totalFormsCount,
-      activeWorkspace,
-    ],
+        : `All forms (${totalFormsCount})`,
+    [displayedFormsCount, hasActiveSearchOrFilter, totalFormsCount],
   )
 
   return (
@@ -87,37 +79,25 @@ export const WorkspaceHeader = ({
         color="secondary.500"
         alignSelf="center"
       >
-        <Skeleton isLoaded={!isLoading} alignSelf="center">
-          <Flex maxW={{ base: '9.75rem', md: '30.5rem' }}>
-            <Text textStyle="h2" color="secondary.500" noOfLines={1}>
-              {headerText}
-            </Text>
-            {!hasActiveSearchOrFilter && (
-              <Text textStyle="h2" color="secondary.500">
-                &nbsp;({totalFormsCount})
-              </Text>
-            )}
-          </Flex>
+        <Skeleton isLoaded={!isLoading}>
+          <Text
+            textStyle={isMobile && hasActiveSearchOrFilter ? 'subhead-1' : 'h2'}
+          >
+            {headerText}
+          </Text>
         </Skeleton>
-        {activeWorkspace._id && (
-          <Skeleton isLoaded={!isLoading}>
-            <WorkspaceEditMenu />
-          </Skeleton>
-        )}
       </Flex>
 
       {isDesktop ? (
         // Combination box used in desktop mode.
         <Box gridArea="searchFilter">
-          {totalFormsCount ? (
-            <WorkspaceSearchbar
-              placeholder="Search by title"
-              value={activeSearch}
-              onChange={setActiveSearch}
-              filterValue={activeFilter}
-              onFilter={setActiveFilter}
-            />
-          ) : null}
+          <WorkspaceSearchbar
+            placeholder="Search by title"
+            value={activeSearch}
+            onChange={setActiveSearch}
+            filterValue={activeFilter}
+            onFilter={setActiveFilter}
+          />
         </Box>
       ) : (
         <MobileWorkspaceSearchbar
@@ -137,7 +117,6 @@ export const WorkspaceHeader = ({
         isDisabled={isLoading}
         onClick={handleOpenCreateFormModal}
         leftIcon={<BiPlus fontSize="1.5rem" />}
-        minW="9.625rem"
       >
         Create form
       </Button>

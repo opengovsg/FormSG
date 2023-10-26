@@ -1,63 +1,35 @@
-import { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import fuzzysort from 'fuzzysort'
 
-import { FormId, FormStatus } from '~shared/types'
-import { Workspace } from '~shared/types/workspace'
+import { FormStatus } from '~shared/types'
 
-import { useDashboard, useWorkspace } from './queries'
+import { useWorkspace } from './queries'
 import { FilterOption } from './types'
 import { WorkspaceContext } from './WorkspaceContext'
 
 interface WorkspaceProviderProps {
-  currentWorkspace: string
-  defaultWorkspace: Workspace
-  setCurrentWorkspace: Dispatch<SetStateAction<string>>
   children: React.ReactNode
 }
 
 export const WorkspaceProvider = ({
-  currentWorkspace,
-  defaultWorkspace,
-  setCurrentWorkspace,
   children,
 }: WorkspaceProviderProps): JSX.Element => {
-  const { data: dashboardForms, isLoading: dashboardIsLoading } = useDashboard()
+  const { data: dashboardForms, isLoading } = useWorkspace()
 
-  const { data: workspaces, isLoading: workspaceIsLoading } = useWorkspace()
-
-  const isLoading = dashboardIsLoading || workspaceIsLoading
+  const totalFormsCount = useMemo(
+    () => dashboardForms?.length,
+    [dashboardForms?.length],
+  )
 
   const [activeSearch, setActiveSearch] = useState<string>('')
   const [activeFilter, setActiveFilter] = useState<FilterOption>(
     FilterOption.AllForms,
   )
 
-  const activeWorkspace = useMemo(
-    () =>
-      workspaces?.find(
-        (workspace) => workspace._id.toString() === currentWorkspace,
-      ),
-    [workspaces, currentWorkspace],
-  )
-
-  const totalFormsCount = useMemo(() => {
-    if (currentWorkspace) {
-      return activeWorkspace?.formIds.length
-    }
-    return dashboardForms?.length
-  }, [dashboardForms?.length, activeWorkspace, currentWorkspace])
-
   const displayedForms = useMemo(() => {
     if (!dashboardForms) return []
 
     let displayedForms = dashboardForms
-
-    // filter by workspaces first
-    if (currentWorkspace) {
-      displayedForms = displayedForms.filter((form) =>
-        activeWorkspace?.formIds.includes(form._id),
-      )
-    }
 
     // Filter first...
     switch (activeFilter) {
@@ -84,13 +56,7 @@ export const WorkspaceProvider = ({
       .map((res) => res.obj)
 
     return displayedForms
-  }, [
-    dashboardForms,
-    activeFilter,
-    activeSearch,
-    currentWorkspace,
-    activeWorkspace,
-  ])
+  }, [dashboardForms, activeFilter, activeSearch])
 
   const displayedFormsCount = useMemo(
     () => displayedForms.length,
@@ -100,13 +66,6 @@ export const WorkspaceProvider = ({
   const hasActiveSearchOrFilter = useMemo(
     () => !!activeSearch || activeFilter !== FilterOption.AllForms,
     [activeFilter, activeSearch],
-  )
-
-  const getFormWorkspace = useCallback(
-    (formId: FormId) => {
-      return workspaces?.find((workspace) => workspace.formIds.includes(formId))
-    },
-    [workspaces],
   )
 
   return (
@@ -121,11 +80,6 @@ export const WorkspaceProvider = ({
         activeSearch,
         setActiveSearch,
         hasActiveSearchOrFilter,
-        activeWorkspace: activeWorkspace ? activeWorkspace : defaultWorkspace,
-        workspaces,
-        setCurrentWorkspace,
-        getFormWorkspace,
-        isDefaultWorkspace: !activeWorkspace,
       }}
     >
       {children}
