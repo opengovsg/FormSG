@@ -195,7 +195,6 @@ export class SGIDMyInfoData
     if (!data || !fieldValue) return false
 
     switch (attr) {
-      case ExternalAttr.MobileNoWithCountryCode:
       case ExternalAttr.RegisteredAddress:
       case ExternalAttr.Name:
       case ExternalAttr.PassportNumber:
@@ -216,6 +215,7 @@ export class SGIDMyInfoData
       case ExternalAttr.Occupation:
         return !!data
       // Fields required to always be editable according to MyInfo docs
+      case ExternalAttr.MobileNoWithCountryCode:
       case ExternalAttr.MaritalStatus:
       case ExternalAttr.CountryOfMarriage:
       case ExternalAttr.MarriageCertNo:

@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.83.0",
+  "version": "6.84.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -236,7 +236,7 @@
     "jest-localstorage-mock": "^2.4.26",
     "jest-mock-axios": "^4.7.2",
     "lint-staged": "^13.1.0",
-    "maildev": "^2.0.5",
+    "maildev": "^2.1.0",
     "mockdate": "^3.0.5",
     "ngrok": "^4.3.3",
     "prettier": "^2.8.1",

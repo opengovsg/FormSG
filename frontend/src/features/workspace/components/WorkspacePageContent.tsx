@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Box, Container, Grid } from '@chakra-ui/react'
 
-import { GUIDE_ENCRYPTION_BOUNDARY_SHIFT } from '~constants/links'
+import { GUIDE_PAYMENTS_ENTRY } from '~constants/links'
 import { ROLLOUT_ANNOUNCEMENT_KEY_PREFIX } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import InlineMessage from '~components/InlineMessage'
@@ -41,7 +41,7 @@ export const WorkspacePageContent = ({
   )
 
   // TODO: change dashboard message to env var
-  const dashboardMessage = `FormSG encryption is changing to make it more secure. This won't affect data/security classifications, and no action is needed from you. [Learn more](${GUIDE_ENCRYPTION_BOUNDARY_SHIFT})`
+  const dashboardMessage = `Introducing payments! Respondents can now pay for fees and services directly on your form. [Learn more](${GUIDE_PAYMENTS_ENTRY})`
 
   return totalFormsCount === 0 ? (
     <EmptyWorkspace
