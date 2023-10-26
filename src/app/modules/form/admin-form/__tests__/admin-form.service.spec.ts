@@ -377,7 +377,7 @@ describe('admin-form.service', () => {
 
       // Assert
       expect(actual.isOk()).toEqual(true)
-      expect(actual._unsafeUnwrap()).toEqual(true)
+      expect(actual._unsafeUnwrap()).toEqual(mockArchivedForm)
     })
 
     it('should return DatabaseError if any database errors occur', async () => {

@@ -271,7 +271,7 @@ export const extractMyInfoFieldIds = (
 export const archiveForm = (
   form: IPopulatedForm,
 ): ResultAsync<
-  true,
+  IFormSchema,
   | DatabaseError
   | DatabaseValidationError
   | DatabaseConflictError
@@ -288,8 +288,8 @@ export const archiveForm = (
     })
 
     return transformMongoError(error)
-    // On success, return true
-  }).map(() => true)
+    // On success, return form
+  }).map((form) => form)
 }
 
 /**
