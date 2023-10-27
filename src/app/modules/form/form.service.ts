@@ -23,7 +23,6 @@ import getFormModel, {
   getEncryptedFormModel,
 } from '../../models/form.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
-import { IntranetService } from '../../services/intranet/intranet.service'
 import {
   getMongoErrorMessage,
   transformMongoError,
@@ -33,6 +32,7 @@ import {
   DatabaseError,
   PossibleDatabaseError,
 } from '../core/core.errors'
+import { IntranetService } from '../intranet/intranet.service'
 
 import {
   FormDeletedError,
