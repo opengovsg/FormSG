@@ -69,6 +69,12 @@ export const sgidVarsSchema: Schema<ISgidVarsSchema> = {
     default: '',
     env: 'SGID_HOSTNAME',
   },
+  jwtSecret: {
+    doc: 'The secret key used to sign and verify JWT based on userinfo from sgID',
+    format: String,
+    default: '',
+    env: 'SGID_JWT_SECRET',
+  },
 }
 
 // Load and validate sgid configuration values

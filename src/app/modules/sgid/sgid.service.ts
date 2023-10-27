@@ -36,6 +36,7 @@ export class SgidServiceClass {
 
   private publicKey: string | Buffer
   private privateKey: string
+  private jwtSecret: string
 
   private cookieDomain: string
   private cookieMaxAge: number
@@ -51,6 +52,7 @@ export class SgidServiceClass {
     formLoginRedirectUri: redirectUri,
     clientId,
     clientSecret,
+    jwtSecret,
   }: ISgidVarsSchema) {
     this.privateKey = fs.readFileSync(privateKeyPath, { encoding: 'utf8' })
     this.client = new SgidClient({
@@ -65,6 +67,7 @@ export class SgidServiceClass {
     this.cookieDomain = cookieDomain
     this.cookieMaxAge = cookieMaxAge
     this.cookieMaxAgePreserved = cookieMaxAgePreserved
+    this.jwtSecret = jwtSecret
   }
 
   /**
@@ -232,7 +235,7 @@ export class SgidServiceClass {
     const userName = data['myinfo.nric_number']
     const payload: SGIDJwtSingpassPayload = { userName, rememberMe }
     const maxAge = rememberMe ? this.cookieMaxAgePreserved : this.cookieMaxAge
-    const jwt = Jwt.sign(payload, this.privateKey, {
+    const jwt = Jwt.sign(payload, this.jwtSecret, {
       algorithm: JWT_ALGORITHM,
       expiresIn: maxAge / 1000,
     })
@@ -263,7 +266,7 @@ export class SgidServiceClass {
   }): Result<{ jwt: string; maxAge: number; sub: string }, ApplicationError> {
     const payload: SGIDJwtAccessPayload = { accessToken }
     const maxAge = this.cookieMaxAge
-    const jwt = Jwt.sign(payload, this.privateKey, {
+    const jwt = Jwt.sign(payload, this.jwtSecret, {
       algorithm: JWT_ALGORITHM,
       expiresIn: maxAge / 1000,
     })
@@ -333,7 +336,7 @@ export class SgidServiceClass {
         return err(new SgidMissingJwtError())
       }
 
-      const payload = Jwt.verify(jwtSgid, this.privateKey, {
+      const payload = Jwt.verify(jwtSgid, this.jwtSecret, {
         algorithms: [JWT_ALGORITHM],
       })
 
