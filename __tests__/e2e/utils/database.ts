@@ -1,7 +1,5 @@
 import mongoose, { Model } from 'mongoose'
 
-const dbUri = 'mongodb://127.0.0.1:3000/formsg'
-
 // Get absolute path of file
 const spec = (path: string): any => {
   const fullPath = `${process.env.PWD}/${path}`
@@ -12,6 +10,10 @@ const spec = (path: string): any => {
  * Connects to mongo-memory-server instance.
  */
 export const makeMongooseFixtures = (): Promise<mongoose.Connection> => {
+  const dbUri = process.env.MONGO_URI?.toString()
+  if (!dbUri) {
+    return Promise.reject(Error('dbUri is empty'))
+  }
   const connection = mongoose.createConnection(dbUri).asPromise()
   return connection
 }
