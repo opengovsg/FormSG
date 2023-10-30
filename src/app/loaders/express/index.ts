@@ -8,13 +8,13 @@ import url from 'url'
 
 import config from '../../config/config'
 import { FrontendRouter } from '../../modules/frontend/frontend.routes'
+import * as IntranetMiddleware from '../../modules/intranet/intranet.middleware'
 import { MYINFO_ROUTER_PREFIX } from '../../modules/myinfo/myinfo.constants'
 import { MyInfoRouter } from '../../modules/myinfo/myinfo.routes'
 import { SgidRouter } from '../../modules/sgid/sgid.routes'
 import { ApiRouter } from '../../routes/api'
 import { LegacyRedirectRouter } from '../../routes/legacy-redirect'
 import { SpOidcJwksRouter } from '../../routes/singpass'
-import * as IntranetMiddleware from '../../services/intranet/intranet.middleware'
 
 import {
   catchNonExistentStaticRoutesMiddleware,
