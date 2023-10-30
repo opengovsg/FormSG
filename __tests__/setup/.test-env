@@ -28,6 +28,7 @@ SGID_FORM_LOGIN_REDIRECT_URI=http://localhost:5000/sgid/login
 SGID_ADMIN_LOGIN_REDIRECT_URI=http://localhost:5000/api/v3/auth/sgid/login
 SGID_PRIVATE_KEY=./node_modules/@opengovsg/mockpass/static/certs/key.pem
 SGID_PUBLIC_KEY=./node_modules/@opengovsg/mockpass/static/certs/server.crt
+SGID_JWT_SECRET=sgidjwtsecret
 
 IS_SP_MAINTENANCE=Date/Time-SP
 IS_CP_MAINTENANCE=Date/Time-CP

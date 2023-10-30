@@ -22,13 +22,13 @@ export const sgidVarsSchema: Schema<ISgidVarsSchema> = {
     env: 'SGID_CLIENT_SECRET',
   },
   privateKeyPath: {
-    doc: 'The path to the private key to decrypt payloads from sgID. Also used for JWT signing',
+    doc: 'The path to the private key to decrypt payloads from sgID.',
     format: String,
     default: null,
     env: 'SGID_PRIVATE_KEY',
   },
   publicKeyPath: {
-    doc: 'The path to the public key given to sgID. Also used to verify JWTs created by FormSG',
+    doc: 'The path to the public key given to sgID.',
     format: String,
     default: null,
     env: 'SGID_PUBLIC_KEY',
@@ -68,6 +68,12 @@ export const sgidVarsSchema: Schema<ISgidVarsSchema> = {
     format: String,
     default: '',
     env: 'SGID_HOSTNAME',
+  },
+  jwtSecret: {
+    doc: 'The secret key used to sign and verify JWT based on userinfo from sgID',
+    format: String,
+    default: '',
+    env: 'SGID_JWT_SECRET',
   },
 }
 
