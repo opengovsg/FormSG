@@ -36,7 +36,7 @@ export const FEATURE_UPDATE_LIST: FeatureUpdateList = {
   features: [
     {
       title: 'Introducing Folders!',
-      date: new Date('25 Oct 2023 GMT+8'),
+      date: new Date('31 Oct 2023 GMT+8'),
       description: `Say hello to a new way of managing your forms! Create folders and organise your forms to find them easily later.`,
       image: {
         url: foldersDashboard,

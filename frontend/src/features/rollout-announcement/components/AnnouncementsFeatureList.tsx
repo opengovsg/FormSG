@@ -15,7 +15,7 @@ export interface NewFeature {
 // so admins will see new announcements.
 export const NEW_FEATURES: NewFeature[] = [
   {
-    // Announcement date: 2023-10-26
+    // Announcement date: 2023-10-31
     title: 'Introducing Folders!',
     description:
       'Say hello to a new way of managing your forms! Create folders and organise your forms to find them easily later.',
