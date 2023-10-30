@@ -80,4 +80,7 @@ export const MOCK_OPTIONS = {
   cookieDomain: MOCK_COOKIE_SETTINGS.domain,
   cookieMaxAge: MOCK_COOKIE_AGE,
   cookieMaxAgePreserved: MOCK_COOKIE_AGE * 2,
+  jwtSecret: 'jwt-secret',
 }
+
+export const MOCK_JWT_ALGORITHM = 'HS256'

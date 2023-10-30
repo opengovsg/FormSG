@@ -23,6 +23,7 @@ import {
   MOCK_CODE_VERIFIER,
   MOCK_DESTINATION,
   MOCK_JWT,
+  MOCK_JWT_ALGORITHM,
   MOCK_JWT_PAYLOAD,
   MOCK_NONCE,
   MOCK_OPTIONS,
@@ -264,9 +265,9 @@ describe('sgid.service', () => {
           userName: MOCK_USER_INFO.data['myinfo.nric_number'],
           rememberMe: false,
         },
-        MOCK_OPTIONS.privateKeyPath,
+        MOCK_OPTIONS.jwtSecret,
         {
-          algorithm: 'RS256',
+          algorithm: MOCK_JWT_ALGORITHM,
           expiresIn: MOCK_OPTIONS.cookieMaxAge / 1000,
         },
       )
@@ -289,9 +290,9 @@ describe('sgid.service', () => {
           userName: MOCK_USER_INFO.data[SGID_MYINFO_NRIC_NUMBER_SCOPE],
           rememberMe: true,
         },
-        MOCK_OPTIONS.privateKeyPath,
+        MOCK_OPTIONS.jwtSecret,
         {
-          algorithm: 'RS256',
+          algorithm: MOCK_JWT_ALGORITHM,
           expiresIn: MOCK_OPTIONS.cookieMaxAgePreserved / 1000,
         },
       )
@@ -306,8 +307,8 @@ describe('sgid.service', () => {
       expect(result._unsafeUnwrap()).toStrictEqual(MOCK_JWT_PAYLOAD)
       expect(MockJwt.verify).toHaveBeenCalledWith(
         MOCK_JWT,
-        MOCK_OPTIONS.publicKeyPath,
-        { algorithms: ['RS256'] },
+        MOCK_OPTIONS.jwtSecret,
+        { algorithms: [MOCK_JWT_ALGORITHM] },
       )
     })
 
@@ -327,8 +328,8 @@ describe('sgid.service', () => {
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(SgidInvalidJwtError)
       expect(MockJwt.verify).toHaveBeenCalledWith(
         MOCK_JWT,
-        MOCK_OPTIONS.publicKeyPath,
-        { algorithms: ['RS256'] },
+        MOCK_OPTIONS.jwtSecret,
+        { algorithms: [MOCK_JWT_ALGORITHM] },
       )
     })
     it('should return SgidVerifyJwtError on verify failure', () => {
@@ -340,8 +341,8 @@ describe('sgid.service', () => {
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(SgidVerifyJwtError)
       expect(MockJwt.verify).toHaveBeenCalledWith(
         MOCK_JWT,
-        MOCK_OPTIONS.publicKeyPath,
-        { algorithms: ['RS256'] },
+        MOCK_OPTIONS.jwtSecret,
+        { algorithms: [MOCK_JWT_ALGORITHM] },
       )
     })
   })
