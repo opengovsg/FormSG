@@ -15,7 +15,7 @@ import { useStorageResponsesContext } from '../../ResponsesPage/storage'
 import { useAllSubmissionData } from '../queries'
 
 import { FIELD_TO_CHART, FormChart } from './FormChart'
-import { WordCloud, WordCloudProps } from './WordCloud'
+import WordCloud, { WordCloudProps } from './WordCloud'
 
 export const UnlockedInsights = () => {
   const { data: decryptedContent } = useAllSubmissionData()
