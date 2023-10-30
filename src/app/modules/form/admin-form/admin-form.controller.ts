@@ -823,12 +823,23 @@ export const handleArchiveForm: ControllerHandler<{ formId: string }> = async (
       )
       // Step 3: Currently logged in user has permissions to archive form.
       .andThen((formToArchive) => AdminFormService.archiveForm(formToArchive))
-      .andThen(() =>
-        removeFormsFromAllWorkspaces({
+      .andThen((archivedForm) => {
+        // Step 4: For each collaborator, remove the form from their workspaces
+        archivedForm.permissionList?.forEach(async (permissions) => {
+          await UserService.findUserByEmail(permissions.email).map(
+            async (user) =>
+              await removeFormsFromAllWorkspaces({
+                formIds: [formId],
+                userId: user._id,
+              }),
+          )
+        })
+        // Step 5: remove form from workspace of current user
+        return removeFormsFromAllWorkspaces({
           formIds: [formId],
           userId: sessionUserId,
-        }),
-      )
+        })
+      })
       .map(() => res.json({ message: 'Form has been archived' }))
       .mapErr((error) => {
         logger.warn({
