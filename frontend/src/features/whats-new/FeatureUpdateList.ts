@@ -3,10 +3,12 @@ import { JsonObject, RequireExactlyOne } from 'type-fest'
 
 import { GUIDE_PAYMENTS_ENTRY } from '~constants/links'
 
-import Animation1 from './assets/1-payments.json'
-import Animation2 from './assets/2-search-and-filter.json'
-import Animation3 from './assets/3-dnd.json'
+import Animation2 from './assets/2-payments.json'
+import Animation3 from './assets/3-search-and-filter.json'
+import Animation4 from './assets/4-dnd.json'
+import foldersDashboard from './assets/folders_dashboard.svg'
 
+// image can either be a static image (using url) or an animation (using animationData)
 export type FeatureUpdateImage = RequireExactlyOne<
   {
     alt: string
@@ -30,14 +32,23 @@ export interface FeatureUpdateList {
 // New features should be added at the top of the list.
 export const FEATURE_UPDATE_LIST: FeatureUpdateList = {
   // Update version whenever a new feature is added.
-  version: 3,
+  version: 4,
   features: [
+    {
+      title: 'Introducing Folders!',
+      date: new Date('31 Oct 2023 GMT+8'),
+      description: `Say hello to a new way of managing your forms! Create folders and organise your forms to find them easily later.`,
+      image: {
+        url: foldersDashboard,
+        alt: 'Introducing Folders!',
+      },
+    },
     {
       title: 'Collect payments on your form',
       date: new Date('31 May 2023 GMT+8'),
       description: `Respondents can now pay for fees and services directly on your form! We integrate with Stripe to provide reliable payments and hassle-free reconciliations. Payment methods we support include debit / credit cards and PayNow. [Learn more](${GUIDE_PAYMENTS_ENTRY})`,
       image: {
-        animationData: Animation1,
+        animationData: Animation2,
         alt: 'Collect payments on your form',
       },
     },
@@ -49,7 +60,7 @@ export const FEATURE_UPDATE_LIST: FeatureUpdateList = {
         * Applying filters to narrow down results
       `,
       image: {
-        animationData: Animation2,
+        animationData: Animation3,
         alt: 'Search and filter your forms',
       },
     },
@@ -64,7 +75,7 @@ export const FEATURE_UPDATE_LIST: FeatureUpdateList = {
         Notice anything wrong? Let us know by using the feedback button at the bottom-right of the screen.
       `,
       image: {
-        animationData: Animation3,
+        animationData: Animation4,
         alt: 'The new FormSG experience',
       },
     },
