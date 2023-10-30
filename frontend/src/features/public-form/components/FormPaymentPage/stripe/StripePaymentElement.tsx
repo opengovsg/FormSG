@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
 import { Elements, useStripe } from '@stripe/react-stripe-js'
@@ -32,13 +32,29 @@ const StripePaymentElement = ({ paymentId }: { paymentId: string }) => {
     () => loadStripe(paymentInfoData.publishableKey),
     [paymentInfoData],
   )
+
+  const { payment_intent_id } = paymentInfoData
+  // paysg-flow block this is a temporary block
+  // eslint-disable-next-line no-lone-blocks
+  {
+    useEffect(() => {
+      const timeoutHandle = setTimeout(() => {
+        // https://staging.pay.gov.sg/payments/eMLb5xZmsw0Og04qk41E1
+        const paysgCheckoutUrl = `https://staging.pay.gov.sg/payments/${payment_intent_id}`
+        window.location.assign(paysgCheckoutUrl)
+      }, 3000)
+      return () => clearTimeout(timeoutHandle)
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+  }
   return (
     <Elements
       stripe={stripePromise}
       options={{ clientSecret: paymentInfoData.client_secret }}
     >
       <Flex flexDir="column" align="center">
-        <StripePaymentContainer paymentInfoData={paymentInfoData} />
+        This is a paysg flow, redirecting you to paysg in a moment...
+        {/* <StripePaymentContainer paymentInfoData={paymentInfoData} /> */}
       </Flex>
     </Elements>
   )

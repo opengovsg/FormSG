@@ -51,7 +51,7 @@ PaymentsRouter.get(
  */
 PaymentsRouter.get(
   '/:paymentId([a-fA-F0-9]{24})/getinfo',
-  StripeController.getPaymentInfo,
+  StripeController.getPaymentInfo, // TODO(KEN): refactor to be channel agnostic
 )
 
 /**

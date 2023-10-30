@@ -513,7 +513,7 @@ const _createPaymentSubmission = async ({
     console.log({ paysgIntent })
     const paymentIntentId = paysgIntent.id
     logger.info({
-      message: 'Created payment intent from Stripe',
+      message: 'Created payment intent from paysg',
       meta: {
         ...logMeta,
         pendingSubmissionId,

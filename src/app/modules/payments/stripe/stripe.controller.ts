@@ -203,6 +203,21 @@ export const getPaymentInfo: ControllerHandler<
           }
 
           const paymentIntentId = payment.paymentIntentId
+
+          // paysg-flow block
+          {
+            return okAsync(
+              res.status(StatusCodes.OK).json({
+                client_secret: '', // unused for paysg
+                publishableKey: '', // unused for paysg
+                payment_intent_id: payment.paymentIntentId,
+                submissionId: payment.pendingSubmissionId,
+                products: payment.products,
+                amount: payment.amount,
+                payment_fields_snapshot: payment.payment_fields_snapshot,
+              }),
+            )
+          }
           return ResultAsync.fromPromise(
             stripe.paymentIntents.retrieve(paymentIntentId, {
               stripeAccount,
