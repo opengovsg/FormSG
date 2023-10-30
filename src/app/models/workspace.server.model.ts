@@ -27,7 +27,7 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
           /^[a-zA-Z0-9_\-./() &`;'"]*$/,
           'Workspace title cannot contain special characters',
         ],
-        required: 'Workspace title cannot be blank',
+        required: [true, 'Workspace title cannot be blank'],
         minlength: [
           WORKSPACE_MIN_TITLE_LENGTH,
           `Workspace title must be at least ${WORKSPACE_MIN_TITLE_LENGTH} characters`,
@@ -41,7 +41,7 @@ const compileWorkspaceModel = (db: Mongoose): IWorkspaceModel => {
       admin: {
         type: Schema.Types.ObjectId,
         ref: 'User',
-        required: 'Workspace must have an Admin',
+        required: [true, 'Workspace must have an Admin'],
       },
       formIds: {
         type: [Schema.Types.ObjectId],
