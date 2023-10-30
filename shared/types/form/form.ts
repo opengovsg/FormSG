@@ -71,11 +71,30 @@ export enum FormResponseMode {
   Email = 'email',
 }
 
-export type FormPaymentsChannel = {
+interface FormPaymentsChannelBase {
   channel: PaymentChannel
+}
+
+interface UnconnectedFormPaymentsChannel extends FormPaymentsChannelBase {
+  channel: PaymentChannel.Unconnected
+}
+interface PaySGFormPaymentsChannel extends FormPaymentsChannelBase {
+  channel: PaymentChannel.PaySG
+  /** PaySG account ID */
+  target_account_id: string
+}
+
+export interface StripeFormPaymentsChannel extends FormPaymentsChannelBase {
+  channel: PaymentChannel.Stripe
+  /** Stripe account ID */
   target_account_id: string
   publishable_key: string
 }
+
+export type FormPaymentsChannel =
+  | PaySGFormPaymentsChannel
+  | StripeFormPaymentsChannel
+  | UnconnectedFormPaymentsChannel
 
 export interface PaymentTypeBase {
   payment_type: PaymentType

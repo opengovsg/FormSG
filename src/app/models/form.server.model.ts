@@ -231,20 +231,11 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
 const EncryptedFormDocumentSchema =
   EncryptedFormSchema as unknown as Schema<IEncryptedFormDocument>
 
-EncryptedFormDocumentSchema.methods.addPaymentAccountId = async function ({
-  accountId,
-  publishableKey,
-}: {
-  accountId: FormPaymentsChannel['target_account_id']
-  publishableKey: FormPaymentsChannel['publishable_key']
-}) {
+EncryptedFormDocumentSchema.methods.addPaymentAccountId = async function (
+  paymentChannel: FormPaymentsChannel,
+) {
   if (this.payments_channel?.channel === PaymentChannel.Unconnected) {
-    this.payments_channel = {
-      // Definitely Stripe for now, may be different later on.
-      channel: PaymentChannel.Stripe,
-      target_account_id: accountId,
-      publishable_key: publishableKey,
-    }
+    this.payments_channel = paymentChannel
   }
   return this.save()
 }
@@ -252,8 +243,6 @@ EncryptedFormDocumentSchema.methods.addPaymentAccountId = async function ({
 EncryptedFormDocumentSchema.methods.removePaymentAccount = async function () {
   this.payments_channel = {
     channel: PaymentChannel.Unconnected,
-    target_account_id: '',
-    publishable_key: '',
   }
   if (this.payments_field) {
     this.payments_field.enabled = false

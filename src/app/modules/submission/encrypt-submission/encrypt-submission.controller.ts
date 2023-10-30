@@ -44,6 +44,7 @@ import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
 import { getFeatureFlag } from '../../feature-flags/feature-flags.service'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
+import * as PaySgService from '../../payments/paysg/paysg.service'
 import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
@@ -392,6 +393,17 @@ const _createPaymentSubmission = async ({
     })
   }
 
+  // begin paymentchannel-specific data
+  if (form.payments_channel.channel === PaymentChannel.Unconnected) {
+    logger.error({
+      message: 'Error when creating payment: payment channel is unconnected.',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message:
+        "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+    })
+  }
   const targetAccountId = form.payments_channel.target_account_id
 
   // Step 1: Create payment without payment intent id and pending submission id.
@@ -452,6 +464,7 @@ const _createPaymentSubmission = async ({
     paymentContactEmail: paymentReceiptEmail,
   }
 
+  // Wrap under paymentservice to handle creation of intents?
   const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
     amount,
     currency: paymentConfig.defaultCurrency,
@@ -462,6 +475,105 @@ const _createPaymentSubmission = async ({
     description: getPaymentIntentDescription(form, paymentProducts),
     receipt_email: paymentReceiptEmail,
     metadata,
+  }
+  // paysg-flow block
+  {
+    const email = 'ken@open.gov.sg'
+    const description = 'formsg test first payment'
+    const referenceId = 'submissionid-0001'
+    // this serviceId should come from the agency/admin
+    const serviceId = 'payment_service_fe5b1b0b-065a-43b8-939d-03ab2b67ede9'
+    let paysgIntent
+    try {
+      paysgIntent = await PaySgService.createPaymentIntent({
+        amount,
+        email,
+        description,
+        referenceId,
+        serviceId,
+        // return_url: resolveRedirectionUrl(`/${formId}/payment/${paymentId}`), // currently they only support strict (non-localhost) https urls
+        metadata,
+      }).then(({ data }) => data)
+    } catch (err) {
+      console.error(err)
+      logger.error({
+        message: 'Failed to create PaySG payment intent',
+        meta: {
+          ...logMeta,
+          pendingSubmissionId,
+        },
+        error: err,
+      })
+      // Return a 502 error here since the issue was with PaySG.
+      return res.status(StatusCodes.BAD_GATEWAY).json({
+        message:
+          'There was a problem creating the payment intent. Please try again.',
+      })
+    }
+    console.log({ paysgIntent })
+    const paymentIntentId = paysgIntent.id
+    logger.info({
+      message: 'Created payment intent from Stripe',
+      meta: {
+        ...logMeta,
+        pendingSubmissionId,
+        paymentIntentId,
+      },
+    })
+
+    // Step 4: Update payment document with payment intent id and pending submission id, and save it.
+    payment.paymentIntentId = paymentIntentId
+    payment.pendingSubmissionId = pendingSubmissionId
+    try {
+      await payment.save()
+    } catch (err) {
+      logger.error({
+        message: 'Error updating payment document with payment intent id',
+        meta: {
+          ...logMeta,
+          pendingSubmissionId,
+          paymentIntentId,
+        },
+        error: err,
+      })
+      // Cancel the payment intent if saving the document fails.
+      try {
+        await PaySgService.cancelPaymentIntent({ serviceId })
+      } catch (stripeErr) {
+        logger.error({
+          message: 'Failed to cancel Stripe payment intent',
+          meta: {
+            ...logMeta,
+            pendingSubmissionId,
+            paymentIntentId,
+          },
+          error: err,
+        })
+      }
+      // Regardless of whether the cancellation succeeded or failed, block the
+      // submission so that user can try to resubmit
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message:
+          'There was a problem updating the payment document. Please try again.',
+      })
+    }
+
+    logger.info({
+      message: 'Saved payment document to DB',
+      meta: {
+        ...logMeta,
+        pendingSubmissionId,
+        paymentIntentId,
+        paymentId,
+      },
+    })
+
+    return res.json({
+      message: 'Form submission successful',
+      submissionId: pendingSubmissionId,
+      timestamp: (pendingSubmission.created || new Date()).getTime(),
+      paymentData: { paymentId, paymentUrl: paysgIntent.payment_url },
+    })
   }
 
   let paymentIntent
