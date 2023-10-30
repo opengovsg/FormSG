@@ -24,7 +24,7 @@ import {
   getStripeOauthUrl,
   unlinkStripeAccountFromForm,
   validateAccount,
-} from '../../payments/stripe.service'
+} from '../../payments/stripe/stripe.service'
 import { checkFormIsEncryptMode } from '../../submission/encrypt-submission/encrypt-submission.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as UserService from '../../user/user.service'

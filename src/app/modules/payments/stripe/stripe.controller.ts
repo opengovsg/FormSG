@@ -9,26 +9,27 @@ import Stripe from 'stripe'
 import {
   DISALLOW_CONNECT_NON_WHITELIST_STRIPE_ACCOUNT,
   ERROR_QUERY_PARAM_KEY,
-} from '../../../../shared/constants'
+} from '../../../../../shared/constants'
 import {
   ErrorDto,
   GetPaymentInfoDto,
   IncompletePaymentsDto,
+  PaymentChannel,
   ReconciliationEventsReportLine,
   ReconciliationReport,
-} from '../../../../shared/types'
-import config from '../../config/config'
-import { createLoggerWithLabel } from '../../config/logger'
-import { stripe } from '../../loaders/stripe'
-import { createReqMeta } from '../../utils/request'
-import { InvalidDomainError } from '../auth/auth.errors'
-import { ControllerHandler } from '../core/core.types'
-import * as FormService from '../form/form.service'
-import * as PendingSubmissionModel from '../pending-submission/pending-submission.service'
-import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt-submission.service'
+} from '../../../../../shared/types'
+import config from '../../../config/config'
+import { createLoggerWithLabel } from '../../../config/logger'
+import { stripe } from '../../../loaders/stripe'
+import { createReqMeta } from '../../../utils/request'
+import { InvalidDomainError } from '../../auth/auth.errors'
+import { ControllerHandler } from '../../core/core.types'
+import * as FormService from '../../form/form.service'
+import * as PendingSubmissionModel from '../../pending-submission/pending-submission.service'
+import { checkFormIsEncryptMode } from '../../submission/encrypt-submission/encrypt-submission.service'
+import { PaymentAccountInformationError } from '../payments.errors'
+import * as PaymentService from '../payments.service'
 
-import { PaymentAccountInformationError } from './payments.errors'
-import * as PaymentService from './payments.service'
 import {
   StripeFetchError,
   StripeMetadataIncorrectEnvError,
@@ -179,8 +180,20 @@ export const getPaymentInfo: ControllerHandler<
         .andThen(checkFormIsEncryptMode) // Payment forms are encrypted
         .andThen((form) => {
           const stripeAccount = payment.targetAccountId
+          const { payments_channel } = form
+          if (payments_channel.channel !== PaymentChannel.Stripe) {
+            logger.error({
+              message: 'Payment form is not configured to use Stripe payments',
+              meta: logMeta,
+            })
+            return errAsync(
+              new PaymentAccountInformationError(
+                'Payment form is not configured to use Stripe payments',
+              ),
+            )
+          }
           // Early termination to prevent consumption of QPS limit to stripe
-          if (stripeAccount !== form.payments_channel.target_account_id) {
+          if (stripeAccount !== payments_channel.target_account_id) {
             logger.error({
               message:
                 'Target stripe account for this form has changed, unable to get payment info',
@@ -208,14 +221,12 @@ export const getPaymentInfo: ControllerHandler<
           ).map((paymentIntent) => {
             return res.status(StatusCodes.OK).json({
               client_secret: paymentIntent.client_secret || '',
-              publishableKey: form.payments_channel.publishable_key,
+              publishableKey: payments_channel.publishable_key,
               payment_intent_id: payment.paymentIntentId,
               submissionId: payment.pendingSubmissionId,
               products: payment.products,
               amount: payment.amount,
-              // Empty {} is returned for backwards compatibility during migration.
-              // Can be removed after set-payment-fields-snapshot.js script has been completely executed
-              payment_fields_snapshot: payment.payment_fields_snapshot || {},
+              payment_fields_snapshot: payment.payment_fields_snapshot,
             })
           })
         })

@@ -20,8 +20,8 @@ import * as EncryptSubmissionService from '../../submission/encrypt-submission/e
 import * as PaymentProofController from '../payment-proof.controller'
 import { PaymentProofUploadS3Error } from '../payment-proof.errors'
 import * as PaymentProofService from '../payment-proof.service'
-import { StripeFetchError } from '../stripe.errors'
-import * as StripeUtils from '../stripe.utils'
+import { StripeFetchError } from '../stripe/stripe.errors'
+import * as StripeUtils from '../stripe/stripe.utils'
 
 const Payment = getPaymentModel(mongoose)
 const EncryptPendingSubmission = getEncryptPendingSubmissionModel(mongoose)

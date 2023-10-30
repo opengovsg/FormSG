@@ -1,4 +1,4 @@
-import { ApplicationError } from '../core/core.errors'
+import { ApplicationError } from '../../core/core.errors'
 
 export class SuccessfulChargeNotFoundError extends ApplicationError {
   constructor(message = 'Successful charge not found from Stripe API') {

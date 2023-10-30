@@ -15,8 +15,8 @@ import config from '../../../config/config'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
 import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
-import * as StripeController from '../stripe.controller'
-import * as StripeService from '../stripe.service'
+import * as StripeController from '../stripe/stripe.controller'
+import * as StripeService from '../stripe/stripe.service'
 
 const Payment = getPaymentModel(mongoose)
 const EncryptPendingSubmission = getEncryptPendingSubmissionModel(mongoose)

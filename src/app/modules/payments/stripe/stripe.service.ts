@@ -7,40 +7,45 @@ import Stripe from 'stripe'
 import { MarkRequired } from 'ts-essentials'
 import isURL from 'validator/lib/isURL'
 
-import { featureFlags } from '../../../../shared/constants'
+import { featureFlags } from '../../../../../shared/constants'
 import {
+  PaymentChannel,
   PaymentStatus,
   ReconciliationReportLine,
-} from '../../../../shared/types'
+  StripeFormPaymentsChannel,
+} from '../../../../../shared/types'
 import {
   IEncryptedFormSchema,
   IPaymentSchema,
   IPopulatedEncryptedForm,
-} from '../../../types'
-import config from '../../config/config'
-import { paymentConfig } from '../../config/features/payment.config'
-import { createLoggerWithLabel } from '../../config/logger'
-import { stripe } from '../../loaders/stripe'
+} from '../../../../types'
+import config from '../../../config/config'
+import { paymentConfig } from '../../../config/features/payment.config'
+import { createLoggerWithLabel } from '../../../config/logger'
+import { stripe } from '../../../loaders/stripe'
 import {
   getMongoErrorMessage,
   transformMongoError,
-} from '../../utils/handle-mongo-error'
-import { InvalidDomainError } from '../auth/auth.errors'
-import * as AuthService from '../auth/auth.service'
-import { DatabaseError, DatabaseWriteConflictError } from '../core/core.errors'
-import { getFeatureFlag } from '../feature-flags/feature-flags.service'
-import { FormNotFoundError } from '../form/form.errors'
+} from '../../../utils/handle-mongo-error'
+import { InvalidDomainError } from '../../auth/auth.errors'
+import * as AuthService from '../../auth/auth.service'
+import {
+  DatabaseError,
+  DatabaseWriteConflictError,
+} from '../../core/core.errors'
+import { getFeatureFlag } from '../../feature-flags/feature-flags.service'
+import { FormNotFoundError } from '../../form/form.errors'
 import {
   PendingSubmissionNotFoundError,
   SubmissionNotFoundError,
-} from '../submission/submission.errors'
-
+} from '../../submission/submission.errors'
 import {
   ConfirmedPaymentNotFoundError,
   PaymentAlreadyConfirmedError,
   PaymentNotFoundError,
-} from './payments.errors'
-import * as PaymentsService from './payments.service'
+} from '../payments.errors'
+import * as PaymentsService from '../payments.service'
+
 import {
   ComputePaymentStateError,
   MalformedStripeChargeObjectError,
@@ -726,20 +731,28 @@ export const linkStripeAccountToForm = (
         return AuthService.validateEmailDomain(account.email)
       })
     })
-    .andThen(() =>
-      ResultAsync.fromPromise(
-        form.addPaymentAccountId({ accountId, publishableKey }),
-        (error) => {
-          const errMsg = 'Failed to update payment account id'
-          logger.error({
-            message: errMsg,
-            meta: logMeta,
-            error,
-          })
-          return new DatabaseError(errMsg)
-        },
-      ).map((updatedForm) => updatedForm.payments_channel.target_account_id),
-    )
+    .andThen(() => {
+      const asd: StripeFormPaymentsChannel = {
+        channel: PaymentChannel.Stripe,
+        target_account_id: 'accountId',
+        publishable_key: 'publishableKey',
+      }
+
+      return ResultAsync.fromPromise(form.addPaymentAccountId(asd), (error) => {
+        const errMsg = 'Failed to update payment account id'
+        logger.error({
+          message: errMsg,
+          meta: logMeta,
+          error,
+        })
+        return new DatabaseError(errMsg)
+      }).andThen((updatedForm) => {
+        if (updatedForm.payments_channel.channel !== PaymentChannel.Stripe) {
+          return errAsync(new DatabaseError())
+        }
+        return ok(updatedForm.payments_channel.target_account_id)
+      })
+    })
 }
 
 export const unlinkStripeAccountFromForm = (

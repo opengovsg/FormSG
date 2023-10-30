@@ -4,7 +4,7 @@ import { rateLimitConfig } from '../../../../config/config'
 import { withCronPaymentSecretAuthentication } from '../../../../modules/auth/auth.middlewares'
 import * as PaymentProofController from '../../../../modules/payments/payment-proof.controller'
 import * as PaymentsController from '../../../../modules/payments/payments.controller'
-import * as StripeController from '../../../../modules/payments/stripe.controller'
+import * as StripeController from '../../../../modules/payments/stripe/stripe.controller'
 import { limitRate } from '../../../../utils/limit-rate'
 
 export const PaymentsRouter = Router()

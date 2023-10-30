@@ -7,29 +7,33 @@ import mongoose from 'mongoose'
 import { err, Ok, ok, Result } from 'neverthrow'
 import Stripe from 'stripe'
 
-import { Payment, PaymentStatus, ProductItem } from '../../../../shared/types'
-import { hasProp } from '../../../../shared/utils/has-prop'
+import {
+  Payment,
+  PaymentStatus,
+  ProductItem,
+} from '../../../../../shared/types'
+import { hasProp } from '../../../../../shared/utils/has-prop'
 import {
   centsToDollars,
   formatCurrency,
-} from '../../../../shared/utils/payments'
-import { MapRouteError, StripePaymentMetadataDto } from '../../../types'
-import config from '../../config/config'
-import { createLoggerWithLabel } from '../../config/logger'
-import { ApplicationError, DatabaseError } from '../core/core.errors'
-import { FormNotFoundError } from '../form/form.errors'
+} from '../../../../../shared/utils/payments'
+import { MapRouteError, StripePaymentMetadataDto } from '../../../../types'
+import config from '../../../config/config'
+import { createLoggerWithLabel } from '../../../config/logger'
+import { ApplicationError, DatabaseError } from '../../core/core.errors'
+import { FormNotFoundError } from '../../form/form.errors'
 import {
   PendingSubmissionNotFoundError,
   ResponseModeError,
   SubmissionNotFoundError,
-} from '../submission/submission.errors'
-
+} from '../../submission/submission.errors'
 import {
   ConfirmedPaymentNotFoundError,
   PaymentAccountInformationError,
   PaymentAlreadyConfirmedError,
   PaymentNotFoundError,
-} from './payments.errors'
+} from '../payments.errors'
+
 import {
   ComputePaymentStateError,
   MalformedStripeChargeObjectError,

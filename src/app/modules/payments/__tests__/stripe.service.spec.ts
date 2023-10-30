@@ -24,9 +24,9 @@ import * as AuthService from '../../auth/auth.service'
 import * as FeatureFlagService from '../../feature-flags/feature-flags.service'
 import { PaymentNotFoundError } from '../payments.errors'
 import * as PaymentsService from '../payments.service'
-import { StripeMetadataInvalidError } from '../stripe.errors'
-import * as StripeService from '../stripe.service'
-import * as StripeUtils from '../stripe.utils'
+import { StripeMetadataInvalidError } from '../stripe/stripe.errors'
+import * as StripeService from '../stripe/stripe.service'
+import * as StripeUtils from '../stripe/stripe.utils'
 
 const Payment = getPaymentModel(mongoose)
 const EncryptPendingSubmission = getEncryptPendingSubmissionModel(mongoose)

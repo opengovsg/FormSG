@@ -14,14 +14,14 @@ import { DAY_IN_SECONDS } from '../../constants/time'
 import { stripe } from '../../loaders/stripe'
 import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
 
+import { StripeFetchError } from './stripe/stripe.errors'
+import { convertToProofOfPaymentFormat } from './stripe/stripe.utils'
 import {
   InvoicePdfGenerationError,
   PaymentProofPresignS3Error,
   PaymentProofUploadS3Error,
 } from './payment-proof.errors'
 import { getPaymentProofS3ObjectPath } from './payment-proof.utils'
-import { StripeFetchError } from './stripe.errors'
-import { convertToProofOfPaymentFormat } from './stripe.utils'
 
 const logger = createLoggerWithLabel(module)
 export const checkStripeReceiptIsReady = (

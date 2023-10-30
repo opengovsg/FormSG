@@ -33,7 +33,7 @@ import {
 } from '../../core/core.errors'
 import { ErrorResponseData } from '../../core/core.types'
 import { InvalidPaymentAmountError } from '../../payments/payments.errors'
-import { StripeAccountError } from '../../payments/stripe.errors'
+import { StripeAccountError } from '../../payments/stripe/stripe.errors'
 import { ResponseModeError } from '../../submission/submission.errors'
 import { MissingUserError } from '../../user/user.errors'
 import { SmsLimitExceededError } from '../../verification/verification.errors'
