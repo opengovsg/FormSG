@@ -10,10 +10,8 @@ const spec = (path: string): any => {
  * Connects to mongo-memory-server instance.
  */
 export const makeMongooseFixtures = (): Promise<mongoose.Connection> => {
-  const dbUri = process.env.MONGO_URI?.toString()
-  if (!dbUri) {
-    return Promise.reject(Error('dbUri is empty'))
-  }
+  const dbUri = 'mongodb://127.0.0.1:3000/test' // TODO: hardcoding uri as the port and path are fixed and doesn't respect values in __tests__/e2e/setup/setupConfig.ts
+
   const connection = mongoose.createConnection(dbUri).asPromise()
   return connection
 }
