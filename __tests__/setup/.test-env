@@ -74,7 +74,7 @@ AWS_SECRET_ACCESS_KEY=fakeSecretAccessKey
 
 AWS_ENDPOINT=http://localhost:4566
 
-APP_URL=http://localhost:5000
+APP_URL=http://localhost:5001
 
 SECRET_ENV=development
 INTRANET_IP_LIST_PATH=__tests__/setup/mock-intranet-ips.txt
