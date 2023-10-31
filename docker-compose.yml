@@ -187,8 +187,6 @@ services:
   mocktwilio:
     image: stoplight/prism:4
     container_name: formsg-mocktwilio
-    depends_on:
-      - backend
     network_mode: 'service:backend' # reuse backend service's network stack so that it can resolve localhost:4010 to prismtwilio:4010
     command: mock https://raw.githubusercontent.com/twilio/twilio-oai/main/spec/json/twilio_api_v2010.json
 
