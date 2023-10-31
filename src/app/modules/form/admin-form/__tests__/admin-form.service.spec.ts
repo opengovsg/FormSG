@@ -3,8 +3,9 @@ import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-fo
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { ObjectId } from 'bson-ext'
 import { assignIn, cloneDeep, merge, omit, pick } from 'lodash'
-import mongoose from 'mongoose'
+import mongoose, { ClientSession } from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
+import { Workspace } from 'shared/types/workspace'
 
 import config, { aws } from 'src/app/config/config'
 import getAgencyModel from 'src/app/models/agency.server.model'
@@ -12,6 +13,7 @@ import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
+import { getWorkspaceModel } from 'src/app/models/workspace.server.model'
 import {
   ApplicationError,
   DatabaseConflictError,
@@ -80,6 +82,7 @@ const FormModel = getFormModel(mongoose)
 const EmailFormModel = getEmailFormModel(mongoose)
 const EncryptFormModel = getEncryptedFormModel(mongoose)
 const AgencyModel = getAgencyModel(mongoose)
+const WorkspaceModel = getWorkspaceModel(mongoose)
 
 jest.mock('src/app/modules/user/user.service')
 const MockUserService = jest.mocked(UserService)
@@ -374,7 +377,7 @@ describe('admin-form.service', () => {
 
       // Assert
       expect(actual.isOk()).toEqual(true)
-      expect(actual._unsafeUnwrap()).toEqual(true)
+      expect(actual._unsafeUnwrap()).toEqual(mockArchivedForm)
     })
 
     it('should return DatabaseError if any database errors occur', async () => {
@@ -461,6 +464,53 @@ describe('admin-form.service', () => {
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
       expect(createSpy).toHaveBeenCalledWith(expectedParams)
+      expect(mockForm.getDuplicateParams).toHaveBeenCalledWith({
+        ...expectedOverrideProps,
+        // Should now have start page set to default
+        startPage: {
+          logo: {
+            state: FormLogoState.Default,
+          },
+        },
+      })
+    })
+
+    // primary functionality of workspace transaction is tested in 'createForm'
+    it('should use form to workspace transaction if duplicating form to workspace', async () => {
+      // Arrange
+      const mockWorkspaceId = new ObjectId().toHexString()
+      const mockNewAdminId = new ObjectId().toHexString()
+      const expectedParams: PickDuplicateForm & OverrideProps = {
+        admin: MOCK_NEW_ADMIN_ID,
+        ...MOCK_ENCRYPT_OVERRIDE_PARAMS,
+      }
+      const mockForm = createMockForm(expectedParams)
+
+      // Mock util return
+      const expectedOverrideProps = { title: 'new title' } as OverrideProps
+      jest
+        .spyOn(AdminFormUtils, 'processDuplicateOverrideProps')
+        .mockReturnValueOnce(expectedOverrideProps)
+      const expectedForm = createMockForm(expectedOverrideProps)
+      const createFormInWorkspaceTransactionSpy = jest
+        .spyOn(AdminFormService, 'createFormInWorkspaceTransaction')
+        .mockResolvedValueOnce(expectedForm as never)
+
+      // Act
+      const actualResult = await AdminFormService.duplicateForm(
+        mockForm,
+        mockNewAdminId,
+        MOCK_EMAIL_OVERRIDE_PARAMS,
+        mockWorkspaceId,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
+      expect(createFormInWorkspaceTransactionSpy).toHaveBeenCalledWith(
+        expectedParams,
+        mockWorkspaceId,
+      )
       expect(mockForm.getDuplicateParams).toHaveBeenCalledWith({
         ...expectedOverrideProps,
         // Should now have start page set to default
@@ -926,6 +976,153 @@ describe('admin-form.service', () => {
         new DatabaseError(formatErrorRecoveryMessage(mockErrorString)),
       )
       expect(createSpy).toHaveBeenCalledWith(formParams)
+    })
+
+    // Creating into Workspace tests
+    it('should use form to workspace transaction if workspaceId is given', async () => {
+      // Arrange
+      const mockWorkspaceId = new ObjectId().toHexString()
+      const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
+        title: 'create form title',
+        admin: new ObjectId().toHexString(),
+        responseMode: FormResponseMode.Email,
+        emails: 'example@example.com',
+      }
+      const expectedForm = {
+        _id: new ObjectId(),
+        ...formParams,
+      } as IFormSchema
+
+      // We directly test the processing of form creation into a workspace
+      // circumventing .withTransaction() in createFormInWorkspaceTransaction which is untestable
+      const createFormInWorkspaceTransactionSpy = jest
+        .spyOn(AdminFormService, 'createFormInWorkspaceTransaction')
+        .mockImplementationOnce((formParams, workspaceId) =>
+          AdminFormService.processCreateFormInWorkspace(
+            formParams,
+            workspaceId,
+            null as unknown as ClientSession,
+          ),
+        )
+
+      const createSpy = jest
+        .spyOn(FormModel, 'create')
+        .mockResolvedValueOnce([expectedForm] as never)
+      const addFormIdsToWorkspaceSpy = jest
+        .spyOn(WorkspaceModel, 'addFormIdsToWorkspace')
+        .mockResolvedValueOnce(null as unknown as Workspace)
+
+      // Act
+      const actualResult = await AdminFormService.createForm(
+        formParams,
+        mockWorkspaceId,
+      )
+
+      // Assert
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
+      expect(createFormInWorkspaceTransactionSpy).toHaveBeenCalledWith(
+        formParams,
+        mockWorkspaceId,
+      )
+      expect(createSpy).toHaveBeenCalledWith([formParams], { session: null })
+      expect(addFormIdsToWorkspaceSpy).toHaveBeenCalledWith({
+        workspaceId: mockWorkspaceId,
+        formIds: [expectedForm._id],
+        session: null,
+      })
+    })
+
+    it('should return DatabaseError on database error whilst creating form in a workspace', async () => {
+      // Arrange
+      const mockWorkspaceId = new ObjectId().toHexString()
+      const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
+        title: 'create form title',
+        admin: new ObjectId().toHexString(),
+        responseMode: FormResponseMode.Email,
+        emails: 'example@example.com',
+      }
+      const createFormInWorkspaceTransactionSpy = jest
+        .spyOn(AdminFormService, 'createFormInWorkspaceTransaction')
+        .mockImplementationOnce((formParams, workspaceId) =>
+          AdminFormService.processCreateFormInWorkspace(
+            formParams,
+            workspaceId,
+            null as unknown as ClientSession,
+          ),
+        )
+      const mockErrorString = 'no'
+      const createSpy = jest
+        .spyOn(FormModel, 'create')
+        .mockRejectedValueOnce(new Error(mockErrorString) as never)
+
+      // Act
+      const actualResult = await AdminFormService.createForm(
+        formParams,
+        mockWorkspaceId,
+      )
+
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new DatabaseError(formatErrorRecoveryMessage(mockErrorString)),
+      )
+      expect(createFormInWorkspaceTransactionSpy).toHaveBeenCalledWith(
+        formParams,
+        mockWorkspaceId,
+      )
+      expect(createSpy).toHaveBeenCalledWith([formParams], { session: null })
+    })
+
+    it('should return DatabaseError on database error whilst moving form into a workspace', async () => {
+      // Arrange
+      const mockWorkspaceId = new ObjectId().toHexString()
+      const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
+        title: 'create form title',
+        admin: new ObjectId().toHexString(),
+        responseMode: FormResponseMode.Email,
+        emails: 'example@example.com',
+      }
+      const expectedForm = {
+        _id: new ObjectId(),
+        ...formParams,
+      } as IFormSchema
+      const createFormInWorkspaceTransactionSpy = jest
+        .spyOn(AdminFormService, 'createFormInWorkspaceTransaction')
+        .mockImplementationOnce((formParams, workspaceId) =>
+          AdminFormService.processCreateFormInWorkspace(
+            formParams,
+            workspaceId,
+            null as unknown as ClientSession,
+          ),
+        )
+
+      const createSpy = jest
+        .spyOn(FormModel, 'create')
+        .mockResolvedValueOnce([expectedForm] as never)
+      const mockErrorString = 'no'
+      const addFormIdsToWorkspaceSpy = jest
+        .spyOn(WorkspaceModel, 'addFormIdsToWorkspace')
+        .mockRejectedValueOnce(new Error(mockErrorString) as never)
+
+      // Act
+      const actualResult = await AdminFormService.createForm(
+        formParams,
+        mockWorkspaceId,
+      )
+
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new DatabaseError(formatErrorRecoveryMessage(mockErrorString)),
+      )
+      expect(createFormInWorkspaceTransactionSpy).toHaveBeenCalledWith(
+        formParams,
+        mockWorkspaceId,
+      )
+      expect(createSpy).toHaveBeenCalledWith([formParams], { session: null })
+      expect(addFormIdsToWorkspaceSpy).toHaveBeenCalledWith({
+        workspaceId: mockWorkspaceId,
+        formIds: [expectedForm._id],
+        session: null,
+      })
     })
   })
 

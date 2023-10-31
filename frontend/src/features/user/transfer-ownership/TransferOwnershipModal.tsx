@@ -30,7 +30,7 @@ import {
 import { ModalCloseButton } from '~components/Modal'
 
 import { useUserMutations } from '~features/user/mutations'
-import { useWorkspace } from '~features/workspace/queries'
+import { useDashboard } from '~features/workspace/queries'
 
 import { useUser } from '../queries'
 
@@ -61,7 +61,7 @@ const useModalState = ({
   reset: UseFormReset<TransferOwnershipInputs>
   trigger: UseFormTrigger<TransferOwnershipInputs>
 }): UseModalStateReturn => {
-  const { refetch } = useWorkspace()
+  const { refetch } = useDashboard()
 
   const [page, setPage] = useState(0)
   const [email, setEmail] = useState('')

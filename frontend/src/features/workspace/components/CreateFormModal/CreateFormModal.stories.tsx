@@ -10,15 +10,27 @@ import {
 } from '@chakra-ui/react'
 import { Meta, Story } from '@storybook/react'
 
+import { UserId } from '~shared/types'
+import { Workspace, WorkspaceId } from '~shared/types/workspace'
+
 import { userHandlers } from '~/mocks/msw/handlers/user'
 
 import { fullScreenDecorator, LoggedInDecorator } from '~utils/storybook'
 import { ModalCloseButton } from '~components/Modal'
 
+import { WorkspaceProvider } from '~features/workspace/WorkspaceProvider'
+
 import { SaveSecretKeyScreen } from './CreateFormModalContent/SaveSecretKeyScreen'
 import { CreateFormModal, CreateFormModalProps } from './CreateFormModal'
 import { CreateFormWizardInputProps } from './CreateFormWizardContext'
 import { CreateFormWizardProvider } from './CreateFormWizardProvider'
+
+const MOCK_DEFAULT_WORKSPACE = {
+  _id: '' as WorkspaceId,
+  title: 'All forms',
+  formIds: [],
+  admin: '' as UserId,
+} as Workspace
 
 export default {
   title: 'Pages/WorkspacePage/CreateFormModal',
@@ -40,11 +52,19 @@ const Template: Story<CreateFormModalProps> = (args) => {
   const modalProps = useDisclosure({ defaultIsOpen: true })
 
   return (
-    <CreateFormModal
-      {...args}
-      {...modalProps}
-      onClose={() => console.log('close modal')}
-    />
+    <WorkspaceProvider
+      currentWorkspace={MOCK_DEFAULT_WORKSPACE._id}
+      defaultWorkspace={MOCK_DEFAULT_WORKSPACE}
+      setCurrentWorkspace={() => {
+        return
+      }}
+    >
+      <CreateFormModal
+        {...args}
+        {...modalProps}
+        onClose={() => console.log('close modal')}
+      />
+    </WorkspaceProvider>
   )
 }
 export const Default = Template.bind({})
@@ -82,13 +102,21 @@ export const StorageModeAckScreen = () => {
   }, [handleCopyKey, hasCopiedKey, register])
 
   return (
-    <Modal isOpen onClose={() => console.log('close modal')} size="full">
-      <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
-        <ModalCloseButton />
-        <CreateFormWizardProvider>
-          <SaveSecretKeyScreen useSaveSecretKey={mockHook} />
-        </CreateFormWizardProvider>
-      </ModalContent>
-    </Modal>
+    <WorkspaceProvider
+      currentWorkspace={MOCK_DEFAULT_WORKSPACE._id}
+      defaultWorkspace={MOCK_DEFAULT_WORKSPACE}
+      setCurrentWorkspace={() => {
+        return
+      }}
+    >
+      <Modal isOpen onClose={() => console.log('close modal')} size="full">
+        <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
+          <ModalCloseButton />
+          <CreateFormWizardProvider>
+            <SaveSecretKeyScreen useSaveSecretKey={mockHook} />
+          </CreateFormWizardProvider>
+        </ModalContent>
+      </Modal>
+    </WorkspaceProvider>
   )
 }

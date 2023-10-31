@@ -23,7 +23,6 @@ import getFormModel, {
   getEncryptedFormModel,
 } from '../../models/form.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
-import { IntranetService } from '../../services/intranet/intranet.service'
 import {
   getMongoErrorMessage,
   transformMongoError,
@@ -33,6 +32,7 @@ import {
   DatabaseError,
   PossibleDatabaseError,
 } from '../core/core.errors'
+import { IntranetService } from '../intranet/intranet.service'
 
 import {
   FormDeletedError,
@@ -297,13 +297,17 @@ export const checkIsIntranetFormAccess = (
   // and the form has authentication set
   if (
     isIntranetUser &&
-    [FormAuthType.SP, FormAuthType.CP, FormAuthType.MyInfo].includes(
-      form.authType,
-    )
+    [
+      FormAuthType.SP,
+      FormAuthType.CP,
+      FormAuthType.MyInfo,
+      FormAuthType.SGID,
+      FormAuthType.SGID_MyInfo,
+    ].includes(form.authType)
   ) {
     logger.warn({
       message:
-        'Attempting to access SingPass, CorpPass or MyInfo form from intranet',
+        'Attempting to access SingPass, CorpPass, MyInfo, SGID or SGID MyInfo form from intranet',
       meta: {
         action: 'checkIsIntranetFormAccess',
         formId: form._id,

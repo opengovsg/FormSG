@@ -411,6 +411,16 @@ export interface IFormModel extends Model<IFormSchema> {
     goLinkSuffix: string,
   ): Promise<IFormDocument | null>
 
+  archiveForms(
+    formIds: IFormSchema['_id'][],
+    /**
+     * Session is optional so that we can mock this function in our tests to test it without a session.
+     * Reason is our mocked mongo database does not support transactions.
+     * See issue #4503 for more details.
+     */
+    session?: ClientSession,
+  ): Promise<void>
+
   /**
    * Transfer ownership of the form to another user.
    * @param currentOwner the current owner of the form. The owner is retrieved outside of the method to force validation to be performed correctly.
