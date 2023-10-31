@@ -469,7 +469,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           } else if (
             this.responseMode === FormResponseMode.Encrypt &&
             // MyInfo is not available for storage mode
-            v === FormAuthType.MyInfo
+            (v === FormAuthType.MyInfo || v === FormAuthType.SGID_MyInfo)
           ) {
             return FormAuthType.NIL
           } else {
