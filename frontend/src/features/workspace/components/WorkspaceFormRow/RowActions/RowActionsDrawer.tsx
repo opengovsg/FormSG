@@ -53,6 +53,7 @@ export const RowActionsDrawer = ({
     previewFormLink,
     handleDeleteForm,
     handleDuplicateForm,
+    isFormAdmin,
     handleCollaborators,
     handleShareForm,
   } = useRowAction(formMeta)
@@ -156,15 +157,19 @@ export const RowActionsDrawer = ({
                       <BiChevronRight fontSize="1.25rem" />
                     </Flex>
                   </Button>
-                  <Divider />
-                  <Button
-                    {...buttonProps}
-                    onClick={handleDeleteForm}
-                    color="danger.500"
-                    leftIcon={<BiTrash fontSize="1.25rem" />}
-                  >
-                    Delete
-                  </Button>
+                  {isFormAdmin && (
+                    <>
+                      <Divider />
+                      <Button
+                        {...buttonProps}
+                        onClick={handleDeleteForm}
+                        color="danger.500"
+                        leftIcon={<BiTrash fontSize="1.25rem" />}
+                      >
+                        Delete
+                      </Button>
+                    </>
+                  )}
                 </>
               )}
             </ButtonGroup>
