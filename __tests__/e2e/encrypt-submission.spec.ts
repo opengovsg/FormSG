@@ -54,7 +54,7 @@ test.describe('Storage form submission', () => {
   })
   test.afterAll(async () => {
     // Clean up db
-    await db.dropDatabase()
+    await db.dropCollection(Form.collection.name)
     await db.close()
   })
 
