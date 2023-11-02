@@ -55,6 +55,7 @@ const helmetMiddlewares = () => {
       // GA4 https://developers.google.com/tag-platform/tag-manager/web/csp
       // not actively used yet, loading specific files due to CSP bypass issue
       'https://*.googletagmanager.com/gtag/',
+      'https://*.cloudflareinsights.com/', // Cloudflare web analytics https://developers.cloudflare.com/analytics/types-of-analytics/#web-analytics
     ],
     connectSrc: [
       "'self'",
