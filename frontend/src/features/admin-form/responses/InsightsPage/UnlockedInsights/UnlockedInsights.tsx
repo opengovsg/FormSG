@@ -44,7 +44,7 @@ export const UnlockedInsights = () => {
   const aggregateSubmissionData = (
     id: string,
     formField: FormFieldDto,
-  ): [string, number | string][] => {
+  ): [string, number][] => {
     const hashMap = new Map<string, number>()
     if (formField.fieldType === BasicField.Rating) {
       for (let i = 1; i <= formField.ratingOptions.steps; i += 1) {

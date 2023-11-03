@@ -34,7 +34,7 @@ export const FormChart = ({
 }: {
   title: string
   formField: FormFieldDto
-  data: [string, number | string][]
+  data: [string, number][]
 }) => {
   const [isTable, setIsTable] = useState(false)
 
@@ -49,15 +49,15 @@ export const FormChart = ({
       // But rating does not
       formField.fieldType === BasicField.Checkbox
     )
-      renderArray.forEach((val, index) => {
-        if (val[1] === 'Count') {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          val.push({ role: 'style' })
-        } else {
-          val.push(colorArray[index % colorArray.length])
-        }
-      })
+      renderArray.forEach(
+        (val: [string, number | string | { role: string }], index) => {
+          if (val[1] === 'Count') {
+            val.push({ role: 'style' })
+          } else {
+            val.push(colorArray[index % colorArray.length])
+          }
+        },
+      )
     return renderArray
   }, [data, formField.fieldType, isTable])
 
@@ -67,7 +67,7 @@ export const FormChart = ({
   }, [isTable, formField])
 
   const options = {
-    // only display legend if piechart
+    // only display legend if pie chart
     legend: {
       position: chartType === ChartTypes.PIE_CHART ? undefined : 'none',
     },
@@ -116,11 +116,7 @@ export const FormChart = ({
   )
 }
 
-const RatingsAverageText = ({
-  data,
-}: {
-  data: [string, number | string][]
-}) => {
+const RatingsAverageText = ({ data }: { data: [string, number][] }) => {
   let mean = 0
   let count = 0
   data.forEach((data) => {
