@@ -25,17 +25,16 @@ export const UnlockedInsights = () => {
   const filteredDecryptedData = useMemo(() => {
     if (!decryptedContent) return []
     if (dateRange.length === 2) {
-      const resultArr: typeof decryptedContent = []
-      decryptedContent.forEach((content) => {
-        if (
-          content.submissionTime &&
-          Date.parse(content.submissionTime) >= Date.parse(dateRange[0]) &&
-          Date.parse(content.submissionTime) <=
-            addDays(Date.parse(dateRange[1]), 1).getTime()
-        )
-          resultArr.push(content)
+      const [startDate, endDate] = dateRange.map((date) =>
+        new Date(date).getTime(),
+      )
+      // Set to the end of the endDate
+      const endOfDay = addDays(endDate, 1).getTime() - 1
+
+      return decryptedContent.filter((content) => {
+        const submissionTime = new Date(content.submissionTime).getTime()
+        return submissionTime >= startDate && submissionTime <= endOfDay
       })
-      return resultArr
     }
     return decryptedContent
   }, [decryptedContent, dateRange])

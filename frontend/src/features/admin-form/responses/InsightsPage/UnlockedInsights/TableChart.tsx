@@ -19,13 +19,13 @@ export const TableChart = ({ data }: { data: [string, number | string][] }) => {
           </Tr>
         </Thead>
         <Tbody>
-          {data.map((val, idx) => {
-            if (typeof val[1] === 'number')
+          {data.map(([answer, count], idx) => {
+            if (typeof count === 'number')
               return (
                 <TableChartRows
-                  answer={val[0]}
-                  value={Number(val[1])}
-                  key={idx}
+                  answer={answer}
+                  value={count}
+                  key={`${answer}-${idx}`} // A more stable key
                 />
               )
             return null
