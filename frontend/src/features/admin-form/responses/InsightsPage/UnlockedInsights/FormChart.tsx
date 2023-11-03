@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import Chart, { GoogleChartWrapperChartType } from 'react-google-charts'
 import { BiBarChartAlt2, BiTable } from 'react-icons/bi'
 import { Flex, Text, VStack } from '@chakra-ui/react'
@@ -9,13 +9,22 @@ import IconButton from '~components/IconButton'
 
 import { TableChart } from './TableChart'
 
+type ChartTypeMapping = {
+  [key: string]: GoogleChartWrapperChartType
+}
+export const ChartTypes: ChartTypeMapping = {
+  COLUMN_CHART: 'ColumnChart',
+  PIE_CHART: 'PieChart',
+  BAR_CHART: 'BarChart',
+  TABLE: 'Table',
+}
 export const FIELD_TO_CHART = new Map<BasicField, GoogleChartWrapperChartType>([
-  [BasicField.Rating, 'ColumnChart'],
-  [BasicField.Radio, 'PieChart'],
-  [BasicField.Checkbox, 'BarChart'],
-  [BasicField.Dropdown, 'PieChart'],
-  [BasicField.CountryRegion, 'PieChart'],
-  [BasicField.YesNo, 'PieChart'],
+  [BasicField.Rating, ChartTypes.COLUMN_CHART],
+  [BasicField.Radio, ChartTypes.PIE_CHART],
+  [BasicField.Checkbox, ChartTypes.BAR_CHART],
+  [BasicField.Dropdown, ChartTypes.PIE_CHART],
+  [BasicField.CountryRegion, ChartTypes.PIE_CHART],
+  [BasicField.YesNo, ChartTypes.PIE_CHART],
 ])
 
 export const FormChart = ({
@@ -32,8 +41,8 @@ export const FormChart = ({
   const dataToRender = useMemo(() => {
     // deep copy of the data
     const renderArray = data.map((val) => [...val] as [string, number | string])
+    // Adding data headers
     renderArray.unshift(['Answer', 'Count'])
-    // append random color as styling to the data
     if (
       !isTable &&
       // Checkbox bar chart should have different colors
@@ -53,13 +62,15 @@ export const FormChart = ({
   }, [data, formField.fieldType, isTable])
 
   const chartType: GoogleChartWrapperChartType = useMemo(() => {
-    if (isTable) return 'Table'
-    return FIELD_TO_CHART.get(formField.fieldType) || 'PieChart'
+    if (isTable) return ChartTypes.TABLE
+    return FIELD_TO_CHART.get(formField.fieldType) || ChartTypes.PIE_CHART
   }, [isTable, formField])
 
   const options = {
     // only display legend if piechart
-    legend: { position: chartType === 'PieChart' ? undefined : 'none' },
+    legend: {
+      position: chartType === ChartTypes.PIE_CHART ? undefined : 'none',
+    },
     chartArea: { width: '50%' },
   }
 

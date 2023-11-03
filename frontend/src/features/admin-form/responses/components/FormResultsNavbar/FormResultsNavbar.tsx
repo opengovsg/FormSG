@@ -2,6 +2,8 @@ import { useCallback } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
 
+import { FormResponseMode } from '~shared/types'
+
 import {
   ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX,
   RESULTS_FEEDBACK_SUBROUTE,
@@ -12,8 +14,12 @@ import { useDraggable } from '~hooks/useDraggable'
 import { noPrintCss } from '~utils/noPrintCss'
 import { NavigationTab, NavigationTabList } from '~templates/NavigationTabs'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
+
 export const FormResultsNavbar = (): JSX.Element => {
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
+
+  const { data: form } = useAdminForm()
 
   const { pathname } = useLocation()
 
@@ -61,12 +67,14 @@ export const FormResultsNavbar = (): JSX.Element => {
         >
           Feedback
         </NavigationTab>
-        <NavigationTab
-          to={RESULTS_INSIGHTS_SUBROUTE}
-          isActive={checkTabActive(RESULTS_INSIGHTS_SUBROUTE)}
-        >
-          Insights
-        </NavigationTab>
+        {form?.responseMode === FormResponseMode.Encrypt ? (
+          <NavigationTab
+            to={RESULTS_INSIGHTS_SUBROUTE}
+            isActive={checkTabActive(RESULTS_INSIGHTS_SUBROUTE)}
+          >
+            Insights
+          </NavigationTab>
+        ) : null}
       </NavigationTabList>
     </Flex>
   )
