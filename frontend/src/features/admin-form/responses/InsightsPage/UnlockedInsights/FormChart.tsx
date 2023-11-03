@@ -119,17 +119,20 @@ export const FormChart = ({
 const RatingsAverageText = ({ data }: { data: [string, number][] }) => {
   let mean = 0
   let count = 0
-  data.forEach((data) => {
-    mean += Number(data[0]) * Number(data[1])
-    count += Number(data[1])
+  data.forEach(([rating, ratingCount]) => {
+    const numericRating = Number(rating)
+    if (!isNaN(numericRating)) {
+      mean += numericRating * ratingCount
+      count += ratingCount
+    }
   })
-  mean = mean / count
 
-  return (
-    <Text textStyle="h4">
-      Average: {Math.round((mean + Number.EPSILON) * 100) / 100}
-    </Text>
-  )
+  if (count == 0) {
+    return <Text textStyle="h4">Average: N/A</Text> // Handle division by zero and no valid ratings
+  }
+  mean = mean / count
+  const roundedMean = Math.round(mean * 100) / 100 // Rounds to two decimal places
+  return <Text textStyle="h4">Average: {roundedMean}</Text>
 }
 
 // colour palette for charts
