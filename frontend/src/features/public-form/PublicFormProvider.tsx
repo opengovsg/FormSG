@@ -11,11 +11,7 @@ import { SubmitHandler } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
-import {
-  useFeatureIsOn,
-  useFeatureValue,
-  useGrowthBook,
-} from '@growthbook/growthbook-react'
+import { useFeatureValue, useGrowthBook } from '@growthbook/growthbook-react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 import get from 'lodash/get'
 import simplur from 'simplur'
@@ -268,10 +264,6 @@ export const PublicFormProvider = ({
       })
     }
   }, [data?.form.form_fields, toast, vfnToastIdRef])
-
-  const enableVirusScanner = useFeatureIsOn(
-    featureFlags.encryptionBoundaryShiftVirusScanner,
-  )
 
   const {
     submitEmailModeFormMutation,
@@ -557,7 +549,7 @@ export const PublicFormProvider = ({
           })
 
           // TODO (FRM-1413): Move to main return statement once virus scanner has been fully rolled out
-          if (enableEncryptionBoundaryShift && enableVirusScanner) {
+          if (enableEncryptionBoundaryShift) {
             return submitStorageModeClearFormWithVirusScanningMutation.mutateAsync(
               {
                 ...formData,
@@ -679,7 +671,6 @@ export const PublicFormProvider = ({
       submitEmailModeFormFetchMutation,
       submitEmailModeFormMutation,
       enableEncryptionBoundaryShift,
-      enableVirusScanner,
       submitStorageModeClearFormMutation,
       submitStorageModeFormMutation,
       submitStorageModeClearFormFetchMutation,
