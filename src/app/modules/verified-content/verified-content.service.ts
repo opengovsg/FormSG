@@ -34,6 +34,7 @@ export const getVerifiedContent = ({
   CpVerifiedContent | SpVerifiedContent | SgidVerifiedContent
 > => {
   switch (type) {
+    case FormAuthType.MyInfo:
     case FormAuthType.SP:
       return getSpVerifiedContent(data)
     case FormAuthType.CP:

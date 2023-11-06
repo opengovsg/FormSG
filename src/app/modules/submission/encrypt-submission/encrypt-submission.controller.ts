@@ -43,6 +43,8 @@ import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
 import { getFeatureFlag } from '../../feature-flags/feature-flags.service'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
+import { MyInfoService } from '../../myinfo/myinfo.service'
+import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
 import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
@@ -190,6 +192,42 @@ const submitEncryptModeForm = async (
       userInfo = jwtPayloadResult.value.userInfo
       break
     }
+    case FormAuthType.MyInfo: {
+      const jwtPayloadResult = await extractMyInfoLoginJwt(
+        req.cookies,
+        authType,
+      )
+        .andThen(MyInfoService.verifyLoginJwt)
+        .map(({ uinFin }) => {
+          return uinFin
+        })
+        .mapErr((error) => {
+          logger.error({
+            message: `Error verifying MyInfo${
+              authType === FormAuthType.SGID_MyInfo ? '(over SGID)' : ''
+            } hashes`,
+            meta: logMeta,
+            error,
+          })
+          return error
+        })
+      if (jwtPayloadResult.isErr()) {
+        const { statusCode, errorMessage } = mapRouteError(
+          jwtPayloadResult.error,
+        )
+        logger.error({
+          message: 'Failed to verify Singpass JWT with auth client',
+          meta: logMeta,
+          error: jwtPayloadResult.error,
+        })
+        return res.status(statusCode).json({
+          message: errorMessage,
+          spcpSubmissionFailure: true,
+        })
+      }
+      uinFin = jwtPayloadResult.value
+      break
+    }
     case FormAuthType.SGID: {
       const jwtPayloadResult = SgidService.extractSgidSingpassJwtPayload(
         req.cookies.jwtSgid,
@@ -218,7 +256,8 @@ const submitEncryptModeForm = async (
   if (
     form.authType === FormAuthType.SP ||
     form.authType === FormAuthType.CP ||
-    form.authType === FormAuthType.SGID
+    form.authType === FormAuthType.SGID ||
+    form.authType === FormAuthType.MyInfo
   ) {
     const encryptVerifiedContentResult =
       VerifiedContentService.getVerifiedContent({

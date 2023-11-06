@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
 
 import {
+  FormAuthType,
   FormPaymentsField,
   PaymentFieldsDto,
   PaymentType,
@@ -48,6 +49,7 @@ import {
   FormNotFoundError,
   PrivateFormError,
 } from '../../form/form.errors'
+import { MyInfoKey } from '../../myinfo/myinfo.types'
 import { PaymentNotFoundError } from '../../payments/payments.errors'
 import {
   SgidInvalidJwtError,
@@ -61,6 +63,7 @@ import {
   VerifyJwtError,
 } from '../../spcp/spcp.errors'
 import { MissingUserError } from '../../user/user.errors'
+import { MYINFO_PREFIX } from '../email-submission/email-submission.constants'
 import {
   AttachmentTooLargeError,
   ConflictError,
@@ -71,6 +74,7 @@ import {
   SubmissionNotFoundError,
   ValidateFieldError,
 } from '../submission.errors'
+import { ProcessedFieldResponse } from '../submission.types'
 
 import {
   AttachmentSizeLimitExceededError,
@@ -357,5 +361,49 @@ export const getPaymentIntentDescription = (
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const exhaustiveCheck: never = payment_type
     }
+  }
+}
+
+/**
+ * Determines the prefix for a question based on whether it is verified
+ * by MyInfo.
+ * @param response
+ * @param hashedFields Field ids of hashed fields.
+ * @returns the prefix
+ */
+const getMyInfoPrefix = (
+  response: ProcessedFieldResponse,
+  hashedFields: Set<MyInfoKey>,
+): string => {
+  return !!response.myInfo?.attr && hashedFields.has(response._id)
+    ? MYINFO_PREFIX
+    : ''
+}
+
+export class SubmissionStorageObj {
+  parsedResponses: ProcessedFieldResponse[]
+  hashedFields: Set<MyInfoKey>
+  authType: FormAuthType
+
+  constructor(
+    parsedResponses: ProcessedFieldResponse[],
+    hashedFields: Set<MyInfoKey> = new Set<MyInfoKey>(),
+    authType: FormAuthType,
+  ) {
+    this.parsedResponses = parsedResponses
+    this.hashedFields = hashedFields
+    this.authType = authType
+  }
+
+  /**
+   * Getter function to return formData which is used to send responses to admin
+   */
+  get formData() {
+    return this.parsedResponses.flatMap((response) => {
+      // Obtain prefix for question based on whether it is verified by MyInfo.
+      const myInfoPrefix = getMyInfoPrefix(response, this.hashedFields)
+      response.question = `${myInfoPrefix}${response.question}`
+      return response
+    })
   }
 }
