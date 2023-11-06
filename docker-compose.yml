@@ -88,6 +88,7 @@ services:
       - SGID_HOSTNAME=http://localhost:5156
       - SGID_CLIENT_ID=sgidclientid
       - SGID_CLIENT_SECRET=sgidclientsecret
+      - SGID_JWT_SECRET=sgidjwtsecret
       - SGID_ADMIN_LOGIN_REDIRECT_URI=http://localhost:5001/api/v3/auth/sgid/login
       - SGID_FORM_LOGIN_REDIRECT_URI=http://localhost:5001/sgid/login
       - SGID_PRIVATE_KEY=./node_modules/@opengovsg/mockpass/static/certs/key.pem
@@ -186,8 +187,6 @@ services:
   mocktwilio:
     image: stoplight/prism:4
     container_name: formsg-mocktwilio
-    depends_on:
-      - backend
     network_mode: 'service:backend' # reuse backend service's network stack so that it can resolve localhost:4010 to prismtwilio:4010
     command: mock https://raw.githubusercontent.com/twilio/twilio-oai/main/spec/json/twilio_api_v2010.json
 

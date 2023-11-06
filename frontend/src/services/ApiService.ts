@@ -88,6 +88,7 @@ export const processFetchResponse = async (response: Response) => {
       const data = await response.json()
       return data
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     // No guarantee that error is an Error object
     datadogLogs.logger.warn(`Fetch error: ${error.message}`, {

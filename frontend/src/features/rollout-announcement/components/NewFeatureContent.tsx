@@ -1,32 +1,29 @@
-import { ModalBody, ModalHeader, Text } from '@chakra-ui/react'
-import { AnimationConfigWithData } from 'lottie-web'
+import { Image, ModalBody, ModalHeader, Text } from '@chakra-ui/react'
 
 import Link from '~components/Link'
 import { LottieAnimation } from '~templates/LottieAnimation'
 
+import { NewFeature } from './AnnouncementsFeatureList'
 import { NewFeatureTag } from './NewFeatureTag'
 
-interface NewFeatureContentProps {
-  title: string
-  description: string
-  learnMoreLink: string
-  animationData: AnimationConfigWithData['animationData']
-}
-
 export const NewFeatureContent = (props: {
-  content: NewFeatureContentProps
+  content: NewFeature
 }): JSX.Element => {
-  const { title, description, animationData, learnMoreLink } = props.content
+  const { title, description, image, learnMoreLink } = props.content
 
   return (
     <>
-      <LottieAnimation
-        bg="primary.100"
-        pt="4.5rem"
-        height={{ base: '30vh', md: 'initial' }}
-        animationData={animationData}
-        preserveAspectRatio="xMidYMax slice"
-      />
+      {image?.animationData ? (
+        <LottieAnimation
+          bg="primary.100"
+          pt="4.5rem"
+          height={{ base: '30vh', md: 'initial' }}
+          animationData={image.animationData}
+          preserveAspectRatio="xMidYMax slice"
+        />
+      ) : (
+        <Image width="100%" src={image.url} alt={image.alt} />
+      )}
       <ModalHeader>
         <NewFeatureTag />
         <Text mt="0.625rem">{title}</Text>
@@ -34,9 +31,11 @@ export const NewFeatureContent = (props: {
       <ModalBody whiteSpace="pre-wrap">
         <Text textStyle="body-1" color="secondary.500">
           {description}{' '}
-          <Link isExternal href={learnMoreLink}>
-            Learn more
-          </Link>
+          {!!learnMoreLink && (
+            <Link isExternal href={learnMoreLink}>
+              Learn more
+            </Link>
+          )}
         </Text>
       </ModalBody>
     </>

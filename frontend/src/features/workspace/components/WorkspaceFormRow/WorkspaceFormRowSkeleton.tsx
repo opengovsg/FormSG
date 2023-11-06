@@ -67,7 +67,7 @@ export const WorkspaceFormRowSkeleton = (): JSX.Element => {
               Loading title... Loading title...
             </Text>
           </Skeleton>
-          <Skeleton>
+          <Skeleton mt="0.5rem">
             <Text textStyle="body-2" color="secondary.400">
               Also loading metadata...
             </Text>

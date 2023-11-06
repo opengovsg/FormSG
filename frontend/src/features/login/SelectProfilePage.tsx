@@ -39,6 +39,7 @@ import { SGID_PROFILES_ENDPOINT, useSgidProfiles } from './queries'
 type ErrorDisclosureProps = Pick<UseDisclosureReturn, 'onClose' | 'isOpen'>
 type ModalErrorMessages = {
   hideCloseButton?: boolean
+  preventBackdropDismissal?: boolean
   header: string
   body: string | (() => React.ReactElement)
   cta: string
@@ -48,6 +49,7 @@ type ModalErrorMessages = {
 const MODAL_ERRORS: Record<string, ModalErrorMessages> = {
   NO_WORKEMAIL: {
     hideCloseButton: true,
+    preventBackdropDismissal: true,
     header: "Singpass login isn't available to you yet",
     body: 'It is progressively being made available to agencies. In the meantime, please log in using your email address.',
     cta: 'Back to login',
@@ -80,9 +82,20 @@ const ErrorDisclosure = (
     return null
   }
   const { errorMessages, ...disclosureProps } = props
-  const { onCtaClick, body, cta, hideCloseButton, header } = errorMessages
+  const {
+    onCtaClick,
+    body,
+    cta,
+    hideCloseButton,
+    header,
+    preventBackdropDismissal,
+  } = errorMessages
   return (
-    <Modal isOpen={props.isOpen} onClose={() => props.onClose()}>
+    <Modal
+      isOpen={props.isOpen}
+      onClose={() => props.onClose()}
+      closeOnOverlayClick={!preventBackdropDismissal}
+    >
       <ModalOverlay />
       <ModalContent>
         {!hideCloseButton ? <ModalCloseButton /> : null}
@@ -150,7 +163,7 @@ export const SelectProfilePage = (): JSX.Element => {
   return (
     <Flex flex={1} justify="center" align="center" background="primary.100">
       <Stack
-        maxWidth="24.5rem"
+        width={{ base: '24.5rem', lg: '42.5rem' }}
         padding="2rem"
         borderRadius="0.5rem"
         border="1px"
@@ -198,7 +211,7 @@ const ProfileItem = ({
 }) => {
   return (
     <Flex align="center" cursor="pointer" onClick={onClick}>
-      <Box>
+      <Box flexGrow={1}>
         <Text
           textStyle="subhead-2"
           color="secondary.700"

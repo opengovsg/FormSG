@@ -1,6 +1,6 @@
 import { createLoggerWithLabel } from '../../config/logger'
-import { ControllerHandler } from '../../modules/core/core.types'
 import { createReqMeta, getRequestIp } from '../../utils/request'
+import { ControllerHandler } from '../core/core.types'
 
 import { IntranetService } from './intranet.service'
 

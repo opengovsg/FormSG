@@ -1128,7 +1128,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       .read('secondary')
       .exec()
   }
-
   FormSchema.statics.getGoLinkSuffix = async function (formId: string) {
     return this.findById(formId, 'goLinkSuffix').exec()
   }
@@ -1142,6 +1141,17 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       { goLinkSuffix: linkSuffix },
       { new: true, runValidators: true },
     ).exec()
+  }
+
+  FormSchema.statics.archiveForms = async function (
+    formIds: IFormSchema['_id'][],
+    session?: ClientSession,
+  ) {
+    return await this.updateMany(
+      { _id: { $in: formIds } },
+      { status: FormStatus.Archived },
+      { session },
+    ).read('primary')
   }
 
   // Hooks

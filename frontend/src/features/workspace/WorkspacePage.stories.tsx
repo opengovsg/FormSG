@@ -9,6 +9,7 @@ import {
 } from '~shared/types/form/form'
 
 import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
+import { getWorkspaces } from '~/mocks/msw/handlers/workspace'
 
 import { DASHBOARD_ROUTE } from '~constants/routes'
 import {
@@ -80,6 +81,7 @@ export default {
           return res(ctx.json(THIRTY_FORMS))
         },
       ),
+      getWorkspaces(),
       getUser({
         delay: 0,
         mockUser: {
