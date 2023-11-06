@@ -55,7 +55,7 @@ export const RolloutAnnouncementModal = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={isMobile ? 'full' : 'md'}>
       <ModalOverlay />
-      <ModalContent {...swipeHandlers}>
+      <ModalContent {...swipeHandlers} borderRadius="0.25rem">
         <ModalCloseButton />
         <NewFeatureContent content={NEW_FEATURES[currActiveIdx]} />
         <ModalFooter>
