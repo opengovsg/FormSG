@@ -155,7 +155,8 @@ export const submitEmailModeForm = async ({
 }
 
 // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
-export const submitStorageModeClearFormWithFetch = async ({
+// Submit storage mode form with virus scanning (storage v2.1+)
+export const submitStorageModeClearFormWithVirusScanningWithFetch = async ({
   formFields,
   formLogics,
   formInputs,
@@ -166,22 +167,26 @@ export const submitStorageModeClearFormWithFetch = async ({
   responseMetadata,
   paymentProducts,
   payments,
-}: SubmitStorageFormClearArgs) => {
+  fieldIdToQuarantineKeyMap,
+}: SubmitStorageFormWithVirusScanningArgs) => {
   const filteredInputs = filterHiddenInputs({
     formFields,
     formInputs,
     formLogics,
   })
 
-  const formData = createClearSubmissionFormData({
-    formFields,
-    formInputs: filteredInputs,
-    responseMetadata,
-    paymentReceiptEmail,
-    paymentProducts,
-    payments,
-    version: ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION,
-  })
+  const formData = createClearSubmissionWithVirusScanningFormData(
+    {
+      formFields,
+      formInputs: filteredInputs,
+      responseMetadata,
+      paymentReceiptEmail,
+      paymentProducts,
+      payments,
+      version: VIRUS_SCANNER_SUBMISSION_VERSION,
+    },
+    fieldIdToQuarantineKeyMap,
+  )
 
   // Add captcha response to query string
   const queryString = new URLSearchParams({
