@@ -249,10 +249,7 @@ export const PublicFormProvider = ({
 
   const {
     submitEmailModeFormMutation,
-    submitStorageModeFormMutation,
     submitEmailModeFormFetchMutation,
-    submitStorageModeFormFetchMutation,
-    submitStorageModeClearFormMutation,
     submitStorageModeClearFormFetchMutation,
     submitStorageModeClearFormWithVirusScanningMutation,
   } = usePublicFormMutations(formId, submissionData?.id ?? '')
@@ -582,10 +579,7 @@ export const PublicFormProvider = ({
       getCaptchaResponse,
       submitEmailModeFormFetchMutation,
       submitEmailModeFormMutation,
-      submitStorageModeClearFormMutation,
-      submitStorageModeFormMutation,
       submitStorageModeClearFormFetchMutation,
-      submitStorageModeFormFetchMutation,
       navigate,
       formId,
       storePaymentMemory,
