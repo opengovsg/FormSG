@@ -11,7 +11,6 @@ import { SubmitHandler } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
-import { useGrowthBook } from '@growthbook/growthbook-react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 import get from 'lodash/get'
 import simplur from 'simplur'
@@ -130,18 +129,6 @@ export const PublicFormProvider = ({
     // Stop querying once submissionData is present.
     /* enabled= */ !submissionData,
   )
-
-  const growthbook = useGrowthBook()
-
-  useEffect(() => {
-    if (growthbook) {
-      growthbook.setAttributes({
-        // Only update the `formId` attribute, keep the rest the same
-        ...growthbook.getAttributes(),
-        formId,
-      })
-    }
-  }, [growthbook, formId])
 
   // Scroll to top of page when user has finished their submission.
   useLayoutEffect(() => {
