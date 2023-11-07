@@ -584,7 +584,9 @@ export const logIfFieldValueNotInMyinfoList = (
   const myInfoSource =
     myInfoData instanceof MyInfoData ? 'Singpass MyInfo' : 'SGID MyInfo'
 
-  if (myInfoSource === 'Singpass MyInfo' && !isFieldValueInMyinfoList) {
+  if (isFieldValueInMyinfoList) return
+
+  if (myInfoSource === 'Singpass MyInfo') {
     logger.error({
       message: 'Myinfo field value not found in existing Myinfo constants list',
       meta: {
@@ -598,8 +600,7 @@ export const logIfFieldValueNotInMyinfoList = (
     // SGID returns NA instead of empty field values, we don't need this to be logged
     // as this is expected behaviour
     myInfoSource === 'SGID MyInfo' &&
-    fieldValue !== 'NA' &&
-    !isFieldValueInMyinfoList
+    fieldValue !== 'NA'
   ) {
     logger.error({
       message: 'Myinfo field value not found in existing Myinfo constants list',
