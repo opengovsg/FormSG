@@ -59,7 +59,7 @@ export const DatePickerInput = forwardRef<{}, 'input'>((_props, ref) => {
           onClick={handleInputClick}
           isReadOnly={fcProps.isReadOnly || !allowManualInput}
         />
-        <InputRightAddon p={0} border="none" bg="none">
+        <InputRightAddon p={0} bg="none">
           <CalendarButton />
         </InputRightAddon>
       </InputGroup>
