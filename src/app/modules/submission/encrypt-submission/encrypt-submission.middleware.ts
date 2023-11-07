@@ -450,7 +450,7 @@ export const validateStorageSubmission = async (
         error,
       })
       req.formsg.filteredResponses = req.body.responses
-      return next()
+      return error
     })
     .andThen(({ parsedResponses, form }) => {
       // Validate MyInfo responses
@@ -483,7 +483,10 @@ export const validateStorageSubmission = async (
                 meta: logMeta,
                 error,
               })
-              return error
+              const { statusCode, errorMessage } = mapRouteError(error)
+              return res.status(statusCode).json({
+                message: errorMessage,
+              })
             })
         default:
           return ok<IPopulatedEmailFormWithResponsesAndHash, never>({
@@ -503,13 +506,14 @@ export const validateStorageSubmission = async (
       return next()
     })
     .mapErr((error) => {
-      logger.warn({
-        message:
-          'Error processing responses, but proceeding with submission as submission have been validated client-side',
+      logger.error({
+        message: 'Error saving responses in req.body',
         meta: logMeta,
         error,
       })
-      return next()
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        message: 'Error saving responses in req.body',
+      })
     })
 }
 
