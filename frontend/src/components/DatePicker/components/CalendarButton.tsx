@@ -7,13 +7,12 @@ export const CalendarButton = (): JSX.Element => {
   const {
     disclosureProps: { onOpen, isOpen },
     calendarButtonAria,
-    fcProps: { isDisabled, isReadOnly, isInvalid },
+    fcProps: { isDisabled, isReadOnly },
   } = useDatePicker()
   return (
     <IconButton
       onClick={onOpen}
       aria-label={calendarButtonAria}
-      aria-invalid={isInvalid}
       icon={<BxCalendar />}
       variant="inputAttached"
       borderLeftColor={'transparent'}
