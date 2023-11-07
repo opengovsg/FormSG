@@ -503,7 +503,6 @@ export const validateStorageSubmission = async (
         form.authType,
       )
       req.body.responses = storageFormData.formData
-      console.log('req.body.responses: ', req.body.responses)
       return next()
     })
     .mapErr((error) => {
@@ -609,8 +608,6 @@ export const encryptSubmission = async (
     }
   })
 
-  console.log('strippedBodyResponses: ', strippedBodyResponses)
-  console.log('publicKey: ', publicKey)
   const encryptedContent = formsgSdk.crypto.encrypt(
     strippedBodyResponses,
     publicKey,
