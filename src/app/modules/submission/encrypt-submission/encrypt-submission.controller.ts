@@ -192,6 +192,7 @@ const submitEncryptModeForm = async (
       userInfo = jwtPayloadResult.value.userInfo
       break
     }
+    case FormAuthType.SGID_MyInfo:
     case FormAuthType.MyInfo: {
       const jwtPayloadResult = await extractMyInfoLoginJwt(
         req.cookies,
@@ -216,7 +217,9 @@ const submitEncryptModeForm = async (
           jwtPayloadResult.error,
         )
         logger.error({
-          message: 'Failed to verify Singpass JWT with auth client',
+          message: `Failed to verify ${
+            authType === FormAuthType.SGID_MyInfo ? 'SGID' : 'Singpass'
+          } JWT with auth client`,
           meta: logMeta,
           error: jwtPayloadResult.error,
         })
@@ -257,7 +260,8 @@ const submitEncryptModeForm = async (
     form.authType === FormAuthType.SP ||
     form.authType === FormAuthType.CP ||
     form.authType === FormAuthType.SGID ||
-    form.authType === FormAuthType.MyInfo
+    form.authType === FormAuthType.MyInfo ||
+    form.authType === FormAuthType.SGID_MyInfo
   ) {
     const encryptVerifiedContentResult =
       VerifiedContentService.getVerifiedContent({

@@ -400,7 +400,7 @@ export const validateStorageSubmission = async (
   }
 
   // Validate submission
-  return SubmissionService.validateAttachments(
+  return await SubmissionService.validateAttachments(
     req.body.responses,
     formDef.responseMode,
   )
@@ -456,6 +456,7 @@ export const validateStorageSubmission = async (
       // Validate MyInfo responses
       const { authType } = form
       switch (authType) {
+        case FormAuthType.SGID_MyInfo:
         case FormAuthType.MyInfo:
           return extractMyInfoLoginJwt(req.cookies, authType)
             .andThen(MyInfoService.verifyLoginJwt)

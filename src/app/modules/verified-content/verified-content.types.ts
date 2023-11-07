@@ -46,5 +46,6 @@ export type GetVerifiedContentParams = {
     | FormAuthType.CP
     | FormAuthType.SGID
     | FormAuthType.MyInfo
+    | FormAuthType.SGID_MyInfo
   data: Record<string, unknown>
 }

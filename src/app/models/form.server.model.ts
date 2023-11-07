@@ -467,15 +467,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
               FormAuthType.CP,
               FormAuthType.SGID,
               FormAuthType.MyInfo,
+              FormAuthType.SGID_MyInfo,
             ].includes(v)
           ) {
             return v
-          } else if (
-            this.responseMode === FormResponseMode.Encrypt &&
-            // MyInfo SGOD is not available for storage mode
-            v === FormAuthType.SGID_MyInfo
-          ) {
-            return FormAuthType.NIL
           } else {
             return v
           }

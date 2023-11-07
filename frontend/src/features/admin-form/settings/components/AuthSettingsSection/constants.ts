@@ -1,19 +1,15 @@
 import { FormAuthType, FormResponseMode } from '~shared/types/form'
 
 export type EmailFormAuthType = FormAuthType
-export type StorageFormAuthType =
-  | FormAuthType.NIL
-  | FormAuthType.SP
-  | FormAuthType.CP
-  | FormAuthType.SGID
-  | FormAuthType.MyInfo
+export type StorageFormAuthType = FormAuthType
 
 export const STORAGE_MODE_AUTHTYPES: Record<StorageFormAuthType, string> = {
   [FormAuthType.NIL]: 'None',
   [FormAuthType.SGID]: 'Singpass App-only Login',
+  [FormAuthType.SGID_MyInfo]: 'Singpass App-only with Myinfo',
   [FormAuthType.SP]: 'Singpass',
-  [FormAuthType.CP]: 'Singpass (Corporate)',
   [FormAuthType.MyInfo]: 'Singpass with Myinfo',
+  [FormAuthType.CP]: 'Singpass (Corporate)',
 }
 
 // Not using STORAGE_MODE_AUTHTYPES due to wanting a different order.
