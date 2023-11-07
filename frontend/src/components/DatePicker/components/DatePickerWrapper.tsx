@@ -8,7 +8,6 @@ import { DatePickerInput } from './DatePickerInput'
 export const DatePickerWrapper = forwardRef<{}, 'input'>(
   ({ children }, ref) => {
     const {
-      styles,
       disclosureProps,
       initialFocusRef,
       closeCalendarOnChange,
@@ -18,9 +17,7 @@ export const DatePickerWrapper = forwardRef<{}, 'input'>(
     if (isMobile) {
       return (
         <Flex>
-          <Flex sx={styles.fieldwrapper}>
-            <DatePickerInput ref={ref} />
-          </Flex>
+          <DatePickerInput ref={ref} />
           {children}
         </Flex>
       )
@@ -37,9 +34,7 @@ export const DatePickerWrapper = forwardRef<{}, 'input'>(
           {...disclosureProps}
         >
           <PopoverAnchor>
-            <Flex sx={styles.fieldwrapper}>
-              <DatePickerInput ref={ref} />
-            </Flex>
+            <DatePickerInput ref={ref} />
           </PopoverAnchor>
           {children}
         </Popover>
