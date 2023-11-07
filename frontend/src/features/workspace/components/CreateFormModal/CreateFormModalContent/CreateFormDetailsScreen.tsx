@@ -34,7 +34,6 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
     isLoading,
     isFetching,
     modalHeader,
-    containsMyInfoFields,
   } = useCreateFormWizard()
   const {
     register,
