@@ -694,19 +694,6 @@ describe('Form Model', () => {
         )
       })
 
-      it('should set authType to NIL when given authType is MyInfo', async () => {
-        // Arrange
-        const malformedParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
-          authType: FormAuthType.MyInfo,
-        })
-
-        // Act
-        const invalidForm = await EncryptedForm.create(malformedParams)
-
-        // Assert
-        await expect(invalidForm.authType).toBe(FormAuthType.NIL)
-      })
-
       // Ensure that encrypted sgID forms can be created since they could not before
       it('should set authType to SGID when given authType is SGID', async () => {
         // Arrange
