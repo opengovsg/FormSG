@@ -16,7 +16,6 @@ import { useDatePicker } from '../DatePickerContext'
 // eslint-disable-next-line @typescript-eslint/ban-types
 export const DatePickerInput = forwardRef<{}, 'input'>((_props, ref) => {
   const {
-    styles,
     internalInputValue,
     handleInputChange,
     handleInputBlur,
