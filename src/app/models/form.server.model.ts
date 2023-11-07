@@ -316,7 +316,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
             )
           },
           message:
-            'Check that your form is MyInfo-authenticatedand has 30 or fewer MyInfo fields.',
+            'Check that your form is MyInfo-authenticated and has 30 or fewer MyInfo fields.',
         },
       },
       form_logics: {

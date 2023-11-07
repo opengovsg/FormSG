@@ -5,12 +5,7 @@ import { Box, Text } from '@chakra-ui/react'
 import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 
 import { featureFlags } from '~shared/constants'
-import {
-  AdminFormDto,
-  FormAuthType,
-  FormResponseMode,
-  MyInfoAttribute,
-} from '~shared/types'
+import { AdminFormDto, FormAuthType, MyInfoAttribute } from '~shared/types'
 
 import { GUIDE_EMAIL_MODE } from '~constants/links'
 import { ADMINFORM_SETTINGS_SINGPASS_SUBROUTE } from '~constants/routes'
