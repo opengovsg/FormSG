@@ -5,6 +5,7 @@ import { Text, VStack } from '@chakra-ui/react'
 export type WordCloudProps = {
   questionTitle: string
   words: { text: string; value: number }[]
+  maxWords?: number
   options?: WordCloudOptions
 }
 
@@ -13,8 +14,9 @@ type WordCloudOptions = {
 }
 
 const WordCloud = ({
-  words,
   questionTitle,
+  words,
+  maxWords = 100,
   options = { deterministic: true },
 }: WordCloudProps) => {
   if (!words.length) return null
@@ -23,7 +25,7 @@ const WordCloud = ({
       <Text textStyle="h4" alignSelf="flex-start">
         {questionTitle}
       </Text>
-      <ReactWordcloud words={words} options={options} />
+      <ReactWordcloud words={words} options={options} maxWords={maxWords} />
     </VStack>
   )
 }

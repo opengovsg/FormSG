@@ -70,12 +70,15 @@ export const UnlockedInsights = () => {
   }
 
   // transform filtered text data into an array of {word: count}
-  const aggregateWordCloud = (id: string): WordCloudProps['words'] => {
+  const aggregateWordCloud = (
+    id: string,
+    data: typeof filteredDecryptedData,
+  ): WordCloudProps['words'] => {
     const hashMap = new Map<string, number>()
 
     const resultArr: WordCloudProps['words'] = []
 
-    filteredDecryptedData?.forEach((content) => {
+    data.forEach((content) => {
       content.responses.forEach((field) => {
         if (field._id === id && field.answer) {
           // split to words
@@ -140,7 +143,10 @@ export const UnlockedInsights = () => {
               formField.fieldType === BasicField.ShortText ||
               formField.fieldType === BasicField.LongText
             ) {
-              const words = aggregateWordCloud(formField._id)
+              const words = aggregateWordCloud(
+                formField._id,
+                filteredDecryptedData,
+              )
               if (!words.length) return null
               return (
                 <WordCloud
