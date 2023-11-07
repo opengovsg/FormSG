@@ -4,6 +4,7 @@ import helmet from 'helmet'
 import config from 'src/app/config/config'
 import { sentryConfig } from 'src/app/config/features/sentry.config'
 
+import { CSP_CORE_DIRECTIVES } from '../constants'
 import helmetMiddlewares from '../helmet'
 
 describe('helmetMiddlewares', () => {
@@ -14,70 +15,7 @@ describe('helmetMiddlewares', () => {
   jest.mock('src/app/config/features/sentry.config')
   const mockSentryConfig = jest.mocked(sentryConfig)
 
-  const cspCoreDirectives = {
-    imgSrc: [
-      "'self'",
-      'blob:',
-      'data:',
-      'https://www.googletagmanager.com/',
-      'https://www.google-analytics.com/',
-      `https://s3-${config.aws.region}.amazonaws.com/agency.form.sg/`,
-      config.aws.imageBucketUrl,
-      config.aws.logoBucketUrl,
-      '*',
-      'https://*.google-analytics.com',
-      'https://*.googletagmanager.com',
-    ],
-    fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com/'],
-    scriptSrc: [
-      "'self'",
-      'https://ssl.google-analytics.com/',
-      'https://www.google-analytics.com/',
-      'https://www.tagmanager.google.com/',
-      'https://www.google.com/recaptcha/',
-      'https://www.recaptcha.net/recaptcha/',
-      'https://www.gstatic.com/recaptcha/releases/',
-      'https://challenges.cloudflare.com',
-      'https://js.stripe.com/v3',
-      // GA4 https://developers.google.com/tag-platform/tag-manager/web/csp
-      // not actively used yet, loading specific file due to CSP bypass issue
-      'https://*.googletagmanager.com/gtag/',
-    ],
-    connectSrc: [
-      "'self'",
-      'https://www.google-analytics.com/',
-      'https://ssl.google-analytics.com/',
-      'https://*.browser-intake-datadoghq.com',
-      'https://sentry.io/api/',
-      config.aws.attachmentBucketUrl,
-      config.aws.imageBucketUrl,
-      config.aws.logoBucketUrl,
-      config.aws.virusScannerQuarantineS3BucketUrl,
-      'https://*.google-analytics.com',
-      'https://*.analytics.google.com',
-      'https://*.googletagmanager.com',
-    ],
-    frameSrc: [
-      "'self'",
-      'https://www.google.com/recaptcha/',
-      'https://www.recaptcha.net/recaptcha/',
-      'https://challenges.cloudflare.com',
-      'https://js.stripe.com/',
-    ],
-    styleSrc: [
-      "'self'",
-      'https://www.google.com/recaptcha/',
-      'https://www.recaptcha.net/recaptcha/',
-      'https://www.gstatic.com/recaptcha/',
-      'https://www.gstatic.cn/',
-      "'unsafe-inline'",
-    ],
-    workerSrc: [
-      "'self'",
-      'blob:', // DataDog RUM session replay - https://docs.datadoghq.com/real_user_monitoring/faq/content_security_policy/
-    ],
-    frameAncestors: ['*'],
-  }
+  const cspCoreDirectives = CSP_CORE_DIRECTIVES
 
   beforeAll(() => {
     mockHelmet.xssFilter = jest.fn().mockReturnValue('xssFilter')

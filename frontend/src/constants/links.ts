@@ -3,8 +3,7 @@ import { PRIVACY_POLICY_ROUTE, TOU_ROUTE } from './routes'
 export const CONTACT_US = 'https://go.gov.sg/formsg-support'
 export const FEATURE_REQUEST = 'https://go.gov.sg/form-featurerequest'
 export const REPORT_VULNERABILITY = 'https://go.gov.sg/report-vulnerability'
-export const OSS_README =
-  'https://s3-ap-southeast-1.amazonaws.com/misc.form.gov.sg/OSS-Legal.pdf'
+export const OSS_README = 'https://go.gov.sg/formsg-thirdparty'
 
 export const SINGPASS_FAQ = 'https://www.singpass.gov.sg/main/html/faq.html'
 

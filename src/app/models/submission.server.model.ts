@@ -32,35 +32,6 @@ import { PAYMENT_SCHEMA_ID } from './payment.server.model'
 
 export const SUBMISSION_SCHEMA_ID = 'Submission'
 
-function createAggregateQueryWithPaymentsProjectionParams(matchParams: any) {
-  return [
-    {
-      $match: {
-        submissionType: SubmissionType.Encrypt,
-        ...matchParams,
-      },
-    },
-    {
-      $lookup: {
-        from: 'payments',
-        localField: 'paymentId',
-        foreignField: '_id',
-        as: 'payments',
-      },
-    },
-    {
-      $project: {
-        _id: 1,
-        created: 1,
-        'payments.payout': 1,
-        'payments.completedPayment': 1,
-        'payments.amount': 1,
-        'payments.email': 1,
-      },
-    },
-  ]
-}
-
 // Exported for use in pending submissions model
 export const SubmissionSchema = new Schema<ISubmissionSchema, ISubmissionModel>(
   {
@@ -285,14 +256,34 @@ EncryptSubmissionSchema.statics.findSingleMetadata = function (
   formId: string,
   submissionId: string,
 ): Promise<StorageModeSubmissionMetadata | null> {
-  const pageResults: Promise<MetadataAggregateResult[]> = this.aggregate(
-    createAggregateQueryWithPaymentsProjectionParams({
-      form: mongoose.Types.ObjectId(formId),
-      _id: mongoose.Types.ObjectId(submissionId),
-    }),
-  )
-    .limit(1)
-    .exec()
+  const pageResults: Promise<MetadataAggregateResult[]> = this.aggregate([
+    {
+      $match: {
+        submissionType: SubmissionType.Encrypt,
+        form: mongoose.Types.ObjectId(formId),
+        _id: mongoose.Types.ObjectId(submissionId),
+      },
+    },
+    { $limit: 1 },
+    {
+      $lookup: {
+        from: 'payments',
+        localField: 'paymentId',
+        foreignField: '_id',
+        as: 'payments',
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        created: 1,
+        'payments.payout': 1,
+        'payments.completedPayment': 1,
+        'payments.amount': 1,
+        'payments.email': 1,
+      },
+    },
+  ]).exec()
 
   return Promise.resolve(pageResults).then((results) => {
     if (!results || results.length <= 0) {
@@ -336,15 +327,30 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
 }> {
   const numToSkip = (page - 1) * pageSize
   // return documents within the page
-  const pageResults: Promise<MetadataAggregateResult[]> = this.aggregate(
-    createAggregateQueryWithPaymentsProjectionParams({
-      form: mongoose.Types.ObjectId(formId),
-    }),
-  )
-    .sort({ created: -1 })
-    .skip(numToSkip)
-    .limit(pageSize)
-    .exec()
+  const pageResults: Promise<MetadataAggregateResult[]> = this.aggregate([
+    { $match: { form: mongoose.Types.ObjectId(formId) } },
+    { $sort: { created: -1 } },
+    { $skip: numToSkip },
+    { $limit: pageSize },
+    {
+      $lookup: {
+        from: 'payments',
+        localField: 'paymentId',
+        foreignField: '_id',
+        as: 'payments',
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        created: 1,
+        'payments.payout': 1,
+        'payments.completedPayment': 1,
+        'payments.amount': 1,
+        'payments.email': 1,
+      },
+    },
+  ]).exec()
 
   const count =
     this.countDocuments({
