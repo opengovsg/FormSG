@@ -17,7 +17,6 @@ import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormFieldMessage from '~components/FormControl/FormFieldMessage'
 import FormLabel from '~components/FormControl/FormLabel'
-import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 
 import { useCreateFormWizard } from '../CreateFormWizardContext'
@@ -79,23 +78,12 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
               <Controller
                 name="responseMode"
                 control={control}
-                render={({ field }) => (
-                  <FormResponseOptions
-                    containsMyInfoFields={containsMyInfoFields}
-                    {...field}
-                  />
-                )}
+                render={({ field }) => <FormResponseOptions {...field} />}
                 rules={{ required: 'Please select a form response mode' }}
               />
             </Skeleton>
             <FormErrorMessage>{errors.responseMode?.message}</FormErrorMessage>
           </FormControl>
-          {containsMyInfoFields && (
-            <InlineMessage useMarkdown mt="-1rem" mb="1rem">
-              {`This form contains MyInfo fields. Only **Email** mode is supported at
-              this point.`}
-            </InlineMessage>
-          )}
           {responseModeValue === FormResponseMode.Email && (
             <FormControl isRequired isInvalid={!!errors.emails} mb="2.25rem">
               <FormLabel
