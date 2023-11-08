@@ -3,7 +3,7 @@ import { GUIDE_PAYMENTS_ENTRY } from '~constants/links'
 import { FeatureUpdateImage } from '~features/whats-new/FeatureUpdateList'
 
 import foldersDashboard from '../../whats-new/assets/folders_dashboard.svg'
-import PaymentsAnnouncementGraphic from '../assets/payments.json'
+import PaymentsAnnouncementGraphic from '../assets/payments_announcement.svg'
 
 export interface NewFeature {
   title: string
@@ -31,7 +31,7 @@ export const NEW_FEATURES: NewFeature[] = [
       'Respondents can now pay for fees and services directly on your form! We integrate with Stripe to provide reliable payments and hassle-free reconciliations. Payment methods we support include debit / credit cards and PayNow.',
     learnMoreLink: GUIDE_PAYMENTS_ENTRY,
     image: {
-      animationData: PaymentsAnnouncementGraphic,
+      url: PaymentsAnnouncementGraphic,
       alt: 'Collect payments on your form',
     },
   },

@@ -1,4 +1,4 @@
-import { Image, ModalBody, ModalHeader, Text } from '@chakra-ui/react'
+import { Box, Image, ModalBody, ModalHeader, Text } from '@chakra-ui/react'
 
 import Link from '~components/Link'
 import { LottieAnimation } from '~templates/LottieAnimation'
@@ -13,17 +13,17 @@ export const NewFeatureContent = (props: {
 
   return (
     <>
-      {image?.animationData ? (
-        <LottieAnimation
-          bg="primary.100"
-          pt="4.5rem"
-          height={{ base: '30vh', md: 'initial' }}
-          animationData={image.animationData}
-          preserveAspectRatio="xMidYMax slice"
-        />
-      ) : (
-        <Image width="100%" src={image.url} alt={image.alt} />
-      )}
+      <Box borderRadius="0.25rem" bg="primary.100" pt="4.5rem">
+        {image?.animationData ? (
+          <LottieAnimation
+            height={{ base: '30vh', md: 'initial' }}
+            animationData={image.animationData}
+            preserveAspectRatio="xMidYMax slice"
+          />
+        ) : (
+          <Image width="100%" src={image.url} alt={image.alt} />
+        )}
+      </Box>
       <ModalHeader>
         <NewFeatureTag />
         <Text mt="0.625rem">{title}</Text>
