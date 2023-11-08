@@ -66,6 +66,7 @@ import {
   getPaymentAmount,
   getPaymentIntentDescription,
   getStripePaymentMethod,
+  sanitisePaymentProducts,
 } from './encrypt-submission.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -119,8 +120,11 @@ const submitEncryptModeForm = async (
   const encryptedPayload = req.formsg.encryptedPayload
 
   // Create Incoming Submission
-  const { encryptedContent, responseMetadata, paymentProducts } =
-    encryptedPayload
+  const {
+    encryptedContent,
+    responseMetadata,
+    paymentProducts: _clientPaymentsProducts,
+  } = encryptedPayload
 
   // Checks if user is SPCP-authenticated before allowing submission
   let uinFin
@@ -308,6 +312,10 @@ const submitEncryptModeForm = async (
     form.payments_field?.enabled &&
     form.payments_channel.channel === PaymentChannel.Stripe
   ) {
+    const paymentProducts = sanitisePaymentProducts(
+      form,
+      _clientPaymentsProducts,
+    )
     return _createPaymentSubmission({
       req,
       res,
