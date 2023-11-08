@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import moment from 'moment-timezone'
+import { Types } from 'mongoose'
 import Stripe from 'stripe'
 
 import {
@@ -201,13 +202,13 @@ export const sanitisePaymentProducts = (
   form: IPopulatedEncryptedForm,
   dirtyPaymentProducts: ProductItem[] | undefined,
 ): ProductItem[] | undefined => {
-  if (!dirtyPaymentProducts) return dirtyPaymentProducts
-  if (!form.payments_field.products) return dirtyPaymentProducts
+  if (!dirtyPaymentProducts) return
+  if (!form.payments_field.products) return
 
   const sanitisedProducts = form.payments_field.products
     .map((cleanProductData): ProductItem | null => {
-      const dirtyProduct = dirtyPaymentProducts.find(
-        ({ data }) => data._id === cleanProductData._id,
+      const dirtyProduct = dirtyPaymentProducts.find(({ data }) =>
+        (cleanProductData._id as unknown as Types.ObjectId).equals(data._id),
       )
       if (!dirtyProduct) return null
 
