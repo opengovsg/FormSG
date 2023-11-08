@@ -410,21 +410,8 @@ const formatProductsDescriptionHtml = (products: ProductItem[]) => {
   let final =
     '<td class="Table-description Font Font--body" style="color: #525f7f;font-size: 15px;line-height: 36px;width: 100%;">'
   products.forEach((product) => {
-    let productStr = ''
-    // Ensure product.name is a string and product.quantity is a number
-    // todo: improve fix to throw error
-    if (!product.data || !product.data.name) {
-      logger.error({
-        message: 'Received invalid request from Stripe webhook endpoint',
-        meta: {
-          action: 'formatProductsDescriptionHtml',
-          error: Error('Invalid product data'),
-        },
-      })
-    } else {
-      const productName = encode(product.data.name)
-      productStr = `${productName} x ${product.quantity}<br>`
-    }
+    const productName = encode(product.data.name)
+    const productStr = `${productName} x ${product.quantity}<br>`
     final = final.concat(productStr)
   })
   final = final.concat('</td>')
