@@ -123,7 +123,7 @@ const submitEncryptModeForm = async (
   const {
     encryptedContent,
     responseMetadata,
-    paymentProducts: _clientPaymentsProducts,
+    paymentProducts: dirtyPaymentsProducts,
   } = encryptedPayload
 
   // Checks if user is SPCP-authenticated before allowing submission
@@ -312,10 +312,7 @@ const submitEncryptModeForm = async (
     form.payments_field?.enabled &&
     form.payments_channel.channel === PaymentChannel.Stripe
   ) {
-    const paymentProducts = sanitisePaymentProducts(
-      form,
-      _clientPaymentsProducts,
-    )
+    const paymentProducts = sanitisePaymentProducts(form, dirtyPaymentsProducts)
     return _createPaymentSubmission({
       req,
       res,
