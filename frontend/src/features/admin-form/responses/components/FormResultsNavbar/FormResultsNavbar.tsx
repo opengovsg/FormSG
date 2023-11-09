@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
+import { useFeatureValue } from '@growthbook/growthbook-react'
 
 import { FormResponseMode } from '~shared/types'
 
@@ -31,6 +32,9 @@ export const FormResultsNavbar = (): JSX.Element => {
     [pathname],
   )
 
+  const isInsightsEnabled = useFeatureValue('insights', false) // disabled by default
+  const isFormEncryptMode = form?.responseMode === FormResponseMode.Encrypt
+  const shouldShowInsights = isFormEncryptMode && isInsightsEnabled
   return (
     <Flex
       sx={noPrintCss}
@@ -67,7 +71,7 @@ export const FormResultsNavbar = (): JSX.Element => {
         >
           Feedback
         </NavigationTab>
-        {form?.responseMode === FormResponseMode.Encrypt ? (
+        {shouldShowInsights ? (
           <NavigationTab
             to={RESULTS_INSIGHTS_SUBROUTE}
             isActive={checkTabActive(RESULTS_INSIGHTS_SUBROUTE)}
