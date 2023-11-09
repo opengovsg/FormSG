@@ -127,7 +127,7 @@ const RatingsAverageText = ({ data }: { data: [string, number][] }) => {
     }
   })
 
-  if (count == 0) {
+  if (count === 0) {
     return <Text textStyle="h4">Average: N/A</Text> // Handle division by zero and no valid ratings
   }
   mean = mean / count
