@@ -1,9 +1,11 @@
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
 
+import { MYINFO_ATTRIBUTE_MAP } from '../../../../../shared/constants/field/myinfo'
 import {
   FormAuthType,
   FormPaymentsField,
+  MyInfoAttribute,
   PaymentFieldsDto,
   PaymentType,
   StorageModeSubmissionContentDto,
@@ -12,6 +14,7 @@ import {
   SubmissionType,
 } from '../../../../../shared/types'
 import { calculatePrice } from '../../../../../shared/utils/paymentProductPrice'
+import { isProcessedChildResponse } from '../../../../app/utils/field-validation/field-validation.guards'
 import {
   IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
@@ -50,6 +53,7 @@ import {
   PrivateFormError,
 } from '../../form/form.errors'
 import { MyInfoKey } from '../../myinfo/myinfo.types'
+import { getMyInfoChildHashKey } from '../../myinfo/myinfo.util'
 import { PaymentNotFoundError } from '../../payments/payments.errors'
 import {
   SgidInvalidJwtError,
@@ -74,7 +78,11 @@ import {
   SubmissionNotFoundError,
   ValidateFieldError,
 } from '../submission.errors'
-import { ProcessedFieldResponse } from '../submission.types'
+import {
+  ProcessedChildrenResponse,
+  ProcessedFieldResponse,
+  ProcessedSingleAnswerResponse,
+} from '../submission.types'
 
 import {
   AttachmentSizeLimitExceededError,
@@ -380,6 +388,43 @@ const getMyInfoPrefix = (
     : ''
 }
 
+export const getAnswersForChild = (
+  response: ProcessedChildrenResponse,
+): ProcessedSingleAnswerResponse[] => {
+  const subFields = response.childSubFieldsArray
+  const qnChildIdx = response.childIdx ?? 0
+  if (!subFields) {
+    return []
+  }
+  return response.answerArray.flatMap((arr, childIdx) => {
+    // First array element is always child name
+    const childName = arr[0]
+    return arr.map((answer, idx) => {
+      const subfield = subFields[idx]
+      return {
+        _id: getMyInfoChildHashKey(
+          response._id,
+          subFields[idx],
+          childIdx,
+          childName,
+        ),
+        // qnChildIdx represents the index of the MyInfo field
+        // childIdx represents the index of the child in this MyInfo field
+        // as there might be >1 child for each MyInfo child field if "Add another child" is used
+        question: `Child ${qnChildIdx + childIdx + 1} ${
+          MYINFO_ATTRIBUTE_MAP[subfield].description
+        }`,
+        answer,
+        fieldType: MYINFO_ATTRIBUTE_MAP[subfield].fieldType,
+        isVisible: response.isVisible,
+        myInfo: {
+          attr: subFields[idx] as unknown as MyInfoAttribute,
+        },
+      }
+    })
+  })
+}
+
 export class SubmissionStorageObj {
   parsedResponses: ProcessedFieldResponse[]
   hashedFields: Set<MyInfoKey>
@@ -400,10 +445,18 @@ export class SubmissionStorageObj {
    */
   get formData() {
     return this.parsedResponses.flatMap((response) => {
-      // Obtain prefix for question based on whether it is verified by MyInfo.
-      const myInfoPrefix = getMyInfoPrefix(response, this.hashedFields)
-      response.question = `${myInfoPrefix}${response.question}`
-      return response
+      if (isProcessedChildResponse(response)) {
+        return getAnswersForChild(response).map((childField) => {
+          const myInfoPrefix = getMyInfoPrefix(childField, this.hashedFields)
+          childField.question = `${myInfoPrefix}${childField.question}`
+          return childField
+        })
+      } else {
+        // Obtain prefix for question based on whether it is verified by MyInfo.
+        const myInfoPrefix = getMyInfoPrefix(response, this.hashedFields)
+        response.question = `${myInfoPrefix}${response.question}`
+        return response
+      }
     })
   }
 }
