@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import Chart, { GoogleChartWrapperChartType } from 'react-google-charts'
 import { BiBarChartAlt2, BiTable } from 'react-icons/bi'
 import { Flex, Text, VStack } from '@chakra-ui/react'
@@ -8,6 +8,7 @@ import { BasicField, FormFieldDto } from '~shared/types'
 import IconButton from '~components/IconButton'
 
 import { COLOR_ARRAY } from './constants'
+import { toolTipFlickerFix } from './piechartCss'
 import { TableChart } from './TableChart'
 
 type ChartTypeMapping = {
@@ -76,7 +77,7 @@ export const FormChart = ({
   }
 
   return (
-    <VStack w="100%" gap="0">
+    <VStack w="100%" gap="0" sx={toolTipFlickerFix}>
       <Flex alignItems="center" justifyContent="space-between" w="100%">
         <Text textStyle="h4" mr="1rem">
           {title}
