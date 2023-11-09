@@ -7,6 +7,7 @@ import { BasicField, FormFieldDto } from '~shared/types'
 
 import IconButton from '~components/IconButton'
 
+import { COLOR_ARRAY } from './constants'
 import { TableChart } from './TableChart'
 
 type ChartTypeMapping = {
@@ -54,7 +55,7 @@ export const FormChart = ({
           if (val[1] === 'Count') {
             val.push({ role: 'style' })
           } else {
-            val.push(colorArray[index % colorArray.length])
+            val.push(COLOR_ARRAY[index % COLOR_ARRAY.length])
           }
         },
       )
@@ -134,37 +135,3 @@ const RatingsAverageText = ({ data }: { data: [string, number][] }) => {
   const roundedMean = Math.round(mean * 100) / 100 // Rounds to two decimal places
   return <Text textStyle="h4">Average: {roundedMean}</Text>
 }
-
-// colour palette for charts
-const colorArray: string[] = [
-  '#FF5733', // Red
-  '#33FF57', // Green
-  '#3357FF', // Blue
-  '#FF33A1', // Pink
-  '#FF8C33', // Orange
-  '#A833FF', // Purple
-  '#33FFF6', // Cyan
-  '#D4FF33', // Lime
-  '#FF335E', // Rose
-  '#33FF90', // Mint
-  '#7A33FF', // Lavender
-  '#FF3362', // Watermelon
-  '#FFB833', // Tangerine
-  '#33FFAB', // Aquamarine
-  '#5133FF', // Indigo
-  '#FF334F', // Tomato
-  '#33E4FF', // Sky blue
-  '#FF33D1', // Magenta
-  '#78FF33', // Spring green
-  '#FF3355', // Crimson
-  '#FF6633', // Vermilion
-  '#33FFC1', // Turquoise
-  '#9933FF', // Grape
-  '#FF3388', // Raspberry
-  '#33FF48', // Shamrock
-  '#FF3344', // Scarlet
-  '#33FFDE', // Azure
-  '#AC33FF', // Orchid
-  '#FF33BB', // Cerise
-  '#33FF6C', // Emerald
-]
