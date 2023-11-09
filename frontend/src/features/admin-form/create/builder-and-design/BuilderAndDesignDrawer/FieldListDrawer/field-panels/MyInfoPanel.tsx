@@ -1,8 +1,10 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
 import { Link as ReactLink } from 'react-router-dom'
 import { Box, Text } from '@chakra-ui/react'
+import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 
+import { featureFlags } from '~shared/constants'
 import {
   AdminFormDto,
   FormAuthType,
@@ -35,7 +37,7 @@ import { DraggableMyInfoFieldListOption } from '../FieldListOption'
 
 import { FieldSection } from './FieldSection'
 
-const SGID_SUPPORTED: Set<MyInfoAttribute> = new Set([
+const SGID_SUPPORTED_V1 = [
   MyInfoAttribute.Name,
   MyInfoAttribute.DateOfBirth,
   MyInfoAttribute.PassportNumber,
@@ -44,26 +46,72 @@ const SGID_SUPPORTED: Set<MyInfoAttribute> = new Set([
   // phone number formats.
   // MyInfo phone numbers support country code, while sgID-MyInfo does not.
   // MyInfoAttribute.MobileNo,
-
-  // FRM-1189: This is disabled due to slight different formatting.
-  // We format the Myinfo response by separates lines in addresses with comma
-  // Whereas sgID separates each line with newline.
-  // This should be enabled in future work
-  // MyInfoAttribute.RegisteredAddress,
-])
-
-/**
- * If sgID is used, checks if the corresponding
- * MyInfo field is supported by sgID.
- */
-const sgIDUnSupported = (
-  form: AdminFormDto | undefined,
-  fieldType: MyInfoAttribute,
-): boolean =>
-  form?.authType === FormAuthType.SGID_MyInfo && !SGID_SUPPORTED.has(fieldType)
+]
+const SGID_SUPPORTED_V2 = [
+  ...SGID_SUPPORTED_V1,
+  MyInfoAttribute.Sex,
+  MyInfoAttribute.Race,
+  MyInfoAttribute.Nationality,
+  MyInfoAttribute.HousingType,
+  MyInfoAttribute.HdbType,
+  MyInfoAttribute.RegisteredAddress,
+  MyInfoAttribute.BirthCountry,
+  MyInfoAttribute.VehicleNo,
+  MyInfoAttribute.Employment,
+  MyInfoAttribute.WorkpassStatus,
+  MyInfoAttribute.Marital,
+  MyInfoAttribute.MobileNo,
+  MyInfoAttribute.WorkpassExpiryDate,
+  MyInfoAttribute.ResidentialStatus,
+  MyInfoAttribute.Dialect,
+  MyInfoAttribute.Occupation,
+  MyInfoAttribute.CountryOfMarriage,
+  MyInfoAttribute.MarriageCertNo,
+  MyInfoAttribute.MarriageDate,
+  MyInfoAttribute.DivorceDate,
+]
 
 export const MyInfoFieldPanel = () => {
   const { data: form, isLoading } = useCreateTabForm()
+
+  const { user } = useUser()
+
+  // FRM-1444: Remove once rollout is 100% and stable
+  const growthbook = useGrowthBook()
+
+  useEffect(() => {
+    if (growthbook) {
+      growthbook.setAttributes({
+        // Only update the `adminEmail` and `adminAgency` attributes, keep the rest the same
+        ...growthbook.getAttributes(),
+        adminEmail: user?.email,
+        adminAgency: user?.agency.shortName,
+      })
+    }
+  }, [growthbook, user])
+
+  const showSgidMyInfoV2 = useFeatureIsOn(featureFlags.myinfoSgid)
+
+  const sgidSupportedFinal = useMemo(() => {
+    return showSgidMyInfoV2 ? SGID_SUPPORTED_V2 : SGID_SUPPORTED_V1
+  }, [showSgidMyInfoV2])
+
+  /**
+   * If sgID is used, checks if the corresponding
+   * MyInfo field is supported by sgID.
+   */
+  const sgIDUnSupported = useCallback(
+    (form: AdminFormDto | undefined, fieldType: MyInfoAttribute): boolean => {
+      const sgidSupported: Set<MyInfoAttribute> = new Set(sgidSupportedFinal)
+
+      return (
+        form?.authType === FormAuthType.SGID_MyInfo &&
+        !sgidSupported.has(fieldType)
+      )
+    },
+    [sgidSupportedFinal],
+  )
+
   // myInfo should be disabled if
   // 1. form response mode is not email mode
   // 2. form auth type is not myInfo
@@ -83,9 +131,8 @@ export const MyInfoFieldPanel = () => {
     (fieldType: MyInfoAttribute): boolean => {
       return isDisabled || sgIDUnSupported(form, fieldType)
     },
-    [form, isDisabled],
+    [form, isDisabled, sgIDUnSupported],
   )
-  const { user } = useUser()
 
   return (
     <>
@@ -220,9 +267,6 @@ const MyInfoText = ({
 
   return (
     <Text>
-      {authType === FormAuthType.SGID_MyInfo
-        ? 'Some MyInfo fields are not yet supported in your selected authentication type. '
-        : null}
       {`Only 30 MyInfo fields are allowed in Email mode (${numMyInfoFields}/30). `}
       <Link isExternal href={GUIDE_EMAIL_MODE}>
         Learn more

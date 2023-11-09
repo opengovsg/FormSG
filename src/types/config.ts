@@ -145,6 +145,7 @@ export interface ISgidVarsSchema {
   cookieMaxAgePreserved: number
   cookieDomain: string
   hostname: string
+  jwtSecret: string
 }
 
 export interface IOptionalVarsSchema {

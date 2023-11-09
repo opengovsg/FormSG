@@ -194,9 +194,15 @@ export const ShareFormModal = ({
       setGoLinkSuffixInput(goLinkSuffixData?.goLinkSuffix ?? '')
       setGoLinkHelperText(goLinkClaimSuccessHelperText)
     }
+    return () => {
+      // before unmount or after any changes to goLinkSuffix, will reset the states first
+      setGoLinkSaved(false)
+      setGoLinkSuffixInput('')
+      setGoLinkHelperText(undefined)
+    }
   }, [goLinkSuffixData?.goLinkSuffix])
 
-  const { claimGoLinkMutation } = useListShortenerMutations()
+  const { claimGoLinkMutation } = useListShortenerMutations(formId ?? '')
 
   const [goLinkHelperText, setGoLinkHelperText] = useState<
     goLinkHelperTextType | undefined
@@ -209,7 +215,6 @@ export const ShareFormModal = ({
       setClaimGoLoading(true)
       await claimGoLinkMutation.mutateAsync({
         linkSuffix: goLinkSuffixInput,
-        formId: formId ?? '',
         adminEmail: user.email,
       })
       setClaimGoLoading(false)
@@ -236,7 +241,7 @@ export const ShareFormModal = ({
       setGoLinkHelperText(getGoLinkClaimFailureHelperText(errMessage))
       return
     }
-  }, [user, claimGoLinkMutation, goLinkSuffixInput, formId])
+  }, [user, claimGoLinkMutation, goLinkSuffixInput])
 
   const FormLinkSection = () => (
     <FormControl isReadOnly>

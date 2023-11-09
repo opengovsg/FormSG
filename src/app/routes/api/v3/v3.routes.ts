@@ -8,6 +8,7 @@ import { ClientRouter } from './client'
 import { CorppassOidcRouter } from './corppass'
 import { FeatureFlagsRouter } from './feature-flags'
 import { PublicFormsRouter } from './forms'
+import { IntranetRouter } from './intranet'
 import { NotificationsRouter } from './notifications'
 import { PaymentsRouter } from './payments'
 import { SingpassOidcRouter } from './singpass'
@@ -27,3 +28,4 @@ V3Router.use('/singpass', SingpassOidcRouter)
 V3Router.use('/corppass', CorppassOidcRouter)
 V3Router.use('/payments', PaymentsRouter)
 V3Router.use('/feature-flags', FeatureFlagsRouter)
+V3Router.use('/intranet', IntranetRouter)

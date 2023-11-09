@@ -1,6 +1,6 @@
 {
   "name": "form-frontend",
-  "version": "6.81.0",
+  "version": "6.87.0",
   "homepage": ".",
   "private": true,
   "dependencies": {
@@ -108,8 +108,8 @@
     "build:dd-chunk": "webpack --config webpack.dd.config.js",
     "test": "cross-env SKIP_PREFLIGHT_CHECK=true craco test --silent",
     "eject": "react-scripts eject",
-    "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook",
+    "storybook": "NODE_OPTIONS=--openssl-legacy-provider start-storybook -p 6006",
+    "build-storybook": "NODE_OPTIONS=--openssl-legacy-provider build-storybook",
     "lint": "eslint ./ --ignore-path .gitignore && prettier . -c",
     "lint:fix": "eslint ./ --ignore-path .gitignore --fix && prettier . -c --write",
     "test:a11y": "npm run build-storybook && jest --config .storybook/storyshots/jest.config.js",
@@ -189,6 +189,7 @@
     "patch-package": "^6.4.7",
     "prettier": "^2.5.1",
     "puppeteer": "^13.0.0",
+    "react-refresh": "^0.14.0",
     "react-scripts": "^4.0.3",
     "resize-observer-polyfill": "^1.5.1",
     "rimraf": "^3.0.2",

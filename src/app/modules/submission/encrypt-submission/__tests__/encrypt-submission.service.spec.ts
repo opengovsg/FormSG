@@ -1416,7 +1416,7 @@ describe('encrypt-submission.service', () => {
       )
     })
 
-    it('should return errAsync if lambda returns an errored response (e.g. file not found)', async () => {
+    it('should return errAsync if lambda returns an errored response (e.g. file not found) when a valid file key is used', async () => {
       // Arrange
       const failurePayload = {
         statusCode: 404,
@@ -1439,7 +1439,9 @@ describe('encrypt-submission.service', () => {
       expect(awsSpy).toHaveBeenCalledOnce()
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new VirusScanFailedError(),
+        new InvalidFileKeyError(
+          'Invalid file key - file key is not found in the quarantine bucket. The file must be uploaded first.',
+        ),
       )
     })
 

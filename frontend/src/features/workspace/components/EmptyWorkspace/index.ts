@@ -1,1 +1,2 @@
-export { EmptyWorkspace } from './EmptyWorkspace'
+export { EmptyDefaultWorkspace } from './EmptyDefaultWorkspace'
+export { EmptyNewWorkspace } from './EmptyNewWorkspace'

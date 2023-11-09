@@ -14,6 +14,7 @@ import {
   MyInfoChildVaxxStatus,
   MyInfoDataTransformer,
 } from '../../../../shared/types'
+import { createLoggerWithLabel } from '../../config/logger'
 
 import {
   formatAddress,
@@ -25,6 +26,8 @@ import {
   formatWorkpassStatus,
 } from './myinfo.format'
 import { isMyInfoChildrenBirthRecords } from './myinfo.util'
+
+const logger = createLoggerWithLabel(module)
 
 /**
  * Converts an internal MyInfo attribute used in FormSG to a scope
@@ -422,6 +425,14 @@ export class MyInfoData
       // Above cases should be exhaustive for all attributes supported by Form.
       // Fall back to leaving field editable as data shape is unknown.
       default:
+        logger.error({
+          message: 'Unknown attribute found in Singpass MyInfo field',
+          meta: {
+            action: '_isDataReadOnly',
+            myInfoValue,
+            attr,
+          },
+        })
         return false
     }
   }

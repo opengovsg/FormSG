@@ -1,6 +1,7 @@
 import { generatePkcePair, SgidClient } from '@opengovsg/sgid-client'
 import fs from 'fs'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
+import { SgidPublicOfficerEmploymentList } from 'shared/types/auth'
 
 import { ISgidVarsSchema } from 'src/types'
 
@@ -13,9 +14,9 @@ import {
 } from '../../sgid/sgid.errors'
 
 const logger = createLoggerWithLabel(module)
-
 export const SGID_LOGIN_OAUTH_STATE = 'login'
-const SGID_OGP_WORK_EMAIL_SCOPE = 'ogpofficerinfo.work_email'
+const SGID_POCDEX_PUBLIC_OFFICER_EMPLOYMENTS_SCOPE =
+  'pocdex.public_officer_details'
 
 export class AuthSgidServiceClass {
   private client: SgidClient
@@ -56,7 +57,9 @@ export class AuthSgidServiceClass {
     try {
       const result = this.client.authorizationUrl({
         state: SGID_LOGIN_OAUTH_STATE,
-        scope: ['openid', SGID_OGP_WORK_EMAIL_SCOPE].join(' '),
+        scope: ['openid', SGID_POCDEX_PUBLIC_OFFICER_EMPLOYMENTS_SCOPE].join(
+          ' ',
+        ),
         nonce: null,
         codeChallenge,
       })
@@ -108,11 +111,14 @@ export class AuthSgidServiceClass {
   retrieveUserInfo(
     accessToken: string,
     sub: string,
-  ): ResultAsync<string, SgidFetchUserInfoError> {
+  ): ResultAsync<SgidPublicOfficerEmploymentList, SgidFetchUserInfoError> {
     return ResultAsync.fromPromise(
-      this.client
-        .userinfo({ accessToken, sub })
-        .then(({ data }) => data[SGID_OGP_WORK_EMAIL_SCOPE]),
+      this.client.userinfo({ accessToken, sub }).then(({ data }) => {
+        const employments: SgidPublicOfficerEmploymentList = JSON.parse(
+          data[SGID_POCDEX_PUBLIC_OFFICER_EMPLOYMENTS_SCOPE],
+        )
+        return employments
+      }),
       (error) => {
         logger.error({
           message: 'Failed to retrieve user info from sgID',
@@ -124,7 +130,15 @@ export class AuthSgidServiceClass {
         })
         return new SgidFetchUserInfoError()
       },
-    )
+    ).andThen((employments) => {
+      // Ensure that all emails are in lowercase
+      const cleanedProfile = employments.map((employment) => ({
+        ...employment,
+        work_email: employment.work_email.toLowerCase(),
+      }))
+
+      return ok(cleanedProfile)
+    })
   }
 }
 

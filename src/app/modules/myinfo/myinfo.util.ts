@@ -44,12 +44,14 @@ import {
   FormAuthNoEsrvcIdError,
   FormNotFoundError,
 } from '../form/form.errors'
+import { SGIDMyInfoData } from '../sgid/sgid.adapter'
 import { SGID_MYINFO_LOGIN_COOKIE_NAME } from '../sgid/sgid.constants'
 import {
   ProcessedChildrenResponse,
   ProcessedFieldResponse,
 } from '../submission/submission.types'
 
+import { MyInfoData } from './myinfo.adapter'
 import { MYINFO_LOGIN_COOKIE_NAME } from './myinfo.constants'
 import {
   MyInfoCookieStateError,
@@ -542,7 +544,7 @@ export const handleMyInfoChildHashResponse = (
  */
 export const getMyInfoAttributeConstantsList = (
   myInfoAttr: string | string[],
-) => {
+): string[] | undefined => {
   switch (myInfoAttr) {
     case MyInfoAttribute.Occupation:
       return myInfoOccupations
@@ -576,15 +578,37 @@ export const logIfFieldValueNotInMyinfoList = (
   fieldValue: string,
   myInfoAttr: string | string[],
   myInfoList: string[],
+  myInfoData: MyInfoData | SGIDMyInfoData,
 ) => {
   const isFieldValueInMyinfoList = myInfoList.includes(fieldValue)
-  if (!isFieldValueInMyinfoList) {
+  const myInfoSource =
+    myInfoData instanceof MyInfoData ? 'Singpass MyInfo' : 'SGID MyInfo'
+
+  if (isFieldValueInMyinfoList) return
+
+  if (myInfoSource === 'Singpass MyInfo') {
     logger.error({
       message: 'Myinfo field value not found in existing Myinfo constants list',
       meta: {
         action: 'prefillAndSaveMyInfoFields',
         myInfoFieldValue: fieldValue,
         myInfoAttr,
+        myInfoSource,
+      },
+    })
+  } else if (
+    // SGID returns NA instead of empty field values, we don't need this to be logged
+    // as this is expected behaviour
+    myInfoSource === 'SGID MyInfo' &&
+    fieldValue !== 'NA'
+  ) {
+    logger.error({
+      message: 'Myinfo field value not found in existing Myinfo constants list',
+      meta: {
+        action: 'prefillAndSaveMyInfoFields',
+        myInfoFieldValue: fieldValue,
+        myInfoAttr,
+        myInfoSource,
       },
     })
   }

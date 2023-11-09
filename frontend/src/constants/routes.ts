@@ -2,7 +2,7 @@ export const LANDING_ROUTE = '/'
 export const LANDING_PAYMENTS_ROUTE = '/payments'
 export const DASHBOARD_ROUTE = '/dashboard'
 export const LOGIN_ROUTE = '/login'
-export const OGP_LOGIN_ROUTE = '/ogp-login'
+export const LOGIN_CALLBACK_ROUTE = '/login/select-profile'
 
 export const TOU_ROUTE = '/terms'
 export const PRIVACY_POLICY_ROUTE = '/privacy'

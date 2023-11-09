@@ -2,6 +2,8 @@ import JSZip from 'jszip'
 import flattenDeep from 'lodash/flattenDeep'
 import uniq from 'lodash/uniq'
 
+// Note: Guide should be updated if the list of valid extensions is changed.
+// https://guide.form.gov.sg/faq/faq/attachments
 export const VALID_EXTENSIONS = [
   '.asc',
   '.avi',

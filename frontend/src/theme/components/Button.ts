@@ -245,8 +245,10 @@ const variantInputAttached: SystemStyleFunction = (props) => {
     ml: '-1px',
     borderColor: 'neutral.400',
     borderRadius: 0,
+    borderLeftColor: 'transparent',
     _hover: {
       bg: 'neutral.100',
+      borderLeftColor: `neutral.400`,
     },
     _active: {
       borderColor: getColor(theme, fc),

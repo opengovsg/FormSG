@@ -16,8 +16,8 @@ import { ModalCloseButton } from '~components/Modal'
 
 import { ProgressIndicator } from '../../components/ProgressIndicator/ProgressIndicator'
 
+import { NEW_FEATURES } from './components/AnnouncementsFeatureList'
 import { NewFeatureContent } from './components/NewFeatureContent'
-import { NEW_FEATURES } from './Announcements'
 
 interface RolloutAnnouncementModalProps {
   isOpen: boolean
@@ -55,7 +55,7 @@ export const RolloutAnnouncementModal = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={isMobile ? 'full' : 'md'}>
       <ModalOverlay />
-      <ModalContent {...swipeHandlers}>
+      <ModalContent {...swipeHandlers} borderRadius="0.25rem">
         <ModalCloseButton />
         <NewFeatureContent content={NEW_FEATURES[currActiveIdx]} />
         <ModalFooter>

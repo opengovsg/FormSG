@@ -469,7 +469,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           } else if (
             this.responseMode === FormResponseMode.Encrypt &&
             // MyInfo is not available for storage mode
-            v === FormAuthType.MyInfo
+            (v === FormAuthType.MyInfo || v === FormAuthType.SGID_MyInfo)
           ) {
             return FormAuthType.NIL
           } else {
@@ -1124,7 +1124,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       .read('secondary')
       .exec()
   }
-
   FormSchema.statics.getGoLinkSuffix = async function (formId: string) {
     return this.findById(formId, 'goLinkSuffix').exec()
   }
@@ -1138,6 +1137,17 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       { goLinkSuffix: linkSuffix },
       { new: true, runValidators: true },
     ).exec()
+  }
+
+  FormSchema.statics.archiveForms = async function (
+    formIds: IFormSchema['_id'][],
+    session?: ClientSession,
+  ) {
+    return await this.updateMany(
+      { _id: { $in: formIds } },
+      { status: FormStatus.Archived },
+      { session },
+    ).read('primary')
   }
 
   // Hooks

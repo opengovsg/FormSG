@@ -5,6 +5,8 @@ import { ContentSecurityPolicyOptions } from 'helmet/dist/types/middlewares/cont
 import config from '../../config/config'
 import { sentryConfig } from '../../config/features/sentry.config'
 
+import { CSP_CORE_DIRECTIVES } from './constants'
+
 const helmetMiddlewares = () => {
   // Only add the "Strict-Transport-Security" header if request is https.
   const hstsMiddleware: RequestHandler = (req, res, next) => {
@@ -27,72 +29,8 @@ const helmetMiddlewares = () => {
     policy: 'strict-origin-when-cross-origin',
   })
 
-  const cspCoreDirectives: ContentSecurityPolicyOptions['directives'] = {
-    imgSrc: [
-      "'self'",
-      'blob:',
-      'data:',
-      'https://www.googletagmanager.com/', // TODO #4279: This is used for Universal Analytics, so remove after react rollout
-      'https://www.google-analytics.com/',
-      `https://s3-${config.aws.region}.amazonaws.com/agency.form.sg/`, // Agency logos
-      config.aws.imageBucketUrl, // Image field
-      config.aws.logoBucketUrl, // Form logo
-      '*', // TODO: Remove when we host our own images for Image field and Form Logo
-      'https://*.google-analytics.com', // GA4 https://developers.google.com/tag-platform/tag-manager/web/csp
-      'https://*.googletagmanager.com',
-    ],
-    fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com/'],
-    scriptSrc: [
-      "'self'",
-      'https://ssl.google-analytics.com/',
-      'https://www.google-analytics.com/',
-      'https://www.tagmanager.google.com/',
-      'https://www.google.com/recaptcha/',
-      'https://www.recaptcha.net/recaptcha/',
-      'https://www.gstatic.com/recaptcha/releases/',
-      'https://challenges.cloudflare.com',
-      'https://js.stripe.com/v3',
-      // GA4 https://developers.google.com/tag-platform/tag-manager/web/csp
-      // not actively used yet, loading specific files due to CSP bypass issue
-      'https://*.googletagmanager.com/gtag/',
-      'https://www.gstatic.com/charts/',
-    ],
-    connectSrc: [
-      "'self'",
-      'https://www.google-analytics.com/',
-      'https://ssl.google-analytics.com/',
-      'https://*.browser-intake-datadoghq.com', // https://docs.datadoghq.com/real_user_monitoring/faq/content_security_policy/
-      'https://sentry.io/api/',
-      config.aws.attachmentBucketUrl, // Attachment downloads
-      config.aws.imageBucketUrl, // Image field
-      config.aws.logoBucketUrl, // Form logo
-      config.aws.virusScannerQuarantineS3BucketUrl, // Virus scanning
-      'https://*.google-analytics.com', // GA4 https://developers.google.com/tag-platform/tag-manager/web/csp
-      'https://*.analytics.google.com',
-      'https://*.googletagmanager.com',
-    ],
-    frameSrc: [
-      "'self'",
-      'https://www.google.com/recaptcha/',
-      'https://www.recaptcha.net/recaptcha/',
-      'https://challenges.cloudflare.com',
-      'https://js.stripe.com/',
-    ],
-    styleSrc: [
-      "'self'",
-      'https://www.google.com/recaptcha/',
-      'https://www.recaptcha.net/recaptcha/',
-      'https://www.gstatic.com/recaptcha/',
-      'https://www.gstatic.cn/',
-      'https://www.gstatic.com/charts/',
-      "'unsafe-inline'",
-    ],
-    workerSrc: [
-      "'self'",
-      'blob:', // DataDog RUM session replay - https://docs.datadoghq.com/real_user_monitoring/faq/content_security_policy/
-    ],
-    frameAncestors: ['*'],
-  }
+  const cspCoreDirectives: ContentSecurityPolicyOptions['directives'] =
+    CSP_CORE_DIRECTIVES
 
   const reportUri = sentryConfig.cspReportUri
 
