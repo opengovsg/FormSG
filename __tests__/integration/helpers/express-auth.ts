@@ -50,7 +50,7 @@ export const createAuthedSession = async (
   // Assert
   // Should have session cookie returned.
   const sessionCookie = request.cookies.find(
-    (cookie) => cookie.name === 'connect.sid',
+    (cookie) => cookie.name === 'formsg.connect.sid',
   )
   expect(sessionCookie).toBeDefined()
 
@@ -68,7 +68,7 @@ export const logoutSession = async (request: Session): Promise<Session> => {
   expect(response.status).toEqual(200)
 
   const sessionCookie = request.cookies.find(
-    (cookie) => cookie.name === 'connect.sid',
+    (cookie) => cookie.name === 'formsg.connect.sid',
   )
   expect(sessionCookie).not.toBeDefined()
 

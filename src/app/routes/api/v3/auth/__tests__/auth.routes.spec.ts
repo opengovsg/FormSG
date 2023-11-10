@@ -511,7 +511,7 @@ describe('auth.routes', () => {
       })
       // Should have session cookie returned.
       const sessionCookie = request.cookies.find(
-        (cookie) => cookie.name === 'connect.sid',
+        (cookie) => cookie.name === 'formsg.connect.sid',
       )
       expect(sessionCookie).toBeDefined()
     })
@@ -538,7 +538,7 @@ describe('auth.routes', () => {
       })
       // Should have session cookie returned.
       const sessionCookie = request.cookies.find(
-        (cookie) => cookie.name === 'connect.sid',
+        (cookie) => cookie.name === 'formsg.connect.sid',
       )
       expect(sessionCookie).toBeDefined()
     })
@@ -591,9 +591,9 @@ describe('auth.routes', () => {
       // Assert
       expect(response.status).toEqual(200)
       expect(response.body).toEqual({ message: 'Sign out successful' })
-      // connect.sid should now be empty.
+      // formsg.connect.sid should now be empty.
       expect(response.header['set-cookie'][0]).toEqual(
-        expect.stringContaining('connect.sid=;'),
+        expect.stringContaining('formsg.connect.sid=;'),
       )
     })
 
@@ -629,7 +629,7 @@ describe('auth.routes', () => {
     // Assert
     // Should have session cookie returned.
     const sessionCookie = request.cookies.find(
-      (cookie) => cookie.name === 'connect.sid',
+      (cookie) => cookie.name === 'formsg.connect.sid',
     )
     expect(sessionCookie).toBeDefined()
     return response.body
