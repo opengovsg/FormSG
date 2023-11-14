@@ -1,11 +1,8 @@
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
 
-import { MYINFO_ATTRIBUTE_MAP } from '../../../../../shared/constants/field/myinfo'
 import {
-  FormAuthType,
   FormPaymentsField,
-  MyInfoAttribute,
   PaymentFieldsDto,
   PaymentType,
   StorageModeSubmissionContentDto,
@@ -53,7 +50,6 @@ import {
   PrivateFormError,
 } from '../../form/form.errors'
 import { MyInfoKey } from '../../myinfo/myinfo.types'
-import { getMyInfoChildHashKey } from '../../myinfo/myinfo.util'
 import { PaymentNotFoundError } from '../../payments/payments.errors'
 import {
   SgidInvalidJwtError,
@@ -67,7 +63,6 @@ import {
   VerifyJwtError,
 } from '../../spcp/spcp.errors'
 import { MissingUserError } from '../../user/user.errors'
-import { MYINFO_PREFIX } from '../email-submission/email-submission.constants'
 import {
   AttachmentTooLargeError,
   ConflictError,
@@ -78,11 +73,8 @@ import {
   SubmissionNotFoundError,
   ValidateFieldError,
 } from '../submission.errors'
-import {
-  ProcessedChildrenResponse,
-  ProcessedFieldResponse,
-  ProcessedSingleAnswerResponse,
-} from '../submission.types'
+import { ProcessedFieldResponse } from '../submission.types'
+import { getAnswersForChild, getMyInfoPrefix } from '../submission.utils'
 
 import {
   AttachmentSizeLimitExceededError,
@@ -372,88 +364,23 @@ export const getPaymentIntentDescription = (
   }
 }
 
-/**
- * Determines the prefix for a question based on whether it is verified
- * by MyInfo.
- * @param response
- * @param hashedFields Field ids of hashed fields.
- * @returns the prefix
- */
-const getMyInfoPrefix = (
-  response: ProcessedFieldResponse,
-  hashedFields: Set<MyInfoKey>,
-): string => {
-  return !!response.myInfo?.attr && hashedFields.has(response._id)
-    ? MYINFO_PREFIX
-    : ''
-}
-
-export const getAnswersForChild = (
-  response: ProcessedChildrenResponse,
-): ProcessedSingleAnswerResponse[] => {
-  const subFields = response.childSubFieldsArray
-  const qnChildIdx = response.childIdx ?? 0
-  if (!subFields) {
-    return []
-  }
-  return response.answerArray.flatMap((arr, childIdx) => {
-    // First array element is always child name
-    const childName = arr[0]
-    return arr.map((answer, idx) => {
-      const subfield = subFields[idx]
-      return {
-        _id: getMyInfoChildHashKey(
-          response._id,
-          subFields[idx],
-          childIdx,
-          childName,
-        ),
-        // qnChildIdx represents the index of the MyInfo field
-        // childIdx represents the index of the child in this MyInfo field
-        // as there might be >1 child for each MyInfo child field if "Add another child" is used
-        question: `Child ${qnChildIdx + childIdx + 1} ${
-          MYINFO_ATTRIBUTE_MAP[subfield].description
-        }`,
-        answer,
-        fieldType: MYINFO_ATTRIBUTE_MAP[subfield].fieldType,
-        isVisible: response.isVisible,
-        myInfo: {
-          attr: subFields[idx] as unknown as MyInfoAttribute,
-        },
-      }
-    })
-  })
-}
-
-export class SubmissionStorageObj {
-  parsedResponses: ProcessedFieldResponse[]
-  hashedFields: Set<MyInfoKey>
-  authType: FormAuthType
-
-  constructor(
-    parsedResponses: ProcessedFieldResponse[],
-    hashedFields: Set<MyInfoKey> = new Set<MyInfoKey>(),
-    authType: FormAuthType,
-  ) {
-    this.parsedResponses = parsedResponses
-    this.hashedFields = hashedFields
-    this.authType = authType
-  }
-
-  /**
-   * Getter function to return formData which is used to send responses to admin
-   */
-  get formData() {
-    return this.parsedResponses.flatMap((response) => {
+export const formatMyInfoStorageResponseData = (
+  parsedResponses: ProcessedFieldResponse[],
+  hashedFields?: Set<MyInfoKey>,
+) => {
+  if (!hashedFields) {
+    return parsedResponses
+  } else {
+    return parsedResponses.flatMap((response) => {
       if (isProcessedChildResponse(response)) {
         return getAnswersForChild(response).map((childField) => {
-          const myInfoPrefix = getMyInfoPrefix(childField, this.hashedFields)
+          const myInfoPrefix = getMyInfoPrefix(childField, hashedFields)
           childField.question = `${myInfoPrefix}${childField.question}`
           return childField
         })
       } else {
         // Obtain prefix for question based on whether it is verified by MyInfo.
-        const myInfoPrefix = getMyInfoPrefix(response, this.hashedFields)
+        const myInfoPrefix = getMyInfoPrefix(response, hashedFields)
         response.question = `${myInfoPrefix}${response.question}`
         return response
       }

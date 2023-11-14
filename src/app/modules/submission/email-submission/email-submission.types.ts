@@ -26,3 +26,8 @@ export interface IPopulatedEmailFormWithResponsesAndHash {
   parsedResponses: ParsedResponsesObject
   hashedFields?: Set<MyInfoKey>
 }
+
+export interface IPopulatedStorageFormWithResponsesAndHash {
+  parsedResponses: ParsedResponsesObject
+  hashedFields?: Set<MyInfoKey>
+}

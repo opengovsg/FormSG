@@ -32,7 +32,7 @@ import { JoiPaymentProduct } from '../../form/admin-form/admin-form.payments.con
 import * as FormService from '../../form/form.service'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
-import { IPopulatedEmailFormWithResponsesAndHash } from '../email-submission/email-submission.types'
+import { IPopulatedStorageFormWithResponsesAndHash } from '../email-submission/email-submission.types'
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import { sharedSubmissionParams } from '../submission.constants'
 import * as SubmissionService from '../submission.service'
@@ -62,7 +62,10 @@ import {
   StorageSubmissionMiddlewareHandlerType,
   ValidateSubmissionMiddlewareHandlerRequest,
 } from './encrypt-submission.types'
-import { mapRouteError, SubmissionStorageObj } from './encrypt-submission.utils'
+import {
+  formatMyInfoStorageResponseData,
+  mapRouteError,
+} from './encrypt-submission.utils'
 import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
 
 const logger = createLoggerWithLabel(module)
@@ -468,9 +471,8 @@ export const validateStorageSubmission = async (
                     hashes,
                   ),
                 )
-                .map<IPopulatedEmailFormWithResponsesAndHash>(
+                .map<IPopulatedStorageFormWithResponsesAndHash>(
                   (hashedFields) => ({
-                    form,
                     hashedFields,
                     parsedResponses,
                   }),
@@ -490,19 +492,17 @@ export const validateStorageSubmission = async (
               })
             })
         default:
-          return ok<IPopulatedEmailFormWithResponsesAndHash, never>({
-            form,
+          return ok<IPopulatedStorageFormWithResponsesAndHash, never>({
             parsedResponses,
           })
       }
     })
-    .map(({ form, parsedResponses, hashedFields }) => {
-      const storageFormData = new SubmissionStorageObj(
+    .map(({ parsedResponses, hashedFields }) => {
+      const storageFormData = formatMyInfoStorageResponseData(
         parsedResponses.getAllResponses(),
         hashedFields,
-        form.authType,
       )
-      req.body.responses = storageFormData.formData
+      req.body.responses = storageFormData
       return next()
     })
     .mapErr((error) => {
