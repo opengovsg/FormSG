@@ -7,7 +7,8 @@ import { BasicField, FormFieldDto } from '~shared/types'
 
 import IconButton from '~components/IconButton'
 
-import { COLOR_ARRAY } from './constants'
+import { COLOR_ARRAY } from '../constants'
+
 import { toolTipFlickerFix } from './piechartCss'
 import { TableChart } from './TableChart'
 

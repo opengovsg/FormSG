@@ -7,8 +7,8 @@ import { FormResponseMode } from '~shared/types'
 
 import {
   ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX,
+  RESULTS_CHARTS_SUBROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
-  RESULTS_INSIGHTS_SUBROUTE,
   RESULTS_RESPONSES_SUBROUTE,
 } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
@@ -32,9 +32,9 @@ export const FormResultsNavbar = (): JSX.Element => {
     [pathname],
   )
 
-  const isInsightsEnabled = useFeatureValue('insights', false) // disabled by default
+  const isChartsEnabled = useFeatureValue('charts', false) // disabled by default
   const isFormEncryptMode = form?.responseMode === FormResponseMode.Encrypt
-  const shouldShowInsights = isFormEncryptMode && isInsightsEnabled
+  const shouldShowCharts = isFormEncryptMode && isChartsEnabled
   return (
     <Flex
       sx={noPrintCss}
@@ -71,12 +71,12 @@ export const FormResultsNavbar = (): JSX.Element => {
         >
           Feedback
         </NavigationTab>
-        {shouldShowInsights ? (
+        {shouldShowCharts ? (
           <NavigationTab
-            to={RESULTS_INSIGHTS_SUBROUTE}
-            isActive={checkTabActive(RESULTS_INSIGHTS_SUBROUTE)}
+            to={RESULTS_CHARTS_SUBROUTE}
+            isActive={checkTabActive(RESULTS_CHARTS_SUBROUTE)}
           >
-            Insights
+            Charts
           </NavigationTab>
         ) : null}
       </NavigationTabList>

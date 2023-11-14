@@ -1,6 +1,6 @@
 import {
   FormSubmissionMetadataQueryDto,
-  StorageModeInsightsDto,
+  StorageModeChartsDto,
   StorageModeSubmissionDto,
   StorageModeSubmissionMetadataList,
   SubmissionCountQueryDto,
@@ -106,8 +106,8 @@ const getAllEncryptedSubmission = async ({
   formId,
 }: {
   formId: string
-}): Promise<StorageModeInsightsDto[]> => {
-  return ApiService.get<StorageModeInsightsDto[]>(
+}): Promise<StorageModeChartsDto[]> => {
+  return ApiService.get<StorageModeChartsDto[]>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/submissions`,
   ).then(({ data }) => data)
 }

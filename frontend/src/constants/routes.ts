@@ -44,10 +44,10 @@ export const ACTIVE_ADMINFORM_BUILDER_ROUTE_REGEX = new RegExp(
 /** Responses tab has no subroute, its the index results route. */
 export const RESULTS_RESPONSES_SUBROUTE = ''
 export const RESULTS_FEEDBACK_SUBROUTE = 'feedback'
-export const RESULTS_INSIGHTS_SUBROUTE = 'insights'
+export const RESULTS_CHARTS_SUBROUTE = 'charts'
 
 export const ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX = new RegExp(
-  `${ADMINFORM_ROUTE}/([a-fA-F0-9]{24})/${ADMINFORM_RESULTS_SUBROUTE}(/${RESULTS_FEEDBACK_SUBROUTE}|/${RESULTS_INSIGHTS_SUBROUTE})?/?`,
+  `${ADMINFORM_ROUTE}/([a-fA-F0-9]{24})/${ADMINFORM_RESULTS_SUBROUTE}(/${RESULTS_FEEDBACK_SUBROUTE}|/${RESULTS_CHARTS_SUBROUTE})?/?`,
   'i',
 )
 export const PAYMENT_PAGE_SUBROUTE = 'payment/:paymentId'

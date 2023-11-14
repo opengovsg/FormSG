@@ -73,7 +73,7 @@ export type StorageModeSubmissionBase = z.infer<
   typeof StorageModeSubmissionBase
 >
 
-export type StorageModeInsightsDto = StorageModeSubmissionBase & {
+export type StorageModeChartsDto = StorageModeSubmissionBase & {
   created: DateString
 }
 

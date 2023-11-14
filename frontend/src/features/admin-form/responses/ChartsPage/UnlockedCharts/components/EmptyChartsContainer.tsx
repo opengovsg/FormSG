@@ -9,7 +9,7 @@ import {
 
 import { BxCheck } from '~assets/icons'
 
-import { EmailResponsesSvgr } from './assets/NoChartsSvgr'
+import { EmailResponsesSvgr } from '../assets/svgr/NoChartsSvgr'
 
 const ListWithIcon = ({ children }: { children: React.ReactNode }) => (
   <ListItem>
@@ -18,7 +18,7 @@ const ListWithIcon = ({ children }: { children: React.ReactNode }) => (
   </ListItem>
 )
 
-export const EmptyInsightsContainer = (): JSX.Element => {
+export const EmptyChartsContainer = (): JSX.Element => {
   return (
     <Container p={0} maxW="42.5rem">
       <Stack spacing="2rem">

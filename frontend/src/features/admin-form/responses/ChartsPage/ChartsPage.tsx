@@ -11,9 +11,9 @@ import {
   useStorageResponsesContext,
 } from '../ResponsesPage/storage'
 
-import UnlockedInsights from './UnlockedInsights'
+import UnlockedCharts from './UnlockedCharts'
 
-export const InsightsPage = (): JSX.Element => {
+export const ChartsPage = (): JSX.Element => {
   const { data: form, isLoading } = useAdminForm()
   const { totalResponsesCount, secretKey } = useStorageResponsesContext()
 
@@ -37,5 +37,5 @@ export const InsightsPage = (): JSX.Element => {
     return <EmptyResponses />
   }
 
-  return secretKey ? <UnlockedInsights /> : <SecretKeyVerification />
+  return secretKey ? <UnlockedCharts /> : <SecretKeyVerification />
 }

@@ -16,9 +16,9 @@ import { DecryptedSubmission } from '../../AdminSubmissionsService'
 import { useStorageResponsesContext } from '../../ResponsesPage/storage'
 import { useAllSubmissionData } from '../queries'
 
-import { EmptyInsightsContainer } from './EmptyInsightsContainer'
-import { FIELD_TO_CHART, FormChart } from './FormChart'
-import WordCloud, { WordCloudProps } from './WordCloud'
+import { EmptyChartsContainer } from './components/EmptyChartsContainer'
+import { FIELD_TO_CHART, FormChart } from './components/FormChart'
+import WordCloud, { WordCloudProps } from './components/WordCloud'
 
 // transform filtered data into an array of answer to count
 const aggregateSubmissionData = (
@@ -81,7 +81,7 @@ const aggregateWordCloud = (
   return resultArr
 }
 
-export const UnlockedInsights = () => {
+export const UnlockedCharts = () => {
   const { data: decryptedContent } = useAllSubmissionData()
   const { data: form } = useAdminForm()
   const { dateRange, setDateRange } = useStorageResponsesContext()
@@ -180,7 +180,7 @@ export const UnlockedInsights = () => {
         {renderedCharts.length > 0 ? (
           <>{renderedCharts}</>
         ) : (
-          <EmptyInsightsContainer />
+          <EmptyChartsContainer />
         )}
       </VStack>
     </>
