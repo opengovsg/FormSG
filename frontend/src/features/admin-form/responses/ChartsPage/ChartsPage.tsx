@@ -4,13 +4,12 @@ import { useToast } from '~hooks/useToast'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
-import { EmptyResponses } from '../ResponsesPage/common/EmptyResponses'
+import { SecretKeyVerification } from '../components/SecretKeyVerification'
 import { ResponsesPageSkeleton } from '../ResponsesPage/ResponsesPageSkeleton'
-import {
-  SecretKeyVerification,
-  useStorageResponsesContext,
-} from '../ResponsesPage/storage'
+import { useStorageResponsesContext } from '../ResponsesPage/storage'
 
+import { ChartsSvgr } from './UnlockedCharts/assets/svgr/ChartsSvgr'
+import { EmptyChartsContainer } from './UnlockedCharts/components/EmptyChartsContainer'
 import UnlockedCharts from './UnlockedCharts'
 
 export const ChartsPage = (): JSX.Element => {
@@ -34,8 +33,24 @@ export const ChartsPage = (): JSX.Element => {
   }
 
   if (totalResponsesCount === 0) {
-    return <EmptyResponses />
+    return (
+      <EmptyChartsContainer
+        title={'No charts generated yet.'}
+        subtitle={
+          'Charts will be generated when you receive responses on your form.'
+        }
+      />
+    )
   }
 
-  return secretKey ? <UnlockedCharts /> : <SecretKeyVerification />
+  return secretKey ? (
+    <UnlockedCharts />
+  ) : (
+    <SecretKeyVerification
+      hideResponseCount
+      heroSvg={<ChartsSvgr />}
+      ctaText="View charts"
+      label="Enter or upload Secret Key to view charts"
+    />
+  )
 }

@@ -1,1 +1,1 @@
-export { UnlockedCharts as default } from './UnlockedCharts'
+export { UnlockedChartsContainer as default } from './UnlockedChartsContainer'

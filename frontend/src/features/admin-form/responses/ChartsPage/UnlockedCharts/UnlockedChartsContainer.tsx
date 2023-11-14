@@ -81,7 +81,7 @@ const aggregateWordCloud = (
   return resultArr
 }
 
-export const UnlockedCharts = () => {
+export const UnlockedChartsContainer = () => {
   const { data: decryptedContent } = useAllSubmissionData()
   const { data: form } = useAdminForm()
   const { dateRange, setDateRange } = useStorageResponsesContext()
@@ -176,13 +176,19 @@ export const UnlockedCharts = () => {
           }
         />
       </Flex>
-      <VStack divider={<Divider />} gap="1.5rem">
-        {renderedCharts.length > 0 ? (
-          <>{renderedCharts}</>
-        ) : (
-          <EmptyChartsContainer />
-        )}
-      </VStack>
+
+      {renderedCharts.length > 0 ? (
+        <VStack divider={<Divider />} gap="1.5rem">
+          {renderedCharts}
+        </VStack>
+      ) : (
+        <EmptyChartsContainer
+          title={'No charts generated yet.'}
+          subtitle={
+            'Charts will be generated when you have supported fields in your form responses.'
+          }
+        />
+      )}
     </>
   )
 }

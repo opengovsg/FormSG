@@ -1,44 +1,30 @@
-import {
-  Container,
-  List,
-  ListIcon,
-  ListItem,
-  Stack,
-  Text,
-} from '@chakra-ui/react'
+import { Box, Container, Divider, Stack, Text } from '@chakra-ui/react'
 
-import { BxCheck } from '~assets/icons'
+import { ChartsSvgr } from '../assets/svgr/ChartsSvgr'
 
-import { EmailResponsesSvgr } from '../assets/svgr/NoChartsSvgr'
+import { ChartsSupportedFieldsInfoBox } from './ChartsSupportedFieldsInfoBox'
 
-const ListWithIcon = ({ children }: { children: React.ReactNode }) => (
-  <ListItem>
-    <ListIcon as={BxCheck} color="green.500" />
-    {children}
-  </ListItem>
-)
-
-export const EmptyChartsContainer = (): JSX.Element => {
+export const EmptyChartsContainer = ({
+  title,
+  subtitle,
+}: {
+  title: string
+  subtitle: string
+}): JSX.Element => {
   return (
     <Container p={0} maxW="42.5rem">
-      <Stack spacing="2rem">
-        <EmailResponsesSvgr />
-        <Text as="h2" textStyle="h2" whiteSpace="pre-wrap">
-          No charts available.
+      <Stack spacing="1rem" align="center">
+        <Text as="h2" color="primary.500" textStyle="h2" whiteSpace="pre-wrap">
+          {title}
         </Text>
-        <Text textStyle="body-1">
-          We can support charts for fields that are of type:
-          <List>
-            <ListWithIcon>Short Text</ListWithIcon>
-            <ListWithIcon>Long Text</ListWithIcon>
-            <ListWithIcon>Rating</ListWithIcon>
-            <ListWithIcon>Radio</ListWithIcon>
-            <ListWithIcon>Checkbox</ListWithIcon>
-            <ListWithIcon>Dropdown</ListWithIcon>
-            <ListWithIcon>Country Region</ListWithIcon>
-            <ListWithIcon>Yes / No</ListWithIcon>
-          </List>
+        <Text textStyle="body-1" color="secondary.500" mb="0.5rem">
+          {subtitle}
         </Text>
+        <Box pb="2.5rem" pt="0.5rem">
+          <ChartsSvgr />
+        </Box>
+        <Divider />
+        <ChartsSupportedFieldsInfoBox />
       </Stack>
     </Container>
   )
