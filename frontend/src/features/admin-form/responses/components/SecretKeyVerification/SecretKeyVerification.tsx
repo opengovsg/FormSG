@@ -119,7 +119,7 @@ export const SecretKeyVerification = ({
   heroSvg: JSX.Element
   ctaText: string
   label: string
-  hideResponseCount: boolean
+  hideResponseCount?: boolean
 }): JSX.Element => {
   const {
     isLoading,

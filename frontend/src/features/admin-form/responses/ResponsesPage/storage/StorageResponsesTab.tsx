@@ -1,6 +1,8 @@
+import { FormActivationSvg } from '~features/admin-form/settings/components/FormActivationSvg'
+
+import { SecretKeyVerification } from '../../components/SecretKeyVerification'
 import { EmptyResponses } from '../common/EmptyResponses'
 
-import { SecretKeyVerification } from './SecretKeyVerification'
 import { useStorageResponsesContext } from './StorageResponsesContext'
 import { UnlockedResponses } from './UnlockedResponses'
 
@@ -11,5 +13,13 @@ export const StorageResponsesTab = (): JSX.Element => {
     return <EmptyResponses />
   }
 
-  return secretKey ? <UnlockedResponses /> : <SecretKeyVerification />
+  return secretKey ? (
+    <UnlockedResponses />
+  ) : (
+    <SecretKeyVerification
+      heroSvg={<FormActivationSvg />}
+      ctaText="Unlock responses"
+      label="Enter or upload Secret Key"
+    />
+  )
 }

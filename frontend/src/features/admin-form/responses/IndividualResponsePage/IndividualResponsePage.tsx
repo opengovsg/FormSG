@@ -14,10 +14,10 @@ import simplur from 'simplur'
 import Button from '~components/Button'
 import Spinner from '~components/Spinner'
 
-import {
-  SecretKeyVerification,
-  useStorageResponsesContext,
-} from '../ResponsesPage/storage'
+import { FormActivationSvg } from '~features/admin-form/settings/components/FormActivationSvg'
+
+import { SecretKeyVerification } from '../components/SecretKeyVerification'
+import { useStorageResponsesContext } from '../ResponsesPage/storage'
 
 import { DecryptedRow } from './DecryptedRow'
 import { IndividualResponseNavbar } from './IndividualResponseNavbar'
@@ -82,7 +82,14 @@ export const IndividualResponsePage = (): JSX.Element => {
     submissionId,
   ])
 
-  if (!secretKey) return <SecretKeyVerification />
+  if (!secretKey)
+    return (
+      <SecretKeyVerification
+        heroSvg={<FormActivationSvg />}
+        ctaText="Unlock responses"
+        label="Enter or upload Secret Key"
+      />
+    )
 
   return (
     <Flex flexDir="column" marginTop={{ base: '-1.5rem', md: '-3rem' }}>

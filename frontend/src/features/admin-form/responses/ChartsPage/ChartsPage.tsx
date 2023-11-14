@@ -1,3 +1,5 @@
+import { Box, Container, Divider, Flex, Stack } from '@chakra-ui/react'
+
 import { FormResponseMode } from '~shared/types/form'
 
 import { useToast } from '~hooks/useToast'
@@ -9,6 +11,7 @@ import { ResponsesPageSkeleton } from '../ResponsesPage/ResponsesPageSkeleton'
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
 
 import { ChartsSvgr } from './UnlockedCharts/assets/svgr/ChartsSvgr'
+import { ChartsSupportedFieldsInfoBox } from './UnlockedCharts/components/ChartsSupportedFieldsInfoBox'
 import { EmptyChartsContainer } from './UnlockedCharts/components/EmptyChartsContainer'
 import UnlockedCharts from './UnlockedCharts'
 
@@ -46,11 +49,21 @@ export const ChartsPage = (): JSX.Element => {
   return secretKey ? (
     <UnlockedCharts />
   ) : (
-    <SecretKeyVerification
-      hideResponseCount
-      heroSvg={<ChartsSvgr />}
-      ctaText="View charts"
-      label="Enter or upload Secret Key to view charts"
-    />
+    <>
+      <SecretKeyVerification
+        hideResponseCount
+        heroSvg={<ChartsSvgr />}
+        ctaText="View charts"
+        label="Enter or upload Secret Key to view charts"
+      />
+      <Container p={0} maxW="42.5rem">
+        <Box mt="2rem" mb="0.5rem">
+          <Divider />
+        </Box>
+        <Stack align="center">
+          <ChartsSupportedFieldsInfoBox />
+        </Stack>
+      </Container>
+    </>
   )
 }
