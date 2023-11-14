@@ -708,6 +708,34 @@ describe('Form Model', () => {
         await expect(sgidForm.authType).toBe(FormAuthType.SGID)
       })
 
+      // Ensure that encrypted MyInfo forms can be created since they could not before
+      it('should set authType to MyInfo when given authType is MyInfo', async () => {
+        // Arrange
+        const encryptFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          authType: FormAuthType.MyInfo,
+        })
+
+        // Act
+        const myInfoForm = await EncryptedForm.create(encryptFormParams)
+
+        // Assert
+        await expect(myInfoForm.authType).toBe(FormAuthType.MyInfo)
+      })
+
+      // Ensure that encrypted SGID MyInfo forms can be created since they could not before
+      it('should set authType to SGID MyInfo when given authType is SGID MyInfo', async () => {
+        // Arrange
+        const encryptFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          authType: FormAuthType.SGID_MyInfo,
+        })
+
+        // Act
+        const sgidMyInfoForm = await EncryptedForm.create(encryptFormParams)
+
+        // Assert
+        await expect(sgidMyInfoForm.authType).toBe(FormAuthType.SGID_MyInfo)
+      })
+
       it('should save with default payments settings', async () => {
         // Arrange + Act
         const validForm = new Form(MOCK_ENCRYPTED_FORM_PARAMS)
