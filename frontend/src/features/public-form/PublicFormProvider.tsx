@@ -559,10 +559,12 @@ export const PublicFormProvider = ({
                   },
                 },
               )
+              if (/Network Error/i.test(error.message)) {
+                axiosDebugFlow()
+                // fallback to fetch
+                return submitStorageFormWithFetch()
+              }
               showErrorToast(error, form)
-
-              // fallback to fetch
-              return submitStorageFormWithFetch()
             })
         }
       }
