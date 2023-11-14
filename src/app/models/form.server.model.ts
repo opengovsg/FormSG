@@ -456,21 +456,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           // Do not allow authType to be changed if form is published
           if (this.authType !== v && this.status === FormStatus.Public) {
             return this.authType
-            // Singpass/Corppass/SGID authentication is available for both email
-            // and storage mode
-            // Important - this case must come before the MyInfo + storage
-            // mode case, or else we may accidentally set Singpass/Corppass/SGID
-            // storage mode forms to FormAuthType.NIL
-          } else if (
-            [
-              FormAuthType.SP,
-              FormAuthType.CP,
-              FormAuthType.SGID,
-              FormAuthType.MyInfo,
-              FormAuthType.SGID_MyInfo,
-            ].includes(v)
-          ) {
-            return v
           } else {
             return v
           }
