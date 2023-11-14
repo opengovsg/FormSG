@@ -32,10 +32,12 @@ export const FIELD_TO_CHART = new Map<BasicField, GoogleChartWrapperChartType>([
 
 export const FormChart = ({
   title,
+  rawTitle,
   formField,
   data,
 }: {
   title: string
+  rawTitle: string
   formField: FormFieldDto
   data: [string, number][]
 }) => {
@@ -45,7 +47,8 @@ export const FormChart = ({
     // deep copy of the data
     const renderArray = data.map((val) => [...val] as [string, number | string])
     // Adding data headers
-    renderArray.unshift(['Answer', 'Count'])
+    // react-google-charts requires the first row to be a header of [string, string]
+    renderArray.unshift([rawTitle, 'Count'])
     if (
       !isTable &&
       // Checkbox bar chart should have different colors
@@ -62,7 +65,7 @@ export const FormChart = ({
         },
       )
     return renderArray
-  }, [data, formField.fieldType, isTable])
+  }, [data, formField.fieldType, isTable, rawTitle])
 
   const chartType: GoogleChartWrapperChartType = useMemo(() => {
     if (isTable) return ChartTypes.TABLE

@@ -142,6 +142,7 @@ export const UnlockedChartsContainer = () => {
       return (
         <FormChart
           title={questionTitle}
+          rawTitle={formField.title}
           formField={formField}
           data={dataValues}
           key={idx}

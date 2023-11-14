@@ -9,23 +9,28 @@ import {
 } from '@chakra-ui/react'
 
 export const TableChart = ({ data }: { data: [string, number | string][] }) => {
+  const [header, ...rows] = data
   return (
     <TableContainer>
-      <Table variant="simple" my="1rem">
+      <Table variant="solid" colorScheme="secondary" my="1rem">
         <Thead>
           <Tr>
-            <Th>Answer</Th>
-            <Th isNumeric>Count</Th>
+            <Th borderX="1px solid" borderColor="secondary.500">
+              {header[0]}
+            </Th>
+            <Th borderX="1px solid" borderColor="secondary.500" isNumeric>
+              {header[1]}
+            </Th>
           </Tr>
         </Thead>
         <Tbody>
-          {data.map(([answer, count], idx) => {
+          {rows.map(([answer, count], idx) => {
             if (typeof count === 'number')
               return (
                 <TableChartRows
                   answer={answer}
                   value={count}
-                  key={`${answer}-${idx}`} // A more stable key
+                  key={`${answer}-${idx}`}
                 />
               )
             return null
@@ -45,8 +50,20 @@ const TableChartRows = ({
 }) => {
   return (
     <Tr>
-      <Td>{answer}</Td>
-      <Td>{value}</Td>
+      <Td
+        borderX="1px solid"
+        borderLeftColor="neutral.300"
+        borderRightColor="neutral.300"
+      >
+        {answer}
+      </Td>
+      <Td
+        borderColor="neutral.300"
+        borderRight="1px solid"
+        borderRightColor="neutral.300"
+      >
+        {value}
+      </Td>
     </Tr>
   )
 }
