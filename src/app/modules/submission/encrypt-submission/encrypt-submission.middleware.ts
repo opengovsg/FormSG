@@ -395,6 +395,7 @@ export const validateStorageSubmission = async (
   next: NextFunction,
 ) => {
   const formDef = req.formsg.formDef
+  let spcpSubmissionFailure: undefined | true
 
   const logMeta = {
     action: 'validateStorageSubmission',
@@ -460,7 +461,7 @@ export const validateStorageSubmission = async (
       const { authType } = form
       switch (authType) {
         case FormAuthType.SGID_MyInfo:
-        case FormAuthType.MyInfo:
+        case FormAuthType.MyInfo: {
           return extractMyInfoLoginJwt(req.cookies, authType)
             .andThen(MyInfoService.verifyLoginJwt)
             .asyncAndThen(({ uinFin }) =>
@@ -479,6 +480,7 @@ export const validateStorageSubmission = async (
                 ),
             )
             .mapErr((error) => {
+              spcpSubmissionFailure = true
               logger.error({
                 message: `Error verifying MyInfo${
                   authType === FormAuthType.SGID_MyInfo ? '(over SGID)' : ''
@@ -486,11 +488,9 @@ export const validateStorageSubmission = async (
                 meta: logMeta,
                 error,
               })
-              const { statusCode, errorMessage } = mapRouteError(error)
-              return res.status(statusCode).json({
-                message: errorMessage,
-              })
+              return error
             })
+        }
         default:
           return ok<IPopulatedStorageFormWithResponsesAndHash, never>({
             parsedResponses,
@@ -513,6 +513,7 @@ export const validateStorageSubmission = async (
       })
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: 'Error saving responses in req.body',
+        spcpSubmissionFailure,
       })
     })
 }
