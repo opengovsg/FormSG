@@ -311,7 +311,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
             return (
               myInfoFieldCount === 0 ||
               ((this.authType === FormAuthType.MyInfo ||
-                this.authType == FormAuthType.SGID_MyInfo) &&
+                this.authType === FormAuthType.SGID_MyInfo) &&
                 myInfoFieldCount <= 30)
             )
           },
