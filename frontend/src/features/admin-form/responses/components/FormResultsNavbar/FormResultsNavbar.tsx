@@ -13,6 +13,7 @@ import {
 } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
 import { noPrintCss } from '~utils/noPrintCss'
+import Badge from '~components/Badge'
 import { NavigationTab, NavigationTabList } from '~templates/NavigationTabs'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -32,7 +33,7 @@ export const FormResultsNavbar = (): JSX.Element => {
     [pathname],
   )
 
-  const isChartsEnabled = useFeatureValue('charts', false) // disabled by default
+  const isChartsEnabled = useFeatureValue('charts', true) // disabled by default
   const isFormEncryptMode = form?.responseMode === FormResponseMode.Encrypt
   const shouldShowCharts = isFormEncryptMode && isChartsEnabled
   return (
@@ -76,7 +77,15 @@ export const FormResultsNavbar = (): JSX.Element => {
             to={RESULTS_CHARTS_SUBROUTE}
             isActive={checkTabActive(RESULTS_CHARTS_SUBROUTE)}
           >
-            Charts
+            Charts{' '}
+            <Badge
+              colorScheme="primary"
+              variant="subtle"
+              color="secondary.500"
+              ml="0.5rem"
+            >
+              Beta
+            </Badge>
           </NavigationTab>
         ) : null}
       </NavigationTabList>
