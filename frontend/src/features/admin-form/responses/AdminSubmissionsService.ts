@@ -112,14 +112,19 @@ const getAllEncryptedSubmission = async ({
   ).then(({ data }) => data)
 }
 
+type DecryptedContent = NonNullable<ReturnType<typeof formsgSdk.crypto.decrypt>>
+export type DecryptedSubmission = DecryptedContent & {
+  submissionTime: string
+}
+
 export const getAllDecryptedSubmission = async ({
   formId,
   secretKey,
 }: {
   formId: string
   secretKey?: string
-}) => {
-  if (!secretKey) return
+}): Promise<DecryptedSubmission[]> => {
+  if (!secretKey) return []
 
   const allEncryptedData = await getAllEncryptedSubmission({ formId })
 
