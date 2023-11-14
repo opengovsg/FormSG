@@ -250,8 +250,8 @@ export const PublicFormProvider = ({
   const {
     submitEmailModeFormMutation,
     submitEmailModeFormFetchMutation,
-    submitStorageModeClearFormWithVirusScanningFetchMutation,
-    submitStorageModeClearFormWithVirusScanningMutation,
+    submitStorageModeFormWithVirusScanningFetchMutation,
+    submitStorageModeFormWithVirusScanningMutation,
   } = usePublicFormMutations(formId, submissionData?.id ?? '')
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
@@ -464,7 +464,7 @@ export const PublicFormProvider = ({
               },
             })
 
-            return submitStorageModeClearFormWithVirusScanningFetchMutation
+            return submitStorageModeFormWithVirusScanningFetchMutation
               .mutateAsync(
                 {
                   ...formData,
@@ -520,7 +520,7 @@ export const PublicFormProvider = ({
             },
           })
 
-          return submitStorageModeClearFormWithVirusScanningMutation
+          return submitStorageModeFormWithVirusScanningMutation
             .mutateAsync(
               {
                 ...formData,
@@ -582,8 +582,8 @@ export const PublicFormProvider = ({
       getCaptchaResponse,
       submitEmailModeFormFetchMutation,
       submitEmailModeFormMutation,
-      submitStorageModeClearFormWithVirusScanningMutation,
-      submitStorageModeClearFormWithVirusScanningFetchMutation,
+      submitStorageModeFormWithVirusScanningMutation,
+      submitStorageModeFormWithVirusScanningFetchMutation,
       navigate,
       formId,
       storePaymentMemory,

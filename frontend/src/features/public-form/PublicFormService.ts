@@ -153,7 +153,7 @@ export const submitEmailModeForm = async ({
 
 // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
 // Submit storage mode form with virus scanning (storage v2.1+)
-export const submitStorageModeClearFormWithVirusScanningWithFetch = async ({
+export const submitStorageModeFormWithVirusScanningWithFetch = async ({
   formFields,
   formLogics,
   formInputs,
@@ -206,7 +206,7 @@ export const submitStorageModeClearFormWithVirusScanningWithFetch = async ({
 }
 
 // Submit storage mode form with virus scanning (storage v2.1+)
-export const submitStorageModeClearFormWithVirusScanning = async ({
+export const submitStorageModeFormWithVirusScanning = async ({
   formFields,
   formLogics,
   formInputs,

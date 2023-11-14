@@ -21,8 +21,8 @@ import {
   submitFormFeedback,
   submitFormIssue,
   SubmitStorageFormClearArgs,
-  submitStorageModeClearFormWithVirusScanning,
-  submitStorageModeClearFormWithVirusScanningWithFetch,
+  submitStorageModeFormWithVirusScanning,
+  submitStorageModeFormWithVirusScanningWithFetch,
   uploadAttachmentToQuarantine,
 } from './PublicFormService'
 
@@ -85,12 +85,12 @@ export const usePublicFormMutations = (
     },
   )
 
-  const submitStorageModeClearFormWithVirusScanningFetchMutation = useMutation(
+  const submitStorageModeFormWithVirusScanningFetchMutation = useMutation(
     async (args: Omit<SubmitStorageFormClearArgs, 'formId'>) => {
       const attachmentSizes = await getAttachmentSizes(args)
       // If there are no attachments, submit form without virus scanning by passing in empty list
       if (attachmentSizes.length === 0) {
-        return submitStorageModeClearFormWithVirusScanningWithFetch({
+        return submitStorageModeFormWithVirusScanningWithFetch({
           ...args,
           fieldIdToQuarantineKeyMap: [],
           formId,
@@ -145,7 +145,7 @@ export const usePublicFormMutations = (
           )
           // Step 3: Submit form with keys to quarantine bucket attachments
           .then((fieldIdToQuarantineKeyMap) => {
-            return submitStorageModeClearFormWithVirusScanningWithFetch({
+            return submitStorageModeFormWithVirusScanningWithFetch({
               ...args,
               fieldIdToQuarantineKeyMap,
               formId,
@@ -165,12 +165,12 @@ export const usePublicFormMutations = (
     },
   )
 
-  const submitStorageModeClearFormWithVirusScanningMutation = useMutation(
+  const submitStorageModeFormWithVirusScanningMutation = useMutation(
     async (args: Omit<SubmitStorageFormClearArgs, 'formId'>) => {
       const attachmentSizes = await getAttachmentSizes(args)
       // If there are no attachments, submit form without virus scanning by passing in empty list
       if (attachmentSizes.length === 0) {
-        return submitStorageModeClearFormWithVirusScanning({
+        return submitStorageModeFormWithVirusScanning({
           ...args,
           fieldIdToQuarantineKeyMap: [],
           formId,
@@ -224,7 +224,7 @@ export const usePublicFormMutations = (
           )
           // Step 3: Submit form with keys to quarantine bucket attachments
           .then((fieldIdToQuarantineKeyMap) => {
-            return submitStorageModeClearFormWithVirusScanning({
+            return submitStorageModeFormWithVirusScanning({
               ...args,
               fieldIdToQuarantineKeyMap,
               formId,
@@ -238,8 +238,8 @@ export const usePublicFormMutations = (
     submitEmailModeFormMutation,
     submitFormFeedbackMutation,
     submitEmailModeFormFetchMutation,
-    submitStorageModeClearFormWithVirusScanningFetchMutation,
-    submitStorageModeClearFormWithVirusScanningMutation,
+    submitStorageModeFormWithVirusScanningFetchMutation,
+    submitStorageModeFormWithVirusScanningMutation,
   }
 }
 
