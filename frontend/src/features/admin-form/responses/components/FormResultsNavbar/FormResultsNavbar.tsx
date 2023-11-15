@@ -77,7 +77,7 @@ export const FormResultsNavbar = (): JSX.Element => {
             to={RESULTS_CHARTS_SUBROUTE}
             isActive={checkTabActive(RESULTS_CHARTS_SUBROUTE)}
           >
-            Charts{' '}
+            Charts
             <Badge
               colorScheme="primary"
               variant="subtle"
