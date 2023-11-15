@@ -1,4 +1,4 @@
-import { FormAuthType, FormResponseMode } from '~shared/types/form'
+import { FormAuthType } from '~shared/types/form'
 
 export type EmailFormAuthType = FormAuthType
 export type StorageFormAuthType = FormAuthType
