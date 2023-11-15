@@ -1,7 +1,7 @@
 import dedent from 'dedent'
 import { JsonObject, RequireExactlyOne } from 'type-fest'
 
-import { GUIDE_PAYMENTS_ENTRY } from '~constants/links'
+import { GUIDE_PAYMENTS_ENTRY, GUIDE_SPCP_ESRVCID } from '~constants/links'
 
 import Animation2 from './assets/2-payments.json'
 import Animation3 from './assets/3-search-and-filter.json'
@@ -38,8 +38,7 @@ export const FEATURE_UPDATE_LIST: FeatureUpdateList = {
     {
       title: 'Myinfo fields for Storage mode forms',
       date: new Date('16 Nov 2023 GMT+8'),
-      description:
-        'Get verified data from respondents by adding Myinfo fields to your Storage mode form. To enable Myinfo fields, select one of our Myinfo-enabled authentication options in your form’s settings.',
+      description: `Get verified data from respondents by adding Myinfo fields to your Storage mode form. To enable Myinfo fields, select one of our Myinfo-enabled authentication options in your form’s settings. [Learn more](${GUIDE_SPCP_ESRVCID})`,
       image: {
         url: MyInfoStorageMode,
         alt: 'Myinfo fields for Storage mode forms',

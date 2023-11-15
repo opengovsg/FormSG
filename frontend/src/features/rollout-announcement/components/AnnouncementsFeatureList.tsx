@@ -1,4 +1,4 @@
-import { GUIDE_PAYMENTS_ENTRY } from '~constants/links'
+import { GUIDE_PAYMENTS_ENTRY, GUIDE_SPCP_ESRVCID } from '~constants/links'
 
 import { FeatureUpdateImage } from '~features/whats-new/FeatureUpdateList'
 
@@ -20,6 +20,7 @@ export const NEW_FEATURES: NewFeature[] = [
     title: 'Myinfo fields for Storage mode forms',
     description:
       'Get verified data from respondents by adding Myinfo fields to your Storage mode form. To enable Myinfo fields, select one of our Myinfo-enabled authentication options in your form’s settings.',
+    learnMoreLink: GUIDE_SPCP_ESRVCID,
     image: {
       url: myInfoStorageMode,
       alt: 'Myinfo fields for Storage mode forms',
