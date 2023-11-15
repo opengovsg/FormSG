@@ -38,7 +38,8 @@ export const FEATURE_UPDATE_LIST: FeatureUpdateList = {
     {
       title: 'Myinfo fields for Storage mode forms',
       date: new Date('16 Nov 2023 GMT+8'),
-      description: `Get verified data from respondents by adding Myinfo fields to your Storage mode form. To enable Myinfo fields, select Singpass App-only with Myinfo or Singpass with Myinfo in your form's authentication settings.`,
+      description:
+        'Get verified data from respondents by adding Myinfo fields to your Storage mode form. To enable Myinfo fields, select one of our Myinfo-enabled authentication options in your form’s settings.',
       image: {
         url: MyInfoStorageMode,
         alt: 'Myinfo fields for Storage mode forms',
