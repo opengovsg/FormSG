@@ -1,5 +1,6 @@
 import axios from 'axios'
 
+import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 
 const logger = createLoggerWithLabel(module)
@@ -115,7 +116,7 @@ export const createPaymentIntent = ({
     },
     {
       headers: {
-        'x-api-key': process.env.PAYSG_API_KEY,
+        'x-api-key': paymentConfig.paysgApiKey,
       },
     },
   )

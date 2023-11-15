@@ -17,7 +17,11 @@ interface IPaymentConfig {
   landingGuideLink: string
 }
 
-interface IPaymentFeature extends IStripe, IPaymentConfig {}
+interface IPaySg {
+  paysgApiKey: string
+}
+
+interface IPaymentFeature extends IStripe, IPaymentConfig, IPaySg {}
 
 const paymentFeature: Schema<IPaymentFeature> = {
   defaultCurrency: {
@@ -73,6 +77,12 @@ const paymentFeature: Schema<IPaymentFeature> = {
     format: String,
     default: PUBLIC_PAYMENTS_GUIDE_LINK, // defaults to public guide
     env: 'PAYMENT_LANDING_GUIDE_LINK',
+  },
+  paysgApiKey: {
+    doc: 'API key for PaySG',
+    format: String,
+    default: '',
+    env: 'PAYMENT_PAYSG_API_KEY',
   },
 }
 
