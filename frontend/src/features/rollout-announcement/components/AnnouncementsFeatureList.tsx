@@ -15,6 +15,15 @@ export interface NewFeature {
 // so admins will see new announcements.
 export const NEW_FEATURES: NewFeature[] = [
   {
+    // Announcement date: 2023-11-
+    title: '',
+    description: '',
+    image: {
+      url: '',
+      alt: '',
+    },
+  },
+  {
     // Announcement date: 2023-10-31
     title: 'Introducing Folders!',
     description:

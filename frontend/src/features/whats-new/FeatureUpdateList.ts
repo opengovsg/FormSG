@@ -35,6 +35,15 @@ export const FEATURE_UPDATE_LIST: FeatureUpdateList = {
   version: 4,
   features: [
     {
+      title: '',
+      date: new Date('Nov 2023 GMT+8'),
+      description: ``,
+      image: {
+        url: '',
+        alt: '',
+      },
+    },
+    {
       title: 'Introducing Folders!',
       date: new Date('31 Oct 2023 GMT+8'),
       description: `Say hello to a new way of managing your forms! Create folders and organise your forms to find them easily later.`,
