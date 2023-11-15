@@ -6,6 +6,7 @@ import { GUIDE_PAYMENTS_ENTRY } from '~constants/links'
 import Animation2 from './assets/2-payments.json'
 import Animation3 from './assets/3-search-and-filter.json'
 import Animation4 from './assets/4-dnd.json'
+import MyInfoStorageMode from './assets/6-myinfo-storage.svg'
 import foldersDashboard from './assets/folders_dashboard.svg'
 
 // image can either be a static image (using url) or an animation (using animationData)
@@ -35,12 +36,12 @@ export const FEATURE_UPDATE_LIST: FeatureUpdateList = {
   version: 4,
   features: [
     {
-      title: '',
-      date: new Date('Nov 2023 GMT+8'),
-      description: ``,
+      title: 'Myinfo fields for Storage mode forms',
+      date: new Date('16 Nov 2023 GMT+8'),
+      description: `Get verified data from respondents by adding Myinfo fields to your Storage mode form. To enable Myinfo fields, select Singpass App-only with Myinfo or Singpass with Myinfo in your form's authentication settings.`,
       image: {
-        url: '',
-        alt: '',
+        url: MyInfoStorageMode,
+        alt: 'Myinfo fields for Storage mode forms',
       },
     },
     {
