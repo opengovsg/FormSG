@@ -15,7 +15,7 @@
     "@stablelib/base64": "^1.0.1",
     "@stripe/react-stripe-js": "^1.15.0",
     "@stripe/stripe-js": "^1.44.1",
-    "axios": "^1.6.0",
+    "axios": "^1.6.2",
     "broadcast-channel": "^4.13.0",
     "browser-image-compression": "^2.0.2",
     "comlink": "^4.3.1",
