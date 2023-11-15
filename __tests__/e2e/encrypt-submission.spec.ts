@@ -1,6 +1,11 @@
 import mongoose from 'mongoose'
 import { featureFlags } from 'shared/constants/feature-flags'
-import { BasicField, FormResponseMode } from 'shared/types'
+import {
+  BasicField,
+  FormAuthType,
+  FormResponseMode,
+  MyInfoAttribute,
+} from 'shared/types'
 
 import { IFeatureFlagModel, IFormModel } from 'src/types'
 
@@ -19,6 +24,7 @@ import {
 } from './helpers'
 import {
   createBlankVersion,
+  createMyInfoField,
   createOptionalVersion,
   deleteDocById,
   getSettings,
@@ -142,5 +148,34 @@ test.describe('Storage form submission', () => {
       preventSubmitMessage,
     )
     await deleteDocById(Form, form._id)
+  })
+
+  test('Create and submit storage mode form with MyInfo fields', async ({
+    page,
+  }) => {
+    // Define
+    const formFields = [
+      // Short answer
+      createMyInfoField(MyInfoAttribute.Name, 'LIM YONG XIANG', true),
+      // Dropdown
+      createMyInfoField(MyInfoAttribute.Sex, 'MALE', true),
+      // Date
+      createMyInfoField(MyInfoAttribute.DateOfBirth, '06/10/1980', true),
+      // Mobile
+      createMyInfoField(MyInfoAttribute.MobileNo, '97399245', false),
+      // Unverified
+      createMyInfoField(MyInfoAttribute.WorkpassStatus, 'Live', false),
+    ]
+    const formLogics = NO_LOGIC
+    const formSettings = getSettings({
+      authType: FormAuthType.MyInfo,
+    })
+
+    // Test
+    await runEncryptSubmissionTest(page, Form, {
+      formFields,
+      formLogics,
+      formSettings,
+    })
   })
 })

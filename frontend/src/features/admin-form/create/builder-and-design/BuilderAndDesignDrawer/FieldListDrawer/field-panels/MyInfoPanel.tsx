@@ -5,12 +5,7 @@ import { Box, Text } from '@chakra-ui/react'
 import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 
 import { featureFlags } from '~shared/constants'
-import {
-  AdminFormDto,
-  FormAuthType,
-  FormResponseMode,
-  MyInfoAttribute,
-} from '~shared/types'
+import { AdminFormDto, FormAuthType, MyInfoAttribute } from '~shared/types'
 
 import { GUIDE_EMAIL_MODE } from '~constants/links'
 import { ADMINFORM_SETTINGS_SINGPASS_SUBROUTE } from '~constants/routes'
@@ -113,14 +108,12 @@ export const MyInfoFieldPanel = () => {
   )
 
   // myInfo should be disabled if
-  // 1. form response mode is not email mode
-  // 2. form auth type is not myInfo
-  // 3. # of myInfo fields >= 30
+  // 1. form auth type is not myInfo
+  // 2. # of myInfo fields >= 30
   const isMyInfoDisabled = useMemo(
     () =>
       form
         ? form.form_fields.filter(isMyInfo).length >= 30 ||
-          form.responseMode !== FormResponseMode.Email ||
           (form.authType !== FormAuthType.MyInfo &&
             form.authType !== FormAuthType.SGID_MyInfo)
         : true,
@@ -232,14 +225,10 @@ export const MyInfoFieldPanel = () => {
   )
 }
 
-type MyInfoTextProps = Pick<
-  AdminFormDto,
-  'authType' | 'responseMode' | 'form_fields'
->
+type MyInfoTextProps = Pick<AdminFormDto, 'authType' | 'form_fields'>
 
 const MyInfoText = ({
   authType,
-  responseMode,
   form_fields,
 }: MyInfoTextProps): JSX.Element => {
   const isMyInfoDisabled =
@@ -248,10 +237,6 @@ const MyInfoText = ({
     () => form_fields.filter((ff) => isMyInfo(ff)).length,
     [form_fields],
   )
-
-  if (responseMode !== FormResponseMode.Email) {
-    return <Text>MyInfo fields are not available in Storage mode forms.</Text>
-  }
 
   if (isMyInfoDisabled) {
     return (

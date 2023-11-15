@@ -9,10 +9,12 @@ import {
 import { err, ok, Result } from 'neverthrow'
 
 import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
+import { MYINFO_ATTRIBUTE_MAP } from '../../../../shared/constants/field/myinfo'
 import {
   BasicField,
   FormField,
   FormResponseMode,
+  MyInfoAttribute,
 } from '../../../../shared/types'
 import * as FileValidation from '../../../../shared/utils/file-validation'
 import {
@@ -26,9 +28,18 @@ import {
   ParsedClearFormFieldResponse,
 } from '../../../types/api'
 import { AutoReplyMailData } from '../../services/mail/mail.types'
+import { MyInfoKey } from '../myinfo/myinfo.types'
+import { getMyInfoChildHashKey } from '../myinfo/myinfo.util'
 
+import { MYINFO_PREFIX } from './email-submission/email-submission.constants'
+import { ResponseFormattedForEmail } from './email-submission/email-submission.types'
 import { ConflictError } from './submission.errors'
-import { FilteredResponse } from './submission.types'
+import {
+  FilteredResponse,
+  ProcessedChildrenResponse,
+  ProcessedFieldResponse,
+  ProcessedSingleAnswerResponse,
+} from './submission.types'
 
 type ResponseModeFilterParam = {
   fieldType: BasicField
@@ -265,4 +276,64 @@ export const mapAttachmentsFromResponses = (
     filename: response.filename,
     content: response.content,
   }))
+}
+
+/**
+ * Determines the prefix for a question based on whether it is verified
+ * by MyInfo.
+ * @param response
+ * @param hashedFields Field ids of hashed fields.
+ * @returns the prefix
+ */
+export const getMyInfoPrefix = (
+  response: ResponseFormattedForEmail | ProcessedFieldResponse,
+  hashedFields: Set<MyInfoKey>,
+): string => {
+  return !!response.myInfo?.attr && hashedFields.has(response._id)
+    ? MYINFO_PREFIX
+    : ''
+}
+
+/**
+ * Expands child subfields into individual fields, so that they are no longer nested under
+ * 1 parent field.
+ * @param response
+ * @returns
+ */
+export const getAnswersForChild = (
+  response: ProcessedChildrenResponse,
+): ProcessedSingleAnswerResponse[] => {
+  const subFields = response.childSubFieldsArray
+  const qnChildIdx = response.childIdx ?? 0
+  if (!subFields) {
+    return []
+  }
+  return response.answerArray.flatMap((arr, childIdx) => {
+    // First array element is always child name
+    const childName = arr[0]
+    return arr.map((answer, idx) => {
+      const subfield = subFields[idx]
+      return {
+        _id: getMyInfoChildHashKey(
+          response._id,
+          subFields[idx],
+          childIdx,
+          childName,
+        ),
+        fieldType: response.fieldType,
+        // qnChildIdx represents the index of the MyInfo field
+        // childIdx represents the index of the child in this MyInfo field
+        // as there might be >1 child for each MyInfo child field if "Add another child" is used
+        question: `Child ${qnChildIdx + childIdx + 1} ${
+          MYINFO_ATTRIBUTE_MAP[subfield].description
+        }`,
+        myInfo: {
+          attr: subFields[idx] as unknown as MyInfoAttribute,
+        },
+        isVisible: response.isVisible,
+        isUserVerified: response.isUserVerified,
+        answer,
+      }
+    })
+  })
 }
