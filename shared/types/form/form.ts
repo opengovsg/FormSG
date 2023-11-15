@@ -12,7 +12,7 @@ import {
 } from '../../constants/form'
 import { DateString } from '../generic'
 import { FormLogic, LogicDto } from './form_logic'
-import { PaymentChannel, PaymentType } from '../payment'
+import { PaymentChannel, PaymentMethodType, PaymentType } from '../payment'
 import { Product } from './product'
 
 export type FormId = Opaque<string, 'FormId'>
@@ -72,6 +72,7 @@ export enum FormResponseMode {
 }
 
 export type FormPaymentsChannel = {
+  payment_methods?: [PaymentMethodType]
   channel: PaymentChannel
   target_account_id: string
   publishable_key: string

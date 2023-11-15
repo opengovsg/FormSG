@@ -18,6 +18,12 @@ export enum PaymentChannel {
   Stripe = 'Stripe',
   // for extensibility to future payment options
 }
+
+export enum PaymentMethodType {
+  Unset = '',
+  Paynow = 'Paynow',
+}
+
 export enum PaymentType {
   Fixed = 'Fixed',
   Variable = 'Variable',

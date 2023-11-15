@@ -85,6 +85,7 @@ import {
   createEncryptedSubmissionDto,
   getPaymentAmount,
   getPaymentIntentDescription,
+  getStripePaymentMethod,
   mapRouteError,
 } from './encrypt-submission.utils'
 
@@ -484,10 +485,7 @@ const _createPaymentSubmission = async ({
   const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
     amount,
     currency: paymentConfig.defaultCurrency,
-    // determine payment methods available based on stripe settings
-    automatic_payment_methods: {
-      enabled: true,
-    },
+    ...getStripePaymentMethod(form),
     description: getPaymentIntentDescription(form, paymentProducts),
     receipt_email: paymentReceiptEmail,
     metadata,
