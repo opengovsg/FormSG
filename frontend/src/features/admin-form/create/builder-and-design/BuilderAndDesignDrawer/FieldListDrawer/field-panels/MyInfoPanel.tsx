@@ -252,7 +252,7 @@ const MyInfoText = ({
 
   return (
     <Text>
-      {`Only 30 MyInfo fields are allowed in Email mode (${numMyInfoFields}/30). `}
+      {`Only 30 MyInfo fields are allowed (${numMyInfoFields}/30). `}
       <Link isExternal href={GUIDE_EMAIL_MODE}>
         Learn more
       </Link>
