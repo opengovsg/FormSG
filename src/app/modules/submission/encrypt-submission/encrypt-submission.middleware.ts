@@ -442,10 +442,8 @@ export const validateStorageSubmission = async (
           meta: logMeta,
           error,
         })
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({
-          message: errorMessage,
-        })
+
+        return error
       }
       logger.warn({
         message:
@@ -511,8 +509,9 @@ export const validateStorageSubmission = async (
         meta: logMeta,
         error,
       })
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: 'Error saving responses in req.body',
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({
+        message: errorMessage,
         spcpSubmissionFailure,
       })
     })
