@@ -430,32 +430,6 @@ export const validateStorageSubmission = async (
       req.formsg.filteredResponses = responses
       return { parsedResponses, form: formDef }
     })
-    .mapErr((error) => {
-      // TODO(FRM-1318): Set DB flag to true to harden submission validation after validation has similar error rates as email mode forms.
-      if (
-        req.formsg.featureFlags.includes(
-          featureFlags.encryptionBoundaryShiftHardValidation,
-        )
-      ) {
-        logger.error({
-          message: 'Error processing responses',
-          meta: logMeta,
-          error,
-        })
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({
-          message: errorMessage,
-        })
-      }
-      logger.warn({
-        message:
-          'Error processing responses, but proceeding with submission as submission have been validated client-side',
-        meta: logMeta,
-        error,
-      })
-      req.formsg.filteredResponses = req.body.responses
-      return error
-    })
     .andThen(({ parsedResponses, form }) => {
       // Validate MyInfo responses
       const { authType } = form
@@ -511,8 +485,9 @@ export const validateStorageSubmission = async (
         meta: logMeta,
         error,
       })
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: 'Error saving responses in req.body',
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({
+        message: errorMessage,
         spcpSubmissionFailure,
       })
     })
