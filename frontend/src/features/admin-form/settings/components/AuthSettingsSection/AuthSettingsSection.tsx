@@ -21,7 +21,7 @@ import { isMyInfo } from '~features/myinfo/utils'
 
 import { useMutateFormSettings } from '../../mutations'
 
-import { AUTHTYPE_TO_TEXT, STORAGE_MODE_AUTHTYPES } from './constants'
+import { FORM_AUTHTYPES } from './constants'
 import { EsrvcIdBox } from './EsrvcIdBox'
 
 const esrvcidRequired = (authType: FormAuthType) => {
@@ -42,13 +42,11 @@ interface AuthSettingsSectionProps {
 export const AuthSettingsSectionSkeleton = (): JSX.Element => {
   return (
     <Radio.RadioGroup>
-      {Object.entries(STORAGE_MODE_AUTHTYPES).map(
-        ([authType, textToRender]) => (
-          <Radio isDisabled key={authType}>
-            <Skeleton>{textToRender}</Skeleton>
-          </Radio>
-        ),
-      )}
+      {Object.entries(FORM_AUTHTYPES).map(([authType, textToRender]) => (
+        <Radio isDisabled key={authType}>
+          <Skeleton>{textToRender}</Skeleton>
+        </Radio>
+      ))}
     </Radio.RadioGroup>
   )
 }
@@ -116,12 +114,9 @@ export const AuthSettingsSection = ({
     [isDisabled, mutateFormAuthType, settings.authType],
   )
 
-  const radioOptions: [FormAuthType, string][] = useMemo(() => {
-    return Object.entries(AUTHTYPE_TO_TEXT[settings.responseMode]) as [
-      FormAuthType,
-      string,
-    ][]
-  }, [settings.responseMode])
+  const radioOptions: [FormAuthType, string][] = Object.entries(
+    FORM_AUTHTYPES,
+  ) as [FormAuthType, string][]
 
   return (
     <Box>

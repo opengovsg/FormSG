@@ -311,13 +311,12 @@ const compileFormModel = (db: Mongoose): IFormModel => {
             return (
               myInfoFieldCount === 0 ||
               ((this.authType === FormAuthType.MyInfo ||
-                this.authType == FormAuthType.SGID_MyInfo) &&
-                this.responseMode === FormResponseMode.Email &&
+                this.authType === FormAuthType.SGID_MyInfo) &&
                 myInfoFieldCount <= 30)
             )
           },
           message:
-            'Check that your form is MyInfo-authenticated, is an email mode form and has 30 or fewer MyInfo fields.',
+            'Check that your form is MyInfo-authenticated and has 30 or fewer MyInfo fields.',
         },
       },
       form_logics: {
@@ -457,21 +456,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           // Do not allow authType to be changed if form is published
           if (this.authType !== v && this.status === FormStatus.Public) {
             return this.authType
-            // Singpass/Corppass/SGID authentication is available for both email
-            // and storage mode
-            // Important - this case must come before the MyInfo + storage
-            // mode case, or else we may accidentally set Singpass/Corppass/SGID
-            // storage mode forms to FormAuthType.NIL
-          } else if (
-            [FormAuthType.SP, FormAuthType.CP, FormAuthType.SGID].includes(v)
-          ) {
-            return v
-          } else if (
-            this.responseMode === FormResponseMode.Encrypt &&
-            // MyInfo is not available for storage mode
-            (v === FormAuthType.MyInfo || v === FormAuthType.SGID_MyInfo)
-          ) {
-            return FormAuthType.NIL
           } else {
             return v
           }

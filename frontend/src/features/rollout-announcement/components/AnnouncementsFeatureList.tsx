@@ -1,7 +1,8 @@
-import { GUIDE_PAYMENTS_ENTRY } from '~constants/links'
+import { GUIDE_PAYMENTS_ENTRY, GUIDE_SPCP_ESRVCID } from '~constants/links'
 
 import { FeatureUpdateImage } from '~features/whats-new/FeatureUpdateList'
 
+import myInfoStorageMode from '../../whats-new/assets/6-myinfo-storage.svg'
 import foldersDashboard from '../../whats-new/assets/folders_dashboard.svg'
 import PaymentsAnnouncementGraphic from '../assets/payments_announcement.svg'
 
@@ -14,6 +15,17 @@ export interface NewFeature {
 // When updating this, remember to update the ROLLOUT_ANNOUNCEMENT_KEY_PREFIX with the new date
 // so admins will see new announcements.
 export const NEW_FEATURES: NewFeature[] = [
+  {
+    // Announcement date: 2023-11-16
+    title: 'Myinfo fields for Storage mode forms',
+    description:
+      'Get verified data from respondents by adding Myinfo fields to your Storage mode form. To enable Myinfo fields, select one of our Myinfo-enabled authentication options in your form’s settings.',
+    learnMoreLink: GUIDE_SPCP_ESRVCID,
+    image: {
+      url: myInfoStorageMode,
+      alt: 'Myinfo fields for Storage mode forms',
+    },
+  },
   {
     // Announcement date: 2023-10-31
     title: 'Introducing Folders!',

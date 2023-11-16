@@ -1,11 +1,7 @@
 import { Schema } from 'mongoose'
 import UIDGenerator from 'uid-generator'
 
-import {
-  BasicField,
-  FormResponseMode,
-  MyInfoAttribute,
-} from '../../../../shared/types'
+import { BasicField, MyInfoAttribute } from '../../../../shared/types'
 import { IFieldSchema, IMyInfoSchema, ITableFieldSchema } from '../../../types'
 
 const uidgen3 = new UIDGenerator(256, UIDGenerator.BASE62)
@@ -60,13 +56,6 @@ BaseFieldSchema.pre<IFieldSchema>('validate', function (next) {
   // Invalid field types
   if (!VALID_FIELD_TYPES.includes(this.fieldType)) {
     return next(Error('Field type is incorrect or unspecified'))
-  }
-
-  // Prevent MyInfo fields from being set in encrypt mode.
-  if (this.parent().responseMode === FormResponseMode.Encrypt) {
-    if (this.myInfo?.attr) {
-      return next(Error('MyInfo fields are not allowed for storage mode forms'))
-    }
   }
 
   // No errors.

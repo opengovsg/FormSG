@@ -11,6 +11,7 @@ import {
   SubmissionType,
 } from '../../../../../shared/types'
 import { calculatePrice } from '../../../../../shared/utils/paymentProductPrice'
+import { isProcessedChildResponse } from '../../../../app/utils/field-validation/field-validation.guards'
 import {
   IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
@@ -48,6 +49,7 @@ import {
   FormNotFoundError,
   PrivateFormError,
 } from '../../form/form.errors'
+import { MyInfoKey } from '../../myinfo/myinfo.types'
 import { PaymentNotFoundError } from '../../payments/payments.errors'
 import {
   SgidInvalidJwtError,
@@ -71,6 +73,8 @@ import {
   SubmissionNotFoundError,
   ValidateFieldError,
 } from '../submission.errors'
+import { ProcessedFieldResponse } from '../submission.types'
+import { getAnswersForChild, getMyInfoPrefix } from '../submission.utils'
 
 import {
   AttachmentSizeLimitExceededError,
@@ -357,5 +361,29 @@ export const getPaymentIntentDescription = (
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const exhaustiveCheck: never = payment_type
     }
+  }
+}
+
+export const formatMyInfoStorageResponseData = (
+  parsedResponses: ProcessedFieldResponse[],
+  hashedFields?: Set<MyInfoKey>,
+) => {
+  if (!hashedFields) {
+    return parsedResponses
+  } else {
+    return parsedResponses.flatMap((response) => {
+      if (isProcessedChildResponse(response)) {
+        return getAnswersForChild(response).map((childField) => {
+          const myInfoPrefix = getMyInfoPrefix(childField, hashedFields)
+          childField.question = `${myInfoPrefix}${childField.question}`
+          return childField
+        })
+      } else {
+        // Obtain prefix for question based on whether it is verified by MyInfo.
+        const myInfoPrefix = getMyInfoPrefix(response, hashedFields)
+        response.question = `${myInfoPrefix}${response.question}`
+        return response
+      }
+    })
   }
 }
