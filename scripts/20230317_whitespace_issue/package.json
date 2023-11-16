@@ -11,6 +11,6 @@
   "dependencies": {
     "bson": "^5.4.0",
     "lodash": "^4.17.21",
-    "mongodb": "^5.8.0"
+    "mongodb": "^5.9.1"
   }
 }
