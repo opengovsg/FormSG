@@ -19,6 +19,10 @@ import {
   MapRouteErrors,
   SubmissionData,
 } from '../../../../types'
+import {
+  EncryptFormFieldResponse,
+  ParsedClearFormFieldResponse,
+} from '../../../../types/api'
 import { MapRouteError } from '../../../../types/routing'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { MalformedVerifiedContentError } from '../../../modules/verified-content/verified-content.errors'
@@ -364,12 +368,26 @@ export const getPaymentIntentDescription = (
   }
 }
 
+const omitResponseKeys = (
+  response: ProcessedFieldResponse,
+):
+  | ProcessedFieldResponse
+  | ParsedClearFormFieldResponse
+  | EncryptFormFieldResponse => {
+  // We want to omit the isVisible property, as all fields are visible in the encrypted submission, making it redundant
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { isVisible, ...rest } = response
+  return rest
+}
+
 export const formatMyInfoStorageResponseData = (
   parsedResponses: ProcessedFieldResponse[],
   hashedFields?: Set<MyInfoKey>,
 ) => {
   if (!hashedFields) {
-    return parsedResponses
+    return parsedResponses.flatMap((response: ProcessedFieldResponse) => {
+      return omitResponseKeys(response)
+    })
   } else {
     return parsedResponses.flatMap((response) => {
       if (isProcessedChildResponse(response)) {
@@ -382,7 +400,7 @@ export const formatMyInfoStorageResponseData = (
         // Obtain prefix for question based on whether it is verified by MyInfo.
         const myInfoPrefix = getMyInfoPrefix(response, hashedFields)
         response.question = `${myInfoPrefix}${response.question}`
-        return response
+        return omitResponseKeys(response)
       }
     })
   }
