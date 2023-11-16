@@ -11,6 +11,7 @@ import {
   SubmissionType,
 } from '../../../../../shared/types'
 import { calculatePrice } from '../../../../../shared/utils/paymentProductPrice'
+import { isProcessedChildResponse } from '../../../../app/utils/field-validation/field-validation.guards'
 import {
   IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
@@ -73,7 +74,7 @@ import {
   ValidateFieldError,
 } from '../submission.errors'
 import { ProcessedFieldResponse } from '../submission.types'
-import { getMyInfoPrefix } from '../submission.utils'
+import { getAnswersForChild, getMyInfoPrefix } from '../submission.utils'
 
 import {
   AttachmentSizeLimitExceededError,
@@ -371,10 +372,18 @@ export const formatMyInfoStorageResponseData = (
     return parsedResponses
   } else {
     return parsedResponses.flatMap((response) => {
-      // Obtain prefix for question based on whether it is verified by MyInfo.
-      const myInfoPrefix = getMyInfoPrefix(response, hashedFields)
-      response.question = `${myInfoPrefix}${response.question}`
-      return response
+      if (isProcessedChildResponse(response)) {
+        return getAnswersForChild(response).map((childField) => {
+          const myInfoPrefix = getMyInfoPrefix(childField, hashedFields)
+          childField.question = `${myInfoPrefix}${childField.question}`
+          return childField
+        })
+      } else {
+        // Obtain prefix for question based on whether it is verified by MyInfo.
+        const myInfoPrefix = getMyInfoPrefix(response, hashedFields)
+        response.question = `${myInfoPrefix}${response.question}`
+        return response
+      }
     })
   }
 }
