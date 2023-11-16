@@ -43,7 +43,6 @@ import {
   LogicDto,
   LogicType,
   PaymentChannel,
-  PaymentMethodType,
   PaymentType,
   StorageFormSettings,
 } from '../../../shared/types'
@@ -219,7 +218,7 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
     },
     payment_methods: {
       type: [String],
-      default: [PaymentMethodType.Unset],
+      default: [],
     },
   },
 
@@ -249,7 +248,7 @@ EncryptedFormDocumentSchema.methods.addPaymentAccountId = async function ({
       channel: PaymentChannel.Stripe,
       target_account_id: accountId,
       publishable_key: publishableKey,
-      payment_methods: [PaymentMethodType.Unset],
+      payment_methods: [],
     }
   }
   return this.save()
@@ -260,7 +259,7 @@ EncryptedFormDocumentSchema.methods.removePaymentAccount = async function () {
     channel: PaymentChannel.Unconnected,
     target_account_id: '',
     publishable_key: '',
-    payment_methods: [PaymentMethodType.Unset],
+    payment_methods: [],
   }
   if (this.payments_field) {
     this.payments_field.enabled = false

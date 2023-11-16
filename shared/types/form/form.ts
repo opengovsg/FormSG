@@ -72,7 +72,7 @@ export enum FormResponseMode {
 }
 
 export type FormPaymentsChannel = {
-  payment_methods?: [PaymentMethodType]
+  payment_methods?: PaymentMethodType[]
   channel: PaymentChannel
   target_account_id: string
   publishable_key: string
