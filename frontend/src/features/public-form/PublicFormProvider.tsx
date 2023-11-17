@@ -421,12 +421,9 @@ export const PublicFormProvider = ({
                       },
                     },
                   )
-                  if (/Network Error/i.test(error.message)) {
-                    axiosDebugFlow()
-                    return submitEmailFormWithFetch()
-                  } else {
-                    showErrorToast(error, form)
-                  }
+                  // Always fallback to fetch if submission fails
+                  axiosDebugFlow()
+                  return submitEmailFormWithFetch()
                 })
             )
           }
@@ -559,12 +556,9 @@ export const PublicFormProvider = ({
                   },
                 },
               )
-              if (/Network Error/i.test(error.message)) {
-                axiosDebugFlow()
-                // fallback to fetch
-                return submitStorageFormWithFetch()
-              }
-              showErrorToast(error, form)
+              // always fallback to fetch if submission fails
+              axiosDebugFlow()
+              return submitStorageFormWithFetch()
             })
         }
       }
