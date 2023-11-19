@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Divider, Flex, Text, VStack } from '@chakra-ui/react'
-import { addDays, format, isValid } from 'date-fns'
+import { endOfDay, format, isValid } from 'date-fns'
 import simplur from 'simplur'
 import { removeStopwords } from 'stopword'
 
@@ -92,12 +92,13 @@ export const UnlockedChartsContainer = () => {
       const [startDate, endDate] = dateRange.map((date) =>
         new Date(date).getTime(),
       )
-      // Set to the end of the endDate
-      const endOfDay = addDays(endDate, 1).getTime() - 1
 
       return decryptedContent.filter((content) => {
         const submissionTime = new Date(content.submissionTime).getTime()
-        return submissionTime >= startDate && submissionTime <= endOfDay
+        return (
+          submissionTime >= startDate &&
+          submissionTime <= endOfDay(endDate).getTime()
+        )
       })
     }
     return decryptedContent
