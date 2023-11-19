@@ -63,7 +63,10 @@ import {
   fileSizeLimitBytes,
 } from '../submission.utils'
 
-import { PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS } from './encrypt-submission.constants'
+import {
+  CHARTS_MAX_SUBMISSION_RESULTS,
+  PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
+} from './encrypt-submission.constants'
 import {
   AttachmentSizeLimitExceededError,
   DownloadCleanFileFailedError,
@@ -324,12 +327,22 @@ export const getEncryptedSubmissionData = (
   })
 }
 
+/**
+ * Retrieves all encrypted submission data from the database
+ * - up to the 1000th submission, sorted in reverse chronological order
+ * - this query uses 'form_1_submissionType_1_created_-1' index
+ * @param formId the id of the form to filter submissions for
+ * @returns ok(SubmissionData)
+ * @returns err(DatabaseError) when error occurs during query
+ */
 export const getAllEncryptedSubmissionData = (formId: string) => {
   return ResultAsync.fromPromise(
     EncryptSubmissionModel.find({
       form: formId,
       submissionType: SubmissionType.Encrypt,
-    }),
+    })
+      .limit(CHARTS_MAX_SUBMISSION_RESULTS)
+      .sort({ created: -1 }),
     (error) => {
       logger.error({
         message: 'Failure retrieving encrypted submission from database',
