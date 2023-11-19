@@ -11,6 +11,11 @@ import { SubmitHandler } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
+import {
+  useFeatureIsOn,
+  useFeatureValue,
+  useGrowthBook,
+} from '@growthbook/growthbook-react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 import get from 'lodash/get'
 import simplur from 'simplur'
@@ -130,6 +135,23 @@ export const PublicFormProvider = ({
     /* enabled= */ !submissionData,
   )
 
+  const growthbook = useGrowthBook()
+
+  useEffect(() => {
+    if (growthbook) {
+      growthbook.setAttributes({
+        // Only update the `formId` attribute, keep the rest the same
+        ...growthbook.getAttributes(),
+        formId,
+      })
+    }
+  }, [growthbook, formId])
+
+  const enableEncryptionBoundaryShift = useFeatureValue(
+    featureFlags.encryptionBoundaryShift,
+    true,
+  )
+
   // Scroll to top of page when user has finished their submission.
   useLayoutEffect(() => {
     if (submissionData) {
@@ -247,11 +269,18 @@ export const PublicFormProvider = ({
     }
   }, [data?.form.form_fields, toast, vfnToastIdRef])
 
+  const enableVirusScanner = useFeatureIsOn(
+    featureFlags.encryptionBoundaryShiftVirusScanner,
+  )
+
   const {
     submitEmailModeFormMutation,
+    submitStorageModeFormMutation,
     submitEmailModeFormFetchMutation,
-    submitStorageModeFormWithVirusScanningFetchMutation,
-    submitStorageModeFormWithVirusScanningMutation,
+    submitStorageModeFormFetchMutation,
+    submitStorageModeClearFormMutation,
+    submitStorageModeClearFormFetchMutation,
+    submitStorageModeClearFormWithVirusScanningMutation,
   } = usePublicFormMutations(formId, submissionData?.id ?? '')
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
@@ -455,7 +484,9 @@ export const PublicFormProvider = ({
               : {}),
           }
 
-          const submitStorageFormWithFetch = function () {
+          const submitStorageFormWithFetch = function (
+            routeToNewStorageModeSubmission: boolean,
+          ) {
             datadogLogs.logger.info(`handleSubmitForm: submitting via fetch`, {
               meta: {
                 ...logMeta,
@@ -464,11 +495,16 @@ export const PublicFormProvider = ({
               },
             })
 
-            return submitStorageModeFormWithVirusScanningFetchMutation
+            return (
+              routeToNewStorageModeSubmission
+                ? submitStorageModeClearFormFetchMutation
+                : submitStorageModeFormFetchMutation
+            )
               .mutateAsync(
                 {
                   ...formData,
                   ...formPaymentData,
+                  publicKey: form.publicKey,
                 },
                 {
                   onSuccess: ({
@@ -510,7 +546,7 @@ export const PublicFormProvider = ({
 
           // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
           if (useFetchForSubmissions) {
-            return submitStorageFormWithFetch()
+            return submitStorageFormWithFetch(enableEncryptionBoundaryShift)
           }
           datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
             meta: {
@@ -520,8 +556,9 @@ export const PublicFormProvider = ({
             },
           })
 
-          return submitStorageModeFormWithVirusScanningMutation
-            .mutateAsync(
+          // TODO (FRM-1413): Move to main return statement once virus scanner has been fully rolled out
+          if (enableEncryptionBoundaryShift && enableVirusScanner) {
+            return submitStorageModeClearFormWithVirusScanningMutation.mutateAsync(
               {
                 ...formData,
                 ...formPaymentData,
@@ -545,27 +582,86 @@ export const PublicFormProvider = ({
                     timestamp,
                   })
                 },
+                onError: (error) => {
+                  // TODO(#5826): Remove when we have resolved the Network Error
+                  datadogLogs.logger.warn(
+                    `handleSubmitForm: submit with virus scan`,
+                    {
+                      meta: {
+                        ...logMeta,
+                        responseMode: 'storage',
+                        method: 'axios',
+                        error,
+                      },
+                    },
+                  )
+
+                  // defaults to the safest option of storage submission without virus scanning
+                  return submitStorageFormWithFetch(
+                    enableEncryptionBoundaryShift,
+                  )
+                },
               },
             )
-            .catch(async (error) => {
-              datadogLogs.logger.warn(
-                `handleSubmitForm: submit with virus scan`,
+          }
+
+          return (
+            (
+              enableEncryptionBoundaryShift
+                ? submitStorageModeClearFormMutation
+                : submitStorageModeFormMutation
+            )
+              .mutateAsync(
                 {
+                  ...formData,
+                  ...formPaymentData,
+                  publicKey: form.publicKey,
+                },
+                {
+                  onSuccess: ({
+                    submissionId,
+                    timestamp,
+                    // payment forms will have non-empty paymentData field
+                    paymentData,
+                  }) => {
+                    trackSubmitForm(form)
+
+                    if (paymentData) {
+                      navigate(getPaymentPageUrl(formId, paymentData.paymentId))
+                      storePaymentMemory(paymentData.paymentId)
+                      return
+                    }
+                    setSubmissionData({
+                      id: submissionId,
+                      timestamp,
+                    })
+                  },
+                },
+              )
+              // Using catch since we are using mutateAsync and react-hook-form will continue bubbling this up.
+              .catch(async (error) => {
+                // TODO(#5826): Remove when we have resolved the Network Error
+                datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
                   meta: {
                     ...logMeta,
                     responseMode: 'storage',
                     method: 'axios',
-                    error,
+                    error: {
+                      message: error.message,
+                      stack: error.stack,
+                    },
                   },
-                },
-              )
-              if (/Network Error/i.test(error.message)) {
-                axiosDebugFlow()
-                // fallback to fetch
-                return submitStorageFormWithFetch()
-              }
-              showErrorToast(error, form)
-            })
+                })
+
+                if (/Network Error/i.test(error.message)) {
+                  axiosDebugFlow()
+                  return submitStorageFormWithFetch(
+                    enableEncryptionBoundaryShift,
+                  )
+                }
+                showErrorToast(error, form)
+              })
+          )
         }
       }
     },
@@ -582,11 +678,16 @@ export const PublicFormProvider = ({
       getCaptchaResponse,
       submitEmailModeFormFetchMutation,
       submitEmailModeFormMutation,
-      submitStorageModeFormWithVirusScanningMutation,
-      submitStorageModeFormWithVirusScanningFetchMutation,
+      enableEncryptionBoundaryShift,
+      enableVirusScanner,
+      submitStorageModeClearFormMutation,
+      submitStorageModeFormMutation,
+      submitStorageModeClearFormFetchMutation,
+      submitStorageModeFormFetchMutation,
       navigate,
       formId,
       storePaymentMemory,
+      submitStorageModeClearFormWithVirusScanningMutation,
     ],
   )
 
