@@ -184,10 +184,8 @@ export const UnlockedChartsContainer = () => {
         </VStack>
       ) : (
         <EmptyChartsContainer
-          title={'No charts generated yet.'}
-          subtitle={
-            'Charts will be generated when you have supported fields in your form responses.'
-          }
+          title="No charts generated yet."
+          subtitle="You need at least one supported field in your form to generate charts."
         />
       )}
     </>

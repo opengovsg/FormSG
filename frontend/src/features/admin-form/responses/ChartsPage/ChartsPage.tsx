@@ -38,10 +38,8 @@ export const ChartsPage = (): JSX.Element => {
   if (totalResponsesCount === 0) {
     return (
       <EmptyChartsContainer
-        title={'No charts generated yet.'}
-        subtitle={
-          'Charts will be generated when you receive responses on your form.'
-        }
+        title="No charts generated yet."
+        subtitle="Charts will be generated when you receive responses on your form."
       />
     )
   }
