@@ -1,7 +1,9 @@
-import { Box, Container, Divider, Flex, Stack } from '@chakra-ui/react'
+import { useLocation } from 'react-router-dom'
+import { Box, Container, Divider, Stack } from '@chakra-ui/react'
 
 import { FormResponseMode } from '~shared/types/form'
 
+import { ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX } from '~constants/routes'
 import { useToast } from '~hooks/useToast'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -18,6 +20,7 @@ import UnlockedCharts from './UnlockedCharts'
 export const ChartsPage = (): JSX.Element => {
   const { data: form, isLoading } = useAdminForm()
   const { totalResponsesCount, secretKey } = useStorageResponsesContext()
+  const { pathname } = useLocation()
 
   const toast = useToast({ status: 'danger' })
 
@@ -31,7 +34,22 @@ export const ChartsPage = (): JSX.Element => {
     return <ResponsesPageSkeleton />
   }
 
+  // Charts is not available for Email response
+  // Since there's no entry to the charts page for Email mode we should
+  // forcefully redirect the user to the responses page
+  // we need to redirect to one level up, i.e., '../'
   if (form.responseMode === FormResponseMode.Email) {
+    /**
+     * 0: "/admin/form/<form_id>/results/charts"
+     * 1: "<form_id>"
+     * 2: "/charts"
+     */
+    const match = pathname.match(ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX)
+    const subroute = match?.[2]
+    if (subroute) {
+      const pathnameWithoutSubroute = pathname.replace(subroute, '')
+      window.location.replace(pathnameWithoutSubroute)
+    }
     return <></>
   }
 
