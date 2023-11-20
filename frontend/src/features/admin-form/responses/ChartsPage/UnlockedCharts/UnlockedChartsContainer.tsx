@@ -212,8 +212,7 @@ export const UnlockedChartsContainer = () => {
               mb="0.5rem"
               align="center"
             >
-              There may not have been any responses collected within this date
-              range.
+              There were no responses collected within this date range.
               <br />
               Try selecting a different date range.
             </Text>
