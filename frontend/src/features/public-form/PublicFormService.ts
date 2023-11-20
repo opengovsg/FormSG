@@ -155,45 +155,6 @@ export const submitEmailModeForm = async ({
   ).then(({ data }) => data)
 }
 
-export const submitStorageModeForm = async ({
-  formFields,
-  formLogics,
-  formInputs,
-  formId,
-  publicKey,
-  captchaResponse = null,
-  captchaType = '',
-  paymentReceiptEmail,
-  responseMetadata,
-  paymentProducts,
-  payments,
-}: SubmitStorageFormArgs) => {
-  const filteredInputs = filterHiddenInputs({
-    formFields,
-    formInputs,
-    formLogics,
-  })
-  const submissionContent = await createEncryptedSubmissionData({
-    formFields,
-    formInputs: filteredInputs,
-    publicKey,
-    responseMetadata,
-    paymentReceiptEmail,
-    payments,
-    paymentProducts,
-  })
-  return ApiService.post<SubmissionResponseDto>(
-    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/encrypt`,
-    submissionContent,
-    {
-      params: {
-        captchaResponse: String(captchaResponse),
-        captchaType,
-      },
-    },
-  ).then(({ data }) => data)
-}
-
 export const submitStorageModeClearForm = async ({
   formFields,
   formLogics,
@@ -361,56 +322,6 @@ export const submitEmailModeFormWithFetch = async ({
       method: 'POST',
       body: formData,
       headers: {
-        Accept: 'application/json',
-      },
-    },
-  )
-
-  return processFetchResponse(response)
-}
-
-// TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
-export const submitStorageModeFormWithFetch = async ({
-  formFields,
-  formLogics,
-  formInputs,
-  formId,
-  publicKey,
-  captchaResponse = null,
-  captchaType = '',
-  paymentReceiptEmail,
-  responseMetadata,
-  paymentProducts,
-  payments,
-}: SubmitStorageFormArgs) => {
-  const filteredInputs = filterHiddenInputs({
-    formFields,
-    formInputs,
-    formLogics,
-  })
-  const submissionContent = await createEncryptedSubmissionData({
-    formFields,
-    formInputs: filteredInputs,
-    publicKey,
-    responseMetadata,
-    paymentReceiptEmail,
-    payments,
-    paymentProducts,
-  })
-
-  // Add captcha response to query string
-  const queryString = new URLSearchParams({
-    captchaResponse: String(captchaResponse),
-    captchaType,
-  }).toString()
-
-  const response = await fetch(
-    `${API_BASE_URL}${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/encrypt?${queryString}`,
-    {
-      method: 'POST',
-      body: JSON.stringify(submissionContent),
-      headers: {
-        'Content-Type': 'application/json',
         Accept: 'application/json',
       },
     },
