@@ -76,7 +76,7 @@ export const ChartsPage = (): JSX.Element => {
         <Box mt="2rem" mb="0.5rem">
           <Divider />
         </Box>
-        <Stack align="center">
+        <Stack>
           <ChartsSupportedFieldsInfoBox />
         </Stack>
       </Container>
