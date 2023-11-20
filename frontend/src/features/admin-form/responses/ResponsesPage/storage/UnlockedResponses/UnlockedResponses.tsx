@@ -1,12 +1,11 @@
 import { useMemo } from 'react'
 import { Box, Flex, Grid, Skeleton, Stack, Text } from '@chakra-ui/react'
-import { format, isValid } from 'date-fns'
 import simplur from 'simplur'
 
-import { DateString } from '~shared/types'
-
-import { DateRangeValue } from '~components/Calendar'
-import { DateRangePicker } from '~components/DateRangePicker'
+import {
+  DateRangePicker,
+  dateRangePickerHelper,
+} from '~components/DateRangePicker'
 import Pagination from '~components/Pagination'
 
 import { useStorageResponsesContext } from '../StorageResponsesContext'
@@ -15,35 +14,6 @@ import { DownloadButton } from './DownloadButton'
 import { ResponsesTable } from './ResponsesTable'
 import { SubmissionSearchbar } from './SubmissionSearchbar'
 import { useUnlockedResponses } from './UnlockedResponsesProvider'
-
-const transform = {
-  input: (range: DateString[]) => {
-    const [start, end] = range
-    // Convert to Date objects
-    const startDate = new Date(start)
-    const endDate = new Date(end)
-    const result: (Date | null)[] = [null, null]
-    // Check if dates are valid
-    if (isValid(startDate)) {
-      result[0] = startDate
-    }
-    if (isValid(endDate)) {
-      result[1] = endDate
-    }
-    return result as DateRangeValue
-  },
-  output: (range: DateRangeValue) => {
-    const [start, end] = range
-    const result: DateString[] = []
-    if (start) {
-      result.push(format(start, 'yyyy-MM-dd') as DateString)
-    }
-    if (end) {
-      result.push(format(end, 'yyyy-MM-dd') as DateString)
-    }
-    return result
-  },
-}
 
 export const UnlockedResponses = (): JSX.Element => {
   const {
@@ -116,9 +86,13 @@ export const UnlockedResponses = (): JSX.Element => {
           maxW="100%"
         >
           <DateRangePicker
-            value={transform.input(dateRange)}
+            value={dateRangePickerHelper.dateStringToDatePickerValue(dateRange)}
             onChange={(nextDateRange) =>
-              setDateRange(transform.output(nextDateRange))
+              setDateRange(
+                dateRangePickerHelper.datePickerValueToDateString(
+                  nextDateRange,
+                ),
+              )
             }
           />
           <DownloadButton />

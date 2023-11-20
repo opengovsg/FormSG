@@ -1,14 +1,16 @@
 import { useMemo } from 'react'
 import { Divider, Flex, Text, VStack } from '@chakra-ui/react'
-import { endOfDay, format, isValid } from 'date-fns'
+import { endOfDay } from 'date-fns'
 import simplur from 'simplur'
 import { removeStopwords } from 'stopword'
 
-import { BasicField, DateString, FormFieldDto } from '~shared/types'
+import { BasicField, FormFieldDto } from '~shared/types'
 import { isNonEmpty } from '~shared/utils/isNonEmpty'
 
-import { DateRangeValue } from '~components/Calendar'
-import { DateRangePicker } from '~components/DateRangePicker'
+import {
+  DateRangePicker,
+  dateRangePickerHelper,
+} from '~components/DateRangePicker'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
@@ -181,10 +183,12 @@ export const UnlockedChartsContainer = () => {
           </Text>
         </Flex>
         <DateRangePicker
-          value={transform.input(dateRange)}
-          onChange={(nextDateRange) =>
-            setDateRange(transform.output(nextDateRange))
-          }
+          value={dateRangePickerHelper.dateStringToDatePickerValue(dateRange)}
+          onChange={(nextDateRange) => {
+            setDateRange(
+              dateRangePickerHelper.datePickerValueToDateString(nextDateRange),
+            )
+          }}
         />
       </Flex>
       {renderedCharts.length > 0 ? (
@@ -199,33 +203,4 @@ export const UnlockedChartsContainer = () => {
       )}
     </>
   )
-}
-
-const transform = {
-  input: (range: DateString[]) => {
-    const [start, end] = range
-    // Convert to Date objects
-    const startDate = new Date(start)
-    const endDate = new Date(end)
-    const result: (Date | null)[] = [null, null]
-    // Check if dates are valid
-    if (isValid(startDate)) {
-      result[0] = startDate
-    }
-    if (isValid(endDate)) {
-      result[1] = endDate
-    }
-    return result as DateRangeValue
-  },
-  output: (range: DateRangeValue) => {
-    const [start, end] = range
-    const result: DateString[] = []
-    if (start) {
-      result.push(format(start, 'yyyy-MM-dd') as DateString)
-    }
-    if (end) {
-      result.push(format(end, 'yyyy-MM-dd') as DateString)
-    }
-    return result
-  },
 }
