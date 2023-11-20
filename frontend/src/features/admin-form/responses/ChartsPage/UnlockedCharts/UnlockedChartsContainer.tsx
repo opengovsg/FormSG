@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Divider, Flex, Text, VStack } from '@chakra-ui/react'
+import { Container, Divider, Flex, Stack, Text, VStack } from '@chakra-ui/react'
 import { endOfDay } from 'date-fns'
 import simplur from 'simplur'
 import { removeStopwords } from 'stopword'
@@ -195,6 +195,30 @@ export const UnlockedChartsContainer = () => {
         <VStack divider={<Divider />} gap="1.5rem">
           {renderedCharts}
         </VStack>
+      ) : filteredDecryptedData.length === 0 ? (
+        <Container p={0} maxW="42.5rem">
+          <Stack spacing="1rem" align="center">
+            <Text
+              as="h2"
+              color="primary.500"
+              textStyle="h2"
+              whiteSpace="pre-wrap"
+            >
+              No charts generated for this date range
+            </Text>
+            <Text
+              textStyle="body-1"
+              color="secondary.500"
+              mb="0.5rem"
+              align="center"
+            >
+              There may not have been any responses collected within this date
+              range.
+              <br />
+              Try selecting a different date range.
+            </Text>
+          </Stack>
+        </Container>
       ) : (
         <EmptyChartsContainer
           title="No charts generated yet."
