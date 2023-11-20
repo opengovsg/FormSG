@@ -7,7 +7,6 @@ import Badge from '~components/Badge'
 import Tile from '~components/Tile'
 
 export interface FormResponseOptionsProps {
-  containsMyInfoFields: boolean
   onChange: (option: FormResponseMode) => void
   value: FormResponseMode
 }
@@ -29,7 +28,7 @@ const OptionDescription = ({ listItems = [] }: { listItems: string[] }) => {
 export const FormResponseOptions = forwardRef<
   FormResponseOptionsProps,
   'button'
->(({ value, onChange, containsMyInfoFields }, ref) => {
+>(({ value, onChange }, ref) => {
   return (
     <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
       <Tile
@@ -37,7 +36,6 @@ export const FormResponseOptions = forwardRef<
         icon={BiLockAlt}
         badge={<Badge colorScheme="success">Recommended</Badge>}
         isActive={value === FormResponseMode.Encrypt}
-        isDisabled={containsMyInfoFields}
         onClick={() => onChange(FormResponseMode.Encrypt)}
         isFullWidth
         flex={1}

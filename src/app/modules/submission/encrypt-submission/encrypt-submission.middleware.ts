@@ -11,6 +11,7 @@ import {
 } from '../../../../../shared/constants'
 import {
   BasicField,
+  FormAuthType,
   StorageModeAttachment,
   StorageModeAttachmentsMap,
 } from '../../../../../shared/types'
@@ -29,6 +30,9 @@ import { createReqMeta } from '../../../utils/request'
 import * as FeatureFlagService from '../../feature-flags/feature-flags.service'
 import { JoiPaymentProduct } from '../../form/admin-form/admin-form.payments.constants'
 import * as FormService from '../../form/form.service'
+import { MyInfoService } from '../../myinfo/myinfo.service'
+import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
+import { IPopulatedStorageFormWithResponsesAndHash } from '../email-submission/email-submission.types'
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import { sharedSubmissionParams } from '../submission.constants'
 import * as SubmissionService from '../submission.service'
@@ -58,7 +62,10 @@ import {
   StorageSubmissionMiddlewareHandlerType,
   ValidateSubmissionMiddlewareHandlerRequest,
 } from './encrypt-submission.types'
-import { mapRouteError } from './encrypt-submission.utils'
+import {
+  formatMyInfoStorageResponseData,
+  mapRouteError,
+} from './encrypt-submission.utils'
 import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
 
 const logger = createLoggerWithLabel(module)
@@ -388,6 +395,7 @@ export const validateStorageSubmission = async (
   next: NextFunction,
 ) => {
   const formDef = req.formsg.formDef
+  let spcpSubmissionFailure: undefined | true
 
   const logMeta = {
     action: 'validateStorageSubmission',
@@ -413,38 +421,75 @@ export const validateStorageSubmission = async (
           else {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { filename: __, content: ___, ...restAttachments } = rest
-            responses.push({ ...restAttachments } as EncryptAttachmentResponse)
+            responses.push({
+              ...restAttachments,
+            } as EncryptAttachmentResponse)
           }
         }
       }
       req.formsg.filteredResponses = responses
+      return { parsedResponses, form: formDef }
+    })
+    .andThen(({ parsedResponses, form }) => {
+      // Validate MyInfo responses
+      const { authType } = form
+      switch (authType) {
+        case FormAuthType.SGID_MyInfo:
+        case FormAuthType.MyInfo: {
+          return extractMyInfoLoginJwt(req.cookies, authType)
+            .andThen(MyInfoService.verifyLoginJwt)
+            .asyncAndThen(({ uinFin }) =>
+              MyInfoService.fetchMyInfoHashes(uinFin, form._id)
+                .andThen((hashes) =>
+                  MyInfoService.checkMyInfoHashes(
+                    parsedResponses.responses,
+                    hashes,
+                  ),
+                )
+                .map<IPopulatedStorageFormWithResponsesAndHash>(
+                  (hashedFields) => ({
+                    hashedFields,
+                    parsedResponses,
+                  }),
+                ),
+            )
+            .mapErr((error) => {
+              spcpSubmissionFailure = true
+              logger.error({
+                message: `Error verifying MyInfo${
+                  authType === FormAuthType.SGID_MyInfo ? '(over SGID)' : ''
+                } hashes`,
+                meta: logMeta,
+                error,
+              })
+              return error
+            })
+        }
+        default:
+          return ok<IPopulatedStorageFormWithResponsesAndHash, never>({
+            parsedResponses,
+          })
+      }
+    })
+    .map(({ parsedResponses, hashedFields }) => {
+      const storageFormData = formatMyInfoStorageResponseData(
+        parsedResponses.getAllResponses(),
+        hashedFields,
+      )
+      req.body.responses = storageFormData
       return next()
     })
     .mapErr((error) => {
-      // TODO(FRM-1318): Set DB flag to true to harden submission validation after validation has similar error rates as email mode forms.
-      if (
-        req.formsg.featureFlags.includes(
-          featureFlags.encryptionBoundaryShiftHardValidation,
-        )
-      ) {
-        logger.error({
-          message: 'Error processing responses',
-          meta: logMeta,
-          error,
-        })
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({
-          message: errorMessage,
-        })
-      }
-      logger.warn({
-        message:
-          'Error processing responses, but proceeding with submission as submission have been validated client-side',
+      logger.error({
+        message: 'Error saving responses in req.body',
         meta: logMeta,
         error,
       })
-      req.formsg.filteredResponses = req.body.responses
-      return next()
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({
+        message: errorMessage,
+        spcpSubmissionFailure,
+      })
     })
 }
 
