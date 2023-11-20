@@ -39,7 +39,6 @@ import { FormFieldValues } from '~templates/Field'
 import {
   createClearSubmissionFormData,
   createClearSubmissionWithVirusScanningFormData,
-  createEncryptedSubmissionData,
   getAttachmentsMap,
 } from './utils/createSubmission'
 import { filterHiddenInputs } from './utils/filterHiddenInputs'
