@@ -3,6 +3,7 @@ import { GUIDE_PAYMENTS_ENTRY, GUIDE_SPCP_ESRVCID } from '~constants/links'
 import { FeatureUpdateImage } from '~features/whats-new/FeatureUpdateList'
 
 import myInfoStorageMode from '../../whats-new/assets/6-myinfo-storage.svg'
+import ChartsSvg from '../../whats-new/assets/7-charts_announcement.svg'
 import foldersDashboard from '../../whats-new/assets/folders_dashboard.svg'
 import PaymentsAnnouncementGraphic from '../assets/payments_announcement.svg'
 
@@ -15,6 +16,16 @@ export interface NewFeature {
 // When updating this, remember to update the ROLLOUT_ANNOUNCEMENT_KEY_PREFIX with the new date
 // so admins will see new announcements.
 export const NEW_FEATURES: NewFeature[] = [
+  {
+    // Announcement date: 2023-11-21
+    title: 'Introducing Charts',
+    description:
+      "You can now visualise data collected on your form and get quick insights through bar charts, pie charts and tables! Find this feature under your form's results. This feature is only available for Storage mode forms.",
+    image: {
+      url: ChartsSvg,
+      alt: 'Charts for Storage mode forms',
+    },
+  },
   {
     // Announcement date: 2023-11-16
     title: 'Myinfo fields for Storage mode forms',
