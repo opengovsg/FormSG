@@ -11,11 +11,7 @@ import { SubmitHandler } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
-import {
-  useFeatureIsOn,
-  useFeatureValue,
-  useGrowthBook,
-} from '@growthbook/growthbook-react'
+import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 import get from 'lodash/get'
 import simplur from 'simplur'
@@ -147,11 +143,6 @@ export const PublicFormProvider = ({
     }
   }, [growthbook, formId])
 
-  const enableEncryptionBoundaryShift = useFeatureValue(
-    featureFlags.encryptionBoundaryShift,
-    true,
-  )
-
   // Scroll to top of page when user has finished their submission.
   useLayoutEffect(() => {
     if (submissionData) {
@@ -275,9 +266,7 @@ export const PublicFormProvider = ({
 
   const {
     submitEmailModeFormMutation,
-    submitStorageModeFormMutation,
     submitEmailModeFormFetchMutation,
-    submitStorageModeFormFetchMutation,
     submitStorageModeClearFormMutation,
     submitStorageModeClearFormFetchMutation,
     submitStorageModeClearFormWithVirusScanningMutation,
@@ -484,9 +473,7 @@ export const PublicFormProvider = ({
               : {}),
           }
 
-          const submitStorageFormWithFetch = function (
-            routeToNewStorageModeSubmission: boolean,
-          ) {
+          const submitStorageFormWithFetch = function () {
             datadogLogs.logger.info(`handleSubmitForm: submitting via fetch`, {
               meta: {
                 ...logMeta,
@@ -495,16 +482,11 @@ export const PublicFormProvider = ({
               },
             })
 
-            return (
-              routeToNewStorageModeSubmission
-                ? submitStorageModeClearFormFetchMutation
-                : submitStorageModeFormFetchMutation
-            )
+            return submitStorageModeClearFormFetchMutation
               .mutateAsync(
                 {
                   ...formData,
                   ...formPaymentData,
-                  publicKey: form.publicKey,
                 },
                 {
                   onSuccess: ({
@@ -546,7 +528,7 @@ export const PublicFormProvider = ({
 
           // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
           if (useFetchForSubmissions) {
-            return submitStorageFormWithFetch(enableEncryptionBoundaryShift)
+            return submitStorageFormWithFetch()
           }
           datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
             meta: {
@@ -557,7 +539,7 @@ export const PublicFormProvider = ({
           })
 
           // TODO (FRM-1413): Move to main return statement once virus scanner has been fully rolled out
-          if (enableEncryptionBoundaryShift && enableVirusScanner) {
+          if (enableVirusScanner) {
             return submitStorageModeClearFormWithVirusScanningMutation.mutateAsync(
               {
                 ...formData,
@@ -597,25 +579,18 @@ export const PublicFormProvider = ({
                   )
 
                   // defaults to the safest option of storage submission without virus scanning
-                  return submitStorageFormWithFetch(
-                    enableEncryptionBoundaryShift,
-                  )
+                  return submitStorageFormWithFetch()
                 },
               },
             )
           }
 
           return (
-            (
-              enableEncryptionBoundaryShift
-                ? submitStorageModeClearFormMutation
-                : submitStorageModeFormMutation
-            )
+            submitStorageModeClearFormMutation
               .mutateAsync(
                 {
                   ...formData,
                   ...formPaymentData,
-                  publicKey: form.publicKey,
                 },
                 {
                   onSuccess: ({
@@ -653,13 +628,8 @@ export const PublicFormProvider = ({
                   },
                 })
 
-                if (/Network Error/i.test(error.message)) {
-                  axiosDebugFlow()
-                  return submitStorageFormWithFetch(
-                    enableEncryptionBoundaryShift,
-                  )
-                }
-                showErrorToast(error, form)
+                axiosDebugFlow()
+                return submitStorageFormWithFetch()
               })
           )
         }
@@ -678,12 +648,9 @@ export const PublicFormProvider = ({
       getCaptchaResponse,
       submitEmailModeFormFetchMutation,
       submitEmailModeFormMutation,
-      enableEncryptionBoundaryShift,
       enableVirusScanner,
       submitStorageModeClearFormMutation,
-      submitStorageModeFormMutation,
       submitStorageModeClearFormFetchMutation,
-      submitStorageModeFormFetchMutation,
       navigate,
       formId,
       storePaymentMemory,
