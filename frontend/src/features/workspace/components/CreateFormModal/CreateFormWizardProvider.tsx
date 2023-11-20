@@ -105,8 +105,6 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     handleDetailsSubmit,
     handleCreateStorageModeForm,
     modalHeader: 'Set up your form',
-    // Creation will never contain any fields.
-    containsMyInfoFields: false,
   }
 }
 

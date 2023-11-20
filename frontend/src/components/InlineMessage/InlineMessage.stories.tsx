@@ -41,6 +41,6 @@ Warning.args = {
 export const Error = InlineMessageTemplate.bind({})
 Error.args = {
   variant: 'error',
-  children: `Only 30 MyInfo fields are allowed in Email mode (30/30). [Learn more](http://localhost:6006)`,
+  children: `Only 30 MyInfo fields are allowed (30/30). [Learn more](http://localhost:6006)`,
   useMarkdown: true,
 }

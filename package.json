@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.88.0",
+  "version": "6.89.2",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -70,7 +70,7 @@
     "abortcontroller-polyfill": "^1.7.5",
     "aws-info": "^1.2.0",
     "aws-sdk": "^2.1354.0",
-    "axios": "^1.6.0",
+    "axios": "^1.6.2",
     "bcrypt": "^5.1.0",
     "bluebird": "^3.5.2",
     "body-parser": "^1.20.1",

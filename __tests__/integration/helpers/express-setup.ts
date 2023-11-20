@@ -17,7 +17,7 @@ const testSessionMiddlewares = () => {
     saveUninitialized: false,
     resave: false,
     secret: 'test-session-secret',
-    name: 'connect.sid',
+    name: 'formsg.connect.sid',
     store: new session.MemoryStore(),
   })
 

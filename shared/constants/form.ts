@@ -68,4 +68,5 @@ export const PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID =
 export const E2EE_SUBMISSION_VERSION = 1
 // Encryption boundary shift RFC: https://docs.google.com/document/d/1VmNXS_xYY2Yg30AwVqzdndBp5yRJGSDsyjBnH51ktyc/edit?usp=sharing
 // Encryption boundary shift implementation PR: https://github.com/opengovsg/FormSG/pull/6587
+export const ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION = 2
 export const VIRUS_SCANNER_SUBMISSION_VERSION = 2.1

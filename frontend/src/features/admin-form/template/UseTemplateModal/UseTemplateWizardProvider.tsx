@@ -1,9 +1,8 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 
 import { FormResponseMode } from '~shared/types'
 
 import { useFormTemplate } from '~features/admin-form/common/queries'
-import { isMyInfo } from '~features/myinfo/utils'
 import {
   CreateFormFlowStates,
   CreateFormWizardContext,
@@ -23,11 +22,6 @@ export const useUseTemplateWizardContext = (
       /* enabled= */ !!formId,
     )
 
-  const containsMyInfoFields = useMemo(
-    () => !!templateFormData?.form.form_fields.find((ff) => isMyInfo(ff)),
-    [templateFormData?.form.form_fields],
-  )
-
   const { formMethods, currentStep, direction, keypair, setCurrentStep } =
     useCommonFormWizardProvider()
 
@@ -41,18 +35,9 @@ export const useUseTemplateWizardContext = (
 
     reset({
       ...getValues(),
-      responseMode: containsMyInfoFields
-        ? FormResponseMode.Email
-        : FormResponseMode.Encrypt,
       title: `[Template] ${templateFormData?.form.title}`,
     })
-  }, [
-    reset,
-    getValues,
-    containsMyInfoFields,
-    isTemplateFormLoading,
-    templateFormData?.form.title,
-  ])
+  }, [reset, getValues, isTemplateFormLoading, templateFormData?.form.title])
 
   const { handleSubmit } = formMethods
 
@@ -98,7 +83,6 @@ export const useUseTemplateWizardContext = (
     formMethods,
     handleDetailsSubmit,
     handleCreateStorageModeForm,
-    containsMyInfoFields,
     modalHeader: 'Duplicate form',
   }
 }
