@@ -632,11 +632,8 @@ export const PublicFormProvider = ({
                   },
                 })
 
-                if (/Network Error/i.test(error.message)) {
-                  axiosDebugFlow()
-                  return submitStorageFormWithFetch()
-                }
-                showErrorToast(error, form)
+                axiosDebugFlow()
+                return submitStorageFormWithFetch()
               })
           )
         }
