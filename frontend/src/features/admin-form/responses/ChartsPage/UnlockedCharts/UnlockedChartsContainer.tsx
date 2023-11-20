@@ -107,8 +107,10 @@ export const UnlockedChartsContainer = () => {
   const prettifiedResponsesCount = useMemo(
     () =>
       dateRange.length === 2
-        ? simplur` ${[filteredDecryptedData.length ?? 0]}result[|s] found`
-        : simplur` ${[filteredDecryptedData.length ?? 0]}response[|s] to date`,
+        ? simplur` ${[filteredDecryptedData.length ?? 0]}result[|s] retrieved`
+        : simplur` ${[
+            filteredDecryptedData.length ?? 0,
+          ]}response[|s] retrieved`,
     [filteredDecryptedData, dateRange],
   )
 
@@ -165,12 +167,19 @@ export const UnlockedChartsContainer = () => {
         w="100%"
         gap="1rem"
       >
-        <Text textStyle="h4" mb="0.5rem">
-          <Text as="span" color="primary.500">
-            {filteredDecryptedData.length}
+        <Flex direction="column">
+          <Text textStyle="h4" mb="0.125rem">
+            <Text as="span" color="primary.500">
+              {filteredDecryptedData.length}
+            </Text>
+            {prettifiedResponsesCount}
           </Text>
-          {prettifiedResponsesCount}
-        </Text>
+          <Text textStyle="body-2" color="secondary.400">
+            {filteredDecryptedData.length > 1000
+              ? 'As you have more than 1,000 responses, charts are generated based on the latest 1,000 responses.'
+              : null}
+          </Text>
+        </Flex>
         <DateRangePicker
           value={transform.input(dateRange)}
           onChange={(nextDateRange) =>
@@ -178,7 +187,6 @@ export const UnlockedChartsContainer = () => {
           }
         />
       </Flex>
-
       {renderedCharts.length > 0 ? (
         <VStack divider={<Divider />} gap="1.5rem">
           {renderedCharts}
