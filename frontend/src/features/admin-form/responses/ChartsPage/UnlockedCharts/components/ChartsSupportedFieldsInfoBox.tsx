@@ -16,7 +16,7 @@ const ListWithIcon = ({
   icon,
 }: {
   children: React.ReactNode
-  icon: As<any>
+  icon: As
 }) => (
   <GridItem>
     <Flex align="center">
