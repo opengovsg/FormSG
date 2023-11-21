@@ -29,6 +29,7 @@ export const CSP_CORE_DIRECTIVES = {
     // not actively used yet, loading specific files due to CSP bypass issue
     'https://*.googletagmanager.com/gtag/',
     'https://*.cloudflareinsights.com/', // Cloudflare web analytics https://developers.cloudflare.com/analytics/types-of-analytics/#web-analytics
+    'https://www.gstatic.com/charts/', // React Google Charts for FormSG charts
   ],
   connectSrc: [
     "'self'",
@@ -58,6 +59,7 @@ export const CSP_CORE_DIRECTIVES = {
     'https://www.gstatic.com/recaptcha/',
     'https://www.gstatic.cn/',
     "'unsafe-inline'",
+    'https://www.gstatic.com/charts/', // React Google Charts for FormSG charts
   ],
   workerSrc: [
     "'self'",

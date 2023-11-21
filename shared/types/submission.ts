@@ -68,9 +68,14 @@ export const StorageModeSubmissionBase = SubmissionBase.extend({
   webhookResponses: z.array(WebhookResponse).optional(),
   paymentId: z.string().optional(),
 })
+
 export type StorageModeSubmissionBase = z.infer<
   typeof StorageModeSubmissionBase
 >
+
+export type StorageModeChartsDto = StorageModeSubmissionBase & {
+  created: DateString
+}
 
 export const SubmissionPaymentDto = z.object({
   id: z.string(),

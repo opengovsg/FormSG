@@ -18,6 +18,7 @@ import {
   PAYMENT_PAGE_SUBROUTE,
   PRIVACY_POLICY_ROUTE,
   PUBLICFORM_ROUTE,
+  RESULTS_CHARTS_SUBROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
   TOU_ROUTE,
   USE_TEMPLATE_REDIRECT_SUBROUTE,
@@ -35,6 +36,7 @@ import {
   ResponsesLayout,
   ResponsesPage,
 } from '~features/admin-form/responses'
+import { ChartsPage } from '~features/admin-form/responses/ChartsPage/ChartsPage'
 import { SettingsPage } from '~features/admin-form/settings/SettingsPage'
 import { SelectProfilePage } from '~features/login'
 import { FormPaymentPage } from '~features/public-form/components/FormPaymentPage/FormPaymentPage'
@@ -171,6 +173,9 @@ export const AppRouter = (): JSX.Element => {
               path={RESULTS_FEEDBACK_SUBROUTE}
               element={<FeedbackPage />}
             />
+            <Route path={RESULTS_CHARTS_SUBROUTE} element={<ResponsesLayout />}>
+              <Route index element={<ChartsPage />} />
+            </Route>
           </Route>
         </Route>
         <Route

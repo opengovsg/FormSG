@@ -13,10 +13,12 @@ import { validate } from 'uuid'
 import {
   AttachmentPresignedPostDataMapType,
   AttachmentSizeMapType,
+  DateString,
   FormResponseMode,
   StorageModeSubmissionMetadata,
   StorageModeSubmissionMetadataList,
   SubmissionPaymentDto,
+  SubmissionType,
 } from '../../../../../shared/types'
 import {
   FieldResponse,
@@ -33,7 +35,7 @@ import {
   createPresignedPostDataPromise,
   CreatePresignedPostError,
 } from '../../../utils/aws-s3'
-import { isMalformedDate } from '../../../utils/date'
+import { createQueryWithDateParam, isMalformedDate } from '../../../utils/date'
 import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
 import {
   AttachmentUploadError,
@@ -62,7 +64,10 @@ import {
   fileSizeLimitBytes,
 } from '../submission.utils'
 
-import { PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS } from './encrypt-submission.constants'
+import {
+  CHARTS_MAX_SUBMISSION_RESULTS,
+  PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS,
+} from './encrypt-submission.constants'
 import {
   AttachmentSizeLimitExceededError,
   DownloadCleanFileFailedError,
@@ -321,6 +326,43 @@ export const getEncryptedSubmissionData = (
 
     return okAsync(submission)
   })
+}
+
+/**
+ * Retrieves all encrypted submission data from the database
+ * - up to the 1000th submission, sorted in reverse chronological order
+ * - this query uses 'form_1_submissionType_1_created_-1' index
+ * @param formId the id of the form to filter submissions for
+ * @returns ok(SubmissionData)
+ * @returns err(DatabaseError) when error occurs during query
+ */
+export const getAllEncryptedSubmissionData = (
+  formId: string,
+  startDate?: DateString,
+  endDate?: DateString,
+) => {
+  const findQuery = {
+    form: formId,
+    submissionType: SubmissionType.Encrypt,
+    ...createQueryWithDateParam(startDate, endDate),
+  }
+  return ResultAsync.fromPromise(
+    EncryptSubmissionModel.find(findQuery)
+      .limit(CHARTS_MAX_SUBMISSION_RESULTS)
+      .sort({ created: -1 }),
+    (error) => {
+      logger.error({
+        message: 'Failure retrieving encrypted submission from database',
+        meta: {
+          action: 'getEncryptedSubmissionData',
+          formId,
+        },
+        error,
+      })
+
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  )
 }
 
 /**

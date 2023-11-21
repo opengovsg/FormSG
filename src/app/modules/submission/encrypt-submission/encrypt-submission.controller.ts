@@ -11,6 +11,7 @@ import { featureFlags } from '../../../../../shared/constants'
 import {
   AttachmentPresignedPostDataMapType,
   AttachmentSizeMapType,
+  DateString,
   ErrorDto,
   FormAuthType,
   FormResponseMode,
@@ -23,6 +24,7 @@ import {
   StorageModeSubmissionMetadataList,
 } from '../../../../../shared/types'
 import {
+  IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
   StripePaymentMetadataDto,
 } from '../../../../types'
@@ -66,6 +68,7 @@ import {
 import {
   addPaymentDataStream,
   checkFormIsEncryptMode,
+  getAllEncryptedSubmissionData,
   getEncryptedSubmissionData,
   getQuarantinePresignedPostData,
   getSubmissionCursor,
@@ -919,6 +922,82 @@ export const handleGetEncryptedResponse: ControllerHandler<
       })
   )
 }
+
+const _getAllEncryptedResponse: ControllerHandler<
+  { formId: string },
+  unknown,
+  IEncryptedSubmissionSchema[] | ErrorDto,
+  { startDate?: DateString; endDate?: DateString }
+> = async (req, res) => {
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+  const { formId } = req.params
+  // extract startDate and endDate from query
+  const { startDate, endDate } = req.query
+
+  const logMeta = {
+    action: 'handleGetAllEncryptedResponse',
+    formId,
+    sessionUserId,
+    ...createReqMeta(req),
+  }
+
+  logger.info({
+    message: 'Get all encrypted response start',
+    meta: logMeta,
+  })
+
+  return (
+    // Step 1: Retrieve logged in user.
+    getPopulatedUserById(sessionUserId)
+      // Step 2: Check whether user has read permissions to form.
+      .andThen((user) =>
+        getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Read,
+        }),
+      )
+      // Step 3: Check whether form is encrypt mode.
+      .andThen(checkFormIsEncryptMode)
+      // Step 4: Is encrypt mode form, retrieve submission data.
+      .andThen(() => getAllEncryptedSubmissionData(formId, startDate, endDate))
+      .map((responseData) => {
+        logger.info({
+          message: 'Get encrypted response using submissionId success',
+          meta: logMeta,
+        })
+        return res.json(responseData)
+      })
+      .mapErr((error) => {
+        logger.error({
+          message: 'Failure retrieving encrypted submission response',
+          meta: logMeta,
+          error,
+        })
+
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({
+          message: errorMessage,
+        })
+      })
+  )
+}
+
+// Handler for GET /:formId([a-fA-F0-9]{24})/submissions
+export const handleGetAllEncryptedResponses = [
+  celebrate({
+    [Segments.QUERY]: Joi.object()
+      .keys({
+        startDate: Joi.date().format('YYYY-MM-DD').raw(),
+        endDate: Joi.date()
+          .format('YYYY-MM-DD')
+          .min(Joi.ref('startDate'))
+          .raw(),
+      })
+      .and('startDate', 'endDate'),
+  }),
+  _getAllEncryptedResponse,
+] as ControllerHandler[]
 
 /**
  * Handler for GET /:formId/submissions/metadata
