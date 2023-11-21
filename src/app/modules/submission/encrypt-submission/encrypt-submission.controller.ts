@@ -961,8 +961,6 @@ const _getAllEncryptedResponse: ControllerHandler<
       .andThen(checkFormIsEncryptMode)
       // Step 4: Is encrypt mode form, retrieve submission data.
       .andThen(() => getAllEncryptedSubmissionData(formId, startDate, endDate))
-      // Step 5: If there is an associated payment, get the payment details.
-
       .map((responseData) => {
         logger.info({
           message: 'Get encrypted response using submissionId success',
