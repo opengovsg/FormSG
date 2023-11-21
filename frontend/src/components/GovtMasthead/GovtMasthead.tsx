@@ -127,7 +127,8 @@ export const GovtMasthead = ({
   const isMobile = useIsMobile()
 
   const ariaControlId = 'govt-masthead-expandable'
-
+  return <></>
+  // Disabled for playground usage
   return (
     <Box>
       <HeaderBar
