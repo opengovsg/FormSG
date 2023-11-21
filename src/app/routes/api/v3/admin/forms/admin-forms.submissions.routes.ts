@@ -86,5 +86,5 @@ AdminFormsSubmissionsRouter.get(
  */
 AdminFormsSubmissionsRouter.get(
   '/:formId([a-fA-F0-9]{24})/submissions',
-  EncryptSubmissionController.handleGetAllEncryptedResponse,
+  EncryptSubmissionController.handleGetAllEncryptedResponses,
 )

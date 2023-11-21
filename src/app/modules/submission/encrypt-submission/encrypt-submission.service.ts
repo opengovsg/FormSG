@@ -13,6 +13,7 @@ import { validate } from 'uuid'
 import {
   AttachmentPresignedPostDataMapType,
   AttachmentSizeMapType,
+  DateString,
   FormResponseMode,
   StorageModeSubmissionMetadata,
   StorageModeSubmissionMetadataList,
@@ -34,7 +35,7 @@ import {
   createPresignedPostDataPromise,
   CreatePresignedPostError,
 } from '../../../utils/aws-s3'
-import { isMalformedDate } from '../../../utils/date'
+import { createQueryWithDateParam, isMalformedDate } from '../../../utils/date'
 import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
 import {
   AttachmentUploadError,
@@ -335,12 +336,18 @@ export const getEncryptedSubmissionData = (
  * @returns ok(SubmissionData)
  * @returns err(DatabaseError) when error occurs during query
  */
-export const getAllEncryptedSubmissionData = (formId: string) => {
+export const getAllEncryptedSubmissionData = (
+  formId: string,
+  startDate?: DateString,
+  endDate?: DateString,
+) => {
+  const findQuery = {
+    form: formId,
+    submissionType: SubmissionType.Encrypt,
+    ...createQueryWithDateParam(startDate, endDate),
+  }
   return ResultAsync.fromPromise(
-    EncryptSubmissionModel.find({
-      form: formId,
-      submissionType: SubmissionType.Encrypt,
-    })
+    EncryptSubmissionModel.find(findQuery)
       .limit(CHARTS_MAX_SUBMISSION_RESULTS)
       .sort({ created: -1 }),
     (error) => {

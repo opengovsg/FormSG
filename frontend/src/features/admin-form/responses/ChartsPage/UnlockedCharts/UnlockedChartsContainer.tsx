@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import { Container, Divider, Flex, Stack, Text, VStack } from '@chakra-ui/react'
-import { endOfDay } from 'date-fns'
 import simplur from 'simplur'
 import { removeStopwords } from 'stopword'
 
@@ -84,36 +83,18 @@ const aggregateWordCloud = (
 }
 
 export const UnlockedChartsContainer = () => {
-  const { data: decryptedContent } = useAllSubmissionData()
   const { data: form } = useAdminForm()
   const { dateRange, setDateRange } = useStorageResponsesContext()
+  const { data: decryptedContent } = useAllSubmissionData(dateRange)
 
-  const filteredDecryptedData: DecryptedSubmission[] = useMemo(() => {
+  const filteredDecryptedData = useMemo(() => {
     if (!decryptedContent) return []
-    if (dateRange.length === 2) {
-      const [startDate, endDate] = dateRange.map((date) =>
-        new Date(date).getTime(),
-      )
-
-      return decryptedContent.filter((content) => {
-        const submissionTime = new Date(content.submissionTime).getTime()
-        return (
-          submissionTime >= startDate &&
-          submissionTime <= endOfDay(endDate).getTime()
-        )
-      })
-    }
     return decryptedContent
-  }, [decryptedContent, dateRange])
+  }, [decryptedContent])
 
   const prettifiedResponsesCount = useMemo(
-    () =>
-      dateRange.length === 2
-        ? simplur` ${[filteredDecryptedData.length ?? 0]}result[|s] retrieved`
-        : simplur` ${[
-            filteredDecryptedData.length ?? 0,
-          ]}response[|s] retrieved`,
-    [filteredDecryptedData, dateRange],
+    () => simplur` ${[filteredDecryptedData.length ?? 0]}result[|s] retrieved`,
+    [filteredDecryptedData],
   )
 
   if (!form) return null

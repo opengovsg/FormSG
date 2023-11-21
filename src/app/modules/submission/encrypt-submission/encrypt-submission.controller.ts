@@ -11,6 +11,7 @@ import { featureFlags } from '../../../../../shared/constants'
 import {
   AttachmentPresignedPostDataMapType,
   AttachmentSizeMapType,
+  DateString,
   ErrorDto,
   FormAuthType,
   FormResponseMode,
@@ -922,16 +923,19 @@ export const handleGetEncryptedResponse: ControllerHandler<
   )
 }
 
-export const handleGetAllEncryptedResponse: ControllerHandler<
+const _getAllEncryptedResponse: ControllerHandler<
   { formId: string },
-  IEncryptedSubmissionSchema[] | ErrorDto
+  unknown,
+  IEncryptedSubmissionSchema[] | ErrorDto,
+  { startDate?: DateString; endDate?: DateString }
 > = async (req, res) => {
   const sessionUserId = (req.session as AuthedSessionData).user._id
   const { formId } = req.params
+  // extract startDate and endDate from query
+  const { startDate, endDate } = req.query
 
   const logMeta = {
     action: 'handleGetAllEncryptedResponse',
-
     formId,
     sessionUserId,
     ...createReqMeta(req),
@@ -956,7 +960,7 @@ export const handleGetAllEncryptedResponse: ControllerHandler<
       // Step 3: Check whether form is encrypt mode.
       .andThen(checkFormIsEncryptMode)
       // Step 4: Is encrypt mode form, retrieve submission data.
-      .andThen(() => getAllEncryptedSubmissionData(formId))
+      .andThen(() => getAllEncryptedSubmissionData(formId, startDate, endDate))
       // Step 5: If there is an associated payment, get the payment details.
 
       .map((responseData) => {
@@ -980,6 +984,22 @@ export const handleGetAllEncryptedResponse: ControllerHandler<
       })
   )
 }
+
+// Handler for GET /:formId([a-fA-F0-9]{24})/submissions
+export const handleGetAllEncryptedResponses = [
+  celebrate({
+    [Segments.QUERY]: Joi.object()
+      .keys({
+        startDate: Joi.date().format('YYYY-MM-DD').raw(),
+        endDate: Joi.date()
+          .format('YYYY-MM-DD')
+          .min(Joi.ref('startDate'))
+          .raw(),
+      })
+      .and('startDate', 'endDate'),
+  }),
+  _getAllEncryptedResponse,
+] as ControllerHandler[]
 
 /**
  * Handler for GET /:formId/submissions/metadata

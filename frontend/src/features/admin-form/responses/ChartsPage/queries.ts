@@ -1,6 +1,8 @@
 import { useQuery } from 'react-query'
 import { useParams } from 'react-router-dom'
 
+import { DateString } from '~shared/types'
+
 import { useToast } from '~hooks/useToast'
 
 import { getAllDecryptedSubmission } from '../AdminSubmissionsService'
@@ -10,7 +12,8 @@ import { useStorageResponsesContext } from '../ResponsesPage/storage'
 /**
  * @precondition Must be wrapped in a Router as `useParam` is used.
  */
-export const useAllSubmissionData = () => {
+export const useAllSubmissionData = (dateRange?: DateString[]) => {
+  const [startDate, endDate] = dateRange ?? []
   const toast = useToast({
     status: 'danger',
   })
@@ -23,10 +26,10 @@ export const useAllSubmissionData = () => {
   const { secretKey } = useStorageResponsesContext()
 
   return useQuery(
-    adminFormResponsesKeys.id(formId),
-    () => getAllDecryptedSubmission({ formId, secretKey }),
+    [adminFormResponsesKeys.id(formId), dateRange],
+    () => getAllDecryptedSubmission({ formId, secretKey, startDate, endDate }),
     {
-      // Will never update once fetched.
+      // Will never update once fetched, unless daterange changes
       staleTime: Infinity,
       enabled: !!secretKey,
       onError: (e) => {
