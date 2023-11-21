@@ -20,9 +20,7 @@ import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
 import Link from '~components/Link'
 
-import { FormActivationSvg } from '~features/admin-form/settings/components/FormActivationSvg'
-
-import { useStorageResponsesContext } from './StorageResponsesContext'
+import { useStorageResponsesContext } from '../../ResponsesPage/storage'
 
 const SECRET_KEY_NAME = 'secretKey'
 const SECRET_KEY_REGEX = /^[a-zA-Z0-9/+]+={0,2}$/
@@ -112,7 +110,17 @@ const useSecretKeyVerification = () => {
   }
 }
 
-export const SecretKeyVerification = (): JSX.Element => {
+export const SecretKeyVerification = ({
+  heroSvg,
+  ctaText,
+  label,
+  hideResponseCount,
+}: {
+  heroSvg: JSX.Element
+  ctaText: string
+  label: string
+  hideResponseCount?: boolean
+}): JSX.Element => {
   const {
     isLoading,
     totalResponsesCount,
@@ -129,15 +137,17 @@ export const SecretKeyVerification = (): JSX.Element => {
   return (
     <Container p={0} maxW="42.5rem">
       <Stack spacing="2rem">
-        <FormActivationSvg />
-        <Skeleton isLoaded={!isLoading} w="fit-content">
-          <Text as="h2" textStyle="h2" whiteSpace="pre-wrap">
-            <Text color="primary.500" as="span">
-              {totalResponsesCount?.toLocaleString() ?? '-'}
+        {heroSvg}
+        {!hideResponseCount ? (
+          <Skeleton isLoaded={!isLoading} w="fit-content">
+            <Text as="h2" textStyle="h2" whiteSpace="pre-wrap">
+              <Text color="primary.500" as="span">
+                {totalResponsesCount?.toLocaleString() ?? '-'}
+              </Text>
+              {simplur` ${[totalResponsesCount ?? 0]}response[|s] to date`}
             </Text>
-            {simplur` ${[totalResponsesCount ?? 0]}response[|s] to date`}
-          </Text>
-        </Skeleton>
+          </Skeleton>
+        ) : null}
         <form onSubmit={handleVerifyKeypair} noValidate>
           {/* Hidden input field to trigger file selector, can be anywhere in the DOM */}
           <Input
@@ -150,7 +160,7 @@ export const SecretKeyVerification = (): JSX.Element => {
           />
           <FormControl isRequired isInvalid={!!errors.secretKey} mb="1rem">
             <FormLabel description="Your Secret Key was downloaded when you created your form">
-              Enter or upload Secret Key
+              {label}
             </FormLabel>
             <Stack direction="row" spacing="0.5rem">
               <Skeleton isLoaded={!isLoading} w="100%">
@@ -178,7 +188,7 @@ export const SecretKeyVerification = (): JSX.Element => {
             mt="2rem"
           >
             <Button isFullWidth={isMobile} isDisabled={isLoading} type="submit">
-              Unlock responses
+              {ctaText}
             </Button>
             <Link variant="standalone" isExternal href={GUIDE_SECRET_KEY_LOSS}>
               Can't find your Secret Key?

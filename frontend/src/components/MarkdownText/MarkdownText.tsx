@@ -23,7 +23,25 @@ export const MarkdownText = ({
   const processedRawString = useMemo(() => {
     // Create new line nodes for every new line in raw string so new lines gets rendered.
     if (multilineBreaks) {
-      return children.replace(/\n/gi, '&nbsp; \n')
+      /**
+       * Matching new lines that are not preceded by a token that indents.
+       *
+       * (?<!{regex}): negative lookbehind to ensure that the following regex does not match
+       *
+       *   (-|\d+\.|\*): matching character tokens that indents
+       *     -: "-"
+       *     *: "*",
+       *     \d+ : "1.", "2.", etc.
+       *
+       *   \s: whitespace following the token, indentation groups must start with token followed by a whitespace character
+       *
+       *   .*: any character, any number of times, this is the actual text content of the line
+       *
+       *   \n: new line character
+       *
+       * \n: the new line character that we will want markdown to render as a new line
+       */
+      return children.replace(/(?<!(-|\d+\.|\*)\s.*\n)\n/gi, '&nbsp; \n')
     }
     return children
   }, [children, multilineBreaks])

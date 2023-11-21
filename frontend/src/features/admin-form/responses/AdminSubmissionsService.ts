@@ -1,5 +1,7 @@
+import { DateString } from '~shared/types'
 import {
   FormSubmissionMetadataQueryDto,
+  StorageModeChartsDto,
   StorageModeSubmissionDto,
   StorageModeSubmissionMetadataList,
   SubmissionCountQueryDto,
@@ -99,4 +101,62 @@ export const getDecryptedSubmissionById = async ({
     ...rest,
     responses: processedContent,
   }
+}
+
+const getAllEncryptedSubmission = async ({
+  formId,
+  startDate,
+  endDate,
+}: {
+  formId: string
+  startDate?: DateString
+  endDate?: DateString
+}): Promise<StorageModeChartsDto[]> => {
+  const queryUrl = `${ADMIN_FORM_ENDPOINT}/${formId}/submissions`
+  if (startDate && endDate) {
+    return ApiService.get(queryUrl, {
+      params: {
+        startDate,
+        endDate,
+      },
+    }).then(({ data }) => data)
+  }
+  return ApiService.get(queryUrl).then(({ data }) => data)
+}
+
+type DecryptedContent = NonNullable<ReturnType<typeof formsgSdk.crypto.decrypt>>
+export type DecryptedSubmission = DecryptedContent & {
+  submissionTime: string
+}
+
+export const getAllDecryptedSubmission = async ({
+  formId,
+  secretKey,
+  startDate,
+  endDate,
+}: {
+  formId: string
+  secretKey?: string
+  startDate?: DateString
+  endDate?: DateString
+}): Promise<DecryptedSubmission[]> => {
+  if (!secretKey) return []
+
+  const allEncryptedData = await getAllEncryptedSubmission({
+    formId,
+    startDate,
+    endDate,
+  })
+
+  return allEncryptedData.map((encryptedData) => {
+    const decryptedContent = formsgSdk.crypto.decrypt(secretKey, {
+      encryptedContent: encryptedData.encryptedContent,
+      verifiedContent: encryptedData.verifiedContent,
+      version: encryptedData.version,
+    })
+
+    if (!decryptedContent) throw new Error('Could not decrypt the response')
+
+    return { ...decryptedContent, submissionTime: encryptedData.created }
+  })
 }
