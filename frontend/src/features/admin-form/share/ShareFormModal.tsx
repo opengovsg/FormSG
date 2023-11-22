@@ -50,6 +50,7 @@ import Link from '~components/Link'
 import { ModalCloseButton } from '~components/Modal'
 import { Tab } from '~components/Tabs'
 import Textarea from '~components/Textarea'
+import Tooltip from '~components/Tooltip'
 import { CopyButton } from '~templates/CopyButton'
 
 import { useEnv } from '~features/env/queries'
@@ -396,14 +397,20 @@ export const ShareFormModal = ({
                           ) : null}
                         </InputGroup>
                         {goLinkSaved ? null : (
-                          <Button
-                            aria-label="Claim Go link"
-                            onClick={handleClaimGoLinkClick}
-                            isDisabled={!goLinkSuffixInput}
-                            isLoading={claimGoLoading}
+                          <Tooltip
+                            placement="top"
+                            label="These are features specific to SG Government and not available on playground."
+                            shouldWrapChildren
                           >
-                            Claim
-                          </Button>
+                            <Button
+                              aria-label="Claim Go link"
+                              onClick={handleClaimGoLinkClick}
+                              isDisabled
+                              isLoading={claimGoLoading}
+                            >
+                              Claim
+                            </Button>
+                          </Tooltip>
                         )}
                       </Stack>
                       {goLinkHelperText && (
