@@ -1,10 +1,15 @@
 import { Router } from 'express'
 
 import * as AuthSgidController from '../../../../modules/auth/sgid/auth-sgid.controller'
+import { disabledOnPlayground } from '../../../../utils/disabled-on-playground'
 
 export const AuthSGIDRouter = Router()
 
-AuthSGIDRouter.get('/authurl', AuthSgidController.generateAuthUrl)
+AuthSGIDRouter.get(
+  '/authurl',
+  disabledOnPlayground,
+  AuthSgidController.generateAuthUrl,
+)
 
 /**
  * Receives the selected login details from Sgid

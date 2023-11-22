@@ -1,6 +1,7 @@
 import { Router } from 'express'
 
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
+import { disabledOnPlayground } from '../../../../../utils/disabled-on-playground'
 
 export const AdminFormsGoGovRouter = Router()
 
@@ -17,4 +18,4 @@ AdminFormsGoGovRouter.route('/:formId([a-fA-F0-9]{24})/gogov')
    * @route POST /:formId/gogov
    * @security session
    */
-  .post(AdminFormController.handleSetGoLinkSuffix)
+  .post(disabledOnPlayground, AdminFormController.handleSetGoLinkSuffix)
