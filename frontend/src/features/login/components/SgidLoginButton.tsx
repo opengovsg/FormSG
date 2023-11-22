@@ -30,16 +30,16 @@ export const SgidLoginButton = (): JSX.Element => {
             isFullWidth
             isLoading={formState.isSubmitting}
             type="submit"
-            color="primary"
+            colorScheme="theme-grey"
             onClick={() => {
               // no-op
             }}
             variant="outline"
           >
             <Flex align="center" flexDirection="row">
-              <Text color="primary.500">Log in with </Text>
+              <Text color="grey.500">Log in with </Text>
               <SingpassFullLogoSvgr height="1.25rem" />
-              <Text color="primary.500"> app</Text>
+              <Text color="grey.500"> app</Text>
             </Flex>
           </Button>
         </Box>
