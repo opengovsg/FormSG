@@ -275,8 +275,8 @@ export const LandingPage = (): JSX.Element => {
         <SectionBodyText>
           All form responses are either encrypted end-to-end (Storage mode) or
           sent directly to your email inbox (Email mode). This means third
-          parties, including FormSG, will not be able to access or view your
-          form data.
+          parties, including Form Playground, will not be able to access or view
+          your form data.
         </SectionBodyText>
         <SimpleGrid
           columns={2}
@@ -426,9 +426,9 @@ export const LandingPage = (): JSX.Element => {
           <TabPanels>
             <TabPanel>
               <SectionBodyText mt="1.5rem">
-                View your responses within FormSG. All data is end-to-end
-                encrypted, which means third parties, including FormSG, will not
-                be able to access or view your form data.
+                View your responses within Form Playground. All data is
+                end-to-end encrypted, which means third parties, including Form
+                Playground, will not be able to access or view your form data.
               </SectionBodyText>
               <OrderedList
                 spacing="1rem"
@@ -439,7 +439,7 @@ export const LandingPage = (): JSX.Element => {
               >
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={1} />
-                  Log in to FormSG via Internet or Intranet
+                  Log in to Form Playground via Internet
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={2} />
@@ -474,7 +474,7 @@ export const LandingPage = (): JSX.Element => {
               >
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={1} />
-                  Log in to FormSG via Internet or Intranet
+                  Log in to Form Playground via Internet
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={2} />
@@ -506,9 +506,9 @@ export const LandingPage = (): JSX.Element => {
         direction={{ base: 'column', lg: 'row' }}
       >
         <SectionBodyText>
-          FormSG is part of the **Open Government Products Suite**, and as a
-          public officer you can mix and match from our set of productivity and
-          collaboration tools.
+          Form Playground is part of the **Open Government Products Suite**, and
+          as a public officer you can mix and match from our set of productivity
+          and collaboration tools.
         </SectionBodyText>
         <FeatureLink
           href={OGP_ALL_PRODUCTS}

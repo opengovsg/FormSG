@@ -31,7 +31,7 @@ export const TemplateFormProvider = ({
 
   useEffect(() => {
     return () => {
-      document.title = 'FormSG'
+      document.title = 'Form Playground'
     }
   }, [])
 

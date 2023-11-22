@@ -15,6 +15,6 @@ export const renderBouncedSubmissionSms = (formTitle: string): string => dedent`
 export const renderVerificationSms = (
   otp: string,
   otpPrefix: string,
-): string => dedent`Use the OTP ${otpPrefix}-${otp} to submit on FormSG.
+): string => dedent`Use the OTP ${otpPrefix}-${otp} to submit on Form Playground.
 
   Never share your OTP with anyone else. If you did not request this OTP, you can safely ignore this SMS.`

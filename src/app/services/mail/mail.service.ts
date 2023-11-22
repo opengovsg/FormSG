@@ -520,7 +520,7 @@ export class MailService {
       const mail: MailOptions = {
         to: form.emails,
         from: this.#senderFromString,
-        subject: `formsg-auto: ${formTitle} (#${refNo})`,
+        subject: `playground-form-auto: ${formTitle} (#${refNo})`,
         html: mailHtml,
         attachments,
         headers: {

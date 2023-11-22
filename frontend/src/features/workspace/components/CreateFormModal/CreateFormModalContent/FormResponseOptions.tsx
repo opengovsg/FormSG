@@ -41,7 +41,9 @@ export const FormResponseOptions = forwardRef<
         flex={1}
       >
         <Tile.Title>Storage Mode</Tile.Title>
-        <Tile.Subtitle>View or download responses in FormSG</Tile.Subtitle>
+        <Tile.Subtitle>
+          View or download responses in Form Playground
+        </Tile.Subtitle>
         <OptionDescription
           listItems={[
             'Attachments: up to 20MB per form',
