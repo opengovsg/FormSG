@@ -71,7 +71,10 @@ export const AuthSettingsSection = ({
 
   const isDisabled = useCallback(
     (authType: FormAuthType) =>
-      isFormPublic || containsMyInfoFields || mutateFormAuthType.isLoading,
+      isFormPublic ||
+      containsMyInfoFields ||
+      mutateFormAuthType.isLoading ||
+      true, // not available on Playground
     [isFormPublic, containsMyInfoFields, mutateFormAuthType.isLoading],
   )
 
@@ -137,16 +140,10 @@ export const AuthSettingsSection = ({
           Learn more about Singpass authentication
         </Link>
       </Text>
-      {isFormPublic ? (
-        <InlineMessage marginBottom="16px">
-          To change authentication method, close your form to new responses.
-        </InlineMessage>
-      ) : containsMyInfoFields ? (
-        <InlineMessage marginBottom="16px">
-          To change authentication method, remove existing Myinfo fields on your
-          form. You can still update your e-service ID.
-        </InlineMessage>
-      ) : null}
+      <InlineMessage marginBottom="16px">
+        The Singpass authentication feature is specific to Singapore available
+        on playground.
+      </InlineMessage>
       <Radio.RadioGroup
         value={settings.authType}
         onKeyDown={handleEnterKeyDown}
