@@ -1,5 +1,4 @@
 import { useForm } from 'react-hook-form'
-import { useMutation } from 'react-query'
 import { Box, Flex, Link, Text, VStack } from '@chakra-ui/react'
 
 import { SGID_VALID_ORG_PAGE } from '~shared/constants'
@@ -21,7 +20,7 @@ export const SgidLoginButton = (): JSX.Element => {
     <VStack alignItems="start">
       <Tooltip
         placement="top"
-        label="These are features specific to SG Government and not available on playground."
+        label="Log in with Singpass feature is not available on playground."
       >
         <Box width="100%">
           {/* To prevent isDisabled swallowing the mouseover event for tooltip */}

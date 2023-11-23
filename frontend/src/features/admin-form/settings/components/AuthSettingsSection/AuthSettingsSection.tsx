@@ -141,8 +141,7 @@ export const AuthSettingsSection = ({
         </Link>
       </Text>
       <InlineMessage marginBottom="16px">
-        The Singpass authentication feature is specific to Singapore available
-        on playground.
+        The Singpass authentication feature is not available on playground.
       </InlineMessage>
       <Radio.RadioGroup
         value={settings.authType}

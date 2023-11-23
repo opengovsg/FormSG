@@ -399,7 +399,7 @@ export const ShareFormModal = ({
                         {goLinkSaved ? null : (
                           <Tooltip
                             placement="top"
-                            label="These are features specific to SG Government and not available on playground."
+                            label="Claiming Go link is not available on playground."
                             shouldWrapChildren
                           >
                             <Button
