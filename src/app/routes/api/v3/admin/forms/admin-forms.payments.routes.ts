@@ -1,8 +1,7 @@
 import { Router } from 'express'
 
-import { disabledOnPlayground } from 'src/app/utils/disabled-on-playground'
-
 import * as AdminPaymentsController from '../../../../../modules/form/admin-form/admin-form.payments.controller'
+import { disabledOnPlayground } from '../../../../../utils/disabled-on-playground'
 
 export const AdminFormsPaymentsRouter = Router()
 
