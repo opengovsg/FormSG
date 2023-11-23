@@ -65,63 +65,50 @@ const BeforeConnectionInstructions = ({
       </>
     )
   }
-  if (isProductionEnv) {
-    return (
-      <VStack spacing="2.5rem" alignItems="start">
-        <InlineMessage variant="info">
-          <Text>
-            Read{' '}
-            <Link isExternal href={paymentGuideLink}>
-              our guide
-            </Link>{' '}
-            to set up a Stripe account. If your agency already has a Stripe
-            account, you can connect it to this form.
-          </Text>
-        </InlineMessage>
-        <Text textStyle="h3" color="secondary.500">
-          Bulk transaction rates
-        </Text>
-        <Text>
-          To request bulk transaction rates for your payments, use{' '}
-          <Link href={GUIDE_STRIPE_ONBOARDING} target="_blank">
-            this form
-          </Link>{' '}
-          to contact us for assistance.{' '}
-          <Text as="b">
-            Without this step, you will be charged default transaction rates.
-          </Text>
-        </Text>
-
-        {/* Stripe connect button should only be enabled when checkbox is checked. */}
-        <Checkbox
-          isChecked={allowConnect}
-          mb="2rem"
-          onChange={(e) => setAllowConnect(e.target.checked)}
-        >
-          I understand that I will be paying default transaction rates, unless I
-          have requested bulk transaction rates and received confirmation
-        </Checkbox>
-        <StripeConnectButton
-          connectState={
-            allowConnect
-              ? StripeConnectButtonStates.ENABLED
-              : StripeConnectButtonStates.DISABLED
-          }
-        />
-      </VStack>
-    )
-  }
-
   return (
-    <>
-      <InlineMessage variant="info" my="2rem">
+    <VStack spacing="2.5rem" alignItems="start">
+      <InlineMessage variant="info">
         <Text>
-          You are currently in test mode. You can choose to skip connecting a
-          Stripe account after clicking the button below.
+          Read{' '}
+          <Link isExternal href={paymentGuideLink}>
+            our guide
+          </Link>{' '}
+          to set up a Stripe account. If your agency already has a Stripe
+          account, you can connect it to this form.
         </Text>
       </InlineMessage>
-      <StripeConnectButton connectState={StripeConnectButtonStates.ENABLED} />
-    </>
+      <Text textStyle="h3" color="secondary.500">
+        Bulk transaction rates
+      </Text>
+      <Text>
+        To request bulk transaction rates for your payments, use{' '}
+        <Link href={GUIDE_STRIPE_ONBOARDING} target="_blank">
+          this form
+        </Link>{' '}
+        to contact us for assistance.{' '}
+        <Text as="b">
+          Without this step, you will be charged default transaction rates.
+        </Text>
+      </Text>
+
+      {/* Stripe connect button should only be enabled when checkbox is checked. */}
+      <Checkbox
+        isChecked={allowConnect}
+        mb="2rem"
+        onChange={(e) => setAllowConnect(e.target.checked)}
+      >
+        I understand that I will be paying default transaction rates, unless I
+        have requested bulk transaction rates and received confirmation
+      </Checkbox>
+
+      <StripeConnectButton
+        connectState={
+          allowConnect
+            ? StripeConnectButtonStates.ENABLED
+            : StripeConnectButtonStates.DISABLED
+        }
+      />
+    </VStack>
   )
 }
 

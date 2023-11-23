@@ -1,5 +1,7 @@
 import { Router } from 'express'
 
+import { disabledOnPlayground } from 'src/app/utils/disabled-on-playground'
+
 import * as AdminPaymentsController from '../../../../../modules/form/admin-form/admin-form.payments.controller'
 
 export const AdminFormsPaymentsRouter = Router()
@@ -19,7 +21,7 @@ AdminFormsPaymentsRouter.route('/:formId([a-fA-F0-9]{24})/stripe')
    * @returns 422 when the form to be updated is not an encrypt mode form
    * @returns 500 when database error occurs
    */
-  .post(AdminPaymentsController.handleConnectAccount)
+  .post(disabledOnPlayground, AdminPaymentsController.handleConnectAccount)
   /**
    * Delete the specified form stripe credentials
    * @route DELETE /:formId/stripe
@@ -34,7 +36,7 @@ AdminFormsPaymentsRouter.route('/:formId([a-fA-F0-9]{24})/stripe')
    * @returns 422 when the form to be updated is not an encrypt mode form
    * @returns 500 when database error occurs
    */
-  .delete(AdminPaymentsController.handleUnlinkAccount)
+  .delete(disabledOnPlayground, AdminPaymentsController.handleUnlinkAccount)
 
 /**
  * Validate that the connected Stripe account is able to receive payments.

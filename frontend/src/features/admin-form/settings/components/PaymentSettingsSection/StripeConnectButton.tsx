@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import Button from '~components/Button'
+import Tooltip from '~components/Tooltip'
 
 import { useMutateStripeAccount } from '../../mutations'
 
@@ -35,14 +36,20 @@ export const StripeConnectButton = ({
 
   if (connectState !== StripeConnectButtonStates.LINKED) {
     return (
-      <Button
-        isDisabled={connectState === StripeConnectButtonStates.DISABLED}
-        isLoading={linkStripeAccountMutation.isLoading}
-        onClick={onLinkAccountClick}
-        colorScheme="primary"
+      <Tooltip
+        placement="right"
+        label="Connecting to Stripe is not available on playground."
+        shouldWrapChildren
       >
-        Connect my Stripe account
-      </Button>
+        <Button
+          isDisabled // not available on playground
+          isLoading={linkStripeAccountMutation.isLoading}
+          onClick={onLinkAccountClick}
+          colorScheme="primary"
+        >
+          Connect my Stripe account
+        </Button>
+      </Tooltip>
     )
   } else {
     return (
