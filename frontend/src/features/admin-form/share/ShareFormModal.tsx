@@ -124,12 +124,13 @@ export const ShareFormModal = ({
   const displayGoLink = flags?.has(featureFlags.goLinks)
 
   // Hard-coded .gov.sg whitelist for GoGov integration
-  const gogovWhiteListed = '.gov.sg'
+  // const gogovWhiteListed = '.gov.sg'
   const { user } = useUser()
-  const whitelisted = useMemo(
-    () => user?.email.endsWith(gogovWhiteListed),
-    [user?.email],
-  )
+  const whitelisted = true // always show on playground
+  // const whitelisted = useMemo(
+  //   () => user?.email.endsWith(gogovWhiteListed),
+  //   [user?.email],
+  // )
 
   const shareLink = useMemo(
     () => `${window.location.origin}/${formId}`,
