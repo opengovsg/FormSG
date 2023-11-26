@@ -216,6 +216,10 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
       default: '',
       validate: [/^\S*$/i, 'publishable_key must not contain whitespace.'],
     },
+    payment_methods: {
+      type: [String],
+      default: [],
+    },
   },
 
   payments_field: formPaymentsFieldSchema,
@@ -244,6 +248,7 @@ EncryptedFormDocumentSchema.methods.addPaymentAccountId = async function ({
       channel: PaymentChannel.Stripe,
       target_account_id: accountId,
       publishable_key: publishableKey,
+      payment_methods: [],
     }
   }
   return this.save()
@@ -254,6 +259,7 @@ EncryptedFormDocumentSchema.methods.removePaymentAccount = async function () {
     channel: PaymentChannel.Unconnected,
     target_account_id: '',
     publishable_key: '',
+    payment_methods: [],
   }
   if (this.payments_field) {
     this.payments_field.enabled = false

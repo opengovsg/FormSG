@@ -1,9 +1,12 @@
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
+import Stripe from 'stripe'
 
 import {
   FormPaymentsField,
+  PaymentChannel,
   PaymentFieldsDto,
+  PaymentMethodType,
   PaymentType,
   StorageModeSubmissionContentDto,
   StorageModeSubmissionDto,
@@ -403,5 +406,26 @@ export const formatMyInfoStorageResponseData = (
         return omitResponseKeys(response)
       }
     })
+  }
+}
+
+export const getStripePaymentMethod = (
+  form: IPopulatedEncryptedForm,
+): Omit<Stripe.PaymentIntentCreateParams, 'amount' | 'currency'> => {
+  const isPaynowOnly =
+    form.payments_channel.payment_methods?.includes(PaymentMethodType.Paynow) &&
+    form.payments_channel.payment_methods?.length === 1
+  const stripePaynowOnly =
+    form.payments_channel.channel === PaymentChannel.Stripe && isPaynowOnly
+
+  if (stripePaynowOnly) {
+    return {
+      payment_method_types: ['paynow'],
+    }
+  }
+  return {
+    automatic_payment_methods: {
+      enabled: true,
+    },
   }
 }
