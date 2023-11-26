@@ -105,7 +105,7 @@ export const FormFields = ({
       searchParams.get(PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID) ?? '',
       10,
     )
-    if (Number.isInteger(paymentParamValue)) {
+    if (Number.isInteger(paymentParamValue) && paymentParamValue > 0) {
       const paymentAmount = centsToDollars(Number(paymentParamValue))
       defaultFormValues[PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID] = paymentAmount
     }
