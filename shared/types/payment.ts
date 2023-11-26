@@ -20,7 +20,6 @@ export enum PaymentChannel {
 }
 
 export enum PaymentMethodType {
-  Unset = '',
   Paynow = 'Paynow',
 }
 
