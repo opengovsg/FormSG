@@ -92,7 +92,7 @@ export const AvatarMenu = ({
   return (
     <Menu autoSelect={false} defaultIsOpen={defaultIsOpen}>
       {({ isOpen }) => (
-        <>
+        <div style={{ zIndex: 1000 }}>
           <AvatarMenuButton isActive={isOpen} isOpen={isOpen}>
             <Avatar
               name={name}
@@ -107,7 +107,7 @@ export const AvatarMenu = ({
             <AvatarMenuDivider />
             {children}
           </Menu.List>
-        </>
+        </div>
       )}
     </Menu>
   )
