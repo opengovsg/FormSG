@@ -49,8 +49,8 @@ RUN apk update && apk upgrade && \
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
-# Chinese fonts
-RUN echo @edge http://dl-cdn.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories && apk add wqy-zenhei@edge
+# This package is needed to render Chinese characters in autoreply PDFs
+RUN apk add font-wqy-zenhei --repository https://dl-cdn.alpinelinux.org/alpine/edge/community
 
 # Avoid using globs as there seems to be some inconsistency in the way dockerfile handles globs
 # * https://github.com/moby/moby/issues/15858 
