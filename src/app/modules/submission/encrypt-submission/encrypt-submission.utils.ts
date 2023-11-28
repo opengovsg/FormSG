@@ -56,6 +56,14 @@ import {
   FormNotFoundError,
   PrivateFormError,
 } from '../../form/form.errors'
+import {
+  MyInfoCookieStateError,
+  MyInfoHashDidNotMatchError,
+  MyInfoHashingError,
+  MyInfoInvalidLoginCookieError,
+  MyInfoMissingHashError,
+  MyInfoMissingLoginCookieError,
+} from '../../myinfo/myinfo.errors'
 import { MyInfoKey } from '../../myinfo/myinfo.types'
 import { PaymentNotFoundError } from '../../payments/payments.errors'
 import {
@@ -123,11 +131,31 @@ const errorMapper: MapRouteError = (
     case MissingJwtError:
     case VerifyJwtError:
     case InvalidJwtError:
+    case MyInfoMissingLoginCookieError:
+    case MyInfoCookieStateError:
+    case MyInfoInvalidLoginCookieError:
     case MalformedVerifiedContentError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage:
           'Something went wrong with your login. Please try logging in and submitting again.',
+      }
+    case MyInfoMissingHashError:
+      return {
+        statusCode: StatusCodes.GONE,
+        errorMessage:
+          'MyInfo verification expired, please refresh and try again.',
+      }
+    case MyInfoHashDidNotMatchError:
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        errorMessage: 'MyInfo verification failed.',
+      }
+    case MyInfoHashingError:
+      return {
+        statusCode: StatusCodes.SERVICE_UNAVAILABLE,
+        errorMessage:
+          'MyInfo verification unavailable, please try again later.',
       }
     case MissingUserError:
       return {
