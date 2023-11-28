@@ -165,6 +165,7 @@ export const SecretKeyVerification = ({
             <Stack direction="row" spacing="0.5rem">
               <Skeleton isLoaded={!isLoading} w="100%">
                 <Input
+                  type="password"
                   isDisabled={isLoading}
                   {...register(SECRET_KEY_NAME, secretKeyValidationRules)}
                 />
