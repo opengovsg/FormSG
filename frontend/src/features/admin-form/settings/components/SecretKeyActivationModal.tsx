@@ -196,6 +196,7 @@ export const SecretKeyActivationModal = ({
                 <FormLabel>Enter or upload Secret Key</FormLabel>
                 <Stack direction="row" spacing="0.5rem">
                   <Input
+                    type="password"
                     {...register('secretKey', {
                       required: "Please enter the form's secret key",
                       pattern: {
