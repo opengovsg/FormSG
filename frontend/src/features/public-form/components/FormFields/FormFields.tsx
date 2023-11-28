@@ -4,8 +4,10 @@ import { useSearchParams } from 'react-router-dom'
 import { Box, Stack } from '@chakra-ui/react'
 import { isEmpty, times } from 'lodash'
 
+import { PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID } from '~shared/constants'
 import { BasicField, FormFieldDto } from '~shared/types/field'
 import { FormColorTheme, FormResponseMode, LogicDto } from '~shared/types/form'
+import { centsToDollars } from '~shared/utils/payments'
 
 import InlineMessage from '~components/InlineMessage'
 import { FormFieldValues } from '~templates/Field'
@@ -96,6 +98,18 @@ export const FormFields = ({
       return acc
     }, {})
   }, [augmentedFormFields, fieldPrefillMap])
+
+  // payment prefills - only for variable payments
+  if (searchParams.has(PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID)) {
+    const paymentParamValue = Number.parseInt(
+      searchParams.get(PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID) ?? '',
+      10,
+    )
+    if (Number.isInteger(paymentParamValue) && paymentParamValue > 0) {
+      const paymentAmount = centsToDollars(Number(paymentParamValue))
+      defaultFormValues[PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID] = paymentAmount
+    }
+  }
 
   const formMethods = useForm<FormFieldValues>({
     defaultValues: defaultFormValues,
