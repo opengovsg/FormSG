@@ -1,9 +1,12 @@
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment-timezone'
+import Stripe from 'stripe'
 
 import {
   FormPaymentsField,
+  PaymentChannel,
   PaymentFieldsDto,
+  PaymentMethodType,
   PaymentType,
   StorageModeSubmissionContentDto,
   StorageModeSubmissionDto,
@@ -53,6 +56,14 @@ import {
   FormNotFoundError,
   PrivateFormError,
 } from '../../form/form.errors'
+import {
+  MyInfoCookieStateError,
+  MyInfoHashDidNotMatchError,
+  MyInfoHashingError,
+  MyInfoInvalidLoginCookieError,
+  MyInfoMissingHashError,
+  MyInfoMissingLoginCookieError,
+} from '../../myinfo/myinfo.errors'
 import { MyInfoKey } from '../../myinfo/myinfo.types'
 import { PaymentNotFoundError } from '../../payments/payments.errors'
 import {
@@ -120,11 +131,31 @@ const errorMapper: MapRouteError = (
     case MissingJwtError:
     case VerifyJwtError:
     case InvalidJwtError:
+    case MyInfoMissingLoginCookieError:
+    case MyInfoCookieStateError:
+    case MyInfoInvalidLoginCookieError:
     case MalformedVerifiedContentError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,
         errorMessage:
           'Something went wrong with your login. Please try logging in and submitting again.',
+      }
+    case MyInfoMissingHashError:
+      return {
+        statusCode: StatusCodes.GONE,
+        errorMessage:
+          'MyInfo verification expired, please refresh and try again.',
+      }
+    case MyInfoHashDidNotMatchError:
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        errorMessage: 'MyInfo verification failed.',
+      }
+    case MyInfoHashingError:
+      return {
+        statusCode: StatusCodes.SERVICE_UNAVAILABLE,
+        errorMessage:
+          'MyInfo verification unavailable, please try again later.',
       }
     case MissingUserError:
       return {
@@ -403,5 +434,26 @@ export const formatMyInfoStorageResponseData = (
         return omitResponseKeys(response)
       }
     })
+  }
+}
+
+export const getStripePaymentMethod = (
+  form: IPopulatedEncryptedForm,
+): Omit<Stripe.PaymentIntentCreateParams, 'amount' | 'currency'> => {
+  const isPaynowOnly =
+    form.payments_channel.payment_methods?.includes(PaymentMethodType.Paynow) &&
+    form.payments_channel.payment_methods?.length === 1
+  const stripePaynowOnly =
+    form.payments_channel.channel === PaymentChannel.Stripe && isPaynowOnly
+
+  if (stripePaynowOnly) {
+    return {
+      payment_method_types: ['paynow'],
+    }
+  }
+  return {
+    automatic_payment_methods: {
+      enabled: true,
+    },
   }
 }
