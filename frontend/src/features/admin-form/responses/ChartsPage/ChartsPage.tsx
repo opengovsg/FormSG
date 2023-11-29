@@ -69,7 +69,7 @@ export const ChartsPage = (): JSX.Element => {
     return (
       <EmptyChartsContainer
         title="No charts generated"
-        subtitle={`Charts is in beta and limited to forms with a maximum of ${chartsMaxResponseCount} responses.`}
+        subtitle="The number of form submissions has exceeded the capacity allowed by Charts beta."
       />
     )
   }
