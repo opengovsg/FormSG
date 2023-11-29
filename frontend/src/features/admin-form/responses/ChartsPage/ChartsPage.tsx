@@ -65,7 +65,7 @@ export const ChartsPage = (): JSX.Element => {
     )
   }
 
-  if (responseCount >= chartsMaxResponseCount) {
+  if (responseCount > chartsMaxResponseCount) {
     return (
       <EmptyChartsContainer
         title="No charts generated"
