@@ -1,5 +1,6 @@
 import { useLocation } from 'react-router-dom'
 import { Box, Container, Divider, Stack } from '@chakra-ui/react'
+import { useFeatureValue } from '@growthbook/growthbook-react'
 
 import { FormResponseMode } from '~shared/types/form'
 
@@ -21,7 +22,7 @@ export const ChartsPage = (): JSX.Element => {
   const { data: form, isLoading } = useAdminForm()
   const { totalResponsesCount, secretKey } = useStorageResponsesContext()
   const { pathname } = useLocation()
-
+  const chartsMaxResponseCount = useFeatureValue('chartsMaxResponseCount', 100) // limit number of responses to 100 as fallback
   const toast = useToast({ status: 'danger' })
 
   if (isLoading) return <ResponsesPageSkeleton />
@@ -53,11 +54,22 @@ export const ChartsPage = (): JSX.Element => {
     return <></>
   }
 
-  if (totalResponsesCount === 0) {
+  const responseCount = totalResponsesCount || 0
+
+  if (responseCount === 0) {
     return (
       <EmptyChartsContainer
         title="No charts generated yet."
         subtitle="Charts will be generated when you receive responses on your form."
+      />
+    )
+  }
+
+  if (responseCount >= chartsMaxResponseCount) {
+    return (
+      <EmptyChartsContainer
+        title="No charts generated"
+        subtitle={`Charts is in beta and limited to forms with a maximum of ${chartsMaxResponseCount} responses.`}
       />
     )
   }
