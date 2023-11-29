@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import { Container, Divider, Flex, Stack, Text, VStack } from '@chakra-ui/react'
-import { useFeatureValue } from '@growthbook/growthbook-react'
 import simplur from 'simplur'
 import { removeStopwords } from 'stopword'
 
