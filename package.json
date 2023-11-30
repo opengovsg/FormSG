@@ -121,7 +121,7 @@
     "libphonenumber-js": "^1.10.24",
     "lodash": "^4.17.21",
     "moment-timezone": "0.5.41",
-    "mongodb-memory-server-core": "^6.9.6",
+    "mongodb-memory-server-core": "^8.12.0",
     "mongodb-uri": "^0.9.7",
     "mongoose": "^5.13.20",
     "multiparty": ">=4.2.3",
