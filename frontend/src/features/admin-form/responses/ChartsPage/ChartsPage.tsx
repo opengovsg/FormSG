@@ -2,6 +2,7 @@ import { useLocation } from 'react-router-dom'
 import { Box, Container, Divider, Stack } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
+import { featureFlags } from '~shared/constants'
 import { FormResponseMode } from '~shared/types/form'
 
 import { ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX } from '~constants/routes'
@@ -22,7 +23,10 @@ export const ChartsPage = (): JSX.Element => {
   const { data: form, isLoading } = useAdminForm()
   const { totalResponsesCount, secretKey } = useStorageResponsesContext()
   const { pathname } = useLocation()
-  const chartsMaxResponseCount = useFeatureValue('chartsMaxResponseCount', 100) // limit number of responses to 100 as fallback
+  const chartsMaxResponseCount = useFeatureValue(
+    featureFlags.chartsMaxResponseCount,
+    100,
+  ) // limit number of responses to 100 as fallback
   const toast = useToast({ status: 'danger' })
 
   if (isLoading) return <ResponsesPageSkeleton />
