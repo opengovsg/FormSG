@@ -9,7 +9,7 @@ RUN chown 1001:1001 /mongodb_data
 ENV CHROMIUM_BIN=/usr/bin/chromium-browser
 ENV NODE_ENV=development
 # --openssl-legacy-provider flag
-# A breaking change in the SSL provider was introduced in node 17. This caused 
+# A breaking change in the SSL provider was introduced in node 17. This caused
 # webpack 4 to break. This is an interim solution; we should investigate removing
 # this flag once angular has been removed and we have upgraded to CRA5 (which uses
 # webpack 5).
@@ -28,7 +28,7 @@ RUN apk update && apk upgrade && \
     # that is guaranteed to work. Upgrades must be done in lockstep.
     # https://github.com/puppeteer/puppeteer/blob/master/docs/troubleshooting.md#running-on-alpine
     # https://www.npmjs.com/package/puppeteer-core?activeTab=versions for corresponding versions
-    chromium=117.0.5938.62-r0 \
+    chromium=119.0.6045.159-r0	 \
     nss \
     freetype \
     freetype-dev \
@@ -53,7 +53,7 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 RUN apk add font-wqy-zenhei --repository https://dl-cdn.alpinelinux.org/alpine/edge/community
 
 # Avoid using globs as there seems to be some inconsistency in the way dockerfile handles globs
-# * https://github.com/moby/moby/issues/15858 
+# * https://github.com/moby/moby/issues/15858
 COPY package.json package-lock.json ./
 COPY shared/package.json shared/package-lock.json ./shared/
 COPY frontend/package.json frontend/package-lock.json ./frontend/
