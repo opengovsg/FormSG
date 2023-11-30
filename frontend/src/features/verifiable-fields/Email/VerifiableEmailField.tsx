@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { Box, VisuallyHidden } from '@chakra-ui/react'
 
+import { FormResponseMode } from '~shared/types'
+
 import { baseEmailValidationFn } from '~utils/fieldValidation'
 import { EmailFieldInput, EmailFieldProps } from '~templates/Field/Email'
 import { EmailFieldSchema } from '~templates/Field/types'
@@ -14,6 +16,7 @@ export type VerifiableEmailFieldSchema = VerifiableFieldSchema<EmailFieldSchema>
 
 export interface VerifiableEmailFieldProps extends EmailFieldProps {
   schema: VerifiableEmailFieldSchema
+  responseMode: FormResponseMode
 }
 
 /**
@@ -22,6 +25,7 @@ export interface VerifiableEmailFieldProps extends EmailFieldProps {
  */
 const InnerVerifiableEmailField = ({
   schema,
+  responseMode,
   ...formContainerProps
 }: VerifiableEmailFieldProps): JSX.Element => {
   const { handleInputChange, handleVfnButtonClick, hasSignature } =
@@ -49,6 +53,7 @@ const InnerVerifiableEmailField = ({
         </VisuallyHidden>
         <EmailFieldInput
           schema={schema}
+          responseMode={responseMode}
           handleInputChange={handleInputChange}
           inputProps={{
             isSuccess: hasSignature,

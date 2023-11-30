@@ -25,6 +25,7 @@ import {
   IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
   IPopulatedForm,
+  IPopulatedMultirespondentForm,
   SubmissionCursorData,
   SubmissionData,
 } from '../../../../types'
@@ -45,7 +46,10 @@ import {
 } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
-import { isFormEncryptMode } from '../../form/form.utils'
+import {
+  isFormEncryptMode,
+  isFormEncryptModeOrMultirespondent,
+} from '../../form/form.utils'
 import { PaymentNotFoundError } from '../../payments/payments.errors'
 import * as PaymentsService from '../../payments/payments.service'
 import {
@@ -508,6 +512,22 @@ export const checkFormIsEncryptMode = (
   return isFormEncryptMode(form)
     ? ok(form)
     : err(new ResponseModeError(FormResponseMode.Encrypt, form.responseMode))
+}
+
+export const checkFormIsEncryptModeOrMultirespondent = (
+  form: IPopulatedForm,
+): Result<
+  IPopulatedEncryptedForm | IPopulatedMultirespondentForm,
+  ResponseModeError
+> => {
+  return isFormEncryptModeOrMultirespondent(form)
+    ? ok(form)
+    : err(
+        new ResponseModeError(
+          [FormResponseMode.Encrypt, FormResponseMode.Multirespondent],
+          form.responseMode,
+        ),
+      )
 }
 
 /**

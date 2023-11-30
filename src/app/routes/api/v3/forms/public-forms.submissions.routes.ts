@@ -3,6 +3,7 @@ import { Router } from 'express'
 import { rateLimitConfig } from '../../../../config/config'
 import * as EmailSubmissionController from '../../../../modules/submission/email-submission/email-submission.controller'
 import * as EncryptSubmissionController from '../../../../modules/submission/encrypt-submission/encrypt-submission.controller'
+import * as MultirespondentSubmissionController from '../../../../modules/submission/multirespondent-submission/multirespondent-submission.controller'
 import { limitRate } from '../../../../utils/limit-rate'
 
 export const PublicFormsSubmissionsRouter = Router()
@@ -65,6 +66,44 @@ PublicFormsSubmissionsRouter.route(
   limitRate({ max: rateLimitConfig.submissions }),
   EncryptSubmissionController.handleStorageSubmission,
 )
+
+/**
+ * Submit a form response before public key encryption, performs pre-encryption
+ * steps (e.g. field validation, virus scanning) and stores the encrypted contents.
+ * @route POST /forms/:formId/submissions/storage
+ * @param response.body.required - contains the entire form submission
+ * @param captchaResponse.query - contains the reCAPTCHA response artifact, if any
+ * @returns 200 - submission made
+ * @returns 400 - submission has bad data and could not be processed
+ */
+PublicFormsSubmissionsRouter.route(
+  '/:formId([a-fA-F0-9]{24})/submissions/multirespondent',
+).post(
+  limitRate({ max: rateLimitConfig.submissions }),
+  MultirespondentSubmissionController.handleMultirespondentSubmission,
+)
+
+/**
+ * Retrieve actual response for a storage mode form
+ * @route GET /forms/:formId/submissions/:submissionId
+ * @returns 200 with encrypted submission data response
+ * @returns 400 when form is not an encrypt mode form
+ * @returns 400 when Joi validation fails
+ * @returns 404 when submissionId cannot be found in the database
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 500 when any errors occurs in database query or generating signed URL
+ */
+PublicFormsSubmissionsRouter.route(
+  '/:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})',
+)
+  .get(
+    MultirespondentSubmissionController.handleGetMultirespondentSubmissionForRespondent,
+  )
+  .put(
+    limitRate({ max: rateLimitConfig.submissions }),
+    MultirespondentSubmissionController.handleUpdateMultirespondentSubmission,
+  )
 
 /**
  * Get S3 presigned post data for attachments in a submission.

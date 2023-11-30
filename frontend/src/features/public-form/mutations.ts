@@ -20,10 +20,12 @@ import {
   submitEmailModeFormWithFetch,
   submitFormFeedback,
   submitFormIssue,
+  submitMultirespondentForm,
   SubmitStorageFormClearArgs,
   submitStorageModeClearForm,
   submitStorageModeClearFormWithFetch,
   submitStorageModeClearFormWithVirusScanning,
+  updateMultirespondentSubmission,
   uploadAttachmentToQuarantine,
 } from './PublicFormService'
 
@@ -108,12 +110,12 @@ export const usePublicFormMutations = (
     },
   )
 
-  const submitStorageModeClearFormWithVirusScanningMutation = useMutation(
-    async (args: Omit<SubmitStorageFormClearArgs, 'formId'>) => {
+  const useSubmitClearFormWithVirusScanningMutation = (f: any) =>
+    useMutation(async (args: Omit<SubmitStorageFormClearArgs, 'formId'>) => {
       const attachmentSizes = await getAttachmentSizes(args)
       // If there are no attachments, submit form without virus scanning by passing in empty list
       if (attachmentSizes.length === 0) {
-        return submitStorageModeClearFormWithVirusScanning({
+        return f({
           ...args,
           fieldIdToQuarantineKeyMap: [],
           formId,
@@ -174,8 +176,15 @@ export const usePublicFormMutations = (
             })
           })
       )
-    },
-  )
+    })
+
+  const submitStorageModeClearFormWithVirusScanningMutation =
+    useSubmitClearFormWithVirusScanningMutation(
+      submitStorageModeClearFormWithVirusScanning,
+    )
+
+  const submitMultirespondentFormMutation =
+    useSubmitClearFormWithVirusScanningMutation(submitMultirespondentForm)
 
   return {
     submitEmailModeFormMutation,
@@ -184,6 +193,22 @@ export const usePublicFormMutations = (
     submitStorageModeClearFormMutation,
     submitStorageModeClearFormFetchMutation,
     submitStorageModeClearFormWithVirusScanningMutation,
+    submitMultirespondentFormMutation,
+  }
+}
+
+export const useEditSubmissionMutations = (
+  formId: string,
+  submissionId?: string,
+) => {
+  const updateMultirespondentSubmissionMutation = useMutation(
+    (args: Omit<SubmitStorageFormClearArgs, 'formId'>) => {
+      return updateMultirespondentSubmission({ ...args, formId, submissionId })
+    },
+  )
+
+  return {
+    updateMultirespondentSubmissionMutation,
   }
 }
 

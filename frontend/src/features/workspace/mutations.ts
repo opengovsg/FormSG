@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { AdminFeedbackRating } from '~shared/types'
 import {
   CreateEmailFormBodyDto,
+  CreateMultirespondentFormBodyDto,
   CreateStorageFormBodyDto,
   DuplicateFormBodyDto,
   FormDto,
@@ -22,7 +23,7 @@ import { workspaceKeys } from './queries'
 import {
   createAdminFeedback,
   createEmailModeForm,
-  createStorageModeForm,
+  createStorageModeOrMultirespondentForm,
   createWorkspace,
   deleteAdminForm,
   deleteWorkspace,
@@ -76,18 +77,18 @@ export const useCreateFormMutations = () => {
     onError: handleError,
   })
 
-  const createStorageModeFormMutation = useMutation<
+  const createStorageModeOrMultirespondentFormMutation = useMutation<
     FormDto,
     ApiError,
-    CreateStorageFormBodyDto
-  >((params) => createStorageModeForm(params), {
+    CreateStorageFormBodyDto | CreateMultirespondentFormBodyDto
+  >((params) => createStorageModeOrMultirespondentForm(params), {
     onSuccess: handleSuccess,
     onError: handleError,
   })
 
   return {
     createEmailModeFormMutation,
-    createStorageModeFormMutation,
+    createStorageModeOrMultirespondentFormMutation,
   }
 }
 

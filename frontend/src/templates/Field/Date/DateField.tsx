@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
 import { DATE_DISPLAY_FORMAT, DATE_PARSE_FORMAT } from '~shared/constants/dates'
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme, FormResponseMode } from '~shared/types'
 import { DateSelectedValidation } from '~shared/types/field'
 import { isDateAnInvalidDay } from '~shared/utils/date-validation'
 
@@ -20,6 +20,7 @@ import { DateFieldSchema, SingleAnswerFieldInput } from '../types'
 
 export interface DateFieldProps extends BaseFieldProps {
   schema: DateFieldSchema
+  responseMode: FormResponseMode
 }
 
 /**
@@ -27,12 +28,13 @@ export interface DateFieldProps extends BaseFieldProps {
  */
 export const DateField = ({
   schema,
+  responseMode,
   colorTheme = FormColorTheme.Blue,
   ...fieldContainerProps
 }: DateFieldProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createDateValidationRules(schema),
-    [schema],
+    () => createDateValidationRules(schema, responseMode),
+    [schema, responseMode],
   )
 
   const isDateUnavailable = useCallback(

@@ -28,6 +28,7 @@ import { DATE_DISPLAY_FORMAT } from '~shared/constants/dates'
 import { MYINFO_ATTRIBUTE_MAP } from '~shared/constants/field/myinfo'
 import {
   FormColorTheme,
+  FormResponseMode,
   MyInfoAttribute,
   MyInfoChildAttributes,
   MyInfoChildData,
@@ -51,6 +52,7 @@ import {
 
 export interface ChildrenCompoundFieldProps extends BaseFieldProps {
   schema: ChildrenCompoundFieldSchema
+  responseMode: FormResponseMode
   myInfoChildrenBirthRecords?: MyInfoChildData
 }
 
@@ -64,6 +66,7 @@ export interface ChildrenCompoundFieldProps extends BaseFieldProps {
  */
 export const ChildrenCompoundField = ({
   schema,
+  responseMode,
   colorTheme = FormColorTheme.Blue,
   myInfoChildrenBirthRecords,
   ...fieldContainerProps
@@ -140,6 +143,7 @@ export const ChildrenCompoundField = ({
                 {...{
                   currChildBodyIdx,
                   schema,
+                  responseMode,
                   fields,
                   field,
                   colorTheme,
@@ -181,6 +185,7 @@ export const ChildrenCompoundField = ({
 interface ChildrenBodyProps {
   currChildBodyIdx: number
   schema: ChildrenCompoundFieldSchema
+  responseMode: FormResponseMode
   fields: FieldArrayWithId<
     ChildrenCompoundFieldInputs,
     `${string}.child`,
@@ -200,6 +205,7 @@ interface ChildrenBodyProps {
 const ChildrenBody = ({
   currChildBodyIdx,
   schema,
+  responseMode,
   fields,
   field,
   colorTheme,
@@ -217,8 +223,8 @@ const ChildrenBody = ({
   )
 
   const validationRules = useMemo(
-    () => createChildrenValidationRules(schema),
-    [schema],
+    () => createChildrenValidationRules(schema, responseMode),
+    [schema, responseMode],
   )
 
   const {

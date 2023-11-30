@@ -5,6 +5,8 @@ import {
   useFormContext,
 } from 'react-hook-form'
 
+import { FormResponseMode } from '~shared/types'
+
 import { createEmailValidationRules } from '~utils/fieldValidation'
 import Input, { InputProps } from '~components/Input'
 
@@ -12,6 +14,7 @@ import { EmailFieldSchema, VerifiableFieldInput } from '../types'
 
 export interface EmailFieldInputProps {
   schema: EmailFieldSchema
+  responseMode: FormResponseMode
   /**
    * If available, will wrap controller's onChange with this function.
    */
@@ -24,12 +27,13 @@ export interface EmailFieldInputProps {
 
 export const EmailFieldInput = ({
   schema,
+  responseMode,
   handleInputChange,
   inputProps = {},
 }: EmailFieldInputProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createEmailValidationRules(schema),
-    [schema],
+    () => createEmailValidationRules(schema, responseMode),
+    [schema, responseMode],
   )
 
   const { control } = useFormContext<VerifiableFieldInput>()

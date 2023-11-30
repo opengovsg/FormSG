@@ -68,6 +68,7 @@ import {
 import {
   addPaymentDataStream,
   checkFormIsEncryptMode,
+  checkFormIsEncryptModeOrMultirespondent,
   getAllEncryptedSubmissionData,
   getEncryptedSubmissionData,
   getQuarantinePresignedPostData,
@@ -729,7 +730,7 @@ export const streamEncryptedResponses: ControllerHandler<
       }),
     )
     // Step 3: Check whether form is encrypt mode.
-    .andThen(checkFormIsEncryptMode)
+    .andThen(checkFormIsEncryptModeOrMultirespondent)
     // Step 4: Retrieve submissions cursor.
     .andThen(() =>
       getSubmissionCursor(formId, {
@@ -868,7 +869,7 @@ export const handleGetEncryptedResponse: ControllerHandler<
         }),
       )
       // Step 3: Check whether form is encrypt mode.
-      .andThen(checkFormIsEncryptMode)
+      .andThen(checkFormIsEncryptModeOrMultirespondent)
       // Step 4: Is encrypt mode form, retrieve submission data.
       .andThen(() => getEncryptedSubmissionData(formId, submissionId))
       // Step 5: If there is an associated payment, get the payment details.
@@ -1041,7 +1042,7 @@ export const getMetadata: ControllerHandler<
         }),
       )
       // Step 3: Check whether form is encrypt mode.
-      .andThen(checkFormIsEncryptMode)
+      .andThen(checkFormIsEncryptModeOrMultirespondent)
       // Step 4: Retrieve submission metadata.
       .andThen(() => {
         // Step 4a: Retrieve specific submission id.

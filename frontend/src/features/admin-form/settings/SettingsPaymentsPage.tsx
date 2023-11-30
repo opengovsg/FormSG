@@ -10,7 +10,7 @@ export const SettingsPaymentsPage = (): JSX.Element => {
 
   // Payments are unsupported in email mode; show message.
   if (!isLoading && settings?.responseMode !== FormResponseMode.Encrypt) {
-    return <PaymentsUnsupportedMsg />
+    return <PaymentsUnsupportedMsg responseMode={settings?.responseMode} />
   }
 
   return (

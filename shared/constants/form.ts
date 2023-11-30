@@ -20,6 +20,10 @@ export const STORAGE_PUBLIC_FORM_FIELDS = <const>[
   'payments_field',
   'publicKey',
 ]
+export const MULTIRESPONDENT_PUBLIC_FORM_FIELDS = <const>[
+  ...PUBLIC_FORM_FIELDS,
+  'publicKey',
+]
 
 const FORM_SETTINGS_FIELDS = <const>[
   'responseMode',
@@ -44,6 +48,11 @@ export const STORAGE_FORM_SETTINGS_FIELDS = <const>[
   'payments_field',
   'publicKey',
   'business',
+]
+
+export const MULTIRESPONDENT_FORM_SETTINGS_FIELDS = <const>[
+  ...FORM_SETTINGS_FIELDS,
+  'publicKey',
 ]
 
 export const WEBHOOK_SETTINGS_FIELDS = <const>['responseMode', 'webhook']

@@ -7,10 +7,10 @@ import {
 import { hasProp } from '../../../../../shared/utils/has-prop'
 import { IPopulatedEncryptedForm } from '../../../../types'
 import {
+  EncryptFormLoadedDto,
   EncryptSubmissionDto,
   FormCompleteDto,
   FormFilteredResponseDto,
-  FormLoadedDto,
   ParsedStorageModeSubmissionBody,
 } from '../../../../types/api'
 import { ControllerHandler } from '../../core/core.types'
@@ -37,7 +37,7 @@ export type CreateFormsgAndRetrieveFormMiddlewareHandlerType =
 
 export type CreateFormsgAndRetrieveFormMiddlewareHandlerRequest =
   Parameters<CreateFormsgAndRetrieveFormMiddlewareHandlerType>[0] & {
-    formsg?: FormLoadedDto
+    formsg?: EncryptFormLoadedDto
   }
 
 export type StorageSubmissionMiddlewareHandlerType = ControllerHandler<

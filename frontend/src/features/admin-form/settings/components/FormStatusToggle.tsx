@@ -21,8 +21,8 @@ export const FormStatusToggle = (): JSX.Element => {
 
   const { status, responseMode, authType, esrvcId } = formSettings ?? {}
 
-  const storageModalProps = useDisclosure()
-  const { onOpen: onOpenActivationModal } = storageModalProps
+  const secretKeyActivationModalProps = useDisclosure()
+  const { onOpen: onOpenActivationModal } = secretKeyActivationModalProps
 
   const isFormPublic = useMemo(() => status === FormStatus.Public, [status])
   const isPreventActivation = useMemo(
@@ -49,7 +49,7 @@ export const FormStatusToggle = (): JSX.Element => {
 
     if (
       nextStatus === FormStatus.Public &&
-      responseMode === FormResponseMode.Encrypt
+      responseMode !== FormResponseMode.Email
     ) {
       return onOpenActivationModal()
     }
@@ -66,9 +66,10 @@ export const FormStatusToggle = (): JSX.Element => {
   return (
     <Skeleton isLoaded={!isLoadingSettings && !!status}>
       <Stack>
-        {formSettings?.responseMode === FormResponseMode.Encrypt && (
+        {(formSettings?.responseMode === FormResponseMode.Encrypt ||
+          formSettings?.responseMode === FormResponseMode.Multirespondent) && (
           <SecretKeyActivationModal
-            {...storageModalProps}
+            {...secretKeyActivationModalProps}
             publicKey={formSettings.publicKey}
           />
         )}

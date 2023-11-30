@@ -64,7 +64,7 @@ export class SendEmailConfirmationError extends ApplicationError {
  */
 export class ResponseModeError extends ApplicationError {
   constructor(
-    formResponseMode: FormResponseMode,
+    formResponseMode: FormResponseMode | FormResponseMode[],
     attemptedResponseMode: FormResponseMode,
   ) {
     super(

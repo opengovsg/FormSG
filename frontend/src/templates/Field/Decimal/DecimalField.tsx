@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
+import { FormResponseMode } from '~shared/types'
+
 import { createDecimalValidationRules } from '~utils/fieldValidation'
 import NumberInput from '~components/NumberInput'
 
@@ -9,15 +11,19 @@ import { DecimalFieldSchema, SingleAnswerFieldInput } from '../types'
 
 export interface DecimalFieldProps extends BaseFieldProps {
   schema: DecimalFieldSchema
+  responseMode: FormResponseMode
 }
 
 /**
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-export const DecimalField = ({ schema }: DecimalFieldProps): JSX.Element => {
+export const DecimalField = ({
+  schema,
+  responseMode,
+}: DecimalFieldProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createDecimalValidationRules(schema),
-    [schema],
+    () => createDecimalValidationRules(schema, responseMode),
+    [schema, responseMode],
   )
 
   const { control } = useFormContext<SingleAnswerFieldInput>()

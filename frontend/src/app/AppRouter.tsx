@@ -11,6 +11,7 @@ import {
   ADMINFORM_USETEMPLATE_ROUTE,
   BILLING_ROUTE,
   DASHBOARD_ROUTE,
+  EDIT_SUBMISSION_PAGE_SUBROUTE,
   LANDING_PAYMENTS_ROUTE,
   LANDING_ROUTE,
   LOGIN_CALLBACK_ROUTE,
@@ -142,6 +143,14 @@ export const AppRouter = (): JSX.Element => {
             element={
               <ParamIdValidator
                 element={<PublicElement element={<FormPaymentPage />} />}
+              />
+            }
+          />
+          <Route
+            path={EDIT_SUBMISSION_PAGE_SUBROUTE}
+            element={
+              <ParamIdValidator
+                element={<PublicElement element={<PublicFormPage />} />}
               />
             }
           />

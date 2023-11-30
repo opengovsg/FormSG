@@ -4,6 +4,8 @@
 import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
+import { FormResponseMode } from '~shared/types'
+
 import { createTextValidationRules } from '~utils/fieldValidation'
 import Textarea from '~components/Textarea'
 
@@ -12,12 +14,16 @@ import { LongTextFieldSchema, SingleAnswerFieldInput } from '../types'
 
 export interface LongTextFieldProps extends BaseFieldProps {
   schema: LongTextFieldSchema
+  responseMode: FormResponseMode
 }
 
-export const LongTextField = ({ schema }: LongTextFieldProps): JSX.Element => {
+export const LongTextField = ({
+  schema,
+  responseMode,
+}: LongTextFieldProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createTextValidationRules(schema),
-    [schema],
+    () => createTextValidationRules(schema, responseMode),
+    [schema, responseMode],
   )
 
   const { register } = useFormContext<SingleAnswerFieldInput>()

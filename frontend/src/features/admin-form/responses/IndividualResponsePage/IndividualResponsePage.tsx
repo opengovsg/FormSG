@@ -11,9 +11,12 @@ import {
 } from '@chakra-ui/react'
 import simplur from 'simplur'
 
+import { FormResponseMode } from '~shared/types'
+
 import Button from '~components/Button'
 import Spinner from '~components/Spinner'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
 import { FormActivationSvg } from '~features/admin-form/settings/components/FormActivationSvg'
 
 import { SecretKeyVerification } from '../components/SecretKeyVerification'
@@ -51,6 +54,7 @@ export const IndividualResponsePage = (): JSX.Element => {
   if (!submissionId) throw new Error('Missing submissionId')
   if (!formId) throw new Error('Missing formId')
 
+  const { data: form } = useAdminForm()
   const { secretKey } = useStorageResponsesContext()
   const { data, isLoading, isError } = useIndividualSubmission()
 
@@ -147,6 +151,19 @@ export const IndividualResponsePage = (): JSX.Element => {
                 >
                   {simplur`Download ${attachmentDownloadUrls.size} attachment[|s] as .zip`}
                 </Button>
+              </Skeleton>
+            </Stack>
+          )}
+          {form?.responseMode === FormResponseMode.Multirespondent && (
+            <Stack
+              spacing={{ base: '0', md: '0.5rem' }}
+              direction={{ base: 'column', md: 'row' }}
+            >
+              <Text as="span" textStyle="subhead-1">
+                Response link:
+              </Text>
+              <Skeleton isLoaded={!isLoading && !isError}>
+                {`${window.location.protocol}//${window.location.host}/${formId}/edit/${submissionId}`}
               </Skeleton>
             </Stack>
           )}

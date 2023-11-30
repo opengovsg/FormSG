@@ -7,7 +7,7 @@ import {
 import { datadogLogs } from '@datadog/browser-logs'
 
 import { MB } from '~shared/constants/file'
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme, FormResponseMode } from '~shared/types'
 import { VALID_EXTENSIONS } from '~shared/utils/file-validation'
 
 import { createAttachmentValidationRules } from '~utils/fieldValidation'
@@ -19,6 +19,7 @@ import { AttachmentFieldInput, AttachmentFieldSchema } from '../types'
 
 export interface AttachmentFieldProps extends BaseFieldProps {
   schema: AttachmentFieldSchema
+  responseMode: FormResponseMode
 }
 
 /**
@@ -26,12 +27,13 @@ export interface AttachmentFieldProps extends BaseFieldProps {
  */
 export const AttachmentField = ({
   schema,
+  responseMode,
   colorTheme = FormColorTheme.Blue,
 }: AttachmentFieldProps): JSX.Element => {
   const fieldName = schema._id
   const validationRules = useMemo(
-    () => createAttachmentValidationRules(schema),
-    [schema],
+    () => createAttachmentValidationRules(schema, responseMode),
+    [schema, responseMode],
   )
 
   const { clearErrors, setError, control } =

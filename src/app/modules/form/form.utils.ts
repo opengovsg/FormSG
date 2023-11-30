@@ -7,6 +7,7 @@ import {
   IForm,
   IFormDocument,
   IFormSchema,
+  IMultirespondentFormSchema,
   IOnboardedForm,
   IPopulatedEmailForm,
   IPopulatedForm,
@@ -47,6 +48,31 @@ export const isFormEncryptMode = (
   form: IFormSchema | IPopulatedForm,
 ): form is IEncryptedFormSchema => {
   return form.responseMode === FormResponseMode.Encrypt
+}
+
+/**
+ * Typeguard to check if given form is a multirespondentform.
+ * @param form the form to check
+ * @returns true if form is multirespondent form, false otherwise.
+ */
+export const isFormMultirespondent = (
+  form: IFormSchema | IPopulatedForm,
+): form is IMultirespondentFormSchema => {
+  return form.responseMode === FormResponseMode.Multirespondent
+}
+
+/**
+ * Typeguard to check if given form is a multirespondentform.
+ * @param form the form to check
+ * @returns true if form is multirespondent form, false otherwise.
+ */
+export const isFormEncryptModeOrMultirespondent = (
+  form: IFormSchema | IPopulatedForm,
+): form is IEncryptedFormSchema | IMultirespondentFormSchema => {
+  return (
+    form.responseMode === FormResponseMode.Encrypt ||
+    form.responseMode === FormResponseMode.Multirespondent
+  )
 }
 
 /**

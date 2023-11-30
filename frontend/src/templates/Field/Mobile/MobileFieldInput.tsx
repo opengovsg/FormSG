@@ -5,6 +5,8 @@ import {
   useFormContext,
 } from 'react-hook-form'
 
+import { FormResponseMode } from '~shared/types'
+
 import { createMobileValidationRules } from '~utils/fieldValidation'
 import PhoneNumberInput, {
   PhoneNumberInputProps,
@@ -14,6 +16,7 @@ import { MobileFieldSchema, VerifiableFieldInput } from '../types'
 
 export interface MobileFieldInputProps {
   schema: MobileFieldSchema
+  responseMode: FormResponseMode
   /**
    * If available, will wrap controller's onChange with this function.
    */
@@ -26,12 +29,13 @@ export interface MobileFieldInputProps {
 
 export const MobileFieldInput = ({
   schema,
+  responseMode,
   handleInputChange,
   phoneNumberInputProps = {},
 }: MobileFieldInputProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createMobileValidationRules(schema),
-    [schema],
+    () => createMobileValidationRules(schema, responseMode),
+    [schema, responseMode],
   )
 
   const { control } = useFormContext<VerifiableFieldInput>()

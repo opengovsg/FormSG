@@ -61,15 +61,21 @@ import {
 } from '~features/verifiable-fields'
 
 import { FormNotFound } from './components/FormNotFound'
-import { usePublicAuthMutations, usePublicFormMutations } from './mutations'
+import { useEncryptedSubmission } from './PublicFormEditPage/queries'
+import {
+  useEditSubmissionMutations,
+  usePublicAuthMutations,
+  usePublicFormMutations,
+} from './mutations'
 import { PublicFormContext, SubmissionData } from './PublicFormContext'
 import { usePublicFormView } from './queries'
 import { axiosDebugFlow } from './utils'
 
 interface PublicFormProviderProps {
   formId: string
-  children: React.ReactNode
+  submissionId?: string
   startTime: number
+  children: React.ReactNode
 }
 
 export function useCommonFormProvider(formId: string) {
@@ -118,6 +124,7 @@ export function useCommonFormProvider(formId: string) {
 
 export const PublicFormProvider = ({
   formId,
+  submissionId,
   children,
   startTime,
 }: PublicFormProviderProps): JSX.Element => {
@@ -125,11 +132,19 @@ export const PublicFormProvider = ({
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
   const [numVisibleFields, setNumVisibleFields] = useState(0)
 
-  const { data, isLoading, error, ...rest } = usePublicFormView(
+  const {
+    data,
+    isLoading,
+    error: publicFormError,
+    ...rest
+  } = usePublicFormView(
     formId,
     // Stop querying once submissionData is present.
     /* enabled= */ !submissionData,
   )
+  const { error: encryptedSubmissionError } = useEncryptedSubmission()
+
+  const error = publicFormError || encryptedSubmissionError
 
   const growthbook = useGrowthBook()
 
@@ -234,9 +249,13 @@ export const PublicFormProvider = ({
 
   const isFormNotFound = useMemo(() => {
     return (
-      error instanceof HttpError && (error.code === 404 || error.code === 410)
+      (error instanceof HttpError &&
+        (error.code === 404 || error.code === 410)) ||
+      (!!submissionId &&
+        !!data &&
+        data.form.responseMode !== FormResponseMode.Multirespondent)
     )
-  }, [error])
+  }, [data, error, submissionId])
 
   const generateVfnExpiryToast = useCallback(() => {
     if (vfnToastIdRef.current) {
@@ -270,7 +289,11 @@ export const PublicFormProvider = ({
     submitStorageModeClearFormMutation,
     submitStorageModeClearFormFetchMutation,
     submitStorageModeClearFormWithVirusScanningMutation,
+    submitMultirespondentFormMutation,
   } = usePublicFormMutations(formId, submissionData?.id ?? '')
+
+  const { updateMultirespondentSubmissionMutation } =
+    useEditSubmissionMutations(formId, submissionId)
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
@@ -644,6 +667,21 @@ export const PublicFormProvider = ({
               })
           )
         }
+        case FormResponseMode.Multirespondent:
+          return (
+            submissionId
+              ? updateMultirespondentSubmissionMutation
+              : submitMultirespondentFormMutation
+          ).mutateAsync(formData, {
+            onSuccess: ({ submissionId, timestamp }) => {
+              trackSubmitForm(form)
+
+              setSubmissionData({
+                id: submissionId,
+                timestamp,
+              })
+            },
+          })
       }
     },
     [
@@ -657,6 +695,9 @@ export const PublicFormProvider = ({
       getTurnstileResponse,
       showErrorToast,
       getCaptchaResponse,
+      submissionId,
+      submitMultirespondentFormMutation,
+      updateMultirespondentSubmissionMutation,
       submitEmailModeFormFetchMutation,
       submitEmailModeFormMutation,
       enableVirusScanner,
@@ -694,6 +735,7 @@ export const PublicFormProvider = ({
         handleSubmitForm,
         handleLogout,
         formId,
+        submissionId,
         error,
         submissionData,
         isAuthRequired,

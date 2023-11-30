@@ -18,7 +18,7 @@ import {
 import {
   EncryptAttachmentResponse,
   EncryptFormFieldResponse,
-  FormLoadedDto,
+  EncryptFormLoadedDto,
   ParsedClearAttachmentResponse,
   ParsedClearFormFieldResponse,
 } from '../../../../types/api'
@@ -685,7 +685,7 @@ export const createFormsgAndRetrieveForm = async (
 
   // Step 1: Create formsg namespace in req.body
   if (req.formsg) return res.send(new FormsgReqBodyExistsError())
-  const formsg = {} as FormLoadedDto
+  const formsg = {} as EncryptFormLoadedDto
 
   // Step 2: Retrieve feature flags
   const featureFlagsListResult = await FeatureFlagService.getEnabledFlags()

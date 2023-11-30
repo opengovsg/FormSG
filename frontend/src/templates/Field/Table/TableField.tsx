@@ -15,7 +15,7 @@ import {
 import { get, head, uniq } from 'lodash'
 import simplur from 'simplur'
 
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme, FormResponseMode } from '~shared/types'
 
 import { useHasChanged } from '~hooks/useHasChanged'
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -33,6 +33,7 @@ import { TableFieldContainer } from './TableFieldContainer'
 
 export interface TableFieldProps extends BaseFieldProps {
   schema: TableFieldSchema
+  responseMode: FormResponseMode
 }
 
 /**
@@ -42,6 +43,7 @@ export interface TableFieldProps extends BaseFieldProps {
  */
 export const TableField = ({
   schema,
+  responseMode,
   colorTheme = FormColorTheme.Blue,
 }: TableFieldProps): JSX.Element => {
   const hasMinRowsChanged = useHasChanged(schema.minimumRows)
@@ -210,6 +212,7 @@ export const TableField = ({
                     >
                       {cell.render('Cell', {
                         schemaId: schema._id,
+                        responseMode,
                         columnSchema: schema.columns[j],
                         colorTheme,
                       })}

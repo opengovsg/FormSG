@@ -329,6 +329,86 @@ export const submitEmailModeFormWithFetch = async ({
   return processFetchResponse(response)
 }
 
+// Submit storage mode form with virus scanning (storage v2.1+)
+export const submitMultirespondentForm = async ({
+  formFields,
+  formLogics,
+  formInputs,
+  formId,
+  captchaResponse = null,
+  captchaType = '',
+  responseMetadata,
+  fieldIdToQuarantineKeyMap,
+}: SubmitStorageFormWithVirusScanningArgs) => {
+  const filteredInputs = filterHiddenInputs({
+    formFields,
+    formInputs,
+    formLogics,
+  })
+
+  const formData = createClearSubmissionWithVirusScanningFormData(
+    {
+      formFields,
+      formInputs: filteredInputs,
+      responseMetadata,
+      version: VIRUS_SCANNER_SUBMISSION_VERSION,
+    },
+    fieldIdToQuarantineKeyMap,
+  )
+
+  return ApiService.post<SubmissionResponseDto>(
+    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/multirespondent`,
+    formData,
+    {
+      params: {
+        captchaResponse: String(captchaResponse),
+        captchaType: captchaType,
+      },
+    },
+  ).then(({ data }) => data)
+}
+
+export const updateMultirespondentSubmission = async ({
+  formFields,
+  formLogics,
+  formInputs,
+  formId,
+  submissionId,
+  captchaResponse = null,
+  captchaType = '',
+  paymentReceiptEmail,
+  responseMetadata,
+  paymentProducts,
+  payments,
+}: SubmitStorageFormClearArgs & { submissionId?: string }) => {
+  const filteredInputs = filterHiddenInputs({
+    formFields,
+    formInputs,
+    formLogics,
+  })
+
+  const formData = createClearSubmissionFormData({
+    formFields,
+    formInputs: filteredInputs,
+    responseMetadata,
+    paymentReceiptEmail,
+    paymentProducts,
+    payments,
+    version: ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION,
+  })
+
+  return ApiService.put<SubmissionResponseDto>(
+    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/${submissionId}`,
+    formData,
+    {
+      params: {
+        captchaResponse: String(captchaResponse),
+        captchaType: captchaType,
+      },
+    },
+  ).then(({ data }) => data)
+}
+
 /**
  * Post feedback for a given form.
  * @param formId the id of the form to post feedback for

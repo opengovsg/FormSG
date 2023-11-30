@@ -4,6 +4,8 @@
 import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
+import { FormResponseMode } from '~shared/types'
+
 import { createNricValidationRules } from '~utils/fieldValidation'
 import Input from '~components/Input'
 
@@ -12,12 +14,16 @@ import { NricFieldSchema, SingleAnswerFieldInput } from '../types'
 
 export interface NricFieldProps extends BaseFieldProps {
   schema: NricFieldSchema
+  responseMode: FormResponseMode
 }
 
-export const NricField = ({ schema }: NricFieldProps): JSX.Element => {
+export const NricField = ({
+  schema,
+  responseMode,
+}: NricFieldProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createNricValidationRules(schema),
-    [schema],
+    () => createNricValidationRules(schema, responseMode),
+    [schema, responseMode],
   )
 
   const { register, setValue } = useFormContext<SingleAnswerFieldInput>()

@@ -39,13 +39,13 @@ export type ParsedStorageModeSubmissionBody = ParsedEmailModeSubmissionBody & {
   version: number
 }
 
-export type FormLoadedDto = {
+export type EncryptFormLoadedDto = {
   featureFlags: string[]
   formDef: IPopulatedForm
   encryptedFormDef: IPopulatedEncryptedForm
 }
 
-export type FormFilteredResponseDto = FormLoadedDto & {
+export type FormFilteredResponseDto = EncryptFormLoadedDto & {
   filteredResponses: ParsedClearFormFieldResponse[]
 }
 

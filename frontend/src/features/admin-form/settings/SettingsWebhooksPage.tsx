@@ -10,7 +10,7 @@ export const SettingsWebhooksPage = (): JSX.Element => {
 
   // Webhooks are unsupported in email mode; show message.
   if (!isLoading && settings?.responseMode !== FormResponseMode.Encrypt) {
-    return <WebhooksUnsupportedMsg />
+    return <WebhooksUnsupportedMsg responseMode={settings?.responseMode} />
   }
 
   return (

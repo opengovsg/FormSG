@@ -1,4 +1,4 @@
-import { BiLockAlt, BiMailSend } from 'react-icons/bi'
+import { BiGroup, BiLockAlt, BiMailSend } from 'react-icons/bi'
 import { forwardRef, Stack, UnorderedList } from '@chakra-ui/react'
 
 import { FormResponseMode } from '~shared/types/form/form'
@@ -34,13 +34,13 @@ export const FormResponseOptions = forwardRef<
       <Tile
         variant="complex"
         icon={BiLockAlt}
-        badge={<Badge colorScheme="success">Recommended</Badge>}
+        badge={<Badge colorScheme="neutral">Recommended</Badge>}
         isActive={value === FormResponseMode.Encrypt}
         onClick={() => onChange(FormResponseMode.Encrypt)}
         isFullWidth
         flex={1}
       >
-        <Tile.Title>Storage Mode</Tile.Title>
+        <Tile.Title>Storage Mode Form</Tile.Title>
         <Tile.Subtitle>View or download responses in FormSG</Tile.Subtitle>
         <OptionDescription
           listItems={[
@@ -60,12 +60,30 @@ export const FormResponseOptions = forwardRef<
         isFullWidth
         flex={1}
       >
-        <Tile.Title>Email Mode</Tile.Title>
+        <Tile.Title>Email Mode Form</Tile.Title>
         <Tile.Subtitle>Receive responses in your inbox</Tile.Subtitle>
         <OptionDescription
           listItems={[
             'Attachments: up to 7MB per form',
             'Up to Restricted and Sensitive (High) data',
+          ]}
+        />
+      </Tile>
+      <Tile
+        ref={ref}
+        variant="complex"
+        icon={BiGroup}
+        badge={<Badge colorScheme="success">New</Badge>}
+        isActive={value === FormResponseMode.Multirespondent}
+        onClick={() => onChange(FormResponseMode.Multirespondent)}
+        isFullWidth
+        flex={1}
+      >
+        <Tile.Title>Multi-party Form </Tile.Title>
+        <Tile.Subtitle>Multiple respondents to one response</Tile.Subtitle>
+        <OptionDescription
+          listItems={[
+            'Each response has a unique link that you can pass to multiple respondents',
           ]}
         />
       </Tile>
