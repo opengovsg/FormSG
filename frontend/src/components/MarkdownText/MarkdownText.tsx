@@ -42,8 +42,8 @@ export const MarkdownText = ({
          *   \n: new line character
          */
         children
-          .replace(/\n/gi, '&nbsp; \n')
-          .replace(/(\n(-|\d+\.|\*)\s.*\n)(&nbsp; \n)/gi, '$1 \n')
+          .replace(/\n/g, '&nbsp; \n')
+          .replace(/(\n(-|\d+\.|\*)\s.*\n)(&nbsp; \n)/g, '$1 \n')
       )
     }
     return children
