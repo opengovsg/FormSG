@@ -135,7 +135,7 @@ export const WorkspaceSearchbar = forwardRef<WorkspaceSearchbarProps, 'input'>(
           onChange={(e) => setInternalValue(e.target.value)}
           pr={filterElemWidth}
         />
-        <InputRightElement width="auto" ref={filterRef}>
+        <InputRightElement width="auto" ref={filterRef} zIndex={0}>
           <Divider height="calc(100% - 1.5rem)" orientation="vertical" />
           <Menu placement="bottom-end">
             <MenuButton

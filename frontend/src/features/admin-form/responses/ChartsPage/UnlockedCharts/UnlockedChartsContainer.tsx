@@ -157,11 +157,6 @@ export const UnlockedChartsContainer = () => {
             </Text>
             {prettifiedResponsesCount}
           </Text>
-          <Text textStyle="body-2" color="secondary.400">
-            {filteredDecryptedData.length > 1000
-              ? 'Charts are generated based on the latest 1,000 responses.'
-              : null}
-          </Text>
         </Flex>
         <DateRangePicker
           value={dateRangePickerHelper.dateStringToDatePickerValue(dateRange)}
