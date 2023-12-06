@@ -66,7 +66,6 @@ export const FormResponseOptions = forwardRef<
           listItems={[
             'Attachments: up to 7MB per form',
             'Up to Restricted and Sensitive (High) data',
-            'Supports MyInfo fields',
           ]}
         />
       </Tile>
