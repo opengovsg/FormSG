@@ -32,6 +32,7 @@ import * as PaymentService from './payments.service'
 import {
   StripeFetchError,
   StripeMetadataIncorrectEnvError,
+  StripeMetadataInvalidError,
 } from './stripe.errors'
 import * as StripeService from './stripe.service'
 import { mapRouteError } from './stripe.utils'
@@ -314,9 +315,13 @@ export const reconcileAccount: ControllerHandler<
           return okAsync(undefined)
         })
         .orElse((error) => {
-          if (error instanceof StripeMetadataIncorrectEnvError) {
-            // Intercept this as it is not really an error. Ignore it as it was
-            // never meant for this environment anyway.
+          if (
+            error instanceof StripeMetadataIncorrectEnvError ||
+            error instanceof StripeMetadataInvalidError
+          ) {
+            // Intercept this as it is not really an error.
+            // StripeMetadataIncorrectEnvError: the request will be processed by another environment server.
+            // StripeMetadataInvalidError: Agencies are using the Stripe account to process payments outside of FormSG.
             return okAsync(undefined)
           }
           logger.error({
