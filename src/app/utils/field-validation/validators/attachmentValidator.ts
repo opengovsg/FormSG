@@ -44,7 +44,7 @@ const makeAttachmentSizeValidator: AttachmentValidatorConstructor =
   (attachmentField) => (response) => {
     const { attachmentSize } = attachmentField
     const byteSizeLimit = parseInt(attachmentSize) * MB
-    return response.content.byteLength < byteSizeLimit
+    return response.content.byteLength > byteSizeLimit
       ? right(response)
       : left(`AttachmentValidator:\t File size more than limit`)
   }
