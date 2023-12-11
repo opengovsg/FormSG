@@ -540,49 +540,55 @@ export const PublicFormProvider = ({
 
           // TODO (FRM-1413): Move to main return statement once virus scanner has been fully rolled out
           if (enableVirusScanner) {
-            return submitStorageModeClearFormWithVirusScanningMutation.mutateAsync(
-              {
-                ...formData,
-                ...formPaymentData,
-              },
-              {
-                onSuccess: ({
-                  submissionId,
-                  timestamp,
-                  // payment forms will have non-empty paymentData field
-                  paymentData,
-                }) => {
-                  trackSubmitForm(form)
-
-                  if (paymentData) {
-                    navigate(getPaymentPageUrl(formId, paymentData.paymentId))
-                    storePaymentMemory(paymentData.paymentId)
-                    return
-                  }
-                  setSubmissionData({
-                    id: submissionId,
-                    timestamp,
-                  })
+            return submitStorageModeClearFormWithVirusScanningMutation
+              .mutateAsync(
+                {
+                  ...formData,
+                  ...formPaymentData,
                 },
-                onError: (error) => {
-                  // TODO(#5826): Remove when we have resolved the Network Error
-                  datadogLogs.logger.warn(
-                    `handleSubmitForm: submit with virus scan`,
-                    {
-                      meta: {
-                        ...logMeta,
-                        responseMode: 'storage',
-                        method: 'axios',
-                        error,
-                      },
-                    },
-                  )
+                {
+                  onSuccess: ({
+                    submissionId,
+                    timestamp,
+                    // payment forms will have non-empty paymentData field
+                    paymentData,
+                  }) => {
+                    trackSubmitForm(form)
 
+                    if (paymentData) {
+                      navigate(getPaymentPageUrl(formId, paymentData.paymentId))
+                      storePaymentMemory(paymentData.paymentId)
+                      return
+                    }
+                    setSubmissionData({
+                      id: submissionId,
+                      timestamp,
+                    })
+                  },
+                },
+              )
+              .catch(async (error) => {
+                // TODO(#5826): Remove when we have resolved the Network Error
+                datadogLogs.logger.warn(
+                  `handleSubmitForm: submit with virus scan`,
+                  {
+                    meta: {
+                      ...logMeta,
+                      responseMode: 'storage',
+                      method: 'axios',
+                      error,
+                    },
+                  },
+                )
+
+                if (/Network Error/i.test(error.message)) {
+                  axiosDebugFlow()
                   // defaults to the safest option of storage submission without virus scanning
                   return submitStorageFormWithFetch()
-                },
-              },
-            )
+                } else {
+                  showErrorToast(error, form)
+                }
+              })
           }
 
           return (
@@ -627,9 +633,14 @@ export const PublicFormProvider = ({
                     },
                   },
                 })
-
                 axiosDebugFlow()
-                return submitStorageFormWithFetch()
+                if (/Network Error/i.test(error.message)) {
+                  axiosDebugFlow()
+                  // defaults to the safest option of storage submission without virus scanning
+                  return submitStorageFormWithFetch()
+                } else {
+                  showErrorToast(error, form)
+                }
               })
           )
         }
