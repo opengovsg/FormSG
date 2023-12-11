@@ -93,7 +93,8 @@ export const UnlockedChartsContainer = () => {
   }, [decryptedContent])
 
   const prettifiedResponsesCount = useMemo(
-    () => simplur` ${[filteredDecryptedData.length ?? 0]}result[|s] retrieved`,
+    () =>
+      simplur` ${[filteredDecryptedData.length ?? 0]}response[|s] retrieved`,
     [filteredDecryptedData],
   )
 
