@@ -4,8 +4,8 @@ import userEvent from '@testing-library/user-event'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 
-import { CHECKBOX_OTHERS_INPUT_KEY } from './CheckboxField'
 import * as stories from './CheckboxField.stories'
+import { CHECKBOX_OTHERS_INPUT_KEY } from './constants'
 
 const { ValidationOptional, ValidationRequired, WithoutOthersOption } =
   composeStories(stories)
