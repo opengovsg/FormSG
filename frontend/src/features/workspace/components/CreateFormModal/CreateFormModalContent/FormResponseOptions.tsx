@@ -40,7 +40,7 @@ export const FormResponseOptions = forwardRef<
         isFullWidth
         flex={1}
       >
-        <Tile.Title>Storage Mode Form</Tile.Title>
+        <Tile.Title>Storage mode form</Tile.Title>
         <Tile.Subtitle>View or download responses in FormSG</Tile.Subtitle>
         <OptionDescription
           listItems={[
@@ -60,7 +60,7 @@ export const FormResponseOptions = forwardRef<
         isFullWidth
         flex={1}
       >
-        <Tile.Title>Email Mode Form</Tile.Title>
+        <Tile.Title>Email mode form</Tile.Title>
         <Tile.Subtitle>Receive responses in your inbox</Tile.Subtitle>
         <OptionDescription
           listItems={[
@@ -79,7 +79,7 @@ export const FormResponseOptions = forwardRef<
         isFullWidth
         flex={1}
       >
-        <Tile.Title>Multi-party Form </Tile.Title>
+        <Tile.Title>Multi-party form</Tile.Title>
         <Tile.Subtitle>Multiple respondents to one response</Tile.Subtitle>
         <OptionDescription
           listItems={[
