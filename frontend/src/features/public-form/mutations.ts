@@ -71,10 +71,9 @@ export const usePublicAuthMutations = (formId: string) => {
 
 export const usePublicFormMutations = (
   formId: string,
-  submissionId: string,
+  submissionId?: string,
 ) => {
-  const toast = useToast({ isClosable: true })
-
+  console.log(submissionId)
   const submitEmailModeFormMutation = useMutation(
     (args: Omit<SubmitEmailFormArgs, 'formId'>) => {
       return submitEmailModeForm({ ...args, formId })
@@ -100,16 +99,6 @@ export const usePublicFormMutations = (
     },
   )
 
-  const submitFormFeedbackMutation = useMutation(
-    (args: SubmitFormFeedbackBodyDto) =>
-      submitFormFeedback(formId, submissionId, args),
-    {
-      onError: (error: Error) => {
-        toast({ status: 'danger', description: error.message })
-      },
-    },
-  )
-
   const useSubmitClearFormWithVirusScanningMutation = (f: any) =>
     useMutation(async (args: Omit<SubmitStorageFormClearArgs, 'formId'>) => {
       const attachmentSizes = await getAttachmentSizes(args)
@@ -119,6 +108,7 @@ export const usePublicFormMutations = (
           ...args,
           fieldIdToQuarantineKeyMap: [],
           formId,
+          submissionId,
         })
       }
       // Step 1: Get presigned post data for all attachment fields
@@ -169,10 +159,11 @@ export const usePublicFormMutations = (
           )
           // Step 3: Submit form with keys to quarantine bucket attachments
           .then((fieldIdToQuarantineKeyMap) => {
-            return submitStorageModeClearFormWithVirusScanning({
+            return f({
               ...args,
               fieldIdToQuarantineKeyMap,
               formId,
+              submissionId,
             })
           })
       )
@@ -186,30 +177,37 @@ export const usePublicFormMutations = (
   const submitMultirespondentFormMutation =
     useSubmitClearFormWithVirusScanningMutation(submitMultirespondentForm)
 
+  const updateMultirespondentSubmissionMutation =
+    useSubmitClearFormWithVirusScanningMutation(updateMultirespondentSubmission)
+
   return {
     submitEmailModeFormMutation,
-    submitFormFeedbackMutation,
     submitEmailModeFormFetchMutation,
     submitStorageModeClearFormMutation,
     submitStorageModeClearFormFetchMutation,
     submitStorageModeClearFormWithVirusScanningMutation,
     submitMultirespondentFormMutation,
+    updateMultirespondentSubmissionMutation,
   }
 }
 
-export const useEditSubmissionMutations = (
+export const useSubmitFormFeedbackMutation = (
   formId: string,
-  submissionId?: string,
+  submissionId: string,
 ) => {
-  const updateMultirespondentSubmissionMutation = useMutation(
-    (args: Omit<SubmitStorageFormClearArgs, 'formId'>) => {
-      return updateMultirespondentSubmission({ ...args, formId, submissionId })
+  const toast = useToast({ isClosable: true })
+
+  const submitFormFeedbackMutation = useMutation(
+    (args: SubmitFormFeedbackBodyDto) =>
+      submitFormFeedback(formId, submissionId, args),
+    {
+      onError: (error: Error) => {
+        toast({ status: 'danger', description: error.message })
+      },
     },
   )
 
-  return {
-    updateMultirespondentSubmissionMutation,
-  }
+  return { submitFormFeedbackMutation }
 }
 
 export const useSubmitFormIssueMutations = (formId: string) => {

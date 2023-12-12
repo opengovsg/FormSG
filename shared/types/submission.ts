@@ -7,13 +7,14 @@ import { FormAuthType } from './form/form'
 import { DateString } from './generic'
 import { EmailResponse, FieldResponse, MobileResponse } from './response'
 import { PaymentStatus } from './payment'
-import { ProductItem } from './form'
+import { LogicDto, ProductItem } from './form'
 export type SubmissionId = Opaque<string, 'SubmissionId'>
 export const SubmissionId = z.string() as unknown as z.Schema<SubmissionId>
 
 export enum SubmissionType {
   Email = 'emailSubmission',
   Encrypt = 'encryptSubmission',
+  Multirespondent = 'multirespondentSubmission',
 }
 
 export const ResponseMetadata = z.object({
@@ -73,6 +74,29 @@ export type StorageModeSubmissionBase = z.infer<
   typeof StorageModeSubmissionBase
 >
 
+/**
+ * Multirespondent submission typings as stored in the database.
+ */
+
+export const MultirespondentSubmissionBase = SubmissionBase.extend({
+  // Store the form fields and logic here, to use as reference for future
+  // submitters. Don't bother to validate since this is injected by the backend.
+  form_fields: z.custom<FormFieldDto[]>(),
+  form_logics: z.custom<LogicDto[]>(),
+
+  submissionType: z.literal(SubmissionType.Multirespondent),
+  submissionPublicKey: z.string(),
+  encryptedSubmissionSecretKey: z.string(),
+  encryptedContent: z.string(),
+  verifiedContent: z.string().optional(),
+  attachmentMetadata: z.map(z.string(), z.string()).optional(),
+  version: z.number(),
+})
+
+export type MultirespondentSubmissionBase = z.infer<
+  typeof MultirespondentSubmissionBase
+>
+
 export type StorageModeChartsDto = StorageModeSubmissionBase & {
   created: DateString
 }
@@ -101,9 +125,14 @@ export const SubmissionPaymentDto = z.object({
 })
 export type SubmissionPaymentDto = z.infer<typeof SubmissionPaymentDto>
 
-export type StorageModeSubmissionDto = {
+export type SubmissionDtoBase = {
+  submissionType: SubmissionType.Encrypt | SubmissionType.Multirespondent
   refNo: SubmissionId
   submissionTime: string
+}
+
+export type StorageModeSubmissionDto = SubmissionDtoBase & {
+  submissionType: SubmissionType.Encrypt
   content: string
   verified?: string
   attachmentMetadata: Record<string, string>
@@ -111,7 +140,25 @@ export type StorageModeSubmissionDto = {
   version: number
 }
 
+export type MultirespondentSubmissionDto = SubmissionDtoBase & {
+  submissionType: SubmissionType.Multirespondent
+  form_fields: FormFieldDto[]
+  form_logics: LogicDto[]
+
+  submissionPublicKey: string
+  encryptedSubmissionSecretKey: string
+  encryptedContent: string
+  //verified?: string
+  //attachmentMetadata: Record<string, string>
+  version: number
+}
+
+export type SubmissionDto =
+  | StorageModeSubmissionDto
+  | MultirespondentSubmissionDto
+
 export const StorageModeSubmissionStreamDto = StorageModeSubmissionBase.pick({
+  submissionType: true,
   encryptedContent: true,
   verifiedContent: true,
   version: true,
@@ -126,6 +173,32 @@ export type StorageModeSubmissionStreamDto = z.infer<
   typeof StorageModeSubmissionStreamDto
 >
 
+export const MultirespondentSubmissionStreamDto =
+  MultirespondentSubmissionBase.pick({
+    submissionType: true,
+    form_fields: true,
+    form_logics: true,
+    encryptedSubmissionSecretKey: true,
+    encryptedContent: true,
+    verifiedContent: true,
+    version: true,
+  }).extend({
+    // attachmentMetadata: z.record(z.string()),
+    _id: SubmissionId,
+    created: DateString,
+  })
+
+export type MultirespondentSubmissionStreamDto = z.infer<
+  typeof MultirespondentSubmissionStreamDto
+>
+
+export const SubmissionStreamDto = z.discriminatedUnion('submissionType', [
+  StorageModeSubmissionStreamDto,
+  MultirespondentSubmissionStreamDto,
+])
+
+export type SubmissionStreamDto = z.infer<typeof SubmissionStreamDto>
+
 export type SubmissionPaymentMetadata = {
   payoutDate: string | null
   paymentAmt: number
@@ -133,7 +206,7 @@ export type SubmissionPaymentMetadata = {
   email: string
 } | null
 
-export type StorageModeSubmissionMetadata = {
+export type SubmissionMetadata = {
   number: number
   refNo: SubmissionId
   /** Not a DateString, format is `Do MMM YYYY, h:mm:ss a` */
@@ -141,8 +214,8 @@ export type StorageModeSubmissionMetadata = {
   payments: SubmissionPaymentMetadata
 }
 
-export type StorageModeSubmissionMetadataList = {
-  metadata: StorageModeSubmissionMetadata[]
+export type SubmissionMetadataList = {
+  metadata: SubmissionMetadata[]
   count: number
 }
 
@@ -180,7 +253,7 @@ export type EmailModeSubmissionContentDto = {
   responses: FieldResponse[]
 }
 
-export type StorageModeAttachment = {
+export type SubmissionAttachment = {
   encryptedFile?: {
     binary: string
     nonce: string
@@ -188,9 +261,9 @@ export type StorageModeAttachment = {
   }
 }
 
-export type StorageModeAttachmentsMap = Record<
+export type SubmissionAttachmentsMap = Record<
   FormFieldDto['_id'],
-  StorageModeAttachment
+  SubmissionAttachment
 >
 
 export type StorageModeSubmissionContentDto = {
@@ -202,7 +275,7 @@ export type StorageModeSubmissionContentDto = {
     'fieldType' | '_id' | 'answer' | 'signature'
   >[]
   encryptedContent: string
-  attachments?: StorageModeAttachmentsMap
+  attachments?: SubmissionAttachmentsMap
   paymentReceiptEmail?: string
   paymentProducts?: Array<ProductItem>
   version: number

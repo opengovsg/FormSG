@@ -5,7 +5,11 @@ import {
   PAYMENT_PRODUCT_FIELD_ID,
   PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID,
 } from '~shared/constants'
-import { ProductItem } from '~shared/types'
+import {
+  ProductItem,
+  SingleAnswerResponse,
+  VerifiableResponseBase,
+} from '~shared/types'
 import {
   AttachmentFieldBase,
   BasicField,
@@ -33,10 +37,6 @@ import {
   YesNoFieldBase,
 } from '~shared/types/field'
 import { ChildrenCompoundFieldBase } from '~shared/types/field/childrenCompoundField'
-import {
-  SingleAnswerResponse,
-  VerifiableResponseBase,
-} from '~shared/types/response'
 
 import { FormFieldWithQuestionNo } from '~features/form/types'
 
@@ -82,6 +82,7 @@ export type FormFieldValue<F extends BasicField = BasicField> = F extends
   | BasicField.Nric
   | BasicField.Uen
   | BasicField.Date
+  | BasicField.CountryRegion
   ? SingleAnswerValue
   : F extends BasicField.YesNo
   ? YesNoFieldValue

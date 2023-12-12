@@ -1,7 +1,9 @@
 import { RateLimitInfo } from 'express-rate-limit'
+import { FormResponseMode } from 'shared/types'
 
 import { SgidUser } from '../../app/modules/auth/auth.types'
-import { EncryptSubmissionDto } from '../api'
+import { EncryptSubmissionDto, MultirespondentSubmissionDto } from '../api'
+import { IPopulatedMultirespondentForm } from '../form'
 import { IPopulatedEncryptedForm, IPopulatedForm, IUserSchema } from '../types'
 
 declare global {
@@ -24,11 +26,20 @@ declare global {
       /**
        * This property is added by storage mode submission middlewares to store context shared between middlewares.
        */
-      formsg?: {
-        formDef?: IPopulatedForm
-        encryptedPayload?: EncryptSubmissionDto
-        encryptedFormDef?: IPopulatedEncryptedForm
-      }
+      formsg?:
+        | {
+            responseMode: FormResponseMode.Encrypt
+            formDef?: IPopulatedForm
+            featureFlags?: string[]
+            encryptedPayload?: EncryptSubmissionDto
+            encryptedFormDef?: IPopulatedEncryptedForm
+          }
+        | {
+            responseMode: FormResponseMode.Multirespondent
+            formDef?: IPopulatedMultirespondentForm
+            featureFlags?: string[]
+            encryptedPayload?: MultirespondentSubmissionDto
+          }
     }
   }
 }

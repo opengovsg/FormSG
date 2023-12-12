@@ -155,17 +155,31 @@ export const IndividualResponsePage = (): JSX.Element => {
             </Stack>
           )}
           {form?.responseMode === FormResponseMode.Multirespondent && (
-            <Stack
-              spacing={{ base: '0', md: '0.5rem' }}
-              direction={{ base: 'column', md: 'row' }}
-            >
-              <Text as="span" textStyle="subhead-1">
-                Response link:
-              </Text>
-              <Skeleton isLoaded={!isLoading && !isError}>
-                {`${window.location.protocol}//${window.location.host}/${formId}/edit/${submissionId}`}
-              </Skeleton>
-            </Stack>
+            <>
+              <Stack
+                spacing={{ base: '0', md: '0.5rem' }}
+                direction={{ base: 'column', md: 'row' }}
+              >
+                <Text as="span" textStyle="subhead-1">
+                  Response link:
+                </Text>
+                <Skeleton isLoaded={!isLoading && !isError}>
+                  {`${window.location.protocol}//${window.location.host}/${formId}/edit/${submissionId}`}
+                </Skeleton>
+              </Stack>
+              <Stack
+                spacing={{ base: '0', md: '0.5rem' }}
+                direction={{ base: 'column', md: 'row' }}
+              >
+                <Text as="span" textStyle="subhead-1">
+                  Submission secret key:
+                </Text>
+                <Skeleton isLoaded={!isLoading && !isError}>
+                  {data?.submissionSecretKey ??
+                    'Failed to obtain submission secret key'}
+                </Skeleton>
+              </Stack>
+            </>
           )}
         </Stack>
         {isLoading || isError ? (

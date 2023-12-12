@@ -7,7 +7,7 @@ import {
   useState,
 } from 'react'
 
-import { StorageModeSubmissionMetadata, SubmissionId } from '~shared/types'
+import { SubmissionId, SubmissionMetadata } from '~shared/types'
 
 import { useFormResponses } from '~features/admin-form/responses/queries'
 
@@ -21,9 +21,9 @@ interface UnlockedResponsesContextProps {
   submissionId?: string
   setSubmissionId: (submissionId: string | null) => void
   count?: number
-  metadata: StorageModeSubmissionMetadata[]
+  metadata: SubmissionMetadata[]
   filteredCount?: number
-  filteredMetadata: StorageModeSubmissionMetadata[]
+  filteredMetadata: SubmissionMetadata[]
   isLoading: boolean
   isAnyFetching: boolean
   getNextSubmissionId: (currentSubmissionId: string) => SubmissionId | undefined

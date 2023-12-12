@@ -61,14 +61,9 @@ import {
 } from '~features/verifiable-fields'
 
 import { FormNotFound } from './components/FormNotFound'
-import { useEncryptedSubmission } from './PublicFormEditPage/queries'
-import {
-  useEditSubmissionMutations,
-  usePublicAuthMutations,
-  usePublicFormMutations,
-} from './mutations'
+import { usePublicAuthMutations, usePublicFormMutations } from './mutations'
 import { PublicFormContext, SubmissionData } from './PublicFormContext'
-import { usePublicFormView } from './queries'
+import { useEncryptedSubmission, usePublicFormView } from './queries'
 import { axiosDebugFlow } from './utils'
 
 interface PublicFormProviderProps {
@@ -134,7 +129,7 @@ export const PublicFormProvider = ({
 
   const {
     data,
-    isLoading,
+    isLoading: isFormLoading,
     error: publicFormError,
     ...rest
   } = usePublicFormView(
@@ -142,8 +137,24 @@ export const PublicFormProvider = ({
     // Stop querying once submissionData is present.
     /* enabled= */ !submissionData,
   )
-  const { error: encryptedSubmissionError } = useEncryptedSubmission()
+  const {
+    data: encryptedPreviousSubmission,
+    isLoading: isSubmissionLoading,
+    error: encryptedSubmissionError,
+  } = useEncryptedSubmission(
+    formId,
+    submissionId,
+    // Stop querying once submissionData is present.
+    /* enabled= */ !submissionData,
+  )
 
+  // Replace form fields and logic with the previous version for MRF consistency.
+  if (data && encryptedPreviousSubmission) {
+    data.form.form_fields = encryptedPreviousSubmission.form_fields
+    data.form.form_logics = encryptedPreviousSubmission.form_logics
+  }
+
+  const isLoading = isFormLoading || isSubmissionLoading
   const error = publicFormError || encryptedSubmissionError
 
   const growthbook = useGrowthBook()
@@ -290,10 +301,8 @@ export const PublicFormProvider = ({
     submitStorageModeClearFormFetchMutation,
     submitStorageModeClearFormWithVirusScanningMutation,
     submitMultirespondentFormMutation,
-  } = usePublicFormMutations(formId, submissionData?.id ?? '')
-
-  const { updateMultirespondentSubmissionMutation } =
-    useEditSubmissionMutations(formId, submissionId)
+    updateMultirespondentSubmissionMutation,
+  } = usePublicFormMutations(formId, submissionId)
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
@@ -745,6 +754,7 @@ export const PublicFormProvider = ({
         isPaymentEnabled,
         isPreview: false,
         setNumVisibleFields,
+        encryptedPreviousSubmission,
         ...commonFormValues,
         ...data,
         ...rest,

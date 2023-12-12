@@ -72,14 +72,14 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
   // Something to do with babel-loader.
 
   // TODO: May be removed when we move to Webpack 5, where web workers are now first class citizens?
-  const { processDecryptedContent } = await import(
+  const { processDecryptedContent, processDecryptedContentV3 } = await import(
     '../utils/processDecryptedContent'
   )
   const { downloadAndDecryptAttachmentsAsZip } = await import(
     '../utils/downloadAndDecryptAttachment'
   )
 
-  const { StorageModeSubmissionStreamDto } = await import('~shared/types')
+  const { SubmissionStreamDto, SubmissionType } = await import('~shared/types')
 
   const { line, secretKey, downloadAttachments, formId, hostOrigin } = data
 
@@ -89,26 +89,50 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
 
   try {
     // Validate that the submission is of a valid shape.
-    const submission = StorageModeSubmissionStreamDto.parse(JSON.parse(line))
+    const submission = SubmissionStreamDto.parse(JSON.parse(line))
     csvRecord = new CsvRecord(
       submission._id,
       submission.created,
       CsvRecordStatus.Unknown,
       formId,
       hostOrigin,
-      submission.payment,
+      submission.submissionType === SubmissionType.Encrypt
+        ? submission.payment
+        : undefined,
     )
     try {
-      const decryptedObject = formsgSdk.crypto.decrypt(secretKey, {
-        encryptedContent: submission.encryptedContent,
-        verifiedContent: submission.verifiedContent,
-        version: submission.version,
-      })
-
-      if (!decryptedObject) {
-        throw new Error('Invalid decryption')
+      let decryptedSubmission
+      switch (submission.submissionType) {
+        case SubmissionType.Encrypt: {
+          const decryptedObject = formsgSdk.crypto.decrypt(secretKey, {
+            encryptedContent: submission.encryptedContent,
+            verifiedContent: submission.verifiedContent,
+            version: submission.version,
+          })
+          if (!decryptedObject) throw new Error('Invalid decryption')
+          decryptedSubmission = processDecryptedContent(decryptedObject)
+          break
+        }
+        case SubmissionType.Multirespondent: {
+          const decryptedObject = formsgSdk.cryptoV3.decrypt(secretKey, {
+            encryptedSubmissionSecretKey:
+              submission.encryptedSubmissionSecretKey,
+            encryptedContent: submission.encryptedContent,
+            verifiedContent: submission.verifiedContent,
+            version: submission.version,
+          })
+          if (!decryptedObject) throw new Error('Invalid decryption')
+          decryptedSubmission = await processDecryptedContentV3(
+            submission.form_fields,
+            decryptedObject,
+          )
+          break
+        }
+        default: {
+          const _: never = submission
+          throw new Error('Invalid submission type encountered.')
+        }
       }
-      const decryptedSubmission = processDecryptedContent(decryptedObject)
 
       if (verifySignature(decryptedSubmission, submission.created)) {
         csvRecord.setStatus(CsvRecordStatus.Ok, 'Success')
@@ -126,12 +150,13 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
             ++questionCount
           }
           // Populate S3 presigned URL for attachments
-          if (submission.attachmentMetadata[field._id]) {
-            attachmentDownloadUrls.set(questionCount, {
-              url: submission.attachmentMetadata[field._id],
-              filename: field.answer,
-            })
-          }
+          //TODO(MRF): Fix attachments!
+          // if (submission.attachmentMetadata[field._id]) {
+          //   attachmentDownloadUrls.set(questionCount, {
+          //     url: submission.attachmentMetadata[field._id],
+          //     filename: field.answer,
+          //   })
+          // }
         })
 
         try {

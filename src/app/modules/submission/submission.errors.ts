@@ -23,6 +23,12 @@ export class PendingSubmissionNotFoundError extends ApplicationError {
   }
 }
 
+export class InvalidSubmissionTypeError extends ApplicationError {
+  constructor(message = 'Unexpected submission type encountered.') {
+    super(message)
+  }
+}
+
 /**
  * A custom error class returned when given submission has invalid encryption encoding
  */

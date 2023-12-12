@@ -1,19 +1,31 @@
 import omit from 'lodash/omit'
+import moment from 'moment'
 import mongoose from 'mongoose'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
-import { FormResponseMode } from 'shared/types'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import { Transform } from 'stream'
 
-import { ParsedClearFormFieldResponse } from 'src/types/api'
-
+import {
+  FormResponseMode,
+  SubmissionMetadata,
+  SubmissionMetadataList,
+  SubmissionPaymentDto,
+} from '../../../../shared/types'
 import {
   EmailRespondentConfirmationField,
   IAttachmentInfo,
   IPopulatedForm,
   ISubmissionSchema,
+  StorageModeSubmissionCursorData,
+  SubmissionData,
 } from '../../../types'
+import { ParsedClearFormFieldResponse } from '../../../types/api'
+import { aws as AwsConfig } from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import getPendingSubmissionModel from '../../models/pending_submission.server.model'
-import getSubmissionModel from '../../models/submission.server.model'
+import getSubmissionModel, {
+  getEncryptSubmissionModel,
+  getMultirespondentSubmissionModel,
+} from '../../models/submission.server.model'
 import MailService from '../../services/mail/mail.service'
 import { AutoReplyMailData } from '../../services/mail/mail.types'
 import { createQueryWithDateParam, isMalformedDate } from '../../utils/date'
@@ -27,16 +39,20 @@ import {
   MalformedParametersError,
 } from '../core/core.errors'
 import { InvalidSubmissionIdError } from '../feedback/feedback.errors'
+import { PaymentNotFoundError } from '../payments/payments.errors'
+import * as PaymentsService from '../payments/payments.service'
 
 import {
   AttachmentTooLargeError,
   InvalidFileExtensionError,
   PendingSubmissionNotFoundError,
+  ResponseModeError,
   SendEmailConfirmationError,
   SubmissionNotFoundError,
 } from './submission.errors'
 import {
   areAttachmentsMoreThanLimit,
+  getEncryptedSubmissionModelByResponseMode,
   getInvalidFileExtensions,
   mapAttachmentsFromResponses,
 } from './submission.utils'
@@ -44,6 +60,9 @@ import {
 const logger = createLoggerWithLabel(module)
 const SubmissionModel = getSubmissionModel(mongoose)
 const PendingSubmissionModel = getPendingSubmissionModel(mongoose)
+const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
+const MultirespondentSubmissionModel =
+  getMultirespondentSubmissionModel(mongoose)
 
 /**
  * Returns number of form submissions of given form id in the given date range.
@@ -192,6 +211,295 @@ export const doesSubmissionIdExist = (
       return errAsync(new InvalidSubmissionIdError())
     }
     return okAsync(true as const)
+  })
+
+export const getSubmissionMetadata = (
+  responseMode: FormResponseMode,
+  formId: string,
+  submissionId: string,
+): ResultAsync<
+  SubmissionMetadata | null,
+  ResponseModeError | DatabaseError
+> => {
+  // Early return, do not even retrieve from database.
+  if (!mongoose.Types.ObjectId.isValid(submissionId)) {
+    return okAsync(null)
+  }
+
+  return getEncryptedSubmissionModelByResponseMode(responseMode).asyncAndThen(
+    (modelToUse) =>
+      ResultAsync.fromPromise(
+        modelToUse.findSingleMetadata(formId, submissionId),
+        (error) => {
+          logger.error({
+            message: 'Failure retrieving metadata from database',
+            meta: {
+              action: 'getSubmissionMetadata',
+              formId,
+              submissionId,
+            },
+            error,
+          })
+          return new DatabaseError(getMongoErrorMessage(error))
+        },
+      ),
+  )
+}
+
+export const getSubmissionMetadataList = (
+  responseMode: FormResponseMode,
+  formId: string,
+  page?: number,
+): ResultAsync<SubmissionMetadataList, ResponseModeError | DatabaseError> =>
+  getEncryptedSubmissionModelByResponseMode(responseMode).asyncAndThen(
+    (modelToUse) =>
+      ResultAsync.fromPromise(
+        modelToUse.findAllMetadataByFormId(formId, { page }),
+        (error) => {
+          logger.error({
+            message: 'Failure retrieving metadata page from database',
+            meta: {
+              action: 'getSubmissionMetadataList',
+              formId,
+              page,
+            },
+            error,
+          })
+          return new DatabaseError(getMongoErrorMessage(error))
+        },
+      ),
+  )
+
+/**
+ * Retrieves required subset of encrypted submission data from the database
+ * @param formId the id of the form to filter submissions for
+ * @param submissionId the submission itself to retrieve
+ * @returns ok(SubmissionData)
+ * @returns err(SubmissionNotFoundError) if given submissionId does not exist in the database
+ * @returns err(DatabaseError) when error occurs during query
+ */
+export const getEncryptedSubmissionData = (
+  responseMode: FormResponseMode,
+  formId: string,
+  submissionId: string,
+): ResultAsync<
+  SubmissionData,
+  ResponseModeError | SubmissionNotFoundError | DatabaseError
+> =>
+  getEncryptedSubmissionModelByResponseMode(responseMode).asyncAndThen(
+    (modelToUse) =>
+      ResultAsync.fromPromise(
+        modelToUse.findEncryptedSubmissionById(
+          formId,
+          submissionId,
+        ) as Promise<SubmissionData | null>,
+        (error) => {
+          logger.error({
+            message: 'Failure retrieving encrypted submission from database',
+            meta: {
+              action: 'getEncryptedSubmissionData',
+              formId,
+              submissionId,
+            },
+            error,
+          })
+          return new DatabaseError(getMongoErrorMessage(error))
+        },
+      ).andThen((submission) => {
+        if (!submission) {
+          logger.error({
+            message: 'Unable to find encrypted submission from database',
+            meta: {
+              action: 'getEncryptedResponse',
+              formId,
+              submissionId,
+            },
+          })
+          return errAsync(
+            new SubmissionNotFoundError(
+              'Unable to find encrypted submission from database',
+            ),
+          )
+        }
+        return okAsync(submission)
+      }),
+  )
+
+/**
+ * Returns a cursor to the stream of the submissions of the given form id.
+ *
+ * @param formId the id of the form to stream responses for
+ * @param dateRange optional. The date range to limit responses to
+ *
+ * @returns ok(stream cursor) if created successfully
+ * @returns err(MalformedParametersError) if given dates are invalid dates
+ */
+export const getSubmissionCursor = (
+  responseMode: FormResponseMode,
+  formId: string,
+  dateRange: {
+    startDate?: string
+    endDate?: string
+  } = {},
+): Result<
+  ReturnType<
+    | typeof EncryptSubmissionModel.getSubmissionCursorByFormId
+    | typeof MultirespondentSubmissionModel.getSubmissionCursorByFormId
+  >,
+  MalformedParametersError
+> => {
+  if (
+    isMalformedDate(dateRange.startDate) ||
+    isMalformedDate(dateRange.endDate)
+  ) {
+    return err(new MalformedParametersError('Malformed date parameter'))
+  }
+
+  return getEncryptedSubmissionModelByResponseMode(responseMode).andThen(
+    (modelToUse) =>
+      ok(modelToUse.getSubmissionCursorByFormId(formId, dateRange)),
+  )
+}
+
+/**
+ * Returns a Transform pipeline that transforms all attachment metadata of each
+ * data chunk from the object path to the S3 signed URL so it can be retrieved
+ * by the client.
+ * @param enabled whether to perform any transformation
+ * @param urlValidDuration how long to keep the S3 signed URL valid for
+ * @returns a Transform pipeline to perform transformations on the pipe
+ */
+export const transformAttachmentMetaStream = ({
+  enabled,
+  urlValidDuration,
+}: {
+  enabled: boolean
+  urlValidDuration: number
+}): Transform => {
+  return new Transform({
+    objectMode: true,
+    transform: (data: StorageModeSubmissionCursorData, _encoding, callback) => {
+      const unprocessedMetadata = data.attachmentMetadata ?? {}
+
+      const totalCount = Object.keys(unprocessedMetadata).length
+      // Early return if pipe is disabled or nothing to transform.
+      if (!enabled || totalCount === 0) {
+        data.attachmentMetadata = {}
+        return callback(null, data)
+      }
+
+      const transformedMetadata: Record<string, string> = {}
+      let processedCount = 0
+
+      for (const [key, objectPath] of Object.entries(unprocessedMetadata)) {
+        AwsConfig.s3.getSignedUrl(
+          'getObject',
+          {
+            Bucket: AwsConfig.attachmentS3Bucket,
+            Key: objectPath,
+            Expires: urlValidDuration,
+          },
+          (error, url) => {
+            if (error) {
+              logger.error({
+                message: 'Error occured whilst retrieving signed URL from S3',
+                meta: {
+                  action: 'transformAttachmentMetaStream',
+                  key,
+                  objectPath,
+                },
+                error,
+              })
+              return callback(error)
+            }
+
+            transformedMetadata[key] = url
+            processedCount += 1
+
+            // Finished processing, replace current attachment metadata with the
+            // signed URLs.
+            if (processedCount === totalCount) {
+              data.attachmentMetadata = transformedMetadata
+              return callback(null, data)
+            }
+          },
+        )
+      }
+    },
+  })
+}
+
+/**
+ * Returns a Transform pipeline that expands the payment id of each submission
+ * to its corresponding payment object with information in SubmissionPaymentDto.
+ * @returns a Transform pipeline to perform transformations on the pipe
+ */
+export const addPaymentDataStream = (): Transform => {
+  return new Transform({
+    objectMode: true,
+    transform: async (
+      data: StorageModeSubmissionCursorData,
+      _encoding,
+      callback,
+    ) => {
+      if (!data.paymentId) {
+        return callback(null, data)
+      }
+
+      const { paymentId, ...rest } = data
+
+      return getSubmissionPaymentDto(paymentId).match(
+        (payment) => callback(null, { ...rest, payment }),
+        () => callback(null, rest),
+      )
+    },
+  })
+}
+
+/**
+ * Gets completed payment details associated with a particular submission for a
+ * given paymentId.
+ * @param paymentId the payment
+ * @requires paymentId must be a completed payment
+ *
+ * @returns ok(SubmissionPayment)
+ * @returns err(PaymentNotFoundError) if the paymentId does not reference a payment, or if the payment is incomplete
+ * @returns err(DatabaseError) if mongoose threw an error during the process
+ */
+export const getSubmissionPaymentDto = (
+  paymentId: string,
+): ResultAsync<SubmissionPaymentDto, PaymentNotFoundError | DatabaseError> =>
+  PaymentsService.findPaymentById(paymentId).andThen((payment) => {
+    // If the payment is incomplete, the "complete payment" is not found. This
+    // also implies an internal consistency error.
+    if (!payment.completedPayment) return errAsync(new PaymentNotFoundError())
+
+    return okAsync({
+      id: payment._id,
+      paymentIntentId: payment.paymentIntentId,
+      email: payment.email,
+      products: payment.products
+        ?.filter((product) => product.selected)
+        .map((product) => ({
+          name: product.data.name,
+          quantity: product.quantity,
+        })),
+      amount: payment.amount,
+      status: payment.status,
+
+      paymentDate: moment(payment.completedPayment.paymentDate)
+        .tz('Asia/Singapore')
+        .format('ddd, D MMM YYYY, hh:mm:ss A'),
+      transactionFee: payment.completedPayment.transactionFee,
+      receiptUrl: payment.completedPayment.receiptUrl,
+
+      payoutId: payment.payout?.payoutId,
+      payoutDate:
+        payment.payout?.payoutDate &&
+        moment(payment.payout.payoutDate)
+          .tz('Asia/Singapore')
+          .format('ddd, D MMM YYYY'),
+    })
   })
 
 /**

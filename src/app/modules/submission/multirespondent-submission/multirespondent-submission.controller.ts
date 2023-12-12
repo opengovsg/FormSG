@@ -1,14 +1,15 @@
 import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
-import { okAsync } from 'neverthrow'
+import { errAsync } from 'neverthrow'
 
 import {
   ErrorDto,
   FormAuthType,
-  StorageModeSubmissionDto,
+  MultirespondentSubmissionDto,
+  SubmissionType,
 } from '../../../../../shared/types'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
+import { getMultirespondentSubmissionModel } from '../../../models/submission.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
 import { Pipeline } from '../../../utils/pipeline-middleware'
@@ -23,38 +24,32 @@ import {
   ensureValidCaptcha,
 } from '../encrypt-submission/encrypt-submission.ensures'
 import { SubmissionFailedError } from '../encrypt-submission/encrypt-submission.errors'
-import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
 import {
-  getEncryptedSubmissionData,
-  getSubmissionPaymentDto,
-  performEncryptPostSubmissionActions,
   transformAttachmentMetasToSignedUrls,
   uploadAttachments,
 } from '../encrypt-submission/encrypt-submission.service'
-import {
-  SubmitEncryptModeFormHandlerRequest,
-  SubmitEncryptModeFormHandlerType,
-} from '../encrypt-submission/encrypt-submission.types'
-import {
-  createEncryptedSubmissionDto,
-  mapRouteError,
-} from '../encrypt-submission/encrypt-submission.utils'
+import { mapRouteError } from '../encrypt-submission/encrypt-submission.utils'
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
+import { InvalidSubmissionTypeError } from '../submission.errors'
+import { getEncryptedSubmissionData } from '../submission.service'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import * as MultirespondentSubmissionMiddleware from './multirespondent-submission.middleware'
 import { checkFormIsMultirespondent } from './multirespondent-submission.service'
 import {
+  SubmitMultirespondentFormHandlerRequest,
+  SubmitMultirespondentFormHandlerType,
   UpdateMultirespondentSubmissionHandlerRequest,
   UpdateMultirespondentSubmissionHandlerType,
 } from './multirespondent-submission.types'
+import { createMultirespondentSubmissionDto } from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
-const EncryptSubmission = getEncryptSubmissionModel(mongoose)
+const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
 
 const submitMultirespondentForm = async (
-  req: SubmitEncryptModeFormHandlerRequest,
-  res: Parameters<SubmitEncryptModeFormHandlerType>[1],
+  req: SubmitMultirespondentFormHandlerRequest,
+  res: Parameters<SubmitMultirespondentFormHandlerType>[1],
 ) => {
   const { formId } = req.params
 
@@ -64,10 +59,9 @@ const submitMultirespondentForm = async (
     formId,
   }
 
-  const formDef = req.formsg.formDef
-  const form = req.formsg.encryptedFormDef
+  const form = req.formsg.formDef
 
-  setFormTags(formDef)
+  setFormTags(form)
 
   const ensurePipeline = new Pipeline(
     ensurePublicForm,
@@ -92,13 +86,8 @@ const submitMultirespondentForm = async (
     return // required to stop submission processing
   }
 
-  const encryptedPayload = req.formsg.encryptedPayload
-
-  // Create Incoming Submission
-  const { encryptedContent, responseMetadata } = encryptedPayload
-
   // Disallow form authentication for multirespondent forms
-  if (formDef.authType !== FormAuthType.NIL) {
+  if (form.authType !== FormAuthType.NIL) {
     logger.error({
       message: 'Multirespondent form is not allowed to have authorization',
       meta: logMeta,
@@ -112,34 +101,47 @@ const submitMultirespondentForm = async (
   }
 
   // Save Responses to Database
-  let attachmentMetadata = new Map<string, string>()
+  const encryptedPayload = req.formsg.encryptedPayload
+  // let attachmentMetadata = new Map<string, string>()
 
-  if (encryptedPayload.attachments) {
-    const attachmentUploadResult = await uploadAttachments(
-      form._id,
-      encryptedPayload.attachments,
-    )
+  // if (encryptedPayload.attachments) {
+  //   const attachmentUploadResult = await uploadAttachments(
+  //     form._id,
+  //     encryptedPayload.attachments,
+  //   )
 
-    if (attachmentUploadResult.isErr()) {
-      const { statusCode, errorMessage } = mapRouteError(
-        attachmentUploadResult.error,
-      )
-      return res.status(statusCode).json({
-        message: errorMessage,
-      })
-    } else {
-      attachmentMetadata = attachmentUploadResult.value
-    }
-  }
+  //   if (attachmentUploadResult.isErr()) {
+  //     const { statusCode, errorMessage } = mapRouteError(
+  //       attachmentUploadResult.error,
+  //     )
+  //     return res.status(statusCode).json({
+  //       message: errorMessage,
+  //     })
+  //   } else {
+  //     attachmentMetadata = attachmentUploadResult.value
+  //   }
+  // }
+
+  // Create Incoming Submission
+  const {
+    submissionPublicKey,
+    encryptedSubmissionSecretKey,
+    encryptedContent,
+    responseMetadata,
+    version,
+  } = encryptedPayload
 
   const submissionContent = {
     form: form._id,
     authType: form.authType,
     myInfoFields: form.getUniqueMyInfoAttrs(),
-    encryptedContent: encryptedContent,
-    attachmentMetadata,
-    version: req.formsg.encryptedPayload.version,
-    responseMetadata,
+    form_fields: form.form_fields,
+    form_logics: form.form_logics,
+    submissionPublicKey,
+    encryptedSubmissionSecretKey,
+    encryptedContent,
+    // attachmentMetadata,
+    version,
   }
 
   return _createSubmission({
@@ -147,7 +149,7 @@ const submitMultirespondentForm = async (
     res,
     logMeta,
     formId,
-    responses: req.formsg.filteredResponses,
+    // responses: ,
     responseMetadata,
     submissionContent,
   })
@@ -160,15 +162,14 @@ const updateMultirespondentSubmission = async (
   const { formId, submissionId } = req.params
 
   const logMeta = {
-    action: 'updateEncryptModeSubmission',
+    action: 'updateMultirespondentSubmission',
     ...createReqMeta(req),
     formId,
   }
 
-  const formDef = req.formsg.formDef
-  const form = req.formsg.encryptedFormDef
+  const form = req.formsg.formDef
 
-  setFormTags(formDef)
+  setFormTags(form)
 
   const ensurePipeline = new Pipeline(
     ensurePublicForm,
@@ -196,30 +197,36 @@ const updateMultirespondentSubmission = async (
   const encryptedPayload = req.formsg.encryptedPayload
 
   // Create Incoming Submission
-  const { encryptedContent, responseMetadata } = encryptedPayload
+  const {
+    responseMetadata,
+    submissionPublicKey,
+    encryptedSubmissionSecretKey,
+    encryptedContent,
+    version,
+  } = encryptedPayload
 
   // Save Responses to Database
-  let attachmentMetadata = new Map<string, string>()
+  // let attachmentMetadata = new Map<string, string>()
 
-  if (encryptedPayload.attachments) {
-    const attachmentUploadResult = await uploadAttachments(
-      form._id,
-      encryptedPayload.attachments,
-    )
+  // if (encryptedPayload.attachments) {
+  //   const attachmentUploadResult = await uploadAttachments(
+  //     form._id,
+  //     encryptedPayload.attachments,
+  //   )
 
-    if (attachmentUploadResult.isErr()) {
-      const { statusCode, errorMessage } = mapRouteError(
-        attachmentUploadResult.error,
-      )
-      return res.status(statusCode).json({
-        message: errorMessage,
-      })
-    } else {
-      attachmentMetadata = attachmentUploadResult.value
-    }
-  }
+  //   if (attachmentUploadResult.isErr()) {
+  //     const { statusCode, errorMessage } = mapRouteError(
+  //       attachmentUploadResult.error,
+  //     )
+  //     return res.status(statusCode).json({
+  //       message: errorMessage,
+  //     })
+  //   } else {
+  //     attachmentMetadata = attachmentUploadResult.value
+  //   }
+  // }
 
-  const submission = await EncryptSubmission.findById(submissionId)
+  const submission = await MultirespondentSubmission.findById(submissionId)
 
   if (!submission) {
     return res.status(StatusCodes.NOT_FOUND).json({
@@ -227,8 +234,12 @@ const updateMultirespondentSubmission = async (
     })
   }
 
+  submission.responseMetadata = responseMetadata
+  submission.submissionPublicKey = submissionPublicKey
+  submission.encryptedSubmissionSecretKey = encryptedSubmissionSecretKey
   submission.encryptedContent = encryptedContent
-  submission.attachmentMetadata = attachmentMetadata
+  submission.version = version
+  // submission.attachmentMetadata = attachmentMetadata
 
   try {
     await submission.save()
@@ -275,19 +286,19 @@ const _createSubmission = async ({
   responseMetadata,
   responses,
 }: {
-  req: Parameters<SubmitEncryptModeFormHandlerType>[0]
-  res: Parameters<SubmitEncryptModeFormHandlerType>[1]
+  req: Parameters<SubmitMultirespondentFormHandlerType>[0]
+  res: Parameters<SubmitMultirespondentFormHandlerType>[1]
   [others: string]: any
 }) => {
-  const submission = new EncryptSubmission(submissionContent)
+  const submission = new MultirespondentSubmission(submissionContent)
 
   try {
     await submission.save()
   } catch (err) {
     logger.error({
-      message: 'Encrypt submission save error',
+      message: 'Multirespondent submission save error',
       meta: {
-        action: 'onEncryptSubmissionFailure',
+        action: 'onMultirespondentSubmissionFailure',
         ...createReqMeta(req),
       },
       error: err,
@@ -313,8 +324,8 @@ const _createSubmission = async ({
   // TODO 6395 make responseMetadata mandatory
   if (responseMetadata) {
     reportSubmissionResponseTime(responseMetadata, {
-      mode: 'encrypt',
-      payment: 'true',
+      mode: 'multirespodent',
+      payment: 'false',
     })
   }
 
@@ -325,32 +336,32 @@ const _createSubmission = async ({
     timestamp: (submission.created || new Date()).getTime(),
   })
 
-  return await performEncryptPostSubmissionActions(submission, responses)
+  // return await performEncryptPostSubmissionActions(submission, responses)
 }
 
 export const handleMultirespondentSubmission = [
   CaptchaMiddleware.validateCaptchaParams,
   TurnstileMiddleware.validateTurnstileParams,
-  ReceiverMiddleware.receiveStorageSubmission,
-  EncryptSubmissionMiddleware.validateStorageSubmissionParams,
+  ReceiverMiddleware.receiveMultirespondentSubmission,
+  MultirespondentSubmissionMiddleware.validateMultirespondentSubmissionParams,
   MultirespondentSubmissionMiddleware.createFormsgAndRetrieveForm,
-  EncryptSubmissionMiddleware.checkNewBoundaryEnabled,
-  EncryptSubmissionMiddleware.scanAndRetrieveAttachments,
-  EncryptSubmissionMiddleware.validateStorageSubmission,
-  EncryptSubmissionMiddleware.encryptSubmission,
+  // EncryptSubmissionMiddleware.checkNewBoundaryEnabled,
+  // EncryptSubmissionMiddleware.scanAndRetrieveAttachments,
+  // EncryptSubmissionMiddleware.validateStorageSubmission,
+  MultirespondentSubmissionMiddleware.encryptSubmission,
   submitMultirespondentForm,
 ] as ControllerHandler[]
 
 export const handleUpdateMultirespondentSubmission = [
   CaptchaMiddleware.validateCaptchaParams,
   TurnstileMiddleware.validateTurnstileParams,
-  ReceiverMiddleware.receiveStorageSubmission,
-  EncryptSubmissionMiddleware.validateStorageSubmissionParams,
+  ReceiverMiddleware.receiveMultirespondentSubmission,
+  MultirespondentSubmissionMiddleware.validateMultirespondentSubmissionParams,
   MultirespondentSubmissionMiddleware.createFormsgAndRetrieveForm,
-  EncryptSubmissionMiddleware.checkNewBoundaryEnabled,
-  EncryptSubmissionMiddleware.scanAndRetrieveAttachments,
-  EncryptSubmissionMiddleware.validateStorageSubmission,
-  EncryptSubmissionMiddleware.encryptSubmission,
+  // EncryptSubmissionMiddleware.checkNewBoundaryEnabled,
+  // EncryptSubmissionMiddleware.scanAndRetrieveAttachments,
+  // EncryptSubmissionMiddleware.validateStorageSubmission,
+  MultirespondentSubmissionMiddleware.encryptSubmission,
   updateMultirespondentSubmission,
 ] as ControllerHandler[]
 
@@ -365,7 +376,7 @@ export const handleUpdateMultirespondentSubmission = [
  */
 export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
   { formId: string; submissionId: string },
-  StorageModeSubmissionDto | ErrorDto
+  MultirespondentSubmissionDto | ErrorDto
 > = async (req, res) => {
   const { formId, submissionId } = req.params
 
@@ -384,37 +395,39 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
   return (
     // Step 1: Retrieve the full form object.
     FormService.retrieveFullFormById(formId)
-      // TODO Step 2: Check whether form is not archived.
-      // Step 3: Check whether form is encrypt mode.
+      //TODO(MRF) Step 2: Check whether form is not archived.
+      // Step 3: Check whether form is multirespondent mode.
       .andThen(checkFormIsMultirespondent)
-      // Step 4: Is encrypt mode form, retrieve submission data.
-      .andThen(() => getEncryptedSubmissionData(formId, submissionId))
+      // Step 4: Is multirespondent mode form, retrieve submission data.
+      .andThen((form) =>
+        getEncryptedSubmissionData(form.responseMode, formId, submissionId),
+      )
       // Step 5: If there is an associated payment, get the payment details.
+      // .andThen((submissionData) => {
+      //   if (!submissionData.paymentId) {
+      //     return okAsync({ submissionData, paymentData: undefined })
+      //   }
+
+      //   return getSubmissionPaymentDto(submissionData.paymentId).map(
+      //     (paymentData) => ({
+      //       submissionData,
+      //       paymentData,
+      //     }),
+      //   )
+      // })
+      // Step 6: Retrieve presigned URLs for attachments.
       .andThen((submissionData) => {
-        if (!submissionData.paymentId) {
-          return okAsync({ submissionData, paymentData: undefined })
+        if (submissionData.submissionType !== SubmissionType.Multirespondent) {
+          return errAsync(new InvalidSubmissionTypeError())
         }
 
-        return getSubmissionPaymentDto(submissionData.paymentId).map(
-          (paymentData) => ({
-            submissionData,
-            paymentData,
-          }),
-        )
-      })
-      // Step 6: Retrieve presigned URLs for attachments.
-      .andThen(({ submissionData, paymentData }) => {
         // Remaining login duration in seconds.
         const urlExpiry = (req.session?.cookie.maxAge ?? 0) / 1000
         return transformAttachmentMetasToSignedUrls(
           submissionData.attachmentMetadata,
           urlExpiry,
         ).map((presignedUrls) =>
-          createEncryptedSubmissionDto(
-            submissionData,
-            presignedUrls,
-            paymentData,
-          ),
+          createMultirespondentSubmissionDto(submissionData, presignedUrls),
         )
       })
       .map((responseData) => {

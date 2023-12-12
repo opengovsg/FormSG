@@ -2,9 +2,10 @@ import { Document, Model, QueryCursor } from 'mongoose'
 
 import {
   EmailModeSubmissionBase,
+  MultirespondentSubmissionBase,
   StorageModeSubmissionBase,
-  StorageModeSubmissionMetadata,
   SubmissionBase,
+  SubmissionMetadata,
   SubmissionType,
   WebhookResponse,
 } from '../../shared/types/submission'
@@ -74,12 +75,21 @@ export interface IEncryptedSubmissionSchema
   submissionType: SubmissionType.Encrypt
   getWebhookView(): WebhookView
 }
+export interface IMultirespondentSubmissionSchema
+  extends MultirespondentSubmissionBase,
+    ISubmissionSchema {
+  // Allows for population and correct typing
+  form: any
+  submissionType: SubmissionType.Multirespondent
+  getWebhookView(): null
+}
 
 // When retrieving from database, the attachmentMetadata type becomes an object
 // instead of a Map.
 // Due to schema changes, some objects may not have attachmentMetadata key.
-export type SubmissionCursorData = Pick<
+export type StorageModeSubmissionCursorData = Pick<
   IEncryptedSubmissionSchema,
+  | 'submissionType'
   | 'encryptedContent'
   | 'verifiedContent'
   | 'paymentId'
@@ -88,7 +98,26 @@ export type SubmissionCursorData = Pick<
   | 'version'
 > & { attachmentMetadata?: Record<string, string> } & Document
 
-export type SubmissionData = Pick<
+export type MultirespondentSubmissionCursorData = Pick<
+  IMultirespondentSubmissionSchema,
+  | 'form_fields'
+  | 'form_logics'
+  | 'submissionType'
+  | 'encryptedSubmissionSecretKey'
+  | 'encryptedContent'
+  | 'verifiedContent'
+  | 'created'
+  | 'id'
+  | 'version'
+> & { attachmentMetadata?: Record<string, string> } & Document
+
+export type SubmissionCursorData =
+  | StorageModeSubmissionCursorData
+  | MultirespondentSubmissionCursorData
+
+export type StorageModeSubmissionData = {
+  submissionType: SubmissionType.Encrypt
+} & Pick<
   IEncryptedSubmissionSchema,
   | 'encryptedContent'
   | 'verifiedContent'
@@ -98,6 +127,26 @@ export type SubmissionData = Pick<
   | 'version'
 > &
   Document
+
+export type MultirespondentSubmissionData = {
+  submissionType: SubmissionType.Multirespondent
+} & Pick<
+  IMultirespondentSubmissionSchema,
+  | 'form_fields'
+  | 'form_logics'
+  | 'submissionPublicKey'
+  | 'encryptedSubmissionSecretKey'
+  | 'encryptedContent'
+  | 'verifiedContent'
+  | 'attachmentMetadata'
+  | 'created'
+  | 'version'
+> &
+  Document
+
+export type SubmissionData =
+  | StorageModeSubmissionData
+  | MultirespondentSubmissionData
 
 export type IEmailSubmissionModel = Model<IEmailSubmissionSchema> &
   ISubmissionModel
@@ -113,7 +162,7 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
     findSingleMetadata(
       formId: string,
       submissionId: string,
-    ): Promise<StorageModeSubmissionMetadata | null>
+    ): Promise<SubmissionMetadata | null>
 
     /**
      * Returns all submission metadata of the form for the given formId. The
@@ -128,7 +177,7 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
       formId: string,
       params?: { page?: number; pageSize?: number },
     ): Promise<{
-      metadata: StorageModeSubmissionMetadata[]
+      metadata: SubmissionMetadata[]
       count: number
     }>
 
@@ -146,12 +195,12 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
         startDate?: string
         endDate?: string
       },
-    ): QueryCursor<SubmissionCursorData>
+    ): QueryCursor<StorageModeSubmissionCursorData>
 
     findEncryptedSubmissionById(
       formId: string,
       submissionId: string,
-    ): Promise<SubmissionData | null>
+    ): Promise<StorageModeSubmissionData | null>
 
     /**
      * Adds a record of a webhook response to a submission
@@ -172,5 +221,59 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
       submissionId: string,
     ): Promise<SubmissionWebhookInfo | null>
   }
+
+export type IMultirespondentSubmissionModel =
+  Model<IMultirespondentSubmissionSchema> &
+    ISubmissionModel & {
+      /**
+       * Return submission metadata for a single submissionId of form with formId.
+       * @param formId formId to filter submissions for
+       * @param submissionId specific submissionId to retrieve metadata for
+       *
+       * @returns submission metadata if available, `null` otherwise.
+       */
+      findSingleMetadata(
+        formId: string,
+        submissionId: string,
+      ): Promise<SubmissionMetadata | null>
+
+      /**
+       * Returns all submission metadata of the form for the given formId. The
+       * metadata returned is offset by the page and the pageSize options.
+       * @param formId the form id to return submission metadata for
+       * @param options.page the page of metadata list to return
+       * @param options.pageSize the number of metadata per page
+       *
+       * @returns limited list of metadata, along with the total number of metadata count
+       */
+      findAllMetadataByFormId(
+        formId: string,
+        params?: { page?: number; pageSize?: number },
+      ): Promise<{
+        metadata: SubmissionMetadata[]
+        count: number
+      }>
+
+      /**
+       * Returns a cursor for all submissions of the given formId. May further be
+       * limited by a given date range provided both dateRange.startDate and
+       * dateRange.endDate is valid.
+       * @param formId the form id to return the submissions cursor for
+       * @param dateRange optional. If provided, will limit the submissions to the given range
+       * @returns a cursor to the submissions retrieved
+       */
+      getSubmissionCursorByFormId(
+        formId: string,
+        dateRange: {
+          startDate?: string
+          endDate?: string
+        },
+      ): QueryCursor<MultirespondentSubmissionCursorData>
+
+      findEncryptedSubmissionById(
+        formId: string,
+        submissionId: string,
+      ): Promise<MultirespondentSubmissionData | null>
+    }
 
 export interface IWebhookResponseSchema extends WebhookResponse, Document {}

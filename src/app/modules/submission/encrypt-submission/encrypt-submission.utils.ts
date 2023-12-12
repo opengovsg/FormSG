@@ -9,7 +9,7 @@ import {
   PaymentMethodType,
   PaymentType,
   StorageModeSubmissionContentDto,
-  StorageModeSubmissionDto,
+  SubmissionDto,
   SubmissionPaymentDto,
   SubmissionType,
 } from '../../../../../shared/types'
@@ -20,7 +20,7 @@ import {
   IPopulatedEncryptedForm,
   ISubmissionSchema,
   MapRouteErrors,
-  SubmissionData,
+  StorageModeSubmissionData,
 } from '../../../../types'
 import {
   EncryptFormFieldResponse,
@@ -312,15 +312,16 @@ export const isSubmissionEncryptMode = (
 }
 
 /**
- * Creates and returns an EncryptedSubmissionDto object from submissionData and
+ * Creates and returns a StorageModeSubmissionDto object from submissionData and
  * attachment presigned urls.
  */
-export const createEncryptedSubmissionDto = (
-  submissionData: SubmissionData,
+export const createStorageModeSubmissionDto = (
+  submissionData: StorageModeSubmissionData,
   attachmentPresignedUrls: Record<string, string>,
   payment?: SubmissionPaymentDto,
-): StorageModeSubmissionDto => {
+): SubmissionDto => {
   return {
+    submissionType: SubmissionType.Encrypt,
     refNo: submissionData._id,
     submissionTime: moment(submissionData.created)
       .tz('Asia/Singapore')

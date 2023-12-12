@@ -84,7 +84,7 @@ PublicFormsSubmissionsRouter.route(
 )
 
 /**
- * Retrieve actual response for a storage mode form
+ * Retrieve actual response for a multirespondent mode form
  * @route GET /forms/:formId/submissions/:submissionId
  * @returns 200 with encrypted submission data response
  * @returns 400 when form is not an encrypt mode form

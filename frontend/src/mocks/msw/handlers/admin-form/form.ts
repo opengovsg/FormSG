@@ -29,7 +29,7 @@ import {
 } from '~shared/types/form/form'
 import { FormLogoState } from '~shared/types/form/form_logo'
 import { DateString } from '~shared/types/generic'
-import { StorageModeSubmissionMetadataList } from '~shared/types/submission'
+import { SubmissionMetadataList } from '~shared/types/submission'
 import { UserDto } from '~shared/types/user'
 import { insertAt, reorder } from '~shared/utils/immutable-array-fns'
 
@@ -764,17 +764,17 @@ export const createFormBuilderMocks = (
 }
 
 export const getStorageSubmissionMetadataResponse = (
-  props: Partial<StorageModeSubmissionMetadataList> = {},
+  props: Partial<SubmissionMetadataList> = {},
   delay: number | 'infinite' | 'real' = 0,
 ) => {
-  return rest.get<StorageModeSubmissionMetadataList>(
+  return rest.get<SubmissionMetadataList>(
     '/api/v3/admin/forms/:formId/submissions/metadata',
     (req, res, ctx) => {
       const pageNum = parseInt(req.url.searchParams.get('page') ?? '1')
       return res(
         ctx.delay(delay),
         ctx.status(200),
-        ctx.json<StorageModeSubmissionMetadataList>(
+        ctx.json<SubmissionMetadataList>(
           merge(
             {
               count: 39,

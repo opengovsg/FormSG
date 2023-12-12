@@ -5,6 +5,7 @@ import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.ty
 import {
   AttachmentResponse,
   FieldResponse,
+  FormResponseMode,
   PaymentFieldsDto,
   ProductItem,
   StorageModeSubmissionContentDto,
@@ -40,6 +41,7 @@ export type ParsedStorageModeSubmissionBody = ParsedEmailModeSubmissionBody & {
 }
 
 export type EncryptFormLoadedDto = {
+  responseMode: FormResponseMode.Encrypt
   featureFlags: string[]
   formDef: IPopulatedForm
   encryptedFormDef: IPopulatedEncryptedForm

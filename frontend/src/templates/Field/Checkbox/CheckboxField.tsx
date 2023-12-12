@@ -18,9 +18,10 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { CheckboxFieldInputs, CheckboxFieldSchema } from '../types'
 
-export const CHECKBOX_OTHERS_INPUT_KEY = 'othersInput'
-export const CHECKBOX_OTHERS_INPUT_VALUE =
-  '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
+import {
+  CHECKBOX_OTHERS_INPUT_KEY,
+  CHECKBOX_OTHERS_INPUT_VALUE,
+} from './constants'
 
 export interface CheckboxFieldProps extends BaseFieldProps {
   schema: CheckboxFieldSchema

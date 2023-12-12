@@ -4,6 +4,7 @@ import { Box, Flex, FlexProps, Skeleton, Stack } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
 import { getVisibleFieldIds } from '~features/logic/utils'
 import { useBgColor } from '~features/public-form/components/PublicFormWrapper'
 
@@ -14,7 +15,6 @@ import {
   stateSelector as endPageStateSelector,
   useEndPageStore,
 } from '../../end-page/useEndPageStore'
-import { useAdminFormLogic } from '../../logic/hooks/useAdminFormLogic'
 import {
   setToInactiveSelector as setPaymentToInactiveSelector,
   usePaymentStore,
@@ -43,9 +43,9 @@ interface FormBuilderProps extends FlexProps {
 export const FormBuilder = ({
   placeholderProps,
   ...props
-}: FormBuilderProps): JSX.Element => {
+}: FormBuilderProps) => {
   const { builderFields, isLoading } = useBuilderFields()
-  const { formLogics } = useAdminFormLogic()
+  const { data: form } = useAdminForm()
   const { handleBuilderClick, handleEndpageClick } = useCreatePageSidebar()
   const setFieldBuilderToInactive = useFieldBuilderStore(
     setFieldBuilderToInactiveSelector,
@@ -61,9 +61,12 @@ export const FormBuilder = ({
     () =>
       getVisibleFieldIds(
         {}, // Assume form has no inputs yet.
-        { formFields: builderFields ?? [], formLogics: formLogics ?? [] },
+        {
+          formFields: builderFields ?? [],
+          formLogics: form?.form_logics ?? [],
+        },
       ),
-    [builderFields, formLogics],
+    [builderFields, form?.form_logics],
   )
 
   const handlePlaceholderClick = useCallback(
@@ -88,6 +91,8 @@ export const FormBuilder = ({
   }
 
   const bg = useBgColor({ colorTheme: useDesignColorTheme() })
+
+  if (!form) return null
 
   return (
     <Flex
@@ -136,6 +141,7 @@ export const FormBuilder = ({
                       {...provided.droppableProps}
                     >
                       <BuilderFields
+                        responseMode={form?.responseMode}
                         fields={builderFields}
                         visibleFieldIds={visibleFieldIds}
                         isDraggingOver={snapshot.isDraggingOver}

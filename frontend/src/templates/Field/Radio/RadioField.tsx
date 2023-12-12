@@ -13,8 +13,7 @@ import Radio, { OthersInput } from '~components/Radio'
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { RadioFieldInputs, RadioFieldSchema } from '../types'
 
-export const RADIO_OTHERS_INPUT_KEY = 'othersInput'
-export const RADIO_OTHERS_INPUT_VALUE = '!!FORMSG_INTERNAL_RADIO_OTHERS_VALUE!!'
+import { RADIO_OTHERS_INPUT_KEY, RADIO_OTHERS_INPUT_VALUE } from './constants'
 
 export interface RadioFieldProps extends BaseFieldProps {
   schema: RadioFieldSchema

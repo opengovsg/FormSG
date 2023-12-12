@@ -8,6 +8,7 @@ import {
 } from 'react'
 import { UseQueryResult } from 'react-query'
 
+import { MultirespondentSubmissionDto } from '~shared/types'
 import { PublicFormViewDto } from '~shared/types/form'
 
 export type SubmissionData = {
@@ -62,6 +63,8 @@ export interface PublicFormContextProps
 
   /** Sets the current number of visible fields in the form in public forms only*/
   setNumVisibleFields?: Dispatch<SetStateAction<number>>
+
+  encryptedPreviousSubmission?: MultirespondentSubmissionDto
 }
 
 export const PublicFormContext = createContext<

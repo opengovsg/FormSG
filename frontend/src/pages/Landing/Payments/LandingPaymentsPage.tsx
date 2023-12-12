@@ -16,7 +16,7 @@ import {
 } from '@chakra-ui/react'
 
 import { PUBLIC_PAYMENTS_GUIDE_LINK } from '~shared/constants'
-import { BasicField, EmailFieldBase } from '~shared/types'
+import { BasicField, EmailFieldBase, FormResponseMode } from '~shared/types'
 
 import { AppFooter } from '~/app/AppFooter'
 import { AppPublicHeader } from '~/app/AppPublicHeader'
@@ -264,6 +264,7 @@ export const LandingPaymentsPage = (): JSX.Element => {
                       sendOnboardingEmailMutation.isSuccess,
                     placeholder: 'Enter your email',
                   }}
+                  responseMode={FormResponseMode.Email}
                 />
                 <Button
                   variant="reverse"
@@ -323,6 +324,7 @@ export const LandingPaymentsPage = (): JSX.Element => {
                       sendOnboardingEmailMutation.isSuccess,
                     placeholder: 'Enter your email',
                   }}
+                  responseMode={FormResponseMode.Email}
                 />
                 <Button
                   variant="reverse"

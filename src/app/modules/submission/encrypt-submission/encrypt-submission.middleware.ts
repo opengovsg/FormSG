@@ -12,8 +12,9 @@ import {
 import {
   BasicField,
   FormAuthType,
-  StorageModeAttachment,
-  StorageModeAttachmentsMap,
+  FormResponseMode,
+  SubmissionAttachment,
+  SubmissionAttachmentsMap,
 } from '../../../../../shared/types'
 import {
   EncryptAttachmentResponse,
@@ -496,7 +497,7 @@ export const validateStorageSubmission = async (
 const encryptAttachment = async (
   attachment: Buffer,
   { id, publicKey }: { id: string; publicKey: string },
-): Promise<StorageModeAttachment & { id: string }> => {
+): Promise<SubmissionAttachment & { id: string }> => {
   let label
 
   try {
@@ -533,7 +534,7 @@ const encryptAttachment = async (
 const getEncryptedAttachmentsMapFromAttachmentsMap = async (
   attachmentsMap: Record<string, Buffer>,
   publicKey: string,
-): Promise<StorageModeAttachmentsMap> => {
+): Promise<SubmissionAttachmentsMap> => {
   const attachmentPromises = Object.entries(attachmentsMap).map(
     ([id, attachment]) => encryptAttachment(attachment, { id, publicKey }),
   )
@@ -685,7 +686,9 @@ export const createFormsgAndRetrieveForm = async (
 
   // Step 1: Create formsg namespace in req.body
   if (req.formsg) return res.send(new FormsgReqBodyExistsError())
-  const formsg = {} as EncryptFormLoadedDto
+  const formsg = {
+    responseMode: FormResponseMode.Encrypt,
+  } as EncryptFormLoadedDto
 
   // Step 2: Retrieve feature flags
   const featureFlagsListResult = await FeatureFlagService.getEnabledFlags()

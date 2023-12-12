@@ -29,7 +29,7 @@ import {
   IFormDocument,
   IPopulatedEmailForm,
   IUserSchema,
-  SubmissionCursorData,
+  StorageModeSubmissionCursorData,
 } from 'src/types'
 
 import {
@@ -587,7 +587,7 @@ describe('admin-form.submissions.routes', () => {
         .split('\n')
         .map(
           (submissionStr: string) =>
-            JSON.parse(submissionStr) as SubmissionCursorData,
+            JSON.parse(submissionStr) as StorageModeSubmissionCursorData,
         )
         .sort((a, b) => String(a._id).localeCompare(String(b._id)))
 
@@ -652,7 +652,7 @@ describe('admin-form.submissions.routes', () => {
         .split('\n')
         .map(
           (submissionStr: string) =>
-            JSON.parse(submissionStr) as SubmissionCursorData,
+            JSON.parse(submissionStr) as StorageModeSubmissionCursorData,
         )
         .sort((a, b) => String(a._id).localeCompare(String(b._id)))
 
@@ -724,7 +724,7 @@ describe('admin-form.submissions.routes', () => {
         .split('\n')
         .map(
           (submissionStr: string) =>
-            JSON.parse(submissionStr) as SubmissionCursorData,
+            JSON.parse(submissionStr) as StorageModeSubmissionCursorData,
         )
         .sort((a, b) => String(a._id).localeCompare(String(b._id)))
 
@@ -797,7 +797,7 @@ describe('admin-form.submissions.routes', () => {
         .split('\n')
         .map(
           (submissionStr: string) =>
-            JSON.parse(submissionStr) as SubmissionCursorData,
+            JSON.parse(submissionStr) as StorageModeSubmissionCursorData,
         )
         .sort((a, b) => String(a._id).localeCompare(String(b._id)))
 

@@ -61,7 +61,7 @@ export const SecretKeyVerificationInput = ({
       required: "Please enter the form's secret key",
       validate: (secretKey: string) => {
         // Should not see this error message.
-        if (!publicKey) return 'This form is not a storage mode form'
+        if (!publicKey) return 'Unexpected form mode'
 
         const trimmedSecretKey = secretKey.trim()
         const isKeypairValid =

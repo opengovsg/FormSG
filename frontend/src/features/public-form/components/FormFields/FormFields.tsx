@@ -2,22 +2,19 @@ import { useEffect, useMemo } from 'react'
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
 import { useSearchParams } from 'react-router-dom'
 import { Box, Stack } from '@chakra-ui/react'
-import { format } from 'date-fns'
-import { isEmpty, times, zip } from 'lodash'
+import { isEmpty, times } from 'lodash'
 
 import { PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID } from '~shared/constants'
 import { CountryRegion } from '~shared/constants/countryRegion'
+import { FieldResponsesV3 } from '~shared/types'
 import { BasicField, FormFieldDto } from '~shared/types/field'
 import { FormColorTheme, FormResponseMode, LogicDto } from '~shared/types/form'
 import { centsToDollars } from '~shared/utils/payments'
 
 import InlineMessage from '~components/InlineMessage'
-import { FormFieldValues } from '~templates/Field'
-import { CHECKBOX_OTHERS_INPUT_VALUE } from '~templates/Field/Checkbox/CheckboxField'
-import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/RadioField'
+import { FormFieldValue, FormFieldValues } from '~templates/Field'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 
-import { AugmentedDecryptedResponse } from '~features/admin-form/responses/ResponsesPage/storage/utils/augmentDecryptedResponses'
 import {
   augmentWithMyInfo,
   extractPreviewValue,
@@ -33,7 +30,7 @@ import { PublicFormSubmitButton } from './PublicFormSubmitButton'
 import { VisibleFormFields } from './VisibleFormFields'
 
 export interface FormFieldsProps {
-  previousResponses?: AugmentedDecryptedResponse[]
+  previousResponses?: FieldResponsesV3
   responseMode: FormResponseMode
   formFields: FormFieldDto[]
   formLogics: LogicDto[]
@@ -84,107 +81,24 @@ export const FormFields = ({
   const defaultFormValues = useMemo(() => {
     return augmentedFormFields.reduce<FormFieldValues>((acc, field) => {
       // If this is part of a MRF flow, use that.
-      const response = previousResponses?.find(
-        (response) => response._id === field._id,
-      )
-      if (response) {
+      const previousResponse = previousResponses?.[field._id]
+      if (previousResponse) {
         switch (field.fieldType) {
-          case BasicField.Number:
-          case BasicField.Decimal:
-          case BasicField.ShortText:
-          case BasicField.LongText:
-          case BasicField.HomeNo:
-          case BasicField.Dropdown:
-          case BasicField.Nric:
-          case BasicField.Uen:
-          case BasicField.YesNo:
-          case BasicField.Rating:
-            if (response.answer) acc[field._id] = response.answer
-            break
-          case BasicField.CountryRegion:
-            if (response.answer) {
-              acc[field._id] = Object.values(CountryRegion).find(
-                (countryRegion) =>
-                  countryRegion.toUpperCase() === response.answer.toUpperCase(),
-              ) as string
+          case BasicField.CountryRegion: {
+            const selected = Object.values(CountryRegion).find(
+              (option) => option.toUpperCase() === previousResponse.answer,
+            )
+            if (selected) {
+              acc[field._id] = selected
             }
             break
-          case BasicField.Date:
-            if (response.answer) {
-              acc[field._id] = format(new Date(response.answer), 'dd/MM/yyyy')
-            }
-            break
-          case BasicField.Attachment:
-            //TODO
-            break
-          case BasicField.Email:
-          case BasicField.Mobile:
-            if (response.answer) {
-              acc[field._id] = {
-                value: response.answer,
-                signature: response.signature,
-              }
-            }
-            break
-          case BasicField.Table:
-            // TODO: Fix this
-            if (response.answerArray) {
-              acc[field._id] = (response.answerArray as string[][]).map(
-                (row) => {
-                  const columns: Record<string, string> = {}
-                  zip(field.columns, row).forEach(([column, answer]) => {
-                    if (!column || !answer) return
-                    columns[column._id] = answer
-                  })
-                  return columns
-                },
-              )
-            }
-            break
-          case BasicField.Radio:
-            if (response.answer) {
-              //TODO: Hackish... fix this.
-              if (response.answer.startsWith('Others: ')) {
-                acc[field._id] = {
-                  value: RADIO_OTHERS_INPUT_VALUE,
-                  othersInput: response.answer.slice(8),
-                }
-                break
-              }
-              acc[field._id] = { value: response.answer }
-            }
-            break
-          case BasicField.Checkbox:
-            //TODO: This doesn't work
-            if (response.answerArray) {
-              const answerArray = response.answerArray as string[]
-              const othersAnswerIdx = answerArray.findIndex((answer) =>
-                answer.startsWith('Others: '),
-              )
-              if (othersAnswerIdx < 0) {
-                acc[field._id] = { value: answerArray }
-                break
-              }
-              const othersAnswer = answerArray.splice(othersAnswerIdx, 1)[0]
-              acc[field._id] = {
-                value: [...answerArray, CHECKBOX_OTHERS_INPUT_VALUE],
-                othersInput: othersAnswer.slice(8),
-              }
-            }
-            break
-          case BasicField.Children:
-            //TODO
-            break
-          case BasicField.Section:
-          case BasicField.Image:
-          case BasicField.Statement:
-            break
-          default: {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const _: never = field
-            throw new Error('Invalid field type encountered')
           }
+          case BasicField.Attachment:
+          //TODO(MRF)
+          default:
+            acc[field._id] = previousResponse.answer as FormFieldValue
         }
+        return acc
       }
 
       // If server returns field with default value, use that.

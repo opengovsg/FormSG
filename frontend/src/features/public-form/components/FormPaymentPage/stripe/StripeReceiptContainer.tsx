@@ -3,7 +3,7 @@ import { Stack, useToast } from '@chakra-ui/react'
 
 import { FormPaymentsField, ProductItem } from '~shared/types'
 
-import { usePublicFormMutations } from '~features/public-form/mutations'
+import { useSubmitFormFeedbackMutation } from '~features/public-form/mutations'
 
 import {
   FeedbackBlock,
@@ -38,7 +38,7 @@ export const StripeReceiptContainer = ({
   const toast = useToast()
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
 
-  const { submitFormFeedbackMutation } = usePublicFormMutations(
+  const { submitFormFeedbackMutation } = useSubmitFormFeedbackMutation(
     formId,
     submissionId,
   )

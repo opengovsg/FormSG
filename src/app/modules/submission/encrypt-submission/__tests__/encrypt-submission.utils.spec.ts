@@ -4,11 +4,11 @@ import { cloneDeep } from 'lodash'
 import moment from 'moment-timezone'
 import { FormPaymentsField, PaymentType } from 'shared/types'
 
-import { IPopulatedEncryptedForm, SubmissionData } from 'src/types'
+import { IPopulatedEncryptedForm, StorageModeSubmissionData } from 'src/types'
 
 import { handleDuplicatesInAttachments } from '../../receiver/receiver.utils'
 import {
-  createEncryptedSubmissionDto,
+  createStorageModeSubmissionDto,
   getPaymentAmount,
   getPaymentIntentDescription,
 } from '../encrypt-submission.utils'
@@ -20,7 +20,7 @@ const validSingleFile = {
 }
 
 describe('encrypt-submission.utils', () => {
-  describe('createEncryptedSubmissionDto', () => {
+  describe('createStorageModeSubmissionDto', () => {
     it('should create an encrypted submission DTO sucessfully', () => {
       // Arrange
       const createdDate = new Date()
@@ -29,13 +29,13 @@ describe('encrypt-submission.utils', () => {
         created: createdDate,
         encryptedContent: 'some encrypted content',
         verifiedContent: 'some verified content',
-      } as SubmissionData
+      } as StorageModeSubmissionData
       const attachmentPresignedUrls = {
         someSubmissionId: 'some presigned url',
       }
 
       // Act
-      const actual = createEncryptedSubmissionDto(
+      const actual = createStorageModeSubmissionDto(
         submissionData,
         attachmentPresignedUrls,
       )

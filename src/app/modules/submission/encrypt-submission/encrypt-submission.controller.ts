@@ -2,9 +2,7 @@ import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
-import JSONStream from 'JSONStream'
 import mongoose from 'mongoose'
-import { okAsync } from 'neverthrow'
 import Stripe from 'stripe'
 
 import { featureFlags } from '../../../../../shared/constants'
@@ -15,13 +13,10 @@ import {
   ErrorDto,
   FormAuthType,
   FormResponseMode,
-  FormSubmissionMetadataQueryDto,
   Payment,
   PaymentChannel,
   PaymentType,
   StorageModeSubmissionContentDto,
-  StorageModeSubmissionDto,
-  StorageModeSubmissionMetadataList,
 } from '../../../../../shared/types'
 import {
   IEncryptedSubmissionSchema,
@@ -66,19 +61,10 @@ import {
   SubmissionFailedError,
 } from './encrypt-submission.errors'
 import {
-  addPaymentDataStream,
   checkFormIsEncryptMode,
-  checkFormIsEncryptModeOrMultirespondent,
   getAllEncryptedSubmissionData,
-  getEncryptedSubmissionData,
   getQuarantinePresignedPostData,
-  getSubmissionCursor,
-  getSubmissionMetadata,
-  getSubmissionMetadataList,
-  getSubmissionPaymentDto,
   performEncryptPostSubmissionActions,
-  transformAttachmentMetasToSignedUrls,
-  transformAttachmentMetaStream,
   uploadAttachments,
 } from './encrypt-submission.service'
 import {
@@ -86,7 +72,6 @@ import {
   SubmitEncryptModeFormHandlerType,
 } from './encrypt-submission.types'
 import {
-  createEncryptedSubmissionDto,
   getPaymentAmount,
   getPaymentIntentDescription,
   getStripePaymentMethod,
@@ -671,257 +656,6 @@ export const handleStorageSubmission = [
   submitEncryptModeForm,
 ] as ControllerHandler[]
 
-// Validates that the ending date >= starting date
-const validateDateRange = celebrate({
-  [Segments.QUERY]: Joi.object()
-    .keys({
-      startDate: Joi.date().format('YYYY-MM-DD').raw(),
-      endDate: Joi.date().format('YYYY-MM-DD').min(Joi.ref('startDate')).raw(),
-      downloadAttachments: Joi.boolean().default(false),
-    })
-    .and('startDate', 'endDate'),
-})
-
-/**
- * Handler for GET /:formId([a-fA-F0-9]{24})/submissions/download
- * NOTE: This is exported solely for testing
- * Streams and downloads for GET /:formId([a-fA-F0-9]{24})/adminform/submissions/download
- * @security session
- *
- * @returns 200 with stream of encrypted responses
- * @returns 400 if form is not an encrypt mode form
- * @returns 400 if req.query.startDate or req.query.endDate is malformed
- * @returns 403 when user does not have read permissions for form
- * @returns 404 when form cannot be found
- * @returns 410 when form is archived
- * @returns 422 when user in session cannot be retrieved from the database
- * @returns 500 if any errors occurs in stream pipeline or error retrieving form
- */
-export const streamEncryptedResponses: ControllerHandler<
-  { formId: string },
-  unknown,
-  unknown,
-  { startDate?: string; endDate?: string; downloadAttachments: boolean }
-> = async (req, res) => {
-  const sessionUserId = (req.session as AuthedSessionData).user._id
-  const { formId } = req.params
-  const { startDate, endDate } = req.query
-
-  const logMeta = {
-    action: 'handleStreamEncryptedResponses',
-    ...createReqMeta(req),
-    formId,
-    sessionUserId,
-  }
-
-  logger.info({
-    message: 'Stream encrypted responses start',
-    meta: logMeta,
-  })
-
-  // Step 1: Retrieve currently logged in user.
-  const cursorResult = await getPopulatedUserById(sessionUserId)
-    .andThen((user) =>
-      // Step 2: Check whether user has read permissions to form
-      getFormAfterPermissionChecks({
-        user,
-        formId,
-        level: PermissionLevel.Read,
-      }),
-    )
-    // Step 3: Check whether form is encrypt mode.
-    .andThen(checkFormIsEncryptModeOrMultirespondent)
-    // Step 4: Retrieve submissions cursor.
-    .andThen(() =>
-      getSubmissionCursor(formId, {
-        startDate,
-        endDate,
-      }),
-    )
-
-  if (cursorResult.isErr()) {
-    logger.error({
-      message: 'Error occurred whilst retrieving submission cursor',
-      meta: logMeta,
-      error: cursorResult.error,
-    })
-
-    const { statusCode, errorMessage } = mapRouteError(cursorResult.error)
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
-  }
-
-  const cursor = cursorResult.value
-
-  cursor
-    .on('error', (error) => {
-      logger.error({
-        message: 'Error streaming submissions from database',
-        meta: logMeta,
-        error,
-      })
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: 'Error retrieving from database.',
-      })
-    })
-    .pipe(
-      transformAttachmentMetaStream({
-        enabled: req.query.downloadAttachments,
-        urlValidDuration: (req.session?.cookie.maxAge ?? 0) / 1000,
-      }),
-    )
-    // TODO: Can we include this within the cursor query as aggregation pipeline
-    // instead, so that we make one query to mongo rather than two.
-    .pipe(addPaymentDataStream())
-    .on('error', (error) => {
-      logger.error({
-        message: 'Error retrieving URL for attachments',
-        meta: logMeta,
-        error,
-      })
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: 'Error retrieving URL for attachments',
-      })
-    })
-    // If you call JSONStream.stringify(false) the elements will only be
-    // seperated by a newline.
-    .pipe(JSONStream.stringify(false))
-    .on('error', (error) => {
-      logger.error({
-        message: 'Error converting submissions to JSON',
-        meta: logMeta,
-        error,
-      })
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: 'Error converting submissions to JSON',
-      })
-    })
-    .pipe(res.type('application/x-ndjson'))
-    .on('error', (error) => {
-      logger.error({
-        message: 'Error writing submissions to HTTP stream',
-        meta: logMeta,
-        error,
-      })
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: 'Error writing submissions to HTTP stream',
-      })
-    })
-    .on('close', () => {
-      logger.info({
-        message: 'Stream encrypted responses closed',
-        meta: logMeta,
-      })
-
-      return res.end()
-    })
-}
-
-// Handler for GET /:formId([a-fA-F0-9]{24})/submissions/download
-export const handleStreamEncryptedResponses = [
-  validateDateRange,
-  streamEncryptedResponses,
-] as ControllerHandler[]
-
-/**
- * Handler for GET /:formId/submissions/:submissionId
- * @security session
- *
- * @returns 200 with encrypted submission data response
- * @returns 400 when form is not an encrypt mode form
- * @returns 403 when user does not have read permissions for form
- * @returns 404 when submissionId cannot be found in the database
- * @returns 404 when form cannot be found
- * @returns 410 when form is archived
- * @returns 422 when user in session cannot be retrieved from the database
- * @returns 500 when any errors occurs in database query, generating signed URL or retrieving payment data
- */
-export const handleGetEncryptedResponse: ControllerHandler<
-  { formId: string; submissionId: string },
-  StorageModeSubmissionDto | ErrorDto
-> = async (req, res) => {
-  const sessionUserId = (req.session as AuthedSessionData).user._id
-  const { formId, submissionId } = req.params
-
-  const logMeta = {
-    action: 'handleGetEncryptedResponse',
-    submissionId,
-    formId,
-    sessionUserId,
-    ...createReqMeta(req),
-  }
-
-  logger.info({
-    message: 'Get encrypted response using submissionId start',
-    meta: logMeta,
-  })
-
-  return (
-    // Step 1: Retrieve logged in user.
-    getPopulatedUserById(sessionUserId)
-      // Step 2: Check whether user has read permissions to form.
-      .andThen((user) =>
-        getFormAfterPermissionChecks({
-          user,
-          formId,
-          level: PermissionLevel.Read,
-        }),
-      )
-      // Step 3: Check whether form is encrypt mode.
-      .andThen(checkFormIsEncryptModeOrMultirespondent)
-      // Step 4: Is encrypt mode form, retrieve submission data.
-      .andThen(() => getEncryptedSubmissionData(formId, submissionId))
-      // Step 5: If there is an associated payment, get the payment details.
-      .andThen((submissionData) => {
-        if (!submissionData.paymentId) {
-          return okAsync({ submissionData, paymentData: undefined })
-        }
-
-        return getSubmissionPaymentDto(submissionData.paymentId).map(
-          (paymentData) => ({
-            submissionData,
-            paymentData,
-          }),
-        )
-      })
-      // Step 6: Retrieve presigned URLs for attachments.
-      .andThen(({ submissionData, paymentData }) => {
-        // Remaining login duration in seconds.
-        const urlExpiry = (req.session?.cookie.maxAge ?? 0) / 1000
-        return transformAttachmentMetasToSignedUrls(
-          submissionData.attachmentMetadata,
-          urlExpiry,
-        ).map((presignedUrls) =>
-          createEncryptedSubmissionDto(
-            submissionData,
-            presignedUrls,
-            paymentData,
-          ),
-        )
-      })
-      .map((responseData) => {
-        logger.info({
-          message: 'Get encrypted response using submissionId success',
-          meta: logMeta,
-        })
-        return res.json(responseData)
-      })
-      .mapErr((error) => {
-        logger.error({
-          message: 'Failure retrieving encrypted submission response',
-          meta: logMeta,
-          error,
-        })
-
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({
-          message: errorMessage,
-        })
-      })
-  )
-}
-
 const _getAllEncryptedResponse: ControllerHandler<
   { formId: string },
   unknown,
@@ -996,103 +730,6 @@ export const handleGetAllEncryptedResponses = [
       .and('startDate', 'endDate'),
   }),
   _getAllEncryptedResponse,
-] as ControllerHandler[]
-
-/**
- * Handler for GET /:formId/submissions/metadata
- * This is exported solely for testing purposes
- *
- * @returns 200 with single submission metadata if query.submissionId is provided
- * @returns 200 with list of submission metadata with total count (and optional offset if query.page is provided) if query.submissionId is not provided
- * @returns 400 if form is not an encrypt mode form
- * @returns 403 when user does not have read permissions for form
- * @returns 404 when form cannot be found
- * @returns 410 when form is archived
- * @returns 422 when user in session cannot be retrieved from the database
- * @returns 500 if any errors occurs whilst querying database
- */
-export const getMetadata: ControllerHandler<
-  { formId: string },
-  StorageModeSubmissionMetadataList | ErrorDto,
-  unknown,
-  FormSubmissionMetadataQueryDto
-> = async (req, res) => {
-  const sessionUserId = (req.session as AuthedSessionData).user._id
-  const { formId } = req.params
-  const { page, submissionId } = req.query
-
-  const logMeta = {
-    action: 'handleGetMetadata',
-    formId,
-    submissionId,
-    page,
-    sessionUserId,
-    ...createReqMeta(req),
-  }
-
-  return (
-    // Step 1: Retrieve logged in user.
-    getPopulatedUserById(sessionUserId)
-      .andThen((user) =>
-        // Step 2: Check whether user has read permissions to form.
-        getFormAfterPermissionChecks({
-          user,
-          formId,
-          level: PermissionLevel.Read,
-        }),
-      )
-      // Step 3: Check whether form is encrypt mode.
-      .andThen(checkFormIsEncryptModeOrMultirespondent)
-      // Step 4: Retrieve submission metadata.
-      .andThen(() => {
-        // Step 4a: Retrieve specific submission id.
-        if (submissionId) {
-          return getSubmissionMetadata(formId, submissionId).map((metadata) => {
-            const metadataList: StorageModeSubmissionMetadataList = metadata
-              ? { metadata: [metadata], count: 1 }
-              : { metadata: [], count: 0 }
-            return metadataList
-          })
-        }
-        // Step 4b: Retrieve all submissions of given form id.
-        return getSubmissionMetadataList(formId, page)
-      })
-      .map((metadataList) => {
-        logger.info({
-          message: 'Successfully retrieved metadata from database',
-          meta: logMeta,
-        })
-        return res.json(metadataList)
-      })
-      .mapErr((error) => {
-        logger.error({
-          message: 'Failure retrieving metadata from database',
-          meta: logMeta,
-          error,
-        })
-
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({
-          message: errorMessage,
-        })
-      })
-  )
-}
-
-// Handler for GET /:formId/submissions/metadata
-export const handleGetMetadata = [
-  // NOTE: If submissionId is set, then page is optional.
-  // Otherwise, if there is no submissionId, then page >= 1
-  celebrate({
-    [Segments.QUERY]: {
-      submissionId: Joi.string().optional(),
-      page: Joi.number().min(1).when('submissionId', {
-        not: Joi.exist(),
-        then: Joi.required(),
-      }),
-    },
-  }),
-  getMetadata,
 ] as ControllerHandler[]
 
 /**

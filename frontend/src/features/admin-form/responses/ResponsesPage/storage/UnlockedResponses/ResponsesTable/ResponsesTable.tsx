@@ -9,7 +9,7 @@ import {
 } from 'react-table'
 import { Flex, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
 
-import { FormResponseMode, StorageModeSubmissionMetadata } from '~shared/types'
+import { FormResponseMode, SubmissionMetadata } from '~shared/types'
 import { centsToDollars } from '~shared/utils/payments'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -18,7 +18,7 @@ import { useUnlockedResponses } from '../UnlockedResponsesProvider'
 
 import { getNetAmount } from './utils'
 
-type ResponseColumnData = StorageModeSubmissionMetadata
+type ResponseColumnData = SubmissionMetadata
 
 const RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {

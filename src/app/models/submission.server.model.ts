@@ -4,7 +4,7 @@ import mongoose, { Mongoose, QueryCursor, Schema } from 'mongoose'
 import {
   FormAuthType,
   MyInfoAttribute,
-  StorageModeSubmissionMetadata,
+  SubmissionMetadata,
   SubmissionType,
   WebhookResponse,
 } from '../../../shared/types'
@@ -14,13 +14,17 @@ import {
   IEmailSubmissionSchema,
   IEncryptedSubmissionSchema,
   IEncryptSubmissionModel,
+  IMultirespondentSubmissionModel,
+  IMultirespondentSubmissionSchema,
   IPaymentSchema,
   IPopulatedWebhookSubmission,
   ISubmissionModel,
   ISubmissionSchema,
   IWebhookResponseSchema,
-  SubmissionCursorData,
-  SubmissionData,
+  MultirespondentSubmissionCursorData,
+  MultirespondentSubmissionData,
+  StorageModeSubmissionCursorData,
+  StorageModeSubmissionData,
   SubmissionWebhookInfo,
   WebhookData,
   WebhookView,
@@ -255,7 +259,7 @@ EncryptSubmissionSchema.statics.retrieveWebhookInfoById = function (
 EncryptSubmissionSchema.statics.findSingleMetadata = function (
   formId: string,
   submissionId: string,
-): Promise<StorageModeSubmissionMetadata | null> {
+): Promise<SubmissionMetadata | null> {
   const pageResults: Promise<MetadataAggregateResult[]> = this.aggregate([
     {
       $match: {
@@ -322,7 +326,7 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
     pageSize?: number
   } = {},
 ): Promise<{
-  metadata: StorageModeSubmissionMetadata[]
+  metadata: SubmissionMetadata[]
   count: number
 }> {
   const numToSkip = (page - 1) * pageSize
@@ -386,7 +390,7 @@ EncryptSubmissionSchema.statics.getSubmissionCursorByFormId = function (
     startDate?: string
     endDate?: string
   } = {},
-): QueryCursor<SubmissionCursorData> {
+): QueryCursor<StorageModeSubmissionCursorData> {
   const streamQuery = {
     form: formId,
     ...createQueryWithDateParam(dateRange?.startDate, dateRange?.endDate),
@@ -394,6 +398,7 @@ EncryptSubmissionSchema.statics.getSubmissionCursorByFormId = function (
   return (
     this.find(streamQuery)
       .select({
+        submissionType: 1,
         encryptedContent: 1,
         verifiedContent: 1,
         attachmentMetadata: 1,
@@ -406,24 +411,204 @@ EncryptSubmissionSchema.statics.getSubmissionCursorByFormId = function (
       .read('secondary')
       .lean()
       // Override typing as Map is converted to Object once passed through `lean()`.
-      .cursor() as QueryCursor<SubmissionCursorData>
+      .cursor() as QueryCursor<StorageModeSubmissionCursorData>
   )
 }
 
 EncryptSubmissionSchema.statics.findEncryptedSubmissionById = function (
   formId: string,
   submissionId: string,
-): Promise<SubmissionData | null> {
+): Promise<StorageModeSubmissionData | null> {
   return this.findOne({
     _id: submissionId,
     form: formId,
     submissionType: SubmissionType.Encrypt,
   })
     .select({
+      submissionType: 1,
       encryptedContent: 1,
       verifiedContent: 1,
       attachmentMetadata: 1,
       paymentId: 1,
+      created: 1,
+      version: 1,
+    })
+    .exec()
+}
+
+export const MultirespondentSubmissionSchema = new Schema<
+  IMultirespondentSubmissionSchema,
+  IMultirespondentSubmissionModel
+>({
+  //TODO(MRF): Clean this up
+  form_fields: [],
+  form_logics: [],
+
+  submissionPublicKey: {
+    type: String,
+    trim: true,
+    required: true,
+  },
+  encryptedSubmissionSecretKey: {
+    type: String,
+    trim: true,
+    required: true,
+  },
+  encryptedContent: {
+    type: String,
+    trim: true,
+    required: true,
+  },
+  verifiedContent: {
+    type: String,
+    trim: true,
+  },
+  attachmentMetadata: {
+    type: Map,
+    of: String,
+  },
+  version: {
+    type: Number,
+    required: true,
+  },
+})
+
+MultirespondentSubmissionSchema.statics.findSingleMetadata = function (
+  formId: string,
+  submissionId: string,
+): Promise<SubmissionMetadata | null> {
+  const pageResults: Promise<MetadataAggregateResult[]> = this.aggregate([
+    {
+      $match: {
+        submissionType: SubmissionType.Multirespondent,
+        form: mongoose.Types.ObjectId(formId),
+        _id: mongoose.Types.ObjectId(submissionId),
+      },
+    },
+    { $limit: 1 },
+  ]).exec()
+
+  return Promise.resolve(pageResults).then((results) => {
+    if (!results || results.length <= 0) {
+      return null
+    }
+
+    const result = results[0]
+
+    // Build submissionMetadata object.
+    const metadata = buildSubmissionMetadata(result, 1)
+
+    return metadata
+  })
+}
+
+MultirespondentSubmissionSchema.statics.findAllMetadataByFormId = function (
+  formId: string,
+  {
+    page = 1,
+    pageSize = 10,
+  }: {
+    page?: number
+    pageSize?: number
+  } = {},
+): Promise<{
+  metadata: SubmissionMetadata[]
+  count: number
+}> {
+  const numToSkip = (page - 1) * pageSize
+  // return documents within the page
+  const pageResults: Promise<MetadataAggregateResult[]> = this.aggregate([
+    { $match: { form: mongoose.Types.ObjectId(formId) } },
+    { $sort: { created: -1 } },
+    { $skip: numToSkip },
+    { $limit: pageSize },
+    {
+      $project: {
+        _id: 1,
+        created: 1,
+      },
+    },
+  ]).exec()
+
+  const count =
+    this.countDocuments({
+      form: mongoose.Types.ObjectId(formId),
+      submissionType: SubmissionType.Multirespondent,
+    }).exec() ?? 0
+
+  return Promise.all([pageResults, count]).then(([results, count]) => {
+    let currentNumber = count - numToSkip
+
+    const metadata = results.map((result) => {
+      const paymentMeta = result.payments?.[0]
+      const metadataEntry = buildSubmissionMetadata(
+        result,
+        currentNumber,
+        paymentMeta,
+      )
+
+      currentNumber--
+      return metadataEntry
+    })
+
+    return {
+      metadata,
+      count,
+    }
+  })
+}
+
+MultirespondentSubmissionSchema.statics.getSubmissionCursorByFormId = function (
+  formId: string,
+  dateRange: {
+    startDate?: string
+    endDate?: string
+  } = {},
+): QueryCursor<MultirespondentSubmissionCursorData> {
+  const streamQuery = {
+    form: formId,
+    ...createQueryWithDateParam(dateRange?.startDate, dateRange?.endDate),
+  }
+  return (
+    this.find(streamQuery)
+      .select({
+        submissionType: 1,
+        form_fields: 1,
+        form_logics: 1,
+        encryptedSubmissionSecretKey: 1,
+        encryptedContent: 1,
+        verifiedContent: 1,
+        attachmentMetadata: 1,
+        created: 1,
+        version: 1,
+        id: 1,
+      })
+      .batchSize(2000)
+      .read('secondary')
+      .lean()
+      // Override typing as Map is converted to Object once passed through `lean()`.
+      .cursor() as QueryCursor<MultirespondentSubmissionCursorData>
+  )
+}
+
+MultirespondentSubmissionSchema.statics.findEncryptedSubmissionById = function (
+  formId: string,
+  submissionId: string,
+): Promise<MultirespondentSubmissionData | null> {
+  return this.findOne({
+    _id: submissionId,
+    form: formId,
+    submissionType: SubmissionType.Multirespondent,
+  })
+    .select({
+      submissionType: 1,
+      form_fields: 1,
+      form_logics: 1,
+      submissionPublicKey: 1,
+      encryptedSubmissionSecretKey: 1,
+      encryptedContent: 1,
+      verifiedContent: 1,
+      attachmentMetadata: 1,
       created: 1,
       version: 1,
     })
@@ -437,6 +622,10 @@ const compileSubmissionModel = (db: Mongoose): ISubmissionModel => {
   )
   Submission.discriminator(SubmissionType.Email, EmailSubmissionSchema)
   Submission.discriminator(SubmissionType.Encrypt, EncryptSubmissionSchema)
+  Submission.discriminator(
+    SubmissionType.Multirespondent,
+    MultirespondentSubmissionSchema,
+  )
   return db.model<ISubmissionSchema, ISubmissionModel>(
     SUBMISSION_SCHEMA_ID,
     SubmissionSchema,
@@ -469,11 +658,21 @@ export const getEncryptSubmissionModel = (
   )
 }
 
+export const getMultirespondentSubmissionModel = (
+  db: Mongoose,
+): IMultirespondentSubmissionModel => {
+  getSubmissionModel(db)
+  return db.model<
+    IMultirespondentSubmissionSchema,
+    IMultirespondentSubmissionModel
+  >(SubmissionType.Multirespondent)
+}
+
 const buildSubmissionMetadata = (
   result: MetadataAggregateResult,
   currentNumber: number,
   paymentMeta?: PaymentAggregates,
-): StorageModeSubmissionMetadata => {
+): SubmissionMetadata => {
   return {
     number: currentNumber,
     refNo: result._id,

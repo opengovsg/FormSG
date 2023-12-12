@@ -6,6 +6,7 @@ import {
   sumBy,
   uniqBy,
 } from 'lodash'
+import mongoose from 'mongoose'
 import { err, ok, Result } from 'neverthrow'
 
 import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
@@ -21,25 +22,39 @@ import {
   FieldResponse,
   FormFieldSchema,
   IAttachmentInfo,
+  IEncryptSubmissionModel,
   IFormDocument,
+  IMultirespondentSubmissionModel,
+  IPopulatedEncryptedForm,
+  IPopulatedForm,
+  IPopulatedMultirespondentForm,
 } from '../../../types'
 import {
   ParsedClearAttachmentResponse,
   ParsedClearFormFieldResponse,
 } from '../../../types/api'
+import {
+  getEncryptSubmissionModel,
+  getMultirespondentSubmissionModel,
+} from '../../models/submission.server.model'
 import { AutoReplyMailData } from '../../services/mail/mail.types'
+import { isFormEncryptModeOrMultirespondent } from '../form/form.utils'
 import { MyInfoKey } from '../myinfo/myinfo.types'
 import { getMyInfoChildHashKey } from '../myinfo/myinfo.util'
 
 import { MYINFO_PREFIX } from './email-submission/email-submission.constants'
 import { ResponseFormattedForEmail } from './email-submission/email-submission.types'
-import { ConflictError } from './submission.errors'
+import { ConflictError, ResponseModeError } from './submission.errors'
 import {
   FilteredResponse,
   ProcessedChildrenResponse,
   ProcessedFieldResponse,
   ProcessedSingleAnswerResponse,
 } from './submission.types'
+
+const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
+const MultirespondentSubmissionModel =
+  getMultirespondentSubmissionModel(mongoose)
 
 type ResponseModeFilterParam = {
   fieldType: BasicField
@@ -59,6 +74,43 @@ export const fileSizeLimit = (responseMode: FormResponseMode) => {
     case FormResponseMode.Encrypt:
     case FormResponseMode.Multirespondent:
       return 20
+  }
+}
+
+export const checkFormIsEncryptModeOrMultirespondent = (
+  form: IPopulatedForm,
+): Result<
+  IPopulatedEncryptedForm | IPopulatedMultirespondentForm,
+  ResponseModeError
+> => {
+  return isFormEncryptModeOrMultirespondent(form)
+    ? ok(form)
+    : err(
+        new ResponseModeError(
+          [FormResponseMode.Encrypt, FormResponseMode.Multirespondent],
+          form.responseMode,
+        ),
+      )
+}
+
+export const getEncryptedSubmissionModelByResponseMode = (
+  responseMode: FormResponseMode,
+): Result<
+  IEncryptSubmissionModel | IMultirespondentSubmissionModel,
+  ResponseModeError
+> => {
+  switch (responseMode) {
+    case FormResponseMode.Encrypt:
+      return ok(EncryptSubmissionModel)
+    case FormResponseMode.Multirespondent:
+      return ok(MultirespondentSubmissionModel)
+    default:
+      return err(
+        new ResponseModeError(
+          [FormResponseMode.Encrypt, FormResponseMode.Multirespondent],
+          responseMode,
+        ),
+      )
   }
 }
 

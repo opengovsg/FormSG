@@ -1,38 +1,32 @@
 import { useMemo, useState } from 'react'
 import { Box } from '@chakra-ui/react'
 
-import { FormAuthType, FormResponseMode } from '~shared/types'
+import { FormAuthType } from '~shared/types'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
-import { useDecryptedSubmission } from '~features/public-form/PublicFormEditPage/queries'
-import { SecretKeyVerification } from '~features/public-form/PublicFormEditPage/SecretKeyVerification'
+import { decryptSubmission } from '~features/public-form/utils/decryptSubmission'
 
 import { FormAuth } from '../FormAuth'
 
 import { FormFields } from './FormFields'
 import { FormFieldsSkeleton } from './FormFieldsSkeleton'
+import { SecretKeyVerification } from './SecretKeyVerification'
 
 export const FormFieldsContainer = (): JSX.Element | null => {
   const {
     form,
     submissionId,
     isAuthRequired,
-    isLoading: isFormLoading,
+    isLoading,
     handleSubmitForm,
     submissionData,
+    encryptedPreviousSubmission,
   } = usePublicFormContext()
 
-  const [secretKey, setSecretKey] = useState<string>()
+  const [previousSubmission, setPreviousSubmission] =
+    useState<ReturnType<typeof decryptSubmission>>()
 
-  const publicKey = useMemo(() => {
-    if (!form || form.responseMode === FormResponseMode.Email) return null
-    return form.publicKey
-  }, [form])
-
-  const { data, isLoading: isSubmissionLoading } =
-    useDecryptedSubmission(secretKey)
-
-  const isLoading = isFormLoading || isSubmissionLoading
+  const { submissionPublicKey = null } = encryptedPreviousSubmission ?? {}
 
   const renderFields = useMemo(() => {
     // Render skeleton when no data
@@ -51,11 +45,18 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     }
 
     // MRF
-    if (submissionId && !secretKey) {
+    if (submissionId && !previousSubmission) {
       return (
         <SecretKeyVerification
-          publicKey={publicKey}
-          setSecretKey={setSecretKey}
+          publicKey={submissionPublicKey}
+          setSecretKey={(secretKey) =>
+            setPreviousSubmission(
+              decryptSubmission({
+                submission: encryptedPreviousSubmission,
+                secretKey,
+              }),
+            )
+          }
           isLoading={isLoading}
         />
       )
@@ -63,7 +64,7 @@ export const FormFieldsContainer = (): JSX.Element | null => {
 
     return (
       <FormFields
-        previousResponses={data?.responses}
+        previousResponses={previousSubmission?.responses}
         responseMode={form.responseMode}
         formFields={form.form_fields}
         formLogics={form.form_logics}
@@ -72,14 +73,14 @@ export const FormFieldsContainer = (): JSX.Element | null => {
       />
     )
   }, [
-    data?.responses,
-    form,
-    handleSubmitForm,
-    isAuthRequired,
     isLoading,
-    publicKey,
-    secretKey,
+    form,
+    isAuthRequired,
     submissionId,
+    previousSubmission,
+    handleSubmitForm,
+    submissionPublicKey,
+    encryptedPreviousSubmission,
   ])
 
   if (submissionData) return null
