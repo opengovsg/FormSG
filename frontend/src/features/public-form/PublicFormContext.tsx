@@ -23,7 +23,7 @@ export interface PublicFormContextProps
     Omit<UseQueryResult<PublicFormViewDto>, 'data'> {
   miniHeaderRef: RefObject<HTMLDivElement>
   formId: string
-  submissionId?: string
+  previousSubmissionId?: string
   /** Whether form authentication is required. */
   isAuthRequired: boolean
   /**

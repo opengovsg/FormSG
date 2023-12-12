@@ -119,7 +119,7 @@ export function useCommonFormProvider(formId: string) {
 
 export const PublicFormProvider = ({
   formId,
-  submissionId,
+  submissionId: previousSubmissionId,
   children,
   startTime,
 }: PublicFormProviderProps): JSX.Element => {
@@ -143,7 +143,7 @@ export const PublicFormProvider = ({
     error: encryptedSubmissionError,
   } = useEncryptedSubmission(
     formId,
-    submissionId,
+    previousSubmissionId,
     // Stop querying once submissionData is present.
     /* enabled= */ !submissionData,
   )
@@ -262,11 +262,11 @@ export const PublicFormProvider = ({
     return (
       (error instanceof HttpError &&
         (error.code === 404 || error.code === 410)) ||
-      (!!submissionId &&
+      (!!previousSubmissionId &&
         !!data &&
         data.form.responseMode !== FormResponseMode.Multirespondent)
     )
-  }, [data, error, submissionId])
+  }, [data, error, previousSubmissionId])
 
   const generateVfnExpiryToast = useCallback(() => {
     if (vfnToastIdRef.current) {
@@ -302,7 +302,7 @@ export const PublicFormProvider = ({
     submitStorageModeClearFormWithVirusScanningMutation,
     submitMultirespondentFormMutation,
     updateMultirespondentSubmissionMutation,
-  } = usePublicFormMutations(formId, submissionId)
+  } = usePublicFormMutations(formId, previousSubmissionId)
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
@@ -678,13 +678,12 @@ export const PublicFormProvider = ({
         }
         case FormResponseMode.Multirespondent:
           return (
-            submissionId
+            previousSubmissionId
               ? updateMultirespondentSubmissionMutation
               : submitMultirespondentFormMutation
           ).mutateAsync(formData, {
             onSuccess: ({ submissionId, timestamp }) => {
               trackSubmitForm(form)
-
               setSubmissionData({
                 id: submissionId,
                 timestamp,
@@ -704,7 +703,7 @@ export const PublicFormProvider = ({
       getTurnstileResponse,
       showErrorToast,
       getCaptchaResponse,
-      submissionId,
+      previousSubmissionId,
       submitMultirespondentFormMutation,
       updateMultirespondentSubmissionMutation,
       submitEmailModeFormFetchMutation,
@@ -744,7 +743,7 @@ export const PublicFormProvider = ({
         handleSubmitForm,
         handleLogout,
         formId,
-        submissionId,
+        previousSubmissionId,
         error,
         submissionData,
         isAuthRequired,

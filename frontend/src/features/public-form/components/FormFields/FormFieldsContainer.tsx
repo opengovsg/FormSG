@@ -15,7 +15,7 @@ import { SecretKeyVerification } from './SecretKeyVerification'
 export const FormFieldsContainer = (): JSX.Element | null => {
   const {
     form,
-    submissionId,
+    previousSubmissionId,
     isAuthRequired,
     isLoading,
     handleSubmitForm,
@@ -45,7 +45,7 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     }
 
     // MRF
-    if (submissionId && !previousSubmission) {
+    if (previousSubmissionId && !previousSubmission) {
       return (
         <SecretKeyVerification
           publicKey={submissionPublicKey}
@@ -76,7 +76,7 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     isLoading,
     form,
     isAuthRequired,
-    submissionId,
+    previousSubmissionId,
     previousSubmission,
     handleSubmitForm,
     submissionPublicKey,
