@@ -74,7 +74,6 @@ import {
 } from '../../submission/email-submission/email-submission.util'
 import * as EncryptSubmissionMiddleware from '../../submission/encrypt-submission/encrypt-submission.middleware'
 import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
-import { mapRouteError as mapEncryptSubmissionError } from '../../submission/encrypt-submission/encrypt-submission.utils'
 import IncomingEncryptSubmission from '../../submission/encrypt-submission/IncomingEncryptSubmission.class'
 import ParsedResponsesObject from '../../submission/ParsedResponsesObject.class'
 import * as ReceiverMiddleware from '../../submission/receiver/receiver.middleware'
@@ -82,6 +81,7 @@ import * as SubmissionService from '../../submission/submission.service'
 import {
   extractEmailConfirmationData,
   mapAttachmentsFromResponses,
+  mapRouteError as mapSubmissionError,
 } from '../../submission/submission.utils'
 import * as UserService from '../../user/user.service'
 import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
@@ -1750,7 +1750,7 @@ export const submitEncryptPreview: ControllerHandler<
       })
     })
     .mapErr((error) => {
-      const { errorMessage, statusCode } = mapEncryptSubmissionError(error)
+      const { errorMessage, statusCode } = mapSubmissionError(error)
       return res.status(statusCode).json({ message: errorMessage })
     })
 }

@@ -41,7 +41,7 @@ import {
   YesNoFieldValue,
 } from '~templates/Field/types'
 
-const pickBaseOutputFromSchema = <F extends FormFieldDto>(
+export const pickBaseOutputFromSchema = <F extends FormFieldDto>(
   schema: F,
 ): BaseFieldOutput<F> => {
   return {

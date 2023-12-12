@@ -1,11 +1,16 @@
 import { StatusCodes } from 'http-status-codes'
 
 import { VIRUS_SCANNER_SUBMISSION_VERSION } from '../../../../../shared/constants'
-import { FieldResponse, FieldResponsesV3 } from '../../../../../shared/types'
+import {
+  BasicField,
+  FieldResponse,
+  FieldResponsesV3,
+} from '../../../../../shared/types'
 import { IAttachmentInfo, MapRouteError } from '../../../../types'
 import {
   ParsedClearAttachmentResponse,
   ParsedClearFormFieldResponse,
+  ParsedClearFormFieldResponseV3,
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 
@@ -106,9 +111,12 @@ export const addAttachmentToResponses = (
   }
 
   if (isBodyVersion3AndAbove(body)) {
-    Object.keys(body.responses).forEach((k) => {
-      if (attachmentMap[k]) {
-        //TODO(MRF): Fill in attachments handling
+    Object.keys(body.responses).forEach((id) => {
+      const response = body.responses[id] as ParsedClearFormFieldResponseV3
+      if (response.fieldType === BasicField.Attachment) {
+        const file = attachmentMap[id]
+        response.answer.filename = file.filename
+        response.answer.content = file.content
       }
     })
   }

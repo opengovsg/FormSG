@@ -17,14 +17,14 @@ import {
   InvalidFileKeyError,
   ParseVirusScannerLambdaPayloadError,
   VirusScanFailedError,
-} from '../encrypt-submission.errors'
+} from '../../submission.errors'
 import {
-  createEncryptSubmissionWithoutSave,
   downloadCleanFile,
   getQuarantinePresignedPostData,
   transformAttachmentMetasToSignedUrls,
   triggerVirusScanning,
-} from '../encrypt-submission.service'
+} from '../../submission.service'
+import { createEncryptSubmissionWithoutSave } from '../encrypt-submission.service'
 
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 

@@ -5,8 +5,12 @@ import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
+import { featureFlags } from '../../../../shared/constants'
 import {
+  AttachmentPresignedPostDataMapType,
+  AttachmentSizeMapType,
   ErrorDto,
+  FormResponseMode,
   FormSubmissionMetadataQueryDto,
   SubmissionDto,
   SubmissionMetadataList,
@@ -18,27 +22,34 @@ import { createReqMeta } from '../../utils/request'
 import { getFormAfterPermissionChecks } from '../auth/auth.service'
 import { DatabaseError } from '../core/core.errors'
 import { ControllerHandler } from '../core/core.types'
+import { getFeatureFlag } from '../feature-flags/feature-flags.service'
 import { PermissionLevel } from '../form/admin-form/admin-form.types'
 import { PaymentNotFoundError } from '../payments/payments.errors'
 import { getPopulatedUserById } from '../user/user.service'
 
-import { transformAttachmentMetasToSignedUrls } from './encrypt-submission/encrypt-submission.service'
-import {
-  createStorageModeSubmissionDto,
-  mapRouteError,
-} from './encrypt-submission/encrypt-submission.utils'
+import { createStorageModeSubmissionDto } from './encrypt-submission/encrypt-submission.utils'
 import { createMultirespondentSubmissionDto } from './multirespondent-submission/multirespondent-submission.utils'
-import { InvalidSubmissionTypeError } from './submission.errors'
+import {
+  FeatureDisabledError,
+  InvalidSubmissionTypeError,
+} from './submission.errors'
 import {
   addPaymentDataStream,
   getEncryptedSubmissionData,
+  getQuarantinePresignedPostData,
   getSubmissionCursor,
   getSubmissionMetadata,
   getSubmissionMetadataList,
   getSubmissionPaymentDto,
+  transformAttachmentMetasToSignedUrls,
   transformAttachmentMetaStream,
 } from './submission.service'
-import { checkFormIsEncryptModeOrMultirespondent } from './submission.utils'
+import {
+  checkFormIsEncryptModeOrMultirespondent,
+  fileSizeLimit,
+  fileSizeLimitBytes,
+  mapRouteError,
+} from './submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -122,7 +133,7 @@ export const getMetadata: ControllerHandler<
           error,
         })
 
-        const { statusCode, errorMessage } = mapRouteError(error) //TODO(MRF): Move errors + maprouteerror out of encrypt-submission folder.
+        const { statusCode, errorMessage } = mapRouteError(error)
         return res.status(statusCode).json({
           message: errorMessage,
         })
@@ -198,46 +209,50 @@ export const handleGetEncryptedResponse: ControllerHandler<
       )
       // Step 5: If there is an associated payment, get the payment details.
       .andThen((submissionData) => {
-        switch (submissionData.submissionType) {
-          case SubmissionType.Encrypt: {
-            const paymentDataResult: ResultAsync<
-              SubmissionPaymentDto | undefined,
-              DatabaseError | PaymentNotFoundError
-            > = !submissionData.paymentId
-              ? okAsync(undefined)
-              : getSubmissionPaymentDto(submissionData.paymentId)
+        // Remaining login duration in seconds.
+        const urlExpiry = (req.session?.cookie.maxAge ?? 0) / 1000
+        return transformAttachmentMetasToSignedUrls(
+          submissionData.attachmentMetadata,
+          urlExpiry,
+        ).andThen((presignedUrls) => {
+          switch (submissionData.submissionType) {
+            case SubmissionType.Encrypt: {
+              const paymentDataResult: ResultAsync<
+                SubmissionPaymentDto | undefined,
+                DatabaseError | PaymentNotFoundError
+              > = !submissionData.paymentId
+                ? okAsync(undefined)
+                : getSubmissionPaymentDto(submissionData.paymentId)
 
-            return (
-              paymentDataResult
-                // Step 6: Retrieve presigned URLs for attachments.
-                .andThen((paymentData) => {
-                  // Remaining login duration in seconds.
-                  const urlExpiry = (req.session?.cookie.maxAge ?? 0) / 1000
-                  return transformAttachmentMetasToSignedUrls(
-                    submissionData.attachmentMetadata,
-                    urlExpiry,
-                  ).map((presignedUrls) =>
-                    createStorageModeSubmissionDto(
-                      submissionData,
-                      presignedUrls,
-                      paymentData,
+              return (
+                paymentDataResult
+                  // Step 6: Retrieve presigned URLs for attachments.
+                  .andThen((paymentData) =>
+                    okAsync(
+                      createStorageModeSubmissionDto(
+                        submissionData,
+                        presignedUrls,
+                        paymentData,
+                      ),
                     ),
                   )
-                })
-            )
+              )
+            }
+            case SubmissionType.Multirespondent: {
+              return okAsync(
+                createMultirespondentSubmissionDto(
+                  submissionData,
+                  presignedUrls,
+                ),
+              )
+            }
+            default: {
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              const _: never = submissionData
+              return errAsync(new InvalidSubmissionTypeError())
+            }
           }
-          case SubmissionType.Multirespondent: {
-            //TODO(MRF): Attachment handling
-            return okAsync(
-              createMultirespondentSubmissionDto(submissionData, {}),
-            )
-          }
-          default: {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const _: never = submissionData
-            return errAsync(new InvalidSubmissionTypeError())
-          }
-        }
+        })
       })
       .map((responseData) => {
         logger.info({
@@ -412,4 +427,114 @@ export const streamEncryptedResponses: ControllerHandler<
 export const handleStreamEncryptedResponses = [
   validateDateRange,
   streamEncryptedResponses,
+] as ControllerHandler[]
+
+/**
+ * Handler for POST /:formId/submissions/get-s3-presigned-post-data
+ * Used by handleGetS3PresignedPostData after joi validation
+ * @returns 200 with array of presigned post data
+ * @returns 400 if ids are invalid or total file size exceeds 20MB
+ * @returns 500 if presigned post data cannot be retrieved or any other errors occur
+ * Exported for testing
+ */
+export const getS3PresignedPostData: ControllerHandler<
+  unknown,
+  AttachmentPresignedPostDataMapType[] | ErrorDto,
+  AttachmentSizeMapType[]
+> = async (req, res) => {
+  const logMeta = {
+    action: 'getS3PresignedPostData',
+    ...createReqMeta(req),
+  }
+
+  return getFeatureFlag(featureFlags.encryptionBoundaryShiftVirusScanner)
+    .map((virusScannerEnabled) => {
+      if (!virusScannerEnabled) {
+        logger.warn({
+          message: 'Virus scanning has not been enabled.',
+          meta: logMeta,
+        })
+
+        const { statusCode, errorMessage } = mapRouteError(
+          new FeatureDisabledError(),
+        )
+        return res.status(statusCode).send({
+          message: errorMessage,
+        })
+      }
+
+      return getQuarantinePresignedPostData(req.body)
+        .map((presignedUrls) => {
+          logger.info({
+            message: 'Successfully retrieved quarantine presigned post data.',
+            meta: logMeta,
+          })
+          return res.status(StatusCodes.OK).send(presignedUrls)
+        })
+        .mapErr((error) => {
+          logger.error({
+            message: 'Failure getting quarantine presigned post data.',
+            meta: logMeta,
+            error,
+          })
+          const { statusCode, errorMessage } = mapRouteError(error)
+          return res.status(statusCode).send({
+            message: errorMessage,
+          })
+        })
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error retrieving feature flags.',
+        meta: logMeta,
+        error,
+      })
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).send({
+        message: errorMessage,
+      })
+    })
+}
+
+/**
+ * Custom validation function for Joi to validate that the sum of 'size' in the array of objects
+ * is less than or equal to total file size limit (20MB).
+ */
+const validateFileSizeSum = (
+  value: { size: number }[],
+  helpers: { error: (arg0: string) => null },
+) => {
+  const sum = value.reduce((acc, curr) => acc + curr.size, 0)
+
+  if (sum <= fileSizeLimitBytes(FormResponseMode.Encrypt)) {
+    return value // Return the validated value if the sum of 'size' is less than or equal to limit
+  } else {
+    return helpers.error('size.limit') // Return an error if the sum of 'size' is greater than limit
+  }
+}
+
+// Handler for POST /:formId/submissions/storage/get-s3-presigned-post-data
+export const handleGetS3PresignedPostData = [
+  celebrate({
+    [Segments.BODY]: Joi.array()
+      .items(
+        Joi.object().keys({
+          id: Joi.string()
+            .regex(/^[0-9a-fA-F]{24}$/) // IDs should be MongoDB ObjectIDs
+            .required(),
+          size: Joi.number()
+            .max(fileSizeLimitBytes(FormResponseMode.Encrypt)) // Max attachment size is 20MB
+            .required(),
+        }),
+      )
+      .unique('id') // IDs of each array item should be unique
+      .custom(validateFileSizeSum, 'Custom validation for total file size') // Custom validation to check for total file size
+      .messages({
+        'size.limit': `Total file size exceeds ${fileSizeLimit(
+          FormResponseMode.Encrypt,
+        )}MB`, // Custom error message for total file size
+        'array.unique': 'Duplicate id(s) found', // Custom error message for duplicate IDs
+      }),
+  }),
+  getS3PresignedPostData,
 ] as ControllerHandler[]

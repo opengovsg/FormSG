@@ -52,7 +52,7 @@ export const createEncryptedSubmissionData = async ({
   payments?: PaymentFieldsDto
   paymentProducts?: Array<ProductItem>
 }): Promise<StorageModeSubmissionContentDto> => {
-  const responses = createEmailAndStorageResponses(formFields, formInputs)
+  const responses = createResponsesArray(formFields, formInputs)
   const encryptedContent = formsgSdk.crypto.encrypt(responses, publicKey)
   // Edge case: We still send email/verifiable fields to the server in plaintext
   // even with end-to-end encryption in order to support email autoreplies and
@@ -108,7 +108,7 @@ export const createClearSubmissionFormData = (
     | CreateStorageSubmissionFormDataArgs,
 ) => {
   const { formFields, formInputs, ...formDataArgsRest } = formDataArgs
-  const responses = createEmailAndStorageResponses(formFields, formInputs)
+  const responses = createResponsesArray(formFields, formInputs)
   const attachments = getAttachmentsMap(formFields, formInputs)
 
   // Convert content to FormData object.
@@ -144,7 +144,7 @@ export const createClearSubmissionWithVirusScanningFormData = (
   fieldIdToQuarantineKeyMap: FieldIdToQuarantineKeyType[],
 ) => {
   const { formFields, formInputs, ...formDataArgsRest } = formDataArgs
-  const responses = createEmailAndStorageResponses(formFields, formInputs).map(
+  const responses = createResponsesArray(formFields, formInputs).map(
     (response) => {
       if (response.fieldType === BasicField.Attachment && response.answer) {
         // for each attachment response, find the corresponding quarantine bucket key
@@ -194,7 +194,7 @@ export const createClearSubmissionWithVirusScanningFormData = (
  * @returns formData containing form responses and attachments.
  * @throws Error if form inputs are invalid or contain malicious attachment(s).
  */
-export const createRawClearSubmissionWithVirusScanningFormData = (
+export const createClearSubmissionWithVirusScanningFormDataV3 = (
   formDataArgs: CreateMultirespondentSubmissionFormDataArgs,
   fieldIdToQuarantineKeyMap: FieldIdToQuarantineKeyType[],
 ) => {
@@ -202,26 +202,15 @@ export const createRawClearSubmissionWithVirusScanningFormData = (
 
   // Call this to validate responses, but don't actually use the result
   // TODO: Move validation to before response array creation so it can be used for encryption v2-3
-  createEmailAndStorageResponses(formFields, formInputs)
+  createResponsesArray(formFields, formInputs)
 
-  const responses = createMultirespondentResponses(formFields, formInputs)
+  const responses = createResponsesV3(
+    formFields,
+    formInputs,
+    fieldIdToQuarantineKeyMap,
+  )
 
-  //TODO(MRF): Handle attachments
-  // form_fields.forEach((ff) => {
-  //   if (ff.fieldType === BasicField.Attachment && formInputs[ff._id]) {
-  //     // for each attachment response, find the corresponding quarantine bucket key
-  //     const fieldIdToQuarantineKeyEntry = fieldIdToQuarantineKeyMap.find(
-  //       (v) => v.fieldId === ff._id,
-  //     )
-  //     if (!fieldIdToQuarantineKeyEntry)
-  //       throw new Error(
-  //         `Attachment response with fieldId ${ff._id} not found among attachments uploaded to quarantine bucket`,
-  //       )
-  //     // set response.answer as the quarantine bucket key
-  //     formInputs[ff._id] = fieldIdToQuarantineKeyEntry.quarantineBucketKey
-  //   }
-  // })
-  // const attachments = getAttachmentsMap(form_fields, formInputs)
+  const attachments = getAttachmentsMap(formFields, formInputs)
 
   // Convert content to FormData object.
   const formData = new FormData()
@@ -233,23 +222,23 @@ export const createRawClearSubmissionWithVirusScanningFormData = (
     }),
   )
 
-  // if (!isEmpty(attachments)) {
-  //   forOwn(attachments, (attachment, fieldId) => {
-  //     if (attachment) {
-  //       formData.append(
-  //         attachment.name,
-  //         // Set content as empty array buffer.
-  //         new File([], attachment.name, { type: attachment.type }),
-  //         fieldId,
-  //       )
-  //     }
-  //   })
-  // }
+  if (!isEmpty(attachments)) {
+    forOwn(attachments, (attachment, fieldId) => {
+      if (attachment) {
+        formData.append(
+          attachment.name,
+          // Set content as empty array buffer.
+          new File([], attachment.name, { type: attachment.type }),
+          fieldId,
+        )
+      }
+    })
+  }
 
   return formData
 }
 
-const createEmailAndStorageResponses = (
+const createResponsesArray = (
   formFields: FormFieldDto[],
   formInputs: FormFieldValues,
 ): FieldResponse[] => {
@@ -260,9 +249,10 @@ const createEmailAndStorageResponses = (
   return validateResponses(transformedResponses)
 }
 
-const createMultirespondentResponses = (
+const createResponsesV3 = (
   formFields: FormFieldDto[],
   formInputs: FormFieldValues,
+  fieldIdToQuarantineKeyMap: FieldIdToQuarantineKeyType[],
 ): FieldResponsesV3 => {
   const returnedInputs: FieldResponsesV3 = {}
   for (const ff of formFields) {
@@ -295,11 +285,19 @@ const createMultirespondentResponses = (
       case BasicField.Attachment: {
         const input = formInputs[ff._id] as FormFieldValue<typeof ff.fieldType>
         if (!input) continue
+        // for each attachment response, find the corresponding quarantine bucket key
+        const fieldIdToQuarantineKeyEntry = fieldIdToQuarantineKeyMap.find(
+          (v) => v.fieldId === ff._id,
+        )
+        if (!fieldIdToQuarantineKeyEntry)
+          throw new Error(
+            `Attachment response with fieldId ${ff._id} not found among attachments uploaded to quarantine bucket`,
+          )
         returnedInputs[ff._id] = {
           fieldType: ff.fieldType,
           answer: {
-            filename: input.name,
-            key: input.name, //TODO(MRF): Hmm?
+            hasBeenScanned: false, //TODO(MRF): conditionally set to true if not replaced by respondent 2 onwards
+            answer: fieldIdToQuarantineKeyEntry.quarantineBucketKey,
           },
         }
         break

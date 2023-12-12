@@ -1,23 +1,14 @@
 import { ObjectId } from 'bson-ext'
-import { readFileSync } from 'fs'
-import { cloneDeep } from 'lodash'
 import moment from 'moment-timezone'
 import { FormPaymentsField, PaymentType } from 'shared/types'
 
 import { IPopulatedEncryptedForm, StorageModeSubmissionData } from 'src/types'
 
-import { handleDuplicatesInAttachments } from '../../receiver/receiver.utils'
 import {
   createStorageModeSubmissionDto,
   getPaymentAmount,
   getPaymentIntentDescription,
 } from '../encrypt-submission.utils'
-
-const validSingleFile = {
-  filename: 'govtech.jpg',
-  content: readFileSync('./__tests__/unit/backend/resources/govtech.jpg'),
-  fieldId: String(new ObjectId()),
-}
 
 describe('encrypt-submission.utils', () => {
   describe('createStorageModeSubmissionDto', () => {
@@ -80,26 +71,6 @@ describe('encrypt-submission.utils', () => {
       const result = getPaymentAmount(fixedPaymentData, incomingPaymentData)
 
       expect(result).toEqual(expectedAmountCents)
-    })
-  })
-
-  // Note that if e.g. you have three attachments called abc.txt, abc.txt
-  // and 1-abc.txt, they will not be given unique names, i.e. one of the abc.txt
-  // will be renamed to 1-abc.txt so you end up with abc.txt, 1-abc.txt and 1-abc.txt.
-  describe('handleDuplicatesInAttachments', () => {
-    it('should make filenames unique by appending count when there are duplicates', () => {
-      const attachments = [
-        cloneDeep(validSingleFile),
-        cloneDeep(validSingleFile),
-        cloneDeep(validSingleFile),
-      ]
-      handleDuplicatesInAttachments(attachments)
-      const newFilenames = attachments.map((att) => att.filename)
-      // Expect uniqueness
-      expect(newFilenames.length).toBe(new Set(newFilenames).size)
-      expect(newFilenames).toContain(validSingleFile.filename)
-      expect(newFilenames).toContain(`1-${validSingleFile.filename}`)
-      expect(newFilenames).toContain(`2-${validSingleFile.filename}`)
     })
   })
 

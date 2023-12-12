@@ -122,10 +122,7 @@ export const getDecryptedSubmissionById = async ({
 
   const responses = augmentDecryptedResponses(
     processedContent,
-    //TODO(MRF): fix this
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //@ts-ignore
-    encryptedSubmission.attachmentMetadata ?? {},
+    encryptedSubmission.attachmentMetadata,
   )
 
   // Add metadata for display.

@@ -5,7 +5,12 @@ import {
 } from '@opengovsg/formsg-sdk/dist/types'
 import { has } from 'lodash'
 
-import { BasicField, FieldResponse, FormFieldDto } from '~shared/types'
+import {
+  AttachmentFieldResponseV3,
+  BasicField,
+  FieldResponse,
+  FormFieldDto,
+} from '~shared/types'
 import {
   CURRENT_VERIFIED_FIELDS,
   SgidFieldTitle,
@@ -13,7 +18,10 @@ import {
   VerifiedKeys,
 } from '~shared/utils/verified-content'
 
-import { transformInputsToOutputs } from '~features/public-form/utils'
+import {
+  pickBaseOutputFromSchema,
+  transformInputsToOutputs,
+} from '~features/public-form/utils'
 
 /**
  * Returns a response matching the given type containing the given value.
@@ -114,8 +122,6 @@ export const processDecryptedContentV3 = async (
   form_fields: FormFieldDto[],
   decrypted: DecryptedContentV3,
 ): Promise<VerifiedFormField[]> => {
-  //TODO(MRF): Attachment handling
-  // const { responses: displayedContent, verified } = decrypted
   const { responses } = decrypted
 
   // Convert decrypted content into displayable object.
@@ -123,12 +129,16 @@ export const processDecryptedContentV3 = async (
     .map((ff) => {
       const response = responses[ff._id]
       if (!response) return null
+      if (response.fieldType === BasicField.Attachment) {
+        const answer = response.answer as AttachmentFieldResponseV3
+        return {
+          ...pickBaseOutputFromSchema(ff),
+          answer: answer.answer,
+        }
+      }
       return transformInputsToOutputs(ff, response.answer)
     })
     .filter((output): output is FieldResponse => output !== null)
 
-  // return verified
-  //   ? displayedContent.concat(convertToResponseArray(verified))
-  //   : displayedContent
   return displayedContent as VerifiedFormField[]
 }

@@ -4,6 +4,7 @@ import { rateLimitConfig } from '../../../../config/config'
 import * as EmailSubmissionController from '../../../../modules/submission/email-submission/email-submission.controller'
 import * as EncryptSubmissionController from '../../../../modules/submission/encrypt-submission/encrypt-submission.controller'
 import * as MultirespondentSubmissionController from '../../../../modules/submission/multirespondent-submission/multirespondent-submission.controller'
+import * as SubmissionController from '../../../../modules/submission/submission.controller'
 import { limitRate } from '../../../../utils/limit-rate'
 
 export const PublicFormsSubmissionsRouter = Router()
@@ -107,15 +108,15 @@ PublicFormsSubmissionsRouter.route(
 
 /**
  * Get S3 presigned post data for attachments in a submission.
- * @route POST /forms/:formId/submissions/storage/get-s3-presigned-post-data
+ * @route POST /forms/:formId/submissions/get-s3-presigned-post-data
  * @param response.body.required - contains field ids and sizes of attachments
  * @returns 200 - presigned post data generated
  * @returns 400 - ids are invalid or attachment size exceeds limit
  * @returns 500 - failed to generate presigned post data
  */
 PublicFormsSubmissionsRouter.route(
-  '/:formId([a-fA-F0-9]{24})/submissions/storage/get-s3-presigned-post-data',
+  '/:formId([a-fA-F0-9]{24})/submissions/get-s3-presigned-post-data',
 ).post(
   limitRate({ max: rateLimitConfig.submissions }),
-  EncryptSubmissionController.handleGetS3PresignedPostData,
+  SubmissionController.handleGetS3PresignedPostData,
 )

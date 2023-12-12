@@ -118,7 +118,6 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
             encryptedSubmissionSecretKey:
               submission.encryptedSubmissionSecretKey,
             encryptedContent: submission.encryptedContent,
-            verifiedContent: submission.verifiedContent,
             version: submission.version,
           })
           if (!decryptedObject) throw new Error('Invalid decryption')
@@ -150,13 +149,12 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
             ++questionCount
           }
           // Populate S3 presigned URL for attachments
-          //TODO(MRF): Fix attachments!
-          // if (submission.attachmentMetadata[field._id]) {
-          //   attachmentDownloadUrls.set(questionCount, {
-          //     url: submission.attachmentMetadata[field._id],
-          //     filename: field.answer,
-          //   })
-          // }
+          if (submission.attachmentMetadata[field._id]) {
+            attachmentDownloadUrls.set(questionCount, {
+              url: submission.attachmentMetadata[field._id],
+              filename: field.answer,
+            })
+          }
         })
 
         try {

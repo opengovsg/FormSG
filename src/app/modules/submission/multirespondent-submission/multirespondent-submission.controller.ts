@@ -23,15 +23,17 @@ import {
   ensurePublicForm,
   ensureValidCaptcha,
 } from '../encrypt-submission/encrypt-submission.ensures'
-import { SubmissionFailedError } from '../encrypt-submission/encrypt-submission.errors'
+import * as ReceiverMiddleware from '../receiver/receiver.middleware'
 import {
+  InvalidSubmissionTypeError,
+  SubmissionFailedError,
+} from '../submission.errors'
+import {
+  getEncryptedSubmissionData,
   transformAttachmentMetasToSignedUrls,
   uploadAttachments,
-} from '../encrypt-submission/encrypt-submission.service'
-import { mapRouteError } from '../encrypt-submission/encrypt-submission.utils'
-import * as ReceiverMiddleware from '../receiver/receiver.middleware'
-import { InvalidSubmissionTypeError } from '../submission.errors'
-import { getEncryptedSubmissionData } from '../submission.service'
+} from '../submission.service'
+import { mapRouteError } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import * as MultirespondentSubmissionMiddleware from './multirespondent-submission.middleware'
@@ -102,25 +104,25 @@ const submitMultirespondentForm = async (
 
   // Save Responses to Database
   const encryptedPayload = req.formsg.encryptedPayload
-  // let attachmentMetadata = new Map<string, string>()
+  let attachmentMetadata = new Map<string, string>()
 
-  // if (encryptedPayload.attachments) {
-  //   const attachmentUploadResult = await uploadAttachments(
-  //     form._id,
-  //     encryptedPayload.attachments,
-  //   )
+  if (encryptedPayload.attachments) {
+    const attachmentUploadResult = await uploadAttachments(
+      form._id,
+      encryptedPayload.attachments,
+    )
 
-  //   if (attachmentUploadResult.isErr()) {
-  //     const { statusCode, errorMessage } = mapRouteError(
-  //       attachmentUploadResult.error,
-  //     )
-  //     return res.status(statusCode).json({
-  //       message: errorMessage,
-  //     })
-  //   } else {
-  //     attachmentMetadata = attachmentUploadResult.value
-  //   }
-  // }
+    if (attachmentUploadResult.isErr()) {
+      const { statusCode, errorMessage } = mapRouteError(
+        attachmentUploadResult.error,
+      )
+      return res.status(statusCode).json({
+        message: errorMessage,
+      })
+    } else {
+      attachmentMetadata = attachmentUploadResult.value
+    }
+  }
 
   // Create Incoming Submission
   const {
@@ -140,7 +142,7 @@ const submitMultirespondentForm = async (
     submissionPublicKey,
     encryptedSubmissionSecretKey,
     encryptedContent,
-    // attachmentMetadata,
+    attachmentMetadata,
     version,
   }
 
@@ -283,8 +285,8 @@ const _createSubmission = async ({
   submissionContent,
   logMeta,
   formId,
+  // responses,
   responseMetadata,
-  responses,
 }: {
   req: Parameters<SubmitMultirespondentFormHandlerType>[0]
   res: Parameters<SubmitMultirespondentFormHandlerType>[1]
@@ -345,8 +347,8 @@ export const handleMultirespondentSubmission = [
   ReceiverMiddleware.receiveMultirespondentSubmission,
   MultirespondentSubmissionMiddleware.validateMultirespondentSubmissionParams,
   MultirespondentSubmissionMiddleware.createFormsgAndRetrieveForm,
-  // EncryptSubmissionMiddleware.checkNewBoundaryEnabled,
-  // EncryptSubmissionMiddleware.scanAndRetrieveAttachments,
+  MultirespondentSubmissionMiddleware.scanAndRetrieveAttachments,
+  // TODO(MRF): Add validation for FieldResponsesV3
   // EncryptSubmissionMiddleware.validateStorageSubmission,
   MultirespondentSubmissionMiddleware.encryptSubmission,
   submitMultirespondentForm,
@@ -358,8 +360,7 @@ export const handleUpdateMultirespondentSubmission = [
   ReceiverMiddleware.receiveMultirespondentSubmission,
   MultirespondentSubmissionMiddleware.validateMultirespondentSubmissionParams,
   MultirespondentSubmissionMiddleware.createFormsgAndRetrieveForm,
-  // EncryptSubmissionMiddleware.checkNewBoundaryEnabled,
-  // EncryptSubmissionMiddleware.scanAndRetrieveAttachments,
+  MultirespondentSubmissionMiddleware.scanAndRetrieveAttachments,
   // EncryptSubmissionMiddleware.validateStorageSubmission,
   MultirespondentSubmissionMiddleware.encryptSubmission,
   updateMultirespondentSubmission,
@@ -402,19 +403,6 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
       .andThen((form) =>
         getEncryptedSubmissionData(form.responseMode, formId, submissionId),
       )
-      // Step 5: If there is an associated payment, get the payment details.
-      // .andThen((submissionData) => {
-      //   if (!submissionData.paymentId) {
-      //     return okAsync({ submissionData, paymentData: undefined })
-      //   }
-
-      //   return getSubmissionPaymentDto(submissionData.paymentId).map(
-      //     (paymentData) => ({
-      //       submissionData,
-      //       paymentData,
-      //     }),
-      //   )
-      // })
       // Step 6: Retrieve presigned URLs for attachments.
       .andThen((submissionData) => {
         if (submissionData.submissionType !== SubmissionType.Multirespondent) {

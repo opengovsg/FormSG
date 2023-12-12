@@ -89,7 +89,6 @@ export type FieldResponseAnswerMapV3<F extends BasicField = BasicField> =
     : never
 
 export type SingleAnswerResponseV3 = string
-export type MultiAnswerResponseV3 = string[]
 export type YesNoFieldResponseV3 = 'Yes' | 'No'
 export type VerifiableFieldResponsesV3 = {
   signature?: string
@@ -115,6 +114,6 @@ export type ChildrenCompoundFieldResponsesV3 = {
   childFields: MyInfoChildAttributes[]
 }
 export type AttachmentFieldResponseV3 = {
-  filename: string
-  key: string
+  hasBeenScanned: boolean
+  answer: string
 }

@@ -94,7 +94,7 @@ export const FormFields = ({
             break
           }
           case BasicField.Attachment:
-          //TODO(MRF)
+          //TODO(MRF): Handling of attachments by respondent 2+
           default:
             acc[field._id] = previousResponse.answer as FormFieldValue
         }

@@ -88,13 +88,13 @@ type ValidationRuleFnEmailAndMobile<T extends FieldBase = FieldBase> = (
 ) => RegisterOptions
 
 const requiredSingleAnswerValidationFn =
-  (schema: Pick<FieldBase, 'required'>, responseMode: FormResponseMode) =>
+  (schema: Pick<FieldBase, 'required'>, responseMode?: FormResponseMode) =>
   (value?: SingleAnswerValue) => {
     if (!schema.required || isMultirespondentForm(responseMode)) return true
     return !!value?.trim() || REQUIRED_ERROR
   }
 
-const isMultirespondentForm = (responseMode: FormResponseMode) =>
+const isMultirespondentForm = (responseMode?: FormResponseMode) =>
   responseMode === FormResponseMode.Multirespondent
 
 /**
@@ -132,7 +132,7 @@ const createBaseVfnFieldValidationRules: ValidationRuleFnEmailAndMobile<
 
 export const createBaseValidationRules = (
   schema: Pick<FieldBase, 'required'>,
-  responseMode: FormResponseMode,
+  responseMode?: FormResponseMode,
 ): RegisterOptions => {
   return {
     validate: requiredSingleAnswerValidationFn(schema, responseMode),

@@ -1,7 +1,10 @@
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
+import { StatusCodes } from 'http-status-codes'
 import { ObjectId } from 'mongodb'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import {
+  AttachmentPresignedPostDataMapType,
+  AttachmentSizeMapType,
   FormResponseMode,
   SubmissionId,
   SubmissionMetadata,
@@ -10,6 +13,7 @@ import {
 
 import * as AuthService from 'src/app/modules/auth/auth.service'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
+import * as FeatureFlagService from 'src/app/modules/feature-flags/feature-flags.service'
 import { PermissionLevel } from 'src/app/modules/form/admin-form/admin-form.types'
 import {
   ForbiddenFormError,
@@ -30,6 +34,7 @@ import {
 import * as EncryptSubmissionService from '../encrypt-submission/encrypt-submission.service'
 import {
   getMetadata,
+  getS3PresignedPostData,
   handleGetEncryptedResponse,
   streamEncryptedResponses,
 } from '../submission.controller'
@@ -46,10 +51,12 @@ jest.mock(
 jest.mock('src/app/modules/user/user.service')
 jest.mock('src/app/modules/auth/auth.service')
 jest.mock('src/app/modules/feature-flags/feature-flags.service')
+jest.mock('src/app/modules/feature-flags/feature-flags.service')
 const MockSubService = jest.mocked(SubmissionService)
 const MockEncryptSubService = jest.mocked(EncryptSubmissionService)
 const MockUserService = jest.mocked(UserService)
 const MockAuthService = jest.mocked(AuthService)
+const MockFeatureFlagService = jest.mocked(FeatureFlagService)
 
 describe('submission.controller', () => {
   beforeEach(() => jest.clearAllMocks())
@@ -502,7 +509,7 @@ describe('submission.controller', () => {
       MockSubService.getEncryptedSubmissionData.mockReturnValueOnce(
         okAsync(mockSubData),
       )
-      MockEncryptSubService.transformAttachmentMetasToSignedUrls.mockReturnValueOnce(
+      MockSubService.transformAttachmentMetasToSignedUrls.mockReturnValueOnce(
         okAsync(mockSignedUrls),
       )
       MockSubService.getSubmissionPaymentDto.mockReturnValueOnce(
@@ -742,7 +749,7 @@ describe('submission.controller', () => {
       MockSubService.getEncryptedSubmissionData.mockReturnValueOnce(
         okAsync({} as SubmissionData),
       )
-      MockEncryptSubService.transformAttachmentMetasToSignedUrls.mockReturnValueOnce(
+      MockSubService.transformAttachmentMetasToSignedUrls.mockReturnValueOnce(
         errAsync(new CreatePresignedPostError(mockErrorString)),
       )
 
@@ -1017,6 +1024,90 @@ describe('submission.controller', () => {
       ).not.toHaveBeenCalled()
       // Check cursor retrieval not called.
       expect(MockSubService.getSubmissionCursor).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('getS3PresignedPostData', () => {
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+
+    const MOCK_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+      },
+      session: {
+        user: {
+          _id: MOCK_USER_ID,
+        },
+      },
+      body: [
+        { id: new ObjectId().toHexString(), size: 500 },
+      ] as unknown as AttachmentSizeMapType[],
+    })
+
+    it('should return 500 if getFeatureFlag returns errAsync(DatabaseError)', async () => {
+      // Arrange
+      MockFeatureFlagService.getFeatureFlag.mockReturnValueOnce(
+        errAsync(new DatabaseError()),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await getS3PresignedPostData(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      )
+    })
+
+    it('should return 400 if getFeatureFlag returns okAsync(false)', async () => {
+      // Arrange
+      MockFeatureFlagService.getFeatureFlag.mockReturnValueOnce(okAsync(false))
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await getS3PresignedPostData(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
+    })
+
+    it('should return 500 if getFeatureFlag returns okAsync(true) but getQuarantinePresignedPostData returns errAsync(CreatePresignedPostError)', async () => {
+      // Arrange
+      MockFeatureFlagService.getFeatureFlag.mockReturnValueOnce(okAsync(true))
+      MockSubService.getQuarantinePresignedPostData.mockReturnValueOnce(
+        errAsync(new CreatePresignedPostError()),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await getS3PresignedPostData(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      )
+    })
+
+    it('should return 200 if getFeatureFlag returns okAsync(true) and getQuarantinePresignedPostData returns okAsync with the presigned URLs', async () => {
+      // Arrange
+      MockFeatureFlagService.getFeatureFlag.mockReturnValueOnce(okAsync(true))
+      const MOCK_PRESIGNED_URLS = [
+        { key: 'value' },
+      ] as unknown as AttachmentPresignedPostDataMapType[]
+
+      MockSubService.getQuarantinePresignedPostData.mockReturnValueOnce(
+        okAsync(MOCK_PRESIGNED_URLS),
+      )
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await getS3PresignedPostData(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.OK)
+      expect(mockRes.send).toHaveBeenCalledWith(MOCK_PRESIGNED_URLS)
     })
   })
 })

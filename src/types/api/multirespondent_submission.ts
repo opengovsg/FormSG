@@ -2,6 +2,7 @@ import {
   FieldResponsesV3,
   FormResponseMode,
   ResponseMetadata,
+  SubmissionAttachmentsMap,
 } from '../../../shared/types'
 import { IPopulatedMultirespondentForm } from '../form'
 
@@ -29,7 +30,7 @@ export type MultirespondentSubmissionDto = {
   submissionPublicKey: string
   encryptedSubmissionSecretKey: string
   encryptedContent: string
-  // attachments?: SubmissionAttachmentsMap
+  attachments?: SubmissionAttachmentsMap
   version: number
   responseMetadata?: ResponseMetadata
 }

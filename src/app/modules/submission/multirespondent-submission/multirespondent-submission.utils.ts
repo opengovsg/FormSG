@@ -27,9 +27,7 @@ export const createMultirespondentSubmissionDto = (
     submissionPublicKey: submissionData.submissionPublicKey,
     encryptedContent: submissionData.encryptedContent,
     encryptedSubmissionSecretKey: submissionData.encryptedSubmissionSecretKey,
-    // verified: submissionData.verifiedContent,
-    // attachmentMetadata: attachmentPresignedUrls,
-    // payment,
+    attachmentMetadata: attachmentPresignedUrls,
     version: submissionData.version,
   }
 }

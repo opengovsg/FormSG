@@ -1,3 +1,5 @@
+import { ParsedClearFormFieldResponsesV3 } from 'src/types/api'
+
 import {
   SubmissionErrorDto,
   SubmissionResponseDto,
@@ -31,6 +33,20 @@ export type MultirespondentSubmissionMiddlewareHandlerType = ControllerHandler<
 
 export type MultirespondentSubmissionMiddlewareHandlerRequest =
   Parameters<MultirespondentSubmissionMiddlewareHandlerType>[0] & {
+    formsg: MultirespondentFormCompleteDto
+  }
+
+export type ProcessedMultirespondentSubmissionHandlerType = ControllerHandler<
+  { formId: string },
+  SubmissionResponseDto | SubmissionErrorDto,
+  Omit<ParsedMultirespondentSubmissionBody, 'responses'> & {
+    responses: ParsedClearFormFieldResponsesV3
+  },
+  { captchaResponse?: unknown; captchaType?: unknown }
+>
+
+export type ProcessedMultirespondentSubmissionHandlerRequest =
+  Parameters<ProcessedMultirespondentSubmissionHandlerType>[0] & {
     formsg: MultirespondentFormCompleteDto
   }
 

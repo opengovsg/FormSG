@@ -149,7 +149,7 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
   encryptedSubmissionSecretKey: string
   encryptedContent: string
   //verified?: string
-  //attachmentMetadata: Record<string, string>
+  attachmentMetadata: Record<string, string>
   version: number
 }
 
@@ -183,7 +183,7 @@ export const MultirespondentSubmissionStreamDto =
     verifiedContent: true,
     version: true,
   }).extend({
-    // attachmentMetadata: z.record(z.string()),
+    attachmentMetadata: z.record(z.string()),
     _id: SubmissionId,
     created: DateString,
   })

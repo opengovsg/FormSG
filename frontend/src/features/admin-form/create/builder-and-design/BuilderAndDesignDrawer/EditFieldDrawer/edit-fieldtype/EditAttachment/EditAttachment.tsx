@@ -113,7 +113,7 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
         AttachmentSize.FourMb,
         AttachmentSize.SevenMb,
       ]
-    } else if (form.responseMode === FormResponseMode.Encrypt) {
+    } else {
       sizes = Object.values(AttachmentSize)
     }
 

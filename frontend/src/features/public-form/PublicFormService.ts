@@ -41,7 +41,7 @@ import { FormFieldValues } from '~templates/Field'
 import {
   createClearSubmissionFormData,
   createClearSubmissionWithVirusScanningFormData,
-  createRawClearSubmissionWithVirusScanningFormData,
+  createClearSubmissionWithVirusScanningFormDataV3,
   getAttachmentsMap,
 } from './utils/createSubmission'
 import { filterHiddenInputs } from './utils/filterHiddenInputs'
@@ -373,7 +373,7 @@ export const submitMultirespondentForm = async ({
     formLogics,
   })
 
-  const formData = createRawClearSubmissionWithVirusScanningFormData(
+  const formData = createClearSubmissionWithVirusScanningFormDataV3(
     {
       formFields,
       formInputs: filteredInputs,
@@ -414,7 +414,7 @@ export const updateMultirespondentSubmission = async ({
     formLogics,
   })
 
-  const formData = createRawClearSubmissionWithVirusScanningFormData(
+  const formData = createClearSubmissionWithVirusScanningFormDataV3(
     {
       formFields,
       formInputs: filteredInputs,
@@ -500,7 +500,7 @@ export const getAttachmentPresignedPostData = async ({
   formId: string
 }) => {
   return ApiService.post<AttachmentPresignedPostDataMapType[]>(
-    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/storage/get-s3-presigned-post-data`,
+    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/get-s3-presigned-post-data`,
     attachmentSizes,
   ).then(({ data }) => data)
 }
