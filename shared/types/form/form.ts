@@ -338,7 +338,7 @@ export type CreateStorageFormBodyDto = Pick<
 export type CreateMultirespondentFormBodyDto = Pick<
   MultirespondentFormDto,
   'publicKey' | 'responseMode' | 'title'
->
+> & { workspaceId?: string }
 
 export type CreateFormBodyDto =
   | CreateEmailFormBodyDto
