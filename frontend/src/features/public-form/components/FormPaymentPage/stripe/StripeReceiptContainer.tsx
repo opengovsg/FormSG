@@ -87,15 +87,13 @@ export const StripeReceiptContainer = ({
           paymentDate={paymentReceiptStatus.paymentDate}
         />
       </PaymentStack>
-      {
-        <PaymentStack>
-          {!isFeedbackSubmitted && (
-            <Box backgroundColor="white" p="2rem">
-              <FeedbackBlock onSubmit={handleSubmitFeedback} />
-            </Box>
-          )}
-        </PaymentStack>
-      }
+      <PaymentStack>
+        {!isFeedbackSubmitted && (
+          <Box backgroundColor="white" p="2rem">
+            <FeedbackBlock onSubmit={handleSubmitFeedback} />
+          </Box>
+        )}
+      </PaymentStack>
     </Stack>
   )
 }

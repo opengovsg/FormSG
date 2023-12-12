@@ -58,9 +58,9 @@ const PaymentSummaryRow = ({
 }): JSX.Element => {
   return (
     <Stack
-      direction={{ base: 'row', md: 'row' }}
+      direction="row"
       spacing={{ base: 0, md: '3rem' }}
-      justify={{ base: 'space-between', md: 'space-between' }}
+      justify="space-between"
     >
       <Text
         textStyle="body-1"
@@ -106,7 +106,6 @@ export const DownloadReceiptBlock = ({
 }: DownloadReceiptBlockProps) => {
   const toast = useToast({ status: 'success', isClosable: true })
 
-  // const formattedAmount = useMemo(() => `S$${centsToDollars(amount)}`, [amount])
   const totalAmount = useMemo(() => `S$${centsToDollars(amount)}`, [amount])
   const paymentTimestamp = useMemo(
     () =>
@@ -124,18 +123,13 @@ export const DownloadReceiptBlock = ({
   }
   return (
     <>
-      <Box bgColor="white" p="2rem">
+      <Box bg="white" p="2rem">
         <Stack tabIndex={-1} spacing="0.75rem">
           <Text textStyle="h2" color="secondary.500">
             Thank you, your payment has been made successfully.
           </Text>
           <Text textStyle="subhead-1" color="secondary.500">
-            This is a message that the admins can customise on their thank you
-            page. This helps to make it more personable to admins. This is a
-            message that the admins can customise on their thank you page. This
-            helps to make it more personable to admins.This is a message that
-            the admins can customise on their thank you page. This helps to make
-            it more personable to admin.
+            Your form has been submitted and payment has been made.
           </Text>
         </Stack>
       </Box>
@@ -153,7 +147,7 @@ export const DownloadReceiptBlock = ({
             flexDir="row"
             justifyContent="space-between"
             mb="1rem"
-            py="1rem" // h="4rem"
+            py="1rem"
             px="1.5rem"
           >
             <Text textStyle="h2" mb="0.5rem" color="secondary.500">
@@ -173,7 +167,7 @@ export const DownloadReceiptBlock = ({
 
         <Stack mx={{ base: '0', md: '1.5rem' }} mt="1.5rem">
           <Button
-            width={{ base: '100%', md: '100%' }}
+            w="100%"
             leftIcon={<BiDownload fontSize="1.5rem" />}
             onClick={handleInvoiceClick}
           >
