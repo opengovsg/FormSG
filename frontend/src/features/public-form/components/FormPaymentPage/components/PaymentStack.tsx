@@ -9,7 +9,7 @@ export const PaymentStack = ({ children }: { children: React.ReactNode }) => (
     spacing={{ base: '1.5rem', md: '2.25rem' }}
     py={{ base: '1.5rem', md: '3rem' }}
     px={{ base: '1.5rem', md: '4rem' }}
-    bg="white"
+    bg="grey.100"
     w="100%"
     divider={<Divider />}
   >
