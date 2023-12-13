@@ -132,7 +132,7 @@ const MOCK_ATTACHMENTS: IAttachmentInfo[] = [
 describe('submission.service', () => {
   beforeAll(async () => await dbHandler.connect())
   afterAll(async () => await dbHandler.closeDatabase())
-  beforeEach(() => jest.clearAllMocks())
+  beforeEach(() => jest.resetAllMocks())
 
   describe('getFormSubmissionsCount', () => {
     const countSpy = jest.spyOn(Submission, 'countDocuments')

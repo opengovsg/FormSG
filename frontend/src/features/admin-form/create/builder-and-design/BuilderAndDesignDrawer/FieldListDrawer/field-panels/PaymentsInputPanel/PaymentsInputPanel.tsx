@@ -476,7 +476,7 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
 
   const paymentDisabledMessage = !isEncryptMode ? (
     <Text>
-      Payments are not available for{' '}
+      Payments are not available in{' '}
       {form?.responseMode === FormResponseMode.Email
         ? 'email mode'
         : 'multi-respondent'}{' '}

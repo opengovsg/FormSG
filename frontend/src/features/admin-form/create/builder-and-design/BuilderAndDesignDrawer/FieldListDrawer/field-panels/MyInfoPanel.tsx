@@ -250,7 +250,7 @@ const MyInfoText = ({
 
   if (responseMode === FormResponseMode.Multirespondent) {
     return (
-      <Text>MyInfo fields are not available for multi-respondent forms.</Text>
+      <Text>MyInfo fields are not available in multi-respondent forms.</Text>
     )
   }
 
