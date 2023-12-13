@@ -37,6 +37,8 @@ const getResponse = (_id: string, answer: string): SingleAnswerFieldResponse =>
   } as unknown as SingleAnswerFieldResponse)
 
 describe('receiver.utils', () => {
+  const TEST_RESPONSE_VERSION = 2
+
   describe('addAttachmentToResponses', () => {
     it('should add attachments to responses correctly when inputs are valid', () => {
       const firstAttachment = validSingleFile
@@ -52,6 +54,7 @@ describe('receiver.utils', () => {
       addAttachmentToResponses(
         {
           responses: [firstResponse, secondResponse],
+          version: TEST_RESPONSE_VERSION,
         } as unknown as ParsedMultipartForm<FieldResponse[]>,
         [firstAttachment, secondAttachment],
       )
@@ -75,33 +78,36 @@ describe('receiver.utils', () => {
       const attachment = validSingleFile
       const responses = {
         responses: [getResponse(attachment.fieldId, MOCK_ANSWER)],
+        version: TEST_RESPONSE_VERSION,
       } as unknown as ParsedMultipartForm<FieldResponse[]>
       addAttachmentToResponses(responses, [attachment])
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
       expect(responses.responses[0].answer).toBe(attachment.filename)
-      expect((responses as unknown as IAttachmentResponse).filename).toBe(
-        attachment.filename,
-      )
-      expect((responses as unknown as IAttachmentResponse).content).toEqual(
-        attachment.content,
-      )
+      expect(
+        (responses.responses[0] as unknown as IAttachmentResponse).filename,
+      ).toBe(attachment.filename)
+      expect(
+        (responses.responses[0] as unknown as IAttachmentResponse).content,
+      ).toEqual(attachment.content)
     })
 
     it('should do nothing when responses are empty', () => {
-      const responses = { responses: [] } as unknown as ParsedMultipartForm<
-        FieldResponse[]
-      >
+      const responses = {
+        responses: [],
+        version: TEST_RESPONSE_VERSION,
+      } as unknown as ParsedMultipartForm<FieldResponse[]>
       addAttachmentToResponses(responses, [validSingleFile])
-      expect(responses).toEqual([])
+      expect(responses.responses).toEqual([])
     })
 
     it('should do nothing when there are no attachments', () => {
       const responses = {
         responses: [getResponse(validSingleFile.fieldId, MOCK_ANSWER)],
+        version: TEST_RESPONSE_VERSION,
       } as unknown as ParsedMultipartForm<FieldResponse[]>
       addAttachmentToResponses(responses, [])
-      expect(responses).toEqual([
+      expect(responses.responses).toEqual([
         getResponse(validSingleFile.fieldId, MOCK_ANSWER),
       ])
     })

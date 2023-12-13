@@ -73,7 +73,6 @@ export const usePublicFormMutations = (
   formId: string,
   submissionId?: string,
 ) => {
-  console.log(submissionId)
   const submitEmailModeFormMutation = useMutation(
     (args: Omit<SubmitEmailFormArgs, 'formId'>) => {
       return submitEmailModeForm({ ...args, formId })

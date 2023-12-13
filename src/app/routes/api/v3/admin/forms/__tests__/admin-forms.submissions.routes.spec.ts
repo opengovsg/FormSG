@@ -822,7 +822,8 @@ describe('admin-form.submissions.routes', () => {
       // Assert
       expect(response.status).toEqual(400)
       expect(response.body).toEqual({
-        message: 'Attempted to submit encrypt form to email endpoint',
+        message:
+          'Attempted to submit email form to encrypt,multirespondent endpoint',
       })
     })
 
@@ -958,6 +959,7 @@ describe('admin-form.submissions.routes', () => {
         content: expectedSubmissionParams.encryptedContent,
         refNo: String(submission._id),
         submissionTime: expect.any(String),
+        submissionType: SubmissionType.Encrypt,
         verified: expectedSubmissionParams.verifiedContent,
         version: submission.version,
       })
@@ -999,6 +1001,7 @@ describe('admin-form.submissions.routes', () => {
         content: expectedSubmissionParams.encryptedContent,
         refNo: String(submission._id),
         submissionTime: expect.any(String),
+        submissionType: SubmissionType.Encrypt,
         verified: expectedSubmissionParams.verifiedContent,
         version: submission.version,
       })
@@ -1023,7 +1026,8 @@ describe('admin-form.submissions.routes', () => {
       // Assert
       expect(response.status).toEqual(400)
       expect(response.body).toEqual({
-        message: 'Attempted to submit encrypt form to email endpoint',
+        message:
+          'Attempted to submit email form to encrypt,multirespondent endpoint',
       })
     })
 

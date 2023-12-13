@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson-ext'
 import moment from 'moment-timezone'
-import { FormPaymentsField, PaymentType } from 'shared/types'
+import { FormPaymentsField, PaymentType, SubmissionType } from 'shared/types'
 
 import { IPopulatedEncryptedForm, StorageModeSubmissionData } from 'src/types'
 
@@ -20,6 +20,7 @@ describe('encrypt-submission.utils', () => {
         created: createdDate,
         encryptedContent: 'some encrypted content',
         verifiedContent: 'some verified content',
+        submissionType: SubmissionType.Encrypt,
       } as StorageModeSubmissionData
       const attachmentPresignedUrls = {
         someSubmissionId: 'some presigned url',
@@ -40,6 +41,7 @@ describe('encrypt-submission.utils', () => {
         content: submissionData.encryptedContent,
         verified: submissionData.verifiedContent,
         attachmentMetadata: attachmentPresignedUrls,
+        submissionType: SubmissionType.Encrypt,
       })
     })
   })

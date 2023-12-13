@@ -9,6 +9,7 @@ import {
   SubmissionId,
   SubmissionMetadata,
   SubmissionPaymentDto,
+  SubmissionType,
 } from 'shared/types'
 
 import * as AuthService from 'src/app/modules/auth/auth.service'
@@ -43,6 +44,7 @@ import {
   SubmissionNotFoundError,
 } from '../submission.errors'
 import * as SubmissionService from '../submission.service'
+import * as SubmissionsUtils from '../submission.utils'
 
 jest.mock('src/app/modules/submission/submission.service')
 jest.mock(
@@ -73,6 +75,7 @@ describe('submission.controller', () => {
       admin: MOCK_USER,
       _id: MOCK_FORM_ID,
       title: 'mock title',
+      responseMode: FormResponseMode.Encrypt,
     } as IPopulatedForm
 
     beforeEach(() => {
@@ -127,6 +130,7 @@ describe('submission.controller', () => {
       })
       expect(MockSubService.getSubmissionMetadataList).not.toHaveBeenCalled()
       expect(MockSubService.getSubmissionMetadata).toHaveBeenCalledWith(
+        FormResponseMode.Encrypt,
         MOCK_FORM_ID,
         mockSubmissionId,
       )
@@ -160,6 +164,7 @@ describe('submission.controller', () => {
       })
       expect(MockSubService.getSubmissionMetadataList).not.toHaveBeenCalled()
       expect(MockSubService.getSubmissionMetadata).toHaveBeenCalledWith(
+        FormResponseMode.Encrypt,
         MOCK_FORM_ID,
         mockSubmissionId,
       )
@@ -200,6 +205,7 @@ describe('submission.controller', () => {
       // Assert
       expect(mockRes.json).toHaveBeenCalledWith(expectedMetadataList)
       expect(MockSubService.getSubmissionMetadataList).toHaveBeenCalledWith(
+        FormResponseMode.Encrypt,
         MOCK_FORM_ID,
         mockReq.query.page,
       )
@@ -223,12 +229,12 @@ describe('submission.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       const expectedError = new ResponseModeError(
-        FormResponseMode.Encrypt,
+        [FormResponseMode.Encrypt, FormResponseMode.Multirespondent],
         FormResponseMode.Email,
       )
-      MockEncryptSubService.checkFormIsEncryptMode.mockReturnValueOnce(
-        err(expectedError),
-      )
+      jest
+        .spyOn(SubmissionsUtils, 'checkFormIsEncryptModeOrMultirespondent')
+        .mockReturnValueOnce(err(expectedError))
 
       // Act
       await getMetadata(mockReq, mockRes, jest.fn())
@@ -410,6 +416,7 @@ describe('submission.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(500)
       expect(MockSubService.getSubmissionMetadataList).not.toHaveBeenCalled()
       expect(MockSubService.getSubmissionMetadata).toHaveBeenCalledWith(
+        FormResponseMode.Encrypt,
         MOCK_FORM_ID,
         mockSubmissionId,
       )
@@ -445,6 +452,7 @@ describe('submission.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(500)
       expect(MockSubService.getSubmissionMetadata).not.toHaveBeenCalled()
       expect(MockSubService.getSubmissionMetadataList).toHaveBeenCalledWith(
+        FormResponseMode.Encrypt,
         MOCK_FORM_ID,
         mockReq.query.page,
       )
@@ -463,6 +471,7 @@ describe('submission.controller', () => {
       admin: MOCK_USER,
       _id: MOCK_FORM_ID,
       title: 'mock title',
+      responseMode: FormResponseMode.Encrypt,
     } as IPopulatedForm
 
     const MOCK_REQ = expressHandler.mockRequest({
@@ -482,9 +491,9 @@ describe('submission.controller', () => {
       MockAuthService.getFormAfterPermissionChecks.mockReturnValue(
         okAsync(MOCK_FORM),
       )
-      MockEncryptSubService.checkFormIsEncryptMode.mockReturnValue(
-        ok(MOCK_FORM as IPopulatedEncryptedForm),
-      )
+      jest
+        .spyOn(SubmissionsUtils, 'checkFormIsEncryptModeOrMultirespondent')
+        .mockReturnValue(ok(MOCK_FORM as IPopulatedEncryptedForm))
     })
 
     it('should return 200 with encrypted response', async () => {
@@ -495,6 +504,7 @@ describe('submission.controller', () => {
         verifiedContent: 'some verified content',
         created: new Date('2020-10-10'),
         paymentId: 'payment id',
+        submissionType: SubmissionType.Encrypt,
       } as SubmissionData
       const mockSignedUrls = {
         someKey1: 'some-signed-url',
@@ -527,6 +537,7 @@ describe('submission.controller', () => {
         verified: mockSubData.verifiedContent,
         attachmentMetadata: mockSignedUrls,
         payment: mockPaymentDetails,
+        submissionType: SubmissionType.Encrypt,
       }
       expect(mockRes.json).toHaveBeenCalledWith(expected)
       expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
@@ -539,9 +550,9 @@ describe('submission.controller', () => {
           level: PermissionLevel.Read,
         },
       )
-      expect(MockEncryptSubService.checkFormIsEncryptMode).toHaveBeenCalledWith(
-        MOCK_FORM,
-      )
+      expect(
+        SubmissionsUtils.checkFormIsEncryptModeOrMultirespondent,
+      ).toHaveBeenCalledWith(MOCK_FORM)
     })
 
     it('should return 400 if form is not an encrypt mode form', async () => {
@@ -552,9 +563,9 @@ describe('submission.controller', () => {
         FormResponseMode.Encrypt,
         FormResponseMode.Email,
       )
-      MockEncryptSubService.checkFormIsEncryptMode.mockReturnValueOnce(
-        err(expectedError),
-      )
+      jest
+        .spyOn(SubmissionsUtils, 'checkFormIsEncryptModeOrMultirespondent')
+        .mockReturnValueOnce(err(expectedError))
 
       // Act
       await handleGetEncryptedResponse(MOCK_REQ, mockRes, jest.fn())
@@ -631,9 +642,9 @@ describe('submission.controller', () => {
           level: PermissionLevel.Read,
         },
       )
-      expect(MockEncryptSubService.checkFormIsEncryptMode).toHaveBeenCalledWith(
-        MOCK_FORM,
-      )
+      expect(
+        SubmissionsUtils.checkFormIsEncryptModeOrMultirespondent,
+      ).toHaveBeenCalledWith(MOCK_FORM)
     })
 
     it('should return 410 when form is already archived', async () => {
@@ -703,16 +714,22 @@ describe('submission.controller', () => {
           level: PermissionLevel.Read,
         },
       )
-      expect(MockEncryptSubService.checkFormIsEncryptMode).toHaveBeenCalledWith(
-        MOCK_FORM,
-      )
+      expect(
+        SubmissionsUtils.checkFormIsEncryptModeOrMultirespondent,
+      ).toHaveBeenCalledWith(MOCK_FORM)
     })
 
     it('should return 500 when database error occurs whilst retrieving payment data', async () => {
       // Arrange
       const mockErrorString = 'payment error occured'
       MockSubService.getEncryptedSubmissionData.mockReturnValueOnce(
-        okAsync({ paymentId: 'paymentId' } as SubmissionData),
+        okAsync({
+          paymentId: 'paymentId',
+          submissionType: SubmissionType.Encrypt,
+        } as SubmissionData),
+      )
+      MockSubService.transformAttachmentMetasToSignedUrls.mockReturnValueOnce(
+        okAsync({}),
       )
       MockSubService.getSubmissionPaymentDto.mockReturnValueOnce(
         errAsync(new DatabaseError(mockErrorString)),
@@ -738,9 +755,9 @@ describe('submission.controller', () => {
           level: PermissionLevel.Read,
         },
       )
-      expect(MockEncryptSubService.checkFormIsEncryptMode).toHaveBeenCalledWith(
-        MOCK_FORM,
-      )
+      expect(
+        SubmissionsUtils.checkFormIsEncryptModeOrMultirespondent,
+      ).toHaveBeenCalledWith(MOCK_FORM)
     })
 
     it('should return 500 when error occurs whilst generating presigned URLs', async () => {
@@ -771,16 +788,22 @@ describe('submission.controller', () => {
           level: PermissionLevel.Read,
         },
       )
-      expect(MockEncryptSubService.checkFormIsEncryptMode).toHaveBeenCalledWith(
-        MOCK_FORM,
-      )
+      expect(
+        SubmissionsUtils.checkFormIsEncryptModeOrMultirespondent,
+      ).toHaveBeenCalledWith(MOCK_FORM)
     })
 
     it('should return 500 when payment was not found for a completed submission', async () => {
       // Arrange
       const mockErrorString = 'payment error occured'
       MockSubService.getEncryptedSubmissionData.mockReturnValueOnce(
-        okAsync({ paymentId: 'paymentId' } as SubmissionData),
+        okAsync({
+          paymentId: 'paymentId',
+          submissionType: SubmissionType.Encrypt,
+        } as SubmissionData),
+      )
+      MockSubService.transformAttachmentMetasToSignedUrls.mockReturnValueOnce(
+        okAsync({}),
       )
       MockSubService.getSubmissionPaymentDto.mockReturnValueOnce(
         errAsync(new PaymentNotFoundError(mockErrorString)),
@@ -806,9 +829,9 @@ describe('submission.controller', () => {
           level: PermissionLevel.Read,
         },
       )
-      expect(MockEncryptSubService.checkFormIsEncryptMode).toHaveBeenCalledWith(
-        MOCK_FORM,
-      )
+      expect(
+        SubmissionsUtils.checkFormIsEncryptModeOrMultirespondent,
+      ).toHaveBeenCalledWith(MOCK_FORM)
     })
   })
 
@@ -823,6 +846,7 @@ describe('submission.controller', () => {
       admin: MOCK_USER,
       _id: MOCK_FORM_ID,
       title: 'mock title',
+      responseMode: FormResponseMode.Encrypt,
     } as IPopulatedForm
 
     const MOCK_REQ = expressHandler.mockRequest({
@@ -852,9 +876,9 @@ describe('submission.controller', () => {
         FormResponseMode.Encrypt,
         FormResponseMode.Email,
       )
-      MockEncryptSubService.checkFormIsEncryptMode.mockReturnValueOnce(
-        err(expectedError),
-      )
+      jest
+        .spyOn(SubmissionsUtils, 'checkFormIsEncryptModeOrMultirespondent')
+        .mockReturnValueOnce(err(expectedError))
 
       const mockRes = expressHandler.mockResponse()
 

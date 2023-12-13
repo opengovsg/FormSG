@@ -70,8 +70,8 @@ export class SendEmailConfirmationError extends ApplicationError {
  */
 export class ResponseModeError extends ApplicationError {
   constructor(
-    formResponseMode: FormResponseMode | FormResponseMode[],
-    attemptedResponseMode: FormResponseMode,
+    attemptedResponseMode: FormResponseMode | FormResponseMode[],
+    formResponseMode: FormResponseMode,
   ) {
     super(
       `Attempted to submit ${formResponseMode} form to ${attemptedResponseMode} endpoint`,

@@ -126,8 +126,6 @@ jest.mock(
   }),
 )
 const MockEmailSubmissionService = jest.mocked(EmailSubmissionService)
-jest.mock('src/app/modules/submission/submission.utils')
-const MockSubmissionUtils = jest.mocked(SubmissionUtils)
 jest.mock('../admin-form.service')
 const MockAdminFormService = jest.mocked(AdminFormService)
 jest.mock('../../../submission/ParsedResponsesObject.class')
@@ -5468,7 +5466,9 @@ describe('admin-form.controller', () => {
       MockEmailSubmissionService.checkFormIsEmailMode.mockReturnValue(
         ok(MOCK_FORM),
       )
-      MockSubmissionUtils.mapAttachmentsFromResponses.mockReturnValue([])
+      jest
+        .spyOn(SubmissionUtils, 'mapAttachmentsFromResponses')
+        .mockReturnValue([])
       MockSubmissionService.validateAttachments.mockReturnValue(okAsync(true))
       // @ts-ignore
       MockParsedResponsesObject.mockClear()
@@ -5483,7 +5483,9 @@ describe('admin-form.controller', () => {
       MockEmailSubmissionService.createEmailSubmissionWithoutSave.mockReturnValue(
         MOCK_SUBMISSION,
       )
-      MockSubmissionUtils.extractEmailConfirmationData.mockReturnValue([])
+      jest
+        .spyOn(SubmissionUtils, 'extractEmailConfirmationData')
+        .mockReturnValue([])
       MockEmailSubmissionService.extractEmailAnswers.mockReturnValue([
         MOCK_RESPONSES[0].answer,
       ])
@@ -6465,7 +6467,9 @@ describe('admin-form.controller', () => {
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
         } as unknown as IncomingEncryptSubmission),
       )
-      MockSubmissionUtils.extractEmailConfirmationData.mockReturnValue([])
+      jest
+        .spyOn(SubmissionUtils, 'extractEmailConfirmationData')
+        .mockReturnValue([])
       MockEncryptSubmissionService.createEncryptSubmissionWithoutSave.mockReturnValue(
         MOCK_SUBMISSION,
       )
