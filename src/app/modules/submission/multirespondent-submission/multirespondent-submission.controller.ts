@@ -157,6 +157,69 @@ const submitMultirespondentForm = async (
   })
 }
 
+const _createSubmission = async ({
+  req,
+  res,
+  submissionContent,
+  logMeta,
+  formId,
+  // responses,
+  responseMetadata,
+}: {
+  req: Parameters<SubmitMultirespondentFormHandlerType>[0]
+  res: Parameters<SubmitMultirespondentFormHandlerType>[1]
+  [others: string]: any
+}) => {
+  const submission = new MultirespondentSubmission(submissionContent)
+
+  try {
+    await submission.save()
+  } catch (err) {
+    logger.error({
+      message: 'Multirespondent submission save error',
+      meta: {
+        action: 'onMultirespondentSubmissionFailure',
+        ...createReqMeta(req),
+      },
+      error: err,
+    })
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message:
+        'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
+      submissionId: submission._id,
+    })
+  }
+
+  const submissionId = submission.id
+  logger.info({
+    message: 'Saved submission to MongoDB',
+    meta: {
+      ...logMeta,
+      submissionId,
+      formId,
+      responseMetadata,
+    },
+  })
+
+  // TODO 6395 make responseMetadata mandatory
+  if (responseMetadata) {
+    reportSubmissionResponseTime(responseMetadata, {
+      mode: 'multirespodent',
+      payment: 'false',
+    })
+  }
+
+  // Send success back to client
+  res.json({
+    message: 'Form submission successful.',
+    submissionId,
+    timestamp: (submission.created || new Date()).getTime(),
+  })
+
+  // TODO(MRF): Add post-submission actions handling
+  // return await performEncryptPostSubmissionActions(submission, responses)
+}
+
 const updateMultirespondentSubmission = async (
   req: UpdateMultirespondentSubmissionHandlerRequest,
   res: Parameters<UpdateMultirespondentSubmissionHandlerType>[1],
@@ -208,6 +271,7 @@ const updateMultirespondentSubmission = async (
   } = encryptedPayload
 
   // Save Responses to Database
+  // TODO(MRF): Handle attachments for respondent 2+
   // let attachmentMetadata = new Map<string, string>()
 
   // if (encryptedPayload.attachments) {
@@ -277,68 +341,6 @@ const updateMultirespondentSubmission = async (
     submissionId,
     timestamp: (submission.created || new Date()).getTime(),
   })
-}
-
-const _createSubmission = async ({
-  req,
-  res,
-  submissionContent,
-  logMeta,
-  formId,
-  // responses,
-  responseMetadata,
-}: {
-  req: Parameters<SubmitMultirespondentFormHandlerType>[0]
-  res: Parameters<SubmitMultirespondentFormHandlerType>[1]
-  [others: string]: any
-}) => {
-  const submission = new MultirespondentSubmission(submissionContent)
-
-  try {
-    await submission.save()
-  } catch (err) {
-    logger.error({
-      message: 'Multirespondent submission save error',
-      meta: {
-        action: 'onMultirespondentSubmissionFailure',
-        ...createReqMeta(req),
-      },
-      error: err,
-    })
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message:
-        'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
-      submissionId: submission._id,
-    })
-  }
-
-  const submissionId = submission.id
-  logger.info({
-    message: 'Saved submission to MongoDB',
-    meta: {
-      ...logMeta,
-      submissionId,
-      formId,
-      responseMetadata,
-    },
-  })
-
-  // TODO 6395 make responseMetadata mandatory
-  if (responseMetadata) {
-    reportSubmissionResponseTime(responseMetadata, {
-      mode: 'multirespodent',
-      payment: 'false',
-    })
-  }
-
-  // Send success back to client
-  res.json({
-    message: 'Form submission successful.',
-    submissionId,
-    timestamp: (submission.created || new Date()).getTime(),
-  })
-
-  // return await performEncryptPostSubmissionActions(submission, responses)
 }
 
 export const handleMultirespondentSubmission = [
