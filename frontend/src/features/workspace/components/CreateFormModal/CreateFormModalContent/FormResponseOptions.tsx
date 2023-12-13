@@ -79,11 +79,14 @@ export const FormResponseOptions = forwardRef<
         isFullWidth
         flex={1}
       >
-        <Tile.Title>Multi-party form</Tile.Title>
-        <Tile.Subtitle>Multiple respondents to one response</Tile.Subtitle>
+        <Tile.Title>Multi-respondent form</Tile.Title>
+        <Tile.Subtitle>
+          Create a workflow to collect responses from multiple respondents
+        </Tile.Subtitle>
         <OptionDescription
           listItems={[
-            'Each response has a unique link that you can pass to multiple respondents',
+            'Route form to respondents according to a sequence',
+            'Specify up to two respondents to route form to for filling',
           ]}
         />
       </Tile>

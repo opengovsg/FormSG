@@ -475,7 +475,13 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
   }, [paymentsField, resetData, setData, setToEditingPayment, setToInactive])
 
   const paymentDisabledMessage = !isEncryptMode ? (
-    <Text>Payments are not available in email mode forms.</Text>
+    <Text>
+      Payments are not available for{' '}
+      {form?.responseMode === FormResponseMode.Email
+        ? 'email mode'
+        : 'multi-respondent'}{' '}
+      forms.
+    </Text>
   ) : !isStripeConnected ? (
     <Text>
       Connect your Stripe account in{' '}

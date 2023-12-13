@@ -15,7 +15,9 @@ export const WebhooksUnsupportedMsg = ({
   responseMode,
 }: WebhooksUnsupportedMsgProps): JSX.Element => {
   const modeText =
-    responseMode === FormResponseMode.Email ? 'Email mode' : 'Multi-party forms'
+    responseMode === FormResponseMode.Email
+      ? 'email mode'
+      : 'multi-respondent forms'
 
   return (
     <Flex justify="center" flexDir="column" textAlign="center">
@@ -25,7 +27,7 @@ export const WebhooksUnsupportedMsg = ({
       <Text textStyle="body-1" color="secondary.500" mb="2.5rem">
         Webhooks are useful for agencies who wish to have form response data
         sent directly to existing IT systems. This feature is only available in
-        Storage Mode.{' '}
+        storage mode.{' '}
         <Link isExternal href={GUIDE_WEBHOOKS}>
           Read more about webhooks
         </Link>

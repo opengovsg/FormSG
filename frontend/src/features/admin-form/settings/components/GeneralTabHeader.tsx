@@ -20,7 +20,7 @@ export const GeneralTabHeader = (): JSX.Element => {
       case FormResponseMode.Encrypt:
         return 'Storage mode'
       case FormResponseMode.Multirespondent:
-        return 'Multi-party form'
+        return 'Multi-respondent form'
     }
     return 'Loading...'
   }, [settings?.responseMode])

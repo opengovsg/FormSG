@@ -17,7 +17,9 @@ export const PaymentsUnsupportedMsg = ({
 }: PaymentsUnsupportedMsgProps): JSX.Element => {
   const { data: paymentGuideLink } = usePaymentGuideLink()
   const modeText =
-    responseMode === FormResponseMode.Email ? 'Email mode' : 'Multi-party forms'
+    responseMode === FormResponseMode.Email
+      ? 'email mode'
+      : 'multi-respondent forms'
   return (
     <Flex justify="center" flexDir="column" textAlign="center">
       <Text textStyle="h2" as="h2" color="primary.500" mb="1rem">
@@ -25,7 +27,7 @@ export const PaymentsUnsupportedMsg = ({
       </Text>
       <Text textStyle="body-1" color="secondary.500" mb="2.5rem">
         Respondents can now make payment for fees or services directly on your
-        form. This feature is only available in Storage Mode.&nbsp;
+        form. This feature is only available in storage mode.&nbsp;
         <Link isExternal href={paymentGuideLink}>
           Learn more about payments
         </Link>
