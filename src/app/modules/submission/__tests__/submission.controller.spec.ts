@@ -555,12 +555,12 @@ describe('submission.controller', () => {
       ).toHaveBeenCalledWith(MOCK_FORM)
     })
 
-    it('should return 400 if form is not an encrypt mode form', async () => {
+    it('should return 400 if form is not an encrypt mode or multirespondent form', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()
 
       const expectedError = new ResponseModeError(
-        FormResponseMode.Encrypt,
+        [FormResponseMode.Encrypt, FormResponseMode.Multirespondent],
         FormResponseMode.Email,
       )
       jest

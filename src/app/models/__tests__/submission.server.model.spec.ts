@@ -10,6 +10,7 @@ import getSubmissionModel, {
 } from 'src/app/models/submission.server.model'
 
 import {
+  BasicField,
   FormAuthType,
   SubmissionType,
   WebhookResponse,
@@ -68,6 +69,20 @@ describe('Submission Model', () => {
       verifiedContent: MOCK_VERIFIED_CONTENT,
       version: 1,
       webhookResponses: [],
+    },
+    MOCK_SUBMISSION_PARAMS,
+  )
+
+  const MOCK_MULTIRESPONDENT_SUBMISSION_PARAMS = merge(
+    // multirespondent schema params
+    {
+      submissionType: SubmissionType.Multirespondent,
+      form_fields: [{ _id: 'aaaaa', fieldType: BasicField.ShortText }],
+      form_logics: [],
+      submissionPublicKey: 'This is a public key',
+      encryptedSubmissionSecretKey: 'This is an encrypted secret key',
+      encryptedContent: MOCK_ENCRYPTED_CONTENT,
+      version: 3,
     },
     MOCK_SUBMISSION_PARAMS,
   )
@@ -161,6 +176,56 @@ describe('Submission Model', () => {
         ])
 
         const expectedObject = merge({}, encryptSubmissionWithResponseMetadata)
+        expect(actualSavedObject).toEqual(expectedObject)
+      })
+
+      it('multirespondent schema should create and save successfully', async () => {
+        const validSubmission = new Submission(
+          MOCK_MULTIRESPONDENT_SUBMISSION_PARAMS,
+        )
+        const saved = await validSubmission.save()
+
+        // Assert
+        expect(saved._id).toBeDefined()
+        expect(saved.created).toBeInstanceOf(Date)
+
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'created',
+          'lastModified',
+          '__v',
+        ])
+
+        const expectedObject = merge({}, MOCK_MULTIRESPONDENT_SUBMISSION_PARAMS)
+        expect(actualSavedObject).toEqual(expectedObject)
+      })
+
+      it('multirespondent schema should create and save successfully with responseMetadata', async () => {
+        const multirespondentSubmissionWithResponseMetadata = merge(
+          { responseMetadata: { responseTimeMs: 1000, numVisibleFields: 10 } },
+          MOCK_MULTIRESPONDENT_SUBMISSION_PARAMS,
+        )
+        const validSubmission = new Submission(
+          multirespondentSubmissionWithResponseMetadata,
+        )
+        const saved = await validSubmission.save()
+
+        // Assert
+        expect(saved._id).toBeDefined()
+        expect(saved.created).toBeInstanceOf(Date)
+        expect(saved.responseMetadata).toBeDefined()
+
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'created',
+          'lastModified',
+          '__v',
+        ])
+
+        const expectedObject = merge(
+          {},
+          multirespondentSubmissionWithResponseMetadata,
+        )
         expect(actualSavedObject).toEqual(expectedObject)
       })
     })
