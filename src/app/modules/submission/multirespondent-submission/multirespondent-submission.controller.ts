@@ -17,6 +17,7 @@ import { createReqMeta } from '../../../utils/request'
 import { MalformedParametersError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
+import { assertFormAvailable } from '../../form/admin-form/admin-form.utils'
 import * as FormService from '../../form/form.service'
 import {
   ensureFormWithinSubmissionLimits,
@@ -216,7 +217,7 @@ const _createSubmission = async ({
     timestamp: (submission.created || new Date()).getTime(),
   })
 
-  // TODO(MRF): Add post-submission actions handling
+  // TODO(MRF/FRM-1591): Add post-submission actions handling
   // return await performEncryptPostSubmissionActions(submission, responses)
 }
 
@@ -271,7 +272,7 @@ const updateMultirespondentSubmission = async (
   } = encryptedPayload
 
   // Save Responses to Database
-  // TODO(MRF): Handle attachments for respondent 2+
+  // TODO(MRF/FRM-1590): Handle attachments for respondent 2+
   // let attachmentMetadata = new Map<string, string>()
 
   // if (encryptedPayload.attachments) {
@@ -350,7 +351,7 @@ export const handleMultirespondentSubmission = [
   MultirespondentSubmissionMiddleware.validateMultirespondentSubmissionParams,
   MultirespondentSubmissionMiddleware.createFormsgAndRetrieveForm,
   MultirespondentSubmissionMiddleware.scanAndRetrieveAttachments,
-  // TODO(MRF): Add validation for FieldResponsesV3
+  // TODO(MRF/FRM-1592): Add validation for FieldResponsesV3
   // EncryptSubmissionMiddleware.validateStorageSubmission,
   MultirespondentSubmissionMiddleware.encryptSubmission,
   submitMultirespondentForm,
@@ -398,7 +399,8 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
   return (
     // Step 1: Retrieve the full form object.
     FormService.retrieveFullFormById(formId)
-      //TODO(MRF) Step 2: Check whether form is not archived.
+      //Step 2: Check whether form is archived.
+      .andThen((form) => assertFormAvailable(form).map(() => form))
       // Step 3: Check whether form is multirespondent mode.
       .andThen(checkFormIsMultirespondent)
       // Step 4: Is multirespondent mode form, retrieve submission data.

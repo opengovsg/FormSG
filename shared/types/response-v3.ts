@@ -23,8 +23,6 @@ export type FieldResponseV3 =
   | TableResponseV3
   | UenResponseV3
   | ChildBirthRecordsResponseV3
-//TODO(MRF): Sorry, I have no idea what this is.
-// | SingleChildSubRecordResponseV3
 
 export type HeaderResponseV3 = FieldResponseFactoryV3<BasicField.Section>
 export type EmailResponseV3 = FieldResponseFactoryV3<BasicField.Email>

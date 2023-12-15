@@ -72,6 +72,7 @@ export const FormResponseOptions = forwardRef<
       <Tile
         ref={ref}
         variant="complex"
+        //TODO(MRF/FRM-1599): Fix this icon.
         icon={BiGroup}
         badge={<Badge colorScheme="success">New</Badge>}
         isActive={value === FormResponseMode.Multirespondent}

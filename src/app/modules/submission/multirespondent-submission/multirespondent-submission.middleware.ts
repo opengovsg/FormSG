@@ -42,7 +42,7 @@ export const validateMultirespondentSubmissionParams = celebrate({
       /^[a-fA-F0-9]{24}$/,
       Joi.object({
         fieldType: Joi.string().valid(...Object.values(BasicField)),
-        //TODO(MRF): Improve this validation, should match ParsedClearFormFieldResponseV3
+        //TODO(MRF/FRM-1592): Improve this validation, should match ParsedClearFormFieldResponseV3
         answer: Joi.required(),
       }),
     ),
@@ -308,7 +308,7 @@ export const encryptSubmission = async (
     submissionPublicKey,
   } = formsgSdk.cryptoV3.encrypt(responses, formPublicKey)
 
-  //TODO(MRF): Workflow here using submissionSecretKey
+  //TODO(MRF/FRM-1577): Workflow here using submissionSecretKey
 
   req.formsg.encryptedPayload = {
     attachments: encryptedAttachments,
