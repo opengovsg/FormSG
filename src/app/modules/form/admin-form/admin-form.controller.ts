@@ -143,7 +143,10 @@ const createFormValidator = celebrate({
         publicKey: Joi.string()
           .allow('')
           .when('responseMode', {
-            is: FormResponseMode.Encrypt,
+            is: Joi.allow(
+              FormResponseMode.Encrypt,
+              FormResponseMode.Multirespondent,
+            ),
             then: Joi.string().required().disallow(''),
           }),
         workspaceId: Joi.string(),
@@ -180,7 +183,10 @@ const duplicateFormValidator = celebrate({
     publicKey: Joi.string()
       .allow('')
       .when('responseMode', {
-        is: FormResponseMode.Encrypt,
+        is: Joi.allow(
+          FormResponseMode.Encrypt,
+          FormResponseMode.Multirespondent,
+        ),
         then: Joi.string().required().disallow(''),
       }),
     workspaceId: Joi.string(),
