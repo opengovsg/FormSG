@@ -13,17 +13,14 @@ export const decryptSubmission = ({
       responses: FieldResponsesV3
     })
   | undefined => {
-  if (!submission || !secretKey) return
+  if (!submission) throw Error('Encrypted submission undefined')
+  if (!secretKey) throw Error('Secret key undefined')
 
   const { encryptedContent, version, ...rest } = submission
 
   const decryptedContent = formsgSdk.cryptoV3.decryptFromSubmissionKey(
     secretKey,
-    {
-      encryptedContent,
-      // verifiedContent: verified,
-      version,
-    },
+    { encryptedContent, version },
   )
   if (!decryptedContent) throw new Error('Could not decrypt the response')
 

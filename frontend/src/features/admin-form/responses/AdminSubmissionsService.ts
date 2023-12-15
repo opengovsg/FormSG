@@ -99,7 +99,9 @@ export const getDecryptedSubmissionById = async ({
         verifiedContent: encryptedSubmission.verified,
         version: encryptedSubmission.version,
       })
-      if (!decryptedContent) throw new Error('Could not decrypt the response')
+      if (!decryptedContent) {
+        throw new Error('Could not decrypt the storage mode response')
+      }
       processedContent = processDecryptedContent(decryptedContent)
       break
     }
@@ -110,7 +112,8 @@ export const getDecryptedSubmissionById = async ({
           encryptedSubmission.encryptedSubmissionSecretKey,
         version: encryptedSubmission.version,
       })
-      if (!decryptedContent) throw new Error('Could not decrypt the response')
+      if (!decryptedContent)
+        throw new Error('Could not decrypt the multirespondent form response')
       processedContent = await processDecryptedContentV3(
         encryptedSubmission.form_fields,
         decryptedContent,

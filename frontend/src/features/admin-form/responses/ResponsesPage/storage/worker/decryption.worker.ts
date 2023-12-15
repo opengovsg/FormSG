@@ -109,7 +109,9 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
             verifiedContent: submission.verifiedContent,
             version: submission.version,
           })
-          if (!decryptedObject) throw new Error('Invalid decryption')
+          if (!decryptedObject) {
+            throw new Error('Invalid decryption for storage mode response')
+          }
           decryptedSubmission = processDecryptedContent(decryptedObject)
           break
         }
@@ -120,7 +122,9 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
             encryptedContent: submission.encryptedContent,
             version: submission.version,
           })
-          if (!decryptedObject) throw new Error('Invalid decryption')
+          if (!decryptedObject) {
+            throw new Error('Invalid decryption for multirespondent response')
+          }
           decryptedSubmission = await processDecryptedContentV3(
             submission.form_fields,
             decryptedObject,

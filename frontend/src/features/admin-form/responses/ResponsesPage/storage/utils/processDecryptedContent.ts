@@ -128,7 +128,10 @@ export const processDecryptedContentV3 = async (
   const displayedContent = form_fields
     .map((ff) => {
       const response = responses[ff._id]
-      if (!response) return null
+      if (!response) {
+        console.log('Unexpected empty response for field id', ff._id)
+        return null
+      }
       if (response.fieldType === BasicField.Attachment) {
         const answer = response.answer as AttachmentFieldResponseV3
         return {

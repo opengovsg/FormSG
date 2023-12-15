@@ -4,8 +4,6 @@
 import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
-import { FormResponseMode } from '~shared/types'
-
 import { createUenValidationRules } from '~utils/fieldValidation'
 import Input from '~components/Input'
 
@@ -14,16 +12,16 @@ import { SingleAnswerFieldInput, UenFieldSchema } from '../types'
 
 export interface UenFieldProps extends BaseFieldProps {
   schema: UenFieldSchema
-  responseMode: FormResponseMode
+  disableRequiredValidation?: boolean
 }
 
 export const UenField = ({
   schema,
-  responseMode,
+  disableRequiredValidation,
 }: UenFieldProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createUenValidationRules(schema, responseMode),
-    [schema, responseMode],
+    () => createUenValidationRules(schema, disableRequiredValidation),
+    [schema, disableRequiredValidation],
   )
 
   const { register, setValue } = useFormContext<SingleAnswerFieldInput>()

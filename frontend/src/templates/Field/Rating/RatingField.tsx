@@ -5,7 +5,7 @@ import { useMemo } from 'react'
 import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { get } from 'lodash'
 
-import { FormColorTheme, FormResponseMode } from '~shared/types'
+import { FormColorTheme } from '~shared/types'
 import { RatingShape } from '~shared/types/field'
 
 import { createRatingValidationRules } from '~utils/fieldValidation'
@@ -17,7 +17,7 @@ import { RatingFieldSchema, SingleAnswerFieldInput } from '../types'
 
 export interface RatingFieldProps extends BaseFieldProps {
   schema: RatingFieldSchema
-  responseMode: FormResponseMode
+  disableRequiredValidation?: boolean
 }
 
 const transform = {
@@ -30,12 +30,12 @@ const transform = {
 
 export const RatingField = ({
   schema,
-  responseMode,
+  disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
 }: RatingFieldProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createRatingValidationRules(schema, responseMode),
-    [schema, responseMode],
+    () => createRatingValidationRules(schema, disableRequiredValidation),
+    [schema, disableRequiredValidation],
   )
 
   const ratingVariant: RatingProps['variant'] = useMemo(() => {

@@ -459,10 +459,6 @@ export const MultirespondentSubmissionSchema = new Schema<
     trim: true,
     required: true,
   },
-  verifiedContent: {
-    type: String,
-    trim: true,
-  },
   attachmentMetadata: {
     type: Map,
     of: String,
@@ -577,7 +573,6 @@ MultirespondentSubmissionSchema.statics.getSubmissionCursorByFormId = function (
         form_logics: 1,
         encryptedSubmissionSecretKey: 1,
         encryptedContent: 1,
-        verifiedContent: 1,
         attachmentMetadata: 1,
         created: 1,
         version: 1,
@@ -607,7 +602,6 @@ MultirespondentSubmissionSchema.statics.findEncryptedSubmissionById = function (
       submissionPublicKey: 1,
       encryptedSubmissionSecretKey: 1,
       encryptedContent: 1,
-      verifiedContent: 1,
       attachmentMetadata: 1,
       created: 1,
       version: 1,

@@ -89,7 +89,7 @@ export type ProcessedFieldResponse =
   | ProcessedChildrenResponse
 
 /**
- * Vius scanner types
+ * Virus scanner types
  */
 export type ParseVirusScannerLambdaPayloadBeforeBodyIsParsed = {
   statusCode: number

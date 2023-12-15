@@ -70,9 +70,11 @@ export const VisibleFormFields = ({
         <FieldFactory
           colorTheme={colorTheme}
           field={field}
+          disableRequiredValidation={
+            responseMode === FormResponseMode.Multirespondent
+          }
           key={field._id}
           prefill={fieldPrefillMap[field._id]}
-          responseMode={responseMode}
         />
       ))}
     </>

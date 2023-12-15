@@ -88,7 +88,6 @@ export const MultirespondentSubmissionBase = SubmissionBase.extend({
   submissionPublicKey: z.string(),
   encryptedSubmissionSecretKey: z.string(),
   encryptedContent: z.string(),
-  verifiedContent: z.string().optional(),
   attachmentMetadata: z.map(z.string(), z.string()).optional(),
   version: z.number(),
 })

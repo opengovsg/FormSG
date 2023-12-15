@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
-import { FormColorTheme, FormResponseMode } from '~shared/types'
+import { FormColorTheme } from '~shared/types'
 
 import { createDropdownValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown/SingleSelect'
@@ -11,7 +11,7 @@ import { DropdownFieldSchema, SingleAnswerFieldInput } from '../types'
 
 export interface DropdownFieldProps extends BaseFieldProps {
   schema: DropdownFieldSchema
-  responseMode: FormResponseMode
+  disableRequiredValidation?: boolean
 }
 
 /**
@@ -19,13 +19,13 @@ export interface DropdownFieldProps extends BaseFieldProps {
  */
 export const DropdownField = ({
   schema,
-  responseMode,
+  disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
   ...fieldContainerProps
 }: DropdownFieldProps): JSX.Element => {
   const rules = useMemo(() => {
-    return createDropdownValidationRules(schema, responseMode)
-  }, [schema, responseMode])
+    return createDropdownValidationRules(schema, disableRequiredValidation)
+  }, [schema, disableRequiredValidation])
 
   const { control } = useFormContext<SingleAnswerFieldInput>()
 

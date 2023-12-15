@@ -3,7 +3,7 @@ import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { FormControl, useMultiStyleConfig } from '@chakra-ui/react'
 import { get } from 'lodash'
 
-import { FormColorTheme, FormResponseMode } from '~shared/types'
+import { FormColorTheme } from '~shared/types'
 
 import { RADIO_THEME_KEY } from '~theme/components/Radio'
 import { createRadioValidationRules } from '~utils/fieldValidation'
@@ -17,7 +17,7 @@ import { RADIO_OTHERS_INPUT_KEY, RADIO_OTHERS_INPUT_VALUE } from './constants'
 
 export interface RadioFieldProps extends BaseFieldProps {
   schema: RadioFieldSchema
-  responseMode: FormResponseMode
+  disableRequiredValidation?: boolean
 }
 
 /**
@@ -25,7 +25,7 @@ export interface RadioFieldProps extends BaseFieldProps {
  */
 export const RadioField = ({
   schema,
-  responseMode,
+  disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
 }: RadioFieldProps): JSX.Element => {
   const fieldColorScheme = useMemo(
@@ -46,8 +46,8 @@ export const RadioField = ({
   )
 
   const validationRules = useMemo(
-    () => createRadioValidationRules(schema, responseMode),
-    [responseMode, schema],
+    () => createRadioValidationRules(schema, disableRequiredValidation),
+    [disableRequiredValidation, schema],
   )
 
   const { register, getValues, trigger } = useFormContext<RadioFieldInputs>()

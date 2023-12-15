@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
-import { FormColorTheme, FormResponseMode } from '~shared/types'
+import { FormColorTheme } from '~shared/types'
 
 import { createNumberValidationRules } from '~utils/fieldValidation'
 import NumberInput from '~components/NumberInput'
@@ -11,17 +11,17 @@ import { NumberFieldSchema, SingleAnswerFieldInput } from '../types'
 
 export interface NumberFieldProps extends BaseFieldProps {
   schema: NumberFieldSchema
-  responseMode: FormResponseMode
+  disableRequiredValidation?: boolean
 }
 
 export const NumberField = ({
   schema,
-  responseMode,
+  disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
 }: NumberFieldProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createNumberValidationRules(schema, responseMode),
-    [responseMode, schema],
+    () => createNumberValidationRules(schema, disableRequiredValidation),
+    [disableRequiredValidation, schema],
   )
 
   const { control } = useFormContext<SingleAnswerFieldInput>()

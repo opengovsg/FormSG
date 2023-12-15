@@ -8,9 +8,9 @@ import { useAdminFormSettings } from './queries'
 export const SettingsWebhooksPage = (): JSX.Element => {
   const { data: settings, isLoading } = useAdminFormSettings()
 
-  // Webhooks are unsupported in email mode; show message.
+  // Webhooks are only supported in storage mode; show message if form response mode is not storage
   if (!isLoading && settings?.responseMode !== FormResponseMode.Encrypt) {
-    return <WebhooksUnsupportedMsg responseMode={settings?.responseMode} />
+    return <WebhooksUnsupportedMsg />
   }
 
   return (

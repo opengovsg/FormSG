@@ -49,7 +49,8 @@ export const FormStatusToggle = (): JSX.Element => {
 
     if (
       nextStatus === FormStatus.Public &&
-      responseMode !== FormResponseMode.Email
+      (responseMode === FormResponseMode.Encrypt ||
+        responseMode === FormResponseMode.Multirespondent)
     ) {
       return onOpenActivationModal()
     }

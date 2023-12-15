@@ -29,8 +29,8 @@ export const IndividualResponseNavbar = (): JSX.Element => {
   const { submissionId } = useParams()
   if (!submissionId) throw new Error('Missing submissionId')
 
-  const currentRespondentNumber = useMemo(() => {
-    return (state as { respondentNumber?: number })?.respondentNumber
+  const currentResponseNumber = useMemo(() => {
+    return (state as { responseNumber?: number })?.responseNumber
   }, [state])
 
   const {
@@ -57,14 +57,14 @@ export const IndividualResponseNavbar = (): JSX.Element => {
     if (!nextSubmissionId) return
     navigate(`../${nextSubmissionId}`, {
       state: {
-        respondentNumber: currentRespondentNumber
-          ? currentRespondentNumber - 1
+        responseNumber: currentResponseNumber
+          ? currentResponseNumber - 1
           : undefined,
       },
     })
     onNavNextSubmissionId(submissionId)
   }, [
-    currentRespondentNumber,
+    currentResponseNumber,
     navigate,
     nextSubmissionId,
     onNavNextSubmissionId,
@@ -75,14 +75,14 @@ export const IndividualResponseNavbar = (): JSX.Element => {
     if (!prevSubmissionId) return
     navigate(`../${prevSubmissionId}`, {
       state: {
-        respondentNumber: currentRespondentNumber
-          ? currentRespondentNumber + 1
+        responseNumber: currentResponseNumber
+          ? currentResponseNumber + 1
           : undefined,
       },
     })
     onNavPreviousSubmissionId(submissionId)
   }, [
-    currentRespondentNumber,
+    currentResponseNumber,
     navigate,
     onNavPreviousSubmissionId,
     prevSubmissionId,
@@ -129,7 +129,7 @@ export const IndividualResponseNavbar = (): JSX.Element => {
         <Skeleton isLoaded={!isLoading}>
           <Text textStyle="h2" as="h2">
             Response
-            {currentRespondentNumber ? ` #${currentRespondentNumber}` : ''}
+            {currentResponseNumber ? ` #${currentResponseNumber}` : ''}
           </Text>
         </Skeleton>
       </Flex>

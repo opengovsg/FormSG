@@ -1,5 +1,3 @@
-import { FormResponseMode } from '~shared/types'
-
 import { InputProps } from '~components/Input'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
@@ -9,7 +7,7 @@ import { EmailFieldInput } from './EmailFieldInput'
 
 export interface EmailFieldProps extends BaseFieldProps {
   schema: EmailFieldSchema
-  responseMode: FormResponseMode
+  disableRequiredValidation?: boolean
   errorVariant?: 'white'
   inputProps?: Partial<InputProps>
 }
@@ -19,7 +17,7 @@ export interface EmailFieldProps extends BaseFieldProps {
  */
 export const EmailField = ({
   schema,
-  responseMode,
+  disableRequiredValidation,
   errorVariant,
   inputProps,
 }: EmailFieldProps): JSX.Element => {
@@ -27,7 +25,7 @@ export const EmailField = ({
     <FieldContainer schema={schema} errorVariant={errorVariant}>
       <EmailFieldInput
         schema={schema}
-        responseMode={responseMode}
+        disableRequiredValidation={disableRequiredValidation}
         inputProps={inputProps}
       />
     </FieldContainer>

@@ -7,7 +7,7 @@ import {
 } from 'react-hook-form'
 import { Box, FormControl, useMultiStyleConfig } from '@chakra-ui/react'
 
-import { FormColorTheme, FormResponseMode } from '~shared/types'
+import { FormColorTheme } from '~shared/types'
 
 import { CHECKBOX_THEME_KEY } from '~theme/components/Checkbox'
 import { createCheckboxValidationRules } from '~utils/fieldValidation'
@@ -25,7 +25,7 @@ import {
 
 export interface CheckboxFieldProps extends BaseFieldProps {
   schema: CheckboxFieldSchema
-  responseMode: FormResponseMode
+  disableRequiredValidation?: boolean
 }
 
 /**
@@ -33,7 +33,7 @@ export interface CheckboxFieldProps extends BaseFieldProps {
  */
 export const CheckboxField = ({
   schema,
-  responseMode,
+  disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
 }: CheckboxFieldProps): JSX.Element => {
   const fieldColorScheme = useMemo(
@@ -54,8 +54,8 @@ export const CheckboxField = ({
   )
 
   const validationRules = useMemo(
-    () => createCheckboxValidationRules(schema, responseMode),
-    [responseMode, schema],
+    () => createCheckboxValidationRules(schema, disableRequiredValidation),
+    [disableRequiredValidation, schema],
   )
 
   const { register, getValues } = useFormContext<CheckboxFieldInputs>()

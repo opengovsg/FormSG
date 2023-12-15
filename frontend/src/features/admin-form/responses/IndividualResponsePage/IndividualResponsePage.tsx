@@ -12,6 +12,7 @@ import {
 import simplur from 'simplur'
 
 import { FormResponseMode } from '~shared/types'
+import { getMultirespondentSubmissionEditPath } from '~shared/utils/urls'
 
 import Button from '~components/Button'
 import Spinner from '~components/Spinner'
@@ -164,7 +165,12 @@ export const IndividualResponsePage = (): JSX.Element => {
                   Response link:
                 </Text>
                 <Skeleton isLoaded={!isLoading && !isError}>
-                  {`${window.location.protocol}//${window.location.host}/${formId}/edit/${submissionId}`}
+                  {`${window.location.protocol}//${
+                    window.location.host
+                  }/${getMultirespondentSubmissionEditPath(
+                    form._id,
+                    submissionId,
+                  )}`}
                 </Skeleton>
               </Stack>
               <Stack

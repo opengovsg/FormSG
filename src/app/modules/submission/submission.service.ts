@@ -637,6 +637,7 @@ export const getSubmissionMetadata = (
             message: 'Failure retrieving metadata from database',
             meta: {
               action: 'getSubmissionMetadata',
+              responseMode,
               formId,
               submissionId,
             },
@@ -662,6 +663,7 @@ export const getSubmissionMetadataList = (
             message: 'Failure retrieving metadata page from database',
             meta: {
               action: 'getSubmissionMetadataList',
+              responseMode,
               formId,
               page,
             },
@@ -700,6 +702,7 @@ export const getEncryptedSubmissionData = (
             message: 'Failure retrieving encrypted submission from database',
             meta: {
               action: 'getEncryptedSubmissionData',
+              responseMode,
               formId,
               submissionId,
             },
@@ -1051,7 +1054,7 @@ export const validateAttachments = (
   parsedResponses: ParsedClearFormFieldResponse[],
   responseMode: FormResponseMode,
 ): ResultAsync<true, InvalidFileExtensionError | AttachmentTooLargeError> => {
-  const logMeta = { action: 'validateAttachments' }
+  const logMeta = { action: 'validateAttachments', responseMode }
   const attachments = mapAttachmentsFromResponses(parsedResponses)
   if (areAttachmentsMoreThanLimit(attachments, responseMode)) {
     logger.error({

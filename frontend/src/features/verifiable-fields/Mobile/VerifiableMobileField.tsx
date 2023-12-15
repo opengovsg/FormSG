@@ -1,8 +1,6 @@
 import { useMemo } from 'react'
 import { Box, VisuallyHidden } from '@chakra-ui/react'
 
-import { FormResponseMode } from '~shared/types'
-
 import { baseMobileValidationFn } from '~utils/fieldValidation'
 import { MobileFieldInput, MobileFieldProps } from '~templates/Field/Mobile'
 import { MobileFieldSchema } from '~templates/Field/types'
@@ -17,7 +15,7 @@ export type VerifiableMobileFieldSchema =
 
 export interface VerifiableMobileFieldProps extends MobileFieldProps {
   schema: VerifiableMobileFieldSchema
-  responseMode: FormResponseMode
+  disableRequiredValidation?: boolean
 }
 
 /**
@@ -26,7 +24,7 @@ export interface VerifiableMobileFieldProps extends MobileFieldProps {
  */
 const InnerVerifiableMobileField = ({
   schema,
-  responseMode,
+  disableRequiredValidation,
   ...formContainerProps
 }: VerifiableMobileFieldProps): JSX.Element => {
   const { handleInputChange, handleVfnButtonClick, hasSignature } =
@@ -54,7 +52,7 @@ const InnerVerifiableMobileField = ({
         </VisuallyHidden>
         <MobileFieldInput
           schema={schema}
-          responseMode={responseMode}
+          disableRequiredValidation={disableRequiredValidation}
           handleInputChange={handleInputChange}
           phoneNumberInputProps={{
             isSuccess: hasSignature,

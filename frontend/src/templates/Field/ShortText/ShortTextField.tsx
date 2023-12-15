@@ -4,8 +4,6 @@
 import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
-import { FormResponseMode } from '~shared/types'
-
 import { createTextValidationRules } from '~utils/fieldValidation'
 import Input from '~components/Input'
 
@@ -15,18 +13,18 @@ import { ShortTextFieldSchema, SingleAnswerFieldInput } from '../types'
 
 export interface ShortTextFieldProps extends BaseFieldProps {
   schema: ShortTextFieldSchema
-  responseMode: FormResponseMode
+  disableRequiredValidation?: boolean
   prefill?: PrefillMap[string]
 }
 
 export const ShortTextField = ({
   schema,
-  responseMode,
+  disableRequiredValidation,
   ...fieldContainerProps
 }: ShortTextFieldProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createTextValidationRules(schema, responseMode),
-    [responseMode, schema],
+    () => createTextValidationRules(schema, disableRequiredValidation),
+    [disableRequiredValidation, schema],
   )
 
   const { register } = useFormContext<SingleAnswerFieldInput>()

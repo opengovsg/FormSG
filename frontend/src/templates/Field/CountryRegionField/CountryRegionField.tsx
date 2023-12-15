@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
 import { CountryRegion } from '~shared/constants/countryRegion'
-import { FormColorTheme, FormResponseMode } from '~shared/types'
+import { FormColorTheme } from '~shared/types'
 import { CountryRegionFieldBase, FormFieldWithId } from '~shared/types/field'
 
 import { createCountryRegionValidationRules } from '~utils/fieldValidation'
@@ -14,7 +14,7 @@ import { SingleAnswerFieldInput } from '../types'
 export type CountryRegionFieldSchema = FormFieldWithId<CountryRegionFieldBase>
 export interface CountryRegionFieldProps extends BaseFieldProps {
   schema: CountryRegionFieldSchema
-  responseMode: FormResponseMode
+  disableRequiredValidation?: boolean
 }
 
 // Exported for testing
@@ -28,7 +28,7 @@ export const SORTED_COUNTRY_OPTIONS = (() => {
 
 export const CountryRegionField = ({
   schema,
-  responseMode,
+  disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
   ...fieldContainerProps
 }: CountryRegionFieldProps): JSX.Element => {
@@ -42,9 +42,9 @@ export const CountryRegionField = ({
   const rules = useMemo(() => {
     return createCountryRegionValidationRules(
       schemaWithFieldOptions,
-      responseMode,
+      disableRequiredValidation,
     )
-  }, [schemaWithFieldOptions, responseMode])
+  }, [schemaWithFieldOptions, disableRequiredValidation])
 
   const { control } = useFormContext<SingleAnswerFieldInput>()
 

@@ -120,3 +120,20 @@ PublicFormsSubmissionsRouter.route(
   limitRate({ max: rateLimitConfig.submissions }),
   SubmissionController.handleGetS3PresignedPostData,
 )
+
+/**
+ * TODO(MRF/FRM-1601): Delete this route.
+ * @deprecated
+ * Get S3 presigned post data for attachments in a submission.
+ * @route POST /forms/:formId/submissions/get-s3-presigned-post-data
+ * @param response.body.required - contains field ids and sizes of attachments
+ * @returns 200 - presigned post data generated
+ * @returns 400 - ids are invalid or attachment size exceeds limit
+ * @returns 500 - failed to generate presigned post data
+ */
+PublicFormsSubmissionsRouter.route(
+  '/:formId([a-fA-F0-9]{24})/submissions/storage/get-s3-presigned-post-data',
+).post(
+  limitRate({ max: rateLimitConfig.submissions }),
+  SubmissionController.handleGetS3PresignedPostData,
+)

@@ -28,7 +28,6 @@ import { DATE_DISPLAY_FORMAT } from '~shared/constants/dates'
 import { MYINFO_ATTRIBUTE_MAP } from '~shared/constants/field/myinfo'
 import {
   FormColorTheme,
-  FormResponseMode,
   MyInfoAttribute,
   MyInfoChildAttributes,
   MyInfoChildData,
@@ -52,7 +51,7 @@ import {
 
 export interface ChildrenCompoundFieldProps extends BaseFieldProps {
   schema: ChildrenCompoundFieldSchema
-  responseMode: FormResponseMode
+  disableRequiredValidation?: boolean
   myInfoChildrenBirthRecords?: MyInfoChildData
 }
 
@@ -66,7 +65,7 @@ export interface ChildrenCompoundFieldProps extends BaseFieldProps {
  */
 export const ChildrenCompoundField = ({
   schema,
-  responseMode,
+  disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
   myInfoChildrenBirthRecords,
   ...fieldContainerProps
@@ -143,7 +142,7 @@ export const ChildrenCompoundField = ({
                 {...{
                   currChildBodyIdx,
                   schema,
-                  responseMode,
+                  disableRequiredValidation,
                   fields,
                   field,
                   colorTheme,
@@ -185,7 +184,7 @@ export const ChildrenCompoundField = ({
 interface ChildrenBodyProps {
   currChildBodyIdx: number
   schema: ChildrenCompoundFieldSchema
-  responseMode: FormResponseMode
+  disableRequiredValidation?: boolean
   fields: FieldArrayWithId<
     ChildrenCompoundFieldInputs,
     `${string}.child`,
@@ -205,7 +204,7 @@ interface ChildrenBodyProps {
 const ChildrenBody = ({
   currChildBodyIdx,
   schema,
-  responseMode,
+  disableRequiredValidation,
   fields,
   field,
   colorTheme,
@@ -223,8 +222,8 @@ const ChildrenBody = ({
   )
 
   const validationRules = useMemo(
-    () => createChildrenValidationRules(schema, responseMode),
-    [schema, responseMode],
+    () => createChildrenValidationRules(schema, disableRequiredValidation),
+    [schema, disableRequiredValidation],
   )
 
   const {
