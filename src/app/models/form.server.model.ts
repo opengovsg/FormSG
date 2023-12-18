@@ -300,6 +300,7 @@ const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
     type: String,
     required: true,
   },
+  //TODO(FRM-1577): add workflow emails
 })
 
 const compileFormModel = (db: Mongoose): IFormModel => {

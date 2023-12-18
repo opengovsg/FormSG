@@ -145,6 +145,7 @@ const submitMultirespondentForm = async (
     encryptedContent,
     attachmentMetadata,
     version,
+    workflowStep: 0,
   }
 
   return _createSubmission({
@@ -221,6 +222,11 @@ const _createSubmission = async ({
   // return await performEncryptPostSubmissionActions(submission, responses)
 }
 
+// const runMultirespondentWorkflow = async () => {
+//   // Step 1: check workflow step against form
+//   // step 2: send out email
+// }
+
 const updateMultirespondentSubmission = async (
   req: UpdateMultirespondentSubmissionHandlerRequest,
   res: Parameters<UpdateMultirespondentSubmissionHandlerType>[1],
@@ -269,6 +275,7 @@ const updateMultirespondentSubmission = async (
     encryptedSubmissionSecretKey,
     encryptedContent,
     version,
+    workflowStep,
   } = encryptedPayload
 
   // Save Responses to Database
@@ -294,18 +301,20 @@ const updateMultirespondentSubmission = async (
   // }
 
   const submission = await MultirespondentSubmission.findById(submissionId)
-
+  console.log('submission: ', submission)
   if (!submission) {
     return res.status(StatusCodes.NOT_FOUND).json({
       message: 'Not found',
     })
   }
+  console.log('workflowStep: ', workflowStep)
 
   submission.responseMetadata = responseMetadata
   submission.submissionPublicKey = submissionPublicKey
   submission.encryptedSubmissionSecretKey = encryptedSubmissionSecretKey
   submission.encryptedContent = encryptedContent
   submission.version = version
+  submission.workflowStep = workflowStep
   // submission.attachmentMetadata = attachmentMetadata
 
   try {
@@ -365,6 +374,7 @@ export const handleUpdateMultirespondentSubmission = [
   MultirespondentSubmissionMiddleware.createFormsgAndRetrieveForm,
   MultirespondentSubmissionMiddleware.scanAndRetrieveAttachments,
   // EncryptSubmissionMiddleware.validateStorageSubmission,
+  MultirespondentSubmissionMiddleware.setCurrentWorkflowStep,
   MultirespondentSubmissionMiddleware.encryptSubmission,
   updateMultirespondentSubmission,
 ] as ControllerHandler[]
@@ -427,6 +437,7 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
           message: 'Get encrypted response using submissionId success',
           meta: logMeta,
         })
+        console.log('responseData: ', responseData)
         return res.json(responseData)
       })
       .mapErr((error) => {

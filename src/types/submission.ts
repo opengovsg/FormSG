@@ -139,6 +139,7 @@ export type MultirespondentSubmissionData = {
   | 'attachmentMetadata'
   | 'created'
   | 'version'
+  | 'workflowStep'
 > &
   Document
 

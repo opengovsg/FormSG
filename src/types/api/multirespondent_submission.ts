@@ -10,6 +10,7 @@ export type ParsedMultirespondentSubmissionBody = {
   responses: FieldResponsesV3
   responseMetadata?: ResponseMetadata
   version: number
+  workflowStep: number
 }
 
 export type MultirespondentFormLoadedDto = {
@@ -33,4 +34,5 @@ export type MultirespondentSubmissionDto = {
   attachments?: SubmissionAttachmentsMap
   version: number
   responseMetadata?: ResponseMetadata
+  workflowStep: number
 }
