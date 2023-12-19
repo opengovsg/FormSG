@@ -145,7 +145,7 @@ export type SubmitStorageFormWithVirusScanningArgs =
 
 export type SubmitMultirespondentFormWithVirusScanningArgs =
   SubmitEmailFormArgs & {
-    publicKey: string
+    // publicKey: string
     fieldIdToQuarantineKeyMap: FieldIdToQuarantineKeyType[]
   }
 

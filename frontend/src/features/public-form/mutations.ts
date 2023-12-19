@@ -1,5 +1,6 @@
 import { useMutation } from 'react-query'
 
+import { SubmissionResponseDto } from '~shared/types'
 import {
   FormAuthType,
   SubmitFormFeedbackBodyDto,
@@ -21,6 +22,7 @@ import {
   submitFormFeedback,
   submitFormIssue,
   submitMultirespondentForm,
+  SubmitMultirespondentFormWithVirusScanningArgs,
   SubmitStorageFormClearArgs,
   submitStorageModeClearForm,
   submitStorageModeClearFormWithFetch,
@@ -98,7 +100,14 @@ export const usePublicFormMutations = (
     },
   )
 
-  const useSubmitClearFormWithVirusScanningMutation = (f: any) =>
+  const useSubmitClearFormWithVirusScanningMutation = (
+    f: (
+      args: SubmitStorageFormClearArgs & {
+        fieldIdToQuarantineKeyMap: FieldIdToQuarantineKeyType[]
+        submissionId: typeof submissionId
+      },
+    ) => Promise<SubmissionResponseDto>,
+  ) =>
     useMutation(async (args: Omit<SubmitStorageFormClearArgs, 'formId'>) => {
       const attachmentSizes = await getAttachmentSizes(args)
       // If there are no attachments, submit form without virus scanning by passing in empty list
