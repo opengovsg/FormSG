@@ -5,12 +5,16 @@ import { errAsync } from 'neverthrow'
 import {
   ErrorDto,
   FormAuthType,
+  FormWorkflowSettings,
   MultirespondentSubmissionDto,
   SubmissionType,
 } from '../../../../../shared/types'
+import { getMultirespondentSubmissionEditPath } from '../../../../../shared/utils/urls'
+import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getMultirespondentSubmissionModel } from '../../../models/submission.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
+import MailService from '../../../services/mail/mail.service'
 import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
 import { Pipeline } from '../../../utils/pipeline-middleware'
 import { createReqMeta } from '../../../utils/request'
@@ -129,6 +133,7 @@ const submitMultirespondentForm = async (
   const {
     submissionPublicKey,
     encryptedSubmissionSecretKey,
+    submissionSecretKey,
     encryptedContent,
     responseMetadata,
     version,
@@ -156,17 +161,22 @@ const submitMultirespondentForm = async (
     // responses: ,
     responseMetadata,
     submissionContent,
+    submissionSecretKey,
+    form,
   })
 }
 
 const _createSubmission = async ({
   req,
   res,
-  submissionContent,
+
   logMeta,
   formId,
   // responses,
   responseMetadata,
+  submissionContent,
+  submissionSecretKey,
+  form,
 }: {
   req: Parameters<SubmitMultirespondentFormHandlerType>[0]
   res: Parameters<SubmitMultirespondentFormHandlerType>[1]
@@ -220,12 +230,73 @@ const _createSubmission = async ({
 
   // TODO(MRF/FRM-1591): Add post-submission actions handling
   // return await performEncryptPostSubmissionActions(submission, responses)
+
+  try {
+    await runMultirespondentWorkflow({
+      currentWorkflowStep: submissionContent.workflowStep,
+      formWorkflow: form.workflow ?? [],
+      formTitle: form.title,
+      responseUrl: `${config.app.appUrl}/${getMultirespondentSubmissionEditPath(
+        form._id,
+        submissionId,
+      )}/?key=${encodeURIComponent(submissionSecretKey)}`,
+      formId: form._id,
+      submissionId,
+    })
+  } catch (err) {
+    logger.error({
+      message: 'Send multirespondent workflow email error',
+      meta: {
+        ...logMeta,
+        ...createReqMeta(req),
+        currentWorkflowStep: submissionContent.workflowStep,
+        formId: form._id,
+        submissionId,
+      },
+      error: err,
+    })
+  }
 }
 
-// const runMultirespondentWorkflow = async () => {
-//   // Step 1: check workflow step against form
-//   // step 2: send out email
-// }
+const runMultirespondentWorkflow = async ({
+  currentWorkflowStep,
+  formWorkflow,
+  formTitle,
+  responseUrl,
+  formId,
+  submissionId,
+}: {
+  currentWorkflowStep: number
+  formWorkflow: FormWorkflowSettings
+  formTitle: string
+  responseUrl: string
+  formId: string
+  submissionId: string
+}) => {
+  const logMeta = {
+    action: 'runMultirespondentWorkflow',
+    formId,
+    submissionId,
+    currentWorkflowStep,
+  }
+  // Step 1: Retrieve email addresses for current workflow step
+  if (!formWorkflow[currentWorkflowStep]) return
+  if (formWorkflow[currentWorkflowStep].emails.length === 0) return
+  const emails = formWorkflow[currentWorkflowStep].emails
+  // Step 2: send out workflow email
+  try {
+    await MailService.sendMRFWorkflowStepEmail({
+      formTitle,
+      emails,
+      responseUrl,
+    })
+  } catch (error) {
+    logger.error({
+      message: 'Failed to send workflow email',
+      meta: { ...logMeta, emails },
+    })
+  }
+}
 
 const updateMultirespondentSubmission = async (
   req: UpdateMultirespondentSubmissionHandlerRequest,
@@ -274,6 +345,7 @@ const updateMultirespondentSubmission = async (
     submissionPublicKey,
     encryptedSubmissionSecretKey,
     encryptedContent,
+    submissionSecretKey,
     version,
     workflowStep,
   } = encryptedPayload
@@ -301,13 +373,11 @@ const updateMultirespondentSubmission = async (
   // }
 
   const submission = await MultirespondentSubmission.findById(submissionId)
-  console.log('submission: ', submission)
   if (!submission) {
     return res.status(StatusCodes.NOT_FOUND).json({
       message: 'Not found',
     })
   }
-  console.log('workflowStep: ', workflowStep)
 
   submission.responseMetadata = responseMetadata
   submission.submissionPublicKey = submissionPublicKey
@@ -351,6 +421,32 @@ const updateMultirespondentSubmission = async (
     submissionId,
     timestamp: (submission.created || new Date()).getTime(),
   })
+
+  try {
+    await runMultirespondentWorkflow({
+      currentWorkflowStep: workflowStep,
+      formWorkflow: form.workflow ?? [],
+      formTitle: form.title,
+      responseUrl: `${config.app.appUrl}/${getMultirespondentSubmissionEditPath(
+        form._id,
+        submissionId,
+      )}/?key=${encodeURIComponent(submissionSecretKey)}`,
+      formId: form._id,
+      submissionId,
+    })
+  } catch (err) {
+    logger.error({
+      message: 'Send multirespondent workflow email error',
+      meta: {
+        ...logMeta,
+        ...createReqMeta(req),
+        currentWorkflowStep: workflowStep,
+        formId: form._id,
+        submissionId,
+      },
+      error: err,
+    })
+  }
 }
 
 export const handleMultirespondentSubmission = [

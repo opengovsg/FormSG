@@ -365,21 +365,13 @@ export const encryptSubmission = async (
       req.body.version,
     )
 
-  console.log('responses: ', responses)
-  console.log('formPublicKey: ', formPublicKey)
-  console.log('formsgSdk:', formsgSdk)
-
   const {
     encryptedContent,
     encryptedSubmissionSecretKey,
-    // submissionSecretKey,
+    submissionSecretKey,
     submissionPublicKey,
   } = formsgSdk.cryptoV3.encrypt(responses, formPublicKey)
 
-  //TODO(MRF/FRM-1577): Workflow here using submissionSecretKey
-
-  console.log('req.body.workflowStep: ', req.body.workflowStep)
-  console.log('req.body.version: ', req.body.version)
   req.formsg.encryptedPayload = {
     attachments: encryptedAttachments,
     // responses: req.body.responses,
@@ -387,6 +379,7 @@ export const encryptSubmission = async (
     submissionPublicKey,
     encryptedSubmissionSecretKey,
     encryptedContent,
+    submissionSecretKey,
     version: req.body.version,
     workflowStep: req.body.workflowStep,
   }
