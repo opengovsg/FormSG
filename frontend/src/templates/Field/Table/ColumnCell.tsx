@@ -4,7 +4,7 @@ import { UseTableCellProps } from 'react-table'
 import { FormControl, VisuallyHidden } from '@chakra-ui/react'
 import { get } from 'lodash'
 
-import { FormColorTheme, FormResponseMode } from '~shared/types'
+import { FormColorTheme } from '~shared/types'
 import {
   BasicField,
   Column,
@@ -29,14 +29,14 @@ import { TableFieldInputs } from '../types'
 export interface ColumnCellProps
   extends UseTableCellProps<TableFieldInputs, string> {
   schemaId: string
-  responseMode: FormResponseMode
+  disableRequiredValidation: boolean
   columnSchema: ColumnDto
   colorTheme: FormColorTheme
 }
 
 export interface FieldColumnCellProps<T extends Column = Column> {
   schema: ColumnDto<T>
-  responseMode: FormResponseMode
+  disableRequiredValidation: boolean
   /** Represents `{schemaId}.{rowIndex}.{columnId}` */
   inputName: `${string}.${number}.${string}`
   colorTheme: FormColorTheme
@@ -44,13 +44,13 @@ export interface FieldColumnCellProps<T extends Column = Column> {
 
 const ShortTextColumnCell = ({
   schema,
-  responseMode,
+  disableRequiredValidation,
   inputName,
   colorTheme,
 }: FieldColumnCellProps<ShortTextColumnBase>) => {
   const rules = useMemo(
-    () => createBaseValidationRules(schema, responseMode),
-    [schema, responseMode],
+    () => createBaseValidationRules(schema, disableRequiredValidation),
+    [schema, disableRequiredValidation],
   )
 
   const { control } = useFormContext<TableFieldInputs>()
@@ -73,14 +73,14 @@ const ShortTextColumnCell = ({
 
 const DropdownColumnCell = ({
   schema,
-  responseMode,
+  disableRequiredValidation,
   inputName,
   colorTheme,
 }: FieldColumnCellProps<DropdownColumnBase>) => {
   const { control } = useFormContext<TableFieldInputs>()
   const rules = useMemo(
-    () => createDropdownValidationRules(schema, responseMode),
-    [schema, responseMode],
+    () => createDropdownValidationRules(schema, disableRequiredValidation),
+    [schema, disableRequiredValidation],
   )
 
   return (
@@ -106,7 +106,7 @@ const DropdownColumnCell = ({
  */
 export const ColumnCell = ({
   schemaId,
-  responseMode,
+  disableRequiredValidation,
   row,
   column,
   columnSchema,
@@ -128,7 +128,7 @@ export const ColumnCell = ({
           <ShortTextColumnCell
             colorTheme={colorTheme}
             schema={columnSchema}
-            responseMode={responseMode}
+            disableRequiredValidation={disableRequiredValidation}
             inputName={inputName}
           />
         )
@@ -137,14 +137,14 @@ export const ColumnCell = ({
           <DropdownColumnCell
             colorTheme={colorTheme}
             schema={columnSchema}
-            responseMode={responseMode}
+            disableRequiredValidation={disableRequiredValidation}
             inputName={inputName}
           />
         )
       default:
         return null
     }
-  }, [colorTheme, columnSchema, responseMode, inputName])
+  }, [colorTheme, columnSchema, disableRequiredValidation, inputName])
 
   return (
     <FormControl
