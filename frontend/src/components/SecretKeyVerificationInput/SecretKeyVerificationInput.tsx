@@ -28,6 +28,7 @@ export type SecretKeyVerificationInputProps = {
   isButtonFullWidth: boolean
   showGuideLink: boolean
   buttonText: string
+  prefillSecretKey?: string
 }
 
 interface SecretKeyFormInputs {
@@ -42,6 +43,7 @@ export const SecretKeyVerificationInput = ({
   isButtonFullWidth,
   showGuideLink,
   buttonText,
+  prefillSecretKey,
 }: SecretKeyVerificationInputProps) => {
   const isMobile = useIsMobile()
 
@@ -51,7 +53,9 @@ export const SecretKeyVerificationInput = ({
     register,
     setValue,
     handleSubmit,
-  } = useForm<SecretKeyFormInputs>()
+  } = useForm<SecretKeyFormInputs>({
+    defaultValues: { secretKey: prefillSecretKey },
+  })
 
   const fileUploadRef = useRef<HTMLInputElement | null>(null)
 

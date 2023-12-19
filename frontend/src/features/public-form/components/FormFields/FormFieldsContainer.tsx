@@ -27,6 +27,8 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     useState<ReturnType<typeof decryptSubmission>>()
 
   const { submissionPublicKey = null } = encryptedPreviousSubmission ?? {}
+  const [searchParams] = useSearchParams()
+  const queryParams = Object.fromEntries([...searchParams])
 
   const renderFields = useMemo(() => {
     // Render skeleton when no data
@@ -58,6 +60,7 @@ export const FormFieldsContainer = (): JSX.Element | null => {
             )
           }
           isLoading={isLoading}
+          prefillSecretKey={queryParams.key}
         />
       )
     }
