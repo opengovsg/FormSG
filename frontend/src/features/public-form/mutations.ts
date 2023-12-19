@@ -22,7 +22,6 @@ import {
   submitFormFeedback,
   submitFormIssue,
   submitMultirespondentForm,
-  SubmitMultirespondentFormWithVirusScanningArgs,
   SubmitStorageFormClearArgs,
   submitStorageModeClearForm,
   submitStorageModeClearFormWithFetch,
