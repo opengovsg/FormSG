@@ -1,8 +1,9 @@
-import { BiGroup, BiLockAlt, BiMailSend } from 'react-icons/bi'
+import { BiLockAlt, BiMailSend } from 'react-icons/bi'
 import { forwardRef, Stack, UnorderedList } from '@chakra-ui/react'
 
 import { FormResponseMode } from '~shared/types/form/form'
 
+import { MultiParty } from '~assets/icons'
 import Badge from '~components/Badge'
 import Tile from '~components/Tile'
 
@@ -72,8 +73,7 @@ export const FormResponseOptions = forwardRef<
       <Tile
         ref={ref}
         variant="complex"
-        //TODO(MRF/FRM-1599): Fix this icon.
-        icon={BiGroup}
+        icon={MultiParty}
         badge={<Badge colorScheme="success">New</Badge>}
         isActive={value === FormResponseMode.Multirespondent}
         onClick={() => onChange(FormResponseMode.Multirespondent)}
