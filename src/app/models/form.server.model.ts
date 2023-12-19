@@ -48,6 +48,7 @@ import {
   PaymentChannel,
   PaymentType,
   StorageFormSettings,
+  WorkflowType,
 } from '../../../shared/types'
 import { reorder } from '../../../shared/utils/immutable-array-fns'
 import { getApplicableIfStates } from '../../shared/util/logic'
@@ -272,23 +273,27 @@ EncryptedFormDocumentSchema.methods.removePaymentAccount = async function () {
   return this.save()
 }
 
+const emailSchema = {
+  type: [
+    {
+      type: String,
+      trim: true,
+    },
+  ],
+  set: transformEmails,
+  validate: {
+    validator: (v: string[]) => {
+      if (!Array.isArray(v)) return false
+      if (v.length === 0) return false
+      return v.every((email) => validator.isEmail(email))
+    },
+    message: 'Please provide valid email addresses',
+  },
+}
+
 const EmailFormSchema = new Schema<IEmailFormSchema, IEmailFormModel>({
   emails: {
-    type: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
-    set: transformEmails,
-    validate: {
-      validator: (v: string[]) => {
-        if (!Array.isArray(v)) return false
-        if (v.length === 0) return false
-        return v.every((email) => validator.isEmail(email))
-      },
-      message: 'Please provide valid email addresses',
-    },
+    ...emailSchema,
     // Mongoose v5 only checks if the type is an array, not whether the array
     // is non-empty.
     required: true,
@@ -300,7 +305,18 @@ const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
     type: String,
     required: true,
   },
-  //TODO(FRM-1577): add workflow emails
+  workflow: [
+    {
+      workflow_type: {
+        type: String,
+        enum: Object.values(WorkflowType),
+        default: WorkflowType.Static,
+        required: true,
+      },
+      emails: emailSchema,
+      //TODO: add form fields
+    },
+  ],
 })
 
 const compileFormModel = (db: Mongoose): IFormModel => {

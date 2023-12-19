@@ -53,6 +53,7 @@ export const STORAGE_FORM_SETTINGS_FIELDS = <const>[
 export const MULTIRESPONDENT_FORM_SETTINGS_FIELDS = <const>[
   ...FORM_SETTINGS_FIELDS,
   'publicKey',
+  'workflow',
 ]
 
 export const WEBHOOK_SETTINGS_FIELDS = <const>['responseMode', 'webhook']

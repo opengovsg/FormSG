@@ -13,6 +13,7 @@ import {
 
 import { featureFlags } from '~shared/constants'
 
+import { Multiparty } from '~assets/icons/Multiparty'
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
 
@@ -27,8 +28,15 @@ import { SettingsGeneralPage } from './SettingsGeneralPage'
 import { SettingsPaymentsPage } from './SettingsPaymentsPage'
 import { SettingsTwilioPage } from './SettingsTwilioPage'
 import { SettingsWebhooksPage } from './SettingsWebhooksPage'
+import { SettingsWorkflowPage } from './SettingsWorkflowPage'
 
-const settingsTabsOrder = ['general', 'singpass', 'twilio', 'webhooks']
+const settingsTabsOrder = [
+  'general',
+  'singpass',
+  'twilio',
+  'webhooks',
+  'workflow',
+]
 
 export const SettingsPage = (): JSX.Element => {
   const { formId, settingsTab } = useParams()
@@ -68,6 +76,7 @@ export const SettingsPage = (): JSX.Element => {
   }, [displayPayments, settingsTab])
 
   const handleTabChange = (index: number) => {
+    console.log('settingsTabsOrder', settingsTabsOrder)
     setTabIndex(index)
     navigate(
       `${ADMINFORM_ROUTE}/${formId}/settings/${settingsTabsOrder[index]}`,
@@ -117,6 +126,7 @@ export const SettingsPage = (): JSX.Element => {
             <SettingsTab label="Singpass" icon={BiKey} />
             <SettingsTab label="Twilio credentials" icon={BiMessage} />
             <SettingsTab label="Webhooks" icon={BiCodeBlock} />
+            <SettingsTab label="Workflow" icon={Multiparty} />
             {displayPayments && (
               <SettingsTab label="Payments" icon={BiDollar} />
             )}
@@ -138,6 +148,9 @@ export const SettingsPage = (): JSX.Element => {
           </TabPanel>
           <TabPanel>
             <SettingsWebhooksPage />
+          </TabPanel>
+          <TabPanel>
+            <SettingsWorkflowPage />
           </TabPanel>
           {displayPayments && (
             <TabPanel>
