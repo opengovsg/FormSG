@@ -7,6 +7,8 @@ import { MultiParty } from '~assets/icons'
 import Badge from '~components/Badge'
 import Tile from '~components/Tile'
 
+import { useUser } from '~features/user/queries'
+
 export interface FormResponseOptionsProps {
   onChange: (option: FormResponseMode) => void
   value: FormResponseMode
@@ -30,6 +32,7 @@ export const FormResponseOptions = forwardRef<
   FormResponseOptionsProps,
   'button'
 >(({ value, onChange }, ref) => {
+  const { user } = useUser()
   return (
     <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
       <Tile
@@ -70,27 +73,29 @@ export const FormResponseOptions = forwardRef<
           ]}
         />
       </Tile>
-      <Tile
-        ref={ref}
-        variant="complex"
-        icon={MultiParty}
-        badge={<Badge colorScheme="success">New</Badge>}
-        isActive={value === FormResponseMode.Multirespondent}
-        onClick={() => onChange(FormResponseMode.Multirespondent)}
-        isFullWidth
-        flex={1}
-      >
-        <Tile.Title>Multi-respondent form</Tile.Title>
-        <Tile.Subtitle>
-          Create a workflow to collect responses from multiple respondents
-        </Tile.Subtitle>
-        <OptionDescription
-          listItems={[
-            'Route form to respondents according to a sequence',
-            'Specify up to two respondents to route form to for filling',
-          ]}
-        />
-      </Tile>
+      {user?.betaFlags?.mrf && (
+        <Tile
+          ref={ref}
+          variant="complex"
+          icon={MultiParty}
+          badge={<Badge colorScheme="success">New</Badge>}
+          isActive={value === FormResponseMode.Multirespondent}
+          onClick={() => onChange(FormResponseMode.Multirespondent)}
+          isFullWidth
+          flex={1}
+        >
+          <Tile.Title>Multi-respondent form</Tile.Title>
+          <Tile.Subtitle>
+            Create a workflow to collect responses from multiple respondents
+          </Tile.Subtitle>
+          <OptionDescription
+            listItems={[
+              'Route form to respondents according to a sequence',
+              'Specify up to two respondents to route form to for filling',
+            ]}
+          />
+        </Tile>
+      )}
     </Stack>
   )
 })
