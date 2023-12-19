@@ -10,6 +10,7 @@ import {
   SubmissionType,
 } from '../../../../../shared/types'
 import { getMultirespondentSubmissionEditPath } from '../../../../../shared/utils/urls'
+import { Environment } from '../../../../../src/types'
 import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getMultirespondentSubmissionModel } from '../../../models/submission.server.model'
@@ -150,7 +151,7 @@ const submitMultirespondentForm = async (
     encryptedContent,
     attachmentMetadata,
     version,
-    workflowStep: 0,
+    workflowStep: 1,
   }
 
   return _createSubmission({
@@ -231,12 +232,17 @@ const _createSubmission = async ({
   // TODO(MRF/FRM-1591): Add post-submission actions handling
   // return await performEncryptPostSubmissionActions(submission, responses)
 
+  const appUrl =
+    process.env.NODE_ENV === Environment.Dev
+      ? config.app.feAppUrl
+      : config.app.appUrl
+
   try {
     await runMultirespondentWorkflow({
       currentWorkflowStep: submissionContent.workflowStep,
       formWorkflow: form.workflow ?? [],
       formTitle: form.title,
-      responseUrl: `${config.app.appUrl}/${getMultirespondentSubmissionEditPath(
+      responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
         form._id,
         submissionId,
       )}/?key=${encodeURIComponent(submissionSecretKey)}`,
