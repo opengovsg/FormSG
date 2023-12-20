@@ -83,6 +83,7 @@ describe('Submission Model', () => {
       encryptedSubmissionSecretKey: 'This is an encrypted secret key',
       encryptedContent: MOCK_ENCRYPTED_CONTENT,
       version: 3,
+      workflowStep: 0,
     },
     MOCK_SUBMISSION_PARAMS,
   )
