@@ -122,10 +122,9 @@ export const IndividualResponsePage = (): JSX.Element => {
 
   const responseLinkWithKey = `${
     window.location.origin
-  }/${getMultirespondentSubmissionEditPath(
-    form?._id ?? '',
-    submissionId,
-  )}?key=${encodeURIComponent(data?.submissionSecretKey || '')}`
+  }/${getMultirespondentSubmissionEditPath(form?._id ?? '', submissionId, {
+    key: data?.submissionSecretKey || '',
+  })}`
 
   return (
     <Flex flexDir="column" marginTop={{ base: '-1.5rem', md: '-3rem' }}>
