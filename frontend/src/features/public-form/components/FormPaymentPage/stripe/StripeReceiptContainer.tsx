@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { Stack, useToast } from '@chakra-ui/react'
+import { Box, Stack, useToast } from '@chakra-ui/react'
 
 import { FormPaymentsField, ProductItem } from '~shared/types'
 
@@ -74,7 +74,7 @@ export const StripeReceiptContainer = ({
     /**
      * PaymentStack is explictly added in this component due to https://github.com/chakra-ui/chakra-ui/issues/6757
      */
-    <Stack spacing="1.5rem">
+    <Stack>
       <PaymentStack>
         <DownloadReceiptBlock
           formId={formId}
@@ -89,7 +89,9 @@ export const StripeReceiptContainer = ({
       </PaymentStack>
       <PaymentStack>
         {!isFeedbackSubmitted && (
-          <FeedbackBlock onSubmit={handleSubmitFeedback} />
+          <Box backgroundColor="white" p="2rem">
+            <FeedbackBlock onSubmit={handleSubmitFeedback} />
+          </Box>
         )}
       </PaymentStack>
     </Stack>
