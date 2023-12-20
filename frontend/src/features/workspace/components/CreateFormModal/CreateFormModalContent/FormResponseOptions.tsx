@@ -7,11 +7,10 @@ import { MultiParty } from '~assets/icons'
 import Badge from '~components/Badge'
 import Tile from '~components/Tile'
 
-import { useUser } from '~features/user/queries'
-
 export interface FormResponseOptionsProps {
   onChange: (option: FormResponseMode) => void
   value: FormResponseMode
+  showMrf: boolean
 }
 
 const OptionDescription = ({ listItems = [] }: { listItems: string[] }) => {
@@ -31,14 +30,17 @@ const OptionDescription = ({ listItems = [] }: { listItems: string[] }) => {
 export const FormResponseOptions = forwardRef<
   FormResponseOptionsProps,
   'button'
->(({ value, onChange }, ref) => {
-  const { user } = useUser()
+>(({ value, onChange, showMrf }, ref) => {
   return (
     <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
       <Tile
         variant="complex"
         icon={BiLockAlt}
-        badge={<Badge colorScheme="neutral">Recommended</Badge>}
+        badge={
+          <Badge colorScheme={showMrf ? 'neutral' : 'success'}>
+            Recommended
+          </Badge>
+        }
         isActive={value === FormResponseMode.Encrypt}
         onClick={() => onChange(FormResponseMode.Encrypt)}
         isFullWidth
@@ -73,7 +75,7 @@ export const FormResponseOptions = forwardRef<
           ]}
         />
       </Tile>
-      {user?.betaFlags?.mrf && (
+      {showMrf && (
         <Tile
           ref={ref}
           variant="complex"
