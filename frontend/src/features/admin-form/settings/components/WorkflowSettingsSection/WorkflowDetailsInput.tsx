@@ -60,8 +60,9 @@ const WorkflowStepInput = ({
     if (value && !isEmail(value)) {
       setError(true)
       return
+    } else {
+      setError(false)
     }
-
     const newWorkflow = [...workflow]
     newWorkflow[workflowStep].emails = [trimmedValue]
 
