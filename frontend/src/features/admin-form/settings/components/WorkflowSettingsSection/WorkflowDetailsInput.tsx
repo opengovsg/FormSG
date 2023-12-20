@@ -5,7 +5,6 @@ import {
   useRef,
   useState,
 } from 'react'
-import { Controller, useForm } from 'react-hook-form'
 import { FormControl, FormErrorMessage, Stack } from '@chakra-ui/react'
 import isEmail from 'validator/lib/isEmail'
 
@@ -39,7 +38,7 @@ const WorkflowStepInput = ({
   disableInput = false,
   labelTitle,
   description = 'Enter the email of the respondent that should fill in this form after the respondent above',
-  placeholder = 'Enter the email of the respondent that should fill in this form after the respondent above',
+  placeholder = 'me@example.com',
 }: WorkflowStepInputProps): JSX.Element => {
   const initialEmail = initialValue[workflowStep].emails[0]
   const [value, setValue] = useState(initialEmail)
@@ -83,9 +82,7 @@ const WorkflowStepInput = ({
 
   return (
     <FormControl isInvalid={error} isRequired>
-      <FormLabel description={description} placeholder={placeholder}>
-        {labelTitle}
-      </FormLabel>
+      <FormLabel description={description}>{labelTitle}</FormLabel>
       <Input
         type="email"
         ref={inputRef}
@@ -94,6 +91,7 @@ const WorkflowStepInput = ({
         onKeyDown={handleKeydown}
         onBlur={handleBlur}
         disabled={disableInput}
+        placeholder={placeholder}
       />
       {error && <FormErrorMessage>{INVALID_EMAIL_ERROR}</FormErrorMessage>}
     </FormControl>
