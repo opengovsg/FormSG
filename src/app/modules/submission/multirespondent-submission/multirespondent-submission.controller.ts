@@ -539,7 +539,6 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
           message: 'Get encrypted response using submissionId success',
           meta: logMeta,
         })
-        console.log('responseData: ', responseData)
         return res.json(responseData)
       })
       .mapErr((error) => {
