@@ -12,14 +12,13 @@ import {
 
 import { GUIDE_SECRET_KEY_LOSS } from '~constants/links'
 import { useIsMobile } from '~hooks/useIsMobile'
-import formsgSdk from '~utils/formSdk'
+import { isKeypairValid, SECRET_KEY_REGEX } from '~utils/secretKeyValidation'
 
 import Button from '../Button'
 import FormLabel from '../FormControl/FormLabel'
 import Link from '../Link'
 
 const SECRET_KEY_NAME = 'secretKey'
-const SECRET_KEY_REGEX = /^[a-zA-Z0-9/+]+={0,2}$/
 
 export type SecretKeyVerificationInputProps = {
   publicKey: string | null
@@ -29,6 +28,7 @@ export type SecretKeyVerificationInputProps = {
   isButtonFullWidth: boolean
   showGuideLink: boolean
   buttonText: string
+  prefillSecretKey?: string
 }
 
 interface SecretKeyFormInputs {
@@ -43,6 +43,7 @@ export const SecretKeyVerificationInput = ({
   isButtonFullWidth,
   showGuideLink,
   buttonText,
+  prefillSecretKey,
 }: SecretKeyVerificationInputProps) => {
   const isMobile = useIsMobile()
 
@@ -52,7 +53,9 @@ export const SecretKeyVerificationInput = ({
     register,
     setValue,
     handleSubmit,
-  } = useForm<SecretKeyFormInputs>()
+  } = useForm<SecretKeyFormInputs>({
+    defaultValues: { secretKey: prefillSecretKey },
+  })
 
   const fileUploadRef = useRef<HTMLInputElement | null>(null)
 
@@ -63,12 +66,8 @@ export const SecretKeyVerificationInput = ({
         // Should not see this error message.
         if (!publicKey) return 'Unexpected form mode'
 
-        const trimmedSecretKey = secretKey.trim()
-        const isKeypairValid =
-          SECRET_KEY_REGEX.test(trimmedSecretKey) &&
-          formsgSdk.crypto.valid(publicKey, trimmedSecretKey)
-
-        return isKeypairValid || 'The secret key provided is invalid'
+        const isValid = isKeypairValid(publicKey, secretKey)
+        return isValid || 'The secret key provided is invalid'
       },
     }
   }, [publicKey])

@@ -1,7 +1,10 @@
 import { useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Box } from '@chakra-ui/react'
 
 import { FormAuthType } from '~shared/types'
+
+import { isKeypairValid } from '~utils/secretKeyValidation'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 import { decryptSubmission } from '~features/public-form/utils/decryptSubmission'
@@ -27,6 +30,8 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     useState<ReturnType<typeof decryptSubmission>>()
 
   const { submissionPublicKey = null } = encryptedPreviousSubmission ?? {}
+  const [searchParams] = useSearchParams()
+  const queryParams = Object.fromEntries([...searchParams])
 
   const renderFields = useMemo(() => {
     // Render skeleton when no data
@@ -46,6 +51,29 @@ export const FormFieldsContainer = (): JSX.Element | null => {
 
     // MRF
     if (previousSubmissionId && !previousSubmission) {
+      let submissionSecretKey = ''
+      try {
+        submissionSecretKey = queryParams.key
+          ? decodeURIComponent(queryParams.key || '')
+          : ''
+      } catch (e) {
+        console.log(e)
+      }
+
+      const isValid = isKeypairValid(
+        submissionPublicKey || '',
+        submissionSecretKey,
+      )
+
+      if (isValid) {
+        setPreviousSubmission(
+          decryptSubmission({
+            submission: encryptedPreviousSubmission,
+            secretKey: submissionSecretKey,
+          }),
+        )
+      }
+
       return (
         <SecretKeyVerification
           publicKey={submissionPublicKey}
@@ -58,6 +86,7 @@ export const FormFieldsContainer = (): JSX.Element | null => {
             )
           }
           isLoading={isLoading}
+          prefillSecretKey={submissionSecretKey}
         />
       )
     }
@@ -79,6 +108,7 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     previousSubmissionId,
     previousSubmission,
     handleSubmitForm,
+    queryParams.key,
     submissionPublicKey,
     encryptedPreviousSubmission,
   ])
