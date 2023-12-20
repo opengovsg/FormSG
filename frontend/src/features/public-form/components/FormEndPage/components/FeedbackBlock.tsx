@@ -36,7 +36,7 @@ export const FeedbackBlock = ({
 
   const handleFormSubmit = handleSubmit((inputs) => onSubmit(inputs))
 
-  const { formId, isPaymentEnabled } = usePublicFormContext()
+  const { isPaymentEnabled } = usePublicFormContext()
 
   const feedbackTitle = isPaymentEnabled
     ? 'How was your experience making payment on this form?'
