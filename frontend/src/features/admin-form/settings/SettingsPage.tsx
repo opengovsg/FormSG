@@ -13,7 +13,7 @@ import {
 
 import { featureFlags } from '~shared/constants'
 
-import { Multiparty } from '~assets/icons/Multiparty'
+import { MultiParty } from '~assets/icons/MultiParty'
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
 
@@ -30,13 +30,7 @@ import { SettingsTwilioPage } from './SettingsTwilioPage'
 import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 import { SettingsWorkflowPage } from './SettingsWorkflowPage'
 
-const settingsTabsOrder = [
-  'general',
-  'singpass',
-  'twilio',
-  'webhooks',
-  'workflow',
-]
+const settingsTabsOrder = ['general', 'singpass', 'twilio', 'webhooks']
 
 export const SettingsPage = (): JSX.Element => {
   const { formId, settingsTab } = useParams()
@@ -60,6 +54,8 @@ export const SettingsPage = (): JSX.Element => {
   const displayPayments =
     user?.betaFlags?.payment || flags?.has(featureFlags.payment)
 
+  const displayWorkflow = user?.betaFlags?.mrf
+
   const [tabIndex, setTabIndex] = useState(
     settingsTabsOrder.indexOf(settingsTab ?? ''),
   )
@@ -67,13 +63,17 @@ export const SettingsPage = (): JSX.Element => {
   // Note: Admins are not redirected to /general on invalid settings tabs as we
   // don't want to do this prematurely before displayPayments can be determined.
   useEffect(() => {
+    if (displayWorkflow) {
+      settingsTabsOrder.push('workflow')
+      setTabIndex(settingsTabsOrder.indexOf(settingsTab ?? ''))
+    }
     if (displayPayments) {
       // Dynamically push payments tab to settings tab order as needed, in case
       // there may be multiple hidden tabs in the future.
       settingsTabsOrder.push('payments')
       setTabIndex(settingsTabsOrder.indexOf(settingsTab ?? ''))
     }
-  }, [displayPayments, settingsTab])
+  }, [displayWorkflow, displayPayments, settingsTab])
 
   const handleTabChange = (index: number) => {
     console.log('settingsTabsOrder', settingsTabsOrder)
@@ -126,7 +126,9 @@ export const SettingsPage = (): JSX.Element => {
             <SettingsTab label="Singpass" icon={BiKey} />
             <SettingsTab label="Twilio credentials" icon={BiMessage} />
             <SettingsTab label="Webhooks" icon={BiCodeBlock} />
-            <SettingsTab label="Workflow" icon={Multiparty} />
+            {displayWorkflow && (
+              <SettingsTab label="Workflow" icon={MultiParty} />
+            )}
             {displayPayments && (
               <SettingsTab label="Payments" icon={BiDollar} />
             )}

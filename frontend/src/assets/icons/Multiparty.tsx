@@ -1,4 +1,4 @@
-export const Multiparty = (
+export const MultiParty = (
   props: React.SVGProps<SVGSVGElement>,
 ): JSX.Element => {
   return (
