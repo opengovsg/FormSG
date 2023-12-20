@@ -11,14 +11,13 @@ import { useAdminFormSettings } from './queries'
 
 export const SettingsWorkflowPage = (): JSX.Element => {
   const { data: settings, isLoading } = useAdminFormSettings()
+  if (!settings || isLoading) return <WorkflowUnsupportedMsg />
 
   // Workflow is only supported in multirespondent mode; show message if form response mode is not multirespondent
-  if (
-    !isLoading &&
-    settings?.responseMode !== FormResponseMode.Multirespondent
-  ) {
+  if (settings.responseMode !== FormResponseMode.Multirespondent) {
     return <WorkflowUnsupportedMsg />
   }
+
   return (
     <>
       <Wrap
@@ -31,21 +30,14 @@ export const SettingsWorkflowPage = (): JSX.Element => {
           Workflow
         </CategoryHeader>
       </Wrap>
-      {settings?.responseMode === FormResponseMode.Multirespondent ? (
-        <>
-          <Text mb="2.5rem">
-            Create a workflow to collect responses from multiple respondents. We
-            currently support up to three respondents.&nbsp;
-            <Link href={GUIDE_TWILIO} isExternal>
-              Learn more about setting up a workflow
-            </Link>
-          </Text>
-
-          <WorkflowDetailsInput settings={settings} />
-        </>
-      ) : (
-        <></>
-      )}
+      <Text mb="2.5rem">
+        Create a workflow to collect responses from multiple respondents. We
+        currently support up to three respondents.&nbsp;
+        <Link href={GUIDE_TWILIO} isExternal>
+          Learn more about setting up a workflow
+        </Link>
+      </Text>
+      <WorkflowDetailsInput settings={settings} />
     </>
   )
 }

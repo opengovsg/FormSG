@@ -76,7 +76,6 @@ export const SettingsPage = (): JSX.Element => {
   }, [displayWorkflow, displayPayments, settingsTab])
 
   const handleTabChange = (index: number) => {
-    console.log('settingsTabsOrder', settingsTabsOrder)
     setTabIndex(index)
     navigate(
       `${ADMINFORM_ROUTE}/${formId}/settings/${settingsTabsOrder[index]}`,
