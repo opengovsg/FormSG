@@ -46,6 +46,8 @@ export type FormEndPage = {
   paragraph?: string
   buttonLink?: string
   buttonText: string
+  paymentTitle: string
+  paymentParagraph: string
 }
 
 export enum FormAuthType {
