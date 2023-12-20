@@ -19,6 +19,8 @@ import FormFieldMessage from '~components/FormControl/FormFieldMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 
+import { useUser } from '~features/user/queries'
+
 import { useCreateFormWizard } from '../CreateFormWizardContext'
 
 import { EmailFormRecipientsInput } from './EmailFormRecipientsInput'
@@ -45,15 +47,18 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
   const titleInputValue = watch('title')
   const responseModeValue = watch('responseMode')
 
+  const { user } = useUser()
+  const showMrf = Boolean(user?.betaFlags?.mrf)
+
   return (
     <>
       <ModalHeader color="secondary.700">
-        <Container maxW="69.5rem" p={0}>
+        <Container maxW={showMrf ? '69.5rem' : '42.5rem'} p={0}>
           {modalHeader}
         </Container>
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap">
-        <Container maxW="69.5rem" p={0}>
+        <Container maxW={showMrf ? '69.5rem' : '42.5rem'} p={0}>
           <FormControl isRequired isInvalid={!!errors.title} mb="2.25rem">
             <FormLabel useMarkdownForDescription>Form name</FormLabel>
             <Skeleton isLoaded={!isFetching}>
@@ -77,7 +82,9 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
               <Controller
                 name="responseMode"
                 control={control}
-                render={({ field }) => <FormResponseOptions {...field} />}
+                render={({ field }) => (
+                  <FormResponseOptions {...field} showMrf={showMrf} />
+                )}
                 rules={{ required: 'Please select a form response mode' }}
               />
             </Skeleton>
