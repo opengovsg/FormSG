@@ -54,6 +54,10 @@ import { createMultirespondentSubmissionDto } from './multirespondent-submission
 
 const logger = createLoggerWithLabel(module)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
+const appUrl =
+  process.env.NODE_ENV === Environment.Dev
+    ? config.app.feAppUrl
+    : config.app.appUrl
 
 const submitMultirespondentForm = async (
   req: SubmitMultirespondentFormHandlerRequest,
@@ -232,11 +236,6 @@ const _createSubmission = async ({
   // TODO(MRF/FRM-1591): Add post-submission actions handling
   // return await performEncryptPostSubmissionActions(submission, responses)
 
-  const appUrl =
-    process.env.NODE_ENV === Environment.Dev
-      ? config.app.feAppUrl
-      : config.app.appUrl
-
   try {
     await runMultirespondentWorkflow({
       nextWorkflowStep: submissionContent.workflowStep + 1, // we want to send emails to the addresses linked to the next step of the workflow
@@ -245,7 +244,8 @@ const _createSubmission = async ({
       responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
         form._id,
         submissionId,
-      )}/?key=${encodeURIComponent(submissionSecretKey)}`,
+        { key: submissionSecretKey },
+      )}`,
       formId: form._id,
       submissionId,
     })
@@ -286,12 +286,7 @@ const runMultirespondentWorkflow = async ({
     nextWorkflowStep,
   }
   // Step 1: Retrieve email addresses for current workflow step
-  if (
-    !formWorkflow[nextWorkflowStep] ||
-    !formWorkflow[nextWorkflowStep].emails ||
-    formWorkflow[nextWorkflowStep].emails.length === 0
-  )
-    return
+  if ((formWorkflow[nextWorkflowStep]?.emails?.length ?? 0) === 0) return
   const emails = formWorkflow[nextWorkflowStep].emails
   // Step 2: send out workflow email
   try {
@@ -437,10 +432,11 @@ const updateMultirespondentSubmission = async (
       nextWorkflowStep: workflowStep + 1, // we want to send emails to the addresses linked to the next step of the workflow
       formWorkflow: form.workflow ?? [],
       formTitle: form.title,
-      responseUrl: `${config.app.appUrl}/${getMultirespondentSubmissionEditPath(
+      responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
         form._id,
         submissionId,
-      )}/?key=${encodeURIComponent(submissionSecretKey)}`,
+        { key: submissionSecretKey },
+      )}`,
       formId: form._id,
       submissionId,
     })
