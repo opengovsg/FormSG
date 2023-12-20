@@ -151,7 +151,7 @@ const submitMultirespondentForm = async (
     encryptedContent,
     attachmentMetadata,
     version,
-    workflowStep: 1,
+    workflowStep: 0,
   }
 
   return _createSubmission({
@@ -239,7 +239,7 @@ const _createSubmission = async ({
 
   try {
     await runMultirespondentWorkflow({
-      currentWorkflowStep: submissionContent.workflowStep,
+      nextWorkflowStep: submissionContent.workflowStep + 1, // we want to send emails to the addresses linked to the next step of the workflow
       formWorkflow: form.workflow ?? [],
       formTitle: form.title,
       responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
@@ -265,14 +265,14 @@ const _createSubmission = async ({
 }
 
 const runMultirespondentWorkflow = async ({
-  currentWorkflowStep,
+  nextWorkflowStep,
   formWorkflow,
   formTitle,
   responseUrl,
   formId,
   submissionId,
 }: {
-  currentWorkflowStep: number
+  nextWorkflowStep: number
   formWorkflow: FormWorkflowSettings
   formTitle: string
   responseUrl: string
@@ -283,12 +283,16 @@ const runMultirespondentWorkflow = async ({
     action: 'runMultirespondentWorkflow',
     formId,
     submissionId,
-    currentWorkflowStep,
+    nextWorkflowStep,
   }
   // Step 1: Retrieve email addresses for current workflow step
-  if (!formWorkflow[currentWorkflowStep]) return
-  if (formWorkflow[currentWorkflowStep].emails.length === 0) return
-  const emails = formWorkflow[currentWorkflowStep].emails
+  if (
+    !formWorkflow[nextWorkflowStep] ||
+    !formWorkflow[nextWorkflowStep].emails ||
+    formWorkflow[nextWorkflowStep].emails.length === 0
+  )
+    return
+  const emails = formWorkflow[nextWorkflowStep].emails
   // Step 2: send out workflow email
   try {
     await MailService.sendMRFWorkflowStepEmail({
@@ -430,7 +434,7 @@ const updateMultirespondentSubmission = async (
 
   try {
     await runMultirespondentWorkflow({
-      currentWorkflowStep: workflowStep,
+      nextWorkflowStep: workflowStep + 1, // we want to send emails to the addresses linked to the next step of the workflow
       formWorkflow: form.workflow ?? [],
       formTitle: form.title,
       responseUrl: `${config.app.appUrl}/${getMultirespondentSubmissionEditPath(
