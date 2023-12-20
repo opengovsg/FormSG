@@ -423,7 +423,7 @@ describe('Multirespondent Submission Model', () => {
         expect(actual).toBeNull()
       })
 
-      it('should return null when type of submission with given id is not SubmissionType.Encrypt', async () => {
+      it('should return null when type of submission with given id is not SubmissionType.Multirespondent', async () => {
         // Arrange
         const validFormId = new ObjectId().toHexString()
         const validEmailSubmission = await EmailSubmission.create({

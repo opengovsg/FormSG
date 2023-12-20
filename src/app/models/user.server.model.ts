@@ -73,6 +73,7 @@ const compileUserModel = (db: Mongoose) => {
       betaFlags: {
         payment: Boolean,
         children: Boolean,
+        mrf: Boolean,
       },
       flags: {
         lastSeenFeatureUpdateVersion: Number,

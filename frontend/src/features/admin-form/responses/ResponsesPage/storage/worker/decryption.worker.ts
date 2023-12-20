@@ -132,6 +132,7 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
           break
         }
         default: {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const _: never = submission
           throw new Error('Invalid submission type encountered.')
         }

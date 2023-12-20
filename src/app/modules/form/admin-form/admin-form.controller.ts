@@ -5,7 +5,7 @@ import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
-import { ResultAsync } from 'neverthrow'
+import { okAsync, ResultAsync } from 'neverthrow'
 
 import {
   MAX_UPLOAD_FILE_SIZE,
@@ -105,6 +105,7 @@ import { PermissionLevel } from './admin-form.types'
 import {
   mapGoGovErrors,
   mapRouteError,
+  verifyUserBetaflag,
   verifyValidUnicodeString,
 } from './admin-form.utils'
 
@@ -143,10 +144,7 @@ const createFormValidator = celebrate({
         publicKey: Joi.string()
           .allow('')
           .when('responseMode', {
-            is: Joi.allow(
-              FormResponseMode.Encrypt,
-              FormResponseMode.Multirespondent,
-            ),
+            is: [FormResponseMode.Encrypt, FormResponseMode.Multirespondent],
             then: Joi.string().required().disallow(''),
           }),
         workspaceId: Joi.string(),
@@ -183,10 +181,7 @@ const duplicateFormValidator = celebrate({
     publicKey: Joi.string()
       .allow('')
       .when('responseMode', {
-        is: Joi.allow(
-          FormResponseMode.Encrypt,
-          FormResponseMode.Multirespondent,
-        ),
+        is: [FormResponseMode.Encrypt, FormResponseMode.Multirespondent],
         then: Joi.string().required().disallow(''),
       }),
     workspaceId: Joi.string(),
@@ -1189,6 +1184,11 @@ export const createForm: ControllerHandler<
   return (
     // Step 1: Retrieve currently logged in user.
     UserService.findUserById(sessionUserId)
+      .andThen((user) =>
+        formParams.responseMode === FormResponseMode.Multirespondent
+          ? verifyUserBetaflag(user, 'mrf')
+          : okAsync(user),
+      )
       // Step 2: Create form with given params and set admin to logged in user.
       .andThen((user) =>
         AdminFormService.createForm(
