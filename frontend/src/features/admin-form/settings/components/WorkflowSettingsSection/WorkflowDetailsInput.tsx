@@ -1,19 +1,9 @@
-import {
-  ChangeEventHandler,
-  KeyboardEventHandler,
-  useCallback,
-  useRef,
-  useState,
-} from 'react'
+import { KeyboardEventHandler, useCallback, useMemo, useRef } from 'react'
+import { useForm } from 'react-hook-form'
 import { FormControl, FormErrorMessage, Stack } from '@chakra-ui/react'
 import isEmail from 'validator/lib/isEmail'
 
-import {
-  FormResponseMode,
-  FormWorkflowSettings,
-  MultirespondentFormSettings,
-  WorkflowType,
-} from '~shared/types'
+import { MultirespondentFormSettings, WorkflowType } from '~shared/types'
 
 import { INVALID_EMAIL_ERROR } from '~constants/validation'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -21,130 +11,125 @@ import Input from '~components/Input'
 
 import { useMutateFormSettings } from '../../mutations'
 
-interface WorkflowStepInputProps {
-  workflowStep: number
-  initialValue: FormWorkflowSettings
-  handleMutation: (newWorkflow: FormWorkflowSettings) => void
-  disableInput?: boolean
-  labelTitle: string
-  description?: string
-  placeholder?: string
-}
-
-const WorkflowStepInput = ({
-  workflowStep,
-  initialValue,
-  handleMutation,
-  disableInput = false,
-  labelTitle,
-  description = 'Enter the email of the respondent that should fill in this form after the respondent above',
-  placeholder = 'me@example.com',
-}: WorkflowStepInputProps): JSX.Element => {
-  const initialEmail = initialValue[workflowStep].emails[0]
-  const [value, setValue] = useState(initialEmail)
-  const [workflow, setWorkflow] = useState(initialValue)
-  const [error, setError] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  const handleValueChange: ChangeEventHandler<HTMLInputElement> = useCallback(
-    (e) => {
-      setValue(e.target.value)
-    },
-    [],
-  )
-
-  const handleBlur = useCallback(() => {
-    if (value === initialEmail) return
-    const trimmedValue = value.trim()
-    if (!value) setError(false)
-    if (value && !isEmail(value)) {
-      setError(true)
-      return
-    } else {
-      setError(false)
-    }
-    const newWorkflow = [...workflow]
-    newWorkflow[workflowStep].emails = [trimmedValue]
-
-    setWorkflow(newWorkflow)
-    handleMutation(workflow)
-    setValue(trimmedValue)
-  }, [value, initialEmail, workflow, workflowStep, handleMutation])
-
-  const handleKeydown: KeyboardEventHandler<HTMLInputElement> = useCallback(
-    (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault()
-        inputRef.current?.blur()
-      }
-    },
-    [],
-  )
-
-  return (
-    <FormControl isInvalid={error} isRequired>
-      <FormLabel description={description}>{labelTitle}</FormLabel>
-      <Input
-        type="email"
-        ref={inputRef}
-        value={value}
-        onChange={handleValueChange}
-        onKeyDown={handleKeydown}
-        onBlur={handleBlur}
-        disabled={disableInput}
-        placeholder={placeholder}
-      />
-      {error && <FormErrorMessage>{INVALID_EMAIL_ERROR}</FormErrorMessage>}
-    </FormControl>
-  )
-}
-
 export const WorkflowDetailsInput = ({
   settings,
 }: {
   settings: MultirespondentFormSettings
 }): JSX.Element => {
   const { mutateWorkflowSettings } = useMutateFormSettings()
-  const handleWorkflowMutation = (newWorkflow: FormWorkflowSettings) => {
+
+  const existingSecondRespEmail = useMemo(
+    () => settings.workflow && settings.workflow[1]?.emails[1],
+    [settings],
+  )
+
+  const existingThirdRespEmail = useMemo(
+    () => settings.workflow && settings.workflow[2]?.emails[2],
+    [settings],
+  )
+
+  const existingWorkflow = useMemo(
+    () =>
+      settings.workflow && settings.workflow.length > 0
+        ? [...settings.workflow]
+        : Array(3).fill({
+            emails: [],
+            workflow_type: WorkflowType.Static,
+          }),
+    [settings],
+  )
+
+  const validateEmail = useCallback((value: string) => {
+    if (!value) return true
+    return isEmail(value.trim()) || INVALID_EMAIL_ERROR
+  }, [])
+
+  const {
+    register,
+    formState: { errors, isValid },
+    getValues,
+  } = useForm<{
+    secondRespondent: string
+    thirdRespondent: string
+  }>({
+    mode: 'onChange',
+    defaultValues: {
+      secondRespondent: existingSecondRespEmail ?? '',
+      thirdRespondent: existingThirdRespEmail ?? '',
+    },
+  })
+
+  const handleUpdateEmail = useCallback(() => {
+    const nextSecondEmail = getValues('secondRespondent')
+    const nextThirdEmail = getValues('thirdRespondent')
+
+    const newWorkflow = [...existingWorkflow]
+    newWorkflow[1].emails = [nextSecondEmail]
+    newWorkflow[2].emails = [nextThirdEmail]
     mutateWorkflowSettings.mutate(newWorkflow)
-  }
+  }, [getValues, existingWorkflow, mutateWorkflowSettings])
 
-  //TODO: Change this when we introduce dynamic routing
-  const WORKFLOW_STEP_COUNT = 3
+  const handleEmailInputKeyDown: KeyboardEventHandler = useCallback(
+    (e) => {
+      if (!isValid || e.key !== 'Enter') return
+      return inputRef.current?.blur()
+    },
+    [isValid],
+  )
 
-  const initialWorkflow =
-    settings.workflow === undefined || settings.workflow.length === 0
-      ? Array(WORKFLOW_STEP_COUNT).fill({
-          emails: [],
-          workflow_type: WorkflowType.Static,
-        })
-      : settings.workflow
+  const handleEmailInputBlur = useCallback(() => {
+    if (isValid) {
+      return handleUpdateEmail()
+    }
+    return
+  }, [isValid, handleUpdateEmail])
 
-  return settings?.responseMode === FormResponseMode.Multirespondent ? (
+  const secondEmailRegister = register('secondRespondent', {
+    onBlur: handleEmailInputBlur,
+    validate: validateEmail,
+  })
+
+  const thirdEmailRegister = register('thirdRespondent', {
+    onBlur: handleEmailInputBlur,
+    validate: validateEmail,
+  })
+
+  const inputRef = useRef<HTMLInputElement | null>(null)
+
+  return (
     <Stack spacing="2.5rem">
-      <WorkflowStepInput
-        workflowStep={0}
-        initialValue={initialWorkflow}
-        handleMutation={handleWorkflowMutation}
-        disableInput
-        labelTitle="First respondent"
-        description="This is the respondent that starts the workflow"
-        placeholder="Anyone with the form link"
-      />
-      <WorkflowStepInput
-        workflowStep={1}
-        initialValue={initialWorkflow}
-        handleMutation={handleWorkflowMutation}
-        labelTitle="Second respondent"
-      />
-      <WorkflowStepInput
-        workflowStep={2}
-        initialValue={initialWorkflow}
-        handleMutation={handleWorkflowMutation}
-        labelTitle="Third respondent"
-      />
+      <FormControl isRequired>
+        <FormLabel description="This is the respondent that starts the workflow">
+          First respondent
+        </FormLabel>
+        <Input isDisabled placeholder="Anyone with the form link" />
+      </FormControl>
+      <FormControl isInvalid={!!errors.secondRespondent} isRequired>
+        <FormLabel description="Enter the email of the respondent that should fill in this form after the respondent above">
+          Second respondent
+        </FormLabel>
+        <Input
+          {...secondEmailRegister}
+          onKeyDown={handleEmailInputKeyDown}
+          placeholder="me@example.com"
+        />
+        {errors.secondRespondent && (
+          <FormErrorMessage>{errors.secondRespondent.message}</FormErrorMessage>
+        )}
+      </FormControl>
+      <FormControl isInvalid={!!errors.thirdRespondent} isRequired>
+        <FormLabel description="Enter the email of the respondent that should fill in this form after the respondent above">
+          Third respondent
+        </FormLabel>
+        <Input
+          {...thirdEmailRegister}
+          onKeyDown={handleEmailInputKeyDown}
+          placeholder="me@example.com"
+        />
+        {errors.thirdRespondent && (
+          <FormErrorMessage>{errors.thirdRespondent.message}</FormErrorMessage>
+        )}
+      </FormControl>
     </Stack>
-  ) : (
-    <></>
   )
 }
