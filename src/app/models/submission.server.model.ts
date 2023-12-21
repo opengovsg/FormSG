@@ -467,7 +467,6 @@ export const MultirespondentSubmissionSchema = new Schema<
     type: Number,
     required: true,
   },
-  //TODO (FRM-1577): add workflow step
   workflowStep: {
     type: Number,
     required: true,

@@ -73,16 +73,11 @@ export const setCurrentWorkflowStep = async (
     return errAsync(new InvalidSubmissionTypeError())
   }
   const logMeta = {
-    action: 'retrievePreviousWorkflowStep',
+    action: 'setCurrentWorkflowStep',
     submissionId,
     formId,
     ...createReqMeta(req),
   }
-
-  // logger.info({
-  //   message: 'Get encrypted response using submissionId start',
-  //   meta: logMeta,
-  // })
 
   return (
     // Step 1: Retrieve the full form object.

@@ -174,7 +174,6 @@ const submitMultirespondentForm = async (
 const _createSubmission = async ({
   req,
   res,
-
   logMeta,
   formId,
   // responses,

@@ -22,3 +22,15 @@ export const isBodyVersion3AndAbove = (
 ): body is ParsedMultipartForm<FieldResponsesV3> => {
   return (body.version ?? 0) >= 3
 }
+
+export const isBodyVersion2AndBelow = (
+  body: ParsedMultipartForm<unknown>,
+): body is ParsedMultipartForm<FieldResponse[]> => {
+  return (body.version ?? 0) < 3
+}
+
+export const isBodyVersion3AndAbove = (
+  body: ParsedMultipartForm<unknown>,
+): body is ParsedMultipartForm<FieldResponsesV3> => {
+  return (body.version ?? 0) >= 3
+}
