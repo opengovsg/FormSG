@@ -12,6 +12,7 @@ import { EmailFieldSchema, VerifiableFieldInput } from '../types'
 
 export interface EmailFieldInputProps {
   schema: EmailFieldSchema
+  disableRequiredValidation?: boolean
   /**
    * If available, will wrap controller's onChange with this function.
    */
@@ -24,12 +25,13 @@ export interface EmailFieldInputProps {
 
 export const EmailFieldInput = ({
   schema,
+  disableRequiredValidation,
   handleInputChange,
   inputProps = {},
 }: EmailFieldInputProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createEmailValidationRules(schema),
-    [schema],
+    () => createEmailValidationRules(schema, disableRequiredValidation),
+    [schema, disableRequiredValidation],
   )
 
   const { control } = useFormContext<VerifiableFieldInput>()

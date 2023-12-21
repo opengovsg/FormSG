@@ -1,8 +1,6 @@
-import { encode as encodeBase64 } from '@stablelib/base64'
 import { celebrate, Joi, Segments } from 'celebrate'
 import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
-import { chain, omit } from 'lodash'
 import { ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import {
@@ -12,14 +10,12 @@ import {
 import {
   BasicField,
   FormAuthType,
-  StorageModeAttachment,
-  StorageModeAttachmentsMap,
+  FormResponseMode,
 } from '../../../../../shared/types'
 import {
   EncryptAttachmentResponse,
   EncryptFormFieldResponse,
-  FormLoadedDto,
-  ParsedClearAttachmentResponse,
+  EncryptFormLoadedDto,
   ParsedClearFormFieldResponse,
 } from '../../../../types/api'
 import { isDev } from '../../../config/config'
@@ -35,24 +31,24 @@ import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
 import { IPopulatedStorageFormWithResponsesAndHash } from '../email-submission/email-submission.types'
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import { sharedSubmissionParams } from '../submission.constants'
+import {
+  DownloadCleanFileFailedError,
+  MaliciousFileDetectedError,
+  VirusScanFailedError,
+} from '../submission.errors'
 import * as SubmissionService from '../submission.service'
 import {
+  getEncryptedAttachmentsMapFromAttachmentsMap,
   isAttachmentResponse,
   isQuarantinedAttachmentResponse,
+  mapRouteError,
 } from '../submission.utils'
 
 import {
-  DownloadCleanFileFailedError,
   EncryptedPayloadExistsError,
   FormsgReqBodyExistsError,
-  MaliciousFileDetectedError,
-  VirusScanFailedError,
 } from './encrypt-submission.errors'
-import {
-  checkFormIsEncryptMode,
-  downloadCleanFile,
-  triggerVirusScanning,
-} from './encrypt-submission.service'
+import { checkFormIsEncryptMode } from './encrypt-submission.service'
 import {
   CreateFormsgAndRetrieveFormMiddlewareHandlerRequest,
   CreateFormsgAndRetrieveFormMiddlewareHandlerType,
@@ -62,10 +58,7 @@ import {
   StorageSubmissionMiddlewareHandlerType,
   ValidateSubmissionMiddlewareHandlerRequest,
 } from './encrypt-submission.types'
-import {
-  formatMyInfoStorageResponseData,
-  mapRouteError,
-} from './encrypt-submission.utils'
+import { formatMyInfoStorageResponseData } from './encrypt-submission.utils'
 import IncomingEncryptSubmission from './IncomingEncryptSubmission.class'
 
 const logger = createLoggerWithLabel(module)
@@ -201,41 +194,6 @@ export const checkNewBoundaryEnabled = async (
 }
 
 /**
- * Helper function to trigger virus scanning and download clean file.
- * @param response quarantined attachment response from storage submissions v2.1+.
- * @returns modified response with content replaced with clean file buffer and answer replaced with filename.
- */
-const triggerVirusScanThenDownloadCleanFileChain = (
-  response: ParsedClearAttachmentResponse,
-): ResultAsync<
-  ParsedClearAttachmentResponse,
-  | VirusScanFailedError
-  | DownloadCleanFileFailedError
-  | MaliciousFileDetectedError
-> =>
-  // Step 3: Trigger lambda to scan attachments.
-  triggerVirusScanning(response.answer)
-    .mapErr((error) => {
-      if (error instanceof MaliciousFileDetectedError)
-        return new MaliciousFileDetectedError(response.filename)
-      return error
-    })
-    .map((lambdaOutput) => lambdaOutput.body)
-    // Step 4: Retrieve attachments from the clean bucket.
-    .andThen((cleanAttachment) =>
-      // Retrieve attachment from clean bucket.
-      downloadCleanFile(
-        cleanAttachment.cleanFileKey,
-        cleanAttachment.destinationVersionId,
-      ).map((attachmentBuffer) => ({
-        ...response,
-        // Replace content with attachmentBuffer and answer with filename.
-        content: attachmentBuffer,
-        answer: response.filename,
-      })),
-    )
-
-/**
  * Asynchronous virus scanning for storage submissions v2.1+. This is used for non-dev environments.
  * @param responses all responses in the storage submissions v2.1+ request.
  * @returns all responses with clean attachments and their filename populated for any attachment fields.
@@ -250,7 +208,9 @@ const asyncVirusScanning = (
 >[] => {
   return responses.map((response) => {
     if (isQuarantinedAttachmentResponse(response)) {
-      return triggerVirusScanThenDownloadCleanFileChain(response)
+      return SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
+        response,
+      )
     }
 
     // If field is not an attachment, return original response.
@@ -281,7 +241,9 @@ const devModeSyncVirusScanning = async (
     if (isQuarantinedAttachmentResponse(response)) {
       // await to pause for...of loop until the virus scanning and downloading of clean file is completed.
       const attachmentResponse =
-        await triggerVirusScanThenDownloadCleanFileChain(response)
+        await SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
+          response,
+        )
       results.push(attachmentResponse)
       if (attachmentResponse.isErr()) break
     } else {
@@ -493,60 +455,6 @@ export const validateStorageSubmission = async (
     })
 }
 
-const encryptAttachment = async (
-  attachment: Buffer,
-  { id, publicKey }: { id: string; publicKey: string },
-): Promise<StorageModeAttachment & { id: string }> => {
-  let label
-
-  try {
-    label = 'Read file content'
-
-    const fileContentsView = new Uint8Array(attachment)
-
-    label = 'Encrypt content'
-    const encryptedAttachment = await formsgSdk.crypto.encryptFile(
-      fileContentsView,
-      publicKey,
-    )
-
-    label = 'Base64-encode encrypted content'
-    const encodedEncryptedAttachment = {
-      ...encryptedAttachment,
-      binary: encodeBase64(encryptedAttachment.binary),
-    }
-
-    return { id, encryptedFile: encodedEncryptedAttachment }
-  } catch (error) {
-    logger.error({
-      message: 'Error encrypting attachment',
-      meta: {
-        action: 'encryptAttachment',
-        label,
-        error,
-      },
-    })
-    throw error
-  }
-}
-
-const getEncryptedAttachmentsMapFromAttachmentsMap = async (
-  attachmentsMap: Record<string, Buffer>,
-  publicKey: string,
-): Promise<StorageModeAttachmentsMap> => {
-  const attachmentPromises = Object.entries(attachmentsMap).map(
-    ([id, attachment]) => encryptAttachment(attachment, { id, publicKey }),
-  )
-
-  return Promise.all(attachmentPromises).then((encryptedAttachmentsMeta) =>
-    chain(encryptedAttachmentsMeta)
-      .keyBy('id')
-      // Remove id from object.
-      .mapValues((v) => omit(v, 'id'))
-      .value(),
-  )
-}
-
 /**
  * Encrypt submission content before saving to DB.
  */
@@ -570,6 +478,7 @@ export const encryptSubmission = async (
     await getEncryptedAttachmentsMapFromAttachmentsMap(
       attachmentsMap,
       publicKey,
+      req.body.version,
     )
 
   const strippedBodyResponses = req.body.responses.map((response) => {
@@ -685,7 +594,9 @@ export const createFormsgAndRetrieveForm = async (
 
   // Step 1: Create formsg namespace in req.body
   if (req.formsg) return res.send(new FormsgReqBodyExistsError())
-  const formsg = {} as FormLoadedDto
+  const formsg = {
+    responseMode: FormResponseMode.Encrypt,
+  } as EncryptFormLoadedDto
 
   // Step 2: Retrieve feature flags
   const featureFlagsListResult = await FeatureFlagService.getEnabledFlags()

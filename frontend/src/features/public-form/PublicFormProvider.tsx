@@ -63,13 +63,14 @@ import {
 import { FormNotFound } from './components/FormNotFound'
 import { usePublicAuthMutations, usePublicFormMutations } from './mutations'
 import { PublicFormContext, SubmissionData } from './PublicFormContext'
-import { usePublicFormView } from './queries'
+import { useEncryptedSubmission, usePublicFormView } from './queries'
 import { axiosDebugFlow } from './utils'
 
 interface PublicFormProviderProps {
   formId: string
-  children: React.ReactNode
+  submissionId?: string
   startTime: number
+  children: React.ReactNode
 }
 
 export function useCommonFormProvider(formId: string) {
@@ -118,6 +119,7 @@ export function useCommonFormProvider(formId: string) {
 
 export const PublicFormProvider = ({
   formId,
+  submissionId: previousSubmissionId,
   children,
   startTime,
 }: PublicFormProviderProps): JSX.Element => {
@@ -125,11 +127,35 @@ export const PublicFormProvider = ({
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
   const [numVisibleFields, setNumVisibleFields] = useState(0)
 
-  const { data, isLoading, error, ...rest } = usePublicFormView(
+  const {
+    data,
+    isLoading: isFormLoading,
+    error: publicFormError,
+    ...rest
+  } = usePublicFormView(
     formId,
     // Stop querying once submissionData is present.
     /* enabled= */ !submissionData,
   )
+  const {
+    data: encryptedPreviousSubmission,
+    isLoading: isSubmissionLoading,
+    error: encryptedSubmissionError,
+  } = useEncryptedSubmission(
+    formId,
+    previousSubmissionId,
+    // Stop querying once submissionData is present.
+    /* enabled= */ !submissionData,
+  )
+
+  // Replace form fields and logic with the previous version for MRF consistency.
+  if (data && encryptedPreviousSubmission) {
+    data.form.form_fields = encryptedPreviousSubmission.form_fields
+    data.form.form_logics = encryptedPreviousSubmission.form_logics
+  }
+
+  const isLoading = isFormLoading || isSubmissionLoading
+  const error = publicFormError || encryptedSubmissionError
 
   const growthbook = useGrowthBook()
 
@@ -234,9 +260,13 @@ export const PublicFormProvider = ({
 
   const isFormNotFound = useMemo(() => {
     return (
-      error instanceof HttpError && (error.code === 404 || error.code === 410)
+      (error instanceof HttpError &&
+        (error.code === 404 || error.code === 410)) ||
+      (!!previousSubmissionId &&
+        !!data &&
+        data.form.responseMode !== FormResponseMode.Multirespondent)
     )
-  }, [error])
+  }, [data, error, previousSubmissionId])
 
   const generateVfnExpiryToast = useCallback(() => {
     if (vfnToastIdRef.current) {
@@ -270,7 +300,9 @@ export const PublicFormProvider = ({
     submitStorageModeClearFormMutation,
     submitStorageModeClearFormFetchMutation,
     submitStorageModeClearFormWithVirusScanningMutation,
-  } = usePublicFormMutations(formId, submissionData?.id ?? '')
+    submitMultirespondentFormMutation,
+    updateMultirespondentSubmissionMutation,
+  } = usePublicFormMutations(formId, previousSubmissionId)
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
@@ -644,6 +676,20 @@ export const PublicFormProvider = ({
               })
           )
         }
+        case FormResponseMode.Multirespondent:
+          return (
+            previousSubmissionId
+              ? updateMultirespondentSubmissionMutation
+              : submitMultirespondentFormMutation
+          ).mutateAsync(formData, {
+            onSuccess: ({ submissionId, timestamp }) => {
+              trackSubmitForm(form)
+              setSubmissionData({
+                id: submissionId,
+                timestamp,
+              })
+            },
+          })
       }
     },
     [
@@ -657,6 +703,9 @@ export const PublicFormProvider = ({
       getTurnstileResponse,
       showErrorToast,
       getCaptchaResponse,
+      previousSubmissionId,
+      submitMultirespondentFormMutation,
+      updateMultirespondentSubmissionMutation,
       submitEmailModeFormFetchMutation,
       submitEmailModeFormMutation,
       enableVirusScanner,
@@ -694,6 +743,7 @@ export const PublicFormProvider = ({
         handleSubmitForm,
         handleLogout,
         formId,
+        previousSubmissionId,
         error,
         submissionData,
         isAuthRequired,
@@ -703,6 +753,7 @@ export const PublicFormProvider = ({
         isPaymentEnabled,
         isPreview: false,
         setNumVisibleFields,
+        encryptedPreviousSubmission,
         ...commonFormValues,
         ...data,
         ...rest,

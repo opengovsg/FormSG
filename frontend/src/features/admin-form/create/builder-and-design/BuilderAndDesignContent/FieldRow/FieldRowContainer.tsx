@@ -14,7 +14,7 @@ import {
 } from '@chakra-ui/react'
 import { isEqual, times } from 'lodash'
 
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme, FormResponseMode } from '~shared/types'
 import { BasicField, FormFieldDto } from '~shared/types/field'
 
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -82,6 +82,7 @@ import { SectionFieldRow } from './SectionFieldRow'
 import { VerifiableFieldBuilderContainer } from './VerifiableFieldBuilderContainer'
 
 export interface FieldRowContainerProps {
+  responseMode: FormResponseMode
   field: FormFieldDto
   index: number
   isHiddenByLogic: boolean
@@ -95,6 +96,7 @@ export interface FieldRowContainerProps {
 }
 
 const FieldRowContainer = ({
+  responseMode,
   field,
   index,
   isHiddenByLogic,
@@ -293,6 +295,7 @@ const FieldRowContainer = ({
                   <FieldRow
                     field={field}
                     colorTheme={colorTheme}
+                    responseMode={responseMode}
                     showMyInfoBadge={isMyInfoField}
                   />
                 </FormProvider>
@@ -440,6 +443,7 @@ const FieldButtonGroup = ({
 type FieldRowProps = {
   field: FormFieldDto
   colorTheme?: FormColorTheme
+  responseMode: FormResponseMode
   showMyInfoBadge?: boolean
 }
 
@@ -458,7 +462,7 @@ const FieldRow = ({ field, ...rest }: FieldRowProps) => {
     case BasicField.Mobile:
       return field.isVerifiable ? (
         <VerifiableFieldBuilderContainer schema={field} {...rest}>
-          <MobileFieldInput schema={field} />
+          <MobileFieldInput schema={field} responseMode={rest.responseMode} />
         </VerifiableFieldBuilderContainer>
       ) : (
         <MobileField schema={field} {...rest} />
@@ -468,7 +472,7 @@ const FieldRow = ({ field, ...rest }: FieldRowProps) => {
     case BasicField.Email:
       return field.isVerifiable ? (
         <VerifiableFieldBuilderContainer schema={field} {...rest}>
-          <EmailFieldInput schema={field} />
+          <EmailFieldInput schema={field} responseMode={rest.responseMode} />
         </VerifiableFieldBuilderContainer>
       ) : (
         <EmailField schema={field} {...rest} />

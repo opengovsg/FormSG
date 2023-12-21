@@ -18,12 +18,14 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { CheckboxFieldInputs, CheckboxFieldSchema } from '../types'
 
-export const CHECKBOX_OTHERS_INPUT_KEY = 'othersInput'
-export const CHECKBOX_OTHERS_INPUT_VALUE =
-  '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
+import {
+  CHECKBOX_OTHERS_INPUT_KEY,
+  CHECKBOX_OTHERS_INPUT_VALUE,
+} from './constants'
 
 export interface CheckboxFieldProps extends BaseFieldProps {
   schema: CheckboxFieldSchema
+  disableRequiredValidation?: boolean
 }
 
 /**
@@ -31,6 +33,7 @@ export interface CheckboxFieldProps extends BaseFieldProps {
  */
 export const CheckboxField = ({
   schema,
+  disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
 }: CheckboxFieldProps): JSX.Element => {
   const fieldColorScheme = useMemo(
@@ -51,8 +54,8 @@ export const CheckboxField = ({
   )
 
   const validationRules = useMemo(
-    () => createCheckboxValidationRules(schema),
-    [schema],
+    () => createCheckboxValidationRules(schema, disableRequiredValidation),
+    [disableRequiredValidation, schema],
   )
 
   const { register, getValues } = useFormContext<CheckboxFieldInputs>()

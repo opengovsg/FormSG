@@ -15,8 +15,8 @@ import {
 } from '~shared/types/response'
 import { removeAt } from '~shared/utils/immutable-array-fns'
 
-import { CHECKBOX_OTHERS_INPUT_VALUE } from '~templates/Field/Checkbox/CheckboxField'
-import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/RadioField'
+import { CHECKBOX_OTHERS_INPUT_VALUE } from '~templates/Field/Checkbox/constants'
+import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/constants'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 import {
   AttachmentFieldSchema,
@@ -41,7 +41,7 @@ import {
   YesNoFieldValue,
 } from '~templates/Field/types'
 
-const pickBaseOutputFromSchema = <F extends FormFieldDto>(
+export const pickBaseOutputFromSchema = <F extends FormFieldDto>(
   schema: F,
 ): BaseFieldOutput<F> => {
   return {

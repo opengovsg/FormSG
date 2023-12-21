@@ -15,6 +15,7 @@ export type VerifiableMobileFieldSchema =
 
 export interface VerifiableMobileFieldProps extends MobileFieldProps {
   schema: VerifiableMobileFieldSchema
+  disableRequiredValidation?: boolean
 }
 
 /**
@@ -23,6 +24,7 @@ export interface VerifiableMobileFieldProps extends MobileFieldProps {
  */
 const InnerVerifiableMobileField = ({
   schema,
+  disableRequiredValidation,
   ...formContainerProps
 }: VerifiableMobileFieldProps): JSX.Element => {
   const { handleInputChange, handleVfnButtonClick, hasSignature } =
@@ -50,6 +52,7 @@ const InnerVerifiableMobileField = ({
         </VisuallyHidden>
         <MobileFieldInput
           schema={schema}
+          disableRequiredValidation={disableRequiredValidation}
           handleInputChange={handleInputChange}
           phoneNumberInputProps={{
             isSuccess: hasSignature,

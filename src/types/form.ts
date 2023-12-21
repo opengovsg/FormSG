@@ -272,11 +272,6 @@ interface IFormBaseDocument<T extends IFormSchema> {
 
 export type IFormDocument = IFormBaseDocument<IFormSchema> & IFormSchema
 
-export type IEncryptedFormDocument = IFormBaseDocument<IEncryptedFormSchema> &
-  IEncryptedFormSchema & {
-    publickey: NonNullable<IEncryptedFormSchema['publicKey']>
-  }
-
 export interface IPopulatedForm extends Omit<IFormDocument, 'toJSON'> {
   admin: IPopulatedUser
   // Override types.
@@ -297,6 +292,11 @@ export type IEncryptedFormSchema = IEncryptedForm & IFormSchema
 
 export type IPopulatedEncryptedForm = IPopulatedForm & IEncryptedForm
 
+export type IEncryptedFormDocument = IFormBaseDocument<IEncryptedFormSchema> &
+  IEncryptedFormSchema & {
+    publickey: NonNullable<IEncryptedFormSchema['publicKey']>
+  }
+
 export interface IEmailForm extends IForm {
   // string type is allowed due to a setter on the form schema that transforms
   // strings to string array.
@@ -307,6 +307,16 @@ export interface IEmailForm extends IForm {
 export type IEmailFormSchema = IEmailForm & IFormSchema
 
 export type IPopulatedEmailForm = IPopulatedForm & IEmailForm
+
+export interface IMultirespondentForm extends IForm {
+  publicKey: string
+  emails?: never
+}
+
+export type IMultirespondentFormSchema = IMultirespondentForm & IFormSchema
+
+export type IPopulatedMultirespondentForm = IPopulatedForm &
+  IMultirespondentForm
 
 export interface IFormModel extends Model<IFormSchema> {
   getOtpData(formId: string): Promise<FormOtpData | null>
@@ -441,6 +451,9 @@ export interface IFormModel extends Model<IFormSchema> {
 export type IEncryptedFormModel = Model<IEncryptedFormSchema> & IFormModel
 
 export type IEmailFormModel = IFormModel & Model<IEmailFormSchema>
+
+export type IMultirespondentFormModel = IFormModel &
+  Model<IMultirespondentFormSchema>
 
 export type IOnboardedForm<T extends IForm> = T & {
   msgSrvcName: string

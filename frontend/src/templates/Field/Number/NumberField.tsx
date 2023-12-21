@@ -11,15 +11,17 @@ import { NumberFieldSchema, SingleAnswerFieldInput } from '../types'
 
 export interface NumberFieldProps extends BaseFieldProps {
   schema: NumberFieldSchema
+  disableRequiredValidation?: boolean
 }
 
 export const NumberField = ({
   schema,
+  disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
 }: NumberFieldProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createNumberValidationRules(schema),
-    [schema],
+    () => createNumberValidationRules(schema, disableRequiredValidation),
+    [disableRequiredValidation, schema],
   )
 
   const { control } = useFormContext<SingleAnswerFieldInput>()

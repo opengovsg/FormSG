@@ -20,6 +20,10 @@ export const STORAGE_PUBLIC_FORM_FIELDS = <const>[
   'payments_field',
   'publicKey',
 ]
+export const MULTIRESPONDENT_PUBLIC_FORM_FIELDS = <const>[
+  ...PUBLIC_FORM_FIELDS,
+  'publicKey',
+]
 
 const FORM_SETTINGS_FIELDS = <const>[
   'responseMode',
@@ -46,6 +50,11 @@ export const STORAGE_FORM_SETTINGS_FIELDS = <const>[
   'business',
 ]
 
+export const MULTIRESPONDENT_FORM_SETTINGS_FIELDS = <const>[
+  ...FORM_SETTINGS_FIELDS,
+  'publicKey',
+]
+
 export const WEBHOOK_SETTINGS_FIELDS = <const>['responseMode', 'webhook']
 
 export const ADMIN_FORM_META_FIELDS = <const>[
@@ -70,3 +79,5 @@ export const E2EE_SUBMISSION_VERSION = 1
 // Encryption boundary shift implementation PR: https://github.com/opengovsg/FormSG/pull/6587
 export const ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION = 2
 export const VIRUS_SCANNER_SUBMISSION_VERSION = 2.1
+// MRF RFC: https://www.notion.so/opengov/RFC-Multi-respondent-forms-8ab40a8c17674937b345450d9dd2c81d?pvs=4
+export const MULTIRESPONDENT_FORM_SUBMISSION_VERSION = 3

@@ -2,9 +2,10 @@ import { DateString } from '~shared/types'
 import {
   FormSubmissionMetadataQueryDto,
   StorageModeChartsDto,
-  StorageModeSubmissionDto,
-  StorageModeSubmissionMetadataList,
   SubmissionCountQueryDto,
+  SubmissionDto,
+  SubmissionMetadataList,
+  SubmissionType,
 } from '~shared/types/submission'
 
 import formsgSdk from '~utils/formSdk'
@@ -13,7 +14,10 @@ import { ApiService } from '~services/ApiService'
 import { ADMIN_FORM_ENDPOINT } from '../common/AdminViewFormService'
 
 import { augmentDecryptedResponses } from './ResponsesPage/storage/utils/augmentDecryptedResponses'
-import { processDecryptedContent } from './ResponsesPage/storage/utils/processDecryptedContent'
+import {
+  processDecryptedContent,
+  processDecryptedContentV3,
+} from './ResponsesPage/storage/utils/processDecryptedContent'
 
 /**
  * Counts the number of submissions for a given form
@@ -44,7 +48,7 @@ export const countFormSubmissions = async ({
 export const getFormSubmissionsMetadata = async (
   formId: string,
   queryParams: FormSubmissionMetadataQueryDto,
-): Promise<StorageModeSubmissionMetadataList> => {
+): Promise<SubmissionMetadataList> => {
   return ApiService.get(
     `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/metadata`,
     {
@@ -65,8 +69,8 @@ const getEncryptedSubmissionById = async ({
 }: {
   formId: string
   submissionId: string
-}): Promise<StorageModeSubmissionDto> => {
-  return ApiService.get<StorageModeSubmissionDto>(
+}): Promise<SubmissionDto> => {
+  return ApiService.get<SubmissionDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/${submissionId}`,
   ).then(({ data }) => data)
 }
@@ -82,24 +86,58 @@ export const getDecryptedSubmissionById = async ({
 }) => {
   if (!secretKey) return
 
-  const { content, version, verified, attachmentMetadata, ...rest } =
-    await getEncryptedSubmissionById({ formId, submissionId })
-
-  const decryptedContent = formsgSdk.crypto.decrypt(secretKey, {
-    encryptedContent: content,
-    verifiedContent: verified,
-    version,
+  const encryptedSubmission = await getEncryptedSubmissionById({
+    formId,
+    submissionId,
   })
-  if (!decryptedContent) throw new Error('Could not decrypt the response')
-  const processedContent = augmentDecryptedResponses(
-    processDecryptedContent(decryptedContent),
-    attachmentMetadata,
+
+  let processedContent, submissionSecretKey
+  switch (encryptedSubmission.submissionType) {
+    case SubmissionType.Encrypt: {
+      const decryptedContent = formsgSdk.crypto.decrypt(secretKey, {
+        encryptedContent: encryptedSubmission.content,
+        verifiedContent: encryptedSubmission.verified,
+        version: encryptedSubmission.version,
+      })
+      if (!decryptedContent) {
+        throw new Error('Could not decrypt the storage mode response')
+      }
+      processedContent = processDecryptedContent(decryptedContent)
+      break
+    }
+    case SubmissionType.Multirespondent: {
+      const decryptedContent = formsgSdk.cryptoV3.decrypt(secretKey, {
+        encryptedContent: encryptedSubmission.encryptedContent,
+        encryptedSubmissionSecretKey:
+          encryptedSubmission.encryptedSubmissionSecretKey,
+        version: encryptedSubmission.version,
+      })
+      if (!decryptedContent)
+        throw new Error('Could not decrypt the multirespondent form response')
+      processedContent = await processDecryptedContentV3(
+        encryptedSubmission.form_fields,
+        decryptedContent,
+      )
+      submissionSecretKey = decryptedContent.submissionSecretKey
+      break
+    }
+  }
+
+  const responses = augmentDecryptedResponses(
+    processedContent,
+    encryptedSubmission.attachmentMetadata,
   )
 
   // Add metadata for display.
   return {
-    ...rest,
-    responses: processedContent,
+    refNo: encryptedSubmission.refNo,
+    submissionTime: encryptedSubmission.submissionTime,
+    submissionSecretKey,
+    payment:
+      encryptedSubmission.submissionType === SubmissionType.Encrypt
+        ? encryptedSubmission.payment
+        : undefined,
+    responses,
   }
 }
 

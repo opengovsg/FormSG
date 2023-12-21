@@ -13,11 +13,11 @@ import Radio, { OthersInput } from '~components/Radio'
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { RadioFieldInputs, RadioFieldSchema } from '../types'
 
-export const RADIO_OTHERS_INPUT_KEY = 'othersInput'
-export const RADIO_OTHERS_INPUT_VALUE = '!!FORMSG_INTERNAL_RADIO_OTHERS_VALUE!!'
+import { RADIO_OTHERS_INPUT_KEY, RADIO_OTHERS_INPUT_VALUE } from './constants'
 
 export interface RadioFieldProps extends BaseFieldProps {
   schema: RadioFieldSchema
+  disableRequiredValidation?: boolean
 }
 
 /**
@@ -25,6 +25,7 @@ export interface RadioFieldProps extends BaseFieldProps {
  */
 export const RadioField = ({
   schema,
+  disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
 }: RadioFieldProps): JSX.Element => {
   const fieldColorScheme = useMemo(
@@ -45,8 +46,8 @@ export const RadioField = ({
   )
 
   const validationRules = useMemo(
-    () => createRadioValidationRules(schema),
-    [schema],
+    () => createRadioValidationRules(schema, disableRequiredValidation),
+    [disableRequiredValidation, schema],
   )
 
   const { register, getValues, trigger } = useFormContext<RadioFieldInputs>()

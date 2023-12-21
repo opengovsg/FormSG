@@ -2,6 +2,7 @@ import { AdminFeedbackDto, AdminFeedbackRating } from '~shared/types'
 import {
   AdminDashboardFormMetaDto,
   CreateEmailFormBodyDto,
+  CreateMultirespondentFormBodyDto,
   CreateStorageFormBodyDto,
   DuplicateFormBodyDto,
   FormDto,
@@ -94,8 +95,8 @@ export const createEmailModeForm = async (
   )
 }
 
-export const createStorageModeForm = async (
-  body: CreateStorageFormBodyDto,
+export const createStorageModeOrMultirespondentForm = async (
+  body: CreateStorageFormBodyDto | CreateMultirespondentFormBodyDto,
 ): Promise<FormDto> => {
   return ApiService.post<FormDto>(ADMIN_FORM_ENDPOINT, { form: body }).then(
     ({ data }) => data,

@@ -19,6 +19,7 @@ import { AttachmentFieldInput, AttachmentFieldSchema } from '../types'
 
 export interface AttachmentFieldProps extends BaseFieldProps {
   schema: AttachmentFieldSchema
+  disableRequiredValidation?: boolean
 }
 
 /**
@@ -26,12 +27,13 @@ export interface AttachmentFieldProps extends BaseFieldProps {
  */
 export const AttachmentField = ({
   schema,
+  disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
 }: AttachmentFieldProps): JSX.Element => {
   const fieldName = schema._id
   const validationRules = useMemo(
-    () => createAttachmentValidationRules(schema),
-    [schema],
+    () => createAttachmentValidationRules(schema, disableRequiredValidation),
+    [schema, disableRequiredValidation],
   )
 
   const { clearErrors, setError, control } =

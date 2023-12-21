@@ -1,5 +1,6 @@
 import { ObjectId } from 'bson'
 import { readFileSync } from 'fs'
+import { cloneDeep } from 'lodash'
 import { BasicField } from 'shared/types'
 
 import {
@@ -7,7 +8,11 @@ import {
   IAttachmentResponse,
   SingleAnswerFieldResponse,
 } from '../../../../../types'
-import { addAttachmentToResponses } from '../receiver.utils'
+import { ParsedMultipartForm } from '../receiver.types'
+import {
+  addAttachmentToResponses,
+  handleDuplicatesInAttachments,
+} from '../receiver.utils'
 
 const validSingleFile = {
   filename: 'govtech.jpg',
@@ -31,7 +36,9 @@ const getResponse = (_id: string, answer: string): SingleAnswerFieldResponse =>
     answer,
   } as unknown as SingleAnswerFieldResponse)
 
-describe('email-submission.util', () => {
+describe('receiver.utils', () => {
+  const TEST_RESPONSE_VERSION = 2
+
   describe('addAttachmentToResponses', () => {
     it('should add attachments to responses correctly when inputs are valid', () => {
       const firstAttachment = validSingleFile
@@ -45,7 +52,10 @@ describe('email-submission.util', () => {
         secondAttachment.filename,
       )
       addAttachmentToResponses(
-        [firstResponse, secondResponse],
+        {
+          responses: [firstResponse, secondResponse],
+          version: TEST_RESPONSE_VERSION,
+        } as unknown as ParsedMultipartForm<FieldResponse[]>,
         [firstAttachment, secondAttachment],
       )
       expect(firstResponse.answer).toBe(firstAttachment.filename)
@@ -66,29 +76,60 @@ describe('email-submission.util', () => {
 
     it('should overwrite answer with filename when they are different', () => {
       const attachment = validSingleFile
-      const response = getResponse(attachment.fieldId, MOCK_ANSWER)
-      addAttachmentToResponses([response], [attachment])
-      expect(response.answer).toBe(attachment.filename)
-      expect((response as unknown as IAttachmentResponse).filename).toBe(
-        attachment.filename,
-      )
-      expect((response as unknown as IAttachmentResponse).content).toEqual(
-        attachment.content,
-      )
+      const responses = {
+        responses: [getResponse(attachment.fieldId, MOCK_ANSWER)],
+        version: TEST_RESPONSE_VERSION,
+      } as unknown as ParsedMultipartForm<FieldResponse[]>
+      addAttachmentToResponses(responses, [attachment])
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-ignore
+      expect(responses.responses[0].answer).toBe(attachment.filename)
+      expect(
+        (responses.responses[0] as unknown as IAttachmentResponse).filename,
+      ).toBe(attachment.filename)
+      expect(
+        (responses.responses[0] as unknown as IAttachmentResponse).content,
+      ).toEqual(attachment.content)
     })
 
     it('should do nothing when responses are empty', () => {
-      const responses: FieldResponse[] = []
+      const responses = {
+        responses: [],
+        version: TEST_RESPONSE_VERSION,
+      } as unknown as ParsedMultipartForm<FieldResponse[]>
       addAttachmentToResponses(responses, [validSingleFile])
-      expect(responses).toEqual([])
+      expect(responses.responses).toEqual([])
     })
 
     it('should do nothing when there are no attachments', () => {
-      const responses = [getResponse(validSingleFile.fieldId, MOCK_ANSWER)]
+      const responses = {
+        responses: [getResponse(validSingleFile.fieldId, MOCK_ANSWER)],
+        version: TEST_RESPONSE_VERSION,
+      } as unknown as ParsedMultipartForm<FieldResponse[]>
       addAttachmentToResponses(responses, [])
-      expect(responses).toEqual([
+      expect(responses.responses).toEqual([
         getResponse(validSingleFile.fieldId, MOCK_ANSWER),
       ])
+    })
+  })
+
+  // Note that if e.g. you have three attachments called abc.txt, abc.txt
+  // and 1-abc.txt, they will not be given unique names, i.e. one of the abc.txt
+  // will be renamed to 1-abc.txt so you end up with abc.txt, 1-abc.txt and 1-abc.txt.
+  describe('handleDuplicatesInAttachments', () => {
+    it('should make filenames unique by appending count when there are duplicates', () => {
+      const attachments = [
+        cloneDeep(validSingleFile),
+        cloneDeep(validSingleFile),
+        cloneDeep(validSingleFile),
+      ]
+      handleDuplicatesInAttachments(attachments)
+      const newFilenames = attachments.map((att) => att.filename)
+      // Expect uniqueness
+      expect(newFilenames.length).toBe(new Set(newFilenames).size)
+      expect(newFilenames).toContain(validSingleFile.filename)
+      expect(newFilenames).toContain(`1-${validSingleFile.filename}`)
+      expect(newFilenames).toContain(`2-${validSingleFile.filename}`)
     })
   })
 })

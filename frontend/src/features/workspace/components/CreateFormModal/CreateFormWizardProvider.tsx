@@ -59,8 +59,10 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
 
   const { handleSubmit } = formMethods
 
-  const { createEmailModeFormMutation, createStorageModeFormMutation } =
-    useCreateFormMutations()
+  const {
+    createEmailModeFormMutation,
+    createStorageModeOrMultirespondentFormMutation,
+  } = useCreateFormMutations()
 
   const { activeWorkspace, isDefaultWorkspace } = useWorkspaceContext()
 
@@ -68,11 +70,17 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
   // as the default workspace contains an empty string as workspaceId
   const workspaceId = isDefaultWorkspace ? undefined : activeWorkspace._id
 
-  const handleCreateStorageModeForm = handleSubmit(
+  const handleCreateStorageModeOrMultirespondentForm = handleSubmit(
     ({ title, responseMode }) => {
-      if (responseMode !== FormResponseMode.Encrypt) return
+      if (
+        !(
+          responseMode === FormResponseMode.Encrypt ||
+          responseMode === FormResponseMode.Multirespondent
+        )
+      )
+        return
 
-      return createStorageModeFormMutation.mutate({
+      return createStorageModeOrMultirespondentFormMutation.mutate({
         title,
         responseMode,
         publicKey: keypair.publicKey,
@@ -90,6 +98,7 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
         workspaceId,
       })
     }
+    // Display secret key for all other form modes
     setCurrentStep([CreateFormFlowStates.Landing, 1])
   })
 
@@ -97,13 +106,13 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     isFetching: false,
     isLoading:
       createEmailModeFormMutation.isLoading ||
-      createStorageModeFormMutation.isLoading,
+      createStorageModeOrMultirespondentFormMutation.isLoading,
     keypair,
     currentStep,
     direction,
     formMethods,
     handleDetailsSubmit,
-    handleCreateStorageModeForm,
+    handleCreateStorageModeOrMultirespondentForm,
     modalHeader: 'Set up your form',
   }
 }

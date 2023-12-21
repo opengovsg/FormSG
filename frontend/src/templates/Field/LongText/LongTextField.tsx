@@ -12,12 +12,16 @@ import { LongTextFieldSchema, SingleAnswerFieldInput } from '../types'
 
 export interface LongTextFieldProps extends BaseFieldProps {
   schema: LongTextFieldSchema
+  disableRequiredValidation?: boolean
 }
 
-export const LongTextField = ({ schema }: LongTextFieldProps): JSX.Element => {
+export const LongTextField = ({
+  schema,
+  disableRequiredValidation,
+}: LongTextFieldProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createTextValidationRules(schema),
-    [schema],
+    () => createTextValidationRules(schema, disableRequiredValidation),
+    [schema, disableRequiredValidation],
   )
 
   const { register } = useFormContext<SingleAnswerFieldInput>()

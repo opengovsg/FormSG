@@ -14,6 +14,7 @@ export type VerifiableEmailFieldSchema = VerifiableFieldSchema<EmailFieldSchema>
 
 export interface VerifiableEmailFieldProps extends EmailFieldProps {
   schema: VerifiableEmailFieldSchema
+  disableRequiredValidation?: boolean
 }
 
 /**
@@ -22,6 +23,7 @@ export interface VerifiableEmailFieldProps extends EmailFieldProps {
  */
 const InnerVerifiableEmailField = ({
   schema,
+  disableRequiredValidation,
   ...formContainerProps
 }: VerifiableEmailFieldProps): JSX.Element => {
   const { handleInputChange, handleVfnButtonClick, hasSignature } =
@@ -49,6 +51,7 @@ const InnerVerifiableEmailField = ({
         </VisuallyHidden>
         <EmailFieldInput
           schema={schema}
+          disableRequiredValidation={disableRequiredValidation}
           handleInputChange={handleInputChange}
           inputProps={{
             isSuccess: hasSignature,

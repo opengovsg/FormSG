@@ -23,9 +23,9 @@ export const ResponsesPage = (): JSX.Element => {
     return <ResponsesPageSkeleton />
   }
 
-  if (form.responseMode === FormResponseMode.Encrypt) {
-    return <StorageResponsesTab />
+  if (form.responseMode === FormResponseMode.Email) {
+    return <EmailResponsesTab />
   }
 
-  return <EmailResponsesTab />
+  return <StorageResponsesTab />
 }

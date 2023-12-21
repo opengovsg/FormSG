@@ -8,7 +8,7 @@ import {
 } from '~shared/types/form'
 
 import { FormFieldValue } from '~templates/Field'
-import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/RadioField'
+import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/constants'
 
 import {
   isLogicableField,

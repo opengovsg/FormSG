@@ -1,9 +1,16 @@
 import { StatusCodes } from 'http-status-codes'
 
+import { VIRUS_SCANNER_SUBMISSION_VERSION } from '../../../../../shared/constants'
+import {
+  BasicField,
+  FieldResponse,
+  FieldResponsesV3,
+} from '../../../../../shared/types'
 import { IAttachmentInfo, MapRouteError } from '../../../../types'
 import {
   ParsedClearAttachmentResponse,
   ParsedClearFormFieldResponse,
+  ParsedClearFormFieldResponseV3,
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 
@@ -11,6 +18,11 @@ import {
   InitialiseMultipartReceiverError,
   MultipartError,
 } from './receiver.errors'
+import {
+  isBodyVersion2AndBelow,
+  isBodyVersion3AndAbove,
+  ParsedMultipartForm,
+} from './receiver.types'
 
 const logger = createLoggerWithLabel(module)
 
@@ -64,10 +76,16 @@ const isAttachmentResponseFromMap = (
  * @returns void. Modifies responses in place.
  */
 export const addAttachmentToResponses = (
-  responses: ParsedClearFormFieldResponse[],
+  body: ParsedMultipartForm<FieldResponse[] | FieldResponsesV3>,
   attachments: IAttachmentInfo[],
-  isVirusScannerEnabled: boolean,
 ): void => {
+  // default to 0 for email mode forms where version is undefined
+  // TODO (FRM-1413): change to a version existence guardrail when
+  // virus scanning has completed rollout, so that virus scanning
+  // cannot be bypassed on storage mode submissions.
+  const isVirusScannerEnabled =
+    (body.version ?? 0) >= VIRUS_SCANNER_SUBMISSION_VERSION
+
   // Create a map of the attachments with fieldId as keys
   const attachmentMap: Record<IAttachmentInfo['fieldId'], IAttachmentInfo> =
     attachments.reduce<Record<string, IAttachmentInfo>>((acc, attachment) => {
@@ -75,16 +93,30 @@ export const addAttachmentToResponses = (
       return acc
     }, {})
 
-  if (responses) {
-    // matches responses to attachments using id, adding filename and content to response
-    responses.forEach((response) => {
-      if (isAttachmentResponseFromMap(attachmentMap, response)) {
-        const file = attachmentMap[response._id]
-        response.filename = file.filename
-        response.content = file.content
-        if (!isVirusScannerEnabled) {
-          response.answer = file.filename
+  if (isBodyVersion2AndBelow(body)) {
+    const responses = body.responses as ParsedClearFormFieldResponse[]
+    if (responses) {
+      // matches responses to attachments using id, adding filename and content to response
+      responses.forEach((response) => {
+        if (isAttachmentResponseFromMap(attachmentMap, response)) {
+          const file = attachmentMap[response._id]
+          response.filename = file.filename
+          response.content = file.content
+          if (!isVirusScannerEnabled) {
+            response.answer = file.filename
+          }
         }
+      })
+    }
+  }
+
+  if (isBodyVersion3AndAbove(body)) {
+    Object.keys(body.responses).forEach((id) => {
+      const response = body.responses[id] as ParsedClearFormFieldResponseV3
+      if (response.fieldType === BasicField.Attachment) {
+        const file = attachmentMap[id]
+        response.answer.filename = file.filename
+        response.answer.content = file.content
       }
     })
   }

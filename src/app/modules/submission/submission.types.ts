@@ -1,3 +1,4 @@
+import { StatusCodes } from 'http-status-codes'
 import type { Opaque } from 'type-fest'
 
 import {
@@ -7,6 +8,7 @@ import {
   MyInfoChildAttributes,
   TableResponse,
 } from '../../../../shared/types'
+import { hasProp } from '../../../../shared/utils/has-prop'
 import {
   EncryptAttachmentResponse,
   ParsedClearAttachmentResponse,
@@ -16,6 +18,10 @@ import {
   FieldResponse,
   SingleAnswerFieldResponse,
 } from '../../../types/response'
+
+import { ParseVirusScannerLambdaPayloadError } from './submission.errors'
+
+export type AttachmentMetadata = Map<string, string>
 
 export type ProcessedResponse = {
   question: string
@@ -81,3 +87,75 @@ export type ProcessedFieldResponse =
   | ProcessedTableResponse
   | ProcessedAttachmentResponse
   | ProcessedChildrenResponse
+
+/**
+ * Virus scanner types
+ */
+export type ParseVirusScannerLambdaPayloadBeforeBodyIsParsed = {
+  statusCode: number
+  body: string
+}
+
+export type ParseVirusScannerLambdaPayloadOkBody = {
+  cleanFileKey: string
+  destinationVersionId: string
+}
+
+export type ParseVirusScannerLambdaPayloadOkType = {
+  statusCode: StatusCodes.OK
+  body: ParseVirusScannerLambdaPayloadOkBody
+}
+
+export type ParseVirusScannerLambdaPayloadErrBody = {
+  message: string
+}
+
+export type ParseVirusScannerLambdaPayloadErrType =
+  | {
+      statusCode: number // custom status codes might be sent by the lambda
+      body: ParseVirusScannerLambdaPayloadErrBody
+    }
+  | ParseVirusScannerLambdaPayloadError
+
+// Helper function to check if the payload is of the expected structure
+export const payloadIsExpectedStructure = (
+  parsedPayload: unknown,
+): false | ParseVirusScannerLambdaPayloadBeforeBodyIsParsed => {
+  return (
+    typeof parsedPayload === 'object' &&
+    !!parsedPayload &&
+    hasProp(parsedPayload, 'statusCode') &&
+    typeof parsedPayload.statusCode === 'number' &&
+    hasProp(parsedPayload, 'body') &&
+    typeof parsedPayload.body === 'string' &&
+    (parsedPayload as ParseVirusScannerLambdaPayloadBeforeBodyIsParsed)
+  )
+}
+
+// Helper function to check if the body is of the expected structure for OK status code
+export const bodyIsExpectedOkStructure = (
+  parsedBody: unknown,
+): false | ParseVirusScannerLambdaPayloadOkBody => {
+  return (
+    typeof parsedBody === 'object' &&
+    !!parsedBody &&
+    hasProp(parsedBody, 'cleanFileKey') &&
+    typeof parsedBody.cleanFileKey === 'string' &&
+    hasProp(parsedBody, 'destinationVersionId') &&
+    typeof parsedBody.destinationVersionId === 'string' &&
+    (parsedBody as ParseVirusScannerLambdaPayloadOkBody)
+  )
+}
+
+// Helper function to check if the body is of the expected structure for non-OK status code
+export const bodyIsExpectedErrStructure = (
+  parsedBody: unknown,
+): false | ParseVirusScannerLambdaPayloadErrBody => {
+  return (
+    typeof parsedBody === 'object' &&
+    !!parsedBody &&
+    hasProp(parsedBody, 'message') &&
+    typeof parsedBody.message === 'string' &&
+    (parsedBody as ParseVirusScannerLambdaPayloadErrBody)
+  )
+}

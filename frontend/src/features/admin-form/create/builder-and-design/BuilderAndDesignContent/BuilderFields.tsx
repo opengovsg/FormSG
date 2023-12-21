@@ -16,12 +16,14 @@ import { useDesignColorTheme } from '../utils/useDesignColorTheme'
 import FieldRow from './FieldRow'
 
 interface BuilderFieldsProps {
+  responseMode: AdminFormDto['responseMode']
   fields: AdminFormDto['form_fields']
   visibleFieldIds: FieldIdSet
   isDraggingOver: boolean
 }
 
 export const BuilderFields = ({
+  responseMode,
   fields,
   visibleFieldIds,
   isDraggingOver,
@@ -54,6 +56,7 @@ export const BuilderFields = ({
             : {}
         return (
           <FieldRow
+            responseMode={responseMode}
             index={i}
             key={f._id}
             field={f}
