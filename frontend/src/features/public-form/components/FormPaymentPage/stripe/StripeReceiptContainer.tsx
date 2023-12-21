@@ -75,7 +75,7 @@ export const StripeReceiptContainer = ({
      * PaymentStack is explictly added in this component due to https://github.com/chakra-ui/chakra-ui/issues/6757
      */
     <Stack>
-      <PaymentStack>
+      <PaymentStack noBg>
         <DownloadReceiptBlock
           formId={formId}
           submissionId={submissionId}
@@ -87,7 +87,7 @@ export const StripeReceiptContainer = ({
           paymentDate={paymentReceiptStatus.paymentDate}
         />
       </PaymentStack>
-      <PaymentStack>
+      <PaymentStack noBg>
         {!isFeedbackSubmitted && (
           <Box backgroundColor="white" p="2rem">
             <FeedbackBlock onSubmit={handleSubmitFeedback} />
