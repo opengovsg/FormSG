@@ -10,8 +10,6 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Textarea from '~components/Textarea'
 
-import { usePublicFormContext } from '~features/public-form/PublicFormContext'
-
 export type FeedbackFormInput = {
   rating: number
   comment?: string
@@ -36,12 +34,6 @@ export const FeedbackBlock = ({
 
   const handleFormSubmit = handleSubmit((inputs) => onSubmit(inputs))
 
-  const { isPaymentEnabled } = usePublicFormContext()
-
-  const feedbackTitle = isPaymentEnabled
-    ? 'How was your experience making payment on this form?'
-    : 'How was your form filling experience today?'
-
   const colorScheme = useMemo(() => {
     return `theme-${colorTheme}` as const
   }, [colorTheme])
@@ -51,7 +43,7 @@ export const FeedbackBlock = ({
       <chakra.form w="100%" maxW="100%" noValidate onSubmit={handleFormSubmit}>
         <FormControl isInvalid={!!errors.rating} id="rating">
           <FormLabel isRequired color="content.strong">
-            {feedbackTitle}
+            How was your form filling experience today?
           </FormLabel>
           <Controller
             rules={{ required: 'Please select a rating' }}
