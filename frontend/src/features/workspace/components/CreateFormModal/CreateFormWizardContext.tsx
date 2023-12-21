@@ -26,7 +26,7 @@ export type CreateFormWizardContextReturn = {
   handleDetailsSubmit: ReturnType<
     UseFormHandleSubmit<CreateFormWizardInputProps>
   >
-  handleCreateStorageModeForm: ReturnType<
+  handleCreateStorageModeOrMultirespondentForm: ReturnType<
     UseFormHandleSubmit<CreateFormWizardInputProps>
   >
   keypair: ReturnType<typeof formsgSdk.crypto.generate>

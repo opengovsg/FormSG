@@ -3,7 +3,7 @@ import { Box } from '@chakra-ui/react'
 
 import { useToast } from '~hooks/useToast'
 
-import { usePublicFormMutations } from '~features/public-form/mutations'
+import { useSubmitFormFeedbackMutation } from '~features/public-form/mutations'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FeedbackFormInput } from './components/FeedbackBlock'
@@ -11,7 +11,7 @@ import { FormEndPage } from './FormEndPage'
 
 export const FormEndPageContainer = (): JSX.Element | null => {
   const { form, formId, submissionData, isPreview } = usePublicFormContext()
-  const { submitFormFeedbackMutation } = usePublicFormMutations(
+  const { submitFormFeedbackMutation } = useSubmitFormFeedbackMutation(
     formId,
     submissionData?.id ?? '',
   )

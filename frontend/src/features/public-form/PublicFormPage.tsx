@@ -16,7 +16,7 @@ import { PublicFormWrapper } from './components/PublicFormWrapper'
 import { PublicFormProvider } from './PublicFormProvider'
 
 export const PublicFormPage = (): JSX.Element => {
-  const { formId } = useParams()
+  const { formId, submissionId } = useParams()
 
   if (!formId) throw new Error('No formId provided')
 
@@ -24,7 +24,11 @@ export const PublicFormPage = (): JSX.Element => {
   const startTime = Date.now()
 
   return (
-    <PublicFormProvider formId={formId} startTime={startTime}>
+    <PublicFormProvider
+      formId={formId}
+      submissionId={submissionId}
+      startTime={startTime}
+    >
       <FormSectionsProvider>
         <Flex direction="column" css={fillMinHeightCss}>
           <FormBanner />

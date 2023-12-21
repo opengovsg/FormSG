@@ -1,4 +1,4 @@
-import { StorageModeSubmissionMetadata } from '~shared/types'
+import { SubmissionMetadata } from '~shared/types'
 import { centsToDollars } from '~shared/utils/payments'
 
 import { getNetAmount } from '../utils'
@@ -15,7 +15,7 @@ describe('getNetAmount', () => {
 
   it('should return empty string when no there is no transaction fees', () => {
     // Arrange
-    const emptyObjectInput = {} as StorageModeSubmissionMetadata['payments']
+    const emptyObjectInput = {} as SubmissionMetadata['payments']
     // Act
     const result = getNetAmount(emptyObjectInput)
     // Assert
@@ -26,7 +26,7 @@ describe('getNetAmount', () => {
     // Arrange
     const zeroTransactionFee = {
       transactionFee: -1,
-    } as StorageModeSubmissionMetadata['payments']
+    } as SubmissionMetadata['payments']
     // Act
     const result = getNetAmount(zeroTransactionFee)
     // Assert
@@ -39,7 +39,7 @@ describe('getNetAmount', () => {
       transactionFee: 0,
       paymentAmt: 100,
       payoutDate: null,
-    } as StorageModeSubmissionMetadata['payments']
+    } as SubmissionMetadata['payments']
     // Act
     const result = getNetAmount(zeroTransactionFee)
     // Assert
@@ -52,7 +52,7 @@ describe('getNetAmount', () => {
       transactionFee: 0,
       paymentAmt: 100,
       payoutDate: Date(),
-    } as StorageModeSubmissionMetadata['payments']
+    } as SubmissionMetadata['payments']
     // Act
     const result = getNetAmount(zeroTransactionFee)
     // Assert
@@ -66,7 +66,7 @@ describe('getNetAmount', () => {
       transactionFee: 0,
       paymentAmt: EXPECTED_PAYMENT_AMOUNT,
       payoutDate: Date(),
-    } as StorageModeSubmissionMetadata['payments']
+    } as SubmissionMetadata['payments']
     // Act
     const result = getNetAmount(zeroTransactionFee)
     // Assert

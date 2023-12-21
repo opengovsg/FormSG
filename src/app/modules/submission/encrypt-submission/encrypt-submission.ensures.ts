@@ -6,8 +6,7 @@ import * as TurnstileService from '../../../services/turnstile/turnstile.service
 import { Middleware } from '../../../utils/pipeline-middleware'
 import { getRequestIp } from '../../../utils/request'
 import * as FormService from '../../form/form.service'
-
-import { mapRouteError } from './encrypt-submission.utils'
+import { mapRouteError } from '../submission.utils'
 
 const logger = createLoggerWithLabel(module)
 

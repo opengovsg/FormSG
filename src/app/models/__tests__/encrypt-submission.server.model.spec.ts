@@ -3,7 +3,7 @@ import { ObjectId } from 'bson-ext'
 import { pick, times } from 'lodash'
 import moment from 'moment-timezone'
 import mongoose from 'mongoose'
-import { StorageModeSubmissionMetadata, SubmissionType } from 'shared/types'
+import { SubmissionMetadata, SubmissionType } from 'shared/types'
 
 import getSubmissionModel, {
   getEmailSubmissionModel,
@@ -45,7 +45,7 @@ describe('Encrypt Submission Model', () => {
         )
 
         // Assert
-        const expected: StorageModeSubmissionMetadata = {
+        const expected: SubmissionMetadata = {
           number: 1,
           payments: null,
           refNo: validSubmission._id,

@@ -17,6 +17,7 @@ import { RatingFieldSchema, SingleAnswerFieldInput } from '../types'
 
 export interface RatingFieldProps extends BaseFieldProps {
   schema: RatingFieldSchema
+  disableRequiredValidation?: boolean
 }
 
 const transform = {
@@ -29,11 +30,12 @@ const transform = {
 
 export const RatingField = ({
   schema,
+  disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
 }: RatingFieldProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createRatingValidationRules(schema),
-    [schema],
+    () => createRatingValidationRules(schema, disableRequiredValidation),
+    [schema, disableRequiredValidation],
   )
 
   const ratingVariant: RatingProps['variant'] = useMemo(() => {
@@ -59,7 +61,7 @@ export const RatingField = ({
             colorScheme={`theme-${colorTheme}`}
             numberOfRatings={schema.ratingOptions.steps}
             variant={ratingVariant}
-            value={transform.toNumber(value)}
+            defaultValue={transform.toNumber(value)}
             isRequired={schema.required}
             isInvalid={!!get(errors, schema._id)}
             fieldTitle={`${schema.questionNumber}. ${schema.title}`}

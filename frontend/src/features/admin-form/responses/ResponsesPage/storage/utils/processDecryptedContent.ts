@@ -1,16 +1,27 @@
 import {
   DecryptedContent,
+  DecryptedContentV3,
   FormField as VerifiedFormField,
 } from '@opengovsg/formsg-sdk/dist/types'
 import { has } from 'lodash'
 
-import { BasicField } from '~shared/types'
+import {
+  AttachmentFieldResponseV3,
+  BasicField,
+  FieldResponse,
+  FormFieldDto,
+} from '~shared/types'
 import {
   CURRENT_VERIFIED_FIELDS,
   SgidFieldTitle,
   SPCPFieldTitle,
   VerifiedKeys,
 } from '~shared/utils/verified-content'
+
+import {
+  pickBaseOutputFromSchema,
+  transformInputsToOutputs,
+} from '~features/public-form/utils'
 
 /**
  * Returns a response matching the given type containing the given value.
@@ -98,4 +109,39 @@ export const processDecryptedContent = (
   return verified
     ? displayedContent.concat(convertToResponseArray(verified))
     : displayedContent
+}
+
+/**
+ * Processes the decrypted content containing the previously encrypted responses
+ * and verified content, and combines them into a single response array.
+ * @param decrypted.responses the previously encrypted responses content
+ * @param decrypted.verified the previously encrypted verified content,if it exists
+ * @returns the processed content
+ */
+export const processDecryptedContentV3 = async (
+  form_fields: FormFieldDto[],
+  decrypted: DecryptedContentV3,
+): Promise<VerifiedFormField[]> => {
+  const { responses } = decrypted
+
+  // Convert decrypted content into displayable object.
+  const displayedContent = form_fields
+    .map((ff) => {
+      const response = responses[ff._id]
+      if (!response) {
+        console.log('Unexpected empty response for field id', ff._id)
+        return null
+      }
+      if (response.fieldType === BasicField.Attachment) {
+        const answer = response.answer as AttachmentFieldResponseV3
+        return {
+          ...pickBaseOutputFromSchema(ff),
+          answer: answer.answer,
+        }
+      }
+      return transformInputsToOutputs(ff, response.answer)
+    })
+    .filter((output): output is FieldResponse => output !== null)
+
+  return displayedContent as VerifiedFormField[]
 }

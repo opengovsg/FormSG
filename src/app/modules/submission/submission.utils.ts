@@ -1,13 +1,19 @@
+import { encode as encodeBase64 } from '@stablelib/base64'
+import StatusCodes from 'http-status-codes'
 import {
+  chain,
   differenceBy,
   flattenDeep,
   intersectionBy,
   keyBy,
+  omit,
   sumBy,
   uniqBy,
 } from 'lodash'
+import mongoose from 'mongoose'
 import { err, ok, Result } from 'neverthrow'
 
+import { MULTIRESPONDENT_FORM_SUBMISSION_VERSION } from '../../../../shared/constants'
 import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
 import { MYINFO_ATTRIBUTE_MAP } from '../../../../shared/constants/field/myinfo'
 import {
@@ -15,25 +21,109 @@ import {
   FormField,
   FormResponseMode,
   MyInfoAttribute,
+  SubmissionAttachment,
+  SubmissionAttachmentsMap,
 } from '../../../../shared/types'
 import * as FileValidation from '../../../../shared/utils/file-validation'
 import {
   FieldResponse,
   FormFieldSchema,
   IAttachmentInfo,
+  IEncryptSubmissionModel,
   IFormDocument,
+  IMultirespondentSubmissionModel,
+  IPopulatedEncryptedForm,
+  IPopulatedForm,
+  IPopulatedMultirespondentForm,
+  MapRouteErrors,
 } from '../../../types'
 import {
   ParsedClearAttachmentResponse,
+  ParsedClearAttachmentResponseV3,
   ParsedClearFormFieldResponse,
+  ParsedClearFormFieldResponseV3,
 } from '../../../types/api'
+import { MapRouteError } from '../../../types/routing'
+import formsgSdk from '../../config/formsg-sdk'
+import { createLoggerWithLabel } from '../../config/logger'
+import {
+  getEncryptSubmissionModel,
+  getMultirespondentSubmissionModel,
+} from '../../models/submission.server.model'
+import { MalformedVerifiedContentError } from '../../modules/verified-content/verified-content.errors'
+import {
+  CaptchaConnectionError,
+  MissingCaptchaError,
+  VerifyCaptchaError,
+} from '../../services/captcha/captcha.errors'
 import { AutoReplyMailData } from '../../services/mail/mail.types'
+import {
+  MissingTurnstileError,
+  TurnstileConnectionError,
+  VerifyTurnstileError,
+} from '../../services/turnstile/turnstile.errors'
+import { CreatePresignedPostError } from '../../utils/aws-s3'
+import { genericMapRouteErrorTransform } from '../../utils/error'
+import {
+  AttachmentUploadError,
+  DatabaseConflictError,
+  DatabaseError,
+  DatabasePayloadSizeError,
+  DatabaseValidationError,
+  EmptyErrorFieldError,
+  MalformedParametersError,
+} from '../core/core.errors'
+import {
+  ForbiddenFormError,
+  FormDeletedError,
+  FormNotFoundError,
+  PrivateFormError,
+} from '../form/form.errors'
+import { isFormEncryptModeOrMultirespondent } from '../form/form.utils'
+import {
+  MyInfoCookieStateError,
+  MyInfoHashDidNotMatchError,
+  MyInfoHashingError,
+  MyInfoInvalidLoginCookieError,
+  MyInfoMissingHashError,
+  MyInfoMissingLoginCookieError,
+} from '../myinfo/myinfo.errors'
 import { MyInfoKey } from '../myinfo/myinfo.types'
 import { getMyInfoChildHashKey } from '../myinfo/myinfo.util'
+import { PaymentNotFoundError } from '../payments/payments.errors'
+import {
+  SgidInvalidJwtError,
+  SgidMissingJwtError,
+  SgidVerifyJwtError,
+} from '../sgid/sgid.errors'
+import {
+  CreateRedirectUrlError,
+  InvalidJwtError,
+  MissingJwtError,
+  VerifyJwtError,
+} from '../spcp/spcp.errors'
+import { MissingUserError } from '../user/user.errors'
 
 import { MYINFO_PREFIX } from './email-submission/email-submission.constants'
 import { ResponseFormattedForEmail } from './email-submission/email-submission.types'
-import { ConflictError } from './submission.errors'
+import {
+  AttachmentSizeLimitExceededError,
+  AttachmentTooLargeError,
+  ConflictError,
+  DownloadCleanFileFailedError,
+  FeatureDisabledError,
+  InvalidEncodingError,
+  InvalidFieldIdError,
+  InvalidFileExtensionError,
+  InvalidFileKeyError,
+  MaliciousFileDetectedError,
+  ProcessingError,
+  ResponseModeError,
+  SubmissionFailedError,
+  SubmissionNotFoundError,
+  ValidateFieldError,
+  VirusScanFailedError,
+} from './submission.errors'
 import {
   FilteredResponse,
   ProcessedChildrenResponse,
@@ -41,11 +131,213 @@ import {
   ProcessedSingleAnswerResponse,
 } from './submission.types'
 
+const logger = createLoggerWithLabel(module)
+
+const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
+const MultirespondentSubmissionModel =
+  getMultirespondentSubmissionModel(mongoose)
+
 type ResponseModeFilterParam = {
   fieldType: BasicField
 }
 
 const MB_MULTIPLIER = 1000000
+
+/**
+ * Handler to map ApplicationErrors to their correct status code and error
+ * messages.
+ * @param error The error to retrieve the status codes and error messages
+ */
+const errorMapper: MapRouteError = (
+  error,
+  coreErrorMessage = 'Sorry, something went wrong. Please try again.',
+) => {
+  switch (error.constructor) {
+    case AttachmentUploadError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'Could not upload attachments for submission. For assistance, please contact the person who asked you to fill in this form.',
+      }
+    case CreateRedirectUrlError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: coreErrorMessage,
+      }
+    case SgidMissingJwtError:
+    case SgidVerifyJwtError:
+    case SgidInvalidJwtError:
+    case MissingJwtError:
+    case VerifyJwtError:
+    case InvalidJwtError:
+    case MyInfoMissingLoginCookieError:
+    case MyInfoCookieStateError:
+    case MyInfoInvalidLoginCookieError:
+    case MalformedVerifiedContentError:
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        errorMessage:
+          'Something went wrong with your login. Please try logging in and submitting again.',
+      }
+    case MyInfoMissingHashError:
+      return {
+        statusCode: StatusCodes.GONE,
+        errorMessage:
+          'MyInfo verification expired, please refresh and try again.',
+      }
+    case MyInfoHashDidNotMatchError:
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED,
+        errorMessage: 'MyInfo verification failed.',
+      }
+    case MyInfoHashingError:
+      return {
+        statusCode: StatusCodes.SERVICE_UNAVAILABLE,
+        errorMessage:
+          'MyInfo verification unavailable, please try again later.',
+      }
+    case MissingUserError:
+      return {
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+        errorMessage: error.message,
+      }
+    case FormNotFoundError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage: error.message,
+      }
+    case ResponseModeError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
+    case FeatureDisabledError:
+    case ForbiddenFormError:
+      return {
+        statusCode: StatusCodes.FORBIDDEN,
+        errorMessage: error.message,
+      }
+    case FormDeletedError:
+      return {
+        statusCode: StatusCodes.GONE,
+        errorMessage: error.message,
+      }
+    case PrivateFormError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage:
+          'This form has been taken down. For assistance, please contact the person who asked you to fill in this form.',
+      }
+    case CaptchaConnectionError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'Could not verify captcha. Please submit again in a few minutes.',
+      }
+    case VerifyCaptchaError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: 'Captcha was incorrect. Please submit again.',
+      }
+    case MissingCaptchaError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: 'Captcha was missing. Please refresh and submit again.',
+      }
+    case TurnstileConnectionError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage:
+          'Error connecting to Turnstile server . Please submit again in a few minutes.',
+      }
+    case VerifyTurnstileError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'Incorrect Turnstile parameters. Please refresh and submit again.',
+      }
+    case MissingTurnstileError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'Missing Turnstile challenge. Please refresh and submit again.',
+      }
+    case MalformedParametersError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
+    case SubmissionNotFoundError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage: error.message,
+      }
+    case InvalidEncodingError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'Invalid data was found. Please check your responses and submit again.',
+      }
+    case DatabasePayloadSizeError:
+      return {
+        statusCode: StatusCodes.REQUEST_TOO_LONG,
+        errorMessage:
+          'Submission too large to be saved. Please reduce the size of your submission and try again.',
+      }
+    case ValidateFieldError:
+    case DatabaseValidationError:
+    case InvalidFileExtensionError:
+    case AttachmentTooLargeError:
+    case ProcessingError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'There is something wrong with your form submission. Please check your responses and try again. If the problem persists, please refresh the page.',
+      }
+    case DatabaseConflictError:
+    case ConflictError:
+      return {
+        statusCode: StatusCodes.CONFLICT,
+        errorMessage:
+          'The form has been updated. Please refresh and submit again.',
+      }
+    case PaymentNotFoundError:
+    case CreatePresignedPostError:
+    case DatabaseError:
+    case EmptyErrorFieldError:
+    case VirusScanFailedError:
+    case DownloadCleanFileFailedError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
+      }
+    case SubmissionFailedError:
+    case InvalidFieldIdError:
+    case AttachmentSizeLimitExceededError:
+    case InvalidFileKeyError:
+    case MaliciousFileDetectedError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
+    default:
+      logger.error({
+        message: 'Unknown route error observed',
+        meta: {
+          action: 'mapRouteError',
+        },
+        error,
+      })
+
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: 'Something went wrong. Please try again.',
+      }
+  }
+}
+
+export const mapRouteError: MapRouteErrors =
+  genericMapRouteErrorTransform(errorMapper)
 
 /**
  * Returns the file size limit in MB based on whether request is an email-mode submission
@@ -57,7 +349,45 @@ export const fileSizeLimit = (responseMode: FormResponseMode) => {
     case FormResponseMode.Email:
       return 7
     case FormResponseMode.Encrypt:
+    case FormResponseMode.Multirespondent:
       return 20
+  }
+}
+
+export const checkFormIsEncryptModeOrMultirespondent = (
+  form: IPopulatedForm,
+): Result<
+  IPopulatedEncryptedForm | IPopulatedMultirespondentForm,
+  ResponseModeError
+> => {
+  return isFormEncryptModeOrMultirespondent(form)
+    ? ok(form)
+    : err(
+        new ResponseModeError(
+          [FormResponseMode.Encrypt, FormResponseMode.Multirespondent],
+          form.responseMode,
+        ),
+      )
+}
+
+export const getEncryptedSubmissionModelByResponseMode = (
+  responseMode: FormResponseMode,
+): Result<
+  IEncryptSubmissionModel | IMultirespondentSubmissionModel,
+  ResponseModeError
+> => {
+  switch (responseMode) {
+    case FormResponseMode.Encrypt:
+      return ok(EncryptSubmissionModel)
+    case FormResponseMode.Multirespondent:
+      return ok(MultirespondentSubmissionModel)
+    default:
+      return err(
+        new ResponseModeError(
+          [FormResponseMode.Encrypt, FormResponseMode.Multirespondent],
+          responseMode,
+        ),
+      )
   }
 }
 
@@ -216,6 +546,18 @@ export const isQuarantinedAttachmentResponse = (
 }
 
 /**
+ * Checks if a response is a quarantined attachment response to be processed by the virus scanner.
+ */
+export const isQuarantinedAttachmentResponseV3 = (
+  response: ParsedClearFormFieldResponseV3,
+): response is ParsedClearAttachmentResponseV3 => {
+  return (
+    response.fieldType === BasicField.Attachment &&
+    response.answer.answer !== ''
+  )
+}
+
+/**
  * Checks an array of attachments to see ensure that every
  * one of them is valid. The validity is determined by an
  * internal isInvalidFileExtension checker function, and
@@ -276,6 +618,67 @@ export const mapAttachmentsFromResponses = (
     filename: response.filename,
     content: response.content,
   }))
+}
+
+const encryptAttachment = async (
+  attachment: Buffer,
+  { id, publicKey }: { id: string; publicKey: string },
+  version: number,
+): Promise<SubmissionAttachment & { id: string }> => {
+  let label
+
+  try {
+    label = 'Read file content'
+
+    const fileContentsView = new Uint8Array(attachment)
+
+    label = 'Encrypt content'
+    const formsgSdkCrypto =
+      version < MULTIRESPONDENT_FORM_SUBMISSION_VERSION
+        ? formsgSdk.crypto
+        : formsgSdk.cryptoV3
+    const encryptedAttachment = await formsgSdkCrypto.encryptFile(
+      fileContentsView,
+      publicKey,
+    )
+
+    label = 'Base64-encode encrypted content'
+    const encodedEncryptedAttachment = {
+      ...encryptedAttachment,
+      binary: encodeBase64(encryptedAttachment.binary),
+    }
+
+    return { id, encryptedFile: encodedEncryptedAttachment }
+  } catch (error) {
+    logger.error({
+      message: 'Error encrypting attachment',
+      meta: {
+        action: 'encryptAttachment',
+        label,
+        error,
+      },
+    })
+    throw error
+  }
+}
+
+export const getEncryptedAttachmentsMapFromAttachmentsMap = async (
+  attachmentsMap: Record<string, Buffer>,
+  publicKey: string,
+  version: number,
+): Promise<SubmissionAttachmentsMap> => {
+  const attachmentPromises = Object.entries(attachmentsMap).map(
+    ([id, attachment]) =>
+      encryptAttachment(attachment, { id, publicKey }, version),
+  )
+
+  return Promise.all(attachmentPromises).then((encryptedAttachmentsMeta) =>
+    chain(encryptedAttachmentsMeta)
+      .keyBy('id')
+      // Remove id from object.
+      .mapValues((v) => omit(v, 'id'))
+      .value(),
+  )
 }
 
 /**

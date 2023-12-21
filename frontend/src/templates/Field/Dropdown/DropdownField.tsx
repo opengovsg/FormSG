@@ -11,6 +11,7 @@ import { DropdownFieldSchema, SingleAnswerFieldInput } from '../types'
 
 export interface DropdownFieldProps extends BaseFieldProps {
   schema: DropdownFieldSchema
+  disableRequiredValidation?: boolean
 }
 
 /**
@@ -18,12 +19,13 @@ export interface DropdownFieldProps extends BaseFieldProps {
  */
 export const DropdownField = ({
   schema,
+  disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
   ...fieldContainerProps
 }: DropdownFieldProps): JSX.Element => {
   const rules = useMemo(() => {
-    return createDropdownValidationRules(schema)
-  }, [schema])
+    return createDropdownValidationRules(schema, disableRequiredValidation)
+  }, [schema, disableRequiredValidation])
 
   const { control } = useFormContext<SingleAnswerFieldInput>()
 

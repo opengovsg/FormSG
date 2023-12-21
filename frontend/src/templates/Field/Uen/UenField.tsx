@@ -12,12 +12,16 @@ import { SingleAnswerFieldInput, UenFieldSchema } from '../types'
 
 export interface UenFieldProps extends BaseFieldProps {
   schema: UenFieldSchema
+  disableRequiredValidation?: boolean
 }
 
-export const UenField = ({ schema }: UenFieldProps): JSX.Element => {
+export const UenField = ({
+  schema,
+  disableRequiredValidation,
+}: UenFieldProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createUenValidationRules(schema),
-    [schema],
+    () => createUenValidationRules(schema, disableRequiredValidation),
+    [schema, disableRequiredValidation],
   )
 
   const { register, setValue } = useFormContext<SingleAnswerFieldInput>()

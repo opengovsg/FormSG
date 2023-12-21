@@ -12,12 +12,16 @@ import { NricFieldSchema, SingleAnswerFieldInput } from '../types'
 
 export interface NricFieldProps extends BaseFieldProps {
   schema: NricFieldSchema
+  disableRequiredValidation?: boolean
 }
 
-export const NricField = ({ schema }: NricFieldProps): JSX.Element => {
+export const NricField = ({
+  schema,
+  disableRequiredValidation,
+}: NricFieldProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createNricValidationRules(schema),
-    [schema],
+    () => createNricValidationRules(schema, disableRequiredValidation),
+    [schema, disableRequiredValidation],
   )
 
   const { register, setValue } = useFormContext<SingleAnswerFieldInput>()

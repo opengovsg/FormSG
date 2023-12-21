@@ -3,7 +3,7 @@ import { Router } from 'express'
 import { rateLimitConfig } from '../../../../../../config/config'
 import { authenticateApiKeyAndPlatform } from '../../../../../../modules/auth/auth.middlewares'
 import * as AdminFormController from '../../../../../../modules/form/admin-form/admin-form.controller'
-import * as EncryptSubmissionController from '../../../../../../modules/submission/encrypt-submission/encrypt-submission.controller'
+import * as SubmissionController from '../../../../../../modules/submission/submission.controller'
 import { limitRate } from '../../../../../../utils/limit-rate'
 
 export const AdminFormsPublicRouter = Router()
@@ -61,7 +61,7 @@ AdminFormsPublicRouter.route('/:formId([a-fA-F0-9]{24})/submissions/count').get(
  */
 AdminFormsPublicRouter.route(
   '/:formId([a-fA-F0-9]{24})/submissions/download',
-).get(EncryptSubmissionController.handleStreamEncryptedResponses)
+).get(SubmissionController.handleStreamEncryptedResponses)
 
 AdminFormsPublicRouter.route('/:formId([a-fA-F0-9]{24})/settings')
   /**

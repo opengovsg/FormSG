@@ -13,16 +13,18 @@ import { ShortTextFieldSchema, SingleAnswerFieldInput } from '../types'
 
 export interface ShortTextFieldProps extends BaseFieldProps {
   schema: ShortTextFieldSchema
+  disableRequiredValidation?: boolean
   prefill?: PrefillMap[string]
 }
 
 export const ShortTextField = ({
   schema,
+  disableRequiredValidation,
   ...fieldContainerProps
 }: ShortTextFieldProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createTextValidationRules(schema),
-    [schema],
+    () => createTextValidationRules(schema, disableRequiredValidation),
+    [disableRequiredValidation, schema],
   )
 
   const { register } = useFormContext<SingleAnswerFieldInput>()

@@ -1,10 +1,13 @@
 import Busboy from 'busboy'
 import { IncomingHttpHeaders } from 'http'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
-import { FormResponseMode } from 'shared/types'
 
-import { VIRUS_SCANNER_SUBMISSION_VERSION } from '../../../../../shared/constants'
 import { MB } from '../../../../../shared/constants/file'
+import {
+  FieldResponse,
+  FieldResponsesV3,
+  FormResponseMode,
+} from '../../../../../shared/types'
 import { IAttachmentInfo } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { fileSizeLimit } from '../submission.utils'
@@ -75,102 +78,95 @@ export const createMultipartReceiver = (
  */
 export const configureMultipartReceiver = (
   busboy: Busboy.Busboy,
-): ResultAsync<ParsedMultipartForm, MultipartError> => {
+): ResultAsync<
+  ParsedMultipartForm<FieldResponse[] | FieldResponsesV3>,
+  MultipartError
+> => {
   const logMeta = {
     action: 'configureMultipartReceiver',
   }
-  const responsePromise = new Promise<ParsedMultipartForm>(
-    (resolve, reject) => {
-      const attachments: IAttachmentInfo[] = []
-      let body: ParsedMultipartForm
+  const responsePromise = new Promise<
+    ParsedMultipartForm<FieldResponse[] | FieldResponsesV3>
+  >((resolve, reject) => {
+    const attachments: IAttachmentInfo[] = []
+    let body: ParsedMultipartForm<FieldResponse[] | FieldResponsesV3>
 
-      busboy
-        .on('file', (fieldname, file, { filename }) => {
-          // Required to convert fieldname's encoding as busboy treats all
-          // incoming fields as `latin1` encoding,
-          // but this means some file languages gets incorrectly encoded
-          // (like Chinese, Tamil, etc), e.g.
-          // `utf8-with-endash – test.txt` -> `utf8-with-endash â�� test.txt`.
-          // See https://github.com/mscdex/busboy/issues/274.
-          const utf8Fieldname = Buffer.from(fieldname, 'latin1').toString(
-            'utf8',
-          )
-          if (filename) {
-            const buffers: Buffer[] = []
-            file.on('data', (data) => {
-              buffers.push(data)
-            })
-
-            file.on('end', () => {
-              const buffer = Buffer.concat(buffers)
-              attachments.push({
-                filename: utf8Fieldname,
-                content: buffer,
-                fieldId: filename,
-              })
-              file.resume()
-            })
-            file.on('limit', () => {
-              logger.error({
-                message: 'Limit event triggered by multipart receiver',
-                meta: logMeta,
-              })
-              return reject(new MultipartContentLimitError())
-            })
-          }
-        })
-        .on('field', (name, val, { valueTruncated }) => {
-          // on receiving body field, convert to JSON
-          if (name === 'body') {
-            if (valueTruncated) {
-              logger.error({
-                message: 'Multipart value truncated',
-                meta: logMeta,
-              })
-              return reject(new MultipartContentLimitError())
-            }
-            try {
-              body = JSON.parse(val)
-            } catch (error) {
-              // Invalid form data
-              logger.error({
-                message: 'Error while attempting to parse form data',
-                meta: logMeta,
-                error,
-              })
-              return reject(new MultipartContentParsingError())
-            }
-          }
-        })
-        .on('error', (error: Error) => {
-          logger.error({
-            message: 'Generic multipart error',
-            meta: logMeta,
-            error,
+    busboy
+      .on('file', (fieldname, file, { filename }) => {
+        // Required to convert fieldname's encoding as busboy treats all
+        // incoming fields as `latin1` encoding,
+        // but this means some file languages gets incorrectly encoded
+        // (like Chinese, Tamil, etc), e.g.
+        // `utf8-with-endash – test.txt` -> `utf8-with-endash â�� test.txt`.
+        // See https://github.com/mscdex/busboy/issues/274.
+        const utf8Fieldname = Buffer.from(fieldname, 'latin1').toString('utf8')
+        if (filename) {
+          const buffers: Buffer[] = []
+          file.on('data', (data) => {
+            buffers.push(data)
           })
-          return reject(error)
-        })
-        .on('close', () => {
-          if (body) {
-            handleDuplicatesInAttachments(attachments)
-            addAttachmentToResponses(
-              body.responses,
-              attachments,
-              // default to 0 for email mode forms where version is undefined
-              // TODO (FRM-1413): change to a version existence guardrail when
-              // virus scanning has completed rollout, so that virus scanning
-              // cannot be bypassed on storage mode submissions.
-              (body.version ?? 0) >= VIRUS_SCANNER_SUBMISSION_VERSION,
-            )
-            return resolve(body)
-          } else {
-            // if body is not defined, the Promise would have been rejected elsewhere.
-            // but reject here again just in case.
-            return reject(new MultipartError())
+
+          file.on('end', () => {
+            const buffer = Buffer.concat(buffers)
+            attachments.push({
+              filename: utf8Fieldname,
+              content: buffer,
+              fieldId: filename,
+            })
+            file.resume()
+          })
+          file.on('limit', () => {
+            logger.error({
+              message: 'Limit event triggered by multipart receiver',
+              meta: logMeta,
+            })
+            return reject(new MultipartContentLimitError())
+          })
+        }
+      })
+      .on('field', (name, val, { valueTruncated }) => {
+        // on receiving body field, convert to JSON
+        if (name === 'body') {
+          if (valueTruncated) {
+            logger.error({
+              message: 'Multipart value truncated',
+              meta: logMeta,
+            })
+            return reject(new MultipartContentLimitError())
           }
+          try {
+            body = JSON.parse(val)
+          } catch (error) {
+            // Invalid form data
+            logger.error({
+              message: 'Error while attempting to parse form data',
+              meta: logMeta,
+              error,
+            })
+            return reject(new MultipartContentParsingError())
+          }
+        }
+      })
+      .on('error', (error: Error) => {
+        logger.error({
+          message: 'Generic multipart error',
+          meta: logMeta,
+          error,
         })
-    },
-  )
+        return reject(error)
+      })
+      .on('close', () => {
+        if (body) {
+          handleDuplicatesInAttachments(attachments)
+          addAttachmentToResponses(body, attachments)
+          return resolve(body)
+        } else {
+          // if body is not defined, the Promise would have been rejected elsewhere.
+          // but reject here again just in case.
+          return reject(new MultipartError())
+        }
+      })
+  })
   return ResultAsync.fromPromise(responsePromise, (error) => {
     logger.error({
       message: 'Error while receiving form data',

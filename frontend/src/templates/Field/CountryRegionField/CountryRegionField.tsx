@@ -14,6 +14,7 @@ import { SingleAnswerFieldInput } from '../types'
 export type CountryRegionFieldSchema = FormFieldWithId<CountryRegionFieldBase>
 export interface CountryRegionFieldProps extends BaseFieldProps {
   schema: CountryRegionFieldSchema
+  disableRequiredValidation?: boolean
 }
 
 // Exported for testing
@@ -27,6 +28,7 @@ export const SORTED_COUNTRY_OPTIONS = (() => {
 
 export const CountryRegionField = ({
   schema,
+  disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
   ...fieldContainerProps
 }: CountryRegionFieldProps): JSX.Element => {
@@ -38,8 +40,11 @@ export const CountryRegionField = ({
   }, [schema])
 
   const rules = useMemo(() => {
-    return createCountryRegionValidationRules(schemaWithFieldOptions)
-  }, [schemaWithFieldOptions])
+    return createCountryRegionValidationRules(
+      schemaWithFieldOptions,
+      disableRequiredValidation,
+    )
+  }, [schemaWithFieldOptions, disableRequiredValidation])
 
   const { control } = useFormContext<SingleAnswerFieldInput>()
 

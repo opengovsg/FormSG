@@ -22,9 +22,11 @@ import {
   EndPageUpdateDto,
   FieldCreateDto,
   FieldUpdateDto,
+  FormAuthType,
   FormField,
   FormLogoState,
   FormPermission,
+  FormResponseMode,
   FormSettings,
   LogicDto,
   MobileFieldBase,
@@ -64,6 +66,7 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
+  MalformedParametersError,
   PossibleDatabaseError,
   SecretsManagerError,
   SecretsManagerNotFoundError,
@@ -1036,7 +1039,7 @@ export const updateFormCollaborators = (
  * @param originalForm The original form to update settings for
  * @param body the subset of form settings to update
  * @returns ok(updated form settings) on success
- * @returns err(MalformedParametersError) if email update is attempted for an encrypt mode form
+ * @returns err(MalformedParametersError) if auth type update is attempted for a multi-respondent form
  * @returns err(database errors) if db error is thrown during form setting update
  */
 export const updateFormSettings = (
@@ -1044,12 +1047,21 @@ export const updateFormSettings = (
   body: SettingsUpdateDto,
 ): ResultAsync<
   FormSettings,
+  | MalformedParametersError
   | FormNotFoundError
   | DatabaseError
   | DatabaseValidationError
   | DatabaseConflictError
   | DatabasePayloadSizeError
 > => {
+  if (
+    originalForm.responseMode === FormResponseMode.Multirespondent &&
+    !!body.authType &&
+    body.authType !== FormAuthType.NIL
+  ) {
+    return errAsync(new MalformedParametersError('Invalid authentication type'))
+  }
+
   const dotifiedSettingsToUpdate = dotifyObject(body)
   const ModelToUse = getFormModelByResponseMode(originalForm.responseMode)
 

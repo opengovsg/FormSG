@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Control, useWatch } from 'react-hook-form'
 
-import { FormColorTheme, LogicDto } from '~shared/types/form'
+import { FormColorTheme, FormResponseMode, LogicDto } from '~shared/types/form'
 
 import { FormFieldValues } from '~templates/Field'
 
@@ -16,6 +16,7 @@ import { useFormSections } from './FormSectionsContext'
 
 interface VisibleFormFieldsProps {
   control: Control<FormFieldValues>
+  responseMode: FormResponseMode
   formFields: FormFieldWithQuestionNo[]
   formLogics: LogicDto[]
   colorTheme: FormColorTheme
@@ -28,6 +29,7 @@ interface VisibleFormFieldsProps {
  */
 export const VisibleFormFields = ({
   control,
+  responseMode,
   formFields,
   formLogics,
   colorTheme,
@@ -68,6 +70,9 @@ export const VisibleFormFields = ({
         <FieldFactory
           colorTheme={colorTheme}
           field={field}
+          disableRequiredValidation={
+            responseMode === FormResponseMode.Multirespondent
+          }
           key={field._id}
           prefill={fieldPrefillMap[field._id]}
         />

@@ -16,6 +16,8 @@ import {
   EMAIL_FORM_SETTINGS_FIELDS,
   EMAIL_PUBLIC_FORM_FIELDS,
   MB,
+  MULTIRESPONDENT_FORM_SETTINGS_FIELDS,
+  MULTIRESPONDENT_PUBLIC_FORM_FIELDS,
   STORAGE_FORM_SETTINGS_FIELDS,
   STORAGE_PUBLIC_FORM_FIELDS,
   WEBHOOK_SETTINGS_FIELDS,
@@ -42,6 +44,7 @@ import {
   LogicConditionState,
   LogicDto,
   LogicType,
+  MultirespondentFormSettings,
   PaymentChannel,
   PaymentType,
   StorageFormSettings,
@@ -61,6 +64,8 @@ import {
   IFormModel,
   IFormSchema,
   ILogicSchema,
+  IMultirespondentFormModel,
+  IMultirespondentFormSchema,
   IPopulatedForm,
   PickDuplicateForm,
   PublicForm,
@@ -286,6 +291,13 @@ const EmailFormSchema = new Schema<IEmailFormSchema, IEmailFormModel>({
     },
     // Mongoose v5 only checks if the type is an array, not whether the array
     // is non-empty.
+    required: true,
+  },
+})
+
+const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
+  publicKey: {
+    type: String,
     required: true,
   },
 })
@@ -693,12 +705,17 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   }
 
   FormDocumentSchema.methods.getSettings = function (): FormSettings {
-    const formSettings =
-      this.responseMode === FormResponseMode.Encrypt
-        ? (pick(this, STORAGE_FORM_SETTINGS_FIELDS) as StorageFormSettings)
-        : (pick(this, EMAIL_FORM_SETTINGS_FIELDS) as EmailFormSettings)
-
-    return formSettings
+    switch (this.responseMode) {
+      case FormResponseMode.Email:
+        return pick(this, EMAIL_FORM_SETTINGS_FIELDS) as EmailFormSettings
+      case FormResponseMode.Encrypt:
+        return pick(this, STORAGE_FORM_SETTINGS_FIELDS) as StorageFormSettings
+      case FormResponseMode.Multirespondent:
+        return pick(
+          this,
+          MULTIRESPONDENT_FORM_SETTINGS_FIELDS,
+        ) as MultirespondentFormSettings
+    }
   }
 
   FormDocumentSchema.methods.getWebhookAndResponseModeSettings =
@@ -711,10 +728,21 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     }
 
   FormDocumentSchema.methods.getPublicView = function (): PublicForm {
-    const basePublicView =
-      this.responseMode === FormResponseMode.Encrypt
-        ? (pick(this, STORAGE_PUBLIC_FORM_FIELDS) as PublicForm)
-        : (pick(this, EMAIL_PUBLIC_FORM_FIELDS) as PublicForm)
+    let basePublicView
+    switch (this.responseMode) {
+      case FormResponseMode.Encrypt:
+        basePublicView = pick(this, STORAGE_PUBLIC_FORM_FIELDS) as PublicForm
+        break
+      case FormResponseMode.Email:
+        basePublicView = pick(this, EMAIL_PUBLIC_FORM_FIELDS) as PublicForm
+        break
+      case FormResponseMode.Multirespondent:
+        basePublicView = pick(
+          this,
+          MULTIRESPONDENT_PUBLIC_FORM_FIELDS,
+        ) as PublicForm
+        break
+    }
 
     // Return non-populated public fields of form if not populated.
     if (!this.populated('admin')) {
@@ -1206,6 +1234,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   // Adding form discriminators
   FormModel.discriminator(FormResponseMode.Email, EmailFormSchema)
   FormModel.discriminator(FormResponseMode.Encrypt, EncryptedFormSchema)
+  FormModel.discriminator(
+    FormResponseMode.Multirespondent,
+    MultirespondentFormSchema,
+  )
 
   return FormModel
 }
@@ -1228,6 +1260,14 @@ export const getEncryptedFormModel = (db: Mongoose): IEncryptedFormModel => {
   // Load or build base model first
   getFormModel(db)
   return db.model(FormResponseMode.Encrypt) as IEncryptedFormModel
+}
+
+export const getMultirespondentFormModel = (
+  db: Mongoose,
+): IMultirespondentFormModel => {
+  // Load or build base model first
+  getFormModel(db)
+  return db.model(FormResponseMode.Multirespondent) as IMultirespondentFormModel
 }
 
 export default getFormModel

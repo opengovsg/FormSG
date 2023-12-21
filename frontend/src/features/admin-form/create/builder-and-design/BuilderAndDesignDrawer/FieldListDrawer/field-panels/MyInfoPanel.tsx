@@ -231,9 +231,13 @@ export const MyInfoFieldPanel = () => {
   )
 }
 
-type MyInfoTextProps = Pick<AdminFormDto, 'authType' | 'form_fields'>
+type MyInfoTextProps = Pick<
+  AdminFormDto,
+  'responseMode' | 'authType' | 'form_fields'
+>
 
 const MyInfoText = ({
+  responseMode,
   authType,
   form_fields,
 }: MyInfoTextProps): JSX.Element => {
@@ -243,6 +247,12 @@ const MyInfoText = ({
     () => form_fields.filter((ff) => isMyInfo(ff)).length,
     [form_fields],
   )
+
+  if (responseMode === FormResponseMode.Multirespondent) {
+    return (
+      <Text>MyInfo fields are not available in multi-respondent forms.</Text>
+    )
+  }
 
   if (isMyInfoDisabled) {
     return (
