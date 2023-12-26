@@ -19,12 +19,12 @@ export const WorkflowDetailsInput = ({
   const { mutateWorkflowSettings } = useMutateFormSettings()
 
   const existingSecondRespEmail = useMemo(
-    () => settings.workflow && settings.workflow[1]?.emails[1],
+    () => settings.workflow && settings.workflow[1]?.emails[0],
     [settings],
   )
 
   const existingThirdRespEmail = useMemo(
-    () => settings.workflow && settings.workflow[2]?.emails[2],
+    () => settings.workflow && settings.workflow[2]?.emails[0],
     [settings],
   )
 
