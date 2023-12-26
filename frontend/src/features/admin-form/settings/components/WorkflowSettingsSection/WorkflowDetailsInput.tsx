@@ -105,7 +105,7 @@ export const WorkflowDetailsInput = ({
         <Input isDisabled placeholder="Anyone with the form link" />
       </FormControl>
       <FormControl isInvalid={!!errors.secondRespondent} isRequired>
-        <FormLabel description="Enter the email of the respondent that should fill in this form after the respondent above">
+        <FormLabel description="Enter the email of the respondent that should fill in this form after the first respondent">
           Second respondent
         </FormLabel>
         <Input
@@ -118,7 +118,7 @@ export const WorkflowDetailsInput = ({
         )}
       </FormControl>
       <FormControl isInvalid={!!errors.thirdRespondent} isRequired>
-        <FormLabel description="Enter the email of the respondent that should fill in this form after the respondent above">
+        <FormLabel description="Enter the email of the respondent that should fill in this form after the second respondent">
           Third respondent
         </FormLabel>
         <Input
