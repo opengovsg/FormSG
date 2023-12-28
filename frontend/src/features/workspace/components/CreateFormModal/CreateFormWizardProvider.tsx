@@ -77,8 +77,9 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
           responseMode === FormResponseMode.Encrypt ||
           responseMode === FormResponseMode.Multirespondent
         )
-      )
+      ) {
         return
+      }
 
       return createStorageModeOrMultirespondentFormMutation.mutate({
         title,

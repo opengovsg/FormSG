@@ -43,14 +43,22 @@ export const useUseTemplateWizardContext = (
 
   const {
     useEmailModeFormTemplateMutation,
-    useStorageModeFormTemplateMutation,
+    useStorageModeOrMultirespondentFormTemplateMutation,
   } = useUseTemplateMutations()
 
-  const handleCreateStorageModeForm = handleSubmit(
+  const handleCreateStorageModeOrMultirespondentForm = handleSubmit(
     ({ title, responseMode }) => {
-      if (responseMode !== FormResponseMode.Encrypt || !formId) return
+      if (
+        !(
+          responseMode === FormResponseMode.Encrypt ||
+          responseMode === FormResponseMode.Multirespondent
+        ) ||
+        !formId
+      ) {
+        return
+      }
 
-      return useStorageModeFormTemplateMutation.mutate({
+      return useStorageModeOrMultirespondentFormTemplateMutation.mutate({
         formIdToDuplicate: formId,
         title,
         responseMode,
@@ -76,13 +84,13 @@ export const useUseTemplateWizardContext = (
     isFetching: isTemplateFormLoading,
     isLoading:
       useEmailModeFormTemplateMutation.isLoading ||
-      useStorageModeFormTemplateMutation.isLoading,
+      useStorageModeOrMultirespondentFormTemplateMutation.isLoading,
     keypair,
     currentStep,
     direction,
     formMethods,
     handleDetailsSubmit,
-    handleCreateStorageModeForm,
+    handleCreateStorageModeOrMultirespondentForm,
     modalHeader: 'Duplicate form',
   }
 }

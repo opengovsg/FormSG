@@ -1,5 +1,6 @@
 import {
   CreateEmailFormBodyDto,
+  CreateMultirespondentFormBodyDto,
   CreateStorageFormBodyDto,
   FormDto,
 } from '~shared/types'
@@ -18,9 +19,9 @@ export const createEmailModeTemplateForm = async (
   ).then(({ data }) => data)
 }
 
-export const createStorageModeTemplateForm = async (
+export const createStorageModeOrMultirespondentTemplateForm = async (
   formId: string,
-  body: CreateStorageFormBodyDto,
+  body: CreateStorageFormBodyDto | CreateMultirespondentFormBodyDto,
 ): Promise<FormDto> => {
   return ApiService.post<FormDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/use-template`,
