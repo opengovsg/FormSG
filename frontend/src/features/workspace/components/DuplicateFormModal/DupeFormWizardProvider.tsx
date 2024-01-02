@@ -57,8 +57,10 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
 
   const { handleSubmit } = formMethods
 
-  const { dupeEmailModeFormMutation, dupeStorageModeFormMutation } =
-    useDuplicateFormMutations()
+  const {
+    dupeEmailModeFormMutation,
+    dupeStorageModeOrMultirespondentFormMutation,
+  } = useDuplicateFormMutations()
 
   const { activeWorkspace, isDefaultWorkspace } = useWorkspaceContext()
 
@@ -66,12 +68,19 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
   // as the default workspace contains an empty string as workspaceId
   const workspaceId = isDefaultWorkspace ? undefined : activeWorkspace._id
 
-  const handleCreateStorageModeForm = handleSubmit(
+  const handleCreateStorageModeOrMultirespondentForm = handleSubmit(
     ({ title, responseMode }) => {
-      if (responseMode !== FormResponseMode.Encrypt || !activeFormMeta?._id)
+      if (
+        !(
+          responseMode === FormResponseMode.Encrypt ||
+          responseMode === FormResponseMode.Multirespondent
+        ) ||
+        !activeFormMeta?._id
+      ) {
         return
+      }
 
-      return dupeStorageModeFormMutation.mutate({
+      return dupeStorageModeOrMultirespondentFormMutation.mutate({
         formIdToDuplicate: activeFormMeta._id,
         title,
         responseMode,
@@ -99,13 +108,13 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
     isFetching: isWorkspaceLoading || isPreviewFormLoading,
     isLoading:
       dupeEmailModeFormMutation.isLoading ||
-      dupeStorageModeFormMutation.isLoading,
+      dupeStorageModeOrMultirespondentFormMutation.isLoading,
     keypair,
     currentStep,
     direction,
     formMethods,
     handleDetailsSubmit,
-    handleCreateStorageModeForm,
+    handleCreateStorageModeOrMultirespondentForm,
     modalHeader: 'Duplicate form',
   }
 }

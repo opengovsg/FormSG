@@ -28,7 +28,7 @@ import {
   deleteAdminForm,
   deleteWorkspace,
   dupeEmailModeForm,
-  dupeStorageModeForm,
+  dupeStorageModeOrMultirespondentForm,
   moveFormsToWorkspace,
   removeFormsFromWorkspaces,
   updateAdminFeedback,
@@ -108,13 +108,13 @@ export const useDuplicateFormMutations = () => {
     },
   )
 
-  const dupeStorageModeFormMutation = useMutation<
+  const dupeStorageModeOrMultirespondentFormMutation = useMutation<
     FormDto,
     ApiError,
     DuplicateFormBodyDto & { formIdToDuplicate: string }
   >(
     ({ formIdToDuplicate, ...params }) =>
-      dupeStorageModeForm(formIdToDuplicate, params),
+      dupeStorageModeOrMultirespondentForm(formIdToDuplicate, params),
     {
       onSuccess: handleSuccess,
       onError: handleError,
@@ -123,7 +123,7 @@ export const useDuplicateFormMutations = () => {
 
   return {
     dupeEmailModeFormMutation,
-    dupeStorageModeFormMutation,
+    dupeStorageModeOrMultirespondentFormMutation,
   }
 }
 

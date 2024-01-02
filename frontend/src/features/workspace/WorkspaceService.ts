@@ -113,7 +113,7 @@ export const dupeEmailModeForm = async (
   ).then(({ data }) => data)
 }
 
-export const dupeStorageModeForm = async (
+export const dupeStorageModeOrMultirespondentForm = async (
   formId: string,
   body: DuplicateFormBodyDto,
 ): Promise<FormDto> => {
