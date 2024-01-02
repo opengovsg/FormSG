@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 
 import {
   CreateEmailFormBodyDto,
+  CreateMultirespondentFormBodyDto,
   CreateStorageFormBodyDto,
   FormDto,
 } from '~shared/types'
@@ -18,7 +19,7 @@ import { workspaceKeys } from '~features/workspace/queries'
 
 import {
   createEmailModeTemplateForm,
-  createStorageModeTemplateForm,
+  createStorageModeOrMultirespondentTemplateForm,
 } from './TemplateFormService'
 
 const useCommonHooks = () => {
@@ -67,13 +68,15 @@ export const useUseTemplateMutations = () => {
     },
   )
 
-  const useStorageModeFormTemplateMutation = useMutation<
+  const useStorageModeOrMultirespondentFormTemplateMutation = useMutation<
     FormDto,
     ApiError,
-    CreateStorageFormBodyDto & { formIdToDuplicate: string }
+    (CreateStorageFormBodyDto | CreateMultirespondentFormBodyDto) & {
+      formIdToDuplicate: string
+    }
   >(
     ({ formIdToDuplicate, ...params }) =>
-      createStorageModeTemplateForm(formIdToDuplicate, params),
+      createStorageModeOrMultirespondentTemplateForm(formIdToDuplicate, params),
     {
       onSuccess: handleSuccess,
       onError: handleError,
@@ -82,6 +85,6 @@ export const useUseTemplateMutations = () => {
 
   return {
     useEmailModeFormTemplateMutation,
-    useStorageModeFormTemplateMutation,
+    useStorageModeOrMultirespondentFormTemplateMutation,
   }
 }
