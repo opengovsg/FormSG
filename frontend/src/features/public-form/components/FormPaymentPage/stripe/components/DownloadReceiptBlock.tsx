@@ -83,7 +83,7 @@ const LineItem = ({
   productItem: ExtractTypeFromArray<NonNullable<GetPaymentInfoDto['products']>>
 }) => {
   return (
-    <Flex textStyle={'body-1'} mb="1rem" justifyContent={'space-between'}>
+    <Flex textStyle="body-1" mb="1rem" justifyContent="space-between">
       <Text fontWeight="400" color="secondary.700">
         {productItem.data.name} x {productItem.quantity}
       </Text>
