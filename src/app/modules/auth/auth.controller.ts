@@ -4,6 +4,7 @@ import { SendOtpResponseDto } from 'shared/types/user'
 
 import { SUPPORT_FORM_LINK } from '../../../../shared/constants/links'
 import { createLoggerWithLabel } from '../../config/logger'
+import { ADMIN_LOGIN_SESSION_COOKIE_NAME } from '../../loaders/express/session'
 import MailService from '../../services/mail/mail.service'
 import { createReqMeta, getRequestIp } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
@@ -256,7 +257,7 @@ export const handleSignout: ControllerHandler = async (req, res) => {
     }
 
     // No error.
-    res.clearCookie('connect.sid')
+    res.clearCookie(ADMIN_LOGIN_SESSION_COOKIE_NAME)
     return res.status(StatusCodes.OK).json({ message: 'Sign out successful' })
   })
 }

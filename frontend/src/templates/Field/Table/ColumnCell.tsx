@@ -29,12 +29,14 @@ import { TableFieldInputs } from '../types'
 export interface ColumnCellProps
   extends UseTableCellProps<TableFieldInputs, string> {
   schemaId: string
+  disableRequiredValidation: boolean
   columnSchema: ColumnDto
   colorTheme: FormColorTheme
 }
 
 export interface FieldColumnCellProps<T extends Column = Column> {
   schema: ColumnDto<T>
+  disableRequiredValidation: boolean
   /** Represents `{schemaId}.{rowIndex}.{columnId}` */
   inputName: `${string}.${number}.${string}`
   colorTheme: FormColorTheme
@@ -42,10 +44,14 @@ export interface FieldColumnCellProps<T extends Column = Column> {
 
 const ShortTextColumnCell = ({
   schema,
+  disableRequiredValidation,
   inputName,
   colorTheme,
 }: FieldColumnCellProps<ShortTextColumnBase>) => {
-  const rules = useMemo(() => createBaseValidationRules(schema), [schema])
+  const rules = useMemo(
+    () => createBaseValidationRules(schema, disableRequiredValidation),
+    [schema, disableRequiredValidation],
+  )
 
   const { control } = useFormContext<TableFieldInputs>()
 
@@ -67,11 +73,15 @@ const ShortTextColumnCell = ({
 
 const DropdownColumnCell = ({
   schema,
+  disableRequiredValidation,
   inputName,
   colorTheme,
 }: FieldColumnCellProps<DropdownColumnBase>) => {
   const { control } = useFormContext<TableFieldInputs>()
-  const rules = useMemo(() => createDropdownValidationRules(schema), [schema])
+  const rules = useMemo(
+    () => createDropdownValidationRules(schema, disableRequiredValidation),
+    [schema, disableRequiredValidation],
+  )
 
   return (
     <Controller
@@ -96,6 +106,7 @@ const DropdownColumnCell = ({
  */
 export const ColumnCell = ({
   schemaId,
+  disableRequiredValidation,
   row,
   column,
   columnSchema,
@@ -117,6 +128,7 @@ export const ColumnCell = ({
           <ShortTextColumnCell
             colorTheme={colorTheme}
             schema={columnSchema}
+            disableRequiredValidation={disableRequiredValidation}
             inputName={inputName}
           />
         )
@@ -125,13 +137,14 @@ export const ColumnCell = ({
           <DropdownColumnCell
             colorTheme={colorTheme}
             schema={columnSchema}
+            disableRequiredValidation={disableRequiredValidation}
             inputName={inputName}
           />
         )
       default:
         return null
     }
-  }, [colorTheme, columnSchema, inputName])
+  }, [colorTheme, columnSchema, disableRequiredValidation, inputName])
 
   return (
     <FormControl

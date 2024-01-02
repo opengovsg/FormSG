@@ -5,7 +5,7 @@ import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
-import { ResultAsync } from 'neverthrow'
+import { okAsync, ResultAsync } from 'neverthrow'
 
 import {
   MAX_UPLOAD_FILE_SIZE,
@@ -74,7 +74,6 @@ import {
 } from '../../submission/email-submission/email-submission.util'
 import * as EncryptSubmissionMiddleware from '../../submission/encrypt-submission/encrypt-submission.middleware'
 import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
-import { mapRouteError as mapEncryptSubmissionError } from '../../submission/encrypt-submission/encrypt-submission.utils'
 import IncomingEncryptSubmission from '../../submission/encrypt-submission/IncomingEncryptSubmission.class'
 import ParsedResponsesObject from '../../submission/ParsedResponsesObject.class'
 import * as ReceiverMiddleware from '../../submission/receiver/receiver.middleware'
@@ -82,6 +81,7 @@ import * as SubmissionService from '../../submission/submission.service'
 import {
   extractEmailConfirmationData,
   mapAttachmentsFromResponses,
+  mapRouteError as mapSubmissionError,
 } from '../../submission/submission.utils'
 import * as UserService from '../../user/user.service'
 import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
@@ -105,6 +105,7 @@ import { PermissionLevel } from './admin-form.types'
 import {
   mapGoGovErrors,
   mapRouteError,
+  verifyUserBetaflag,
   verifyValidUnicodeString,
 } from './admin-form.utils'
 
@@ -143,7 +144,7 @@ const createFormValidator = celebrate({
         publicKey: Joi.string()
           .allow('')
           .when('responseMode', {
-            is: FormResponseMode.Encrypt,
+            is: [FormResponseMode.Encrypt, FormResponseMode.Multirespondent],
             then: Joi.string().required().disallow(''),
           }),
         workspaceId: Joi.string(),
@@ -180,7 +181,7 @@ const duplicateFormValidator = celebrate({
     publicKey: Joi.string()
       .allow('')
       .when('responseMode', {
-        is: FormResponseMode.Encrypt,
+        is: [FormResponseMode.Encrypt, FormResponseMode.Multirespondent],
         then: Joi.string().required().disallow(''),
       }),
     workspaceId: Joi.string(),
@@ -1183,6 +1184,11 @@ export const createForm: ControllerHandler<
   return (
     // Step 1: Retrieve currently logged in user.
     UserService.findUserById(sessionUserId)
+      .andThen((user) =>
+        formParams.responseMode === FormResponseMode.Multirespondent
+          ? verifyUserBetaflag(user, 'mrf')
+          : okAsync(user),
+      )
       // Step 2: Create form with given params and set admin to logged in user.
       .andThen((user) =>
         AdminFormService.createForm(
@@ -1750,7 +1756,7 @@ export const submitEncryptPreview: ControllerHandler<
       })
     })
     .mapErr((error) => {
-      const { errorMessage, statusCode } = mapEncryptSubmissionError(error)
+      const { errorMessage, statusCode } = mapSubmissionError(error)
       return res.status(statusCode).json({ message: errorMessage })
     })
 }

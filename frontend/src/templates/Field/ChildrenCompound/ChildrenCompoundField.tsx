@@ -51,6 +51,7 @@ import {
 
 export interface ChildrenCompoundFieldProps extends BaseFieldProps {
   schema: ChildrenCompoundFieldSchema
+  disableRequiredValidation?: boolean
   myInfoChildrenBirthRecords?: MyInfoChildData
 }
 
@@ -64,6 +65,7 @@ export interface ChildrenCompoundFieldProps extends BaseFieldProps {
  */
 export const ChildrenCompoundField = ({
   schema,
+  disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
   myInfoChildrenBirthRecords,
   ...fieldContainerProps
@@ -140,6 +142,7 @@ export const ChildrenCompoundField = ({
                 {...{
                   currChildBodyIdx,
                   schema,
+                  disableRequiredValidation,
                   fields,
                   field,
                   colorTheme,
@@ -181,6 +184,7 @@ export const ChildrenCompoundField = ({
 interface ChildrenBodyProps {
   currChildBodyIdx: number
   schema: ChildrenCompoundFieldSchema
+  disableRequiredValidation?: boolean
   fields: FieldArrayWithId<
     ChildrenCompoundFieldInputs,
     `${string}.child`,
@@ -200,6 +204,7 @@ interface ChildrenBodyProps {
 const ChildrenBody = ({
   currChildBodyIdx,
   schema,
+  disableRequiredValidation,
   fields,
   field,
   colorTheme,
@@ -217,8 +222,8 @@ const ChildrenBody = ({
   )
 
   const validationRules = useMemo(
-    () => createChildrenValidationRules(schema),
-    [schema],
+    () => createChildrenValidationRules(schema, disableRequiredValidation),
+    [schema, disableRequiredValidation],
   )
 
   const {

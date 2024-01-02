@@ -410,7 +410,8 @@ const formatProductsDescriptionHtml = (products: ProductItem[]) => {
   let final =
     '<td class="Table-description Font Font--body" style="color: #525f7f;font-size: 15px;line-height: 36px;width: 100%;">'
   products.forEach((product) => {
-    const productStr = `${product.data.name} x ${product.quantity}<br>`
+    const productName = encode(product?.data?.name || '')
+    const productStr = `${productName} x ${product.quantity}<br>`
     final = final.concat(productStr)
   })
   final = final.concat('</td>')

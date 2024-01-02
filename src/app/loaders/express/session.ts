@@ -6,6 +6,10 @@ import { Connection } from 'mongoose'
 
 import config from '../../config/config'
 
+export const ADMIN_LOGIN_SESSION_COOKIE_NAME = config.isDev
+  ? 'formsg.connect.sid'
+  : 'connect.sid'
+
 const sessionMiddlewares = (connection: Connection): RequestHandler[] => {
   // Configure express-session and connect to mongo
   const expressSession = session({
@@ -13,7 +17,8 @@ const sessionMiddlewares = (connection: Connection): RequestHandler[] => {
     resave: false,
     secret: config.sessionSecret,
     cookie: config.cookieSettings,
-    name: 'connect.sid',
+    // TODO: FRM-1512: Standardise cookie name across environments
+    name: ADMIN_LOGIN_SESSION_COOKIE_NAME,
     store: MongoStore.create({
       // @ts-expect-error Property 'isConnected' is missing in type
       client: connection.getClient(),

@@ -2,7 +2,11 @@ import { Busboy } from 'busboy'
 import { NextFunction, Request, Response } from 'express-serve-static-core'
 import { Result } from 'neverthrow'
 
-import { FieldResponse, FormResponseMode } from '../../../../../shared/types'
+import {
+  FieldResponse,
+  FieldResponsesV3,
+  FormResponseMode,
+} from '../../../../../shared/types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import { ControllerHandler } from '../../core/core.types'
@@ -65,11 +69,37 @@ export const receiveStorageSubmission: ControllerHandler<
   )
 }
 
+/**
+ * Used for multirespondent forms only.
+ * Parses multipart-form data request. Parsed attachments are
+ * placed into req.attachments and parsed fields are placed into
+ * req.body.
+ *
+ * @param req - Express request object
+ * @param res - Express response object
+ * @param next - Express next middleware function
+ */
+export const receiveMultirespondentSubmission: ControllerHandler<
+  unknown,
+  { message: string },
+  { responses: FieldResponsesV3 }
+> = async (req, res, next) => {
+  return receiveSubmission(
+    req,
+    res,
+    next,
+    SubmissionReceiver.createMultipartReceiver(
+      req.headers,
+      FormResponseMode.Multirespondent,
+    ),
+  )
+}
+
 const receiveSubmission = async (
   req: Request<
     unknown,
     { message: string },
-    { responses: FieldResponse[] },
+    { responses: FieldResponse[] | FieldResponsesV3 },
     unknown,
     Record<string, unknown>
   >,

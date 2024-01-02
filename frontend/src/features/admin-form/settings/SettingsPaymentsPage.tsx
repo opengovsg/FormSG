@@ -8,7 +8,7 @@ import { useAdminFormSettings } from './queries'
 export const SettingsPaymentsPage = (): JSX.Element => {
   const { data: settings, isLoading } = useAdminFormSettings()
 
-  // Payments are unsupported in email mode; show message.
+  // Payments are only supported in storage mode; show message if form response mode is enything else.
   if (!isLoading && settings?.responseMode !== FormResponseMode.Encrypt) {
     return <PaymentsUnsupportedMsg />
   }

@@ -8,6 +8,7 @@ export const getAttachmentSizeLimit = (
     case FormResponseMode.Email:
       return Number(AttachmentSize.SevenMb)
     case FormResponseMode.Encrypt:
+    case FormResponseMode.Multirespondent:
       return Number(AttachmentSize.TwentyMb)
     default:
       return 0

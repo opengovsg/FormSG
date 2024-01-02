@@ -16,6 +16,8 @@ import {
   EMAIL_FORM_SETTINGS_FIELDS,
   EMAIL_PUBLIC_FORM_FIELDS,
   MB,
+  MULTIRESPONDENT_FORM_SETTINGS_FIELDS,
+  MULTIRESPONDENT_PUBLIC_FORM_FIELDS,
   STORAGE_FORM_SETTINGS_FIELDS,
   STORAGE_PUBLIC_FORM_FIELDS,
   WEBHOOK_SETTINGS_FIELDS,
@@ -42,6 +44,7 @@ import {
   LogicConditionState,
   LogicDto,
   LogicType,
+  MultirespondentFormSettings,
   PaymentChannel,
   PaymentType,
   StorageFormSettings,
@@ -62,6 +65,8 @@ import {
   IFormModel,
   IFormSchema,
   ILogicSchema,
+  IMultirespondentFormModel,
+  IMultirespondentFormSchema,
   IPopulatedForm,
   PickDuplicateForm,
   PublicForm,
@@ -200,6 +205,10 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
       default: '',
       validate: [/^\S*$/i, 'publishable_key must not contain whitespace.'],
     },
+    payment_methods: {
+      type: [String],
+      default: [],
+    },
   },
 
   payments_field: formPaymentsFieldSchema,
@@ -228,6 +237,7 @@ EncryptedFormDocumentSchema.methods.addPaymentAccountId = async function ({
       channel: PaymentChannel.Stripe,
       target_account_id: accountId,
       publishable_key: publishableKey,
+      payment_methods: [],
     }
   }
   return this.save()
@@ -238,6 +248,7 @@ EncryptedFormDocumentSchema.methods.removePaymentAccount = async function () {
     channel: PaymentChannel.Unconnected,
     target_account_id: '',
     publishable_key: '',
+    payment_methods: [],
   }
   if (this.payments_field) {
     this.payments_field.enabled = false
@@ -264,6 +275,13 @@ const EmailFormSchema = new Schema<IEmailFormSchema, IEmailFormModel>({
     ],
     // Mongoose v5 only checks if the type is an array, not whether the array
     // is non-empty.
+    required: true,
+  },
+})
+
+const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
+  publicKey: {
+    type: String,
     required: true,
   },
 })
@@ -295,13 +313,12 @@ const compileFormModel = (db: Mongoose): IFormModel => {
             return (
               myInfoFieldCount === 0 ||
               ((this.authType === FormAuthType.MyInfo ||
-                this.authType == FormAuthType.SGID_MyInfo) &&
-                this.responseMode === FormResponseMode.Email &&
+                this.authType === FormAuthType.SGID_MyInfo) &&
                 myInfoFieldCount <= 30)
             )
           },
           message:
-            'Check that your form is MyInfo-authenticated, is an email mode form and has 30 or fewer MyInfo fields.',
+            'Check that your form is MyInfo-authenticated and has 30 or fewer MyInfo fields.',
         },
       },
       form_logics: {
@@ -441,21 +458,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           // Do not allow authType to be changed if form is published
           if (this.authType !== v && this.status === FormStatus.Public) {
             return this.authType
-            // Singpass/Corppass/SGID authentication is available for both email
-            // and storage mode
-            // Important - this case must come before the MyInfo + storage
-            // mode case, or else we may accidentally set Singpass/Corppass/SGID
-            // storage mode forms to FormAuthType.NIL
-          } else if (
-            [FormAuthType.SP, FormAuthType.CP, FormAuthType.SGID].includes(v)
-          ) {
-            return v
-          } else if (
-            this.responseMode === FormResponseMode.Encrypt &&
-            // MyInfo is not available for storage mode
-            (v === FormAuthType.MyInfo || v === FormAuthType.SGID_MyInfo)
-          ) {
-            return FormAuthType.NIL
           } else {
             return v
           }
@@ -694,14 +696,30 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     }
   }
 
-  FormDocumentSchema.method('getSettings', function (): FormSettings {
-    const formSettings =
-      this.responseMode === FormResponseMode.Encrypt
-        ? (pick(this, STORAGE_FORM_SETTINGS_FIELDS) as StorageFormSettings)
-        : (pick(this, EMAIL_FORM_SETTINGS_FIELDS) as EmailFormSettings)
+  // FormDocumentSchema.method('getSettings', function (): FormSettings {
+  //   const formSettings =
+  //     this.responseMode === FormResponseMode.Encrypt
+  //       ? (pick(this, STORAGE_FORM_SETTINGS_FIELDS) as StorageFormSettings)
+  //       : (pick(this, EMAIL_FORM_SETTINGS_FIELDS) as EmailFormSettings)
 
-    return formSettings
-  })
+  //   return formSettings
+  // })
+  FormDocumentSchema.method<IFormDocument>(
+    'getSettings',
+    function (): FormSettings {
+      switch (this.responseMode) {
+        case FormResponseMode.Email:
+          return pick(this, EMAIL_FORM_SETTINGS_FIELDS) as EmailFormSettings
+        case FormResponseMode.Encrypt:
+          return pick(this, STORAGE_FORM_SETTINGS_FIELDS) as StorageFormSettings
+        case FormResponseMode.Multirespondent:
+          return pick(
+            this,
+            MULTIRESPONDENT_FORM_SETTINGS_FIELDS,
+          ) as MultirespondentFormSettings
+      }
+    },
+  )
 
   FormDocumentSchema.methods.getWebhookAndResponseModeSettings =
     function (): FormWebhookSettings {
@@ -712,23 +730,37 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       return formSettings
     }
 
-  FormDocumentSchema.methods.getPublicView = function (): PublicForm {
-    const basePublicView =
-      this.responseMode === FormResponseMode.Encrypt
-        ? (pick(this, STORAGE_PUBLIC_FORM_FIELDS) as PublicForm)
-        : (pick(this, EMAIL_PUBLIC_FORM_FIELDS) as PublicForm)
+  FormDocumentSchema.method<IFormDocument>(
+    'getPublicView',
+    function (): PublicForm {
+      let basePublicView
+      switch (this.responseMode) {
+        case FormResponseMode.Encrypt:
+          basePublicView = pick(this, STORAGE_PUBLIC_FORM_FIELDS) as PublicForm
+          break
+        case FormResponseMode.Email:
+          basePublicView = pick(this, EMAIL_PUBLIC_FORM_FIELDS) as PublicForm
+          break
+        case FormResponseMode.Multirespondent:
+          basePublicView = pick(
+            this,
+            MULTIRESPONDENT_PUBLIC_FORM_FIELDS,
+          ) as PublicForm
+          break
+      }
 
-    // Return non-populated public fields of form if not populated.
-    if (!this.populated('admin')) {
-      return basePublicView
-    }
+      // Return non-populated public fields of form if not populated.
+      if (!this.populated('admin')) {
+        return basePublicView
+      }
 
-    // Populated, return public view with user's public view.
-    return {
-      ...basePublicView,
-      admin: (this.admin as IUserSchema).getPublicView(),
-    }
-  }
+      // Populated, return public view with user's public view.
+      return {
+        ...basePublicView,
+        admin: (this.admin as IUserSchema).getPublicView(),
+      }
+    },
+  )
 
   // Transfer ownership of the form to another user
   FormDocumentSchema.method<IFormDocument>(
@@ -1212,6 +1244,10 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   // Adding form discriminators
   FormModel.discriminator(FormResponseMode.Email, EmailFormSchema)
   FormModel.discriminator(FormResponseMode.Encrypt, EncryptedFormSchema)
+  FormModel.discriminator(
+    FormResponseMode.Multirespondent,
+    MultirespondentFormSchema,
+  )
 
   return FormModel
 }
@@ -1234,6 +1270,14 @@ export const getEncryptedFormModel = (db: Mongoose): IEncryptedFormModel => {
   // Load or build base model first
   getFormModel(db)
   return db.model(FormResponseMode.Encrypt) as IEncryptedFormModel
+}
+
+export const getMultirespondentFormModel = (
+  db: Mongoose,
+): IMultirespondentFormModel => {
+  // Load or build base model first
+  getFormModel(db)
+  return db.model(FormResponseMode.Multirespondent) as IMultirespondentFormModel
 }
 
 export default getFormModel

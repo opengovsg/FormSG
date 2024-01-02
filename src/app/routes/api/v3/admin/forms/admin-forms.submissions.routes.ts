@@ -2,6 +2,7 @@ import { Router } from 'express'
 
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 import * as EncryptSubmissionController from '../../../../../modules/submission/encrypt-submission/encrypt-submission.controller'
+import * as SubmissionController from '../../../../../modules/submission/submission.controller'
 
 export const AdminFormsSubmissionsRouter = Router()
 
@@ -40,7 +41,7 @@ AdminFormsSubmissionsRouter.route(
  */
 AdminFormsSubmissionsRouter.route(
   '/:formId([a-fA-F0-9]{24})/submissions/download',
-).get(EncryptSubmissionController.handleStreamEncryptedResponses)
+).get(SubmissionController.handleStreamEncryptedResponses)
 
 /**
  * Retrieve actual response for a storage mode form
@@ -60,7 +61,7 @@ AdminFormsSubmissionsRouter.route(
  */
 AdminFormsSubmissionsRouter.route(
   '/:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})',
-).get(EncryptSubmissionController.handleGetEncryptedResponse)
+).get(SubmissionController.handleGetEncryptedResponse)
 
 /**
  * Retrieve metadata of responses for a form with encrypted storage
@@ -78,5 +79,13 @@ AdminFormsSubmissionsRouter.route(
  */
 AdminFormsSubmissionsRouter.get(
   '/:formId([a-fA-F0-9]{24})/submissions/metadata',
-  EncryptSubmissionController.handleGetMetadata,
+  SubmissionController.handleGetMetadata,
+)
+
+/**
+ * Retrieve all encrypted response form a form
+ */
+AdminFormsSubmissionsRouter.get(
+  '/:formId([a-fA-F0-9]{24})/submissions',
+  EncryptSubmissionController.handleGetAllEncryptedResponses,
 )

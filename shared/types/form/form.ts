@@ -7,12 +7,14 @@ import {
   ADMIN_FORM_META_FIELDS,
   EMAIL_FORM_SETTINGS_FIELDS,
   EMAIL_PUBLIC_FORM_FIELDS,
+  MULTIRESPONDENT_FORM_SETTINGS_FIELDS,
+  MULTIRESPONDENT_PUBLIC_FORM_FIELDS,
   STORAGE_FORM_SETTINGS_FIELDS,
   STORAGE_PUBLIC_FORM_FIELDS,
 } from '../../constants/form'
 import { DateString } from '../generic'
 import { FormLogic, LogicDto } from './form_logic'
-import { PaymentChannel, PaymentType } from '../payment'
+import { PaymentChannel, PaymentMethodType, PaymentType } from '../payment'
 import { Product } from './product'
 
 export type FormId = Opaque<string, 'FormId'>
@@ -69,9 +71,11 @@ export type FormWebhook = {
 export enum FormResponseMode {
   Encrypt = 'encrypt',
   Email = 'email',
+  Multirespondent = 'multirespondent',
 }
 
 export type FormPaymentsChannel = {
+  payment_methods?: PaymentMethodType[]
   channel: PaymentChannel
   target_account_id: string
   publishable_key: string
@@ -167,6 +171,11 @@ export interface StorageFormBase extends FormBase {
   business?: FormBusinessField
 }
 
+export interface MultirespondentFormBase extends FormBase {
+  responseMode: FormResponseMode.Multirespondent
+  publicKey: string
+}
+
 /**
  * Additional props to be added/replaced when tranformed into DTO.
  */
@@ -182,11 +191,20 @@ export type StorageFormDto = Merge<StorageFormBase, FormDtoBase>
 
 export type EmailFormDto = Merge<EmailFormBase, FormDtoBase>
 
-export type FormDto = StorageFormDto | EmailFormDto
+export type MultirespondentFormDto = Merge<MultirespondentFormBase, FormDtoBase>
+
+export type FormDto = StorageFormDto | EmailFormDto | MultirespondentFormDto
 
 export type AdminStorageFormDto = Merge<StorageFormDto, { admin: UserDto }>
 export type AdminEmailFormDto = Merge<EmailFormDto, { admin: UserDto }>
-export type AdminFormDto = AdminStorageFormDto | AdminEmailFormDto
+export type AdminMultirespondentFormDto = Merge<
+  MultirespondentFormDto,
+  { admin: UserDto }
+>
+export type AdminFormDto =
+  | AdminStorageFormDto
+  | AdminEmailFormDto
+  | AdminMultirespondentFormDto
 
 type PublicFormBase = {
   admin: PublicUserDto
@@ -212,7 +230,20 @@ export type PublicEmailFormDto = Merge<
   PublicFormBase
 >
 
-export type PublicFormDto = PublicStorageFormDto | PublicEmailFormDto
+export type PublicMultirespondentFormDto = Merge<
+  Pick<
+    MultirespondentFormDto,
+    // Arrays like typeof list have numeric index signatures, so their number key
+    // yields the union of all numerically-indexed properties.
+    typeof MULTIRESPONDENT_PUBLIC_FORM_FIELDS[number]
+  >,
+  PublicFormBase
+>
+
+export type PublicFormDto =
+  | PublicStorageFormDto
+  | PublicEmailFormDto
+  | PublicMultirespondentFormDto
 
 export type EmailFormSettings = Pick<
   EmailFormDto,
@@ -223,7 +254,15 @@ export type StorageFormSettings = Pick<
   typeof STORAGE_FORM_SETTINGS_FIELDS[number]
 >
 
-export type FormSettings = EmailFormSettings | StorageFormSettings
+export type MultirespondentFormSettings = Pick<
+  MultirespondentFormDto,
+  typeof MULTIRESPONDENT_FORM_SETTINGS_FIELDS[number]
+>
+
+export type FormSettings =
+  | EmailFormSettings
+  | StorageFormSettings
+  | MultirespondentFormSettings
 
 export type FormWebhookSettings = Pick<FormSettings, 'webhook'>
 
@@ -298,9 +337,15 @@ export type CreateStorageFormBodyDto = Pick<
   'publicKey' | 'responseMode' | 'title'
 > & { workspaceId?: string }
 
+export type CreateMultirespondentFormBodyDto = Pick<
+  MultirespondentFormDto,
+  'publicKey' | 'responseMode' | 'title'
+> & { workspaceId?: string }
+
 export type CreateFormBodyDto =
   | CreateEmailFormBodyDto
   | CreateStorageFormBodyDto
+  | CreateMultirespondentFormBodyDto
 
 export type StartPageUpdateDto = FormStartPage
 export type EndPageUpdateDto = FormEndPage

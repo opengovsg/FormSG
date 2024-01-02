@@ -3,6 +3,7 @@ import axios from 'axios'
 
 import {
   ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION,
+  MULTIRESPONDENT_FORM_SUBMISSION_VERSION,
   VIRUS_SCANNER_SUBMISSION_VERSION,
 } from '~shared/constants'
 import { SubmitFormIssueBodyDto, SuccessMessageDto } from '~shared/types'
@@ -24,6 +25,7 @@ import {
   PublicFormViewDto,
 } from '~shared/types/form/form'
 import {
+  MultirespondentSubmissionDto,
   ResponseMetadata,
   SubmissionResponseDto,
 } from '~shared/types/submission'
@@ -39,7 +41,7 @@ import { FormFieldValues } from '~templates/Field'
 import {
   createClearSubmissionFormData,
   createClearSubmissionWithVirusScanningFormData,
-  createEncryptedSubmissionData,
+  createClearSubmissionWithVirusScanningFormDataV3,
   getAttachmentsMap,
 } from './utils/createSubmission'
 import { filterHiddenInputs } from './utils/filterHiddenInputs'
@@ -90,6 +92,24 @@ export const logoutPublicForm = async (
   ).then(({ data }) => data)
 }
 
+/**
+ * Returns the data of a single submission of a given multirespondent form
+ * @param arg.formId The id of the form to query
+ * @param arg.submissionId The id of the submission
+ * @returns The data of the submission
+ */
+export const getMultirespondentSubmissionById = async ({
+  formId,
+  submissionId,
+}: {
+  formId: string
+  submissionId: string
+}): Promise<MultirespondentSubmissionDto> => {
+  return ApiService.get<MultirespondentSubmissionDto>(
+    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/${submissionId}`,
+  ).then(({ data }) => data)
+}
+
 export type SubmitEmailFormArgs = {
   formId: string
   captchaResponse?: string | null
@@ -123,6 +143,12 @@ export type SubmitStorageFormWithVirusScanningArgs =
     fieldIdToQuarantineKeyMap: FieldIdToQuarantineKeyType[]
   }
 
+export type SubmitMultirespondentFormWithVirusScanningArgs =
+  SubmitEmailFormArgs & {
+    // publicKey: string
+    fieldIdToQuarantineKeyMap: FieldIdToQuarantineKeyType[]
+  }
+
 export const submitEmailModeForm = async ({
   formFields,
   formLogics,
@@ -150,45 +176,6 @@ export const submitEmailModeForm = async ({
       params: {
         captchaResponse: String(captchaResponse),
         captchaType: captchaType,
-      },
-    },
-  ).then(({ data }) => data)
-}
-
-export const submitStorageModeForm = async ({
-  formFields,
-  formLogics,
-  formInputs,
-  formId,
-  publicKey,
-  captchaResponse = null,
-  captchaType = '',
-  paymentReceiptEmail,
-  responseMetadata,
-  paymentProducts,
-  payments,
-}: SubmitStorageFormArgs) => {
-  const filteredInputs = filterHiddenInputs({
-    formFields,
-    formInputs,
-    formLogics,
-  })
-  const submissionContent = await createEncryptedSubmissionData({
-    formFields,
-    formInputs: filteredInputs,
-    publicKey,
-    responseMetadata,
-    paymentReceiptEmail,
-    payments,
-    paymentProducts,
-  })
-  return ApiService.post<SubmissionResponseDto>(
-    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/encrypt`,
-    submissionContent,
-    {
-      params: {
-        captchaResponse: String(captchaResponse),
-        captchaType,
       },
     },
   ).then(({ data }) => data)
@@ -369,54 +356,84 @@ export const submitEmailModeFormWithFetch = async ({
   return processFetchResponse(response)
 }
 
-// TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
-export const submitStorageModeFormWithFetch = async ({
+// Submit storage mode form with virus scanning (storage v2.1+)
+export const submitMultirespondentForm = async ({
   formFields,
   formLogics,
   formInputs,
   formId,
-  publicKey,
   captchaResponse = null,
   captchaType = '',
-  paymentReceiptEmail,
   responseMetadata,
-  paymentProducts,
-  payments,
-}: SubmitStorageFormArgs) => {
+  fieldIdToQuarantineKeyMap,
+}: SubmitMultirespondentFormWithVirusScanningArgs) => {
   const filteredInputs = filterHiddenInputs({
     formFields,
     formInputs,
     formLogics,
   })
-  const submissionContent = await createEncryptedSubmissionData({
-    formFields,
-    formInputs: filteredInputs,
-    publicKey,
-    responseMetadata,
-    paymentReceiptEmail,
-    payments,
-    paymentProducts,
-  })
 
-  // Add captcha response to query string
-  const queryString = new URLSearchParams({
-    captchaResponse: String(captchaResponse),
-    captchaType,
-  }).toString()
-
-  const response = await fetch(
-    `${API_BASE_URL}${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/encrypt?${queryString}`,
+  const formData = createClearSubmissionWithVirusScanningFormDataV3(
     {
-      method: 'POST',
-      body: JSON.stringify(submissionContent),
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
+      formFields,
+      formInputs: filteredInputs,
+      responseMetadata,
+      version: MULTIRESPONDENT_FORM_SUBMISSION_VERSION,
     },
+    fieldIdToQuarantineKeyMap,
   )
 
-  return processFetchResponse(response)
+  return ApiService.post<SubmissionResponseDto>(
+    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/multirespondent`,
+    formData,
+    {
+      params: {
+        captchaResponse: String(captchaResponse),
+        captchaType: captchaType,
+      },
+    },
+  ).then(({ data }) => data)
+}
+
+export const updateMultirespondentSubmission = async ({
+  formFields,
+  formLogics,
+  formInputs,
+  formId,
+  submissionId,
+  captchaResponse = null,
+  captchaType = '',
+  responseMetadata,
+  fieldIdToQuarantineKeyMap,
+}: SubmitMultirespondentFormWithVirusScanningArgs & {
+  submissionId?: string
+}) => {
+  const filteredInputs = filterHiddenInputs({
+    formFields,
+    formInputs,
+    formLogics,
+  })
+
+  const formData = createClearSubmissionWithVirusScanningFormDataV3(
+    {
+      formFields,
+      formInputs: filteredInputs,
+      responseMetadata,
+      version: MULTIRESPONDENT_FORM_SUBMISSION_VERSION,
+    },
+    fieldIdToQuarantineKeyMap,
+  )
+
+  return ApiService.put<SubmissionResponseDto>(
+    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/${submissionId}`,
+    formData,
+    {
+      params: {
+        captchaResponse: String(captchaResponse),
+        captchaType: captchaType,
+      },
+    },
+  ).then(({ data }) => data)
 }
 
 /**
@@ -483,7 +500,7 @@ export const getAttachmentPresignedPostData = async ({
   formId: string
 }) => {
   return ApiService.post<AttachmentPresignedPostDataMapType[]>(
-    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/storage/get-s3-presigned-post-data`,
+    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/get-s3-presigned-post-data`,
     attachmentSizes,
   ).then(({ data }) => data)
 }

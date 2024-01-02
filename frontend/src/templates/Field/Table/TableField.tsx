@@ -33,6 +33,7 @@ import { TableFieldContainer } from './TableFieldContainer'
 
 export interface TableFieldProps extends BaseFieldProps {
   schema: TableFieldSchema
+  disableRequiredValidation?: boolean
 }
 
 /**
@@ -42,6 +43,7 @@ export interface TableFieldProps extends BaseFieldProps {
  */
 export const TableField = ({
   schema,
+  disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
 }: TableFieldProps): JSX.Element => {
   const hasMinRowsChanged = useHasChanged(schema.minimumRows)
@@ -210,6 +212,7 @@ export const TableField = ({
                     >
                       {cell.render('Cell', {
                         schemaId: schema._id,
+                        disableRequiredValidation,
                         columnSchema: schema.columns[j],
                         colorTheme,
                       })}

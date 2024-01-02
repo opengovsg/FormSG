@@ -7,6 +7,7 @@ import { EmailFieldInput } from './EmailFieldInput'
 
 export interface EmailFieldProps extends BaseFieldProps {
   schema: EmailFieldSchema
+  disableRequiredValidation?: boolean
   errorVariant?: 'white'
   inputProps?: Partial<InputProps>
 }
@@ -16,12 +17,17 @@ export interface EmailFieldProps extends BaseFieldProps {
  */
 export const EmailField = ({
   schema,
+  disableRequiredValidation,
   errorVariant,
   inputProps,
 }: EmailFieldProps): JSX.Element => {
   return (
     <FieldContainer schema={schema} errorVariant={errorVariant}>
-      <EmailFieldInput schema={schema} inputProps={inputProps} />
+      <EmailFieldInput
+        schema={schema}
+        disableRequiredValidation={disableRequiredValidation}
+        inputProps={inputProps}
+      />
     </FieldContainer>
   )
 }

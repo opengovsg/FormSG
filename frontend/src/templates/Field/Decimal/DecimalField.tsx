@@ -9,15 +9,19 @@ import { DecimalFieldSchema, SingleAnswerFieldInput } from '../types'
 
 export interface DecimalFieldProps extends BaseFieldProps {
   schema: DecimalFieldSchema
+  disableRequiredValidation?: boolean
 }
 
 /**
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-export const DecimalField = ({ schema }: DecimalFieldProps): JSX.Element => {
+export const DecimalField = ({
+  schema,
+  disableRequiredValidation,
+}: DecimalFieldProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createDecimalValidationRules(schema),
-    [schema],
+    () => createDecimalValidationRules(schema, disableRequiredValidation),
+    [schema, disableRequiredValidation],
   )
 
   const { control } = useFormContext<SingleAnswerFieldInput>()

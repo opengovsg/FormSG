@@ -34,7 +34,7 @@ const useSaveSecretKeyDefault = () => {
       register,
       formState: { isValid },
     },
-    handleCreateStorageModeForm,
+    handleCreateStorageModeOrMultirespondentForm,
     isLoading,
     keypair: { secretKey },
   } = useCreateFormWizard()
@@ -92,7 +92,7 @@ const useSaveSecretKeyDefault = () => {
     handleCopyKey,
     handleDownloadKey,
     mailToHref,
-    handleCreateStorageModeForm,
+    handleCreateStorageModeOrMultirespondentForm,
     secretKey,
     register,
   }
@@ -108,7 +108,7 @@ export const SaveSecretKeyScreen = ({
   const {
     isLoading,
     handleCopyKey,
-    handleCreateStorageModeForm,
+    handleCreateStorageModeOrMultirespondentForm,
     handleDownloadKey,
     mailToHref,
     hasDownloaded,
@@ -215,7 +215,7 @@ export const SaveSecretKeyScreen = ({
             rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
             type="submit"
             isLoading={isLoading}
-            onClick={handleCreateStorageModeForm}
+            onClick={handleCreateStorageModeOrMultirespondentForm}
             isFullWidth
           >
             <Text lineHeight="1.5rem">I have saved my Secret Key safely</Text>

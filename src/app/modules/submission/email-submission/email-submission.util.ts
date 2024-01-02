@@ -1,12 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { compact } from 'lodash'
 
-import { MYINFO_ATTRIBUTE_MAP } from '../../../../../shared/constants/field/myinfo'
-import {
-  BasicField,
-  FormAuthType,
-  MyInfoAttribute,
-} from '../../../../../shared/types'
+import { BasicField, FormAuthType } from '../../../../../shared/types'
 import {
   EmailAdminDataField,
   EmailDataCollationToolField,
@@ -58,7 +53,6 @@ import {
   MyInfoMissingLoginCookieError,
 } from '../../myinfo/myinfo.errors'
 import { MyInfoKey } from '../../myinfo/myinfo.types'
-import { getMyInfoChildHashKey } from '../../myinfo/myinfo.util'
 import {
   SgidInvalidJwtError,
   SgidMissingJwtError,
@@ -80,14 +74,13 @@ import {
 } from '../submission.errors'
 import {
   ProcessedCheckboxResponse,
-  ProcessedChildrenResponse,
   ProcessedFieldResponse,
   ProcessedTableResponse,
 } from '../submission.types'
+import { getAnswersForChild, getMyInfoPrefix } from '../submission.utils'
 
 import {
   ATTACHMENT_PREFIX,
-  MYINFO_PREFIX,
   TABLE_PREFIX,
   VERIFIED_PREFIX,
 } from './email-submission.constants'
@@ -95,22 +88,6 @@ import { SubmissionHashError } from './email-submission.errors'
 import { ResponseFormattedForEmail } from './email-submission.types'
 
 const logger = createLoggerWithLabel(module)
-
-/**
- * Determines the prefix for a question based on whether it is verified
- * by MyInfo.
- * @param response
- * @param hashedFields Field ids of hashed fields.
- * @returns the prefix
- */
-const getMyInfoPrefix = (
-  response: ResponseFormattedForEmail,
-  hashedFields: Set<MyInfoKey>,
-): string => {
-  return !!response.myInfo?.attr && hashedFields.has(response._id)
-    ? MYINFO_PREFIX
-    : ''
-}
 
 /**
  * Determines the prefix for a question based on whether it was verified
@@ -212,44 +189,6 @@ export const getAnswerForCheckbox = (
     isUserVerified: response.isUserVerified,
     answer: response.answerArray.join(', '),
   }
-}
-
-export const getAnswersForChild = (
-  response: ProcessedChildrenResponse,
-): ResponseFormattedForEmail[] => {
-  const subFields = response.childSubFieldsArray
-  const qnChildIdx = response.childIdx ?? 0
-  if (!subFields) {
-    return []
-  }
-  return response.answerArray.flatMap((arr, childIdx) => {
-    // First array element is always child name
-    const childName = arr[0]
-    return arr.map((answer, idx) => {
-      const subfield = subFields[idx]
-      return {
-        _id: getMyInfoChildHashKey(
-          response._id,
-          subFields[idx],
-          childIdx,
-          childName,
-        ),
-        fieldType: response.fieldType,
-        // qnChildIdx represents the index of the MyInfo field
-        // childIdx represents the index of the child in this MyInfo field
-        // as there might be >1 child for each MyInfo child field if "Add another child" is used
-        question: `Child ${qnChildIdx + childIdx + 1} ${
-          MYINFO_ATTRIBUTE_MAP[subfield].description
-        }`,
-        myInfo: {
-          attr: subFields[idx] as unknown as MyInfoAttribute,
-        },
-        isVisible: response.isVisible,
-        isUserVerified: response.isUserVerified,
-        answer,
-      }
-    })
-  })
 }
 
 /**

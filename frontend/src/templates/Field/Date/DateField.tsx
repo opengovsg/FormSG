@@ -20,6 +20,7 @@ import { DateFieldSchema, SingleAnswerFieldInput } from '../types'
 
 export interface DateFieldProps extends BaseFieldProps {
   schema: DateFieldSchema
+  disableRequiredValidation?: boolean
 }
 
 /**
@@ -27,12 +28,13 @@ export interface DateFieldProps extends BaseFieldProps {
  */
 export const DateField = ({
   schema,
+  disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
   ...fieldContainerProps
 }: DateFieldProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createDateValidationRules(schema),
-    [schema],
+    () => createDateValidationRules(schema, disableRequiredValidation),
+    [schema, disableRequiredValidation],
   )
 
   const isDateUnavailable = useCallback(

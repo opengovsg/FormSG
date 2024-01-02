@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 
-import { RADIO_OTHERS_INPUT_KEY } from './RadioField'
+import { RADIO_OTHERS_INPUT_KEY } from './constants'
 import * as stories from './RadioField.stories'
 
 const { ValidationOptional, ValidationRequired, WithoutOthersOption } =

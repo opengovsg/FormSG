@@ -11,11 +11,7 @@ import { SubmitHandler } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
-import {
-  useFeatureIsOn,
-  useFeatureValue,
-  useGrowthBook,
-} from '@growthbook/growthbook-react'
+import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 import get from 'lodash/get'
 import simplur from 'simplur'
@@ -67,13 +63,14 @@ import {
 import { FormNotFound } from './components/FormNotFound'
 import { usePublicAuthMutations, usePublicFormMutations } from './mutations'
 import { PublicFormContext, SubmissionData } from './PublicFormContext'
-import { usePublicFormView } from './queries'
+import { useEncryptedSubmission, usePublicFormView } from './queries'
 import { axiosDebugFlow } from './utils'
 
 interface PublicFormProviderProps {
   formId: string
-  children: React.ReactNode
+  submissionId?: string
   startTime: number
+  children: React.ReactNode
 }
 
 export function useCommonFormProvider(formId: string) {
@@ -122,6 +119,7 @@ export function useCommonFormProvider(formId: string) {
 
 export const PublicFormProvider = ({
   formId,
+  submissionId: previousSubmissionId,
   children,
   startTime,
 }: PublicFormProviderProps): JSX.Element => {
@@ -129,11 +127,35 @@ export const PublicFormProvider = ({
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
   const [numVisibleFields, setNumVisibleFields] = useState(0)
 
-  const { data, isLoading, error, ...rest } = usePublicFormView(
+  const {
+    data,
+    isLoading: isFormLoading,
+    error: publicFormError,
+    ...rest
+  } = usePublicFormView(
     formId,
     // Stop querying once submissionData is present.
     /* enabled= */ !submissionData,
   )
+  const {
+    data: encryptedPreviousSubmission,
+    isLoading: isSubmissionLoading,
+    error: encryptedSubmissionError,
+  } = useEncryptedSubmission(
+    formId,
+    previousSubmissionId,
+    // Stop querying once submissionData is present.
+    /* enabled= */ !submissionData,
+  )
+
+  // Replace form fields and logic with the previous version for MRF consistency.
+  if (data && encryptedPreviousSubmission) {
+    data.form.form_fields = encryptedPreviousSubmission.form_fields
+    data.form.form_logics = encryptedPreviousSubmission.form_logics
+  }
+
+  const isLoading = isFormLoading || isSubmissionLoading
+  const error = publicFormError || encryptedSubmissionError
 
   const growthbook = useGrowthBook()
 
@@ -146,11 +168,6 @@ export const PublicFormProvider = ({
       })
     }
   }, [growthbook, formId])
-
-  const enableEncryptionBoundaryShift = useFeatureValue(
-    featureFlags.encryptionBoundaryShift,
-    true,
-  )
 
   // Scroll to top of page when user has finished their submission.
   useLayoutEffect(() => {
@@ -243,9 +260,13 @@ export const PublicFormProvider = ({
 
   const isFormNotFound = useMemo(() => {
     return (
-      error instanceof HttpError && (error.code === 404 || error.code === 410)
+      (error instanceof HttpError &&
+        (error.code === 404 || error.code === 410)) ||
+      (!!previousSubmissionId &&
+        !!data &&
+        data.form.responseMode !== FormResponseMode.Multirespondent)
     )
-  }, [error])
+  }, [data, error, previousSubmissionId])
 
   const generateVfnExpiryToast = useCallback(() => {
     if (vfnToastIdRef.current) {
@@ -275,13 +296,13 @@ export const PublicFormProvider = ({
 
   const {
     submitEmailModeFormMutation,
-    submitStorageModeFormMutation,
     submitEmailModeFormFetchMutation,
-    submitStorageModeFormFetchMutation,
     submitStorageModeClearFormMutation,
     submitStorageModeClearFormFetchMutation,
     submitStorageModeClearFormWithVirusScanningMutation,
-  } = usePublicFormMutations(formId, submissionData?.id ?? '')
+    submitMultirespondentFormMutation,
+    updateMultirespondentSubmissionMutation,
+  } = usePublicFormMutations(formId, previousSubmissionId)
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
@@ -484,9 +505,7 @@ export const PublicFormProvider = ({
               : {}),
           }
 
-          const submitStorageFormWithFetch = function (
-            routeToNewStorageModeSubmission: boolean,
-          ) {
+          const submitStorageFormWithFetch = function () {
             datadogLogs.logger.info(`handleSubmitForm: submitting via fetch`, {
               meta: {
                 ...logMeta,
@@ -495,16 +514,11 @@ export const PublicFormProvider = ({
               },
             })
 
-            return (
-              routeToNewStorageModeSubmission
-                ? submitStorageModeClearFormFetchMutation
-                : submitStorageModeFormFetchMutation
-            )
+            return submitStorageModeClearFormFetchMutation
               .mutateAsync(
                 {
                   ...formData,
                   ...formPaymentData,
-                  publicKey: form.publicKey,
                 },
                 {
                   onSuccess: ({
@@ -546,7 +560,7 @@ export const PublicFormProvider = ({
 
           // TODO (#5826): Toggle to use fetch for submissions instead of axios. If enabled, this is used for testing and to use fetch instead of axios by default if testing shows fetch is more  stable. Remove once network error is resolved
           if (useFetchForSubmissions) {
-            return submitStorageFormWithFetch(enableEncryptionBoundaryShift)
+            return submitStorageFormWithFetch()
           }
           datadogLogs.logger.info(`handleSubmitForm: submitting via axios`, {
             meta: {
@@ -557,65 +571,64 @@ export const PublicFormProvider = ({
           })
 
           // TODO (FRM-1413): Move to main return statement once virus scanner has been fully rolled out
-          if (enableEncryptionBoundaryShift && enableVirusScanner) {
-            return submitStorageModeClearFormWithVirusScanningMutation.mutateAsync(
-              {
-                ...formData,
-                ...formPaymentData,
-              },
-              {
-                onSuccess: ({
-                  submissionId,
-                  timestamp,
-                  // payment forms will have non-empty paymentData field
-                  paymentData,
-                }) => {
-                  trackSubmitForm(form)
-
-                  if (paymentData) {
-                    navigate(getPaymentPageUrl(formId, paymentData.paymentId))
-                    storePaymentMemory(paymentData.paymentId)
-                    return
-                  }
-                  setSubmissionData({
-                    id: submissionId,
-                    timestamp,
-                  })
-                },
-                onError: (error) => {
-                  // TODO(#5826): Remove when we have resolved the Network Error
-                  datadogLogs.logger.warn(
-                    `handleSubmitForm: submit with virus scan`,
-                    {
-                      meta: {
-                        ...logMeta,
-                        responseMode: 'storage',
-                        method: 'axios',
-                        error,
-                      },
-                    },
-                  )
-
-                  // defaults to the safest option of storage submission without virus scanning
-                  return submitStorageFormWithFetch(
-                    enableEncryptionBoundaryShift,
-                  )
-                },
-              },
-            )
-          }
-
-          return (
-            (
-              enableEncryptionBoundaryShift
-                ? submitStorageModeClearFormMutation
-                : submitStorageModeFormMutation
-            )
+          if (enableVirusScanner) {
+            return submitStorageModeClearFormWithVirusScanningMutation
               .mutateAsync(
                 {
                   ...formData,
                   ...formPaymentData,
-                  publicKey: form.publicKey,
+                },
+                {
+                  onSuccess: ({
+                    submissionId,
+                    timestamp,
+                    // payment forms will have non-empty paymentData field
+                    paymentData,
+                  }) => {
+                    trackSubmitForm(form)
+
+                    if (paymentData) {
+                      navigate(getPaymentPageUrl(formId, paymentData.paymentId))
+                      storePaymentMemory(paymentData.paymentId)
+                      return
+                    }
+                    setSubmissionData({
+                      id: submissionId,
+                      timestamp,
+                    })
+                  },
+                },
+              )
+              .catch(async (error) => {
+                // TODO(#5826): Remove when we have resolved the Network Error
+                datadogLogs.logger.warn(
+                  `handleSubmitForm: submit with virus scan`,
+                  {
+                    meta: {
+                      ...logMeta,
+                      responseMode: 'storage',
+                      method: 'axios',
+                      error,
+                    },
+                  },
+                )
+
+                if (/Network Error/i.test(error.message)) {
+                  axiosDebugFlow()
+                  // defaults to the safest option of storage submission without virus scanning
+                  return submitStorageFormWithFetch()
+                } else {
+                  showErrorToast(error, form)
+                }
+              })
+          }
+
+          return (
+            submitStorageModeClearFormMutation
+              .mutateAsync(
+                {
+                  ...formData,
+                  ...formPaymentData,
                 },
                 {
                   onSuccess: ({
@@ -652,17 +665,31 @@ export const PublicFormProvider = ({
                     },
                   },
                 })
-
+                axiosDebugFlow()
                 if (/Network Error/i.test(error.message)) {
                   axiosDebugFlow()
-                  return submitStorageFormWithFetch(
-                    enableEncryptionBoundaryShift,
-                  )
+                  // defaults to the safest option of storage submission without virus scanning
+                  return submitStorageFormWithFetch()
+                } else {
+                  showErrorToast(error, form)
                 }
-                showErrorToast(error, form)
               })
           )
         }
+        case FormResponseMode.Multirespondent:
+          return (
+            previousSubmissionId
+              ? updateMultirespondentSubmissionMutation
+              : submitMultirespondentFormMutation
+          ).mutateAsync(formData, {
+            onSuccess: ({ submissionId, timestamp }) => {
+              trackSubmitForm(form)
+              setSubmissionData({
+                id: submissionId,
+                timestamp,
+              })
+            },
+          })
       }
     },
     [
@@ -676,14 +703,14 @@ export const PublicFormProvider = ({
       getTurnstileResponse,
       showErrorToast,
       getCaptchaResponse,
+      previousSubmissionId,
+      submitMultirespondentFormMutation,
+      updateMultirespondentSubmissionMutation,
       submitEmailModeFormFetchMutation,
       submitEmailModeFormMutation,
-      enableEncryptionBoundaryShift,
       enableVirusScanner,
       submitStorageModeClearFormMutation,
-      submitStorageModeFormMutation,
       submitStorageModeClearFormFetchMutation,
-      submitStorageModeFormFetchMutation,
       navigate,
       formId,
       storePaymentMemory,
@@ -716,6 +743,7 @@ export const PublicFormProvider = ({
         handleSubmitForm,
         handleLogout,
         formId,
+        previousSubmissionId,
         error,
         submissionData,
         isAuthRequired,
@@ -725,6 +753,7 @@ export const PublicFormProvider = ({
         isPaymentEnabled,
         isPreview: false,
         setNumVisibleFields,
+        encryptedPreviousSubmission,
         ...commonFormValues,
         ...data,
         ...rest,

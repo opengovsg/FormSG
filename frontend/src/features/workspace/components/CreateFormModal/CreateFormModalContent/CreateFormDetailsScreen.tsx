@@ -17,8 +17,9 @@ import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormFieldMessage from '~components/FormControl/FormFieldMessage'
 import FormLabel from '~components/FormControl/FormLabel'
-import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
+
+import { useUser } from '~features/user/queries'
 
 import { useCreateFormWizard } from '../CreateFormWizardContext'
 
@@ -35,7 +36,6 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
     isLoading,
     isFetching,
     modalHeader,
-    containsMyInfoFields,
   } = useCreateFormWizard()
   const {
     register,
@@ -47,15 +47,18 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
   const titleInputValue = watch('title')
   const responseModeValue = watch('responseMode')
 
+  const { user } = useUser()
+  const showMrf = Boolean(user?.betaFlags?.mrf)
+
   return (
     <>
       <ModalHeader color="secondary.700">
-        <Container maxW="42.5rem" p={0}>
+        <Container maxW={showMrf ? '69.5rem' : '42.5rem'} p={0}>
           {modalHeader}
         </Container>
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap">
-        <Container maxW="42.5rem" p={0}>
+        <Container maxW={showMrf ? '69.5rem' : '42.5rem'} p={0}>
           <FormControl isRequired isInvalid={!!errors.title} mb="2.25rem">
             <FormLabel useMarkdownForDescription>Form name</FormLabel>
             <Skeleton isLoaded={!isFetching}>
@@ -80,22 +83,13 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
                 name="responseMode"
                 control={control}
                 render={({ field }) => (
-                  <FormResponseOptions
-                    containsMyInfoFields={containsMyInfoFields}
-                    {...field}
-                  />
+                  <FormResponseOptions {...field} showMrf={showMrf} />
                 )}
                 rules={{ required: 'Please select a form response mode' }}
               />
             </Skeleton>
             <FormErrorMessage>{errors.responseMode?.message}</FormErrorMessage>
           </FormControl>
-          {containsMyInfoFields && (
-            <InlineMessage useMarkdown mt="-1rem" mb="1rem">
-              {`This form contains MyInfo fields. Only **Email** mode is supported at
-              this point.`}
-            </InlineMessage>
-          )}
           {responseModeValue === FormResponseMode.Email && (
             <FormControl isRequired isInvalid={!!errors.emails} mb="2.25rem">
               <FormLabel

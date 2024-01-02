@@ -4,11 +4,15 @@ import { useSearchParams } from 'react-router-dom'
 import { Box, Stack } from '@chakra-ui/react'
 import { isEmpty, times } from 'lodash'
 
+import { PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID } from '~shared/constants'
+import { CountryRegion } from '~shared/constants/countryRegion'
+import { FieldResponsesV3 } from '~shared/types'
 import { BasicField, FormFieldDto } from '~shared/types/field'
 import { FormColorTheme, FormResponseMode, LogicDto } from '~shared/types/form'
+import { centsToDollars } from '~shared/utils/payments'
 
 import InlineMessage from '~components/InlineMessage'
-import { FormFieldValues } from '~templates/Field'
+import { FormFieldValue, FormFieldValues } from '~templates/Field'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 
 import {
@@ -26,6 +30,8 @@ import { PublicFormSubmitButton } from './PublicFormSubmitButton'
 import { VisibleFormFields } from './VisibleFormFields'
 
 export interface FormFieldsProps {
+  previousResponses?: FieldResponsesV3
+  responseMode: FormResponseMode
   formFields: FormFieldDto[]
   formLogics: LogicDto[]
   colorTheme: FormColorTheme
@@ -40,6 +46,8 @@ export type PrefillMap = {
 }
 
 export const FormFields = ({
+  previousResponses,
+  responseMode,
   formFields,
   formLogics,
   colorTheme,
@@ -72,6 +80,28 @@ export const FormFields = ({
 
   const defaultFormValues = useMemo(() => {
     return augmentedFormFields.reduce<FormFieldValues>((acc, field) => {
+      // If this is part of a MRF flow, use that.
+      const previousResponse = previousResponses?.[field._id]
+      if (previousResponse) {
+        switch (field.fieldType) {
+          case BasicField.CountryRegion: {
+            const selected = Object.values(CountryRegion).find(
+              (option) => option.toUpperCase() === previousResponse.answer,
+            )
+            if (selected) {
+              acc[field._id] = selected
+            }
+            break
+          }
+          case BasicField.Attachment:
+            //TODO(MRF/FRM-1590): Handling of attachments by respondent 2+
+            break
+          default:
+            acc[field._id] = previousResponse.answer as FormFieldValue
+        }
+        return acc
+      }
+
       // If server returns field with default value, use that.
       if (hasExistingFieldValue(field)) {
         acc[field._id] = extractPreviewValue(field)
@@ -95,7 +125,19 @@ export const FormFields = ({
       }
       return acc
     }, {})
-  }, [augmentedFormFields, fieldPrefillMap])
+  }, [augmentedFormFields, previousResponses, fieldPrefillMap])
+
+  // payment prefills - only for variable payments
+  if (searchParams.has(PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID)) {
+    const paymentParamValue = Number.parseInt(
+      searchParams.get(PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID) ?? '',
+      10,
+    )
+    if (Number.isInteger(paymentParamValue) && paymentParamValue > 0) {
+      const paymentAmount = centsToDollars(Number(paymentParamValue))
+      defaultFormValues[PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID] = paymentAmount
+    }
+  }
 
   const formMethods = useForm<FormFieldValues>({
     defaultValues: defaultFormValues,
@@ -156,6 +198,7 @@ export const FormFields = ({
               <VisibleFormFields
                 colorTheme={colorTheme}
                 control={formMethods.control}
+                responseMode={responseMode}
                 formFields={augmentedFormFields}
                 formLogics={formLogics}
                 fieldPrefillMap={fieldPrefillMap}

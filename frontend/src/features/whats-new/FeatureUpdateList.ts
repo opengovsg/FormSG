@@ -1,11 +1,13 @@
 import dedent from 'dedent'
 import { JsonObject, RequireExactlyOne } from 'type-fest'
 
-import { GUIDE_PAYMENTS_ENTRY } from '~constants/links'
+import { GUIDE_PAYMENTS_ENTRY, GUIDE_SPCP_ESRVCID } from '~constants/links'
 
 import Animation2 from './assets/2-payments.json'
 import Animation3 from './assets/3-search-and-filter.json'
 import Animation4 from './assets/4-dnd.json'
+import MyInfoStorageMode from './assets/6-myinfo-storage.svg'
+import ChartsSvg from './assets/7-charts_announcement.svg'
 import foldersDashboard from './assets/folders_dashboard.svg'
 
 // image can either be a static image (using url) or an animation (using animationData)
@@ -32,8 +34,26 @@ export interface FeatureUpdateList {
 // New features should be added at the top of the list.
 export const FEATURE_UPDATE_LIST: FeatureUpdateList = {
   // Update version whenever a new feature is added.
-  version: 4,
+  version: 5,
   features: [
+    {
+      title: 'Introducing Charts',
+      date: new Date('21 Nov 2023 GMT+8'),
+      description: `You can now visualise data collected on your form and get quick insights through bar charts, pie charts and tables! Find this feature under your form's results. This feature is only available for Storage mode forms.`,
+      image: {
+        url: ChartsSvg,
+        alt: 'Charts for Storage mode forms',
+      },
+    },
+    {
+      title: 'Myinfo fields for Storage mode forms',
+      date: new Date('16 Nov 2023 GMT+8'),
+      description: `Get verified data from respondents by adding Myinfo fields to your Storage mode form. To enable Myinfo fields, select one of our Myinfo-enabled authentication options in your form’s settings. [Learn more](${GUIDE_SPCP_ESRVCID})`,
+      image: {
+        url: MyInfoStorageMode,
+        alt: 'Myinfo fields for Storage mode forms',
+      },
+    },
     {
       title: 'Introducing Folders!',
       date: new Date('31 Oct 2023 GMT+8'),

@@ -44,12 +44,15 @@ export const ACTIVE_ADMINFORM_BUILDER_ROUTE_REGEX = new RegExp(
 /** Responses tab has no subroute, its the index results route. */
 export const RESULTS_RESPONSES_SUBROUTE = ''
 export const RESULTS_FEEDBACK_SUBROUTE = 'feedback'
+export const RESULTS_CHARTS_SUBROUTE = 'charts'
 
 export const ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX = new RegExp(
-  `${ADMINFORM_ROUTE}/([a-fA-F0-9]{24})/${ADMINFORM_RESULTS_SUBROUTE}(/${RESULTS_FEEDBACK_SUBROUTE})?/?`,
+  `${ADMINFORM_ROUTE}/([a-fA-F0-9]{24})/${ADMINFORM_RESULTS_SUBROUTE}(/${RESULTS_FEEDBACK_SUBROUTE}|/${RESULTS_CHARTS_SUBROUTE})?/?`,
   'i',
 )
+
 export const PAYMENT_PAGE_SUBROUTE = 'payment/:paymentId'
+export const EDIT_SUBMISSION_PAGE_SUBROUTE = 'edit/:submissionId'
 
 // Path for growthbook api proxy, set up on cloudflare workers. Worker script: https://github.com/opengovsg/formsg-private/pull/171.
 export const GROWTHBOOK_API_HOST_PATH = '/api/v1/proxy/growthbook'

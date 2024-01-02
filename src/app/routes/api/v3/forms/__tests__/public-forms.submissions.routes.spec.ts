@@ -1234,7 +1234,7 @@ describe('public-form.submissions.routes', () => {
     })
   })
 
-  describe('POST /forms/:formId/submissions/storage/get-s3-presigned-post-data', () => {
+  describe('POST /forms/:formId/submissions/get-s3-presigned-post-data', () => {
     const FILE_MAP_1 = { id: '64ed84955ac23100636a00a0', size: 1 }
     const FILE_MAP_2 = { id: '64ed84a35ac23100636a00af', size: 19999999 }
     const VALID_PAYLOAD = [FILE_MAP_1, FILE_MAP_2]
@@ -1250,9 +1250,7 @@ describe('public-form.submissions.routes', () => {
       })
 
       const response = await request
-        .post(
-          `/forms/${form._id}/submissions/storage/get-s3-presigned-post-data`,
-        )
+        .post(`/forms/${form._id}/submissions/get-s3-presigned-post-data`)
         .send(FILE_MAP_1)
 
       expect(response.status).toBe(400)
@@ -1283,9 +1281,7 @@ describe('public-form.submissions.routes', () => {
       INVALID_ID_PAYLOAD[0].id = 'invalidObjectId'
 
       const response = await request
-        .post(
-          `/forms/${form._id}/submissions/storage/get-s3-presigned-post-data`,
-        )
+        .post(`/forms/${form._id}/submissions/get-s3-presigned-post-data`)
         .send(INVALID_ID_PAYLOAD)
 
       expect(response.status).toBe(400)
@@ -1320,9 +1316,7 @@ describe('public-form.submissions.routes', () => {
       INVALID_FILE_SIZE_PAYLOAD[1].size += 10000000
 
       const response = await request
-        .post(
-          `/forms/${form._id}/submissions/storage/get-s3-presigned-post-data`,
-        )
+        .post(`/forms/${form._id}/submissions/get-s3-presigned-post-data`)
         .send(INVALID_FILE_SIZE_PAYLOAD)
 
       expect(response.status).toBe(400)
@@ -1356,9 +1350,7 @@ describe('public-form.submissions.routes', () => {
       INVALID_TOTAL_FILE_SIZE_PAYLOAD[0].size += 1
 
       const response = await request
-        .post(
-          `/forms/${form._id}/submissions/storage/get-s3-presigned-post-data`,
-        )
+        .post(`/forms/${form._id}/submissions/get-s3-presigned-post-data`)
         .send(INVALID_TOTAL_FILE_SIZE_PAYLOAD)
 
       expect(response.status).toBe(400)
@@ -1391,9 +1383,7 @@ describe('public-form.submissions.routes', () => {
         .mockReturnValue(okAsync(false))
 
       const response = await request
-        .post(
-          `/forms/${form._id}/submissions/storage/get-s3-presigned-post-data`,
-        )
+        .post(`/forms/${form._id}/submissions/get-s3-presigned-post-data`)
         .send(VALID_PAYLOAD)
 
       expect(response.status).toBe(403)
@@ -1417,9 +1407,7 @@ describe('public-form.submissions.routes', () => {
         .mockReturnValue(errAsync(new DatabaseError()))
 
       const response = await request
-        .post(
-          `/forms/${form._id}/submissions/storage/get-s3-presigned-post-data`,
-        )
+        .post(`/forms/${form._id}/submissions/get-s3-presigned-post-data`)
         .send(VALID_PAYLOAD)
 
       expect(response.status).toBe(500)
@@ -1446,9 +1434,7 @@ describe('public-form.submissions.routes', () => {
       })
 
       const response = await request
-        .post(
-          `/forms/${form._id}/submissions/storage/get-s3-presigned-post-data`,
-        )
+        .post(`/forms/${form._id}/submissions/get-s3-presigned-post-data`)
         .send(VALID_PAYLOAD)
 
       expect(response.status).toBe(500)
@@ -1487,9 +1473,7 @@ describe('public-form.submissions.routes', () => {
       })
 
       const response = await request
-        .post(
-          `/forms/${form._id}/submissions/storage/get-s3-presigned-post-data`,
-        )
+        .post(`/forms/${form._id}/submissions/get-s3-presigned-post-data`)
         .send(VALID_PAYLOAD)
 
       expect(response.status).toBe(200)

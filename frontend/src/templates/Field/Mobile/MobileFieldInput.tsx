@@ -14,6 +14,7 @@ import { MobileFieldSchema, VerifiableFieldInput } from '../types'
 
 export interface MobileFieldInputProps {
   schema: MobileFieldSchema
+  disableRequiredValidation?: boolean
   /**
    * If available, will wrap controller's onChange with this function.
    */
@@ -26,12 +27,13 @@ export interface MobileFieldInputProps {
 
 export const MobileFieldInput = ({
   schema,
+  disableRequiredValidation,
   handleInputChange,
   phoneNumberInputProps = {},
 }: MobileFieldInputProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createMobileValidationRules(schema),
-    [schema],
+    () => createMobileValidationRules(schema, disableRequiredValidation),
+    [schema, disableRequiredValidation],
   )
 
   const { control } = useFormContext<VerifiableFieldInput>()

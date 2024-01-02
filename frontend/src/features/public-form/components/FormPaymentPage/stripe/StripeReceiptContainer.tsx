@@ -1,9 +1,9 @@
 import { useCallback, useState } from 'react'
-import { Stack, useToast } from '@chakra-ui/react'
+import { Box, Stack, useToast } from '@chakra-ui/react'
 
 import { FormPaymentsField, ProductItem } from '~shared/types'
 
-import { usePublicFormMutations } from '~features/public-form/mutations'
+import { useSubmitFormFeedbackMutation } from '~features/public-form/mutations'
 
 import {
   FeedbackBlock,
@@ -38,7 +38,7 @@ export const StripeReceiptContainer = ({
   const toast = useToast()
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
 
-  const { submitFormFeedbackMutation } = usePublicFormMutations(
+  const { submitFormFeedbackMutation } = useSubmitFormFeedbackMutation(
     formId,
     submissionId,
   )
@@ -74,8 +74,8 @@ export const StripeReceiptContainer = ({
     /**
      * PaymentStack is explictly added in this component due to https://github.com/chakra-ui/chakra-ui/issues/6757
      */
-    <Stack spacing="1.5rem">
-      <PaymentStack>
+    <Stack>
+      <PaymentStack noBg>
         <DownloadReceiptBlock
           formId={formId}
           submissionId={submissionId}
@@ -87,9 +87,11 @@ export const StripeReceiptContainer = ({
           paymentDate={paymentReceiptStatus.paymentDate}
         />
       </PaymentStack>
-      <PaymentStack>
+      <PaymentStack noBg>
         {!isFeedbackSubmitted && (
-          <FeedbackBlock onSubmit={handleSubmitFeedback} />
+          <Box backgroundColor="white" p="2rem">
+            <FeedbackBlock onSubmit={handleSubmitFeedback} />
+          </Box>
         )}
       </PaymentStack>
     </Stack>

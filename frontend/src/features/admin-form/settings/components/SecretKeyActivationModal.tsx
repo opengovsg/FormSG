@@ -15,7 +15,7 @@ import {
 
 import { FormStatus } from '~shared/types/form/form'
 
-import formsgSdk from '~utils/formSdk'
+import { isKeypairValid, SECRET_KEY_REGEX } from '~utils/secretKeyValidation'
 import Button from '~components/Button'
 import Checkbox from '~components/Checkbox'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -34,7 +34,6 @@ export interface SecretKeyActivationModalProps
 }
 
 const SECRET_KEY_NAME = 'secretKey'
-const SECRET_KEY_REGEX = /^[a-zA-Z0-9/+]+={0,2}$/
 
 interface SecretKeyFormInputs {
   [SECRET_KEY_NAME]: string
@@ -60,10 +59,9 @@ const useSecretKeyActivationModal = ({
   const { mutateFormStatus } = useMutateFormSettings()
 
   const handleVerifyKeypair = handleSubmit(({ secretKey }) => {
-    const trimmedSecretKey = secretKey.trim()
-    const isKeypairValid = formsgSdk.crypto.valid(publicKey, trimmedSecretKey)
+    const isValid = isKeypairValid(publicKey, secretKey)
 
-    if (!isKeypairValid) {
+    if (!isValid) {
       return setError(
         SECRET_KEY_NAME,
         {
@@ -196,6 +194,7 @@ export const SecretKeyActivationModal = ({
                 <FormLabel>Enter or upload Secret Key</FormLabel>
                 <Stack direction="row" spacing="0.5rem">
                   <Input
+                    type="password"
                     {...register('secretKey', {
                       required: "Please enter the form's secret key",
                       pattern: {

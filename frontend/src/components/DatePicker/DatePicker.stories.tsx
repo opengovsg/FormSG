@@ -29,3 +29,14 @@ DatePickerDisallowManualInput.args = {
 
 export const Mobile = Template.bind({})
 Mobile.parameters = getMobileViewParameters()
+
+export const Prefilled = Template.bind({})
+Prefilled.args = {
+  defaultValue: new Date('2021-09-13'),
+  isDisabled: true,
+}
+
+export const Error = Template.bind({})
+Error.args = {
+  isInvalid: true,
+}

@@ -15,12 +15,14 @@ import {
   IEncryptedFormModel,
   IFormDocument,
   IFormSchema,
+  IMultirespondentFormModel,
   IPopulatedForm,
 } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,
+  getMultirespondentFormModel,
 } from '../../models/form.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
 import {
@@ -44,6 +46,7 @@ const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
 const EmailFormModel = getEmailFormModel(mongoose)
 const EncryptedFormModel = getEncryptedFormModel(mongoose)
+const MultirespondentFormModel = getMultirespondentFormModel(mongoose)
 const SubmissionModel = getSubmissionModel(mongoose)
 
 /**
@@ -272,12 +275,14 @@ export const checkFormSubmissionLimitAndDeactivateForm = (
 
 export const getFormModelByResponseMode = (
   responseMode: FormResponseMode,
-): IEmailFormModel | IEncryptedFormModel => {
+): IEmailFormModel | IEncryptedFormModel | IMultirespondentFormModel => {
   switch (responseMode) {
     case FormResponseMode.Email:
       return EmailFormModel
     case FormResponseMode.Encrypt:
       return EncryptedFormModel
+    case FormResponseMode.Multirespondent:
+      return MultirespondentFormModel
   }
 }
 

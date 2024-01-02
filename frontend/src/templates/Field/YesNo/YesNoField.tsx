@@ -15,15 +15,17 @@ import { YesNoFieldInput, YesNoFieldSchema } from '../types'
 
 export interface YesNoFieldProps extends BaseFieldProps {
   schema: YesNoFieldSchema
+  disableRequiredValidation?: boolean
 }
 
 export const YesNoField = ({
   schema,
+  disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
 }: YesNoFieldProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createBaseValidationRules(schema),
-    [schema],
+    () => createBaseValidationRules(schema, disableRequiredValidation),
+    [schema, disableRequiredValidation],
   )
 
   const { control } = useFormContext<YesNoFieldInput>()

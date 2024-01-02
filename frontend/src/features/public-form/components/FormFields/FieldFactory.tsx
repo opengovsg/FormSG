@@ -43,6 +43,7 @@ import { PrefillMap } from './FormFields'
 
 interface FieldFactoryProps {
   field: FormFieldWithQuestionNo
+  disableRequiredValidation?: boolean
   prefill?: PrefillMap[string]
   colorTheme?: FormColorTheme
 }

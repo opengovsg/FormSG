@@ -9,4 +9,5 @@ export const featureFlags = {
   encryptionBoundaryShiftVirusScanner:
     'encryption-boundary-shift-virus-scanner' as const,
   myinfoSgid: 'myinfo-sgid' as const,
+  chartsMaxResponseCount: 'charts-max-response-count' as const,
 }

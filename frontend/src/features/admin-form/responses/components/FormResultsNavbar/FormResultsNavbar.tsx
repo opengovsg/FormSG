@@ -1,18 +1,27 @@
 import { useCallback } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
+import { useFeatureValue } from '@growthbook/growthbook-react'
+
+import { FormResponseMode } from '~shared/types'
 
 import {
   ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX,
+  RESULTS_CHARTS_SUBROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
   RESULTS_RESPONSES_SUBROUTE,
 } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
 import { noPrintCss } from '~utils/noPrintCss'
+import Badge from '~components/Badge'
 import { NavigationTab, NavigationTabList } from '~templates/NavigationTabs'
+
+import { useAdminForm } from '~features/admin-form/common/queries'
 
 export const FormResultsNavbar = (): JSX.Element => {
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
+
+  const { data: form } = useAdminForm()
 
   const { pathname } = useLocation()
 
@@ -24,6 +33,9 @@ export const FormResultsNavbar = (): JSX.Element => {
     [pathname],
   )
 
+  const isChartsEnabled = useFeatureValue('charts', false) // disabled by default
+  const isFormEncryptMode = form?.responseMode === FormResponseMode.Encrypt
+  const shouldShowCharts = isFormEncryptMode && isChartsEnabled
   return (
     <Flex
       sx={noPrintCss}
@@ -60,6 +72,22 @@ export const FormResultsNavbar = (): JSX.Element => {
         >
           Feedback
         </NavigationTab>
+        {shouldShowCharts ? (
+          <NavigationTab
+            to={RESULTS_CHARTS_SUBROUTE}
+            isActive={checkTabActive(RESULTS_CHARTS_SUBROUTE)}
+          >
+            Charts
+            <Badge
+              colorScheme="primary"
+              variant="subtle"
+              color="secondary.500"
+              ml="0.5rem"
+            >
+              Beta
+            </Badge>
+          </NavigationTab>
+        ) : null}
       </NavigationTabList>
     </Flex>
   )

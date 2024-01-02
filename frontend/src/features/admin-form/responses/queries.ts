@@ -5,8 +5,8 @@ import { useParams } from 'react-router-dom'
 import { FormFeedbackMetaDto, FormIssueMetaDto } from '~shared/types'
 import {
   FormSubmissionMetadataQueryDto,
-  StorageModeSubmissionMetadataList,
   SubmissionCountQueryDto,
+  SubmissionMetadataList,
 } from '~shared/types/submission'
 
 import { adminFormKeys } from '../common/queries'
@@ -79,7 +79,7 @@ export const useFormResponses = ({
 }: {
   page?: number
   submissionId?: string
-} = {}): UseQueryResult<StorageModeSubmissionMetadataList> => {
+} = {}): UseQueryResult<SubmissionMetadataList> => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 

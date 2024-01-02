@@ -11,13 +11,17 @@ import {
 } from '@chakra-ui/react'
 import simplur from 'simplur'
 
+import { FormResponseMode } from '~shared/types'
+import { getMultirespondentSubmissionEditPath } from '~shared/utils/urls'
+
 import Button from '~components/Button'
 import Spinner from '~components/Spinner'
 
-import {
-  SecretKeyVerification,
-  useStorageResponsesContext,
-} from '../ResponsesPage/storage'
+import { useAdminForm } from '~features/admin-form/common/queries'
+import { FormActivationSvg } from '~features/admin-form/settings/components/FormActivationSvg'
+
+import { SecretKeyVerification } from '../components/SecretKeyVerification'
+import { useStorageResponsesContext } from '../ResponsesPage/storage'
 
 import { DecryptedRow } from './DecryptedRow'
 import { IndividualResponseNavbar } from './IndividualResponseNavbar'
@@ -46,11 +50,36 @@ const LoadingDecryption = memo(() => {
   )
 })
 
+const StackRow = ({
+  label,
+  value,
+  isLoading,
+  isError,
+}: {
+  label: string
+  value: string
+  isLoading: boolean
+  isError: boolean
+}) => {
+  return (
+    <Stack
+      spacing={{ base: '0', md: '0.5rem' }}
+      direction={{ base: 'column', md: 'row' }}
+    >
+      <Text as="span" textStyle="subhead-1">
+        {label}:
+      </Text>
+      <Skeleton isLoaded={!isLoading && !isError}>{value}</Skeleton>
+    </Stack>
+  )
+}
+
 export const IndividualResponsePage = (): JSX.Element => {
   const { submissionId, formId } = useParams()
   if (!submissionId) throw new Error('Missing submissionId')
   if (!formId) throw new Error('Missing formId')
 
+  const { data: form } = useAdminForm()
   const { secretKey } = useStorageResponsesContext()
   const { data, isLoading, isError } = useIndividualSubmission()
 
@@ -82,7 +111,20 @@ export const IndividualResponsePage = (): JSX.Element => {
     submissionId,
   ])
 
-  if (!secretKey) return <SecretKeyVerification />
+  if (!secretKey)
+    return (
+      <SecretKeyVerification
+        heroSvg={<FormActivationSvg />}
+        ctaText="Unlock responses"
+        label="Enter or upload Secret Key"
+      />
+    )
+
+  const responseLinkWithKey = `${
+    window.location.origin
+  }/${getMultirespondentSubmissionEditPath(form?._id ?? '', submissionId, {
+    key: data?.submissionSecretKey || '',
+  })}`
 
   return (
     <Flex flexDir="column" marginTop={{ base: '-1.5rem', md: '-3rem' }}>
@@ -93,26 +135,18 @@ export const IndividualResponsePage = (): JSX.Element => {
         spacing={{ base: '1.5rem', md: '2.5rem' }}
       >
         <Stack bg="primary.100" p="1.5rem" textStyle="monospace">
-          <Stack
-            spacing={{ base: '0', md: '0.5rem' }}
-            direction={{ base: 'column', md: 'row' }}
-          >
-            <Text as="span" textStyle="subhead-1">
-              Response ID:
-            </Text>
-            <Text>{submissionId}</Text>
-          </Stack>
-          <Stack
-            spacing={{ base: '0', md: '0.5rem' }}
-            direction={{ base: 'column', md: 'row' }}
-          >
-            <Text as="span" textStyle="subhead-1">
-              Timestamp:
-            </Text>
-            <Skeleton isLoaded={!isLoading && !isError}>
-              {data?.submissionTime ?? 'Loading...'}
-            </Skeleton>
-          </Stack>
+          <StackRow
+            label="Response ID"
+            value={submissionId}
+            isLoading={isLoading}
+            isError={isError}
+          />
+          <StackRow
+            label="Timestamp"
+            value={data?.submissionTime ?? 'Loading...'}
+            isLoading={isLoading}
+            isError={isError}
+          />
           {attachmentDownloadUrls.size > 0 && (
             <Stack
               spacing={{ base: '0', md: '0.5rem' }}
@@ -142,6 +176,14 @@ export const IndividualResponsePage = (): JSX.Element => {
                 </Button>
               </Skeleton>
             </Stack>
+          )}
+          {form?.responseMode === FormResponseMode.Multirespondent && (
+            <StackRow
+              label="Response link"
+              value={responseLinkWithKey}
+              isLoading={isLoading}
+              isError={isError}
+            />
           )}
         </Stack>
         {isLoading || isError ? (

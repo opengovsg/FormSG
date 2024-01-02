@@ -144,6 +144,16 @@ export type ChildBirthRecordsResponse = z.infer<
   typeof ChildBirthRecordsResponse
 >
 
+// These fieldTypes are used for the child fields in MYINFO_ATTRIBUTE_MAP
+export const SingleChildSubRecordResponse = MyInfoableSingleResponse.extend({
+  fieldType: z.literal(
+    BasicField.Children || BasicField.ShortText || BasicField.Dropdown,
+  ),
+})
+export type SingleChildSubRecordResponse = z.infer<
+  typeof SingleChildSubRecordResponse
+>
+
 export type FieldResponse =
   | HeaderResponse
   | EmailResponse
@@ -165,3 +175,4 @@ export type FieldResponse =
   | TableResponse
   | UenResponse
   | ChildBirthRecordsResponse
+  | SingleChildSubRecordResponse

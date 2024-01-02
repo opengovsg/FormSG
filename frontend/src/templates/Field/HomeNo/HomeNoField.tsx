@@ -10,12 +10,16 @@ import { HomeNoFieldSchema, SingleAnswerFieldInput } from '../types'
 
 export interface HomeNoFieldProps extends BaseFieldProps {
   schema: HomeNoFieldSchema
+  disableRequiredValidation?: boolean
 }
 
-export const HomeNoField = ({ schema }: HomeNoFieldProps): JSX.Element => {
+export const HomeNoField = ({
+  schema,
+  disableRequiredValidation,
+}: HomeNoFieldProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createHomeNoValidationRules(schema),
-    [schema],
+    () => createHomeNoValidationRules(schema, disableRequiredValidation),
+    [schema, disableRequiredValidation],
   )
 
   const { control } = useFormContext<SingleAnswerFieldInput>()

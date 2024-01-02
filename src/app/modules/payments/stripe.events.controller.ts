@@ -11,7 +11,10 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
 import { ControllerHandler } from '../core/core.types'
 
-import { StripeMetadataIncorrectEnvError } from './stripe.errors'
+import {
+  StripeMetadataIncorrectEnvError,
+  StripeMetadataInvalidError,
+} from './stripe.errors'
 import * as StripeService from './stripe.service'
 import { mapRouteError } from './stripe.utils'
 
@@ -91,9 +94,13 @@ const _handleStripeEventUpdates: ControllerHandler<
       .match(
         () => res.sendStatus(StatusCodes.OK),
         (error) => {
-          if (error instanceof StripeMetadataIncorrectEnvError) {
-            // Intercept this error and return 202 Accepted instead, indicating
-            // the request will be processed by another environment server.
+          if (
+            error instanceof StripeMetadataIncorrectEnvError ||
+            error instanceof StripeMetadataInvalidError
+          ) {
+            // Intercept these errors and return 202 Accepted instead.
+            // StripeMetadataIncorrectEnvError: the request will be processed by another environment server.
+            // StripeMetadataInvalidError: Agencies are using the Stripe account to process payments outside of FormSG.
             return res.sendStatus(StatusCodes.ACCEPTED)
           }
           // Additional logging with error details

@@ -1,9 +1,7 @@
-import { StorageModeSubmissionMetadata } from '~shared/types'
+import { SubmissionMetadata } from '~shared/types'
 import { centsToDollars } from '~shared/utils/payments'
 
-export const getNetAmount = (
-  payments: StorageModeSubmissionMetadata['payments'],
-) => {
+export const getNetAmount = (payments: SubmissionMetadata['payments']) => {
   if (!payments) {
     return ''
   }
