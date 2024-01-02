@@ -296,7 +296,7 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
     port: {
       doc: 'Application Port',
       format: 'port',
-      default: 5001,
+      default: 5000,
       env: 'PORT',
     },
     otpLifeSpan: {
