@@ -29,7 +29,10 @@ export default {
   decorators: [
     (storyFn) => (
       <MemoryRouter initialEntries={['/12345']}>
-        <PublicFormProvider formId="61540ece3d4a6e50ac0cc6ff">
+        <PublicFormProvider
+          formId="61540ece3d4a6e50ac0cc6ff"
+          startTime={Date.now()}
+        >
           <FormSectionsProvider>{storyFn()}</FormSectionsProvider>
         </PublicFormProvider>
       </MemoryRouter>

@@ -1,20 +1,37 @@
+import { MemoryRouter } from 'react-router-dom'
 import { Meta, Story } from '@storybook/react'
 
 import { FormColorTheme } from '~shared/types'
 
+import { getPublicFormResponse } from '~/mocks/msw/handlers/public-form'
+
 import { getMobileViewParameters } from '~utils/storybook'
+
+import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
 import { FormEndPage, FormEndPageProps } from './FormEndPage'
 
 export default {
   title: 'Pages/PublicFormPage/FormEndPage',
   component: FormEndPage,
-  decorators: [],
+  decorators: [
+    (storyFn) => (
+      <MemoryRouter initialEntries={['/12345']}>
+        <PublicFormProvider
+          formId="61540ece3d4a6e50ac0cc6ff"
+          startTime={Date.now()}
+        >
+          {storyFn()}
+        </PublicFormProvider>
+      </MemoryRouter>
+    ),
+  ],
   parameters: {
     backgrounds: {
       default: 'light',
     },
     layout: 'fullscreen',
+    msw: [getPublicFormResponse()],
   },
 } as Meta<FormEndPageProps>
 
