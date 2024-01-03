@@ -325,7 +325,6 @@ const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
           message: 'Please provide valid email addresses',
         },
       },
-      //TODO: add form fields
     },
   ],
 })
