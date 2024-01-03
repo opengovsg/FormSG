@@ -210,7 +210,7 @@ describe('Workspace Model', () => {
         })
 
         const actual = await Workspace.exists({ _id: MOCK_WORKSPACE_ID })
-        expect(actual).toEqual(false)
+        expect(actual).toBeNull()
       })
 
       it('should not archive forms when workspace is deleted', async () => {
@@ -229,9 +229,9 @@ describe('Workspace Model', () => {
           status: FormStatus.Archived,
         })
 
-        expect(actual).toEqual(false)
-        expect(doesFormExist).toEqual(true)
-        expect(isFormArchived).toEqual(false)
+        expect(actual).toBeNull()
+        expect(doesFormExist).toBeTruthy()
+        expect(isFormArchived).toBeNull()
       })
     })
 
