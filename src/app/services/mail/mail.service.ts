@@ -44,6 +44,7 @@ import {
   SendAutoReplyEmailsArgs,
   SendMailOptions,
   SendSingleAutoreplyMailArgs,
+  WorkflowEmailData,
 } from './mail.types'
 import {
   generateAutoreplyHtml,
@@ -59,6 +60,7 @@ import {
   generateSmsVerificationWarningHtmlForCollab,
   generateSubmissionToAdminHtml,
   generateVerificationOtpHtml,
+  generateWorkflowEmail,
   isToFieldValid,
 } from './mail.utils'
 
@@ -1011,6 +1013,41 @@ export class MailService {
     }
     return this.#sendNodeMail(mailOptions, {
       mailId: 'sendWarningMailForAdmin',
+    })
+  }
+
+  /**
+   * For MRF forms - sends a workflow notification to the valid email addresses
+   * @param emails the recipient email addresses
+   * @param formTitle the form title of the MRF form
+   * @param responseUrl the response url which includes the secret key
+   * @returns err(MailSendError) when there was an error in sending the mail
+   */
+  sendMRFWorkflowStepEmail = ({
+    emails,
+    formTitle,
+    responseUrl,
+  }: {
+    emails: string[]
+    formTitle: string
+    responseUrl: string
+  }): ResultAsync<true, MailSendError> => {
+    const htmlData: WorkflowEmailData = {
+      formTitle: formTitle,
+      appName: this.#appName,
+      responseUrl: responseUrl,
+    }
+    return generateWorkflowEmail({ htmlData }).andThen((html) => {
+      const mail: MailOptions = {
+        to: emails,
+        from: this.#senderFromString,
+        subject: `You have been assigned to fill in ${formTitle}`,
+        html: html,
+        headers: {
+          [EMAIL_HEADERS.emailType]: EmailType.WorkflowNotification,
+        },
+      }
+      return this.#sendNodeMail(mail, { mailId: 'workflowNotification' })
     })
   }
 }

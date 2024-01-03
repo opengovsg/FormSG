@@ -5,6 +5,7 @@ import {
   FormStatus,
   SettingsUpdateDto,
   WebhookSettingsUpdateDto,
+  WorkflowType,
 } from '../../../../../shared/types'
 
 import { verifyValidUnicodeString } from './admin-form.utils'
@@ -37,6 +38,18 @@ export const updateSettingsValidator = celebrate({
       gstRegNo: Joi.string().allow(''),
     }),
     payments_field: Joi.object({ gst_enabled: Joi.boolean() }),
+    workflow: Joi.array()
+      .items(
+        Joi.object().keys({
+          _id: Joi.string(),
+          workflow_type: Joi.string().valid(...Object.values(WorkflowType)),
+          emails: Joi.alternatives().try(
+            Joi.array().items(Joi.string().email().allow('')),
+            Joi.string().email({ multiple: true }).allow(''),
+          ),
+        }),
+      )
+      .optional(),
   })
     .min(1)
     .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),

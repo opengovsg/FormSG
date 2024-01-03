@@ -9,6 +9,7 @@ import {
   FormResponseMode,
   FormSettings,
   FormStatus,
+  MultirespondentFormSettings,
   StorageFormSettings,
 } from '~shared/types/form/form'
 import { TwilioCredentials } from '~shared/types/twilio'
@@ -40,6 +41,7 @@ import {
   updateFormWebhookUrl,
   updateGstEnabledFlag,
   updateTwilioCredentials,
+  updateWorkflowSettings,
 } from './SettingsService'
 
 export const useMutateFormSettings = () => {
@@ -335,6 +337,19 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateWorkflowSettings = useMutation(
+    (workflowSettings: MultirespondentFormSettings['workflow']) =>
+      updateWorkflowSettings(formId, workflowSettings),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: `Workflow settings have been updated.`,
+        })
+      },
+      onError: handleError,
+    },
+  )
   return {
     mutateWebhookRetries,
     mutateFormWebhookUrl,
@@ -349,6 +364,7 @@ export const useMutateFormSettings = () => {
     mutateFormEsrvcId,
     mutateFormBusiness,
     mutateGST,
+    mutateWorkflowSettings,
   }
 }
 

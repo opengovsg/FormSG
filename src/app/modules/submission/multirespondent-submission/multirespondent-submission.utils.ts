@@ -29,5 +29,6 @@ export const createMultirespondentSubmissionDto = (
     encryptedSubmissionSecretKey: submissionData.encryptedSubmissionSecretKey,
     attachmentMetadata: attachmentPresignedUrls,
     version: submissionData.version,
+    workflowStep: submissionData.workflowStep,
   }
 }

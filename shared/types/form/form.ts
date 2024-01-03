@@ -126,6 +126,17 @@ export type FormBusinessField = {
   gstRegNo?: string
 }
 
+export enum WorkflowType {
+  Static = 'static',
+  Dynamic = 'dynamic',
+}
+
+export type FormWorkflowSettings = Array<{
+  _id?: string
+  workflow_type: WorkflowType
+  emails: string[]
+}>
+
 export interface FormBase {
   title: string
   admin: UserDto['_id']
@@ -172,6 +183,7 @@ export interface StorageFormBase extends FormBase {
 export interface MultirespondentFormBase extends FormBase {
   responseMode: FormResponseMode.Multirespondent
   publicKey: string
+  workflow?: FormWorkflowSettings
 }
 
 /**
@@ -351,6 +363,7 @@ export type FormPermissionsDto = FormPermission[]
 export type PermissionsUpdateDto = FormPermission[]
 export type PaymentsUpdateDto = FormPaymentsField
 export type BusinessUpdateDto = FormBusinessField
+export type WorkflowUpdateDto = FormWorkflowSettings
 export type PaymentsProductUpdateDto = ProductsPaymentField['products']
 
 export type SendFormOtpResponseDto = {

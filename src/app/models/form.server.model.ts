@@ -48,6 +48,7 @@ import {
   PaymentChannel,
   PaymentType,
   StorageFormSettings,
+  WorkflowType,
 } from '../../../shared/types'
 import { reorder } from '../../../shared/utils/immutable-array-fns'
 import { getApplicableIfStates } from '../../shared/util/logic'
@@ -300,6 +301,32 @@ const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
     type: String,
     required: true,
   },
+  workflow: [
+    {
+      workflow_type: {
+        type: String,
+        enum: Object.values(WorkflowType),
+        default: WorkflowType.Static,
+        required: true,
+      },
+      emails: {
+        type: [
+          {
+            type: String,
+            trim: true,
+          },
+        ],
+        set: transformEmails,
+        validate: {
+          validator: (v: string[]) => {
+            if (!Array.isArray(v)) return false
+            return v.every((email) => validator.isEmail(email))
+          },
+          message: 'Please provide valid email addresses',
+        },
+      },
+    },
+  ],
 })
 
 const compileFormModel = (db: Mongoose): IFormModel => {
