@@ -37,7 +37,7 @@ export type MultirespondentSubmissionMiddlewareHandlerRequest =
   }
 
 export type ProcessedMultirespondentSubmissionHandlerType = ControllerHandler<
-  { formId: string },
+  { formId: string; submissionId?: string },
   SubmissionResponseDto | SubmissionErrorDto,
   Omit<ParsedMultirespondentSubmissionBody, 'responses'> & {
     responses: ParsedClearFormFieldResponsesV3

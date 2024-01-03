@@ -41,6 +41,7 @@ describe('Multirespondent Submission Model', () => {
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
           version: 3,
           created: createdDate,
+          workflowStep: 0,
         })
 
         // Act
@@ -121,6 +122,7 @@ describe('Multirespondent Submission Model', () => {
             encryptedContent: MOCK_ENCRYPTED_CONTENT,
             version: 3,
             created: MOCK_CREATED_DATES_ASC[idx],
+            workflowStep: 0,
           }),
         )
         const validSubmissions: IMultirespondentSubmissionSchema[] =
@@ -163,6 +165,7 @@ describe('Multirespondent Submission Model', () => {
             encryptedContent: MOCK_ENCRYPTED_CONTENT,
             version: 3,
             created: MOCK_CREATED_DATES_ASC[idx],
+            workflowStep: 0,
           }),
         )
         const validSubmissions: IMultirespondentSubmissionSchema[] =
@@ -209,6 +212,7 @@ describe('Multirespondent Submission Model', () => {
             encryptedContent: MOCK_ENCRYPTED_CONTENT,
             version: 3,
             created: MOCK_CREATED_DATES_ASC[idx],
+            workflowStep: 0,
           }),
         )
         const validSubmissions: IMultirespondentSubmissionSchema[] =
@@ -255,6 +259,7 @@ describe('Multirespondent Submission Model', () => {
             encryptedContent: MOCK_ENCRYPTED_CONTENT,
             version: 1,
             created: MOCK_CREATED_DATES_ASC[idx],
+            workflowStep: 0,
           }),
         )
         const validSubmissions: IMultirespondentSubmissionSchema[] =
@@ -309,6 +314,7 @@ describe('Multirespondent Submission Model', () => {
           encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
           version: 1,
+          workflowStep: 0,
         })
         const expectedSubmission = pick(
           validSubmission,
@@ -379,6 +385,7 @@ describe('Multirespondent Submission Model', () => {
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
           version: 3,
           attachmentMetadata: { someFileName: 'some url of attachment' },
+          workflowStep: 0,
         })
 
         // Act
@@ -401,6 +408,7 @@ describe('Multirespondent Submission Model', () => {
           'encryptedContent',
           'submissionType',
           'version',
+          'workflowStep',
         )
         expect(actual).not.toBeNull()
         expect(actual?.toJSON()).toEqual(expected)

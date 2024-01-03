@@ -8,6 +8,7 @@ export type ParsedMultipartForm<ResponsesType> = {
   responses: ResponsesType
   responseMetadata: ResponseMetadata
   version?: number
+  workflowStep?: number
 }
 
 export const isBodyVersion2AndBelow = (

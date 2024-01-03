@@ -467,6 +467,10 @@ export const MultirespondentSubmissionSchema = new Schema<
     type: Number,
     required: true,
   },
+  workflowStep: {
+    type: Number,
+    required: true,
+  },
 })
 
 MultirespondentSubmissionSchema.statics.findSingleMetadata = function (
@@ -605,6 +609,7 @@ MultirespondentSubmissionSchema.statics.findEncryptedSubmissionById = function (
       attachmentMetadata: 1,
       created: 1,
       version: 1,
+      workflowStep: 1,
     })
     .exec()
 }

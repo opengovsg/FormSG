@@ -5,12 +5,17 @@ import { errAsync } from 'neverthrow'
 import {
   ErrorDto,
   FormAuthType,
+  FormWorkflowSettings,
   MultirespondentSubmissionDto,
   SubmissionType,
 } from '../../../../../shared/types'
+import { getMultirespondentSubmissionEditPath } from '../../../../../shared/utils/urls'
+import { Environment } from '../../../../../src/types'
+import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getMultirespondentSubmissionModel } from '../../../models/submission.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
+import MailService from '../../../services/mail/mail.service'
 import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
 import { Pipeline } from '../../../utils/pipeline-middleware'
 import { createReqMeta } from '../../../utils/request'
@@ -49,6 +54,10 @@ import { createMultirespondentSubmissionDto } from './multirespondent-submission
 
 const logger = createLoggerWithLabel(module)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
+const appUrl =
+  process.env.NODE_ENV === Environment.Dev
+    ? config.app.feAppUrl
+    : config.app.appUrl
 
 const submitMultirespondentForm = async (
   req: SubmitMultirespondentFormHandlerRequest,
@@ -129,6 +138,7 @@ const submitMultirespondentForm = async (
   const {
     submissionPublicKey,
     encryptedSubmissionSecretKey,
+    submissionSecretKey,
     encryptedContent,
     responseMetadata,
     version,
@@ -145,6 +155,7 @@ const submitMultirespondentForm = async (
     encryptedContent,
     attachmentMetadata,
     version,
+    workflowStep: 0,
   }
 
   return _createSubmission({
@@ -155,17 +166,21 @@ const submitMultirespondentForm = async (
     // responses: ,
     responseMetadata,
     submissionContent,
+    submissionSecretKey,
+    form,
   })
 }
 
 const _createSubmission = async ({
   req,
   res,
-  submissionContent,
   logMeta,
   formId,
   // responses,
   responseMetadata,
+  submissionContent,
+  submissionSecretKey,
+  form,
 }: {
   req: Parameters<SubmitMultirespondentFormHandlerType>[0]
   res: Parameters<SubmitMultirespondentFormHandlerType>[1]
@@ -219,6 +234,72 @@ const _createSubmission = async ({
 
   // TODO(MRF/FRM-1591): Add post-submission actions handling
   // return await performEncryptPostSubmissionActions(submission, responses)
+
+  try {
+    await runMultirespondentWorkflow({
+      nextWorkflowStep: submissionContent.workflowStep + 1, // we want to send emails to the addresses linked to the next step of the workflow
+      formWorkflow: form.workflow ?? [],
+      formTitle: form.title,
+      responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
+        form._id,
+        submissionId,
+        { key: submissionSecretKey },
+      )}`,
+      formId: form._id,
+      submissionId,
+    })
+  } catch (err) {
+    logger.error({
+      message: 'Send multirespondent workflow email error',
+      meta: {
+        ...logMeta,
+        ...createReqMeta(req),
+        currentWorkflowStep: submissionContent.workflowStep,
+        formId: form._id,
+        submissionId,
+      },
+      error: err,
+    })
+  }
+}
+
+const runMultirespondentWorkflow = async ({
+  nextWorkflowStep,
+  formWorkflow,
+  formTitle,
+  responseUrl,
+  formId,
+  submissionId,
+}: {
+  nextWorkflowStep: number
+  formWorkflow: FormWorkflowSettings
+  formTitle: string
+  responseUrl: string
+  formId: string
+  submissionId: string
+}) => {
+  const logMeta = {
+    action: 'runMultirespondentWorkflow',
+    formId,
+    submissionId,
+    nextWorkflowStep,
+  }
+  // Step 1: Retrieve email addresses for current workflow step
+  if ((formWorkflow[nextWorkflowStep]?.emails?.length ?? 0) === 0) return
+  const emails = formWorkflow[nextWorkflowStep].emails
+  // Step 2: send out workflow email
+  try {
+    await MailService.sendMRFWorkflowStepEmail({
+      formTitle,
+      emails,
+      responseUrl,
+    })
+  } catch (error) {
+    logger.error({
+      message: 'Failed to send workflow email',
+      meta: { ...logMeta, emails },
+    })
+  }
 }
 
 const updateMultirespondentSubmission = async (
@@ -268,7 +349,9 @@ const updateMultirespondentSubmission = async (
     submissionPublicKey,
     encryptedSubmissionSecretKey,
     encryptedContent,
+    submissionSecretKey,
     version,
+    workflowStep,
   } = encryptedPayload
 
   // Save Responses to Database
@@ -294,7 +377,6 @@ const updateMultirespondentSubmission = async (
   // }
 
   const submission = await MultirespondentSubmission.findById(submissionId)
-
   if (!submission) {
     return res.status(StatusCodes.NOT_FOUND).json({
       message: 'Not found',
@@ -306,6 +388,7 @@ const updateMultirespondentSubmission = async (
   submission.encryptedSubmissionSecretKey = encryptedSubmissionSecretKey
   submission.encryptedContent = encryptedContent
   submission.version = version
+  submission.workflowStep = workflowStep
   // submission.attachmentMetadata = attachmentMetadata
 
   try {
@@ -342,6 +425,33 @@ const updateMultirespondentSubmission = async (
     submissionId,
     timestamp: (submission.created || new Date()).getTime(),
   })
+
+  try {
+    await runMultirespondentWorkflow({
+      nextWorkflowStep: workflowStep + 1, // we want to send emails to the addresses linked to the next step of the workflow
+      formWorkflow: form.workflow ?? [],
+      formTitle: form.title,
+      responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
+        form._id,
+        submissionId,
+        { key: submissionSecretKey },
+      )}`,
+      formId: form._id,
+      submissionId,
+    })
+  } catch (err) {
+    logger.error({
+      message: 'Send multirespondent workflow email error',
+      meta: {
+        ...logMeta,
+        ...createReqMeta(req),
+        currentWorkflowStep: workflowStep,
+        formId: form._id,
+        submissionId,
+      },
+      error: err,
+    })
+  }
 }
 
 export const handleMultirespondentSubmission = [
@@ -365,6 +475,7 @@ export const handleUpdateMultirespondentSubmission = [
   MultirespondentSubmissionMiddleware.createFormsgAndRetrieveForm,
   MultirespondentSubmissionMiddleware.scanAndRetrieveAttachments,
   // EncryptSubmissionMiddleware.validateStorageSubmission,
+  MultirespondentSubmissionMiddleware.setCurrentWorkflowStep,
   MultirespondentSubmissionMiddleware.encryptSubmission,
   updateMultirespondentSubmission,
 ] as ControllerHandler[]

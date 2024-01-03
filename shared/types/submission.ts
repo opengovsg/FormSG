@@ -90,6 +90,7 @@ export const MultirespondentSubmissionBase = SubmissionBase.extend({
   encryptedContent: z.string(),
   attachmentMetadata: z.map(z.string(), z.string()).optional(),
   version: z.number(),
+  workflowStep: z.number(),
 })
 
 export type MultirespondentSubmissionBase = z.infer<
@@ -150,6 +151,7 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
   //verified?: string
   attachmentMetadata: Record<string, string>
   version: number
+  workflowStep: number
 }
 
 export type SubmissionDto =

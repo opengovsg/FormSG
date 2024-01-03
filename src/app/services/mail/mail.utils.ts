@@ -21,6 +21,7 @@ import {
   IssueReportedNotificationData,
   PaymentConfirmationData,
   SubmissionToAdminHtmlData,
+  WorkflowEmailData,
 } from './mail.types'
 
 const logger = createLoggerWithLabel(module)
@@ -311,6 +312,22 @@ export const generateIssueReportedNotificationHtml = ({
     message: 'generateIssueReportedNotificationHtml',
     meta: {
       action: 'generateIssueReportedNotificationHtml',
+      pathToTemplate,
+    },
+  })
+  return safeRenderFile(pathToTemplate, htmlData)
+}
+
+export const generateWorkflowEmail = ({
+  htmlData,
+}: {
+  htmlData: WorkflowEmailData
+}): ResultAsync<string, MailGenerationError> => {
+  const pathToTemplate = `${process.cwd()}/src/app/views/templates/mrf-workflow-email.view.html`
+  logger.info({
+    message: 'generateWorkflowEmailHtml',
+    meta: {
+      action: 'generateWorkflowEmailHtml',
       pathToTemplate,
     },
   })

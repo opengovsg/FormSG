@@ -1,9 +1,13 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
-import { err, ok, Result, ResultAsync } from 'neverthrow'
+import { err, errAsync, ok, Result, ResultAsync } from 'neverthrow'
 
-import { BasicField, FormResponseMode } from '../../../../../shared/types'
+import {
+  BasicField,
+  FormResponseMode,
+  SubmissionType,
+} from '../../../../../shared/types'
 import { isDev } from '../../../../app/config/config'
 import { ParsedClearAttachmentResponseV3 } from '../../../../types/api'
 import { MultirespondentFormLoadedDto } from '../../../../types/api/multirespondent_submission'
@@ -11,15 +15,20 @@ import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import * as FeatureFlagService from '../../feature-flags/feature-flags.service'
+import { assertFormAvailable } from '../../form/admin-form/admin-form.utils'
 import * as FormService from '../../form/form.service'
 import { FormsgReqBodyExistsError } from '../encrypt-submission/encrypt-submission.errors'
 import { CreateFormsgAndRetrieveFormMiddlewareHandlerType } from '../encrypt-submission/encrypt-submission.types'
 import {
   DownloadCleanFileFailedError,
+  InvalidSubmissionTypeError,
   MaliciousFileDetectedError,
   VirusScanFailedError,
 } from '../submission.errors'
-import { triggerVirusScanThenDownloadCleanFileChain } from '../submission.service'
+import {
+  getEncryptedSubmissionData,
+  triggerVirusScanThenDownloadCleanFileChain,
+} from '../submission.service'
 import {
   getEncryptedAttachmentsMapFromAttachmentsMap,
   mapRouteError,
@@ -54,6 +63,56 @@ export const validateMultirespondentSubmissionParams = celebrate({
   }),
 })
 
+export const setCurrentWorkflowStep = async (
+  req: ProcessedMultirespondentSubmissionHandlerRequest,
+  res: Parameters<MultirespondentSubmissionMiddlewareHandlerType>[1],
+  next: NextFunction,
+) => {
+  const { formId, submissionId } = req.params
+  if (!submissionId) {
+    return errAsync(new InvalidSubmissionTypeError())
+  }
+  const logMeta = {
+    action: 'setCurrentWorkflowStep',
+    submissionId,
+    formId,
+    ...createReqMeta(req),
+  }
+
+  return (
+    // Step 1: Retrieve the full form object.
+    FormService.retrieveFullFormById(formId)
+      //Step 2: Check whether form is archived.
+      .andThen((form) => assertFormAvailable(form).map(() => form))
+      // Step 3: Check whether form is multirespondent mode.
+      .andThen(checkFormIsMultirespondent)
+      // Step 4: Is multirespondent mode form, retrieve submission data.
+      .andThen((form) =>
+        getEncryptedSubmissionData(form.responseMode, formId, submissionId),
+      )
+      // Step 6: Retrieve presigned URLs for attachments.
+      .map((submissionData) => {
+        if (submissionData.submissionType !== SubmissionType.Multirespondent) {
+          return errAsync(new InvalidSubmissionTypeError())
+        }
+        // Increment previous submission's workflow step by 1 to get workflow step of current submission
+        req.body.workflowStep = submissionData.workflowStep + 1
+        return next()
+      })
+      .mapErr((error) => {
+        logger.error({
+          message: 'Failure retrieving encrypted submission response',
+          meta: logMeta,
+          error,
+        })
+
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({
+          message: errorMessage,
+        })
+      })
+  )
+}
 /**
  * Creates formsg namespace in req.body and populates it with featureFlags, formDef and encryptedFormDef.
  */
@@ -304,11 +363,9 @@ export const encryptSubmission = async (
   const {
     encryptedContent,
     encryptedSubmissionSecretKey,
-    // submissionSecretKey,
+    submissionSecretKey,
     submissionPublicKey,
   } = formsgSdk.cryptoV3.encrypt(responses, formPublicKey)
-
-  //TODO(MRF/FRM-1577): Workflow here using submissionSecretKey
 
   req.formsg.encryptedPayload = {
     attachments: encryptedAttachments,
@@ -317,7 +374,9 @@ export const encryptSubmission = async (
     submissionPublicKey,
     encryptedSubmissionSecretKey,
     encryptedContent,
+    submissionSecretKey,
     version: req.body.version,
+    workflowStep: req.body.workflowStep,
   }
 
   return next()
