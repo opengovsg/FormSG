@@ -781,7 +781,6 @@ describe('admin-form.submissions.routes', () => {
             version: s.version,
           }),
         )
-        // .filter((s) => expectedSubmissionIds.includes(s._id))
         .sort((a, b) => String(a._id).localeCompare(String(b._id)))
 
       const actualSorted = (response.body as string)
