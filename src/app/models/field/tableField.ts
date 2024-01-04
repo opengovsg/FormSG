@@ -19,7 +19,6 @@ const createColumnSchema = () => {
     },
     {
       discriminatorKey: 'columnType',
-      // _id: false, // this is used in tablefield to identify column ids
     },
   )
 
