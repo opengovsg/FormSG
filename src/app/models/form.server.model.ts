@@ -696,14 +696,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     }
   }
 
-  // FormDocumentSchema.method('getSettings', function (): FormSettings {
-  //   const formSettings =
-  //     this.responseMode === FormResponseMode.Encrypt
-  //       ? (pick(this, STORAGE_FORM_SETTINGS_FIELDS) as StorageFormSettings)
-  //       : (pick(this, EMAIL_FORM_SETTINGS_FIELDS) as EmailFormSettings)
-
-  //   return formSettings
-  // })
   FormDocumentSchema.method<IFormDocument>(
     'getSettings',
     function (): FormSettings {
