@@ -91,6 +91,7 @@ export const CheckboxField = ({
             <CheckboxGroup {...field}>
               {schema.fieldOptions.map((o, idx) => (
                 <Checkbox
+                  name={checkboxInputName}
                   colorScheme={fieldColorScheme}
                   key={idx}
                   value={o}
@@ -115,6 +116,7 @@ export const CheckboxField = ({
                     isInvalid={!!get(errors, othersInputName)}
                   >
                     <OtherCheckboxField
+                      name={checkboxInputName}
                       colorScheme={fieldColorScheme}
                       value={CHECKBOX_OTHERS_INPUT_VALUE}
                       isInvalid={!!get(errors, checkboxInputName)}
