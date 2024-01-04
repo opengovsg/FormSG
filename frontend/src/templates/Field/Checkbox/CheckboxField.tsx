@@ -1,11 +1,12 @@
 import { forwardRef, useMemo } from 'react'
+import { Controller, get, useFormContext, useFormState } from 'react-hook-form'
 import {
-  get,
-  useFormContext,
-  UseFormRegisterReturn,
-  useFormState,
-} from 'react-hook-form'
-import { Box, FormControl, useMultiStyleConfig } from '@chakra-ui/react'
+  Box,
+  CheckboxGroup as ChakraCheckboxGroup,
+  CheckboxGroupProps as ChakraCheckboxGroupProps,
+  FormControl,
+  useMultiStyleConfig,
+} from '@chakra-ui/react'
 
 import { FormColorTheme } from '~shared/types'
 
@@ -58,7 +59,7 @@ export const CheckboxField = ({
     [disableRequiredValidation, schema],
   )
 
-  const { register, getValues } = useFormContext<CheckboxFieldInputs>()
+  const { register, getValues, control } = useFormContext<CheckboxFieldInputs>()
   const { isValid, isSubmitting, errors } = useFormState<CheckboxFieldInputs>({
     name: schema._id,
   })
@@ -79,66 +80,77 @@ export const CheckboxField = ({
     }),
     [checkboxInputName, getValues],
   )
-
   return (
     <FieldContainer schema={schema} errorKey={checkboxInputName}>
       <Box aria-label={`${schema.questionNumber}. ${schema.title}`} role="list">
-        {schema.fieldOptions.map((o, idx) => (
-          <Checkbox
-            colorScheme={fieldColorScheme}
-            key={idx}
-            value={o}
-            defaultValue=""
-            aria-label={o}
-            {...register(checkboxInputName, validationRules)}
-          >
-            {o}
-          </Checkbox>
-        ))}
-        {schema.fieldOptions.length === 1 ? (
-          // React-hook-form quirk where the value will not be set in an array if there is only a single checkbox option.
-          // This is a workaround to set the value in an array by registering a hidden checkbox with the same id.
-          // See https://github.com/react-hook-form/react-hook-form/issues/7834#issuecomment-1040735711.
-          <input
-            type="checkbox"
-            hidden
-            value=""
-            {...register(checkboxInputName)}
-          />
-        ) : null}
-        {schema.othersRadioButton ? (
-          <Checkbox.OthersWrapper colorScheme={fieldColorScheme}>
-            <FormControl
-              isRequired={schema.required}
-              isDisabled={schema.disabled}
-              isReadOnly={isValid && isSubmitting}
-              isInvalid={!!get(errors, othersInputName)}
-            >
-              <OtherCheckboxField
-                colorScheme={fieldColorScheme}
-                value={CHECKBOX_OTHERS_INPUT_VALUE}
-                isInvalid={!!get(errors, checkboxInputName)}
-                {...register(checkboxInputName, validationRules)}
-              />
-              <Checkbox.OthersInput
-                colorScheme={fieldColorScheme}
-                aria-label='"Other" response'
-                {...register(othersInputName, othersValidationRules)}
-              />
-              <FormErrorMessage ml={styles.othersInput?.ml as string} mb={0}>
-                {get(errors, `${othersInputName}.message`)}
-              </FormErrorMessage>
-            </FormControl>
-          </Checkbox.OthersWrapper>
-        ) : null}
+        <Controller
+          name={checkboxInputName}
+          control={control}
+          rules={validationRules}
+          render={({ field: { ref, ...field } }) => (
+            <CheckboxGroup {...field}>
+              {schema.fieldOptions.map((o, idx) => (
+                <Checkbox
+                  colorScheme={fieldColorScheme}
+                  key={idx}
+                  value={o}
+                  aria-label={o}
+                  {...(idx === 0 ? { ref } : {})}
+                >
+                  {o}
+                </Checkbox>
+              ))}
+              {schema.fieldOptions.length === 1 ? (
+                // React-hook-form quirk where the value will not be set in an array if there is only a single checkbox option.
+                // This is a workaround to set the value in an array by registering a hidden checkbox with the same id.
+                // See https://github.com/react-hook-form/react-hook-form/issues/7834#issuecomment-1040735711.
+                <input type="checkbox" hidden value="" />
+              ) : null}
+              {schema.othersRadioButton ? (
+                <Checkbox.OthersWrapper colorScheme={fieldColorScheme}>
+                  <FormControl
+                    isRequired={schema.required}
+                    isDisabled={schema.disabled}
+                    isReadOnly={isValid && isSubmitting}
+                    isInvalid={!!get(errors, othersInputName)}
+                  >
+                    <OtherCheckboxField
+                      colorScheme={fieldColorScheme}
+                      value={CHECKBOX_OTHERS_INPUT_VALUE}
+                      isInvalid={!!get(errors, checkboxInputName)}
+                    />
+                    <Checkbox.OthersInput
+                      colorScheme={fieldColorScheme}
+                      aria-label='"Other" response'
+                      {...register(othersInputName, othersValidationRules)}
+                    />
+                    <FormErrorMessage
+                      ml={styles.othersInput?.ml as string}
+                      mb={0}
+                    >
+                      {get(errors, `${othersInputName}.message`)}
+                    </FormErrorMessage>
+                  </FormControl>
+                </Checkbox.OthersWrapper>
+              ) : null}
+            </CheckboxGroup>
+          )}
+        />
       </Box>
     </FieldContainer>
   )
 }
 
-interface OtherCheckboxFieldProps
-  extends UseFormRegisterReturn,
-    Omit<CheckboxProps, keyof UseFormRegisterReturn> {
+interface CheckboxGroupProps extends Omit<ChakraCheckboxGroupProps, 'value'> {
+  value: false | string[]
+}
+const CheckboxGroup = ({ children, value, ...props }: CheckboxGroupProps) => (
+  <ChakraCheckboxGroup {...props} value={!value ? undefined : value}>
+    {children}
+  </ChakraCheckboxGroup>
+)
+
+interface OtherCheckboxFieldProps extends CheckboxProps {
   value: string
 }
 const OtherCheckboxField = forwardRef<
