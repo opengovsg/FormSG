@@ -66,7 +66,7 @@ const StackRow = ({
       spacing={{ base: '0', md: '0.5rem' }}
       direction={{ base: 'column', md: 'row' }}
     >
-      <Text as="span" textStyle="subhead-1">
+      <Text as="span" textStyle="subhead-1" whiteSpace="nowrap">
         {label}:
       </Text>
       <Skeleton isLoaded={!isLoading && !isError}>{value}</Skeleton>
