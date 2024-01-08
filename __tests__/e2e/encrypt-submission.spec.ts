@@ -6,7 +6,7 @@ import {
   MyInfoAttribute,
 } from 'shared/types'
 
-import { IFeatureFlagModel, IFormModel } from 'src/types'
+import { IFormModel } from 'src/types'
 
 import {
   ALL_FIELDS as _ALL_FIELDS,
@@ -48,9 +48,6 @@ test.describe('Storage form submission', () => {
     // Create models
     db = await makeMongooseFixtures()
     Form = makeModel(db, 'form.server.model', 'Form')
-    // TODO(FRM-1232): Remove this once old storage submission endpoint (/submissions/encrypt) is removed
-    // Add feature flag model and set encryption boundary shift to true
-    FeatureFlags = makeModel(db, 'feature_flag.server.model', 'FeatureFlags')
   })
   test.afterAll(async () => {
     // Clean up db
