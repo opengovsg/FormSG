@@ -50,16 +50,9 @@ export const EmailFormSection = ({
 
   useEffect(() => reset({ emails: initialEmails }), [initialEmails, reset])
 
-  const mdComponents = useMdComponents()
-
   return (
     <>
-      <Flex bg="primary.100" p="1rem">
-        <Icon as={BiBulb} color="primary.500" fontSize="1.5rem" mr="0.5rem" />
-        <MarkdownText
-          components={mdComponents}
-        >{`Require routing and approval? [Try using Checkpoint to set up an approval workflow](${OGP_CHECKPOINT})`}</MarkdownText>
-      </Flex>
+      <CheckpointAdvertisingInfobox />
       <FormProvider {...formMethods}>
         <FormControl isInvalid={!isEmpty(errors)}>
           <FormLabel
@@ -74,6 +67,19 @@ export const EmailFormSection = ({
         </FormControl>
       </FormProvider>
     </>
+  )
+}
+
+const CheckpointAdvertisingInfobox = () => {
+  const mdComponents = useMdComponents()
+
+  return (
+    <Flex bg="primary.100" p="1rem">
+      <Icon as={BiBulb} color="primary.500" fontSize="1.5rem" mr="0.5rem" />
+      <MarkdownText
+        components={mdComponents}
+      >{`Require routing and approval? [Try using Checkpoint to set up an approval workflow](${OGP_CHECKPOINT})`}</MarkdownText>
+    </Flex>
   )
 }
 
