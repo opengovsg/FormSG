@@ -639,7 +639,6 @@ export const handleStorageSubmission = [
   ReceiverMiddleware.receiveStorageSubmission,
   EncryptSubmissionMiddleware.validateStorageSubmissionParams,
   EncryptSubmissionMiddleware.createFormsgAndRetrieveForm,
-  EncryptSubmissionMiddleware.checkNewBoundaryEnabled,
   EncryptSubmissionMiddleware.scanAndRetrieveAttachments,
   EncryptSubmissionMiddleware.validateStorageSubmission,
   EncryptSubmissionMiddleware.encryptSubmission,

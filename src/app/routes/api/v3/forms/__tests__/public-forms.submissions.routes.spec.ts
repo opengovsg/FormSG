@@ -4,7 +4,6 @@ import jwt from 'jsonwebtoken'
 import { omit } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
-import { featureFlags } from 'shared/constants'
 import session, { Session } from 'supertest-session'
 
 import { aws } from 'src/app/config/config'
@@ -1492,12 +1491,6 @@ describe('public-form.submissions.routes', () => {
 
   describe('POST /forms/:formId/submissions/storage', () => {
     describe('Joi validation', () => {
-      beforeEach(() => {
-        jest
-          .spyOn(FeatureFlagsService, 'getEnabledFlags')
-          .mockReturnValue(okAsync([featureFlags.encryptionBoundaryShift]))
-      })
-
       it('should return 403 when feature flag has not been enabled', async () => {
         // Arrange
         const { form } = await dbHandler.insertEncryptForm({
@@ -1928,11 +1921,6 @@ describe('public-form.submissions.routes', () => {
         ...MOCK_NO_RESPONSES_BODY,
         version: 2,
       }
-      beforeEach(() => {
-        jest
-          .spyOn(FeatureFlagsService, 'getEnabledFlags')
-          .mockReturnValue(okAsync([featureFlags.encryptionBoundaryShift]))
-      })
 
       describe('SingPass', () => {
         it('should return 200 when submission is valid', async () => {
