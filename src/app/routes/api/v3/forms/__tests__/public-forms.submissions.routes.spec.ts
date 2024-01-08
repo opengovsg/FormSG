@@ -3,11 +3,10 @@ import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import jwt from 'jsonwebtoken'
 import { omit } from 'lodash'
 import mongoose from 'mongoose'
-import { errAsync, okAsync } from 'neverthrow'
+import { okAsync } from 'neverthrow'
 import session, { Session } from 'supertest-session'
 
 import { aws } from 'src/app/config/config'
-import { DatabaseError } from 'src/app/modules/core/core.errors'
 import * as FeatureFlagsService from 'src/app/modules/feature-flags/feature-flags.service'
 import { FormFieldSchema } from 'src/types'
 
@@ -1367,54 +1366,6 @@ describe('public-form.submissions.routes', () => {
       })
     })
 
-    it('should return 403 if virus scanning has not been enabled', async () => {
-      const { form } = await dbHandler.insertEncryptForm({
-        formOptions: {
-          esrvcId: 'mockEsrvcId',
-          authType: FormAuthType.CP,
-          hasCaptcha: false,
-          status: FormStatus.Public,
-        },
-      })
-
-      jest
-        .spyOn(FeatureFlagsService, 'getFeatureFlag')
-        .mockReturnValue(okAsync(false))
-
-      const response = await request
-        .post(`/forms/${form._id}/submissions/get-s3-presigned-post-data`)
-        .send(VALID_PAYLOAD)
-
-      expect(response.status).toBe(403)
-      expect(response.body).toEqual({
-        message: 'This feature is disabled.',
-      })
-    })
-
-    it('should return 500 if feature flag retrieving fails', async () => {
-      const { form } = await dbHandler.insertEncryptForm({
-        formOptions: {
-          esrvcId: 'mockEsrvcId',
-          authType: FormAuthType.CP,
-          hasCaptcha: false,
-          status: FormStatus.Public,
-        },
-      })
-
-      jest
-        .spyOn(FeatureFlagsService, 'getFeatureFlag')
-        .mockReturnValue(errAsync(new DatabaseError()))
-
-      const response = await request
-        .post(`/forms/${form._id}/submissions/get-s3-presigned-post-data`)
-        .send(VALID_PAYLOAD)
-
-      expect(response.status).toBe(500)
-      expect(response.body).toEqual({
-        message: 'Something went wrong. Please try again.',
-      })
-    })
-
     it('should return 500 if creating of presigned post data fails', async () => {
       const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
@@ -1491,40 +1442,6 @@ describe('public-form.submissions.routes', () => {
 
   describe('POST /forms/:formId/submissions/storage', () => {
     describe('Joi validation', () => {
-      it('should return 403 when feature flag has not been enabled', async () => {
-        // Arrange
-        const { form } = await dbHandler.insertEncryptForm({
-          formOptions: {
-            esrvcId: 'mockEsrvcId',
-            hasCaptcha: false,
-            status: FormStatus.Public,
-          },
-        })
-
-        jest
-          .spyOn(FeatureFlagsService, 'getEnabledFlags')
-          .mockReturnValueOnce(okAsync([]))
-
-        // Act
-        const response = await request
-          .post(`/forms/${form._id}/submissions/storage`)
-          // MOCK_RESPONSE contains all required keys
-          .field(
-            'body',
-            JSON.stringify({
-              responses: [MOCK_TEXTFIELD_RESPONSE],
-              version: 2,
-            }),
-          )
-          .query({ captchaResponse: 'null', captchaType: '' })
-
-        // Assert
-        expect(response.status).toBe(403)
-        expect(response.body).toEqual({
-          message: 'This endpoint has not been enabled for this form.',
-        })
-      })
-
       it('should return 200 when submission is valid', async () => {
         // Arrange
         const { form } = await dbHandler.insertEncryptForm({
