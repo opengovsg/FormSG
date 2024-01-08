@@ -196,7 +196,7 @@ export const getStripePaymentMethod = (
  * The payment products from incoming submission can be freely altered by the respondent
  * which could result in undesirable data seeded into our database
  * @param form
- * @param uncleanPaymentProducts
+ * @param dirtyPaymentProducts
  */
 export const sanitisePaymentProducts = (
   form: IPopulatedEncryptedForm,
