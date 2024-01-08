@@ -14,8 +14,9 @@ async function globalSetup(): Promise<void> {
         checkMD5: true,
       },
     })
+    await mongod.start()
 
-    const uri = await mongod.getUri(true)
+    const uri = mongod.getUri()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(global as any).__MONGOINSTANCE = mongod
     process.env.MONGO_URI = `${uri.slice(0, uri.lastIndexOf('/'))}/${
@@ -27,14 +28,6 @@ async function globalSetup(): Promise<void> {
 
   // The following is to make sure the database is clean before an test starts
   await mongoose.connect(process.env.MONGO_URI, {
-    // Avoid using deprecated URL string parser in MongoDB driver
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    // Avoid using deprecated collection.ensureIndex internally
-    useCreateIndex: true,
-    // upgrade to mongo driver's native findOneAndUpdate function instead of
-    // findAndModify.
-    useFindAndModify: false,
     promiseLibrary: global.Promise,
   })
   await mongoose.disconnect()

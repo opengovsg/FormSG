@@ -1,6 +1,5 @@
 import moment from 'moment-timezone'
-import { ObjectId } from 'mongodb'
-import mongoose from 'mongoose'
+import mongoose, { Types } from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import { PaymentStatus } from '../../../../shared/types'
@@ -84,7 +83,7 @@ export const findBySubmissionIdAndUpdate = (
 ): ResultAsync<IPaymentSchema, PaymentNotFoundError | DatabaseError> => {
   return ResultAsync.fromPromise(
     PaymentModel.findOneAndUpdate(
-      { 'completedPayment.submissionId': new ObjectId(submissionId) },
+      { 'completedPayment.submissionId': new Types.ObjectId(submissionId) },
       update,
     ).exec(),
     (error) => {
@@ -116,7 +115,7 @@ export const findPaymentBySubmissionId = (
 ): ResultAsync<IPaymentSchema, PaymentNotFoundError | DatabaseError> => {
   return ResultAsync.fromPromise(
     PaymentModel.findOne({
-      'completedPayment.submissionId': new ObjectId(submissionId),
+      'completedPayment.submissionId': new Types.ObjectId(submissionId),
     }),
     (error) => {
       logger.error({

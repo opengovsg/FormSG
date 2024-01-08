@@ -1,7 +1,7 @@
 import { setupApp } from '__tests__/integration/helpers/express-setup'
 import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import { ObjectId } from 'mongodb'
+import { Types } from 'mongoose'
 import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
@@ -126,7 +126,7 @@ describe('public-form.feedback.routes', () => {
         }),
       )
 
-      const INVALID_SUBMISSION_ID = new ObjectId().toHexString()
+      const INVALID_SUBMISSION_ID = new Types.ObjectId().toHexString()
       const actualResp = await request
         .post(
           `/forms/${form._id}/submissions/${INVALID_SUBMISSION_ID}/feedback`,

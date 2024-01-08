@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+
 import {
   createAuthedSession,
   logoutSession,
@@ -7,10 +8,10 @@ import { setupApp } from '__tests__/integration/helpers/express-setup'
 import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-data'
-import { ObjectId } from 'bson-ext'
 import { format, subDays } from 'date-fns'
 import { times } from 'lodash'
-import mongoose from 'mongoose'
+import MockDate from 'mockdate'
+import mongoose, { Types } from 'mongoose'
 import supertest, { Session } from 'supertest-session'
 
 import { aws } from 'src/app/config/config'
@@ -186,7 +187,6 @@ describe('admin-form.submissions.routes', () => {
 
     it('should return 200 with counts of submissions made between given start and end dates.', async () => {
       // Arrange
-      const expectedSubmissionCount = 3
       const newForm = (await EmailFormModel.create({
         title: 'new form',
         responseMode: FormResponseMode.Email,
@@ -198,15 +198,12 @@ describe('admin-form.submissions.routes', () => {
         hash: 'some hash',
         salt: 'some salt',
       }
-      const results = await Promise.all(
-        times(expectedSubmissionCount, () =>
-          saveSubmissionMetadata(newForm, mockSubmissionHash),
-        ),
+      await Promise.all(
+        times(3, () => saveSubmissionMetadata(newForm, mockSubmissionHash)),
       )
       const now = new Date()
-      const firstSubmission = results[0]._unsafeUnwrap()
-      firstSubmission.created = subDays(now, 5)
-      await firstSubmission.save()
+      MockDate.set(subDays(now, 5))
+      await saveSubmissionMetadata(newForm, mockSubmissionHash)
 
       // Act
       const response = await request
@@ -219,6 +216,7 @@ describe('admin-form.submissions.routes', () => {
       // Assert
       expect(response.status).toEqual(200)
       expect(response.body).toEqual(1)
+      MockDate.reset()
     })
 
     it('should return 200 with counts of submissions made with same start and end dates', async () => {
@@ -235,15 +233,14 @@ describe('admin-form.submissions.routes', () => {
         hash: 'some hash',
         salt: 'some salt',
       }
-      const results = await Promise.all(
+      await Promise.all(
         times(expectedSubmissionCount, () =>
           saveSubmissionMetadata(newForm, mockSubmissionHash),
         ),
       )
       const expectedDate = '2021-04-04'
-      const firstSubmission = results[0]._unsafeUnwrap()
-      firstSubmission.created = new Date(expectedDate)
-      await firstSubmission.save()
+      MockDate.set(expectedDate)
+      await saveSubmissionMetadata(newForm, mockSubmissionHash)
 
       // Act
       const response = await request
@@ -256,6 +253,7 @@ describe('admin-form.submissions.routes', () => {
       // Assert
       expect(response.status).toEqual(200)
       expect(response.body).toEqual(1)
+      MockDate.reset()
     })
 
     it('should return 400 when query.startDate is missing when query.endDate is provided', async () => {
@@ -411,7 +409,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request.get(
-        `${ADMIN_FORMS_PREFIX}/${new ObjectId()}/submissions/count`,
+        `${ADMIN_FORMS_PREFIX}/${new Types.ObjectId()}/submissions/count`,
       )
 
       // Assert
@@ -423,7 +421,7 @@ describe('admin-form.submissions.routes', () => {
       // Arrange
       const anotherUser = (
         await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new Types.ObjectId(),
           mailName: 'some-user',
           shortName: 'someUser',
         })
@@ -452,7 +450,7 @@ describe('admin-form.submissions.routes', () => {
 
     it('should return 404 when form to retrieve submission counts for cannot be found', async () => {
       // Arrange
-      const invalidFormId = new ObjectId().toHexString()
+      const invalidFormId = new Types.ObjectId().toHexString()
 
       // Act
       const response = await request.get(
@@ -491,7 +489,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request.get(
-        `${ADMIN_FORMS_PREFIX}/${new ObjectId()}/submissions/count`,
+        `${ADMIN_FORMS_PREFIX}/${new Types.ObjectId()}/submissions/count`,
       )
 
       // Assert
@@ -662,30 +660,26 @@ describe('admin-form.submissions.routes', () => {
 
     it('should return 200 with stream of encrypted responses when query.startDate is the same as query.endDate', async () => {
       // Arrange
-      const submissions = await Promise.all(
-        times(5, (count) =>
-          createEncryptSubmission({
-            form: defaultForm,
-            encryptedContent: `any encrypted content ${count}`,
-            verifiedContent: `any verified content ${count}`,
-            attachmentMetadata: new Map([
-              ['fieldId1', `some.attachment.url.${count}`],
-              ['fieldId2', `some.other.attachment.url.${count}`],
-            ]),
-          }),
-        ),
-      )
+      const saveEncryptedSubmission = async (count: number) =>
+        createEncryptSubmission({
+          form: defaultForm,
+          encryptedContent: `any encrypted content ${count}`,
+          verifiedContent: `any verified content ${count}`,
+          attachmentMetadata: new Map([
+            ['fieldId1', `some.attachment.url.${count}`],
+            ['fieldId2', `some.other.attachment.url.${count}`],
+          ]),
+        })
+
+      await Promise.all(times(3, (count) => saveEncryptedSubmission(count)))
 
       const expectedDate = '2020-02-03'
+      MockDate.set(expectedDate)
       // Set 2 submissions to be submitted with specific date
-      submissions[2].created = new Date(expectedDate)
-      submissions[4].created = new Date(expectedDate)
-      await submissions[2].save()
-      await submissions[4].save()
-      const expectedSubmissionIds = [
-        String(submissions[2]._id),
-        String(submissions[4]._id),
-      ]
+
+      const expectedSubmissions = await Promise.all(
+        times(2, (count) => saveEncryptedSubmission(count)),
+      )
 
       // Act
       const response = await request
@@ -704,7 +698,7 @@ describe('admin-form.submissions.routes', () => {
         })
 
       // Assert
-      const expectedSorted = submissions
+      const expectedSorted = expectedSubmissions
         .map((s) =>
           jsonParseStringify({
             _id: s._id,
@@ -717,7 +711,6 @@ describe('admin-form.submissions.routes', () => {
             version: s.version,
           }),
         )
-        .filter((s) => expectedSubmissionIds.includes(s._id))
         .sort((a, b) => String(a._id).localeCompare(String(b._id)))
 
       const actualSorted = (response.body as string)
@@ -730,35 +723,33 @@ describe('admin-form.submissions.routes', () => {
 
       expect(response.status).toEqual(200)
       expect(actualSorted).toEqual(expectedSorted)
+      MockDate.reset()
     })
 
     it('should return 200 with stream of encrypted responses between given query.startDate and query.endDate', async () => {
       // Arrange
-      const submissions = await Promise.all(
-        times(5, (count) =>
-          createEncryptSubmission({
-            form: defaultForm,
-            encryptedContent: `any encrypted content ${count}`,
-            verifiedContent: `any verified content ${count}`,
-            attachmentMetadata: new Map([
-              ['fieldId1', `some.attachment.url.${count}`],
-              ['fieldId2', `some.other.attachment.url.${count}`],
-            ]),
-          }),
-        ),
-      )
+      const saveEncryptedSubmission = (count: number) =>
+        createEncryptSubmission({
+          form: defaultForm,
+          encryptedContent: `any encrypted content ${count}`,
+          verifiedContent: `any verified content ${count}`,
+          attachmentMetadata: new Map([
+            ['fieldId1', `some.attachment.url.${count}`],
+            ['fieldId2', `some.other.attachment.url.${count}`],
+          ]),
+        })
 
+      await Promise.all(times(3, (count) => saveEncryptedSubmission(count)))
+
+      const expectedSubmissions = []
       const startDateStr = '2020-02-03'
-      const endDateStr = '2020-02-04'
+
       // Set 2 submissions to be submitted with specific date
-      submissions[2].created = new Date(startDateStr)
-      submissions[4].created = new Date(endDateStr)
-      await submissions[2].save()
-      await submissions[4].save()
-      const expectedSubmissionIds = [
-        String(submissions[2]._id),
-        String(submissions[4]._id),
-      ]
+      MockDate.set(startDateStr)
+      expectedSubmissions.push(await saveEncryptedSubmission(1))
+      const endDateStr = '2020-02-04'
+      MockDate.set(endDateStr)
+      expectedSubmissions.push(await saveEncryptedSubmission(1))
 
       // Act
       const response = await request
@@ -777,7 +768,7 @@ describe('admin-form.submissions.routes', () => {
         })
 
       // Assert
-      const expectedSorted = submissions
+      const expectedSorted = expectedSubmissions
         .map((s) =>
           jsonParseStringify({
             _id: s._id,
@@ -790,7 +781,6 @@ describe('admin-form.submissions.routes', () => {
             version: s.version,
           }),
         )
-        .filter((s) => expectedSubmissionIds.includes(s._id))
         .sort((a, b) => String(a._id).localeCompare(String(b._id)))
 
       const actualSorted = (response.body as string)
@@ -803,6 +793,7 @@ describe('admin-form.submissions.routes', () => {
 
       expect(response.status).toEqual(200)
       expect(actualSorted).toEqual(expectedSorted)
+      MockDate.reset()
     })
 
     it('should return 400 when form of given formId is not an encrypt mode form', async () => {
@@ -845,7 +836,7 @@ describe('admin-form.submissions.routes', () => {
       // Arrange
       const anotherUser = (
         await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new Types.ObjectId(),
           mailName: 'some-user',
           shortName: 'someUser',
         })
@@ -874,7 +865,7 @@ describe('admin-form.submissions.routes', () => {
 
     it('should return 404 when form to download submissions for cannot be found', async () => {
       // Arrange
-      const invalidFormId = new ObjectId().toHexString()
+      const invalidFormId = new Types.ObjectId().toHexString()
 
       // Act
       const response = await request.get(
@@ -913,7 +904,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request.get(
-        `${ADMIN_FORMS_PREFIX}/${new ObjectId()}/submissions/download`,
+        `${ADMIN_FORMS_PREFIX}/${new Types.ObjectId()}/submissions/download`,
       )
 
       // Assert
@@ -1019,7 +1010,7 @@ describe('admin-form.submissions.routes', () => {
       // Act
       const response = await request.get(
         `${ADMIN_FORMS_PREFIX}/${emailForm._id}/submissions/${String(
-          new ObjectId(),
+          new Types.ObjectId(),
         )}`,
       )
 
@@ -1039,7 +1030,7 @@ describe('admin-form.submissions.routes', () => {
       const response = await request.get(
         `${ADMIN_FORMS_PREFIX}/${
           defaultForm._id
-        }/adminform/submissions/${String(new ObjectId())}`,
+        }/adminform/submissions/${String(new Types.ObjectId())}`,
       )
 
       // Assert
@@ -1051,7 +1042,7 @@ describe('admin-form.submissions.routes', () => {
       // Arrange
       const anotherUser = (
         await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new Types.ObjectId(),
           mailName: 'some-user',
           shortName: 'someUser',
         })
@@ -1068,7 +1059,7 @@ describe('admin-form.submissions.routes', () => {
       // Act
       const response = await request.get(
         `${ADMIN_FORMS_PREFIX}/${inaccessibleForm._id}/submissions/${String(
-          new ObjectId(),
+          new Types.ObjectId(),
         )}`,
       )
 
@@ -1085,7 +1076,7 @@ describe('admin-form.submissions.routes', () => {
       // Act
       const response = await request.get(
         `${ADMIN_FORMS_PREFIX}/${defaultForm._id}/submissions/${String(
-          new ObjectId(),
+          new Types.ObjectId(),
         )}`,
       )
 
@@ -1098,12 +1089,12 @@ describe('admin-form.submissions.routes', () => {
 
     it('should return 404 when form to retrieve submission for cannot be found', async () => {
       // Arrange
-      const invalidFormId = new ObjectId().toHexString()
+      const invalidFormId = new Types.ObjectId().toHexString()
 
       // Act
       const response = await request.get(
         `${ADMIN_FORMS_PREFIX}/${invalidFormId}/submissions/${String(
-          new ObjectId(),
+          new Types.ObjectId(),
         )}`,
       )
 
@@ -1125,7 +1116,7 @@ describe('admin-form.submissions.routes', () => {
       // Act
       const response = await request.get(
         `${ADMIN_FORMS_PREFIX}/${archivedForm._id}/submissions/${String(
-          new ObjectId(),
+          new Types.ObjectId(),
         )}`,
       )
 
@@ -1141,8 +1132,8 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request.get(
-        `${ADMIN_FORMS_PREFIX}/${new ObjectId()}/submissions/${String(
-          new ObjectId(),
+        `${ADMIN_FORMS_PREFIX}/${new Types.ObjectId()}/submissions/${String(
+          new Types.ObjectId(),
         )}`,
       )
 
@@ -1238,10 +1229,10 @@ describe('admin-form.submissions.routes', () => {
     it('should return 200 with requested page of metadata with payments when payment exists', async () => {
       // Arrange
       const createdPayment = await Payment.create({
-        _id: new ObjectId(),
+        _id: new Types.ObjectId(),
         formId: defaultForm._id,
         targetAccountId: 'acct_MOCK_ACCOUNT_ID',
-        pendingSubmissionId: new ObjectId(),
+        pendingSubmissionId: new Types.ObjectId(),
         status: PaymentStatus.Succeeded,
         paymentIntentId: 'somePaymentIntentId',
         amount: 314159,
@@ -1352,10 +1343,10 @@ describe('admin-form.submissions.routes', () => {
     it('should return 200 with metadata of single submissionId when query.submissionId is provided for submissions with payments', async () => {
       // Arrange
       const createdPayment = await Payment.create({
-        _id: new ObjectId(),
+        _id: new Types.ObjectId(),
         formId: defaultForm._id,
         targetAccountId: 'acct_MOCK_ACCOUNT_ID',
-        pendingSubmissionId: new ObjectId(),
+        pendingSubmissionId: new Types.ObjectId(),
         status: PaymentStatus.Succeeded,
         paymentIntentId: 'somePaymentIntentId',
         amount: 314159,
@@ -1453,7 +1444,7 @@ describe('admin-form.submissions.routes', () => {
       // Arrange
       const anotherUser = (
         await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new Types.ObjectId(),
           mailName: 'some-user',
           shortName: 'someUser',
         })
@@ -1484,7 +1475,7 @@ describe('admin-form.submissions.routes', () => {
 
     it('should return 404 when form to retrieve submission metadata for cannot be found', async () => {
       // Arrange
-      const invalidFormId = new ObjectId().toHexString()
+      const invalidFormId = new Types.ObjectId().toHexString()
 
       // Act
       const response = await request
@@ -1527,7 +1518,7 @@ describe('admin-form.submissions.routes', () => {
 
       // Act
       const response = await request
-        .get(`/admin/forms/${new ObjectId()}/submissions/metadata`)
+        .get(`/admin/forms/${new Types.ObjectId()}/submissions/metadata`)
         .query({
           page: 10,
         })
@@ -1567,7 +1558,7 @@ describe('admin-form.submissions.routes', () => {
       const response = await request
         .get(`/admin/forms/${defaultForm._id}/submissions/metadata`)
         .query({
-          submissionId: new ObjectId().toHexString(),
+          submissionId: new Types.ObjectId().toHexString(),
         })
 
       // Assert

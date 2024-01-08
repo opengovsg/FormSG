@@ -6,7 +6,7 @@ import {
 } from '__tests__/unit/backend/helpers/generate-form-data'
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { PresignedPost } from 'aws-sdk/clients/s3'
-import { ObjectId } from 'bson-ext'
+import { ObjectId } from 'bson'
 import { StatusCodes } from 'http-status-codes'
 import { assignIn, cloneDeep, merge, pick } from 'lodash'
 import { err, errAsync, ok, okAsync, Result } from 'neverthrow'

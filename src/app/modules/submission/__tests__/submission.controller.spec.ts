@@ -1,6 +1,6 @@
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
+import { ObjectId } from 'bson'
 import { StatusCodes } from 'http-status-codes'
-import { ObjectId } from 'mongodb'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import {
   AttachmentPresignedPostDataMapType,

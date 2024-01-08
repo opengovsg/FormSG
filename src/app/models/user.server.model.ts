@@ -1,6 +1,7 @@
 import { parsePhoneNumberFromString } from 'libphonenumber-js/mobile'
-import { MongoError } from 'mongodb'
 import { CallbackError, Mongoose, Schema } from 'mongoose'
+// https://stackoverflow.com/a/61679809
+import { MongoError } from 'mongoose/node_modules/mongodb'
 import validator from 'validator'
 
 import {
@@ -28,7 +29,7 @@ const compileUserModel = (db: Mongoose) => {
         // @ts-ignore
         trim: true,
         unique: true,
-        required: 'Please enter your email',
+        required: [true, 'Please enter your email'],
         validate: {
           // Check if email entered exists in the Agency collection
           validator: async (value: string) => {
@@ -114,7 +115,10 @@ const compileUserModel = (db: Mongoose) => {
     'save',
     function (err: Error, _doc: unknown, next: (err?: CallbackError) => void) {
       if (err) {
-        if (err.name === 'MongoError' && (err as MongoError)?.code === 11000) {
+        if (
+          ['MongoError', 'MongoServerError'].includes(err.name) &&
+          (err as MongoError)?.code === 11000
+        ) {
           next(new Error('Account already exists with this email'))
         } else {
           next(err)

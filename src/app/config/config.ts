@@ -126,14 +126,6 @@ const dbConfig: DbConfig = {
     pass: '',
     // Only create indexes in dev env to avoid adverse production impact.
     autoIndex: isDev,
-    // Avoid using deprecated URL string parser in MongoDB driver
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    // Avoid using deprecated collection.ensureIndex internally
-    useCreateIndex: true,
-    // upgrade to mongo driver's native findOneAndUpdate function instead of
-    // findAndModify.
-    useFindAndModify: false,
     promiseLibrary: global.Promise,
   },
 }

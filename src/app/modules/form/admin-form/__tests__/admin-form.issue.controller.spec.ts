@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson-ext'
+import { ObjectId } from 'bson'
 import { StatusCodes } from 'http-status-codes'
 import { errAsync, okAsync } from 'neverthrow'
 import { PassThrough } from 'stream'

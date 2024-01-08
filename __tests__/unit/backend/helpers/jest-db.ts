@@ -1,6 +1,5 @@
 import MemoryDatabaseServer from '__tests__/setup/database'
-import { ObjectID } from 'bson'
-import mongoose from 'mongoose'
+import mongoose, { Schema, Types } from 'mongoose'
 import { FormResponseMode } from 'shared/types'
 
 import getAgencyModel from 'src/app/models/agency.server.model'
@@ -31,14 +30,9 @@ import {
  * Connect to the in-memory database
  */
 const connect = async (): Promise<typeof mongoose> => {
-  const dbUrl = await MemoryDatabaseServer.getConnectionString()
-
-  const conn = await mongoose.connect(dbUrl, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-    useFindAndModify: false,
-  })
+  await MemoryDatabaseServer.start()
+  const dbUrl = MemoryDatabaseServer.getConnectionString()
+  const conn = await mongoose.connect(dbUrl)
   return conn
 }
 
@@ -91,8 +85,8 @@ const insertUser = async ({
   mailName = 'test',
   apiToken,
 }: {
-  agencyId: ObjectID
-  userId?: ObjectID
+  agencyId: Schema.Types.ObjectId
+  userId?: Schema.Types.ObjectId
   mailName?: string
   mailDomain?: string
   apiToken?: UserApiToken
@@ -122,7 +116,7 @@ const insertFormCollectionReqs = async ({
   betaFlags,
   apiToken,
 }: {
-  userId?: ObjectID
+  userId?: Schema.Types.ObjectId
   mailName?: string
   mailDomain?: string
   shortName?: string
@@ -139,7 +133,7 @@ const insertFormCollectionReqs = async ({
 
   const user = await User.create({
     email: `${mailName}@${mailDomain}`,
-    _id: userId ?? new ObjectID(),
+    _id: userId ?? new Types.ObjectId(),
     agency: agency._id,
     flags,
     betaFlags,
@@ -157,8 +151,8 @@ const insertEmailForm = async ({
   shortName = 'govtest',
   formOptions = {},
 }: {
-  formId?: ObjectID
-  userId?: ObjectID
+  formId?: Schema.Types.ObjectId
+  userId?: Schema.Types.ObjectId
   mailName?: string
   mailDomain?: string
   shortName?: string
@@ -201,8 +195,8 @@ const insertEncryptForm = async ({
   formOptions = {},
   userBetaFlags,
 }: {
-  formId?: ObjectID
-  userId?: ObjectID
+  formId?: Schema.Types.ObjectId
+  userId?: Schema.Types.ObjectId
   mailName?: string
   mailDomain?: string
   shortName?: string
@@ -248,8 +242,8 @@ const insertFormWithMsgSrvcName = async ({
   formOptions = {},
   msgSrvcName = 'mockMsgSrvcname',
 }: {
-  formId?: ObjectID
-  userId?: ObjectID
+  formId?: Schema.Types.ObjectId
+  userId?: Schema.Types.ObjectId
   mailName?: string
   mailDomain?: string
   shortName?: string
@@ -294,7 +288,7 @@ const insertFormSubmission = async ({
   version = '1',
   encryptedContent = 'encryptedContent',
 }: {
-  formId?: ObjectID
+  formId?: Schema.Types.ObjectId
   submissionType?: string
   version?: string
   encryptedContent?: string
@@ -320,8 +314,8 @@ const insertFormFeedback = async ({
   rating = '5',
   comment = 'FormSG rocks!',
 }: {
-  formId?: ObjectID
-  submissionId?: ObjectID
+  formId?: Schema.Types.ObjectId
+  submissionId?: Schema.Types.ObjectId
   rating?: string
   comment?: string
 } = {}): Promise<{

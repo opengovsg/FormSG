@@ -92,6 +92,9 @@ describe('payments.service', () => {
         gstEnabled: false,
         completedPayment: {
           paymentDate: now.toDate(),
+          receiptUrl: 'https://form.gov.sg',
+          submissionId: new ObjectId().toHexString(),
+          transactionFee: 0,
         },
       })
     })
@@ -122,6 +125,9 @@ describe('payments.service', () => {
         gstEnabled: false,
         completedPayment: {
           paymentDate: now.subtract(1, 'days').toDate(),
+          receiptUrl: 'https://form.gov.sg',
+          submissionId: new ObjectId().toHexString(),
+          transactionFee: 0,
         },
       })
 
@@ -195,7 +201,10 @@ describe('payments.service', () => {
         status: PaymentStatus.Succeeded,
         gstEnabled: false,
         completedPayment: {
+          receiptUrl: 'https://form.gov.sg',
+          submissionId: new ObjectId().toHexString(),
           paymentDate: moment().subtract(31, 'days').utc().toDate(),
+          transactionFee: 0,
         },
       })
       const result =

@@ -1,9 +1,8 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import { ObjectId } from 'bson'
 import { compareAsc } from 'date-fns'
 import { omit, times } from 'lodash'
 import moment from 'moment-timezone'
-import mongoose from 'mongoose'
+import mongoose, { Types } from 'mongoose'
 import { okAsync } from 'neverthrow'
 
 import MailService from 'src/app/services/mail/mail.service'
@@ -15,7 +14,7 @@ import { DatabaseError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as IssueService from '../issue.service'
 
-const MOCK_FORM_ID = new ObjectId()
+const MOCK_FORM_ID = new Types.ObjectId()
 const MOCK_ISSUE =
   'I tried to submit the form, but I keep getting an error message saying that my email address is invalid. I double-checked the email address and it looks correct to me. Can you please help me resolve this issue?'
 const MOCK_EMAIL = 'test@example.com'
@@ -113,7 +112,7 @@ describe('issue.service', () => {
 
   describe('getIsFirstIssueForFormToday', () => {
     let FORM_ISSUE: IFormIssueSchema
-    const MOCK_ISSUE_ID = ObjectId.createFromTime(
+    const MOCK_ISSUE_ID = Types.ObjectId.createFromTime(
       new Date('2023-06-22T23:30:00+08:00').getTime() / 1000,
     )
     beforeEach(async () => {
@@ -178,7 +177,7 @@ describe('issue.service', () => {
       await FormIssueModel.create({
         issue: 'I am unable to make a payment',
         formId: MOCK_FORM_ID,
-        _id: ObjectId.createFromTime(yesterday.valueOf()),
+        _id: Types.ObjectId.createFromTime(yesterday.getSeconds()),
       })
       const countDocumentsSpy = jest.spyOn(FormIssueModel, 'countDocuments')
 
@@ -201,7 +200,7 @@ describe('issue.service', () => {
       await FormIssueModel.create({
         issue: 'I am unable to make a payment',
         formId: MOCK_FORM_ID,
-        _id: ObjectId.createFromTime(earlier.getSeconds()),
+        _id: Types.ObjectId.createFromTime(earlier.getSeconds()),
       })
       const countDocumentsSpy = jest.spyOn(FormIssueModel, 'countDocuments')
 
@@ -224,7 +223,7 @@ describe('issue.service', () => {
       await FormIssueModel.create({
         issue: 'I am unable to make a payment',
         formId: MOCK_FORM_ID,
-        _id: ObjectId.createFromTime(aSecondAgo.getTime() / 1000),
+        _id: Types.ObjectId.createFromTime(aSecondAgo.getTime() / 1000),
       })
       const countDocumentsSpy = jest.spyOn(FormIssueModel, 'countDocuments')
       // Act
@@ -241,7 +240,7 @@ describe('issue.service', () => {
 
   describe('notifyFormAdmin', () => {
     let FORM_ISSUE: IFormIssueSchema
-    const MOCK_ISSUE_ID = ObjectId.createFromTime(
+    const MOCK_ISSUE_ID = Types.ObjectId.createFromTime(
       new Date('2023-06-22T12:30:00+08:00').getTime() / 1000,
     )
     beforeEach(async () => {
@@ -305,7 +304,7 @@ describe('issue.service', () => {
       await FormIssueModel.create({
         issue: 'I just want to complain',
         formId: MOCK_FORM_ID,
-        _id: ObjectId.createFromTime(aSecondAgo.getTime() / 1000),
+        _id: Types.ObjectId.createFromTime(aSecondAgo.getTime() / 1000),
       })
       const mailSpy = jest.spyOn(
         MailService,
@@ -381,7 +380,7 @@ describe('issue.service', () => {
     it('should return correct issues', async () => {
       // Arrange
       const expectedCount = 3
-      const mockFormId = new ObjectId().toHexString()
+      const mockFormId = new Types.ObjectId().toHexString()
       const expectedPromises = times(expectedCount, (count) =>
         FormIssueModel.create({
           formId: mockFormId,
@@ -391,7 +390,7 @@ describe('issue.service', () => {
       )
       // Add another issue with a different form id.
       await FormIssueModel.create({
-        formId: new ObjectId(),
+        formId: new Types.ObjectId(),
         issue: 'I cant see anything',
         email: 'email@example.com',
       })
@@ -435,7 +434,7 @@ describe('issue.service', () => {
 
     it('should return issue response with zero count and empty array when no issue is available', async () => {
       // Arrange
-      const mockFormId = new ObjectId().toHexString()
+      const mockFormId = new Types.ObjectId().toHexString()
 
       // Act
       const actualResult = await IssueService.getFormIssues(mockFormId)
@@ -450,7 +449,7 @@ describe('issue.service', () => {
 
     it('should return issue response with empty string email if email is undefined', async () => {
       // Arrange
-      const mockFormId = new ObjectId().toHexString()
+      const mockFormId = new Types.ObjectId().toHexString()
       const issueSchema = await FormIssueModel.create({
         formId: mockFormId,
         // Missing comment key value.
@@ -479,7 +478,7 @@ describe('issue.service', () => {
 
     it('should return DatabaseError when error occurs whilst querying database', async () => {
       // Arrange
-      const mockFormId = new ObjectId().toHexString()
+      const mockFormId = new Types.ObjectId().toHexString()
       const sortSpy = jest.fn().mockReturnThis()
       const findSpy = jest.spyOn(FormIssueModel, 'find').mockImplementationOnce(
         () =>
@@ -506,7 +505,7 @@ describe('issue.service', () => {
     it('should return stream successfully', async () => {
       // Arrange
       const mockFormId = 'some form id'
-      const mockCursor = 'some cursor' as unknown as mongoose.QueryCursor<any>
+      const mockCursor = 'some cursor' as unknown as mongoose.Cursor<any>
       const streamSpy = jest
         .spyOn(FormIssueModel, 'getIssueCursorByFormId')
         .mockReturnValue(mockCursor)

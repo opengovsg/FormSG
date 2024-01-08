@@ -1,6 +1,5 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import { ObjectID } from 'bson'
-import mongoose from 'mongoose'
+import mongoose, { Types } from 'mongoose'
 import {
   BasicField,
   FormResponseMode,
@@ -15,7 +14,7 @@ import { aws } from '../../config/config'
 
 const Form = getFormModel(mongoose)
 
-const MOCK_ADMIN_ID = new ObjectID()
+const MOCK_ADMIN_ID = new Types.ObjectId()
 const MOCK_FORM_PARAMS = {
   title: 'Test Form',
   admin: MOCK_ADMIN_ID,
