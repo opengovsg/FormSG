@@ -2,7 +2,6 @@ import { PresignedPost } from 'aws-sdk/clients/s3'
 import axios from 'axios'
 
 import {
-  ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION,
   MULTIRESPONDENT_FORM_SUBMISSION_VERSION,
   VIRUS_SCANNER_SUBMISSION_VERSION,
 } from '~shared/constants'
@@ -181,48 +180,9 @@ export const submitEmailModeForm = async ({
   ).then(({ data }) => data)
 }
 
-export const submitStorageModeClearForm = async ({
-  formFields,
-  formLogics,
-  formInputs,
-  formId,
-  captchaResponse = null,
-  captchaType = '',
-  paymentReceiptEmail,
-  responseMetadata,
-  paymentProducts,
-  payments,
-}: SubmitStorageFormClearArgs) => {
-  const filteredInputs = filterHiddenInputs({
-    formFields,
-    formInputs,
-    formLogics,
-  })
-
-  const formData = createClearSubmissionFormData({
-    formFields,
-    formInputs: filteredInputs,
-    responseMetadata,
-    paymentReceiptEmail,
-    paymentProducts,
-    payments,
-    version: ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION,
-  })
-
-  return ApiService.post<SubmissionResponseDto>(
-    `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/storage`,
-    formData,
-    {
-      params: {
-        captchaResponse: String(captchaResponse),
-        captchaType: captchaType,
-      },
-    },
-  ).then(({ data }) => data)
-}
-
 // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
-export const submitStorageModeClearFormWithFetch = async ({
+// Submit storage mode form with virus scanning (storage v2.1+)
+export const submitStorageModeFormWithFetch = async ({
   formFields,
   formLogics,
   formInputs,
@@ -233,22 +193,26 @@ export const submitStorageModeClearFormWithFetch = async ({
   responseMetadata,
   paymentProducts,
   payments,
-}: SubmitStorageFormClearArgs) => {
+  fieldIdToQuarantineKeyMap,
+}: SubmitStorageFormWithVirusScanningArgs) => {
   const filteredInputs = filterHiddenInputs({
     formFields,
     formInputs,
     formLogics,
   })
 
-  const formData = createClearSubmissionFormData({
-    formFields,
-    formInputs: filteredInputs,
-    responseMetadata,
-    paymentReceiptEmail,
-    paymentProducts,
-    payments,
-    version: ENCRYPTION_BOUNDARY_SHIFT_SUBMISSION_VERSION,
-  })
+  const formData = createClearSubmissionWithVirusScanningFormData(
+    {
+      formFields,
+      formInputs: filteredInputs,
+      responseMetadata,
+      paymentReceiptEmail,
+      paymentProducts,
+      payments,
+      version: VIRUS_SCANNER_SUBMISSION_VERSION,
+    },
+    fieldIdToQuarantineKeyMap,
+  )
 
   // Add captcha response to query string
   const queryString = new URLSearchParams({
@@ -271,7 +235,7 @@ export const submitStorageModeClearFormWithFetch = async ({
 }
 
 // Submit storage mode form with virus scanning (storage v2.1+)
-export const submitStorageModeClearFormWithVirusScanning = async ({
+export const submitStorageModeForm = async ({
   formFields,
   formLogics,
   formInputs,
