@@ -4,10 +4,6 @@ import { StatusCodes } from 'http-status-codes'
 import { ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import {
-  featureFlags,
-  VIRUS_SCANNER_SUBMISSION_VERSION,
-} from '../../../../../shared/constants'
-import {
   BasicField,
   FormAuthType,
   FormResponseMode,
@@ -162,38 +158,6 @@ export const validateStorageSubmissionParams = celebrate({
 })
 
 /**
- * Guardrail to prevent new endpoint from being used for regular storage mode forms.
- * TODO (FRM-1232): remove this guardrail when encryption boundary is shifted.
- */
-export const checkNewBoundaryEnabled = async (
-  req: StorageSubmissionMiddlewareHandlerRequest,
-  res: Parameters<StorageSubmissionMiddlewareHandlerType>[1],
-  next: NextFunction,
-) => {
-  const logMeta = {
-    action: 'checkNewBoundaryEnabled',
-    ...createReqMeta(req),
-  }
-
-  const newBoundaryEnabled = req.formsg.featureFlags.includes(
-    featureFlags.encryptionBoundaryShift,
-  )
-
-  if (!newBoundaryEnabled) {
-    logger.warn({
-      message: 'Encryption boundary shift is not enabled.',
-      meta: logMeta,
-    })
-
-    return res
-      .status(StatusCodes.FORBIDDEN)
-      .json({ message: 'This endpoint has not been enabled for this form.' })
-  }
-
-  return next()
-}
-
-/**
  * Asynchronous virus scanning for storage submissions v2.1+. This is used for non-dev environments.
  * @param responses all responses in the storage submissions v2.1+ request.
  * @returns all responses with clean attachments and their filename populated for any attachment fields.
@@ -268,44 +232,7 @@ export const scanAndRetrieveAttachments = async (
     ...createReqMeta(req),
   }
 
-  // TODO (FRM-1413): remove this guardrail when virus scanning has completed rollout.
-  // Step 1: If virus scanner is not enabled, skip this middleware.
-
-  const virusScannerEnabled = req.formsg.featureFlags.includes(
-    featureFlags.encryptionBoundaryShiftVirusScanner,
-  )
-
-  if (!virusScannerEnabled) {
-    logger.warn({
-      message: 'Virus scanner is not enabled on BE.',
-      meta: logMeta,
-    })
-
-    return next()
-  }
-
-  // TODO (FRM-1413): remove this guardrail when virus scanning has completed rollout.
-  // Step 2: If virus scanner is enabled, check if storage submission v2.1+. Storage submission v2.1 onwards
-  // should have virus scanning enabled. If not, skip this middleware.
-  // Note: Version number is sent by the frontend and should only be >=2.1 if virus scanning is enabled on the frontend.
-
-  if (req.body.version < VIRUS_SCANNER_SUBMISSION_VERSION) {
-    logger.warn({
-      message: 'Virus scanner is not enabled on FE.',
-      meta: logMeta,
-    })
-    return next()
-  }
-
-  logger.info({
-    message: 'Virus scanner is enabled on both BE and FE.',
-    meta: logMeta,
-  })
-
-  // At this point, virus scanner is enabled and storage submission v2.1+. This means that both the FE and BE
-  // have virus scanning enabled.
-
-  // Step 3 + 4: For each attachment, trigger lambda to scan and if it succeeds, retrieve attachment from clean bucket. Do this asynchronously.
+  // For each attachment, trigger lambda to scan and if it succeeds, retrieve attachment from clean bucket. Do this asynchronously.
   const scanAndRetrieveFilesResult: Result<
     ParsedClearFormFieldResponse[], // true for attachment fields, false for non-attachment fields.
     | VirusScanFailedError
@@ -341,7 +268,7 @@ export const scanAndRetrieveAttachments = async (
     meta: logMeta,
   })
 
-  // Step 5: Replace req.body.responses with the new responses with populated attachments.
+  // Replace req.body.responses with the new responses with populated attachments.
   req.body.responses = scanAndRetrieveFilesResult.value
 
   return next()
