@@ -70,6 +70,7 @@ export const FormResponseOptions = forwardRef<
         <Tile.Subtitle>Receive responses in your inbox</Tile.Subtitle>
         <OptionDescription
           listItems={[
+            'Supported by Checkpoint, an approval workflow tool',
             'Attachments: up to 7MB per form',
             'Up to Restricted and Sensitive (High) data',
           ]}
