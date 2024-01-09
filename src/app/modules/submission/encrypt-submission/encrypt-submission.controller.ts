@@ -622,24 +622,12 @@ const _createSubmission = async ({
   return await performEncryptPostSubmissionActions(submission, responses)
 }
 
-// TODO (FRM-1232): remove endpoint after encryption boundary is shifted
-export const handleEncryptedSubmission = [
-  CaptchaMiddleware.validateCaptchaParams,
-  TurnstileMiddleware.validateTurnstileParams,
-  EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
-  EncryptSubmissionMiddleware.createFormsgAndRetrieveForm,
-  EncryptSubmissionMiddleware.validateEncryptSubmission,
-  EncryptSubmissionMiddleware.moveEncryptedPayload,
-  submitEncryptModeForm,
-] as ControllerHandler[]
-
 export const handleStorageSubmission = [
   CaptchaMiddleware.validateCaptchaParams,
   TurnstileMiddleware.validateTurnstileParams,
   ReceiverMiddleware.receiveStorageSubmission,
   EncryptSubmissionMiddleware.validateStorageSubmissionParams,
   EncryptSubmissionMiddleware.createFormsgAndRetrieveForm,
-  EncryptSubmissionMiddleware.checkNewBoundaryEnabled,
   EncryptSubmissionMiddleware.scanAndRetrieveAttachments,
   EncryptSubmissionMiddleware.validateStorageSubmission,
   EncryptSubmissionMiddleware.encryptSubmission,

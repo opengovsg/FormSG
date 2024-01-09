@@ -23,9 +23,8 @@ import {
   submitFormIssue,
   submitMultirespondentForm,
   SubmitStorageFormClearArgs,
-  submitStorageModeClearForm,
-  submitStorageModeClearFormWithFetch,
-  submitStorageModeClearFormWithVirusScanning,
+  submitStorageModeForm,
+  submitStorageModeFormWithFetch,
   updateMultirespondentSubmission,
   uploadAttachmentToQuarantine,
 } from './PublicFormService'
@@ -80,12 +79,6 @@ export const usePublicFormMutations = (
     },
   )
 
-  const submitStorageModeClearFormMutation = useMutation(
-    (args: Omit<SubmitStorageFormClearArgs, 'formId'>) => {
-      return submitStorageModeClearForm({ ...args, formId })
-    },
-  )
-
   // TODO (#5826): Fallback mutation using Fetch. Remove once network error is resolved
   const submitEmailModeFormFetchMutation = useMutation(
     (args: Omit<SubmitEmailFormArgs, 'formId'>) => {
@@ -93,13 +86,7 @@ export const usePublicFormMutations = (
     },
   )
 
-  const submitStorageModeClearFormFetchMutation = useMutation(
-    (args: Omit<SubmitStorageFormClearArgs, 'formId'>) => {
-      return submitStorageModeClearFormWithFetch({ ...args, formId })
-    },
-  )
-
-  const useSubmitClearFormWithVirusScanningMutation = (
+  const useSubmitStorageModeFormMutation = (
     f: (
       args: SubmitStorageFormClearArgs & {
         fieldIdToQuarantineKeyMap: FieldIdToQuarantineKeyType[]
@@ -176,23 +163,26 @@ export const usePublicFormMutations = (
       )
     })
 
-  const submitStorageModeClearFormWithVirusScanningMutation =
-    useSubmitClearFormWithVirusScanningMutation(
-      submitStorageModeClearFormWithVirusScanning,
-    )
+  const submitStorageModeFormMutation = useSubmitStorageModeFormMutation(
+    submitStorageModeForm,
+  )
 
-  const submitMultirespondentFormMutation =
-    useSubmitClearFormWithVirusScanningMutation(submitMultirespondentForm)
+  const submitStorageModeFormFetchMutation = useSubmitStorageModeFormMutation(
+    submitStorageModeFormWithFetch,
+  )
+
+  const submitMultirespondentFormMutation = useSubmitStorageModeFormMutation(
+    submitMultirespondentForm,
+  )
 
   const updateMultirespondentSubmissionMutation =
-    useSubmitClearFormWithVirusScanningMutation(updateMultirespondentSubmission)
+    useSubmitStorageModeFormMutation(updateMultirespondentSubmission)
 
   return {
     submitEmailModeFormMutation,
     submitEmailModeFormFetchMutation,
-    submitStorageModeClearFormMutation,
-    submitStorageModeClearFormFetchMutation,
-    submitStorageModeClearFormWithVirusScanningMutation,
+    submitStorageModeFormMutation,
+    submitStorageModeFormFetchMutation,
     submitMultirespondentFormMutation,
     updateMultirespondentSubmissionMutation,
   }

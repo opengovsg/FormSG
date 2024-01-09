@@ -14,7 +14,6 @@ import {
 
 import * as AuthService from 'src/app/modules/auth/auth.service'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
-import * as FeatureFlagService from 'src/app/modules/feature-flags/feature-flags.service'
 import { PermissionLevel } from 'src/app/modules/form/admin-form/admin-form.types'
 import {
   ForbiddenFormError,
@@ -58,7 +57,6 @@ const MockSubService = jest.mocked(SubmissionService)
 const MockEncryptSubService = jest.mocked(EncryptSubmissionService)
 const MockUserService = jest.mocked(UserService)
 const MockAuthService = jest.mocked(AuthService)
-const MockFeatureFlagService = jest.mocked(FeatureFlagService)
 
 describe('submission.controller', () => {
   beforeEach(() => jest.clearAllMocks())
@@ -1069,37 +1067,8 @@ describe('submission.controller', () => {
       ] as unknown as AttachmentSizeMapType[],
     })
 
-    it('should return 500 if getFeatureFlag returns errAsync(DatabaseError)', async () => {
+    it('should return 500 if getQuarantinePresignedPostData returns errAsync(CreatePresignedPostError)', async () => {
       // Arrange
-      MockFeatureFlagService.getFeatureFlag.mockReturnValueOnce(
-        errAsync(new DatabaseError()),
-      )
-      const mockRes = expressHandler.mockResponse()
-
-      // Act
-      await getS3PresignedPostData(MOCK_REQ, mockRes, jest.fn())
-
-      // Assert
-      expect(mockRes.status).toHaveBeenCalledWith(
-        StatusCodes.INTERNAL_SERVER_ERROR,
-      )
-    })
-
-    it('should return 400 if getFeatureFlag returns okAsync(false)', async () => {
-      // Arrange
-      MockFeatureFlagService.getFeatureFlag.mockReturnValueOnce(okAsync(false))
-      const mockRes = expressHandler.mockResponse()
-
-      // Act
-      await getS3PresignedPostData(MOCK_REQ, mockRes, jest.fn())
-
-      // Assert
-      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
-    })
-
-    it('should return 500 if getFeatureFlag returns okAsync(true) but getQuarantinePresignedPostData returns errAsync(CreatePresignedPostError)', async () => {
-      // Arrange
-      MockFeatureFlagService.getFeatureFlag.mockReturnValueOnce(okAsync(true))
       MockSubService.getQuarantinePresignedPostData.mockReturnValueOnce(
         errAsync(new CreatePresignedPostError()),
       )
@@ -1114,9 +1083,9 @@ describe('submission.controller', () => {
       )
     })
 
-    it('should return 200 if getFeatureFlag returns okAsync(true) and getQuarantinePresignedPostData returns okAsync with the presigned URLs', async () => {
+    it('should return 200 if getQuarantinePresignedPostData returns okAsync with the presigned URLs', async () => {
       // Arrange
-      MockFeatureFlagService.getFeatureFlag.mockReturnValueOnce(okAsync(true))
+
       const MOCK_PRESIGNED_URLS = [
         { key: 'value' },
       ] as unknown as AttachmentPresignedPostDataMapType[]

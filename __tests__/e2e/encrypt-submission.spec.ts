@@ -1,5 +1,4 @@
 import mongoose from 'mongoose'
-import { featureFlags } from 'shared/constants/feature-flags'
 import {
   BasicField,
   FormAuthType,
@@ -7,7 +6,7 @@ import {
   MyInfoAttribute,
 } from 'shared/types'
 
-import { IFeatureFlagModel, IFormModel } from 'src/types'
+import { IFormModel } from 'src/types'
 
 import {
   ALL_FIELDS as _ALL_FIELDS,
@@ -43,20 +42,12 @@ const runEncryptSubmissionTest = createSubmissionTestRunnerForResponseMode(
 
 let db: mongoose.Connection
 let Form: IFormModel
-let FeatureFlags: IFeatureFlagModel
 
 test.describe('Storage form submission', () => {
   test.beforeAll(async () => {
     // Create models
     db = await makeMongooseFixtures()
     Form = makeModel(db, 'form.server.model', 'Form')
-    // TODO(FRM-1232): Remove this once old storage submission endpoint (/submissions/encrypt) is removed
-    // Add feature flag model and set encryption boundary shift to true
-    FeatureFlags = makeModel(db, 'feature_flag.server.model', 'FeatureFlags')
-    await FeatureFlags.create({
-      name: featureFlags.encryptionBoundaryShift,
-      enabled: true,
-    })
   })
   test.afterAll(async () => {
     // Clean up db
