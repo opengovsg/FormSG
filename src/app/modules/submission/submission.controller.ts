@@ -5,7 +5,6 @@ import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
-import { featureFlags } from '../../../../shared/constants'
 import {
   AttachmentPresignedPostDataMapType,
   AttachmentSizeMapType,
@@ -22,17 +21,13 @@ import { createReqMeta } from '../../utils/request'
 import { getFormAfterPermissionChecks } from '../auth/auth.service'
 import { DatabaseError } from '../core/core.errors'
 import { ControllerHandler } from '../core/core.types'
-import { getFeatureFlag } from '../feature-flags/feature-flags.service'
 import { PermissionLevel } from '../form/admin-form/admin-form.types'
 import { PaymentNotFoundError } from '../payments/payments.errors'
 import { getPopulatedUserById } from '../user/user.service'
 
 import { createStorageModeSubmissionDto } from './encrypt-submission/encrypt-submission.utils'
 import { createMultirespondentSubmissionDto } from './multirespondent-submission/multirespondent-submission.utils'
-import {
-  FeatureDisabledError,
-  InvalidSubmissionTypeError,
-} from './submission.errors'
+import { InvalidSubmissionTypeError } from './submission.errors'
 import {
   addPaymentDataStream,
   getEncryptedSubmissionData,
@@ -445,46 +440,17 @@ export const getS3PresignedPostData: ControllerHandler<
     action: 'getS3PresignedPostData',
     ...createReqMeta(req),
   }
-
-  return getFeatureFlag(featureFlags.encryptionBoundaryShiftVirusScanner)
-    .map((virusScannerEnabled) => {
-      if (!virusScannerEnabled) {
-        logger.warn({
-          message: 'Virus scanning has not been enabled.',
-          meta: logMeta,
-        })
-
-        const { statusCode, errorMessage } = mapRouteError(
-          new FeatureDisabledError(),
-        )
-        return res.status(statusCode).send({
-          message: errorMessage,
-        })
-      }
-
-      return getQuarantinePresignedPostData(req.body)
-        .map((presignedUrls) => {
-          logger.info({
-            message: 'Successfully retrieved quarantine presigned post data.',
-            meta: logMeta,
-          })
-          return res.status(StatusCodes.OK).send(presignedUrls)
-        })
-        .mapErr((error) => {
-          logger.error({
-            message: 'Failure getting quarantine presigned post data.',
-            meta: logMeta,
-            error,
-          })
-          const { statusCode, errorMessage } = mapRouteError(error)
-          return res.status(statusCode).send({
-            message: errorMessage,
-          })
-        })
+  return getQuarantinePresignedPostData(req.body)
+    .map((presignedUrls) => {
+      logger.info({
+        message: 'Successfully retrieved quarantine presigned post data.',
+        meta: logMeta,
+      })
+      return res.status(StatusCodes.OK).send(presignedUrls)
     })
     .mapErr((error) => {
       logger.error({
-        message: 'Error retrieving feature flags.',
+        message: 'Failure getting quarantine presigned post data.',
         meta: logMeta,
         error,
       })
