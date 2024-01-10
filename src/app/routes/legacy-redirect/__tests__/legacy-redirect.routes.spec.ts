@@ -1,12 +1,12 @@
 import { setupApp } from '__tests__/integration/helpers/express-setup'
-import { ObjectId } from 'mongodb'
+import { Types } from 'mongoose'
 import session, { Session } from 'supertest-session'
 
 import { LegacyRedirectRouter } from '../legacy-redirect.routes'
 
 const app = setupApp(undefined, LegacyRedirectRouter)
 
-const MOCK_FORM_ID = new ObjectId().toHexString()
+const MOCK_FORM_ID = new Types.ObjectId().toHexString()
 
 describe('legacy-redirect.routes', () => {
   let request: Session

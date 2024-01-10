@@ -1,4 +1,4 @@
-import { Mongoose, QueryCursor, Schema } from 'mongoose'
+import { Cursor as QueryCursor, Mongoose, QueryOptions, Schema } from 'mongoose'
 
 import {
   FormIssueStreamData,
@@ -48,7 +48,7 @@ FormIssueSchema.index({ formId: 1 })
 FormIssueSchema.statics.getIssueCursorByFormId = function (
   formId: string,
   fields: (keyof IFormIssueSchema)[],
-): QueryCursor<FormIssueStreamData> {
+): QueryCursor<FormIssueStreamData, QueryOptions<IFormIssueSchema>> {
   return this.find({ formId }, fields)
     .batchSize(2000)
     .read('secondary')

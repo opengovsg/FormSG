@@ -165,6 +165,8 @@ export interface FormBase {
   webhook: FormWebhook
 
   responseMode: FormResponseMode
+
+  goLinkSuffix?: string
 }
 
 export interface EmailFormBase extends FormBase {

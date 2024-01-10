@@ -27,6 +27,8 @@ export interface IShowFieldsLogicSchema
   extends ILogicSchema,
     ShowFieldLogic,
     Document {
+  // overwriting field id type in show to reflect mongoose Id type
+  show: IFieldSchema['_id'][]
   logicType: LogicType.ShowFields
   conditions: IConditionSchema[]
 }

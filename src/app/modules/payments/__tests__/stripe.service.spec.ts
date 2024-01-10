@@ -705,9 +705,7 @@ describe('stripe.service', () => {
         admin: MOCK_USER,
         title: 'Test Form',
         publicKey: 'mockPublicKey',
-      })
-        .populate('admin')
-        .execPopulate()) as IPopulatedEncryptedForm
+      }).populate('admin')) as IPopulatedEncryptedForm
 
       const getFeatureFlagSpy = jest
         .spyOn(FeatureFlagService, 'getFeatureFlag')
@@ -745,9 +743,7 @@ describe('stripe.service', () => {
         admin: MOCK_USER,
         title: 'Test Form',
         publicKey: 'mockPublicKey',
-      })
-        .populate('admin')
-        .execPopulate()) as IPopulatedEncryptedForm
+      }).populate('admin')) as IPopulatedEncryptedForm
 
       const getFeatureFlagSpy = jest
         .spyOn(FeatureFlagService, 'getFeatureFlag')
@@ -788,7 +784,7 @@ describe('stripe.service', () => {
         admin: MOCK_USER,
         title: 'Test Form',
         publicKey: 'mockPublicKey',
-      }).execPopulate()) as IPopulatedEncryptedForm
+      })) as IPopulatedEncryptedForm
       const addPaymentAccountIdSpy = jest.spyOn(mockForm, 'addPaymentAccountId')
 
       const getFeatureFlagSpy = jest
@@ -826,9 +822,7 @@ describe('stripe.service', () => {
         admin: MOCK_USER,
         title: 'Test Form',
         publicKey: 'mockPublicKey',
-      })
-        .populate('admin')
-        .execPopulate()) as IPopulatedEncryptedForm
+      }).populate('admin')) as IPopulatedEncryptedForm
 
       const getFeatureFlagSpy = jest
         .spyOn(FeatureFlagService, 'getFeatureFlag')

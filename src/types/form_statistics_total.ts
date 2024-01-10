@@ -12,9 +12,7 @@ export interface IFormStatisticsTotalSchema
   extends IFormStatisticsTotal,
     Document {}
 
-export type AggregateFormCountResult =
-  | [{ numActiveForms: number } | undefined]
-  | never[]
+export type AggregateFormCountResult = { numActiveForms: number }[]
 
 export interface IFormStatisticsTotalModel
   extends Model<IFormStatisticsTotalSchema> {

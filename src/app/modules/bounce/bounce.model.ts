@@ -118,82 +118,87 @@ BounceSchema.statics.fromSnsNotification = function (
  * @param snsInfo the notification information to merge
  * @returns the updated document
  */
-BounceSchema.methods.updateBounceInfo = function (
-  snsInfo: IEmailNotification,
-): IBounceSchema {
-  // Correctly parse the emails from commonHeaders.to
-  const emailsArray = parseBounceNotificationCommonHeadersToEmails(
-    snsInfo.mail.commonHeaders.to,
-  )
-  // First, get rid of outdated emails
-  const latestRecipients = new Set(emailsArray)
-  this.bounces = this.bounces.filter((bounceInfo) =>
-    latestRecipients.has(bounceInfo.email),
-  )
-  // Reshape this.bounces to avoid O(n^2) computation
-  const bouncesByEmail = keyBy(this.bounces, 'email')
-  // The following block needs to work for the cross product of cases:
-  // (notification type) *
-  // (does the notification confirm delivery/bounce for this email) *
-  // (does bouncesByEmail contain this email) *
-  // (does bouncesByEmail currently say this email has bounced)
-  emailsArray.forEach((email) => {
-    if (!validator.isEmail(email)) {
-      logger.warn({
-        message: 'Bounce notification contains value that is not a valid email',
-        meta: {
-          action: 'BounceSchema.methods.updateBounceInfo',
-          email,
-        },
-      })
-    }
-    if (hasEmailBounced(snsInfo, email)) {
-      bouncesByEmail[email] = {
-        email,
-        hasBounced: true,
-        bounceType: snsInfo.bounce.bounceType,
+BounceSchema.method<IBounceSchema>(
+  'updateBounceInfo',
+  function (snsInfo: IEmailNotification): IBounceSchema {
+    // Correctly parse the emails from commonHeaders.to
+    const emailsArray = parseBounceNotificationCommonHeadersToEmails(
+      snsInfo.mail.commonHeaders.to,
+    )
+    // First, get rid of outdated emails
+    const latestRecipients = new Set(emailsArray)
+    this.bounces = this.bounces.filter((bounceInfo) =>
+      latestRecipients.has(bounceInfo.email),
+    )
+    // Reshape this.bounces to avoid O(n^2) computation
+    const bouncesByEmail = keyBy(this.bounces, 'email')
+    // The following block needs to work for the cross product of cases:
+    // (notification type) *
+    // (does the notification confirm delivery/bounce for this email) *
+    // (does bouncesByEmail contain this email) *
+    // (does bouncesByEmail currently say this email has bounced)
+    emailsArray.forEach((email) => {
+      if (!validator.isEmail(email)) {
+        logger.warn({
+          message:
+            'Bounce notification contains value that is not a valid email',
+          meta: {
+            action: 'BounceSchema.methods.updateBounceInfo',
+            email,
+          },
+        })
       }
-    } else if (
-      hasEmailBeenDelivered(snsInfo, email) ||
-      !bouncesByEmail[email]
-    ) {
-      bouncesByEmail[email] = { email, hasBounced: false }
-    }
-  })
-  this.bounces = Object.values(bouncesByEmail)
-  return this
-}
+      if (hasEmailBounced(snsInfo, email)) {
+        bouncesByEmail[email] = {
+          email,
+          hasBounced: true,
+          bounceType: snsInfo.bounce.bounceType,
+        }
+      } else if (
+        hasEmailBeenDelivered(snsInfo, email) ||
+        !bouncesByEmail[email]
+      ) {
+        bouncesByEmail[email] = { email, hasBounced: false }
+      }
+    })
+    this.bounces = Object.values(bouncesByEmail)
+    return this
+  },
+)
 
 /**
  * Returns true if the document indicates a critical bounce (all recipients
  * bounced), false otherwise.
  * @returns true if all recipients bounced
  */
-BounceSchema.methods.isCriticalBounce = function (): boolean {
+BounceSchema.method<IBounceSchema>('isCriticalBounce', function (): boolean {
   return this.bounces.every((emailInfo) => emailInfo.hasBounced)
-}
+})
 
 /**
  * Returns true if the document indicates that all recipients bounced and
  * all bounces were permanent, false otherwise.
  * @returns true if all bounecs were permanent
  */
-BounceSchema.methods.areAllPermanentBounces = function (): boolean {
-  return this.bounces.every(
-    (emailInfo) =>
-      emailInfo.hasBounced && emailInfo.bounceType === BounceType.Permanent,
-  )
-}
+BounceSchema.method<IBounceSchema>(
+  'areAllPermanentBounces',
+  function (): boolean {
+    return this.bounces.every(
+      (emailInfo) =>
+        emailInfo.hasBounced && emailInfo.bounceType === BounceType.Permanent,
+    )
+  },
+)
 
 /**
  * Returns the list of email recipients for this form
  * @returns Array of email addresses
  */
-BounceSchema.methods.getEmails = function (): string[] {
+BounceSchema.method<IBounceSchema>('getEmails', function (): string[] {
   // Return a regular array to prevent unexpected bugs with mongoose
   // CoreDocumentArray
   return Array.from(this.bounces.map((emailInfo) => emailInfo.email))
-}
+})
 
 /**
  * Sets hasAutoEmailed to true if at least one person has been emailed.

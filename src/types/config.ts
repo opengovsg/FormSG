@@ -2,7 +2,7 @@ import { Lambda } from '@aws-sdk/client-lambda'
 import { PackageMode } from '@opengovsg/formsg-sdk/dist/types'
 import aws from 'aws-sdk'
 import { SessionOptions } from 'express-session'
-import { ConnectionOptions } from 'mongoose'
+import { ConnectOptions } from 'mongoose'
 import Mail from 'nodemailer/lib/mailer'
 
 // Enums
@@ -25,7 +25,7 @@ export type AppConfig = {
 
 export type DbConfig = {
   uri: string
-  options: ConnectionOptions
+  options: ConnectOptions
 }
 
 export type AwsConfig = {

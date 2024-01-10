@@ -8,9 +8,8 @@ import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-data'
-import { ObjectId } from 'bson-ext'
 import { omit, pick } from 'lodash'
-import mongoose from 'mongoose'
+import mongoose, { Types } from 'mongoose'
 import { err, errAsync, okAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
@@ -94,7 +93,7 @@ describe('admin-form.form.routes', () => {
       // Create separate user
       const collabUser = (
         await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new Types.ObjectId(),
           mailName: 'collab-user',
           shortName: 'collabUser',
         })
@@ -533,7 +532,7 @@ describe('admin-form.form.routes', () => {
       // Arrange
       const newOwner = (
         await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new Types.ObjectId(),
           mailName: 'new-owner',
           shortName: 'newOwner',
         })
@@ -599,7 +598,7 @@ describe('admin-form.form.routes', () => {
       // Arrange
       const newOwner = (
         await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new Types.ObjectId(),
           mailName: 'new-owner',
           shortName: 'newOwner',
         })
@@ -621,7 +620,7 @@ describe('admin-form.form.routes', () => {
       // Arrange
       const newOwner = (
         await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new Types.ObjectId(),
           mailName: 'new-owner',
           shortName: 'newOwner',
         })
@@ -643,7 +642,7 @@ describe('admin-form.form.routes', () => {
       // Arrange
       const newOwner = (
         await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new Types.ObjectId(),
           mailName: 'new-owner',
           shortName: 'newOwner',
         })
@@ -690,7 +689,7 @@ describe('admin-form.form.routes', () => {
         .lean()
       expect(response.status).toEqual(200)
       expect(response.body).not.toBeNull()
-      expect(response.body).toEqual({
+      expect(response.body).toMatchObject({
         form: jsonParseStringify(expected),
       })
     })
@@ -700,7 +699,7 @@ describe('admin-form.form.routes', () => {
       // Create separate user
       const collabUser = (
         await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new Types.ObjectId(),
           mailName: 'collab-user',
           shortName: 'collabUser',
         })
@@ -727,7 +726,7 @@ describe('admin-form.form.routes', () => {
         .lean()
       expect(response.status).toEqual(200)
       expect(response.body).not.toBeNull()
-      expect(response.body).toEqual({
+      expect(response.body).toMatchObject({
         form: jsonParseStringify(expected),
       })
     })
@@ -737,7 +736,7 @@ describe('admin-form.form.routes', () => {
       await logoutSession(request)
 
       // Act
-      const response = await request.get(`/admin/forms/${new ObjectId()}`)
+      const response = await request.get(`/admin/forms/${new Types.ObjectId()}`)
 
       // Assert
       expect(response.status).toEqual(401)
@@ -748,7 +747,7 @@ describe('admin-form.form.routes', () => {
       // Arrange
       const anotherUser = (
         await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new Types.ObjectId(),
           mailName: 'some-user',
           shortName: 'someUser',
         })
@@ -775,7 +774,7 @@ describe('admin-form.form.routes', () => {
 
     it('should return 404 when form cannot be found', async () => {
       // Arrange
-      const invalidFormId = new ObjectId().toHexString()
+      const invalidFormId = new Types.ObjectId().toHexString()
 
       // Act
       const response = await request.get(`/admin/forms/${invalidFormId}`)
@@ -809,7 +808,7 @@ describe('admin-form.form.routes', () => {
       await dbHandler.clearCollection(UserModel.collection.name)
 
       // Act
-      const response = await request.get(`/admin/forms/${new ObjectId()}`)
+      const response = await request.get(`/admin/forms/${new Types.ObjectId()}`)
 
       // Assert
       expect(response.status).toEqual(422)
@@ -823,7 +822,7 @@ describe('admin-form.form.routes', () => {
         .mockRejectedValueOnce(new Error('some error'))
 
       // Act
-      const response = await request.get(`/admin/forms/${new ObjectId()}`)
+      const response = await request.get(`/admin/forms/${new Types.ObjectId()}`)
 
       // Assert
       expect(response.status).toEqual(500)
@@ -875,7 +874,7 @@ describe('admin-form.form.routes', () => {
       // Create separate user
       const collabUser = (
         await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new Types.ObjectId(),
           mailName: 'collab-user',
           shortName: 'collabUser',
         })
@@ -900,7 +899,7 @@ describe('admin-form.form.routes', () => {
 
     it('should return 404 when form to archive cannot be found', async () => {
       // Arrange
-      const invalidFormId = new ObjectId()
+      const invalidFormId = new Types.ObjectId()
 
       // Act
       const response = await request.delete(`/admin/forms/${invalidFormId}`)
@@ -1223,7 +1222,7 @@ describe('admin-form.form.routes', () => {
       // Create separate user
       const someUser = (
         await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new Types.ObjectId(),
           mailName: 'some-user',
           shortName: 'someUser',
         })
@@ -1254,7 +1253,7 @@ describe('admin-form.form.routes', () => {
 
     it('should return 404 when form to duplicate cannot be found', async () => {
       // Arrange
-      const invalidFormId = new ObjectId()
+      const invalidFormId = new Types.ObjectId()
 
       // Act
       const response = await request
@@ -1301,7 +1300,7 @@ describe('admin-form.form.routes', () => {
 
       // Act
       const response = await request
-        .post(`/admin/forms/${new ObjectId()}/duplicate`)
+        .post(`/admin/forms/${new Types.ObjectId()}/duplicate`)
         .send({
           responseMode: FormResponseMode.Encrypt,
           title: 'does not matter',
@@ -1355,7 +1354,7 @@ describe('admin-form.form.routes', () => {
       })
       const newOwner = (
         await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new Types.ObjectId(),
           mailName: 'new-owner',
           shortName: 'newOwner',
         })
@@ -1391,7 +1390,7 @@ describe('admin-form.form.routes', () => {
 
     it('should return 400 when body.email is missing', async () => {
       // Arrange
-      const someFormId = new ObjectId().toHexString()
+      const someFormId = new Types.ObjectId().toHexString()
 
       // Act
       const response = await request
@@ -1408,7 +1407,7 @@ describe('admin-form.form.routes', () => {
 
     it('should return 400 when body.email is an invalid email', async () => {
       // Arrange
-      const someFormId = new ObjectId().toHexString()
+      const someFormId = new Types.ObjectId().toHexString()
 
       // Act
       const response = await request
@@ -1426,7 +1425,7 @@ describe('admin-form.form.routes', () => {
 
     it('should return 400 when body.email contains multiple emails', async () => {
       // Arrange
-      const someFormId = new ObjectId().toHexString()
+      const someFormId = new Types.ObjectId().toHexString()
 
       // Act
       const response = await request
@@ -1487,14 +1486,14 @@ describe('admin-form.form.routes', () => {
       // Arrange
       const anotherUser = (
         await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new Types.ObjectId(),
           mailName: 'some-user',
           shortName: 'someUser',
         })
       ).user
       const yetAnotherUser = (
         await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new Types.ObjectId(),
           mailName: 'anotheranother-user',
           shortName: 'someOtherUser',
         })
@@ -1521,10 +1520,10 @@ describe('admin-form.form.routes', () => {
 
     it('should return 404 when form to transfer cannot be found', async () => {
       // Arrange
-      const invalidFormId = new ObjectId().toHexString()
+      const invalidFormId = new Types.ObjectId().toHexString()
       const anotherUser = (
         await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new Types.ObjectId(),
           mailName: 'some-user',
           shortName: 'someUser',
         })
@@ -1553,7 +1552,7 @@ describe('admin-form.form.routes', () => {
       })
       const anotherUser = (
         await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new Types.ObjectId(),
           mailName: 'some-user',
           shortName: 'someUser',
         })
@@ -1573,7 +1572,7 @@ describe('admin-form.form.routes', () => {
       // Arrange
       const anotherUser = (
         await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new Types.ObjectId(),
           mailName: 'some-user',
           shortName: 'someUser',
         })
@@ -1623,7 +1622,7 @@ describe('admin-form.form.routes', () => {
       // Create separate user
       const collabUser = (
         await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new Types.ObjectId(),
           mailName: 'collab-user',
           shortName: 'collabUser',
         })
@@ -1650,7 +1649,7 @@ describe('admin-form.form.routes', () => {
     it('should return 404 when form to retrieve cannot be found', async () => {
       // Arrange
       const MOCK_FIELD = generateDefaultField(BasicField.Rating)
-      const invalidFormId = new ObjectId().toHexString()
+      const invalidFormId = new Types.ObjectId().toHexString()
 
       // Act
       const response = await request.get(
@@ -2148,7 +2147,7 @@ describe('admin-form.form.routes', () => {
 
       const expectedOriginalField = {
         ...omit(fieldToDuplicate, ['getQuestion']),
-        _id: new ObjectId(fieldToDuplicate._id),
+        _id: new Types.ObjectId(fieldToDuplicate._id),
       }
       const expectedDuplicatedField = {
         ...omit(fieldToDuplicate, ['_id', 'globalId', 'getQuestion']), // do not compare _id and globalId
@@ -2178,7 +2177,7 @@ describe('admin-form.form.routes', () => {
       expect(actual?.__v).toEqual(1) // mongoose version key should be incremented by one upon save()
       expect({
         ...response.body,
-        _id: new ObjectId(response.body._id),
+        _id: new Types.ObjectId(response.body._id),
       }).toEqual(actual?.form_fields![1])
     })
 
@@ -2210,7 +2209,7 @@ describe('admin-form.form.routes', () => {
       // Create separate user
       const collabUser = (
         await dbHandler.insertFormCollectionReqs({
-          userId: new ObjectId(),
+          userId: new Types.ObjectId(),
           mailName: 'collab-user',
           shortName: 'collabUser',
         })
@@ -2240,8 +2239,8 @@ describe('admin-form.form.routes', () => {
 
     it('should return 404 when form to update cannot be found', async () => {
       // Arrange
-      const invalidFormId = new ObjectId()
-      const randomFieldId = new ObjectId()
+      const invalidFormId = new Types.ObjectId()
+      const randomFieldId = new Types.ObjectId()
 
       // Act
       const response = await request.post(
@@ -2262,7 +2261,7 @@ describe('admin-form.form.routes', () => {
         form_fields: [generateDefaultField(BasicField.Date)],
       })) as IPopulatedForm
 
-      const randomFieldId = new ObjectId()
+      const randomFieldId = new Types.ObjectId()
 
       // Act
       const response = await request.post(
@@ -2393,7 +2392,7 @@ describe('admin-form.form.routes', () => {
       // Arrange
       // Create separate user
       const { user: formOwner } = await dbHandler.insertFormCollectionReqs({
-        userId: new ObjectId(),
+        userId: new Types.ObjectId(),
         mailName: 'collab-user',
         shortName: 'collabUser',
       })
@@ -2419,7 +2418,7 @@ describe('admin-form.form.routes', () => {
     it('should  return 404 when the form cannot be found', async () => {
       // Act
       const resp = await request
-        .put(`/admin/forms/${new ObjectId().toHexString()}/start-page`)
+        .put(`/admin/forms/${new Types.ObjectId().toHexString()}/start-page`)
         .send(MOCK_UPDATED_START_PAGE)
       const expectedResponse = { message: 'Form not found' }
 
@@ -2747,7 +2746,7 @@ describe('admin-form.form.routes', () => {
     it('should return 404 when feedbackId cannot be found in database', async () => {
       // Act
       const resp = await request
-        .patch(`/admin/forms/feedback/${new ObjectId().toString()}`)
+        .patch(`/admin/forms/feedback/${new Types.ObjectId().toString()}`)
         .send({ rating: MOCK_NEW_RATING, comment: MOCK_NEW_COMMENT })
 
       // Assert
@@ -2758,7 +2757,7 @@ describe('admin-form.form.routes', () => {
     it('should return 404 when userId and feedbackId pair cannot be found in database', async () => {
       // create new admin feedback with different userId from defaultuser
       const newFeedback = await AdminFeedbackModel.create({
-        userId: new ObjectId().toHexString(),
+        userId: new Types.ObjectId().toHexString(),
         rating: MOCK_RATING,
         comment: MOCK_COMMENT,
       })

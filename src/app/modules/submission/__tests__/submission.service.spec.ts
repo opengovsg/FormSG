@@ -809,7 +809,12 @@ describe('submission.service', () => {
 
     it('should return DatabaseError when error occurs whilst querying database', async () => {
       const existSpy = jest.spyOn(Submission, 'exists')
-      existSpy.mockImplementationOnce(() => Promise.reject(new Error('boom')))
+      existSpy.mockImplementationOnce(
+        () =>
+          ({
+            exec: () => Promise.reject(new Error('boom')),
+          } as unknown as mongoose.Query<any, any>),
+      )
 
       const actualResult = await SubmissionService.doesSubmissionIdExist(
         MOCK_SUBMISSION_ID,
@@ -1740,7 +1745,7 @@ describe('submission.service', () => {
         MOCK_PENDING_SUBMISSION_ID,
         session,
       )
-      session.endSession()
+      void session.endSession()
 
       //Assert
       expect(result.isOk()).toEqual(true)
@@ -1765,7 +1770,7 @@ describe('submission.service', () => {
         MOCK_PENDING_SUBMISSION_ID,
         session,
       )
-      session.endSession()
+      void session.endSession()
 
       // Assert
       expect(result.isOk()).toEqual(true)
@@ -1786,7 +1791,7 @@ describe('submission.service', () => {
         new ObjectId().toHexString(),
         session,
       )
-      session.endSession()
+      void session.endSession()
 
       // Assert
       expect(result.isErr()).toEqual(true)
@@ -1811,7 +1816,7 @@ describe('submission.service', () => {
         MOCK_PENDING_SUBMISSION_ID,
         session,
       )
-      session.endSession()
+      void session.endSession()
 
       // Assert
       expect(findSpy).toHaveBeenCalledWith(

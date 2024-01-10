@@ -1,4 +1,4 @@
-import { Document, Model, QueryCursor } from 'mongoose'
+import { Cursor as QueryCursor, Document, Model, QueryOptions } from 'mongoose'
 
 import {
   EmailModeSubmissionBase,
@@ -194,7 +194,10 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
         startDate?: string
         endDate?: string
       },
-    ): QueryCursor<StorageModeSubmissionCursorData>
+    ): QueryCursor<
+      StorageModeSubmissionCursorData,
+      QueryOptions<ISubmissionModel>
+    >
 
     findEncryptedSubmissionById(
       formId: string,

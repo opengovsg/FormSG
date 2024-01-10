@@ -1,4 +1,5 @@
 import { Mongoose, Schema } from 'mongoose'
+import { ExtractTypeFromArray } from 'shared/types'
 
 import {
   AggregateFormCountResult,
@@ -53,7 +54,7 @@ const compileFormStatisticsTotalModel = (db: Mongoose) => {
   FormStatisticsTotalSchema.statics.aggregateFormCount = function (
     minSubCount: number,
   ): Promise<AggregateFormCountResult> {
-    return this.aggregate([
+    return this.aggregate<ExtractTypeFromArray<AggregateFormCountResult>>([
       {
         $match: {
           totalCount: {

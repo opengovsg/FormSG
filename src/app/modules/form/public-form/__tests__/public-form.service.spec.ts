@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { ObjectId } from 'bson-ext'
+import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 import type { PartialDeep } from 'type-fest'
 

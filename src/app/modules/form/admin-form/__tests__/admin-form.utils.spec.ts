@@ -1,5 +1,5 @@
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
-import { ObjectId } from 'bson-ext'
+import { ObjectId } from 'bson'
 import { cloneDeep, omit, tail } from 'lodash'
 
 import { EditFieldActions } from 'src/shared/constants'

@@ -87,16 +87,19 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
     return pick(this, VERIFICATION_PUBLIC_FIELDS) as PublicTransaction
   }
 
-  VerificationSchema.methods.getField = function (
-    isPayment: boolean,
-    fieldId: string,
-  ): IVerificationFieldSchema | undefined {
-    if (isPayment) {
-      return this.paymentField
-    } else {
-      return this.fields.find((field) => field._id === fieldId)
-    }
-  }
+  VerificationSchema.method<IVerificationSchema>(
+    'getField',
+    function getField(
+      isPayment: boolean,
+      fieldId: string,
+    ): IVerificationFieldSchema | undefined {
+      if (isPayment) {
+        return this.paymentField
+      } else {
+        return this.fields.find((field) => field._id === fieldId)
+      }
+    },
+  )
 
   // Static methods
   // Method to return non-sensitive fields

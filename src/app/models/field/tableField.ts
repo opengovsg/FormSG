@@ -19,7 +19,6 @@ const createColumnSchema = () => {
     },
     {
       discriminatorKey: 'columnType',
-      _id: false,
     },
   )
 

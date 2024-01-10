@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson-ext'
+import { ObjectId } from 'bson'
 
 import {
   getApplicableIfFields,
