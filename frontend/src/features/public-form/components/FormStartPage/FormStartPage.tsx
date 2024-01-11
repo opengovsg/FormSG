@@ -28,8 +28,6 @@ export const FormStartPage = ({
     [submissionData],
   )
 
-  console.log('submissionData: ', submissionData)
-  console.log('showminiheader:', showHeaderAndMiniHeader)
   const formHeaderProps = useFormHeader({ startPage: form?.startPage })
 
   return (

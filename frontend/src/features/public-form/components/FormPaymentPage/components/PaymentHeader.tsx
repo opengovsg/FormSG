@@ -8,12 +8,7 @@ import { FormBannerLogo, useFormBannerLogo } from '../../FormLogo'
 import { FormHeader } from '../../FormStartPage/FormHeader'
 import { useFormHeader } from '../../FormStartPage/useFormHeader'
 
-interface FormStartPageProps {
-  superOverride?: number
-}
-export const PaymentHeader = ({
-  superOverride = -1,
-}: FormStartPageProps): JSX.Element => {
+export const PaymentHeader = (): JSX.Element => {
   const {
     form,
     spcpSession,
