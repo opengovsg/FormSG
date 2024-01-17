@@ -37,8 +37,9 @@ export default async (): Promise<Connection> => {
       },
     })
 
+    await mongod.start()
     // Store the uri to connect to later on
-    config.db.uri = await mongod.getUri()
+    config.db.uri = mongod.getUri()
   }
 
   // Actually connect to the database
@@ -47,7 +48,9 @@ export default async (): Promise<Connection> => {
   }
 
   // Only required for initial connection errors, reconnect on error.
-  connect().catch((err) => {
+  try {
+    await connect()
+  } catch (err) {
     logger.error({
       message: '@MongoDB: Error caught while connecting',
       meta: {
@@ -55,8 +58,8 @@ export default async (): Promise<Connection> => {
       },
       error: err,
     })
-    return connect()
-  })
+    await connect()
+  }
 
   mongoose.connection.on('error', (err) => {
     // No need to reconnect here since mongo config has auto reconnect, we log.

@@ -1,4 +1,4 @@
-import BSON, { ObjectId } from 'bson-ext'
+import { calculateObjectSize, ObjectId } from 'bson'
 import { compact, omit, pick, uniq } from 'lodash'
 import mongoose, {
   ClientSession,
@@ -53,6 +53,7 @@ import {
 import { reorder } from '../../../shared/utils/immutable-array-fns'
 import { getApplicableIfStates } from '../../shared/util/logic'
 import {
+  FormFieldSchema,
   FormLogicSchema,
   FormOtpData,
   IEmailFormModel,
@@ -112,23 +113,6 @@ import getUserModel from './user.server.model'
 import { isPositiveInteger } from './utils'
 
 export const FORM_SCHEMA_ID = 'Form'
-
-const bson = new BSON([
-  BSON.Binary,
-  BSON.Code,
-  BSON.DBRef,
-  BSON.Decimal128,
-  BSON.Double,
-  BSON.Int32,
-  BSON.Long,
-  BSON.Map,
-  BSON.MaxKey,
-  BSON.MinKey,
-  BSON.ObjectId,
-  BSON.BSONRegExp,
-  BSON.Symbol,
-  BSON.Timestamp,
-])
 
 const formSchemaOptions: SchemaOptions = {
   id: false,
@@ -232,8 +216,8 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
 
   business: {
     type: {
-      address: { type: String, required: true, trim: true },
-      gstRegNo: { type: String, required: true, trim: true },
+      address: { type: String, default: '', trim: true },
+      gstRegNo: { type: String, default: '', trim: true },
     },
   },
 })
@@ -282,14 +266,14 @@ const EmailFormSchema = new Schema<IEmailFormSchema, IEmailFormModel>({
       },
     ],
     set: transformEmails,
-    validate: {
-      validator: (v: string[]) => {
+    validate: [
+      (v: string[]) => {
         if (!Array.isArray(v)) return false
         if (v.length === 0) return false
         return v.every((email) => validator.isEmail(email))
       },
-      message: 'Please provide valid email addresses',
-    },
+      'Please provide valid email addresses',
+    ],
     // Mongoose v5 only checks if the type is an array, not whether the array
     // is non-empty.
     required: true,
@@ -337,7 +321,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     {
       title: {
         type: String,
-        required: 'Form name cannot be blank',
+        required: [true, 'Form name cannot be blank'],
         minlength: [4, 'Form name must be at least 4 characters'],
         maxlength: [200, 'Form name can have a maximum of 200 characters'],
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -507,6 +491,16 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         },
       },
 
+      // This must be before `status` since `status` has setters reliant on
+      // whether esrvcId is available, and mongoose@v6 now saves objects with keys
+      // in the order the keys are specifified in the schema instead of the object.
+      // See https://mongoosejs.com/docs/migrating_to_6.html#schema-defined-document-key-order.
+      esrvcId: {
+        type: String,
+        required: false,
+        validate: [/^\S*$/i, 'e-service ID must not contain whitespace'],
+      },
+
       status: {
         type: String,
         enum: Object.values(FormStatus),
@@ -536,11 +530,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       isListed: {
         type: Boolean,
         default: true,
-      },
-      esrvcId: {
-        type: String,
-        required: false,
-        validate: [/^\S*$/i, 'e-service ID must not contain whitespace'],
       },
 
       webhook: {
@@ -654,23 +643,26 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   // Methods
 
   // Method to return myInfo attributes
-  FormSchema.methods.getUniqueMyInfoAttrs = function () {
-    if (
-      this.authType !== FormAuthType.MyInfo &&
-      this.authType !== FormAuthType.SGID_MyInfo
-    ) {
-      return []
-    }
+  FormSchema.method<IFormSchema>(
+    'getUniqueMyInfoAttrs',
+    function getUniqueMyInfoAttrs() {
+      if (
+        this.authType !== FormAuthType.MyInfo &&
+        this.authType !== FormAuthType.SGID_MyInfo
+      ) {
+        return []
+      }
 
-    // Compact is used to remove undefined from array
-    return compact(
-      uniq(
-        this.form_fields?.flatMap((field) => {
-          return getMyInfoAttr(field)
-        }),
-      ),
-    )
-  }
+      // Compact is used to remove undefined from array
+      return compact(
+        uniq(
+          this.form_fields?.flatMap((field) => {
+            return getMyInfoAttr(field)
+          }),
+        ),
+      )
+    },
+  )
 
   // Return essential form creation parameters with the given properties
   FormSchema.methods.getDuplicateParams = function (
@@ -731,19 +723,22 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     }
   }
 
-  FormDocumentSchema.methods.getSettings = function (): FormSettings {
-    switch (this.responseMode) {
-      case FormResponseMode.Email:
-        return pick(this, EMAIL_FORM_SETTINGS_FIELDS) as EmailFormSettings
-      case FormResponseMode.Encrypt:
-        return pick(this, STORAGE_FORM_SETTINGS_FIELDS) as StorageFormSettings
-      case FormResponseMode.Multirespondent:
-        return pick(
-          this,
-          MULTIRESPONDENT_FORM_SETTINGS_FIELDS,
-        ) as MultirespondentFormSettings
-    }
-  }
+  FormDocumentSchema.method<IFormDocument>(
+    'getSettings',
+    function (): FormSettings {
+      switch (this.responseMode) {
+        case FormResponseMode.Email:
+          return pick(this, EMAIL_FORM_SETTINGS_FIELDS) as EmailFormSettings
+        case FormResponseMode.Encrypt:
+          return pick(this, STORAGE_FORM_SETTINGS_FIELDS) as StorageFormSettings
+        case FormResponseMode.Multirespondent:
+          return pick(
+            this,
+            MULTIRESPONDENT_FORM_SETTINGS_FIELDS,
+          ) as MultirespondentFormSettings
+      }
+    },
+  )
 
   FormDocumentSchema.methods.getWebhookAndResponseModeSettings =
     function (): FormWebhookSettings {
@@ -754,51 +749,57 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       return formSettings
     }
 
-  FormDocumentSchema.methods.getPublicView = function (): PublicForm {
-    let basePublicView
-    switch (this.responseMode) {
-      case FormResponseMode.Encrypt:
-        basePublicView = pick(this, STORAGE_PUBLIC_FORM_FIELDS) as PublicForm
-        break
-      case FormResponseMode.Email:
-        basePublicView = pick(this, EMAIL_PUBLIC_FORM_FIELDS) as PublicForm
-        break
-      case FormResponseMode.Multirespondent:
-        basePublicView = pick(
-          this,
-          MULTIRESPONDENT_PUBLIC_FORM_FIELDS,
-        ) as PublicForm
-        break
-    }
+  FormDocumentSchema.method<IFormDocument>(
+    'getPublicView',
+    function (): PublicForm {
+      let basePublicView
+      switch (this.responseMode) {
+        case FormResponseMode.Encrypt:
+          basePublicView = pick(this, STORAGE_PUBLIC_FORM_FIELDS) as PublicForm
+          break
+        case FormResponseMode.Email:
+          basePublicView = pick(this, EMAIL_PUBLIC_FORM_FIELDS) as PublicForm
+          break
+        case FormResponseMode.Multirespondent:
+          basePublicView = pick(
+            this,
+            MULTIRESPONDENT_PUBLIC_FORM_FIELDS,
+          ) as PublicForm
+          break
+      }
 
-    // Return non-populated public fields of form if not populated.
-    if (!this.populated('admin')) {
-      return basePublicView
-    }
+      // Return non-populated public fields of form if not populated.
+      if (!this.populated('admin')) {
+        return basePublicView
+      }
 
-    // Populated, return public view with user's public view.
-    return {
-      ...basePublicView,
-      admin: (this.admin as IUserSchema).getPublicView(),
-    }
-  }
+      // Populated, return public view with user's public view.
+      return {
+        ...basePublicView,
+        admin: (this.admin as IUserSchema).getPublicView(),
+      }
+    },
+  )
 
   // Transfer ownership of the form to another user
-  FormDocumentSchema.methods.transferOwner = async function (
-    currentOwner: IUserSchema,
-    newOwner: IUserSchema,
-  ) {
-    // Update form's admin to new owner's id.
-    this.admin = newOwner._id
+  FormDocumentSchema.method<IFormDocument>(
+    'transferOwner',
+    async function transferOwner(
+      currentOwner: IUserSchema,
+      newOwner: IUserSchema,
+    ) {
+      // Update form's admin to new owner's id.
+      this.admin = newOwner._id
 
-    // Remove new owner from perm list and include previous owner as an editor.
-    this.permissionList = this.permissionList.filter(
-      (item) => item.email !== newOwner.email,
-    )
-    this.permissionList.push({ email: currentOwner.email, write: true })
+      // Remove new owner from perm list and include previous owner as an editor.
+      this.permissionList = this.permissionList.filter(
+        (item) => item.email !== newOwner.email,
+      )
+      this.permissionList.push({ email: currentOwner.email, write: true })
 
-    return this.save()
-  }
+      return this.save()
+    },
+  )
 
   // Transfer ownership of multiple forms to another user
   FormSchema.statics.transferAllFormsToNewOwner = async function (
@@ -875,42 +876,43 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.save()
   }
 
-  FormDocumentSchema.methods.duplicateFormFieldByIdAndIndex = function (
-    fieldId: string,
-    insertionIndex: number,
-  ) {
-    const fieldToDuplicate = getFormFieldById(this.form_fields, fieldId)
-    if (!fieldToDuplicate) return Promise.resolve(null)
-    const duplicatedField = omit(fieldToDuplicate, ['_id', 'globalId'])
+  FormDocumentSchema.method<IFormDocument>(
+    'duplicateFormFieldByIdAndIndex',
+    function (fieldId: string, insertionIndex: number) {
+      const fieldToDuplicate = getFormFieldById(this.form_fields, fieldId)
+      if (!fieldToDuplicate) return Promise.resolve(null)
+      const duplicatedField = omit(fieldToDuplicate, [
+        '_id',
+        'globalId',
+      ]) as FormFieldSchema
 
-    // eslint-disable-next-line @typescript-eslint/no-extra-semi
-    ;(this.form_fields as Types.DocumentArray<IFieldSchema>).splice(
-      insertionIndex,
-      0,
-      duplicatedField,
-    )
-    return this.save()
-  }
+      this.form_fields.splice(insertionIndex, 0, duplicatedField)
+      return this.save()
+    },
+  )
 
-  FormDocumentSchema.methods.reorderFormFieldById = function (
-    fieldId: string,
-    newPosition: number,
-  ): Promise<IFormDocument | null> {
-    const existingFieldPosition = this.form_fields.findIndex(
-      (f) => String(f._id) === fieldId,
-    )
+  FormDocumentSchema.method<IFormDocument>(
+    'reorderFormFieldById',
+    function reorderFormFieldById(
+      fieldId: string,
+      newPosition: number,
+    ): Promise<IFormDocument | null> {
+      const existingFieldPosition = this.form_fields.findIndex(
+        (f) => String(f._id) === fieldId,
+      )
 
-    if (existingFieldPosition === -1) return Promise.resolve(null)
+      if (existingFieldPosition === -1) return Promise.resolve(null)
 
-    // Exist, reorder form fields and save.
-    const updatedFormFields = reorder(
-      this.form_fields,
-      existingFieldPosition,
-      newPosition,
-    )
-    this.form_fields = updatedFormFields
-    return this.save()
-  }
+      // Exist, reorder form fields and save.
+      const updatedFormFields = reorder(
+        this.form_fields,
+        existingFieldPosition,
+        newPosition,
+      )
+      this.form_fields = updatedFormFields
+      return this.save()
+    },
+  )
 
   // Statics
   // Method to retrieve data for OTP verification
@@ -1025,7 +1027,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     logicId: string,
   ): Promise<IFormSchema | null> {
     return this.findByIdAndUpdate(
-      mongoose.Types.ObjectId(formId),
+      formId,
       {
         $pull: { form_logics: { _id: logicId } },
       },
@@ -1198,7 +1200,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   // Hooks
   FormSchema.pre<IFormSchema>('validate', function (next) {
     // Reject save if form document is too large
-    if (bson.calculateObjectSize(this) > 10 * MB) {
+    if (calculateObjectSize(this) > 10 * MB) {
       const err = new Error('Form size exceeded.')
       err.name = 'FormSizeError'
       return next(err)

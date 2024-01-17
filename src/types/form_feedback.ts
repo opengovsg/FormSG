@@ -1,4 +1,4 @@
-import { Document, Model, QueryCursor } from 'mongoose'
+import { Cursor as QueryCursor, Document, Model, QueryOptions } from 'mongoose'
 import type { Merge } from 'type-fest'
 
 import { FormFeedbackBase } from '../../shared/types'
@@ -26,5 +26,7 @@ export interface IFormFeedbackModel extends Model<IFormFeedbackSchema> {
    * @param formId the form id to return the submissions cursor for
    * @returns a cursor to the feedback retrieved
    */
-  getFeedbackCursorByFormId(formId: string): QueryCursor<IFormFeedbackSchema>
+  getFeedbackCursorByFormId(
+    formId: string,
+  ): QueryCursor<IFormFeedbackSchema, QueryOptions<IFormFeedbackSchema>>
 }

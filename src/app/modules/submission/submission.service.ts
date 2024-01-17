@@ -595,7 +595,7 @@ export const doesSubmissionIdExist = (
   ResultAsync.fromPromise(
     SubmissionModel.exists({
       _id: submissionId,
-    }),
+    }).exec(),
     (error) => {
       logger.error({
         message: 'Error finding _id from submissions collection in database',

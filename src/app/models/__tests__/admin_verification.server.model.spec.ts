@@ -1,6 +1,5 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import { ObjectID } from 'bson'
-import mongoose from 'mongoose'
+import mongoose, { Types } from 'mongoose'
 
 import getAdminVerificationModel from 'src/app/models/admin_verification.server.model'
 import {
@@ -17,7 +16,7 @@ describe('AdminVerification Model', () => {
 
   describe('Schema', () => {
     const DEFAULT_PARAMS: IAdminVerification = {
-      admin: new ObjectID(),
+      admin: new Types.ObjectId(),
       expireAt: new Date(),
       hashedContact: 'mockHashedContact',
       hashedOtp: 'mockHashedOtp',
@@ -132,7 +131,7 @@ describe('AdminVerification Model', () => {
       it('should create successfully when document does not exist', async () => {
         // Arrange
         const params: UpsertOtpParams = {
-          admin: new ObjectID(),
+          admin: new Types.ObjectId(),
           expireAt: new Date(),
           hashedContact: 'mockHashedContact',
           hashedOtp: 'mockHashedOtp',
@@ -154,7 +153,7 @@ describe('AdminVerification Model', () => {
       it('should update successfully when a document already exists', async () => {
         // Arrange
         // Insert mock document into collection.
-        const adminId = new ObjectID()
+        const adminId = new Types.ObjectId()
         const oldExpireAt = new Date()
         const newExpireAt = new Date(Date.now() + 9000000)
         const oldNumOtpSent = 3
@@ -196,7 +195,7 @@ describe('AdminVerification Model', () => {
         // Arrange
         const invalidParams: UpsertOtpParams = {
           // Invalid admin parameter.
-          admin: undefined,
+          admin: null,
           expireAt: new Date(),
           hashedContact: 'mockHashedContact',
           hashedOtp: 'mockHashedOtp',
@@ -218,7 +217,7 @@ describe('AdminVerification Model', () => {
       it('should increment successfully', async () => {
         // Arrange
         // Insert mock document into collection.
-        const adminId = new ObjectID()
+        const adminId = new Types.ObjectId()
         const initialOtpAttempts = 5
         const adminVerificationParams = {
           admin: adminId,
@@ -251,7 +250,7 @@ describe('AdminVerification Model', () => {
         // Arrange
         // Should have no documents yet.
         await expect(AdminVerification.countDocuments()).resolves.toEqual(0)
-        const freshAdminId = new ObjectID()
+        const freshAdminId = new Types.ObjectId()
 
         // Act
         const actualPromise =

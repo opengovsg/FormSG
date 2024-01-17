@@ -1,5 +1,5 @@
 import { setupApp } from '__tests__/integration/helpers/express-setup'
-import { ObjectId } from 'bson-ext'
+import { ObjectId } from 'bson'
 import fs from 'fs'
 import { JWTVerifyResult } from 'jose'
 import mongoose from 'mongoose'

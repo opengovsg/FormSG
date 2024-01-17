@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson'
 import { isEmpty } from 'lodash'
 import moment from 'moment-timezone'
-import mongoose from 'mongoose'
+import mongoose, { Cursor as QueryCursor, QueryOptions } from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import {
@@ -238,7 +238,7 @@ export const getFormIssues = (
  */
 export const getFormIssueStream = (
   formId: string,
-): mongoose.QueryCursor<FormIssueStreamData> => {
+): QueryCursor<FormIssueStreamData, QueryOptions<IFormIssueSchema>> => {
   return FormIssueModel.getIssueCursorByFormId(formId, [
     'issue',
     'email',

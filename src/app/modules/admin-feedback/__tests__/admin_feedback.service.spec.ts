@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import { ObjectId } from 'bson-ext'
+import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 
 import getAdminFeedbackModel from 'src/app/models/admin_feedback.server.model'

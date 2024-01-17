@@ -20,6 +20,7 @@ const sessionMiddlewares = (connection: Connection): RequestHandler[] => {
     // TODO: FRM-1512: Standardise cookie name across environments
     name: ADMIN_LOGIN_SESSION_COOKIE_NAME,
     store: MongoStore.create({
+      // @ts-expect-error Property 'isConnected' is missing in type
       client: connection.getClient(),
     }),
   })

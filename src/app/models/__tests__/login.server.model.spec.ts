@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import { ObjectId } from 'bson-ext'
+import { ObjectId } from 'bson'
 import { omit } from 'lodash'
 import moment from 'moment-timezone'
 import mongoose from 'mongoose'

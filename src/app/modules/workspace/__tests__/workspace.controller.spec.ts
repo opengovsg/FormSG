@@ -1,5 +1,5 @@
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
-import { ObjectId } from 'bson-ext'
+import { ObjectId } from 'bson'
 import { errAsync, okAsync } from 'neverthrow'
 
 import * as WorkspaceService from 'src/app/modules/workspace/workspace.service'

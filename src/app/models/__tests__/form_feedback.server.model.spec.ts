@@ -1,7 +1,6 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import { ObjectId } from 'bson-ext'
 import { omit } from 'lodash'
-import mongoose from 'mongoose'
+import mongoose, { Types } from 'mongoose'
 
 import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 import { IFormFeedback } from 'src/types'
@@ -15,8 +14,8 @@ describe('form_feedback.server.model', () => {
 
   describe('Schema', () => {
     const DEFAULT_PARAMS: IFormFeedback = {
-      formId: new ObjectId(),
-      submissionId: new ObjectId(),
+      formId: new Types.ObjectId(),
+      submissionId: new Types.ObjectId(),
       rating: 5,
       comment: 'feedback comment',
     }
@@ -93,8 +92,8 @@ describe('form_feedback.server.model', () => {
       it('should return cursor to feedback', async () => {
         // Arrange
         // Create document
-        const mockFormId = new ObjectId()
-        const mockSubmissionId = new ObjectId()
+        const mockFormId = new Types.ObjectId()
+        const mockSubmissionId = new Types.ObjectId()
         const mockFeedbackDoc = await FeedbackModel.create({
           formId: mockFormId,
           submissionId: mockSubmissionId,

@@ -4,7 +4,6 @@ import {
   LeanDocument,
   Model,
   ToObjectOptions,
-  Types,
   UpdateWriteOpResult,
 } from 'mongoose'
 import { DeepRequired } from 'ts-essentials'
@@ -88,6 +87,7 @@ export type IForm = Merge<
     // string type is allowed due to a setter on the form schema that transforms
     // strings to string array.
     emails?: string[] | string
+    goLinkSuffix?: string
   }
 >
 
@@ -107,8 +107,8 @@ export type PickDuplicateForm = Pick<
 >
 
 export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
-  form_fields?: Types.DocumentArray<FormFieldSchema> | FormFieldSchema[]
-  form_logics?: Types.DocumentArray<FormLogicSchema> | FormLogicSchema[]
+  form_fields?: FormFieldSchema[]
+  form_logics?: FormLogicSchema[]
 
   created?: Date
   lastModified?: Date

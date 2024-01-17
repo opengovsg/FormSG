@@ -102,7 +102,7 @@ export const updateAdminFeedback = ({
       return new DatabaseError('Admin feedback could not be created')
     },
   ).andThen((mongoResult) => {
-    if (!mongoResult.nModified) {
+    if (!mongoResult.modifiedCount) {
       logger.error({
         message: 'Unable to retrieve feedback document',
         meta: {

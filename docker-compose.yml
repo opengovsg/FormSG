@@ -17,7 +17,7 @@ services:
       - '9229:9229' # Node debugger port
     environment:
       - NODE_ENV=development
-      - DB_HOST=mongodb://database:27017/formsg
+      - DB_HOST=mongodb://database:27017/formsg?directConnection=true
       - APP_NAME=FormSG
       - APP_URL=http://localhost:5001
       - FE_APP_URL=http://localhost:3000

@@ -2,7 +2,7 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { MyInfoGovClient } from '@opengovsg/myinfo-gov-client'
 import bcrypt from 'bcrypt'
-import { ObjectId } from 'bson-ext'
+import { ObjectId } from 'bson'
 import jwt from 'jsonwebtoken'
 import mongoose from 'mongoose'
 import { v4 as uuidv4 } from 'uuid'

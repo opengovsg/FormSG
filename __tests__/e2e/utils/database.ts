@@ -1,7 +1,5 @@
 import mongoose, { Model } from 'mongoose'
 
-const dbUri = 'mongodb://127.0.0.1:3000/formsg'
-
 // Get absolute path of file
 const spec = (path: string): any => {
   const fullPath = `${process.env.PWD}/${path}`
@@ -11,11 +9,10 @@ const spec = (path: string): any => {
 /**
  * Connects to mongo-memory-server instance.
  */
-export const makeMongooseFixtures = async (): Promise<mongoose.Connection> => {
-  const connection = await mongoose.createConnection(dbUri, {
-    reconnectTries: 5,
-    useNewUrlParser: true,
-  })
+export const makeMongooseFixtures = (): Promise<mongoose.Connection> => {
+  const dbUri = 'mongodb://127.0.0.1:3000/test' // TODO: hardcoding uri as the port and path are fixed and doesn't respect values in __tests__/e2e/setup/setupConfig.ts
+
+  const connection = mongoose.createConnection(dbUri).asPromise()
   return connection
 }
 

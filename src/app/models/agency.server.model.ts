@@ -17,7 +17,6 @@ export const AGENCY_PUBLIC_FIELDS = [
 const AgencySchema = new Schema<
   IAgencySchema,
   IAgencyModel,
-  undefined,
   AgencyInstanceMethods
 >(
   {

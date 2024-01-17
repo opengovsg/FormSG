@@ -1,4 +1,4 @@
-import { Document, Model, QueryCursor } from 'mongoose'
+import { Cursor as QueryCursor, Document, Model, QueryOptions } from 'mongoose'
 import { FormIssueBase } from 'shared/types'
 import type { Merge } from 'type-fest'
 
@@ -23,5 +23,5 @@ export interface IFormIssueModel extends Model<IFormIssueSchema> {
   getIssueCursorByFormId(
     formId: string,
     fields: (keyof IFormIssueSchema)[],
-  ): QueryCursor<FormIssueStreamData>
+  ): QueryCursor<FormIssueStreamData, QueryOptions<IFormIssueModel>>
 }

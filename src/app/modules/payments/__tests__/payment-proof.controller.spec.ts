@@ -1,8 +1,7 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import axios from 'axios'
-import { ObjectId } from 'bson'
-import mongoose from 'mongoose'
+import mongoose, { Types } from 'mongoose'
 import { errAsync, ok, okAsync } from 'neverthrow'
 import { PaymentStatus, SubmissionType } from 'shared/types'
 
@@ -26,7 +25,7 @@ import * as StripeUtils from '../stripe.utils'
 const Payment = getPaymentModel(mongoose)
 const EncryptPendingSubmission = getEncryptPendingSubmissionModel(mongoose)
 
-const MOCK_FORM_ID = new ObjectId().toHexString()
+const MOCK_FORM_ID = new Types.ObjectId().toHexString()
 
 jest.mock('axios')
 jest.mock('src/app/modules/payments/stripe.utils')
@@ -51,7 +50,7 @@ describe('stripe.controller', () => {
       gstRegNo: 'G123456',
     }
     const mockFormTitle = 'Mock Form Title'
-    const mockSubmissionId = 'MOCK_SUBMISSION_ID'
+    const mockSubmissionId = new Types.ObjectId().toHexString()
     const mockForm = {
       _id: MOCK_FORM_ID,
       admin: {
@@ -85,6 +84,8 @@ describe('stripe.controller', () => {
         completedPayment: {
           receiptUrl: 'https://form.gov.sg',
           submissionId: mockSubmissionId,
+          transactionFee: 0,
+          paymentDate: new Date(),
         },
         gstEnabled: false,
       })
