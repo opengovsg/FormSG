@@ -129,6 +129,8 @@ services:
       - GROWTHBOOK_CLIENT_KEY
       # env vars for virus scanner
       - VIRUS_SCANNER_LAMBDA_FUNCTION_NAME=function
+      # env vars for OpenAI integration (assisted form creation)
+      - OPENAI_API_KEY=fake-key
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git#v4.0.4
