@@ -3,7 +3,12 @@ import { ChatCompletionMessageParam } from 'openai/src/resources/chat/completion
 
 import { ControllerHandler } from '../../core/core.types'
 
-import { sampleFormFields } from './admin-form.assistance.constants'
+import {
+  ContentTypes,
+  MODEL_TYPE,
+  Roles,
+  sampleFormFields,
+} from './admin-form.assistance.constants'
 import {
   formFieldsPromptBuilder,
   migratePromptBuilder,
@@ -20,16 +25,16 @@ export const generateQuestions: ControllerHandler<
   { purpose: string }
 > = async (req, res) => {
   const messages: ChatCompletionMessageParam[] = [
-    { role: 'system', content: schemaPromptBuilder(sampleFormFields) },
+    { role: Roles.SYSTEM, content: schemaPromptBuilder(sampleFormFields) },
     {
-      role: 'user',
+      role: Roles.USER,
       content: questionListPromptBuilder(req.body.purpose),
     },
   ]
   try {
     const chatCompletion = await openai.chat.completions.create({
       messages: messages,
-      model: 'gpt-3.5-turbo',
+      model: MODEL_TYPE,
     })
     return res
       .status(200)
@@ -49,18 +54,18 @@ export const generateFormFields: ControllerHandler<
   }
 > = async (req, res) => {
   const messages: ChatCompletionMessageParam[] = [
-    { role: 'system', content: schemaPromptBuilder(sampleFormFields) },
+    { role: Roles.SYSTEM, content: schemaPromptBuilder(sampleFormFields) },
   ]
   switch (req.body.type) {
-    case 'questions':
+    case ContentTypes.QUESTIONS:
       messages.push({
-        role: 'user',
+        role: Roles.USER,
         content: formFieldsPromptBuilder(req.body.content),
       })
       break
-    case 'pdf':
+    case ContentTypes.PDF:
       messages.push({
-        role: 'user',
+        role: Roles.USER,
         content: migratePromptBuilder(req.body.content),
       })
       break
@@ -70,7 +75,7 @@ export const generateFormFields: ControllerHandler<
   try {
     const chatCompletion = await openai.chat.completions.create({
       messages: messages,
-      model: 'gpt-3.5-turbo',
+      model: MODEL_TYPE,
     })
     return res.status(200).json(chatCompletion.choices[0].message)
   } catch (error) {
