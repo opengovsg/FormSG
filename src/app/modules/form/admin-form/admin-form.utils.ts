@@ -9,6 +9,7 @@ import {
   FieldUpdateDto,
   FormResponseMode,
   FormStatus,
+  TextValidationOptions,
 } from '../../../../../shared/types'
 import {
   reorder,
@@ -605,7 +606,7 @@ export const insertTableShortTextColumnDefaultValidationOptions = (
   newField: FieldUpdateDto,
 ) => {
   if (newField.fieldType === BasicField.Table) {
-    const defaultValidationOptions = {
+    const defaultValidationOptions: TextValidationOptions = {
       customVal: null,
       selectedValidation: null,
     }
