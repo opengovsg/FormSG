@@ -8,4 +8,4 @@ import {
 export const AssistanceRouter = Router()
 
 AssistanceRouter.post('/questions', generateQuestions)
-AssistanceRouter.post('/form', generateFormFields)
+AssistanceRouter.post('/form-fields', generateFormFields)
