@@ -6,6 +6,7 @@ import { ControllerHandler } from '../../core/core.types'
 import { sampleFormFields } from './admin-form.assistance.constants'
 import {
   formFieldsPromptBuilder,
+  migratePromptBuilder,
   questionListPromptBuilder,
   schemaPromptBuilder,
 } from './admin-form.assistance.service'
@@ -43,22 +44,30 @@ export const generateFormFields: ControllerHandler<
   unknown,
   unknown,
   {
-    prevMessages: { role: string; content: string }[]
-    questions: string
+    type: string
+    content: string
   }
 > = async (req, res) => {
-  try {
-    const prevMessages = [
-      ...req.body.prevMessages,
-    ] as ChatCompletionMessageParam[]
-
-    const messages: ChatCompletionMessageParam[] = [
-      ...prevMessages,
-      {
+  const messages: ChatCompletionMessageParam[] = [
+    { role: 'system', content: schemaPromptBuilder(sampleFormFields) },
+  ]
+  switch (req.body.type) {
+    case 'questions':
+      messages.push({
         role: 'user',
-        content: formFieldsPromptBuilder(req.body.questions),
-      },
-    ]
+        content: formFieldsPromptBuilder(req.body.content),
+      })
+      break
+    case 'pdf':
+      messages.push({
+        role: 'user',
+        content: migratePromptBuilder(req.body.content),
+      })
+      break
+    default:
+      return res.status(400).send({ message: 'Unknown type' })
+  }
+  try {
     const chatCompletion = await openai.chat.completions.create({
       messages: messages,
       model: 'gpt-3.5-turbo',
