@@ -3,7 +3,11 @@ import { Box, Stack, useToast } from '@chakra-ui/react'
 
 import { FormPaymentsField, ProductItem } from '~shared/types'
 
-import { useSubmitFormFeedbackMutation } from '~features/public-form/mutations'
+import {
+  usePublicFormMutations,
+  useSubmitFormFeedbackMutation,
+} from '~features/public-form/mutations'
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import {
   FeedbackBlock,
@@ -35,6 +39,7 @@ export const StripeReceiptContainer = ({
     error,
   } = useGetPaymentReceiptStatus(formId, paymentId)
 
+  const { form } = usePublicFormContext()
   const toast = useToast()
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
 
@@ -59,7 +64,7 @@ export const StripeReceiptContainer = ({
     [submitFormFeedbackMutation, toast],
   )
 
-  if (isLoading || error || !paymentReceiptStatus?.isReady) {
+  if (isLoading || error || !paymentReceiptStatus?.isReady || !form) {
     return (
       <PaymentStack>
         <GenericMessageBlock
@@ -85,6 +90,7 @@ export const StripeReceiptContainer = ({
           paymentType={paymentFieldsSnapshot.payment_type}
           name={paymentFieldsSnapshot.name || ''}
           paymentDate={paymentReceiptStatus.paymentDate}
+          endPage={form?.endPage}
         />
       </PaymentStack>
       <PaymentStack noBg>

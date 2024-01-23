@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
-import { Box, Flex, Text, VisuallyHidden } from '@chakra-ui/react'
+import { Box, Container, Text, VisuallyHidden } from '@chakra-ui/react'
 import { format } from 'date-fns'
 
 import { FormColorTheme, FormDto } from '~shared/types/form'
@@ -16,6 +16,7 @@ export interface EndPageBlockProps {
   submissionData: SubmissionData
   colorTheme?: FormColorTheme
   focusOnMount?: boolean
+  isPaymentEnabled: boolean
 }
 
 export const EndPageBlock = ({
@@ -24,6 +25,7 @@ export const EndPageBlock = ({
   submissionData,
   colorTheme = FormColorTheme.Blue,
   focusOnMount,
+  isPaymentEnabled,
 }: EndPageBlockProps): JSX.Element => {
   const focusRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -54,7 +56,7 @@ export const EndPageBlock = ({
   }, [formTitle])
 
   return (
-    <Flex flexDir="column">
+    <Container py={{ base: '1.5rem', md: '3rem' }}>
       <Box ref={focusRef}>
         <VisuallyHidden aria-live="assertive">
           {submittedAriaText}
@@ -70,24 +72,26 @@ export const EndPageBlock = ({
           </Box>
         ) : null}
       </Box>
-      <Box mt="2rem">
-        <Text textColor="secondary.300" textStyle="caption-2">
-          Response ID: {submissionData.id}
-        </Text>
-        <Text mt="0.25rem" textColor="secondary.300" textStyle="caption-2">
-          {submissionTimestamp}
-        </Text>
+      <Box mt="1.5rem">
+        <Box>
+          <Text textColor="secondary.300" textStyle="caption-2">
+            Response ID: {submissionData.id}
+          </Text>
+          <Text mt="0.25rem" textColor="secondary.300" textStyle="caption-2">
+            {submissionTimestamp}
+          </Text>
+        </Box>
+        <Box mt="2.25rem">
+          <Button
+            as="a"
+            href={endPage.buttonLink || window.location.href}
+            variant="solid"
+            colorScheme={`theme-${colorTheme}`}
+          >
+            {endPage.buttonText || 'Submit another response'}
+          </Button>
+        </Box>
       </Box>
-      <Box mt="2.25rem">
-        <Button
-          as="a"
-          href={endPage.buttonLink || window.location.href}
-          variant="solid"
-          colorScheme={`theme-${colorTheme}`}
-        >
-          {endPage.buttonText || 'Submit another response'}
-        </Button>
-      </Box>
-    </Flex>
+    </Container>
   )
 }

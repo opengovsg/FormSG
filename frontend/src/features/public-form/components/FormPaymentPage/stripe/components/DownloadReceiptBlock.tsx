@@ -5,6 +5,7 @@ import { format } from 'date-fns'
 
 import {
   ExtractTypeFromArray,
+  FormDto,
   GetPaymentInfoDto,
   PaymentType,
   ProductItem,
@@ -25,6 +26,7 @@ type DownloadReceiptBlockProps = {
   paymentType?: PaymentType
   name: string
   paymentDate: Date | null
+  endPage: FormDto['endPage']
 }
 
 const PaymentDetailsRow = ({
@@ -93,7 +95,6 @@ const LineItem = ({
     </Flex>
   )
 }
-
 export const DownloadReceiptBlock = ({
   formId,
   submissionId,
@@ -103,10 +104,12 @@ export const DownloadReceiptBlock = ({
   paymentType,
   name,
   paymentDate,
+  endPage,
 }: DownloadReceiptBlockProps) => {
   const toast = useToast({ status: 'success', isClosable: true })
 
   const totalAmount = useMemo(() => `S$${centsToDollars(amount)}`, [amount])
+
   const paymentTimestamp = useMemo(
     () =>
       paymentDate
@@ -125,11 +128,13 @@ export const DownloadReceiptBlock = ({
     <>
       <Box bg="white" p="2rem">
         <Stack tabIndex={-1} spacing="0.75rem">
-          <Text textStyle="h2" color="secondary.500">
-            Thank you, your payment has been made successfully.
+          <Text textStyle="h2" color="content.strong">
+            {endPage.paymentTitle ||
+              'Thank you, your payment has been made successfully.'}
           </Text>
           <Text textStyle="subhead-1" color="secondary.500">
-            Your form has been submitted and payment has been made.
+            {endPage.paymentParagraph ||
+              'Your form has been submitted and payment has been made.'}
           </Text>
         </Stack>
       </Box>
@@ -157,6 +162,19 @@ export const DownloadReceiptBlock = ({
               {products.map((product) => (
                 <LineItem productItem={product} />
               ))}
+              <Flex
+                textStyle={'body-1'}
+                mb="1rem"
+                justifyContent={'space-between'}
+              >
+                <Text fontWeight="400" color="secondary.700">
+                  {name}
+                </Text>
+                <Text fontWeight="500" color="secondary.700">
+                  S$
+                  {centsToDollars(amount)}
+                </Text>
+              </Flex>
             </Stack>
             <Divider />
             <Stack my="1rem">

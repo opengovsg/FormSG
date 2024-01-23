@@ -1,18 +1,26 @@
 import { useMemo } from 'react'
 import { Box, Flex, Stack } from '@chakra-ui/react'
 
-import { FormAuthType, FormColorTheme, FormLogoState } from '~shared/types'
+import {
+  FormAuthType,
+  FormColorTheme,
+  FormLogoState,
+  FormResponseMode,
+} from '~shared/types'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { PREVIEW_MOCK_UINFIN } from '~features/admin-form/preview/constants'
 import { useEnv } from '~features/env/queries'
 import { EndPageBlock } from '~features/public-form/components/FormEndPage/components/EndPageBlock'
-import { ThankYouSvgr } from '~features/public-form/components/FormEndPage/components/ThankYouSvgr'
+import { PaymentEndPageBlock } from '~features/public-form/components/FormEndPage/components/PaymentEndPageBlock'
+import {
+  PaymentsThankYouSvgr,
+  ThankYouSvgr,
+} from '~features/public-form/components/FormEndPage/components/ThankYouSvgr'
 import {
   FormBannerLogo,
   useFormBannerLogo,
 } from '~features/public-form/components/FormLogo'
-import { useBgColor } from '~features/public-form/components/PublicFormWrapper'
 
 import { useDesignColorTheme } from '../builder-and-design/utils/useDesignColorTheme'
 
@@ -42,7 +50,21 @@ export const EndPageContent = (): JSX.Element => {
     showDefaultLogoIfNoLogo: true,
   })
 
-  const backgroundColor = useBgColor({ colorTheme })
+  const isPaymentEnabled =
+    form?.responseMode === FormResponseMode.Encrypt && //TOCHECK: what does this mean?
+    form.payments_field.enabled
+
+  const backgroundColor = isPaymentEnabled ? 'transparent' : 'white'
+
+  const thankYouSvg = isPaymentEnabled ? (
+    <Flex backgroundColor="primary.100" justifyContent="center" py="1rem">
+      <PaymentsThankYouSvgr h="100%" pt="2.5rem" />
+    </Flex>
+  ) : (
+    <Flex backgroundColor="primary.100" justifyContent="center">
+      <ThankYouSvgr h="100%" pt="2.5rem" />
+    </Flex>
+  )
 
   return (
     <Flex
@@ -55,7 +77,7 @@ export const EndPageContent = (): JSX.Element => {
       justify="center"
       overflow="auto"
     >
-      <Stack w="100%" h="fit-content" bg="white">
+      <Stack w="100%" h="fit-content" bg="primary.100">
         <FormBannerLogo
           isLoading={isLoading}
           {...formBannerLogoProps}
@@ -66,25 +88,49 @@ export const EndPageContent = (): JSX.Element => {
               : undefined
           }
         />
-        <Flex backgroundColor={backgroundColor} justifyContent="center">
-          <ThankYouSvgr h="100%" pt="2.5rem" />
-        </Flex>
-
-        <Box
-          py={{ base: '1.5rem', md: '3rem' }}
-          px={{ base: '1.5rem', md: '4rem' }}
-          w="100%"
-        >
-          <EndPageBlock
-            formTitle={form?.title}
-            endPage={endPage ?? { title: '', buttonText: '' }}
-            submissionData={{
-              id: form?._id ?? 'Submission ID',
-              timestamp: Date.now(),
-            }}
-            colorTheme={colorTheme ?? FormColorTheme.Blue}
-          />
-        </Box>
+        {thankYouSvg}
+        <Stack>
+          <Box px={{ base: '1.5rem', md: '4rem' }} bg={backgroundColor}>
+            {isPaymentEnabled ? (
+              <PaymentEndPageBlock
+                formTitle={form?.title}
+                submissionData={{
+                  id: form?._id ?? 'Submission ID',
+                  timestamp: Date.now(),
+                }}
+                endPage={
+                  endPage ?? {
+                    title: '',
+                    buttonText: '',
+                    paymentTitle: '',
+                    paymentParagraph: '',
+                  }
+                }
+                isPaymentEnabled
+                products={[]}
+                name={''}
+              />
+            ) : (
+              <EndPageBlock
+                formTitle={form?.title}
+                isPaymentEnabled={isPaymentEnabled}
+                endPage={
+                  endPage ?? {
+                    title: '',
+                    buttonText: '',
+                    paymentTitle: '',
+                    paymentParagraph: '',
+                  }
+                }
+                submissionData={{
+                  id: form?._id ?? 'Submission ID',
+                  timestamp: Date.now(),
+                }}
+                colorTheme={colorTheme ?? FormColorTheme.Blue}
+              />
+            )}
+          </Box>
+        </Stack>
       </Stack>
     </Flex>
   )

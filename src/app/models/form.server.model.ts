@@ -466,7 +466,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         },
         paymentTitle: {
           type: String,
-          default: 'Thank you, your payment has been made successfully',
+          default: 'Thank you, your payment has been made successfully.',
         },
         paymentParagraph: {
           type: String,
