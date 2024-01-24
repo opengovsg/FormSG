@@ -4,9 +4,12 @@ import { err, ok, Result } from 'neverthrow'
 import { v4 as uuidv4 } from 'uuid'
 
 import {
+  BasicField,
   DuplicateFormBodyDto,
+  FieldUpdateDto,
   FormResponseMode,
   FormStatus,
+  TextValidationOptions,
 } from '../../../../../shared/types'
 import {
   reorder,
@@ -585,4 +588,37 @@ export const mapGoGovErrors = (error: AxiosError): GoGovError => {
         } message`,
       )
   }
+}
+
+// TODO: remove once we upgrade to Mongoose 7.x
+/**
+ * Manually insert default validation options for short text columns in tables.
+ * Due to a bug in Mongoose 6.x, default values are not inherited for discriminators.
+ *
+ * See https://github.com/Automattic/mongoose/issues/12135
+ *
+ * Fixed in Mongoose 7.x
+ * @param newField
+ * @returns
+ */
+
+export const insertTableShortTextColumnDefaultValidationOptions = (
+  newField: FieldUpdateDto,
+) => {
+  if (newField.fieldType === BasicField.Table) {
+    const defaultValidationOptions: TextValidationOptions = {
+      customVal: null,
+      selectedValidation: null,
+    }
+    newField.columns.map((column) => {
+      if (column.columnType === BasicField.ShortText) {
+        column.ValidationOptions = {
+          ...defaultValidationOptions,
+          ...column.ValidationOptions,
+        }
+      }
+      return column
+    })
+  }
+  return newField
 }
