@@ -1,6 +1,7 @@
 const MongoClient = require('mongodb').MongoClient,
   ObjectId = require('mongodb').ObjectId,
-  _ = require('lodash')
+  _ = require('lodash'),
+  fs = require('fs')
 
 const categories = ['un', 'cn', 'ta', 'ms', 'en']
 
@@ -111,7 +112,7 @@ async function getStats(db) {
     ]),
   )
 
-  const printFormTSVReport = async (header, filter) => {
+  const outputFormTSVReport = async (header, filename, filter) => {
     console.log('========================================')
     console.log(header)
     const formIds = Object.keys(formsById).filter(filter)
@@ -126,29 +127,34 @@ async function getStats(db) {
       form.agency = await getAgencyFromAdminId(form.admin)
     }
 
-    console.log(
-      formIds
-        .map((id) =>
-          [
-            id,
-            formsById[id].title,
-            [...formsById[id].langs].sort().join('+'),
-            `${formsById[id].agency.shortName} (${formsById[id].agency.fullName})`,
-            formsById[id].status,
-            formsById[id].numSubmissions,
-          ].join('\t'),
-        )
-        .join('\n'),
-    )
+    const reportContent = formIds
+      .map((id) =>
+        [
+          id,
+          formsById[id].title,
+          [...formsById[id].langs].sort().join('+'),
+          `${formsById[id].agency.shortName} (${formsById[id].agency.fullName})`,
+          formsById[id].status,
+          formsById[id].numSubmissions,
+        ].join('\t'),
+      )
+      .join('\n')
+
+    // 1. print report to console
+    console.log(reportContent)
+    // 2. save report to file
+    fs.writeFileSync(filename, reportContent)
   }
 
-  await printFormTSVReport(
+  await outputFormTSVReport(
     'Getting agency and number of submissions for forms with multi-languages',
+    'forms_multi_languages.tsv',
     (id) => formsById[id].langs.size > 1,
   )
 
-  await printFormTSVReport(
+  await outputFormTSVReport(
     'Getting agency and number of submissions for non-english forms',
+    'forms_non_english_single_language.tsv',
     (id) =>
       formsById[id].langs.size === 1 &&
       !formsById[id].langs.has('en') &&
