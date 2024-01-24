@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import {
+  Box,
   ButtonProps,
   Center,
   chakra,
@@ -81,14 +82,25 @@ export const EmptyFormPlaceholder = forwardRef<
           >
             {placeholderText}
           </Text>
-          <Text
-            textStyle="subhead-2"
-            color="secondary.500"
-            px="1.5rem"
-            textAlign={'center'}
+          <Flex
+            width="100%"
+            maxW={isMobile ? '12rem' : '18rem'}
+            flexDir="row"
+            alignItems="center"
+            justifyContent="space-around"
+            verticalAlign="middle"
           >
-            ———————&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;———————
-          </Text>
+            <Box flexGrow={1} height="1px" bgColor="black" />
+            <Text
+              textStyle="subhead-2"
+              color="secondary.500"
+              px="1.5rem"
+              textAlign={'center'}
+            >
+              OR
+            </Text>
+            <Box flexGrow={1} height="1px" bgColor="black" />
+          </Flex>
         </Center>
       </chakra.button>
     </Flex>
