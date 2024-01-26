@@ -465,7 +465,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 https://github.com/faker-js/faker
 
 ### License
-Faker - Copyright (c) 2022-2023
+Faker - Copyright (c) 2022-2024
 
 This software consists of voluntary contributions made by many individuals.
 For exact contribution history, see the revision history
@@ -558,7 +558,27 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 https://github.com/opengovsg/formsg-javascript-sdk
 
 ### License
-There is no license specified in this repository. Please visit the source and contact the repository's owners to find out more.
+MIT License
+
+Copyright (c) 2023 Open Government Products
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 
 -------------------------------------------------------------------------------
@@ -1586,10 +1606,10 @@ SOFTWARE.
 -------------------------------------------------------------------------------
 
 ## Project
-bson-ext
+bson
 
 ### Source
-https://github.com/mongodb-js/bson-ext
+https://github.com/mongodb/js-bson
 
 ### License
                                  Apache License
@@ -2491,9 +2511,27 @@ express-rate-limit
 https://github.com/express-rate-limit/express-rate-limit
 
 ### License
+﻿# MIT License
 
-MIT © Nathan Friedly,
-Vedant K
+Copyright 2023 Nathan Friedly, Vedant K
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 
 -------------------------------------------------------------------------------
 
@@ -2504,7 +2542,15 @@ express-request-id
 https://github.com/floatdrop/express-request-id
 
 ### License
-There is no license specified in this repository. Please visit the source and contact the repository's owners to find out more.
+MIT License
+
+Copyright (c) Vsevolod Strukchinsky <floatdrop@gmail.com> (https://floatdrop.me)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 -------------------------------------------------------------------------------
@@ -2845,7 +2891,7 @@ https://github.com/helmetjs/helmet
 ### License
 The MIT License
 
-Copyright (c) 2012-2023 Evan Hahn, Adam Baldwin
+Copyright (c) 2012-2024 Evan Hahn, Adam Baldwin
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -3061,8 +3107,8 @@ ip
 https://github.com/indutny/node-ip
 
 ### License
+There is no license specified in this repository. Please visit the source and contact the repository's owners to find out more.
 
-This software is licensed under the MIT 
 
 -------------------------------------------------------------------------------
 
@@ -4738,7 +4784,15 @@ p-queue
 https://github.com/sindresorhus/p-queue
 
 ### License
-There is no license specified in this repository. Please visit the source and contact the repository's owners to find out more.
+MIT License
+
+Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 -------------------------------------------------------------------------------
@@ -5978,7 +6032,7 @@ https://github.com/twilio/twilio-node
 ### License
 MIT License
 
-Copyright (C) 2023, Twilio, Inc. <help@twilio.com>
+Copyright (C) 2023, Twilio, Inc. <https://www.twilio.com/help/contact>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -6156,7 +6210,7 @@ https://github.com/MattiasBuelens/web-streams-polyfill
 ### License
 The MIT License (MIT)
 
-Copyright (c) 2020 Mattias Buelens
+Copyright (c) 2024 Mattias Buelens
 Copyright (c) 2016 Diwank Singh Tomer
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
