@@ -45,7 +45,11 @@ import {
   SubmissionCountQueryDto,
   WebhookSettingsUpdateDto,
 } from '../../../../../shared/types'
-import { IFormDocument, IPopulatedForm } from '../../../../types'
+import {
+  FormFieldSchema,
+  IFormDocument,
+  IPopulatedForm,
+} from '../../../../types'
 import {
   EncryptSubmissionDto,
   FormUpdateParams,
@@ -1195,6 +1199,13 @@ export const createForm: ControllerHandler<
           {
             ...formParams,
             admin: user._id,
+            ...(formParams.responseMode === FormResponseMode.Email ||
+            formParams.responseMode === FormResponseMode.Encrypt
+              ? {
+                  form_fields:
+                    formParams.form_fields as unknown as FormFieldSchema[],
+                }
+              : { form_fields: undefined }),
           },
           workspaceId,
         ),
