@@ -4,7 +4,11 @@ import { Flex } from '@chakra-ui/react'
 import { Elements, useStripe } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 
-import { GetPaymentInfoDto } from '~shared/types'
+import {
+  GetPaymentInfoDto,
+  PaymentType,
+  ProductItemForReceipt,
+} from '~shared/types'
 
 import InlineMessage from '~components/InlineMessage'
 
@@ -69,6 +73,28 @@ const StripePaymentContainer = ({
     stripe,
     refetchKey,
   })
+
+  const productsProductsType = paymentInfoData?.products?.map((product) => {
+    return {
+      name: product.data.name,
+      quantity: product.quantity,
+      amount_cents: product.data.amount_cents,
+    }
+  }) as ProductItemForReceipt[]
+
+  const productsVariableType = [
+    {
+      name: paymentInfoData?.payment_fields_snapshot?.name,
+      quantity: 1,
+      amount_cents: paymentInfoData?.amount,
+    },
+  ] as ProductItemForReceipt[]
+
+  const paymentProducts =
+    paymentInfoData?.payment_fields_snapshot?.payment_type ===
+    PaymentType.Variable
+      ? productsVariableType
+      : productsProductsType
 
   const viewStates = getPaymentViewStates(
     stripePaymentStatusResponse?.paymentIntent?.status,
@@ -138,7 +164,7 @@ const StripePaymentContainer = ({
               paymentId={paymentId}
               submissionId={paymentInfoData.submissionId}
               amount={paymentInfoData.amount}
-              products={paymentInfoData.products || []}
+              products={paymentProducts || []}
               paymentFieldsSnapshot={paymentInfoData.payment_fields_snapshot}
             />
           </>

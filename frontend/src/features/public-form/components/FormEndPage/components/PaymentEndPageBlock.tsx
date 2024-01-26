@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { Box, Container, VisuallyHidden } from '@chakra-ui/react'
-import { format } from 'date-fns'
 
-import { FormColorTheme, FormDto, ProductItem } from '~shared/types/form'
+import {
+  FormColorTheme,
+  FormDto,
+  ProductItemForReceipt,
+} from '~shared/types/form'
 
 import { SubmissionData } from '~features/public-form/PublicFormContext'
 
@@ -15,7 +18,8 @@ export interface PaymentEndPageBlockProps {
   colorTheme?: FormColorTheme
   focusOnMount?: boolean
   isPaymentEnabled: boolean
-  products: ProductItem[]
+  products: ProductItemForReceipt[]
+  totalAmount: number
   name: string
 }
 
@@ -26,6 +30,7 @@ export const PaymentEndPageBlock = ({
   colorTheme = FormColorTheme.Blue,
   focusOnMount,
   products,
+  totalAmount,
   name,
 }: PaymentEndPageBlockProps): JSX.Element => {
   const focusRef = useRef<HTMLDivElement>(null)
@@ -54,7 +59,7 @@ export const PaymentEndPageBlock = ({
         submissionId={submissionData.id as string}
         paymentId={''}
         endPage={endPage}
-        amount={1000}
+        amount={totalAmount}
         products={products}
         name={'Product/ Service'}
         paymentDate={new Date()}

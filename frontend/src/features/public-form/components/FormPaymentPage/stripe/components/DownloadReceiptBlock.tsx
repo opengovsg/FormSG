@@ -3,13 +3,7 @@ import { BiDownload } from 'react-icons/bi'
 import { Box, Divider, Flex, Stack, Text } from '@chakra-ui/react'
 import { format } from 'date-fns'
 
-import {
-  ExtractTypeFromArray,
-  FormDto,
-  GetPaymentInfoDto,
-  PaymentType,
-  ProductItem,
-} from '~shared/types'
+import { FormDto, PaymentType, ProductItemForReceipt } from '~shared/types'
 import { centsToDollars } from '~shared/utils/payments'
 
 import { useToast } from '~hooks/useToast'
@@ -22,7 +16,7 @@ type DownloadReceiptBlockProps = {
   submissionId: string
   paymentId: string
   amount: number
-  products: ProductItem[]
+  products: ProductItemForReceipt[]
   paymentType?: PaymentType
   name: string
   paymentDate: Date | null
@@ -80,17 +74,21 @@ const PaymentSummaryRow = ({
 }
 
 const LineItem = ({
-  productItem,
+  name,
+  quantity,
+  amount_cents,
 }: {
-  productItem: ExtractTypeFromArray<NonNullable<GetPaymentInfoDto['products']>>
+  name: string
+  quantity: number
+  amount_cents: number
 }) => {
   return (
     <Flex textStyle="body-1" mb="1rem" justifyContent="space-between">
       <Text fontWeight="400" color="secondary.700">
-        {productItem.data.name} x {productItem.quantity}
+        {name} x {quantity}
       </Text>
       <Text fontWeight="500" color="secondary.700">
-        S${centsToDollars(productItem.quantity * productItem.data.amount_cents)}
+        S${centsToDollars(quantity * amount_cents)}
       </Text>
     </Flex>
   )
@@ -160,21 +158,12 @@ export const DownloadReceiptBlock = ({
             </Text>
             <Stack spacing="0.75rem" my="1rem">
               {products.map((product) => (
-                <LineItem productItem={product} />
+                <LineItem
+                  name={product.name}
+                  quantity={product.quantity}
+                  amount_cents={product.amount_cents}
+                />
               ))}
-              <Flex
-                textStyle={'body-1'}
-                mb="1rem"
-                justifyContent={'space-between'}
-              >
-                <Text fontWeight="400" color="secondary.700">
-                  {name}
-                </Text>
-                <Text fontWeight="500" color="secondary.700">
-                  S$
-                  {centsToDollars(amount)}
-                </Text>
-              </Flex>
             </Stack>
             <Divider />
             <Stack my="1rem">

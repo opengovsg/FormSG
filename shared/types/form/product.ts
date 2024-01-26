@@ -16,3 +16,9 @@ export type ProductItem = {
   selected: boolean
   quantity: number
 }
+
+export type ProductItemForReceipt = {
+  name: string
+  quantity: number
+  amount_cents: number
+}

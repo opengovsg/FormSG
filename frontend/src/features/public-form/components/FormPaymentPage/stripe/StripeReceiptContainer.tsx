@@ -1,12 +1,9 @@
 import { useCallback, useState } from 'react'
 import { Box, Stack, useToast } from '@chakra-ui/react'
 
-import { FormPaymentsField, ProductItem } from '~shared/types'
+import { FormPaymentsField, ProductItemForReceipt } from '~shared/types'
 
-import {
-  usePublicFormMutations,
-  useSubmitFormFeedbackMutation,
-} from '~features/public-form/mutations'
+import { useSubmitFormFeedbackMutation } from '~features/public-form/mutations'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import {
@@ -30,7 +27,7 @@ export const StripeReceiptContainer = ({
   submissionId: string
   paymentId: string
   amount: number
-  products: ProductItem[]
+  products: ProductItemForReceipt[]
   paymentFieldsSnapshot: FormPaymentsField
 }) => {
   const {

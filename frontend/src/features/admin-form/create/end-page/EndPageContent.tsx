@@ -6,6 +6,8 @@ import {
   FormColorTheme,
   FormLogoState,
   FormResponseMode,
+  PaymentType,
+  ProductItemForReceipt,
 } from '~shared/types'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -51,8 +53,38 @@ export const EndPageContent = (): JSX.Element => {
   })
 
   const isPaymentEnabled =
-    form?.responseMode === FormResponseMode.Encrypt && //TOCHECK: what does this mean?
+    form?.responseMode === FormResponseMode.Encrypt &&
     form.payments_field.enabled
+
+  let paymentProducts: ProductItemForReceipt[] = []
+  let totalAmount = 0
+
+  if (
+    isPaymentEnabled &&
+    form.payments_field.payment_type === PaymentType.Products
+  ) {
+    const formPaymentProducts = form?.payments_field?.products
+    paymentProducts = formPaymentProducts?.map((product) => {
+      totalAmount += product.amount_cents
+      return {
+        name: product.name,
+        quantity: product.min_qty,
+        amount_cents: product.amount_cents,
+      }
+    }) as ProductItemForReceipt[]
+  } else if (
+    isPaymentEnabled &&
+    form.payments_field.payment_type === PaymentType.Variable
+  ) {
+    paymentProducts = [
+      {
+        name: form?.payments_field?.name,
+        quantity: 1,
+        amount_cents: form?.payments_field?.min_amount,
+      },
+    ] as ProductItemForReceipt[]
+    totalAmount = form?.payments_field?.min_amount
+  }
 
   const backgroundColor = isPaymentEnabled ? 'transparent' : 'white'
 
@@ -107,8 +139,9 @@ export const EndPageContent = (): JSX.Element => {
                   }
                 }
                 isPaymentEnabled
-                products={[]}
+                products={paymentProducts}
                 name={''}
+                totalAmount={totalAmount}
               />
             ) : (
               <EndPageBlock
