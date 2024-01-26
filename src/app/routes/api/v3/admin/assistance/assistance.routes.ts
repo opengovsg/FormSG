@@ -1,11 +1,11 @@
 import { Router } from 'express'
 
 import {
-  generateFormFields,
-  generateQuestions,
+  handleGenerateFormFields,
+  handleGenerateQuestions,
 } from '../../../../../modules/form/admin-form/admin-form.assistance.controller'
 
 export const AssistanceRouter = Router()
 
-AssistanceRouter.post('/questions', generateQuestions)
-AssistanceRouter.post('/form-fields', generateFormFields)
+AssistanceRouter.post('/questions', handleGenerateQuestions)
+AssistanceRouter.post('/form-fields', handleGenerateFormFields)
