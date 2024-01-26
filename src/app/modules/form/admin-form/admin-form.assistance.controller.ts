@@ -8,6 +8,11 @@ import {
   generateQuestions,
 } from './admin-form.assistance.service'
 
+/**
+ * Handler for POST /questions
+ * @returns 200 when questions are successfully generated
+ * @returns 500 when openai server error occurs
+ */
 export const handleGenerateQuestions: ControllerHandler<
   unknown,
   ChatCompletionMessage | ErrorDto,
@@ -19,6 +24,12 @@ export const handleGenerateQuestions: ControllerHandler<
   }
   res.status(200).json(result.value)
 }
+
+/**
+ * Handler for POST /form-fields
+ * @returns 200 when form fields are successfully generated
+ * @returns 500 when openai server error occurs
+ */
 export const handleGenerateFormFields: ControllerHandler<
   unknown,
   ChatCompletionMessage | ErrorDto,

@@ -30,6 +30,12 @@ const logger = createLoggerWithLabel(module)
 const openai = new OpenAI({
   apiKey: 'fake-key',
 })
+
+/**
+ * generates a list of questions based on the given purpose
+ * @param purpose the purpose of the questions, e.g. "registration", "login", etc.
+ * @returns a ResultAsync containing the generated questions or an AssistanceConnectionError if there was an error connecting to OpenAI
+ */
 export const generateQuestions = (
   purpose: string,
 ): ResultAsync<ChatCompletionMessage, AssistanceConnectionError> => {
@@ -67,6 +73,16 @@ export const generateQuestions = (
   })
 }
 
+/**
+ * Generates form fields based on the given type and content.
+ *
+ * @param {object} param - The type and content parameters.
+ * @param {string} param.type - The type of content provided. "questions" or "pdf"
+ * @param {string} param.content - List of questions or parsed pdf content
+ *
+ * @returns {ResultAsync} A ResultAsync with either a ChatCompletionMessage or an error.
+ * Possible errors include AssistanceConnectionError and AssistanceModelTypeError.
+ */
 export const generateFormFields = ({
   type,
   content,
