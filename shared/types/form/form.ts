@@ -74,6 +74,11 @@ export enum FormResponseMode {
   Multirespondent = 'multirespondent',
 }
 
+export enum MagicFormBuilderMode {
+  Pdf = 'pdf',
+  Prompt = 'prompt',
+}
+
 export type FormPaymentsChannel = {
   payment_methods?: PaymentMethodType[]
   channel: PaymentChannel
