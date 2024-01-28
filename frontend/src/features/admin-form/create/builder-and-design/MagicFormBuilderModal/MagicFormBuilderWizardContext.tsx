@@ -25,6 +25,7 @@ export type MagicFormBuilderWizardContextReturn = {
   handleDetailsSubmit: ReturnType<
     UseFormHandleSubmit<MagicFormBuilderWizardInputProps>
   >
+  handleBack: () => void
 
   // Whether any async operation is in progress.
   isFetching: boolean
