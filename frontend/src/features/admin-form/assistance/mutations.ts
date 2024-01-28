@@ -70,4 +70,10 @@ export const useAssistanceMutations = () => {
         })
       }),
   )
+
+  return {
+    generateEmailFormFieldsMutation,
+    generateEncryptFormFieldsMutation,
+    generateQuestionsMutation,
+  }
 }
