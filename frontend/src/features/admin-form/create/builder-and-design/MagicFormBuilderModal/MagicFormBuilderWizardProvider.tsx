@@ -70,12 +70,22 @@ const useMagicFormBuilderWizardContext =
     })
 
     const handleDetailsSubmit = handleSubmit((inputs) => {
-      if (inputs.magicFormBuilderMode === MagicFormBuilderMode.Pdf) {
-        setCurrentStep([MagicFormBuilderFlowStates.PdfDetails, 1])
+      if (currentStep === MagicFormBuilderFlowStates.Landing) {
+        if (inputs.magicFormBuilderMode === MagicFormBuilderMode.Pdf) {
+          setCurrentStep([MagicFormBuilderFlowStates.PdfDetails, 1])
+        }
+
+        if (inputs.magicFormBuilderMode === MagicFormBuilderMode.Prompt) {
+          setCurrentStep([MagicFormBuilderFlowStates.PromptDetails, 1])
+        }
       }
 
-      if (inputs.magicFormBuilderMode === MagicFormBuilderMode.Prompt) {
-        setCurrentStep([MagicFormBuilderFlowStates.PromptDetails, 1])
+      if (currentStep === MagicFormBuilderFlowStates.PdfDetails) {
+        mockPdfMutation.mutate()
+      }
+
+      if (currentStep === MagicFormBuilderFlowStates.PromptDetails) {
+        mockPromptMutation.mutate()
       }
     })
 
