@@ -2,6 +2,7 @@ import { Controller } from 'react-hook-form'
 import { BiRightArrowAlt } from 'react-icons/bi'
 import {
   Container,
+  Flex,
   FormControl,
   ModalBody,
   ModalHeader,
@@ -9,6 +10,7 @@ import {
   Text,
 } from '@chakra-ui/react'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import Badge from '~components/Badge'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -18,7 +20,11 @@ import { useMagicFormBuilderWizard } from '../MagicFormBuilderWizardContext'
 
 import { MagicFormBuilderOptions } from './MagicFormBuilderOptions'
 
-export const MagicFormBuilderLandingScreen = (): JSX.Element => {
+export const MagicFormBuilderLandingScreen = ({
+  onClose,
+}: {
+  onClose: () => void
+}): JSX.Element => {
   const {
     formMethods,
     handleDetailsSubmit,
@@ -31,6 +37,7 @@ export const MagicFormBuilderLandingScreen = (): JSX.Element => {
     formState: { errors },
   } = formMethods
 
+  const isMobile = useIsMobile()
   return (
     <>
       <ModalHeader color="secondary.700">
@@ -62,16 +69,40 @@ export const MagicFormBuilderLandingScreen = (): JSX.Element => {
             </FormErrorMessage>
           </FormControl>
 
-          <Button
-            rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
-            type="submit"
-            isLoading={isLoading}
-            isDisabled={isFetching}
-            onClick={handleDetailsSubmit}
-            isFullWidth
-          >
-            <Text lineHeight="1.5rem">Next step</Text>
-          </Button>
+          {isMobile ? (
+            <Button
+              rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
+              type="submit"
+              isLoading={isLoading}
+              isDisabled={isFetching}
+              onClick={handleDetailsSubmit}
+              isFullWidth
+            >
+              <Text lineHeight="1.5rem">Next step</Text>
+            </Button>
+          ) : (
+            <Flex justify="flex-end" gap="1rem">
+              <Button
+                mr="1rem"
+                type="submit"
+                isLoading={isLoading}
+                isDisabled={isFetching}
+                onClick={onClose}
+                variant="clear"
+              >
+                <Text lineHeight="1.5rem">Back</Text>
+              </Button>
+              <Button
+                rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
+                type="submit"
+                isLoading={isLoading}
+                isDisabled={isFetching}
+                onClick={handleDetailsSubmit}
+              >
+                <Text lineHeight="1.5rem">Next step</Text>
+              </Button>
+            </Flex>
+          )}
         </Container>
       </ModalBody>
     </>

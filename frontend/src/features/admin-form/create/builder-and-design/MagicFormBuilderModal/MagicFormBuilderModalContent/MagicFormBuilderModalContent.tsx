@@ -13,13 +13,17 @@ import { MagicFormBuilderPromptDetailsScreen } from './PromptDetailsScreen'
  * @preconditions Requires MagicFormBuilderWizardProvider parent
  * Display screen content depending on the current step (with animation).
  */
-export const MagicFormBuilderModalContent = () => {
+export const MagicFormBuilderModalContent = ({
+  onClose,
+}: {
+  onClose: () => void
+}) => {
   const { direction, currentStep } = useMagicFormBuilderWizard()
 
   return (
     <XMotionBox keyProp={currentStep} custom={direction}>
       {currentStep === MagicFormBuilderFlowStates.Landing && (
-        <MagicFormBuilderLandingScreen />
+        <MagicFormBuilderLandingScreen onClose={onClose} />
       )}
       {currentStep === MagicFormBuilderFlowStates.PromptDetails && (
         <MagicFormBuilderPromptDetailsScreen />
