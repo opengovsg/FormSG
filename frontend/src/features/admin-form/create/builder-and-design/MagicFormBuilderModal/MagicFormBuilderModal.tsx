@@ -6,6 +6,9 @@ import {
   UseDisclosureReturn,
 } from '@chakra-ui/react'
 
+import { MagicFormBuilderModalContent } from './MagicFormBuilderModalContent'
+import { MagicFormBuilderWizardProvider } from './MagicFormBuilderWizardProvider'
+
 export type MagicFormBuilderModalProps = Pick<
   UseDisclosureReturn,
   'onClose' | 'isOpen'
@@ -25,7 +28,9 @@ export const MagicFormBuilderModal = ({
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
       <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
         <ModalCloseButton />
-        ABCD
+        <MagicFormBuilderWizardProvider>
+          <MagicFormBuilderModalContent />
+        </MagicFormBuilderWizardProvider>
       </ModalContent>
     </Modal>
   )
