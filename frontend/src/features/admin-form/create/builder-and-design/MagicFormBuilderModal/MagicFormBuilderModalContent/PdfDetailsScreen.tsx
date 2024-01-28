@@ -1,5 +1,5 @@
 import { BiRightArrowAlt } from 'react-icons/bi'
-import { Container, ModalBody, ModalHeader, Text } from '@chakra-ui/react'
+import { Container, Flex, ModalBody, ModalHeader, Text } from '@chakra-ui/react'
 
 import Badge from '~components/Badge'
 import Button from '~components/Button'
@@ -7,7 +7,7 @@ import Button from '~components/Button'
 import { useMagicFormBuilderWizard } from '../MagicFormBuilderWizardContext'
 
 export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
-  const { handleDetailsSubmit, isLoading, isFetching } =
+  const { handleDetailsSubmit, isLoading, isFetching, handleBack } =
     useMagicFormBuilderWizard()
 
   return (
@@ -22,16 +22,27 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap">
         <Container maxW={'42.5rem'} p={0}>
-          <Button
-            rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
-            type="submit"
-            isLoading={isLoading}
-            isDisabled={isFetching}
-            onClick={handleDetailsSubmit}
-            isFullWidth
-          >
-            <Text lineHeight="1.5rem">Next step</Text>
-          </Button>
+          <Flex justify="flex-end" gap="1rem">
+            <Button
+              mr="1rem"
+              type="submit"
+              isLoading={isLoading}
+              isDisabled={isFetching}
+              onClick={handleBack}
+              variant="clear"
+            >
+              <Text lineHeight="1.5rem">Back</Text>
+            </Button>
+            <Button
+              rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
+              type="submit"
+              isLoading={isLoading}
+              isDisabled={isFetching}
+              onClick={handleDetailsSubmit}
+            >
+              <Text lineHeight="1.5rem">Next step</Text>
+            </Button>
+          </Flex>
         </Container>
       </ModalBody>
     </>
