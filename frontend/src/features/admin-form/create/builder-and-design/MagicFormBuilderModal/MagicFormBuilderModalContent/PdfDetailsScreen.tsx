@@ -1,14 +1,35 @@
 import { BiRightArrowAlt } from 'react-icons/bi'
-import { Container, Flex, ModalBody, ModalHeader, Text } from '@chakra-ui/react'
+import {
+  Container,
+  Flex,
+  FormControl,
+  FormLabel,
+  ModalBody,
+  ModalHeader,
+  Text,
+} from '@chakra-ui/react'
+
+import { MB } from '~shared/constants'
 
 import Badge from '~components/Badge'
 import Button from '~components/Button'
+import Attachment from '~components/Field/Attachment'
 
 import { useMagicFormBuilderWizard } from '../MagicFormBuilderWizardContext'
 
 export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
-  const { handleDetailsSubmit, isLoading, isFetching, handleBack } =
-    useMagicFormBuilderWizard()
+  const {
+    handleDetailsSubmit,
+    isLoading,
+    isFetching,
+    handleBack,
+    formMethods,
+  } = useMagicFormBuilderWizard()
+
+  const { watch } = formMethods
+
+  const MAX_FILE_SIZE = 20 * MB
+  const VALID_EXTENSIONS = '.pdf'
 
   return (
     <>
@@ -22,12 +43,22 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap">
         <Container maxW={'42.5rem'} p={0}>
-          <Flex justify="flex-end" gap="1rem">
+          <FormLabel>Upload a PDF</FormLabel>
+          <Attachment
+            maxSize={MAX_FILE_SIZE}
+            accept={VALID_EXTENSIONS}
+            showFileSize
+            title={'Upload a PDF'}
+            onChange={() => undefined}
+            name="pdfFile"
+            value={watch('pdfFile')}
+          />
+
+          <Flex justify="flex-end" gap="1rem" mt="2.5rem">
             <Button
               mr="1rem"
               type="submit"
-              isLoading={isLoading}
-              isDisabled={isFetching}
+              isDisabled={isLoading || isFetching}
               onClick={handleBack}
               variant="clear"
             >
