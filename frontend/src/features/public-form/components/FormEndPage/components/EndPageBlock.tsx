@@ -25,7 +25,6 @@ export const EndPageBlock = ({
   submissionData,
   colorTheme = FormColorTheme.Blue,
   focusOnMount,
-  isPaymentEnabled,
 }: EndPageBlockProps): JSX.Element => {
   const focusRef = useRef<HTMLDivElement>(null)
   useEffect(() => {

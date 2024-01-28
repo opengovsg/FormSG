@@ -99,8 +99,6 @@ export const DownloadReceiptBlock = ({
   paymentId,
   amount,
   products,
-  paymentType,
-  name,
   paymentDate,
   endPage,
 }: DownloadReceiptBlockProps) => {
@@ -157,8 +155,9 @@ export const DownloadReceiptBlock = ({
               Summary
             </Text>
             <Stack spacing="0.75rem" my="1rem">
-              {products.map((product) => (
+              {products.map((product, index) => (
                 <LineItem
+                  key={index}
                   name={product.name}
                   quantity={product.quantity}
                   amount_cents={product.amount_cents}
