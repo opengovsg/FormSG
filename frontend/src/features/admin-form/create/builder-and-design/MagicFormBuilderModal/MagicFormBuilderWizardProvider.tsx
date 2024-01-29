@@ -4,6 +4,8 @@ import { useMutation } from 'react-query'
 
 import { MagicFormBuilderMode } from '~shared/types'
 
+import { useAssistanceMutations } from '~features/admin-form/assistance/mutations'
+
 import {
   MagicFormBuilderFlowStates,
   MagicFormBuilderWizardContext,
@@ -53,13 +55,6 @@ const useMagicFormBuilderWizardContext =
      * Mock the mutations first
      * TODO: Wire up with actual mutations
      */
-    const mockPromptMutation = useMutation(() => {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve('success')
-        }, 2000)
-      })
-    })
 
     const mockPdfMutation = useMutation(() => {
       return new Promise((resolve) => {
@@ -68,6 +63,8 @@ const useMagicFormBuilderWizardContext =
         }, 2000)
       })
     })
+
+    const { createFieldsFromPromptMutation } = useAssistanceMutations()
 
     const handleDetailsSubmit = handleSubmit((inputs) => {
       if (currentStep === MagicFormBuilderFlowStates.Landing) {
@@ -85,7 +82,7 @@ const useMagicFormBuilderWizardContext =
       }
 
       if (currentStep === MagicFormBuilderFlowStates.PromptDetails) {
-        mockPromptMutation.mutate()
+        createFieldsFromPromptMutation.mutate(inputs.prompt)
       }
     })
 
@@ -100,7 +97,8 @@ const useMagicFormBuilderWizardContext =
 
     return {
       isFetching: false,
-      isLoading: mockPdfMutation.isLoading || mockPromptMutation.isLoading,
+      isLoading:
+        mockPdfMutation.isLoading || createFieldsFromPromptMutation.isLoading,
       currentStep,
       direction,
       formMethods,

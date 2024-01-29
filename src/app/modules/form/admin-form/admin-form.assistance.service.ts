@@ -5,10 +5,10 @@ import {
   ChatCompletionMessageParam,
 } from 'openai/src/resources/chat/completions'
 
+import { ContentTypes } from '../../../../../shared/types/assistance'
 import { createLoggerWithLabel } from '../../../config/logger'
 
 import {
-  ContentTypes,
   MODEL_TYPE,
   Roles,
   sampleFormFields,
