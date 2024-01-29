@@ -9,7 +9,10 @@ import { useToast } from '~hooks/useToast'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
 
-import { createSingleFormField } from '../UpdateFormFieldService'
+import {
+  createFormFields,
+  createSingleFormField,
+} from '../UpdateFormFieldService'
 import {
   FieldBuilderState,
   stateDataSelector,
@@ -97,6 +100,9 @@ export const useCreateFormField = () => {
         onSuccess: handleSuccess,
         onError: handleError,
       },
+    ),
+    createFieldsMutation: useMutation((createFieldsBody: FieldCreateDto[]) =>
+      createFormFields({ createFieldsBody, formId }),
     ),
   }
 }
