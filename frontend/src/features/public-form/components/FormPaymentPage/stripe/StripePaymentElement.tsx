@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Flex } from '@chakra-ui/react'
+import { Box, Button, Flex, Link, Stack, Text } from '@chakra-ui/react'
 import { Elements, useStripe } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 
@@ -15,6 +15,7 @@ import {
   PaymentStack,
   PaymentSuccessSvgr,
 } from '../components'
+import { LoadingSvgr } from '../components/assets/LoadingSvgr'
 import { useGetPaymentInfo } from '../queries'
 
 import { GenericMessageBlock, StripePaymentBlock } from './components'
@@ -74,6 +75,11 @@ const StripePaymentContainer = ({
     stripePaymentStatusResponse?.paymentIntent?.status,
   )
 
+  const shareLink = useMemo(
+    () => `${window.location.origin}/${formId}`,
+    [formId],
+  )
+
   const renderViewState = () => {
     switch (viewStates) {
       case PaymentViewStates.Invalid:
@@ -86,12 +92,31 @@ const StripePaymentContainer = ({
         )
       case PaymentViewStates.Canceled:
         return (
-          <PaymentStack>
-            <GenericMessageBlock
-              submissionId={paymentInfoData.submissionId}
-              title="Payment request was canceled."
-              subtitle="The payment request has timed out. No payment has been taken. Please submit the form again."
-            />
+          <PaymentStack noBg>
+            <>
+              <Box display="flex" justifyContent="center" alignItems="center">
+                <Stack spacing="1rem">
+                  <Text textStyle="h2" textColor="secondary.500">
+                    Your payment session has expired
+                  </Text>
+                  <Text textStyle="subhead-1" textColor="secondary.500">
+                    No payment has been taken. Please fill in this form again.
+                  </Text>
+                </Stack>
+              </Box>
+              <Box
+                mt="2.5rem"
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+              >
+                <Link href={`${shareLink}`}>
+                  <Button variant="outline" width="8.7rem">
+                    Fill form again
+                  </Button>
+                </Link>
+              </Box>
+            </>
           </PaymentStack>
         )
       case PaymentViewStates.PendingPayment: {
@@ -121,13 +146,16 @@ const StripePaymentContainer = ({
       }
       case PaymentViewStates.Processing:
         return (
-          <PaymentStack>
-            <GenericMessageBlock
-              submissionId={paymentInfoData.submissionId}
-              title="Stripe is still processing your payment."
-              subtitle="Hold tight, your payment is still being processed by stripe."
-            />
-          </PaymentStack>
+          <>
+            <LoadingSvgr maxW="100%" />
+            <PaymentStack mt="2rem">
+              <GenericMessageBlock
+                submissionId={paymentInfoData.submissionId}
+                title="We are still processing your payment."
+                subtitle="Hold tight, this should not take long."
+              />
+            </PaymentStack>
+          </>
         )
       case PaymentViewStates.Succeeded:
         return (

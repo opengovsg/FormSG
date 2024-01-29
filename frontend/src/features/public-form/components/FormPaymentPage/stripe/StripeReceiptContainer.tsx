@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { Box, Stack, useToast } from '@chakra-ui/react'
+import { Box, Divider, Stack, useToast } from '@chakra-ui/react'
 
 import { FormPaymentsField, ProductItem } from '~shared/types'
 
@@ -61,13 +61,19 @@ export const StripeReceiptContainer = ({
 
   if (isLoading || error || !paymentReceiptStatus?.isReady) {
     return (
-      <PaymentStack>
+      <Stack
+        py={{ base: '1.5rem', md: '3rem' }}
+        px={{ base: '1.5rem', md: '4rem' }}
+        bg="white"
+        mt="2rem"
+        divider={<Divider />}
+      >
         <GenericMessageBlock
-          title="Your payment has been received."
-          subtitle="We are waiting to get your proof of payment from our payment provider. You may come back to the same link to download your proof of payment later."
+          title="Thank you, your payment has been made successfully."
+          subtitle="We are waiting to get your proof of payment from our payment provider. You may come back to the same link to download your invoice later."
           submissionId={submissionId}
         />
-      </PaymentStack>
+      </Stack>
     )
   }
   return (
