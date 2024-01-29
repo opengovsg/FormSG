@@ -5,11 +5,6 @@ export enum Roles {
 
 export const MODEL_TYPE = 'gpt-3.5-turbo'
 
-export enum ContentTypes {
-  QUESTIONS = 'questions',
-  PDF = 'pdf',
-}
-
 export const sampleFormFields = [
   {
     title: '<string>',

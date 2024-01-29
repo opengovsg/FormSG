@@ -1,5 +1,7 @@
 import { useMutation } from 'react-query'
 
+import { ContentTypes } from '~shared/types/assistance'
+
 import {
   generateFormFields,
   generateQuestions,
@@ -9,6 +11,16 @@ import { useCreateFormField } from '~features/admin-form/create/builder-and-desi
 
 export const useAssistanceMutations = () => {
   const { createFieldsMutation } = useCreateFormField()
+
+  const createFieldsFromPromptMutation = useMutation((prompt: string) =>
+    generateFormFields(ContentTypes.QUESTIONS, prompt).then((data) => {
+      let formFields
+      if (data.content) {
+        formFields = JSON.parse(parseModelOutput(data.content))
+      }
+      return createFieldsMutation.mutate(formFields)
+    }),
+  )
 
   const generateQuestionsMutation = useMutation((purpose: string) =>
     generateQuestions(purpose),
@@ -39,6 +51,7 @@ export const useAssistanceMutations = () => {
   )
 
   return {
+    createFieldsFromPromptMutation,
     generateEmailFormFieldsMutation,
     generateEncryptFormFieldsMutation,
     generateQuestionsMutation,
