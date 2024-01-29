@@ -1,79 +1,47 @@
 import { useMutation } from 'react-query'
 
-import { FormResponseMode } from '~shared/types'
-
 import {
   generateFormFields,
   generateQuestions,
 } from '~features/admin-form/assistance/AssistanceService'
 import { parseModelOutput } from '~features/admin-form/assistance/utils'
-import {
-  createEmailModeForm,
-  createStorageModeOrMultirespondentForm,
-} from '~features/workspace/WorkspaceService'
+import { useCreateFormField } from '~features/admin-form/create/builder-and-design/mutations/useCreateFormField'
 
 export const useAssistanceMutations = () => {
+  const { createFieldsMutation } = useCreateFormField()
+
   const generateQuestionsMutation = useMutation((purpose: string) =>
     generateQuestions(purpose),
   )
 
   const generateEmailFormFieldsMutation = useMutation(
-    async ({
-      type,
-      content,
-      formName,
-      email,
-    }: {
-      type: string
-      content: string
-      formName: string
-      email: string
-    }) =>
-      generateFormFields(type, content).then(async (data) => {
-        let formFields
-        if (data.content) {
-          formFields = JSON.parse(parseModelOutput(data.content))
-        }
-        // todo: remove from mutation
-        return await createEmailModeForm({
-          title: formName,
-          emails: [email],
-          responseMode: FormResponseMode.Email,
-          form_fields: formFields,
-        })
-      }),
+    async ({ type, content }: { type: string; content: string }) =>
+      generateFormFields(type, content),
   )
 
   const generateEncryptFormFieldsMutation = useMutation(
-    async ({
-      type,
-      content,
-      formName,
-      publicKey,
-    }: {
-      type: string
-      content: string
-      formName: string
-      publicKey: string
-    }) =>
+    async ({ type, content }: { type: string; content: string }) =>
+      generateFormFields(type, content),
+  )
+
+  // todo: remove example to use createFormFieldsMutation
+  const generateEncryptFormFieldsMutationExample = useMutation(
+    async ({ type, content }: { type: string; content: string }) => {
       generateFormFields(type, content).then(async (data) => {
         let formFields
         if (data.content) {
           formFields = JSON.parse(parseModelOutput(data.content))
         }
         // todo: remove from mutation
-        return await createStorageModeOrMultirespondentForm({
-          title: formName,
-          publicKey,
-          responseMode: FormResponseMode.Encrypt,
-          form_fields: formFields,
-        })
-      }),
+        return createFieldsMutation.mutate(formFields)
+      })
+    },
   )
 
   return {
     generateEmailFormFieldsMutation,
     generateEncryptFormFieldsMutation,
     generateQuestionsMutation,
+    generateEncryptFormFieldsMutationExample,
   }
 }
