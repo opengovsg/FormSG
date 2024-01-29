@@ -57,7 +57,9 @@ export const updateSettingsValidator = celebrate({
         }),
       )
       .optional(),
-    defaultLanguage: Joi.string().valid(...Object.values(Language)),
+    defaultLanguage: Joi.string()
+      .valid(...Object.values(Language))
+      .allow(null),
   })
     .min(1)
     .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),

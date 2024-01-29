@@ -9,6 +9,7 @@ import {
   FormResponseMode,
   FormSettings,
   FormStatus,
+  Language,
   StorageFormSettings,
 } from '~shared/types/form/form'
 import { TwilioCredentials } from '~shared/types/twilio'
@@ -29,6 +30,7 @@ import {
   updateBusinessInfo,
   updateFormAuthType,
   updateFormCaptcha,
+  updateFormDefaultLanguage,
   updateFormEmails,
   updateFormEsrvcId,
   updateFormInactiveMessage,
@@ -128,6 +130,23 @@ export const useMutateFormSettings = () => {
               formatOrdinal,
             ]} submission.`
           : 'The submission limit on your form is removed.'
+        handleSuccess({ newData, toastDescription: toastStatusMessage })
+      },
+      onError: handleError,
+    },
+  )
+
+  const mutateFormDefaultLang = useMutation(
+    (nextDefaultLanguage?: Language | null) =>
+      updateFormDefaultLanguage(formId, nextDefaultLanguage),
+    {
+      onSuccess: (newData) => {
+        // Show toast on success.
+        const toastStatusMessage = `Your form will now ${
+          newData.defaultLanguage
+            ? 'support multiple languages'
+            : 'not support multiple languages'
+        }`
         handleSuccess({ newData, toastDescription: toastStatusMessage })
       },
       onError: handleError,
@@ -340,6 +359,7 @@ export const useMutateFormSettings = () => {
     mutateFormWebhookUrl,
     mutateFormStatus,
     mutateFormLimit,
+    mutateFormDefaultLang,
     mutateFormInactiveMessage,
     mutateFormCaptcha,
     mutateFormIssueNotification,

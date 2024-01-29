@@ -577,9 +577,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       defaultLanguage: {
         // default language of Form
         type: String,
-        enum: Object.values(Language),
+        enum: Object.values(Language).concat([null]),
         required: false,
-        default: '',
       },
     },
     formSchemaOptions,

@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react'
+import { SetStateAction, useCallback, useMemo, useState } from 'react'
+import { Controller } from 'react-hook-form'
 import { BiEditAlt } from 'react-icons/bi'
 import { GoEye } from 'react-icons/go'
 import {
@@ -11,28 +12,28 @@ import {
   Text,
 } from '@chakra-ui/react'
 
+import { Language } from '~shared/types'
+
 import Badge from '~components/Badge'
 import { SingleSelect } from '~components/Dropdown'
 import FormLabel from '~components/FormControl/FormLabel'
 import Toggle from '~components/Toggle'
 
+import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
 
-enum LANGUAGES {
-  ENGLISH = 'English',
-  CHINESE = 'Chinese',
-  MALAY = 'Malay',
-  TAMIL = 'Tamil',
-}
-
 interface LanguageTranslationRowProps {
-  language: LANGUAGES
+  language: Language
   isDefaultLanguage: boolean
   isLast?: boolean
 }
 
 interface LanguageTranslationSectionProps {
-  defaultLanguage: LANGUAGES
+  defaultLanguage: Language
+}
+
+interface MultiLangBlockProps {
+  selectedDefaultLanguage: Language | null
 }
 
 const LanguageTranslationRow = ({
@@ -76,7 +77,7 @@ const LanguageTranslationRow = ({
 const LanguageTranslationSection = ({
   defaultLanguage,
 }: LanguageTranslationSectionProps): JSX.Element => {
-  const languages = Object.values(LANGUAGES)
+  const languages = Object.values(Language)
 
   return (
     <>
@@ -87,6 +88,7 @@ const LanguageTranslationSection = ({
               language={language}
               isDefaultLanguage={language === defaultLanguage}
               isLast={id === arr.length}
+              key={language}
             />
           </>
         )
@@ -95,13 +97,23 @@ const LanguageTranslationSection = ({
   )
 }
 
-const MultiLangBlock = (): JSX.Element => {
-  const [defaultLanguage, setDefaultLanguage] = useState(LANGUAGES.ENGLISH)
+const MultiLangBlock = ({
+  selectedDefaultLanguage,
+}: MultiLangBlockProps): JSX.Element => {
+  const { mutateFormDefaultLang } = useMutateFormSettings()
 
-  const selectDefaultLanguageChange = (language: string) => {
-    const selectedDefaultLanguage: LANGUAGES = language as LANGUAGES
-    setDefaultLanguage(selectedDefaultLanguage)
-  }
+  const [defaultLanguage, setDefaultLanguage] = useState(
+    selectedDefaultLanguage ?? Language.ENGLISH,
+  )
+
+  const handleDefaultLanguageChange = useCallback(
+    (language: string) => {
+      const selectedDefaultLanguage: Language = language as Language
+      setDefaultLanguage(selectedDefaultLanguage)
+      return mutateFormDefaultLang.mutate(selectedDefaultLanguage)
+    },
+    [mutateFormDefaultLang],
+  )
 
   return (
     <>
@@ -114,9 +126,9 @@ const MultiLangBlock = (): JSX.Element => {
         </FormLabel>
         <SingleSelect
           value={defaultLanguage}
-          onChange={selectDefaultLanguageChange}
+          onChange={handleDefaultLanguageChange}
           name={'selectDefaultLanguage'}
-          items={Object.values(LANGUAGES)}
+          items={Object.values(Language)}
           isClearable={false}
         />
       </FormControl>
@@ -129,22 +141,42 @@ export const FormMultiLangToggle = (): JSX.Element => {
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
-  console.log(settings)
+  const { mutateFormDefaultLang } = useMutateFormSettings()
+
+  const isDefaultLanguageSelected = useMemo(
+    () =>
+      settings &&
+      typeof settings?.defaultLanguage !== 'undefined' &&
+      settings?.defaultLanguage !== null,
+    [settings],
+  )
 
   const handleToggleMultiLang = useCallback(() => {
-    if (!settings || isLoadingSettings) return
-  }, [isLoadingSettings, settings])
+    if (!settings || isLoadingSettings || mutateFormDefaultLang.isLoading)
+      return
+
+    // toggle multi lang off
+    if (settings.defaultLanguage && settings.defaultLanguage != null) {
+      return mutateFormDefaultLang.mutate(null)
+    }
+
+    // toggle multi lang on
+    return mutateFormDefaultLang.mutate(
+      settings?.defaultLanguage ?? Language.ENGLISH,
+    )
+  }, [isLoadingSettings, mutateFormDefaultLang, settings])
 
   return (
     <Skeleton isLoaded={!isLoadingSettings && !!settings} mt="2rem">
       <Toggle
-        onChange={() => console.log('toggle changed')}
+        onChange={handleToggleMultiLang}
+        isChecked={isDefaultLanguageSelected}
         label="Enable multi-language"
         description="This will allow respondents to select a language they prefer to view your form in. Translations are not automated."
       />
-      {settings && (
+      {settings && settings.defaultLanguage && (
         <Skeleton isLoaded={true}>
-          <MultiLangBlock />
+          <MultiLangBlock selectedDefaultLanguage={settings?.defaultLanguage} />
         </Skeleton>
       )}
     </Skeleton>
