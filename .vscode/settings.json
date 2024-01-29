@@ -2,7 +2,10 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   },
-  "eslint.validate": ["javascript", "typescript"],
+  "eslint.validate": [
+    "javascript",
+    "typescript"
+  ],
   "editor.formatOnSave": true,
   "[javascript]": {
     "editor.formatOnSave": false
@@ -16,10 +19,11 @@
     },
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "typescript.enablePromptUseWorkspaceTsdk": true,
   "typescript.tsdk": "node_modules/typescript/lib",
   "markdown.extension.toc.omittedFromToc": {
     "README.md": [
       "## Table of Contents"
-  ]
+    ]
   }
 }

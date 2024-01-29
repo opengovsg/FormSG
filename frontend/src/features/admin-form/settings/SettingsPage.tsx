@@ -11,6 +11,7 @@ import {
   Tabs,
 } from '@chakra-ui/react'
 
+import { LanguageTranslation } from '~assets/icons/LanguageTranslation'
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
 
@@ -19,6 +20,7 @@ import { useAdminFormCollaborators } from '../common/queries'
 import { SettingsTab } from './components/SettingsTab'
 import { SettingsAuthPage } from './SettingsAuthPage'
 import { SettingsGeneralPage } from './SettingsGeneralPage'
+import { SettingsMultiLangPage } from './SettingsMultiLangPage'
 import { SettingsPaymentsPage } from './SettingsPaymentsPage'
 import { SettingsTwilioPage } from './SettingsTwilioPage'
 import { SettingsWebhooksPage } from './SettingsWebhooksPage'
@@ -103,6 +105,7 @@ export const SettingsPage = (): JSX.Element => {
             <SettingsTab label="Twilio credentials" icon={BiMessage} />
             <SettingsTab label="Webhooks" icon={BiCodeBlock} />
             <SettingsTab label="Payments" icon={BiDollar} />
+            <SettingsTab label="Multi-language" icon={LanguageTranslation} />
           </TabList>
         </Flex>
         <TabPanels
@@ -124,6 +127,9 @@ export const SettingsPage = (): JSX.Element => {
           </TabPanel>
           <TabPanel>
             <SettingsPaymentsPage />
+          </TabPanel>
+          <TabPanel>
+            <SettingsMultiLangPage />
           </TabPanel>
         </TabPanels>
         <Spacer />
