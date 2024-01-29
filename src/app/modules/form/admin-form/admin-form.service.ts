@@ -781,6 +781,51 @@ export const createFormField = (
 }
 
 /**
+ * Inserts new form fields into given form's fields with the fields provided
+ * @param form the form to insert the new fields into
+ * @param newFields the new field to insert
+ * @returns ok(created form fields)
+ * @returns err(PossibleDatabaseError) when database errors arise
+ */
+export const createFormFields = (
+  form: IPopulatedForm,
+  newFields: FieldCreateDto[],
+): ResultAsync<
+  FormFieldSchema[],
+  PossibleDatabaseError | FormNotFoundError | FieldNotFoundError
+> => {
+  // If MyInfo field, override field title to stored name
+  for (const newField of newFields) {
+    if (newField.myInfo?.attr) {
+      newField.title =
+        MYINFO_ATTRIBUTE_MAP[newField.myInfo.attr]?.value ?? newField.title
+    }
+  }
+
+  return ResultAsync.fromPromise(form.insertFormFields(newFields), (error) => {
+    logger.error({
+      message: 'Error encountered while inserting new form fields',
+      meta: {
+        action: 'createFormField',
+        formId: form._id,
+        newFields,
+      },
+      error,
+    })
+
+    return transformMongoError(error)
+  }).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    const updatedField = updatedForm.form_fields
+    return updatedField
+      ? okAsync(updatedField)
+      : errAsync(new FieldNotFoundError())
+  })
+}
+
+/**
  * Reorders field with given fieldId to the given newPosition
  * @param form the form to reorder the field from
  * @param fieldId the id of the field to reorder
