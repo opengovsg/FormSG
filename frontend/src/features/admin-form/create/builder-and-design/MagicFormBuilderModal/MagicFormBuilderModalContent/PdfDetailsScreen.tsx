@@ -1,8 +1,8 @@
+import { useState } from 'react'
 import { BiRightArrowAlt } from 'react-icons/bi'
 import {
   Container,
   Flex,
-  FormControl,
   FormLabel,
   ModalBody,
   ModalHeader,
@@ -18,18 +18,13 @@ import Attachment from '~components/Field/Attachment'
 import { useMagicFormBuilderWizard } from '../MagicFormBuilderWizardContext'
 
 export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
-  const {
-    handleDetailsSubmit,
-    isLoading,
-    isFetching,
-    handleBack,
-    formMethods,
-  } = useMagicFormBuilderWizard()
-
-  const { watch } = formMethods
+  const { handleDetailsSubmit, isLoading, isFetching, handleBack } =
+    useMagicFormBuilderWizard()
 
   const MAX_FILE_SIZE = 20 * MB
   const VALID_EXTENSIONS = '.pdf'
+
+  const [pdfFile, setPdfFile] = useState<File | undefined>(undefined)
 
   return (
     <>
@@ -49,9 +44,9 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
             accept={VALID_EXTENSIONS}
             showFileSize
             title={'Upload a PDF'}
-            onChange={() => undefined}
+            onChange={(file) => setPdfFile(file)}
             name="pdfFile"
-            value={watch('pdfFile')}
+            value={pdfFile}
           />
 
           <Flex justify="flex-end" gap="1rem" mt="2.5rem">
