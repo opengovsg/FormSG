@@ -342,12 +342,12 @@ export type DuplicateFormBodyDto = DuplicateFormOverwriteDto & {
 export type CreateEmailFormBodyDto = Pick<
   EmailFormDto,
   'emails' | 'responseMode' | 'title'
-> & { workspaceId?: string; form_fields?: FormFieldDto }
+> & { workspaceId?: string }
 
 export type CreateStorageFormBodyDto = Pick<
   StorageFormDto,
   'publicKey' | 'responseMode' | 'title'
-> & { workspaceId?: string; form_fields?: FormFieldDto }
+> & { workspaceId?: string }
 
 export type CreateMultirespondentFormBodyDto = Pick<
   MultirespondentFormDto,

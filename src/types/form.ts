@@ -173,6 +173,14 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   ): Promise<T | null>
 
   /**
+   * Inserts a form field into the form
+   * @param newFields the new fields to insert
+   * @returns updated form after the insertion if field insertions are successful
+   * @throws validation error on invalid updates
+   */
+  insertFormFields<T>(this: T, newFields: FormField[]): Promise<T | null>
+
+  /**
    * Returns the dashboard form view of the form.
    * @param admin the admin to inject into the returned object
    * @returns dashboard form view object
