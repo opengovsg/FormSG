@@ -41,6 +41,7 @@ import {
   FormStatus,
   FormWebhookResponseModeSettings,
   FormWebhookSettings,
+  Language,
   LogicConditionState,
   LogicDto,
   LogicType,
@@ -569,6 +570,14 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       goLinkSuffix: {
         // GoGov link suffix
         type: String,
+        required: false,
+        default: '',
+      },
+
+      defaultLanguage: {
+        // default language of Form
+        type: String,
+        enum: Object.values(Language),
         required: false,
         default: '',
       },

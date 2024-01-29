@@ -37,6 +37,7 @@ const FORM_SETTINGS_FIELDS = <const>[
   'submissionLimit',
   'title',
   'webhook',
+  'defaultLanguage',
 ]
 
 export const EMAIL_FORM_SETTINGS_FIELDS = <const>[

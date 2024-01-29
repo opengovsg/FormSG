@@ -60,6 +60,13 @@ export enum FormAuthType {
   SGID_MyInfo = 'SGID_MyInfo',
 }
 
+export enum Language {
+  ENGLISH = 'English',
+  CHINESE = 'Chinese',
+  MALAY = 'Malay',
+  Tamil = 'Tamil',
+}
+
 export enum FormStatus {
   Private = 'PRIVATE',
   Public = 'PUBLIC',
@@ -161,6 +168,8 @@ export interface FormBase {
   responseMode: FormResponseMode
 
   goLinkSuffix?: string
+
+  defaultLanguage?: Language
 }
 
 export interface EmailFormBase extends FormBase {
