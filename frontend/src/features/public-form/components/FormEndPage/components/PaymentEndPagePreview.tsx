@@ -27,16 +27,14 @@ export const PaymentEndPagePreview = ({
 }: PaymentEndPagePreviewProps): JSX.Element => {
   const { isPaymentEnabled } = usePublicFormContext()
   return (
-    <Container>
+    <>
       <Flex flexDir="column" align="center">
         <PaymentsThankYouSvgr h="100%" pt="2.5rem" />
         <Stack
           //   spacing={{ base: '1.5rem', md: '3rem' }}
           py={{ base: '1rem', md: '1.5rem' }}
-          //   px={{ base: '1.5rem', md: '2rem' }}
+          mx={{ base: '1.5rem', md: '2rem' }}
           bg="transparent"
-          //   w="100%"
-          divider={<StackDivider />}
         >
           <PaymentEndPageBlock
             focusOnMount
@@ -50,6 +48,6 @@ export const PaymentEndPagePreview = ({
           )}
         </Stack>
       </Flex>
-    </Container>
+    </>
   )
 }
