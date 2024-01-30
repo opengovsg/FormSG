@@ -11,6 +11,7 @@ import {
 import { parseModelOutput } from '~features/admin-form/assistance/utils'
 import { useCreateFormField } from '~features/admin-form/create/builder-and-design/mutations/useCreateFormField'
 
+import { useToast } from '../../../hooks/useToast'
 import { adminFormKeys } from '../common/queries'
 import { MagicFormBuilderModalOnCloseContext } from '../create/builder-and-design/BuilderAndDesignContent/FormBuilder'
 
@@ -21,6 +22,8 @@ export const useAssistanceMutations = () => {
   if (!formId) {
     throw new Error('Form ID is required')
   }
+
+  const toast = useToast({ status: 'success', isClosable: true })
 
   const queryClient = useQueryClient()
 
@@ -35,12 +38,29 @@ export const useAssistanceMutations = () => {
       .then((data) => {
         let formFields
         if (data.content) {
-          formFields = JSON.parse(parseModelOutput(data.content))
+          try {
+            formFields = JSON.parse(parseModelOutput(data.content))
+          } catch (e) {
+            toast({
+              title: `Error creating form. Reason: ${e}`,
+              status: 'warning',
+            })
+            return
+          }
         }
         return createFieldsMutation.mutate(formFields, {
           onSuccess: () => {
             queryClient.invalidateQueries(adminFormKeys.id(formId))
             onClose()
+            toast({
+              title: 'Successfully created form',
+            })
+          },
+          onError: () => {
+            toast({
+              title: 'Error creating form.',
+              status: 'warning',
+            })
           },
         })
       }),
@@ -50,12 +70,29 @@ export const useAssistanceMutations = () => {
     generateFormFields(ContentTypes.PDF, pdfContent).then((data) => {
       let formFields
       if (data.content) {
-        formFields = JSON.parse(parseModelOutput(data.content))
+        try {
+          formFields = JSON.parse(parseModelOutput(data.content))
+        } catch (e) {
+          toast({
+            title: `Error creating form. Reason: ${e}`,
+            status: 'warning',
+          })
+          return
+        }
       }
       return createFieldsMutation.mutate(formFields, {
         onSuccess: () => {
           queryClient.invalidateQueries(adminFormKeys.id(formId))
           onClose()
+          toast({
+            title: 'Successfully created form',
+          })
+        },
+        onError: () => {
+          toast({
+            title: 'Error creating form.',
+            status: 'warning',
+          })
         },
       })
     }),
