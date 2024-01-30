@@ -26,6 +26,52 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
 
   const [pdfFile, setPdfFile] = useState<File | undefined>(undefined)
 
+  function fileToArrayBuffer(file: File) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = (event) => resolve(reader.result)
+      reader.onerror = (error) => reject(error)
+      reader.readAsArrayBuffer(file)
+    })
+  }
+
+  let pdfjs: any
+  ;(async function () {
+    pdfjs = await import('pdfjs-dist/build/pdf.js')
+    const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry.js')
+    pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker
+  })()
+
+  const handleFileUpload = async (file: any) => {
+    setPdfFile(file)
+    console.log('Uploaded file:', file)
+    if (file) {
+      const arrayBuffer = await fileToArrayBuffer(file)
+      console.log('ArrayBuffer:', arrayBuffer)
+      try {
+        const text = await pdfToText(arrayBuffer)
+        console.log(text)
+      } catch (e) {
+        console.log(e)
+      }
+    }
+  }
+  async function pdfToText(data: any) {
+    const loadingTask = pdfjs.getDocument(data)
+    const pdf = await loadingTask.promise
+
+    let combinedText = ''
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i)
+      const content = await page.getTextContent()
+      const text = content.items.map((item: any) => item.str).join(' ')
+      combinedText += text + '\n\n' // Adding two new lines to separate pages.
+    }
+    console.log(combinedText.trim())
+    return combinedText.trim()
+  }
+
   return (
     <>
       <ModalHeader color="secondary.700">
@@ -44,7 +90,7 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
             accept={VALID_EXTENSIONS}
             showFileSize
             title={'Upload a PDF'}
-            onChange={(file) => setPdfFile(file)}
+            onChange={handleFileUpload}
             name="pdfFile"
             value={pdfFile}
           />
