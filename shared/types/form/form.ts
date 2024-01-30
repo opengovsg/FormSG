@@ -170,6 +170,7 @@ export interface FormBase {
   goLinkSuffix?: string
 
   defaultLanguage?: Language | null
+  supportedLanguages?: Language[] | null
 }
 
 export interface EmailFormBase extends FormBase {

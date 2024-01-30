@@ -580,6 +580,13 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         enum: Object.values(Language).concat([null]),
         required: false,
       },
+
+      supportedLanguages: {
+        // supported language translations
+        type: [String],
+        enum: Object.values(Language).concat([null]),
+        require: false,
+      },
     },
     formSchemaOptions,
   )

@@ -38,6 +38,7 @@ const FORM_SETTINGS_FIELDS = <const>[
   'title',
   'webhook',
   'defaultLanguage',
+  'supportedLanguages',
 ]
 
 export const EMAIL_FORM_SETTINGS_FIELDS = <const>[

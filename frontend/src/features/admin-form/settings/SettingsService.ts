@@ -55,6 +55,14 @@ export const updateFormDefaultLanguage: UpdateFormFn<
   return updateFormSettings(formId, { defaultLanguage: newDefaultLanguage })
 }
 
+export const updateFormSupportedLanguages: UpdateFormFn<
+  'supportedLanguages'
+> = async (formId, newSupportedLanguages) => {
+  return updateFormSettings(formId, {
+    supportedLanguages: newSupportedLanguages,
+  })
+}
+
 export const updateFormCaptcha: UpdateFormFn<'hasCaptcha'> = async (
   formId,
   newHasCaptcha,

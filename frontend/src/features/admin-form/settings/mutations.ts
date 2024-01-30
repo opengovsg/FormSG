@@ -37,6 +37,7 @@ import {
   updateFormIssueNotification,
   updateFormLimit,
   updateFormStatus,
+  updateFormSupportedLanguages,
   updateFormTitle,
   updateFormWebhookRetries,
   updateFormWebhookUrl,
@@ -149,6 +150,14 @@ export const useMutateFormSettings = () => {
         }`
         handleSuccess({ newData, toastDescription: toastStatusMessage })
       },
+      onError: handleError,
+    },
+  )
+
+  const mutateFormSupportedLanguages = useMutation(
+    (nextSupportedLanguages?: Language[] | null) =>
+      updateFormSupportedLanguages(formId, nextSupportedLanguages),
+    {
       onError: handleError,
     },
   )
@@ -360,6 +369,7 @@ export const useMutateFormSettings = () => {
     mutateFormStatus,
     mutateFormLimit,
     mutateFormDefaultLang,
+    mutateFormSupportedLanguages,
     mutateFormInactiveMessage,
     mutateFormCaptcha,
     mutateFormIssueNotification,

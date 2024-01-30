@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { BiEditAlt } from 'react-icons/bi'
-import { GoEye } from 'react-icons/go'
+import { GoEye, GoEyeClosed } from 'react-icons/go'
 import {
   Divider,
   Flex,
@@ -40,6 +40,35 @@ const LanguageTranslationRow = ({
   isDefaultLanguage,
   isLast,
 }: LanguageTranslationRowProps): JSX.Element => {
+  const { data: settings } = useAdminFormSettings()
+
+  const supportedLanguages = settings?.supportedLanguages ?? null
+
+  const [isLanguageSupported, setIsLanguageSupported] = useState(
+    supportedLanguages?.indexOf(language) !== -1,
+  )
+
+  const { mutateFormSupportedLanguages } = useMutateFormSettings()
+
+  const handleToggleSupportedLanague = useCallback(
+    (language: Language) => {
+      if (supportedLanguages == null) return
+
+      // remove support for this language if it exists in supported language
+      const existingSupportedLanguageIdx = supportedLanguages.indexOf(language)
+      if (existingSupportedLanguageIdx !== -1) {
+        supportedLanguages.splice(existingSupportedLanguageIdx, 1)
+        setIsLanguageSupported(false)
+        return mutateFormSupportedLanguages.mutate(supportedLanguages)
+      } else {
+        const updatedSupportedLanguages = supportedLanguages.concat(language)
+        setIsLanguageSupported(true)
+        return mutateFormSupportedLanguages.mutate(updatedSupportedLanguages)
+      }
+    },
+    [mutateFormSupportedLanguages, supportedLanguages],
+  )
+
   return (
     <>
       <Flex alignItems="center" w="100%">
@@ -55,9 +84,16 @@ const LanguageTranslationRow = ({
           <HStack spacing="0.75rem">
             <IconButton
               variant="clear"
-              icon={<GoEye width="44px" />}
+              icon={
+                isLanguageSupported ? (
+                  <GoEye width="44px" />
+                ) : (
+                  <GoEyeClosed width="44px" />
+                )
+              }
               colorScheme="secondary"
               aria-label={`Select ${language} as the form's default language`}
+              onClick={() => handleToggleSupportedLanague(language)}
             />
             <IconButton
               variant="clear"
@@ -145,7 +181,8 @@ export const FormMultiLangToggle = (): JSX.Element => {
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
-  const { mutateFormDefaultLang } = useMutateFormSettings()
+  const { mutateFormDefaultLang, mutateFormSupportedLanguages } =
+    useMutateFormSettings()
 
   const isDefaultLanguageSelected = useMemo(
     () =>
@@ -161,14 +198,21 @@ export const FormMultiLangToggle = (): JSX.Element => {
 
     // toggle multi lang off
     if (settings.defaultLanguage && settings.defaultLanguage != null) {
+      mutateFormSupportedLanguages.mutate(null)
       return mutateFormDefaultLang.mutate(null)
     }
 
-    // toggle multi lang on
+    // toggle multi lang on and add all supported languages
+    mutateFormSupportedLanguages.mutate(Object.values(Language))
     return mutateFormDefaultLang.mutate(
       settings?.defaultLanguage ?? Language.ENGLISH,
     )
-  }, [isLoadingSettings, mutateFormDefaultLang, settings])
+  }, [
+    isLoadingSettings,
+    mutateFormDefaultLang,
+    mutateFormSupportedLanguages,
+    settings,
+  ])
 
   return (
     <Skeleton isLoaded={!isLoadingSettings && !!settings} mt="2rem">
