@@ -8,8 +8,9 @@ import {
   ModalHeader,
   Text,
 } from '@chakra-ui/react'
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry'
+import * as pdfjs from 'pdfjs-dist/legacy/build/pdf'
 
-// import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs'
 import { MB } from '~shared/constants'
 
 import Badge from '~components/Badge'
@@ -24,6 +25,7 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
 
   const MAX_FILE_SIZE = 20 * MB
   const VALID_EXTENSIONS = '.pdf'
+  pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker
 
   const [pdfFile, setPdfFile] = useState<File | undefined>(undefined)
 
@@ -35,13 +37,6 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
       reader.readAsArrayBuffer(file)
     })
   }
-
-  let pdfjs
-  ;(async function () {
-    pdfjs = await import('pdfjs-dist/legacy/build/pdf')
-    const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry')
-    pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker
-  })()
 
   const handleFileUpload = async (file: any) => {
     setPdfFile(file)
