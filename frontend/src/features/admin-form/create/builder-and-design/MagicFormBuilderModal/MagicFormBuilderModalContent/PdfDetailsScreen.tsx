@@ -9,6 +9,7 @@ import {
   Text,
 } from '@chakra-ui/react'
 
+// import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs'
 import { MB } from '~shared/constants'
 
 import Badge from '~components/Badge'
@@ -35,10 +36,10 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
     })
   }
 
-  let pdfjs: any
+  let pdfjs
   ;(async function () {
-    pdfjs = await import('pdfjs-dist/build/pdf.js')
-    const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry.js')
+    pdfjs = await import('pdfjs-dist/legacy/build/pdf')
+    const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry')
     pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker
   })()
 
