@@ -926,7 +926,7 @@ export const TermsOfUsePage = (): JSX.Element => {
                 </SubSectionOrderedList>
               </SectionListItem>
             </OrderedList>
-            <Text mt="2rem">These Terms of Use are dated 19 Oct 2021.</Text>
+            <Text mt="2rem">These Terms of Use are dated 29 January 2024.</Text>
           </Box>
           <Box as="section">
             <Text textStyle="h1" as="h1" mb="2.5rem">
