@@ -13,7 +13,21 @@ export const useAssistanceMutations = () => {
   const { createFieldsMutation } = useCreateFormField()
 
   const createFieldsFromPromptMutation = useMutation((prompt: string) =>
-    generateFormFields(ContentTypes.QUESTIONS, prompt).then((data) => {
+    generateQuestions(prompt)
+      .then((questions) =>
+        generateFormFields(ContentTypes.QUESTIONS, String(questions)),
+      )
+      .then((data) => {
+        let formFields
+        if (data.content) {
+          formFields = JSON.parse(parseModelOutput(data.content))
+        }
+        return createFieldsMutation.mutate(formFields)
+      }),
+  )
+
+  const createFieldsFromPdfMutation = useMutation((pdfContent: string) =>
+    generateFormFields(ContentTypes.PDF, pdfContent).then((data) => {
       let formFields
       if (data.content) {
         formFields = JSON.parse(parseModelOutput(data.content))
@@ -22,39 +36,8 @@ export const useAssistanceMutations = () => {
     }),
   )
 
-  const generateQuestionsMutation = useMutation((purpose: string) =>
-    generateQuestions(purpose),
-  )
-
-  const generateEmailFormFieldsMutation = useMutation(
-    async ({ type, content }: { type: string; content: string }) =>
-      generateFormFields(type, content),
-  )
-
-  const generateEncryptFormFieldsMutation = useMutation(
-    async ({ type, content }: { type: string; content: string }) =>
-      generateFormFields(type, content),
-  )
-
-  // todo: remove example to use createFormFieldsMutation
-  const generateEncryptFormFieldsMutationExample = useMutation(
-    async ({ type, content }: { type: string; content: string }) => {
-      generateFormFields(type, content).then(async (data) => {
-        let formFields
-        if (data.content) {
-          formFields = JSON.parse(parseModelOutput(data.content))
-        }
-        // todo: remove from mutation
-        return createFieldsMutation.mutate(formFields)
-      })
-    },
-  )
-
   return {
     createFieldsFromPromptMutation,
-    generateEmailFormFieldsMutation,
-    generateEncryptFormFieldsMutation,
-    generateQuestionsMutation,
-    generateEncryptFormFieldsMutationExample,
+    createFieldsFromPdfMutation,
   }
 }
