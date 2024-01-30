@@ -66,6 +66,7 @@ export const StripeReceiptContainer = ({
         px={{ base: '1.5rem', md: '4rem' }}
         bg="white"
         mt="2rem"
+        width="75%"
         divider={<Divider />}
       >
         <GenericMessageBlock

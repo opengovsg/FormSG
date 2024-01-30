@@ -16,6 +16,7 @@ import {
   PaymentSuccessSvgr,
 } from '../components'
 import { LoadingSvgr } from '../components/assets/LoadingSvgr'
+import { PaymentCanceledSvgr } from '../components/assets/PaymentCanceledSvgr'
 import { useGetPaymentInfo } from '../queries'
 
 import { GenericMessageBlock, StripePaymentBlock } from './components'
@@ -92,8 +93,9 @@ const StripePaymentContainer = ({
         )
       case PaymentViewStates.Canceled:
         return (
-          <PaymentStack noBg>
-            <>
+          <>
+            <PaymentCanceledSvgr maxW="100%" />
+            <PaymentStack noBg>
               <Box display="flex" justifyContent="center" alignItems="center">
                 <Stack spacing="1rem">
                   <Text textStyle="h2" textColor="secondary.500">
@@ -102,22 +104,22 @@ const StripePaymentContainer = ({
                   <Text textStyle="subhead-1" textColor="secondary.500">
                     No payment has been taken. Please fill in this form again.
                   </Text>
+                  <Box
+                    pt="1.5rem"
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                  >
+                    <Link href={`${shareLink}`}>
+                      <Button variant="outline" width="8.7rem">
+                        Fill form again
+                      </Button>
+                    </Link>
+                  </Box>
                 </Stack>
               </Box>
-              <Box
-                mt="2.5rem"
-                display="flex"
-                justifyContent="center"
-                alignItems="center"
-              >
-                <Link href={`${shareLink}`}>
-                  <Button variant="outline" width="8.7rem">
-                    Fill form again
-                  </Button>
-                </Link>
-              </Box>
-            </>
-          </PaymentStack>
+            </PaymentStack>
+          </>
         )
       case PaymentViewStates.PendingPayment: {
         // The item name is passed over to Stripe as PaymentIntent.description
