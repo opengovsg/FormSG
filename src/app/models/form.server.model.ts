@@ -880,7 +880,9 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     newFields: FormField[],
   ) {
     const formFields = this.form_fields as Types.DocumentArray<IFieldSchema>
-    formFields.push(newFields)
+    newFields.forEach((field) => {
+      formFields.push(field)
+    })
     return this.save()
   }
 
