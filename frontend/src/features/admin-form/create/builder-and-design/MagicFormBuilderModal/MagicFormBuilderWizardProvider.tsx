@@ -64,7 +64,8 @@ const useMagicFormBuilderWizardContext =
       })
     })
 
-    const { createFieldsFromPromptMutation } = useAssistanceMutations()
+    const { createFieldsFromPromptMutation, createFieldsFromPdfMutation } =
+      useAssistanceMutations()
 
     const handleDetailsSubmit = handleSubmit((inputs) => {
       if (currentStep === MagicFormBuilderFlowStates.Landing) {
@@ -78,7 +79,7 @@ const useMagicFormBuilderWizardContext =
       }
 
       if (currentStep === MagicFormBuilderFlowStates.PdfDetails) {
-        mockPdfMutation.mutate()
+        createFieldsFromPdfMutation.mutate(inputs.pdfFileText)
       }
 
       if (currentStep === MagicFormBuilderFlowStates.PromptDetails) {
@@ -98,7 +99,8 @@ const useMagicFormBuilderWizardContext =
     return {
       isFetching: false,
       isLoading:
-        mockPdfMutation.isLoading || createFieldsFromPromptMutation.isLoading,
+        createFieldsFromPdfMutation.isLoading ||
+        createFieldsFromPromptMutation.isLoading,
       currentStep,
       direction,
       formMethods,

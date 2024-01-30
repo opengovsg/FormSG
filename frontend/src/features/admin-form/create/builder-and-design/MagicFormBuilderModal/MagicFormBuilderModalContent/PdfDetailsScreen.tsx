@@ -20,14 +20,22 @@ import Attachment from '~components/Field/Attachment'
 import { useMagicFormBuilderWizard } from '../MagicFormBuilderWizardContext'
 
 export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
-  const { handleDetailsSubmit, isLoading, isFetching, handleBack } =
-    useMagicFormBuilderWizard()
+  const {
+    handleDetailsSubmit,
+    isLoading,
+    isFetching,
+    handleBack,
+    formMethods,
+  } = useMagicFormBuilderWizard()
+
+  const { setValue } = formMethods
 
   const MAX_FILE_SIZE = 20 * MB
   const VALID_EXTENSIONS = '.pdf'
   pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker
 
   const [pdfFile, setPdfFile] = useState<File | undefined>(undefined)
+  const [pdfFileText, setPdfFileText] = useState<string>('')
 
   function fileToArrayBuffer(file: File) {
     return new Promise((resolve, reject) => {
@@ -40,16 +48,18 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
 
   const handleFileUpload = async (file: any) => {
     setPdfFile(file)
-    console.log('Uploaded file:', file)
     if (file) {
       const arrayBuffer = await fileToArrayBuffer(file)
-      console.log('ArrayBuffer:', arrayBuffer)
       try {
         const text = await pdfToText(arrayBuffer)
-        console.log(text)
+        setPdfFileText(text)
+        setValue('pdfFileText', text)
       } catch (e) {
-        console.log(e)
+        console.error(e)
       }
+    } else {
+      setPdfFileText('')
+      setValue('pdfFileText', '')
     }
   }
   async function pdfToText(data: any) {
@@ -64,7 +74,6 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
       const text = content.items.map((item: any) => item.str).join(' ')
       combinedText += text + '\n\n' // Adding two new lines to separate pages.
     }
-    console.log(combinedText.trim())
     return combinedText.trim()
   }
 
@@ -105,7 +114,7 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
               rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
               type="submit"
               isLoading={isLoading}
-              isDisabled={isFetching}
+              isDisabled={isFetching || isLoading || !pdfFileText}
               onClick={handleDetailsSubmit}
             >
               <Text lineHeight="1.5rem">Next step</Text>
