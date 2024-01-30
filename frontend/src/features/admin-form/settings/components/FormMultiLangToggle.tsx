@@ -1,5 +1,4 @@
-import { SetStateAction, useCallback, useMemo, useState } from 'react'
-import { Controller } from 'react-hook-form'
+import { useCallback, useMemo, useState } from 'react'
 import { BiEditAlt } from 'react-icons/bi'
 import { GoEye } from 'react-icons/go'
 import {
@@ -77,7 +76,12 @@ const LanguageTranslationRow = ({
 const LanguageTranslationSection = ({
   defaultLanguage,
 }: LanguageTranslationSectionProps): JSX.Element => {
-  const languages = Object.values(Language)
+  let languages = Object.values(Language)
+
+  const idxToRemove = languages.indexOf(defaultLanguage)
+  languages.splice(idxToRemove, 1)
+
+  languages = [defaultLanguage, ...languages]
 
   return (
     <>

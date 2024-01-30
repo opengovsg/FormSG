@@ -31,6 +31,7 @@ const settingsTabsOrder = [
   'twilio',
   'webhooks',
   'payments',
+  'multi-language',
 ]
 
 export const SettingsPage = (): JSX.Element => {
