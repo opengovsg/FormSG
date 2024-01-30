@@ -6,6 +6,7 @@ import {
 } from 'openai/src/resources/chat/completions'
 
 import { ContentTypes } from '../../../../../shared/types/assistance'
+import { openAIConfig } from '../../../config/features/openai.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 
 import {
@@ -28,7 +29,7 @@ import {
 const logger = createLoggerWithLabel(module)
 
 const openai = new OpenAI({
-  apiKey: 'fake-key',
+  apiKey: openAIConfig.apiKey,
 })
 
 /**
