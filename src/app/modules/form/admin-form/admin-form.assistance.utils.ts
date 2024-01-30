@@ -23,14 +23,8 @@ export const schemaPromptBuilder = (schema: any) => {
 }
 
 export const questionListPromptBuilder = (purpose: string) => {
-  const prompt = `I am a public officer who wants to create a form that ${purpose}.
+  const prompt = `I am a public officer who wants to create a form that collects ${purpose}.
   Give me a list of content / questions I should have in my form built with this form builder, in the form of "${expectedQuestionsListFormat}".`
-  return prompt
-}
-
-export const questionListPromptBuilderV2 = (purpose: string) => {
-  const prompt = `I am a public offer who wants to create a form for ${purpose}. Give me a list of questions and answers that I should include in my form. The questions and answers should be in the following format:\n
-   "${expectedQuestionsListFormat}".`
   return prompt
 }
 
