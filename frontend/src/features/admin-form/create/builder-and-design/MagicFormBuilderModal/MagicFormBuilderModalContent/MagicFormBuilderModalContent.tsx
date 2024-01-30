@@ -5,6 +5,7 @@ import {
   useMagicFormBuilderWizard,
 } from '../MagicFormBuilderWizardContext'
 
+import { MagicFormBuilderGifLoadingScreen } from './GifLoadingScreen'
 import { MagicFormBuilderLandingScreen } from './LandingScreen'
 import { MagicFormBuilderPdfDetailsScreen } from './PdfDetailsScreen'
 import { MagicFormBuilderPromptDetailsScreen } from './PromptDetailsScreen'
@@ -18,9 +19,11 @@ export const MagicFormBuilderModalContent = ({
 }: {
   onClose: () => void
 }) => {
-  const { direction, currentStep } = useMagicFormBuilderWizard()
+  const { direction, currentStep, isLoading } = useMagicFormBuilderWizard()
 
-  return (
+  return isLoading ? (
+    <MagicFormBuilderGifLoadingScreen />
+  ) : (
     <XMotionBox keyProp={currentStep} custom={direction}>
       {currentStep === MagicFormBuilderFlowStates.Landing && (
         <MagicFormBuilderLandingScreen onClose={onClose} />
