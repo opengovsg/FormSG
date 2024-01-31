@@ -33,20 +33,38 @@ const openai = new OpenAI({
 })
 
 /**
- * generates a list of questions based on the given purpose
- * @param purpose the purpose of the questions, e.g. "registration", "login", etc.
+ * generates a list of questions based on the given type and content
+ * @param {string} param.type - The type of content provided. "prompt" or "pdf"
+ * @param {string} param.content - prompt or parsed pdf content
  * @returns a ResultAsync containing the generated questions or an AssistanceConnectionError if there was an error connecting to OpenAI
  */
-export const generateQuestions = (
-  purpose: string,
-): ResultAsync<ChatCompletionMessage, AssistanceConnectionError> => {
+export const generateQuestions = ({
+  type,
+  content,
+}: {
+  type: string
+  content: string
+}): ResultAsync<ChatCompletionMessage, AssistanceConnectionError> => {
   const messages: ChatCompletionMessageParam[] = [
     { role: Roles.SYSTEM, content: schemaPromptBuilder(sampleFormFields) },
-    {
-      role: Roles.USER,
-      content: questionListPromptBuilder(purpose),
-    },
   ]
+  switch (type) {
+    case ContentTypes.PROMPT:
+      messages.push({
+        role: Roles.USER,
+        content: questionListPromptBuilder(content),
+      })
+      break
+    case ContentTypes.PDF:
+      messages.push({
+        role: Roles.USER,
+        content: migratePromptBuilder(content),
+      })
+      break
+    default:
+      return errAsync(new AssistanceModelTypeError())
+  }
+
   return ResultAsync.fromPromise(
     openai.chat.completions.create({
       messages: messages,
@@ -62,7 +80,8 @@ export const generateQuestions = (
         message: `Error while generating questions: ${errorMessage}`,
         meta: {
           action: 'generateQuestions',
-          purpose,
+          type,
+          content,
         },
         error,
       })
@@ -77,42 +96,21 @@ export const generateQuestions = (
 /**
  * Generates form fields based on the given type and content.
  *
- * @param {object} param - The type and content parameters.
- * @param {string} param.type - The type of content provided. "questions" or "pdf"
- * @param {string} param.content - List of questions or parsed pdf content
+ * @param {string} param.questions - List of questions
  *
  * @returns {ResultAsync} A ResultAsync with either a ChatCompletionMessage or an error.
  * Possible errors include AssistanceConnectionError and AssistanceModelTypeError.
  */
-export const generateFormFields = ({
-  type,
-  content,
-}: {
-  type: string
-  content: string
-}): ResultAsync<
+export const generateFormFields = (
+  questions: string,
+): ResultAsync<
   ChatCompletionMessage,
   AssistanceConnectionError | AssistanceModelTypeError
 > => {
   const messages: ChatCompletionMessageParam[] = [
     { role: Roles.SYSTEM, content: schemaPromptBuilder(sampleFormFields) },
+    { role: Roles.USER, content: formFieldsPromptBuilder(questions) },
   ]
-  switch (type) {
-    case ContentTypes.QUESTIONS:
-      messages.push({
-        role: Roles.USER,
-        content: formFieldsPromptBuilder(content),
-      })
-      break
-    case ContentTypes.PDF:
-      messages.push({
-        role: Roles.USER,
-        content: migratePromptBuilder(content),
-      })
-      break
-    default:
-      return errAsync(new AssistanceModelTypeError())
-  }
   return ResultAsync.fromPromise(
     openai.chat.completions.create({
       messages: messages,
@@ -127,7 +125,7 @@ export const generateFormFields = ({
         message: `Error while generating form fields: ${errorMessage}`,
         meta: {
           action: 'generateFormFields',
-          type,
+          questions,
         },
         error,
       })
