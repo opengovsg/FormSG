@@ -31,13 +31,12 @@ export const useAssistanceMutations = () => {
   const { onClose } = onCloseContext || {}
 
   const createFieldsFromPromptMutation = useMutation((prompt: string) =>
-    generateQuestions(prompt)
+    generateQuestions(ContentTypes.PROMPT, prompt)
       .then((questions) => {
         if (!questions.content) {
           throw new Error('No content in questions')
         }
-
-        return generateFormFields(ContentTypes.QUESTIONS, questions.content)
+        return generateFormFields(questions.content)
       })
       .then((data) => {
         let formFields
@@ -71,35 +70,42 @@ export const useAssistanceMutations = () => {
   )
 
   const createFieldsFromPdfMutation = useMutation((pdfContent: string) =>
-    generateFormFields(ContentTypes.PDF, pdfContent).then((data) => {
-      let formFields
-      if (data.content) {
-        try {
-          formFields = JSON.parse(parseModelOutput(data.content))
-        } catch (e) {
-          toast({
-            description: `Error creating form. Reason: ${e}`,
-            status: 'warning',
-          })
-          return
+    generateQuestions(ContentTypes.PDF, pdfContent)
+      .then((questions) => {
+        if (!questions.content) {
+          throw new Error('No content in questions')
         }
-      }
-      return createFieldsMutation.mutate(formFields, {
-        onSuccess: () => {
-          queryClient.invalidateQueries(adminFormKeys.id(formId))
-          onClose()
-          toast({
-            description: 'Successfully created form',
-          })
-        },
-        onError: () => {
-          toast({
-            description: 'Error creating form.',
-            status: 'warning',
-          })
-        },
+        return generateFormFields(questions.content)
       })
-    }),
+      .then((data) => {
+        let formFields
+        if (data.content) {
+          try {
+            formFields = JSON.parse(parseModelOutput(data.content))
+          } catch (e) {
+            toast({
+              description: `Error creating form. Reason: ${e}`,
+              status: 'warning',
+            })
+            return
+          }
+        }
+        return createFieldsMutation.mutate(formFields, {
+          onSuccess: () => {
+            queryClient.invalidateQueries(adminFormKeys.id(formId))
+            onClose()
+            toast({
+              description: 'Successfully created form',
+            })
+          },
+          onError: () => {
+            toast({
+              description: 'Error creating form.',
+              status: 'warning',
+            })
+          },
+        })
+      }),
   )
 
   return {
