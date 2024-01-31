@@ -27,8 +27,11 @@ export const MagicFormBuilderPromptDetailsScreen = (): JSX.Element => {
 
   const {
     register,
+    setValue,
     formState: { errors },
   } = formMethods
+
+  const handleUseIdea = (idea: string) => () => setValue('prompt', idea)
 
   return (
     <>
@@ -60,33 +63,65 @@ export const MagicFormBuilderPromptDetailsScreen = (): JSX.Element => {
             gap="2rem"
           >
             <Text textStyle="subhead-1">Ideas for you</Text>
-            <Flex alignItems="start">
-              <Icon
-                as={BiBulb}
+            <Button
+              variant="clear"
+              color="secondary.500"
+              justifyContent="flex-start"
+              padding="0"
+              onClick={handleUseIdea(
+                'Employee feedback on workplace environment and culture.',
+              )}
+              leftIcon={<BiBulb fontSize="1.6rem" />}
+            >
+              <Text
+                textStyle="subhead-1"
                 color="secondary.500"
-                mr="1rem"
-                boxSize="1.5rem"
-              />
-              Employee feedback on workplace environment and culture.
-            </Flex>
-            <Flex alignItems="start">
-              <Icon
-                as={BiBulb}
+                fontWeight="400"
+                ml="0.5rem"
+              >
+                Employee feedback on workplace environment and culture.
+              </Text>
+            </Button>
+            <Button
+              variant="clear"
+              color="secondary.500"
+              justifyContent="flex-start"
+              padding="0"
+              onClick={handleUseIdea(
+                'Event registrations and dietary preferences for dance and dinner.',
+              )}
+              leftIcon={<BiBulb fontSize="1.6rem" />}
+            >
+              <Text
+                textStyle="subhead-1"
                 color="secondary.500"
-                mr="1rem"
-                boxSize="1.5rem"
-              />
-              Event registrations and dietary preferences for dance and dinner.
-            </Flex>
-            <Flex alignItems="start">
-              <Icon
-                as={BiBulb}
+                fontWeight="400"
+                ml="0.5rem"
+              >
+                Event registrations and dietary preferences for dance and
+                dinner.
+              </Text>
+            </Button>
+
+            <Button
+              variant="clear"
+              color="secondary.500"
+              justifyContent="flex-start"
+              padding="0"
+              onClick={handleUseIdea(
+                'Support requests for building faults and damages.',
+              )}
+              leftIcon={<BiBulb fontSize="1.6rem" />}
+            >
+              <Text
+                textStyle="subhead-1"
                 color="secondary.500"
-                mr="1rem"
-                boxSize="1.5rem"
-              />
-              Support requests for building faults and damages.
-            </Flex>
+                fontWeight="400"
+                ml="0.5rem"
+              >
+                Support requests for building faults and damages.
+              </Text>
+            </Button>
           </Flex>
           <Flex justify="flex-end" gap="1rem" mt="2.25rem">
             <Button
