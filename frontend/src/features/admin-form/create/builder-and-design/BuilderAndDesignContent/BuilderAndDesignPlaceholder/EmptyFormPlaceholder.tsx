@@ -7,13 +7,23 @@ import {
   Flex,
   forwardRef,
   Icon,
+  shouldForwardProp,
   Text,
 } from '@chakra-ui/react'
+import { isValidMotionProp, motion } from 'framer-motion'
 
 import { BxsMagicWand } from '~assets/icons/BxsMagicWand'
 import { BxsWidget } from '~assets/icons/BxsWidget'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
+
+const ChakraBox = chakra(motion.div, {
+  /**
+   * Allow motion props and non-Chakra props to be forwarded.
+   */
+  shouldForwardProp: (prop) =>
+    isValidMotionProp(prop) || shouldForwardProp(prop),
+})
 
 interface EmptyFormPlaceholderProps extends ButtonProps {
   isDraggingOver: boolean
@@ -47,15 +57,30 @@ export const EmptyFormPlaceholder = forwardRef<
         justifyContent="center"
         position="relative"
       >
-        <Button
-          bottom="3rem"
-          bgColor="secondary.500"
+        <ChakraBox
           position="absolute"
-          leftIcon={<BxsMagicWand />}
-          onClick={handleOpenMagicFormBuilderModal}
+          bottom="3rem"
+          animate={{
+            scale: [1, 1, 1, 1, 1],
+            rotate: [0, 1, -1, 1, 0],
+          }}
+          transition={{
+            duration: '0.5',
+            ease: 'easeInOut',
+            repeat: 3,
+            repeatType: 'loop',
+          }}
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
         >
-          Try out Magic Form Builder
-        </Button>
+          <Button
+            leftIcon={<BxsMagicWand />}
+            onClick={handleOpenMagicFormBuilderModal}
+          >
+            Try out Magic Form Builder
+          </Button>
+        </ChakraBox>
         <chakra.button
           _hover={{
             bg: 'primary.200',
