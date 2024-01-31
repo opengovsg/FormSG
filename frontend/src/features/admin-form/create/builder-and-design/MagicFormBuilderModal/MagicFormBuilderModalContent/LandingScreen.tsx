@@ -53,7 +53,7 @@ export const MagicFormBuilderLandingScreen = ({
           <FormControl
             isRequired
             isInvalid={!!errors.magicFormBuilderMode}
-            mb="2.5rem"
+            mb="1.125rem"
           >
             <FormLabel>How do you want to build?</FormLabel>
             <Skeleton isLoaded={!isFetching}>
@@ -68,6 +68,19 @@ export const MagicFormBuilderLandingScreen = ({
               {errors.magicFormBuilderMode?.message}
             </FormErrorMessage>
           </FormControl>
+
+          <Text
+            textStyle="body-2"
+            fontSize="0.625rem"
+            lineHeight="0.75rem"
+            textColor="secondary.400"
+            mb="2.5rem"
+          >
+            Disclaimer: This makes use of an AI language model. Any content it
+            generates may contain errors, inconsistencies, or outdated
+            information, and does not represent official government views.
+            Please fact-check and verify all AI-generated content before use.
+          </Text>
 
           {isMobile ? (
             <Button
