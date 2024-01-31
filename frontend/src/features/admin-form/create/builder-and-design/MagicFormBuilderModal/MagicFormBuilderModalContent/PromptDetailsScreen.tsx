@@ -78,6 +78,7 @@ export const MagicFormBuilderPromptDetailsScreen = (): JSX.Element => {
                 color="secondary.500"
                 fontWeight="400"
                 ml="0.5rem"
+                textAlign="justify"
               >
                 Employee feedback on workplace environment and culture.
               </Text>
@@ -97,6 +98,7 @@ export const MagicFormBuilderPromptDetailsScreen = (): JSX.Element => {
                 color="secondary.500"
                 fontWeight="400"
                 ml="0.5rem"
+                textAlign="justify"
               >
                 Event registrations and dietary preferences for dance and
                 dinner.
@@ -118,6 +120,7 @@ export const MagicFormBuilderPromptDetailsScreen = (): JSX.Element => {
                 color="secondary.500"
                 fontWeight="400"
                 ml="0.5rem"
+                textAlign="justify"
               >
                 Support requests for building faults and damages.
               </Text>
