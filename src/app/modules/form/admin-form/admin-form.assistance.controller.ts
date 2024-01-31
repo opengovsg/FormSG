@@ -16,9 +16,12 @@ import {
 export const handleGenerateQuestions: ControllerHandler<
   unknown,
   ChatCompletionMessage | ErrorDto,
-  { purpose: string }
+  {
+    type: string
+    content: string
+  }
 > = async (req, res) => {
-  const result = await generateQuestions(req.body.purpose)
+  const result = await generateQuestions(req.body)
   if (result.isErr()) {
     return res.status(500).json({ message: result.error.message })
   }
@@ -34,11 +37,10 @@ export const handleGenerateFormFields: ControllerHandler<
   unknown,
   ChatCompletionMessage | ErrorDto,
   {
-    type: string
     content: string
   }
 > = async (req, res) => {
-  const result = await generateFormFields(req.body)
+  const result = await generateFormFields(req.body.content)
   if (result.isErr()) {
     return res.status(500).json({ message: result.error.message })
   }

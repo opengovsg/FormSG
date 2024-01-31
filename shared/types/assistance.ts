@@ -1,4 +1,4 @@
 export enum ContentTypes {
-  QUESTIONS = 'questions',
+  PROMPT = 'prompt',
   PDF = 'pdf',
 }
