@@ -46,7 +46,7 @@ export const useAssistanceMutations = () => {
             formFields = JSON.parse(parseModelOutput(data.content))
           } catch (e) {
             toast({
-              title: `Error creating form. Reason: ${e}`,
+              description: `Error creating form. Reason: ${e}`,
               status: 'warning',
             })
             return
@@ -57,12 +57,12 @@ export const useAssistanceMutations = () => {
             queryClient.invalidateQueries(adminFormKeys.id(formId))
             onClose()
             toast({
-              title: 'Successfully created form',
+              description: 'Successfully created form',
             })
           },
           onError: () => {
             toast({
-              title: 'Error creating form.',
+              description: 'Error creating form.',
               status: 'warning',
             })
           },
@@ -78,7 +78,7 @@ export const useAssistanceMutations = () => {
           formFields = JSON.parse(parseModelOutput(data.content))
         } catch (e) {
           toast({
-            title: `Error creating form. Reason: ${e}`,
+            description: `Error creating form. Reason: ${e}`,
             status: 'warning',
           })
           return
@@ -89,12 +89,12 @@ export const useAssistanceMutations = () => {
           queryClient.invalidateQueries(adminFormKeys.id(formId))
           onClose()
           toast({
-            title: 'Successfully created form',
+            description: 'Successfully created form',
           })
         },
         onError: () => {
           toast({
-            title: 'Error creating form.',
+            description: 'Error creating form.',
             status: 'warning',
           })
         },
