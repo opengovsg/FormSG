@@ -1,10 +1,14 @@
 import { ModalBody } from '@chakra-ui/react'
 
+import { LottieAnimation } from '~templates/LottieAnimation'
+
+import loadingAnimation from './assets/loadingAnimation.json'
+
 export const MagicFormBuilderGifLoadingScreen = (): JSX.Element => {
   return (
     <>
       <ModalBody whiteSpace="pre-wrap">
-        <img src="/magicBuilderLoading.gif" alt="loading gif" />
+        <LottieAnimation animationData={loadingAnimation}></LottieAnimation>
       </ModalBody>
     </>
   )
