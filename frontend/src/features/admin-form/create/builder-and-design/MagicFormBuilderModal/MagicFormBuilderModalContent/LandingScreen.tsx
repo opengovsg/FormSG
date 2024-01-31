@@ -55,7 +55,6 @@ export const MagicFormBuilderLandingScreen = ({
             isInvalid={!!errors.magicFormBuilderMode}
             mb="1.125rem"
           >
-            <FormLabel>How do you want to build?</FormLabel>
             <Skeleton isLoaded={!isFetching}>
               <Controller
                 name="magicFormBuilderMode"

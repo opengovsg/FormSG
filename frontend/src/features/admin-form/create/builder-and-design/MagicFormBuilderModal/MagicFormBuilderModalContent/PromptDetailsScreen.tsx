@@ -62,7 +62,7 @@ export const MagicFormBuilderPromptDetailsScreen = (): JSX.Element => {
             py="1.5rem"
             gap="2rem"
           >
-            <Text textStyle="subhead-1">Ideas for you</Text>
+            <Text textStyle="subhead-1">Try one of these</Text>
             <Button
               variant="clear"
               color="secondary.500"
