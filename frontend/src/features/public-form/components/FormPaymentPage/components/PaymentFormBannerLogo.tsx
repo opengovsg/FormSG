@@ -11,7 +11,7 @@ export const PaymentFormBannerLogo = (): JSX.Element => {
   const { data: { logoBucketUrl } = {} } = useEnv(
     form?.startPage.logo.state === FormLogoState.Custom,
   )
-  const hasSubmitted = true
+  const hasSubmitted = true //true because payment banner logo (i.e. payment page) will show after a submission is done
 
   const formBannerLogoProps = useFormBannerLogo({
     logoBucketUrl,
@@ -24,9 +24,9 @@ export const PaymentFormBannerLogo = (): JSX.Element => {
   return (
     <FormBannerLogo
       isLoading={isLoading}
-      {...formBannerLogoProps}
       loggedInId={spcpSession?.userName}
       onLogout={handleLogout}
+      {...formBannerLogoProps}
     />
   )
 }

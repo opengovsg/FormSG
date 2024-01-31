@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Box, Center, Container, Flex } from '@chakra-ui/react'
+import { Box, Center, Container } from '@chakra-ui/react'
 import { Elements, useStripe } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 
@@ -28,7 +28,7 @@ const PaymentFormWrapper = ({ children }: { children: React.ReactNode }) => {
   return (
     <PublicFormWrapper>
       <Box py="1rem" w="100%">
-        <Container w="57rem" maxW="100%" p={0}>
+        <Container w="100%" maxW="57rem" p={0}>
           {children}
         </Container>
       </Box>
