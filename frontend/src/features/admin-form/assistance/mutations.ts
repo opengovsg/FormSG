@@ -32,9 +32,13 @@ export const useAssistanceMutations = () => {
 
   const createFieldsFromPromptMutation = useMutation((prompt: string) =>
     generateQuestions(prompt)
-      .then((questions) =>
-        generateFormFields(ContentTypes.QUESTIONS, String(questions)),
-      )
+      .then((questions) => {
+        if (!questions.content) {
+          throw new Error('No content in questions')
+        }
+
+        return generateFormFields(ContentTypes.QUESTIONS, questions.content)
+      })
       .then((data) => {
         let formFields
         if (data.content) {
