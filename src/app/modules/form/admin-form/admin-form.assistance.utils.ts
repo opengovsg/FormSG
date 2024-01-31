@@ -40,6 +40,6 @@ export const migratePromptBuilder = (parsedContent: string) => {
   """
   ${parsedContent}
   """
-  Based on the parsed content, extract content that should be added to the form builder form and present them as a list, in the form of "${expectedQuestionsListFormat}".`
+  Based on the parsed content, extract content that should be added to the form builder form and present them as a list, in the form of "${expectedFormFieldSchemaFormat}".`
   return prompt
 }
