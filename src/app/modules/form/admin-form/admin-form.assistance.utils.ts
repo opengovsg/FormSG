@@ -30,7 +30,7 @@ export const questionListPromptBuilder = (purpose: string) => {
 
 export const formFieldsPromptBuilder = (questions: string) => {
   const prompt = `Help me generate a form with the following list of questions: ${questions}
-  Present the questions as form fields in JSON (list of form field schemas), in the form of "${expectedFormFieldSchemaFormat}" as defined by the system, without any code blocks. Format the JSON as a single line.`
+  Present the questions as FormSG form fields in JSON (list of form field schemas), in the form of "${expectedFormFieldSchemaFormat}" as defined by the system, without any code blocks. Format the JSON as a single line.`
   return prompt
 }
 export const migratePromptBuilder = (parsedContent: string) => {
