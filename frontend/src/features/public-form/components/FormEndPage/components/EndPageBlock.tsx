@@ -16,7 +16,6 @@ export interface EndPageBlockProps {
   submissionData: SubmissionData
   colorTheme?: FormColorTheme
   focusOnMount?: boolean
-  isPaymentEnabled: boolean
 }
 
 export const EndPageBlock = ({

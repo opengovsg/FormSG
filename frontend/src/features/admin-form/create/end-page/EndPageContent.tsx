@@ -105,12 +105,10 @@ export const EndPageContent = (): JSX.Element => {
                   timestamp: Date.now(),
                 }}
                 endPage={endPageContent}
-                isPaymentEnabled
               />
             ) : (
               <EndPageBlock
                 formTitle={form?.title}
-                isPaymentEnabled={isPaymentEnabled}
                 endPage={endPageContent}
                 submissionData={{
                   id: form?._id ?? 'Submission ID',
