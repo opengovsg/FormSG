@@ -11,6 +11,7 @@ import {
 } from '../../shared/types/submission'
 
 import { IFormSchema } from './form'
+import { IPaymentSchema } from './payment'
 
 export interface WebhookData {
   formId: string
@@ -20,6 +21,7 @@ export interface WebhookData {
   version: IEncryptedSubmissionSchema['version']
   created: IEncryptedSubmissionSchema['created']
   attachmentDownloadUrls: Record<string, string>
+  paymentContent?: Record<string, unknown>
 }
 
 export interface WebhookView {
@@ -43,11 +45,14 @@ export interface IPopulatedWebhookSubmission
     _id: IFormSchema['_id']
     webhook: IFormSchema['webhook']
   }
+  paymentId: IPaymentSchema
 }
 
 export interface ISubmissionSchema extends SubmissionBase, Document {
   // Allows for population and correct typing
   form: any
+  paymentId: any
+
   created?: Date
 }
 
@@ -65,15 +70,17 @@ export interface IEmailSubmissionSchema
   // Allows for population and correct typing
   form: any
   submissionType: SubmissionType.Email
-  getWebhookView(): null
+  getWebhookView(): Promise<null>
 }
 export interface IEncryptedSubmissionSchema
   extends StorageModeSubmissionBase,
     ISubmissionSchema {
   // Allows for population and correct typing
   form: any
+  paymentId: any
+
   submissionType: SubmissionType.Encrypt
-  getWebhookView(): WebhookView
+  getWebhookView(): Promise<WebhookView>
 }
 export interface IMultirespondentSubmissionSchema
   extends MultirespondentSubmissionBase,
@@ -81,7 +88,7 @@ export interface IMultirespondentSubmissionSchema
   // Allows for population and correct typing
   form: any
   submissionType: SubmissionType.Multirespondent
-  getWebhookView(): null
+  getWebhookView(): Promise<null>
 }
 
 // When retrieving from database, the attachmentMetadata type becomes an object

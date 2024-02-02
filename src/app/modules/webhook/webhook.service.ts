@@ -15,7 +15,7 @@ import formsgSdk from '../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../config/logger'
 import { getEncryptSubmissionModel } from '../../models/submission.server.model'
 import { transformMongoError } from '../../utils/handle-mongo-error'
-import { PossibleDatabaseError } from '../core/core.errors'
+import { DatabaseError, PossibleDatabaseError } from '../core/core.errors'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
 
 import { WEBHOOK_MAX_CONTENT_LENGTH } from './webhook.constants'
@@ -257,8 +257,12 @@ export const createInitialWebhookSender =
     | WebhookPushToQueueError
   > => {
     // Attempt to send webhook
-    return sendWebhook(submission.getWebhookView(), webhookUrl).andThen(
-      (webhookResponse) => {
+
+    return ResultAsync.fromPromise(
+      submission.getWebhookView(),
+      () => new DatabaseError(),
+    ).andThen((webhookView) =>
+      sendWebhook(webhookView, webhookUrl).andThen((webhookResponse) => {
         webhookStatsdClient.increment('sent', 1, 1, {
           responseCode: `${webhookResponse.response.status || null}`,
           webhookType: getWebhookType(webhookUrl),
@@ -282,6 +286,6 @@ export const createInitialWebhookSender =
             ).asyncAndThen((queueMessage) => producer.sendMessage(queueMessage))
           },
         )
-      },
+      }),
     )
   }
