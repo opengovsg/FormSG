@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Box, Button, Flex, Link, Stack, Text } from '@chakra-ui/react'
+import { Flex } from '@chakra-ui/react'
 import { Elements, useStripe } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 
@@ -16,10 +16,10 @@ import {
   PaymentSuccessSvgr,
 } from '../components'
 import { LoadingSvgr } from '../components/assets/LoadingSvgr'
-import { PaymentCanceledSvgr } from '../components/assets/PaymentCanceledSvgr'
 import { useGetPaymentInfo } from '../queries'
 
 import { GenericMessageBlock, StripePaymentBlock } from './components'
+import { FormUnsuccessfulPayment } from './FormUnsuccessfulPaymentPage'
 import { useGetPaymentStatusFromStripe } from './queries'
 import { StripeReceiptContainer } from './StripeReceiptContainer'
 import { getPaymentViewStates, PaymentViewStates } from './utils'
@@ -76,11 +76,6 @@ const StripePaymentContainer = ({
     stripePaymentStatusResponse?.paymentIntent?.status,
   )
 
-  const shareLink = useMemo(
-    () => `${window.location.origin}/${formId}`,
-    [formId],
-  )
-
   const renderViewState = () => {
     switch (viewStates) {
       case PaymentViewStates.Invalid:
@@ -93,33 +88,13 @@ const StripePaymentContainer = ({
         )
       case PaymentViewStates.Canceled:
         return (
-          <>
-            <PaymentCanceledSvgr maxW="100%" />
-            <PaymentStack noBg>
-              <Box display="flex" justifyContent="center" alignItems="center">
-                <Stack spacing="1rem">
-                  <Text textStyle="h2" textColor="secondary.500">
-                    Your payment session has expired
-                  </Text>
-                  <Text textStyle="subhead-1" textColor="secondary.500">
-                    No payment has been taken. Please fill in this form again.
-                  </Text>
-                  <Box
-                    pt="1.5rem"
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
-                  >
-                    <Link href={`${shareLink}`}>
-                      <Button variant="outline" width="8.7rem">
-                        Fill form again
-                      </Button>
-                    </Link>
-                  </Box>
-                </Stack>
-              </Box>
-            </PaymentStack>
-          </>
+          <FormUnsuccessfulPayment
+            title={'Your payment session has expired'}
+            message={
+              'No payment has been taken. Please fill in this form again.'
+            }
+            formId={formId}
+          />
         )
       case PaymentViewStates.PendingPayment: {
         // The item name is passed over to Stripe as PaymentIntent.description
@@ -162,7 +137,7 @@ const StripePaymentContainer = ({
       case PaymentViewStates.Succeeded:
         return (
           <>
-            <PaymentSuccessSvgr maxW="100%" />
+            <PaymentSuccessSvgr maxW="100%" mt="1rem" />
             <StripeReceiptContainer
               formId={formId}
               paymentId={paymentId}
