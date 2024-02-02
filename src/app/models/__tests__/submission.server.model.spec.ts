@@ -265,6 +265,7 @@ describe('Submission Model', () => {
               verifiedContent: undefined,
               version: 0,
               created: submission.created,
+              paymentContent: {},
             },
           },
         })
@@ -318,6 +319,7 @@ describe('Submission Model', () => {
               verifiedContent: undefined,
               version: 0,
               created: submission.created,
+              paymentContent: {},
             },
           },
         })
@@ -354,6 +356,7 @@ describe('Submission Model', () => {
               verifiedContent: undefined,
               version: 0,
               created: submission.created,
+              paymentContent: {},
             },
           },
         })
@@ -451,7 +454,7 @@ describe('Submission Model', () => {
         })
 
         // Act
-        const actualWebhookView = submission.getWebhookView()
+        const actualWebhookView = await submission.getWebhookView()
 
         // Assert
         expect(actualWebhookView).toEqual({
@@ -463,6 +466,7 @@ describe('Submission Model', () => {
             verifiedContent: undefined,
             attachmentDownloadUrls: {},
             version: 1,
+            paymentContent: {},
           },
         })
       })
@@ -483,7 +487,7 @@ describe('Submission Model', () => {
         })
 
         // Act
-        const actualWebhookView = submission.getWebhookView()
+        const actualWebhookView = await submission.getWebhookView()
 
         // Assert
         expect(actualWebhookView).toEqual({
@@ -495,6 +499,7 @@ describe('Submission Model', () => {
             encryptedContent: MOCK_ENCRYPTED_CONTENT,
             verifiedContent: MOCK_VERIFIED_CONTENT,
             version: 1,
+            paymentContent: {},
           },
         })
       })
@@ -526,7 +531,7 @@ describe('Submission Model', () => {
         ).populate('form', 'webhook')
 
         // Act
-        const actualWebhookView = populatedSubmission!.getWebhookView()
+        const actualWebhookView = await populatedSubmission!.getWebhookView()
 
         // Assert
         expect(actualWebhookView).toEqual({
@@ -538,6 +543,7 @@ describe('Submission Model', () => {
             encryptedContent: MOCK_ENCRYPTED_CONTENT,
             verifiedContent: MOCK_VERIFIED_CONTENT,
             version: 1,
+            paymentContent: {},
           },
         })
       })
@@ -559,7 +565,7 @@ describe('Submission Model', () => {
         })
 
         // Act
-        const actualWebhookView = submission.getWebhookView()
+        const actualWebhookView = await submission.getWebhookView()
 
         // Assert
         expect(actualWebhookView).toBeNull()
