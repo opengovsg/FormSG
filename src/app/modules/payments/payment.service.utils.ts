@@ -1,3 +1,4 @@
+import config from 'src/app/config/config'
 import { IPaymentSchema } from 'src/types'
 
 import { centsToDollars } from '../../../../shared/utils/payments'
@@ -8,7 +9,10 @@ export const getPaymentFields = (payment: IPaymentSchema) => {
     type: 'payment_charge',
     status: payment.status,
     payer: payment.email,
-    url: getPaymentInvoiceDownloadUrlPath(payment.formId, payment._id),
+    url: `${config.app.appUrl}/api/v3/${getPaymentInvoiceDownloadUrlPath(
+      payment.formId,
+      payment._id,
+    )}`,
     paymentIntent: payment.paymentIntentId,
     amount: centsToDollars(payment.amount),
     productService:
