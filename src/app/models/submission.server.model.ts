@@ -145,8 +145,8 @@ export const EmailSubmissionSchema = new Schema<IEmailSubmissionSchema>({
 /**
  * Returns null as email submission does not have a webhook view
  */
-EmailSubmissionSchema.methods.getWebhookView = function (): null {
-  return null
+EmailSubmissionSchema.methods.getWebhookView = function (): Promise<null> {
+  return Promise.resolve(null)
 }
 
 const webhookResponseSchema = new Schema<IWebhookResponseSchema>(
@@ -259,7 +259,7 @@ EncryptSubmissionSchema.statics.retrieveWebhookInfoById = function (
   submissionId: string,
 ): Promise<SubmissionWebhookInfo | null> {
   return this.findById(submissionId)
-    .populate('form', 'webhook', 'paymentId')
+    .populate([{ path: 'form', select: 'webhook' }, { path: 'paymentId' }])
     .then((populatedSubmission: IPopulatedWebhookSubmission | null) => {
       if (!populatedSubmission) return null
       const webhookView = populatedSubmission.getWebhookView()
