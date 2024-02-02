@@ -1,8 +1,7 @@
-import config from 'src/app/config/config'
-import { IPaymentSchema } from 'src/types'
-
 import { centsToDollars } from '../../../../shared/utils/payments'
 import { getPaymentInvoiceDownloadUrlPath } from '../../../../shared/utils/urls'
+import config from '../../../app/config/config'
+import { IPaymentSchema } from '../../../types'
 
 export const getPaymentFields = (payment: IPaymentSchema) => {
   return {
