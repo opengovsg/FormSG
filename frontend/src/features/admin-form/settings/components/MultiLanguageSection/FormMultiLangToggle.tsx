@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react'
 import { BiEditAlt } from 'react-icons/bi'
 import { GoEye, GoEyeClosed } from 'react-icons/go'
 import {
@@ -18,27 +18,40 @@ import { SingleSelect } from '~components/Dropdown'
 import FormLabel from '~components/FormControl/FormLabel'
 import Toggle from '~components/Toggle'
 
-import { useMutateFormSettings } from '../mutations'
-import { useAdminFormSettings } from '../queries'
+import { useMutateFormSettings } from '../../mutations'
+import { useAdminFormSettings } from '../../queries'
 
 interface LanguageTranslationRowProps {
   language: Language
   isDefaultLanguage: boolean
   isLast?: boolean
+  setIsFormToggle: Dispatch<SetStateAction<boolean>>
+  setTranslationLanguage: Dispatch<SetStateAction<Language>>
 }
 
 interface LanguageTranslationSectionProps {
   defaultLanguage: Language
+  setIsFormToggle: Dispatch<SetStateAction<boolean>>
+  setTranslationLanguage: Dispatch<SetStateAction<Language>>
 }
 
 interface MultiLangBlockProps {
   selectedDefaultLanguage: Language | null
+  setIsFormToggle: Dispatch<SetStateAction<boolean>>
+  setTranslationLanguage: Dispatch<SetStateAction<Language>>
+}
+
+interface FormMultiLangToggleProps {
+  setIsFormToggle: Dispatch<SetStateAction<boolean>>
+  setTranslationLanguage: Dispatch<SetStateAction<Language>>
 }
 
 const LanguageTranslationRow = ({
   language,
   isDefaultLanguage,
   isLast,
+  setIsFormToggle,
+  setTranslationLanguage,
 }: LanguageTranslationRowProps): JSX.Element => {
   const { data: settings } = useAdminFormSettings()
 
@@ -67,6 +80,14 @@ const LanguageTranslationRow = ({
       }
     },
     [mutateFormSupportedLanguages, supportedLanguages],
+  )
+
+  const handleLanguageTranslationEditClick = useCallback(
+    (language: Language) => {
+      setIsFormToggle(false)
+      setTranslationLanguage(language)
+    },
+    [setIsFormToggle, setTranslationLanguage],
   )
 
   return (
@@ -100,6 +121,7 @@ const LanguageTranslationRow = ({
               icon={<BiEditAlt width="44px" />}
               colorScheme="secondary"
               aria-label={`Add ${language} translations`}
+              onClick={() => handleLanguageTranslationEditClick(language)}
             />
           </HStack>
         )}
@@ -111,6 +133,8 @@ const LanguageTranslationRow = ({
 
 const LanguageTranslationSection = ({
   defaultLanguage,
+  setIsFormToggle,
+  setTranslationLanguage,
 }: LanguageTranslationSectionProps): JSX.Element => {
   let languages = Object.values(Language)
 
@@ -129,6 +153,8 @@ const LanguageTranslationSection = ({
               isDefaultLanguage={language === defaultLanguage}
               isLast={id === arr.length}
               key={language}
+              setIsFormToggle={setIsFormToggle}
+              setTranslationLanguage={setTranslationLanguage}
             />
           </>
         )
@@ -139,6 +165,8 @@ const LanguageTranslationSection = ({
 
 const MultiLangBlock = ({
   selectedDefaultLanguage,
+  setIsFormToggle,
+  setTranslationLanguage,
 }: MultiLangBlockProps): JSX.Element => {
   const { mutateFormDefaultLang } = useMutateFormSettings()
 
@@ -172,12 +200,19 @@ const MultiLangBlock = ({
           isClearable={false}
         />
       </FormControl>
-      <LanguageTranslationSection defaultLanguage={defaultLanguage} />
+      <LanguageTranslationSection
+        defaultLanguage={defaultLanguage}
+        setIsFormToggle={setIsFormToggle}
+        setTranslationLanguage={setTranslationLanguage}
+      />
     </>
   )
 }
 
-export const FormMultiLangToggle = (): JSX.Element => {
+export const FormMultiLangToggle = ({
+  setIsFormToggle,
+  setTranslationLanguage,
+}: FormMultiLangToggleProps): JSX.Element => {
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
@@ -224,7 +259,11 @@ export const FormMultiLangToggle = (): JSX.Element => {
       />
       {settings && settings.defaultLanguage && (
         <Skeleton isLoaded={true}>
-          <MultiLangBlock selectedDefaultLanguage={settings?.defaultLanguage} />
+          <MultiLangBlock
+            selectedDefaultLanguage={settings?.defaultLanguage}
+            setIsFormToggle={setIsFormToggle}
+            setTranslationLanguage={setTranslationLanguage}
+          />
         </Skeleton>
       )}
     </Skeleton>

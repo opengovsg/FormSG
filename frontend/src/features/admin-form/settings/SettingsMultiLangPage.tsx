@@ -1,11 +1,9 @@
-import { CategoryHeader } from './components/CategoryHeader'
-import { FormMultiLangToggle } from './components/FormMultiLangToggle'
+import { MultiLanguageSection } from './components/MultiLanguageSection/MultiLangugageSection'
 
 export const SettingsMultiLangPage = (): JSX.Element => {
   return (
     <>
-      <CategoryHeader>Multi-language</CategoryHeader>
-      <FormMultiLangToggle />
+      <MultiLanguageSection />
     </>
   )
 }

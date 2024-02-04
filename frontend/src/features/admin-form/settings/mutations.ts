@@ -143,11 +143,9 @@ export const useMutateFormSettings = () => {
     {
       onSuccess: (newData) => {
         // Show toast on success.
-        const toastStatusMessage = `Your form will now ${
-          newData.defaultLanguage
-            ? 'support multiple languages'
-            : 'not support multiple languages'
-        }`
+        const toastStatusMessage = newData.defaultLanguage
+          ? 'Multi-language enabled. Respondents can now select other languages to view your form in.'
+          : 'Multi-language disabled.'
         handleSuccess({ newData, toastDescription: toastStatusMessage })
       },
       onError: handleError,
