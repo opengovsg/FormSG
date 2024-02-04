@@ -5,7 +5,7 @@ import { Language } from '~shared/types'
 import { CategoryHeader } from '../CategoryHeader'
 
 import { FormMultiLangToggle } from './FormMultiLangToggle'
-import { TranslationSection } from './TranslationSection'
+import { TranslationSection } from './TranslationListSection'
 
 export const MultiLanguageSection = (): JSX.Element => {
   const [isTogglePage, setIsTogglePage] = useState(true)

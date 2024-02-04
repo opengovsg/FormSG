@@ -8,13 +8,13 @@ import {
   IconButton,
   Skeleton,
   Text,
+  Tooltip,
 } from '@chakra-ui/react'
 
 import { Language } from '~shared/types'
 
-import Button from '~components/Button'
-
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { FieldListOption } from '~features/admin-form/create/builder-and-design/BuilderAndDesignDrawer/FieldListDrawer/FieldListOption'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { isMyInfo } from '~features/myinfo/utils'
 
@@ -37,16 +37,21 @@ export const QuestionRow = ({
   isMyInfoField,
 }: QuestionRowProps): JSX.Element => {
   return (
-    <Flex
-      direction="row"
-      px="1rem"
-      py="1.5rem"
-      justifyItems="center"
-      alignContent="center"
-      opacity={isMyInfoField ? 0.3 : 1}
-    >
-      <Icon as={icon} fontSize="1.25rem" color="secondary.500" mr="1.5rem" />
-      <Text>{toTranslateString}</Text>
+    <Flex direction="row" justifyItems="center" alignContent="center">
+      <Tooltip
+        label={isMyInfoField ? 'Myinfo fields cannot be translated' : ''}
+        hasArrow
+        placement="top"
+      >
+        <FieldListOption
+          isDisabled={isMyInfoField}
+          onClick={() => console.log('click')}
+          w="100%"
+        >
+          <Icon fontSize="1.5rem" as={icon} />
+          <Text textStyle="body-1">{toTranslateString}</Text>
+        </FieldListOption>
+      </Tooltip>
     </Flex>
   )
 }
@@ -63,17 +68,19 @@ export const TranslationSection = ({
 
   return (
     <Skeleton isLoaded={!isLoading && !!form}>
-      <Flex justifyItems="center">
+      <Flex>
         <IconButton
           variant="clear"
           colorScheme="primary"
           aria-label="Back Button"
           icon={<BiArrowBack fontSize="1.25rem" />}
           onClick={handleOnBackClick}
+          justifySelf="flex-start"
+          marginRight="2.25rem"
         />
         <Flex direction="column" w="100%">
           <CategoryHeader>{language}</CategoryHeader>
-          {form?.form_fields.map((form_field, id) => {
+          {form?.form_fields.map((form_field, id, arr) => {
             return (
               <>
                 <QuestionRow
@@ -82,7 +89,7 @@ export const TranslationSection = ({
                   icon={BASICFIELD_TO_DRAWER_META[form_field.fieldType].icon}
                   isMyInfoField={isMyInfo(form_field)}
                 />
-                <Divider />
+                {id < arr.length - 1 && <Divider />}
               </>
             )
           })}
