@@ -16,6 +16,7 @@ import {
   WebhookResponse,
 } from '../../../../shared/types'
 import { ISubmissionSchema } from '../../../../src/types'
+import getPaymentModel from '../payment.server.model'
 
 jest.mock('dns', () => ({
   promises: {
@@ -27,6 +28,7 @@ const MockDns = jest.mocked(dns)
 const Submission = getSubmissionModel(mongoose)
 const EncryptedSubmission = getEncryptSubmissionModel(mongoose)
 const EmailSubmission = getEmailSubmissionModel(mongoose)
+const PaymentSubmission = getPaymentModel(mongoose)
 
 // TODO: Add more tests for the rest of the submission schema.
 describe('Submission Model', () => {
@@ -271,6 +273,73 @@ describe('Submission Model', () => {
         })
       })
 
+      it('should return the paymentContent when the submission, payment, and webhook URL exist', async () => {
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            webhook: {
+              url: MOCK_WEBHOOK_URL,
+              isRetryEnabled: true,
+            },
+          },
+        })
+        const submission = await EncryptedSubmission.create({
+          form: form._id,
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          version: 0,
+        })
+
+        const MOCK_PAYMENT_INTENT_ID = 'MOCK_PAYMENT_INTENT_ID'
+        const MOCK_EMAIL = 'MOCK_EMAIL'
+        const MOCK_PAYMENT_STATUS = 'succeeded'
+        const payment = await PaymentSubmission.create({
+          amount: 100,
+          paymentStatus: 'successful',
+          submission: submission._id,
+          gstEnabled: false,
+          paymentIntentId: MOCK_PAYMENT_INTENT_ID,
+          email: MOCK_EMAIL,
+          targetAccountId: 'targetAccountId',
+          formId: form._id,
+          pendingSubmissionId: submission._id,
+          status: MOCK_PAYMENT_STATUS,
+        })
+        submission.paymentId = payment._id
+        await submission.save()
+
+        const result = await EncryptedSubmission.retrieveWebhookInfoById(
+          String(submission._id),
+        )
+
+        expect(result).toEqual({
+          webhookUrl: MOCK_WEBHOOK_URL,
+          isRetryEnabled: true,
+          webhookView: {
+            data: {
+              attachmentDownloadUrls: {},
+              formId: String(form._id),
+              submissionId: String(submission._id),
+              encryptedContent: MOCK_ENCRYPTED_CONTENT,
+              verifiedContent: undefined,
+              version: 0,
+              created: submission.created,
+              paymentContent: {
+                amount: '1.00',
+                dateTime: '-',
+                payer: MOCK_EMAIL,
+                paymentIntent: MOCK_PAYMENT_INTENT_ID,
+                productService: '-',
+                status: MOCK_PAYMENT_STATUS,
+                transactionFee: '-',
+                type: 'payment_charge',
+                url: expect.stringContaining(
+                  `api/v3/payments/${form._id}/${payment._id}/invoice/download`,
+                ),
+              },
+            },
+          },
+        })
+      })
+
       it('should return null when the submission ID does not exist', async () => {
         // Create submission
         const { form } = await dbHandler.insertEncryptForm({
@@ -368,7 +437,7 @@ describe('Submission Model', () => {
         // Arrange
         const formCounts = [4, 2, 4]
         const formIdsAndCounts = times(formCounts.length, (it) => ({
-          _id: mongoose.Types.ObjectId(),
+          _id: new mongoose.Types.ObjectId(),
           count: formCounts[it],
         }))
         const submissionPromises: Promise<ISubmissionSchema>[] = []
@@ -404,7 +473,7 @@ describe('Submission Model', () => {
         // Arrange
         const formCounts = [1, 1, 2]
         const formIdsAndCounts = times(formCounts.length, (it) => ({
-          _id: mongoose.Types.ObjectId(),
+          _id: new mongoose.Types.ObjectId(),
           count: formCounts[it],
         }))
         const submissionPromises: Promise<ISubmissionSchema>[] = []
@@ -439,6 +508,66 @@ describe('Submission Model', () => {
 
   describe('Methods', () => {
     describe('getWebhookView', () => {
+      it('should returnt non-null view with paymentContent when submission has paymentId', async () => {
+        const formId = new ObjectId()
+
+        const submission = await EncryptedSubmission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: formId,
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          version: 1,
+          authType: FormAuthType.NIL,
+          myInfoFields: [],
+          webhookResponses: [],
+        })
+
+        const MOCK_PAYMENT_INTENT_ID = 'MOCK_PAYMENT_INTENT_ID'
+        const MOCK_EMAIL = 'MOCK_EMAIL'
+        const MOCK_PAYMENT_STATUS = 'succeeded'
+        const payment = await PaymentSubmission.create({
+          amount: 100,
+          paymentStatus: 'successful',
+          submission: submission._id,
+          gstEnabled: false,
+          paymentIntentId: MOCK_PAYMENT_INTENT_ID,
+          email: MOCK_EMAIL,
+          targetAccountId: 'targetAccountId',
+          formId: formId,
+          pendingSubmissionId: submission._id,
+          status: MOCK_PAYMENT_STATUS,
+        })
+        submission.paymentId = payment._id
+        await submission.save()
+
+        // Act
+        const actualWebhookView = await submission.getWebhookView()
+
+        // Assert
+        expect(actualWebhookView).toEqual({
+          data: {
+            formId: expect.any(String),
+            submissionId: expect.any(String),
+            created: expect.any(Date),
+            encryptedContent: MOCK_ENCRYPTED_CONTENT,
+            verifiedContent: undefined,
+            attachmentDownloadUrls: {},
+            version: 1,
+            paymentContent: {
+              amount: '1.00',
+              dateTime: '-',
+              payer: MOCK_EMAIL,
+              paymentIntent: MOCK_PAYMENT_INTENT_ID,
+              productService: '-',
+              status: MOCK_PAYMENT_STATUS,
+              transactionFee: '-',
+              type: 'payment_charge',
+              url: expect.stringContaining(
+                `api/v3/payments/${formId}/${payment._id}/invoice/download`,
+              ),
+            },
+          },
+        })
+      })
       it('should return non-null view with encryptedSubmission type when submission has no verified content', async () => {
         // Arrange
         const formId = new ObjectId()
