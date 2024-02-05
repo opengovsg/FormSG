@@ -105,6 +105,7 @@ import {
   checkIsApiSecretKeyName,
   generateTwilioCredSecretKeyName,
   getUpdatedFormFields,
+  insertTableShortTextColumnDefaultValidationOptions,
   processDuplicateOverrideProps,
 } from './admin-form.utils'
 
@@ -652,8 +653,10 @@ export const updateFormField = (
   fieldId: string,
   newField: FieldUpdateDto,
 ): ResultAsync<FormFieldSchema, PossibleDatabaseError | FieldNotFoundError> => {
+  const _newField = insertTableShortTextColumnDefaultValidationOptions(newField)
+
   return ResultAsync.fromPromise(
-    form.updateFormFieldById(fieldId, newField),
+    form.updateFormFieldById(fieldId, _newField),
     (error) => {
       logger.error({
         message: 'Error encountered while updating form field',

@@ -5,7 +5,7 @@ relative to external systems and in terms of how the codebase is organised
 
 ## Overview
 
-FormSG runs on Amazon Web Services and is built on top of express.js and AngularJS.
+FormSG runs on Amazon Web Services and is built on top of express.js and ReactJS.
 It relies on MongoDB Atlas and AWS EFS for storage, AWS SES to dispatch e-mails and
 is deployed on Docker containers running on top of Elastic Beanstalk. Optionally, FormSG
 can also talk to Government-hosted systems - SingPass/CorpPass/MyInfo to retrieve form-filler

@@ -65,7 +65,7 @@ export const EsrvcIdBox = ({
       case FormAuthType.SP:
       case FormAuthType.CP:
       case FormAuthType.MyInfo:
-        return 'Contact spcp.transoffice@accenture.com for your e-service ID'
+        return 'Contact askNDI@tech.gov.sg for your e-service ID'
       default:
         return ''
     }

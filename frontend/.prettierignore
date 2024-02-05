@@ -30,3 +30,5 @@ tsconfig.dd.json
 
 # all asset json files
 **/assets/**/*.json
+
+CREDITS.md

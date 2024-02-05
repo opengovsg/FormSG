@@ -75,6 +75,11 @@ To install the relevant npm packages, run the following in the root direcory:
 npm install
 ```
 
+To also install the required virus-scanner packages on local, run the following in the `serverless/virus-scanner` directory:
+```bash
+npm install
+```
+
 To prevent breaking changes to webpack4 introduced in node 17 and above, enable the `--openssl-legacy-provider` flag:
 
 ```bash
