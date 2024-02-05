@@ -12,6 +12,7 @@ import getSubmissionModel, {
 import {
   BasicField,
   FormAuthType,
+  PaymentType,
   SubmissionType,
   WebhookResponse,
 } from '../../../../shared/types'
@@ -335,6 +336,64 @@ describe('Submission Model', () => {
                   `api/v3/payments/${form._id}/${payment._id}/invoice/download`,
                 ),
               },
+            },
+          },
+        })
+      })
+
+      it('should not return the paymentContent when the payment type is Fixed', async () => {
+        const { form } = await dbHandler.insertEncryptForm({
+          formOptions: {
+            webhook: {
+              url: MOCK_WEBHOOK_URL,
+              isRetryEnabled: true,
+            },
+          },
+        })
+        const submission = await EncryptedSubmission.create({
+          form: form._id,
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          version: 0,
+        })
+
+        const MOCK_PAYMENT_INTENT_ID = 'MOCK_PAYMENT_INTENT_ID'
+        const MOCK_EMAIL = 'MOCK_EMAIL'
+        const MOCK_PAYMENT_STATUS = 'succeeded'
+        const payment = await PaymentSubmission.create({
+          amount: 100,
+          paymentStatus: 'successful',
+          submission: submission._id,
+          gstEnabled: false,
+          paymentIntentId: MOCK_PAYMENT_INTENT_ID,
+          email: MOCK_EMAIL,
+          targetAccountId: 'targetAccountId',
+          formId: form._id,
+          pendingSubmissionId: submission._id,
+          status: MOCK_PAYMENT_STATUS,
+          payment_fields_snapshot: {
+            payment_type: PaymentType.Fixed,
+          },
+        })
+        submission.paymentId = payment._id
+        await submission.save()
+
+        const result = await EncryptedSubmission.retrieveWebhookInfoById(
+          String(submission._id),
+        )
+
+        expect(result).toEqual({
+          webhookUrl: MOCK_WEBHOOK_URL,
+          isRetryEnabled: true,
+          webhookView: {
+            data: {
+              attachmentDownloadUrls: {},
+              formId: String(form._id),
+              submissionId: String(submission._id),
+              encryptedContent: MOCK_ENCRYPTED_CONTENT,
+              verifiedContent: undefined,
+              version: 0,
+              created: submission.created,
+              paymentContent: {},
             },
           },
         })
