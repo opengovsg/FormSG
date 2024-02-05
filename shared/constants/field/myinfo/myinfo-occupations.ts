@@ -1,4 +1,5 @@
 export const myInfoOccupations = [
+  'Not Applicable',
   '2nd Engineer (Special Limit)',
   '2nd/3rd/4th Mate',
   '3d Modeller',
