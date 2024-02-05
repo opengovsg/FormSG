@@ -30,6 +30,7 @@ export const CSP_CORE_DIRECTIVES = {
     'https://*.googletagmanager.com/gtag/',
     'https://*.cloudflareinsights.com/', // Cloudflare web analytics https://developers.cloudflare.com/analytics/types-of-analytics/#web-analytics
     'https://www.gstatic.com/charts/', // React Google Charts for FormSG charts
+    'https://www.gstatic.cn',
   ],
   connectSrc: [
     "'self'",
