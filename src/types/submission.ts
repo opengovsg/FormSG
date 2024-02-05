@@ -1,5 +1,7 @@
 import { Cursor as QueryCursor, Document, Model, QueryOptions } from 'mongoose'
 
+import { PaymentWebhookEventObject } from 'src/app/modules/webhook/webhook.types'
+
 import {
   EmailModeSubmissionBase,
   MultirespondentSubmissionBase,
@@ -21,7 +23,7 @@ export interface WebhookData {
   version: IEncryptedSubmissionSchema['version']
   created: IEncryptedSubmissionSchema['created']
   attachmentDownloadUrls: Record<string, string>
-  paymentContent?: Record<string, unknown>
+  paymentContent?: PaymentWebhookEventObject | object
 }
 
 export interface WebhookView {
