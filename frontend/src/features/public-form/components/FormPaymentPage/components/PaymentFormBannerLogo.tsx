@@ -11,13 +11,12 @@ export const PaymentFormBannerLogo = (): JSX.Element => {
   const { data: { logoBucketUrl } = {} } = useEnv(
     form?.startPage.logo.state === FormLogoState.Custom,
   )
-  const hasSubmitted = true //true because payment banner logo (i.e. payment page) will show after a submission is done
 
   const formBannerLogoProps = useFormBannerLogo({
     logoBucketUrl,
     logo: form?.startPage.logo,
     agency: form?.admin.agency,
-    showDefaultLogoIfNoLogo: hasSubmitted,
+    showDefaultLogoIfNoLogo: true,
     colorTheme: form?.startPage.colorTheme,
   })
 
