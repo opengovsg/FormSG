@@ -53,3 +53,10 @@ export type RetryInterval = {
   base: number
   jitter: number
 }
+
+export type PaymentWebhookEventType = 'payment_charge'
+
+export type PaymentWebhookEventObject = {
+  type: PaymentWebhookEventType
+  [key: string]: unknown
+}

@@ -34,7 +34,7 @@ import {
   WebhookData,
   WebhookView,
 } from '../../types'
-import { getPaymentFields } from '../modules/payments/payment.service.utils'
+import { getPaymentWebhookEventObject } from '../modules/payments/payment.service.utils'
 import { createQueryWithDateParam } from '../utils/date'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
@@ -224,7 +224,7 @@ EncryptSubmissionSchema.methods.getWebhookView = async function (
     await (this as IPopulatedWebhookSubmission).populate('paymentId')
   }
   const paymentContent = this.populated('paymentId')
-    ? getPaymentFields(this.paymentId)
+    ? getPaymentWebhookEventObject(this.paymentId)
     : {}
 
   const webhookData: WebhookData = {
