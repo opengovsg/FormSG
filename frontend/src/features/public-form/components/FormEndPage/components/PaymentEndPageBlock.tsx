@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
-import { Box, Container, VisuallyHidden } from '@chakra-ui/react'
+import { Box, VisuallyHidden } from '@chakra-ui/react'
 
 import {
   AdminStorageFormDto,
@@ -53,7 +53,7 @@ export const PaymentEndPageBlock = ({
   )
 
   return (
-    <Container pb={{ base: '1.5rem', md: '3rem' }}>
+    <Box>
       <Box ref={focusRef} bg="white">
         <VisuallyHidden aria-live="assertive">
           {submittedAriaText}
@@ -69,6 +69,6 @@ export const PaymentEndPageBlock = ({
         name={'Product/ Service'}
         paymentDate={new Date()}
       />
-    </Container>
+    </Box>
   )
 }

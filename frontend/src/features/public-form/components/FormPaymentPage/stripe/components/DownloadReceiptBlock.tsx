@@ -124,7 +124,7 @@ export const DownloadReceiptBlock = ({
     <>
       <Box bg="white" p="2rem">
         <Stack tabIndex={-1} spacing="0.75rem">
-          <Text textStyle="h2" color="content.strong">
+          <Text textStyle="h2" color="secondary.500">
             {endPage.paymentTitle ||
               'Thank you, your payment has been made successfully.'}
           </Text>
@@ -134,7 +134,7 @@ export const DownloadReceiptBlock = ({
           </Text>
         </Stack>
       </Box>
-      <Box mt="2rem" px="1rem" py="2rem" bgColor="white">
+      <Box my="1.5rem" px="1rem" py="2rem" bgColor="white">
         <Stack>
           <Box mb="1.5rem" px="1.5rem">
             <Text textStyle="h2" mb="0.5rem" color="secondary.500">

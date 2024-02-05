@@ -90,13 +90,13 @@ export const StripeReceiptContainer = ({
           endPage={form?.endPage}
         />
       </PaymentStack>
-      <PaymentStack noBg>
+      <Stack px={{ base: '1.5rem', md: '4rem' }} bg="transparent">
         {!isFeedbackSubmitted && (
           <Box backgroundColor="white" p="2rem">
             <FeedbackBlock onSubmit={handleSubmitFeedback} />
           </Box>
         )}
-      </PaymentStack>
+      </Stack>
     </Stack>
   )
 }
