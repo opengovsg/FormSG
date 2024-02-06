@@ -89,7 +89,10 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap">
         <Container maxW={'42.5rem'} p={0}>
-          <FormLabel>Upload a PDF</FormLabel>
+          <FormLabel>
+            Upload a PDF - The PDF should not contain any restricted or
+            sensitive information.
+          </FormLabel>
           <Attachment
             maxSize={MAX_FILE_SIZE}
             accept={VALID_EXTENSIONS}
