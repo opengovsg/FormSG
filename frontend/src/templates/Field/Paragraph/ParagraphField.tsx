@@ -16,11 +16,15 @@ export interface ParagraphFieldProps extends BaseFieldProps {
 export const ParagraphField = ({
   schema,
 }: ParagraphFieldProps): JSX.Element => {
-  const editor = useEditor({
-    editable: false,
-    content: schema.description,
-    extensions: [StarterKit, Link],
-  })
+  // Using a read-only instance of Tiptap for rendering ensures that the HTML content is rendered consistently
+  const editor = useEditor(
+    {
+      editable: false,
+      content: schema.description,
+      extensions: [StarterKit, Link],
+    },
+    [schema],
+  )
 
   return <EditorContent editor={editor} />
 }
