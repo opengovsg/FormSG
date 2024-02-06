@@ -22,9 +22,9 @@ function transformAndSave() {
     const transformedDocuments = documents.map(doc => {
       doc.form_fields = doc.form_fields.map(field => {
         if (field.fieldType === 'statement') {
-          // Add two whitespaces in front of every \n to fix formatting
+          // Add two whitespaces in front of every \n to form line breaks as expected
           const markdown = field.description.replace(/\n/g, "  \n");
-          field.description = marked.parse(field.description);
+          field.description = marked.parse(markdown);
         }
         return field;
       });
