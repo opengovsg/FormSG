@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { Controller } from 'react-hook-form'
 import { FormControl } from '@chakra-ui/react'
 import { extend } from 'lodash'
 
@@ -7,7 +8,7 @@ import { StatementFieldBase } from '~shared/types/field'
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
-import Textarea from '~components/Textarea'
+import { RichTextEditor } from '~components/RichTextEditor/RichTextEditor'
 
 import { CreatePageDrawerContentContainer } from '../../../../common'
 
@@ -21,7 +22,7 @@ type EditParagraphInputs = Pick<StatementFieldBase, 'description'>
 
 export const EditParagraph = ({ field }: EditParagraphProps): JSX.Element => {
   const {
-    register,
+    control,
     formState: { errors },
     buttonText,
     handleUpdateField,
@@ -52,9 +53,11 @@ export const EditParagraph = ({ field }: EditParagraphProps): JSX.Element => {
         isInvalid={!!errors.description}
       >
         <FormLabel>Paragraph</FormLabel>
-        <Textarea
-          autoFocus
-          {...register('description', requiredValidationRule)}
+        <Controller
+          name="description"
+          control={control}
+          rules={requiredValidationRule}
+          render={({ field }) => <RichTextEditor {...field} />}
         />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
