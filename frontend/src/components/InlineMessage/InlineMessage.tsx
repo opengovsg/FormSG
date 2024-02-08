@@ -15,7 +15,7 @@ import { MarkdownText } from '~components/MarkdownText'
 export interface InlineMessageProps extends FlexProps {
   variant?: InlineMessageVariant
   useMarkdown?: boolean
-  icon?: As<any>
+  icon?: As
 }
 
 export const InlineMessage = ({
