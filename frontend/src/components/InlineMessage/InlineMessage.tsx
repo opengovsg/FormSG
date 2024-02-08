@@ -1,4 +1,10 @@
-import { Flex, FlexProps, Icon, useMultiStyleConfig } from '@chakra-ui/react'
+import {
+  As,
+  Flex,
+  FlexProps,
+  Icon,
+  useMultiStyleConfig,
+} from '@chakra-ui/react'
 
 import { BxsErrorCircle, BxsInfoCircle } from '~/assets/icons'
 import { InlineMessageVariant } from '~/theme/components/InlineMessage'
@@ -9,12 +15,14 @@ import { MarkdownText } from '~components/MarkdownText'
 export interface InlineMessageProps extends FlexProps {
   variant?: InlineMessageVariant
   useMarkdown?: boolean
+  icon?: As<any>
 }
 
 export const InlineMessage = ({
   variant = 'info',
   children,
   useMarkdown = false,
+  icon,
   ...flexProps
 }: InlineMessageProps): JSX.Element => {
   const styles = useMultiStyleConfig('InlineMessage', { variant })
@@ -24,7 +32,7 @@ export const InlineMessage = ({
   return (
     <Flex sx={styles.messagebox} {...flexProps}>
       <Icon
-        as={variant !== 'error' ? BxsInfoCircle : BxsErrorCircle}
+        as={icon || (variant !== 'error' ? BxsInfoCircle : BxsErrorCircle)}
         __css={styles.icon}
         aria-label={`${variant !== 'error' ? 'Info' : 'Error'} message icon`}
       />

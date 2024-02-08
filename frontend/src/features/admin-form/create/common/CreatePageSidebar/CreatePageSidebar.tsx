@@ -1,8 +1,10 @@
 import { useCallback } from 'react'
 import { BiGitMerge, BiQuestionMark } from 'react-icons/bi'
-import { Stack } from '@chakra-ui/react'
+import { Divider, Stack } from '@chakra-ui/react'
 
-import { PhHandsClapping } from '~assets/icons'
+import { FormResponseMode } from '~shared/types'
+
+import { MultiParty, PhHandsClapping } from '~assets/icons'
 import { BxsDockTop } from '~assets/icons/BxsDockTop'
 import { BxsWidget } from '~assets/icons/BxsWidget'
 import { FORM_GUIDE } from '~constants/links'
@@ -10,6 +12,7 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
 import {
   DrawerTabs,
   useCreatePageSidebar,
@@ -29,6 +32,9 @@ import { DrawerTabIcon } from './DrawerTabIcon'
 
 export const CreatePageSidebar = (): JSX.Element | null => {
   const isMobile = useIsMobile()
+
+  const { data } = useAdminForm()
+
   const setFieldsToInactive = useFieldBuilderStore(setToInactiveSelector)
   const isDirty = useDirtyFieldStore(isDirtySelector)
   const {
@@ -37,6 +43,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
     handleDesignClick,
     handleLogicClick,
     handleEndpageClick,
+    handleWorkflowClick,
   } = useCreatePageSidebar()
 
   const handleDrawerBuilderClick = useCallback(() => {
@@ -60,6 +67,11 @@ export const CreatePageSidebar = (): JSX.Element | null => {
   const handleDrawerEndpageClick = useCallback(
     () => handleEndpageClick(isDirty),
     [handleEndpageClick, isDirty],
+  )
+
+  const handleDrawerWorkflowClick = useCallback(
+    () => handleWorkflowClick(isDirty),
+    [handleWorkflowClick, isDirty],
   )
 
   return (
@@ -103,6 +115,17 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           isActive={activeTab === DrawerTabs.EndPage}
           id={FEATURE_TOUR[3].id}
         />
+        {data?.responseMode === FormResponseMode.Multirespondent && (
+          <>
+            <Divider />
+            <DrawerTabIcon
+              label="Add workflow"
+              icon={<MultiParty fontSize="1.5rem" />}
+              onClick={handleDrawerWorkflowClick}
+              isActive={activeTab === DrawerTabs.Workflow}
+            />
+          </>
+        )}
       </Stack>
       <Tooltip label="Help" placement="right">
         <IconButton

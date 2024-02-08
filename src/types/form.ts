@@ -22,7 +22,7 @@ import {
   FormSettings,
   FormStartPage,
   FormWebhookResponseModeSettings,
-  FormWorkflowSettings,
+  FormWorkflowDto,
   LogicDto,
   MyInfoAttribute,
   PublicFormDto,
@@ -312,7 +312,7 @@ export type IPopulatedEmailForm = IPopulatedForm & IEmailForm
 export interface IMultirespondentForm extends IForm {
   publicKey: string
   emails?: never
-  workflow?: FormWorkflowSettings
+  workflow: FormWorkflowDto
 }
 
 export type IMultirespondentFormSchema = IMultirespondentForm & IFormSchema
