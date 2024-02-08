@@ -3,15 +3,12 @@ import { Meta, Story } from '@storybook/react'
 import { AttachmentSize, BasicField, FormFieldDto } from '~shared/types/field'
 import {
   AdminFormDto,
+  FormResponseMode,
   FormWorkflowStepDto,
   WorkflowType,
 } from '~shared/types/form'
 
-import {
-  createFormBuilderMocks,
-  createLogic,
-  deleteLogic,
-} from '~/mocks/msw/handlers/admin-form'
+import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 
 import { StoryRouter, viewports } from '~utils/storybook'
 
@@ -20,11 +17,7 @@ import { CreatePageWorkflowTab } from './CreatePageWorkflowTab'
 const buildMswRoutes = (
   overrides?: Partial<AdminFormDto>,
   delay: number | 'infinite' = 0,
-) => [
-  ...createFormBuilderMocks(overrides, delay),
-  createLogic(delay),
-  deleteLogic(delay),
-]
+) => createFormBuilderMocks(overrides, delay)
 
 export default {
   title: 'Pages/AdminFormPage/Create/WorkflowTab',
@@ -36,7 +29,10 @@ export default {
     // Pass a very short delay to avoid bug where Chromatic takes a snapshot before
     // the story has loaded
     chromatic: { pauseAnimationAtEnd: true, delay: 50 },
-    msw: buildMswRoutes(),
+    msw: buildMswRoutes({
+      responseMode: FormResponseMode.Multirespondent,
+      workflow: [],
+    }),
   },
 } as Meta
 
@@ -94,19 +90,16 @@ const workflow_step_2: FormWorkflowStepDto = {
 }
 
 const FORM_WITH_WORKFLOW: Partial<AdminFormDto> = {
+  responseMode: FormResponseMode.Multirespondent,
   form_fields: [form_field_1, form_field_2, form_field_3, form_field_4],
   workflow: [workflow_step_1, workflow_step_2],
 }
 
 const Template: Story = () => <CreatePageWorkflowTab />
 export const NoWorkflow = Template.bind({})
-NoWorkflow.parameters = {
-  msw: buildMswRoutes({ workflow: [] }),
-}
 
 export const MobileNoWorkflow = Template.bind({})
 MobileNoWorkflow.parameters = {
-  msw: buildMswRoutes({ workflow: [] }),
   viewport: {
     defaultViewport: 'mobile1',
   },
