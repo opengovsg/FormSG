@@ -30,7 +30,7 @@ export const ActiveStepBlock = ({
           stepNumber,
           updateStepBody: {
             workflow_type: WorkflowType.Static,
-            emails: [inputs.email],
+            emails: inputs.email ? [inputs.email] : [],
           },
         },
         {

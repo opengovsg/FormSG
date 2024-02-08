@@ -15,12 +15,7 @@ import { useWorkflowMutations } from '../../../mutations'
 import { EditStepInputs } from '../../../types'
 import { EditStepBlock } from '../EditStepBlock'
 
-export interface NewStepBlockProps {
-  /** Prop to inject values for testing */
-  _defaultValues?: Partial<EditStepInputs>
-}
-
-export const NewStepBlock = ({ _defaultValues }: NewStepBlockProps) => {
+export const NewStepBlock = () => {
   const { formWorkflow } = useAdminFormWorkflow()
   const { createStepMutation } = useWorkflowMutations()
   const { isCreatingState, setToInactive, setToCreating } =
@@ -34,7 +29,7 @@ export const NewStepBlock = ({ _defaultValues }: NewStepBlockProps) => {
       createStepMutation.mutate(
         {
           workflow_type: WorkflowType.Static,
-          emails: [inputs.email],
+          emails: inputs.email ? [inputs.email] : [],
         },
         {
           onSuccess: () => setToInactive(),
@@ -49,7 +44,6 @@ export const NewStepBlock = ({ _defaultValues }: NewStepBlockProps) => {
     <EditStepBlock
       stepNumber={formWorkflow.length}
       isLoading={createStepMutation.isLoading}
-      defaultValues={_defaultValues}
       onSubmit={handleSubmit}
       submitButtonLabel="Add step"
     />

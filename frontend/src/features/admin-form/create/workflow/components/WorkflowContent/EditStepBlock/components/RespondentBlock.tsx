@@ -55,7 +55,7 @@ export const RespondentBlock = ({
                   ? !email || 'Emails are not allowed for Step 1' // This should never be seen
                   : !!email || 'Please add an email',
               isEmails: (email) =>
-                isEmail(email) || 'Please enter a valid email',
+                !email || isEmail(email) || 'Please enter a valid email',
             },
           }}
           render={({ field }) => (

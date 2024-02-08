@@ -4,5 +4,5 @@ export enum AdminEditWorkflowState {
 }
 
 export type EditStepInputs = {
-  email: string
+  email?: string
 }
