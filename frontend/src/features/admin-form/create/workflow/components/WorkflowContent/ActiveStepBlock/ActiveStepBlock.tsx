@@ -28,7 +28,10 @@ export const ActiveStepBlock = ({
       updateStepMutation.mutate(
         {
           stepNumber,
-          updateStepBody: { workflow_type: WorkflowType.Static, ...inputs },
+          updateStepBody: {
+            workflow_type: WorkflowType.Static,
+            emails: [inputs.email],
+          },
         },
         {
           onSuccess: () => setToInactive(),
@@ -43,7 +46,7 @@ export const ActiveStepBlock = ({
       isLoading={updateStepMutation.isLoading}
       handleOpenDeleteModal={handleOpenDeleteModal}
       onSubmit={handleSubmit}
-      defaultValues={step}
+      defaultValues={{ email: step.emails[0] }}
       submitButtonLabel="Save changes"
     />
   )

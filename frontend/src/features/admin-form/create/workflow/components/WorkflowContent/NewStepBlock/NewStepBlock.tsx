@@ -34,7 +34,7 @@ export const NewStepBlock = ({ _defaultValues }: NewStepBlockProps) => {
       createStepMutation.mutate(
         {
           workflow_type: WorkflowType.Static,
-          ...inputs,
+          emails: [inputs.email],
         },
         {
           onSuccess: () => setToInactive(),

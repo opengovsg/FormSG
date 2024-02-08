@@ -1,11 +1,13 @@
-import { Controller, get, UseFormReturn } from 'react-hook-form'
+import { Controller, UseFormReturn } from 'react-hook-form'
 import { FormControl, Stack } from '@chakra-ui/react'
 import isEmail from 'validator/lib/isEmail'
 
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import { TagInput } from '~components/TagInput'
+import Input from '~components/Input'
 
 import { EditStepInputs } from '~features/admin-form/create/workflow/types'
+
+import { isFirstStepByStepNumber } from '../../utils/isFirstStepByStepNumber'
 
 import { BlockLabelText } from './BlockLabelText'
 
@@ -25,6 +27,8 @@ export const RespondentBlock = ({
     control,
   } = formMethods
 
+  const isFirstStep = isFirstStepByStepNumber(stepNumber)
+
   return (
     <Stack
       direction="column"
@@ -39,36 +43,34 @@ export const RespondentBlock = ({
         isReadOnly={isLoading}
         id="emails"
         isRequired
-        isInvalid={!!errors.emails}
+        isInvalid={!!errors.email}
       >
         <Controller
-          name="emails"
+          name="email"
           control={control}
           rules={{
             validate: {
-              required: (emails) =>
-                stepNumber === 0
-                  ? emails.length === 0 || 'Emails are not allowed for Step 1' // This should never be seen
-                  : emails.length > 0 || 'Please add at least one email',
-              isEmails: (emails) =>
-                emails.every((email) => isEmail(email)) ||
-                'Please remove invalid emails',
+              required: (email) =>
+                isFirstStep
+                  ? !email || 'Emails are not allowed for Step 1' // This should never be seen
+                  : !!email || 'Please add an email',
+              isEmails: (email) =>
+                isEmail(email) || 'Please enter a valid email',
             },
           }}
           render={({ field }) => (
-            <TagInput
+            <Input
               placeholder={
-                stepNumber === 0
+                isFirstStep
                   ? 'Anyone you share the form link with'
                   : 'me@example.com'
               }
-              disabled={stepNumber === 0}
-              tagValidation={isEmail}
+              disabled={isFirstStep}
               {...field}
             />
           )}
         />
-        <FormErrorMessage>{get(errors, `emails.message`)}</FormErrorMessage>
+        <FormErrorMessage>{errors.email?.message}</FormErrorMessage>
       </FormControl>
     </Stack>
   )

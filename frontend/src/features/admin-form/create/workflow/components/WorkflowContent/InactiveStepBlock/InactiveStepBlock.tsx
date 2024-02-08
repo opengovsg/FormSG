@@ -12,6 +12,7 @@ import {
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
 import { StepLabel } from '../StepLabel'
+import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { EmailBadge } from './EmailBadge'
 
@@ -38,6 +39,8 @@ export const InactiveStepBlock = ({
     }
     setToEditing(stepNumber)
   }, [isPreventEdit, stepNumber, setToEditing])
+
+  const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
   return (
     <Box pos="relative">
@@ -69,8 +72,8 @@ export const InactiveStepBlock = ({
           <StepLabel stepNumber={stepNumber} />
           <Stack>
             <Text textStyle="subhead-3">Respondent in this step</Text>
-            {stepNumber === 0 ? (
-              <Text>Anyone you share the form link with </Text>
+            {isFirstStep ? (
+              <Text>Anyone you share the form link with</Text>
             ) : (
               <Flex
                 flexDir={{ base: 'column', md: 'row' }}
@@ -86,16 +89,18 @@ export const InactiveStepBlock = ({
           </Stack>
         </Stack>
       </chakra.button>
-      <IconButton
-        top={{ base: '0.5rem', md: '2rem' }}
-        right={{ base: '0.5rem', md: '2rem' }}
-        pos="absolute"
-        aria-label="Delete step"
-        variant="clear"
-        colorScheme="danger"
-        onClick={handleOpenDeleteModal}
-        icon={<BiTrash fontSize="1.5rem" />}
-      />
+      {!isFirstStep && (
+        <IconButton
+          top={{ base: '0.5rem', md: '2rem' }}
+          right={{ base: '0.5rem', md: '2rem' }}
+          pos="absolute"
+          aria-label="Delete step"
+          variant="clear"
+          colorScheme="danger"
+          onClick={handleOpenDeleteModal}
+          icon={<BiTrash fontSize="1.5rem" />}
+        />
+      )}
     </Box>
   )
 }

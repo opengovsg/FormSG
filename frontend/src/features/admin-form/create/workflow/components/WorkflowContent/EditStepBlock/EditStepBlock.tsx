@@ -10,6 +10,7 @@ import {
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { EditStepInputs } from '../../../types'
 import { StepLabel } from '../StepLabel'
+import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { RespondentBlock, SaveActionGroup } from './components'
 
@@ -74,6 +75,8 @@ export const EditStepBlock = ({
   const { formMethods, wrapperRef, handleSubmit, setToInactive } =
     useEditStepBlock({ defaultValues, onSubmit })
 
+  const isFirstStep = isFirstStepByStepNumber(stepNumber)
+
   return (
     <Stack
       ref={wrapperRef}
@@ -94,11 +97,10 @@ export const EditStepBlock = ({
         formMethods={formMethods}
         isLoading={isLoading}
       />
-
       <SaveActionGroup
         isLoading={isLoading}
         handleSubmit={handleSubmit}
-        handleDelete={handleOpenDeleteModal}
+        handleDelete={isFirstStep ? undefined : handleOpenDeleteModal}
         handleCancel={setToInactive}
         submitButtonLabel={submitButtonLabel}
       />
