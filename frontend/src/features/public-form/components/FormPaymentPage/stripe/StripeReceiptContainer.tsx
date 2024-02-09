@@ -63,13 +63,20 @@ export const StripeReceiptContainer = ({
 
   if (isLoading || error || !paymentReceiptStatus?.isReady || !form) {
     return (
-      <PaymentStack>
-        <GenericMessageBlock
-          title="Your payment has been received."
-          subtitle="We are waiting to get your proof of payment from our payment provider. You may come back to the same link to download your proof of payment later."
-          submissionId={submissionId}
-        />
-      </PaymentStack>
+      <Stack my="1.5rem">
+        <PaymentStack>
+          <Box
+            py={{ base: '1.5rem', md: '2rem' }}
+            px={{ base: '1rem', md: '2rem' }}
+          >
+            <GenericMessageBlock
+              title="Your payment has been received."
+              subtitle="We are waiting to get your proof of payment from our payment provider. You may come back to the same link to download your proof of payment later."
+              submissionId={submissionId}
+            />
+          </Box>
+        </PaymentStack>
+      </Stack>
     )
   }
   return (
@@ -90,9 +97,13 @@ export const StripeReceiptContainer = ({
           endPage={form?.endPage}
         />
       </PaymentStack>
-      <Stack px={{ base: '1.5rem', md: '4rem' }} bg="transparent">
+      <Stack px={{ base: '1rem', md: '4rem' }} bg="transparent">
         {!isFeedbackSubmitted && (
-          <Box backgroundColor="white" p="2rem">
+          <Box
+            backgroundColor="white"
+            py={{ base: '1.5rem', md: '2rem' }}
+            px={{ base: '1rem', md: '2rem' }}
+          >
             <FeedbackBlock onSubmit={handleSubmitFeedback} />
           </Box>
         )}

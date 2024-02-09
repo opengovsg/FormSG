@@ -28,7 +28,7 @@ export const FormPaymentPage = () => {
           <PublicFormLogo />
           <FormStartPage />
           <PublicFormWrapper>
-            <Box py="1rem" w="100%">
+            <Box py={{ base: '2.5rem', md: '0rem' }} w="100%">
               <Container w="57rem" maxW="100%" p={0}>
                 <Suspense
                   fallback={

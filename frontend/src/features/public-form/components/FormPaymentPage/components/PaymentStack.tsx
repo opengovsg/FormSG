@@ -15,7 +15,7 @@ export const PaymentStack = ({
   return (
     <Stack
       pt="1.5rem"
-      px={{ base: '1.5rem', md: '4rem' }}
+      px={{ base: '1rem', md: '4rem' }}
       bg={backgroundColour}
       w="100%"
       divider={<Divider />}

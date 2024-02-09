@@ -1,8 +1,6 @@
 import { useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
 
-import { FormResponseMode } from '~shared/types'
-
 import FormIssueFeedback from '~/features/public-form/components/FormIssueFeedback'
 
 import { fillHeightCss } from '~utils/fillHeightCss'
