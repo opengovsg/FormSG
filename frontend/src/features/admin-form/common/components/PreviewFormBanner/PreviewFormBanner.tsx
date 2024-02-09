@@ -195,6 +195,16 @@ export const PreviewFormBanner = ({
           )}
         </Flex>
       )}
+      {!isPaymentEnabled && (
+        <Flex backgroundColor="neutral.900">
+          {!(secretEnv === 'production') && (
+            <Text {...textProps}>
+              You will not be able to view submitted answers or attachments in
+              Form Preview mode. Open your form to test a form submission.
+            </Text>
+          )}
+        </Flex>
+      )}
       <Divider />
     </>
   )

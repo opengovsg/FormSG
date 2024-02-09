@@ -1,6 +1,6 @@
 import JoiDate from '@joi/date'
 import axios from 'axios'
-import { ObjectID, ObjectId } from 'bson'
+import { ObjectId } from 'bson'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
@@ -1716,7 +1716,7 @@ export const submitEncryptPreview: ControllerHandler<
       }),
     )
     .map(() => {
-      const fakeSubmissionId = new ObjectID().toString()
+      const fakeSubmissionId = new ObjectId().toString()
       // Return the reply early to the submitter
       return res.json({
         message: 'Form submission successful.',

@@ -235,13 +235,13 @@ export const submitStorageModeFormPreviewWithFetch = async ({
 }: {
   formId: string
 }): Promise<SubmissionResponseDto> => {
-  const formData = {}
+  const emptyFormData = {}
 
   const response = await fetch(
     `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/storage`,
     {
       method: 'POST',
-      body: JSON.stringify(formData),
+      body: JSON.stringify(emptyFormData),
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
