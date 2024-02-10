@@ -1,0 +1,14 @@
+export const BxsUnorderedList = (
+  props: React.SVGProps<SVGSVGElement>,
+): JSX.Element => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    width="24"
+    height="24"
+    {...props}
+  >
+    <path d="M4 6h2v2H4zm0 5h2v2H4zm0 5h2v2H4zm16-8V6H8.023v2H18.8zM8 11h12v2H8zm0 5h12v2H8z"></path>
+  </svg>
+)
