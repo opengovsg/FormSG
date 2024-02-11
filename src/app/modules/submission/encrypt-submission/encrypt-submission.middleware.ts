@@ -25,6 +25,7 @@ import { JoiPaymentProduct } from '../../form/admin-form/admin-form.payments.con
 import * as FormService from '../../form/form.service'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
+import * as PaymentsService from '../../payments/payments.service'
 import { IPopulatedStorageFormWithResponsesAndHash } from '../email-submission/email-submission.types'
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import { sharedSubmissionParams } from '../submission.constants'
@@ -294,77 +295,23 @@ export const validatePaymentSubmission = async (
   const formDefProducts = formDef?.payments_field?.products
   const submittedPaymentProducts = req.body.paymentProducts
   if (isPaymentsProducts(formDefProducts) && submittedPaymentProducts) {
-    const paymentDef = formDefProducts
-
-    if (submittedPaymentProducts) {
-      // Check that no duplicate payment products are selected
-
-      const selectedProducts = submittedPaymentProducts.filter(
-        (product) => product.selected,
-      )
-
-      const selectedProductIds = new Set(
-        selectedProducts.map((product) => product.data._id),
-      )
-
-      if (selectedProductIds.size !== selectedProducts.length) {
+    return PaymentsService.validatePaymentProducts(
+      formDefProducts,
+      submittedPaymentProducts,
+    )
+      .map(() => next())
+      .mapErr((error) => {
         logger.error({
-          message: 'Duplicate payment products selected',
+          message: 'Error validating payment submission',
           meta: logMeta,
+          error,
         })
-        return res.status(StatusCodes.BAD_REQUEST).json({
-          message:
-            'You have selected a duplicate product. Please refresh and try again.',
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({
+          message: errorMessage,
         })
-      }
-
-      // Check that every selected product is in the form definition
-      for (const product of submittedPaymentProducts) {
-        const productIdSubmitted = product.data._id
-        const productDefinition = paymentDef.find(
-          (product) => String(product._id) === String(productIdSubmitted),
-        )
-
-        if (!productDefinition) {
-          logger.error({
-            message: 'Invalid payment product selected.',
-            meta: logMeta,
-          })
-          return res.status(StatusCodes.BAD_REQUEST).json({
-            message:
-              'Product selected is no longer available. Please refresh and try again.',
-          })
-        }
-
-        if (!productDefinition.multi_qty && product.quantity > 1) {
-          logger.error({
-            message: 'Invalid payment product quantity',
-            meta: logMeta,
-          })
-          return res.status(StatusCodes.BAD_REQUEST).json({
-            message:
-              'You cannot select more than 1 of this item. Please refresh and try again.',
-          })
-        }
-
-        if (productDefinition.multi_qty) {
-          if (
-            product.quantity < productDefinition.min_qty ||
-            product.quantity > productDefinition.max_qty
-          ) {
-            logger.error({
-              message: 'Invalid payment product quantity',
-              meta: logMeta,
-            })
-            return res.status(StatusCodes.BAD_REQUEST).json({
-              message: `You have selected an invalid quantity. It must be between ${productDefinition.min_qty} and ${productDefinition.max_qty}. Please try again.`,
-            })
-          }
-        }
-      }
-    }
+      })
   }
-
   return next()
 }
 
