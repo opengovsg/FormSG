@@ -16,3 +16,23 @@ export type ProductItem = {
   selected: boolean
   quantity: number
 }
+
+// Typeguard for Product
+export const isPaymentsProducts = (
+  products: unknown,
+): products is Product[] => {
+  if (!Array.isArray(products)) {
+    return false
+  }
+  return products.every((product) => {
+    return (
+      typeof product._id === 'string' &&
+      typeof product.name === 'string' &&
+      typeof product.description === 'string' &&
+      typeof product.multi_qty === 'boolean' &&
+      typeof product.min_qty === 'number' &&
+      typeof product.max_qty === 'number' &&
+      typeof product.amount_cents === 'number'
+    )
+  })
+}

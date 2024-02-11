@@ -7,6 +7,7 @@ import {
   BasicField,
   FormAuthType,
   FormResponseMode,
+  isPaymentsProducts,
 } from '../../../../../shared/types'
 import {
   EncryptAttachmentResponse,
@@ -270,6 +271,99 @@ export const scanAndRetrieveAttachments = async (
 
   // Replace req.body.responses with the new responses with populated attachments.
   req.body.responses = scanAndRetrieveFilesResult.value
+
+  return next()
+}
+
+/**
+ * Middleware to validate payment content
+ */
+export const validatePaymentSubmission = async (
+  req: ValidateSubmissionMiddlewareHandlerRequest,
+  res: Parameters<EncryptSubmissionMiddlewareHandlerType>[1],
+  next: NextFunction,
+) => {
+  const formDef = req.formsg.formDef
+
+  const logMeta = {
+    action: 'validatePaymentSubmission',
+    formId: formDef._id.toString(),
+    ...createReqMeta(req),
+  }
+
+  const formDefProducts = formDef?.payments_field?.products
+  const submittedPaymentProducts = req.body.paymentProducts
+  if (isPaymentsProducts(formDefProducts) && submittedPaymentProducts) {
+    const paymentDef = formDefProducts
+
+    if (submittedPaymentProducts) {
+      // Check that no duplicate payment products are selected
+
+      const selectedProducts = submittedPaymentProducts.filter(
+        (product) => product.selected,
+      )
+
+      const selectedProductIds = new Set(
+        selectedProducts.map((product) => product.data._id),
+      )
+
+      if (selectedProductIds.size !== selectedProducts.length) {
+        logger.error({
+          message: 'Duplicate payment products selected',
+          meta: logMeta,
+        })
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          message:
+            'You have selected a duplicate product. Please refresh and try again.',
+        })
+      }
+
+      // Check that every selected product is in the form definition
+      for (const product of submittedPaymentProducts) {
+        const productIdSubmitted = product.data._id
+        const productDefinition = paymentDef.find(
+          (product) => String(product._id) === String(productIdSubmitted),
+        )
+
+        if (!productDefinition) {
+          logger.error({
+            message: 'Invalid payment product selected.',
+            meta: logMeta,
+          })
+          return res.status(StatusCodes.BAD_REQUEST).json({
+            message:
+              'Product selected is no longer available. Please refresh and try again.',
+          })
+        }
+
+        if (!productDefinition.multi_qty && product.quantity > 1) {
+          logger.error({
+            message: 'Invalid payment product quantity',
+            meta: logMeta,
+          })
+          return res.status(StatusCodes.BAD_REQUEST).json({
+            message:
+              'You cannot select more than 1 of this item. Please refresh and try again.',
+          })
+        }
+
+        if (productDefinition.multi_qty) {
+          if (
+            product.quantity < productDefinition.min_qty ||
+            product.quantity > productDefinition.max_qty
+          ) {
+            logger.error({
+              message: 'Invalid payment product quantity',
+              meta: logMeta,
+            })
+            return res.status(StatusCodes.BAD_REQUEST).json({
+              message: `You have selected an invalid quantity. It must be between ${productDefinition.min_qty} and ${productDefinition.max_qty}. Please try again.`,
+            })
+          }
+        }
+      }
+    }
+  }
 
   return next()
 }
