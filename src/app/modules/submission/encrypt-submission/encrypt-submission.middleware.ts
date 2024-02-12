@@ -296,13 +296,16 @@ export const validatePaymentSubmission = async (
   const submittedPaymentProducts = req.body.paymentProducts
   if (submittedPaymentProducts) {
     if (!isPaymentsProducts(formDefProducts)) {
+      // Payment definition does not allow for payment by product
+
       logger.error({
         message: 'Invalid form definition for payment by product',
         meta: logMeta,
       })
 
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: 'This form has an invalid payment setting.',
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message:
+          'The payment settings in this form have been updated. Please refresh and try again.',
       })
     }
     return PaymentsService.validatePaymentProducts(
