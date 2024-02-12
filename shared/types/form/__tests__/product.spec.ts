@@ -1,5 +1,3 @@
-// Unit tests for product.ts, isPaymentsProductt
-
 import { ObjectId } from 'bson'
 import { isPaymentsProducts } from '../product'
 import { Product } from '../product'
