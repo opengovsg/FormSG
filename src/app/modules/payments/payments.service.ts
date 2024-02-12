@@ -370,6 +370,9 @@ export const sendOnboardingEmailIfEligible = (
   )
 }
 
+/**
+ * Validates that payment by product is valid
+ */
 export const validatePaymentProducts = (
   formProductsDefinition: Product[],
   submittedPaymentProducts: ProductItem[],
@@ -378,7 +381,7 @@ export const validatePaymentProducts = (
     action: 'validatePayments',
   }
 
-  // Check that no duplicate payment products are selected
+  // Check that no duplicate payment products (by id) are selected
   const selectedProducts = submittedPaymentProducts.filter(
     (product) => product.selected,
   )
@@ -412,7 +415,11 @@ export const validatePaymentProducts = (
         message: 'Invalid payment product selected.',
         meta: logMeta,
       })
-      return err(new InvalidPaymentProductsError('Invalid product selected.'))
+      return err(
+        new InvalidPaymentProductsError(
+          'Invalid product selected. Please refresh and try again.',
+        ),
+      )
     }
 
     // Check that the quantity of the product is valid
@@ -424,7 +431,7 @@ export const validatePaymentProducts = (
       })
       return err(
         new InvalidPaymentProductsError(
-          'Selected more than 1 quantity when it is not allowed.',
+          'Selected more than 1 quantity when it is not allowed. Please refresh and try again.',
         ),
       )
     }
@@ -439,7 +446,7 @@ export const validatePaymentProducts = (
 
         return err(
           new InvalidPaymentProductsError(
-            `Selected an invalid quantity below the liimt.`,
+            `Selected an invalid quantity below the limit. Please refresh and try again.`,
           ),
         )
       }
@@ -452,11 +459,20 @@ export const validatePaymentProducts = (
 
         return err(
           new InvalidPaymentProductsError(
-            `Selected an invalid quantity above the limit.`,
+            `Selected an invalid quantity above the limit. Please refresh and try again.`,
           ),
         )
       }
     }
+
+    if (product.data.amount_cents !== productDefinition.amount_cents) {
+      return err(
+        new InvalidPaymentProductsError(
+          `Price has changed. Please refresh and try again.`,
+        ),
+      )
+    }
   }
+
   return ok(true)
 }
