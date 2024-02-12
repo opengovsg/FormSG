@@ -24,15 +24,15 @@ export const isPaymentsProducts = (
   if (!Array.isArray(products)) {
     return false
   }
-  return products.every((product) => {
-    return (
-      typeof product._id === 'string' &&
-      typeof product.name === 'string' &&
-      typeof product.description === 'string' &&
-      typeof product.multi_qty === 'boolean' &&
-      typeof product.min_qty === 'number' &&
-      typeof product.max_qty === 'number' &&
-      typeof product.amount_cents === 'number'
-    )
-  })
+  return (
+    products.length > 0 &&
+    products.every((product) => {
+      return (
+        product._id &&
+        String(product._id).match(/^[0-9a-fA-F]{24}$/) &&
+        product.name &&
+        typeof product.name === 'string'
+      )
+    })
+  )
 }
