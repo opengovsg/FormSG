@@ -6,10 +6,12 @@ import { Divider, Stack } from '@chakra-ui/react'
  */
 export const PaymentStack = ({
   noBg,
+  mt,
   children,
 }: {
   noBg?: boolean
   children: React.ReactNode
+  mt?: string
 }) => {
   const backgroundColour = noBg ? 'transparent' : 'white'
   return (
@@ -20,6 +22,7 @@ export const PaymentStack = ({
       bg={backgroundColour}
       w="100%"
       divider={<Divider />}
+      mt={mt}
     >
       {children}
     </Stack>
