@@ -4,7 +4,6 @@ import {
   logoutSession,
 } from '__tests__/integration/helpers/express-auth'
 import { setupApp } from '__tests__/integration/helpers/express-setup'
-import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
 import {
   generateDefaultField,
   generateUnprocessedSingleAnswerResponse,
@@ -642,7 +641,7 @@ describe('admin-form.preview.routes', () => {
     })
   })
 
-  describe('POST /admin/forms/:formId/preview/submissions/encrypt', () => {
+  describe('POST /admin/forms/:formId/preview/submissions/storage', () => {
     const MOCK_FIELD_ID = new ObjectId().toHexString()
     const MOCK_ATTACHMENT_FIELD_ID = new ObjectId().toHexString()
     const MOCK_RESPONSE = omit(
@@ -685,7 +684,7 @@ describe('admin-form.preview.routes', () => {
 
     it('should return 200 with submission ID when request is valid', async () => {
       const response = await request
-        .post(`/admin/forms/${mockForm._id}/preview/submissions/encrypt`)
+        .post(`/admin/forms/${mockForm._id}/preview/submissions/storage`)
         .send(MOCK_SUBMISSION_BODY)
 
       expect(response.body.message).toBe('Form submission successful.')
@@ -697,276 +696,11 @@ describe('admin-form.preview.routes', () => {
       await logoutSession(request)
 
       const response = await request
-        .post(`/admin/forms/${mockForm._id}/preview/submissions/encrypt`)
+        .post(`/admin/forms/${mockForm._id}/preview/submissions/storage`)
         .send(MOCK_SUBMISSION_BODY)
 
       expect(response.status).toBe(401)
       expect(response.body).toEqual({ message: 'User is unauthorized.' })
-    })
-
-    it('should return 400 when responses are not provided in body', async () => {
-      const response = await request
-        .post(`/admin/forms/${mockForm._id}/preview/submissions/encrypt`)
-        .send(omit(MOCK_SUBMISSION_BODY, 'responses'))
-
-      expect(response.status).toBe(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({ body: { key: 'responses' } }),
-      )
-    })
-
-    it('should return 400 when responses are missing _id field', async () => {
-      const response = await request
-        .post(`/admin/forms/${mockForm._id}/preview/submissions/encrypt`)
-        .send({
-          ...MOCK_SUBMISSION_BODY,
-          responses: [omit(MOCK_RESPONSE, '_id')],
-        })
-
-      expect(response.status).toBe(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({
-          body: {
-            key: 'responses.0._id',
-            message: '"responses[0]._id" is required',
-          },
-        }),
-      )
-    })
-
-    it('should return 400 when responses are missing answer field', async () => {
-      const response = await request
-        .post(`/admin/forms/${mockForm._id}/preview/submissions/encrypt`)
-        .send({
-          ...MOCK_SUBMISSION_BODY,
-          responses: [omit(MOCK_RESPONSE, 'answer')],
-        })
-
-      expect(response.status).toBe(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({
-          body: {
-            key: 'responses.0.answer',
-            message: '"responses[0].answer" is required',
-          },
-        }),
-      )
-    })
-
-    it('should return 400 when responses are missing fieldType', async () => {
-      const response = await request
-        .post(`/admin/forms/${mockForm._id}/preview/submissions/encrypt`)
-        .send({
-          ...MOCK_SUBMISSION_BODY,
-          responses: [omit(MOCK_RESPONSE, 'fieldType')],
-        })
-
-      expect(response.status).toBe(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({
-          body: {
-            key: 'responses.0.fieldType',
-            message: '"responses[0].fieldType" is required',
-          },
-        }),
-      )
-    })
-
-    it('should return 400 when a fieldType is malformed', async () => {
-      const response = await request
-        .post(`/admin/forms/${mockForm._id}/preview/submissions/encrypt`)
-        .send({
-          ...MOCK_SUBMISSION_BODY,
-          responses: [{ ...MOCK_RESPONSE, fieldType: 'malformed' }],
-        })
-
-      expect(response.status).toBe(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({
-          body: {
-            key: 'responses.0.fieldType',
-            message: expect.stringContaining(
-              '"responses[0].fieldType" must be one of ',
-            ),
-          },
-        }),
-      )
-    })
-
-    it('should return 400 when encryptedContent is not provided in body', async () => {
-      const response = await request
-        .post(`/admin/forms/${mockForm._id}/preview/submissions/encrypt`)
-        .send(omit(MOCK_SUBMISSION_BODY, 'encryptedContent'))
-
-      expect(response.status).toBe(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({
-          body: {
-            key: 'encryptedContent',
-          },
-        }),
-      )
-    })
-
-    it('should return 400 when version is not provided in body', async () => {
-      const response = await request
-        .post(`/admin/forms/${mockForm._id}/preview/submissions/encrypt`)
-        .send(omit(MOCK_SUBMISSION_BODY, 'version'))
-
-      expect(response.status).toBe(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({
-          body: {
-            key: 'version',
-          },
-        }),
-      )
-    })
-
-    it('should return 400 when encryptedContent is malformed', async () => {
-      const response = await request
-        .post(`/admin/forms/${mockForm._id}/preview/submissions/encrypt`)
-        .send({ ...MOCK_SUBMISSION_BODY, encryptedContent: 'abc' })
-
-      expect(response.status).toBe(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({
-          body: {
-            key: 'encryptedContent',
-            message: 'Invalid encryptedContent.',
-          },
-        }),
-      )
-    })
-
-    it('should return 400 when attachment field ID is malformed', async () => {
-      const invalidKey = 'invalidFieldId'
-      const response = await request
-        .post(`/admin/forms/${mockForm._id}/preview/submissions/encrypt`)
-        .send({
-          ...MOCK_SUBMISSION_BODY,
-          attachments: {
-            [invalidKey]: {
-              encryptedFile: {
-                binary: '10101',
-                nonce: 'mockNonce',
-                submissionPublicKey: 'mockPublicKey',
-              },
-            },
-          },
-        })
-
-      expect(response.status).toBe(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({
-          body: {
-            key: `attachments.${invalidKey}`,
-            message: `"attachments.${invalidKey}" is not allowed`,
-          },
-        }),
-      )
-    })
-
-    it('should return 400 when attachment is missing encryptedFile key', async () => {
-      const response = await request
-        .post(`/admin/forms/${mockForm._id}/preview/submissions/encrypt`)
-        .send({
-          ...MOCK_SUBMISSION_BODY,
-          attachments: {
-            [MOCK_ATTACHMENT_FIELD_ID]: {},
-          },
-        })
-
-      expect(response.status).toBe(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({
-          body: {
-            key: `attachments.${MOCK_ATTACHMENT_FIELD_ID}.encryptedFile`,
-            message: `"attachments.${MOCK_ATTACHMENT_FIELD_ID}.encryptedFile" is required`,
-          },
-        }),
-      )
-    })
-
-    it('should return 400 when attachment is missing binary', async () => {
-      const response = await request
-        .post(`/admin/forms/${mockForm._id}/preview/submissions/encrypt`)
-        .send({
-          ...MOCK_SUBMISSION_BODY,
-          attachments: {
-            [MOCK_ATTACHMENT_FIELD_ID]: {
-              encryptedFile: {
-                // binary is missing
-                nonce: 'mockNonce',
-                submissionPublicKey: 'mockPublicKey',
-              },
-            },
-          },
-        })
-
-      expect(response.status).toBe(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({
-          body: {
-            key: `attachments.${MOCK_ATTACHMENT_FIELD_ID}.encryptedFile.binary`,
-            message: `"attachments.${MOCK_ATTACHMENT_FIELD_ID}.encryptedFile.binary" is required`,
-          },
-        }),
-      )
-    })
-
-    it('should return 400 when attachment is missing nonce', async () => {
-      const response = await request
-        .post(`/admin/forms/${mockForm._id}/preview/submissions/encrypt`)
-        .send({
-          ...MOCK_SUBMISSION_BODY,
-          attachments: {
-            [MOCK_ATTACHMENT_FIELD_ID]: {
-              encryptedFile: {
-                binary: '10101',
-                // nonce is missing
-                submissionPublicKey: 'mockPublicKey',
-              },
-            },
-          },
-        })
-
-      expect(response.status).toBe(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({
-          body: {
-            key: `attachments.${MOCK_ATTACHMENT_FIELD_ID}.encryptedFile.nonce`,
-            message: `"attachments.${MOCK_ATTACHMENT_FIELD_ID}.encryptedFile.nonce" is required`,
-          },
-        }),
-      )
-    })
-
-    it('should return 400 when attachment is missing public key', async () => {
-      const response = await request
-        .post(`/admin/forms/${mockForm._id}/preview/submissions/encrypt`)
-        .send({
-          ...MOCK_SUBMISSION_BODY,
-          attachments: {
-            [MOCK_ATTACHMENT_FIELD_ID]: {
-              encryptedFile: {
-                binary: '10101',
-                nonce: 'mockNonce',
-                // missing public key
-              },
-            },
-          },
-        })
-
-      expect(response.status).toBe(400)
-      expect(response.body).toEqual(
-        buildCelebrateError({
-          body: {
-            key: `attachments.${MOCK_ATTACHMENT_FIELD_ID}.encryptedFile.submissionPublicKey`,
-            message: `"attachments.${MOCK_ATTACHMENT_FIELD_ID}.encryptedFile.submissionPublicKey" is required`,
-          },
-        }),
-      )
     })
   })
 })

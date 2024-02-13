@@ -188,8 +188,19 @@ export const PreviewFormBanner = ({
             </Text>
           ) : (
             <Text {...textProps}>
-              You will not be able to make a test payment in Form Preview mode.
-              Open your form to make a test payment.
+              You will not be able to make a test payment, or view submitted
+              answers or attachments in Form Preview mode. Open your form to
+              make a test payment or form submission.
+            </Text>
+          )}
+        </Flex>
+      )}
+      {!isPaymentEnabled && (
+        <Flex backgroundColor="neutral.900">
+          {!(secretEnv === 'production') && (
+            <Text {...textProps}>
+              You will not be able to view submitted answers or attachments in
+              Form Preview mode. Open your form to test a form submission.
             </Text>
           )}
         </Flex>

@@ -72,9 +72,7 @@ import {
   mapRouteError as mapEmailSubmissionError,
   SubmissionEmailObj,
 } from '../../submission/email-submission/email-submission.util'
-import * as EncryptSubmissionMiddleware from '../../submission/encrypt-submission/encrypt-submission.middleware'
 import * as EncryptSubmissionService from '../../submission/encrypt-submission/encrypt-submission.service'
-import IncomingEncryptSubmission from '../../submission/encrypt-submission/IncomingEncryptSubmission.class'
 import ParsedResponsesObject from '../../submission/ParsedResponsesObject.class'
 import * as ReceiverMiddleware from '../../submission/receiver/receiver.middleware'
 import * as SubmissionService from '../../submission/submission.service'
@@ -1692,7 +1690,6 @@ export const submitEncryptPreview: ControllerHandler<
   const { formId } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
   // No need to process attachments as we don't do anything with them
-  const { encryptedContent, responses, version } = req.body
   const logMeta = {
     action: 'submitEncryptPreview',
     formId,
@@ -1718,41 +1715,12 @@ export const submitEncryptPreview: ControllerHandler<
         return error
       }),
     )
-    .andThen((form) =>
-      IncomingEncryptSubmission.init(form, responses, encryptedContent)
-        .map((incomingSubmission) => ({ incomingSubmission, form }))
-        .mapErr((error) => {
-          logger.error({
-            message: 'Error while processing incoming preview submission.',
-            meta: logMeta,
-            error,
-          })
-          return error
-        }),
-    )
-    .map(({ incomingSubmission, form }) => {
-      const submission =
-        EncryptSubmissionService.createEncryptSubmissionWithoutSave({
-          form,
-          encryptedContent: incomingSubmission.encryptedContent,
-          // Don't bother encrypting and signing mock variables for previews
-          verifiedContent: '',
-          version,
-        })
-
-      void SubmissionService.sendEmailConfirmations({
-        form,
-        submission,
-        recipientData: extractEmailConfirmationData(
-          incomingSubmission.responses,
-          form.form_fields,
-        ),
-      })
-
+    .map(() => {
+      const fakeSubmissionId = new ObjectId().toString()
       // Return the reply early to the submitter
       return res.json({
         message: 'Form submission successful.',
-        submissionId: submission._id,
+        submissionId: fakeSubmissionId,
       })
     })
     .mapErr((error) => {
@@ -1762,7 +1730,6 @@ export const submitEncryptPreview: ControllerHandler<
 }
 
 export const handleEncryptPreviewSubmission = [
-  EncryptSubmissionMiddleware.validateEncryptSubmissionParams,
   submitEncryptPreview,
 ] as ControllerHandler[]
 
