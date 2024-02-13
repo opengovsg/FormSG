@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import {
   FormSettings,
   FormWorkflow,
+  FormWorkflowDto,
   FormWorkflowStep,
   MultirespondentFormSettings,
 } from '~shared/types/form'
@@ -24,26 +24,25 @@ export const createWorkflowStep = (
   formId: string,
   formWorkflow: FormWorkflow,
   createStepBody: FormWorkflowStep,
-  //@ts-ignore
+  // @ts-expect-error Argument of type 'FormWorkflow' is not assignable to parameter of type 'FormWorkflowDto'.
 ) => updateFormWorkflow(formId, [...formWorkflow, createStepBody])
 
 export const deleteWorkflowStep = (
   formId: string,
-  formWorkflow: FormWorkflow,
+  formWorkflow: FormWorkflowDto,
   stepNumber: number,
 ) => {
   formWorkflow.splice(stepNumber, 1)
-  //@ts-ignore
   return updateFormWorkflow(formId, formWorkflow)
 }
 
 export const updateWorkflowStep = (
   formId: string,
-  formWorkflow: FormWorkflow,
+  formWorkflow: FormWorkflowDto,
   stepNumber: number,
   updateStepBody: FormWorkflowStep,
 ) => {
+  // @ts-expect-error Argument of type 'FormWorkflow' is not assignable to parameter of type 'FormWorkflowDto'.
   formWorkflow.splice(stepNumber, 1, updateStepBody)
-  //@ts-ignore
   return updateFormWorkflow(formId, formWorkflow)
 }
