@@ -30,7 +30,7 @@ export const InactiveStepBlock = ({
   const setToEditing = useAdminWorkflowStore(setToEditingSelector)
   const stateData = useAdminWorkflowStore(createOrEditDataSelector)
 
-  // Prevent editing logic if some other logic block is being edited.
+  // Prevent editing step if some other step is being edited.
   const isPreventEdit = useMemo(() => !!stateData, [stateData])
 
   const handleClick = useCallback(() => {
