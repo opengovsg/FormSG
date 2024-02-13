@@ -1,4 +1,4 @@
-import { isEqual } from 'lodash'
+import { isEqual, omit } from 'lodash'
 import moment from 'moment-timezone'
 import mongoose, { Types } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -411,7 +411,11 @@ export const validatePaymentProducts = (
     const productDefinition = formProductsDefinition.find(
       (product) => String(product._id) === String(productIdSubmitted),
     )
-    if (!productDefinition || !isEqual(productDefinition, product.data)) {
+
+    if (
+      !productDefinition ||
+      !isEqual(omit(productDefinition, '_id'), omit(product.data, '_id'))
+    ) {
       logger.error({
         message: 'Invalid payment product selected.',
         meta: logMeta,

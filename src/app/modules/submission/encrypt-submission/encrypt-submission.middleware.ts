@@ -9,6 +9,7 @@ import {
   FormResponseMode,
   isPaymentsProducts,
 } from '../../../../../shared/types'
+import { IPopulatedForm } from '../../../../types'
 import {
   EncryptAttachmentResponse,
   EncryptFormFieldResponse,
@@ -284,11 +285,13 @@ export const validatePaymentSubmission = async (
   res: Parameters<EncryptSubmissionMiddlewareHandlerType>[1],
   next: NextFunction,
 ) => {
-  const formDef = req.formsg.formDef
+  const formDefDoc = req.formsg.formDef as IPopulatedForm
+
+  const formDef = formDefDoc.toObject() // Convert to POJO
 
   const logMeta = {
     action: 'validatePaymentSubmission',
-    formId: formDef._id.toString(),
+    formId: String(formDef._id),
     ...createReqMeta(req),
   }
 
