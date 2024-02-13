@@ -1,3 +1,4 @@
+import { isEqual } from 'lodash'
 import moment from 'moment-timezone'
 import mongoose, { Types } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -404,20 +405,20 @@ export const validatePaymentProducts = (
   }
 
   for (const product of submittedPaymentProducts) {
-    // Check that every selected product is in the form definition
+    // Check that every selected product matches the form definition
+
     const productIdSubmitted = product.data._id
     const productDefinition = formProductsDefinition.find(
       (product) => String(product._id) === String(productIdSubmitted),
     )
-
-    if (!productDefinition) {
+    if (!productDefinition || !isEqual(productDefinition, product.data)) {
       logger.error({
         message: 'Invalid payment product selected.',
         meta: logMeta,
       })
       return err(
         new InvalidPaymentProductsError(
-          'Invalid product selected. Please refresh and try again.',
+          'There has been a change in the products available. Please refresh and try again.',
         ),
       )
     }
@@ -463,14 +464,6 @@ export const validatePaymentProducts = (
           ),
         )
       }
-    }
-
-    if (product.data.amount_cents !== productDefinition.amount_cents) {
-      return err(
-        new InvalidPaymentProductsError(
-          `Price has changed. Please refresh and try again.`,
-        ),
-      )
     }
   }
 
