@@ -10,10 +10,10 @@ import Input from '~components/Input'
 import Radio from '~components/Radio'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
+import { useAdminFormWorkflow } from '~features/admin-form/create/workflow/hooks/useAdminFormWorkflow'
 import { EditStepInputs } from '~features/admin-form/create/workflow/types'
 
-import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
-import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
+import { isFirstStepByStepNumber } from '../../utils/isFirstStepByStepNumber'
 
 interface RespondentBlockProps {
   stepNumber: number

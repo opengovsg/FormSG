@@ -1,7 +1,8 @@
 import { useLayoutEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { Box, Stack } from '@chakra-ui/react'
-import { merge } from 'lodash'
+
+import { FormWorkflowStep, WorkflowType } from '~shared/types'
 
 import { SaveActionGroup } from '~features/admin-form/create/logic/components/LogicContent/EditLogicBlock/EditCondition'
 
@@ -18,7 +19,7 @@ import { RespondentBlock } from './RespondentBlock'
 export interface EditLogicBlockProps {
   /** Sets default values of inputs if this is provided */
   defaultValues?: Partial<EditStepInputs>
-  onSubmit: (inputs: EditStepInputs) => void
+  onSubmit: (inputs: FormWorkflowStep) => void
 
   stepNumber: number
   submitButtonLabel: string
@@ -37,8 +38,7 @@ export const EditStepBlock = ({
   const setToInactive = useAdminWorkflowStore(setToInactiveSelector)
 
   const formMethods = useForm<EditStepInputs>({
-    defaultValues: merge({ emails: [] }, defaultValues),
-    shouldUnregister: true,
+    defaultValues,
   })
 
   const wrapperRef = useRef<HTMLDivElement | null>(null)
@@ -55,9 +55,33 @@ export const EditStepBlock = ({
     }
   }, [])
 
-  const isFirstStep = isFirstStepByStepNumber(stepNumber)
+  const handleSubmit = formMethods.handleSubmit((inputs: EditStepInputs) => {
+    let step: FormWorkflowStep
+    switch (inputs.workflow_type) {
+      case WorkflowType.Static: {
+        step = {
+          workflow_type: WorkflowType.Static,
+          emails: inputs.emails ? [inputs.emails] : [],
+        }
+        break
+      }
+      case WorkflowType.Dynamic: {
+        if (!inputs.field) return
+        step = {
+          workflow_type: WorkflowType.Dynamic,
+          field: inputs.field,
+        }
+        break
+      }
+      default: {
+        const _: never = inputs.workflow_type
+        throw new Error('Invalid workflow type')
+      }
+    }
+    onSubmit(step)
+  })
 
-  const handleSubmit = formMethods.handleSubmit((inputs) => onSubmit(inputs))
+  const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
   return (
     <Stack

@@ -36,4 +36,5 @@ export type MultirespondentSubmissionDto = {
   version: number
   responseMetadata?: ResponseMetadata
   workflowStep: number
+  responses: FieldResponsesV3
 }

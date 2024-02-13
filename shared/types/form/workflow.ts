@@ -1,12 +1,25 @@
+import { FormFieldDto } from '../field'
+
 export enum WorkflowType {
   Static = 'static',
   Dynamic = 'dynamic',
 }
 
-export type FormWorkflowStep = {
+export interface FormWorkflowStepBase {
   workflow_type: WorkflowType
+}
+
+export interface FormWorkflowStepStatic extends FormWorkflowStepBase {
+  workflow_type: WorkflowType.Static
   emails: string[]
 }
+
+export interface FormWorkflowStepDynamic extends FormWorkflowStepBase {
+  workflow_type: WorkflowType.Dynamic
+  field: FormFieldDto['_id']
+}
+
+export type FormWorkflowStep = FormWorkflowStepStatic | FormWorkflowStepDynamic
 
 export type FormWorkflow = Array<FormWorkflowStep>
 

@@ -38,7 +38,7 @@ export const ActiveLogicBlock = ({
       handleOpenDeleteModal={handleOpenDeleteModal}
       onSubmit={handleSubmit}
       defaultValues={logic}
-      submitButtonLabel="Save changes"
+      submitButtonLabel="Save"
     />
   )
 }

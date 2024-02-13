@@ -31,7 +31,7 @@ export const NewLogicBlock = ({
       isLoading={createLogicMutation.isLoading}
       defaultValues={_defaultValues}
       onSubmit={handleSubmit}
-      submitButtonLabel="Add logic"
+      submitButtonLabel="Add step"
     />
   )
 }
