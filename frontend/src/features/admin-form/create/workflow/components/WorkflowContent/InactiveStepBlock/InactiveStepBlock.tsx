@@ -6,6 +6,8 @@ import { FormWorkflowStepDto } from '~shared/types/form'
 
 import IconButton from '~components/IconButton'
 
+import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
+
 import {
   createOrEditDataSelector,
   setToEditingSelector,
@@ -13,8 +15,6 @@ import {
 } from '../../../adminWorkflowStore'
 import { StepLabel } from '../StepLabel'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
-
-import { EmailBadge } from './EmailBadge'
 
 interface InactiveStepBlockProps {
   stepNumber: number
@@ -82,7 +82,7 @@ export const InactiveStepBlock = ({
                 wrap="wrap"
               >
                 {step.emails.map((email) => (
-                  <EmailBadge>{email}</EmailBadge>
+                  <LogicBadge>{email}</LogicBadge>
                 ))}
               </Flex>
             )}

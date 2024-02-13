@@ -47,7 +47,7 @@ export const ActiveStepBlock = ({
       handleOpenDeleteModal={handleOpenDeleteModal}
       onSubmit={handleSubmit}
       defaultValues={{ email: step.emails[0] }}
-      submitButtonLabel="Save changes"
+      submitButtonLabel="Save step"
     />
   )
 }

@@ -11,6 +11,7 @@ export interface SaveActionGroupProps {
   handleSubmit: () => void
   submitButtonLabel?: string
   isLoading: boolean
+  ariaLabelName: string
 }
 
 export const SaveActionGroup = ({
@@ -19,6 +20,7 @@ export const SaveActionGroup = ({
   handleDelete,
   handleSubmit,
   isLoading,
+  ariaLabelName,
 }: SaveActionGroupProps): JSX.Element => {
   const isMobile = useIsMobile()
 
@@ -35,7 +37,7 @@ export const SaveActionGroup = ({
         <IconButton
           variant="clear"
           colorScheme="danger"
-          aria-label="Delete logic"
+          aria-label={`Delete ${ariaLabelName}`}
           icon={<BiTrash />}
           onClick={handleDelete}
           isDisabled={isLoading}

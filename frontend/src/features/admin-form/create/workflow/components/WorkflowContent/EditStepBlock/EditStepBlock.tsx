@@ -1,31 +1,40 @@
 import { useLayoutEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
-import { Box, Divider, Stack } from '@chakra-ui/react'
+import { Box, Stack } from '@chakra-ui/react'
 import { merge } from 'lodash'
+
+import { SaveActionGroup } from '~features/admin-form/create/logic/components/LogicContent/EditLogicBlock/EditCondition'
 
 import {
   setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
-import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { EditStepInputs } from '../../../types'
 import { StepLabel } from '../StepLabel'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
-import { RespondentBlock, SaveActionGroup } from './components'
+import { RespondentBlock } from './RespondentBlock'
 
-export interface UseEditStepBlockProps {
+export interface EditLogicBlockProps {
   /** Sets default values of inputs if this is provided */
   defaultValues?: Partial<EditStepInputs>
   onSubmit: (inputs: EditStepInputs) => void
+
+  stepNumber: number
+  submitButtonLabel: string
+  handleOpenDeleteModal?: () => void
+  isLoading: boolean
 }
 
-export const useEditStepBlock = ({
-  defaultValues,
+export const EditStepBlock = ({
+  stepNumber,
   onSubmit,
-}: UseEditStepBlockProps) => {
+  defaultValues,
+  isLoading,
+  submitButtonLabel,
+  handleOpenDeleteModal,
+}: EditLogicBlockProps) => {
   const setToInactive = useAdminWorkflowStore(setToInactiveSelector)
-  const { formWorkflow } = useAdminFormWorkflow()
 
   const formMethods = useForm<EditStepInputs>({
     defaultValues: merge({ emails: [] }, defaultValues),
@@ -46,36 +55,9 @@ export const useEditStepBlock = ({
     }
   }, [])
 
-  const handleSubmit = formMethods.handleSubmit((inputs) => onSubmit(inputs))
-
-  return {
-    formWorkflow,
-    formMethods,
-    handleSubmit,
-    wrapperRef,
-    setToInactive,
-  }
-}
-
-export interface EditLogicBlockProps extends UseEditStepBlockProps {
-  stepNumber: number
-  submitButtonLabel: string
-  handleOpenDeleteModal?: () => void
-  isLoading: boolean
-}
-
-export const EditStepBlock = ({
-  stepNumber,
-  onSubmit,
-  defaultValues,
-  isLoading,
-  submitButtonLabel,
-  handleOpenDeleteModal,
-}: EditLogicBlockProps) => {
-  const { formMethods, wrapperRef, handleSubmit, setToInactive } =
-    useEditStepBlock({ defaultValues, onSubmit })
-
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
+
+  const handleSubmit = formMethods.handleSubmit((inputs) => onSubmit(inputs))
 
   return (
     <Stack
@@ -87,9 +69,13 @@ export const EditStepBlock = ({
       boxShadow="0 0 0 1px var(--chakra-colors-primary-500)"
       transitionProperty="common"
       transitionDuration="normal"
-      divider={<Divider />}
     >
-      <Box py="1.5rem" px={{ base: '1.5rem', md: '2rem' }}>
+      <Box
+        py="1.5rem"
+        px={{ base: '1.5rem', md: '2rem' }}
+        borderBottomWidth="1px"
+        borderBottomColor="secondary.200"
+      >
         <StepLabel stepNumber={stepNumber} />
       </Box>
       <RespondentBlock
@@ -103,6 +89,7 @@ export const EditStepBlock = ({
         handleDelete={isFirstStep ? undefined : handleOpenDeleteModal}
         handleCancel={setToInactive}
         submitButtonLabel={submitButtonLabel}
+        ariaLabelName="step"
       />
     </Stack>
   )
