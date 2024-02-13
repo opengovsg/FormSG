@@ -18,13 +18,9 @@ import {
 } from '~services/ApiService'
 
 import { augmentWithMyInfoDisplayValue } from '~features/myinfo/utils'
-import {
-  SubmitEmailFormArgs,
-  SubmitStorageFormArgs,
-} from '~features/public-form/PublicFormService'
+import { SubmitEmailFormArgs } from '~features/public-form/PublicFormService'
 import {
   createClearSubmissionFormData,
-  createEncryptedSubmissionData,
   filterHiddenInputs,
 } from '~features/public-form/utils'
 
@@ -185,11 +181,11 @@ export const submitStorageModeFormPreview = async ({
 }: {
   formId: string
 }) => {
-  const formData = {}
+  const emptyFormData = {}
 
   return ApiService.post<SubmissionResponseDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/storage`,
-    formData,
+    emptyFormData,
   ).then(({ data }) => data)
 }
 
