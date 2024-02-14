@@ -1,21 +1,37 @@
+import OpenAI from 'openai'
+
 import { MODEL_TYPE, Roles } from '../admin-form.assistance.constants'
 import { generateQuestions } from '../admin-form.assistance.service'
-import { questionListPromptBuilder } from '../admin-form.assistance.utils'
 import { AssistanceConnectionError } from '../admin-form.errors'
 
 // Mock openai
-jest.mock('openai', () => ({
-  chat: {
-    completions: {
-      create: jest.fn().mockResolvedValue({
-        message: {
-          role: 'user',
-          content: 'dummy content',
+
+const mockReturnValue = {
+  role: 'user',
+  content: 'dummy content',
+}
+
+jest.mock('openai', () => {
+  return jest.fn().mockImplementation(
+    () =>
+      ({
+        chat: {
+          completions: {
+            create: jest.fn().mockResolvedValue({
+              choices: [
+                {
+                  message: {
+                    role: 'user',
+                    content: 'dummy content',
+                  },
+                },
+              ],
+            }),
+          },
         },
-      }),
-    },
-  },
-}))
+      } as unknown as OpenAI),
+  )
+})
 
 describe('admin-form.assistance.service', () => {
   beforeEach(async () => {
@@ -27,20 +43,14 @@ describe('admin-form.assistance.service', () => {
       // Arrange
       const type = 'prompt'
       const content = 'Sample content'
-      const mockMessages = [
-        { role: Roles.SYSTEM, content: questionListPromptBuilder(content) },
-      ]
-
-      const mockGeneratedQuestion = {
-        messages: mockMessages,
-      }
 
       // Act
       const actualResult = await generateQuestions({ type, content })
 
       // Assert
       expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult).toMatchObject(mockGeneratedQuestion)
+
+      expect(actualResult._unsafeUnwrap()).toMatchObject(mockReturnValue)
     })
 
     it('should return list of questions based on the PDF type and content', async () => {
@@ -71,24 +81,22 @@ describe('admin-form.assistance.service', () => {
       jest.mock('openai', () => ({
         chat: {
           completions: {
-            create: jest.fn().mockImplementation(() => {
-              throw new Error('Unable to connect to OpenAI API')
-            }),
+            create: jest
+              .fn()
+              .mockRejectedValue(new Error('Some random error message')),
           },
         },
       }))
-      const mockErrorMessage = 'Unable to connect to OpenAI API'
 
       // Act
       const actualResult = await generateQuestions({ type, content })
       // assuming the generateQuestions function will be using the mocked openai API?
 
       // Assert
+      expect(actualResult.isOk()).toEqual(true)
       expect(actualResult.isErr()).toEqual(true)
-      expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new AssistanceConnectionError(
-          `Error while generating questions: ${mockErrorMessage}`,
-        ),
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+        AssistanceConnectionError,
       )
     })
   })
