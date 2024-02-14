@@ -17,6 +17,7 @@ import { useDraggable } from '~hooks/useDraggable'
 
 import { useAdminFormCollaborators } from '../common/queries'
 
+import { TranslationListSection } from './components/MultiLanguageSection/TranslationListSection'
 import { SettingsTab } from './components/SettingsTab'
 import { SettingsAuthPage } from './SettingsAuthPage'
 import { SettingsGeneralPage } from './SettingsGeneralPage'
@@ -35,7 +36,7 @@ const settingsTabsOrder = [
 ]
 
 export const SettingsPage = (): JSX.Element => {
-  const { formId, settingsTab } = useParams()
+  const { formId, settingsTab, language } = useParams()
 
   if (!formId) throw new Error('No formId provided')
 
@@ -130,7 +131,8 @@ export const SettingsPage = (): JSX.Element => {
             <SettingsPaymentsPage />
           </TabPanel>
           <TabPanel>
-            <SettingsMultiLangPage />
+            {!language && <SettingsMultiLangPage />}
+            {language && <TranslationListSection language={language} />}
           </TabPanel>
         </TabPanels>
         <Spacer />
