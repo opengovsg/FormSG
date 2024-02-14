@@ -1,23 +1,32 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
+import OpenAI from 'openai'
 
 import { handleGenerateQuestions } from '../admin-form.assistance.controller'
-import { generateQuestions } from '../admin-form.assistance.service'
 
 // Mock openai
-jest.mock('openai', () => ({
-  chat: {
+jest.mock('openai', () => jest.fn())
+const MockedOpenAIClient = jest.mocked(OpenAI)
+
+const mockReturnValue = {
+  role: 'user',
+  content: 'dummy content',
+}
+
+beforeEach(() => {
+  jest.clearAllMocks()
+  MockedOpenAIClient.prototype.chat = {
     completions: {
       create: jest.fn().mockResolvedValue({
-        message: {
-          role: 'user',
-          content: 'dummy content',
-        },
+        choices: [
+          {
+            message: mockReturnValue,
+          },
+        ],
       }),
     },
-  },
-}))
+  } as any
+})
 
 describe('admin-form.assistance.controller', () => {
   beforeEach(() => jest.clearAllMocks())
@@ -33,24 +42,21 @@ describe('admin-form.assistance.controller', () => {
       })
       const mockRes = expressHandler.mockResponse({
         status: jest.fn().mockReturnThis(),
-        json: jest.fn(),
-      })
-      // Mock generateQuestions function
-      jest.spyOn(generateQuestions, 'generateQuestions').mockResolvedValue({
-        role: 'user',
-        content: 'mock content',
+        json: jest.fn().mockResolvedValue({
+          result: {
+            value: 'sample value',
+          },
+        }),
       })
 
       // Act
-      handleGenerateQuestions(MOCK_REQ, mockRes)
+      await handleGenerateQuestions(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(200)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        role: 'user',
-        content: 'mock content',
-      })
+      expect(mockRes.json).toHaveBeenCalledWith(mockReturnValue)
     })
+
     it('should return 500 when openai server error occurs', async () => {
       // Arrange
       const MOCK_REQ = expressHandler.mockRequest({
@@ -61,24 +67,25 @@ describe('admin-form.assistance.controller', () => {
       })
       const mockRes = expressHandler.mockResponse({
         status: jest.fn().mockReturnThis(),
-        json: jest.fn(),
+        json: jest.fn().mockResolvedValue({
+          result: {
+            value: 'sample value',
+          },
+        }),
       })
 
-      jest
-        .spyOn(generateQuestions, 'generateQuestions')
-        .mockRejectedValue(new Error('OpenAI server error'))
+      // Mock OpenAI API throwing an error
+      MockedOpenAIClient.prototype.chat.completions.create = jest
+        .fn()
+        .mockRejectedValue(new Error('Some random error message'))
 
       // Act
-      handleGenerateQuestions(
-        MOCK_REQ.body.type,
-        MOCK_REQ.body.content,
-        mockRes,
-      )
+      await handleGenerateQuestions(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(500)
       expect(mockRes.json).toHaveBeenCalledWith({
-        message: 'OpenAI server error',
+        message: 'Error while connecting to OpenAI',
       })
     })
   })
