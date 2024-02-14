@@ -5,7 +5,7 @@ import { errAsync } from 'neverthrow'
 import {
   ErrorDto,
   FormAuthType,
-  FormWorkflowSettings,
+  FormWorkflowDto,
   MultirespondentSubmissionDto,
   SubmissionType,
 } from '../../../../../shared/types'
@@ -272,7 +272,7 @@ const runMultirespondentWorkflow = async ({
   submissionId,
 }: {
   nextWorkflowStep: number
-  formWorkflow: FormWorkflowSettings
+  formWorkflow: FormWorkflowDto
   formTitle: string
   responseUrl: string
   formId: string

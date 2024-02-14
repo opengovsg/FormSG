@@ -155,6 +155,7 @@ export const EditLogicBlock = ({
         handleDelete={handleOpenDeleteModal}
         handleCancel={setToInactive}
         submitButtonLabel={submitButtonLabel}
+        ariaLabelName="logic"
       />
     </EditConditionWrapper>
   )

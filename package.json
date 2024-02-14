@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.108.0",
+  "version": "6.109.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -121,7 +121,7 @@
     "libphonenumber-js": "^1.10.48",
     "lodash": "^4.17.21",
     "moment-timezone": "0.5.41",
-    "mongodb-memory-server-core": "^7.6.3",
+    "mongodb-memory-server-core": "^9.1.6",
     "mongodb-uri": "^0.9.7",
     "mongoose": "^6.12.0",
     "multiparty": ">=4.2.3",

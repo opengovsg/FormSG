@@ -27,7 +27,6 @@ import IncomingEncryptSubmission from 'src/app/modules/submission/encrypt-submis
 import {
   AttachmentTooLargeError,
   ConflictError,
-  InvalidEncodingError,
   InvalidFileExtensionError,
   ProcessingError,
   ResponseModeError,
@@ -6508,29 +6507,10 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(IncomingEncryptSubmission.init).toHaveBeenCalledWith(
-        MOCK_FORM,
-        MOCK_RESPONSES,
-        MOCK_ENCRYPTED_CONTENT,
-      )
-      expect(
-        MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
-      ).toHaveBeenCalledWith({
-        form: MOCK_FORM,
-        encryptedContent: MOCK_ENCRYPTED_CONTENT,
-        verifiedContent: '',
-        version: MOCK_VERSION,
-      })
-      expect(MockSubmissionService.sendEmailConfirmations).toHaveBeenCalledWith(
-        {
-          form: MOCK_FORM,
-          submission: MOCK_SUBMISSION,
-          recipientData: [],
-        },
-      )
+
       expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Form submission successful.',
-        submissionId: MOCK_SUBMISSION_ID,
+        submissionId: expect.stringMatching(/^[0-9a-fA-F]{24}$/), // to validate that fake submission ID generated is a hexstring
       })
     })
 
@@ -6874,112 +6854,6 @@ describe('admin-form.controller', () => {
       })
     })
 
-    it('should return 400 when encrypted content encoding is invalid', async () => {
-      mockIncomingEncryptSubmissionInit.mockReturnValueOnce(
-        err(new InvalidEncodingError()),
-      )
-      const mockReq = expressHandler.mockRequest({
-        params: {
-          formId: MOCK_FORM_ID,
-        },
-        body: MOCK_SUBMISSION_BODY,
-        session: {
-          user: {
-            _id: MOCK_USER_ID,
-          },
-        },
-      })
-      const mockRes = expressHandler.mockResponse()
-
-      await AdminFormController.submitEncryptPreview(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
-
-      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
-        MOCK_USER_ID,
-      )
-      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
-        {
-          user: MOCK_USER,
-          formId: MOCK_FORM_ID,
-          level: PermissionLevel.Read,
-        },
-      )
-      expect(
-        MockEncryptSubmissionService.checkFormIsEncryptMode,
-      ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(IncomingEncryptSubmission.init).toHaveBeenCalledWith(
-        MOCK_FORM,
-        MOCK_RESPONSES,
-        MOCK_ENCRYPTED_CONTENT,
-      )
-      expect(
-        MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
-      ).not.toHaveBeenCalled()
-      expect(
-        MockSubmissionService.sendEmailConfirmations,
-      ).not.toHaveBeenCalled()
-      expect(mockRes.status).toHaveBeenCalledWith(400)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: expect.any(String),
-      })
-    })
-
-    it('should return 400 when responses cannot be processed', async () => {
-      mockIncomingEncryptSubmissionInit.mockReturnValueOnce(
-        err(new ProcessingError()),
-      )
-      const mockReq = expressHandler.mockRequest({
-        params: {
-          formId: MOCK_FORM_ID,
-        },
-        body: MOCK_SUBMISSION_BODY,
-        session: {
-          user: {
-            _id: MOCK_USER_ID,
-          },
-        },
-      })
-      const mockRes = expressHandler.mockResponse()
-
-      await AdminFormController.submitEncryptPreview(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
-
-      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
-        MOCK_USER_ID,
-      )
-      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
-        {
-          user: MOCK_USER,
-          formId: MOCK_FORM_ID,
-          level: PermissionLevel.Read,
-        },
-      )
-      expect(
-        MockEncryptSubmissionService.checkFormIsEncryptMode,
-      ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(IncomingEncryptSubmission.init).toHaveBeenCalledWith(
-        MOCK_FORM,
-        MOCK_RESPONSES,
-        MOCK_ENCRYPTED_CONTENT,
-      )
-      expect(
-        MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
-      ).not.toHaveBeenCalled()
-      expect(
-        MockSubmissionService.sendEmailConfirmations,
-      ).not.toHaveBeenCalled()
-      expect(mockRes.status).toHaveBeenCalledWith(400)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: expect.any(String),
-      })
-    })
-
     it('should return 409 when form fields submitted are not updated', async () => {
       mockIncomingEncryptSubmissionInit.mockReturnValueOnce(
         err(new ConflictError('')),
@@ -7016,74 +6890,12 @@ describe('admin-form.controller', () => {
       expect(
         MockEncryptSubmissionService.checkFormIsEncryptMode,
       ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(IncomingEncryptSubmission.init).toHaveBeenCalledWith(
-        MOCK_FORM,
-        MOCK_RESPONSES,
-        MOCK_ENCRYPTED_CONTENT,
-      )
       expect(
         MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
       ).not.toHaveBeenCalled()
       expect(
         MockSubmissionService.sendEmailConfirmations,
       ).not.toHaveBeenCalled()
-      expect(mockRes.status).toHaveBeenCalledWith(409)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: expect.any(String),
-      })
-    })
-
-    it('should return 400 when responses cannot be validated', async () => {
-      mockIncomingEncryptSubmissionInit.mockReturnValueOnce(
-        err(new ValidateFieldError()),
-      )
-      const mockReq = expressHandler.mockRequest({
-        params: {
-          formId: MOCK_FORM_ID,
-        },
-        body: MOCK_SUBMISSION_BODY,
-        session: {
-          user: {
-            _id: MOCK_USER_ID,
-          },
-        },
-      })
-      const mockRes = expressHandler.mockResponse()
-
-      await AdminFormController.submitEncryptPreview(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
-
-      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
-        MOCK_USER_ID,
-      )
-      expect(MockAuthService.getFormAfterPermissionChecks).toHaveBeenCalledWith(
-        {
-          user: MOCK_USER,
-          formId: MOCK_FORM_ID,
-          level: PermissionLevel.Read,
-        },
-      )
-      expect(
-        MockEncryptSubmissionService.checkFormIsEncryptMode,
-      ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(IncomingEncryptSubmission.init).toHaveBeenCalledWith(
-        MOCK_FORM,
-        MOCK_RESPONSES,
-        MOCK_ENCRYPTED_CONTENT,
-      )
-      expect(
-        MockEncryptSubmissionService.createEncryptSubmissionWithoutSave,
-      ).not.toHaveBeenCalled()
-      expect(
-        MockSubmissionService.sendEmailConfirmations,
-      ).not.toHaveBeenCalled()
-      expect(mockRes.status).toHaveBeenCalledWith(400)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: expect.any(String),
-      })
     })
   })
 

@@ -39,7 +39,6 @@ export const PublicFormPage = (): JSX.Element => {
             <FormFields />
             <FormIssueFeedback />
             <FormEndPage />
-
             <FormFooter />
           </PublicFormWrapper>
         </Flex>
