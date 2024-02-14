@@ -21,7 +21,13 @@ export const ParagraphField = ({
     {
       editable: false,
       content: schema.description,
-      extensions: [StarterKit, Link],
+      extensions: [
+        StarterKit.configure({
+          blockquote: false,
+          heading: false,
+        }),
+        Link,
+      ],
     },
     [schema],
   )

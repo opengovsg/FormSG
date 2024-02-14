@@ -26,9 +26,7 @@ export const RichTextEditor = ({
         extensions={[
           StarterKit.configure({
             blockquote: false,
-            heading: {
-              levels: [2],
-            },
+            heading: false,
           }),
           Link,
           Placeholder.configure({
