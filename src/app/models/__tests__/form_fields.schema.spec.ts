@@ -183,7 +183,7 @@ describe('Form Field Schema', () => {
           fieldType: BasicField.Email,
           isVerifiable: true,
           hasAllowedEmailDomains: true,
-          allowedEmailDomains: ['@*.gov.sg', '@*.example.com'],
+          allowedEmailDomains: ['@*.gov.sg', '@*.asia'],
         })
 
         // Assert
