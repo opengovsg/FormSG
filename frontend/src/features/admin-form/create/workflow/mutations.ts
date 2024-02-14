@@ -57,8 +57,7 @@ export const useWorkflowMutations = () => {
           ) {
             throw new Error('Invalid response mode')
           }
-          prev.workflow = newSettings.workflow
-          return prev
+          return { ...prev, workflow: newSettings.workflow }
         })
         toast({
           description: 'The step was successfully created.',
@@ -84,8 +83,7 @@ export const useWorkflowMutations = () => {
           ) {
             throw new Error('Invalid response mode')
           }
-          prev.workflow = newSettings.workflow
-          return prev
+          return { ...prev, workflow: newSettings.workflow }
         })
         toast({
           description: 'The step was successfully deleted.',
@@ -116,8 +114,7 @@ export const useWorkflowMutations = () => {
           ) {
             throw new Error('Invalid response mode')
           }
-          prev.workflow = newSettings.workflow
-          return prev
+          return { ...prev, workflow: newSettings.workflow }
         })
         toast({
           description: 'The step was successfully updated.',
