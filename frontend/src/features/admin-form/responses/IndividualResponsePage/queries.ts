@@ -1,9 +1,11 @@
 import { useQuery } from 'react-query'
 import { useParams } from 'react-router-dom'
 
+import { FormResponseMode } from '~shared/types'
+
 import { useToast } from '~hooks/useToast'
 
-import { useUser } from '~features/user/queries'
+import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { getDecryptedSubmissionById } from '../AdminSubmissionsService'
 import { adminFormResponsesKeys } from '../queries'
@@ -18,8 +20,7 @@ export const useIndividualSubmission = () => {
   })
 
   const { formId, submissionId } = useParams()
-  const { user } = useUser()
-  const displayWorkflow = user?.betaFlags?.mrf
+  const { data: { responseMode } = {} } = useAdminForm()
 
   if (!formId || !submissionId) {
     throw new Error('No formId or submissionId provided')
@@ -31,8 +32,12 @@ export const useIndividualSubmission = () => {
     adminFormResponsesKeys.individual(formId, submissionId),
     () => getDecryptedSubmissionById({ formId, submissionId, secretKey }),
     {
-      // For users with MRF enabled, will always fetch the response. Otherwise, response Will never update once fetched.
-      staleTime: displayWorkflow ? 0 : Infinity,
+      staleTime:
+        responseMode === FormResponseMode.Multirespondent
+          ? // For MRFs, will always fetch the response.
+            0
+          : // Otherwise, response Will never update once fetched.
+            Infinity,
       enabled: !!secretKey,
       onError: (e) => {
         toast({
