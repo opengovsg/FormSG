@@ -29,10 +29,10 @@ export const RespondentBlock = ({
   const {
     formState: { errors },
     register,
-    watch,
+    getValues,
   } = formMethods
 
-  const selectedWorkflowType = watch('workflow_type')
+  const defaultWorkflowType = getValues('workflow_type')
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
@@ -55,7 +55,7 @@ export const RespondentBlock = ({
             isRequired
             isInvalid={!!errors.workflow_type}
           >
-            <Radio.RadioGroup defaultValue={selectedWorkflowType}>
+            <Radio.RadioGroup defaultValue={defaultWorkflowType}>
               <Flex flexDir="row">
                 <Radio
                   allowDeselect={false}
