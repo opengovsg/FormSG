@@ -1,13 +1,10 @@
-import React from 'react'
 import { useCurrentEditor } from '@tiptap/react'
 
 import { BxsBold } from '~assets/icons/BxsBold'
-import { BxsHeading } from '~assets/icons/BxsHeading'
 import { BxsItalic } from '~assets/icons/BxsItalic'
+import { BxsLink } from '~assets/icons/BxsLink'
 import { BxsOrderedList } from '~assets/icons/BxsOrderedList'
-import { BxsRedo } from '~assets/icons/BxsRedo'
 import { BxsStrikethrough } from '~assets/icons/BxsStrikethrough'
-import { BxsUndo } from '~assets/icons/BxsUndo'
 import { BxsUnorderedList } from '~assets/icons/BxsUnorderedList'
 import ButtonGroup from '~components/ButtonGroup'
 
@@ -73,6 +70,12 @@ export const MenuBar = () => {
         disabled={!editor.can().chain().focus().toggleStrike().run()}
         active={editor.isActive('strike')}
         icon={<BxsStrikethrough />}
+      />
+      <IconButton
+        ariaLabel="Link"
+        onClick={() => console.log('Link clicked')}
+        disabled={true}
+        icon={<BxsLink />}
       />
       <IconButton
         ariaLabel="Unordered List"

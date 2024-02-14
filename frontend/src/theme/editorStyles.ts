@@ -21,6 +21,9 @@ export const editorStyles = {
   '.tiptap a:visited': {
     color: 'purple',
   },
+  '.tiptap a:hover': {
+    cursor: 'pointer',
+  },
   // Display placeholder for first line in an empty editor
   // See: https://tiptap.dev/docs/editor/api/extensions/placeholder#placeholder
   '.tiptap p.is-editor-empty:first-child::before': {
