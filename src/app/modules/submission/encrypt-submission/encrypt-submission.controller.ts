@@ -630,6 +630,7 @@ export const handleStorageSubmission = [
   EncryptSubmissionMiddleware.createFormsgAndRetrieveForm,
   EncryptSubmissionMiddleware.scanAndRetrieveAttachments,
   EncryptSubmissionMiddleware.validateStorageSubmission,
+  EncryptSubmissionMiddleware.validatePaymentSubmission,
   EncryptSubmissionMiddleware.encryptSubmission,
   submitEncryptModeForm,
 ] as ControllerHandler[]
