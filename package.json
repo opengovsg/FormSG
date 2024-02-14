@@ -24,7 +24,7 @@
     ]
   },
   "scripts": {
-    "postinstall": "npm run postinstall:frontend && npm run postinstall:shared && npm run postinstall:virus-scanner",
+    "postinstall": "npm run postinstall:frontend && npm run postinstall:shared",
     "test": "npm run test:backend && npm run test:frontend",
     "test:backend": "env-cmd -f __tests__/setup/.test-env jest",
     "test:backend:ci": "env-cmd -f __tests__/setup/.test-env jest --maxWorkers=2 --logHeapUsage --workerIdleMemoryLimit=0.2",
@@ -52,8 +52,7 @@
     "pre-commit": "lint-staged",
     "storybook": "npm run --prefix frontend storybook",
     "postinstall:frontend": "npm --prefix frontend install",
-    "postinstall:shared": "npm --prefix shared install",
-    "postinstall:virus-scanner": "npm --prefix serverless/virus-scanner install"
+    "postinstall:shared": "npm --prefix shared install"
   },
   "dependencies": {
     "@aws-sdk/client-cloudwatch-logs": "^3.347.1",
