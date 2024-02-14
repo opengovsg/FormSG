@@ -459,6 +459,63 @@ describe('Email field validation', () => {
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
+
+  it('should allow email addresses with wildcard domains when allowedEmailDomains includes a wildcard domain', () => {
+    const formField = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      globalId: 'random',
+      title: 'random',
+      required: true,
+      isVerifiable: false,
+      hasAllowedEmailDomains: true,
+      allowedEmailDomains: ['@*.gov.sg'],
+    } as OmitUnusedValidatorProps<IEmailFieldSchema>
+    const response = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      question: 'random',
+      isVisible: true,
+      answer: 'user@agency.gov.sg',
+    } as SingleAnswerFieldResponse
+    const validateResult = validateField(
+      'formId',
+      formField,
+      response as ProcessedFieldResponse,
+    )
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should not allow email addresses with domains not matching the wildcard when allowedEmailDomains includes a wildcard domain', () => {
+    const formField = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      globalId: 'random',
+      title: 'random',
+      required: true,
+      isVerifiable: false,
+      hasAllowedEmailDomains: true,
+      allowedEmailDomains: ['@*.gov.sg'],
+    } as OmitUnusedValidatorProps<IEmailFieldSchema>
+    const response = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      question: 'random',
+      isVisible: true,
+      answer: 'user@company.com.sg',
+    } as SingleAnswerFieldResponse
+    const validateResult = validateField(
+      'formId',
+      formField,
+      response as ProcessedFieldResponse,
+    )
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
+  })
+
   it('should disallow responses submitted for hidden fields', () => {
     const formField = {
       _id: 'abc123',
