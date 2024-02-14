@@ -4,6 +4,7 @@ import { breakpoints } from './foundations/breakpoints'
 import { colours } from './foundations/colours'
 import { shadows } from './foundations/shadows'
 import { components } from './components'
+import { editorStyles } from './editorStyles'
 import { textStyles } from './textStyles'
 
 export const theme = extendTheme({
@@ -37,6 +38,7 @@ export const theme = extendTheme({
         outline: 'none',
       },
       '.focus-visible': { outline: 'none' },
+      ...editorStyles,
     },
   },
   colors: colours,
