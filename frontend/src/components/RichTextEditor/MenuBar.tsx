@@ -75,15 +75,6 @@ export const MenuBar = () => {
         icon={<BxsStrikethrough />}
       />
       <IconButton
-        ariaLabel="Heading"
-        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        disabled={
-          !editor.can().chain().focus().toggleHeading({ level: 2 }).run()
-        }
-        active={editor.isActive('heading', { level: 2 })}
-        icon={<BxsHeading />}
-      />
-      <IconButton
         ariaLabel="Unordered List"
         onClick={() => editor.chain().focus().toggleBulletList().run()}
         disabled={!editor.can().chain().focus().toggleBulletList().run()}
@@ -96,18 +87,6 @@ export const MenuBar = () => {
         disabled={!editor.can().chain().focus().toggleOrderedList().run()}
         active={editor.isActive('orderedList')}
         icon={<BxsOrderedList />}
-      />
-      <IconButton
-        ariaLabel="Undo"
-        onClick={() => editor.chain().focus().undo().run()}
-        disabled={!editor.can().chain().focus().undo().run()}
-        icon={<BxsUndo />}
-      />
-      <IconButton
-        ariaLabel="Redo"
-        onClick={() => editor.chain().focus().redo().run()}
-        disabled={!editor.can().chain().focus().redo().run()}
-        icon={<BxsRedo />}
       />
     </ButtonGroup>
   )
