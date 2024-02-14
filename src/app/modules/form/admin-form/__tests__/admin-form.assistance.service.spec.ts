@@ -1,6 +1,9 @@
 import OpenAI from 'openai'
 
-import { generateQuestions } from '../admin-form.assistance.service'
+import {
+  generateFormFields,
+  generateQuestions,
+} from '../admin-form.assistance.service'
 import { AssistanceConnectionError } from '../admin-form.errors'
 
 // Mock openai
@@ -78,7 +81,38 @@ describe('admin-form.assistance.service', () => {
     })
   })
 
-  // describe('generateFormFields', () => {
-  //   it('should return a list of form fields based on the prompt type and content', async () => {})
-  // })
+  describe('generateFormFields', () => {
+    it('should return a list of questions', async () => {
+      // Arrange
+      const questions = 'sample questions'
+
+      // Act
+      const actualResult = await generateFormFields(questions)
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+
+      expect(actualResult._unsafeUnwrap()).toMatchObject(mockReturnValue)
+    })
+
+    it('should return AssistanceConnectionError when unable to connect to OpenAI API', async () => {
+      // Arrange
+      const questions = 'sample questions'
+
+      // Mock OpenAI API throwing an error
+      MockedOpenAIClient.prototype.chat.completions.create = jest
+        .fn()
+        .mockRejectedValue(new Error('Some random error message'))
+
+      // Act
+      const actualResult = await generateFormFields(questions)
+      // assuming the generateQuestions function will be using the mocked openai API?
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+        AssistanceConnectionError,
+      )
+    })
+  })
 })
