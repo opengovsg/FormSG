@@ -2,7 +2,7 @@ import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import moment from 'moment-timezone'
 import mongoose, { Query } from 'mongoose'
-import { PaymentStatus, Product, ProductItem } from 'shared/types'
+import { PaymentStatus, Product, ProductId, ProductItem } from 'shared/types'
 
 import getAgencyModel from 'src/app/models/agency.server.model'
 import getPaymentModel from 'src/app/models/payment.server.model'
@@ -131,8 +131,8 @@ describe('payments.service', () => {
         {
           data: {
             ...mockValidProduct,
-            _id: new ObjectId(),
-          } as unknown as Product,
+            _id: new ObjectId() as unknown as ProductId,
+          },
           quantity: 1,
           selected: true,
         },
@@ -166,13 +166,7 @@ describe('payments.service', () => {
           data: {
             ...mockValidProduct,
             description: 'some other description',
-            _id: new ObjectId(),
-          } as unknown as Product,
-          quantity: 1,
-          selected: true,
-        },
-        {
-          data: mockValidProduct,
+          },
           quantity: 1,
           selected: true,
         },
@@ -201,13 +195,7 @@ describe('payments.service', () => {
           data: {
             ...mockValidProduct,
             name: 'some other name',
-            _id: new ObjectId(),
-          } as unknown as Product,
-          quantity: 1,
-          selected: true,
-        },
-        {
-          data: mockValidProduct,
+          },
           quantity: 1,
           selected: true,
         },
@@ -236,13 +224,7 @@ describe('payments.service', () => {
           data: {
             ...mockValidProduct,
             multi_qty: true,
-            _id: new ObjectId(),
-          } as unknown as Product,
-          quantity: 1,
-          selected: true,
-        },
-        {
-          data: mockValidProduct,
+          },
           quantity: 1,
           selected: true,
         },
@@ -271,13 +253,7 @@ describe('payments.service', () => {
           data: {
             ...mockValidProduct,
             max_qty: 5,
-            _id: new ObjectId(),
-          } as unknown as Product,
-          quantity: 1,
-          selected: true,
-        },
-        {
-          data: mockValidProduct,
+          },
           quantity: 1,
           selected: true,
         },
