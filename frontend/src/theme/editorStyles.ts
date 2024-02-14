@@ -6,9 +6,13 @@ export const editorStyles = {
     padding: '1em',
   },
   '.tiptap ul, ol': {
-    'margin-block-start': '1em',
-    'margin-block-end': '1em',
-    'padding-inline-start': '40px',
+    all: 'revert',
+  },
+  '.tiptap ol ol': {
+    'list-style-type': 'lower-alpha',
+  },
+  '.tiptap ol ol ol': {
+    'list-style-type': 'lower-roman',
   },
   '.tiptap a': {
     color: 'blue',
@@ -16,16 +20,6 @@ export const editorStyles = {
   },
   '.tiptap a:visited': {
     color: 'purple',
-  },
-  '.tiptap h2, h3, h4': {
-    fontSize: 'revert',
-    fontWeight: 'bolder',
-  },
-  // For H1, we can't use fontSize: revert due to how H1 font-size is calculated in <aside> (where the Tiptap editor resides).
-  // See: https://html.spec.whatwg.org/multipage/rendering.html#sections-and-headings
-  '.tiptap h1': {
-    fontSize: '2em', // HTML Standard
-    fontWeight: 'bolder',
   },
   // Display placeholder for first line in an empty editor
   // See: https://tiptap.dev/docs/editor/api/extensions/placeholder#placeholder
