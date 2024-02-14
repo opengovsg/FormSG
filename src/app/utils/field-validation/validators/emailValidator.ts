@@ -40,10 +40,9 @@ const makeEmailDomainValidator: EmailValidatorConstructor =
     const emailDomain = ('@' + emailAddress.split('@').pop()).toLowerCase()
     const domainMatches = (domainPattern: string) => {
       if (domainPattern.startsWith('*.')) {
-        const domainRegex = new RegExp(
-          domainPattern.replace('*', '[a-z0-9-]+') + '$',
-          'i',
-        )
+        const domainRegexPattern =
+          domainPattern.replace(/\*/g, '[a-z0-9-]+') + '$'
+        const domainRegex = new RegExp(domainRegexPattern, 'i')
         return domainRegex.test(emailDomain)
       }
       return domainPattern.toLowerCase() === emailDomain

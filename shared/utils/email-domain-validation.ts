@@ -17,11 +17,9 @@ export const validateEmailDomains = (emailDomains: string[]): boolean => {
           // email address and can be validated by validator.isEmail.
 
           // For wildcards, just replacing them with example to form a domain
-          const domainToCheck = emailDomain.startsWith('@*.')
-            ? 'bob' + emailDomain.replace('*', 'example')
-            : 'bob' + emailDomain;
+          const domainToCheck = 'bob' + emailDomain.replace(/\*\./g, 'example.');
 
-          return validator.isEmail(domainToCheck);
+          return validator.isEmail('bob' + emailDomain.replace(/\*\./g, 'example.'));
         }
       ))
   )
