@@ -469,6 +469,7 @@ export const MultirespondentSubmissionSchema = new Schema<
   //TODO(MRF/FRM-1592): Clean this up
   form_fields: [],
   form_logics: [],
+  workflow: [],
 
   submissionPublicKey: {
     type: String,
@@ -604,6 +605,7 @@ MultirespondentSubmissionSchema.statics.getSubmissionCursorByFormId = function (
         submissionType: 1,
         form_fields: 1,
         form_logics: 1,
+        workflow: 1,
         encryptedSubmissionSecretKey: 1,
         encryptedContent: 1,
         attachmentMetadata: 1,
@@ -635,6 +637,7 @@ MultirespondentSubmissionSchema.statics.findEncryptedSubmissionById = function (
       submissionType: 1,
       form_fields: 1,
       form_logics: 1,
+      workflow: 1,
       submissionPublicKey: 1,
       encryptedSubmissionSecretKey: 1,
       encryptedContent: 1,

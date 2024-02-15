@@ -142,6 +142,7 @@ export type MultirespondentSubmissionData = {
   IMultirespondentSubmissionSchema,
   | 'form_fields'
   | 'form_logics'
+  | 'workflow'
   | 'submissionPublicKey'
   | 'encryptedSubmissionSecretKey'
   | 'encryptedContent'

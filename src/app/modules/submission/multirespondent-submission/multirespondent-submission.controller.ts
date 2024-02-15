@@ -157,6 +157,7 @@ const submitMultirespondentForm = async (
     myInfoFields: form.getUniqueMyInfoAttrs(),
     form_fields: form.form_fields,
     form_logics: form.form_logics,
+    workflow: form.workflow,
     submissionPublicKey,
     encryptedSubmissionSecretKey,
     encryptedContent,
@@ -457,7 +458,7 @@ const updateMultirespondentSubmission = async (
   try {
     await runMultirespondentWorkflow({
       nextWorkflowStep: workflowStep + 1, // we want to send emails to the addresses linked to the next step of the workflow
-      formWorkflow: form.workflow ?? [],
+      formWorkflow: submission.workflow,
       formTitle: form.title,
       responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
         form._id,

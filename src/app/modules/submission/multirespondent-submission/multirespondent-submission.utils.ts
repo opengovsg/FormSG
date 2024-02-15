@@ -29,6 +29,7 @@ export const createMultirespondentSubmissionDto = (
 
     form_fields: submissionData.form_fields,
     form_logics: submissionData.form_logics,
+    workflow: submissionData.workflow,
 
     submissionPublicKey: submissionData.submissionPublicKey,
     encryptedContent: submissionData.encryptedContent,
