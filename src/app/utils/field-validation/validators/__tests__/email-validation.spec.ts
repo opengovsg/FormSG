@@ -477,6 +477,7 @@ describe('Email field validation', () => {
       question: 'random',
       isVisible: true,
       answer: 'user@agency.gov.sg',
+      signature: 'some signature',
     } as SingleAnswerFieldResponse
     const validateResult = validateField(
       'formId',
@@ -504,6 +505,7 @@ describe('Email field validation', () => {
       question: 'random',
       isVisible: true,
       answer: 'user@company.com.sg',
+      signature: 'some signature',
     } as SingleAnswerFieldResponse
     const validateResult = validateField(
       'formId',
