@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
+import { okAsync } from 'neverthrow'
 import OpenAI from 'openai'
 
 import {
   handleGenerateFormFields,
   handleGenerateQuestions,
 } from '../admin-form.assistance.controller'
+import * as AdminFormAssistanceService from '../admin-form.assistance.service'
 
 // Mock openai
 jest.mock('openai', () => jest.fn())
@@ -43,21 +45,21 @@ describe('admin-form.assistance.controller', () => {
           content: 'mock content',
         },
       })
-      const mockRes = expressHandler.mockResponse({
-        status: jest.fn().mockReturnThis(),
-        json: jest.fn().mockResolvedValue({
-          result: {
-            value: 'sample value',
-          },
-        }),
-      })
+      const mockRes = expressHandler.mockResponse()
+
+      const MOCK_RESULT = 'some result'
+
+      const generateQuestionsSpy = jest
+        .spyOn(AdminFormAssistanceService, 'generateQuestions')
+        .mockReturnValueOnce(okAsync(MOCK_RESULT) as any)
 
       // Act
       await handleGenerateQuestions(MOCK_REQ, mockRes, jest.fn())
 
       // Assert
+      expect(generateQuestionsSpy).toHaveBeenCalledOnce()
       expect(mockRes.status).toHaveBeenCalledWith(200)
-      expect(mockRes.json).toHaveBeenCalledWith(mockReturnValue)
+      expect(mockRes.json).toHaveBeenCalledWith(MOCK_RESULT)
     })
 
     it('should return 500 when openai server error occurs', async () => {
