@@ -23,6 +23,7 @@ export const STORAGE_PUBLIC_FORM_FIELDS = <const>[
 export const MULTIRESPONDENT_PUBLIC_FORM_FIELDS = <const>[
   ...PUBLIC_FORM_FIELDS,
   'publicKey',
+  'workflow',
 ]
 
 const FORM_SETTINGS_FIELDS = <const>[
