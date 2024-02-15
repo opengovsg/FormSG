@@ -38,17 +38,18 @@ const makeEmailDomainValidator: EmailValidatorConstructor =
     if (!(hasAllowedEmailDomains && allowedEmailDomains.length))
       return right(response)
     const emailDomain = ('@' + emailAddress.split('@').pop()).toLowerCase()
-    const domainMatches = (domainPattern: string) => {
-      if (domainPattern.startsWith('*.')) {
-        const domainRegexPattern =
-          domainPattern.replace(/\*/g, '[a-z0-9-]+') + '$'
-        const domainRegex = new RegExp(domainRegexPattern, 'i')
-        return domainRegex.test(emailDomain)
+
+    const domainMatches = (domainPattern: string, emailDomain: string) => {
+      if (domainPattern.startsWith('@*.')) {
+        const wildcardDomain = domainPattern.slice(3).toLowerCase()
+        return emailDomain.endsWith(wildcardDomain)
       }
       return domainPattern.toLowerCase() === emailDomain
     }
 
-    return allowedEmailDomains.some(domainMatches)
+    return allowedEmailDomains.some((domain) =>
+      domainMatches(domain, emailDomain),
+    )
       ? right(response)
       : left(`EmailValidator:\t answer is not a valid email domain`)
   }
