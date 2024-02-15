@@ -58,6 +58,7 @@ export const RespondentBlock = ({
             <Radio.RadioGroup defaultValue={defaultWorkflowType}>
               <Flex flexDir="row">
                 <Radio
+                  isDisabled={isLoading}
                   allowDeselect={false}
                   value={WorkflowType.Static}
                   {...register('workflow_type')}
@@ -65,6 +66,7 @@ export const RespondentBlock = ({
                   Assign by a specific email
                 </Radio>
                 <Radio
+                  isDisabled={isLoading}
                   allowDeselect={false}
                   value={WorkflowType.Dynamic}
                   {...register('workflow_type')}
@@ -125,7 +127,11 @@ const RespondentInput = ({ isLoading, formMethods }: RespondentInputProps) => {
               },
             }}
             render={({ field }) => (
-              <Input placeholder="me@example.com" {...field} />
+              <Input
+                isDisabled={isLoading}
+                placeholder="me@example.com"
+                {...field}
+              />
             )}
           />
           <FormErrorMessage>{errors.emails?.message}</FormErrorMessage>
