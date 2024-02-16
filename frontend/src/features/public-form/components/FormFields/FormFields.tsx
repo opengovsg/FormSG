@@ -8,13 +8,19 @@ import { PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID } from '~shared/constants'
 import { CountryRegion } from '~shared/constants/countryRegion'
 import { FieldResponsesV3 } from '~shared/types'
 import { BasicField, FormFieldDto } from '~shared/types/field'
-import { FormColorTheme, FormResponseMode, LogicDto } from '~shared/types/form'
+import {
+  FormColorTheme,
+  FormResponseMode,
+  FormWorkflowStepDto,
+  LogicDto,
+} from '~shared/types/form'
 import { centsToDollars } from '~shared/utils/payments'
 
 import InlineMessage from '~components/InlineMessage'
 import { FormFieldValue, FormFieldValues } from '~templates/Field'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 
+import { augmentWithWorkflowDisabling } from '~features/form/utils/augmentWithWorkflowDisabling'
 import {
   augmentWithMyInfo,
   extractPreviewValue,
@@ -31,9 +37,9 @@ import { VisibleFormFields } from './VisibleFormFields'
 
 export interface FormFieldsProps {
   previousResponses?: FieldResponsesV3
-  responseMode: FormResponseMode
   formFields: FormFieldDto[]
   formLogics: LogicDto[]
+  workflowStep?: FormWorkflowStepDto
   colorTheme: FormColorTheme
   onSubmit: SubmitHandler<FormFieldValues> | undefined
 }
@@ -47,9 +53,9 @@ export type PrefillMap = {
 
 export const FormFields = ({
   previousResponses,
-  responseMode,
   formFields,
   formLogics,
+  workflowStep,
   colorTheme,
   onSubmit,
 }: FormFieldsProps): JSX.Element => {
@@ -74,8 +80,11 @@ export const FormFields = ({
   }, [formFields, searchParams])
 
   const augmentedFormFields = useMemo(
-    () => formFields.map(augmentWithMyInfo),
-    [formFields],
+    () =>
+      formFields
+        .map(augmentWithMyInfo)
+        .map(augmentWithWorkflowDisabling.bind(this, workflowStep)),
+    [formFields, workflowStep],
   )
 
   const defaultFormValues = useMemo(() => {
@@ -198,9 +207,9 @@ export const FormFields = ({
               <VisibleFormFields
                 colorTheme={colorTheme}
                 control={formMethods.control}
-                responseMode={responseMode}
                 formFields={augmentedFormFields}
                 formLogics={formLogics}
+                workflowStep={workflowStep}
                 fieldPrefillMap={fieldPrefillMap}
               />
             </Stack>
