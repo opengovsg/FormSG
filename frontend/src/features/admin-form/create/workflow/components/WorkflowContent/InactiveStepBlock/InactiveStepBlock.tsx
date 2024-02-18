@@ -52,6 +52,7 @@ export const InactiveStepBlock = ({
       case WorkflowType.Dynamic:
         return <FieldLogicBadge field={mapIdToField[step.field]} />
       default: {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _: never = step
         throw new Error('Unexpected workflow type encountered')
       }

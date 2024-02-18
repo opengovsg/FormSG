@@ -74,6 +74,7 @@ export const EditStepBlock = ({
         break
       }
       default: {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _: never = inputs.workflow_type
         throw new Error('Invalid workflow type')
       }

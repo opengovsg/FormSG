@@ -170,6 +170,7 @@ const RespondentInput = ({ isLoading, formMethods }: RespondentInputProps) => {
         </FormControl>
       )
     default: {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _: never = watchedWorkflowType
       throw new Error('Invalid workflow type')
     }
