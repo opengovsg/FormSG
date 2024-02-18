@@ -247,7 +247,6 @@
     "stripe-event-types": "^2.3.0",
     "supertest": "^6.3.3",
     "supertest-session": "^4.1.0",
-    "testcafe": "=1.15.1",
     "ts-jest": "^29.0.5",
     "ts-loader": "^8.2.0",
     "ts-node": "^10.9.1",
