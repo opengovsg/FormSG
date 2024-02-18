@@ -24,7 +24,6 @@ export interface IWorkflowStepDynamicSchema
     FormWorkflowStepDynamic,
     Document {
   workflow_type: WorkflowType.Dynamic
-  // overwriting field id type in show to reflect mongoose Id type
   field: IFieldSchema['_id']
 }
 
