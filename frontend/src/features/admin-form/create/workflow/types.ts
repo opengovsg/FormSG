@@ -15,6 +15,6 @@ export type EditStepInputs = Omit<FormWorkflowStep, 'emails'> & {
   // Should be FormWorkflowStepStatic['emails'], but the model accomodates an
   // array of strings while on the frontend, we only want to show one email input
   // for now.
-  emails?: string
+  emails?: FormWorkflowStepStatic['emails'][number]
   field?: FormWorkflowStepDynamic['field']
 }
