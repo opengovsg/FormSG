@@ -86,7 +86,7 @@ const StripePaymentContainer = ({
     refetchKey,
   })
 
-  const productsProductsType = paymentInfoData?.products?.map((product) => {
+  const productsProductsType = paymentInfoData.products?.map((product) => {
     return {
       name: product.data.name,
       quantity: product.quantity,
@@ -96,14 +96,14 @@ const StripePaymentContainer = ({
 
   const productsVariableType = [
     {
-      name: paymentInfoData?.payment_fields_snapshot?.name,
+      name: paymentInfoData.payment_fields_snapshot.name,
       quantity: 1,
-      amount_cents: paymentInfoData?.amount,
+      amount_cents: paymentInfoData.amount,
     },
   ] as ProductItemForReceipt[]
 
   const paymentProducts =
-    paymentInfoData?.payment_fields_snapshot?.payment_type ===
+    paymentInfoData.payment_fields_snapshot.payment_type ===
     PaymentType.Variable
       ? productsVariableType
       : productsProductsType

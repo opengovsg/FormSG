@@ -4,9 +4,10 @@ import { FormColorTheme, FormDto } from '~shared/types/form'
 
 import { SubmissionData } from '~features/public-form/PublicFormContext'
 
+import { PaymentEndPageBlock } from '../../../../admin-form/create/end-page/PaymentEndPageBlock'
+
 import { FeedbackBlock, FeedbackFormInput } from './FeedbackBlock'
-import { PaymentEndPageBlock } from './PaymentEndPageBlock'
-import { PaymentsThankYouSvgr } from './ThankYouSvgr'
+import { PaymentsThankYouSvgr } from './PaymentsThankYouSvgr'
 
 export interface PaymentEndPagePreviewProps {
   endPage: FormDto['endPage']

@@ -10,7 +10,7 @@ import {
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { SubmissionData } from '~features/public-form/PublicFormContext'
 
-import { DownloadReceiptBlock } from '../../FormPaymentPage/stripe/components'
+import { DownloadReceiptBlock } from '../../../public-form/components/FormPaymentPage/stripe/components'
 
 import { paymentTypeSelection } from './payment.utils'
 

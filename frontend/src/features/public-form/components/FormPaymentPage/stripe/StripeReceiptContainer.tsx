@@ -94,7 +94,7 @@ export const StripeReceiptContainer = ({
           paymentType={paymentFieldsSnapshot.payment_type}
           name={paymentFieldsSnapshot.name || ''}
           paymentDate={paymentReceiptStatus.paymentDate}
-          endPage={form?.endPage}
+          endPage={form.endPage}
         />
       </PaymentStack>
       <Stack px={{ base: '1rem', md: '4rem' }} bg="transparent">

@@ -12,11 +12,8 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 import { PREVIEW_MOCK_UINFIN } from '~features/admin-form/preview/constants'
 import { useEnv } from '~features/env/queries'
 import { EndPageBlock } from '~features/public-form/components/FormEndPage/components/EndPageBlock'
-import { PaymentEndPageBlock } from '~features/public-form/components/FormEndPage/components/PaymentEndPageBlock'
-import {
-  PaymentsThankYouSvgr,
-  ThankYouSvgr,
-} from '~features/public-form/components/FormEndPage/components/ThankYouSvgr'
+import { PaymentsThankYouSvgr } from '~features/public-form/components/FormEndPage/components/PaymentsThankYouSvgr'
+import { ThankYouSvgr } from '~features/public-form/components/FormEndPage/components/ThankYouSvgr'
 import {
   FormBannerLogo,
   useFormBannerLogo,
@@ -24,6 +21,7 @@ import {
 
 import { useDesignColorTheme } from '../builder-and-design/utils/useDesignColorTheme'
 
+import { PaymentEndPageBlock } from './PaymentEndPageBlock'
 import { dataSelector, useEndPageStore } from './useEndPageStore'
 
 export const EndPageContent = (): JSX.Element => {
