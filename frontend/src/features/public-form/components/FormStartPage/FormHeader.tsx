@@ -1,4 +1,4 @@
-import { RefObject, useCallback } from 'react'
+import { RefObject, useCallback, useEffect, useState } from 'react'
 import { BiLogOutCircle } from 'react-icons/bi'
 import { Waypoint } from 'react-waypoint'
 import {
@@ -17,6 +17,8 @@ import { ThemeColorScheme } from '~theme/foundations/colours'
 import { noPrintCss } from '~utils/noPrintCss'
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
+
+import ZoomControls from '../ZoomControls'
 
 export type MiniHeaderProps = Pick<
   FormHeaderProps,
@@ -142,6 +144,30 @@ export const FormHeader = ({
     [onClose, onOpen],
   )
 
+  const [rootFontSize, setRootFontSize] = useState('16px')
+
+  const setDefaultSize = () => {
+    setRootFontSize('16px')
+    console.log('set default size!')
+  }
+
+  const setLargeSize = () => {
+    setRootFontSize('18px')
+    console.log('set large size!')
+  }
+
+  const setLargestSize = () => {
+    setRootFontSize('24px')
+    console.log('set largest size!')
+  }
+
+  useEffect(() => {
+    const root = document.documentElement
+    root.style.setProperty('font-size', rootFontSize)
+    // need to reset on unmount
+    return () => root.style.removeProperty('font-size')
+  }, [rootFontSize])
+
   if (!showHeader) return null
 
   return (
@@ -162,7 +188,8 @@ export const FormHeader = ({
       <Flex
         transition="background 0.2s ease"
         px={{ base: '1.5rem', md: '3rem' }}
-        py={{ base: '2rem', md: '3rem' }}
+        pt={{ base: '2rem', md: '3rem' }}
+        pb={{ base: '3rem', md: '3rem' }}
         wordBreak="break-word"
         justify="center"
         bg={titleBg}
@@ -214,6 +241,11 @@ export const FormHeader = ({
               {loggedInId} - Log out
             </Button>
           ) : null}
+          <ZoomControls
+            setDefaultSize={setDefaultSize}
+            setLargeSize={setLargeSize}
+            setLargestSize={setLargestSize}
+          />
         </Flex>
       </Flex>
       {
