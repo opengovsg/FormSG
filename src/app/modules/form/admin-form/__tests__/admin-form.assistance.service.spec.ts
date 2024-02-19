@@ -4,7 +4,10 @@ import {
   generateFormFields,
   generateQuestions,
 } from '../admin-form.assistance.service'
-import { AssistanceConnectionError } from '../admin-form.errors'
+import {
+  AssistanceConnectionError,
+  AssistanceModelTypeError,
+} from '../admin-form.errors'
 
 // Mock openai
 jest.mock('openai', () => jest.fn())
@@ -77,6 +80,22 @@ describe('admin-form.assistance.service', () => {
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
         AssistanceConnectionError,
+      )
+    })
+
+    it('should return AssistanceModelTypeError when type is not prompt or pdf', async () => {
+      // Arrange
+      const type = 'wrong type'
+      const content = 'Sample content'
+
+      // Act
+      const actualResult = await generateQuestions({ type, content })
+      // assuming the generateQuestions function will be using the mocked openai API?
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+        AssistanceModelTypeError,
       )
     })
   })
