@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { BiEditAlt } from 'react-icons/bi'
 import { GoEye, GoEyeClosed } from 'react-icons/go'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -63,11 +63,17 @@ const LanguageTranslationRow = ({
       if (existingSupportedLanguageIdx !== -1) {
         supportedLanguages.splice(existingSupportedLanguageIdx, 1)
         setIsLanguageSupported(false)
-        return mutateFormSupportedLanguages.mutate(supportedLanguages)
+        return mutateFormSupportedLanguages.mutate({
+          nextSupportedLanguages: supportedLanguages,
+          selectedLanguage: language,
+        })
       } else {
         const updatedSupportedLanguages = supportedLanguages.concat(language)
         setIsLanguageSupported(true)
-        return mutateFormSupportedLanguages.mutate(updatedSupportedLanguages)
+        return mutateFormSupportedLanguages.mutate({
+          nextSupportedLanguages: updatedSupportedLanguages,
+          selectedLanguage: language,
+        })
       }
     },
     [mutateFormSupportedLanguages, supportedLanguages],
@@ -213,12 +219,16 @@ export const FormMultiLangToggle = (): JSX.Element => {
 
     // toggle multi lang off
     if (settings.defaultLanguage && settings.defaultLanguage != null) {
-      mutateFormSupportedLanguages.mutate(null)
+      mutateFormSupportedLanguages.mutate({
+        nextSupportedLanguages: null,
+      })
       return mutateFormDefaultLang.mutate(null)
     }
 
     // toggle multi lang on and add all supported languages
-    mutateFormSupportedLanguages.mutate(Object.values(Language))
+    mutateFormSupportedLanguages.mutate({
+      nextSupportedLanguages: Object.values(Language),
+    })
     return mutateFormDefaultLang.mutate(
       settings?.defaultLanguage ?? Language.ENGLISH,
     )

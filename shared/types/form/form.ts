@@ -73,6 +73,11 @@ export enum FormStatus {
   Archived = 'ARCHIVED',
 }
 
+export type FormSupportedLanguages = {
+  nextSupportedLanguages: Language[] | null
+  selectedLanguage?: Language | null
+}
+
 export type FormWebhook = {
   url: string
   isRetryEnabled: boolean

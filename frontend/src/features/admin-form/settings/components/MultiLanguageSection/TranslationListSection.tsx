@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 import { BiArrowBack } from 'react-icons/bi'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
@@ -25,13 +25,24 @@ interface QuestionRowProps {
   toTranslateString: string
   icon: As
   isMyInfoField: boolean
+  formFieldNum: number
 }
 
 export const QuestionRow = ({
   toTranslateString,
   icon,
   isMyInfoField,
+  formFieldNum,
 }: QuestionRowProps): JSX.Element => {
+  const { formId, language } = useParams()
+  const navigate = useNavigate()
+  const handleOnListClick = useCallback(() => {
+    navigate(
+      `${ADMINFORM_ROUTE}/${formId}/settings/multi-language/${language}`,
+      { state: { isTranslation: true, formFieldNum } },
+    )
+  }, [formFieldNum, formId, language, navigate])
+
   return (
     <Flex
       direction="row"
@@ -46,7 +57,7 @@ export const QuestionRow = ({
       >
         <FieldListOption
           isDisabled={isMyInfoField}
-          onClick={() => console.log('click')}
+          onClick={() => handleOnListClick()}
           w="100%"
           paddingX="1.5rem"
           maxH="3.5rem"
@@ -100,6 +111,7 @@ export const TranslationListSection = ({
                   toTranslateString={form_field.title}
                   icon={BASICFIELD_TO_DRAWER_META[form_field.fieldType].icon}
                   isMyInfoField={isMyInfo(form_field)}
+                  formFieldNum={id}
                 />
                 {id < arr.length - 1 && <Divider />}
               </>

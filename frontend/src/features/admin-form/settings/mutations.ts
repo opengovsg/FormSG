@@ -9,6 +9,7 @@ import {
   FormResponseMode,
   FormSettings,
   FormStatus,
+  FormSupportedLanguages,
   Language,
   StorageFormSettings,
 } from '~shared/types/form/form'
@@ -153,9 +154,32 @@ export const useMutateFormSettings = () => {
   )
 
   const mutateFormSupportedLanguages = useMutation(
-    (nextSupportedLanguages?: Language[] | null) =>
-      updateFormSupportedLanguages(formId, nextSupportedLanguages),
+    (nextSupportedLanguages?: FormSupportedLanguages) =>
+      updateFormSupportedLanguages(
+        formId,
+        nextSupportedLanguages
+          ? nextSupportedLanguages.nextSupportedLanguages
+          : null,
+      ),
     {
+      onSuccess: (newData, newSupportedLanguages) => {
+        if (newSupportedLanguages && newSupportedLanguages.selectedLanguage) {
+          const supportedLanguages =
+            newSupportedLanguages.nextSupportedLanguages ?? []
+          let successMessage: string
+          if (
+            supportedLanguages.includes(newSupportedLanguages.selectedLanguage)
+          ) {
+            successMessage = `Respondents will now be able to select and view your form in ${newSupportedLanguages.selectedLanguage}.`
+          } else {
+            successMessage = `${newSupportedLanguages.selectedLanguage} is now hidden. Respondents will not be able to see it.`
+          }
+          handleSuccess({
+            newData,
+            toastDescription: successMessage,
+          })
+        }
+      },
       onError: handleError,
     },
   )

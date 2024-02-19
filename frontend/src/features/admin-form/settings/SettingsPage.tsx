@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { BiCodeBlock, BiCog, BiDollar, BiKey, BiMessage } from 'react-icons/bi'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   Box,
   Flex,
@@ -18,6 +18,7 @@ import { useDraggable } from '~hooks/useDraggable'
 import { useAdminFormCollaborators } from '../common/queries'
 
 import { TranslationListSection } from './components/MultiLanguageSection/TranslationListSection'
+import { TranslationSection } from './components/MultiLanguageSection/TranslationSection'
 import { SettingsTab } from './components/SettingsTab'
 import { SettingsAuthPage } from './SettingsAuthPage'
 import { SettingsGeneralPage } from './SettingsGeneralPage'
@@ -37,6 +38,7 @@ const settingsTabsOrder = [
 
 export const SettingsPage = (): JSX.Element => {
   const { formId, settingsTab, language } = useParams()
+  const { state } = useLocation()
 
   if (!formId) throw new Error('No formId provided')
 
@@ -56,6 +58,15 @@ export const SettingsPage = (): JSX.Element => {
     settingsTabsOrder.indexOf(settingsTab ?? ''),
   )
 
+  const currentIsTranslation = useMemo(() => {
+    return (state as { isTranslation?: boolean; formFieldNum: number })
+      ?.isTranslation
+  }, [state])
+
+  const formFieldNumToBeTranslated = useMemo(() => {
+    return (state as { isTranslation?: boolean; formFieldNum: number })
+      ?.formFieldNum
+  }, [state])
   const handleTabChange = (index: number) => {
     setTabIndex(index)
     navigate(
@@ -131,8 +142,16 @@ export const SettingsPage = (): JSX.Element => {
             <SettingsPaymentsPage />
           </TabPanel>
           <TabPanel>
-            {!language && <SettingsMultiLangPage />}
-            {language && <TranslationListSection language={language} />}
+            {!language && !currentIsTranslation && <SettingsMultiLangPage />}
+            {language && !currentIsTranslation && (
+              <TranslationListSection language={language} />
+            )}
+            {language && currentIsTranslation && (
+              <TranslationSection
+                language={language}
+                formFieldNumToBeTranslated={formFieldNumToBeTranslated}
+              />
+            )}
           </TabPanel>
         </TabPanels>
         <Spacer />
