@@ -1,9 +1,12 @@
 import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
-import { errAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+
+import { MailSendError } from 'src/app/services/mail/mail.errors'
 
 import {
   ErrorDto,
+  FieldResponsesV3,
   FormAuthType,
   FormWorkflowDto,
   MultirespondentSubmissionDto,
@@ -32,6 +35,7 @@ import {
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
 import {
   InvalidSubmissionTypeError,
+  InvalidWorkflowTypeError,
   SubmissionFailedError,
 } from '../submission.errors'
 import {
@@ -50,7 +54,10 @@ import {
   UpdateMultirespondentSubmissionHandlerRequest,
   UpdateMultirespondentSubmissionHandlerType,
 } from './multirespondent-submission.types'
-import { createMultirespondentSubmissionDto } from './multirespondent-submission.utils'
+import {
+  createMultirespondentSubmissionDto,
+  retrieveWorkflowStepEmailAddresses,
+} from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
@@ -163,7 +170,7 @@ const submitMultirespondentForm = async (
     res,
     logMeta,
     formId,
-    // responses: ,
+    responses: encryptedPayload.responses,
     responseMetadata,
     submissionContent,
     submissionSecretKey,
@@ -176,7 +183,7 @@ const _createSubmission = async ({
   res,
   logMeta,
   formId,
-  // responses,
+  responses,
   responseMetadata,
   submissionContent,
   submissionSecretKey,
@@ -247,6 +254,7 @@ const _createSubmission = async ({
       )}`,
       formId: form._id,
       submissionId,
+      responses,
     })
   } catch (err) {
     logger.error({
@@ -263,13 +271,14 @@ const _createSubmission = async ({
   }
 }
 
-const runMultirespondentWorkflow = async ({
+const runMultirespondentWorkflow = ({
   nextWorkflowStep,
   formWorkflow,
   formTitle,
   responseUrl,
   formId,
   submissionId,
+  responses,
 }: {
   nextWorkflowStep: number
   formWorkflow: FormWorkflowDto
@@ -277,29 +286,47 @@ const runMultirespondentWorkflow = async ({
   responseUrl: string
   formId: string
   submissionId: string
-}) => {
+  responses: FieldResponsesV3
+}): ResultAsync<true, InvalidWorkflowTypeError | MailSendError> => {
   const logMeta = {
     action: 'runMultirespondentWorkflow',
     formId,
     submissionId,
     nextWorkflowStep,
   }
-  // Step 1: Retrieve email addresses for current workflow step
-  if ((formWorkflow[nextWorkflowStep]?.emails?.length ?? 0) === 0) return
-  const emails = formWorkflow[nextWorkflowStep].emails
-  // Step 2: send out workflow email
-  try {
-    await MailService.sendMRFWorkflowStepEmail({
-      formTitle,
-      emails,
-      responseUrl,
-    })
-  } catch (error) {
-    logger.error({
-      message: 'Failed to send workflow email',
-      meta: { ...logMeta, emails },
-    })
-  }
+  return (
+    // Step 1: Retrieve email addresses for current workflow step
+    retrieveWorkflowStepEmailAddresses(
+      formWorkflow,
+      nextWorkflowStep,
+      responses,
+    )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Failed to retrieve workflow step email addresses',
+          meta: logMeta,
+          error,
+        })
+        return error
+      })
+
+      // Step 2: send out workflow email
+      .asyncAndThen((emails) => {
+        if (!emails) return okAsync(true)
+        return MailService.sendMRFWorkflowStepEmail({
+          formTitle,
+          emails,
+          responseUrl,
+        }).orElse((error) => {
+          logger.error({
+            message: 'Failed to send workflow email',
+            meta: { ...logMeta, emails },
+            error,
+          })
+          return errAsync(error)
+        })
+      })
+  )
 }
 
 const updateMultirespondentSubmission = async (
@@ -352,6 +379,7 @@ const updateMultirespondentSubmission = async (
     submissionSecretKey,
     version,
     workflowStep,
+    responses,
   } = encryptedPayload
 
   // Save Responses to Database
@@ -438,6 +466,7 @@ const updateMultirespondentSubmission = async (
       )}`,
       formId: form._id,
       submissionId,
+      responses,
     })
   } catch (err) {
     logger.error({

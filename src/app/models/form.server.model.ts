@@ -109,6 +109,10 @@ import LogicSchema, {
   ShowFieldsLogicSchema,
 } from './form_logic.server.schema'
 import { CustomFormLogoSchema, FormLogoSchema } from './form_logo.server.schema'
+import WorkflowStepSchema, {
+  WorkflowStepDynamicSchema,
+  WorkflowStepStaticSchema,
+} from './form_workflow_step.server.schema'
 import getUserModel from './user.server.model'
 import { isPositiveInteger } from './utils'
 
@@ -285,33 +289,23 @@ const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
     type: String,
     required: true,
   },
-  workflow: [
-    {
-      workflow_type: {
-        type: String,
-        enum: Object.values(WorkflowType),
-        default: WorkflowType.Static,
-        required: true,
-      },
-      emails: {
-        type: [
-          {
-            type: String,
-            trim: true,
-          },
-        ],
-        set: transformEmails,
-        validate: {
-          validator: (v: string[]) => {
-            if (!Array.isArray(v)) return false
-            return v.every((email) => validator.isEmail(email))
-          },
-          message: 'Please provide valid email addresses',
-        },
-      },
-    },
-  ],
+  workflow: {
+    type: [WorkflowStepSchema],
+  },
 })
+
+const MultirespondentFormWorkflowPath = MultirespondentFormSchema.path(
+  'workflow',
+) as Schema.Types.DocumentArray
+
+MultirespondentFormWorkflowPath.discriminator(
+  WorkflowType.Static,
+  WorkflowStepStaticSchema,
+)
+MultirespondentFormWorkflowPath.discriminator(
+  WorkflowType.Dynamic,
+  WorkflowStepDynamicSchema,
+)
 
 const compileFormModel = (db: Mongoose): IFormModel => {
   const User = getUserModel(db)

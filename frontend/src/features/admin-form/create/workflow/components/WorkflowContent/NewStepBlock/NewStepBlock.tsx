@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { BiPlus } from 'react-icons/bi'
 import { Button } from '@chakra-ui/react'
 
-import { WorkflowType } from '~shared/types'
+import { FormWorkflowStep, WorkflowType } from '~shared/types'
 
 import {
   isCreatingStateSelector,
@@ -12,7 +12,6 @@ import {
 } from '../../../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { useWorkflowMutations } from '../../../mutations'
-import { EditStepInputs } from '../../../types'
 import { EditStepBlock } from '../EditStepBlock'
 
 export const NewStepBlock = () => {
@@ -25,16 +24,10 @@ export const NewStepBlock = () => {
       setToCreating: setToCreatingSelector(state),
     }))
   const handleSubmit = useCallback(
-    (inputs: EditStepInputs) =>
-      createStepMutation.mutate(
-        {
-          workflow_type: WorkflowType.Static,
-          emails: inputs.email ? [inputs.email] : [],
-        },
-        {
-          onSuccess: () => setToInactive(),
-        },
-      ),
+    (step: FormWorkflowStep) =>
+      createStepMutation.mutate(step, {
+        onSuccess: () => setToInactive(),
+      }),
     [createStepMutation, setToInactive],
   )
 
@@ -45,6 +38,7 @@ export const NewStepBlock = () => {
       stepNumber={formWorkflow.length}
       isLoading={createStepMutation.isLoading}
       onSubmit={handleSubmit}
+      defaultValues={{ workflow_type: WorkflowType.Static }}
       submitButtonLabel="Add step"
     />
   ) : (

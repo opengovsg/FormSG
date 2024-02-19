@@ -1,13 +1,16 @@
 import { useCallback } from 'react'
 
-import { FormWorkflowStepDto, WorkflowType } from '~shared/types'
+import {
+  FormWorkflowStep,
+  FormWorkflowStepDto,
+  WorkflowType,
+} from '~shared/types'
 
 import {
   setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
 import { useWorkflowMutations } from '../../../mutations'
-import { EditStepInputs } from '../../../types'
 import { EditStepBlock } from '../EditStepBlock'
 
 export interface ActiveStepBlockProps {
@@ -23,15 +26,22 @@ export const ActiveStepBlock = ({
 }: ActiveStepBlockProps): JSX.Element => {
   const { updateStepMutation } = useWorkflowMutations()
   const setToInactive = useAdminWorkflowStore(setToInactiveSelector)
+
+  const defaultValues =
+    // A bit of instrumentation to convert the emails array to a single email
+    step.workflow_type === WorkflowType.Static
+      ? {
+          ...step,
+          emails: step.emails[0],
+        }
+      : step
+
   const handleSubmit = useCallback(
-    (inputs: EditStepInputs) =>
+    (step: FormWorkflowStep) =>
       updateStepMutation.mutate(
         {
           stepNumber,
-          updateStepBody: {
-            workflow_type: WorkflowType.Static,
-            emails: inputs.email ? [inputs.email] : [],
-          },
+          updateStepBody: step,
         },
         {
           onSuccess: () => setToInactive(),
@@ -46,7 +56,7 @@ export const ActiveStepBlock = ({
       isLoading={updateStepMutation.isLoading}
       handleOpenDeleteModal={handleOpenDeleteModal}
       onSubmit={handleSubmit}
-      defaultValues={{ email: step.emails[0] }}
+      defaultValues={defaultValues}
       submitButtonLabel="Save step"
     />
   )

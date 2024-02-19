@@ -168,3 +168,11 @@ export class MaliciousFileDetectedError extends ApplicationError {
     )
   }
 }
+
+export class InvalidWorkflowTypeError extends ApplicationError {
+  constructor(
+    message = 'Invalid workflow type encountered. Please contact the form admin and try again later.',
+  ) {
+    super(message)
+  }
+}
