@@ -47,10 +47,12 @@ export const updateSettingsValidator = celebrate({
             is: WorkflowType.Static,
             then: Joi.array().items(Joi.string().email()).required(),
           }),
+          // TODO: Add regex validation that these are valid mongo IDs
           field: Joi.when('workflow_type', {
             is: WorkflowType.Dynamic,
             then: Joi.string().required(),
           }),
+          edit: Joi.array().items(Joi.string()).required(),
         }),
       )
       .optional(),

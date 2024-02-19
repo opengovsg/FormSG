@@ -59,6 +59,45 @@ export const InactiveStepBlock = ({
     }
   }, [mapIdToField, step])
 
+  const questionBadges = useMemo(() => {
+    const allInvalid = step.edit.every((fieldId) => !(fieldId in mapIdToField))
+
+    if (step.edit.length === 0) {
+      return (
+        <FieldLogicBadge
+          defaults={{
+            variant: 'info',
+            message: 'No fields selected',
+          }}
+        />
+      )
+    }
+
+    if (allInvalid) {
+      return (
+        <FieldLogicBadge
+          defaults={{
+            variant: 'error',
+            message:
+              'All fields were deleted, please select at least one field',
+          }}
+        />
+      )
+    }
+
+    return step.edit.map((fieldId, index) => (
+      <FieldLogicBadge
+        key={index}
+        field={mapIdToField[fieldId]}
+        defaults={{
+          variant: 'info',
+          message:
+            'This field was deleted and has been removed from your workflow',
+        }}
+      />
+    ))
+  }, [mapIdToField, step.edit])
+
   return (
     <Box pos="relative">
       <chakra.button
@@ -87,6 +126,7 @@ export const InactiveStepBlock = ({
       >
         <Stack spacing="1.5rem" p={{ base: '1.5rem', md: '2rem' }}>
           <StepLabel stepNumber={stepNumber} />
+
           <Stack>
             <Text textStyle="subhead-3">Respondent in this step</Text>
             {isFirstStep ? (
@@ -101,6 +141,13 @@ export const InactiveStepBlock = ({
                 {respondentBadges}
               </Flex>
             )}
+          </Stack>
+
+          <Stack>
+            <Text textStyle="subhead-3">Questions to fill</Text>
+            <Stack direction="column" spacing="0.25rem">
+              {questionBadges}
+            </Stack>
           </Stack>
         </Stack>
       </chakra.button>

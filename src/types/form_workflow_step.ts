@@ -9,7 +9,10 @@ import {
 
 import { IFieldSchema } from './field'
 
-export interface IWorkflowStepSchema extends FormWorkflowStepBase, Document {}
+export interface IWorkflowStepSchema extends FormWorkflowStepBase, Document {
+  // overwriting field id type to reflect mongoose Id type
+  edit: IFieldSchema['_id'][]
+}
 
 export interface IWorkflowStepStaticSchema
   extends IWorkflowStepSchema,
@@ -17,6 +20,7 @@ export interface IWorkflowStepStaticSchema
     Document {
   workflow_type: WorkflowType.Static
   emails: string[]
+  edit: IFieldSchema['_id'][]
 }
 
 export interface IWorkflowStepDynamicSchema
@@ -25,6 +29,8 @@ export interface IWorkflowStepDynamicSchema
     Document {
   workflow_type: WorkflowType.Dynamic
   field: IFieldSchema['_id']
+  // overwriting field id type to reflect mongoose Id type
+  edit: IFieldSchema['_id'][]
 }
 
 export type FormWorkflowStepSchema =

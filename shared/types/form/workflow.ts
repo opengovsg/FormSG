@@ -7,6 +7,7 @@ export enum WorkflowType {
 
 export interface FormWorkflowStepBase {
   workflow_type: WorkflowType
+  edit: FormFieldDto['_id'][]
 }
 
 export interface FormWorkflowStepStatic extends FormWorkflowStepBase {
