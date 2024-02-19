@@ -135,7 +135,7 @@ services:
       - WOGAA_FEEDBACK_ENDPOINT
 
       # env vars for OpenAI integration (assisted form creation)
-      - OPENAI_API_KEY=fake-key
+      - OPENAI_API_KEY
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git#v4.0.4
