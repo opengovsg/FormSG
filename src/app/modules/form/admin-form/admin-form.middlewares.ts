@@ -45,13 +45,7 @@ export const updateSettingsValidator = celebrate({
           workflow_type: Joi.string().valid(...Object.values(WorkflowType)),
           emails: Joi.when('workflow_type', {
             is: WorkflowType.Static,
-            then: Joi.alternatives()
-              .try(
-                // We might want to tighten this validation
-                Joi.array().items(Joi.string().email().allow('')),
-                Joi.string().email({ multiple: true }).allow(''),
-              )
-              .required(),
+            then: Joi.array().items(Joi.string().email()).required(),
           }),
           field: Joi.when('workflow_type', {
             is: WorkflowType.Dynamic,
