@@ -90,7 +90,10 @@ import {
 } from '../myinfo/myinfo.errors'
 import { MyInfoKey } from '../myinfo/myinfo.types'
 import { getMyInfoChildHashKey } from '../myinfo/myinfo.util'
-import { PaymentNotFoundError } from '../payments/payments.errors'
+import {
+  InvalidPaymentProductsError,
+  PaymentNotFoundError,
+} from '../payments/payments.errors'
 import {
   SgidInvalidJwtError,
   SgidMissingJwtError,
@@ -207,6 +210,7 @@ const errorMapper: MapRouteError = (
         errorMessage: error.message,
       }
     case ResponseModeError:
+    case InvalidPaymentProductsError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,

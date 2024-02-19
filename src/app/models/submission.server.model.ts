@@ -34,6 +34,7 @@ import {
   WebhookData,
   WebhookView,
 } from '../../types'
+import { getPaymentWebhookEventObject } from '../modules/payments/payment.service.utils'
 import { createQueryWithDateParam } from '../utils/date'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
@@ -144,8 +145,8 @@ export const EmailSubmissionSchema = new Schema<IEmailSubmissionSchema>({
 /**
  * Returns null as email submission does not have a webhook view
  */
-EmailSubmissionSchema.methods.getWebhookView = function (): null {
-  return null
+EmailSubmissionSchema.methods.getWebhookView = function (): Promise<null> {
+  return Promise.resolve(null)
 }
 
 const webhookResponseSchema = new Schema<IWebhookResponseSchema>(
@@ -209,15 +210,22 @@ export const EncryptSubmissionSchema = new Schema<
  * Returns an object which represents the encrypted submission
  * which will be posted to the webhook URL.
  */
-EncryptSubmissionSchema.methods.getWebhookView = function (
+EncryptSubmissionSchema.methods.getWebhookView = async function (
   this: IEncryptedSubmissionSchema | IPopulatedWebhookSubmission,
-): WebhookView {
+): Promise<WebhookView> {
   const formId = this.populated('form')
     ? String((this as IPopulatedWebhookSubmission).form._id)
     : String(this.form)
   const attachmentRecords = Object.fromEntries(
     this.attachmentMetadata ?? new Map(),
   )
+
+  if (this.paymentId) {
+    await (this as IPopulatedWebhookSubmission).populate('paymentId')
+  }
+  const paymentContent = this.populated('paymentId')
+    ? getPaymentWebhookEventObject(this.paymentId)
+    : {}
 
   const webhookData: WebhookData = {
     formId,
@@ -227,6 +235,7 @@ EncryptSubmissionSchema.methods.getWebhookView = function (
     version: this.version,
     created: this.created,
     attachmentDownloadUrls: attachmentRecords,
+    paymentContent,
   }
 
   return {
@@ -250,13 +259,19 @@ EncryptSubmissionSchema.statics.retrieveWebhookInfoById = function (
   submissionId: string,
 ): Promise<SubmissionWebhookInfo | null> {
   return this.findById(submissionId)
-    .populate('form', 'webhook')
+    .populate([{ path: 'form', select: 'webhook' }, { path: 'paymentId' }])
     .then((populatedSubmission: IPopulatedWebhookSubmission | null) => {
       if (!populatedSubmission) return null
+      const webhookView = populatedSubmission.getWebhookView()
+      return Promise.all([populatedSubmission, webhookView])
+    })
+    .then((arr) => {
+      if (!arr) return null
+      const [populatedSubmission, webhookView] = arr
       return {
         webhookUrl: populatedSubmission.form.webhook?.url ?? '',
         isRetryEnabled: !!populatedSubmission.form.webhook?.isRetryEnabled,
-        webhookView: populatedSubmission.getWebhookView(),
+        webhookView,
       }
     })
 }

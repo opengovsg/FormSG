@@ -42,10 +42,9 @@ AdminFormsPreviewRouter.post(
 
 /**
  * Submit an encrypt mode form in preview mode
- * @route POST api/v3/admin/forms/:formId([a-fA-F0-9]{24})/preview/submissions/encrypt
+ * @route POST api/v3/admin/forms/:formId([a-fA-F0-9]{24})/preview/submissions/storage
  * @security session
- *
- * @returns 200 if submission was valid
+
  * @returns 400 when error occurs while processing submission or submission is invalid
  * @returns 403 when user does not have read permissions for form
  * @returns 404 when form cannot be found
@@ -54,7 +53,7 @@ AdminFormsPreviewRouter.post(
  * @returns 500 when database error occurs
  */
 AdminFormsPreviewRouter.post(
-  '/:formId([a-fA-F0-9]{24})/preview/submissions/encrypt',
+  '/:formId([a-fA-F0-9]{24})/preview/submissions/storage',
   AdminFormController.handleEncryptPreviewSubmission,
 )
 

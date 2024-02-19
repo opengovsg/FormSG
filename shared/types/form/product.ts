@@ -22,3 +22,23 @@ export type ProductItemForReceipt = {
   quantity: number
   amount_cents: number
 }
+
+// Typeguard for Product
+export const isPaymentsProducts = (
+  products: unknown,
+): products is Product[] => {
+  if (!Array.isArray(products)) {
+    return false
+  }
+  return (
+    products.length > 0 &&
+    products.every((product) => {
+      return (
+        product._id &&
+        String(product._id).match(/^[0-9a-fA-F]{24}$/) &&
+        product.name &&
+        typeof product.name === 'string'
+      )
+    })
+  )
+}

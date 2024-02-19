@@ -7,7 +7,9 @@ import {
   BasicField,
   FormAuthType,
   FormResponseMode,
+  isPaymentsProducts,
 } from '../../../../../shared/types'
+import { IPopulatedForm } from '../../../../types'
 import {
   EncryptAttachmentResponse,
   EncryptFormFieldResponse,
@@ -24,6 +26,7 @@ import { JoiPaymentProduct } from '../../form/admin-form/admin-form.payments.con
 import * as FormService from '../../form/form.service'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
+import * as PaymentsService from '../../payments/payments.service'
 import { IPopulatedStorageFormWithResponsesAndHash } from '../email-submission/email-submission.types'
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import { sharedSubmissionParams } from '../submission.constants'
@@ -271,6 +274,60 @@ export const scanAndRetrieveAttachments = async (
   // Replace req.body.responses with the new responses with populated attachments.
   req.body.responses = scanAndRetrieveFilesResult.value
 
+  return next()
+}
+
+/**
+ * Middleware to validate payment content
+ */
+export const validatePaymentSubmission = async (
+  req: ValidateSubmissionMiddlewareHandlerRequest,
+  res: Parameters<EncryptSubmissionMiddlewareHandlerType>[1],
+  next: NextFunction,
+) => {
+  const formDefDoc = req.formsg.formDef as IPopulatedForm
+
+  const formDef = formDefDoc.toObject() // Convert to POJO
+
+  const logMeta = {
+    action: 'validatePaymentSubmission',
+    formId: String(formDef._id),
+    ...createReqMeta(req),
+  }
+
+  const formDefProducts = formDef?.payments_field?.products
+  const submittedPaymentProducts = req.body.paymentProducts
+  if (submittedPaymentProducts) {
+    if (!isPaymentsProducts(formDefProducts)) {
+      // Payment definition does not allow for payment by product
+
+      logger.error({
+        message: 'Invalid form definition for payment by product',
+        meta: logMeta,
+      })
+
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message:
+          'The payment settings in this form have been updated. Please refresh and try again.',
+      })
+    }
+    return PaymentsService.validatePaymentProducts(
+      formDefProducts,
+      submittedPaymentProducts,
+    )
+      .map(() => next())
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error validating payment submission',
+          meta: logMeta,
+          error,
+        })
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({
+          message: errorMessage,
+        })
+      })
+  }
   return next()
 }
 

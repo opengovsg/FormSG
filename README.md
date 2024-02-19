@@ -9,8 +9,9 @@
 [![Coverage Status](https://coveralls.io/repos/github/opengovsg/FormSG/badge.svg?branch=develop)](https://coveralls.io/github/opengovsg/FormSG?branch=develop)
 
 ## Table of Contents
+
 - [Contributing](#contributing)
-    - [IMPORTANT NOTE TO ALL CONTRIBUTORS](#important-note-to-all-contributors)
+  - [IMPORTANT NOTE TO ALL CONTRIBUTORS](#important-note-to-all-contributors)
 - [Features](#features)
 - [Local Development (Docker)](#local-development-docker)
   - [Prerequisites](#prerequisites)
@@ -69,10 +70,10 @@ Install [docker and docker-compose](https://docs.docker.com/get-docker/).
 
 ### First Setup
 
-To install the relevant npm packages, run the following in the root direcory:
+To install the relevant npm packages (frontend, backend and virus-scanner), run the following in the root direcory:
 
 ```bash
-npm install
+npm install && npm --prefix serverless/virus-scanner install
 ```
 
 To prevent breaking changes to webpack4 introduced in node 17 and above, enable the `--openssl-legacy-provider` flag:
@@ -235,6 +236,7 @@ Prisma is an Object-Relational Mapping (ORM) library that can also be used as th
 Follow this [guide](https://www.prisma.io/docs/guides/migrate-to-prisma/migrate-from-mongoose#overview-of-the-migration-process) by Prisma to migrate from Mongoose.
 
 The guide has 4 primary steps:
+
 1. Install Prisma CLI
 2. Introspect the current MongoDB for the data model
    1. For this section, Prisma’s introspection should be able to create prisma models that will replace your `server.model.ts` for each collection

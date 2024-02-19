@@ -469,7 +469,7 @@ export const usePreviewFormMutations = (formId: string) => {
 
   const submitStorageModeFormMutation = useMutation(
     (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
-      return submitStorageModeFormPreview({ ...args, formId })
+      return submitStorageModeFormPreview({ formId })
     },
   )
 
@@ -482,7 +482,7 @@ export const usePreviewFormMutations = (formId: string) => {
 
   const submitStorageModeFormFetchMutation = useMutation(
     (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
-      return submitStorageModeFormPreviewWithFetch({ ...args, formId })
+      return submitStorageModeFormPreviewWithFetch({ formId })
     },
   )
 

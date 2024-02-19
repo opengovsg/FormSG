@@ -29,3 +29,9 @@ export class PaymentAccountInformationError extends ApplicationError {
     super(message)
   }
 }
+
+export class InvalidPaymentProductsError extends ApplicationError {
+  constructor(message = 'Invalid payment submission') {
+    super(message)
+  }
+}
