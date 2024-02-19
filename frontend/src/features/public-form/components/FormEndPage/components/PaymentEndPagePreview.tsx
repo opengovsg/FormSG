@@ -27,7 +27,7 @@ export const PaymentEndPagePreview = ({
     <>
       <Flex flexDir="column" align="center">
         <Box mt={{ base: '2.5rem', md: 0 }} mb={{ base: '0.5rem', md: 0 }}>
-          <PaymentsThankYouSvgr h="100%" pt="2.5rem" />
+          <PaymentsThankYouSvgr h="100%" />
         </Box>
         <Stack
           pt={{ base: '1rem', md: '1.5rem' }}

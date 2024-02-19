@@ -2,10 +2,7 @@ import { Container, Flex, Stack, StackDivider } from '@chakra-ui/react'
 
 import { FormColorTheme, FormDto } from '~shared/types/form'
 
-import {
-  SubmissionData,
-  usePublicFormContext,
-} from '~features/public-form/PublicFormContext'
+import { SubmissionData } from '~features/public-form/PublicFormContext'
 
 import { EndPageBlock } from './components/EndPageBlock'
 import { FeedbackBlock, FeedbackFormInput } from './components/FeedbackBlock'
@@ -26,7 +23,6 @@ export const FormEndPage = ({
   colorTheme,
   ...endPageProps
 }: FormEndPageProps): JSX.Element => {
-  const { isPaymentEnabled } = usePublicFormContext()
   return (
     <Container w="42.5rem" maxW="100%" p={0}>
       <Flex flexDir="column" align="center">
@@ -43,7 +39,6 @@ export const FormEndPage = ({
             focusOnMount
             {...endPageProps}
             colorTheme={colorTheme}
-            isPaymentEnabled={isPaymentEnabled}
           />
           {isFeedbackSubmitted ? null : (
             <FeedbackBlock

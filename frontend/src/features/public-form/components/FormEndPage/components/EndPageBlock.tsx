@@ -54,7 +54,7 @@ export const EndPageBlock = ({
   }, [formTitle])
 
   return (
-    <Container py={{ base: '1.5rem', md: '3rem' }}>
+    <>
       <Box ref={focusRef}>
         <VisuallyHidden aria-live="assertive">
           {submittedAriaText}
@@ -90,6 +90,6 @@ export const EndPageBlock = ({
           </Button>
         </Box>
       </Box>
-    </Container>
+    </>
   )
 }

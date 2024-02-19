@@ -63,7 +63,7 @@ export const EndPageContent = (): JSX.Element => {
 
   const thankYouSvg = isPaymentEnabled ? (
     <Flex backgroundColor="primary.100" justifyContent="center" py="1rem">
-      <PaymentsThankYouSvgr h="100%" pt="2.5rem" />
+      <PaymentsThankYouSvgr h="100%" />
     </Flex>
   ) : (
     <Flex backgroundColor="primary.100" justifyContent="center">
@@ -95,8 +95,8 @@ export const EndPageContent = (): JSX.Element => {
         />
         {thankYouSvg}
         <Stack>
-          <Box px={{ base: '1.5rem', md: '4rem' }} bg={backgroundColor}>
-            {isPaymentEnabled ? (
+          {isPaymentEnabled ? (
+            <Box px={{ base: '1.5rem', md: '4rem' }} bg={backgroundColor}>
               <PaymentEndPageBlock
                 submissionData={{
                   id: form?._id ?? 'Submission ID',
@@ -104,7 +104,13 @@ export const EndPageContent = (): JSX.Element => {
                 }}
                 endPage={endPageContent}
               />
-            ) : (
+            </Box>
+          ) : (
+            <Box
+              px={{ base: '1.5rem', md: '4rem' }}
+              py={{ base: '1.5rem', md: '3rem' }}
+              bg={backgroundColor}
+            >
               <EndPageBlock
                 formTitle={form?.title}
                 endPage={endPageContent}
@@ -114,8 +120,8 @@ export const EndPageContent = (): JSX.Element => {
                 }}
                 colorTheme={colorTheme ?? FormColorTheme.Blue}
               />
-            )}
-          </Box>
+            </Box>
+          )}
         </Stack>
       </Stack>
     </Flex>
