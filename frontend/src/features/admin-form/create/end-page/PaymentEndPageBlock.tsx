@@ -44,6 +44,10 @@ export const PaymentEndPageBlock = ({
     return 'You have successfully submitted your response.'
   }, [form?.title])
 
+  const handleButtonClick = () => {
+    window.location.reload()
+  }
+
   if (!isPaymentEnabled) {
     return <></>
   }
@@ -68,6 +72,7 @@ export const PaymentEndPageBlock = ({
         products={paymentProducts}
         name={'Product/ Service'}
         paymentDate={new Date()}
+        onClick={handleButtonClick}
       />
     </Box>
   )

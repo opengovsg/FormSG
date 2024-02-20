@@ -21,6 +21,7 @@ type DownloadReceiptBlockProps = {
   name: string
   paymentDate: Date | null
   endPage: FormDto['endPage']
+  onClick?: () => void
 }
 
 const PaymentDetailsRow = ({
@@ -111,6 +112,7 @@ export const DownloadReceiptBlock = ({
   products,
   paymentDate,
   endPage,
+  onClick,
 }: DownloadReceiptBlockProps) => {
   const toast = useToast({ status: 'success', isClosable: true })
 
@@ -194,7 +196,7 @@ export const DownloadReceiptBlock = ({
           <Button
             w="100%"
             leftIcon={<BiDownload fontSize="1.5rem" />}
-            onClick={handleInvoiceClick}
+            onClick={onClick || handleInvoiceClick}
           >
             Save proof of payment
           </Button>

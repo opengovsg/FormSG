@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
-import { Box, Container, Text, VisuallyHidden } from '@chakra-ui/react'
+import { Box, Text, VisuallyHidden } from '@chakra-ui/react'
 import { format } from 'date-fns'
 
 import { FormColorTheme, FormDto } from '~shared/types/form'
