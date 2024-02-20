@@ -134,7 +134,7 @@ const transformToAttachmentOutput = (
 
 const transformToCheckboxOutput = (
   schema: CheckboxFieldSchema,
-  input: CheckboxFieldValues,
+  input?: CheckboxFieldValues,
 ): CheckboxResponse => {
   let answerArray: string[] = []
   if (input !== undefined && input.value) {
@@ -158,7 +158,7 @@ const transformToCheckboxOutput = (
 
 const transformToRadioOutput = (
   schema: RadioFieldSchema,
-  input: RadioFieldValues,
+  input?: RadioFieldValues,
 ): RadioResponse => {
   let answer = ''
   if (input !== undefined) {
@@ -210,7 +210,7 @@ const transformToChildOutput = (
  */
 export const transformInputsToOutputs = (
   field: FormFieldDto,
-  input: FormFieldValue,
+  input?: FormFieldValue,
 ): FieldResponse | null => {
   switch (field.fieldType) {
     case BasicField.Section:
