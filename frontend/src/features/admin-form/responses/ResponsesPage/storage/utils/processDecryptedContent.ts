@@ -129,7 +129,7 @@ export const processDecryptedContentV3 = async (
     .map((ff) => {
       const response = responses[ff._id]
       if (!response) {
-        return transformInputsToOutputs(ff, '')
+        return transformInputsToOutputs(ff)
       }
       if (response.fieldType === BasicField.Attachment) {
         const answer = response.answer as AttachmentFieldResponseV3
