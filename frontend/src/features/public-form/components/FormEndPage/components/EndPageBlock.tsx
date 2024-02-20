@@ -70,7 +70,7 @@ export const EndPageBlock = ({
           </Box>
         ) : null}
       </Box>
-      <Box mt="1.5rem">
+      <Box mt="2rem">
         <Box>
           <Text textColor="secondary.300" textStyle="caption-2">
             Response ID: {submissionData.id}

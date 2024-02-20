@@ -31,7 +31,11 @@ import { getPaymentViewStates, PaymentViewStates } from './utils'
 const PaymentFormWrapper = ({ children }: { children: React.ReactNode }) => {
   return (
     <PublicFormWrapper>
-      <Box pt={{ base: '2.5rem', md: '0' }} w="100%">
+      <Box
+        pt={{ base: '2.5rem', md: '0' }}
+        mb={{ base: '1.5rem', md: '0' }}
+        w="100%"
+      >
         <Container w="100%" maxW="57rem" p={0}>
           {children}
         </Container>

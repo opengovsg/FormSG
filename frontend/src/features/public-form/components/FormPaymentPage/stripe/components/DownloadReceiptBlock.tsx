@@ -149,7 +149,8 @@ export const DownloadReceiptBlock = ({
         </Stack>
       </Box>
       <Box
-        my="1.5rem"
+        mt="1.5rem"
+        mb="1rem"
         py={{ base: '1.5rem', md: '2rem' }}
         px={{ base: '1rem', md: '2rem' }}
         bgColor="white"

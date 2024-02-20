@@ -32,9 +32,9 @@ export const CreatePaymentIntentFailureBlock = ({
   }, [formTitle, submissionId])
 
   return (
-    <Flex flexDir="column">
-      <Stack tabIndex={-1} ref={focusRef} spacing="1rem">
-        <Box>
+    <Flex flexDir="column" mb="1rem">
+      <Stack tabIndex={-1} ref={focusRef} spacing="1rem" pb="2rem">
+        <Box pt="0.5rem">
           <VisuallyHidden aria-live="assertive">
             {submittedAriaText}
           </VisuallyHidden>
