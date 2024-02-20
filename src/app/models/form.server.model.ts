@@ -458,6 +458,14 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           type: String,
           default: 'Submit another response',
         },
+        paymentTitle: {
+          type: String,
+          default: 'Thank you, your payment has been made successfully.',
+        },
+        paymentParagraph: {
+          type: String,
+          default: 'Your form has been submitted and payment has been made.',
+        },
       },
 
       hasCaptcha: {

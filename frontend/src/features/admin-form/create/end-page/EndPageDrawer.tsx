@@ -78,9 +78,8 @@ export const EndPageInput = ({
   const { handleClose } = useCreatePageSidebar()
 
   const paymentDefaults = {
-    title: 'Your payment has been made successfully.',
-    paragraph: 'Your form has been submitted and payment has been made.',
-    buttonLink: 'Default proof of payment link',
+    paymentTitle: endPageData?.paymentTitle,
+    paymentParagraph: endPageData?.paymentParagraph,
     buttonText: 'Save proof of payment',
   }
 
@@ -93,6 +92,10 @@ export const EndPageInput = ({
     mode: 'onBlur',
     defaultValues: isPayment ? paymentDefaults : endPageData,
   })
+
+  const formPlaceholder = isPayment
+    ? 'Default proof of payment'
+    : 'Default form link'
 
   // Update dirty state of builder so confirmation modal can be shown
   useEffect(() => {
@@ -125,14 +128,17 @@ export const EndPageInput = ({
 
   const handleCloseDrawer = useCallback(() => handleClose(false), [handleClose])
 
-  const handleUpdateEndPage = handleSubmit((endPage) =>
-    endPageMutation.mutate(endPage, {
+  const handleUpdateEndPage = handleSubmit((endPage) => {
+    return endPageMutation.mutate(endPage, {
       onSuccess: () => {
         setToInactive()
         handleCloseDrawer()
       },
-    }),
-  )
+    })
+  })
+
+  const paymentTitle = isPayment ? 'paymentTitle' : 'title'
+  const paymentParagraph = isPayment ? 'paymentParagraph' : 'paragraph'
 
   return (
     <CreatePageDrawerContentContainer>
@@ -140,22 +146,20 @@ export const EndPageInput = ({
         <FormControl
           isReadOnly={endPageMutation.isLoading}
           isInvalid={!!errors.title}
-          isDisabled={isPayment}
         >
           <FormLabel isRequired>Title</FormLabel>
           <Input
             autoFocus
-            {...register('title', { required: REQUIRED_ERROR })}
+            {...register(paymentTitle, { required: REQUIRED_ERROR })}
           />
           <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
         </FormControl>
         <FormControl
           isReadOnly={endPageMutation.isLoading}
           isInvalid={!!errors.paragraph}
-          isDisabled={isPayment}
         >
           <FormLabel isRequired>Follow-up instructions</FormLabel>
-          <Textarea {...register('paragraph')} />
+          <Textarea {...register(paymentParagraph)} />
           <FormErrorMessage>{errors.paragraph?.message}</FormErrorMessage>
         </FormControl>
         <Stack direction={['column', 'row']} gap={['2rem', '1rem']}>
@@ -178,7 +182,7 @@ export const EndPageInput = ({
           >
             <FormLabel isRequired>Button redirect link</FormLabel>
             <Input
-              placeholder="Default form link"
+              placeholder={formPlaceholder}
               {...register('buttonLink', buttonLinkRules)}
             />
             <FormErrorMessage>{errors.buttonLink?.message}</FormErrorMessage>

@@ -84,6 +84,8 @@ const FORM_DEFAULTS = {
   endPage: {
     title: 'Thank you for filling out the form.',
     buttonText: 'Submit another response',
+    paymentTitle: 'Thank you, your payment has been made successfully.',
+    paymentParagraph: 'Your form has been submitted and payment has been made.',
   },
   hasCaptcha: true,
   hasIssueNotification: true,
@@ -1810,6 +1812,9 @@ describe('Form Model', () => {
           title: 'some new title',
           paragraph: 'some description paragraph',
           buttonText: 'custom button text',
+          paymentParagraph:
+            'Your form has been submitted and payment has been made.',
+          paymentTitle: 'Thank you, your payment has been made successfully.',
         }
 
         // Act
@@ -1848,6 +1853,9 @@ describe('Form Model', () => {
             // Defaults should be populated and returned
             buttonText: 'Submit another response',
             title: 'Thank you for filling out the form.',
+            paymentParagraph:
+              'Your form has been submitted and payment has been made.',
+            paymentTitle: 'Thank you, your payment has been made successfully.',
           },
         })
       })
@@ -1859,6 +1867,9 @@ describe('Form Model', () => {
           buttonText: 'custom button text',
           title: 'some new title',
           paragraph: 'does not really matter',
+          paymentParagraph:
+            'Your form has been submitted and payment has been made.',
+          paymentTitle: 'Thank you, your payment has been made successfully.',
         }
 
         // Act
