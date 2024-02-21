@@ -212,6 +212,7 @@ export const TableField = ({
                     >
                       {cell.render('Cell', {
                         schemaId: schema._id,
+                        isDisabled: schema.disabled,
                         disableRequiredValidation,
                         columnSchema: schema.columns[j],
                         colorTheme,
@@ -226,7 +227,9 @@ export const TableField = ({
                       display={{ base: 'block', md: 'table-cell' }}
                     >
                       <IconButton
-                        isDisabled={fields.length <= schema.minimumRows}
+                        isDisabled={
+                          schema.disabled || fields.length <= schema.minimumRows
+                        }
                         variant="clear"
                         colorScheme="danger"
                         aria-label="Remove row"
@@ -248,6 +251,7 @@ export const TableField = ({
       ) : null}
       {schema.addMoreRows && schema.maximumRows !== undefined ? (
         <AddRowFooter
+          isDisabled={schema.disabled}
           currentRows={fields.length}
           maxRows={schema.maximumRows}
           handleAddRow={handleAddRow}

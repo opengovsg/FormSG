@@ -63,7 +63,7 @@ export const VerifiableFieldContainer = ({
               // are removed from DOM if the button is disabled.
               // Instead, we allow users to click the button to trigger verification
               name={`${schema._id}-verify`}
-              isDisabled={isVfnBoxOpen || hasSignature}
+              isDisabled={schema.disabled || isVfnBoxOpen || hasSignature}
               isLoading={isSendingOtp}
               onClick={handleVfnButtonClick}
               colorScheme={`theme-${colorTheme}`}

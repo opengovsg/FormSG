@@ -53,6 +53,9 @@ export const MobileFieldInput = ({
               ? handleInputChange(onChange)
               : (value) => onChange({ value })
           }
+          // Remove placeholder when field is disabled, to avoid confusion if
+          // the field is prefilled or not (placeholder and prefill look similar)
+          examplePlaceholder={schema.disabled ? 'off' : undefined}
           {...field}
           {...phoneNumberInputProps}
         />

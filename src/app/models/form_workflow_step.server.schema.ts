@@ -17,6 +17,10 @@ const WorkflowStepSchema = new Schema<IWorkflowStepSchema>(
       default: WorkflowType.Static,
       required: true,
     },
+    edit: {
+      type: [{ type: Schema.Types.ObjectId }],
+      required: true,
+    },
   },
   {
     discriminatorKey: 'workflow_type',

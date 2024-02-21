@@ -883,6 +883,7 @@ describe('Form Model', () => {
 
       it('should create and save successfully with a workflow', async () => {
         // Arrange
+        const emailFieldObjectId = new ObjectId()
         const validFormObj = {
           ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
           workflow: [
@@ -890,11 +891,13 @@ describe('Form Model', () => {
               _id: new ObjectId(),
               workflow_type: WorkflowType.Static,
               emails: ['test@open.gov.sg'],
+              edit: [new ObjectId(), emailFieldObjectId],
             },
             {
               _id: new ObjectId(),
               workflow_type: WorkflowType.Dynamic,
-              field: new ObjectId(),
+              field: emailFieldObjectId,
+              edit: [new ObjectId()],
             },
           ],
         }

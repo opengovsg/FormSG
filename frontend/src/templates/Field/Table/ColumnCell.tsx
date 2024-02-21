@@ -29,6 +29,7 @@ import { TableFieldInputs } from '../types'
 export interface ColumnCellProps
   extends UseTableCellProps<TableFieldInputs, string> {
   schemaId: string
+  isDisabled?: boolean
   disableRequiredValidation: boolean
   columnSchema: ColumnDto
   colorTheme: FormColorTheme
@@ -36,6 +37,7 @@ export interface ColumnCellProps
 
 export interface FieldColumnCellProps<T extends Column = Column> {
   schema: ColumnDto<T>
+  isDisabled?: boolean
   disableRequiredValidation: boolean
   /** Represents `{schemaId}.{rowIndex}.{columnId}` */
   inputName: `${string}.${number}.${string}`
@@ -44,6 +46,7 @@ export interface FieldColumnCellProps<T extends Column = Column> {
 
 const ShortTextColumnCell = ({
   schema,
+  isDisabled,
   disableRequiredValidation,
   inputName,
   colorTheme,
@@ -62,6 +65,7 @@ const ShortTextColumnCell = ({
       rules={rules}
       render={({ field }) => (
         <Input
+          isDisabled={isDisabled}
           colorScheme={`theme-${colorTheme}`}
           aria-labelledby={schema._id}
           {...field}
@@ -73,6 +77,7 @@ const ShortTextColumnCell = ({
 
 const DropdownColumnCell = ({
   schema,
+  isDisabled,
   disableRequiredValidation,
   inputName,
   colorTheme,
@@ -91,6 +96,7 @@ const DropdownColumnCell = ({
       defaultValue=""
       render={({ field }) => (
         <SingleSelect
+          isDisabled={isDisabled}
           colorScheme={`theme-${colorTheme}`}
           // Possibility of fieldOptions being undefined during table field creation.
           items={schema.fieldOptions ?? []}
@@ -106,6 +112,7 @@ const DropdownColumnCell = ({
  */
 export const ColumnCell = ({
   schemaId,
+  isDisabled,
   disableRequiredValidation,
   row,
   column,
@@ -128,6 +135,7 @@ export const ColumnCell = ({
           <ShortTextColumnCell
             colorTheme={colorTheme}
             schema={columnSchema}
+            isDisabled={isDisabled}
             disableRequiredValidation={disableRequiredValidation}
             inputName={inputName}
           />
@@ -137,6 +145,7 @@ export const ColumnCell = ({
           <DropdownColumnCell
             colorTheme={colorTheme}
             schema={columnSchema}
+            isDisabled={isDisabled}
             disableRequiredValidation={disableRequiredValidation}
             inputName={inputName}
           />
@@ -144,7 +153,13 @@ export const ColumnCell = ({
       default:
         return null
     }
-  }, [colorTheme, columnSchema, disableRequiredValidation, inputName])
+  }, [
+    colorTheme,
+    columnSchema,
+    disableRequiredValidation,
+    inputName,
+    isDisabled,
+  ])
 
   return (
     <FormControl

@@ -14,6 +14,7 @@ import { EditStepInputs } from '../../../types'
 import { StepLabel } from '../StepLabel'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
+import { QuestionsBlock } from './QuestionsBlock'
 import { RespondentBlock } from './RespondentBlock'
 
 export interface EditLogicBlockProps {
@@ -60,6 +61,8 @@ export const EditStepBlock = ({
     switch (inputs.workflow_type) {
       case WorkflowType.Static: {
         step = {
+          ...inputs,
+          // Need to explicitly set workflow_type in this object to help with typechecking.
           workflow_type: WorkflowType.Static,
           emails: inputs.emails ? [inputs.emails] : [],
         }
@@ -68,6 +71,7 @@ export const EditStepBlock = ({
       case WorkflowType.Dynamic: {
         if (!inputs.field) return
         step = {
+          ...inputs,
           workflow_type: WorkflowType.Dynamic,
           field: inputs.field,
         }
@@ -108,6 +112,7 @@ export const EditStepBlock = ({
         formMethods={formMethods}
         isLoading={isLoading}
       />
+      <QuestionsBlock formMethods={formMethods} isLoading={isLoading} />
       <SaveActionGroup
         isLoading={isLoading}
         handleSubmit={handleSubmit}
