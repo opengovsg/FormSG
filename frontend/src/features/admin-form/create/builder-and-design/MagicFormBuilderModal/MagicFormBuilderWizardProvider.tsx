@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useMutation } from 'react-query'
+import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 
+import { featureFlags } from '~shared/constants'
 import { MagicFormBuilderMode } from '~shared/types'
 
 import { useAssistanceMutations } from '~features/admin-form/assistance/mutations'
@@ -18,18 +20,29 @@ export const INITIAL_STEP_STATE: [MagicFormBuilderFlowStates, -1 | 1 | 0] = [
   -1,
 ]
 
-interface UseCommonFormWizardProviderProps {
-  defaultValues?: Partial<MagicFormBuilderWizardInputProps>
-}
-
-export const useMagicFormBuilderWizardProvider = ({
-  defaultValues,
-}: UseCommonFormWizardProviderProps = {}) => {
+export const useMagicFormBuilderWizardProvider = () => {
   const [[currentStep, direction], setCurrentStep] =
     useState(INITIAL_STEP_STATE)
 
+  const growthbook = useGrowthBook()
+
+  useEffect(() => {
+    // Load features asynchronously when the app renders
+    if (growthbook) {
+      growthbook.loadFeatures()
+    }
+  }, [growthbook])
+
+  const showMagicFormPDFButton = useFeatureIsOn(
+    featureFlags.magicFormBuilderPDF,
+  )
+
   const formMethods = useForm<MagicFormBuilderWizardInputProps>({
-    defaultValues,
+    defaultValues: {
+      magicFormBuilderMode: !showMagicFormPDFButton
+        ? MagicFormBuilderMode.Prompt
+        : MagicFormBuilderMode.Pdf,
+    },
   })
 
   return {
@@ -43,11 +56,7 @@ export const useMagicFormBuilderWizardProvider = ({
 const useMagicFormBuilderWizardContext =
   (): MagicFormBuilderWizardContextReturn => {
     const { formMethods, currentStep, direction, setCurrentStep } =
-      useMagicFormBuilderWizardProvider({
-        defaultValues: {
-          magicFormBuilderMode: MagicFormBuilderMode.Pdf,
-        },
-      })
+      useMagicFormBuilderWizardProvider()
 
     const { handleSubmit } = formMethods
 
@@ -72,7 +81,6 @@ const useMagicFormBuilderWizardContext =
         if (inputs.magicFormBuilderMode === MagicFormBuilderMode.Pdf) {
           setCurrentStep([MagicFormBuilderFlowStates.PdfDetails, 1])
         }
-
         if (inputs.magicFormBuilderMode === MagicFormBuilderMode.Prompt) {
           setCurrentStep([MagicFormBuilderFlowStates.PromptDetails, 1])
         }
