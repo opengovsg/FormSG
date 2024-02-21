@@ -83,7 +83,7 @@ export const FormFields = ({
     () =>
       formFields
         .map(augmentWithMyInfo)
-        .map(augmentWithWorkflowDisabling.bind(this, workflowStep)),
+        .map((fields) => augmentWithWorkflowDisabling(workflowStep, fields)),
     [formFields, workflowStep],
   )
 
