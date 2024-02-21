@@ -148,10 +148,13 @@ export const PublicFormProvider = ({
     /* enabled= */ !submissionData,
   )
 
-  // Replace form fields and logic with the previous version for MRF consistency.
+  // Replace form fields, logic, and workflow with the previous version for MRF consistency.
   if (data && encryptedPreviousSubmission) {
     data.form.form_fields = encryptedPreviousSubmission.form_fields
     data.form.form_logics = encryptedPreviousSubmission.form_logics
+    if (data.form.responseMode === FormResponseMode.Multirespondent) {
+      data.form.workflow = encryptedPreviousSubmission.workflow
+    }
   }
 
   const isLoading = isFormLoading || isSubmissionLoading
