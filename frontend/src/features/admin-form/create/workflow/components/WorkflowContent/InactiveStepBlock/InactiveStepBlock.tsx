@@ -60,8 +60,6 @@ export const InactiveStepBlock = ({
   }, [mapIdToField, step])
 
   const questionBadges = useMemo(() => {
-    const allInvalid = step.edit.every((fieldId) => !(fieldId in mapIdToField))
-
     if (step.edit.length === 0) {
       return (
         <FieldLogicBadge
@@ -72,6 +70,8 @@ export const InactiveStepBlock = ({
         />
       )
     }
+
+    const allInvalid = step.edit.every((fieldId) => !(fieldId in mapIdToField))
 
     if (allInvalid) {
       return (
