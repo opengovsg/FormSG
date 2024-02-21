@@ -139,6 +139,12 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
     }
   }, [isPdfResponseEnabled])
 
+  // vfn is not supported on MRF
+  const isToggleVfnDisabled = useMemo(
+    () => form?.responseMode === FormResponseMode.Multirespondent,
+    [form],
+  )
+
   return (
     <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
@@ -158,7 +164,7 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
       <FormControl isReadOnly={isLoading}>
         <Toggle {...register('required')} label="Required" />
       </FormControl>
-      <FormControl isReadOnly={isLoading}>
+      <FormControl isReadOnly={isLoading} isDisabled={isToggleVfnDisabled}>
         <Toggle
           {...register('isVerifiable')}
           label="OTP verification"
