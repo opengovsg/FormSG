@@ -1,6 +1,9 @@
+import { useMemo } from 'react'
 import { BiFileBlank, BiPencil } from 'react-icons/bi'
 import { forwardRef, Stack } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
+import { featureFlags } from '~shared/constants'
 import { MagicFormBuilderMode } from '~shared/types/form/form'
 
 import Tile from '~components/Tile'
@@ -14,8 +17,16 @@ export const MagicFormBuilderOptions = forwardRef<
   MagicFormBuilderOptionsProps,
   'button'
 >(({ value, onChange }, ref) => {
-  return (
-    <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
+  const showMagicFormPDFButton = useFeatureIsOn(
+    featureFlags.magicFormBuilderPDF,
+  )
+
+  const showMagicFormPromptButton = useFeatureIsOn(
+    featureFlags.magicFormBuilderPrompt,
+  )
+
+  const showMagicFormPDF = useMemo(() => {
+    return showMagicFormPDFButton ? (
       <Tile
         variant="complex"
         icon={BiFileBlank}
@@ -27,6 +38,13 @@ export const MagicFormBuilderOptions = forwardRef<
         <Tile.Title>Upload a form</Tile.Title>
         <Tile.Subtitle>Convert a PDF form</Tile.Subtitle>
       </Tile>
+    ) : (
+      <></>
+    )
+  }, [onChange, showMagicFormPDFButton, value])
+
+  const showMagicFormPrompt = useMemo(() => {
+    return showMagicFormPromptButton ? (
       <Tile
         ref={ref}
         variant="complex"
@@ -39,6 +57,15 @@ export const MagicFormBuilderOptions = forwardRef<
         <Tile.Title>Write a prompt</Tile.Title>
         <Tile.Subtitle>Build a form based on a prompt</Tile.Subtitle>
       </Tile>
+    ) : (
+      <></>
+    )
+  }, [onChange, ref, showMagicFormPromptButton, value])
+
+  return (
+    <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
+      {showMagicFormPDF}
+      {showMagicFormPrompt}
     </Stack>
   )
 })

@@ -14,7 +14,6 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import Badge from '~components/Badge'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
 
 import { useMagicFormBuilderWizard } from '../MagicFormBuilderWizardContext'
 
