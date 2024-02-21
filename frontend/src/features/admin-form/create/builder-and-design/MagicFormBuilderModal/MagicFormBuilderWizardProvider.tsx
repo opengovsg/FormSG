@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useMutation } from 'react-query'
-import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import { featureFlags } from '~shared/constants'
 import { MagicFormBuilderMode } from '~shared/types'
@@ -23,15 +23,6 @@ export const INITIAL_STEP_STATE: [MagicFormBuilderFlowStates, -1 | 1 | 0] = [
 export const useMagicFormBuilderWizardProvider = () => {
   const [[currentStep, direction], setCurrentStep] =
     useState(INITIAL_STEP_STATE)
-
-  const growthbook = useGrowthBook()
-
-  useEffect(() => {
-    // Load features asynchronously when the app renders
-    if (growthbook) {
-      growthbook.loadFeatures()
-    }
-  }, [growthbook])
 
   const showMagicFormPDFButton = useFeatureIsOn(
     featureFlags.magicFormBuilderPDF,
