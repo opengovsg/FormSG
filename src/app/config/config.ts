@@ -81,13 +81,17 @@ const s3BucketUrlVars = convict(s3BucketUrlSchema)
   .validate({ allowed: 'strict' })
   .getProperties()
 
+const hasR2Buckets = Object.values(s3BucketUrlVars).some((url) =>
+  /https:\/\/\w+\.r2\.cloudflarestorage\.com/i.test(url),
+)
+
 const s3 = new aws.S3({
   region: basicVars.awsConfig.region,
   // Unset and use default if not in development mode
-  // Endpoint and path style overrides are needed only in development mode for
-  // localstack to work.
-  endpoint: isDev ? s3BucketUrlVars.endPoint : undefined,
-  s3ForcePathStyle: isDev ? true : undefined,
+  // Endpoint and path style overrides are needed only in development mode
+  // for localstack to work, or for Cloudflare R2.
+  endpoint: isDev || hasR2Buckets ? s3BucketUrlVars.endPoint : undefined,
+  s3ForcePathStyle: isDev || hasR2Buckets ? true : undefined,
 })
 
 // using aws-sdk v3 (FRM-993)

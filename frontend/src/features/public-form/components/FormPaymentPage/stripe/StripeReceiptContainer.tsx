@@ -1,9 +1,10 @@
 import { useCallback, useState } from 'react'
 import { Box, Stack, useToast } from '@chakra-ui/react'
 
-import { FormPaymentsField, ProductItem } from '~shared/types'
+import { FormPaymentsField, ProductItemForReceipt } from '~shared/types'
 
 import { useSubmitFormFeedbackMutation } from '~features/public-form/mutations'
+import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import {
   FeedbackBlock,
@@ -26,7 +27,7 @@ export const StripeReceiptContainer = ({
   submissionId: string
   paymentId: string
   amount: number
-  products: ProductItem[]
+  products: ProductItemForReceipt[]
   paymentFieldsSnapshot: FormPaymentsField
 }) => {
   const {
@@ -35,6 +36,7 @@ export const StripeReceiptContainer = ({
     error,
   } = useGetPaymentReceiptStatus(formId, paymentId)
 
+  const { form } = usePublicFormContext()
   const toast = useToast()
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
 
@@ -59,15 +61,22 @@ export const StripeReceiptContainer = ({
     [submitFormFeedbackMutation, toast],
   )
 
-  if (isLoading || error || !paymentReceiptStatus?.isReady) {
+  if (isLoading || error || !paymentReceiptStatus?.isReady || !form) {
     return (
-      <PaymentStack>
-        <GenericMessageBlock
-          title="Your payment has been received."
-          subtitle="We are waiting to get your proof of payment from our payment provider. You may come back to the same link to download your proof of payment later."
-          submissionId={submissionId}
-        />
-      </PaymentStack>
+      <Stack my="1.5rem" mx={{ base: '1rem', md: 'auto' }}>
+        <Box
+          bg="white"
+          py={{ base: '1.5rem', md: '2rem' }}
+          px={{ base: '1rem', md: '2rem' }}
+          w="100%"
+        >
+          <GenericMessageBlock
+            title="Thank you, your payment has been made successfully."
+            subtitle="We are waiting to get your proof of payment from our payment provider. You may come back to the same link to download your invoice later."
+            submissionId={submissionId}
+          />
+        </Box>
+      </Stack>
     )
   }
   return (
@@ -85,15 +94,20 @@ export const StripeReceiptContainer = ({
           paymentType={paymentFieldsSnapshot.payment_type}
           name={paymentFieldsSnapshot.name || ''}
           paymentDate={paymentReceiptStatus.paymentDate}
+          endPage={form.endPage}
         />
       </PaymentStack>
-      <PaymentStack noBg>
+      <Stack px={{ base: '1rem', md: '4rem' }} bg="transparent">
         {!isFeedbackSubmitted && (
-          <Box backgroundColor="white" p="2rem">
+          <Box
+            backgroundColor="white"
+            py={{ base: '1.5rem', md: '2rem' }}
+            px={{ base: '1rem', md: '2rem' }}
+          >
             <FeedbackBlock onSubmit={handleSubmitFeedback} />
           </Box>
         )}
-      </PaymentStack>
+      </Stack>
     </Stack>
   )
 }

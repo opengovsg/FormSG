@@ -2,10 +2,11 @@ import { useCallback, useMemo } from 'react'
 import { BiTrash } from 'react-icons/bi'
 import { Box, chakra, Flex, Stack, Text } from '@chakra-ui/react'
 
-import { FormWorkflowStepDto } from '~shared/types/form'
+import { FormWorkflowStepDto, WorkflowType } from '~shared/types/form'
 
 import IconButton from '~components/IconButton'
 
+import { FieldLogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/FieldLogicBadge'
 import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
 
 import {
@@ -13,6 +14,7 @@ import {
   setToEditingSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
+import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { StepLabel } from '../StepLabel'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
@@ -27,6 +29,7 @@ export const InactiveStepBlock = ({
   step,
   handleOpenDeleteModal,
 }: InactiveStepBlockProps): JSX.Element | null => {
+  const { mapIdToField } = useAdminFormWorkflow()
   const setToEditing = useAdminWorkflowStore(setToEditingSelector)
   const stateData = useAdminWorkflowStore(createOrEditDataSelector)
 
@@ -41,6 +44,59 @@ export const InactiveStepBlock = ({
   }, [isPreventEdit, stepNumber, setToEditing])
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
+
+  const respondentBadges = useMemo(() => {
+    switch (step.workflow_type) {
+      case WorkflowType.Static:
+        return step.emails.map((email) => <LogicBadge>{email}</LogicBadge>)
+      case WorkflowType.Dynamic:
+        return <FieldLogicBadge field={mapIdToField[step.field]} />
+      default: {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _: never = step
+        throw new Error('Unexpected workflow type encountered')
+      }
+    }
+  }, [mapIdToField, step])
+
+  const questionBadges = useMemo(() => {
+    if (step.edit.length === 0) {
+      return (
+        <FieldLogicBadge
+          defaults={{
+            variant: 'info',
+            message: 'No fields selected',
+          }}
+        />
+      )
+    }
+
+    const allInvalid = step.edit.every((fieldId) => !(fieldId in mapIdToField))
+
+    if (allInvalid) {
+      return (
+        <FieldLogicBadge
+          defaults={{
+            variant: 'error',
+            message:
+              'All fields were deleted, please select at least one field',
+          }}
+        />
+      )
+    }
+
+    return step.edit.map((fieldId, index) => (
+      <FieldLogicBadge
+        key={index}
+        field={mapIdToField[fieldId]}
+        defaults={{
+          variant: 'info',
+          message:
+            'This field was deleted and has been removed from your workflow',
+        }}
+      />
+    ))
+  }, [mapIdToField, step.edit])
 
   return (
     <Box pos="relative">
@@ -70,6 +126,7 @@ export const InactiveStepBlock = ({
       >
         <Stack spacing="1.5rem" p={{ base: '1.5rem', md: '2rem' }}>
           <StepLabel stepNumber={stepNumber} />
+
           <Stack>
             <Text textStyle="subhead-3">Respondent in this step</Text>
             {isFirstStep ? (
@@ -81,11 +138,16 @@ export const InactiveStepBlock = ({
                 rowGap={{ md: '0.5rem' }}
                 wrap="wrap"
               >
-                {step.emails.map((email) => (
-                  <LogicBadge>{email}</LogicBadge>
-                ))}
+                {respondentBadges}
               </Flex>
             )}
+          </Stack>
+
+          <Stack>
+            <Text textStyle="subhead-3">Questions to fill</Text>
+            <Stack direction="column" spacing="0.25rem">
+              {questionBadges}
+            </Stack>
           </Stack>
         </Stack>
       </chakra.button>

@@ -1,21 +1,27 @@
 import { useMemo } from 'react'
 import { Box, Flex, Stack } from '@chakra-ui/react'
 
-import { FormAuthType, FormColorTheme, FormLogoState } from '~shared/types'
+import {
+  FormAuthType,
+  FormColorTheme,
+  FormLogoState,
+  FormResponseMode,
+} from '~shared/types'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { PREVIEW_MOCK_UINFIN } from '~features/admin-form/preview/constants'
 import { useEnv } from '~features/env/queries'
 import { EndPageBlock } from '~features/public-form/components/FormEndPage/components/EndPageBlock'
+import { PaymentsThankYouSvgr } from '~features/public-form/components/FormEndPage/components/PaymentsThankYouSvgr'
 import { ThankYouSvgr } from '~features/public-form/components/FormEndPage/components/ThankYouSvgr'
 import {
   FormBannerLogo,
   useFormBannerLogo,
 } from '~features/public-form/components/FormLogo'
-import { useBgColor } from '~features/public-form/components/PublicFormWrapper'
 
 import { useDesignColorTheme } from '../builder-and-design/utils/useDesignColorTheme'
 
+import { PaymentEndPageBlock } from './PaymentEndPageBlock'
 import { dataSelector, useEndPageStore } from './useEndPageStore'
 
 export const EndPageContent = (): JSX.Element => {
@@ -42,7 +48,28 @@ export const EndPageContent = (): JSX.Element => {
     showDefaultLogoIfNoLogo: true,
   })
 
-  const backgroundColor = useBgColor({ colorTheme })
+  const isPaymentEnabled =
+    form?.responseMode === FormResponseMode.Encrypt &&
+    form.payments_field.enabled
+
+  const backgroundColor = isPaymentEnabled ? 'transparent' : 'white'
+
+  const endPageContent = endPage ?? {
+    title: '',
+    buttonText: '',
+    paymentTitle: '',
+    paymentParagraph: '',
+  }
+
+  const thankYouSvg = isPaymentEnabled ? (
+    <Flex backgroundColor="primary.100" justifyContent="center" py="1rem">
+      <PaymentsThankYouSvgr h="100%" />
+    </Flex>
+  ) : (
+    <Flex backgroundColor="primary.100" justifyContent="center">
+      <ThankYouSvgr h="100%" pt="2.5rem" />
+    </Flex>
+  )
 
   return (
     <Flex
@@ -55,7 +82,7 @@ export const EndPageContent = (): JSX.Element => {
       justify="center"
       overflow="auto"
     >
-      <Stack w="100%" h="fit-content" bg="white">
+      <Stack w="100%" h="fit-content" bg="primary.100">
         <FormBannerLogo
           isLoading={isLoading}
           {...formBannerLogoProps}
@@ -66,25 +93,36 @@ export const EndPageContent = (): JSX.Element => {
               : undefined
           }
         />
-        <Flex backgroundColor={backgroundColor} justifyContent="center">
-          <ThankYouSvgr h="100%" pt="2.5rem" />
-        </Flex>
-
-        <Box
-          py={{ base: '1.5rem', md: '3rem' }}
-          px={{ base: '1.5rem', md: '4rem' }}
-          w="100%"
-        >
-          <EndPageBlock
-            formTitle={form?.title}
-            endPage={endPage ?? { title: '', buttonText: '' }}
-            submissionData={{
-              id: form?._id ?? 'Submission ID',
-              timestamp: Date.now(),
-            }}
-            colorTheme={colorTheme ?? FormColorTheme.Blue}
-          />
-        </Box>
+        {thankYouSvg}
+        <Stack>
+          {isPaymentEnabled ? (
+            <Box px={{ base: '1.5rem', md: '4rem' }} bg={backgroundColor}>
+              <PaymentEndPageBlock
+                submissionData={{
+                  id: form?._id ?? 'Submission ID',
+                  timestamp: Date.now(),
+                }}
+                endPage={endPageContent}
+              />
+            </Box>
+          ) : (
+            <Box
+              px={{ base: '1.5rem', md: '4rem' }}
+              py={{ base: '1.5rem', md: '3rem' }}
+              bg={backgroundColor}
+            >
+              <EndPageBlock
+                formTitle={form?.title}
+                endPage={endPageContent}
+                submissionData={{
+                  id: form?._id ?? 'Submission ID',
+                  timestamp: Date.now(),
+                }}
+                colorTheme={colorTheme ?? FormColorTheme.Blue}
+              />
+            </Box>
+          )}
+        </Stack>
       </Stack>
     </Flex>
   )

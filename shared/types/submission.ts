@@ -7,7 +7,7 @@ import { FormAuthType } from './form/form'
 import { DateString } from './generic'
 import { EmailResponse, FieldResponse, MobileResponse } from './response'
 import { PaymentStatus } from './payment'
-import { LogicDto, ProductItem } from './form'
+import { FormWorkflowDto, LogicDto, ProductItem } from './form'
 export type SubmissionId = Opaque<string, 'SubmissionId'>
 export const SubmissionId = z.string() as unknown as z.Schema<SubmissionId>
 
@@ -83,6 +83,7 @@ export const MultirespondentSubmissionBase = SubmissionBase.extend({
   // submitters. Don't bother to validate since this is injected by the backend.
   form_fields: z.custom<FormFieldDto[]>(),
   form_logics: z.custom<LogicDto[]>(),
+  workflow: z.custom<FormWorkflowDto>(),
 
   submissionType: z.literal(SubmissionType.Multirespondent),
   submissionPublicKey: z.string(),
@@ -144,6 +145,7 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
   submissionType: SubmissionType.Multirespondent
   form_fields: FormFieldDto[]
   form_logics: LogicDto[]
+  workflow: FormWorkflowDto
 
   submissionPublicKey: string
   encryptedSubmissionSecretKey: string

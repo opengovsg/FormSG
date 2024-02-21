@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
-import { Box, Flex, Text, VisuallyHidden } from '@chakra-ui/react'
+import { Box, Text, VisuallyHidden } from '@chakra-ui/react'
 import { format } from 'date-fns'
 
 import { FormColorTheme, FormDto } from '~shared/types/form'
@@ -54,7 +54,7 @@ export const EndPageBlock = ({
   }, [formTitle])
 
   return (
-    <Flex flexDir="column">
+    <>
       <Box ref={focusRef}>
         <VisuallyHidden aria-live="assertive">
           {submittedAriaText}
@@ -71,23 +71,25 @@ export const EndPageBlock = ({
         ) : null}
       </Box>
       <Box mt="2rem">
-        <Text textColor="secondary.300" textStyle="caption-2">
-          Response ID: {submissionData.id}
-        </Text>
-        <Text mt="0.25rem" textColor="secondary.300" textStyle="caption-2">
-          {submissionTimestamp}
-        </Text>
+        <Box>
+          <Text textColor="secondary.300" textStyle="caption-2">
+            Response ID: {submissionData.id}
+          </Text>
+          <Text mt="0.25rem" textColor="secondary.300" textStyle="caption-2">
+            {submissionTimestamp}
+          </Text>
+        </Box>
+        <Box mt="2.25rem">
+          <Button
+            as="a"
+            href={endPage.buttonLink || window.location.href}
+            variant="solid"
+            colorScheme={`theme-${colorTheme}`}
+          >
+            {endPage.buttonText || 'Submit another response'}
+          </Button>
+        </Box>
       </Box>
-      <Box mt="2.25rem">
-        <Button
-          as="a"
-          href={endPage.buttonLink || window.location.href}
-          variant="solid"
-          colorScheme={`theme-${colorTheme}`}
-        >
-          {endPage.buttonText || 'Submit another response'}
-        </Button>
-      </Box>
-    </Flex>
+    </>
   )
 }

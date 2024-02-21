@@ -81,12 +81,14 @@ const workflow_step_1: FormWorkflowStepDto = {
   _id: '61e6857c9c794b0012f1c6f8',
   workflow_type: WorkflowType.Static,
   emails: [],
+  edit: [form_field_1._id, form_field_2._id],
 }
 
 const workflow_step_2: FormWorkflowStepDto = {
   _id: '61e6857c9c794b0012f1c6f9',
   workflow_type: WorkflowType.Static,
   emails: ['test_1@tech.gov.sg', 'test_2@tech.gov.sg'],
+  edit: [form_field_3._id, form_field_4._id],
 }
 
 const FORM_WITH_WORKFLOW: Partial<AdminFormDto> = {

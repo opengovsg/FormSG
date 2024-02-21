@@ -1,12 +1,15 @@
 import { useCallback, useState } from 'react'
 import { Box } from '@chakra-ui/react'
 
+import { FormResponseMode } from '~shared/types'
+
 import { useToast } from '~hooks/useToast'
 
 import { useSubmitFormFeedbackMutation } from '~features/public-form/mutations'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FeedbackFormInput } from './components/FeedbackBlock'
+import { PaymentEndPagePreview } from './components/PaymentEndPagePreview'
 import { FormEndPage } from './FormEndPage'
 
 export const FormEndPageContainer = (): JSX.Element | null => {
@@ -17,6 +20,10 @@ export const FormEndPageContainer = (): JSX.Element | null => {
   )
   const toast = useToast()
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
+
+  const isPaymentEnabled =
+    form?.responseMode === FormResponseMode.Encrypt &&
+    form.payments_field.enabled
 
   /**
    * Handles feedback submission
@@ -54,6 +61,17 @@ export const FormEndPageContainer = (): JSX.Element | null => {
 
   if (!form || !submissionData) return null
 
+  if (isPaymentEnabled) {
+    return (
+      <PaymentEndPagePreview
+        submissionData={submissionData}
+        endPage={form.endPage}
+        handleSubmitFeedback={handleSubmitFeedback}
+        isFeedbackSubmitted={isFeedbackSubmitted}
+        colorTheme={form.startPage.colorTheme}
+      />
+    )
+  }
   return (
     <Box py={{ base: '1.5rem', md: '2.5rem' }} w="100%">
       <FormEndPage

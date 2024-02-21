@@ -17,6 +17,12 @@ export type ProductItem = {
   quantity: number
 }
 
+export type ProductItemForReceipt = {
+  name: string
+  quantity: number
+  amount_cents: number
+}
+
 // Typeguard for Product
 export const isPaymentsProducts = (
   products: unknown,

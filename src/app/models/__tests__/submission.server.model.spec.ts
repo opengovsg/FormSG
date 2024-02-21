@@ -15,6 +15,7 @@ import {
   PaymentType,
   SubmissionType,
   WebhookResponse,
+  WorkflowType,
 } from '../../../../shared/types'
 import { ISubmissionSchema } from '../../../../src/types'
 import getPaymentModel from '../payment.server.model'
@@ -80,8 +81,16 @@ describe('Submission Model', () => {
     // multirespondent schema params
     {
       submissionType: SubmissionType.Multirespondent,
-      form_fields: [{ _id: 'aaaaa', fieldType: BasicField.ShortText }],
+      form_fields: [{ _id: new ObjectId(), fieldType: BasicField.ShortText }],
       form_logics: [],
+      workflow: [
+        { _id: new ObjectId(), workflow_type: WorkflowType.Static, emails: [] },
+        {
+          _id: new ObjectId(),
+          workflow_type: WorkflowType.Dynamic,
+          field: new ObjectId(),
+        },
+      ],
       submissionPublicKey: 'This is a public key',
       encryptedSubmissionSecretKey: 'This is an encrypted secret key',
       encryptedContent: MOCK_ENCRYPTED_CONTENT,
