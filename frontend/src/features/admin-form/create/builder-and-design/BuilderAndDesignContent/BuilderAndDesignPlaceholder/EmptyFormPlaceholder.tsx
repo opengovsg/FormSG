@@ -10,7 +10,10 @@ import {
   shouldForwardProp,
   Text,
 } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { isValidMotionProp, motion } from 'framer-motion'
+
+import { featureFlags } from '~shared/constants'
 
 import { BxsMagicWand } from '~assets/icons/BxsMagicWand'
 import { BxsWidget } from '~assets/icons/BxsWidget'
@@ -50,6 +53,40 @@ export const EmptyFormPlaceholder = forwardRef<
         : 'Drag a field from the Builder on the left to start'
     }, [isDraggingOver, isMobile])
 
+    const showMagicFormButton = useFeatureIsOn(featureFlags.magicFormBuilder)
+
+    const showMagicFormButtonFinal = useMemo(() => {
+      return showMagicFormButton ? (
+        <Button
+          leftIcon={<BxsMagicWand />}
+          onClick={handleOpenMagicFormBuilderModal}
+        >
+          Try out Magic Form Builder
+        </Button>
+      ) : (
+        <></>
+      )
+    }, [handleOpenMagicFormBuilderModal, showMagicFormButton])
+
+    const showOrLine = useMemo(() => {
+      return showMagicFormButton ? (
+        <>
+          <Box flexGrow={1} height="1px" bgColor="black" />
+          <Text
+            textStyle="subhead-2"
+            color="secondary.500"
+            px="1.5rem"
+            textAlign={'center'}
+          >
+            OR
+          </Text>
+          <Box flexGrow={1} height="1px" bgColor="black" />
+        </>
+      ) : (
+        <></>
+      )
+    }, [showMagicFormButton])
+
     return (
       <Flex
         h="15.75rem"
@@ -74,12 +111,7 @@ export const EmptyFormPlaceholder = forwardRef<
           justifyContent="center"
           alignItems="center"
         >
-          <Button
-            leftIcon={<BxsMagicWand />}
-            onClick={handleOpenMagicFormBuilderModal}
-          >
-            Try out Magic Form Builder
-          </Button>
+          {showMagicFormButtonFinal}
         </ChakraBox>
         <chakra.button
           _hover={{
@@ -121,16 +153,7 @@ export const EmptyFormPlaceholder = forwardRef<
               justifyContent="space-around"
               verticalAlign="middle"
             >
-              <Box flexGrow={1} height="1px" bgColor="black" />
-              <Text
-                textStyle="subhead-2"
-                color="secondary.500"
-                px="1.5rem"
-                textAlign={'center'}
-              >
-                OR
-              </Text>
-              <Box flexGrow={1} height="1px" bgColor="black" />
+              {showOrLine}
             </Flex>
           </Center>
         </chakra.button>
