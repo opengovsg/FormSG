@@ -145,6 +145,12 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
     [form],
   )
 
+  // email confirmation is not supported on MRF
+  const isToggleEmailConfirmationDisabled = useMemo(
+    () => form?.responseMode === FormResponseMode.Multirespondent,
+    [form],
+  )
+
   return (
     <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
@@ -199,7 +205,10 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
         )}
       </Box>
       <Box>
-        <FormControl isReadOnly={isLoading}>
+        <FormControl
+          isReadOnly={isLoading}
+          isDisabled={isToggleEmailConfirmationDisabled}
+        >
           <Toggle
             {...register('autoReplyOptions.hasAutoReply')}
             description="Customise an email acknowledgement to respondents"
