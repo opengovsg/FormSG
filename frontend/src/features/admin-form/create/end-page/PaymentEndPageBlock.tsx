@@ -57,7 +57,7 @@ export const PaymentEndPageBlock = ({
   )
 
   return (
-    <Box>
+    <Box mx={{ base: '1rem', md: '4rem' }}>
       <Box ref={focusRef} bg="white">
         <VisuallyHidden aria-live="assertive">
           {submittedAriaText}
