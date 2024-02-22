@@ -47,7 +47,7 @@ interface PreviewFormBannerProps {
 const textProps: TextProps = {
   textStyle: 'body-2',
   color: 'white',
-  ml: '2rem',
+  mx: '2rem',
   mt: '0.5rem',
   mb: '0.5rem',
 }
