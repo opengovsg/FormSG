@@ -31,23 +31,21 @@ export const PaymentEndPagePreview = ({
         </Box>
         <Stack
           pt={{ base: '1rem', md: '1.5rem' }}
-          mx={{ base: '1rem', md: '2rem' }}
+          px={{ base: '1rem', md: '4rem' }}
           bg="transparent"
-          width="100%"
+          w="100%"
         >
-          <PaymentEndPageBlock {...endPageProps} />
-          <Stack px={{ base: '1rem', md: '4rem' }} bg="transparent">
-            {isFeedbackSubmitted ? null : (
-              <Box
-                backgroundColor="white"
-                p="2rem"
-                py={{ base: '1.5rem', md: '2rem' }}
-                px={{ base: '1rem', md: '2rem' }}
-              >
-                <FeedbackBlock onSubmit={handleSubmitFeedback} />
-              </Box>
-            )}
-          </Stack>
+          <PaymentEndPageBlock focusOnMount {...endPageProps} />
+          {isFeedbackSubmitted ? null : (
+            <Box
+              backgroundColor="white"
+              p="2rem"
+              py={{ base: '1.5rem', md: '2rem' }}
+              px={{ base: '1rem', md: '2rem' }}
+            >
+              <FeedbackBlock onSubmit={handleSubmitFeedback} />
+            </Box>
+          )}
         </Stack>
       </Flex>
     </>
