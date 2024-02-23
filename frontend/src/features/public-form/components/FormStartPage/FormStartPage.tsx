@@ -20,13 +20,12 @@ export const FormStartPage = ({
     miniHeaderRef,
     onMobileDrawerOpen,
     handleLogout,
-    isPaymentEnabled,
   } = usePublicFormContext()
   const { activeSectionId } = useFormSections()
 
   const showHeaderAndMiniHeader = useMemo(
-    () => !submissionData || isPaymentEnabled,
-    [submissionData, isPaymentEnabled],
+    () => !submissionData,
+    [submissionData],
   )
 
   const formHeaderProps = useFormHeader({ startPage: form?.startPage })

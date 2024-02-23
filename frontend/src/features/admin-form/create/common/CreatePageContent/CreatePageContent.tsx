@@ -6,6 +6,7 @@ import {
 import { BuilderAndDesignTab } from '../../builder-and-design/BuilderAndDesignTab'
 import { EndPageTab } from '../../end-page/EndPageTab'
 import { CreatePageLogicTab } from '../../logic/CreatePageLogicTab'
+import { CreatePageWorkflowTab } from '../../workflow/CreatePageWorkflowTab'
 
 export const CreatePageContent = (): JSX.Element => {
   const { activeTab } = useCreatePageSidebar()
@@ -14,6 +15,8 @@ export const CreatePageContent = (): JSX.Element => {
       return <CreatePageLogicTab />
     case DrawerTabs.EndPage:
       return <EndPageTab />
+    case DrawerTabs.Workflow:
+      return <CreatePageWorkflowTab />
     default:
       // builder or design
       return <BuilderAndDesignTab />

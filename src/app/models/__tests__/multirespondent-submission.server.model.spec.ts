@@ -30,12 +30,13 @@ describe('Multirespondent Submission Model', () => {
         // Arrange
         const validFormId = new ObjectId().toHexString()
         const createdDate = new Date()
-        // Add valid encrypt submission.
+        // Add valid multirespondent submission.
         const validSubmission = await MultirespondentSubmission.create({
           form: validFormId,
           submissionType: SubmissionType.Multirespondent,
           form_fields: [],
           form_logics: [],
+          workflow: [],
           submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
           encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
@@ -110,13 +111,14 @@ describe('Multirespondent Submission Model', () => {
 
       it('should return all metadata and count successfully when params are not provided', async () => {
         // Arrange
-        // Add 3 valid encrypt submission.
+        // Add 3 valid multirespondent submissions.
         const validSubmissionPromises = times(3, (idx) =>
           MultirespondentSubmission.create({
             form: VALID_FORM_ID,
             submissionType: SubmissionType.Multirespondent,
             form_fields: [],
             form_logics: [],
+            workflow: [],
             submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
             encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
             encryptedContent: MOCK_ENCRYPTED_CONTENT,
@@ -153,13 +155,14 @@ describe('Multirespondent Submission Model', () => {
 
       it('should return offset metadata with correct count when page number is provided', async () => {
         // Arrange
-        // Add 3 valid encrypt submission.
+        // Add 3 valid multirespondent submissions.
         const validSubmissionPromises = times(3, (idx) =>
           MultirespondentSubmission.create({
             form: VALID_FORM_ID,
             submissionType: SubmissionType.Multirespondent,
             form_fields: [],
             form_logics: [],
+            workflow: [],
             submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
             encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
             encryptedContent: MOCK_ENCRYPTED_CONTENT,
@@ -200,13 +203,14 @@ describe('Multirespondent Submission Model', () => {
 
       it('should return offset metadata with correct count when page size is provided', async () => {
         // Arrange
-        // Add 3 valid encrypt submission.
+        // Add 3 valid multirespondent submissions.
         const validSubmissionPromises = times(3, (idx) =>
           MultirespondentSubmission.create({
             form: VALID_FORM_ID,
             submissionType: SubmissionType.Multirespondent,
             form_fields: [],
             form_logics: [],
+            workflow: [],
             submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
             encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
             encryptedContent: MOCK_ENCRYPTED_CONTENT,
@@ -247,13 +251,14 @@ describe('Multirespondent Submission Model', () => {
 
       it('should return empty metadata array when given page has no metadata', async () => {
         // Arrange
-        // Add 3 valid encrypt submission.
+        // Add 3 valid multirespondent submissions.
         const validSubmissionPromises = times(3, (idx) =>
           MultirespondentSubmission.create({
             form: VALID_FORM_ID,
             submissionType: SubmissionType.Multirespondent,
             form_fields: [],
             form_logics: [],
+            workflow: [],
             submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
             encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
             encryptedContent: MOCK_ENCRYPTED_CONTENT,
@@ -310,6 +315,7 @@ describe('Multirespondent Submission Model', () => {
           submissionType: SubmissionType.Multirespondent,
           form_fields: [],
           form_logics: [],
+          workflow: [],
           submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
           encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
@@ -322,6 +328,7 @@ describe('Multirespondent Submission Model', () => {
           'created',
           'form_fields',
           'form_logics',
+          'workflow',
           'encryptedSubmissionSecretKey',
           'encryptedContent',
           'submissionType',
@@ -380,6 +387,7 @@ describe('Multirespondent Submission Model', () => {
           submissionType: SubmissionType.Multirespondent,
           form_fields: [],
           form_logics: [],
+          workflow: [],
           submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
           encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
@@ -403,6 +411,7 @@ describe('Multirespondent Submission Model', () => {
           'created',
           'form_fields',
           'form_logics',
+          'workflow',
           'submissionPublicKey',
           'encryptedSubmissionSecretKey',
           'encryptedContent',

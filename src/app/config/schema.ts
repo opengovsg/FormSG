@@ -58,9 +58,15 @@ const validateS3BucketUrl = (
     }
   }
   // Region should be specified correctly in production
-  const isRegionCorrect = new RegExp(`^https://s3.${region}.amazonaws.com`, 'i')
-  if (!isDev && !isRegionCorrect.test(val)) {
-    throw new Error(`region should be ${region}`)
+  const isS3RegionCorrect = new RegExp(
+    `^https://s3.${region}.amazonaws.com`,
+    'i',
+  )
+  const isR2 = new RegExp(`^https://\\w+.r2.cloudflarestorage.com`, 'i')
+  if (!isDev && !isS3RegionCorrect.test(val) && !isR2.test(val)) {
+    throw new Error(
+      `region should be ${region}, or url should be for Cloudflare R2`,
+    )
   }
   /* eslint-enable typesafe/no-throw-sync-func */
 }

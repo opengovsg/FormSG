@@ -24,11 +24,13 @@ import {
   LogicType,
   PaymentChannel,
   PaymentType,
+  WorkflowType,
 } from 'shared/types'
 
 import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,
+  getMultirespondentFormModel,
 } from 'src/app/models/form.server.model'
 import {
   IEncryptedForm,
@@ -42,6 +44,7 @@ import {
 const Form = getFormModel(mongoose)
 const EncryptedForm = getEncryptedFormModel(mongoose)
 const EmailForm = getEmailFormModel(mongoose)
+const MultirespondentForm = getMultirespondentFormModel(mongoose)
 
 const MOCK_ADMIN_OBJ_ID = new ObjectId()
 const MOCK_ADMIN_DOMAIN = 'example.com'
@@ -61,6 +64,11 @@ const MOCK_EMAIL_FORM_PARAMS = {
   emails: [MOCK_ADMIN_EMAIL],
   responseMode: FormResponseMode.Email,
 }
+const MOCK_MULTIRESPONDENT_FORM_PARAMS = {
+  ...MOCK_FORM_PARAMS,
+  publicKey: 'mockPublicKey',
+  responseMode: FormResponseMode.Multirespondent,
+}
 
 const FORM_DEFAULTS = {
   authType: 'NIL',
@@ -76,6 +84,8 @@ const FORM_DEFAULTS = {
   endPage: {
     title: 'Thank you for filling out the form.',
     buttonText: 'Submit another response',
+    paymentTitle: 'Thank you, your payment has been made successfully.',
+    paymentParagraph: 'Your form has been submitted and payment has been made.',
   },
   hasCaptcha: true,
   hasIssueNotification: true,
@@ -861,6 +871,81 @@ describe('Form Model', () => {
         // Assert
         await expect(invalidForm.save()).rejects.toThrow(
           '`null` is not a valid enum value for path `payments_field.payment_type`',
+        )
+      })
+    })
+
+    describe('Multirespondent form schema', () => {
+      const MULTIRESPONDENT_FORM_DEFAULTS = merge(
+        { responseMode: 'multirespondent' },
+        FORM_DEFAULTS,
+      )
+
+      it('should create and save successfully with a workflow', async () => {
+        // Arrange
+        const emailFieldObjectId = new ObjectId()
+        const validFormObj = {
+          ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+          workflow: [
+            {
+              _id: new ObjectId(),
+              workflow_type: WorkflowType.Static,
+              emails: ['test@open.gov.sg'],
+              edit: [new ObjectId(), emailFieldObjectId],
+            },
+            {
+              _id: new ObjectId(),
+              workflow_type: WorkflowType.Dynamic,
+              field: emailFieldObjectId,
+              edit: [new ObjectId()],
+            },
+          ],
+        }
+
+        const validForm = new MultirespondentForm(validFormObj)
+
+        // Act
+        const saved = await validForm.save()
+
+        // Assert
+        // All fields should exist
+        // Object Id should be defined when successfully saved to MongoDB.
+        expect(saved._id).toBeDefined()
+        expect(saved.created).toBeInstanceOf(Date)
+        expect(saved.lastModified).toBeInstanceOf(Date)
+        // Retrieve object and compare to params, remove indeterministic keys
+        const actualSavedObject = omit(saved.toObject(), [
+          '_id',
+          'created',
+          'lastModified',
+          '__v',
+        ])
+        const expectedObject = merge(
+          {},
+          MULTIRESPONDENT_FORM_DEFAULTS,
+          validFormObj,
+        )
+        expect(actualSavedObject).toEqual(expectedObject)
+      })
+
+      it('should reject when a workflow contains missing keys', async () => {
+        // Arrange
+        const invalidFormObj = {
+          ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+          workflow: [
+            {
+              _id: new ObjectId(),
+              workflow_type: WorkflowType.Dynamic,
+              // Missing "field"
+            },
+          ],
+        }
+
+        const invalidForm = new MultirespondentForm(invalidFormObj)
+
+        // Act + Assert
+        await expect(invalidForm.save()).rejects.toThrow(
+          mongoose.Error.ValidationError,
         )
       })
     })
@@ -1730,6 +1815,9 @@ describe('Form Model', () => {
           title: 'some new title',
           paragraph: 'some description paragraph',
           buttonText: 'custom button text',
+          paymentParagraph:
+            'Your form has been submitted and payment has been made.',
+          paymentTitle: 'Thank you, your payment has been made successfully.',
         }
 
         // Act
@@ -1768,6 +1856,9 @@ describe('Form Model', () => {
             // Defaults should be populated and returned
             buttonText: 'Submit another response',
             title: 'Thank you for filling out the form.',
+            paymentParagraph:
+              'Your form has been submitted and payment has been made.',
+            paymentTitle: 'Thank you, your payment has been made successfully.',
           },
         })
       })
@@ -1779,6 +1870,9 @@ describe('Form Model', () => {
           buttonText: 'custom button text',
           title: 'some new title',
           paragraph: 'does not really matter',
+          paymentParagraph:
+            'Your form has been submitted and payment has been made.',
+          paymentTitle: 'Thank you, your payment has been made successfully.',
         }
 
         // Act

@@ -1,8 +1,9 @@
+import { isEqual, omit } from 'lodash'
 import moment from 'moment-timezone'
 import mongoose, { Types } from 'mongoose'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import { PaymentStatus } from '../../../../shared/types'
+import { PaymentStatus, Product, ProductItem } from '../../../../shared/types'
 import { IPaymentSchema } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import getPaymentModel from '../../models/payment.server.model'
@@ -25,6 +26,7 @@ import { findSubmissionById } from '../submission/submission.service'
 
 import {
   ConfirmedPaymentNotFoundError,
+  InvalidPaymentProductsError,
   PaymentAlreadyConfirmedError,
   PaymentNotFoundError,
 } from './payments.errors'
@@ -367,4 +369,107 @@ export const sendOnboardingEmailIfEligible = (
   return AuthService.validateEmailDomain(email).andThen(() =>
     MailService.sendPaymentOnboardingEmail({ email }),
   )
+}
+
+/**
+ * Validates that payment by product is valid
+ */
+export const validatePaymentProducts = (
+  formProductsDefinition: Product[],
+  submittedPaymentProducts: ProductItem[],
+): Result<true, InvalidPaymentProductsError> => {
+  const logMeta = {
+    action: 'validatePayments',
+  }
+
+  // Check that no duplicate payment products (by id) are selected
+  const selectedProducts = submittedPaymentProducts.filter(
+    (product) => product.selected,
+  )
+
+  const selectedProductIds = new Set(
+    selectedProducts.map((product) => product.data._id),
+  )
+
+  if (selectedProductIds.size !== selectedProducts.length) {
+    logger.error({
+      message: 'Duplicate payment products selected',
+      meta: logMeta,
+    })
+
+    return err(
+      new InvalidPaymentProductsError(
+        'You have selected a duplicate product. Please refresh and try again.',
+      ),
+    )
+  }
+
+  for (const product of submittedPaymentProducts) {
+    // Check that every selected product matches the form definition
+
+    const productIdSubmitted = product.data._id
+    const productDefinition = formProductsDefinition.find(
+      (product) => String(product._id) === String(productIdSubmitted),
+    )
+
+    if (
+      !productDefinition ||
+      !isEqual(omit(productDefinition, '_id'), omit(product.data, '_id'))
+    ) {
+      logger.error({
+        message: 'Invalid payment product selected.',
+        meta: logMeta,
+      })
+      return err(
+        new InvalidPaymentProductsError(
+          'There has been a change in the products available. Please refresh and try again.',
+        ),
+      )
+    }
+
+    // Check that the quantity of the product is valid
+
+    if (!productDefinition.multi_qty && product.quantity > 1) {
+      logger.error({
+        message: 'Invalid payment product quantity',
+        meta: logMeta,
+      })
+      return err(
+        new InvalidPaymentProductsError(
+          'Selected more than 1 quantity when it is not allowed. Please refresh and try again.',
+        ),
+      )
+    }
+
+    if (productDefinition.multi_qty) {
+      if (product.quantity < productDefinition.min_qty) {
+        logger.error({
+          message:
+            'Selected an invalid payment product quantity below the limit',
+          meta: logMeta,
+        })
+
+        return err(
+          new InvalidPaymentProductsError(
+            `Selected an invalid quantity below the limit. Please refresh and try again.`,
+          ),
+        )
+      }
+      if (product.quantity > productDefinition.max_qty) {
+        logger.error({
+          message:
+            'Selected an invalid payment product quantity above the limit.',
+          meta: logMeta,
+        })
+
+        return err(
+          new InvalidPaymentProductsError(
+            `Selected an invalid quantity above the limit. Please refresh and try again.`,
+          ),
+        )
+      }
+    }
+  }
+
+  return ok(true)
 }

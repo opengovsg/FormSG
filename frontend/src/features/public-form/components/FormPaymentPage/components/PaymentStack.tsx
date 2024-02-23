@@ -14,9 +14,8 @@ export const PaymentStack = ({
   const backgroundColour = noBg ? 'transparent' : 'white'
   return (
     <Stack
-      spacing={{ base: '1.5rem', md: '2.25rem' }}
-      py={{ base: '1.5rem', md: '3rem' }}
-      px={{ base: '1.5rem', md: '4rem' }}
+      pt="1.5rem"
+      px={{ base: '1rem', md: '4rem' }}
       bg={backgroundColour}
       w="100%"
       divider={<Divider />}

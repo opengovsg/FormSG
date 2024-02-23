@@ -1,12 +1,17 @@
 import { useEffect, useState } from 'react'
 import { Control, useWatch } from 'react-hook-form'
 
-import { FormColorTheme, FormResponseMode, LogicDto } from '~shared/types/form'
+import {
+  FormColorTheme,
+  FormWorkflowStepDto,
+  LogicDto,
+} from '~shared/types/form'
 
 import { FormFieldValues } from '~templates/Field'
 
 import { FormFieldWithQuestionNo } from '~features/form/types'
 import { augmentWithQuestionNo } from '~features/form/utils'
+import { isFieldEnabledByWorkflow } from '~features/form/utils/augmentWithWorkflowDisabling'
 import { getVisibleFieldIds } from '~features/logic/utils'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
@@ -16,9 +21,9 @@ import { useFormSections } from './FormSectionsContext'
 
 interface VisibleFormFieldsProps {
   control: Control<FormFieldValues>
-  responseMode: FormResponseMode
   formFields: FormFieldWithQuestionNo[]
   formLogics: LogicDto[]
+  workflowStep?: FormWorkflowStepDto
   colorTheme: FormColorTheme
   fieldPrefillMap: PrefillMap
 }
@@ -29,9 +34,9 @@ interface VisibleFormFieldsProps {
  */
 export const VisibleFormFields = ({
   control,
-  responseMode,
   formFields,
   formLogics,
+  workflowStep,
   colorTheme,
   fieldPrefillMap,
 }: VisibleFormFieldsProps) => {
@@ -71,7 +76,7 @@ export const VisibleFormFields = ({
           colorTheme={colorTheme}
           field={field}
           disableRequiredValidation={
-            responseMode === FormResponseMode.Multirespondent
+            !isFieldEnabledByWorkflow(workflowStep, field)
           }
           key={field._id}
           prefill={fieldPrefillMap[field._id]}

@@ -3,7 +3,6 @@ import Stripe from 'stripe'
 import {
   EmailFormSettings,
   FormSettings,
-  MultirespondentFormSettings,
   SettingsUpdateDto,
   StorageFormSettings,
 } from '~shared/types/form/form'
@@ -22,12 +21,6 @@ type UpdateStorageFormFn<T extends keyof StorageFormSettings> = (
   formId: string,
   settingsToUpdate: StorageFormSettings[T],
 ) => Promise<FormSettings>
-
-type UpdateMultirespondentFormFn<T extends keyof MultirespondentFormSettings> =
-  (
-    formId: string,
-    settingsToUpdate: MultirespondentFormSettings[T],
-  ) => Promise<FormSettings>
 
 type UpdateFormFn<T extends keyof FormSettings> = (
   formId: string,
@@ -143,14 +136,6 @@ export const updateGstEnabledFlag = async (
   })
 }
 
-export const updateWorkflowSettings: UpdateMultirespondentFormFn<
-  'workflow'
-> = async (
-  formId,
-  newWorkflowSettings: MultirespondentFormSettings['workflow'],
-) => {
-  return updateFormSettings(formId, { workflow: newWorkflowSettings })
-}
 /**
  * Internal function that calls the PATCH API.
  * @param formId the id of the form to update

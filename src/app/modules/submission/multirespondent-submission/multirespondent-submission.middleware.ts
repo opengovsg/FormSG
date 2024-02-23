@@ -369,7 +369,6 @@ export const encryptSubmission = async (
 
   req.formsg.encryptedPayload = {
     attachments: encryptedAttachments,
-    // responses: req.body.responses,
     responseMetadata: req.body.responseMetadata,
     submissionPublicKey,
     encryptedSubmissionSecretKey,
@@ -377,6 +376,7 @@ export const encryptSubmission = async (
     submissionSecretKey,
     version: req.body.version,
     workflowStep: req.body.workflowStep,
+    responses,
   }
 
   return next()

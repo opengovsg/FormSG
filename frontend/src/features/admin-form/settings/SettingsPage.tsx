@@ -13,7 +13,6 @@ import {
 
 import { featureFlags } from '~shared/constants'
 
-import { MultiParty } from '~assets/icons/MultiParty'
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
 
@@ -28,7 +27,6 @@ import { SettingsGeneralPage } from './SettingsGeneralPage'
 import { SettingsPaymentsPage } from './SettingsPaymentsPage'
 import { SettingsTwilioPage } from './SettingsTwilioPage'
 import { SettingsWebhooksPage } from './SettingsWebhooksPage'
-import { SettingsWorkflowPage } from './SettingsWorkflowPage'
 
 const settingsTabsOrder = ['general', 'singpass', 'twilio', 'webhooks']
 
@@ -54,8 +52,6 @@ export const SettingsPage = (): JSX.Element => {
   const displayPayments =
     user?.betaFlags?.payment || flags?.has(featureFlags.payment)
 
-  const displayWorkflow = user?.betaFlags?.mrf
-
   const [tabIndex, setTabIndex] = useState(
     settingsTabsOrder.indexOf(settingsTab ?? ''),
   )
@@ -69,11 +65,7 @@ export const SettingsPage = (): JSX.Element => {
       settingsTabsOrder.push('payments')
       setTabIndex(settingsTabsOrder.indexOf(settingsTab ?? ''))
     }
-    if (displayWorkflow) {
-      settingsTabsOrder.push('workflow')
-      setTabIndex(settingsTabsOrder.indexOf(settingsTab ?? ''))
-    }
-  }, [displayWorkflow, displayPayments, settingsTab])
+  }, [displayPayments, settingsTab])
 
   const handleTabChange = (index: number) => {
     setTabIndex(index)
@@ -128,9 +120,6 @@ export const SettingsPage = (): JSX.Element => {
             {displayPayments && (
               <SettingsTab label="Payments" icon={BiDollar} />
             )}
-            {displayWorkflow && (
-              <SettingsTab label="Workflow" icon={MultiParty} />
-            )}
           </TabList>
         </Flex>
         <TabPanels
@@ -153,11 +142,6 @@ export const SettingsPage = (): JSX.Element => {
           {displayPayments && (
             <TabPanel>
               <SettingsPaymentsPage />
-            </TabPanel>
-          )}
-          {displayWorkflow && (
-            <TabPanel>
-              <SettingsWorkflowPage />
             </TabPanel>
           )}
         </TabPanels>

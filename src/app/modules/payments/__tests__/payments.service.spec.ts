@@ -2,13 +2,14 @@ import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import moment from 'moment-timezone'
 import mongoose, { Query } from 'mongoose'
-import { PaymentStatus } from 'shared/types'
+import { PaymentStatus, Product, ProductId, ProductItem } from 'shared/types'
 
 import getAgencyModel from 'src/app/models/agency.server.model'
 import getPaymentModel from 'src/app/models/payment.server.model'
 
 import { InvalidDomainError } from '../../auth/auth.errors'
 import { DatabaseError } from '../../core/core.errors'
+import { InvalidPaymentProductsError } from '../payments.errors'
 import * as PaymentsService from '../payments.service'
 
 const Payment = getPaymentModel(mongoose)
@@ -70,6 +71,357 @@ describe('payments.service', () => {
         new ObjectId().toHexString(),
       )
       expect(result.isErr()).toBeTrue()
+    })
+  })
+
+  describe('validatePaymentProducts', () => {
+    const mockValidProduct = {
+      name: 'some name',
+      description: 'some description',
+      multi_qty: false,
+      min_qty: 1,
+      max_qty: 1,
+      amount_cents: 1000,
+      _id: new ObjectId(),
+    } as unknown as Product
+
+    const mockValidProductsDefinition = [mockValidProduct]
+
+    const mockValidProductSubmission: ProductItem[] = [
+      { data: mockValidProduct, quantity: 1, selected: true },
+    ]
+
+    it('should return without error if payment products are valid', () => {
+      // Act
+      const result = PaymentsService.validatePaymentProducts(
+        mockValidProductsDefinition,
+        mockValidProductSubmission,
+      )
+
+      // Assert
+      expect(result.isOk()).toBeTrue()
+    })
+
+    it('should return with error if there are duplicate payment products', () => {
+      // Arrange
+      const mockDuplicatedProductSubmission: ProductItem[] = [
+        { data: mockValidProduct, quantity: 1, selected: true },
+        { data: mockValidProduct, quantity: 1, selected: true },
+      ]
+
+      // Act
+      const result = PaymentsService.validatePaymentProducts(
+        mockValidProductsDefinition,
+        mockDuplicatedProductSubmission,
+      )
+
+      // Assert
+      expect(result.isErr()).toBeTrue()
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        InvalidPaymentProductsError,
+      )
+      expect(result._unsafeUnwrapErr().message).toContain(
+        'You have selected a duplicate product.',
+      )
+    })
+
+    it('should return with error if the payment product id cannot be found', () => {
+      // Arrange
+      const mockInvalidProductSubmission: ProductItem[] = [
+        {
+          data: {
+            ...mockValidProduct,
+            _id: new ObjectId() as unknown as ProductId,
+          },
+          quantity: 1,
+          selected: true,
+        },
+        {
+          data: mockValidProduct,
+          quantity: 1,
+          selected: true,
+        },
+      ]
+
+      // Act
+      const result = PaymentsService.validatePaymentProducts(
+        mockValidProductsDefinition,
+        mockInvalidProductSubmission,
+      )
+
+      // Assert
+      expect(result.isErr()).toBeTrue()
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        InvalidPaymentProductsError,
+      )
+      expect(result._unsafeUnwrapErr().message).toContain(
+        'There has been a change in the products available.',
+      )
+    })
+
+    it('should return with error if the description has changed', () => {
+      // Arrange
+      const mockInvalidProductSubmission: ProductItem[] = [
+        {
+          data: {
+            ...mockValidProduct,
+            description: 'some other description',
+          },
+          quantity: 1,
+          selected: true,
+        },
+      ]
+
+      // Act
+      const result = PaymentsService.validatePaymentProducts(
+        mockValidProductsDefinition,
+        mockInvalidProductSubmission,
+      )
+
+      // Assert
+      expect(result.isErr()).toBeTrue()
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        InvalidPaymentProductsError,
+      )
+      expect(result._unsafeUnwrapErr().message).toContain(
+        'There has been a change in the products available.',
+      )
+    })
+
+    it('should return with error if the name has changed', () => {
+      // Arrange
+      const mockInvalidProductSubmission: ProductItem[] = [
+        {
+          data: {
+            ...mockValidProduct,
+            name: 'some other name',
+          },
+          quantity: 1,
+          selected: true,
+        },
+      ]
+
+      // Act
+      const result = PaymentsService.validatePaymentProducts(
+        mockValidProductsDefinition,
+        mockInvalidProductSubmission,
+      )
+
+      // Assert
+      expect(result.isErr()).toBeTrue()
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        InvalidPaymentProductsError,
+      )
+      expect(result._unsafeUnwrapErr().message).toContain(
+        'There has been a change in the products available.',
+      )
+    })
+
+    it('should return with error if multi_qty has changed', () => {
+      // Arrange
+      const mockInvalidProductSubmission: ProductItem[] = [
+        {
+          data: {
+            ...mockValidProduct,
+            multi_qty: true,
+          },
+          quantity: 1,
+          selected: true,
+        },
+      ]
+
+      // Act
+      const result = PaymentsService.validatePaymentProducts(
+        mockValidProductsDefinition,
+        mockInvalidProductSubmission,
+      )
+
+      // Assert
+      expect(result.isErr()).toBeTrue()
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        InvalidPaymentProductsError,
+      )
+      expect(result._unsafeUnwrapErr().message).toContain(
+        'There has been a change in the products available.',
+      )
+    })
+
+    it('should return with error if the max_qty has changed', () => {
+      // Arrange
+      const mockInvalidProductSubmission: ProductItem[] = [
+        {
+          data: {
+            ...mockValidProduct,
+            max_qty: 5,
+          },
+          quantity: 1,
+          selected: true,
+        },
+      ]
+
+      // Act
+      const result = PaymentsService.validatePaymentProducts(
+        mockValidProductsDefinition,
+        mockInvalidProductSubmission,
+      )
+
+      // Assert
+      expect(result.isErr()).toBeTrue()
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        InvalidPaymentProductsError,
+      )
+      expect(result._unsafeUnwrapErr().message).toContain(
+        'There has been a change in the products available.',
+      )
+    })
+
+    it('should return with error if more than 1 quantity selected when multi_qty is disabled', () => {
+      // Arrange
+      const mockSingleQuantityProduct = {
+        name: 'some name',
+        description: 'some description',
+        multi_qty: false,
+        min_qty: 1,
+        max_qty: 5,
+        amount_cents: 1000,
+        _id: new ObjectId(),
+      } as unknown as Product
+
+      const mockProductSubmission = [
+        { data: mockSingleQuantityProduct, quantity: 2, selected: true },
+      ]
+
+      const mockProductDefinition = [mockSingleQuantityProduct]
+
+      // Act
+
+      const result = PaymentsService.validatePaymentProducts(
+        mockProductDefinition,
+        mockProductSubmission,
+      )
+
+      // Assert
+      expect(result.isErr()).toBeTrue()
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        InvalidPaymentProductsError,
+      )
+      expect(result._unsafeUnwrapErr().message).toContain(
+        'Selected more than 1 quantity when it is not allowed',
+      )
+    })
+
+    it('should return with error if less than min quantity selected when multi_qty is enabled', () => {
+      // Arrange
+      const mockMultiQuantityProduct = {
+        name: 'some name',
+        description: 'some description',
+        multi_qty: true,
+        min_qty: 3,
+        max_qty: 5,
+        amount_cents: 1000,
+        _id: new ObjectId(),
+      } as unknown as Product
+
+      const mockProductSubmission = [
+        { data: mockMultiQuantityProduct, quantity: 1, selected: true },
+      ]
+
+      const mockProductDefinition = [mockMultiQuantityProduct]
+
+      // Act
+
+      const result = PaymentsService.validatePaymentProducts(
+        mockProductDefinition,
+        mockProductSubmission,
+      )
+
+      // Assert
+      expect(result.isErr()).toBeTrue()
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        InvalidPaymentProductsError,
+      )
+      expect(result._unsafeUnwrapErr().message).toContain(
+        'Selected an invalid quantity below the limit',
+      )
+    })
+
+    it('should return with error if more than max quantity selected when multi_qty is enabled', () => {
+      // Arrange
+      const mockMultiQuantityProduct = {
+        name: 'some name',
+        description: 'some description',
+        multi_qty: true,
+        min_qty: 3,
+        max_qty: 5,
+        amount_cents: 1000,
+        _id: new ObjectId(),
+      } as unknown as Product
+
+      const mockProductSubmission = [
+        { data: mockMultiQuantityProduct, quantity: 10, selected: true },
+      ]
+
+      const mockProductDefinition = [mockMultiQuantityProduct]
+
+      // Act
+
+      const result = PaymentsService.validatePaymentProducts(
+        mockProductDefinition,
+        mockProductSubmission,
+      )
+
+      // Assert
+      expect(result.isErr()).toBeTrue()
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        InvalidPaymentProductsError,
+      )
+      expect(result._unsafeUnwrapErr().message).toContain(
+        'Selected an invalid quantity above the limit',
+      )
+    })
+
+    it('should return with error if submitted price is not the same as in form definition', () => {
+      // Arrange
+      const mockProductWithCorrectPrice = {
+        name: 'some name',
+        description: 'some description',
+        multi_qty: true,
+        min_qty: 3,
+        max_qty: 5,
+        amount_cents: 1000,
+        _id: new ObjectId(),
+      } as unknown as Product
+
+      const mockProductWithIncorrectPrice = {
+        ...mockProductWithCorrectPrice,
+        amount_cents: 500,
+      }
+
+      const mockProductSubmissionWithIncorrectPrice = [
+        {
+          data: mockProductWithIncorrectPrice,
+          quantity: 3,
+          selected: true,
+        },
+      ]
+
+      const mockProductDefinition = [mockProductWithCorrectPrice]
+
+      // Act
+
+      const result = PaymentsService.validatePaymentProducts(
+        mockProductDefinition,
+        mockProductSubmissionWithIncorrectPrice,
+      )
+
+      // Assert
+      expect(result.isErr()).toBeTrue()
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        InvalidPaymentProductsError,
+      )
+      expect(result._unsafeUnwrapErr().message).toContain(
+        'There has been a change in the products available',
+      )
     })
   })
 

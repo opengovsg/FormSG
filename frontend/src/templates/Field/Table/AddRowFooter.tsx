@@ -6,12 +6,14 @@ import simplur from 'simplur'
 import Button from '~components/Button'
 
 interface AddRowFooterProps {
+  isDisabled?: boolean
   handleAddRow: () => void
   currentRows: number
   maxRows: number | ''
 }
 
 export const AddRowFooter = ({
+  isDisabled,
   currentRows,
   maxRows,
   handleAddRow: handleAddRowProp,
@@ -44,7 +46,7 @@ export const AddRowFooter = ({
       spacing="0.75rem"
     >
       <Button
-        isDisabled={!!maxRows && currentRows >= maxRows}
+        isDisabled={isDisabled || (!!maxRows && currentRows >= maxRows)}
         leftIcon={<BiPlus fontSize="1.5rem" />}
         type="button"
         onClick={handleAddRow}

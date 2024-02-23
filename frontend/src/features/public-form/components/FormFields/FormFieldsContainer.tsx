@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Box } from '@chakra-ui/react'
 
-import { FormAuthType } from '~shared/types'
+import { FormAuthType, FormResponseMode } from '~shared/types'
 
 import { isKeypairValid } from '~utils/secretKeyValidation'
 
@@ -29,7 +29,8 @@ export const FormFieldsContainer = (): JSX.Element | null => {
   const [previousSubmission, setPreviousSubmission] =
     useState<ReturnType<typeof decryptSubmission>>()
 
-  const { submissionPublicKey = null } = encryptedPreviousSubmission ?? {}
+  const { submissionPublicKey = null, workflowStep } =
+    encryptedPreviousSubmission ?? {}
   const [searchParams] = useSearchParams()
   const queryParams = Object.fromEntries([...searchParams])
 
@@ -94,9 +95,17 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     return (
       <FormFields
         previousResponses={previousSubmission?.responses}
-        responseMode={form.responseMode}
         formFields={form.form_fields}
         formLogics={form.form_logics}
+        workflowStep={
+          form.responseMode === FormResponseMode.Multirespondent
+            ? form.workflow[
+                // If no submission, then the workflowStep will be undefined.
+                // Require explicit undefined check here since both 0 and undefined are falsy but mean different things here.
+                workflowStep === undefined ? 0 : workflowStep + 1
+              ]
+            : undefined
+        }
         colorTheme={form.startPage.colorTheme}
         onSubmit={handleSubmitForm}
       />
@@ -107,9 +116,10 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     isAuthRequired,
     previousSubmissionId,
     previousSubmission,
+    workflowStep,
     handleSubmitForm,
-    queryParams.key,
     submissionPublicKey,
+    queryParams.key,
     encryptedPreviousSubmission,
   ])
 

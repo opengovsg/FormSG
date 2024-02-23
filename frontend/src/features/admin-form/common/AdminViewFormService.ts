@@ -18,13 +18,9 @@ import {
 } from '~services/ApiService'
 
 import { augmentWithMyInfoDisplayValue } from '~features/myinfo/utils'
-import {
-  SubmitEmailFormArgs,
-  SubmitStorageFormArgs,
-} from '~features/public-form/PublicFormService'
+import { SubmitEmailFormArgs } from '~features/public-form/PublicFormService'
 import {
   createClearSubmissionFormData,
-  createEncryptedSubmissionData,
   filterHiddenInputs,
 } from '~features/public-form/utils'
 
@@ -181,26 +177,15 @@ export const submitEmailModeFormPreview = async ({
  * Submit a storage mode form in preview mode
  */
 export const submitStorageModeFormPreview = async ({
-  formFields,
-  formLogics,
-  formInputs,
   formId,
-  publicKey,
-}: SubmitStorageFormArgs) => {
-  const filteredInputs = filterHiddenInputs({
-    formFields,
-    formInputs,
-    formLogics,
-  })
-  const submissionContent = await createEncryptedSubmissionData({
-    formFields,
-    formInputs: filteredInputs,
-    publicKey,
-  })
+}: {
+  formId: string
+}) => {
+  const emptyFormData = {}
 
   return ApiService.post<SubmissionResponseDto>(
-    `${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/encrypt`,
-    submissionContent,
+    `${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/storage`,
+    emptyFormData,
   ).then(({ data }) => data)
 }
 
@@ -242,28 +227,17 @@ export const submitEmailModeFormPreviewWithFetch = async ({
  * TODO(#5826): Fallback using Fetch. Remove once network error is resolved
  */
 export const submitStorageModeFormPreviewWithFetch = async ({
-  formFields,
-  formLogics,
-  formInputs,
   formId,
-  publicKey,
-}: SubmitStorageFormArgs): Promise<SubmissionResponseDto> => {
-  const filteredInputs = filterHiddenInputs({
-    formFields,
-    formInputs,
-    formLogics,
-  })
-  const submissionContent = await createEncryptedSubmissionData({
-    formFields,
-    formInputs: filteredInputs,
-    publicKey,
-  })
+}: {
+  formId: string
+}): Promise<SubmissionResponseDto> => {
+  const emptyFormData = {}
 
   const response = await fetch(
-    `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/encrypt`,
+    `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/storage`,
     {
       method: 'POST',
-      body: JSON.stringify(submissionContent),
+      body: JSON.stringify(emptyFormData),
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',

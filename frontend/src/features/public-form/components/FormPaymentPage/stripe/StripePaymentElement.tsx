@@ -1,26 +1,48 @@
 import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Flex } from '@chakra-ui/react'
+import { Box, Center, Container } from '@chakra-ui/react'
 import { Elements, useStripe } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 
-import { GetPaymentInfoDto } from '~shared/types'
+import {
+  GetPaymentInfoDto,
+  PaymentType,
+  ProductItemForReceipt,
+} from '~shared/types'
 
 import InlineMessage from '~components/InlineMessage'
 
 import { useEnv } from '~features/env/queries'
 
+import { PublicFormWrapper } from '../../PublicFormWrapper'
 import {
   CreatePaymentIntentFailureBlock,
   PaymentStack,
   PaymentSuccessSvgr,
 } from '../components'
+import { PaymentHeader } from '../components/PaymentHeader'
 import { useGetPaymentInfo } from '../queries'
 
 import { GenericMessageBlock, StripePaymentBlock } from './components'
 import { useGetPaymentStatusFromStripe } from './queries'
 import { StripeReceiptContainer } from './StripeReceiptContainer'
 import { getPaymentViewStates, PaymentViewStates } from './utils'
+
+const PaymentFormWrapper = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <PublicFormWrapper>
+      <Box
+        pt={{ base: '2.5rem', md: '0' }}
+        mb={{ base: '1.5rem', md: '0' }}
+        w="100%"
+      >
+        <Container w="100%" maxW="57rem" p={0}>
+          {children}
+        </Container>
+      </Box>
+    </PublicFormWrapper>
+  )
+}
 
 const StripePaymentElement = ({ paymentId }: { paymentId: string }) => {
   const { data: paymentInfoData } = useGetPaymentInfo(paymentId)
@@ -37,9 +59,7 @@ const StripePaymentElement = ({ paymentId }: { paymentId: string }) => {
       stripe={stripePromise}
       options={{ clientSecret: paymentInfoData.client_secret }}
     >
-      <Flex flexDir="column" align="center">
-        <StripePaymentContainer paymentInfoData={paymentInfoData} />
-      </Flex>
+      <StripePaymentContainer paymentInfoData={paymentInfoData} />
     </Elements>
   )
 }
@@ -70,6 +90,28 @@ const StripePaymentContainer = ({
     refetchKey,
   })
 
+  const productsProductsType = paymentInfoData.products?.map((product) => {
+    return {
+      name: product.data.name,
+      quantity: product.quantity,
+      amount_cents: product.data.amount_cents,
+    }
+  }) as ProductItemForReceipt[]
+
+  const productsVariableType = [
+    {
+      name: paymentInfoData.payment_fields_snapshot.name,
+      quantity: 1,
+      amount_cents: paymentInfoData.amount,
+    },
+  ] as ProductItemForReceipt[]
+
+  const paymentProducts =
+    paymentInfoData.payment_fields_snapshot.payment_type ===
+    PaymentType.Variable
+      ? productsVariableType
+      : productsProductsType
+
   const viewStates = getPaymentViewStates(
     stripePaymentStatusResponse?.paymentIntent?.status,
   )
@@ -78,69 +120,91 @@ const StripePaymentContainer = ({
     switch (viewStates) {
       case PaymentViewStates.Invalid:
         return (
-          <PaymentStack>
-            <CreatePaymentIntentFailureBlock
-              submissionId={paymentInfoData.submissionId}
-            />
-          </PaymentStack>
+          <>
+            <PaymentHeader />
+            <PaymentFormWrapper>
+              <PaymentStack>
+                <CreatePaymentIntentFailureBlock
+                  submissionId={paymentInfoData.submissionId}
+                />
+              </PaymentStack>
+            </PaymentFormWrapper>
+          </>
         )
       case PaymentViewStates.Canceled:
         return (
-          <PaymentStack>
-            <GenericMessageBlock
-              submissionId={paymentInfoData.submissionId}
-              title="Payment request was canceled."
-              subtitle="The payment request has timed out. No payment has been taken. Please submit the form again."
-            />
-          </PaymentStack>
+          <>
+            <PaymentHeader />
+            <PaymentFormWrapper>
+              <PaymentStack>
+                <GenericMessageBlock
+                  submissionId={paymentInfoData.submissionId}
+                  title="Payment request was canceled."
+                  subtitle="The payment request has timed out. No payment has been taken. Please submit the form again."
+                />
+              </PaymentStack>
+            </PaymentFormWrapper>
+          </>
         )
       case PaymentViewStates.PendingPayment: {
         // The item name is passed over to Stripe as PaymentIntent.description
         const itemName = stripePaymentStatusResponse?.paymentIntent?.description
         return (
           <>
-            {secretEnv === 'production' ? null : (
-              <InlineMessage variant="warning" mb="1rem">
-                Use '4242 4242 4242 4242' as your card number to test payments
-                on this form. Payments made on this form will only show in test
-                mode in Stripe.
-              </InlineMessage>
-            )}
-            <PaymentStack>
-              <StripePaymentBlock
-                paymentInfoData={paymentInfoData}
-                triggerPaymentStatusRefetch={() => setRefetchKey(Date.now())}
-                paymentAmount={
-                  stripePaymentStatusResponse?.paymentIntent?.amount ?? 0
-                }
-                paymentItemName={itemName}
-              />
-            </PaymentStack>
+            <PaymentHeader />
+            <PaymentFormWrapper>
+              {secretEnv === 'production' ? null : (
+                <InlineMessage variant="warning" mb="1rem">
+                  Use '4242 4242 4242 4242' as your card number to test payments
+                  on this form. Payments made on this form will only show in
+                  test mode in Stripe.
+                </InlineMessage>
+              )}
+              <PaymentStack>
+                <StripePaymentBlock
+                  paymentInfoData={paymentInfoData}
+                  triggerPaymentStatusRefetch={() => setRefetchKey(Date.now())}
+                  paymentAmount={
+                    stripePaymentStatusResponse?.paymentIntent?.amount ?? 0
+                  }
+                  paymentItemName={itemName}
+                />
+              </PaymentStack>
+            </PaymentFormWrapper>
           </>
         )
       }
       case PaymentViewStates.Processing:
         return (
-          <PaymentStack>
-            <GenericMessageBlock
-              submissionId={paymentInfoData.submissionId}
-              title="Stripe is still processing your payment."
-              subtitle="Hold tight, your payment is still being processed by stripe."
-            />
-          </PaymentStack>
+          <>
+            <PaymentHeader />
+            <PaymentFormWrapper>
+              <PaymentStack>
+                <GenericMessageBlock
+                  submissionId={paymentInfoData.submissionId}
+                  title="Stripe is still processing your payment."
+                  subtitle="Hold tight, your payment is still being processed by stripe."
+                />
+              </PaymentStack>
+            </PaymentFormWrapper>
+          </>
         )
       case PaymentViewStates.Succeeded:
         return (
           <>
-            <PaymentSuccessSvgr maxW="100%" />
-            <StripeReceiptContainer
-              formId={formId}
-              paymentId={paymentId}
-              submissionId={paymentInfoData.submissionId}
-              amount={paymentInfoData.amount}
-              products={paymentInfoData.products || []}
-              paymentFieldsSnapshot={paymentInfoData.payment_fields_snapshot}
-            />
+            <PaymentFormWrapper>
+              <Center>
+                <PaymentSuccessSvgr maxW="100%" />
+              </Center>
+              <StripeReceiptContainer
+                formId={formId}
+                paymentId={paymentId}
+                submissionId={paymentInfoData.submissionId}
+                amount={paymentInfoData.amount}
+                products={paymentProducts || []}
+                paymentFieldsSnapshot={paymentInfoData.payment_fields_snapshot}
+              />
+            </PaymentFormWrapper>
           </>
         )
       default: {

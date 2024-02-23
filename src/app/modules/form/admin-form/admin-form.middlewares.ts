@@ -40,13 +40,19 @@ export const updateSettingsValidator = celebrate({
     payments_field: Joi.object({ gst_enabled: Joi.boolean() }),
     workflow: Joi.array()
       .items(
-        Joi.object().keys({
+        Joi.object({
           _id: Joi.string(),
           workflow_type: Joi.string().valid(...Object.values(WorkflowType)),
-          emails: Joi.alternatives().try(
-            Joi.array().items(Joi.string().email().allow('')),
-            Joi.string().email({ multiple: true }).allow(''),
-          ),
+          emails: Joi.when('workflow_type', {
+            is: WorkflowType.Static,
+            then: Joi.array().items(Joi.string().email()).required(),
+          }),
+          // TODO: Add regex validation that these are valid mongo IDs
+          field: Joi.when('workflow_type', {
+            is: WorkflowType.Dynamic,
+            then: Joi.string().required(),
+          }),
+          edit: Joi.array().items(Joi.string()).required(),
         }),
       )
       .optional(),
