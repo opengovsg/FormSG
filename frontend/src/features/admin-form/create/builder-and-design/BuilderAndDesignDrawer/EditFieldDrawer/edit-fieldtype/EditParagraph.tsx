@@ -57,7 +57,13 @@ export const EditParagraph = ({ field }: EditParagraphProps): JSX.Element => {
           name="description"
           control={control}
           rules={requiredValidationRule}
-          render={({ field }) => <RichTextEditor {...field} />}
+          render={({ field, fieldState }) => (
+            <RichTextEditor
+              onChange={field.onChange}
+              value={field.value}
+              invalid={fieldState.invalid}
+            />
+          )}
         />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>

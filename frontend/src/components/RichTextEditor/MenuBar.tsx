@@ -1,4 +1,4 @@
-import { useCurrentEditor } from '@tiptap/react'
+import { Editor } from '@tiptap/react'
 
 import { BxsBold } from '~assets/icons/BxsBold'
 import { BxsItalic } from '~assets/icons/BxsItalic'
@@ -9,14 +9,25 @@ import { BxsUnorderedList } from '~assets/icons/BxsUnorderedList'
 import ButtonGroup from '~components/ButtonGroup'
 import IconButton from '~components/IconButton'
 
-export const MenuBar = () => {
-  const { editor } = useCurrentEditor()
+type MenuBarProps = {
+  editor: Editor | null
+}
+
+export const MenuBar = ({ editor }: MenuBarProps): JSX.Element | null => {
   if (!editor) {
     return null
   }
 
   const handleLinkClick = () => {
-    console.log('Link clicked!')
+    if (!editor.isActive('link')) {
+      editor
+        .chain()
+        .focus()
+        .setLink({ href: 'https://', target: '_blank' })
+        .run()
+    } else {
+      editor.chain().focus().unsetLink().run()
+    }
   }
 
   return (
