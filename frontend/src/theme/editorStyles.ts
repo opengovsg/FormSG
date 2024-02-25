@@ -2,21 +2,21 @@
 export const editorStyles = {
   // Apply styles only to editable instances
   '.tiptap[contentEditable=true]': {
-    'min-height': '10em',
+    minHeight: '10em',
     padding: '1em',
   },
   '.tiptap ul, ol': {
     all: 'revert',
   },
   '.tiptap ol ol': {
-    'list-style-type': 'lower-alpha',
+    listStyleType: 'lower-alpha',
   },
   '.tiptap ol ol ol': {
-    'list-style-type': 'lower-roman',
+    listStyleType: 'lower-roman',
   },
   '.tiptap a': {
     color: 'blue',
-    'text-decoration': 'underline',
+    textDecoration: 'underline',
   },
   '.tiptap a:visited': {
     color: 'purple',
@@ -31,6 +31,6 @@ export const editorStyles = {
     content: 'attr(data-placeholder)',
     float: 'left',
     height: '0m',
-    'pointer-events': 'none',
+    pointerEvents: 'none',
   },
 }
