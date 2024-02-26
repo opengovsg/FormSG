@@ -13,13 +13,13 @@ export interface FormEndPageProps {
   endPage: FormDto['endPage']
   submissionData: SubmissionData
   handleSubmitFeedback: (inputs: FeedbackFormInput) => void
-  isFeedbackSubmitted: boolean
+  isFeedbackSectionHidden: boolean
   colorTheme: FormColorTheme
 }
 
 export const FormEndPage = ({
   handleSubmitFeedback,
-  isFeedbackSubmitted,
+  isFeedbackSectionHidden,
   colorTheme,
   ...endPageProps
 }: FormEndPageProps): JSX.Element => {
@@ -40,7 +40,7 @@ export const FormEndPage = ({
             {...endPageProps}
             colorTheme={colorTheme}
           />
-          {isFeedbackSubmitted ? null : (
+          {isFeedbackSectionHidden ? null : (
             <FeedbackBlock
               colorTheme={colorTheme}
               onSubmit={handleSubmitFeedback}
