@@ -43,6 +43,8 @@ Default.args = {
     title:
       'Thank you for your submission with some super long backstory about how important the submission is to them',
     paragraph: 'We will get back to you shortly.\n\nOnce again,\r\nthank you.',
+    paymentTitle: '',
+    paymentParagraph: '',
   },
   submissionData: {
     id: 'mockSubmissionId',
@@ -84,7 +86,7 @@ ColorThemeOrange.args = {
 export const FeedbackSubmitted = Template.bind({})
 FeedbackSubmitted.args = {
   ...Default.args,
-  isFeedbackSubmitted: true,
+  hideFeedbackSection: true,
 }
 
 export const Mobile = Template.bind({})
