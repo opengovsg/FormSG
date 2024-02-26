@@ -86,7 +86,7 @@ ColorThemeOrange.args = {
 export const FeedbackSubmitted = Template.bind({})
 FeedbackSubmitted.args = {
   ...Default.args,
-  hideFeedbackSection: true,
+  isFeedbackSectionHidden: true,
 }
 
 export const Mobile = Template.bind({})
