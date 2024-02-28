@@ -13,7 +13,12 @@ import {
   Textarea,
 } from '@chakra-ui/react'
 
-import { FormFieldDto, Language, TranslationMapping } from '~shared/types'
+import {
+  FormField,
+  FormFieldDto,
+  Language,
+  TranslationMapping,
+} from '~shared/types'
 
 import { ADMINFORM_ROUTE } from '~constants/routes'
 import { useToast } from '~hooks/useToast'
@@ -33,12 +38,18 @@ export const TranslationContainer = ({
   language,
   defaultString,
   register,
+  formField,
 }: {
   language: string
   defaultString: string | undefined
   register: UseFormRegister<TranslationInput>
+  formField: FormFieldDto<FormField> | undefined
 }): JSX.Element => {
-  const uppercaseLanguage = language.charAt(0).toUpperCase() + language.slice(1)
+  const previousTranslation =
+    formField?.titleTranslations?.find(
+      (translation) => translation.language === language,
+    )?.translation ?? ''
+
   return (
     <Flex direction="column" width="100%">
       <Flex alignItems="center" mb="2rem">
@@ -60,10 +71,15 @@ export const TranslationContainer = ({
       </Flex>
       <Flex alignItems="center">
         <Text color="secondary.700" mr="7.5rem" width="6.25rem">
-          {uppercaseLanguage}
+          {language}
         </Text>
         <FormControl>
-          <Input type="text" width="100%" {...register('translation')} />
+          <Input
+            type="text"
+            width="100%"
+            {...register('translation')}
+            defaultValue={previousTranslation}
+          />
         </FormControl>
       </Flex>
     </Flex>
@@ -96,6 +112,8 @@ export const TranslationSection = ({
   const formFieldData = form?.form_fields[formFieldNumToBeTranslated]
   const fieldId = formFieldData?._id
   const translationInput = watch('translation')
+  const capitalisedLanguage =
+    language.charAt(0).toUpperCase() + language.slice(1)
 
   useEffect(() => {
     if (formFieldData) updateEditState(formFieldData)
@@ -108,9 +126,6 @@ export const TranslationSection = ({
   const handleOnSaveClick = useCallback(() => {
     if (formFieldData) {
       const titleTranslations = formFieldData.titleTranslations ?? []
-
-      const capitalisedLanguage =
-        language.charAt(0).toUpperCase() + language.slice(1)
 
       const translationIdx = titleTranslations.findIndex(
         (translation: TranslationMapping) =>
@@ -144,7 +159,13 @@ export const TranslationSection = ({
         _id: fieldId,
       } as FormFieldDto)
     }
-  }, [editFieldMutation, fieldId, formFieldData, language, translationInput])
+  }, [
+    capitalisedLanguage,
+    editFieldMutation,
+    fieldId,
+    formFieldData,
+    translationInput,
+  ])
 
   return (
     <Skeleton isLoaded={!isLoading && !!form}>
@@ -172,8 +193,9 @@ export const TranslationSection = ({
             Question
           </Text>
           <TranslationContainer
-            language={language}
+            language={capitalisedLanguage}
             defaultString={formFieldData?.title}
+            formField={formFieldData}
             register={register}
           />
         </Flex>
