@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { BiArrowBack } from 'react-icons/bi'
+import { BiArrowBack, BiCheck, BiError } from 'react-icons/bi'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   As,
@@ -26,6 +26,7 @@ interface QuestionRowProps {
   icon: As
   isMyInfoField: boolean
   formFieldNum: number
+  hasTranslations: boolean
 }
 
 export const QuestionRow = ({
@@ -33,6 +34,7 @@ export const QuestionRow = ({
   icon,
   isMyInfoField,
   formFieldNum,
+  hasTranslations,
 }: QuestionRowProps): JSX.Element => {
   const { formId, language } = useParams()
   const navigate = useNavigate()
@@ -61,14 +63,26 @@ export const QuestionRow = ({
         <FieldListOption
           isDisabled={isTranslationRowDisabled}
           onClick={() => handleOnListClick()}
-          w="100%"
+          minW="100%"
           paddingX="1.5rem"
           maxH="3.5rem"
+          display="flex"
         >
           <Icon fontSize="1.5rem" as={icon} />
           <Text textStyle="body-1" overflow="hidden" textOverflow="ellipsis">
             {toTranslateString}
           </Text>
+          {!isMyInfoField && !hasTranslations && (
+            <Icon fontSize="1.5rem" as={BiError} color="warning.600" />
+          )}
+          {!isMyInfoField && hasTranslations && (
+            <Icon
+              fontSize="1.5rem"
+              as={BiCheck}
+              color="success.500"
+              ml="auto"
+            />
+          )}
         </FieldListOption>
       </Tooltip>
     </Flex>
@@ -86,8 +100,6 @@ export const TranslationListSection = ({
 
   const uppercaseLanguage = language.charAt(0).toUpperCase() + language.slice(1)
 
-  console.log(form)
-  console.log(language)
   const handleOnBackClick = useCallback(() => {
     navigate(`${ADMINFORM_ROUTE}/${formId}/settings/multi-language`)
   }, [formId, navigate])
@@ -107,6 +119,7 @@ export const TranslationListSection = ({
         <Flex direction="column">
           <CategoryHeader>{uppercaseLanguage}</CategoryHeader>
           {form?.form_fields.map((form_field, id, arr) => {
+            const hasTranslations = form_field?.titleTranslations.length !== 0
             return (
               <>
                 <QuestionRow
@@ -115,6 +128,7 @@ export const TranslationListSection = ({
                   icon={BASICFIELD_TO_DRAWER_META[form_field.fieldType].icon}
                   isMyInfoField={isMyInfo(form_field)}
                   formFieldNum={id}
+                  hasTranslations={hasTranslations}
                 />
                 {id < arr.length - 1 && <Divider />}
               </>
