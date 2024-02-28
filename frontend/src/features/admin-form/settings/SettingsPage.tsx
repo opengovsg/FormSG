@@ -17,12 +17,12 @@ import { useDraggable } from '~hooks/useDraggable'
 
 import { useAdminFormCollaborators } from '../common/queries'
 
+import { MultiLanguageSection } from './components/MultiLanguageSection/MultiLangugageSection'
 import { TranslationListSection } from './components/MultiLanguageSection/TranslationListSection'
 import { TranslationSection } from './components/MultiLanguageSection/TranslationSection'
 import { SettingsTab } from './components/SettingsTab'
 import { SettingsAuthPage } from './SettingsAuthPage'
 import { SettingsGeneralPage } from './SettingsGeneralPage'
-import { SettingsMultiLangPage } from './SettingsMultiLangPage'
 import { SettingsPaymentsPage } from './SettingsPaymentsPage'
 import { SettingsTwilioPage } from './SettingsTwilioPage'
 import { SettingsWebhooksPage } from './SettingsWebhooksPage'
@@ -142,7 +142,7 @@ export const SettingsPage = (): JSX.Element => {
             <SettingsPaymentsPage />
           </TabPanel>
           <TabPanel>
-            {!language && !currentIsTranslation && <SettingsMultiLangPage />}
+            {!language && !currentIsTranslation && <MultiLanguageSection />}
             {language && !currentIsTranslation && (
               <TranslationListSection language={language} />
             )}

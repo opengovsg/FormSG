@@ -31,6 +31,7 @@ import {
   FormSettings,
   FormWebhookResponseModeSettings,
   FormWebhookSettings,
+  Language,
   LogicConditionState,
   LogicDto,
   LogicIfValue,
@@ -1896,6 +1897,17 @@ export const handleUpdateFormField = [
         required: Joi.boolean().required(),
         title: Joi.string().trim().required(),
         disabled: Joi.boolean().required(),
+        titleTranslations: Joi.array()
+          .items(
+            Joi.object({
+              language: Joi.string()
+                .valid(...Object.values(Language))
+                .required(),
+              translation: Joi.string().required(),
+            }),
+          )
+          .optional()
+          .default([]),
         // Allow other field related key-values to be provided and let the model
         // layer handle the validation.
       })

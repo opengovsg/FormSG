@@ -36,12 +36,15 @@ export const QuestionRow = ({
 }: QuestionRowProps): JSX.Element => {
   const { formId, language } = useParams()
   const navigate = useNavigate()
+  const isTranslationRowDisabled = isMyInfoField
+
   const handleOnListClick = useCallback(() => {
-    navigate(
-      `${ADMINFORM_ROUTE}/${formId}/settings/multi-language/${language}`,
-      { state: { isTranslation: true, formFieldNum } },
-    )
-  }, [formFieldNum, formId, language, navigate])
+    if (!isTranslationRowDisabled)
+      navigate(
+        `${ADMINFORM_ROUTE}/${formId}/settings/multi-language/${language}`,
+        { state: { isTranslation: true, formFieldNum } },
+      )
+  }, [formFieldNum, formId, isTranslationRowDisabled, language, navigate])
 
   return (
     <Flex
@@ -56,7 +59,7 @@ export const QuestionRow = ({
         placement="top"
       >
         <FieldListOption
-          isDisabled={isMyInfoField}
+          isDisabled={isTranslationRowDisabled}
           onClick={() => handleOnListClick()}
           w="100%"
           paddingX="1.5rem"

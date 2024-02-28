@@ -1,4 +1,5 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
+import { useForm, UseFormRegister } from 'react-hook-form'
 import { BiChevronLeft } from 'react-icons/bi'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
@@ -12,17 +13,30 @@ import {
   Textarea,
 } from '@chakra-ui/react'
 
+import { FormFieldDto, Language, TranslationMapping } from '~shared/types'
+
 import { ADMINFORM_ROUTE } from '~constants/routes'
 import { useToast } from '~hooks/useToast'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { useEditFormField } from '~features/admin-form/create/builder-and-design/mutations/useEditFormField'
+import {
+  updateEditStateSelector,
+  useFieldBuilderStore,
+} from '~features/admin-form/create/builder-and-design/useFieldBuilderStore'
+
+type TranslationInput = {
+  translation: string
+}
 
 export const TranslationContainer = ({
   language,
   defaultString,
+  register,
 }: {
   language: string
   defaultString: string | undefined
+  register: UseFormRegister<TranslationInput>
 }): JSX.Element => {
   const uppercaseLanguage = language.charAt(0).toUpperCase() + language.slice(1)
   return (
@@ -40,7 +54,6 @@ export const TranslationContainer = ({
           placeholder={defaultString}
           width="100%"
           isDisabled={true}
-          //   minHeight="auto"
           padding="0.75rem"
           resize="vertical"
         />
@@ -50,7 +63,7 @@ export const TranslationContainer = ({
           {uppercaseLanguage}
         </Text>
         <FormControl>
-          <Input type="translation" width="100%" />
+          <Input type="text" width="100%" {...register('translation')} />
         </FormControl>
       </Flex>
     </Flex>
@@ -67,6 +80,9 @@ export const TranslationSection = ({
   const { data: form, isLoading } = useAdminForm()
   const { formId } = useParams()
   const navigate = useNavigate()
+  const { editFieldMutation } = useEditFormField()
+  const { register, watch } = useForm<TranslationInput>()
+  const updateEditState = useFieldBuilderStore(updateEditStateSelector)
 
   const toast = useToast({ status: 'danger' })
 
@@ -77,11 +93,58 @@ export const TranslationSection = ({
     })
   }
 
-  const formData = form?.form_fields[formFieldNumToBeTranslated]
+  const formFieldData = form?.form_fields[formFieldNumToBeTranslated]
+  const fieldId = formFieldData?._id
+  const translationInput = watch('translation')
+
+  useEffect(() => {
+    if (formFieldData) updateEditState(formFieldData)
+  }, [formFieldData, updateEditState])
 
   const handleOnBackClick = useCallback(() => {
     navigate(`${ADMINFORM_ROUTE}/${formId}/settings/multi-language/${language}`)
   }, [formId, language, navigate])
+
+  const handleOnSaveClick = useCallback(() => {
+    if (formFieldData) {
+      const titleTranslations = formFieldData.titleTranslations ?? []
+
+      const capitalisedLanguage =
+        language.charAt(0).toUpperCase() + language.slice(1)
+
+      const translationIdx = titleTranslations.findIndex(
+        (translation: TranslationMapping) =>
+          translation.language === capitalisedLanguage,
+      )
+
+      let updatedTitleTranslations = titleTranslations
+
+      if (translationIdx !== -1) {
+        updatedTitleTranslations[translationIdx] = {
+          language: capitalisedLanguage as Language,
+          translation: translationInput,
+        }
+      } else {
+        updatedTitleTranslations = [
+          ...updatedTitleTranslations,
+          {
+            language: capitalisedLanguage as Language,
+            translation: translationInput,
+          },
+        ]
+      }
+
+      const updatedFormData = {
+        ...formFieldData,
+        titleTranslations: updatedTitleTranslations,
+      }
+
+      editFieldMutation.mutate({
+        ...updatedFormData,
+        _id: fieldId,
+      } as FormFieldDto)
+    }
+  }, [editFieldMutation, fieldId, formFieldData, language, translationInput])
 
   return (
     <Skeleton isLoaded={!isLoading && !!form}>
@@ -110,10 +173,14 @@ export const TranslationSection = ({
           </Text>
           <TranslationContainer
             language={language}
-            defaultString={formData?.title}
+            defaultString={formFieldData?.title}
+            register={register}
           />
         </Flex>
         <Divider mb="2.5rem" />
+        <Button variant="solid" width="30%" onClick={handleOnSaveClick}>
+          Save Translation
+        </Button>
       </Flex>
     </Skeleton>
   )
