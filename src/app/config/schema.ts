@@ -297,6 +297,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: '',
       env: 'VIRUS_SCANNER_LAMBDA_FUNCTION_NAME',
     },
+    virusScannerLambdaEndpoint: {
+      doc: 'Endpoint address for virus scanner lambda function. Specify this if the lambda is hosted neither on AWS nor your local dev environment.',
+      format: String,
+      default: '',
+      env: 'VIRUS_SCANNER_LAMBDA_ENDPOINT',
+    },
   },
   core: {
     port: {
