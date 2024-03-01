@@ -56,13 +56,13 @@ const useMagicFormBuilderWizardContext =
      * TODO: Wire up with actual mutations
      */
 
-    const mockPdfMutation = useMutation(() => {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve('success')
-        }, 2000)
-      })
-    })
+    // const mockPdfMutation = useMutation(() => {
+    //   return new Promise((resolve) => {
+    //     setTimeout(() => {
+    //       resolve('success')
+    //     }, 2000)
+    //   })
+    // })
 
     const { createFieldsFromPromptMutation, createFieldsFromPdfMutation } =
       useAssistanceMutations()

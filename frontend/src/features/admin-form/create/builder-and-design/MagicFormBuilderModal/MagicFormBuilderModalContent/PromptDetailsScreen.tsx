@@ -4,7 +4,6 @@ import {
   Flex,
   FormControl,
   FormLabel,
-  Icon,
   ModalBody,
   ModalHeader,
   Text,
