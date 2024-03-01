@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useMutation } from 'react-query'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import { featureFlags } from '~shared/constants'
