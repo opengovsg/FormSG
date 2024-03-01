@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Box, Center, Container } from '@chakra-ui/react'
+import { Box, Center, Container, Flex, Stack, Text } from '@chakra-ui/react'
 import { Elements, useStripe } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 
@@ -11,6 +11,7 @@ import {
 } from '~shared/types'
 
 import InlineMessage from '~components/InlineMessage'
+import { CopyButton } from '~templates/CopyButton'
 
 import { useEnv } from '~features/env/queries'
 
@@ -31,7 +32,7 @@ import { getPaymentViewStates, PaymentViewStates } from './utils'
 const PaymentFormWrapper = ({ children }: { children: React.ReactNode }) => {
   return (
     <PublicFormWrapper>
-      <Box
+      <Flex
         pt={{ base: '2.5rem', md: '0' }}
         mb={{ base: '1.5rem', md: '0' }}
         w="100%"
@@ -39,7 +40,7 @@ const PaymentFormWrapper = ({ children }: { children: React.ReactNode }) => {
         <Container w="100%" maxW="57rem" p={0}>
           {children}
         </Container>
-      </Box>
+      </Flex>
     </PublicFormWrapper>
   )
 }
@@ -155,9 +156,22 @@ const StripePaymentContainer = ({
             <PaymentFormWrapper>
               {secretEnv === 'production' ? null : (
                 <InlineMessage variant="warning" mb="1rem">
-                  Use '4242 4242 4242 4242' as your card number to test payments
-                  on this form. Payments made on this form will only show in
-                  test mode in Stripe.
+                  <Stack>
+                    <Text>
+                      Make a test payment with the card number below! Payments
+                      made on this form will only show in test mode in Stripe.
+                    </Text>
+                    <Flex align="center">
+                      <Text mr="0.25rem">4242 4242 4242 4242</Text>
+                      <Flex boxSize="1.5rem" align="center" justify="center">
+                        <CopyButton
+                          colorScheme="secondary"
+                          stringToCopy={`4242424242424242`}
+                          aria-label="Copy test card number"
+                        />
+                      </Flex>
+                    </Flex>
+                  </Stack>
                 </InlineMessage>
               )}
               <PaymentStack>
