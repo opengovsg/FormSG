@@ -1,4 +1,4 @@
-import { ChatCompletionMessage } from 'openai/src/resources/chat/completions'
+import { ChatResponseMessage } from '@azure/openai/types/openai'
 
 import { ErrorDto } from '../../../../../shared/types'
 import { ControllerHandler } from '../../core/core.types'
@@ -15,7 +15,7 @@ import {
  */
 export const handleGenerateQuestions: ControllerHandler<
   unknown,
-  ChatCompletionMessage | ErrorDto,
+  ChatResponseMessage | ErrorDto,
   {
     type: string
     content: string
@@ -35,7 +35,7 @@ export const handleGenerateQuestions: ControllerHandler<
  */
 export const handleGenerateFormFields: ControllerHandler<
   unknown,
-  ChatCompletionMessage | ErrorDto,
+  ChatResponseMessage | ErrorDto,
   {
     content: string
   }

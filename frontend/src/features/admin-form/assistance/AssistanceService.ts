@@ -1,4 +1,4 @@
-import { ChatCompletionMessage } from 'openai/src/resources/chat/completions'
+import { ChatResponseMessage } from '@azure/openai/types/openai'
 
 import { ApiService } from '~services/ApiService'
 
@@ -7,7 +7,7 @@ import { ADMIN_FORM_ENDPOINT } from '~features/admin-form/common/AdminViewFormSe
 export const generateQuestions = async (
   type: string,
   content: string,
-): Promise<ChatCompletionMessage> => {
+): Promise<ChatResponseMessage> => {
   return await ApiService.post(`${ADMIN_FORM_ENDPOINT}/assistance/questions`, {
     type,
     content,
@@ -16,7 +16,7 @@ export const generateQuestions = async (
 
 export const generateFormFields = async (
   content: string,
-): Promise<ChatCompletionMessage> => {
+): Promise<ChatResponseMessage> => {
   return await ApiService.post(
     `${ADMIN_FORM_ENDPOINT}/assistance/form-fields`,
     {
