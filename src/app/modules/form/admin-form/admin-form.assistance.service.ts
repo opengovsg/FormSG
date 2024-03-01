@@ -1,16 +1,16 @@
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
-import OpenAI from 'openai'
+import { AzureKeyCredential, OpenAIClient } from '@azure/openai'
 import {
-  ChatCompletionMessage,
-  ChatCompletionMessageParam,
-} from 'openai/src/resources/chat/completions'
+  ChatRequestMessage,
+  ChatResponseMessage,
+} from '@azure/openai/types/openai'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import { ContentTypes } from '../../../../../shared/types/assistance'
-import { openAIConfig } from '../../../config/features/openai.config'
+import { azureOpenAIConfig } from '../../../config/features/azureopenai.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 
 import {
-  MODEL_TYPE,
+  // MODEL_TYPE,
   Roles,
   sampleFormFields,
 } from './admin-form.assistance.constants'
@@ -28,9 +28,20 @@ import {
 
 const logger = createLoggerWithLabel(module)
 
-const openai = new OpenAI({
-  apiKey: openAIConfig.apiKey,
-})
+const endpoint = azureOpenAIConfig.endpoint
+const azureApiKey = azureOpenAIConfig.apiKey
+const deploymentId = azureOpenAIConfig.deploymentId
+
+if (!endpoint || !azureApiKey) {
+  throw new Error(
+    'Azure OpenAI endpoint or API key is not defined in the environment variables',
+  )
+}
+
+const azureOpenAi = new OpenAIClient(
+  endpoint,
+  new AzureKeyCredential(azureApiKey),
+)
 
 /**
  * generates a list of questions based on the given type and content
@@ -44,8 +55,8 @@ export const generateQuestions = ({
 }: {
   type: string
   content: string
-}): ResultAsync<ChatCompletionMessage, AssistanceConnectionError> => {
-  const messages: ChatCompletionMessageParam[] = [
+}): ResultAsync<ChatResponseMessage, AssistanceConnectionError> => {
+  const messages: ChatRequestMessage[] = [
     { role: Roles.SYSTEM, content: schemaPromptBuilder(sampleFormFields) },
   ]
   switch (type) {
@@ -66,10 +77,7 @@ export const generateQuestions = ({
   }
 
   return ResultAsync.fromPromise(
-    openai.chat.completions.create({
-      messages: messages,
-      model: MODEL_TYPE,
-    }),
+    azureOpenAi.getChatCompletions(deploymentId, messages),
     (error) => {
       let errorMessage = ''
       // todo: return different error messages based on error codes
@@ -88,8 +96,12 @@ export const generateQuestions = ({
 
       return new AssistanceConnectionError()
     },
-  ).andThen((chatCompletion) => {
-    return okAsync(chatCompletion.choices[0].message)
+  ).andThen((chatCompletions) => {
+    const { message } = chatCompletions.choices[0]
+    if (!message) {
+      return errAsync(new AssistanceConnectionError())
+    }
+    return okAsync(message)
   })
 }
 
@@ -104,18 +116,15 @@ export const generateQuestions = ({
 export const generateFormFields = (
   questions: string,
 ): ResultAsync<
-  ChatCompletionMessage,
+  ChatResponseMessage,
   AssistanceConnectionError | AssistanceModelTypeError
 > => {
-  const messages: ChatCompletionMessageParam[] = [
+  const messages: ChatRequestMessage[] = [
     { role: Roles.SYSTEM, content: schemaPromptBuilder(sampleFormFields) },
     { role: Roles.USER, content: formFieldsPromptBuilder(questions) },
   ]
   return ResultAsync.fromPromise(
-    openai.chat.completions.create({
-      messages: messages,
-      model: MODEL_TYPE,
-    }),
+    azureOpenAi.getChatCompletions(deploymentId, messages),
     (error) => {
       let errorMessage = ''
       if (isOpenAIError(error)) {
@@ -131,7 +140,11 @@ export const generateFormFields = (
       })
       return new AssistanceConnectionError()
     },
-  ).andThen((chatCompletion) => {
-    return okAsync(chatCompletion.choices[0].message)
+  ).andThen((chatCompletions) => {
+    const { message } = chatCompletions.choices[0]
+    if (!message) {
+      return errAsync(new AssistanceConnectionError())
+    }
+    return okAsync(message)
   })
 }
