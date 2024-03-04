@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { Box, FormControl, useDisclosure } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
+import { FormResponseMode } from '~shared/types'
 import { MobileFieldBase } from '~shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
@@ -62,13 +63,20 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
 
   const { data: freeSmsCount } = useFreeSmsQuota()
   const isToggleVfnDisabled = useMemo(() => {
+    // vfn is not supported on MRF
+    if (form?.responseMode === FormResponseMode.Multirespondent) return true
     if (!freeSmsCount) return true
     return (
       !field.isVerifiable &&
       !hasTwilioCredentials &&
       freeSmsCount.freeSmsCounts >= freeSmsCount.quota
     )
-  }, [field.isVerifiable, freeSmsCount, hasTwilioCredentials])
+  }, [
+    field.isVerifiable,
+    freeSmsCount,
+    hasTwilioCredentials,
+    form?.responseMode,
+  ])
 
   const smsCountsDisclosure = useDisclosure()
 

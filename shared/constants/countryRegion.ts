@@ -5,7 +5,6 @@ export enum CountryRegion {
   American_Samoa = 'American Samoa',
   Andorra = 'Andorra',
   Angola = 'Angola',
-  Anguilla = 'Anguilla',
   Antigua = 'Antigua',
   Argentina = 'Argentina',
   Armenia = 'Armenia',

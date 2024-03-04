@@ -11,7 +11,7 @@
 ## Table of Contents
 
 - [Contributing](#contributing)
-  - [IMPORTANT NOTE TO ALL CONTRIBUTORS](#important-note-to-all-contributors)
+    - [IMPORTANT NOTE TO ALL CONTRIBUTORS](#important-note-to-all-contributors)
 - [Features](#features)
 - [Local Development (Docker)](#local-development-docker)
   - [Prerequisites](#prerequisites)
@@ -31,6 +31,7 @@
 - [MongoDB Scripts](#mongodb-scripts)
 - [Support](#support)
 - [Database Alternatives](#database-alternatives)
+  - [Migrating from MongoDB to FerretDB](#migrating-from-mongodb-to-ferretdb)
   - [Migrating from Mongoose ODM to Prisma ORM](#migrating-from-mongoose-odm-to-prisma-orm)
     - [Replacing MongoDB with CockroachDB](#replacing-mongodb-with-cockroachdb)
     - [Other Prisma supported DBs](#other-prisma-supported-dbs)
@@ -225,6 +226,51 @@ Please contact FormSG (support@form.gov.sg) for any details.
 
 ## Database Alternatives
 
+### Migrating from MongoDB to FerretDB
+[FerretDB](https://ferretdb.io) is an open source MongoDB alternative built on PostgreSQL. MongoDB can be swapped out of FormSG for FerretDB. In order for this to be done, certain changes to the code should be made as described below:
+
+- Add postgres to the list of services in the `docker.compose` file e.g. 
+  ```  pg:
+    image: postgres:15.3-alpine3.18
+    environment:
+      - POSTGRES_USER=<pguser>
+      - POSTGRES_PASSWORD=<pgpassword>
+      - POSTGRES_DB=<pgdbname>
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+- In the same file, change the "database" image from MongoDB to FerretDB and update the database section to include the lines below:
+    ``` 
+     image: ghcr.io/ferretdb/ferretdb:1.17.0
+     environment:
+       - FERRETDB_TELEMETRY=disable
+       - FERRETDB_POSTGRESQL_URL=postgres://pg:5432/formsg?user=<pguser>&password=<pgpassword>
+     ports:
+       - '8080:8080'
+     depends_on:
+       - pg
+- Lastly, add the *pgdata* volume
+    ``` 
+        volumes:
+            mongodb_data:
+                driver: local
+            pgdata:
+- FerretDB currently has some limitations and [certain database features are not supported](https://docs.ferretdb.io/reference/supported-commands/), these include TTL, database transactions and some aggregration pipelines which are all features used by FormSG. 
+
+    The following changes can be made to mitigate the limitations of FerretDB:
+    
+    - Add the *autoRemove: 'interval'* property to the initializing of the session object in the `session.ts` file.
+    - Remove the unsupported [aggregration pipeline stages](https://docs.ferretdb.io/reference/supported-commands/#aggregation-pipeline-stages) e.g. *lookup* and *project*, in the `submission.server.model.ts` file.
+    - Replace the *findOneAndUpdate* code block in the `user.server.model.ts` file with code similar to the one below:
+        ```  
+         const user = await this.exists({ email: upsertParams.email })
+         if (!user) {
+          await this.create(upsertParams)
+        }
+        return this.findOne({
+          email: upsertParams.email,
+        }).populate({...
 ### Migrating from Mongoose ODM to Prisma ORM
 
 FormSG uses Mongoose as the Object-Document Mapping (ODM) to MongoDB. This means that our code is strongly coupled with MongoDB as Mongoose solely supports it.
