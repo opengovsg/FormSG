@@ -85,8 +85,6 @@ jobs:
             APP_VERSION=${{env.APP_VERSION}}
             APP_URL=${{secrets.APP_URL}}
             REPO_URL=${{github.server_url}}/${{github.repository}}
-            DD_GIT_REPOSITORY_URL=${{github.server_url}}/${{github.repository}}
-            DD_GIT_COMMIT_SHA=${{github.sha}}
           secrets: |
             "dd_api_key=${{ secrets.DD_API_KEY }}"
 
@@ -95,11 +93,14 @@ jobs:
           ECR_REPOSITORY: ${{ secrets.ECR_REPO }}
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
           DD_ENV: ${{ secrets.DD_ENV }}
+          DD_GIT_REPOSITORY_URL: ${{github.server_url}}/${{github.repository}}
+          DD_GIT_COMMIT_SHA: ${{github.sha}}
         run: |
           docker tag $ECR_REPOSITORY:$IMAGE_TAG $ECR_REPOSITORY:$BRANCH
           docker push -a $ECR_REPOSITORY
           sed -i -e "s/@TAG/$IMAGE_TAG/g" Dockerrun.aws.json
           sed -i -e "s/@DD_API_KEY/$DD_API_KEY/g" -e "s/@DD_ENV/$DD_ENV/g" .ebextensions/99datadog-amazon-linux-2.config
+          sed -i -e "s/@DD_GIT_REPOSITORY_URL/$DD_GIT_REPOSITORY_URL/g" -e "s/@DD_GIT_COMMIT_SHA/$DD_GIT_COMMIT_SHA/g" .ebextensions/02env-file-datadog.config
           zip -r "$IMAGE_TAG.zip" .ebextensions Dockerrun.aws.json
 
       - name: Copy Image to S3
