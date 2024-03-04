@@ -1,4 +1,4 @@
-import OpenAI from 'openai'
+import { OpenAIClient } from '@azure/openai'
 
 import {
   generateFormFields,
@@ -9,28 +9,38 @@ import {
   AssistanceModelTypeError,
 } from '../admin-form.errors'
 
-// Mock openai
-jest.mock('openai', () => jest.fn())
-const MockedOpenAIClient = jest.mocked(OpenAI)
-
 const mockReturnValue = {
   role: 'user',
   content: 'dummy content',
 }
 
+// Mock azure openai
+jest.mock('@azure/openai', () => {
+  return {
+    AzureKeyCredential: jest.fn().mockImplementation((apiKey) => {
+      return apiKey
+    }),
+    OpenAIClient: jest.fn().mockImplementation(() => {
+      return {
+        getChatCompletions: jest.fn().mockResolvedValue({
+          choices: [
+            {
+              message: {
+                role: 'user',
+                content: 'dummy content',
+              },
+            },
+          ],
+        }),
+      }
+    }),
+  }
+})
+
+const MockedOpenAIClient = jest.mocked(OpenAIClient)
+
 beforeEach(() => {
   jest.clearAllMocks()
-  MockedOpenAIClient.prototype.chat = {
-    completions: {
-      create: jest.fn().mockResolvedValue({
-        choices: [
-          {
-            message: mockReturnValue,
-          },
-        ],
-      }),
-    },
-  } as any
 })
 
 describe('admin-form.assistance.service', () => {
@@ -67,8 +77,8 @@ describe('admin-form.assistance.service', () => {
       const type = 'prompt'
       const content = 'Sample content'
 
-      // Mock OpenAI API throwing an error
-      MockedOpenAIClient.prototype.chat.completions.create = jest
+      // Mock Azure OpenAI API throwing an error
+      MockedOpenAIClient.prototype.getChatCompletions = jest
         .fn()
         .mockRejectedValue(new Error('Some random error message'))
 
@@ -119,7 +129,7 @@ describe('admin-form.assistance.service', () => {
       const questions = 'sample questions'
 
       // Mock OpenAI API throwing an error
-      MockedOpenAIClient.prototype.chat.completions.create = jest
+      MockedOpenAIClient.prototype.getChatCompletions = jest
         .fn()
         .mockRejectedValue(new Error('Some random error message'))
 

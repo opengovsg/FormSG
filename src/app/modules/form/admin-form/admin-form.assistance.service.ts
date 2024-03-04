@@ -9,11 +9,7 @@ import { ContentTypes } from '../../../../../shared/types/assistance'
 import { azureOpenAIConfig } from '../../../config/features/azureopenai.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 
-import {
-  // MODEL_TYPE,
-  Roles,
-  sampleFormFields,
-} from './admin-form.assistance.constants'
+import { Roles, sampleFormFields } from './admin-form.assistance.constants'
 import {
   formFieldsPromptBuilder,
   isOpenAIError,
@@ -31,12 +27,6 @@ const logger = createLoggerWithLabel(module)
 const endpoint = azureOpenAIConfig.endpoint
 const azureApiKey = azureOpenAIConfig.apiKey
 const deploymentId = azureOpenAIConfig.deploymentId
-
-if (!endpoint || !azureApiKey) {
-  throw new Error(
-    'Azure OpenAI endpoint or API key is not defined in the environment variables',
-  )
-}
 
 const azureOpenAi = new OpenAIClient(
   endpoint,
