@@ -85,6 +85,8 @@ jobs:
             APP_VERSION=${{env.APP_VERSION}}
             APP_URL=${{secrets.APP_URL}}
             REPO_URL=${{github.server_url}}/${{github.repository}}
+            DD_GIT_REPOSITORY_URL=${{github.server_url}}/${{github.repository}}
+            DD_GIT_COMMIT_SHA=${{github.sha}}
           secrets: |
             "dd_api_key=${{ secrets.DD_API_KEY }}"
 
