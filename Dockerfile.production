@@ -40,11 +40,6 @@ COPY . ./
 # These options are only used in the build stage, not the start stage.
 ENV NODE_OPTIONS="--max-old-space-size=4096 --openssl-legacy-provider"
 
-ARG DD_GIT_REPOSITORY_URL
-ARG DD_GIT_COMMIT_SHA
-ENV DD_GIT_REPOSITORY_URL=${DD_GIT_REPOSITORY_URL} 
-ENV DD_GIT_COMMIT_SHA=${DD_GIT_COMMIT_SHA}
-
 RUN npm run build
 
 ARG APP_VERSION
@@ -86,7 +81,7 @@ RUN mv /opt/formsg/dist/backend/shared /opt/formsg/
 # https://www.npmjs.com/package/puppeteer-core?activeTab=versions for corresponding versions
 
 RUN apk add --no-cache \
-    # Compatible chromium versions can be found here https://pkgs.alpinelinux.org/packages?name=chromium&branch=v3.18&repo=&arch=&maintainer=
+# Compatible chromium versions can be found here https://pkgs.alpinelinux.org/packages?name=chromium&branch=v3.18&repo=&arch=&maintainer=
     chromium=119.0.6045.159-r0 \
     nss \
     freetype \
