@@ -1,4 +1,6 @@
+import _ from 'lodash'
 import moment from 'moment-timezone'
+import { Types } from 'mongoose'
 import Stripe from 'stripe'
 
 import {
@@ -7,11 +9,13 @@ import {
   PaymentFieldsDto,
   PaymentMethodType,
   PaymentType,
+  ProductItem,
   StorageModeSubmissionContentDto,
   SubmissionDto,
   SubmissionPaymentDto,
   SubmissionType,
 } from '../../../../../shared/types'
+import { isNonEmpty } from '../../../../../shared/utils/isNonEmpty'
 import { calculatePrice } from '../../../../../shared/utils/paymentProductPrice'
 import { isProcessedChildResponse } from '../../../../app/utils/field-validation/field-validation.guards'
 import {
@@ -185,4 +189,35 @@ export const getStripePaymentMethod = (
       enabled: true,
     },
   }
+}
+
+/**
+ * Sanitizes the payment fields from the form and the incoming submission
+ * The payment products from incoming submission can be freely altered by the respondent
+ * which could result in undesirable data seeded into our database
+ * @param form
+ * @param dirtyPaymentProducts
+ */
+export const sanitisePaymentProducts = (
+  form: IPopulatedEncryptedForm,
+  dirtyPaymentProducts: ProductItem[] | undefined,
+): ProductItem[] | undefined => {
+  if (!dirtyPaymentProducts) return
+  if (!form.payments_field.products) return
+
+  const sanitisedProducts = form.payments_field.products
+    .map((cleanProductData): ProductItem | null => {
+      const dirtyProduct = dirtyPaymentProducts.find(({ data }) =>
+        (cleanProductData._id as unknown as Types.ObjectId).equals(data._id),
+      )
+      if (!dirtyProduct) return null
+
+      return {
+        ..._.pick(dirtyProduct, ['selected', 'quantity']), // only selected and quantity are allowed to be passed through
+        data: cleanProductData, // only clean product data from the form should be used
+      }
+    })
+    .filter(isNonEmpty)
+
+  return sanitisedProducts
 }
