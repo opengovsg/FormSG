@@ -11,7 +11,7 @@ const wogaaSchema: Schema<IWogaa> = {
   wogaaSecretKey: {
     doc: 'Wogaa shared secret key',
     format: String,
-    default: null,
+    default: '',
     env: 'WOGAA_SECRET_KEY',
   },
   wogaaStartEndpoint: {
@@ -24,7 +24,7 @@ const wogaaSchema: Schema<IWogaa> = {
     doc: 'Wogaa endpoint when a form is loaded',
     format: String,
     default: '',
-    ENV: 'WOGAA_SUBMIT_ENDPOINT',
+    env: 'WOGAA_SUBMIT_ENDPOINT',
   },
   wogaaFeedbackEndpoint: {
     doc: 'Wogaa endpoint when a form is loaded',
@@ -34,6 +34,6 @@ const wogaaSchema: Schema<IWogaa> = {
   },
 }
 
-export const captchaConfig = convict(wogaaSchema)
+export const wogaaConfig = convict(wogaaSchema)
   .validate({ allowed: 'strict' })
   .getProperties()

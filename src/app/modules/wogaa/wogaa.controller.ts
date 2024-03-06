@@ -13,8 +13,8 @@ const generateSignature = (payload: Record<string, unknown>) => {
   return signature
 }
 
-const checkAll = () => {
-  if (!wogaaConfig.wogaaFeedbackEndpoint) {
+const isConfigValid = () => {
+  if (!wogaaConfig.wogaaSecretKey) {
     return false
   }
   if (!wogaaConfig.wogaaStartEndpoint) {
@@ -29,6 +29,7 @@ const checkAll = () => {
 
   return true
 }
+
 export const handleSubmit: ControllerHandler<{ formId: string }> = async (
   req,
   _,
@@ -36,7 +37,7 @@ export const handleSubmit: ControllerHandler<{ formId: string }> = async (
 ) => {
   const { formId } = req.params
 
-  if (!req.sessionID || !formId || !checkAll()) {
+  if (!req.sessionID || !formId || !isConfigValid()) {
     return next()
   }
 
@@ -62,10 +63,8 @@ export const handleFormView: ControllerHandler<{ formId: string }> = async (
   next,
 ) => {
   const { formId } = req.params
-  console.log('>>>>>>>>>>>>>>>', 1)
 
-  if (!req.sessionID || !formId || !checkAll()) {
-    console.log({ req: req.sessionID, formId, ch: checkAll() })
+  if (!req.sessionID || !formId || !isConfigValid()) {
     return next()
   }
   const payload = {
@@ -92,7 +91,7 @@ export const handleFormFeedback: ControllerHandler<
   const { formId } = req.params
   const { rating, comment } = req.body
 
-  if (!req.sessionID || !formId || !checkAll()) {
+  if (!req.sessionID || !formId || !isConfigValid()) {
     return next()
   }
   const payload = {
