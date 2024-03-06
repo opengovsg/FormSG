@@ -152,6 +152,7 @@
     "uid-generator": "^2.0.0",
     "ulid": "^2.3.0",
     "uuid": "^9.0.0",
+    "uuid-by-string": "^4.0.0",
     "validator": "^13.7.0",
     "web-streams-polyfill": "^3.2.1",
     "whatwg-fetch": "^3.6.2",
