@@ -5,6 +5,7 @@ import * as EmailSubmissionController from '../../../../modules/submission/email
 import * as EncryptSubmissionController from '../../../../modules/submission/encrypt-submission/encrypt-submission.controller'
 import * as MultirespondentSubmissionController from '../../../../modules/submission/multirespondent-submission/multirespondent-submission.controller'
 import * as SubmissionController from '../../../../modules/submission/submission.controller'
+import * as WogaaController from '../../../../modules/wogaa/wogaa.controller'
 import { limitRate } from '../../../../utils/limit-rate'
 
 export const PublicFormsSubmissionsRouter = Router()
@@ -29,6 +30,7 @@ PublicFormsSubmissionsRouter.route(
   '/:formId([a-fA-F0-9]{24})/submissions/email',
 ).post(
   limitRate({ max: rateLimitConfig.submissions }),
+  WogaaController.handleSubmit,
   EmailSubmissionController.handleEmailSubmission,
 )
 
@@ -45,6 +47,7 @@ PublicFormsSubmissionsRouter.route(
   '/:formId([a-fA-F0-9]{24})/submissions/storage',
 ).post(
   limitRate({ max: rateLimitConfig.submissions }),
+  WogaaController.handleSubmit,
   EncryptSubmissionController.handleStorageSubmission,
 )
 
@@ -61,6 +64,7 @@ PublicFormsSubmissionsRouter.route(
   '/:formId([a-fA-F0-9]{24})/submissions/multirespondent',
 ).post(
   limitRate({ max: rateLimitConfig.submissions }),
+  WogaaController.handleSubmit,
   MultirespondentSubmissionController.handleMultirespondentSubmission,
 )
 
