@@ -12,6 +12,7 @@ import {
   Text,
   Textarea,
 } from '@chakra-ui/react'
+import _ from 'lodash'
 
 import {
   FormField,
@@ -31,7 +32,8 @@ import {
 } from '~features/admin-form/create/builder-and-design/useFieldBuilderStore'
 
 type TranslationInput = {
-  translation: string
+  titleTranslation: string
+  descriptionTranslation: string
 }
 
 export const TranslationContainer = ({
@@ -39,16 +41,28 @@ export const TranslationContainer = ({
   defaultString,
   register,
   formField,
+  editingTranslation,
 }: {
   language: string
   defaultString: string | undefined
   register: UseFormRegister<TranslationInput>
   formField: FormFieldDto<FormField> | undefined
+  editingTranslation: keyof TranslationInput
 }): JSX.Element => {
-  const previousTranslation =
-    formField?.titleTranslations?.find(
-      (translation) => translation.language === language,
-    )?.translation ?? ''
+  let translationMapping: TranslationMapping[] = []
+
+  switch (editingTranslation) {
+    case 'descriptionTranslation':
+      translationMapping = formField?.descriptionTranslations ?? []
+      break
+    case 'titleTranslation':
+      translationMapping = formField?.titleTranslations ?? []
+      break
+  }
+
+  const previousTranslations =
+    translationMapping.find((translation) => translation.language === language)
+      ?.translation ?? ''
 
   return (
     <Flex direction="column" width="100%">
@@ -66,7 +80,7 @@ export const TranslationContainer = ({
           width="100%"
           isDisabled={true}
           padding="0.75rem"
-          resize="vertical"
+          resize="none"
         />
       </Flex>
       <Flex alignItems="center">
@@ -77,8 +91,8 @@ export const TranslationContainer = ({
           <Input
             type="text"
             width="100%"
-            {...register('translation')}
-            defaultValue={previousTranslation}
+            {...register(editingTranslation)}
+            defaultValue={previousTranslations}
           />
         </FormControl>
       </Flex>
@@ -100,6 +114,9 @@ export const TranslationSection = ({
   const { register, watch } = useForm<TranslationInput>()
   const updateEditState = useFieldBuilderStore(updateEditStateSelector)
 
+  const titleTranslationInput = watch('titleTranslation')
+  const descriptionTranslationInput = watch('descriptionTranslation')
+
   const toast = useToast({ status: 'danger' })
 
   if (!isLoading && !form) {
@@ -110,8 +127,10 @@ export const TranslationSection = ({
   }
 
   const formFieldData = form?.form_fields[formFieldNumToBeTranslated]
+  const hasDescription =
+    !_.isUndefined(formFieldData?.description) &&
+    formFieldData?.description !== ''
   const fieldId = formFieldData?._id
-  const translationInput = watch('translation')
   const capitalisedLanguage =
     language.charAt(0).toUpperCase() + language.slice(1)
 
@@ -123,8 +142,8 @@ export const TranslationSection = ({
     navigate(`${ADMINFORM_ROUTE}/${formId}/settings/multi-language/${language}`)
   }, [formId, language, navigate])
 
-  const handleOnSaveClick = useCallback(() => {
-    if (formFieldData) {
+  const handleOnSaveTitleTranslation = useCallback(
+    (formFieldData: FormFieldDto<FormField>): TranslationMapping[] => {
       const titleTranslations = formFieldData.titleTranslations ?? []
 
       const translationIdx = titleTranslations.findIndex(
@@ -134,24 +153,72 @@ export const TranslationSection = ({
 
       let updatedTitleTranslations = titleTranslations
 
+      // title translations for this language exists, need to
+      // override it with new translations on save
       if (translationIdx !== -1) {
-        updatedTitleTranslations[translationIdx] = {
-          language: capitalisedLanguage as Language,
-          translation: translationInput,
-        }
+        updatedTitleTranslations[translationIdx].translation =
+          titleTranslationInput
       } else {
         updatedTitleTranslations = [
           ...updatedTitleTranslations,
           {
             language: capitalisedLanguage as Language,
-            translation: translationInput,
+            translation: titleTranslationInput,
           },
         ]
+      }
+
+      return updatedTitleTranslations
+    },
+    [capitalisedLanguage, titleTranslationInput],
+  )
+
+  const handleOnSaveDescriptionTranslations = useCallback(
+    (formFieldData: FormFieldDto<FormField>): TranslationMapping[] => {
+      const descriptionTranslations =
+        formFieldData.descriptionTranslations ?? []
+
+      const translationIdx = descriptionTranslations.findIndex(
+        (translation: TranslationMapping) =>
+          translation.language === capitalisedLanguage,
+      )
+
+      let updatedDescriptionTranslations = descriptionTranslations
+
+      if (translationIdx !== -1) {
+        updatedDescriptionTranslations[translationIdx].translation =
+          descriptionTranslationInput
+      } else {
+        updatedDescriptionTranslations = [
+          ...updatedDescriptionTranslations,
+          {
+            language: capitalisedLanguage as Language,
+            translation: descriptionTranslationInput,
+          },
+        ]
+      }
+
+      return updatedDescriptionTranslations
+    },
+    [capitalisedLanguage, descriptionTranslationInput],
+  )
+
+  const handleOnSaveClick = useCallback(() => {
+    if (formFieldData) {
+      const updatedTitleTranslations =
+        handleOnSaveTitleTranslation(formFieldData)
+
+      let updatedDescriptionTranslations: TranslationMapping[] = []
+
+      if (formFieldData.description && !_.isEmpty(formFieldData.description)) {
+        updatedDescriptionTranslations =
+          handleOnSaveDescriptionTranslations(formFieldData)
       }
 
       const updatedFormData = {
         ...formFieldData,
         titleTranslations: updatedTitleTranslations,
+        descriptionTranslations: updatedDescriptionTranslations,
       }
 
       editFieldMutation.mutate({
@@ -160,11 +227,11 @@ export const TranslationSection = ({
       } as FormFieldDto)
     }
   }, [
-    capitalisedLanguage,
     editFieldMutation,
     fieldId,
     formFieldData,
-    translationInput,
+    handleOnSaveDescriptionTranslations,
+    handleOnSaveTitleTranslation,
   ])
 
   return (
@@ -195,11 +262,31 @@ export const TranslationSection = ({
           <TranslationContainer
             language={capitalisedLanguage}
             defaultString={formFieldData?.title}
-            formField={formFieldData}
             register={register}
+            formField={formFieldData}
+            editingTranslation={'titleTranslation'}
           />
         </Flex>
         <Divider mb="2.5rem" />
+        {hasDescription && (
+          <Flex justifyContent="flex-start" mb="2.5rem" direction="column">
+            <Text
+              color="secondary.500"
+              fontSize="1.25rem"
+              fontWeight="600"
+              mb="1rem"
+            >
+              Description
+            </Text>
+            <TranslationContainer
+              language={capitalisedLanguage}
+              defaultString={formFieldData?.description}
+              register={register}
+              formField={formFieldData}
+              editingTranslation={'descriptionTranslation'}
+            />
+          </Flex>
+        )}
         <Button variant="solid" width="30%" onClick={handleOnSaveClick}>
           Save Translation
         </Button>

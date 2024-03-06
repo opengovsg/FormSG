@@ -119,7 +119,10 @@ export const TranslationListSection = ({
         <Flex direction="column">
           <CategoryHeader>{uppercaseLanguage}</CategoryHeader>
           {form?.form_fields.map((form_field, id, arr) => {
-            const hasTranslations = form_field?.titleTranslations.length !== 0
+            const hasTranslations =
+              (form_field?.titleTranslations &&
+                form_field?.titleTranslations.length !== 0) ??
+              false
             return (
               <>
                 <QuestionRow

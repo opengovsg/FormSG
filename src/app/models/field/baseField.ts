@@ -60,6 +60,21 @@ export const BaseFieldSchema = new Schema<IFieldSchema>(
       default: [],
       _id: false,
     },
+    descriptionTranslations: {
+      type: [
+        {
+          language: {
+            type: String,
+            enum: Object.values(Language),
+          },
+          translation: {
+            type: String,
+          },
+        },
+      ],
+      default: [],
+      _id: false,
+    },
   },
   {
     discriminatorKey: 'fieldType',

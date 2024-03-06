@@ -100,6 +100,7 @@ export type FieldBase = {
   disabled: boolean
   fieldType: BasicField
   titleTranslations?: TranslationMapping[]
+  descriptionTranslations?: TranslationMapping[]
 }
 
 export type MyInfoableFieldBase = FieldBase & AllowMyInfoBase
