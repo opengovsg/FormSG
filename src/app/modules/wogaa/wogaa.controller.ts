@@ -3,8 +3,10 @@ import * as crypto from 'crypto'
 import uuidGen from 'uuid-by-string'
 
 import { wogaaConfig } from '../../config/features/wogaa'
+import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 
+const logger = createLoggerWithLabel(module)
 const generateSignature = (payload: Record<string, unknown>) => {
   const signature = crypto
     .createHmac('sha256', wogaaConfig.wogaaSecretKey)
@@ -41,6 +43,11 @@ export const handleSubmit: ControllerHandler<{ formId: string }> = async (
     return next()
   }
 
+  const logMeta = {
+    action: 'wogaaHandleSubmit',
+    formId,
+  }
+
   const payload = {
     formSgId: formId,
     transactionId: uuidGen(req.sessionID),
@@ -50,9 +57,19 @@ export const handleSubmit: ControllerHandler<{ formId: string }> = async (
     headers: {
       'WOGAA-Signature': generateSignature(payload),
     },
-  }).catch(() => {
-    // should not handle errors
   })
+    .then(() => {
+      logger.info({
+        message: 'Successfully sent WOGAA submit endpoint',
+        meta: logMeta,
+      })
+    })
+    .catch((e) => {
+      logger.warn({
+        message: 'Error sending to WOGAA submit endpoint',
+        meta: { ...logMeta, wogaaRespError: e },
+      })
+    })
 
   return next()
 }
@@ -67,6 +84,11 @@ export const handleFormView: ControllerHandler<{ formId: string }> = async (
   if (!req.sessionID || !formId || !isConfigValid()) {
     return next()
   }
+
+  const logMeta = {
+    action: 'wogaaHandleFormView',
+    formId,
+  }
   const payload = {
     formSgId: formId,
     pageUrl: formId,
@@ -76,9 +98,19 @@ export const handleFormView: ControllerHandler<{ formId: string }> = async (
     headers: {
       'WOGAA-Signature': generateSignature(payload),
     },
-  }).catch(() => {
-    // ignore
   })
+    .then(() => {
+      logger.info({
+        message: 'Successfully sent WOGAA load form endpoint',
+        meta: logMeta,
+      })
+    })
+    .catch((e) => {
+      logger.warn({
+        message: 'Error sending to WOGAA load form endpoint',
+        meta: { ...logMeta, wogaaRespError: e },
+      })
+    })
 
   return next()
 }
@@ -94,6 +126,11 @@ export const handleFormFeedback: ControllerHandler<
   if (!req.sessionID || !formId || !isConfigValid()) {
     return next()
   }
+
+  const logMeta = {
+    action: 'wogaaHandleFormFeedback',
+    formId,
+  }
   const payload = {
     formSgId: formId,
     transactionId: uuidGen(req.sessionID),
@@ -105,9 +142,19 @@ export const handleFormFeedback: ControllerHandler<
     headers: {
       'WOGAA-Signature': generateSignature(payload),
     },
-  }).catch(() => {
-    // ignore
   })
+    .then(() => {
+      logger.info({
+        message: 'Successfully sent WOGAA form feedback endpoint',
+        meta: logMeta,
+      })
+    })
+    .catch((e) => {
+      logger.warn({
+        message: 'Error sending to WOGAA form feedback endpoint',
+        meta: { ...logMeta, wogaaRespError: e },
+      })
+    })
 
   return next()
 }
