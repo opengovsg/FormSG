@@ -62,12 +62,15 @@ export const handleFormView: ControllerHandler<{ formId: string }> = async (
   next,
 ) => {
   const { formId } = req.params
+  console.log('>>>>>>>>>>>>>>>', 1)
 
   if (!req.sessionID || !formId || !checkAll()) {
+    console.log({ req: req.sessionID, formId, ch: checkAll() })
     return next()
   }
   const payload = {
     formSgId: formId,
+    pageUrl: formId,
     transactionId: uuidGen(req.sessionID),
   }
   void Axios.post(wogaaConfig.wogaaStartEndpoint, payload, {
