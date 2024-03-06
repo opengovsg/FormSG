@@ -16,32 +16,14 @@ const mockReturnValue = {
 }
 
 // Mock azure openai
-jest.mock('@azure/openai', () => {
-  return {
-    AzureKeyCredential: jest.fn().mockImplementation((apiKey) => {
-      return apiKey
-    }),
-    OpenAIClient: jest.fn().mockImplementation(() => {
-      return {
-        getChatCompletions: jest.fn().mockResolvedValue({
-          choices: [
-            {
-              message: {
-                role: 'user',
-                content: 'dummy content',
-              },
-            },
-          ],
-        }),
-      }
-    }),
-  }
-})
-
-const MockedOpenAIClient = jest.mocked(OpenAIClient)
+jest.mock('@azure/openai')
 
 beforeEach(() => {
   jest.clearAllMocks()
+
+  jest
+    .spyOn(OpenAIClient.prototype, 'getChatCompletions')
+    .mockResolvedValue({ choices: [{ message: mockReturnValue }] } as any)
 })
 
 describe('admin-form.assistance.controller', () => {
@@ -91,9 +73,10 @@ describe('admin-form.assistance.controller', () => {
       })
 
       // Mock OpenAI API throwing an error
-      MockedOpenAIClient.prototype.getChatCompletions = jest
-        .fn()
-        .mockRejectedValue(new Error('Some random error message'))
+
+      jest
+        .spyOn(OpenAIClient.prototype, 'getChatCompletions')
+        .mockRejectedValue({ choices: [{ message: mockReturnValue }] } as any)
 
       // Act
       await handleGenerateQuestions(MOCK_REQ, mockRes, jest.fn())
@@ -148,9 +131,9 @@ describe('admin-form.assistance.controller', () => {
       })
 
       // Mock OpenAI API throwing an error
-      MockedOpenAIClient.prototype.getChatCompletions = jest
-        .fn()
-        .mockRejectedValue(new Error('Some random error message'))
+      jest
+        .spyOn(OpenAIClient.prototype, 'getChatCompletions')
+        .mockRejectedValue({ choices: [{ message: mockReturnValue }] } as any)
 
       // Act
       await handleGenerateFormFields(MOCK_REQ, mockRes, jest.fn())
