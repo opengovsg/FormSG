@@ -385,11 +385,20 @@ export const downloadCleanFile = (cleanFileKey: string, versionId: string) => {
     })
     .createReadStream()
 
+  logger.info({
+    message: 'File download from S3 has started',
+    meta: logMeta,
+  })
+
   readStream.pipe(writeStream)
 
   return ResultAsync.fromPromise(
     new Promise<Buffer>((resolve, reject) => {
       readStream.on('end', () => {
+        logger.info({
+          message: 'Successfully downloaded file from S3',
+          meta: logMeta,
+        })
         resolve(buffer)
       })
 
