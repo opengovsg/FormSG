@@ -145,7 +145,7 @@ describe('S3Service', () => {
         expect.objectContaining({
           bucketName: 'bucketName',
           objectKey: 'objectKey',
-          error: new Error('Body is empty'),
+          err: new Error('Body is empty'),
         }),
         'Failed to get object from s3',
       )
@@ -172,7 +172,7 @@ describe('S3Service', () => {
         expect.objectContaining({
           bucketName: 'bucketName',
           objectKey: 'objectKey',
-          error: new Error('VersionId is empty'),
+          err: new Error('VersionId is empty'),
         }),
         'Failed to get object from s3',
       )

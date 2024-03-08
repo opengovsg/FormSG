@@ -66,10 +66,10 @@ export const handler = async (
       bucketName: quarantineBucket,
       objectKey: quarantineFileKey,
     })
-  } catch (error) {
+  } catch (err) {
     logger.warn({
       message: 'File not found',
-      error,
+      err,
       quarantineFileKey,
     })
     return {
@@ -88,10 +88,10 @@ export const handler = async (
   let scanResult
   try {
     scanResult = await scanFileStream(body)
-  } catch (error) {
+  } catch (err) {
     logger.error({
       message: 'Failed to scan file',
-      error,
+      err,
       quarantineFileKey,
     })
     return {
@@ -122,11 +122,11 @@ export const handler = async (
         objectKey: quarantineFileKey,
         versionId,
       })
-    } catch (error) {
+    } catch (err) {
       // Log but do not halt execution as we still want to return 400 for malicious file
       logger.error({
         message: 'Failed to delete file from quarantine bucket',
-        error,
+        err,
         key: quarantineFileKey,
       })
     }
@@ -158,10 +158,10 @@ export const handler = async (
         destinationBucketName: cleanBucket,
         destinationObjectKey: cleanFileKey,
       })
-    } catch (error) {
+    } catch (err) {
       logger.error({
         message: 'Failed to move file to clean bucket',
-        error,
+        err,
         bucket: quarantineBucket,
         key: quarantineFileKey,
       })
