@@ -1,6 +1,7 @@
 import { Router } from 'express'
 
 import * as FeedbackController from '../../../../modules/feedback/feedback.controller'
+import * as WogaaController from '../../../../modules/wogaa/wogaa.controller'
 
 export const PublicFormsFeedbackRouter = Router()
 
@@ -22,4 +23,7 @@ export const PublicFormsFeedbackRouter = Router()
  */
 PublicFormsFeedbackRouter.route(
   '/:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})/feedback',
-).post(FeedbackController.handleSubmitFormFeedback)
+).post(
+  WogaaController.handleFormFeedback,
+  FeedbackController.handleSubmitFormFeedback,
+)
