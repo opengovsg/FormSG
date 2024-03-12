@@ -1,6 +1,8 @@
 import { ChatResponseMessage } from '@azure/openai/types/openai'
+import { Joi } from 'celebrate'
 
 import { ErrorDto } from '../../../../../shared/types'
+import { ContentTypes } from '../../../../../shared/types/assistance'
 import { ControllerHandler } from '../../core/core.types'
 
 import {
@@ -13,6 +15,19 @@ import {
  * @returns 200 when questions are successfully generated
  * @returns 500 when openai server error occurs
  */
+
+// Validate inputs by the user for form builder:
+const generateQuestionsSchema = Joi.object({
+  type: Joi.string()
+    .valid(...Object.values(ContentTypes))
+    .required(),
+  content: Joi.alternatives().conditional('type', {
+    is: ContentTypes.PROMPT,
+    then: Joi.string().max(300).required(),
+    otherwise: Joi.string().max(3000).required(), // max character of 3000 to cater for PDF uploads
+  }),
+})
+
 export const handleGenerateQuestions: ControllerHandler<
   unknown,
   ChatResponseMessage | ErrorDto,
@@ -21,7 +36,11 @@ export const handleGenerateQuestions: ControllerHandler<
     content: string
   }
 > = async (req, res) => {
-  const result = await generateQuestions(req.body)
+  const { error, value } = generateQuestionsSchema.validate(req.body)
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message })
+  }
+  const result = await generateQuestions(value)
   if (result.isErr()) {
     return res.status(500).json({ message: result.error.message })
   }
