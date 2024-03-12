@@ -1,7 +1,6 @@
-import { useEffect, useRef } from 'react'
-import { Box } from '@chakra-ui/react'
+import { useRef } from 'react'
+import { Box, useToken } from '@chakra-ui/react'
 import Link from '@tiptap/extension-link'
-import Placeholder from '@tiptap/extension-placeholder'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 
@@ -11,13 +10,11 @@ import { MenuBar } from './MenuBar'
 type RichTextEditorProps = {
   value: string
   onChange: (value: unknown) => void
-  invalid: boolean
 }
 
 export const RichTextEditor = ({
   value,
   onChange,
-  invalid,
 }: RichTextEditorProps): JSX.Element => {
   const editor = useEditor({
     content: value,
@@ -34,20 +31,14 @@ export const RichTextEditor = ({
       }).configure({
         openOnClick: false,
       }),
-      Placeholder.configure({
-        placeholder: 'Write something :)',
-      }),
     ],
     // Update React Hook Form with new field value
     // Returning '' ensures that React Hook Form treats the field as empty.
     onUpdate: ({ editor }) => onChange(editor.isEmpty ? '' : editor.getHTML()),
   })
 
-  // Tiptap Editor does not respond to focus events fired from DOM nodes, thus we mimic the focusing of error inputs by RHF here
-  useEffect(() => {
-    if (invalid && !editor?.isFocused)
-      editor?.chain().focus().scrollIntoView().run()
-  }, [invalid, editor, editor?.isFocused])
+  // Used for creating box shadows
+  const [primary500] = useToken('colors', ['primary.500'])
 
   const containerRef = useRef<HTMLDivElement>(null)
   return (
@@ -57,6 +48,10 @@ export const RichTextEditor = ({
       borderRadius="base"
       overflow="hidden"
       ref={containerRef}
+      _focusWithin={{
+        borderColor: 'primary.500',
+        boxShadow: `0 0 0 1px ${primary500}`,
+      }}
     >
       <MenuBar editor={editor} />
       <EditorContent editor={editor} />

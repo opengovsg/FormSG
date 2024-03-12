@@ -1,10 +1,10 @@
-import { RefObject, useEffect, useState } from 'react'
-import { Flex } from '@chakra-ui/react'
+import React, { RefObject, useEffect, useState } from 'react'
+import { Divider, Flex } from '@chakra-ui/react'
 import { BubbleMenu, Editor, getMarkRange, getMarkType } from '@tiptap/react'
 import { Props } from 'tippy.js'
 
 import { BxCheck, BxsEditAlt } from '~assets/icons'
-import { BxsTrashAlt } from '~assets/icons/BxsTrashAlt'
+import { BxsTrash } from '~assets/icons/BxsTrash'
 import ButtonGroup from '~components/ButtonGroup'
 import IconButton from '~components/IconButton'
 import Input from '~components/Input'
@@ -20,7 +20,7 @@ export const LinkBubbleMenu = ({
   containerRef,
 }: LinkBubbleMenuProps): JSX.Element | null => {
   const [link, setLink] = useState<string>(editor?.getAttributes('link').href)
-  const [isEditable, setisEditable] = useState<boolean>(false)
+  const [isEditable, setisEditable] = useState<boolean>(true)
 
   useEffect(() => {
     setLink(editor?.getAttributes('link').href)
@@ -30,10 +30,20 @@ export const LinkBubbleMenu = ({
 
   // Update link href then set editor selection to end of the link text.
   const handleUpdateLinkClick = () => {
+    let updateLink = link
+    if (updateLink === '') {
+      editor.chain().unsetLink().run()
+      return
+    }
+
+    if (!link.startsWith('http')) {
+      updateLink = 'https://' + updateLink
+    }
+
     editor
       .chain()
       .extendMarkRange('link')
-      .updateAttributes('link', { href: link })
+      .updateAttributes('link', { href: updateLink })
       .run()
 
     // Run the commands separately so that editor selection is updated
@@ -42,12 +52,22 @@ export const LinkBubbleMenu = ({
       .setTextSelection(editor.state.selection.$to.pos)
       .focus()
       .run()
+
+    setisEditable(false)
   }
 
+  const handleEditLinkKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleUpdateLinkClick()
+    }
+  }
+
+  const popoverPadding = 4
+  const borderPadding = 4
+
   const tippyOptions: Partial<Props> = {
-    placement: 'bottom',
+    placement: 'bottom-start',
     maxWidth: 'none',
-    onHidden: () => setisEditable(false),
     // Create a fixed position for the bubble menu, else it follows the cursor
     getReferenceClientRect: (): DOMRect => {
       const startPos = getMarkRange(
@@ -64,8 +84,16 @@ export const LinkBubbleMenu = ({
           // Specify the container for the bubble menu to fix clipping issues.
           name: 'preventOverflow',
           options: {
-            // TODO: Check if this cast is safe
-            boundary: containerRef.current as Element,
+            boundary: containerRef?.current,
+            padding: popoverPadding + borderPadding,
+            flip: false,
+          },
+        },
+        {
+          // Prevent bubble menu from flipping position when link is too far right
+          name: 'flip',
+          options: {
+            fallbackPlacements: [],
           },
         },
       ],
@@ -82,22 +110,35 @@ export const LinkBubbleMenu = ({
       <Flex
         align="center"
         backgroundColor="white"
-        borderRadius="0 0 8px 8px"
-        boxShadow="gray 0 1px 8px"
+        border="1px solid"
+        borderColor="neutral.400"
+        borderRadius="base"
+        boxShadow="0px 0px 10px 0px #D8DEEB80"
+        // Gives 16px gap from button to end of input
+        gap="4px"
+        height="auto"
         justify="space-between"
-        padding="1"
-        width="xs"
+        minHeight="50px"
+        padding={4 + 'px'}
       >
         {isEditable ? (
           <Input
+            flexBasis="200px"
+            flexGrow={1}
+            flexShrink={1}
+            onChange={(e) => setLink(e.target.value)}
+            onKeyPress={handleEditLinkKeyPress}
+            padding={0}
+            placeholder="https://form.gov.sg"
             type="text"
             value={link}
-            onChange={(e) => setLink(e.target.value)}
-            padding={0}
-            border="none"
-            flexBasis="200px"
-            flexShrink={1}
-            flexGrow={1}
+            // Override default border styles
+            sx={{
+              border: 'none',
+            }}
+            _focus={{
+              border: 'none',
+            }}
           />
         ) : (
           <Link
@@ -114,29 +155,30 @@ export const LinkBubbleMenu = ({
           </Link>
         )}
         <ButtonGroup
+          alignItems="center"
+          colorScheme="secondary"
           isFullWidth={false}
           variant="clear"
-          colorScheme="secondary"
         >
-          <IconButton
-            aria-label="Edit Link"
-            onClick={() => setisEditable(!isEditable)}
-            isActive={isEditable}
-            icon={<BxsEditAlt />}
-          />
           {isEditable ? (
             <IconButton
               aria-label="Update Link"
-              onClick={handleUpdateLinkClick}
               icon={<BxCheck />}
+              onClick={handleUpdateLinkClick}
             />
           ) : (
             <IconButton
-              aria-label="Delete Link"
-              onClick={() => editor.chain().focus().unsetLink().run()}
-              icon={<BxsTrashAlt />}
+              aria-label="Edit Link"
+              icon={<BxsEditAlt />}
+              onClick={() => setisEditable(!isEditable)}
             />
           )}
+          <Divider orientation="vertical" height="1.5rem" />
+          <IconButton
+            aria-label="Delete Link"
+            icon={<BxsTrash />}
+            onClick={() => editor.chain().focus().unsetLink().run()}
+          />
         </ButtonGroup>
       </Flex>
     </BubbleMenu>

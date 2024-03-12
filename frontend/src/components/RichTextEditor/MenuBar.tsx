@@ -20,11 +20,7 @@ export const MenuBar = ({ editor }: MenuBarProps): JSX.Element | null => {
 
   const handleLinkClick = () => {
     if (!editor.isActive('link')) {
-      editor
-        .chain()
-        .focus()
-        .setLink({ href: 'https://', target: '_blank' })
-        .run()
+      editor.chain().focus().setLink({ href: '', target: '_blank' }).run()
     } else {
       editor.chain().focus().unsetLink().run()
     }
