@@ -1,4 +1,4 @@
-import Translation from './types'
+import Translation from '../types'
 
 export const zhSG: Translation = {
   translation: {
