@@ -1,16 +1,19 @@
+import { useState } from 'react'
 import { BiBulb, BiRightArrowAlt } from 'react-icons/bi'
 import {
+  Box,
   Container,
   Flex,
   FormControl,
+  FormErrorIcon,
+  FormErrorMessage,
   FormLabel,
-  Icon,
   ModalBody,
   ModalHeader,
   Text,
 } from '@chakra-ui/react'
 
-import Badge from '~components/Badge'
+import { BxsErrorCircle } from '~assets/icons'
 import Button from '~components/Button'
 import Textarea from '~components/Textarea'
 
@@ -32,15 +35,13 @@ export const MagicFormBuilderPromptDetailsScreen = (): JSX.Element => {
   } = formMethods
 
   const handleUseIdea = (idea: string) => () => setValue('prompt', idea)
+  const [inputValue, setInputValue] = useState('')
 
   return (
     <>
       <ModalHeader color="secondary.700">
         <Container maxW={'42.5rem'} p={0}>
-          Build your form using AI
-          <Badge bgColor="primary.100" ml="1rem">
-            Beta
-          </Badge>
+          Write a prompt
         </Container>
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap">
@@ -48,104 +49,120 @@ export const MagicFormBuilderPromptDetailsScreen = (): JSX.Element => {
           <FormLabel>I want to create a form that collects...</FormLabel>
           <FormControl isRequired isInvalid={!!errors.prompt}>
             <Textarea
-              {...register('prompt')}
+              {...register('prompt', {
+                required: 'Please enter a prompt.',
+                onChange: (e) => setInputValue(e.target.value),
+                maxLength: {
+                  value: 300,
+                  message: 'Please enter at most 300 characters.',
+                },
+              })}
               placeholder="personal particulars for an event"
-              borderBottomRadius="0"
             />
+            <FormErrorMessage>
+              <FormErrorIcon h="1.5rem" as={BxsErrorCircle} />
+              {errors.prompt?.message} {inputValue.length}/300
+            </FormErrorMessage>
           </FormControl>
-          <Flex
-            flexDir="column"
-            border="1px"
-            borderColor="neutral.400"
-            mt="-.25rem"
-            px="1rem"
-            py="1.5rem"
-            gap="2rem"
-          >
-            <Text textStyle="subhead-1">Try one of these</Text>
-            <Button
-              variant="clear"
-              color="secondary.500"
-              justifyContent="flex-start"
-              padding="0"
-              onClick={handleUseIdea(
-                'Employee feedback on workplace environment and culture.',
-              )}
-              leftIcon={<BiBulb fontSize="1.6rem" />}
+          <Box mt="1rem">
+            <Flex
+              flexDir="column"
+              border="1px"
+              borderColor="neutral.400"
+              bg="white"
+              mt="-.25rem"
+              py="0.75rem"
+              borderRadius="0.25rem"
             >
-              <Text
-                textStyle="subhead-1"
+              <Flex my="0.5rem" px="1rem">
+                {<BiBulb fontSize="1.6rem" />}
+                <Text textStyle="subhead-1" px="1rem">
+                  Try one of these
+                </Text>
+              </Flex>
+              <Button
+                variant="clear"
                 color="secondary.500"
-                fontWeight="400"
-                ml="0.5rem"
-                textAlign="justify"
+                justifyContent="flex-start"
+                padding="0"
+                onClick={handleUseIdea(
+                  'Employee feedback on workplace environment and culture.',
+                )}
               >
-                Employee feedback on workplace environment and culture.
-              </Text>
-            </Button>
-            <Button
-              variant="clear"
-              color="secondary.500"
-              justifyContent="flex-start"
-              padding="0"
-              onClick={handleUseIdea(
-                'Event registrations and dietary preferences for dance and dinner.',
-              )}
-              leftIcon={<BiBulb fontSize="1.6rem" />}
-            >
-              <Text
-                textStyle="subhead-1"
+                <Text
+                  textStyle="subhead-1"
+                  color="secondary.500"
+                  fontWeight="400"
+                  px="1rem"
+                  textAlign="justify"
+                >
+                  employee feedback on workplace environment and culture.
+                </Text>
+              </Button>
+              <Button
+                variant="clear"
                 color="secondary.500"
-                fontWeight="400"
-                ml="0.5rem"
-                textAlign="justify"
+                justifyContent="flex-start"
+                padding="0"
+                onClick={handleUseIdea(
+                  'Event registrations and dietary preferences for dance and dinner.',
+                )}
               >
-                Event registrations and dietary preferences for dance and
-                dinner.
-              </Text>
-            </Button>
+                <Text
+                  textStyle="subhead-1"
+                  color="secondary.500"
+                  fontWeight="400"
+                  px="1rem"
+                  textAlign="justify"
+                >
+                  event registrations and dietary preferences for dance and
+                  dinner.
+                </Text>
+              </Button>
 
-            <Button
-              variant="clear"
-              color="secondary.500"
-              justifyContent="flex-start"
-              padding="0"
-              onClick={handleUseIdea(
-                'Support requests for building faults and damages.',
-              )}
-              leftIcon={<BiBulb fontSize="1.6rem" />}
-            >
-              <Text
-                textStyle="subhead-1"
+              <Button
+                variant="clear"
                 color="secondary.500"
-                fontWeight="400"
-                ml="0.5rem"
-                textAlign="justify"
+                justifyContent="flex-start"
+                padding="0"
+                onClick={handleUseIdea(
+                  'Support requests for building faults and damages.',
+                )}
               >
-                Support requests for building faults and damages.
-              </Text>
-            </Button>
-          </Flex>
-          <Flex justify="flex-end" gap="1rem" mt="2.25rem">
-            <Button
-              mr="1rem"
-              type="submit"
-              isDisabled={isLoading || isFetching}
-              onClick={handleBack}
-              variant="clear"
-            >
-              <Text lineHeight="1.5rem">Back</Text>
-            </Button>
-            <Button
-              rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
-              type="submit"
-              isLoading={isLoading}
-              isDisabled={isFetching}
-              onClick={handleDetailsSubmit}
-            >
-              <Text lineHeight="1.5rem">Next step</Text>
-            </Button>
-          </Flex>
+                <Text
+                  textStyle="subhead-1"
+                  color="secondary.500"
+                  fontWeight="400"
+                  px="1rem"
+                  textAlign="justify"
+                >
+                  support requests for building faults and damages.
+                </Text>
+              </Button>
+            </Flex>
+            <Flex justify="flex-end" gap="1rem" mt="2.25rem">
+              <Button
+                mr="0.5rem"
+                type="submit"
+                isDisabled={isLoading || isFetching}
+                onClick={handleBack}
+                variant="clear"
+              >
+                <Text lineHeight="1.5rem" color="secondary.500">
+                  Back
+                </Text>
+              </Button>
+              <Button
+                rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
+                type="submit"
+                isLoading={isLoading}
+                isDisabled={isFetching}
+                onClick={handleDetailsSubmit}
+              >
+                <Text lineHeight="1.5rem">Create form</Text>
+              </Button>
+            </Flex>
+          </Box>
         </Container>
       </ModalBody>
     </>
