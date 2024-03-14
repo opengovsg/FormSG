@@ -5,7 +5,6 @@ export const myInfoCountries = [
   'AMERICAN SAMOA',
   'ANDORRA',
   'ANGOLA',
-  'ANGUILLA',
   'ANTIGUA',
   'ARGENTINA',
   'ARMENIA',

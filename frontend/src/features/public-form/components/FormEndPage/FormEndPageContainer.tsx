@@ -72,6 +72,12 @@ export const FormEndPageContainer = (): JSX.Element | null => {
       />
     )
   }
+
+  const isFeedbackHidden =
+    // Feedback is not supported on MRF
+    form.responseMode === FormResponseMode.Multirespondent ||
+    isFeedbackSubmitted
+
   return (
     <Box py={{ base: '1.5rem', md: '2.5rem' }} w="100%">
       <FormEndPage
@@ -79,7 +85,7 @@ export const FormEndPageContainer = (): JSX.Element | null => {
         submissionData={submissionData}
         formTitle={form.title}
         endPage={form.endPage}
-        isFeedbackSubmitted={isFeedbackSubmitted}
+        isFeedbackSectionHidden={isFeedbackHidden}
         handleSubmitFeedback={handleSubmitFeedback}
       />
     </Box>

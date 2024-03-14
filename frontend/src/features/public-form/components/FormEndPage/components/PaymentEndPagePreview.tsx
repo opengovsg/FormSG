@@ -31,8 +31,9 @@ export const PaymentEndPagePreview = ({
         </Box>
         <Stack
           pt={{ base: '1rem', md: '1.5rem' }}
-          mx={{ base: '1rem', md: '2rem' }}
+          px={{ base: '1rem', md: '4rem' }}
           bg="transparent"
+          w="100%"
         >
           <PaymentEndPageBlock focusOnMount {...endPageProps} />
           {isFeedbackSubmitted ? null : (

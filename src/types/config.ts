@@ -168,6 +168,7 @@ export interface IOptionalVarsSchema {
     region: string
     customCloudWatchGroup: string
     virusScannerLambdaFunctionName: string
+    virusScannerLambdaEndpoint: string
   }
   mail: {
     from: string

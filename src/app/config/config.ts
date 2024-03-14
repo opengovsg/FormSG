@@ -97,10 +97,16 @@ const s3 = new aws.S3({
 // using aws-sdk v3 (FRM-993)
 const virusScannerLambda = new Lambda({
   region: basicVars.awsConfig.region,
-  // Endpoint is set for development mode to point to the separate docker container running the lambda function.
+  // For dev mode or where specified, endpoint is set to point to the separate docker container running the lambda function.
   // host.docker.internal is a special DNS name which resolves to the internal IP address used by the host.
   // Reference: https://docs.docker.com/desktop/networking/#i-want-to-connect-from-a-container-to-a-service-on-the-host
-  ...(isDev ? { endpoint: 'http://host.docker.internal:9999' } : undefined),
+  ...(isDev || basicVars.awsConfig.virusScannerLambdaEndpoint
+    ? {
+        endpoint:
+          basicVars.awsConfig.virusScannerLambdaEndpoint ||
+          'http://host.docker.internal:9999',
+      }
+    : undefined),
 })
 
 const awsConfig: AwsConfig = {

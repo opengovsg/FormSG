@@ -129,6 +129,11 @@ services:
       - GROWTHBOOK_CLIENT_KEY
       # env vars for virus scanner
       - VIRUS_SCANNER_LAMBDA_FUNCTION_NAME=function
+      - WOGAA_SECRET_KEY
+      - WOGAA_START_ENDPOINT
+      - WOGAA_SUBMIT_ENDPOINT
+      - WOGAA_FEEDBACK_ENDPOINT
+
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git#v4.0.4
