@@ -400,10 +400,10 @@ export const downloadCleanFile = (cleanFileKey: string, versionId: string) => {
           message: 'Successfully downloaded file from S3',
           meta: logMeta,
         })
-        const timeDownloadEnd = Date.now()
+        const downloadEndTime = Date.now()
         logger.info({
           message: 'File download from S3 duration',
-          meta: { ...logMeta, time: timeDownloadEnd - downloadStartTime },
+          meta: { ...logMeta, time: downloadEndTime - downloadStartTime },
         })
 
         resolve(buffer)
