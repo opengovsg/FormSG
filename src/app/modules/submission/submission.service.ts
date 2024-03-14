@@ -385,6 +385,7 @@ export const downloadCleanFile = (cleanFileKey: string, versionId: string) => {
     })
     .createReadStream()
 
+  const downloadStartTime = Date.now()
   logger.info({
     message: 'File download from S3 has started',
     meta: logMeta,
@@ -399,6 +400,12 @@ export const downloadCleanFile = (cleanFileKey: string, versionId: string) => {
           message: 'Successfully downloaded file from S3',
           meta: logMeta,
         })
+        const downloadEndTime = Date.now()
+        logger.info({
+          message: 'File download from S3 duration',
+          meta: { ...logMeta, time: downloadEndTime - downloadStartTime },
+        })
+
         resolve(buffer)
       })
 
