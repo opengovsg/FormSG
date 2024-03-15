@@ -5,7 +5,7 @@ import type { FormDto, FormFieldDto } from '~shared/types'
 import type { FormFieldValues } from '~templates/Field/types'
 
 // Cannot import from directory index because of circular imports.
-import { getVisibleFieldIds } from '~features/logic/utils/getVisibleFieldIds'
+import { getVisibleFieldIds } from '~features/logic/utils/logic-adaptor'
 
 export const filterHiddenInputs = ({
   formFields,
