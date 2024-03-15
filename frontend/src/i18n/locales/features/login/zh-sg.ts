@@ -1,4 +1,6 @@
-export const login = {
+import { Login } from '.'
+
+export const zhSG: Login = {
   LoginPage: {
     slogan: '在几分钟内创建安全的政府表格',
   },

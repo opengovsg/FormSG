@@ -1,4 +1,6 @@
-export const login = {
+import { Login } from '.'
+
+export const enSG: Login = {
   LoginPage: {
     slogan: 'Build secure government forms in minutes',
   },

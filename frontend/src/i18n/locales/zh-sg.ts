@@ -1,6 +1,5 @@
-import Translation from '../types'
-
-import { login } from './features'
+import { zhSG as login } from './features/login'
+import Translation from './types'
 
 export const zhSG: Translation = {
   translation: {
