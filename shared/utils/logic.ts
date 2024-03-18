@@ -406,12 +406,12 @@ const isConditionFulfilled = (
         conditionValues.includes('Others')
       ) {
         if (typeof currentValue === 'string') {
-          // Server-side handling
+          // (1) Server-side handling
           if (currentValue.startsWith('Others: ')) {
             return true
           }
         } else {
-          // Client-side handling
+          // (4) Client-side handling
           if (
             currentValue.value === RADIO_OTHERS_INPUT_VALUE &&
             !!currentValue.othersInput
@@ -422,6 +422,8 @@ const isConditionFulfilled = (
       }
 
       // Bump client-side radio value nested in the object back up to the main level
+      // This is fine since the "Others" check above would have caught if the othersInput
+      // satisfied the logic.
       let currentValueString: string | undefined
       if (typeof currentValue !== 'string') {
         currentValueString = currentValue.value
@@ -429,13 +431,15 @@ const isConditionFulfilled = (
         currentValueString = currentValue
       }
 
-      // Handle the rest of the cases (radio non-others, non-radio fields)
+      // (2) + (5) Handle the decimal case
       if (field.fieldType === BasicField.Decimal) {
         return conditionValues.some(
           (conditionValue) =>
             Number(conditionValue) === Number(currentValueString),
         )
       }
+
+      // (3) + (6) Handle everything else
       return conditionValues.some(
         (conditionValue) =>
           String(conditionValue) === String(currentValueString),

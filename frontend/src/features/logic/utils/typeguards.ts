@@ -33,5 +33,3 @@ export const isNotLogicableField = (args: {
 } => {
   return !isLogicableField(args)
 }
-
-export const isNotNull = <T>(arg: T): arg is Exclude<T, null> => arg !== null

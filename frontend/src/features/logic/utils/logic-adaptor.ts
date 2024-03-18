@@ -2,6 +2,7 @@ import { DeepPartialSkipArrayKey, UnpackNestedValue } from 'react-hook-form'
 import { CamelCasedProperties } from 'type-fest'
 
 import { FormDto } from '~shared/types'
+import { isNonEmpty } from '~shared/utils/isNonEmpty'
 import {
   FieldIdSet,
   getLogicUnitPreventingSubmit as sharedGetLogicUnitPreventingSubmit,
@@ -12,7 +13,7 @@ import { FormFieldValues } from '~templates/Field'
 
 import { filterHiddenInputs } from '~features/public-form/utils'
 
-import { isLogicableField, isNotLogicableField, isNotNull } from './typeguards'
+import { isLogicableField, isNotLogicableField } from './typeguards'
 
 /**
  * Determines whether the submission should be prevented by form logic. If so,
@@ -54,7 +55,7 @@ export const getLogicUnitPreventingSubmit = ({
         throw new Error('Unexpected fallthrough')
       }
     })
-    .filter(isNotNull)
+    .filter(isNonEmpty)
 
   const visibleFieldIds = new Set(Object.keys(filteredFormInputs))
 
@@ -98,7 +99,7 @@ export const getVisibleFieldIds = (
         throw new Error('Unexpected fallthrough')
       }
     })
-    .filter(isNotNull)
+    .filter(isNonEmpty)
 
   return sharedGetVisibleFieldIds(responseData, {
     form_fields: formFields,
