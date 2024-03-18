@@ -11,12 +11,6 @@ import { Environment } from '../../types'
 
 import { aws, customCloudWatchGroup, isDev, nodeEnv } from './config'
 
-// WINSTON_CLOUDWATCH_NAME is not actually needed, but the typescript definition has
-// an error (presumably?), and so we must supply a dummy value.
-// See issue: https://github.com/lazywithclass/winston-cloudwatch/issues/159
-// TODO: remove if/when typescript definition is updated correctly
-const WINSTON_CLOUDWATCH_NAME = 'FormSGCloudWatch'
-
 // Params to enforce the logging format.
 export type CustomLoggerParams = {
   message: string
@@ -238,7 +232,6 @@ export const createCloudWatchLogger = (label: string) => {
   if (!isDev && customCloudWatchGroup) {
     loggerOptions.transports = [
       new WinstonCloudWatch({
-        name: WINSTON_CLOUDWATCH_NAME,
         logGroupName: customCloudWatchGroup,
         // Every EC2 instance needs its own unique stream name, or else they
         // will run into InvalidSequenceTokenException errors because they do
