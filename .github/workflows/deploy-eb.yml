@@ -100,7 +100,7 @@ jobs:
           docker push -a $ECR_REPOSITORY
           sed -i -e "s/@TAG/$IMAGE_TAG/g" Dockerrun.aws.json
           sed -i -e "s/@DD_API_KEY/$DD_API_KEY/g" -e "s/@DD_ENV/$DD_ENV/g" .ebextensions/99datadog-amazon-linux-2.config
-          # use # as delimiter to avoid escaping / in DD_GIT_REPOSITORY_URL
+          # Using "+" as delimiter to avoid escaping / in DD_GIT_REPOSITORY_URL
           sed -i -e "s+@DD_GIT_REPOSITORY_URL+$DD_GIT_REPOSITORY_URL+g" -e "s/@DD_GIT_COMMIT_SHA/$DD_GIT_COMMIT_SHA/g" .ebextensions/02env-file-datadog.config
           zip -r "$IMAGE_TAG.zip" .ebextensions Dockerrun.aws.json
 
