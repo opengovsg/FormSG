@@ -228,7 +228,6 @@
     "eslint-plugin-typesafe": "^0.5.2",
     "file-loader": "^4.3.0",
     "form-data": "^4.0.0",
-    "html-loader": "~0.5.5",
     "htmlhint": "^1.1.4",
     "husky": "^8.0.3",
     "jest": "^29.5.0",
