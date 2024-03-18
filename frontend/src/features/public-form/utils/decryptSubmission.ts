@@ -11,6 +11,7 @@ export const decryptSubmission = ({
 }):
   | (Omit<MultirespondentSubmissionDto, 'encryptedContent' | 'version'> & {
       responses: FieldResponsesV3
+      submissionSecretKey: string
     })
   | undefined => {
   if (!submission) throw Error('Encrypted submission undefined')
@@ -28,5 +29,6 @@ export const decryptSubmission = ({
   return {
     ...rest,
     responses: decryptedContent.responses as FieldResponsesV3,
+    submissionSecretKey: secretKey,
   }
 }

@@ -94,6 +94,7 @@ type CreateStorageSubmissionFormDataArgs = CreateEmailSubmissionFormDataArgs & {
 
 type CreateMultirespondentSubmissionFormDataArgs =
   CreateEmailSubmissionFormDataArgs & {
+    submissionSecretKey?: string
     version: number
   }
 
@@ -268,14 +269,55 @@ const createResponsesV3 = (
       case BasicField.Uen:
       case BasicField.Date:
       case BasicField.CountryRegion:
-      case BasicField.YesNo:
+      case BasicField.YesNo: {
+        const input = formInputs[ff._id] as FormFieldValue<typeof ff.fieldType>
+        if (!input) continue
+        returnedInputs[ff._id] = {
+          fieldType: ff.fieldType,
+          answer: input,
+        } as FieldResponseV3
+        break
+      }
       case BasicField.Email:
-      case BasicField.Mobile:
-      case BasicField.Table:
-      case BasicField.Checkbox:
+      case BasicField.Mobile: {
+        const input = formInputs[ff._id] as FormFieldValue<typeof ff.fieldType>
+        if (!input || !input.value) continue
+        returnedInputs[ff._id] = {
+          fieldType: ff.fieldType,
+          answer: input,
+        } as FieldResponseV3
+        break
+      }
+      case BasicField.Table: {
+        const input = formInputs[ff._id] as FormFieldValue<typeof ff.fieldType>
+        if (!input) continue
+        if (input.every((row) => Object.values(row).every((value) => !value))) {
+          continue
+        }
+        returnedInputs[ff._id] = {
+          fieldType: ff.fieldType,
+          answer: input,
+        } as FieldResponseV3
+        break
+      }
+      case BasicField.Checkbox: {
+        const input = formInputs[ff._id] as FormFieldValue<typeof ff.fieldType>
+        if (!input) continue
+        if ((!input.value || input.value.length === 0) && !input.othersInput) {
+          continue
+        }
+        returnedInputs[ff._id] = {
+          fieldType: ff.fieldType,
+          answer: input,
+        } as FieldResponseV3
+        break
+      }
       case BasicField.Children: {
         const input = formInputs[ff._id] as FormFieldValue<typeof ff.fieldType>
         if (!input) continue
+        if (input.child.every((child) => child.every((value) => !value))) {
+          continue
+        }
         returnedInputs[ff._id] = {
           fieldType: ff.fieldType,
           answer: input,
@@ -305,6 +347,7 @@ const createResponsesV3 = (
       case BasicField.Radio: {
         const input = formInputs[ff._id] as FormFieldValue<typeof ff.fieldType>
         if (!input) continue
+        if (!input.value && !input.othersInput) continue
         returnedInputs[ff._id] = {
           fieldType: ff.fieldType,
           answer: input.othersInput

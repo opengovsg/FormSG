@@ -61,6 +61,7 @@ import {
 } from '~features/verifiable-fields'
 
 import { FormNotFound } from './components/FormNotFound'
+import { decryptSubmission } from './utils/decryptSubmission'
 import { usePublicAuthMutations, usePublicFormMutations } from './mutations'
 import { PublicFormContext, SubmissionData } from './PublicFormContext'
 import { useEncryptedSubmission, usePublicFormView } from './queries'
@@ -147,6 +148,9 @@ export const PublicFormProvider = ({
     // Stop querying once submissionData is present.
     /* enabled= */ !submissionData,
   )
+
+  const [previousSubmission, setPreviousSubmission] =
+    useState<ReturnType<typeof decryptSubmission>>()
 
   // Replace form fields, logic, and workflow with the previous version for MRF consistency.
   if (data && encryptedPreviousSubmission) {
@@ -300,7 +304,11 @@ export const PublicFormProvider = ({
     submitStorageModeFormFetchMutation,
     submitMultirespondentFormMutation,
     updateMultirespondentSubmissionMutation,
-  } = usePublicFormMutations(formId, previousSubmissionId)
+  } = usePublicFormMutations(
+    formId,
+    previousSubmissionId,
+    previousSubmission?.submissionSecretKey,
+  )
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
@@ -694,6 +702,8 @@ export const PublicFormProvider = ({
         isPreview: false,
         setNumVisibleFields,
         encryptedPreviousSubmission,
+        previousSubmission,
+        setPreviousSubmission,
         ...commonFormValues,
         ...data,
         ...rest,

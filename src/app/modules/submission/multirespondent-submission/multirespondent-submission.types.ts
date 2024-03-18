@@ -40,6 +40,7 @@ export type ProcessedMultirespondentSubmissionHandlerType = ControllerHandler<
   { formId: string; submissionId?: string },
   SubmissionResponseDto | SubmissionErrorDto,
   Omit<ParsedMultirespondentSubmissionBody, 'responses'> & {
+    submissionSecretKey?: string
     responses: ParsedClearFormFieldResponsesV3
   },
   { captchaResponse?: unknown; captchaType?: unknown }
