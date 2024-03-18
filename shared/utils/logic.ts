@@ -1,3 +1,4 @@
+import { CLIENT_RADIO_OTHERS_INPUT_VALUE } from '../constants'
 import {
   BasicField,
   FormDto,
@@ -10,10 +11,6 @@ import {
   LogicCondition,
   LogicableField,
 } from '../types'
-
-// TODO: Keep this in sync with the frontend value.
-// Exported for testing
-export const RADIO_OTHERS_INPUT_VALUE = '!!FORMSG_INTERNAL_RADIO_OTHERS_VALUE!!'
 
 const LOGIC_CONDITIONS: LogicCondition[] = [
   [
@@ -413,7 +410,7 @@ const isConditionFulfilled = (
         } else {
           // (4) Client-side handling
           if (
-            currentValue.value === RADIO_OTHERS_INPUT_VALUE &&
+            currentValue.value === CLIENT_RADIO_OTHERS_INPUT_VALUE &&
             !!currentValue.othersInput
           ) {
             return true

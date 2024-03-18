@@ -7,7 +7,6 @@ import {
   LogicFieldClientRadioResponseInput,
   LogicFieldResponse,
   LogicFieldServerResponse,
-  RADIO_OTHERS_INPUT_VALUE,
 } from '../logic'
 
 import {
@@ -22,6 +21,7 @@ import {
   ShortTextFieldBase,
   ShowFieldLogicDto,
 } from '../../types'
+import { CLIENT_RADIO_OTHERS_INPUT_VALUE } from '../../constants'
 
 describe('Logic validation', () => {
   /** Mock a field's bare essentials */
@@ -1100,7 +1100,7 @@ describe('Logic validation', () => {
         getVisibleFieldIds(
           [
             fillInRadioButton({
-              value: RADIO_OTHERS_INPUT_VALUE,
+              value: CLIENT_RADIO_OTHERS_INPUT_VALUE,
               othersInput: 'test',
             }) as unknown as LogicFieldResponse,
             textLogicFieldServerResponse,
@@ -1312,7 +1312,7 @@ describe('Logic validation', () => {
         getLogicUnitPreventingSubmit(
           [
             fillInRadioButton({
-              value: RADIO_OTHERS_INPUT_VALUE,
+              value: CLIENT_RADIO_OTHERS_INPUT_VALUE,
               othersInput: 'test',
             }) as unknown as LogicFieldResponse,
             textLogicFieldServerResponse,
