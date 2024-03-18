@@ -128,7 +128,7 @@
     "neverthrow": "^6.0.0",
     "nocache": "^3.0.4",
     "node-cache": "^5.1.2",
-    "nodemailer": "^6.9.1",
+    "nodemailer": "^6.9.12",
     "openid-client": "^5.3.1",
     "opossum": "^7.1.0",
     "p-queue": "^6.6.2",
