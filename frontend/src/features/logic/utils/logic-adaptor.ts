@@ -47,11 +47,15 @@ export const getLogicUnitPreventingSubmit = ({
         input: filteredFormInputs[_id],
       }
       // Type narrowing to help the typechecker along with complex if-else types
+      // Unfortunately, this requires the runtime check where isNotLogicableField
+      // is defined as !isLogicableField, allowing the final "else" case to be
+      // an unreachable code path.
       if (isNotLogicableField(fieldTypeAndInput)) {
         return { _id, fieldType: fieldTypeAndInput.fieldType }
       } else if (isLogicableField(fieldTypeAndInput)) {
         return { _id, ...fieldTypeAndInput }
       } else {
+        // Unreachable branch
         throw new Error('Unexpected fallthrough')
       }
     })
@@ -91,11 +95,15 @@ export const getVisibleFieldIds = (
         input,
       }
       // Type narrowing to help the typechecker along with complex if-else types
+      // Unfortunately, this requires the runtime check where isNotLogicableField
+      // is defined as !isLogicableField, allowing the final "else" case to be
+      // an unreachable code path.
       if (isNotLogicableField(fieldTypeAndInput)) {
         return { _id: ff._id, fieldType: fieldTypeAndInput.fieldType }
       } else if (isLogicableField(fieldTypeAndInput)) {
         return { _id: ff._id, ...fieldTypeAndInput }
       } else {
+        // Unreachable branch
         throw new Error('Unexpected fallthrough')
       }
     })
