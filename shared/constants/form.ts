@@ -73,6 +73,9 @@ export const PAYMENT_PRODUCT_FIELD_ID = 'payment_products'
 export const PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID =
   'payment_variable_input_amount_field_id'
 
+export const CLIENT_RADIO_OTHERS_INPUT_VALUE =
+  '!!FORMSG_INTERNAL_RADIO_OTHERS_VALUE!!'
+
 // The current encrypt version to assign to the encrypted submission.
 // This is needed if we ever break backwards compatibility with
 // end-to-end encryption
