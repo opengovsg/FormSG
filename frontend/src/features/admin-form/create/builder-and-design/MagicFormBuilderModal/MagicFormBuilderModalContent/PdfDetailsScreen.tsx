@@ -39,7 +39,7 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
     formState: { errors },
   } = formMethods
 
-  const MAX_FILE_SIZE = 20 * MB
+  const MAX_FILE_SIZE = 5 * MB
   const VALID_EXTENSIONS = '.pdf'
   pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker
 
