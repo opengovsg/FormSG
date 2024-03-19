@@ -1,50 +1,35 @@
 import { DeepPartial } from 'react-hook-form'
 
 import { BasicField } from '~shared/types/field'
-import {
-  FormCondition,
-  LogicableField,
-  LogicDto,
-  LogicType,
-  PreventSubmitLogicDto,
-  ShowFieldLogicDto,
-} from '~shared/types/form'
+import { LogicableField } from '~shared/types/form'
 
 import { FormFieldValue } from '~templates/Field'
 
 import { ALLOWED_LOGIC_FIELDS } from '../constants'
 
-export const isShowFieldsLogic = (
-  formLogic: LogicDto,
-): formLogic is ShowFieldLogicDto => {
-  return formLogic.logicType === LogicType.ShowFields
-}
+type SingleAnswerLogicableField = Exclude<LogicableField, BasicField.Radio>
 
-export const isPreventSubmitLogic = (
-  formLogic: LogicDto,
-): formLogic is PreventSubmitLogicDto => {
-  return formLogic.logicType === LogicType.PreventSubmit
-}
-
-export const isRadioFormFieldValue = <F extends BasicField>(
-  value: DeepPartial<FormFieldValue<LogicableField>>,
-  fieldType: F,
-): value is FormFieldValue<BasicField.Radio> => {
-  return fieldType === BasicField.Radio && value !== undefined
-}
 export const isLogicableField = (args: {
   fieldType: BasicField
   input: DeepPartial<FormFieldValue>
-}): args is {
-  fieldType: LogicableField
-  input: FormFieldValue<LogicableField>
-} => {
+}): args is
+  | {
+      fieldType: SingleAnswerLogicableField
+      input: FormFieldValue<SingleAnswerLogicableField>
+    }
+  | {
+      fieldType: BasicField.Radio
+      input: FormFieldValue<BasicField.Radio>
+    } => {
   return ALLOWED_LOGIC_FIELDS.has(args.fieldType)
 }
 
-export const isValueStringArray = (
-  value: FormCondition['value'],
-): value is string[] => {
-  // use .some because of limitation of typescript in calling .every() on union of array types: https://github.com/microsoft/TypeScript/issues/44373
-  return Array.isArray(value) && !value.some((v) => typeof v === 'number')
+export const isNotLogicableField = (args: {
+  fieldType: BasicField
+  input: DeepPartial<FormFieldValue>
+}): args is {
+  fieldType: Exclude<BasicField, LogicableField>
+  input: DeepPartial<FormFieldValue>
+} => {
+  return !isLogicableField(args)
 }

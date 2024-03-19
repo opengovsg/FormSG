@@ -51,7 +51,7 @@ import {
   WorkflowType,
 } from '../../../shared/types'
 import { reorder } from '../../../shared/utils/immutable-array-fns'
-import { getApplicableIfStates } from '../../shared/util/logic'
+import { getApplicableIfStates } from '../../../shared/utils/logic'
 import {
   FormFieldSchema,
   FormLogicSchema,

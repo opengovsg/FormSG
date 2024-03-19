@@ -97,7 +97,7 @@ describe('handler', () => {
     expect(mockLoggerWarn).toHaveBeenCalledWith(
       expect.objectContaining({
         message: 'File not found',
-        error: new Error('File not found'),
+        err: new Error('File not found'),
         quarantineFileKey: mockUUID,
       }),
     )
@@ -175,7 +175,7 @@ describe('handler', () => {
     expect(mockLoggerError).toHaveBeenCalledWith(
       expect.objectContaining({
         message: 'Failed to scan file',
-        error: new Error('Failed to scan file'),
+        err: new Error('Failed to scan file'),
         quarantineFileKey: mockUUID,
       }),
     )
@@ -248,7 +248,7 @@ describe('handler', () => {
     expect(mockLoggerError).toHaveBeenCalledWith(
       expect.objectContaining({
         message: 'Failed to move file to clean bucket',
-        error: new Error('Failed to move file'),
+        err: new Error('Failed to move file'),
         bucket: 'local-virus-scanner-quarantine-bucket',
         key: mockUUID,
       }),
