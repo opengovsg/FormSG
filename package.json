@@ -179,7 +179,7 @@
     "@types/express-request-id": "^1.4.3",
     "@types/express-session": "^1.17.4",
     "@types/helmet": "4.0.0",
-    "@types/html-escaper": "^3.0.0",
+    "@types/html-escaper": "^3.0.2",
     "@types/http-errors": "^2.0.1",
     "@types/ip": "^1.1.0",
     "@types/jest": "^29.5.1",
