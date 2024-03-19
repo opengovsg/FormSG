@@ -9,7 +9,7 @@ import {
   LogicType,
   MyInfoAttribute,
 } from '../../../../../shared/types'
-import * as LogicUtil from '../../../../shared/util/logic'
+import * as LogicUtil from '../../../../../shared/utils/logic'
 import {
   FormFieldSchema,
   IFormDocument,

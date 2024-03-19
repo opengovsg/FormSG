@@ -1,20 +1,16 @@
-// TODO: Import shared code from shared/logic.ts when possible.
+import { CLIENT_RADIO_OTHERS_INPUT_VALUE } from '../constants'
 import {
   BasicField,
-  FieldBase,
+  FormDto,
   LogicConditionState,
   LogicType,
-} from '../../../shared/types'
-import {
-  FieldResponse,
-  IClientFieldSchema,
-  IConditionSchema,
-  IFormDocument,
-  ILogicSchema,
-  IPreventSubmitLogicSchema,
-  IShowFieldsLogicSchema,
+  FormCondition,
+  LogicDto,
+  ShowFieldLogicDto,
+  PreventSubmitLogicDto,
   LogicCondition,
-} from '../../types'
+  LogicableField,
+} from '../types'
 
 const LOGIC_CONDITIONS: LogicCondition[] = [
   [
@@ -54,36 +50,90 @@ export const LOGIC_MAP = new Map<BasicField, LogicConditionState[]>(
 )
 
 /**
- * Given a list of form fields, returns only the fields that are
- * allowed to be present in the if-condition dropdown in the Logic tab.
- */
-export const getApplicableIfFields = (formFields: FieldBase[]): FieldBase[] =>
-  formFields.filter((field) => !!LOGIC_MAP.get(field.fieldType))
-
-/**
  * Given a single form field type, returns the applicable logic states for that field type.
  */
 export const getApplicableIfStates = (
   fieldType: BasicField,
 ): LogicConditionState[] => LOGIC_MAP.get(fieldType) ?? []
 
-type GroupedLogic = Record<string, IConditionSchema[][]>
-export type FieldIdSet = Set<IClientFieldSchema['_id']>
-// This module handles logic on both the client side (IFieldSchema[])
-// and server side (FieldResponse[])
-type LogicFieldSchemaOrResponse = IClientFieldSchema | FieldResponse
+export const isValueStringArray = (
+  value: FormCondition['value'],
+): value is string[] => {
+  // use .some because of limitation of typescript in calling .every() on union of array types: https://github.com/microsoft/TypeScript/issues/44373
+  return Array.isArray(value) && !value.some((v) => typeof v === 'number')
+}
+
+/**
+ * Utility function to trim condition.value strings
+ * Trim logic condition for backward compability as some logic conditions have trailing whitespace
+ */
+const trimConditionValue = (condition: FormCondition) => ({
+  field: condition.field,
+  state: condition.state,
+  value: isValueStringArray(condition.value)
+    ? condition.value.map((value) => value.trim())
+    : typeof condition.value === 'string'
+    ? condition.value.trim()
+    : condition.value,
+  ifValueType: condition.ifValueType,
+})
+
+type GroupedLogic = Record<string, FormCondition[][]>
+
+export type FieldIdSet = Set<LogicFieldClientResponse['_id']>
+// This module handles logic on both the client side (LogicFieldClientResponse)
+// and server side (LogicFieldServerResponse)
+export type LogicFieldClientRadioResponseInput = {
+  value?: string
+  othersInput?: string
+}
+type LogicFieldClientLogicableRadioResponse = {
+  _id: string
+  fieldType: BasicField.Radio
+  input: LogicFieldClientRadioResponseInput
+}
+type LogicFieldClientLogicableNonRadioResponse = {
+  _id: string
+  fieldType: Exclude<LogicableField, BasicField.Radio>
+  input?: string
+}
+type LogicFieldClientNonLogicableResponse = {
+  _id: string
+  fieldType: Exclude<BasicField, LogicableField>
+}
+export type LogicFieldClientResponse =
+  | LogicFieldClientLogicableRadioResponse
+  | LogicFieldClientLogicableNonRadioResponse
+  | LogicFieldClientNonLogicableResponse
+
+type LogicFieldServerLogicableResponse = {
+  _id: string
+  fieldType: LogicableField
+  answer: string
+}
+type LogicFieldServerNonLogicableResponse = {
+  _id: string
+  fieldType: Exclude<BasicField, LogicableField>
+}
+export type LogicFieldServerResponse =
+  | LogicFieldServerLogicableResponse
+  | LogicFieldServerNonLogicableResponse
+
+export type LogicFieldResponse =
+  | LogicFieldClientResponse
+  | LogicFieldServerResponse
 
 // Returns typed ShowFields logic unit
 const isShowFieldsLogic = (
-  formLogic: ILogicSchema,
-): formLogic is IShowFieldsLogicSchema => {
+  formLogic: LogicDto,
+): formLogic is ShowFieldLogicDto => {
   return formLogic.logicType === LogicType.ShowFields
 }
 
 // Returns typed PreventSubmit logic unit
 const isPreventSubmitLogic = (
-  formLogic: ILogicSchema,
-): formLogic is IPreventSubmitLogicSchema => {
+  formLogic: LogicDto,
+): formLogic is PreventSubmitLogicDto => {
   return formLogic.logicType === LogicType.PreventSubmit
 }
 
@@ -118,17 +168,16 @@ const isPreventSubmitLogic = (
  * @param form the form object to group its logic by field for
  * @returns an object containing fields to be displayed and their corresponding conditions, keyed by id of the displayable field
  */
-export const groupLogicUnitsByField = (form: IFormDocument): GroupedLogic => {
-  const formId = form._id
-  const formLogics = form.form_logics?.filter(isShowFieldsLogic) ?? []
-  const formFieldIds = new Set(
-    form.form_fields?.map((field) => String(field._id)),
-  )
+export const groupLogicUnitsByField = ({
+  form_logics,
+  form_fields,
+}: Pick<FormDto, 'form_fields' | 'form_logics'>): GroupedLogic => {
+  const formLogics = form_logics?.filter(isShowFieldsLogic) ?? []
+  const formFieldIds = new Set(form_fields?.map((field) => String(field._id)))
 
   /** An index of logic units keyed by the field id to be shown. */
   const logicUnitsGroupedByField: GroupedLogic = {}
 
-  let hasInvalidLogic = false
   formLogics.forEach(function (logicUnit) {
     // Only add fields with valid logic conditions to the returned map.
     if (allConditionsExist(logicUnit.conditions, formFieldIds)) {
@@ -141,12 +190,8 @@ export const groupLogicUnitsByField = (form: IFormDocument): GroupedLogic => {
           logicUnitsGroupedByField[fieldId].push(logicUnit.conditions)
         }
       })
-    } else {
-      hasInvalidLogic = true
     }
   })
-  if (hasInvalidLogic && formId)
-    console.info(`formId="${form._id}" message="Form has invalid logic"`)
   return logicUnitsGroupedByField
 }
 
@@ -156,16 +201,15 @@ export const groupLogicUnitsByField = (form: IFormDocument): GroupedLogic => {
  * @param form the form document to check
  * @returns array of conditions that prevent submission, can be empty
  */
-const getPreventSubmitConditions = (
-  form: IFormDocument,
-): IPreventSubmitLogicSchema[] => {
-  const formFieldIds = new Set(
-    form.form_fields?.map((field) => String(field._id)),
-  )
+const getPreventSubmitConditions = ({
+  form_fields,
+  form_logics,
+}: Pick<FormDto, 'form_fields' | 'form_logics'>): PreventSubmitLogicDto[] => {
+  const formFieldIds = new Set(form_fields?.map((field) => String(field._id)))
 
   const preventFormLogics =
-    form.form_logics?.filter(
-      (formLogic): formLogic is IPreventSubmitLogicSchema =>
+    form_logics?.filter(
+      (formLogic): formLogic is PreventSubmitLogicDto =>
         isPreventSubmitLogic(formLogic) &&
         allConditionsExist(formLogic.conditions, formFieldIds),
     ) ?? []
@@ -178,14 +222,14 @@ const getPreventSubmitConditions = (
  * return the condition preventing the submission. If not, return undefined.
  * @param submission the submission responses to retrieve logic units for. Can be `form_fields` (on client), or `req.body.responses` (on server)
  * @param form the form document for the submission
- * @param optionalVisibleFieldIds the optional set of currently visible fields. If this is not provided, it will be recomputed using the given form parameter.
+ * @param visibleFieldIds the set of currently visible fields. Optional for testing purposes
  * @returns a condition if submission is to prevented, otherwise `undefined`
  */
 export const getLogicUnitPreventingSubmit = (
-  submission: LogicFieldSchemaOrResponse[],
-  form: IFormDocument,
+  submission: LogicFieldResponse[],
+  form: Pick<FormDto, 'form_fields' | 'form_logics'>,
   visibleFieldIds?: FieldIdSet,
-): IPreventSubmitLogicSchema | undefined => {
+): PreventSubmitLogicDto | undefined => {
   const definedVisibleFieldIds =
     visibleFieldIds ?? getVisibleFieldIds(submission, form)
   const preventSubmitConditions = getPreventSubmitConditions(form)
@@ -205,7 +249,7 @@ export const getLogicUnitPreventingSubmit = (
  * @returns true if every condition's related form field id exists in the set of formFieldIds, false otherwise.
  */
 const allConditionsExist = (
-  conditions: IConditionSchema[],
+  conditions: FormCondition[],
   formFieldIds: FieldIdSet,
 ): boolean => {
   return conditions.every((condition) =>
@@ -223,8 +267,8 @@ const allConditionsExist = (
  * @returns a set of IDs of visible fields in the submission
  */
 export const getVisibleFieldIds = (
-  submission: LogicFieldSchemaOrResponse[],
-  form: IFormDocument,
+  submission: LogicFieldResponse[],
+  form: Pick<FormDto, 'form_fields' | 'form_logics'>,
 ): FieldIdSet => {
   const logicUnitsGroupedByField = groupLogicUnitsByField(form)
   const visibleFieldIds: FieldIdSet = new Set()
@@ -265,11 +309,11 @@ export const getVisibleFieldIds = (
  * @returns true if all the conditions are satisfied, false otherwise
  */
 const isLogicUnitSatisfied = (
-  submission: LogicFieldSchemaOrResponse[],
-  logicUnit: IConditionSchema[],
+  submission: LogicFieldResponse[],
+  logicUnit: FormCondition[],
   visibleFieldIds: FieldIdSet,
-): boolean => {
-  return logicUnit.every((condition) => {
+): boolean =>
+  logicUnit.every((condition) => {
     const conditionField = findConditionField(submission, condition.field)
     return (
       conditionField &&
@@ -277,20 +321,20 @@ const isLogicUnitSatisfied = (
       isConditionFulfilled(conditionField, condition)
     )
   })
-}
 
 const getCurrentValue = (
-  field: LogicFieldSchemaOrResponse,
-): string | null | undefined | string[] => {
-  if ('fieldValue' in field) {
+  field: LogicFieldResponse,
+): string | LogicFieldClientRadioResponseInput | null | undefined => {
+  if ('input' in field) {
     // client
-    return field.fieldValue
+    return field.input
   } else if ('answer' in field) {
     // server
     return field.answer
   }
   return null
 }
+
 /**
  * Checks if the field's value matches the condition
  * @param {Object} field
@@ -298,69 +342,108 @@ const getCurrentValue = (
  * @param {String} condition.state - The type of condition
  */
 const isConditionFulfilled = (
-  field: LogicFieldSchemaOrResponse,
-  condition: IConditionSchema,
+  field: LogicFieldResponse,
+  condition: FormCondition,
 ): boolean => {
-  if (!field || !condition) {
-    return false
-  }
   let currentValue = getCurrentValue(field)
+
+  // Trim the current value
+  if (typeof currentValue === 'string') {
+    currentValue = currentValue.trim()
+  }
+
   if (
     currentValue === null ||
     currentValue === undefined ||
-    currentValue.length === 0
+    currentValue === ''
   ) {
     return false
   }
 
-  if (
-    condition.state === LogicConditionState.Equal ||
-    condition.state === LogicConditionState.Either
-  ) {
-    // condition.value can be a string (is equals to), or an array (is either) (not strictly true either...)
-    const conditionValues = ([] as unknown[])
-      .concat(condition.value)
-      .map(String)
-      // TODO #4279: Revisit decision to trim in backend after React rollout is complete
-      .map((opt) => opt.trim())
-    currentValue = String(currentValue)
-    /*
-    Handling 'Others' for radiobutton
-
-    form_logics: [{ ... value : 'Others' }]
-
-    Client-side:
-    When an Others radiobutton is checked, the fieldValue is 'radioButtonOthers'
-
-    Server-side:
-    When an Others radiobutton is checked, and submitted with the required value,
-    the answer is: 'Others: value'
-    */
-
-    // TODO: An option that is named "Others: Something..." will also pass this test,
-    // even if the field has not been configured to set othersRadioButton=true
-    if (conditionValues.indexOf('Others') > -1) {
-      // TODO: This is used for angular's client. The server has no need for these magic values, as they are never seen by the server.
-      if (field.fieldType === 'radiobutton') {
-        conditionValues.push('radioButtonOthers')
-      } else if (field.fieldType === 'checkbox') {
-        conditionValues.push('checkboxOthers') // Checkbox currently doesn't have logic, but the 'Others' will work in the future if it in implemented
-      }
-      // This needs to work for manual "Others" options created by users as well.
-      // The only reason this works is that manual "Others" will satisfy the client-side
-      // condition, albeit on the server. See #5318 for more info.
-      return (
-        conditionValues.indexOf(currentValue) > -1 || // Client-side
-        currentValue.startsWith('Others: ')
-      ) // Server-side
+  if (typeof currentValue !== 'string') {
+    // Handle the case where the value is a client radio field value.
+    currentValue = {
+      ...currentValue,
+      value: currentValue.value?.trim(),
     }
-    return conditionValues.indexOf(currentValue) > -1
-  } else if (condition.state === LogicConditionState.Lte) {
-    return Number(currentValue) <= Number(condition.value)
-  } else if (condition.state === LogicConditionState.Gte) {
-    return Number(currentValue) >= Number(condition.value)
-  } else {
-    return false
+  }
+
+  // Evaluate condition
+  const trimmedCondition = trimConditionValue(condition)
+
+  switch (trimmedCondition.state) {
+    case LogicConditionState.Lte:
+      return Number(currentValue) <= Number(trimmedCondition.value)
+    case LogicConditionState.Gte:
+      return Number(currentValue) >= Number(trimmedCondition.value)
+    case LogicConditionState.Equal:
+    case LogicConditionState.Either: {
+      const conditionValues = Array.isArray(trimmedCondition.value)
+        ? trimmedCondition.value
+        : [trimmedCondition.value]
+
+      /**
+       * Field type   Radio       Decimal     Everything else
+       * Server-side  (1)         (2)         (3)
+       * Client-side  (4)         (5)         (6)
+       *
+       * (1) If conditionValues includes "Others", must check for radio answer
+       *     starting with "Others: ".
+       *     If not, continue the usual string-based check with (3).
+       * (4) If conditionValues includes "Others", check for the value being
+       *     special radio value and the othersInput subfield having a value.
+       *     If not, continue the usual string-based check with (3).
+       * (2) + (5) Use Number equality for decimals
+       * (3) + (6) Use String equality for everything else
+       */
+
+      // Special radio others check
+      if (
+        field.fieldType === BasicField.Radio &&
+        conditionValues.includes('Others')
+      ) {
+        if (typeof currentValue === 'string') {
+          // (1) Server-side handling
+          if (currentValue.startsWith('Others: ')) {
+            return true
+          }
+        } else {
+          // (4) Client-side handling
+          if (
+            currentValue.value === CLIENT_RADIO_OTHERS_INPUT_VALUE &&
+            !!currentValue.othersInput
+          ) {
+            return true
+          }
+        }
+      }
+
+      // Bump client-side radio value nested in the object back up to the main level
+      // This is fine since the "Others" check above would have caught if the othersInput
+      // satisfied the logic.
+      let currentValueString: string | undefined
+      if (typeof currentValue !== 'string') {
+        currentValueString = currentValue.value
+      } else {
+        currentValueString = currentValue
+      }
+
+      // (2) + (5) Handle the decimal case
+      if (field.fieldType === BasicField.Decimal) {
+        return conditionValues.some(
+          (conditionValue) =>
+            Number(conditionValue) === Number(currentValueString),
+        )
+      }
+
+      // (3) + (6) Handle everything else
+      return conditionValues.some(
+        (conditionValue) =>
+          String(conditionValue) === String(currentValueString),
+      )
+    }
+    default:
+      return false
   }
 }
 
@@ -372,9 +455,9 @@ const isConditionFulfilled = (
  * @returns the condition field if it exists, `undefined` otherwise
  */
 const findConditionField = (
-  submission: LogicFieldSchemaOrResponse[],
-  fieldId: IConditionSchema['field'],
-): LogicFieldSchemaOrResponse | undefined => {
+  submission: LogicFieldResponse[],
+  fieldId: FormCondition['field'],
+): LogicFieldResponse | undefined => {
   return submission.find(
     (submittedField) => String(submittedField._id) === String(fieldId),
   )
