@@ -8,8 +8,8 @@ import {
 import { isNonEmpty } from '../../../shared/utils/isNonEmpty'
 import {
   FieldIdSet,
-  getLogicUnitPreventingSubmit as logicGetLogicUnitPreventingSubmit,
-  getVisibleFieldIds as logicGetVisibleFieldIds,
+  getLogicUnitPreventingSubmit as sharedGetLogicUnitPreventingSubmit,
+  getVisibleFieldIds as sharedGetVisibleFieldIds,
   type LogicFieldResponse,
 } from '../../../shared/utils/logic'
 import { FieldResponse, IFormDocument } from '../../types'
@@ -23,7 +23,7 @@ export const getVisibleFieldIds = (
   submission: FieldResponse[],
   form: IFormDocument,
 ): Result<FieldIdSet, ProcessingError> => {
-  return ok(logicGetVisibleFieldIds(submission, form as unknown as FormDto))
+  return ok(sharedGetVisibleFieldIds(submission, form as unknown as FormDto))
 }
 
 export const getLogicUnitPreventingSubmit = (
@@ -32,7 +32,7 @@ export const getLogicUnitPreventingSubmit = (
   visibleFieldIds: FieldIdSet,
 ): Result<PreventSubmitLogicDto | undefined, ProcessingError> => {
   return ok(
-    logicGetLogicUnitPreventingSubmit(
+    sharedGetLogicUnitPreventingSubmit(
       submission,
       form as unknown as FormDto,
       visibleFieldIds,
@@ -48,7 +48,7 @@ export const getVisibleFieldIdsV3 = (
   fieldResponsesV3ToLogicFieldResponseTransformer(submission, form.form_fields)
     // Call the shared logic evaluator
     .map((responseData) =>
-      logicGetVisibleFieldIds(responseData, form as unknown as FormDto),
+      sharedGetVisibleFieldIds(responseData, form as unknown as FormDto),
     )
 
 export const getLogicUnitPreventingSubmitV3 = (
@@ -60,7 +60,7 @@ export const getLogicUnitPreventingSubmitV3 = (
     submission,
     form.form_fields,
   ).map((responseData) =>
-    logicGetLogicUnitPreventingSubmit(responseData, form, visibleFieldIds),
+    sharedGetLogicUnitPreventingSubmit(responseData, form, visibleFieldIds),
   )
 
 // Transformer functions
