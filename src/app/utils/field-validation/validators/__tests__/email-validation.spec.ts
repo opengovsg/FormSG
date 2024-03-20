@@ -459,6 +459,7 @@ describe('Email field validation', () => {
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
+
   it('should disallow responses submitted for hidden fields', () => {
     const formField = {
       _id: 'abc123',
@@ -548,5 +549,140 @@ describe('Email field validation', () => {
     expect(validateResult._unsafeUnwrapErr()).toEqual(
       new ValidateFieldError('Invalid answer submitted'),
     )
+  })
+
+  describe('Wildcard domain validation', () => {
+    const formFieldBase = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      globalId: 'random',
+      title: 'random',
+      required: true,
+      isVerifiable: false,
+      hasAllowedEmailDomains: true,
+    } as OmitUnusedValidatorProps<IEmailFieldSchema>
+
+    const responseBase = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      question: 'random',
+      isVisible: true,
+    } as SingleAnswerFieldResponse
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should allow email addresses with wildcard domains when allowedEmailDomains includes a wildcard domain', () => {
+      const formField = {
+        ...formFieldBase,
+        allowedEmailDomains: ['@*.gov.sg'],
+      }
+      const response = {
+        ...responseBase,
+        answer: 'user@agency.gov.sg',
+      }
+      const validateResult = validateField(
+        'formId',
+        formField,
+        response as ProcessedFieldResponse,
+      )
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should not allow email addresses with domains not matching the wildcard when allowedEmailDomains includes a wildcard domain', () => {
+      const formField = {
+        ...formFieldBase,
+        allowedEmailDomains: ['@*.gov.sg'],
+      }
+      const response = {
+        ...responseBase,
+        answer: 'user@company.com.sg',
+      }
+      const validateResult = validateField(
+        'formId',
+        formField,
+        response as ProcessedFieldResponse,
+      )
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
+    })
+
+    it('should allow email addresses with exact domain match even when wildcard is present', () => {
+      const formField = {
+        ...formFieldBase,
+        allowedEmailDomains: ['@*.gov.sg', '@agency.gov.sg'],
+      }
+      const response = {
+        ...responseBase,
+        answer: 'user@agency.gov.sg',
+      }
+      const validateResult = validateField(
+        'formId',
+        formField,
+        response as ProcessedFieldResponse,
+      )
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should allow email addresses with subdomains not explicitly specified in wildcard', () => {
+      const formField = {
+        ...formFieldBase,
+        allowedEmailDomains: ['@*.gov.sg'],
+      }
+      const response = {
+        ...responseBase,
+        answer: 'user@sub.agency.gov.sg',
+      }
+      const validateResult = validateField(
+        'formId',
+        formField,
+        response as ProcessedFieldResponse,
+      )
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should allow email addresses with multiple wildcard domains', () => {
+      const formField = {
+        ...formFieldBase,
+        allowedEmailDomains: ['@*.gov.sg', '@*.agency.gov.sg'],
+      }
+      const response = {
+        ...responseBase,
+        answer: 'user@sub.agency.gov.sg',
+      }
+      const validateResult = validateField(
+        'formId',
+        formField,
+        response as ProcessedFieldResponse,
+      )
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should not allow email addresses with invalid wildcard domains', () => {
+      const formField = {
+        ...formFieldBase,
+        allowedEmailDomains: ['@*.invalid.gov.sg'],
+      }
+      const response = {
+        ...responseBase,
+        answer: 'user@agency.gov.sg',
+      }
+      const validateResult = validateField(
+        'formId',
+        formField,
+        response as ProcessedFieldResponse,
+      )
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
+    })
   })
 })
