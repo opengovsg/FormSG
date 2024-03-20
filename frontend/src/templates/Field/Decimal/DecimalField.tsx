@@ -37,7 +37,6 @@ export const DecimalField = ({
           <NumberInput
             inputMode="decimal"
             aria-label={`${schema.questionNumber}. ${schema.title}`}
-            allowMouseWheel
             preventDefaultOnEnter
             {...field}
           />
