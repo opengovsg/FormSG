@@ -1,15 +1,9 @@
 import { err, ok, Result } from 'neverthrow'
 
-import { LOGIC_MAP } from '../../../shared/modules/logic'
 import {
-  BasicField,
-  FieldResponseAnswerMapV3,
   FieldResponsesV3,
   FormDto,
-  LogicableField,
   PreventSubmitLogicDto,
-  RadioFieldResponsesV3,
-  SingleAnswerResponseV3,
 } from '../../../shared/types'
 import { isNonEmpty } from '../../../shared/utils/isNonEmpty'
 import {
@@ -20,6 +14,8 @@ import {
 } from '../../../shared/utils/logic'
 import { FieldResponse, IFormDocument } from '../../types'
 import { ProcessingError } from '../modules/submission/submission.errors'
+
+import { isLogicableField, isNotLogicableField } from './typeguards'
 
 export { FieldIdSet } from '../../../shared/utils/logic'
 
@@ -68,30 +64,6 @@ export const getLogicUnitPreventingSubmitV3 = (
   )
 
 // Transformer functions
-
-type SingleAnswerLogicableField = Exclude<LogicableField, BasicField.Radio>
-
-const isLogicableField = (args: {
-  fieldType: BasicField
-  input: FieldResponseAnswerMapV3<BasicField>
-}): args is
-  | {
-      fieldType: SingleAnswerLogicableField
-      input: SingleAnswerResponseV3
-    }
-  | {
-      fieldType: BasicField.Radio
-      input: RadioFieldResponsesV3
-    } => [...LOGIC_MAP.keys()].includes(args.fieldType)
-
-const isNotLogicableField = (args: {
-  fieldType: BasicField
-  input: FieldResponseAnswerMapV3<BasicField>
-}): args is {
-  fieldType: Exclude<BasicField, LogicableField>
-  input: FieldResponseAnswerMapV3<BasicField>
-} => !isLogicableField(args)
-
 const fieldResponsesV3ToLogicFieldResponseTransformer = (
   submission: FieldResponsesV3,
   form_fields: FormDto['form_fields'],
