@@ -99,14 +99,14 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
         <Container maxW={'42.5rem'} p={0}>
           <FormControl isInvalid={isError || !!errors.pdfFileText}>
             <FormLabel>
-              Upload a PDF - The PDF should not contain any restricted or
-              sensitive information.
+              Upload a PDF - The PDF should not be a scanned copy and should not
+              contain any restricted or sensitive information.
             </FormLabel>
             <Controller
               rules={{
                 validate: (pdfFileText) => {
                   if (pdfFileText && pdfFileText.length < 3001) return true
-                  return 'Please upload a PDF file.'
+                  return 'This PDF file cannot be processed. Please ensure that the PDF uploaded contains selectable text and is not a scanned copy.'
                 },
               }}
               name="pdfFileText"
@@ -126,11 +126,14 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
               )}
             />
 
-            <FormErrorMessage>
+            <FormErrorMessage alignItems="top">
               {(isError || !pdfFileText) && (
                 <FormErrorIcon h="1.5rem" as={BxsErrorCircle} />
               )}
-              {!pdfFileText && `${errors.pdfFileText?.message}`}
+              {!pdfFileText &&
+                (pdfFile
+                  ? `${errors.pdfFileText?.message}`
+                  : 'Please upload a PDF.')}
               {isError &&
                 `The PDF uploaded exceeds the character limit acceptable (${pdfFileText.length}/3000). Please try another form.`}
             </FormErrorMessage>
