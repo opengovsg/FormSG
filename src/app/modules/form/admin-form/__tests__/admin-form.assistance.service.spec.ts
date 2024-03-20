@@ -1,4 +1,4 @@
-import OpenAI from 'openai'
+import { OpenAIClient } from '@azure/openai'
 
 import {
   generateFormFields,
@@ -9,10 +9,6 @@ import {
   AssistanceModelTypeError,
 } from '../admin-form.errors'
 
-// Mock openai
-jest.mock('openai', () => jest.fn())
-const MockedOpenAIClient = jest.mocked(OpenAI)
-
 const mockReturnValue = {
   role: 'user',
   content: 'dummy content',
@@ -20,17 +16,10 @@ const mockReturnValue = {
 
 beforeEach(() => {
   jest.clearAllMocks()
-  MockedOpenAIClient.prototype.chat = {
-    completions: {
-      create: jest.fn().mockResolvedValue({
-        choices: [
-          {
-            message: mockReturnValue,
-          },
-        ],
-      }),
-    },
-  } as any
+
+  jest
+    .spyOn(OpenAIClient.prototype, 'getChatCompletions')
+    .mockResolvedValue({ choices: [{ message: mockReturnValue }] } as any)
 })
 
 describe('admin-form.assistance.service', () => {
@@ -67,14 +56,14 @@ describe('admin-form.assistance.service', () => {
       const type = 'prompt'
       const content = 'Sample content'
 
-      // Mock OpenAI API throwing an error
-      MockedOpenAIClient.prototype.chat.completions.create = jest
-        .fn()
+      // Mock Azure OpenAI API throwing an error
+
+      jest
+        .spyOn(OpenAIClient.prototype, 'getChatCompletions')
         .mockRejectedValue(new Error('Some random error message'))
 
       // Act
       const actualResult = await generateQuestions({ type, content })
-      // assuming the generateQuestions function will be using the mocked openai API?
 
       // Assert
       expect(actualResult.isErr()).toEqual(true)
@@ -119,8 +108,9 @@ describe('admin-form.assistance.service', () => {
       const questions = 'sample questions'
 
       // Mock OpenAI API throwing an error
-      MockedOpenAIClient.prototype.chat.completions.create = jest
-        .fn()
+
+      jest
+        .spyOn(OpenAIClient.prototype, 'getChatCompletions')
         .mockRejectedValue(new Error('Some random error message'))
 
       // Act

@@ -1,8 +1,12 @@
 import { useState } from 'react'
+import { Controller } from 'react-hook-form'
 import { BiRightArrowAlt } from 'react-icons/bi'
 import {
   Container,
   Flex,
+  FormControl,
+  FormErrorIcon,
+  FormErrorMessage,
   FormLabel,
   ModalBody,
   ModalHeader,
@@ -13,7 +17,7 @@ import * as pdfjs from 'pdfjs-dist/legacy/build/pdf'
 
 import { MB } from '~shared/constants'
 
-import Badge from '~components/Badge'
+import { BxsErrorCircle } from '~assets/icons'
 import Button from '~components/Button'
 import Attachment from '~components/Field/Attachment'
 
@@ -28,9 +32,14 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
     formMethods,
   } = useMagicFormBuilderWizard()
 
-  const { setValue } = formMethods
+  const {
+    setError,
+    control,
+    setValue,
+    formState: { errors },
+  } = formMethods
 
-  const MAX_FILE_SIZE = 20 * MB
+  const MAX_FILE_SIZE = 5 * MB
   const VALID_EXTENSIONS = '.pdf'
   pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker
 
@@ -77,50 +86,79 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
     return combinedText.trim()
   }
 
+  const isError = pdfFileText.length > 3000
+
   return (
     <>
       <ModalHeader color="secondary.700">
         <Container maxW={'42.5rem'} p={0}>
-          Build your form using PDF
-          <Badge bgColor="primary.100" ml="1rem">
-            Beta
-          </Badge>
+          Upload a PDF
         </Container>
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap">
         <Container maxW={'42.5rem'} p={0}>
-          <FormLabel>
-            Upload a PDF - The PDF should not contain any restricted or
-            sensitive information.
-          </FormLabel>
-          <Attachment
-            maxSize={MAX_FILE_SIZE}
-            accept={VALID_EXTENSIONS}
-            showFileSize
-            title={'Upload a PDF'}
-            onChange={handleFileUpload}
-            name="pdfFile"
-            value={pdfFile}
-          />
+          <FormControl isInvalid={isError || !!errors.pdfFileText}>
+            <FormLabel>
+              Upload a PDF - The PDF should not be a scanned copy and should not
+              contain any restricted or sensitive information.
+            </FormLabel>
+            <Controller
+              rules={{
+                validate: (pdfFileText) => {
+                  if (pdfFileText && pdfFileText.length < 3001) return true
+                  return 'This PDF file cannot be processed. Please ensure that the PDF uploaded contains selectable text and is not a scanned copy.'
+                },
+              }}
+              name="pdfFileText"
+              control={control}
+              render={() => (
+                <Attachment
+                  isRequired
+                  maxSize={MAX_FILE_SIZE}
+                  accept={VALID_EXTENSIONS}
+                  showFileSize
+                  title={'Upload a PDF'}
+                  onChange={handleFileUpload}
+                  name="pdfFile"
+                  value={pdfFile}
+                  onError={(message) => setError('pdfFileText', { message })}
+                />
+              )}
+            />
+
+            <FormErrorMessage alignItems="top">
+              {(isError || !pdfFileText) && (
+                <FormErrorIcon h="1.5rem" as={BxsErrorCircle} />
+              )}
+              {!pdfFileText &&
+                (pdfFile
+                  ? `${errors.pdfFileText?.message}`
+                  : 'Please upload a PDF.')}
+              {isError &&
+                `The PDF uploaded exceeds the character limit acceptable (${pdfFileText.length}/3000). Please try another form.`}
+            </FormErrorMessage>
+          </FormControl>
 
           <Flex justify="flex-end" gap="1rem" mt="2.5rem">
             <Button
-              mr="1rem"
+              mr="0.5rem"
               type="submit"
               isDisabled={isLoading || isFetching}
               onClick={handleBack}
               variant="clear"
             >
-              <Text lineHeight="1.5rem">Back</Text>
+              <Text lineHeight="1.5rem" color="secondary.500">
+                Back
+              </Text>
             </Button>
             <Button
               rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
               type="submit"
               isLoading={isLoading}
-              isDisabled={isFetching || isLoading || !pdfFileText}
+              isDisabled={isFetching || isLoading}
               onClick={handleDetailsSubmit}
             >
-              <Text lineHeight="1.5rem">Next step</Text>
+              <Text lineHeight="1.5rem">Create form</Text>
             </Button>
           </Flex>
         </Container>

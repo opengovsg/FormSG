@@ -4,6 +4,8 @@ import { useParams } from 'react-router-dom'
 
 import { ContentTypes } from '~shared/types/assistance'
 
+import { HttpError } from '~services/ApiService'
+
 import {
   generateFormFields,
   generateQuestions,
@@ -30,82 +32,113 @@ export const useAssistanceMutations = () => {
   const onCloseContext = useContext(MagicFormBuilderModalOnCloseContext)
   const { onClose } = onCloseContext || {}
 
-  const createFieldsFromPromptMutation = useMutation((prompt: string) =>
-    generateQuestions(ContentTypes.PROMPT, prompt)
-      .then((questions) => {
-        if (!questions.content) {
-          throw new Error('No content in questions')
-        }
-        return generateFormFields(questions.content)
-      })
-      .then((data) => {
-        let formFields
-        if (data.content) {
-          try {
-            formFields = JSON.parse(parseModelOutput(data.content))
-          } catch (e) {
-            toast({
-              description: `Error creating form. Reason: ${e}`,
-              status: 'warning',
-            })
-            return
+  const createFieldsFromPromptMutation = useMutation(
+    (prompt: string) =>
+      generateQuestions(ContentTypes.PROMPT, prompt)
+        .then((questions) => {
+          if (!questions.content) {
+            throw new Error('No content in questions')
           }
-        }
-        return createFieldsMutation.mutate(formFields, {
-          onSuccess: () => {
-            queryClient.invalidateQueries(adminFormKeys.id(formId))
-            onClose()
-            toast({
-              description: 'Successfully created form',
-            })
-          },
-          onError: () => {
-            toast({
-              description: 'Error creating form.',
-              status: 'warning',
-            })
-          },
+          return generateFormFields(questions.content)
         })
-      }),
+        .then((data) => {
+          let formFields
+          if (data.content) {
+            try {
+              formFields = JSON.parse(parseModelOutput(data.content))
+            } catch (e) {
+              toast({
+                description: `Error creating form. Reason: ${e}`,
+                status: 'warning',
+              })
+              return
+            }
+          }
+          return createFieldsMutation.mutate(formFields, {
+            onSuccess: () => {
+              queryClient.invalidateQueries(adminFormKeys.id(formId))
+              onClose()
+              toast({
+                description: 'Successfully created form',
+              })
+            },
+            onError: () => {
+              toast({
+                description: 'Error creating form.',
+                status: 'warning',
+              })
+            },
+          })
+        }),
+    {
+      onError: (error: Error) => {
+        if (error instanceof HttpError) {
+          let errorMessage
+          switch (error.code) {
+            case 429:
+              errorMessage =
+                'Too many forms created! Please try creating again later.'
+
+              break
+
+            default:
+              errorMessage = 'An error occured. Please try again.'
+          }
+          toast({
+            description: `${errorMessage}`,
+            status: 'danger',
+          })
+        }
+      },
+    },
   )
 
-  const createFieldsFromPdfMutation = useMutation((pdfContent: string) =>
-    generateQuestions(ContentTypes.PDF, pdfContent)
-      .then((questions) => {
-        if (!questions.content) {
-          throw new Error('No content in questions')
-        }
-        return generateFormFields(questions.content)
-      })
-      .then((data) => {
-        let formFields
-        if (data.content) {
-          try {
-            formFields = JSON.parse(parseModelOutput(data.content))
-          } catch (e) {
-            toast({
-              description: `Error creating form. Reason: ${e}`,
-              status: 'warning',
-            })
-            return
+  const createFieldsFromPdfMutation = useMutation(
+    (pdfContent: string) =>
+      generateQuestions(ContentTypes.PDF, pdfContent)
+        .then((questions) => {
+          if (!questions.content) {
+            throw new Error('No content in questions')
           }
-        }
-        return createFieldsMutation.mutate(formFields, {
-          onSuccess: () => {
-            queryClient.invalidateQueries(adminFormKeys.id(formId))
-            onClose()
-            toast({
-              description: 'Successfully created form',
-            })
-          },
-          onError: () => {
-            toast({
-              description: 'Error creating form.',
-              status: 'warning',
-            })
-          },
+          return generateFormFields(questions.content)
         })
-      }),
+        .then((data) => {
+          let formFields
+          if (data.content) {
+            try {
+              formFields = JSON.parse(parseModelOutput(data.content))
+            } catch (e) {
+              toast({
+                description: `Error creating form. Reason: ${e}`,
+                status: 'warning',
+              })
+              return
+            }
+          }
+          return createFieldsMutation.mutate(formFields, {
+            onSuccess: () => {
+              queryClient.invalidateQueries(adminFormKeys.id(formId))
+              onClose()
+              toast({
+                description: 'Successfully created form',
+              })
+            },
+            onError: () => {
+              toast({
+                description: 'Error creating form.',
+                status: 'warning',
+              })
+            },
+          })
+        }),
+    {
+      onError: (error: Error) => {
+        toast({
+          description: 'Too many forms generated! Please try again later.',
+          status: 'danger',
+        })
+      },
+    },
   )
 
   return {
