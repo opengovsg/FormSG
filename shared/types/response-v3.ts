@@ -114,4 +114,6 @@ export type ChildrenCompoundFieldResponsesV3 = {
 export type AttachmentFieldResponseV3 = {
   hasBeenScanned: boolean
   answer: string
+  filename: string
+  content: { data: Iterable<number>; type: string }
 }
