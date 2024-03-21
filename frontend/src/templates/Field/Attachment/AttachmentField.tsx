@@ -58,7 +58,7 @@ export const AttachmentField = ({
         clearErrors(fieldName)
         // Case where attachment is cleared.
         if (!file) {
-          onChange(undefined)
+          onChange(null)
           return
         }
         // Clone file due to bug where attached file may be empty or corrupted if the
