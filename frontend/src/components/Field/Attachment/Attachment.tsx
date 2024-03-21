@@ -32,8 +32,9 @@ const IMAGE_UPLOAD_TYPES_TO_COMPRESS = ['image/jpeg', 'image/png']
 export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
   /**
    * Callback to be invoked when the file is attached or removed.
+   * Do not use undefined to clear the value, use null instead.
    */
-  onChange: (file?: File) => void
+  onChange: (file: File | null) => void
   /**
    * If exists, callback to be invoked when file has errors.
    */
@@ -41,7 +42,7 @@ export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
   /**
    * Current value of the input.
    */
-  value: File | undefined
+  value: File | undefined | null
   /**
    * Name of the input.
    */
@@ -156,6 +157,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
           maxSize &&
           acceptedFile.size > maxSize
         ) {
+          console.log('gaaaa')
           return imageCompression(acceptedFile, {
             maxSizeMB: maxSize ? maxSize / MB : undefined,
             maxWidthOrHeight: 1440,
@@ -170,8 +172,9 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
             ),
           )
         }
-
+        console.log('gaaaa?')
         onChange(acceptedFile)
+        console.log({ acceptedFile })
       },
       [accept, maxSize, onChange, onError],
     )
@@ -211,7 +214,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
     })
 
     const handleRemoveFile = useCallback(() => {
-      onChange(undefined)
+      onChange(null)
       rootRef.current?.focus()
     }, [onChange, rootRef])
 
@@ -244,12 +247,14 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
     }, [getRootProps, inputProps, value])
 
     const processedInputProps = useMemo(() => {
+      console.log('processedInputProps')
       return getInputProps({
         name,
         ...inputProps,
       })
     }, [getInputProps, inputProps, name])
 
+    console.log('AttachmentFileInfo', { value })
     return (
       <StylesProvider value={styles}>
         <Box __css={styles.container}>
