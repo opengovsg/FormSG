@@ -109,7 +109,7 @@ export const FormLimitToggle = (): JSX.Element => {
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
-  const isMRF = settings?.responseMode === FormResponseMode.Multirespondent
+  const isMrf = settings?.responseMode === FormResponseMode.Multirespondent
 
   const { data: responseCount, isLoading: isLoadingCount } =
     useFormResponsesCount()
@@ -154,13 +154,13 @@ export const FormLimitToggle = (): JSX.Element => {
   return (
     <Skeleton isLoaded={!isLoadingSettings && !!settings} mt="2rem">
       <Toggle
-        isDisabled={isMRF}
+        isDisabled={isMrf}
         isLoading={mutateFormLimit.isLoading}
         isChecked={isLimit}
         label="Set a response limit"
         onChange={() => handleToggleLimit()}
       />
-      {isMRF ? (
+      {isMrf ? (
         <InlineMessage variant="warning" mt="0.5rem">
           Response limits cannot be applied for multi-respondent forms.
         </InlineMessage>
