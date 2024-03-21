@@ -67,6 +67,11 @@ export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
    * Color scheme of the component.
    */
   colorScheme?: ThemeColorScheme
+
+  /**
+   * Color scheme of the component.
+   */
+  enableDownload?: boolean
 }
 
 export const Attachment = forwardRef<AttachmentProps, 'div'>(
@@ -81,6 +86,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       name,
       colorScheme,
       title,
+      enableDownload,
       ...props
     },
     ref,
@@ -209,6 +215,17 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       rootRef.current?.focus()
     }, [onChange, rootRef])
 
+    const handleDownloadFile = useCallback(() => {
+      if (value) {
+        const url = URL.createObjectURL(value)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = value.name
+        a.click()
+        URL.revokeObjectURL(url)
+      }
+    }, [value])
+
     // Bunch of memoization to avoid unnecessary re-renders.
     const processedRootProps = useMemo(() => {
       return getRootProps({
@@ -246,6 +263,8 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
               <AttachmentFileInfo
                 file={value}
                 handleRemoveFile={handleRemoveFile}
+                handleDownloadFile={handleDownloadFile}
+                enableDownload={enableDownload}
               />
             ) : (
               <AttachmentDropzone
