@@ -58,7 +58,6 @@ export const AttachmentFileInfo = ({
         {showDownloadButton ? (
           <IconButton
             variant="clear"
-            colorScheme="danger"
             aria-label="Click to download file"
             icon={<BiDownload />}
             onClick={handleDownloadFile}
