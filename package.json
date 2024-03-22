@@ -236,7 +236,7 @@
     "prettier": "^2.8.1",
     "react-dev-inspector": "^1.8.6",
     "regenerator": "^0.14.10",
-    "rimraf": "^4.4.0",
+    "rimraf": "^5.0.5",
     "stripe-event-types": "^2.3.0",
     "supertest": "^6.3.3",
     "supertest-session": "^4.1.0",
