@@ -70,9 +70,14 @@ export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
   colorScheme?: ThemeColorScheme
 
   /**
-   * Color scheme of the component.
+   * Show attachment download button.
    */
   enableDownload?: boolean
+
+  /**
+   * Show attachment removal button
+   */
+  enableRemove?: boolean
 }
 
 export const Attachment = forwardRef<AttachmentProps, 'div'>(
@@ -88,6 +93,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       colorScheme,
       title,
       enableDownload,
+      enableRemove,
       ...props
     },
     ref,
@@ -265,6 +271,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
                 handleRemoveFile={handleRemoveFile}
                 handleDownloadFile={handleDownloadFile}
                 enableDownload={enableDownload}
+                enableRemove={enableRemove}
               />
             ) : (
               <AttachmentDropzone

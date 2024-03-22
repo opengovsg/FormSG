@@ -9,6 +9,7 @@ import { getReadableFileSize } from './utils/getReadableFileSize'
 export interface AttachmentFileInfoProps {
   file: File
   enableDownload?: boolean
+  enableRemove?: boolean
   handleRemoveFile: () => void
   handleDownloadFile: () => void
 }
@@ -16,6 +17,7 @@ export interface AttachmentFileInfoProps {
 export const AttachmentFileInfo = ({
   file,
   enableDownload = false,
+  enableRemove = true,
   handleRemoveFile,
   handleDownloadFile,
 }: AttachmentFileInfoProps) => {
@@ -44,13 +46,15 @@ export const AttachmentFileInfo = ({
         </Text>
       </Flex>
       <Flex>
-        <IconButton
-          variant="clear"
-          colorScheme="danger"
-          aria-label="Click to remove file"
-          icon={<BiTrash />}
-          onClick={handleRemoveFile}
-        />
+        {enableRemove ? (
+          <IconButton
+            variant="clear"
+            colorScheme="danger"
+            aria-label="Click to remove file"
+            icon={<BiTrash />}
+            onClick={handleRemoveFile}
+          />
+        ) : null}
         {showDownloadButton ? (
           <IconButton
             variant="clear"

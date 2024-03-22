@@ -55,6 +55,9 @@ export const AttachmentField = ({
   const handleFileChange = useCallback(
     (onChange: ControllerRenderProps['onChange']) =>
       async (file: File | null) => {
+        if (schema.disabled) {
+          return
+        }
         clearErrors(fieldName)
         // Case where attachment is cleared.
         if (!file) {
@@ -95,7 +98,7 @@ export const AttachmentField = ({
           return onChange(undefined) // Clear attachment and return
         }
       },
-    [clearErrors, fieldName, setErrorMessage],
+    [clearErrors, fieldName, setErrorMessage, schema.disabled],
   )
 
   return (
@@ -113,6 +116,7 @@ export const AttachmentField = ({
             onError={setErrorMessage}
             title={`${schema.questionNumber}. ${schema.title}`}
             enableDownload={enableDownload}
+            enableRemove={!schema.disabled}
           />
         )}
         name={fieldName}
