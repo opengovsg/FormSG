@@ -8,11 +8,11 @@ import {
   FieldResponsesV3,
   FormDto,
   FormResponseMode,
+  ParsedClearAttachmentResponseV3,
   SubmissionType,
 } from '../../../../../shared/types'
 import { isFieldResponseV3Equal } from '../../../../../shared/utils/response-v3'
 import { isDev } from '../../../../app/config/config'
-import { ParsedClearAttachmentResponseV3 } from '../../../../types/api'
 import { MultirespondentFormLoadedDto } from '../../../../types/api/multirespondent_submission'
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'

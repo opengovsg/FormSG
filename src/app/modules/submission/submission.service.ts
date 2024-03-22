@@ -15,6 +15,7 @@ import {
   AttachmentPresignedPostDataMapType,
   AttachmentSizeMapType,
   FormResponseMode,
+  ParsedClearAttachmentFieldResponseV3,
   SubmissionMetadata,
   SubmissionMetadataList,
   SubmissionPaymentDto,
@@ -28,7 +29,6 @@ import {
   SubmissionData,
 } from '../../../types'
 import {
-  ParsedClearAttachmentFieldResponseV3,
   ParsedClearAttachmentResponse,
   ParsedClearFormFieldResponse,
 } from '../../../types/api'

@@ -114,6 +114,28 @@ export type ChildrenCompoundFieldResponsesV3 = {
 export type AttachmentFieldResponseV3 = {
   hasBeenScanned: boolean
   answer: string
-  filename: string
-  content: { data: Iterable<number>; type: string }
 }
+
+/**
+ * AttachmentResponses with additional server injected metadata on email and storage v2+ forms.
+ */
+export type ParsedClearAttachmentFieldResponseV3 = AttachmentFieldResponseV3 & {
+  filename: string
+  content: Buffer
+}
+
+export type ParsedClearAttachmentResponseV3 = Omit<
+  AttachmentResponseV3,
+  'answer'
+> & {
+  answer: ParsedClearAttachmentFieldResponseV3
+}
+
+export type ParsedClearFormFieldResponseV3 =
+  | Exclude<FieldResponseV3, AttachmentResponseV3>
+  | ParsedClearAttachmentResponseV3
+
+export type ParsedClearFormFieldResponsesV3 = Record<
+  FormFieldDto['_id'],
+  ParsedClearFormFieldResponseV3
+>
