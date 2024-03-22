@@ -157,7 +157,6 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
           maxSize &&
           acceptedFile.size > maxSize
         ) {
-          console.log('gaaaa')
           return imageCompression(acceptedFile, {
             maxSizeMB: maxSize ? maxSize / MB : undefined,
             maxWidthOrHeight: 1440,
@@ -172,9 +171,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
             ),
           )
         }
-        console.log('gaaaa?')
         onChange(acceptedFile)
-        console.log({ acceptedFile })
       },
       [accept, maxSize, onChange, onError],
     )
@@ -247,14 +244,12 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
     }, [getRootProps, inputProps, value])
 
     const processedInputProps = useMemo(() => {
-      console.log('processedInputProps')
       return getInputProps({
         name,
         ...inputProps,
       })
     }, [getInputProps, inputProps, name])
 
-    console.log('AttachmentFileInfo', { value })
     return (
       <StylesProvider value={styles}>
         <Box __css={styles.container}>
