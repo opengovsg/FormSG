@@ -221,7 +221,6 @@ const devModeSyncVirusScanning = async (
 
 /**
  * Scan attachments on quarantine bucket and retrieve attachments from the clean bucket.
- * Note: Downloading of attachments from the clean bucket is not implemented yet. See Step 4.
  */
 export const scanAndRetrieveAttachments = async (
   req: MultirespondentSubmissionMiddlewareHandlerRequest,
