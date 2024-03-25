@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Box } from '@chakra-ui/react'
 
@@ -24,10 +24,9 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     handleSubmitForm,
     submissionData,
     encryptedPreviousSubmission,
+    previousSubmission,
+    setPreviousSubmission,
   } = usePublicFormContext()
-
-  const [previousSubmission, setPreviousSubmission] =
-    useState<ReturnType<typeof decryptSubmission>>()
 
   const { submissionPublicKey = null, workflowStep } =
     encryptedPreviousSubmission ?? {}
@@ -120,6 +119,7 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     handleSubmitForm,
     submissionPublicKey,
     queryParams.key,
+    setPreviousSubmission,
     encryptedPreviousSubmission,
   ])
 

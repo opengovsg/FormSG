@@ -72,6 +72,7 @@ export const usePublicAuthMutations = (formId: string) => {
 export const usePublicFormMutations = (
   formId: string,
   submissionId?: string,
+  submissionSecretKey?: string,
 ) => {
   const submitEmailModeFormMutation = useMutation(
     (args: Omit<SubmitEmailFormArgs, 'formId'>) => {
@@ -176,7 +177,9 @@ export const usePublicFormMutations = (
   )
 
   const updateMultirespondentSubmissionMutation =
-    useSubmitStorageModeFormMutation(updateMultirespondentSubmission)
+    useSubmitStorageModeFormMutation((args) =>
+      updateMultirespondentSubmission({ ...args, submissionSecretKey }),
+    )
 
   return {
     submitEmailModeFormMutation,
