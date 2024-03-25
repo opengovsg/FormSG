@@ -10,7 +10,7 @@ import {
   FormResponseMode,
   SubmissionType,
 } from '../../../../../shared/types'
-import { areFieldResponseV3sEqual } from '../../../../../shared/utils/response-v3'
+import { isFieldResponseV3Equal } from '../../../../../shared/utils/response-v3'
 import { isDev } from '../../../../app/config/config'
 import { ParsedClearAttachmentResponseV3 } from '../../../../types/api'
 import { MultirespondentFormLoadedDto } from '../../../../types/api/multirespondent_submission'
@@ -447,7 +447,7 @@ export const validateMultirespondentSubmission = async (
 
                 return Result.combine(
                   nonEditableFieldIdsWithResponses.map((fieldId) =>
-                    areFieldResponseV3sEqual(
+                    isFieldResponseV3Equal(
                       req.body.responses[fieldId],
                       previousResponses[fieldId],
                     )
