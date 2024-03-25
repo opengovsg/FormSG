@@ -320,9 +320,9 @@ export const validateMultirespondentSubmission = async (
    * 2. Defined editable fields from workflow[0].edit.
    *     a. If no workflow, all fields are editable.
    * 3. Get visible fields by logic
-   * 4. CHECK: no preventing submit
-   * 5. CHECK: response fields C visible fields
-   * 6. CHECK: response fields C editable fields
+   * 4. CHECK: no logic block preventing submit
+   * 5. CHECK: response fields subset of visible fields
+   * 6. CHECK: response fields subset of editable fields
    * 7. CHECK: for each field, validate by its rules
    *
    * Subsequent submissions:
@@ -365,7 +365,7 @@ export const validateMultirespondentSubmission = async (
         }) => {
           // Step 0b: Determine editable fields based on the workflow step, if it exists.
           const editableFieldIds = (
-            workflow && !!workflow[workflowStep]
+            workflow[workflowStep]
               ? workflow[workflowStep].edit
               : form_fields.map((ff) => ff._id)
           ).map(String)
