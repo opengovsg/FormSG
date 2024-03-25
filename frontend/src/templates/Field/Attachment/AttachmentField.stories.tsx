@@ -100,3 +100,16 @@ export const ValidationOptional = Template.bind({})
 ValidationOptional.args = {
   schema: { ...baseSchema, required: false },
 }
+
+export const DownloadEnabled = Template.bind({})
+DownloadEnabled.args = {
+  schema: { ...baseSchema, required: false },
+  enableDownload: true,
+}
+
+export const DownloadEnabledWithDisabledUpload = Template.bind({})
+DownloadEnabledWithDisabledUpload.args = {
+  schema: { ...baseSchema, disabled: true },
+  enableDownload: true,
+  defaultValue: new File(['examplebtyes'], 'example.txt'),
+}
