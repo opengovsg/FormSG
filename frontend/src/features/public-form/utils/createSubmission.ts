@@ -270,8 +270,10 @@ const createResponsesV3 = (
       case BasicField.Date:
       case BasicField.CountryRegion:
       case BasicField.YesNo: {
-        const input = formInputs[ff._id] as FormFieldValue<typeof ff.fieldType>
-        if (!input) continue
+        const input = formInputs[ff._id] as
+          | FormFieldValue<typeof ff.fieldType>
+          | undefined
+        if (!input) break
         returnedInputs[ff._id] = {
           fieldType: ff.fieldType,
           answer: input,
@@ -280,8 +282,10 @@ const createResponsesV3 = (
       }
       case BasicField.Email:
       case BasicField.Mobile: {
-        const input = formInputs[ff._id] as FormFieldValue<typeof ff.fieldType>
-        if (!input || !input.value) continue
+        const input = formInputs[ff._id] as
+          | FormFieldValue<typeof ff.fieldType>
+          | undefined
+        if (!input?.value) break
         returnedInputs[ff._id] = {
           fieldType: ff.fieldType,
           answer: input,
@@ -289,10 +293,12 @@ const createResponsesV3 = (
         break
       }
       case BasicField.Table: {
-        const input = formInputs[ff._id] as FormFieldValue<typeof ff.fieldType>
-        if (!input) continue
+        const input = formInputs[ff._id] as
+          | FormFieldValue<typeof ff.fieldType>
+          | undefined
+        if (!input) break
         if (input.every((row) => Object.values(row).every((value) => !value))) {
-          continue
+          break
         }
         returnedInputs[ff._id] = {
           fieldType: ff.fieldType,
@@ -301,10 +307,14 @@ const createResponsesV3 = (
         break
       }
       case BasicField.Checkbox: {
-        const input = formInputs[ff._id] as FormFieldValue<typeof ff.fieldType>
-        if (!input) continue
-        if ((!input.value || input.value.length === 0) && !input.othersInput) {
-          continue
+        const input = formInputs[ff._id] as
+          | FormFieldValue<typeof ff.fieldType>
+          | undefined
+        if (
+          (!input?.value || input?.value.length === 0) &&
+          !input?.othersInput
+        ) {
+          break
         }
         returnedInputs[ff._id] = {
           fieldType: ff.fieldType,
@@ -313,10 +323,14 @@ const createResponsesV3 = (
         break
       }
       case BasicField.Children: {
-        const input = formInputs[ff._id] as FormFieldValue<typeof ff.fieldType>
-        if (!input) continue
-        if (input.child.every((child) => child.every((value) => !value))) {
-          continue
+        const input = formInputs[ff._id] as
+          | FormFieldValue<typeof ff.fieldType>
+          | undefined
+        if (
+          !input ||
+          input.child.every((child) => child.every((value) => !value))
+        ) {
+          break
         }
         returnedInputs[ff._id] = {
           fieldType: ff.fieldType,
@@ -325,8 +339,10 @@ const createResponsesV3 = (
         break
       }
       case BasicField.Attachment: {
-        const input = formInputs[ff._id] as FormFieldValue<typeof ff.fieldType>
-        if (!input) continue
+        const input = formInputs[ff._id] as
+          | FormFieldValue<typeof ff.fieldType>
+          | undefined
+        if (!input) break
         // for each attachment response, find the corresponding quarantine bucket key
         const fieldIdToQuarantineKeyEntry = fieldIdToQuarantineKeyMap.find(
           (v) => v.fieldId === ff._id,
@@ -345,9 +361,10 @@ const createResponsesV3 = (
         break
       }
       case BasicField.Radio: {
-        const input = formInputs[ff._id] as FormFieldValue<typeof ff.fieldType>
-        if (!input) continue
-        if (!input.value && !input.othersInput) continue
+        const input = formInputs[ff._id] as
+          | FormFieldValue<typeof ff.fieldType>
+          | undefined
+        if (!input?.value && !input?.othersInput) break
         returnedInputs[ff._id] = {
           fieldType: ff.fieldType,
           answer: input.othersInput
