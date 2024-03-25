@@ -86,9 +86,7 @@ export const EndPageBlock = ({
           </Text>
         </Box>
         <Box mt="2.25rem">
-          {disableSubmitResponseButton ? (
-            <></>
-          ) : (
+          {disableSubmitResponseButton || (
             <Button
               as="a"
               href={endPage.buttonLink || window.location.href}
