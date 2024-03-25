@@ -289,6 +289,10 @@ export const Button = {
       minH: 'auto',
       minW: 'auto',
     },
+    smd: {
+      minH: '2.25rem',
+      minW: '2.25rem',
+    },
     md: {
       minH: '2.75rem',
       minW: '2.75rem',
