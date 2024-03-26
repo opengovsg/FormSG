@@ -38,7 +38,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
     isLoading,
     isFetching,
     modalHeader,
-    hasSingpass,
+    isSingpass,
   } = useCreateFormWizard()
   const {
     register,
@@ -90,7 +90,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
                     <FormResponseOptions
                       {...field}
                       showMrf={showMrf}
-                      hasSingpass={hasSingpass}
+                      isSingpass={isSingpass}
                     />
                   </WorkspaceRowsProvider>
                 )}
@@ -98,11 +98,10 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
               />
             </Skeleton>
             <FormErrorMessage>{errors.responseMode?.message}</FormErrorMessage>
-            {!hasSingpass || (
+            {isSingpass && (
               <InlineMessage mt="2rem">
-                {
-                  'The form you are trying to duplicate has Singpass authentication which is not supported for Multi-respondent forms.'
-                }
+                The form you are trying to duplicate has Singpass authentication
+                which is not supported for Multi-respondent forms.
               </InlineMessage>
             )}
           </FormControl>
