@@ -11,6 +11,7 @@ export interface FormResponseOptionsProps {
   onChange: (option: FormResponseMode) => void
   value: FormResponseMode
   showMrf: boolean
+  hasSingpass: boolean
 }
 
 const OptionDescription = ({ listItems = [] }: { listItems: string[] }) => {
@@ -30,7 +31,7 @@ const OptionDescription = ({ listItems = [] }: { listItems: string[] }) => {
 export const FormResponseOptions = forwardRef<
   FormResponseOptionsProps,
   'button'
->(({ value, onChange, showMrf }, ref) => {
+>(({ value, onChange, showMrf, hasSingpass }, ref) => {
   return (
     <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
       <Tile
@@ -86,6 +87,7 @@ export const FormResponseOptions = forwardRef<
           onClick={() => onChange(FormResponseMode.Multirespondent)}
           isFullWidth
           flex={1}
+          isDisabled={hasSingpass}
         >
           <Tile.Title>Multi-respondent form</Tile.Title>
           <Tile.Subtitle>

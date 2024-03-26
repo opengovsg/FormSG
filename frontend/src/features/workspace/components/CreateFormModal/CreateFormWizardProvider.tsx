@@ -114,6 +114,7 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     formMethods,
     handleDetailsSubmit,
     handleCreateStorageModeOrMultirespondentForm,
+    hasSingpass: false,
     modalHeader: 'Set up your form',
   }
 }

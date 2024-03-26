@@ -34,6 +34,7 @@ export type CreateFormWizardContextReturn = {
   isFetching: boolean
   isLoading: boolean
   modalHeader: string
+  hasSingpass: boolean
 }
 
 export const CreateFormWizardContext = createContext<

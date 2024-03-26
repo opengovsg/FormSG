@@ -31,6 +31,8 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
 
   const { reset, getValues } = formMethods
 
+  const hasSingpass = !!previewFormData?.spcpSession
+
   // Async set defaultValues onto modal inputs.
   useEffect(() => {
     if (
@@ -115,6 +117,7 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
     formMethods,
     handleDetailsSubmit,
     handleCreateStorageModeOrMultirespondentForm,
+    hasSingpass,
     modalHeader: 'Duplicate form',
   }
 }
