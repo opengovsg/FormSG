@@ -98,14 +98,12 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
               />
             </Skeleton>
             <FormErrorMessage>{errors.responseMode?.message}</FormErrorMessage>
-            {hasSingpass ? (
+            {!hasSingpass || (
               <InlineMessage mt="2rem">
                 {
                   'The form you are trying to duplicate has Singpass authentication which is not supported for Multi-respondent forms.'
                 }
               </InlineMessage>
-            ) : (
-              <></>
             )}
           </FormControl>
           {responseModeValue === FormResponseMode.Email && (
