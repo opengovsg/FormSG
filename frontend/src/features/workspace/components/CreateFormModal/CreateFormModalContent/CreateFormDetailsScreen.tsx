@@ -17,10 +17,12 @@ import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormFieldMessage from '~components/FormControl/FormFieldMessage'
 import FormLabel from '~components/FormControl/FormLabel'
+import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 
 import { useUser } from '~features/user/queries'
 
+import { WorkspaceRowsProvider } from '../../WorkspaceFormRow/WorkspaceRowsContext'
 import { useCreateFormWizard } from '../CreateFormWizardContext'
 
 import { EmailFormRecipientsInput } from './EmailFormRecipientsInput'
@@ -36,6 +38,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
     isLoading,
     isFetching,
     modalHeader,
+    isSingpass,
   } = useCreateFormWizard()
   const {
     register,
@@ -83,12 +86,24 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
                 name="responseMode"
                 control={control}
                 render={({ field }) => (
-                  <FormResponseOptions {...field} showMrf={showMrf} />
+                  <WorkspaceRowsProvider>
+                    <FormResponseOptions
+                      {...field}
+                      showMrf={showMrf}
+                      isSingpass={isSingpass}
+                    />
+                  </WorkspaceRowsProvider>
                 )}
                 rules={{ required: 'Please select a form response mode' }}
               />
             </Skeleton>
             <FormErrorMessage>{errors.responseMode?.message}</FormErrorMessage>
+            {isSingpass && (
+              <InlineMessage mt="2rem">
+                The form you are trying to duplicate has Singpass authentication
+                which is not supported for Multi-respondent forms.
+              </InlineMessage>
+            )}
           </FormControl>
           {responseModeValue === FormResponseMode.Email && (
             <FormControl isRequired isInvalid={!!errors.emails} mb="2.25rem">
