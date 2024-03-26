@@ -147,8 +147,10 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
 
   // email confirmation is not supported on MRF
   const isToggleEmailConfirmationDisabled = useMemo(
-    () => form?.responseMode === FormResponseMode.Multirespondent,
-    [form],
+    () =>
+      form?.responseMode === FormResponseMode.Multirespondent &&
+      !field.autoReplyOptions.hasAutoReply,
+    [field.autoReplyOptions.hasAutoReply, form?.responseMode],
   )
 
   return (
