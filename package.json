@@ -123,7 +123,7 @@
     "mongoose": "^6.12.0",
     "multiparty": ">=4.2.3",
     "nan": "^2.17.0",
-    "neverthrow": "^6.0.0",
+    "neverthrow": "^6.1.0",
     "nocache": "^3.0.4",
     "node-cache": "^5.1.2",
     "nodemailer": "^6.9.12",
