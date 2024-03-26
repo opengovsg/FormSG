@@ -104,7 +104,7 @@
     "html-entities": "^2.3.3",
     "html-escaper": "^3.0.3",
     "http-errors": "^2.0.0",
-    "http-status-codes": "^2.2.0",
+    "http-status-codes": "^2.3.0",
     "intl-tel-input": "~12.4.0",
     "ip": "^1.1.9",
     "jose": "^4.15.5",
