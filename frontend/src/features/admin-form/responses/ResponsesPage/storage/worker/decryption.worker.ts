@@ -138,7 +138,11 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
         }
       }
 
-      if (verifySignature(decryptedSubmission, submission.created)) {
+      if (
+        // Short-circuit signature verification for multirespondent submission
+        submission.submissionType === SubmissionType.Multirespondent ||
+        verifySignature(decryptedSubmission, submission.created)
+      ) {
         csvRecord.setStatus(CsvRecordStatus.Ok, 'Success')
         csvRecord.setRecord(decryptedSubmission)
       } else {

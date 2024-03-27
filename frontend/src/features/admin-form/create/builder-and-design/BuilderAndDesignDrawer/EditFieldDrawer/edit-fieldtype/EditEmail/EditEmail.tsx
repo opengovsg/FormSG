@@ -139,12 +139,6 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
     }
   }, [isPdfResponseEnabled])
 
-  // vfn is not supported on MRF
-  const isToggleVfnDisabled = useMemo(
-    () => form?.responseMode === FormResponseMode.Multirespondent,
-    [form],
-  )
-
   // email confirmation is not supported on MRF
   const isToggleEmailConfirmationDisabled = useMemo(
     () =>
@@ -172,7 +166,7 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
       <FormControl isReadOnly={isLoading}>
         <Toggle {...register('required')} label="Required" />
       </FormControl>
-      <FormControl isReadOnly={isLoading} isDisabled={isToggleVfnDisabled}>
+      <FormControl isReadOnly={isLoading}>
         <Toggle
           {...register('isVerifiable')}
           label="OTP verification"
