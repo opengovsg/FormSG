@@ -600,6 +600,13 @@ export const duplicateForm = (
     overrideProps.endPage = omit(originalForm.endPage, 'buttonLink')
   }
 
+  // if MRF, set submissionLimit = null
+  // this is because MRF does not support submission limit (i.e. response limit)
+
+  if (overrideProps.responseMode === FormResponseMode.Multirespondent) {
+    overrideProps.submissionLimit = null
+  }
+
   const duplicateParams = originalForm.getDuplicateParams(overrideProps)
 
   if (workspaceId)

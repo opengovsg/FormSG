@@ -30,6 +30,7 @@ export type OverrideProps = {
   responseMode: FormResponseMode
   emails?: string | string[]
   publicKey?: string
+  submissionLimit?: number | null
 }
 
 export type EditFormFieldResult = Result<FormFieldSchema[], EditFieldError>
