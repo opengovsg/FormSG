@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { Flex, Skeleton, Stack, Text, useDisclosure } from '@chakra-ui/react'
 
+import { BasicField } from '~shared/types'
 import {
   FormAuthType,
   FormResponseMode,
@@ -10,12 +11,15 @@ import {
 import InlineMessage from '~components/InlineMessage'
 import { Switch } from '~components/Toggle/Switch'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
+
 import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
 
 import { SecretKeyActivationModal } from './SecretKeyActivationModal'
 
 export const FormStatusToggle = (): JSX.Element => {
+  const { data: { form_fields } = {} } = useAdminForm()
   const { data: formSettings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
@@ -25,19 +29,32 @@ export const FormStatusToggle = (): JSX.Element => {
   const { onOpen: onOpenActivationModal } = secretKeyActivationModalProps
 
   const isFormPublic = useMemo(() => status === FormStatus.Public, [status])
-  const isPreventActivation = useMemo(
-    () =>
-      // Prevent switch from being activated if form has authType but no esrvcId.
-      // But only if form is not already public
-      // (so admin can toggle to private mode when that happens somehow).
-      status === FormStatus.Private &&
+  const preventActivationMessage: string | undefined = useMemo(() => {
+    // Only prevent switch from private -> public. If already public, never prevent toggling
+    if (status === FormStatus.Public) return
+
+    // Prevent form activation if form has authType but no esrvcId.
+    if (
       authType &&
       [FormAuthType.CP, FormAuthType.SP, FormAuthType.MyInfo].includes(
         authType,
       ) &&
-      !esrvcId,
-    [authType, esrvcId, status],
-  )
+      !esrvcId
+    ) {
+      return 'This form cannot be activated until a valid e-service ID is entered in the Singpass section.'
+    }
+
+    // For MRF, prevent form activation if form has an email confirmation field.
+    if (
+      formSettings?.responseMode === FormResponseMode.Multirespondent &&
+      form_fields?.some(
+        (ff) =>
+          ff.fieldType === BasicField.Email && ff.autoReplyOptions.hasAutoReply,
+      )
+    ) {
+      return 'Email confirmation is not supported in multi-respondent forms. Please remove email confirmations from email fields before activating your form.'
+    }
+  }, [authType, esrvcId, formSettings?.responseMode, form_fields, status])
 
   const { mutateFormStatus } = useMutateFormSettings()
 
@@ -85,7 +102,7 @@ export const FormStatusToggle = (): JSX.Element => {
             responses
           </Text>
           <Switch
-            isDisabled={isPreventActivation}
+            isDisabled={!!preventActivationMessage}
             aria-label="Toggle form status"
             aria-describedby="form-status"
             isLoading={mutateFormStatus.isLoading}
@@ -93,10 +110,9 @@ export const FormStatusToggle = (): JSX.Element => {
             onChange={handleToggleStatus}
           />
         </Flex>
-        {isPreventActivation ? (
+        {preventActivationMessage ? (
           <InlineMessage variant="warning">
-            This form cannot be activated until a valid e-service ID is entered
-            in the Singpass section
+            {preventActivationMessage}
           </InlineMessage>
         ) : null}
       </Stack>
