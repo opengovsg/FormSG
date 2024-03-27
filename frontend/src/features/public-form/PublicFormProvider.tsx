@@ -631,15 +631,19 @@ export const PublicFormProvider = ({
             previousSubmissionId
               ? updateMultirespondentSubmissionMutation
               : submitMultirespondentFormMutation
-          ).mutateAsync(formData, {
-            onSuccess: ({ submissionId, timestamp }) => {
-              trackSubmitForm(form)
-              setSubmissionData({
-                id: submissionId,
-                timestamp,
-              })
-            },
-          })
+          )
+            .mutateAsync(formData, {
+              onSuccess: ({ submissionId, timestamp }) => {
+                trackSubmitForm(form)
+                setSubmissionData({
+                  id: submissionId,
+                  timestamp,
+                })
+              },
+            })
+            .catch(async (error) => {
+              showErrorToast(error, form)
+            })
       }
     },
     [

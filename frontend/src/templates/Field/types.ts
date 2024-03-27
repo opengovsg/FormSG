@@ -61,7 +61,7 @@ export type FormFieldValues = Record<
   [PAYMENT_PRODUCT_FIELD_ID]?: Array<ProductItem>
 }
 
-export type AttachmentFieldInput = FieldInput<File>
+export type AttachmentFieldInput = FieldInput<File | null>
 export type CheckboxFieldInputs = FieldInput<CheckboxFieldValues>
 export type RadioFieldInputs = FieldInput<RadioFieldValues>
 export type TableFieldInputs = FieldInput<TableFieldValues>

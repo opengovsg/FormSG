@@ -8,11 +8,11 @@ import {
   FieldResponsesV3,
   FormDto,
   FormResponseMode,
+  ParsedClearAttachmentResponseV3,
   SubmissionType,
 } from '../../../../../shared/types'
 import { isFieldResponseV3Equal } from '../../../../../shared/utils/response-v3'
 import { isDev } from '../../../../app/config/config'
-import { ParsedClearAttachmentResponseV3 } from '../../../../types/api'
 import { MultirespondentFormLoadedDto } from '../../../../types/api/multirespondent_submission'
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -221,7 +221,6 @@ const devModeSyncVirusScanning = async (
 
 /**
  * Scan attachments on quarantine bucket and retrieve attachments from the clean bucket.
- * Note: Downloading of attachments from the clean bucket is not implemented yet. See Step 4.
  */
 export const scanAndRetrieveAttachments = async (
   req: MultirespondentSubmissionMiddlewareHandlerRequest,
@@ -296,6 +295,32 @@ export const scanAndRetrieveAttachments = async (
   return next()
 }
 
+/**
+ * What types of fields are there?
+ *                Visible                     Not visible
+ * Editable       Regular field validation    Not allowed
+ * Non-editable   Not allowed / prev submiss  Not allowed
+ *
+ * Initial submission:
+ * 1. Retrieve form object
+ * 2. Defined editable fields from workflow[0].edit.
+ *     a. If no workflow, all fields are editable.
+ * 3. Get visible fields by logic
+ * 4. CHECK: no logic block preventing submit
+ * 5. CHECK: response fields subset of visible fields
+ * 6. CHECK: response fields subset of editable fields
+ * 7. CHECK: for each field, validate by its rules
+ *
+ * Subsequent submissions:
+ * - Identical to initial except in step 6, check that any response fields that
+ * were non-editable were indeed not edited (i.e. equality with previous submission)
+ *
+ * - Attachment names will be replaced with the previousResponse filename
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 export const validateMultirespondentSubmission = async (
   req: ProcessedMultirespondentSubmissionHandlerRequest,
   res: Parameters<MultirespondentSubmissionMiddlewareHandlerType>[1],
@@ -309,26 +334,6 @@ export const validateMultirespondentSubmission = async (
     formId,
     ...createReqMeta(req),
   }
-  /**
-   * What types of fields are there?
-   *                Visible                     Not visible
-   * Editable       Regular field validation    Not allowed
-   * Non-editable   Not allowed / prev submiss  Not allowed
-   *
-   * Initial submission:
-   * 1. Retrieve form object
-   * 2. Defined editable fields from workflow[0].edit.
-   *     a. If no workflow, all fields are editable.
-   * 3. Get visible fields by logic
-   * 4. CHECK: no logic block preventing submit
-   * 5. CHECK: response fields subset of visible fields
-   * 6. CHECK: response fields subset of editable fields
-   * 7. CHECK: for each field, validate by its rules
-   *
-   * Subsequent submissions:
-   * Identical to initial except in step 6, check that any response fields that
-   * were non-editable were indeed not edited (i.e. equality with previous submission)
-   */
 
   return (
     // Step 0: Prepare by retrieving relevant reference data
@@ -446,18 +451,40 @@ export const validateMultirespondentSubmission = async (
                   previousSubmissionDecryptedContent.responses as FieldResponsesV3
 
                 return Result.combine(
-                  nonEditableFieldIdsWithResponses.map((fieldId) =>
-                    isFieldResponseV3Equal(
-                      req.body.responses[fieldId],
-                      previousResponses[fieldId],
+                  nonEditableFieldIdsWithResponses.map((fieldId) => {
+                    const incomingResField = req.body.responses[fieldId]
+                    const prevResField = previousResponses[fieldId]
+
+                    const resp = isFieldResponseV3Equal(
+                      incomingResField,
+                      prevResField,
                     )
-                      ? ok(undefined)
-                      : err(
-                          new ProcessingError(
-                            'Submitted response on a non-editable field which did not match previous response',
-                          ),
+
+                    if (!resp) {
+                      return err(
+                        new ProcessingError(
+                          'Submitted response on a non-editable field which did not match previous response',
                         ),
-                  ),
+                      )
+                    }
+
+                    /**
+                     * Files are verified to have the same md5 hash, so we can safely assume that the files are the same.
+                     * We should also ignore attachment names from submissions as handleDuplicatesInAttachments may rename files
+                     */
+                    if (
+                      incomingResField.fieldType === BasicField.Attachment &&
+                      prevResField.fieldType === BasicField.Attachment
+                    ) {
+                      incomingResField.answer.answer =
+                        prevResField.answer.answer
+
+                      incomingResField.answer.filename =
+                        prevResField.answer.answer
+                    }
+
+                    return ok(undefined)
+                  }),
                 ).map(() => undefined)
               })
               .andThen(() =>

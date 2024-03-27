@@ -1,6 +1,5 @@
-import { ParsedClearFormFieldResponsesV3 } from 'src/types/api'
-
 import {
+  ParsedClearFormFieldResponsesV3,
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../../shared/types'

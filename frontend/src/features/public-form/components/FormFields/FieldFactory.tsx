@@ -1,7 +1,7 @@
 import { memo } from 'react'
 
 import { BasicField } from '~shared/types/field'
-import { FormColorTheme } from '~shared/types/form'
+import { FormColorTheme, FormResponseMode } from '~shared/types/form'
 
 import {
   AttachmentField,
@@ -50,7 +50,7 @@ interface FieldFactoryProps {
 
 export const FieldFactory = memo(
   ({ field, ...rest }: FieldFactoryProps) => {
-    const { myInfoChildrenBirthRecords } = usePublicFormContext()
+    const { myInfoChildrenBirthRecords, form } = usePublicFormContext()
     switch (field.fieldType) {
       case BasicField.Section:
         return <SectionField schema={field} {...rest} />
@@ -78,8 +78,17 @@ export const FieldFactory = memo(
         return <DateField schema={field} {...rest} />
       case BasicField.Uen:
         return <UenField schema={field} {...rest} />
-      case BasicField.Attachment:
-        return <AttachmentField schema={field} {...rest} />
+      case BasicField.Attachment: {
+        const enableDownload =
+          form?.responseMode === FormResponseMode.Multirespondent
+        return (
+          <AttachmentField
+            schema={field}
+            {...rest}
+            enableDownload={enableDownload}
+          />
+        )
+      }
       case BasicField.HomeNo:
         return <HomeNoField schema={field} {...rest} />
       case BasicField.Mobile: {

@@ -20,6 +20,7 @@ import { AttachmentFieldInput, AttachmentFieldSchema } from '../types'
 export interface AttachmentFieldProps extends BaseFieldProps {
   schema: AttachmentFieldSchema
   disableRequiredValidation?: boolean
+  enableDownload?: boolean
 }
 
 /**
@@ -28,6 +29,7 @@ export interface AttachmentFieldProps extends BaseFieldProps {
 export const AttachmentField = ({
   schema,
   disableRequiredValidation,
+  enableDownload,
   colorTheme = FormColorTheme.Blue,
 }: AttachmentFieldProps): JSX.Element => {
   const fieldName = schema._id
@@ -52,11 +54,14 @@ export const AttachmentField = ({
 
   const handleFileChange = useCallback(
     (onChange: ControllerRenderProps['onChange']) =>
-      async (file: File | undefined) => {
+      async (file: File | null) => {
+        if (schema.disabled) {
+          return
+        }
         clearErrors(fieldName)
         // Case where attachment is cleared.
         if (!file) {
-          onChange(undefined)
+          onChange(null)
           return
         }
         // Clone file due to bug where attached file may be empty or corrupted if the
@@ -70,6 +75,15 @@ export const AttachmentField = ({
         try {
           const buffer = await fileArrayBuffer(file)
           const clone = new File([buffer], file.name, { type: file.type })
+
+          /**
+           * Set a custom field to force attachment field to remain dirty.
+           * React Hook Form is unable to evaluate dirtiness file when comparing File objects https://react-hook-form.com/docs/useformstate#return
+           * React Hook Form has a custom deepEqual comparator function that checks for key values on the object https://github.com/react-hook-form/react-hook-form/blob/v7.51.1/src/utils/deepEqual.ts
+           * By introducing a new `__dirtyField` property, so we can set force the evaluation deepEqual to be false, thus remaining dirty.
+           * */
+          // @ts-expect-error __dirtyField is not a standard property of File.
+          clone.__dirtyField = 1
           return onChange(clone)
         } catch (error) {
           setErrorMessage(
@@ -84,7 +98,7 @@ export const AttachmentField = ({
           return onChange(undefined) // Clear attachment and return
         }
       },
-    [clearErrors, fieldName, setErrorMessage],
+    [clearErrors, fieldName, setErrorMessage, schema.disabled],
   )
 
   return (
@@ -101,6 +115,8 @@ export const AttachmentField = ({
             onChange={handleFileChange(onChange)}
             onError={setErrorMessage}
             title={`${schema.questionNumber}. ${schema.title}`}
+            enableDownload={enableDownload}
+            enableRemove={!schema.disabled}
           />
         )}
         name={fieldName}

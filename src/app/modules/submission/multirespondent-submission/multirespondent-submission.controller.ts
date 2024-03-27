@@ -384,26 +384,25 @@ const updateMultirespondentSubmission = async (
   } = encryptedPayload
 
   // Save Responses to Database
-  // TODO(MRF/FRM-1590): Handle attachments for respondent 2+
-  // let attachmentMetadata = new Map<string, string>()
+  let attachmentMetadata = new Map<string, string>()
 
-  // if (encryptedPayload.attachments) {
-  //   const attachmentUploadResult = await uploadAttachments(
-  //     form._id,
-  //     encryptedPayload.attachments,
-  //   )
+  if (encryptedPayload.attachments) {
+    const attachmentUploadResult = await uploadAttachments(
+      form._id,
+      encryptedPayload.attachments,
+    )
 
-  //   if (attachmentUploadResult.isErr()) {
-  //     const { statusCode, errorMessage } = mapRouteError(
-  //       attachmentUploadResult.error,
-  //     )
-  //     return res.status(statusCode).json({
-  //       message: errorMessage,
-  //     })
-  //   } else {
-  //     attachmentMetadata = attachmentUploadResult.value
-  //   }
-  // }
+    if (attachmentUploadResult.isErr()) {
+      const { statusCode, errorMessage } = mapRouteError(
+        attachmentUploadResult.error,
+      )
+      return res.status(statusCode).json({
+        message: errorMessage,
+      })
+    } else {
+      attachmentMetadata = attachmentUploadResult.value
+    }
+  }
 
   const submission = await MultirespondentSubmission.findById(submissionId)
   if (!submission) {
@@ -418,7 +417,7 @@ const updateMultirespondentSubmission = async (
   submission.encryptedContent = encryptedContent
   submission.version = version
   submission.workflowStep = workflowStep
-  // submission.attachmentMetadata = attachmentMetadata
+  submission.attachmentMetadata = attachmentMetadata
 
   try {
     await submission.save()

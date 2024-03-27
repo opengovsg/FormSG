@@ -21,6 +21,8 @@ import {
   FormField,
   FormResponseMode,
   MyInfoAttribute,
+  ParsedClearAttachmentResponseV3,
+  ParsedClearFormFieldResponseV3,
   SubmissionAttachment,
   SubmissionAttachmentsMap,
 } from '../../../../shared/types'
@@ -39,9 +41,7 @@ import {
 } from '../../../types'
 import {
   ParsedClearAttachmentResponse,
-  ParsedClearAttachmentResponseV3,
   ParsedClearFormFieldResponse,
-  ParsedClearFormFieldResponseV3,
 } from '../../../types/api'
 import { MapRouteError } from '../../../types/routing'
 import formsgSdk from '../../config/formsg-sdk'
