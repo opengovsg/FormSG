@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useRef } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Draggable } from 'react-beautiful-dnd'
 import { FormProvider, useForm } from 'react-hook-form'
 import { BiCog, BiDuplicate, BiGridHorizontal, BiTrash } from 'react-icons/bi'
@@ -191,13 +191,10 @@ const FieldRowContainer = ({
   )
 
   const isDragDisabled = useMemo(() => {
-    return (
-      !isActive ||
-      isDirty ||
-      !!numFormFieldMutations ||
-      fieldBuilderState === FieldBuilderState.CreatingField
-    )
-  }, [isActive, isDirty, numFormFieldMutations, fieldBuilderState])
+    return !!numFormFieldMutations
+  }, [numFormFieldMutations])
+
+  const [isHover, setIsHover] = useState(false)
 
   return (
     <Draggable
@@ -248,42 +245,55 @@ const FieldRowContainer = ({
               onClick={handleFieldClick}
               onKeyDown={handleKeydown}
               ref={ref}
+              onMouseEnter={() => setIsHover(true)}
+              onMouseLeave={() => setIsHover(false)}
             >
-              <Fade in={isActive}>
-                <chakra.button
-                  disabled={isDragDisabled}
-                  display="flex"
-                  tabIndex={isActive ? 0 : -1}
-                  {...provided.dragHandleProps}
-                  borderRadius="4px"
-                  _disabled={{
-                    cursor: 'not-allowed',
-                    opacity: 0.4,
-                  }}
-                  _focus={{
-                    boxShadow: snapshot.isDragging
-                      ? undefined
-                      : '0 0 0 2px var(--chakra-colors-neutral-500)',
-                  }}
-                  transition="color 0.2s ease"
-                  _hover={{
-                    color: 'secondary.300',
-                    _disabled: {
-                      color: 'secondary.200',
-                    },
-                  }}
-                  color={
-                    snapshot.isDragging ? 'secondary.300' : 'secondary.200'
-                  }
-                >
-                  {fieldBuilderState === FieldBuilderState.EditingField &&
-                  !isDragDisabled ? (
-                    <Icon as={BiGridHorizontal} fontSize="1.5rem" />
-                  ) : (
-                    <Box h="1.5rem"></Box>
-                  )}
-                </chakra.button>
-              </Fade>
+              <Tooltip
+                openDelay={200}
+                label={isDragDisabled && 'Save changes before reordering'}
+                placement="top"
+                fontSize={'xs'}
+                hasArrow={false}
+              >
+                <Box width="100%">
+                  <Fade in={isHover}>
+                    <chakra.button
+                      width="100%"
+                      disabled={isDragDisabled}
+                      display="flex"
+                      justifyContent="center"
+                      tabIndex={isActive ? 0 : -1}
+                      {...provided.dragHandleProps}
+                      borderRadius="4px"
+                      _disabled={{
+                        cursor: 'not-allowed',
+                        opacity: 0.4,
+                      }}
+                      _focus={{
+                        boxShadow: snapshot.isDragging
+                          ? undefined
+                          : '0 0 0 2px var(--chakra-colors-neutral-500)',
+                      }}
+                      transition="color 0.2s ease"
+                      _hover={{
+                        color: 'secondary.300',
+                        _disabled: {
+                          color: 'secondary.200',
+                        },
+                      }}
+                      color={
+                        snapshot.isDragging ? 'secondary.300' : 'secondary.200'
+                      }
+                    >
+                      {!isDragDisabled ? (
+                        <Icon as={BiGridHorizontal} fontSize="1.5rem" />
+                      ) : (
+                        <Box h="1.5rem"></Box>
+                      )}
+                    </chakra.button>
+                  </Fade>
+                </Box>
+              </Tooltip>
               <Box
                 px={{ base: '0.75rem', md: '1.5rem' }}
                 pb={{ base: '0.75rem', md: '1.5rem' }}
