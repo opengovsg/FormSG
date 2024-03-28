@@ -18,6 +18,7 @@ export const innerContainerStyle: ContainerProps['style'] = {
 }
 
 export const headingStyle: HeadingProps['style'] = {
+  display: 'flex',
   color: '#1b1f2c',
   fontFamily:
     "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
@@ -26,20 +27,30 @@ export const headingStyle: HeadingProps['style'] = {
 }
 
 export const textStyle: TextProps['style'] = {
+  display: 'flex',
   color: '#474747',
   fontFamily:
     "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
   fontSize: '16px',
-  lineHeight: '20px',
 }
 
+/** Button style to be attached to the outer <a> tag of a button. */
 export const buttonStyle: ButtonProps['style'] = {
   display: 'flex',
   justifyContent: 'center',
   borderRadius: '4px',
-  width: '100%',
   backgroundColor: '#445fcd',
-  padding: '8px',
+  padding: '24px',
+  textDecoration: 'none',
+}
+
+/** Inner text style to be attached to the inner <div> tag of a button. */
+export const innerButtonTextStyle: ContainerProps['style'] = {
+  ...textStyle,
+  display: 'inline-block',
+  width: '100%',
+  textAlign: 'center',
+  color: '#ffffff',
 }
 
 export const linkStyle: LinkProps['style'] = {

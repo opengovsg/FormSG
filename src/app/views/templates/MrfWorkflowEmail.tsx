@@ -15,6 +15,7 @@ import { FORMSG_LOGO_URL } from '../../constants/formsg-logo'
 import {
   buttonStyle,
   headingStyle,
+  innerButtonTextStyle,
   innerContainerStyle,
   linkStyle,
   outerContainerStyle,
@@ -56,11 +57,9 @@ export const MrfWorkflowEmail = ({
               {responseId}
             </Text>
           </Container>
-          <Button href={responseUrl} style={buttonStyle}>
-            <Text style={{ ...textStyle, color: '#ffffff' }}>
-              Review and complete
-            </Text>
-          </Button>
+          <a href={responseUrl} style={buttonStyle}>
+            <div style={innerButtonTextStyle}>Review and complete</div>
+          </a>
           <Hr style={{ margin: '36px 0' }} />
           <Text style={{ ...textStyle, fontSize: '14px' }}>
             If you are having trouble with the button above, copy and paste the
