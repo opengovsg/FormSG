@@ -144,7 +144,7 @@ export const InactiveStepBlock = ({
           </Stack>
 
           <Stack>
-            <Text textStyle="subhead-3">Questions to fill</Text>
+            <Text textStyle="subhead-3">Fields to fill</Text>
             <Stack direction="column" spacing="0.25rem">
               {questionBadges}
             </Stack>
