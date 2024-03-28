@@ -315,8 +315,9 @@ const runMultirespondentWorkflow = ({
       .asyncAndThen((emails) => {
         if (!emails) return okAsync(true)
         return MailService.sendMRFWorkflowStepEmail({
-          formTitle,
           emails,
+          formTitle,
+          responseId: submissionId,
           responseUrl,
         }).orElse((error) => {
           logger.error({
