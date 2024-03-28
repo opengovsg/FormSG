@@ -349,6 +349,7 @@ export const processDuplicateOverrideProps = (
     case FormResponseMode.Encrypt:
     case FormResponseMode.Multirespondent:
       overrideProps.publicKey = params.publicKey
+      overrideProps.submissionLimit = null
       break
     case FormResponseMode.Email:
       overrideProps.emails = params.emails
