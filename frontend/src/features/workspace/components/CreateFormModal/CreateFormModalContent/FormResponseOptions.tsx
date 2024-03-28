@@ -90,12 +90,13 @@ export const FormResponseOptions = forwardRef<
         >
           <Tile.Title>Multi-respondent form</Tile.Title>
           <Tile.Subtitle>
-            Create a workflow to collect responses from multiple respondents
+            Create a workflow to collect responses from multiple respondents in
+            the same form submission
           </Tile.Subtitle>
           <OptionDescription
             listItems={[
               'Route form to respondents according to a sequence',
-              'Specify up to two respondents to route form to for filling',
+              'Assign fields and specify respondents to route form to for filling',
             ]}
           />
         </Tile>
