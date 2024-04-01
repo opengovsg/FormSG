@@ -1,13 +1,13 @@
 import {
-  ParsedClearFormFieldResponsesV3,
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../../shared/types'
 import {
   MultirespondentFormCompleteDto,
   MultirespondentFormLoadedDto,
+  ParsedClearFormFieldResponsesV3,
   ParsedMultirespondentSubmissionBody,
-} from '../../../../types/api/multirespondent_submission'
+} from '../../../../types/api'
 import { ControllerHandler } from '../../core/core.types'
 
 export type CreateFormsgAndRetrieveFormMiddlewareHandlerType =

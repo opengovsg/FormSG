@@ -5,12 +5,12 @@ import {
   BasicField,
   FieldResponse,
   FieldResponsesV3,
-  ParsedClearFormFieldResponseV3,
 } from '../../../../../shared/types'
 import { IAttachmentInfo, MapRouteError } from '../../../../types'
 import {
   ParsedClearAttachmentResponse,
   ParsedClearFormFieldResponse,
+  ParsedClearFormFieldResponseV3,
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 
