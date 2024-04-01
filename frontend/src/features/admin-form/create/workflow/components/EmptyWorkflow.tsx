@@ -29,7 +29,7 @@ export const EmptyWorkflow = (): JSX.Element => {
       </Text>
       <Text textStyle="body-1" mt="1rem">
         Assign respondents to specific steps, and control which fields they can
-        fill. Learn how to create a workflow.{' '}
+        fill.{' '}
         <Link isExternal href={GUIDE_FORM_MRF}>
           Learn how to create a workflow
         </Link>
