@@ -1,11 +1,12 @@
 import crypto from 'crypto'
 import _ from 'lodash'
+
 import {
   BasicField,
   FieldResponseV3,
-  ParsedClearAttachmentResponseV3,
   HydratedClearAttachmentResponseV3,
-} from '../types'
+  ParsedClearAttachmentResponseV3,
+} from '../../../shared/types'
 
 export const isFieldResponseV3Equal = (
   l: FieldResponseV3,

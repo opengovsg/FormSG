@@ -11,7 +11,6 @@ import {
   ParsedClearAttachmentResponseV3,
   SubmissionType,
 } from '../../../../../shared/types'
-import { isFieldResponseV3Equal } from '../../../../../shared/utils/response-v3'
 import { isDev } from '../../../../app/config/config'
 import { MultirespondentFormLoadedDto } from '../../../../types/api/multirespondent_submission'
 import formsgSdk from '../../../config/formsg-sdk'
@@ -21,6 +20,7 @@ import {
   getVisibleFieldIdsV3,
 } from '../../../utils/logic-adaptor'
 import { createReqMeta } from '../../../utils/request'
+import { isFieldResponseV3Equal } from '../../../utils/response-v3'
 import * as FeatureFlagService from '../../feature-flags/feature-flags.service'
 import { assertFormAvailable } from '../../form/admin-form/admin-form.utils'
 import * as FormService from '../../form/form.service'
