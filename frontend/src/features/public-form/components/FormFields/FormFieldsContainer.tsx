@@ -1,37 +1,27 @@
 import { useMemo } from 'react'
-import { useSearchParams } from 'react-router-dom'
 import { Box } from '@chakra-ui/react'
 
 import { FormAuthType, FormResponseMode } from '~shared/types'
 
-import { isKeypairValid } from '~utils/secretKeyValidation'
-
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
-import { decryptSubmission } from '~features/public-form/utils/decryptSubmission'
 
 import { FormAuth } from '../FormAuth'
 
 import { FormFields } from './FormFields'
 import { FormFieldsSkeleton } from './FormFieldsSkeleton'
-import { SecretKeyVerification } from './SecretKeyVerification'
 
 export const FormFieldsContainer = (): JSX.Element | null => {
   const {
     form,
-    previousSubmissionId,
     isAuthRequired,
     isLoading,
     handleSubmitForm,
     submissionData,
     encryptedPreviousSubmission,
     previousSubmission,
-    setPreviousSubmission,
   } = usePublicFormContext()
 
-  const { submissionPublicKey = null, workflowStep } =
-    encryptedPreviousSubmission ?? {}
-  const [searchParams] = useSearchParams()
-  const queryParams = Object.fromEntries([...searchParams])
+  const { workflowStep } = encryptedPreviousSubmission ?? {}
 
   const renderFields = useMemo(() => {
     // Render skeleton when no data
@@ -47,48 +37,6 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     // Redundant conditional for type narrowing
     if (isAuthRequired && form.authType !== FormAuthType.NIL) {
       return <FormAuth authType={form.authType} />
-    }
-
-    // MRF
-    if (previousSubmissionId && !previousSubmission) {
-      let submissionSecretKey = ''
-      try {
-        submissionSecretKey = queryParams.key
-          ? decodeURIComponent(queryParams.key || '')
-          : ''
-      } catch (e) {
-        console.log(e)
-      }
-
-      const isValid = isKeypairValid(
-        submissionPublicKey || '',
-        submissionSecretKey,
-      )
-
-      if (isValid) {
-        setPreviousSubmission(
-          decryptSubmission({
-            submission: encryptedPreviousSubmission,
-            secretKey: submissionSecretKey,
-          }),
-        )
-      }
-
-      return (
-        <SecretKeyVerification
-          publicKey={submissionPublicKey}
-          setSecretKey={(secretKey) =>
-            setPreviousSubmission(
-              decryptSubmission({
-                submission: encryptedPreviousSubmission,
-                secretKey,
-              }),
-            )
-          }
-          isLoading={isLoading}
-          prefillSecretKey={submissionSecretKey}
-        />
-      )
     }
 
     return (
@@ -113,14 +61,9 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     isLoading,
     form,
     isAuthRequired,
-    previousSubmissionId,
     previousSubmission,
     workflowStep,
     handleSubmitForm,
-    submissionPublicKey,
-    queryParams.key,
-    setPreviousSubmission,
-    encryptedPreviousSubmission,
   ])
 
   if (submissionData) return null

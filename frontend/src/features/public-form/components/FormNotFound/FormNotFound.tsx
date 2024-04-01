@@ -5,10 +5,14 @@ import { FormFooter } from '../FormFooter'
 import { FormNotFoundSvgr } from './FormNotFoundSvgr'
 
 interface FormNotFoundProps {
+  header?: string
   message?: string
 }
 
-export const FormNotFound = ({ message }: FormNotFoundProps): JSX.Element => {
+export const FormNotFound = ({
+  header = 'This form is not available.',
+  message,
+}: FormNotFoundProps): JSX.Element => {
   return (
     <Flex flex={1} flexDir="column" h="100%">
       <Flex
@@ -35,7 +39,7 @@ export const FormNotFound = ({ message }: FormNotFoundProps): JSX.Element => {
           textAlign="center"
         >
           <Text as="h2" textStyle="h2">
-            This form is not available.
+            {header}
           </Text>
           <Text textStyle="body-1">{message}</Text>
         </Stack>
