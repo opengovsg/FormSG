@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo } from 'react'
+import { memo, ReactNode, useCallback, useMemo } from 'react'
 import { BiDownload } from 'react-icons/bi'
 import { useParams } from 'react-router-dom'
 import {
@@ -52,12 +52,12 @@ const LoadingDecryption = memo(() => {
 
 const StackRow = ({
   label,
-  value,
+  children,
   isLoading,
   isError,
 }: {
   label: string
-  value: string
+  children: string | ReactNode
   isLoading: boolean
   isError: boolean
 }) => {
@@ -65,11 +65,16 @@ const StackRow = ({
     <Stack
       spacing={{ base: '0', md: '0.5rem' }}
       direction={{ base: 'column', md: 'row' }}
+      alignItems="center"
     >
-      <Text as="span" textStyle="subhead-1" whiteSpace="nowrap">
-        {label}:
-      </Text>
-      <Skeleton isLoaded={!isLoading && !isError}>{value}</Skeleton>
+      <Box minW="8rem">
+        <Text as="span" textStyle="subhead-1" whiteSpace="nowrap">
+          {label}:
+        </Text>
+      </Box>
+      <Skeleton isLoaded={!isLoading && !isError}>
+        <Box>{children}</Box>
+      </Skeleton>
     </Stack>
   )
 }
@@ -135,32 +140,21 @@ export const IndividualResponsePage = (): JSX.Element => {
         spacing={{ base: '1.5rem', md: '2.5rem' }}
       >
         <Stack bg="primary.100" p="1.5rem" textStyle="monospace">
-          <StackRow
-            label="Response ID"
-            value={submissionId}
-            isLoading={isLoading}
-            isError={isError}
-          />
-          <StackRow
-            label="Timestamp"
-            value={data?.submissionTime ?? 'Loading...'}
-            isLoading={isLoading}
-            isError={isError}
-          />
+          <StackRow label="Response ID" isLoading={isLoading} isError={isError}>
+            {submissionId}
+          </StackRow>
+          <StackRow label="Timestamp" isLoading={isLoading} isError={isError}>
+            {data?.submissionTime ?? 'Loading...'}
+          </StackRow>
           {attachmentDownloadUrls.size > 0 && (
-            <Stack
-              spacing={{ base: '0', md: '0.5rem' }}
-              direction={{ base: 'column', md: 'row' }}
-            >
-              <Text
-                as="span"
-                textStyle="subhead-1"
-                py={{ base: '0', md: '0.25rem' }}
+            <>
+              <StackRow
+                label="Attachments"
+                isLoading={isLoading}
+                isError={isError}
               >
-                Attachments:
-              </Text>
-              <Skeleton isLoaded={!isLoading && !isError}>
                 <Button
+                  pl="0"
                   variant="link"
                   isDisabled={downloadAttachmentsAsZipMutation.isLoading}
                   onClick={handleDownload}
@@ -174,16 +168,17 @@ export const IndividualResponsePage = (): JSX.Element => {
                 >
                   {simplur`Download ${attachmentDownloadUrls.size} attachment[|s] as .zip`}
                 </Button>
-              </Skeleton>
-            </Stack>
+              </StackRow>
+            </>
           )}
           {form?.responseMode === FormResponseMode.Multirespondent && (
             <StackRow
               label="Response link"
-              value={responseLinkWithKey}
               isLoading={isLoading}
               isError={isError}
-            />
+            >
+              {responseLinkWithKey}
+            </StackRow>
           )}
         </Stack>
         {isLoading || isError ? (
