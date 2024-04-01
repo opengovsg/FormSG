@@ -42,6 +42,7 @@ describe('Multirespondent Submission Model', () => {
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
           version: 3,
           created: createdDate,
+          lastModified: createdDate,
           workflowStep: 0,
         })
 
@@ -105,8 +106,13 @@ describe('Multirespondent Submission Model', () => {
       const VALID_FORM_ID = new ObjectId().toHexString()
       const MOCK_CREATED_DATES_ASC = [
         new Date('2020-01-01'),
+        new Date('2020-01-02'),
+        new Date('2020-01-03'),
+      ]
+      const MOCK_MODIFIED_DATES_ASC = [
+        new Date('2020-02-01'),
         new Date('2020-02-02'),
-        new Date('2020-03-03'),
+        new Date('2020-02-03'),
       ]
 
       it('should return all metadata and count successfully when params are not provided', async () => {
@@ -125,6 +131,7 @@ describe('Multirespondent Submission Model', () => {
             version: 3,
             created: MOCK_CREATED_DATES_ASC[idx],
             workflowStep: 0,
+            lastModified: MOCK_MODIFIED_DATES_ASC[idx],
           }),
         )
         const validSubmissions: IMultirespondentSubmissionSchema[] =
@@ -144,7 +151,7 @@ describe('Multirespondent Submission Model', () => {
               number: idx + 1,
               payments: null,
               refNo: data._id,
-              submissionTime: moment(data.created)
+              submissionTime: moment(data.lastModified)
                 .tz('Asia/Singapore')
                 .format('Do MMM YYYY, h:mm:ss a'),
             }))
@@ -169,6 +176,7 @@ describe('Multirespondent Submission Model', () => {
             version: 3,
             created: MOCK_CREATED_DATES_ASC[idx],
             workflowStep: 0,
+            lastModified: MOCK_MODIFIED_DATES_ASC[idx],
           }),
         )
         const validSubmissions: IMultirespondentSubmissionSchema[] =
@@ -192,7 +200,7 @@ describe('Multirespondent Submission Model', () => {
               number: 2,
               payments: null,
               refNo: secondSubmission._id,
-              submissionTime: moment(secondSubmission.created)
+              submissionTime: moment(secondSubmission.lastModified)
                 .tz('Asia/Singapore')
                 .format('Do MMM YYYY, h:mm:ss a'),
             },
@@ -217,6 +225,7 @@ describe('Multirespondent Submission Model', () => {
             version: 3,
             created: MOCK_CREATED_DATES_ASC[idx],
             workflowStep: 0,
+            lastModified: MOCK_MODIFIED_DATES_ASC[idx],
           }),
         )
         const validSubmissions: IMultirespondentSubmissionSchema[] =
@@ -240,7 +249,7 @@ describe('Multirespondent Submission Model', () => {
               number: 3,
               payments: null,
               refNo: latestSubmission._id,
-              submissionTime: moment(latestSubmission.created)
+              submissionTime: moment(latestSubmission.lastModified)
                 .tz('Asia/Singapore')
                 .format('Do MMM YYYY, h:mm:ss a'),
             },
@@ -265,6 +274,7 @@ describe('Multirespondent Submission Model', () => {
             version: 1,
             created: MOCK_CREATED_DATES_ASC[idx],
             workflowStep: 0,
+            lastModified: MOCK_MODIFIED_DATES_ASC[idx],
           }),
         )
         const validSubmissions: IMultirespondentSubmissionSchema[] =
@@ -333,6 +343,7 @@ describe('Multirespondent Submission Model', () => {
           'encryptedContent',
           'submissionType',
           'version',
+          'lastModified',
         )
         // Native-ify arrays as mongoose documents contain a mongoose-specific array type.
         expectedSubmission.form_fields = JSON.parse(
@@ -418,6 +429,7 @@ describe('Multirespondent Submission Model', () => {
           'submissionType',
           'version',
           'workflowStep',
+          'lastModified',
         )
         expect(actual).not.toBeNull()
         expect(actual?.toJSON()).toEqual(expected)

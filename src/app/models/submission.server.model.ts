@@ -615,6 +615,7 @@ MultirespondentSubmissionSchema.statics.getSubmissionCursorByFormId = function (
         created: 1,
         version: 1,
         id: 1,
+        lastModified: 1,
       })
       .batchSize(2000)
       .read('secondary')

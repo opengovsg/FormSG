@@ -118,6 +118,7 @@ export type MultirespondentSubmissionCursorData = Pick<
   | 'created'
   | 'id'
   | 'version'
+  | 'lastModified'
 > & { attachmentMetadata?: Record<string, string> } & Document
 
 export type SubmissionCursorData =
