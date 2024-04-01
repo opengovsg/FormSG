@@ -23,7 +23,7 @@ export const createMultirespondentSubmissionDto = (
   return {
     submissionType: SubmissionType.Multirespondent,
     refNo: submissionData._id,
-    submissionTime: moment(submissionData.created)
+    submissionTime: moment(submissionData.lastModified)
       .tz('Asia/Singapore')
       .format('ddd, D MMM YYYY, hh:mm:ss A'),
 

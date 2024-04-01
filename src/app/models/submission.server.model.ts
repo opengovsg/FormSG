@@ -318,7 +318,7 @@ EncryptSubmissionSchema.statics.findSingleMetadata = function (
     const paymentMeta = result.payments?.[0]
 
     // Build submissionMetadata object.
-    const metadata = buildSubmissionMetadata(result, 1, paymentMeta)
+    const metadata = buildSubmissionMetadata(result, 1, { paymentMeta })
 
     return metadata
   })
@@ -328,7 +328,10 @@ EncryptSubmissionSchema.statics.findSingleMetadata = function (
  * Unexported as the type is only used in {@see findAllMetadataByFormId} for
  * now.
  */
-type MetadataAggregateResult = Pick<ISubmissionSchema, '_id' | 'created'> & {
+type MetadataAggregateResult = Pick<
+  ISubmissionSchema,
+  '_id' | 'created' | 'lastModified'
+> & {
   payments?: PaymentAggregates[]
 }
 type PaymentAggregates = Pick<
@@ -387,11 +390,9 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
 
     const metadata = results.map((result) => {
       const paymentMeta = result.payments?.[0]
-      const metadataEntry = buildSubmissionMetadata(
-        result,
-        currentNumber,
+      const metadataEntry = buildSubmissionMetadata(result, currentNumber, {
         paymentMeta,
-      )
+      })
 
       currentNumber--
       return metadataEntry
@@ -523,7 +524,9 @@ MultirespondentSubmissionSchema.statics.findSingleMetadata = function (
     const result = results[0]
 
     // Build submissionMetadata object.
-    const metadata = buildSubmissionMetadata(result, 1)
+    const metadata = buildSubmissionMetadata(result, 1, {
+      lastModifiedAsSubmissionTime: true,
+    })
 
     return metadata
   })
@@ -553,6 +556,7 @@ MultirespondentSubmissionSchema.statics.findAllMetadataByFormId = function (
       $project: {
         _id: 1,
         created: 1,
+        lastModified: 1,
       },
     },
   ]).exec()
@@ -568,11 +572,10 @@ MultirespondentSubmissionSchema.statics.findAllMetadataByFormId = function (
 
     const metadata = results.map((result) => {
       const paymentMeta = result.payments?.[0]
-      const metadataEntry = buildSubmissionMetadata(
-        result,
-        currentNumber,
+      const metadataEntry = buildSubmissionMetadata(result, currentNumber, {
         paymentMeta,
-      )
+        lastModifiedAsSubmissionTime: true,
+      })
 
       currentNumber--
       return metadataEntry
@@ -645,6 +648,7 @@ MultirespondentSubmissionSchema.statics.findEncryptedSubmissionById = function (
       created: 1,
       version: 1,
       workflowStep: 1,
+      lastModified: 1,
     })
     .exec()
 }
@@ -705,12 +709,18 @@ export const getMultirespondentSubmissionModel = (
 const buildSubmissionMetadata = (
   result: MetadataAggregateResult,
   currentNumber: number,
-  paymentMeta?: PaymentAggregates,
+  options?: {
+    paymentMeta?: PaymentAggregates
+    lastModifiedAsSubmissionTime?: boolean
+  },
 ): SubmissionMetadata => {
+  const { lastModifiedAsSubmissionTime = false, paymentMeta } = options || {}
   return {
     number: currentNumber,
     refNo: result._id,
-    submissionTime: moment(result.created)
+    submissionTime: moment(
+      lastModifiedAsSubmissionTime ? result.lastModified : result.created,
+    )
       .tz('Asia/Singapore')
       .format('Do MMM YYYY, h:mm:ss a'),
     payments: paymentMeta

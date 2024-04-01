@@ -56,6 +56,7 @@ export interface ISubmissionSchema extends SubmissionBase, Document {
   paymentId: any
 
   created?: Date
+  lastModified?: Date
 }
 
 export type IPendingSubmissionSchema = ISubmissionSchema
@@ -148,6 +149,7 @@ export type MultirespondentSubmissionData = {
   | 'encryptedContent'
   | 'attachmentMetadata'
   | 'created'
+  | 'lastModified'
   | 'version'
   | 'workflowStep'
 > &
