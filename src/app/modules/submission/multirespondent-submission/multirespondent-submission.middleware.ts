@@ -5,13 +5,15 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import {
   BasicField,
-  FieldResponsesV3,
   FormDto,
   FormResponseMode,
   SubmissionType,
 } from '../../../../../shared/types'
 import { isDev } from '../../../../app/config/config'
-import { ParsedClearAttachmentResponseV3 } from '../../../../types/api'
+import {
+  ParsedClearAttachmentResponseV3,
+  ParsedClearFormFieldResponsesV3,
+} from '../../../../types/api'
 import { MultirespondentFormLoadedDto } from '../../../../types/api/multirespondent_submission'
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -448,12 +450,23 @@ export const validateMultirespondentSubmission = async (
                 }
 
                 const previousResponses =
-                  previousSubmissionDecryptedContent.responses as FieldResponsesV3
+                  previousSubmissionDecryptedContent.responses as ParsedClearFormFieldResponsesV3
 
                 return Result.combine(
                   nonEditableFieldIdsWithResponses.map((fieldId) => {
                     const incomingResField = req.body.responses[fieldId]
                     const prevResField = previousResponses[fieldId]
+
+                    if (prevResField.fieldType === BasicField.Attachment) {
+                      prevResField.answer.content = Buffer.from(
+                        /**
+                         * JSON.parse(JSON.stringify(fooBuffer)) does not fully reconstruct the Buffer object
+                         * it gets parsed as { type: 'Buffer', data: number[] } instead of the original Buffer object
+                         */
+                        // @ts-expect-error data does not exist on Buffer
+                        prevResField.answer.content.data,
+                      )
+                    }
 
                     const resp = isFieldResponseV3Equal(
                       incomingResField,
@@ -488,7 +501,7 @@ export const validateMultirespondentSubmission = async (
                 ).map(() => undefined)
               })
               .andThen(() =>
-                // TODO: Step 4: Validate each field content individually.
+                // TODO: Step 4: Validate each field content with each field's validator rules individually.
                 ok(undefined),
               ),
           )
