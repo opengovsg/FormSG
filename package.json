@@ -122,7 +122,7 @@
     "mongodb-uri": "^0.9.7",
     "mongoose": "^6.12.0",
     "multiparty": ">=4.2.3",
-    "nan": "^2.17.0",
+    "nan": "^2.19.0",
     "neverthrow": "^6.1.0",
     "nocache": "^3.0.4",
     "node-cache": "^5.1.2",
