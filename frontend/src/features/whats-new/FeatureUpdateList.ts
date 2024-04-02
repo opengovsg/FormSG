@@ -1,7 +1,11 @@
 import dedent from 'dedent'
 import { JsonObject, RequireExactlyOne } from 'type-fest'
 
-import { GUIDE_PAYMENTS_ENTRY, GUIDE_SPCP_ESRVCID } from '~constants/links'
+import {
+  GUIDE_MRF_MODE,
+  GUIDE_PAYMENTS_ENTRY,
+  GUIDE_SPCP_ESRVCID,
+} from '~constants/links'
 
 import Animation2 from './assets/2-payments.json'
 import Animation3 from './assets/3-search-and-filter.json'
@@ -39,8 +43,8 @@ export const FEATURE_UPDATE_LIST: FeatureUpdateList = {
   features: [
     {
       title: 'Introducing Multi-respondent forms!',
-      date: new Date('02 Apr 2024 GMT+8'), // TODO: Update this date
-      description: `Create a workflow to collect responses from multiple respondents in the same form submission. Add multiple steps and assign respondents and fields to each step. See some example workflows [here](${GUIDE_SPCP_ESRVCID})!`, // TODO: Update this link
+      date: new Date('04 Apr 2024 GMT+8'),
+      description: `Create a workflow to collect responses from multiple respondents in the same form submission. Add multiple steps and assign respondents and fields to each step. See some example workflows [here](${GUIDE_MRF_MODE})!`,
       image: {
         animationData: MrfAnimation,
         alt: 'Multi-respondent forms',

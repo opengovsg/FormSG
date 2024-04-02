@@ -1,4 +1,8 @@
-import { GUIDE_PAYMENTS_ENTRY, GUIDE_SPCP_ESRVCID } from '~constants/links'
+import {
+  GUIDE_MRF_MODE,
+  GUIDE_PAYMENTS_ENTRY,
+  GUIDE_SPCP_ESRVCID,
+} from '~constants/links'
 
 import { FeatureUpdateImage } from '~features/whats-new/FeatureUpdateList'
 
@@ -21,7 +25,7 @@ export const NEW_FEATURES: NewFeature[] = [
     // Announcement date: 2024-04-02
     title: 'Introducing Multi-respondent forms!',
     description: `Create a workflow to collect responses from multiple respondents in the same form submission. Add multiple steps and assign respondents and fields to each step.`,
-    learnMoreLink: GUIDE_SPCP_ESRVCID, // TODO: Update this link
+    learnMoreLink: GUIDE_MRF_MODE,
     image: {
       animationData: MrfAnimation,
       alt: 'Multi-respondent forms',
