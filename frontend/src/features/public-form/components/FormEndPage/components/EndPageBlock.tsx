@@ -8,10 +8,7 @@ import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
 import { MarkdownText } from '~components/MarkdownText'
 
-import {
-  SubmissionData,
-  usePublicFormContext,
-} from '~features/public-form/PublicFormContext'
+import { SubmissionData } from '~features/public-form/PublicFormContext'
 
 export interface EndPageBlockProps {
   formTitle: FormDto['title'] | undefined
@@ -56,9 +53,6 @@ export const EndPageBlock = ({
     return 'You have successfully submitted your response.'
   }, [formTitle])
 
-  const { previousSubmissionId } = usePublicFormContext()
-  const disableSubmitResponseButton = !!previousSubmissionId //disable for MRF 2nd respondent onwards
-
   return (
     <>
       <Box ref={focusRef}>
@@ -86,16 +80,14 @@ export const EndPageBlock = ({
           </Text>
         </Box>
         <Box mt="2.25rem">
-          {disableSubmitResponseButton || (
-            <Button
-              as="a"
-              href={endPage.buttonLink || window.location.href}
-              variant="solid"
-              colorScheme={`theme-${colorTheme}`}
-            >
-              {endPage.buttonText || 'Submit another response'}
-            </Button>
-          )}
+          <Button
+            as="a"
+            href={endPage.buttonLink || window.location.href}
+            variant="solid"
+            colorScheme={`theme-${colorTheme}`}
+          >
+            {endPage.buttonText || 'Submit another response'}
+          </Button>
         </Box>
       </Box>
     </>
