@@ -424,6 +424,7 @@ export const handleGetPublicFormSampleSubmission: ControllerHandler<
       meta: logMeta,
       error,
     })
+    return res.sendStatus(HttpStatusCode.InternalServerError)
   }
 
   return res.json({ responses: sampleData })
