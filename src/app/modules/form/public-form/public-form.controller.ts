@@ -1,3 +1,4 @@
+import { HttpStatusCode } from 'axios'
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
@@ -400,16 +401,30 @@ export const handleGetPublicFormSampleSubmission: ControllerHandler<
 
     return res.status(statusCode).json({ message: errorMessage })
   }
+
   const form = formResult.value
 
   const publicForm = form.getPublicView() as PublicFormDto
 
   const formFields = publicForm.form_fields
   if (!formFields) {
-    throw new Error('unable to get form fields')
+    logger.error({
+      message: 'Form fields not found from form public view',
+      meta: logMeta,
+    })
+    return res.sendStatus(HttpStatusCode.InternalServerError)
   }
 
-  const sampleData = FormService.createSampleSubmissionResponses(formFields)
+  let sampleData
+  try {
+    sampleData = FormService.createSampleSubmissionResponses(formFields)
+  } catch (error) {
+    logger.error({
+      message: 'Error faking sample submission data',
+      meta: logMeta,
+      error,
+    })
+  }
 
   return res.json({ responses: sampleData })
 }

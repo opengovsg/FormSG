@@ -35,6 +35,7 @@ import {
   PossibleDatabaseError,
 } from '../core/core.errors'
 import { IntranetService } from '../intranet/intranet.service'
+import { getMyInfoFieldOptions } from '../myinfo/myinfo.util'
 
 import {
   FormDeletedError,
@@ -358,6 +359,11 @@ export const retrievePublicFormsWithSmsVerification = (
 }
 
 export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
+  // Prefill dropdown MyInfo field options for faking
+  if (field.fieldType === BasicField.Dropdown && field.myInfo) {
+    field.fieldOptions = getMyInfoFieldOptions(field.myInfo.attr)
+  }
+
   let sampleValue = null
   let noOfTableRows
   let noOfTableCols
@@ -371,7 +377,10 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
       break
     case BasicField.Radio:
     case BasicField.Dropdown:
-      sampleValue = faker.helpers.arrayElement(field.fieldOptions)
+      sampleValue =
+        field.fieldOptions.length === 0
+          ? ''
+          : faker.helpers.arrayElement(field.fieldOptions)
       break
     case BasicField.Email:
       sampleValue = faker.internet.email()
@@ -412,7 +421,10 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
       sampleValue = tableSampleValue
       break
     case BasicField.Checkbox:
-      sampleValue = faker.helpers.arrayElements(field.fieldOptions)
+      sampleValue =
+        field.fieldOptions.length === 0
+          ? ''
+          : faker.helpers.arrayElements(field.fieldOptions)
       break
     case BasicField.Date:
       sampleValue = faker.date.anytime().toLocaleDateString('en-SG', {
