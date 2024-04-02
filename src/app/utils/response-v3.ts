@@ -1,5 +1,8 @@
+import crypto from 'crypto'
 import _ from 'lodash'
-import { BasicField, FieldResponseV3 } from '../types'
+
+import { BasicField, FieldResponseV3 } from '../../../shared/types'
+import { ParsedClearAttachmentResponseV3 } from '../../types/api'
 
 export const isFieldResponseV3Equal = (
   l: FieldResponseV3,
@@ -28,10 +31,21 @@ export const isFieldResponseV3Equal = (
     case BasicField.Children:
       return _.isEqual(l.answer, r.answer)
     case BasicField.Attachment: {
-      const rAnswer = r.answer as typeof l.answer
+      const lAnswer = l.answer as ParsedClearAttachmentResponseV3['answer']
+      const rAnswer = r.answer as ParsedClearAttachmentResponseV3['answer']
+
+      const lMd5 = crypto
+        .createHash('md5')
+        .update(Buffer.from(lAnswer.content))
+        .digest()
+
+      const rMd5 = crypto
+        .createHash('md5')
+        .update(Buffer.from(rAnswer.content))
+        .digest()
+
       return (
-        l.answer.answer === rAnswer.answer &&
-        l.answer.hasBeenScanned === rAnswer.hasBeenScanned
+        lMd5.equals(rMd5) && l.answer.hasBeenScanned === rAnswer.hasBeenScanned
       )
     }
     case BasicField.Section:

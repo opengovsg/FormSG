@@ -32,8 +32,9 @@ const IMAGE_UPLOAD_TYPES_TO_COMPRESS = ['image/jpeg', 'image/png']
 export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
   /**
    * Callback to be invoked when the file is attached or removed.
+   * Do not use undefined to clear the value, use null instead.
    */
-  onChange: (file?: File) => void
+  onChange: (file: File | null) => void
   /**
    * If exists, callback to be invoked when file has errors.
    */
@@ -41,7 +42,7 @@ export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
   /**
    * Current value of the input.
    */
-  value: File | undefined
+  value: File | undefined | null
   /**
    * Name of the input.
    */
@@ -67,6 +68,16 @@ export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
    * Color scheme of the component.
    */
   colorScheme?: ThemeColorScheme
+
+  /**
+   * Show attachment download button.
+   */
+  enableDownload?: boolean
+
+  /**
+   * Show attachment removal button
+   */
+  enableRemove?: boolean
 }
 
 export const Attachment = forwardRef<AttachmentProps, 'div'>(
@@ -81,6 +92,8 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       name,
       colorScheme,
       title,
+      enableDownload,
+      enableRemove,
       ...props
     },
     ref,
@@ -164,7 +177,6 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
             ),
           )
         }
-
         onChange(acceptedFile)
       },
       [accept, maxSize, onChange, onError],
@@ -205,9 +217,20 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
     })
 
     const handleRemoveFile = useCallback(() => {
-      onChange(undefined)
+      onChange(null)
       rootRef.current?.focus()
     }, [onChange, rootRef])
+
+    const handleDownloadFile = useCallback(() => {
+      if (value) {
+        const url = URL.createObjectURL(value)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = value.name
+        a.click()
+        URL.revokeObjectURL(url)
+      }
+    }, [value])
 
     // Bunch of memoization to avoid unnecessary re-renders.
     const processedRootProps = useMemo(() => {
@@ -246,6 +269,9 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
               <AttachmentFileInfo
                 file={value}
                 handleRemoveFile={handleRemoveFile}
+                handleDownloadFile={handleDownloadFile}
+                enableDownload={enableDownload}
+                enableRemove={enableRemove}
               />
             ) : (
               <AttachmentDropzone
