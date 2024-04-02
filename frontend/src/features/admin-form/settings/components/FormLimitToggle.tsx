@@ -7,8 +7,11 @@ import {
 } from 'react'
 import { FormControl, Skeleton } from '@chakra-ui/react'
 
+import { FormResponseMode } from '~shared/types'
+
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
+import InlineMessage from '~components/InlineMessage'
 import NumberInput from '~components/NumberInput'
 import Toggle from '~components/Toggle'
 
@@ -106,6 +109,8 @@ export const FormLimitToggle = (): JSX.Element => {
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
+  const isMrf = settings?.responseMode === FormResponseMode.Multirespondent
+
   const { data: responseCount, isLoading: isLoadingCount } =
     useFormResponsesCount()
 
@@ -149,11 +154,17 @@ export const FormLimitToggle = (): JSX.Element => {
   return (
     <Skeleton isLoaded={!isLoadingSettings && !!settings} mt="2rem">
       <Toggle
+        isDisabled={isMrf}
         isLoading={mutateFormLimit.isLoading}
         isChecked={isLimit}
         label="Set a response limit"
         onChange={() => handleToggleLimit()}
       />
+      {isMrf ? (
+        <InlineMessage variant="warning" mt="0.5rem">
+          Response limits cannot be applied for multi-respondent forms.
+        </InlineMessage>
+      ) : null}
       {settings && settings?.submissionLimit !== null && (
         <Skeleton isLoaded={!isLoadingCount}>
           <FormLimitBlock

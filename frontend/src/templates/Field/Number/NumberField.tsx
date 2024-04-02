@@ -39,7 +39,6 @@ export const NumberField = ({
             inputMode="numeric"
             colorScheme={`theme-${colorTheme}`}
             aria-label={`${schema.questionNumber}. ${schema.title}`}
-            allowMouseWheel
             precision={0}
             value={value}
             preventDefaultOnEnter

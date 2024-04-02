@@ -1,7 +1,7 @@
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { Flex, FormControl, Icon, Stack, Text } from '@chakra-ui/react'
 
-import { BxsInfoCircle } from '~assets/icons'
+import { BxsInfoCircleAlt } from '~assets/icons'
 import { MultiSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Tooltip from '~components/Tooltip'
@@ -50,9 +50,9 @@ export const QuestionsBlock = ({
       borderTopColor="secondary.200"
     >
       <Flex alignItems="center" gap="0.5rem">
-        <Text textStyle="subhead-3">Questions to fill</Text>
-        <Tooltip label="Respondent will only be able to fill the questions you have selected">
-          <Icon as={BxsInfoCircle} />
+        <Text textStyle="subhead-3">Fields to fill</Text>
+        <Tooltip label="Respondent will only be able to fill the fields you have selected">
+          <Icon as={BxsInfoCircleAlt} />
         </Tooltip>
       </Flex>
 

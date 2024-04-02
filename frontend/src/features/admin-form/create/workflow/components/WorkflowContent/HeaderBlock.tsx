@@ -9,8 +9,8 @@ export const HeaderBlock = (): JSX.Element => {
       <Flex flexDir="column">
         <Text textStyle="subhead-3">Create a workflow for your form</Text>
         <Text>
-          Add multiple steps, and for each of them, assign who should respond to
-          it, and select fields that they can see and fill.
+          Add multiple steps, and for each step, assign a respondent, and select
+          fields that they can fill.
         </Text>
       </Flex>
     </InlineMessage>

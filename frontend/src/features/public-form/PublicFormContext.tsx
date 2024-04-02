@@ -11,6 +11,8 @@ import { UseQueryResult } from 'react-query'
 import { MultirespondentSubmissionDto } from '~shared/types'
 import { PublicFormViewDto } from '~shared/types/form'
 
+import { decryptSubmission } from './utils/decryptSubmission'
+
 export type SubmissionData = {
   /** Submission id */
   id: string | undefined
@@ -65,6 +67,10 @@ export interface PublicFormContextProps
   setNumVisibleFields?: Dispatch<SetStateAction<number>>
 
   encryptedPreviousSubmission?: MultirespondentSubmissionDto
+  previousSubmission?: ReturnType<typeof decryptSubmission>
+  setPreviousSubmission: (
+    previousSubmission: ReturnType<typeof decryptSubmission>,
+  ) => void
 }
 
 export const PublicFormContext = createContext<

@@ -11,6 +11,7 @@ export interface FormResponseOptionsProps {
   onChange: (option: FormResponseMode) => void
   value: FormResponseMode
   showMrf: boolean
+  isSingpass: boolean
 }
 
 const OptionDescription = ({ listItems = [] }: { listItems: string[] }) => {
@@ -30,7 +31,7 @@ const OptionDescription = ({ listItems = [] }: { listItems: string[] }) => {
 export const FormResponseOptions = forwardRef<
   FormResponseOptionsProps,
   'button'
->(({ value, onChange, showMrf }, ref) => {
+>(({ value, onChange, showMrf, isSingpass }, ref) => {
   return (
     <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
       <Tile
@@ -70,7 +71,6 @@ export const FormResponseOptions = forwardRef<
         <Tile.Subtitle>Receive responses in your inbox</Tile.Subtitle>
         <OptionDescription
           listItems={[
-            'Supported by Checkpoint, an approval workflow tool',
             'Attachments: up to 7MB per form',
             'Up to Restricted and Sensitive (High) data',
           ]}
@@ -86,15 +86,17 @@ export const FormResponseOptions = forwardRef<
           onClick={() => onChange(FormResponseMode.Multirespondent)}
           isFullWidth
           flex={1}
+          isDisabled={isSingpass}
         >
           <Tile.Title>Multi-respondent form</Tile.Title>
           <Tile.Subtitle>
-            Create a workflow to collect responses from multiple respondents
+            Create a workflow to collect responses from multiple respondents in
+            the same form submission
           </Tile.Subtitle>
           <OptionDescription
             listItems={[
               'Route form to respondents according to a sequence',
-              'Specify up to two respondents to route form to for filling',
+              'Assign fields and specify respondents to route form to for filling',
             ]}
           />
         </Tile>

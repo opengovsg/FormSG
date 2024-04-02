@@ -10,7 +10,7 @@ import { Flex, FormControl, Icon } from '@chakra-ui/react'
 import { get, isEmpty, isEqual } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
-import { GUIDE_PREVENT_EMAIL_BOUNCE, OGP_CHECKPOINT } from '~constants/links'
+import { GUIDE_FORM_MRF, GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
 import { useMdComponents } from '~hooks/useMdComponents'
 import { ADMIN_EMAIL_VALIDATION_RULES } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -52,7 +52,7 @@ export const EmailFormSection = ({
 
   return (
     <>
-      <CheckpointAdvertisingInfobox />
+      <MRFAdvertisingInfobox />
       <FormProvider {...formMethods}>
         <FormControl isInvalid={!isEmpty(errors)}>
           <FormLabel
@@ -70,7 +70,7 @@ export const EmailFormSection = ({
   )
 }
 
-const CheckpointAdvertisingInfobox = () => {
+const MRFAdvertisingInfobox = () => {
   const mdComponents = useMdComponents()
 
   return (
@@ -78,7 +78,7 @@ const CheckpointAdvertisingInfobox = () => {
       <Icon as={BiBulb} color="primary.500" fontSize="1.5rem" mr="0.5rem" />
       <MarkdownText
         components={mdComponents}
-      >{`Require routing and approval? [Try using Checkpoint to set up an approval workflow](${OGP_CHECKPOINT})`}</MarkdownText>
+      >{`Require routing and approval? [Check out our new feature: Multi-respondent forms!](${GUIDE_FORM_MRF})`}</MarkdownText>
     </Flex>
   )
 }

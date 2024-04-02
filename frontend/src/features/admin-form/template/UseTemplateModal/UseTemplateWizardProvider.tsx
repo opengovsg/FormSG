@@ -22,6 +22,8 @@ export const useUseTemplateWizardContext = (
       /* enabled= */ !!formId,
     )
 
+  const isSingpass = !!templateFormData?.spcpSession
+
   const { formMethods, currentStep, direction, keypair, setCurrentStep } =
     useCommonFormWizardProvider()
 
@@ -91,6 +93,7 @@ export const useUseTemplateWizardContext = (
     formMethods,
     handleDetailsSubmit,
     handleCreateStorageModeOrMultirespondentForm,
+    isSingpass,
     modalHeader: 'Duplicate form',
   }
 }

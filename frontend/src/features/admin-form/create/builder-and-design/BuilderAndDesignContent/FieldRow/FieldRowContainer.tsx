@@ -455,8 +455,17 @@ const FieldRow = ({ field, ...rest }: FieldRowProps) => {
       return <ImageField schema={field} {...rest} />
     case BasicField.Statement:
       return <ParagraphField schema={field} {...rest} />
-    case BasicField.Attachment:
-      return <AttachmentField schema={field} {...rest} />
+    case BasicField.Attachment: {
+      const enableDownload =
+        rest.responseMode === FormResponseMode.Multirespondent
+      return (
+        <AttachmentField
+          schema={field}
+          {...rest}
+          enableDownload={enableDownload}
+        />
+      )
+    }
     case BasicField.Checkbox:
       return <CheckboxField schema={field} {...rest} />
     case BasicField.Mobile:

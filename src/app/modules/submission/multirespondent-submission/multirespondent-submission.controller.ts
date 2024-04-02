@@ -384,26 +384,25 @@ const updateMultirespondentSubmission = async (
   } = encryptedPayload
 
   // Save Responses to Database
-  // TODO(MRF/FRM-1590): Handle attachments for respondent 2+
-  // let attachmentMetadata = new Map<string, string>()
+  let attachmentMetadata = new Map<string, string>()
 
-  // if (encryptedPayload.attachments) {
-  //   const attachmentUploadResult = await uploadAttachments(
-  //     form._id,
-  //     encryptedPayload.attachments,
-  //   )
+  if (encryptedPayload.attachments) {
+    const attachmentUploadResult = await uploadAttachments(
+      form._id,
+      encryptedPayload.attachments,
+    )
 
-  //   if (attachmentUploadResult.isErr()) {
-  //     const { statusCode, errorMessage } = mapRouteError(
-  //       attachmentUploadResult.error,
-  //     )
-  //     return res.status(statusCode).json({
-  //       message: errorMessage,
-  //     })
-  //   } else {
-  //     attachmentMetadata = attachmentUploadResult.value
-  //   }
-  // }
+    if (attachmentUploadResult.isErr()) {
+      const { statusCode, errorMessage } = mapRouteError(
+        attachmentUploadResult.error,
+      )
+      return res.status(statusCode).json({
+        message: errorMessage,
+      })
+    } else {
+      attachmentMetadata = attachmentUploadResult.value
+    }
+  }
 
   const submission = await MultirespondentSubmission.findById(submissionId)
   if (!submission) {
@@ -418,15 +417,15 @@ const updateMultirespondentSubmission = async (
   submission.encryptedContent = encryptedContent
   submission.version = version
   submission.workflowStep = workflowStep
-  // submission.attachmentMetadata = attachmentMetadata
+  submission.attachmentMetadata = attachmentMetadata
 
   try {
     await submission.save()
   } catch (err) {
     logger.error({
-      message: 'Encrypt submission save error',
+      message: 'Multirespondent submission save error',
       meta: {
-        action: 'onEncryptSubmissionFailure',
+        action: 'onMultirespondentSubmissionFailure',
         ...createReqMeta(req),
       },
       error: err,
@@ -491,8 +490,7 @@ export const handleMultirespondentSubmission = [
   MultirespondentSubmissionMiddleware.validateMultirespondentSubmissionParams,
   MultirespondentSubmissionMiddleware.createFormsgAndRetrieveForm,
   MultirespondentSubmissionMiddleware.scanAndRetrieveAttachments,
-  // TODO(MRF/FRM-1592): Add validation for FieldResponsesV3
-  // EncryptSubmissionMiddleware.validateStorageSubmission,
+  MultirespondentSubmissionMiddleware.validateMultirespondentSubmission,
   MultirespondentSubmissionMiddleware.encryptSubmission,
   submitMultirespondentForm,
 ] as ControllerHandler[]
@@ -501,10 +499,10 @@ export const handleUpdateMultirespondentSubmission = [
   CaptchaMiddleware.validateCaptchaParams,
   TurnstileMiddleware.validateTurnstileParams,
   ReceiverMiddleware.receiveMultirespondentSubmission,
-  MultirespondentSubmissionMiddleware.validateMultirespondentSubmissionParams,
+  MultirespondentSubmissionMiddleware.validateUpdateMultirespondentSubmissionParams,
   MultirespondentSubmissionMiddleware.createFormsgAndRetrieveForm,
   MultirespondentSubmissionMiddleware.scanAndRetrieveAttachments,
-  // EncryptSubmissionMiddleware.validateStorageSubmission,
+  MultirespondentSubmissionMiddleware.validateMultirespondentSubmission,
   MultirespondentSubmissionMiddleware.setCurrentWorkflowStep,
   MultirespondentSubmissionMiddleware.encryptSubmission,
   updateMultirespondentSubmission,

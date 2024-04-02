@@ -144,7 +144,7 @@ export type SubmitStorageFormWithVirusScanningArgs =
 
 export type SubmitMultirespondentFormWithVirusScanningArgs =
   SubmitEmailFormArgs & {
-    // publicKey: string
+    submissionSecretKey?: string
     fieldIdToQuarantineKeyMap: FieldIdToQuarantineKeyType[]
   }
 
@@ -369,6 +369,7 @@ export const updateMultirespondentSubmission = async ({
   captchaType = '',
   responseMetadata,
   fieldIdToQuarantineKeyMap,
+  submissionSecretKey,
 }: SubmitMultirespondentFormWithVirusScanningArgs & {
   submissionId?: string
 }) => {
@@ -383,6 +384,7 @@ export const updateMultirespondentSubmission = async ({
       formFields,
       formInputs: filteredInputs,
       responseMetadata,
+      submissionSecretKey,
       version: MULTIRESPONDENT_FORM_SUBMISSION_VERSION,
     },
     fieldIdToQuarantineKeyMap,

@@ -6,7 +6,7 @@ import { isEmpty, times } from 'lodash'
 
 import { PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID } from '~shared/constants'
 import { CountryRegion } from '~shared/constants/countryRegion'
-import { FieldResponsesV3 } from '~shared/types'
+import { AttachmentFieldResponseV3, FieldResponsesV3 } from '~shared/types'
 import { BasicField, FormFieldDto } from '~shared/types/field'
 import {
   FormColorTheme,
@@ -16,6 +16,7 @@ import {
 } from '~shared/types/form'
 import { centsToDollars } from '~shared/utils/payments'
 
+import bufferToFile from '~utils/bufferToFile'
 import InlineMessage from '~components/InlineMessage'
 import { FormFieldValue, FormFieldValues } from '~templates/Field'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
@@ -102,9 +103,14 @@ export const FormFields = ({
             }
             break
           }
-          case BasicField.Attachment:
-            //TODO(MRF/FRM-1590): Handling of attachments by respondent 2+
+          case BasicField.Attachment: {
+            const attachmentData =
+              previousResponse.answer as AttachmentFieldResponseV3
+            const fileData = attachmentData.content.data
+            const fileName = attachmentData.answer
+            acc[field._id] = bufferToFile(fileData, fileName)
             break
+          }
           default:
             acc[field._id] = previousResponse.answer as FormFieldValue
         }

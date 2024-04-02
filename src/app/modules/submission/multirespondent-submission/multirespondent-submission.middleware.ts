@@ -1,19 +1,28 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
-import { err, errAsync, ok, Result, ResultAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import {
   BasicField,
+  FormDto,
   FormResponseMode,
   SubmissionType,
 } from '../../../../../shared/types'
 import { isDev } from '../../../../app/config/config'
-import { ParsedClearAttachmentResponseV3 } from '../../../../types/api'
+import {
+  ParsedClearAttachmentResponseV3,
+  ParsedClearFormFieldResponsesV3,
+} from '../../../../types/api'
 import { MultirespondentFormLoadedDto } from '../../../../types/api/multirespondent_submission'
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
+import {
+  getLogicUnitPreventingSubmitV3,
+  getVisibleFieldIdsV3,
+} from '../../../utils/logic-adaptor'
 import { createReqMeta } from '../../../utils/request'
+import { isFieldResponseV3Equal } from '../../../utils/response-v3'
 import * as FeatureFlagService from '../../feature-flags/feature-flags.service'
 import { assertFormAvailable } from '../../form/admin-form/admin-form.utils'
 import * as FormService from '../../form/form.service'
@@ -23,6 +32,7 @@ import {
   DownloadCleanFileFailedError,
   InvalidSubmissionTypeError,
   MaliciousFileDetectedError,
+  ProcessingError,
   VirusScanFailedError,
 } from '../submission.errors'
 import {
@@ -34,7 +44,10 @@ import {
   mapRouteError,
 } from '../submission.utils'
 
-import { checkFormIsMultirespondent } from './multirespondent-submission.service'
+import {
+  checkFormIsMultirespondent,
+  getMultirespondentSubmission,
+} from './multirespondent-submission.service'
 import {
   CreateFormsgAndRetrieveFormMiddlewareHandlerRequest,
   MultirespondentSubmissionMiddlewareHandlerRequest,
@@ -45,74 +58,35 @@ import {
 
 const logger = createLoggerWithLabel(module)
 
-export const validateMultirespondentSubmissionParams = celebrate({
-  [Segments.BODY]: Joi.object({
-    responses: Joi.object().pattern(
-      /^[a-fA-F0-9]{24}$/,
-      Joi.object({
-        fieldType: Joi.string().valid(...Object.values(BasicField)),
-        //TODO(MRF/FRM-1592): Improve this validation, should match ParsedClearFormFieldResponseV3
-        answer: Joi.required(),
-      }),
-    ),
-    responseMetadata: Joi.object({
-      responseTimeMs: Joi.number(),
-      numVisibleFields: Joi.number(),
+const multirespondentSubmissionBodySchema = Joi.object({
+  responses: Joi.object().pattern(
+    /^[a-fA-F0-9]{24}$/,
+    Joi.object({
+      fieldType: Joi.string().valid(...Object.values(BasicField)),
+      //TODO(MRF/FRM-1592): Improve this validation, should match ParsedClearFormFieldResponseV3
+      answer: Joi.required(),
     }),
-    version: Joi.number().required(),
+  ),
+  responseMetadata: Joi.object({
+    responseTimeMs: Joi.number(),
+    numVisibleFields: Joi.number(),
   }),
+  version: Joi.number().required(),
 })
 
-export const setCurrentWorkflowStep = async (
-  req: ProcessedMultirespondentSubmissionHandlerRequest,
-  res: Parameters<MultirespondentSubmissionMiddlewareHandlerType>[1],
-  next: NextFunction,
-) => {
-  const { formId, submissionId } = req.params
-  if (!submissionId) {
-    return errAsync(new InvalidSubmissionTypeError())
-  }
-  const logMeta = {
-    action: 'setCurrentWorkflowStep',
-    submissionId,
-    formId,
-    ...createReqMeta(req),
-  }
+export const validateMultirespondentSubmissionParams = celebrate({
+  [Segments.BODY]: multirespondentSubmissionBodySchema,
+})
 
-  return (
-    // Step 1: Retrieve the full form object.
-    FormService.retrieveFullFormById(formId)
-      //Step 2: Check whether form is archived.
-      .andThen((form) => assertFormAvailable(form).map(() => form))
-      // Step 3: Check whether form is multirespondent mode.
-      .andThen(checkFormIsMultirespondent)
-      // Step 4: Is multirespondent mode form, retrieve submission data.
-      .andThen((form) =>
-        getEncryptedSubmissionData(form.responseMode, formId, submissionId),
-      )
-      // Step 6: Retrieve presigned URLs for attachments.
-      .map((submissionData) => {
-        if (submissionData.submissionType !== SubmissionType.Multirespondent) {
-          return errAsync(new InvalidSubmissionTypeError())
-        }
-        // Increment previous submission's workflow step by 1 to get workflow step of current submission
-        req.body.workflowStep = submissionData.workflowStep + 1
-        return next()
-      })
-      .mapErr((error) => {
-        logger.error({
-          message: 'Failure retrieving encrypted submission response',
-          meta: logMeta,
-          error,
-        })
+const updateMultirespondentSubmissionBodySchema =
+  multirespondentSubmissionBodySchema.append({
+    submissionSecretKey: Joi.string().required(),
+  })
 
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({
-          message: errorMessage,
-        })
-      })
-  )
-}
+export const validateUpdateMultirespondentSubmissionParams = celebrate({
+  [Segments.BODY]: updateMultirespondentSubmissionBodySchema,
+})
+
 /**
  * Creates formsg namespace in req.body and populates it with featureFlags, formDef and encryptedFormDef.
  */
@@ -249,7 +223,6 @@ const devModeSyncVirusScanning = async (
 
 /**
  * Scan attachments on quarantine bucket and retrieve attachments from the clean bucket.
- * Note: Downloading of attachments from the clean bucket is not implemented yet. See Step 4.
  */
 export const scanAndRetrieveAttachments = async (
   req: MultirespondentSubmissionMiddlewareHandlerRequest,
@@ -322,6 +295,283 @@ export const scanAndRetrieveAttachments = async (
   }
 
   return next()
+}
+
+/**
+ * What types of fields are there?
+ *                Visible                     Not visible
+ * Editable       Regular field validation    Not allowed
+ * Non-editable   Not allowed / prev submiss  Not allowed
+ *
+ * Initial submission:
+ * 1. Retrieve form object
+ * 2. Defined editable fields from workflow[0].edit.
+ *     a. If no workflow, all fields are editable.
+ * 3. Get visible fields by logic
+ * 4. CHECK: no logic block preventing submit
+ * 5. CHECK: response fields subset of visible fields
+ * 6. CHECK: response fields subset of editable fields
+ * 7. CHECK: for each field, validate by its rules
+ *
+ * Subsequent submissions:
+ * - Identical to initial except in step 6, check that any response fields that
+ * were non-editable were indeed not edited (i.e. equality with previous submission)
+ *
+ * - Attachment names will be replaced with the previousResponse filename
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
+export const validateMultirespondentSubmission = async (
+  req: ProcessedMultirespondentSubmissionHandlerRequest,
+  res: Parameters<MultirespondentSubmissionMiddlewareHandlerType>[1],
+  next: NextFunction,
+) => {
+  const { formId, submissionId } = req.params
+
+  const logMeta = {
+    action: 'validateMultirespondentSubmission',
+    submissionId,
+    formId,
+    ...createReqMeta(req),
+  }
+
+  return (
+    // Step 0: Prepare by retrieving relevant reference data
+    okAsync(submissionId)
+      .andThen((submissionId) =>
+        // Step 0a: If its an existing submission, use the reference data from
+        // the submission rather than the form
+        submissionId
+          ? getMultirespondentSubmission(submissionId).map((submission) => ({
+              previousSubmission: {
+                encryptedContent: submission.encryptedContent,
+                version: submission.version,
+              },
+              workflowStep: submission.workflowStep + 1,
+              workflow: submission.workflow,
+              form_fields: submission.form_fields,
+              form_logics: submission.form_logics,
+            }))
+          : okAsync({
+              previousSubmission: undefined,
+              workflowStep: 0,
+              workflow: req.formsg.formDef.workflow,
+              form_fields: req.formsg.formDef.form_fields,
+              form_logics: req.formsg.formDef.form_logics,
+            }),
+      )
+      .andThen(
+        ({
+          previousSubmission,
+          workflowStep,
+          workflow,
+          form_fields,
+          form_logics,
+        }) => {
+          // Step 0b: Determine editable fields based on the workflow step, if it exists.
+          const editableFieldIds = (
+            workflow[workflowStep]
+              ? workflow[workflowStep].edit
+              : form_fields.map((ff) => ff._id)
+          ).map(String)
+
+          const formPropertiesForLogicComputation = {
+            _id: formId,
+            form_fields,
+            form_logics,
+          } as Pick<FormDto, '_id' | 'form_fields' | 'form_logics'>
+
+          // Step 0c: Get visible fields based on evaluation of logic
+          return getVisibleFieldIdsV3(
+            req.body.responses,
+            formPropertiesForLogicComputation,
+          ).andThen((visibleFieldIds) =>
+            // Step 1: Check prevent submission logic
+            getLogicUnitPreventingSubmitV3(
+              req.body.responses,
+              formPropertiesForLogicComputation,
+              visibleFieldIds,
+            )
+              .andThen((logicUnitPreventingSubmit) =>
+                logicUnitPreventingSubmit
+                  ? err(
+                      new ProcessingError('Submission prevented by form logic'),
+                    )
+                  : ok(undefined),
+              )
+              .andThen(() =>
+                // Step 2: Check that response fields C visible fields
+                Object.keys(req.body.responses).every((fieldId) =>
+                  visibleFieldIds.has(fieldId),
+                )
+                  ? ok(undefined)
+                  : err(
+                      new ProcessingError(
+                        'Attempted to submit response on a hidden field',
+                      ),
+                    ),
+              )
+              .andThen(() => {
+                // Step 3: Match non-editable response fields to previous version
+                const nonEditableFieldIdsWithResponses = Object.keys(
+                  req.body.responses,
+                ).filter((fieldId) => !editableFieldIds.includes(fieldId))
+
+                // If it's the first submission, just check that response fields C editable fields
+                if (!previousSubmission) {
+                  return nonEditableFieldIdsWithResponses.length === 0
+                    ? ok(undefined)
+                    : err(
+                        new ProcessingError(
+                          'Attempted to submit response on a non-editable field',
+                        ),
+                      )
+                }
+
+                // If it's not the first submission, need to check that the responses match existing values from the DB
+                if (!req.body.submissionSecretKey) {
+                  return err(
+                    new ProcessingError('Submission secret key is required'),
+                  )
+                }
+
+                const previousSubmissionDecryptedContent =
+                  formsgSdk.cryptoV3.decryptFromSubmissionKey(
+                    req.body.submissionSecretKey,
+                    previousSubmission,
+                  )
+
+                if (!previousSubmissionDecryptedContent) {
+                  return err(
+                    new ProcessingError('Unable to decrypt previous response'),
+                  )
+                }
+
+                const previousResponses =
+                  previousSubmissionDecryptedContent.responses as ParsedClearFormFieldResponsesV3
+
+                return Result.combine(
+                  nonEditableFieldIdsWithResponses.map((fieldId) => {
+                    const incomingResField = req.body.responses[fieldId]
+                    const prevResField = previousResponses[fieldId]
+
+                    if (prevResField.fieldType === BasicField.Attachment) {
+                      prevResField.answer.content = Buffer.from(
+                        /**
+                         * JSON.parse(JSON.stringify(fooBuffer)) does not fully reconstruct the Buffer object
+                         * it gets parsed as { type: 'Buffer', data: number[] } instead of the original Buffer object
+                         */
+                        // @ts-expect-error data does not exist on Buffer
+                        prevResField.answer.content.data,
+                      )
+                    }
+
+                    const resp = isFieldResponseV3Equal(
+                      incomingResField,
+                      prevResField,
+                    )
+
+                    if (!resp) {
+                      return err(
+                        new ProcessingError(
+                          'Submitted response on a non-editable field which did not match previous response',
+                        ),
+                      )
+                    }
+
+                    /**
+                     * Files are verified to have the same md5 hash, so we can safely assume that the files are the same.
+                     * We should also ignore attachment names from submissions as handleDuplicatesInAttachments may rename files
+                     */
+                    if (
+                      incomingResField.fieldType === BasicField.Attachment &&
+                      prevResField.fieldType === BasicField.Attachment
+                    ) {
+                      incomingResField.answer.answer =
+                        prevResField.answer.answer
+
+                      incomingResField.answer.filename =
+                        prevResField.answer.answer
+                    }
+
+                    return ok(undefined)
+                  }),
+                ).map(() => undefined)
+              })
+              .andThen(() =>
+                // TODO: Step 4: Validate each field content with each field's validator rules individually.
+                ok(undefined),
+              ),
+          )
+        },
+      )
+      .map(() => next())
+      .mapErr((error) => {
+        logger.error({
+          message: 'Validation failed on incoming multirespondent submission',
+          meta: logMeta,
+          error,
+        })
+
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({
+          message: errorMessage,
+        })
+      })
+  )
+}
+
+export const setCurrentWorkflowStep = async (
+  req: ProcessedMultirespondentSubmissionHandlerRequest,
+  res: Parameters<MultirespondentSubmissionMiddlewareHandlerType>[1],
+  next: NextFunction,
+) => {
+  const { formId, submissionId } = req.params
+  if (!submissionId) {
+    return errAsync(new InvalidSubmissionTypeError())
+  }
+  const logMeta = {
+    action: 'setCurrentWorkflowStep',
+    submissionId,
+    formId,
+    ...createReqMeta(req),
+  }
+
+  return (
+    // Step 1: Retrieve the full form object.
+    FormService.retrieveFullFormById(formId)
+      //Step 2: Check whether form is archived.
+      .andThen((form) => assertFormAvailable(form).map(() => form))
+      // Step 3: Check whether form is multirespondent mode.
+      .andThen(checkFormIsMultirespondent)
+      // Step 4: Is multirespondent mode form, retrieve submission data.
+      .andThen((form) =>
+        getEncryptedSubmissionData(form.responseMode, formId, submissionId),
+      )
+      // Step 6: Retrieve presigned URLs for attachments.
+      .map((submissionData) => {
+        if (submissionData.submissionType !== SubmissionType.Multirespondent) {
+          return errAsync(new InvalidSubmissionTypeError())
+        }
+        // Increment previous submission's workflow step by 1 to get workflow step of current submission
+        req.body.workflowStep = submissionData.workflowStep + 1
+        return next()
+      })
+      .mapErr((error) => {
+        logger.error({
+          message: 'Failure retrieving encrypted submission response',
+          meta: logMeta,
+          error,
+        })
+
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({
+          message: errorMessage,
+        })
+      })
+  )
 }
 
 /**
