@@ -201,7 +201,7 @@
     "@types/uid-generator": "^2.0.3",
     "@types/uuid": "^9.0.8",
     "@types/validator": "^13.7.10",
-    "@typescript-eslint/eslint-plugin": "^5.47.0",
+    "@typescript-eslint/eslint-plugin": "^7.5.0",
     "@typescript-eslint/parser": "^5.56.0",
     "auto-changelog": "^2.4.0",
     "axios-mock-adapter": "^1.21.4",
