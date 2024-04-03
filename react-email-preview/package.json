@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "email build",
-    "dev": "email dev",
+    "dev": "email dev --port 4242",
     "export": "email export"
   },
   "dependencies": {
