@@ -1,6 +1,5 @@
 import { useCallback, useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
-import { useParams } from 'react-router-dom'
 
 import { DATE_DISPLAY_FORMAT, DATE_PARSE_FORMAT } from '~shared/constants/dates'
 import { FormColorTheme } from '~shared/types'
@@ -33,15 +32,10 @@ export const DateField = ({
   colorTheme = FormColorTheme.Blue,
   ...fieldContainerProps
 }: DateFieldProps): JSX.Element => {
-  console.log('disable validaton', disableRequiredValidation)
   const validationRules = useMemo(
     () => createDateValidationRules(schema, disableRequiredValidation),
     [schema, disableRequiredValidation],
   )
-
-  console.log('validation rules', validationRules)
-  const { submissionId } = useParams()
-  console.log('submission id', submissionId)
 
   const isDateUnavailable = useCallback(
     (date: Date) => {
