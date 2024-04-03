@@ -1,6 +1,7 @@
 import {
   Body,
   Button,
+  Column,
   Container,
   Head,
   Heading,
@@ -8,14 +9,15 @@ import {
   Html,
   Img,
   Link,
+  Row,
   Text,
 } from '@react-email/components'
 import { FORMSG_LOGO_URL } from '../../constants/formsg-logo'
 
 import {
-  buttonStyle,
+  buttonContainerStyle,
+  buttonInnerStyle,
   headingStyle,
-  innerButtonTextStyle,
   innerContainerStyle,
   linkStyle,
   outerContainerStyle,
@@ -38,36 +40,58 @@ export const MrfWorkflowEmail = ({
       <Head />
       <Body style={outerContainerStyle}>
         <Container style={innerContainerStyle}>
-          <Img
-            src={FORMSG_LOGO_URL}
-            alt="FormSG"
-            width="120px"
-            style={{ marginBottom: '36px' }}
-          />
-          <Heading style={{ ...headingStyle, marginBottom: '36px' }}>
-            Review and complete your part of {formTitle}.
-          </Heading>
-          <Container style={{ marginBottom: '36px' }}>
-            <Text
-              style={{ ...textStyle, display: 'inline', marginRight: '16px' }}
-            >
-              Response ID
-            </Text>
-            <Text style={{ ...textStyle, display: 'inline' }}>
-              {responseId}
-            </Text>
-          </Container>
-          <a href={responseUrl} style={buttonStyle}>
-            <div style={innerButtonTextStyle}>Review and complete</div>
-          </a>
-          <Hr style={{ margin: '36px 0' }} />
-          <Text style={{ ...textStyle, fontSize: '14px' }}>
-            If you are having trouble with the button above, copy and paste the
-            link below into your browser:
-          </Text>
-          <Link href={responseUrl} style={{ ...linkStyle, fontSize: '14px' }}>
-            {responseUrl}
-          </Link>
+          <Row>
+            <Column>
+              <Img src={FORMSG_LOGO_URL} alt="FormSG" />
+            </Column>
+          </Row>
+          <Row style={{ paddingTop: '16px' }}>
+            <Column>
+              <Heading style={headingStyle}>
+                Review and complete your part of {formTitle}.
+              </Heading>
+            </Column>
+          </Row>
+          <Row style={{ paddingTop: '16px' }}>
+            <Column>
+              <Text style={textStyle}>Response ID</Text>
+            </Column>
+            <Column style={textStyle}>
+              <Text>{responseId}</Text>
+            </Column>
+          </Row>
+          <Row style={{ paddingTop: '16px' }}>
+            <Column>
+              <Container style={buttonContainerStyle}>
+                <a href={responseUrl} target="_blank" style={buttonInnerStyle}>
+                  Click to review and complete
+                </a>
+              </Container>
+            </Column>
+          </Row>
+          <Row style={{ paddingTop: '32px' }}>
+            <Column>
+              <Hr />
+            </Column>
+          </Row>
+          <Row>
+            <Column>
+              <Text style={{ ...textStyle, fontSize: '14px' }}>
+                If you are having trouble with the button above, copy and paste
+                the link below into your browser:
+              </Text>
+            </Column>
+          </Row>
+          <Row>
+            <Column>
+              <Link
+                href={responseUrl}
+                style={{ ...linkStyle, fontSize: '14px' }}
+              >
+                {responseUrl}
+              </Link>
+            </Column>
+          </Row>
         </Container>
       </Body>
     </Html>

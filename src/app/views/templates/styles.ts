@@ -6,18 +6,18 @@ import {
   TextProps,
 } from '@react-email/components'
 
-export const outerContainerStyle: ContainerProps['style'] = {
+export const outerContainerStyle: NonNullable<ContainerProps['style']> = {
   backgroundColor: '#f8f9fd',
   padding: '72px',
 }
 
-export const innerContainerStyle: ContainerProps['style'] = {
+export const innerContainerStyle: NonNullable<ContainerProps['style']> = {
   backgroundColor: '#ffffff',
   padding: '48px',
   borderRadius: '16px',
 }
 
-export const headingStyle: HeadingProps['style'] = {
+export const headingStyle: NonNullable<HeadingProps['style']> = {
   display: 'flex',
   color: '#1b1f2c',
   fontFamily:
@@ -26,34 +26,32 @@ export const headingStyle: HeadingProps['style'] = {
   fontWeight: 'bold',
 }
 
-export const textStyle: TextProps['style'] = {
-  display: 'flex',
+export const textStyle: NonNullable<TextProps['style']> = {
   color: '#474747',
   fontFamily:
     "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
   fontSize: '16px',
 }
 
-/** Button style to be attached to the outer <a> tag of a button. */
-export const buttonStyle: ButtonProps['style'] = {
-  display: 'flex',
-  justifyContent: 'center',
+/** Button style to be attached to the outer <Container> of a button */
+export const buttonContainerStyle: NonNullable<ContainerProps['style']> = {
+  border: '24px solid #445fcd',
   borderRadius: '4px',
   backgroundColor: '#445fcd',
-  padding: '24px',
-  textDecoration: 'none',
 }
 
-/** Inner text style to be attached to the inner <div> tag of a button. */
-export const innerButtonTextStyle: ContainerProps['style'] = {
+/** Button style to be attached to the inner <a> tag of a button. */
+export const buttonInnerStyle: NonNullable<ButtonProps['style']> = {
   ...textStyle,
-  display: 'inline-block',
-  width: '100%',
+  display: 'block',
+  backgroundColor: '#445fcd',
+  borderRadius: '4px',
   textAlign: 'center',
+  textDecoration: 'none',
   color: '#ffffff',
 }
 
-export const linkStyle: LinkProps['style'] = {
+export const linkStyle: NonNullable<LinkProps['style']> = {
   ...textStyle,
   wordBreak: 'break-all',
   color: '#445fcd',
