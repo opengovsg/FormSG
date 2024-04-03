@@ -64,7 +64,12 @@ export const MrfWorkflowEmail = ({
           <Row style={{ paddingTop: '16px' }}>
             <Column>
               <Container style={buttonContainerStyle}>
-                <a href={responseUrl} target="_blank" style={buttonInnerStyle}>
+                <a
+                  href={responseUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={buttonInnerStyle}
+                >
                   Click to review and complete
                 </a>
               </Container>
