@@ -22,7 +22,7 @@ export interface NewFeature {
 // so admins will see new announcements.
 export const NEW_FEATURES: NewFeature[] = [
   {
-    // Announcement date: 2024-04-02
+    // Announcement date: 2024-04-04
     title: 'Introducing Multi-respondent forms!',
     description: `Create a workflow to collect responses from multiple respondents in the same form submission. Add multiple steps and assign respondents and fields to each step.`,
     learnMoreLink: GUIDE_MRF_MODE,
