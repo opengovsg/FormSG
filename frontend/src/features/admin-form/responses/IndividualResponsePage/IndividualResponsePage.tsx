@@ -57,7 +57,7 @@ const StackRow = ({
   isError,
 }: {
   label: string
-  children: string | ReactNode
+  children: ReactNode
   isLoading: boolean
   isError: boolean
 }) => {
