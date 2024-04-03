@@ -8,10 +8,7 @@ import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
 import { MarkdownText } from '~components/MarkdownText'
 
-import {
-  SubmissionData,
-  usePublicFormContext,
-} from '~features/public-form/PublicFormContext'
+import { SubmissionData } from '~features/public-form/PublicFormContext'
 
 export interface EndPageBlockProps {
   formTitle: FormDto['title'] | undefined
@@ -19,6 +16,7 @@ export interface EndPageBlockProps {
   submissionData: SubmissionData
   colorTheme?: FormColorTheme
   focusOnMount?: boolean
+  isButtonHidden?: boolean
 }
 
 export const EndPageBlock = ({
@@ -27,6 +25,7 @@ export const EndPageBlock = ({
   submissionData,
   colorTheme = FormColorTheme.Blue,
   focusOnMount,
+  isButtonHidden,
 }: EndPageBlockProps): JSX.Element => {
   const focusRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -56,9 +55,6 @@ export const EndPageBlock = ({
     return 'You have successfully submitted your response.'
   }, [formTitle])
 
-  const { previousSubmissionId } = usePublicFormContext()
-  const disableSubmitResponseButton = !!previousSubmissionId //disable for MRF 2nd respondent onwards
-
   return (
     <>
       <Box ref={focusRef}>
@@ -86,7 +82,7 @@ export const EndPageBlock = ({
           </Text>
         </Box>
         <Box mt="2.25rem">
-          {disableSubmitResponseButton || (
+          {isButtonHidden || (
             <Button
               as="a"
               href={endPage.buttonLink || window.location.href}
