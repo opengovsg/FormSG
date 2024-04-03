@@ -128,6 +128,8 @@ export const SecretKeyVerificationInput = ({
         <Stack direction="row" spacing="0.5rem">
           <Skeleton isLoaded={!isLoading} w="100%">
             <Input
+              data-testid="secretKey"
+              type="password"
               isDisabled={isLoading}
               {...register(SECRET_KEY_NAME, secretKeyValidationRules)}
             />

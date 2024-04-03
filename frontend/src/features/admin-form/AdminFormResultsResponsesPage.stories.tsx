@@ -135,25 +135,14 @@ export const StorageFormUnlocked = Template.bind({})
 StorageFormUnlocked.parameters = StorageForm.parameters
 StorageFormUnlocked.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement)
-  const inputName =
-    /enter or upload secret key your secret key was downloaded when you created your form/i
 
   await waitFor(
     async () => {
-      expect(
-        canvas.getByRole('textbox', {
-          name: inputName,
-        }),
-      ).not.toBeDisabled()
+      expect(canvas.getByTestId('secretKey')).not.toBeDisabled()
     },
     { timeout: 5000 },
   )
-  await userEvent.type(
-    canvas.getByRole('textbox', {
-      name: inputName,
-    }),
-    MOCK_KEYPAIR.secretKey,
-  )
+  await userEvent.type(canvas.getByTestId('secretKey'), MOCK_KEYPAIR.secretKey)
 
   await userEvent.click(
     canvas.getByRole('button', { name: /unlock responses/i }),
