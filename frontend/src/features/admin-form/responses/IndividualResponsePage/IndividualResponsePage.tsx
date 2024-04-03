@@ -72,9 +72,7 @@ const StackRow = ({
           {label}:
         </Text>
       </Box>
-      <Skeleton isLoaded={!isLoading && !isError}>
-        <Box>{children}</Box>
-      </Skeleton>
+      <Skeleton isLoaded={!isLoading && !isError}>{children}</Skeleton>
     </Stack>
   )
 }
