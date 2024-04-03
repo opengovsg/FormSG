@@ -129,9 +129,3 @@ export type IssueReportedNotificationData = {
   formTitle: string
   formResultUrl: string
 }
-
-export type WorkflowEmailData = {
-  appName: string
-  formTitle: string
-  responseUrl: string
-}

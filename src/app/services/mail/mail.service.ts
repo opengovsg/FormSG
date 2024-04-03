@@ -1,3 +1,4 @@
+import { render } from '@react-email/render'
 import tracer from 'dd-trace'
 import { get, inRange, isEmpty } from 'lodash'
 import moment from 'moment-timezone'
@@ -27,6 +28,9 @@ import { createLoggerWithLabel } from '../../config/logger'
 import * as FormService from '../../modules/form/form.service'
 import { extractFormLinkView } from '../../modules/form/form.utils'
 import { formatAsPercentage } from '../../utils/formatters'
+import MrfWorkflowEmail, {
+  WorkflowEmailData,
+} from '../../views/templates/MrfWorkflowEmail'
 
 import { EMAIL_HEADERS, EmailType } from './mail.constants'
 import { MailGenerationError, MailSendError } from './mail.errors'
@@ -44,7 +48,6 @@ import {
   SendAutoReplyEmailsArgs,
   SendMailOptions,
   SendSingleAutoreplyMailArgs,
-  WorkflowEmailData,
 } from './mail.types'
 import {
   generateAutoreplyHtml,
@@ -60,7 +63,6 @@ import {
   generateSmsVerificationWarningHtmlForCollab,
   generateSubmissionToAdminHtml,
   generateVerificationOtpHtml,
-  generateWorkflowEmail,
   isToFieldValid,
 } from './mail.utils'
 
@@ -1026,29 +1028,33 @@ export class MailService {
   sendMRFWorkflowStepEmail = ({
     emails,
     formTitle,
+    responseId,
     responseUrl,
   }: {
     emails: string[]
     formTitle: string
+    responseId: string
     responseUrl: string
   }): ResultAsync<true, MailSendError> => {
     const htmlData: WorkflowEmailData = {
-      formTitle: formTitle,
-      appName: this.#appName,
-      responseUrl: responseUrl,
+      formTitle,
+      responseId,
+      responseUrl,
     }
-    return generateWorkflowEmail({ htmlData }).andThen((html) => {
-      const mail: MailOptions = {
-        to: emails,
-        from: this.#senderFromString,
-        subject: `You have been assigned to fill in ${formTitle}`,
-        html: html,
-        headers: {
-          [EMAIL_HEADERS.emailType]: EmailType.WorkflowNotification,
-        },
-      }
-      return this.#sendNodeMail(mail, { mailId: 'workflowNotification' })
-    })
+
+    const html = render(MrfWorkflowEmail(htmlData))
+
+    const mail: MailOptions = {
+      to: emails,
+      from: this.#senderFromString,
+      subject: `Action required - ${formTitle}`,
+      html,
+      headers: {
+        [EMAIL_HEADERS.emailType]: EmailType.WorkflowNotification,
+      },
+    }
+
+    return this.#sendNodeMail(mail, { mailId: 'workflowNotification' })
   }
 }
 
