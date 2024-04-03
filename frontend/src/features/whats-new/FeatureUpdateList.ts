@@ -44,7 +44,7 @@ export const FEATURE_UPDATE_LIST: FeatureUpdateList = {
     {
       title: 'Introducing Multi-respondent forms!',
       date: new Date('04 Apr 2024 GMT+8'),
-      description: `Create a workflow to collect responses from multiple respondents in the same form submission. Add multiple steps and assign respondents and fields to each step. See some example workflows [here](${GUIDE_MRF_MODE})!`,
+      description: `Create a workflow to collect responses from multiple respondents in the same form submission. Add multiple steps and assign respondents and fields to each step. See some example workflows [here](${GUIDE_MRF_MODE})`,
       image: {
         animationData: MrfAnimation,
         alt: 'Multi-respondent forms',
