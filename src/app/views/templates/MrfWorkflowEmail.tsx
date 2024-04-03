@@ -31,6 +31,7 @@ export type WorkflowEmailData = {
 }
 
 export const MrfWorkflowEmail = ({
+  // Defaults are provided only for testing purposes in react-email-preview.
   formTitle = 'Test form title',
   responseId = '64303c45828035f732088a41',
   responseUrl = 'https://form.gov.sg/6b8391fe9810da639463b61c/edit/6481ae09183785bf30b2d5ca?key=Qks08afjek3leF8d83j2nCd902rf=',
