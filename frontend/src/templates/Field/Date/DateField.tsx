@@ -77,7 +77,7 @@ export const DateField = ({
       <Controller
         control={control}
         name={schema._id}
-        rules={validationRules}
+        rules={disableRequiredValidation ? undefined : validationRules}
         defaultValue=""
         render={({ field: { value, onChange, ...field } }) => (
           <DatePicker
