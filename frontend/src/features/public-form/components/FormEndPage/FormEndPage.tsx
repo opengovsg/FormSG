@@ -44,7 +44,7 @@ export const FormEndPage = ({
             focusOnMount
             {...endPageProps}
             colorTheme={colorTheme}
-            previousSubmissionId={previousSubmissionId}
+            isButtonHidden={!!previousSubmissionId}
           />
           {isFeedbackSectionHidden ? null : (
             <FeedbackBlock
