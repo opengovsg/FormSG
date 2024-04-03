@@ -10,7 +10,6 @@ import Tile from '~components/Tile'
 export interface FormResponseOptionsProps {
   onChange: (option: FormResponseMode) => void
   value: FormResponseMode
-  showMrf: boolean
   isSingpass: boolean
 }
 
@@ -31,17 +30,13 @@ const OptionDescription = ({ listItems = [] }: { listItems: string[] }) => {
 export const FormResponseOptions = forwardRef<
   FormResponseOptionsProps,
   'button'
->(({ value, onChange, showMrf, isSingpass }, ref) => {
+>(({ value, onChange, isSingpass }, ref) => {
   return (
     <Stack spacing="1rem" w="100%" direction={{ base: 'column', md: 'row' }}>
       <Tile
         variant="complex"
         icon={BiLockAlt}
-        badge={
-          <Badge colorScheme={showMrf ? 'neutral' : 'success'}>
-            Recommended
-          </Badge>
-        }
+        badge={<Badge colorScheme={'neutral'}>Recommended</Badge>}
         isActive={value === FormResponseMode.Encrypt}
         onClick={() => onChange(FormResponseMode.Encrypt)}
         isFullWidth
@@ -76,31 +71,29 @@ export const FormResponseOptions = forwardRef<
           ]}
         />
       </Tile>
-      {showMrf && (
-        <Tile
-          ref={ref}
-          variant="complex"
-          icon={MultiParty}
-          badge={<Badge colorScheme="success">New</Badge>}
-          isActive={value === FormResponseMode.Multirespondent}
-          onClick={() => onChange(FormResponseMode.Multirespondent)}
-          isFullWidth
-          flex={1}
-          isDisabled={isSingpass}
-        >
-          <Tile.Title>Multi-respondent form</Tile.Title>
-          <Tile.Subtitle>
-            Create a workflow to collect responses from multiple respondents in
-            the same form submission
-          </Tile.Subtitle>
-          <OptionDescription
-            listItems={[
-              'Route form to respondents according to a sequence',
-              'Assign fields and specify respondents to route form to for filling',
-            ]}
-          />
-        </Tile>
-      )}
+      <Tile
+        ref={ref}
+        variant="complex"
+        icon={MultiParty}
+        badge={<Badge colorScheme="success">New</Badge>}
+        isActive={value === FormResponseMode.Multirespondent}
+        onClick={() => onChange(FormResponseMode.Multirespondent)}
+        isFullWidth
+        flex={1}
+        isDisabled={isSingpass}
+      >
+        <Tile.Title>Multi-respondent form</Tile.Title>
+        <Tile.Subtitle>
+          Create a workflow to collect responses from multiple respondents in
+          the same form submission
+        </Tile.Subtitle>
+        <OptionDescription
+          listItems={[
+            'Route form to respondents according to a sequence',
+            'Assign fields and specify respondents to route form to for filling',
+          ]}
+        />
+      </Tile>
     </Stack>
   )
 })

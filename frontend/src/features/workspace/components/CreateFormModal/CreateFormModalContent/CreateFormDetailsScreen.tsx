@@ -20,8 +20,6 @@ import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 
-import { useUser } from '~features/user/queries'
-
 import { WorkspaceRowsProvider } from '../../WorkspaceFormRow/WorkspaceRowsContext'
 import { useCreateFormWizard } from '../CreateFormWizardContext'
 
@@ -50,18 +48,15 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
   const titleInputValue = watch('title')
   const responseModeValue = watch('responseMode')
 
-  const { user } = useUser()
-  const showMrf = Boolean(user?.betaFlags?.mrf)
-
   return (
     <>
       <ModalHeader color="secondary.700">
-        <Container maxW={showMrf ? '69.5rem' : '42.5rem'} p={0}>
+        <Container maxW="69.5rem" p={0}>
           {modalHeader}
         </Container>
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap">
-        <Container maxW={showMrf ? '69.5rem' : '42.5rem'} p={0}>
+        <Container maxW="69.5rem" p={0}>
           <FormControl isRequired isInvalid={!!errors.title} mb="2.25rem">
             <FormLabel useMarkdownForDescription>Form name</FormLabel>
             <Skeleton isLoaded={!isFetching}>
@@ -87,11 +82,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
                 control={control}
                 render={({ field }) => (
                   <WorkspaceRowsProvider>
-                    <FormResponseOptions
-                      {...field}
-                      showMrf={showMrf}
-                      isSingpass={isSingpass}
-                    />
+                    <FormResponseOptions {...field} isSingpass={isSingpass} />
                   </WorkspaceRowsProvider>
                 )}
                 rules={{ required: 'Please select a form response mode' }}
