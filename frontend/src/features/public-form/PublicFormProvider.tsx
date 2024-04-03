@@ -8,7 +8,7 @@ import {
 } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { SubmitHandler } from 'react-hook-form'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
 import { useGrowthBook } from '@growthbook/growthbook-react'
@@ -36,6 +36,7 @@ import { MONGODB_ID_REGEX } from '~constants/routes'
 import { useBrowserStm } from '~hooks/payments'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
+import { isKeypairValid } from '~utils/secretKeyValidation'
 import { HttpError } from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
 
@@ -138,6 +139,7 @@ export const PublicFormProvider = ({
     // Stop querying once submissionData is present.
     /* enabled= */ !submissionData,
   )
+
   const {
     data: encryptedPreviousSubmission,
     isLoading: isSubmissionLoading,
@@ -149,8 +151,45 @@ export const PublicFormProvider = ({
     /* enabled= */ !submissionData,
   )
 
+  const isLoading = isFormLoading || isSubmissionLoading
+  const error = publicFormError || encryptedSubmissionError
+
   const [previousSubmission, setPreviousSubmission] =
     useState<ReturnType<typeof decryptSubmission>>()
+  const [isSubmissionSecretKeyInvalid, setIsSubmissionSecretKeyInvalid] =
+    useState(false)
+
+  const [searchParams] = useSearchParams()
+
+  if (
+    previousSubmissionId &&
+    encryptedPreviousSubmission &&
+    !previousSubmission &&
+    !isSubmissionSecretKeyInvalid
+  ) {
+    let submissionSecretKey = ''
+    try {
+      submissionSecretKey = decodeURIComponent(searchParams.get('key') ?? '')
+    } catch (e) {
+      console.log(e)
+    }
+
+    const isValid = isKeypairValid(
+      encryptedPreviousSubmission.submissionPublicKey,
+      submissionSecretKey,
+    )
+
+    if (isValid) {
+      setPreviousSubmission(
+        decryptSubmission({
+          submission: encryptedPreviousSubmission,
+          secretKey: submissionSecretKey,
+        }),
+      )
+    } else {
+      setIsSubmissionSecretKeyInvalid(true)
+    }
+  }
 
   // Replace form fields, logic, and workflow with the previous version for MRF consistency.
   if (data && encryptedPreviousSubmission) {
@@ -160,9 +199,6 @@ export const PublicFormProvider = ({
       data.form.workflow = encryptedPreviousSubmission.workflow
     }
   }
-
-  const isLoading = isFormLoading || isSubmissionLoading
-  const error = publicFormError || encryptedSubmissionError
 
   const growthbook = useGrowthBook()
 
@@ -265,15 +301,35 @@ export const PublicFormProvider = ({
     if (data) trackVisitPublicForm(data.form)
   }, [data])
 
-  const isFormNotFound = useMemo(() => {
-    return (
-      (error instanceof HttpError &&
-        (error.code === 404 || error.code === 410)) ||
-      (!!previousSubmissionId &&
-        !!data &&
-        data.form.responseMode !== FormResponseMode.Multirespondent)
-    )
-  }, [data, error, previousSubmissionId])
+  const formNotFoundMessage = useMemo(() => {
+    // Server response 404 or 410
+    const isFormNotFound =
+      error instanceof HttpError && (error.code === 404 || error.code === 410)
+
+    // Non MRFs should not use the :formId/edit/:submissionId path
+    const isNonMultirespondentFormWithPreviousSubmissionId =
+      !!data &&
+      data.form.responseMode !== FormResponseMode.Multirespondent &&
+      !!previousSubmissionId
+
+    if (isFormNotFound || isNonMultirespondentFormWithPreviousSubmissionId) {
+      return {
+        title: 'Form not found',
+        header: 'This form is not available.',
+        message: error?.message || 'Form not found',
+      }
+    }
+
+    // Decryption failed for previous submission
+    if (isSubmissionSecretKeyInvalid) {
+      return {
+        title: 'Invalid form link',
+        header: 'This form link is no longer valid.',
+        message:
+          'A submission may have already been made using this link. If you think this is a mistake, please contact the agency that gave you the form link.',
+      }
+    }
+  }, [error, data, previousSubmissionId, isSubmissionSecretKeyInvalid])
 
   const generateVfnExpiryToast = useCallback(() => {
     if (vfnToastIdRef.current) {
@@ -713,8 +769,16 @@ export const PublicFormProvider = ({
         ...rest,
       }}
     >
-      <Helmet title={isFormNotFound ? 'Form not found' : data?.form.title} />
-      {isFormNotFound ? <FormNotFound message={error?.message} /> : children}
+      <Helmet
+        title={
+          formNotFoundMessage ? formNotFoundMessage.title : data?.form.title
+        }
+      />
+      {formNotFoundMessage ? (
+        <FormNotFound {...formNotFoundMessage} />
+      ) : (
+        children
+      )}
     </PublicFormContext.Provider>
   )
 }
