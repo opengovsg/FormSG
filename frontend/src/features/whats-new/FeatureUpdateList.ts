@@ -1,13 +1,18 @@
 import dedent from 'dedent'
 import { JsonObject, RequireExactlyOne } from 'type-fest'
 
-import { GUIDE_PAYMENTS_ENTRY, GUIDE_SPCP_ESRVCID } from '~constants/links'
+import {
+  GUIDE_MRF_MODE,
+  GUIDE_PAYMENTS_ENTRY,
+  GUIDE_SPCP_ESRVCID,
+} from '~constants/links'
 
 import Animation2 from './assets/2-payments.json'
 import Animation3 from './assets/3-search-and-filter.json'
 import Animation4 from './assets/4-dnd.json'
 import MyInfoStorageMode from './assets/6-myinfo-storage.svg'
 import ChartsSvg from './assets/7-charts_announcement.svg'
+import MrfAnimation from './assets/8-mrf_announcement.json'
 import foldersDashboard from './assets/folders_dashboard.svg'
 
 // image can either be a static image (using url) or an animation (using animationData)
@@ -34,8 +39,17 @@ export interface FeatureUpdateList {
 // New features should be added at the top of the list.
 export const FEATURE_UPDATE_LIST: FeatureUpdateList = {
   // Update version whenever a new feature is added.
-  version: 5,
+  version: 6,
   features: [
+    {
+      title: 'Introducing Multi-respondent forms!',
+      date: new Date('04 Apr 2024 GMT+8'),
+      description: `Create a workflow to collect responses from multiple respondents in the same form submission. Add multiple steps and assign respondents and fields to each step. See some example workflows [here](${GUIDE_MRF_MODE})`,
+      image: {
+        animationData: MrfAnimation,
+        alt: 'Multi-respondent forms',
+      },
+    },
     {
       title: 'Introducing Charts',
       date: new Date('21 Nov 2023 GMT+8'),

@@ -1,9 +1,14 @@
-import { GUIDE_PAYMENTS_ENTRY, GUIDE_SPCP_ESRVCID } from '~constants/links'
+import {
+  GUIDE_MRF_MODE,
+  GUIDE_PAYMENTS_ENTRY,
+  GUIDE_SPCP_ESRVCID,
+} from '~constants/links'
 
 import { FeatureUpdateImage } from '~features/whats-new/FeatureUpdateList'
 
 import myInfoStorageMode from '../../whats-new/assets/6-myinfo-storage.svg'
 import ChartsSvg from '../../whats-new/assets/7-charts_announcement.svg'
+import MrfAnimation from '../../whats-new/assets/8-mrf_announcement.json'
 import foldersDashboard from '../../whats-new/assets/folders_dashboard.svg'
 import PaymentsAnnouncementGraphic from '../assets/payments_announcement.svg'
 
@@ -16,6 +21,16 @@ export interface NewFeature {
 // When updating this, remember to update the ROLLOUT_ANNOUNCEMENT_KEY_PREFIX with the new date
 // so admins will see new announcements.
 export const NEW_FEATURES: NewFeature[] = [
+  {
+    // Announcement date: 2024-04-04
+    title: 'Introducing Multi-respondent forms!',
+    description: `Create a workflow to collect responses from multiple respondents in the same form submission. Add multiple steps and assign respondents and fields to each step.`,
+    learnMoreLink: GUIDE_MRF_MODE,
+    image: {
+      animationData: MrfAnimation,
+      alt: 'Multi-respondent forms',
+    },
+  },
   {
     // Announcement date: 2023-11-21
     title: 'Introducing Charts',
