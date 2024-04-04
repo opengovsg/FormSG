@@ -360,57 +360,130 @@ export const retrievePublicFormsWithSmsVerification = (
 
 export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
   // Prefill dropdown MyInfo field options for faking
-  if (field.fieldType === BasicField.Dropdown && field.myInfo) {
+  const { fieldType } = field
+  if (fieldType === BasicField.Dropdown && field.myInfo) {
     field.fieldOptions = getMyInfoFieldOptions(field.myInfo.attr)
   }
 
-  let sampleValue = null
-  let noOfTableRows
-  let noOfTableCols
-  const tableSampleValue = []
-  switch (field.fieldType) {
-    case BasicField.LongText:
-      sampleValue = faker.lorem.text()
-      break
-    case BasicField.ShortText:
-      sampleValue = faker.lorem.words()
-      break
+  switch (fieldType) {
+    case BasicField.LongText: {
+      const sampleValue = faker.lorem.text()
+      return {
+        id: field._id,
+        question: field.title,
+        answer: sampleValue,
+        fieldType: field.fieldType,
+      }
+    }
+
+    case BasicField.ShortText: {
+      const sampleValue = faker.lorem.words()
+      return {
+        id: field._id,
+        question: field.title,
+        answer: sampleValue,
+        fieldType: field.fieldType,
+      }
+    }
+
     case BasicField.Radio:
-    case BasicField.Dropdown:
-      sampleValue =
+    case BasicField.Dropdown: {
+      const sampleValue =
         field.fieldOptions.length === 0
           ? ''
           : faker.helpers.arrayElement(field.fieldOptions)
-      break
-    case BasicField.Email:
-      sampleValue = faker.internet.email()
-      break
-    case BasicField.Decimal:
-      sampleValue = faker.number.float({ precision: 0.1 }).toString()
-      break
-    case BasicField.Number:
-      sampleValue = faker.number.int(100).toString()
-      break
-    case BasicField.Mobile:
-      sampleValue = faker.phone.number('+659#######')
-      break
-    case BasicField.HomeNo:
-      sampleValue = faker.phone.number('+656#######')
-      break
-    case BasicField.YesNo:
-      sampleValue = faker.helpers.arrayElement(['Yes', 'No'])
-      break
-    case BasicField.Rating:
-      sampleValue = faker.number
+      return {
+        id: field._id,
+        question: field.title,
+        answer: sampleValue,
+        fieldType: field.fieldType,
+      }
+    }
+    case BasicField.Email: {
+      const sampleValue = faker.internet.email()
+      return {
+        id: field._id,
+        question: field.title,
+        answer: sampleValue,
+        fieldType: field.fieldType,
+      }
+    }
+
+    case BasicField.Decimal: {
+      const sampleValue = faker.number.float({ precision: 0.1 }).toString()
+      return {
+        id: field._id,
+        question: field.title,
+        answer: sampleValue,
+        fieldType: field.fieldType,
+      }
+    }
+
+    case BasicField.Number: {
+      const sampleValue = faker.number.int(100).toString()
+      return {
+        id: field._id,
+        question: field.title,
+        answer: sampleValue,
+        fieldType: field.fieldType,
+      }
+    }
+
+    case BasicField.Mobile: {
+      const sampleValue = faker.phone.number('+659#######')
+      return {
+        id: field._id,
+        question: field.title,
+        answer: sampleValue,
+        fieldType: field.fieldType,
+      }
+    }
+
+    case BasicField.HomeNo: {
+      const sampleValue = faker.phone.number('+656#######')
+      return {
+        id: field._id,
+        question: field.title,
+        answer: sampleValue,
+        fieldType: field.fieldType,
+      }
+    }
+
+    case BasicField.YesNo: {
+      const sampleValue = faker.helpers.arrayElement(['Yes', 'No'])
+      return {
+        id: field._id,
+        question: field.title,
+        answer: sampleValue,
+        fieldType: field.fieldType,
+      }
+    }
+
+    case BasicField.Rating: {
+      const sampleValue = faker.number
         .int({ min: 1, max: field.ratingOptions.steps })
         .toString()
-      break
-    case BasicField.Attachment:
-      sampleValue = 'attachmentFileName'
-      break
-    case BasicField.Table:
-      noOfTableRows = field.minimumRows
-      noOfTableCols = field.columns.length
+      return {
+        id: field._id,
+        question: field.title,
+        answer: sampleValue,
+        fieldType: field.fieldType,
+      }
+    }
+
+    case BasicField.Attachment: {
+      return {
+        id: field._id,
+        question: field.title,
+        answer: 'attachmentFileName',
+        fieldType: field.fieldType,
+      }
+    }
+
+    case BasicField.Table: {
+      const noOfTableRows = field.minimumRows
+      const noOfTableCols = field.columns.length
+      const tableSampleValue = []
       for (let row = 0; row < noOfTableRows; row++) {
         const rowSampleValue = []
         for (let col = 0; col < noOfTableCols; col++) {
@@ -418,35 +491,72 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
         }
         tableSampleValue.push(rowSampleValue)
       }
-      sampleValue = tableSampleValue
-      break
-    case BasicField.Checkbox:
-      sampleValue =
+      return {
+        id: field._id,
+        question: field.title,
+        answerArray: tableSampleValue,
+        fieldType: field.fieldType,
+      }
+    }
+    case BasicField.Checkbox: {
+      const sampleValue =
         field.fieldOptions.length === 0
-          ? ''
+          ? []
           : faker.helpers.arrayElements(field.fieldOptions)
-      break
-    case BasicField.Date:
-      sampleValue = faker.date.anytime().toLocaleDateString('en-SG', {
+      return {
+        id: field._id,
+        question: field.title,
+        answerArray: sampleValue,
+        fieldType: field.fieldType,
+      }
+    }
+    case BasicField.Date: {
+      const sampleValue = faker.date.anytime().toLocaleDateString('en-SG', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
       })
+      return {
+        id: field._id,
+        question: field.title,
+        answer: sampleValue,
+        fieldType: field.fieldType,
+      }
+    }
+
+    case BasicField.Nric: {
+      return {
+        id: field._id,
+        question: field.title,
+        answer: faker.helpers.replaceSymbols('S9######A'),
+        fieldType: field.fieldType,
+      }
+    }
+    case BasicField.Uen: {
+      return {
+        id: field._id,
+        question: field.title,
+        answer: faker.helpers.replaceSymbols('#########A'),
+        fieldType: field.fieldType,
+      }
+    }
+    case BasicField.Section:
+    case BasicField.Statement:
+    case BasicField.Image:
+    case BasicField.CountryRegion:
+    case BasicField.Children:
+      return {
+        id: field._id,
+        question: field.title,
+        answer: null,
+        fieldType: field.fieldType,
+      }
+    default: {
+      // Force TS to emit an error if the cases above are not exhaustive
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const exhaustiveCheck: never = fieldType
       break
-    case BasicField.Nric:
-      sampleValue = faker.helpers.replaceSymbols('S9######A')
-      break
-    case BasicField.Uen:
-      sampleValue = faker.helpers.replaceSymbols('#########A')
-      break
-    default:
-      break
-  }
-  return {
-    id: field._id,
-    question: field.title,
-    answer: sampleValue,
-    fieldType: field.fieldType,
+    }
   }
 }
 
