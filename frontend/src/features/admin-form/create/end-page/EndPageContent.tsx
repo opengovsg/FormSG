@@ -9,12 +9,12 @@ import {
 } from '~shared/types'
 
 import { EndPageBlock } from '~components/FormEndPage/EndPageBlock'
+import { PaymentsThankYouSvgr } from '~components/FormEndPage/PaymentsThankYouSvgr'
+import { ThankYouSvgr } from '~components/FormEndPage/ThankYouSvgr'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { PREVIEW_MOCK_UINFIN } from '~features/admin-form/preview/constants'
 import { useEnv } from '~features/env/queries'
-import { PaymentsThankYouSvgr } from '~features/public-form/components/FormEndPage/components/PaymentsThankYouSvgr'
-import { ThankYouSvgr } from '~features/public-form/components/FormEndPage/components/ThankYouSvgr'
 import {
   FormBannerLogo,
   useFormBannerLogo,
