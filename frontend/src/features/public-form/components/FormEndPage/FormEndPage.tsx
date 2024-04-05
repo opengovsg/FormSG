@@ -7,7 +7,8 @@ import {
   usePublicFormContext,
 } from '~features/public-form/PublicFormContext'
 
-import { EndPageBlock } from './components/EndPageBlock'
+import { EndPageBlock } from '../../../../components/FormEndPage/EndPageBlock'
+
 import { FeedbackBlock, FeedbackFormInput } from './components/FeedbackBlock'
 import { ThankYouSvgr } from './components/ThankYouSvgr'
 

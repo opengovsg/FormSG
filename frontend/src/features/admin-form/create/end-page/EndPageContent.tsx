@@ -8,10 +8,11 @@ import {
   FormResponseMode,
 } from '~shared/types'
 
+import { EndPageBlock } from '~components/FormEndPage/EndPageBlock'
+
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { PREVIEW_MOCK_UINFIN } from '~features/admin-form/preview/constants'
 import { useEnv } from '~features/env/queries'
-import { EndPageBlock } from '~features/public-form/components/FormEndPage/components/EndPageBlock'
 import { PaymentsThankYouSvgr } from '~features/public-form/components/FormEndPage/components/PaymentsThankYouSvgr'
 import { ThankYouSvgr } from '~features/public-form/components/FormEndPage/components/ThankYouSvgr'
 import {
