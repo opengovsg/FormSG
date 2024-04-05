@@ -20,6 +20,7 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
+  MalformedParametersError,
 } from 'src/app/modules/core/core.errors'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
@@ -1418,6 +1419,47 @@ describe('admin-form.service', () => {
         { new: true, runValidators: true },
       )
       expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(0)
+    })
+
+    it('should not allow webhooks updates for MRF', async () => {
+      const MOCK_MULTIRESPONDENT_FORM = jest.mocked({
+        _id: new ObjectId(),
+        status: FormStatus.Public,
+        responseMode: FormResponseMode.Multirespondent,
+      } as unknown as IPopulatedForm)
+      const settingsToUpdate: SettingsUpdateDto = {
+        webhook: {
+          url: 'does not matter',
+        },
+      }
+
+      // Act
+      const actualResult = await AdminFormService.updateFormSettings(
+        MOCK_MULTIRESPONDENT_FORM,
+        settingsToUpdate,
+      )
+
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+        MalformedParametersError,
+      )
+    })
+
+    it('should allow webhooks updates for encrypt form', async () => {
+      const settingsToUpdate: SettingsUpdateDto = {
+        webhook: {
+          url: 'does not matter',
+        },
+      }
+
+      // Act
+      const actualResult = await AdminFormService.updateFormSettings(
+        MOCK_ENCRYPT_FORM,
+        settingsToUpdate,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toBeTrue()
     })
   })
 

@@ -1041,6 +1041,7 @@ export const updateFormCollaborators = (
  * @param body the subset of form settings to update
  * @returns ok(updated form settings) on success
  * @returns err(MalformedParametersError) if auth type update is attempted for a multi-respondent form
+ * @returns err(MalformedParametersError) if webhook update is attempted for a multi-respondent form
  * @returns err(database errors) if db error is thrown during form setting update
  */
 export const updateFormSettings = (
@@ -1061,6 +1062,15 @@ export const updateFormSettings = (
     body.authType !== FormAuthType.NIL
   ) {
     return errAsync(new MalformedParametersError('Invalid authentication type'))
+  }
+
+  if (
+    originalForm.responseMode === FormResponseMode.Multirespondent &&
+    Boolean(body.webhook?.url)
+  ) {
+    return errAsync(
+      new MalformedParametersError('Webhooks not supported on MRF'),
+    )
   }
 
   const dotifiedSettingsToUpdate = dotifyObject(body)
