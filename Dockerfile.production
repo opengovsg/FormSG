@@ -82,7 +82,7 @@ RUN mv /opt/formsg/dist/backend/shared /opt/formsg/
 
 RUN apk add --no-cache \
     # Compatible chromium versions can be found here https://pkgs.alpinelinux.org/packages?name=chromium&branch=v3.19&repo=&arch=&maintainer=
-    chromium=123.0.6312.105-r0 \
+    chromium=123.0.6312.122-r0 \
     nss \
     freetype \
     freetype-dev \
