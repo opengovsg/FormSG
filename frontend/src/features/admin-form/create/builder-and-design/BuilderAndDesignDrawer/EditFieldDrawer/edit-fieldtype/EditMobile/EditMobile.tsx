@@ -14,7 +14,6 @@ import Toggle from '~components/Toggle'
 import { useFreeSmsQuota } from '~features/admin-form/common/queries'
 
 import { CreatePageDrawerContentContainer } from '../../../../../common'
-import { useCreateTabForm } from '../../../../useCreateTabForm'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
@@ -55,18 +54,7 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
     [],
   )
 
-  const { data: form } = useCreateTabForm()
-  const hasTwilioCredentials = useMemo(() => !!form?.msgSrvcName, [form])
-
   const { data: freeSmsCount } = useFreeSmsQuota()
-  const isToggleVfnDisabled = useMemo(() => {
-    if (!freeSmsCount) return true
-    return (
-      !field.isVerifiable &&
-      !hasTwilioCredentials &&
-      freeSmsCount.freeSmsCounts >= freeSmsCount.quota
-    )
-  }, [field.isVerifiable, freeSmsCount, hasTwilioCredentials])
 
   return (
     <>
@@ -99,7 +87,7 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
           />
         </FormControl>
         <Box>
-          <FormControl isReadOnly={isLoading} isDisabled={isToggleVfnDisabled}>
+          <FormControl isReadOnly={isLoading}>
             <Toggle
               {...register('isVerifiable')}
               label="OTP verification"
