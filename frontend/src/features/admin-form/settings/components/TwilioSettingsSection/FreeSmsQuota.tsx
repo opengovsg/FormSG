@@ -14,8 +14,7 @@ export const FreeSmsQuota = (): JSX.Element => {
         alignItems="center"
       >
         <Icon fontSize="1rem" mr="0.5rem" as={BiMessage} />
-        {freeSmsQuota?.freeSmsCounts.toLocaleString()}/
-        {freeSmsQuota?.quota.toLocaleString()} free SMSes used
+        {freeSmsQuota?.freeSmsCounts.toLocaleString()} free SMSes used
       </Skeleton>
     </Text>
   )
