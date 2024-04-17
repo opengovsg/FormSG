@@ -111,7 +111,10 @@ export const generateFormFields = (
 > => {
   const messages: ChatRequestMessage[] = [
     { role: Roles.SYSTEM, content: schemaPromptBuilder(sampleFormFields) },
-    { role: Roles.USER, content: formFieldsPromptBuilder(questions) },
+    {
+      role: Roles.USER,
+      content: formFieldsPromptBuilder(questions, sampleFormFields),
+    },
   ]
   return ResultAsync.fromPromise(
     azureOpenAi.getChatCompletions(deploymentId, messages),
@@ -132,6 +135,7 @@ export const generateFormFields = (
     },
   ).andThen((chatCompletions) => {
     const { message } = chatCompletions.choices[0]
+    // const {tokenUsage} = chatCompletions.usage?.totalTokens?
     if (!message) {
       return errAsync(new AssistanceConnectionError())
     }

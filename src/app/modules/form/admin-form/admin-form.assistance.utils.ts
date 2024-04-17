@@ -1,4 +1,5 @@
 // type guard for OpenAIError
+import { fieldTypes } from './admin-form.assistance.constants'
 import { OpenAIError } from './admin-form.assistance.types'
 
 export function isOpenAIError(error: unknown): error is OpenAIError {
@@ -24,12 +25,12 @@ export const schemaPromptBuilder = (schema: string) => {
 
 export const questionListPromptBuilder = (purpose: string) => {
   return `I am a public officer who wants to create a form that collects ${purpose}.
-  Give me a list of content / questions I should have in my form built with this form builder, in the form of "${expectedQuestionsListFormat}".`
+  Give me a list of content / questions I should have in my form built with this form builder, in the form of "${expectedQuestionsListFormat}", where <answer type> must follow the category of types within ${fieldTypes}. Do not create the question if the <answer type> does not exist in ${fieldTypes}.`
 }
 
-export const formFieldsPromptBuilder = (questions: string) => {
+export const formFieldsPromptBuilder = (questions: string, schema: string) => {
   return `Help me generate a form with the following list of questions: ${questions}
-  Present the questions as FormSG form fields in JSON (list of form field schemas), in the form of "${expectedFormFieldSchemaFormat}" as defined by the system, without any code blocks. Format the JSON as a single line.`
+  Provide the questions as FormSG form fields in JSON format (with the following keys: ${schema}), in the form of "${expectedFormFieldSchemaFormat}" as defined by the system, without any code blocks. Format the JSON as a single line. Ensure the JSON generated only contain fieldTypes of types ${fieldTypes}. Do not create any fieldTypes which are not ${fieldTypes}. Replace values in <> with actual primitive values. Do not build the fieldType if a path required is not available.`
 }
 export const migratePromptBuilder = (parsedContent: string) => {
   return `Help me generate the corresponding JSON form fields from content parsed from a PDF document.
