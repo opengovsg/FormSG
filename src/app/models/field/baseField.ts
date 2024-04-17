@@ -55,6 +55,7 @@ export const BaseFieldSchema = new Schema<IFieldSchema>(
 BaseFieldSchema.pre<IFieldSchema>('validate', function (next) {
   // Invalid field types
   if (!VALID_FIELD_TYPES.includes(this.fieldType)) {
+    console.log('>>>>>>>>>>>>>>>>>>>', this.fieldType)
     return next(Error('Field type is incorrect or unspecified'))
   }
 

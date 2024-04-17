@@ -59,6 +59,7 @@ export const handleGenerateFormFields: ControllerHandler<
   }
 > = async (req, res) => {
   const result = await generateFormFields(req.body.content)
+  console.log('^^^^^^questions', req.body.content)
   if (result.isErr()) {
     return res.status(500).json({ message: result.error.message })
   }
