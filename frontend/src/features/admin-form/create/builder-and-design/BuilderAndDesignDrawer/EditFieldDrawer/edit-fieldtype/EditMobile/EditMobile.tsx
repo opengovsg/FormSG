@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Box, FormControl, useDisclosure } from '@chakra-ui/react'
+import { Box, FormControl } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
 import { MobileFieldBase } from '~shared/types/field'
@@ -20,8 +20,6 @@ import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
 
 import { SmsCountMessage } from './SmsCountMessage'
-import { SmsCountsModal } from './SmsCountsModal'
-import { TwilioCredentialsMessage } from './TwilioCredentialsMessage'
 
 const EDIT_MOBILE_KEYS = [
   'title',
@@ -70,8 +68,6 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
     )
   }, [field.isVerifiable, freeSmsCount, hasTwilioCredentials])
 
-  const smsCountsDisclosure = useDisclosure()
-
   return (
     <>
       <CreatePageDrawerContentContainer>
@@ -105,13 +101,7 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
         <Box>
           <FormControl isReadOnly={isLoading} isDisabled={isToggleVfnDisabled}>
             <Toggle
-              {...register('isVerifiable', {
-                onChange: (e) => {
-                  if (e.target.checked && !hasTwilioCredentials) {
-                    smsCountsDisclosure.onOpen()
-                  }
-                },
-              })}
+              {...register('isVerifiable')}
               label="OTP verification"
               description="Respondents must verify by entering a code sent to them. If you have added Twilio credentials, please test this OTP verification feature to make sure your credentials are accurate."
             />
@@ -125,11 +115,6 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
           handleCancel={handleCancel}
         />
       </CreatePageDrawerContentContainer>
-      <SmsCountsModal
-        freeSmsCount={freeSmsCount}
-        isOpen={smsCountsDisclosure.isOpen}
-        onClose={smsCountsDisclosure.onClose}
-      />
     </>
   )
 }
