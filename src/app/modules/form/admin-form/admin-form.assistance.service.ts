@@ -2,7 +2,9 @@ import { AzureKeyCredential, OpenAIClient } from '@azure/openai'
 import {
   ChatRequestMessage,
   ChatResponseMessage,
+  GetChatCompletionsOptions,
 } from '@azure/openai/types/openai'
+// import { FunctionToolDefinition } from '@azure/openai-assistants'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import { ContentTypes } from '../../../../../shared/types/assistance'
@@ -12,6 +14,8 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { Roles, sampleFormFields } from './admin-form.assistance.constants'
 import {
   formFieldsPromptBuilder,
+  getExpectedQuestionsListTool,
+  getFormFieldsTool,
   isOpenAIError,
   migratePromptBuilder,
   questionListPromptBuilder,
@@ -33,12 +37,22 @@ const azureOpenAi = new OpenAIClient(
   new AzureKeyCredential(azureApiKey),
 )
 
+// const assistantsClient = new AssistantsClient(
+//   endpoint,
+//   new AzureKeyCredential(azureApiKey),
+// )
+
 /**
  * generates a list of questions based on the given type and content
  * @param {string} param.type - The type of content provided. "prompt" or "pdf"
  * @param {string} param.content - prompt or parsed pdf content
  * @returns a ResultAsync containing the generated questions or an AssistanceConnectionError if there was an error connecting to OpenAI
  */
+// export type ChatResponseWithTool = {
+//   message: ChatResponseMessage
+//   tool: FunctionToolDefinition
+// }
+
 export const generateQuestions = ({
   type,
   content,
@@ -66,8 +80,21 @@ export const generateQuestions = ({
       return errAsync(new AssistanceModelTypeError())
   }
 
+  const options = {
+    tools: [
+      {
+        type: 'function',
+        function: getExpectedQuestionsListTool,
+      },
+      // {
+      //   type: 'function',
+      //   function: getFormFieldsTool,
+      // },
+    ],
+  } as GetChatCompletionsOptions
+
   return ResultAsync.fromPromise(
-    azureOpenAi.getChatCompletions(deploymentId, messages),
+    azureOpenAi.getChatCompletions(deploymentId, messages, options),
     (error) => {
       let errorMessage = ''
       // todo: return different error messages based on error codes
@@ -88,6 +115,9 @@ export const generateQuestions = ({
     },
   ).andThen((chatCompletions) => {
     const { message } = chatCompletions.choices[0]
+    console.log('chatCompletions: ', chatCompletions)
+    console.log('messages:', messages)
+    console.log('MESSAGE OBJECT: ', message)
     if (!message) {
       return errAsync(new AssistanceConnectionError())
     }
@@ -116,8 +146,22 @@ export const generateFormFields = (
       content: formFieldsPromptBuilder(questions, sampleFormFields),
     },
   ]
+
+  const options = {
+    tools: [
+      // {
+      //   type: 'function',
+      //   function: getExpectedQuestionsListTool,
+      // },
+      {
+        type: 'function',
+        function: getFormFieldsTool,
+      },
+    ],
+  } as GetChatCompletionsOptions
+
   return ResultAsync.fromPromise(
-    azureOpenAi.getChatCompletions(deploymentId, messages),
+    azureOpenAi.getChatCompletions(deploymentId, messages, options),
     (error) => {
       let errorMessage = ''
       if (isOpenAIError(error)) {
@@ -134,8 +178,10 @@ export const generateFormFields = (
       return new AssistanceConnectionError()
     },
   ).andThen((chatCompletions) => {
+    console.log('chatCompletions form fields: ', chatCompletions)
     const { message } = chatCompletions.choices[0]
     // const {tokenUsage} = chatCompletions.usage?.totalTokens?
+    console.log('form fields message: ', message)
     if (!message) {
       return errAsync(new AssistanceConnectionError())
     }
