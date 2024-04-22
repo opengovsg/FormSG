@@ -1,32 +1,30 @@
-import { Skeleton, Text } from '@chakra-ui/react'
+import { ListItem, Text, UnorderedList } from '@chakra-ui/react'
 
-import { GUIDE_TWILIO } from '~constants/links'
 import InlineMessage from '~components/InlineMessage'
-import Link from '~components/Link'
-
-import { useFreeSmsQuota } from '~features/admin-form/common/queries'
 
 import { TwilioDetailsInputs } from './TwilioDetailsInputs'
 
 export const TwilioSettingsSection = (): JSX.Element => {
-  const { data: freeSmsQuota } = useFreeSmsQuota()
-
   return (
     <>
-      <Text mb="1rem">
-        Add your Twilio credentials to pay for Verified SMSes beyond the free
-        tier of&nbsp;
-        <Skeleton as="span" isLoaded={!!freeSmsQuota}>
-          {freeSmsQuota?.quota.toLocaleString() ?? '10,000'}
-        </Skeleton>
-        &nbsp;SMSes.&nbsp;
-        <Link href={GUIDE_TWILIO} isExternal>
-          How to find your credentials
-        </Link>
-      </Text>
-      <InlineMessage mb="1rem">
-        Please test SMS verification in your form to verify that your
-        credentials work
+      <InlineMessage mb="1rem" variant="warning">
+        <Text>
+          To comply with <strong>SNDGO Circular NO-1-2024</strong>, FormSG will
+          start using gov.sg secured channel to send SMSes to form respondents
+          from <strong>1 July 2024</strong>.
+          <UnorderedList spacing="0.5rem" mt="1rem">
+            <ListItem>
+              There is no longer a limit of 10,000 SMSes per form admin. Given
+              this change, the capability of adding new Twilio credentials will
+              be disabled from 30 April.
+            </ListItem>
+
+            <ListItem>
+              Existing Twilio credentials will automatically be removed and all
+              SMSes will be sent out via gov.sg from 30 June.
+            </ListItem>
+          </UnorderedList>
+        </Text>
       </InlineMessage>
       <TwilioDetailsInputs />
     </>
