@@ -39,7 +39,7 @@ services:
       - SEND_AUTH_OTP_RATE_LIMIT=60
       - SES_PORT=1025
       - SES_HOST=maildev
-      - WEBHOOK_SQS_URL=http://localhost:4566/000000000000/local-webhooks-sqs-main
+      - WEBHOOK_SQS_URL=http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/local-webhooks-sqs-main
       - INTRANET_IP_LIST_PATH
       - SENTRY_CONFIG_URL=https://random@sentry.io/123456
       - CSP_REPORT_URI=https://random@sentry.io/123456
@@ -162,16 +162,16 @@ services:
       - '27017:27017'
 
   localstack:
-    image: localstack/localstack:0.11.5
+    image: localstack/localstack:3.3
     container_name: formsg-localstack
     depends_on:
       - backend
     environment:
       - SERVICES=s3,sqs,secretsmanager
-      - DATA_DIR=/tmp/localstack/data
+      - DNS_ADDRESS=0
     volumes:
-      - './.localstack:/tmp/localstack'
-      - '/var/run/docker.sock:/var/run/docker.sock'
+      - "${LOCALSTACK_VOLUME_DIR:-./.localstack/volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
     network_mode: 'service:backend' # reuse backend service's network stack so that it can resolve localhost:4566 to localstack:4566
     logging:
       driver: none

@@ -1,6 +1,7 @@
 #!/bin/bash
 # Wait for all Localstack services to be ready
-while [[ "$(curl -s -f http://localhost:4566/health | jq '[.services[] == "running"] | all')" != "true" ]]; do
+while [[ "$(curl -s -f http://localhost:4566/health | jq '.services|.sqs,.s3')" == "available\navailable" ]]; do
+  echo "Waiting for Localstack to be ready..."
   sleep 5
 done
 
