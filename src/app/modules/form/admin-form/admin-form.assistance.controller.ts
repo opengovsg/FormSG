@@ -21,10 +21,9 @@ const generateQuestionsSchema = Joi.object({
   type: Joi.string()
     .valid(...Object.values(ContentTypes))
     .required(),
-  content: Joi.alternatives().conditional('type', {
+  content: Joi.string().when('type', {
     is: ContentTypes.PROMPT,
     then: Joi.string().max(300).required(),
-    otherwise: Joi.string().max(3000).required(), // max character of 3000 to cater for PDF uploads
   }),
 })
 

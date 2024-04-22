@@ -2,6 +2,7 @@ import { AzureKeyCredential, OpenAIClient } from '@azure/openai'
 import {
   ChatRequestMessage,
   ChatResponseMessage,
+  GetChatCompletionsOptions,
 } from '@azure/openai/types/openai'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
@@ -12,6 +13,8 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { Roles, sampleFormFields } from './admin-form.assistance.constants'
 import {
   formFieldsPromptBuilder,
+  getExpectedQuestionsListTool,
+  getFormFieldsTool,
   isOpenAIError,
   migratePromptBuilder,
   questionListPromptBuilder,
@@ -32,13 +35,13 @@ const azureOpenAi = new OpenAIClient(
   endpoint,
   new AzureKeyCredential(azureApiKey),
 )
-
 /**
  * generates a list of questions based on the given type and content
  * @param {string} param.type - The type of content provided. "prompt" or "pdf"
  * @param {string} param.content - prompt or parsed pdf content
  * @returns a ResultAsync containing the generated questions or an AssistanceConnectionError if there was an error connecting to OpenAI
  */
+
 export const generateQuestions = ({
   type,
   content,
@@ -66,8 +69,17 @@ export const generateQuestions = ({
       return errAsync(new AssistanceModelTypeError())
   }
 
+  const options = {
+    tools: [
+      {
+        type: 'function',
+        function: getExpectedQuestionsListTool,
+      },
+    ],
+  } as GetChatCompletionsOptions
+
   return ResultAsync.fromPromise(
-    azureOpenAi.getChatCompletions(deploymentId, messages),
+    azureOpenAi.getChatCompletions(deploymentId, messages, options),
     (error) => {
       let errorMessage = ''
       // todo: return different error messages based on error codes
@@ -111,10 +123,23 @@ export const generateFormFields = (
 > => {
   const messages: ChatRequestMessage[] = [
     { role: Roles.SYSTEM, content: schemaPromptBuilder(sampleFormFields) },
-    { role: Roles.USER, content: formFieldsPromptBuilder(questions) },
+    {
+      role: Roles.USER,
+      content: formFieldsPromptBuilder(questions, sampleFormFields),
+    },
   ]
+
+  const options = {
+    tools: [
+      {
+        type: 'function',
+        function: getFormFieldsTool,
+      },
+    ],
+  } as GetChatCompletionsOptions
+
   return ResultAsync.fromPromise(
-    azureOpenAi.getChatCompletions(deploymentId, messages),
+    azureOpenAi.getChatCompletions(deploymentId, messages, options),
     (error) => {
       let errorMessage = ''
       if (isOpenAIError(error)) {
