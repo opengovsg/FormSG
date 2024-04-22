@@ -58,9 +58,7 @@ export const DeleteTwilioModal = ({
         </ModalHeader>
         <ModalBody whiteSpace="pre-wrap">
           <Text textStyle="body-2" color="secondary.500">
-            Are you sure you want to remove your Twilio credentials? You will
-            not be able to use the Verified SMS feature unless you have free
-            SMSes remaining.
+            Are you sure you want to remove your Twilio credentials?
           </Text>
         </ModalBody>
         <ModalFooter>
