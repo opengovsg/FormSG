@@ -71,20 +71,20 @@ export type FieldResponseAnswerMapV3<F extends BasicField = BasicField> =
     | BasicField.CountryRegion
     ? SingleAnswerResponseV3
     : F extends BasicField.YesNo
-    ? YesNoFieldResponseV3
-    : F extends BasicField.Attachment
-    ? AttachmentFieldResponseV3
-    : F extends BasicField.Email | BasicField.Mobile
-    ? VerifiableFieldResponsesV3
-    : F extends BasicField.Table
-    ? TableFieldResponsesV3
-    : F extends BasicField.Radio
-    ? RadioFieldResponsesV3
-    : F extends BasicField.Checkbox
-    ? CheckboxFieldResponsesV3
-    : F extends BasicField.Children
-    ? ChildrenCompoundFieldResponsesV3
-    : never
+      ? YesNoFieldResponseV3
+      : F extends BasicField.Attachment
+        ? AttachmentFieldResponseV3
+        : F extends BasicField.Email | BasicField.Mobile
+          ? VerifiableFieldResponsesV3
+          : F extends BasicField.Table
+            ? TableFieldResponsesV3
+            : F extends BasicField.Radio
+              ? RadioFieldResponsesV3
+              : F extends BasicField.Checkbox
+                ? CheckboxFieldResponsesV3
+                : F extends BasicField.Children
+                  ? ChildrenCompoundFieldResponsesV3
+                  : never
 
 export type SingleAnswerResponseV3 = string
 export type YesNoFieldResponseV3 = 'Yes' | 'No'

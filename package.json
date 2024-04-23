@@ -43,7 +43,7 @@
     "dev:backend": "tsnd --poll --respawn --transpile-only --inspect=0.0.0.0 --exit-child -r dotenv/config -- src/app/server.ts",
     "dev:virus-scanner": "concurrently -k -p \"[{name}]\" -n \"api,virus-scanner\" -c  \"yellow.bold,blue.bold\" \"docker-compose up\" \"npm --prefix serverless/virus-scanner run dev\"",
     "dev:frontend": "npm run --prefix frontend start",
-    "lint": "eslint src/ --quiet --fix",
+    "lint": "eslint src/ shared/ --quiet --fix",
     "lint:shared": "eslint shared/ --quiet --fix",
     "lint:frontend": "npm run --prefix frontend lint",
     "lint-ci": "eslint src/ shared/ --quiet",
