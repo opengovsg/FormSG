@@ -1127,31 +1127,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     ).exec()
   }
 
-  FormSchema.statics.disableSmsVerificationsForUser = async function (
-    userId: IUserSchema['_id'],
-  ) {
-    return this.updateMany(
-      // Filter the collection so that only specified user is selected
-      // Only update forms without message service name
-      // As it implies that those forms are using default (our) credentials
-      {
-        admin: userId,
-        msgSrvcName: {
-          $exists: false,
-        },
-      },
-      // Next, set the isVerifiable property for each field in form_fields
-      // Refer here for $[identifier] syntax: https://docs.mongodb.com/manual/reference/operator/update/positional-filtered/
-      { $set: { 'form_fields.$[field].isVerifiable': false } },
-      {
-        // Only set if the field has fieldType equal to mobile
-        arrayFilters: [{ 'field.fieldType': 'mobile' }],
-        // NOTE: Not updating the timestamp because we should preserve ordering due to user-level modifications
-        timestamps: false,
-      },
-    ).exec()
-  }
-
   /**
    * Retrieves all the public forms for a user which has sms verifications enabled
    * This only retrieves forms that are using FormSG credentials

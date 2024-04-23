@@ -2609,40 +2609,6 @@ describe('admin-form.service', () => {
     })
   })
 
-  describe('disableSmsVerificationsForUser', () => {
-    it('should return true when the forms are updated successfully', async () => {
-      // Arrange
-      const MOCK_ADMIN_ID = new ObjectId().toHexString()
-      const disableSpy = jest.spyOn(FormModel, 'disableSmsVerificationsForUser')
-      disableSpy.mockResolvedValueOnce({ n: 0, nModified: 0, ok: 0 })
-
-      // Act
-      const expected = await AdminFormService.disableSmsVerificationsForUser(
-        MOCK_ADMIN_ID,
-      )
-
-      // Assert
-      expect(disableSpy).toHaveBeenCalledWith(MOCK_ADMIN_ID)
-      expect(expected._unsafeUnwrap()).toEqual(true)
-    })
-
-    it('should return a database error when the operation fails', async () => {
-      // Arrange
-      const MOCK_ADMIN_ID = new ObjectId().toHexString()
-      const disableSpy = jest.spyOn(FormModel, 'disableSmsVerificationsForUser')
-      disableSpy.mockRejectedValueOnce('whoops')
-
-      // Act
-      const expected = await AdminFormService.disableSmsVerificationsForUser(
-        MOCK_ADMIN_ID,
-      )
-
-      // Assert
-      expect(disableSpy).toHaveBeenCalledWith(MOCK_ADMIN_ID)
-      expect(expected._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
-    })
-  })
-
   describe('shouldUpdateFormField', () => {
     const MOCK_FORM = {
       admin: {

@@ -4,7 +4,6 @@ import {
   LeanDocument,
   Model,
   ToObjectOptions,
-  UpdateWriteOpResult,
 } from 'mongoose'
 import { DeepRequired } from 'ts-essentials'
 import type { Merge, SetOptional } from 'type-fest'
@@ -358,10 +357,6 @@ export interface IFormModel extends Model<IFormSchema> {
   retrieveFormsOwnedByUserId(
     userId: IUserSchema['_id'],
   ): Promise<AdminDashboardFormMetaDto[]>
-
-  disableSmsVerificationsForUser(
-    userId: IUserSchema['_id'],
-  ): Promise<UpdateWriteOpResult>
 
   /**
    * Retrieves all the public forms for a user which has sms verifications enabled

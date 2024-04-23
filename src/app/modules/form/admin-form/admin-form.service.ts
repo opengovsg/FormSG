@@ -1391,31 +1391,6 @@ export const updateStartPage = (
 }
 
 /**
- * Disables sms verifications for all forms belonging to the specified user
- * @param userId the id of the user whose sms verifications should be disabled
- * @returns ok(true) when the forms have been successfully disabled
- * @returns err(PossibleDatabaseError) when an error occurred while attempting to disable sms verifications
- */
-export const disableSmsVerificationsForUser = (
-  userId: string,
-): ResultAsync<true, PossibleDatabaseError> =>
-  ResultAsync.fromPromise(
-    FormModel.disableSmsVerificationsForUser(userId),
-    (error) => {
-      logger.error({
-        message:
-          'Error occurred when attempting to disable sms verifications for user',
-        meta: {
-          action: 'disableSmsVerificationsForUser',
-          userId,
-        },
-        error,
-      })
-      return transformMongoError(error)
-    },
-  ).map(() => true)
-
-/**
  * Checks if the given form field should be updated.
  * This currently checks if the admin has exceeded their free sms limit.
  * @param form The form which the specified field belongs to
