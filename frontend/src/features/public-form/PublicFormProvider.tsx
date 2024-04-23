@@ -62,7 +62,7 @@ import {
 } from '~features/verifiable-fields'
 
 import { FormNotFound } from './components/FormNotFound'
-import { decryptSubmission } from './utils/decryptSubmission'
+import { decryptAttachment, decryptSubmission } from './utils/decryptSubmission'
 import { usePublicAuthMutations, usePublicFormMutations } from './mutations'
 import { PublicFormContext, SubmissionData } from './PublicFormContext'
 import { useEncryptedSubmission, usePublicFormView } from './queries'
@@ -140,6 +140,9 @@ export const PublicFormProvider = ({
     /* enabled= */ !submissionData,
   )
 
+  const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
+    useCommonFormProvider(formId)
+
   const {
     data: encryptedPreviousSubmission,
     isLoading: isSubmissionLoading,
@@ -159,7 +162,53 @@ export const PublicFormProvider = ({
   const [isSubmissionSecretKeyInvalid, setIsSubmissionSecretKeyInvalid] =
     useState(false)
 
+  const [previousAttachments, setPreviousAttachments] = useState<
+    Record<string, ArrayBuffer>
+  >({})
+
   const [searchParams] = useSearchParams()
+
+  // MRF key
+  let submissionSecretKey = ''
+  try {
+    submissionSecretKey = decodeURIComponent(searchParams.get('key') ?? '')
+  } catch (e) {
+    console.log(e)
+  }
+
+  useMemo(async () => {
+    const decryptedAttachments: Record<string, Uint8Array> = {}
+    if (!encryptedPreviousSubmission) return
+    const isValid = isKeypairValid(
+      encryptedPreviousSubmission.submissionPublicKey,
+      submissionSecretKey,
+    )
+    if (!isValid) return
+
+    const decryptionTasks = Object.keys(
+      encryptedPreviousSubmission.encryptedAttachments,
+    ).map(async (id) => {
+      const attachment = encryptedPreviousSubmission.encryptedAttachments[id]
+      let decryptedContent
+      try {
+        decryptedContent = await decryptAttachment(
+          attachment,
+          submissionSecretKey,
+        )
+      } catch (e) {
+        console.error(e, 'failed to decrypt attachment', id)
+        toast({
+          status: 'danger',
+          description: 'Failed to decrypt attachment',
+        })
+      }
+      if (!decryptedContent) return
+
+      decryptedAttachments[id] = decryptedContent
+    })
+    await Promise.all(decryptionTasks)
+    setPreviousAttachments(decryptedAttachments)
+  }, [encryptedPreviousSubmission, submissionSecretKey, toast])
 
   if (
     previousSubmissionId &&
@@ -167,13 +216,6 @@ export const PublicFormProvider = ({
     !previousSubmission &&
     !isSubmissionSecretKeyInvalid
   ) {
-    let submissionSecretKey = ''
-    try {
-      submissionSecretKey = decodeURIComponent(searchParams.get('key') ?? '')
-    } catch (e) {
-      console.log(e)
-    }
-
     const isValid = isKeypairValid(
       encryptedPreviousSubmission.submissionPublicKey,
       submissionSecretKey,
@@ -265,9 +307,6 @@ export const PublicFormProvider = ({
     containerID = recaptchaContainerID
     captchaType = CaptchaTypes.Recaptcha
   }
-
-  const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
-    useCommonFormProvider(formId)
 
   const isPaymentEnabled =
     data?.form.responseMode === FormResponseMode.Encrypt &&
@@ -763,6 +802,7 @@ export const PublicFormProvider = ({
         setNumVisibleFields,
         encryptedPreviousSubmission,
         previousSubmission,
+        previousAttachments,
         setPreviousSubmission,
         ...commonFormValues,
         ...data,

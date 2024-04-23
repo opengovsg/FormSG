@@ -1,6 +1,7 @@
 import type { Opaque, RequireAtLeastOne } from 'type-fest'
 import { z } from 'zod'
 
+import { EncryptedFileContent } from '@opengovsg/formsg-sdk/dist/types'
 import { ErrorDto } from './core'
 import { FormFieldDto, MyInfoAttribute, PaymentFieldsDto } from './field'
 import { FormAuthType } from './form/form'
@@ -152,6 +153,9 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
   encryptedContent: string
   //verified?: string
   attachmentMetadata: Record<string, string>
+  // Populated by FE during upon loading of the submission dto
+  encryptedAttachments: Record<string, EncryptedFileContent>
+
   version: number
   workflowStep: number
 }
