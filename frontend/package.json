@@ -159,7 +159,7 @@
     "@types/gtag.js": "0.0.10",
     "@types/jest": "^26.0.24",
     "@types/node": "^16.11.12",
-    "@types/react": "^17.0.37",
+    "@types/react": "^17.0.80",
     "@types/react-beautiful-dnd": "^13.1.2",
     "@types/react-csv": "^1.1.2",
     "@types/react-dom": "^17.0.11",
