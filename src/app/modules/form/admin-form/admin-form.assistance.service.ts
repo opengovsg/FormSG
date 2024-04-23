@@ -50,20 +50,23 @@ export const generateQuestions = ({
   content: string
 }): ResultAsync<ChatResponseMessage, AssistanceConnectionError> => {
   const messages: ChatRequestMessage[] = [
-    { role: Roles.SYSTEM, content: schemaPromptBuilder(sampleFormFields) },
+    {
+      role: Roles.SYSTEM,
+      content: schemaPromptBuilder(sampleFormFields),
+    } as ChatRequestMessage,
   ]
   switch (type) {
     case ContentTypes.PROMPT:
       messages.push({
         role: Roles.USER,
         content: questionListPromptBuilder(content),
-      })
+      } as ChatRequestMessage)
       break
     case ContentTypes.PDF:
       messages.push({
         role: Roles.USER,
         content: migratePromptBuilder(content),
-      })
+      } as ChatRequestMessage)
       break
     default:
       return errAsync(new AssistanceModelTypeError())
@@ -122,11 +125,14 @@ export const generateFormFields = (
   AssistanceConnectionError | AssistanceModelTypeError
 > => {
   const messages: ChatRequestMessage[] = [
-    { role: Roles.SYSTEM, content: schemaPromptBuilder(sampleFormFields) },
+    {
+      role: Roles.SYSTEM,
+      content: schemaPromptBuilder(sampleFormFields),
+    } as ChatRequestMessage,
     {
       role: Roles.USER,
       content: formFieldsPromptBuilder(questions, sampleFormFields),
-    },
+    } as ChatRequestMessage,
   ]
 
   const options = {
