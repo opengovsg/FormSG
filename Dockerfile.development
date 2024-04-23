@@ -43,7 +43,7 @@ RUN apk update && apk upgrade && \
     py-pip && \
     npm install --quiet node-gyp -g && \
     # [ver1] ensures that the underlying AWS CLI version is also installed
-    pip install awscli-local[ver1]
+    pip install awscli-local[ver1] --break-system-packages
 
 
 # Tell Puppeteer to skip installing Chrome. We'll be using the installed package.
