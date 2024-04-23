@@ -255,7 +255,7 @@ describe('Form Model', () => {
         expect(saved.created).toBeInstanceOf(Date)
         expect(saved.lastModified).toBeInstanceOf(Date)
         // Retrieve object and compare to params, remove indeterministic keys
-        const actualSavedObject = omit(saved.toObject(), [
+        const actualSavedObject = omit(saved.toObject<IFormDocument>(), [
           '_id',
           'created',
           'lastModified',
@@ -1252,7 +1252,7 @@ describe('Form Model', () => {
         const form = await Form.create(formParams)
         await Form.deactivateById(form._id)
         const updated = await Form.findById(form._id)
-        expect(updated!.status).toBe('PRIVATE')
+        expect(updated?.status).toBe('PRIVATE')
       })
 
       it('should not deactivate archived form', async () => {
@@ -1263,7 +1263,7 @@ describe('Form Model', () => {
         const form = await Form.create(formParams)
         await Form.deactivateById(form._id)
         const updated = await Form.findById(form._id)
-        expect(updated!.status).toBe('ARCHIVED')
+        expect(updated?.status).toBe('ARCHIVED')
       })
 
       it('should return null for invalid form ID', async () => {
@@ -1290,7 +1290,9 @@ describe('Form Model', () => {
           admin: populatedAdmin,
         })
         // Create a form
-        const form = (await Form.create(emailFormParams)).toObject()
+        const form = (
+          await Form.create(emailFormParams)
+        ).toObject<IFormDocument>()
 
         // Act
         const actualForm = (await Form.getFullFormById(form._id))?.toObject()
@@ -1321,7 +1323,9 @@ describe('Form Model', () => {
           admin: populatedAdmin,
         })
         // Create a form
-        const form = (await Form.create(encryptFormParams)).toObject()
+        const form = (
+          await Form.create(encryptFormParams)
+        ).toObject<IFormDocument>()
 
         // Act
         const actualForm = (await Form.getFullFormById(form._id))?.toObject()
@@ -1555,7 +1559,7 @@ describe('Form Model', () => {
         // Check that form logic has been added
         expect(modifiedForm?.form_logics).toBeDefined()
         expect(modifiedForm?.form_logics).toHaveLength(1)
-        expect(modifiedForm!.form_logics![0].logicType).toEqual(
+        expect(modifiedForm?.form_logics[0].logicType).toEqual(
           LogicType.PreventSubmit,
         )
       })
@@ -1591,10 +1595,10 @@ describe('Form Model', () => {
         // Check that form logic has been added
         expect(modifiedFormRepeat?.form_logics).toBeDefined()
         expect(modifiedFormRepeat?.form_logics).toHaveLength(2)
-        expect(modifiedFormRepeat!.form_logics![0].logicType).toEqual(
+        expect(modifiedFormRepeat?.form_logics[0].logicType).toEqual(
           LogicType.PreventSubmit,
         )
-        expect(modifiedFormRepeat!.form_logics![1].logicType).toEqual(
+        expect(modifiedFormRepeat?.form_logics[1].logicType).toEqual(
           LogicType.PreventSubmit,
         )
       })
@@ -1628,10 +1632,10 @@ describe('Form Model', () => {
         // Check that form logic has been added
         expect(modifiedForm?.form_logics).toBeDefined()
         expect(modifiedForm?.form_logics).toHaveLength(2)
-        expect(modifiedForm!.form_logics![0].logicType).toEqual(
+        expect(modifiedForm?.form_logics[0].logicType).toEqual(
           LogicType.ShowFields,
         )
-        expect(modifiedForm!.form_logics![1].logicType).toEqual(
+        expect(modifiedForm?.form_logics[1].logicType).toEqual(
           LogicType.PreventSubmit,
         )
       })
@@ -1733,7 +1737,7 @@ describe('Form Model', () => {
         expect(modifiedForm?.form_logics).toBeDefined()
         expect(modifiedForm?.form_logics).toHaveLength(1)
         const logic = modifiedForm?.form_logics || ['some logic']
-        expect((logic[0] as any)['_id'].toString()).toEqual(logicId2)
+        expect((logic[0] as unknown as any)['_id'].toString()).toEqual(logicId2)
       })
 
       it('should return null if formId is invalid', async () => {
@@ -1768,7 +1772,9 @@ describe('Form Model', () => {
 
         // Assert
         // Only non-deleted form field remains
-        const expectedFormFields = [form.toObject().form_fields![1]]
+        const expectedFormFields = [
+          form.toObject<IFormDocument>().form_fields[1],
+        ]
         const retrievedForm = await Form.findById(form._id).lean()
         // Check return shape.
         expect(actual?.toObject().form_fields).toEqual(expectedFormFields)
@@ -1810,7 +1816,7 @@ describe('Form Model', () => {
             title: 'old title',
           },
         })
-        const form = (await Form.create(formParams)).toObject()
+        const form = (await Form.create(formParams)).toObject<IFormDocument>()
         const updatedEndPage: FormEndPage = {
           title: 'some new title',
           paragraph: 'some description paragraph',
@@ -1948,7 +1954,7 @@ describe('Form Model', () => {
         // Check that form logic has been updated
         expect(modifiedForm?.form_logics).toBeDefined()
         expect(modifiedForm?.form_logics).toHaveLength(1)
-        expect(modifiedForm!.form_logics![0].logicType).toEqual(
+        expect(modifiedForm?.form_logics?.[0].logicType).toEqual(
           LogicType.PreventSubmit,
         )
       })
@@ -1983,10 +1989,10 @@ describe('Form Model', () => {
         // Check that first form logic has been updated but second is unchanges
         expect(modifiedForm?.form_logics).toBeDefined()
         expect(modifiedForm?.form_logics).toHaveLength(2)
-        expect(modifiedForm!.form_logics![0].logicType).toEqual(
+        expect(modifiedForm?.form_logics?.[0].logicType).toEqual(
           LogicType.PreventSubmit,
         )
-        expect(modifiedForm!.form_logics![1].logicType).toEqual(
+        expect(modifiedForm?.form_logics?.[1].logicType).toEqual(
           LogicType.ShowFields,
         )
       })
@@ -2047,7 +2053,7 @@ describe('Form Model', () => {
         // Check that form logic has not been updated and there are no new form logics introduced
         expect(modifiedForm?.form_logics).toBeDefined()
         expect(modifiedForm?.form_logics).toHaveLength(1)
-        expect(modifiedForm!.form_logics![0].logicType).toEqual(
+        expect(modifiedForm?.form_logics?.[0].logicType).toEqual(
           LogicType.ShowFields,
         )
       })
@@ -2062,7 +2068,7 @@ describe('Form Model', () => {
             title: 'old title',
           },
         })
-        const form = (await Form.create(formParams)).toObject()
+        const form = (await Form.create(formParams)).toObject<IFormDocument>()
         const prevModifiedDate = form.lastModified
         const updatedStartPage: FormStartPage = {
           paragraph: 'some description paragraph',
@@ -2095,7 +2101,7 @@ describe('Form Model', () => {
         const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
           admin: MOCK_ADMIN_OBJ_ID,
         })
-        const form = (await Form.create(formParams)).toObject()
+        const form = (await Form.create(formParams)).toObject<IFormDocument>()
         const updatedStartPage: FormStartPage = {
           paragraph: 'some description paragraph',
           colorTheme: FormColorTheme.Blue,
@@ -2146,161 +2152,6 @@ describe('Form Model', () => {
         // Assert
         expect(actual).toEqual(null)
         await expect(Form.countDocuments()).resolves.toEqual(0)
-      })
-    })
-
-    describe('disableSmsVerificationsForUser', () => {
-      const MOCK_MSG_SRVC_NAME = 'mockTwilioId'
-      it('should disable sms verifications for all forms belonging to a user that are not onboarded successfully', async () => {
-        // Arrange
-        const mockFormPromises = range(3).map((_, idx) => {
-          const isOnboarded = !!(idx % 2)
-          return Form.create({
-            admin: populatedAdmin._id,
-            responseMode: FormResponseMode.Email,
-            title: 'mock mobile form',
-            emails: [populatedAdmin.email],
-            ...(isOnboarded && { msgSrvcName: MOCK_MSG_SRVC_NAME }),
-            form_fields: [
-              generateDefaultField(BasicField.Mobile, { isVerifiable: true }),
-            ],
-          })
-        })
-        await Promise.all(mockFormPromises)
-
-        // Act
-        await Form.disableSmsVerificationsForUser(populatedAdmin._id)
-
-        // Assert
-        // Find all forms that match admin id
-        // All forms with msgSrvcName have been using their own credentials
-        // They should not have verifications disabled.
-        const onboardedForms = await Form.find({
-          admin: populatedAdmin._id,
-          msgSrvcName: {
-            $exists: true,
-          },
-        })
-        onboardedForms.map(({ form_fields }) =>
-          form_fields!.map((field) => {
-            expect(field.isVerifiable).toBe(true)
-          }),
-        )
-
-        // Conversely, forms without msgSrvcName are using our credentials
-        // And should have their verifications disabled.
-        const notOnboardedForms = await Form.find({
-          admin: populatedAdmin._id,
-          msgSrvcName: {
-            $exists: false,
-          },
-        })
-
-        notOnboardedForms.map(({ form_fields }) =>
-          form_fields!.map((field) => {
-            expect(field.isVerifiable).toBe(false)
-          }),
-        )
-      })
-
-      it('should not disable non mobile fields for a user', async () => {
-        // Arrange
-        const mockFormPromises = range(3).map(() => {
-          return Form.create({
-            admin: populatedAdmin._id,
-            responseMode: FormResponseMode.Email,
-            title: 'mock email form',
-            emails: [populatedAdmin.email],
-            form_fields: [
-              generateDefaultField(BasicField.Email, { isVerifiable: true }),
-            ],
-          })
-        })
-        await Promise.all(mockFormPromises)
-
-        // Act
-        await Form.disableSmsVerificationsForUser(populatedAdmin._id)
-
-        // Assert
-        // Find all forms that match admin id
-        const updatedForms = await Form.find({ admin: populatedAdmin._id })
-        updatedForms.map(({ form_fields }) =>
-          form_fields!.map((field) => {
-            expect(field.isVerifiable).toBe(true)
-          }),
-        )
-      })
-
-      it('should only disable sms verifications for a particular user', async () => {
-        // Arrange
-        const MOCK_USER_ID = new ObjectId()
-        await dbHandler.insertFormCollectionReqs({
-          userId: MOCK_USER_ID,
-          mailDomain: 'something.com',
-        })
-        await Form.create({
-          admin: populatedAdmin._id,
-          responseMode: FormResponseMode.Email,
-          title: 'mock email form',
-          emails: [populatedAdmin.email],
-          form_fields: [
-            generateDefaultField(BasicField.Mobile, { isVerifiable: true }),
-          ],
-        })
-        await Form.create({
-          admin: MOCK_USER_ID,
-          responseMode: FormResponseMode.Email,
-          title: 'mock email form',
-          emails: [populatedAdmin.email],
-          form_fields: [
-            generateDefaultField(BasicField.Email, { isVerifiable: true }),
-          ],
-        })
-
-        // Act
-        await Form.disableSmsVerificationsForUser(populatedAdmin._id)
-
-        // Assert
-        // Find all forms that match admin id
-        const updatedMobileForms = (await Form.find({
-          admin: populatedAdmin._id,
-        })) as IFormDocument[]
-        expect(updatedMobileForms[0].form_fields[0].isVerifiable).toBe(false)
-        const updatedEmailForm = (await Form.find({
-          admin: MOCK_USER_ID,
-        })) as IFormDocument[]
-        expect(updatedEmailForm[0].form_fields[0].isVerifiable).toBe(true)
-      })
-
-      it('should not update when a db error occurs', async () => {
-        // Arrange
-        const disableSpy = jest.spyOn(Form, 'disableSmsVerificationsForUser')
-        // @ts-ignore
-        disableSpy.mockResolvedValueOnce(new Error('tee hee db crashed'))
-        const mockFormPromises = range(3).map(() => {
-          return Form.create({
-            admin: populatedAdmin._id,
-            responseMode: FormResponseMode.Email,
-            title: 'mock mobile form',
-            emails: [populatedAdmin.email],
-            form_fields: [
-              generateDefaultField(BasicField.Mobile, { isVerifiable: true }),
-            ],
-          })
-        })
-        await Promise.all(mockFormPromises)
-
-        // Act
-        await Form.disableSmsVerificationsForUser(populatedAdmin._id)
-
-        // Assert
-        // Find all forms that match admin id
-        const updatedForms = await Form.find({ admin: populatedAdmin._id })
-        updatedForms.map(({ form_fields }) =>
-          form_fields!.map((field) => {
-            expect(field.isVerifiable).toBe(true)
-          }),
-        )
       })
     })
 
@@ -3065,7 +2916,7 @@ describe('Form Model', () => {
         // Act
         const updatedForm = await form.updateMsgSrvcName(MOCK_MSG_SRVC_NAME)
         // Assert
-        expect(updatedForm!.msgSrvcName).toBe(MOCK_MSG_SRVC_NAME)
+        expect(updatedForm?.msgSrvcName).toBe(MOCK_MSG_SRVC_NAME)
       })
     })
 
@@ -3083,7 +2934,7 @@ describe('Form Model', () => {
         const updatedForm = await form.deleteMsgSrvcName()
 
         // Assert
-        expect(updatedForm!.msgSrvcName).toBeUndefined()
+        expect(updatedForm?.msgSrvcName).toBeUndefined()
       })
     })
   })

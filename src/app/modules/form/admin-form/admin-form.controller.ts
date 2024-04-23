@@ -1320,12 +1320,6 @@ export const handleDuplicateFormField: ControllerHandler<
         level: PermissionLevel.Write,
       }),
     )
-    .andThen((form) => {
-      return AdminFormService.getFormField(form, fieldId).asyncAndThen(
-        (formFieldToDuplicate) =>
-          AdminFormService.shouldUpdateFormField(form, formFieldToDuplicate),
-      )
-    })
     .andThen((form) => AdminFormService.duplicateFormField(form, fieldId))
     .map((duplicatedField) =>
       res.status(StatusCodes.OK).json(duplicatedField as FormFieldDto),
@@ -1512,11 +1506,7 @@ export const _handleUpdateFormField: ControllerHandler<
           level: PermissionLevel.Write,
         }),
       )
-      // Step 3: Check if the user has exceeded the allowable limit for sms if the fieldType is mobile
-      .andThen((form) =>
-        AdminFormService.shouldUpdateFormField(form, updatedFormField),
-      )
-      // Step 4: User has permissions, update form field of retrieved form.
+      // Step 3: User has permissions, update form field of retrieved form.
       .andThen((form) =>
         AdminFormService.updateFormField(form, fieldId, updatedFormField),
       )
@@ -1958,11 +1948,7 @@ export const _handleCreateFormField: ControllerHandler<
           level: PermissionLevel.Write,
         }),
       )
-      // Step 3: Check if the user has exceeded the allowable limit for sms if the fieldType is mobile
-      .andThen((form) =>
-        AdminFormService.shouldUpdateFormField(form, formFieldToCreate),
-      )
-      // Step 4: User has permissions, proceed to create form field with provided body.
+      // Step 3: User has permissions, proceed to create form field with provided body.
       .andThen((form) =>
         AdminFormService.createFormField(form, formFieldToCreate, to),
       )
