@@ -4,7 +4,8 @@
   "extends": [
     "eslint:recommended",
     "plugin:prettier/recommended",
-    "plugin:storybook/recommended"
+    "plugin:storybook/recommended",
+    "plugin:react-hooks/recommended"
   ],
   "overrides": [
     {
