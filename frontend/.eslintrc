@@ -31,7 +31,8 @@
       "rules": {
         "@typescript-eslint/no-non-null-assertion": "off",
         "testing-library/no-unnecessary-act": "off",
-        "@typescript-eslint/no-explicit-any": "off"
+        "@typescript-eslint/no-explicit-any": "off",
+        "no-unsafe-optional-chaining": "off"
       }
     }
   ],
