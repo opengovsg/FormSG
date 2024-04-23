@@ -194,15 +194,8 @@ export const _handleGenerateOtp: ControllerHandler<
             },
         ),
       )
-      .map(({ updatedTransaction, form, otpPrefix }) => {
-        res.status(StatusCodes.CREATED).json({ otpPrefix })
-        // NOTE: This is returned because tests require this to avoid async mocks interfering with each other.
-        // However, this is not an issue in reality because express does not require awaiting on the sendStatus call.
-        return VerificationService.disableVerifiedFieldsIfRequired(
-          form,
-          updatedTransaction,
-          fieldId,
-        )
+      .map(({ otpPrefix }) => {
+        return res.status(StatusCodes.CREATED).json({ otpPrefix })
       })
       .mapErr((error) => {
         logger.error({

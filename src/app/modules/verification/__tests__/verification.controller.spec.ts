@@ -303,9 +303,6 @@ describe('Verification controller', () => {
 
     it('should return 201 when params are valid and form has no SPCP/MyInfo authentication required', async () => {
       // Arrange
-      MockVerificationService.disableVerifiedFieldsIfRequired.mockReturnValueOnce(
-        okAsync(true),
-      )
 
       // Act
       await VerificationController._handleGenerateOtp(
@@ -332,13 +329,6 @@ describe('Verification controller', () => {
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_FORM_OTP,
       )
-      expect(
-        MockVerificationService.disableVerifiedFieldsIfRequired,
-      ).toHaveBeenCalledWith(
-        MOCK_FORM,
-        mockTransaction,
-        MOCK_FORM_REQ.params.fieldId,
-      )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
     })
 
@@ -358,9 +348,6 @@ describe('Verification controller', () => {
       mockSpOidcServiceClass.extractJwt.mockReturnValueOnce(ok(MOCK_JWT))
       mockSpOidcServiceClass.extractJwtPayload.mockReturnValueOnce(
         okAsync(MOCK_SP_SESSION),
-      )
-      MockVerificationService.disableVerifiedFieldsIfRequired.mockReturnValueOnce(
-        okAsync(true),
       )
 
       // Act
@@ -384,13 +371,6 @@ describe('Verification controller', () => {
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_FORM_OTP,
       )
-      expect(
-        MockVerificationService.disableVerifiedFieldsIfRequired,
-      ).toHaveBeenCalledWith(
-        MOCK_SP_FORM,
-        mockTransaction,
-        MOCK_FORM_REQ.params.fieldId,
-      )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
     })
 
@@ -407,10 +387,6 @@ describe('Verification controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_CP_FORM),
       )
-      MockVerificationService.disableVerifiedFieldsIfRequired.mockReturnValueOnce(
-        okAsync(true),
-      )
-
       mockCpOidcServiceClass.extractJwt.mockReturnValueOnce(ok(MOCK_JWT))
       mockCpOidcServiceClass.extractJwtPayload.mockReturnValueOnce(
         okAsync(MOCK_CP_SESSION),
@@ -437,19 +413,15 @@ describe('Verification controller', () => {
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_FORM_OTP,
       )
-      expect(
-        MockVerificationService.disableVerifiedFieldsIfRequired,
-      ).toHaveBeenCalledWith(
-        MOCK_CP_FORM,
-        mockTransaction,
-        MOCK_FORM_REQ.params.fieldId,
-      )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
     })
 
     it('should return 201 when SGID authentication is enabled and sgid jwt token is valid', async () => {
       // Arrange
-      const MOCK_VALID_SGID_PAYLOAD = { userName: MOCK_JWT_PAYLOAD.userName }
+      const MOCK_VALID_SGID_PAYLOAD = {
+        userName: MOCK_JWT_PAYLOAD.userName,
+        rememberMe: false,
+      }
       const MOCK_SGID_REQ = expressHandler.mockRequest({
         body: { answer: MOCK_ANSWER },
         params: {
@@ -463,9 +435,6 @@ describe('Verification controller', () => {
 
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_SGID_FORM),
-      )
-      MockVerificationService.disableVerifiedFieldsIfRequired.mockReturnValueOnce(
-        okAsync(true),
       )
       MockSgidService.extractSgidSingpassJwtPayload.mockReturnValueOnce(
         ok(MOCK_VALID_SGID_PAYLOAD),
@@ -489,13 +458,6 @@ describe('Verification controller', () => {
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_FORM_OTP,
       )
-      expect(
-        MockVerificationService.disableVerifiedFieldsIfRequired,
-      ).toHaveBeenCalledWith(
-        MOCK_SGID_FORM,
-        mockTransaction,
-        MOCK_FORM_REQ.params.fieldId,
-      )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
     })
 
@@ -510,10 +472,6 @@ describe('Verification controller', () => {
       MockMyInfoService.verifyLoginJwt.mockReturnValueOnce(
         ok(MOCK_MYINFO_LOGIN_COOKIE),
       )
-      MockVerificationService.disableVerifiedFieldsIfRequired.mockReturnValueOnce(
-        okAsync(true),
-      )
-
       // Act
       await VerificationController._handleGenerateOtp(
         MOCK_FORM_REQ,
@@ -535,13 +493,6 @@ describe('Verification controller', () => {
       expect(MockOtpUtils.generateOtpWithHash).toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_FORM_OTP,
-      )
-      expect(
-        MockVerificationService.disableVerifiedFieldsIfRequired,
-      ).toHaveBeenCalledWith(
-        MOCK_MYINFO_FORM,
-        mockTransaction,
-        MOCK_FORM_REQ.params.fieldId,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
     })
@@ -1205,9 +1156,6 @@ describe('Verification controller', () => {
 
     it('should return 201 when params are valid and form has no SPCP/MyInfo authentication required for payment otp', async () => {
       // Arrange
-      MockVerificationService.disableVerifiedFieldsIfRequired.mockReturnValueOnce(
-        okAsync(true),
-      )
 
       // Act
       await VerificationController._handleGenerateOtp(
@@ -1234,13 +1182,7 @@ describe('Verification controller', () => {
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_PAYMENT_OTP,
       )
-      expect(
-        MockVerificationService.disableVerifiedFieldsIfRequired,
-      ).toHaveBeenCalledWith(
-        MOCK_FORM,
-        mockTransaction,
-        MOCK_PAYMENT_REQ.params.fieldId,
-      )
+
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
     })
 
@@ -1260,9 +1202,6 @@ describe('Verification controller', () => {
       mockSpOidcServiceClass.extractJwt.mockReturnValueOnce(ok(MOCK_JWT))
       mockSpOidcServiceClass.extractJwtPayload.mockReturnValueOnce(
         okAsync(MOCK_SP_SESSION),
-      )
-      MockVerificationService.disableVerifiedFieldsIfRequired.mockReturnValueOnce(
-        okAsync(true),
       )
 
       // Act
@@ -1286,13 +1225,7 @@ describe('Verification controller', () => {
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_PAYMENT_OTP,
       )
-      expect(
-        MockVerificationService.disableVerifiedFieldsIfRequired,
-      ).toHaveBeenCalledWith(
-        MOCK_SP_FORM,
-        mockTransaction,
-        MOCK_PAYMENT_REQ.params.fieldId,
-      )
+
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
     })
 
@@ -1308,9 +1241,6 @@ describe('Verification controller', () => {
 
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_CP_FORM),
-      )
-      MockVerificationService.disableVerifiedFieldsIfRequired.mockReturnValueOnce(
-        okAsync(true),
       )
 
       mockCpOidcServiceClass.extractJwt.mockReturnValueOnce(ok(MOCK_JWT))
@@ -1339,19 +1269,16 @@ describe('Verification controller', () => {
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_PAYMENT_OTP,
       )
-      expect(
-        MockVerificationService.disableVerifiedFieldsIfRequired,
-      ).toHaveBeenCalledWith(
-        MOCK_CP_FORM,
-        mockTransaction,
-        MOCK_PAYMENT_REQ.params.fieldId,
-      )
+
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
     })
 
     it('should return 201 when SGID authentication is enabled and sgid jwt token is valid for payment otp', async () => {
       // Arrange
-      const MOCK_VALID_SGID_PAYLOAD = { userName: MOCK_JWT_PAYLOAD.userName }
+      const MOCK_VALID_SGID_PAYLOAD = {
+        userName: MOCK_JWT_PAYLOAD.userName,
+        rememberMe: false,
+      }
       const MOCK_SGID_REQ = expressHandler.mockRequest({
         body: { answer: MOCK_ANSWER },
         params: {
@@ -1366,9 +1293,7 @@ describe('Verification controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_SGID_FORM),
       )
-      MockVerificationService.disableVerifiedFieldsIfRequired.mockReturnValueOnce(
-        okAsync(true),
-      )
+
       MockSgidService.extractSgidSingpassJwtPayload.mockReturnValueOnce(
         ok(MOCK_VALID_SGID_PAYLOAD),
       )
@@ -1391,13 +1316,7 @@ describe('Verification controller', () => {
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_PAYMENT_OTP,
       )
-      expect(
-        MockVerificationService.disableVerifiedFieldsIfRequired,
-      ).toHaveBeenCalledWith(
-        MOCK_SGID_FORM,
-        mockTransaction,
-        MOCK_PAYMENT_REQ.params.fieldId,
-      )
+
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
     })
 
@@ -1411,9 +1330,6 @@ describe('Verification controller', () => {
       )
       MockMyInfoService.verifyLoginJwt.mockReturnValueOnce(
         ok(MOCK_MYINFO_LOGIN_COOKIE),
-      )
-      MockVerificationService.disableVerifiedFieldsIfRequired.mockReturnValueOnce(
-        okAsync(true),
       )
 
       // Act
@@ -1438,13 +1354,7 @@ describe('Verification controller', () => {
       expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
         EXPECTED_PARAMS_FOR_SENDING_PAYMENT_OTP,
       )
-      expect(
-        MockVerificationService.disableVerifiedFieldsIfRequired,
-      ).toHaveBeenCalledWith(
-        MOCK_MYINFO_FORM,
-        mockTransaction,
-        MOCK_PAYMENT_REQ.params.fieldId,
-      )
+
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
     })
 

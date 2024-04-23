@@ -18,7 +18,6 @@ import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-data'
 import { PAYMENT_CONTACT_FIELD_ID } from 'shared/constants'
 
-import { smsConfig } from 'src/app/config/features/sms.config'
 import formsgSdk from 'src/app/config/formsg-sdk'
 import * as FormService from 'src/app/modules/form/form.service'
 import {
@@ -29,28 +28,16 @@ import {
   OtpRetryExceededError,
   WrongOtpError,
 } from 'src/app/modules/verification/verification.errors'
-import {
-  MailGenerationError,
-  MailSendError,
-} from 'src/app/services/mail/mail.errors'
+import { MailSendError } from 'src/app/services/mail/mail.errors'
 import MailService from 'src/app/services/mail/mail.service'
 import { SmsSendError } from 'src/app/services/sms/sms.errors'
 import { SmsFactory } from 'src/app/services/sms/sms.factory'
-import * as SmsService from 'src/app/services/sms/sms.service'
 import * as HashUtils from 'src/app/utils/hash'
-import {
-  IFormSchema,
-  IPopulatedForm,
-  IVerificationSchema,
-  UpdateFieldData,
-} from 'src/types'
+import { IFormSchema, IVerificationSchema, UpdateFieldData } from 'src/types'
 
 import { BasicField } from '../../../../../shared/types'
-import { SMS_WARNING_TIERS } from '../../../../../shared/utils/verification'
 import { DatabaseError } from '../../core/core.errors'
-import * as AdminFormService from '../../form/admin-form/admin-form.service'
 import { FormNotFoundError } from '../../form/form.errors'
-import * as FormUtils from '../../form/form.utils'
 import {
   FieldNotFoundInTransactionError,
   TransactionExpiredError,
@@ -1149,226 +1136,6 @@ describe('Verification service', () => {
         )
         expect(result._unsafeUnwrapErr()).toEqual(new WrongOtpError())
       })
-    })
-  })
-
-  describe('disableVerifiedFieldsIfRequired', () => {
-    const MOCK_FORM = {
-      title: 'some mock form',
-      _id: new ObjectId(),
-      admin: {
-        _id: new ObjectId(),
-      },
-      permissionList: [{ email: 'some@user.gov.sg' }],
-    } as IPopulatedForm
-    let mobileTransaction: IVerificationSchema
-    const EMAIL_FIELD = generateFieldParams({ fieldType: BasicField.Email })
-    const MOBILE_FIELD = generateFieldParams({ fieldType: BasicField.Mobile })
-    const onboardSpy = jest.spyOn(FormUtils, 'isFormOnboarded')
-    const retrievalSpy = jest.spyOn(SmsService, 'retrieveFreeSmsCounts')
-    const disableSpy = jest.spyOn(
-      AdminFormService,
-      'disableSmsVerificationsForUser',
-    )
-
-    beforeEach(async () => {
-      mobileTransaction = await VerificationModel.create({
-        formId: MOCK_FORM._id,
-        fields: [MOBILE_FIELD],
-        // Expire 1 hour in future
-        expireAt: addHours(new Date(), 1),
-      })
-    })
-
-    it('should not do anything when the transaction is not for a BasicField.Mobile field', async () => {
-      // Arrange
-      const nonMobileTransaction = await VerificationModel.create({
-        formId: MOCK_FORM._id,
-        fields: [EMAIL_FIELD],
-        // Expire 1 hour in future
-        expireAt: addHours(new Date(), 1),
-      })
-
-      // Act
-      const actualResult =
-        await VerificationService.disableVerifiedFieldsIfRequired(
-          MOCK_FORM,
-          nonMobileTransaction,
-          EMAIL_FIELD._id,
-        )
-
-      // Assert
-      expect(actualResult._unsafeUnwrap()).toEqual(false)
-      expect(retrievalSpy).not.toHaveBeenCalled()
-    })
-
-    it('should not do anything when the form is onboarded even with Mobile field', async () => {
-      // Arrange
-      onboardSpy.mockReturnValueOnce(true)
-
-      // Act
-      const actualResult =
-        await VerificationService.disableVerifiedFieldsIfRequired(
-          MOCK_FORM,
-          mobileTransaction,
-          MOBILE_FIELD._id,
-        )
-
-      // Assert
-      expect(actualResult._unsafeUnwrap()).toBe(false)
-      expect(retrievalSpy).not.toHaveBeenCalled()
-    })
-
-    it('should disable sms verifications and send email when sms limit is exceeded', async () => {
-      // Arrange
-      MockMailService.sendSmsVerificationDisabledEmail.mockReturnValueOnce(
-        okAsync(true),
-      )
-
-      disableSpy.mockReturnValueOnce(okAsync(true))
-      retrievalSpy.mockReturnValueOnce(
-        okAsync(smsConfig.smsVerificationLimit + 1),
-      )
-
-      // Act
-      const actualResult =
-        await VerificationService.disableVerifiedFieldsIfRequired(
-          MOCK_FORM,
-          mobileTransaction,
-          MOBILE_FIELD._id,
-        )
-
-      // Assert
-      expect(actualResult._unsafeUnwrap()).toBe(true)
-      expect(
-        MockMailService.sendSmsVerificationDisabledEmail,
-      ).toHaveBeenCalledWith(MOCK_FORM)
-      // NOTE: String casting is required so that the test recognises them as equal
-      expect(disableSpy).toHaveBeenCalledWith(String(MOCK_FORM.admin._id))
-    })
-
-    it('should send a warning when the admin has sent out a certain number of sms', async () => {
-      // Arrange
-      MockMailService.sendSmsVerificationWarningEmail.mockReturnValueOnce(
-        okAsync(true),
-      )
-      retrievalSpy.mockReturnValueOnce(okAsync(SMS_WARNING_TIERS.LOW))
-
-      // Act
-      const actualResult =
-        await VerificationService.disableVerifiedFieldsIfRequired(
-          MOCK_FORM,
-          mobileTransaction,
-          MOBILE_FIELD._id,
-        )
-      // Assert
-      expect(actualResult._unsafeUnwrap()).toBe(true)
-      expect(disableSpy).not.toHaveBeenCalled()
-      expect(
-        MockMailService.sendSmsVerificationWarningEmail,
-      ).toHaveBeenCalledWith(MOCK_FORM, SMS_WARNING_TIERS.LOW)
-    })
-
-    it('should not do anything when the sms sent by admin is not at any limit', async () => {
-      // Arrange
-      retrievalSpy.mockReturnValueOnce(okAsync(SMS_WARNING_TIERS.LOW - 1))
-
-      // Act
-      const actualResult =
-        await VerificationService.disableVerifiedFieldsIfRequired(
-          MOCK_FORM,
-          mobileTransaction,
-          MOBILE_FIELD._id,
-        )
-      // Assert
-      expect(actualResult._unsafeUnwrap()).toBe(false)
-      expect(
-        MockMailService.sendSmsVerificationDisabledEmail,
-      ).not.toHaveBeenCalled()
-      expect(
-        MockMailService.sendSmsVerificationWarningEmail,
-      ).not.toHaveBeenCalled()
-      expect(disableSpy).not.toHaveBeenCalled()
-    })
-
-    it('should log any errors encountered during warning mail sending', async () => {
-      // Arrange
-      const expected = new MailGenerationError('big ded')
-      MockMailService.sendSmsVerificationWarningEmail.mockReturnValueOnce(
-        errAsync(expected),
-      )
-      retrievalSpy.mockReturnValueOnce(okAsync(SMS_WARNING_TIERS.LOW))
-
-      // Act
-      const actualResult =
-        await VerificationService.disableVerifiedFieldsIfRequired(
-          MOCK_FORM,
-          mobileTransaction,
-          MOBILE_FIELD._id,
-        )
-      // Assert
-      expect(actualResult._unsafeUnwrapErr()).toBe(undefined)
-      expect(disableSpy).not.toHaveBeenCalled()
-      expect(
-        MockMailService.sendSmsVerificationWarningEmail,
-      ).toHaveBeenCalledWith(MOCK_FORM, SMS_WARNING_TIERS.LOW)
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        expect.objectContaining({ error: expected }),
-      )
-    })
-
-    it('should propagate any errors encountered during disabled mail sending', async () => {
-      // Arrange
-      const expected = new MailGenerationError('big ded')
-      MockMailService.sendSmsVerificationDisabledEmail.mockReturnValueOnce(
-        errAsync(expected),
-      )
-      retrievalSpy.mockReturnValueOnce(
-        okAsync(smsConfig.smsVerificationLimit + 1),
-      )
-
-      // Act
-      const actualResult =
-        await VerificationService.disableVerifiedFieldsIfRequired(
-          MOCK_FORM,
-          mobileTransaction,
-          MOBILE_FIELD._id,
-        )
-
-      // Assert
-      expect(disableSpy).not.toHaveBeenCalled()
-      expect(
-        MockMailService.sendSmsVerificationWarningEmail,
-      ).not.toHaveBeenCalled()
-      expect(actualResult._unsafeUnwrapErr()).toBe(undefined)
-      expect(
-        MockMailService.sendSmsVerificationDisabledEmail,
-      ).toHaveBeenCalledWith(MOCK_FORM)
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        expect.objectContaining({ error: expected }),
-      )
-    })
-
-    it('should log the error received when retrieval of sms counts fails', async () => {
-      // Arrange
-      const expected = new DatabaseError()
-      onboardSpy.mockReturnValueOnce(false)
-      retrievalSpy.mockReturnValueOnce(errAsync(expected))
-
-      // Act
-      const actualResult =
-        await VerificationService.disableVerifiedFieldsIfRequired(
-          MOCK_FORM,
-          mobileTransaction,
-          MOBILE_FIELD._id,
-        )
-
-      // Assert
-      expect(actualResult._unsafeUnwrapErr()).toBe(undefined)
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        expect.objectContaining({ error: expected }),
-      )
-      expect(retrievalSpy).toHaveBeenCalledWith(String(MOCK_FORM.admin._id))
     })
   })
 
