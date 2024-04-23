@@ -65,7 +65,7 @@
       }
     },
     {
-      "files": ["**/*.spec.ts", "**/.spec.js", "**/__tests__/**/*.ts"],
+      "files": ["**/*.spec.ts", "**/__tests__/**/*.ts"],
       "extends": ["plugin:jest/recommended"],
       "rules": {
         "@typescript-eslint/no-explicit-any": "off"
@@ -73,7 +73,7 @@
     },
     {
       "files": ["*.ts", "*.js"],
-      "excludedFiles": ["**/*.spec.ts", "**/.spec.js", "**/__tests__/**/*.ts"],
+      "excludedFiles": ["**/*.spec.ts", "**/__tests__/**/*.ts"],
       "rules": {
         "@typescript-eslint/no-non-null-assertion": "error"
       }
