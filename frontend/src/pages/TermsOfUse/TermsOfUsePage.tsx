@@ -72,8 +72,8 @@ export const SubSectionListItem: FC<ListItemProps & listItemMarkerProps> = ({
   const markerType = isNumericMarker
     ? 'numeric'
     : isRomanMarker
-    ? 'lower-roman'
-    : 'lower-alpha'
+      ? 'lower-roman'
+      : 'lower-alpha'
   const sequenceMarker = useMemo(() => {
     return `"${
       prependSequenceMarker ? prependSequenceMarker : '('

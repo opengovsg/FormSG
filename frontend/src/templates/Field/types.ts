@@ -85,20 +85,20 @@ export type FormFieldValue<F extends BasicField = BasicField> = F extends
   | BasicField.CountryRegion
   ? SingleAnswerValue
   : F extends BasicField.YesNo
-  ? YesNoFieldValue
-  : F extends BasicField.Attachment
-  ? File
-  : F extends BasicField.Email | BasicField.Mobile
-  ? VerifiableFieldValues
-  : F extends BasicField.Table
-  ? TableFieldValues
-  : F extends BasicField.Radio
-  ? RadioFieldValues
-  : F extends BasicField.Checkbox
-  ? CheckboxFieldValues
-  : F extends BasicField.Children
-  ? ChildrenCompoundFieldValues
-  : never
+    ? YesNoFieldValue
+    : F extends BasicField.Attachment
+      ? File
+      : F extends BasicField.Email | BasicField.Mobile
+        ? VerifiableFieldValues
+        : F extends BasicField.Table
+          ? TableFieldValues
+          : F extends BasicField.Radio
+            ? RadioFieldValues
+            : F extends BasicField.Checkbox
+              ? CheckboxFieldValues
+              : F extends BasicField.Children
+                ? ChildrenCompoundFieldValues
+                : never
 
 // Input values, what each field contains
 export type SingleAnswerValue = string

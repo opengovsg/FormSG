@@ -33,7 +33,7 @@ type EditEmailProps = EditFieldProps<EmailFieldBase>
 
 type EditEmailInputs = Pick<
   EmailFieldBase,
-  typeof EDIT_EMAIL_FIELD_KEYS[number]
+  (typeof EDIT_EMAIL_FIELD_KEYS)[number]
 > & {
   hasAllowedEmailDomains: boolean
   allowedEmailDomains: string
