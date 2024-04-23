@@ -7,7 +7,6 @@ import { startsWithSgPrefix } from '../../../../shared/utils/phone-num-validatio
 import { NUM_OTP_RETRIES } from '../../../../shared/utils/verification'
 import {
   IFormSchema,
-  IPopulatedForm,
   IVerificationFieldSchema,
   IVerificationSchema,
 } from '../../../types'
@@ -317,32 +316,6 @@ export const sendNewOtp = ({
         return okAsync(newTransaction)
       })
   })
-}
-
-export const disableVerifiedFieldsIfRequired = (
-  form: IPopulatedForm,
-  transaction: IVerificationSchema,
-  fieldId: string,
-): ResultAsync<boolean, void> => {
-  return getFieldFromTransaction(
-    transaction,
-    fieldId === PAYMENT_CONTACT_FIELD_ID,
-    fieldId,
-  )
-    .asyncAndThen(() => okAsync(false))
-    .mapErr((error) => {
-      logger.error({
-        message:
-          'Error checking sms counts or deactivating OTP verification for admin',
-        meta: {
-          action: 'checkShouldDisabledVerifiedMobileFields',
-          transactionId: transaction._id,
-          fieldId,
-          formId: transaction.formId,
-        },
-        error,
-      })
-    })
 }
 
 /**
