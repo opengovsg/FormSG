@@ -63,7 +63,7 @@ const getResponse = (_id: string, answer: string): SingleAnswerFieldResponse =>
     fieldType: BasicField.Attachment,
     question: 'mockQuestion',
     answer,
-  } as unknown as SingleAnswerFieldResponse)
+  }) as unknown as SingleAnswerFieldResponse
 
 describe('submission.utils', () => {
   describe('getResponseModeFilter', () => {

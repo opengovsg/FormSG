@@ -2755,9 +2755,8 @@ describe('admin-form.service', () => {
 
       // Act
 
-      const actualResult = await AdminFormService.deleteTwilioCredentials(
-        MOCK_FORM,
-      )
+      const actualResult =
+        await AdminFormService.deleteTwilioCredentials(MOCK_FORM)
 
       // Assert
       expect(actualResult.isOk()).toEqual(true)

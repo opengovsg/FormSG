@@ -32,9 +32,8 @@ describe('FormStatisticsTotal Model', () => {
         const minSubCount = 10
 
         // Act
-        const actualResult = await FormStatsModel.aggregateFormCount(
-          minSubCount,
-        )
+        const actualResult =
+          await FormStatsModel.aggregateFormCount(minSubCount)
 
         // Assert
         const expectedResult: AggregateFormCountResult = [
@@ -63,9 +62,8 @@ describe('FormStatisticsTotal Model', () => {
         const minSubCount = 12
 
         // Act
-        const actualResult = await FormStatsModel.aggregateFormCount(
-          minSubCount,
-        )
+        const actualResult =
+          await FormStatsModel.aggregateFormCount(minSubCount)
 
         // Assert
         const expectedResult: AggregateFormCountResult = []
