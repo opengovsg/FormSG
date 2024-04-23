@@ -30,7 +30,8 @@
       "extends": ["plugin:testing-library/react"],
       "rules": {
         "@typescript-eslint/no-non-null-assertion": "off",
-        "testing-library/no-unnecessary-act": "off"
+        "testing-library/no-unnecessary-act": "off",
+        "@typescript-eslint/no-explicit-any": "off"
       }
     }
   ],
