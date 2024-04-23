@@ -1,4 +1,5 @@
 import { AxiosError } from 'axios'
+import { type Joi } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
 import { v4 as uuidv4 } from 'uuid'
@@ -516,7 +517,10 @@ export const checkIsApiSecretKeyName = (msgSrvcName: string): boolean => {
  * @param helpers
  * @returns custom err message if there are invalid characters in the input
  */
-export const verifyValidUnicodeString = (value: any, helpers: any) => {
+export const verifyValidUnicodeString = (
+  value: unknown,
+  helpers: Joi.CustomHelpers<unknown>,
+) => {
   // If there are invalid utf-8 encoded unicode-escaped characters,
   // nodejs treats the sequence of characters as a string e.g. \udbbb is treated as a 6-character string instead of an escaped unicode sequence
   // If this is saved into the db, an error is thrown when the driver attempts to read the db document as the driver interprets this as an escaped unicode sequence.

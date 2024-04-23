@@ -362,7 +362,11 @@ export const handleGetPublicForm: ControllerHandler<
 
 export const handleGetPublicFormSampleSubmission: ControllerHandler<
   { formId: string },
-  Record<string, any> | ErrorDto | PrivateFormErrorDto
+  | {
+      responses: ReturnType<typeof FormService.createSampleSubmissionResponses>
+    }
+  | ErrorDto
+  | PrivateFormErrorDto
 > = async (req, res) => {
   const { formId } = req.params
   const logMeta = {
@@ -415,7 +419,7 @@ export const handleGetPublicFormSampleSubmission: ControllerHandler<
     return res.sendStatus(HttpStatusCode.InternalServerError)
   }
 
-  let sampleData
+  let sampleData: ReturnType<typeof FormService.createSampleSubmissionResponses>
   try {
     sampleData = FormService.createSampleSubmissionResponses(formFields)
   } catch (error) {

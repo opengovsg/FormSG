@@ -390,7 +390,7 @@ export const processStripeEvent = (
           meta: logMeta,
           error,
         })
-        return error as any
+        return error as never
       },
     )
       .andThen(() => {
