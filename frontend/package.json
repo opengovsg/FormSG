@@ -197,7 +197,6 @@
     "resize-observer-polyfill": "^1.5.1",
     "rimraf": "^3.0.2",
     "storybook": "^8.0.9",
-    "storybook-addon-turbo-build": "^2.0.1",
     "storybook-react-i18next": "^3.0.1",
     "ts-jest": "^27.1.1",
     "vite": "^5.2.10",
