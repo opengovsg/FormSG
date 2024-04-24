@@ -45,6 +45,7 @@
     "libphonenumber-js": "^1.10.48",
     "lodash": "^4.17.21",
     "lottie-web": "^5.9.4",
+    "node-stdlib-browser": "^1.2.0",
     "p-queue": "^7.2.0",
     "polyfill-object.fromentries": "^1.0.1",
     "react": "^17.0.2",
