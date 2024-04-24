@@ -1,4 +1,4 @@
-const PUBLIC_FORM_FIELDS = <const>[
+const PUBLIC_FORM_FIELDS = [
   'admin',
   'authType',
   'endPage',
@@ -12,21 +12,21 @@ const PUBLIC_FORM_FIELDS = <const>[
   'title',
   '_id',
   'responseMode',
-]
+] as const
 
 export const EMAIL_PUBLIC_FORM_FIELDS = PUBLIC_FORM_FIELDS
-export const STORAGE_PUBLIC_FORM_FIELDS = <const>[
+export const STORAGE_PUBLIC_FORM_FIELDS = [
   ...PUBLIC_FORM_FIELDS,
   'payments_field',
   'publicKey',
-]
-export const MULTIRESPONDENT_PUBLIC_FORM_FIELDS = <const>[
+] as const
+export const MULTIRESPONDENT_PUBLIC_FORM_FIELDS = [
   ...PUBLIC_FORM_FIELDS,
   'publicKey',
   'workflow',
-]
+] as const
 
-const FORM_SETTINGS_FIELDS = <const>[
+const FORM_SETTINGS_FIELDS = [
   'responseMode',
   'authType',
   'esrvcId',
@@ -37,36 +37,36 @@ const FORM_SETTINGS_FIELDS = <const>[
   'submissionLimit',
   'title',
   'webhook',
-]
+] as const
 
-export const EMAIL_FORM_SETTINGS_FIELDS = <const>[
+export const EMAIL_FORM_SETTINGS_FIELDS = [
   ...FORM_SETTINGS_FIELDS,
   'emails',
-]
-export const STORAGE_FORM_SETTINGS_FIELDS = <const>[
+] as const
+export const STORAGE_FORM_SETTINGS_FIELDS = [
   ...FORM_SETTINGS_FIELDS,
   'payments_channel',
   'payments_field',
   'publicKey',
   'business',
-]
+] as const
 
-export const MULTIRESPONDENT_FORM_SETTINGS_FIELDS = <const>[
+export const MULTIRESPONDENT_FORM_SETTINGS_FIELDS = [
   ...FORM_SETTINGS_FIELDS,
   'publicKey',
   'workflow',
-]
+] as const
 
-export const WEBHOOK_SETTINGS_FIELDS = <const>['responseMode', 'webhook']
+export const WEBHOOK_SETTINGS_FIELDS = ['responseMode', 'webhook'] as const
 
-export const ADMIN_FORM_META_FIELDS = <const>[
+export const ADMIN_FORM_META_FIELDS = [
   'admin',
   'title',
   'lastModified',
   'status',
   '_id',
   'responseMode',
-]
+] as const
 
 export const PAYMENT_CONTACT_FIELD_ID = 'payment_contact_field'
 export const PAYMENT_PRODUCT_FIELD_ID = 'payment_products'

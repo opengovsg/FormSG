@@ -1,6 +1,6 @@
 /* eslint-env node */
 const tsconfigPaths = require('vite-tsconfig-paths')
-const { nodePolyfills } = require('vite-plugin-node-polyfills')
+const nodePolyfills = require('vite-plugin-node-stdlib-browser')
 const { mergeConfig } = require('vite')
 
 const config = {
@@ -26,12 +26,7 @@ const config = {
   async viteFinal(config) {
     // Merge custom configuration into the default config
     return mergeConfig(config, {
-      plugins: [
-        tsconfigPaths.default(),
-        nodePolyfills({
-          include: ['stream', 'util'],
-        }),
-      ],
+      plugins: [tsconfigPaths.default(), nodePolyfills()],
       // manually specify plugins to avoid conflict
     })
   },
