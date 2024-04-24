@@ -1,12 +1,22 @@
 #!/bin/bash
+set +x
 
-set -x
 
 # pre-requisites: install github CLI
 # - github documentation: https://github.com/cli/cli#installation
 # - github is remote 'origin'
 # - PRs use test section LAST with heading "## Tests"
 # - ALL build and release PRs start with "build: "
+
+if ! command -v gh >/dev/null 2>&1; then
+    echo "Install gh first"
+    exit 1
+fi
+
+if ! gh auth status >/dev/null 2>&1; then
+    echo "You need to login: gh auth login"
+    exit 1
+fi
 
 has_local_changes=$(git status --porcelain --untracked-files=no --ignored=no)
 if [[ ${has_local_changes} ]]; then
@@ -69,8 +79,6 @@ echo "" >> ${pr_body_file_groupped}
 echo "## Dev-Dependencies" >> ${pr_body_file_groupped}
 echo "" >> ${pr_body_file_groupped}
 grep -E -- '- [a-z]+\(deps-dev\)' ${pr_body_file} >> ${pr_body_file_groupped}
-
-gh auth login
 
 ## Extract test procedures for feature PRs
 echo "" >> ${pr_body_file_groupped}
