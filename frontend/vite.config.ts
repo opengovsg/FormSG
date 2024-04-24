@@ -1,6 +1,7 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
-import { nodePolyfills } from 'vite-plugin-node-polyfills'
+// @ts-expect-error missing type definitions
+import nodePolyfills from 'vite-plugin-node-stdlib-browser'
 import svgr from 'vite-plugin-svgr'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
@@ -9,9 +10,6 @@ export default defineConfig(() => {
     build: {
       outDir: '../dist/frontend',
       emptyOutDir: true,
-      rollupOptions: {
-        external: ['jszip'],
-      },
     },
     base: './',
     server: {
@@ -21,9 +19,7 @@ export default defineConfig(() => {
     },
     plugins: [
       tsconfigPaths(),
-      nodePolyfills({
-        include: ['stream', 'util'],
-      }),
+      nodePolyfills(),
       react(),
       svgr({ svgrOptions: { icon: true } }),
     ],

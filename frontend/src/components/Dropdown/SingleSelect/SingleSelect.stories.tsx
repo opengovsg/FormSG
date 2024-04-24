@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { BiHeading, BiRadioCircleMarked } from 'react-icons/bi'
 import { FormControl } from '@chakra-ui/react'
-import { useArgs } from '@storybook/client-api'
+import { useArgs } from '@storybook/preview-api'
 import { Meta, Story } from '@storybook/react'
 
 import { fixedHeightDecorator } from '~utils/storybook'

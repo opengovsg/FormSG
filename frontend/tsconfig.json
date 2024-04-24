@@ -16,7 +16,6 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "downlevelIteration": true,
-
     "baseUrl": ".",
     "paths": {
       "~shared/*": ["../shared/*"],

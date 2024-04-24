@@ -4,7 +4,7 @@ import { FormColorTheme } from '~shared/types'
 
 import { useMdComponents } from '~hooks/useMdComponents'
 import { MarkdownText } from '~components/MarkdownText'
-import { useSectionColor } from '~templates/Field/Section/SectionField'
+import { useSectionColor } from '~templates/Field/Section/useSectionColor'
 
 interface FormInstructionsProps {
   content: string

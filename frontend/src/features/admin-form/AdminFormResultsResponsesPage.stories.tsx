@@ -1,8 +1,7 @@
 import { MemoryRouter, Route } from 'react-router'
 import { Routes } from 'react-router-dom'
-import { expect } from '@storybook/jest'
 import { Meta, Story } from '@storybook/react'
-import { userEvent, waitFor, within } from '@storybook/testing-library'
+import { expect, userEvent, waitFor, within } from '@storybook/test'
 
 import { FormResponseMode } from '~shared/types/form'
 
