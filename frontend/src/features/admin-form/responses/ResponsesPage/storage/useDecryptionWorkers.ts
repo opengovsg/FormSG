@@ -137,7 +137,7 @@ const useDecryptionWorkers = ({
         freshAbortController,
       )
       const reader = stream.getReader()
-      let read: (result: ReadableStreamDefaultReadResult<string>) => void
+      let read: (result: ReadableStreamReadResult<string>) => void
       const downloadStartTime = performance.now()
 
       let progress = 0

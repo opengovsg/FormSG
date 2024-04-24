@@ -8,7 +8,12 @@ export default defineConfig(() => {
   return {
     build: {
       outDir: '../dist/frontend',
+      emptyOutDir: true,
+      rollupOptions: {
+        external: ['jszip'],
+      },
     },
+    base: './',
     server: {
       proxy: {
         '/api/v3': 'http://localhost:5001',
@@ -22,5 +27,8 @@ export default defineConfig(() => {
       react(),
       svgr({ svgrOptions: { icon: true } }),
     ],
+    worker: {
+      plugins: () => [tsconfigPaths()],
+    },
   }
 })

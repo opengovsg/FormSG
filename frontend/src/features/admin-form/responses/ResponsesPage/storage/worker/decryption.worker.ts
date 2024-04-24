@@ -217,5 +217,4 @@ const exports = {
 
 expose(exports)
 
-export default {} as typeof Worker & { new (): Worker }
 export type DecryptionWorkerApi = typeof exports
