@@ -13,12 +13,6 @@ const config: StorybookConfig = {
     '@storybook/addon-links',
     '@storybook/addon-essentials',
     '@storybook/addon-a11y',
-    {
-      name: 'storybook-addon-turbo-build',
-      options: {
-        optimizationLevel: 2,
-      },
-    },
     '@storybook/addon-interactions',
   ],
   framework: {
