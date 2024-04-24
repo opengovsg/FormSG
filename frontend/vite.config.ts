@@ -29,6 +29,7 @@ export default defineConfig(() => {
     ],
     worker: {
       plugins: () => [tsconfigPaths()],
+      format: 'es' as const,
     },
   }
 })
