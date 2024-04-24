@@ -103,7 +103,7 @@
     ]
   },
   "scripts": {
-    "gen:theme-typings": "chakra-cli tokens src/theme/index.ts || true",
+    "gen:theme-typings": "chakra-cli tokens src/theme/index.ts --out node_modules/@chakra-ui/styled-system/dist/declarations/src/theming.types.d.ts || true",
     "clean:emotion-types": "rimraf node_modules/@emotion/core/types",
     "postinstall": "patch-package && npm run gen:theme-typings && npm run clean:emotion-types && npm --prefix ../shared install",
     "start": "vite",
