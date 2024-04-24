@@ -6,9 +6,8 @@ import { API_BASE_URL } from '~services/ApiService'
 import { ADMIN_FORM_ENDPOINT } from '~features/admin-form/common/AdminViewFormService'
 
 import { ndjsonStream } from './utils/ndjsonStream'
-import DecryptionWorker, {
-  DecryptionWorkerApi,
-} from './worker/decryption.worker'
+import type { DecryptionWorkerApi } from './worker/decryption.worker'
+import DecryptionWorker from './worker/decryption.worker?worker'
 import { CleanableDecryptionWorkerApi } from './types'
 
 export type EncryptedResponsesStreamParams = {
