@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from 'path'
 
 export const getStorybookUrl = (): string | null => {
-  if (process.env.USE_DEV_SERVER) {
+  if (import.meta.env.USE_DEV_SERVER) {
     return 'http://localhost:6006'
   }
 

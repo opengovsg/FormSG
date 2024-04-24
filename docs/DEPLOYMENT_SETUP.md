@@ -92,7 +92,7 @@ There are also environment secrets for each environment (`staging`, `staging-alt
 |:---------|------------|
 |`APP_NAME`|Application name for the environment.|
 |`DEPLOY_ENV`|Deployment environment on elastic beanstalk.|
-|`REACT_APP_FORMSG_SDK_MODE`|Determines the keys used in the formsg SDK. Set either `production` or `staging`.|
+|`VITE_APP_FORMSG_SDK_MODE`|Determines the keys used in the formsg SDK. Set either `production` or `staging`.|
 
 ## Environment Variables
 
@@ -268,7 +268,7 @@ Forms can be protected with [recaptcha](https://www.google.com/recaptcha/about/)
 
 | Variable                   | Description                   |
 | :------------------------- | ----------------------------- |
-| `REACT_APP_GA_TRACKING_ID` | Google Analytics tracking ID. |
+| `VITE_APP_GA_TRACKING_ID` | Google Analytics tracking ID. |
 
 #### Sentry.io
 
