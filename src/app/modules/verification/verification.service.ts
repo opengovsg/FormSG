@@ -4,27 +4,18 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { PAYMENT_CONTACT_FIELD_ID } from '../../../../shared/constants'
 import { BasicField } from '../../../../shared/types'
 import { startsWithSgPrefix } from '../../../../shared/utils/phone-num-validation'
-import {
-  NUM_OTP_RETRIES,
-  SMS_WARNING_TIERS,
-} from '../../../../shared/utils/verification'
+import { NUM_OTP_RETRIES } from '../../../../shared/utils/verification'
 import {
   IFormSchema,
-  IPopulatedForm,
   IVerificationFieldSchema,
   IVerificationSchema,
 } from '../../../types'
 import formsgSdk from '../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../config/logger'
-import * as AdminFormService from '../../modules/form/admin-form/admin-form.service'
-import {
-  MailGenerationError,
-  MailSendError,
-} from '../../services/mail/mail.errors'
+import { MailSendError } from '../../services/mail/mail.errors'
 import MailService from '../../services/mail/mail.service'
 import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
 import { SmsFactory } from '../../services/sms/sms.factory'
-import * as SmsService from '../../services/sms/sms.service'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 import { compareHash, HashingError } from '../../utils/hash'
 import {
@@ -34,7 +25,6 @@ import {
 } from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'
 import * as FormService from '../form/form.service'
-import { isFormOnboarded } from '../form/form.utils'
 
 import {
   FieldNotFoundInTransactionError,
@@ -57,7 +47,6 @@ import {
 } from './verification.types'
 import {
   getFieldFromTransaction,
-  hasAdminExceededFreeSmsLimit,
   isOtpExpired,
   isOtpRequestCountExceeded,
   isOtpWaitTimeElapsed,
@@ -329,39 +318,6 @@ export const sendNewOtp = ({
   })
 }
 
-export const disableVerifiedFieldsIfRequired = (
-  form: IPopulatedForm,
-  transaction: IVerificationSchema,
-  fieldId: string,
-): ResultAsync<boolean, void> => {
-  return getFieldFromTransaction(
-    transaction,
-    fieldId === PAYMENT_CONTACT_FIELD_ID,
-    fieldId,
-  )
-    .asyncAndThen((field) => {
-      switch (field.fieldType) {
-        case BasicField.Mobile:
-          return processAdminSmsCounts(form)
-        default:
-          return okAsync(false)
-      }
-    })
-    .mapErr((error) => {
-      logger.error({
-        message:
-          'Error checking sms counts or deactivating OTP verification for admin',
-        meta: {
-          action: 'checkShouldDisabledVerifiedMobileFields',
-          transactionId: transaction._id,
-          fieldId,
-          formId: transaction.formId,
-        },
-        error,
-      })
-    })
-}
-
 /**
  * Compares the given otp. If correct, returns signedData, else returns an error
  * @param transactionId
@@ -516,67 +472,6 @@ const sendOtpForField = (
     default:
       return errAsync(new NonVerifiedFieldTypeError(fieldType))
   }
-}
-
-/**
- * Checks the number of free smses sent by the admin of the form and deactivates verification or sends mail as required
- * @param form The form whose admin's sms counts needs to be checked
- * @returns ok(true) when the verification has been deactivated successfully
- * @returns ok(false) when no action is required
- * @returns err(MailGenerationError) when an error occurred on creating the HTML template for the email
- * @returns err(MailSendError) when an error occurred on sending the email
- * @returns err(PossibleDatabaseError) when an error occurred while retrieving the counts from the database
- */
-const processAdminSmsCounts = (
-  form: IPopulatedForm,
-): ResultAsync<
-  boolean,
-  MailGenerationError | MailSendError | PossibleDatabaseError
-> => {
-  if (isFormOnboarded(form)) {
-    return okAsync(false)
-  }
-
-  // Convert to string because it's typed as any
-  const formAdminId = String(form.admin._id)
-
-  return SmsService.retrieveFreeSmsCounts(formAdminId).andThen((freeSmsSent) =>
-    checkSmsCountAndPerformAction(form, freeSmsSent),
-  )
-}
-
-/**
- * Checks the number of free smses sent by the admin of a form and performs the appropriate action
- * @param form The form whose admin's sms counts needs to be checked
- * @returns ok(true) when the action has been performed successfully
- * @returns ok(false) when no action is required
- * @returns err(MailGenerationError) when an error occurred on creating the HTML template for the email
- * @returns err(MailSendError) when an error occurred on sending the email
- * @returns err(PossibleDatabaseError) when an error occurred while retrieving the counts from the database
- */
-const checkSmsCountAndPerformAction = (
-  form: Pick<IPopulatedForm, 'admin' | 'title' | '_id' | 'permissionList'>,
-  freeSmsSent: number,
-): ResultAsync<
-  boolean,
-  MailGenerationError | MailSendError | PossibleDatabaseError
-> => {
-  // Convert to string because it's typed as any
-  const formAdminId = String(form.admin._id)
-
-  // NOTE: Because the admin has exceeded their allowable limit of free sms,
-  // the sms verifications for their forms also need to be disabled.
-  if (hasAdminExceededFreeSmsLimit(freeSmsSent)) {
-    return MailService.sendSmsVerificationDisabledEmail(form).andThen(() =>
-      AdminFormService.disableSmsVerificationsForUser(formAdminId),
-    )
-  }
-
-  if (freeSmsSent in SMS_WARNING_TIERS) {
-    return MailService.sendSmsVerificationWarningEmail(form, freeSmsSent)
-  }
-
-  return okAsync(false)
 }
 
 /**

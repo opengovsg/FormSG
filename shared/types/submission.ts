@@ -183,7 +183,6 @@ export const MultirespondentSubmissionStreamDto =
     form_logics: true,
     encryptedSubmissionSecretKey: true,
     encryptedContent: true,
-    verifiedContent: true,
     version: true,
   }).extend({
     attachmentMetadata: z.record(z.string()),

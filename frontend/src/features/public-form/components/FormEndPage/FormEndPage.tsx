@@ -7,9 +7,10 @@ import {
   usePublicFormContext,
 } from '~features/public-form/PublicFormContext'
 
-import { EndPageBlock } from './components/EndPageBlock'
+import { EndPageBlock } from '../../../../components/FormEndPage/EndPageBlock'
+import { ThankYouSvgr } from '../../../../components/FormEndPage/ThankYouSvgr'
+
 import { FeedbackBlock, FeedbackFormInput } from './components/FeedbackBlock'
-import { ThankYouSvgr } from './components/ThankYouSvgr'
 
 export interface FormEndPageProps {
   formTitle: FormDto['title']

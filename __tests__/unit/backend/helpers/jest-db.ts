@@ -116,7 +116,7 @@ const insertFormCollectionReqs = async ({
   betaFlags,
   apiToken,
 }: {
-  userId?: Schema.Types.ObjectId
+  userId?: Types.ObjectId
   mailName?: string
   mailDomain?: string
   shortName?: string
