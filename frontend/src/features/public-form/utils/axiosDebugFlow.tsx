@@ -5,7 +5,9 @@ import { ApiService } from '~services/ApiService'
 import { ClientEnvVars } from '../../../../../shared/types'
 
 const getClientEnvWithFetch = async () => {
-  const response = await fetch(`${process.env.REACT_APP_URL}/api/v3/client/env`)
+  const response = await fetch(
+    `${import.meta.env.VITE_APP_URL}/api/v3/client/env`,
+  )
   if (response.ok) {
     const env = await response.json()
     datadogLogs.logger.info(`handleSubmitForm: fetch env vars successful`, {
@@ -28,7 +30,7 @@ const getClientEnvWithFetch = async () => {
 const getClientEnvWithAxios = async () => {
   try {
     const env = await ApiService.get<ClientEnvVars>(
-      `${process.env.REACT_APP_URL}/api/v3/client/env`,
+      `${import.meta.env.VITE_APP_URL}/api/v3/client/env`,
     ).then(({ data }) => data)
 
     datadogLogs.logger.info(`handleSubmitForm: axios env vars successful`, {

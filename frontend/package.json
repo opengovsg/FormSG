@@ -202,6 +202,7 @@
     "storybook-react-i18next": "^1.0.20",
     "ts-jest": "^27.1.1",
     "vite": "^5.2.10",
+    "vite-plugin-svgr": "^4.2.0",
     "worker-loader": "^3.0.8"
   },
   "proxy": "http://localhost:5001",

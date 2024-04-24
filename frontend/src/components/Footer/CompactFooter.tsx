@@ -1,7 +1,7 @@
 import { chakra, Divider, Flex, Link, Stack, Wrap } from '@chakra-ui/react'
 
-import { ReactComponent as BrandHortSvg } from '~assets/svgs/brand/brand-hort-colour.svg'
-import { ReactComponent as BrandHortLightMonoSvg } from '~assets/svgs/brand/brand-hort-lightmono.svg'
+import BrandHortSvg from '~assets/svgs/brand/brand-hort-colour.svg?react'
+import BrandHortLightMonoSvg from '~assets/svgs/brand/brand-hort-lightmono.svg?react'
 
 import { FooterContainerProps, FooterVariantProps } from './common/types'
 

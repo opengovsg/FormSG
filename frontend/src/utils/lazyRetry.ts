@@ -13,7 +13,7 @@ import { ComponentType } from 'react'
 export const lazyRetry = <T extends ComponentType>(
   componentImport: () => Promise<{ default: T }>,
 ) => {
-  const sessionStorageKey = `retry-lazy-${process.env.REACT_APP_VERSION}-refreshed`
+  const sessionStorageKey = `retry-lazy-${import.meta.env.VITE_APP_VERSION}-refreshed`
 
   return new Promise<{ default: T }>((resolve, reject) => {
     // check if the window has already been refreshed

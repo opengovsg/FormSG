@@ -39,11 +39,7 @@ import {
   OGP_FORMSG_COLLATE,
   OGP_FORMSG_REPO,
 } from '~constants/links'
-import {
-  LANDING_PAYMENTS_ROUTE,
-  LOGIN_ROUTE,
-  TOU_ROUTE,
-} from '~constants/routes'
+import { LOGIN_ROUTE, TOU_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
