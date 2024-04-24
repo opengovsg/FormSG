@@ -9,7 +9,7 @@ export default defineConfig(() => {
       outDir: '../dist/frontend',
     },
     resolve: {
-      // Aliases must be kept in sync with tsconfig.paths.json
+      // Aliases must be kept in sync with tsconfig.json
       alias: {
         '~shared/*': resolve(__dirname, '../shared/*'),
         '~assets/*': resolve(__dirname, './src/assets/*'),
