@@ -14,11 +14,14 @@ import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { isValidMotionProp, motion } from 'framer-motion'
 
 import { featureFlags } from '~shared/constants'
+import { SubmissionType } from '~shared/types'
 
 import { BxsMagicWand } from '~assets/icons/BxsMagicWand'
 import { BxsWidget } from '~assets/icons/BxsWidget'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
+
+import { useUser } from '~features/user/queries'
 
 const ChakraBox = chakra(motion.div, {
   /**
@@ -53,7 +56,10 @@ export const EmptyFormPlaceholder = forwardRef<
         : 'Drag a field from the Builder on the left to start'
     }, [isDraggingOver, isMobile])
 
-    const showMagicFormButton = useFeatureIsOn(featureFlags.magicFormBuilder)
+    const { user } = useUser()
+
+    const showMagicFormButton =
+      useFeatureIsOn(featureFlags.magicFormBuilder) && user?.betaFlags?.mfb
 
     const showMagicFormButtonFinal = useMemo(() => {
       return showMagicFormButton ? (

@@ -5,7 +5,7 @@ import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
-import { ResultAsync } from 'neverthrow'
+import { okAsync, ResultAsync } from 'neverthrow'
 
 import {
   MAX_UPLOAD_FILE_SIZE,
@@ -104,6 +104,7 @@ import { PermissionLevel } from './admin-form.types'
 import {
   mapGoGovErrors,
   mapRouteError,
+  verifyUserBetaflag,
   verifyValidUnicodeString,
 } from './admin-form.utils'
 
@@ -1182,6 +1183,12 @@ export const createForm: ControllerHandler<
   return (
     // Step 1: Retrieve currently logged in user.
     UserService.findUserById(sessionUserId)
+      .andThen((user) =>
+        formParams.responseMode === FormResponseMode.Encrypt ||
+        formParams.responseMode === FormResponseMode.Email
+          ? verifyUserBetaflag(user, 'mfb')
+          : okAsync(user),
+      )
       // Step 2: Create form with given params and set admin to logged in user.
       .andThen((user) =>
         AdminFormService.createForm(
