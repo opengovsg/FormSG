@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { PaymentChannel, UserId } from '~shared/types'
+import { PaymentChannel, PaymentType, UserId } from '~shared/types'
 import {
   AdminFormDto,
   FormAuthType,
@@ -161,6 +161,7 @@ FormWithPayment.parameters = {
       publishable_key: 'pk_samplekey',
     },
     payments_field: {
+      payment_type: PaymentType.Fixed,
       enabled: true,
       amount_cents: 5000,
       description: 'Test event registration fee',

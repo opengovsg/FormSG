@@ -142,6 +142,7 @@
     "@storybook/addon-essentials": "^8.0.9",
     "@storybook/addon-interactions": "^8.0.9",
     "@storybook/addon-links": "^8.0.9",
+    "@storybook/addon-themes": "^8.0.9",
     "@storybook/blocks": "^8.0.9",
     "@storybook/node-logger": "^8.0.9",
     "@storybook/preset-create-react-app": "^8.0.9",

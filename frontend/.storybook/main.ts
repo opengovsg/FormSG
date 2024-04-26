@@ -13,12 +13,21 @@ const config: StorybookConfig = {
     '@storybook/addon-links',
     '@storybook/addon-essentials',
     '@storybook/addon-a11y',
+    '@storybook/addon-themes',
     '@storybook/addon-interactions',
   ],
   framework: {
     name: '@storybook/react-vite',
     options: {},
   },
+  previewHead: (head) => `
+    ${head}
+    <style>
+      #storybook-root {
+        height: 100%;
+      }
+    </style>
+  `,
 }
 
 export default config
