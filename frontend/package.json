@@ -83,7 +83,7 @@
     "stopword": "^2.0.8",
     "stripe": "^11.1.0",
     "timezone-mock": "^1.3.6",
-    "type-fest": "^2.8.0",
+    "type-fest": "^4.17.0",
     "typescript": "^4.5.3",
     "use-debounce": "^7.0.1",
     "use-draggable-scroll": "^0.1.0",
