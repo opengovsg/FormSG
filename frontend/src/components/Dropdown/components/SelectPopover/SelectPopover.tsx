@@ -1,4 +1,4 @@
-import { FC, useLayoutEffect, useMemo, useRef } from 'react'
+import { useLayoutEffect, useMemo, useRef } from 'react'
 import { Box, useMergeRefs, useOutsideClick } from '@chakra-ui/react'
 import {
   autoUpdate,
@@ -9,11 +9,13 @@ import {
   useFloating,
 } from '@floating-ui/react-dom-interactions'
 
+import { FCC } from '~typings/react'
+
 import { useSelectContext } from '~components/Dropdown/SelectContext'
 
 import { SelectPopoverContext } from './SelectPopoverContext'
 
-export const SelectPopoverProvider: FC = ({ children }): JSX.Element => {
+export const SelectPopoverProvider: FCC = ({ children }): JSX.Element => {
   const { styles, setIsFocused, isOpen } = useSelectContext()
 
   const wrapperRef = useRef<HTMLDivElement | null>(null)
