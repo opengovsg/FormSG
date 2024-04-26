@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { fullScreenDecorator, getMobileViewParameters } from '~utils/storybook'
 
@@ -18,7 +18,7 @@ const onClose = () => {
   return
 }
 
-const Template: Story = () => (
+const Template: StoryFn = () => (
   <RolloutAnnouncementModal onClose={onClose} isOpen={true} />
 )
 

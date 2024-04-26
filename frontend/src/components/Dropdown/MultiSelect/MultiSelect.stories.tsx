@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { BiRadioCircleMarked } from 'react-icons/bi'
 import { FormControl } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { get } from 'lodash'
 import difference from 'lodash/difference'
 
@@ -73,7 +73,10 @@ export default {
   },
 } as Meta<MultiSelectProps>
 
-const Template: Story<MultiSelectProps> = ({ values: valuesProp, ...args }) => {
+const Template: StoryFn<MultiSelectProps> = ({
+  values: valuesProp,
+  ...args
+}) => {
   const [values, setValues] = useState<string[]>(valuesProp)
 
   return <MultiSelect {...args} values={values} onChange={setValues} />
@@ -116,7 +119,10 @@ DisabledWithSelection.args = {
   values: ['What happens when the label is fairly long', 'Bat'],
 }
 
-export const Playground: Story<MultiSelectProps> = ({ items, isDisabled }) => {
+export const Playground: StoryFn<MultiSelectProps> = ({
+  items,
+  isDisabled,
+}) => {
   const name = 'Multiselect'
   const {
     handleSubmit,

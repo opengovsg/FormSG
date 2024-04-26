@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import {
   BasicField,
@@ -42,7 +42,7 @@ export default {
   },
 } as Meta<EditLongTextProps>
 
-const Template: Story<EditLongTextProps> = ({ field }) => {
+const Template: StoryFn<EditLongTextProps> = ({ field }) => {
   return <EditLongText field={field} />
 }
 

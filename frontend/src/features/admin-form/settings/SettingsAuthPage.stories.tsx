@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import {
   FormAuthType,
@@ -34,7 +34,7 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <SettingsAuthPage />
+const Template: StoryFn = () => <SettingsAuthPage />
 export const PrivateEmailForm = Template.bind({})
 PrivateEmailForm.parameters = {
   msw: buildMswRoutes({ status: FormStatus.Private }),

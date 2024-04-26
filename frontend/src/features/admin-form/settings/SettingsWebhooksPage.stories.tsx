@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { FormResponseMode, FormSettings } from '~shared/types/form'
 
@@ -37,7 +37,7 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <SettingsWebhooksPage />
+const Template: StoryFn = () => <SettingsWebhooksPage />
 export const StorageModeEmpty = Template.bind({})
 StorageModeEmpty.parameters = {
   msw: buildMswRoutes({

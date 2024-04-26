@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { DateString } from '~shared/types/generic'
 
@@ -24,7 +24,7 @@ export default {
   },
 } as Meta<AdminFormNavbarProps>
 
-const Template: Story<AdminFormNavbarProps> = (args) => (
+const Template: StoryFn<AdminFormNavbarProps> = (args) => (
   <AdminFormNavbar {...args} />
 )
 export const DefaultEditor = Template.bind({})

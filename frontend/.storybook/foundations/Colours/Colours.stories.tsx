@@ -240,7 +240,6 @@ export const FeedbackWarning = {
       ]}
     />
   ),
-
   name: 'Feedback/Warning',
 }
 
@@ -288,7 +287,6 @@ export const Neutral = {
       ]}
     />
   ),
-  name: 'Neutral',
 }
 
 export const ThemeGreen = {
@@ -327,7 +325,6 @@ export const ThemeGreen = {
       ]}
     />
   ),
-
   name: 'Theme/Green',
 }
 
@@ -367,7 +364,6 @@ export const ThemeTeal = {
       ]}
     />
   ),
-
   name: 'Theme/Teal',
 }
 
@@ -407,7 +403,6 @@ export const ThemePurple = {
       ]}
     />
   ),
-
   name: 'Theme/Purple',
 }
 
@@ -447,7 +442,6 @@ export const ThemeGrey = {
       ]}
     />
   ),
-
   name: 'Theme/Grey',
 }
 
@@ -487,7 +481,6 @@ export const ThemeYellow = {
       ]}
     />
   ),
-
   name: 'Theme/Yellow',
 }
 
@@ -527,7 +520,6 @@ export const ThemeOrange = {
       ]}
     />
   ),
-
   name: 'Theme/Orange',
 }
 
@@ -567,7 +559,6 @@ export const ThemeRed = {
       ]}
     />
   ),
-
   name: 'Theme/Red',
 }
 
@@ -607,6 +598,5 @@ export const ThemeBrown = {
       ]}
     />
   ),
-
   name: 'Theme/Brown',
 }

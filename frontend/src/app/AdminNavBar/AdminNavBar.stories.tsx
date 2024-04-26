@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 
@@ -28,7 +28,7 @@ export default {
   ],
 } as Meta
 
-const Template: Story<AdminNavBarProps> = (args) => <AdminNavBar {...args} />
+const Template: StoryFn<AdminNavBarProps> = (args) => <AdminNavBar {...args} />
 
 export const Default = Template.bind({})
 

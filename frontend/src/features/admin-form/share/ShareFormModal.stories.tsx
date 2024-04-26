@@ -1,6 +1,6 @@
 import { MemoryRouter } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { fullScreenDecorator } from '~utils/storybook'
 
@@ -20,7 +20,7 @@ export default {
   },
 } as Meta
 
-const Template: Story<ShareFormModalProps> = (args) => {
+const Template: StoryFn<ShareFormModalProps> = (args) => {
   const modalProps = useDisclosure({ defaultIsOpen: true })
 
   return (

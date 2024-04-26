@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { times } from 'lodash'
 import { rest } from 'msw'
 
@@ -93,7 +93,7 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <WorkspacePage />
+const Template: StoryFn = () => <WorkspacePage />
 export const Desktop = Template.bind({})
 export const Mobile = Template.bind({})
 Mobile.parameters = {

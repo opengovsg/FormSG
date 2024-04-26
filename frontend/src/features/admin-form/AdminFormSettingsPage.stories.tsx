@@ -1,6 +1,6 @@
 import { MemoryRouter, Route } from 'react-router'
 import { Routes } from 'react-router-dom'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import {
   FormAuthType,
@@ -66,7 +66,7 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <SettingsPage />
+const Template: StoryFn = () => <SettingsPage />
 export const Desktop = Template.bind({})
 
 export const PreventActivation = Template.bind({})

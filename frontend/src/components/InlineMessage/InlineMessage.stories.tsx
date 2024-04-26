@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { InlineMessage, InlineMessageProps } from './InlineMessage'
 
@@ -7,7 +7,7 @@ export default {
   component: InlineMessage,
 } as Meta
 
-const InlineMessageTemplate: Story<InlineMessageProps> = (args) => (
+const InlineMessageTemplate: StoryFn<InlineMessageProps> = (args) => (
   <InlineMessage {...args} />
 )
 

@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { TOU_ROUTE } from '~constants/routes'
 import { StoryRouter } from '~utils/storybook'
@@ -19,6 +19,6 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <TermsOfUsePage />
+const Template: StoryFn = () => <TermsOfUsePage />
 export const Default = Template.bind({})
 Default.storyName = 'TermsOfUsePage'

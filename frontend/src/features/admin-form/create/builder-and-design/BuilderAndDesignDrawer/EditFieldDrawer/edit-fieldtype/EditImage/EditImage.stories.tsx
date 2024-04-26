@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { BasicField, ImageFieldBase } from '~shared/types'
 
@@ -44,7 +44,7 @@ export default {
   },
 } as Meta<EditFieldProps<ImageFieldBase>>
 
-const Template: Story<EditFieldProps<ImageFieldBase>> = ({ field }) => {
+const Template: StoryFn<EditFieldProps<ImageFieldBase>> = ({ field }) => {
   return <EditImage field={field} />
 }
 

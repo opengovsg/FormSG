@@ -10,7 +10,7 @@ import {
   ModalOverlay,
   ModalProps,
 } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { fullScreenDecorator, viewports } from '~utils/storybook'
 import Button from '~components/Button'
@@ -39,7 +39,7 @@ const generateLorem = (numParagraph = 1) => {
   return Array(numParagraph).fill(para).join('\n\n')
 }
 
-const Template: Story<StoryModalProps> = ({ bodyContent, ...args }) => {
+const Template: StoryFn<StoryModalProps> = ({ bodyContent, ...args }) => {
   const { isOpen, onOpen, onClose } = useDisclosure({ defaultIsOpen: true })
   return (
     <>

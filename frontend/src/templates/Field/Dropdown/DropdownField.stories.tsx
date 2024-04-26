@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { BasicField } from '~shared/types/field'
 
@@ -52,7 +52,7 @@ interface StoryDropdownFieldProps extends DropdownFieldProps {
   defaultValue?: string
 }
 
-const Template: Story<StoryDropdownFieldProps> = ({
+const Template: StoryFn<StoryDropdownFieldProps> = ({
   defaultValue,
   ...args
 }) => {

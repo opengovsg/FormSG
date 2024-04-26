@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import type { Meta, StoryFn } from '@storybook/react'
 
 import { BasicField } from '~shared/types/field'
 
@@ -41,7 +41,7 @@ interface StoryUenFieldProps extends UenFieldProps {
   defaultValue?: string
 }
 
-const Template: Story<StoryUenFieldProps> = ({ defaultValue, ...args }) => {
+const Template: StoryFn<StoryUenFieldProps> = ({ defaultValue, ...args }) => {
   const formMethods = useForm({
     defaultValues: {
       [args.schema._id]: defaultValue,

@@ -9,7 +9,7 @@ import {
   Thead,
   Tr,
 } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { MenuVariant } from '~theme/components/Menu'
 
@@ -25,7 +25,7 @@ type MenuGroupTemplateProps = {
   variant: MenuVariant
 }
 
-const MenuTemplate: Story<MenuTemplateProps> = ({
+const MenuTemplate: StoryFn<MenuTemplateProps> = ({
   variant,
   children,
   isStretch,
@@ -49,7 +49,7 @@ const MenuTemplate: Story<MenuTemplateProps> = ({
   )
 }
 
-const MenuGroupTemplate: Story<MenuGroupTemplateProps> = ({ variant }) => {
+const MenuGroupTemplate: StoryFn<MenuGroupTemplateProps> = ({ variant }) => {
   return (
     <SimpleGrid
       columns={2}
@@ -99,7 +99,7 @@ Outline.args = { variant: 'outline' }
 export const Clear = MenuGroupTemplate.bind({})
 Clear.args = { variant: 'clear' }
 
-export const Playground: Story = () => {
+export const Playground: StoryFn = () => {
   return (
     <Box>
       <Menu>

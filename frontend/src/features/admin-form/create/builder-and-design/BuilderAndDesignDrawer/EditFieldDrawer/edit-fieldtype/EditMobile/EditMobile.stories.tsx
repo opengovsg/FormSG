@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { BasicField, MobileFieldBase } from '~shared/types'
 
@@ -44,7 +44,7 @@ interface StoryArgs {
   field: MobileFieldBase
 }
 
-const Template: Story<StoryArgs> = ({ field }) => {
+const Template: StoryFn<StoryArgs> = ({ field }) => {
   return <EditMobile field={field} />
 }
 

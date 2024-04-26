@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { BasicField } from '~shared/types/field'
 
@@ -46,7 +46,7 @@ interface StoryCountryRegionFieldProps extends CountryRegionFieldProps {
   defaultValue?: string
 }
 
-const Template: Story<StoryCountryRegionFieldProps> = ({
+const Template: StoryFn<StoryCountryRegionFieldProps> = ({
   defaultValue,
   ...args
 }) => {
