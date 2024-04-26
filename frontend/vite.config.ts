@@ -21,7 +21,13 @@ export default defineConfig(() => {
       tsconfigPaths(),
       nodePolyfills(),
       react(),
-      svgr({ svgrOptions: { icon: true } }),
+      svgr({
+        svgrOptions: {
+          icon: true,
+          // Allows resizing of SVGs to keep aspect ratio with just one dimension
+          dimensions: false,
+        },
+      }),
     ],
     worker: {
       plugins: () => [tsconfigPaths()],
