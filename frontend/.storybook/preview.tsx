@@ -19,7 +19,9 @@ import { theme } from '../src/theme'
 
 import { StorybookTheme } from './themes'
 
-initialize()
+initialize({
+  quiet: true,
+})
 dayjsUtils.init()
 
 const withReactQuery: Decorator = (storyFn) => {
