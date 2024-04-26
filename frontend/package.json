@@ -93,8 +93,8 @@
     "zustand": "^4.1.1"
   },
   "scripts": {
-    "gen:theme-typings": "chakra-cli tokens src/theme/index.ts || true",
     "postinstall": "npm run gen:theme-typings && npm --prefix ../shared install",
+    "gen:theme-typings": "chakra-cli tokens --template augmentation src/theme/index.ts || true",
     "start": "vite",
     "build": "vite build",
     "serve": "vite preview",
