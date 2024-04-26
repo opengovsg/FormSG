@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { SimpleGrid, Text } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { useToast, UseToastProps } from '~hooks/useToast'
 import Button from '~components/Button'
@@ -45,9 +45,9 @@ export default {
   ],
 } as Meta
 
-const ToastTemplate: Story<ToastProps> = (args) => <Toast {...args} />
+const ToastTemplate: StoryFn<ToastProps> = (args) => <Toast {...args} />
 
-const ButtonWithToastTemplate: Story<UseToastProps> = (args) => {
+const ButtonWithToastTemplate: StoryFn<UseToastProps> = (args) => {
   const toast = useToast()
   return (
     <Button
@@ -90,7 +90,7 @@ ButtonWithToast.args = {
   position: 'top',
 }
 
-export const CombinedToasts: Story<ToastProps> = () => (
+export const CombinedToasts: StoryFn<ToastProps> = () => (
   <SimpleGrid
     columns={3}
     spacing={8}

@@ -1,6 +1,6 @@
 import { MemoryRouter, Route } from 'react-router'
 import { Routes } from 'react-router-dom'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { expect, userEvent, waitFor, within } from '@storybook/test'
 
 import { FormResponseMode } from '~shared/types/form'
@@ -49,7 +49,7 @@ const MOCK_KEYPAIR = {
   secretKey: 'xdXNlI2HyZzsVXcvCR/LT4350oW/yRZNx2lMi+555Yk=',
 }
 
-const Template: Story = () => {
+const Template: StoryFn = () => {
   return (
     <MemoryRouter
       initialEntries={[

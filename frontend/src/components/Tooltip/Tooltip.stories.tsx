@@ -1,5 +1,5 @@
 import { Box, Icon, Placement, TooltipProps, VStack } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { BxsHelpCircle } from '~/assets/icons/BxsHelpCircle'
 
@@ -41,7 +41,7 @@ const TooltipStack = (
   )
 }
 
-const Template: Story<TooltipProps> = (args) => {
+const Template: StoryFn<TooltipProps> = (args) => {
   return (
     <TooltipStack
       {...args}
@@ -64,7 +64,7 @@ OpenTooltip.args = {
   isOpen: true,
 }
 
-const MobileTemplate: Story<TooltipProps> = (args) => {
+const MobileTemplate: StoryFn<TooltipProps> = (args) => {
   return (
     <TooltipStack
       {...args}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { BasicField } from '~shared/types/field'
 
@@ -41,7 +41,7 @@ interface StoryNricFieldProps extends NricFieldProps {
   defaultValue?: string
 }
 
-const Template: Story<StoryNricFieldProps> = ({ defaultValue, ...args }) => {
+const Template: StoryFn<StoryNricFieldProps> = ({ defaultValue, ...args }) => {
   const formMethods = useForm({
     defaultValues: {
       [args.schema._id]: defaultValue,

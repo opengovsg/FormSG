@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { AdminFormDto } from '~shared/types/form'
 
@@ -28,7 +28,7 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <SettingsTwilioPage />
+const Template: StoryFn = () => <SettingsTwilioPage />
 export const WithoutCustomCredentials = Template.bind({})
 
 export const WithCustomCredentials = Template.bind({})

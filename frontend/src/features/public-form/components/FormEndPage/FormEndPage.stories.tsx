@@ -1,5 +1,5 @@
 import { MemoryRouter } from 'react-router-dom'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { FormColorTheme } from '~shared/types'
 
@@ -35,7 +35,7 @@ export default {
   },
 } as Meta<FormEndPageProps>
 
-const Template: Story<FormEndPageProps> = (args) => <FormEndPage {...args} />
+const Template: StoryFn<FormEndPageProps> = (args) => <FormEndPage {...args} />
 export const Default = Template.bind({})
 Default.args = {
   endPage: {

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { FormColorTheme, PaymentType } from '~shared/types'
 
@@ -48,11 +48,15 @@ export default {
   },
 } as Meta
 
-const Template: (children: React.ReactElement) => Story = (children) => () => (
-  <PublicFormProvider formId="61540ece3d4a6e50ac0cc6ff" startTime={Date.now()}>
-    <PaymentStack>{children}</PaymentStack>
-  </PublicFormProvider>
-)
+const Template: (children: React.ReactElement) => StoryFn =
+  (children) => () => (
+    <PublicFormProvider
+      formId="61540ece3d4a6e50ac0cc6ff"
+      startTime={Date.now()}
+    >
+      <PaymentStack>{children}</PaymentStack>
+    </PublicFormProvider>
+  )
 
 export const PendingPaymentDetails = Template(
   <FixedPaymentItemDetailsBlock

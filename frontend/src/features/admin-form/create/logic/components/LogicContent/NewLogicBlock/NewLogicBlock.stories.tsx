@@ -1,5 +1,5 @@
 import { Box } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import {
   BasicField,
@@ -61,7 +61,7 @@ const FIELD_TYPE_TO_ID = MOCK_FORM_FIELDS.reduce(
   {} as Record<BasicField, string>,
 )
 
-const Template: Story<NewLogicBlockProps> = (args) => (
+const Template: StoryFn<NewLogicBlockProps> = (args) => (
   <NewLogicBlock {...args} />
 )
 

@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import {
   BasicField,
@@ -42,7 +42,7 @@ export default {
   },
 } as Meta<EditShortTextProps>
 
-const Template: Story<EditShortTextProps> = ({ field }) => {
+const Template: StoryFn<EditShortTextProps> = ({ field }) => {
   return <EditShortText field={field} />
 }
 

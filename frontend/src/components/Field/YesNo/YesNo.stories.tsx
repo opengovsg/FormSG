@@ -6,7 +6,7 @@ import {
   SimpleGrid,
   Text,
 } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { viewports } from '~utils/storybook'
 import Button from '~components/Button'
@@ -19,13 +19,13 @@ export default {
   decorators: [],
 } as Meta
 
-const Template: Story<YesNoProps> = (args) => <YesNo {...args} />
+const Template: StoryFn<YesNoProps> = (args) => <YesNo {...args} />
 export const Default = Template.bind({})
 Default.args = {
   name: 'testInput',
 }
 
-const TemplateGroup: Story<YesNoProps> = (args) => (
+const TemplateGroup: StoryFn<YesNoProps> = (args) => (
   <SimpleGrid
     columns={2}
     spacing={8}
@@ -97,7 +97,7 @@ Tablet.parameters = {
   chromatic: { viewports: [viewports.md] },
 }
 
-export const Playground: Story = ({
+export const Playground: StoryFn = ({
   name,
   label,
   isDisabled,

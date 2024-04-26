@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { BasicField } from '~shared/types/field'
 
@@ -48,7 +48,10 @@ interface StoryDecimalFieldProps extends DecimalFieldProps {
   defaultValue?: string
 }
 
-const Template: Story<StoryDecimalFieldProps> = ({ defaultValue, ...args }) => {
+const Template: StoryFn<StoryDecimalFieldProps> = ({
+  defaultValue,
+  ...args
+}) => {
   const formMethods = useForm({
     defaultValues: {
       [args.schema._id]: defaultValue,

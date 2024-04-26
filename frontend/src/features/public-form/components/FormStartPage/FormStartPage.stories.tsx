@@ -1,5 +1,5 @@
 import { MemoryRouter } from 'react-router-dom'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { FormColorTheme } from '~shared/types/form/form'
 import { FormLogoState } from '~shared/types/form/form_logo'
@@ -45,7 +45,7 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <FormStartPage />
+const Template: StoryFn = () => <FormStartPage />
 
 export const NoEstimatedTime = Template.bind({})
 NoEstimatedTime.parameters = {
@@ -177,7 +177,7 @@ ColorThemeRed.parameters = {
   ],
 }
 
-const MiniHeaderTemplate: Story<MiniHeaderProps> = (args) => (
+const MiniHeaderTemplate: StoryFn<MiniHeaderProps> = (args) => (
   <MiniHeaderComponent {...args} />
 )
 

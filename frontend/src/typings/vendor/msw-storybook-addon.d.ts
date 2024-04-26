@@ -1,9 +1,9 @@
 declare module 'msw-storybook-addon' {
-  import { DecoratorFn } from '@storybook/react'
+  import { Decorator } from '@storybook/react'
   import { SetupWorkerApi } from 'msw'
   import { SetupServerApi } from 'msw/node'
 
-  export declare const mswDecorator: DecoratorFn
+  export declare const mswDecorator: Decorator
   export declare const initialize: (
     options?:
       | Parameters<SetupWorkerApi['start']>[0]

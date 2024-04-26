@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { getLandingStats } from '~/mocks/msw/handlers/landing'
 
@@ -26,7 +26,7 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <LandingPage />
+const Template: StoryFn = () => <LandingPage />
 export const Default = Template.bind({})
 
 export const Loading = Template.bind({})

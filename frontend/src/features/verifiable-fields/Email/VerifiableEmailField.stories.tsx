@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
-import { DecoratorFn, Meta, Story } from '@storybook/react'
+import { Decorator, Meta, StoryFn } from '@storybook/react'
 
 import { BasicField } from '~shared/types/field'
 
@@ -29,7 +29,7 @@ import {
   VerifiableEmailFieldSchema,
 } from './VerifiableEmailField'
 
-const MockProviders: DecoratorFn = (storyFn) => {
+const MockProviders: Decorator = (storyFn) => {
   return (
     <PublicFormContext.Provider
       value={
@@ -91,7 +91,7 @@ export default {
   },
 } as Meta<StoryEmailFieldProps>
 
-const Template: Story<StoryEmailFieldProps> = ({ defaultValue, ...args }) => {
+const Template: StoryFn<StoryEmailFieldProps> = ({ defaultValue, ...args }) => {
   const formMethods = useForm<VerifiableFieldInput>({
     defaultValues: {
       [args.schema._id]: defaultValue,

@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { getMobileViewParameters } from '~utils/storybook'
 
@@ -13,7 +13,7 @@ export default {
   },
 } as Meta<TagInputProps>
 
-const Template: Story<TagInputProps> = (args) => <TagInput {...args} />
+const Template: StoryFn<TagInputProps> = (args) => <TagInput {...args} />
 export const Default = Template.bind({})
 Default.args = {}
 

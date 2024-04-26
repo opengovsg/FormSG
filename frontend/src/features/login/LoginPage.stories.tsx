@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { authHandlers, otpGenerationResponse } from '~/mocks/msw/handlers/auth'
 
@@ -23,7 +23,7 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <LoginPage />
+const Template: StoryFn = () => <LoginPage />
 export const Desktop = Template.bind({})
 
 export const Tablet = Template.bind({})

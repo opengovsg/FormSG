@@ -1,5 +1,5 @@
 import { Box } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { BasicField } from '~shared/types/field'
 
@@ -36,7 +36,7 @@ interface StoryParagraphFieldProps extends ParagraphFieldProps {
   defaultValue?: string
 }
 
-const Template: Story<StoryParagraphFieldProps> = (args) => (
+const Template: StoryFn<StoryParagraphFieldProps> = (args) => (
   <ParagraphFieldComponent {...args} />
 )
 
