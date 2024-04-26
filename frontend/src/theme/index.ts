@@ -1,6 +1,6 @@
 import { extendTheme } from '@chakra-ui/react'
 
-import { breakpoints } from './foundations/breakpoints'
+import { BREAKPOINT_VALS } from './foundations/breakpoints'
 import { colours } from './foundations/colours'
 import { shadows } from './foundations/shadows'
 import { components } from './components'
@@ -41,7 +41,7 @@ export const theme = extendTheme({
   },
   colors: colours,
   textStyles,
-  breakpoints,
+  breakpoints: BREAKPOINT_VALS,
   shadows,
   fonts: {
     heading: `'Inter var', sans-serif`,
