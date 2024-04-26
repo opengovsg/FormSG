@@ -65,7 +65,9 @@ describe('User transfers ownership of all owned forms', () => {
 
     // Assert
     // Wait for toast. Toast should appear.
-    await screen.findByText(/ownership transferred\./i)
+    expect(
+      screen.findByText(/ownership transferred\./i),
+    ).resolves.toBeInTheDocument()
   })
 
   it('should disable ownership transfer to self', async () => {
