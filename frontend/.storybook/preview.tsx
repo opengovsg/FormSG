@@ -8,7 +8,8 @@ import 'focus-visible/dist/focus-visible.min.js'
 import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { ChakraProvider } from '@chakra-ui/react'
-import { Decorator } from '@storybook/react'
+import { withThemeFromJSXProvider } from '@storybook/addon-themes'
+import { Decorator, ReactRenderer } from '@storybook/react'
 import { initialize, mswDecorator } from 'msw-storybook-addon'
 
 import { AuthProvider } from '~contexts/AuthContext'
@@ -20,7 +21,7 @@ import { theme } from '../src/theme'
 import { StorybookTheme } from './themes'
 
 initialize({
-  quiet: true,
+  onUnhandledRequest: 'bypass',
 })
 dayjsUtils.init()
 
@@ -40,17 +41,21 @@ const withReactQuery: Decorator = (storyFn) => {
   )
 }
 
-const withChakra: Decorator = (storyFn) => (
-  <ChakraProvider resetCSS theme={theme}>
-    {storyFn()}
-  </ChakraProvider>
-)
-
 const withHelmet: Decorator = (storyFn) => (
   <HelmetProvider>{storyFn()}</HelmetProvider>
 )
 
-export const decorators = [withReactQuery, withChakra, withHelmet, mswDecorator]
+export const decorators = [
+  withReactQuery,
+  withHelmet,
+  withThemeFromJSXProvider<ReactRenderer>({
+    themes: {
+      default: theme,
+    },
+    Provider: ChakraProvider,
+  }),
+  mswDecorator,
+]
 
 export const parameters = {
   i18n,
@@ -58,6 +63,7 @@ export const parameters = {
   locales: {
     'en-SG': 'English',
   },
+  layout: 'fullscreen',
   docs: {
     theme: StorybookTheme.docs,
     inlineStories: true,
