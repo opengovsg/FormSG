@@ -3,7 +3,7 @@ import { Flex } from '@chakra-ui/react'
 import { AnimatePresence } from 'framer-motion'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import { MotionBox } from '~components/motion'
+import { MotionBox } from '~templates/MotionBox'
 
 import { useCreatePageSidebar } from '../CreatePageSidebarContext'
 import { useCreatePageSidebarLayout } from '../CreatePageSideBarLayoutContext'
