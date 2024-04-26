@@ -14,13 +14,13 @@ import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { isValidMotionProp, motion } from 'framer-motion'
 
 import { featureFlags } from '~shared/constants'
-import { SubmissionType } from '~shared/types'
 
 import { BxsMagicWand } from '~assets/icons/BxsMagicWand'
 import { BxsWidget } from '~assets/icons/BxsWidget'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
 import { useUser } from '~features/user/queries'
 
 const ChakraBox = chakra(motion.div, {
@@ -57,9 +57,14 @@ export const EmptyFormPlaceholder = forwardRef<
     }, [isDraggingOver, isMobile])
 
     const { user } = useUser()
+    const { data: form } = useAdminForm()
+
+    const isMrf = form?.responseMode === 'multirespondent'
 
     const showMagicFormButton =
-      useFeatureIsOn(featureFlags.magicFormBuilder) && user?.betaFlags?.mfb
+      useFeatureIsOn(featureFlags.magicFormBuilder) &&
+      user?.betaFlags?.mfb &&
+      !isMrf
 
     const showMagicFormButtonFinal = useMemo(() => {
       return showMagicFormButton ? (

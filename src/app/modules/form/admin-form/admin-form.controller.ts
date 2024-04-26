@@ -59,7 +59,6 @@ import * as SmsService from '../../../services/sms/sms.service'
 import { createReqMeta } from '../../../utils/request'
 import * as AuthService from '../../auth/auth.service'
 import {
-  ApplicationError,
   DatabaseConflictError,
   DatabaseError,
   DatabasePayloadSizeError,
@@ -2008,49 +2007,36 @@ export const _handleCreateFormFields: ControllerHandler<
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
   // Step 1: Retrieve currently logged in user.
-  return (
-    UserService.getPopulatedUserById(sessionUserId)
-      .andThen((user) =>
-        // Step 2: Retrieve form with write permission check.
-        AuthService.getFormAfterPermissionChecks({
-          user,
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Step 2: Retrieve form with write permission check.
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((form) =>
+      AdminFormService.createFormFields(form, formFieldsToCreate),
+    )
+    .map((createdFormFields) =>
+      res.status(StatusCodes.OK).json(createdFormFields as FormFieldDto[]),
+    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when creating form field',
+        meta: {
+          action: '_handleCreateFormField',
+          ...createReqMeta(req),
+          userId: sessionUserId,
           formId,
-          level: PermissionLevel.Write,
-        }),
-      )
-      // Step 3: Check if the user has exceeded the allowable limit for sms if the fieldType is mobile
-      .andThen((form) => {
-        const promiseArray = formFieldsToCreate.map((field) =>
-          AdminFormService.shouldUpdateFormField(form, field),
-        )
-        return ResultAsync.fromPromise(
-          Promise.all(promiseArray),
-          (e) => e as ApplicationError,
-        ).map(() => form) // If all promises resolve, pass form to the next handler
+          createFieldBody: formFieldsToCreate,
+        },
+        error,
       })
-      // Step 4: User has permissions, proceed to create form field with provided body.
-      .andThen((form) =>
-        AdminFormService.createFormFields(form, formFieldsToCreate),
-      )
-      .map((createdFormFields) =>
-        res.status(StatusCodes.OK).json(createdFormFields as FormFieldDto[]),
-      )
-      .mapErr((error) => {
-        logger.error({
-          message: 'Error occurred when creating form field',
-          meta: {
-            action: '_handleCreateFormField',
-            ...createReqMeta(req),
-            userId: sessionUserId,
-            formId,
-            createFieldBody: formFieldsToCreate,
-          },
-          error,
-        })
-        const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
-      })
-  )
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
 }
 
 /**
