@@ -96,7 +96,7 @@ export const SectionSidebar = (): JSX.Element => {
       as="nav"
       aria-label="Jump to form section"
       flex={1}
-      d={{ base: 'none', md: 'initial' }}
+      display={{ base: 'none', md: 'initial' }}
       minW={sectionScrollData.length > 0 ? '20%' : undefined}
     >
       <UnorderedList
