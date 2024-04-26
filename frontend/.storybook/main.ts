@@ -20,14 +20,6 @@ const config: StorybookConfig = {
     name: '@storybook/react-vite',
     options: {},
   },
-  previewHead: (head) => `
-    ${head}
-    <style>
-      #storybook-root {
-        height: 100%;
-      }
-    </style>
-  `,
 }
 
 export default config
