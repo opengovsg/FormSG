@@ -92,23 +92,9 @@
     "web-vitals": "^2.1.2",
     "zustand": "^4.1.1"
   },
-  "scriptComments": {
-    "clean:emotion-types": [
-      "Prevents injected emotion types from conflicting with ChakraUI types, such as `css`.",
-      "See https://github.com/emotion-js/emotion/issues/1800"
-    ],
-    "build": [
-      "The flags are required for the app to build successfully.",
-      "`CI=false` ensures that warnings in the app linter are not treated as errors (preventing a build)",
-      "`BUILD_PATH='../dist/frontend` ensures build output to be created in the root /dist folder",
-      "`INLINE_RUNTIME_CHUNK=false` prevents inline scripts from appearing in the build output. This is required due to our strict CSP rules on the backend that disallow inline scripts",
-      "`SKIP_PREFLIGHT_CHECK=true` skips node_module warnings that results from having a root node_module above this application"
-    ]
-  },
   "scripts": {
     "gen:theme-typings": "chakra-cli tokens src/theme/index.ts || true",
-    "clean:emotion-types": "rimraf node_modules/@emotion/core/types",
-    "postinstall": "npm run gen:theme-typings && npm run clean:emotion-types && npm --prefix ../shared install",
+    "postinstall": "npm run gen:theme-typings && npm --prefix ../shared install",
     "start": "vite",
     "build": "vite build",
     "serve": "vite preview",
