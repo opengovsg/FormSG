@@ -5,4 +5,5 @@ export const featureFlags = {
   validateStripeEmailDomain: 'validateStripeEmailDomain' as const,
   myinfoSgid: 'myinfo-sgid' as const,
   chartsMaxResponseCount: 'charts-max-response-count' as const,
+  addingTwilioDisabled: 'adding-twilio-disabled' as const,
 }
