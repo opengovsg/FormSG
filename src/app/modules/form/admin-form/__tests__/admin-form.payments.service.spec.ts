@@ -271,6 +271,63 @@ describe('admin-form.payment.service', () => {
           InvalidPaymentAmountError,
         )
       })
+
+      it('should return OK if min_amount is greater than global_min_amount_override', async () => {
+        const updatedPaymentSettingsMaxAboveMin = {
+          ...defaultVariablePaymentSettings,
+          min_amount: 10,
+          max_amount: 1500,
+          global_min_amount_override: 10,
+        }
+
+        const mockUpdatedForm = {
+          _id: mockFormId,
+          payments_field: updatedPaymentSettingsMaxAboveMin,
+        }
+        const putSpy = jest
+          .spyOn(EncryptFormModel, 'updatePaymentsById')
+          .mockResolvedValueOnce(
+            mockUpdatedForm as unknown as IEncryptedFormDocument,
+          )
+        // Act
+        const actualResult = await AdminFormPaymentService.updatePayments(
+          mockFormId,
+          updatedPaymentSettingsMaxAboveMin,
+        )
+
+        // Assert
+        expect(putSpy).toHaveBeenCalledWith(
+          mockFormId,
+          updatedPaymentSettingsMaxAboveMin,
+        )
+        expect(actualResult.isOk()).toBeTrue()
+        expect(actualResult._unsafeUnwrap()).toEqual(
+          updatedPaymentSettingsMaxAboveMin,
+        )
+      })
+
+      it('should return error if min_amount is lower than global_min_amount_override', async () => {
+        const updatedPaymentSettingsMaxAboveMin = {
+          ...defaultVariablePaymentSettings,
+          min_amount: 9,
+          max_amount: 1500,
+          global_min_amount_override: 10,
+        }
+
+        const putSpy = jest.spyOn(EncryptFormModel, 'updatePaymentsById')
+        // Act
+        const actualResult = await AdminFormPaymentService.updatePayments(
+          mockFormId,
+          updatedPaymentSettingsMaxAboveMin,
+        )
+
+        // Assert
+        expect(putSpy).not.toHaveBeenCalled()
+        expect(actualResult.isErr()).toBeTrue()
+        expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+          InvalidPaymentAmountError,
+        )
+      })
     })
   })
 
