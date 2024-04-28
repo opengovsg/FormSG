@@ -47,6 +47,7 @@ const PaymentItemDetailsElement = ({
           paymentDescription={paymentDetails.description}
           paymentMin={paymentDetails.min_amount}
           paymentMax={paymentDetails.max_amount}
+          globalMinAmountOverride={paymentDetails.global_min_amount_override}
         />
       )
     }
