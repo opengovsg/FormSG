@@ -33,16 +33,21 @@ export const VariablePaymentAmountField = ({
 }) => {
   const {
     data: {
-      maxPaymentAmountCents = Number.MAX_SAFE_INTEGER,
-      minPaymentAmountCents = Number.MIN_SAFE_INTEGER,
+      maxPaymentAmountCents: envMaxPaymentAmountCents = Number.MAX_SAFE_INTEGER,
+      minPaymentAmountCents: envMinPaymentAmountCents = Number.MIN_SAFE_INTEGER,
     } = {},
   } = useEnv()
 
+  const minAmountCents =
+    input.global_min_amount_override || envMinPaymentAmountCents
+
+  const maxAmountCents = envMaxPaymentAmountCents
+
   const minAmountInDollars = `S${formatCurrency(
-    Number(centsToDollars(minPaymentAmountCents)),
+    Number(centsToDollars(minAmountCents)),
   )}`
   const maxAmountInDollars = `S${formatCurrency(
-    Number(centsToDollars(maxPaymentAmountCents)),
+    Number(centsToDollars(maxAmountCents)),
   )}`
 
   const minAmountValidation: RegisterOptions<
@@ -51,6 +56,7 @@ export const VariablePaymentAmountField = ({
   > = usePaymentFieldValidation<FormPaymentsInput, typeof MIN_FIELD_KEY>({
     lesserThanCents: dollarsToCents(input[MAX_FIELD_KEY] || ''),
     msgWhenEmpty: `The minimum amount is ${minAmountInDollars}`,
+    overrideMinAmount: input.global_min_amount_override,
   })
   const maxAmountValidation: RegisterOptions<
     FormPaymentsInput,

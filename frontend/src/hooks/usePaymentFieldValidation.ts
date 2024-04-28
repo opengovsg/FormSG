@@ -8,28 +8,40 @@ import {
 
 import { useEnv } from '~features/env/queries'
 
+/**
+ *
+ * @param options.greaterThanCents The minimum amount in cents
+ * @param options.lesserThanCents The maximum amount in cents
+ * @param options.overrideMinAmount The minimum amount in cents that overrides the global minimum amount
+ * @param options.msgWhenEmpty The message to display when the field is empty
+ * @returns
+ */
 export const usePaymentFieldValidation = <
   T extends FieldValues,
   V extends FieldPath<T>,
 >(options?: {
   greaterThanCents?: number
   lesserThanCents?: number
+  overrideMinAmount?: number
   msgWhenEmpty?: string
 }) => {
   const {
     data: {
-      maxPaymentAmountCents = Number.MAX_SAFE_INTEGER,
-      minPaymentAmountCents = Number.MIN_SAFE_INTEGER,
+      maxPaymentAmountCents: envMaxPaymentAmountCents = Number.MAX_SAFE_INTEGER,
+      minPaymentAmountCents: envMinPaymentAmountCents = Number.MIN_SAFE_INTEGER,
     } = {},
   } = useEnv()
+
+  const maxAmountCents = envMaxPaymentAmountCents
+  const minAmountCents = options?.overrideMinAmount || envMinPaymentAmountCents
 
   const {
     lesserThanCents: maxCents = Number.MAX_SAFE_INTEGER,
     greaterThanCents: minCents = Number.MIN_SAFE_INTEGER,
     msgWhenEmpty = '',
   } = options || {}
-  const maxCentsLimit = Math.min(maxCents, maxPaymentAmountCents)
-  const minCentsLimit = Math.max(minCents, minPaymentAmountCents)
+  const maxCentsLimit = Math.min(maxCents, maxAmountCents)
+  const minCentsLimit = Math.max(minCents, minAmountCents)
 
   const amountValidation: RegisterOptions<T, V> = {
     validate: (val) => {
