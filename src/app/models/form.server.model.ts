@@ -186,6 +186,10 @@ export const formPaymentsFieldSchema = {
     type: Boolean,
     default: true,
   },
+  global_min_amount_override: {
+    type: Number,
+    default: 0,
+  },
 }
 
 const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
