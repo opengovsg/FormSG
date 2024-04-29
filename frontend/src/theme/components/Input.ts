@@ -1,26 +1,53 @@
 import { inputAnatomy } from '@chakra-ui/anatomy'
+import {
+  createMultiStyleConfigHelpers,
+  cssVar,
+  defineStyle,
+} from '@chakra-ui/react'
 import { getColor, StyleFunctionProps } from '@chakra-ui/theme-tools'
+
+// Additional success part.
+const parts = inputAnatomy.extend('success')
+
+const $height = cssVar('input-height')
+const $padding = cssVar('input-padding')
+const $borderRadius = cssVar('input-border-radius')
+
+const { definePartsStyle, defineMultiStyleConfig } =
+  createMultiStyleConfigHelpers(parts.keys)
 
 /**
  * Override with more if we have more sizes.
  */
 const size = {
-  md: {
-    px: '1rem',
-    h: '2.75rem',
-    borderRadius: '0.25rem',
-  },
+  md: defineStyle({
+    [$padding.variable]: '1rem',
+    [$height.variable]: '2.75rem',
+    [$borderRadius.variable]: '4px',
+  }),
+}
+
+const sizes = {
+  md: definePartsStyle({
+    element: size.md,
+    field: size.md,
+    addon: size.md,
+  }),
+}
+
+function getDefaults(props: Record<string, string>) {
+  const { focusBorderColor: fc, errorBorderColor: ec } = props
+  return {
+    focusBorderColor: fc || 'primary.500',
+    errorBorderColor: ec || 'danger.500',
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 const outlineVariant = (props: StyleFunctionProps) => {
-  const {
-    theme,
-    focusBorderColor: fc,
-    errorBorderColor: ec,
-    isSuccess,
-    isPrefilled,
-  } = props
+  const { theme, isSuccess, isPrefilled } = props
+
+  const { focusBorderColor: fc, errorBorderColor: ec } = getDefaults(props)
 
   return {
     field: {
@@ -94,24 +121,13 @@ const outlineVariant = (props: StyleFunctionProps) => {
   }
 }
 
-// Additional success part.
-const parts = inputAnatomy.extend('success')
-
-export const Input = {
-  parts: parts.keys,
+export const Input = defineMultiStyleConfig({
   variants: {
     outline: outlineVariant,
   },
-  sizes: {
-    md: {
-      field: size.md,
-      addon: size.md,
-    },
-  },
+  sizes,
   defaultProps: {
     variant: 'outline',
     size: 'md',
-    focusBorderColor: 'primary.500',
-    errorBorderColor: 'danger.500',
   },
-}
+})
