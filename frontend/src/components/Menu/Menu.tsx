@@ -1,26 +1,24 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { useMemo } from 'react'
+import { FC, useMemo } from 'react'
 import {
+  Icon,
   Menu as ChakraMenu,
   MenuButton as ChakraMenuButton,
   MenuDivider as ChakraMenuDivider,
   MenuItem as ChakraMenuItem,
   MenuList as ChakraMenuList,
-  MenuProps,
+  MenuProps as ChakraMenuProps,
+  ThemingProps,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 
-import { BxsChevronDown } from '~/assets/icons/BxsChevronDown'
-import { BxsChevronUp } from '~/assets/icons/BxsChevronUp'
-
-import { MenuVariant } from '~theme/components/Menu'
+import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
+import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import Button, { ButtonProps } from '~components/Button'
 
 export interface MenuButtonProps extends Omit<ButtonProps, 'isFullWidth'> {
-  variant?: MenuVariant
+  variant?: ThemingProps<'Menu'>['variant']
   isStretch?: boolean
   isOpen?: boolean
-  focusItemBorderColor?: string
   chevronSize?: string
 }
 
@@ -28,41 +26,30 @@ export interface MenuButtonProps extends Omit<ButtonProps, 'isFullWidth'> {
  * @preconditions Must be a child of Menu component,
  * and returned using a render prop (see implementation in Menu.stories).
  */
-const MenuButton = ({
+const MenuButton: FC<MenuButtonProps> = ({
   isOpen,
-  variant = 'outline',
-  colorScheme = 'secondary',
-  focusItemBorderColor,
   isStretch,
-  chevronSize = '1.25rem',
+  chevronSize,
   ...props
-}: MenuButtonProps): JSX.Element => {
+}) => {
+  const styles = useMultiStyleConfig('Menu', props)
   const ChevronIcon = useMemo(
-    () =>
-      isOpen ? (
-        <BxsChevronUp fontSize={chevronSize} />
-      ) : (
-        <BxsChevronDown fontSize={chevronSize} />
-      ),
-    [chevronSize, isOpen],
+    () => (
+      <Icon
+        as={isOpen ? BxsChevronUp : BxsChevronDown}
+        fontSize={chevronSize}
+        sx={styles.chevron}
+      />
+    ),
+    [chevronSize, isOpen, styles.chevron],
   )
-  const style = useMultiStyleConfig('Menu', {
-    ...props,
-    variant,
-    colorScheme,
-    isStretch,
-    focusItemBorderColor,
-  })
 
   return (
     <ChakraMenuButton
       as={Button}
-      colorScheme={colorScheme}
-      variant={variant}
       rightIcon={ChevronIcon}
-      justifyContent="space-between"
-      iconSpacing="1.5rem"
-      sx={style.button}
+      width={isStretch ? '100%' : undefined}
+      sx={styles.button}
       {...props}
     />
   )
@@ -87,14 +74,24 @@ const MenuItem = ChakraMenuItem
  */
 const MenuDivider = ChakraMenuDivider
 
+interface MenuProps extends ChakraMenuProps {
+  /** If true, menu list will match width of menu. Alias of `matchWidth=true` */
+  isStretch?: boolean
+}
+
 /**
  * Used to wrap MenuButton, MenuItem and MenuList components
  */
-export const Menu = (props: MenuProps): JSX.Element => {
-  return <ChakraMenu matchWidth={true} gutter={4} {...props} />
+export const Menu = ({ isStretch, ...props }: MenuProps): JSX.Element => {
+  return <ChakraMenu matchWidth={isStretch} gutter={4} {...props} />
 }
 
 Menu.Button = MenuButton
 Menu.List = MenuList
 Menu.Item = MenuItem
 Menu.Divider = MenuDivider
+
+Menu.Button.displayName = 'Menu.Button'
+Menu.List.displayName = 'Menu.List'
+Menu.Item.displayName = 'Menu.Item'
+Menu.Divider.displayName = 'Menu.Divider'

@@ -1,5 +1,8 @@
 import { menuAnatomy as parts } from '@chakra-ui/anatomy'
+import { cssVar } from '@chakra-ui/react'
 import { getColor, PartsStyleFunction } from '@chakra-ui/theme-tools'
+
+const $bg = cssVar('menu-bg')
 
 export type MenuVariant = 'outline' | 'clear'
 
@@ -21,29 +24,32 @@ const baseStyle: PartsStyleFunction<typeof parts> = (props) => {
       },
     },
     item: {
+      // Required for items to also have variable colors
+      bg: $bg.reference,
+      [$bg.variable]: 'white',
       padding: '0.75rem 1rem',
       fontWeight: '400',
       color: 'secondary.700',
       _hover: {
-        bg: `${c}.100`,
+        [$bg.variable]: `colors.${c}.100`,
         borderWidth: '0rem',
       },
       _focus: {
-        bg: `${c}.100`,
+        [$bg.variable]: `colors.${c}.100`,
         boxShadow: `0 0 0 2px var(--chakra-colors-primary-500)`,
         _active: {
-          bg: `${c}.200`,
+          [$bg.variable]: `colors.${c}.200`,
         },
       },
       _active: {
-        bg: `${c}.200`,
+        [$bg.variable]: `colors.${c}.200`,
         fontWeight: 500,
       },
       _disabled: {
         opacity: 0.6,
-        bg: 'initial',
+        [$bg.variable]: 'initial',
         _hover: {
-          bg: 'initial',
+          [$bg.variable]: 'initial',
         },
         _active: {
           fontWeight: 'initial',
