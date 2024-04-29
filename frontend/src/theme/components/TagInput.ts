@@ -1,9 +1,11 @@
-import { createMultiStyleConfigHelpers } from '@chakra-ui/react'
+import { createMultiStyleConfigHelpers, cssVar } from '@chakra-ui/react'
 import { anatomy } from '@chakra-ui/theme-tools'
 
 import { Input } from './Input'
 
 export const parts = anatomy('taginput').parts('container', 'field')
+
+const $height = cssVar('input-height')
 
 const { definePartsStyle, defineMultiStyleConfig } =
   createMultiStyleConfigHelpers(parts.keys)
@@ -14,6 +16,7 @@ const baseStyle = definePartsStyle({
     flexWrap: 'wrap',
     cursor: 'text',
     height: 'auto',
+    minH: [$height.reference],
     maxW: '100%',
     w: '100%',
     _disabled: {
