@@ -91,11 +91,6 @@ export const LandingPage = (): JSX.Element => {
 
   return (
     <>
-      {/* <FeatureBanner
-        title="Introducing Payments"
-        body="Respondents can now pay for fees and services directly on your form!"
-        learnMoreLink={LANDING_PAYMENTS_ROUTE}
-      /> */}
       <FeatureBanner
         body="We have updated FormSG's Terms of Use and Privacy Policy"
         learnMoreLink={TOU_ROUTE}
@@ -120,7 +115,7 @@ export const LandingPage = (): JSX.Element => {
             >
               Build secure government forms in minutes.
             </Text>
-            <SectionBodyText>
+            <SectionBodyText mt="1rem">
               Instant, customisable forms with zero code or cost, to safely
               collect classified and sensitive data.
             </SectionBodyText>
