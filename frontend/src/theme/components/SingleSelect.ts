@@ -14,6 +14,7 @@ export const comboboxParts = anatomy('combobox').parts(
   'list',
   'item',
   'icon',
+  'inputStack',
   'emptyItem',
 )
 
@@ -105,7 +106,6 @@ const variantOutline: PartsStyleFunction<typeof parts> = (props) => {
     list: { py: 0 },
     item: { cursor: 'pointer' },
     field: merge(inputVariantOutline.field, {
-      zIndex: 1,
       borderRightRadius: isClearable ? 0 : undefined,
       bg: 'white',
       gridArea: '1 / 1 / 2 / 3',
