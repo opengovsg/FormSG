@@ -1,7 +1,6 @@
 import { Controller, useForm } from 'react-hook-form'
 import { BiMinus, BiPlus } from 'react-icons/bi'
 import {
-  Button,
   FormControl,
   HStack,
   Input,
@@ -17,6 +16,7 @@ import {
 } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
+import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import IconButton from '~components/IconButton'
 import { ModalCloseButton } from '~components/Modal'
