@@ -37,7 +37,7 @@ export const BASIC_FIELDS_ORDERED = [
   BasicField.Uen,
 ]
 
-export const MYINFO_FIELDS_ORDERED: MyInfoAttribute[] = [
+export const MYINFO_FIELDS_ORDERED = [
   // Personal section
   MyInfoAttribute.Name,
   MyInfoAttribute.Sex,
@@ -68,7 +68,7 @@ export const MYINFO_FIELDS_ORDERED: MyInfoAttribute[] = [
   MyInfoAttribute.DivorceDate,
   // Children section
   MyInfoAttribute.ChildrenBirthRecords,
-]
+] as const
 
 export const MYINFO_TEXTFIELD_META: MyInfoFieldMeta<ShortTextFieldBase> = {
   ValidationOptions: {
