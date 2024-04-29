@@ -52,7 +52,14 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
 
     return (
       <Flex>
-        <InputGroup pos="relative" display="grid" gridTemplateColumns="1fr">
+        <InputGroup
+          pos="relative"
+          display="grid"
+          gridTemplateColumns="1fr"
+          _focusWithin={{
+            zIndex: 1,
+          }}
+        >
           <Stack
             visibility={inputValue ? 'hidden' : 'initial'}
             direction="row"
