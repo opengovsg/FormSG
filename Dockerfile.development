@@ -23,13 +23,6 @@ RUN apk update && apk upgrade && \
     # Python version must be specified starting in alpine3.12
     g++ gcc libgcc libstdc++ linux-headers autoconf automake make nasm python3 git curl \
     # Runtime dependencies
-    # Note that each alpine version supports a specific version of chromium
-    # Note that chromium and puppeteer-core are released together and it is the only version
-    # that is guaranteed to work. Upgrades must be done in lockstep.
-    # https://github.com/puppeteer/puppeteer/blob/master/docs/troubleshooting.md#running-on-alpine
-    # https://www.npmjs.com/package/puppeteer-core?activeTab=versions for corresponding versions
-    # Compatible chromium versions can be found here https://pkgs.alpinelinux.org/packages?name=chromium&branch=v3.19&repo=&arch=&maintainer=
-    chromium=124.0.6367.78-r0 \
     nss \
     freetype \
     freetype-dev \
@@ -45,6 +38,15 @@ RUN apk update && apk upgrade && \
     # [ver1] ensures that the underlying AWS CLI version is also installed
     pip install awscli-local[ver1] --break-system-packages
 
+
+# Note that each alpine version supports a specific version of chromium
+# Note that chromium and puppeteer-core are released together and it is the only version
+# that is guaranteed to work. Upgrades must be done in lockstep.
+# https://github.com/puppeteer/puppeteer/blob/master/docs/troubleshooting.md#running-on-alpine
+# https://www.npmjs.com/package/puppeteer-core?activeTab=versions for corresponding versions
+# Compatible chromium versions can be found here https://pkgs.alpinelinux.org/packages?name=chromium&branch=v3.18&repo=&arch=&maintainer=
+# Pinning to an older version of node to avoid regular breakage due to version chromium being bumped on latest alpine
+RUN apk add chromium=119.0.6045.159-r0 --repository https://dl-cdn.alpinelinux.org/alpine/v3.18/community/
 
 # Tell Puppeteer to skip installing Chrome. We'll be using the installed package.
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
