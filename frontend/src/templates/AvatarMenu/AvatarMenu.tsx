@@ -27,6 +27,7 @@ const AvatarMenuButton = (props: MenuButtonProps): JSX.Element => {
     <Menu.Button
       variant="clear"
       px="0"
+      minH="auto"
       iconSpacing="0.5rem"
       color="secondary.300"
       chevronSize="1.5rem"
@@ -103,9 +104,11 @@ export const AvatarMenu = ({
             </Avatar>
           </AvatarMenuButton>
           <Menu.List role="menu" marginTop="0.375rem" {...menuListProps}>
-            <AvatarMenuUsername>{menuUsername}</AvatarMenuUsername>
-            <AvatarMenuDivider />
-            {children}
+            <>
+              <AvatarMenuUsername>{menuUsername}</AvatarMenuUsername>
+              <AvatarMenuDivider />
+              {children}
+            </>
           </Menu.List>
         </>
       )}
