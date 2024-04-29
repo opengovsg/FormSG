@@ -46,7 +46,7 @@ const Template: StoryFn<YesNoFieldProps> = (args) => {
   const [submitValues, setSubmitValues] = useState<string>()
 
   const onSubmit = (values: Record<string, string>) => {
-    setSubmitValues(values[args.schema._id] ?? 'Nothing was selected')
+    setSubmitValues(values[args.schema._id] || 'Nothing was selected')
   }
 
   return (

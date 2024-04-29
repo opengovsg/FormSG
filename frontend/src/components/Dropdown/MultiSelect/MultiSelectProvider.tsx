@@ -291,6 +291,7 @@ export const MultiSelectProvider = ({
   return (
     <SelectContext.Provider
       value={{
+        fullWidth: false,
         inputRef,
         isClearable: false,
         selectedItem: null,
