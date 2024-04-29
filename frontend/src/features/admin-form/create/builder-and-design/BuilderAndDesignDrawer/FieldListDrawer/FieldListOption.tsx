@@ -1,10 +1,10 @@
 import { CSSProperties, useCallback, useMemo } from 'react'
+import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
 import {
   Draggable,
   DraggableProvided,
   DraggableStateSnapshot,
-} from 'react-beautiful-dnd'
-import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
+} from '@hello-pangea/dnd'
 
 import { AllowedMyInfoFieldOption, BasicField } from '~shared/types/field'
 
