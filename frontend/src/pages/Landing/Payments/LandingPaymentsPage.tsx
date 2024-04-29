@@ -247,7 +247,7 @@ export const LandingPaymentsPage = (): JSX.Element => {
             >
               Collect payments on your form
             </Text>
-            <SectionBodyText color={mainSectionTextColour}>
+            <SectionBodyText mt="1rem" color={mainSectionTextColour}>
               Respondents can now pay for fees and services directly on your
               form. Enter your agency email to receive our guide on how to get
               started with payments.
