@@ -3,16 +3,17 @@ import {
   Button,
   ButtonProps,
   ComponentWithAs,
+  createStylesContext,
   forwardRef,
   HStack,
   Icon,
   ListItem,
-  StylesProvider,
   Text,
   TextProps,
   useMultiStyleConfig,
-  useStyles,
 } from '@chakra-ui/react'
+
+const [TileStylesProvider, useTileStyles] = createStylesContext('Tile')
 
 export interface TileProps
   extends Omit<
@@ -62,7 +63,7 @@ export const Tile = forwardRef<TileProps, 'button'>(
     const styles = useMultiStyleConfig('Tile', props)
     return (
       // Ref passed into the component as a whole so that it can be focused
-      <StylesProvider value={styles}>
+      <TileStylesProvider value={styles}>
         <Button sx={styles.container} ref={ref} {...props}>
           <HStack spacing="1rem">
             <Icon __css={styles.icon} as={icon} />
@@ -70,19 +71,19 @@ export const Tile = forwardRef<TileProps, 'button'>(
           </HStack>
           {children}
         </Button>
-      </StylesProvider>
+      </TileStylesProvider>
     )
   },
 ) as TileWithParts
 
 const TileTitle = (props: TextProps): JSX.Element => {
-  const styles = useStyles()
+  const styles = useTileStyles()
   // Allow consumers to override default style props with their own styling
   return <Text sx={styles.title} {...props} />
 }
 
 const TileSubtitle = (props: TextProps): JSX.Element => {
-  const styles = useStyles()
+  const styles = useTileStyles()
   // Allow consumers to override default style props with their own styling
   return <Text sx={styles.subtitle} {...props} />
 }
