@@ -79,8 +79,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
     }, [formControlProps, getRadioProps, props.name])
 
     return (
-      // -1px so borders collapse.
-      <HStack spacing="-1px" {...groupProps}>
+      <HStack spacing={0} {...groupProps}>
         <YesNoOption
           side="left"
           colorScheme={colorScheme}
