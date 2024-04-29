@@ -22,9 +22,7 @@ export const Tile: ComponentMultiStyleConfig<typeof parts> = {
       },
       _focus: {
         borderColor: 'transparent',
-        // NOTE: For the boxShadow styling, due to conflicts with the focus-visible package,
-        // the !important is required to display the boxShadow styling correctly.
-        boxShadow: '0 0 0 2px var(--chakra-colors-primary-500) !important',
+        boxShadow: '0 0 0 2px var(--chakra-colors-primary-500)',
       },
       _active: {
         bg: 'primary.200',
@@ -35,9 +33,7 @@ export const Tile: ComponentMultiStyleConfig<typeof parts> = {
           bg: 'initial',
         },
         _focus: {
-          // NOTE: For the boxShadow styling, due to conflicts with the focus-visible package,
-          // the !important is required to display the boxShadow styling correctly.
-          boxShadow: '0 0 0 3px var(--chakra-colors-primary-500) !important',
+          boxShadow: '0 0 0 3px var(--chakra-colors-primary-500)',
         },
       },
       bg: 'white',

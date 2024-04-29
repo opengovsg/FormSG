@@ -100,10 +100,6 @@ const variantSubtle: PartsStyleFunction<typeof parts> = (props) => {
       },
       _focus: {
         boxShadow: `0 0 0 2px var(--chakra-colors-${c}-300)`,
-        // Enable boxShadow even with :focus-visible
-        ':not([data-focus-visible-added])': {
-          boxShadow: `0 0 0 2px var(--chakra-colors-${c}-300)`,
-        },
         _disabled: {
           boxShadow: 'none',
         },
@@ -164,10 +160,6 @@ const variantSolid: PartsStyleFunction<typeof parts> = (props) => {
       },
       _focus: {
         boxShadow: `0 0 0 2px var(--chakra-colors-${c}-200)`,
-        // Enable boxShadow even with :focus-visible
-        ':not([data-focus-visible-added])': {
-          boxShadow: `0 0 0 2px var(--chakra-colors-${c}-200)`,
-        },
         _disabled: {
           boxShadow: 'none',
         },
