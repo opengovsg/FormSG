@@ -223,9 +223,11 @@ export const PublicFormProvider = ({
         Object.keys(previousSubmission.responses).forEach((id) => {
           const response = previousSubmission.responses[id]
           if (response.fieldType === BasicField.Attachment) {
-            //@ts-expect-error 'content' required for backward compatibility,
-            // but does not exist on type AttachmentResponseV3
-            previousAttachments[id] = Uint8Array.from(response.content.data)
+            previousAttachments[id] = Uint8Array.from(
+              //@ts-expect-error 'content' required for backward compatibility, but
+              // does not exist on AttachmentFieldResponseV3 in mrfVersion === 1 versions
+              response.answer.content.data,
+            )
           }
         })
         setPreviousAttachments(previousAttachments)
