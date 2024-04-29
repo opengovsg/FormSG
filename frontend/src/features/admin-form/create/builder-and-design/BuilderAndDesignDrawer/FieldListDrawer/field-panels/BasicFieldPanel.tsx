@@ -1,5 +1,5 @@
-import { Droppable } from 'react-beautiful-dnd'
 import { Box } from '@chakra-ui/react'
+import { Droppable } from '@hello-pangea/dnd'
 
 import {
   BASIC_FIELDS_ORDERED,
