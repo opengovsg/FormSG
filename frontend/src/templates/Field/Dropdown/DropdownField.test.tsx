@@ -1,5 +1,5 @@
 import { composeStories } from '@storybook/react'
-import { act, render, screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import { REQUIRED_ERROR } from '~constants/validation'
@@ -135,11 +135,9 @@ describe('dropdown validation', () => {
     expect(dropdownOptions.includes(inputToType)).toEqual(false)
 
     // Act
-    user.click(input)
-    await act(() => {
-      user.type(input, inputToType)
-      return user.tab()
-    })
+    await user.click(input)
+    await user.type(input, inputToType)
+    await user.tab()
     // Input should blur and input value should be cleared (since nothing was selected).
     expect(input.value).toEqual('')
     await userEvent.click(submitButton)
