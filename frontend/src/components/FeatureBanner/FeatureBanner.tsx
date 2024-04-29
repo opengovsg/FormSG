@@ -51,7 +51,7 @@ export const FeatureBanner = ({
   return (
     <Box __css={styles.banner} bgColor={`primary.${bannerColorIntensity}`}>
       <Flex
-        sx={styles.item}
+        __css={styles.item}
         placeContent={title ? undefined : 'center'}
         mx={isMobile ? '0.5rem' : '2rem'}
         my={title ? (isMobile ? '0.5rem' : '1.5rem') : undefined}
