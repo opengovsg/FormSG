@@ -68,6 +68,7 @@ export const Playground: StoryFn = ({
         isDisabled={isDisabled}
         isInvalid={!!errors[name]}
         mb={6}
+        id={name}
       >
         <FormLabel htmlFor={name}>{label}</FormLabel>
         <Controller

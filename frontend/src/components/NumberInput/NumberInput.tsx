@@ -6,8 +6,8 @@ import {
   Divider,
   forwardRef,
   NumberInputProps as ChakraNumberInputProps,
+  PropsOf,
   useFormControlProps,
-  useMergeRefs,
   useMultiStyleConfig,
   useNumberInput,
 } from '@chakra-ui/react'
@@ -16,7 +16,9 @@ import { ThemeColorScheme } from '~theme/foundations/colours'
 
 import IconButton from '../IconButton'
 
-export interface NumberInputProps extends ChakraNumberInputProps {
+export interface NumberInputProps
+  extends Omit<PropsOf<'input'>, keyof ChakraNumberInputProps>,
+    ChakraNumberInputProps {
   /**
    * Whether the input is in a prefilled state.
    */
@@ -82,8 +84,6 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
     const incProps = getIncrementButtonProps()
     const decProps = getDecrementButtonProps()
 
-    const inputRef = useMergeRefs(inputProps.ref, ref)
-
     const inputEndPadding = showSteppers
       ? stepperWrapperRef.current?.offsetWidth
       : undefined
@@ -110,7 +110,7 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
           // the parent.
           // No point passing the ref to the div wrapper as the main component
           // is this input.
-          ref={inputRef}
+          ref={ref}
           __css={styles.field}
         />
         {showSteppers && (

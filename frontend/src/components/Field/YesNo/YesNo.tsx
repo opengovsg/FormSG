@@ -51,7 +51,7 @@ export interface YesNoProps {
 export const YesNo = forwardRef<YesNoProps, 'input'>(
   ({ colorScheme, ...props }, ref) => {
     const formControlProps = useFormControlProps(props)
-    const { getRootProps, getRadioProps } = useRadioGroup(props)
+    const { getRootProps, getRadioProps, onChange } = useRadioGroup(props)
 
     const groupProps = getRootProps()
     const [noProps, yesProps] = useMemo(() => {
@@ -65,16 +65,17 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
         name: props.name,
       }
 
-      return [
-        getRadioProps({
-          value: 'No',
-          ...baseProps,
-        }),
-        getRadioProps({
-          value: 'Yes',
-          ...baseProps,
-        }),
-      ]
+      const noRadioProps = getRadioProps({
+        value: 'No',
+        ...baseProps,
+      })
+
+      const yesRadioProps = getRadioProps({
+        value: 'Yes',
+        ...baseProps,
+      })
+
+      return [noRadioProps, yesRadioProps]
     }, [formControlProps, getRadioProps, props.name])
 
     return (
@@ -84,6 +85,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           side="left"
           colorScheme={colorScheme}
           {...noProps}
+          onChange={(value) => onChange(value as YesNoOptionValue)}
           leftIcon={BiX}
           label="No"
           // Ref is set here for tracking current value, and also so any errors
@@ -95,6 +97,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           side="right"
           colorScheme={colorScheme}
           {...yesProps}
+          onChange={(value) => onChange(value as YesNoOptionValue)}
           leftIcon={BiCheck}
           label="Yes"
           title={props.title}

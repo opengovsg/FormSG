@@ -471,7 +471,7 @@ const FieldRow = ({ field, ...rest }: FieldRowProps) => {
     case BasicField.Mobile:
       return field.isVerifiable ? (
         <VerifiableFieldBuilderContainer schema={field} {...rest}>
-          <MobileFieldInput schema={field} responseMode={rest.responseMode} />
+          <MobileFieldInput schema={field} />
         </VerifiableFieldBuilderContainer>
       ) : (
         <MobileField schema={field} {...rest} />
@@ -481,7 +481,7 @@ const FieldRow = ({ field, ...rest }: FieldRowProps) => {
     case BasicField.Email:
       return field.isVerifiable ? (
         <VerifiableFieldBuilderContainer schema={field} {...rest}>
-          <EmailFieldInput schema={field} responseMode={rest.responseMode} />
+          <EmailFieldInput schema={field} />
         </VerifiableFieldBuilderContainer>
       ) : (
         <EmailField schema={field} {...rest} />

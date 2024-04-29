@@ -35,6 +35,8 @@ const withReactQuery: Decorator = (storyFn) => {
     },
   })
   return (
+    // FIXME: react 18 types
+    // @ts-expect-error missing FC type in old version
     <QueryClientProvider client={queryClient}>
       <AuthProvider>{storyFn()}</AuthProvider>
     </QueryClientProvider>

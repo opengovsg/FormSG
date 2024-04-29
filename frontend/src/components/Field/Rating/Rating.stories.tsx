@@ -230,6 +230,8 @@ export const Playground: StoryFn = ({
       >
         <FormLabel htmlFor={name}>{label}</FormLabel>
         <Rating
+          isRequired={isRequired}
+          fieldTitle="Test rating field title"
           variant={variant}
           numberOfRatings={numberOfRatings}
           {...args}

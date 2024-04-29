@@ -64,6 +64,8 @@ export const App = (): JSX.Element => {
         />
       )}
       <HelmetProvider>
+        {/* FIXME: react 18 types */}
+        {/* @ts-expect-error missing FC type in old version */}
         <QueryClientProvider client={queryClient}>
           <ReactQueryDevtools initialIsOpen={false} />
           <AppHelmet />
