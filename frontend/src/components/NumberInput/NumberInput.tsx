@@ -6,19 +6,14 @@ import {
   Divider,
   forwardRef,
   NumberInputProps as ChakraNumberInputProps,
-  PropsOf,
   useFormControlProps,
   useMultiStyleConfig,
   useNumberInput,
 } from '@chakra-ui/react'
 
-import { ThemeColorScheme } from '~theme/foundations/colours'
+import IconButton from '~components/IconButton'
 
-import IconButton from '../IconButton'
-
-export interface NumberInputProps
-  extends Omit<PropsOf<'input'>, keyof ChakraNumberInputProps>,
-    ChakraNumberInputProps {
+export interface NumberInputProps extends ChakraNumberInputProps {
   /**
    * Whether the input is in a prefilled state.
    */
@@ -31,10 +26,7 @@ export interface NumberInputProps
    * Whether to show the increment and decrement steppers. Defaults to true.
    */
   showSteppers?: boolean
-  /**
-   * Color scheme of number input.
-   */
-  colorScheme?: ThemeColorScheme
+
   /**
    * Whether to prevent default on user pressing the 'Enter' key.
    */
@@ -57,6 +49,7 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
   ) => {
     const styles = useMultiStyleConfig('NumberInput', {
       ...props,
+      colorScheme,
       isSuccess,
       isPrefilled,
     })
@@ -81,6 +74,7 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
     })
 
     const inputProps = getInputProps({ placeholder: props.placeholder })
+
     const incProps = getIncrementButtonProps()
     const decProps = getDecrementButtonProps()
 
@@ -124,7 +118,7 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
               icon={<BiMinus />}
               {...decProps}
             />
-            <Divider __css={styles.stepperDivider} orientation="vertical" />
+            <Divider sx={styles.stepperDivider} orientation="vertical" />
             <IconButton
               sx={styles.stepperButton}
               colorScheme={colorScheme}
@@ -140,3 +134,5 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
     )
   },
 )
+
+NumberInput.displayName = 'NumberInput'
