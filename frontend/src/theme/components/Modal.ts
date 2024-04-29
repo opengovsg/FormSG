@@ -20,6 +20,7 @@ const baseStyleDialog: SystemStyleFunction = (props) => {
     my: '4rem',
     maxH: scrollBehavior === 'inside' ? 'calc(100% - 16rem)' : undefined,
     boxShadow: 'md',
+    bg: 'white',
   }
 }
 
