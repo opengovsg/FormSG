@@ -62,7 +62,7 @@ const Template: StoryFn<StoryModalProps> = ({ bodyContent, ...args }) => {
           </ModalBody>
           <ModalFooter>
             <ButtonGroup>
-              <Button variant="clear" onClick={onClose}>
+              <Button variant="clear" colorScheme="secondary" onClick={onClose}>
                 Cancel
               </Button>
               <Button>Create workspace</Button>
