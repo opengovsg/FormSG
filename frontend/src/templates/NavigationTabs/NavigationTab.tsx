@@ -1,6 +1,8 @@
 import { PropsWithChildren } from 'react'
 import { Link as ReactLink, LinkProps } from 'react-router-dom'
-import { chakra, useStyles } from '@chakra-ui/react'
+import { chakra } from '@chakra-ui/react'
+
+import { useNavigationTabStyles } from './NavigationTabContext'
 
 const Link = chakra(ReactLink)
 
@@ -16,7 +18,7 @@ export const NavigationTab = ({
   children,
   ...props
 }: PropsWithChildren<NavigationTabProps>) => {
-  const styles = useStyles()
+  const styles = useNavigationTabStyles()
 
   if (isDisabled) {
     return (
