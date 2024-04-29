@@ -71,6 +71,17 @@ export enum MyInfoChildAttributes {
   ChildSecondaryRace = 'childsecondaryrace',
 }
 
+export type AllowedMyInfoFieldOption = Exclude<
+  MyInfoAttribute,
+  | MyInfoAttribute.ChildName
+  | MyInfoAttribute.ChildBirthCertNo
+  | MyInfoAttribute.ChildDateOfBirth
+  | MyInfoAttribute.ChildVaxxStatus
+  | MyInfoAttribute.ChildGender
+  | MyInfoAttribute.ChildRace
+  | MyInfoAttribute.ChildSecondaryRace
+>
+
 export type MyInfoChildData = Partial<{
   [key in MyInfoChildAttributes]: string[]
 }>
