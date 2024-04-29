@@ -4,7 +4,7 @@ import { getColor, PartsStyleFunction } from '@chakra-ui/theme-tools'
 export type MenuVariant = 'outline' | 'clear'
 
 const baseStyle: PartsStyleFunction<typeof parts> = (props) => {
-  const { colorScheme: c, isStretch, theme, focusItemBorderColor: fc } = props
+  const { colorScheme: c, isStretch } = props
   return {
     button: {
       width: isStretch ? '100%' : undefined,
@@ -30,7 +30,7 @@ const baseStyle: PartsStyleFunction<typeof parts> = (props) => {
       },
       _focus: {
         bg: `${c}.100`,
-        boxShadow: `0 0 0 2px ${getColor(theme, fc)}`,
+        boxShadow: `0 0 0 2px var(--chakra-colors-primary-500)`,
         _active: {
           bg: `${c}.200`,
         },
