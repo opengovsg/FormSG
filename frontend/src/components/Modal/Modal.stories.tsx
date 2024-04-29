@@ -1,5 +1,6 @@
 import { useDisclosure } from '@chakra-ui/hooks'
 import {
+  Box,
   ButtonGroup,
   Modal,
   ModalBody,
@@ -12,7 +13,8 @@ import {
 } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 
-import { fullScreenDecorator, viewports } from '~utils/storybook'
+import { getMobileViewParameters } from '~/utils/storybook'
+
 import Button from '~components/Button'
 
 export default {
@@ -20,7 +22,13 @@ export default {
   // Required for Chromatic to know the dimensions of the snapshot to take,
   // since the modal is rendered in a portal and Chromatic only detects the
   // bounding box of the button that opens the modal.
-  decorators: [fullScreenDecorator],
+  decorators: [
+    (storyFn) => (
+      <Box w="100vw" h="100vh">
+        {storyFn()}
+      </Box>
+    ),
+  ],
   parameters: {
     layout: 'fullscreen',
     // Prevent flaky tests due to modal animating in.
@@ -49,12 +57,12 @@ const Template: StoryFn<StoryModalProps> = ({ bodyContent, ...args }) => {
         <ModalContent>
           <ModalCloseButton />
           <ModalHeader>Create workspace</ModalHeader>
-          <ModalBody whiteSpace="pre-wrap">
+          <ModalBody whiteSpace="pre-line">
             {bodyContent ?? generateLorem()}
           </ModalBody>
           <ModalFooter>
             <ButtonGroup>
-              <Button variant="clear" colorScheme="secondary" onClick={onClose}>
+              <Button variant="clear" onClick={onClose}>
                 Cancel
               </Button>
               <Button>Create workspace</Button>
@@ -85,9 +93,4 @@ Mobile.args = {
   size: 'mobile',
   bodyContent: generateLorem(5),
 }
-Mobile.parameters = {
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
-}
+Mobile.parameters = getMobileViewParameters()
