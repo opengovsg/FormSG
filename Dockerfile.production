@@ -90,7 +90,7 @@ RUN apk add --no-cache \
 # https://www.npmjs.com/package/puppeteer-core?activeTab=versions for corresponding versions
 # Compatible chromium versions can be found here https://pkgs.alpinelinux.org/packages?name=chromium&branch=v3.18&repo=&arch=&maintainer=
 # Pinning to an older version of node to avoid regular breakage due to version chromium being bumped on latest alpine
-RUN apk add chromium=119.0.6045.159-r0 --repository https://dl-cdn.alpinelinux.org/alpine/v3.18/community
+RUN apk add chromium --repository https://dl-cdn.alpinelinux.org/alpine/v3.18/community
 
 # Tell Puppeteer to skip installing Chrome. We'll be using the installed package.
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
