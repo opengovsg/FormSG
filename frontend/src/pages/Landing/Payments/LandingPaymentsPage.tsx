@@ -171,7 +171,7 @@ export const LandingPaymentsPage = (): JSX.Element => {
       bg="primary.100"
     >
       <Box>
-        <SectionBodyText>
+        <SectionBodyText mt="1rem">
           Have a question? Most answers can be found in our self service Help
           Center. Common questions include:
         </SectionBodyText>
