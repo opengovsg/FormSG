@@ -13,6 +13,8 @@ import {
   Text,
 } from '@chakra-ui/react'
 
+import { PROMPT_CHAR_LIMIT } from '~shared/constants'
+
 import { BxsErrorCircle } from '~assets/icons'
 import Button from '~components/Button'
 import Textarea from '~components/Textarea'
@@ -61,7 +63,7 @@ export const MagicFormBuilderPromptDetailsScreen = (): JSX.Element => {
             />
             <FormErrorMessage>
               <FormErrorIcon h="1.5rem" as={BxsErrorCircle} />
-              {errors.prompt?.message} {inputValue.length}/300
+              {errors.prompt?.message} {inputValue.length}/{PROMPT_CHAR_LIMIT}
             </FormErrorMessage>
           </FormControl>
           <Box mt="1rem">

@@ -13,7 +13,7 @@ export const MagicFormBuilderGifLoadingScreen = (): JSX.Element => {
             animationData={updatedLoadingAnimation}
             width="47.4rem"
             height="22rem"
-          ></LottieAnimation>
+          />
         </Box>
         <Box
           textAlign="center"

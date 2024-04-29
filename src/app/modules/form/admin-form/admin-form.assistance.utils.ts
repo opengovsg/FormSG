@@ -1,5 +1,5 @@
 // type guard for OpenAIError
-import { fieldTypes } from './admin-form.assistance.constants'
+import { fieldTypes, sampleFormFields } from './admin-form.assistance.constants'
 import { OpenAIError } from './admin-form.assistance.types'
 
 export function isOpenAIError(error: unknown): error is OpenAIError {
@@ -56,7 +56,7 @@ export const formFieldsPromptBuilder = (questions: string, schema: string) => {
 export const getFormFieldsTool = {
   name: 'getFormFields',
   description:
-    'Gets form fields to build a form with the specified field types. Do not create fields which do not belong to any of the specified field types. Signatures should be treated as textfield because a field type of signature cannot not exist in digital forms.',
+    'Gets form fields to build a form with the specified field types based on the example of sample form fields. Do not create fields which do not belong to any of the specified field types. For example, Signatures should be treated as textfield because a field type of signature cannot not exist in digital forms.',
   parameters: {
     type: 'object',
     properties: {
@@ -68,8 +68,12 @@ export const getFormFieldsTool = {
         type: 'string',
         enum: fieldTypes,
       },
+      sampleFormFields: {
+        type: 'string',
+        format: sampleFormFields,
+      },
     },
-    required: ['formFieldsFormat', 'fieldType'],
+    required: ['formFieldsFormat', 'fieldType', 'sampleFormFields'],
   },
 }
 

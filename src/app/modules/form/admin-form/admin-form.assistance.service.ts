@@ -85,7 +85,6 @@ export const generateQuestions = ({
     azureOpenAi.getChatCompletions(deploymentId, messages, options),
     (error) => {
       let errorMessage = ''
-      // todo: return different error messages based on error codes
       if (isOpenAIError(error)) {
         errorMessage = error.message
       }

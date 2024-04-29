@@ -14,7 +14,7 @@ export type MagicFormBuilderWizardInputProps = {
   magicFormBuilderMode: MagicFormBuilderMode
   // PDF mode props
   pdfFileText: string
-  // Prompt mode pros
+  // Prompt mode props
   prompt: string
 }
 

@@ -15,7 +15,10 @@ import {
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry'
 import * as pdfjs from 'pdfjs-dist/legacy/build/pdf'
 
-import { MB } from '~shared/constants'
+import {
+  PDF_UPLOAD_FILE_SIZE_LIMIT,
+  VALID_UPLOAD_FILE_TYPES,
+} from '~shared/constants'
 
 import { BxsErrorCircle } from '~assets/icons'
 import Button from '~components/Button'
@@ -39,14 +42,12 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
     formState: { errors },
   } = formMethods
 
-  const MAX_FILE_SIZE = 5 * MB
-  const VALID_EXTENSIONS = '.pdf'
   pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker
 
-  const [pdfFile, setPdfFile] = useState<File | undefined>(undefined)
+  const [pdfFile, setPdfFile] = useState<File>()
   const [pdfFileText, setPdfFileText] = useState<string>('')
 
-  function fileToArrayBuffer(file: File) {
+  const fileToArrayBuffer = (file: File) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
       reader.onload = (event) => resolve(reader.result)
@@ -112,10 +113,10 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
               render={() => (
                 <Attachment
                   isRequired
-                  maxSize={MAX_FILE_SIZE}
-                  accept={VALID_EXTENSIONS}
+                  maxSize={PDF_UPLOAD_FILE_SIZE_LIMIT}
+                  accept={VALID_UPLOAD_FILE_TYPES}
                   showFileSize
-                  title={'Upload a PDF'}
+                  title="Upload a PDF"
                   onChange={handleFileUpload}
                   name="pdfFile"
                   value={pdfFile}

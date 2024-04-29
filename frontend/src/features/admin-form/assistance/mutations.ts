@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
+import { StatusCodes } from 'http-status-codes'
 
 import { ContentTypes } from '~shared/types/assistance'
 
@@ -75,7 +76,7 @@ export const useAssistanceMutations = () => {
         if (error instanceof HttpError) {
           let errorMessage
           switch (error.code) {
-            case 429:
+            case StatusCodes.TOO_MANY_REQUESTS:
               errorMessage =
                 'Too many forms created! Please try creating again later.'
 

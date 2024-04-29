@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useMutation } from 'react-query'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import { featureFlags } from '~shared/constants'
@@ -50,19 +49,6 @@ const useMagicFormBuilderWizardContext =
       useMagicFormBuilderWizardProvider()
 
     const { handleSubmit } = formMethods
-
-    /**
-     * Mock the mutations first
-     * TODO: Wire up with actual mutations
-     */
-
-    const mockPdfMutation = useMutation(() => {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve('success')
-        }, 2000)
-      })
-    })
 
     const { createFieldsFromPromptMutation, createFieldsFromPdfMutation } =
       useAssistanceMutations()
