@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
-import ReactMarkdown, { Components } from 'react-markdown'
-import type { PluggableList } from 'react-markdown/lib/react-markdown'
+import ReactMarkdown, { type Components } from 'react-markdown'
 import breaks from 'remark-breaks'
 import gfm from 'remark-gfm'
 
@@ -54,8 +53,7 @@ export const MarkdownText = ({
       // Prevent <br> tags from being created, remark-breaks will still create newlines which gets replaced.
       disallowedElements={['br']}
       components={components}
-      // Known issue, only types are breaking. See https://github.com/orgs/rehypejs/discussions/63.
-      remarkPlugins={[gfm, breaks] as PluggableList}
+      remarkPlugins={[gfm, breaks]}
     >
       {processedRawString}
     </ReactMarkdown>
