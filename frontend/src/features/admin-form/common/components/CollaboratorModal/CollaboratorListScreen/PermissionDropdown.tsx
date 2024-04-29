@@ -37,6 +37,7 @@ export const PermissionDropdown = ({
             variant={buttonVariant}
             colorScheme="secondary"
             isActive={isOpen}
+            iconSpacing="1.5rem"
           >
             {value}
           </Menu.Button>

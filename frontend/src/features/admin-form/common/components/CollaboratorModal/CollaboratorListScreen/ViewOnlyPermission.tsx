@@ -21,9 +21,8 @@ export const ViewOnlyPermission = ({
       {...stackProps}
     >
       <Text
-        px="1rem"
         // Same width as permissions dropdown menu button for alignment
-        minW="7rem"
+        minW="6.25rem"
         textStyle="body-2"
         color="secondary.500"
       >
