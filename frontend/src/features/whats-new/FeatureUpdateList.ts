@@ -1,5 +1,5 @@
 import dedent from 'dedent'
-import { JsonObject, RequireExactlyOne } from 'type-fest'
+import { RequireExactlyOne } from 'type-fest'
 
 import {
   GUIDE_MRF_MODE,
@@ -20,7 +20,7 @@ export type FeatureUpdateImage = RequireExactlyOne<
   {
     alt: string
     url: string
-    animationData: JsonObject
+    animationData: object
   },
   'url' | 'animationData'
 >
