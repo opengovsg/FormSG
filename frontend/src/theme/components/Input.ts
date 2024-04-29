@@ -13,8 +13,7 @@ const $height = cssVar('input-height')
 const $padding = cssVar('input-padding')
 const $borderRadius = cssVar('input-border-radius')
 
-const { definePartsStyle, defineMultiStyleConfig } =
-  createMultiStyleConfigHelpers(parts.keys)
+const { definePartsStyle } = createMultiStyleConfigHelpers(parts.keys)
 
 /**
  * Override with more if we have more sizes.
@@ -35,19 +34,15 @@ const sizes = {
   }),
 }
 
-function getDefaults(props: Record<string, string>) {
-  const { focusBorderColor: fc, errorBorderColor: ec } = props
-  return {
-    focusBorderColor: fc || 'primary.500',
-    errorBorderColor: ec || 'danger.500',
-  }
-}
-
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 const outlineVariant = (props: StyleFunctionProps) => {
-  const { theme, isSuccess, isPrefilled } = props
-
-  const { focusBorderColor: fc, errorBorderColor: ec } = getDefaults(props)
+  const {
+    theme,
+    focusBorderColor: fc,
+    errorBorderColor: ec,
+    isSuccess,
+    isPrefilled,
+  } = props
 
   return {
     field: {
@@ -121,7 +116,7 @@ const outlineVariant = (props: StyleFunctionProps) => {
   }
 }
 
-export const Input = defineMultiStyleConfig({
+export const Input = {
   variants: {
     outline: outlineVariant,
   },
@@ -129,5 +124,7 @@ export const Input = defineMultiStyleConfig({
   defaultProps: {
     variant: 'outline',
     size: 'md',
+    focusBorderColor: 'primary.500',
+    errorBorderColor: 'danger.500',
   },
-})
+}

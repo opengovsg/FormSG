@@ -50,7 +50,7 @@ const WorkspaceTab = ({
           isDefault ? 'subhead-3' : isSelected ? 'subhead-2' : 'body-2'
         }
         whiteSpace="nowrap"
-        isTruncated
+        noOfLines={1}
         mr="2rem"
       >
         {label}

@@ -1,65 +1,71 @@
-import {
-  anatomy,
-  PartsStyleFunction,
-  PartsStyleObject,
-} from '@chakra-ui/theme-tools'
+import { createMultiStyleConfigHelpers } from '@chakra-ui/react'
+import { anatomy } from '@chakra-ui/theme-tools'
 
 import { Input } from './Input'
 
 export const parts = anatomy('taginput').parts('container', 'field')
 
-const baseStyle: PartsStyleFunction<typeof parts> = (props) => {
-  return {
-    container: {
-      display: 'flex',
-      flexWrap: 'wrap',
-      cursor: 'text',
-      height: 'auto',
-      maxW: '100%',
-      w: '100%',
-      _disabled: {
-        cursor: 'not-allowed',
-      },
-      transitionProperty: 'common',
-      transitionDuration: 'normal',
-    },
-    field: {
-      flexGrow: 1,
-      _disabled: {
-        cursor: 'not-allowed',
-      },
-    },
-  }
-}
+const { definePartsStyle, defineMultiStyleConfig } =
+  createMultiStyleConfigHelpers(parts.keys)
 
-const variantOutline: PartsStyleFunction<typeof parts> = (props) => {
-  const inputFieldVariantOutline = Input.variants.outline(props).field
-
-  return {
-    container: {
-      borderRadius: '4px',
-      _focusWithin: inputFieldVariantOutline._focus,
-      ...inputFieldVariantOutline,
+const baseStyle = definePartsStyle({
+  container: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    cursor: 'text',
+    height: 'auto',
+    maxW: '100%',
+    w: '100%',
+    _disabled: {
+      cursor: 'not-allowed',
     },
-  }
-}
-
-const sizes: Record<string, PartsStyleObject<typeof parts>> = {
-  md: {
-    container: {
-      p: '0.375rem',
-      minH: '2.75rem',
-      gap: '0.25rem',
+    transitionProperty: 'common',
+    transitionDuration: 'normal',
+  },
+  field: {
+    _focusVisible: {
+      outline: 'none',
     },
-    field: {
-      py: '0.25rem',
-      pl: '0.5rem',
+    flexGrow: 1,
+    _disabled: {
+      cursor: 'not-allowed',
     },
   },
+})
+
+const variantOutline = definePartsStyle((props) => {
+  const inputFieldVariantOutline = Input.variants?.outline(props).field
+
+  return {
+    container: {
+      ...inputFieldVariantOutline,
+      _focusWithin: {
+        ...inputFieldVariantOutline?._focus,
+      },
+      h: 'auto',
+    },
+  }
+})
+
+const sizes = {
+  md: definePartsStyle(() => {
+    const mdInputFieldProps = Input.sizes?.md.field
+    return {
+      container: {
+        ...mdInputFieldProps,
+        p: 'calc(0.5rem - 2px)',
+        minH: mdInputFieldProps?.h,
+        gap: '0.25rem',
+      },
+      field: {
+        h: '1.75rem',
+        pl: '0.5rem',
+      },
+    }
+  }),
 }
 
-export const TagInput = {
-  parts: parts.keys,
+export const TagInput = defineMultiStyleConfig({
   baseStyle,
   variants: {
     outline: variantOutline,
@@ -72,4 +78,4 @@ export const TagInput = {
     errorBorderColor: Input.defaultProps.errorBorderColor,
     colorScheme: 'primary',
   },
-}
+})
