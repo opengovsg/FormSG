@@ -176,39 +176,67 @@ export const PublicFormProvider = ({
     console.log(e)
   }
 
-  useMemo(async () => {
-    const decryptedAttachments: Record<string, Uint8Array> = {}
-    if (!encryptedPreviousSubmission) return
-    const isValid = isKeypairValid(
-      encryptedPreviousSubmission.submissionPublicKey,
-      submissionSecretKey,
-    )
-    if (!isValid) return
+  useEffect(() => {
+    // Function to decrypt attachments retrieved from S3 using the submission secret key
+    const decryptAttachments = async () => {
+      const decryptedAttachments: Record<string, Uint8Array> = {}
+      if (!encryptedPreviousSubmission) return
+      const isValid = isKeypairValid(
+        encryptedPreviousSubmission.submissionPublicKey,
+        submissionSecretKey,
+      )
+      if (!isValid) return
 
-    const decryptionTasks = Object.keys(
-      encryptedPreviousSubmission.encryptedAttachments,
-    ).map(async (id) => {
-      const attachment = encryptedPreviousSubmission.encryptedAttachments[id]
-      let decryptedContent
-      try {
-        decryptedContent = await decryptAttachment(
-          attachment,
-          submissionSecretKey,
-        )
-      } catch (e) {
-        console.error(e, 'failed to decrypt attachment', id)
-        toast({
-          status: 'danger',
-          description: 'Failed to decrypt attachment',
+      const decryptionTasks = Object.keys(
+        encryptedPreviousSubmission.encryptedAttachments,
+      ).map(async (id) => {
+        const attachment = encryptedPreviousSubmission.encryptedAttachments[id]
+        let decryptedContent
+        try {
+          decryptedContent = await decryptAttachment(
+            attachment,
+            submissionSecretKey,
+          )
+        } catch (e) {
+          console.error(e, 'failed to decrypt attachment', id)
+          toast({
+            status: 'danger',
+            description: 'Failed to decrypt attachment',
+          })
+        }
+        if (!decryptedContent) return
+
+        decryptedAttachments[id] = decryptedContent
+      })
+      await Promise.all(decryptionTasks)
+      setPreviousAttachments(decryptedAttachments)
+    }
+
+    if (encryptedPreviousSubmission?.mrfVersion === 1) {
+      if (submissionSecretKey) decryptAttachments()
+    } else {
+      // Backward compatibility to retrieve attachments from the DB itself once
+      // the previous submission responses are decrypted.
+      if (previousSubmission) {
+        // Backward compatibility
+        const previousAttachments: Record<string, ArrayBuffer> = {}
+        Object.keys(previousSubmission.responses).forEach((id) => {
+          const response = previousSubmission.responses[id]
+          if (response.fieldType === BasicField.Attachment) {
+            //@ts-expect-error 'content' required for backward compatibility,
+            // but does not exist on type AttachmentResponseV3
+            previousAttachments[id] = Uint8Array.from(response.content.data)
+          }
         })
+        setPreviousAttachments(previousAttachments)
       }
-      if (!decryptedContent) return
-
-      decryptedAttachments[id] = decryptedContent
-    })
-    await Promise.all(decryptionTasks)
-    setPreviousAttachments(decryptedAttachments)
-  }, [encryptedPreviousSubmission, submissionSecretKey, toast])
+    }
+  }, [
+    encryptedPreviousSubmission,
+    previousSubmission,
+    submissionSecretKey,
+    toast,
+  ])
 
   if (
     previousSubmissionId &&

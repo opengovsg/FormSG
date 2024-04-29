@@ -149,6 +149,7 @@ const submitMultirespondentForm = async (
     encryptedContent,
     responseMetadata,
     version,
+    mrfVersion,
   } = encryptedPayload
 
   const submissionContent = {
@@ -164,6 +165,7 @@ const submitMultirespondentForm = async (
     attachmentMetadata,
     version,
     workflowStep: 0,
+    mrfVersion,
   }
 
   return _createSubmission({
@@ -382,6 +384,7 @@ const updateMultirespondentSubmission = async (
     version,
     workflowStep,
     responses,
+    mrfVersion,
   } = encryptedPayload
 
   // Save Responses to Database
@@ -419,6 +422,7 @@ const updateMultirespondentSubmission = async (
   submission.version = version
   submission.workflowStep = workflowStep
   submission.attachmentMetadata = attachmentMetadata
+  submission.mrfVersion = mrfVersion
 
   try {
     await submission.save()

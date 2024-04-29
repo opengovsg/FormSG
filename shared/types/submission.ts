@@ -1,7 +1,6 @@
 import type { Opaque, RequireAtLeastOne } from 'type-fest'
 import { z } from 'zod'
 
-import { EncryptedFileContent } from '@opengovsg/formsg-sdk/dist/types'
 import { ErrorDto } from './core'
 import { FormFieldDto, MyInfoAttribute, PaymentFieldsDto } from './field'
 import { FormAuthType } from './form/form'
@@ -93,6 +92,7 @@ export const MultirespondentSubmissionBase = SubmissionBase.extend({
   attachmentMetadata: z.map(z.string(), z.string()).optional(),
   version: z.number(),
   workflowStep: z.number(),
+  mrfVersion: z.number().optional(),
 })
 
 export type MultirespondentSubmissionBase = z.infer<
@@ -151,13 +151,11 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
   submissionPublicKey: string
   encryptedSubmissionSecretKey: string
   encryptedContent: string
-  //verified?: string
   attachmentMetadata: Record<string, string>
-  // Populated by FE during upon loading of the submission dto
-  encryptedAttachments: Record<string, EncryptedFileContent>
+  workflowStep: number
 
   version: number
-  workflowStep: number
+  mrfVersion: number
 }
 
 export type SubmissionDto =
@@ -188,6 +186,7 @@ export const MultirespondentSubmissionStreamDto =
     encryptedSubmissionSecretKey: true,
     encryptedContent: true,
     version: true,
+    mrfVersion: true,
   }).extend({
     attachmentMetadata: z.record(z.string()),
     _id: SubmissionId,
