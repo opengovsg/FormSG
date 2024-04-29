@@ -1,11 +1,9 @@
-import { createMultiStyleConfigHelpers, cssVar } from '@chakra-ui/react'
+import { createMultiStyleConfigHelpers } from '@chakra-ui/react'
 import { anatomy } from '@chakra-ui/theme-tools'
 
-import { Input } from './Input'
+import { $borderRadius, $height, Input } from './Input'
 
 export const parts = anatomy('taginput').parts('container', 'field')
-
-const $height = cssVar('input-height')
 
 const { definePartsStyle, defineMultiStyleConfig } =
   createMultiStyleConfigHelpers(parts.keys)
@@ -17,6 +15,7 @@ const baseStyle = definePartsStyle({
     cursor: 'text',
     height: 'auto',
     minH: [$height.reference],
+    borderRadius: [$borderRadius.reference],
     maxW: '100%',
     w: '100%',
     _disabled: {
@@ -77,6 +76,7 @@ export const TagInput = defineMultiStyleConfig({
   defaultProps: {
     size: 'md',
     variant: 'outline',
+    // @ts-expect-error defineMultiStyleConfig does not have types for focus color props
     focusBorderColor: Input.defaultProps.focusBorderColor,
     errorBorderColor: Input.defaultProps.errorBorderColor,
     colorScheme: 'primary',

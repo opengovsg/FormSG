@@ -9,9 +9,9 @@ import { getColor, StyleFunctionProps } from '@chakra-ui/theme-tools'
 // Additional success part.
 const parts = inputAnatomy.extend('success')
 
-const $height = cssVar('input-height')
-const $padding = cssVar('input-padding')
-const $borderRadius = cssVar('input-border-radius')
+export const $height = cssVar('input-height')
+export const $padding = cssVar('input-padding')
+export const $borderRadius = cssVar('input-border-radius')
 
 const { definePartsStyle } = createMultiStyleConfigHelpers(parts.keys)
 
