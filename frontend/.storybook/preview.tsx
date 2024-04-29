@@ -3,7 +3,6 @@
  * @see https://storybook.js.org/docs/react/configure/overview#configure-story-rendering
  */
 import 'inter-ui/inter.css'
-import 'focus-visible/dist/focus-visible.min.js'
 
 import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from 'react-query'
