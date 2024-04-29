@@ -1,6 +1,7 @@
 import { HTMLProps, KeyboardEvent, useCallback, useMemo } from 'react'
 import {
   Box,
+  BoxProps,
   forwardRef,
   Icon,
   useMultiStyleConfig,
@@ -102,7 +103,7 @@ const IconRating = ({
   )
 }
 
-interface RatingOptionProps {
+interface RatingOptionProps extends Omit<BoxProps, 'onChange'> {
   /**
    * Color scheme of the component to render. Defaults to `primary`.
    */
@@ -144,6 +145,7 @@ export const RatingOption = forwardRef<RatingOptionProps, 'input'>(
       value,
       variant,
       isDisabled,
+      ...boxProps
     },
     ref,
   ) => {
@@ -204,7 +206,7 @@ export const RatingOption = forwardRef<RatingOptionProps, 'input'>(
     }, [radioProps, colorScheme, inputProps.id, selectedValue, value, variant])
 
     return (
-      <Box _active={{ zIndex: 1 }} _focusWithin={{ zIndex: 1 }}>
+      <Box _active={{ zIndex: 1 }} _focusWithin={{ zIndex: 1 }} {...boxProps}>
         <input
           type="radio"
           aria-checked={isChecked}
