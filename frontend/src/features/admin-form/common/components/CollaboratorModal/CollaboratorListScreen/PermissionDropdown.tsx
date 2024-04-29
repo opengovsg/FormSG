@@ -28,12 +28,11 @@ export const PermissionDropdown = ({
   }, [allowTransferOwnership])
 
   return (
-    <Menu>
+    <Menu matchWidth>
       {({ isOpen }) => (
         <>
           <Menu.Button
             minW="6.5rem"
-            ml={{ base: '-0.25rem', md: 0 }}
             isDisabled={isLoading}
             variant={buttonVariant}
             colorScheme="secondary"
