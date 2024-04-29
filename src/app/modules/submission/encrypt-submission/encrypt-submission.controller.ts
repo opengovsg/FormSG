@@ -373,9 +373,23 @@ const _createPaymentSubmission = async ({
   })
 
   // Step 0: Perform validation checks
+  if (!amount) {
+    logger.error({
+      message: 'Error when creating payment: amount is missing',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message:
+        "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+    })
+  }
+
+  const paymentMinAmount =
+    form.payments_field.global_min_amount_override ||
+    paymentConfig.minPaymentAmountCents
+
   if (
-    !amount ||
-    amount < paymentConfig.minPaymentAmountCents ||
+    amount < paymentMinAmount ||
     amount > paymentConfig.maxPaymentAmountCents
   ) {
     logger.error({
