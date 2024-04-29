@@ -25,6 +25,7 @@ import {
   getMobileViewParameters,
   getTabletViewParameters,
   LoggedInDecorator,
+  mockDateDecorator,
   ViewedFeatureTourDecorator,
 } from '~utils/storybook'
 
@@ -66,6 +67,7 @@ export default {
     ViewedFeatureTourDecorator,
     AdminFormCreatePageDecorator,
     LoggedInDecorator,
+    mockDateDecorator,
   ],
   parameters: {
     // Required so skeleton "animation" does not hide content.
@@ -74,6 +76,7 @@ export default {
     chromatic: { pauseAnimationAtEnd: true, delay: 200 },
     layout: 'fullscreen',
     msw: buildMswRoutes(),
+    mockdate: new Date('2022-12-25T06:22:27.219Z'),
     userId: 'adminFormTestUserId',
   },
 } as Meta
