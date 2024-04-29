@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState } from 'react'
 import {
+  Flex,
   forwardRef,
   Grid,
-  HStack,
   Stack,
   Text,
   useBreakpointValue,
@@ -167,11 +167,14 @@ export const Rating = forwardRef<RatingProps, 'input'>(
           spacing={{ base: '0.5rem', md: '1rem' }}
           align={{ base: 'flex-start', md: 'center' }}
         >
-          <Stack spacing={optionSpacing.row}>
+          <Flex flexDirection="column" rowGap={optionSpacing.row}>
             {options.map((row, i) => (
-              <HStack spacing={optionSpacing.column} key={i}>
+              <Flex flexDirection="row" key={i}>
                 {row.map((value) => (
                   <RatingOption
+                    _notFirst={{
+                      ml: optionSpacing.column,
+                    }}
                     name={name}
                     variant={variant}
                     colorScheme={colorScheme}
@@ -185,9 +188,9 @@ export const Rating = forwardRef<RatingProps, 'input'>(
                     {value}
                   </RatingOption>
                 ))}
-              </HStack>
+              </Flex>
             ))}
-          </Stack>
+          </Flex>
           {currentValue && variant !== 'number' && (
             <Text color="secondary.700" textStyle="subhead-2">
               {currentValue} selected
