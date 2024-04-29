@@ -22,7 +22,7 @@ export const parts = anatomy('singleselect')
   .extend('field', 'clearbutton')
 
 const itemBaseStyle: SystemStyleFunction = (props) => {
-  const menuItemStyle = Menu.baseStyle?.(props).item
+  const menuItemStyle = Menu.baseStyle?.(props).item ?? {}
   return merge(menuItemStyle, {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
@@ -31,12 +31,13 @@ const itemBaseStyle: SystemStyleFunction = (props) => {
 }
 
 const listBaseStyle: SystemStyleFunction = (props) => {
-  const menuListStyle = Menu.baseStyle?.(props).list
+  const menuListStyle = Menu.baseStyle?.(props).list ?? {}
   return merge(menuListStyle, {
     w: '100%',
     overflowY: 'auto',
     maxH: '12rem',
     bg: 'white',
+    shadow: 'sm',
   })
 }
 

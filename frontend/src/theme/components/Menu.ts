@@ -35,6 +35,7 @@ const baseStyle = definePartsStyle((props) => {
       boxShadow: $shadow.reference,
     },
     item: {
+      padding: '0.75rem 1rem',
       // Required for items to also have variable colors
       bg: $bg.reference,
       [$bg.variable]: 'white',
