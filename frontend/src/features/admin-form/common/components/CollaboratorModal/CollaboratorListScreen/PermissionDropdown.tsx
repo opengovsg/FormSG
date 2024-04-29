@@ -32,7 +32,7 @@ export const PermissionDropdown = ({
       {({ isOpen }) => (
         <>
           <Menu.Button
-            minW="6.5rem"
+            minW="7rem"
             isDisabled={isLoading}
             variant={buttonVariant}
             colorScheme="secondary"
