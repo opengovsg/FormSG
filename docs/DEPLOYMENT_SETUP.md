@@ -92,7 +92,7 @@ There are also environment secrets for each environment (`staging`, `staging-alt
 |:---------|------------|
 |`APP_NAME`|Application name for the environment.|
 |`DEPLOY_ENV`|Deployment environment on elastic beanstalk.|
-|`VITE_APP_FORMSG_SDK_MODE`|Determines the keys used in the formsg SDK. Set either `production` or `staging`.|
+|`REACT_APP_FORMSG_SDK_MODE`| Determines the keys used in the formsg SDK. Set either `production` or `staging`.|
 
 ## Environment Variables
 
