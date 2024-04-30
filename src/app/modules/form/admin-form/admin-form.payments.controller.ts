@@ -456,7 +456,7 @@ const updatePaymentsValidator = celebrate({
       then: Joi.boolean().required(),
     }),
 
-    global_min_amount_override: JoiInt.positive().optional(),
+    global_min_amount_override: JoiInt.positive().allow(0).optional(),
   },
 })
 
