@@ -13,6 +13,7 @@ import {
   Stack,
   useDisclosure,
 } from '@chakra-ui/react'
+import { useFeatureValue } from '@growthbook/growthbook-react'
 import { useToggle } from 'rooks'
 
 import { featureFlags } from '~shared/constants'
@@ -26,7 +27,6 @@ import IconButton from '~components/IconButton'
 import Input, { InputProps } from '~components/Input'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
-import { useIsFeatureEnabled } from '~features/feature-flags/queries'
 
 import { useMutateTwilioCreds } from '../../mutations'
 
@@ -68,7 +68,7 @@ export const TwilioDetailsInputs = (): JSX.Element => {
 
   const [isApiSecretShown, toggleIsApiSecretShown] = useToggle(false)
 
-  const isAddingTwilioDisabled = useIsFeatureEnabled(
+  const isAddingTwilioDisabled = useFeatureValue(
     featureFlags.addingTwilioDisabled,
     false,
   )
