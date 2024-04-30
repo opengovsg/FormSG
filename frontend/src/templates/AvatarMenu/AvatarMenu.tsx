@@ -63,7 +63,7 @@ const AvatarMenuUsername = ({ children }: MenuItemProps): JSX.Element => {
  * @preconditions Must be a child of Menu component,
  */
 export const AvatarMenuDivider = (): JSX.Element => {
-  return <MenuDivider aria-hidden borderColor="neutral.300" />
+  return <MenuDivider my="0.5rem" aria-hidden borderColor="neutral.300" />
 }
 
 export interface AvatarMenuProps
