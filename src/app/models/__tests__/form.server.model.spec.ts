@@ -116,6 +116,7 @@ const PAYMENTS_DEFAULTS = {
     min_amount: 0,
     max_amount: 0,
     payment_type: PaymentType.Products,
+    global_min_amount_override: 0,
     gst_enabled: true,
     products: [],
     products_meta: {

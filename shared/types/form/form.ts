@@ -122,6 +122,9 @@ export type FormPaymentsField =
       description?: string
       name?: string
       gst_enabled?: boolean
+      // This amount overrides global minimum value
+      // https://linear.app/ogp/issue/FRM-1720/add-feature-flag-to-allow-10-cents-as-minimum-value-on-form-level
+      global_min_amount_override?: number
     } & (VariablePaymentsField | FixedPaymentField | ProductsPaymentField)
 
 export type FormBusinessField = {
