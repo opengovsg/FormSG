@@ -111,7 +111,6 @@
     "start": "vite",
     "build": "vite build",
     "serve": "vite preview",
-    "build:dd-chunk": "webpack --config webpack.dd.config.js",
     "test": "cross-env SKIP_PREFLIGHT_CHECK=true vitest",
     "eject": "react-scripts eject",
     "storybook": "NODE_OPTIONS=--openssl-legacy-provider storybook dev -p 6006",
