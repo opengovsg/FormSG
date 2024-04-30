@@ -10,6 +10,14 @@ export default defineConfig(() => {
     build: {
       outDir: '../dist/frontend',
       emptyOutDir: true,
+      rollupOptions: {
+        output: {
+          // Manually chunk datadog-chunk.ts so it gets preloaded in index.html instead of app.
+          manualChunks: {
+            'datadog-chunk': ['datadog-chunk.ts'],
+          },
+        },
+      },
     },
     base: './',
     server: {
