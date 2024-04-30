@@ -1,15 +1,14 @@
 import { ListItem, Text, UnorderedList } from '@chakra-ui/react'
+import { useFeatureValue } from '@growthbook/growthbook-react'
 
 import { featureFlags } from '~shared/constants'
 
 import InlineMessage from '~components/InlineMessage'
 
-import { useIsFeatureEnabled } from '~features/feature-flags/queries'
-
 import { TwilioDetailsInputs } from './TwilioDetailsInputs'
 
 export const TwilioSettingsSection = (): JSX.Element => {
-  const isAddingTwilioDisabled = useIsFeatureEnabled(
+  const isAddingTwilioDisabled = useFeatureValue(
     featureFlags.addingTwilioDisabled,
     false,
   )
