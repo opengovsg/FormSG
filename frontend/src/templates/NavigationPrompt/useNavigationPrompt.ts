@@ -10,7 +10,7 @@ import {
   Navigator as BaseNavigator,
   UNSAFE_NavigationContext as NavigationContext,
 } from 'react-router-dom'
-import type { HiStoryFn } from 'history'
+import type { History } from 'history'
 
 interface Navigator extends BaseNavigator {
   block: History['block']
