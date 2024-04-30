@@ -14,10 +14,11 @@ import {
 } from '@chakra-ui/react'
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry'
 import * as pdfjs from 'pdfjs-dist/legacy/build/pdf'
+import { TextItem } from 'pdfjs-dist/types/src/display/api'
 
 import {
   PDF_UPLOAD_FILE_SIZE_LIMIT,
-  VALID_UPLOAD_FILE_TYPES,
+  VALID_UPLOAD_FILE_TYPES_PDF,
 } from '~shared/constants'
 
 import { BxsErrorCircle } from '~assets/icons'
@@ -56,10 +57,10 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
     })
   }
 
-  const handleFileUpload = async (file: any) => {
+  const handleFileUpload = async (file: File) => {
     setPdfFile(file)
     if (file) {
-      const arrayBuffer = await fileToArrayBuffer(file)
+      const arrayBuffer = (await fileToArrayBuffer(file)) as ArrayBuffer
       try {
         const text = await pdfToText(arrayBuffer)
         setPdfFileText(text)
@@ -72,16 +73,24 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
       setValue('pdfFileText', '')
     }
   }
-  async function pdfToText(data: any) {
+  async function pdfToText(data: ArrayBuffer) {
     const loadingTask = pdfjs.getDocument(data)
     const pdf = await loadingTask.promise
 
     let combinedText = ''
 
+    // Define mapping function outside of the loop
+    // const mapItemToString = (item: TextItem | TextMarkedContent) => item.str
+
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i)
       const content = await page.getTextContent()
-      const text = content.items.map((item: any) => item.str).join(' ')
+      const text = content.items
+        .map((item) => {
+          const textItem = item as TextItem
+          return textItem.str
+        })
+        .join(' ')
       combinedText += text + '\n\n' // Adding two new lines to separate pages.
     }
     return combinedText.trim()
@@ -114,7 +123,7 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
                 <Attachment
                   isRequired
                   maxSize={PDF_UPLOAD_FILE_SIZE_LIMIT}
-                  accept={VALID_UPLOAD_FILE_TYPES}
+                  accept={VALID_UPLOAD_FILE_TYPES_PDF}
                   showFileSize
                   title="Upload a PDF"
                   onChange={handleFileUpload}
@@ -126,11 +135,14 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
             />
 
             <FormErrorMessage alignItems="top">
-              {!pdfFileText && <FormErrorIcon h="1.5rem" as={BxsErrorCircle} />}
-              {!pdfFileText &&
-                (pdfFile
-                  ? `${errors.pdfFileText?.message}`
-                  : 'Please upload a PDF.')}
+              {!pdfFileText && (
+                <>
+                  <FormErrorIcon h="1.5rem" as={BxsErrorCircle} />
+                  {pdfFile
+                    ? errors.pdfFileText?.message
+                    : 'Please upload a PDF.'}
+                </>
+              )}
             </FormErrorMessage>
           </FormControl>
 

@@ -66,7 +66,7 @@ export const EmptyFormPlaceholder = forwardRef<
       user?.betaFlags?.mfb &&
       !isMrf
 
-    const showMagicFormButtonFinal = useMemo(() => {
+    const magicFormButton = useMemo(() => {
       return showMagicFormButton ? (
         <Button
           leftIcon={<BxsMagicWand />}
@@ -79,7 +79,7 @@ export const EmptyFormPlaceholder = forwardRef<
       )
     }, [handleOpenMagicFormBuilderModal, showMagicFormButton])
 
-    const showOrLine = useMemo(() => {
+    const orLine = useMemo(() => {
       return showMagicFormButton ? (
         <>
           <Box flexGrow={1} height="1px" bgColor="black" />
@@ -122,7 +122,7 @@ export const EmptyFormPlaceholder = forwardRef<
           justifyContent="center"
           alignItems="center"
         >
-          {showMagicFormButtonFinal}
+          {magicFormButton}
         </ChakraBox>
         <chakra.button
           _hover={{
@@ -164,7 +164,7 @@ export const EmptyFormPlaceholder = forwardRef<
               justifyContent="space-around"
               verticalAlign="middle"
             >
-              {showOrLine}
+              {orLine}
             </Flex>
           </Center>
         </chakra.button>

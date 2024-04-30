@@ -214,7 +214,7 @@ AdminFormsFormRouter.post(
 
 AdminFormsFormRouter.post(
   '/:formId([a-fA-F0-9]{24})/fieldslist',
-  AdminFormController._handleCreateFormFields,
+  AdminFormController.handleCreateFormFields,
 )
 
 AdminFormsFormRouter.put(

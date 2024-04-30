@@ -1990,7 +1990,7 @@ export const _handleCreateFormField: ControllerHandler<
  * @returns 500 when database error occurs
  * todo: add validation
  */
-export const _handleCreateFormFields: ControllerHandler<
+export const handleCreateFormFields: ControllerHandler<
   { formId: string },
   FormFieldDto[] | ErrorDto,
   FieldCreateDto[]
