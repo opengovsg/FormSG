@@ -45,7 +45,7 @@ jobs:
           VITE_APP_DD_RUM_ENV: ${{ secrets.DD_ENV }}
           VITE_APP_DD_SAMPLE_RATE: ${{ secrets.DD_SAMPLE_RATE }}
           VITE_APP_GA_TRACKING_ID: ${{ secrets.GA_TRACKING_ID }}
-          VITE_APP_FORMSG_SDK_MODE: ${{ secrets.VITE_APP_FORMSG_SDK_MODE }}
+          VITE_APP_FORMSG_SDK_MODE: ${{ secrets.REACT_APP_FORMSG_SDK_MODE }}
           VITE_APP_URL: ${{ secrets.APP_URL }}
         run: |
           sed -i -e "s|@VITE_APP_URL|${{secrets.APP_URL}}|g" -e "s/@VITE_APP_DD_RUM_APP_ID/$VITE_APP_DD_RUM_APP_ID/g" -e "s/@VITE_APP_DD_RUM_CLIENT_TOKEN/$VITE_APP_DD_RUM_CLIENT_TOKEN/g" -e "s/@VITE_APP_DD_RUM_ENV/$VITE_APP_DD_RUM_ENV/g" -e "s/@VITE_APP_VERSION/${{env.APP_VERSION}}/g" -e "s/@VITE_APP_DD_SAMPLE_RATE/$VITE_APP_DD_SAMPLE_RATE/g" frontend/datadog-chunk.ts
