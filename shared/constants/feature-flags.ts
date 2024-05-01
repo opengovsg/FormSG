@@ -8,4 +8,5 @@ export const featureFlags = {
   magicFormBuilder: 'magic-form-builder' as const,
   magicFormBuilderPDF: 'magic-form-builder-pdf-button' as const,
   magicFormBuilderPrompt: 'magic-form-builder-prompt-button' as const,
+  addingTwilioDisabled: 'adding-twilio-disabled' as const,
 }

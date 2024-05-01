@@ -1,10 +1,20 @@
 import { ListItem, Text, UnorderedList } from '@chakra-ui/react'
+import { useFeatureValue } from '@growthbook/growthbook-react'
+
+import { featureFlags } from '~shared/constants'
 
 import InlineMessage from '~components/InlineMessage'
 
 import { TwilioDetailsInputs } from './TwilioDetailsInputs'
 
 export const TwilioSettingsSection = (): JSX.Element => {
+  const isAddingTwilioDisabled = useFeatureValue(
+    featureFlags.addingTwilioDisabled,
+    false,
+  )
+
+  const verbTense = isAddingTwilioDisabled ? 'has been' : 'will be'
+
   return (
     <>
       <InlineMessage mb="1rem" variant="warning">
@@ -15,8 +25,8 @@ export const TwilioSettingsSection = (): JSX.Element => {
           <UnorderedList spacing="0.5rem" mt="1rem">
             <ListItem>
               There is no longer a limit of 10,000 SMSes per form admin. Given
-              this change, the capability of adding new Twilio credentials will
-              be disabled from 30 April.
+              this change, the capability of adding new Twilio credentials{' '}
+              {verbTense} disabled from 30 April.
             </ListItem>
 
             <ListItem>

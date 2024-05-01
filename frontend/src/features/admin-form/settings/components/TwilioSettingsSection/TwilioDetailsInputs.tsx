@@ -13,8 +13,10 @@ import {
   Stack,
   useDisclosure,
 } from '@chakra-ui/react'
+import { useFeatureValue } from '@growthbook/growthbook-react'
 import { useToggle } from 'rooks'
 
+import { featureFlags } from '~shared/constants'
 import { TwilioCredentials } from '~shared/types/twilio'
 
 import { trimStringsInObject } from '~utils/trimStringsInObject'
@@ -61,11 +63,15 @@ const TWILIO_INPUT_RULES: Record<keyof TwilioCredentials, RegisterOptions> = {
     },
   },
 }
-
 export const TwilioDetailsInputs = (): JSX.Element => {
   const { data: form, isLoading } = useAdminForm()
 
   const [isApiSecretShown, toggleIsApiSecretShown] = useToggle(false)
+
+  const isAddingTwilioDisabled = useFeatureValue(
+    featureFlags.addingTwilioDisabled,
+    false,
+  )
 
   const hasExistingTwilioCreds = useMemo(
     () => !!form?.msgSrvcName,
@@ -93,6 +99,7 @@ export const TwilioDetailsInputs = (): JSX.Element => {
 
   const handleUpdateTwilioDetails = handleSubmit((credentials) => {
     if (!form) return
+    if (isAddingTwilioDisabled) return
     return mutateFormTwilioDetails.mutate(trimStringsInObject(credentials), {
       onSuccess: () => reset(),
     })
@@ -129,6 +136,7 @@ export const TwilioDetailsInputs = (): JSX.Element => {
         <FormControl
           isReadOnly={mutateFormTwilioDetails.isLoading}
           isInvalid={!!errors.accountSid}
+          isDisabled={isAddingTwilioDisabled}
         >
           <FormLabel isRequired>Account SID</FormLabel>
           <Skeleton isLoaded={!isLoading}>
@@ -139,6 +147,7 @@ export const TwilioDetailsInputs = (): JSX.Element => {
         <FormControl
           isReadOnly={mutateFormTwilioDetails.isLoading}
           isInvalid={!!errors.apiKey}
+          isDisabled={isAddingTwilioDisabled}
         >
           <FormLabel isRequired>API Key SID</FormLabel>
           <Skeleton isLoaded={!isLoading}>
@@ -149,6 +158,7 @@ export const TwilioDetailsInputs = (): JSX.Element => {
         <FormControl
           isReadOnly={mutateFormTwilioDetails.isLoading}
           isInvalid={!!errors.apiSecret}
+          isDisabled={isAddingTwilioDisabled}
         >
           <FormLabel isRequired>API key secret</FormLabel>
           <Skeleton isLoaded={!isLoading}>
@@ -179,6 +189,7 @@ export const TwilioDetailsInputs = (): JSX.Element => {
         <FormControl
           isReadOnly={mutateFormTwilioDetails.isLoading}
           isInvalid={!!errors.messagingServiceSid}
+          isDisabled={isAddingTwilioDisabled}
         >
           <FormLabel isRequired>Messaging service SID</FormLabel>
           <Skeleton isLoaded={!isLoading}>
@@ -198,6 +209,7 @@ export const TwilioDetailsInputs = (): JSX.Element => {
           <Button
             isLoading={mutateFormTwilioDetails.isLoading}
             onClick={handleUpdateTwilioDetails}
+            isDisabled={isAddingTwilioDisabled}
           >
             Save credentials
           </Button>
