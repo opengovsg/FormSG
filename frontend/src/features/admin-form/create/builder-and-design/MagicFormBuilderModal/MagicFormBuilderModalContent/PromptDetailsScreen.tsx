@@ -13,7 +13,7 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import { PROMPT_CHAR_LIMIT } from '~shared/constants'
+import { PROMPT_CHAR_LIMIT, promptIdeas } from '~shared/constants'
 
 import { BxsErrorCircle } from '~assets/icons'
 import Button from '~components/Button'
@@ -82,65 +82,25 @@ export const MagicFormBuilderPromptDetailsScreen = (): JSX.Element => {
                   Try one of these
                 </Text>
               </Flex>
-              <Button
-                variant="clear"
-                color="secondary.500"
-                justifyContent="flex-start"
-                padding="0"
-                onClick={handleUseIdea(
-                  'Employee feedback on workplace environment and culture.',
-                )}
-              >
-                <Text
-                  textStyle="subhead-1"
+              {promptIdeas.map((idea: string) => (
+                <Button
+                  variant="clear"
                   color="secondary.500"
-                  fontWeight="400"
-                  px="1rem"
-                  textAlign="justify"
+                  justifyContent="flex-start"
+                  padding="0"
+                  onClick={handleUseIdea(idea)}
                 >
-                  employee feedback on workplace environment and culture.
-                </Text>
-              </Button>
-              <Button
-                variant="clear"
-                color="secondary.500"
-                justifyContent="flex-start"
-                padding="0"
-                onClick={handleUseIdea(
-                  'Event registrations and dietary preferences for dance and dinner.',
-                )}
-              >
-                <Text
-                  textStyle="subhead-1"
-                  color="secondary.500"
-                  fontWeight="400"
-                  px="1rem"
-                  textAlign="justify"
-                >
-                  event registrations and dietary preferences for dance and
-                  dinner.
-                </Text>
-              </Button>
-
-              <Button
-                variant="clear"
-                color="secondary.500"
-                justifyContent="flex-start"
-                padding="0"
-                onClick={handleUseIdea(
-                  'Support requests for building faults and damages.',
-                )}
-              >
-                <Text
-                  textStyle="subhead-1"
-                  color="secondary.500"
-                  fontWeight="400"
-                  px="1rem"
-                  textAlign="justify"
-                >
-                  support requests for building faults and damages.
-                </Text>
-              </Button>
+                  <Text
+                    textStyle="subhead-1"
+                    color="secondary.500"
+                    fontWeight="400"
+                    px="1rem"
+                    textAlign="justify"
+                  >
+                    {idea}
+                  </Text>
+                </Button>
+              ))}
             </Flex>
             <Flex justify="flex-end" gap="1rem" mt="2.25rem">
               <Button

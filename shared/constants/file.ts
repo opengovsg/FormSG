@@ -17,6 +17,3 @@ export const PDF_UPLOAD_FILE_SIZE_LIMIT = 5 * MB // 5 Million/Mega Bytes, or 5 M
 
 /** Decimal byte units sorted in ascending order */
 export const DECIMAL_BYTE_UNITS = ['B', 'kB', 'MB', 'GB', 'TB']
-
-/** Character limit for Prompts for MFB */
-export const PROMPT_CHAR_LIMIT = 300

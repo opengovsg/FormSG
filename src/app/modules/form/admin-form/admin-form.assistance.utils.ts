@@ -50,13 +50,13 @@ export const getExpectedQuestionsListTool = {
 
 export const formFieldsPromptBuilder = (questions: string, schema: string) => {
   return `Help me generate a digital form with the following list of questions: ${questions}
-  Provide the questions as form fields for a digital form in JSON format (with the following keys: ${schema}), in the form of "${expectedFormFieldSchemaFormat}" as defined by the system, without any code blocks. Format the JSON as a single line. Ensure the JSON generated only contain fieldTypes of types ${fieldTypes}. Do not create any fieldTypes which are not ${fieldTypes}. Replace values in <> with actual primitive values. Do not build the fieldType if a path required is not available.`
+  Provide the questions as form fields for a digital form in JSON format (with the following keys: ${schema}), in the form of "${expectedFormFieldSchemaFormat}" as defined by the system, without any code blocks. Format the JSON as a single line. Ensure the JSON generated only contain fieldTypes of types ${fieldTypes}. Do not create any fieldTypes which are not ${fieldTypes}. Replace values in "<>" with actual primitive values. Do not build the fieldType if a path required is not available.`
 }
 
 export const getFormFieldsTool = {
   name: 'getFormFields',
   description:
-    'Gets form fields to build a form with the specified field types based on the example of sample form fields. Do not create fields which do not belong to any of the specified field types. For example, Signatures should be treated as textfield because a field type of signature cannot not exist in digital forms.',
+    'Gets form fields to build a form with the specified field types based on the example of sample form fields. Do not create fields which do not belong to any of the specified field types. For example, Signatures should be treated as textfield because a field type of signature cannot not exist in digital forms. Replace values in "<>" with actual primitive values. Do not build the fieldType if a path required is not available.',
   parameters: {
     type: 'object',
     properties: {
