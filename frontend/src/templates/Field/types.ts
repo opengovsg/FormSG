@@ -6,7 +6,7 @@ import {
   PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID,
 } from '~shared/constants'
 import {
-  ProductItem,
+  ProductItemInput,
   SingleAnswerResponse,
   VerifiableResponseBase,
 } from '~shared/types'
@@ -58,7 +58,7 @@ export type FormFieldValues = Record<
 > & {
   [PAYMENT_CONTACT_FIELD_ID]?: { value: string }
   [PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]?: string
-  [PAYMENT_PRODUCT_FIELD_ID]?: Array<ProductItem>
+  [PAYMENT_PRODUCT_FIELD_ID]?: ProductItemInput[]
 }
 
 export type AttachmentFieldInput = FieldInput<File | null>

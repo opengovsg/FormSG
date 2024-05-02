@@ -3,6 +3,7 @@ import {
   Controller,
   ControllerRenderProps,
   UseFormReturn,
+  Validate,
 } from 'react-hook-form'
 import { BiTrash } from 'react-icons/bi'
 import {
@@ -185,7 +186,9 @@ export const EditConditionBlock = ({
     return ifValueTypeValue === LogicIfValue.MultiSelect ? '0px' : 'auto'
   }, [ifValueTypeValue])
 
-  const validateValueInputComponent = useCallback(
+  const validateValueInputComponent: Validate<
+    string | number | string[] | number[]
+  > = useCallback(
     (val) => {
       switch (ifValueTypeValue) {
         case LogicIfValue.Number: {

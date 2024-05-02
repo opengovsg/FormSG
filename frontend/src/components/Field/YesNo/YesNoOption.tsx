@@ -4,6 +4,7 @@ import {
   Box,
   forwardRef,
   Icon,
+  ThemingProps,
   useMultiStyleConfig,
   useRadio,
   UseRadioGroupReturn,
@@ -40,6 +41,8 @@ interface YesNoOptionProps extends UseRadioProps {
    * instead of the default event-only argument.
    */
   onChange?: UseRadioGroupReturn['onChange']
+
+  size?: ThemingProps<'Radio'>['size']
 }
 
 /**

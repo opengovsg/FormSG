@@ -21,6 +21,7 @@ import { HttpError } from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
+import { SubmitEmailFormArgs } from '~features/public-form/PublicFormService'
 
 import { useEnv } from '../../env/queries'
 import { axiosDebugFlow } from '../../public-form/utils'
@@ -51,7 +52,7 @@ export const PreviewFormProvider = ({
     useCommonFormProvider(formId)
 
   const showErrorToast = useCallback(
-    (error) => {
+    (error: unknown) => {
       toast({
         status: 'danger',
         description:
@@ -119,11 +120,10 @@ export const PreviewFormProvider = ({
     async (formInputs) => {
       const { form } = data ?? {}
       if (!form) return
-
-      const formData = {
+      const formData: Omit<SubmitEmailFormArgs, 'formId'> = {
         formFields: form.form_fields,
         formLogics: form.form_logics,
-        formInputs,
+        formInputs: formInputs,
       }
 
       const logMeta = {

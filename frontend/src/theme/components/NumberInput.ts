@@ -75,5 +75,6 @@ export const NumberInput = defineMultiStyleConfig({
   baseStyle,
   sizes,
   variants: variants,
+  // @ts-expect-error type inference
   defaultProps: Input.defaultProps,
 })

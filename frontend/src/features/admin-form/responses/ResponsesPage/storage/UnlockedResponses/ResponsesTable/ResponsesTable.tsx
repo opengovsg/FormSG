@@ -169,7 +169,7 @@ export const ResponsesTable = () => {
   }, [currentPage, gotoPage])
 
   const handleRowClick = useCallback(
-    (submissionId: string, responseNumber) => {
+    (submissionId: string, responseNumber: number) => {
       onRowClick()
       return navigate(submissionId, {
         state: {
