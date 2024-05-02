@@ -13,6 +13,7 @@ import React, {
 import {
   CSSObject,
   FormControlProps,
+  ThemingProps,
   useControllableState,
   useDisclosure,
   UseDisclosureReturn,
@@ -21,7 +22,6 @@ import {
 } from '@chakra-ui/react'
 import { format, isValid, parse } from 'date-fns'
 
-import { ThemeColorScheme } from '~theme/foundations/colours'
 import { useIsMobile } from '~hooks/useIsMobile'
 
 import { DatePickerProps } from './DatePicker'
@@ -42,7 +42,7 @@ interface DatePickerContextReturn {
   closeCalendarOnChange: boolean
   placeholder: string
   allowManualInput: boolean
-  colorScheme: ThemeColorScheme
+  colorScheme?: ThemingProps<'DatePicker'>['colorScheme']
   isDateUnavailable?: (date: Date) => boolean
   disclosureProps: UseDisclosureReturn
   monthsToDisplay?: number

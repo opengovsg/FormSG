@@ -5,8 +5,6 @@ import {
   IconProps,
 } from '@chakra-ui/react'
 
-import { ThemeColorScheme } from '~theme/foundations/colours'
-
 import Spinner from '../Spinner'
 
 export interface ButtonProps extends ChakraButtonProps {
@@ -14,11 +12,6 @@ export interface ButtonProps extends ChakraButtonProps {
    * Loading spinner font size. Defaults to `1.5rem`.
    */
   spinnerFontSize?: IconProps['fontSize']
-
-  /**
-   * Color scheme of button.
-   */
-  colorScheme?: ThemeColorScheme
   /**
    * Base color intensity of button.
    */

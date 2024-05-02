@@ -95,7 +95,7 @@
     "postinstall": "npm run gen:theme-typings && npm --prefix ../shared install",
     "gen:theme-typings": "chakra-cli tokens --template augmentation src/theme/index.ts || true",
     "start": "vite",
-    "build": "vite build",
+    "build": "npx tsc && vite build",
     "serve": "vite preview",
     "test": "cross-env SKIP_PREFLIGHT_CHECK=true vitest",
     "eject": "react-scripts eject",

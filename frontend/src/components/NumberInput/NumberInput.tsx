@@ -31,6 +31,8 @@ export interface NumberInputProps extends ChakraNumberInputProps {
    * Whether to prevent default on user pressing the 'Enter' key.
    */
   preventDefaultOnEnter?: boolean
+
+  placeholder?: string
 }
 
 export const NumberInput = forwardRef<NumberInputProps, 'input'>(

@@ -1,11 +1,10 @@
 import {
   Box,
   forwardRef,
+  ThemingProps,
   useControllableState,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
-
-import { ThemeColorScheme } from '~theme/foundations/colours'
 
 import { CalendarStylesProvider } from './CalendarBase/CalendarStyleProvider'
 import {
@@ -33,7 +32,7 @@ export interface CalendarProps extends CalendarBaseProps {
   /** Function to determine whether a date should be made unavailable. */
   isDateUnavailable?: (d: Date) => boolean
   /** Color scheme for component */
-  colorScheme?: ThemeColorScheme
+  colorScheme?: ThemingProps<'Calendar'>['colorScheme']
 }
 
 export const Calendar = forwardRef<CalendarProps, 'input'>(

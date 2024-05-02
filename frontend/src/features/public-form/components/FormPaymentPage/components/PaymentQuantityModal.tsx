@@ -101,7 +101,7 @@ const PaymentQuantityModal = ({
                 variant="clear"
                 aria-label="Decrement"
                 colorScheme="secondary"
-                isDisabled={quantity <= minQty}
+                isDisabled={(quantity || 0) <= minQty}
                 onClick={() => {
                   setValue('quantity', quantity ? quantity - 1 : minQty)
                   trigger('quantity')
@@ -133,7 +133,7 @@ const PaymentQuantityModal = ({
                 variant="clear"
                 aria-label="Increment"
                 colorScheme="secondary"
-                isDisabled={quantity >= maxQty}
+                isDisabled={(quantity || 0) >= maxQty}
                 onClick={() => {
                   setValue('quantity', quantity ? quantity + 1 : minQty)
                   trigger('quantity')

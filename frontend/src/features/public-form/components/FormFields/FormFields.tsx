@@ -106,6 +106,7 @@ export const FormFields = ({
           case BasicField.Attachment: {
             const attachmentData =
               previousResponse.answer as AttachmentFieldResponseV3
+            //@ts-expect-error fixed in https://github.com/opengovsg/FormSG/pull/7281
             const fileData = attachmentData.content.data
             const fileName = attachmentData.answer
             acc[field._id] = bufferToFile(fileData, fileName)

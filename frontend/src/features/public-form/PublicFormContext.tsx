@@ -68,9 +68,6 @@ export interface PublicFormContextProps
 
   encryptedPreviousSubmission?: MultirespondentSubmissionDto
   previousSubmission?: ReturnType<typeof decryptSubmission>
-  setPreviousSubmission: (
-    previousSubmission: ReturnType<typeof decryptSubmission>,
-  ) => void
 }
 
 export const PublicFormContext = createContext<

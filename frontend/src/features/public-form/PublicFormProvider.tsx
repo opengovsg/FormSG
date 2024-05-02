@@ -284,7 +284,7 @@ export const PublicFormProvider = ({
   }, [data, toast])
 
   const showErrorToast = useCallback(
-    (error, form: PublicFormDto) => {
+    (error: unknown, form: PublicFormDto) => {
       toast({
         status: 'danger',
         description:
@@ -763,7 +763,6 @@ export const PublicFormProvider = ({
         setNumVisibleFields,
         encryptedPreviousSubmission,
         previousSubmission,
-        setPreviousSubmission,
         ...commonFormValues,
         ...data,
         ...rest,
