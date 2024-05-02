@@ -26,7 +26,7 @@ const minLengthValidator: TextFieldValidatorConstructor =
   (textField) => (response) => {
     const { customVal: min } = textField.ValidationOptions
     if (min === null) return right(response)
-    return response.answer.length >= min
+    return response.answer.length >= (min || 0)
       ? right(response)
       : left(`TextValidator.minLength:\tanswer is less than minimum of ${min}`)
   }
@@ -39,7 +39,7 @@ const maxLengthValidator: TextFieldValidatorConstructor =
   (textField) => (response) => {
     const { customVal: max } = textField.ValidationOptions
     if (max === null) return right(response)
-    return response.answer.length <= max
+    return response.answer.length <= (max || 0)
       ? right(response)
       : left(
           `TextValidator.maxLength:\tanswer is greater than maximum of ${max}`,
