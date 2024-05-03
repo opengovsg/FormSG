@@ -498,6 +498,9 @@ export const MultirespondentSubmissionSchema = new Schema<
     type: Number,
     required: true,
   },
+  mrfVersion: {
+    type: Number,
+  },
 })
 
 MultirespondentSubmissionSchema.statics.findSingleMetadata = function (
@@ -611,6 +614,7 @@ MultirespondentSubmissionSchema.statics.getSubmissionCursorByFormId = function (
         attachmentMetadata: 1,
         created: 1,
         version: 1,
+        mrfVersion: 1,
         id: 1,
       })
       .batchSize(2000)
@@ -645,6 +649,7 @@ MultirespondentSubmissionSchema.statics.findEncryptedSubmissionById = function (
       created: 1,
       version: 1,
       workflowStep: 1,
+      mrfVersion: 1,
     })
     .exec()
 }

@@ -1,6 +1,5 @@
 import { useQuery, UseQueryResult } from 'react-query'
 
-import { MultirespondentSubmissionDto } from '~shared/types'
 import { PublicFormViewDto } from '~shared/types/form/form'
 
 import { ApiError } from '~typings/core'
@@ -11,6 +10,7 @@ import {
   getMultirespondentSubmissionById,
   getPublicFormView,
 } from './PublicFormService'
+import { MultirespondentSubmissionDtoWithAttachments } from './types'
 
 export const publicFormKeys = {
   // All keys map to either an array or function returning an array for
@@ -45,7 +45,7 @@ export const useEncryptedSubmission = (
   submissionId?: string,
   /** Extra override to determine whether query is enabled */
   enabled = true,
-): UseQueryResult<MultirespondentSubmissionDto, ApiError> => {
+): UseQueryResult<MultirespondentSubmissionDtoWithAttachments, ApiError> => {
   return useQuery(
     publicFormKeys.submission(formId, submissionId),
     () =>
