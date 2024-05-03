@@ -18,6 +18,7 @@ import {
   VisuallyHidden,
   Wrap,
 } from '@chakra-ui/react'
+import { Button, Link, Tab } from '@opengovsg/design-system-react'
 import dedent from 'dedent'
 
 import { AppFooter } from '~/app/AppFooter'
@@ -42,11 +43,8 @@ import {
 import { LOGIN_ROUTE, TOU_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useMdComponents } from '~hooks/useMdComponents'
-import Button from '~components/Button'
 import { FeatureBanner } from '~components/FeatureBanner/FeatureBanner'
-import Link from '~components/Link'
 import { MarkdownText } from '~components/MarkdownText'
-import { Tab } from '~components/Tabs'
 import { LottieAnimation } from '~templates/LottieAnimation'
 
 import { ExternalFormLink } from '../components/ExternalFormLink'
@@ -96,7 +94,7 @@ export const LandingPage = (): JSX.Element => {
         learnMoreLink={TOU_ROUTE}
       />
       <AppPublicHeader />
-      <LandingSection bg="primary.100" pt={{ base: '2rem', md: 0 }} px="0">
+      <LandingSection bg="brand.primary.50" pt={{ base: '2rem', md: 0 }} px="0">
         <Stack
           direction={{ base: 'column', lg: 'row' }}
           align="center"
@@ -110,7 +108,7 @@ export const LandingPage = (): JSX.Element => {
           >
             <Text
               as="h1"
-              textStyle={{ base: 'display-1-mobile', md: 'display-1' }}
+              textStyle="responsive-display-heavy"
               color="secondary.700"
             >
               Build secure government forms in minutes.
@@ -177,7 +175,7 @@ export const LandingPage = (): JSX.Element => {
           />
         </SimpleGrid>
       </LandingSection>
-      <LandingSection bg="primary.100">
+      <LandingSection bg="brand.primary.50">
         <Stack
           direction={{ base: 'column', lg: 'row' }}
           align="center"
@@ -245,7 +243,7 @@ export const LandingPage = (): JSX.Element => {
           />
         </Wrap>
       </LandingSection>
-      <LandingSection bg="primary.100" align="center">
+      <LandingSection bg="brand.primary.50" align="center">
         <SectionTitleText>
           Supporting national and emergent use cases
         </SectionTitleText>
@@ -323,6 +321,7 @@ export const LandingPage = (): JSX.Element => {
       </FeatureSection>
       <FeatureSection
         title="Help Center"
+        align="start"
         imgSrc={helpCenterImg}
         direction={{ base: 'column', lg: 'row' }}
       >
@@ -412,7 +411,7 @@ export const LandingPage = (): JSX.Element => {
       <FeatureSection
         align="start"
         direction={{ base: 'column', lg: 'row' }}
-        bg="primary.100"
+        bg="brand.primary.50"
         title="How it works"
         animationSrc={howFormsWorksAnimation}
       >
@@ -522,7 +521,7 @@ export const LandingPage = (): JSX.Element => {
         <Image src={FormBrandLogo} aria-hidden h="3.5rem" />
         <Text
           textAlign="center"
-          textStyle={{ base: 'display-2-mobile', md: 'display-2' }}
+          textStyle={{ base: 'h2', md: 'h1' }}
           color="white"
           mt="2rem"
         >

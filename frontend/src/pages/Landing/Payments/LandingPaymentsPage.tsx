@@ -168,7 +168,7 @@ export const LandingPaymentsPage = (): JSX.Element => {
       title="Help Center"
       imgSrc={helpCenterImg}
       direction={{ base: 'column', lg: 'row' }}
-      bg="primary.100"
+      bg="brand.primary.50"
     >
       <Box>
         <SectionBodyText mt="1rem">
@@ -242,7 +242,7 @@ export const LandingPaymentsPage = (): JSX.Element => {
           >
             <Text
               as="h1"
-              textStyle={{ base: 'display-1-mobile', md: 'display-1' }}
+              textStyle="responsive-display-heavy"
               color={mainSectionTextColour}
             >
               Collect payments on your form
@@ -306,7 +306,7 @@ export const LandingPaymentsPage = (): JSX.Element => {
           ref={bottomCTARef}
         >
           <GridItem alignSelf="center">
-            <Text textStyle="h5" color="primary.100" mr="2rem">
+            <Text textStyle="h5" color="brand.primary.50" mr="2rem">
               Receive our guide to get started on payments
             </Text>
           </GridItem>
@@ -352,7 +352,7 @@ export const LandingPaymentsPage = (): JSX.Element => {
           </GridItem>
         </Grid>
       </LandingSection>
-      <AppFooter containerProps={{ bg: 'primary.100' }} />
+      <AppFooter containerProps={{ bg: 'brand.primary.50' }} />
     </>
   )
 }

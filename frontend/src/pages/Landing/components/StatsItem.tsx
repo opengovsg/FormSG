@@ -9,7 +9,7 @@ export const StatsItem = ({ stat, description }: StatsItemProps) => {
   return (
     <Stack>
       <Skeleton isLoaded={!!stat}>
-        <Text textStyle="h2" color="primary.500">
+        <Text textStyle="h4" color="primary.500">
           {stat?.toLocaleString() ?? '-'}
         </Text>
       </Skeleton>
