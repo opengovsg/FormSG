@@ -6,12 +6,12 @@ import {
   useState,
 } from 'react'
 import { FormControl, Skeleton } from '@chakra-ui/react'
+import { Infobox } from '@opengovsg/design-system-react'
 
 import { FormResponseMode } from '~shared/types'
 
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
-import InlineMessage from '~components/InlineMessage'
 import NumberInput from '~components/NumberInput'
 import Toggle from '~components/Toggle'
 
@@ -161,9 +161,9 @@ export const FormLimitToggle = (): JSX.Element => {
         onChange={() => handleToggleLimit()}
       />
       {isMrf ? (
-        <InlineMessage variant="warning" mt="0.5rem">
+        <Infobox variant="warning" mt="0.5rem">
           Response limits cannot be applied for multi-respondent forms.
-        </InlineMessage>
+        </Infobox>
       ) : null}
       {settings && settings?.submissionLimit !== null && (
         <Skeleton isLoaded={!isLoadingCount}>

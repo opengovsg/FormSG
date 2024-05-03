@@ -3,6 +3,7 @@ import { Link as ReactLink } from 'react-router-dom'
 import { Box, Text } from '@chakra-ui/react'
 import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 import { Droppable } from '@hello-pangea/dnd'
+import { Infobox } from '@opengovsg/design-system-react'
 
 import { featureFlags } from '~shared/constants'
 import {
@@ -14,7 +15,6 @@ import {
 
 import { GUIDE_EMAIL_MODE } from '~constants/links'
 import { ADMINFORM_SETTINGS_SINGPASS_SUBROUTE } from '~constants/routes'
-import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 
 import {
@@ -286,9 +286,9 @@ const MyInfoMessage = (): JSX.Element | null => {
 
   return form ? (
     <Box px="1.5rem" pt="2rem" pb="1.5rem">
-      <InlineMessage variant={hasExceededLimit ? 'error' : 'info'}>
+      <Infobox variant={hasExceededLimit ? 'error' : 'info'}>
         <MyInfoText {...form} />
-      </InlineMessage>
+      </Infobox>
     </Box>
   ) : null
 }

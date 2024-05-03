@@ -8,6 +8,7 @@ import {
   Skeleton,
   Text,
 } from '@chakra-ui/react'
+import { Infobox } from '@opengovsg/design-system-react'
 
 import { FormResponseMode } from '~shared/types/form/form'
 
@@ -17,7 +18,6 @@ import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormFieldMessage from '~components/FormControl/FormFieldMessage'
 import FormLabel from '~components/FormControl/FormLabel'
-import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 
 import { WorkspaceRowsProvider } from '../../WorkspaceFormRow/WorkspaceRowsContext'
@@ -90,10 +90,10 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             </Skeleton>
             <FormErrorMessage>{errors.responseMode?.message}</FormErrorMessage>
             {isSingpass && (
-              <InlineMessage mt="2rem">
+              <Infobox mt="2rem">
                 The form you are trying to duplicate has Singpass authentication
                 which is not supported for Multi-respondent forms.
-              </InlineMessage>
+              </Infobox>
             )}
           </FormControl>
           {responseModeValue === FormResponseMode.Email && (

@@ -20,6 +20,7 @@ import {
   Text,
   Textarea,
 } from '@chakra-ui/react'
+import { Infobox } from '@opengovsg/design-system-react'
 import { cloneDeep } from 'lodash'
 
 import {
@@ -36,7 +37,6 @@ import { useSessionStorage } from '~hooks/useSessionStorage'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
-import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 import Toggle from '~components/Toggle'
 
@@ -495,7 +495,7 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
     <>
       {isPaymentDisabled && (
         <Box px="1.5rem" pt="2rem">
-          <InlineMessage variant="info">{paymentDisabledMessage}</InlineMessage>
+          <Infobox variant="info">{paymentDisabledMessage}</Infobox>
         </Box>
       )}
       <PaymentInputFields

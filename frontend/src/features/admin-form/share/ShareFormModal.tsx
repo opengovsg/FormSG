@@ -24,6 +24,7 @@ import {
   Text,
   useBreakpointValue,
 } from '@chakra-ui/react'
+import { Infobox } from '@opengovsg/design-system-react'
 import dedent from 'dedent'
 import { StatusCodes } from 'http-status-codes'
 
@@ -44,7 +45,6 @@ import { HttpError } from '~services/ApiService'
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'
-import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 import Link from '~components/Link'
 import { ModalCloseButton } from '~components/Modal'
@@ -340,7 +340,7 @@ export const ShareFormModal = ({
         <ModalHeader color="secondary.700">Share form</ModalHeader>
         <ModalBody whiteSpace="pre-wrap">
           {isFormPrivate ? (
-            <InlineMessage variant="warning" mb="1rem">
+            <Infobox variant="warning" mb="1rem">
               <Box>
                 This form is currently closed to new responses. Activate your
                 form in{' '}
@@ -349,7 +349,7 @@ export const ShareFormModal = ({
                 </Button>{' '}
                 to allow new responses or to share it as a template.
               </Box>
-            </InlineMessage>
+            </Infobox>
           ) : null}
           <Tabs pos="relative" h="100%" display="flex" flexDir="column" isLazy>
             <Box bg="white">

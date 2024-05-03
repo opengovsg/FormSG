@@ -12,10 +12,10 @@ import {
   Text,
   Wrap,
 } from '@chakra-ui/react'
+import { Infobox } from '@opengovsg/design-system-react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
-import InlineMessage from '~components/InlineMessage'
 import { ModalCloseButton } from '~components/Modal'
 
 const InlineTextListItem = ({
@@ -69,7 +69,7 @@ export const ConfirmationScreen = ({
             <br />
             <b>Estimated time:</b> 30-50 mins per 1,000 responses
           </Text>
-          <InlineMessage>
+          <Infobox>
             <Stack>
               <Text textStyle="subhead-1">
                 Downloading many attachments can be an intensive operation.
@@ -86,12 +86,12 @@ export const ConfirmationScreen = ({
                 </InlineTextListItem>
               </List>
             </Stack>
-          </InlineMessage>
+          </Infobox>
           {responsesCount === 0 && (
-            <InlineMessage variant="warning">
+            <Infobox variant="warning">
               The date range you selected does not contain any responses. Please
               select a date range containing responses and try again.
-            </InlineMessage>
+            </Infobox>
           )}
         </Stack>
       </ModalBody>

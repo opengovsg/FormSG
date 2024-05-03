@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
 import { FormControl, Skeleton } from '@chakra-ui/react'
+import { Infobox } from '@opengovsg/design-system-react'
 import { extend, pick } from 'lodash'
 
 import { FormResponseMode } from '~shared/types'
@@ -20,8 +21,8 @@ import { SingleSelect } from '~components/Dropdown'
 import type { ComboboxItem } from '~components/Dropdown/types'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
-import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
+import { MarkdownText } from '~components/MarkdownText2'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
@@ -196,9 +197,11 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
           max={maxTotalSizeMb}
         />
       </FormControl>
-      <InlineMessage useMarkdown>
-        {`View our [complete list](${ACCEPTED_FILETYPES_SPREADSHEET}) of accepted file types. Please also read our [FAQ on email reliability](${GUIDE_EMAIL_RELIABILITY}) relating to unaccepted file types.`}
-      </InlineMessage>
+      <Infobox>
+        <MarkdownText>
+          {`View our [complete list](${ACCEPTED_FILETYPES_SPREADSHEET}) of accepted file types. Please also read our [FAQ on email reliability](${GUIDE_EMAIL_RELIABILITY}) relating to unaccepted file types.`}
+        </MarkdownText>
+      </Infobox>
       <FormFieldDrawerActions
         isLoading={isLoading}
         buttonText={buttonText}
