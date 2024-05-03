@@ -42,7 +42,20 @@ export const useCreateFormField = () => {
   const toast = useToast({ status: 'success', isClosable: true })
   const adminFormKey = adminFormKeys.id(formId)
 
-  const handleSuccess = useCallback(
+  const handleMultiFieldMutationSuccess = useCallback(
+    (newField: FormFieldDto[]) => {
+      queryClient.setQueryData<AdminFormDto>(adminFormKey, (oldForm) => {
+        // Should not happen, should not be able to update field if there is no
+        // existing data.
+        if (!oldForm) throw new Error('Query should have been set')
+        const newForm = { ...oldForm, form_fields: newField }
+        return newForm
+      })
+    },
+    [adminFormKey, queryClient],
+  )
+
+  const handleSingleFieldMutationSuccess = useCallback(
     (newField: FormFieldDto) => {
       toast.closeAll()
       if (stateData.state !== FieldBuilderState.CreatingField) {
@@ -97,12 +110,17 @@ export const useCreateFormField = () => {
           insertionIndex,
         }),
       {
-        onSuccess: handleSuccess,
+        onSuccess: handleSingleFieldMutationSuccess,
         onError: handleError,
       },
     ),
-    createFieldsMutation: useMutation((createFieldsBody: FieldCreateDto[]) =>
-      createFormFields({ createFieldsBody, formId }),
+    createFieldsMutation: useMutation(
+      (createFieldsBody: FieldCreateDto[]) =>
+        createFormFields({ createFieldsBody, formId }),
+      {
+        onSuccess: handleMultiFieldMutationSuccess,
+        onError: handleError,
+      },
     ),
   }
 }

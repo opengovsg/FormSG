@@ -1,4 +1,3 @@
-import { useContext } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 import { StatusCodes } from 'http-status-codes'
@@ -16,7 +15,6 @@ import { useCreateFormField } from '~features/admin-form/create/builder-and-desi
 
 import { useToast } from '../../../hooks/useToast'
 import { adminFormKeys } from '../common/queries'
-import { MagicFormBuilderModalOnCloseContext } from '../create/builder-and-design/BuilderAndDesignContent/FormBuilder'
 
 export const useAssistanceMutations = () => {
   const { createFieldsMutation } = useCreateFormField()
@@ -26,12 +24,9 @@ export const useAssistanceMutations = () => {
     throw new Error('Form ID is required')
   }
 
-  const toast = useToast({ status: 'success', isClosable: true })
-
   const queryClient = useQueryClient()
 
-  const onCloseContext = useContext(MagicFormBuilderModalOnCloseContext)
-  const { onClose } = onCloseContext || {}
+  const toast = useToast({ status: 'success', isClosable: true })
 
   const createFieldsFromPromptMutation = useMutation(
     (prompt: string) =>
@@ -52,22 +47,12 @@ export const useAssistanceMutations = () => {
                 description: `Error creating form. Reason: ${e}`,
                 status: 'warning',
               })
-              return
+              throw e
             }
           }
           return createFieldsMutation.mutate(formFields, {
             onSuccess: () => {
               queryClient.invalidateQueries(adminFormKeys.id(formId))
-              onClose()
-              toast({
-                description: 'Successfully created form',
-              })
-            },
-            onError: () => {
-              toast({
-                description: 'Error creating form.',
-                status: 'warning',
-              })
             },
           })
         }),
@@ -79,9 +64,7 @@ export const useAssistanceMutations = () => {
             case StatusCodes.TOO_MANY_REQUESTS:
               errorMessage =
                 'Too many forms created! Please try creating again later.'
-
               break
-
             default:
               errorMessage = 'An error occured. Please try again.'
           }
@@ -116,28 +99,27 @@ export const useAssistanceMutations = () => {
               return
             }
           }
-          return createFieldsMutation.mutate(formFields, {
-            onSuccess: () => {
-              queryClient.invalidateQueries(adminFormKeys.id(formId))
-              onClose()
-              toast({
-                description: 'Successfully created form',
-              })
-            },
-            onError: () => {
-              toast({
-                description: 'Error creating form.',
-                status: 'warning',
-              })
-            },
-          })
+          return createFieldsMutation.mutate(formFields)
         }),
     {
       onError: (error: Error) => {
-        toast({
-          description: 'Too many forms generated! Please try again later.',
-          status: 'danger',
-        })
+        if (error instanceof HttpError) {
+          let errorMessage
+          switch (error.code) {
+            case StatusCodes.TOO_MANY_REQUESTS:
+              errorMessage =
+                'Too many forms created! Please try creating again later.'
+
+              break
+
+            default:
+              errorMessage = 'An error occured. Please try again.'
+          }
+          toast({
+            description: `${errorMessage}`,
+            status: 'danger',
+          })
+        }
       },
     },
   )

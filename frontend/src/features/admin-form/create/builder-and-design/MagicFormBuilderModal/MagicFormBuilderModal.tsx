@@ -28,7 +28,7 @@ export const MagicFormBuilderModal = ({
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
       <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
         <ModalCloseButton />
-        <MagicFormBuilderWizardProvider>
+        <MagicFormBuilderWizardProvider onClose={onClose}>
           <MagicFormBuilderModalContent onClose={onClose} />
         </MagicFormBuilderWizardProvider>
       </ModalContent>

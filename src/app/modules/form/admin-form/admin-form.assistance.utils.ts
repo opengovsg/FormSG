@@ -55,8 +55,7 @@ export const formFieldsPromptBuilder = (questions: string, schema: string) => {
 
 export const getFormFieldsTool = {
   name: 'getFormFields',
-  description:
-    'Gets form fields to build a form with the specified field types based on the example of sample form fields. Do not create fields which do not belong to any of the specified field types. For example, Signatures should be treated as textfield because a field type of signature cannot not exist in digital forms. Replace values in "<>" with actual primitive values. Do not build the fieldType if a path required is not available.',
+  description: `Gets form fields to build a form with the specified field types based on the example of sample form fields. Do not create fields which do not belong to any of the specified field types. For example, do not create a signature field type because 'signature' is not found in the list of fieldTypes, it should either be 'textarea' or 'textfield' instead. Enum values should follow the specified sample form fields provided. Do not create enum values which do not exist or are not valid. For example, the enum value for path dateValidation.selectedDateValidation should be null as described in the sampleFormFields. Replace values in "<>" with actual primitive values. Do not build the fieldType if a path required is not available.`,
   parameters: {
     type: 'object',
     properties: {
