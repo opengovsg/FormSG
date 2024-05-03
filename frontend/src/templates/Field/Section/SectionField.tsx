@@ -2,7 +2,7 @@ import { Box, forwardRef } from '@chakra-ui/react'
 
 import { FormColorTheme } from '~shared/types'
 
-import { MarkdownText } from '~components/MarkdownText2'
+import { MarkdownText } from '~components/MarkdownText'
 
 import { SectionFieldContainerProps } from './SectionFieldContainer'
 import { useSectionColor } from './useSectionColor'

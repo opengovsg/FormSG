@@ -1,6 +1,6 @@
-import { FormResponseMode } from '~shared/types/form'
+import { useToast } from '@opengovsg/design-system-react'
 
-import { useToast } from '~hooks/useToast'
+import { FormResponseMode } from '~shared/types/form'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
@@ -11,7 +11,7 @@ import { StorageResponsesTab } from './storage'
 export const ResponsesPage = (): JSX.Element => {
   const { data: form, isLoading } = useAdminForm()
 
-  const toast = useToast({ status: 'danger' })
+  const toast = useToast({ status: 'error' })
 
   if (isLoading) return <ResponsesPageSkeleton />
 

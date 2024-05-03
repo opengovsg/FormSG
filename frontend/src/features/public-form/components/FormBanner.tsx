@@ -4,7 +4,7 @@ import { Banner } from '@opengovsg/design-system-react'
 import { FormAuthType } from '~shared/types'
 
 import { getBannerProps } from '~utils/getBannerProps'
-import { MarkdownText } from '~components/MarkdownText2'
+import { MarkdownText } from '~components/MarkdownText'
 
 import { useEnv } from '~features/env/queries'
 

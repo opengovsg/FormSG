@@ -1,9 +1,8 @@
 import { useCallback, useState } from 'react'
 import { Box } from '@chakra-ui/react'
+import { useToast } from '@opengovsg/design-system-react'
 
 import { FormResponseMode } from '~shared/types'
-
-import { useToast } from '~hooks/useToast'
 
 import { useSubmitFormFeedbackMutation } from '~features/public-form/mutations'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'

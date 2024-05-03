@@ -90,7 +90,11 @@ export const FormStatusToggle = (): JSX.Element => {
           />
         )}
         <Flex
-          bg={isFormPublic ? 'success.100' : 'danger.200'}
+          bg={
+            isFormPublic
+              ? 'interaction.success-subtle.default'
+              : 'interaction.critical-subtle.default'
+          }
           py="1rem"
           px="1.125rem"
           justify="space-between"

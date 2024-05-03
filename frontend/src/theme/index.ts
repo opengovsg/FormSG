@@ -1,8 +1,9 @@
 import { extendTheme } from '@chakra-ui/react'
 import { theme as baseTheme } from '@opengovsg/design-system-react'
 
-import { YesNoField } from './components/Field/YesNo'
+import { RatingField } from './components/Rating'
 import { Tabs } from './components/Tabs'
+import { YesNoField } from './components/YesNo'
 import { BREAKPOINT_VALS } from './foundations/breakpoints'
 import { shadows } from './foundations/shadows'
 import { spacing } from './foundations/spacing'
@@ -44,6 +45,7 @@ export const theme = extendTheme(baseTheme, {
   breakpoints: BREAKPOINT_VALS,
   components: {
     YesNoField,
+    RatingField,
     Tabs,
   },
 })

@@ -23,7 +23,11 @@ const VerifiedIcon = ({ isVerified }: { isVerified: boolean }): JSX.Element => {
     <Icon
       fontSize="1.5rem"
       as={isVerified ? BiCheck : BiX}
-      color={isVerified ? 'success.500' : 'danger.500'}
+      color={
+        isVerified
+          ? 'interaction.success.default'
+          : 'interaction.critical.default'
+      }
     />
   )
 }

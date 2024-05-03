@@ -20,6 +20,7 @@ import {
   Input,
   ModalCloseButton,
   Textarea,
+  useToast,
 } from '@opengovsg/design-system-react'
 import isEmail from 'validator/lib/isEmail'
 
@@ -27,7 +28,6 @@ import { BasicField, SubmitFormIssueBodyDto } from '~shared/types'
 
 import { INVALID_EMAIL_ERROR, REQUIRED_ERROR } from '~constants/validation'
 import { useIsMobile } from '~hooks/useIsMobile'
-import { useToast } from '~hooks/useToast'
 
 import { useSubmitFormIssueMutations } from '~features/public-form/mutations'
 

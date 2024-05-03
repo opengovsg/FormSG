@@ -12,6 +12,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
 import { useGrowthBook } from '@growthbook/growthbook-react'
+import { useToast } from '@opengovsg/design-system-react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 import get from 'lodash/get'
 import simplur from 'simplur'
@@ -35,7 +36,6 @@ import { dollarsToCents } from '~shared/utils/payments'
 import { MONGODB_ID_REGEX } from '~constants/routes'
 import { useBrowserStm } from '~hooks/payments'
 import { useTimeout } from '~hooks/useTimeout'
-import { useToast } from '~hooks/useToast'
 import { isKeypairValid } from '~utils/secretKeyValidation'
 import { HttpError } from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
@@ -276,7 +276,7 @@ export const PublicFormProvider = ({
   useEffect(() => {
     if (data?.myInfoError) {
       toast({
-        status: 'danger',
+        status: 'error',
         description:
           'Your Myinfo details could not be retrieved. Refresh your browser and log in, or try again later.',
       })
@@ -286,7 +286,7 @@ export const PublicFormProvider = ({
   const showErrorToast = useCallback(
     (error: unknown, form: PublicFormDto) => {
       toast({
-        status: 'danger',
+        status: 'error',
         description:
           error instanceof Error
             ? error.message

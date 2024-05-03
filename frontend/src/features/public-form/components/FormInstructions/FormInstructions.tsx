@@ -2,7 +2,7 @@ import { Box } from '@chakra-ui/react'
 
 import { FormColorTheme } from '~shared/types'
 
-import { MarkdownText } from '~components/MarkdownText2'
+import { MarkdownText } from '~components/MarkdownText'
 import { useSectionColor } from '~templates/Field/Section/useSectionColor'
 
 interface FormInstructionsProps {

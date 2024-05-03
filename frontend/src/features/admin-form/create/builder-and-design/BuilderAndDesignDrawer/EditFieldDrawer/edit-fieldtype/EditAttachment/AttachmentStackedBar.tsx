@@ -61,14 +61,14 @@ export const AttachmentStackedBar = ({
     const barProps = []
     if (existingValue) {
       barProps.push({
-        bg: 'warning.500',
+        bg: 'interaction.warning.default',
         border: 'none',
       })
     }
     if (newValue) {
       barProps.push({
-        bg: 'success.500',
-        border: '1px dashed var(--chakra-colors-success-800)',
+        bg: 'interaction.success.default',
+        border: '1px dashed var(--chakra-colors-interaction-success-active)',
       })
     }
     return barProps
@@ -100,7 +100,7 @@ export const AttachmentStackedBar = ({
         {isOverQuota ? (
           <>
             <Flex h="1rem">
-              <FilledTrack bg="danger.500" />
+              <FilledTrack bg="interaction.critical.default" />
             </Flex>
             <Flex
               justify="center"

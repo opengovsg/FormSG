@@ -162,7 +162,7 @@ export const RowActionsDrawer = ({
                       <Button
                         {...buttonProps}
                         onClick={handleDeleteForm}
-                        color="danger.500"
+                        color="interaction.critical.default"
                         leftIcon={<BiTrash fontSize="1.25rem" />}
                       >
                         Delete

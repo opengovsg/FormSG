@@ -74,8 +74,6 @@ export const EmailFormSection = ({
 }
 
 const MRFAdvertisingInfobox = () => {
-  const mdComponents = useMdComponents()
-
   return (
     <Flex bg="brand.primary.50" p="1rem">
       <Icon
@@ -84,9 +82,7 @@ const MRFAdvertisingInfobox = () => {
         fontSize="1.5rem"
         mr="0.5rem"
       />
-      <MarkdownText
-        components={mdComponents}
-      >{`Require routing and approval? [Check out our new feature: Multi-respondent forms!](${GUIDE_FORM_MRF})`}</MarkdownText>
+      <MarkdownText>{`Require routing and approval? [Check out our new feature: Multi-respondent forms!](${GUIDE_FORM_MRF})`}</MarkdownText>
     </Flex>
   )
 }

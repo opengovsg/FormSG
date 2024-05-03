@@ -1,9 +1,8 @@
 import { useQuery } from 'react-query'
 import { useParams } from 'react-router-dom'
+import { useToast } from '@opengovsg/design-system-react'
 
 import { DateString } from '~shared/types'
-
-import { useToast } from '~hooks/useToast'
 
 import { getAllDecryptedSubmission } from '../AdminSubmissionsService'
 import { adminFormResponsesKeys } from '../queries'
@@ -15,7 +14,7 @@ import { useStorageResponsesContext } from '../ResponsesPage/storage'
 export const useAllSubmissionData = (dateRange?: DateString[]) => {
   const [startDate, endDate] = dateRange ?? []
   const toast = useToast({
-    status: 'danger',
+    status: 'error',
   })
 
   const { formId } = useParams()

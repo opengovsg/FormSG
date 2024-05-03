@@ -201,7 +201,7 @@ export const RowActionsDropdown = ({
                   <MenuDivider aria-hidden borderColor="base.divider.medium" />
                   <Menu.Item
                     onClick={handleDeleteForm}
-                    color="danger.500"
+                    color="interaction.critical.default"
                     icon={<BiTrash fontSize="1.25rem" />}
                   >
                     Delete

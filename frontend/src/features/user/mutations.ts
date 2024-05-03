@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from 'react-query'
+import { useToast } from '@opengovsg/design-system-react'
 
 import {
   SendUserContactOtpDto,
@@ -9,7 +10,6 @@ import {
 
 import { ApiError } from '~typings/core'
 
-import { useToast } from '~hooks/useToast'
 import {
   generateUserContactOtp,
   transferOwnership,
@@ -22,7 +22,7 @@ import { userKeys } from './queries'
 export const useUserMutations = () => {
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
-  const failureToast = useToast({ status: 'danger', isClosable: true })
+  const failureToast = useToast({ status: 'error', isClosable: true })
 
   const generateOtpMutation = useMutation<
     void,

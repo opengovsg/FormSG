@@ -8,7 +8,7 @@ import {
 
 import { GUIDE_PAYMENTS_INVOICE_DIFFERENCES } from '~constants/links'
 import { usePaymentFieldValidation } from '~hooks/usePaymentFieldValidation'
-import { MarkdownText } from '~components/MarkdownText2'
+import { MarkdownText } from '~components/MarkdownText'
 import { MoneyInput } from '~components/MoneyInput'
 
 import { FormPaymentsInput } from './PaymentsInputPanel'

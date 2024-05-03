@@ -124,7 +124,7 @@ const WhatsNewNavBarTab = ({
         {shouldShowNotiifcation && (
           <Icon
             as={GoPrimitiveDot}
-            color="danger.500"
+            color="interaction.critical.default"
             position="absolute"
             ml="-15px"
           />
@@ -148,7 +148,7 @@ const WhatsNewNavBarTab = ({
       {shouldShowNotiifcation && (
         <Icon
           as={GoPrimitiveDot}
-          color="danger.500"
+          color="interaction.critical.default"
           position="absolute"
           ml="-5px"
         />

@@ -12,14 +12,18 @@ import {
   Icon,
 } from '@chakra-ui/react'
 import { Draggable } from '@hello-pangea/dnd'
-import { IconButton, TouchableTooltip } from '@opengovsg/design-system-react'
+import {
+  IconButton,
+  TouchableTooltip,
+  useToast,
+} from '@opengovsg/design-system-react'
 import { isEqual, times } from 'lodash'
 
 import { FormColorTheme, FormResponseMode } from '~shared/types'
 import { BasicField, FormFieldDto } from '~shared/types/field'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import { useToast } from '~hooks/useToast'
+import { MarkdownText } from '~components/MarkdownText'
 import {
   AttachmentField,
   CheckboxField,
@@ -340,7 +344,7 @@ const FieldButtonGroup = ({
 
   const { data: form } = useCreateTabForm()
 
-  const toast = useToast({ status: 'danger', isClosable: true })
+  const toast = useToast({ status: 'error', isClosable: true })
 
   const { duplicateFieldMutation } = useDuplicateFormField()
   const { deleteFieldMutation } = useDeleteFormField()
@@ -378,8 +382,9 @@ const FieldButtonGroup = ({
       const thisAttachmentSize = Number(field.attachmentSize)
       if (thisAttachmentSize > availableAttachmentSize) {
         toast({
-          useMarkdown: true,
-          description: `The field "${field.title}" could not be duplicated. The attachment size of **${thisAttachmentSize} MB** exceeds the form's remaining available attachment size of **${availableAttachmentSize} MB**.`,
+          description: (
+            <MarkdownText>{`The field "${field.title}" could not be duplicated. The attachment size of **${thisAttachmentSize} MB** exceeds the form's remaining available attachment size of **${availableAttachmentSize} MB**.`}</MarkdownText>
+          ),
         })
         return
       }

@@ -1,4 +1,4 @@
-import { MarkdownText } from '~components/MarkdownText2'
+import { MarkdownText } from '~components/MarkdownText'
 
 import { BaseFieldProps } from '../FieldContainer'
 import { ParagraphFieldSchema } from '../types'

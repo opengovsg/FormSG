@@ -1,11 +1,10 @@
 import { useCallback } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
+import { useToast } from '@opengovsg/design-system-react'
 
 import { FormFieldDto } from '~shared/types/field'
 import { AdminFormDto } from '~shared/types/form'
-
-import { useToast } from '~hooks/useToast'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
 
@@ -88,7 +87,7 @@ export const useDuplicateFormField = () => {
       toast.closeAll()
       toast({
         description: getMutationErrorMessage(error),
-        status: 'danger',
+        status: 'error',
       })
     },
     [toast],

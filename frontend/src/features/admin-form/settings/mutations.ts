@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
+import { useToast } from '@opengovsg/design-system-react'
 import simplur from 'simplur'
 
 import {
@@ -16,7 +17,6 @@ import { TwilioCredentials } from '~shared/types/twilio'
 import { ApiError } from '~typings/core'
 
 import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
-import { useToast } from '~hooks/useToast'
 import { formatOrdinal } from '~utils/stringFormat'
 
 import { adminFormKeys } from '../common/queries'
@@ -90,7 +90,7 @@ export const useMutateFormSettings = () => {
       toast.closeAll()
       toast({
         description: error.message,
-        status: 'danger',
+        status: 'error',
       })
     },
     [toast],
@@ -182,7 +182,7 @@ export const useMutateFormSettings = () => {
         toast.closeAll()
         toast({
           description: error.message,
-          status: 'danger',
+          status: 'error',
         })
       },
     },
@@ -375,7 +375,7 @@ export const useMutateTwilioCreds = () => {
         toast.closeAll()
         toast({
           description: error.message,
-          status: 'danger',
+          status: 'error',
         })
       },
     },
@@ -396,7 +396,7 @@ export const useMutateTwilioCreds = () => {
         toast.closeAll()
         toast({
           description: error.message,
-          status: 'danger',
+          status: 'error',
         })
       },
     },

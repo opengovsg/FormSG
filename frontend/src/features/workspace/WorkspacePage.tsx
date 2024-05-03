@@ -147,7 +147,7 @@ export const WorkspacePage = (): JSX.Element => {
             </Box>
           </GridItem>
         )}
-        <GridItem area="main" bg="neutral.100">
+        <GridItem area="main">
           <WorkspaceProvider
             currentWorkspace={currWorkspaceId}
             defaultWorkspace={DEFAULT_WORKSPACE}

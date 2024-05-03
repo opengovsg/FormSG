@@ -21,12 +21,12 @@ import {
   FormErrorMessage,
   NumberInput,
   Radio,
+  useToast,
 } from '@opengovsg/design-system-react'
 import { cloneDeep, get, isEmpty } from 'lodash'
 
 import { FormColorTheme, FormLogoState, FormStartPage } from '~shared/types'
 
-import { useToast } from '~hooks/useToast'
 import { uploadLogo } from '~services/FileHandlerService'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
@@ -65,7 +65,7 @@ type DesignDrawerProps = {
 }
 
 export const DesignInput = (): JSX.Element | null => {
-  const toast = useToast({ status: 'danger' })
+  const toast = useToast({ status: 'error' })
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 

@@ -52,7 +52,7 @@ export const PreviewFormProvider = ({
   const showErrorToast = useCallback(
     (error: unknown) => {
       toast({
-        status: 'danger',
+        status: 'error',
         description:
           error instanceof Error
             ? error.message

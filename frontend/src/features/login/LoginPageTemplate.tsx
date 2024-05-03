@@ -13,7 +13,7 @@ import { LANDING_PAYMENTS_ROUTE, LANDING_ROUTE } from '~constants/routes'
 import { getBannerProps } from '~utils/getBannerProps'
 import { Banner } from '~components/Banner'
 import { FeatureBanner } from '~components/FeatureBanner/FeatureBanner'
-import { MarkdownText } from '~components/MarkdownText2'
+import { MarkdownText } from '~components/MarkdownText'
 import { AppGrid } from '~templates/AppGrid'
 
 import { useEnv } from '~features/env/queries'

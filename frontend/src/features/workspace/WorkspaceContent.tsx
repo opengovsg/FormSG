@@ -5,7 +5,7 @@ import { Infobox } from '@opengovsg/design-system-react'
 import { GUIDE_PAYMENTS_ENTRY } from '~constants/links'
 import { ROLLOUT_ANNOUNCEMENT_KEY_PREFIX } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
-import { MarkdownText } from '~components/MarkdownText2'
+import { MarkdownText } from '~components/MarkdownText'
 
 import { RolloutAnnouncementModal } from '~features/rollout-announcement/RolloutAnnouncementModal'
 import { useUser } from '~features/user/queries'

@@ -6,7 +6,7 @@ import { get } from 'lodash'
 
 import { fillHeightCss } from '~utils/fillHeightCss'
 import { getBannerProps } from '~utils/getBannerProps'
-import { MarkdownText } from '~components/MarkdownText2'
+import { MarkdownText } from '~components/MarkdownText'
 
 import AdminForbiddenErrorPage from '~pages/AdminForbiddenError'
 import NotFoundErrorPage from '~pages/NotFoundError'

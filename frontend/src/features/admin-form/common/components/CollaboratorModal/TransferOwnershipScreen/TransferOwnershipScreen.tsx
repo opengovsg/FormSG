@@ -36,7 +36,7 @@ export const TransferOwnershipScreen = (): JSX.Element | null => {
       <ModalBody whiteSpace="pre-wrap" color="brand.secondary.500">
         <Text>
           You are transferring this form to{' '}
-          <Text color="danger.500" as="span" fontWeight={700}>
+          <Text color="interaction.critical.default" as="span" fontWeight={700}>
             {emailToTransfer}
           </Text>
           . You will lose form ownership and the right to delete this form. You

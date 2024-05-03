@@ -35,7 +35,7 @@ export const FieldLogicBadge = ({
     if (fieldMeta) return undefined
     switch (defaults.variant) {
       case 'error':
-        return 'danger.500'
+        return 'interaction.critical.default'
       case 'info':
         return 'brand.primary.500'
     }

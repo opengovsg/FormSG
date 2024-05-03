@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   As,
+  ColorProps,
   Divider,
   Flex,
   FormControl,
@@ -26,7 +27,7 @@ import { FormResponseMode, PaymentChannel } from '~shared/types'
 
 import { BxsCheckCircle, BxsError, BxsInfoCircle } from '~assets/icons'
 import { GUIDE_STRIPE_ONBOARDING } from '~constants/links'
-import { MarkdownText } from '~components/MarkdownText2'
+import { MarkdownText } from '~components/MarkdownText'
 
 import { useEnv } from '~features/env/queries'
 
@@ -125,7 +126,7 @@ const ConnectionStatusText = ({
   icon,
   text,
 }: {
-  color: string
+  color: ColorProps['color']
   icon: As
   text: string
 }) => (
@@ -158,7 +159,7 @@ const AfterConnectionInfo = ({
     // Base case: Error retrieving form payments data
     connectionInfo = (
       <ConnectionStatusText
-        color="danger.500"
+        color="interaction.critical.default"
         icon={BxsError}
         text="Something went wrong when validating the connected Stripe account."
       />
@@ -168,7 +169,7 @@ const AfterConnectionInfo = ({
       // Live mode: Account connected successfully and can be charged
       connectionInfo = (
         <ConnectionStatusText
-          color="success.700"
+          color="interaction.success.default"
           icon={BxsCheckCircle}
           text="Your Stripe account is connected to this Form."
         />
@@ -177,7 +178,7 @@ const AfterConnectionInfo = ({
       // Live mode: Linked account has no payment capabilities.
       connectionInfo = (
         <ConnectionStatusText
-          color="warning.500"
+          color="interaction.warning.default"
           icon={BxsInfoCircle}
           text="The connected account does not have the ability to process payments."
         />
@@ -188,7 +189,7 @@ const AfterConnectionInfo = ({
       // Test mode: Account connected successfully but note that will only be on test mode
       connectionInfo = (
         <ConnectionStatusText
-          color="success.700"
+          color="interaction.success.default"
           icon={BxsCheckCircle}
           text="Stripe account connected. Payments made on this form will only show in test mode in your Stripe account."
         />
@@ -197,7 +198,7 @@ const AfterConnectionInfo = ({
       // Test mode: Stripe account connection step skipped
       connectionInfo = (
         <ConnectionStatusText
-          color="success.700"
+          color="interaction.success.default"
           icon={BxsCheckCircle}
           text="You are connected to a test account."
         />

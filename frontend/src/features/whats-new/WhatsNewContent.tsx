@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Box, Image, Text } from '@chakra-ui/react'
 import { format } from 'date-fns'
 
-import { MarkdownText } from '~components/MarkdownText2'
+import { MarkdownText } from '~components/MarkdownText'
 import { LottieAnimation } from '~templates/LottieAnimation'
 
 import { FeatureUpdateImage } from './FeatureUpdateList'

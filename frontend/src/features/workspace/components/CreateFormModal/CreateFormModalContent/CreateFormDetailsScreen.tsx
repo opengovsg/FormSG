@@ -21,7 +21,7 @@ import { FormResponseMode } from '~shared/types/form/form'
 
 import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
 import { FORM_TITLE_VALIDATION_RULES } from '~utils/formValidation'
-import { MarkdownText } from '~components/MarkdownText2'
+import { MarkdownText } from '~components/MarkdownText'
 
 import { WorkspaceRowsProvider } from '../../WorkspaceFormRow/WorkspaceRowsContext'
 import { useCreateFormWizard } from '../CreateFormWizardContext'

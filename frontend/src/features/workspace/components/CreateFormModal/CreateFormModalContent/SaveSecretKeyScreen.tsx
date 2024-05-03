@@ -138,7 +138,7 @@ export const SaveSecretKeyScreen = ({
                 as={BxsError}
                 fontSize="3rem"
                 aria-hidden
-                color="danger.500"
+                color="interaction.critical.default"
               />
               <Text as="header" textStyle="h4" color="brand.secondary.700">
                 Download Secret Key to proceed
@@ -147,7 +147,11 @@ export const SaveSecretKeyScreen = ({
             <Text textStyle="body-1" color="brand.secondary.500" mb="2.5rem">
               You'll need it every time you access your responses to this form.
               If you lose it,{' '}
-              <Text color="danger.500" textStyle="subhead-1" as="span">
+              <Text
+                color="interaction.critical.default"
+                textStyle="subhead-1"
+                as="span"
+              >
                 all responses will be permanently lost
               </Text>
               . You can also{' '}

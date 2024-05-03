@@ -1,12 +1,12 @@
 import { useLocation } from 'react-router-dom'
 import { Box, Container, Divider, Stack } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
+import { useToast } from '@opengovsg/design-system-react'
 
 import { featureFlags } from '~shared/constants'
 import { FormResponseMode } from '~shared/types/form'
 
 import { ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX } from '~constants/routes'
-import { useToast } from '~hooks/useToast'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
@@ -27,7 +27,7 @@ export const ChartsPage = (): JSX.Element => {
     featureFlags.chartsMaxResponseCount,
     100,
   ) // limit number of responses to 100 as fallback
-  const toast = useToast({ status: 'danger' })
+  const toast = useToast({ status: 'error' })
 
   if (isLoading) return <ResponsesPageSkeleton />
 

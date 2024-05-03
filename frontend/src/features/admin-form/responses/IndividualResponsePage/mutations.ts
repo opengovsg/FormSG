@@ -1,8 +1,7 @@
 import { useCallback } from 'react'
 import { useMutation } from 'react-query'
+import { useToast } from '@opengovsg/design-system-react'
 import FileSaver from 'file-saver'
-
-import { useToast } from '~hooks/useToast'
 
 import { AttachmentsDownloadMap } from '../ResponsesPage/storage/types'
 import {
@@ -18,7 +17,7 @@ export const useMutateDownloadAttachments = () => {
       toast.closeAll()
       toast({
         description: error.message,
-        status: 'danger',
+        status: 'error',
       })
     },
     [toast],

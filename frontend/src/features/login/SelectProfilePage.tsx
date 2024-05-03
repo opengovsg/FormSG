@@ -18,7 +18,11 @@ import {
   useDisclosure,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
-import { Button, ModalCloseButton } from '@opengovsg/design-system-react'
+import {
+  Button,
+  ModalCloseButton,
+  useToast,
+} from '@opengovsg/design-system-react'
 import { StatusCodes } from 'http-status-codes'
 
 import { SUPPORT_FORM_LINK } from '~shared/constants'
@@ -28,7 +32,6 @@ import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { DASHBOARD_ROUTE, LOGIN_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useLocalStorage } from '~hooks/useLocalStorage'
-import { useToast } from '~hooks/useToast'
 import { ApiService } from '~services/ApiService'
 
 import { useUser } from '~features/user/queries'
@@ -125,7 +128,7 @@ export const SelectProfilePage = (): JSX.Element => {
   >()
 
   const errorDisclosure = useDisclosure()
-  const toast = useToast({ isClosable: true, status: 'danger' })
+  const toast = useToast({ isClosable: true, status: 'error' })
 
   // If redirected back here but already authed, redirect to dashboard.
   if (user) window.location.replace(DASHBOARD_ROUTE)

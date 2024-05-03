@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Box, Image, Skeleton, useBreakpointValue } from '@chakra-ui/react'
 
-import { MarkdownText } from '~components/MarkdownText2'
+import { MarkdownText } from '~components/MarkdownText'
 
 import { BaseFieldProps } from '../FieldContainer'
 import { ImageFieldSchema } from '../types'

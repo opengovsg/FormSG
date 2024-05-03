@@ -1,9 +1,8 @@
 import { useQuery } from 'react-query'
 import { useParams } from 'react-router-dom'
+import { useToast } from '@opengovsg/design-system-react'
 
 import { FormResponseMode } from '~shared/types'
-
-import { useToast } from '~hooks/useToast'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
@@ -16,7 +15,7 @@ import { useStorageResponsesContext } from '../ResponsesPage/storage'
  */
 export const useIndividualSubmission = () => {
   const toast = useToast({
-    status: 'danger',
+    status: 'error',
   })
 
   const { formId, submissionId } = useParams()

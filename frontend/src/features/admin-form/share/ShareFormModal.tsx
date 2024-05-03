@@ -67,7 +67,7 @@ type goLinkHelperTextType = {
 }
 
 const goLinkClaimSuccessHelperText: goLinkHelperTextType = {
-  color: 'success.700',
+  color: 'interaction.success.default',
   icon: <BxsCheckCircle fontSize="1rem" />,
   text: (
     <Text>
@@ -89,7 +89,7 @@ const getGoLinkClaimFailureHelperText = (
   text: string,
 ): goLinkHelperTextType => {
   return {
-    color: 'danger.500',
+    color: 'interaction.critical.default',
     icon: <BxsErrorCircle fontSize="1rem" />,
     text: <Text>{text}</Text>,
   }
@@ -339,7 +339,7 @@ export const ShareFormModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader color="brand.secondary.700">Share form</ModalHeader>
+        <ModalHeader color="base.content.strong">Share form</ModalHeader>
         <ModalBody whiteSpace="pre-wrap">
           {isFormPrivate ? (
             <Infobox variant="warning" mb="1rem">

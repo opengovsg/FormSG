@@ -1,13 +1,12 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useThrottle } from 'react-use'
 import { Box, MenuButton, Text, useDisclosure } from '@chakra-ui/react'
-import { Button, Menu } from '@opengovsg/design-system-react'
+import { Button, Menu, useToast } from '@opengovsg/design-system-react'
 import simplur from 'simplur'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import { useTimeout } from '~hooks/useTimeout'
-import { useToast } from '~hooks/useToast'
 import { NavigationPrompt } from '~templates/NavigationPrompt'
 
 import { useStorageResponsesContext } from '../StorageResponsesContext'
@@ -90,7 +89,7 @@ export const DownloadButton = (): JSX.Element => {
       },
       onError: () => {
         toast({
-          status: 'danger',
+          status: 'error',
           description: 'Failed to start download. Please try again later.',
         })
       },

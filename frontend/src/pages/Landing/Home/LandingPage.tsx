@@ -43,7 +43,7 @@ import {
 import { LOGIN_ROUTE, TOU_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { FeatureBanner } from '~components/FeatureBanner/FeatureBanner'
-import { MarkdownText } from '~components/MarkdownText2'
+import { MarkdownText } from '~components/MarkdownText'
 import { LottieAnimation } from '~templates/LottieAnimation'
 
 import { ExternalFormLink } from '../components/ExternalFormLink'

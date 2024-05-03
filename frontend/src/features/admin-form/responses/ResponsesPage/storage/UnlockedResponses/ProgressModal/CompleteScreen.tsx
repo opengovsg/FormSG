@@ -14,7 +14,7 @@ import simplur from 'simplur'
 
 import { BxsCheckCircle, BxsXCircle } from '~assets/icons'
 import { useIsMobile } from '~hooks/useIsMobile'
-import { MarkdownText } from '~components/MarkdownText2'
+import { MarkdownText } from '~components/MarkdownText'
 
 import { DownloadResult } from '../../types'
 
@@ -78,7 +78,7 @@ export const CompleteScreen = ({
         <Stack spacing="1rem">
           <Stack direction="row" spacing="0.5rem">
             <Icon
-              color="success.500"
+              color="interaction.success.default"
               fontSize="1.25rem"
               height="1.5rem"
               as={BxsCheckCircle}
@@ -90,7 +90,7 @@ export const CompleteScreen = ({
             <Stack direction="row" spacing="0.5rem">
               <Icon
                 height="1.5rem"
-                color="danger.500"
+                color="interaction.critical.default"
                 fontSize="1.25rem"
                 as={BxsXCircle}
                 aria-hidden

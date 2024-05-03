@@ -26,7 +26,7 @@ import {
   GUIDE_EMAIL_RELIABILITY,
 } from '~constants/links'
 import { createBaseValidationRules } from '~utils/fieldValidation'
-import { MarkdownText } from '~components/MarkdownText2'
+import { MarkdownText } from '~components/MarkdownText'
 
 import { useCreateTabForm } from '~features/admin-form/create/builder-and-design/useCreateTabForm'
 import { getAttachmentSizeLimit } from '~features/admin-form/create/builder-and-design/utils/getAttachmentSizeLimit'

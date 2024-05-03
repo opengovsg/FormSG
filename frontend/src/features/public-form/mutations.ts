@@ -1,4 +1,5 @@
 import { useMutation } from 'react-query'
+import { useToast } from '@opengovsg/design-system-react'
 
 import { SubmissionResponseDto } from '~shared/types'
 import {
@@ -6,8 +7,6 @@ import {
   SubmitFormFeedbackBodyDto,
   SubmitFormIssueBodyDto,
 } from '~shared/types/form'
-
-import { useToast } from '~hooks/useToast'
 
 import { useStorePrefillQuery } from './hooks/useStorePrefillQuery'
 import {
@@ -46,7 +45,7 @@ export const usePublicAuthMutations = (formId: string) => {
       onError: (error: Error) => {
         toast({
           description: error.message,
-          status: 'danger',
+          status: 'error',
         })
       },
     },
@@ -202,7 +201,7 @@ export const useSubmitFormFeedbackMutation = (
       submitFormFeedback(formId, submissionId, args),
     {
       onError: (error: Error) => {
-        toast({ status: 'danger', description: error.message })
+        toast({ status: 'error', description: error.message })
       },
     },
   )
@@ -217,7 +216,7 @@ export const useSubmitFormIssueMutations = (formId: string) => {
     (args: SubmitFormIssueBodyDto) => submitFormIssue(formId, args),
     {
       onError: (error: Error) => {
-        toast({ status: 'danger', description: error.message })
+        toast({ status: 'error', description: error.message })
       },
     },
   )

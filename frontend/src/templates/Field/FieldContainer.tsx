@@ -15,7 +15,7 @@ import { get } from 'lodash'
 
 import { FormColorTheme } from '~shared/types/form'
 
-import { MarkdownText } from '~components/MarkdownText2'
+import { MarkdownText } from '~components/MarkdownText'
 
 import { FormFieldWithQuestionNo } from '~features/form/types'
 

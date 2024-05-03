@@ -191,7 +191,11 @@ export const TransferOwnershipModal = ({
             <section>
               <Text textStyle="body-2" color="brand.secondary.500">
                 You are transferring all forms to{' '}
-                <Text as="span" color="danger.500" fontWeight="bold">
+                <Text
+                  as="span"
+                  color="interaction.critical.default"
+                  fontWeight="bold"
+                >
                   {email}
                 </Text>
                 . You will be removed as a collaborator and lose access to the

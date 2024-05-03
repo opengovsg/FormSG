@@ -1,13 +1,11 @@
 import { useMemo } from 'react'
 import { BiDownload } from 'react-icons/bi'
 import { Box, Divider, Flex, Stack, Text } from '@chakra-ui/react'
-import { Button } from '@opengovsg/design-system-react'
+import { Button, useToast } from '@opengovsg/design-system-react'
 import { format } from 'date-fns'
 
 import { FormDto, PaymentType, ProductItemForReceipt } from '~shared/types'
 import { centsToDollars } from '~shared/utils/payments'
-
-import { useToast } from '~hooks/useToast'
 
 import { getPaymentInvoiceDownloadUrl } from '~features/public-form/utils/urls'
 

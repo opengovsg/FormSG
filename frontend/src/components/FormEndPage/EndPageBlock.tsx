@@ -5,7 +5,7 @@ import { format } from 'date-fns'
 
 import { FormColorTheme, FormDto } from '~shared/types/form'
 
-import { MarkdownText } from '~components/MarkdownText2'
+import { MarkdownText } from '~components/MarkdownText'
 
 import { SubmissionData } from '~features/public-form/PublicFormContext'
 
