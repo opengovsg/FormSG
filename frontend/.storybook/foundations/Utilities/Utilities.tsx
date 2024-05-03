@@ -30,7 +30,12 @@ export const Utilities = (): JSX.Element => {
       >
         Utilities
       </Heading>
-      <Heading as="h2" textStyle="display-2" color="primary.500" mb="2.5rem">
+      <Heading
+        as="h2"
+        textStyle="responsive-heading-heavy"
+        color="primary.500"
+        mb="2.5rem"
+      >
         Shadows
       </Heading>
       <Stack spacing="2.5rem">

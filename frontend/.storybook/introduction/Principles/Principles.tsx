@@ -10,7 +10,7 @@ export const Principles = (): JSX.Element => {
       px={{ base: '1.5rem', md: '5.5rem', lg: '7.5rem' }}
       py={{ base: '1.5rem', md: '5rem', lg: '6rem' }}
     >
-      <Text mb="4rem" textStyle="display-2">
+      <Text mb="4rem" textStyle="responsive-heading-heavy">
         Guiding principles
       </Text>
       <Box mb="1rem">

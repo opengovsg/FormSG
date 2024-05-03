@@ -21,7 +21,7 @@ export const Typography: FC = () => {
         {Object.entries(theme).map(([key, value]) => (
           <Box display="inline-flex" key={key}>
             <Text color="secondary.400">{key}:&nbsp;</Text>
-            <Text>{value}</Text>
+            <Text>{JSON.stringify(value)}</Text>
           </Box>
         ))}
       </Box>
@@ -69,42 +69,62 @@ export const Typography: FC = () => {
       <Stack spacing="1.5rem">
         <Wrap justify="space-between">
           <WrapItem>
-            <Box w="43rem" textStyle="display-1" color="secondary.700">
-              <Text>Display 1</Text>
-              <Text>Build forms in minutes.</Text>
-            </Box>
-          </WrapItem>
-          <WrapItem>{prettyPrint(theme.textStyles['display-1'])}</WrapItem>
-        </Wrap>
-        <Wrap justify="space-between">
-          <WrapItem>
-            <Box w="43rem" textStyle="display-1-mobile" color="secondary.700">
-              <Text>Display 1 mobile</Text>
+            <Box
+              w="43rem"
+              textStyle="responsive-display-heavy"
+              color="secondary.700"
+            >
+              <Text>Responsive Display Heavy</Text>
               <Text>Build forms in minutes.</Text>
             </Box>
           </WrapItem>
           <WrapItem>
-            {prettyPrint(theme.textStyles['display-1-mobile'])}
+            {prettyPrint(theme.textStyles['responsive-display-heavy'])}
           </WrapItem>
         </Wrap>
         <Wrap justify="space-between">
           <WrapItem>
-            <Box w="43rem" textStyle="display-2" color="secondary.700">
-              <Text>Display 2</Text>
-              <Text>Build government forms in minutes.</Text>
+            <Box
+              w="43rem"
+              textStyle="responsive-display-light"
+              color="secondary.700"
+            >
+              <Text>Responsive Display Light</Text>
+              <Text>Build forms in minutes.</Text>
             </Box>
           </WrapItem>
-          <WrapItem>{prettyPrint(theme.textStyles['display-2'])}</WrapItem>
+          <WrapItem>
+            {prettyPrint(theme.textStyles['responsive-display-light'])}
+          </WrapItem>
+        </Wrap>{' '}
+        <Wrap justify="space-between">
+          <WrapItem>
+            <Box
+              w="43rem"
+              textStyle="responsive-heading-heavy"
+              color="secondary.700"
+            >
+              <Text>Responsive Heading Heavy</Text>
+              <Text>Build forms in minutes.</Text>
+            </Box>
+          </WrapItem>
+          <WrapItem>
+            {prettyPrint(theme.textStyles['responsive-heading-heavy'])}
+          </WrapItem>
         </Wrap>
         <Wrap justify="space-between">
           <WrapItem>
-            <Box w="43rem" textStyle="display-2-mobile" color="secondary.700">
-              <Text>Display 2 mobile</Text>
-              <Text>Build government forms in minutes.</Text>
+            <Box
+              w="43rem"
+              textStyle="responsive-heading-light"
+              color="secondary.700"
+            >
+              <Text>Responsive Heading Light</Text>
+              <Text>Build forms in minutes.</Text>
             </Box>
           </WrapItem>
           <WrapItem>
-            {prettyPrint(theme.textStyles['display-2-mobile'])}
+            {prettyPrint(theme.textStyles['responsive-heading-light'])}
           </WrapItem>
         </Wrap>
         <Wrap justify="space-between">
@@ -115,15 +135,6 @@ export const Typography: FC = () => {
             </Box>
           </WrapItem>
           <WrapItem>{prettyPrint(theme.textStyles['h1'])}</WrapItem>
-        </Wrap>
-        <Wrap justify="space-between">
-          <WrapItem>
-            <Box w="43rem" textStyle="h1-mobile" color="secondary.700">
-              <Text>Heading 1 mobile</Text>
-              <Text>Build government forms in minutes.</Text>
-            </Box>
-          </WrapItem>
-          <WrapItem>{prettyPrint(theme.textStyles['h1-mobile'])}</WrapItem>
         </Wrap>
         <Wrap justify="space-between">
           <WrapItem>

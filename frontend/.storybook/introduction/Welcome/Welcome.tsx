@@ -1,8 +1,7 @@
 import { BiBulb, BiChevronRight, BiWrench } from 'react-icons/bi'
 import { Box, Flex, Icon, Text } from '@chakra-ui/react'
+import { Link } from '@opengovsg/design-system-react'
 import { linkTo } from '@storybook/addon-links'
-
-import Link from '~components/Link'
 
 export const Welcome = (): JSX.Element => {
   return (
@@ -13,8 +12,8 @@ export const Welcome = (): JSX.Element => {
         flex="1 0 auto"
       >
         <Box mb="3rem" color="white">
-          <Text textStyle="h1-mobile">Welcome to our</Text>
-          <Text textStyle="display-1">Camp 🏕</Text>
+          <Text textStyle="responsive-display-heavy">Welcome to our</Text>
+          <Text textStyle="responsive-display-heavy">Camp 🏕</Text>
         </Box>
         <Box maxW="43.75rem">
           <Text textStyle="body-1" color="white" mb="1rem">

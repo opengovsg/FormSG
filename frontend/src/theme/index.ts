@@ -1,12 +1,14 @@
 import { extendTheme } from '@chakra-ui/react'
+import { theme as baseTheme } from '@opengovsg/design-system-react'
 
 import { BREAKPOINT_VALS } from './foundations/breakpoints'
-import { colours } from './foundations/colours'
+import { colors } from './foundations/colors'
 import { shadows } from './foundations/shadows'
-import { components } from './components'
+import { spacing } from './foundations/spacing'
+import { typography } from './foundations/typography'
 import { textStyles } from './textStyles'
 
-export const theme = extendTheme({
+export const theme = extendTheme(baseTheme, {
   styles: {
     global: {
       '*': {
@@ -29,13 +31,13 @@ export const theme = extendTheme({
       },
     },
   },
-  colors: colours,
+  colors,
+  shadows,
+  space: spacing,
+  fontSizes: typography.fontSize,
+  fontWeights: typography.fontWeights,
+  lineHeights: typography.lineHeights,
+  letterSpacings: typography.letterSpacing,
   textStyles,
   breakpoints: BREAKPOINT_VALS,
-  shadows,
-  fonts: {
-    heading: `'Inter var', sans-serif`,
-    body: `'Inter var', sans-serif`,
-  },
-  components,
 })
