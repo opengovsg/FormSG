@@ -3,8 +3,8 @@ import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
 import { BrowserRouter } from 'react-router-dom'
-import { ChakraProvider } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
+import { ThemeProvider } from '@opengovsg/design-system-react'
 
 import { theme } from '~theme/index'
 import { AuthProvider } from '~contexts/AuthContext'
@@ -70,13 +70,13 @@ export const App = (): JSX.Element => {
           <ReactQueryDevtools initialIsOpen={false} />
           <AppHelmet />
           <BrowserRouter>
-            <ChakraProvider theme={theme} resetCSS>
+            <ThemeProvider theme={theme}>
               <AuthProvider>
                 <GrowthBookProvider>
                   <AppRouter />
                 </GrowthBookProvider>
               </AuthProvider>
-            </ChakraProvider>
+            </ThemeProvider>
           </BrowserRouter>
         </QueryClientProvider>
       </HelmetProvider>
