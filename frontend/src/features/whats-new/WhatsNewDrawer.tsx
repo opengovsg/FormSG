@@ -50,7 +50,7 @@ export const WhatsNewDrawer = ({ isOpen, onClose }: WhatsNewDrawerProps) => {
           colorScheme="secondary"
           top="1.25rem"
         />
-        <DrawerHeader textStyle="h2" color="secondary.700">
+        <DrawerHeader textStyle="h4" color="secondary.700">
           What's new
         </DrawerHeader>
         <DrawerBody

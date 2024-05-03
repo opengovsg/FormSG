@@ -127,7 +127,7 @@ export const IndividualResponseNavbar = (): JSX.Element => {
       </Flex>
       <Flex gridArea="respondent" justify="center" align="center">
         <Skeleton isLoaded={!isLoading}>
-          <Text textStyle="h2" as="h2">
+          <Text textStyle="h4" as="h2">
             Response
             {currentResponseNumber ? ` #${currentResponseNumber}` : ''}
           </Text>

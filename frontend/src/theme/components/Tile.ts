@@ -15,7 +15,7 @@ export const Tile: ComponentMultiStyleConfig<typeof parts> = {
       padding: '1.5rem',
       height: 'auto',
       _hover: {
-        bg: 'primary.100',
+        bg: 'brand.primary.50',
         _disabled: {
           bg: 'initial',
         },

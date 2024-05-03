@@ -140,7 +140,7 @@ export const DownloadReceiptBlock = ({
         px={{ base: '1rem', md: '2rem' }}
       >
         <Stack tabIndex={-1} spacing="0.75rem">
-          <Text textStyle="h2" color="secondary.500">
+          <Text textStyle="h4" color="secondary.500">
             {endPage.paymentTitle ||
               'Thank you, your payment has been made successfully.'}
           </Text>
@@ -159,20 +159,20 @@ export const DownloadReceiptBlock = ({
       >
         <Stack>
           <Box mb="0.5rem" px={{ base: '0.5rem', md: '1.5rem' }}>
-            <Text textStyle="h2" mb="1rem" color="secondary.500">
+            <Text textStyle="h4" mb="1rem" color="secondary.500">
               Details
             </Text>
             <PaymentDetailsRow title="Payment date" input={paymentTimestamp} />
             <PaymentDetailsRow title="Response ID" input={submissionId} />
           </Box>
           <Box
-            bgColor="primary.100"
+            bgColor="brand.primary.50"
             flexDir="row"
             justifyContent="space-between"
             py="1rem"
             px="1.5rem"
           >
-            <Text textStyle="h2" mb="1rem" color="secondary.500">
+            <Text textStyle="h4" mb="1rem" color="secondary.500">
               Summary
             </Text>
             <Stack spacing="0.75rem" mb="1rem">

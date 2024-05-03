@@ -7,14 +7,13 @@ import {
   Icon,
   useBreakpointValue,
 } from '@chakra-ui/react'
+import { IconButton, Link } from '@opengovsg/design-system-react'
 
 import BrandHortSvg from '~assets/svgs/brand/brand-hort-colour.svg?react'
 import BrandHortDarkSvg from '~assets/svgs/brand/brand-hort-dark.svg?react'
 import BrandMarkSvg from '~assets/svgs/brand/brand-mark-colour.svg?react'
 import BrandMarkDarkSvg from '~assets/svgs/brand/brand-mark-dark.svg?react'
 import { useIsMobile } from '~hooks/useIsMobile'
-import IconButton from '~components/IconButton'
-import Link from '~components/Link'
 
 type PublicHeaderLinkProps = {
   label: string
@@ -122,7 +121,7 @@ PublicHeader.Container = ({
       px={{ base: '1.5rem', md: '5.5rem', lg: '9.25rem' }}
       py={{ base: '0.625rem', md: '4.5rem' }}
       {...props}
-      bg={bg ? bg : 'primary.100'}
+      bg={bg ? bg : 'brand.primary.50'}
     >
       {children}
     </Flex>

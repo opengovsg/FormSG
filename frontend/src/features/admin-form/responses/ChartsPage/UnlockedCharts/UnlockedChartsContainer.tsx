@@ -178,7 +178,7 @@ export const UnlockedChartsContainer = () => {
             <Text
               as="h2"
               color="primary.500"
-              textStyle="h2"
+              textStyle="h4"
               whiteSpace="pre-wrap"
             >
               No charts generated for this date range

@@ -54,7 +54,7 @@ export const WorkspaceFormRow = ({
         }}
         gridGap={{ base: '0.5rem', md: '1.5rem' }}
         _hover={{
-          bg: 'primary.100',
+          bg: 'brand.primary.50',
         }}
         _active={{
           bg: 'primary.200',

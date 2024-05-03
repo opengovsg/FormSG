@@ -25,7 +25,7 @@ type MdComponentStyles = {
   list?: SystemStyleObject
 }
 
-type UseMdComponentsProps = {
+export type UseMdComponentsProps = {
   styles?: MdComponentStyles
   overrides?: Components
 }

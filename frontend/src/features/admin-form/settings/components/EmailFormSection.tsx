@@ -74,7 +74,7 @@ const MRFAdvertisingInfobox = () => {
   const mdComponents = useMdComponents()
 
   return (
-    <Flex bg="primary.100" p="1rem">
+    <Flex bg="brand.primary.50" p="1rem">
       <Icon as={BiBulb} color="primary.500" fontSize="1.5rem" mr="0.5rem" />
       <MarkdownText
         components={mdComponents}

@@ -43,7 +43,7 @@ export const WhatsNewContent = ({
     if (image.animationData) {
       return (
         <LottieAnimation
-          bg="primary.100"
+          bg="brand.primary.50"
           title={image.alt}
           aria-label={image.alt}
           animationData={image.animationData}

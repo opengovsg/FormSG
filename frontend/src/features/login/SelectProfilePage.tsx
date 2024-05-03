@@ -161,7 +161,12 @@ export const SelectProfilePage = (): JSX.Element => {
   }
 
   return (
-    <Flex flex={1} justify="center" align="center" background="primary.100">
+    <Flex
+      flex={1}
+      justify="center"
+      align="center"
+      background="brand.primary.50"
+    >
       <Stack
         width={{ base: '24.5rem', lg: '42.5rem' }}
         padding="2rem"
@@ -172,7 +177,7 @@ export const SelectProfilePage = (): JSX.Element => {
         background="white"
         divider={<Divider />}
       >
-        <Text textStyle="h2" marginBottom="0.5rem" color="secondary.700">
+        <Text textStyle="h4" marginBottom="0.5rem" color="secondary.700">
           Choose an account to continue to FormSG
         </Text>
 

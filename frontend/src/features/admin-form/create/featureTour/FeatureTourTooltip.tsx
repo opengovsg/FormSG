@@ -38,7 +38,7 @@ export const FeatureTourTooltip = ({
       maxW="100%"
       w="18rem"
       color="secondary.500"
-      bg="primary.100"
+      bg="brand.primary.50"
       borderRadius="4px"
       {...tooltipProps}
       position="relative"

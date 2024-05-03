@@ -111,7 +111,7 @@ export const Playground: StoryFn<SearchbarProps> = ({
       color="secondary.500"
       transitionProperty="position"
     >
-      <Text textStyle="h2">Form examples</Text>
+      <Text textStyle="h4">Form examples</Text>
       <Flex justify="space-between">
         <Text textStyle="body-1">Explore forms and use as a template</Text>
         <Flex align="center" maxW="25rem" justify="flex-end">

@@ -13,7 +13,7 @@ export const StorybookTheme = {
     brandUrl: 'https://github.com/opengovsg/formsg',
     brandImage,
     // UI
-    appBg: '#f6f7fc', // primary.100,
+    appBg: '#F8F9FD', // brand.primary.50,
     appBorderColor: '#DADCE3',
     appBorderRadius: 0,
     // Typography

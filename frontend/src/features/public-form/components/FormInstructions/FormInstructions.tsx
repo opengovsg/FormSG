@@ -27,7 +27,7 @@ export const FormInstructions = ({
 
   return (
     <>
-      <Box as="h2" textStyle="h2" color={sectionColor}>
+      <Box as="h2" textStyle="h4" color={sectionColor}>
         Instructions
       </Box>
       <Box mt="1rem">

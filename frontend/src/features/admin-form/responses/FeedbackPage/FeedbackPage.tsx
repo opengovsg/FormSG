@@ -243,7 +243,7 @@ const getReviewInformationComponent = (
         <Text textStyle="caption-2" color="secondary.400">
           Average Score
         </Text>
-        <Text textStyle="display-2">
+        <Text textStyle="responsive-heading-heavy">
           {average ? Number(average).toPrecision(2) : '-.--'}
         </Text>
       </Flex>

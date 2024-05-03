@@ -35,8 +35,7 @@ export const WorkspaceMenuHeader = ({
             onClick={() => onMenuClick && onMenuClick()}
             aria-label="open folder drawer"
             variant="clear"
-            colorScheme="primary"
-            color="secondary.500"
+            colorScheme="secondary"
           />
         )}
         <Text textStyle="h4" color="secondary.700">

@@ -15,7 +15,7 @@ export const GenericMessageBlock = ({
   return (
     <Box>
       <Stack tabIndex={-1} spacing="1rem">
-        <Text textStyle="h2" textColor="secondary.500">
+        <Text textStyle="h4" textColor="secondary.500">
           {title}
         </Text>
         <Text textStyle="subhead-1" textColor="secondary.500">

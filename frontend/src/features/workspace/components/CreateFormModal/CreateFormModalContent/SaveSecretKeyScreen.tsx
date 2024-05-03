@@ -138,7 +138,7 @@ export const SaveSecretKeyScreen = ({
                 aria-hidden
                 color="danger.500"
               />
-              <Text as="header" textStyle="h2" color="secondary.700">
+              <Text as="header" textStyle="h4" color="secondary.700">
                 Download Secret Key to proceed
               </Text>
             </Stack>

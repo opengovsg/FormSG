@@ -89,11 +89,11 @@ export const WorkspaceHeader = ({
       >
         <Skeleton isLoaded={!isLoading} alignSelf="center">
           <Flex maxW={{ base: '9.75rem', md: '30.5rem' }}>
-            <Text textStyle="h2" color="secondary.500" noOfLines={1}>
+            <Text textStyle="h4" color="secondary.500" noOfLines={1}>
               {headerText}
             </Text>
             {!hasActiveSearchOrFilter && (
-              <Text textStyle="h2" color="secondary.500">
+              <Text textStyle="h4" color="secondary.500">
                 &nbsp;({totalFormsCount})
               </Text>
             )}

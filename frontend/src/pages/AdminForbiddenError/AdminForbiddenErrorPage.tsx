@@ -33,8 +33,8 @@ export const AdminForbiddenErrorPage = ({
           flexDir="column"
           flex={1}
           bgGradient={{
-            base: 'linear(to-b, primary.500, primary.500 40%, primary.100 0)',
-            md: 'linear(to-b, primary.500 50%, primary.100 50%)',
+            base: 'linear(to-b, primary.500, primary.500 40%, brand.primary.50 0)',
+            md: 'linear(to-b, primary.500 50%, brand.primary.50 50%)',
           }}
           py="3rem"
           px="1.5rem"
@@ -56,7 +56,7 @@ export const AdminForbiddenErrorPage = ({
               align="center"
               textAlign="center"
             >
-              <Text as="h2" textStyle="h2">
+              <Text as="h2" textStyle="h4">
                 You do not have access to this page.
               </Text>
               <Text textStyle="body-1">
@@ -87,7 +87,7 @@ export const AdminForbiddenErrorPage = ({
             </Stack>
           </Stack>
         </Flex>
-        <Box py={{ lg: '3rem' }} px={{ lg: '9.25rem' }} bg="primary.100">
+        <Box py={{ lg: '3rem' }} px={{ lg: '9.25rem' }} bg="brand.primary.50">
           <AppFooter variant="compact" />
         </Box>
       </Flex>

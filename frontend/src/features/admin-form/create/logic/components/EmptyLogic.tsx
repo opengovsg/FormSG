@@ -24,7 +24,7 @@ export const EmptyLogic = (): JSX.Element => {
       color="secondary.500"
       pt={{ base: '0.5rem', md: '2.75rem' }}
     >
-      <Text textStyle="h2" as="h2">
+      <Text textStyle="h4" as="h2">
         Start creating logic for your form
       </Text>
       <Text textStyle="body-1" mt="1rem">

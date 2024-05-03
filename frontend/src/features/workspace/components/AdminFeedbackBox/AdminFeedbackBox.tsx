@@ -161,7 +161,7 @@ const AdminFeedbackCommentContent = ({
   return (
     <Stack w={isMobile ? undefined : '28.5rem'}>
       <Flex justifyContent="space-between" alignItems="center" mb="1rem">
-        <Text textStyle="h2">Great!</Text>
+        <Text textStyle="h4">Great!</Text>
         <IconButton
           aria-label="close feedback box"
           icon={<BxX />}

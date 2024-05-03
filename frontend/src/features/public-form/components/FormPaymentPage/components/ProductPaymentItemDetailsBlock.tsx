@@ -107,7 +107,7 @@ export const ProductPaymentItemDetailsBlock = ({
         <Text textAlign="right" mr="0.5rem" justifySelf="end">
           Total:
         </Text>
-        <Text textStyle="h2">
+        <Text textStyle="h4">
           S{formatCurrency(Number(centsToDollars(totalPrice)))}
         </Text>
       </Flex>

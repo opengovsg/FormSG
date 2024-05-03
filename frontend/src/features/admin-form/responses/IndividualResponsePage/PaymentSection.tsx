@@ -91,7 +91,7 @@ const PayoutDataHeader = ({
 }: PaymentDataHeaderProps) => (
   <Flex gap="1rem" align="center">
     <Flex>
-      <Text textStyle="h2" as="h2" color="primary.500">
+      <Text textStyle="h4" as="h2" color="primary.500">
         {name}
       </Text>
 
@@ -124,7 +124,7 @@ const PaymentDataHeader = ({
   rightIcon,
 }: PaymentDataHeaderProps) => (
   <Flex gap="1rem" align="center">
-    <Text textStyle="h2" as="h2" color="primary.500">
+    <Text textStyle="h4" as="h2" color="primary.500">
       {name}
     </Text>
     <Badge

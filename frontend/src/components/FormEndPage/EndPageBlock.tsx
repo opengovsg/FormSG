@@ -61,7 +61,7 @@ export const EndPageBlock = ({
         <VisuallyHidden aria-live="assertive">
           {submittedAriaText}
         </VisuallyHidden>
-        <Text as="h2" textStyle="h2" textColor="secondary.500">
+        <Text as="h2" textStyle="h4" textColor="secondary.500">
           {endPage.title}
         </Text>
         {endPage.paragraph ? (

@@ -37,7 +37,7 @@ export const EmptyWorkspace = ({
     >
       <Text
         as="h2"
-        textStyle="h2"
+        textStyle="h4"
         color="primary.500"
         mb="1rem"
         textAlign="center"

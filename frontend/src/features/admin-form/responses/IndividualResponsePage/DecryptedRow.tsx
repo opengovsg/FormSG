@@ -30,7 +30,7 @@ const DecryptedQuestionLabel = ({ row }: DecryptedRowBaseProps) => {
 const DecryptedHeaderRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
   return (
     <Text
-      textStyle="h2"
+      textStyle="h4"
       as="h2"
       color="primary.500"
       mb="0.5rem"

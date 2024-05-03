@@ -29,7 +29,7 @@ export const AttachmentFileInfo = ({
   const showDownloadButton = enableDownload && file
 
   return (
-    <Flex justify="space-between" bg="primary.100" py="0.875rem" px="1rem">
+    <Flex justify="space-between" bg="brand.primary.50" py="0.875rem" px="1rem">
       <VisuallyHidden>
         File attached: {file.name} with file size of {readableFileSize}
       </VisuallyHidden>

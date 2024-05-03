@@ -81,7 +81,7 @@ export const PreviewFormBanner = ({
   return (
     <>
       <Flex
-        bg="primary.100"
+        bg="brand.primary.50"
         py="1rem"
         px={{ base: '1.5rem', md: '2rem' }}
         display="flex"

@@ -98,7 +98,7 @@ export const PaymentPreview = ({
       : paymentDetails
   return (
     <>
-      <Box as="h2" mb="2.25rem" textStyle="h2" color={sectionColor}>
+      <Box as="h2" mb="2.25rem" textStyle="h4" color={sectionColor}>
         {title}
       </Box>
       <Box mb="2rem">

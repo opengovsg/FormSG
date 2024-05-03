@@ -36,7 +36,7 @@ export const CollaboratorRow = ({
       align={{ base: 'flex-start', md: 'center' }}
       spacing={{ base: '0.75rem', md: '2rem' }}
       _odd={{ bg: { base: 'white', md: undefined } }}
-      _even={{ bg: { base: 'primary.100', md: undefined } }}
+      _even={{ bg: { base: 'brand.primary.50', md: undefined } }}
     >
       <Skeleton
         isLoaded={!isLoading}

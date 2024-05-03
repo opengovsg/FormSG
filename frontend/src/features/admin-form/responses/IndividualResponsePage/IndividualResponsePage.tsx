@@ -134,7 +134,7 @@ export const IndividualResponsePage = (): JSX.Element => {
         px={{ md: '1.75rem', lg: '2rem' }}
         spacing={{ base: '1.5rem', md: '2.5rem' }}
       >
-        <Stack bg="primary.100" p="1.5rem" textStyle="monospace">
+        <Stack bg="brand.primary.50" p="1.5rem" textStyle="monospace">
           <StackRow
             label="Response ID"
             value={submissionId}

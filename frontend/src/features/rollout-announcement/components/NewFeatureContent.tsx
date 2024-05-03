@@ -13,7 +13,7 @@ export const NewFeatureContent = (props: {
 
   return (
     <>
-      <Box borderRadius="0.25rem" bg="primary.100" pt="4.5rem">
+      <Box borderRadius="0.25rem" bg="brand.primary.50" pt="4.5rem">
         {image?.animationData ? (
           <LottieAnimation
             height={{ base: '30vh', md: 'initial' }}

@@ -115,7 +115,7 @@ export const InactiveLogicBlock = ({
           _disabled: {
             bg: 'white',
           },
-          bg: 'primary.100',
+          bg: 'brand.primary.50',
         }}
         _focus={{
           boxShadow: `0 0 0 4px var(--chakra-colors-primary-300)`,

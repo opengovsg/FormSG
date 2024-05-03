@@ -245,7 +245,7 @@ export const ResponsesTable = () => {
               }
               cursor="pointer"
               _hover={{
-                bg: 'primary.100',
+                bg: 'brand.primary.50',
               }}
               _active={{
                 bg: 'primary.200',

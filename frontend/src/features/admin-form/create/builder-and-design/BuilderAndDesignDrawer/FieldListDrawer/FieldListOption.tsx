@@ -230,9 +230,9 @@ export const FieldListOption = forwardRef<FieldOptionProps, 'button'>(
           _hover: { bg: 'white' },
           _focus: { bg: 'white' },
         }}
-        _hover={{ bg: 'primary.100' }}
-        _focus={{ bg: 'primary.100' }}
-        _active={{ bg: 'primary.100' }}
+        _hover={{ bg: 'brand.primary.50' }}
+        _focus={{ bg: 'brand.primary.50' }}
+        _active={{ bg: 'brand.primary.50' }}
         bg="white"
         {...props}
         ref={ref}

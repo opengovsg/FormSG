@@ -25,7 +25,7 @@ export const SecretKeyVerification = ({
         {heroSvg}
         {!hideResponseCount ? (
           <Skeleton isLoaded={!isLoading} w="fit-content">
-            <Text as="h2" textStyle="h2" whiteSpace="pre-wrap">
+            <Text as="h2" textStyle="h4" whiteSpace="pre-wrap">
               <Text color="primary.500" as="span">
                 {totalResponsesCount?.toLocaleString() ?? '-'}
               </Text>

@@ -22,7 +22,7 @@ const WorkspaceFormRowsFilterNone = (): JSX.Element => {
   return (
     <Box mt="2rem">
       <Stack w="100%" spacing="1rem">
-        <Text textStyle="h2" align="center" color="primary.500">
+        <Text textStyle="h4" align="center" color="primary.500">
           No forms found
         </Text>
         <Flex justify="center" align="center">

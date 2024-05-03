@@ -8,7 +8,7 @@ import { EmptyResponsesSvgr } from './EmptyResponsesSvgr'
 export const EmptyResponses = (): JSX.Element => {
   return (
     <Flex justify="center" flexDir="column" align="center" px="2rem" py="4rem">
-      <Text as="h2" textStyle="h2" color="primary.500" mb="1rem">
+      <Text as="h2" textStyle="h4" color="primary.500" mb="1rem">
         You don't have any responses yet.
       </Text>
       <Text textStyle="body-1" color="secondary.500">
