@@ -7,11 +7,10 @@ import {
   ModalHeader,
   ModalOverlay,
 } from '@chakra-ui/react'
+import { Button, ModalCloseButton } from '@opengovsg/design-system-react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
-import ButtonGroup from '~components/ButtonGroup'
-import { ModalCloseButton } from '~components/Modal'
+import { ButtonGroup } from '~components/ButtonGroup'
 
 type FormPaymentModalProps = {
   onSubmit: MouseEventHandler<HTMLButtonElement> | undefined

@@ -17,13 +17,12 @@ import {
   Tr,
   useDisclosure,
 } from '@chakra-ui/react'
+import { Button, ButtonProps, IconButton } from '@opengovsg/design-system-react'
 
 import { Product } from '~shared/types'
 import { centsToDollars } from '~shared/utils/payments'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button, { ButtonProps } from '~components/Button'
-import IconButton from '~components/IconButton'
 
 export const ProductItem = ({
   product,
@@ -43,7 +42,11 @@ export const ProductItem = ({
         <Flex justifyContent="center" alignItems="center">
           <Box flexGrow={1}>
             <Flex justifyContent="space-between">
-              <Text textStyle="subhead-1" pb="0.25rem" color="secondary.500">
+              <Text
+                textStyle="subhead-1"
+                pb="0.25rem"
+                color="brand.secondary.500"
+              >
                 {product.name}
               </Text>
               {isMobile && (
@@ -100,18 +103,17 @@ const DesktopProductItemButtonGroup = ({
   onDeleteClick: () => void
 }) => {
   return (
-    <ButtonGroup variant="clear" colorScheme="secondary" spacing={0}>
+    <ButtonGroup variant="clear" colorScheme="sub" spacing={0}>
       <IconButton
         isDisabled={isDisabled}
         icon={<BiEditAlt type="solid" />}
-        color="primary.500"
         aria-label={'Edit'}
         onClick={onEditClick}
       />
       <IconButton
         isDisabled={isDisabled}
         icon={<BiTrash />}
-        color="danger.500"
+        colorScheme="critical"
         aria-label={'Delete'}
         onClick={onDeleteClick}
       />
@@ -159,7 +161,7 @@ const MobileProductItemMenu = ({
               spacing={0}
               w="100%"
               variant="clear"
-              colorScheme="secondary"
+              colorScheme="sub"
             >
               <Button
                 onClick={onEditClick}
@@ -171,7 +173,7 @@ const MobileProductItemMenu = ({
               <Divider />
               <Button
                 onClick={onDeleteClick}
-                color="danger.500"
+                colorScheme="critical"
                 leftIcon={<BiTrash fontSize="1.25rem" />}
                 {...buttonProps}
               >
@@ -200,7 +202,7 @@ const ProductItemTableContent = ({
         pr="1rem"
         borderBottom="0"
         textStyle={{ base: 'caption-1', md: 'body-2' }}
-        color="secondary.400"
+        color="brand.secondary.400"
         w="1%"
       >
         {label}
@@ -209,7 +211,7 @@ const ProductItemTableContent = ({
         p="0"
         borderBottom="0"
         textStyle={{ base: 'caption-1', md: 'body-2' }}
-        color="secondary.500"
+        color="brand.secondary.500"
       >
         {value}
       </Td>

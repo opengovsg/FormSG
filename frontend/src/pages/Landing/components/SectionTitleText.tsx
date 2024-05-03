@@ -5,7 +5,7 @@ export const SectionTitleText = (props: TextProps) => {
     <Text
       as="h2"
       textStyle="responsive-heading-heavy"
-      color="secondary.700"
+      color="brand.secondary.700"
       {...props}
     />
   )

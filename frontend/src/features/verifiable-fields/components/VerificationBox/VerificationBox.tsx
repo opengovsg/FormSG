@@ -7,14 +7,16 @@ import {
   InputGroup,
   InputLeftAddon,
 } from '@chakra-ui/react'
+import {
+  Button,
+  FormErrorMessage,
+  FormLabel,
+  Input,
+} from '@opengovsg/design-system-react'
 
 import { ResendOtpButton } from '~/templates/ResendOtpButton/ResendOtpButton'
 
 import { HttpError } from '~services/ApiService'
-import Button from '~components/Button'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
 
 import { VerifiableFieldType } from '../../types'
 

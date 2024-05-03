@@ -18,6 +18,7 @@ import {
   useDisclosure,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
+import { Button, ModalCloseButton } from '@opengovsg/design-system-react'
 import { StatusCodes } from 'http-status-codes'
 
 import { SUPPORT_FORM_LINK } from '~shared/constants'
@@ -29,8 +30,6 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { useToast } from '~hooks/useToast'
 import { ApiService } from '~services/ApiService'
-import Button from '~components/Button'
-import { ModalCloseButton } from '~components/Modal'
 
 import { useUser } from '~features/user/queries'
 
@@ -177,7 +176,7 @@ export const SelectProfilePage = (): JSX.Element => {
         background="white"
         divider={<Divider />}
       >
-        <Text textStyle="h4" marginBottom="0.5rem" color="secondary.700">
+        <Text textStyle="h4" marginBottom="0.5rem" color="brand.secondary.700">
           Choose an account to continue to FormSG
         </Text>
 
@@ -219,19 +218,19 @@ const ProfileItem = ({
       <Box flexGrow={1}>
         <Text
           textStyle="subhead-2"
-          color="secondary.700"
+          color="brand.secondary.700"
           marginBottom="0.25rem"
         >
           {profile.work_email}
         </Text>
         <Text
           textStyle="caption-2"
-          color="secondary.400"
+          color="brand.secondary.400"
           marginBottom="0.25rem"
         >
           {[profile.agency_name, profile.department_name].join(', ')}
         </Text>
-        <Text textStyle="caption-2" color="secondary.400">
+        <Text textStyle="caption-2" color="brand.secondary.400">
           {profile.employment_title}
         </Text>
       </Box>

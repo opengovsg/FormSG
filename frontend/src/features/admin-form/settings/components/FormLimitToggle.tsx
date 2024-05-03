@@ -6,14 +6,15 @@ import {
   useState,
 } from 'react'
 import { FormControl, Skeleton } from '@chakra-ui/react'
-import { Infobox } from '@opengovsg/design-system-react'
+import {
+  FormErrorMessage,
+  FormLabel,
+  Infobox,
+  NumberInput,
+  Toggle,
+} from '@opengovsg/design-system-react'
 
 import { FormResponseMode } from '~shared/types'
-
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import NumberInput from '~components/NumberInput'
-import Toggle from '~components/Toggle'
 
 import { useFormResponsesCount } from '~features/admin-form/responses/queries'
 

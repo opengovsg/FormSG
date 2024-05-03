@@ -12,6 +12,7 @@ import {
   Icon,
 } from '@chakra-ui/react'
 import { Draggable } from '@hello-pangea/dnd'
+import { IconButton, TouchableTooltip } from '@opengovsg/design-system-react'
 import { isEqual, times } from 'lodash'
 
 import { FormColorTheme, FormResponseMode } from '~shared/types'
@@ -19,8 +20,6 @@ import { BasicField, FormFieldDto } from '~shared/types/field'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useToast } from '~hooks/useToast'
-import IconButton from '~components/IconButton'
-import Tooltip from '~components/Tooltip'
 import {
   AttachmentField,
   CheckboxField,
@@ -214,7 +213,7 @@ const FieldRowContainer = ({
           {...provided.draggableProps}
           ref={provided.innerRef}
         >
-          <Tooltip
+          <TouchableTooltip
             hidden={!isHiddenByLogic}
             placement="top"
             label="This field may be hidden by your form logic"
@@ -228,7 +227,7 @@ const FieldRowContainer = ({
               cursor={isActive ? 'initial' : 'pointer'}
               bg="white"
               transition="background 0.2s ease"
-              _hover={{ bg: isDraggingOver ? 'white' : 'secondary.100' }}
+              _hover={{ bg: isDraggingOver ? 'white' : 'brand.secondary.100' }}
               borderRadius="4px"
               outline="none"
               {...(isActive ? { 'data-active': true } : {})}
@@ -238,7 +237,7 @@ const FieldRowContainer = ({
                   : '0 0 0 2px var(--chakra-colors-primary-500) !important',
               }}
               _active={{
-                bg: 'secondary.100',
+                bg: 'brand.secondary.100',
                 boxShadow: snapshot.isDragging
                   ? 'md'
                   : '0 0 0 2px var(--chakra-colors-primary-500)',
@@ -267,13 +266,15 @@ const FieldRowContainer = ({
                   }}
                   transition="color 0.2s ease"
                   _hover={{
-                    color: 'secondary.300',
+                    color: 'brand.secondary.300',
                     _disabled: {
-                      color: 'secondary.200',
+                      color: 'brand.secondary.200',
                     },
                   }}
                   color={
-                    snapshot.isDragging ? 'secondary.300' : 'secondary.200'
+                    snapshot.isDragging
+                      ? 'brand.secondary.300'
+                      : 'brand.secondary.200'
                   }
                 >
                   {fieldBuilderState === FieldBuilderState.EditingField &&
@@ -311,7 +312,7 @@ const FieldRowContainer = ({
                 )}
               </Collapse>
             </Flex>
-          </Tooltip>
+          </TouchableTooltip>
         </Box>
       )}
     </Draggable>
@@ -401,11 +402,11 @@ const FieldButtonGroup = ({
       borderTop="1px solid var(--chakra-colors-neutral-300)"
       justify="flex-end"
     >
-      <ButtonGroup variant="clear" colorScheme="secondary" spacing={0}>
+      <ButtonGroup variant="clear" colorScheme="sub" spacing={0}>
         {isMobile ? (
           <IconButton
             variant="clear"
-            colorScheme="secondary"
+            colorScheme="sub"
             aria-label="Edit field"
             icon={<BiCog fontSize="1.25rem" />}
             onClick={handleEditFieldClick}
@@ -414,7 +415,7 @@ const FieldButtonGroup = ({
         {
           // Fields which are not yet created cannot be duplicated
           fieldBuilderState !== FieldBuilderState.CreatingField && (
-            <Tooltip label="Duplicate field">
+            <TouchableTooltip label="Duplicate field">
               <IconButton
                 aria-label="Duplicate field"
                 isDisabled={isAnyMutationLoading}
@@ -422,19 +423,19 @@ const FieldButtonGroup = ({
                 isLoading={duplicateFieldMutation.isLoading}
                 icon={<BiDuplicate fontSize="1.25rem" />}
               />
-            </Tooltip>
+            </TouchableTooltip>
           )
         }
-        <Tooltip label="Delete field">
+        <TouchableTooltip label="Delete field">
           <IconButton
-            colorScheme="danger"
+            colorScheme="critical"
             aria-label="Delete field"
             icon={<BiTrash fontSize="1.25rem" />}
             onClick={handleDeleteClick}
             isLoading={deleteFieldMutation.isLoading}
             isDisabled={isAnyMutationLoading}
           />
-        </Tooltip>
+        </TouchableTooltip>
       </ButtonGroup>
     </Flex>
   )

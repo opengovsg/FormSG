@@ -1,12 +1,9 @@
 import { memo, useCallback } from 'react'
 import { BiDownload } from 'react-icons/bi'
 import { Stack, Table, Tbody, Td, Text, Tr } from '@chakra-ui/react'
+import { Button, FormLabel, Spinner } from '@opengovsg/design-system-react'
 
 import { BasicField } from '~shared/types'
-
-import Button from '~components/Button'
-import FormLabel from '~components/FormControl/FormLabel'
-import Spinner from '~components/Spinner'
 
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
 
@@ -32,7 +29,7 @@ const DecryptedHeaderRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
     <Text
       textStyle="h4"
       as="h2"
-      color="primary.500"
+      color="brand.primary.500"
       mb="0.5rem"
       _notFirst={{ mt: '2.5rem' }}
     >

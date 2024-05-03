@@ -6,7 +6,7 @@ export const Form: ComponentMultiStyleConfig<typeof parts> = {
   parts: parts.keys,
   baseStyle: {
     helperText: {
-      color: 'secondary.400',
+      color: 'brand.secondary.400',
       mt: 2,
       textStyle: 'body-2',
       lineHeight: '1.25rem',

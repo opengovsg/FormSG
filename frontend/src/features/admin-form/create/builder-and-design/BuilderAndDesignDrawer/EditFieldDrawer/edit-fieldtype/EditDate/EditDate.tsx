@@ -9,6 +9,16 @@ import {
   Wrap,
   WrapItem,
 } from '@chakra-ui/react'
+import {
+  Checkbox,
+  DatePicker,
+  FormErrorMessage,
+  FormLabel,
+  Input,
+  SingleSelect,
+  Textarea,
+  Toggle,
+} from '@opengovsg/design-system-react'
 import { isBefore, isEqual, isValid } from 'date-fns'
 import { extend, get, isEmpty, pick } from 'lodash'
 
@@ -27,14 +37,6 @@ import {
   normalizeDateToUtc,
 } from '~utils/date'
 import { createBaseValidationRules } from '~utils/fieldValidation'
-import Checkbox from '~components/Checkbox'
-import { DatePicker } from '~components/DatePicker'
-import { SingleSelect } from '~components/Dropdown'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
-import Textarea from '~components/Textarea'
-import Toggle from '~components/Toggle'
 
 import { useCreatePageSidebarLayout } from '~features/admin-form/create/common/CreatePageSideBarLayoutContext'
 

@@ -1,6 +1,5 @@
 import { Text } from '@chakra-ui/layout'
-
-import FormLabel from '~components/FormControl/FormLabel'
+import { FormLabel } from '@opengovsg/design-system-react'
 
 interface ColumnHeaderProps {
   title: string

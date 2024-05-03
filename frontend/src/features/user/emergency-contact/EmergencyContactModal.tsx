@@ -7,8 +7,7 @@ import {
   Text,
   useBreakpointValue,
 } from '@chakra-ui/react'
-
-import { ModalCloseButton } from '~components/Modal'
+import { ModalCloseButton } from '@opengovsg/design-system-react'
 
 import { ContactNumberInput } from './components/ContactNumberInput'
 
@@ -32,9 +31,9 @@ export const EmergencyContactModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader color="secondary.700">Emergency contact</ModalHeader>
+        <ModalHeader color="brand.secondary.700">Emergency contact</ModalHeader>
         <ModalBody whiteSpace="pre-wrap" pb="3.25rem">
-          <Text textStyle="body-2" color="secondary.500">
+          <Text textStyle="body-2" color="brand.secondary.500">
             Update your mobile number and verify it so we can contact you in the
             unlikely case of an urgent form issue. This number can be changed at
             any time in your user settings.

@@ -1,12 +1,18 @@
 import { BiCheck, BiInfoCircle } from 'react-icons/bi'
 import { IconType } from 'react-icons/lib'
-import { Box, Divider, Flex, Icon, Link, Text } from '@chakra-ui/react'
+import {
+  Box,
+  Divider,
+  Flex,
+  Icon,
+  Link,
+  Text,
+  ThemingProps,
+} from '@chakra-ui/react'
+import { Badge, TouchableTooltip } from '@opengovsg/design-system-react'
 import { keyBy } from 'lodash'
 
 import { PaymentStatus, SubmissionPaymentDto } from '~shared/types'
-
-import Badge from '~components/Badge'
-import Tooltip from '~components/Tooltip'
 
 import { getPaymentDataView } from '../common/utils/getPaymentDataView'
 
@@ -30,9 +36,9 @@ export const PaymentSection = ({
     payment.status === PaymentStatus.Succeeded
       ? { label: 'Success', colorScheme: 'success', rightIcon: BiCheck }
       : payment.status === PaymentStatus.PartiallyRefunded
-        ? { label: 'Partially refunded', colorScheme: 'secondary' }
+        ? { label: 'Partially refunded', colorScheme: 'sub' }
         : payment.status === PaymentStatus.FullyRefunded
-          ? { label: 'Fully refunded', colorScheme: 'secondary' }
+          ? { label: 'Fully refunded', colorScheme: 'sub' }
           : payment.status === PaymentStatus.Disputed
             ? { label: 'Disputed', colorScheme: 'warning' }
             : undefined // The remaining options should never appear.
@@ -40,7 +46,7 @@ export const PaymentSection = ({
   const payoutTagProps =
     payment.payoutId || payment.payoutDate
       ? { label: 'Success', colorScheme: 'success', rightIcon: BiCheck }
-      : { label: 'Pending', colorScheme: 'secondary' }
+      : { label: 'Pending', colorScheme: 'sub' }
 
   // Error: the payment is invalid and should not reach this state
   if (!paymentTagProps) return null
@@ -79,7 +85,7 @@ export const PaymentSection = ({
 type PaymentDataHeaderProps = {
   name: string
   label: string
-  colorScheme: string
+  colorScheme: ThemingProps<'Badge'>['colorScheme']
   rightIcon?: IconType
 }
 
@@ -91,11 +97,11 @@ const PayoutDataHeader = ({
 }: PaymentDataHeaderProps) => (
   <Flex gap="1rem" align="center">
     <Flex>
-      <Text textStyle="h4" as="h2" color="primary.500">
+      <Text textStyle="h4" as="h2" color="brand.primary.500">
         {name}
       </Text>
 
-      <Tooltip
+      <TouchableTooltip
         placement="top"
         label="This is when money collected gets deposited into your bank account.
         Depending on payment method, payouts happen 1 - 3 working days after a respondent makes payment."
@@ -103,7 +109,7 @@ const PayoutDataHeader = ({
         <Flex justify="center" align="center">
           <Icon as={BiInfoCircle} fontSize="1.25rem" ml="0.5rem" />
         </Flex>
-      </Tooltip>
+      </TouchableTooltip>
     </Flex>
     <Badge
       colorScheme={colorScheme}
@@ -124,7 +130,7 @@ const PaymentDataHeader = ({
   rightIcon,
 }: PaymentDataHeaderProps) => (
   <Flex gap="1rem" align="center">
-    <Text textStyle="h4" as="h2" color="primary.500">
+    <Text textStyle="h4" as="h2" color="brand.primary.500">
       {name}
     </Text>
     <Badge

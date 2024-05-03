@@ -13,6 +13,14 @@ import {
   Text,
   useBreakpointValue,
 } from '@chakra-ui/react'
+import {
+  Button,
+  FormErrorMessage,
+  FormLabel,
+  Input,
+  ModalCloseButton,
+  Textarea,
+} from '@opengovsg/design-system-react'
 import isEmail from 'validator/lib/isEmail'
 
 import { BasicField, SubmitFormIssueBodyDto } from '~shared/types'
@@ -20,12 +28,6 @@ import { BasicField, SubmitFormIssueBodyDto } from '~shared/types'
 import { INVALID_EMAIL_ERROR, REQUIRED_ERROR } from '~constants/validation'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useToast } from '~hooks/useToast'
-import Button from '~components/Button'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
-import { ModalCloseButton } from '~components/Modal'
-import Textarea from '~components/Textarea'
 
 import { useSubmitFormIssueMutations } from '~features/public-form/mutations'
 

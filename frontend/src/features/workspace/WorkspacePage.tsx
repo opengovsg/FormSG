@@ -12,6 +12,7 @@ import {
   Stack,
   useDisclosure,
 } from '@chakra-ui/react'
+import { Banner } from '@opengovsg/design-system-react'
 
 import { Workspace } from '~shared/types/workspace'
 
@@ -19,7 +20,6 @@ import { AdminNavBar } from '~/app/AdminNavBar/AdminNavBar'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import { getBannerProps } from '~utils/getBannerProps'
-import { Banner } from '~components/Banner'
 
 import { useEnv } from '~features/env/queries'
 import { useUser } from '~features/user/queries'
@@ -113,9 +113,7 @@ export const WorkspacePage = (): JSX.Element => {
       >
         <GridItem area="header">
           {bannerProps ? (
-            <Banner useMarkdown variant={bannerProps.variant}>
-              {bannerProps.msg}
-            </Banner>
+            <Banner variant={bannerProps.variant}>{bannerProps.msg}</Banner>
           ) : null}
           <AdminNavBar />
         </GridItem>
@@ -125,13 +123,17 @@ export const WorkspacePage = (): JSX.Element => {
               shouldShowMenuIcon
               onMenuClick={mobileDrawer.onOpen}
               borderBottom="1px"
-              borderBottomColor="neutral.300"
+              borderBottomColor="base.divider.medium"
               py="1rem"
             />
           </GridItem>
         )}
         {!isMobile && (
-          <GridItem area="nav" borderRight="1px" borderRightColor="neutral.300">
+          <GridItem
+            area="nav"
+            borderRight="1px"
+            borderRightColor="base.divider.medium"
+          >
             <Box overflowY="auto">
               <Stack minH="100vh">
                 <WorkspaceMenuHeader shouldShowAddWorkspaceButton />

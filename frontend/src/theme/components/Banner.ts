@@ -32,7 +32,7 @@ export const Banner: MultiStyleConfig<typeof parts> & {
     info: {
       banner: {
         color: 'white',
-        bg: 'primary.500',
+        bg: 'brand.primary.500',
       },
       link: {
         color: 'white',
@@ -46,13 +46,13 @@ export const Banner: MultiStyleConfig<typeof parts> & {
     },
     warn: {
       banner: {
-        color: 'secondary.700',
+        color: 'brand.secondary.700',
         bg: 'warning.500',
       },
       link: {
-        color: 'secondary.700',
+        color: 'brand.secondary.700',
         _hover: {
-          color: 'secondary.700',
+          color: 'brand.secondary.700',
         },
       },
     },

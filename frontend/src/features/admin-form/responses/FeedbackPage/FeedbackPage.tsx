@@ -10,6 +10,11 @@ import {
   Icon,
   Text,
 } from '@chakra-ui/react'
+import {
+  Button,
+  ButtonProps,
+  TouchableTooltip,
+} from '@opengovsg/design-system-react'
 import simplur from 'simplur'
 
 import { ProcessedFeedbackMeta, ProcessedIssueMeta } from '~shared/types'
@@ -18,8 +23,6 @@ import Pagination from '~/components/Pagination'
 
 import { BxsInfoCircle } from '~assets/icons'
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button, { ButtonProps } from '~components/Button'
-import Tooltip from '~components/Tooltip'
 
 import {
   DownloadFormFeedbackMutationArgs,
@@ -141,7 +144,7 @@ export const FeedbackPage = (): JSX.Element => {
         mb="1rem"
         minH={{ md: '4rem' }}
         alignItems="end"
-        color="secondary.500"
+        color="brand.secondary.500"
         gridTemplateColumns={{ base: 'auto', md: '1fr auto auto' }}
         gridGap={{ base: '0.5rem', md: '1.5rem' }}
         gridTemplateAreas={{
@@ -240,7 +243,7 @@ const getReviewInformationComponent = (
       }}
     >
       <Flex gridArea="score" flexDir="column">
-        <Text textStyle="caption-2" color="secondary.400">
+        <Text textStyle="caption-2" color="brand.secondary.400">
           Average Score
         </Text>
         <Text textStyle="responsive-heading-heavy">
@@ -249,7 +252,7 @@ const getReviewInformationComponent = (
       </Flex>
       <Box gridArea="submissions" alignSelf="end">
         <Text textStyle="h4" mb="0.5rem">
-          <Text as="span" color="primary.500">
+          <Text as="span" color="brand.primary.500">
             {count}
           </Text>
           {simplur` ${[count || 0]}review[|s] to date`}
@@ -265,18 +268,18 @@ const getIssueInformationComponent = (
   return (
     <Box display="flex" alignItems="center" mb="0.5rem">
       <Text textStyle="h4">
-        <Text as="span" color="primary.500">
+        <Text as="span" color="brand.primary.500">
           {count}
         </Text>
         {simplur` ${[count || 0]}issue[|s] to date`}
       </Text>
-      <Tooltip
+      <TouchableTooltip
         label={`Feedback displayed here relates to form submission issues`}
         placement="top"
         textAlign="center"
       >
         <Icon as={BxsInfoCircle} aria-hidden marginX="0.5rem" />
-      </Tooltip>
+      </TouchableTooltip>
     </Box>
   )
 }
@@ -298,11 +301,11 @@ const getFeedbackTypeButtonProps = (
 ): ButtonProps => {
   return selectedFeedbackType === feedbackType
     ? {
-        colorScheme: 'primary',
+        colorScheme: 'main',
         isActive: true,
       }
     : {
-        colorScheme: 'secondary',
+        colorScheme: 'sub',
         isActive: false,
       }
 }

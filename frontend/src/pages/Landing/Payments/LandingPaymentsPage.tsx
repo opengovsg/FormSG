@@ -14,6 +14,7 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react'
+import { Button, Link } from '@opengovsg/design-system-react'
 
 import { PUBLIC_PAYMENTS_GUIDE_LINK } from '~shared/constants'
 import { BasicField, EmailFieldBase } from '~shared/types'
@@ -24,8 +25,6 @@ import { AppPublicHeader } from '~/app/AppPublicHeader'
 import { BxsCheckCircle } from '~assets/icons'
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
-import Link from '~components/Link'
 import {
   EmailField,
   EmailFieldSchema,
@@ -178,7 +177,7 @@ export const LandingPaymentsPage = (): JSX.Element => {
         <Accordion
           variant="medium"
           mt="1rem"
-          color="secondary.500"
+          color="brand.secondary.500"
           allowToggle
           whiteSpace="pre-wrap"
         >
@@ -226,9 +225,13 @@ export const LandingPaymentsPage = (): JSX.Element => {
   // Note: Email fields in HeroBanner and BottomCTA should be the same. Extracted into a separate component due to blur when error state changes.
   return (
     <>
-      <AppPublicHeader bg="primary.500" />
+      <AppPublicHeader bg="brand.primary.500" />
       {/* Hero Banner */}
-      <LandingSection bg="primary.500" pt={{ base: '2rem', md: 0 }} px="0">
+      <LandingSection
+        bg="brand.primary.500"
+        pt={{ base: '2rem', md: 0 }}
+        px="0"
+      >
         <Stack
           direction={{ base: 'column', lg: 'row' }}
           spacing={{ base: '1.5rem', md: '3.125rem', lg: '7.5rem' }}

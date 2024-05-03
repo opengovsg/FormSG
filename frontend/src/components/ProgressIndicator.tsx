@@ -10,7 +10,7 @@ const ActiveIndicator = (): JSX.Element => (
     width="1.5rem"
     height="0.5rem"
     borderRadius="full"
-    backgroundColor="secondary.500"
+    backgroundColor="brand.secondary.500"
     position="absolute"
   />
 )
@@ -31,15 +31,15 @@ const CircleIndicator = ({
       height="0.75rem"
       padding="0.125rem"
       borderRadius="full"
-      backgroundColor="secondary.200"
+      backgroundColor="brand.secondary.200"
       marginRight={isActiveIndicator ? '1.25rem' : '0.25rem'}
       onClick={onClick}
-      _hover={{ backgroundColor: 'secondary.300' }}
+      _hover={{ backgroundColor: 'brand.secondary.300' }}
       _focus={
         isActiveIndicator
           ? undefined
           : {
-              backgroundColor: 'secondary.300',
+              backgroundColor: 'brand.secondary.300',
               boxShadow: `0 0 0 1px var(--chakra-colors-secondary-400)`,
             }
       }

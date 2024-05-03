@@ -9,14 +9,12 @@ import {
   Text,
   Wrap,
 } from '@chakra-ui/react'
+import { Button, ModalCloseButton } from '@opengovsg/design-system-react'
 import simplur from 'simplur'
 
 import { BxsCheckCircle, BxsXCircle } from '~assets/icons'
 import { useIsMobile } from '~hooks/useIsMobile'
-import { useMdComponents } from '~hooks/useMdComponents'
-import Button from '~components/Button'
-import { MarkdownText } from '~components/MarkdownText'
-import { ModalCloseButton } from '~components/Modal'
+import { MarkdownText } from '~components/MarkdownText2'
 
 import { DownloadResult } from '../../types'
 
@@ -32,8 +30,6 @@ export const CompleteScreen = ({
   downloadMetadata,
 }: CompleteScreenProps): JSX.Element => {
   const isMobile = useIsMobile()
-  const mdComponents = useMdComponents()
-
   const completionMessage = useMemo(() => {
     if (!downloadMetadata) return ''
     const { successCount, expectedCount } = downloadMetadata
@@ -70,7 +66,7 @@ export const CompleteScreen = ({
   return (
     <>
       <ModalCloseButton />
-      <ModalHeader color="secondary.700" pr="4.5rem">
+      <ModalHeader color="brand.secondary.700" pr="4.5rem">
         <Wrap shouldWrapChildren direction="row" align="center">
           <Text>Download complete</Text>
           <Badge w="fit-content" colorScheme="success">
@@ -78,7 +74,7 @@ export const CompleteScreen = ({
           </Badge>
         </Wrap>
       </ModalHeader>
-      <ModalBody whiteSpace="pre-wrap" color="secondary.500">
+      <ModalBody whiteSpace="pre-wrap" color="brand.secondary.500">
         <Stack spacing="1rem">
           <Stack direction="row" spacing="0.5rem">
             <Icon
@@ -88,9 +84,7 @@ export const CompleteScreen = ({
               as={BxsCheckCircle}
               aria-hidden
             />
-            <MarkdownText components={mdComponents}>
-              {completionMessage}
-            </MarkdownText>
+            <MarkdownText>{completionMessage}</MarkdownText>
           </Stack>
           {attachmentErrorMessage && (
             <Stack direction="row" spacing="0.5rem">
@@ -101,9 +95,7 @@ export const CompleteScreen = ({
                 as={BxsXCircle}
                 aria-hidden
               />
-              <MarkdownText components={mdComponents}>
-                {attachmentErrorMessage}
-              </MarkdownText>
+              <MarkdownText>{attachmentErrorMessage}</MarkdownText>
             </Stack>
           )}
         </Stack>

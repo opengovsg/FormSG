@@ -1,14 +1,13 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useThrottle } from 'react-use'
 import { Box, MenuButton, Text, useDisclosure } from '@chakra-ui/react'
+import { Button, Menu } from '@opengovsg/design-system-react'
 import simplur from 'simplur'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
-import Button from '~components/Button'
-import Menu from '~components/Menu'
 import { NavigationPrompt } from '~templates/NavigationPrompt'
 
 import { useStorageResponsesContext } from '../StorageResponsesContext'

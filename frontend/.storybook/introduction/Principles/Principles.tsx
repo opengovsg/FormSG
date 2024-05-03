@@ -4,7 +4,7 @@ export const Principles = (): JSX.Element => {
   return (
     <Box
       color="white"
-      bg="secondary.700"
+      bg="brand.secondary.700"
       w="100%"
       h="100vh"
       px={{ base: '1.5rem', md: '5.5rem', lg: '7.5rem' }}

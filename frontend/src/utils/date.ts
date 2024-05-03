@@ -1,6 +1,15 @@
-import { endOfToday, isAfter, isBefore, parseISO, startOfToday } from 'date-fns'
+import { DateRangeValue } from '@opengovsg/design-system-react'
+import {
+  endOfToday,
+  format,
+  isAfter,
+  isBefore,
+  isValid,
+  parseISO,
+  startOfToday,
+} from 'date-fns'
 
-import { InvalidDaysOptions } from '~shared/types'
+import { DateString, InvalidDaysOptions } from '~shared/types'
 
 import { JsonDate } from '~typings/core'
 
@@ -134,4 +143,32 @@ export const getRemainingDaysOfTheWeek = (
 ): InvalidDaysOptions[] => {
   const daysSet = new Set(days)
   return Object.values(InvalidDaysOptions).filter((day) => !daysSet.has(day))
+}
+
+export const dateStringToDatePickerValue = (range: DateString[]) => {
+  const [start, end] = range
+  // Convert to Date objects
+  const startDate = new Date(start)
+  const endDate = new Date(end)
+  const result: (Date | null)[] = [null, null]
+  // Check if dates are valid
+  if (isValid(startDate)) {
+    result[0] = startDate
+  }
+  if (isValid(endDate)) {
+    result[1] = endDate
+  }
+  return result as DateRangeValue
+}
+
+export const datePickerValueToDateString = (range: DateRangeValue) => {
+  const [start, end] = range
+  const result: DateString[] = []
+  if (start) {
+    result.push(format(start, 'yyyy-MM-dd') as DateString)
+  }
+  if (end) {
+    result.push(format(end, 'yyyy-MM-dd') as DateString)
+  }
+  return result
 }

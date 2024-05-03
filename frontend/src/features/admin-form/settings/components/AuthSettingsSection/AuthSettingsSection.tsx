@@ -7,14 +7,11 @@ import {
   useState,
 } from 'react'
 import { Box, Flex, Skeleton, Spacer, Text } from '@chakra-ui/react'
-import { Infobox } from '@opengovsg/design-system-react'
+import { Infobox, Link, Radio, Tag } from '@opengovsg/design-system-react'
 
 import { FormAuthType, FormSettings, FormStatus } from '~shared/types/form'
 
 import { GUIDE_SPCP_ESRVCID } from '~constants/links'
-import Link from '~components/Link'
-import Radio from '~components/Radio'
-import { Tag } from '~components/Tag'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { isMyInfo } from '~features/myinfo/utils'
@@ -121,7 +118,7 @@ export const AuthSettingsSection = ({
     <Box>
       <Text
         textStyle="subhead-1"
-        color="secondary.500"
+        color="brand.secondary.500"
         marginBottom="40px"
         marginTop="40px"
       >

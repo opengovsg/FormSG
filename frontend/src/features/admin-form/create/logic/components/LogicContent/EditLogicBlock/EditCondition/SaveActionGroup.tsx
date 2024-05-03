@@ -1,9 +1,8 @@
 import { BiTrash } from 'react-icons/bi'
 import { Box, Flex, Stack } from '@chakra-ui/react'
+import { Button, IconButton } from '@opengovsg/design-system-react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
-import IconButton from '~components/IconButton'
 
 export interface SaveActionGroupProps {
   handleCancel: () => void
@@ -31,12 +30,12 @@ export const SaveActionGroup = ({
       py="0.375rem"
       px={{ base: '1rem', md: '2rem' }}
       borderTop="1px solid"
-      borderColor="neutral.300"
+      borderColor="base.divider.medium"
     >
       {handleDelete ? (
         <IconButton
           variant="clear"
-          colorScheme="danger"
+          colorScheme="critical"
           aria-label={`Delete ${ariaLabelName}`}
           icon={<BiTrash />}
           onClick={handleDelete}
@@ -59,7 +58,7 @@ export const SaveActionGroup = ({
         </Button>
         <Button
           variant="clear"
-          colorScheme="secondary"
+          colorScheme="sub"
           isDisabled={isLoading}
           onClick={handleCancel}
           isFullWidth={isMobile}

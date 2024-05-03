@@ -165,7 +165,7 @@ const StripePaymentContainer = ({
                       <Text mr="0.25rem">4242 4242 4242 4242</Text>
                       <Flex boxSize="1.5rem" align="center" justify="center">
                         <CopyButton
-                          colorScheme="secondary"
+                          colorScheme="sub"
                           stringToCopy={`4242424242424242`}
                           aria-label="Copy test card number"
                         />

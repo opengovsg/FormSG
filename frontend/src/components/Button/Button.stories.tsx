@@ -89,7 +89,7 @@ export const Default = ButtonTemplate.bind({})
 Default.args = {
   variant: 'solid',
   children: 'Button',
-  colorScheme: 'primary',
+  colorScheme: 'main',
   size: 'md',
   textStyle: 'subhead-1',
 }
@@ -98,7 +98,7 @@ export const FullWidth = ButtonTemplate.bind({})
 FullWidth.args = {
   variant: 'solid',
   children: 'Button',
-  colorScheme: 'primary',
+  colorScheme: 'main',
   isFullWidth: true,
   textStyle: 'subhead-1',
 }
@@ -106,7 +106,7 @@ FullWidth.args = {
 export const SolidPrimary = ButtonGroupTemplate.bind({})
 SolidPrimary.args = {
   variant: 'solid',
-  colorScheme: 'primary',
+  colorScheme: 'main',
 }
 
 export const SolidDanger = ButtonGroupTemplate.bind({})
@@ -130,23 +130,23 @@ SolidSubtle.args = {
 export const ReversePrimary = ButtonGroupTemplate.bind({})
 ReversePrimary.args = {
   variant: 'reverse',
-  colorScheme: 'primary',
+  colorScheme: 'main',
 }
 
 export const OutlinePrimary = ButtonGroupTemplate.bind({})
 OutlinePrimary.args = {
   variant: 'outline',
-  colorScheme: 'primary',
+  colorScheme: 'main',
 }
 
 export const ClearSecondary = ButtonGroupTemplate.bind({})
 ClearSecondary.args = {
   variant: 'clear',
-  colorScheme: 'secondary',
+  colorScheme: 'sub',
 }
 
 export const LinkPrimary = ButtonGroupTemplate.bind({})
 LinkPrimary.args = {
   variant: 'link',
-  colorScheme: 'primary',
+  colorScheme: 'main',
 }

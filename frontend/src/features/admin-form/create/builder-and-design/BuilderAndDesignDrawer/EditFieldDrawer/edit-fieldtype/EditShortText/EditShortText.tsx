@@ -7,19 +7,21 @@ import {
   SimpleGrid,
   useMergeRefs,
 } from '@chakra-ui/react'
+import {
+  FormErrorMessage,
+  FormLabel,
+  Input,
+  NumberInput,
+  SingleSelect,
+  Textarea,
+  Toggle,
+} from '@opengovsg/design-system-react'
 import { extend, isEmpty, pick } from 'lodash'
 
 import { ShortTextFieldBase, TextSelectedValidation } from '~shared/types/field'
 
 import { GUIDE_PREFILL } from '~constants/links'
 import { createBaseValidationRules } from '~utils/fieldValidation'
-import { SingleSelect } from '~components/Dropdown'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
-import NumberInput from '~components/NumberInput'
-import Textarea from '~components/Textarea'
-import Toggle from '~components/Toggle'
 import { CopyButton } from '~templates/CopyButton'
 
 import { validateNumberInput } from '~features/admin-form/create/builder-and-design/utils/validateNumberInput'

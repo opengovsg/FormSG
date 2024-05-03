@@ -52,7 +52,9 @@ const PublicHeaderLink = ({
         as="a"
         href={href}
         aria-label={label}
-        icon={<Icon as={MobileIcon} fontSize="1.25rem" color="primary.500" />}
+        icon={
+          <Icon as={MobileIcon} fontSize="1.25rem" color="brand.primary.500" />
+        }
       />
     )
   }
@@ -61,11 +63,11 @@ const PublicHeaderLink = ({
     <Link
       w="fit-content"
       variant="standalone"
-      color={bg ? 'white' : 'primary.500'}
+      color={bg ? 'white' : 'brand.primary.500'}
       href={href}
       aria-label={label}
       _hover={{
-        color: bg ? 'white' : 'primary.600',
+        color: bg ? 'white' : 'brand.primary.600',
         textDecoration: 'underline',
       }}
     >

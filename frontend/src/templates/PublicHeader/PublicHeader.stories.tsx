@@ -12,7 +12,7 @@ import { PublicHeader, PublicHeaderProps } from './PublicHeader'
 
 const DEFAULT_ARGS: PublicHeaderProps = {
   ctaElement: (
-    <Button variant="solid" colorScheme="primary">
+    <Button variant="solid" colorScheme="main">
       Log in
     </Button>
   ),

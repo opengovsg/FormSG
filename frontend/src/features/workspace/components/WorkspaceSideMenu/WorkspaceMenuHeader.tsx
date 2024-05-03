@@ -1,7 +1,6 @@
 import { BiMenuAltLeft, BiPlus } from 'react-icons/bi'
 import { Flex, FlexProps, Text, useDisclosure } from '@chakra-ui/react'
-
-import IconButton from '~components/IconButton'
+import { IconButton } from '@opengovsg/design-system-react'
 
 import { CreateWorkspaceModal } from '../WorkspaceModals/CreateWorkspaceModal'
 
@@ -35,10 +34,10 @@ export const WorkspaceMenuHeader = ({
             onClick={() => onMenuClick && onMenuClick()}
             aria-label="open folder drawer"
             variant="clear"
-            colorScheme="secondary"
+            colorScheme="sub"
           />
         )}
-        <Text textStyle="h4" color="secondary.700">
+        <Text textStyle="h4" color="brand.secondary.700">
           Folders
         </Text>
       </Flex>
@@ -48,8 +47,8 @@ export const WorkspaceMenuHeader = ({
           size="lg"
           aria-label="Create new folder"
           variant="clear"
-          colorScheme="primary"
-          color="secondary.500"
+          colorScheme="main"
+          color="brand.secondary.500"
           onClick={onOpen}
           icon={<BiPlus />}
           justifySelf="flex-end"

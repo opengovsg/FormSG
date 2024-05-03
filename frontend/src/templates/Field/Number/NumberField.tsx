@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
+import { NumberInput } from '@opengovsg/design-system-react'
 
 import { FormColorTheme } from '~shared/types'
 
 import { createNumberValidationRules } from '~utils/fieldValidation'
-import NumberInput from '~components/NumberInput'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { NumberFieldSchema, SingleAnswerFieldInput } from '../types'
@@ -41,7 +41,6 @@ export const NumberField = ({
             aria-label={`${schema.questionNumber}. ${schema.title}`}
             precision={0}
             value={value}
-            preventDefaultOnEnter
             onChange={(val) => {
               // Only allow numeric inputs
               onChange(val.replace(/\D/g, ''))

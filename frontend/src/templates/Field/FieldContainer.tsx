@@ -6,13 +6,16 @@
  */
 import { FieldError, useFormState } from 'react-hook-form'
 import { Box, FormControl, Grid } from '@chakra-ui/react'
+import {
+  Badge,
+  FormErrorMessage,
+  FormLabel,
+} from '@opengovsg/design-system-react'
 import { get } from 'lodash'
 
 import { FormColorTheme } from '~shared/types/form'
 
-import Badge from '~components/Badge'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
+import { MarkdownText } from '~components/MarkdownText2'
 
 import { FormFieldWithQuestionNo } from '~features/form/types'
 
@@ -75,25 +78,24 @@ export const FieldContainer = ({
         gridTemplateColumns={'1fr auto'}
       >
         <FormLabel
-          useMarkdownForDescription
           gridArea="formlabel"
           questionNumber={
             schema.questionNumber ? `${schema.questionNumber}.` : undefined
           }
-          description={schema.description}
+          description={<MarkdownText>{`${schema.description}`}</MarkdownText>}
         >
           {schema.title}
         </FormLabel>
         {showMyInfoBadge && (
           <Box gridArea="myinfobadge">
-            <Badge variant="subtle" colorScheme="secondary">
+            <Badge variant="subtle" colorScheme="sub">
               MyInfo
             </Badge>
           </Box>
         )}
       </Grid>
       {children}
-      <FormErrorMessage variant={errorVariant}>
+      <FormErrorMessage colorScheme={errorVariant}>
         {error?.message}
       </FormErrorMessage>
     </FormControl>

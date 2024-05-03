@@ -33,13 +33,13 @@ const baseDayOfMonthStyles: SystemStyleFunction = ({
     color: isSelected
       ? 'white'
       : isOutsideCurrMonth
-        ? 'secondary.300'
-        : 'secondary.500',
+        ? 'brand.secondary.300'
+        : 'brand.secondary.500',
     outline: 'none',
     border: '1px solid',
     borderColor: isToday
       ? isOutsideCurrMonth
-        ? 'secondary.300'
+        ? 'brand.secondary.300'
         : `${c}.500`
       : 'transparent',
     _hover: {
@@ -49,7 +49,7 @@ const baseDayOfMonthStyles: SystemStyleFunction = ({
       boxShadow: `0 0 0 4px ${getColor(theme, `${c}.300`)}`,
     },
     _disabled: {
-      color: 'secondary.300',
+      color: 'brand.secondary.300',
       cursor: 'not-allowed',
       bg: 'transparent',
       textDecor: 'line-through',
@@ -125,7 +125,7 @@ export const Calendar: ComponentMultiStyleConfig<typeof parts> = {
           md: 'flex',
         },
         borderBottom: '1px solid',
-        borderColor: 'neutral.300',
+        borderColor: 'base.divider.medium',
       },
       monthGrid: {
         w: '100%',
@@ -133,7 +133,7 @@ export const Calendar: ComponentMultiStyleConfig<typeof parts> = {
       },
       dayNamesContainer: {
         textStyle: 'subhead-2',
-        color: 'secondary.700',
+        color: 'brand.secondary.700',
       },
       dayOfMonth: baseDayOfMonthStyles(props),
       todayLinkContainer: {
@@ -143,7 +143,7 @@ export const Calendar: ComponentMultiStyleConfig<typeof parts> = {
   },
   sizes,
   defaultProps: {
-    colorScheme: 'primary',
+    colorScheme: 'main',
     size: 'md',
   },
 }

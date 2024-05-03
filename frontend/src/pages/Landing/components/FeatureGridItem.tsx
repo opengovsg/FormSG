@@ -16,7 +16,7 @@ export const FeatureGridItem = ({
   return (
     <Stack spacing="1rem">
       <Image maxW="3rem" src={image} aria-hidden />
-      <Text as="h2" textStyle="h4" color="secondary.700">
+      <Text as="h2" textStyle="h4" color="brand.secondary.700">
         {title}
       </Text>
       <SectionBodyText>{description}</SectionBodyText>

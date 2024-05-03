@@ -131,7 +131,7 @@ const variantSubtle: PartsStyleFunction<typeof parts> = (props) => {
 const variantSolid: PartsStyleFunction<typeof parts> = (props) => {
   const { colorScheme: c, theme } = props
   const bgColor = getColor(theme, `${c}.500`)
-  let textColor = getColor(theme, 'secondary.700')
+  let textColor = getColor(theme, 'brand.secondary.700')
   const hasSufficientContrast = meetsWcagAaRatio(textColor, bgColor)
   if (!hasSufficientContrast) {
     textColor = 'white'
@@ -186,6 +186,6 @@ export const Tag = {
   defaultProps: {
     size: 'md',
     variant: 'subtle',
-    colorScheme: 'primary',
+    colorScheme: 'main',
   },
 }

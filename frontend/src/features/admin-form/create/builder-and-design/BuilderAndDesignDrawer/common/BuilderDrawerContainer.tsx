@@ -1,8 +1,7 @@
 import { ReactNode, useCallback } from 'react'
 import { BiLeftArrowAlt } from 'react-icons/bi'
 import { Stack, Text } from '@chakra-ui/react'
-
-import IconButton from '~components/IconButton'
+import { IconButton } from '@opengovsg/design-system-react'
 
 import { CreatePageDrawerCloseButton } from '../../../common/CreatePageDrawer'
 import { isDirtySelector, useDirtyFieldStore } from '../../useDirtyFieldStore'
@@ -36,6 +35,7 @@ export const BuilderDrawerContainer = ({
         px="1.5rem"
         py="1rem"
         align="center"
+        // TODO: Fix colors
         borderBottom="1px solid var(--chakra-colors-neutral-300)"
         bg="white"
       >
@@ -45,14 +45,14 @@ export const BuilderDrawerContainer = ({
           w="1.5rem"
           aria-label="Back to field selection"
           variant="clear"
-          colorScheme="secondary"
+          colorScheme="sub"
           onClick={handleBack}
           icon={<BiLeftArrowAlt />}
         />
         <Text
           textStyle="h4"
           as="h4"
-          color="secondary.500"
+          color="brand.secondary.500"
           flex={1}
           textAlign="center"
         >

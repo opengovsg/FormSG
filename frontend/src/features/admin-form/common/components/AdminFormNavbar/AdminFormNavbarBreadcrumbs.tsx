@@ -1,10 +1,10 @@
 import { BiHomeAlt } from 'react-icons/bi'
 import { Link as ReactLink } from 'react-router-dom'
 import { Icon, Skeleton, Stack, Text } from '@chakra-ui/react'
+import { Link } from '@opengovsg/design-system-react'
 
 import { DASHBOARD_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
-import Link from '~components/Link'
 
 import { AdminFormNavbarProps } from './AdminFormNavbar'
 
@@ -35,14 +35,14 @@ export const AdminFormNavbarBreadcrumbs = ({
         {isMobile ? <Icon as={BiHomeAlt} /> : 'All forms'}
       </Link>
 
-      <Text color="secondary.300">/</Text>
+      <Text color="brand.secondary.300">/</Text>
 
       <Skeleton overflow="hidden" isLoaded={!!formInfo}>
         <Text
           whiteSpace="nowrap"
           textOverflow="ellipsis"
           overflow="hidden"
-          color="secondary.500"
+          color="brand.secondary.500"
         >
           {formInfo ? formInfo.title : 'Loading...'}
         </Text>

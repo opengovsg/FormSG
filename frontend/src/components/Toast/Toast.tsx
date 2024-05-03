@@ -92,7 +92,7 @@ export const Toast = ({
         {isClosable && (
           <CloseButton
             variant="clear"
-            colorScheme="secondary"
+            colorScheme="sub"
             children={<BiX aria-hidden="true" />}
             onClick={() => {
               onClose?.()

@@ -30,7 +30,7 @@ const MonthYearSelect = ({
       isInvalid={false}
       variant="flushed"
       borderRadius="4px"
-      color="secondary.500"
+      color="brand.secondary.500"
       textStyle="subhead-1"
       flexBasis="fit-content"
       borderColor="transparent"
@@ -135,7 +135,7 @@ const MonthYear = memo(({ monthOffset }: CalendarHeaderProps) => {
     <HStack
       ml={{ base: '0.5rem', md: '1rem' }}
       textStyle="subhead-1"
-      color="secondary.500"
+      color="brand.secondary.500"
       spacing="1.5rem"
     >
       <Text>{monthDisplay}</Text>
@@ -162,14 +162,14 @@ export const CalendarHeader = memo(
           <Flex sx={styles.monthArrowContainer}>
             <IconButton
               variant="clear"
-              colorScheme="secondary"
+              colorScheme="sub"
               icon={<BxChevronLeft />}
               aria-label="Back one month"
               {...getBackProps({ calendars })}
             />
             <IconButton
               variant="clear"
-              colorScheme="secondary"
+              colorScheme="sub"
               icon={<BxChevronRight />}
               aria-label="Forward one month"
               {...getForwardProps({ calendars })}

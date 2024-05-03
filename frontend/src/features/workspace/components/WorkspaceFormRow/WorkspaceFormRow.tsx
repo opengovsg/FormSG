@@ -57,7 +57,7 @@ export const WorkspaceFormRow = ({
           bg: 'brand.primary.50',
         }}
         _active={{
-          bg: 'primary.200',
+          bg: 'brand.primary.200',
         }}
         _focus={{
           boxShadow: '0 0 0 2px var(--chakra-colors-primary-500)',
@@ -75,11 +75,11 @@ export const WorkspaceFormRow = ({
             noOfLines={{ base: 0, md: 1 }}
             title={formMeta.title}
             textStyle="subhead-1"
-            color="secondary.700"
+            color="brand.secondary.700"
           >
             {formMeta.title}
           </Text>
-          <Text textStyle="body-2" color="secondary.400">
+          <Text textStyle="body-2" color="brand.secondary.400">
             Edited {prettyLastModified}
           </Text>
         </Flex>

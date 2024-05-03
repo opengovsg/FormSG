@@ -1,10 +1,9 @@
 import { useMemo } from 'react'
 import { CSVLink } from 'react-csv'
 import { BiDownload } from 'react-icons/bi'
+import { Button } from '@opengovsg/design-system-react'
 
 import { FormBillingStatistic } from '~shared/types'
-
-import Button from '~components/Button'
 
 import { DateRange, dateRangeToString } from '../../DateRange'
 

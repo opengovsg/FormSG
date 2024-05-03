@@ -2,10 +2,9 @@ import { useMemo, useState } from 'react'
 import Chart, { GoogleChartWrapperChartType } from 'react-google-charts'
 import { BiBarChartAlt2, BiTable } from 'react-icons/bi'
 import { Flex, Text, VStack } from '@chakra-ui/react'
+import { IconButton } from '@opengovsg/design-system-react'
 
 import { BasicField, FormFieldDto } from '~shared/types'
-
-import IconButton from '~components/IconButton'
 
 import { COLOR_ARRAY } from '../constants'
 

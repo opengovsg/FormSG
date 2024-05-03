@@ -241,7 +241,7 @@ const variantInputAttached: SystemStyleFunction = (props) => {
 
   return {
     fontSize: '1.25rem',
-    color: 'secondary.500',
+    color: 'brand.secondary.500',
     ml: '-1px',
     borderColor: 'neutral.400',
     borderRadius: 0,
@@ -309,7 +309,7 @@ export const Button = {
   },
   defaultProps: {
     variant: 'solid',
-    colorScheme: 'primary',
+    colorScheme: 'main',
     size: 'md',
   },
 }

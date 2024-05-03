@@ -1,8 +1,8 @@
 import { FieldValues, UseFormHandleSubmit } from 'react-hook-form'
 import { Stack } from '@chakra-ui/react'
+import { Button } from '@opengovsg/design-system-react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
 
 interface FormFieldDrawerActionsProps {
   isLoading: boolean
@@ -40,7 +40,7 @@ export const FormFieldDrawerActions = ({
         isDisabled={isLoading}
         isFullWidth={isMobile}
         variant="clear"
-        colorScheme="secondary"
+        colorScheme="sub"
         onClick={handleCancel}
       >
         Cancel

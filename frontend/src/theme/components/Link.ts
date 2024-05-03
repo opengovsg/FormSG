@@ -55,6 +55,6 @@ export const Link = {
   },
   defaultProps: {
     variant: 'inline',
-    colorScheme: 'primary',
+    colorScheme: 'main',
   },
 }

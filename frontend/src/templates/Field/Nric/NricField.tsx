@@ -3,9 +3,9 @@
  */
 import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
+import { Input } from '@opengovsg/design-system-react'
 
 import { createNricValidationRules } from '~utils/fieldValidation'
-import Input from '~components/Input'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { NricFieldSchema, SingleAnswerFieldInput } from '../types'
@@ -31,7 +31,6 @@ export const NricField = ({
       <Input
         aria-label={`${schema.questionNumber}. ${schema.title}`}
         defaultValue=""
-        preventDefaultOnEnter
         {...register(schema._id, {
           ...validationRules,
           onChange: (event: React.ChangeEvent<HTMLInputElement>) =>

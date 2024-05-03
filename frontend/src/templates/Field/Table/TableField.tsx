@@ -12,6 +12,7 @@ import {
   Tr,
   VisuallyHidden,
 } from '@chakra-ui/react'
+import { FormErrorMessage, IconButton } from '@opengovsg/design-system-react'
 import { get, head, uniq } from 'lodash'
 import simplur from 'simplur'
 
@@ -19,8 +20,6 @@ import { FormColorTheme } from '~shared/types'
 
 import { useHasChanged } from '~hooks/useHasChanged'
 import { useIsMobile } from '~hooks/useIsMobile'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import IconButton from '~components/IconButton'
 
 import { BaseFieldProps } from '../FieldContainer'
 import { TableFieldInputs, TableFieldSchema } from '../types'
@@ -238,7 +237,7 @@ export const TableField = ({
                           fields.length <= (schema.minimumRows || 0)
                         }
                         variant="clear"
-                        colorScheme="danger"
+                        colorScheme="critical"
                         aria-label="Remove row"
                         icon={<BiTrash />}
                         onClick={() => handleRemoveRow(rowIndex)}

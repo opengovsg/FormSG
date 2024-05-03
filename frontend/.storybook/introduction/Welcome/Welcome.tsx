@@ -5,7 +5,7 @@ import { linkTo } from '@storybook/addon-links'
 
 export const Welcome = (): JSX.Element => {
   return (
-    <Flex bg="secondary.700" w="100%" h="100vh" flexDir="column">
+    <Flex bg="brand.secondary.700" w="100%" h="100vh" flexDir="column">
       <Box
         px={{ base: '1.5rem', md: '5.5rem', lg: '7.5rem' }}
         py={{ base: '1.5rem', md: '5rem', lg: '6rem' }}
@@ -36,7 +36,7 @@ export const Welcome = (): JSX.Element => {
         <Box
           color="white"
           flex={1}
-          bg="primary.500"
+          bg="brand.primary.500"
           px={{ base: '1.5rem', md: '5.5rem', lg: '7.5rem' }}
           py={{ base: '1rem', md: '3.5rem', lg: '5.5rem' }}
         >
@@ -66,7 +66,7 @@ export const Welcome = (): JSX.Element => {
             as="button"
             onClick={linkTo('Introduction/Guiding principles')}
             aria-label="Next story"
-            colorScheme="secondary"
+            colorScheme="sub"
           >
             <BiChevronRight fontSize="4rem" />
           </Link>

@@ -40,7 +40,7 @@ export const DatePickerContentBase = ({
       >
         <DrawerOverlay />
         <DrawerContent maxH="100%" overflow="auto">
-          <DrawerCloseButton colorScheme="secondary" />
+          <DrawerCloseButton colorScheme="sub" />
           <DrawerHeader
             h="3.5rem"
             px={{ base: '1rem', md: '1.5rem' }}
@@ -49,7 +49,7 @@ export const DatePickerContentBase = ({
             borderBottom="1px solid"
             borderColor="neutral.300"
           >
-            <Text textStyle="subhead-2" color="secondary.500">
+            <Text textStyle="subhead-2" color="brand.secondary.500">
               Select a date
             </Text>
           </DrawerHeader>
@@ -70,7 +70,7 @@ export const DatePickerContentBase = ({
             justifyContent="space-between"
             alignItems="center"
             textStyle="subhead-2"
-            color="secondary.500"
+            color="brand.secondary.500"
           >
             Select a date
             <PopoverCloseButton position="initial" />

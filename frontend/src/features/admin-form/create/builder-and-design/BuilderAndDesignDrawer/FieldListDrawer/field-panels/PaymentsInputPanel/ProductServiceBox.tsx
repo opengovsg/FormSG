@@ -10,11 +10,9 @@ import {
   Text,
   useDisclosure,
 } from '@chakra-ui/react'
+import { Button, FormLabel } from '@opengovsg/design-system-react'
 
 import { FormPaymentsField, Product } from '~shared/types'
-
-import Button from '~components/Button'
-import FormLabel from '~components/FormControl/FormLabel'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 
@@ -44,7 +42,7 @@ const AddProductButton = ({
       <Button
         isDisabled={isDisabled}
         leftIcon={<BiPlus />}
-        color="primary.500"
+        color="brand.primary.500"
         aria-label="Add"
         variant="clear"
       >
@@ -69,7 +67,7 @@ const ProductList = ({
     return (
       <>
         <Box px="1rem" py="1rem" backgroundColor={'#F9F9F9'} mb="1.5rem">
-          <Text textStyle="subhead-1" pb="0.25rem" color="secondary.500">
+          <Text textStyle="subhead-1" pb="0.25rem" color="brand.secondary.500">
             You haven't added any product/service
           </Text>
         </Box>

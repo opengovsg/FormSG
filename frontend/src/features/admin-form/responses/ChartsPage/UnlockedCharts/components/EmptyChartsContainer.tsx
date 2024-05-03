@@ -14,10 +14,15 @@ export const EmptyChartsContainer = ({
   return (
     <Container p={0} maxW="42.5rem">
       <Stack spacing="1rem" align="center">
-        <Text as="h2" color="primary.500" textStyle="h4" whiteSpace="pre-wrap">
+        <Text
+          as="h2"
+          color="brand.primary.500"
+          textStyle="h4"
+          whiteSpace="pre-wrap"
+        >
           {title}
         </Text>
-        <Text textStyle="body-1" color="secondary.500" mb="0.5rem">
+        <Text textStyle="body-1" color="brand.secondary.500" mb="0.5rem">
           {subtitle}
         </Text>
         <Box pb="2.5rem" pt="0.5rem">

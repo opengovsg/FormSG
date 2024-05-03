@@ -223,11 +223,11 @@ export const StartPageView = () => {
             >
               <Box
                 transition="background 0.2s ease"
-                _hover={{ bg: 'secondary.100', cursor: 'pointer' }}
+                _hover={{ bg: 'brand.secondary.100', cursor: 'pointer' }}
                 borderRadius="4px"
                 {...(designState === DesignState.EditingInstructions
                   ? {
-                      bg: 'secondary.100',
+                      bg: 'brand.secondary.100',
                       border: '2px solid var(--chakra-colors-primary-500)',
                     }
                   : { border: '2px solid white' })}
@@ -253,12 +253,12 @@ export const StartPageView = () => {
                     >
                       <ButtonGroup
                         variant="clear"
-                        colorScheme="secondary"
+                        colorScheme="sub"
                         spacing={0}
                       >
                         <IconButton
                           variant="clear"
-                          colorScheme="secondary"
+                          colorScheme="sub"
                           aria-label="Edit field"
                           icon={<BiCog fontSize="1.25rem" />}
                           onClick={handleEditInstructionsClick}

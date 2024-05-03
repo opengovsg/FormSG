@@ -1,10 +1,8 @@
 import { useState } from 'react'
 import { useMutation } from 'react-query'
 import { Text } from '@chakra-ui/react'
-import { Button } from '@opengovsg/design-system-react'
+import { Button, ButtonProps } from '@opengovsg/design-system-react'
 import { useIntervalWhen } from 'rooks'
-
-import { ButtonProps } from '~components/Button'
 
 export interface ResendOtpButtonProps extends ButtonProps {
   onResendOtp: () => Promise<void>
@@ -42,7 +40,7 @@ export const ResendOtpButton = ({
       onClick={() => mutate()}
       type="button"
       variant="reverse"
-      colorScheme="primary"
+      colorScheme="main"
       {...buttonProps}
     >
       Resend OTP

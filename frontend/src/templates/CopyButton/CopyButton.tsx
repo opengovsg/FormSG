@@ -1,7 +1,6 @@
 import { BiCheck, BiCopy } from 'react-icons/bi'
 import { Icon, useClipboard } from '@chakra-ui/react'
-
-import IconButton, { IconButtonProps } from '~components/IconButton'
+import { IconButton, IconButtonProps } from '@opengovsg/design-system-react'
 
 export interface CopyFieldIdButtonProps extends IconButtonProps {
   stringToCopy: string

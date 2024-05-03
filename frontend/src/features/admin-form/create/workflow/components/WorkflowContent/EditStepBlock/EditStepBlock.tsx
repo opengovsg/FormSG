@@ -94,7 +94,7 @@ export const EditStepBlock = ({
       borderRadius="4px"
       bg="white"
       border="1px solid"
-      borderColor="primary.500"
+      borderColor="brand.primary.500"
       boxShadow="0 0 0 1px var(--chakra-colors-primary-500)"
       transitionProperty="common"
       transitionDuration="normal"
@@ -103,7 +103,7 @@ export const EditStepBlock = ({
         py="1.5rem"
         px={{ base: '1.5rem', md: '2rem' }}
         borderBottomWidth="1px"
-        borderBottomColor="secondary.200"
+        borderBottomColor="brand.secondary.200"
       >
         <StepLabel stepNumber={stepNumber} />
       </Box>

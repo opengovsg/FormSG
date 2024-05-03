@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { Divider, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
+import { FormErrorMessage } from '@opengovsg/design-system-react'
 
 import { PAYMENT_PRODUCT_FIELD_ID } from '~shared/constants'
 import { ProductItem } from '~shared/types'
 import { calculatePrice } from '~shared/utils/paymentProductPrice'
 import { centsToDollars, formatCurrency } from '~shared/utils/payments'
-
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 
 import { ProductPaymentCard } from './ProductPaymentCard'
 import { ProductItemDetailProps } from './types'

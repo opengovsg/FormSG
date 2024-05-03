@@ -12,13 +12,13 @@ export const TableChart = ({ data }: { data: [string, number | string][] }) => {
   const [header, ...rows] = data
   return (
     <TableContainer>
-      <Table variant="solid" colorScheme="secondary" my="1rem">
+      <Table variant="solid" colorScheme="sub" my="1rem">
         <Thead>
           <Tr>
-            <Th borderX="1px solid" borderColor="secondary.500">
+            <Th borderX="1px solid" borderColor="brand.secondary.500">
               {header[0]}
             </Th>
-            <Th borderX="1px solid" borderColor="secondary.500" isNumeric>
+            <Th borderX="1px solid" borderColor="brand.secondary.500" isNumeric>
               {header[1]}
             </Th>
           </Tr>
@@ -52,15 +52,15 @@ const TableChartRows = ({
     <Tr>
       <Td
         borderX="1px solid"
-        borderLeftColor="neutral.300"
-        borderRightColor="neutral.300"
+        borderLeftColor="base.divider.medium"
+        borderRightColor="base.divider.medium"
       >
         {answer}
       </Td>
       <Td
-        borderColor="neutral.300"
+        borderColor="base.divider.medium"
         borderRight="1px solid"
-        borderRightColor="neutral.300"
+        borderRightColor="base.divider.medium"
       >
         {value}
       </Td>

@@ -28,7 +28,11 @@ const ListWithIcon = ({
 
 export const ChartsSupportedFieldsInfoBox = () => (
   <Box pt="1.5rem">
-    <Text textStyle="subhead-3" color="secondary.500" textTransform="uppercase">
+    <Text
+      textStyle="subhead-3"
+      color="brand.secondary.500"
+      textTransform="uppercase"
+    >
       Supported fields
     </Text>
     <Grid templateColumns="repeat(3,1fr)" mt="1.5rem" gap="1rem 2rem">

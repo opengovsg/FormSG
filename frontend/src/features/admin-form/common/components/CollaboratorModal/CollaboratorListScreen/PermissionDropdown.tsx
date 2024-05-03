@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { Text } from '@chakra-ui/react'
-
-import Menu from '~components/Menu'
+import { Menu } from '@opengovsg/design-system-react'
 
 import { DropdownRole } from '../constants'
 
@@ -35,7 +34,7 @@ export const PermissionDropdown = ({
             minW="7rem"
             isDisabled={isLoading}
             variant={buttonVariant}
-            colorScheme="secondary"
+            colorScheme="sub"
             isActive={isOpen}
             iconSpacing="1.5rem"
           >

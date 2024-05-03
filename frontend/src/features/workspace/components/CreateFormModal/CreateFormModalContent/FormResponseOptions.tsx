@@ -1,11 +1,10 @@
 import { BiLockAlt, BiMailSend } from 'react-icons/bi'
-import { forwardRef, Stack, UnorderedList } from '@chakra-ui/react'
+import { forwardRef, ListItem, Stack, UnorderedList } from '@chakra-ui/react'
+import { Badge, Tile } from '@opengovsg/design-system-react'
 
 import { FormResponseMode } from '~shared/types/form/form'
 
 import { MultiParty } from '~assets/icons'
-import Badge from '~components/Badge'
-import Tile from '~components/Tile'
 
 export interface FormResponseOptionsProps {
   onChange: (option: FormResponseMode) => void
@@ -16,11 +15,11 @@ export interface FormResponseOptionsProps {
 const OptionDescription = ({ listItems = [] }: { listItems: string[] }) => {
   return (
     <>
-      <UnorderedList color="secondary.400" ml="1.5rem">
+      <UnorderedList color="brand.secondary.400" ml="1.5rem">
         {listItems.map((text, index) => (
-          <Tile.ListItem key={index} textStyle="body-2" textAlign="left">
+          <ListItem key={index} textStyle="body-2" textAlign="left">
             {text}
-          </Tile.ListItem>
+          </ListItem>
         ))}
       </UnorderedList>
     </>
@@ -36,8 +35,8 @@ export const FormResponseOptions = forwardRef<
       <Tile
         variant="complex"
         icon={BiLockAlt}
-        badge={<Badge colorScheme={'neutral'}>Recommended</Badge>}
-        isActive={value === FormResponseMode.Encrypt}
+        badge={<Badge colorScheme="neutral">Recommended</Badge>}
+        isSelected={value === FormResponseMode.Encrypt}
         onClick={() => onChange(FormResponseMode.Encrypt)}
         flex={1}
       >
@@ -56,7 +55,7 @@ export const FormResponseOptions = forwardRef<
         ref={ref}
         variant="complex"
         icon={BiMailSend}
-        isActive={value === FormResponseMode.Email}
+        isSelected={value === FormResponseMode.Email}
         onClick={() => onChange(FormResponseMode.Email)}
         flex={1}
       >
@@ -74,7 +73,7 @@ export const FormResponseOptions = forwardRef<
         variant="complex"
         icon={MultiParty}
         badge={<Badge colorScheme="success">New</Badge>}
-        isActive={value === FormResponseMode.Multirespondent}
+        isSelected={value === FormResponseMode.Multirespondent}
         onClick={() => onChange(FormResponseMode.Multirespondent)}
         flex={1}
         isDisabled={isSingpass}

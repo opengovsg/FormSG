@@ -1,7 +1,16 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
 import { FormControl, Skeleton } from '@chakra-ui/react'
-import { Infobox } from '@opengovsg/design-system-react'
+import {
+  ComboboxItem,
+  FormErrorMessage,
+  FormLabel,
+  Infobox,
+  Input,
+  SingleSelect,
+  Textarea,
+  Toggle,
+} from '@opengovsg/design-system-react'
 import { extend, pick } from 'lodash'
 
 import { FormResponseMode } from '~shared/types'
@@ -17,14 +26,7 @@ import {
   GUIDE_EMAIL_RELIABILITY,
 } from '~constants/links'
 import { createBaseValidationRules } from '~utils/fieldValidation'
-import { SingleSelect } from '~components/Dropdown'
-import type { ComboboxItem } from '~components/Dropdown/types'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
 import { MarkdownText } from '~components/MarkdownText2'
-import Textarea from '~components/Textarea'
-import Toggle from '~components/Toggle'
 
 import { useCreateTabForm } from '~features/admin-form/create/builder-and-design/useCreateTabForm'
 import { getAttachmentSizeLimit } from '~features/admin-form/create/builder-and-design/utils/getAttachmentSizeLimit'

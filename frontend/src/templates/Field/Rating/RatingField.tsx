@@ -9,8 +9,7 @@ import { FormColorTheme } from '~shared/types'
 import { RatingShape } from '~shared/types/field'
 
 import { createRatingValidationRules } from '~utils/fieldValidation'
-import Rating from '~components/Field/Rating'
-import { RatingProps } from '~components/Field/Rating/Rating'
+import { Rating, type RatingProps } from '~components/Field/Rating/Rating'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { RatingFieldSchema, SingleAnswerFieldInput } from '../types'

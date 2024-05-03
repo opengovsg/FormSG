@@ -15,9 +15,9 @@ import {
   Skeleton,
   Text,
 } from '@chakra-ui/react'
+import { IconButton } from '@opengovsg/design-system-react'
 
 import { noPrintCss } from '~utils/noPrintCss'
-import IconButton from '~components/IconButton'
 
 import { useUnlockedResponses } from '../ResponsesPage/storage/UnlockedResponses/UnlockedResponsesProvider'
 

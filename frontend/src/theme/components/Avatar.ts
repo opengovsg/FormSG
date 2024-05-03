@@ -56,6 +56,6 @@ export const Avatar = {
   baseStyle,
   defaultProps: {
     size: 'md',
-    colorScheme: 'primary',
+    colorScheme: 'main',
   },
 }

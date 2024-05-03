@@ -59,7 +59,7 @@ export const SidebarLink = ({
   ])
 
   const styles = useStyleConfig('Link', {
-    colorScheme: 'secondary',
+    colorScheme: 'sub',
     variant: 'standalone',
   })
 
@@ -72,7 +72,7 @@ export const SidebarLink = ({
       display="flex"
       pl="0.5rem"
       textAlign="start"
-      color={isActive ? 'secondary.700' : 'secondary.400'}
+      color={isActive ? 'brand.secondary.700' : 'brand.secondary.400'}
       onClick={handleClick}
     >
       {isActive && (
@@ -81,7 +81,7 @@ export const SidebarLink = ({
           left="-1.5rem"
           w="1.5rem"
           h="2px"
-          bg="secondary.700"
+          bg="brand.secondary.700"
           aria-hidden
         />
       )}

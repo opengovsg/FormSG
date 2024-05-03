@@ -8,6 +8,7 @@ import {
   useClipboard,
   useDisclosure,
 } from '@chakra-ui/react'
+import { ModalCloseButton } from '@opengovsg/design-system-react'
 import { Meta, StoryFn } from '@storybook/react'
 
 import { UserId } from '~shared/types'
@@ -16,7 +17,6 @@ import { Workspace, WorkspaceId } from '~shared/types/workspace'
 import { userHandlers } from '~/mocks/msw/handlers/user'
 
 import { fullScreenDecorator, LoggedInDecorator } from '~utils/storybook'
-import { ModalCloseButton } from '~components/Modal'
 
 import { WorkspaceProvider } from '~features/workspace/WorkspaceProvider'
 

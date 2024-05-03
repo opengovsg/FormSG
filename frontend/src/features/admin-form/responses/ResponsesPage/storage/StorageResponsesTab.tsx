@@ -19,7 +19,6 @@ export const StorageResponsesTab = (): JSX.Element => {
     <SecretKeyVerification
       heroSvg={<FormActivationSvg />}
       ctaText="Unlock responses"
-      label="Enter or upload Secret Key"
     />
   )
 }

@@ -1,7 +1,7 @@
 import { Icon } from '@chakra-ui/react'
+import { Badge } from '@opengovsg/design-system-react'
 
 import { BxsRocket } from '~assets/icons'
-import Badge from '~components/Badge'
 
 export const NewFeatureTag = (): JSX.Element => {
   return (
@@ -10,7 +10,7 @@ export const NewFeatureTag = (): JSX.Element => {
       display="inline-flex"
       columnGap="0.5rem"
       alignItems="center"
-      color="secondary.500"
+      colorScheme="sub"
     >
       <Icon as={BxsRocket} />
       New feature

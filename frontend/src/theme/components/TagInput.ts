@@ -79,6 +79,6 @@ export const TagInput = defineMultiStyleConfig({
     // @ts-expect-error defineMultiStyleConfig does not have types for focus color props
     focusBorderColor: Input.defaultProps.focusBorderColor,
     errorBorderColor: Input.defaultProps.errorBorderColor,
-    colorScheme: 'primary',
+    colorScheme: 'main',
   },
 })

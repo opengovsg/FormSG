@@ -68,7 +68,7 @@ const baseStyle: PartsStyleFunction<typeof parts> = (props) => {
       display: 'inline-flex',
       alignItems: 'center',
       justifyContent: 'center',
-      color: 'secondary.500',
+      color: 'brand.secondary.500',
       borderRightRadius: '4px',
       borderLeftRadius: 0,
     },
@@ -76,7 +76,7 @@ const baseStyle: PartsStyleFunction<typeof parts> = (props) => {
       transitionProperty: 'common',
       transitionDuration: 'normal',
       fontSize: '1.25rem',
-      color: 'secondary.500',
+      color: 'brand.secondary.500',
       _disabled: {
         cursor: 'not-allowed',
         color: 'neutral.500',
@@ -122,7 +122,7 @@ const variantOutline: PartsStyleFunction<typeof parts> = (props) => {
         boxShadow: `0 0 0 1px var(--chakra-colors-${c}-500)`,
       },
       _active: {
-        color: 'secondary.500',
+        color: 'brand.secondary.500',
       },
       _disabled: {
         cursor: 'not-allowed',
@@ -150,7 +150,7 @@ const variantClear: PartsStyleFunction<typeof parts> = (props) => {
         color: 'black',
       },
       _hover: {
-        borderColor: 'primary.500',
+        borderColor: 'brand.primary.500',
       },
     }),
     inputStack: {
@@ -174,6 +174,6 @@ export const SingleSelect = {
     size: 'md',
     focusBorderColor: Input.defaultProps.focusBorderColor,
     errorBorderColor: Input.defaultProps.errorBorderColor,
-    colorScheme: 'primary',
+    colorScheme: 'main',
   },
 }

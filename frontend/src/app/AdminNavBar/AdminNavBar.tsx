@@ -138,7 +138,7 @@ const WhatsNewNavBarTab = ({
       <Button
         w="fit-content"
         variant="link"
-        color="secondary.500"
+        color="brand.secondary.500"
         onClick={onClick}
         aria-label={WHATS_NEW_LABEL}
         fontWeight="500"
@@ -331,7 +331,7 @@ AdminNavBar.Container = ({
       py="0.75rem"
       bg="white"
       borderBottom="1px"
-      borderBottomColor="neutral.300"
+      borderBottomColor="base.divider.medium"
       {...props}
     >
       {children}

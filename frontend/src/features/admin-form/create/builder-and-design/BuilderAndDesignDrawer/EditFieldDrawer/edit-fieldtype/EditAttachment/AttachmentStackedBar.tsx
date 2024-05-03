@@ -102,7 +102,11 @@ export const AttachmentStackedBar = ({
             <Flex h="1rem">
               <FilledTrack bg="danger.500" />
             </Flex>
-            <Flex justify="center" textStyle="caption-1" color="secondary.700">
+            <Flex
+              justify="center"
+              textStyle="caption-1"
+              color="brand.secondary.700"
+            >
               {totalAttachmentSize} / {max} MB
             </Flex>
           </>
@@ -112,7 +116,7 @@ export const AttachmentStackedBar = ({
               overflow="hidden"
               borderRadius="3px"
               h="1rem"
-              bg="primary.300"
+              bg="brand.primary.300"
               gridTemplateColumns={gridTemplateColumns}
             >
               {barProps.map((props, i) => (
@@ -122,7 +126,7 @@ export const AttachmentStackedBar = ({
             <Grid
               gridTemplateColumns={gridTemplateColumns}
               textStyle="caption-1"
-              color="secondary.700"
+              color="brand.secondary.700"
             >
               {valueLabels.map((value, i) => (
                 <Flex key={i} justify="center">

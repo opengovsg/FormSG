@@ -3,7 +3,7 @@ import { Link as ReactLink } from 'react-router-dom'
 import { Box, Text } from '@chakra-ui/react'
 import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 import { Droppable } from '@hello-pangea/dnd'
-import { Infobox } from '@opengovsg/design-system-react'
+import { Infobox, Link } from '@opengovsg/design-system-react'
 
 import { featureFlags } from '~shared/constants'
 import {
@@ -15,7 +15,6 @@ import {
 
 import { GUIDE_EMAIL_MODE } from '~constants/links'
 import { ADMINFORM_SETTINGS_SINGPASS_SUBROUTE } from '~constants/routes'
-import Link from '~components/Link'
 
 import {
   CREATE_MYINFO_CHILDREN_DROP_ID,

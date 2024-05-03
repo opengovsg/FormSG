@@ -12,8 +12,6 @@ import {
   useNumberInput,
 } from '@chakra-ui/react'
 
-import { ThemeColorScheme } from '~theme/foundations/colours'
-
 export interface MoneyInputProps
   extends ChakraNumberInputProps,
     Omit<PropsOf<'input'>, keyof ChakraNumberInputProps> {
@@ -25,10 +23,6 @@ export interface MoneyInputProps
    * Whether the input is in a success state.
    */
   isSuccess?: boolean
-  /**
-   * Color scheme of number input.
-   */
-  colorScheme?: ThemeColorScheme
   /**
    * Whether to prevent default on user pressing the 'Enter' key.
    */

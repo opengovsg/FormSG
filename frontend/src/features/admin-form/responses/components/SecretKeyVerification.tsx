@@ -1,19 +1,17 @@
 import { Container, Skeleton, Stack, Text } from '@chakra-ui/react'
 import simplur from 'simplur'
 
-import SecretKeyVerificationInput from '~components/SecretKeyVerificationInput'
+import { SecretKeyVerificationInput } from '~components/SecretKeyVerificationInput'
 
-import { useStorageResponsesContext } from '../../ResponsesPage/storage'
+import { useStorageResponsesContext } from '../ResponsesPage/storage'
 
 export const SecretKeyVerification = ({
   heroSvg,
   ctaText,
-  label,
   hideResponseCount,
 }: {
   heroSvg: JSX.Element
   ctaText: string
-  label: string
   hideResponseCount?: boolean
 }): JSX.Element => {
   const { setSecretKey, formPublicKey, isLoading, totalResponsesCount } =
@@ -26,7 +24,7 @@ export const SecretKeyVerification = ({
         {!hideResponseCount ? (
           <Skeleton isLoaded={!isLoading} w="fit-content">
             <Text as="h2" textStyle="h4" whiteSpace="pre-wrap">
-              <Text color="primary.500" as="span">
+              <Text color="brand.primary.500" as="span">
                 {totalResponsesCount?.toLocaleString() ?? '-'}
               </Text>
               {simplur` ${[totalResponsesCount ?? 0]}response[|s] to date`}

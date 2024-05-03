@@ -15,7 +15,7 @@ const PaymentItemNameDescription = ({
         <Text textStyle="subhead-1">{paymentItemName}</Text>
       ) : null}
       {paymentDescription ? (
-        <Text textStyle="body-2" color="secondary.400">
+        <Text textStyle="body-2" color="brand.secondary.400">
           {paymentDescription}
         </Text>
       ) : null}

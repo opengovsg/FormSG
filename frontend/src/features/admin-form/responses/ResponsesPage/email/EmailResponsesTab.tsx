@@ -1,8 +1,8 @@
 import { Container, Skeleton, Stack, Text } from '@chakra-ui/react'
+import { Link } from '@opengovsg/design-system-react'
 import simplur from 'simplur'
 
 import { OGP_FORMSG_COLLATE } from '~constants/links'
-import Link from '~components/Link'
 
 import { useFormResponsesCount } from '../../queries'
 import { EmptyResponses } from '../common/EmptyResponses'
@@ -23,7 +23,7 @@ export const EmailResponsesTab = (): JSX.Element => {
         <EmailResponsesSvgr />
         <Skeleton isLoaded={!isFormResponsesLoading} w="fit-content">
           <Text as="h2" textStyle="h4" whiteSpace="pre-wrap">
-            <Text color="primary.500" as="span">
+            <Text color="brand.primary.500" as="span">
               {responsesCount?.toLocaleString() ?? '-'}
             </Text>
             {simplur` ${[responsesCount ?? 0]}response[|s] to date`}

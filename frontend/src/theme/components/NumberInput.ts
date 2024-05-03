@@ -35,7 +35,7 @@ const baseStyle = definePartsStyle({
     border: '1px solid transparent',
   },
   stepperButton: {
-    color: 'secondary.500',
+    color: 'brand.secondary.500',
     borderRadius: 0,
     minH: '100%',
     _disabled: {

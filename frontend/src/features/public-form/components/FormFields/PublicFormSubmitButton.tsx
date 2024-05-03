@@ -1,13 +1,12 @@
 import { MouseEventHandler, useMemo, useState } from 'react'
 import { useFormState, UseFormTrigger, useWatch } from 'react-hook-form'
 import { Stack, useDisclosure, VisuallyHidden } from '@chakra-ui/react'
-import { Infobox } from '@opengovsg/design-system-react'
+import { Button, Infobox } from '@opengovsg/design-system-react'
 
 import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
 import { FormField, LogicDto, MyInfoFormField } from '~shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
 import { FormFieldValues, VerifiableFieldValues } from '~templates/Field'
 
 import { getLogicUnitPreventingSubmit } from '~features/logic/utils'

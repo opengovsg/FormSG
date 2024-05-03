@@ -16,12 +16,11 @@ import {
   useBreakpointValue,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
+import { Button, ModalCloseButton } from '@opengovsg/design-system-react'
 
 import { AdminDashboardFormMetaDto } from '~shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
-import { ModalCloseButton } from '~components/Modal'
 
 import { useDeleteFormMutation } from '~features/workspace/mutations'
 
@@ -58,13 +57,13 @@ export const DeleteFormModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader color="secondary.700">
+        <ModalHeader>
           <Container maxW="42.5rem" p={0}>
             Delete form
           </Container>
         </ModalHeader>
         <ModalBody whiteSpace="pre-wrap">
-          <Text color="secondary.500">
+          <Text color="brand.secondary.500">
             You will lose all responses and feedback for the following form
             permanently. Are you sure you want to delete the form?
           </Text>
@@ -93,7 +92,7 @@ export const DeleteFormModal = ({
             direction={{ base: 'column', md: 'row-reverse' }}
           >
             <Button
-              colorScheme="danger"
+              colorScheme="critical"
               isFullWidth={isMobile}
               isDisabled={!formToDelete}
               isLoading={deleteFormMutation.isLoading}
@@ -104,7 +103,7 @@ export const DeleteFormModal = ({
             <Button
               isFullWidth={isMobile}
               variant="clear"
-              colorScheme="secondary"
+              colorScheme="sub"
               onClick={onClose}
               isDisabled={deleteFormMutation.isLoading}
             >

@@ -12,9 +12,7 @@ import {
   Text,
   UnorderedList,
 } from '@chakra-ui/react'
-
-import Button from '~components/Button'
-import { ModalCloseButton } from '~components/Modal'
+import { Button, ModalCloseButton } from '@opengovsg/design-system-react'
 
 import { BASICFIELD_TO_DRAWER_META } from '../../constants'
 import { useAdminFormLogic } from '../../logic/hooks/useAdminFormLogic'
@@ -63,7 +61,7 @@ export const DeleteFieldModal = (): JSX.Element => {
         <ModalCloseButton />
         <ModalHeader>Delete field</ModalHeader>
         <ModalBody>
-          <Text color="secondary.500">
+          <Text color="brand.secondary.500">
             {fieldIsInLogic
               ? `This field is used in your form logic, so deleting it may cause
                 your logic to stop working correctly. Are you sure you want to 
@@ -95,11 +93,11 @@ export const DeleteFieldModal = (): JSX.Element => {
         </ModalBody>
         <ModalFooter>
           <ButtonGroup>
-            <Button variant="clear" colorScheme="secondary" onClick={onClose}>
+            <Button variant="clear" colorScheme="sub" onClick={onClose}>
               Cancel
             </Button>
             <Button
-              colorScheme="danger"
+              colorScheme="critical"
               onClick={handleDeleteConfirmation}
               isLoading={deleteFieldMutation.isLoading}
             >

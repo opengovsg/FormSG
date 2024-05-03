@@ -33,7 +33,7 @@ const TemplateGroup: StoryFn<YesNoProps> = (args) => (
     alignItems="center"
   >
     <Text>primary</Text>
-    <YesNo {...args} colorScheme="primary" />
+    <YesNo {...args} colorScheme="main" />
     <Text>theme-green</Text>
     <YesNo {...args} colorScheme="theme-green" />
     <Text>theme-teal</Text>

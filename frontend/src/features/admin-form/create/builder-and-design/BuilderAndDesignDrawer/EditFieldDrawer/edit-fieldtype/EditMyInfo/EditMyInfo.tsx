@@ -1,10 +1,10 @@
 import { BiCheck, BiData, BiX } from 'react-icons/bi'
 import { HStack, Icon, Text, VStack } from '@chakra-ui/react'
+import { Link } from '@opengovsg/design-system-react'
 
 import { MyInfoField } from '~shared/types'
 
 import { SINGPASS_FAQ } from '~constants/links'
-import Link from '~components/Link'
 
 import {
   FieldBuilderState,

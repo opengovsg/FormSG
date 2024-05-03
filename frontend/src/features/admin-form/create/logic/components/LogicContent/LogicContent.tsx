@@ -18,7 +18,7 @@ export const LogicContent = (): JSX.Element | null => {
   if (isLoading) return null
 
   return (
-    <Stack color="secondary.500" spacing="1rem">
+    <Stack color="brand.secondary.500" spacing="1rem">
       {hasError ? (
         <Infobox variant="error">
           There are errors in your form's logic, please fix them before sharing

@@ -24,7 +24,7 @@ export const ViewOnlyPermission = ({
         // Same width as permissions dropdown menu button for alignment
         minW="6.25rem"
         textStyle="body-2"
-        color="secondary.500"
+        color="brand.secondary.500"
       >
         {role}
       </Text>

@@ -8,15 +8,14 @@ import {
   SkeletonCircle,
   Text,
 } from '@chakra-ui/react'
+import { Button, IconButton } from '@opengovsg/design-system-react'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
-import IconButton from '~components/IconButton'
 
 const RowDropdownButtonSkeleton = () => {
   return (
-    <ButtonGroup isAttached variant="outline" colorScheme="secondary">
+    <ButtonGroup isAttached variant="outline" colorScheme="sub">
       <Button px="1.5rem" mr="-1px" isDisabled>
         Edit
       </Button>
@@ -63,12 +62,12 @@ export const WorkspaceFormRowSkeleton = (): JSX.Element => {
           w="fit-content"
         >
           <Skeleton>
-            <Text textStyle="subhead-1" color="secondary.700">
+            <Text textStyle="subhead-1" color="brand.secondary.700">
               Loading title... Loading title...
             </Text>
           </Skeleton>
           <Skeleton mt="0.5rem">
-            <Text textStyle="body-2" color="secondary.400">
+            <Text textStyle="body-2" color="brand.secondary.400">
               Also loading metadata...
             </Text>
           </Skeleton>

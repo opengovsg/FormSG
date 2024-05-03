@@ -1,13 +1,15 @@
 import { Controller, RegisterOptions, UseFormReturn } from 'react-hook-form'
 import { FormControl } from '@chakra-ui/react'
-import { Infobox } from '@opengovsg/design-system-react'
+import {
+  FormErrorMessage,
+  FormLabel,
+  Infobox,
+} from '@opengovsg/design-system-react'
 
 import { GUIDE_PAYMENTS_INVOICE_DIFFERENCES } from '~constants/links'
 import { usePaymentFieldValidation } from '~hooks/usePaymentFieldValidation'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
 import { MarkdownText } from '~components/MarkdownText2'
-import MoneyInput from '~components/MoneyInput'
+import { MoneyInput } from '~components/MoneyInput'
 
 import { FormPaymentsInput } from './PaymentsInputPanel'
 

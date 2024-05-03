@@ -11,11 +11,14 @@ import {
   useDisclosure,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
+import {
+  Button,
+  ButtonProps,
+  IconButton,
+  Menu,
+} from '@opengovsg/design-system-react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button, { ButtonProps } from '~components/Button'
-import IconButton from '~components/IconButton'
-import Menu from '~components/Menu'
 
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
@@ -72,12 +75,12 @@ const WorkspaceEditDropdown = ({
         <>
           <MenuButton
             as={IconButton}
-            _active={{ bg: 'secondary.100' }}
+            _active={{ bg: 'brand.secondary.100' }}
             isActive={isOpen}
             aria-label="Edit folder"
             icon={<BiDotsHorizontalRounded />}
             variant="clear"
-            colorScheme="secondary"
+            colorScheme="sub"
             ml="0.25rem"
           />
           <Menu.List>
@@ -126,7 +129,7 @@ const WorkspaceEditDrawer = ({
               spacing={0}
               w="100%"
               variant="clear"
-              colorScheme="secondary"
+              colorScheme="sub"
             >
               <Button onClick={renameModal.onOpen} {...buttonProps}>
                 Rename folder

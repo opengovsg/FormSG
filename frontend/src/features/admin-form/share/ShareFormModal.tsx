@@ -24,7 +24,17 @@ import {
   Text,
   useBreakpointValue,
 } from '@chakra-ui/react'
-import { Infobox } from '@opengovsg/design-system-react'
+import {
+  Button,
+  FormLabel,
+  IconButton,
+  Infobox,
+  Input,
+  Link,
+  ModalCloseButton,
+  Tab,
+  Textarea,
+} from '@opengovsg/design-system-react'
 import dedent from 'dedent'
 import { StatusCodes } from 'http-status-codes'
 
@@ -42,14 +52,6 @@ import {
   ADMINFORM_USETEMPLATE_ROUTE,
 } from '~constants/routes'
 import { HttpError } from '~services/ApiService'
-import Button from '~components/Button'
-import FormLabel from '~components/FormControl/FormLabel'
-import IconButton from '~components/IconButton'
-import Input from '~components/Input'
-import Link from '~components/Link'
-import { ModalCloseButton } from '~components/Modal'
-import { Tab } from '~components/Tabs'
-import Textarea from '~components/Textarea'
 import { CopyButton } from '~templates/CopyButton'
 
 import { useEnv } from '~features/env/queries'
@@ -258,7 +260,7 @@ export const ShareFormModal = ({
             {formId ? (
               <InputRightElement>
                 <CopyButton
-                  colorScheme="secondary"
+                  colorScheme="sub"
                   stringToCopy={shareLink}
                   aria-label="Copy respondent form link"
                 />
@@ -293,7 +295,7 @@ export const ShareFormModal = ({
           {formId ? (
             <InputRightElement>
               <CopyButton
-                colorScheme="secondary"
+                colorScheme="sub"
                 stringToCopy={`${templateLink}`}
                 aria-label="Copy link to use this form as a template"
                 isDisabled={isFormPrivate}
@@ -312,7 +314,7 @@ export const ShareFormModal = ({
         <InputGroup>
           <Textarea
             pr="2.75rem"
-            fontFamily="monospace"
+            fontFamily="code"
             textStyle="body-1"
             isReadOnly
             value={embeddedHtml}
@@ -321,7 +323,7 @@ export const ShareFormModal = ({
             <InputRightElement>
               <CopyButton
                 bg="white"
-                colorScheme="secondary"
+                colorScheme="sub"
                 stringToCopy={embeddedHtml}
                 aria-label="Copy HTML code for embedding this form"
               />
@@ -337,7 +339,7 @@ export const ShareFormModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader color="secondary.700">Share form</ModalHeader>
+        <ModalHeader color="brand.secondary.700">Share form</ModalHeader>
         <ModalBody whiteSpace="pre-wrap">
           {isFormPrivate ? (
             <Infobox variant="warning" mb="1rem">
@@ -388,7 +390,7 @@ export const ShareFormModal = ({
                           {goLinkSaved ? (
                             <InputRightElement>
                               <CopyButton
-                                colorScheme="secondary"
+                                colorScheme="sub"
                                 stringToCopy={`${goGovBaseUrl}/${goLinkSuffixInput}`}
                                 aria-label="Copy respondent form link"
                               />

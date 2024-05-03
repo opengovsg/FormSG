@@ -42,6 +42,6 @@ export const Accordion = {
   baseStyle,
   variants,
   defaultProps: {
-    colorScheme: 'primary',
+    colorScheme: 'main',
   },
 }

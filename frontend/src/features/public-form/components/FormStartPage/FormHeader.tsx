@@ -8,15 +8,14 @@ import {
   Skeleton,
   Slide,
   Text,
+  ThemingProps,
   useDisclosure,
 } from '@chakra-ui/react'
+import { Button, IconButton } from '@opengovsg/design-system-react'
 
 import { BxMenuAltLeft } from '~assets/icons/BxMenuAltLeft'
 import { BxsTimeFive } from '~assets/icons/BxsTimeFive'
-import { ThemeColorScheme } from '~theme/foundations/colours'
 import { noPrintCss } from '~utils/noPrintCss'
-import Button from '~components/Button'
-import IconButton from '~components/IconButton'
 
 export type MiniHeaderProps = Pick<
   FormHeaderProps,
@@ -101,7 +100,7 @@ interface FormHeaderProps {
   estTimeString: string
   titleBg: string
   titleColor: string
-  colorScheme?: ThemeColorScheme
+  colorScheme?: ThemingProps<'Button'>['colorScheme']
   showHeader?: boolean
   loggedInId?: string
   showMiniHeader?: boolean

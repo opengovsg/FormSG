@@ -7,14 +7,16 @@ import {
   FormControl,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
+import {
+  Checkbox,
+  CheckboxProps,
+  FormErrorMessage,
+} from '@opengovsg/design-system-react'
 
 import { FormColorTheme } from '~shared/types'
 
 import { CHECKBOX_THEME_KEY } from '~theme/components/Checkbox'
 import { createCheckboxValidationRules } from '~utils/fieldValidation'
-import Checkbox from '~components/Checkbox'
-import { CheckboxProps } from '~components/Checkbox/Checkbox'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { CheckboxFieldInputs, CheckboxFieldSchema } from '../types'

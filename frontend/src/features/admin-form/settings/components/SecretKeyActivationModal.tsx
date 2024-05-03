@@ -12,17 +12,19 @@ import {
   useBreakpointValue,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
+import {
+  Button,
+  Checkbox,
+  FormErrorMessage,
+  FormLabel,
+  IconButton,
+  Input,
+  ModalCloseButton,
+} from '@opengovsg/design-system-react'
 
 import { FormStatus } from '~shared/types/form/form'
 
 import { isKeypairValid, SECRET_KEY_REGEX } from '~utils/secretKeyValidation'
-import Button from '~components/Button'
-import Checkbox from '~components/Checkbox'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import IconButton from '~components/IconButton'
-import Input from '~components/Input'
-import { ModalCloseButton } from '~components/Modal'
 
 import { useMutateFormSettings } from '../mutations'
 
@@ -178,7 +180,7 @@ export const SecretKeyActivationModal = ({
           onChange={handleFileSelect}
           display="none"
         />
-        <ModalHeader color="secondary.500">
+        <ModalHeader color="brand.secondary.500">
           <Container maxW="42.5rem">Activate your form</Container>
         </ModalHeader>
         <ModalBody whiteSpace="pre-wrap">

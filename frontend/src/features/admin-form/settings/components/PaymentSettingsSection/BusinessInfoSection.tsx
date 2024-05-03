@@ -6,15 +6,13 @@ import {
   useState,
 } from 'react'
 import { FormControl } from '@chakra-ui/react'
+import { FormLabel, Input } from '@opengovsg/design-system-react'
 
 import {
   AgencyBase,
   FormResponseMode,
   StorageFormSettings,
 } from '~shared/types'
-
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 

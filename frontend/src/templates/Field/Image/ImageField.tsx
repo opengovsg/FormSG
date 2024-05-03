@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Box, Image, Skeleton, useBreakpointValue } from '@chakra-ui/react'
 
-import { useMdComponents } from '~hooks/useMdComponents'
-import { MarkdownText } from '~components/MarkdownText'
+import { MarkdownText } from '~components/MarkdownText2'
 
 import { BaseFieldProps } from '../FieldContainer'
 import { ImageFieldSchema } from '../types'
@@ -23,15 +22,6 @@ export const ImageField = ({ schema }: ImageFieldProps): JSX.Element => {
   const responsiveTextStyle = useBreakpointValue({
     base: 'caption-2',
     md: 'body-2',
-  })
-
-  const mdComponents = useMdComponents({
-    styles: {
-      text: {
-        color: 'secondary.700',
-        textStyle: responsiveTextStyle,
-      },
-    },
   })
 
   // Reset fallback type to `loading` whenever url changes.
@@ -61,7 +51,17 @@ export const ImageField = ({ schema }: ImageFieldProps): JSX.Element => {
       />
       {schema.description ? (
         <Box mt={{ base: '0.5rem', md: '1rem' }}>
-          <MarkdownText multilineBreaks components={mdComponents}>
+          <MarkdownText
+            multilineBreaks
+            componentProps={{
+              styles: {
+                text: {
+                  color: 'brand.secondary.700',
+                  textStyle: responsiveTextStyle,
+                },
+              },
+            }}
+          >
             {schema.description}
           </MarkdownText>
         </Box>

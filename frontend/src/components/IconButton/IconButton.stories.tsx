@@ -58,42 +58,42 @@ export const SolidPrimary = ButtonGroupTemplate.bind({})
 SolidPrimary.args = {
   'aria-label': 'Test Storybook Icon Button',
   variant: 'solid',
-  colorScheme: 'primary',
+  colorScheme: 'main',
 }
 
 export const OutlinePrimary = ButtonGroupTemplate.bind({})
 OutlinePrimary.args = {
   'aria-label': 'Test Storybook Icon Button',
   variant: 'outline',
-  colorScheme: 'primary',
+  colorScheme: 'main',
 }
 
 export const ClearPrimary = ButtonGroupTemplate.bind({})
 ClearPrimary.args = {
   'aria-label': 'Test Storybook Icon Button',
   variant: 'clear',
-  colorScheme: 'primary',
+  colorScheme: 'main',
 }
 
 export const ReverseSecondary = ButtonGroupTemplate.bind({})
 ReverseSecondary.args = {
   'aria-label': 'Test Storybook Icon Button',
   variant: 'reverse',
-  colorScheme: 'secondary',
+  colorScheme: 'sub',
 }
 
 export const OutlineSecondary = ButtonGroupTemplate.bind({})
 OutlineSecondary.args = {
   'aria-label': 'Test Storybook Icon Button',
   variant: 'outline',
-  colorScheme: 'secondary',
+  colorScheme: 'sub',
 }
 
 export const ClearSecondary = ButtonGroupTemplate.bind({})
 ClearSecondary.args = {
   'aria-label': 'Test Storybook Icon Button',
   variant: 'clear',
-  colorScheme: 'secondary',
+  colorScheme: 'sub',
 }
 
 export const SolidDanger = ButtonGroupTemplate.bind({})

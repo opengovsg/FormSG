@@ -1,10 +1,12 @@
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { Flex, FormControl, Icon, Stack, Text } from '@chakra-ui/react'
+import {
+  FormErrorMessage,
+  MultiSelect,
+  TouchableTooltip,
+} from '@opengovsg/design-system-react'
 
 import { BxsInfoCircleAlt } from '~assets/icons'
-import { MultiSelect } from '~components/Dropdown'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import Tooltip from '~components/Tooltip'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { getLogicFieldLabel } from '~features/admin-form/create/logic/components/LogicContent/utils/getLogicFieldLabel'
@@ -47,13 +49,13 @@ export const QuestionsBlock = ({
       py="1.5rem"
       px={{ base: '1.5rem', md: '2rem' }}
       borderTopWidth="1px"
-      borderTopColor="secondary.200"
+      borderTopColor="brand.secondary.200"
     >
       <Flex alignItems="center" gap="0.5rem">
         <Text textStyle="subhead-3">Fields to fill</Text>
-        <Tooltip label="Respondent will only be able to fill the fields you have selected">
+        <TouchableTooltip label="Respondent will only be able to fill the fields you have selected">
           <Icon as={BxsInfoCircleAlt} />
-        </Tooltip>
+        </TouchableTooltip>
       </Flex>
 
       <FormControl
@@ -70,7 +72,6 @@ export const QuestionsBlock = ({
               isDisabled={isLoading}
               placeholder="Select questions from your form"
               items={items}
-              isSelectedItemFullWidth
               values={value}
               {...field}
             />

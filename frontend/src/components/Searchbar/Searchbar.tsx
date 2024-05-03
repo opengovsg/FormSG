@@ -130,7 +130,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
               isDisabled={isDisabled}
               size="sm"
               variant="clear"
-              colorScheme="secondary"
+              colorScheme="sub"
               icon={<BiSearch fontSize="1.25rem" />}
               onClick={handleClickSearch}
             />
@@ -140,7 +140,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
             aria-label="Expand searchbar"
             icon={<BiSearch fontSize="1.25rem" />}
             variant="clear"
-            colorScheme="secondary"
+            colorScheme="sub"
             onClick={onExpandIconClick}
             sx={styles.icon}
           />
@@ -162,7 +162,7 @@ export const Searchbar = forwardRef<SearchbarProps, 'input'>(
               isDisabled={isDisabled}
               size="sm"
               variant="clear"
-              colorScheme="secondary"
+              colorScheme="sub"
               icon={<BiX fontSize="1.25rem" />}
               onClick={onCollapseIconClick}
             />

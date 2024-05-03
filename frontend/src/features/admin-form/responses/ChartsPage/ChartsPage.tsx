@@ -86,7 +86,6 @@ export const ChartsPage = (): JSX.Element => {
         hideResponseCount
         heroSvg={<ChartsSvgr />}
         ctaText="View charts"
-        label="Enter or upload Secret Key to view charts"
       />
       <Container p={0} maxW="42.5rem">
         <Box mt="2rem" mb="0.5rem">

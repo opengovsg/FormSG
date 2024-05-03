@@ -34,7 +34,7 @@ export const FormNotFound = ({
         />
         <Stack
           spacing="1rem"
-          color="secondary.500"
+          color="brand.secondary.500"
           align="center"
           textAlign="center"
         >

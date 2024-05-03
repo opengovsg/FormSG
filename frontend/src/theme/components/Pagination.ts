@@ -21,26 +21,26 @@ const baseButtonStyling: SystemStyleFunction = (props) => {
     h: 'auto',
     border: 'none',
     borderRadius: '0.25rem',
-    bg: isSelected ? 'secondary.500' : 'transparent',
+    bg: isSelected ? 'brand.secondary.500' : 'transparent',
     _active: {
-      bg: isSelected ? 'secondary.700' : 'secondary.200',
+      bg: isSelected ? 'brand.secondary.700' : 'brand.secondary.200',
     },
     _hover: {
-      bg: isSelected ? 'secondary.600' : 'secondary.100',
+      bg: isSelected ? 'brand.secondary.600' : 'brand.secondary.100',
     },
     _focus: {
       boxShadow: `0 0 0 2px var(--chakra-colors-secondary-300)`,
     },
     _disabled: {
-      bg: isSelected ? 'secondary.300' : 'transparent',
+      bg: isSelected ? 'brand.secondary.300' : 'transparent',
       cursor: 'not-allowed',
-      color: isSelected ? 'white' : 'secondary.300',
+      color: isSelected ? 'white' : 'brand.secondary.300',
       _hover: {
-        bg: isSelected ? 'secondary.300' : 'transparent',
-        color: isSelected ? 'white' : 'secondary.300',
+        bg: isSelected ? 'brand.secondary.300' : 'transparent',
+        color: isSelected ? 'white' : 'brand.secondary.300',
       },
     },
-    color: isSelected ? 'white' : 'secondary.500',
+    color: isSelected ? 'white' : 'brand.secondary.500',
   }
 }
 
@@ -66,7 +66,7 @@ export const Pagination: ComponentMultiStyleConfig<typeof parts> = {
         text: {
           alignSelf: 'center',
           p: '0.25rem 0.75rem',
-          color: isDisabled ? 'secondary.300' : 'secondary.500',
+          color: isDisabled ? 'brand.secondary.300' : 'brand.secondary.500',
         },
         stepper: {
           ...buttonStyling,

@@ -23,6 +23,12 @@ import {
   useBreakpointValue,
   useDisclosure,
 } from '@chakra-ui/react'
+import {
+  Button,
+  ButtonProps,
+  IconButton,
+  TouchableTooltip,
+} from '@opengovsg/design-system-react'
 import format from 'date-fns/format'
 
 import { AdminFormDto } from '~shared/types/form/form'
@@ -35,9 +41,6 @@ import {
 } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
 import { noPrintCss } from '~utils/noPrintCss'
-import Button, { ButtonProps } from '~components/Button'
-import IconButton from '~components/IconButton'
-import Tooltip from '~components/Tooltip'
 import { NavigationTab, NavigationTabList } from '~templates/NavigationTabs'
 
 import { AdminFormNavbarBreadcrumbs } from './AdminFormNavbarBreadcrumbs'
@@ -88,7 +91,7 @@ export const AdminFormNavbar = ({
       iconSpacing: '1rem',
       justifyContent: 'flex-start',
       variant: 'clear',
-      colorScheme: 'secondary',
+      colorScheme: 'sub',
       textStyle: 'body-1',
     }),
     [],
@@ -130,7 +133,8 @@ export const AdminFormNavbar = ({
         base: `'left right' 'tabs tabs'`,
         lg: `'left tabs right'`,
       }}
-      boxShadow={{ lg: '0 1px 1px var(--chakra-colors-neutral-300)' }}
+      borderBottom="1px solid"
+      borderBottomColor="base.divider.medium"
       mb="1px"
       bg="white"
       zIndex="docked"
@@ -201,15 +205,15 @@ export const AdminFormNavbar = ({
             {renderLastModified}
           </Flex>
           <ButtonGroup spacing="0.5rem" isDisabled={!formInfo}>
-            <Tooltip label="Manage collaborators">
+            <TouchableTooltip label="Manage collaborators">
               <IconButton
                 aria-label="Manage collaborators"
                 variant="outline"
                 onClick={handleAddCollabButtonClick}
                 icon={<BiUserPlus />}
               />
-            </Tooltip>
-            <Tooltip label="Preview form">
+            </TouchableTooltip>
+            <TouchableTooltip label="Preview form">
               <IconButton
                 as={ReactLink}
                 aria-label="Preview form"
@@ -218,10 +222,10 @@ export const AdminFormNavbar = ({
                 target="_blank"
                 icon={<BiShow />}
               />
-            </Tooltip>
-            <Tooltip label="Share your form link">
+            </TouchableTooltip>
+            <TouchableTooltip label="Share your form link">
               <Button onClick={handleShareButtonClick}>Share</Button>
-            </Tooltip>
+            </TouchableTooltip>
           </ButtonGroup>
         </Box>
       </Flex>

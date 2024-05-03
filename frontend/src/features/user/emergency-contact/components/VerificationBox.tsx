@@ -1,13 +1,15 @@
 import { useCallback, useMemo } from 'react'
 import { RegisterOptions, useForm } from 'react-hook-form'
 import { Flex, FormControl } from '@chakra-ui/react'
+import {
+  Button,
+  FormErrorMessage,
+  FormLabel,
+  Input,
+} from '@opengovsg/design-system-react'
 
 import { UserDto } from '~shared/types/user'
 
-import Button from '~components/Button'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
 import { ResendOtpButton } from '~templates/ResendOtpButton/ResendOtpButton'
 
 import { useUserMutations } from '~features/user/mutations'

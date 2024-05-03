@@ -32,9 +32,9 @@ const TemplateGroup: StoryFn<BadgeProps> = (args) => (
     alignItems="center"
   >
     <Text>primary</Text>
-    <Badge {...args} colorScheme="primary" />
+    <Badge {...args} colorScheme="main" />
     <Text>secondary</Text>
-    <Badge {...args} colorScheme="secondary" />
+    <Badge {...args} colorScheme="sub" />
     <Text>warning</Text>
     <Badge {...args} colorScheme="warning" />
     <Text>success</Text>

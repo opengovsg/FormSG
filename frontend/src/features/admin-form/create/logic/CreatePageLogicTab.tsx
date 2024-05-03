@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { BiPlus } from 'react-icons/bi'
 import { Box, Container, Flex, Spacer } from '@chakra-ui/react'
-
-import IconButton from '~components/IconButton'
+import { IconButton } from '@opengovsg/design-system-react'
 
 import { EmptyLogic } from './components/EmptyLogic'
 import { LogicContent } from './components/LogicContent'

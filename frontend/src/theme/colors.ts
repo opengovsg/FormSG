@@ -1,5 +1,19 @@
 import { colors as baseColors } from './foundations/colors'
 
+/**
+ * Available color schemes to use for form field colors
+ */
+export type FieldColorScheme =
+  | 'theme-blue'
+  | 'theme-green'
+  | 'theme-teal'
+  | 'theme-purple'
+  | 'theme-grey'
+  | 'theme-yellow'
+  | 'theme-orange'
+  | 'theme-red'
+  | 'theme-brown'
+
 export const colors = {
   ...baseColors,
   // Public form theme colors

@@ -8,10 +8,10 @@ import {
   Text,
   useDisclosure,
 } from '@chakra-ui/react'
+import { Button } from '@opengovsg/design-system-react'
 import simplur from 'simplur'
 
 import { useIsDesktop, useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
 
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
@@ -84,16 +84,16 @@ export const WorkspaceHeader = ({
         gridArea="header"
         flex={1}
         display="flex"
-        color="secondary.500"
+        color="brand.secondary.500"
         alignSelf="center"
       >
         <Skeleton isLoaded={!isLoading} alignSelf="center">
           <Flex maxW={{ base: '9.75rem', md: '30.5rem' }}>
-            <Text textStyle="h4" color="secondary.500" noOfLines={1}>
+            <Text textStyle="h4" color="brand.secondary.500" noOfLines={1}>
               {headerText}
             </Text>
             {!hasActiveSearchOrFilter && (
-              <Text textStyle="h4" color="secondary.500">
+              <Text textStyle="h4" color="brand.secondary.500">
                 &nbsp;({totalFormsCount})
               </Text>
             )}

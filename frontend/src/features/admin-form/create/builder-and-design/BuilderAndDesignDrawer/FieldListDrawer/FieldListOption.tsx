@@ -242,7 +242,7 @@ export const FieldListOption = forwardRef<FieldOptionProps, 'button'>(
           spacing="1.5rem"
           direction="row"
           align="center"
-          color="secondary.500"
+          color="brand.secondary.500"
         >
           {children}
         </Stack>

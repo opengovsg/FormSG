@@ -112,6 +112,6 @@ export const RatingField: ComponentMultiStyleConfig<typeof parts> = {
     }),
   },
   defaultProps: {
-    colorScheme: 'primary',
+    colorScheme: 'main',
   },
 }

@@ -25,7 +25,8 @@ export const FormFieldMessage = ({
   variant = 'info',
   ...props
 }: FormFieldMessageProps): JSX.Element => {
-  const fontColor = variant === 'success' ? 'success.700' : 'secondary.400'
+  const fontColor =
+    variant === 'success' ? 'success.700' : 'brand.secondary.400'
   return (
     <FormHelperText
       display="flex"

@@ -1,17 +1,19 @@
 import { useMemo } from 'react'
 import { Controller } from 'react-hook-form'
 import { FormControl } from '@chakra-ui/react'
+import {
+  FormErrorMessage,
+  FormLabel,
+  Input,
+  SingleSelect,
+  Textarea,
+  Toggle,
+} from '@opengovsg/design-system-react'
 import { extend, pick } from 'lodash'
 
 import { RatingFieldBase, RatingShape } from '~shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
-import { SingleSelect } from '~components/Dropdown'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
-import Textarea from '~components/Textarea'
-import Toggle from '~components/Toggle'
 
 import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'

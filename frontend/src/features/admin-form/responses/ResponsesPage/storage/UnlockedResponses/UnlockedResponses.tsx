@@ -1,12 +1,12 @@
 import { useMemo } from 'react'
 import { Box, Flex, Grid, Skeleton, Stack, Text } from '@chakra-ui/react'
+import { DateRangePicker, Pagination } from '@opengovsg/design-system-react'
 import simplur from 'simplur'
 
 import {
-  DateRangePicker,
-  dateRangePickerHelper,
-} from '~components/DateRangePicker'
-import Pagination from '~components/Pagination'
+  datePickerValueToDateString,
+  dateStringToDatePickerValue,
+} from '~utils/date'
 
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 
@@ -47,7 +47,7 @@ export const UnlockedResponses = (): JSX.Element => {
       <Grid
         mb="1rem"
         alignItems="end"
-        color="secondary.500"
+        color="brand.secondary.500"
         gridTemplateColumns={{ base: 'auto 1fr', lg: 'auto 1fr auto' }}
         gridGap="0.5rem"
         gridTemplateAreas={{
@@ -63,7 +63,7 @@ export const UnlockedResponses = (): JSX.Element => {
         >
           <Skeleton isLoaded={!isAnyFetching}>
             <Text textStyle="h4" mb="0.5rem">
-              <Text as="span" color="primary.500">
+              <Text as="span" color="brand.primary.500">
                 {countToUse?.toLocaleString()}
               </Text>
               {prettifiedResponsesCount}
@@ -86,13 +86,9 @@ export const UnlockedResponses = (): JSX.Element => {
           maxW="100%"
         >
           <DateRangePicker
-            value={dateRangePickerHelper.dateStringToDatePickerValue(dateRange)}
+            value={dateStringToDatePickerValue(dateRange)}
             onChange={(nextDateRange) =>
-              setDateRange(
-                dateRangePickerHelper.datePickerValueToDateString(
-                  nextDateRange,
-                ),
-              )
+              setDateRange(datePickerValueToDateString(nextDateRange))
             }
           />
           <DownloadButton />

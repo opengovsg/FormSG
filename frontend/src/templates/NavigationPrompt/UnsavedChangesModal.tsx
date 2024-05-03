@@ -9,10 +9,9 @@ import {
   Stack,
   useBreakpointValue,
 } from '@chakra-ui/react'
+import { Button, ModalCloseButton } from '@opengovsg/design-system-react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
-import { ModalCloseButton } from '~components/Modal'
 
 export interface UnsavedChangesModalProps extends Omit<ModalProps, 'children'> {
   onConfirm: () => void
@@ -60,10 +59,10 @@ export const UnsavedChangesModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader color="secondary.700" pr="4rem">
+        <ModalHeader color="brand.secondary.700" pr="4rem">
           {title}
         </ModalHeader>
-        <ModalBody color="secondary.500" textStyle="body-2">
+        <ModalBody color="brand.secondary.500" textStyle="body-2">
           {description}
         </ModalBody>
         <ModalFooter>
@@ -74,14 +73,14 @@ export const UnsavedChangesModal = ({
           >
             <Button
               isFullWidth={isMobile}
-              colorScheme="danger"
+              colorScheme="critical"
               onClick={onConfirm}
               autoFocus
             >
               {confirmButtonText}
             </Button>
             <Button
-              colorScheme="secondary"
+              colorScheme="sub"
               variant="clear"
               isFullWidth={isMobile}
               onClick={onCancel}

@@ -34,10 +34,10 @@ export const InvalidLogo = ({ message }: { message: string }): JSX.Element => {
   return (
     <Box bg="neutral.200" p="0.5rem">
       <Stack spacing="1rem" justify="center" align="center">
-        <Icon as={BiImage} size="1.5rem" color="secondary.500" />
+        <Icon as={BiImage} size="1.5rem" color="brand.secondary.500" />
         <Text
           textStyle="caption-1"
-          color="secondary.400"
+          color="brand.secondary.400"
           whiteSpace="pre-wrap"
           textAlign="center"
         >

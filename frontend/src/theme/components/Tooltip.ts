@@ -7,7 +7,7 @@ export const Tooltip: ComponentStyleConfig = {
     // overriding --tooltip-bg since Chakra UI does it this way -
     // see https://github.com/chakra-ui/chakra-ui/blob/main/packages/theme/src/components/tooltip.ts
     '--tooltip-bg': 'var(--chakra-colors-secondary-700)',
-    bg: 'secondary.700',
+    bg: 'brand.secondary.700',
     px: '0.75rem',
     py: '0.5rem',
     color: 'white',

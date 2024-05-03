@@ -25,7 +25,7 @@ export const Tile: ComponentMultiStyleConfig<typeof parts> = {
         boxShadow: '0 0 0 2px var(--chakra-colors-primary-500)',
       },
       _active: {
-        bg: 'primary.200',
+        bg: 'brand.primary.200',
         // borderColor: 'transparent',
         boxShadow: '0 0 0 3px var(--chakra-colors-primary-400)',
         _disabled: {
@@ -38,7 +38,7 @@ export const Tile: ComponentMultiStyleConfig<typeof parts> = {
       },
       bg: 'white',
       border: '1px solid',
-      borderColor: 'neutral.300',
+      borderColor: 'base.divider.medium',
       whiteSpace: 'pre-wrap',
       flexDir: 'column',
       alignItems: 'flex-start',
@@ -48,16 +48,16 @@ export const Tile: ComponentMultiStyleConfig<typeof parts> = {
       justifyContent: 'stretch',
     },
     title: {
-      color: 'secondary.700',
+      color: 'brand.secondary.700',
       textStyle: 'h4',
       mt: '1rem',
     },
     icon: {
       boxSize: '2.5rem',
-      color: 'secondary.500',
+      color: 'brand.secondary.500',
     },
     subtitle: {
-      color: 'secondary.500',
+      color: 'brand.secondary.500',
       textStyle: 'body-2',
     },
   },

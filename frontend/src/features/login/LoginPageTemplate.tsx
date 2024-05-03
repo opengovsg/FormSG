@@ -130,7 +130,7 @@ export const LoginPageTemplate: FCC = ({ children }) => {
               <Text
                 display={{ base: 'none', lg: 'initial' }}
                 textStyle="responsive-heading-heavy"
-                color="secondary.500"
+                color="brand.secondary.500"
                 mb="2.5rem"
               >
                 {t('features.login.LoginPage.slogan')}
@@ -143,7 +143,7 @@ export const LoginPageTemplate: FCC = ({ children }) => {
                 >
                   <BrandLogo title="FormSG logo" />
                 </Link>
-                <Text textStyle="h4" color="secondary.500">
+                <Text textStyle="h4" color="brand.secondary.500">
                   {t('features.login.LoginPage.slogan')}
                 </Text>
               </Box>

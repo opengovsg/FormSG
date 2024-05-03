@@ -1,5 +1,4 @@
-import { useMdComponents } from '~hooks/useMdComponents'
-import { MarkdownText } from '~components/MarkdownText'
+import { MarkdownText } from '~components/MarkdownText2'
 
 import { BaseFieldProps } from '../FieldContainer'
 import { ParagraphFieldSchema } from '../types'
@@ -15,17 +14,18 @@ export interface ParagraphFieldProps extends BaseFieldProps {
 export const ParagraphField = ({
   schema,
 }: ParagraphFieldProps): JSX.Element => {
-  const mdComponents = useMdComponents({
-    styles: {
-      text: {
-        textStyle: 'body-1',
-        color: 'secondary.700',
-      },
-    },
-  })
-
   return (
-    <MarkdownText multilineBreaks components={mdComponents}>
+    <MarkdownText
+      multilineBreaks
+      componentProps={{
+        styles: {
+          text: {
+            textStyle: 'body-1',
+            color: 'brand.secondary.700',
+          },
+        },
+      }}
+    >
       {schema.description}
     </MarkdownText>
   )

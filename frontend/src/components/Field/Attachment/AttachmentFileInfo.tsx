@@ -36,12 +36,12 @@ export const AttachmentFileInfo = ({
       <Flex flexDir="column" aria-hidden>
         <Text
           textStyle="subhead-1"
-          color="secondary.500"
+          color="brand.secondary.500"
           overflowWrap="anywhere"
         >
           {file.name}
         </Text>
-        <Text textStyle="caption-1" color="secondary.500">
+        <Text textStyle="caption-1" color="brand.secondary.500">
           {readableFileSize}
         </Text>
       </Flex>
@@ -49,7 +49,7 @@ export const AttachmentFileInfo = ({
         {enableRemove ? (
           <IconButton
             variant="clear"
-            colorScheme="danger"
+            colorScheme="critical"
             aria-label="Click to remove file"
             icon={<BiTrash />}
             onClick={handleRemoveFile}

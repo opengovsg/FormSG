@@ -23,12 +23,12 @@ export const Toggle: ComponentMultiStyleConfig<typeof parts> = {
     },
     label: {
       textStyle: 'subhead-1',
-      color: 'secondary.700',
+      color: 'brand.secondary.700',
       m: 0,
     },
     description: {
       textStyle: 'body-2',
-      color: 'secondary.400',
+      color: 'brand.secondary.400',
     },
     container: {
       // To allow container to have a blue border on focus
@@ -45,7 +45,7 @@ export const Toggle: ComponentMultiStyleConfig<typeof parts> = {
       _focus: {
         boxShadow: `0 0 0 2px white, 0 0 0 3px ${getColor(
           theme,
-          'primary.500',
+          'brand.primary.500',
         )}`,
       },
     },
@@ -58,7 +58,7 @@ export const Toggle: ComponentMultiStyleConfig<typeof parts> = {
       _checked: {
         boxShadow: `inset 0 0 0 0.0625rem ${getColor(theme, `success.300`)}`,
       },
-      boxShadow: `inset 0 0 0 0.0625rem ${getColor(theme, `neutral.300`)}`,
+      boxShadow: `inset 0 0 0 0.0625rem ${getColor(theme, `base.divider.medium`)}`,
     },
     icon: {
       color: 'neutral.400',

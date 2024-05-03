@@ -61,7 +61,7 @@ const TemplateGroup: StoryFn<RatingProps> = (args) => (
       {...args}
       name={`${args.name}-p`}
       defaultValue={-1}
-      colorScheme="primary"
+      colorScheme="main"
     />
     <Text>theme-green</Text>
     <Rating

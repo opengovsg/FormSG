@@ -6,7 +6,7 @@ import { useFreeSmsQuota } from '~features/admin-form/common/queries'
 export const FreeSmsQuota = (): JSX.Element => {
   const { data: freeSmsQuota } = useFreeSmsQuota()
   return (
-    <Text textStyle="caption-1" color="secondary.500">
+    <Text textStyle="caption-1" color="brand.secondary.500">
       <Skeleton
         as="span"
         isLoaded={!!freeSmsQuota}

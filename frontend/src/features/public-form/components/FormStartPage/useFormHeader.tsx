@@ -16,7 +16,7 @@ export const getTitleBg = (colorTheme?: FormColorTheme, hover?: boolean) =>
 export const useFormHeader = ({ startPage, hover }: UseFormHeaderProps) => {
   const titleColor = useMemo(() => {
     if (startPage?.colorTheme === FormColorTheme.Orange) {
-      return 'secondary.700'
+      return 'brand.secondary.700'
     }
     return 'white'
   }, [startPage?.colorTheme])

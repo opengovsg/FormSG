@@ -1,14 +1,16 @@
 import { useMemo } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { chakra, Flex, FormControl } from '@chakra-ui/react'
+import {
+  Button,
+  FormErrorMessage,
+  FormLabel,
+  Textarea,
+} from '@opengovsg/design-system-react'
 
 import { FormColorTheme } from '~shared/types/form'
 
-import Button from '~components/Button'
-import Rating from '~components/Field/Rating'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Textarea from '~components/Textarea'
+import { Rating } from '~components/Field/Rating/Rating'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 

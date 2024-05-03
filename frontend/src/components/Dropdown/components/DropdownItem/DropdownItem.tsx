@@ -70,7 +70,7 @@ export const DropdownItem = ({
         {description && (
           <Text
             textStyle="body-2"
-            color={isActive ? 'secondary.500' : 'secondary.400'}
+            color={isActive ? 'brand.secondary.500' : 'brand.secondary.400'}
           >
             <DropdownItemTextHighlighter
               inputValue={inputValue ?? ''}

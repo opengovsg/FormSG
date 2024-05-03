@@ -34,7 +34,7 @@ export const BillingPage = (): JSX.Element => {
         flex={1}
         display="flex"
         flexDir="column"
-        color="secondary.500"
+        color="brand.secondary.500"
       >
         {esrvcId ? (
           <BillCharges

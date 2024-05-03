@@ -2,14 +2,12 @@ import { useCallback, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { GoThumbsdown, GoThumbsup } from 'react-icons/go'
 import { Flex, Link, Stack, Text } from '@chakra-ui/react'
+import { Button, IconButton, Textarea } from '@opengovsg/design-system-react'
 
 import { AdminFeedbackRating } from '~shared/types'
 
 import { BxX } from '~assets/icons'
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
-import IconButton from '~components/IconButton'
-import Textarea from '~components/Textarea'
 
 import { useAdminFeedbackMutation } from '~features/workspace/mutations'
 

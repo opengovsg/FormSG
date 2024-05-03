@@ -1,10 +1,9 @@
 import { useCallback, useMemo } from 'react'
 import { BiTrash } from 'react-icons/bi'
 import { Box, chakra, Flex, Stack, Text } from '@chakra-ui/react'
+import { IconButton } from '@opengovsg/design-system-react'
 
 import { FormWorkflowStepDto, WorkflowType } from '~shared/types/form'
-
-import IconButton from '~components/IconButton'
 
 import { FieldLogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/FieldLogicBadge'
 import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
@@ -107,7 +106,7 @@ export const InactiveStepBlock = ({
         borderRadius="4px"
         bg="white"
         border="1px solid"
-        borderColor="neutral.300"
+        borderColor="base.divider.medium"
         transitionProperty="common"
         transitionDuration="normal"
         cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
@@ -158,7 +157,7 @@ export const InactiveStepBlock = ({
           pos="absolute"
           aria-label="Delete step"
           variant="clear"
-          colorScheme="danger"
+          colorScheme="critical"
           onClick={handleOpenDeleteModal}
           icon={<BiTrash fontSize="1.5rem" />}
         />

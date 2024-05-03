@@ -1,11 +1,11 @@
 import { Controller, useFormContext } from 'react-hook-form'
 import { Box, FormControl, Text } from '@chakra-ui/react'
+import { FormErrorMessage } from '@opengovsg/design-system-react'
 
 import { PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID } from '~shared/constants'
 import { centsToDollars, formatCurrency } from '~shared/utils/payments'
 
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import MoneyInput from '~components/MoneyInput'
+import { MoneyInput } from '~components/MoneyInput'
 
 import { centsToDollarString } from '~features/admin-form/responses/common/utils/getPaymentDataView'
 import { useEnv } from '~features/env/queries'
@@ -78,7 +78,7 @@ export const VariablePaymentItemDetailsBlock = ({
         {errors[PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]?.message ? (
           <FormErrorMessage>{amountHint}</FormErrorMessage>
         ) : (
-          <Text textStyle="body-2" color="secondary.400" mt="0.5rem">
+          <Text textStyle="body-2" color="brand.secondary.400" mt="0.5rem">
             {amountHint}
           </Text>
         )}

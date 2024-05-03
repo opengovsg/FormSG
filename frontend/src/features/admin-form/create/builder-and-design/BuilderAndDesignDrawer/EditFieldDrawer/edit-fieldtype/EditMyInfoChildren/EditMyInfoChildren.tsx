@@ -1,14 +1,12 @@
 import { Controller } from 'react-hook-form'
 import { BiCheck, BiData, BiX } from 'react-icons/bi'
 import { Box, FormControl, HStack, Icon, Text, VStack } from '@chakra-ui/react'
+import { Link, MultiSelect, Toggle } from '@opengovsg/design-system-react'
 import { extend } from 'lodash'
 
 import { MyInfoChildAttributes } from '~shared/types'
 
 import { SINGPASS_FAQ } from '~constants/links'
-import { MultiSelect } from '~components/Dropdown'
-import Link from '~components/Link'
-import { Toggle } from '~components/Toggle/Toggle'
 
 import { CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS } from '~features/admin-form/create/builder-and-design/constants'
 

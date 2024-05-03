@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { BiGitMerge, BiQuestionMark } from 'react-icons/bi'
 import { Divider, Stack } from '@chakra-ui/react'
+import { IconButton, TouchableTooltip } from '@opengovsg/design-system-react'
 
 import { FormResponseMode } from '~shared/types'
 
@@ -9,8 +10,6 @@ import { BxsDockTop } from '~assets/icons/BxsDockTop'
 import { BxsWidget } from '~assets/icons/BxsWidget'
 import { FORM_GUIDE } from '~constants/links'
 import { useIsMobile } from '~hooks/useIsMobile'
-import IconButton from '~components/IconButton'
-import Tooltip from '~components/Tooltip'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import {
@@ -82,7 +81,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
       px="0.5rem"
       py="1rem"
       borderRight="1px solid"
-      borderColor="neutral.300"
+      borderColor="base.divider.medium"
       direction="column"
       justifyContent="space-between"
     >
@@ -127,7 +126,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           </>
         )}
       </Stack>
-      <Tooltip label="Help" placement="right">
+      <TouchableTooltip label="Help" placement="right">
         <IconButton
           variant="solid"
           colorScheme="subtle"
@@ -140,7 +139,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
             window.open(FORM_GUIDE)
           }}
         />
-      </Tooltip>
+      </TouchableTooltip>
     </Stack>
   )
 }

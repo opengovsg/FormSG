@@ -12,11 +12,13 @@ import {
   Text,
   Wrap,
 } from '@chakra-ui/react'
-import { Infobox } from '@opengovsg/design-system-react'
+import {
+  Button,
+  Infobox,
+  ModalCloseButton,
+} from '@opengovsg/design-system-react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
-import { ModalCloseButton } from '~components/Modal'
 
 const InlineTextListItem = ({
   children,
@@ -49,7 +51,7 @@ export const ConfirmationScreen = ({
   return (
     <>
       <ModalCloseButton />
-      <ModalHeader color="secondary.700" pr="4.5rem">
+      <ModalHeader color="brand.secondary.700" pr="4.5rem">
         <Wrap shouldWrapChildren direction="row" align="center">
           <Text>Download responses and attachments</Text>
           <Badge w="fit-content" colorScheme="success">
@@ -57,7 +59,7 @@ export const ConfirmationScreen = ({
           </Badge>
         </Wrap>
       </ModalHeader>
-      <ModalBody whiteSpace="pre-wrap" color="secondary.500">
+      <ModalBody whiteSpace="pre-wrap" color="brand.secondary.500">
         <Stack spacing="1rem">
           <Text>
             Separate zip files will be downloaded, <b>one for each response</b>.
@@ -112,7 +114,7 @@ export const ConfirmationScreen = ({
           <Button
             isFullWidth={isMobile}
             variant="clear"
-            colorScheme="secondary"
+            colorScheme="sub"
             onClick={onCancel}
             isDisabled={isDownloading}
           >

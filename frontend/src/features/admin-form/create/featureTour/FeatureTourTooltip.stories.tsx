@@ -1,8 +1,8 @@
 import { useState } from 'react'
+import { ButtonProps } from '@opengovsg/design-system-react'
 import { Meta, StoryFn } from '@storybook/react'
 
 import { fullScreenDecorator } from '~utils/storybook'
-import { ButtonProps } from '~components/Button'
 
 import { FEATURE_STEPS } from './constants'
 import { FeatureTourContext } from './FeatureTourContext'

@@ -22,11 +22,9 @@ import {
   Text,
   useDisclosure,
 } from '@chakra-ui/react'
+import { Button, IconButton, Menu } from '@opengovsg/design-system-react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
-import IconButton from '~components/IconButton'
-import Menu from '~components/Menu'
 
 import { FilterOption } from '~features/workspace/types'
 import { FILTER_OPTIONS } from '~features/workspace/utils/dashboardFilter'
@@ -56,7 +54,7 @@ const SelectedFilterAffordance = ({ show }: { show?: boolean }) => {
           top="-0.5rem"
           right="-0.5rem"
           textStyle="legal"
-          bg="primary.500"
+          bg="brand.primary.500"
           borderRadius="50%"
           zIndex="banner"
           align="center"
@@ -102,7 +100,11 @@ export const MobileWorkspaceSearchbar = forwardRef<
         {isExpanded ? (
           <InputGroup gridArea="search">
             <InputLeftElement>
-              <Icon as={BiSearch} color="secondary.500" fontSize="1.25rem" />
+              <Icon
+                as={BiSearch}
+                color="brand.secondary.500"
+                fontSize="1.25rem"
+              />
             </InputLeftElement>
             <Input
               ref={ref}
@@ -118,7 +120,7 @@ export const MobileWorkspaceSearchbar = forwardRef<
                 fontSize="1.25rem"
                 variant="clear"
                 size="sm"
-                colorScheme="secondary"
+                colorScheme="sub"
                 minH="auto"
               />
             </InputRightElement>
@@ -127,7 +129,7 @@ export const MobileWorkspaceSearchbar = forwardRef<
           <Box gridArea="searchIcon">
             <IconButton
               aria-label="Expand search bar"
-              colorScheme="secondary"
+              colorScheme="sub"
               variant="clear"
               onClick={handleToggle}
               icon={<BiSearch fontSize="1.25rem" />}
@@ -141,7 +143,7 @@ export const MobileWorkspaceSearchbar = forwardRef<
               pos="relative"
               width="min-content"
               as={IconButton}
-              colorScheme="secondary"
+              colorScheme="sub"
               variant="clear"
               aria-label="Filter forms"
               icon={<SelectedFilterAffordance show={hasFilter} />}
@@ -185,7 +187,7 @@ export const MobileWorkspaceSearchbar = forwardRef<
                       isFullWidth={true}
                       justifyContent="flex-start"
                       variant="clear"
-                      colorScheme="secondary"
+                      colorScheme="sub"
                       textStyle="body-1"
                       onClick={() => {
                         setInternalFilter(option)

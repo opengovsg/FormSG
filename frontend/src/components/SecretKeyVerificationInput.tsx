@@ -9,14 +9,11 @@ import {
   Skeleton,
   Stack,
 } from '@chakra-ui/react'
+import { Button, FormLabel, Link } from '@opengovsg/design-system-react'
 
 import { GUIDE_SECRET_KEY_LOSS } from '~constants/links'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { isKeypairValid, SECRET_KEY_REGEX } from '~utils/secretKeyValidation'
-
-import Button from '../Button'
-import FormLabel from '../FormControl/FormLabel'
-import Link from '../Link'
 
 const SECRET_KEY_NAME = 'secretKey'
 

@@ -13,14 +13,12 @@ import {
   Text,
   useBreakpointValue,
 } from '@chakra-ui/react'
+import { Button, FormErrorMessage, Input } from '@opengovsg/design-system-react'
 
 import { Workspace } from '~shared/types/workspace'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import { WORKSPACE_TITLE_VALIDATION_RULES } from '~utils/workspaceValidation'
-import Button from '~components/Button'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import Input from '~components/Input'
 
 import { useWorkspaceMutations } from '~features/workspace/mutations'
 
@@ -101,7 +99,7 @@ export const RenameWorkspaceModal = ({
             <Button
               onClick={onClose}
               variant="clear"
-              colorScheme="secondary"
+              colorScheme="sub"
               isFullWidth={isMobile}
             >
               Cancel

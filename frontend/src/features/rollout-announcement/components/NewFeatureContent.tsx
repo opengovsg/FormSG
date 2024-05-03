@@ -1,6 +1,6 @@
 import { Box, Image, ModalBody, ModalHeader, Text } from '@chakra-ui/react'
+import { Link } from '@opengovsg/design-system-react'
 
-import Link from '~components/Link'
 import { LottieAnimation } from '~templates/LottieAnimation'
 
 import { NewFeature } from './AnnouncementsFeatureList'
@@ -29,7 +29,7 @@ export const NewFeatureContent = (props: {
         <Text mt="0.625rem">{title}</Text>
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap">
-        <Text textStyle="body-1" color="secondary.500">
+        <Text textStyle="body-1" color="brand.secondary.500">
           {description}{' '}
           {!!learnMoreLink && (
             <Link isExternal href={learnMoreLink}>

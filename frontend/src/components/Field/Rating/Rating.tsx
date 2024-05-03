@@ -8,7 +8,7 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 
-import { FieldColorScheme } from '~theme/foundations/colours'
+import { FieldColorScheme } from '~theme/colors'
 
 import { RatingOption } from './RatingOption'
 
@@ -22,7 +22,7 @@ export interface RatingProps {
    */
   numberOfRatings: number
   /**
-   * Color scheme of the component to render. Defaults to `primary`.
+   * Color scheme of the component to render. Defaults to `theme-blue`.
    */
   colorScheme?: FieldColorScheme
   /**
@@ -74,7 +74,7 @@ export interface RatingProps {
 export const Rating = forwardRef<RatingProps, 'input'>(
   (
     {
-      colorScheme = 'primary',
+      colorScheme = 'theme-blue',
       defaultValue,
       name,
       numberOfRatings,
@@ -192,7 +192,7 @@ export const Rating = forwardRef<RatingProps, 'input'>(
             ))}
           </Flex>
           {currentValue && variant !== 'number' && (
-            <Text color="secondary.700" textStyle="subhead-2">
+            <Text color="brand.secondary.700" textStyle="subhead-2">
               {currentValue} selected
             </Text>
           )}
@@ -202,7 +202,7 @@ export const Rating = forwardRef<RatingProps, 'input'>(
             id={`${name}-caption`}
             gridArea="caption"
             textStyle="caption-1"
-            color="secondary.500"
+            color="brand.secondary.500"
           >
             {helperText}
           </Text>

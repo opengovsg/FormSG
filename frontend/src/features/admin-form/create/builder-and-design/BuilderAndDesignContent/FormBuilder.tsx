@@ -1,8 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { Box, Flex, FlexProps, Skeleton, Stack } from '@chakra-ui/react'
 import { Droppable } from '@hello-pangea/dnd'
-
-import Button from '~components/Button'
+import { Button } from '@opengovsg/design-system-react'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { getVisibleFieldIds } from '~features/logic/utils'
@@ -176,12 +175,12 @@ export const FormBuilder = ({
         >
           <Skeleton isLoaded={!isLoading} mb="1.5rem" maxW="57rem" width="100%">
             <Button
-              _hover={{ bg: 'primary.200' }}
+              _hover={{ bg: 'brand.primary.200' }}
               py="1.5rem"
               width="100%"
               variant="outline"
-              borderColor="secondary.200"
-              colorScheme="secondary"
+              borderColor="brand.secondary.200"
+              colorScheme="sub"
               height="auto"
               onClick={handleEditEndPageClick}
               textStyle="subhead-2"

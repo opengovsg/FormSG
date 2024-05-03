@@ -36,7 +36,7 @@ export const EmptyFormPlaceholder = forwardRef<
     <Box h="13.75rem" m={{ base: 0, lg: '1.625rem' }}>
       <chakra.button
         _hover={{
-          bg: 'primary.200',
+          bg: 'brand.primary.200',
         }}
         _focus={{
           boxShadow: '0 0 0 2px var(--chakra-colors-neutral-500)',
@@ -44,7 +44,9 @@ export const EmptyFormPlaceholder = forwardRef<
         h="100%"
         w="100%"
         border="1px dashed"
-        borderColor={isDraggingOver ? 'primary.700' : 'secondary.300'}
+        borderColor={
+          isDraggingOver ? 'brand.primary.700' : 'brand.secondary.300'
+        }
         borderRadius="4px"
         bg="neutral.100"
         transitionProperty="common"
@@ -56,11 +58,11 @@ export const EmptyFormPlaceholder = forwardRef<
         <Center flexDir="column" gap={'0.75rem'}>
           <Icon
             as={BxsWidget}
-            __css={{ color: 'secondary.500', fontSize: '1.5rem' }}
+            __css={{ color: 'brand.secondary.500', fontSize: '1.5rem' }}
           />
           <Text
             textStyle="subhead-2"
-            color="secondary.500"
+            color="brand.secondary.500"
             px="1.5rem"
             textAlign={'center'}
           >

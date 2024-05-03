@@ -1,5 +1,10 @@
 import { Controller, RegisterOptions, UseFormReturn } from 'react-hook-form'
 import { FormControl, HStack } from '@chakra-ui/react'
+import {
+  FormErrorMessage,
+  FormLabel,
+  Input,
+} from '@opengovsg/design-system-react'
 
 import {
   centsToDollars,
@@ -8,9 +13,6 @@ import {
 } from '~shared/utils/payments'
 
 import { usePaymentFieldValidation } from '~hooks/usePaymentFieldValidation'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
 
 import { useEnv } from '~features/env/queries'
 

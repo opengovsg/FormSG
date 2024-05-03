@@ -7,8 +7,7 @@ import {
   Text,
   UnorderedList,
 } from '@chakra-ui/react'
-
-import Link from '~components/Link'
+import { Link } from '@opengovsg/design-system-react'
 
 type MdComponentStyles = {
   /**

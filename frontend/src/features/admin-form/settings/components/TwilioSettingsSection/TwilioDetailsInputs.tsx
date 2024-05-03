@@ -14,17 +14,20 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
+import {
+  Button,
+  FormErrorMessage,
+  FormLabel,
+  IconButton,
+  Input,
+  InputProps,
+} from '@opengovsg/design-system-react'
 import { useToggle } from 'rooks'
 
 import { featureFlags } from '~shared/constants'
 import { TwilioCredentials } from '~shared/types/twilio'
 
 import { trimStringsInObject } from '~utils/trimStringsInObject'
-import Button from '~components/Button'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import IconButton from '~components/IconButton'
-import Input, { InputProps } from '~components/Input'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
@@ -170,7 +173,7 @@ export const TwilioDetailsInputs = (): JSX.Element => {
               {!hasExistingTwilioCreds && (
                 <InputRightElement>
                   <IconButton
-                    colorScheme="secondary"
+                    colorScheme="sub"
                     minH="auto"
                     right="2px"
                     variant="clear"
@@ -179,7 +182,7 @@ export const TwilioDetailsInputs = (): JSX.Element => {
                     } API key secret`}
                     icon={isApiSecretShown ? <BiHide /> : <BiShow />}
                     onClick={toggleIsApiSecretShown}
-                  ></IconButton>
+                  />
                 </InputRightElement>
               )}
             </InputGroup>
@@ -202,7 +205,7 @@ export const TwilioDetailsInputs = (): JSX.Element => {
       </Stack>
       <Skeleton isLoaded={!isLoading} mt="2.5rem" w="fit-content">
         {hasExistingTwilioCreds ? (
-          <Button colorScheme="danger" onClick={onOpen}>
+          <Button colorScheme="critical" onClick={onOpen}>
             Remove and re-enter credentials
           </Button>
         ) : (

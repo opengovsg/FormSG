@@ -43,7 +43,7 @@ export const DatePicker: ComponentMultiStyleConfig<typeof parts> = {
   variants,
   defaultProps: {
     variant: 'outline',
-    colorScheme: 'primary',
+    colorScheme: 'main',
     size: 'md',
     focusBorderColor: Input.defaultProps.focusBorderColor,
     errorBorderColor: Input.defaultProps.errorBorderColor,

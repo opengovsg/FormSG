@@ -1,13 +1,13 @@
 import { useMemo } from 'react'
 import { BiDownload } from 'react-icons/bi'
 import { Box, Divider, Flex, Stack, Text } from '@chakra-ui/react'
+import { Button } from '@opengovsg/design-system-react'
 import { format } from 'date-fns'
 
 import { FormDto, PaymentType, ProductItemForReceipt } from '~shared/types'
 import { centsToDollars } from '~shared/utils/payments'
 
 import { useToast } from '~hooks/useToast'
-import Button from '~components/Button'
 
 import { getPaymentInvoiceDownloadUrl } from '~features/public-form/utils/urls'
 
@@ -40,12 +40,12 @@ const PaymentDetailsRow = ({
       <Text
         textStyle="body-1"
         width="6.5rem"
-        color="secondary.400"
+        color="brand.secondary.400"
         mb={{ base: 0, md: '0.5rem' }}
       >
         {title}
       </Text>
-      <Text textStyle="body-1" color="secondary.700">
+      <Text textStyle="body-1" color="brand.secondary.700">
         {input}
       </Text>
     </Stack>
@@ -68,12 +68,12 @@ const PaymentSummaryRow = ({
       <Text
         textStyle="body-1"
         width="6.5rem"
-        color="secondary.700"
+        color="brand.secondary.700"
         fontWeight="400"
       >
         {title}
       </Text>
-      <Text textStyle="body-1" color="secondary.700" fontWeight="500">
+      <Text textStyle="body-1" color="brand.secondary.700" fontWeight="500">
         {input}
       </Text>
     </Stack>
@@ -93,12 +93,12 @@ const LineItem = ({
     <Flex textStyle="body-1" justifyContent="space-between">
       <Text
         fontWeight="400"
-        color="secondary.700"
+        color="brand.secondary.700"
         width={{ base: '9.81rem', md: '26.69rem' }}
       >
         {name} x {quantity}
       </Text>
-      <Text fontWeight="500" color="secondary.700">
+      <Text fontWeight="500" color="brand.secondary.700">
         S${centsToDollars(quantity * amount_cents)}
       </Text>
     </Flex>
@@ -140,11 +140,11 @@ export const DownloadReceiptBlock = ({
         px={{ base: '1rem', md: '2rem' }}
       >
         <Stack tabIndex={-1} spacing="0.75rem">
-          <Text textStyle="h4" color="secondary.500">
+          <Text textStyle="h4" color="brand.secondary.500">
             {endPage.paymentTitle ||
               'Thank you, your payment has been made successfully.'}
           </Text>
-          <Text textStyle="subhead-1" color="secondary.500">
+          <Text textStyle="subhead-1" color="brand.secondary.500">
             {endPage.paymentParagraph ||
               'Your form has been submitted and payment has been made.'}
           </Text>
@@ -159,7 +159,7 @@ export const DownloadReceiptBlock = ({
       >
         <Stack>
           <Box mb="0.5rem" px={{ base: '0.5rem', md: '1.5rem' }}>
-            <Text textStyle="h4" mb="1rem" color="secondary.500">
+            <Text textStyle="h4" mb="1rem" color="brand.secondary.500">
               Details
             </Text>
             <PaymentDetailsRow title="Payment date" input={paymentTimestamp} />
@@ -172,7 +172,7 @@ export const DownloadReceiptBlock = ({
             py="1rem"
             px="1.5rem"
           >
-            <Text textStyle="h4" mb="1rem" color="secondary.500">
+            <Text textStyle="h4" mb="1rem" color="brand.secondary.500">
               Summary
             </Text>
             <Stack spacing="0.75rem" mb="1rem">
@@ -194,7 +194,7 @@ export const DownloadReceiptBlock = ({
 
         <Stack mx={{ base: '0', md: '1.5rem' }} mt="1.5rem">
           <Button
-            w="100%"
+            isFullWidth
             leftIcon={<BiDownload fontSize="1.5rem" />}
             onClick={onClick || handleInvoiceClick}
           >

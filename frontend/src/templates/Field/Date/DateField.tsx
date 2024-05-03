@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
+import { DatePicker } from '@opengovsg/design-system-react'
 
 import { DATE_DISPLAY_FORMAT, DATE_PARSE_FORMAT } from '~shared/constants/dates'
 import { FormColorTheme } from '~shared/types'
@@ -13,7 +14,6 @@ import {
   loadDateFromNormalizedDate,
 } from '~utils/date'
 import { createDateValidationRules } from '~utils/fieldValidation'
-import { DatePicker } from '~components/DatePicker'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { DateFieldSchema, SingleAnswerFieldInput } from '../types'

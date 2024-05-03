@@ -1,12 +1,14 @@
 import { Controller } from 'react-hook-form'
 import { Skeleton } from '@chakra-ui/react'
+import {
+  FormErrorMessage,
+  Input,
+  TagInput,
+} from '@opengovsg/design-system-react'
 import { get } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
 import { ADMIN_EMAIL_VALIDATION_RULES } from '~utils/formValidation'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import Input from '~components/Input'
-import { TagInput } from '~components/TagInput'
 
 import { useUser } from '~features/user/queries'
 

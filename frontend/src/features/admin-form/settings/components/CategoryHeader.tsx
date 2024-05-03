@@ -12,7 +12,7 @@ export const CategoryHeader = ({
     <Text
       as="h2"
       textStyle="h4"
-      color="secondary.500"
+      color="brand.secondary.500"
       mb="2.5rem"
       {...textProps}
     >

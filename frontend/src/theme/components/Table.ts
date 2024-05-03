@@ -25,7 +25,7 @@ const variantColumnStripe: PartsStyleFunction<typeof parts> = ({
       textAlign: 'center',
       textTransform: 'initial',
       ...textStyles['subhead-2'],
-      color: 'secondary.500',
+      color: 'brand.secondary.500',
       bg: { base: 'transparent', md: 'white' },
       '&:nth-of-type(odd)': {
         bg: { md: `${c}.100` },
@@ -55,7 +55,7 @@ const variantSolid: PartsStyleFunction<typeof parts> = ({ colorScheme: c }) => {
       py: '0.625rem',
       px: '1rem',
       borderBottom: '1px solid',
-      borderColor: 'neutral.300',
+      borderColor: 'base.divider.medium',
     },
   }
 }
@@ -81,7 +81,7 @@ export const Table: ComponentMultiStyleConfig<typeof parts> = {
     solid: variantSolid,
   },
   defaultProps: {
-    colorScheme: 'secondary',
+    colorScheme: 'sub',
   },
   sizes,
 }

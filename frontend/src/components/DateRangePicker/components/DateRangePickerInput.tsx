@@ -81,7 +81,7 @@ export const DateRangePickerInput = forwardRef<{}, 'input'>((_props, ref) => {
           onClick={handleInputClick}
           isReadOnly={fcProps.isReadOnly || !allowManualInput}
         />
-        <Text color="secondary.400">{labelSeparator}</Text>
+        <Text color="brand.secondary.400">{labelSeparator}</Text>
         <Input
           variant="unstyled"
           aria-label="Start date of range"

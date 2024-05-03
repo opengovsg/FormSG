@@ -27,7 +27,7 @@ export const FormPaymentPage = () => {
           <Suspense
             fallback={
               <Skeleton w={'100%'} h={'350px'}>
-                <Text w={'100%'} textStyle="h3" textColor="primary.500">
+                <Text w={'100%'} textStyle="h3" textColor="brand.primary.500">
                   Loading Payment Information
                 </Text>
               </Skeleton>

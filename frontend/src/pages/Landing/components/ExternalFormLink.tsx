@@ -1,7 +1,6 @@
 import { BiLayout } from 'react-icons/bi'
 import { Flex, Icon } from '@chakra-ui/react'
-
-import Link from '~components/Link'
+import { Link } from '@opengovsg/design-system-react'
 
 export interface ExternalFormLinkProps {
   href: string
@@ -16,7 +15,7 @@ export const ExternalFormLink = ({
     <Flex>
       <Icon
         mr="1rem"
-        color="secondary.500"
+        color="brand.secondary.500"
         fontSize="1.5rem"
         as={BiLayout}
         aria-hidden

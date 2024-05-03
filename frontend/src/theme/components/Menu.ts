@@ -41,12 +41,12 @@ const baseStyle = definePartsStyle((props) => {
       [$bg.variable]: 'white',
       textStyle: 'body-1',
       fontWeight: '400',
-      color: 'secondary.700',
+      color: 'brand.secondary.700',
       _hover: {
         [$bg.variable]: `colors.${hoverBg}`,
       },
       _disabled: {
-        color: 'secondary.300',
+        color: 'brand.secondary.300',
         opacity: 1,
         cursor: 'not-allowed',
       },
@@ -67,7 +67,7 @@ const baseStyle = definePartsStyle((props) => {
       },
     },
     divider: {
-      borderColor: 'secondary.100',
+      borderColor: 'brand.secondary.100',
       opacity: 1,
       my: 0,
     },
@@ -129,7 +129,7 @@ export const Menu = defineMultiStyleConfig({
   sizes,
   variants,
   defaultProps: {
-    colorScheme: 'secondary',
+    colorScheme: 'sub',
     variant: 'outline',
     size: 'md',
   },

@@ -11,16 +11,17 @@ import {
 } from 'react-hook-form'
 import { Link as ReactLink } from 'react-router-dom'
 import { useDebounce } from 'react-use'
+import { Box, Divider, FormControl, Stack, Text } from '@chakra-ui/react'
 import {
-  Box,
-  Divider,
-  FormControl,
+  FormErrorMessage,
+  FormLabel,
+  Infobox,
+  Input,
   Link,
-  Stack,
-  Text,
+  SingleSelect,
   Textarea,
-} from '@chakra-ui/react'
-import { Infobox } from '@opengovsg/design-system-react'
+  Toggle,
+} from '@opengovsg/design-system-react'
 import { cloneDeep } from 'lodash'
 
 import {
@@ -34,11 +35,6 @@ import { centsToDollars, dollarsToCents } from '~shared/utils/payments'
 import { ADMINFORM_SETTINGS_PAYMENTS_SUBROUTE } from '~constants/routes'
 import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'
 import { useSessionStorage } from '~hooks/useSessionStorage'
-import { SingleSelect } from '~components/Dropdown'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
-import Toggle from '~components/Toggle'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -178,7 +174,6 @@ const PaymentTypeSelector = ({
             <SingleSelect
               isClearable={false}
               placeholder="Select Payment Type"
-              fullWidth
               items={[
                 {
                   value: PaymentType.Products,

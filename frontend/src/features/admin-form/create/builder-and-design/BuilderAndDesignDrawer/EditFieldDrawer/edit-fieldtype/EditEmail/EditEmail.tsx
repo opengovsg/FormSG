@@ -1,6 +1,13 @@
 import { useMemo, useRef } from 'react'
 import { RegisterOptions } from 'react-hook-form'
 import { Box, FormControl, useMergeRefs } from '@chakra-ui/react'
+import {
+  FormErrorMessage,
+  FormLabel,
+  Input,
+  Textarea,
+  Toggle,
+} from '@opengovsg/design-system-react'
 import { extend, pick } from 'lodash'
 
 import { EmailFieldBase } from '~shared/types/field'
@@ -8,11 +15,6 @@ import { FormResponseMode } from '~shared/types/form'
 import { validateEmailDomains } from '~shared/utils/email-domain-validation'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
-import Textarea from '~components/Textarea'
-import Toggle from '~components/Toggle'
 
 import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { useCreateTabForm } from '../../../../useCreateTabForm'

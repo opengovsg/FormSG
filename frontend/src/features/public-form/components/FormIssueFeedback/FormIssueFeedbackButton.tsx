@@ -1,9 +1,8 @@
 import { BiQuestionMark } from 'react-icons/bi'
 import { Flex, useDisclosure } from '@chakra-ui/react'
+import { IconButton, TouchableTooltip } from '@opengovsg/design-system-react'
 
 import { noPrintCss } from '~utils/noPrintCss'
-import IconButton from '~components/IconButton'
-import Tooltip from '~components/Tooltip'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
@@ -21,15 +20,15 @@ export const FormIssueFeedbackButton = (): JSX.Element | null => {
       right={{ base: '1rem', md: '2.75rem' }}
       sx={noPrintCss}
     >
-      <Tooltip placement="left" label="Report an issue">
+      <TouchableTooltip placement="left" label="Report an issue">
         <IconButton
           variant="outline"
           cursor="pointer"
           aria-label="issue feedback"
-          icon={<BiQuestionMark color="primary.500" />}
+          icon={<BiQuestionMark />}
           onClick={onOpen}
         />
-      </Tooltip>
+      </TouchableTooltip>
       <FormIssueFeedbackModal
         isOpen={isOpen}
         onClose={onClose}

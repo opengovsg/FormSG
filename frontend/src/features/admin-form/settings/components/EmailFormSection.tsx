@@ -7,16 +7,18 @@ import {
 } from 'react-hook-form'
 import { BiBulb } from 'react-icons/bi'
 import { Flex, FormControl, Icon } from '@chakra-ui/react'
+import {
+  FormErrorMessage,
+  FormLabel,
+  TagInput,
+} from '@opengovsg/design-system-react'
 import { get, isEmpty, isEqual } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
 import { GUIDE_FORM_MRF, GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
 import { useMdComponents } from '~hooks/useMdComponents'
 import { ADMIN_EMAIL_VALIDATION_RULES } from '~utils/formValidation'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
 import { MarkdownText } from '~components/MarkdownText'
-import { TagInput } from '~components/TagInput'
 
 import { useMutateFormSettings } from '../mutations'
 
@@ -57,8 +59,9 @@ export const EmailFormSection = ({
         <FormControl isInvalid={!isEmpty(errors)}>
           <FormLabel
             isRequired
-            useMarkdownForDescription
-            description={`Add at least **2 recipients** to prevent loss of response. Learn more on [how to guard against email bounces](${GUIDE_PREVENT_EMAIL_BOUNCE}).`}
+            description={
+              <MarkdownText>{`Add at least **2 recipients** to prevent loss of response. Learn more on [how to guard against email bounces](${GUIDE_PREVENT_EMAIL_BOUNCE}).`}</MarkdownText>
+            }
           >
             Emails where responses will be sent
           </FormLabel>
@@ -75,7 +78,12 @@ const MRFAdvertisingInfobox = () => {
 
   return (
     <Flex bg="brand.primary.50" p="1rem">
-      <Icon as={BiBulb} color="primary.500" fontSize="1.5rem" mr="0.5rem" />
+      <Icon
+        as={BiBulb}
+        color="brand.primary.500"
+        fontSize="1.5rem"
+        mr="0.5rem"
+      />
       <MarkdownText
         components={mdComponents}
       >{`Require routing and approval? [Check out our new feature: Multi-respondent forms!](${GUIDE_FORM_MRF})`}</MarkdownText>

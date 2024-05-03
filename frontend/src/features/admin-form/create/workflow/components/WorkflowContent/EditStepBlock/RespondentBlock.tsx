@@ -1,13 +1,14 @@
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { Flex, FormControl, Stack, Text } from '@chakra-ui/react'
+import {
+  FormErrorMessage,
+  Input,
+  Radio,
+  SingleSelect,
+} from '@opengovsg/design-system-react'
 import isEmail from 'validator/lib/isEmail'
 
 import { WorkflowType } from '~shared/types'
-
-import { SingleSelect } from '~components/Dropdown'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import Input from '~components/Input'
-import Radio from '~components/Radio'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { EditStepInputs } from '~features/admin-form/create/workflow/types'

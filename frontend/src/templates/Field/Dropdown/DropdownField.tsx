@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
+import { SingleSelect } from '@opengovsg/design-system-react'
 
 import { FormColorTheme } from '~shared/types'
 
 import { createDropdownValidationRules } from '~utils/fieldValidation'
-import { SingleSelect } from '~components/Dropdown/SingleSelect'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { DropdownFieldSchema, SingleAnswerFieldInput } from '../types'

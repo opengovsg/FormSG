@@ -10,7 +10,13 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react'
-import { Infobox } from '@opengovsg/design-system-react'
+import {
+  Checkbox,
+  FormLabel,
+  Infobox,
+  Input,
+  Link,
+} from '@opengovsg/design-system-react'
 
 import {
   DISALLOW_CONNECT_NON_WHITELIST_STRIPE_ACCOUNT,
@@ -20,10 +26,6 @@ import { FormResponseMode, PaymentChannel } from '~shared/types'
 
 import { BxsCheckCircle, BxsError, BxsInfoCircle } from '~assets/icons'
 import { GUIDE_STRIPE_ONBOARDING } from '~constants/links'
-import Checkbox from '~components/Checkbox'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
-import Link from '~components/Link'
 import { MarkdownText } from '~components/MarkdownText2'
 
 import { useEnv } from '~features/env/queries'
@@ -73,7 +75,7 @@ const BeforeConnectionInstructions = ({
             account, you can connect it to this form.`}
           </MarkdownText>
         </Infobox>
-        <Text textStyle="h3" color="secondary.500">
+        <Text textStyle="h3" color="brand.secondary.500">
           Bulk transaction rates
         </Text>
         <Text>

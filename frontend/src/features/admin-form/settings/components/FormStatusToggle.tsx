@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { Flex, Skeleton, Stack, Text, useDisclosure } from '@chakra-ui/react'
-import { Infobox } from '@opengovsg/design-system-react'
+import { Infobox, Switch } from '@opengovsg/design-system-react'
 
 import { BasicField } from '~shared/types'
 import {
@@ -8,8 +8,6 @@ import {
   FormResponseMode,
   FormStatus,
 } from '~shared/types/form/form'
-
-import { Switch } from '~components/Toggle/Switch'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 

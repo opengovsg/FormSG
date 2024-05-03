@@ -60,11 +60,11 @@ const TemplateGroup: StoryFn<LinkProps> = (args) => (
     alignItems="center"
   >
     <Text>primary</Text>
-    <Link {...args} colorScheme="primary" />
+    <Link {...args} colorScheme="main" />
     <Text>secondary</Text>
-    <Link {...args} colorScheme="secondary" />
+    <Link {...args} colorScheme="sub" />
     <Text>danger</Text>
-    <Link {...args} colorScheme="danger" />
+    <Link {...args} colorScheme="critical" />
     <Text>warning</Text>
     <Link {...args} colorScheme="warning" />
     <Text>success</Text>
@@ -72,7 +72,7 @@ const TemplateGroup: StoryFn<LinkProps> = (args) => (
     <Text>neutral</Text>
     <Link {...args} colorScheme="neutral" />
     <Text>primary</Text>
-    <Link {...args} colorScheme="primary" />
+    <Link {...args} colorScheme="main" />
     <Text>theme-green</Text>
     <Link {...args} colorScheme="theme-green" />
     <Text>theme-teal</Text>

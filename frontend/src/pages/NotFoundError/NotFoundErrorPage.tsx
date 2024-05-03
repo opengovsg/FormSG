@@ -1,14 +1,13 @@
 import { Helmet } from 'react-helmet-async'
 import { Link as ReactLink, useNavigate } from 'react-router-dom'
 import { Box, Flex, Stack, Text } from '@chakra-ui/react'
+import { Button, Link } from '@opengovsg/design-system-react'
 
 import { AppFooter } from '~/app/AppFooter'
 
 import { useAuth } from '~contexts/AuthContext'
 import { DASHBOARD_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
-import Link from '~components/Link'
 
 import { NotFoundSvgr } from './NotFoundSvgr'
 
@@ -40,7 +39,7 @@ export const NotFoundErrorPage = (): JSX.Element => {
           />
           <Stack
             spacing="2.5rem"
-            color="secondary.500"
+            color="brand.secondary.500"
             align="center"
             textAlign="center"
           >

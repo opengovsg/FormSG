@@ -18,7 +18,7 @@ const baseStyle: SystemStyleObject = {
 const variantSolid: SystemStyleFunction = (props) => {
   const { colorScheme: c, theme } = props
   const bgColor = getColor(theme, `${c}.400`)
-  let textColor = getColor(theme, 'secondary.700')
+  let textColor = getColor(theme, 'brand.secondary.700')
   const hasSufficientContrast = meetsWcagAaRatio(textColor, bgColor)
   if (!hasSufficientContrast) {
     textColor = 'white'
@@ -65,6 +65,6 @@ export const Badge = {
   defaultProps: {
     variant: 'solid',
     size: 'md',
-    colorScheme: 'primary',
+    colorScheme: 'main',
   },
 }

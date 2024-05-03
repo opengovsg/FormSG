@@ -94,7 +94,7 @@ export const Radio: ComponentMultiStyleConfig<typeof parts> = {
     },
     container: {
       w: '100%',
-      color: 'secondary.700',
+      color: 'brand.secondary.700',
       _hover: {
         bg: `${c}.100`,
       },
@@ -183,6 +183,6 @@ export const Radio: ComponentMultiStyleConfig<typeof parts> = {
     },
   },
   defaultProps: {
-    colorScheme: 'primary',
+    colorScheme: 'main',
   },
 }

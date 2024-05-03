@@ -1,11 +1,11 @@
 import { useCallback, useMemo } from 'react'
 import { BiTrash } from 'react-icons/bi'
 import { Spacer, Stack, StackDivider } from '@chakra-ui/react'
+import { IconButton, IconButtonProps } from '@opengovsg/design-system-react'
 
 import { FormPermission } from '~shared/types/form/form'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import IconButton, { IconButtonProps } from '~components/IconButton'
 
 import { useMutateCollaborators } from '../../../mutations'
 import { useAdminFormCollaborators } from '../../../queries'
@@ -29,7 +29,7 @@ const RemoveCollaboratorButton = (
     <IconButton
       icon={<BiTrash />}
       variant="clear"
-      colorScheme="danger"
+      colorScheme="critical"
       aria-label="Remove collaborator"
       {...props}
     />

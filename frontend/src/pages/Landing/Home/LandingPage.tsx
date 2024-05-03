@@ -42,9 +42,8 @@ import {
 } from '~constants/links'
 import { LOGIN_ROUTE, TOU_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
-import { useMdComponents } from '~hooks/useMdComponents'
 import { FeatureBanner } from '~components/FeatureBanner/FeatureBanner'
-import { MarkdownText } from '~components/MarkdownText'
+import { MarkdownText } from '~components/MarkdownText2'
 import { LottieAnimation } from '~templates/LottieAnimation'
 
 import { ExternalFormLink } from '../components/ExternalFormLink'
@@ -85,7 +84,6 @@ import { useLanding } from './queries'
 export const LandingPage = (): JSX.Element => {
   const { data } = useLanding()
   const isMobile = useIsMobile()
-  const mdComponents = useMdComponents()
 
   return (
     <>
@@ -109,7 +107,7 @@ export const LandingPage = (): JSX.Element => {
             <Text
               as="h1"
               textStyle="responsive-display-heavy"
-              color="secondary.700"
+              color="brand.secondary.700"
             >
               Build secure government forms in minutes.
             </Text>
@@ -281,7 +279,7 @@ export const LandingPage = (): JSX.Element => {
           w="fit-content"
           spacingX="1.5rem"
           spacingY="0.75rem"
-          color="secondary.500"
+          color="brand.secondary.500"
         >
           <Flex align="center">
             <Icon as={BiLockAlt} fontSize="1.5rem" mr="0.5rem" />
@@ -333,12 +331,12 @@ export const LandingPage = (): JSX.Element => {
           <Accordion
             variant="medium"
             mt="1rem"
-            color="secondary.500"
+            color="brand.secondary.500"
             allowToggle
             whiteSpace="pre-wrap"
           >
             <HelpAccordionItem title="What happens if I lose my Secret Key?">
-              <MarkdownText components={mdComponents}>
+              <MarkdownText>
                 {dedent`
                   If you have lost your secret key, take these steps immediately:
 
@@ -360,7 +358,7 @@ export const LandingPage = (): JSX.Element => {
               </FeatureLink>
             </HelpAccordionItem>
             <HelpAccordionItem title="How do I increase attachment size limit?">
-              <MarkdownText components={mdComponents}>
+              <MarkdownText>
                 {dedent`
                   The current size limit is 7 MB for email mode forms, and 20 MB for storage mode forms.
 
@@ -374,7 +372,7 @@ export const LandingPage = (): JSX.Element => {
               </FeatureLink>
             </HelpAccordionItem>
             <HelpAccordionItem title="How does end-to-end encryption work?">
-              <MarkdownText components={mdComponents}>
+              <MarkdownText>
                 {dedent`
                 When a respondent submits a response, response data is encrypted in the respondent's browser before being sent to our servers for storage. This means that by the time Form's servers receive responses, they have already been scrambled and are stored in this unreadable form. Your response data remains in this encrypted state until you decrypt your responses with your secret key, transforming them into a readable format. 
 
@@ -386,7 +384,7 @@ export const LandingPage = (): JSX.Element => {
               </FeatureLink>
             </HelpAccordionItem>
             <HelpAccordionItem title="How do I transfer ownership of my forms?">
-              <MarkdownText components={mdComponents}>
+              <MarkdownText>
                 {dedent`
                   You can transfer ownership on the top right hand corner of each form by clicking the Add Collaborator button. 
 
@@ -433,7 +431,7 @@ export const LandingPage = (): JSX.Element => {
                 mt="2.5rem"
                 listStyleType="none"
                 ml="2.5rem"
-                color="secondary.500"
+                color="brand.secondary.500"
               >
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={1} />
@@ -468,7 +466,7 @@ export const LandingPage = (): JSX.Element => {
                 mt="2.5rem"
                 listStyleType="none"
                 ml="2.5rem"
-                color="secondary.500"
+                color="brand.secondary.500"
               >
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={1} />
@@ -517,7 +515,7 @@ export const LandingPage = (): JSX.Element => {
           Full list of OGP products
         </FeatureLink>
       </FeatureSection>
-      <LandingSection bg="secondary.700" align="center">
+      <LandingSection bg="brand.secondary.700" align="center">
         <Image src={FormBrandLogo} aria-hidden h="3.5rem" />
         <Text
           textAlign="center"

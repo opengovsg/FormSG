@@ -89,7 +89,7 @@ const TileSubtitle = (props: TextProps): JSX.Element => {
 }
 
 const TileText = (props: TextProps): JSX.Element => {
-  return <Text color="secondary.400" {...props} />
+  return <Text color="brand.secondary.400" {...props} />
 }
 
 const TileListItem = (props: TextProps): JSX.Element => {
