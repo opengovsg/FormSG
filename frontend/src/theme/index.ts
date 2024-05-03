@@ -2,10 +2,10 @@ import { extendTheme } from '@chakra-ui/react'
 import { theme as baseTheme } from '@opengovsg/design-system-react'
 
 import { BREAKPOINT_VALS } from './foundations/breakpoints'
-import { colors } from './foundations/colors'
 import { shadows } from './foundations/shadows'
 import { spacing } from './foundations/spacing'
 import { typography } from './foundations/typography'
+import { colors } from './colors'
 import { textStyles } from './textStyles'
 
 export const theme = extendTheme(baseTheme, {
