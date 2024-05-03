@@ -10,8 +10,18 @@ import {
   FlexProps,
   HStack,
   Icon,
+  Text,
   useDisclosure,
 } from '@chakra-ui/react'
+import {
+  AvatarMenu,
+  AvatarMenuDivider,
+  Button,
+  BxsUser,
+  IconButton,
+  Link,
+  Menu,
+} from '@opengovsg/design-system-react'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { BxsRocket } from '~assets/icons/BxsRocket'
@@ -26,10 +36,6 @@ import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { logout } from '~services/AuthService'
-import Button from '~components/Button'
-import IconButton from '~components/IconButton'
-import Link from '~components/Link'
-import { AvatarMenu, AvatarMenuDivider } from '~templates/AvatarMenu/AvatarMenu'
 
 import { EmergencyContactModal } from '~features/user/emergency-contact/EmergencyContactModal'
 import { useUserMutations } from '~features/user/mutations'
@@ -38,8 +44,6 @@ import { TransferOwnershipModal } from '~features/user/transfer-ownership/Transf
 import { FEATURE_UPDATE_LIST } from '~features/whats-new/FeatureUpdateList'
 import { getShowLatestFeatureUpdateNotification } from '~features/whats-new/utils/utils'
 import { WhatsNewDrawer } from '~features/whats-new/WhatsNewDrawer'
-
-import Menu from '../../components/Menu'
 
 const BrandSmallLogo = chakra(BrandMarkSvg)
 
@@ -74,7 +78,9 @@ const AdminNavBarLink = ({ MobileIcon, href, label }: AdminNavBarLinkProps) => {
         as="a"
         href={href}
         aria-label={label}
-        icon={<Icon as={MobileIcon} fontSize="1.25rem" color="primary.500" />}
+        icon={
+          <Icon as={MobileIcon} fontSize="1.25rem" color="brand.primary.500" />
+        }
       />
     )
   }
@@ -83,7 +89,7 @@ const AdminNavBarLink = ({ MobileIcon, href, label }: AdminNavBarLinkProps) => {
     <Link
       w="fit-content"
       variant="standalone"
-      color="secondary.500"
+      color="brand.secondary.500"
       href={href}
       aria-label={label}
       target="_blank"
@@ -110,7 +116,9 @@ const WhatsNewNavBarTab = ({
         <IconButton
           variant="clear"
           aria-label={WHATS_NEW_LABEL}
-          icon={<BxsRocket fontSize="1.25rem" color="primary.500" />}
+          icon={
+            <Icon as={BxsRocket} fontSize="1.25rem" color="brand.primary.500" />
+          }
           onClick={onClick}
         />
         {shouldShowNotiifcation && (
@@ -261,10 +269,22 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
           />
           <AvatarMenu
             name={user?.email}
-            menuUsername={user?.email}
             defaultIsOpen={isMenuOpen}
             menuListProps={{ maxWidth: '19rem' }}
           >
+            <Flex
+              align="center"
+              py="0.5rem"
+              px="1rem"
+              fontWeight={500}
+              aria-hidden
+            >
+              <Icon as={BxsUser} fontSize="1.25rem" mr="1rem" />
+              <Text noOfLines={1} title={user?.email}>
+                {user?.email}
+              </Text>
+            </Flex>
+            <AvatarMenuDivider />
             <Menu.Item as={ReactLink} to="/billing">
               Billing
             </Menu.Item>
