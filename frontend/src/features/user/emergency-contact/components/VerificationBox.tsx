@@ -8,7 +8,7 @@ import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
-import ResendOtpButton from '~templates/ResendOtpButton'
+import { ResendOtpButton } from '~templates/ResendOtpButton/ResendOtpButton'
 
 import { useUserMutations } from '~features/user/mutations'
 
@@ -111,7 +111,7 @@ export const VerificationBox = (props: VerificationBoxProps): JSX.Element => {
     <Flex
       px={{ base: '1.25rem', md: '4.5rem' }}
       py={{ base: '1.25rem', md: '2.25rem' }}
-      bg="primary.100"
+      bg="brand.primary.50"
       align="flex-start"
       mt="2.5rem"
     >

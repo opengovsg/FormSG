@@ -8,7 +8,7 @@ import {
   InputLeftAddon,
 } from '@chakra-ui/react'
 
-import ResendOtpButton from '~/templates/ResendOtpButton'
+import { ResendOtpButton } from '~/templates/ResendOtpButton/ResendOtpButton'
 
 import { HttpError } from '~services/ApiService'
 import Button from '~components/Button'
@@ -88,7 +88,7 @@ export const VerificationBox = ({
   return (
     <Flex
       p={{ base: '1.25rem', md: '2.25rem' }}
-      bg="primary.100"
+      bg="brand.primary.50"
       align="flex-start"
       mt="0.5rem"
     >
