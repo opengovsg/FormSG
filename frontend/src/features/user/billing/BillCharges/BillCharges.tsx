@@ -2,13 +2,12 @@ import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
 import { Box, Container, Flex, Grid, Stack, Text } from '@chakra-ui/react'
 import {
+  Pagination,
   Searchbar,
   SingleSelect,
   useSearchbar,
 } from '@opengovsg/design-system-react'
 import simplur from 'simplur'
-
-import Pagination from '~/components/Pagination'
 
 import { getBillingInfo } from '~features/user/billing/BillingService'
 

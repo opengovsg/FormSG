@@ -10,7 +10,6 @@ import { get } from 'lodash'
 
 import { FormColorTheme } from '~shared/types'
 
-import { RADIO_THEME_KEY } from '~theme/components/Radio'
 import { createRadioValidationRules } from '~utils/fieldValidation'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
@@ -35,7 +34,7 @@ export const RadioField = ({
     () => `theme-${colorTheme}` as const,
     [colorTheme],
   )
-  const styles = useMultiStyleConfig(RADIO_THEME_KEY, {
+  const styles = useMultiStyleConfig('Radio', {
     colorScheme: fieldColorScheme,
   })
 

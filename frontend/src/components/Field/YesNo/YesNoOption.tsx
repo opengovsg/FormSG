@@ -11,8 +11,7 @@ import {
   UseRadioProps,
 } from '@chakra-ui/react'
 
-import { YESNO_THEME_KEY } from '~theme/components/Field/YesNo'
-import { FieldColorScheme } from '~theme/foundations/colours'
+import { FieldColorScheme } from '~theme/colors'
 
 interface YesNoOptionProps extends UseRadioProps {
   /**
@@ -50,7 +49,7 @@ interface YesNoOptionProps extends UseRadioProps {
  */
 export const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
   ({ leftIcon, label, ...props }, ref) => {
-    const styles = useMultiStyleConfig(YESNO_THEME_KEY, props)
+    const styles = useMultiStyleConfig('YesNoField', props)
 
     const { getInputProps, getCheckboxProps } = useRadio(props)
     // Empty object needed here as ref is the second argument,

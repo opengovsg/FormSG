@@ -1,8 +1,8 @@
 import { DropzoneInputProps, DropzoneState } from 'react-dropzone'
 import { chakra, Icon, Text, VisuallyHidden } from '@chakra-ui/react'
+import { Link } from '@opengovsg/design-system-react'
 
 import { BxsCloudUpload } from '~assets/icons/BxsCloudUpload'
-import Link from '~components/Link'
 
 import { useAttachmentStyles } from './AttachmentContext'
 

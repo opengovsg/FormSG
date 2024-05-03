@@ -13,13 +13,12 @@ import {
 import {
   Button,
   ButtonProps,
+  Pagination,
   TouchableTooltip,
 } from '@opengovsg/design-system-react'
 import simplur from 'simplur'
 
 import { ProcessedFeedbackMeta, ProcessedIssueMeta } from '~shared/types'
-
-import Pagination from '~/components/Pagination'
 
 import { BxsInfoCircle } from '~assets/icons'
 import { useIsMobile } from '~hooks/useIsMobile'

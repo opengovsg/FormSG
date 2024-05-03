@@ -7,7 +7,7 @@ import {
   VALID_UPLOAD_FILE_TYPES,
 } from '~shared/constants/file'
 
-import Attachment from '~components/Field/Attachment'
+import { Attachment } from '~components/Field/Attachment/Attachment'
 
 import { EditImageInputs } from './EditImage'
 

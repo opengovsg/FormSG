@@ -12,7 +12,7 @@ import { VALID_EXTENSIONS } from '~shared/utils/file-validation'
 
 import { createAttachmentValidationRules } from '~utils/fieldValidation'
 import fileArrayBuffer from '~utils/fileArrayBuffer'
-import Attachment from '~components/Field/Attachment'
+import { Attachment } from '~components/Field/Attachment/Attachment'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { AttachmentFieldInput, AttachmentFieldSchema } from '../types'

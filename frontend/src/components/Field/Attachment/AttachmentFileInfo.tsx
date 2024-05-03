@@ -1,8 +1,7 @@
 import { useMemo } from 'react'
 import { BiDownload, BiTrash } from 'react-icons/bi'
 import { Flex, Text, VisuallyHidden } from '@chakra-ui/react'
-
-import IconButton from '~components/IconButton'
+import { IconButton } from '@opengovsg/design-system-react'
 
 import { getReadableFileSize } from './utils/getReadableFileSize'
 

@@ -15,7 +15,6 @@ import {
 
 import { FormColorTheme } from '~shared/types'
 
-import { CHECKBOX_THEME_KEY } from '~theme/components/Checkbox'
 import { createCheckboxValidationRules } from '~utils/fieldValidation'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
@@ -43,7 +42,7 @@ export const CheckboxField = ({
     () => `theme-${colorTheme}` as const,
     [colorTheme],
   )
-  const styles = useMultiStyleConfig(CHECKBOX_THEME_KEY, {
+  const styles = useMultiStyleConfig('Checkbox', {
     colorScheme: fieldColorScheme,
   })
 

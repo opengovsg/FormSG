@@ -11,7 +11,7 @@ import simplur from 'simplur'
 
 import { BxHeart, BxsHeart, BxsStar, BxStar } from '~assets/icons'
 import { FieldColorScheme } from '~theme/colors'
-import { RATING_THEME_KEY } from '~theme/components/Field/Rating'
+import { RATING_THEME_KEY } from '~theme/components/Rating'
 
 interface BaseRatingComponent {
   /**
