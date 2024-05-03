@@ -114,7 +114,7 @@ const SectionTitle: FCC = ({ children }) => <Text mb="1.5rem">{children}</Text>
 
 export const TermsOfUsePage = (): JSX.Element => {
   return (
-    <Flex flexDir="column" bg="primary.100">
+    <Flex flexDir="column" bg="brand.primary.50">
       <AppPublicHeader />
       <Container color="secondary.700" maxW="85ch" px="2rem" pb="5rem" flex={1}>
         <Stack spacing="5rem">
