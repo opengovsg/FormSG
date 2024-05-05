@@ -141,6 +141,7 @@ export const generateFormFields = (
         function: getFormFieldsTool,
       },
     ],
+    temperature: 0.1,
   } as GetChatCompletionsOptions
 
   return ResultAsync.fromPromise(

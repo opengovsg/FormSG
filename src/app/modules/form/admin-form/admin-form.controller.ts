@@ -1988,9 +1988,8 @@ export const _handleCreateFormField: ControllerHandler<
  * @returns 422 when an invalid form field creation is attempted on the form
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
- * todo: add validation
  */
-export const handleCreateFormFields: ControllerHandler<
+export const _handleCreateFormFields: ControllerHandler<
   { formId: string },
   FormFieldDto[] | ErrorDto,
   FieldCreateDto[]
@@ -2216,6 +2215,39 @@ export const handleCreateFormField = [
     },
   }),
   _handleCreateFormField,
+]
+
+/**
+ * Handler for POST /forms/:formId/fields
+ */
+
+//to validate that new fields generated from magic form builder is iterable
+export const handleCreateFormFields = [
+  celebrate({
+    [Segments.BODY]: Joi.array().items(
+      Joi.object({
+        // Ensures id is not provided.
+        _id: Joi.any().forbidden(),
+        globalId: Joi.any().forbidden(),
+        fieldType: Joi.string()
+          .valid(...Object.values(BasicField))
+          .required(),
+        title: Joi.string().trim().required(),
+        description: Joi.string().allow(''),
+        required: Joi.boolean(),
+        disabled: Joi.boolean(),
+        // Allow other field related key-values to be provided and let the model
+        // layer handle the validation.
+      })
+        .unknown(true)
+        .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),
+    ),
+    [Segments.QUERY]: {
+      // Optional index to insert the field at.
+      to: Joi.number().min(0),
+    },
+  }),
+  _handleCreateFormFields,
 ]
 
 /**
