@@ -5,7 +5,7 @@ import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
 import { createTextValidationRules } from '~utils/fieldValidation'
-import Input from '~components/Input'
+import { Input } from '~components/Input/Input'
 
 import { PrefillMap } from '../../../features/public-form/components/FormFields/FormFields'
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'

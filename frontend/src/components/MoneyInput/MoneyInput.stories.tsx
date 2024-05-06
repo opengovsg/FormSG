@@ -4,9 +4,8 @@ import {
   FormErrorMessage,
   FormLabel,
 } from '@chakra-ui/form-control'
+import { Button } from '@opengovsg/design-system-react'
 import { Meta, StoryFn } from '@storybook/react'
-
-import Button from '../Button'
 
 import { MoneyInput, MoneyInputProps } from './MoneyInput'
 

@@ -6,10 +6,10 @@ import {
   SimpleGrid,
   Text,
 } from '@chakra-ui/react'
+import { Button } from '@opengovsg/design-system-react'
 import { Meta, StoryFn } from '@storybook/react'
 
 import { viewports } from '~utils/storybook'
-import Button from '~components/Button'
 
 import { YesNo, YesNoProps } from './YesNo'
 

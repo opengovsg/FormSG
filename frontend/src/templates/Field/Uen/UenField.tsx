@@ -5,7 +5,7 @@ import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
 import { createUenValidationRules } from '~utils/fieldValidation'
-import Input from '~components/Input'
+import { Input } from '~components/Input/Input'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { SingleAnswerFieldInput, UenFieldSchema } from '../types'

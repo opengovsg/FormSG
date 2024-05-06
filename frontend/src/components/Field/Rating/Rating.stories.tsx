@@ -7,11 +7,10 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react'
+import { Button } from '@opengovsg/design-system-react'
 import { Meta, StoryFn } from '@storybook/react'
 
 import { viewports } from '~/utils/storybook'
-
-import Button from '~components/Button'
 
 import { Rating, RatingProps } from './Rating'
 
@@ -56,12 +55,12 @@ const TemplateGroup: StoryFn<RatingProps> = (args) => (
     templateColumns="max-content auto"
     alignItems="center"
   >
-    <Text>primary</Text>
+    <Text>theme-blue</Text>
     <Rating
       {...args}
       name={`${args.name}-p`}
       defaultValue={-1}
-      colorScheme="main"
+      colorScheme="theme-blue"
     />
     <Text>theme-green</Text>
     <Rating
