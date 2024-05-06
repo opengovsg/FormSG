@@ -38,6 +38,7 @@ import { VisibleFormFields } from './VisibleFormFields'
 
 export interface FormFieldsProps {
   previousResponses?: FieldResponsesV3
+  previousAttachments?: Record<string, ArrayBuffer>
   formFields: FormFieldDto[]
   formLogics: LogicDto[]
   workflowStep?: FormWorkflowStepDto
@@ -54,6 +55,7 @@ export type PrefillMap = {
 
 export const FormFields = ({
   previousResponses,
+  previousAttachments,
   formFields,
   formLogics,
   workflowStep,
@@ -106,9 +108,12 @@ export const FormFields = ({
           case BasicField.Attachment: {
             const attachmentData =
               previousResponse.answer as AttachmentFieldResponseV3
-            const fileData = attachmentData.content.data
             const fileName = attachmentData.answer
-            acc[field._id] = bufferToFile(fileData, fileName)
+            const fileData = previousAttachments?.[field._id]
+            if (fileData) {
+              acc[field._id] = bufferToFile(fileData, fileName)
+            }
+
             break
           }
           default:
@@ -140,7 +145,12 @@ export const FormFields = ({
       }
       return acc
     }, {})
-  }, [augmentedFormFields, previousResponses, fieldPrefillMap])
+  }, [
+    augmentedFormFields,
+    previousResponses,
+    fieldPrefillMap,
+    previousAttachments,
+  ])
 
   // payment prefills - only for variable payments
   if (searchParams.has(PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID)) {

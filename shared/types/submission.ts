@@ -92,6 +92,7 @@ export const MultirespondentSubmissionBase = SubmissionBase.extend({
   attachmentMetadata: z.map(z.string(), z.string()).optional(),
   version: z.number(),
   workflowStep: z.number(),
+  mrfVersion: z.number().optional(),
 })
 
 export type MultirespondentSubmissionBase = z.infer<
@@ -150,10 +151,11 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
   submissionPublicKey: string
   encryptedSubmissionSecretKey: string
   encryptedContent: string
-  //verified?: string
   attachmentMetadata: Record<string, string>
-  version: number
   workflowStep: number
+
+  version: number
+  mrfVersion: number
 }
 
 export type SubmissionDto =
@@ -184,6 +186,7 @@ export const MultirespondentSubmissionStreamDto =
     encryptedSubmissionSecretKey: true,
     encryptedContent: true,
     version: true,
+    mrfVersion: true,
   }).extend({
     attachmentMetadata: z.record(z.string()),
     _id: SubmissionId,

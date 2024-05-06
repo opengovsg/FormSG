@@ -603,19 +603,19 @@ export const encryptSubmission = async (
     }
   }
 
-  const encryptedAttachments =
-    await getEncryptedAttachmentsMapFromAttachmentsMap(
-      attachmentsMap,
-      formPublicKey,
-      req.body.version,
-    )
-
   const {
     encryptedContent,
     encryptedSubmissionSecretKey,
     submissionSecretKey,
     submissionPublicKey,
-  } = formsgSdk.cryptoV3.encrypt(responses, formPublicKey)
+  } = formsgSdk.cryptoV3.encrypt(strippedAttachmentResponses, formPublicKey)
+
+  const encryptedAttachments =
+    await getEncryptedAttachmentsMapFromAttachmentsMap(
+      attachmentsMap,
+      submissionPublicKey,
+      req.body.version,
+    )
 
   req.formsg.encryptedPayload = {
     attachments: encryptedAttachments,
@@ -627,6 +627,13 @@ export const encryptSubmission = async (
     version: req.body.version,
     workflowStep: req.body.workflowStep,
     responses,
+    /**
+     * MRF Version: 1
+     * ====================
+     * - Encrypted payload does not contain attachment contents
+     * - Encrypted Attachment now encrypted by mrf / submission Public Key instead of Form Public Key
+     */
+    mrfVersion: 1,
   }
 
   return next()

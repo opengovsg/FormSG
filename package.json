@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.118.0",
+  "version": "6.119.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -91,7 +91,7 @@
     "dd-trace": "^3.36.0",
     "dedent-js": "~1.0.1",
     "dotenv": "^16.0.3",
-    "ejs": "^3.1.8",
+    "ejs": "^3.1.10",
     "express": "^4.19.2",
     "express-rate-limit": "^6.7.0",
     "express-request-id": "^1.4.1",

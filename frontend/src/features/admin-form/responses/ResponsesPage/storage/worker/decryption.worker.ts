@@ -101,7 +101,7 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
         : undefined,
     )
     try {
-      let decryptedSubmission
+      let decryptedSubmission, submissionSecretKey
       switch (submission.submissionType) {
         case SubmissionType.Encrypt: {
           const decryptedObject = formsgSdk.crypto.decrypt(secretKey, {
@@ -125,6 +125,7 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
           if (!decryptedObject) {
             throw new Error('Invalid decryption for multirespondent response')
           }
+          submissionSecretKey = decryptedObject.submissionSecretKey
           decryptedSubmission = await processDecryptedContentV3(
             submission.form_fields,
             decryptedObject,
@@ -150,6 +151,17 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
       }
 
       if (downloadAttachments) {
+        // Logic to determine which key to use to decrypt attachments.
+        const attachmentDecryptionKey =
+          // If no submission secret key present, it is a storage mode form. So, use form secret key.
+          !submissionSecretKey
+            ? secretKey
+            : // It's an mrf, but old version
+            submission.submissionType === SubmissionType.Multirespondent &&
+              !submission.mrfVersion
+            ? secretKey
+            : submissionSecretKey
+
         let questionCount = 0
 
         decryptedSubmission.forEach((field) => {
@@ -170,7 +182,7 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
           downloadBlob = await queue.add(() =>
             downloadAndDecryptAttachmentsAsZip(
               attachmentDownloadUrls,
-              secretKey,
+              attachmentDecryptionKey,
             ),
           )
           csvRecord.setStatus(
