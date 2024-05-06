@@ -1,1 +1,0 @@
-export { ModalCloseButton } from './ModalCloseButton'
