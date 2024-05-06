@@ -1,6 +1,16 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
 import { FormControl, Skeleton } from '@chakra-ui/react'
+import {
+  ComboboxItem,
+  FormErrorMessage,
+  FormLabel,
+  Infobox,
+  Input,
+  SingleSelect,
+  Textarea,
+  Toggle,
+} from '@opengovsg/design-system-react'
 import { extend, pick } from 'lodash'
 
 import { FormResponseMode } from '~shared/types'
@@ -16,14 +26,7 @@ import {
   GUIDE_EMAIL_RELIABILITY,
 } from '~constants/links'
 import { createBaseValidationRules } from '~utils/fieldValidation'
-import { SingleSelect } from '~components/Dropdown'
-import type { ComboboxItem } from '~components/Dropdown/types'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import InlineMessage from '~components/InlineMessage'
-import Input from '~components/Input'
-import Textarea from '~components/Textarea'
-import Toggle from '~components/Toggle'
+import { MarkdownText } from '~components/MarkdownText'
 
 import { useCreateTabForm } from '~features/admin-form/create/builder-and-design/useCreateTabForm'
 import { getAttachmentSizeLimit } from '~features/admin-form/create/builder-and-design/utils/getAttachmentSizeLimit'
@@ -196,9 +199,11 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
           max={maxTotalSizeMb}
         />
       </FormControl>
-      <InlineMessage useMarkdown>
-        {`View our [complete list](${ACCEPTED_FILETYPES_SPREADSHEET}) of accepted file types. Please also read our [FAQ on email reliability](${GUIDE_EMAIL_RELIABILITY}) relating to unaccepted file types.`}
-      </InlineMessage>
+      <Infobox>
+        <MarkdownText>
+          {`View our [complete list](${ACCEPTED_FILETYPES_SPREADSHEET}) of accepted file types. Please also read our [FAQ on email reliability](${GUIDE_EMAIL_RELIABILITY}) relating to unaccepted file types.`}
+        </MarkdownText>
+      </Infobox>
       <FormFieldDrawerActions
         isLoading={isLoading}
         buttonText={buttonText}

@@ -13,14 +13,16 @@ import {
   Text,
   useClipboard,
 } from '@chakra-ui/react'
+import {
+  Button,
+  Checkbox,
+  IconButton,
+  TouchableTooltip,
+} from '@opengovsg/design-system-react'
 import dedent from 'dedent'
 import FileSaver from 'file-saver'
 
 import { BxsError } from '~assets/icons'
-import Button from '~components/Button'
-import Checkbox from '~components/Checkbox'
-import IconButton from '~components/IconButton'
-import Tooltip from '~components/Tooltip'
 
 import { trackClickSecretKeyMailTo } from '~features/analytics/AnalyticsService'
 
@@ -126,7 +128,7 @@ export const SaveSecretKeyScreen = ({
             bg="white"
             borderRadius="4px"
             border="1px solid"
-            borderColor="neutral.200"
+            borderColor="grey.100"
             py="3rem"
             px={{ base: '1.5rem', md: '2.5rem' }}
             mt={{ base: '5.5rem', md: '1rem' }}
@@ -136,16 +138,20 @@ export const SaveSecretKeyScreen = ({
                 as={BxsError}
                 fontSize="3rem"
                 aria-hidden
-                color="danger.500"
+                color="interaction.critical.default"
               />
-              <Text as="header" textStyle="h2" color="secondary.700">
+              <Text as="header" textStyle="h4" color="brand.secondary.700">
                 Download Secret Key to proceed
               </Text>
             </Stack>
-            <Text textStyle="body-1" color="secondary.500" mb="2.5rem">
+            <Text textStyle="body-1" color="brand.secondary.500" mb="2.5rem">
               You'll need it every time you access your responses to this form.
               If you lose it,{' '}
-              <Text color="danger.500" textStyle="subhead-1" as="span">
+              <Text
+                color="interaction.critical.default"
+                textStyle="subhead-1"
+                as="span"
+              >
                 all responses will be permanently lost
               </Text>
               . You can also{' '}
@@ -155,7 +161,10 @@ export const SaveSecretKeyScreen = ({
               for safekeeping.
             </Text>
             <Stack direction={{ base: 'column', md: 'row' }}>
-              <Tooltip mt={0} label={hasCopiedKey ? 'Copied!' : 'Copy key'}>
+              <TouchableTooltip
+                mt={0}
+                label={hasCopiedKey ? 'Copied!' : 'Copy key'}
+              >
                 <Code
                   // To allow for focus styling on code element.
                   data-group
@@ -165,10 +174,10 @@ export const SaveSecretKeyScreen = ({
                   cursor="pointer"
                   onClick={handleCopyKey}
                   _groupFocus={{
-                    bg: 'neutral.400',
+                    bg: 'grey.300',
                   }}
                   _hover={{
-                    bg: 'neutral.300',
+                    bg: 'base.canvas.backdrop',
                   }}
                   wordBreak="break-word"
                   display="inline-flex"
@@ -177,13 +186,13 @@ export const SaveSecretKeyScreen = ({
                   h="auto"
                   px="0.75rem"
                   py="0.625rem"
-                  bg="neutral.200"
-                  color="secondary.500"
+                  bg="grey.100"
+                  color="brand.secondary.500"
                   borderRadius="4px"
                 >
                   {secretKey}
                 </Code>
-              </Tooltip>
+              </TouchableTooltip>
               <ButtonGroup>
                 <Button onClick={handleDownloadKey}>Download key</Button>
                 <IconButton

@@ -1,5 +1,4 @@
-import IconButton from '~components/IconButton'
-import Tooltip from '~components/Tooltip'
+import { IconButton, TouchableTooltip } from '@opengovsg/design-system-react'
 
 interface DrawerTabIconProps {
   icon: React.ReactElement
@@ -17,7 +16,7 @@ export const DrawerTabIcon = ({
   id,
 }: DrawerTabIconProps): JSX.Element => {
   return (
-    <Tooltip label={label} placement="right">
+    <TouchableTooltip label={label} placement="right">
       <IconButton
         variant="reverse"
         aria-label={label}
@@ -26,6 +25,6 @@ export const DrawerTabIcon = ({
         onClick={onClick}
         id={id}
       />
-    </Tooltip>
+    </TouchableTooltip>
   )
 }

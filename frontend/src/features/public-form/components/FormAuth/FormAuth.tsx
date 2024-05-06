@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
 import { BiLogInCircle } from 'react-icons/bi'
 import { Box, Stack, Text } from '@chakra-ui/react'
+import { Button } from '@opengovsg/design-system-react'
 
 import { FormAuthType } from '~shared/types/form'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
 
 import { usePublicAuthMutations } from '~features/public-form/mutations'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
@@ -74,7 +74,7 @@ export const FormAuth = ({ authType }: FormAuthProps): JSX.Element => {
         </Button>
         <Text
           textStyle="body-2"
-          color="secondary.500"
+          color="brand.secondary.500"
           textAlign="center"
           whiteSpace="pre-wrap"
         >

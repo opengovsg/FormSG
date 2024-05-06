@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
 import { BiCheck } from 'react-icons/bi'
 import { Box, Stack } from '@chakra-ui/react'
+import { Button } from '@opengovsg/design-system-react'
 
 import { FormColorTheme } from '~shared/types'
 import { BasicField, FormFieldWithId } from '~shared/types/field'
 
-import Button from '~components/Button'
 import { BaseFieldProps, FieldContainer } from '~templates/Field/FieldContainer'
 
 import { VerifiableFieldBase, VerifiableFieldSchema } from '../../types'

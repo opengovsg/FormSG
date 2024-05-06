@@ -1,8 +1,7 @@
 import { useMemo } from 'react'
 import { BiDownload, BiTrash } from 'react-icons/bi'
 import { Flex, Text, VisuallyHidden } from '@chakra-ui/react'
-
-import IconButton from '~components/IconButton'
+import { IconButton } from '@opengovsg/design-system-react'
 
 import { getReadableFileSize } from './utils/getReadableFileSize'
 
@@ -29,19 +28,19 @@ export const AttachmentFileInfo = ({
   const showDownloadButton = enableDownload && file
 
   return (
-    <Flex justify="space-between" bg="primary.100" py="0.875rem" px="1rem">
+    <Flex justify="space-between" bg="brand.primary.50" py="0.875rem" px="1rem">
       <VisuallyHidden>
         File attached: {file.name} with file size of {readableFileSize}
       </VisuallyHidden>
       <Flex flexDir="column" aria-hidden>
         <Text
           textStyle="subhead-1"
-          color="secondary.500"
+          color="brand.secondary.500"
           overflowWrap="anywhere"
         >
           {file.name}
         </Text>
-        <Text textStyle="caption-1" color="secondary.500">
+        <Text textStyle="caption-1" color="brand.secondary.500">
           {readableFileSize}
         </Text>
       </Flex>
@@ -49,7 +48,7 @@ export const AttachmentFileInfo = ({
         {enableRemove ? (
           <IconButton
             variant="clear"
-            colorScheme="danger"
+            colorScheme="critical"
             aria-label="Click to remove file"
             icon={<BiTrash />}
             onClick={handleRemoveFile}

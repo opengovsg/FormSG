@@ -9,11 +9,11 @@ export const StatsItem = ({ stat, description }: StatsItemProps) => {
   return (
     <Stack>
       <Skeleton isLoaded={!!stat}>
-        <Text textStyle="h2" color="primary.500">
+        <Text textStyle="h4" color="brand.primary.500">
           {stat?.toLocaleString() ?? '-'}
         </Text>
       </Skeleton>
-      <Text textStyle="subhead-3" color="secondary.500">
+      <Text textStyle="subhead-3" color="brand.secondary.500">
         {description}
       </Text>
     </Stack>

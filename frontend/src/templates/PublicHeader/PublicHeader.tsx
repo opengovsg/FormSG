@@ -7,14 +7,13 @@ import {
   Icon,
   useBreakpointValue,
 } from '@chakra-ui/react'
+import { IconButton, Link } from '@opengovsg/design-system-react'
 
 import BrandHortSvg from '~assets/svgs/brand/brand-hort-colour.svg?react'
 import BrandHortDarkSvg from '~assets/svgs/brand/brand-hort-dark.svg?react'
 import BrandMarkSvg from '~assets/svgs/brand/brand-mark-colour.svg?react'
 import BrandMarkDarkSvg from '~assets/svgs/brand/brand-mark-dark.svg?react'
 import { useIsMobile } from '~hooks/useIsMobile'
-import IconButton from '~components/IconButton'
-import Link from '~components/Link'
 
 type PublicHeaderLinkProps = {
   label: string
@@ -53,7 +52,9 @@ const PublicHeaderLink = ({
         as="a"
         href={href}
         aria-label={label}
-        icon={<Icon as={MobileIcon} fontSize="1.25rem" color="primary.500" />}
+        icon={
+          <Icon as={MobileIcon} fontSize="1.25rem" color="brand.primary.500" />
+        }
       />
     )
   }
@@ -62,11 +63,11 @@ const PublicHeaderLink = ({
     <Link
       w="fit-content"
       variant="standalone"
-      color={bg ? 'white' : 'primary.500'}
+      color={bg ? 'white' : 'brand.primary.500'}
       href={href}
       aria-label={label}
       _hover={{
-        color: bg ? 'white' : 'primary.600',
+        color: bg ? 'white' : 'brand.primary.600',
         textDecoration: 'underline',
       }}
     >
@@ -122,7 +123,7 @@ PublicHeader.Container = ({
       px={{ base: '1.5rem', md: '5.5rem', lg: '9.25rem' }}
       py={{ base: '0.625rem', md: '4.5rem' }}
       {...props}
-      bg={bg ? bg : 'primary.100'}
+      bg={bg ? bg : 'brand.primary.50'}
     >
       {children}
     </Flex>

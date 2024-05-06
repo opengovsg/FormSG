@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Box, Center, Container, Flex, Stack, Text } from '@chakra-ui/react'
+import { Infobox } from '@opengovsg/design-system-react'
 import { Elements, useStripe } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 
@@ -10,7 +11,6 @@ import {
   ProductItemForReceipt,
 } from '~shared/types'
 
-import InlineMessage from '~components/InlineMessage'
 import { CopyButton } from '~templates/CopyButton'
 
 import { useEnv } from '~features/env/queries'
@@ -155,7 +155,7 @@ const StripePaymentContainer = ({
             <PaymentHeader />
             <PaymentFormWrapper>
               {secretEnv === 'production' ? null : (
-                <InlineMessage variant="warning" mb="1rem">
+                <Infobox variant="warning" mb="1rem">
                   <Stack>
                     <Text>
                       Make a test payment with the card number below! Payments
@@ -165,14 +165,14 @@ const StripePaymentContainer = ({
                       <Text mr="0.25rem">4242 4242 4242 4242</Text>
                       <Flex boxSize="1.5rem" align="center" justify="center">
                         <CopyButton
-                          colorScheme="secondary"
+                          colorScheme="sub"
                           stringToCopy={`4242424242424242`}
                           aria-label="Copy test card number"
                         />
                       </Flex>
                     </Flex>
                   </Stack>
-                </InlineMessage>
+                </Infobox>
               )}
               <PaymentStack>
                 <StripePaymentBlock

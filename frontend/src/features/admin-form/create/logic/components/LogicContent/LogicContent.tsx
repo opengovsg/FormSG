@@ -1,6 +1,5 @@
 import { Stack } from '@chakra-ui/react'
-
-import InlineMessage from '~components/InlineMessage'
+import { Infobox } from '@opengovsg/design-system-react'
 
 import {
   isCreatingStateSelector,
@@ -19,12 +18,12 @@ export const LogicContent = (): JSX.Element | null => {
   if (isLoading) return null
 
   return (
-    <Stack color="secondary.500" spacing="1rem">
+    <Stack color="brand.secondary.500" spacing="1rem">
       {hasError ? (
-        <InlineMessage variant="error">
+        <Infobox variant="error">
           There are errors in your form's logic, please fix them before sharing
           your form
-        </InlineMessage>
+        </Infobox>
       ) : null}
       <HeaderBlock />
       {formLogics?.map((logic) => (

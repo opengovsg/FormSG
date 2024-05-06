@@ -4,6 +4,7 @@ import {
   Box,
   forwardRef,
   Text,
+  ThemingProps,
   useFormControl,
   UseFormControlProps,
   useMergeRefs,
@@ -14,9 +15,6 @@ import omit from 'lodash/omit'
 import simplur from 'simplur'
 
 import { MB } from '~shared/constants/file'
-
-import { ATTACHMENT_THEME_KEY } from '~theme/components/Field/Attachment'
-import { ThemeColorScheme } from '~theme/foundations/colours'
 
 import { AttachmentStylesProvider } from './AttachmentContext'
 import { AttachmentDropzone } from './AttachmentDropzone'
@@ -67,7 +65,7 @@ export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
   /**
    * Color scheme of the component.
    */
-  colorScheme?: ThemeColorScheme
+  colorScheme?: ThemingProps<'AttachmentField'>['colorScheme']
 
   /**
    * Show attachment download button.
@@ -211,7 +209,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
 
     const mergedRefs = useMergeRefs(rootRef, ref)
 
-    const styles = useMultiStyleConfig(ATTACHMENT_THEME_KEY, {
+    const styles = useMultiStyleConfig('Attachment', {
       isDragActive,
       colorScheme,
     })
@@ -285,7 +283,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
           {showMaxSize ? (
             <Text
               id={maxSizeTextId}
-              color="secondary.400"
+              color="brand.secondary.400"
               mt="0.5rem"
               textStyle="body-2"
               aria-hidden

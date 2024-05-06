@@ -57,7 +57,7 @@ const ProductsPaymentSummary = ({
         <Text textAlign="right" mr="0.5rem" justifySelf="end">
           Total:
         </Text>
-        <Text textStyle="h2">S${centsToDollars(paymentAmount ?? 0)}</Text>
+        <Text textStyle="h4">S${centsToDollars(paymentAmount ?? 0)}</Text>
       </Flex>
     </Box>
   )

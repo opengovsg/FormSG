@@ -1,14 +1,16 @@
 import { useMemo } from 'react'
 import { FormControl } from '@chakra-ui/react'
+import {
+  FormErrorMessage,
+  FormLabel,
+  Input,
+  Textarea,
+} from '@opengovsg/design-system-react'
 import { extend, pick } from 'lodash'
 
 import { SectionFieldBase } from '~shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
-import Textarea from '~components/Textarea'
 
 import { CreatePageDrawerContentContainer } from '../../../../common'
 

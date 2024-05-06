@@ -7,18 +7,20 @@ import {
   useFormState,
 } from 'react-hook-form'
 import { FormControl, Stack } from '@chakra-ui/react'
+import {
+  FormErrorMessage,
+  FormLabel,
+  Input,
+  NumberInput,
+  Textarea,
+  Toggle,
+} from '@opengovsg/design-system-react'
 import { extend, pick } from 'lodash'
 
 import { Column, ColumnDto, TableFieldBase } from '~shared/types/field'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 import { createBaseValidationRules } from '~utils/fieldValidation'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
-import NumberInput from '~components/NumberInput'
-import Textarea from '~components/Textarea'
-import Toggle from '~components/Toggle'
 
 import { isTemporaryColumnId } from '~features/admin-form/create/builder-and-design/utils/columnCreation'
 import { validateNumberInput } from '~features/admin-form/create/builder-and-design/utils/validateNumberInput'

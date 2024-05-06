@@ -3,21 +3,21 @@ import { Controller } from 'react-hook-form'
 import { useMutation } from 'react-query'
 import { useParams } from 'react-router-dom'
 import { FormControl } from '@chakra-ui/react'
+import {
+  FormErrorMessage,
+  FormLabel,
+  getByteFileSize,
+  getReadableFileSize,
+  Textarea,
+  useToast,
+} from '@opengovsg/design-system-react'
 import { extend, get, isEmpty, pick } from 'lodash'
 
 import { MB } from '~shared/constants/file'
 import { ImageFieldBase } from '~shared/types/field'
 
-import { useToast } from '~hooks/useToast'
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import { uploadImage } from '~services/FileHandlerService'
-import {
-  getByteFileSize,
-  getReadableFileSize,
-} from '~components/Field/Attachment/utils'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Textarea from '~components/Textarea'
 
 import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
@@ -86,7 +86,7 @@ const transformImageEditFormToField = (
 }
 
 export const EditImage = ({ field }: EditImageProps): JSX.Element => {
-  const toast = useToast({ status: 'danger' })
+  const toast = useToast({ status: 'error' })
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 

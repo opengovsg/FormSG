@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Stack } from '@chakra-ui/react'
+import { useToast } from '@opengovsg/design-system-react'
 import { StatusCodes } from 'http-status-codes'
 
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
-import { useToast } from '~hooks/useToast'
 import { sendLoginOtp, verifyLoginOtp } from '~services/AuthService'
 
 import {
@@ -32,7 +32,7 @@ export const LoginPage = (): JSX.Element => {
   const [otpPrefix, setOtpPrefix] = useState<string>('')
 
   const [params] = useSearchParams()
-  const toast = useToast({ isClosable: true, status: 'danger' })
+  const toast = useToast({ isClosable: true, status: 'error' })
 
   const statusCode = params.get('status')
   const toastMessage = useMemo(() => {

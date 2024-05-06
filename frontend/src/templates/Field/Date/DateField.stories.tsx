@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
+import { Button } from '@opengovsg/design-system-react'
 import { Meta, StoryFn } from '@storybook/react'
 import { addDays, lightFormat, parse } from 'date-fns'
 
@@ -12,7 +13,6 @@ import {
 } from '~shared/types/field'
 
 import { mockDateDecorator } from '~utils/storybook'
-import Button from '~components/Button'
 
 import { DateFieldSchema } from '../types'
 

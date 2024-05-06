@@ -23,7 +23,7 @@ export const FixedPaymentItemDetailsBlock = ({
         paymentDescription={paymentDescription}
         paymentItemName={paymentItemName}
       />
-      <Box as="h2" textStyle="h2">
+      <Box as="h2" textStyle="h4">
         S${centsToDollars(paymentAmount ?? 0)}
       </Box>
     </Box>

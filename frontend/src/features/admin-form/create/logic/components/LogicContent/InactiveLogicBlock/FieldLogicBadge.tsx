@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import { Box, Icon, Stack, Text } from '@chakra-ui/react'
+import { TouchableTooltip } from '@opengovsg/design-system-react'
 
 import { BxsErrorCircle, BxsInfoCircle } from '~assets/icons'
-import Tooltip from '~components/Tooltip'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { FormFieldWithQuestionNo } from '~features/form/types'
@@ -35,9 +35,9 @@ export const FieldLogicBadge = ({
     if (fieldMeta) return undefined
     switch (defaults.variant) {
       case 'error':
-        return 'danger.500'
+        return 'interaction.critical.default'
       case 'info':
-        return 'primary.500'
+        return 'brand.primary.500'
     }
   }, [defaults.variant, fieldMeta])
 
@@ -59,11 +59,11 @@ export const FieldLogicBadge = ({
   return (
     <LogicBadge display="inline-flex">
       <Stack direction="row" spacing="0.25rem" maxW="100%" align="center">
-        <Tooltip placement="top" label={tooltipLabel}>
+        <TouchableTooltip placement="top" label={tooltipLabel}>
           <Box display="inline-flex" alignItems="center">
             <Icon as={tooltipIcon} fontSize="1rem" color={textColor} />
           </Box>
-        </Tooltip>
+        </TouchableTooltip>
         {field ? (
           <Text noOfLines={1}>{getLogicFieldLabel(field)}</Text>
         ) : (

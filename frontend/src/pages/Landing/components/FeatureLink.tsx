@@ -1,4 +1,4 @@
-import Link, { LinkProps } from '~components/Link'
+import { Link, type LinkProps } from '@opengovsg/design-system-react'
 
 export const FeatureLink = (props: LinkProps): JSX.Element => {
   return (

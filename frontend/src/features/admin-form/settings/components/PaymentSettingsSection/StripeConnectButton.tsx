@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
-
-import Button from '~components/Button'
+import { Button } from '@opengovsg/design-system-react'
 
 import { useMutateStripeAccount } from '../../mutations'
 
@@ -39,7 +38,7 @@ export const StripeConnectButton = ({
         isDisabled={connectState === StripeConnectButtonStates.DISABLED}
         isLoading={linkStripeAccountMutation.isLoading}
         onClick={onLinkAccountClick}
-        colorScheme="primary"
+        colorScheme="main"
       >
         Connect my Stripe account
       </Button>
@@ -47,7 +46,7 @@ export const StripeConnectButton = ({
   } else {
     return (
       <Button
-        colorScheme="danger"
+        colorScheme="critical"
         onClick={onUnlinkAccountClick}
         isLoading={unlinkStripeAccountMutation.isLoading}
       >

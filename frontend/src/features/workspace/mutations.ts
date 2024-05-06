@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
 import { useNavigate } from 'react-router-dom'
+import { useToast } from '@opengovsg/design-system-react'
 
 import { AdminFeedbackRating } from '~shared/types'
 import {
@@ -14,7 +15,6 @@ import {
 import { ApiError } from '~typings/core'
 
 import { ADMINFORM_ROUTE } from '~constants/routes'
-import { useToast } from '~hooks/useToast'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
 import { trackCreateFormFailed } from '~features/analytics/AnalyticsService'
@@ -38,7 +38,7 @@ import {
 const useCommonHooks = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const toast = useToast({ status: 'danger', isClosable: true })
+  const toast = useToast({ status: 'error', isClosable: true })
 
   const handleSuccess = useCallback(
     (data: Pick<FormDto, '_id'>) => {
@@ -129,7 +129,7 @@ export const useDuplicateFormMutations = () => {
 
 export const useDeleteFormMutation = () => {
   const queryClient = useQueryClient()
-  const toast = useToast({ status: 'danger', isClosable: true })
+  const toast = useToast({ status: 'error', isClosable: true })
 
   const handleSuccess = useCallback(
     (formId: string) => {

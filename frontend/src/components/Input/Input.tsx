@@ -12,9 +12,8 @@ import {
 import { omit } from '@chakra-ui/utils'
 import { merge } from 'lodash'
 
+import { BxLockAlt } from '~assets/icons/BxLockAlt'
 import { BxsCheckCircle } from '~assets/icons/BxsCheckCircle'
-
-import { BxLockAlt } from '../../assets/icons/BxLockAlt'
 
 export interface InputProps extends ChakraInputProps {
   /**

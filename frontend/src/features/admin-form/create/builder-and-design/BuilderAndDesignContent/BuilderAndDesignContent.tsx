@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import { Box, Flex } from '@chakra-ui/react'
-
-import InlineMessage from '~components/InlineMessage'
+import { Infobox } from '@opengovsg/design-system-react'
 
 import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 
@@ -33,14 +32,14 @@ export const BuilderAndDesignContent = ({
     <Flex flex={1} overflow="auto">
       <Box w="100%">
         {settings?.webhook?.url ? (
-          <InlineMessage
+          <Infobox
             mx={{ base: 0, md: '2rem' }}
             mt={{ base: 0, md: '2rem' }}
             mb={{ base: 0, md: '-1rem' }}
           >
             Webhooks are enabled on this form. Please ensure the webhook server
             is able to handle any field changes.
-          </InlineMessage>
+          </Infobox>
         ) : null}
         <FormBuilder placeholderProps={placeholderProps} display="flex" />
       </Box>

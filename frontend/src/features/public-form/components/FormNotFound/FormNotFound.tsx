@@ -21,8 +21,8 @@ export const FormNotFound = ({
         align="center"
         flex={1}
         bgGradient={{
-          base: 'linear(to-b, primary.500, primary.500 40%, primary.100 0)',
-          md: 'linear(to-b, primary.500 50%, primary.100 50%)',
+          base: 'linear(to-b, primary.500, primary.500 40%, brand.primary.50 0)',
+          md: 'linear(to-b, primary.500 50%, brand.primary.50 50%)',
         }}
         py="3rem"
         px="1.5rem"
@@ -34,18 +34,18 @@ export const FormNotFound = ({
         />
         <Stack
           spacing="1rem"
-          color="secondary.500"
+          color="brand.secondary.500"
           align="center"
           textAlign="center"
         >
-          <Text as="h2" textStyle="h2">
+          <Text as="h2" textStyle="h4">
             {header}
           </Text>
           <Text textStyle="body-1">{message}</Text>
         </Stack>
       </Flex>
       <Flex
-        bg="primary.100"
+        bg="brand.primary.50"
         p={{ base: 0, md: '1.5rem' }}
         flex={0}
         justify="center"

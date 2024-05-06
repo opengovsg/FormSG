@@ -9,9 +9,7 @@ import {
   ModalOverlay,
   Text,
 } from '@chakra-ui/react'
-
-import Button from '~components/Button'
-import { ModalCloseButton } from '~components/Modal'
+import { Button, ModalCloseButton } from '@opengovsg/design-system-react'
 
 import { useCreatePageSidebar } from '../../common'
 import { useBuilderAndDesignContext } from '../BuilderAndDesignContext'
@@ -51,18 +49,18 @@ export const DeletePaymentModal = (): JSX.Element => {
         <ModalCloseButton />
         <ModalHeader>Delete field</ModalHeader>
         <ModalBody>
-          <Text color="secondary.500">
+          <Text color="brand.secondary.500">
             Are you sure you want to delete payment field? This action can't be
             undone.
           </Text>
         </ModalBody>
         <ModalFooter>
           <ButtonGroup>
-            <Button variant="clear" colorScheme="secondary" onClick={onClose}>
+            <Button variant="clear" colorScheme="sub" onClick={onClose}>
               Cancel
             </Button>
             <Button
-              colorScheme="danger"
+              colorScheme="critical"
               onClick={handleDeleteConfirmation}
               isLoading={deletePaymentFieldMutation.isLoading}
             >

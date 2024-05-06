@@ -3,7 +3,6 @@ import { BiMinus, BiPlus } from 'react-icons/bi'
 import {
   FormControl,
   HStack,
-  Input,
   Modal,
   ModalBody,
   ModalContent,
@@ -14,12 +13,15 @@ import {
   Text,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
+import {
+  Button,
+  FormErrorMessage,
+  IconButton,
+  Input,
+  ModalCloseButton,
+} from '@opengovsg/design-system-react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import IconButton from '~components/IconButton'
-import { ModalCloseButton } from '~components/Modal'
 
 interface PaymentQuantityModalProps
   extends Pick<UseDisclosureReturn, 'onClose' | 'isOpen'> {
@@ -100,7 +102,7 @@ const PaymentQuantityModal = ({
                 icon={<BiMinus />}
                 variant="clear"
                 aria-label="Decrement"
-                colorScheme="secondary"
+                colorScheme="sub"
                 isDisabled={(quantity || 0) <= minQty}
                 onClick={() => {
                   setValue('quantity', quantity ? quantity - 1 : minQty)
@@ -132,7 +134,7 @@ const PaymentQuantityModal = ({
                 icon={<BiPlus />}
                 variant="clear"
                 aria-label="Increment"
-                colorScheme="secondary"
+                colorScheme="sub"
                 isDisabled={(quantity || 0) >= maxQty}
                 onClick={() => {
                   setValue('quantity', quantity ? quantity + 1 : minQty)
@@ -160,7 +162,7 @@ const PaymentQuantityModal = ({
               Update
             </Button>
             {!isMobile ? (
-              <Button variant="clear" onClick={onClose} colorScheme="secondary">
+              <Button variant="clear" onClick={onClose} colorScheme="sub">
                 Cancel
               </Button>
             ) : null}

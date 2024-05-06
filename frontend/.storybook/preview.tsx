@@ -6,7 +6,7 @@ import 'inter-ui/inter.css'
 
 import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from 'react-query'
-import { ChakraProvider } from '@chakra-ui/react'
+import { ThemeProvider } from '@opengovsg/design-system-react'
 import { withThemeFromJSXProvider } from '@storybook/addon-themes'
 import { Decorator, ReactRenderer } from '@storybook/react'
 import { initialize, mswDecorator } from 'msw-storybook-addon'
@@ -53,7 +53,8 @@ export const decorators = [
     themes: {
       default: theme,
     },
-    Provider: ChakraProvider,
+    defaultTheme: 'default',
+    Provider: ThemeProvider,
   }),
   mswDecorator,
 ]

@@ -12,11 +12,13 @@ import {
   Text,
   Wrap,
 } from '@chakra-ui/react'
+import {
+  Button,
+  Infobox,
+  ModalCloseButton,
+} from '@opengovsg/design-system-react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
-import InlineMessage from '~components/InlineMessage'
-import { ModalCloseButton } from '~components/Modal'
 
 const InlineTextListItem = ({
   children,
@@ -49,7 +51,7 @@ export const ConfirmationScreen = ({
   return (
     <>
       <ModalCloseButton />
-      <ModalHeader color="secondary.700" pr="4.5rem">
+      <ModalHeader color="brand.secondary.700" pr="4.5rem">
         <Wrap shouldWrapChildren direction="row" align="center">
           <Text>Download responses and attachments</Text>
           <Badge w="fit-content" colorScheme="success">
@@ -57,7 +59,7 @@ export const ConfirmationScreen = ({
           </Badge>
         </Wrap>
       </ModalHeader>
-      <ModalBody whiteSpace="pre-wrap" color="secondary.500">
+      <ModalBody whiteSpace="pre-wrap" color="brand.secondary.500">
         <Stack spacing="1rem">
           <Text>
             Separate zip files will be downloaded, <b>one for each response</b>.
@@ -69,7 +71,7 @@ export const ConfirmationScreen = ({
             <br />
             <b>Estimated time:</b> 30-50 mins per 1,000 responses
           </Text>
-          <InlineMessage>
+          <Infobox>
             <Stack>
               <Text textStyle="subhead-1">
                 Downloading many attachments can be an intensive operation.
@@ -86,12 +88,12 @@ export const ConfirmationScreen = ({
                 </InlineTextListItem>
               </List>
             </Stack>
-          </InlineMessage>
+          </Infobox>
           {responsesCount === 0 && (
-            <InlineMessage variant="warning">
+            <Infobox variant="warning">
               The date range you selected does not contain any responses. Please
               select a date range containing responses and try again.
-            </InlineMessage>
+            </Infobox>
           )}
         </Stack>
       </ModalBody>
@@ -112,7 +114,7 @@ export const ConfirmationScreen = ({
           <Button
             isFullWidth={isMobile}
             variant="clear"
-            colorScheme="secondary"
+            colorScheme="sub"
             onClick={onCancel}
             isDisabled={isDownloading}
           >

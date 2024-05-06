@@ -25,13 +25,12 @@ import {
   Text,
   useDisclosure,
 } from '@chakra-ui/react'
+import { Button, ButtonProps, IconButton } from '@opengovsg/design-system-react'
 
 import { AdminDashboardFormMetaDto } from '~shared/types'
 import { Workspace } from '~shared/types/workspace'
 
 import { BxCheck } from '~assets/icons'
-import Button, { ButtonProps } from '~components/Button'
-import IconButton from '~components/IconButton'
 
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
@@ -95,7 +94,7 @@ export const RowActionsDrawer = ({
               w="100%"
               isDisabled={isDisabled}
               variant="clear"
-              colorScheme="secondary"
+              colorScheme="sub"
             >
               {isMoveWorkspace ? (
                 <MoveWorkspaceDrawer
@@ -163,7 +162,7 @@ export const RowActionsDrawer = ({
                       <Button
                         {...buttonProps}
                         onClick={handleDeleteForm}
-                        color="danger.500"
+                        color="interaction.critical.default"
                         leftIcon={<BiTrash fontSize="1.25rem" />}
                       >
                         Delete

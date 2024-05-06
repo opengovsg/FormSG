@@ -1,10 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react'
 
 import { ResendOtpButton, ResendOtpButtonProps } from './ResendOtpButton'
-import {
-  ResendOtpButtonContainer,
-  ResendOtpButtonContainerProps,
-} from './ResendOtpButtonContainer'
 
 export default {
   title: 'Templates/Button/ResendOtpButton',
@@ -29,8 +25,8 @@ InProgress.args = {
   isDisabled: true,
 }
 
-export const Playground: StoryFn<ResendOtpButtonContainerProps> = (args) => (
-  <ResendOtpButtonContainer {...args} />
+export const Playground: StoryFn<ResendOtpButtonProps> = (args) => (
+  <ResendOtpButton {...args} />
 )
 Playground.args = {
   onResendOtp: () => new Promise((res) => setTimeout(res, 800)),

@@ -7,13 +7,15 @@ import {
   Text,
   useBreakpointValue,
 } from '@chakra-ui/react'
+import {
+  Button,
+  FormErrorMessage,
+  FormLabel,
+  Input,
+  Link,
+} from '@opengovsg/design-system-react'
 
 import { GUIDE_SPCP_ESRVCID } from '~constants/links'
-import Button from '~components/Button'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
-import Link from '~components/Link'
 
 import { BillingSvg } from './BillingSvg'
 
@@ -42,7 +44,7 @@ export const BillingForm = ({
       <Stack spacing="2rem">
         <BillingSvg />
         <Skeleton isLoaded={true} w="fit-content">
-          <Text as="h2" textStyle="h2" whiteSpace="pre-wrap">
+          <Text as="h2" textStyle="h4" whiteSpace="pre-wrap">
             Bill charges
           </Text>
         </Skeleton>

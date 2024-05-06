@@ -1,4 +1,4 @@
-import { InputProps } from '~components/Input'
+import { InputProps } from '@opengovsg/design-system-react'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { EmailFieldSchema } from '../types'

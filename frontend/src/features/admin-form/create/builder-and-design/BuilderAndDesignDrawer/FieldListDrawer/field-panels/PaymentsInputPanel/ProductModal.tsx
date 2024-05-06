@@ -14,6 +14,14 @@ import {
   Stack,
   useBreakpointValue,
 } from '@chakra-ui/react'
+import {
+  Button,
+  FormErrorMessage,
+  FormLabel,
+  Input,
+  ModalCloseButton,
+  Toggle,
+} from '@opengovsg/design-system-react'
 
 import { Product, StorageFormSettings } from '~shared/types'
 import {
@@ -23,13 +31,7 @@ import {
 } from '~shared/utils/payments'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
-import { ModalCloseButton } from '~components/Modal'
-import MoneyInput from '~components/MoneyInput'
-import Toggle from '~components/Toggle'
+import { MoneyInput } from '~components/MoneyInput'
 
 import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 import { useEnv } from '~features/env/queries'

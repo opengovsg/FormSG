@@ -1,10 +1,9 @@
 import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { FormControl } from '@chakra-ui/react'
+import { FormErrorMessage, FormLabel } from '@opengovsg/design-system-react'
 import { get } from 'lodash'
 
 import { REQUIRED_ERROR } from '~constants/validation'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
 
 import { EditTableInputs } from './EditTable'
 import { EditTableDropdownInput } from './EditTableDropdownInput'

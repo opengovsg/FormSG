@@ -1,16 +1,18 @@
 import { useCallback, useMemo } from 'react'
 import { Controller, RegisterOptions, useForm } from 'react-hook-form'
 import { FormControl, Skeleton, Stack } from '@chakra-ui/react'
+import {
+  Button,
+  FormErrorMessage,
+  FormLabel,
+  Input,
+} from '@opengovsg/design-system-react'
 import { isEmpty } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
 import { FormPermission } from '~shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
 
 import { useMutateCollaborators } from '~features/admin-form/common/mutations'
 
@@ -159,12 +161,10 @@ export const AddCollaboratorInput = (): JSX.Element => {
             />
           </Stack>
         </Skeleton>
-        <FormErrorMessage>
-          {errors.email && errors.email.message}
-        </FormErrorMessage>
+        <FormErrorMessage>{errors.email?.message}</FormErrorMessage>
       </FormControl>
       <Button
-        colorScheme={isTransferOwnershipSelected ? 'danger' : 'primary'}
+        colorScheme={isTransferOwnershipSelected ? 'critical' : 'main'}
         isDisabled={isQueryLoading}
         isLoading={isMutationLoading}
         isFullWidth={isFullWidth}

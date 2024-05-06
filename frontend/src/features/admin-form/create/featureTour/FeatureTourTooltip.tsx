@@ -1,9 +1,8 @@
 import { BiBulb, BiRightArrowAlt } from 'react-icons/bi'
 import { Box, BoxProps, CloseButton, Flex, Icon, Text } from '@chakra-ui/react'
+import { Badge, Button, ButtonProps } from '@opengovsg/design-system-react'
 
-import Badge from '~components/Badge'
-import Button, { ButtonProps } from '~components/Button'
-import { ProgressIndicator } from '~components/ProgressIndicator/ProgressIndicator'
+import { ProgressIndicator } from '~components/ProgressIndicator'
 
 import { FEATURE_STEPS } from './constants'
 import { useFeatureTourContext } from './FeatureTourContext'
@@ -37,8 +36,8 @@ export const FeatureTourTooltip = ({
       alignItems="center"
       maxW="100%"
       w="18rem"
-      color="secondary.500"
-      bg="primary.100"
+      color="brand.secondary.500"
+      bg="brand.primary.50"
       borderRadius="4px"
       {...tooltipProps}
       position="relative"
@@ -60,10 +59,14 @@ export const FeatureTourTooltip = ({
         <Icon as={BiBulb} mr="0.25rem" fontSize="1rem" />
         <Text textStyle="caption-1">Tip</Text>
       </Badge>
-      <Text textStyle="subhead-1" color="secondary.500" marginTop="1.25rem">
+      <Text
+        textStyle="subhead-1"
+        color="brand.secondary.500"
+        marginTop="1.25rem"
+      >
         {step.title}
       </Text>
-      <Text textStyle="body-2" color="secondary.500" marginTop="0.5rem">
+      <Text textStyle="body-2" color="brand.secondary.500" marginTop="0.5rem">
         {step.content}
       </Text>
       <Flex

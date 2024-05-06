@@ -2,6 +2,12 @@ import { useMemo } from 'react'
 import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { UseTableCellProps } from 'react-table'
 import { FormControl, VisuallyHidden } from '@chakra-ui/react'
+import {
+  FormErrorMessage,
+  FormLabel,
+  Input,
+  SingleSelect,
+} from '@opengovsg/design-system-react'
 import { get } from 'lodash'
 
 import { FormColorTheme } from '~shared/types'
@@ -19,10 +25,6 @@ import {
   createBaseValidationRules,
   createDropdownValidationRules,
 } from '~utils/fieldValidation'
-import { SingleSelect } from '~components/Dropdown'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
 
 import { TableFieldInputs } from '../types'
 
@@ -170,7 +172,7 @@ export const ColumnCell = ({
       <FormLabel
         // display column header in print and mobile modes
         as={isPrint || isMobile ? undefined : VisuallyHidden}
-        color="secondary.700"
+        color="brand.secondary.700"
       >
         {columnSchema.title}
       </FormLabel>

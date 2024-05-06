@@ -38,7 +38,7 @@ export const CompactFooter = ({
         </Link>
         <Divider
           orientation="vertical"
-          color={compactMonochromeLogos ? 'neutral.300' : undefined}
+          color={compactMonochromeLogos ? 'grey.200' : undefined}
         />
         <Link
           isExternal

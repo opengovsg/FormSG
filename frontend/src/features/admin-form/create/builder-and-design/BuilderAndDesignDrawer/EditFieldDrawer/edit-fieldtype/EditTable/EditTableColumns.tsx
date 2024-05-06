@@ -13,19 +13,21 @@ import {
   StackDivider,
   VisuallyHidden,
 } from '@chakra-ui/react'
+import {
+  Button,
+  ComboboxItem,
+  FormErrorMessage,
+  FormLabel,
+  IconButton,
+  Input,
+  SingleSelect,
+  Toggle,
+} from '@opengovsg/design-system-react'
 import { pick } from 'lodash'
 
 import { BasicField, TableFieldBase } from '~shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
-import Button from '~components/Button'
-import { SingleSelect } from '~components/Dropdown'
-import { ComboboxItem } from '~components/Dropdown/types'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import IconButton from '~components/IconButton'
-import Input from '~components/Input'
-import Toggle from '~components/Toggle'
 
 import { createShortTextColumn } from '~features/admin-form/create/builder-and-design/utils/columnCreation'
 
@@ -72,7 +74,7 @@ export const EditTableColumns = ({
 
   return (
     <Stack
-      divider={<StackDivider borderColor="secondary.100" />}
+      divider={<StackDivider borderColor="brand.secondary.100" />}
       spacing="2rem"
     >
       {fields.map((column, index) => (
@@ -88,7 +90,7 @@ export const EditTableColumns = ({
                 <IconButton
                   mt="-0.75rem"
                   variant="clear"
-                  colorScheme="danger"
+                  colorScheme="critical"
                   fontSize="1.25rem"
                   icon={<BiTrash />}
                   aria-label="Delete column"

@@ -1,10 +1,10 @@
 import { useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
+import { RestrictedGovtMasthead } from '@opengovsg/design-system-react'
 
 import FormIssueFeedback from '~/features/public-form/components/FormIssueFeedback'
 
 import { fillHeightCss } from '~utils/fillHeightCss'
-import GovtMasthead from '~components/GovtMasthead'
 
 import FormEndPage from '~features/public-form/components/FormEndPage'
 import FormFields from '~features/public-form/components/FormFields'
@@ -26,7 +26,7 @@ export const PreviewFormPage = (): JSX.Element => {
   return (
     <Flex flexDir="column" css={fillHeightCss} pos="relative">
       <PreviewFormProvider formId={formId}>
-        <GovtMasthead />
+        <RestrictedGovtMasthead />
         <PreviewFormBannerContainer />
         <FormSectionsProvider>
           <PublicFormLogo />

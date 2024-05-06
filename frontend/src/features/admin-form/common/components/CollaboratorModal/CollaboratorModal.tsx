@@ -4,8 +4,7 @@ import {
   ModalOverlay,
   useBreakpointValue,
 } from '@chakra-ui/react'
-
-import { ModalCloseButton } from '~components/Modal'
+import { ModalCloseButton } from '@opengovsg/design-system-react'
 
 import { CollaboratorModalContent } from './CollaboratorModalContent'
 import { CollaboratorWizardProvider } from './CollaboratorWizardContext'

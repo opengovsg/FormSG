@@ -1,7 +1,6 @@
 import { BiPlus } from 'react-icons/bi'
 import { Divider, Flex } from '@chakra-ui/react'
-
-import Button from '~components/Button'
+import { Button } from '@opengovsg/design-system-react'
 
 export interface AddConditionDividerProps {
   handleAddCondition: () => void

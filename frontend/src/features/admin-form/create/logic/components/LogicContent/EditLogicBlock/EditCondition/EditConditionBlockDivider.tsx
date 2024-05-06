@@ -8,7 +8,7 @@ export const EditConditionBlockDivider = (): JSX.Element => {
         ml={{ base: '-1.5rem', md: '-2rem' }}
         pr={{ base: '1.5rem', md: '2rem' }}
       />
-      <Text p="0.625rem" textStyle="subhead-3" color="secondary.500">
+      <Text p="0.625rem" textStyle="subhead-3" color="brand.secondary.500">
         AND
       </Text>
       <Divider

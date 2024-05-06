@@ -4,11 +4,12 @@ import {
   ControllerRenderProps,
   useFormContext,
 } from 'react-hook-form'
+import {
+  PhoneNumberInput,
+  PhoneNumberInputProps,
+} from '@opengovsg/design-system-react'
 
 import { createMobileValidationRules } from '~utils/fieldValidation'
-import PhoneNumberInput, {
-  PhoneNumberInputProps,
-} from '~components/PhoneNumberInput'
 
 import { MobileFieldSchema, VerifiableFieldInput } from '../types'
 

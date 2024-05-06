@@ -14,9 +14,7 @@ import {
   Portal,
   useControllableState,
 } from '@chakra-ui/react'
-
-import Button from '~components/Button'
-import Menu from '~components/Menu'
+import { Button, Menu } from '@opengovsg/design-system-react'
 
 import { FilterOption } from '~features/workspace/types'
 import { FILTER_OPTIONS } from '~features/workspace/utils/dashboardFilter'
@@ -126,7 +124,7 @@ export const WorkspaceSearchbar = forwardRef<WorkspaceSearchbarProps, 'input'>(
     return (
       <InputGroup>
         <InputLeftElement>
-          <Icon as={BiSearch} color="secondary.500" fontSize="1.25rem" />
+          <Icon as={BiSearch} color="brand.secondary.500" fontSize="1.25rem" />
         </InputLeftElement>
         <Input
           ref={ref}
@@ -142,7 +140,7 @@ export const WorkspaceSearchbar = forwardRef<WorkspaceSearchbarProps, 'input'>(
               as={Button}
               size="sm"
               variant="clear"
-              colorScheme="secondary"
+              colorScheme="sub"
               aria-label="Filter forms"
               leftIcon={<BiFilter fontSize="1.25rem" />}
               px="0.5rem"

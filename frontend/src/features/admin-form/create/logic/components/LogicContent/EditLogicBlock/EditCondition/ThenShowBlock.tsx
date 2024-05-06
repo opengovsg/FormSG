@@ -2,6 +2,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { BiShow, BiX } from 'react-icons/bi'
 import { FormControl, Stack, Text } from '@chakra-ui/react'
+import {
+  FormErrorMessage,
+  Infobox,
+  MultiSelect,
+  SingleSelect,
+  Textarea,
+} from '@opengovsg/design-system-react'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
@@ -9,10 +16,6 @@ import { FormFieldDto } from '~shared/types/field'
 import { LogicType } from '~shared/types/form'
 
 import { useWatchDependency } from '~hooks/useWatchDependency'
-import { MultiSelect, SingleSelect } from '~components/Dropdown'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import InlineMessage from '~components/InlineMessage'
-import Textarea from '~components/Textarea'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { EditLogicInputs } from '~features/admin-form/create/logic/types'
@@ -128,13 +131,13 @@ export const ThenShowBlock = ({
       px={{ base: '1.5rem', md: '2rem' }}
     >
       {deletedFieldsCount ? (
-        <InlineMessage variant="info" p={0}>
+        <Infobox variant="info" p={0}>
           <Text>
             <strong>{simplur`${deletedFieldsCount} Show field[|s]`}</strong>{' '}
             {simplur`${[deletedFieldsCount]}[was|were] deleted, and [has|have]`}{' '}
             been removed from your logic
           </Text>
-        </InlineMessage>
+        </Infobox>
       ) : null}
 
       <Stack
@@ -276,7 +279,6 @@ const ThenLogicInput = ({
             placeholder={null}
             items={thenValueItems}
             values={value ?? []}
-            isSelectedItemFullWidth
             {...rest}
           />
         )}

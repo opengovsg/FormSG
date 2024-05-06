@@ -18,11 +18,10 @@ import {
   TextProps,
   useDisclosure,
 } from '@chakra-ui/react'
+import { Button, ButtonProps, Link } from '@opengovsg/design-system-react'
 
 import { FORMSG_UAT } from '~constants/links'
 import { ADMINFORM_ROUTE, DASHBOARD_ROUTE } from '~constants/routes'
-import Button, { ButtonProps } from '~components/Button'
-import Link from '~components/Link'
 
 import { UseTemplateModal } from '~features/admin-form/template/UseTemplateModal'
 import { useEnv } from '~features/env/queries'
@@ -73,7 +72,7 @@ export const PreviewFormBanner = ({
       iconSpacing: '1rem',
       justifyContent: 'flex-start',
       variant: 'clear',
-      colorScheme: 'secondary',
+      colorScheme: 'sub',
       textStyle: 'body-1',
     }),
     [],
@@ -81,7 +80,7 @@ export const PreviewFormBanner = ({
   return (
     <>
       <Flex
-        bg="primary.100"
+        bg="brand.primary.50"
         py="1rem"
         px={{ base: '1.5rem', md: '2rem' }}
         display="flex"
@@ -122,7 +121,7 @@ export const PreviewFormBanner = ({
                 </Button>
               </Stack>
               <IconButton
-                color="primary.500"
+                color="brand.primary.500"
                 variant="clear"
                 display={{ base: 'flex', md: 'none' }}
                 aria-label="Template preview actions"
@@ -178,7 +177,7 @@ export const PreviewFormBanner = ({
         </Drawer>
       </Flex>
       {isPaymentEnabled && (
-        <Flex backgroundColor="neutral.900">
+        <Flex backgroundColor="grey.900">
           {secretEnv === 'production' ? (
             <Text {...textProps}>
               To test your payment form, replicate this form on our{' '}
@@ -196,7 +195,7 @@ export const PreviewFormBanner = ({
         </Flex>
       )}
       {!isPaymentEnabled && (
-        <Flex backgroundColor="neutral.900">
+        <Flex backgroundColor="grey.900">
           {!(secretEnv === 'production') && (
             <Text {...textProps}>
               You will not be able to view submitted answers or attachments in

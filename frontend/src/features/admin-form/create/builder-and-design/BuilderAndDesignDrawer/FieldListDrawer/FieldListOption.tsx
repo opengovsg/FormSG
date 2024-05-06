@@ -230,9 +230,9 @@ export const FieldListOption = forwardRef<FieldOptionProps, 'button'>(
           _hover: { bg: 'white' },
           _focus: { bg: 'white' },
         }}
-        _hover={{ bg: 'primary.100' }}
-        _focus={{ bg: 'primary.100' }}
-        _active={{ bg: 'primary.100' }}
+        _hover={{ bg: 'brand.primary.50' }}
+        _focus={{ bg: 'brand.primary.50' }}
+        _active={{ bg: 'brand.primary.50' }}
         bg="white"
         {...props}
         ref={ref}
@@ -242,7 +242,7 @@ export const FieldListOption = forwardRef<FieldOptionProps, 'button'>(
           spacing="1.5rem"
           direction="row"
           align="center"
-          color="secondary.500"
+          color="brand.secondary.500"
         >
           {children}
         </Stack>

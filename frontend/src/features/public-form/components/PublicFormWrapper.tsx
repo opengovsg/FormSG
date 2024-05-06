@@ -17,7 +17,7 @@ export const useBgColor = ({ colorTheme, isFooter }: BgColorProps) =>
     if (isFooter) {
       return 'transparent'
     }
-    if (!colorTheme) return 'neutral.100'
+    if (!colorTheme) return 'grey.50'
     return `theme-${colorTheme}.100`
   }, [colorTheme, isFooter])
 

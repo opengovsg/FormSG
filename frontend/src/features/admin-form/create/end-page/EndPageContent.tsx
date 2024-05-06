@@ -63,11 +63,11 @@ export const EndPageContent = (): JSX.Element => {
   }
 
   const thankYouSvg = isPaymentEnabled ? (
-    <Flex backgroundColor="primary.100" justifyContent="center" py="1rem">
+    <Flex backgroundColor="brand.primary.50" justifyContent="center" py="1rem">
       <PaymentsThankYouSvgr h="100%" />
     </Flex>
   ) : (
-    <Flex backgroundColor="primary.100" justifyContent="center">
+    <Flex backgroundColor="brand.primary.50" justifyContent="center">
       <ThankYouSvgr h="100%" pt="2.5rem" />
     </Flex>
   )
@@ -76,14 +76,14 @@ export const EndPageContent = (): JSX.Element => {
     <Flex
       mb={0}
       flex={1}
-      bg="neutral.200"
+      bg="grey.100"
       pt={{ base: 0, md: '2rem' }}
       pb={{ base: 0, md: '2rem' }}
       px={{ base: 0, md: '2rem' }}
       justify="center"
       overflow="auto"
     >
-      <Stack w="100%" h="fit-content" bg="primary.100">
+      <Stack w="100%" h="fit-content" bg="brand.primary.50">
         <FormBannerLogo
           isLoading={isLoading}
           {...formBannerLogoProps}

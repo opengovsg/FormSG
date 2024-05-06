@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
+import { Badge } from '@opengovsg/design-system-react'
 
 import { FormResponseMode } from '~shared/types'
 
@@ -13,7 +14,6 @@ import {
 } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
 import { noPrintCss } from '~utils/noPrintCss'
-import Badge from '~components/Badge'
 import { NavigationTab, NavigationTabList } from '~templates/NavigationTabs'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -44,7 +44,7 @@ export const FormResultsNavbar = (): JSX.Element => {
       top={0}
       flexDir="column"
       borderBottom="1px"
-      borderBottomColor="neutral.300"
+      borderBottomColor="base.divider.medium"
       bg="white"
       zIndex="docked"
       flex={0}
@@ -78,12 +78,7 @@ export const FormResultsNavbar = (): JSX.Element => {
             isActive={checkTabActive(RESULTS_CHARTS_SUBROUTE)}
           >
             Charts
-            <Badge
-              colorScheme="primary"
-              variant="subtle"
-              color="secondary.500"
-              ml="0.5rem"
-            >
+            <Badge colorScheme="sub" variant="subtle" ml="0.5rem">
               Beta
             </Badge>
           </NavigationTab>

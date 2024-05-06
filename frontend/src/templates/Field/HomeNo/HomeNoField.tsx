@@ -1,9 +1,8 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
+import { PhoneNumberInput } from '@opengovsg/design-system-react'
 
 import { createHomeNoValidationRules } from '~utils/fieldValidation'
-import PhoneNumberInput from '~components/PhoneNumberInput'
-import landlineExamples from '~components/PhoneNumberInput/resources/examples.landline.json'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { HomeNoFieldSchema, SingleAnswerFieldInput } from '../types'
@@ -34,7 +33,6 @@ export const HomeNoField = ({
           <PhoneNumberInput
             autoComplete="tel"
             allowInternational={schema.allowIntlNumbers}
-            examples={landlineExamples}
             // Remove placeholder when field is disabled, to avoid confusion if
             // the field is prefilled or not (placeholder and prefill look similar)
             examplePlaceholder={schema.disabled ? 'off' : undefined}

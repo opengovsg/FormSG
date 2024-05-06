@@ -8,6 +8,13 @@ import {
 } from 'react-hook-form'
 import { useDebounce } from 'react-use'
 import { Box, Divider, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
+import {
+  Button,
+  FormErrorMessage,
+  FormLabel,
+  Input,
+  Textarea,
+} from '@opengovsg/design-system-react'
 import { cloneDeep } from 'lodash'
 import validator from 'validator'
 
@@ -15,11 +22,6 @@ import { FormEndPage, FormResponseMode } from '~shared/types'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
-import Textarea from '~components/Textarea'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -205,7 +207,7 @@ export const EndPageInput = ({
         <Button
           isFullWidth={isMobile}
           variant="clear"
-          colorScheme="secondary"
+          colorScheme="sub"
           isDisabled={endPageMutation.isLoading}
           onClick={() => handleCloseDrawer()}
         >
@@ -246,7 +248,7 @@ export const EndPageDrawer = (): JSX.Element | null => {
         <Flex pos="relative" h="100%" display="flex" flexDir="column">
           <Box pt="1rem" px="1.5rem" bg="white">
             <Flex justify="space-between">
-              <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
+              <Text textStyle="subhead-3" color="brand.secondary.500" mb="1rem">
                 Edit thank you page
               </Text>
               <CreatePageDrawerCloseButton />

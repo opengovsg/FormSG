@@ -1,10 +1,10 @@
 import { BiCheck, BiData, BiX } from 'react-icons/bi'
 import { HStack, Icon, Text, VStack } from '@chakra-ui/react'
+import { Link } from '@opengovsg/design-system-react'
 
 import { MyInfoField } from '~shared/types'
 
 import { SINGPASS_FAQ } from '~constants/links'
-import Link from '~components/Link'
 
 import {
   FieldBuilderState,
@@ -24,7 +24,11 @@ const VerifiedIcon = ({ isVerified }: { isVerified: boolean }): JSX.Element => {
     <Icon
       fontSize="1.5rem"
       as={isVerified ? BiCheck : BiX}
-      color={isVerified ? 'success.500' : 'danger.500'}
+      color={
+        isVerified
+          ? 'interaction.success.default'
+          : 'interaction.critical.default'
+      }
     />
   )
 }

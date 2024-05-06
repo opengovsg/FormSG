@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { Flex, Skeleton, Stack, Text, useDisclosure } from '@chakra-ui/react'
+import { Infobox, Switch } from '@opengovsg/design-system-react'
 
 import { BasicField } from '~shared/types'
 import {
@@ -7,9 +8,6 @@ import {
   FormResponseMode,
   FormStatus,
 } from '~shared/types/form/form'
-
-import InlineMessage from '~components/InlineMessage'
-import { Switch } from '~components/Toggle/Switch'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
@@ -92,7 +90,11 @@ export const FormStatusToggle = (): JSX.Element => {
           />
         )}
         <Flex
-          bg={isFormPublic ? 'success.100' : 'danger.200'}
+          bg={
+            isFormPublic
+              ? 'interaction.success-subtle.default'
+              : 'interaction.critical-subtle.default'
+          }
           py="1rem"
           px="1.125rem"
           justify="space-between"
@@ -111,9 +113,7 @@ export const FormStatusToggle = (): JSX.Element => {
           />
         </Flex>
         {preventActivationMessage ? (
-          <InlineMessage variant="warning">
-            {preventActivationMessage}
-          </InlineMessage>
+          <Infobox variant="warning">{preventActivationMessage}</Infobox>
         ) : null}
       </Stack>
     </Skeleton>

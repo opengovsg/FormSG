@@ -10,8 +10,8 @@ import {
 import simplur from 'simplur'
 
 import { BxHeart, BxsHeart, BxsStar, BxStar } from '~assets/icons'
-import { RATING_THEME_KEY } from '~theme/components/Field/Rating'
-import { FieldColorScheme } from '~theme/foundations/colours'
+import { FieldColorScheme } from '~theme/colors'
+import { RATING_THEME_KEY } from '~theme/components/Rating'
 
 interface BaseRatingComponent {
   /**
@@ -32,7 +32,7 @@ interface BaseRatingComponent {
    */
   inputId: string | undefined
   /**
-   * Color scheme of the component to render. Defaults to `primary`.
+   * Color scheme of the component to render. Defaults to `theme-blue`.
    */
   colorScheme?: FieldColorScheme
 }
@@ -47,7 +47,7 @@ const NumberRating = ({
   inputId,
   value,
   selectedValue,
-  colorScheme = 'primary',
+  colorScheme = 'theme-blue',
 }: BaseRatingComponent): JSX.Element => {
   const styles = useMultiStyleConfig(RATING_THEME_KEY, {
     colorScheme,
@@ -74,7 +74,7 @@ const IconRating = ({
   inputId,
   value,
   selectedValue,
-  colorScheme = 'primary',
+  colorScheme = 'theme-blue',
   emptyIcon,
   fullIcon,
 }: IconRatingComponent): JSX.Element => {
@@ -105,7 +105,7 @@ const IconRating = ({
 
 interface RatingOptionProps extends Omit<BoxProps, 'onChange'> {
   /**
-   * Color scheme of the component to render. Defaults to `primary`.
+   * Color scheme of the component to render. Defaults to `theme-blue`.
    */
   colorScheme?: FieldColorScheme
   /**
@@ -138,7 +138,7 @@ interface RatingOptionProps extends Omit<BoxProps, 'onChange'> {
 export const RatingOption = forwardRef<RatingOptionProps, 'input'>(
   (
     {
-      colorScheme = 'primary',
+      colorScheme = 'theme-blue',
       name,
       onChange,
       selectedValue,

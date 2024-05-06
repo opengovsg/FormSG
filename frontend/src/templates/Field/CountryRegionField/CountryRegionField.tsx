@@ -1,12 +1,12 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
+import { SingleSelect } from '@opengovsg/design-system-react'
 
 import { CountryRegion } from '~shared/constants/countryRegion'
 import { FormColorTheme } from '~shared/types'
 import { CountryRegionFieldBase, FormFieldWithId } from '~shared/types/field'
 
 import { createCountryRegionValidationRules } from '~utils/fieldValidation'
-import { SingleSelect } from '~components/Dropdown'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { SingleAnswerFieldInput } from '../types'

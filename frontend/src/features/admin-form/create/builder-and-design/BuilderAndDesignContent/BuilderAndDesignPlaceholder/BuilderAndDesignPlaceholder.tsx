@@ -20,7 +20,7 @@ export const BuilderAndDesignPlaceholder = ({
         return (
           <Box
             h="100%"
-            bg="primary.200"
+            bg="brand.primary.200"
             opacity="0.5"
             border="dashed 1px blue"
           />
@@ -29,10 +29,10 @@ export const BuilderAndDesignPlaceholder = ({
         return (
           <Flex
             h="100%"
-            bg="primary.200"
+            bg="brand.primary.200"
             border="1px solid"
-            borderColor="primary.500"
-            color="primary.400"
+            borderColor="brand.primary.500"
+            color="brand.primary.400"
             justify="center"
             align="center"
           >

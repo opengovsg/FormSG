@@ -2,7 +2,6 @@ import { Box } from '@chakra-ui/react'
 
 import { FormColorTheme } from '~shared/types'
 
-import { useMdComponents } from '~hooks/useMdComponents'
 import { MarkdownText } from '~components/MarkdownText'
 import { useSectionColor } from '~templates/Field/Section/useSectionColor'
 
@@ -16,22 +15,24 @@ export const FormInstructions = ({
   colorTheme,
 }: FormInstructionsProps): JSX.Element => {
   const sectionColor = useSectionColor(colorTheme)
-  const mdComponents = useMdComponents({
-    styles: {
-      text: {
-        textStyle: 'body-1',
-        color: 'secondary.700',
-      },
-    },
-  })
 
   return (
     <>
-      <Box as="h2" textStyle="h2" color={sectionColor}>
+      <Box as="h2" textStyle="h4" color={sectionColor}>
         Instructions
       </Box>
       <Box mt="1rem">
-        <MarkdownText multilineBreaks components={mdComponents}>
+        <MarkdownText
+          multilineBreaks
+          componentProps={{
+            styles: {
+              text: {
+                textStyle: 'body-1',
+                color: 'brand.secondary.700',
+              },
+            },
+          }}
+        >
           {content}
         </MarkdownText>
       </Box>

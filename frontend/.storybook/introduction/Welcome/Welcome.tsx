@@ -1,20 +1,19 @@
 import { BiBulb, BiChevronRight, BiWrench } from 'react-icons/bi'
 import { Box, Flex, Icon, Text } from '@chakra-ui/react'
+import { Link } from '@opengovsg/design-system-react'
 import { linkTo } from '@storybook/addon-links'
-
-import Link from '~components/Link'
 
 export const Welcome = (): JSX.Element => {
   return (
-    <Flex bg="secondary.700" w="100%" h="100vh" flexDir="column">
+    <Flex bg="brand.secondary.700" w="100%" h="100vh" flexDir="column">
       <Box
         px={{ base: '1.5rem', md: '5.5rem', lg: '7.5rem' }}
         py={{ base: '1.5rem', md: '5rem', lg: '6rem' }}
         flex="1 0 auto"
       >
         <Box mb="3rem" color="white">
-          <Text textStyle="h1-mobile">Welcome to our</Text>
-          <Text textStyle="display-1">Camp 🏕</Text>
+          <Text textStyle="responsive-display-heavy">Welcome to our</Text>
+          <Text textStyle="responsive-display-heavy">Camp 🏕</Text>
         </Box>
         <Box maxW="43.75rem">
           <Text textStyle="body-1" color="white" mb="1rem">
@@ -37,7 +36,7 @@ export const Welcome = (): JSX.Element => {
         <Box
           color="white"
           flex={1}
-          bg="primary.500"
+          bg="brand.primary.500"
           px={{ base: '1.5rem', md: '5.5rem', lg: '7.5rem' }}
           py={{ base: '1rem', md: '3.5rem', lg: '5.5rem' }}
         >
@@ -67,7 +66,7 @@ export const Welcome = (): JSX.Element => {
             as="button"
             onClick={linkTo('Introduction/Guiding principles')}
             aria-label="Next story"
-            colorScheme="secondary"
+            colorScheme="sub"
           >
             <BiChevronRight fontSize="4rem" />
           </Link>

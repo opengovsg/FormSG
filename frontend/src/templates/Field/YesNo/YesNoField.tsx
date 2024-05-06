@@ -8,7 +8,7 @@ import { FormColorTheme } from '~shared/types'
 
 import { createBaseValidationRules } from '~/utils/fieldValidation'
 
-import YesNo from '~components/Field/YesNo'
+import { YesNo } from '~components/Field/YesNo/YesNo'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { YesNoFieldInput, YesNoFieldSchema } from '../types'

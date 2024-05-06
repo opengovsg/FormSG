@@ -2,13 +2,15 @@ import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { FormControl, Stack } from '@chakra-ui/react'
+import {
+  Button,
+  FormErrorMessage,
+  FormLabel,
+  Input,
+} from '@opengovsg/design-system-react'
 import isEmail from 'validator/lib/isEmail'
 
 import { INVALID_EMAIL_ERROR } from '~constants/validation'
-import Button from '~components/Button'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
 
 export type LoginFormInputs = {
   email: string

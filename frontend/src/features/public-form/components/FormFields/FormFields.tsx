@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react'
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
 import { useSearchParams } from 'react-router-dom'
 import { Box, Stack } from '@chakra-ui/react'
+import { Infobox } from '@opengovsg/design-system-react'
 import { isEmpty, times } from 'lodash'
 
 import { PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID } from '~shared/constants'
@@ -17,7 +18,6 @@ import {
 import { centsToDollars } from '~shared/utils/payments'
 
 import bufferToFile from '~utils/bufferToFile'
-import InlineMessage from '~components/InlineMessage'
 import { FormFieldValue, FormFieldValues } from '~templates/Field'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 
@@ -193,23 +193,23 @@ export const FormFields = ({
             <Stack spacing="2.25rem">
               {isEmpty(fieldPrefillMap) ? null : hasLockedNormalPrefills ? (
                 // If there are both locked and non-locked prefills, show this message.
-                <InlineMessage variant="warning">
+                <Infobox variant="warning">
                   Highlighted fields below have been pre-filled according to the
                   form link you clicked. You may edit these fields if necessary,
                   except non-editable fields with a lock icon.
-                </InlineMessage>
+                </Infobox>
               ) : hasLockedPrefills ? (
                 // If there are only locked prefills, show this message.
-                <InlineMessage variant="warning">
+                <Infobox variant="warning">
                   Highlighted fields below have been pre-filled according to the
                   form link you clicked. These are non-editable fields.
-                </InlineMessage>
+                </Infobox>
               ) : hasNormalPrefills ? (
                 // If there are only non-locked prefills, show this message.
-                <InlineMessage variant="warning">
+                <Infobox variant="warning">
                   Highlighted fields below have been pre-filled according to the
                   form link you clicked. You may edit these fields if necessary.
-                </InlineMessage>
+                </Infobox>
               ) : null}
               <VisibleFormFields
                 colorTheme={colorTheme}

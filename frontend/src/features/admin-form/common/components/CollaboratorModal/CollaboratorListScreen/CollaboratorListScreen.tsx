@@ -12,7 +12,7 @@ export const CollaboratorListScreen = (): JSX.Element => {
   const { hasEditAccess } = useAdminFormCollaborators(formId)
   return (
     <>
-      <ModalHeader color="secondary.700">
+      <ModalHeader color="brand.secondary.700">
         {hasEditAccess ? 'Manage collaborators' : 'Collaborators'}
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap">

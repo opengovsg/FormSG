@@ -6,9 +6,9 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react'
+import { Button } from '@opengovsg/design-system-react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
 
 import { useMutateCollaborators } from '~features/admin-form/common/mutations'
 
@@ -25,10 +25,10 @@ export const RemoveSelfScreen = (): JSX.Element | null => {
 
   return (
     <>
-      <ModalHeader color="secondary.700">
+      <ModalHeader color="brand.secondary.700">
         Remove myself as collaborator
       </ModalHeader>
-      <ModalBody whiteSpace="pre-wrap" color="secondary.500">
+      <ModalBody whiteSpace="pre-wrap" color="brand.secondary.500">
         <Text>
           You are removing yourself as a collaborator and will lose all access
           to this form. This action cannot be undone.
@@ -43,7 +43,7 @@ export const RemoveSelfScreen = (): JSX.Element | null => {
           <Button
             isFullWidth={isMobile}
             isLoading={mutateRemoveSelf.isLoading}
-            colorScheme="danger"
+            colorScheme="critical"
             onClick={handleRemoveSelf}
           >
             Yes, remove myself
@@ -52,7 +52,7 @@ export const RemoveSelfScreen = (): JSX.Element | null => {
             isFullWidth={isMobile}
             isDisabled={mutateRemoveSelf.isLoading}
             variant="clear"
-            colorScheme="secondary"
+            colorScheme="sub"
             onClick={handleBackToList}
           >
             Cancel

@@ -2,12 +2,11 @@ import { useCallback, useEffect, useRef } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { BiCog, BiTrash } from 'react-icons/bi'
 import { Box, ButtonGroup, Collapse, Flex } from '@chakra-ui/react'
+import { IconButton, TouchableTooltip } from '@opengovsg/design-system-react'
 
 import { FormFieldDto, FormResponseMode } from '~shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import IconButton from '~components/IconButton'
-import Tooltip from '~components/Tooltip'
 import { PaymentPreview } from '~templates/Field/PaymentPreview/PaymentPreview'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -104,10 +103,10 @@ export const PaymentView = () => {
         <Box mt="2.5rem" bg="white" py="2.5rem" px="1.5rem">
           <Box
             transition="background 0.2s ease"
-            _hover={{ bg: 'secondary.100', cursor: 'pointer' }}
+            _hover={{ bg: 'brand.secondary.100', cursor: 'pointer' }}
             borderRadius="4px"
             _active={{
-              bg: 'secondary.100',
+              bg: 'brand.secondary.100',
               boxShadow: '0 0 0 2px var(--chakra-colors-primary-500)',
             }}
             data-active={isActive || undefined}
@@ -159,24 +158,24 @@ const PaymentButtonGroup = ({
       borderTop="1px solid var(--chakra-colors-neutral-300)"
       justify="flex-end"
     >
-      <ButtonGroup variant="clear" colorScheme="secondary" spacing={0}>
+      <ButtonGroup variant="clear" colorScheme="sub" spacing={0}>
         {isMobile && (
           <IconButton
             variant="clear"
-            colorScheme="secondary"
+            colorScheme="sub"
             aria-label="Edit field"
             icon={<BiCog fontSize="1.25rem" />}
             onClick={handleEditFieldClick}
           />
         )}
-        <Tooltip label="Delete field">
+        <TouchableTooltip label="Delete field">
           <IconButton
-            colorScheme="danger"
+            colorScheme="critical"
             aria-label="Delete field"
             icon={<BiTrash fontSize="1.25rem" />}
             onClick={onDeleteModalOpen}
           />
-        </Tooltip>
+        </TouchableTooltip>
       </ButtonGroup>
     </Flex>
   )

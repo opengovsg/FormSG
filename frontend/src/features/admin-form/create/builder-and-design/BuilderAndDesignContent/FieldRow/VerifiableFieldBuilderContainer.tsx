@@ -1,8 +1,8 @@
 import { Box, Stack } from '@chakra-ui/react'
+import { Button } from '@opengovsg/design-system-react'
 
 import { FormColorTheme, FormFieldWithId } from '~shared/types'
 
-import Button from '~components/Button'
 import { FieldContainer } from '~templates/Field/FieldContainer'
 
 import { VerifiableFieldBase } from '~features/verifiable-fields/types'

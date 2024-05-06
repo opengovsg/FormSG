@@ -1,14 +1,13 @@
 import { Helmet } from 'react-helmet-async'
 import { Link as ReactLink, useNavigate } from 'react-router-dom'
 import { Box, Flex, Stack, Text } from '@chakra-ui/react'
+import { Button, Link } from '@opengovsg/design-system-react'
 
 import { AppFooter } from '~/app/AppFooter'
 
 import { useAuth } from '~contexts/AuthContext'
 import { DASHBOARD_ROUTE, LOGIN_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
-import Link from '~components/Link'
 
 import { ForbiddenSvgr } from './ForbiddenSvgr'
 
@@ -33,8 +32,8 @@ export const AdminForbiddenErrorPage = ({
           flexDir="column"
           flex={1}
           bgGradient={{
-            base: 'linear(to-b, primary.500, primary.500 40%, primary.100 0)',
-            md: 'linear(to-b, primary.500 50%, primary.100 50%)',
+            base: 'linear(to-b, primary.500, primary.500 40%, brand.primary.50 0)',
+            md: 'linear(to-b, primary.500 50%, brand.primary.50 50%)',
           }}
           py="3rem"
           px="1.5rem"
@@ -46,17 +45,17 @@ export const AdminForbiddenErrorPage = ({
           />
           <Stack
             spacing="2.5rem"
-            color="secondary.500"
+            color="brand.secondary.500"
             align="center"
             textAlign="center"
           >
             <Stack
               spacing="1rem"
-              color="secondary.500"
+              color="brand.secondary.500"
               align="center"
               textAlign="center"
             >
-              <Text as="h2" textStyle="h2">
+              <Text as="h2" textStyle="h4">
                 You do not have access to this page.
               </Text>
               <Text textStyle="body-1">
@@ -87,7 +86,7 @@ export const AdminForbiddenErrorPage = ({
             </Stack>
           </Stack>
         </Flex>
-        <Box py={{ lg: '3rem' }} px={{ lg: '9.25rem' }} bg="primary.100">
+        <Box py={{ lg: '3rem' }} px={{ lg: '9.25rem' }} bg="brand.primary.50">
           <AppFooter variant="compact" />
         </Box>
       </Flex>

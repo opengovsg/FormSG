@@ -1,9 +1,8 @@
 import { useCallback, useMemo } from 'react'
 import { Skeleton } from '@chakra-ui/react'
+import { Toggle } from '@opengovsg/design-system-react'
 
 import { FormResponseMode } from '~shared/types'
-
-import Toggle from '~components/Toggle'
 
 import { useMutateFormSettings } from '../../mutations'
 import { useAdminFormSettings } from '../../queries'

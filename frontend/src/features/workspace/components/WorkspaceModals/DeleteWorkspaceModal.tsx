@@ -11,11 +11,11 @@ import {
   Text,
   useBreakpointValue,
 } from '@chakra-ui/react'
+import { Button } from '@opengovsg/design-system-react'
 
 import { Workspace } from '~shared/types/workspace'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
 
 import { useWorkspaceMutations } from '~features/workspace/mutations'
 
@@ -59,13 +59,13 @@ export const DeleteWorkspaceModal = ({
         <ModalCloseButton />
         <ModalBody>
           {activeWorkspace.formIds.length > 0 ? (
-            <Text textStyle="body-2" color="secondary.500">
+            <Text textStyle="body-2" color="brand.secondary.500">
               Remove {activeWorkspace.formIds.length} form(s) from&nbsp;
               {activeWorkspace.title} and delete the folder? This action cannot
               be undone
             </Text>
           ) : (
-            <Text textStyle="body-2" color="secondary.500">
+            <Text textStyle="body-2" color="brand.secondary.500">
               Are you sure you want to delete this folder? This action cannot be
               undone.
             </Text>
@@ -83,14 +83,14 @@ export const DeleteWorkspaceModal = ({
             <Button
               onClick={onClose}
               variant="clear"
-              colorScheme="secondary"
+              colorScheme="sub"
               isFullWidth={isMobile}
             >
               Cancel
             </Button>
             <Button
               onClick={handleDeleteWorkspace}
-              colorScheme="danger"
+              colorScheme="critical"
               isFullWidth={isMobile}
             >
               Yes, delete folder

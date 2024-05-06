@@ -1,12 +1,20 @@
 import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
-import { FormControl, Stack, useBreakpointValue } from '@chakra-ui/react'
+import {
+  FormControl,
+  InputGroup,
+  InputLeftAddon,
+  Stack,
+  useBreakpointValue,
+} from '@chakra-ui/react'
+import {
+  Button,
+  FormErrorMessage,
+  FormLabel,
+  Input,
+} from '@opengovsg/design-system-react'
 
-import Button from '~components/Button'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
-import ResendOtpButton from '~templates/ResendOtpButton'
+import { ResendOtpButton } from '~templates/ResendOtpButton/ResendOtpButton'
 
 export type OtpFormInputs = {
   otp: string
@@ -47,25 +55,25 @@ export const OtpForm = ({
         <FormLabel isRequired htmlFor="otp">
           {`Enter OTP sent to ${email.toLowerCase()}`}
         </FormLabel>
-        <Input
-          type="text"
-          maxLength={6}
-          inputMode="numeric"
-          autoComplete="one-time-code"
-          autoFocus
-          {...register('otp', {
-            required: 'OTP is required.',
-            pattern: {
-              value: /^[0-9\b]+$/,
-              message: 'Only numbers are allowed.',
-            },
-            validate: validateOtp,
-          })}
-          prefix={otpPrefix === undefined ? undefined : `${otpPrefix} -`}
-        />
-        {formState.errors.otp && (
-          <FormErrorMessage>{formState.errors.otp.message}</FormErrorMessage>
-        )}
+        <InputGroup>
+          <InputLeftAddon>{otpPrefix} -</InputLeftAddon>
+          <Input
+            type="text"
+            maxLength={6}
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            autoFocus
+            {...register('otp', {
+              required: 'OTP is required.',
+              pattern: {
+                value: /^[0-9\b]+$/,
+                message: 'Only numbers are allowed.',
+              },
+              validate: validateOtp,
+            })}
+          />
+        </InputGroup>
+        <FormErrorMessage>{formState.errors.otp?.message}</FormErrorMessage>
       </FormControl>
       <Stack
         direction={{ base: 'column', lg: 'row' }}

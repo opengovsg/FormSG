@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   As,
+  ColorProps,
   Divider,
   Flex,
   FormControl,
@@ -10,6 +11,13 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react'
+import {
+  Checkbox,
+  FormLabel,
+  Infobox,
+  Input,
+  Link,
+} from '@opengovsg/design-system-react'
 
 import {
   DISALLOW_CONNECT_NON_WHITELIST_STRIPE_ACCOUNT,
@@ -19,11 +27,7 @@ import { FormResponseMode, PaymentChannel } from '~shared/types'
 
 import { BxsCheckCircle, BxsError, BxsInfoCircle } from '~assets/icons'
 import { GUIDE_STRIPE_ONBOARDING } from '~constants/links'
-import Checkbox from '~components/Checkbox'
-import FormLabel from '~components/FormControl/FormLabel'
-import InlineMessage from '~components/InlineMessage'
-import Input from '~components/Input'
-import Link from '~components/Link'
+import { MarkdownText } from '~components/MarkdownText'
 
 import { useEnv } from '~features/env/queries'
 
@@ -54,13 +58,11 @@ const BeforeConnectionInstructions = ({
   if (isInvalidDomain) {
     return (
       <>
-        <InlineMessage variant="error" my="2rem">
-          <Text>
-            Your Stripe account could not be connected because it was created
-            with a non-whitelisted email domain. Try reconnecting an account
-            that was created with a whitelisted email domain.
-          </Text>
-        </InlineMessage>
+        <Infobox variant="error" my="2rem">
+          Your Stripe account could not be connected because it was created with
+          a non-whitelisted email domain. Try reconnecting an account that was
+          created with a whitelisted email domain.
+        </Infobox>
         <StripeConnectButton connectState={StripeConnectButtonStates.ENABLED} />
       </>
     )
@@ -68,17 +70,13 @@ const BeforeConnectionInstructions = ({
   if (isProductionEnv) {
     return (
       <VStack spacing="2.5rem" alignItems="start">
-        <InlineMessage variant="info">
-          <Text>
-            Read{' '}
-            <Link isExternal href={paymentGuideLink}>
-              our guide
-            </Link>{' '}
-            to set up a Stripe account. If your agency already has a Stripe
-            account, you can connect it to this form.
-          </Text>
-        </InlineMessage>
-        <Text textStyle="h3" color="secondary.500">
+        <Infobox variant="info">
+          <MarkdownText>
+            {`Read [our guide](${paymentGuideLink}) to set up a Stripe account. If your agency already has a Stripe
+            account, you can connect it to this form.`}
+          </MarkdownText>
+        </Infobox>
+        <Text textStyle="h3" color="brand.secondary.500">
           Bulk transaction rates
         </Text>
         <Text>
@@ -114,12 +112,10 @@ const BeforeConnectionInstructions = ({
 
   return (
     <>
-      <InlineMessage variant="info" my="2rem">
-        <Text>
-          You are currently in test mode. You can choose to skip connecting a
-          Stripe account after clicking the button below.
-        </Text>
-      </InlineMessage>
+      <Infobox variant="info" my="2rem">
+        You are currently in test mode. You can choose to skip connecting a
+        Stripe account after clicking the button below.
+      </Infobox>
       <StripeConnectButton connectState={StripeConnectButtonStates.ENABLED} />
     </>
   )
@@ -130,7 +126,7 @@ const ConnectionStatusText = ({
   icon,
   text,
 }: {
-  color: string
+  color: ColorProps['color']
   icon: As
   text: string
 }) => (
@@ -163,7 +159,7 @@ const AfterConnectionInfo = ({
     // Base case: Error retrieving form payments data
     connectionInfo = (
       <ConnectionStatusText
-        color="danger.500"
+        color="interaction.critical.default"
         icon={BxsError}
         text="Something went wrong when validating the connected Stripe account."
       />
@@ -173,7 +169,7 @@ const AfterConnectionInfo = ({
       // Live mode: Account connected successfully and can be charged
       connectionInfo = (
         <ConnectionStatusText
-          color="success.700"
+          color="interaction.success.default"
           icon={BxsCheckCircle}
           text="Your Stripe account is connected to this Form."
         />
@@ -182,7 +178,7 @@ const AfterConnectionInfo = ({
       // Live mode: Linked account has no payment capabilities.
       connectionInfo = (
         <ConnectionStatusText
-          color="warning.500"
+          color="interaction.warning.default"
           icon={BxsInfoCircle}
           text="The connected account does not have the ability to process payments."
         />
@@ -193,7 +189,7 @@ const AfterConnectionInfo = ({
       // Test mode: Account connected successfully but note that will only be on test mode
       connectionInfo = (
         <ConnectionStatusText
-          color="success.700"
+          color="interaction.success.default"
           icon={BxsCheckCircle}
           text="Stripe account connected. Payments made on this form will only show in test mode in your Stripe account."
         />
@@ -202,7 +198,7 @@ const AfterConnectionInfo = ({
       // Test mode: Stripe account connection step skipped
       connectionInfo = (
         <ConnectionStatusText
-          color="success.700"
+          color="interaction.success.default"
           icon={BxsCheckCircle}
           text="You are connected to a test account."
         />

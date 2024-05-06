@@ -20,7 +20,7 @@ const OrderedListIconBox = ({ index }: OrderedListIconProps) => {
       w="1.5rem"
       h="1.5rem"
       textStyle="subhead-3"
-      bg="primary.500"
+      bg="brand.primary.500"
       color="white"
       borderRadius="4px"
     >

@@ -4,9 +4,9 @@ import {
   ControllerRenderProps,
   useFormContext,
 } from 'react-hook-form'
+import { Input, InputProps } from '@opengovsg/design-system-react'
 
 import { createEmailValidationRules } from '~utils/fieldValidation'
-import Input, { InputProps } from '~components/Input'
 
 import { EmailFieldSchema, VerifiableFieldInput } from '../types'
 

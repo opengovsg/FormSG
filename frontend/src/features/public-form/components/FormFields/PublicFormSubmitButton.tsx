@@ -1,14 +1,12 @@
 import { MouseEventHandler, useMemo, useState } from 'react'
 import { useFormState, UseFormTrigger, useWatch } from 'react-hook-form'
 import { Stack, useDisclosure, VisuallyHidden } from '@chakra-ui/react'
+import { Button, Infobox } from '@opengovsg/design-system-react'
 
 import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
 import { FormField, LogicDto, MyInfoFormField } from '~shared/types'
 
-import { ThemeColorScheme } from '~theme/foundations/colours'
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
-import InlineMessage from '~components/InlineMessage'
 import { FormFieldValues, VerifiableFieldValues } from '~templates/Field'
 
 import { getLogicUnitPreventingSubmit } from '~features/logic/utils'
@@ -99,7 +97,7 @@ export const PublicFormSubmitButton = ({
       <Button
         isFullWidth={isMobile}
         w="100%"
-        colorScheme={`theme-${colorTheme}` as ThemeColorScheme}
+        colorScheme={`theme-${colorTheme}`}
         type="button"
         isLoading={isSubmitting}
         isDisabled={!!preventSubmissionLogic || !onSubmit}
@@ -114,9 +112,9 @@ export const PublicFormSubmitButton = ({
             : 'Submit now'}
       </Button>
       {preventSubmissionLogic ? (
-        <InlineMessage variant="warning">
+        <Infobox variant="warning">
           {preventSubmissionLogic.preventSubmitMessage}
-        </InlineMessage>
+        </Infobox>
       ) : null}
     </Stack>
   )

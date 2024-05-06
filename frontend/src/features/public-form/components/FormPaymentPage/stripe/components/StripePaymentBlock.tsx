@@ -8,13 +8,13 @@ import {
   Text,
   VisuallyHidden,
 } from '@chakra-ui/react'
+import { Button } from '@opengovsg/design-system-react'
 import { PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
 
 import { GetPaymentInfoDto } from '~shared/types'
 import { FormColorTheme, FormResponseMode } from '~shared/types/form'
 
 import { useBrowserStm } from '~hooks/payments'
-import Button from '~components/Button'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
@@ -170,7 +170,7 @@ export const StripePaymentBlock = ({
           <VisuallyHidden aria-live="assertive">
             {submittedAriaText}
           </VisuallyHidden>
-          <Text textStyle="h3" textColor="primary.500" mb="2.25rem">
+          <Text textStyle="h3" textColor="brand.primary.500" mb="2.25rem">
             Payment
           </Text>
           <PaymentSummary
@@ -186,7 +186,7 @@ export const StripePaymentBlock = ({
           isRetry={isRetry}
           triggerPaymentStatusRefetch={triggerPaymentStatusRefetch}
         />
-        <Text textColor="secondary.300">
+        <Text textColor="brand.secondary.300">
           Response ID: {paymentInfoData.submissionId}
         </Text>
       </Stack>

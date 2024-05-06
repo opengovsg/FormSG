@@ -15,9 +15,9 @@ import {
   Skeleton,
   Text,
 } from '@chakra-ui/react'
+import { IconButton } from '@opengovsg/design-system-react'
 
 import { noPrintCss } from '~utils/noPrintCss'
-import IconButton from '~components/IconButton'
 
 import { useUnlockedResponses } from '../ResponsesPage/storage/UnlockedResponses/UnlockedResponsesProvider'
 
@@ -127,7 +127,7 @@ export const IndividualResponseNavbar = (): JSX.Element => {
       </Flex>
       <Flex gridArea="respondent" justify="center" align="center">
         <Skeleton isLoaded={!isLoading}>
-          <Text textStyle="h2" as="h2">
+          <Text textStyle="h4" as="h2">
             Response
             {currentResponseNumber ? ` #${currentResponseNumber}` : ''}
           </Text>

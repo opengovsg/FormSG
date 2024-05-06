@@ -15,7 +15,7 @@ export const StepLabel = ({ stepNumber }: StepLabelProps) => (
       py="0.5rem"
       px="1rem"
       borderWidth="1px"
-      borderColor="secondary.300"
+      borderColor="brand.secondary.300"
       borderRadius="4px"
     >
       {stepNumber + 1}

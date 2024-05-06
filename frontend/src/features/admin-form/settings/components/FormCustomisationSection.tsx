@@ -6,9 +6,7 @@ import {
   useState,
 } from 'react'
 import { FormControl, Skeleton } from '@chakra-ui/react'
-
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
+import { FormLabel, Input } from '@opengovsg/design-system-react'
 
 import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'

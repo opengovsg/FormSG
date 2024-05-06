@@ -10,9 +10,7 @@ import {
   Text,
   useBreakpointValue,
 } from '@chakra-ui/react'
-
-import Button from '~components/Button'
-import { ModalCloseButton } from '~components/Modal'
+import { Button, ModalCloseButton } from '@opengovsg/design-system-react'
 
 import {
   setToInactiveSelector,
@@ -58,9 +56,9 @@ export const DeleteStepModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton isDisabled={deleteStepMutation.isLoading} />
-        <ModalHeader color="secondary.700">Delete step</ModalHeader>
+        <ModalHeader color="brand.secondary.700">Delete step</ModalHeader>
         <ModalBody whiteSpace="pre-wrap">
-          <Text textStyle="body-2" color="secondary.500">
+          <Text textStyle="body-2" color="brand.secondary.500">
             Are you sure you want to delete this step? This action is not
             reversible.
           </Text>
@@ -74,13 +72,13 @@ export const DeleteStepModal = ({
             <Button
               variant="clear"
               isDisabled={deleteStepMutation.isLoading}
-              colorScheme="secondary"
+              colorScheme="sub"
               onClick={onClose}
             >
               No, don't delete
             </Button>
             <Button
-              colorScheme="danger"
+              colorScheme="critical"
               onClick={handleDelete}
               isLoading={deleteStepMutation.isLoading}
             >

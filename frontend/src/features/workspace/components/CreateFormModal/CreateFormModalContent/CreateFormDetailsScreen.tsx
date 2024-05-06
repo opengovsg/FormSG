@@ -8,17 +8,20 @@ import {
   Skeleton,
   Text,
 } from '@chakra-ui/react'
+import {
+  Button,
+  FormErrorMessage,
+  FormHelperText,
+  FormLabel,
+  Infobox,
+  Input,
+} from '@opengovsg/design-system-react'
 
 import { FormResponseMode } from '~shared/types/form/form'
 
 import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
 import { FORM_TITLE_VALIDATION_RULES } from '~utils/formValidation'
-import Button from '~components/Button'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormFieldMessage from '~components/FormControl/FormFieldMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import InlineMessage from '~components/InlineMessage'
-import Input from '~components/Input'
+import { MarkdownText } from '~components/MarkdownText'
 
 import { WorkspaceRowsProvider } from '../../WorkspaceFormRow/WorkspaceRowsContext'
 import { useCreateFormWizard } from '../CreateFormWizardContext'
@@ -50,7 +53,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
 
   return (
     <>
-      <ModalHeader color="secondary.700">
+      <ModalHeader color="brand.secondary.700">
         <Container maxW="69.5rem" p={0}>
           {modalHeader}
         </Container>
@@ -58,7 +61,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
       <ModalBody whiteSpace="pre-wrap">
         <Container maxW="69.5rem" p={0}>
           <FormControl isRequired isInvalid={!!errors.title} mb="2.25rem">
-            <FormLabel useMarkdownForDescription>Form name</FormLabel>
+            <FormLabel>Form name</FormLabel>
             <Skeleton isLoaded={!isFetching}>
               <Input
                 autoFocus
@@ -67,9 +70,9 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             </Skeleton>
             <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
             {titleInputValue?.length > FORM_TITLE_LENGTH_WARNING ? (
-              <FormFieldMessage>
+              <FormHelperText>
                 It is advised to use a shorter, more succinct form name.
-              </FormFieldMessage>
+              </FormHelperText>
             ) : null}
           </FormControl>
           <FormControl isRequired isInvalid={!!errors.responseMode} mb="2.5rem">
@@ -90,17 +93,18 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             </Skeleton>
             <FormErrorMessage>{errors.responseMode?.message}</FormErrorMessage>
             {isSingpass && (
-              <InlineMessage mt="2rem">
+              <Infobox mt="2rem">
                 The form you are trying to duplicate has Singpass authentication
                 which is not supported for Multi-respondent forms.
-              </InlineMessage>
+              </Infobox>
             )}
           </FormControl>
           {responseModeValue === FormResponseMode.Email && (
             <FormControl isRequired isInvalid={!!errors.emails} mb="2.25rem">
               <FormLabel
-                useMarkdownForDescription
-                description={`Specify up to 30 emails. [How to guard against bounce emails](${GUIDE_PREVENT_EMAIL_BOUNCE}).`}
+                description={
+                  <MarkdownText>{`Specify up to 30 emails. [How to guard against bounce emails](${GUIDE_PREVENT_EMAIL_BOUNCE}).`}</MarkdownText>
+                }
               >
                 Emails where responses will be sent
               </FormLabel>

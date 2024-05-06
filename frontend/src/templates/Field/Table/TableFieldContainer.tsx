@@ -1,7 +1,6 @@
 import { useFormState } from 'react-hook-form'
 import { FormControl } from '@chakra-ui/react'
-
-import FormLabel from '~components/FormControl/FormLabel'
+import { FormLabel } from '@opengovsg/design-system-react'
 
 import { TableFieldSchema } from '../types'
 

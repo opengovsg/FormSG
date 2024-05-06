@@ -61,14 +61,14 @@ export const AttachmentStackedBar = ({
     const barProps = []
     if (existingValue) {
       barProps.push({
-        bg: 'warning.500',
+        bg: 'interaction.warning.default',
         border: 'none',
       })
     }
     if (newValue) {
       barProps.push({
-        bg: 'success.500',
-        border: '1px dashed var(--chakra-colors-success-800)',
+        bg: 'interaction.success.default',
+        border: '1px dashed var(--chakra-colors-interaction-success-active)',
       })
     }
     return barProps
@@ -100,9 +100,13 @@ export const AttachmentStackedBar = ({
         {isOverQuota ? (
           <>
             <Flex h="1rem">
-              <FilledTrack bg="danger.500" />
+              <FilledTrack bg="interaction.critical.default" />
             </Flex>
-            <Flex justify="center" textStyle="caption-1" color="secondary.700">
+            <Flex
+              justify="center"
+              textStyle="caption-1"
+              color="brand.secondary.700"
+            >
               {totalAttachmentSize} / {max} MB
             </Flex>
           </>
@@ -112,7 +116,7 @@ export const AttachmentStackedBar = ({
               overflow="hidden"
               borderRadius="3px"
               h="1rem"
-              bg="primary.300"
+              bg="brand.primary.300"
               gridTemplateColumns={gridTemplateColumns}
             >
               {barProps.map((props, i) => (
@@ -122,7 +126,7 @@ export const AttachmentStackedBar = ({
             <Grid
               gridTemplateColumns={gridTemplateColumns}
               textStyle="caption-1"
-              color="secondary.700"
+              color="brand.secondary.700"
             >
               {valueLabels.map((value, i) => (
                 <Flex key={i} justify="center">

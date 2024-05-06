@@ -14,7 +14,7 @@ export const WorkflowContent = (): JSX.Element | null => {
   if (isLoading) return null
 
   return (
-    <Stack color="secondary.500" spacing="1rem">
+    <Stack color="brand.secondary.500" spacing="1rem">
       <HeaderBlock />
       <Stack spacing="0" divider={<WorkflowStepBlockDivider />}>
         {formWorkflow?.map((step, i) => (
@@ -33,7 +33,7 @@ const WorkflowStepBlockDivider = () => (
       h="1rem"
       borderLeftWidth="2px"
       marginLeft="7px"
-      borderColor="secondary.200"
+      borderColor="brand.secondary.200"
     />
     <BxsChevronDown />
     <Divider
@@ -41,7 +41,7 @@ const WorkflowStepBlockDivider = () => (
       h="1rem"
       borderLeftWidth="2px"
       marginLeft="7px"
-      borderColor="secondary.200"
+      borderColor="brand.secondary.200"
     />
   </Box>
 )

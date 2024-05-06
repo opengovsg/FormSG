@@ -7,14 +7,11 @@ import {
   useState,
 } from 'react'
 import { Box, Flex, Skeleton, Spacer, Text } from '@chakra-ui/react'
+import { Infobox, Link, Radio, Tag } from '@opengovsg/design-system-react'
 
 import { FormAuthType, FormSettings, FormStatus } from '~shared/types/form'
 
 import { GUIDE_SPCP_ESRVCID } from '~constants/links'
-import InlineMessage from '~components/InlineMessage'
-import Link from '~components/Link'
-import Radio from '~components/Radio'
-import { Tag } from '~components/Tag'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { isMyInfo } from '~features/myinfo/utils'
@@ -69,9 +66,8 @@ export const AuthSettingsSection = ({
     [settings],
   )
 
-  const isDisabled = useCallback(
-    (authType: FormAuthType) =>
-      isFormPublic || containsMyInfoFields || mutateFormAuthType.isLoading,
+  const isDisabled = useMemo(
+    () => isFormPublic || containsMyInfoFields || mutateFormAuthType.isLoading,
     [isFormPublic, containsMyInfoFields, mutateFormAuthType.isLoading],
   )
 
@@ -85,7 +81,7 @@ export const AuthSettingsSection = ({
       if (
         (e.key === 'Enter' || e.key === ' ') &&
         focusedValue &&
-        !isDisabled(focusedValue) &&
+        isDisabled &&
         focusedValue !== settings.authType
       ) {
         return mutateFormAuthType.mutate(focusedValue)
@@ -98,7 +94,7 @@ export const AuthSettingsSection = ({
     (authType: FormAuthType): MouseEventHandler =>
       (e) => {
         if (
-          !isDisabled(authType) &&
+          isDisabled &&
           e.type === 'click' &&
           // Required so only real clicks get registered.
           // Typical radio behaviour is that the 'click' event is triggered on change.
@@ -122,7 +118,7 @@ export const AuthSettingsSection = ({
     <Box>
       <Text
         textStyle="subhead-1"
-        color="secondary.500"
+        color="brand.secondary.500"
         marginBottom="40px"
         marginTop="40px"
       >
@@ -138,14 +134,14 @@ export const AuthSettingsSection = ({
         </Link>
       </Text>
       {isFormPublic ? (
-        <InlineMessage marginBottom="16px">
+        <Infobox marginBottom="16px">
           To change authentication method, close your form to new responses.
-        </InlineMessage>
+        </Infobox>
       ) : containsMyInfoFields ? (
-        <InlineMessage marginBottom="16px">
+        <Infobox marginBottom="16px">
           To change authentication method, remove existing Myinfo fields on your
           form. You can still update your e-service ID.
-        </InlineMessage>
+        </Infobox>
       ) : null}
       <Radio.RadioGroup
         value={settings.authType}
@@ -155,7 +151,7 @@ export const AuthSettingsSection = ({
         {radioOptions.map(([authType, text]) => (
           <Fragment key={authType}>
             <Box onClick={handleOptionClick(authType)}>
-              <Radio value={authType} isDisabled={isDisabled(authType)}>
+              <Radio value={authType} isDisabled={isDisabled}>
                 <Flex>
                   {text}
                   {authType === FormAuthType.SGID ||

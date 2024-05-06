@@ -18,6 +18,7 @@ import {
   MenuDivider,
   Text,
 } from '@chakra-ui/react'
+import { Button, IconButton, Menu } from '@opengovsg/design-system-react'
 
 import { AdminDashboardFormMetaDto } from '~shared/types'
 import { Workspace } from '~shared/types/workspace'
@@ -25,9 +26,6 @@ import { Workspace } from '~shared/types/workspace'
 import { BxCheck } from '~assets/icons'
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
-import Button from '~components/Button'
-import IconButton from '~components/IconButton'
-import Menu from '~components/Menu'
 
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
@@ -72,7 +70,10 @@ const MoveWorkspaceDropdown = ({
       >
         Back
       </Menu.Item>
-      <Menu.Divider aria-hidden borderColor="neutral.300"></Menu.Divider>
+      <Menu.Divider
+        aria-hidden
+        borderColor="base.divider.medium"
+      ></Menu.Divider>
       {workspaces.map((workspace) => (
         <Menu.Item
           key={workspace._id}
@@ -127,7 +128,7 @@ export const RowActionsDropdown = ({
           <ButtonGroup
             isAttached
             variant="outline"
-            colorScheme="secondary"
+            colorScheme="sub"
             display={{ base: 'none', md: 'flex' }}
           >
             <Button
@@ -143,7 +144,7 @@ export const RowActionsDropdown = ({
               as={IconButton}
               borderStartRadius={0}
               isDisabled={isDisabled}
-              _active={{ bg: 'secondary.100' }}
+              _active={{ bg: 'brand.secondary.100' }}
               isActive={isOpen}
               aria-label="More actions"
               icon={isOpen ? <BxsChevronUp /> : <BxsChevronDown />}
@@ -197,10 +198,10 @@ export const RowActionsDropdown = ({
               </Menu.Item>
               {isFormAdmin && (
                 <>
-                  <MenuDivider aria-hidden borderColor="neutral.300" />
+                  <MenuDivider aria-hidden borderColor="base.divider.medium" />
                   <Menu.Item
                     onClick={handleDeleteForm}
-                    color="danger.500"
+                    color="interaction.critical.default"
                     icon={<BiTrash fontSize="1.25rem" />}
                   >
                     Delete

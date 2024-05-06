@@ -1,11 +1,11 @@
 import { Flex, Text } from '@chakra-ui/react'
+import { Infobox } from '@opengovsg/design-system-react'
 
 import { MultiParty } from '~assets/icons'
-import InlineMessage from '~components/InlineMessage'
 
 export const HeaderBlock = (): JSX.Element => {
   return (
-    <InlineMessage icon={MultiParty}>
+    <Infobox icon={<MultiParty />}>
       <Flex flexDir="column">
         <Text textStyle="subhead-3">Create a workflow for your form</Text>
         <Text>
@@ -13,6 +13,6 @@ export const HeaderBlock = (): JSX.Element => {
           fields that they can fill.
         </Text>
       </Flex>
-    </InlineMessage>
+    </Infobox>
   )
 }

@@ -1,7 +1,5 @@
 import { BiDownload } from 'react-icons/bi'
-
-import Button from '~components/Button'
-import IconButton from '~components/IconButton'
+import { Button, IconButton } from '@opengovsg/design-system-react'
 
 type FeedbackDownloadButtonProps = {
   isDisabled: boolean
@@ -25,8 +23,8 @@ export const FeedbackDownloadButton = ({
         aria-label="Export"
         icon={<BiDownload />}
         variant="outline"
-        colorScheme="primary"
-      ></IconButton>
+        colorScheme="main"
+      />
     )
   }
   return (

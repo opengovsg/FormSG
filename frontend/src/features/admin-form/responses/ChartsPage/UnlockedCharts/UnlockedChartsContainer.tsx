@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Container, Divider, Flex, Stack, Text, VStack } from '@chakra-ui/react'
+import { DateRangePicker } from '@opengovsg/design-system-react'
 import simplur from 'simplur'
 import { removeStopwords } from 'stopword'
 
@@ -7,9 +8,9 @@ import { BasicField, FormFieldDto } from '~shared/types'
 import { isNonEmpty } from '~shared/utils/isNonEmpty'
 
 import {
-  DateRangePicker,
-  dateRangePickerHelper,
-} from '~components/DateRangePicker'
+  datePickerValueToDateString,
+  dateStringToDatePickerValue,
+} from '~utils/date'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
@@ -153,18 +154,16 @@ export const UnlockedChartsContainer = () => {
       >
         <Flex direction="column">
           <Text textStyle="h4" mb="0.125rem">
-            <Text as="span" color="primary.500">
+            <Text as="span" color="brand.primary.500">
               {filteredDecryptedData.length}
             </Text>
             {prettifiedResponsesCount}
           </Text>
         </Flex>
         <DateRangePicker
-          value={dateRangePickerHelper.dateStringToDatePickerValue(dateRange)}
+          value={dateStringToDatePickerValue(dateRange)}
           onChange={(nextDateRange) => {
-            setDateRange(
-              dateRangePickerHelper.datePickerValueToDateString(nextDateRange),
-            )
+            setDateRange(datePickerValueToDateString(nextDateRange))
           }}
         />
       </Flex>
@@ -177,15 +176,15 @@ export const UnlockedChartsContainer = () => {
           <Stack spacing="1rem" align="center">
             <Text
               as="h2"
-              color="primary.500"
-              textStyle="h2"
+              color="brand.primary.500"
+              textStyle="h4"
               whiteSpace="pre-wrap"
             >
               No charts generated for this date range
             </Text>
             <Text
               textStyle="body-1"
-              color="secondary.500"
+              color="brand.secondary.500"
               mb="0.5rem"
               align="center"
             >

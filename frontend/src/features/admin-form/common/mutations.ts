@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useToast } from '@opengovsg/design-system-react'
 
 import {
   AdminFormDto,
@@ -14,7 +15,6 @@ import {
 } from '~shared/types/form/form'
 
 import { DASHBOARD_ROUTE } from '~constants/routes'
-import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
 
 import {
@@ -212,7 +212,7 @@ export const useMutateCollaborators = () => {
           formCollaboratorAction,
           requestEmail,
         ),
-        status: 'danger',
+        status: 'error',
       })
     },
     [getMappedErrorMessage, toast],
@@ -365,7 +365,7 @@ export const useMutateFormPage = () => {
       toast.closeAll()
       toast({
         description: error.message,
-        status: 'danger',
+        status: 'error',
       })
     },
     [toast],
@@ -502,7 +502,7 @@ export const useFormFeedbackMutations = () => {
       toast.closeAll()
       toast({
         description: error.message,
-        status: 'danger',
+        status: 'error',
       })
     },
     [toast],
@@ -532,7 +532,7 @@ export const useFormIssueMutations = () => {
       toast.closeAll()
       toast({
         description: error.message,
-        status: 'danger',
+        status: 'error',
       })
     },
     [toast],

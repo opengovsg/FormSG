@@ -1,11 +1,12 @@
 import { useMemo } from 'react'
 import { Outlet, useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
+import { Banner } from '@opengovsg/design-system-react'
 import { get } from 'lodash'
 
 import { fillHeightCss } from '~utils/fillHeightCss'
 import { getBannerProps } from '~utils/getBannerProps'
-import { Banner } from '~components/Banner'
+import { MarkdownText } from '~components/MarkdownText'
 
 import AdminForbiddenErrorPage from '~pages/AdminForbiddenError'
 import NotFoundErrorPage from '~pages/NotFoundError'
@@ -59,8 +60,8 @@ export const AdminFormLayout = (): JSX.Element => {
       }}
     >
       {bannerProps ? (
-        <Banner useMarkdown variant={bannerProps.variant}>
-          {bannerProps.msg}
+        <Banner variant={bannerProps.variant}>
+          <MarkdownText>{bannerProps.msg}</MarkdownText>
         </Banner>
       ) : null}
       <AdminFormNavbar />

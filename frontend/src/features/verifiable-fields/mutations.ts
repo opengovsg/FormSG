@@ -1,9 +1,8 @@
 import { useCallback } from 'react'
 import { useMutation } from 'react-query'
+import { useToast } from '@opengovsg/design-system-react'
 
 import { FormFieldWithId } from '~shared/types/field'
-
-import { useToast } from '~hooks/useToast'
 
 import { VerifiableFieldBase, VerifiableFieldSchema } from './types'
 import {
@@ -40,7 +39,7 @@ export const useVerifiableFieldMutations = ({
       toast.closeAll()
       toast({
         description: error.message,
-        status: 'danger',
+        status: 'error',
       })
     },
     [toast],

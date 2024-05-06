@@ -1,10 +1,11 @@
 import { useMemo } from 'react'
 import { Box, Container, Grid, useDisclosure } from '@chakra-ui/react'
+import { Infobox } from '@opengovsg/design-system-react'
 
 import { GUIDE_PAYMENTS_ENTRY } from '~constants/links'
 import { ROLLOUT_ANNOUNCEMENT_KEY_PREFIX } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
-import InlineMessage from '~components/InlineMessage'
+import { MarkdownText } from '~components/MarkdownText'
 
 import { RolloutAnnouncementModal } from '~features/rollout-announcement/RolloutAnnouncementModal'
 import { useUser } from '~features/user/queries'
@@ -51,7 +52,7 @@ export const WorkspaceContent = (): JSX.Element => {
         />
       ) : (
         <Grid
-          bg="neutral.100"
+          bg="grey.50"
           templateColumns="1fr"
           templateRows="auto 1fr auto"
           minH="100vh"
@@ -66,14 +67,9 @@ export const WorkspaceContent = (): JSX.Element => {
             py="1rem"
           >
             {isDefaultWorkspace && (
-              <InlineMessage
-                useMarkdown
-                mb="2rem"
-                mx="-2rem"
-                justifyContent="center"
-              >
-                {dashboardMessage}
-              </InlineMessage>
+              <Infobox mb="2rem" mx="-2rem" justifyContent="center">
+                <MarkdownText>{dashboardMessage}</MarkdownText>
+              </Infobox>
             )}
             <WorkspaceHeader
               handleOpenCreateFormModal={createFormModalDisclosure.onOpen}

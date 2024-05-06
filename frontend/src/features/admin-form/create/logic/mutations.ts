@@ -1,10 +1,9 @@
 import { useCallback } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
+import { useToast } from '@opengovsg/design-system-react'
 
 import { AdminFormDto, FormLogic, LogicDto } from '~shared/types/form'
-
-import { useToast } from '~hooks/useToast'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
 
@@ -27,7 +26,7 @@ export const useLogicMutations = () => {
       toast.closeAll()
       toast({
         description: error.message,
-        status: 'danger',
+        status: 'error',
       })
     },
     [toast],

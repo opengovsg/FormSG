@@ -1,7 +1,7 @@
 import { ChangeEventHandler, useCallback } from 'react'
+import { Toggle } from '@opengovsg/design-system-react'
 
 import { GUIDE_WEBHOOKS } from '~constants/links'
-import Toggle from '~components/Toggle'
 
 import { useMutateFormSettings } from '../../mutations'
 import { useAdminFormSettings } from '../../queries'

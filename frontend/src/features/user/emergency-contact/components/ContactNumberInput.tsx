@@ -2,14 +2,16 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { BiCheck } from 'react-icons/bi'
 import { Box, FormControl, Skeleton, Stack } from '@chakra-ui/react'
+import {
+  Button,
+  FormErrorMessage,
+  FormLabel,
+  PhoneNumberInput,
+} from '@opengovsg/design-system-react'
 
 import { isMobilePhoneNumber } from '~shared/utils/phone-num-validation'
 
 import { REQUIRED_ERROR } from '~constants/validation'
-import Button from '~components/Button'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import PhoneNumberInput from '~components/PhoneNumberInput'
 
 import { useUserMutations } from '~features/user/mutations'
 import { useUser } from '~features/user/queries'

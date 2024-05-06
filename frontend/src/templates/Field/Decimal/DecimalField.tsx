@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
+import { NumberInput } from '@opengovsg/design-system-react'
 
 import { createDecimalValidationRules } from '~utils/fieldValidation'
-import NumberInput from '~components/NumberInput'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { DecimalFieldSchema, SingleAnswerFieldInput } from '../types'
@@ -37,7 +37,6 @@ export const DecimalField = ({
           <NumberInput
             inputMode="decimal"
             aria-label={`${schema.questionNumber}. ${schema.title}`}
-            preventDefaultOnEnter
             {...field}
           />
         )}

@@ -4,7 +4,7 @@ import { NoChargesSvg } from './NoChargesSvg'
 
 export const BillingNoChargesContent = (): JSX.Element => (
   <Stack w="100%" spacing="1rem">
-    <Text textStyle="h2" align="center" color="primary.500">
+    <Text textStyle="h4" align="center" color="brand.primary.500">
       No results were found
     </Text>
     <Text align="center">

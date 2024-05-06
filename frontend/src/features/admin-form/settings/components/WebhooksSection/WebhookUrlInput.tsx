@@ -7,12 +7,13 @@ import {
   Skeleton,
   useMergeRefs,
 } from '@chakra-ui/react'
+import {
+  FormErrorMessage,
+  FormLabel,
+  Input,
+  Spinner,
+} from '@opengovsg/design-system-react'
 import validator from 'validator'
-
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
-import Spinner from '~components/Spinner'
 
 import { useMutateFormSettings } from '../../mutations'
 import { useAdminFormSettings } from '../../queries'

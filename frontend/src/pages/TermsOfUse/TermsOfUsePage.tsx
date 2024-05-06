@@ -10,6 +10,7 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react'
+import { Link } from '@opengovsg/design-system-react'
 
 import { AppFooter } from '~/app/AppFooter'
 import { AppPublicHeader } from '~/app/AppPublicHeader'
@@ -17,7 +18,6 @@ import { AppPublicHeader } from '~/app/AppPublicHeader'
 import { FCC } from '~typings/react'
 
 import { OSS_README } from '~constants/links'
-import Link from '~components/Link'
 
 interface listItemMarkerProps {
   prependSequenceMarker?: string
@@ -114,9 +114,15 @@ const SectionTitle: FCC = ({ children }) => <Text mb="1.5rem">{children}</Text>
 
 export const TermsOfUsePage = (): JSX.Element => {
   return (
-    <Flex flexDir="column" bg="primary.100">
+    <Flex flexDir="column" bg="brand.primary.50">
       <AppPublicHeader />
-      <Container color="secondary.700" maxW="85ch" px="2rem" pb="5rem" flex={1}>
+      <Container
+        color="brand.secondary.700"
+        maxW="85ch"
+        px="2rem"
+        pb="5rem"
+        flex={1}
+      >
         <Stack spacing="5rem">
           <Box as="section">
             <Text textStyle="h1" as="h1" mb="2.5rem">

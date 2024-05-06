@@ -56,12 +56,7 @@ export const FeedbackTable = ({
   }, [currentPage, gotoPage])
 
   return (
-    <Table
-      as="div"
-      variant="solid"
-      colorScheme="secondary"
-      {...getTableProps()}
-    >
+    <Table as="div" variant="solid" colorScheme="sub" {...getTableProps()}>
       <Thead as="div" pos="sticky" top={0}>
         {headerGroups.map((headerGroup) => (
           <Tr
@@ -98,14 +93,14 @@ export const FeedbackTable = ({
                     pos="absolute"
                     h="100%"
                     borderX="8px solid"
-                    borderColor="secondary.500"
+                    borderColor="brand.secondary.500"
                     _hover={{
-                      bg: column.isResizing ? 'white' : 'secondary.200',
+                      bg: column.isResizing ? 'white' : 'brand.secondary.200',
                     }}
                     _groupHover={{
-                      bg: column.isResizing ? 'white' : 'secondary.300',
+                      bg: column.isResizing ? 'white' : 'brand.secondary.300',
                       _hover: {
-                        bg: column.isResizing ? 'white' : 'secondary.200',
+                        bg: column.isResizing ? 'white' : 'brand.secondary.200',
                       },
                     }}
                     w="17px"

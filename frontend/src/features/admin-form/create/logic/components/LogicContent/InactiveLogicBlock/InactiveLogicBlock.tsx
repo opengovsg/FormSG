@@ -8,10 +8,9 @@ import {
   StackDivider,
   Text,
 } from '@chakra-ui/react'
+import { IconButton } from '@opengovsg/design-system-react'
 
 import { LogicDto, LogicType } from '~shared/types/form'
-
-import IconButton from '~components/IconButton'
 
 import {
   createOrEditDataSelector,
@@ -105,7 +104,7 @@ export const InactiveLogicBlock = ({
         borderRadius="4px"
         bg="white"
         border="1px solid"
-        borderColor="neutral.300"
+        borderColor="base.divider.medium"
         transitionProperty="common"
         transitionDuration="normal"
         cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
@@ -115,7 +114,7 @@ export const InactiveLogicBlock = ({
           _disabled: {
             bg: 'white',
           },
-          bg: 'primary.100',
+          bg: 'brand.primary.50',
         }}
         _focus={{
           boxShadow: `0 0 0 4px var(--chakra-colors-primary-300)`,
@@ -124,7 +123,7 @@ export const InactiveLogicBlock = ({
       >
         <Stack
           spacing="1.5rem"
-          divider={<StackDivider borderColor="secondary.100" />}
+          divider={<StackDivider borderColor="brand.secondary.100" />}
           p={{ base: '1.5rem', md: '2rem' }}
         >
           {logic.conditions.map((condition, index) => (
@@ -132,7 +131,7 @@ export const InactiveLogicBlock = ({
               key={index}
               spacing="1.5rem"
               textStyle="subhead-3"
-              color="secondary.500"
+              color="brand.secondary.500"
             >
               <Stack>
                 <Text>{index === 0 ? 'If' : 'and'}</Text>
@@ -153,10 +152,10 @@ export const InactiveLogicBlock = ({
           ))}
         </Stack>
 
-        <Divider borderBottomWidth="2px" borderColor="secondary.200" />
+        <Divider borderBottomWidth="2px" borderColor="brand.secondary.200" />
         <Stack
           textStyle="subhead-3"
-          color="secondary.500"
+          color="brand.secondary.500"
           p={{ base: '1.5rem', md: '2rem' }}
         >
           {renderThenContent}
@@ -168,7 +167,7 @@ export const InactiveLogicBlock = ({
         pos="absolute"
         aria-label="Delete logic"
         variant="clear"
-        colorScheme="danger"
+        colorScheme="critical"
         onClick={handleOpenDeleteModal}
         icon={<BiTrash fontSize="1.5rem" />}
       />

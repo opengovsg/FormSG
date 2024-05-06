@@ -9,13 +9,11 @@ import {
   StackDivider,
   Text,
 } from '@chakra-ui/react'
+import { Button, Spinner } from '@opengovsg/design-system-react'
 import simplur from 'simplur'
 
 import { FormResponseMode } from '~shared/types'
 import { getMultirespondentSubmissionEditPath } from '~shared/utils/urls'
-
-import Button from '~components/Button'
-import Spinner from '~components/Spinner'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { FormActivationSvg } from '~features/admin-form/settings/components/FormActivationSvg'
@@ -116,7 +114,6 @@ export const IndividualResponsePage = (): JSX.Element => {
       <SecretKeyVerification
         heroSvg={<FormActivationSvg />}
         ctaText="Unlock responses"
-        label="Enter or upload Secret Key"
       />
     )
 
@@ -134,7 +131,7 @@ export const IndividualResponsePage = (): JSX.Element => {
         px={{ md: '1.75rem', lg: '2rem' }}
         spacing={{ base: '1.5rem', md: '2.5rem' }}
       >
-        <Stack bg="primary.100" p="1.5rem" textStyle="monospace">
+        <Stack bg="brand.primary.50" p="1.5rem" textStyle="code-1">
           <StackRow
             label="Response ID"
             value={submissionId}

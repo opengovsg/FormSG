@@ -6,12 +6,8 @@ import {
   UseFormTrigger,
 } from 'react-hook-form'
 import {
-  Button,
   ButtonGroup,
   FormControl,
-  FormErrorMessage,
-  FormLabel,
-  Input,
   Modal,
   ModalBody,
   ModalContent,
@@ -20,6 +16,13 @@ import {
   Text,
   useBreakpointValue,
 } from '@chakra-ui/react'
+import {
+  Button,
+  FormErrorMessage,
+  FormLabel,
+  Input,
+  ModalCloseButton,
+} from '@opengovsg/design-system-react'
 import isEmail from 'validator/lib/isEmail'
 
 import {
@@ -27,7 +30,6 @@ import {
   INVALID_EMAIL_ERROR,
   REQUIRED_ERROR,
 } from '~constants/validation'
-import { ModalCloseButton } from '~components/Modal'
 
 import { useUserMutations } from '~features/user/mutations'
 import { useDashboard } from '~features/workspace/queries'
@@ -142,14 +144,16 @@ export const TransferOwnershipModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader color="secondary.700">Transfer all forms</ModalHeader>
+        <ModalHeader color="brand.secondary.700">
+          Transfer all forms
+        </ModalHeader>
         <ModalBody whiteSpace="pre-wrap" pb="3.25rem">
           {page === 0 && (
             <form onSubmit={handleSubmit(onNext)}>
               <FormControl isInvalid={!!errors['email']}>
                 <FormLabel>
                   Transfer ownership of all forms
-                  <Text textStyle="body-2" color="secondary.500">
+                  <Text textStyle="body-2" color="brand.secondary.500">
                     Share your secret key with this user for them to access
                     response data
                   </Text>
@@ -185,9 +189,13 @@ export const TransferOwnershipModal = ({
           )}
           {page === 1 && (
             <section>
-              <Text textStyle="body-2" color="secondary.500">
+              <Text textStyle="body-2" color="brand.secondary.500">
                 You are transferring all forms to{' '}
-                <Text as="span" color="danger.500" fontWeight="bold">
+                <Text
+                  as="span"
+                  color="interaction.critical.default"
+                  fontWeight="bold"
+                >
                   {email}
                 </Text>
                 . You will be removed as a collaborator and lose access to the
@@ -198,7 +206,7 @@ export const TransferOwnershipModal = ({
                   <Button variant="link" onClick={resetModal}>
                     Cancel
                   </Button>
-                  <Button colorScheme="danger" onClick={onConfirm}>
+                  <Button colorScheme="critical" onClick={onConfirm}>
                     Yes, transfer all forms
                   </Button>
                 </ButtonGroup>

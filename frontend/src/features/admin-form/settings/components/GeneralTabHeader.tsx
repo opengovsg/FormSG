@@ -1,9 +1,8 @@
 import { useMemo } from 'react'
 import { Skeleton, Wrap } from '@chakra-ui/react'
+import { Badge } from '@opengovsg/design-system-react'
 
 import { FormResponseMode } from '~shared/types/form'
-
-import Badge from '~components/Badge'
 
 import { useAdminFormSettings } from '../queries'
 
@@ -33,7 +32,7 @@ export const GeneralTabHeader = (): JSX.Element => {
     >
       <CategoryHeader mb={0}>General settings</CategoryHeader>
       <Skeleton isLoaded={!isLoadingSettings}>
-        <Badge variant="subtle" colorScheme="primary" color="secondary.500">
+        <Badge variant="subtle" colorScheme="sub">
           {readableFormResponseMode}
         </Badge>
       </Skeleton>

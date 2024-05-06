@@ -23,8 +23,8 @@ const WorkspaceTab = ({
   const styles = isSelected
     ? {
         borderLeft: '2px',
-        borderLeftColor: 'primary.500',
-        textColor: 'primary.500',
+        borderLeftColor: 'brand.primary.500',
+        textColor: 'brand.primary.500',
       }
     : {}
 
@@ -38,7 +38,7 @@ const WorkspaceTab = ({
       h="3.5rem"
       alignItems="center"
       _hover={{
-        textColor: 'primary.500',
+        textColor: 'brand.primary.500',
       }}
       onClick={onClick}
       aria-label={`${label} folder tab`}

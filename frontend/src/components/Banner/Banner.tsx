@@ -1,80 +1,96 @@
 import { useMemo } from 'react'
-import { BiX } from 'react-icons/bi'
 import {
+  As,
   Box,
+  BoxProps,
   CloseButton,
   Collapse,
   Flex,
   Icon,
+  ThemingProps,
   useDisclosure,
   useMultiStyleConfig,
+  useTheme,
 } from '@chakra-ui/react'
+import {
+  BxsErrorCircle,
+  BxsInfoCircle,
+  BxX,
+} from '@opengovsg/design-system-react'
 
-import { BxsErrorCircle, BxsInfoCircle } from '~/assets/icons'
-
-import { BannerVariant } from '~theme/components/Banner'
-import { useMdComponents } from '~hooks/useMdComponents'
-import { MarkdownText } from '~components/MarkdownText'
-
-export interface BannerProps {
-  variant?: BannerVariant
-  children: string
-  useMarkdown?: boolean
-  showCloseButton?: boolean
-  bannerColor?: string
+export interface BannerProps extends BoxProps {
+  variant?: ThemingProps<'Banner'>['variant']
+  /**
+   * Whether to allow collapsing of the banner.
+   * Defaults to `true` if `info` variant is used, `false` otherwise.
+   */
+  isDismissable?: boolean
+  /**
+   * The icon to use for the banner. Defaults to the variant's icon.
+   */
+  icon?: As
+  /**
+   * The close button to use for the banner.
+   * Defaults to the variant's close button.
+   * If `null`, the close button will not be rendered.
+   */
+  closeButton?: React.ReactNode
+  size?: ThemingProps<'Banner'>['size']
 }
 
 export const Banner = ({
-  variant = 'info',
+  variant: _variant,
+  size,
   children,
-  useMarkdown = false,
-  showCloseButton,
-  bannerColor,
+  isDismissable: isDismissableProp,
+  icon: iconProp,
+  closeButton,
+  ...boxProps
 }: BannerProps): JSX.Element => {
   const { isOpen, onToggle } = useDisclosure({
     defaultIsOpen: true,
   })
 
-  const styles = useMultiStyleConfig('Banner', { variant })
+  const theme = useTheme()
+  const styles = useMultiStyleConfig('Banner', { variant: _variant, size })
 
-  const mdComponents = useMdComponents({ styles })
+  // Required in case variant is set in theme, we should respect the one set in theme.
+  const variant = useMemo(
+    () => _variant ?? theme?.components?.Banner?.defaultProps?.size ?? 'info',
+    [_variant, theme?.components?.Banner?.defaultProps?.size],
+  )
 
-  const shouldShowCloseButton = useMemo(() => {
-    // Prop supercedes all.
-    if (showCloseButton !== undefined) return showCloseButton
+  const iconToUse = useMemo(() => {
+    if (iconProp) {
+      return iconProp
+    }
+    return variant === 'info' ? BxsInfoCircle : BxsErrorCircle
+  }, [iconProp, variant])
+
+  const isDismissable = useMemo(() => {
+    if (isDismissableProp !== undefined) {
+      return isDismissableProp
+    }
     return variant === 'info'
-  }, [showCloseButton, variant])
+  }, [isDismissableProp, variant])
+
+  const closeButtonRendered = useMemo(() => {
+    if (!isDismissable) return null
+    if (closeButton !== undefined) return closeButton
+    return (
+      <CloseButton children={<BxX />} onClick={onToggle} sx={styles.close} />
+    )
+  }, [closeButton, isDismissable, onToggle, styles.close])
 
   return (
-    <Collapse style={{ overflow: 'visible' }} in={isOpen} animateOpacity>
-      <Box
-        __css={{
-          ...styles.banner,
-          ...(bannerColor ? { bgColor: bannerColor } : {}),
-        }}
-      >
+    <Collapse in={isOpen} animateOpacity>
+      <Box __css={styles.banner} {...boxProps}>
         <Flex sx={styles.item}>
           <Flex>
-            <Icon
-              as={variant === 'info' ? BxsInfoCircle : BxsErrorCircle}
-              aria-label={`${variant} banner icon`}
-              __css={styles.icon}
-            />
-            {useMarkdown ? (
-              <MarkdownText components={mdComponents}>{children}</MarkdownText>
-            ) : (
-              children
-            )}
+            <Icon as={iconToUse} __css={styles.icon} />
+            {children}
           </Flex>
-          {shouldShowCloseButton && (
-            <CloseButton
-              variant="subtle"
-              colorScheme="whiteAlpha"
-              __css={styles.close}
-              children={<BiX />}
-              onClick={onToggle}
-            />
-          )}
+          {closeButtonRendered}
         </Flex>
       </Box>
     </Collapse>

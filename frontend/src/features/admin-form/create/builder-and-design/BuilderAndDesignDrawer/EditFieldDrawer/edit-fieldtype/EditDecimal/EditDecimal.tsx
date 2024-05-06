@@ -1,17 +1,19 @@
 import { useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
 import { FormControl, SimpleGrid } from '@chakra-ui/react'
+import {
+  FormErrorMessage,
+  FormLabel,
+  Input,
+  NumberInput,
+  Textarea,
+  Toggle,
+} from '@opengovsg/design-system-react'
 import { extend, isEmpty, pick } from 'lodash'
 
 import { DecimalFieldBase } from '~shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
-import NumberInput from '~components/NumberInput'
-import Textarea from '~components/Textarea'
-import Toggle from '~components/Toggle'
 
 import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'

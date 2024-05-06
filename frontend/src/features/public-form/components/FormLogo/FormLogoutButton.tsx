@@ -1,17 +1,15 @@
 import { BiLogOutCircle } from 'react-icons/bi'
-import { Box } from '@chakra-ui/react'
+import { Box, ThemingProps } from '@chakra-ui/react'
+import { Button, IconButton } from '@opengovsg/design-system-react'
 
-import { ThemeColorScheme } from '~theme/foundations/colours'
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
-import IconButton from '~components/IconButton'
 
 import { FormBannerLogoProps } from './FormBannerLogo'
 
 export interface FormLogoutButtonProps
   extends Pick<FormBannerLogoProps, 'loggedInId'> {
   onLogout: (() => void) | undefined
-  colorScheme: ThemeColorScheme
+  colorScheme: ThemingProps<'Button'>['colorScheme']
 }
 
 export const FormLogoutButton = ({

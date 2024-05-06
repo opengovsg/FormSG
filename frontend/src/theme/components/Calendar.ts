@@ -1,149 +1,95 @@
 import {
-  anatomy,
-  getColor,
-  PartsStyleObject,
-  SystemStyleFunction,
-} from '@chakra-ui/theme-tools'
-
-import { ComponentMultiStyleConfig } from '~theme/types'
+  createMultiStyleConfigHelpers,
+  StyleFunctionProps,
+} from '@chakra-ui/react'
+import { anatomy } from '@chakra-ui/theme-tools'
 
 const parts = anatomy('calendar').parts(
   'container', // overall container
   'monthYearSelectorContainer', // container for month, year dropdowns and arrows
+  'monthYearSelect', // select for month and year
+  'monthYearDisplay', // container for month and year text
   'monthYearDropdownContainer', // container for month, year dropdowns
   'monthArrowContainer', // container for month forward/backward arrows
   'calendarContainer', // container for all month grids
   'monthGrid', // grid of dates for a single month
   'dayNamesContainer', // container for names of days in the week
+  'dayOfMonthContainer',
   'dayOfMonth', // container for single date
-  'todayLinkContainer', // container for "Today" link
+  'todayLinkContainer', // container for "Today" link,
+  'todayLink', // "Today" link
+  'fillerRow', // Filler row for months with only 5 weeks displayed.
 )
 
-const baseDayOfMonthStyles: SystemStyleFunction = ({
+const { definePartsStyle, defineMultiStyleConfig } =
+  createMultiStyleConfigHelpers(parts.keys)
+
+const getDayOfMonthColors = ({
   isToday,
-  isOutsideCurrMonth,
-  isSelected,
   colorScheme: c,
-  theme,
-}) => {
-  return {
-    display: 'inline-block',
-    textStyle: 'body-1',
-    borderRadius: '50%',
-    color: isSelected
-      ? 'white'
-      : isOutsideCurrMonth
-        ? 'secondary.300'
-        : 'secondary.500',
-    outline: 'none',
-    border: '1px solid',
-    borderColor: isToday
-      ? isOutsideCurrMonth
-        ? 'secondary.300'
-        : `${c}.500`
-      : 'transparent',
-    _hover: {
-      bg: isSelected ? `${c}.500` : `${c}.200`,
-    },
-    _focus: {
-      boxShadow: `0 0 0 4px ${getColor(theme, `${c}.300`)}`,
-    },
-    _disabled: {
-      color: 'secondary.300',
-      cursor: 'not-allowed',
-      bg: 'transparent',
-      textDecor: 'line-through',
-    },
+  isOutsideCurrMonth,
+}: StyleFunctionProps) => {
+  switch (c) {
+    case 'main':
+      return {
+        color: isOutsideCurrMonth
+          ? 'interaction.support.disabled-content'
+          : 'base.content.strong',
+        activeColor: 'base.content.inverse',
+        hoverBg: 'interaction.muted.main.hover',
+        activeBg: 'interaction.main.default',
+        selectedBg: 'interaction.muted.main.active',
+        borderColor: isToday ? 'utility.focus-default' : 'transparent',
+      }
+    default: {
+      return {
+        color: isOutsideCurrMonth
+          ? 'brand.secondary.300'
+          : 'brand.secondary.500',
+        activeColor: 'base.content.inverse',
+        selectedBg: `${c}.200`,
+        hoverBg: `${c}.200`,
+        activeBg: `${c}.500`,
+        borderColor: isToday ? `${c}.500` : 'transparent',
+      }
+    }
   }
 }
 
-const sizes: Record<string, PartsStyleObject<typeof parts>> = {
-  md: {
+const variantForm = definePartsStyle((props) => {
+  const { color, activeBg, borderColor, activeColor, hoverBg, selectedBg } =
+    getDayOfMonthColors(props)
+
+  return {
     dayOfMonth: {
-      p: {
-        base: 0,
-        md: 0.75,
+      color,
+      borderColor,
+      _hover: {
+        bg: hoverBg,
       },
-      aspectRatio: '1 / 1',
-      w: {
-        base: '100%',
-        md: '3rem',
+      _active: {
+        bg: activeBg,
+        color: activeColor,
       },
-      minW: {
-        base: '2.25rem',
-        md: '3rem',
+      _selected: {
+        bg: selectedBg,
       },
-      maxW: '3rem',
-    },
-    monthYearSelectorContainer: {
-      pt: '0.75rem',
-      h: '3.5rem',
-    },
-    calendarContainer: {
-      pb: '1rem',
-      px: '0.625rem',
-      mb: '-1px',
-    },
-    dayNamesContainer: {
-      w: {
-        base: '2.25rem',
-        md: '3.25rem',
-      },
-      h: {
-        base: '2.25rem',
-        md: '3rem',
+      _disabled: {
+        _hover: {
+          bg: hoverBg,
+        },
       },
     },
-    todayLinkContainer: {
-      py: '0.75rem',
-    },
-  },
+  }
+})
+
+const variants = {
+  form: variantForm,
 }
 
-export const Calendar: ComponentMultiStyleConfig<typeof parts> = {
-  parts: parts.keys,
-  baseStyle: (props) => {
-    return {
-      container: {
-        display: 'inline-block',
-      },
-      monthYearSelectorContainer: {
-        display: 'flex',
-        justifyContent: 'space-between',
-      },
-      monthYearDropdownContainer: {
-        display: 'flex',
-        justifyContent: 'flex-start',
-      },
-      monthArrowContainer: {
-        display: 'flex',
-        justifyContent: 'flex-end',
-      },
-      calendarContainer: {
-        display: {
-          base: 'block',
-          md: 'flex',
-        },
-        borderBottom: '1px solid',
-        borderColor: 'neutral.300',
-      },
-      monthGrid: {
-        w: '100%',
-        justifyItems: 'left',
-      },
-      dayNamesContainer: {
-        textStyle: 'subhead-2',
-        color: 'secondary.700',
-      },
-      dayOfMonth: baseDayOfMonthStyles(props),
-      todayLinkContainer: {
-        textAlign: 'center',
-      },
-    }
-  },
-  sizes,
+export const Calendar = defineMultiStyleConfig({
+  variants,
   defaultProps: {
-    colorScheme: 'primary',
-    size: 'md',
+    variant: 'form',
   },
-}
+})

@@ -10,10 +10,10 @@ export const HeaderBlock = (): JSX.Element => {
       flexDir="column"
       bg="white"
       border="1px solid"
-      borderColor="neutral.300"
+      borderColor="base.divider.medium"
       borderRadius="4px"
     >
-      <Text as="h2" textStyle="h2" mb="0.5rem">
+      <Text as="h2" textStyle="h4" mb="0.5rem">
         Logic
       </Text>
       <Text textStyle="body-1" mb="1.5rem">

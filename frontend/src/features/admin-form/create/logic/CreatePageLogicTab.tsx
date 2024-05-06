@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { BiPlus } from 'react-icons/bi'
 import { Box, Container, Flex, Spacer } from '@chakra-ui/react'
-
-import IconButton from '~components/IconButton'
+import { IconButton } from '@opengovsg/design-system-react'
 
 import { EmptyLogic } from './components/EmptyLogic'
 import { LogicContent } from './components/LogicContent'
@@ -32,7 +31,7 @@ export const CreatePageLogicTab = (): JSX.Element => {
   if (isLoading) return <LogicSkeleton />
 
   return (
-    <Box flex={1} overflow="auto" bg="neutral.100">
+    <Box flex={1} overflow="auto" bg="grey.50">
       <Flex
         py={{ base: '2rem', md: '1rem' }}
         px={{ base: '1.5rem', md: '3.75rem' }}

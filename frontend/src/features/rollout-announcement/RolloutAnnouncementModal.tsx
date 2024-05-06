@@ -9,12 +9,11 @@ import {
   ModalOverlay,
   Stack,
 } from '@chakra-ui/react'
+import { Button, ModalCloseButton } from '@opengovsg/design-system-react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
-import { ModalCloseButton } from '~components/Modal'
 
-import { ProgressIndicator } from '../../components/ProgressIndicator/ProgressIndicator'
+import { ProgressIndicator } from '../../components/ProgressIndicator'
 
 import { NEW_FEATURES } from './components/AnnouncementsFeatureList'
 import { NewFeatureContent } from './components/NewFeatureContent'
@@ -73,11 +72,7 @@ export const RolloutAnnouncementModal = ({
             />
             <Flex gap="1rem">
               {!isMobile && (
-                <Button
-                  onClick={onClose}
-                  variant="clear"
-                  colorScheme="secondary"
-                >
+                <Button onClick={onClose} variant="clear" colorScheme="sub">
                   Cancel
                 </Button>
               )}

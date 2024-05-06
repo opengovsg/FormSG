@@ -17,15 +17,17 @@ import {
   Text,
   Textarea,
 } from '@chakra-ui/react'
+import {
+  FormErrorMessage,
+  NumberInput,
+  Radio,
+  useToast,
+} from '@opengovsg/design-system-react'
 import { cloneDeep, get, isEmpty } from 'lodash'
 
 import { FormColorTheme, FormLogoState, FormStartPage } from '~shared/types'
 
-import { useToast } from '~hooks/useToast'
 import { uploadLogo } from '~services/FileHandlerService'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import NumberInput from '~components/NumberInput'
-import Radio from '~components/Radio'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
@@ -63,7 +65,7 @@ type DesignDrawerProps = {
 }
 
 export const DesignInput = (): JSX.Element | null => {
-  const toast = useToast({ status: 'danger' })
+  const toast = useToast({ status: 'error' })
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
@@ -288,7 +290,7 @@ export const DesignInput = (): JSX.Element | null => {
         isInvalid={!isEmpty(errors.colorTheme)}
         onFocus={setToEditingHeader}
       >
-        <FormLabel>Theme colour</FormLabel>
+        <FormLabel borderRadius="full">Theme colour</FormLabel>
         <Radio.RadioGroup
           defaultValue={startPageData.colorTheme}
           isDisabled={startPageMutation.isLoading}
@@ -307,18 +309,18 @@ export const DesignInput = (): JSX.Element | null => {
               // CSS for inverted radio button
               // TODO: anti-aliasing at interface of border and ::before?
               border="2px solid"
-              borderRadius="50%"
+              borderRadius="full"
               borderColor="white"
               background={getTitleBg(color)}
               _checked={{ borderColor: getTitleBg(color) }}
               _before={{
                 content: '""',
                 display: 'inline-block',
-                width: '20px',
-                height: '20px',
+                width: '1rem',
+                height: '1rem',
                 border: '2px solid',
                 borderColor: 'white',
-                borderRadius: '50%',
+                borderRadius: 'full',
               }}
             />
           ))}
@@ -434,7 +436,7 @@ export const DesignDrawer = ({
     <Flex pos="relative" h="100%" display="flex" flexDir="column">
       <Box pt="1rem" px="1.5rem" bg="white">
         <Flex justify="space-between">
-          <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
+          <Text textStyle="subhead-3" color="brand.secondary.500" mb="1rem">
             Edit header and instructions
           </Text>
           <CreatePageDrawerCloseButton />

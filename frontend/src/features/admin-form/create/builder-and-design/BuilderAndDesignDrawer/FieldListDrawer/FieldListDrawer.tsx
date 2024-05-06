@@ -8,10 +8,9 @@ import {
   Tabs,
   Text,
 } from '@chakra-ui/react'
+import { Tab } from '@opengovsg/design-system-react'
 
 import { featureFlags } from '~shared/constants'
-
-import { Tab } from '~components/Tabs'
 
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
 import { useFeatureFlags } from '~features/feature-flags/queries'
@@ -73,7 +72,7 @@ export const FieldListDrawer = (): JSX.Element => {
     >
       <Box pt="1rem" px="1.5rem" bg="white">
         <Flex justify="space-between">
-          <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
+          <Text textStyle="subhead-3" color="brand.secondary.500" mb="1rem">
             Fields
           </Text>
           <CreatePageDrawerCloseButton />

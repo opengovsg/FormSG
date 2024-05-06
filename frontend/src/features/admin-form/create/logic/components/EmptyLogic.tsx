@@ -1,10 +1,9 @@
 import { useCallback } from 'react'
 import { BiPlus } from 'react-icons/bi'
 import { Divider, Flex, Grid, Icon, Stack, Text } from '@chakra-ui/react'
+import { Button, Link } from '@opengovsg/design-system-react'
 
 import { GUIDE_FORM_LOGIC } from '~constants/links'
-import Button from '~components/Button'
-import Link from '~components/Link'
 
 import { useAdminLogicStore } from '../adminLogicStore'
 import { ALLOWED_FIELDS_META } from '../constants'
@@ -21,10 +20,10 @@ export const EmptyLogic = (): JSX.Element => {
       textAlign="center"
       flexDir="column"
       align="center"
-      color="secondary.500"
+      color="brand.secondary.500"
       pt={{ base: '0.5rem', md: '2.75rem' }}
     >
-      <Text textStyle="h2" as="h2">
+      <Text textStyle="h4" as="h2">
         Start creating logic for your form
       </Text>
       <Text textStyle="body-1" mt="1rem">

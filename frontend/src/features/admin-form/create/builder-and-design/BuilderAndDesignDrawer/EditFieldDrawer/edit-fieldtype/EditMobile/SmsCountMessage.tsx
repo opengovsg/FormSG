@@ -12,7 +12,7 @@ type SmsCountMessageProps = {
 export const SmsCountMessage = ({
   freeSmsCount,
 }: SmsCountMessageProps): JSX.Element => {
-  const textColor = 'secondary.500'
+  const textColor = 'brand.secondary.500'
 
   return (
     <Flex mt="1rem" color={textColor}>

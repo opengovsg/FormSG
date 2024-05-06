@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { Box, Text, VisuallyHidden } from '@chakra-ui/react'
+import { Button } from '@opengovsg/design-system-react'
 import { format } from 'date-fns'
 
 import { FormColorTheme, FormDto } from '~shared/types/form'
 
-import { useMdComponents } from '~hooks/useMdComponents'
-import Button from '~components/Button'
 import { MarkdownText } from '~components/MarkdownText'
 
 import { SubmissionData } from '~features/public-form/PublicFormContext'
@@ -34,15 +33,6 @@ export const EndPageBlock = ({
     }
   }, [focusOnMount])
 
-  const mdComponents = useMdComponents({
-    styles: {
-      text: {
-        textStyle: 'subhead-1',
-        color: 'secondary.500',
-      },
-    },
-  })
-
   const submissionTimestamp = useMemo(
     () => format(new Date(submissionData.timestamp), 'dd MMM yyyy, HH:mm:ss z'),
     [submissionData.timestamp],
@@ -61,12 +51,21 @@ export const EndPageBlock = ({
         <VisuallyHidden aria-live="assertive">
           {submittedAriaText}
         </VisuallyHidden>
-        <Text as="h2" textStyle="h2" textColor="secondary.500">
+        <Text as="h2" textStyle="h4" textColor="brand.secondary.500">
           {endPage.title}
         </Text>
         {endPage.paragraph ? (
           <Box mt="0.75rem">
-            <MarkdownText components={mdComponents}>
+            <MarkdownText
+              componentProps={{
+                styles: {
+                  text: {
+                    textStyle: 'subhead-1',
+                    color: 'brand.secondary.500',
+                  },
+                },
+              }}
+            >
               {endPage.paragraph}
             </MarkdownText>
           </Box>
@@ -74,10 +73,14 @@ export const EndPageBlock = ({
       </Box>
       <Box mt="2rem">
         <Box>
-          <Text textColor="secondary.300" textStyle="caption-2">
+          <Text textColor="brand.secondary.300" textStyle="caption-2">
             Response ID: {submissionData.id}
           </Text>
-          <Text mt="0.25rem" textColor="secondary.300" textStyle="caption-2">
+          <Text
+            mt="0.25rem"
+            textColor="brand.secondary.300"
+            textStyle="caption-2"
+          >
             {submissionTimestamp}
           </Text>
         </Box>

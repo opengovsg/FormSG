@@ -13,9 +13,9 @@ export const FormStatusLabel = ({
   const renderMeta = useMemo(() => {
     switch (status) {
       case FormStatus.Private:
-        return { label: 'Closed', circleColor: 'neutral.500' }
+        return { label: 'Closed', circleColor: 'interaction.grey.default' }
       case FormStatus.Public:
-        return { label: 'Open', circleColor: 'success.500' }
+        return { label: 'Open', circleColor: 'interaction.success.default' }
       default:
         throw new Error('Should never happen')
     }

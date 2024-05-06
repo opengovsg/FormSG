@@ -10,8 +10,7 @@ import {
   StackDivider,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
-
-import Button from '~components/Button'
+import { Button } from '@opengovsg/design-system-react'
 
 import { FEATURE_UPDATE_LIST, FeatureUpdate } from './FeatureUpdateList'
 import { WhatsNewContent } from './WhatsNewContent'
@@ -45,17 +44,13 @@ export const WhatsNewDrawer = ({ isOpen, onClose }: WhatsNewDrawerProps) => {
     <Drawer isOpen={isOpen} onClose={onClose} placement="right" size="lg">
       <DrawerOverlay />
       <DrawerContent>
-        <DrawerCloseButton
-          variant="clear"
-          colorScheme="secondary"
-          top="1.25rem"
-        />
-        <DrawerHeader textStyle="h2" color="secondary.700">
+        <DrawerCloseButton variant="clear" colorScheme="sub" top="1.25rem" />
+        <DrawerHeader textStyle="h4" color="brand.secondary.700">
           What's new
         </DrawerHeader>
         <DrawerBody
           whiteSpace="pre-wrap"
-          color="secondary.500"
+          color="brand.secondary.500"
           textStyle="body-2"
         >
           <Stack divider={<StackDivider />} spacing="2rem" mb="2rem">

@@ -11,7 +11,7 @@ export const CollaboratorText = ({ children }: { children?: string }) => {
   return (
     <Text
       textStyle={{ base: 'subhead-1', md: 'body-2' }}
-      color={{ base: 'secondary.700', md: 'secondary.500' }}
+      color={{ base: 'brand.secondary.700', md: 'brand.secondary.500' }}
       noOfLines={{ base: 0, md: 1 }}
       title={children}
     >
@@ -36,7 +36,7 @@ export const CollaboratorRow = ({
       align={{ base: 'flex-start', md: 'center' }}
       spacing={{ base: '0.75rem', md: '2rem' }}
       _odd={{ bg: { base: 'white', md: undefined } }}
-      _even={{ bg: { base: 'primary.100', md: undefined } }}
+      _even={{ bg: { base: 'brand.primary.50', md: undefined } }}
     >
       <Skeleton
         isLoaded={!isLoading}
@@ -48,7 +48,7 @@ export const CollaboratorRow = ({
         <Stack direction="row" align="baseline" flex={1}>
           <CollaboratorText>{email}</CollaboratorText>
           {isCurrentUser ? (
-            <Text as="span" textStyle="caption-1" color="neutral.600">
+            <Text as="span" textStyle="caption-1" color="grey.500">
               (You)
             </Text>
           ) : null}

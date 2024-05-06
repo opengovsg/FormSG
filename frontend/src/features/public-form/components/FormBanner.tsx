@@ -1,9 +1,10 @@
 import { useMemo } from 'react'
+import { Banner } from '@opengovsg/design-system-react'
 
 import { FormAuthType } from '~shared/types'
 
 import { getBannerProps } from '~utils/getBannerProps'
-import { Banner } from '~components/Banner'
+import { MarkdownText } from '~components/MarkdownText'
 
 import { useEnv } from '~features/env/queries'
 
@@ -48,8 +49,8 @@ export const FormBanner = (): JSX.Element | null => {
   if (!bannerProps) return null
 
   return (
-    <Banner useMarkdown variant={bannerProps.variant}>
-      {bannerProps.msg}
+    <Banner variant={bannerProps.variant}>
+      <MarkdownText>{bannerProps.msg}</MarkdownText>
     </Banner>
   )
 }

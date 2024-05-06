@@ -3,12 +3,11 @@ import { BiCheck, BiX } from 'react-icons/bi'
 import {
   forwardRef,
   HStack,
+  ThemingProps,
   useFormControlProps,
   useRadioGroup,
 } from '@chakra-ui/react'
 import pick from 'lodash/pick'
-
-import { FieldColorScheme } from '~theme/foundations/colours'
 
 import { YesNoOption } from './YesNoOption'
 
@@ -40,9 +39,9 @@ export interface YesNoProps {
   name: string
 
   /**
-   * Color scheme of the component to render. Defaults to `primary`.
+   * Color scheme of the component to render.
    */
-  colorScheme?: FieldColorScheme
+  colorScheme?: ThemingProps<'YesNoField'>['colorScheme']
 }
 
 /**

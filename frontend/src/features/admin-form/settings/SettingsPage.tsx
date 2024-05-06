@@ -95,7 +95,7 @@ export const SettingsPage = (): JSX.Element => {
           position="sticky"
           zIndex={0}
           top={{ base: '2.5rem', lg: '3.125rem' }}
-          borderTopColor="neutral.300"
+          borderTopColor="base.divider.medium"
           w={{ base: 'auto', lg: '21rem' }}
           __css={{
             scrollbarWidth: 0,

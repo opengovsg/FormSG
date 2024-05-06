@@ -3,9 +3,9 @@
  */
 import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
+import { Textarea } from '@opengovsg/design-system-react'
 
 import { createTextValidationRules } from '~utils/fieldValidation'
-import Textarea from '~components/Textarea'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { LongTextFieldSchema, SingleAnswerFieldInput } from '../types'

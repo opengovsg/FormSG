@@ -11,8 +11,8 @@ export const CategoryHeader = ({
   return (
     <Text
       as="h2"
-      textStyle="h2"
-      color="secondary.500"
+      textStyle="h4"
+      color="base.content.strong"
       mb="2.5rem"
       {...textProps}
     >

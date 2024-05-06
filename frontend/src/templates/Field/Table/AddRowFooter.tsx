@@ -1,9 +1,8 @@
 import { useCallback, useMemo, useState } from 'react'
 import { BiPlus } from 'react-icons/bi'
 import { Box, Stack, Text, VisuallyHidden } from '@chakra-ui/react'
+import { Button } from '@opengovsg/design-system-react'
 import simplur from 'simplur'
-
-import Button from '~components/Button'
 
 interface AddRowFooterProps {
   isDisabled?: boolean
@@ -61,8 +60,7 @@ export const AddRowFooter = ({
         <VisuallyHidden aria-live={hasAddedRows ? 'polite' : 'off'} aria-atomic>
           The table field currently has {maxRowDescription}
         </VisuallyHidden>
-
-        <Text aria-hidden textStyle="body-2" color="secondary.400">
+        <Text aria-hidden textStyle="body-2" color="brand.secondary.400">
           {maxRowDescription}
         </Text>
       </Box>

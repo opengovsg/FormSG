@@ -6,9 +6,9 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react'
+import { Button } from '@opengovsg/design-system-react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
 
 import { useMutateCollaborators } from '~features/admin-form/common/mutations'
 
@@ -30,11 +30,13 @@ export const TransferOwnershipScreen = (): JSX.Element | null => {
 
   return (
     <>
-      <ModalHeader color="secondary.700">Transfer form ownership</ModalHeader>
-      <ModalBody whiteSpace="pre-wrap" color="secondary.500">
+      <ModalHeader color="brand.secondary.700">
+        Transfer form ownership
+      </ModalHeader>
+      <ModalBody whiteSpace="pre-wrap" color="brand.secondary.500">
         <Text>
           You are transferring this form to{' '}
-          <Text color="danger.500" as="span" fontWeight={700}>
+          <Text color="interaction.critical.default" as="span" fontWeight={700}>
             {emailToTransfer}
           </Text>
           . You will lose form ownership and the right to delete this form. You
@@ -50,7 +52,7 @@ export const TransferOwnershipScreen = (): JSX.Element | null => {
           <Button
             isFullWidth={isMobile}
             isLoading={mutateTransferFormOwnership.isLoading}
-            colorScheme="danger"
+            colorScheme="critical"
             onClick={handleTransferOwnership}
           >
             Yes, transfer form
@@ -59,7 +61,7 @@ export const TransferOwnershipScreen = (): JSX.Element | null => {
             isFullWidth={isMobile}
             isDisabled={mutateTransferFormOwnership.isLoading}
             variant="clear"
-            colorScheme="secondary"
+            colorScheme="sub"
             onClick={handleBackToList}
           >
             Cancel

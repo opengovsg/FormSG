@@ -38,16 +38,16 @@ export const CreatePaymentIntentFailureBlock = ({
           <VisuallyHidden aria-live="assertive">
             {submittedAriaText}
           </VisuallyHidden>
-          <Text textStyle="h3" textColor="primary.500">
+          <Text textStyle="h3" textColor="brand.primary.500">
             There was an error preparing the payment.
           </Text>
         </Box>
-        <Text textStyle="body-1" textColor="secondary.700">
+        <Text textStyle="body-1" textColor="brand.secondary.700">
           For assistance, share the response ID with the agency that gave you
           the form link. No payment has been taken.
         </Text>
 
-        <Text textColor="secondary.300">Response ID: {submissionId}</Text>
+        <Text textColor="brand.secondary.300">Response ID: {submissionId}</Text>
       </Stack>
     </Flex>
   )

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-
-import Searchbar, { useSearchbar } from '~components/Searchbar'
+import { Searchbar, useSearchbar } from '@opengovsg/design-system-react'
 
 export const SubmissionSearchbar = ({
   submissionId,
@@ -18,7 +17,7 @@ export const SubmissionSearchbar = ({
     setInputValue(submissionId ?? '')
   }, [submissionId])
 
-  const { inputRef } = useSearchbar()
+  const { inputRef } = useSearchbar({})
 
   return (
     <Searchbar
@@ -26,8 +25,12 @@ export const SubmissionSearchbar = ({
       ref={inputRef}
       value={inputValue}
       isExpanded={!!submissionId}
-      onChange={setInputValue}
-      onCollapseIconClick={() => setSubmissionId(null)}
+      onChange={(e) => setInputValue(e.target.value)}
+      onExpansion={(isExpanded) => {
+        if (!isExpanded) {
+          setSubmissionId(null)
+        }
+      }}
       onSearch={setSubmissionId}
       placeholder="Search by response ID"
     />

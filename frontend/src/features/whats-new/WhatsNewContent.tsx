@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import { Box, Image, Text } from '@chakra-ui/react'
 import { format } from 'date-fns'
 
-import { useMdComponents } from '~hooks/useMdComponents'
 import { MarkdownText } from '~components/MarkdownText'
 import { LottieAnimation } from '~templates/LottieAnimation'
 
@@ -23,27 +22,13 @@ export const WhatsNewContent = ({
   description,
   image,
 }: WhatsNewContentProps) => {
-  const mdComponents = useMdComponents({
-    styles: {
-      text: {
-        color: 'secondary.500',
-        textStyle: 'body-1',
-        whiteSpace: 'pre-wrap',
-      },
-      list: {
-        color: 'secondary.500',
-        marginInlineStart: '1.25em',
-      },
-    },
-  })
-
   const renderedImage = useMemo(() => {
     if (!image) return
 
     if (image.animationData) {
       return (
         <LottieAnimation
-          bg="primary.100"
+          bg="brand.primary.50"
           title={image.alt}
           aria-label={image.alt}
           animationData={image.animationData}
@@ -58,13 +43,35 @@ export const WhatsNewContent = ({
   const formattedDate = format(date, DATE_FORMAT)
   return (
     <Box>
-      <Text textStyle="caption-1" color="secondary.400">
+      <Text textStyle="caption-1" color="brand.secondary.400">
         {formattedDate}
       </Text>
-      <Text as="h4" textStyle="h4" mb="0.5rem" mt="1rem" color="secondary.700">
+      <Text
+        as="h4"
+        textStyle="h4"
+        mb="0.5rem"
+        mt="1rem"
+        color="brand.secondary.700"
+      >
         {title}
       </Text>
-      <MarkdownText components={mdComponents}>{description}</MarkdownText>
+      <MarkdownText
+        componentProps={{
+          styles: {
+            text: {
+              color: 'brand.secondary.500',
+              textStyle: 'body-1',
+              whiteSpace: 'pre-wrap',
+            },
+            list: {
+              color: 'brand.secondary.500',
+              marginInlineStart: '1.25em',
+            },
+          },
+        }}
+      >
+        {description}
+      </MarkdownText>
       <Box mt="2rem" role="presentation">
         {renderedImage}
       </Box>

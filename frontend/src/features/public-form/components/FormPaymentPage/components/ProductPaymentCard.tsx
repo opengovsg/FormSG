@@ -1,12 +1,10 @@
 import { Box, Flex, Text, useDisclosure } from '@chakra-ui/react'
+import { Button, Checkbox, Radio } from '@opengovsg/design-system-react'
 
 import { FormColorTheme, ProductItem } from '~shared/types'
 import { centsToDollars, formatCurrency } from '~shared/utils/payments'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
-import Button from '~components/Button'
-import Checkbox from '~components/Checkbox'
-import Radio from '~components/Radio'
 
 import PaymentQuantityModal from './PaymentQuantityModal'
 
@@ -24,7 +22,7 @@ const ItemQuantityButton = ({
     <Box minWidth="6.75rem" height="2.75rem" onClick={onClick}>
       <Button
         rightIcon={<BxsChevronDown fontSize="1.5rem" />}
-        colorScheme="secondary"
+        colorScheme="sub"
         aria-label="Change"
         variant="clear"
       >

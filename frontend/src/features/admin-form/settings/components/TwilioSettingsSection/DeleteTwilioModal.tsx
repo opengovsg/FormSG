@@ -11,9 +11,7 @@ import {
   Text,
   useBreakpointValue,
 } from '@chakra-ui/react'
-
-import Button from '~components/Button'
-import { ModalCloseButton } from '~components/Modal'
+import { Button, ModalCloseButton } from '@opengovsg/design-system-react'
 
 import { useMutateTwilioCreds } from '../../mutations'
 
@@ -53,11 +51,11 @@ export const DeleteTwilioModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader color="secondary.700">
+        <ModalHeader color="brand.secondary.700">
           Remove Twilio credentials
         </ModalHeader>
         <ModalBody whiteSpace="pre-wrap">
-          <Text textStyle="body-2" color="secondary.500">
+          <Text textStyle="body-2" color="brand.secondary.500">
             Are you sure you want to remove your Twilio credentials?
           </Text>
         </ModalBody>
@@ -69,14 +67,14 @@ export const DeleteTwilioModal = ({
           >
             <Button
               variant="clear"
-              colorScheme="secondary"
+              colorScheme="sub"
               isFullWidth={modalSize === 'mobile'}
               onClick={onClose}
             >
               No, don't remove
             </Button>
             <Button
-              colorScheme="danger"
+              colorScheme="critical"
               isFullWidth={modalSize === 'mobile'}
               isLoading={mutateFormTwilioDeletion.isLoading}
               onClick={handleConfirmDeleteCreds}

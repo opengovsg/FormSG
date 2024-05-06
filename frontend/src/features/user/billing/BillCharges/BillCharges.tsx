@@ -1,12 +1,13 @@
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
 import { Box, Container, Flex, Grid, Stack, Text } from '@chakra-ui/react'
+import {
+  Pagination,
+  Searchbar,
+  SingleSelect,
+  useSearchbar,
+} from '@opengovsg/design-system-react'
 import simplur from 'simplur'
-
-import Pagination from '~/components/Pagination'
-
-import { SingleSelect } from '~components/Dropdown'
-import Searchbar, { useSearchbar } from '~components/Searchbar'
 
 import { getBillingInfo } from '~features/user/billing/BillingService'
 
@@ -95,9 +96,8 @@ export const BillCharges = ({
   )
 
   // Searchbar props
-
   const { inputRef, isExpanded, handleExpansion, handleCollapse } =
-    useSearchbar()
+    useSearchbar({})
 
   // Date range selection dropdown functions
 
@@ -126,7 +126,7 @@ export const BillCharges = ({
     >
       <Stack spacing="2rem">
         <Stack spacing="0.5rem">
-          <Text as="h2" textStyle="h2" whiteSpace="pre-wrap">
+          <Text as="h2" textStyle="h4" whiteSpace="pre-wrap">
             Bill charges
           </Text>
           <Text>Export monthly bill charges</Text>
@@ -135,7 +135,7 @@ export const BillCharges = ({
           <Grid
             mb="1rem"
             alignItems="end"
-            color="secondary.500"
+            color="brand.secondary.500"
             gridTemplateColumns={{ base: 'auto', md: 'auto 1fr' }}
             gridGap={'0.5rem'}
             gridTemplateAreas={{
@@ -153,13 +153,13 @@ export const BillCharges = ({
                   'Loading logins for '
                 ) : (
                   <>
-                    <Text as="span" color="primary.500">
+                    <Text as="span" color="brand.primary.500">
                       {loginCount}
                     </Text>
                     {prettifiedLoginCount}
                   </>
                 )}
-                <Text as="span" color="primary.500">
+                <Text as="span" color="brand.primary.500">
                   {esrvcId}
                 </Text>
                 {isLoadingOrRefetching ? '...' : ''}
@@ -175,8 +175,13 @@ export const BillCharges = ({
                     esrvcId ? onSubmitEsrvcId({ esrvcId }) : null
                   }
                   isExpanded={isExpanded}
-                  onExpandIconClick={handleExpansion}
-                  onCollapseIconClick={handleCollapse}
+                  onExpansion={(isExpandedNext) => {
+                    if (isExpandedNext) {
+                      handleExpansion()
+                    } else {
+                      handleCollapse()
+                    }
+                  }}
                   placeholder="Search an e-service ID"
                 ></Searchbar>
               </Flex>

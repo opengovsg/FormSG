@@ -1,5 +1,4 @@
-import { Meta, Story, Canvas } from '@storybook/blocks'
-import { ColourTable } from './ColourTable'
+import { Meta, Canvas } from '@storybook/blocks'
 import * as ColoursStories from './Colours.stories'
 
 <Meta of={ColoursStories} />
@@ -10,62 +9,53 @@ We are toning down our palette to signify the maturity of Form. Keeping blues an
 
 ## Brand colours
 
-### Primary
+### Brand/Primary
 
-<Story of={ColoursStories.BrandPrimary} />
+<Canvas of={ColoursStories.BrandPrimary} />
 
-### Secondary
+### Brand/Secondary
 
-<Story of={ColoursStories.BrandSecondary} />
+<Canvas of={ColoursStories.BrandSecondary} />
 
-## Feedback
+### Theme/Blue
 
-### Success
+<Canvas of={ColoursStories.FormThemeBlue} />
 
-<Story of={ColoursStories.FeedbackSuccess} />
+### Theme/Green
 
-### Danger
+<Canvas of={ColoursStories.FormThemeGreen} />
 
-<Story of={ColoursStories.FeedbackDanger} />
 
-### Warning
+### Theme/Teal
 
-<Story of={ColoursStories.FeedbackWarning} />
+<Canvas of={ColoursStories.FormThemeTeal} />
 
-## Neutral
 
-<Story of={ColoursStories.Neutral} />
+### Theme/Purple
 
-## Theme
+<Canvas of={ColoursStories.FormThemePurple} />
 
-### Green
 
-<Story of={ColoursStories.ThemeGreen} />
+### Theme/Grey
 
-### Teal
+<Canvas of={ColoursStories.FormThemeGrey} />
 
-<Story of={ColoursStories.ThemeTeal} />
 
-### Purple
+### Theme/Yellow
 
-<Story of={ColoursStories.ThemePurple} />
+<Canvas of={ColoursStories.FormThemeYellow} />
 
-### Grey
 
-<Story of={ColoursStories.ThemeGrey} />
+### Theme/Orange
 
-### Yellow
+<Canvas of={ColoursStories.FormThemeOrange} />
 
-<Story of={ColoursStories.ThemeYellow} />
 
-### Orange
+### Theme/Red
 
-<Story of={ColoursStories.ThemeOrange} />
+<Canvas of={ColoursStories.FormThemeRed} />
 
-### Red
 
-<Story of={ColoursStories.ThemeRed} />
+### Theme/Brown
 
-### Brown
-
-<Story of={ColoursStories.ThemeBrown} />
+<Canvas of={ColoursStories.FormThemeBrown} />

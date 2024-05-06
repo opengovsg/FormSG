@@ -1,9 +1,9 @@
 import { BiPlus } from 'react-icons/bi'
 import { Flex, Text } from '@chakra-ui/react'
+import { Button } from '@opengovsg/design-system-react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import { fillHeightCss } from '~utils/fillHeightCss'
-import Button from '~components/Button'
 
 import { EmptyWorkspaceSvgr } from './EmptyWorkspaceSvgr'
 
@@ -32,19 +32,19 @@ export const EmptyWorkspace = ({
       align="center"
       px="2rem"
       py="4rem"
-      bg="neutral.100"
+      bg="grey.50"
       css={fillHeightCss}
     >
       <Text
         as="h2"
-        textStyle="h2"
-        color="primary.500"
+        textStyle="h4"
+        color="brand.primary.500"
         mb="1rem"
         textAlign="center"
       >
         {title}
       </Text>
-      <Text textStyle="body-1" color="secondary.500" textAlign="center">
+      <Text textStyle="body-1" color="brand.secondary.500" textAlign="center">
         {subText}
       </Text>
       {!!handleOpenCreateFormModal && (

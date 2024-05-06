@@ -21,6 +21,14 @@ import {
   VisuallyHidden,
   VStack,
 } from '@chakra-ui/react'
+import {
+  Button,
+  DatePicker,
+  FormErrorMessage,
+  FormLabel,
+  IconButton,
+  SingleSelect,
+} from '@opengovsg/design-system-react'
 import { get } from 'lodash'
 import simplur from 'simplur'
 
@@ -36,12 +44,6 @@ import {
 import { formatMyinfoDate } from '~shared/utils/dates'
 
 import { createChildrenValidationRules } from '~utils/fieldValidation'
-import { Button } from '~components/Button/Button'
-import { DatePicker } from '~components/DatePicker'
-import { SingleSelect } from '~components/Dropdown/SingleSelect'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import { FormLabel } from '~components/FormControl/FormLabel/FormLabel'
-import { IconButton } from '~components/IconButton/IconButton'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import {
@@ -172,7 +174,7 @@ export const ChildrenCompoundField = ({
             <Spacer />
             <Text
               textStyle="body-2"
-              color="secondary.400"
+              color="brand.secondary.400"
             >{simplur`${numChild} child[|ren] added`}</Text>
           </HStack>
         ) : null}
@@ -355,7 +357,7 @@ const ChildrenBody = ({
           </Box>
           <IconButton
             variant="clear"
-            colorScheme="danger"
+            colorScheme="critical"
             icon={<BiTrash />}
             aria-label="Remove child"
             alignSelf="end"
@@ -404,7 +406,7 @@ const ChildrenBody = ({
                   isRequired
                   isInvalid={!!childrenSubFieldError}
                 >
-                  <FormLabel useMarkdownForDescription gridArea="formlabel">
+                  <FormLabel gridArea="formlabel">
                     {MYINFO_ATTRIBUTE_MAP[subField].description}
                   </FormLabel>
                   <ChakraInput
@@ -428,7 +430,7 @@ const ChildrenBody = ({
                   isRequired
                   isInvalid={!!childrenSubFieldError}
                 >
-                  <FormLabel useMarkdownForDescription gridArea="formlabel">
+                  <FormLabel gridArea="formlabel">
                     {MYINFO_ATTRIBUTE_MAP[subField].description}
                   </FormLabel>
                   <SingleSelect
@@ -460,7 +462,7 @@ const ChildrenBody = ({
                   isRequired
                   isInvalid={!!childrenSubFieldError}
                 >
-                  <FormLabel useMarkdownForDescription gridArea="formlabel">
+                  <FormLabel gridArea="formlabel">
                     {MYINFO_ATTRIBUTE_MAP[subField].description}
                   </FormLabel>
                   <DatePicker

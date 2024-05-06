@@ -1,6 +1,5 @@
 import { Flex } from '@chakra-ui/react'
-
-import Badge, { BadgeProps } from '~components/Badge'
+import { Badge, type BadgeProps } from '@opengovsg/design-system-react'
 
 /**
  * Styled badge for displaying logic values and fields
@@ -10,7 +9,7 @@ export const LogicBadge = (props: BadgeProps) => (
     <Badge
       maxW="100%"
       variant="subtle"
-      colorScheme="secondary"
+      colorScheme="sub"
       whiteSpace="pre-wrap"
       {...props}
     />

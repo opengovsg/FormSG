@@ -10,12 +10,13 @@ import {
   Text,
   VisuallyHidden,
 } from '@chakra-ui/react'
+import {
+  FormErrorMessage,
+  Input,
+  Spinner,
+} from '@opengovsg/design-system-react'
 
 import { FormAuthType, FormSettings } from '~shared/types/form'
-
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import Input from '~components/Input'
-import Spinner from '~components/Spinner'
 
 import { useMutateFormSettings } from '../../mutations'
 
@@ -81,7 +82,7 @@ export const EsrvcIdBox = ({
   return (
     <form onSubmit={onSubmit} onBlur={handleBlur}>
       <Stack ml="2.75rem" mb="1.25rem">
-        <Text textStyle="body-2" color="secondary.400">
+        <Text textStyle="body-2" color="brand.secondary.400">
           {renderedHelperText}
         </Text>
         <VisuallyHidden>

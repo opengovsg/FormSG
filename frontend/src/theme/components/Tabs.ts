@@ -76,24 +76,24 @@ const variantLineLight: PartsStyleFunction<typeof parts> = (props) => {
   const { size } = props
   return merge(variantLineColor(props), getSizesForLineLightDarkVariant(size), {
     tab: {
-      color: 'secondary.400',
+      color: 'brand.secondary.400',
       _hover: {
-        color: 'primary.500',
+        color: 'brand.primary.500',
       },
       _disabled: {
-        color: 'primary.300',
+        color: 'brand.primary.300',
         _hover: {
-          color: 'primary.300',
+          color: 'brand.primary.300',
         },
       },
       _selected: {
         _before: {
-          bg: 'primary.500',
+          bg: 'brand.primary.500',
         },
-        color: 'primary.500',
+        color: 'brand.primary.500',
       },
       _focusVisible: {
-        boxShadow: `0 0 0 2px ${getColor(props.theme, 'primary.500')}`,
+        boxShadow: `0 0 0 2px ${getColor(props.theme, 'brand.primary.500')}`,
       },
     },
   })
@@ -103,10 +103,10 @@ const variantLineDark: PartsStyleFunction<typeof parts> = (props) => {
   const { size } = props
   return merge(variantLineColor(props), getSizesForLineLightDarkVariant(size), {
     tablist: {
-      bg: 'secondary.500',
+      bg: 'brand.secondary.500',
     },
     tab: {
-      color: 'neutral.400',
+      color: 'grey.300',
       _hover: {
         color: 'white',
       },
@@ -117,9 +117,9 @@ const variantLineDark: PartsStyleFunction<typeof parts> = (props) => {
         color: 'white',
       },
       _disabled: {
-        color: 'neutral.500',
+        color: 'grey.400',
         _hover: {
-          color: 'neutral.500',
+          color: 'grey.400',
         },
       },
       _focusVisible: {
@@ -150,7 +150,7 @@ const variantLine: PartsStyleFunction<typeof parts> = (props) => {
       transitionProperty:
         'background-color, border-color, color, fill, stroke, opacity, box-shadow, transform, font-weight',
       textStyle: 'body-1',
-      color: 'secondary.500',
+      color: 'brand.secondary.500',
       _selected: {
         textStyle: 'subhead-1',
         color: `${c}.500`,
@@ -163,7 +163,7 @@ const variantLine: PartsStyleFunction<typeof parts> = (props) => {
       },
       _disabled: {
         _hover: {
-          color: 'secondary.500',
+          color: 'brand.secondary.500',
         },
       },
     },
@@ -206,7 +206,7 @@ export const Tabs: ComponentMultiStyleConfig<typeof parts> = {
     'line-dark': variantLineDark,
   },
   defaultProps: {
-    colorScheme: 'primary',
+    colorScheme: 'main',
     variant: 'line-light',
     size: 'md',
   },

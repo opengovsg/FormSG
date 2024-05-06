@@ -1,9 +1,8 @@
 import { useCallback, useState } from 'react'
 import { forwardRef } from '@chakra-ui/react'
+import { Textarea } from '@opengovsg/design-system-react'
 
 import { DropdownColumnBase } from '~shared/types'
-
-import Textarea from '~components/Textarea'
 
 import { SPLIT_TEXTAREA_TRANSFORM } from '../common/constants'
 

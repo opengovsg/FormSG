@@ -2,14 +2,12 @@ import { useCallback, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { GoThumbsdown, GoThumbsup } from 'react-icons/go'
 import { Flex, Link, Stack, Text } from '@chakra-ui/react'
+import { Button, IconButton, Textarea } from '@opengovsg/design-system-react'
 
 import { AdminFeedbackRating } from '~shared/types'
 
 import { BxX } from '~assets/icons'
 import { useIsMobile } from '~hooks/useIsMobile'
-import Button from '~components/Button'
-import IconButton from '~components/IconButton'
-import Textarea from '~components/Textarea'
 
 import { useAdminFeedbackMutation } from '~features/workspace/mutations'
 
@@ -161,7 +159,7 @@ const AdminFeedbackCommentContent = ({
   return (
     <Stack w={isMobile ? undefined : '28.5rem'}>
       <Flex justifyContent="space-between" alignItems="center" mb="1rem">
-        <Text textStyle="h2">Great!</Text>
+        <Text textStyle="h4">Great!</Text>
         <IconButton
           aria-label="close feedback box"
           icon={<BxX />}

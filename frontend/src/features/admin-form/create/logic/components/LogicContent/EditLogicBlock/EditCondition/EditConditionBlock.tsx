@@ -14,6 +14,13 @@ import {
   Stack,
   VisuallyHidden,
 } from '@chakra-ui/react'
+import {
+  FormErrorMessage,
+  IconButton,
+  MultiSelect,
+  NumberInput,
+  SingleSelect,
+} from '@opengovsg/design-system-react'
 import { Dictionary, get, pickBy, range } from 'lodash'
 
 import { LOGIC_MAP } from '~shared/modules/logic'
@@ -23,10 +30,6 @@ import { LogicIfValue, LogicType } from '~shared/types/form'
 import { useHasChanged } from '~hooks/useHasChanged'
 import { useWatchDependency } from '~hooks/useWatchDependency'
 import { convertToStringArray } from '~utils/stringFormat'
-import { MultiSelect, SingleSelect } from '~components/Dropdown'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import IconButton from '~components/IconButton'
-import NumberInput from '~components/NumberInput'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { EditLogicInputs } from '~features/admin-form/create/logic/types'
@@ -294,7 +297,7 @@ export const EditConditionBlock = ({
               gridArea="delete"
               isDisabled={isLoading}
               variant="clear"
-              colorScheme="danger"
+              colorScheme="critical"
               icon={<BiTrash />}
               onClick={() => handleRemoveCondition(index)}
               aria-label="Remove logic condition block"
