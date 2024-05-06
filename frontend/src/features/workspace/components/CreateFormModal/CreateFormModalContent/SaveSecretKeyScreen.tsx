@@ -128,7 +128,7 @@ export const SaveSecretKeyScreen = ({
             bg="white"
             borderRadius="4px"
             border="1px solid"
-            borderColor="neutral.200"
+            borderColor="grey.100"
             py="3rem"
             px={{ base: '1.5rem', md: '2.5rem' }}
             mt={{ base: '5.5rem', md: '1rem' }}
@@ -174,7 +174,7 @@ export const SaveSecretKeyScreen = ({
                   cursor="pointer"
                   onClick={handleCopyKey}
                   _groupFocus={{
-                    bg: 'neutral.400',
+                    bg: 'grey.300',
                   }}
                   _hover={{
                     bg: 'base.canvas.backdrop',
@@ -186,7 +186,7 @@ export const SaveSecretKeyScreen = ({
                   h="auto"
                   px="0.75rem"
                   py="0.625rem"
-                  bg="neutral.200"
+                  bg="grey.100"
                   color="brand.secondary.500"
                   borderRadius="4px"
                 >

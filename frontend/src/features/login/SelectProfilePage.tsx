@@ -174,7 +174,7 @@ export const SelectProfilePage = (): JSX.Element => {
         padding="2rem"
         borderRadius="0.5rem"
         border="1px"
-        borderColor="neutral.200"
+        borderColor="grey.100"
         gap="1rem"
         background="white"
         divider={<Divider />}

@@ -60,7 +60,7 @@ export const CreatePage = (): JSX.Element => {
           h="100%"
           w="100%"
           overflow="auto !important"
-          bg="neutral.200"
+          bg="grey.100"
           direction="row"
         >
           {shouldFeatureTourRender && (

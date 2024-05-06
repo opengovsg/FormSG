@@ -147,7 +147,7 @@ export const MobileWorkspaceSearchbar = forwardRef<
               variant="clear"
               aria-label="Filter forms"
               icon={<SelectedFilterAffordance show={hasFilter} />}
-              backgroundColor={hasFilter ? 'neutral.200' : undefined}
+              backgroundColor={hasFilter ? 'grey.100' : undefined}
               onClick={onOpen}
             />
             {isMobile || (

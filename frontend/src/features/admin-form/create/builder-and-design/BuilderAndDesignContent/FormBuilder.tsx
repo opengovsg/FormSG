@@ -97,7 +97,7 @@ export const FormBuilder = ({
     <Flex
       mb={0}
       flex={1}
-      bg="neutral.200"
+      bg="grey.100"
       // Using margin for margin collapse when there are inline messages above.
       mt={{ base: 0, md: '1rem' }}
       pt={{ base: 0, md: '1rem' }}

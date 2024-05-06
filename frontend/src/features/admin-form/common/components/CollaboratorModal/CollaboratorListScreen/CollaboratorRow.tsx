@@ -48,7 +48,7 @@ export const CollaboratorRow = ({
         <Stack direction="row" align="baseline" flex={1}>
           <CollaboratorText>{email}</CollaboratorText>
           {isCurrentUser ? (
-            <Text as="span" textStyle="caption-1" color="neutral.600">
+            <Text as="span" textStyle="caption-1" color="grey.500">
               (You)
             </Text>
           ) : null}

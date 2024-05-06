@@ -32,7 +32,7 @@ export const EmptyWorkspace = ({
       align="center"
       px="2rem"
       py="4rem"
-      bg="neutral.100"
+      bg="grey.50"
       css={fillHeightCss}
     >
       <Text

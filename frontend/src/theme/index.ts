@@ -1,6 +1,7 @@
 import { extendTheme } from '@chakra-ui/react'
 import { theme as baseTheme } from '@opengovsg/design-system-react'
 
+import { Calendar } from './components/Calendar'
 import { RatingField } from './components/Rating'
 import { Tabs } from './components/Tabs'
 import { YesNoField } from './components/YesNo'
@@ -44,6 +45,7 @@ export const theme = extendTheme(baseTheme, {
   textStyles,
   breakpoints: BREAKPOINT_VALS,
   components: {
+    Calendar,
     YesNoField,
     RatingField,
     Tabs,

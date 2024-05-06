@@ -29,16 +29,16 @@ const numberOptionStyle: SystemStyleFunction = (props) => {
     borderColor: themeColor,
     color: themeColor,
     _disabled: {
-      borderColor: 'neutral.500',
-      color: 'neutral.500',
+      borderColor: 'grey.400',
+      color: 'grey.400',
       cursor: 'not-allowed',
       _checked: {
-        bg: 'neutral.500',
+        bg: 'grey.400',
         _hover: {
-          bg: 'neutral.500',
+          bg: 'grey.400',
         },
         _active: {
-          bg: 'neutral.500',
+          bg: 'grey.400',
           color: 'white',
         },
       },
@@ -46,7 +46,7 @@ const numberOptionStyle: SystemStyleFunction = (props) => {
         bg: 'white',
       },
       _active: {
-        color: 'neutral.500',
+        color: 'grey.400',
         bg: 'white',
       },
     },
@@ -82,11 +82,11 @@ const iconOptionStyle: SystemStyleFunction = (props) => {
       color: `${c}.700`,
     },
     _disabled: {
-      borderColor: 'neutral.500',
-      color: 'neutral.500',
+      borderColor: 'grey.400',
+      color: 'grey.400',
       cursor: 'not-allowed',
       _active: {
-        color: 'neutral.500',
+        color: 'grey.400',
       },
     },
   }

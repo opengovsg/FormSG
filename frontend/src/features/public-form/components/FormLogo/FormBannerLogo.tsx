@@ -32,7 +32,7 @@ export interface FormBannerLogoProps {
 
 export const InvalidLogo = ({ message }: { message: string }): JSX.Element => {
   return (
-    <Box bg="neutral.200" p="0.5rem">
+    <Box bg="grey.100" p="0.5rem">
       <Stack spacing="1rem" justify="center" align="center">
         <Icon as={BiImage} size="1.5rem" color="brand.secondary.500" />
         <Text

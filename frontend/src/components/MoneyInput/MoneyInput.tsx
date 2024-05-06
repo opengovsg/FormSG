@@ -72,7 +72,7 @@ export const MoneyInput = forwardRef<MoneyInputProps, 'input'>(
             as="label"
             sx={styles.country}
             background="transparent"
-            borderColor="neutral.400"
+            borderColor="grey.300"
           >
             <Text>S$</Text>
           </InputLeftAddon>

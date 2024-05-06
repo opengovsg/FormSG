@@ -48,7 +48,7 @@ export const EmptyFormPlaceholder = forwardRef<
           isDraggingOver ? 'brand.primary.700' : 'brand.secondary.300'
         }
         borderRadius="4px"
-        bg="neutral.100"
+        bg="grey.50"
         transitionProperty="common"
         transitionDuration="normal"
         onClick={onClick}

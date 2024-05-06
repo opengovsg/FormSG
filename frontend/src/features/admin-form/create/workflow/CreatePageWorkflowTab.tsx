@@ -32,7 +32,7 @@ export const CreatePageWorkflowTab = (): JSX.Element => {
     <Box
       flex={1}
       overflow="auto"
-      bg="neutral.100"
+      bg="grey.50"
       py={{ base: '2rem', md: '1rem' }}
       px={{ base: '1.5rem', md: '3.75rem' }}
     >

@@ -177,7 +177,7 @@ export const PreviewFormBanner = ({
         </Drawer>
       </Flex>
       {isPaymentEnabled && (
-        <Flex backgroundColor="neutral.900">
+        <Flex backgroundColor="grey.900">
           {secretEnv === 'production' ? (
             <Text {...textProps}>
               To test your payment form, replicate this form on our{' '}
@@ -195,7 +195,7 @@ export const PreviewFormBanner = ({
         </Flex>
       )}
       {!isPaymentEnabled && (
-        <Flex backgroundColor="neutral.900">
+        <Flex backgroundColor="grey.900">
           {!(secretEnv === 'production') && (
             <Text {...textProps}>
               You will not be able to view submitted answers or attachments in

@@ -52,7 +52,7 @@ export const WorkspaceContent = (): JSX.Element => {
         />
       ) : (
         <Grid
-          bg="neutral.100"
+          bg="grey.50"
           templateColumns="1fr"
           templateRows="auto 1fr auto"
           minH="100vh"

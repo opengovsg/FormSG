@@ -26,29 +26,29 @@ const outlineOptionStyle: SystemStyleFunction = (props) => {
     textStyle: 'subhead-1',
     justifyContent: 'center',
     color: 'brand.secondary.700',
-    bg: 'neutral.100',
+    bg: 'grey.50',
     border: '1px solid',
-    borderColor: 'neutral.500',
+    borderColor: 'grey.400',
     p: '15px',
     _disabled: {
-      bg: 'neutral.200',
+      bg: 'grey.100',
       cursor: 'not-allowed',
-      color: 'neutral.500',
+      color: 'grey.400',
       _active: {
         boxShadow: 'none',
-        borderColor: 'neutral.500',
+        borderColor: 'grey.400',
       },
       _hover: {
-        bg: 'neutral.200',
+        bg: 'grey.100',
       },
       _checked: {
         bg: 'base.divider.medium',
-        borderColor: 'neutral.500',
+        borderColor: 'grey.400',
         _hover: {
           bg: 'base.divider.medium',
         },
         _active: {
-          borderColor: 'neutral.500',
+          borderColor: 'grey.400',
         },
       },
     },

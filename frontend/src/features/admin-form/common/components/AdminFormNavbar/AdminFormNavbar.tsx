@@ -104,7 +104,7 @@ export const AdminFormNavbar = ({
         <Text
           textStyle="legal"
           textTransform="uppercase"
-          color="neutral.700"
+          color="grey.600"
           textAlign="right"
         >
           {/* Use spans with nowrap to break the second half of the date as a group */}

@@ -11,7 +11,7 @@ interface UseFormHeaderProps {
 }
 
 export const getTitleBg = (colorTheme?: FormColorTheme, hover?: boolean) =>
-  colorTheme ? `theme-${colorTheme}.${hover ? 6 : 5}00` : `neutral.200`
+  colorTheme ? `theme-${colorTheme}.${hover ? 6 : 5}00` : `grey.100`
 
 export const useFormHeader = ({ startPage, hover }: UseFormHeaderProps) => {
   const titleColor = useMemo(() => {

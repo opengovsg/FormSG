@@ -76,7 +76,7 @@ export const EndPageContent = (): JSX.Element => {
     <Flex
       mb={0}
       flex={1}
-      bg="neutral.200"
+      bg="grey.100"
       pt={{ base: 0, md: '2rem' }}
       pb={{ base: 0, md: '2rem' }}
       px={{ base: 0, md: '2rem' }}
