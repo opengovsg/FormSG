@@ -457,15 +457,16 @@ export const validateMultirespondentSubmission = async (
                     const incomingResField = req.body.responses[fieldId]
                     const prevResField = previousResponses[fieldId]
 
+                    // TODO(FRM-1724): Reenable this validation.
                     if (prevResField.fieldType === BasicField.Attachment) {
-                      prevResField.answer.content = Buffer.from(
-                        /**
-                         * JSON.parse(JSON.stringify(fooBuffer)) does not fully reconstruct the Buffer object
-                         * it gets parsed as { type: 'Buffer', data: number[] } instead of the original Buffer object
-                         */
-                        // @ts-expect-error data does not exist on Buffer
-                        prevResField.answer.content.data,
-                      )
+                      // prevResField.answer.content = Buffer.from(
+                      //   /**
+                      //    * JSON.parse(JSON.stringify(fooBuffer)) does not fully reconstruct the Buffer object
+                      //    * it gets parsed as { type: 'Buffer', data: number[] } instead of the original Buffer object
+                      //    */
+                      //   // @ts-expect-error data does not exist on Buffer
+                      //   prevResField.answer.content.data,
+                      // )
                     }
 
                     const resp = isFieldResponseV3Equal(
