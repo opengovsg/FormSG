@@ -184,14 +184,18 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
 
     const fileValidator = useCallback<NonNullable<DropzoneProps['validator']>>(
       (file) => {
-        if (
-          !IMAGE_UPLOAD_TYPES_TO_COMPRESS.includes(file.type) &&
-          maxSize &&
-          file.size > maxSize
-        ) {
-          return {
-            code: 'file-too-large',
-            message: `You have exceeded the limit, please upload a file below ${readableMaxSize}`,
+        if (!IMAGE_UPLOAD_TYPES_TO_COMPRESS.includes(file.type)) {
+          if (maxSize && file.size > maxSize) {
+            return {
+              code: 'file-too-large',
+              message: `You have exceeded the limit, please upload a file below ${readableMaxSize}`,
+            }
+          }
+          if (file.size === 0) {
+            return {
+              code: 'file-empty',
+              message: `You have uploaded an empty file, please upload a valid attachment`,
+            }
           }
         }
         return null
