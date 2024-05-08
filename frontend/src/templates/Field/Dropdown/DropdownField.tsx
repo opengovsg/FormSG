@@ -21,6 +21,7 @@ export const DropdownField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
+  language,
   ...fieldContainerProps
 }: DropdownFieldProps): JSX.Element => {
   const rules = useMemo(() => {
@@ -30,7 +31,11 @@ export const DropdownField = ({
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema} {...fieldContainerProps}>
+    <FieldContainer
+      schema={schema}
+      {...fieldContainerProps}
+      language={language}
+    >
       <Controller
         control={control}
         rules={rules}

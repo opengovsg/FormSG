@@ -1,7 +1,7 @@
 import { memo } from 'react'
 
 import { BasicField } from '~shared/types/field'
-import { FormColorTheme, FormResponseMode } from '~shared/types/form'
+import { FormColorTheme, FormResponseMode, Language } from '~shared/types/form'
 
 import {
   AttachmentField,
@@ -46,6 +46,7 @@ interface FieldFactoryProps {
   disableRequiredValidation?: boolean
   prefill?: PrefillMap[string]
   colorTheme?: FormColorTheme
+  language?: Language
 }
 
 export const FieldFactory = memo(

@@ -31,6 +31,7 @@ export const AttachmentField = ({
   disableRequiredValidation,
   enableDownload,
   colorTheme = FormColorTheme.Blue,
+  language,
 }: AttachmentFieldProps): JSX.Element => {
   const fieldName = schema._id
   const validationRules = useMemo(
@@ -102,7 +103,7 @@ export const AttachmentField = ({
   )
 
   return (
-    <FieldContainer schema={schema}>
+    <FieldContainer schema={schema} language={language}>
       <Controller
         control={control}
         render={({ field: { onChange, ...rest } }) => (

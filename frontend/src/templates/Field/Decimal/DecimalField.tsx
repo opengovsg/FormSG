@@ -18,6 +18,7 @@ export interface DecimalFieldProps extends BaseFieldProps {
 export const DecimalField = ({
   schema,
   disableRequiredValidation,
+  language,
 }: DecimalFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createDecimalValidationRules(schema, disableRequiredValidation),
@@ -27,7 +28,7 @@ export const DecimalField = ({
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema}>
+    <FieldContainer schema={schema} language={language}>
       <Controller
         control={control}
         rules={validationRules}

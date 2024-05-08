@@ -8,7 +8,7 @@ import { FieldError, useFormState } from 'react-hook-form'
 import { Box, FormControl, Grid } from '@chakra-ui/react'
 import { get } from 'lodash'
 
-import { FormColorTheme } from '~shared/types/form'
+import { FormColorTheme, Language } from '~shared/types/form'
 
 import Badge from '~components/Badge'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -19,7 +19,14 @@ import { FormFieldWithQuestionNo } from '~features/form/types'
 export type BaseFieldProps = {
   schema: Pick<
     FormFieldWithQuestionNo,
-    '_id' | 'required' | 'description' | 'title' | 'disabled' | 'questionNumber'
+    | '_id'
+    | 'required'
+    | 'description'
+    | 'title'
+    | 'disabled'
+    | 'questionNumber'
+    | 'titleTranslations'
+    | 'descriptionTranslations'
   >
   /**
    * Color theme of form, if available. Defaults to `FormColorTheme.Blue`
@@ -45,6 +52,8 @@ export type BaseFieldProps = {
    * Optional specification for error message variant.
    */
   errorVariant?: 'white'
+
+  language?: Language
 }
 
 export interface FieldContainerProps extends BaseFieldProps {
@@ -57,10 +66,34 @@ export const FieldContainer = ({
   errorKey,
   showMyInfoBadge,
   errorVariant,
+  language,
 }: FieldContainerProps): JSX.Element => {
   const { errors, isSubmitting, isValid } = useFormState({ name: schema._id })
 
   const error: FieldError | undefined = get(errors, errorKey ?? schema._id)
+
+  const titleTranslationIdx =
+    schema.titleTranslations?.findIndex((titleTranslation) => {
+      return titleTranslation.language === language
+    }) ?? -1
+
+  let title = schema.title
+
+  if (schema.titleTranslations && titleTranslationIdx !== -1) {
+    title = schema.titleTranslations[titleTranslationIdx].translation
+  }
+
+  const descriptionTranslationIdx =
+    schema.descriptionTranslations?.findIndex((descriptionTranslation) => {
+      return descriptionTranslation.language === language
+    }) ?? -1
+
+  let description = schema.description
+
+  if (schema.descriptionTranslations && descriptionTranslationIdx !== -1) {
+    description =
+      schema.descriptionTranslations[descriptionTranslationIdx].translation
+  }
 
   return (
     <FormControl
@@ -80,9 +113,9 @@ export const FieldContainer = ({
           questionNumber={
             schema.questionNumber ? `${schema.questionNumber}.` : undefined
           }
-          description={schema.description}
+          description={description}
         >
-          {schema.title}
+          {title}
         </FormLabel>
         {showMyInfoBadge && (
           <Box gridArea="myinfobadge">

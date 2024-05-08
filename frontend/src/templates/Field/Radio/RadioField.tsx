@@ -27,6 +27,7 @@ export const RadioField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
+  language,
 }: RadioFieldProps): JSX.Element => {
   const fieldColorScheme = useMemo(
     () => `theme-${colorTheme}` as const,
@@ -70,7 +71,11 @@ export const RadioField = ({
   )
 
   return (
-    <FieldContainer schema={schema} errorKey={radioInputName}>
+    <FieldContainer
+      schema={schema}
+      errorKey={radioInputName}
+      language={language}
+    >
       <Controller
         name={radioInputName}
         rules={validationRules}
