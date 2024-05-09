@@ -54,6 +54,9 @@ export const useAssistanceMutations = () => {
             onSuccess: () => {
               queryClient.invalidateQueries(adminFormKeys.id(formId))
             },
+            onError: (error) => {
+              console.error(error)
+            },
           })
         }),
     {
@@ -66,10 +69,17 @@ export const useAssistanceMutations = () => {
                 'Too many forms created! Please try creating again later.'
               break
             default:
-              errorMessage = 'An error occured. Please try again.'
+              errorMessage =
+                'Sorry, we are unable to generate a form with your prompt. Please try another prompt or manually create form fields.'
           }
           toast({
             description: `${errorMessage}`,
+            status: 'danger',
+          })
+        } else {
+          toast({
+            description:
+              'Sorry, we are unable to generate a form with your prompt. Please try another prompt or manually create form fields.',
             status: 'danger',
           })
         }

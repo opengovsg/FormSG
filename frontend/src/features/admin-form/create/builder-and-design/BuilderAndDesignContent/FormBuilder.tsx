@@ -1,4 +1,4 @@
-import { createContext, useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
 import {
   Box,
@@ -47,12 +47,6 @@ import { useBuilderFields } from './useBuilderFields'
 interface FormBuilderProps extends FlexProps {
   placeholderProps: DndPlaceholderProps
 }
-
-type OnCloseContext = {
-  onClose: () => void
-}
-export const MagicFormBuilderModalOnCloseContext =
-  createContext<OnCloseContext>({ onClose: () => undefined })
 
 export const FormBuilder = ({
   placeholderProps,
@@ -112,14 +106,10 @@ export const FormBuilder = ({
 
   return (
     <>
-      <MagicFormBuilderModalOnCloseContext.Provider
-        value={{ onClose: magicFormBuilderModalDisclosure.onClose }}
-      >
-        <MagicFormBuilderModal
-          isOpen={magicFormBuilderModalDisclosure.isOpen}
-          onClose={magicFormBuilderModalDisclosure.onClose}
-        />
-      </MagicFormBuilderModalOnCloseContext.Provider>
+      <MagicFormBuilderModal
+        isOpen={magicFormBuilderModalDisclosure.isOpen}
+        onClose={magicFormBuilderModalDisclosure.onClose}
+      />
       <Flex
         mb={0}
         flex={1}

@@ -95,6 +95,18 @@ export const useCreateFormField = () => {
     [toast],
   )
 
+  const handleAssistanceError = useCallback(
+    (error: Error) => {
+      toast.closeAll()
+      toast({
+        description:
+          'Sorry, we are unable to generate a form with your prompt. Please try another prompt or manually create form fields.',
+        status: 'danger',
+      })
+    },
+    [toast],
+  )
+
   const insertionIndex = useMemo(() => {
     if (stateData.state === FieldBuilderState.CreatingField) {
       return stateData.insertionIndex
@@ -119,7 +131,7 @@ export const useCreateFormField = () => {
         createFormFields({ createFieldsBody, formId }),
       {
         onSuccess: handleMultiFieldMutationSuccess,
-        onError: handleError,
+        onError: handleAssistanceError,
       },
     ),
   }
