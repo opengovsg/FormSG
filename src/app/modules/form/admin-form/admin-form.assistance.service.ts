@@ -79,6 +79,7 @@ export const generateQuestions = ({
         function: getExpectedQuestionsListTool,
       },
     ],
+    topP: 0.1,
   } as GetChatCompletionsOptions
 
   return ResultAsync.fromPromise(

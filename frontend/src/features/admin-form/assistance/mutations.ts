@@ -43,10 +43,7 @@ export const useAssistanceMutations = () => {
             try {
               formFields = JSON.parse(parseModelOutput(data.content))
             } catch (e) {
-              toast({
-                description: `Error creating form. Reason: ${e}`,
-                status: 'warning',
-              })
+              console.error(e)
               throw e
             }
           }

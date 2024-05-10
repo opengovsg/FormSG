@@ -44,6 +44,7 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
   } = formMethods
 
   pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker
+  // pdfjs.GlobalWorkerOptions.isEvalSupported = false
 
   const [pdfFile, setPdfFile] = useState<File>()
   const [pdfFileText, setPdfFileText] = useState<string>('')

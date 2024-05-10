@@ -87,11 +87,8 @@ const useMagicFormBuilderWizardContext = (
             description: 'Successfully created form',
           })
         },
-        onError: () => {
-          toast({
-            description: 'Error creating form. Please try again.',
-            status: 'warning',
-          })
+        onError: (error) => {
+          console.error(error)
         },
       })
     }
@@ -104,11 +101,8 @@ const useMagicFormBuilderWizardContext = (
             description: 'Successfully created form',
           })
         },
-        onError: () => {
-          toast({
-            description: 'Error creating form. Please try again.',
-            status: 'warning',
-          })
+        onError: (error) => {
+          console.error(error)
         },
       })
     }
