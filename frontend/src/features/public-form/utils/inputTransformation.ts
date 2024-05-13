@@ -3,11 +3,10 @@ import { times } from 'lodash'
 
 import { DATE_PARSE_FORMAT } from '~shared/constants/dates'
 import {
-  AttachmentResponseV3,
+  AttachmentFieldResponseV3,
   CheckboxFieldResponsesV3,
   ChildrenCompoundFieldResponsesV3,
   FieldResponseAnswerMapV3,
-  FieldResponseV3,
   RadioFieldResponsesV3,
   TableFieldResponsesV3,
   VerifiableFieldResponsesV3,
@@ -230,7 +229,10 @@ type FormFieldValueOrFieldResponseAnswerV3<T extends BasicField> =
  */
 export const transformInputsToOutputs = (
   field: FormFieldDto,
-  input?: Exclude<FormFieldValue | FieldResponseV3, AttachmentResponseV3>,
+  input?: Exclude<
+    FormFieldValue | FieldResponseAnswerMapV3,
+    AttachmentFieldResponseV3
+  >,
 ): FieldResponse | null => {
   switch (field.fieldType) {
     case BasicField.Section:
