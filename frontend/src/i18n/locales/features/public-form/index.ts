@@ -1,5 +1,4 @@
 export * from './en-sg'
-export * from './zh-sg'
 
 export interface PublicForm {
   errors: {
