@@ -114,4 +114,5 @@ export type ChildrenCompoundFieldResponsesV3 = {
 export type AttachmentFieldResponseV3 = {
   hasBeenScanned: boolean
   answer: string
+  md5Hash?: string
 }
