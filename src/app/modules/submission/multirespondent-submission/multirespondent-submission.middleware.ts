@@ -1,4 +1,5 @@
 import { celebrate, Joi, Segments } from 'celebrate'
+import crypto from 'crypto'
 import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -291,6 +292,12 @@ export const scanAndRetrieveAttachments = async (
   for (const idTaggedAttachmentResponse of scanAndRetrieveFilesResult.value) {
     const { id, ...attachmentResponse } = idTaggedAttachmentResponse
     attachmentResponse.answer.hasBeenScanned = true
+    // Store the md5 hash in the DB as well for comparison later on.
+    attachmentResponse.answer.md5Hash = crypto
+      .createHash('md5')
+      .update(Buffer.from(attachmentResponse.answer.content))
+      .digest()
+      .toString()
     req.body.responses[id] = attachmentResponse
   }
 
@@ -456,18 +463,6 @@ export const validateMultirespondentSubmission = async (
                   nonEditableFieldIdsWithResponses.map((fieldId) => {
                     const incomingResField = req.body.responses[fieldId]
                     const prevResField = previousResponses[fieldId]
-
-                    // TODO(FRM-1724): Reenable this validation.
-                    if (prevResField.fieldType === BasicField.Attachment) {
-                      // prevResField.answer.content = Buffer.from(
-                      //   /**
-                      //    * JSON.parse(JSON.stringify(fooBuffer)) does not fully reconstruct the Buffer object
-                      //    * it gets parsed as { type: 'Buffer', data: number[] } instead of the original Buffer object
-                      //    */
-                      //   // @ts-expect-error data does not exist on Buffer
-                      //   prevResField.answer.content.data,
-                      // )
-                    }
 
                     const resp = isFieldResponseV3Equal(
                       incomingResField,

@@ -1,6 +1,7 @@
 import _ from 'lodash'
 
 import { BasicField, FieldResponseV3 } from '../../../shared/types'
+import { ParsedClearAttachmentResponseV3 } from '../../types/api'
 
 export const isFieldResponseV3Equal = (
   l: FieldResponseV3,
@@ -29,26 +30,16 @@ export const isFieldResponseV3Equal = (
     case BasicField.Children:
       return _.isEqual(l.answer, r.answer)
     case BasicField.Attachment: {
-      return true
-      // TODO(FRM-1724): Re-enable this validation
-      /**
       const lAnswer = l.answer as ParsedClearAttachmentResponseV3['answer']
       const rAnswer = r.answer as ParsedClearAttachmentResponseV3['answer']
 
-      const lMd5 = crypto
-        .createHash('md5')
-        .update(Buffer.from(lAnswer.content))
-        .digest()
-
-      const rMd5 = crypto
-        .createHash('md5')
-        .update(Buffer.from(rAnswer.content))
-        .digest()
+      const lMd5 = lAnswer.md5Hash
+      const rMd5 = rAnswer.md5Hash
 
       return (
-        lMd5.equals(rMd5) && l.answer.hasBeenScanned === rAnswer.hasBeenScanned
+        (!lMd5 || !rMd5 || lMd5 === rMd5) &&
+        l.answer.hasBeenScanned === rAnswer.hasBeenScanned
       )
-      */
     }
     case BasicField.Section:
       return true

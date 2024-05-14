@@ -2,6 +2,16 @@ import { format, parse } from 'date-fns'
 import { times } from 'lodash'
 
 import { DATE_PARSE_FORMAT } from '~shared/constants/dates'
+import {
+  AttachmentFieldResponseV3,
+  CheckboxFieldResponsesV3,
+  ChildrenCompoundFieldResponsesV3,
+  FieldResponseAnswerMapV3,
+  RadioFieldResponsesV3,
+  TableFieldResponsesV3,
+  VerifiableFieldResponsesV3,
+  YesNoFieldResponseV3,
+} from '~shared/types'
 import { BasicField, FormFieldDto } from '~shared/types/field'
 import {
   AttachmentResponse,
@@ -55,7 +65,7 @@ const transformToVerifiableOutput = <
   F extends EmailFieldSchema | MobileFieldSchema,
 >(
   schema: F,
-  input?: VerifiableFieldValues,
+  input?: VerifiableFieldValues | VerifiableFieldResponsesV3,
 ): VerifiableAnswerOutput<F> => {
   return {
     ...pickBaseOutputFromSchema(schema),
@@ -89,7 +99,7 @@ const transformToDateOutput = (
 
 const transformToYesNoOutput = (
   schema: YesNoFieldSchema,
-  input?: YesNoFieldValue,
+  input?: YesNoFieldValue | YesNoFieldResponseV3,
 ): SingleAnswerOutput<YesNoFieldSchema> => {
   return {
     ...pickBaseOutputFromSchema(schema),
@@ -99,7 +109,7 @@ const transformToYesNoOutput = (
 
 const transformToTableOutput = (
   schema: TableFieldSchema,
-  input?: TableFieldValues,
+  input?: TableFieldValues | TableFieldResponsesV3,
 ): TableResponse => {
   // Build table shape
   // Set default input if undefined.
@@ -134,7 +144,7 @@ const transformToAttachmentOutput = (
 
 const transformToCheckboxOutput = (
   schema: CheckboxFieldSchema,
-  input?: CheckboxFieldValues,
+  input?: CheckboxFieldValues | CheckboxFieldResponsesV3,
 ): CheckboxResponse => {
   let answerArray: string[] = []
   if (input !== undefined && input.value) {
@@ -158,15 +168,20 @@ const transformToCheckboxOutput = (
 
 const transformToRadioOutput = (
   schema: RadioFieldSchema,
-  input?: RadioFieldValues,
+  input?: RadioFieldValues | RadioFieldResponsesV3,
 ): RadioResponse => {
   let answer = ''
   if (input !== undefined) {
-    answer = input.value
-    const isOthersInput = answer === RADIO_OTHERS_INPUT_VALUE
-    // Others is selected, so we need to use the input at othersInput for the answer instead.
-    if (isOthersInput) {
-      answer = `Others: ${input.othersInput}`
+    if ('value' in input) {
+      // RadioFieldValues, or value response in V3
+      answer = input.value
+      if (answer === RADIO_OTHERS_INPUT_VALUE && 'othersInput' in input) {
+        // Others is selected, so we need to use the input at othersInput for the answer instead.
+        answer = `Others: ${input.othersInput}`
+      }
+    } else {
+      // "Others" response in V3
+      answer = input.othersInput
     }
   }
   return {
@@ -187,7 +202,7 @@ const transformToSectionOutput = (
 
 const transformToChildOutput = (
   schema: ChildrenCompoundFieldSchema,
-  input?: ChildrenCompoundFieldValues,
+  input?: ChildrenCompoundFieldValues | ChildrenCompoundFieldResponsesV3,
 ): ChildBirthRecordsResponse => {
   const noOfChildrenSubFields = schema.childrenSubFields?.length ?? 1
   let answerArray: string[][]
@@ -202,6 +217,10 @@ const transformToChildOutput = (
   }
 }
 
+type FormFieldValueOrFieldResponseAnswerV3<T extends BasicField> =
+  | FormFieldValue<T>
+  | FieldResponseAnswerMapV3<T>
+
 /**
  * Transforms form inputs to their desire output shapes for sending to the server
  * @param field schema to retrieve base field info
@@ -210,7 +229,10 @@ const transformToChildOutput = (
  */
 export const transformInputsToOutputs = (
   field: FormFieldDto,
-  input?: FormFieldValue,
+  input?: Exclude<
+    FormFieldValue | FieldResponseAnswerMapV3,
+    AttachmentFieldResponseV3
+  >,
 ): FieldResponse | null => {
   switch (field.fieldType) {
     case BasicField.Section:
@@ -218,23 +240,23 @@ export const transformInputsToOutputs = (
     case BasicField.Checkbox:
       return transformToCheckboxOutput(
         field,
-        input as FormFieldValue<typeof field.fieldType>,
+        input as FormFieldValueOrFieldResponseAnswerV3<typeof field.fieldType>,
       )
     case BasicField.Radio:
       return transformToRadioOutput(
         field,
-        input as FormFieldValue<typeof field.fieldType>,
+        input as FormFieldValueOrFieldResponseAnswerV3<typeof field.fieldType>,
       )
     case BasicField.Table:
       return transformToTableOutput(
         field,
-        input as FormFieldValue<typeof field.fieldType>,
+        input as FormFieldValueOrFieldResponseAnswerV3<typeof field.fieldType>,
       )
     case BasicField.Email:
     case BasicField.Mobile:
       return transformToVerifiableOutput(
         field,
-        input as FormFieldValue<typeof field.fieldType>,
+        input as FormFieldValueOrFieldResponseAnswerV3<typeof field.fieldType>,
       )
     case BasicField.Attachment:
       return transformToAttachmentOutput(
@@ -244,12 +266,12 @@ export const transformInputsToOutputs = (
     case BasicField.Date:
       return transformToDateOutput(
         field,
-        input as FormFieldValue<typeof field.fieldType>,
+        input as FormFieldValueOrFieldResponseAnswerV3<typeof field.fieldType>,
       )
     case BasicField.YesNo:
       return transformToYesNoOutput(
         field,
-        input as FormFieldValue<typeof field.fieldType>,
+        input as FormFieldValueOrFieldResponseAnswerV3<typeof field.fieldType>,
       )
     case BasicField.Number:
     case BasicField.Decimal:
@@ -263,7 +285,7 @@ export const transformInputsToOutputs = (
     case BasicField.Uen:
       return transformToSingleAnswerOutput(
         field,
-        input as FormFieldValue<typeof field.fieldType>,
+        input as FormFieldValueOrFieldResponseAnswerV3<typeof field.fieldType>,
       )
     case BasicField.Statement:
     case BasicField.Image:
@@ -272,7 +294,7 @@ export const transformInputsToOutputs = (
     case BasicField.Children:
       return transformToChildOutput(
         field,
-        input as FormFieldValue<typeof field.fieldType>,
+        input as FormFieldValueOrFieldResponseAnswerV3<typeof field.fieldType>,
       )
   }
 }
