@@ -10,6 +10,15 @@
       "rules": {
         "@typescript-eslint/no-unused-vars": "error"
       }
+    },
+    {
+      "files": [
+        "**/__tests__/**/*.[jt]s?(x)",
+        "**/?(*.)+(spec|test).[jt]s?(x)"
+      ],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off"
+      }
     }
   ],
   "env": { "es6": true },
