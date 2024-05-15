@@ -61,7 +61,7 @@ jobs:
           autoAcceptChanges: develop
           exitOnceUploaded: true
           onlyChanged: true
-          storybookBaseDir: frontend/.storybook
+          storybookBaseDir: frontend
           # Skip running Chromatic on dependabot PRs
           skip: dependabot/**
           # Only run when the frontend directory has changes
