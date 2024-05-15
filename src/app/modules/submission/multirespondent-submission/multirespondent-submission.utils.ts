@@ -13,7 +13,7 @@ import { MultirespondentSubmissionData } from '../../../../types'
 import { InvalidWorkflowTypeError } from '../submission.errors'
 
 /**
- * Creates and returns a StorageModeSubmissionDto object from submissionData and
+ * Creates and returns a MultirespondentSubmissionDto object from submissionData and
  * attachment presigned urls.
  */
 export const createMultirespondentSubmissionDto = (
@@ -37,6 +37,7 @@ export const createMultirespondentSubmissionDto = (
     attachmentMetadata: attachmentPresignedUrls,
     version: submissionData.version,
     workflowStep: submissionData.workflowStep,
+    mrfVersion: submissionData.mrfVersion,
   }
 }
 

@@ -83,6 +83,16 @@ export const IndividualResponsePage = (): JSX.Element => {
   const { secretKey } = useStorageResponsesContext()
   const { data, isLoading, isError } = useIndividualSubmission()
 
+  // Logic to determine which key to use to decrypt attachments.
+  const attachmentDecryptionKey =
+    // If no submission secret key present, it is a storage mode form. So, use form secret key.
+    !data?.submissionSecretKey
+      ? secretKey
+      : // It's an mrf, but old version
+      !data.mrfVersion
+      ? secretKey
+      : data.submissionSecretKey
+
   const attachmentDownloadUrls = useMemo(() => {
     const attachmentDownloadUrls = new Map()
     data?.responses.forEach(({ questionNumber, downloadUrl, answer }) => {
@@ -98,20 +108,20 @@ export const IndividualResponsePage = (): JSX.Element => {
   const { downloadAttachmentsAsZipMutation } = useMutateDownloadAttachments()
 
   const handleDownload = useCallback(() => {
-    if (attachmentDownloadUrls.size === 0 || !secretKey) return
+    if (attachmentDownloadUrls.size === 0 || !attachmentDecryptionKey) return
     return downloadAttachmentsAsZipMutation.mutate({
       attachmentDownloadUrls,
-      secretKey,
+      secretKey: attachmentDecryptionKey,
       fileName: `RefNo ${submissionId}.zip`,
     })
   }, [
     attachmentDownloadUrls,
     downloadAttachmentsAsZipMutation,
-    secretKey,
+    attachmentDecryptionKey,
     submissionId,
   ])
 
-  if (!secretKey)
+  if (!secretKey || !attachmentDecryptionKey)
     return (
       <SecretKeyVerification
         heroSvg={<FormActivationSvg />}
@@ -192,7 +202,11 @@ export const IndividualResponsePage = (): JSX.Element => {
           <>
             <Stack spacing="1.5rem" divider={<StackDivider />}>
               {data?.responses.map((r, idx) => (
-                <DecryptedRow row={r} secretKey={secretKey} key={idx} />
+                <DecryptedRow
+                  row={r}
+                  attachmentDecryptionKey={attachmentDecryptionKey}
+                  key={idx}
+                />
               ))}
               <Box />
             </Stack>

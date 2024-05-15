@@ -20,6 +20,7 @@ export const VariablePaymentItemDetailsBlock = ({
   paymentItemName,
   paymentMin: _paymentMin,
   paymentMax: _paymentMax,
+  globalMinAmountOverride,
 }: VariableItemDetailProps): JSX.Element => {
   const {
     control,
@@ -39,7 +40,11 @@ export const VariablePaymentItemDetailsBlock = ({
       [PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID]: string
     },
     typeof PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID
-  >({ lesserThanCents: paymentMax, greaterThanCents: paymentMin })
+  >({
+    lesserThanCents: paymentMax,
+    greaterThanCents: paymentMin,
+    overrideMinAmount: globalMinAmountOverride,
+  })
 
   const amountHint = `Enter an amount between ${centsToDollarString(
     paymentMin,

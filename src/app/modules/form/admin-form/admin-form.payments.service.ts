@@ -52,7 +52,10 @@ export const updatePayments = (
     if (min_amount > max_amount) {
       return errAsync(new InvalidPaymentAmountError())
     }
-    if (min_amount < paymentConfig.minPaymentAmountCents) {
+    const minAmountCents =
+      newPayments.global_min_amount_override ||
+      paymentConfig.minPaymentAmountCents
+    if (min_amount < minAmountCents) {
       return errAsync(new InvalidPaymentAmountError())
     }
     if (max_amount > paymentConfig.maxPaymentAmountCents) {

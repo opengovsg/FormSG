@@ -297,7 +297,14 @@ const _handleUpdatePayments: ControllerHandler<
           : ok(form),
       )
       // Step 4: User has permissions, proceed to allow updating of start page
-      .andThen(() => AdminFormPaymentService.updatePayments(formId, req.body))
+      .andThen((form) => {
+        return AdminFormPaymentService.updatePayments(formId, {
+          ...req.body,
+          // prevent APIs from updating global_min_amount_override
+          global_min_amount_override:
+            form.payments_field.global_min_amount_override,
+        })
+      })
       .map((updatedPayments) =>
         res.status(StatusCodes.OK).json(updatedPayments),
       )
@@ -380,9 +387,7 @@ const updatePaymentsValidator = celebrate({
       is: Joi.equal(true),
       then: Joi.when('payment_type', {
         is: Joi.equal(PaymentType.Fixed),
-        then: JoiInt.min(paymentConfig.minPaymentAmountCents)
-          .max(paymentConfig.maxPaymentAmountCents)
-          .required(),
+        then: JoiInt.max(paymentConfig.maxPaymentAmountCents).required(),
         otherwise: JoiInt,
       }),
       otherwise: JoiInt,
@@ -392,9 +397,7 @@ const updatePaymentsValidator = celebrate({
       is: Joi.equal(true),
       then: Joi.when('payment_type', {
         is: Joi.equal(PaymentType.Variable),
-        then: JoiInt.positive()
-          .min(paymentConfig.minPaymentAmountCents)
-          .required(),
+        then: JoiInt.positive().required(),
         otherwise: JoiInt,
       }),
       otherwise: JoiInt,
@@ -452,6 +455,8 @@ const updatePaymentsValidator = celebrate({
       is: Joi.equal(true),
       then: Joi.boolean().required(),
     }),
+
+    global_min_amount_override: JoiInt.positive().allow(0).optional(),
   },
 })
 

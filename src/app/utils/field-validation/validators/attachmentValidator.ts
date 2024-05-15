@@ -44,6 +44,12 @@ const makeAttachmentSizeValidator: AttachmentValidatorConstructor =
   (attachmentField) => (response) => {
     const { attachmentSize } = attachmentField
     const byteSizeLimit = parseInt(attachmentSize) * MB
+
+    // Check if the attachment content is empty
+    if (response.content.byteLength === 0) {
+      return left(`AttachmentValidator:\t File is empty.`)
+    }
+
     return response.content.byteLength <= byteSizeLimit
       ? right(response)
       : left(`AttachmentValidator:\t File size more than limit`)

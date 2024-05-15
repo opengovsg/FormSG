@@ -1,4 +1,5 @@
 import {
+  MyInfoAttribute,
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../../shared/types'
@@ -69,3 +70,14 @@ export type SubmitEncryptModeFormHandlerType = ControllerHandler<
 
 export type SubmitEncryptModeFormHandlerRequest =
   Parameters<SubmitEncryptModeFormHandlerType>[0] & { formsg: FormCompleteDto }
+
+export type EncryptSubmissionContent = {
+  form: IPopulatedEncryptedForm['_id']
+  auth: IPopulatedEncryptedForm['authType']
+  myInfoFields: MyInfoAttribute[]
+  encryptedContent: string
+  verifiedContent: string | undefined
+  attachmentMetadata: Map<string, string>
+  version: number
+  responseMetadata: EncryptSubmissionDto['responseMetadata']
+}

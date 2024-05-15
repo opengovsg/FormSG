@@ -1,6 +1,9 @@
 import { CaptchaTypes } from '../../../../../shared/types/captcha'
 import { IPopulatedForm } from '../../../../types'
-import { createLoggerWithLabel } from '../../../config/logger'
+import {
+  createLoggerWithLabel,
+  CustomLoggerParams,
+} from '../../../config/logger'
 import * as CaptchaService from '../../../services/captcha/captcha.service'
 import * as TurnstileService from '../../../services/turnstile/turnstile.service'
 import { Middleware } from '../../../utils/pipeline-middleware'
@@ -11,9 +14,12 @@ import { mapRouteError } from '../submission.utils'
 const logger = createLoggerWithLabel(module)
 
 type FormSubmissionPipelineContext = {
+  // FIXME: Replace with actual request and response types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   req: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   res: any
-  logMeta: { [other: string]: any; action: string }
+  logMeta: CustomLoggerParams['meta']
   form: IPopulatedForm
 }
 

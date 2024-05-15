@@ -12,7 +12,9 @@ declare module 'JSONStream' {
     recurse: boolean
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   export declare function parse(pattern: any): NodeJS.ReadWriteStream
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   export declare function parse(patterns: any[]): NodeJS.ReadWriteStream
 
   /**

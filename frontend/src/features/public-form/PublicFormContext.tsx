@@ -68,7 +68,8 @@ export interface PublicFormContextProps
 
   encryptedPreviousSubmission?: MultirespondentSubmissionDto
   previousSubmission?: ReturnType<typeof decryptSubmission>
-  setPreviousSubmission: (
+  previousAttachments?: Record<string, ArrayBuffer>
+  setPreviousSubmission?: (
     previousSubmission: ReturnType<typeof decryptSubmission>,
   ) => void
 }

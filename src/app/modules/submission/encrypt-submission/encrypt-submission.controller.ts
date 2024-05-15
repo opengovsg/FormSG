@@ -19,10 +19,17 @@ import {
   IPopulatedEncryptedForm,
   StripePaymentMetadataDto,
 } from '../../../../types'
-import { FormCompleteDto } from '../../../../types/api'
+import {
+  EncryptSubmissionDto,
+  FormCompleteDto,
+  ParsedClearFormFieldResponse,
+} from '../../../../types/api'
 import config from '../../../config/config'
 import { paymentConfig } from '../../../config/features/payment.config'
-import { createLoggerWithLabel } from '../../../config/logger'
+import {
+  createLoggerWithLabel,
+  CustomLoggerParams,
+} from '../../../config/logger'
 import { stripe } from '../../../loaders/stripe'
 import getPaymentModel from '../../../models/payment.server.model'
 import { getEncryptPendingSubmissionModel } from '../../../models/pending_submission.server.model'
@@ -59,6 +66,7 @@ import {
   performEncryptPostSubmissionActions,
 } from './encrypt-submission.service'
 import {
+  EncryptSubmissionContent,
   SubmitEncryptModeFormHandlerRequest,
   SubmitEncryptModeFormHandlerType,
 } from './encrypt-submission.types'
@@ -89,7 +97,7 @@ const submitEncryptModeForm = async (
   }
 
   const formDef = req.formsg.formDef
-  const form = req.formsg.encryptedFormDef
+  const form: IPopulatedEncryptedForm = req.formsg.encryptedFormDef
 
   setFormTags(formDef)
 
@@ -292,9 +300,9 @@ const submitEncryptModeForm = async (
     }
   }
 
-  const submissionContent = {
+  const submissionContent: EncryptSubmissionContent = {
     form: form._id,
-    authType: form.authType,
+    auth: form.authType,
     myInfoFields: form.getUniqueMyInfoAttrs(),
     encryptedContent: encryptedContent,
     verifiedContent: verified,
@@ -349,7 +357,11 @@ const _createPaymentSubmission = async ({
   res: Parameters<SubmitEncryptModeFormHandlerType>[1]
   form: IPopulatedEncryptedForm
   paymentProducts: StorageModeSubmissionContentDto['paymentProducts']
-  [others: string]: any
+  responseMetadata: EncryptSubmissionDto['responseMetadata']
+  responses: ParsedClearFormFieldResponse[]
+  formId: string
+  submissionContent: EncryptSubmissionContent
+  logMeta: CustomLoggerParams['meta']
 }) => {
   const encryptedPayload = req.formsg.encryptedPayload
 
@@ -373,9 +385,23 @@ const _createPaymentSubmission = async ({
   })
 
   // Step 0: Perform validation checks
+  if (!amount) {
+    logger.error({
+      message: 'Error when creating payment: amount is missing',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message:
+        "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+    })
+  }
+
+  const paymentMinAmount =
+    form.payments_field.global_min_amount_override ||
+    paymentConfig.minPaymentAmountCents
+
   if (
-    !amount ||
-    amount < paymentConfig.minPaymentAmountCents ||
+    amount < paymentMinAmount ||
     amount > paymentConfig.maxPaymentAmountCents
   ) {
     logger.error({
@@ -571,7 +597,11 @@ const _createSubmission = async ({
 }: {
   req: Parameters<SubmitEncryptModeFormHandlerType>[0]
   res: Parameters<SubmitEncryptModeFormHandlerType>[1]
-  [others: string]: any
+  responseMetadata: EncryptSubmissionDto['responseMetadata']
+  responses: ParsedClearFormFieldResponse[]
+  formId: string
+  submissionContent: EncryptSubmissionContent
+  logMeta: CustomLoggerParams['meta']
 }) => {
   const submission = new EncryptSubmission(submissionContent)
 
