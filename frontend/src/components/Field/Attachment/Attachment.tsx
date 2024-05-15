@@ -194,7 +194,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
           if (file.size === 0) {
             return {
               code: 'file-empty',
-              message: `You have uploaded an empty file, please upload a valid attachment`,
+              message: `You have uploaded an empty file, please upload another valid attachment`,
             }
           }
         }
