@@ -8,13 +8,13 @@ import {
 } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { SubmitHandler } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
 import { useGrowthBook } from '@growthbook/growthbook-react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
 import get from 'lodash/get'
-import simplur from 'simplur'
 
 import {
   featureFlags,
@@ -125,6 +125,8 @@ export const PublicFormProvider = ({
   children,
   startTime,
 }: PublicFormProviderProps): JSX.Element => {
+  const { t } = useTranslation()
+
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
   const [numVisibleFields, setNumVisibleFields] = useState(0)
@@ -346,11 +348,10 @@ export const PublicFormProvider = ({
     if (data?.myInfoError) {
       toast({
         status: 'danger',
-        description:
-          'Your Myinfo details could not be retrieved. Refresh your browser and log in, or try again later.',
+        description: t('features.publicForm.errors.myinfo'),
       })
     }
-  }, [data, toast])
+  }, [data, toast, t])
 
   const showErrorToast = useCallback(
     (error, form: PublicFormDto) => {
@@ -359,11 +360,11 @@ export const PublicFormProvider = ({
         description:
           error instanceof Error
             ? error.message
-            : 'An error occurred whilst processing your submission. Please refresh and try again.',
+            : t('features.publicForm.errors.submitFailure'),
       })
       trackSubmitFormFailure(form)
     },
-    [toast],
+    [toast, t],
   )
 
   useEffect(() => {
@@ -382,23 +383,19 @@ export const PublicFormProvider = ({
       !!previousSubmissionId
 
     if (isFormNotFound || isNonMultirespondentFormWithPreviousSubmissionId) {
+      const title = t('features.publicForm.errors.notFound')
       return {
-        title: 'Form not found',
-        header: 'This form is not available.',
-        message: error?.message || 'Form not found',
+        title,
+        header: t('features.publicForm.errors.notAvailable'),
+        message: error?.message ?? title,
       }
     }
 
     // Decryption failed for previous submission
     if (isSubmissionSecretKeyInvalid) {
-      return {
-        title: 'Invalid form link',
-        header: 'This form link is no longer valid.',
-        message:
-          'A submission may have already been made using this link. If you think this is a mistake, please contact the agency that gave you the form link.',
-      }
+      return t('features.publicForm.errors.submissionSecretKeyInvalid')
     }
-  }, [error, data, previousSubmissionId, isSubmissionSecretKeyInvalid])
+  }, [error, data, previousSubmissionId, isSubmissionSecretKeyInvalid, t])
 
   const generateVfnExpiryToast = useCallback(() => {
     if (vfnToastIdRef.current) {
@@ -413,14 +410,12 @@ export const PublicFormProvider = ({
         duration: null,
         status: 'warning',
         isClosable: true,
-        description: simplur`Your verified field[|s] ${[
-          numVerifiable,
-        ]} [has|have] expired. Please verify [the|those] ${[
-          numVerifiable,
-        ]} field[|s] again.`,
+        description: t('features.publicForm.errors.verifiedFieldExpired', {
+          count: numVerifiable,
+        }),
       })
     }
-  }, [data?.form.form_fields, toast, vfnToastIdRef])
+  }, [data?.form.form_fields, toast, vfnToastIdRef, t])
 
   const {
     submitEmailModeFormMutation,

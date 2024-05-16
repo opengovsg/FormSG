@@ -643,11 +643,10 @@ describe('public-form.controller', () => {
         // Arrange
         // 1. Mock the response
         const mockRes = expressHandler.mockResponse()
-        const MOCK_ERROR_STRING = 'Your form was eaten up by a monster'
 
         // 2. Mock the call to retrieve the form
         MockAuthService.getFormIfPublic.mockReturnValueOnce(
-          errAsync(new FormNotFoundError(MOCK_ERROR_STRING)),
+          errAsync(new FormNotFoundError()),
         )
 
         // Act
@@ -668,7 +667,7 @@ describe('public-form.controller', () => {
         ).not.toHaveBeenCalled()
         expect(mockRes.status).toHaveBeenCalledWith(404)
         expect(mockRes.json).toHaveBeenCalledWith({
-          message: MOCK_ERROR_STRING,
+          message: 'Form not found',
         })
       })
 
