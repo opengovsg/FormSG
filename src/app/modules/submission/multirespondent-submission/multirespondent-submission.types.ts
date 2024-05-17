@@ -1,11 +1,10 @@
-import { IPopulatedMultirespondentForm } from 'src/types'
-
 import {
   AttachmentResponseV3,
   MyInfoAttribute,
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../../shared/types'
+import { IPopulatedMultirespondentForm } from '../../../../../src/types'
 import {
   MultirespondentFormCompleteDto,
   MultirespondentFormLoadedDto,
@@ -87,6 +86,7 @@ export type MultirespondentSubmissionContent = {
   attachmentMetadata: Map<string, string>
   version: number
   workflowStep: number
+  mrfVersion: number
 }
 
 export type StrippedAttachmentResponseV3 = AttachmentResponseV3 & {
