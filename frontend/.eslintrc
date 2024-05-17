@@ -4,12 +4,13 @@
   "extends": [
     "eslint:recommended",
     "plugin:prettier/recommended",
-    "plugin:storybook/recommended"
+    "plugin:storybook/recommended",
+    "plugin:react-hooks/recommended"
   ],
   "overrides": [
     {
       "files": ["*.ts", "*.tsx"],
-      "extends": ["react-app", "plugin:@typescript-eslint/recommended"],
+      "extends": ["plugin:@typescript-eslint/recommended"],
       "parser": "@typescript-eslint/parser",
       "rules": {
         "@typescript-eslint/no-unused-vars": "warn"
@@ -26,10 +27,12 @@
         "**/__tests__/**/*.[jt]s?(x)",
         "**/?(*.)+(spec|test).[jt]s?(x)"
       ],
-      "extends": ["react-app/jest", "plugin:testing-library/react"],
+      "extends": ["plugin:testing-library/react"],
       "rules": {
         "@typescript-eslint/no-non-null-assertion": "off",
-        "testing-library/no-unnecessary-act": "off"
+        "testing-library/no-unnecessary-act": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "no-unsafe-optional-chaining": "off"
       }
     }
   ],

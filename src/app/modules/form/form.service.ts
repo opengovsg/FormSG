@@ -481,7 +481,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
     }
 
     case BasicField.Table: {
-      const noOfTableRows = field.minimumRows
+      const noOfTableRows = field.minimumRows || 0
       const noOfTableCols = field.columns.length
       const tableSampleValue = []
       for (let row = 0; row < noOfTableRows; row++) {
@@ -563,7 +563,10 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
 export const createSampleSubmissionResponses = (
   formFields: FormFieldDto<FormField>[],
 ) => {
-  const sampleData: Record<string, any> = {}
+  const sampleData: Record<
+    string,
+    ReturnType<typeof createSingleSampleSubmissionAnswer>
+  > = {}
   formFields.forEach((field) => {
     const answer = createSingleSampleSubmissionAnswer(field)
     if (!answer) return

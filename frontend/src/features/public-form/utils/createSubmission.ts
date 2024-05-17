@@ -33,7 +33,7 @@ import { validateResponses } from './validateResponses'
 
 /**
  * @returns StorageModeSubmissionContentDto
- * @throw Error if form inputs are invalid.
+ * @throws Error if form inputs are invalid.
  */
 export const createEncryptedSubmissionData = async ({
   formFields,

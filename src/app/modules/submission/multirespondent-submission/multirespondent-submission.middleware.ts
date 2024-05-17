@@ -1,4 +1,5 @@
 import { celebrate, Joi, Segments } from 'celebrate'
+import crypto from 'crypto'
 import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -13,6 +14,7 @@ import { isDev } from '../../../../app/config/config'
 import {
   ParsedClearAttachmentResponseV3,
   ParsedClearFormFieldResponsesV3,
+  ParsedClearFormFieldResponseV3,
 } from '../../../../types/api'
 import { MultirespondentFormLoadedDto } from '../../../../types/api/multirespondent_submission'
 import formsgSdk from '../../../config/formsg-sdk'
@@ -54,6 +56,7 @@ import {
   MultirespondentSubmissionMiddlewareHandlerType,
   ProcessedMultirespondentSubmissionHandlerRequest,
   ProcessedMultirespondentSubmissionHandlerType,
+  StrippedAttachmentResponseV3,
 } from './multirespondent-submission.types'
 
 const logger = createLoggerWithLabel(module)
@@ -291,6 +294,12 @@ export const scanAndRetrieveAttachments = async (
   for (const idTaggedAttachmentResponse of scanAndRetrieveFilesResult.value) {
     const { id, ...attachmentResponse } = idTaggedAttachmentResponse
     attachmentResponse.answer.hasBeenScanned = true
+    // Store the md5 hash in the DB as well for comparison later on.
+    attachmentResponse.answer.md5Hash = crypto
+      .createHash('md5')
+      .update(Buffer.from(attachmentResponse.answer.content))
+      .digest()
+      .toString()
     req.body.responses[id] = attachmentResponse
   }
 
@@ -457,17 +466,6 @@ export const validateMultirespondentSubmission = async (
                     const incomingResField = req.body.responses[fieldId]
                     const prevResField = previousResponses[fieldId]
 
-                    if (prevResField.fieldType === BasicField.Attachment) {
-                      prevResField.answer.content = Buffer.from(
-                        /**
-                         * JSON.parse(JSON.stringify(fooBuffer)) does not fully reconstruct the Buffer object
-                         * it gets parsed as { type: 'Buffer', data: number[] } instead of the original Buffer object
-                         */
-                        // @ts-expect-error data does not exist on Buffer
-                        prevResField.answer.content.data,
-                      )
-                    }
-
                     const resp = isFieldResponseV3Equal(
                       incomingResField,
                       prevResField,
@@ -587,7 +585,11 @@ export const encryptSubmission = async (
   const responses = req.body.responses
 
   const attachmentsMap: Record<string, Buffer> = {}
-  const strippedAttachmentResponses: Record<string, any> = {}
+
+  const strippedAttachmentResponses: Record<
+    string,
+    ParsedClearFormFieldResponseV3 | StrippedAttachmentResponseV3
+  > = {}
 
   // Populate attachment map
   for (const id of Object.keys(responses)) {
@@ -603,19 +605,19 @@ export const encryptSubmission = async (
     }
   }
 
-  const encryptedAttachments =
-    await getEncryptedAttachmentsMapFromAttachmentsMap(
-      attachmentsMap,
-      formPublicKey,
-      req.body.version,
-    )
-
   const {
     encryptedContent,
     encryptedSubmissionSecretKey,
     submissionSecretKey,
     submissionPublicKey,
-  } = formsgSdk.cryptoV3.encrypt(responses, formPublicKey)
+  } = formsgSdk.cryptoV3.encrypt(strippedAttachmentResponses, formPublicKey)
+
+  const encryptedAttachments =
+    await getEncryptedAttachmentsMapFromAttachmentsMap(
+      attachmentsMap,
+      submissionPublicKey,
+      req.body.version,
+    )
 
   req.formsg.encryptedPayload = {
     attachments: encryptedAttachments,
@@ -627,6 +629,13 @@ export const encryptSubmission = async (
     version: req.body.version,
     workflowStep: req.body.workflowStep,
     responses,
+    /**
+     * MRF Version: 1
+     * ====================
+     * - Encrypted payload does not contain attachment contents
+     * - Encrypted Attachment now encrypted by mrf / submission Public Key instead of Form Public Key
+     */
+    mrfVersion: 1,
   }
 
   return next()

@@ -16,7 +16,7 @@ export interface DecryptedRowBaseProps {
   row: AugmentedDecryptedResponse
 }
 type DecryptedRowProps = DecryptedRowBaseProps & {
-  secretKey: string
+  attachmentDecryptionKey: string
 }
 
 const DecryptedQuestionLabel = ({ row }: DecryptedRowBaseProps) => {
@@ -62,17 +62,20 @@ const DecryptedTableRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
   )
 }
 
-const DecryptedAttachmentRow = ({ row, secretKey }: DecryptedRowProps) => {
+const DecryptedAttachmentRow = ({
+  row,
+  attachmentDecryptionKey,
+}: DecryptedRowProps) => {
   const { downloadAttachmentMutation } = useMutateDownloadAttachments()
 
   const handleDownload = useCallback(() => {
     if (!row.downloadUrl || !row.answer) return
     return downloadAttachmentMutation.mutate({
       url: row.downloadUrl,
-      secretKey,
+      secretKey: attachmentDecryptionKey,
       fileName: row.answer,
     })
-  }, [downloadAttachmentMutation, row, secretKey])
+  }, [downloadAttachmentMutation, row, attachmentDecryptionKey])
 
   return (
     <Stack>
@@ -102,12 +105,17 @@ const DecryptedAttachmentRow = ({ row, secretKey }: DecryptedRowProps) => {
 }
 
 export const DecryptedRow = memo(
-  ({ row, secretKey }: DecryptedRowProps): JSX.Element => {
+  ({ row, attachmentDecryptionKey }: DecryptedRowProps): JSX.Element => {
     switch (row.fieldType) {
       case BasicField.Section:
         return <DecryptedHeaderRow row={row} />
       case BasicField.Attachment:
-        return <DecryptedAttachmentRow row={row} secretKey={secretKey} />
+        return (
+          <DecryptedAttachmentRow
+            row={row}
+            attachmentDecryptionKey={attachmentDecryptionKey}
+          />
+        )
       case BasicField.Table:
         return <DecryptedTableRow row={row} />
       default:

@@ -73,6 +73,7 @@ export type IForm = Merge<
   SetOptional<FormBase, FormDefaultableKey>,
   {
     // Loosen types here to allow for IPopulatedForm extension
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     admin: any
     permission?: FormPermission[]
     form_fields?: FormFieldSchema[]

@@ -87,7 +87,7 @@ export const usePublicFormMutations = (
     },
   )
 
-  const useSubmitStorageModeFormMutation = (
+  const useSubmitMutationWithAttachmentVirusScanning = (
     f: (
       args: SubmitStorageFormClearArgs & {
         fieldIdToQuarantineKeyMap: FieldIdToQuarantineKeyType[]
@@ -164,20 +164,17 @@ export const usePublicFormMutations = (
       )
     })
 
-  const submitStorageModeFormMutation = useSubmitStorageModeFormMutation(
-    submitStorageModeForm,
-  )
+  const submitStorageModeFormMutation =
+    useSubmitMutationWithAttachmentVirusScanning(submitStorageModeForm)
 
-  const submitStorageModeFormFetchMutation = useSubmitStorageModeFormMutation(
-    submitStorageModeFormWithFetch,
-  )
+  const submitStorageModeFormFetchMutation =
+    useSubmitMutationWithAttachmentVirusScanning(submitStorageModeFormWithFetch)
 
-  const submitMultirespondentFormMutation = useSubmitStorageModeFormMutation(
-    submitMultirespondentForm,
-  )
+  const submitMultirespondentFormMutation =
+    useSubmitMutationWithAttachmentVirusScanning(submitMultirespondentForm)
 
   const updateMultirespondentSubmissionMutation =
-    useSubmitStorageModeFormMutation((args) =>
+    useSubmitMutationWithAttachmentVirusScanning((args) =>
       updateMultirespondentSubmission({ ...args, submissionSecretKey }),
     )
 
