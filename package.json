@@ -153,7 +153,7 @@
     "uuid": "^9.0.0",
     "uuid-by-string": "^4.0.0",
     "validator": "^13.7.0",
-    "web-streams-polyfill": "^3.2.1",
+    "web-streams-polyfill": "^4.0.0",
     "whatwg-fetch": "^3.6.2",
     "winston": "^3.8.2",
     "winston-cloudwatch": "^6.2.0",
