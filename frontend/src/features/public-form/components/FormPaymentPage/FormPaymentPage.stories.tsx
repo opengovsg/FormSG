@@ -48,15 +48,11 @@ export default {
   },
 } as Meta
 
-const Template: (children: React.ReactElement) => Story = (children) => () =>
-  (
-    <PublicFormProvider
-      formId="61540ece3d4a6e50ac0cc6ff"
-      startTime={Date.now()}
-    >
-      <PaymentStack>{children}</PaymentStack>
-    </PublicFormProvider>
-  )
+const Template: (children: React.ReactElement) => Story = (children) => () => (
+  <PublicFormProvider formId="61540ece3d4a6e50ac0cc6ff" startTime={Date.now()}>
+    <PaymentStack>{children}</PaymentStack>
+  </PublicFormProvider>
+)
 
 export const PendingPaymentDetails = Template(
   <FixedPaymentItemDetailsBlock

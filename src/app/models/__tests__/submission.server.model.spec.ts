@@ -526,9 +526,8 @@ describe('Submission Model', () => {
         const minSubCount = 3
 
         // Act
-        const actualResult = await Submission.findFormsWithSubsAbove(
-          minSubCount,
-        )
+        const actualResult =
+          await Submission.findFormsWithSubsAbove(minSubCount)
 
         // Assert
         const expectedResult = formIdsAndCounts.filter(
@@ -564,9 +563,8 @@ describe('Submission Model', () => {
         const minSubCount = 2
 
         // Act
-        const actualResult = await Submission.findFormsWithSubsAbove(
-          minSubCount,
-        )
+        const actualResult =
+          await Submission.findFormsWithSubsAbove(minSubCount)
 
         // Assert
         expect(actualResult).toEqual([])

@@ -26,7 +26,7 @@ import { CLIENT_RADIO_OTHERS_INPUT_VALUE } from '../../constants'
 describe('Logic validation', () => {
   /** Mock a field's bare essentials */
   const makeField = (fieldId: string, fieldType: BasicField) =>
-    ({ _id: fieldId, fieldType } as FormFieldDto)
+    ({ _id: fieldId, fieldType }) as FormFieldDto
 
   /**
    *  Mock a response

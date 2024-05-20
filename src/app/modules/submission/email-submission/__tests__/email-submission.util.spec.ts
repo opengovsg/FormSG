@@ -41,7 +41,7 @@ const getResponse = (_id: string, answer: string): SingleAnswerFieldResponse =>
     fieldType: BasicField.Attachment,
     question: 'mockQuestion',
     answer,
-  } as unknown as SingleAnswerFieldResponse)
+  }) as unknown as SingleAnswerFieldResponse
 
 const ALL_SINGLE_SUBMITTED_RESPONSES = basicTypes
   // Attachments are special cases, requiring filename and content

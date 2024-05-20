@@ -41,7 +41,7 @@ const EDIT_TABLE_FIELD_KEYS = [
 ] as const
 
 export type EditTableInputs = Omit<
-  Pick<TableFieldBase, typeof EDIT_TABLE_FIELD_KEYS[number]>,
+  Pick<TableFieldBase, (typeof EDIT_TABLE_FIELD_KEYS)[number]>,
   'columns' | 'maximumRows' | 'minimumRows'
 > & {
   // Every column must have an ID for react-table to render.

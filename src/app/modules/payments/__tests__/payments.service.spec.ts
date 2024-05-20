@@ -660,9 +660,8 @@ describe('payments.service', () => {
 
     it('should send onboarding email if email domain is valid', async () => {
       // Act
-      const result = await PaymentsService.sendOnboardingEmailIfEligible(
-        MOCK_VALID_EMAIL,
-      )
+      const result =
+        await PaymentsService.sendOnboardingEmailIfEligible(MOCK_VALID_EMAIL)
 
       // Assert
       expect(result.isOk()).toBeTrue()
@@ -675,9 +674,8 @@ describe('payments.service', () => {
       } as unknown as Query<any, any>)
 
       // Act
-      const result = await PaymentsService.sendOnboardingEmailIfEligible(
-        MOCK_VALID_EMAIL,
-      )
+      const result =
+        await PaymentsService.sendOnboardingEmailIfEligible(MOCK_VALID_EMAIL)
 
       // Assert
       expect(result.isErr()).toBeTrue()
@@ -687,9 +685,8 @@ describe('payments.service', () => {
 
     it('should return a InvalidDomainError if string is not an email', async () => {
       // Act
-      const result = await PaymentsService.sendOnboardingEmailIfEligible(
-        'hello@world',
-      )
+      const result =
+        await PaymentsService.sendOnboardingEmailIfEligible('hello@world')
 
       // Assert
       expect(result.isErr()).toBeTrue()
@@ -699,9 +696,8 @@ describe('payments.service', () => {
 
     it('should return a InvalidDomainError if email domain is not whitelisted', async () => {
       // Act
-      const result = await PaymentsService.sendOnboardingEmailIfEligible(
-        'hello@world.com',
-      )
+      const result =
+        await PaymentsService.sendOnboardingEmailIfEligible('hello@world.com')
 
       // Assert
       expect(result.isErr()).toBeTrue()
@@ -718,9 +714,8 @@ describe('payments.service', () => {
       }))
 
       // Act
-      const result = await PaymentsService.sendOnboardingEmailIfEligible(
-        'hello@world.com',
-      )
+      const result =
+        await PaymentsService.sendOnboardingEmailIfEligible('hello@world.com')
 
       // Assert
       expect(result.isErr()).toBeTrue()

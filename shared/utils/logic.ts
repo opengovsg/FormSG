@@ -73,8 +73,8 @@ const trimConditionValue = (condition: FormCondition) => ({
   value: isValueStringArray(condition.value)
     ? condition.value.map((value) => value.trim())
     : typeof condition.value === 'string'
-    ? condition.value.trim()
-    : condition.value,
+      ? condition.value.trim()
+      : condition.value,
   ifValueType: condition.ifValueType,
 })
 

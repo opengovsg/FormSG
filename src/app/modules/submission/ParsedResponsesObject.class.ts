@@ -154,8 +154,6 @@ export default class ParsedResponsesObject {
       if (formField.myInfo?.attr) {
         processingResponse.myInfo = formField.myInfo
         if (formField.myInfo.attr === MyInfoAttribute.ChildrenBirthRecords) {
-          // eslint and prettier fight over the next line.
-          // eslint-disable-next-line @typescript-eslint/no-extra-semi
           ;(
             processingResponse as ProcessedChildrenResponse
           ).childSubFieldsArray =

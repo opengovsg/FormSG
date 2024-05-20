@@ -35,7 +35,7 @@ const EDIT_MYINFO_CHILDREN = ['allowMultiple', 'childrenSubFields'] as const
 type EditMyInfoChildrenProps = EditFieldProps<ChildrenCompoundFieldMyInfo>
 type EditMyInfoChildrenInputs = Pick<
   ChildrenCompoundFieldMyInfo,
-  typeof EDIT_MYINFO_CHILDREN[number]
+  (typeof EDIT_MYINFO_CHILDREN)[number]
 >
 
 export const EditMyInfoChildren = ({

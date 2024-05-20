@@ -66,7 +66,7 @@ const MIN_WIDTH_FOR_2_COL = 405
 
 type EditDateInputs = Pick<
   DateFieldBase,
-  typeof EDIT_DATE_FIELD_KEYS[number]
+  (typeof EDIT_DATE_FIELD_KEYS)[number]
 > & {
   dateValidation: {
     selectedDateValidation: DateSelectedValidation | ''

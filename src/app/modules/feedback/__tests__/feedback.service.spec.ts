@@ -57,9 +57,8 @@ describe('feedback.service', () => {
       const formWithNoFeedback = new ObjectId().toHexString()
 
       // Act
-      const actualResult = await FeedbackService.getFormFeedbackCount(
-        formWithNoFeedback,
-      )
+      const actualResult =
+        await FeedbackService.getFormFeedbackCount(formWithNoFeedback)
 
       // Assert
       expect(actualResult.isOk()).toEqual(true)
@@ -74,13 +73,12 @@ describe('feedback.service', () => {
         () =>
           ({
             exec: () => Promise.reject(new Error('boom')),
-          } as unknown as mongoose.Query<any, any>),
+          }) as unknown as mongoose.Query<any, any>,
       )
 
       // Act
-      const actualResult = await FeedbackService.getFormFeedbackCount(
-        validFormId,
-      )
+      const actualResult =
+        await FeedbackService.getFormFeedbackCount(validFormId)
 
       // Assert
       expect(countSpy).toHaveBeenCalledWith({
@@ -240,7 +238,7 @@ describe('feedback.service', () => {
           ({
             sort: sortSpy,
             exec: () => Promise.reject(new Error('boom')),
-          } as unknown as mongoose.Query<any, any>),
+          }) as unknown as mongoose.Query<any, any>,
       )
 
       // Act
@@ -273,9 +271,8 @@ describe('feedback.service', () => {
         rating: 5,
       })
 
-      const actualResult = await FeedbackService.hasNoPreviousFeedback(
-        MOCK_SUBMISSION_ID,
-      )
+      const actualResult =
+        await FeedbackService.hasNoPreviousFeedback(MOCK_SUBMISSION_ID)
 
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
@@ -303,9 +300,8 @@ describe('feedback.service', () => {
       const existSpy = jest.spyOn(FormFeedback, 'exists')
       existSpy.mockImplementationOnce(() => Promise.reject(new Error('boom')))
 
-      const actualResult = await FeedbackService.hasNoPreviousFeedback(
-        MOCK_SUBMISSION_ID,
-      )
+      const actualResult =
+        await FeedbackService.hasNoPreviousFeedback(MOCK_SUBMISSION_ID)
 
       expect(existSpy).toHaveBeenCalledWith({
         submissionId: MOCK_SUBMISSION_ID,

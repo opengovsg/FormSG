@@ -351,6 +351,6 @@ const getDisplayTableProp = (
       ? 'none'
       : ''
     : reviewProps.count === 0
-    ? 'none'
-    : ''
+      ? 'none'
+      : ''
 }

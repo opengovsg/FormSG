@@ -84,9 +84,8 @@ describe('public-form.service', () => {
         .mockRejectedValueOnce(new Error('some error'))
 
       // Act
-      const actualResult = await PublicFormService.insertFormFeedback(
-        MOCK_FORM_FEEDBACK,
-      )
+      const actualResult =
+        await PublicFormService.insertFormFeedback(MOCK_FORM_FEEDBACK)
 
       // Assert
       expect(insertSpy).toHaveBeenCalledTimes(1)
@@ -121,9 +120,8 @@ describe('public-form.service', () => {
         .mockResolvedValueOnce(MOCK_FORM_FEEDBACK)
 
       // Act
-      const actualResult = await PublicFormService.insertFormFeedback(
-        MOCK_FORM_FEEDBACK,
-      )
+      const actualResult =
+        await PublicFormService.insertFormFeedback(MOCK_FORM_FEEDBACK)
 
       // Assert
       expect(insertSpy).toHaveBeenCalledTimes(1)
@@ -161,9 +159,8 @@ describe('public-form.service', () => {
         })
 
       // Act
-      const createResult = await PublicFormService.createMetatags(
-        MOCK_METATAGS_PARAMS,
-      )
+      const createResult =
+        await PublicFormService.createMetatags(MOCK_METATAGS_PARAMS)
 
       // Assert
       const expectedResults: Metatags = {
@@ -194,9 +191,8 @@ describe('public-form.service', () => {
         })
 
       // Act
-      const createResult = await PublicFormService.createMetatags(
-        MOCK_METATAGS_PARAMS,
-      )
+      const createResult =
+        await PublicFormService.createMetatags(MOCK_METATAGS_PARAMS)
 
       // Assert
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -217,9 +213,8 @@ describe('public-form.service', () => {
         })
 
       // Act
-      const createResult = await PublicFormService.createMetatags(
-        MOCK_METATAGS_PARAMS,
-      )
+      const createResult =
+        await PublicFormService.createMetatags(MOCK_METATAGS_PARAMS)
 
       // Assert
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
