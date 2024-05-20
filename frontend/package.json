@@ -134,7 +134,7 @@
     ]
   },
   "devDependencies": {
-    "@chakra-ui/cli": "^1.9.0",
+    "@chakra-ui/cli": "^2.4.1",
     "@craco/craco": "^6.4.3",
     "@storybook/addon-a11y": "^6.5.5",
     "@storybook/addon-actions": "^6.5.5",
