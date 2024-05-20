@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { Helmet } from 'react-helmet-async'
+import { useTranslation } from 'react-i18next'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
@@ -24,6 +25,7 @@ export const TemplateFormProvider = ({
   formId,
   children,
 }: PreviewFormProviderProps): JSX.Element => {
+  const { t } = useTranslation()
   const { data, isLoading, error, ...rest } = useFormTemplate(formId)
 
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
@@ -95,7 +97,13 @@ export const TemplateFormProvider = ({
         ...rest,
       }}
     >
-      <Helmet title={isFormNotFound ? 'Form not found' : data?.form.title} />
+      <Helmet
+        title={
+          isFormNotFound
+            ? t('features.publicForm.errors.notFound')
+            : data?.form.title
+        }
+      />
       {isFormNotFound ? <FormNotFound message={error?.message} /> : children}
     </PublicFormContext.Provider>
   )

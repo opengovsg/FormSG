@@ -97,6 +97,7 @@ export interface IMultirespondentSubmissionSchema
   form: any
   submissionType: SubmissionType.Multirespondent
   getWebhookView(): Promise<null>
+  mrfVersion: number
 }
 
 // When retrieving from database, the attachmentMetadata type becomes an object
@@ -123,6 +124,7 @@ export type MultirespondentSubmissionCursorData = Pick<
   | 'created'
   | 'id'
   | 'version'
+  | 'mrfVersion'
 > & { attachmentMetadata?: Record<string, string> } & Document
 
 export type SubmissionCursorData =
@@ -156,6 +158,7 @@ export type MultirespondentSubmissionData = {
   | 'created'
   | 'version'
   | 'workflowStep'
+  | 'mrfVersion'
 > &
   Document
 

@@ -43,7 +43,9 @@ import {
   createClearSubmissionWithVirusScanningFormDataV3,
   getAttachmentsMap,
 } from './utils/createSubmission'
+import { convertEncryptedAttachmentToFileContent } from './utils/decryptSubmission'
 import { filterHiddenInputs } from './utils/filterHiddenInputs'
+import { MultirespondentSubmissionDtoWithAttachments } from './types'
 
 export const PUBLIC_FORMS_ENDPOINT = '/forms'
 
@@ -103,10 +105,27 @@ export const getMultirespondentSubmissionById = async ({
 }: {
   formId: string
   submissionId: string
-}): Promise<MultirespondentSubmissionDto> => {
+}): Promise<MultirespondentSubmissionDtoWithAttachments> => {
   return ApiService.get<MultirespondentSubmissionDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/${submissionId}`,
-  ).then(({ data }) => data)
+  ).then(async ({ data }) => {
+    const encryptedAttachments: MultirespondentSubmissionDtoWithAttachments['encryptedAttachments'] =
+      {}
+    const downloadTasks = Object.keys(data.attachmentMetadata).map(
+      async (id) => {
+        const url = data.attachmentMetadata[id]
+        const attachmentJson = await fetch(url).then((response) =>
+          response.json(),
+        )
+        encryptedAttachments[id] =
+          convertEncryptedAttachmentToFileContent(attachmentJson)
+      },
+    )
+
+    await Promise.all(downloadTasks)
+
+    return { ...data, encryptedAttachments }
+  })
 }
 
 export type SubmitEmailFormArgs = {

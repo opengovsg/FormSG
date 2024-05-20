@@ -91,7 +91,7 @@ export const getDecryptedSubmissionById = async ({
     submissionId,
   })
 
-  let processedContent, submissionSecretKey
+  let processedContent, submissionSecretKey, mrfVersion
   switch (encryptedSubmission.submissionType) {
     case SubmissionType.Encrypt: {
       const decryptedContent = formsgSdk.crypto.decrypt(secretKey, {
@@ -119,6 +119,7 @@ export const getDecryptedSubmissionById = async ({
         decryptedContent,
       )
       submissionSecretKey = decryptedContent.submissionSecretKey
+      mrfVersion = encryptedSubmission.mrfVersion
       break
     }
   }
@@ -138,6 +139,7 @@ export const getDecryptedSubmissionById = async ({
         ? encryptedSubmission.payment
         : undefined,
     responses,
+    mrfVersion,
   }
 }
 

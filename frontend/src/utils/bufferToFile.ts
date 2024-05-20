@@ -4,9 +4,8 @@
  * @param filename
  * @returns
  */
-const bufferToFile = (data: Iterable<number>, filename: string): File => {
-  const bufferArray = Uint8Array.from(data)
-  const blob = new Blob([bufferArray])
+const bufferToFile = (data: ArrayBuffer, filename: string): File => {
+  const blob = new Blob([data])
   const file = new File([blob], filename)
 
   return file
