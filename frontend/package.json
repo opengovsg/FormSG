@@ -110,11 +110,9 @@
     "postinstall": "patch-package && npm run gen:theme-typings && npm run clean:emotion-types && npm --prefix ../shared install",
     "start": "vite",
     "build": "vite build",
-    "serve": "vite preview",
     "test": "cross-env SKIP_PREFLIGHT_CHECK=true vitest",
-    "eject": "react-scripts eject",
-    "storybook": "NODE_OPTIONS=--openssl-legacy-provider storybook dev -p 6006",
-    "build-storybook": "NODE_OPTIONS=--openssl-legacy-provider storybook build",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
     "lint": "eslint ./ --ignore-path .gitignore && prettier . -c",
     "lint:fix": "eslint ./ --ignore-path .gitignore --fix && prettier . -c --write",
     "pre-commit": "lint-staged"
