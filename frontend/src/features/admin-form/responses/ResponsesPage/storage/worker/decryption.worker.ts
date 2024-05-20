@@ -157,10 +157,10 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
           !submissionSecretKey
             ? secretKey
             : // It's an mrf, but old version
-            submission.submissionType === SubmissionType.Multirespondent &&
-              !submission.mrfVersion
-            ? secretKey
-            : submissionSecretKey
+              submission.submissionType === SubmissionType.Multirespondent &&
+                !submission.mrfVersion
+              ? secretKey
+              : submissionSecretKey
 
         let questionCount = 0
 
