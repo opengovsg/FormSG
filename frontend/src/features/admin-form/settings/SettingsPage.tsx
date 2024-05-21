@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react'
-import { BiCodeBlock, BiCog, BiDollar, BiKey, BiMessage } from 'react-icons/bi'
+import {
+  BiCodeBlock,
+  BiCog,
+  BiDollar,
+  BiKey,
+  BiMailSend,
+  BiMessage,
+} from 'react-icons/bi'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   Box,
@@ -18,6 +25,7 @@ import { useAdminFormCollaborators } from '../common/queries'
 
 import { SettingsTab } from './components/SettingsTab'
 import { SettingsAuthPage } from './SettingsAuthPage'
+import { SettingsEmailPage } from './SettingsEmailPage'
 import { SettingsGeneralPage } from './SettingsGeneralPage'
 import { SettingsPaymentsPage } from './SettingsPaymentsPage'
 import { SettingsTwilioPage } from './SettingsTwilioPage'
@@ -100,6 +108,7 @@ export const SettingsPage = (): JSX.Element => {
           >
             <SettingsTab label="General" icon={BiCog} />
             <SettingsTab label="Singpass" icon={BiKey} />
+            <SettingsTab label="Email Notifications" icon={BiMailSend} />
             <SettingsTab label="Twilio credentials" icon={BiMessage} />
             <SettingsTab label="Webhooks" icon={BiCodeBlock} />
             <SettingsTab label="Payments" icon={BiDollar} />
@@ -115,6 +124,9 @@ export const SettingsPage = (): JSX.Element => {
           </TabPanel>
           <TabPanel>
             <SettingsAuthPage />
+          </TabPanel>
+          <TabPanel>
+            <SettingsEmailPage />
           </TabPanel>
           <TabPanel>
             <SettingsTwilioPage />
