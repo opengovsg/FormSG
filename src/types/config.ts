@@ -84,6 +84,7 @@ export type Config = {
   isDev: boolean
   nodeEnv: Environment
   useMockTwilio: boolean
+  useMockPostmanSms: boolean
   port: number
   sessionSecret: string
   chromiumBin: string
@@ -157,6 +158,7 @@ export interface IOptionalVarsSchema {
     submissionsTopUp: number
     nodeEnv: Environment
     useMockTwilio: boolean
+    useMockPostmanSms: boolean
   }
   banner: {
     isGeneralMaintenance: string

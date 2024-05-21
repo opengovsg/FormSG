@@ -50,7 +50,10 @@ class PostmanSmsService {
     }
 
     if (useMockPostmanSms) {
-      return MailService.sendLocalDevMail('[mocktwilio] Captured SMS', message)
+      return MailService.sendLocalDevMail(
+        '[Mock Postman SMS] Captured SMS',
+        message,
+      )
     }
 
     const campaignUrl =
