@@ -65,7 +65,7 @@ export const EndPageBlock = ({
   }, [endPage.title, endPage.titleTranslations, publicFormLanguage])
 
   const paragraph = useMemo(() => {
-    let content = endPage.paragraph
+    let content = endPage?.paragraph
 
     if (publicFormLanguage !== Language.ENGLISH) {
       const translations = endPage.paragraphTranslations ?? []
@@ -102,7 +102,7 @@ export const EndPageBlock = ({
         <Text as="h2" textStyle="h2" textColor="secondary.500">
           {title}
         </Text>
-        {endPage.paragraph ? (
+        {paragraph ? (
           <Box mt="0.75rem">
             <MarkdownText components={mdComponents}>{paragraph}</MarkdownText>
           </Box>

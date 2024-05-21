@@ -44,28 +44,15 @@ export const TranslationContainer = ({
   language,
   defaultString,
   register,
-  formField,
   editingTranslation,
   previousTranslation,
 }: {
   language: string
   defaultString: string | undefined
   register: UseFormRegister<TranslationInput>
-  formField?: FormFieldDto<FormField>
   editingTranslation: keyof TranslationInput
   previousTranslation?: string
 }): JSX.Element => {
-  // let translationMapping: TranslationMapping[] = []
-
-  // switch (editingTranslation) {
-  //   case 'descriptionTranslation':
-  //     translationMapping = formField?.descriptionTranslations ?? []
-  //     break
-  //   case 'titleTranslation':
-  //     translationMapping = formField?.titleTranslations ?? []
-  //     break
-  // }
-
   return (
     <Flex direction="column" width="100%">
       <Flex alignItems="center" mb="2rem">
@@ -190,7 +177,6 @@ const FormFieldTranslationContainer = ({
           language={capitalisedLanguage}
           defaultString={formFieldData?.title}
           register={register}
-          formField={formFieldData}
           editingTranslation={'titleTranslation'}
           previousTranslation={prevTitleTranslations}
         />
@@ -210,7 +196,6 @@ const FormFieldTranslationContainer = ({
             language={capitalisedLanguage}
             defaultString={formFieldData?.description}
             register={register}
-            formField={formFieldData}
             editingTranslation={'descriptionTranslation'}
             previousTranslation={prevDescriptionTranslations}
           />
@@ -364,7 +349,6 @@ export const TranslationSection = ({
           },
         ]
       }
-
       return updatedTranslations
     },
     [capitalisedLanguage, titleTranslationInput],
@@ -499,6 +483,7 @@ export const TranslationSection = ({
 
       let updatedDescriptionTranslations: TranslationMapping[] = []
 
+      // update translations for form fields
       if (!_.isUndefined(formFieldData.description)) {
         updatedDescriptionTranslations =
           handleOnSaveDescriptionTranslations(formFieldData)
@@ -516,6 +501,7 @@ export const TranslationSection = ({
       } as FormFieldDto)
     }
 
+    // update translations for start page
     if (isStartPageTranslations && formStartPage) {
       const updatedTranslations =
         handleOnSaveStartPageTranslation(formStartPage)
@@ -535,6 +521,7 @@ export const TranslationSection = ({
       )
     }
 
+    // update translations for end page
     if (isEndPageTranslations && formEndPage) {
       const updatedTitleTranslations =
         handleOnSaveEndPageTitleTranslations(formEndPage)

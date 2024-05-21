@@ -53,7 +53,7 @@ export const QuestionRow = ({
   const isTranslationRowDisabled = isMyInfoField
 
   const handleOnListClick = useCallback(() => {
-    // check if translation row is disabled
+    // check if translation row is not disabled
     if (!isTranslationRowDisabled)
       navigate(
         `${ADMINFORM_ROUTE}/${formId}/settings/multi-language/${language}`,
@@ -129,7 +129,7 @@ export const TranslationListSection = ({
 
   const uppercaseLanguage = language.charAt(0).toUpperCase() + language.slice(1)
 
-  const startPage = form?.startPage.paragraph
+  const startPageParagraph = form?.startPage?.paragraph
   const endPage = form?.endPage
 
   const hasStartPageTranslations = useMemo(() => {
@@ -216,7 +216,7 @@ export const TranslationListSection = ({
         <Flex direction="column">
           <CategoryHeader py={2}>{uppercaseLanguage}</CategoryHeader>
           {/* Start Page Translation */}
-          {!_.isEmpty(startPage) && (
+          {!_.isEmpty(startPageParagraph) && (
             <>
               <QuestionRow
                 questionTitle="Instructions"
