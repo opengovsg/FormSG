@@ -7,7 +7,6 @@ const PUBLIC_FORM_FIELDS = <const>[
   'form_logics',
   'hasCaptcha',
   'hasIssueNotification',
-  'defaultLanguage',
   'supportedLanguages',
   'startPage',
   'status',
@@ -39,7 +38,7 @@ const FORM_SETTINGS_FIELDS = <const>[
   'submissionLimit',
   'title',
   'webhook',
-  'defaultLanguage',
+  'hasMultiLang',
   'supportedLanguages',
 ]
 

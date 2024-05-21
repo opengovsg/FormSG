@@ -27,6 +27,7 @@ import { CaptchaTypes } from '~shared/types/captcha'
 import {
   FormAuthType,
   FormResponseMode,
+  Language,
   ProductItem,
   PublicFormDto,
 } from '~shared/types/form'
@@ -130,6 +131,9 @@ export const PublicFormProvider = ({
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
   const [numVisibleFields, setNumVisibleFields] = useState(0)
+  const [publicFormLanguage, setPublicFormLanguage] = useState<Language>(
+    Language.ENGLISH,
+  )
 
   const {
     data,
@@ -829,6 +833,8 @@ export const PublicFormProvider = ({
         previousSubmission,
         previousAttachments,
         setPreviousSubmission,
+        publicFormLanguage,
+        setPublicFormLanguage,
         ...commonFormValues,
         ...data,
         ...rest,

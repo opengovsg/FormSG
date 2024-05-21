@@ -49,10 +49,13 @@ export const updateFormLimit: UpdateFormFn<'submissionLimit'> = async (
   return updateFormSettings(formId, { submissionLimit: newLimit })
 }
 
-export const updateFormDefaultLanguage: UpdateFormFn<
-  'defaultLanguage'
-> = async (formId, newDefaultLanguage) => {
-  return updateFormSettings(formId, { defaultLanguage: newDefaultLanguage })
+export const updateFormHasMultiLang: UpdateFormFn<'hasMultiLang'> = async (
+  formId,
+  newHasMultiLang,
+) => {
+  return updateFormSettings(formId, {
+    hasMultiLang: newHasMultiLang,
+  })
 }
 
 export const updateFormSupportedLanguages: UpdateFormFn<

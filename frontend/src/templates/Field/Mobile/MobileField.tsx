@@ -1,3 +1,5 @@
+import { Language } from '~shared/types'
+
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { MobileFieldSchema } from '../types'
 
@@ -11,14 +13,14 @@ export interface MobileFieldProps extends BaseFieldProps {
 export const MobileField = ({
   schema,
   disableRequiredValidation,
-  language,
+  selectedLanguage: publicFormLanguage = Language.ENGLISH,
   ...fieldContainerProps
 }: MobileFieldProps): JSX.Element => {
   return (
     <FieldContainer
       schema={schema}
       {...fieldContainerProps}
-      language={language}
+      selectedLanguage={publicFormLanguage}
     >
       <MobileFieldInput
         schema={schema}

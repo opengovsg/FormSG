@@ -21,7 +21,7 @@ export const DropdownField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
-  language,
+  selectedLanguage: language,
   ...fieldContainerProps
 }: DropdownFieldProps): JSX.Element => {
   const rules = useMemo(() => {
@@ -34,7 +34,7 @@ export const DropdownField = ({
     <FieldContainer
       schema={schema}
       {...fieldContainerProps}
-      language={language}
+      selectedLanguage={language}
     >
       <Controller
         control={control}

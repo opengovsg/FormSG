@@ -4,6 +4,8 @@
 import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
+import { Language } from '~shared/types'
+
 import { createNricValidationRules } from '~utils/fieldValidation'
 import Input from '~components/Input'
 
@@ -18,7 +20,7 @@ export interface NricFieldProps extends BaseFieldProps {
 export const NricField = ({
   schema,
   disableRequiredValidation,
-  language,
+  selectedLanguage: publicFormLanguage = Language.ENGLISH,
 }: NricFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createNricValidationRules(schema, disableRequiredValidation),
@@ -28,7 +30,7 @@ export const NricField = ({
   const { register, setValue } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema} language={language}>
+    <FieldContainer schema={schema} selectedLanguage={publicFormLanguage}>
       <Input
         aria-label={`${schema.questionNumber}. ${schema.title}`}
         defaultValue=""

@@ -8,7 +8,7 @@ import {
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme, Language } from '~shared/types'
 
 import { CHECKBOX_THEME_KEY } from '~theme/components/Checkbox'
 import { createCheckboxValidationRules } from '~utils/fieldValidation'
@@ -36,7 +36,7 @@ export const CheckboxField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
-  language,
+  selectedLanguage: publicFormLanguage = Language.ENGLISH,
 }: CheckboxFieldProps): JSX.Element => {
   const fieldColorScheme = useMemo(
     () => `theme-${colorTheme}` as const,
@@ -85,7 +85,7 @@ export const CheckboxField = ({
     <FieldContainer
       schema={schema}
       errorKey={checkboxInputName}
-      language={language}
+      selectedLanguage={publicFormLanguage}
     >
       <Box aria-label={`${schema.questionNumber}. ${schema.title}`} role="list">
         <Controller

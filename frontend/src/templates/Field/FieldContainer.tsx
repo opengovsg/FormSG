@@ -53,7 +53,10 @@ export type BaseFieldProps = {
    */
   errorVariant?: 'white'
 
-  language?: Language
+  /**
+   * Form language selected by user.
+   */
+  selectedLanguage?: Language
 }
 
 export interface FieldContainerProps extends BaseFieldProps {
@@ -66,7 +69,7 @@ export const FieldContainer = ({
   errorKey,
   showMyInfoBadge,
   errorVariant,
-  language,
+  selectedLanguage = Language.ENGLISH,
 }: FieldContainerProps): JSX.Element => {
   const { errors, isSubmitting, isValid } = useFormState({ name: schema._id })
 
@@ -74,7 +77,7 @@ export const FieldContainer = ({
 
   const titleTranslationIdx =
     schema.titleTranslations?.findIndex((titleTranslation) => {
-      return titleTranslation.language === language
+      return titleTranslation.language === selectedLanguage
     }) ?? -1
 
   let title = schema.title
@@ -85,7 +88,7 @@ export const FieldContainer = ({
 
   const descriptionTranslationIdx =
     schema.descriptionTranslations?.findIndex((descriptionTranslation) => {
-      return descriptionTranslation.language === language
+      return descriptionTranslation.language === selectedLanguage
     }) ?? -1
 
   let description = schema.description

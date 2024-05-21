@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { BiArrowBack, BiCheck, BiError } from 'react-icons/bi'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
@@ -13,8 +13,10 @@ import {
 } from '@chakra-ui/react'
 import _ from 'lodash'
 
-import { FormField, FormFieldDto } from '~shared/types'
+import { FormField, FormFieldDto, Language } from '~shared/types'
 
+import { PhHandsClapping } from '~assets/icons'
+import { BxsDockTop } from '~assets/icons/BxsDockTop'
 import { ADMINFORM_ROUTE } from '~constants/routes'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -33,6 +35,8 @@ interface QuestionRowProps {
   isMyInfoField: boolean
   formFieldNum: number
   hasTranslations: boolean
+  isStartPage?: boolean
+  isEndPage?: boolean
 }
 
 export const QuestionRow = ({
@@ -41,18 +45,36 @@ export const QuestionRow = ({
   isMyInfoField,
   formFieldNum,
   hasTranslations,
+  isStartPage,
+  isEndPage,
 }: QuestionRowProps): JSX.Element => {
   const { formId, language } = useParams()
   const navigate = useNavigate()
   const isTranslationRowDisabled = isMyInfoField
 
   const handleOnListClick = useCallback(() => {
+    // check if translation row is disabled
     if (!isTranslationRowDisabled)
       navigate(
         `${ADMINFORM_ROUTE}/${formId}/settings/multi-language/${language}`,
-        { state: { isTranslation: true, formFieldNum } },
+        {
+          state: {
+            isTranslation: true,
+            formFieldNum,
+            isStartPage: isStartPage ?? false,
+            isEndPage: isEndPage ?? false,
+          },
+        },
       )
-  }, [formFieldNum, formId, isTranslationRowDisabled, language, navigate])
+  }, [
+    formFieldNum,
+    formId,
+    isEndPage,
+    isStartPage,
+    isTranslationRowDisabled,
+    language,
+    navigate,
+  ])
 
   return (
     <Flex direction="row">
@@ -65,7 +87,7 @@ export const QuestionRow = ({
           onClick={handleOnListClick}
           w="100%"
           justifyItems="stretch"
-          disabled={isMyInfoField}
+          disabled={isTranslationRowDisabled}
         >
           <Flex direction="row" alignItems="center" mr="auto" gap={6}>
             <Icon fontSize="1.5rem" as={icon} />
@@ -106,6 +128,42 @@ export const TranslationListSection = ({
   const navigate = useNavigate()
 
   const uppercaseLanguage = language.charAt(0).toUpperCase() + language.slice(1)
+
+  const startPage = form?.startPage.paragraph
+  const endPage = form?.endPage
+
+  const hasStartPageTranslations = useMemo(() => {
+    const startPageTranslations = form?.startPage.translations ?? []
+    return (
+      startPageTranslations.filter(
+        (translations) =>
+          translations.language === (uppercaseLanguage as Language),
+      ).length > 0
+    )
+  }, [form?.startPage.translations, uppercaseLanguage])
+
+  const hasEndPageTranslations = useMemo(() => {
+    const endPageTitleTranslations = form?.endPage.titleTranslations ?? []
+    const hasEndPageTitleTranslations =
+      endPageTitleTranslations.filter(
+        (translations) =>
+          translations.language === (uppercaseLanguage as Language),
+      ).length > 0
+
+    const endPageParagraphTranslations =
+      form?.endPage.paragraphTranslations ?? []
+    const hasEndPageParagraphTranslations =
+      endPageParagraphTranslations.filter(
+        (translations) =>
+          translations.language === (uppercaseLanguage as Language),
+      ).length > 0
+
+    return hasEndPageTitleTranslations && hasEndPageParagraphTranslations
+  }, [
+    form?.endPage.paragraphTranslations,
+    form?.endPage.titleTranslations,
+    uppercaseLanguage,
+  ])
 
   const handleOnBackClick = useCallback(() => {
     navigate(`${ADMINFORM_ROUTE}/${formId}/settings/multi-language`)
@@ -157,8 +215,22 @@ export const TranslationListSection = ({
         />
         <Flex direction="column">
           <CategoryHeader py={2}>{uppercaseLanguage}</CategoryHeader>
+          {/* Start Page Translation */}
+          {!_.isEmpty(startPage) && (
+            <>
+              <QuestionRow
+                questionTitle="Instructions"
+                icon={BxsDockTop}
+                isMyInfoField={false}
+                hasTranslations={hasStartPageTranslations}
+                formFieldNum={-1}
+                isStartPage={true}
+              />
+              <Divider />
+            </>
+          )}
+
           {form?.form_fields.map((form_field, id, arr) => {
-            const isLastQuestion = arr.length - 1 === id
             const isMyInfoField = isMyInfo(form_field)
 
             const questionIcon = isMyInfoField
@@ -174,10 +246,23 @@ export const TranslationListSection = ({
                   formFieldNum={id}
                   hasTranslations={getHasTranslations(form_field)}
                 />
-                {!isLastQuestion && <Divider />}
+                <Divider />
               </>
             )
           })}
+
+          {/* End Page Translation */}
+
+          {!_.isEmpty(endPage) && (
+            <QuestionRow
+              questionTitle={endPage?.title ?? ''}
+              icon={PhHandsClapping}
+              isMyInfoField={false}
+              hasTranslations={hasEndPageTranslations}
+              formFieldNum={-1}
+              isEndPage={true}
+            />
+          )}
         </Flex>
       </Flex>
     </Skeleton>

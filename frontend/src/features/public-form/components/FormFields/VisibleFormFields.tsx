@@ -4,7 +4,6 @@ import { Control, useWatch } from 'react-hook-form'
 import {
   FormColorTheme,
   FormWorkflowStepDto,
-  Language,
   LogicDto,
 } from '~shared/types/form'
 
@@ -27,7 +26,6 @@ interface VisibleFormFieldsProps {
   workflowStep?: FormWorkflowStepDto
   colorTheme: FormColorTheme
   fieldPrefillMap: PrefillMap
-  formLanguage?: Language
 }
 
 /**
@@ -41,7 +39,6 @@ export const VisibleFormFields = ({
   workflowStep,
   colorTheme,
   fieldPrefillMap,
-  formLanguage,
 }: VisibleFormFieldsProps) => {
   const watchedValues = useWatch({ control })
   const { setVisibleFieldIdsForScrollData } = useFormSections()
@@ -83,7 +80,6 @@ export const VisibleFormFields = ({
           }
           key={field._id}
           prefill={fieldPrefillMap[field._id]}
-          language={formLanguage}
         />
       ))}
     </>

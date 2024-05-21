@@ -5,7 +5,6 @@ import { useNavigate, useParams } from 'react-router-dom'
 import {
   Divider,
   Flex,
-  FormControl,
   HStack,
   IconButton,
   Skeleton,
@@ -16,8 +15,6 @@ import { Language } from '~shared/types'
 
 import { ADMINFORM_ROUTE } from '~constants/routes'
 import Badge from '~components/Badge'
-import { SingleSelect } from '~components/Dropdown'
-import FormLabel from '~components/FormControl/FormLabel'
 import Toggle from '~components/Toggle'
 
 import { useMutateFormSettings } from '../../mutations'
@@ -31,10 +28,6 @@ interface LanguageTranslationRowProps {
 
 interface LanguageTranslationSectionProps {
   defaultLanguage: Language
-}
-
-interface MultiLangBlockProps {
-  selectedDefaultLanguage: Language | null
 }
 
 const LanguageTranslationRow = ({
@@ -58,7 +51,7 @@ const LanguageTranslationRow = ({
     (language: Language) => {
       if (supportedLanguages == null) return
 
-      // remove support for this language if it exists in supported language
+      // remove support for this language if it exists in supportedLanguages
       const existingSupportedLanguageIdx = supportedLanguages.indexOf(language)
       if (existingSupportedLanguageIdx !== -1) {
         supportedLanguages.splice(existingSupportedLanguageIdx, 1)
@@ -67,7 +60,10 @@ const LanguageTranslationRow = ({
           nextSupportedLanguages: supportedLanguages,
           selectedLanguage: language,
         })
-      } else {
+      }
+      // if selected language is not in supportedLanguages then add this language
+      // to supportedLanguages
+      else {
         const updatedSupportedLanguages = supportedLanguages.concat(language)
         setIsLanguageSupported(true)
         return mutateFormSupportedLanguages.mutate({
@@ -91,7 +87,7 @@ const LanguageTranslationRow = ({
 
   return (
     <>
-      <Flex alignItems="center" w="100%">
+      <Flex alignItems="center" w="100%" mt="2rem">
         <Flex marginRight="auto">
           <Text mr="0.75rem">{language}</Text>
           {isDefaultLanguage && (
@@ -158,83 +154,41 @@ const LanguageTranslationSection = ({
   )
 }
 
-const MultiLangBlock = ({
-  selectedDefaultLanguage,
-}: MultiLangBlockProps): JSX.Element => {
-  const { mutateFormDefaultLang } = useMutateFormSettings()
-
-  const [defaultLanguage, setDefaultLanguage] = useState(
-    selectedDefaultLanguage ?? Language.ENGLISH,
-  )
-
-  const handleDefaultLanguageChange = useCallback(
-    (language: string) => {
-      const selectedDefaultLanguage: Language = language as Language
-      setDefaultLanguage(selectedDefaultLanguage)
-      return mutateFormDefaultLang.mutate(selectedDefaultLanguage)
-    },
-    [mutateFormDefaultLang],
-  )
-
-  return (
-    <>
-      <FormControl mt="2rem" mb="2.5rem">
-        <FormLabel
-          isRequired
-          description="Select the language that you created this form in. This will be the language that we display when respondents open the form."
-        >
-          Default Language
-        </FormLabel>
-        <SingleSelect
-          value={defaultLanguage}
-          onChange={handleDefaultLanguageChange}
-          name={'selectDefaultLanguage'}
-          items={Object.values(Language)}
-          isClearable={false}
-        />
-      </FormControl>
-      <LanguageTranslationSection defaultLanguage={defaultLanguage} />
-    </>
-  )
-}
-
 export const FormMultiLangToggle = (): JSX.Element => {
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
-  const { mutateFormDefaultLang, mutateFormSupportedLanguages } =
+  const { mutateFormSupportedLanguages, mutateFormHasMultiLang } =
     useMutateFormSettings()
 
-  const isDefaultLanguageSelected = useMemo(
-    () =>
-      settings &&
-      typeof settings?.defaultLanguage !== 'undefined' &&
-      settings?.defaultLanguage !== null,
+  const hasMultiLang = useMemo(
+    () => settings && settings?.hasMultiLang,
     [settings],
   )
 
+  console.log(hasMultiLang)
+
   const handleToggleMultiLang = useCallback(() => {
-    if (!settings || isLoadingSettings || mutateFormDefaultLang.isLoading)
+    if (!settings || isLoadingSettings || mutateFormHasMultiLang.isLoading)
       return
 
-    // toggle multi lang off
-    if (settings.defaultLanguage && settings.defaultLanguage != null) {
-      mutateFormSupportedLanguages.mutate({
-        nextSupportedLanguages: null,
-      })
-      return mutateFormDefaultLang.mutate(null)
+    // get next hasMultiLang value
+    const nextHasMultiLang = !settings.hasMultiLang
+
+    // toggle multi lang on: add all supported languages if there were no supported
+    // languages previously or restore back previously supported languages
+    let nextSupportedLanguages = settings.supportedLanguages ?? []
+
+    if (!nextHasMultiLang && nextSupportedLanguages.length === 0) {
+      nextSupportedLanguages = Object.values(Language)
     }
 
-    // toggle multi lang on and add all supported languages
-    mutateFormSupportedLanguages.mutate({
-      nextSupportedLanguages: Object.values(Language),
-    })
-    return mutateFormDefaultLang.mutate(
-      settings?.defaultLanguage ?? Language.ENGLISH,
-    )
+    mutateFormSupportedLanguages.mutate({ nextSupportedLanguages })
+
+    return mutateFormHasMultiLang.mutate(nextHasMultiLang)
   }, [
     isLoadingSettings,
-    mutateFormDefaultLang,
+    mutateFormHasMultiLang,
     mutateFormSupportedLanguages,
     settings,
   ])
@@ -243,13 +197,13 @@ export const FormMultiLangToggle = (): JSX.Element => {
     <Skeleton isLoaded={!isLoadingSettings && !!settings} mt="2rem">
       <Toggle
         onChange={handleToggleMultiLang}
-        isChecked={isDefaultLanguageSelected}
+        isChecked={hasMultiLang}
         label="Enable multi-language"
         description="This will allow respondents to select a language they prefer to view your form in. Translations are not automated."
       />
-      {settings && settings.defaultLanguage && (
+      {settings && hasMultiLang && (
         <Skeleton isLoaded={true}>
-          <MultiLangBlock selectedDefaultLanguage={settings?.defaultLanguage} />
+          <LanguageTranslationSection defaultLanguage={Language.ENGLISH} />
         </Skeleton>
       )}
     </Skeleton>

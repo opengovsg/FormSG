@@ -107,6 +107,7 @@ interface FormHeaderProps {
   showMiniHeader?: boolean
   activeSectionId?: string
   isTemplate?: boolean
+  showZoomControl?: boolean
   miniHeaderRef?: RefObject<HTMLDivElement>
   onMobileDrawerOpen?: () => void
   handleLogout?: () => void
@@ -124,6 +125,7 @@ export const FormHeader = ({
   activeSectionId,
   miniHeaderRef,
   isTemplate,
+  showZoomControl = true,
   onMobileDrawerOpen,
   handleLogout,
 }: FormHeaderProps): JSX.Element | null => {
@@ -162,7 +164,8 @@ export const FormHeader = ({
       <Flex
         transition="background 0.2s ease"
         px={{ base: '1.5rem', md: '3rem' }}
-        py={{ base: '2rem', md: '3rem' }}
+        pt={{ base: '2rem', md: '3rem' }}
+        pb={{ base: '3rem', md: '3rem' }}
         wordBreak="break-word"
         justify="center"
         bg={titleBg}

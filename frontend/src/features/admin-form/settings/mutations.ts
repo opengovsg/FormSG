@@ -10,7 +10,6 @@ import {
   FormSettings,
   FormStatus,
   FormSupportedLanguages,
-  Language,
   StorageFormSettings,
 } from '~shared/types/form/form'
 import { TwilioCredentials } from '~shared/types/twilio'
@@ -31,9 +30,9 @@ import {
   updateBusinessInfo,
   updateFormAuthType,
   updateFormCaptcha,
-  updateFormDefaultLanguage,
   updateFormEmails,
   updateFormEsrvcId,
+  updateFormHasMultiLang,
   updateFormInactiveMessage,
   updateFormIssueNotification,
   updateFormLimit,
@@ -138,18 +137,18 @@ export const useMutateFormSettings = () => {
     },
   )
 
-  const mutateFormDefaultLang = useMutation(
-    (nextDefaultLanguage?: Language | null) =>
-      updateFormDefaultLanguage(formId, nextDefaultLanguage),
+  const mutateFormHasMultiLang = useMutation(
+    (nextHasMultiLang: boolean) =>
+      updateFormHasMultiLang(formId, nextHasMultiLang),
     {
       onSuccess: (newData) => {
-        // Show toast on success.
-        const toastStatusMessage = newData.defaultLanguage
-          ? 'Multi-language enabled. Respondents can now select other languages to view your form in.'
-          : 'Multi-language disabled.'
-        handleSuccess({ newData, toastDescription: toastStatusMessage })
+        handleSuccess({
+          newData,
+          toastDescription: newData.hasMultiLang
+            ? 'Multi-language enabled. Respondents can now select other languages to view your form in.'
+            : 'Multi-language disabled.',
+        })
       },
-      onError: handleError,
     },
   )
 
@@ -390,7 +389,7 @@ export const useMutateFormSettings = () => {
     mutateFormWebhookUrl,
     mutateFormStatus,
     mutateFormLimit,
-    mutateFormDefaultLang,
+    mutateFormHasMultiLang,
     mutateFormSupportedLanguages,
     mutateFormInactiveMessage,
     mutateFormCaptcha,

@@ -12,7 +12,6 @@ import {
   FormColorTheme,
   FormResponseMode,
   FormWorkflowStepDto,
-  Language,
   LogicDto,
 } from '~shared/types/form'
 import { centsToDollars } from '~shared/utils/payments'
@@ -45,7 +44,6 @@ export interface FormFieldsProps {
   workflowStep?: FormWorkflowStepDto
   colorTheme: FormColorTheme
   onSubmit: SubmitHandler<FormFieldValues> | undefined
-  chosenLanguage?: Language
 }
 
 export type PrefillMap = {
@@ -63,7 +61,6 @@ export const FormFields = ({
   workflowStep,
   colorTheme,
   onSubmit,
-  chosenLanguage,
 }: FormFieldsProps): JSX.Element => {
   useFetchPrefillQuery()
   const [searchParams] = useSearchParams()
@@ -230,7 +227,6 @@ export const FormFields = ({
                 formLogics={formLogics}
                 workflowStep={workflowStep}
                 fieldPrefillMap={fieldPrefillMap}
-                formLanguage={chosenLanguage}
               />
             </Stack>
           </Box>

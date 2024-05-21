@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Box } from '@chakra-ui/react'
 
-import { FormAuthType, FormResponseMode, Language } from '~shared/types'
+import { FormAuthType, FormResponseMode } from '~shared/types'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
@@ -57,7 +57,6 @@ export const FormFieldsContainer = (): JSX.Element | null => {
         }
         colorTheme={form.startPage.colorTheme}
         onSubmit={handleSubmitForm}
-        chosenLanguage={Language.CHINESE}
       />
     )
   }, [

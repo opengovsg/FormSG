@@ -194,6 +194,7 @@ export const StartPageView = () => {
         />
         <FormHeader
           title={form?.title}
+          showZoomControl={false}
           showHeader
           loggedInId={
             form && form.authType !== FormAuthType.NIL

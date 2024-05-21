@@ -40,6 +40,13 @@ export const SettingsPage = (): JSX.Element => {
   const { formId, settingsTab, language } = useParams()
   const { state } = useLocation()
 
+  const translationParams = state as {
+    isTranslation: boolean
+    formFieldNum: number
+    isStartPage: boolean
+    isEndPage: boolean
+  }
+
   if (!formId) throw new Error('No formId provided')
 
   const { hasEditAccess, isLoading: isCollabLoading } =
@@ -58,15 +65,23 @@ export const SettingsPage = (): JSX.Element => {
     settingsTabsOrder.indexOf(settingsTab ?? ''),
   )
 
+  const startPageTranslations = useMemo(() => {
+    return translationParams?.isStartPage
+  }, [translationParams?.isStartPage])
+
+  const endPageTranslations = useMemo(() => {
+    return translationParams?.isEndPage
+  }, [translationParams?.isEndPage])
+
   const currentIsTranslation = useMemo(() => {
-    return (state as { isTranslation?: boolean; formFieldNum: number })
-      ?.isTranslation
-  }, [state])
+    return translationParams?.isTranslation
+  }, [translationParams?.isTranslation])
 
   const formFieldNumToBeTranslated = useMemo(() => {
     return (state as { isTranslation?: boolean; formFieldNum: number })
       ?.formFieldNum
   }, [state])
+
   const handleTabChange = (index: number) => {
     setTabIndex(index)
     navigate(
@@ -150,6 +165,9 @@ export const SettingsPage = (): JSX.Element => {
               <TranslationSection
                 language={language}
                 formFieldNumToBeTranslated={formFieldNumToBeTranslated}
+                isFormField={formFieldNumToBeTranslated !== -1}
+                isStartPageTranslations={startPageTranslations}
+                isEndPageTranslations={endPageTranslations}
               />
             )}
           </TabPanel>

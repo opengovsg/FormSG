@@ -35,11 +35,17 @@ export type FormPermission = {
   write: boolean
 }
 
+export type TranslationMapping = {
+  language: Language
+  translation: string
+}
+
 export type FormStartPage = {
   logo: FormLogo
   colorTheme: FormColorTheme
   estTimeTaken?: number
   paragraph?: string
+  translations?: TranslationMapping[]
 }
 
 export type FormEndPage = {
@@ -49,6 +55,8 @@ export type FormEndPage = {
   buttonText: string
   paymentTitle: string
   paymentParagraph: string
+  titleTranslations?: TranslationMapping[]
+  paragraphTranslations?: TranslationMapping[]
 }
 
 export enum FormAuthType {
@@ -174,7 +182,8 @@ export interface FormBase {
 
   goLinkSuffix?: string
 
-  defaultLanguage?: Language | null
+  hasMultiLang?: boolean
+
   supportedLanguages?: Language[] | null
 }
 
@@ -239,7 +248,7 @@ export type PublicStorageFormDto = Merge<
     StorageFormDto,
     // Arrays like typeof list have numeric index signatures, so their number key
     // yields the union of all numerically-indexed properties.
-    (typeof STORAGE_PUBLIC_FORM_FIELDS)[number]
+    typeof STORAGE_PUBLIC_FORM_FIELDS[number]
   >,
   PublicFormBase
 >
@@ -249,7 +258,7 @@ export type PublicEmailFormDto = Merge<
     EmailFormDto,
     // Arrays like typeof list have numeric index signatures, so their number key
     // yields the union of all numerically-indexed properties.
-    (typeof EMAIL_PUBLIC_FORM_FIELDS)[number]
+    typeof EMAIL_PUBLIC_FORM_FIELDS[number]
   >,
   PublicFormBase
 >
@@ -259,7 +268,7 @@ export type PublicMultirespondentFormDto = Merge<
     MultirespondentFormDto,
     // Arrays like typeof list have numeric index signatures, so their number key
     // yields the union of all numerically-indexed properties.
-    (typeof MULTIRESPONDENT_PUBLIC_FORM_FIELDS)[number]
+    typeof MULTIRESPONDENT_PUBLIC_FORM_FIELDS[number]
   >,
   PublicFormBase
 >
@@ -271,16 +280,16 @@ export type PublicFormDto =
 
 export type EmailFormSettings = Pick<
   EmailFormDto,
-  (typeof EMAIL_FORM_SETTINGS_FIELDS)[number]
+  typeof EMAIL_FORM_SETTINGS_FIELDS[number]
 >
 export type StorageFormSettings = Pick<
   StorageFormDto,
-  (typeof STORAGE_FORM_SETTINGS_FIELDS)[number]
+  typeof STORAGE_FORM_SETTINGS_FIELDS[number]
 >
 
 export type MultirespondentFormSettings = Pick<
   MultirespondentFormDto,
-  (typeof MULTIRESPONDENT_FORM_SETTINGS_FIELDS)[number]
+  typeof MULTIRESPONDENT_FORM_SETTINGS_FIELDS[number]
 >
 
 export type FormSettings =
@@ -331,7 +340,7 @@ export type AdminFormViewDto = {
 
 export type AdminDashboardFormMetaDto = Pick<
   AdminFormDto,
-  (typeof ADMIN_FORM_META_FIELDS)[number]
+  typeof ADMIN_FORM_META_FIELDS[number]
 >
 
 export type DuplicateFormOverwriteDto = {

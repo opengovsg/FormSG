@@ -20,13 +20,13 @@ export const EmailField = ({
   disableRequiredValidation,
   errorVariant,
   inputProps,
-  language,
+  selectedLanguage: language,
 }: EmailFieldProps): JSX.Element => {
   return (
     <FieldContainer
       schema={schema}
       errorVariant={errorVariant}
-      language={language}
+      selectedLanguage={language}
     >
       <EmailFieldInput
         schema={schema}

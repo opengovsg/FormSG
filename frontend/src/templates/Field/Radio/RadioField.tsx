@@ -3,7 +3,7 @@ import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { FormControl, useMultiStyleConfig } from '@chakra-ui/react'
 import { get } from 'lodash'
 
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme, Language } from '~shared/types'
 
 import { RADIO_THEME_KEY } from '~theme/components/Radio'
 import { createRadioValidationRules } from '~utils/fieldValidation'
@@ -27,7 +27,7 @@ export const RadioField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
-  language,
+  selectedLanguage: publicFormLanguage = Language.ENGLISH,
 }: RadioFieldProps): JSX.Element => {
   const fieldColorScheme = useMemo(
     () => `theme-${colorTheme}` as const,
@@ -74,7 +74,7 @@ export const RadioField = ({
     <FieldContainer
       schema={schema}
       errorKey={radioInputName}
-      language={language}
+      selectedLanguage={publicFormLanguage}
     >
       <Controller
         name={radioInputName}

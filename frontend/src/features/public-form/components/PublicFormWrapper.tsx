@@ -39,7 +39,14 @@ export const PublicFormWrapper = ({
   })
 
   return (
-    <Flex bg={bgColour} p={{ base: 0, md: '1.5rem' }} flex={1} justify="center">
+    <Flex
+      bg={bgColour}
+      px={{ base: 0, md: '1.5rem' }}
+      pt={{ base: 0, md: '2.75rem' }}
+      pb={{ base: 0, md: '1.5rem' }}
+      flex={1}
+      justify="center"
+    >
       {isAuthRequired ? null : <SectionSidebar />}
       <Flex flexDir="column" maxW="57rem" w="100%">
         {children}

@@ -9,7 +9,7 @@ import {
 import { UseQueryResult } from 'react-query'
 
 import { MultirespondentSubmissionDto } from '~shared/types'
-import { PublicFormViewDto } from '~shared/types/form'
+import { Language, PublicFormViewDto } from '~shared/types/form'
 
 import { decryptSubmission } from './utils/decryptSubmission'
 
@@ -72,6 +72,12 @@ export interface PublicFormContextProps
   setPreviousSubmission?: (
     previousSubmission: ReturnType<typeof decryptSubmission>,
   ) => void
+
+  // callback to set public form's language
+  setPublicFormLanguage: (language: Language) => void
+
+  // public form's language
+  publicFormLanguage: Language
 }
 
 export const PublicFormContext = createContext<

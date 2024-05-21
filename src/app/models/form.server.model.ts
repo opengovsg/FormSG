@@ -450,6 +450,21 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           type: FormLogoSchema,
           default: () => ({}),
         },
+        translations: {
+          type: [
+            {
+              language: {
+                type: String,
+                enum: Object.values(Language),
+              },
+              translation: {
+                type: String,
+              },
+            },
+          ],
+          default: [],
+          _id: false,
+        },
       },
 
       endPage: {
@@ -463,6 +478,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           type: String,
           default: 'Submit another response',
         },
+
         paymentTitle: {
           type: String,
           default: 'Thank you, your payment has been made successfully.',
@@ -470,6 +486,37 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         paymentParagraph: {
           type: String,
           default: 'Your form has been submitted and payment has been made.',
+        },
+
+        titleTranslations: {
+          type: [
+            {
+              language: {
+                type: String,
+                enum: Object.values(Language),
+              },
+              translation: {
+                type: String,
+              },
+            },
+          ],
+          default: [],
+          _id: false,
+        },
+        paragraphTranslations: {
+          type: [
+            {
+              language: {
+                type: String,
+                enum: Object.values(Language),
+              },
+              translation: {
+                type: String,
+              },
+            },
+          ],
+          default: [],
+          _id: false,
         },
       },
 
@@ -574,17 +621,17 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         default: '',
       },
 
-      defaultLanguage: {
-        // default language of Form
-        type: String,
-        enum: Object.values(Language).concat([null]),
+      // boolean value to indicate if form supports multi
+      // language
+      hasMultiLang: {
+        type: Boolean,
         required: false,
       },
 
+      // languages that is supported by form for translations
       supportedLanguages: {
-        // supported language translations
         type: [String],
-        enum: Object.values(Language).concat([null]),
+        enum: Object.values(Language),
         require: false,
       },
     },

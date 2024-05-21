@@ -30,7 +30,7 @@ export const CountryRegionField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
-  language,
+  selectedLanguage: language,
   ...fieldContainerProps
 }: CountryRegionFieldProps): JSX.Element => {
   const schemaWithFieldOptions = useMemo(() => {
@@ -53,7 +53,7 @@ export const CountryRegionField = ({
     <FieldContainer
       schema={schemaWithFieldOptions}
       {...fieldContainerProps}
-      language={language}
+      selectedLanguage={language}
     >
       <Controller
         control={control}
