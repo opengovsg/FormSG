@@ -340,8 +340,6 @@ export const TranslationSection = ({
     navigate(`${ADMINFORM_ROUTE}/${formId}/settings/multi-language/${language}`)
   }, [formId, language, navigate])
 
-  console.log(formStartPage)
-
   const handleOnSaveStartPageTranslation = useCallback(
     (startPage: FormStartPage): TranslationMapping[] => {
       // get current translations if any

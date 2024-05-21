@@ -2,13 +2,16 @@ import { useEffect, useMemo, useRef } from 'react'
 import { Box, Text, VisuallyHidden } from '@chakra-ui/react'
 import { format } from 'date-fns'
 
-import { FormColorTheme, FormDto } from '~shared/types/form'
+import { FormColorTheme, FormDto, Language } from '~shared/types/form'
 
 import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
 import { MarkdownText } from '~components/MarkdownText'
 
-import { SubmissionData } from '~features/public-form/PublicFormContext'
+import {
+  SubmissionData,
+  usePublicFormContext,
+} from '~features/public-form/PublicFormContext'
 
 export interface EndPageBlockProps {
   formTitle: FormDto['title'] | undefined
@@ -27,6 +30,7 @@ export const EndPageBlock = ({
   focusOnMount,
   isButtonHidden,
 }: EndPageBlockProps): JSX.Element => {
+  const { publicFormLanguage } = usePublicFormContext()
   const focusRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (focusOnMount) {
@@ -42,6 +46,40 @@ export const EndPageBlock = ({
       },
     },
   })
+
+  const title = useMemo(() => {
+    let content = endPage.title
+
+    if (publicFormLanguage !== Language.ENGLISH) {
+      const translations = endPage.titleTranslations ?? []
+      const titleTranslationIdx = translations.findIndex(
+        (translation) => translation.language === publicFormLanguage,
+      )
+
+      if (titleTranslationIdx !== -1) {
+        content = translations[titleTranslationIdx].translation
+      }
+    }
+
+    return content
+  }, [endPage.title, endPage.titleTranslations, publicFormLanguage])
+
+  const paragraph = useMemo(() => {
+    let content = endPage.paragraph
+
+    if (publicFormLanguage !== Language.ENGLISH) {
+      const translations = endPage.paragraphTranslations ?? []
+      const paragraphTranslationIdx = translations.findIndex(
+        (translation) => translation.language === publicFormLanguage,
+      )
+
+      if (paragraphTranslationIdx !== -1) {
+        content = translations[paragraphTranslationIdx].translation
+      }
+    }
+
+    return content
+  }, [endPage.paragraph, endPage.paragraphTranslations, publicFormLanguage])
 
   const submissionTimestamp = useMemo(
     () => format(new Date(submissionData.timestamp), 'dd MMM yyyy, HH:mm:ss z'),
@@ -62,13 +100,11 @@ export const EndPageBlock = ({
           {submittedAriaText}
         </VisuallyHidden>
         <Text as="h2" textStyle="h2" textColor="secondary.500">
-          {endPage.title}
+          {title}
         </Text>
         {endPage.paragraph ? (
           <Box mt="0.75rem">
-            <MarkdownText components={mdComponents}>
-              {endPage.paragraph}
-            </MarkdownText>
+            <MarkdownText components={mdComponents}>{paragraph}</MarkdownText>
           </Box>
         ) : null}
       </Box>

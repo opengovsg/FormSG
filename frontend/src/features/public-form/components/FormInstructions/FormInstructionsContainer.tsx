@@ -1,5 +1,7 @@
 import { Box, Flex } from '@chakra-ui/react'
 
+import { Language } from '~shared/types'
+
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { useFormSections } from '../FormFields/FormSectionsContext'
@@ -10,9 +12,24 @@ export const PUBLICFORM_INSTRUCTIONS_SECTIONID = 'instructions'
 
 export const FormInstructionsContainer = (): JSX.Element | null => {
   const { sectionRefs } = useFormSections()
-  const { form, submissionData } = usePublicFormContext()
+  const { form, submissionData, publicFormLanguage } = usePublicFormContext()
 
   if (submissionData || !form?.startPage.paragraph) return null
+
+  let content = form?.startPage.paragraph
+
+  // English is the default even if multi lang is not supported for this form
+  if (publicFormLanguage !== Language.ENGLISH) {
+    const translations = form?.startPage?.translations ?? []
+
+    const contentTranslationIdx = translations.findIndex(
+      (translation) => translation.language === publicFormLanguage,
+    )
+
+    if (contentTranslationIdx !== -1) {
+      content = translations[contentTranslationIdx].translation
+    }
+  }
 
   return (
     <Flex justify="center">
@@ -38,7 +55,7 @@ export const FormInstructionsContainer = (): JSX.Element | null => {
           tabIndex={-1}
         >
           <FormInstructions
-            content={form?.startPage.paragraph}
+            content={content}
             colorTheme={form?.startPage.colorTheme}
           />
         </Box>

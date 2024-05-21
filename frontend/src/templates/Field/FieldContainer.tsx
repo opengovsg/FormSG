@@ -75,10 +75,12 @@ export const FieldContainer = ({
 
   const error: FieldError | undefined = get(errors, errorKey ?? schema._id)
 
-  const titleTranslationIdx =
-    schema.titleTranslations?.findIndex((titleTranslation) => {
+  const titleTranslations = schema.titleTranslations ?? []
+  const titleTranslationIdx = titleTranslations.findIndex(
+    (titleTranslation) => {
       return titleTranslation.language === selectedLanguage
-    }) ?? -1
+    },
+  )
 
   let title = schema.title
 
@@ -86,10 +88,11 @@ export const FieldContainer = ({
     title = schema.titleTranslations[titleTranslationIdx].translation
   }
 
-  const descriptionTranslationIdx =
-    schema.descriptionTranslations?.findIndex((descriptionTranslation) => {
-      return descriptionTranslation.language === selectedLanguage
-    }) ?? -1
+  const descriptionTranslations = schema.descriptionTranslations ?? []
+  const descriptionTranslationIdx = descriptionTranslations.findIndex(
+    (descriptionTranslation) =>
+      descriptionTranslation.language === selectedLanguage,
+  )
 
   let description = schema.description
 
