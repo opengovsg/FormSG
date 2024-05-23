@@ -14,6 +14,7 @@ export interface SectionFieldContainerProps extends BaseFieldProps {
 export const SectionFieldContainer = ({
   schema,
   colorTheme = FormColorTheme.Blue,
+  selectedLanguage,
 }: SectionFieldContainerProps): JSX.Element => {
   const { sectionRefs } = useFormSections()
 
@@ -24,6 +25,7 @@ export const SectionFieldContainer = ({
       tabIndex={-1}
       schema={schema}
       colorTheme={colorTheme}
+      selectedLanguage={selectedLanguage}
     />
   )
 }

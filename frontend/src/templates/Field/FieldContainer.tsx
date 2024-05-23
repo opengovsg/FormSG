@@ -75,30 +75,35 @@ export const FieldContainer = ({
 
   const error: FieldError | undefined = get(errors, errorKey ?? schema._id)
 
+  let title = schema.title
+
   const titleTranslations = schema.titleTranslations ?? []
+  // check if there are any title translations for the selected language
   const titleTranslationIdx = titleTranslations.findIndex(
     (titleTranslation) => {
       return titleTranslation.language === selectedLanguage
     },
   )
 
-  let title = schema.title
-
-  if (schema.titleTranslations && titleTranslationIdx !== -1) {
-    title = schema.titleTranslations[titleTranslationIdx].translation
+  // If there are title translations for the selected language, use the translation.
+  // If not default it to English.
+  if (titleTranslationIdx !== -1) {
+    title = titleTranslations[titleTranslationIdx].translation
   }
 
+  let description = schema.description
+
   const descriptionTranslations = schema.descriptionTranslations ?? []
+  // check if there are any description translations for the selected language
   const descriptionTranslationIdx = descriptionTranslations.findIndex(
     (descriptionTranslation) =>
       descriptionTranslation.language === selectedLanguage,
   )
 
-  let description = schema.description
-
-  if (schema.descriptionTranslations && descriptionTranslationIdx !== -1) {
-    description =
-      schema.descriptionTranslations[descriptionTranslationIdx].translation
+  // If there are description translations for the language, use the translation.
+  // If not default it to English.
+  if (descriptionTranslationIdx !== -1) {
+    description = descriptionTranslations[descriptionTranslationIdx].translation
   }
 
   return (
