@@ -249,7 +249,7 @@ describe('postman-sms.service', () => {
       expect(postmanSendSpy).not.toHaveBeenCalled()
     })
 
-    it('should log and send verification OTP when sending has no errors', async () => {
+    it('should log and send verification OTP through MOP channel when sending has no errors', async () => {
       // Arrange
       jest.spyOn(FormModel, 'getOtpData').mockResolvedValueOnce(mockOtpData)
 
@@ -271,7 +271,7 @@ describe('postman-sms.service', () => {
       expect(postmanSendSpy).toHaveBeenCalledOnce()
     })
 
-    it('should log failure and return InvalidNumberError when verification OTP fails to send due to invalid number', async () => {
+    it('should return InvalidNumberError when verification OTP fails to send due to invalid number', async () => {
       // Arrange
       jest.spyOn(FormModel, 'getOtpData').mockResolvedValueOnce(mockOtpData)
       const postmanSendSpy = jest
