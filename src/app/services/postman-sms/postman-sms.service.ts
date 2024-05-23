@@ -16,8 +16,11 @@ import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import MailService from '../mail/mail.service'
 
 import { InvalidNumberError, SmsSendError } from './postman-sms.errors'
-import { SmsType } from './postman-sms.types'
-import { renderVerificationSms } from './postman-sms.util'
+import { BouncedSubmissionSmsData, SmsType } from './postman-sms.types'
+import {
+  renderBouncedSubmissionSms,
+  renderVerificationSms,
+} from './postman-sms.util'
 
 const logger = createLoggerWithLabel(module)
 const Form = getFormModel(mongoose)
@@ -88,8 +91,59 @@ class PostmanSmsService {
    *
    * SMSes will be sent using FormSG sender id.
    */
-  private sendInternalSms() {
-    // stub
+  sendInternalSms(
+    smsData: FormOtpData | AdminContactOtpData,
+    recipient: string,
+    message: string,
+    smsType: SmsType,
+    senderIp?: string,
+  ): ResultAsync<true, SmsSendError | InvalidNumberError> {
+    const logMeta = {
+      action: 'sendMopSms',
+      recipient,
+      smsType,
+      smsData,
+      senderIp,
+    }
+
+    const body = {
+      recipient: recipient.replace('+', ''),
+      language: 'english',
+      values: { body: message },
+    }
+
+    if (useMockPostmanSms) {
+      return MailService.sendLocalDevMail(
+        '[Mock Postman SMS] Captured SMS',
+        message,
+      )
+    }
+
+    const campaignUrl =
+      postmanSmsConfig.postmanBaseUrl +
+      `/campaigns/${postmanSmsConfig.internalCampaignId}/messages`
+
+    return ResultAsync.fromPromise(
+      axios.post(campaignUrl, body, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${postmanSmsConfig.internalCampaignApiKey}`,
+        },
+      }),
+      (error) => {
+        logger.warn({
+          message: 'Error sending SMS using Postman API',
+          meta: {
+            ...logMeta,
+            postmanError: (error as AxiosError).response?.data,
+          },
+        })
+
+        return new SmsSendError()
+      },
+    ).andThen(() => {
+      return okAsync(true as const)
+    })
   }
 
   /**
@@ -155,6 +209,42 @@ class PostmanSmsService {
         senderIp,
       )
     })
+  }
+
+  public sendBouncedSubmissionSms(
+    recipient: string,
+    recipientEmail: string,
+    adminId: string,
+    adminEmail: string,
+    formId: string,
+    formTitle: string,
+  ): ResultAsync<true, SmsSendError | InvalidNumberError> {
+    logger.info({
+      message: `Sending bounced submission notification for ${recipientEmail}`,
+      meta: {
+        action: 'sendBouncedSubmissionSms',
+        formId,
+      },
+    })
+
+    const message = renderBouncedSubmissionSms(formTitle)
+
+    const smsData: BouncedSubmissionSmsData = {
+      form: formId,
+      collaboratorEmail: recipientEmail,
+      recipientNumber: recipient,
+      formAdmin: {
+        email: adminEmail,
+        userId: adminId,
+      },
+    }
+
+    return this.sendInternalSms(
+      smsData,
+      recipient,
+      message,
+      SmsType.BouncedSubmission,
+    )
   }
 }
 
