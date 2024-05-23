@@ -14,8 +14,8 @@ import {
 } from '../../modules/core/core.errors'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import MailService from '../mail/mail.service'
-import { InvalidNumberError, SmsSendError } from '../sms/sms.errors'
 
+import { InvalidNumberError, SmsSendError } from './postman-sms.errors'
 import { SmsType } from './postman-sms.types'
 import { renderVerificationSms } from './postman-sms.util'
 
@@ -28,7 +28,7 @@ class PostmanSmsService {
    * SMSes will be sent using govsg sender id.
    * Messages to any member of public MUST be sent using this method.
    */
-  private sendMopSms(
+  sendMopSms(
     smsData: FormOtpData | AdminContactOtpData,
     recipient: string,
     message: string,
