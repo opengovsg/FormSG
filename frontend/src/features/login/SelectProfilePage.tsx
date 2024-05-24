@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { BiChevronRight } from 'react-icons/bi'
 import { Link as ReactLink } from 'react-router-dom'
 import {
@@ -59,12 +60,14 @@ const MODAL_ERRORS: Record<string, ModalErrorMessages> = {
     header: "You don't have access to this service",
     body: () => (
       <Text>
-        It may be available only to select agencies or authorised individuals.
-        If you believe you should have access to this service, please{' '}
-        <Link isExternal href={SUPPORT_FORM_LINK}>
-          contact us
-        </Link>
-        .
+        <Trans i18nKey="features.login.SelectProfilePage.invalidWorkEmail">
+          It may be available only to select agencies or authorised individuals.
+          If you believe you should have access to this service, please{' '}
+          <Link isExternal href={SUPPORT_FORM_LINK}>
+            contact us
+          </Link>
+          .
+        </Trans>
       </Text>
     ),
     cta: 'Choose another account',
@@ -118,6 +121,7 @@ const ErrorDisclosure = (
   )
 }
 export const SelectProfilePage = (): JSX.Element => {
+  const { t } = useTranslation()
   const profilesResponse = useSgidProfiles()
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const { user } = useUser()
@@ -156,7 +160,7 @@ export const SelectProfilePage = (): JSX.Element => {
           setErrorContext(MODAL_ERRORS.INVALID_WORKEMAIL)
           return
         }
-        toast({ description: 'Something went wrong. Please try again later.' })
+        toast({ description: t('features.common.errors.generic') })
       })
   }
 
@@ -173,7 +177,7 @@ export const SelectProfilePage = (): JSX.Element => {
         divider={<Divider />}
       >
         <Text textStyle="h2" marginBottom="0.5rem" color="secondary.700">
-          Choose an account to continue to FormSG
+          {t('features.login.SelectProfilePage.accountSelection')}
         </Text>
 
         {!profilesResponse.data ? (
@@ -194,7 +198,7 @@ export const SelectProfilePage = (): JSX.Element => {
           as={ReactLink}
           to={LOGIN_ROUTE}
         >
-          Or, login manually using email and OTP
+          {t('features.login.SelectProfilePage.manualLogin')}
         </Link>
       </Stack>
       <ErrorDisclosure {...errorDisclosure} errorMessages={errorContext} />

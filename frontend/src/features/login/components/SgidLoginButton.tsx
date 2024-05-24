@@ -1,4 +1,5 @@
 import { useForm } from 'react-hook-form'
+import { Trans } from 'react-i18next'
 import { useMutation } from 'react-query'
 import { Flex, Link, Text, VStack } from '@chakra-ui/react'
 
@@ -33,10 +34,12 @@ export const SgidLoginButton = (): JSX.Element => {
         </Flex>
       </Button>
       <Text>
-        For{' '}
-        <Link isExternal href={SGID_VALID_ORG_PAGE}>
-          select agencies
-        </Link>
+        <Trans i18nKey="features.login.components.SgidLoginButton.selectAgencies">
+          For{' '}
+          <Link isExternal href={SGID_VALID_ORG_PAGE}>
+            select agencies
+          </Link>
+        </Trans>
       </Text>
     </VStack>
   )
