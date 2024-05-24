@@ -27,7 +27,7 @@ const EDIT_LONGTEXT_FIELD_KEYS = ['title', 'description', 'required'] as const
 
 type EditLongTextInputs = Pick<
   LongTextFieldBase,
-  typeof EDIT_LONGTEXT_FIELD_KEYS[number]
+  (typeof EDIT_LONGTEXT_FIELD_KEYS)[number]
 > & {
   ValidationOptions: {
     selectedValidation: TextSelectedValidation | ''

@@ -576,10 +576,10 @@ export const mapGoGovErrors = (error: AxiosError): GoGovError => {
       return responseData.type
         ? new GoGovAlreadyExistError()
         : !responseData.message.includes(urlFormatError)
-        ? new GoGovValidationError()
-        : new GoGovServerError(
-            'GoGov server returned 400 for URL formatting error',
-          )
+          ? new GoGovValidationError()
+          : new GoGovServerError(
+              'GoGov server returned 400 for URL formatting error',
+            )
     case StatusCodes.TOO_MANY_REQUESTS:
       return new GoGovRequestLimitError()
     // For gogov API this is equivalent to Request Failed

@@ -110,8 +110,8 @@ export const PublicFormSubmitButton = ({
         {preventSubmissionLogic
           ? 'Submission disabled'
           : isPaymentEnabled
-          ? 'Proceed to pay'
-          : 'Submit now'}
+            ? 'Proceed to pay'
+            : 'Submit now'}
       </Button>
       {preventSubmissionLogic ? (
         <InlineMessage variant="warning">

@@ -26,12 +26,11 @@ export const centerDecorator: DecoratorFn = (storyFn) => (
 
 export const fixedHeightDecorator =
   (height: BoxProps['h']): DecoratorFn =>
-  (Story) =>
-    (
-      <Box h={height}>
-        <Story />
-      </Box>
-    )
+  (Story) => (
+    <Box h={height}>
+      <Story />
+    </Box>
+  )
 
 export const fullScreenDecorator: DecoratorFn = (storyFn) => (
   <Box w="100vw" css={fillHeightCss}>

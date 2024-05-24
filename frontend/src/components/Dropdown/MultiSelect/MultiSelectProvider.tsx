@@ -138,7 +138,7 @@ export const MultiSelectProvider = ({
     reset,
     activeIndex,
     setActiveIndex,
-  } = useMultipleSelection<typeof items[0]>({
+  } = useMultipleSelection<(typeof items)[0]>({
     selectedItems,
     onSelectedItemsChange: ({ selectedItems }) => {
       onChange(

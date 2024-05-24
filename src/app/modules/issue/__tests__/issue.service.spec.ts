@@ -137,7 +137,7 @@ describe('issue.service', () => {
               exec: jest
                 .fn()
                 .mockRejectedValueOnce(new Error('some error') as never),
-            } as unknown as mongoose.Query<any, any>),
+            }) as unknown as mongoose.Query<any, any>,
         )
 
       // Act
@@ -334,7 +334,7 @@ describe('issue.service', () => {
             exec: jest
               .fn()
               .mockRejectedValueOnce(new Error('some error') as never),
-          } as unknown as mongoose.Query<any, any>),
+          }) as unknown as mongoose.Query<any, any>,
       )
       const mailSpy = jest.spyOn(
         MailService,
@@ -485,7 +485,7 @@ describe('issue.service', () => {
           ({
             sort: sortSpy,
             exec: () => Promise.reject(new Error('boom')),
-          } as unknown as mongoose.Query<any, any>),
+          }) as unknown as mongoose.Query<any, any>,
       )
 
       // Act

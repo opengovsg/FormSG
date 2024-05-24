@@ -30,7 +30,7 @@ const EDIT_DECIMAL_FIELD_KEYS = [
 
 type EditDecimalInputs = Pick<
   DecimalFieldBase,
-  typeof EDIT_DECIMAL_FIELD_KEYS[number]
+  (typeof EDIT_DECIMAL_FIELD_KEYS)[number]
 >
 
 const transformDecimalEditFormToField = (

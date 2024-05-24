@@ -23,5 +23,5 @@ export type CpOidcProps = {
 export type OidcServiceType<T> = T extends FormAuthType.SP
   ? SpOidcServiceClass
   : T extends FormAuthType.CP
-  ? CpOidcServiceClass
-  : never
+    ? CpOidcServiceClass
+    : never

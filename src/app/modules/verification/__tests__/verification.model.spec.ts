@@ -655,9 +655,8 @@ describe('Verification Model', () => {
             signedData: 'updatedSignedData',
           }
 
-          const result = await VerificationModel.updateHashForField(
-            updateParams,
-          )
+          const result =
+            await VerificationModel.updateHashForField(updateParams)
 
           expect(result!.fields[0].hashRetries).toEqual(0)
           expect(result!.fields[0].hashCreatedAt).toBeInstanceOf(Date)
@@ -701,9 +700,8 @@ describe('Verification Model', () => {
             signedData: 'updatedSignedData',
           }
 
-          const result = await VerificationModel.updateHashForField(
-            updateParams,
-          )
+          const result =
+            await VerificationModel.updateHashForField(updateParams)
 
           expect(result!.fields[0].hashRetries).toEqual(0)
           expect(result!.fields[0].hashCreatedAt).toBeInstanceOf(Date)
@@ -759,9 +757,8 @@ describe('Verification Model', () => {
             signedData: 'updatedSignedData',
           }
 
-          const result = await VerificationModel.updateHashForField(
-            updateParams,
-          )
+          const result =
+            await VerificationModel.updateHashForField(updateParams)
 
           expect(result!.formId).toEqual(transaction.formId)
 
@@ -802,9 +799,8 @@ describe('Verification Model', () => {
             signedData: 'updatedSignedData',
           }
 
-          const result = await VerificationModel.updateHashForField(
-            updateParams,
-          )
+          const result =
+            await VerificationModel.updateHashForField(updateParams)
 
           expect(result!.formId).toEqual(transaction.formId)
 

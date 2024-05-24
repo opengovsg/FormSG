@@ -21,7 +21,7 @@ type EditCountryRegionProps = EditFieldProps<CountryRegionFieldBase>
 
 const EDIT_COUNTRY_FIELD_KEYS = ['title', 'description', 'required'] as const
 
-type EditCountryRegionKeys = typeof EDIT_COUNTRY_FIELD_KEYS[number]
+type EditCountryRegionKeys = (typeof EDIT_COUNTRY_FIELD_KEYS)[number]
 
 type EditCountryRegionInputs = Pick<
   CountryRegionFieldBase,

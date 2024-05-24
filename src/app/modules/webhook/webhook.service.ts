@@ -231,8 +231,8 @@ export const getWebhookType = (webhookUrl: string) => {
   const webhookType = isZapier.test(webhookUrl)
     ? 'zapier'
     : isPlumber.test(webhookUrl)
-    ? 'plumber'
-    : 'generic'
+      ? 'plumber'
+      : 'generic'
   return webhookType
 }
 

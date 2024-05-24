@@ -89,9 +89,9 @@ export const IndividualResponsePage = (): JSX.Element => {
     !data?.submissionSecretKey
       ? secretKey
       : // It's an mrf, but old version
-      !data.mrfVersion
-      ? secretKey
-      : data.submissionSecretKey
+        !data.mrfVersion
+        ? secretKey
+        : data.submissionSecretKey
 
   const attachmentDownloadUrls = useMemo(() => {
     const attachmentDownloadUrls = new Map()
