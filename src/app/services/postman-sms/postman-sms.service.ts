@@ -16,9 +16,14 @@ import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import MailService from '../mail/mail.service'
 
 import { InvalidNumberError, SmsSendError } from './postman-sms.errors'
-import { BouncedSubmissionSmsData, SmsType } from './postman-sms.types'
+import {
+  BouncedSubmissionSmsData,
+  FormDeactivatedSmsData,
+  SmsType,
+} from './postman-sms.types'
 import {
   renderBouncedSubmissionSms,
+  renderFormDeactivatedSms,
   renderVerificationSms,
 } from './postman-sms.util'
 
@@ -91,7 +96,7 @@ class PostmanSmsService {
    *
    * SMSes will be sent using FormSG sender id.
    */
-  sendInternalSms(
+  _sendInternalSms(
     smsData: FormOtpData | AdminContactOtpData,
     recipient: string,
     message: string,
@@ -111,6 +116,11 @@ class PostmanSmsService {
       language: 'english',
       values: { body: message },
     }
+
+    logger.info({
+      message: `Sending internal SMS for ${smsType}`,
+      meta: logMeta,
+    })
 
     if (useMockPostmanSms) {
       return MailService.sendLocalDevMail(
@@ -219,13 +229,23 @@ class PostmanSmsService {
     formId: string,
     formTitle: string,
   ): ResultAsync<true, SmsSendError | InvalidNumberError> {
+    const logMeta = {
+      action: 'sendBouncedSubmissionSms',
+      formId,
+    }
+
     logger.info({
       message: `Sending bounced submission notification for ${recipientEmail}`,
-      meta: {
-        action: 'sendBouncedSubmissionSms',
-        formId,
-      },
+      meta: logMeta,
     })
+
+    if (!isPhoneNumber(recipient)) {
+      logger.warn({
+        message: `${recipient} is not a valid phone number`,
+        meta: logMeta,
+      })
+      return errAsync(new InvalidNumberError())
+    }
 
     const message = renderBouncedSubmissionSms(formTitle)
 
@@ -239,11 +259,57 @@ class PostmanSmsService {
       },
     }
 
-    return this.sendInternalSms(
+    return this._sendInternalSms(
       smsData,
       recipient,
       message,
       SmsType.BouncedSubmission,
+    )
+  }
+
+  public sendFormDeactivatedSms(
+    recipient: string,
+    recipientEmail: string,
+    adminId: string,
+    adminEmail: string,
+    formId: string,
+    formTitle: string,
+  ): ResultAsync<true, SmsSendError | InvalidNumberError> {
+    const logMeta = {
+      action: 'sendFormDeactivatedSms',
+      formId,
+    }
+
+    logger.info({
+      message: `Sending form deactivation notification for ${recipientEmail}`,
+      meta: logMeta,
+    })
+
+    if (!isPhoneNumber(recipient)) {
+      logger.warn({
+        message: `${recipient} is not a valid phone number`,
+        meta: logMeta,
+      })
+      return errAsync(new InvalidNumberError())
+    }
+
+    const message = renderFormDeactivatedSms(formTitle)
+
+    const smsData: FormDeactivatedSmsData = {
+      form: formId,
+      collaboratorEmail: recipientEmail,
+      recipientNumber: recipient,
+      formAdmin: {
+        email: adminEmail,
+        userId: adminId,
+      },
+    }
+
+    return this._sendInternalSms(
+      smsData,
+      recipient,
+      message,
+      SmsType.DeactivatedForm,
     )
   }
 }
