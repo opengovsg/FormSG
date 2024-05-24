@@ -16,10 +16,9 @@ interface Navigator extends BaseNavigator {
   block: History['block']
 }
 
-type NavigationContextWithBlock =
-  | ContextType<typeof NavigationContext> & {
-      navigator: Navigator
-    }
+type NavigationContextWithBlock = ContextType<typeof NavigationContext> & {
+  navigator: Navigator
+}
 
 export const useNavigationPrompt = (when?: boolean) => {
   const navigationContext = useContext(

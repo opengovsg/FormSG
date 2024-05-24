@@ -33,8 +33,8 @@ const baseDayOfMonthStyles: SystemStyleFunction = ({
     color: isSelected
       ? 'white'
       : isOutsideCurrMonth
-      ? 'secondary.300'
-      : 'secondary.500',
+        ? 'secondary.300'
+        : 'secondary.500',
     outline: 'none',
     border: '1px solid',
     borderColor: isToday

@@ -30,7 +30,7 @@ const EDIT_MOBILE_KEYS = [
 
 type EditMobileProps = EditFieldProps<MobileFieldBase>
 
-type EditMobileInputs = Pick<MobileFieldBase, typeof EDIT_MOBILE_KEYS[number]>
+type EditMobileInputs = Pick<MobileFieldBase, (typeof EDIT_MOBILE_KEYS)[number]>
 
 export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
   const {

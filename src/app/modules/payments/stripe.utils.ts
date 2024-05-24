@@ -178,8 +178,8 @@ const chargeStateReducer = (
         const chargeIdLatest = !latestCharge
           ? undefined
           : typeof latestCharge === 'string'
-          ? latestCharge
-          : latestCharge.id
+            ? latestCharge
+            : latestCharge.id
         if (state.chargeIdLatest === chargeIdLatest) {
           state.status = PaymentStatus.Canceled
         } else {
@@ -348,8 +348,8 @@ export const computePaymentState = (
         chargeIdLatest: !latestCharge
           ? undefined
           : typeof latestCharge === 'string'
-          ? latestCharge
-          : latestCharge.id,
+            ? latestCharge
+            : latestCharge.id,
       })
     }
     default:

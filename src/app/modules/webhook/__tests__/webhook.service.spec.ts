@@ -406,7 +406,7 @@ describe('webhook.service', () => {
     const generateMockProducer = () =>
       ({
         sendMessage: jest.fn().mockReturnValue(okAsync(true)),
-      } as unknown as WebhookProducer)
+      }) as unknown as WebhookProducer
 
     beforeEach(() => {
       jest.clearAllMocks()

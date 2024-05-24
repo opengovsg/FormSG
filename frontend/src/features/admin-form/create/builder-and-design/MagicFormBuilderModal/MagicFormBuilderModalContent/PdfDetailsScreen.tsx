@@ -75,7 +75,7 @@ export const MagicFormBuilderPdfDetailsScreen = (): JSX.Element => {
     }
   }
   async function pdfToText(data: ArrayBuffer) {
-    const loadingTask = pdfjs.getDocument(data)
+    const loadingTask = pdfjs.getDocument({ data, isEvalSupported: false })
     const pdf = await loadingTask.promise
 
     let combinedText = ''

@@ -258,9 +258,8 @@ describe('spcp.oidc.service.sp', () => {
         .mockResolvedValueOnce(MOCK_SP_JWT_PAYLOAD)
 
       // Act
-      const result = await spOidcServiceClass.extractJwtPayloadFromRequest(
-        MOCK_COOKIES,
-      )
+      const result =
+        await spOidcServiceClass.extractJwtPayloadFromRequest(MOCK_COOKIES)
 
       // Assert
       expect(result._unsafeUnwrap()).toEqual(MOCK_SP_JWT_PAYLOAD)
@@ -290,9 +289,8 @@ describe('spcp.oidc.service.sp', () => {
       jest.spyOn(mockSpOidcClient, 'verifyJwt').mockResolvedValueOnce({})
 
       // Act
-      const result = await spOidcServiceClass.extractJwtPayloadFromRequest(
-        MOCK_COOKIES,
-      )
+      const result =
+        await spOidcServiceClass.extractJwtPayloadFromRequest(MOCK_COOKIES)
 
       // Assert
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(InvalidJwtError)

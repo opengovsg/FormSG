@@ -37,8 +37,8 @@ export const BuilderFields = ({
     stateData.state === FieldBuilderState.EditingField
       ? stateData.field._id
       : stateData.state === FieldBuilderState.CreatingField
-      ? PENDING_CREATE_FIELD_ID
-      : null
+        ? PENDING_CREATE_FIELD_ID
+        : null
 
   const colorTheme = useDesignColorTheme()
 

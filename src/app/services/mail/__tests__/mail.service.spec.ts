@@ -502,9 +502,8 @@ describe('mail.service', () => {
       )
 
       // Act
-      const actualResult = await mailService.sendSubmissionToAdmin(
-        modifiedParams,
-      )
+      const actualResult =
+        await mailService.sendSubmissionToAdmin(modifiedParams)
 
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(true)
@@ -526,9 +525,8 @@ describe('mail.service', () => {
       )
 
       // Act
-      const actualResult = await mailService.sendSubmissionToAdmin(
-        modifiedParams,
-      )
+      const actualResult =
+        await mailService.sendSubmissionToAdmin(modifiedParams)
 
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(true)
@@ -551,9 +549,8 @@ describe('mail.service', () => {
       const expectedArgument = generateExpectedArgWithToField(formEmailsMixture)
 
       // Act
-      const actualResult = await mailService.sendSubmissionToAdmin(
-        modifiedParams,
-      )
+      const actualResult =
+        await mailService.sendSubmissionToAdmin(modifiedParams)
 
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(true)
@@ -574,9 +571,8 @@ describe('mail.service', () => {
       modifiedParams.form.emails = formEmailsMixture
 
       // Act
-      const actualResult = await mailService.sendSubmissionToAdmin(
-        modifiedParams,
-      )
+      const actualResult =
+        await mailService.sendSubmissionToAdmin(modifiedParams)
 
       // Assert
       expect(actualResult._unsafeUnwrapErr()).toEqual(
@@ -590,9 +586,8 @@ describe('mail.service', () => {
       invalidParams.form.emails = ['notAnEmail', MOCK_VALID_EMAIL]
 
       // Act
-      const actualResult = await mailService.sendSubmissionToAdmin(
-        invalidParams,
-      )
+      const actualResult =
+        await mailService.sendSubmissionToAdmin(invalidParams)
 
       // Assert
       expect(actualResult._unsafeUnwrapErr()).toEqual(
@@ -606,9 +601,8 @@ describe('mail.service', () => {
       invalidParams.form.emails = []
 
       // Act
-      const actualResult = await mailService.sendSubmissionToAdmin(
-        invalidParams,
-      )
+      const actualResult =
+        await mailService.sendSubmissionToAdmin(invalidParams)
 
       // Assert
       expect(actualResult._unsafeUnwrapErr()).toEqual(
@@ -636,9 +630,8 @@ describe('mail.service', () => {
       const expectedArgument = generateExpectedArgWithToField(formEmailsMixture)
 
       // Act
-      const actualResult = await mailService.sendSubmissionToAdmin(
-        modifiedParams,
-      )
+      const actualResult =
+        await mailService.sendSubmissionToAdmin(modifiedParams)
 
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(true)
@@ -668,9 +661,8 @@ describe('mail.service', () => {
       )
 
       // Act
-      const actualResult = await mailService.sendSubmissionToAdmin(
-        modifiedParams,
-      )
+      const actualResult =
+        await mailService.sendSubmissionToAdmin(modifiedParams)
 
       // Assert
       const actualError = actualResult._unsafeUnwrapErr()
@@ -705,9 +697,8 @@ describe('mail.service', () => {
       const expectedArgument = generateExpectedArgWithToField(formEmailsMixture)
 
       // Act
-      const actualResult = await mailService.sendSubmissionToAdmin(
-        modifiedParams,
-      )
+      const actualResult =
+        await mailService.sendSubmissionToAdmin(modifiedParams)
 
       // Assert
       const actualError = actualResult._unsafeUnwrapErr()
@@ -819,9 +810,8 @@ describe('mail.service', () => {
 
       const expectedResponse = await Promise.allSettled([ok(true), ok(true)])
       // Act
-      const actualResult = await mailService.sendAutoReplyEmails(
-        multipleEmailParams,
-      )
+      const actualResult =
+        await mailService.sendAutoReplyEmails(multipleEmailParams)
 
       // Assert
       expect(actualResult).toEqual(expectedResponse)
@@ -860,9 +850,8 @@ describe('mail.service', () => {
       ])
 
       // Act
-      const actualResult = await mailService.sendAutoReplyEmails(
-        multipleEmailParams,
-      )
+      const actualResult =
+        await mailService.sendAutoReplyEmails(multipleEmailParams)
 
       // Assert
       expect(actualResult).toEqual(expectedResponse)
@@ -887,9 +876,8 @@ describe('mail.service', () => {
       const expectedResponse = await Promise.allSettled([ok(true)])
 
       // Act
-      const actualResult = await mailService.sendAutoReplyEmails(
-        customDataParams,
-      )
+      const actualResult =
+        await mailService.sendAutoReplyEmails(customDataParams)
 
       // Assert
       expect(actualResult).toEqual(expectedResponse)
@@ -913,9 +901,8 @@ describe('mail.service', () => {
       const expectedResponse = await Promise.allSettled([ok(true)])
 
       // Act
-      const actualResult = await mailService.sendAutoReplyEmails(
-        customDataParams,
-      )
+      const actualResult =
+        await mailService.sendAutoReplyEmails(customDataParams)
 
       // Assert
       expect(actualResult).toEqual(expectedResponse)
@@ -963,9 +950,8 @@ describe('mail.service', () => {
       const expectedResponse = await Promise.allSettled([ok(true)])
 
       // Act
-      const actualResult = await mailService.sendAutoReplyEmails(
-        customDataParams,
-      )
+      const actualResult =
+        await mailService.sendAutoReplyEmails(customDataParams)
 
       // Assert
       expect(actualResult).toEqual(expectedResponse)
@@ -980,9 +966,8 @@ describe('mail.service', () => {
       invalidDataParams.autoReplyMailDatas[0].email = 'notAnEmail'
 
       // Act
-      const actualResult = await mailService.sendAutoReplyEmails(
-        invalidDataParams,
-      )
+      const actualResult =
+        await mailService.sendAutoReplyEmails(invalidDataParams)
 
       // Assert
       const expectedResponse = await Promise.allSettled([
@@ -1009,9 +994,8 @@ describe('mail.service', () => {
       const expectedResponse = await Promise.allSettled([ok(true)])
 
       // Act
-      const actualResult = await mailService.sendAutoReplyEmails(
-        customDataParams,
-      )
+      const actualResult =
+        await mailService.sendAutoReplyEmails(customDataParams)
 
       // Assert
       expect(actualResult).toEqual(expectedResponse)
@@ -1037,9 +1021,8 @@ describe('mail.service', () => {
       const expectedArg = { ...defaultExpectedArg, subject: customSubject }
 
       // Act
-      const actualResult = await mailService.sendAutoReplyEmails(
-        customDataParams,
-      )
+      const actualResult =
+        await mailService.sendAutoReplyEmails(customDataParams)
 
       // Assert
       const expectedResponse = await Promise.allSettled([
@@ -1070,9 +1053,8 @@ describe('mail.service', () => {
       const expectedArg = { ...defaultExpectedArg, subject: customSubject }
 
       // Act
-      const actualResult = await mailService.sendAutoReplyEmails(
-        customDataParams,
-      )
+      const actualResult =
+        await mailService.sendAutoReplyEmails(customDataParams)
 
       // Assert
       const expectedResponse = await Promise.allSettled([
@@ -1349,18 +1331,16 @@ describe('mail.service', () => {
       jest
         .spyOn(FormService, 'retrievePublicFormsWithSmsVerification')
         .mockReturnValueOnce(okAsync([MOCK_FORM]))
-      const expectedAdminMailOptions = await generateAdminExpectedMailOptions(
-        MOCK_VALID_EMAIL,
-      )
+      const expectedAdminMailOptions =
+        await generateAdminExpectedMailOptions(MOCK_VALID_EMAIL)
       const expectedCollabMailOptions = await generateCollabExpectedMailOptions(
         MOCK_VALID_EMAIL,
         [MOCK_VALID_EMAIL_2, MOCK_VALID_EMAIL_3],
       )
 
       // Act
-      const actualResult = await mailService.sendSmsVerificationDisabledEmail(
-        MOCK_FORM,
-      )
+      const actualResult =
+        await mailService.sendSmsVerificationDisabledEmail(MOCK_FORM)
 
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(true)

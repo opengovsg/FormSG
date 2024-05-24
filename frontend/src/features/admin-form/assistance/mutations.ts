@@ -103,7 +103,7 @@ export const useAssistanceMutations = () => {
                 description: `Error creating form. Reason: ${e}`,
                 status: 'warning',
               })
-              return
+              throw new Error('Unable to create form fields')
             }
           }
           return createFieldsMutation.mutate(formFields)
@@ -120,7 +120,7 @@ export const useAssistanceMutations = () => {
               break
 
             default:
-              errorMessage = 'An error occured. Please try again.'
+              errorMessage = 'An error occurred. Please try again.'
           }
           toast({
             description: `${errorMessage}`,

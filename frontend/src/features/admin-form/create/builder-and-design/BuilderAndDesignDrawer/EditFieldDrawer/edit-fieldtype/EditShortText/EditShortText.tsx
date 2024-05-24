@@ -41,7 +41,7 @@ const EDIT_SHORTTEXT_FIELD_KEYS = [
 
 type EditShortTextInputs = Pick<
   ShortTextFieldBase,
-  typeof EDIT_SHORTTEXT_FIELD_KEYS[number]
+  (typeof EDIT_SHORTTEXT_FIELD_KEYS)[number]
 > & {
   ValidationOptions: {
     selectedValidation: TextSelectedValidation | ''
