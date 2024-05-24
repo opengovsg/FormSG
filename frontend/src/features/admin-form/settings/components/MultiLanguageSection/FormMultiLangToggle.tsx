@@ -166,8 +166,6 @@ export const FormMultiLangToggle = (): JSX.Element => {
     [settings],
   )
 
-  console.log(hasMultiLang)
-
   const handleToggleMultiLang = useCallback(() => {
     if (!settings || isLoadingSettings || mutateFormHasMultiLang.isLoading)
       return

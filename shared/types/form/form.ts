@@ -40,6 +40,11 @@ export type TranslationMapping = {
   translation: string
 }
 
+export type TranslationOptionMapping = {
+  language: Language
+  translation: string[]
+}
+
 export type FormStartPage = {
   logo: FormLogo
   colorTheme: FormColorTheme

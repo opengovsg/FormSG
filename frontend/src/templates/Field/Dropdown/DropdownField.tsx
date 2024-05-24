@@ -21,7 +21,7 @@ export const DropdownField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
-  selectedLanguage: language,
+  selectedLanguage,
   ...fieldContainerProps
 }: DropdownFieldProps): JSX.Element => {
   const rules = useMemo(() => {
@@ -30,11 +30,25 @@ export const DropdownField = ({
 
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
+  const fieldOptions = useMemo(() => {
+    const fieldOptionsTranslations = schema?.fieldOptionsTranslations ?? []
+
+    const translationIdx = fieldOptionsTranslations.findIndex((translation) => {
+      return translation.language === selectedLanguage
+    })
+
+    if (translationIdx !== -1) {
+      return fieldOptionsTranslations[translationIdx].translation
+    } else {
+      return schema.fieldOptions
+    }
+  }, [schema.fieldOptions, schema?.fieldOptionsTranslations, selectedLanguage])
+
   return (
     <FieldContainer
       schema={schema}
       {...fieldContainerProps}
-      selectedLanguage={language}
+      selectedLanguage={selectedLanguage}
     >
       <Controller
         control={control}
@@ -44,7 +58,7 @@ export const DropdownField = ({
         render={({ field }) => (
           <SingleSelect
             colorScheme={`theme-${colorTheme}`}
-            items={schema.fieldOptions}
+            items={fieldOptions}
             {...field}
           />
         )}

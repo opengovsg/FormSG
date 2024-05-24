@@ -13,14 +13,14 @@ export interface MobileFieldProps extends BaseFieldProps {
 export const MobileField = ({
   schema,
   disableRequiredValidation,
-  selectedLanguage: publicFormLanguage = Language.ENGLISH,
+  selectedLanguage = Language.ENGLISH,
   ...fieldContainerProps
 }: MobileFieldProps): JSX.Element => {
   return (
     <FieldContainer
       schema={schema}
       {...fieldContainerProps}
-      selectedLanguage={publicFormLanguage}
+      selectedLanguage={selectedLanguage}
     >
       <MobileFieldInput
         schema={schema}

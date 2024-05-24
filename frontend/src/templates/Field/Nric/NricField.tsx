@@ -20,7 +20,7 @@ export interface NricFieldProps extends BaseFieldProps {
 export const NricField = ({
   schema,
   disableRequiredValidation,
-  selectedLanguage: publicFormLanguage = Language.ENGLISH,
+  selectedLanguage = Language.ENGLISH,
 }: NricFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createNricValidationRules(schema, disableRequiredValidation),
@@ -30,7 +30,7 @@ export const NricField = ({
   const { register, setValue } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema} selectedLanguage={publicFormLanguage}>
+    <FieldContainer schema={schema} selectedLanguage={selectedLanguage}>
       <Input
         aria-label={`${schema.questionNumber}. ${schema.title}`}
         defaultValue=""

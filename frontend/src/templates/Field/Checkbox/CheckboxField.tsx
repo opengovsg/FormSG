@@ -36,7 +36,7 @@ export const CheckboxField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
-  selectedLanguage: publicFormLanguage = Language.ENGLISH,
+  selectedLanguage = Language.ENGLISH,
 }: CheckboxFieldProps): JSX.Element => {
   const fieldColorScheme = useMemo(
     () => `theme-${colorTheme}` as const,
@@ -65,6 +65,20 @@ export const CheckboxField = ({
     name: schema._id,
   })
 
+  const fieldOptions = useMemo(() => {
+    const fieldOptionsTranslations = schema?.fieldOptionsTranslations ?? []
+
+    const translationIdx = fieldOptionsTranslations.findIndex((translation) => {
+      return translation.language === selectedLanguage
+    })
+
+    if (translationIdx !== -1) {
+      return fieldOptionsTranslations[translationIdx].translation
+    } else {
+      return schema.fieldOptions
+    }
+  }, [schema.fieldOptions, schema?.fieldOptionsTranslations, selectedLanguage])
+
   const othersValidationRules = useMemo(
     () => ({
       validate: (value?: string) => {
@@ -85,7 +99,7 @@ export const CheckboxField = ({
     <FieldContainer
       schema={schema}
       errorKey={checkboxInputName}
-      selectedLanguage={publicFormLanguage}
+      selectedLanguage={selectedLanguage}
     >
       <Box aria-label={`${schema.questionNumber}. ${schema.title}`} role="list">
         <Controller
@@ -94,7 +108,7 @@ export const CheckboxField = ({
           rules={validationRules}
           render={({ field: { ref, ...field } }) => (
             <CheckboxGroup {...field}>
-              {schema.fieldOptions.map((o, idx) => (
+              {fieldOptions.map((o, idx) => (
                 <Checkbox
                   name={checkboxInputName}
                   colorScheme={fieldColorScheme}
@@ -106,7 +120,7 @@ export const CheckboxField = ({
                   {o}
                 </Checkbox>
               ))}
-              {schema.fieldOptions.length === 1 ? (
+              {fieldOptions.length === 1 ? (
                 // React-hook-form quirk where the value will not be set in an array if there is only a single checkbox option.
                 // This is a workaround to set the value in an array by registering a hidden checkbox with the same id.
                 // See https://github.com/react-hook-form/react-hook-form/issues/7834#issuecomment-1040735711.

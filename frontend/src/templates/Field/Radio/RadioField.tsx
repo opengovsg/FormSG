@@ -27,7 +27,7 @@ export const RadioField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
-  selectedLanguage: publicFormLanguage = Language.ENGLISH,
+  selectedLanguage = Language.ENGLISH,
 }: RadioFieldProps): JSX.Element => {
   const fieldColorScheme = useMemo(
     () => `theme-${colorTheme}` as const,
@@ -70,11 +70,25 @@ export const RadioField = ({
     [getValues, radioInputName, schema.othersRadioButton],
   )
 
+  const fieldOptions = useMemo(() => {
+    const fieldOptionsTranslations = schema?.fieldOptionsTranslations ?? []
+
+    const translationIdx = fieldOptionsTranslations.findIndex((translation) => {
+      return translation.language === selectedLanguage
+    })
+
+    if (translationIdx !== -1) {
+      return fieldOptionsTranslations[translationIdx].translation
+    } else {
+      return schema.fieldOptions
+    }
+  }, [schema.fieldOptions, schema?.fieldOptionsTranslations, selectedLanguage])
+
   return (
     <FieldContainer
       schema={schema}
       errorKey={radioInputName}
-      selectedLanguage={publicFormLanguage}
+      selectedLanguage={selectedLanguage}
     >
       <Controller
         name={radioInputName}
@@ -98,7 +112,7 @@ export const RadioField = ({
             }
             aria-required={schema.required}
           >
-            {schema.fieldOptions.map((option, idx) => (
+            {fieldOptions.map((option, idx) => (
               <Radio
                 key={idx}
                 value={option}

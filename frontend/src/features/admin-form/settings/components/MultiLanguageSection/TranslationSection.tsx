@@ -15,12 +15,14 @@ import {
 import _ from 'lodash'
 
 import {
+  BasicField,
   FormEndPage,
   FormField,
   FormFieldDto,
   FormStartPage,
   Language,
   TranslationMapping,
+  TranslationOptionMapping,
 } from '~shared/types'
 
 import { ADMINFORM_ROUTE } from '~constants/routes'
@@ -38,6 +40,7 @@ type TranslationInput = {
   titleTranslation: string
   descriptionTranslation: string
   paragraphTranslations: string
+  fieldOptionsTranslations: string
 }
 
 export const TranslationContainer = ({
@@ -79,6 +82,55 @@ export const TranslationContainer = ({
         <FormControl>
           <Input
             type="text"
+            width="100%"
+            {...register(editingTranslation)}
+            defaultValue={previousTranslation}
+          />
+        </FormControl>
+      </Flex>
+    </Flex>
+  )
+}
+
+const OptionsTranslationContainer = ({
+  language,
+  defaultString,
+  register,
+  editingTranslation,
+  previousTranslation,
+}: {
+  language: string
+  defaultString: string | undefined
+  register: UseFormRegister<TranslationInput>
+  editingTranslation: keyof TranslationInput
+  previousTranslation?: string
+}) => {
+  return (
+    <Flex direction="column" width="100%">
+      <Flex alignItems="center" mb="2rem">
+        <Text
+          color="secondary.700"
+          fontWeight="400"
+          mr="7.5rem"
+          width="6.25rem"
+        >
+          Default
+        </Text>
+        <Textarea
+          placeholder={defaultString}
+          width="100%"
+          isDisabled={true}
+          padding="0.75rem"
+          resize="none"
+          height="max-content"
+        />
+      </Flex>
+      <Flex alignItems="center">
+        <Text color="secondary.700" mr="7.5rem" width="6.25rem">
+          {language}
+        </Text>
+        <FormControl>
+          <Textarea
             width="100%"
             {...register(editingTranslation)}
             defaultValue={previousTranslation}
@@ -137,7 +189,7 @@ const FormFieldTranslationContainer = ({
   capitalisedLanguage,
   register,
 }: {
-  formFieldData: FormFieldDto<FormField> | undefined
+  formFieldData: FormField | undefined
   capitalisedLanguage: string
   register: UseFormRegister<TranslationInput>
 }): JSX.Element | null => {
@@ -162,6 +214,31 @@ const FormFieldTranslationContainer = ({
       (translation) => translation.language === capitalisedLanguage,
     )?.translation ?? ''
 
+  let hasFieldOptions = false
+  let defaultFieldOptions = ''
+  let previousFieldOptionsTranslations = ''
+
+  if (
+    formFieldData.fieldType === BasicField.Radio ||
+    formFieldData.fieldType === BasicField.Checkbox ||
+    formFieldData.fieldType === BasicField.Dropdown
+  ) {
+    hasFieldOptions = true
+    defaultFieldOptions = formFieldData.fieldOptions.join('\n')
+
+    const existingFieldOptionsTranslations =
+      formFieldData?.fieldOptionsTranslations ?? []
+
+    const idx = existingFieldOptionsTranslations.findIndex((translation) => {
+      return translation.language === capitalisedLanguage
+    })
+
+    if (idx !== -1) {
+      previousFieldOptionsTranslations =
+        existingFieldOptionsTranslations[idx].translation.join('\n')
+    }
+  }
+
   return (
     <>
       <Flex justifyContent="flex-start" mb="2.5rem" direction="column">
@@ -181,25 +258,49 @@ const FormFieldTranslationContainer = ({
           previousTranslation={prevTitleTranslations}
         />
       </Flex>
-      <Divider mb="2.5rem" />
       {hasDescription && (
-        <Flex justifyContent="flex-start" mb="2.5rem" direction="column">
-          <Text
-            color="secondary.500"
-            fontSize="1.25rem"
-            fontWeight="600"
-            mb="1rem"
-          >
-            Description
-          </Text>
-          <TranslationContainer
-            language={capitalisedLanguage}
-            defaultString={formFieldData?.description}
-            register={register}
-            editingTranslation={'descriptionTranslation'}
-            previousTranslation={prevDescriptionTranslations}
-          />
-        </Flex>
+        <>
+          <Divider mb="2.5rem" />
+          <Flex justifyContent="flex-start" mb="2.5rem" direction="column">
+            <Text
+              color="secondary.500"
+              fontSize="1.25rem"
+              fontWeight="600"
+              mb="1rem"
+            >
+              Description
+            </Text>
+            <TranslationContainer
+              language={capitalisedLanguage}
+              defaultString={formFieldData?.description}
+              register={register}
+              editingTranslation={'descriptionTranslation'}
+              previousTranslation={prevDescriptionTranslations}
+            />
+          </Flex>
+        </>
+      )}
+      {hasFieldOptions && (
+        <>
+          <Divider mb="2.5rem" />
+          <Flex justifyContent="flex-start" mb="2.5rem" direction="column">
+            <Text
+              color="secondary.500"
+              fontSize="1.25rem"
+              fontWeight="600"
+              mb="1rem"
+            >
+              Options
+            </Text>
+            <OptionsTranslationContainer
+              language={capitalisedLanguage}
+              defaultString={defaultFieldOptions}
+              register={register}
+              editingTranslation={'fieldOptionsTranslations'}
+              previousTranslation={previousFieldOptionsTranslations}
+            />
+          </Flex>
+        </>
       )}
     </>
   )
@@ -299,7 +400,8 @@ export const TranslationSection = ({
 
   const titleTranslationInput = watch('titleTranslation')
   const descriptionTranslationInput = watch('descriptionTranslation')
-  const paragrapgTranslationInput = watch('paragraphTranslations')
+  const paragraphTranslationInput = watch('paragraphTranslations')
+  const fieldOptionsTranslationInput = watch('fieldOptionsTranslations')
 
   const toast = useToast({ status: 'danger' })
 
@@ -399,7 +501,7 @@ export const TranslationSection = ({
 
       if (translationIdx !== -1) {
         updatedTranslations[translationIdx].translation =
-          paragrapgTranslationInput
+          paragraphTranslationInput
       } else {
         updatedTranslations = [
           ...updatedTranslations,
@@ -412,7 +514,7 @@ export const TranslationSection = ({
 
       return updatedTranslations
     },
-    [capitalisedLanguage, paragrapgTranslationInput, titleTranslationInput],
+    [capitalisedLanguage, paragraphTranslationInput, titleTranslationInput],
   )
 
   const handleOnSaveTitleTranslation = useCallback(
@@ -476,6 +578,46 @@ export const TranslationSection = ({
     [capitalisedLanguage, descriptionTranslationInput],
   )
 
+  const handleOnSaveOptionsTranslations = useCallback(
+    (formFieldData: FormField): TranslationOptionMapping[] => {
+      if (
+        formFieldData.fieldType === BasicField.Radio ||
+        formFieldData.fieldType === BasicField.Checkbox ||
+        formFieldData.fieldType === BasicField.Dropdown
+      ) {
+        // get existing options translations if any
+        const existingOptionsTranslations =
+          formFieldData?.fieldOptionsTranslations ?? []
+
+        const translationIdx = existingOptionsTranslations.findIndex(
+          (translations) => {
+            return translations.language === capitalisedLanguage
+          },
+        )
+
+        let updatedOptionsTranslations = existingOptionsTranslations
+
+        // there are existing translations for the options
+        if (translationIdx !== -1) {
+          updatedOptionsTranslations[translationIdx].translation =
+            fieldOptionsTranslationInput.split('\n')
+        } else {
+          updatedOptionsTranslations = [
+            ...existingOptionsTranslations,
+            {
+              language: capitalisedLanguage as Language,
+              translation: fieldOptionsTranslationInput.split('\n'),
+            },
+          ]
+        }
+
+        return updatedOptionsTranslations
+      }
+      return []
+    },
+    [capitalisedLanguage, fieldOptionsTranslationInput],
+  )
+
   const handleOnSaveClick = useCallback(() => {
     if (formFieldData) {
       const updatedTitleTranslations =
@@ -489,10 +631,29 @@ export const TranslationSection = ({
           handleOnSaveDescriptionTranslations(formFieldData)
       }
 
-      const updatedFormData = {
+      let updatedFormData = {
         ...formFieldData,
         titleTranslations: updatedTitleTranslations,
         descriptionTranslations: updatedDescriptionTranslations,
+      }
+
+      if (
+        formFieldData.fieldType === BasicField.Radio ||
+        formFieldData.fieldType === BasicField.Checkbox ||
+        formFieldData.fieldType === BasicField.Dropdown
+      ) {
+        let updatedFieldOptionsTranslations: TranslationOptionMapping[] = []
+
+        // check if there are any options to be translated
+        if (!_.isEmpty(formFieldData.fieldOptions)) {
+          updatedFieldOptionsTranslations =
+            handleOnSaveOptionsTranslations(formFieldData)
+        }
+
+        updatedFormData = {
+          ...updatedFormData,
+          fieldOptionsTranslations: updatedFieldOptionsTranslations,
+        }
       }
 
       editFieldMutation.mutate({
@@ -559,6 +720,7 @@ export const TranslationSection = ({
     handleOnSaveDescriptionTranslations,
     handleOnSaveEndPageParagraphTranslation,
     handleOnSaveEndPageTitleTranslations,
+    handleOnSaveOptionsTranslations,
     handleOnSaveStartPageTranslation,
     handleOnSaveTitleTranslation,
     isEndPageTranslations,
