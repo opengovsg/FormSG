@@ -156,9 +156,7 @@ export const useMutateFormSettings = () => {
     (nextSupportedLanguages?: FormSupportedLanguages) =>
       updateFormSupportedLanguages(
         formId,
-        nextSupportedLanguages
-          ? nextSupportedLanguages.nextSupportedLanguages
-          : null,
+        nextSupportedLanguages?.nextSupportedLanguages,
       ),
     {
       onSuccess: (newData, newSupportedLanguages) => {
