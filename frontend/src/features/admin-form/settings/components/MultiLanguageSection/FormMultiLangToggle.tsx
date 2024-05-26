@@ -3,6 +3,7 @@ import { BiEditAlt } from 'react-icons/bi'
 import { GoEye, GoEyeClosed } from 'react-icons/go'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
+  Box,
   Divider,
   Flex,
   HStack,
@@ -88,7 +89,7 @@ const LanguageTranslationRow = ({
 
   return (
     <>
-      <Flex alignItems="center" w="100%" mt="2rem">
+      <Flex alignItems="center" w="100%" py={2}>
         <Flex marginRight="auto">
           <Text mr="0.75rem">{language}</Text>
           {isDefaultLanguage && (
@@ -122,7 +123,7 @@ const LanguageTranslationRow = ({
           </HStack>
         )}
       </Flex>
-      {!isLast && <Divider my="1.125rem" />}
+      {!isLast && <Divider />}
     </>
   )
 }
@@ -138,7 +139,7 @@ const LanguageTranslationSection = ({
   languages = [defaultLanguage, ...languages]
 
   return (
-    <>
+    <Box pt={8}>
       {languages.map((language, id, arr) => {
         return (
           <>
@@ -151,7 +152,7 @@ const LanguageTranslationSection = ({
           </>
         )
       })}
-    </>
+    </Box>
   )
 }
 
