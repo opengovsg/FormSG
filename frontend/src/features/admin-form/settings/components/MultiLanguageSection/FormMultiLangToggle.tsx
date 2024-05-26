@@ -10,6 +10,7 @@ import {
   Skeleton,
   Text,
 } from '@chakra-ui/react'
+import _ from 'lodash'
 
 import { Language } from '~shared/types'
 
@@ -173,11 +174,15 @@ export const FormMultiLangToggle = (): JSX.Element => {
     // get next hasMultiLang value
     const nextHasMultiLang = !settings.hasMultiLang
 
-    // toggle multi lang on: add all supported languages if there were no supported
-    // languages previously or restore back previously supported languages
-    let nextSupportedLanguages = settings.supportedLanguages ?? []
+    const currentSupportedLanguages = settings?.supportedLanguages
 
-    if (!nextHasMultiLang && nextSupportedLanguages.length === 0) {
+    // restore back previously supported languages
+    // English will also be a supported language
+    let nextSupportedLanguages = currentSupportedLanguages
+
+    // this is the first instance where user turns on multi lang feature
+    // add all supported languages.
+    if (_.isEmpty(currentSupportedLanguages) && nextHasMultiLang) {
       nextSupportedLanguages = Object.values(Language)
     }
 

@@ -87,7 +87,7 @@ export enum FormStatus {
 }
 
 export type FormSupportedLanguages = {
-  nextSupportedLanguages: Language[] | null
+  nextSupportedLanguages?: Language[]
   selectedLanguage?: Language | null
 }
 
@@ -189,7 +189,7 @@ export interface FormBase {
 
   hasMultiLang?: boolean
 
-  supportedLanguages?: Language[] | null
+  supportedLanguages?: Language[]
 }
 
 export interface EmailFormBase extends FormBase {
