@@ -144,7 +144,7 @@ const LanguageTranslationSection = ({
             <LanguageTranslationRow
               language={language}
               isDefaultLanguage={language === defaultLanguage}
-              isLast={id === arr.length}
+              isLast={id === arr.length - 1}
               key={language}
             />
           </>
