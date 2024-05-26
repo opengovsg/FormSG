@@ -213,8 +213,9 @@ export const TranslationListSection = ({
           onClick={handleOnBackClick}
           marginRight="2.25rem"
         />
-        <Flex direction="column">
+        <Flex direction="column" w="full">
           <CategoryHeader py={2}>{uppercaseLanguage}</CategoryHeader>
+
           {/* Start Page Translation */}
           {!_.isEmpty(startPageParagraph) && (
             <>
