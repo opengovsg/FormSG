@@ -7,6 +7,7 @@ const PUBLIC_FORM_FIELDS = <const>[
   'form_logics',
   'hasCaptcha',
   'hasIssueNotification',
+  'hasMultiLang',
   'supportedLanguages',
   'startPage',
   'status',

@@ -26,6 +26,12 @@ export const ZoomControl = ({
 
   const availableLanguages = form?.supportedLanguages ?? []
 
+  // English language is always supported. Hence if form supports multi-lang
+  // and there is more than one supported language available, show the
+  // language dropdown.
+  const shouldShowLanguageDropdown =
+    form?.hasMultiLang && availableLanguages.length > 1
+
   const bgColour = useBgColor({
     colorTheme: form?.startPage.colorTheme,
   })
@@ -48,15 +54,17 @@ export const ZoomControl = ({
         pl={4}
         pr={2}
       >
-        <SingleSelect
-          placeholder={publicFormLanguage ?? Language.ENGLISH}
-          value={publicFormLanguage ?? Language.ENGLISH}
-          onChange={handleLanguageChange}
-          name={'select form language'}
-          items={availableLanguages}
-          isClearable={false}
-          colorScheme="primary"
-        />
+        {shouldShowLanguageDropdown && (
+          <SingleSelect
+            placeholder={publicFormLanguage ?? Language.ENGLISH}
+            value={publicFormLanguage ?? Language.ENGLISH}
+            onChange={handleLanguageChange}
+            name={'select form language'}
+            items={availableLanguages}
+            isClearable={false}
+            colorScheme="primary"
+          />
+        )}
 
         <IconButton
           variant="clear"
