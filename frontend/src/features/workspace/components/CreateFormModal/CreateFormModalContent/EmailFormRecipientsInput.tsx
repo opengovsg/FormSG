@@ -3,7 +3,7 @@ import { Skeleton } from '@chakra-ui/react'
 import { get } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
-import { ADMIN_EMAIL_VALIDATION_RULES } from '~utils/formValidation'
+import { REQUIRED_ADMIN_EMAIL_VALIDATION_RULES } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
 import { TagInput } from '~components/TagInput'
@@ -35,7 +35,7 @@ export const EmailFormRecipientsInput = (): JSX.Element => {
         control={control}
         defaultValue={[user.email]}
         name="emails"
-        rules={ADMIN_EMAIL_VALIDATION_RULES}
+        rules={REQUIRED_ADMIN_EMAIL_VALIDATION_RULES}
         render={({ field }) => (
           <TagInput
             placeholder="Separate emails with a comma"
