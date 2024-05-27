@@ -125,25 +125,33 @@ const createFormValidator = celebrate({
         // Require emails string (for backwards compatibility) or string
         // array if form to be created in Email mode.
         emails: Joi.when('responseMode', {
-          is: FormResponseMode.Email,
-          then: Joi.alternatives()
-            .try(Joi.array().items(Joi.string()).min(1), Joi.string())
-            .required(),
-          // TODO (#2264): disallow the 'emails' key when responseMode is not Email
-          // Allow old clients to send this key but optionally and without restrictions
-          // on array length or type
-          otherwise: Joi.alternatives().try(
-            Joi.array(),
-            Joi.string().allow(''),
-          ),
+          switch: [
+            {
+              is: FormResponseMode.Email,
+              then: Joi.alternatives()
+                .try(Joi.array().items(Joi.string()).min(1), Joi.string())
+                .required(),
+            },
+            {
+              is: FormResponseMode.Encrypt,
+              then: Joi.alternatives()
+                .try(Joi.array().items(Joi.string()), Joi.string())
+                .required(),
+            },
+            {
+              is: FormResponseMode.Multirespondent,
+              then: Joi.forbidden(),
+            },
+          ],
+          otherwise: Joi.forbidden(),
         }),
-        // Require publicKey field if form to be created in Storage mode.
-        publicKey: Joi.string()
-          .allow('')
-          .when('responseMode', {
-            is: [FormResponseMode.Encrypt, FormResponseMode.Multirespondent],
-            then: Joi.string().required().disallow(''),
-          }),
+        // Require publicKey field if form to be created in Storage mode or
+        // Multirespondent mode
+        publicKey: Joi.when('responseMode', {
+          is: [FormResponseMode.Encrypt, FormResponseMode.Multirespondent],
+          then: Joi.string().required().disallow(''),
+          otherwise: Joi.forbidden(),
+        }),
         workspaceId: Joi.string(),
       })
       .required()
@@ -165,22 +173,33 @@ const duplicateFormValidator = celebrate({
     // Require emails string (for backwards compatibility) or string array
     // if form to be duplicated in Email mode.
     emails: Joi.when('responseMode', {
-      is: FormResponseMode.Email,
-      then: Joi.alternatives()
-        .try(Joi.array().items(Joi.string()).min(1), Joi.string())
-        .required(),
-      // TODO (#2264): disallow the 'emails' key when responseMode is not Email
-      // Allow old clients to send this key but optionally and without restrictions
-      // on array length or type
-      otherwise: Joi.alternatives().try(Joi.array(), Joi.string().allow('')),
+      switch: [
+        {
+          is: FormResponseMode.Email,
+          then: Joi.alternatives()
+            .try(Joi.array().items(Joi.string()).min(1), Joi.string())
+            .required(),
+        },
+        {
+          is: FormResponseMode.Encrypt,
+          then: Joi.alternatives()
+            .try(Joi.array().items(Joi.string()), Joi.string())
+            .required(),
+        },
+        {
+          is: FormResponseMode.Multirespondent,
+          then: Joi.forbidden(),
+        },
+      ],
+      otherwise: Joi.forbidden(),
     }),
-    // Require publicKey field if form to be duplicated in Storage mode.
-    publicKey: Joi.string()
-      .allow('')
-      .when('responseMode', {
-        is: [FormResponseMode.Encrypt, FormResponseMode.Multirespondent],
-        then: Joi.string().required().disallow(''),
-      }),
+    // Require publicKey field if form to be duplicated in Storage mode or
+    // Multirespondent mode
+    publicKey: Joi.when('responseMode', {
+      is: [FormResponseMode.Encrypt, FormResponseMode.Multirespondent],
+      then: Joi.string().required().disallow(''),
+      otherwise: Joi.forbidden(),
+    }),
     workspaceId: Joi.string(),
   }),
 })
