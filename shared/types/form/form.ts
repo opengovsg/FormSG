@@ -174,6 +174,7 @@ export interface StorageFormBase extends FormBase {
   payments_channel: FormPaymentsChannel
   payments_field: FormPaymentsField
   business?: FormBusinessField
+  emails: string[]
 }
 
 export interface MultirespondentFormBase extends FormBase {
@@ -327,7 +328,12 @@ export type DuplicateFormOverwriteDto = {
       emails: string | string[]
     }
   | {
-      responseMode: FormResponseMode.Encrypt | FormResponseMode.Multirespondent
+      responseMode: FormResponseMode.Encrypt
+      publicKey: string
+      emails: string | string[]
+    }
+  | {
+      responseMode: FormResponseMode.Multirespondent
       publicKey: string
     }
 )
@@ -343,7 +349,7 @@ export type CreateEmailFormBodyDto = Pick<
 
 export type CreateStorageFormBodyDto = Pick<
   StorageFormDto,
-  'publicKey' | 'responseMode' | 'title'
+  'publicKey' | 'responseMode' | 'title' | 'emails'
 > & { workspaceId?: string }
 
 export type CreateMultirespondentFormBodyDto = Pick<
