@@ -67,9 +67,16 @@ Notable features include:
 
 ### Prerequisites
 
-Install [docker and docker-compose](https://docs.docker.com/get-docker/).
+Install [docker and docker-compose](https://docs.docker.com/get-docker/) and the [node version manager](https://github.com/nvm-sh/nvm).
 
 ### First Setup
+
+First, make sure to install and use the node version used by the project:
+
+```bash
+nvm install
+nvm use
+```
 
 To install the relevant npm packages (frontend, backend and virus-scanner), run the following in the root direcory:
 
@@ -87,24 +94,23 @@ If you are on Mac OS X, you may want to allow Docker to use more RAM (minimum of
 
 ### Running Locally
 
-Run the following shell commands to build the Docker image from scratch. This will usually take 10 or so minutes. These commands runs the backend services specified under [docker-compose.yml](docker-compose.yml) and the React frontend on the native host.
+First, build the frontend for local development:
 
 ```bash
 npm run build:frontend
+```
+
+Run the following shell commands to build the Docker image. The first time will usually take 10 or so minutes. These commands runs the backend services specified under [docker-compose.yml](docker-compose.yml) and the React frontend on the native host.
+
+```bash
 npm run dev
 ```
 
-After the Docker image has finished building, the React application can be accessed at [localhost:3000](localhost:3000). The backend API server can be accessed at [localhost:5001](localhost:5001).
+After the Docker image has finished building, the following local applications can be accessed:
 
-If there are no dependency changes in `package.json` or changes in the
-`src/app/server.ts` file, you can run
-
-```bash
-docker-compose up
-```
-
-which does **not** rebuild the Docker image from scratch. This command usually
-only takes ~15 seconds to finish starting up the image.
+- React application can be accessed at [localhost:3000](localhost:3000)
+- The backend API server can be accessed at [localhost:5001](localhost:5001)
+- The development mail server can be accessed at [localhost:1080](localhost:1080)
 
 ### Adding dependencies
 
