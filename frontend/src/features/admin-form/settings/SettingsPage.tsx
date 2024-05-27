@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import {
   BiCodeBlock,
   BiCog,
@@ -24,23 +24,19 @@ import { useDraggable } from '~hooks/useDraggable'
 import { useAdminFormCollaborators } from '../common/queries'
 
 import { SettingsTab } from './components/SettingsTab'
+import { isEmailOrStorageMode, useAdminFormSettings } from './queries'
 import { SettingsAuthPage } from './SettingsAuthPage'
-import { SettingsEmailPage } from './SettingsEmailPage'
+import { SettingsEmailNotificationsPage } from './SettingsEmailNotificationsPage'
 import { SettingsGeneralPage } from './SettingsGeneralPage'
 import { SettingsPaymentsPage } from './SettingsPaymentsPage'
 import { SettingsTwilioPage } from './SettingsTwilioPage'
 import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 
-const settingsTabsOrder = [
-  'general',
-  'singpass',
-  'twilio',
-  'webhooks',
-  'payments',
-]
-
 export const SettingsPage = (): JSX.Element => {
   const { formId, settingsTab } = useParams()
+  const { user } = useUser()
+  const { data: flags } = useFeatureFlags()
+  const { data: settings } = useAdminFormSettings()
 
   if (!formId) throw new Error('No formId provided')
 
@@ -56,14 +52,52 @@ export const SettingsPage = (): JSX.Element => {
 
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
 
-  const [tabIndex, setTabIndex] = useState(
-    settingsTabsOrder.indexOf(settingsTab ?? ''),
+  const displayPayments =
+    user?.betaFlags?.payment || flags?.has(featureFlags.payment)
+  const displayEmailNotificationPage =
+    settings && isEmailOrStorageMode(settings)
+
+  // Note: Admins are not redirected to /general on invalid settings tabs as we
+  // don't want to do this prematurely before displayPayments can be determined.
+  const tabConfig = useMemo(() => {
+    const baseTabs = [
+      { label: 'General', icon: BiCog, component: SettingsGeneralPage },
+      { label: 'Singpass', icon: BiKey, component: SettingsAuthPage },
+      {
+        label: 'Twilio credentials',
+        icon: BiMessage,
+        component: SettingsTwilioPage,
+      },
+      { label: 'Webhooks', icon: BiCodeBlock, component: SettingsWebhooksPage },
+    ]
+
+    if (displayPayments) {
+      baseTabs.push({
+        label: 'Payments',
+        icon: BiDollar,
+        component: SettingsPaymentsPage,
+      })
+    }
+
+    if (displayEmailNotificationPage && !displayPayments) {
+      baseTabs.splice(2, 0, {
+        label: 'Email Notifications',
+        icon: BiMailSend,
+        component: SettingsEmailNotificationsPage,
+      })
+    }
+
+    return baseTabs
+  }, [displayPayments, displayEmailNotificationPage])
+
+  const tabIndex = tabConfig.findIndex(
+    (tab) =>
+      tab.label.toLowerCase() === (settingsTab ?? 'general').toLowerCase(),
   )
 
   const handleTabChange = (index: number) => {
-    setTabIndex(index)
     navigate(
-      `${ADMINFORM_ROUTE}/${formId}/settings/${settingsTabsOrder[index]}`,
+      `${ADMINFORM_ROUTE}/${formId}/settings/${tabConfig[index].label.toLowerCase()}`,
     )
   }
 
@@ -106,12 +140,9 @@ export const SettingsPage = (): JSX.Element => {
             mr={{ base: '1.5rem', md: '4rem', lg: '2rem' }}
             mb="calc(0.5rem - 2px)"
           >
-            <SettingsTab label="General" icon={BiCog} />
-            <SettingsTab label="Singpass" icon={BiKey} />
-            <SettingsTab label="Email Notifications" icon={BiMailSend} />
-            <SettingsTab label="Twilio credentials" icon={BiMessage} />
-            <SettingsTab label="Webhooks" icon={BiCodeBlock} />
-            <SettingsTab label="Payments" icon={BiDollar} />
+            {tabConfig.map((tab) => (
+              <SettingsTab key={tab.label} label={tab.label} icon={tab.icon} />
+            ))}
           </TabList>
         </Flex>
         <TabPanels
@@ -119,24 +150,11 @@ export const SettingsPage = (): JSX.Element => {
           // Offset start of tabpanel text from tablist.
           mt={{ md: '1rem' }}
         >
-          <TabPanel>
-            <SettingsGeneralPage />
-          </TabPanel>
-          <TabPanel>
-            <SettingsAuthPage />
-          </TabPanel>
-          <TabPanel>
-            <SettingsEmailPage />
-          </TabPanel>
-          <TabPanel>
-            <SettingsTwilioPage />
-          </TabPanel>
-          <TabPanel>
-            <SettingsWebhooksPage />
-          </TabPanel>
-          <TabPanel>
-            <SettingsPaymentsPage />
-          </TabPanel>
+          {tabConfig.map((tab) => (
+            <TabPanel key={tab.label}>
+              <tab.component />
+            </TabPanel>
+          ))}
         </TabPanels>
         <Spacer />
       </Tabs>
