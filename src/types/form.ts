@@ -286,7 +286,7 @@ export interface IEncryptedForm extends IForm {
   payments_channel: FormPaymentsChannel
   payments_field: FormPaymentsField
   business?: FormBusinessField
-  emails?: never
+  emails: string[] | string
 }
 
 export type IEncryptedFormSchema = IEncryptedForm & IFormSchema
@@ -296,6 +296,7 @@ export type IPopulatedEncryptedForm = IPopulatedForm & IEncryptedForm
 export type IEncryptedFormDocument = IFormBaseDocument<IEncryptedFormSchema> &
   IEncryptedFormSchema & {
     publickey: NonNullable<IEncryptedFormSchema['publicKey']>
+    emails: NonNullable<IEncryptedFormSchema['emails']>
   }
 
 export interface IEmailForm extends IForm {
