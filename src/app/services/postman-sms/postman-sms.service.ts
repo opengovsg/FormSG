@@ -312,6 +312,45 @@ class PostmanSmsService {
       SmsType.DeactivatedForm,
     )
   }
+
+  public sendAdminContactOtp(
+    recipient: string,
+    otp: string,
+    userId: string,
+    senderIp: string,
+  ): ResultAsync<true, SmsSendError | InvalidNumberError> {
+    const logMeta = {
+      action: 'sendAdminContactOtp',
+      userId,
+    }
+
+    logger.info({
+      message: `Sending admin contact verification OTP for ${userId}`,
+      meta: logMeta,
+    })
+
+    if (!isPhoneNumber(recipient)) {
+      logger.warn({
+        message: `${recipient} is not a valid phone number`,
+        meta: logMeta,
+      })
+      return errAsync(new InvalidNumberError())
+    }
+
+    const message = `Use the OTP ${otp} to verify your emergency contact number.`
+
+    const otpData: AdminContactOtpData = {
+      admin: userId,
+    }
+
+    return this._sendInternalSms(
+      otpData,
+      recipient,
+      message,
+      SmsType.AdminContact,
+      senderIp,
+    )
+  }
 }
 
 export default new PostmanSmsService()
