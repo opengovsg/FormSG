@@ -122,7 +122,7 @@ const AdminEmailRecipientsInput = ({
     // Get rid of bad tags before submitting.
     setValue(
       'emails',
-      getValues('emails').filter((email) => tagValidation(email)),
+      (getValues('emails') || []).filter((email) => tagValidation(email)),
     )
     handleSubmit(onSubmit)()
   }, [getValues, handleSubmit, onSubmit, setValue, tagValidation])
