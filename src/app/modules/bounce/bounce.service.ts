@@ -17,7 +17,6 @@ import {
 import { EMAIL_HEADERS, EmailType } from '../../services/mail/mail.constants'
 import MailService from '../../services/mail/mail.service'
 import PostmanSmsService from '../../services/postman-sms/postman-sms.service'
-import { SmsFactory } from '../../services/sms/sms.factory'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 import { PossibleDatabaseError } from '../core/core.errors'
 import { getCollabEmailsWithPermission } from '../form/form.utils'
@@ -369,14 +368,14 @@ export const notifyAdminsOfDeactivation = (
   // Best-effort attempt to send SMSes, don't propagate error upwards
 ): ResultAsync<true, never> => {
   const smsResults = possibleSmsRecipients.map((recipient) =>
-    SmsFactory.sendFormDeactivatedSms({
-      adminEmail: form.admin.email,
-      adminId: String(form.admin._id),
-      formId: form._id,
-      formTitle: form.title,
-      recipient: recipient.contact,
-      recipientEmail: recipient.email,
-    }),
+    PostmanSmsService.sendFormDeactivatedSms(
+      form.admin.email,
+      String(form.admin._id),
+      form._id,
+      form.title,
+      recipient.contact,
+      recipient.email,
+    ),
   )
   return ResultAsync.combineWithAllErrors(smsResults)
     .map(() => true as const)

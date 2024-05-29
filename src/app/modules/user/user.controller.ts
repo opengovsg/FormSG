@@ -7,7 +7,7 @@ import {
 } from '../../../../shared/types'
 import { IPopulatedUser } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
-import { SmsFactory } from '../../services/sms/sms.factory'
+import PostmanSmsService from '../../services/postman-sms/postman-sms.service'
 import { getRequestIp } from '../../utils/request'
 import { getUserIdFromSession } from '../auth/auth.utils'
 import { ControllerHandler } from '../core/core.types'
@@ -70,7 +70,7 @@ export const _handleContactSendOtp: ControllerHandler<
 
   // Step 2: No error, send verification OTP to contact.
   const otp = createResult.value
-  const sendOtpResult = await SmsFactory.sendAdminContactOtp(
+  const sendOtpResult = await PostmanSmsService.sendAdminContactOtp(
     contact,
     otp,
     userId,

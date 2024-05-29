@@ -22,6 +22,7 @@ import {
   SmsSendError,
 } from '../../services/postman-sms/postman-sms.errors'
 import PostmanSmsService from '../../services/postman-sms/postman-sms.service'
+import { SmsFactory } from '../../services/sms/sms.factory'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 import { compareHash, HashingError } from '../../utils/hash'
 import {
