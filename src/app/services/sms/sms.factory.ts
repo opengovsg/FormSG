@@ -4,13 +4,8 @@ import { useMockTwilio } from '../../config/config'
 import { ISms, smsConfig } from '../../config/features/sms.config'
 
 import { PrismClient } from './sms.dev.prismclient'
-import {
-  sendAdminContactOtp,
-  sendBouncedSubmissionSms,
-  sendFormDeactivatedSms,
-  sendVerificationOtp,
-} from './sms.service'
-import { BounceNotificationSmsParams, TwilioConfig } from './sms.types'
+import { sendVerificationOtp } from './sms.service'
+import { TwilioConfig } from './sms.types'
 
 interface ISmsFactory {
   sendVerificationOtp: (
@@ -20,40 +15,6 @@ interface ISmsFactory {
     formId: string,
     senderIp: string,
   ) => ReturnType<typeof sendVerificationOtp>
-  sendAdminContactOtp: (
-    recipient: string,
-    otp: string,
-    userId: string,
-    senderIp: string,
-  ) => ReturnType<typeof sendAdminContactOtp>
-  /**
-   * Informs recipient that the given form was deactivated. Rejects if SMS feature
-   * not activated in app.
-   * @param params Data for SMS to be sent
-   * @param params.recipient Mobile number to be SMSed
-   * @param params.recipientEmail The email address of the recipient being SMSed
-   * @param params.adminId User ID of the admin of the deactivated form
-   * @param params.adminEmail Email of the admin of the deactivated form
-   * @param params.formId Form ID of deactivated form
-   * @param params.formTitle Title of deactivated form
-   */
-  sendFormDeactivatedSms: (
-    params: BounceNotificationSmsParams,
-  ) => ReturnType<typeof sendFormDeactivatedSms>
-  /**
-   * Informs recipient that a response for the given form was lost due to email bounces.
-   * Rejects if SMS feature not activated in app.
-   * @param params Data for SMS to be sent
-   * @param params.recipient Mobile number to be SMSed
-   * @param params.recipientEmail The email address of the recipient being SMSed
-   * @param params.adminId User ID of the admin of the form
-   * @param params.adminEmail Email of the admin of the form
-   * @param params.formId Form ID of form
-   * @param params.formTitle Title of form
-   */
-  sendBouncedSubmissionSms: (
-    params: BounceNotificationSmsParams,
-  ) => ReturnType<typeof sendBouncedSubmissionSms>
 }
 
 // Exported for testing.
@@ -82,12 +43,6 @@ export const createSmsFactory = (smsConfig: ISms): ISmsFactory => {
         senderIp,
         twilioConfig,
       ),
-    sendAdminContactOtp: (recipient, otp, userId, senderIp) =>
-      sendAdminContactOtp(recipient, otp, userId, senderIp, twilioConfig),
-    sendFormDeactivatedSms: (params) =>
-      sendFormDeactivatedSms(params, twilioConfig),
-    sendBouncedSubmissionSms: (params) =>
-      sendBouncedSubmissionSms(params, twilioConfig),
   }
 }
 

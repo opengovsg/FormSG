@@ -14,7 +14,7 @@ import { MailSendError } from 'src/app/services/mail/mail.errors'
 import {
   InvalidNumberError,
   SmsSendError,
-} from 'src/app/services/sms/sms.errors'
+} from 'src/app/services/postman-sms/postman-sms.errors'
 import { HashingError } from 'src/app/utils/hash'
 import * as OtpUtils from 'src/app/utils/otp'
 import {
