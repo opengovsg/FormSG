@@ -33,7 +33,7 @@ const postmanSmsSchema: Schema<IPostmanSms> = {
     doc: 'Postman SMS messaging internal (non-mop) campaign ID',
     format: String,
     default: null,
-    env: 'POSTMAN_INTERNAL_CAMPAIGN_ID',
+    env: 'POSTMAN_INTERNAL_CAMPAIGN_API_KEY',
   },
   postmanBaseUrl: {
     doc: 'Postman base URL',
