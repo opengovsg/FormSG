@@ -1,12 +1,14 @@
 import { enSG as common } from './features/common'
 import { enSG as login } from './features/login'
-import Translation from './types'
+import { enSG as publicForm } from './features/public-form'
+import { FallbackTranslation } from './types'
 
-export const enSG: Translation = {
+export const enSG: FallbackTranslation = {
   translation: {
     features: {
       common,
       login,
+      publicForm,
     },
   },
 }

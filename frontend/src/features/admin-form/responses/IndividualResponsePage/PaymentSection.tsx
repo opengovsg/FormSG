@@ -30,12 +30,12 @@ export const PaymentSection = ({
     payment.status === PaymentStatus.Succeeded
       ? { label: 'Success', colorScheme: 'success', rightIcon: BiCheck }
       : payment.status === PaymentStatus.PartiallyRefunded
-      ? { label: 'Partially refunded', colorScheme: 'secondary' }
-      : payment.status === PaymentStatus.FullyRefunded
-      ? { label: 'Fully refunded', colorScheme: 'secondary' }
-      : payment.status === PaymentStatus.Disputed
-      ? { label: 'Disputed', colorScheme: 'warning' }
-      : undefined // The remaining options should never appear.
+        ? { label: 'Partially refunded', colorScheme: 'secondary' }
+        : payment.status === PaymentStatus.FullyRefunded
+          ? { label: 'Fully refunded', colorScheme: 'secondary' }
+          : payment.status === PaymentStatus.Disputed
+            ? { label: 'Disputed', colorScheme: 'warning' }
+            : undefined // The remaining options should never appear.
 
   const payoutTagProps =
     payment.payoutId || payment.payoutDate

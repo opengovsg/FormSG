@@ -46,7 +46,7 @@ export const getEnabledFlags = (): ResultAsync<string[], DatabaseError> => {
  * @returns boolean that represents the status of the feature flag or the fallback value
  */
 export const getFeatureFlag = (
-  flag: typeof featureFlags[keyof typeof featureFlags],
+  flag: (typeof featureFlags)[keyof typeof featureFlags],
   options?: {
     fallbackValue?: boolean
     logMeta?: CustomLoggerParams['meta']

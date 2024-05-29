@@ -1062,9 +1062,8 @@ describe('SpOidcClient', () => {
 
       const spOidcClient = new SpOidcClient(spOidcClientConfig)
 
-      const result = await spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(
-        MOCK_AUTHCODE,
-      )
+      const result =
+        await spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
       expect(axiosSpy).toHaveBeenCalledOnce()
@@ -2670,9 +2669,8 @@ describe('CpOidcClient', () => {
 
       const cpOidcClient = new CpOidcClient(cpOidcClientConfig)
 
-      const result = await cpOidcClient.exchangeAuthCodeAndDecodeVerifyToken(
-        MOCK_AUTHCODE,
-      )
+      const result =
+        await cpOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
       expect(axiosSpy).toHaveBeenCalledOnce()

@@ -1,4 +1,8 @@
+import { IPopulatedMultirespondentForm } from 'src/types'
+
 import {
+  AttachmentResponseV3,
+  MyInfoAttribute,
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../../shared/types'
@@ -69,3 +73,26 @@ export type UpdateMultirespondentSubmissionHandlerRequest =
   Parameters<UpdateMultirespondentSubmissionHandlerType>[0] & {
     formsg: MultirespondentFormCompleteDto
   }
+
+export type MultirespondentSubmissionContent = {
+  form: IPopulatedMultirespondentForm['_id']
+  authType: IPopulatedMultirespondentForm['authType']
+  myInfoFields: MyInfoAttribute[]
+  form_fields: IPopulatedMultirespondentForm['form_fields']
+  form_logics: IPopulatedMultirespondentForm['form_logics']
+  workflow: IPopulatedMultirespondentForm['workflow']
+  submissionPublicKey: string
+  encryptedSubmissionSecretKey: string
+  encryptedContent: string
+  attachmentMetadata: Map<string, string>
+  version: number
+  workflowStep: number
+  mrfVersion: number
+}
+
+export type StrippedAttachmentResponseV3 = AttachmentResponseV3 & {
+  answer: AttachmentResponseV3['answer'] & {
+    filename: undefined
+    content: undefined
+  }
+}

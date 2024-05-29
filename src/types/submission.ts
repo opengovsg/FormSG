@@ -51,8 +51,10 @@ export interface IPopulatedWebhookSubmission
 }
 
 export interface ISubmissionSchema extends SubmissionBase, Document {
-  // Allows for population and correct typing
+  // `any` allows for population and correct typing
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   paymentId: any
 
   created?: Date
@@ -70,6 +72,7 @@ export interface IEmailSubmissionSchema
   extends EmailModeSubmissionBase,
     ISubmissionSchema {
   // Allows for population and correct typing
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: any
   submissionType: SubmissionType.Email
   getWebhookView(): Promise<null>
@@ -78,7 +81,9 @@ export interface IEncryptedSubmissionSchema
   extends StorageModeSubmissionBase,
     ISubmissionSchema {
   // Allows for population and correct typing
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   paymentId: any
 
   submissionType: SubmissionType.Encrypt
@@ -88,6 +93,7 @@ export interface IMultirespondentSubmissionSchema
   extends MultirespondentSubmissionBase,
     ISubmissionSchema {
   // Allows for population and correct typing
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: any
   submissionType: SubmissionType.Multirespondent
   getWebhookView(): Promise<null>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import omit from 'lodash/omit'
 import logform from 'logform'
 import path from 'path'

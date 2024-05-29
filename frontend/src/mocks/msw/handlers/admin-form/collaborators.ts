@@ -8,7 +8,7 @@ export const getAdminFormCollaborators = ({
 }: {
   overrides?: FormPermissionsDto
   delay?: number | 'infinite'
-} = {}): ReturnType<typeof rest['post']> => {
+} = {}): ReturnType<(typeof rest)['post']> => {
   return rest.get<FormPermissionsDto>(
     '/api/v3/admin/forms/:formId/collaborators',
     (req, res, ctx) => {
@@ -23,7 +23,7 @@ export const updateFormCollaborators = ({
 }: {
   delay?: number | 'infinite'
   errorCode: number
-}): ReturnType<typeof rest['put']> => {
+}): ReturnType<(typeof rest)['put']> => {
   return rest.put<FormPermissionsDto>(
     '/api/v3/admin/forms/:formId/collaborators',
     (_req, res, ctx) => {

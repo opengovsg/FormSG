@@ -68,7 +68,7 @@ export const QuestionsBlock = ({
           render={({ field: { value, ...field } }) => (
             <MultiSelect
               isDisabled={isLoading}
-              placeholder="Select questions from your form"
+              placeholder="Select fields from your form"
               items={items}
               isSelectedItemFullWidth
               values={value}

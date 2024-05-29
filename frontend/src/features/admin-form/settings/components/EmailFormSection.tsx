@@ -90,8 +90,9 @@ interface AdminEmailRecipientsInputProps {
 const AdminEmailRecipientsInput = ({
   onSubmit,
 }: AdminEmailRecipientsInputProps): JSX.Element => {
-  const { getValues, setValue, control, handleSubmit } =
-    useFormContext<{ emails: string[] }>()
+  const { getValues, setValue, control, handleSubmit } = useFormContext<{
+    emails: string[]
+  }>()
 
   const tagValidation = useMemo(() => isEmail, [])
 

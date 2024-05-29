@@ -278,7 +278,7 @@ describe('submission.service', () => {
         () =>
           ({
             exec: () => Promise.reject(new Error('boom')),
-          } as unknown as mongoose.Query<any, any>),
+          }) as unknown as mongoose.Query<any, any>,
       )
 
       // Act
@@ -778,9 +778,8 @@ describe('submission.service', () => {
         responseSalt: 'salt',
       })
 
-      const actualResult = await SubmissionService.doesSubmissionIdExist(
-        MOCK_SUBMISSION_ID,
-      )
+      const actualResult =
+        await SubmissionService.doesSubmissionIdExist(MOCK_SUBMISSION_ID)
 
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(true)
@@ -813,12 +812,11 @@ describe('submission.service', () => {
         () =>
           ({
             exec: () => Promise.reject(new Error('boom')),
-          } as unknown as mongoose.Query<any, any>),
+          }) as unknown as mongoose.Query<any, any>,
       )
 
-      const actualResult = await SubmissionService.doesSubmissionIdExist(
-        MOCK_SUBMISSION_ID,
-      )
+      const actualResult =
+        await SubmissionService.doesSubmissionIdExist(MOCK_SUBMISSION_ID)
 
       expect(existSpy).toHaveBeenCalledWith({
         _id: MOCK_SUBMISSION_ID,
@@ -1683,9 +1681,8 @@ describe('submission.service', () => {
         .mockImplementationOnce(() => okAsync(payment))
 
       // Act
-      const actualResult = await SubmissionService.getSubmissionPaymentDto(
-        MOCK_PAYMENT_ID,
-      )
+      const actualResult =
+        await SubmissionService.getSubmissionPaymentDto(MOCK_PAYMENT_ID)
 
       // Assert
       expect(actualResult.isOk()).toEqual(true)
@@ -1700,9 +1697,8 @@ describe('submission.service', () => {
         .mockImplementationOnce(() => errAsync(new PaymentNotFoundError()))
 
       // Act
-      const actualResult = await SubmissionService.getSubmissionPaymentDto(
-        MOCK_PAYMENT_ID,
-      )
+      const actualResult =
+        await SubmissionService.getSubmissionPaymentDto(MOCK_PAYMENT_ID)
 
       // Assert
       // Should be error.
@@ -1807,7 +1803,7 @@ describe('submission.service', () => {
         () =>
           ({
             session: () => Promise.reject(new Error('boom')),
-          } as unknown as mongoose.Query<any, any>),
+          }) as unknown as mongoose.Query<any, any>,
       )
 
       // Act

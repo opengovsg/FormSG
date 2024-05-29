@@ -467,9 +467,8 @@ describe('FormService', () => {
       const expected: IFormSchema[] = []
 
       // Act
-      const actual = await FormService.retrievePublicFormsWithSmsVerification(
-        MOCK_ADMIN_ID,
-      )
+      const actual =
+        await FormService.retrievePublicFormsWithSmsVerification(MOCK_ADMIN_ID)
 
       // Assert
       expect(actual._unsafeUnwrap()).toEqual(expected)
@@ -485,9 +484,8 @@ describe('FormService', () => {
       const MOCK_ADMIN_ID = MOCK_ADMIN_OBJ_ID.toString()
 
       // Act
-      const actual = await FormService.retrievePublicFormsWithSmsVerification(
-        MOCK_ADMIN_ID,
-      )
+      const actual =
+        await FormService.retrievePublicFormsWithSmsVerification(MOCK_ADMIN_ID)
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)

@@ -30,7 +30,7 @@ const EDIT_RADIO_FIELD_KEYS = [
   'othersRadioButton',
 ] as const
 
-type EditRadioKeys = typeof EDIT_RADIO_FIELD_KEYS[number]
+type EditRadioKeys = (typeof EDIT_RADIO_FIELD_KEYS)[number]
 
 type EditRadioInputs = Pick<RadioFieldBase, EditRadioKeys> & {
   fieldOptionsString: string // Differs from fieldOptions in RadioFieldBase because input is a string. Will be converted to array using SPLIT_TEXTAREA_TRANSFORM

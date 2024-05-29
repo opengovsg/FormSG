@@ -3,6 +3,7 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import { MailSendError } from 'src/app/services/mail/mail.errors'
+import { EncryptSubmissionDto } from 'src/types/api'
 
 import {
   ErrorDto,
@@ -13,9 +14,15 @@ import {
   SubmissionType,
 } from '../../../../../shared/types'
 import { getMultirespondentSubmissionEditPath } from '../../../../../shared/utils/urls'
-import { Environment } from '../../../../../src/types'
+import {
+  Environment,
+  IPopulatedMultirespondentForm,
+} from '../../../../../src/types'
 import config from '../../../config/config'
-import { createLoggerWithLabel } from '../../../config/logger'
+import {
+  createLoggerWithLabel,
+  CustomLoggerParams,
+} from '../../../config/logger'
 import { getMultirespondentSubmissionModel } from '../../../models/submission.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import MailService from '../../../services/mail/mail.service'
@@ -49,6 +56,7 @@ import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 import * as MultirespondentSubmissionMiddleware from './multirespondent-submission.middleware'
 import { checkFormIsMultirespondent } from './multirespondent-submission.service'
 import {
+  MultirespondentSubmissionContent,
   SubmitMultirespondentFormHandlerRequest,
   SubmitMultirespondentFormHandlerType,
   UpdateMultirespondentSubmissionHandlerRequest,
@@ -152,7 +160,7 @@ const submitMultirespondentForm = async (
     mrfVersion,
   } = encryptedPayload
 
-  const submissionContent = {
+  const submissionContent: MultirespondentSubmissionContent = {
     form: form._id,
     authType: form.authType,
     myInfoFields: form.getUniqueMyInfoAttrs(),
@@ -194,7 +202,13 @@ const _createSubmission = async ({
 }: {
   req: Parameters<SubmitMultirespondentFormHandlerType>[0]
   res: Parameters<SubmitMultirespondentFormHandlerType>[1]
-  [others: string]: any
+  responseMetadata: EncryptSubmissionDto['responseMetadata']
+  responses: FieldResponsesV3
+  formId: string
+  submissionContent: MultirespondentSubmissionContent
+  logMeta: CustomLoggerParams['meta']
+  form: IPopulatedMultirespondentForm
+  submissionSecretKey: string
 }) => {
   const submission = new MultirespondentSubmission(submissionContent)
 

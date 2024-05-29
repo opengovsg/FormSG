@@ -131,9 +131,8 @@ describe('Multirespondent Submission Model', () => {
           await Promise.all(validSubmissionPromises)
 
         // Act
-        const actual = await MultirespondentSubmission.findAllMetadataByFormId(
-          VALID_FORM_ID,
-        )
+        const actual =
+          await MultirespondentSubmission.findAllMetadataByFormId(VALID_FORM_ID)
 
         // Assert
         const expected = {

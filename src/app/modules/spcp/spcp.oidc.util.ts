@@ -1,5 +1,6 @@
 import { JWTVerifyResult } from 'jose'
 import { EC, ECPrivate } from 'jwk-to-pem'
+import { pick } from 'lodash'
 import promiseRetry from 'promise-retry'
 
 import { hasProp } from '../../../../shared/utils/has-prop'
@@ -46,7 +47,7 @@ export const retryPromiseThreeAttempts = <T>(
           },
         })
         return result
-      } catch (e: any) {
+      } catch (e: unknown) {
         logger.warn({
           message: 'Promise rejected',
           meta: {
@@ -54,11 +55,7 @@ export const retryPromiseThreeAttempts = <T>(
             promise: promiseName,
             attemptNo,
           },
-          error: {
-            message: e?.message,
-            stack: e?.stack,
-            code: e?.code,
-          },
+          error: pick(e, ['message', 'stack', 'code']),
         })
         return retry(e)
       }
@@ -106,7 +103,7 @@ export const retryPromiseForever = <T>(
           },
         })
         return result
-      } catch (e: any) {
+      } catch (e) {
         logger.warn({
           message: 'Promise rejected',
           meta: {
@@ -114,11 +111,7 @@ export const retryPromiseForever = <T>(
             promise: promiseName,
             attemptNo,
           },
-          error: {
-            message: e?.message,
-            stack: e?.stack,
-            code: e?.code,
-          },
+          error: pick(e, ['message', 'stack', 'code']),
         })
         return retry(e)
       }

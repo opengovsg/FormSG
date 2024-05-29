@@ -85,7 +85,7 @@ describe('MyInfoServiceClass', () => {
           createRedirectURL: mockCreateRedirectURL,
           getAccessToken: mockGetAccessToken,
           extractUinFin: mockExtractUinFin,
-        } as unknown as MyInfoGovClient),
+        }) as unknown as MyInfoGovClient,
     )
     myInfoService = new MyInfoServiceClass(MOCK_SERVICE_PARAMS)
     MockSpcpConfig.myInfoJwtSecret = MOCK_MYINFO_JWT_SECRET

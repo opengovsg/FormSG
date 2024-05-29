@@ -18,6 +18,7 @@ export interface IPaymentSchema extends IPayment, Document {
    * Additional field to store responses for sending email confirmations post-payment.
    * Will be used to store FilteredResponse[], allows for population.
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   responses: any[]
 }
 

@@ -14,6 +14,7 @@ import { isDev } from '../../../../app/config/config'
 import {
   ParsedClearAttachmentResponseV3,
   ParsedClearFormFieldResponsesV3,
+  ParsedClearFormFieldResponseV3,
 } from '../../../../types/api'
 import { MultirespondentFormLoadedDto } from '../../../../types/api/multirespondent_submission'
 import formsgSdk from '../../../config/formsg-sdk'
@@ -55,6 +56,7 @@ import {
   MultirespondentSubmissionMiddlewareHandlerType,
   ProcessedMultirespondentSubmissionHandlerRequest,
   ProcessedMultirespondentSubmissionHandlerType,
+  StrippedAttachmentResponseV3,
 } from './multirespondent-submission.types'
 
 const logger = createLoggerWithLabel(module)
@@ -583,7 +585,11 @@ export const encryptSubmission = async (
   const responses = req.body.responses
 
   const attachmentsMap: Record<string, Buffer> = {}
-  const strippedAttachmentResponses: Record<string, any> = {}
+
+  const strippedAttachmentResponses: Record<
+    string,
+    ParsedClearFormFieldResponseV3 | StrippedAttachmentResponseV3
+  > = {}
 
   // Populate attachment map
   for (const id of Object.keys(responses)) {

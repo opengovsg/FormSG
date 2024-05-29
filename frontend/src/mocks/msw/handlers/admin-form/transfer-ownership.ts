@@ -10,7 +10,7 @@ export const transferAllFormsOwnership = ({
 }: {
   overrides?: { status?: number; body?: { email: string } }
   delay?: number | 'infinite'
-} = {}): ReturnType<typeof rest['get']> => {
+} = {}): ReturnType<(typeof rest)['get']> => {
   return rest.post<{ email: string }>(
     '/api/v3/admin/forms/all-transfer-owner',
     (req, res, ctx) => {
@@ -30,7 +30,7 @@ export const transferOwnership = ({
 }: {
   overrides?: { status?: number; body?: AdminFormViewDto }
   delay?: number | 'infinite'
-} = {}): ReturnType<typeof rest['get']> => {
+} = {}): ReturnType<(typeof rest)['get']> => {
   return rest.post<AdminFormViewDto>(
     '/api/v3/admin/forms/:formId/collaborators/transfer-owner',
     (req, res, ctx) => {

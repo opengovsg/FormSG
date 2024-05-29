@@ -18,10 +18,12 @@ export class PrismClient extends RequestClient {
     await MailService.sendLocalDevMail('[mocktwilio] Captured SMS', msg)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   request<TData>(opts: any) {
     opts.uri = opts.uri.replace(/^https:\/\/.*?\.twilio\.com/, this.prismUrl)
     const resp = this.requestClient.request<TData>(opts)
 
+    // eslint-disable-next-line no-console
     this.#sendInternalMail(opts.data.Body).catch(console.error)
     return resp
   }

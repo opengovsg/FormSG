@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { SubmitHandler } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { datadogLogs } from '@datadog/browser-logs'
 import get from 'lodash/get'
 import simplur from 'simplur'
@@ -34,6 +35,7 @@ export const PreviewFormProvider = ({
   formId,
   children,
 }: PreviewFormProviderProps): JSX.Element => {
+  const { t } = useTranslation()
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
 
@@ -340,7 +342,13 @@ export const PreviewFormProvider = ({
         ...rest,
       }}
     >
-      <Helmet title={isFormNotFound ? 'Form not found' : data?.form.title} />
+      <Helmet
+        title={
+          isFormNotFound
+            ? t('features.publicForm.errors.notFound')
+            : data?.form.title
+        }
+      />
       {isFormNotFound ? <FormNotFound message={error?.message} /> : children}
     </PublicFormContext.Provider>
   )

@@ -38,7 +38,7 @@ enum NumberSelectedValidationInputs {
 
 type EditNumberInputs = Pick<
   NumberFieldBase,
-  typeof EDIT_NUMBER_FIELD_KEYS[number]
+  (typeof EDIT_NUMBER_FIELD_KEYS)[number]
 > & {
   ValidationOptions: {
     selectedValidation: NumberSelectedValidationInputs | ''
@@ -66,8 +66,8 @@ const transformNumberFieldToEditForm = (
     selectedValidation === NumberSelectedValidation.Length
       ? NumberSelectedValidationInputs.Length
       : selectedValidation === NumberSelectedValidation.Range
-      ? NumberSelectedValidationInputs.Range
-      : ('' as const)
+        ? NumberSelectedValidationInputs.Range
+        : ('' as const)
 
   const nextLengthValidationOptions = {
     selectedLengthValidation:
@@ -110,8 +110,8 @@ const transformNumberEditFormToField = (
     selectedValidation === NumberSelectedValidationInputs.Length
       ? NumberSelectedValidation.Length
       : selectedValidation === NumberSelectedValidationInputs.Range
-      ? NumberSelectedValidation.Range
-      : null
+        ? NumberSelectedValidation.Range
+        : null
 
   const nextLengthValidationOptions = hasSelectedLengthValidationOption
     ? LengthValidationOptions

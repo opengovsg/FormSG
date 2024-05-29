@@ -860,7 +860,7 @@ describe('stripe.service', () => {
             () =>
               ({
                 autoPagingEach: () => Promise.reject('boom'),
-              } as unknown as Stripe.ApiListPromise<Stripe.BalanceTransaction>),
+              }) as unknown as Stripe.ApiListPromise<Stripe.BalanceTransaction>,
           )
         const processStripeEventSpy = jest.spyOn(
           StripeService,
@@ -882,7 +882,7 @@ describe('stripe.service', () => {
             () =>
               ({
                 autoPagingEach: (fn) => fn({ type: 'charge', source: {} }),
-              } as unknown as Stripe.ApiListPromise<Stripe.BalanceTransaction>),
+              }) as unknown as Stripe.ApiListPromise<Stripe.BalanceTransaction>,
           )
         const getMetadataPaymentIdSpy = jest
           .spyOn(StripeUtils, 'getMetadataPaymentId')
@@ -909,7 +909,7 @@ describe('stripe.service', () => {
             () =>
               ({
                 autoPagingEach: (fn) => fn({ type: 'charge', source: {} }),
-              } as unknown as Stripe.ApiListPromise<Stripe.BalanceTransaction>),
+              }) as unknown as Stripe.ApiListPromise<Stripe.BalanceTransaction>,
           )
         const getMetadataPaymentIdSpy = jest
           .spyOn(StripeUtils, 'getMetadataPaymentId')
@@ -935,7 +935,7 @@ describe('stripe.service', () => {
             () =>
               ({
                 autoPagingEach: (fn) => fn({ type: 'charge', source: {} }),
-              } as unknown as Stripe.ApiListPromise<Stripe.BalanceTransaction>),
+              }) as unknown as Stripe.ApiListPromise<Stripe.BalanceTransaction>,
           )
         const getMetadataPaymentIdSpy = jest
           .spyOn(StripeUtils, 'getMetadataPaymentId')
@@ -1061,7 +1061,7 @@ describe('stripe.service', () => {
                       })
                       return Promise.resolve('pass')
                     },
-                  } as unknown as Stripe.ApiListPromise<Stripe.BalanceTransaction>),
+                  }) as unknown as Stripe.ApiListPromise<Stripe.BalanceTransaction>,
               )
           getMetadataPaymentIdSpy = jest
             .spyOn(StripeUtils, 'getMetadataPaymentId')
