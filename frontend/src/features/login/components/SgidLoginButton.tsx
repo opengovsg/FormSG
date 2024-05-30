@@ -34,12 +34,14 @@ export const SgidLoginButton = (): JSX.Element => {
         </Flex>
       </Button>
       <Text>
-        <Trans i18nKey="features.login.components.SgidLoginButton.selectAgencies">
-          For{' '}
-          <Link isExternal href={SGID_VALID_ORG_PAGE}>
+        <Trans i18nKey="features.login.components.SgidLoginButton.forText">
+          For
+        </Trans>{' '}
+        <Link isExternal href={SGID_VALID_ORG_PAGE}>
+          <Trans i18nKey="features.login.components.SgidLoginButton.selectAgenciesText">
             select agencies
-          </Link>
-        </Trans>
+          </Trans>
+        </Link>
       </Text>
     </VStack>
   )

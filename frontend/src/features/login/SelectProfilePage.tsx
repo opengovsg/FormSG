@@ -60,14 +60,16 @@ const MODAL_ERRORS: Record<string, ModalErrorMessages> = {
     header: "You don't have access to this service",
     body: () => (
       <Text>
-        <Trans i18nKey="features.login.SelectProfilePage.invalidWorkEmail">
+        <Trans i18nKey="features.login.SelectProfilePage.invalidWorkEmailRestrictionText">
           It may be available only to select agencies or authorised individuals.
-          If you believe you should have access to this service, please{' '}
-          <Link isExternal href={SUPPORT_FORM_LINK}>
+          If you believe you should have access to this service, please
+        </Trans>{' '}
+        <Link isExternal href={SUPPORT_FORM_LINK}>
+          <Trans i18nKey="features.login.SelectProfilePage.invalidWorkEmailContactText">
             contact us
-          </Link>
-          .
-        </Trans>
+          </Trans>
+        </Link>
+        .
       </Text>
     ),
     cta: 'Choose another account',

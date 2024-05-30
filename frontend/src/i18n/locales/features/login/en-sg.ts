@@ -10,8 +10,9 @@ export const enSG: Login = {
   SelectProfilePage: {
     accountSelection: 'Choose an account to continue to FormSG',
     manualLogin: 'Or, login manually using email and OTP',
-    invalidWorkEmail:
-      'It may be available only to select agencies or authorised individuals. If you believe you should have access to this service, please <2><0>contact us</0></2>',
+    invalidWorkEmailRestrictionText:
+      'It may be available only to select agencies or authorised individuals. If you believe you should have access to this service, please',
+    invalidWorkEmailContactText: 'contact us',
   },
   components: {
     LoginForm: {
@@ -29,7 +30,8 @@ export const enSG: Login = {
       otpFromEmail: 'Enter OTP sent to {email}',
     },
     SgidLoginButton: {
-      selectAgencies: 'For <2><0>select agencies</0></2>',
+      forText: 'For',
+      selectAgenciesText: 'select agencies',
     },
   },
 }
