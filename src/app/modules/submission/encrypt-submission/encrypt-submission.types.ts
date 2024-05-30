@@ -12,6 +12,7 @@ import {
   ParsedStorageModeSubmissionBody,
 } from '../../../../types/api'
 import { ControllerHandler } from '../../core/core.types'
+import { ProcessedFieldResponse } from '../submission.types'
 
 export type SaveEncryptSubmissionParams = {
   form: IPopulatedEncryptedForm
@@ -69,7 +70,12 @@ export type SubmitEncryptModeFormHandlerType = ControllerHandler<
 >
 
 export type SubmitEncryptModeFormHandlerRequest =
-  Parameters<SubmitEncryptModeFormHandlerType>[0] & { formsg: FormCompleteDto }
+  Parameters<SubmitEncryptModeFormHandlerType>[0] & {
+    formsg: FormCompleteDto
+    body: {
+      responses: ProcessedFieldResponse[]
+    }
+  }
 
 export type EncryptSubmissionContent = {
   form: IPopulatedEncryptedForm['_id']

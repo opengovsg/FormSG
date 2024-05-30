@@ -308,6 +308,8 @@ export interface IEmailForm extends IForm {
 
 export type IEmailFormSchema = IEmailForm & IFormSchema
 
+export type IFormHasEmailSchema = IEmailFormSchema | IEncryptedFormSchema
+
 export type IPopulatedEmailForm = IPopulatedForm & IEmailForm
 
 export interface IMultirespondentForm extends IForm {
