@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { BiChevronRight } from 'react-icons/bi'
 import { Link as ReactLink } from 'react-router-dom'
 import {
@@ -45,36 +45,6 @@ type ModalErrorMessages = {
   body: string | (() => React.ReactElement)
   cta: string
   onCtaClick: (disclosureProps: ErrorDisclosureProps) => void
-}
-
-const MODAL_ERRORS: Record<string, ModalErrorMessages> = {
-  NO_WORKEMAIL: {
-    hideCloseButton: true,
-    preventBackdropDismissal: true,
-    header: "Singpass login isn't available to you yet",
-    body: 'It is progressively being made available to agencies. In the meantime, please log in using your email address.',
-    cta: 'Back to login',
-    onCtaClick: () => window.location.assign(LOGIN_ROUTE),
-  },
-  INVALID_WORKEMAIL: {
-    header: "You don't have access to this service",
-    body: () => (
-      <Text>
-        <Trans i18nKey="features.login.SelectProfilePage.invalidWorkEmailRestrictionText">
-          It may be available only to select agencies or authorised individuals.
-          If you believe you should have access to this service, please
-        </Trans>{' '}
-        <Link isExternal href={SUPPORT_FORM_LINK}>
-          <Trans i18nKey="features.login.SelectProfilePage.invalidWorkEmailContactText">
-            contact us
-          </Trans>
-        </Link>
-        .
-      </Text>
-    ),
-    cta: 'Choose another account',
-    onCtaClick: (disclosureProps) => disclosureProps.onClose(),
-  },
 }
 
 const ErrorDisclosure = (
@@ -133,6 +103,31 @@ export const SelectProfilePage = (): JSX.Element => {
 
   const errorDisclosure = useDisclosure()
   const toast = useToast({ isClosable: true, status: 'danger' })
+
+  const MODAL_ERRORS: Record<string, ModalErrorMessages> = {
+    NO_WORKEMAIL: {
+      hideCloseButton: true,
+      preventBackdropDismissal: true,
+      header: t('features.login.SelectProfilePage.noWorkEmailHeader'),
+      body: t('features.login.SelectProfilePage.noWorkEmailBody'),
+      cta: t('features.login.SelectProfilePage.noWorkEmailCta'),
+      onCtaClick: () => window.location.assign(LOGIN_ROUTE),
+    },
+    INVALID_WORKEMAIL: {
+      header: t('features.login.SelectProfilePage.invalidWorkEmailHeader'),
+      body: () => (
+        <Text>
+          {`${t('features.login.SelectProfilePage.invalidWorkEmailBodyRestriction')} `}
+          <Link isExternal href={SUPPORT_FORM_LINK}>
+            {t('features.login.SelectProfilePage.invalidWorkEmailBodyContact')}
+          </Link>
+          .
+        </Text>
+      ),
+      cta: t('features.login.SelectProfilePage.invalidWorkEmailCta'),
+      onCtaClick: (disclosureProps) => disclosureProps.onClose(),
+    },
+  }
 
   // If redirected back here but already authed, redirect to dashboard.
   if (user) window.location.replace(DASHBOARD_ROUTE)

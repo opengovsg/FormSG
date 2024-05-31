@@ -19,6 +19,8 @@ export interface Login {
     SgidLoginButton: {
       forText: string
       selectAgenciesText: string
+      loginText: string
+      appText: string
     }
   }
   LoginPage: {
@@ -29,7 +31,12 @@ export interface Login {
   SelectProfilePage: {
     accountSelection: string
     manualLogin: string
-    invalidWorkEmailRestrictionText: string
-    invalidWorkEmailContactText: string
+    noWorkEmailHeader: string
+    noWorkEmailBody: string
+    noWorkEmailCta: string
+    invalidWorkEmailHeader: string
+    invalidWorkEmailBodyRestriction: string
+    invalidWorkEmailBodyContact: string
+    invalidWorkEmailCta: string
   }
 }

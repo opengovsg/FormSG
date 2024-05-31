@@ -1,5 +1,5 @@
 import { useForm } from 'react-hook-form'
-import { Trans } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { useMutation } from 'react-query'
 import { Flex, Link, Text, VStack } from '@chakra-ui/react'
 
@@ -11,6 +11,7 @@ import Button from '~components/Button'
 
 export const SgidLoginButton = (): JSX.Element => {
   const { formState } = useForm()
+  const { t } = useTranslation()
 
   const handleLoginMutation = useMutation(getSgidAuthUrl, {
     onSuccess: (data) => {
@@ -28,19 +29,19 @@ export const SgidLoginButton = (): JSX.Element => {
         variant="outline"
       >
         <Flex align="center" flexDirection="row">
-          <Text color="primary.500">Log in with </Text>
+          <Text color="primary.500">
+            {`${t('features.login.components.SgidLoginButton.loginText')} `}
+          </Text>
           <SingpassFullLogoSvgr height="1.25rem" />
-          <Text color="primary.500"> app</Text>
+          <Text color="primary.500">
+            {` ${t('features.login.components.SgidLoginButton.appText')}`}
+          </Text>
         </Flex>
       </Button>
       <Text>
-        <Trans i18nKey="features.login.components.SgidLoginButton.forText">
-          For
-        </Trans>{' '}
+        {`${t('features.login.components.SgidLoginButton.forText')} `}
         <Link isExternal href={SGID_VALID_ORG_PAGE}>
-          <Trans i18nKey="features.login.components.SgidLoginButton.selectAgenciesText">
-            select agencies
-          </Trans>
+          {t('features.login.components.SgidLoginButton.selectAgenciesText')}
         </Link>
       </Text>
     </VStack>

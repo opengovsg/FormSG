@@ -10,9 +10,15 @@ export const enSG: Login = {
   SelectProfilePage: {
     accountSelection: 'Choose an account to continue to FormSG',
     manualLogin: 'Or, login manually using email and OTP',
-    invalidWorkEmailRestrictionText:
+    noWorkEmailHeader: "Singpass login isn't available to you yet",
+    noWorkEmailBody:
+      'It is progressively being made available to agencies. In the meantime, please log in using your email address.',
+    noWorkEmailCta: 'Back to login',
+    invalidWorkEmailHeader: "You don't have access to this service",
+    invalidWorkEmailBodyRestriction:
       'It may be available only to select agencies or authorised individuals. If you believe you should have access to this service, please',
-    invalidWorkEmailContactText: 'contact us',
+    invalidWorkEmailBodyContact: 'contact us',
+    invalidWorkEmailCta: 'Choose another account',
   },
   components: {
     LoginForm: {
@@ -32,6 +38,8 @@ export const enSG: Login = {
     SgidLoginButton: {
       forText: 'For',
       selectAgenciesText: 'select agencies',
+      loginText: 'Log in with',
+      appText: 'app',
     },
   },
 }
