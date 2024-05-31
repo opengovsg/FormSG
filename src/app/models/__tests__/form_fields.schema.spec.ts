@@ -176,6 +176,25 @@ describe('Form Field Schema', () => {
         expect(fieldObj).toHaveProperty('hasAllowedEmailDomains', true)
         expect(fieldObj).toHaveProperty('allowedEmailDomains', ['@example.com'])
       })
+
+      it('should allow email field with wildcard domains', async () => {
+        // Arrange
+        const field = await createAndReturnFormField({
+          fieldType: BasicField.Email,
+          isVerifiable: true,
+          hasAllowedEmailDomains: true,
+          allowedEmailDomains: ['@*.gov.sg', '@*.asia'],
+        })
+
+        // Assert
+        const fieldObj = field.toObject()
+        expect(fieldObj).toHaveProperty('isVerifiable', true)
+        expect(fieldObj).toHaveProperty('hasAllowedEmailDomains', true)
+        expect(fieldObj).toHaveProperty('allowedEmailDomains', [
+          '@*.gov.sg',
+          '@*.asia',
+        ])
+      })
     })
   })
 
