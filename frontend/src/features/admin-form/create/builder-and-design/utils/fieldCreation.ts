@@ -296,6 +296,14 @@ export const getMyInfoFieldCreationMeta = (
       }
     }
 
+    case MyInfoAttribute.DrivingLicenceComStatus:
+    case MyInfoAttribute.DrivingLicenceDisqualificationStartDate:
+      return {
+        ...baseMeta,
+        fieldType: BasicField.ShortText,
+        ...MYINFO_TEXTFIELD_META,
+      }
+
     default: {
       const exception: never = myInfoAttribute
       throw new Error(`MyInfo type is not implemented: ${exception}`)

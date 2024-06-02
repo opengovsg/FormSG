@@ -391,6 +391,27 @@ export const types: MyInfoFieldBlock[] = [
     fieldOptions: myInfoRaces,
     previewValue: 'CHINESE',
   },
+
+  {
+    name: MyInfoAttribute.DrivingLicenceComStatus,
+    value: 'Driving Licence Certificate of Merit Status',
+    category: 'personal',
+    verified: [],
+    source: 'Land Transport Authority',
+    description: 'The certificate of merit status of the form-filler.',
+    fieldType: BasicField.ShortText,
+    previewValue: 'Eligible',
+  },
+  {
+    name: MyInfoAttribute.DrivingLicenceDisqualificationStartDate,
+    value: 'Driving Licence Disqualification Start Date',
+    category: 'personal',
+    verified: [],
+    source: 'Land Transport Authority',
+    description: 'The disqualification start date of the form-filler.',
+    fieldType: BasicField.ShortText,
+    previewValue: 'Eligible (TEMP)',
+  },
 ]
 
 export const MYINFO_ATTRIBUTE_MAP = keyBy(types, 'name')

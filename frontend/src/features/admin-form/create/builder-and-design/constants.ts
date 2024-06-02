@@ -37,39 +37,6 @@ export const BASIC_FIELDS_ORDERED = [
   BasicField.Uen,
 ]
 
-export const MYINFO_FIELDS_ORDERED: MyInfoAttribute[] = [
-  // Personal section
-  MyInfoAttribute.Name,
-  MyInfoAttribute.Sex,
-  MyInfoAttribute.DateOfBirth,
-  MyInfoAttribute.Race,
-  MyInfoAttribute.Nationality,
-  MyInfoAttribute.BirthCountry,
-  MyInfoAttribute.ResidentialStatus,
-  MyInfoAttribute.Dialect,
-  MyInfoAttribute.HousingType,
-  MyInfoAttribute.HdbType,
-  MyInfoAttribute.PassportNumber,
-  MyInfoAttribute.PassportExpiryDate,
-  MyInfoAttribute.VehicleNo,
-  // Contact section
-  MyInfoAttribute.RegisteredAddress,
-  MyInfoAttribute.MobileNo,
-  // Particulars section
-  MyInfoAttribute.Occupation,
-  MyInfoAttribute.Employment,
-  MyInfoAttribute.WorkpassStatus,
-  MyInfoAttribute.WorkpassExpiryDate,
-  // Family (Marriage) section
-  MyInfoAttribute.Marital,
-  MyInfoAttribute.CountryOfMarriage,
-  MyInfoAttribute.MarriageCertNo,
-  MyInfoAttribute.MarriageDate,
-  MyInfoAttribute.DivorceDate,
-  // Children section
-  MyInfoAttribute.ChildrenBirthRecords,
-]
-
 export const MYINFO_TEXTFIELD_META: MyInfoFieldMeta<ShortTextFieldBase> = {
   ValidationOptions: {
     selectedValidation: null,
@@ -99,22 +66,50 @@ export const MYINFO_CHILDRENFIELD_META: MyInfoFieldMeta<ChildrenCompoundFieldBas
     allowMultiple: false,
   }
 
-export const CREATE_MYINFO_PERSONAL_FIELDS_ORDERED =
-  MYINFO_FIELDS_ORDERED.slice(0, 13)
+export const CREATE_MYINFO_PERSONAL_FIELDS_ORDERED = [
+  MyInfoAttribute.Name,
+  MyInfoAttribute.Sex,
+  MyInfoAttribute.DateOfBirth,
+  MyInfoAttribute.Race,
+  MyInfoAttribute.Nationality,
+  MyInfoAttribute.BirthCountry,
+  MyInfoAttribute.ResidentialStatus,
+  MyInfoAttribute.Dialect,
+  MyInfoAttribute.HousingType,
+  MyInfoAttribute.HdbType,
+  MyInfoAttribute.PassportNumber,
+  MyInfoAttribute.PassportExpiryDate,
+  MyInfoAttribute.VehicleNo,
+]
 
-export const CREATE_MYINFO_CONTACT_FIELDS_ORDERED = MYINFO_FIELDS_ORDERED.slice(
-  13,
-  15,
-)
+export const CREATE_MYINFO_CONTACT_FIELDS_ORDERED = [
+  MyInfoAttribute.RegisteredAddress,
+  MyInfoAttribute.MobileNo,
+]
 
-export const CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED =
-  MYINFO_FIELDS_ORDERED.slice(15, 19)
+export const CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED = [
+  MyInfoAttribute.Occupation,
+  MyInfoAttribute.Employment,
+  MyInfoAttribute.WorkpassStatus,
+  MyInfoAttribute.WorkpassExpiryDate,
+]
 
-export const CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED =
-  MYINFO_FIELDS_ORDERED.slice(19, 24)
+export const CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED = [
+  MyInfoAttribute.Marital,
+  MyInfoAttribute.CountryOfMarriage,
+  MyInfoAttribute.MarriageCertNo,
+  MyInfoAttribute.MarriageDate,
+  MyInfoAttribute.DivorceDate,
+]
 
-export const CREATE_MYINFO_CHILDREN_FIELDS_ORDERED =
-  MYINFO_FIELDS_ORDERED.slice(24, 25)
+export const CREATE_MYINFO_CHILDREN_FIELDS_ORDERED = [
+  MyInfoAttribute.ChildrenBirthRecords,
+]
+
+export const CREATE_MYINFO_DRIVING_LICENCE_FIELDS_ORDERED = [
+  MyInfoAttribute.DrivingLicenceComStatus,
+  MyInfoAttribute.DrivingLicenceDisqualificationStartDate,
+]
 
 export const CREATE_FIELD_DROP_ID = 'create-fields-field'
 
@@ -127,6 +122,9 @@ export const CREATE_MYINFO_PARTICULARS_DROP_ID = 'create-myinfo-particulars'
 export const CREATE_MYINFO_MARRIAGE_DROP_ID = 'create-myinfo-marriage'
 
 export const CREATE_MYINFO_CHILDREN_DROP_ID = 'create-myinfo-children'
+
+export const CREATE_MYINFO_DRIVING_LICENCE_DROP_ID =
+  'create-myinfo-driving-licence'
 
 export const FIELD_LIST_DROP_ID = 'formFieldList'
 export const PENDING_CREATE_FIELD_ID = 'FIELD-PENDING-CREATION'

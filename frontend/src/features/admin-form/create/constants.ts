@@ -360,6 +360,18 @@ export const MYINFO_FIELD_TO_DRAWER_META: {
     icon: BiDummyIcon,
     isSubmitted: true,
   },
+  // driver licence
+  [MyInfoAttribute.DrivingLicenceComStatus]: {
+    label: 'Driving Licence Certificate of Merit Status',
+    icon: BiDummyIcon,
+    isSubmitted: true,
+  },
+  // driver licence
+  [MyInfoAttribute.DrivingLicenceDisqualificationStartDate]: {
+    label: 'Driving Licence Disqualification Start Date',
+    icon: BiDummyIcon,
+    isSubmitted: true,
+  },
 }
 // TODO: remove after 28 Jun 2024 as this would have fully taken effect
 function updateLabelsBasedOnDate() {

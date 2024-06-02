@@ -22,6 +22,8 @@ import {
   CREATE_MYINFO_CHILDREN_FIELDS_ORDERED,
   CREATE_MYINFO_CONTACT_DROP_ID,
   CREATE_MYINFO_CONTACT_FIELDS_ORDERED,
+  CREATE_MYINFO_DRIVING_LICENCE_DROP_ID,
+  CREATE_MYINFO_DRIVING_LICENCE_FIELDS_ORDERED,
   CREATE_MYINFO_MARRIAGE_DROP_ID,
   CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED,
   CREATE_MYINFO_PARTICULARS_DROP_ID,
@@ -227,6 +229,28 @@ export const MyInfoFieldPanel = () => {
           )}
         </Droppable>
       ) : null}
+      <Droppable
+        isDropDisabled
+        droppableId={CREATE_MYINFO_DRIVING_LICENCE_DROP_ID}
+      >
+        {(provided) => (
+          <Box ref={provided.innerRef} {...provided.droppableProps}>
+            <FieldSection label="Driving Licence Fields">
+              {CREATE_MYINFO_DRIVING_LICENCE_FIELDS_ORDERED.map(
+                (fieldType, index) => (
+                  <DraggableMyInfoFieldListOption
+                    index={index}
+                    isDisabled={isDisabledCheck(fieldType)}
+                    key={index}
+                    fieldType={fieldType}
+                  />
+                ),
+              )}
+            </FieldSection>
+            <Box display="none">{provided.placeholder}</Box>
+          </Box>
+        )}
+      </Droppable>
     </>
   )
 }

@@ -58,6 +58,12 @@ export enum MyInfoAttribute {
   ChildGender = 'childgender',
   ChildRace = 'childrace',
   ChildSecondaryRace = 'childsecondaryrace',
+
+  DrivingLicenceComStatus = 'drivinglicencecomstatus',
+  DrivingLicenceTotalDemeritPoints = 'drivinglicencetotaldemeritpoints',
+  DrivingLicenceSuspensionStartDate = 'drivinglicencesuspensionstartdate',
+  DrivingLicenceSuspensionEndDate = 'drivinglicencesuspensionenddate',
+  DrivingLicenceDisqualificationStartDate = 'drivinglicencedisqualificationstartdate',
 }
 
 // We need to write this manually otherwise TS merges the names and keys
