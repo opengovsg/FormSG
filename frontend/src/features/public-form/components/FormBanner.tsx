@@ -49,7 +49,7 @@ export const FormBanner = (): JSX.Element | null => {
 
   return (
     <Banner useMarkdown variant={bannerProps.variant}>
-      {bannerProps.msg}
+      {bannerProps.msg + 'bonk'}
     </Banner>
   )
 }
