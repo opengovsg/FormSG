@@ -2,7 +2,7 @@ import { PublicUserDto, UserDto } from '../user'
 import { FormField, FormFieldDto, MyInfoChildData } from '../field'
 
 import { FormLogo } from './form_logo'
-import type { Merge, Opaque, PartialDeep } from 'type-fest'
+import type { Merge, Tagged, PartialDeep } from 'type-fest'
 import {
   ADMIN_FORM_META_FIELDS,
   EMAIL_FORM_SETTINGS_FIELDS,
@@ -18,7 +18,7 @@ import { PaymentChannel, PaymentMethodType, PaymentType } from '../payment'
 import { Product } from './product'
 import { FormWorkflow, FormWorkflowDto } from './workflow'
 
-export type FormId = Opaque<string, 'FormId'>
+export type FormId = Tagged<string, 'FormId'>
 
 export enum FormColorTheme {
   Blue = 'blue',
