@@ -212,6 +212,11 @@ AdminFormsFormRouter.post(
   AdminFormController.handleCreateFormField,
 )
 
+AdminFormsFormRouter.post(
+  '/:formId([a-fA-F0-9]{24})/fieldslist',
+  AdminFormController.handleCreateFormFields,
+)
+
 AdminFormsFormRouter.put(
   '/:formId([a-fA-F0-9]{24})/end-page',
   AdminFormController.handleUpdateEndPage,

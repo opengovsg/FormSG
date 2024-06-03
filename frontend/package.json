@@ -1,6 +1,6 @@
 {
   "name": "form-frontend",
-  "version": "6.122.0",
+  "version": "6.121.0",
   "homepage": ".",
   "private": true,
   "dependencies": {
@@ -45,6 +45,7 @@
     "lodash": "^4.17.21",
     "lottie-web": "^5.9.4",
     "p-queue": "^7.2.0",
+    "pdfjs-dist": "^2.16.105",
     "polyfill-object.fromentries": "^1.0.1",
     "react": "^17.0.2",
     "react-beautiful-dnd": "^13.1.0",

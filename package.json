@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.122.0",
+  "version": "6.121.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -59,6 +59,7 @@
     "@aws-sdk/client-lambda": "^3.414.0",
     "@babel/runtime": "^7.24.1",
     "@faker-js/faker": "^8.4.1",
+    "@azure/openai": "^1.0.0-beta.11",
     "@joi/date": "^2.1.0",
     "@opengovsg/formsg-sdk": "^0.12.0-alpha.1",
     "@opengovsg/myinfo-gov-client": "^4.1.2",
@@ -128,6 +129,7 @@
     "nocache": "^3.0.4",
     "node-cache": "^5.1.2",
     "nodemailer": "^6.9.12",
+    "openai": "^4.25.0",
     "openid-client": "^5.3.1",
     "opossum": "^7.1.0",
     "p-queue": "^6.6.2",

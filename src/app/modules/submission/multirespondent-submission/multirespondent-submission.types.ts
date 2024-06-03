@@ -1,11 +1,10 @@
-import { IPopulatedMultirespondentForm } from 'src/types'
-
 import {
   AttachmentResponseV3,
   MyInfoAttribute,
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../../shared/types'
+import { IPopulatedMultirespondentForm } from '../../../../../src/types'
 import {
   MultirespondentFormCompleteDto,
   MultirespondentFormLoadedDto,
