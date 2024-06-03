@@ -5,7 +5,6 @@ import { err, ok } from 'neverthrow'
 
 import { IEncryptedFormDocument } from 'src/types'
 
-import { featureFlags } from '../../../../../shared/constants'
 import {
   ErrorDto,
   PaymentChannel,
@@ -19,7 +18,6 @@ import { createReqMeta } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import * as AuthService from '../../auth/auth.service'
 import { ControllerHandler } from '../../core/core.types'
-import * as FeatureFlagService from '../../feature-flags/feature-flags.service'
 import {
   getStripeOauthUrl,
   unlinkStripeAccountFromForm,
@@ -33,7 +31,7 @@ import { PaymentChannelNotFoundError } from './admin-form.errors'
 import { JoiPaymentProduct } from './admin-form.payments.constants'
 import * as AdminFormPaymentService from './admin-form.payments.service'
 import { PermissionLevel } from './admin-form.types'
-import { mapRouteError, verifyUserBetaflag } from './admin-form.utils'
+import { mapRouteError } from './admin-form.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -61,44 +59,20 @@ export const handleConnectAccount: ControllerHandler<{
     ...createReqMeta(req),
   }
 
-  // If getFeatureFlag throws a DatabaseError, we want to log it, but respond
-  // to the client as if the flag is not found.
-  const featureFlagsListResult = await FeatureFlagService.getEnabledFlags()
-
-  let featureFlagEnabled = false
-
-  if (featureFlagsListResult.isErr()) {
-    logger.error({
-      message: 'Error occurred whilst retrieving enabled feature flags',
-      meta: logMeta,
-      error: featureFlagsListResult.error,
-    })
-  } else {
-    featureFlagEnabled = featureFlagsListResult.value.includes(
-      featureFlags.payment,
-    )
-  }
-
-  // Step 1: Retrieve currently logged in user.
+  // Retrieve currently logged in user.
   return (
     getPopulatedUserById(sessionUserId)
-      // Step 2: Check if user has 'payment' betaflag
       .andThen((user) =>
-        featureFlagEnabled
-          ? ok(user)
-          : verifyUserBetaflag(user, featureFlags.payment),
-      )
-      .andThen((user) =>
-        // Step 3: Retrieve form with write permission check.
+        // Retrieve form with write permission check.
         getFormAfterPermissionChecks({
           user,
           formId,
           level: PermissionLevel.Write,
         }),
       )
-      // Step 4: Ensure that the form is encrypt mode.
+      // Ensure that the form is encrypt mode.
       .andThen(checkFormIsEncryptMode)
-      // Step 5: Get the auth URL and state, and pass the auth URL for redirection.
+      // Get the auth URL and state, and pass the auth URL for redirection.
       .andThen(getStripeOauthUrl)
       .map(({ authUrl, state }) => {
         // Save the state for validation later on, to ensure the state has not been
@@ -254,35 +228,11 @@ const _handleUpdatePayments: ControllerHandler<
     body: req.body,
   }
 
-  // If getFeatureFlag throws a DatabaseError, we want to log it, but respond
-  // to the client as if the flag is not found.
-  const featureFlagsListResult = await FeatureFlagService.getEnabledFlags()
-
-  let featureFlagEnabled = false
-
-  if (featureFlagsListResult.isErr()) {
-    logger.error({
-      message: 'Error occurred whilst retrieving enabled feature flags',
-      meta: logMeta,
-      error: featureFlagsListResult.error,
-    })
-  } else {
-    featureFlagEnabled = featureFlagsListResult.value.includes(
-      featureFlags.payment,
-    )
-  }
-
-  // Step 1: Retrieve currently logged in user.
+  // Retrieve currently logged in user.
   return (
     UserService.getPopulatedUserById(sessionUserId)
-      // Step 2: Check if user has 'payment' betaflag
       .andThen((user) =>
-        featureFlagEnabled
-          ? ok(user)
-          : verifyUserBetaflag(user, featureFlags.payment),
-      )
-      .andThen((user) =>
-        // Step 2: Retrieve form with write permission check.
+        // Retrieve form with write permission check.
         AuthService.getFormAfterPermissionChecks({
           user,
           formId,
@@ -290,13 +240,13 @@ const _handleUpdatePayments: ControllerHandler<
         }),
       )
       .andThen(checkFormIsEncryptMode)
-      // Step 3: Check that the payment form has a stripe account connected
+      // Check that the payment form has a stripe account connected
       .andThen((form) =>
         form.payments_channel.channel === PaymentChannel.Unconnected
           ? err(new PaymentChannelNotFoundError())
           : ok(form),
       )
-      // Step 4: User has permissions, proceed to allow updating of start page
+      // Proceed to allow updating of start page
       .andThen((form) => {
         return AdminFormPaymentService.updatePayments(formId, {
           ...req.body,
@@ -482,56 +432,7 @@ export const handleGetPaymentGuideLink: ControllerHandler = async (
   req,
   res,
 ) => {
-  const sessionUserId = (req.session as AuthedSessionData).user._id
-
-  const logMeta = {
-    action: 'handleGetPaymentGuideLink',
-    ...createReqMeta(req),
-    userId: sessionUserId,
-  }
-
-  // If getFeatureFlag throws a DatabaseError, we want to log it, but respond
-  // to the client as if the flag is not found.
-  const featureFlagsListResult = await FeatureFlagService.getEnabledFlags()
-
-  let featureFlagEnabled = false
-
-  if (featureFlagsListResult.isErr()) {
-    logger.error({
-      message: 'Error occurred whilst retrieving enabled feature flags',
-      meta: logMeta,
-      error: featureFlagsListResult.error,
-    })
-  } else {
-    featureFlagEnabled = featureFlagsListResult.value.includes(
-      featureFlags.payment,
-    )
-  }
-
-  // Step 1: Retrieve currently logged in user.
-  return (
-    UserService.getPopulatedUserById(sessionUserId)
-      // Step 2: Check if user has 'payment' betaflag
-      .andThen((user) =>
-        featureFlagEnabled
-          ? ok(user)
-          : verifyUserBetaflag(user, featureFlags.payment),
-      )
-      // Step 3: User has permissions, proceed to get payment guide link
-      .map(() =>
-        res
-          .status(StatusCodes.OK)
-          .json(AdminFormPaymentService.getPaymentGuideLink()),
-      )
-      .mapErr((error) => {
-        logger.error({
-          message: 'Error checking if payment feature is enabled',
-          meta: logMeta,
-          error,
-        })
-
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
-      })
-  )
+  return res
+    .status(StatusCodes.OK)
+    .json(AdminFormPaymentService.getPaymentGuideLink())
 }

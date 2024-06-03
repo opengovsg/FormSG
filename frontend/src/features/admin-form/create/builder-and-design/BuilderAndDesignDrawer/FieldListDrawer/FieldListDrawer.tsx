@@ -9,13 +9,9 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import { featureFlags } from '~shared/constants'
-
 import { Tab } from '~components/Tabs'
 
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
-import { useFeatureFlags } from '~features/feature-flags/queries'
-import { useUser } from '~features/user/queries'
 
 import { useCreateTabForm } from '../../../builder-and-design/useCreateTabForm'
 import { CreatePageDrawerCloseButton } from '../../../common'
@@ -30,12 +26,6 @@ import {
 export const FieldListDrawer = (): JSX.Element => {
   const { fieldListTabIndex, setFieldListTabIndex } = useCreatePageSidebar()
   const { isLoading } = useCreateTabForm()
-
-  const { user } = useUser()
-  const { data: flags } = useFeatureFlags()
-
-  const displayPayments =
-    user?.betaFlags?.payment || flags?.has(featureFlags.payment)
 
   const tabsDataList = [
     {
@@ -55,7 +45,7 @@ export const FieldListDrawer = (): JSX.Element => {
     {
       header: 'Payments',
       component: PaymentsInputPanel,
-      isHidden: !displayPayments,
+      isHidden: false,
       isDisabled: isLoading,
       key: FieldListTabIndex.Payments,
     },
