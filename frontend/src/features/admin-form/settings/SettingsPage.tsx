@@ -11,13 +11,8 @@ import {
   Tabs,
 } from '@chakra-ui/react'
 
-import { featureFlags } from '~shared/constants'
-
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
-
-import { useFeatureFlags } from '~features/feature-flags/queries'
-import { useUser } from '~features/user/queries'
 
 import { useAdminFormCollaborators } from '../common/queries'
 
@@ -28,12 +23,16 @@ import { SettingsPaymentsPage } from './SettingsPaymentsPage'
 import { SettingsTwilioPage } from './SettingsTwilioPage'
 import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 
-const settingsTabsOrder = ['general', 'singpass', 'twilio', 'webhooks']
+const settingsTabsOrder = [
+  'general',
+  'singpass',
+  'twilio',
+  'webhooks',
+  'payments',
+]
 
 export const SettingsPage = (): JSX.Element => {
   const { formId, settingsTab } = useParams()
-  const { user } = useUser()
-  const { data: flags } = useFeatureFlags()
 
   if (!formId) throw new Error('No formId provided')
 
@@ -49,23 +48,9 @@ export const SettingsPage = (): JSX.Element => {
 
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
 
-  const displayPayments =
-    user?.betaFlags?.payment || flags?.has(featureFlags.payment)
-
   const [tabIndex, setTabIndex] = useState(
     settingsTabsOrder.indexOf(settingsTab ?? ''),
   )
-
-  // Note: Admins are not redirected to /general on invalid settings tabs as we
-  // don't want to do this prematurely before displayPayments can be determined.
-  useEffect(() => {
-    if (displayPayments) {
-      // Dynamically push payments tab to settings tab order as needed, in case
-      // there may be multiple hidden tabs in the future.
-      settingsTabsOrder.push('payments')
-      setTabIndex(settingsTabsOrder.indexOf(settingsTab ?? ''))
-    }
-  }, [displayPayments, settingsTab])
 
   const handleTabChange = (index: number) => {
     setTabIndex(index)
@@ -117,9 +102,7 @@ export const SettingsPage = (): JSX.Element => {
             <SettingsTab label="Singpass" icon={BiKey} />
             <SettingsTab label="Twilio credentials" icon={BiMessage} />
             <SettingsTab label="Webhooks" icon={BiCodeBlock} />
-            {displayPayments && (
-              <SettingsTab label="Payments" icon={BiDollar} />
-            )}
+            <SettingsTab label="Payments" icon={BiDollar} />
           </TabList>
         </Flex>
         <TabPanels
@@ -139,11 +122,9 @@ export const SettingsPage = (): JSX.Element => {
           <TabPanel>
             <SettingsWebhooksPage />
           </TabPanel>
-          {displayPayments && (
-            <TabPanel>
-              <SettingsPaymentsPage />
-            </TabPanel>
-          )}
+          <TabPanel>
+            <SettingsPaymentsPage />
+          </TabPanel>
         </TabPanels>
         <Spacer />
       </Tabs>
