@@ -17,3 +17,16 @@ db.agencies.update(
   },
   { upsert: true },
 )
+
+db.agencies.update(
+  { shortName: 'was' },
+  {
+    $setOnInsert: {
+      shortName: 'was',
+      fullName: 'Work Allocation Singapore',
+      logo: 'https://logos.demos.sg/was.svg',
+      emailDomain: ['was.gov.sg'],
+    },
+  },
+  { upsert: true },
+)
