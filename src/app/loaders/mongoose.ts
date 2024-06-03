@@ -95,17 +95,18 @@ export default async (): Promise<Connection> => {
     const Agency = mongoose.model('Agency')
     const agencyList = [
       {
-      shortName: 'govtech',
-      fullName: 'Government Technology Agency',
-      emailDomain: 'data.gov.sg',
-      logo: '/public/modules/core/img/govtech.jpg',
-    },
-    {
-      shortName: 'was',
-      fullName: 'Work Allocation Singapore',
-      emailDomain: 'was.gov.sg',
-      logo: '/public/modules/core/img/was.jpg'
-    }]
+        shortName: 'govtech',
+        fullName: 'Government Technology Agency',
+        emailDomain: 'data.gov.sg',
+        logo: '/public/modules/core/img/govtech.jpg',
+      },
+      {
+        shortName: 'was',
+        fullName: 'Work Allocation Singapore',
+        emailDomain: 'was.gov.sg',
+        logo: '/public/modules/core/img/was.jpg',
+      },
+    ]
     await Agency.create(agencyList)
   }
 
