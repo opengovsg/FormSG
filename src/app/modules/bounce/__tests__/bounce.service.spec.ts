@@ -33,10 +33,8 @@ const MockLoggerModule = jest.mocked(LoggerModule)
 jest.mock('src/app/services/mail/mail.service')
 const MockMailService = jest.mocked(MailService)
 jest.mock('src/app/services/postman-sms/postman-sms.service', () => ({
-  PostmanSmsService: {
-    sendFormDeactivatedSms: jest.fn(),
-    sendBouncedSubmissionSms: jest.fn(),
-  },
+  sendFormDeactivatedSms: jest.fn(),
+  sendBouncedSubmissionSms: jest.fn(),
 }))
 const MockedPostmanSmsService = jest.mocked(PostmanSmsService)
 
@@ -400,7 +398,6 @@ describe('BounceService', () => {
         formId: form._id,
         bounces: [],
       })
-      console.log({ MockedPostmanSmsService })
       MockedPostmanSmsService.sendBouncedSubmissionSms.mockReturnValue(
         okAsync(true),
       )
@@ -416,24 +413,24 @@ describe('BounceService', () => {
       ).toHaveBeenCalledTimes(2)
       expect(
         MockedPostmanSmsService.sendBouncedSubmissionSms,
-      ).toHaveBeenCalledWith({
-        adminEmail: testUser.email,
-        adminId: String(testUser._id),
-        formId: form._id,
-        formTitle: form.title,
-        recipient: MOCK_CONTACT.contact,
-        recipientEmail: MOCK_CONTACT.email,
-      })
+      ).toHaveBeenCalledWith(
+        testUser.email,
+        String(testUser._id),
+        form._id,
+        form.title,
+        MOCK_CONTACT.contact,
+        MOCK_CONTACT.email,
+      )
       expect(
         MockedPostmanSmsService.sendBouncedSubmissionSms,
-      ).toHaveBeenCalledWith({
-        adminEmail: testUser.email,
-        adminId: String(testUser._id),
-        formId: form._id,
-        formTitle: form.title,
-        recipient: MOCK_CONTACT_2.contact,
-        recipientEmail: MOCK_CONTACT_2.email,
-      })
+      ).toHaveBeenCalledWith(
+        testUser.email,
+        String(testUser._id),
+        form._id,
+        form.title,
+        MOCK_CONTACT_2.contact,
+        MOCK_CONTACT_2.email,
+      )
       expect(notifiedRecipients._unsafeUnwrap()).toEqual([
         MOCK_CONTACT,
         MOCK_CONTACT_2,
@@ -464,24 +461,24 @@ describe('BounceService', () => {
       ).toHaveBeenCalledTimes(2)
       expect(
         MockedPostmanSmsService.sendBouncedSubmissionSms,
-      ).toHaveBeenCalledWith({
-        adminEmail: testUser.email,
-        adminId: String(testUser._id),
-        formId: form._id,
-        formTitle: form.title,
-        recipient: MOCK_CONTACT.contact,
-        recipientEmail: MOCK_CONTACT.email,
-      })
+      ).toHaveBeenCalledWith(
+        testUser.email,
+        String(testUser._id),
+        form._id,
+        form.title,
+        MOCK_CONTACT.contact,
+        MOCK_CONTACT.email,
+      )
       expect(
         MockedPostmanSmsService.sendBouncedSubmissionSms,
-      ).toHaveBeenCalledWith({
-        adminEmail: testUser.email,
-        adminId: String(testUser._id),
-        formId: form._id,
-        formTitle: form.title,
-        recipient: MOCK_CONTACT_2.contact,
-        recipientEmail: MOCK_CONTACT_2.email,
-      })
+      ).toHaveBeenCalledWith(
+        testUser.email,
+        String(testUser._id),
+        form._id,
+        form.title,
+        MOCK_CONTACT_2.contact,
+        MOCK_CONTACT_2.email,
+      )
       expect(notifiedRecipients._unsafeUnwrap()).toEqual([MOCK_CONTACT])
     })
   })
@@ -869,24 +866,24 @@ describe('BounceService', () => {
       ).toHaveBeenCalledTimes(2)
       expect(
         MockedPostmanSmsService.sendFormDeactivatedSms,
-      ).toHaveBeenCalledWith({
-        adminEmail: form.admin.email,
-        adminId: String(form.admin._id),
-        formId: form._id,
-        formTitle: form.title,
-        recipient: MOCK_CONTACT.contact,
-        recipientEmail: MOCK_CONTACT.email,
-      })
+      ).toHaveBeenCalledWith(
+        form.admin.email,
+        String(form.admin._id),
+        form._id,
+        form.title,
+        MOCK_CONTACT.contact,
+        MOCK_CONTACT.email,
+      )
       expect(
         MockedPostmanSmsService.sendFormDeactivatedSms,
-      ).toHaveBeenCalledWith({
-        adminEmail: form.admin.email,
-        adminId: String(form.admin._id),
-        formId: form._id,
-        formTitle: form.title,
-        recipient: MOCK_CONTACT_2.contact,
-        recipientEmail: MOCK_CONTACT_2.email,
-      })
+      ).toHaveBeenCalledWith(
+        form.admin.email,
+        String(form.admin._id),
+        form._id,
+        form.title,
+        MOCK_CONTACT_2.contact,
+        MOCK_CONTACT_2.email,
+      )
     })
 
     it('should return true even when some SMSes fail', async () => {
@@ -909,24 +906,24 @@ describe('BounceService', () => {
       ).toHaveBeenCalledTimes(2)
       expect(
         MockedPostmanSmsService.sendFormDeactivatedSms,
-      ).toHaveBeenCalledWith({
-        adminEmail: form.admin.email,
-        adminId: String(form.admin._id),
-        formId: form._id,
-        formTitle: form.title,
-        recipient: MOCK_CONTACT.contact,
-        recipientEmail: MOCK_CONTACT.email,
-      })
+      ).toHaveBeenCalledWith(
+        form.admin.email,
+        String(form.admin._id),
+        form._id,
+        form.title,
+        MOCK_CONTACT.contact,
+        MOCK_CONTACT.email,
+      )
       expect(
         MockedPostmanSmsService.sendFormDeactivatedSms,
-      ).toHaveBeenCalledWith({
-        adminEmail: form.admin.email,
-        adminId: String(form.admin._id),
-        formId: form._id,
-        formTitle: form.title,
-        recipient: MOCK_CONTACT_2.contact,
-        recipientEmail: MOCK_CONTACT_2.email,
-      })
+      ).toHaveBeenCalledWith(
+        form.admin.email,
+        String(form.admin._id),
+        form._id,
+        form.title,
+        MOCK_CONTACT_2.contact,
+        MOCK_CONTACT_2.email,
+      )
     })
   })
 })
