@@ -1,12 +1,5 @@
 import { useEffect, useMemo } from 'react'
-import {
-  BiCodeBlock,
-  BiCog,
-  BiDollar,
-  BiKey,
-  BiMailSend,
-  BiMessage,
-} from 'react-icons/bi'
+import { BiCodeBlock, BiCog, BiDollar, BiKey, BiMessage } from 'react-icons/bi'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   Box,
@@ -24,9 +17,7 @@ import { useDraggable } from '~hooks/useDraggable'
 import { useAdminFormCollaborators } from '../common/queries'
 
 import { SettingsTab } from './components/SettingsTab'
-import { isEmailOrStorageMode, useAdminFormSettings } from './queries'
 import { SettingsAuthPage } from './SettingsAuthPage'
-import { SettingsEmailNotificationsPage } from './SettingsEmailNotificationsPage'
 import { SettingsGeneralPage } from './SettingsGeneralPage'
 import { SettingsPaymentsPage } from './SettingsPaymentsPage'
 import { SettingsTwilioPage } from './SettingsTwilioPage'
@@ -34,9 +25,6 @@ import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 
 export const SettingsPage = (): JSX.Element => {
   const { formId, settingsTab } = useParams()
-  const { user } = useUser()
-  const { data: flags } = useFeatureFlags()
-  const { data: settings } = useAdminFormSettings()
 
   if (!formId) throw new Error('No formId provided')
 
@@ -52,11 +40,6 @@ export const SettingsPage = (): JSX.Element => {
 
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
 
-  const displayPayments =
-    user?.betaFlags?.payment || flags?.has(featureFlags.payment)
-  const displayEmailNotificationPage =
-    settings && isEmailOrStorageMode(settings)
-
   // Note: Admins are not redirected to /general on invalid settings tabs as we
   // don't want to do this prematurely before displayPayments can be determined.
   const tabConfig = useMemo(() => {
@@ -69,26 +52,11 @@ export const SettingsPage = (): JSX.Element => {
         component: SettingsTwilioPage,
       },
       { label: 'Webhooks', icon: BiCodeBlock, component: SettingsWebhooksPage },
+      { label: 'Payments', icon: BiDollar, component: SettingsPaymentsPage },
     ]
 
-    if (displayPayments) {
-      baseTabs.push({
-        label: 'Payments',
-        icon: BiDollar,
-        component: SettingsPaymentsPage,
-      })
-    }
-
-    if (displayEmailNotificationPage && !displayPayments) {
-      baseTabs.splice(2, 0, {
-        label: 'Email Notifications',
-        icon: BiMailSend,
-        component: SettingsEmailNotificationsPage,
-      })
-    }
-
     return baseTabs
-  }, [displayPayments, displayEmailNotificationPage])
+  }, [])
 
   const tabIndex = tabConfig.findIndex(
     (tab) =>

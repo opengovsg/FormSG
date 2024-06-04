@@ -3,13 +3,15 @@ import { Controller, useForm } from 'react-hook-form'
 import { FormControl, Skeleton, Stack } from '@chakra-ui/react'
 import { get, isEmpty } from 'lodash'
 
+import { FormResponseMode } from '~shared/types'
+
 import { FORM_TITLE_VALIDATION_RULES } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 
 import { useMutateFormSettings } from '../mutations'
-import { isEmailMode, useAdminFormSettings } from '../queries'
+import { useAdminFormSettings } from '../queries'
 
 import { EmailFormSection } from './EmailFormSection'
 
@@ -21,8 +23,10 @@ export const FormDetailsSection = (): JSX.Element => {
     <Skeleton isLoaded={!isLoadingSettings && !!settings}>
       <Stack spacing="2rem">
         {settings ? <FormTitleInput initialTitle={settings.title} /> : null}
-        {settings && isEmailMode(settings) ? (
-          <EmailFormSection emails={settings.emails} isRequired={true} />
+        {settings &&
+        (settings?.responseMode === FormResponseMode.Encrypt ||
+          settings?.responseMode === FormResponseMode.Email) ? (
+          <EmailFormSection settings={settings} />
         ) : null}
       </Stack>
     </Skeleton>
