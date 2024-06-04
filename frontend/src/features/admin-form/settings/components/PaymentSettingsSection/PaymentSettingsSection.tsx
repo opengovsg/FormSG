@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   As,
@@ -10,6 +10,7 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react'
+import { get, isEmpty } from 'lodash'
 
 import {
   DISALLOW_CONNECT_NON_WHITELIST_STRIPE_ACCOUNT,
@@ -45,11 +46,20 @@ const BeforeConnectionInstructions = ({
   const [allowConnect, setAllowConnect] = useState(false)
   const { data: paymentGuideLink } = usePaymentGuideLink()
   const [searchParams] = useSearchParams()
+  const { data: settings } = useAdminFormSettings()
 
   const queryParams = Object.fromEntries([...searchParams])
   const isInvalidDomain =
     queryParams[ERROR_QUERY_PARAM_KEY] ===
     DISALLOW_CONNECT_NON_WHITELIST_STRIPE_ACCOUNT
+
+  const isEmailsAbsent = useMemo(() => {
+    return (
+      (settings?.responseMode === FormResponseMode.Email ||
+        settings?.responseMode === FormResponseMode.Encrypt) &&
+      isEmpty(get(settings, 'emails', []))
+    )
+  }, [settings])
 
   if (isInvalidDomain) {
     return (
@@ -103,7 +113,7 @@ const BeforeConnectionInstructions = ({
         </Checkbox>
         <StripeConnectButton
           connectState={
-            allowConnect
+            allowConnect && isEmailsAbsent
               ? StripeConnectButtonStates.ENABLED
               : StripeConnectButtonStates.DISABLED
           }

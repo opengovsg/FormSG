@@ -2,8 +2,6 @@ import { useState } from 'react'
 import { useQuery, UseQueryResult } from 'react-query'
 import { useParams } from 'react-router-dom'
 
-import { FormResponseMode } from '~shared/types'
-import { EmailFormSettings, StorageFormSettings } from '~shared/types/form'
 import { FormSettings } from '~shared/types/form/form'
 
 import { adminFormKeys } from '../common/queries'
@@ -58,26 +56,4 @@ export const useAdminFormPayments = () => {
     data,
     ...rest,
   }
-}
-
-export function isEmailMode(
-  settings?: FormSettings,
-): settings is EmailFormSettings {
-  return (
-    settings !== undefined && settings.responseMode === FormResponseMode.Email
-  )
-}
-
-export function isStorageMode(
-  settings?: FormSettings,
-): settings is StorageFormSettings {
-  return (
-    settings !== undefined && settings.responseMode === FormResponseMode.Encrypt
-  )
-}
-
-export function isEmailOrStorageMode(
-  settings?: FormSettings,
-): settings is EmailFormSettings | StorageFormSettings {
-  return isEmailMode(settings) || isStorageMode(settings)
 }
