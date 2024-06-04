@@ -111,6 +111,16 @@ describe('submission.utils', () => {
   })
 
   describe('getInvalidFileExtensions', () => {
+    it('should throw error when filename is not a string', async () => {
+      // Special case where we found instances where the filename was not a string
+      // See https://www.notion.so/opengov/TypeError-Cannot-read-properties-of-undefined-reading-split-in-file-validation-js-6f4dcc17e6fc48319d8f7f0f997685c2?pvs=4
+      // We can remove this test case when the issue is found and fixed
+      const promiseOutcome = getInvalidFileExtensions([
+        { ...validSingleFile, filename: null as unknown as string },
+      ])
+      await expect(promiseOutcome).toReject()
+    })
+
     it('should return empty array when given a single valid file', async () => {
       const invalid = await getInvalidFileExtensions([validSingleFile])
       expect(invalid).toEqual([])
