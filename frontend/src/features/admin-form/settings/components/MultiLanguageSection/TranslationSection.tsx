@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react'
-import { useForm, UseFormRegister } from 'react-hook-form'
+import { FormProvider, useForm, useFormContext } from 'react-hook-form'
 import { BiChevronLeft } from 'react-icons/bi'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
@@ -16,6 +16,7 @@ import _ from 'lodash'
 
 import {
   BasicField,
+  Column,
   FormEndPage,
   FormField,
   FormFieldDto,
@@ -24,6 +25,7 @@ import {
   TranslationMapping,
   TranslationOptionMapping,
 } from '~shared/types'
+import { TableFieldDto } from '~shared/types/field'
 
 import { ADMINFORM_ROUTE } from '~constants/routes'
 import { useToast } from '~hooks/useToast'
@@ -36,26 +38,28 @@ import {
   useFieldBuilderStore,
 } from '~features/admin-form/create/builder-and-design/useFieldBuilderStore'
 
-type TranslationInput = {
+export type TranslationInput = {
   titleTranslation: string
   descriptionTranslation: string
   paragraphTranslations: string
   fieldOptionsTranslations: string
+  tableColumnTitleTranslations: string[]
+  tableColumnDropdownTranslations: string[]
 }
 
 export const TranslationContainer = ({
   language,
   defaultString,
-  register,
   editingTranslation,
   previousTranslation,
 }: {
   language: string
   defaultString: string | undefined
-  register: UseFormRegister<TranslationInput>
   editingTranslation: keyof TranslationInput
   previousTranslation?: string
 }): JSX.Element => {
+  const { register } = useFormContext<TranslationInput>()
+
   return (
     <Flex direction="column" width="100%">
       <Flex alignItems="center" mb="2rem">
@@ -95,16 +99,15 @@ export const TranslationContainer = ({
 const OptionsTranslationContainer = ({
   language,
   defaultString,
-  register,
   editingTranslation,
   previousTranslation,
 }: {
   language: string
   defaultString: string | undefined
-  register: UseFormRegister<TranslationInput>
   editingTranslation: keyof TranslationInput
   previousTranslation?: string
 }) => {
+  const { register } = useFormContext<TranslationInput>()
   return (
     <Flex direction="column" width="100%">
       <Flex alignItems="center" mb="2rem">
@@ -141,14 +144,147 @@ const OptionsTranslationContainer = ({
   )
 }
 
+/**
+ * Parts of table that requires translation:
+ * - Title
+ * - Description
+ * - Columns name -> Text field
+ * - Field options for columns that have dropdown -> Dropdown field
+ * Each column will either have a dropdown or text input
+ */
+const TableTranslationContainer = ({
+  language,
+  columns,
+}: {
+  language: string
+  columns: Column[]
+}): JSX.Element | null => {
+  const { register } = useFormContext<TranslationInput>()
+  return (
+    <>
+      {columns.map((column, index) => {
+        let fieldOptionsString = ''
+
+        if (column.columnType === BasicField.Dropdown) {
+          fieldOptionsString = column.fieldOptions.join('\n')
+        }
+
+        const previousColumnTitleTranslation =
+          column?.titleTranslations?.find(
+            (translation) => translation.language === language,
+          )?.translation ?? ''
+
+        let previousFieldOptionsTranslations: string[] = []
+
+        if (column.columnType === BasicField.Dropdown) {
+          previousFieldOptionsTranslations =
+            column?.fieldOptionsTranslations?.find(
+              (translation) => translation.language === language,
+            )?.translation ?? []
+        }
+
+        const previousFieldOptionsTranslationsString =
+          previousFieldOptionsTranslations.join('\n')
+
+        return (
+          <Flex justifyContent="flex-start" mb="2.5rem" direction="column">
+            <Text
+              color="secondary.500"
+              fontSize="1.25rem"
+              fontWeight="600"
+              mb="1rem"
+            >
+              Column
+            </Text>
+            <Flex direction="column" width="100%">
+              <Flex alignItems="center" mb="2rem">
+                <Text
+                  color="secondary.700"
+                  fontWeight="400"
+                  mr="7.5rem"
+                  width="6.25rem"
+                >
+                  Default
+                </Text>
+                <Textarea
+                  placeholder={column.title}
+                  width="100%"
+                  isDisabled={true}
+                  padding="0.75rem"
+                  resize="none"
+                />
+              </Flex>
+              <Flex alignItems="center">
+                <Text color="secondary.700" mr="7.5rem" width="6.25rem">
+                  {language}
+                </Text>
+                <FormControl>
+                  <Input
+                    type="text"
+                    width="100%"
+                    {...register(`tableColumnTitleTranslations.${index}`)}
+                    defaultValue={previousColumnTitleTranslation}
+                  />
+                </FormControl>
+              </Flex>
+            </Flex>
+            {column.columnType === BasicField.Dropdown && (
+              <Flex direction="column" width="100%">
+                <Text
+                  color="secondary.500"
+                  fontSize="1.25rem"
+                  fontWeight="600"
+                  mb="1rem"
+                  mt="2rem"
+                >
+                  Options
+                </Text>
+                <Flex alignItems="center" mb="2rem">
+                  <Text
+                    color="secondary.700"
+                    fontWeight="400"
+                    mr="7.5rem"
+                    width="6.25rem"
+                  >
+                    Default
+                  </Text>
+                  <Textarea
+                    placeholder={fieldOptionsString}
+                    width="100%"
+                    isDisabled={true}
+                    padding="0.75rem"
+                    resize="none"
+                    height="max-content"
+                  />
+                </Flex>
+                <Flex alignItems="center">
+                  <Text color="secondary.700" mr="7.5rem" width="6.25rem">
+                    {language}
+                  </Text>
+                  <FormControl>
+                    <Textarea
+                      width="100%"
+                      {...register(`tableColumnDropdownTranslations.${index}`)}
+                      defaultValue={previousFieldOptionsTranslationsString}
+                    />
+                  </FormControl>
+                </Flex>
+              </Flex>
+            )}
+            {index !== columns.length - 1 && <Divider mt="2.5rem" />}
+          </Flex>
+        )
+      })}
+    </>
+  )
+}
+
 const StartPageTranslationContainer = ({
   startPage,
   capitalisedLanguage,
-  register,
 }: {
   startPage?: FormStartPage
   capitalisedLanguage: string
-  register: UseFormRegister<TranslationInput>
 }): JSX.Element | null => {
   if (_.isUndefined(startPage)) {
     return null
@@ -175,7 +311,6 @@ const StartPageTranslationContainer = ({
         <TranslationContainer
           language={capitalisedLanguage}
           defaultString={startPage.paragraph}
-          register={register}
           editingTranslation={'titleTranslation'}
           previousTranslation={previousTranslation}
         />
@@ -186,12 +321,10 @@ const StartPageTranslationContainer = ({
 
 const FormFieldTranslationContainer = ({
   formFieldData,
-  capitalisedLanguage,
-  register,
+  language,
 }: {
   formFieldData: FormField | undefined
-  capitalisedLanguage: string
-  register: UseFormRegister<TranslationInput>
+  language: string
 }): JSX.Element | null => {
   if (_.isUndefined(formFieldData)) {
     return null
@@ -205,13 +338,12 @@ const FormFieldTranslationContainer = ({
   const descriptionTranslations = formFieldData.descriptionTranslations ?? []
 
   const prevTitleTranslations =
-    titleTranslations.find(
-      (translation) => translation.language === capitalisedLanguage,
-    )?.translation ?? ''
+    titleTranslations.find((translation) => translation.language === language)
+      ?.translation ?? ''
 
   const prevDescriptionTranslations =
     descriptionTranslations.find(
-      (translation) => translation.language === capitalisedLanguage,
+      (translation) => translation.language === language,
     )?.translation ?? ''
 
   let hasFieldOptions = false
@@ -230,13 +362,20 @@ const FormFieldTranslationContainer = ({
       formFieldData?.fieldOptionsTranslations ?? []
 
     const idx = existingFieldOptionsTranslations.findIndex((translation) => {
-      return translation.language === capitalisedLanguage
+      return translation.language === language
     })
 
     if (idx !== -1) {
       previousFieldOptionsTranslations =
         existingFieldOptionsTranslations[idx].translation.join('\n')
     }
+  }
+
+  let isTableField = false
+  let columns: Column[] = []
+  if (formFieldData.fieldType === BasicField.Table) {
+    isTableField = true
+    columns = formFieldData.columns
   }
 
   return (
@@ -251,9 +390,8 @@ const FormFieldTranslationContainer = ({
           Question
         </Text>
         <TranslationContainer
-          language={capitalisedLanguage}
+          language={language}
           defaultString={formFieldData?.title}
-          register={register}
           editingTranslation={'titleTranslation'}
           previousTranslation={prevTitleTranslations}
         />
@@ -271,9 +409,8 @@ const FormFieldTranslationContainer = ({
               Description
             </Text>
             <TranslationContainer
-              language={capitalisedLanguage}
+              language={language}
               defaultString={formFieldData?.description}
-              register={register}
               editingTranslation={'descriptionTranslation'}
               previousTranslation={prevDescriptionTranslations}
             />
@@ -293,13 +430,18 @@ const FormFieldTranslationContainer = ({
               Options
             </Text>
             <OptionsTranslationContainer
-              language={capitalisedLanguage}
+              language={language}
               defaultString={defaultFieldOptions}
-              register={register}
               editingTranslation={'fieldOptionsTranslations'}
               previousTranslation={previousFieldOptionsTranslations}
             />
           </Flex>
+        </>
+      )}
+      {isTableField && (
+        <>
+          <Divider mb="2.5rem" />
+          <TableTranslationContainer language={language} columns={columns} />
         </>
       )}
     </>
@@ -309,11 +451,9 @@ const FormFieldTranslationContainer = ({
 const EndPageTranslationsContainer = ({
   endPage,
   capitalisedLanguage,
-  register,
 }: {
   endPage?: FormEndPage
   capitalisedLanguage: string
-  register: UseFormRegister<TranslationInput>
 }): JSX.Element | null => {
   if (_.isUndefined(endPage)) {
     return null
@@ -348,7 +488,6 @@ const EndPageTranslationsContainer = ({
         <TranslationContainer
           language={capitalisedLanguage}
           defaultString={endPage.title}
-          register={register}
           editingTranslation={'titleTranslation'}
           previousTranslation={previousTranslation}
         />
@@ -367,7 +506,6 @@ const EndPageTranslationsContainer = ({
           <TranslationContainer
             language={capitalisedLanguage}
             defaultString={endPage.paragraph}
-            register={register}
             editingTranslation={'paragraphTranslations'}
             previousTranslation={prevParagraphTranslations}
           />
@@ -395,8 +533,10 @@ export const TranslationSection = ({
   const navigate = useNavigate()
   const { editFieldMutation } = useEditFormField()
   const { endPageMutation, startPageMutation } = useMutateFormPage()
-  const { register, watch } = useForm<TranslationInput>()
+  const methods = useForm<TranslationInput>()
   const updateEditState = useFieldBuilderStore(updateEditStateSelector)
+
+  const { getValues, watch } = methods
 
   const titleTranslationInput = watch('titleTranslation')
   const descriptionTranslationInput = watch('descriptionTranslation')
@@ -515,6 +655,76 @@ export const TranslationSection = ({
       return updatedTranslations
     },
     [capitalisedLanguage, paragraphTranslationInput, titleTranslationInput],
+  )
+
+  const handleOnSaveTableTranslations = useCallback(
+    (field: TableFieldDto): TableFieldDto => {
+      // for each column, update the title translation if any and update the field options translation
+      // if any
+      const updatedTableField = field
+      updatedTableField.columns.forEach((column, index) => {
+        // update title translations
+        const translatedColumnTitle = getValues(
+          `tableColumnTitleTranslations.${index}`,
+        )
+
+        let updatedColumnTitleTranslations = column.titleTranslations ?? []
+        const columnTitleTranslationIdx =
+          updatedColumnTitleTranslations.findIndex(
+            (translation) => translation.translation === capitalisedLanguage,
+          )
+
+        if (columnTitleTranslationIdx !== -1) {
+          updatedColumnTitleTranslations[
+            columnTitleTranslationIdx
+          ].translation = translatedColumnTitle
+        } else {
+          updatedColumnTitleTranslations = [
+            ...updatedColumnTitleTranslations,
+            {
+              language: capitalisedLanguage as Language,
+              translation: translatedColumnTitle,
+            },
+          ]
+        }
+
+        column.titleTranslations = updatedColumnTitleTranslations
+
+        // get translated options
+        if (column.columnType === BasicField.Dropdown) {
+          const optionsTranslationsInput = getValues(
+            `tableColumnDropdownTranslations.${index}`,
+          )
+          const optionsTranslationsArr = optionsTranslationsInput?.split('\n')
+
+          // find if there exists translations for the options
+          let updatedOptionsTranslations = column.fieldOptionsTranslations ?? []
+          const translationIdx = updatedOptionsTranslations.findIndex(
+            (translation) => translation.language === capitalisedLanguage,
+          )
+
+          if (translationIdx !== -1) {
+            updatedOptionsTranslations[translationIdx].translation =
+              optionsTranslationsArr
+          } else {
+            updatedOptionsTranslations = [
+              ...updatedOptionsTranslations,
+              {
+                language: capitalisedLanguage as Language,
+                translation: optionsTranslationsArr,
+              },
+            ]
+          }
+
+          column.fieldOptionsTranslations = updatedOptionsTranslations
+        }
+
+        return column
+      })
+
+      return updatedTableField
+    },
+    [capitalisedLanguage, getValues],
   )
 
   const handleOnSaveTitleTranslation = useCallback(
@@ -656,10 +866,23 @@ export const TranslationSection = ({
         }
       }
 
-      editFieldMutation.mutate({
-        ...updatedFormData,
-        _id: fieldId,
-      } as FormFieldDto)
+      if (formFieldData.fieldType === BasicField.Table) {
+        const updatedFormFieldData =
+          handleOnSaveTableTranslations(formFieldData)
+
+        updatedFormData = {
+          ...updatedFormData,
+          columns: updatedFormFieldData.columns,
+        }
+      }
+
+      editFieldMutation.mutate(
+        {
+          ...updatedFormData,
+          _id: fieldId,
+        } as FormFieldDto,
+        { onSuccess: () => handleOnBackClick() },
+      )
     }
 
     // update translations for start page
@@ -722,6 +945,7 @@ export const TranslationSection = ({
     handleOnSaveEndPageTitleTranslations,
     handleOnSaveOptionsTranslations,
     handleOnSaveStartPageTranslation,
+    handleOnSaveTableTranslations,
     handleOnSaveTitleTranslation,
     isEndPageTranslations,
     isStartPageTranslations,
@@ -743,32 +967,31 @@ export const TranslationSection = ({
           Back to all questions
         </Button>
       </Flex>
-      <Flex ml="6.25rem" direction="column">
-        {isStartPageTranslations && (
-          <StartPageTranslationContainer
-            startPage={formStartPage}
-            register={register}
-            capitalisedLanguage={capitalisedLanguage}
-          />
-        )}
-        {isFormField && formFieldData && (
-          <FormFieldTranslationContainer
-            formFieldData={formFieldData}
-            register={register}
-            capitalisedLanguage={capitalisedLanguage}
-          />
-        )}
-        {isEndPageTranslations && formEndPage && (
-          <EndPageTranslationsContainer
-            endPage={formEndPage}
-            capitalisedLanguage={capitalisedLanguage}
-            register={register}
-          />
-        )}
-        <Button variant="solid" width="30%" onClick={handleOnSaveClick}>
-          Save Translation
-        </Button>
-      </Flex>
+      <FormProvider {...methods}>
+        <Flex ml="6.25rem" direction="column">
+          {isStartPageTranslations && (
+            <StartPageTranslationContainer
+              startPage={formStartPage}
+              capitalisedLanguage={capitalisedLanguage}
+            />
+          )}
+          {isFormField && formFieldData && (
+            <FormFieldTranslationContainer
+              formFieldData={formFieldData}
+              language={capitalisedLanguage}
+            />
+          )}
+          {isEndPageTranslations && formEndPage && (
+            <EndPageTranslationsContainer
+              endPage={formEndPage}
+              capitalisedLanguage={capitalisedLanguage}
+            />
+          )}
+          <Button variant="solid" width="30%" onClick={handleOnSaveClick}>
+            Save Translation
+          </Button>
+        </Flex>
+      </FormProvider>
     </Skeleton>
   )
 }

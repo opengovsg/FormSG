@@ -30,7 +30,7 @@ import { useEditFieldForm } from '../common/useEditFieldForm'
 
 import { EditTableColumns } from './EditTableColumns'
 
-const EDIT_TABLE_FIELD_KEYS = [
+export const EDIT_TABLE_FIELD_KEYS = [
   'title',
   'description',
   'required',

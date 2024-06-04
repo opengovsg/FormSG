@@ -4,7 +4,7 @@ import { UseTableCellProps } from 'react-table'
 import { FormControl, VisuallyHidden } from '@chakra-ui/react'
 import { get } from 'lodash'
 
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme, Language } from '~shared/types'
 import {
   BasicField,
   Column,
@@ -33,6 +33,7 @@ export interface ColumnCellProps
   disableRequiredValidation: boolean
   columnSchema: ColumnDto
   colorTheme: FormColorTheme
+  selectedLanguage: Language
 }
 
 export interface FieldColumnCellProps<T extends Column = Column> {
@@ -42,6 +43,7 @@ export interface FieldColumnCellProps<T extends Column = Column> {
   /** Represents `{schemaId}.{rowIndex}.{columnId}` */
   inputName: `${string}.${number}.${string}`
   colorTheme: FormColorTheme
+  selectedLanguage: Language
 }
 
 const ShortTextColumnCell = ({
@@ -81,12 +83,23 @@ const DropdownColumnCell = ({
   disableRequiredValidation,
   inputName,
   colorTheme,
+  selectedLanguage,
 }: FieldColumnCellProps<DropdownColumnBase>) => {
   const { control } = useFormContext<TableFieldInputs>()
   const rules = useMemo(
     () => createDropdownValidationRules(schema, disableRequiredValidation),
     [schema, disableRequiredValidation],
   )
+
+  let fieldOptions = schema.fieldOptions ?? []
+  const fieldOptionsTranslations = schema?.fieldOptionsTranslations ?? []
+  const translationsIdx = fieldOptionsTranslations.findIndex(
+    (translation) => translation.language === selectedLanguage,
+  )
+
+  if (translationsIdx !== -1) {
+    fieldOptions = fieldOptionsTranslations[translationsIdx].translation
+  }
 
   return (
     <Controller
@@ -99,7 +112,7 @@ const DropdownColumnCell = ({
           isDisabled={isDisabled}
           colorScheme={`theme-${colorTheme}`}
           // Possibility of fieldOptions being undefined during table field creation.
-          items={schema.fieldOptions ?? []}
+          items={fieldOptions}
           {...field}
         />
       )}
@@ -118,6 +131,7 @@ export const ColumnCell = ({
   column,
   columnSchema,
   colorTheme,
+  selectedLanguage,
 }: ColumnCellProps): JSX.Element => {
   const isMobile = useIsMobile()
   const isPrint = useIsPrint()
@@ -138,6 +152,7 @@ export const ColumnCell = ({
             isDisabled={isDisabled}
             disableRequiredValidation={disableRequiredValidation}
             inputName={inputName}
+            selectedLanguage={selectedLanguage}
           />
         )
       case BasicField.Dropdown:
@@ -148,6 +163,7 @@ export const ColumnCell = ({
             isDisabled={isDisabled}
             disableRequiredValidation={disableRequiredValidation}
             inputName={inputName}
+            selectedLanguage={selectedLanguage}
           />
         )
       default:
@@ -159,6 +175,7 @@ export const ColumnCell = ({
     disableRequiredValidation,
     inputName,
     isDisabled,
+    selectedLanguage,
   ])
 
   return (

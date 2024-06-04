@@ -15,7 +15,7 @@ import {
 import { get, head, uniq } from 'lodash'
 import simplur from 'simplur'
 
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme, Language } from '~shared/types'
 
 import { useHasChanged } from '~hooks/useHasChanged'
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -44,6 +44,7 @@ export interface TableFieldProps extends BaseFieldProps {
 export const TableField = ({
   schema,
   disableRequiredValidation,
+  selectedLanguage = Language.ENGLISH,
   colorTheme = FormColorTheme.Blue,
 }: TableFieldProps): JSX.Element => {
   const hasMinRowsChanged = useHasChanged(schema.minimumRows)
@@ -51,13 +52,30 @@ export const TableField = ({
 
   const columnsData = useMemo(() => {
     return schema.columns.map((c) => ({
-      Header: (
-        <ColumnHeader title={c.title} isRequired={c.required} id={c._id} />
-      ),
+      Header: () => {
+        let translatedTitle = c.title
+
+        // get translation for the title
+        const translations = c.titleTranslations ?? []
+        const idx = translations.findIndex(
+          (translation) => translation.language === selectedLanguage,
+        )
+
+        if (idx !== -1) {
+          translatedTitle = translations[idx].translation
+        }
+        return (
+          <ColumnHeader
+            title={translatedTitle}
+            isRequired={c.required}
+            id={c._id}
+          />
+        )
+      },
       accessor: c._id,
       Cell: ColumnCell,
     }))
-  }, [schema.columns])
+  }, [schema.columns, selectedLanguage])
 
   const formMethods = useFormContext<TableFieldInputs>()
   const { errors } = useFormState({
@@ -146,7 +164,7 @@ export const TableField = ({
     schema.columns.length * rows.length * (2.75 + 2.25 + 1.5) + rows.length * 3
 
   return (
-    <TableFieldContainer schema={schema}>
+    <TableFieldContainer schema={schema} selectedLanguage={selectedLanguage}>
       <Box
         d="block"
         w="100%"
@@ -216,6 +234,7 @@ export const TableField = ({
                         disableRequiredValidation,
                         columnSchema: schema.columns[j],
                         colorTheme,
+                        selectedLanguage,
                       })}
                     </Td>
                   ))}

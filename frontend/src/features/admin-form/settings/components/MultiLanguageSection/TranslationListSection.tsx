@@ -145,6 +145,7 @@ export const TranslationListSection = ({
   const hasEndPageTranslations = useMemo(() => {
     const endPageTitleTranslations = form?.endPage.titleTranslations ?? []
     const hasEndPageTitleTranslations =
+      !_.isUndefined(form?.endPage.title) &&
       endPageTitleTranslations.filter(
         (translations) =>
           translations.language === (uppercaseLanguage as Language),
@@ -153,17 +154,14 @@ export const TranslationListSection = ({
     const endPageParagraphTranslations =
       form?.endPage.paragraphTranslations ?? []
     const hasEndPageParagraphTranslations =
+      _.isUndefined(form?.endPage.paragraph) ||
       endPageParagraphTranslations.filter(
         (translations) =>
           translations.language === (uppercaseLanguage as Language),
       ).length > 0
 
     return hasEndPageTitleTranslations && hasEndPageParagraphTranslations
-  }, [
-    form?.endPage.paragraphTranslations,
-    form?.endPage.titleTranslations,
-    uppercaseLanguage,
-  ])
+  }, [form?.endPage, uppercaseLanguage])
 
   const handleOnBackClick = useCallback(() => {
     navigate(`${ADMINFORM_ROUTE}/${formId}/settings/multi-language`)

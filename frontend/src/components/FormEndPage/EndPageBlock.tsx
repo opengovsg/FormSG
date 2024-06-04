@@ -8,10 +8,7 @@ import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
 import { MarkdownText } from '~components/MarkdownText'
 
-import {
-  SubmissionData,
-  usePublicFormContext,
-} from '~features/public-form/PublicFormContext'
+import { SubmissionData } from '~features/public-form/PublicFormContext'
 
 export interface EndPageBlockProps {
   formTitle: FormDto['title'] | undefined
@@ -20,6 +17,7 @@ export interface EndPageBlockProps {
   colorTheme?: FormColorTheme
   focusOnMount?: boolean
   isButtonHidden?: boolean
+  selectedLanguage: Language
 }
 
 export const EndPageBlock = ({
@@ -29,8 +27,8 @@ export const EndPageBlock = ({
   colorTheme = FormColorTheme.Blue,
   focusOnMount,
   isButtonHidden,
+  selectedLanguage,
 }: EndPageBlockProps): JSX.Element => {
-  const { publicFormLanguage } = usePublicFormContext()
   const focusRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (focusOnMount) {
@@ -50,10 +48,10 @@ export const EndPageBlock = ({
   const title = useMemo(() => {
     let content = endPage.title
 
-    if (publicFormLanguage !== Language.ENGLISH) {
+    if (selectedLanguage !== Language.ENGLISH) {
       const translations = endPage.titleTranslations ?? []
       const titleTranslationIdx = translations.findIndex(
-        (translation) => translation.language === publicFormLanguage,
+        (translation) => translation.language === selectedLanguage,
       )
 
       if (titleTranslationIdx !== -1) {
@@ -62,15 +60,15 @@ export const EndPageBlock = ({
     }
 
     return content
-  }, [endPage.title, endPage.titleTranslations, publicFormLanguage])
+  }, [endPage.title, endPage.titleTranslations, selectedLanguage])
 
   const paragraph = useMemo(() => {
     let content = endPage?.paragraph
 
-    if (publicFormLanguage !== Language.ENGLISH) {
+    if (selectedLanguage !== Language.ENGLISH) {
       const translations = endPage.paragraphTranslations ?? []
       const paragraphTranslationIdx = translations.findIndex(
-        (translation) => translation.language === publicFormLanguage,
+        (translation) => translation.language === selectedLanguage,
       )
 
       if (paragraphTranslationIdx !== -1) {
@@ -79,7 +77,7 @@ export const EndPageBlock = ({
     }
 
     return content
-  }, [endPage.paragraph, endPage.paragraphTranslations, publicFormLanguage])
+  }, [endPage?.paragraph, endPage.paragraphTranslations, selectedLanguage])
 
   const submissionTimestamp = useMemo(
     () => format(new Date(submissionData.timestamp), 'dd MMM yyyy, HH:mm:ss z'),
