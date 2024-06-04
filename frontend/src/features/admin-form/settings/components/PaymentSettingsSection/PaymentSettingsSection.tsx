@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link as ReactLink, useSearchParams } from 'react-router-dom'
 import {
   As,
+  Box,
   Divider,
   Flex,
   FormControl,
@@ -53,11 +54,11 @@ const BeforeConnectionInstructions = ({
     queryParams[ERROR_QUERY_PARAM_KEY] ===
     DISALLOW_CONNECT_NON_WHITELIST_STRIPE_ACCOUNT
 
-  const isEmailsAbsent = useMemo(() => {
+  const isEmailsPresent = useMemo(() => {
     return (
       (settings?.responseMode === FormResponseMode.Email ||
         settings?.responseMode === FormResponseMode.Encrypt) &&
-      isEmpty(get(settings, 'emails', []))
+      !isEmpty(get(settings, 'emails', []))
     )
   }, [settings])
 
@@ -78,16 +79,24 @@ const BeforeConnectionInstructions = ({
   if (isProductionEnv) {
     return (
       <VStack spacing="2.5rem" alignItems="start">
-        <InlineMessage variant="info">
-          <Text>
-            Read{' '}
-            <Link isExternal href={paymentGuideLink}>
-              our guide
-            </Link>{' '}
-            to set up a Stripe account. If your agency already has a Stripe
-            account, you can connect it to this form.
-          </Text>
-        </InlineMessage>
+        {isEmailsPresent ? (
+          <Box w="100%">
+            <InlineMessage>
+              <Text>
+                To enable payment fields, remove all recipients from{' '}
+                <Link as={ReactLink} to={'general'}>
+                  email notifications
+                </Link>
+                .
+              </Text>
+            </InlineMessage>
+          </Box>
+        ) : (
+          <InlineMessage useMarkdown>
+            {`Read [our guide](${paymentGuideLink}) to set up a Stripe account. If your agency already has a Stripe account, you can connect it to this form.`}
+          </InlineMessage>
+        )}
+
         <Text textStyle="h3" color="secondary.500">
           Bulk transaction rates
         </Text>
@@ -113,7 +122,7 @@ const BeforeConnectionInstructions = ({
         </Checkbox>
         <StripeConnectButton
           connectState={
-            allowConnect && isEmailsAbsent
+            allowConnect && !isEmailsPresent
               ? StripeConnectButtonStates.ENABLED
               : StripeConnectButtonStates.DISABLED
           }

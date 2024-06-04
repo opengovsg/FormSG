@@ -17,7 +17,11 @@ import {
   StorageFormSettings,
 } from '~shared/types/form'
 
-import { GUIDE_FORM_MRF, GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
+import {
+  GUIDE_FORM_MRF,
+  GUIDE_PREVENT_EMAIL_BOUNCE,
+  OGP_PLUMBER,
+} from '~constants/links'
 import { useMdComponents } from '~hooks/useMdComponents'
 import {
   OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES,
@@ -62,13 +66,12 @@ export const EmailFormSection = ({
 
   const { hasPaymentCapabilities } = useAdminFormPayments()
 
-  const isEmailInputDisabled = useMemo(
+  const isPaymentsEnabled = useMemo(
     () =>
-      isFormPublic ||
-      (settings &&
-        settings.responseMode === FormResponseMode.Encrypt &&
-        hasPaymentCapabilities),
-    [settings, isFormPublic, hasPaymentCapabilities],
+      settings &&
+      settings.responseMode === FormResponseMode.Encrypt &&
+      hasPaymentCapabilities,
+    [settings, hasPaymentCapabilities],
   )
 
   const handleSubmitEmails = useCallback(
@@ -87,21 +90,21 @@ export const EmailFormSection = ({
   return (
     <>
       {isFormPublic ? (
-        <InlineMessage marginBottom="16px">
+        <InlineMessage>
           To change admin email recipients, close your form to new responses.
         </InlineMessage>
-      ) : isEmailInputDisabled ? (
-        <InlineMessage variant="error">
-          To enable email notifications, please remove Payments fields from your
-          form.
+      ) : isPaymentsEnabled ? (
+        <InlineMessage useMarkdown>
+          {`Email notifications for payment forms are not available in FormSG. You
+          can configure them using [Plumber](${OGP_PLUMBER}).`}
         </InlineMessage>
-      ) : settings && settings.responseMode === FormResponseMode.Encrypt ? (
+      ) : settings && settings.responseMode === FormResponseMode.Email ? (
         <MRFAdvertisingInfobox />
       ) : null}
       <FormProvider {...formMethods}>
         <FormControl
           isInvalid={!isEmpty(errors)}
-          isDisabled={isEmailInputDisabled}
+          isDisabled={isFormPublic || isPaymentsEnabled}
         >
           <FormLabel
             isRequired={settings.responseMode === FormResponseMode.Email}
