@@ -19,6 +19,7 @@
   - [Running Locally](#running-locally)
   - [Adding dependencies](#adding-dependencies)
   - [Accessing email locally](#accessing-email-locally)
+  - [Login using mockpass locally](#login-using-mockpass-locally)
   - [Environment variables](#environment-variables)
   - [Trouble-shooting](#trouble-shooting)
 - [Testing](#testing)
@@ -129,6 +130,15 @@ As frontend project is currently not using Docker, no other steps are required.
 ### Accessing email locally
 
 We use [MailDev](https://github.com/maildev/maildev) to access emails in the development environment. The MailDev UI can be accessed at [localhost:1080](localhost:1080) when the Docker container runs.
+
+### Login using mockpass locally
+
+1. Click on the `Login with Singpass` button on the login page
+2. In the dropdown menu, select `S9812379B [MyInfo]`
+3. Choose the profile with the email `lim_yong_xiang@was.gov.sg`
+4. You should now be successfully logged in
+
+**Note**: Remember to renew your formsg_mongodb_data volume
 
 ### Environment variables
 
