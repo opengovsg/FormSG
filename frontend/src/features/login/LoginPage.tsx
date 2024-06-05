@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { Stack } from '@chakra-ui/react'
 import { StatusCodes } from 'http-status-codes'
@@ -25,6 +26,7 @@ export type LoginOtpData = {
 }
 
 export const LoginPage = (): JSX.Element => {
+  const { t } = useTranslation()
   const { data: isIntranetIp } = useIsIntranetCheck()
 
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
@@ -41,9 +43,9 @@ export const LoginPage = (): JSX.Element => {
       case StatusCodes.OK.toString():
         return
       case StatusCodes.UNAUTHORIZED.toString():
-        return 'Your sgID login session has expired. Please login again.'
+        return t('features.login.LoginPage.expiredSgIdSession')
       default:
-        return 'Something went wrong. Please try again later.'
+        return t('features.common.errors.generic')
     }
   }, [statusCode])
 
