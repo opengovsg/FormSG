@@ -59,10 +59,7 @@ export const EmailFormSection = ({
 
   const { mutateFormEmails } = useMutateFormSettings()
 
-  const isFormPublic = useMemo(
-    () => settings.status === FormStatus.Public,
-    [settings],
-  )
+  const isFormPublic = settings.status === FormStatus.Public
 
   const { hasPaymentCapabilities } = useAdminFormPayments()
 
@@ -89,18 +86,13 @@ export const EmailFormSection = ({
 
   return (
     <>
-      {isFormPublic ? (
-        <InlineMessage>
-          To change admin email recipients, close your form to new responses.
-        </InlineMessage>
-      ) : isPaymentsEnabled ? (
-        <InlineMessage useMarkdown>
-          {`Email notifications for payment forms are not available in FormSG. You
-          can configure them using [Plumber](${OGP_PLUMBER}).`}
-        </InlineMessage>
-      ) : settings && settings.responseMode === FormResponseMode.Email ? (
-        <MRFAdvertisingInfobox />
-      ) : null}
+      <EmailNotificationsHeader
+        isFormPublic={isFormPublic}
+        isPaymentsEnabled={isPaymentsEnabled}
+        isFormResponseModeEmail={
+          settings.responseMode === FormResponseMode.Email
+        }
+      />
       <FormProvider {...formMethods}>
         <FormControl
           isInvalid={!isEmpty(errors)}
@@ -140,6 +132,41 @@ const MRFAdvertisingInfobox = () => {
       >{`Require routing and approval? [Check out our new feature: Multi-respondent forms!](${GUIDE_FORM_MRF})`}</MarkdownText>
     </Flex>
   )
+}
+
+interface EmailNotificationsHeaderProps {
+  isFormPublic: boolean
+  isPaymentsEnabled: boolean
+  isFormResponseModeEmail: boolean
+}
+
+const EmailNotificationsHeader = ({
+  isFormPublic,
+  isPaymentsEnabled,
+  isFormResponseModeEmail,
+}: EmailNotificationsHeaderProps) => {
+  if (isFormPublic) {
+    return (
+      <InlineMessage>
+        To change admin email recipients, close your form to new responses.
+      </InlineMessage>
+    )
+  }
+
+  if (isPaymentsEnabled) {
+    return (
+      <InlineMessage useMarkdown>
+        {`Email notifications for payment forms are not available in FormSG. You
+        can configure them using [Plumber](${OGP_PLUMBER}).`}
+      </InlineMessage>
+    )
+  }
+
+  if (isFormResponseModeEmail) {
+    return <MRFAdvertisingInfobox />
+  }
+
+  return null
 }
 
 interface AdminEmailRecipientsInputProps {
