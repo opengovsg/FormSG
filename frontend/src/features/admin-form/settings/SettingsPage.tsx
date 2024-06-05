@@ -1,5 +1,6 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import { BiCodeBlock, BiCog, BiDollar, BiKey, BiMessage } from 'react-icons/bi'
+import { IconType } from 'react-icons/lib'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   Box,
@@ -23,6 +24,46 @@ import { SettingsPaymentsPage } from './SettingsPaymentsPage'
 import { SettingsTwilioPage } from './SettingsTwilioPage'
 import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 
+interface TabEntry {
+  label: string
+  icon: IconType
+  component: () => JSX.Element
+  path: string
+}
+
+const tabConfig: TabEntry[] = [
+  {
+    label: 'General',
+    icon: BiCog,
+    component: SettingsGeneralPage,
+    path: 'general',
+  },
+  {
+    label: 'Singpass',
+    icon: BiKey,
+    component: SettingsAuthPage,
+    path: 'singpass',
+  },
+  {
+    label: 'Twilio credentials',
+    icon: BiMessage,
+    component: SettingsTwilioPage,
+    path: 'twilio-credentials',
+  },
+  {
+    label: 'Webhooks',
+    icon: BiCodeBlock,
+    component: SettingsWebhooksPage,
+    path: 'webhooks',
+  },
+  {
+    label: 'Payments',
+    icon: BiDollar,
+    component: SettingsPaymentsPage,
+    path: 'payments',
+  },
+]
+
 export const SettingsPage = (): JSX.Element => {
   const { formId, settingsTab } = useParams()
 
@@ -40,33 +81,12 @@ export const SettingsPage = (): JSX.Element => {
 
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
 
-  // Note: Admins are not redirected to /general on invalid settings tabs as we
-  // don't want to do this prematurely before displayPayments can be determined.
-  const tabConfig = useMemo(() => {
-    const baseTabs = [
-      { label: 'General', icon: BiCog, component: SettingsGeneralPage },
-      { label: 'Singpass', icon: BiKey, component: SettingsAuthPage },
-      {
-        label: 'Twilio credentials',
-        icon: BiMessage,
-        component: SettingsTwilioPage,
-      },
-      { label: 'Webhooks', icon: BiCodeBlock, component: SettingsWebhooksPage },
-      { label: 'Payments', icon: BiDollar, component: SettingsPaymentsPage },
-    ]
-
-    return baseTabs
-  }, [])
-
   const tabIndex = tabConfig.findIndex(
-    (tab) =>
-      tab.label.toLowerCase() === (settingsTab ?? 'general').toLowerCase(),
+    (tab) => tab.path === (settingsTab ?? 'general').toLowerCase(),
   )
 
   const handleTabChange = (index: number) => {
-    navigate(
-      `${ADMINFORM_ROUTE}/${formId}/settings/${tabConfig[index].label.toLowerCase()}`,
-    )
+    navigate(`${ADMINFORM_ROUTE}/${formId}/settings/${tabConfig[index].path}`)
   }
 
   return (
