@@ -124,19 +124,21 @@ const createFormValidator = celebrate({
         title: Joi.string().min(4).max(200).required(),
         // Require emails string (for backwards compatibility) or string
         // array if form to be created in Email mode.
+        // Must be string array (which can be empty) if form is to be created in Encrypt mode.
         emails: Joi.when('responseMode', {
           switch: [
             {
               is: FormResponseMode.Email,
               then: Joi.alternatives()
-                .try(Joi.array().items(Joi.string()).min(1), Joi.string())
+                .try(
+                  Joi.array().items(Joi.string().email()).min(1),
+                  Joi.string().email(),
+                )
                 .required(),
             },
             {
               is: FormResponseMode.Encrypt,
-              then: Joi.alternatives()
-                .try(Joi.array().items(Joi.string()), Joi.string())
-                .required(),
+              then: Joi.array().items(Joi.string().email()).required(),
             },
             {
               is: FormResponseMode.Multirespondent,
@@ -177,14 +179,15 @@ const duplicateFormValidator = celebrate({
         {
           is: FormResponseMode.Email,
           then: Joi.alternatives()
-            .try(Joi.array().items(Joi.string()).min(1), Joi.string())
+            .try(
+              Joi.array().items(Joi.string().email()).min(1),
+              Joi.string().email(),
+            )
             .required(),
         },
         {
           is: FormResponseMode.Encrypt,
-          then: Joi.alternatives()
-            .try(Joi.array().items(Joi.string()), Joi.string())
-            .required(),
+          then: Joi.array().items(Joi.string().email()).required(),
         },
         {
           is: FormResponseMode.Multirespondent,

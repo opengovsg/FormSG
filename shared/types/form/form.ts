@@ -171,10 +171,10 @@ export interface EmailFormBase extends FormBase {
 export interface StorageFormBase extends FormBase {
   responseMode: FormResponseMode.Encrypt
   publicKey: string
+  emails: string[]
   payments_channel: FormPaymentsChannel
   payments_field: FormPaymentsField
   business?: FormBusinessField
-  emails: string[]
 }
 
 export interface MultirespondentFormBase extends FormBase {
@@ -330,7 +330,7 @@ export type DuplicateFormOverwriteDto = {
   | {
       responseMode: FormResponseMode.Encrypt
       publicKey: string
-      emails: string | string[]
+      emails: string[]
     }
   | {
       responseMode: FormResponseMode.Multirespondent
