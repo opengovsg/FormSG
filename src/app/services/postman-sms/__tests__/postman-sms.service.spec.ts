@@ -42,7 +42,7 @@ describe('postman-sms.service', () => {
         .mockResolvedValueOnce(okAsync(true))
 
       const postmanMopSendSpy = jest
-        .spyOn(PostmanSmsService, 'sendMopSms')
+        .spyOn(PostmanSmsService, '_sendMopSms')
         .mockResolvedValueOnce(okAsync(true))
 
       // Act
@@ -67,7 +67,7 @@ describe('postman-sms.service', () => {
         .mockResolvedValueOnce(okAsync(true))
 
       const postmanMopSendSpy = jest
-        .spyOn(PostmanSmsService, 'sendMopSms')
+        .spyOn(PostmanSmsService, '_sendMopSms')
         .mockResolvedValueOnce(okAsync(true))
 
       const invalidNumber = '1+11'
@@ -97,7 +97,7 @@ describe('postman-sms.service', () => {
         .mockResolvedValueOnce(okAsync(true))
 
       const postmanMopSendSpy = jest
-        .spyOn(PostmanSmsService, 'sendMopSms')
+        .spyOn(PostmanSmsService, '_sendMopSms')
         .mockResolvedValueOnce(okAsync(true))
 
       // Act
@@ -121,7 +121,7 @@ describe('postman-sms.service', () => {
         .mockResolvedValueOnce(okAsync(true))
 
       const postmanMopSendSpy = jest
-        .spyOn(PostmanSmsService, 'sendMopSms')
+        .spyOn(PostmanSmsService, '_sendMopSms')
         .mockResolvedValueOnce(okAsync(true))
 
       const invalidNumber = '1+11'
@@ -170,7 +170,7 @@ describe('postman-sms.service', () => {
       // Return null on Form method
       jest.spyOn(FormModel, 'getOtpData').mockResolvedValueOnce(null)
       const postmanSendSpy = jest
-        .spyOn(PostmanSmsService, 'sendMopSms')
+        .spyOn(PostmanSmsService, '_sendMopSms')
         .mockResolvedValueOnce(okAsync(true))
 
       // Act
@@ -196,7 +196,7 @@ describe('postman-sms.service', () => {
       jest.spyOn(FormModel, 'getOtpData').mockResolvedValueOnce(mockOtpData)
 
       const postmanSendSpy = jest
-        .spyOn(PostmanSmsService, 'sendMopSms')
+        .spyOn(PostmanSmsService, '_sendMopSms')
         .mockResolvedValueOnce(okAsync(true))
 
       // Act
@@ -217,7 +217,7 @@ describe('postman-sms.service', () => {
       // Arrange
       jest.spyOn(FormModel, 'getOtpData').mockResolvedValueOnce(mockOtpData)
       const postmanSendSpy = jest
-        .spyOn(PostmanSmsService, 'sendMopSms')
+        .spyOn(PostmanSmsService, '_sendMopSms')
         .mockResolvedValueOnce(okAsync(true))
 
       const invalidNumber = '1+11123'
@@ -244,7 +244,7 @@ describe('postman-sms.service', () => {
         .mockResolvedValueOnce(okAsync(true))
 
       const postmanMopSendSpy = jest
-        .spyOn(PostmanSmsService, 'sendMopSms')
+        .spyOn(PostmanSmsService, '_sendMopSms')
         .mockResolvedValueOnce(okAsync(true))
 
       // Act
@@ -268,7 +268,7 @@ describe('postman-sms.service', () => {
         .mockResolvedValueOnce(okAsync(true))
 
       const postmanMopSendSpy = jest
-        .spyOn(PostmanSmsService, 'sendMopSms')
+        .spyOn(PostmanSmsService, '_sendMopSms')
         .mockResolvedValueOnce(okAsync(true))
 
       const invalidNumber = '1+11123'

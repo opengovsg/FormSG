@@ -104,7 +104,7 @@ class PostmanSmsService {
     senderIp?: string,
   ): ResultAsync<true, SmsSendError | InvalidNumberError> {
     const logMeta = {
-      action: 'sendMopSms',
+      action: '_sendInternalSms',
       recipient,
       smsType,
       smsData,
@@ -211,7 +211,7 @@ class PostmanSmsService {
       }
 
       const message = renderVerificationSms(otp, otpPrefix)
-      return this.sendMopSms(
+      return this._sendMopSms(
         otpData,
         recipient,
         message,
