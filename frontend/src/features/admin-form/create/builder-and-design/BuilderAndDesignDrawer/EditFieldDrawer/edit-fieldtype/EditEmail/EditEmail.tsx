@@ -192,7 +192,7 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
             <Textarea
               autoFocus
               {...register('allowedEmailDomains', emailDomainsValidation)}
-              placeholder={'@agency.gov.sg\n@*.edu.sg'}
+              placeholder={'@data.gov.sg\n@agency.gov.sg'}
             />
             <FormErrorMessage>
               {errors?.allowedEmailDomains?.message}
