@@ -347,7 +347,15 @@ export const processDuplicateOverrideProps = (
   }
 
   switch (params.responseMode) {
+    // For encrypt forms, we don't want emails to be carried over in case of
+    // 1. Unexpected spam of emails after duplicating a form
+    // 2. Standardize with `use-template` (security issue if duplicator is able
+    //  to see the emails of the duplicatee)
     case FormResponseMode.Encrypt:
+      overrideProps.publicKey = params.publicKey
+      overrideProps.submissionLimit = null
+      overrideProps.emails = []
+      break
     case FormResponseMode.Multirespondent:
       overrideProps.publicKey = params.publicKey
       overrideProps.submissionLimit = null

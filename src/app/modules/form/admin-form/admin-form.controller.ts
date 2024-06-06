@@ -186,8 +186,10 @@ const duplicateFormValidator = celebrate({
             .required(),
         },
         {
+          // When duplicating forms, we reset the `emails` field to be empty
+          // Refer to `admin-form.utils.ts`.
           is: FormResponseMode.Encrypt,
-          then: Joi.array().items(Joi.string().email()).required(),
+          then: Joi.forbidden(),
         },
         {
           is: FormResponseMode.Multirespondent,
