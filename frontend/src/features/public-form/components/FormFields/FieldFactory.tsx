@@ -1,7 +1,6 @@
 import { memo } from 'react'
 
 import { BasicField } from '~shared/types/field'
-
 import { FormColorTheme, FormResponseMode } from '~shared/types/form'
 
 import {
@@ -51,12 +50,8 @@ interface FieldFactoryProps {
 
 export const FieldFactory = memo(
   ({ field, ...rest }: FieldFactoryProps) => {
-<<<<<<< HEAD
-    const { myInfoChildrenBirthRecords, form } = usePublicFormContext()
-=======
-    const { myInfoChildrenBirthRecords, publicFormLanguage } =
+    const { myInfoChildrenBirthRecords, publicFormLanguage, form } =
       usePublicFormContext()
->>>>>>> 471b73127 (feat: display translations on public form)
     switch (field.fieldType) {
       case BasicField.Section:
         return (
@@ -155,12 +150,6 @@ export const FieldFactory = memo(
           />
         )
       case BasicField.Uen:
-<<<<<<< HEAD
-        return <UenField schema={field} {...rest} />
-      case BasicField.Attachment: {
-        const enableDownload =
-          form?.responseMode === FormResponseMode.Multirespondent
-=======
         return (
           <UenField
             schema={field}
@@ -168,22 +157,18 @@ export const FieldFactory = memo(
             selectedLanguage={publicFormLanguage}
           />
         )
-      case BasicField.Attachment:
->>>>>>> 471b73127 (feat: display translations on public form)
+      case BasicField.Attachment: {
+        const enableDownload =
+          form?.responseMode === FormResponseMode.Multirespondent
         return (
           <AttachmentField
             schema={field}
             {...rest}
-<<<<<<< HEAD
             enableDownload={enableDownload}
-          />
-        )
-      }
-=======
             selectedLanguage={publicFormLanguage}
           />
         )
->>>>>>> 471b73127 (feat: display translations on public form)
+      }
       case BasicField.HomeNo:
         return (
           <HomeNoField
