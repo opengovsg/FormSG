@@ -91,6 +91,11 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
             publicKey: keypair.publicKey,
             workspaceId,
           })
+        default: {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const _: never = responseMode
+          throw new Error('Invalid response mode')
+        }
       }
     },
   )
