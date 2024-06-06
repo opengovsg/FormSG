@@ -576,7 +576,21 @@ export const getInvalidFileExtensions = (
   // Turn it into an array of promises that each resolve
   // to an array of file extensions that are invalid (if any)
   const promises = attachments.map((attachment) => {
-    const extension = FileValidation.getFileExtension(attachment.filename)
+    const { filename } = attachment
+    // Special case where we found instances where the filename was not a string
+    // See https://www.notion.so/opengov/TypeError-Cannot-read-properties-of-undefined-reading-split-in-file-validation-js-6f4dcc17e6fc48319d8f7f0f997685c2?pvs=4
+    // We can remove this handling when the issue is found and fixed
+    if (filename == null) {
+      logger.error({
+        message: 'A string is expected, but received null or undefined',
+        meta: {
+          action: 'getInvalidFileExtensions',
+          filename,
+        },
+      })
+      return Promise.reject(new Error('filename is required'))
+    }
+    const extension = FileValidation.getFileExtension(filename)
     if (FileValidation.isInvalidFileExtension(extension)) {
       return Promise.resolve([extension])
     }

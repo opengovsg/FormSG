@@ -1914,6 +1914,30 @@ describe('submission.service', () => {
       expect(result._unsafeUnwrapErr()).toEqual(new InvalidFileExtensionError())
     })
 
+    it('should reject submissions when attachment responses are invalid', async () => {
+      // Special case where we found instances where the filename was not a string
+      // See https://www.notion.so/opengov/TypeError-Cannot-read-properties-of-undefined-reading-split-in-file-validation-js-6f4dcc17e6fc48319d8f7f0f997685c2?pvs=4
+      // We can remove this test case when the issue is found and fixed
+      const processedResponse1 = generateNewAttachmentResponse({
+        content: readFileSync('./__tests__/unit/backend/resources/invalid.py'),
+        filename: 'mock.jpg',
+      })
+
+      processedResponse1.filename = null as unknown as string
+
+      // Omit attributes only present in processed fields
+      const response1 = omit(processedResponse1, [
+        'isVisible',
+        'isUserVerified',
+      ])
+
+      const result = await SubmissionService.validateAttachments(
+        [response1],
+        FormResponseMode.Email,
+      )
+      expect(result._unsafeUnwrapErr()).toEqual(new InvalidFileExtensionError())
+    })
+
     it('should reject submissions when there are invalid file types in zip', async () => {
       const processedResponse1 = generateNewAttachmentResponse({
         content: readFileSync(
