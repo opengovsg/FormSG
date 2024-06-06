@@ -1,6 +1,6 @@
 {
   "name": "form-frontend",
-  "version": "6.123.0",
+  "version": "6.124.0",
   "homepage": ".",
   "private": true,
   "dependencies": {
@@ -37,7 +37,6 @@
     "i18next": "^21.6.16",
     "i18next-browser-languagedetector": "^6.1.4",
     "i18next-icu": "^2.0.3",
-    "immer": "^9.0.6",
     "inter-ui": "^3.19.3",
     "intl-messageformat": "^9.13.0",
     "jszip": "^3.10.0",

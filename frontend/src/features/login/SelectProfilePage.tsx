@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiChevronRight } from 'react-icons/bi'
 import { Link as ReactLink } from 'react-router-dom'
 import {
@@ -44,32 +45,6 @@ type ModalErrorMessages = {
   body: string | (() => React.ReactElement)
   cta: string
   onCtaClick: (disclosureProps: ErrorDisclosureProps) => void
-}
-
-const MODAL_ERRORS: Record<string, ModalErrorMessages> = {
-  NO_WORKEMAIL: {
-    hideCloseButton: true,
-    preventBackdropDismissal: true,
-    header: "Singpass login isn't available to you yet",
-    body: 'It is progressively being made available to agencies. In the meantime, please log in using your email address.',
-    cta: 'Back to login',
-    onCtaClick: () => window.location.assign(LOGIN_ROUTE),
-  },
-  INVALID_WORKEMAIL: {
-    header: "You don't have access to this service",
-    body: () => (
-      <Text>
-        It may be available only to select agencies or authorised individuals.
-        If you believe you should have access to this service, please{' '}
-        <Link isExternal href={SUPPORT_FORM_LINK}>
-          contact us
-        </Link>
-        .
-      </Text>
-    ),
-    cta: 'Choose another account',
-    onCtaClick: (disclosureProps) => disclosureProps.onClose(),
-  },
 }
 
 const ErrorDisclosure = (
@@ -118,6 +93,7 @@ const ErrorDisclosure = (
   )
 }
 export const SelectProfilePage = (): JSX.Element => {
+  const { t } = useTranslation()
   const profilesResponse = useSgidProfiles()
   const [, setIsAuthenticated] = useLocalStorage<boolean>(LOGGED_IN_KEY)
   const { user } = useUser()
@@ -127,6 +103,31 @@ export const SelectProfilePage = (): JSX.Element => {
 
   const errorDisclosure = useDisclosure()
   const toast = useToast({ isClosable: true, status: 'danger' })
+
+  const MODAL_ERRORS: Record<string, ModalErrorMessages> = {
+    NO_WORKEMAIL: {
+      hideCloseButton: true,
+      preventBackdropDismissal: true,
+      header: t('features.login.SelectProfilePage.noWorkEmailHeader'),
+      body: t('features.login.SelectProfilePage.noWorkEmailBody'),
+      cta: t('features.login.SelectProfilePage.noWorkEmailCta'),
+      onCtaClick: () => window.location.assign(LOGIN_ROUTE),
+    },
+    INVALID_WORKEMAIL: {
+      header: t('features.login.SelectProfilePage.invalidWorkEmailHeader'),
+      body: () => (
+        <Text>
+          {`${t('features.login.SelectProfilePage.invalidWorkEmailBodyRestriction')} `}
+          <Link isExternal href={SUPPORT_FORM_LINK}>
+            {t('features.login.SelectProfilePage.invalidWorkEmailBodyContact')}
+          </Link>
+          .
+        </Text>
+      ),
+      cta: t('features.login.SelectProfilePage.invalidWorkEmailCta'),
+      onCtaClick: (disclosureProps) => disclosureProps.onClose(),
+    },
+  }
 
   // If redirected back here but already authed, redirect to dashboard.
   if (user) window.location.replace(DASHBOARD_ROUTE)
@@ -156,7 +157,7 @@ export const SelectProfilePage = (): JSX.Element => {
           setErrorContext(MODAL_ERRORS.INVALID_WORKEMAIL)
           return
         }
-        toast({ description: 'Something went wrong. Please try again later.' })
+        toast({ description: t('features.common.errors.generic') })
       })
   }
 
@@ -173,7 +174,7 @@ export const SelectProfilePage = (): JSX.Element => {
         divider={<Divider />}
       >
         <Text textStyle="h2" marginBottom="0.5rem" color="secondary.700">
-          Choose an account to continue to FormSG
+          {t('features.login.SelectProfilePage.accountSelection')}
         </Text>
 
         {!profilesResponse.data ? (
@@ -194,7 +195,7 @@ export const SelectProfilePage = (): JSX.Element => {
           as={ReactLink}
           to={LOGIN_ROUTE}
         >
-          Or, login manually using email and OTP
+          {t('features.login.SelectProfilePage.manualLogin')}
         </Link>
       </Stack>
       <ErrorDisclosure {...errorDisclosure} errorMessages={errorContext} />

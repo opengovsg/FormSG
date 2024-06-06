@@ -49,6 +49,7 @@ export const enSG: Common = {
       homeNo: 'Please enter a valid landline number',
     },
     pageNotFound: 'This page could not be found.',
+    generic: 'Something went wrong. Please try again later.',
   },
   tooltip: {
     deleteField: 'Delete field',

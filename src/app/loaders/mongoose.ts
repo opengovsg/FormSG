@@ -93,13 +93,21 @@ export default async (): Promise<Connection> => {
   // Seed the db with govtech agency if using the mocked db
   if (usingMockedDb) {
     const Agency = mongoose.model('Agency')
-    const agency = new Agency({
-      shortName: 'govtech',
-      fullName: 'Government Technology Agency',
-      emailDomain: 'data.gov.sg',
-      logo: '/public/modules/core/img/govtech.jpg',
-    })
-    await agency.save()
+    const agencyList = [
+      {
+        shortName: 'govtech',
+        fullName: 'Government Technology Agency',
+        emailDomain: 'data.gov.sg',
+        logo: '/public/modules/core/img/govtech.jpg',
+      },
+      {
+        shortName: 'was',
+        fullName: 'Work Allocation Singapore',
+        emailDomain: 'was.gov.sg',
+        logo: '/public/modules/core/img/was.jpg',
+      },
+    ]
+    await Agency.create(agencyList)
   }
 
   return mongoose.connection

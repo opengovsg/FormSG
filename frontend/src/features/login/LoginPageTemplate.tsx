@@ -118,7 +118,7 @@ export const LoginPageTemplate: FC = ({ children }) => {
       ) : null}
       <FeatureBanner
         bannerColorIntensity={bannerColorIntensity}
-        body="You can now collect payments directly on your form!"
+        body={t('features.login.LoginPage.banner')}
         learnMoreLink={LANDING_PAYMENTS_ROUTE}
       />
       <BaseGridLayout flex={1}>

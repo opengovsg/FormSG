@@ -49,6 +49,7 @@ export interface Common {
       homeNo: string
     }
     pageNotFound: string
+    generic: string
   }
   tooltip: {
     deleteField: string
