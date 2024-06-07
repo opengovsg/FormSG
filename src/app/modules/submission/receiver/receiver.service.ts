@@ -99,6 +99,13 @@ export const configureMultipartReceiver = (
         // (like Chinese, Tamil, etc), e.g.
         // `utf8-with-endash – test.txt` -> `utf8-with-endash â�� test.txt`.
         // See https://github.com/mscdex/busboy/issues/274.
+        if (!fieldname) {
+          logger.error({
+            message: 'Error while attempting to parse form fieldname',
+            meta: logMeta,
+          })
+          return reject(new MultipartContentParsingError())
+        }
         const utf8Fieldname = Buffer.from(fieldname, 'latin1').toString('utf8')
         if (filename) {
           const buffers: Buffer[] = []
