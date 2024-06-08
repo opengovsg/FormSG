@@ -108,7 +108,6 @@ const useSecretKeyActivationModal = ({
     e.stopPropagation()
   }
 
-  // add event handlers for file upload (drop, dragenter, dragover and dragleave)
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       preventDefaults(e)
