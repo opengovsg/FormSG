@@ -80,6 +80,7 @@ import {
   getFormFieldById,
   getFormFieldIndexById,
   getLogicById,
+  isFormEncryptMode,
 } from '../form.utils'
 
 import {
@@ -1062,6 +1063,23 @@ export const updateFormSettings = (
   ) {
     return errAsync(
       new MalformedParametersError('Webhooks not supported on MRF'),
+    )
+  }
+
+  // Don't allow emails updates if payments_field is enabled on the form and vice versa
+  const originalFormSettings = originalForm.getSettings()
+
+  if (
+    isFormEncryptMode(originalForm) &&
+    'payments_channel' in originalFormSettings &&
+    originalFormSettings.payments_field.enabled &&
+    'emails' in body &&
+    body.emails
+  ) {
+    return errAsync(
+      new MalformedParametersError(
+        'Cannot update form settings when payments_field is enabled',
+      ),
     )
   }
 

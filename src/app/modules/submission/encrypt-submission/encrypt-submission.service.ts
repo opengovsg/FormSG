@@ -26,6 +26,7 @@ import {
 } from '../../webhook/webhook.errors'
 import { WebhookFactory } from '../../webhook/webhook.factory'
 import {
+  ConflictError,
   ResponseModeError,
   SendEmailConfirmationError,
   SubmissionNotFoundError,
@@ -82,6 +83,14 @@ export const checkFormIsEncryptMode = (
   return isFormEncryptMode(form)
     ? ok(form)
     : err(new ResponseModeError(FormResponseMode.Encrypt, form.responseMode))
+}
+
+export const checkFormHasNoEmails = (
+  form: IPopulatedEncryptedForm,
+): Result<IPopulatedEncryptedForm, ConflictError> => {
+  return form.emails?.length === 0
+    ? ok(form)
+    : err(new ConflictError('Trying to enable payments on a form with emails'))
 }
 
 /**

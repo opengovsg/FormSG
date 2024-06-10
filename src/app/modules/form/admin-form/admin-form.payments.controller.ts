@@ -23,7 +23,10 @@ import {
   unlinkStripeAccountFromForm,
   validateAccount,
 } from '../../payments/stripe.service'
-import { checkFormIsEncryptMode } from '../../submission/encrypt-submission/encrypt-submission.service'
+import {
+  checkFormHasNoEmails,
+  checkFormIsEncryptMode,
+} from '../../submission/encrypt-submission/encrypt-submission.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as UserService from '../../user/user.service'
 
@@ -72,6 +75,8 @@ export const handleConnectAccount: ControllerHandler<{
       )
       // Ensure that the form is encrypt mode.
       .andThen(checkFormIsEncryptMode)
+      // Ensure that the form doesn't have admin emails
+      .andThen(checkFormHasNoEmails)
       // Get the auth URL and state, and pass the auth URL for redirection.
       .andThen(getStripeOauthUrl)
       .map(({ authUrl, state }) => {
