@@ -398,7 +398,7 @@ export const MYINFO_ATTRIBUTE_MAP = keyBy(types, 'name')
 // to remove after 1 July. For testing purposes, deliberately setting target date as 1 day before today (10 Jun) to simulate change
 function updateLabelBasedOnDate() {
   const currentDate = new Date().toLocaleString('en-US', { timeZone: 'Asia/Singapore' })
-  const targetDate = new Date('2022-06-09T00:00:00').toLocaleString('en-US', { timeZone: 'Asia/Singapore' }) // Change to 2022-07-01 for production
+  const targetDate = new Date('2024-06-09T00:00:00').toLocaleString('en-US', { timeZone: 'Asia/Singapore' }) // Change to 2022-07-01 for production
   if (new Date(currentDate) >= new Date(targetDate)) {
     const sexAttribute = MYINFO_ATTRIBUTE_MAP[MyInfoAttribute.Sex]
     if (sexAttribute) {
