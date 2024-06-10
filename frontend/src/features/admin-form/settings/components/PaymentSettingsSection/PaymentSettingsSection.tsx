@@ -39,7 +39,7 @@ import {
   StripeConnectButtonStates,
 } from './StripeConnectButton'
 
-const PaymentNotAllowedMessage = () => {
+const PaymentsNotAllowedMessage = () => {
   return (
     <Box w="100%">
       <InlineMessage>
@@ -96,7 +96,7 @@ const BeforeConnectionInstructions = ({
     return (
       <VStack spacing="2.5rem" alignItems="start">
         {isEmailsPresent ? (
-          <PaymentNotAllowedMessage />
+          <PaymentsNotAllowedMessage />
         ) : (
           <InlineMessage useMarkdown>
             {`Read [our guide](${paymentGuideLink}) to set up a Stripe account. If your agency already has a Stripe account, you can connect it to this form.`}
@@ -139,24 +139,25 @@ const BeforeConnectionInstructions = ({
 
   return (
     <>
-      {isEmailsPresent ? (
-        <PaymentNotAllowedMessage />
-      ) : (
-        <InlineMessage variant="info" my="2rem">
-          <Text>
-            You are currently in test mode. You can choose to skip connecting a
-            Stripe account after clicking the button below.
-          </Text>
-        </InlineMessage>
-      )}
-
-      <StripeConnectButton
-        connectState={
-          isEmailsPresent
-            ? StripeConnectButtonStates.DISABLED
-            : StripeConnectButtonStates.ENABLED
-        }
-      />
+      <VStack spacing="2.5rem" alignItems="start">
+        {isEmailsPresent ? (
+          <PaymentsNotAllowedMessage />
+        ) : (
+          <InlineMessage variant="info" my="2rem">
+            <Text>
+              You are currently in test mode. You can choose to skip connecting
+              a Stripe account after clicking the button below.
+            </Text>
+          </InlineMessage>
+        )}
+        <StripeConnectButton
+          connectState={
+            isEmailsPresent
+              ? StripeConnectButtonStates.DISABLED
+              : StripeConnectButtonStates.ENABLED
+          }
+        />
+      </VStack>
     </>
   )
 }
