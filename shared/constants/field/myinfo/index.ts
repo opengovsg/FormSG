@@ -397,16 +397,22 @@ export const MYINFO_ATTRIBUTE_MAP = keyBy(types, 'name')
 
 // to remove after 1 July. For testing purposes, deliberately setting target date as 1 day before today (10 Jun) to simulate change
 function updateLabelBasedOnDate() {
-  const currentDate = new Date().toLocaleString('en-US', { timeZone: 'Asia/Singapore' })
-  const targetDate = new Date('2024-06-09T00:00:00').toLocaleString('en-US', { timeZone: 'Asia/Singapore' }) // Change to 2022-07-01 for production
+  const currentDate = new Date().toLocaleString('en-US', {
+    timeZone: 'Asia/Singapore',
+  })
+  const targetDate = new Date('2024-06-09T00:00:00').toLocaleString('en-US', {
+    timeZone: 'Asia/Singapore',
+  }) // Change to 2022-07-01 for production
   if (new Date(currentDate) >= new Date(targetDate)) {
     const sexAttribute = MYINFO_ATTRIBUTE_MAP[MyInfoAttribute.Sex]
     if (sexAttribute) {
       sexAttribute.description = 'Sex'
-      sexAttribute.value = "Sex"
-      sexAttribute.description = 'The sex of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.'
+      sexAttribute.value = 'Sex'
+      sexAttribute.description =
+        'The sex of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.'
     }
-    const childGenderAttribute = MYINFO_ATTRIBUTE_MAP[MyInfoAttribute.ChildGender]
+    const childGenderAttribute =
+      MYINFO_ATTRIBUTE_MAP[MyInfoAttribute.ChildGender]
     if (childGenderAttribute) {
       childGenderAttribute.value = "Child's Sex"
       childGenderAttribute.description = 'Sex'
