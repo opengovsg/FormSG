@@ -81,6 +81,8 @@ export const EmailFormSection = ({
 
   useEffect(() => reset({ emails: settings.emails }), [settings.emails, reset])
 
+  const isEmailMode = settings.responseMode === FormResponseMode.Email
+
   const emailModeDescription = `Add at least **2 recipients** to prevent loss of response.`
   const storageModeDescription = `FormSG securely stores responses in an encrypted format and does not retain any associated emails.`
 
@@ -89,9 +91,7 @@ export const EmailFormSection = ({
       <EmailNotificationsHeader
         isFormPublic={isFormPublic}
         isPaymentsEnabled={isPaymentsEnabled}
-        isFormResponseModeEmail={
-          settings.responseMode === FormResponseMode.Email
-        }
+        isFormResponseModeEmail={isEmailMode}
       />
       <FormProvider {...formMethods}>
         <FormControl
@@ -99,12 +99,10 @@ export const EmailFormSection = ({
           isDisabled={isFormPublic || isPaymentsEnabled}
         >
           <FormLabel
-            isRequired={settings.responseMode === FormResponseMode.Email}
+            isRequired={isEmailMode}
             useMarkdownForDescription
             description={
-              (settings.responseMode === FormResponseMode.Email
-                ? emailModeDescription
-                : storageModeDescription) +
+              (isEmailMode ? emailModeDescription : storageModeDescription) +
               ` Learn more on [how to guard against email bounces](${GUIDE_PREVENT_EMAIL_BOUNCE}).`
             }
           >
