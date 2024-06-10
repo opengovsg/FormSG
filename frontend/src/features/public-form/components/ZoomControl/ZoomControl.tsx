@@ -45,9 +45,9 @@ export const ZoomControl = ({
   return (
     <Flex
       background={bgColour}
-      justifyContent="center"
       zIndex={10}
       px={{ base: '1.5rem', md: 0 }}
+      justifyContent={{ base: 'start', md: 'center' }}
     >
       <HStack
         mt="-2rem"

@@ -107,7 +107,6 @@ interface FormHeaderProps {
   showMiniHeader?: boolean
   activeSectionId?: string
   isTemplate?: boolean
-  showZoomControl?: boolean
   miniHeaderRef?: RefObject<HTMLDivElement>
   onMobileDrawerOpen?: () => void
   handleLogout?: () => void
@@ -125,7 +124,6 @@ export const FormHeader = ({
   activeSectionId,
   miniHeaderRef,
   isTemplate,
-  showZoomControl = true,
   onMobileDrawerOpen,
   handleLogout,
 }: FormHeaderProps): JSX.Element | null => {
