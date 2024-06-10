@@ -213,8 +213,9 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
       },
       'Please provide valid email addresses',
     ],
-    // Mongoose v5 only checks if the type is an array, not whether the array
-    // is non-empty. We allow empty arrays for backwards compatibility
+    // Mongoose v6 only checks if the type is an array, not whether the array
+    // is non-empty. We allow this field to not exist for backwards compatibility
+    // TODO: Make this required after all forms have been migrated
     required: false,
   },
   payments_channel: {
@@ -303,7 +304,7 @@ const EmailFormSchema = new Schema<IEmailFormSchema, IEmailFormModel>({
     ],
     // Mongoose v5 only checks if the type is an array, not whether the array
     // is non-empty.
-    required: true,
+    required: [true, 'Emails field is required'],
   },
 })
 
