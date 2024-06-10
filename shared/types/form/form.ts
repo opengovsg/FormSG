@@ -330,7 +330,6 @@ export type DuplicateFormOverwriteDto = {
   | {
       responseMode: FormResponseMode.Encrypt
       publicKey: string
-      emails: string[]
     }
   | {
       responseMode: FormResponseMode.Multirespondent
