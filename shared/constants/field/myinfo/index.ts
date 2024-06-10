@@ -403,7 +403,7 @@ function updateLabelBasedOnDate() {
     const sexAttribute = MYINFO_ATTRIBUTE_MAP[MyInfoAttribute.Sex]
     if (sexAttribute) {
       sexAttribute.description = 'Sex'
-      sexAttribute.value = "Child's Sex"
+      sexAttribute.value = "Sex"
       sexAttribute.description = 'The sex of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.'
     }
     const childGenderAttribute = MYINFO_ATTRIBUTE_MAP[MyInfoAttribute.ChildGender]
