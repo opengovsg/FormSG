@@ -361,3 +361,24 @@ export const MYINFO_FIELD_TO_DRAWER_META: {
     isSubmitted: true,
   },
 }
+// to remove after 1 July. For testing purposes, deliberately setting target date as 1 day before today (10 Jun) to simulate change
+function updateLabelsBasedOnDate() {
+  const currentDate = new Date().toLocaleString('en-US', {
+    timeZone: 'Asia/Singapore',
+  })
+  const targetDate = new Date('2024-06-09T00:00:00').toLocaleString('en-US', {
+    timeZone: 'Asia/Singapore',
+  }) // Change to 2022-07-01 for production
+  if (new Date(currentDate) >= new Date(targetDate)) {
+    const sexAttribute = MYINFO_FIELD_TO_DRAWER_META[MyInfoAttribute.Sex]
+    if (sexAttribute) {
+      sexAttribute.label = 'Sex'
+    }
+    const childGenderAttribute =
+      MYINFO_FIELD_TO_DRAWER_META[MyInfoAttribute.ChildGender]
+    if (childGenderAttribute) {
+      childGenderAttribute.label = 'Sex'
+    }
+  }
+}
+updateLabelsBasedOnDate()
