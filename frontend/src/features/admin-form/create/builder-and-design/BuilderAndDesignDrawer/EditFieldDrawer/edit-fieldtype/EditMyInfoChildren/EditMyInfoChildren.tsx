@@ -7,6 +7,7 @@ import { MyInfoChildAttributes } from '~shared/types'
 
 import { SINGPASS_FAQ } from '~constants/links'
 import { MultiSelect } from '~components/Dropdown'
+import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 import { Toggle } from '~components/Toggle/Toggle'
 
@@ -63,6 +64,14 @@ export const EditMyInfoChildren = ({
   return (
     <CreatePageDrawerContentContainer>
       <VStack align="flex-start">
+        <VStack>
+          <Box pt="2rem" pb="1.5rem">
+            <InlineMessage variant={'info'}>
+              To align with MyInfo terminology, the “Gender” field will be
+              renamed to “Sex” from 1 Jul 2024.
+            </InlineMessage>
+          </Box>
+        </VStack>
         <Text textStyle="subhead-1">Data source</Text>
         {extendedField.dataSource.map((dataSource, idx) => (
           <HStack key={idx} align="flex-start">
