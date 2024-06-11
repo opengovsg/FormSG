@@ -29,6 +29,7 @@ import {
   LogicDto,
   SettingsUpdateDto,
   StartPageUpdateDto,
+  StorageFormSettings,
 } from '../../../../../shared/types'
 import { EditFieldActions } from '../../../../shared/constants'
 import {
@@ -1067,20 +1068,17 @@ export const updateFormSettings = (
   }
 
   // Don't allow emails updates if payments_field is enabled on the form and vice versa
-  const originalFormSettings = originalForm.getSettings()
-
-  if (
-    isFormEncryptMode(originalForm) &&
-    'payments_channel' in originalFormSettings &&
-    originalFormSettings.payments_field.enabled &&
-    'emails' in body &&
-    body.emails
-  ) {
-    return errAsync(
-      new MalformedParametersError(
-        'Cannot update form settings when payments_field is enabled',
-      ),
-    )
+  if (isFormEncryptMode(originalForm)) {
+    if (
+      originalForm.payments_field.enabled &&
+      (body as StorageFormSettings).emails
+    ) {
+      return errAsync(
+        new MalformedParametersError(
+          'Cannot update form settings when payments_field is enabled',
+        ),
+      )
+    }
   }
 
   const dotifiedSettingsToUpdate = dotifyObject(body)
