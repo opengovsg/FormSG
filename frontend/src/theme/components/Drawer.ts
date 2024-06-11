@@ -24,7 +24,6 @@ const baseStyleHeader: SystemStyleObject = {
   ...textStyles['h2'],
   py: '1.25rem',
   px: '2.5rem',
-  bg: 'white',
 }
 
 const baseStyleBody: SystemStyleObject = {
