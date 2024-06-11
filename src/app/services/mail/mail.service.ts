@@ -1047,7 +1047,7 @@ export class MailService {
     const mail: MailOptions = {
       to: emails,
       from: this.#senderFromString,
-      subject: `Action required - ${formTitle}`,
+      subject: `Action required - ${formTitle} (${responseId})`,
       html,
       headers: {
         [EMAIL_HEADERS.emailType]: EmailType.WorkflowNotification,
