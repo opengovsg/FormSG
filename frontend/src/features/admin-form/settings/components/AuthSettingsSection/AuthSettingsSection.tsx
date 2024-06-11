@@ -177,7 +177,7 @@ export const AuthSettingsSection = ({
           </Fragment>
         ))}
       </Radio.RadioGroup>
-      <Divider my="40px" />
+      <Divider my="2.5rem" />
       <FormNricMaskingToggle />
     </Box>
   )

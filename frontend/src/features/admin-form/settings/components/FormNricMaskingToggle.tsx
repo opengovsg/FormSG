@@ -23,7 +23,7 @@ export const FormNricMaskingToggle = (): JSX.Element => {
             placement="top"
             label="Enabling this will apply NRIC masking to the entire form and all collected data"
           >
-            <Icon as={BxsInfoCircle} marginLeft="0.25rem" />
+            <Icon as={BxsInfoCircle} marginLeft="0.5rem" />
           </Tooltip>
         }
         description="NRIC numbers are masked by default; only the last 4 characters will be displayed and collected (e.g. S7914578N appears as *****578N)"
