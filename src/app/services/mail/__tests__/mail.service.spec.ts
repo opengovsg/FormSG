@@ -1735,7 +1735,7 @@ describe('mail.service', () => {
     })
   })
 
-  describe.only('sendMRFWorkflowStepEmail', () => {
+  describe('sendMRFWorkflowStepEmail', () => {
     const MOCK_RESPONSE_ID = '666872d118b702c4f517ef9a'
     it('should send notification email successfully', async () => {
       // Arrange
