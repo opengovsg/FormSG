@@ -366,9 +366,9 @@ function updateLabelsBasedOnDate() {
   const currentDate = new Date().toLocaleString('en-US', {
     timeZone: 'Asia/Singapore',
   })
-  const targetDate = new Date('2024-06-09T00:00:00').toLocaleString('en-US', {
+  const targetDate = new Date('2024-06-28T00:00:00').toLocaleString('en-US', {
     timeZone: 'Asia/Singapore',
-  }) // Change to 2022-07-01 for production
+  })
   if (new Date(currentDate) >= new Date(targetDate)) {
     const sexAttribute = MYINFO_FIELD_TO_DRAWER_META[MyInfoAttribute.Sex]
     if (sexAttribute) {
