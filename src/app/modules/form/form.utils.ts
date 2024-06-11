@@ -6,6 +6,7 @@ import {
   IEncryptedFormSchema,
   IForm,
   IFormDocument,
+  IFormHasEmailSchema,
   IFormSchema,
   IMultirespondentFormSchema,
   IOnboardedForm,
@@ -98,6 +99,18 @@ export const getCollabEmailsWithPermission = (
     }
     return acc
   }, [])
+}
+
+export const getAdminEmails = (
+  form: Partial<IFormHasEmailSchema>,
+): string[] => {
+  if (form.emails === undefined) {
+    return []
+  } else if (typeof form.emails === 'string') {
+    return [form.emails]
+  } else {
+    return form.emails
+  }
 }
 
 /**

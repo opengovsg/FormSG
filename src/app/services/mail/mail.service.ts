@@ -26,7 +26,10 @@ import config from '../../config/config'
 import { smsConfig } from '../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import * as FormService from '../../modules/form/form.service'
-import { extractFormLinkView } from '../../modules/form/form.utils'
+import {
+  extractFormLinkView,
+  getAdminEmails,
+} from '../../modules/form/form.utils'
 import { formatAsPercentage } from '../../utils/formatters'
 import MrfWorkflowEmail, {
   WorkflowEmailData,
@@ -523,9 +526,11 @@ export class MailService {
       htmlData.dataCollationData = fullDataCollationData
     }
 
+    const adminEmails: string[] = getAdminEmails(form)
+
     return generateSubmissionToAdminHtml(htmlData).andThen((mailHtml) => {
       const mail: MailOptions = {
-        to: form.emails,
+        to: adminEmails,
         from: this.#senderFromString,
         subject: `formsg-auto: ${formTitle} (#${refNo})`,
         html: mailHtml,
