@@ -61,14 +61,12 @@ export const EmailFormSection = ({
 
   const isFormPublic = settings.status === FormStatus.Public
 
-  const { hasPaymentCapabilities } = useAdminFormPayments()
-
   const isPaymentsEnabled = useMemo(
     () =>
       settings &&
       settings.responseMode === FormResponseMode.Encrypt &&
-      hasPaymentCapabilities,
-    [settings, hasPaymentCapabilities],
+      settings.payments_field.enabled,
+    [settings],
   )
 
   const handleSubmitEmails = useCallback(
