@@ -98,7 +98,6 @@ const submitEncryptModeForm = async (
 
   const formDef = req.formsg.formDef
   const form: IPopulatedEncryptedForm = req.formsg.encryptedFormDef
-  // to use teh MailService to send the email, needs to be IPopulatedEmailForm
 
   setFormTags(formDef)
 

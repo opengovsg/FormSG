@@ -296,7 +296,6 @@ export type IPopulatedEncryptedForm = IPopulatedForm & IEncryptedForm
 export type IEncryptedFormDocument = IFormBaseDocument<IEncryptedFormSchema> &
   IEncryptedFormSchema & {
     publickey: NonNullable<IEncryptedFormSchema['publicKey']>
-    emails: NonNullable<IEncryptedFormSchema['emails']>
   }
 
 export interface IEmailForm extends IForm {
