@@ -6,7 +6,7 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { Box, Flex, Skeleton, Spacer, Text } from '@chakra-ui/react'
+import { Box, Divider, Flex, Skeleton, Spacer, Text } from '@chakra-ui/react'
 
 import { FormAuthType, FormSettings, FormStatus } from '~shared/types/form'
 
@@ -20,6 +20,7 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 import { isMyInfo } from '~features/myinfo/utils'
 
 import { useMutateFormSettings } from '../../mutations'
+import { FormNricMaskingToggle } from '../FormNricMaskingToggle'
 
 import { FORM_AUTHTYPES } from './constants'
 import { EsrvcIdBox } from './EsrvcIdBox'
@@ -176,6 +177,8 @@ export const AuthSettingsSection = ({
           </Fragment>
         ))}
       </Radio.RadioGroup>
+      <Divider my="40px" />
+      <FormNricMaskingToggle />
     </Box>
   )
 }

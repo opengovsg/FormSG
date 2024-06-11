@@ -19,6 +19,10 @@ export interface ToggleProps extends Omit<SwitchProps, 'children'> {
    */
   label: string
   /**
+   * Optional component displayed on right of label (E.g. tooltip)
+   */
+  labelComponentRight?: JSX.Element
+  /**
    * Secondary description text
    */
   description?: string
@@ -45,6 +49,7 @@ export const Toggle = forwardRef<ToggleProps, 'input'>(
   (
     {
       label,
+      labelComponentRight,
       description,
       containerStyles,
       labelStyles,
@@ -58,9 +63,12 @@ export const Toggle = forwardRef<ToggleProps, 'input'>(
       <Flex __css={{ ...styles.overallContainer, ...containerStyles }}>
         {(label || description) && (
           <Box __css={styles.textContainer}>
-            <FormLabel.Label sx={{ ...styles.label, ...labelStyles }}>
-              {label}
-            </FormLabel.Label>
+            <Box display="flex" alignItems="center">
+              <FormLabel.Label sx={{ ...styles.label, ...labelStyles }}>
+                {label}
+              </FormLabel.Label>
+              {labelComponentRight ?? labelComponentRight}
+            </Box>
             {description && (
               <FormLabel.Description
                 useMarkdown
