@@ -395,7 +395,7 @@ export const types: MyInfoFieldBlock[] = [
 
 export const MYINFO_ATTRIBUTE_MAP = keyBy(types, 'name')
 
-// to remove after 1 July. For testing purposes, deliberately setting target date as 1 day before today (10 Jun) to simulate change
+// TO DO: 1 July. For testing purposes, deliberately setting target date as 1 day before today (10 Jun) to simulate change
 function updateLabelBasedOnDate() {
   const currentDate = new Date().toLocaleString('en-US', {
     timeZone: 'Asia/Singapore',
