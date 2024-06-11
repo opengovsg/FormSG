@@ -27,6 +27,7 @@ import {
   FormResponseMode,
   FormSettings,
   LogicDto,
+  PaymentChannel,
   SettingsUpdateDto,
   StartPageUpdateDto,
   StorageFormSettings,
@@ -1070,7 +1071,8 @@ export const updateFormSettings = (
   // Don't allow emails updates if payments_field is enabled on the form and vice versa
   if (isFormEncryptMode(originalForm)) {
     if (
-      originalForm.payments_field.enabled &&
+      (originalForm.payments_channel.channel !== PaymentChannel.Unconnected ||
+        originalForm.payments_field.enabled) &&
       (body as StorageFormSettings).emails
     ) {
       return errAsync(

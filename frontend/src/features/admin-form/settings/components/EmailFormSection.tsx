@@ -10,6 +10,7 @@ import { Flex, FormControl, Icon } from '@chakra-ui/react'
 import { get, isEmpty, isEqual } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
+import { PaymentChannel } from '~shared/types'
 import {
   EmailFormSettings,
   FormResponseMode,
@@ -61,13 +62,11 @@ export const EmailFormSection = ({
 
   const isFormPublic = settings.status === FormStatus.Public
 
-  const isPaymentsEnabled = useMemo(
-    () =>
-      settings &&
-      settings.responseMode === FormResponseMode.Encrypt &&
-      settings.payments_field.enabled,
-    [settings],
-  )
+  const isPaymentsEnabled =
+    settings &&
+    settings.responseMode === FormResponseMode.Encrypt &&
+    (settings.payments_channel.channel !== PaymentChannel.Unconnected ||
+      settings.payments_field.enabled)
 
   const handleSubmitEmails = useCallback(
     ({ emails }: { emails: string[] }) => {
