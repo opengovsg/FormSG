@@ -7,7 +7,6 @@ import {
   getAdminFormSettings,
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
-import { createMockForm } from '~/mocks/msw/handlers/admin-form/form'
 
 import {
   getMobileViewParameters,
@@ -67,13 +66,15 @@ const PAYMENTS_DISABLED = {
 
 const buildMswRoutes = ({
   overrides,
+  mode,
   delay,
 }: {
   overrides?: Partial<FormSettings>
+  mode?: FormResponseMode
   delay?: number | 'infinite'
 } = {}) => [
-  getAdminFormSettings({ overrides, delay }),
-  patchAdminFormSettings({ overrides }),
+  getAdminFormSettings({ overrides, mode, delay }),
+  patchAdminFormSettings({ overrides, mode, delay }),
 ]
 
 export default {
@@ -92,9 +93,10 @@ const Template: Story = () => <SettingsEmailsPage />
 export const PrivateStorageForm = Template.bind({})
 PrivateStorageForm.parameters = {
   msw: buildMswRoutes({
+    mode: FormResponseMode.Encrypt,
     overrides: {
-      responseMode: FormResponseMode.Encrypt,
       status: FormStatus.Private,
+      emails: [], // has one email by default
       ...PAYMENTS_DISABLED,
     },
   }),
@@ -103,10 +105,9 @@ PrivateStorageForm.parameters = {
 export const PrivateEmailForm = Template.bind({})
 PrivateEmailForm.parameters = {
   msw: buildMswRoutes({
+    mode: FormResponseMode.Email,
     overrides: {
-      responseMode: FormResponseMode.Email,
       status: FormStatus.Private,
-      ...PAYMENTS_DISABLED,
     },
   }),
 }
@@ -114,8 +115,10 @@ PrivateEmailForm.parameters = {
 export const PublicForm = Template.bind({})
 PublicForm.parameters = {
   msw: buildMswRoutes({
+    mode: FormResponseMode.Encrypt,
     overrides: {
       status: FormStatus.Public,
+      emails: [],
       ...PAYMENTS_DISABLED,
     },
   }),
@@ -124,8 +127,10 @@ PublicForm.parameters = {
 export const PaymentForm = Template.bind({})
 PaymentForm.parameters = {
   msw: buildMswRoutes({
+    mode: FormResponseMode.Encrypt,
     overrides: {
       status: FormStatus.Private,
+      emails: [],
       ...PAYMENTS_ENABLED,
     },
   }),
@@ -136,13 +141,13 @@ Loading.parameters = {
   msw: buildMswRoutes({ delay: 'infinite' }),
 }
 
-export const EmailsAddedForm = Template.bind({})
-EmailsAddedForm.parameters = {
+export const NoEmailsAddedForm = Template.bind({})
+NoEmailsAddedForm.parameters = {
   msw: buildMswRoutes({
+    mode: FormResponseMode.Encrypt,
     overrides: {
-      responseMode: FormResponseMode.Encrypt,
       status: FormStatus.Private,
-      emails: ['test@example.com'],
+      emails: [],
       ...PAYMENTS_DISABLED,
     },
   }),
@@ -150,13 +155,13 @@ EmailsAddedForm.parameters = {
 
 export const Mobile = Template.bind({})
 Mobile.parameters = {
-  ...EmailsAddedForm,
+  ...NoEmailsAddedForm,
   ...getMobileViewParameters(),
 }
 
 export const Tablet = Template.bind({})
 Tablet.parameters = {
-  ...EmailsAddedForm,
+  ...NoEmailsAddedForm,
   viewport: {
     defaultViewport: 'tablet',
   },
