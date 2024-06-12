@@ -7,6 +7,7 @@ import {
   getAdminFormSettings,
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
+import { createMockForm } from '~/mocks/msw/handlers/admin-form/form'
 
 import {
   getMobileViewParameters,
@@ -15,6 +16,54 @@ import {
 } from '~utils/storybook'
 
 import { SettingsEmailsPage } from './SettingsEmailsPage'
+
+const PAYMENTS_ENABLED = {
+  payments_channel: {
+    channel: PaymentChannel.Stripe,
+    target_account_id: 'target-account-id',
+    publishable_key: 'publishable-key',
+    payment_methods: [],
+  },
+  payments_field: {
+    enabled: true,
+    description: 'description',
+    name: 'name',
+    amount_cents: 1,
+    min_amount: 1,
+    max_amount: 1,
+    payment_type: PaymentType.Products,
+    global_min_amount_override: 0,
+    gst_enabled: true,
+    products: [],
+    products_meta: {
+      multi_product: false,
+    },
+  },
+}
+
+const PAYMENTS_DISABLED = {
+  payments_channel: {
+    channel: PaymentChannel.Unconnected,
+    target_account_id: '',
+    publishable_key: '',
+    payment_methods: [],
+  },
+  payments_field: {
+    enabled: false,
+    description: '',
+    name: '',
+    amount_cents: 0,
+    min_amount: 0,
+    max_amount: 0,
+    payment_type: PaymentType.Products,
+    global_min_amount_override: 0,
+    gst_enabled: true,
+    products: [],
+    products_meta: {
+      multi_product: false,
+    },
+  },
+}
 
 const buildMswRoutes = ({
   overrides,
@@ -46,6 +95,7 @@ PrivateStorageForm.parameters = {
     overrides: {
       responseMode: FormResponseMode.Encrypt,
       status: FormStatus.Private,
+      ...PAYMENTS_DISABLED,
     },
   }),
 }
@@ -56,6 +106,7 @@ PrivateEmailForm.parameters = {
     overrides: {
       responseMode: FormResponseMode.Email,
       status: FormStatus.Private,
+      ...PAYMENTS_DISABLED,
     },
   }),
 }
@@ -65,6 +116,7 @@ PublicForm.parameters = {
   msw: buildMswRoutes({
     overrides: {
       status: FormStatus.Public,
+      ...PAYMENTS_DISABLED,
     },
   }),
 }
@@ -73,29 +125,8 @@ export const PaymentForm = Template.bind({})
 PaymentForm.parameters = {
   msw: buildMswRoutes({
     overrides: {
-      responseMode: FormResponseMode.Encrypt,
-      status: FormStatus.Public,
-      payments_channel: {
-        channel: PaymentChannel.Unconnected,
-        target_account_id: '',
-        publishable_key: '',
-        payment_methods: [],
-      },
-      payments_field: {
-        enabled: false,
-        description: '',
-        name: '',
-        amount_cents: 0,
-        min_amount: 0,
-        max_amount: 0,
-        payment_type: PaymentType.Products,
-        global_min_amount_override: 0,
-        gst_enabled: true,
-        products: [],
-        products_meta: {
-          multi_product: false,
-        },
-      },
+      status: FormStatus.Private,
+      ...PAYMENTS_ENABLED,
     },
   }),
 }
@@ -106,12 +137,13 @@ Loading.parameters = {
 }
 
 export const EmailsAddedForm = Template.bind({})
-PrivateStorageForm.parameters = {
+EmailsAddedForm.parameters = {
   msw: buildMswRoutes({
     overrides: {
       responseMode: FormResponseMode.Encrypt,
       status: FormStatus.Private,
       emails: ['test@example.com'],
+      ...PAYMENTS_DISABLED,
     },
   }),
 }
