@@ -45,7 +45,7 @@ const PaymentsNotAllowedMessage = () => {
       <InlineMessage>
         <Text>
           To enable payment fields, remove all recipients from{' '}
-          <Link as={ReactLink} to={'general'}>
+          <Link as={ReactLink} to={'email-notifications'}>
             email notifications
           </Link>
           .
@@ -143,7 +143,7 @@ const BeforeConnectionInstructions = ({
         {isEmailsPresent ? (
           <PaymentsNotAllowedMessage />
         ) : (
-          <InlineMessage variant="info" my="2rem">
+          <InlineMessage variant="info">
             <Text>
               You are currently in test mode. You can choose to skip connecting
               a Stripe account after clicking the button below.
