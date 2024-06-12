@@ -35,7 +35,7 @@ import { MarkdownText } from '~components/MarkdownText'
 import { TagInput } from '~components/TagInput'
 
 import { useMutateFormSettings } from '../mutations'
-import { useAdminFormPayments, useAdminFormSettings } from '../queries'
+import { useAdminFormSettings } from '../queries'
 
 interface EmailFormSectionProps {
   settings: EmailFormSettings | StorageFormSettings
@@ -91,10 +91,7 @@ export const EmailFormSection = ({
         isFormResponseModeEmail={isEmailMode}
       />
       <FormProvider {...formMethods}>
-        <FormControl
-          isInvalid={!isEmpty(errors)}
-          isDisabled={isFormPublic || isPaymentsEnabled}
-        >
+        <FormControl isInvalid={!isEmpty(errors)}>
           <FormLabel
             isRequired={isEmailMode}
             useMarkdownForDescription
@@ -105,9 +102,12 @@ export const EmailFormSection = ({
           >
             Send an email copy of new responses
           </FormLabel>
-          <AdminEmailRecipientsInput onSubmit={handleSubmitEmails} />
+          <AdminEmailRecipientsInput
+            onSubmit={handleSubmitEmails}
+            isDisabled={isFormPublic || isPaymentsEnabled}
+          />
           <FormErrorMessage>{get(errors, 'emails.message')}</FormErrorMessage>
-          <FormLabel.Description color="neutral.500" mt="0.5rem">
+          <FormLabel.Description color="secondary.400" mt="0.5rem">
             Separate multiple email addresses with a comma
           </FormLabel.Description>
         </FormControl>
@@ -166,10 +166,12 @@ const EmailNotificationsHeader = ({
 
 interface AdminEmailRecipientsInputProps {
   onSubmit: (params: { emails: string[] }) => void
+  isDisabled: boolean
 }
 
 const AdminEmailRecipientsInput = ({
   onSubmit,
+  isDisabled,
 }: AdminEmailRecipientsInputProps): JSX.Element => {
   const { getValues, setValue, control, handleSubmit } = useFormContext<{
     emails: string[]
@@ -206,6 +208,7 @@ const AdminEmailRecipientsInput = ({
           {...field}
           tagValidation={tagValidation}
           onBlur={handleBlur}
+          isDisabled={isDisabled}
         />
       )}
     />
