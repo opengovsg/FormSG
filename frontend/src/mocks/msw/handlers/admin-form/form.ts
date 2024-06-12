@@ -632,7 +632,7 @@ export const createMockForm = (
       },
       props,
       (objValue, srcValue) => {
-        if (Array.isArray(objValue)) {
+        if (Array.isArray(objValue) && srcValue.length === 0) {
           return srcValue
         }
       },
