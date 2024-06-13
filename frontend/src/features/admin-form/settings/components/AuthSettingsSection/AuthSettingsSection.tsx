@@ -78,6 +78,15 @@ export const AuthSettingsSection = ({
     [isFormPublic, mutateFormAuthType.isLoading],
   )
 
+  const isSingpassAuthType = (authType: FormAuthType) =>
+    authType === FormAuthType.SP ||
+    authType === FormAuthType.CP ||
+    authType === FormAuthType.MyInfo ||
+    authType === FormAuthType.SGID ||
+    authType === FormAuthType.SGID_MyInfo
+
+  const isNricMaskingBoxEnabled = isSingpassAuthType
+
   const handleEnterKeyDown: KeyboardEventHandler = useCallback(
     (e) => {
       if (
@@ -178,7 +187,9 @@ export const AuthSettingsSection = ({
         ))}
       </Radio.RadioGroup>
       <Divider my="2.5rem" />
-      <FormNricMaskingToggle />
+      {isNricMaskingBoxEnabled(settings.authType) ? (
+        <FormNricMaskingToggle />
+      ) : null}
     </Box>
   )
 }

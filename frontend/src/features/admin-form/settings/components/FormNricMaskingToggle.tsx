@@ -1,22 +1,35 @@
-import { useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Icon, Skeleton } from '@chakra-ui/react'
 
 import { BxsInfoCircle } from '~assets/icons'
 import Toggle from '~components/Toggle'
 import Tooltip from '~components/Tooltip'
 
-export const FormNricMaskingToggle = (): JSX.Element => {
-  const [isNricMaskingChecked, setIsNricMaskingChecked] = useState(false)
+import { useMutateFormSettings } from '../mutations'
+import { useAdminFormSettings } from '../queries'
 
-  const handleToggleNricMasking = () => {
-    setIsNricMaskingChecked(!isNricMaskingChecked)
-  }
+export const FormNricMaskingToggle = (): JSX.Element => {
+  const { data: settings, isLoading: isLoadingSettings } =
+    useAdminFormSettings()
+
+  const isNricMaskingEnabled = useMemo(
+    () => settings && settings.isNricMaskingEnabled,
+    [settings],
+  )
+
+  const { mutateNricMasking } = useMutateFormSettings()
+
+  const handleToggleNricMasking = useCallback(() => {
+    if (!settings || isLoadingSettings || mutateNricMasking.isLoading) return
+    const nextIsNricMaskingEnabled = !settings.isNricMaskingEnabled
+    return mutateNricMasking.mutate(nextIsNricMaskingEnabled)
+  }, [isLoadingSettings, mutateNricMasking, settings])
 
   return (
     <Skeleton isLoaded={true}>
       <Toggle
         isLoading={false}
-        isChecked={isNricMaskingChecked}
+        isChecked={isNricMaskingEnabled}
         label="Enable NRIC masking"
         labelComponentRight={
           <Tooltip
