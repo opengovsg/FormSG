@@ -1734,4 +1734,61 @@ describe('mail.service', () => {
       expect(sendMailSpy).toHaveBeenCalledTimes(0)
     })
   })
+
+  describe('sendMRFWorkflowStepEmail', () => {
+    const MOCK_RESPONSE_ID = '666872d118b702c4f517ef9a'
+    it('should send notification email successfully', async () => {
+      // Arrange
+      // sendMail should return mocked success response
+      sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
+
+      const responseUrl = 'responseUrl'
+      const emails = [MOCK_VALID_EMAIL, MOCK_VALID_EMAIL_2]
+
+      const expectedArg = {
+        to: emails,
+        from: MOCK_SENDER_STRING,
+        subject: expect.stringContaining(MOCK_RESPONSE_ID),
+        html: expect.any(String),
+        headers: {
+          // Hardcode in tests in case something changes this.
+          'X-Formsg-Email-Type': expect.any(String),
+        },
+      }
+
+      // Act
+      const actualResult = await mailService.sendMRFWorkflowStepEmail({
+        emails,
+        formTitle: 'mockFormTitle',
+        responseId: MOCK_RESPONSE_ID,
+        responseUrl,
+      })
+
+      // Assert
+      expect(actualResult).toEqual(ok(true))
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).toHaveBeenCalledTimes(1)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
+    })
+    it('should reject with error when email is invalid', async () => {
+      // Arrange
+      const invalidEmail = 'notAnEmail'
+      const responseUrl = 'responseUrl'
+
+      // Act
+      const actualResult = await mailService.sendMRFWorkflowStepEmail({
+        emails: [invalidEmail],
+        formTitle: 'mockFormTitle',
+        responseId: MOCK_RESPONSE_ID,
+        responseUrl,
+      })
+
+      // Assert
+      expect(actualResult).toEqual(
+        err(new MailSendError('Invalid email error')),
+      )
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).not.toHaveBeenCalled()
+    })
+  })
 })

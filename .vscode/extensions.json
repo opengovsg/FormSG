@@ -1,0 +1,13 @@
+{
+    "recommendations": [
+        "kamikillerto.vscode-colorize",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "rvest.vs-code-prettier-eslint",
+        "yoavbls.pretty-ts-errors",
+        "wayou.vscode-todo-highlight",
+        "gruntfuggly.todo-tree",
+        "adpyke.codesnap",
+        "eamodio.gitlens"
+    ]
+}
