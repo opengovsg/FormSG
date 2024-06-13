@@ -496,13 +496,6 @@ export const LandingPage = (): JSX.Element => {
                   <OrderedListIcon index={4} />
                   Collect responses at your email address
                 </ListItem>
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={5} />
-                  Collate responses with our{' '}
-                  <Link isExternal href={OGP_FORMSG_COLLATE}>
-                    data collation tool
-                  </Link>
-                </ListItem>
               </OrderedList>
             </TabPanel>
           </TabPanels>

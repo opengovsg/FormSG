@@ -30,12 +30,7 @@ export const EmailResponsesTab = (): JSX.Element => {
           </Text>
         </Skeleton>
         <Text textStyle="body-1">
-          FormSG does not store responses in Email mode. To collate the
-          responses in your Outlook Inbox, use the{' '}
-          <Link isExternal href={OGP_FORMSG_COLLATE}>
-            Data Collation Tool
-          </Link>
-          .
+          FormSG does not store responses in Email mode.
         </Text>
       </Stack>
     </Container>
