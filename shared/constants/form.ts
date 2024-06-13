@@ -29,6 +29,7 @@ export const MULTIRESPONDENT_PUBLIC_FORM_FIELDS = <const>[
 const FORM_SETTINGS_FIELDS = <const>[
   'responseMode',
   'authType',
+  'isNricMaskingEnabled',
   'esrvcId',
   'hasCaptcha',
   'hasIssueNotification',
