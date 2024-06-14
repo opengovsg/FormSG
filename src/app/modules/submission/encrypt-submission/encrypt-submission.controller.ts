@@ -15,6 +15,7 @@ import {
   StorageModeSubmissionContentDto,
 } from '../../../../../shared/types'
 import {
+  IEncryptedForm,
   IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
   StripePaymentMetadataDto,
@@ -299,18 +300,20 @@ const submitEncryptModeForm = async (
   // We don't await for email submission, as the submission gets saved for encrypt
   // submissions regardless, the email is more of a notification and shouldn't
   // stop the storage of the data in the db
-  void MailService.sendSubmissionToAdmin({
-    replyToEmails: EmailSubmissionService.extractEmailAnswers(
-      req.body.responses,
-    ),
-    form,
-    submission: {
-      created: form.created,
-      id: form._id,
-    },
-    attachments: undefined, // Don't send attachments in the email notifications
-    formData: emailData.formData,
-  })
+  if (((form as IEncryptedForm)?.emails || []).length > 0) {
+    void MailService.sendSubmissionToAdmin({
+      replyToEmails: EmailSubmissionService.extractEmailAnswers(
+        req.body.responses,
+      ),
+      form,
+      submission: {
+        created: form.created,
+        id: form._id,
+      },
+      attachments: undefined, // Don't send attachments in the email notifications
+      formData: emailData.formData,
+    })
+  }
 
   // Save Responses to Database
   let attachmentMetadata = new Map<string, string>()
