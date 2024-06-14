@@ -394,3 +394,30 @@ export const types: MyInfoFieldBlock[] = [
 ]
 
 export const MYINFO_ATTRIBUTE_MAP = keyBy(types, 'name')
+
+// TODO: remove after 28 Jun 2024 as this would have fully taken effect
+function updateLabelBasedOnDate() {
+  const currentDate = new Date().toLocaleString('en-US', {
+    timeZone: 'Asia/Singapore',
+  })
+  const targetDate = new Date('2024-06-28T00:00:00').toLocaleString('en-US', {
+    timeZone: 'Asia/Singapore',
+  })
+  if (new Date(currentDate) >= new Date(targetDate)) {
+    const sexAttribute = MYINFO_ATTRIBUTE_MAP[MyInfoAttribute.Sex]
+    if (sexAttribute) {
+      sexAttribute.description = 'Sex'
+      sexAttribute.value = 'Sex'
+      sexAttribute.description =
+        'The sex of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.'
+    }
+    const childGenderAttribute =
+      MYINFO_ATTRIBUTE_MAP[MyInfoAttribute.ChildGender]
+    if (childGenderAttribute) {
+      childGenderAttribute.value = "Child's Sex"
+      childGenderAttribute.description = 'Sex'
+    }
+  }
+}
+
+updateLabelBasedOnDate()
