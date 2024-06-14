@@ -208,11 +208,10 @@ const AdminEmailRecipientsInput = ({
       }
       render={({ field }) => (
         <TagInput
-          {...(getValues('emails') && getValues('emails').length > 0
+          {...(getValues('emails')?.length > 0
             ? {}
             : {
                 placeholder: 'me@example.com',
-                _placeholder: { color: 'neutral.500' },
               })}
           {...field}
           tagValidation={tagValidation}
