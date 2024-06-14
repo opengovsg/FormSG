@@ -1,9 +1,6 @@
 import { Container, Skeleton, Stack, Text } from '@chakra-ui/react'
 import simplur from 'simplur'
 
-import { OGP_FORMSG_COLLATE } from '~constants/links'
-import Link from '~components/Link'
-
 import { useFormResponsesCount } from '../../queries'
 import { EmptyResponses } from '../common/EmptyResponses'
 
