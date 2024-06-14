@@ -1,17 +1,21 @@
 import { useCallback, useMemo } from 'react'
 import { Icon, Skeleton } from '@chakra-ui/react'
 
+import { FormSettings } from '~shared/types/form'
+
 import { BxsInfoCircle } from '~assets/icons'
 import Toggle from '~components/Toggle'
 import Tooltip from '~components/Tooltip'
 
 import { useMutateFormSettings } from '../mutations'
-import { useAdminFormSettings } from '../queries'
 
-export const FormNricMaskToggle = (): JSX.Element => {
-  const { data: settings, isLoading: isLoadingSettings } =
-    useAdminFormSettings()
+interface FormNricMaskToggleProps {
+  settings: FormSettings
+}
 
+export const FormNricMaskToggle = ({
+  settings,
+}: FormNricMaskToggleProps): JSX.Element => {
   const isNricMaskEnabled = useMemo(
     () => settings?.isNricMaskEnabled,
     [settings],
@@ -20,10 +24,10 @@ export const FormNricMaskToggle = (): JSX.Element => {
   const { mutateNricMask } = useMutateFormSettings()
 
   const handleToggleNricMask = useCallback(() => {
-    if (!settings || isLoadingSettings || mutateNricMask.isLoading) return
+    if (!settings || mutateNricMask.isLoading) return
     const nextIsNricMaskEnabled = !settings.isNricMaskEnabled
     return mutateNricMask.mutate(nextIsNricMaskEnabled)
-  }, [isLoadingSettings, mutateNricMask, settings])
+  }, [mutateNricMask, settings])
 
   return (
     <Skeleton isLoaded={true}>

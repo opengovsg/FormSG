@@ -186,7 +186,9 @@ export const AuthSettingsSection = ({
         ))}
       </Radio.RadioGroup>
       <Divider my="2.5rem" />
-      {isNricMaskBoxEnabled(settings.authType) ? <FormNricMaskToggle /> : null}
+      {isNricMaskBoxEnabled(settings.authType) ? (
+        <FormNricMaskToggle settings={settings} />
+      ) : null}
     </Box>
   )
 }

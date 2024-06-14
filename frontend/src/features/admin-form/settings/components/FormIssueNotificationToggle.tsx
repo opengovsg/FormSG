@@ -11,7 +11,7 @@ export const FormIssueNotificationToggle = (): JSX.Element => {
     useAdminFormSettings()
 
   const hasIssueNotification = useMemo(
-    () => settings && settings?.hasIssueNotification,
+    () => settings?.hasIssueNotification,
     [settings],
   )
 
