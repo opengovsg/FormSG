@@ -705,6 +705,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       'startPage',
       'endPage',
       'authType',
+      'isNricMaskEnabled',
       'inactiveMessage',
       'responseMode',
       'submissionLimit',

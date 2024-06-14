@@ -1,6 +1,7 @@
 const PUBLIC_FORM_FIELDS = <const>[
   'admin',
   'authType',
+  'isNricMaskEnabled',
   'endPage',
   'esrvcId',
   'form_fields',
