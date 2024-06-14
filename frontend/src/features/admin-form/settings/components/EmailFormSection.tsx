@@ -68,6 +68,8 @@ export const EmailFormSection = ({
     (settings.payments_channel.channel !== PaymentChannel.Unconnected ||
       settings.payments_field.enabled)
 
+  const isEmailsDisabled = isFormPublic || isPaymentsEnabled
+
   const handleSubmitEmails = useCallback(
     ({ emails }: { emails: string[] }) => {
       if (isEqual(new Set(emails.filter(Boolean)), initialEmailSet)) return
@@ -91,10 +93,7 @@ export const EmailFormSection = ({
         isFormResponseModeEmail={isEmailMode}
       />
       <FormProvider {...formMethods}>
-        <FormControl
-          isInvalid={!isEmpty(errors)}
-          isDisabled={isFormPublic || isPaymentsEnabled}
-        >
+        <FormControl isInvalid={!isEmpty(errors)} isDisabled={isEmailsDisabled}>
           <FormLabel
             isRequired={isEmailMode}
             useMarkdownForDescription
@@ -105,11 +104,20 @@ export const EmailFormSection = ({
           >
             Send an email copy of new responses
           </FormLabel>
-          <AdminEmailRecipientsInput onSubmit={handleSubmitEmails} />
+          <AdminEmailRecipientsInput
+            onSubmit={handleSubmitEmails}
+            isEmailsDisabled={isEmailsDisabled}
+          />
           <FormErrorMessage>{get(errors, 'emails.message')}</FormErrorMessage>
-          <FormLabel.Description color="secondary.400" mt="0.5rem">
-            Separate multiple email addresses with a comma
-          </FormLabel.Description>
+          {isEmpty(errors) ? (
+            <FormLabel.Description
+              color="secondary.400"
+              mt="0.5rem"
+              opacity={isEmailsDisabled ? '0.3' : '1'}
+            >
+              Separate multiple email addresses with a comma
+            </FormLabel.Description>
+          ) : null}
         </FormControl>
       </FormProvider>
     </>
@@ -120,7 +128,7 @@ const MRFAdvertisingInfobox = () => {
   const mdComponents = useMdComponents()
 
   return (
-    <Flex bg="primary.100" p="1rem">
+    <Flex bg="primary.100" p="1rem" marginBottom="40px">
       <Icon as={BiBulb} color="primary.500" fontSize="1.5rem" mr="0.5rem" />
       <MarkdownText
         components={mdComponents}
@@ -142,7 +150,7 @@ const EmailNotificationsHeader = ({
 }: EmailNotificationsHeaderProps) => {
   if (isFormPublic) {
     return (
-      <InlineMessage>
+      <InlineMessage marginBottom="40px">
         To change admin email recipients, close your form to new responses.
       </InlineMessage>
     )
@@ -150,9 +158,8 @@ const EmailNotificationsHeader = ({
 
   if (isPaymentsEnabled) {
     return (
-      <InlineMessage useMarkdown>
-        {`Email notifications for payment forms are not available in FormSG. You
-        can configure them using [Plumber](${OGP_PLUMBER}).`}
+      <InlineMessage useMarkdown marginBottom="40px">
+        {`Email notifications for payment forms are not available in FormSG. You can configure them using [Plumber](${OGP_PLUMBER}).`}
       </InlineMessage>
     )
   }
@@ -166,6 +173,7 @@ const EmailNotificationsHeader = ({
 
 interface AdminEmailRecipientsInputProps {
   onSubmit: (params: { emails: string[] }) => void
+  isEmailsDisabled: boolean
 }
 
 const AdminEmailRecipientsInput = ({
@@ -202,7 +210,10 @@ const AdminEmailRecipientsInput = ({
         <TagInput
           {...(getValues('emails') && getValues('emails').length > 0
             ? {}
-            : { placeholder: 'me@example.com' })}
+            : {
+                placeholder: 'me@example.com',
+                _placeholder: { color: 'neutral.500' },
+              })}
           {...field}
           tagValidation={tagValidation}
           onBlur={handleBlur}

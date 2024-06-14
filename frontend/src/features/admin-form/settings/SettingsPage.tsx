@@ -98,7 +98,7 @@ export const SettingsPage = (): JSX.Element => {
     ) {
       // Add the Email Notifications page into the tab list, after singpass
       baseConfig.splice(2, 0, {
-        label: 'Email Notifications',
+        label: 'Email notifications',
         icon: BiMailSend,
         component: SettingsEmailsPage,
         path: 'email-notifications',
