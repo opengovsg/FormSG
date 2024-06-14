@@ -8,28 +8,28 @@ import Tooltip from '~components/Tooltip'
 import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
 
-export const FormNricMaskingToggle = (): JSX.Element => {
+export const FormNricMaskToggle = (): JSX.Element => {
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
-  const isNricMaskingEnabled = useMemo(
-    () => settings && settings.isNricMaskingEnabled,
+  const isNricMaskEnabled = useMemo(
+    () => settings?.isNricMaskEnabled,
     [settings],
   )
 
-  const { mutateNricMasking } = useMutateFormSettings()
+  const { mutateNricMask } = useMutateFormSettings()
 
-  const handleToggleNricMasking = useCallback(() => {
-    if (!settings || isLoadingSettings || mutateNricMasking.isLoading) return
-    const nextIsNricMaskingEnabled = !settings.isNricMaskingEnabled
-    return mutateNricMasking.mutate(nextIsNricMaskingEnabled)
-  }, [isLoadingSettings, mutateNricMasking, settings])
+  const handleToggleNricMask = useCallback(() => {
+    if (!settings || isLoadingSettings || mutateNricMask.isLoading) return
+    const nextIsNricMaskEnabled = !settings.isNricMaskEnabled
+    return mutateNricMask.mutate(nextIsNricMaskEnabled)
+  }, [isLoadingSettings, mutateNricMask, settings])
 
   return (
     <Skeleton isLoaded={true}>
       <Toggle
         isLoading={false}
-        isChecked={isNricMaskingEnabled}
+        isChecked={isNricMaskEnabled}
         label="Enable NRIC masking"
         labelComponentRight={
           <Tooltip
@@ -40,7 +40,7 @@ export const FormNricMaskingToggle = (): JSX.Element => {
           </Tooltip>
         }
         description="NRIC numbers are masked by default; only the last 4 characters will be displayed and collected (e.g. S7914578N appears as *****578N)"
-        onChange={handleToggleNricMasking}
+        onChange={handleToggleNricMask}
       />
     </Skeleton>
   )

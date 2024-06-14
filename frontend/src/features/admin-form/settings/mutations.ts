@@ -36,7 +36,7 @@ import {
   updateFormInactiveMessage,
   updateFormIssueNotification,
   updateFormLimit,
-  updateFormNricMasking,
+  updateFormNricMask,
   updateFormStatus,
   updateFormTitle,
   updateFormWebhookRetries,
@@ -280,15 +280,15 @@ export const useMutateFormSettings = () => {
     },
   })
 
-  const mutateNricMasking = useMutation(
-    (nextIsNricMaskingEnabled: boolean) =>
-      updateFormNricMasking(formId, nextIsNricMaskingEnabled),
+  const mutateNricMask = useMutation(
+    (nextIsNricMaskEnabled: boolean) =>
+      updateFormNricMask(formId, nextIsNricMaskEnabled),
     {
       onSuccess: (newData) => {
         handleSuccess({
           newData,
           toastDescription: `NRIC masking is now ${
-            newData.isNricMaskingEnabled ? 'enabled' : 'disabled'
+            newData.isNricMaskEnabled ? 'enabled' : 'disabled'
           } on your form.`,
         })
       },
@@ -365,7 +365,7 @@ export const useMutateFormSettings = () => {
     mutateFormEmails,
     mutateFormTitle,
     mutateFormAuthType,
-    mutateNricMasking,
+    mutateNricMask,
     mutateFormEsrvcId,
     mutateFormBusiness,
     mutateGST,

@@ -517,7 +517,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         },
       },
 
-      isNricMaskingEnabled: {
+      isNricMaskEnabled: {
         type: Boolean,
         default: false,
       },

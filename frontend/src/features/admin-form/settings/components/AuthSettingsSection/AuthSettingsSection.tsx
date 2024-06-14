@@ -20,7 +20,7 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 import { isMyInfo } from '~features/myinfo/utils'
 
 import { useMutateFormSettings } from '../../mutations'
-import { FormNricMaskingToggle } from '../FormNricMaskingToggle'
+import { FormNricMaskToggle } from '../FormNricMaskToggle'
 
 import { FORM_AUTHTYPES } from './constants'
 import { EsrvcIdBox } from './EsrvcIdBox'
@@ -68,8 +68,7 @@ export const AuthSettingsSection = ({
   const isFormPublic = settings.status === FormStatus.Public
 
   const isDisabled = useCallback(
-    (authType: FormAuthType) =>
-      isFormPublic || containsMyInfoFields || mutateFormAuthType.isLoading,
+    () => isFormPublic || containsMyInfoFields || mutateFormAuthType.isLoading,
     [isFormPublic, containsMyInfoFields, mutateFormAuthType.isLoading],
   )
 
@@ -85,14 +84,14 @@ export const AuthSettingsSection = ({
     authType === FormAuthType.SGID ||
     authType === FormAuthType.SGID_MyInfo
 
-  const isNricMaskingBoxEnabled = isSingpassAuthType
+  const isNricMaskBoxEnabled = isSingpassAuthType
 
   const handleEnterKeyDown: KeyboardEventHandler = useCallback(
     (e) => {
       if (
         (e.key === 'Enter' || e.key === ' ') &&
         focusedValue &&
-        !isDisabled(focusedValue) &&
+        !isDisabled() &&
         focusedValue !== settings.authType
       ) {
         return mutateFormAuthType.mutate(focusedValue)
@@ -105,7 +104,7 @@ export const AuthSettingsSection = ({
     (authType: FormAuthType): MouseEventHandler =>
       (e) => {
         if (
-          !isDisabled(authType) &&
+          !isDisabled() &&
           e.type === 'click' &&
           // Required so only real clicks get registered.
           // Typical radio behaviour is that the 'click' event is triggered on change.
@@ -162,7 +161,7 @@ export const AuthSettingsSection = ({
         {radioOptions.map(([authType, text]) => (
           <Fragment key={authType}>
             <Box onClick={handleOptionClick(authType)}>
-              <Radio value={authType} isDisabled={isDisabled(authType)}>
+              <Radio value={authType} isDisabled={isDisabled()}>
                 <Flex>
                   {text}
                   {authType === FormAuthType.SGID ||
@@ -187,9 +186,7 @@ export const AuthSettingsSection = ({
         ))}
       </Radio.RadioGroup>
       <Divider my="2.5rem" />
-      {isNricMaskingBoxEnabled(settings.authType) ? (
-        <FormNricMaskingToggle />
-      ) : null}
+      {isNricMaskBoxEnabled(settings.authType) ? <FormNricMaskToggle /> : null}
     </Box>
   )
 }
