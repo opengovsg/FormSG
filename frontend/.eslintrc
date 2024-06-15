@@ -1,6 +1,6 @@
 {
   "root": true,
-  "plugins": ["import", "simple-import-sort", "prettier", "testing-library"],
+  "plugins": ["import", "simple-import-sort", "prettier", "testing-library", "unused-imports"],
   "extends": [
     "eslint:recommended",
     "plugin:prettier/recommended",
@@ -13,7 +13,7 @@
       "extends": ["plugin:@typescript-eslint/recommended"],
       "parser": "@typescript-eslint/parser",
       "rules": {
-        "@typescript-eslint/no-unused-vars": "warn"
+        "@typescript-eslint/no-unused-vars": "off"
       }
     },
     {
@@ -81,6 +81,16 @@
     "simple-import-sort/exports": "error",
     "import/first": "error",
     "import/newline-after-import": "error",
-    "import/no-duplicates": "error"
+    "import/no-duplicates": "error",
+    "unused-imports/no-unused-imports": "error", 
+    "unused-imports/no-unused-vars": [
+      "warn",
+      {
+        "vars": "all",
+        "varsIgnorePattern": "^_",
+        "args": "after-used",
+        "argsIgnorePattern": "^_"
+      }
+    ]
   }
 }
