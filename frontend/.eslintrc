@@ -43,6 +43,7 @@
     "sourceType": "module"
   },
   "rules": {
+    "no-console": "warn",
     // Rules for auto sort of imports
     "simple-import-sort/imports": [
       "error",

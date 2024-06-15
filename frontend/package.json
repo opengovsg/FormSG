@@ -182,7 +182,7 @@
     "eslint-plugin-simple-import-sort": "^12.1.0",
     "eslint-plugin-storybook": "^0.5.12",
     "eslint-plugin-testing-library": "^6.2.2",
-    "eslint-plugin-unused-imports": "^4.0.0",
+    "eslint-plugin-unused-imports": "^3.2.0",
     "html-webpack-plugin": "^4.5.2",
     "http-proxy-middleware": "^2.0.6",
     "lint-staged": "^12.1.2",

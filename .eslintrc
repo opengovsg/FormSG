@@ -29,7 +29,8 @@
         "@typescript-eslint",
         "import",
         "simple-import-sort",
-        "typesafe"
+        "typesafe",
+        "unused-imports"
       ],
       "extends": ["plugin:@typescript-eslint/recommended"],
       "rules": {
@@ -60,7 +61,7 @@
         "import/newline-after-import": "error",
         "import/no-duplicates": "error",
         "@typescript-eslint/no-floating-promises": 2,
-        "@typescript-eslint/no-unused-vars": 2,
+        "@typescript-eslint/no-unused-vars": 0,
         "typesafe/no-throw-sync-func": "error"
       }
     },
@@ -80,7 +81,18 @@
     }
   ],
   "rules": {
-    "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
-    "no-console": "warn"
+    "no-unused-vars": "off", 
+    "@typescript-eslint/no-unused-vars": "off",
+    "no-console": "warn",
+    "unused-imports/no-unused-imports": "error",
+    "unused-imports/no-unused-vars": [
+        "error",
+        {
+            "vars": "all",
+            "varsIgnorePattern": "^_",
+            "args": "after-used",
+            "argsIgnorePattern": "^_"
+        }
+    ]
   }
 }
