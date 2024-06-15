@@ -553,7 +553,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
       }
     default: {
       // Force TS to emit an error if the cases above are not exhaustive
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const exhaustiveCheck: never = fieldType
       break
     }

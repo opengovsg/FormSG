@@ -86,7 +86,7 @@ export const getPaymentAmount = (
       return calculatePrice(paymentProducts)
     default: {
       // Force TS to emit an error if the cases above are not exhaustive
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const exhaustiveCheck: never = payment_type
     }
   }
@@ -122,7 +122,7 @@ export const getPaymentIntentDescription = (
     }
     default: {
       // Force TS to emit an error if the cases above are not exhaustive
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const exhaustiveCheck: never = payment_type
     }
   }
@@ -135,7 +135,7 @@ const omitResponseKeys = (
   | ParsedClearFormFieldResponse
   | EncryptFormFieldResponse => {
   // We want to omit the isVisible property, as all fields are visible in the encrypted submission, making it redundant
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const { isVisible, ...rest } = response
   return rest
 }

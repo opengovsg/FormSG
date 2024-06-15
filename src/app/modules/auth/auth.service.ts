@@ -371,7 +371,7 @@ export const getUserByApiKey = (
   })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line unused-imports/no-unused-vars
 const getApiKeyHash = (apiKey: string): ResultAsync<string, HashingError> => {
   return ResultAsync.fromPromise(
     bcrypt.hash(apiKey, DEFAULT_SALT_ROUNDS),
@@ -388,7 +388,7 @@ const getApiKeyHash = (apiKey: string): ResultAsync<string, HashingError> => {
   ).map((hash) => `${hash}`)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line unused-imports/no-unused-vars
 const generateApiKey = (user: IUserSchema): string => {
   const key = crypto.randomBytes(32).toString('base64')
   const apiEnv = config.publicApiConfig.apiEnv
