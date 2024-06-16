@@ -237,7 +237,6 @@ export const useMutateFormSettings = () => {
     { previousSettings?: FormSettings }
   >(
     (nextAuthType: FormAuthType) => {
-      console.log('Actual mutation fn nextAuthType: ' + nextAuthType)
       return updateFormAuthType(formId, nextAuthType)
     },
     {
