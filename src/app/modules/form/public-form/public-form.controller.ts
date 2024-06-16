@@ -2,7 +2,6 @@ import { HttpStatusCode } from 'axios'
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
-import { makeSpcpSessionWithMaskedNric, maskNric } from 'shared/utils/nric-mask'
 import { UnreachableCaseError } from 'ts-essentials'
 
 import {
@@ -15,6 +14,10 @@ import {
   PublicFormDto,
   PublicFormViewDto,
 } from '../../../../../shared/types'
+import {
+  makeSpcpSessionWithMaskedNric,
+  maskNric,
+} from '../../../../../shared/utils/nric-mask'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'
 import { createReqMeta, getRequestIp } from '../../../utils/request'

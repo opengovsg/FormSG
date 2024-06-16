@@ -142,12 +142,6 @@ export const PublicFormProvider = ({
     /* enabled= */ !submissionData,
   )
 
-  // TODO: check if needed
-  // Mask nric info if nric masking is enabled
-  // if (data?.form.isNricMaskEnabled && data.spcpSession?.userName) {
-  //   data.spcpSession.userName = maskNric(data.spcpSession.userName)
-  // }
-
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
     useCommonFormProvider(formId)
 

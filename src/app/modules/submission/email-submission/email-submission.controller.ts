@@ -6,6 +6,7 @@ import {
   SubmissionResponseDto,
 } from '../../../../../shared/types'
 import { CaptchaTypes } from '../../../../../shared/types/captcha'
+import { maskNric } from '../../../../../shared/utils/nric-mask'
 import { IPopulatedEmailForm } from '../../../../types'
 import { ParsedEmailModeSubmissionBody } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -198,6 +199,15 @@ const submitEmailModeForm: ControllerHandler<
             return oidcService
               .extractJwt(req.cookies)
               .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
+              .map((jwt) => {
+                if (form.isNricMaskEnabled) {
+                  return {
+                    ...jwt,
+                    userName: maskNric(jwt.userName),
+                  }
+                }
+                return jwt
+              })
               .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
                 form,
                 parsedResponses: parsedResponses.addNdiResponses({
@@ -221,6 +231,15 @@ const submitEmailModeForm: ControllerHandler<
             return oidcService
               .extractJwt(req.cookies)
               .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
+              .map((jwt) => {
+                if (form.isNricMaskEnabled) {
+                  return {
+                    ...jwt,
+                    userName: maskNric(jwt.userName),
+                  }
+                }
+                return jwt
+              })
               .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
                 form,
                 parsedResponses: parsedResponses.addNdiResponses({
@@ -251,14 +270,19 @@ const submitEmailModeForm: ControllerHandler<
                     ),
                   )
                   .map<IPopulatedEmailFormWithResponsesAndHash>(
-                    (hashedFields) => ({
-                      form,
-                      hashedFields,
-                      parsedResponses: parsedResponses.addNdiResponses({
-                        authType,
-                        uinFin,
-                      }),
-                    }),
+                    (hashedFields) => {
+                      if (form.isNricMaskEnabled) {
+                        uinFin = maskNric(uinFin)
+                      }
+                      return {
+                        form,
+                        hashedFields,
+                        parsedResponses: parsedResponses.addNdiResponses({
+                          authType,
+                          uinFin,
+                        }),
+                      }
+                    },
                   ),
               )
               .mapErr((error) => {
@@ -276,15 +300,20 @@ const submitEmailModeForm: ControllerHandler<
             return SgidService.extractSgidSingpassJwtPayload(
               req.cookies[SGID_COOKIE_NAME],
             )
-              .map<IPopulatedEmailFormWithResponsesAndHash>(
-                ({ userName: uinFin }) => ({
-                  form,
-                  parsedResponses: parsedResponses.addNdiResponses({
-                    authType,
-                    uinFin,
-                  }),
+              .map(({ userName: uinFin }) => {
+                if (form.isNricMaskEnabled) {
+                  return maskNric(uinFin)
+                } else {
+                  return uinFin
+                }
+              })
+              .map<IPopulatedEmailFormWithResponsesAndHash>((uinFin) => ({
+                form,
+                parsedResponses: parsedResponses.addNdiResponses({
+                  authType,
+                  uinFin,
                 }),
-              )
+              }))
               .mapErr((error) => {
                 spcpSubmissionFailure = true
                 logger.error({

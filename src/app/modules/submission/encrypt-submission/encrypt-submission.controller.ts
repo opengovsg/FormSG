@@ -14,6 +14,7 @@ import {
   PaymentType,
   StorageModeSubmissionContentDto,
 } from '../../../../../shared/types'
+import { maskNric } from '../../../../../shared/utils/nric-mask'
 import {
   IEncryptedForm,
   IEncryptedSubmissionSchema,
@@ -241,6 +242,18 @@ const submitEncryptModeForm = async (
       uinFin = jwtPayloadResult.value.userName
       break
     }
+  }
+
+  // Mask if Nric masking is enabled
+  if (
+    form.isNricMaskEnabled &&
+    (form.authType === FormAuthType.SP ||
+      form.authType === FormAuthType.CP ||
+      form.authType === FormAuthType.SGID ||
+      form.authType === FormAuthType.MyInfo ||
+      form.authType === FormAuthType.SGID_MyInfo)
+  ) {
+    uinFin = maskNric(uinFin)
   }
 
   // Encrypt Verified SPCP Fields
