@@ -67,7 +67,7 @@ export const Toggle = forwardRef<ToggleProps, 'input'>(
               <FormLabel.Label sx={{ ...styles.label, ...labelStyles }}>
                 {label}
               </FormLabel.Label>
-              {labelComponentRight ?? null}
+              {labelComponentRight ? labelComponentRight : null}
             </Box>
             {description && (
               <FormLabel.Description
