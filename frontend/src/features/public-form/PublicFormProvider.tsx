@@ -142,13 +142,11 @@ export const PublicFormProvider = ({
     /* enabled= */ !submissionData,
   )
 
-  const maskNric = (nric: string) => {
-    return nric.slice(0, -4).replace(/./g, '*') + nric.slice(-4)
-  }
-
-  if (data?.form.isNricMaskEnabled && data.spcpSession?.userName) {
-    data.spcpSession.userName = maskNric(data.spcpSession.userName)
-  }
+  // TODO: check if needed
+  // Mask nric info if nric masking is enabled
+  // if (data?.form.isNricMaskEnabled && data.spcpSession?.userName) {
+  //   data.spcpSession.userName = maskNric(data.spcpSession.userName)
+  // }
 
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
     useCommonFormProvider(formId)
