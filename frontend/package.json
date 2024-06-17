@@ -190,7 +190,7 @@
     "msw-storybook-addon": "^1.6.3",
     "patch-package": "^6.4.7",
     "prettier": "^3.2.5",
-    "puppeteer": "^13.0.0",
+    "puppeteer": "^22.11.1",
     "react-refresh": "^0.14.0",
     "react-scripts": "^4.0.3",
     "resize-observer-polyfill": "^1.5.1",
