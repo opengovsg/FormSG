@@ -29,12 +29,12 @@ class PostmanSmsService {
    * Messages to any member of public MUST be sent using this method.
    */
   sendMopSms(
-    smsData: FormOtpData | AdminContactOtpData,
+    smsData: FormOtpData,
     recipient: string,
     message: string,
     smsType: SmsType,
     senderIp?: string,
-  ): ResultAsync<true, SmsSendError | InvalidNumberError> {
+  ): ResultAsync<true, SmsSendError> {
     const logMeta = {
       action: 'sendMopSms',
       recipient,
