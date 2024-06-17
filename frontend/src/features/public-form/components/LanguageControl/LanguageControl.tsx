@@ -1,6 +1,5 @@
 import { BiChevronDown } from 'react-icons/bi'
 import {
-  Box,
   Button,
   Flex,
   HStack,
@@ -8,7 +7,6 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
-  Text,
 } from '@chakra-ui/react'
 
 import { Language } from '~shared/types'
@@ -29,8 +27,8 @@ const LANGUAGES: LanguageListType[] = [
   { language: Language.TAMIL, title: 'தமிழ்' },
 ]
 
-export const LanguageControl = (): JSX.Element => {
-  const { form, publicFormLanguage, setPublicFormLanguage } =
+export const LanguageControl = (): JSX.Element | null => {
+  const { form, publicFormLanguage, setPublicFormLanguage, submissionData } =
     usePublicFormContext()
 
   const availableLanguages = new Set(form?.supportedLanguages ?? [])
@@ -58,6 +56,11 @@ export const LanguageControl = (): JSX.Element => {
   const selectedLanguage = LANGUAGES.find(
     (language) => language.language === publicFormLanguage,
   )?.title
+
+  // Submission data is not undefinde in the form end page. Use
+  // this to not render the language control component in the form
+  // end page.
+  if (submissionData) return null
 
   return (
     <Flex
