@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
 
@@ -13,35 +12,12 @@ import FormInstructions from './components/FormInstructions'
 import FormIssueFeedback from './components/FormIssueFeedback'
 import { PublicFormLogo } from './components/FormLogo'
 import FormStartPage from './components/FormStartPage'
+import LanguageControl from './components/LanguageControl'
 import { PublicFormWrapper } from './components/PublicFormWrapper'
-import ZoomControl from './components/ZoomControl'
 import { PublicFormProvider } from './PublicFormProvider'
 
 export const PublicFormPage = (): JSX.Element => {
   const { formId, submissionId } = useParams()
-  const [rootFontSize, setRootFontSize] = useState('16px')
-
-  const setDefaultSize = () => {
-    setRootFontSize('16px')
-  }
-
-  const setLargeSize = () => {
-    setRootFontSize('18px')
-  }
-
-  const setLargestSize = () => {
-    setRootFontSize('24px')
-  }
-
-  useEffect(() => {
-    const root = document.documentElement
-    root.style.setProperty('font-size', rootFontSize)
-
-    // need to reset on unmount
-    return () => {
-      root.style.removeProperty('font-size')
-    }
-  }, [rootFontSize])
 
   if (!formId) throw new Error('No formId provided')
 
@@ -59,11 +35,7 @@ export const PublicFormPage = (): JSX.Element => {
           <FormBanner />
           <PublicFormLogo />
           <FormStartPage />
-          <ZoomControl
-            setDefaultSize={setDefaultSize}
-            setLargeSize={setLargeSize}
-            setLargestSize={setLargestSize}
-          />
+          <LanguageControl />
           <PublicFormWrapper>
             <FormInstructions />
             <FormFields />
