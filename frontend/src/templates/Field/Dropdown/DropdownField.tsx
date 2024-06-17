@@ -5,6 +5,7 @@ import { FormColorTheme } from '~shared/types'
 
 import { createDropdownValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown/SingleSelect'
+import { ComboboxItem } from '~components/Dropdown/types'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { DropdownFieldSchema, SingleAnswerFieldInput } from '../types'
@@ -30,7 +31,8 @@ export const DropdownField = ({
 
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
-  const fieldOptions = useMemo(() => {
+  const fieldOptions: ComboboxItem[] = useMemo(() => {
+    const defaultEnglishFieldOptions = schema.fieldOptions
     const fieldOptionsTranslations = schema?.fieldOptionsTranslations ?? []
 
     const translationIdx = fieldOptionsTranslations.findIndex((translation) => {
@@ -38,9 +40,25 @@ export const DropdownField = ({
     })
 
     if (translationIdx !== -1) {
-      return fieldOptionsTranslations[translationIdx].translation
+      const translatedFieldOptions =
+        fieldOptionsTranslations[translationIdx].translation
+
+      // The label will be the translated option while the value is the
+      // default English option so that upon form submission, the value recorded
+      // will be the default english option. The indexes of the translated options
+      // and the default English options are corresponding with each other.
+      return translatedFieldOptions.map((translatedFieldOption, index) => {
+        return {
+          value: defaultEnglishFieldOptions[index],
+          label: translatedFieldOption,
+        }
+      })
     } else {
-      return schema.fieldOptions
+      return schema.fieldOptions.map((fieldOption) => {
+        return {
+          value: fieldOption,
+        }
+      })
     }
   }, [schema.fieldOptions, schema?.fieldOptionsTranslations, selectedLanguage])
 

@@ -60,6 +60,8 @@ export const CheckboxField = ({
     [disableRequiredValidation, schema],
   )
 
+  const defaultEnglishCheckboxOptions = schema.fieldOptions
+
   const { register, getValues, control } = useFormContext<CheckboxFieldInputs>()
   const { isValid, isSubmitting, errors } = useFormState<CheckboxFieldInputs>({
     name: schema._id,
@@ -113,7 +115,11 @@ export const CheckboxField = ({
                   name={checkboxInputName}
                   colorScheme={fieldColorScheme}
                   key={idx}
-                  value={o}
+                  // Value will always be the default english field option
+                  // so that upon form submission, the selected value submitted
+                  // and collected will always be the english field option regardless
+                  // of the language of the form.
+                  value={defaultEnglishCheckboxOptions[idx]}
                   aria-label={o}
                   {...(idx === 0 ? { ref } : {})}
                 >

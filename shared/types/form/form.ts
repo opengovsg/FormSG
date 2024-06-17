@@ -77,7 +77,7 @@ export enum Language {
   ENGLISH = 'English',
   CHINESE = 'Chinese',
   MALAY = 'Malay',
-  Tamil = 'Tamil',
+  TAMIL = 'Tamil',
 }
 
 export enum FormStatus {

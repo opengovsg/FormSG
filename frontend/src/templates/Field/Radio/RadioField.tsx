@@ -46,6 +46,8 @@ export const RadioField = ({
     [schema._id],
   )
 
+  const defaultEnglishRadioOptions = schema.fieldOptions
+
   const validationRules = useMemo(
     () => createRadioValidationRules(schema, disableRequiredValidation),
     [disableRequiredValidation, schema],
@@ -80,9 +82,13 @@ export const RadioField = ({
     if (translationIdx !== -1) {
       return fieldOptionsTranslations[translationIdx].translation
     } else {
-      return schema.fieldOptions
+      return defaultEnglishRadioOptions
     }
-  }, [schema.fieldOptions, schema?.fieldOptionsTranslations, selectedLanguage])
+  }, [
+    defaultEnglishRadioOptions,
+    schema?.fieldOptionsTranslations,
+    selectedLanguage,
+  ])
 
   return (
     <FieldContainer
@@ -115,7 +121,11 @@ export const RadioField = ({
             {fieldOptions.map((option, idx) => (
               <Radio
                 key={idx}
-                value={option}
+                // Value will always be the default english field option
+                // so that upon form submission, the selected value submitted
+                // and collected will always be the english field option regardless
+                // of the language of the form.
+                value={defaultEnglishRadioOptions[idx]}
                 {...(idx === 0 ? { ref } : {})}
                 // Required should apply to radio group rather than individual radio.
                 isRequired={false}

@@ -20,6 +20,7 @@ import {
   createDropdownValidationRules,
 } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown'
+import { ComboboxItem } from '~components/Dropdown/types'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
@@ -91,15 +92,36 @@ const DropdownColumnCell = ({
     [schema, disableRequiredValidation],
   )
 
-  let fieldOptions = schema.fieldOptions ?? []
-  const fieldOptionsTranslations = schema?.fieldOptionsTranslations ?? []
-  const translationsIdx = fieldOptionsTranslations.findIndex(
-    (translation) => translation.language === selectedLanguage,
-  )
+  const fieldOptions: ComboboxItem[] = useMemo(() => {
+    const defaultEnglishFieldOptions = schema.fieldOptions ?? []
+    const fieldOptionsTranslations = schema?.fieldOptionsTranslations ?? []
+    const translationsIdx = fieldOptionsTranslations.findIndex(
+      (translation) => translation.language === selectedLanguage,
+    )
 
-  if (translationsIdx !== -1) {
-    fieldOptions = fieldOptionsTranslations[translationsIdx].translation
-  }
+    if (translationsIdx !== -1) {
+      const translatedFieldOptions =
+        fieldOptionsTranslations[translationsIdx].translation
+
+      // The label will be the translated option while the value is the
+      // default English option so that upon form submission, the value recorded
+      // and collected will be the default english option. The indexes of the
+      // translated options and the default English options are corresponding
+      // with each other.
+      return translatedFieldOptions.map((translatedFieldOption, index) => {
+        return {
+          value: defaultEnglishFieldOptions[index],
+          label: translatedFieldOption,
+        }
+      })
+    } else {
+      return defaultEnglishFieldOptions.map((fieldOption) => {
+        return {
+          value: fieldOption,
+        }
+      })
+    }
+  }, [schema.fieldOptions, schema?.fieldOptionsTranslations, selectedLanguage])
 
   return (
     <Controller
