@@ -235,7 +235,7 @@
     "prettier": "^3.2.5",
     "regenerator": "^0.14.10",
     "rimraf": "^5.0.5",
-    "stripe-event-types": "^2.3.0",
+    "stripe-event-types": "^3.1.0",
     "supertest": "^6.3.3",
     "supertest-session": "^4.1.0",
     "ts-jest": "^29.1.2",
