@@ -365,7 +365,7 @@ describe('Verification service', () => {
         expect(postmanSpy).toHaveBeenCalledOnce()
       })
 
-      it('should send OTP with twilio if admin has feature flag on', async () => {
+      it('should send OTP with twilio if admin has feature flag off', async () => {
         const postmanSpy = jest
           .spyOn(PostmanSmsService, 'sendVerificationOtp')
           .mockResolvedValueOnce(okAsync(true))
