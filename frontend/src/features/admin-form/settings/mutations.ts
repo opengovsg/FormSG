@@ -12,6 +12,7 @@ import {
   StorageFormSettings,
 } from '~shared/types/form/form'
 import { TwilioCredentials } from '~shared/types/twilio'
+import { PAYMENT_DELETE_DEFAULT } from '~shared/utils/payments'
 
 import { ApiError } from '~typings/core'
 
@@ -19,6 +20,7 @@ import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
 import { useToast } from '~hooks/useToast'
 import { formatOrdinal } from '~utils/stringFormat'
 
+import { updateFormPayments } from '../common/AdminFormPageService'
 import { adminFormKeys } from '../common/queries'
 
 import { adminFormSettingsKeys } from './queries'
@@ -424,7 +426,10 @@ export const useMutateStripeAccount = () => {
   )
 
   const unlinkStripeAccountMutation = useMutation(
-    () => unlinkStripeAccount(formId),
+    () => {
+      updateFormPayments(formId, PAYMENT_DELETE_DEFAULT)
+      return unlinkStripeAccount(formId)
+    },
     {
       onSuccess: () => {
         queryClient.invalidateQueries(adminFormKeys.id(formId))
