@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.125.0",
+  "version": "6.126.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -235,7 +235,7 @@
     "prettier": "^3.2.5",
     "regenerator": "^0.14.10",
     "rimraf": "^5.0.5",
-    "stripe-event-types": "^2.3.0",
+    "stripe-event-types": "^3.1.0",
     "supertest": "^6.3.3",
     "supertest-session": "^4.1.0",
     "ts-jest": "^29.1.2",
