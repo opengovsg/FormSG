@@ -27,30 +27,6 @@ describe('admin-form.payment.service', () => {
       emails: ['test@example.com'],
     } as any as IPopulatedEncryptedForm
 
-    it.only('should not allow payment updates for encrypt forms with emails', async () => {
-      // Arrange
-      const updatedPaymentSettings: PaymentsUpdateDto = {
-        enabled: true,
-        amount_cents: 100,
-        description: 'some description',
-        payment_type: PaymentType.Fixed,
-      }
-      jest.replaceProperty(MOCK_FORM, 'emails', ['test@example.com'])
-
-      // Act
-      const actualResult = await AdminFormPaymentService.updatePayments(
-        mockFormId,
-        MOCK_FORM,
-        updatedPaymentSettings,
-      )
-
-      // Assert
-      expect(actualResult.isErr()).toBeTrue()
-      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
-        PaymentConfigurationError,
-      )
-    })
-
     describe('When Payment Type is Fixed', () => {
       beforeEach(() => {
         jest.clearAllMocks()
@@ -180,6 +156,30 @@ describe('admin-form.payment.service', () => {
         expect(actualResult.isErr()).toBeTrue()
         expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
           FormNotFoundError,
+        )
+      })
+
+      it('should not allow payment updates for encrypt forms with emails', async () => {
+        // Arrange
+        const updatedPaymentSettings: PaymentsUpdateDto = {
+          enabled: true,
+          amount_cents: 100,
+          description: 'some description',
+          payment_type: PaymentType.Fixed,
+        }
+        jest.replaceProperty(MOCK_FORM, 'emails', ['test@example.com'])
+
+        // Act
+        const actualResult = await AdminFormPaymentService.updatePayments(
+          mockFormId,
+          MOCK_FORM,
+          updatedPaymentSettings,
+        )
+
+        // Assert
+        expect(actualResult.isErr()).toBeTrue()
+        expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+          PaymentConfigurationError,
         )
       })
     })

@@ -26,7 +26,6 @@ import {
 } from '../../webhook/webhook.errors'
 import { WebhookFactory } from '../../webhook/webhook.factory'
 import {
-  ConflictError,
   ResponseModeError,
   SendEmailConfirmationError,
   SubmissionNotFoundError,
