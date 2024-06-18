@@ -73,3 +73,15 @@ export class GoGovServerError extends GoGovError {
     super(message)
   }
 }
+
+export class AssistanceConnectionError extends ApplicationError {
+  constructor(message = 'Error while connecting to OpenAI') {
+    super(message)
+  }
+}
+
+export class AssistanceModelTypeError extends ApplicationError {
+  constructor(message = 'Unknown model type') {
+    super(message)
+  }
+}

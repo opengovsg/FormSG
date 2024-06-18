@@ -2,9 +2,6 @@ import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
-import { MailSendError } from 'src/app/services/mail/mail.errors'
-import { EncryptSubmissionDto } from 'src/types/api'
-
 import {
   ErrorDto,
   FieldResponsesV3,
@@ -14,10 +11,12 @@ import {
   SubmissionType,
 } from '../../../../../shared/types'
 import { getMultirespondentSubmissionEditPath } from '../../../../../shared/utils/urls'
+import { MailSendError } from '../../../../../src/app/services/mail/mail.errors'
 import {
   Environment,
   IPopulatedMultirespondentForm,
 } from '../../../../../src/types'
+import { EncryptSubmissionDto } from '../../../../../src/types/api'
 import config from '../../../config/config'
 import {
   createLoggerWithLabel,

@@ -1975,6 +1975,64 @@ export const _handleCreateFormField: ControllerHandler<
 
 /**
  * NOTE: Exported for testing.
+ * Private handler for POST /forms/:formId/fieldslist
+ * @precondition Must be preceded by request validation
+ * @security session
+ *
+ * @returns 200 with created form fields
+ * @returns 403 when current user does not have permissions to create a form field
+ * @returns 404 when form cannot be found
+ * @returns 409 when form field update conflicts with database state
+ * @returns 410 when creating form field for an archived form
+ * @returns 413 when creating form field causes form to be too large to be saved in the database
+ * @returns 422 when an invalid form field creation is attempted on the form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const _handleCreateFormFields: ControllerHandler<
+  { formId: string },
+  FormFieldDto[] | ErrorDto,
+  FieldCreateDto[]
+> = (req, res) => {
+  const { formId } = req.params
+  const formFieldsToCreate = req.body
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Step 2: Retrieve form with write permission check.
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((form) =>
+      AdminFormService.createFormFields(form, formFieldsToCreate),
+    )
+    .map((createdFormFields) =>
+      res.status(StatusCodes.OK).json(createdFormFields as FormFieldDto[]),
+    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when creating form field',
+        meta: {
+          action: '_handleCreateFormField',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          createFieldBody: formFieldsToCreate,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
+ * NOTE: Exported for testing.
  * Private handler for POST /forms/:formId/logic
  * @precondition Must be preceded by request validation
  * @security session
@@ -2157,6 +2215,39 @@ export const handleCreateFormField = [
     },
   }),
   _handleCreateFormField,
+]
+
+/**
+ * Handler for POST /forms/:formId/fields
+ */
+
+//to validate that new fields generated from magic form builder is iterable
+export const handleCreateFormFields = [
+  celebrate({
+    [Segments.BODY]: Joi.array().items(
+      Joi.object({
+        // Ensures id is not provided.
+        _id: Joi.any().forbidden(),
+        globalId: Joi.any().forbidden(),
+        fieldType: Joi.string()
+          .valid(...Object.values(BasicField))
+          .required(),
+        title: Joi.string().trim().required(),
+        description: Joi.string().allow(''),
+        required: Joi.boolean(),
+        disabled: Joi.boolean(),
+        // Allow other field related key-values to be provided and let the model
+        // layer handle the validation.
+      })
+        .unknown(true)
+        .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),
+    ),
+    [Segments.QUERY]: {
+      // Optional index to insert the field at.
+      to: Joi.number().min(0),
+    },
+  }),
+  _handleCreateFormFields,
 ]
 
 /**

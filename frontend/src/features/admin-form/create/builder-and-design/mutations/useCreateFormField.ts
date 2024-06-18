@@ -9,7 +9,10 @@ import { useToast } from '~hooks/useToast'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
 
-import { createSingleFormField } from '../UpdateFormFieldService'
+import {
+  createFormFields,
+  createSingleFormField,
+} from '../UpdateFormFieldService'
 import {
   FieldBuilderState,
   stateDataSelector,
@@ -39,7 +42,20 @@ export const useCreateFormField = () => {
   const toast = useToast({ status: 'success', isClosable: true })
   const adminFormKey = adminFormKeys.id(formId)
 
-  const handleSuccess = useCallback(
+  const handleMultiFieldMutationSuccess = useCallback(
+    (newField: FormFieldDto[]) => {
+      queryClient.setQueryData<AdminFormDto>(adminFormKey, (oldForm) => {
+        // Should not happen, should not be able to update field if there is no
+        // existing data.
+        if (!oldForm) throw new Error('Query should have been set')
+        const newForm = { ...oldForm, form_fields: newField }
+        return newForm
+      })
+    },
+    [adminFormKey, queryClient],
+  )
+
+  const handleSingleFieldMutationSuccess = useCallback(
     (newField: FormFieldDto) => {
       toast.closeAll()
       if (stateData.state !== FieldBuilderState.CreatingField) {
@@ -79,6 +95,18 @@ export const useCreateFormField = () => {
     [toast],
   )
 
+  const handleAssistanceError = useCallback(
+    (error: Error) => {
+      toast.closeAll()
+      toast({
+        description:
+          'Sorry, we are unable to generate a form with your prompt. Please try another prompt or manually create form fields.',
+        status: 'danger',
+      })
+    },
+    [toast],
+  )
+
   const insertionIndex = useMemo(() => {
     if (stateData.state === FieldBuilderState.CreatingField) {
       return stateData.insertionIndex
@@ -94,8 +122,16 @@ export const useCreateFormField = () => {
           insertionIndex,
         }),
       {
-        onSuccess: handleSuccess,
+        onSuccess: handleSingleFieldMutationSuccess,
         onError: handleError,
+      },
+    ),
+    createFieldsMutation: useMutation(
+      (createFieldsBody: FieldCreateDto[]) =>
+        createFormFields({ createFieldsBody, formId }),
+      {
+        onSuccess: handleMultiFieldMutationSuccess,
+        onError: handleAssistanceError,
       },
     ),
   }

@@ -30,6 +30,27 @@ export const createSingleFormField = async ({
     .then(transformAllIsoStringsToDate)
 }
 
+/**
+ * Creates a new form field in the given form
+ * @param formId the form to insert a new form field for
+ * @param createFieldBody[] the body of the new form fields
+ * @returns the created form fields
+ */
+export const createFormFields = async ({
+  formId,
+  createFieldsBody,
+}: {
+  formId: string
+  createFieldsBody: FieldCreateDto[]
+}): Promise<FormFieldDto[]> => {
+  return ApiService.post<FormFieldDto[]>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/fieldslist`,
+    createFieldsBody,
+  )
+    .then(({ data }) => data)
+    .then(transformAllIsoStringsToDate)
+}
+
 export const updateSingleFormField = async ({
   formId,
   updateFieldBody,
