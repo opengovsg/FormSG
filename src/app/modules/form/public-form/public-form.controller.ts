@@ -14,10 +14,6 @@ import {
   PublicFormDto,
   PublicFormViewDto,
 } from '../../../../../shared/types'
-import {
-  makeSpcpSessionWithMaskedNric,
-  maskNric,
-} from '../../../../../shared/utils/nric-mask'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
