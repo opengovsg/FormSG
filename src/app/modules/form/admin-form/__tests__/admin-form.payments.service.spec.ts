@@ -24,7 +24,7 @@ describe('admin-form.payment.service', () => {
     const mockFormId = new ObjectId().toString()
     const MOCK_FORM: IPopulatedEncryptedForm = {
       publicKey: 'public key',
-      emails: ['test@example.com'],
+      emails: [],
     } as any as IPopulatedEncryptedForm
 
     describe('When Payment Type is Fixed', () => {

@@ -78,7 +78,7 @@ export const updatePayments = (
   if (((form as IEncryptedForm)?.emails || []).length !== 0) {
     return errAsync(
       new PaymentConfigurationError(
-        'Cannot enable payment for form without emails',
+        'Cannot enable payment for form with emails',
       ),
     )
   }
