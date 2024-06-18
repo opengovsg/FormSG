@@ -3,7 +3,7 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import { isPhoneNumber } from '../../../../shared/utils/phone-num-validation'
-import { FormOtpData } from '../../../types'
+import { AdminContactOtpData, FormOtpData } from '../../../types'
 import { useMockPostmanSms } from '../../config/config'
 import { postmanSmsConfig } from '../../config/features/postman-sms.config'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -36,7 +36,7 @@ class PostmanSmsService {
    * SMSes will be sent using govsg sender id.
    * Messages to any member of public MUST be sent using this method.
    */
-  sendMopSms(
+  _sendMopSms(
     smsData: FormOtpData,
     recipient: string,
     message: string,
@@ -97,7 +97,10 @@ class PostmanSmsService {
    * SMSes will be sent using FormSG sender id.
    */
   _sendInternalSms(
-    smsData: FormOtpData | AdminContactOtpData,
+    smsData:
+      | FormDeactivatedSmsData
+      | BouncedSubmissionSmsData
+      | AdminContactOtpData,
     recipient: string,
     message: string,
     smsType: SmsType,
