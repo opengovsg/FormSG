@@ -85,14 +85,6 @@ export const checkFormIsEncryptMode = (
     : err(new ResponseModeError(FormResponseMode.Encrypt, form.responseMode))
 }
 
-export const checkFormHasNoEmails = (
-  form: IPopulatedEncryptedForm,
-): Result<IPopulatedEncryptedForm, ConflictError> => {
-  return form.emails?.length === 0
-    ? ok(form)
-    : err(new ConflictError('Trying to enable payments on a form with emails'))
-}
-
 /**
  * Creates an encrypted submission without saving it to the database.
  * @param form Document of the form being submitted
