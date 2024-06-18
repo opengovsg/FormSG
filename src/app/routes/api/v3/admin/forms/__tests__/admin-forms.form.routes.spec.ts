@@ -2367,6 +2367,7 @@ describe('admin-form.form.routes', () => {
         state: FormLogoState.None,
       },
       estTimeTaken: 10,
+      translations: [],
     }
 
     it('should return 200 when the request is successful', async () => {
