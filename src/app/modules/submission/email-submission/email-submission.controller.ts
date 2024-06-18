@@ -7,6 +7,7 @@ import {
   SubmissionResponseDto,
 } from '../../../../../shared/types'
 import { CaptchaTypes } from '../../../../../shared/types/captcha'
+import { maskNric } from '../../../../../shared/utils/nric-mask'
 import { IPopulatedEmailForm } from '../../../../types'
 import { ParsedEmailModeSubmissionBody } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -304,12 +305,14 @@ const submitEmailModeForm: ControllerHandler<
       })
       .andThen(({ form, parsedResponses, hashedFields }) => {
         if (form.isNricMaskEnabled) {
-          parsedResponses.ndiResponses.map((response) => {
-            if (response.fieldType === BasicField.Nric) {
-              return { ...response, answer: maskNric(response.answer) }
-            }
-            return response
-          })
+          parsedResponses.ndiResponses = parsedResponses.ndiResponses.map(
+            (response) => {
+              if (response.fieldType === BasicField.Nric) {
+                return { ...response, answer: maskNric(response.answer) }
+              }
+              return response
+            },
+          )
         }
         // Create data for response email as well as email confirmation
         const emailData = new SubmissionEmailObj(
