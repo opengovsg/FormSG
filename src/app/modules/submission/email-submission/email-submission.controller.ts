@@ -1,12 +1,12 @@
 import { ok, okAsync, ResultAsync } from 'neverthrow'
 
 import {
+  BasicField,
   FormAuthType,
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../../shared/types'
 import { CaptchaTypes } from '../../../../../shared/types/captcha'
-import { maskNric } from '../../../../../shared/utils/nric-mask'
 import { IPopulatedEmailForm } from '../../../../types'
 import { ParsedEmailModeSubmissionBody } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -199,15 +199,6 @@ const submitEmailModeForm: ControllerHandler<
             return oidcService
               .extractJwt(req.cookies)
               .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
-              .map((jwt) => {
-                if (form.isNricMaskEnabled) {
-                  return {
-                    ...jwt,
-                    userName: maskNric(jwt.userName),
-                  }
-                }
-                return jwt
-              })
               .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
                 form,
                 parsedResponses: parsedResponses.addNdiResponses({
@@ -231,15 +222,6 @@ const submitEmailModeForm: ControllerHandler<
             return oidcService
               .extractJwt(req.cookies)
               .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
-              .map((jwt) => {
-                if (form.isNricMaskEnabled) {
-                  return {
-                    ...jwt,
-                    userName: maskNric(jwt.userName),
-                  }
-                }
-                return jwt
-              })
               .map<IPopulatedEmailFormWithResponsesAndHash>((jwt) => ({
                 form,
                 parsedResponses: parsedResponses.addNdiResponses({
@@ -270,19 +252,14 @@ const submitEmailModeForm: ControllerHandler<
                     ),
                   )
                   .map<IPopulatedEmailFormWithResponsesAndHash>(
-                    (hashedFields) => {
-                      if (form.isNricMaskEnabled) {
-                        uinFin = maskNric(uinFin)
-                      }
-                      return {
-                        form,
-                        hashedFields,
-                        parsedResponses: parsedResponses.addNdiResponses({
-                          authType,
-                          uinFin,
-                        }),
-                      }
-                    },
+                    (hashedFields) => ({
+                      form,
+                      hashedFields,
+                      parsedResponses: parsedResponses.addNdiResponses({
+                        authType,
+                        uinFin,
+                      }),
+                    }),
                   ),
               )
               .mapErr((error) => {
@@ -300,20 +277,15 @@ const submitEmailModeForm: ControllerHandler<
             return SgidService.extractSgidSingpassJwtPayload(
               req.cookies[SGID_COOKIE_NAME],
             )
-              .map(({ userName: uinFin }) => {
-                if (form.isNricMaskEnabled) {
-                  return maskNric(uinFin)
-                } else {
-                  return uinFin
-                }
-              })
-              .map<IPopulatedEmailFormWithResponsesAndHash>((uinFin) => ({
-                form,
-                parsedResponses: parsedResponses.addNdiResponses({
-                  authType,
-                  uinFin,
+              .map<IPopulatedEmailFormWithResponsesAndHash>(
+                ({ userName: uinFin }) => ({
+                  form,
+                  parsedResponses: parsedResponses.addNdiResponses({
+                    authType,
+                    uinFin,
+                  }),
                 }),
-              }))
+              )
               .mapErr((error) => {
                 spcpSubmissionFailure = true
                 logger.error({
@@ -331,6 +303,14 @@ const submitEmailModeForm: ControllerHandler<
         }
       })
       .andThen(({ form, parsedResponses, hashedFields }) => {
+        if (form.isNricMaskEnabled) {
+          parsedResponses.ndiResponses.map((response) => {
+            if (response.fieldType === BasicField.Nric) {
+              return { ...response, answer: maskNric(response.answer) }
+            }
+            return response
+          })
+        }
         // Create data for response email as well as email confirmation
         const emailData = new SubmissionEmailObj(
           parsedResponses.getAllResponses(),
