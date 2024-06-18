@@ -21,7 +21,6 @@ import {
   PaymentConfigurationError,
 } from '../../payments/payments.errors'
 import { FormNotFoundError } from '../form.errors'
-import { getAdminEmails } from '../form.utils'
 
 const logger = createLoggerWithLabel(module)
 const EncryptedFormModel = getEncryptedFormModel(mongoose)
@@ -78,7 +77,7 @@ export const updatePayments = (
 
   if (((form as IEncryptedForm)?.emails || []).length !== 0) {
     return errAsync(
-      new InvalidPaymentAmountError(
+      new PaymentConfigurationError(
         'Cannot enable payment for form without emails',
       ),
     )
