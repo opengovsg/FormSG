@@ -118,7 +118,7 @@ export const handleGetPublicForm: ControllerHandler<
   const form = formResult.value
   const publicForm = form.getPublicView() as PublicFormDto
 
-  const { authType, isNricMaskEnabled } = form
+  const { authType } = form
   const isIntranetUser = FormService.checkIsIntranetFormAccess(
     getRequestIp(req),
     form,
@@ -130,11 +130,6 @@ export const handleGetPublicForm: ControllerHandler<
     case FormAuthType.SP:
       return getOidcService(FormAuthType.SP)
         .extractJwtPayloadFromRequest(req.cookies)
-        .map((spcpSession) =>
-          spcpSession && isNricMaskEnabled
-            ? makeSpcpSessionWithMaskedNric(spcpSession)
-            : spcpSession,
-        )
         .map((spcpSession) => {
           return res.json({
             form: publicForm,
@@ -159,11 +154,6 @@ export const handleGetPublicForm: ControllerHandler<
     case FormAuthType.CP:
       return getOidcService(FormAuthType.CP)
         .extractJwtPayloadFromRequest(req.cookies)
-        .map((spcpSession) =>
-          spcpSession && isNricMaskEnabled
-            ? makeSpcpSessionWithMaskedNric(spcpSession)
-            : spcpSession,
-        )
         .map((spcpSession) => {
           return res.json({
             form: publicForm,
@@ -221,21 +211,13 @@ export const handleGetPublicForm: ControllerHandler<
             form.toJSON().form_fields,
           ).map((prefilledFields) => ({
             prefilledFields,
-            spcpSession: {
-              userName: myInfoData.getUinFin(),
-            },
+            spcpSession: { userName: myInfoData.getUinFin() },
             myInfoLoginCookie: createMyInfoLoginCookie(myInfoData.getUinFin()),
             myInfoChildrenBirthRecords: myInfoData.getChildrenBirthRecords(
               form.getUniqueMyInfoAttrs(),
             ),
           }))
         })
-        .map((myInfoData) => ({
-          ...myInfoData,
-          spcpSession: isNricMaskEnabled
-            ? makeSpcpSessionWithMaskedNric(myInfoData.spcpSession)
-            : myInfoData.spcpSession,
-        }))
         .map(
           ({
             myInfoLoginCookie,
@@ -280,11 +262,6 @@ export const handleGetPublicForm: ControllerHandler<
       return SgidService.extractSgidSingpassJwtPayload(
         req.cookies[SGID_COOKIE_NAME],
       )
-        .map((spcpSession) =>
-          spcpSession && isNricMaskEnabled
-            ? makeSpcpSessionWithMaskedNric(spcpSession)
-            : spcpSession,
-        )
         .map((spcpSession) => {
           return res.json({
             form: publicForm,
@@ -363,11 +340,7 @@ export const handleGetPublicForm: ControllerHandler<
                       ...publicForm,
                       form_fields: prefilledFields as FormFieldDto[],
                     },
-                    spcpSession: {
-                      userName: isNricMaskEnabled
-                        ? maskNric(data.getUinFin())
-                        : data.getUinFin(),
-                    },
+                    spcpSession: { userName: data.getUinFin() },
                     isIntranetUser,
                   })
               })
