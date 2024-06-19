@@ -9,21 +9,26 @@ import { CategoryHeader } from './components/CategoryHeader'
 import { EmailFormSection } from './components/EmailFormSection'
 import { useAdminFormSettings } from './queries'
 
-const AdminEmailSection = (): JSX.Element => {
+const AdminEmailSection = () => {
   const { data: settings } = useAdminFormSettings()
+
+  if (!settings) {
+    return <EmailFormSectionSkeleton />
+  }
 
   const isEmailOrStorageMode =
     settings?.responseMode === FormResponseMode.Email ||
     settings?.responseMode === FormResponseMode.Encrypt
 
-  if (settings && isEmailOrStorageMode) {
-    return <EmailFormSection settings={settings} />
-  } else {
-    return <EmailFormSectionSkeleton />
+  // should render null
+  if (!isEmailOrStorageMode) {
+    return false
   }
+
+  return <EmailFormSection settings={settings} />
 }
 
-export const EmailFormSectionSkeleton = (): JSX.Element => {
+const EmailFormSectionSkeleton = (): JSX.Element => {
   return (
     <FormControl isRequired>
       <FormLabel>Send an email copy of new responses</FormLabel>
