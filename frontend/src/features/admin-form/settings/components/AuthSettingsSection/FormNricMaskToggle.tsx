@@ -8,10 +8,12 @@ import { useMutateFormSettings } from '../../mutations'
 
 interface FormNricMaskToggleProps {
   settings: FormSettings
+  isDisabled: boolean
 }
 
 export const FormNricMaskToggle = ({
   settings,
+  isDisabled,
 }: FormNricMaskToggleProps): JSX.Element => {
   const isNricMaskEnabled = useMemo(
     () => settings?.isNricMaskEnabled,
@@ -28,6 +30,7 @@ export const FormNricMaskToggle = ({
 
   return (
     <Toggle
+      isDisabled={isDisabled}
       isLoading={!settings || mutateNricMask.isLoading}
       isChecked={isNricMaskEnabled}
       label="Enable NRIC masking"

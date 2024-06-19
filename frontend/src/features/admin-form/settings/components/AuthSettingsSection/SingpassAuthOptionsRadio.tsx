@@ -3,13 +3,10 @@ import {
   KeyboardEventHandler,
   MouseEventHandler,
   useCallback,
-  useEffect,
   useMemo,
-  useRef,
   useState,
 } from 'react'
 import { Box, Flex, Spacer } from '@chakra-ui/react'
-import { set } from 'lodash'
 
 import { FormAuthType, FormSettings, FormStatus } from '~shared/types'
 
@@ -17,7 +14,6 @@ import Radio from '~components/Radio'
 import { Tag } from '~components/Tag'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
-import { isMyInfo } from '~features/myinfo/utils'
 
 import { useMutateFormSettings } from '../../mutations'
 
@@ -26,6 +22,7 @@ import { EsrvcIdBox } from './EsrvcIdBox'
 
 export interface SingpassAuthOptionsRadioProps {
   settings: FormSettings
+  isDisabled: boolean
 }
 
 const esrvcidRequired = (authType: FormAuthType) => {
@@ -45,24 +42,14 @@ const radioOptions: [FormAuthType, string][] = Object.entries(
 
 export const SingpassAuthOptionsRadio = ({
   settings,
+  isDisabled,
 }: SingpassAuthOptionsRadioProps): JSX.Element => {
-  const { data: form } = useAdminForm()
   const { mutateFormAuthType } = useMutateFormSettings()
   const [focusedValue, setFocusedValue] = useState<FormAuthType>()
-
-  const containsMyInfoFields = useMemo(
-    () => form?.form_fields.some(isMyInfo) ?? false,
-    [form?.form_fields],
-  )
 
   const isFormPublic = useMemo(
     () => settings.status === FormStatus.Public,
     [settings],
-  )
-
-  const isDisabled = useCallback(
-    () => isFormPublic || containsMyInfoFields || mutateFormAuthType.isLoading,
-    [isFormPublic, containsMyInfoFields, mutateFormAuthType.isLoading],
   )
 
   const isEsrvcIdBoxDisabled = useMemo(
@@ -70,25 +57,29 @@ export const SingpassAuthOptionsRadio = ({
     [isFormPublic, mutateFormAuthType.isLoading],
   )
 
+  const checkIsDisabled = useCallback(() => {
+    return isDisabled || mutateFormAuthType.isLoading
+  }, [isDisabled, mutateFormAuthType.isLoading])
+
   const handleEnterKeyDown: KeyboardEventHandler = useCallback(
     (e) => {
       if (
         (e.key === 'Enter' || e.key === ' ') &&
         focusedValue &&
-        !isDisabled() &&
+        !checkIsDisabled() &&
         focusedValue !== settings.authType
       ) {
         return mutateFormAuthType.mutate(focusedValue)
       }
     },
-    [focusedValue, isDisabled, mutateFormAuthType, settings.authType],
+    [focusedValue, checkIsDisabled, mutateFormAuthType, settings.authType],
   )
 
   const handleOptionClick = useCallback(
     (authType: FormAuthType): MouseEventHandler =>
       (e) => {
         if (
-          !isDisabled() &&
+          !checkIsDisabled() &&
           e.type === 'click' &&
           // Required so only real clicks get registered.
           // Typical radio behaviour is that the 'click' event is triggered on change.
@@ -101,7 +92,7 @@ export const SingpassAuthOptionsRadio = ({
           return mutateFormAuthType.mutate(authType)
         }
       },
-    [isDisabled, mutateFormAuthType, settings.authType],
+    [mutateFormAuthType, settings.authType, checkIsDisabled],
   )
 
   return (
@@ -113,7 +104,7 @@ export const SingpassAuthOptionsRadio = ({
       {radioOptions.map(([authType, text]) => (
         <Fragment key={authType}>
           <Box onClick={handleOptionClick(authType)}>
-            <Radio value={authType} isDisabled={isDisabled()}>
+            <Radio value={authType} isDisabled={checkIsDisabled()}>
               <Flex>
                 {text}
                 {authType === FormAuthType.SGID ||

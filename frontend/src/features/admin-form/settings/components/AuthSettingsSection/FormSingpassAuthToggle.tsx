@@ -8,10 +8,12 @@ import { useMutateFormSettings } from '../../mutations'
 
 interface FormSingpassAuthToggleProps {
   settings: FormSettings
+  isDisabled: boolean
 }
 
 export const FormSingpassAuthToggle = ({
   settings,
+  isDisabled,
 }: FormSingpassAuthToggleProps): JSX.Element => {
   const DEFAULT_FORM_AUTH_TYPE = FormAuthType.SGID
 
@@ -33,6 +35,7 @@ export const FormSingpassAuthToggle = ({
 
   return (
     <Toggle
+      isDisabled={isDisabled}
       containerStyles={{ marginBottom: '1rem' }}
       isLoading={!settings || mutateFormAuthType.isLoading}
       isChecked={isSingpassAuthEnabled}
