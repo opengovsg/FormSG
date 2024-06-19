@@ -104,13 +104,15 @@ export const getCollabEmailsWithPermission = (
 export const getAdminEmails = (
   form: Partial<IFormHasEmailSchema>,
 ): string[] => {
-  if (form.emails === undefined) {
+  if (form.emails == null) {
     return []
-  } else if (typeof form.emails === 'string') {
-    return [form.emails]
-  } else {
-    return form.emails
   }
+
+  if (typeof form.emails === 'string') {
+    return [form.emails]
+  }
+
+  return form.emails
 }
 
 /**
