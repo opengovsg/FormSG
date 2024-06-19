@@ -123,6 +123,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
               icon={<MultiParty fontSize="1.5rem" />}
               onClick={handleDrawerWorkflowClick}
               isActive={activeTab === DrawerTabs.Workflow}
+              showRedDot
             />
           </>
         )}
