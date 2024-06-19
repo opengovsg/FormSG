@@ -119,7 +119,7 @@ export const _handleSendOnboardingEmail: ControllerHandler<
 export const handleSendOnboardingEmail = [
   celebrate({
     [Segments.BODY]: Joi.object({
-      email: Joi.string(),
+      email: Joi.string().email().required(),
     }),
   }),
   _handleSendOnboardingEmail,
