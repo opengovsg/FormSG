@@ -49,6 +49,7 @@ export const STORAGE_FORM_SETTINGS_FIELDS = <const>[
   'payments_field',
   'publicKey',
   'business',
+  'emails',
 ]
 
 export const MULTIRESPONDENT_FORM_SETTINGS_FIELDS = <const>[

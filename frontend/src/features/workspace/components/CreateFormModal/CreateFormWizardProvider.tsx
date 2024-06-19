@@ -61,7 +61,8 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
 
   const {
     createEmailModeFormMutation,
-    createStorageModeOrMultirespondentFormMutation,
+    createStorageModeFormMutation,
+    createMultirespondentModeFormMutation,
   } = useCreateFormMutations()
 
   const { activeWorkspace, isDefaultWorkspace } = useWorkspaceContext()
@@ -72,21 +73,30 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
 
   const handleCreateStorageModeOrMultirespondentForm = handleSubmit(
     ({ title, responseMode }) => {
-      if (
-        !(
-          responseMode === FormResponseMode.Encrypt ||
-          responseMode === FormResponseMode.Multirespondent
-        )
-      ) {
-        return
+      switch (responseMode) {
+        case FormResponseMode.Encrypt:
+          return createStorageModeFormMutation.mutate({
+            title,
+            responseMode,
+            publicKey: keypair.publicKey,
+            workspaceId,
+            emails: [],
+          })
+        case FormResponseMode.Email:
+          return
+        case FormResponseMode.Multirespondent:
+          return createMultirespondentModeFormMutation.mutate({
+            title,
+            responseMode,
+            publicKey: keypair.publicKey,
+            workspaceId,
+          })
+        default: {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const _: never = responseMode
+          throw new Error('Invalid response mode')
+        }
       }
-
-      return createStorageModeOrMultirespondentFormMutation.mutate({
-        title,
-        responseMode,
-        publicKey: keypair.publicKey,
-        workspaceId,
-      })
     },
   )
 
@@ -107,7 +117,8 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     isFetching: false,
     isLoading:
       createEmailModeFormMutation.isLoading ||
-      createStorageModeOrMultirespondentFormMutation.isLoading,
+      createStorageModeFormMutation.isLoading ||
+      createMultirespondentModeFormMutation.isLoading,
     keypair,
     currentStep,
     direction,

@@ -171,6 +171,10 @@ const addSettings = async (
   await expect(page).toHaveURL(ADMIN_FORM_PAGE_SETTINGS(formId))
 
   await addGeneralSettings(page, formSettings)
+  // Encrypt mode forms don't have an email
+  if (formResponseMode.responseMode === FormResponseMode.Encrypt) {
+    await addAdminEmails(page, formSettings)
+  }
   await addAuthSettings(page, formSettings)
   await addCollaborators(page, formSettings)
 
@@ -271,18 +275,6 @@ const addGeneralSettings = async (
       .getByLabel('Set message for closed form')
       .fill(formSettings.closedFormMessage)
   }
-
-  if (formSettings.emails) {
-    const emailInput = page.getByLabel('Emails where responses will be sent')
-    await emailInput.focus()
-
-    // Clear the current admin email
-    await page.keyboard.press('Backspace')
-
-    await emailInput.fill(formSettings.emails.join(', '))
-
-    await expectToast(page, /emails successfully updated/i)
-  }
 }
 
 /** Goes to Singpass settings frame and adds auth settings.
@@ -363,6 +355,29 @@ const addCollaborators = async (
   await page.getByRole('button', { name: 'Close' }).click()
 }
 
+const addAdminEmails = async (
+  page: Page,
+  formSettings: E2eSettingsOptions,
+): Promise<void> => {
+  await page.getByRole('tab', { name: 'Email notifications' }).click()
+
+  // Ensure that we are on the email notifications page
+  await expect(
+    page.getByRole('heading', { name: 'Email notifications' }),
+  ).toBeVisible()
+
+  if (formSettings.emails) {
+    const emailInput = page.getByLabel('Send an email copy of new responses')
+    await emailInput.focus()
+
+    // Clear the current admin email
+    await page.keyboard.press('Backspace')
+
+    await emailInput.fill(formSettings.emails.join(', '))
+
+    await expectToast(page, /emails successfully updated/i)
+  }
+}
 const addFieldsAndLogic = async (
   page: Page,
   {

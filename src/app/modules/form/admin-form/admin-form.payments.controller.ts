@@ -248,7 +248,7 @@ const _handleUpdatePayments: ControllerHandler<
       )
       // Proceed to allow updating of start page
       .andThen((form) => {
-        return AdminFormPaymentService.updatePayments(formId, {
+        return AdminFormPaymentService.updatePayments(formId, form, {
           ...req.body,
           // prevent APIs from updating global_min_amount_override
           global_min_amount_override:

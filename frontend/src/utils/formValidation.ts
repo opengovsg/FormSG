@@ -26,32 +26,42 @@ export const FORM_TITLE_VALIDATION_RULES: UseControllerProps['rules'] = {
   },
 }
 
-export const ADMIN_EMAIL_VALIDATION_RULES: UseControllerProps['rules'] = {
-  validate: {
-    required: (emails: string[]) => {
-      return (
-        emails.filter(Boolean).length > 0 ||
-        'You must at least enter one email to receive responses'
-      )
+export const REQUIRED_ADMIN_EMAIL_VALIDATION_RULES: UseControllerProps['rules'] =
+  {
+    validate: {
+      required: (emails: string[]) => {
+        return (
+          emails.filter(Boolean).length > 0 ||
+          'You must at least enter one email to receive responses'
+        )
+      },
+      valid: (emails: string[]) => {
+        return (
+          emails.filter(Boolean).every((e) => validator.isEmail(e)) ||
+          'Please enter valid email(s) (e.g. me@example.com) separated by commas, as invalid emails will not be saved'
+        )
+      },
+      duplicate: (emails: string[]) => {
+        const truthyEmails = emails.filter(Boolean)
+        return (
+          new Set(truthyEmails).size === truthyEmails.length ||
+          'Please remove duplicate emails'
+        )
+      },
+      maxLength: (emails: string[]) => {
+        return (
+          emails.filter(Boolean).length <= MAX_EMAIL_LENGTH ||
+          `Please limit number of emails to ${MAX_EMAIL_LENGTH}`
+        )
+      },
     },
-    valid: (emails: string[]) => {
-      return (
-        emails.filter(Boolean).every((e) => validator.isEmail(e)) ||
-        'Please enter valid email(s) (e.g. me@example.com) separated by commas, as invalid emails will not be saved'
-      )
+  }
+
+export const OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES: UseControllerProps['rules'] =
+  {
+    ...REQUIRED_ADMIN_EMAIL_VALIDATION_RULES,
+    validate: {
+      ...REQUIRED_ADMIN_EMAIL_VALIDATION_RULES.validate,
+      required: () => true,
     },
-    duplicate: (emails: string[]) => {
-      const truthyEmails = emails.filter(Boolean)
-      return (
-        new Set(truthyEmails).size === truthyEmails.length ||
-        'Please remove duplicate emails'
-      )
-    },
-    maxLength: (emails: string[]) => {
-      return (
-        emails.filter(Boolean).length <= MAX_EMAIL_LENGTH ||
-        `Please limit number of emails to ${MAX_EMAIL_LENGTH}`
-      )
-    },
-  },
-}
+  }

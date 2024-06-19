@@ -2,7 +2,7 @@ import { PublicUserDto, UserDto } from '../user'
 import { FormField, FormFieldDto, MyInfoChildData } from '../field'
 
 import { FormLogo } from './form_logo'
-import type { Merge, Opaque, PartialDeep } from 'type-fest'
+import type { Merge, Tagged, PartialDeep } from 'type-fest'
 import {
   ADMIN_FORM_META_FIELDS,
   EMAIL_FORM_SETTINGS_FIELDS,
@@ -18,7 +18,7 @@ import { PaymentChannel, PaymentMethodType, PaymentType } from '../payment'
 import { Product } from './product'
 import { FormWorkflow, FormWorkflowDto } from './workflow'
 
-export type FormId = Opaque<string, 'FormId'>
+export type FormId = Tagged<string, 'FormId'>
 
 export enum FormColorTheme {
   Blue = 'blue',
@@ -171,6 +171,7 @@ export interface EmailFormBase extends FormBase {
 export interface StorageFormBase extends FormBase {
   responseMode: FormResponseMode.Encrypt
   publicKey: string
+  emails: string[]
   payments_channel: FormPaymentsChannel
   payments_field: FormPaymentsField
   business?: FormBusinessField
@@ -327,7 +328,11 @@ export type DuplicateFormOverwriteDto = {
       emails: string | string[]
     }
   | {
-      responseMode: FormResponseMode.Encrypt | FormResponseMode.Multirespondent
+      responseMode: FormResponseMode.Encrypt
+      publicKey: string
+    }
+  | {
+      responseMode: FormResponseMode.Multirespondent
       publicKey: string
     }
 )
@@ -343,7 +348,7 @@ export type CreateEmailFormBodyDto = Pick<
 
 export type CreateStorageFormBodyDto = Pick<
   StorageFormDto,
-  'publicKey' | 'responseMode' | 'title'
+  'publicKey' | 'responseMode' | 'title' | 'emails'
 > & { workspaceId?: string }
 
 export type CreateMultirespondentFormBodyDto = Pick<

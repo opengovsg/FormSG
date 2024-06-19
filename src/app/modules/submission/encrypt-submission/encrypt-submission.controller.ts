@@ -15,15 +15,13 @@ import {
   StorageModeSubmissionContentDto,
 } from '../../../../../shared/types'
 import {
+  IEncryptedForm,
   IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
   StripePaymentMetadataDto,
 } from '../../../../types'
-import {
-  EncryptSubmissionDto,
-  FormCompleteDto,
-  ParsedClearFormFieldResponse,
-} from '../../../../types/api'
+import { EncryptSubmissionDto, FormCompleteDto } from '../../../../types/api'
+import { ParsedClearFormFieldResponse } from '../../../../types/api/submission'
 import config from '../../../config/config'
 import { paymentConfig } from '../../../config/features/payment.config'
 import {
@@ -35,6 +33,7 @@ import getPaymentModel from '../../../models/payment.server.model'
 import { getEncryptPendingSubmissionModel } from '../../../models/pending_submission.server.model'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
+import MailService from '../../../services/mail/mail.service'
 import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
 import { Pipeline } from '../../../utils/pipeline-middleware'
 import { createReqMeta } from '../../../utils/request'
@@ -48,6 +47,8 @@ import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
+import * as EmailSubmissionService from '../email-submission/email-submission.service'
+import { SubmissionEmailObj } from '../email-submission/email-submission.util'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
 import { SubmissionFailedError } from '../submission.errors'
@@ -277,6 +278,41 @@ const submitEncryptModeForm = async (
       // No errors, set local variable to the encrypted string.
       verified = encryptVerifiedContentResult.value
     }
+  }
+
+  const logMetaWithSubmission = {
+    ...logMeta,
+    submissionId: form._id,
+    responseMetadata,
+  }
+
+  logger.info({
+    message: 'Sending admin notification mail',
+    meta: logMetaWithSubmission,
+  })
+
+  const emailData = new SubmissionEmailObj(
+    req.body.responses,
+    new Set(), // the MyInfo prefixes are already inserted in middleware
+    form.authType,
+  )
+
+  // We don't await for email submission, as the submission gets saved for encrypt
+  // submissions regardless, the email is more of a notification and shouldn't
+  // stop the storage of the data in the db
+  if (((form as IEncryptedForm)?.emails || []).length > 0) {
+    void MailService.sendSubmissionToAdmin({
+      replyToEmails: EmailSubmissionService.extractEmailAnswers(
+        req.body.responses,
+      ),
+      form,
+      submission: {
+        created: form.created,
+        id: form._id,
+      },
+      attachments: undefined, // Don't send attachments in the email notifications
+      formData: emailData.formData,
+    })
   }
 
   // Save Responses to Database

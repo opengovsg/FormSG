@@ -1,7 +1,8 @@
-import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useMemo, useState } from 'react'
+import { Link as ReactLink, useSearchParams } from 'react-router-dom'
 import {
   As,
+  Box,
   Divider,
   Flex,
   FormControl,
@@ -10,6 +11,7 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react'
+import { get, isEmpty } from 'lodash'
 
 import {
   DISALLOW_CONNECT_NON_WHITELIST_STRIPE_ACCOUNT,
@@ -37,6 +39,22 @@ import {
   StripeConnectButtonStates,
 } from './StripeConnectButton'
 
+const PaymentsNotAllowedMessage = () => {
+  return (
+    <Box w="100%">
+      <InlineMessage>
+        <Text>
+          To enable payment fields, remove all recipients from{' '}
+          <Link as={ReactLink} to={'email-notifications'}>
+            email notifications
+          </Link>
+          .
+        </Text>
+      </InlineMessage>
+    </Box>
+  )
+}
+
 const BeforeConnectionInstructions = ({
   isProductionEnv,
 }: {
@@ -45,11 +63,20 @@ const BeforeConnectionInstructions = ({
   const [allowConnect, setAllowConnect] = useState(false)
   const { data: paymentGuideLink } = usePaymentGuideLink()
   const [searchParams] = useSearchParams()
+  const { data: settings } = useAdminFormSettings()
 
   const queryParams = Object.fromEntries([...searchParams])
   const isInvalidDomain =
     queryParams[ERROR_QUERY_PARAM_KEY] ===
     DISALLOW_CONNECT_NON_WHITELIST_STRIPE_ACCOUNT
+
+  const isEmailsPresent = useMemo(() => {
+    return (
+      (settings?.responseMode === FormResponseMode.Email ||
+        settings?.responseMode === FormResponseMode.Encrypt) &&
+      !isEmpty(get(settings, 'emails', []))
+    )
+  }, [settings])
 
   if (isInvalidDomain) {
     return (
@@ -68,16 +95,14 @@ const BeforeConnectionInstructions = ({
   if (isProductionEnv) {
     return (
       <VStack spacing="2.5rem" alignItems="start">
-        <InlineMessage variant="info">
-          <Text>
-            Read{' '}
-            <Link isExternal href={paymentGuideLink}>
-              our guide
-            </Link>{' '}
-            to set up a Stripe account. If your agency already has a Stripe
-            account, you can connect it to this form.
-          </Text>
-        </InlineMessage>
+        {isEmailsPresent ? (
+          <PaymentsNotAllowedMessage />
+        ) : (
+          <InlineMessage useMarkdown>
+            {`Read [our guide](${paymentGuideLink}) to set up a Stripe account. If your agency already has a Stripe account, you can connect it to this form.`}
+          </InlineMessage>
+        )}
+
         <Text textStyle="h3" color="secondary.500">
           Bulk transaction rates
         </Text>
@@ -103,7 +128,7 @@ const BeforeConnectionInstructions = ({
         </Checkbox>
         <StripeConnectButton
           connectState={
-            allowConnect
+            allowConnect && !isEmailsPresent
               ? StripeConnectButtonStates.ENABLED
               : StripeConnectButtonStates.DISABLED
           }
@@ -114,13 +139,25 @@ const BeforeConnectionInstructions = ({
 
   return (
     <>
-      <InlineMessage variant="info" my="2rem">
-        <Text>
-          You are currently in test mode. You can choose to skip connecting a
-          Stripe account after clicking the button below.
-        </Text>
-      </InlineMessage>
-      <StripeConnectButton connectState={StripeConnectButtonStates.ENABLED} />
+      <VStack spacing="2.5rem" alignItems="start">
+        {isEmailsPresent ? (
+          <PaymentsNotAllowedMessage />
+        ) : (
+          <InlineMessage variant="info">
+            <Text>
+              You are currently in test mode. You can choose to skip connecting
+              a Stripe account after clicking the button below.
+            </Text>
+          </InlineMessage>
+        )}
+        <StripeConnectButton
+          connectState={
+            isEmailsPresent
+              ? StripeConnectButtonStates.DISABLED
+              : StripeConnectButtonStates.ENABLED
+          }
+        />
+      </VStack>
     </>
   )
 }

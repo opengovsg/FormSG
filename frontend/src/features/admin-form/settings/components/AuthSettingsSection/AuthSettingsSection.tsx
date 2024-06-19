@@ -64,10 +64,7 @@ export const AuthSettingsSection = ({
 
   const [focusedValue, setFocusedValue] = useState<FormAuthType>()
 
-  const isFormPublic = useMemo(
-    () => settings.status === FormStatus.Public,
-    [settings],
-  )
+  const isFormPublic = settings.status === FormStatus.Public
 
   const isDisabled = useCallback(
     (authType: FormAuthType) =>

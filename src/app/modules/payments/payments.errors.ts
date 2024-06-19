@@ -35,3 +35,10 @@ export class InvalidPaymentProductsError extends ApplicationError {
     super(message)
   }
 }
+
+// TODO: Should remove once email notifications for payment forms are supported
+export class PaymentConfigurationError extends ApplicationError {
+  constructor(message = 'Invalid payment configuration') {
+    super(message)
+  }
+}

@@ -75,7 +75,7 @@ export const EditMyInfoChildren = ({
           <Box pb="1.5rem">
             <InlineMessage variant="warning">
               To align with MyInfo terminology, the “Gender” field will be
-              renamed to “Sex” from 1 Jul 2024.
+              renamed to “Sex” from 28 Jun 2024.
             </InlineMessage>
           </Box>{' '}
         </>

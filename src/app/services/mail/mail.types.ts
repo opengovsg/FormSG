@@ -67,7 +67,7 @@ export type SubmissionToAdminHtmlData = {
   formTitle: string
   submissionTime: string
   formData: EmailAdminDataField[]
-  dataCollationData: {
+  dataCollationData?: {
     question: string
     answer: string | number
   }[]

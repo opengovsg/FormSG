@@ -21,6 +21,7 @@ import {
   PUBLICFORM_ROUTE,
   RESULTS_CHARTS_SUBROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
+  TEMP_LOGIN_ROUTE,
   TOU_ROUTE,
   USE_TEMPLATE_REDIRECT_SUBROUTE,
 } from '~constants/routes'
@@ -58,6 +59,9 @@ const LandingPaymentsPage = lazy(() =>
   lazyRetry(() => import('~pages/Landing/Payments')),
 )
 const LoginPage = lazy(() => lazyRetry(() => import('~features/login')))
+const TempLoginPage = lazy(() =>
+  lazyRetry(() => import('~features/login/TempLoginPage')),
+)
 const PrivacyPolicyPage = lazy(() =>
   lazyRetry(() => import('~pages/PrivacyPolicy')),
 )
@@ -102,6 +106,10 @@ export const AppRouter = (): JSX.Element => {
         <Route
           path={LOGIN_ROUTE}
           element={<PublicElement strict element={<LoginPage />} />}
+        />
+        <Route
+          path={TEMP_LOGIN_ROUTE}
+          element={<PublicElement strict element={<TempLoginPage />} />}
         />
         <Route
           path={LOGIN_CALLBACK_ROUTE}
