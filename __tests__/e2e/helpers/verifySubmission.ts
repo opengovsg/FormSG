@@ -163,53 +163,56 @@ export const verifyEncryptSubmission = async (
     secretKey,
   }: VerifySubmissionBaseInputs & { secretKey: string },
 ): Promise<void> => {
-  // Step 1: Verify that there's an email notification in maildev
-  // Get the submission from the email, via the subject.
-  const submission = await getSubmission(form.title, responseId)
+  if (formSettings.emails) {
+    // (Optional) Step 1: Verify that there's an email notification in maildev
+    // Get the submission from the email, via the subject.
+    const submission = await getSubmission(form.title, responseId)
 
-  // Verify email metadata
-  expect(submission.from).toContain(MAIL_FROM)
+    // Verify email metadata
+    expect(submission.from).toContain(MAIL_FROM)
 
-  const emails = formSettings.emails ?? []
-  emails.unshift(ADMIN_EMAIL)
+    const emails = formSettings.emails
 
-  for (const email of emails) {
-    expect(submission.to).toContain(email)
-  }
+    emails.unshift(ADMIN_EMAIL)
 
-  // Subject need not be verified, since we got the email via the subject.
+    for (const email of emails) {
+      expect(submission.to).toContain(email)
+    }
 
-  const expectSubmissionContains = expectContains(submission.html)
+    // Subject need not be verified, since we got the email via the subject.
 
-  // Verify form responses in email
-  for (const field of formFields) {
-    const responseArray = getResponseArray(field, {
-      mode: FormResponseMode.Email,
-    })
-    if (!responseArray) continue
-    expectSubmissionContains([
-      getResponseTitle(field, { mode: FormResponseMode.Email }),
-      ...responseArray,
-    ])
-    expectAttachment(field, submission.attachments)
-  }
+    const expectSubmissionContains = expectContains(submission.html)
 
-  if (formSettings.authType !== FormAuthType.NIL) {
-    // Verify that form auth correctly returned NRIC (SPCP/SGID) and UEN (CP)
-    if (!formSettings.nric) throw new Error('No nric provided!')
-    switch (formSettings.authType) {
-      case FormAuthType.SP:
-      case FormAuthType.MyInfo:
-        expectSubmissionContains([SPCPFieldTitle.SpNric, formSettings.nric])
-        break
-      case FormAuthType.CP:
-        expectSubmissionContains([SPCPFieldTitle.CpUid, formSettings.nric])
-        if (!formSettings.uen) throw new Error('No uen provided!')
-        expectSubmissionContains([SPCPFieldTitle.CpUen, formSettings.uen])
-        break
-      case FormAuthType.SGID:
-        expectSubmissionContains([SgidFieldTitle.SgidNric, formSettings.nric])
-        break
+    // Verify form responses in email
+    for (const field of formFields) {
+      const responseArray = getResponseArray(field, {
+        mode: FormResponseMode.Email,
+      })
+      if (!responseArray) continue
+      expectSubmissionContains([
+        getResponseTitle(field, { mode: FormResponseMode.Email }),
+        ...responseArray,
+      ])
+      expectAttachment(field, submission.attachments)
+    }
+
+    if (formSettings.authType !== FormAuthType.NIL) {
+      // Verify that form auth correctly returned NRIC (SPCP/SGID) and UEN (CP)
+      if (!formSettings.nric) throw new Error('No nric provided!')
+      switch (formSettings.authType) {
+        case FormAuthType.SP:
+        case FormAuthType.MyInfo:
+          expectSubmissionContains([SPCPFieldTitle.SpNric, formSettings.nric])
+          break
+        case FormAuthType.CP:
+          expectSubmissionContains([SPCPFieldTitle.CpUid, formSettings.nric])
+          if (!formSettings.uen) throw new Error('No uen provided!')
+          expectSubmissionContains([SPCPFieldTitle.CpUen, formSettings.uen])
+          break
+        case FormAuthType.SGID:
+          expectSubmissionContains([SgidFieldTitle.SgidNric, formSettings.nric])
+          break
+      }
     }
   }
 
