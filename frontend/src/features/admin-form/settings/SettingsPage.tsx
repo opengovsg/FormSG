@@ -20,6 +20,7 @@ import {
 } from '@chakra-ui/react'
 
 import { FormResponseMode } from '~shared/types'
+import { isNonEmpty } from '~shared/utils/isNonEmpty'
 
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
@@ -59,7 +60,18 @@ export const SettingsPage = (): JSX.Element => {
   }, [formId, hasEditAccess, isCollabLoading, navigate])
 
   const tabConfig = useMemo(() => {
-    const baseConfig: TabEntry[] = [
+    const emailsNotificationsTab =
+      settings?.responseMode === FormResponseMode.Encrypt ||
+      settings?.responseMode === FormResponseMode.Email
+        ? {
+            label: 'Email notifications',
+            icon: BiMailSend,
+            component: SettingsEmailsPage,
+            path: 'email-notifications',
+          }
+        : null
+
+    const baseConfig: (TabEntry | null)[] = [
       {
         label: 'General',
         icon: BiCog,
@@ -72,6 +84,7 @@ export const SettingsPage = (): JSX.Element => {
         component: SettingsAuthPage,
         path: 'singpass',
       },
+      emailsNotificationsTab,
       {
         label: 'Twilio credentials',
         icon: BiMessage,
@@ -92,20 +105,7 @@ export const SettingsPage = (): JSX.Element => {
       },
     ]
 
-    if (
-      settings?.responseMode === FormResponseMode.Encrypt ||
-      settings?.responseMode === FormResponseMode.Email
-    ) {
-      // Add the Email Notifications page into the tab list, after singpass
-      baseConfig.splice(2, 0, {
-        label: 'Email notifications',
-        icon: BiMailSend,
-        component: SettingsEmailsPage,
-        path: 'email-notifications',
-      })
-    }
-
-    return baseConfig
+    return baseConfig.filter(isNonEmpty)
   }, [settings])
 
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
