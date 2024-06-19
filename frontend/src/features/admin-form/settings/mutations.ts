@@ -230,6 +230,19 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const generateFormAuthTypeMutationToastMessageText = (
+    prevAuthType: FormAuthType | undefined,
+    nextAuthType: FormAuthType,
+  ) => {
+    if (prevAuthType === FormAuthType.NIL) {
+      return 'Singpass authentication successfully enabled.'
+    }
+    if (nextAuthType === FormAuthType.NIL) {
+      return 'Singpass authentication successfully disabled.'
+    }
+    return 'Singpass authentication successfully updated.'
+  }
+
   const mutateFormAuthType = useMutation<
     FormSettings,
     ApiError,
@@ -264,10 +277,14 @@ export const useMutateFormSettings = () => {
         // Return a context object with the snapshotted value
         return { previousSettings }
       },
-      onSuccess: (newData) => {
+      onSuccess: (newData, newAuthType, context) => {
+        const prevAuthType = context?.previousSettings?.authType
         handleSuccess({
           newData,
-          toastDescription: 'Form authentication successfully updated.',
+          toastDescription: generateFormAuthTypeMutationToastMessageText(
+            prevAuthType,
+            newAuthType,
+          ),
         })
       },
       onError: (error, _newData, context) => {
