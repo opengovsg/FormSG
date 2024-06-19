@@ -298,6 +298,7 @@ describe('admin-form.utils', () => {
         title: params.title,
         admin: newAdminId,
         publicKey: params.publicKey,
+        emails: [],
         submissionLimit: null,
       }
       expect(actual).toEqual(expected)

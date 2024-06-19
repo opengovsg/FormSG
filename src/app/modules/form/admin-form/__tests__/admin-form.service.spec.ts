@@ -57,6 +57,8 @@ import {
   FormStatus,
   LogicDto,
   LogicType,
+  PaymentChannel,
+  PaymentType,
   SettingsUpdateDto,
 } from '../../../../../../shared/types'
 import * as SmsService from '../../../../services/sms/sms.service'
@@ -1321,6 +1323,28 @@ describe('admin-form.service', () => {
       _id: new ObjectId(),
       status: FormStatus.Public,
       responseMode: FormResponseMode.Encrypt,
+      payments_channel: {
+        channel: PaymentChannel.Unconnected,
+        target_account_id: '',
+        publishable_key: '',
+        payment_methods: [],
+      },
+      payments_field: {
+        enabled: false,
+        description: '',
+        name: '',
+        amount_cents: 0,
+        min_amount: 0,
+        max_amount: 0,
+        payment_type: PaymentType.Products,
+        global_min_amount_override: 0,
+        gst_enabled: true,
+        products: [],
+        products_meta: {
+          multi_product: false,
+        },
+      },
+      getSettings: jest.fn(),
     } as unknown as IPopulatedForm)
 
     const EMAIL_UPDATE_SPY = jest
@@ -1458,6 +1482,31 @@ describe('admin-form.service', () => {
 
       // Assert
       expect(actualResult.isOk()).toBeTrue()
+    })
+
+    it('should not allow email updates for payment forms', async () => {
+      // Arrange
+      const settingsToUpdate: SettingsUpdateDto = {
+        emails: ['test@example.com', 'test2@example.com'],
+      }
+
+      const PAYMENT_ENABLED_FORM = merge({}, MOCK_ENCRYPT_FORM, {
+        payments_field: {
+          enabled: true,
+          amount_cents: 54.22,
+          description: 'some payment',
+          payment_type: null,
+        },
+      })
+
+      // Act
+      const actualResult = await AdminFormService.updateFormSettings(
+        PAYMENT_ENABLED_FORM,
+        settingsToUpdate,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toBeTrue()
     })
   })
 

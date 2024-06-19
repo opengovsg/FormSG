@@ -28,6 +28,9 @@ const baseStyle: PartsStyleFunction<typeof parts> = (props) => {
       _disabled: {
         cursor: 'not-allowed',
       },
+      _placeholder: {
+        color: 'neutral.500',
+      },
     },
   }
 }

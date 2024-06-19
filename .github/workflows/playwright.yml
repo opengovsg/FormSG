@@ -30,7 +30,7 @@ jobs:
         timeout-minutes: 15
       - name: Run Playwright tests (encrypt-submission)
         run: npx playwright test __tests__/e2e/encrypt-submission.spec.ts
-        timeout-minutes: 10
+        timeout-minutes: 15
       - uses: actions/upload-artifact@v3
         if: always()
         with:

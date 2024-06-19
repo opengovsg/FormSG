@@ -19,9 +19,19 @@ export const createEmailModeTemplateForm = async (
   ).then(({ data }) => data)
 }
 
-export const createStorageModeOrMultirespondentTemplateForm = async (
+export const createStorageModeTemplateForm = async (
   formId: string,
-  body: CreateStorageFormBodyDto | CreateMultirespondentFormBodyDto,
+  body: CreateStorageFormBodyDto,
+): Promise<FormDto> => {
+  return ApiService.post<FormDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/use-template`,
+    body,
+  ).then(({ data }) => data)
+}
+
+export const createMultirespondentTemplateForm = async (
+  formId: string,
+  body: CreateMultirespondentFormBodyDto,
 ): Promise<FormDto> => {
   return ApiService.post<FormDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/use-template`,
