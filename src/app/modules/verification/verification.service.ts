@@ -455,7 +455,7 @@ const sendOtpForField = (
   switch (fieldType) {
     case BasicField.Mobile:
       return fieldId
-        ? FormService.retrieveFormById(formId)
+        ? FormService.retrieveFullFormById(formId)
             // check if we should allow public user to request for otp
             .andThen((form) => {
               return okAsync(form)
