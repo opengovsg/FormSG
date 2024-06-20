@@ -36,6 +36,7 @@ import { SmsFactory } from 'src/app/services/sms/sms.factory'
 import * as HashUtils from 'src/app/utils/hash'
 import {
   IFormSchema,
+  IPopulatedForm,
   IUserSchema,
   IVerificationSchema,
   UpdateFieldData,
@@ -318,6 +319,9 @@ describe('Verification service', () => {
           .spyOn(VerificationModel, 'updateHashForField')
           .mockResolvedValue(mockTransactionSuccessful)
         MockFormService.retrieveFormById.mockReturnValue(okAsync(mockForm))
+        MockFormService.retrieveFullFormById.mockReturnValue(
+          okAsync(mockForm as IPopulatedForm),
+        )
 
         jest
           .spyOn(AdminFormUtils, 'verifyUserBetaflag')
