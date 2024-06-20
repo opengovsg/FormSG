@@ -14,12 +14,12 @@ export const AuthSettingsDisabledExplanationText = ({
   return (
     <Box marginY="2.5rem">
       {containsMyInfoFields ? (
-        <InlineMessage marginBottom="16px">
+        <InlineMessage marginBottom="1rem">
           To change Singpass authentication settings, close your form to new
           responses and remove all existing MyInfo fields.
         </InlineMessage>
       ) : isFormPublic ? (
-        <InlineMessage marginBottom="16px">
+        <InlineMessage marginBottom="1rem">
           To change Singpass authentication settings, close your form to new
           responses.
         </InlineMessage>
