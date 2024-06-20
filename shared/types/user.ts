@@ -15,6 +15,7 @@ export const UserBase = z.object({
     .object({
       payment: z.boolean().optional(),
       children: z.boolean().optional(),
+      postmanSms: z.boolean().optional(),
     })
     .optional(),
   flags: z
