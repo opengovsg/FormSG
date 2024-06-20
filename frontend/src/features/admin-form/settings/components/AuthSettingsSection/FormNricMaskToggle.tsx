@@ -30,6 +30,7 @@ export const FormNricMaskToggle = ({
 
   return (
     <Toggle
+      containerStyles={{ opacity: isDisabled ? 0.3 : 1 }}
       isDisabled={isDisabled}
       isLoading={!settings || mutateNricMask.isLoading}
       isChecked={isNricMaskEnabled}

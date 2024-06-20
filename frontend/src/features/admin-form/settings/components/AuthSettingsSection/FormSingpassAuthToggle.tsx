@@ -35,8 +35,8 @@ export const FormSingpassAuthToggle = ({
 
   return (
     <Toggle
+      containerStyles={{ marginBottom: '1rem', opacity: isDisabled ? 0.3 : 1 }}
       isDisabled={isDisabled}
-      containerStyles={{ marginBottom: '1rem' }}
       isLoading={!settings || mutateFormAuthType.isLoading}
       isChecked={isSingpassAuthEnabled}
       label="Enable Singpass authentication"

@@ -41,11 +41,6 @@ export const AuthSettingsSection = ({
     [settings],
   )
 
-  const isDisabled = useMemo(
-    () => isFormPublic || containsMyInfoFields,
-    [isFormPublic, containsMyInfoFields],
-  )
-
   return (
     <Box>
       <AuthSettingsDescriptionText />
@@ -53,15 +48,17 @@ export const AuthSettingsSection = ({
         isFormPublic={isFormPublic}
         containsMyInfoFields={containsMyInfoFields}
       />
-      <Box style={{ opacity: isDisabled ? 0.3 : 1 }}>
-        <FormSingpassAuthToggle settings={settings!} isDisabled={isDisabled} />
-        {settings.authType !== FormAuthType.NIL ? (
-          <AuthSettingsSingpassSection
-            settings={settings}
-            isDisabled={isDisabled}
-          />
-        ) : null}
-      </Box>
+      <FormSingpassAuthToggle
+        settings={settings!}
+        isDisabled={isFormPublic || containsMyInfoFields}
+      />
+      {settings.authType !== FormAuthType.NIL ? (
+        <AuthSettingsSingpassSection
+          settings={settings}
+          isFormPublic={isFormPublic}
+          containsMyInfoFields={containsMyInfoFields}
+        />
+      ) : null}
     </Box>
   )
 }

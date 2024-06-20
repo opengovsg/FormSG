@@ -7,18 +7,23 @@ import { SingpassAuthOptionsRadio } from './SingpassAuthOptionsRadio'
 
 export interface AuthSettingsSingpassSectionProps {
   settings: FormSettings
-  isDisabled: boolean
+  isFormPublic: boolean
+  containsMyInfoFields: boolean
 }
 
 export const AuthSettingsSingpassSection = ({
   settings,
-  isDisabled,
+  isFormPublic,
+  containsMyInfoFields,
 }: AuthSettingsSingpassSectionProps): JSX.Element => {
   return (
     <>
-      <SingpassAuthOptionsRadio settings={settings} isDisabled={isDisabled} />
+      <SingpassAuthOptionsRadio
+        settings={settings}
+        isDisabled={isFormPublic || containsMyInfoFields}
+      />
       <Divider my="2.5rem" />
-      <FormNricMaskToggle settings={settings} isDisabled={isDisabled} />
+      <FormNricMaskToggle settings={settings} isDisabled={isFormPublic} />
     </>
   )
 }
