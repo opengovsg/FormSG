@@ -6,7 +6,8 @@ import { UserDto } from '~shared/types/user'
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { HttpError } from '~services/ApiService'
-import { fetchUser } from '~services/UserService'
+
+import { fetchUser } from '~features/user/UserService'
 
 export const userKeys = {
   base: ['user'] as const,
