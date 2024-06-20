@@ -76,7 +76,8 @@ const compileUserModel = (db: Mongoose) => {
         children: Boolean,
       },
       flags: {
-        lastSeenFeatureUpdateVersion: Number,
+        type: Schema.Types.Map, // of SeenFlags
+        of: Number,
       },
       apiToken: {
         select: false,

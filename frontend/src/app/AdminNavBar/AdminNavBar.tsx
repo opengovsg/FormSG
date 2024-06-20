@@ -13,6 +13,8 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 
+import { SeenFlags } from '~shared/types'
+
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { BxsRocket } from '~assets/icons/BxsRocket'
 import { ReactComponent as BrandMarkSvg } from '~assets/svgs/brand/brand-mark-colour.svg'
@@ -156,7 +158,7 @@ export interface AdminNavBarProps {
 
 export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
   const { user, isLoading: isUserLoading, removeQuery } = useUser()
-  const { updateLastSeenFeatureVersionMutation } = useUserMutations()
+  const { updateLastSeenFlagMutation } = useUserMutations()
 
   const whatsNewFeatureDrawerDisclosure = useDisclosure()
 
@@ -209,14 +211,15 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
       user.flags?.lastSeenFeatureUpdateVersion === undefined ||
       user.flags?.lastSeenFeatureUpdateVersion < FEATURE_UPDATE_LIST.version
     ) {
-      updateLastSeenFeatureVersionMutation.mutateAsync(
-        FEATURE_UPDATE_LIST.version,
-      )
+      updateLastSeenFlagMutation.mutateAsync({
+        version: FEATURE_UPDATE_LIST.version,
+        flag: SeenFlags.LastSeenFeatureUpdateVersion,
+      })
     }
     whatsNewFeatureDrawerDisclosure.onOpen()
   }, [
     isUserLoading,
-    updateLastSeenFeatureVersionMutation,
+    updateLastSeenFlagMutation,
     user,
     whatsNewFeatureDrawerDisclosure,
   ])

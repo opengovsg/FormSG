@@ -321,11 +321,10 @@ describe('user.service', () => {
 
       expect(user.flags?.lastSeenFeatureUpdateVersion).toBeUndefined()
 
-      const actualResult =
-        await UserService.updateUserLastSeenFeatureUpdateVersion(
-          user._id,
-          MOCK_FEATURE_VERSION,
-        )
+      const actualResult = await UserService.updateUserLastSeenFlagVersion(
+        user._id,
+        MOCK_FEATURE_VERSION,
+      )
 
       const updatedUser = await UserService.getPopulatedUserById(user._id)
       expect(actualResult.isOk()).toEqual(true)
@@ -340,11 +339,10 @@ describe('user.service', () => {
       const invalidUserId = new ObjectID()
 
       // Act
-      const actualResult =
-        await UserService.updateUserLastSeenFeatureUpdateVersion(
-          invalidUserId,
-          MOCK_FEATURE_VERSION,
-        )
+      const actualResult = await UserService.updateUserLastSeenFlagVersion(
+        invalidUserId,
+        MOCK_FEATURE_VERSION,
+      )
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(MissingUserError)
     })

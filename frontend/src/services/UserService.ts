@@ -1,6 +1,7 @@
 import {
   SendUserContactOtpDto,
   TransferOwnershipRequestDto,
+  UpdateUserLastSeenFlagDto,
   UserDto,
   VerifyUserContactOtpDto,
 } from '~shared/types/user'
@@ -34,13 +35,12 @@ export const verifyUserContactOtp = (
   ).then(({ data }) => data)
 }
 
-export const updateUserLastSeenFeatureUpdateVersion = async (
-  version: number,
+export const updateUserLastSeenFlagVersion = async (
+  params: UpdateUserLastSeenFlagDto,
 ): Promise<UserDto> => {
-  return ApiService.post<UserDto>(
-    `${USER_ENDPOINT}/flag/new-features-last-seen`,
-    { version },
-  ).then(({ data }) => data)
+  return ApiService.post<UserDto>(`${USER_ENDPOINT}/flag/last-seen`, {
+    params,
+  }).then(({ data }) => data)
 }
 
 export const transferOwnership = async (

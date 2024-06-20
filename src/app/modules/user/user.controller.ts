@@ -15,13 +15,13 @@ import { UNAUTHORIZED_USER_MESSAGE } from './user.constant'
 import {
   validateContactOtpVerificationParams,
   validateContactSendOtpParams,
-  validateUpdateUserLastSeenFeatureUpdateVersion,
+  validateUpdateUserLastSeenFlagVersion,
 } from './user.middleware'
 import {
   createContactOtp,
   getPopulatedUserById,
   updateUserContact,
-  updateUserLastSeenFeatureUpdateVersion,
+  updateUserLastSeenFlagVersion,
   verifyContactOtp,
 } from './user.service'
 import { mapRouteError } from './user.utils'
@@ -218,7 +218,7 @@ export const handleFetchUser: ControllerHandler = async (req, res) => {
  * @returns 422 when user id does not exist in the database
  * @returns 500 database errors occurs
  */
-export const _handleUpdateUserLastSeenFeatureUpdateVersion: ControllerHandler<
+export const _handleUpdateUserLastSeenFlagVersion: ControllerHandler<
   unknown,
   IPopulatedUser | string,
   { version: number }
@@ -231,16 +231,16 @@ export const _handleUpdateUserLastSeenFeatureUpdateVersion: ControllerHandler<
 
   const { version } = req.body
 
-  return updateUserLastSeenFeatureUpdateVersion(sessionUserId, version)
+  return updateUserLastSeenFlagVersion(sessionUserId, version)
     .map((updatedUser) => {
       return res.status(StatusCodes.OK).json(updatedUser)
     })
     .mapErr((error) => {
       logger.error({
         message:
-          'Error occurred while updating user last seen feature update date',
+          'Error occurred while updating user last seen flag update date',
         meta: {
-          action: 'handleUpdateUserLastSeenFeatureUpdate',
+          action: 'handleUpdateUserLastSeenFlagUpdate',
           userId: sessionUserId,
         },
         error,
@@ -251,7 +251,7 @@ export const _handleUpdateUserLastSeenFeatureUpdateVersion: ControllerHandler<
     })
 }
 
-export const handleUpdateUserLastSeenFeatureUpdateVersion = [
-  validateUpdateUserLastSeenFeatureUpdateVersion,
-  _handleUpdateUserLastSeenFeatureUpdateVersion,
+export const handleUpdateUserLastSeenFlagVersion = [
+  validateUpdateUserLastSeenFlagVersion,
+  _handleUpdateUserLastSeenFlagVersion,
 ] as ControllerHandler[]

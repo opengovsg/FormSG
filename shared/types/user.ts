@@ -81,3 +81,13 @@ export type TransferOwnershipResponseDto = {
   formIds: string[]
   error: string
 }
+export type UpdateUserLastSeenFlagDto = {
+  version: number
+  flag: SeenFlags
+}
+
+export enum SeenFlags {
+  LastSeenFeatureUpdateVersion = 'lastSeenFeatureUpdateVersion',
+  SettingsEmailNotification = 'settingsEmailNotification',
+  CreateBuilderMrfWorkflow = 'createBuilderMrfWorkflow',
+}

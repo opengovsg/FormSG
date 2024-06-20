@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from 'react-query'
 import {
   SendUserContactOtpDto,
   TransferOwnershipRequestDto,
+  UpdateUserLastSeenFlagDto,
   UserDto,
   VerifyUserContactOtpDto,
 } from '~shared/types/user'
@@ -13,7 +14,7 @@ import { useToast } from '~hooks/useToast'
 import {
   generateUserContactOtp,
   transferOwnership,
-  updateUserLastSeenFeatureUpdateVersion,
+  updateUserLastSeenFlagVersion,
   verifyUserContactOtp,
 } from '~services/UserService'
 
@@ -43,11 +44,11 @@ export const useUserMutations = () => {
     },
   })
 
-  const updateLastSeenFeatureVersionMutation = useMutation<
+  const updateLastSeenFlagMutation = useMutation<
     UserDto,
     ApiError,
-    number
-  >((version: number) => updateUserLastSeenFeatureUpdateVersion(version), {
+    UpdateUserLastSeenFlagDto
+  >((params) => updateUserLastSeenFlagVersion(params), {
     onSuccess: (newData) => {
       queryClient.setQueryData(userKeys.base, newData)
     },
@@ -72,7 +73,7 @@ export const useUserMutations = () => {
   return {
     generateOtpMutation,
     verifyOtpMutation,
-    updateLastSeenFeatureVersionMutation,
+    updateLastSeenFlagMutation,
     transferOwnershipMutation,
   }
 }
