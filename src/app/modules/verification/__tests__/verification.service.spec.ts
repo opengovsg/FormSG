@@ -3,7 +3,7 @@ import getMockLogger from '__tests__/unit/backend/helpers/jest-logger'
 import { ObjectId } from 'bson'
 import { addHours, subHours, subMinutes, subSeconds } from 'date-fns'
 import mongoose from 'mongoose'
-import { errAsync, okAsync } from 'neverthrow'
+import { err, errAsync, ok, okAsync } from 'neverthrow'
 
 // These need to be mocked first before the rest of the test
 import * as LoggerModule from 'src/app/config/logger'
@@ -30,14 +30,22 @@ import {
 } from 'src/app/modules/verification/verification.errors'
 import { MailSendError } from 'src/app/services/mail/mail.errors'
 import MailService from 'src/app/services/mail/mail.service'
+import PostmanSmsService from 'src/app/services/postman-sms/postman-sms.service'
 import { SmsSendError } from 'src/app/services/sms/sms.errors'
 import { SmsFactory } from 'src/app/services/sms/sms.factory'
 import * as HashUtils from 'src/app/utils/hash'
-import { IFormSchema, IVerificationSchema, UpdateFieldData } from 'src/types'
+import {
+  IFormSchema,
+  IPopulatedForm,
+  IUserSchema,
+  IVerificationSchema,
+  UpdateFieldData,
+} from 'src/types'
 
 import { BasicField } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'
-import { FormNotFoundError } from '../../form/form.errors'
+import * as AdminFormUtils from '../../form/admin-form/admin-form.utils'
+import { ForbiddenFormError, FormNotFoundError } from '../../form/form.errors'
 import {
   FieldNotFoundInTransactionError,
   TransactionExpiredError,
@@ -311,6 +319,13 @@ describe('Verification service', () => {
           .spyOn(VerificationModel, 'updateHashForField')
           .mockResolvedValue(mockTransactionSuccessful)
         MockFormService.retrieveFormById.mockReturnValue(okAsync(mockForm))
+        MockFormService.retrieveFullFormById.mockReturnValue(
+          okAsync(mockForm as IPopulatedForm),
+        )
+
+        jest
+          .spyOn(AdminFormUtils, 'verifyUserBetaflag')
+          .mockReturnValue(err(new ForbiddenFormError('ForbiddenFormError')))
       })
 
       it('should send OTP and update hashes when parameters are valid', async () => {
@@ -335,6 +350,45 @@ describe('Verification service', () => {
           answer: MOCK_LOCAL_RECIPIENT,
         })
         expect(result._unsafeUnwrap()).toEqual(mockTransactionSuccessful)
+      })
+
+      it('should send OTP with postman if admin has feature flag on', async () => {
+        jest
+          .spyOn(AdminFormUtils, 'verifyUserBetaflag')
+          .mockReturnValue(ok(true as unknown as IUserSchema))
+
+        const postmanSpy = jest
+          .spyOn(PostmanSmsService, 'sendVerificationOtp')
+          .mockResolvedValueOnce(okAsync(true))
+
+        await VerificationService.sendNewOtp(mockSendNewFormOtpValidInput)
+
+        // Default mock params has fieldType: 'mobile'
+        expect(MockSmsFactory.sendVerificationOtp).not.toHaveBeenCalled()
+
+        expect(postmanSpy).toHaveBeenCalledOnce()
+      })
+
+      it('should send OTP with twilio if admin has feature flag off', async () => {
+        const postmanSpy = jest
+          .spyOn(PostmanSmsService, 'sendVerificationOtp')
+          .mockResolvedValueOnce(okAsync(true))
+
+        await VerificationService.sendNewOtp(mockSendNewFormOtpValidInput)
+
+        // Default mock params has fieldType: 'mobile'
+        expect(MockSmsFactory.sendVerificationOtp).toHaveBeenCalledWith(
+          MOCK_LOCAL_RECIPIENT,
+          MOCK_OTP,
+          MOCK_OTP_PREFIX,
+          mockTransaction.formId,
+          MOCK_SENDER_IP,
+        )
+
+        // Default mock params has fieldType: 'mobile'
+        expect(MockSmsFactory.sendVerificationOtp).toHaveBeenCalled()
+
+        expect(postmanSpy).not.toHaveBeenCalled()
       })
 
       it('should return TransactionNotFoundError when transaction ID does not exist', async () => {

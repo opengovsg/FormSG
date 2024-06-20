@@ -133,7 +133,9 @@ services:
       - WOGAA_START_ENDPOINT
       - WOGAA_SUBMIT_ENDPOINT
       - WOGAA_FEEDBACK_ENDPOINT
-
+      - POSTMAN_MOP_CAMPAIGN_ID
+      - POSTMAN_MOP_CAMPAIGN_API_KEY
+      - POSTMAN_BASE_URL
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git#v4.3.1
