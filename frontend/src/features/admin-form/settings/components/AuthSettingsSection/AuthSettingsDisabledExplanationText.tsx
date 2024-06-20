@@ -16,7 +16,7 @@ export const AuthSettingsDisabledExplanationText = ({
       {containsMyInfoFields ? (
         <InlineMessage marginBottom="1rem">
           To change Singpass authentication settings, close your form to new
-          responses and remove all existing MyInfo fields.
+          responses and remove all existing Myinfo fields.
         </InlineMessage>
       ) : isFormPublic ? (
         <InlineMessage marginBottom="1rem">
