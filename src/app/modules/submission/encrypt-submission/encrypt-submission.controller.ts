@@ -280,41 +280,6 @@ const submitEncryptModeForm = async (
     }
   }
 
-  const logMetaWithSubmission = {
-    ...logMeta,
-    submissionId: form._id,
-    responseMetadata,
-  }
-
-  logger.info({
-    message: 'Sending admin notification mail',
-    meta: logMetaWithSubmission,
-  })
-
-  const emailData = new SubmissionEmailObj(
-    req.body.responses,
-    new Set(), // the MyInfo prefixes are already inserted in middleware
-    form.authType,
-  )
-
-  // We don't await for email submission, as the submission gets saved for encrypt
-  // submissions regardless, the email is more of a notification and shouldn't
-  // stop the storage of the data in the db
-  if (((form as IEncryptedForm)?.emails || []).length > 0) {
-    void MailService.sendSubmissionToAdmin({
-      replyToEmails: EmailSubmissionService.extractEmailAnswers(
-        req.body.responses,
-      ),
-      form,
-      submission: {
-        created: form.created,
-        id: form._id,
-      },
-      attachments: undefined, // Don't send attachments in the email notifications
-      formData: emailData.formData,
-    })
-  }
-
   // Save Responses to Database
   let attachmentMetadata = new Map<string, string>()
 
@@ -370,6 +335,7 @@ const submitEncryptModeForm = async (
     res,
     logMeta,
     formId,
+    form,
     responses: req.formsg.filteredResponses,
     responseMetadata,
     submissionContent,
@@ -628,6 +594,7 @@ const _createSubmission = async ({
   submissionContent,
   logMeta,
   formId,
+  form,
   responseMetadata,
   responses,
 }: {
@@ -636,6 +603,7 @@ const _createSubmission = async ({
   responseMetadata: EncryptSubmissionDto['responseMetadata']
   responses: ParsedClearFormFieldResponse[]
   formId: string
+  form: IPopulatedEncryptedForm
   submissionContent: EncryptSubmissionContent
   logMeta: CustomLoggerParams['meta']
 }) => {
@@ -670,6 +638,41 @@ const _createSubmission = async ({
     },
   })
 
+  const createdTime = submission.created || new Date()
+
+  const logMetaWithSubmission = {
+    ...logMeta,
+    submissionId,
+    responseMetadata,
+  }
+
+  logger.info({
+    message: 'Sending admin notification mail',
+    meta: logMetaWithSubmission,
+  })
+
+  const emailData = new SubmissionEmailObj(
+    responses,
+    new Set(), // the MyInfo prefixes are already inserted in middleware
+    form.authType,
+  )
+
+  // We don't await for email submission, as the submission gets saved for encrypt
+  // submissions regardless, the email is more of a notification and shouldn't
+  // stop the storage of the data in the db
+  if (((form as IEncryptedForm)?.emails || []).length > 0) {
+    void MailService.sendSubmissionToAdmin({
+      replyToEmails: EmailSubmissionService.extractEmailAnswers(responses),
+      form,
+      submission: {
+        created: createdTime,
+        id: submission.id,
+      },
+      attachments: undefined, // Don't send attachments in the email notifications
+      formData: emailData.formData,
+    })
+  }
+
   // TODO 6395 make responseMetadata mandatory
   if (responseMetadata) {
     reportSubmissionResponseTime(responseMetadata, {
@@ -682,7 +685,7 @@ const _createSubmission = async ({
   res.json({
     message: 'Form submission successful.',
     submissionId,
-    timestamp: (submission.created || new Date()).getTime(),
+    timestamp: createdTime.getTime(),
   })
 
   return await performEncryptPostSubmissionActions(submission, responses)
