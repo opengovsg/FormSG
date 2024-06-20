@@ -120,11 +120,6 @@ class PostmanSmsService {
       values: { body: message },
     }
 
-    logger.info({
-      message: `Sending internal SMS for ${smsType}`,
-      meta: logMeta,
-    })
-
     if (useMockPostmanSms) {
       return MailService.sendLocalDevMail(
         '[Mock Postman SMS] Captured SMS',
