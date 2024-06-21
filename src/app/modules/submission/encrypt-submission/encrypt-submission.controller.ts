@@ -317,7 +317,7 @@ export const submitEncryptModeForm = async (
 
   const submissionContent: EncryptSubmissionContent = {
     form: form._id,
-    auth: form.authType,
+    authType: form.authType,
     myInfoFields: form.getUniqueMyInfoAttrs(),
     encryptedContent: encryptedContent,
     verifiedContent: verified,
