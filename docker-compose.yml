@@ -133,9 +133,9 @@ services:
       - WOGAA_START_ENDPOINT
       - WOGAA_SUBMIT_ENDPOINT
       - WOGAA_FEEDBACK_ENDPOINT
-      - POSTMAN_MOP_CAMPAIGN_ID
-      - POSTMAN_MOP_CAMPAIGN_API_KEY
-      - POSTMAN_BASE_URL
+      - POSTMAN_MOP_CAMPAIGN_ID=campaign_test
+      - POSTMAN_MOP_CAMPAIGN_API_KEY=key_test_123
+      - POSTMAN_BASE_URL=https://test.postman.gov.sg/api/v2
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git#v4.3.1
