@@ -33,7 +33,7 @@ const MockSgidService = jest.mocked(SgidService)
 const MockMailService = jest.mocked(MailService)
 
 describe('email-submission.controller', () => {
-  describe('maskNric', () => {
+  describe('nricMask', () => {
     beforeEach(() => {
       const MOCK_SUBMISSION_HASH = {
         hash: 'some hash',
@@ -108,7 +108,7 @@ describe('email-submission.controller', () => {
       expect(
         MockSubmissionService.sendEmailConfirmations,
       ).toHaveBeenCalledTimes(1)
-      // Assert nric is masked
+      // Assert nric is masked in email payload
       expect(
         MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData[0]
           .answer,

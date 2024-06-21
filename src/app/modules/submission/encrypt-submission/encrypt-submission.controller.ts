@@ -86,7 +86,7 @@ const Payment = getPaymentModel(mongoose)
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
 const Joi = BaseJoi.extend(JoiDate)
 
-const submitEncryptModeForm = async (
+export const submitEncryptModeForm = async (
   req: SubmitEncryptModeFormHandlerRequest,
   res: Parameters<SubmitEncryptModeFormHandlerType>[1],
 ) => {
@@ -622,7 +622,6 @@ const _createSubmission = async ({
   logMeta: CustomLoggerParams['meta']
 }) => {
   const submission = new EncryptSubmission(submissionContent)
-
   try {
     await submission.save()
   } catch (err) {
