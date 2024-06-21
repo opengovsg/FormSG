@@ -51,9 +51,11 @@ import * as VerifiedContentService from '../../verified-content/verified-content
 import * as EmailSubmissionService from '../email-submission/email-submission.service'
 import { SubmissionEmailObj } from '../email-submission/email-submission.util'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
+import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
 import { SubmissionFailedError } from '../submission.errors'
 import { uploadAttachments } from '../submission.service'
+import { ProcessedFieldResponse } from '../submission.types'
 import { mapRouteError } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
@@ -132,6 +134,10 @@ const submitEncryptModeForm = async (
   const { encryptedContent, responseMetadata, paymentProducts } =
     encryptedPayload
 
+  // This is because NRIC masking is done in the controller, but we parse the fields in the
+  // middleware for encrypt forms
+  const parsedResponses = new ParsedResponsesObject(req.body.responses)
+
   // Checks if user is SPCP-authenticated before allowing submission
   let uinFin
   let userInfo
@@ -157,6 +163,11 @@ const submitEncryptModeForm = async (
         })
       }
       uinFin = jwtPayloadResult.value.userName
+      uinFin = form.isNricMaskEnabled ? maskNric(uinFin) : uinFin
+      parsedResponses.addNdiResponses({
+        authType,
+        uinFin,
+      })
       break
     }
     case FormAuthType.CP: {
@@ -179,7 +190,13 @@ const submitEncryptModeForm = async (
         })
       }
       uinFin = jwtPayloadResult.value.userName
+      uinFin = form.isNricMaskEnabled ? maskNric(uinFin) : uinFin
       userInfo = jwtPayloadResult.value.userInfo
+      parsedResponses.addNdiResponses({
+        authType,
+        uinFin,
+        userInfo,
+      })
       break
     }
     case FormAuthType.SGID_MyInfo:
@@ -219,6 +236,11 @@ const submitEncryptModeForm = async (
         })
       }
       uinFin = jwtPayloadResult.value
+      uinFin = form.isNricMaskEnabled ? maskNric(uinFin) : uinFin
+      parsedResponses.addNdiResponses({
+        authType,
+        uinFin,
+      })
       break
     }
     case FormAuthType.SGID: {
@@ -240,21 +262,13 @@ const submitEncryptModeForm = async (
         })
       }
       uinFin = jwtPayloadResult.value.userName
+      uinFin = form.isNricMaskEnabled ? maskNric(uinFin) : uinFin
+      parsedResponses.addNdiResponses({
+        authType,
+        uinFin,
+      })
       break
     }
-  }
-
-  // Mask if Nric masking is enabled
-  if (
-    uinFin &&
-    form.isNricMaskEnabled &&
-    (form.authType === FormAuthType.SP ||
-      form.authType === FormAuthType.CP ||
-      form.authType === FormAuthType.SGID ||
-      form.authType === FormAuthType.MyInfo ||
-      form.authType === FormAuthType.SGID_MyInfo)
-  ) {
-    uinFin = maskNric(uinFin)
   }
 
   // Encrypt Verified SPCP Fields
@@ -351,6 +365,7 @@ const submitEncryptModeForm = async (
     formId,
     form,
     responses: req.formsg.filteredResponses,
+    emailFields: parsedResponses.getAllResponses(),
     responseMetadata,
     submissionContent,
   })
@@ -613,11 +628,13 @@ const _createSubmission = async ({
   form,
   responseMetadata,
   responses,
+  emailFields,
 }: {
   req: Parameters<SubmitEncryptModeFormHandlerType>[0]
   res: Parameters<SubmitEncryptModeFormHandlerType>[1]
   responseMetadata: EncryptSubmissionDto['responseMetadata']
   responses: ParsedClearFormFieldResponse[]
+  emailFields: ProcessedFieldResponse[]
   formId: string
   form: IPopulatedEncryptedForm
   submissionContent: EncryptSubmissionContent
@@ -667,7 +684,7 @@ const _createSubmission = async ({
   })
 
   const emailData = new SubmissionEmailObj(
-    responses,
+    emailFields,
     new Set(), // the MyInfo prefixes are already inserted in middleware
     form.authType,
   )
@@ -677,7 +694,7 @@ const _createSubmission = async ({
   // stop the storage of the data in the db
   if (((form as IEncryptedForm)?.emails || []).length > 0) {
     void MailService.sendSubmissionToAdmin({
-      replyToEmails: EmailSubmissionService.extractEmailAnswers(responses),
+      replyToEmails: EmailSubmissionService.extractEmailAnswers(emailFields),
       form,
       submission: {
         created: createdTime,
