@@ -48,7 +48,7 @@ import { mapRouteError, SubmissionEmailObj } from './email-submission.util'
 
 const logger = createLoggerWithLabel(module)
 
-const submitEmailModeForm: ControllerHandler<
+export const submitEmailModeForm: ControllerHandler<
   { formId: string },
   SubmissionResponseDto | SubmissionErrorDto,
   ParsedEmailModeSubmissionBody,
