@@ -246,13 +246,13 @@ export const FormFields = ({
             </Box>
           )}
         <PublicFormPaymentResumeModal />
-        <PublicFormSubmitButton
+        {/* <PublicFormSubmitButton
           onSubmit={onSubmit ? formMethods.handleSubmit(onSubmit) : undefined}
           formFields={augmentedFormFields}
           formLogics={formLogics}
           colorTheme={colorTheme}
           trigger={trigger}
-        />
+        /> */}
       </form>
     </FormProvider>
   )
