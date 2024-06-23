@@ -1,7 +1,8 @@
 import {
   IPerson,
   IPersonResponse,
-  MyInfoAttribute as _ExternalAttr,
+  // MyInfoAttribute as _ExternalAttr,
+  MyInfoAttribute as ExternalAttr,
   MyInfoChildBirthRecordBelow21,
   MyInfoScope,
   MyInfoSource,
@@ -28,16 +29,16 @@ import {
 import { isMyInfoChildrenBirthRecords } from './myinfo.util'
 
 // TODO: this needs to be updated in myinfo-gov-client
-const ExternalAttr = {
-  ..._ExternalAttr,
-  TEMP_DL_COM: `drivinglicence.comstatus`,
-  TEMP_DL_TDP: `drivinglicence.totaldemeritpoints`,
-  TEMP_DL_SUS_SD: `drivinglicence.suspension.startdate`,
-  TEMP_DL_SUS_ED: `drivinglicence.suspension.enddate`,
-  TEMP_DL_DIS_SD: `drivinglicence.disqualification.startdate`,
-} as const
+// const ExternalAttr = {
+//   ..._ExternalAttr,
+//   TEMP_DL_COM: `drivinglicence.comstatus`,
+//   TEMP_DL_TDP: `drivinglicence.totaldemeritpoints`,
+//   TEMP_DL_SUS_SD: `drivinglicence.suspension.startdate`,
+//   TEMP_DL_SUS_ED: `drivinglicence.suspension.enddate`,
+//   TEMP_DL_DIS_SD: `drivinglicence.disqualification.startdate`,
+// } as const
 
-type ExternalAttr = (typeof ExternalAttr)[keyof typeof ExternalAttr]
+// type ExternalAttr = (typeof ExternalAttr)[keyof typeof ExternalAttr]
 
 const logger = createLoggerWithLabel(module)
 
@@ -116,15 +117,16 @@ export const internalAttrToScope = (attr: InternalAttr): MyInfoScope => {
       return `${ExternalAttr.ChildrenBirthRecords}.secondaryrace`
     // ref https://public.cloud.myinfo.gov.sg/myinfo/api/myinfo-kyc-v4.0.html#section/Authentication
     case InternalAttr.DrivingLicenceComStatus:
-      return `drivinglicence.comstatus` // Driving Licence - Certificate of Merit Status
+      return `${ExternalAttr.DrivingLicence}.comstatus`
+    // return `${ExternalAttr.DrivingLicence}.comstatus` // Driving Licence - Certificate of Merit Status
     case InternalAttr.DrivingLicenceTotalDemeritPoints:
-      return `drivinglicence.totaldemeritpoints` // Driving Licence - Total Demerit Points
+      return `${ExternalAttr.DrivingLicence}.totaldemeritpoints` // Driving Licence - Total Demerit Points
     case InternalAttr.DrivingLicenceSuspensionStartDate:
-      return `drivinglicence.suspension.startdate` // Driving Licence - Suspension Start Date
+      return `${ExternalAttr.DrivingLicence}.suspension.startdate` // Driving Licence - Suspension Start Date
     case InternalAttr.DrivingLicenceSuspensionEndDate:
-      return `drivinglicence.suspension.enddate` // Driving Licence - Suspension End Date
+      return `${ExternalAttr.DrivingLicence}.suspension.enddate` // Driving Licence - Suspension End Date
     case InternalAttr.DrivingLicenceDisqualificationStartDate:
-      return `drivinglicence.disqualification.startdate` // Driving Licence - Disqualification Start Date
+      return `${ExternalAttr.DrivingLicence}.disqualification.startdate` // Driving Licence - Disqualification Start Date
   }
 }
 
@@ -195,15 +197,16 @@ export const internalAttrToExternal = (attr: InternalAttr): ExternalAttr => {
     case InternalAttr.ChildSecondaryRace:
       return ExternalAttr.ChildrenBirthRecords
     case InternalAttr.DrivingLicenceComStatus:
-      return `drivinglicence.comstatus`
     case InternalAttr.DrivingLicenceTotalDemeritPoints:
-      return `drivinglicence.totaldemeritpoints`
     case InternalAttr.DrivingLicenceSuspensionStartDate:
-      return `drivinglicence.suspension.startdate`
     case InternalAttr.DrivingLicenceSuspensionEndDate:
-      return `drivinglicence.suspension.enddate`
     case InternalAttr.DrivingLicenceDisqualificationStartDate:
-      return `drivinglicence.disqualification.startdate`
+      // return `drivinglicence.comstatus`
+      // return `drivinglicence.totaldemeritpoints`
+      // return `drivinglicence.suspension.startdate`
+      // return `drivinglicence.suspension.enddate`
+      // return `drivinglicence.disqualification.startdate`
+      return ExternalAttr.DrivingLicence
 
     default: {
       // Force TS to emit an error if the cases above are not exhaustive
