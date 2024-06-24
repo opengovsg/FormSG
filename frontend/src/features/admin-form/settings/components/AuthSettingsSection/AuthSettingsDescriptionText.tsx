@@ -5,12 +5,7 @@ import Link from '~components/Link'
 
 export const AuthSettingsDescriptionText = () => {
   return (
-    <Text
-      textStyle="subhead-1"
-      color="secondary.500"
-      marginBottom="40px"
-      marginTop="40px"
-    >
+    <Text textStyle="subhead-1" color="secondary.500" mb="2.5rem" mt="2.5rem">
       Authenticate respondents by NRIC.{' '}
       <Link
         textStyle="subhead-1"

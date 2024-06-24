@@ -3,7 +3,6 @@ import {
   KeyboardEventHandler,
   MouseEventHandler,
   useCallback,
-  useMemo,
   useState,
 } from 'react'
 import { Box, Flex, Spacer } from '@chakra-ui/react'
@@ -12,8 +11,6 @@ import { FormAuthType, FormSettings, FormStatus } from '~shared/types'
 
 import Radio from '~components/Radio'
 import { Tag } from '~components/Tag'
-
-import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { useMutateFormSettings } from '../../mutations'
 
@@ -47,15 +44,9 @@ export const SingpassAuthOptionsRadio = ({
   const { mutateFormAuthType } = useMutateFormSettings()
   const [focusedValue, setFocusedValue] = useState<FormAuthType>()
 
-  const isFormPublic = useMemo(
-    () => settings.status === FormStatus.Public,
-    [settings],
-  )
+  const isFormPublic = settings.status === FormStatus.Public
 
-  const isEsrvcIdBoxDisabled = useMemo(
-    () => isFormPublic || mutateFormAuthType.isLoading,
-    [isFormPublic, mutateFormAuthType.isLoading],
-  )
+  const isEsrvcIdBoxDisabled = isFormPublic || mutateFormAuthType.isLoading
 
   const checkIsDisabled = useCallback(() => {
     return isDisabled || mutateFormAuthType.isLoading

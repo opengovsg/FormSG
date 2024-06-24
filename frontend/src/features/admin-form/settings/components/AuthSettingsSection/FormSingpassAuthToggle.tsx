@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 
 import { FormAuthType, FormSettings } from '~shared/types'
 
@@ -11,16 +11,14 @@ interface FormSingpassAuthToggleProps {
   isDisabled: boolean
 }
 
+const DEFAULT_FORM_AUTH_TYPE = FormAuthType.SGID
+
 export const FormSingpassAuthToggle = ({
   settings,
   isDisabled,
 }: FormSingpassAuthToggleProps): JSX.Element => {
-  const DEFAULT_FORM_AUTH_TYPE = FormAuthType.SGID
-
-  const isSingpassAuthEnabled = useMemo(
-    () => settings && settings?.authType !== FormAuthType.NIL,
-    [settings],
-  )
+  const isSingpassAuthEnabled =
+    settings && settings?.authType !== FormAuthType.NIL
 
   const { mutateFormAuthType } = useMutateFormSettings()
 
@@ -35,7 +33,7 @@ export const FormSingpassAuthToggle = ({
 
   return (
     <Toggle
-      containerStyles={{ marginBottom: '1rem', opacity: isDisabled ? 0.3 : 1 }}
+      containerStyles={{ mb: '1rem', opacity: isDisabled ? 0.3 : 1 }}
       isDisabled={isDisabled}
       isLoading={!settings || mutateFormAuthType.isLoading}
       isChecked={isSingpassAuthEnabled}

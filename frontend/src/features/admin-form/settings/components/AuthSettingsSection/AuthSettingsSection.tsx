@@ -36,10 +36,7 @@ export const AuthSettingsSection = ({
     [form?.form_fields],
   )
 
-  const isFormPublic = useMemo(
-    () => settings.status === FormStatus.Public,
-    [settings],
-  )
+  const isFormPublic = settings.status === FormStatus.Public
 
   return (
     <Box>

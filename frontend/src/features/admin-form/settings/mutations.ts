@@ -312,9 +312,9 @@ export const useMutateFormSettings = () => {
       onSuccess: (newData) => {
         handleSuccess({
           newData,
-          toastDescription: `NRIC masking is now ${
-            newData.isNricMaskEnabled ? 'enabled' : 'disabled'
-          } on your form.`,
+          toastDescription: newData.isNricMaskEnabled
+            ? 'NRIC masking is now enabled on your form.'
+            : 'NRIC masking is now disabled on your form.',
         })
       },
       onError: handleError,
