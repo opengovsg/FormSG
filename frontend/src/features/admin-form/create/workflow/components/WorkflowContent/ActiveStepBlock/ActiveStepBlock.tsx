@@ -27,15 +27,6 @@ export const ActiveStepBlock = ({
   const { updateStepMutation } = useWorkflowMutations()
   const setToInactive = useAdminWorkflowStore(setToInactiveSelector)
 
-  const defaultValues =
-    // A bit of instrumentation to convert the emails array to a single email
-    step.workflow_type === WorkflowType.Static
-      ? {
-          ...step,
-          emails: step.emails[0],
-        }
-      : step
-
   const handleSubmit = useCallback(
     (step: FormWorkflowStep) =>
       updateStepMutation.mutate(
@@ -56,7 +47,7 @@ export const ActiveStepBlock = ({
       isLoading={updateStepMutation.isLoading}
       handleOpenDeleteModal={handleOpenDeleteModal}
       onSubmit={handleSubmit}
-      defaultValues={defaultValues}
+      defaultValues={step}
       submitButtonLabel="Save step"
     />
   )

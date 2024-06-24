@@ -64,7 +64,7 @@ export const EditStepBlock = ({
           ...inputs,
           // Need to explicitly set workflow_type in this object to help with typechecking.
           workflow_type: WorkflowType.Static,
-          emails: inputs.emails ? [inputs.emails] : [],
+          emails: inputs.emails ?? [],
         }
         break
       }
