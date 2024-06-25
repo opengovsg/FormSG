@@ -152,7 +152,7 @@ const RespondentInput = ({ isLoading, formMethods }: RespondentInputProps) => {
           {staticTagInputErrorMessage ? (
             <FormErrorMessage>{staticTagInputErrorMessage}</FormErrorMessage>
           ) : (
-            <Text textStyle="body-2" my="8px" py="2px">
+            <Text textStyle="body-2" my="0.5rem" py="0.125rem">
               Separate multiple emails with a comma
             </Text>
           )}
