@@ -61,7 +61,7 @@ export const EsrvcIdBox = ({
     return errors.esrvcId ? reset() : onSubmit()
   }, [errors, onSubmit, reset])
 
-  const renderedHelperText = useMemo(() => {
+  const renderHelperTextComponent = () => {
     switch (settings.authType) {
       case FormAuthType.SP:
       case FormAuthType.CP:
@@ -78,7 +78,7 @@ export const EsrvcIdBox = ({
       default:
         return null
     }
-  }, [settings.authType])
+  }
 
   const placeHolder = useMemo(
     () =>
@@ -90,7 +90,7 @@ export const EsrvcIdBox = ({
   return (
     <form onSubmit={onSubmit} onBlur={handleBlur}>
       <Stack ml="2.75rem" mb="1.25rem">
-        {renderedHelperText}
+        {renderHelperTextComponent()}
         <VisuallyHidden>
           <FormLabel htmlFor="esrvcId">e-service ID:</FormLabel>
         </VisuallyHidden>
