@@ -1,4 +1,5 @@
 import convict, { Schema } from 'convict'
+import { GOGOV_BASE_URL } from 'shared/constants'
 
 export interface IGoGov {
   goGovAPIKey: string
@@ -15,7 +16,7 @@ const goGovSchema: Schema<IGoGov> = {
   goGovBaseUrl: {
     doc: 'GoGov base URL',
     format: String,
-    default: 'https://go.gov.sg',
+    default: GOGOV_BASE_URL,
     env: 'GOGOV_BASE_URL',
   },
 }
