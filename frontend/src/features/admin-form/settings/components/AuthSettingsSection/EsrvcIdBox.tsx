@@ -15,6 +15,7 @@ import { FormAuthType, FormSettings } from '~shared/types/form'
 
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
+import Link from '~components/Link'
 import Spinner from '~components/Spinner'
 
 import { useMutateFormSettings } from '../../mutations'
@@ -65,9 +66,17 @@ export const EsrvcIdBox = ({
       case FormAuthType.SP:
       case FormAuthType.CP:
       case FormAuthType.MyInfo:
-        return 'Contact askNDI@tech.gov.sg for your e-service ID'
+        return (
+          <Text textStyle="body-2" color="secondary.400">
+            Contact{' '}
+            <Link isExternal href="https://go.gov.sg/formsg-singpass-contact">
+              Singpass partner support
+            </Link>{' '}
+            for your e-Service ID
+          </Text>
+        )
       default:
-        return ''
+        return null
     }
   }, [settings.authType])
 
@@ -81,9 +90,7 @@ export const EsrvcIdBox = ({
   return (
     <form onSubmit={onSubmit} onBlur={handleBlur}>
       <Stack ml="2.75rem" mb="1.25rem">
-        <Text textStyle="body-2" color="secondary.400">
-          {renderedHelperText}
-        </Text>
+        {renderedHelperText}
         <VisuallyHidden>
           <FormLabel htmlFor="esrvcId">e-service ID:</FormLabel>
         </VisuallyHidden>
