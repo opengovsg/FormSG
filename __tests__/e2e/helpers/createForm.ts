@@ -291,9 +291,7 @@ const addAuthSettings = async (
   await page.getByRole('tab', { name: 'Singpass' }).click()
 
   // Ensure that we are on the auth page
-  await expect(
-    page.getByRole('heading', { name: 'Enable Singpass authentication' }),
-  ).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Singpass' })).toBeVisible()
 
   await page
     .locator('label', {
