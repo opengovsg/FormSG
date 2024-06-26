@@ -2620,6 +2620,52 @@ describe('Form Model', () => {
       })
     })
 
+    describe('getDuplicateParams', () => {
+      it('should duplicate all required fields', () => {
+        // Arrange
+        const MOCK_ALL_OVERRIDE_PARAMS = {
+          admin: 'duplicated admin',
+          title: 'duplicated title',
+          responseMode: FormResponseMode.Email,
+          emails: ['duplicated email'],
+          submissionLimit: null,
+        }
+        const MOCK_ALL_FORM_PARAMS = {
+          title: 'Test Form',
+          admin: MOCK_ADMIN_OBJ_ID,
+          authType: FormAuthType.SP,
+          isNricMaskEnabled: true,
+          inactiveMessage: 'inactive_test',
+          responseMode: FormResponseMode.Encrypt,
+          submissionLimit: 1000,
+        }
+        const sourceForm = new Form(MOCK_ALL_FORM_PARAMS)
+
+        // Act
+        const duplicatedForm = sourceForm.getDuplicateParams(
+          MOCK_ALL_OVERRIDE_PARAMS,
+        )
+
+        // Assert
+        expect(duplicatedForm.title).toEqual(MOCK_ALL_OVERRIDE_PARAMS.title)
+        expect(duplicatedForm.admin).toEqual(MOCK_ALL_OVERRIDE_PARAMS.admin)
+        expect(duplicatedForm.responseMode).toEqual(
+          MOCK_ALL_OVERRIDE_PARAMS.responseMode,
+        )
+        expect(duplicatedForm.emails).toEqual(MOCK_ALL_OVERRIDE_PARAMS.emails)
+        expect(duplicatedForm.submissionLimit).toEqual(
+          MOCK_ALL_OVERRIDE_PARAMS.submissionLimit,
+        )
+        expect(duplicatedForm.authType).toEqual(MOCK_ALL_FORM_PARAMS.authType)
+        expect(duplicatedForm.isNricMaskEnabled).toEqual(
+          MOCK_ALL_FORM_PARAMS.isNricMaskEnabled,
+        )
+        expect(duplicatedForm.inactiveMessage).toEqual(
+          MOCK_ALL_FORM_PARAMS.inactiveMessage,
+        )
+      })
+    })
+
     describe('insertFormField', () => {
       it('should return updated document with inserted form field', async () => {
         // Arrange
