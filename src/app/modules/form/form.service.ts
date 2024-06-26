@@ -499,10 +499,14 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
       }
     }
     case BasicField.Checkbox: {
+      const sampleValue =
+        field.fieldOptions.length === 0
+          ? []
+          : faker.helpers.arrayElements(field.fieldOptions)
       return {
         id: field._id,
         question: field.title,
-        answerArray: field.fieldOptions.length === 0 ? [] : field.fieldOptions,
+        answerArray: sampleValue,
         fieldType: field.fieldType,
       }
     }
