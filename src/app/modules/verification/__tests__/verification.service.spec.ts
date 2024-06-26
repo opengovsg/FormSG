@@ -3,7 +3,7 @@ import getMockLogger from '__tests__/unit/backend/helpers/jest-logger'
 import { ObjectId } from 'bson'
 import { addHours, subHours, subMinutes, subSeconds } from 'date-fns'
 import mongoose from 'mongoose'
-import { err, errAsync, ok, okAsync } from 'neverthrow'
+import { errAsync, okAsync } from 'neverthrow'
 
 // These need to be mocked first before the rest of the test
 import * as LoggerModule from 'src/app/config/logger'
@@ -34,18 +34,12 @@ import PostmanSmsService from 'src/app/services/postman-sms/postman-sms.service'
 import { SmsSendError } from 'src/app/services/sms/sms.errors'
 import { SmsFactory } from 'src/app/services/sms/sms.factory'
 import * as HashUtils from 'src/app/utils/hash'
-import {
-  IFormSchema,
-  IPopulatedForm,
-  IUserSchema,
-  IVerificationSchema,
-  UpdateFieldData,
-} from 'src/types'
+import { IFormSchema, IVerificationSchema, UpdateFieldData } from 'src/types'
 
 import { BasicField } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'
-import * as AdminFormUtils from '../../form/admin-form/admin-form.utils'
-import { ForbiddenFormError, FormNotFoundError } from '../../form/form.errors'
+import * as FeatureFlagService from '../../feature-flags/feature-flags.service'
+import { FormNotFoundError } from '../../form/form.errors'
 import {
   FieldNotFoundInTransactionError,
   TransactionExpiredError,
@@ -319,13 +313,6 @@ describe('Verification service', () => {
           .spyOn(VerificationModel, 'updateHashForField')
           .mockResolvedValue(mockTransactionSuccessful)
         MockFormService.retrieveFormById.mockReturnValue(okAsync(mockForm))
-        MockFormService.retrieveFullFormById.mockReturnValue(
-          okAsync(mockForm as IPopulatedForm),
-        )
-
-        jest
-          .spyOn(AdminFormUtils, 'verifyUserBetaflag')
-          .mockReturnValue(err(new ForbiddenFormError('ForbiddenFormError')))
       })
 
       it('should send OTP and update hashes when parameters are valid', async () => {
@@ -352,10 +339,10 @@ describe('Verification service', () => {
         expect(result._unsafeUnwrap()).toEqual(mockTransactionSuccessful)
       })
 
-      it('should send OTP with postman if admin has feature flag on', async () => {
+      it('should send OTP with postman if platform has feature flag on', async () => {
         jest
-          .spyOn(AdminFormUtils, 'verifyUserBetaflag')
-          .mockReturnValue(ok(true as unknown as IUserSchema))
+          .spyOn(FeatureFlagService, 'getFeatureFlag')
+          .mockReturnValue(okAsync(true))
 
         const postmanSpy = jest
           .spyOn(PostmanSmsService, 'sendVerificationOtp')
@@ -369,7 +356,10 @@ describe('Verification service', () => {
         expect(postmanSpy).toHaveBeenCalledOnce()
       })
 
-      it('should send OTP with twilio if admin has feature flag off', async () => {
+      it('should send OTP with twilio if platform has feature flag off', async () => {
+        jest
+          .spyOn(FeatureFlagService, 'getFeatureFlag')
+          .mockReturnValue(okAsync(false))
         const postmanSpy = jest
           .spyOn(PostmanSmsService, 'sendVerificationOtp')
           .mockResolvedValueOnce(okAsync(true))

@@ -27,7 +27,7 @@ import {
   MalformedParametersError,
   PossibleDatabaseError,
 } from '../core/core.errors'
-import { verifyUserBetaflag } from '../form/admin-form/admin-form.utils'
+import * as FeatureFlagService from '../feature-flags/feature-flags.service'
 import { FormNotFoundError } from '../form/form.errors'
 import * as FormService from '../form/form.service'
 
@@ -452,38 +452,45 @@ const sendOtpForField = (
   | OtpRequestError
 > => {
   const { fieldType, _id: fieldId } = field
+  const logMeta = {
+    action: 'sendOtpForField',
+    formId,
+  }
   switch (fieldType) {
     case BasicField.Mobile:
       return fieldId
-        ? FormService.retrieveFullFormById(formId)
+        ? FormService.retrieveFormById(formId)
             // check if we should allow public user to request for otp
-            .andThen((form) => {
-              return okAsync(form)
-            })
             .andThen((form) =>
-              shouldGenerateMobileOtp(form, fieldId, recipient).andThen(() => {
-                const postmanFlag = verifyUserBetaflag(
-                  form.admin,
-                  featureFlags.postmanSms,
-                )
-                if (postmanFlag.isErr()) {
-                  return SmsFactory.sendVerificationOtp(
-                    recipient,
-                    otp,
-                    otpPrefix,
-                    formId,
-                    senderIp,
-                  )
-                }
-                return PostmanSmsService.sendVerificationOtp(
+              shouldGenerateMobileOtp(form, fieldId, recipient),
+            )
+            .andThen(() => {
+              return FeatureFlagService.getFeatureFlag(
+                featureFlags.postmanSms,
+                {
+                  fallbackValue: false,
+                  logMeta,
+                },
+              )
+            })
+            .andThen((shouldUsePostmanSms) => {
+              if (!shouldUsePostmanSms) {
+                return SmsFactory.sendVerificationOtp(
                   recipient,
                   otp,
                   otpPrefix,
                   formId,
                   senderIp,
                 )
-              }),
-            )
+              }
+              return PostmanSmsService.sendVerificationOtp(
+                recipient,
+                otp,
+                otpPrefix,
+                formId,
+                senderIp,
+              )
+            })
         : errAsync(new MalformedParametersError('Field id not present'))
     case BasicField.Email:
       // call email - it should validate the recipient
