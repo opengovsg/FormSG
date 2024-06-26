@@ -22,7 +22,7 @@ export interface SingpassAuthOptionsRadioProps {
   isDisabled: boolean
 }
 
-const esrvcidRequired = (authType: FormAuthType) => {
+const isEsrvcidRequired = (authType: FormAuthType) => {
   switch (authType) {
     case FormAuthType.SP:
     case FormAuthType.MyInfo:
@@ -111,7 +111,7 @@ export const SingpassAuthOptionsRadio = ({
               </Flex>
             </Radio>
           </Box>
-          {esrvcidRequired(authType) && authType === settings.authType ? (
+          {isEsrvcidRequired(authType) && authType === settings.authType ? (
             <EsrvcIdBox settings={settings} isDisabled={isEsrvcIdBoxDisabled} />
           ) : null}
         </Fragment>

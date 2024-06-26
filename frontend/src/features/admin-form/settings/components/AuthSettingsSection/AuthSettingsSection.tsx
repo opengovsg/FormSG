@@ -21,7 +21,7 @@ export const AuthSettingsSectionSkeleton = (): JSX.Element => {
   return (
     <Skeleton>
       <AuthSettingsDescriptionText />
-      <Toggle description="" label="" />
+      <Toggle label="" />
     </Skeleton>
   )
 }

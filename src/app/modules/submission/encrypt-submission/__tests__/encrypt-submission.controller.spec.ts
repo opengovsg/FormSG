@@ -18,7 +18,7 @@ import MailService from 'src/app/services/mail/mail.service'
 import { FormFieldSchema, IPopulatedEncryptedForm } from 'src/types'
 import { EncryptSubmissionDto, FormCompleteDto } from 'src/types/api'
 
-import { submitEncryptModeForm } from '../encrypt-submission.controller'
+import { submitEncryptModeFormForTest } from '../encrypt-submission.controller'
 import { SubmitEncryptModeFormHandlerRequest } from '../encrypt-submission.types'
 
 jest.mock('src/app/utils/pipeline-middleware', () => {
@@ -121,7 +121,7 @@ describe('encrypt-submission.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await submitEncryptModeForm(MOCK_REQ, mockRes)
+      await submitEncryptModeFormForTest(MOCK_REQ, mockRes)
 
       // Assert
       // that verified content is generated using the masked nric
@@ -173,7 +173,7 @@ describe('encrypt-submission.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await submitEncryptModeForm(MOCK_REQ, mockRes)
+      await submitEncryptModeFormForTest(MOCK_REQ, mockRes)
 
       // Assert
       // that verified content is generated using the masked nric
