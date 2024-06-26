@@ -20,6 +20,7 @@ import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormIfPublic } from '../../auth/auth.service'
 import * as BillingService from '../../billing/billing.service'
 import { ControllerHandler } from '../../core/core.types'
+import { setErrorCode } from '../../datadog/datadog.utils'
 import {
   MYINFO_AUTH_CODE_COOKIE_NAME,
   MYINFO_AUTH_CODE_COOKIE_OPTIONS,
@@ -95,6 +96,8 @@ export const handleGetPublicForm: ControllerHandler<
       })
     }
     const { errorMessage, statusCode } = mapRouteError(error)
+
+    setErrorCode(error)
 
     // Specialized error response for PrivateFormError.
     // This is to maintain backwards compatibility with the middleware implementation

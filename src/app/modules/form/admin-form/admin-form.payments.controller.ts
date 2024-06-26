@@ -18,6 +18,7 @@ import { createReqMeta } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import * as AuthService from '../../auth/auth.service'
 import { ControllerHandler } from '../../core/core.types'
+import { setErrorCode } from '../../datadog/datadog.utils'
 import {
   getStripeOauthUrl,
   unlinkStripeAccountFromForm,
@@ -264,6 +265,7 @@ const _handleUpdatePayments: ControllerHandler<
           meta: logMeta,
           error,
         })
+        setErrorCode(error)
         const { errorMessage, statusCode } = mapRouteError(error)
         return res.status(statusCode).json({ message: errorMessage })
       })

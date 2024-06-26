@@ -1,4 +1,4 @@
-import { ApplicationError } from '../core/core.errors'
+import { ApplicationError, ErrorCodes } from '../core/core.errors'
 
 export class InvalidDomainError extends ApplicationError {
   constructor(
@@ -8,20 +8,21 @@ export class InvalidDomainError extends ApplicationError {
   }
 }
 
+// What's the difference between this and user.errors.ts:InvalidOtpError?
 export class InvalidOtpError extends ApplicationError {
   constructor(message = 'OTP has expired. Please request for a new OTP.') {
-    super(message)
+    super(message, undefined, ErrorCodes.AuthInvalidOtp)
   }
 }
 
 export class InvalidTokenError extends ApplicationError {
   constructor(message = 'Invalid API Key') {
-    super(message)
+    super(message, undefined, ErrorCodes.InvalidToken)
   }
 }
 
 export class MissingTokenError extends ApplicationError {
   constructor(message = "User's API Key not found") {
-    super(message)
+    super(message, undefined, ErrorCodes.MissingToken)
   }
 }
