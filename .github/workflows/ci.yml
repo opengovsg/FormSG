@@ -68,6 +68,7 @@ jobs:
       - run: npm run build
         env:
           NODE_OPTIONS: '--max-old-space-size=4096 --openssl-legacy-provider'
+          AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
       - name: Upload build files
         uses: actions/upload-artifact@v2
         if: always()
@@ -98,6 +99,7 @@ jobs:
       - name: Run frontend test
         env:
           NODE_OPTIONS: --max-old-space-size=4096
+          AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
         run: npm run test:frontend
 
   frontend_lint:
@@ -157,6 +159,7 @@ jobs:
       - run: npm run test:backend:ci
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
+          AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
       - name: Coveralls
         uses: coverallsapp/github-action@master
         with:
