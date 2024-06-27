@@ -203,7 +203,7 @@ const useDecryptionWorkers = ({
                           ATTACHMENT_DOWNLOAD_CONVOY_MINIMUM_SEPARATION_TIME -
                             elaspedSinceXDownloads,
                         )
-                        if (waitTime >= 0) {
+                        if (waitTime > 0) {
                           await waitForMs(waitTime)
                         }
                         timeSinceLastXAttachmentDownload = now
