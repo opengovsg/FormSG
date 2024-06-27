@@ -70,7 +70,7 @@ export const DateRangePickerProvider = ({
   )
 }
 
-export const useDateRangePicker = () => {
+export const useDateRangePicker = (): DateRangePickerContextReturn => {
   const context = useContext(DateRangePickerContext)
   if (!context) {
     throw new Error(

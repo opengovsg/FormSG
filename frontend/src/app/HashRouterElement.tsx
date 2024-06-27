@@ -46,10 +46,12 @@ const pathMapper = [
   },
   {
     regex: /^\/forms\/?$/,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     getTarget: (m: FormRegExpMatchArray) => `${DASHBOARD_ROUTE}`,
   },
   {
     regex: /^\/examples\/?$/,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     getTarget: (m: FormRegExpMatchArray) => `/examples`,
   },
 ]

@@ -10,20 +10,20 @@ const GA = function () {
   }
 }
 
-export const trackAdminLogin = () => {
+export const trackAdminLogin = (): void => {
   GA().gtag('event', 'login', {
     event_category: 'admin_login',
   })
 }
 
-export const trackAdminLoginFailure = (error: string) => {
+export const trackAdminLoginFailure = (error: string): void => {
   GA().gtag('event', 'login', {
     event_category: 'admin_login_failure',
     message: error,
   })
 }
 
-export const trackCreateFormFailed = () => {
+export const trackCreateFormFailed = (): void => {
   GA().gtag('event', 'create_form', {
     event_category: 'create_form',
     event_action: 'Create Form failed',
@@ -34,7 +34,7 @@ const trackPublicFormEvent = (
   eventAction: string,
   form: PublicFormDto,
   others?: Record<string, unknown>,
-) => {
+): void => {
   if (form.status !== FormStatus.Public) {
     return
   }
@@ -46,29 +46,29 @@ const trackPublicFormEvent = (
   })
 }
 
-export const trackVisitPublicForm = (form: PublicFormDto) => {
+export const trackVisitPublicForm = (form: PublicFormDto): void => {
   return trackPublicFormEvent('visit', form)
 }
 
-export const trackSubmitForm = (form: PublicFormDto) => {
+export const trackSubmitForm = (form: PublicFormDto): void => {
   return trackPublicFormEvent('submit_form_success', form)
 }
 
-export const trackSubmitFormFailure = (form: PublicFormDto) => {
+export const trackSubmitFormFailure = (form: PublicFormDto): void => {
   return trackPublicFormEvent('submit_form_failure', form)
 }
 
 /**
  * Logs client form reCAPTCHA onError.
  */
-export const trackReCaptchaOnError = (form: PublicFormDto) => {
+export const trackReCaptchaOnError = (form: PublicFormDto): void => {
   return trackPublicFormEvent('reCAPTCHA connection failure', form)
 }
 
 /**
  * Logs client form Cloudflare Turnstile onError.
  */
-export const trackTurnstileOnError = (form: PublicFormDto) => {
+export const trackTurnstileOnError = (form: PublicFormDto): void => {
   return trackPublicFormEvent('Turnstile connection failure', form)
 }
 
@@ -83,7 +83,7 @@ export const trackDownloadResponseStart = (
   adminForm: AdminFormDto,
   numWorkers: number,
   expectedNumSubmissions: number,
-) => {
+): void => {
   GA().gtag('event', 'storage_mode', {
     event_action: 'download_start',
     form_title: adminForm.title,
@@ -106,7 +106,7 @@ export const trackDownloadResponseSuccess = (
   numWorkers: number,
   expectedNumSubmissions: number,
   duration: number,
-) => {
+): void => {
   GA().gtag('event', 'storage_mode', {
     event_action: 'download_success',
     form_title: adminForm.title,
@@ -132,7 +132,7 @@ export const trackDownloadResponseFailure = (
   expectedNumSubmissions: number,
   duration: number,
   errorMessage: string,
-) => {
+): void => {
   GA().gtag('event', 'storage_mode', {
     event_action: 'download_failure',
     form_title: adminForm.title,
@@ -153,7 +153,7 @@ export const trackDownloadResponseFailure = (
 export const trackDownloadNetworkFailure = (
   adminForm: AdminFormDto,
   errorMessage: string,
-) => {
+): void => {
   GA().gtag('event', 'storage_mode', {
     event_action: 'network_failure',
     form_title: adminForm.title,
@@ -179,7 +179,7 @@ export const trackPartialDecryptionFailure = (
   duration: number,
   errorCount: number,
   attachmentErrorCount: number,
-) => {
+): void => {
   GA().gtag('event', 'storage_mode', {
     event_action: 'partial_decrypt_error',
     form_title: adminForm.title,
@@ -195,7 +195,7 @@ export const trackPartialDecryptionFailure = (
 /**
  * Logs clicking on mailto link to share form secret key with collaborators.
  */
-export const trackClickSecretKeyMailTo = (formTitle: string) => {
+export const trackClickSecretKeyMailTo = (formTitle: string): void => {
   GA().gtag('event', 'storage', {
     event_action: 'Secret key mailto clicked',
     form_title: formTitle,

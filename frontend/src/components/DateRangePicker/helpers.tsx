@@ -4,7 +4,9 @@ import { DateString } from '~shared/types'
 
 import { DateRangeValue } from '~components/Calendar'
 
-export const dateStringToDatePickerValue = (range: DateString[]) => {
+export const dateStringToDatePickerValue = (
+  range: DateString[],
+): DateRangeValue => {
   const [start, end] = range
   // Convert to Date objects
   const startDate = new Date(start)
@@ -20,7 +22,9 @@ export const dateStringToDatePickerValue = (range: DateString[]) => {
   return result as DateRangeValue
 }
 
-export const datePickerValueToDateString = (range: DateRangeValue) => {
+export const datePickerValueToDateString = (
+  range: DateRangeValue,
+): DateString[] => {
   const [start, end] = range
   const result: DateString[] = []
   if (start) {

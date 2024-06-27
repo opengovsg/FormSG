@@ -62,7 +62,7 @@ export const DatePickerProvider = ({
   )
 }
 
-export const useDatePicker = () => {
+export const useDatePicker = (): DatePickerContextReturn => {
   const context = useContext(DatePickerContext)
   if (!context) {
     throw new Error('useDatePicker must be used within a DatePickerProvider')

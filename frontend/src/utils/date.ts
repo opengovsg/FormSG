@@ -18,7 +18,7 @@ import { JsonDate } from '~typings/core'
  * isDateAfterToday('2020-01-01') === !isDateBeforeToday('2020-01-01') // false
  * ```
  */
-export const isDateBeforeToday = (date: number | Date) => {
+export const isDateBeforeToday = (date: number | Date): boolean => {
   return isBefore(date, startOfToday())
 }
 
@@ -36,16 +36,16 @@ export const isDateBeforeToday = (date: number | Date) => {
  * isDateAfterToday('2020-01-01') === !isDateBeforeToday('2020-01-01') // false
  * ```
  */
-export const isDateAfterToday = (date: number | Date) => {
+export const isDateAfterToday = (date: number | Date): boolean => {
   return isAfter(date, endOfToday())
 }
 
-export const normalizeDateToUtc = (date: Date | null) => {
+export const normalizeDateToUtc = (date: Date | null): Date | null => {
   if (!date) return date
   return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
 }
 
-export const loadDateFromNormalizedDate = (date: Date | null) => {
+export const loadDateFromNormalizedDate = (date: Date | null): Date | null => {
   if (!date) return date
   return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
 }
@@ -62,7 +62,7 @@ export const isDateOutOfRange = (
   date: number | Date,
   start?: number | Date | null,
   end?: number | Date | null,
-) => {
+): boolean => {
   if (start && end) {
     return isBefore(date, start) || isAfter(date, end)
   }
@@ -102,7 +102,7 @@ export const isShortIsoDateString = (value: unknown): value is JsonDate => {
  * in the body object to Date objects.
  * @param body object to transform
  */
-export const mutableTransformAllIsoStringsToDate = (body: unknown) => {
+export const mutableTransformAllIsoStringsToDate = (body: unknown): void => {
   if (body === null || body === undefined || typeof body !== 'object') {
     return
   }

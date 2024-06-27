@@ -7,7 +7,7 @@ import { itemIsObject } from './itemUtils'
 export const defaultFilter = <Item extends ComboboxItem>(
   items: Item[],
   value: string,
-) => {
+): Item[] | string[] => {
   const item = items[0]
   if (!item) return items
 

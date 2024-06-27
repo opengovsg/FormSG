@@ -5,7 +5,7 @@ import { NON_RESPONSE_FIELD_SET } from '../constants'
 export const isFieldEnabledByWorkflow = (
   workflowStep: FormWorkflowStep | undefined,
   field: FormFieldDto,
-) => {
+): boolean => {
   // If no workflow, default to enabled
   if (!workflowStep) return true
 

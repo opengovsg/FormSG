@@ -23,7 +23,7 @@ export const MultiSelectContext = createContext<
   MultiSelectContextReturn | undefined
 >(undefined)
 
-export const useMultiSelectContext = () => {
+export const useMultiSelectContext = (): MultiSelectContextReturn => {
   const context = useContext(MultiSelectContext)
 
   if (context === undefined) {

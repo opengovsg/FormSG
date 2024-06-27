@@ -20,7 +20,10 @@ interface UseItemProps<Item extends ComboboxItem = ComboboxItem> {
 
 export const useItems = <Item extends ComboboxItem = ComboboxItem>({
   rawItems,
-}: UseItemProps<Item>) => {
+}: UseItemProps<Item>): {
+  items: Item[]
+  getItemByValue: (value: string) => ItemWithIndex<Item> | null
+} => {
   const normalizedItems = useMemo(() => {
     const initialStore: UseItemsReturn<Item> = {
       // Normalized store for filtering and retrieval of state

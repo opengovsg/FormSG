@@ -17,7 +17,7 @@ export class FeedbackCsvGenerator extends CsvGenerator {
   /**
    * Generate a string representing a form feedback CSV line record
    */
-  addLineFromFeedback(feedback: FormFeedbackDto) {
+  addLineFromFeedback(feedback: FormFeedbackDto): void {
     const feedbackCreatedDate =
       feedback.created && isValid(parseISO(feedback.created))
         ? feedback.created
