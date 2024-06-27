@@ -1,11 +1,13 @@
 import { ok, okAsync, ResultAsync } from 'neverthrow'
 
 import {
+  BasicField,
   FormAuthType,
   SubmissionErrorDto,
   SubmissionResponseDto,
 } from '../../../../../shared/types'
 import { CaptchaTypes } from '../../../../../shared/types/captcha'
+import { maskNric } from '../../../../../shared/utils/nric-mask'
 import { IPopulatedEmailForm } from '../../../../types'
 import { ParsedEmailModeSubmissionBody } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -46,7 +48,7 @@ import { mapRouteError, SubmissionEmailObj } from './email-submission.util'
 
 const logger = createLoggerWithLabel(module)
 
-const submitEmailModeForm: ControllerHandler<
+export const submitEmailModeForm: ControllerHandler<
   { formId: string },
   SubmissionResponseDto | SubmissionErrorDto,
   ParsedEmailModeSubmissionBody,
@@ -302,6 +304,16 @@ const submitEmailModeForm: ControllerHandler<
         }
       })
       .andThen(({ form, parsedResponses, hashedFields }) => {
+        if (form.isNricMaskEnabled) {
+          parsedResponses.ndiResponses = parsedResponses.ndiResponses.map(
+            (response) => {
+              if (response.fieldType === BasicField.Nric) {
+                return { ...response, answer: maskNric(response.answer) }
+              }
+              return response
+            },
+          )
+        }
         // Create data for response email as well as email confirmation
         const emailData = new SubmissionEmailObj(
           parsedResponses.getAllResponses(),

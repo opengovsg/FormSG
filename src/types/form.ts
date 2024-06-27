@@ -63,6 +63,7 @@ type FormDefaultableKey =
   | 'hasCaptcha'
   | 'hasIssueNotification'
   | 'authType'
+  | 'isNricMaskEnabled'
   | 'status'
   | 'inactiveMessage'
   | 'submissionLimit'
@@ -101,6 +102,7 @@ export type PickDuplicateForm = Pick<
   | 'startPage'
   | 'endPage'
   | 'authType'
+  | 'isNricMaskEnabled'
   | 'inactiveMessage'
   | 'submissionLimit'
   | 'responseMode'
@@ -259,6 +261,7 @@ interface IFormBaseDocument<T extends IFormSchema> {
   hasCaptcha: NonNullable<T['hasCaptcha']>
   hasIssueNotification: NonNullable<T['hasIssueNotification']>
   authType: NonNullable<T['authType']>
+  isNricMaskEnabled: NonNullable<T['isNricMaskEnabled']>
   status: NonNullable<T['status']>
   inactiveMessage: NonNullable<T['inactiveMessage']>
   // NOTE: Due to the way creating a form works, creating a form without specifying submissionLimit will throw an error.

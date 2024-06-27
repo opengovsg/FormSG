@@ -10,7 +10,7 @@ export const FormCaptchaToggle = (): JSX.Element => {
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
-  const hasCaptcha = useMemo(() => settings && settings?.hasCaptcha, [settings])
+  const hasCaptcha = useMemo(() => settings?.hasCaptcha, [settings])
 
   const { mutateFormCaptcha } = useMutateFormSettings()
 

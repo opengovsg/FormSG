@@ -91,6 +91,15 @@ export const updateFormAuthType: UpdateFormFn<'authType'> = async (
   return updateFormSettings(formId, { authType: newAuthType })
 }
 
+export const updateFormNricMask: UpdateFormFn<'isNricMaskEnabled'> = async (
+  formId,
+  newIsNricMaskEnabled,
+) => {
+  return updateFormSettings(formId, {
+    isNricMaskEnabled: newIsNricMaskEnabled,
+  })
+}
+
 export const updateFormEsrvcId: UpdateFormFn<'esrvcId'> = async (
   formId,
   newEsrvcId,

@@ -18,7 +18,7 @@ export const SettingsAuthPage = (): JSX.Element => {
 
   return (
     <>
-      <CategoryHeader>Enable Singpass authentication</CategoryHeader>
+      <CategoryHeader>Singpass</CategoryHeader>
       <AuthSettingsSection />
     </>
   )
