@@ -26,7 +26,7 @@ import {
   createMyInfoField,
   createOptionalVersion,
   deleteDocById,
-  getSettings,
+  getEncryptSettings,
   makeModel,
   makeMongooseFixtures,
 } from './utils'
@@ -61,7 +61,7 @@ test.describe('Storage form submission', () => {
     // Define
     const formFields = ALL_FIELDS
     const formLogics = NO_LOGIC
-    const formSettings = getSettings()
+    const formSettings = getEncryptSettings()
 
     // Test
     await runEncryptSubmissionTest(page, Form, {
@@ -79,7 +79,7 @@ test.describe('Storage form submission', () => {
       createBlankVersion(createOptionalVersion(ff)),
     )
     const formLogics = NO_LOGIC
-    const formSettings = getSettings()
+    const formSettings = getEncryptSettings()
 
     // Test
     await runEncryptSubmissionTest(page, Form, {
@@ -94,7 +94,7 @@ test.describe('Storage form submission', () => {
   }) => {
     // Define
     const { formFields, formLogics } = TEST_ALL_FIELDS_SHOWN_BY_LOGIC
-    const formSettings = getSettings()
+    const formSettings = getEncryptSettings()
 
     // Test
     await runEncryptSubmissionTest(page, Form, {
@@ -109,7 +109,7 @@ test.describe('Storage form submission', () => {
   }) => {
     // Define
     const { formFields, formLogics } = TEST_FIELD_HIDDEN_BY_LOGIC
-    const formSettings = getSettings()
+    const formSettings = getEncryptSettings()
 
     // Test
     await runEncryptSubmissionTest(page, Form, {
@@ -125,7 +125,7 @@ test.describe('Storage form submission', () => {
     // Define
     const { formFields, formLogics, preventSubmitMessage } =
       TEST_SUBMISSION_DISABLED_BY_CHAINED_LOGIC
-    const formSettings = getSettings()
+    const formSettings = getEncryptSettings()
 
     // Test
     const { form } = await createForm(page, Form, FormResponseMode.Encrypt, {
@@ -158,7 +158,7 @@ test.describe('Storage form submission', () => {
       createMyInfoField(MyInfoAttribute.WorkpassStatus, 'Live', false),
     ]
     const formLogics = NO_LOGIC
-    const formSettings = getSettings({
+    const formSettings = getEncryptSettings({
       authType: FormAuthType.MyInfo,
     })
 

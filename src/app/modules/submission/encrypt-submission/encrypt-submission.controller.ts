@@ -163,11 +163,6 @@ const submitEncryptModeForm = async (
         })
       }
       uinFin = jwtPayloadResult.value.userName
-      uinFin = form.isNricMaskEnabled ? maskNric(uinFin) : uinFin
-      parsedResponses.addNdiResponses({
-        authType,
-        uinFin,
-      })
       break
     }
     case FormAuthType.CP: {
@@ -190,13 +185,7 @@ const submitEncryptModeForm = async (
         })
       }
       uinFin = jwtPayloadResult.value.userName
-      uinFin = form.isNricMaskEnabled ? maskNric(uinFin) : uinFin
       userInfo = jwtPayloadResult.value.userInfo
-      parsedResponses.addNdiResponses({
-        authType,
-        uinFin,
-        userInfo,
-      })
       break
     }
     case FormAuthType.SGID_MyInfo:
@@ -236,11 +225,6 @@ const submitEncryptModeForm = async (
         })
       }
       uinFin = jwtPayloadResult.value
-      uinFin = form.isNricMaskEnabled ? maskNric(uinFin) : uinFin
-      parsedResponses.addNdiResponses({
-        authType,
-        uinFin,
-      })
       break
     }
     case FormAuthType.SGID: {
@@ -262,9 +246,41 @@ const submitEncryptModeForm = async (
         })
       }
       uinFin = jwtPayloadResult.value.userName
-      uinFin = form.isNricMaskEnabled ? maskNric(uinFin) : uinFin
+      break
+    }
+  }
+
+  // Mask if Nric masking is enabled
+  if (
+    uinFin &&
+    form.isNricMaskEnabled &&
+    (form.authType === FormAuthType.SP ||
+      form.authType === FormAuthType.CP ||
+      form.authType === FormAuthType.SGID ||
+      form.authType === FormAuthType.MyInfo ||
+      form.authType === FormAuthType.SGID_MyInfo)
+  ) {
+    uinFin = maskNric(uinFin)
+  }
+
+  // Add NDI responses
+  switch (form.authType) {
+    case FormAuthType.CP: {
+      if (!uinFin || !userInfo) break
       parsedResponses.addNdiResponses({
         authType,
+        uinFin,
+        userInfo,
+      })
+      break
+    }
+    case FormAuthType.SP:
+    case FormAuthType.SGID:
+    case FormAuthType.MyInfo:
+    case FormAuthType.SGID_MyInfo: {
+      if (!uinFin) break
+      parsedResponses.addNdiResponses({
+        authType: form.authType,
         uinFin,
       })
       break
