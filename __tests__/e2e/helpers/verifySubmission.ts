@@ -50,7 +50,7 @@ export const verifySubmission = async (
   // Verify the submission content
   switch (formResponseMode.responseMode) {
     case FormResponseMode.Email:
-      await verifyEmailSubmission(data)
+      await verifyEmailSubmission(page, data)
       break
     case FormResponseMode.Encrypt:
       await verifyEncryptSubmission(page, {
@@ -87,14 +87,17 @@ export const verifySubmission = async (
  * @param {E2eFieldMetadata[]} formFields the field metadata used to create and fill the form
  * @param {E2eSettingsOptions} formSettings the form settings used to create the form
  */
-export const verifyEmailSubmission = async ({
-  form,
-  responseId,
-  formFields,
-  formSettings,
-}: VerifySubmissionBaseInputs): Promise<void> => {
+export const verifyEmailSubmission = async (
+  page: Page,
+  { form, responseId, formFields, formSettings }: VerifySubmissionBaseInputs,
+): Promise<void> => {
   // Get the submission from the email, via the subject.
-  const submission = await getSubmission(form.title, responseId)
+  const submission = await getSubmission(
+    page,
+    form.title,
+    responseId,
+    FormResponseMode.Email,
+  )
 
   // Verify email metadata
   expect(submission.from).toContain(MAIL_FROM)
@@ -120,6 +123,7 @@ export const verifyEmailSubmission = async ({
       getResponseTitle(field, { mode: FormResponseMode.Email }),
       ...responseArray,
     ])
+    if (!submission.attachments) return
     expectAttachment(field, submission.attachments)
   }
 
@@ -166,7 +170,21 @@ export const verifyEncryptSubmission = async (
   if (formSettings.emails) {
     // (Optional) Step 1: Verify that there's an email notification in maildev
     // Get the submission from the email, via the subject.
-    const submission = await getSubmission(form.title, responseId)
+    await page.evaluate(
+      ([responseId, form_title]) => {
+        console.log(
+          `Checking maildev for submission_id=${responseId} for form=${form_title}`,
+        )
+      },
+      [responseId, form.title],
+    )
+
+    const submission = await getSubmission(
+      page,
+      form.title,
+      responseId,
+      FormResponseMode.Encrypt,
+    )
 
     // Verify email metadata
     expect(submission.from).toContain(MAIL_FROM)
@@ -180,7 +198,6 @@ export const verifyEncryptSubmission = async (
     }
 
     // Subject need not be verified, since we got the email via the subject.
-
     const expectSubmissionContains = expectContains(submission.html)
 
     // Verify form responses in email
@@ -193,6 +210,7 @@ export const verifyEncryptSubmission = async (
         getResponseTitle(field, { mode: FormResponseMode.Email }),
         ...responseArray,
       ])
+      if (!submission.attachments) return
       expectAttachment(field, submission.attachments)
     }
 

@@ -1,8 +1,21 @@
-import { FormAuthType, FormStatus } from 'shared/types'
+import { FormAuthType, FormResponseMode, FormStatus } from 'shared/types'
 
+import { ADMIN_EMAIL } from '../constants'
 import { E2eSettingsOptions } from '../constants/settings'
 
-export const getSettings = (
+export const getEncryptSettings = (
+  custom?: Partial<E2eSettingsOptions>,
+): E2eSettingsOptions => {
+  return _getSettings(FormResponseMode.Encrypt, custom)
+}
+
+export const getEmailSettings = (
+  custom?: Partial<E2eSettingsOptions>,
+): E2eSettingsOptions => {
+  return _getSettings(FormResponseMode.Email, custom)
+}
+const _getSettings = (
+  responseMode: FormResponseMode,
   custom?: Partial<E2eSettingsOptions>,
 ): E2eSettingsOptions => {
   // Inject form auth settings
@@ -24,11 +37,18 @@ export const getSettings = (
     }
   }
 
-  return {
+  // Create
+  const settings: E2eSettingsOptions = {
     status: FormStatus.Public,
     collaborators: [],
     authType: FormAuthType.NIL,
     // By default, if emails is undefined, only the admin (current user) will receive.
     ...custom,
   }
+
+  if (responseMode === FormResponseMode.Encrypt) {
+    settings.emails = [ADMIN_EMAIL]
+  }
+
+  return settings
 }
