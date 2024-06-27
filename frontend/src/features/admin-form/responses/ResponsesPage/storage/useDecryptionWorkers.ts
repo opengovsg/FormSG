@@ -29,10 +29,10 @@ import {
 
 const NUM_OF_METADATA_ROWS = 5
 
-// We will download attachments in convoys of 7
+// We will download attachments in convoys of 5
 // This is to prevent the script from downloading too many attachments at once
 // which could cause it to block downloads.
-const ATTACHMENT_DOWNLOAD_CONVOY_SIZE = 7
+const ATTACHMENT_DOWNLOAD_CONVOY_SIZE = 5
 const ATTACHMENT_DOWNLOAD_CONVOY_MINIMUM_SEPARATION_TIME = 1000
 
 const killWorkers = (workers: CleanableDecryptionWorkerApi[]): void => {
