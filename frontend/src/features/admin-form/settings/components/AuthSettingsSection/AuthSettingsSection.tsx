@@ -1,9 +1,7 @@
 import { useMemo } from 'react'
-import { Box, Skeleton } from '@chakra-ui/react'
+import { Box } from '@chakra-ui/react'
 
 import { FormAuthType, FormSettings, FormStatus } from '~shared/types/form'
-
-import Toggle from '~components/Toggle'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { isMyInfo } from '~features/myinfo/utils'
@@ -15,15 +13,6 @@ import { FormSingpassAuthToggle } from './FormSingpassAuthToggle'
 
 interface AuthSettingsSectionProps {
   settings: FormSettings
-}
-
-export const AuthSettingsSectionSkeleton = (): JSX.Element => {
-  return (
-    <Skeleton>
-      <AuthSettingsDescriptionText />
-      <Toggle label="" />
-    </Skeleton>
-  )
 }
 
 export const AuthSettingsSection = ({
