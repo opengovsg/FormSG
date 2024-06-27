@@ -195,13 +195,13 @@ const useDecryptionWorkers = ({
                       // Ensure attachments downloads are spaced out to avoid browser blocking downloads
                       if (progress % ATTACHMENT_DOWNLOAD_CONVOY_SIZE === 0) {
                         const now = new Date().getTime()
-                        const elaspedSinceXDownloads =
+                        const elapsedSinceXDownloads =
                           now - timeSinceLastXAttachmentDownload
 
                         const waitTime = Math.max(
                           0,
                           ATTACHMENT_DOWNLOAD_CONVOY_MINIMUM_SEPARATION_TIME -
-                            elaspedSinceXDownloads,
+                            elapsedSinceXDownloads,
                         )
                         if (waitTime > 0) {
                           await waitForMs(waitTime)
