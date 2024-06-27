@@ -146,6 +146,7 @@ export interface FormBase {
   hasIssueNotification: boolean
   authType: FormAuthType
   isNricMaskEnabled: boolean
+  isSingleSubmission: boolean
 
   status: FormStatus
 

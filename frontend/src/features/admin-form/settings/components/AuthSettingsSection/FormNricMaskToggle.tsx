@@ -15,7 +15,7 @@ export const FormNricMaskToggle = ({
   settings,
   isDisabled,
 }: FormNricMaskToggleProps): JSX.Element => {
-  const isNricMaskEnabled = settings?.isNricMaskEnabled
+  const isNricMaskEnabled = !!settings?.isNricMaskEnabled
 
   const { mutateNricMask } = useMutateFormSettings()
 

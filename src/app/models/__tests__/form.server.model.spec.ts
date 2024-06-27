@@ -2635,6 +2635,7 @@ describe('Form Model', () => {
           admin: MOCK_ADMIN_OBJ_ID,
           authType: FormAuthType.SP,
           isNricMaskEnabled: true,
+          isSingleSubmission: true,
           inactiveMessage: 'inactive_test',
           responseMode: FormResponseMode.Encrypt,
           submissionLimit: 1000,
@@ -2662,6 +2663,9 @@ describe('Form Model', () => {
         )
         expect(duplicatedForm.inactiveMessage).toEqual(
           MOCK_ALL_FORM_PARAMS.inactiveMessage,
+        )
+        expect(duplicatedForm.isSingleSubmission).toEqual(
+          MOCK_ALL_FORM_PARAMS.isSingleSubmission,
         )
       })
     })

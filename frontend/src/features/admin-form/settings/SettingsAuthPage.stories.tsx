@@ -150,6 +150,25 @@ PrivateEmailMyInfoFormNricMaskingEnabled.parameters = {
   ],
 }
 
+export const PrivateEmailSingpassFormSingleSubmissionEnabled = Template.bind({})
+PrivateEmailSingpassFormSingleSubmissionEnabled.parameters = {
+  msw: buildMswRoutes({
+    status: FormStatus.Private,
+    authType: FormAuthType.SGID,
+    isSingleSubmission: true,
+  }),
+}
+
+export const PrivateEmailSingpassFormAllTogglesEnabled = Template.bind({})
+PrivateEmailSingpassFormAllTogglesEnabled.parameters = {
+  msw: buildMswRoutes({
+    status: FormStatus.Private,
+    authType: FormAuthType.SGID,
+    isSingleSubmission: true,
+    isNricMaskEnabled: true,
+  }),
+}
+
 export const Loading = Template.bind({})
 Loading.parameters = {
   msw: [getAdminFormSettings({ delay: 'infinite' })],

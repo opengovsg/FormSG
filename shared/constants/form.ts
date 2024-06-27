@@ -31,6 +31,7 @@ const FORM_SETTINGS_FIELDS = <const>[
   'responseMode',
   'authType',
   'isNricMaskEnabled',
+  'isSingleSubmission',
   'esrvcId',
   'hasCaptcha',
   'hasIssueNotification',

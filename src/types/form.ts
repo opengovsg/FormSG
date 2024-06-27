@@ -64,6 +64,7 @@ type FormDefaultableKey =
   | 'hasIssueNotification'
   | 'authType'
   | 'isNricMaskEnabled'
+  | 'isSingleSubmission'
   | 'status'
   | 'inactiveMessage'
   | 'submissionLimit'
@@ -262,6 +263,7 @@ interface IFormBaseDocument<T extends IFormSchema> {
   hasIssueNotification: NonNullable<T['hasIssueNotification']>
   authType: NonNullable<T['authType']>
   isNricMaskEnabled: NonNullable<T['isNricMaskEnabled']>
+  isSingleSubmission: NonNullable<T['isSingleSubmission']>
   status: NonNullable<T['status']>
   inactiveMessage: NonNullable<T['inactiveMessage']>
   // NOTE: Due to the way creating a form works, creating a form without specifying submissionLimit will throw an error.

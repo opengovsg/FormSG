@@ -42,6 +42,7 @@ import {
   updateFormWebhookRetries,
   updateFormWebhookUrl,
   updateGstEnabledFlag,
+  updateIsSingleSubmission,
   updateTwilioCredentials,
 } from './SettingsService'
 
@@ -321,6 +322,27 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateIsSingleSubmission = useMutation(
+    (nextIsSingleSubmissionPerNricEnabled: boolean) => {
+      console.log('mutating')
+      return updateIsSingleSubmission(
+        formId,
+        nextIsSingleSubmissionPerNricEnabled,
+      )
+    },
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: newData.isSingleSubmission
+            ? 'Single submission per NRIC/FIN is now enabled on your form.'
+            : 'Single submission per NRIC/FIN is now disabled on your form.',
+        })
+      },
+      onError: handleError,
+    },
+  )
+
   const mutateFormWebhookUrl = useMutation(
     (nextUrl?: string) => updateFormWebhookUrl(formId, nextUrl),
     {
@@ -391,6 +413,7 @@ export const useMutateFormSettings = () => {
     mutateFormTitle,
     mutateFormAuthType,
     mutateNricMask,
+    mutateIsSingleSubmission,
     mutateFormEsrvcId,
     mutateFormBusiness,
     mutateGST,
