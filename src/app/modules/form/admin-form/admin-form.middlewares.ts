@@ -21,6 +21,7 @@ const webhookSettingsValidator = Joi.object({
 export const updateSettingsValidator = celebrate({
   [Segments.BODY]: Joi.object<SettingsUpdateDto>({
     authType: Joi.string().valid(...Object.values(FormAuthType)),
+    isNricMaskEnabled: Joi.boolean(),
     emails: Joi.alternatives().try(
       Joi.array().items(Joi.string().email()),
       Joi.string().email({ multiple: true }),

@@ -79,7 +79,7 @@ export type SubmitEncryptModeFormHandlerRequest =
 
 export type EncryptSubmissionContent = {
   form: IPopulatedEncryptedForm['_id']
-  auth: IPopulatedEncryptedForm['authType']
+  authType: IPopulatedEncryptedForm['authType']
   myInfoFields: MyInfoAttribute[]
   encryptedContent: string
   verifiedContent: string | undefined

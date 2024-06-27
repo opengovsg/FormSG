@@ -291,20 +291,30 @@ const addAuthSettings = async (
   await page.getByRole('tab', { name: 'Singpass' }).click()
 
   // Ensure that we are on the auth page
-  await expect(
-    page.getByRole('heading', { name: 'Enable Singpass authentication' }),
-  ).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Singpass' })).toBeVisible()
 
   await page
     .locator('label', {
-      has: page.locator(
-        `input[type='radio'][value='${formSettings.authType}']`,
-      ),
+      has: page.locator('[aria-label="Enable Singpass authentication"]'),
     })
-    .first() // Since 'Singpass' will match all radio options, pick the first matching one.
-    .click({ position: { x: 1, y: 1 } }) // Clicking the center of the sgid button launches the sgid contact form, put this here until we get rid of the link
+    .click()
 
-  await expectToast(page, /form authentication successfully updated/i)
+  await expectToast(page, /singpass authentication successfully enabled/i)
+
+  // Don't need to click if SGID is desired auth type
+  // since SGID is the default once Singpass is enabled
+  if (formSettings.authType !== FormAuthType.SGID) {
+    await page
+      .locator('label', {
+        has: page.locator(
+          `input[type='radio'][value='${formSettings.authType}']`,
+        ),
+      })
+      .first() // Since 'Singpass' will match all radio options, pick the first matching one.
+      .click({ position: { x: 1, y: 1 } }) // Clicking the center of the sgid button launches the sgid contact form, put this here until we get rid of the link
+
+    await expectToast(page, /singpass authentication successfully updated/i)
+  }
 
   switch (formSettings.authType) {
     case FormAuthType.SP:

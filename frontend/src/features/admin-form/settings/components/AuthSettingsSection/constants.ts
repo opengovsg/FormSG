@@ -1,13 +1,8 @@
 import { FormAuthType } from '~shared/types/form'
 
-export type EmailFormAuthType = FormAuthType
-export type StorageFormAuthType = FormAuthType
+type FormSingpassAuthType = Exclude<FormAuthType, FormAuthType.NIL>
 
-export const FORM_AUTHTYPES: Record<
-  StorageFormAuthType | EmailFormAuthType,
-  string
-> = {
-  [FormAuthType.NIL]: 'None',
+export const FORM_SINGPASS_AUTHTYPES: Record<FormSingpassAuthType, string> = {
   [FormAuthType.SGID]: 'Singpass App-only Login',
   [FormAuthType.SGID_MyInfo]: 'Singpass App-only with Myinfo',
   [FormAuthType.SP]: 'Singpass',
