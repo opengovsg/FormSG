@@ -56,7 +56,11 @@ import * as ReceiverMiddleware from '../receiver/receiver.middleware'
 import { SubmissionFailedError } from '../submission.errors'
 import { uploadAttachments } from '../submission.service'
 import { ProcessedFieldResponse } from '../submission.types'
-import { mapRouteError } from '../submission.utils'
+import {
+  checkIsIndividualSingpassAuthType,
+  generateHashedSubmitterSingpassId,
+  mapRouteError,
+} from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import {
@@ -250,6 +254,12 @@ const submitEncryptModeForm = async (
     }
   }
 
+  let submitterSingpassId
+  // Generate submitterSingpassId for Singpass (excluding Corppass) auth types.
+  if (uinFin && checkIsIndividualSingpassAuthType(form.authType)) {
+    submitterSingpassId = generateHashedSubmitterSingpassId(uinFin)
+  }
+
   // Mask if Nric masking is enabled
   if (
     uinFin &&
@@ -348,6 +358,7 @@ const submitEncryptModeForm = async (
   const submissionContent: EncryptSubmissionContent = {
     form: form._id,
     authType: form.authType,
+    submitterSingpassId,
     myInfoFields: form.getUniqueMyInfoAttrs(),
     encryptedContent: encryptedContent,
     verifiedContent: verified,
@@ -656,9 +667,32 @@ const _createSubmission = async ({
   submissionContent: EncryptSubmissionContent
   logMeta: CustomLoggerParams['meta']
 }) => {
-  const submission = new EncryptSubmission(submissionContent)
+  let submission
   try {
-    await submission.save()
+    if (
+      form.isSingleSubmission &&
+      checkIsIndividualSingpassAuthType(form.authType)
+    ) {
+      if (!submissionContent.submitterSingpassId) {
+        // TODO: make this error type/message more specific
+        throw new Error('submitterSingpassId is required for single submission')
+      }
+      submission = await EncryptSubmission.saveIfSubmitterSingpassIdIsUnique(
+        form.id,
+        submissionContent.submitterSingpassId,
+        submissionContent,
+      )
+
+      // handles the case where submission has already been created for given submissionSingpassId
+      if (!submission) {
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .json({ message: 'You have already submitted this form.' })
+      }
+    } else {
+      submission = new EncryptSubmission(submissionContent)
+      await submission.save()
+    }
   } catch (err) {
     logger.error({
       message: 'Encrypt submission save error',
@@ -671,7 +705,6 @@ const _createSubmission = async ({
     return res.status(StatusCodes.BAD_REQUEST).json({
       message:
         'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
-      submissionId: submission._id,
     })
   }
 

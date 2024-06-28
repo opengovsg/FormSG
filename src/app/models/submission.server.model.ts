@@ -2,6 +2,7 @@ import moment from 'moment-timezone'
 import mongoose, {
   Cursor as QueryCursor,
   Mongoose,
+  MongooseError,
   QueryOptions,
   Schema,
 } from 'mongoose'
@@ -35,6 +36,7 @@ import {
   WebhookView,
 } from '../../types'
 import { getPaymentWebhookEventObject } from '../modules/payments/payment.service.utils'
+import { EncryptSubmissionContent } from '../modules/submission/encrypt-submission/encrypt-submission.types'
 import { createQueryWithDateParam } from '../utils/date'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
@@ -54,6 +56,9 @@ export const SubmissionSchema = new Schema<ISubmissionSchema, ISubmissionModel>(
       type: String,
       enum: Object.values(FormAuthType),
       default: FormAuthType.NIL,
+    },
+    submitterSingpassId: {
+      type: String,
     },
     myInfoFields: {
       type: [
@@ -113,6 +118,36 @@ SubmissionSchema.statics.findFormsWithSubsAbove = function (
       },
     },
   ]).exec()
+}
+
+// TODO: Update the return type for Typescript?
+/**
+ * Creates a new submission only if provided submitterSingpassId is unique.
+ * Otherwise, throws an error.
+ * This method ensures that isSingleSubmission is enforced.
+ * @param submitterSingpassId uniquely identifies the submitter
+ * @returns created submission if successful, null otherwise
+ */
+SubmissionSchema.statics.saveIfSubmitterSingpassIdIsUnique = async function (
+  formId: string,
+  submitterSingpassId: string,
+  submissionContent: EncryptSubmissionContent,
+) {
+  const res = await this.findOneAndUpdate(
+    { form: formId, submitterSingpassId },
+    { $set: {}, $setOnInsert: { ...submissionContent } },
+    { upsert: true, timestamps: false, new: true, rawResult: true },
+  ).exec()
+
+  if (!res.lastErrorObject) {
+    throw new MongooseError(
+      "Execution result from findOneAndUpdatedid did not include expected field 'lastErrorObject'",
+    )
+  }
+  if (res.lastErrorObject.updatedExisting) {
+    return null
+  }
+  return res.value
 }
 
 // Exported for use in pending submissions model

@@ -1,5 +1,6 @@
 import { Cursor as QueryCursor, Document, Model, QueryOptions } from 'mongoose'
 
+import { EncryptSubmissionContent } from 'src/app/modules/submission/encrypt-submission/encrypt-submission.types'
 import { PaymentWebhookEventObject } from 'src/app/modules/webhook/webhook.types'
 
 import {
@@ -66,6 +67,11 @@ export interface ISubmissionModel extends Model<ISubmissionSchema> {
   findFormsWithSubsAbove(
     minSubCount: number,
   ): Promise<FindFormsWithSubsAboveResult[]>
+  saveIfSubmitterSingpassIdIsUnique(
+    formId: string,
+    submitterSingpassId: string,
+    submissionContent: EncryptSubmissionContent,
+  ): Promise<IEncryptedSubmissionSchema | null>
 }
 
 export interface IEmailSubmissionSchema

@@ -18,6 +18,7 @@ import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
 import { MYINFO_ATTRIBUTE_MAP } from '../../../../shared/constants/field/myinfo'
 import {
   BasicField,
+  FormAuthType,
   FormField,
   FormResponseMode,
   MyInfoAttribute,
@@ -757,4 +758,28 @@ export const getAnswersForChild = (
       }
     })
   })
+}
+
+/**
+ * Returns true if the authType is Singpass (with NRIC/FIN) and false if nil or Corppass.
+ */
+export const checkIsIndividualSingpassAuthType = (
+  authType: FormAuthType,
+): boolean => {
+  return (
+    authType === FormAuthType.SP ||
+    authType === FormAuthType.MyInfo ||
+    authType === FormAuthType.SGID ||
+    authType === FormAuthType.SGID_MyInfo
+  )
+}
+
+// TODO: choose a hash later on (should be collision resistant & preferably reasonably one-way)
+/**
+ * Generates a hash to mask the original Singpass ID.
+ * @param id
+ * @returns
+ */
+export const generateHashedSubmitterSingpassId = (id: string) => {
+  return id
 }
