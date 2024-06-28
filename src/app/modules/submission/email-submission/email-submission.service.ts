@@ -91,14 +91,14 @@ export const hashSubmission = (
  */
 export const saveSubmissionMetadata = (
   form: IPopulatedEmailForm,
-  submitterSingpassId: string | undefined,
+  submitterId: string | undefined,
   submissionHash: SubmissionHash,
   responseMetadata?: ResponseMetadata,
 ): ResultAsync<IEmailSubmissionSchema | null, DatabaseError> => {
   const params: EmailSubmissionContent = {
     form: form._id,
     authType: form.authType,
-    submitterSingpassId,
+    submitterId,
     myInfoFields: form.getUniqueMyInfoAttrs(),
     recipientEmails: transformEmails(form.emails),
     responseHash: submissionHash.hash,
@@ -113,16 +113,16 @@ export const saveSubmissionMetadata = (
         form.isSingleSubmission &&
         checkIsIndividualSingpassAuthType(form.authType)
       ) {
-        if (!submitterSingpassId) {
+        if (!submitterId) {
           return Promise.reject(
             new DatabaseError(
-              'submitterSingpassId must be defined for single submission form',
+              'submitterId must be defined for isSingleSubmission enabled form',
             ),
           )
         }
-        return EmailSubmissionModel.saveIfSubmitterSingpassIdIsUnique(
+        return EmailSubmissionModel.saveIfSubmitterIdIsUnique(
           form._id,
-          submitterSingpassId,
+          submitterId,
           params,
         )
       } else {

@@ -27,7 +27,7 @@ export type ResponseMetadata = z.infer<typeof ResponseMetadata>
 export const SubmissionBase = z.object({
   form: z.string(),
   authType: z.nativeEnum(FormAuthType),
-  submitterSingpassId: z.string().optional(),
+  submitterId: z.string().optional(),
   myInfoFields: z.array(z.nativeEnum(MyInfoAttribute)).optional(),
   submissionType: z.nativeEnum(SubmissionType),
   responseMetadata: ResponseMetadata.optional(),

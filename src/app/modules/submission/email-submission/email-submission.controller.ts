@@ -41,7 +41,7 @@ import { ProcessedSingleAnswerResponse } from '../submission.types'
 import {
   checkIsIndividualSingpassAuthType,
   extractEmailConfirmationData,
-  generateHashedSubmitterSingpassId,
+  generateHashedSubmitterId,
   mapAttachmentsFromResponses,
 } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
@@ -308,14 +308,13 @@ export const submitEmailModeForm: ControllerHandler<
         }
       })
       .andThen(({ form, parsedResponses, hashedFields }) => {
-        let submitterSingpassId: string | undefined = undefined
+        let submitterId: string | undefined = undefined
         if (checkIsIndividualSingpassAuthType(form.authType)) {
           const ndiResponse = parsedResponses.ndiResponses.find(
             (response) => response.fieldType === BasicField.Nric,
           ) as ProcessedSingleAnswerResponse
-          submitterSingpassId =
-            ndiResponse?.answer ??
-            generateHashedSubmitterSingpassId(ndiResponse.answer)
+          submitterId =
+            ndiResponse?.answer ?? generateHashedSubmitterId(ndiResponse.answer)
         }
 
         if (form.isNricMaskEnabled) {
@@ -346,7 +345,7 @@ export const submitEmailModeForm: ControllerHandler<
           .andThen((submissionHash) =>
             EmailSubmissionService.saveSubmissionMetadata(
               form,
-              submitterSingpassId,
+              submitterId,
               submissionHash,
               responseMetadata,
             ),

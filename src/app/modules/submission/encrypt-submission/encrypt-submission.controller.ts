@@ -59,7 +59,7 @@ import { uploadAttachments } from '../submission.service'
 import { ProcessedFieldResponse } from '../submission.types'
 import {
   checkIsIndividualSingpassAuthType,
-  generateHashedSubmitterSingpassId,
+  generateHashedSubmitterId,
   mapRouteError,
 } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
@@ -255,10 +255,10 @@ const submitEncryptModeForm = async (
     }
   }
 
-  let submitterSingpassId
-  // Generate submitterSingpassId for Singpass (excluding Corppass) auth types.
+  let submitterId
+  // Generate submitterId for Singpass (excluding Corppass) auth types.
   if (uinFin && checkIsIndividualSingpassAuthType(form.authType)) {
-    submitterSingpassId = generateHashedSubmitterSingpassId(uinFin)
+    submitterId = generateHashedSubmitterId(uinFin)
   }
 
   // Mask if Nric masking is enabled
@@ -359,7 +359,7 @@ const submitEncryptModeForm = async (
   const submissionContent: EncryptSubmissionContent = {
     form: form._id,
     authType: form.authType,
-    submitterSingpassId,
+    submitterId,
     myInfoFields: form.getUniqueMyInfoAttrs(),
     encryptedContent: encryptedContent,
     verifiedContent: verified,
@@ -674,14 +674,14 @@ const _createSubmission = async ({
       form.isSingleSubmission &&
       checkIsIndividualSingpassAuthType(form.authType)
     ) {
-      if (!submissionContent.submitterSingpassId) {
+      if (!submissionContent.submitterId) {
         throw new ApplicationError(
-          'submitterSingpassId is required for single submission',
+          'submitterId is required for isSingleSubmission enabled forms',
         )
       }
-      submission = await EncryptSubmission.saveIfSubmitterSingpassIdIsUnique(
+      submission = await EncryptSubmission.saveIfSubmitterIdIsUnique(
         form.id,
-        submissionContent.submitterSingpassId,
+        submissionContent.submitterId,
         submissionContent,
       )
 

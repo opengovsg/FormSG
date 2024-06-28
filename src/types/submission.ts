@@ -171,14 +171,14 @@ export type SubmissionData =
 export type IEmailSubmissionModel = Model<IEmailSubmissionSchema> &
   ISubmissionModel & {
     /**
-     * Creates a new email submission only if provided submitterSingpassId is unique.
+     * Creates a new email submission only if provided submitterId is unique.
      * This method ensures that isSingleSubmission is enforced.
-     * @param submitterSingpassId uniquely identifies the submitter
+     * @param submitterId uniquely identifies the submitter
      * @returns created submission if successful, null otherwise
      */
-    saveIfSubmitterSingpassIdIsUnique(
+    saveIfSubmitterIdIsUnique(
       formId: string,
-      submitterSingpassId: string,
+      submitterId: string,
       submissionContent: EmailSubmissionContent,
     ): Promise<IEmailSubmissionSchema | null>
   }
@@ -256,9 +256,9 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
       submissionId: string,
     ): Promise<SubmissionWebhookInfo | null>
 
-    saveIfSubmitterSingpassIdIsUnique(
+    saveIfSubmitterIdIsUnique(
       formId: string,
-      submitterSingpassId: string,
+      submitterId: string,
       submissionContent: EncryptSubmissionContent,
     ): Promise<IEncryptedSubmissionSchema | null>
   }

@@ -776,10 +776,10 @@ export const checkIsIndividualSingpassAuthType = (
 
 // TODO: choose a hash later on (should be collision resistant & preferably reasonably one-way)
 /**
- * Generates a hash to mask the original Singpass ID.
+ * Generates a hash to mask the original submitterId.
  * @param id
  * @returns
  */
-export const generateHashedSubmitterSingpassId = (id: string) => {
+export const generateHashedSubmitterId = (id: string) => {
   return id
 }
