@@ -676,7 +676,7 @@ const _createSubmission = async ({
     ) {
       if (!submissionContent.submitterId) {
         throw new ApplicationError(
-          'submitterId is required for isSingleSubmission enabled forms',
+          'Failed to find submitterId which is mandatory for isSingleSubmission enabled forms',
         )
       }
       submission = await EncryptSubmission.saveIfSubmitterIdIsUnique(
@@ -687,10 +687,11 @@ const _createSubmission = async ({
 
       // handles the case where submission has already been created for given submissionSingpassId
       if (!submission) {
-        // TODO: add json message for frontend to deal with no submission made error
-        return res
-          .status(StatusCodes.BAD_REQUEST)
-          .json({ message: 'You have already submitted this form.' })
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          message:
+            'Your NRIC/FIN has already been used to respond to this form.',
+          isSingleSubmissionValidationFailure: true,
+        })
       }
     } else {
       submission = new EncryptSubmission(submissionContent)

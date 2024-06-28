@@ -235,7 +235,10 @@ export type SubmissionResponseDto = {
   paymentData?: PaymentSubmissionData
 }
 
-export type SubmissionErrorDto = ErrorDto & { spcpSubmissionFailure?: true }
+export type SubmissionErrorDto = ErrorDto & {
+  spcpSubmissionFailure?: true
+  isSingleSubmissionValidationFailure?: true
+}
 
 export type SubmissionCountQueryDto =
   | {

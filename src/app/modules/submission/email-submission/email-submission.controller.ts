@@ -433,16 +433,17 @@ export const submitEmailModeForm: ControllerHandler<
         },
       )
       .map(({ form, parsedResponses, submission, emailData, logMeta }) => {
-        // TODO: add json message for frontend to deal with no submission made error
         if (!submission) {
           logger.info({
             message:
               'Submission not created since NRIC/FIN already submitted and form has isSingleSubmission enabled',
             meta: logMeta,
           })
-          return res
-            .status(StatusCodes.BAD_REQUEST)
-            .json({ message: 'You have already submitted this form.' })
+          return res.status(StatusCodes.BAD_REQUEST).json({
+            message:
+              'Your NRIC/FIN has already been used to respond to this form.',
+            isSingleSubmissionValidationFailure: true,
+          })
         }
         // Send email confirmations
         void SubmissionService.sendEmailConfirmations({

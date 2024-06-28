@@ -18,6 +18,7 @@ import { usePublicFormContext } from '../../PublicFormContext'
 import { DuplicatePaymentModal } from '../DuplicatePaymentModal/DuplicatePaymentModal'
 import { FormPaymentModal } from '../FormPaymentModal/FormPaymentModal'
 import { getPreviousPaymentId } from '../FormPaymentPage/FormPaymentService'
+import { SingleSubmissionModal } from '../SingleSubmissionModal/SingleSubmissionModal'
 
 interface PublicFormSubmitButtonProps {
   formFields: MyInfoFormField<FormField>[]
@@ -44,7 +45,13 @@ export const PublicFormSubmitButton = ({
   const isMobile = useIsMobile()
   const { isSubmitting } = useFormState()
   const formInputs = useWatch<FormFieldValues>({}) as FormFieldValues
-  const { formId, isPaymentEnabled, isPreview } = usePublicFormContext()
+  const {
+    formId,
+    isPaymentEnabled,
+    isPreview,
+    hasSingleSubmissionValidationError,
+    setHasSingleSubmissionValidationError,
+  } = usePublicFormContext()
 
   const paymentEmailField = formInputs[
     PAYMENT_CONTACT_FIELD_ID
@@ -79,9 +86,15 @@ export const PublicFormSubmitButton = ({
     }
   }
 
+  const isSingleSubmissionOnlyModalOpen = hasSingleSubmissionValidationError
+  const onSingleSubmissionModalClose = () => {
+    setHasSingleSubmissionValidationError(false)
+  }
+
   return (
     <Stack px={{ base: '1rem', md: 0 }} pt="2.5rem" pb="4rem">
-      {isOpen ? (
+      // Prevent opening of multiple modals
+      {isOpen && !isSingleSubmissionOnlyModalOpen ? (
         prevPaymentId ? (
           <DuplicatePaymentModal
             onSubmit={onSubmit}
@@ -98,6 +111,11 @@ export const PublicFormSubmitButton = ({
           />
         )
       ) : null}
+      <SingleSubmissionModal
+        formId={formId}
+        isOpen={isSingleSubmissionOnlyModalOpen}
+        onClose={onSingleSubmissionModalClose}
+      />
       <Button
         isFullWidth={isMobile}
         w="100%"

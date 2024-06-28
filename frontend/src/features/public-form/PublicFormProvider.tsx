@@ -38,7 +38,10 @@ import { useBrowserStm } from '~hooks/payments'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
 import { isKeypairValid } from '~utils/secretKeyValidation'
-import { HttpError } from '~services/ApiService'
+import {
+  HttpError,
+  SingleSubmissionValidationError,
+} from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
@@ -131,6 +134,10 @@ export const PublicFormProvider = ({
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
   const [numVisibleFields, setNumVisibleFields] = useState(0)
+  const [
+    hasSingleSubmissionValidationError,
+    setHasSingleSubmissionValidationError,
+  ] = useState(false)
 
   const {
     data,
@@ -520,11 +527,20 @@ export const PublicFormProvider = ({
         submissionId: string
         timestamp: number
       }) => {
+        setHasSingleSubmissionValidationError(false)
         setSubmissionData({
           id: submissionId,
           timestamp,
         })
         trackSubmitForm(form)
+      }
+
+      const handleError = (error: Error, form: PublicFormDto) => {
+        if (error instanceof SingleSubmissionValidationError) {
+          setHasSingleSubmissionValidationError(true)
+        } else {
+          showErrorToast(error, form)
+        }
       }
 
       switch (form.responseMode) {
@@ -561,7 +577,7 @@ export const PublicFormProvider = ({
                     },
                   },
                 })
-                showErrorToast(error, form)
+                handleError(error, form)
               })
           }
 
@@ -607,7 +623,7 @@ export const PublicFormProvider = ({
                     axiosDebugFlow()
                     return submitEmailFormWithFetch()
                   } else {
-                    showErrorToast(error, form)
+                    handleError(error, form)
                   }
                 })
             )
@@ -686,7 +702,7 @@ export const PublicFormProvider = ({
                     },
                   },
                 })
-                showErrorToast(error, form)
+                handleError(error, form)
               })
           }
 
@@ -748,7 +764,7 @@ export const PublicFormProvider = ({
                 // defaults to the safest option of storage submission without virus scanning
                 return submitStorageFormWithFetch()
               } else {
-                showErrorToast(error, form)
+                handleError(error, form)
               }
             })
         }
@@ -831,6 +847,8 @@ export const PublicFormProvider = ({
         isPaymentEnabled,
         isPreview: false,
         setNumVisibleFields,
+        hasSingleSubmissionValidationError,
+        setHasSingleSubmissionValidationError,
         encryptedPreviousSubmission,
         previousSubmission,
         previousAttachments,
