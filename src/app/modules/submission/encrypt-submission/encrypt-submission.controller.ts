@@ -39,6 +39,7 @@ import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.midd
 import { Pipeline } from '../../../utils/pipeline-middleware'
 import { createReqMeta } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
+import { ApplicationError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
@@ -674,8 +675,9 @@ const _createSubmission = async ({
       checkIsIndividualSingpassAuthType(form.authType)
     ) {
       if (!submissionContent.submitterSingpassId) {
-        // TODO: make this error type/message more specific
-        throw new Error('submitterSingpassId is required for single submission')
+        throw new ApplicationError(
+          'submitterSingpassId is required for single submission',
+        )
       }
       submission = await EncryptSubmission.saveIfSubmitterSingpassIdIsUnique(
         form.id,
@@ -685,6 +687,7 @@ const _createSubmission = async ({
 
       // handles the case where submission has already been created for given submissionSingpassId
       if (!submission) {
+        // TODO: add json message for frontend to deal with no submission made error
         return res
           .status(StatusCodes.BAD_REQUEST)
           .json({ message: 'You have already submitted this form.' })

@@ -1,5 +1,6 @@
 import { Cursor as QueryCursor, Document, Model, QueryOptions } from 'mongoose'
 
+import { EmailSubmissionContent } from 'src/app/modules/submission/email-submission/email-submission.types'
 import { EncryptSubmissionContent } from 'src/app/modules/submission/encrypt-submission/encrypt-submission.types'
 import { PaymentWebhookEventObject } from 'src/app/modules/webhook/webhook.types'
 
@@ -67,11 +68,6 @@ export interface ISubmissionModel extends Model<ISubmissionSchema> {
   findFormsWithSubsAbove(
     minSubCount: number,
   ): Promise<FindFormsWithSubsAboveResult[]>
-  saveIfSubmitterSingpassIdIsUnique(
-    formId: string,
-    submitterSingpassId: string,
-    submissionContent: EncryptSubmissionContent,
-  ): Promise<IEncryptedSubmissionSchema | null>
 }
 
 export interface IEmailSubmissionSchema
@@ -173,7 +169,19 @@ export type SubmissionData =
   | MultirespondentSubmissionData
 
 export type IEmailSubmissionModel = Model<IEmailSubmissionSchema> &
-  ISubmissionModel
+  ISubmissionModel & {
+    /**
+     * Creates a new email submission only if provided submitterSingpassId is unique.
+     * This method ensures that isSingleSubmission is enforced.
+     * @param submitterSingpassId uniquely identifies the submitter
+     * @returns created submission if successful, null otherwise
+     */
+    saveIfSubmitterSingpassIdIsUnique(
+      formId: string,
+      submitterSingpassId: string,
+      submissionContent: EmailSubmissionContent,
+    ): Promise<IEmailSubmissionSchema | null>
+  }
 export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
   ISubmissionModel & {
     /**
@@ -247,6 +255,12 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
     retrieveWebhookInfoById(
       submissionId: string,
     ): Promise<SubmissionWebhookInfo | null>
+
+    saveIfSubmitterSingpassIdIsUnique(
+      formId: string,
+      submitterSingpassId: string,
+      submissionContent: EncryptSubmissionContent,
+    ): Promise<IEncryptedSubmissionSchema | null>
   }
 
 export type IMultirespondentSubmissionModel =

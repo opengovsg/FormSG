@@ -2,7 +2,6 @@ import moment from 'moment-timezone'
 import mongoose, {
   Cursor as QueryCursor,
   Mongoose,
-  MongooseError,
   QueryOptions,
   Schema,
 } from 'mongoose'
@@ -35,7 +34,9 @@ import {
   WebhookData,
   WebhookView,
 } from '../../types'
+import { DatabaseError } from '../modules/core/core.errors'
 import { getPaymentWebhookEventObject } from '../modules/payments/payment.service.utils'
+import { EmailSubmissionContent } from '../modules/submission/email-submission/email-submission.types'
 import { EncryptSubmissionContent } from '../modules/submission/encrypt-submission/encrypt-submission.types'
 import { createQueryWithDateParam } from '../utils/date'
 
@@ -120,36 +121,6 @@ SubmissionSchema.statics.findFormsWithSubsAbove = function (
   ]).exec()
 }
 
-// TODO: Update the return type for Typescript?
-/**
- * Creates a new submission only if provided submitterSingpassId is unique.
- * Otherwise, throws an error.
- * This method ensures that isSingleSubmission is enforced.
- * @param submitterSingpassId uniquely identifies the submitter
- * @returns created submission if successful, null otherwise
- */
-SubmissionSchema.statics.saveIfSubmitterSingpassIdIsUnique = async function (
-  formId: string,
-  submitterSingpassId: string,
-  submissionContent: EncryptSubmissionContent,
-) {
-  const res = await this.findOneAndUpdate(
-    { form: formId, submitterSingpassId },
-    { $set: {}, $setOnInsert: { ...submissionContent } },
-    { upsert: true, timestamps: false, new: true, rawResult: true },
-  ).exec()
-
-  if (!res.lastErrorObject) {
-    throw new MongooseError(
-      "Execution result from findOneAndUpdatedid did not include expected field 'lastErrorObject'",
-    )
-  }
-  if (res.lastErrorObject.updatedExisting) {
-    return null
-  }
-  return res.value
-}
-
 // Exported for use in pending submissions model
 export const EmailSubmissionSchema = new Schema<IEmailSubmissionSchema>({
   recipientEmails: {
@@ -183,6 +154,35 @@ export const EmailSubmissionSchema = new Schema<IEmailSubmissionSchema>({
 EmailSubmissionSchema.methods.getWebhookView = function (): Promise<null> {
   return Promise.resolve(null)
 }
+
+/**
+ * Creates a new email submission only if provided submitterSingpassId is unique.
+ * This method ensures that isSingleSubmission is enforced.
+ * @param submitterSingpassId uniquely identifies the submitter
+ * @returns created submission if successful, null otherwise
+ */
+EmailSubmissionSchema.statics.saveIfSubmitterSingpassIdIsUnique =
+  async function (
+    formId: string,
+    submitterSingpassId: string,
+    submissionContent: EmailSubmissionContent,
+  ): Promise<IEmailSubmissionSchema | null> {
+    const res = await this.findOneAndUpdate(
+      { form: formId, submitterSingpassId },
+      { $set: {}, $setOnInsert: { ...submissionContent } },
+      { upsert: true, new: true, rawResult: true },
+    ).exec()
+
+    if (!res.lastErrorObject) {
+      throw new DatabaseError(
+        "Execution result from findOneAndUpdatedid did not include expected field 'lastErrorObject'",
+      )
+    }
+    if (res.lastErrorObject.updatedExisting) {
+      return null
+    }
+    return res.value
+  }
 
 const webhookResponseSchema = new Schema<IWebhookResponseSchema>(
   {
@@ -358,6 +358,35 @@ EncryptSubmissionSchema.statics.findSingleMetadata = function (
     return metadata
   })
 }
+
+/**
+ * Creates a new encrypt submission only if provided submitterSingpassId is unique.
+ * This method ensures that isSingleSubmission is enforced.
+ * @param submitterSingpassId uniquely identifies the submitter
+ * @returns created submission if successful, null otherwise
+ */
+EncryptSubmissionSchema.statics.saveIfSubmitterSingpassIdIsUnique =
+  async function (
+    formId: string,
+    submitterSingpassId: string,
+    submissionContent: EncryptSubmissionContent,
+  ): Promise<IEncryptedSubmissionSchema | null> {
+    const res = await this.findOneAndUpdate(
+      { form: formId, submitterSingpassId },
+      { $set: {}, $setOnInsert: { ...submissionContent } },
+      { upsert: true, new: true, rawResult: true },
+    ).exec()
+
+    if (!res.lastErrorObject) {
+      throw new DatabaseError(
+        "Execution result from findOneAndUpdatedid did not include expected field 'lastErrorObject'",
+      )
+    }
+    if (res.lastErrorObject.updatedExisting) {
+      return null
+    }
+    return res.value
+  }
 
 /**
  * Unexported as the type is only used in {@see findAllMetadataByFormId} for

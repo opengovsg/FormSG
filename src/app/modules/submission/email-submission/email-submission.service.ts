@@ -21,6 +21,7 @@ import { DatabaseError } from '../../core/core.errors'
 import { isEmailModeForm, transformEmails } from '../../form/form.utils'
 import { ResponseModeError } from '../submission.errors'
 import { ProcessedFieldResponse } from '../submission.types'
+import { checkIsIndividualSingpassAuthType } from '../submission.utils'
 
 import {
   DIGEST_TYPE,
@@ -29,7 +30,10 @@ import {
   SALT_LENGTH,
 } from './email-submission.constants'
 import { SubmissionHashError } from './email-submission.errors'
-import { SubmissionHash } from './email-submission.types'
+import {
+  EmailSubmissionContent,
+  SubmissionHash,
+} from './email-submission.types'
 import { concatAttachmentsAndResponses } from './email-submission.util'
 
 const EmailSubmissionModel = getEmailSubmissionModel(mongoose)
@@ -87,12 +91,14 @@ export const hashSubmission = (
  */
 export const saveSubmissionMetadata = (
   form: IPopulatedEmailForm,
+  submitterSingpassId: string | undefined,
   submissionHash: SubmissionHash,
   responseMetadata?: ResponseMetadata,
-): ResultAsync<IEmailSubmissionSchema, DatabaseError> => {
-  const params = {
+): ResultAsync<IEmailSubmissionSchema | null, DatabaseError> => {
+  const params: EmailSubmissionContent = {
     form: form._id,
     authType: form.authType,
+    submitterSingpassId,
     myInfoFields: form.getUniqueMyInfoAttrs(),
     recipientEmails: transformEmails(form.emails),
     responseHash: submissionHash.hash,
@@ -100,8 +106,32 @@ export const saveSubmissionMetadata = (
     submissionType: SubmissionType.Email,
     responseMetadata,
   }
+
+  const saveEmailSubmissionMetadataBasedOnFormSettings =
+    async (): Promise<IEmailSubmissionSchema | null> => {
+      if (
+        form.isSingleSubmission &&
+        checkIsIndividualSingpassAuthType(form.authType)
+      ) {
+        if (!submitterSingpassId) {
+          return Promise.reject(
+            new DatabaseError(
+              'submitterSingpassId must be defined for single submission form',
+            ),
+          )
+        }
+        return EmailSubmissionModel.saveIfSubmitterSingpassIdIsUnique(
+          form._id,
+          submitterSingpassId,
+          params,
+        )
+      } else {
+        return EmailSubmissionModel.create(params)
+      }
+    }
+
   return ResultAsync.fromPromise(
-    EmailSubmissionModel.create(params),
+    saveEmailSubmissionMetadataBasedOnFormSettings(),
     (error) => {
       logger.error({
         message: 'Error while saving submission to database',
