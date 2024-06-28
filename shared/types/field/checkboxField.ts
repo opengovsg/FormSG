@@ -1,3 +1,4 @@
+import { TranslationOptionMapping } from '../form'
 import { BasicField, FieldBase } from './base'
 
 export type CheckboxValidationOptions = {
@@ -8,6 +9,7 @@ export type CheckboxValidationOptions = {
 export interface CheckboxFieldBase extends FieldBase {
   fieldType: BasicField.Checkbox
   fieldOptions: string[]
+  fieldOptionsTranslations?: TranslationOptionMapping[]
   othersRadioButton: boolean
   ValidationOptions: CheckboxValidationOptions
   validateByValue: boolean
