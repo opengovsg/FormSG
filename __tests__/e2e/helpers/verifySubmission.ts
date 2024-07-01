@@ -1,5 +1,5 @@
 import { expect, Page } from '@playwright/test'
-import { readFileSync } from 'fs'
+// import { readFileSync } from 'fs'
 import { BasicField, FormAuthType, FormResponseMode } from 'shared/types'
 
 import { IFormSchema, SgidFieldTitle, SPCPFieldTitle } from 'src/types'
@@ -7,7 +7,7 @@ import { IFormSchema, SgidFieldTitle, SPCPFieldTitle } from 'src/types'
 import {
   ADMIN_EMAIL,
   ADMIN_FORM_PAGE_RESPONSES,
-  ADMIN_FORM_PAGE_RESPONSES_INDIVIDUAL,
+  // ADMIN_FORM_PAGE_RESPONSES_INDIVIDUAL,
   E2eFieldMetadata,
   E2eFormResponseMode,
   E2eSettingsOptions,
@@ -15,7 +15,7 @@ import {
 import {
   expectAttachment,
   expectContains,
-  expectToast,
+  // expectToast,
   getAutoreplyEmail,
   getResponseArray,
   getResponseTitle,
@@ -198,6 +198,7 @@ export const verifyEncryptSubmission = async (
     }
 
     // Subject need not be verified, since we got the email via the subject.
+
     const expectSubmissionContains = expectContains(submission.html)
 
     // Verify form responses in email
@@ -245,13 +246,12 @@ export const verifyEncryptSubmission = async (
   //   [responseId, form.title],
   // )
 
-  // // Go to the responses summary page and enter the secret key
-  // await page.goto(ADMIN_FORM_PAGE_RESPONSES(form._id))
-  // await page.getByLabel(/Enter or upload Secret Key/).fill(secretKey)
-  // await page.getByRole('button', { name: 'Unlock responses' }).click()
+  // Go to the responses summary page and enter the secret key
+  await page.goto(ADMIN_FORM_PAGE_RESPONSES(form._id))
+  await page.getByLabel(/Enter or upload Secret Key/).fill(secretKey)
+  await page.getByRole('button', { name: 'Unlock responses' }).click()
 
   // // Try downloading CSV and checking contents
-  // // Start waiting for download before clicking. Note no await.
   // const downloadPromise = page.waitForEvent('download')
   // await page.getByRole('button', { name: 'Download' }).click()
   // await page.getByRole('menuitem', { name: 'CSV only' }).click()
