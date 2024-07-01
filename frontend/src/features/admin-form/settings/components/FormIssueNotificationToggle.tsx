@@ -10,10 +10,7 @@ export const FormIssueNotificationToggle = (): JSX.Element => {
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
-  const hasIssueNotification = useMemo(
-    () => settings && settings?.hasIssueNotification,
-    [settings],
-  )
+  const hasIssueNotification = settings?.hasIssueNotification
 
   const { mutateFormIssueNotification } = useMutateFormSettings()
 

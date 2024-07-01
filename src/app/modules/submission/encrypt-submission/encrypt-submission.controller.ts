@@ -14,6 +14,7 @@ import {
   PaymentType,
   StorageModeSubmissionContentDto,
 } from '../../../../../shared/types'
+import { maskNric } from '../../../../../shared/utils/nric-mask'
 import {
   IEncryptedForm,
   IEncryptedSubmissionSchema,
@@ -243,6 +244,19 @@ const submitEncryptModeForm = async (
     }
   }
 
+  // Mask if Nric masking is enabled
+  if (
+    uinFin &&
+    form.isNricMaskEnabled &&
+    (form.authType === FormAuthType.SP ||
+      form.authType === FormAuthType.CP ||
+      form.authType === FormAuthType.SGID ||
+      form.authType === FormAuthType.MyInfo ||
+      form.authType === FormAuthType.SGID_MyInfo)
+  ) {
+    uinFin = maskNric(uinFin)
+  }
+
   // Encrypt Verified SPCP Fields
   let verified
   if (
@@ -303,7 +317,7 @@ const submitEncryptModeForm = async (
 
   const submissionContent: EncryptSubmissionContent = {
     form: form._id,
-    auth: form.authType,
+    authType: form.authType,
     myInfoFields: form.getUniqueMyInfoAttrs(),
     encryptedContent: encryptedContent,
     verifiedContent: verified,
@@ -341,6 +355,8 @@ const submitEncryptModeForm = async (
     submissionContent,
   })
 }
+
+export const submitEncryptModeFormForTest = submitEncryptModeForm
 
 const _createPaymentSubmission = async ({
   req,
@@ -608,7 +624,6 @@ const _createSubmission = async ({
   logMeta: CustomLoggerParams['meta']
 }) => {
   const submission = new EncryptSubmission(submissionContent)
-
   try {
     await submission.save()
   } catch (err) {

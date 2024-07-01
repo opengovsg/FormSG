@@ -1,1 +1,2 @@
 export const PREVIEW_MOCK_UINFIN = 'S1234567A'
+export const PREVIEW_MASKED_MOCK_UINFIN = '*****567A'

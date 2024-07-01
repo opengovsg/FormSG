@@ -12,7 +12,7 @@ fi
 # Initialise git-secrets configuration
 git-secrets --register-aws > /dev/null
 
-echo "Running git-secrets..."
+echo "Running git-secrets prepare_commit_msg_hook"
 # Determines if merging in a commit will introduce tainted history.
 git-secrets --prepare_commit_msg_hook -- "$@"
 
