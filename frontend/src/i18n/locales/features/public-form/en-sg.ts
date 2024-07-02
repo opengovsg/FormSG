@@ -24,4 +24,13 @@ export const enSG: PublicForm = {
     verifiedFieldExpired_other:
       'Your verified fields {{count}} have expired. Please verify those {{count}} fields again.',
   },
+  components: {
+    PublicFormSubmitButton: {
+      loadingText: 'Submitting',
+      visuallyHidden: 'End of form.',
+      preventSubmission: 'Submission disabled',
+      proceedToPay: 'Proceed to pay',
+      submitNow: 'Submit now',
+    },
+  },
 }
