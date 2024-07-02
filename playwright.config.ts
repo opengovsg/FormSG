@@ -1,5 +1,4 @@
-import type { PlaywrightTestConfig } from '@playwright/test'
-import { devices } from '@playwright/test'
+import { defineConfig, devices } from '@playwright/test'
 import dotenv from 'dotenv'
 import path from 'path'
 
@@ -10,7 +9,7 @@ dotenv.config({
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
-const config: PlaywrightTestConfig = {
+export default defineConfig({
   testDir: './__tests__/e2e',
   /* Maximum time one test can run for. */
   timeout: 120 * 1000,
@@ -107,6 +106,4 @@ const config: PlaywrightTestConfig = {
       reuseExistingServer: !process.env.CI,
     },
   ],
-}
-
-export default config
+})

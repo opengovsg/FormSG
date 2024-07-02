@@ -1,4 +1,6 @@
+import { Page } from '@playwright/test'
 import axios from 'axios'
+import { FormResponseMode } from 'shared/types'
 
 // Maildev default port is 1080.
 const MAIL_URL = 'http://0.0.0.0:1080'
@@ -29,7 +31,7 @@ type EmailSubmission = {
   from: string[]
   subject: string
   html: string
-  attachments: Record<string, string>
+  attachments?: Record<string, string>
 }
 
 // Sleep util, needed before getting mail to give mail server some time to receive email.
@@ -82,15 +84,26 @@ export const extractOtp = async (recipient: string): Promise<string> => {
  * @returns {object} subject, sender, recipient and html content of email
  */
 export const getSubmission = async (
+  page: Page,
   formName: string,
   responseId: string,
+  responseMode: FormResponseMode,
 ): Promise<EmailSubmission> => {
   const subject = `formsg-auto: ${formName} (#${responseId})`
 
   const emails = await getEmailsBy((e) => e.subject === subject)
 
   const lastEmail = emails.pop()
-  if (!lastEmail) throw Error(`mailbox does not contain subject "${subject}"`)
+  if (!lastEmail) {
+    const err_msg = `mailbox does not contain subject "${subject}"`
+    await page.evaluate(
+      ([err_msg]) => {
+        console.log(err_msg)
+      },
+      [err_msg],
+    )
+    throw Error(err_msg)
+  }
 
   const submission = {
     responseId,
@@ -98,7 +111,10 @@ export const getSubmission = async (
     from: lastEmail.from.map((p) => p.address),
     subject: lastEmail.subject,
     html: lastEmail.html,
-    attachments: await getSubmissionAttachments(lastEmail),
+    attachments:
+      responseMode === FormResponseMode.Email
+        ? await getSubmissionAttachments(lastEmail)
+        : undefined,
   }
 
   await MAIL_CLIENT.deleteById(lastEmail.id)

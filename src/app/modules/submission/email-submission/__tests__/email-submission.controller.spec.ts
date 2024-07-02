@@ -163,7 +163,7 @@ describe('email-submission.controller', () => {
       expect(
         MockSubmissionService.sendEmailConfirmations,
       ).toHaveBeenCalledTimes(1)
-      // Assert nric is masked
+      // Assert nric is not masked
       expect(
         MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData[0]
           .answer,

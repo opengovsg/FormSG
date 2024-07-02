@@ -59,7 +59,10 @@ const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 describe('encrypt-submission.controller', () => {
   describe('nricMask', () => {
     beforeAll(async () => await dbHandler.connect())
-    afterEach(async () => await dbHandler.clearDatabase())
+    afterEach(async () => {
+      await dbHandler.clearDatabase()
+      jest.clearAllMocks()
+    })
     afterAll(async () => await dbHandler.closeDatabase())
 
     beforeEach(() => {
@@ -188,6 +191,102 @@ describe('encrypt-submission.controller', () => {
 
       expect(savedSubmission).toBeDefined()
       expect(savedSubmission!.verifiedContent).toEqual(MOCK_NRIC)
+    })
+
+    it('should not mask nric in email notification if form isNricMaskEnabled is false', async () => {
+      // Arrange
+      const mockFormId = new ObjectId()
+      const mockSpAuthTypeAndNricMaskingDisabledForm = {
+        _id: mockFormId,
+        title: 'some form',
+        authType: FormAuthType.SP,
+        isNricMaskEnabled: false,
+        form_fields: [] as FormFieldSchema[],
+        emails: ['test@example.com'],
+        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
+      } as IPopulatedEncryptedForm
+
+      const MOCK_REQ = merge(
+        expressHandler.mockRequest({
+          params: { formId: 'some id' },
+          body: {
+            responses: [],
+          },
+        }),
+        {
+          formsg: {
+            encryptedPayload: {
+              encryptedContent: 'encryptedContent',
+              version: 1,
+            },
+            formDef: {
+              authType: FormAuthType.SP,
+            },
+            encryptedFormDef: mockSpAuthTypeAndNricMaskingDisabledForm,
+          } as unknown as EncryptSubmissionDto,
+        } as unknown as FormCompleteDto,
+      ) as unknown as SubmitEncryptModeFormHandlerRequest
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await submitEncryptModeFormForTest(MOCK_REQ, mockRes)
+
+      // Assert
+      // email notification should be sent with the unmasked nric
+      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
+      // Assert nric is not masked
+      expect(
+        MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData[0]
+          .answer,
+      ).toEqual(MOCK_NRIC)
+    })
+
+    it('should mask nric in email notification if form isNricMaskEnabled is true', async () => {
+      // Arrange
+      const mockFormId = new ObjectId()
+      const mockSpAuthTypeAndNricMaskingEnabledForm = {
+        _id: mockFormId,
+        title: 'some form',
+        authType: FormAuthType.SP,
+        isNricMaskEnabled: true,
+        form_fields: [] as FormFieldSchema[],
+        emails: ['test@example.com'],
+        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
+      } as IPopulatedEncryptedForm
+
+      const MOCK_REQ = merge(
+        expressHandler.mockRequest({
+          params: { formId: 'some id' },
+          body: {
+            responses: [],
+          },
+        }),
+        {
+          formsg: {
+            encryptedPayload: {
+              encryptedContent: 'encryptedContent',
+              version: 1,
+            },
+            formDef: {
+              authType: FormAuthType.SP,
+            },
+            encryptedFormDef: mockSpAuthTypeAndNricMaskingEnabledForm,
+          } as unknown as EncryptSubmissionDto,
+        } as unknown as FormCompleteDto,
+      ) as unknown as SubmitEncryptModeFormHandlerRequest
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await submitEncryptModeFormForTest(MOCK_REQ, mockRes)
+
+      // Assert
+      // email notification should be sent with the masked nric
+      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
+      // Assert nric is masked
+      expect(
+        MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData[0]
+          .answer,
+      ).toEqual(MOCK_MASKED_NRIC)
     })
   })
 })
