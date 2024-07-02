@@ -20,6 +20,7 @@ import Button from '~components/Button'
 import Checkbox from '~components/Checkbox'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
+import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 import { ModalCloseButton } from '~components/Modal'
 
@@ -132,9 +133,7 @@ const useSecretKeyActivationModal = ({
 
   const handleDragLeave = (e: React.DragEvent) => {
     preventDefaults(e)
-    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-      setDragging(false)
-    }
+    setDragging(false)
   }
 
   const handleFileSelect = useCallback(
@@ -245,7 +244,7 @@ export const SecretKeyActivationModal = ({
                 isDisabled={isLoading}
               >
                 <FormLabel>Enter or upload Secret Key</FormLabel>
-                <Stack direction="column" spacing="0.5rem">
+                <Stack direction="row" spacing="0.5rem">
                   <Input
                     type="password"
                     {...register('secretKey', {
@@ -255,22 +254,23 @@ export const SecretKeyActivationModal = ({
                         message: 'The secret key provided is invalid',
                       },
                     })}
-                    placeholder="Enter or upload your Secret Key to continue"
-                  />
-                  <Button
-                    isDisabled={isLoading}
-                    variant="outline"
-                    rightIcon={<BiUpload />}
-                    onClick={() => fileUploadRef.current?.click()}
+                    placeholder={
+                      dragging
+                        ? 'Drop your Secret Key here'
+                        : 'Enter or upload your Secret Key to continue'
+                    }
                     onDragEnter={handleDragEnter}
                     onDragLeave={handleDragLeave}
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
-                  >
-                    {dragging
-                      ? 'Drop files here'
-                      : 'Drag and drop or click to upload'}
-                  </Button>
+                  />
+                  <IconButton
+                    isDisabled={isLoading}
+                    variant="outline"
+                    aria-label="Pass secret key from file"
+                    icon={<BiUpload />}
+                    onClick={() => fileUploadRef.current?.click()}
+                  />
                 </Stack>
                 <FormErrorMessage>{errors.secretKey?.message}</FormErrorMessage>
               </FormControl>
