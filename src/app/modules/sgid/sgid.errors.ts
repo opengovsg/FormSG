@@ -1,32 +1,32 @@
-import { ApplicationError } from '../../modules/core/core.errors'
+import { ApplicationError, ErrorCodes } from '../../modules/core/core.errors'
 
 export class SgidCreateRedirectUrlError extends ApplicationError {
   constructor(message = 'Error while creating redirect URL') {
-    super(message)
+    super(message, undefined, ErrorCodes.SgidCreateRedirectUrl)
   }
 }
 
 export class SgidInvalidStateError extends ApplicationError {
   constructor(message = 'State given by sgID is malformed') {
-    super(message)
+    super(message, undefined, ErrorCodes.SgidInvalidState)
   }
 }
 
 export class SgidFetchAccessTokenError extends ApplicationError {
   constructor(message = 'Error while fetching access token') {
-    super(message)
+    super(message, undefined, ErrorCodes.SgidFetchAccessToken)
   }
 }
 
 export class SgidFetchUserInfoError extends ApplicationError {
   constructor(message = 'Error while fetching user info') {
-    super(message)
+    super(message, undefined, ErrorCodes.SgidFetchUserInfo)
   }
 }
 
 export class SgidMalformedMyInfoCookieError extends ApplicationError {
   constructor(message = 'SGID MyInfo cookie is malformed') {
-    super(message)
+    super(message, undefined, ErrorCodes.SgidMalformedMyInfoCookie)
   }
 }
 
@@ -35,7 +35,7 @@ export class SgidMalformedMyInfoCookieError extends ApplicationError {
  */
 export class SgidVerifyJwtError extends ApplicationError {
   constructor(message = 'Invalid JWT') {
-    super(message)
+    super(message, undefined, ErrorCodes.SgidVerifyJwt)
   }
 }
 
@@ -44,7 +44,7 @@ export class SgidVerifyJwtError extends ApplicationError {
  */
 export class SgidInvalidJwtError extends ApplicationError {
   constructor(message = 'Decoded JWT did not contain the correct attributes') {
-    super(message)
+    super(message, undefined, ErrorCodes.SgidInvalidJwt)
   }
 }
 
@@ -53,6 +53,6 @@ export class SgidInvalidJwtError extends ApplicationError {
  */
 export class SgidMissingJwtError extends ApplicationError {
   constructor(message = 'No JWT present in cookies') {
-    super(message)
+    super(message, undefined, ErrorCodes.SgidMissingJwt)
   }
 }

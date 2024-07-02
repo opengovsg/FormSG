@@ -1,11 +1,11 @@
-import { ApplicationError } from '../core/core.errors'
+import { ApplicationError, ErrorCodes } from '../core/core.errors'
 
 /**
  * Transaction with given ID not found.
  */
 export class TransactionNotFoundError extends ApplicationError {
   constructor(message = 'Transaction with given ID not found') {
-    super(message)
+    super(message, undefined, ErrorCodes.TransactionNotFound)
   }
 }
 
@@ -14,7 +14,7 @@ export class TransactionNotFoundError extends ApplicationError {
  */
 export class FieldNotFoundInTransactionError extends ApplicationError {
   constructor(message = 'Field with given ID not found in the transaction') {
-    super(message)
+    super(message, undefined, ErrorCodes.FieldNotFoundInTransaction)
   }
 }
 
@@ -23,7 +23,7 @@ export class FieldNotFoundInTransactionError extends ApplicationError {
  */
 export class TransactionExpiredError extends ApplicationError {
   constructor(message = 'Transaction is expired') {
-    super(message)
+    super(message, undefined, ErrorCodes.TransactionExpired)
   }
 }
 
@@ -32,7 +32,7 @@ export class TransactionExpiredError extends ApplicationError {
  */
 export class OtpExpiredError extends ApplicationError {
   constructor(message = 'OTP is expired') {
-    super(message)
+    super(message, undefined, ErrorCodes.OtpExpired)
   }
 }
 
@@ -41,7 +41,7 @@ export class OtpExpiredError extends ApplicationError {
  */
 export class MissingHashDataError extends ApplicationError {
   constructor(message = 'Field is missing information on hashed OTP') {
-    super(message)
+    super(message, undefined, ErrorCodes.MissingHashData)
   }
 }
 
@@ -50,7 +50,7 @@ export class MissingHashDataError extends ApplicationError {
  */
 export class OtpRetryExceededError extends ApplicationError {
   constructor(message = 'Too many invalid attempts to enter OTP') {
-    super(message)
+    super(message, undefined, ErrorCodes.OtpRetryExceeded)
   }
 }
 
@@ -59,7 +59,7 @@ export class OtpRetryExceededError extends ApplicationError {
  */
 export class WrongOtpError extends ApplicationError {
   constructor(message = 'Wrong OTP entered') {
-    super(message)
+    super(message, undefined, ErrorCodes.WrongOtp)
   }
 }
 
@@ -68,7 +68,7 @@ export class WrongOtpError extends ApplicationError {
  */
 export class WaitForOtpError extends ApplicationError {
   constructor(message = 'OTP requested too soon after previous OTP') {
-    super(message)
+    super(message, undefined, ErrorCodes.WaitForOtp)
   }
 }
 
@@ -77,7 +77,7 @@ export class WaitForOtpError extends ApplicationError {
  */
 export class OtpRequestCountExceededError extends ApplicationError {
   constructor(message = 'Max OTP request count exceeded') {
-    super(message)
+    super(message, undefined, ErrorCodes.OtpRequestCountExceeded)
   }
 }
 
@@ -88,6 +88,7 @@ export class NonVerifiedFieldTypeError extends ApplicationError {
   constructor(unsupportedFieldType: string) {
     super(
       `Unsupported field type for OTP verification: ${unsupportedFieldType}`,
+      undefined, ErrorCodes.NonVerifiedFieldType
     )
   }
 }
@@ -99,7 +100,7 @@ export class SmsLimitExceededError extends ApplicationError {
   constructor(
     message = 'You have exceeded the free sms limit. Please refresh and try again.',
   ) {
-    super(message)
+    super(message, undefined, ErrorCodes.SmsLimitExceeded)
   }
 }
 
@@ -110,6 +111,6 @@ export class OtpRequestError extends ApplicationError {
   constructor(
     message = 'Please ensure that the form you are trying to request OTP for has the feature enabled.',
   ) {
-    super(message)
+    super(message, undefined, ErrorCodes.OtpRequestError)
   }
 }

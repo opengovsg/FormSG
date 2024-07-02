@@ -1,11 +1,11 @@
-import { ApplicationError } from '../core/core.errors'
+import { ApplicationError, ErrorCodes } from '../core/core.errors'
 
 /**
  * Error while creating Authorisation URL
  */
 export class CreateAuthorisationUrlError extends ApplicationError {
   constructor(message = 'Error while creating Authorisation URL') {
-    super(message)
+    super(message, undefined, ErrorCodes.CreateAuthorisationUrl)
   }
 }
 
@@ -14,7 +14,7 @@ export class CreateAuthorisationUrlError extends ApplicationError {
  */
 export class CreateJwtError extends ApplicationError {
   constructor(message = 'Create JWT failed') {
-    super(message)
+    super(message, undefined, ErrorCodes.OidcCreateJwt)
   }
 }
 
@@ -23,7 +23,7 @@ export class CreateJwtError extends ApplicationError {
  */
 export class GetSigningKeyError extends ApplicationError {
   constructor(message = 'Failed to get signing key') {
-    super(message)
+    super(message, undefined, ErrorCodes.GetSigningKey)
   }
 }
 
@@ -32,7 +32,7 @@ export class GetSigningKeyError extends ApplicationError {
  */
 export class GetDecryptionKeyError extends ApplicationError {
   constructor(message = 'Failed to get decryption key') {
-    super(message)
+    super(message, undefined, ErrorCodes.GetDecryptionKey)
   }
 }
 
@@ -41,7 +41,7 @@ export class GetDecryptionKeyError extends ApplicationError {
  */
 export class GetVerificationKeyError extends ApplicationError {
   constructor(message = 'Failed to get verification key') {
-    super(message)
+    super(message, undefined, ErrorCodes.GetVerificationKey)
   }
 }
 
@@ -50,7 +50,7 @@ export class GetVerificationKeyError extends ApplicationError {
  */
 export class InvalidIdTokenError extends ApplicationError {
   constructor(message = 'idToken has invalid shape') {
-    super(message)
+    super(message, undefined, ErrorCodes.OidcInvalidIdToken)
   }
 }
 
@@ -59,7 +59,7 @@ export class InvalidIdTokenError extends ApplicationError {
  */
 export class JwkError extends ApplicationError {
   constructor(message = 'Jwk has invalid shape') {
-    super(message)
+    super(message, undefined, ErrorCodes.JwkShapeInvalid)
   }
 }
 
@@ -68,7 +68,7 @@ export class JwkError extends ApplicationError {
  */
 export class MissingIdTokenError extends ApplicationError {
   constructor(message = 'Missing id token in tokenset') {
-    super(message)
+    super(message, undefined, ErrorCodes.MissingIdToken)
   }
 }
 
@@ -77,7 +77,7 @@ export class MissingIdTokenError extends ApplicationError {
  */
 export class VerificationKeyError extends ApplicationError {
   constructor(message = 'Verification key invalid') {
-    super(message)
+    super(message, undefined, ErrorCodes.VerificationKey)
   }
 }
 
@@ -86,6 +86,6 @@ export class VerificationKeyError extends ApplicationError {
  */
 export class ExchangeAuthTokenError extends ApplicationError {
   constructor(message = 'Exchange auth code for nric failed') {
-    super(message)
+    super(message, undefined, ErrorCodes.OidcExchangeAuthToken)
   }
 }

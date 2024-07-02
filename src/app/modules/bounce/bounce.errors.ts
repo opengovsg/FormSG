@@ -2,14 +2,14 @@ import {
   InvalidNumberError,
   SmsSendError,
 } from '../../services/postman-sms/postman-sms.errors'
-import { ApplicationError } from '../core/core.errors'
+import { ApplicationError, ErrorCodes } from '../core/core.errors'
 
 /**
  * Unexpected shape of request body.
  */
 export class InvalidNotificationError extends ApplicationError {
   constructor(message = 'Notification from AWS could not be validated') {
-    super(message)
+    super(message, undefined, ErrorCodes.InvalidNotification)
   }
 }
 
@@ -27,7 +27,7 @@ export class SendBounceSmsNotificationError extends ApplicationError {
     contact: string,
     message = 'Error while sending bounce notification via SMS',
   ) {
-    super(message)
+    super(message, undefined, ErrorCodes.SendBounceSmsNotification)
     this.meta = {
       contact,
       originalError,
@@ -42,7 +42,7 @@ export class MissingEmailHeadersError extends ApplicationError {
   constructor(
     message = 'Email is missing custom header containing form or submission ID',
   ) {
-    super(message)
+    super(message, undefined, ErrorCodes.MissingEmailHeaders)
   }
 }
 
@@ -51,6 +51,6 @@ export class MissingEmailHeadersError extends ApplicationError {
  */
 export class ParseNotificationError extends ApplicationError {
   constructor(message = 'Could not parse SNS notification') {
-    super(message)
+    super(message, undefined, ErrorCodes.ParseNotification)
   }
 }

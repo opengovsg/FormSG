@@ -1,11 +1,11 @@
-import { ApplicationError } from '../core/core.errors'
+import { ApplicationError, ErrorCodes } from '../core/core.errors'
 
 /**
  * Verified content has the wrong shape
  */
 export class MalformedVerifiedContentError extends ApplicationError {
   constructor(message = 'Verified content is malformed') {
-    super(message)
+    super(message, undefined, ErrorCodes.MalformedVerifiedContent)
   }
 }
 
@@ -14,6 +14,6 @@ export class MalformedVerifiedContentError extends ApplicationError {
  */
 export class EncryptVerifiedContentError extends ApplicationError {
   constructor(message = 'Failed to encrypt verified content') {
-    super(message)
+    super(message, undefined, ErrorCodes.EncryptVerifiedContent)
   }
 }
