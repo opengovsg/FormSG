@@ -18,7 +18,7 @@ import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.midd
 import * as TurnstileService from '../../../services/turnstile/turnstile.service'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { ControllerHandler } from '../../core/core.types'
-import { setFormTags } from '../../datadog/datadog.utils'
+import { setErrorCode, setFormTags } from '../../datadog/datadog.utils'
 import * as FormService from '../../form/form.service'
 import {
   MYINFO_LOGIN_COOKIE_NAME,
@@ -452,6 +452,7 @@ export const submitEmailModeForm: ControllerHandler<
         },
       )
       .mapErr((error) => {
+        setErrorCode(error)
         const { errorMessage, statusCode } = mapRouteError(error)
         return res
           .status(statusCode)

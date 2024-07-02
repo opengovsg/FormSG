@@ -21,6 +21,7 @@ import { createReqMeta } from '../../utils/request'
 import { getFormAfterPermissionChecks } from '../auth/auth.service'
 import { DatabaseError } from '../core/core.errors'
 import { ControllerHandler } from '../core/core.types'
+import { setErrorCode } from '../datadog/datadog.utils'
 import { PermissionLevel } from '../form/admin-form/admin-form.types'
 import { PaymentNotFoundError } from '../payments/payments.errors'
 import { getPopulatedUserById } from '../user/user.service'
@@ -127,7 +128,7 @@ export const getMetadata: ControllerHandler<
           meta: logMeta,
           error,
         })
-
+        setErrorCode(error)
         const { statusCode, errorMessage } = mapRouteError(error)
         return res.status(statusCode).json({
           message: errorMessage,
@@ -262,6 +263,7 @@ export const handleGetEncryptedResponse: ControllerHandler<
           meta: logMeta,
           error,
         })
+        setErrorCode(error)
         const { statusCode, errorMessage } = mapRouteError(error)
         return res.status(statusCode).json({
           message: errorMessage,
@@ -344,7 +346,7 @@ export const streamEncryptedResponses: ControllerHandler<
       meta: logMeta,
       error: cursorResult.error,
     })
-
+    setErrorCode(cursorResult.error)
     const { statusCode, errorMessage } = mapRouteError(cursorResult.error)
     return res.status(statusCode).json({
       message: errorMessage,

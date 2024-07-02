@@ -12,7 +12,7 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
 import { createReqMeta, getRequestIp } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
-import { setFormTags } from '../datadog/datadog.utils'
+import { setErrorCode, setFormTags } from '../datadog/datadog.utils'
 import * as FormService from '../form/form.service'
 import { MyInfoService } from '../myinfo/myinfo.service'
 import * as MyInfoUtil from '../myinfo/myinfo.util'
@@ -60,6 +60,7 @@ export const handleCreateVerificationTransaction: ControllerHandler<
         meta: logMeta,
         error,
       })
+      setErrorCode(error)
       const { errorMessage, statusCode } = mapRouteError(error)
       return res.status(statusCode).json({ message: errorMessage })
     })
@@ -203,6 +204,7 @@ export const _handleGenerateOtp: ControllerHandler<
           meta: logMeta,
           error,
         })
+        setErrorCode(error)
         const { errorMessage, statusCode } = mapRouteError(error)
         return res.status(statusCode).json({ message: errorMessage })
       })
@@ -272,6 +274,7 @@ export const _handleOtpVerification: ControllerHandler<
           meta: logMeta,
           error,
         })
+        setErrorCode(error)
         const { statusCode, errorMessage } = mapRouteError(error)
         return res.status(statusCode).json({ message: errorMessage })
       })
@@ -334,6 +337,7 @@ export const handleResetFieldVerification: ControllerHandler<
         meta: logMeta,
         error,
       })
+      setErrorCode(error)
       const { errorMessage, statusCode } = mapRouteError(error)
       return res.status(statusCode).json({ message: errorMessage })
     })
