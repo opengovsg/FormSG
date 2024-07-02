@@ -38,38 +38,41 @@ export class PaymentChannelNotFoundError extends ApplicationError {
 
 // Family of GoGov Errors from GoGov Integration
 export class GoGovError extends ApplicationError {
-  constructor(message = 'Error occurred when claiming GoGov link') {
-    super(message, undefined, ErrorCodes.GoGov)
+  constructor(
+    message = 'Error occurred when claiming GoGov link',
+    errorCode?: ErrorCodes,
+  ) {
+    super(message, undefined, errorCode || ErrorCodes.GoGov)
   }
 }
 
 export class GoGovValidationError extends GoGovError {
   constructor(message = GO_VALIDATION_ERROR_MESSAGE) {
-    super(message, undefined, ErrorCodes.GoGovValidation)
+    super(message, ErrorCodes.GoGovValidation)
   }
 }
 
 export class GoGovAlreadyExistError extends GoGovError {
   constructor(message = GO_ALREADY_EXIST_ERROR_MESSAGE) {
-    super(message, undefined, ErrorCodes.GoGovAlreadyExist)
+    super(message, ErrorCodes.GoGovAlreadyExist)
   }
 }
 
 export class GoGovRequestLimitError extends GoGovError {
   constructor(message = 'GoGov request limit exceeded') {
-    super(message, undefined, ErrorCodes.GoGovRequestLimit)
+    super(message, ErrorCodes.GoGovRequestLimit)
   }
 }
 
 export class GoGovBadGatewayError extends GoGovError {
   constructor(message = 'GoGov request failed') {
-    super(message, undefined, ErrorCodes.GoGovBadGateway)
+    super(message, ErrorCodes.GoGovBadGateway)
   }
 }
 
 export class GoGovServerError extends GoGovError {
   // Default error message will be shown if not AxiosError
   constructor(message = 'Unexpected error occured when claiming GoGov link') {
-    super(message, undefined, ErrorCodes.GoGovServer)
+    super(message, ErrorCodes.GoGovServer)
   }
 }
