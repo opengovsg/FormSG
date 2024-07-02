@@ -442,7 +442,7 @@ export const submitEmailModeForm: ControllerHandler<
           return res.status(StatusCodes.BAD_REQUEST).json({
             message:
               'Your NRIC/FIN has already been used to respond to this form.',
-            isSingleSubmissionValidationFailure: true,
+            hasSingleSubmissionValidationFailure: true,
           })
         }
         // Send email confirmations

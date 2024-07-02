@@ -1,7 +1,7 @@
 import type { Opaque, RequireAtLeastOne } from 'type-fest'
 import { z } from 'zod'
 
-import { ErrorDto } from './core'
+import { ErrorDto, SingleSubmissionValidationErrorDto } from './core'
 import { FormFieldDto, MyInfoAttribute, PaymentFieldsDto } from './field'
 import { FormAuthType } from './form/form'
 import { DateString } from './generic'
@@ -235,10 +235,11 @@ export type SubmissionResponseDto = {
   paymentData?: PaymentSubmissionData
 }
 
-export type SubmissionErrorDto = ErrorDto & {
-  spcpSubmissionFailure?: true
-  isSingleSubmissionValidationFailure?: true
-}
+export type SubmissionErrorDto =
+  | (ErrorDto & {
+      spcpSubmissionFailure?: true
+    })
+  | SingleSubmissionValidationErrorDto
 
 export type SubmissionCountQueryDto =
   | {

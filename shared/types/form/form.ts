@@ -304,6 +304,7 @@ export type PublicFormViewDto = {
   isIntranetUser?: boolean
   myInfoError?: true
   myInfoChildrenBirthRecords?: MyInfoChildData
+  hasSingleSubmissionValidationFailure?: boolean
 }
 
 export type PreviewFormViewDto = Pick<PublicFormViewDto, 'form' | 'spcpSession'>

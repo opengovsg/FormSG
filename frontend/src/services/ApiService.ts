@@ -30,7 +30,7 @@ export const transformAxiosError = (error: Error): ApiError => {
   if (axios.isAxiosError(error)) {
     if (error.response) {
       const statusCode = error.response.status
-      if (error.response.data?.isSingleSubmissionValidationFailure) {
+      if (error.response.data?.hasSingleSubmissionValidationFailure) {
         return new SingleSubmissionValidationError()
       }
       if (statusCode === StatusCodes.TOO_MANY_REQUESTS) {

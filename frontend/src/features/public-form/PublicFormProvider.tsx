@@ -155,6 +155,18 @@ export const PublicFormProvider = ({
     data.spcpSession.userName = maskNric(data.spcpSession.userName)
   }
 
+  useEffect(() => {
+    if (
+      data?.form.isSingleSubmission &&
+      data.hasSingleSubmissionValidationFailure
+    ) {
+      setHasSingleSubmissionValidationError(true)
+    }
+  }, [
+    data?.form.isSingleSubmission,
+    data?.hasSingleSubmissionValidationFailure,
+  ])
+
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
     useCommonFormProvider(formId)
 
@@ -444,6 +456,11 @@ export const PublicFormProvider = ({
   )
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
+
+  const handleLogout = useCallback(() => {
+    if (!data?.form || data.form.authType === FormAuthType.NIL) return
+    return handleLogoutMutation.mutate(data.form.authType)
+  }, [data?.form, handleLogoutMutation])
 
   const navigate = useNavigate()
   const [, storePaymentMemory] = useBrowserStm(formId)
@@ -813,11 +830,6 @@ export const PublicFormProvider = ({
   )
 
   useTimeout(generateVfnExpiryToast, expiryInMs)
-
-  const handleLogout = useCallback(() => {
-    if (!data?.form || data.form.authType === FormAuthType.NIL) return
-    return handleLogoutMutation.mutate(data.form.authType)
-  }, [data?.form, handleLogoutMutation])
 
   const isAuthRequired = useMemo(
     () =>

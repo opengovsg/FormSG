@@ -12,6 +12,8 @@ import {
   Text,
 } from '@chakra-ui/react'
 
+import { FORM_SINGLE_SUBMISSION_VALIDATION_ERROR_MESSAGE } from '~shared/constants/'
+
 import { useIsMobile } from '~hooks/useIsMobile'
 import ButtonGroup from '~components/ButtonGroup'
 
@@ -55,11 +57,7 @@ export const SingleSubmissionModal = ({
         </ModalHeader>
         <ModalBody flexGrow={0}>
           <Stack>
-            <Text>
-              You have already submitted a response using this NRIC/FIN. If you
-              think this is a mistake, please contact the agency that gave you
-              the form link.
-            </Text>
+            <Text>{FORM_SINGLE_SUBMISSION_VALIDATION_ERROR_MESSAGE}</Text>
           </Stack>
         </ModalBody>
         <ModalFooter>

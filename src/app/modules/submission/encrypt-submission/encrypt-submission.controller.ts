@@ -60,6 +60,7 @@ import { ProcessedFieldResponse } from '../submission.types'
 import {
   checkIsIndividualSingpassAuthType,
   generateHashedSubmitterId,
+  getCookieNameByAuthType,
   mapRouteError,
 } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
@@ -672,7 +673,8 @@ const _createSubmission = async ({
   try {
     if (
       form.isSingleSubmission &&
-      checkIsIndividualSingpassAuthType(form.authType)
+      checkIsIndividualSingpassAuthType(form.authType) &&
+      form.authType !== FormAuthType.NIL
     ) {
       if (!submissionContent.submitterId) {
         throw new ApplicationError(
@@ -690,7 +692,7 @@ const _createSubmission = async ({
         return res.status(StatusCodes.BAD_REQUEST).json({
           message:
             'Your NRIC/FIN has already been used to respond to this form.',
-          isSingleSubmissionValidationFailure: true,
+          hasSingleSubmissionValidationFailure: true,
         })
       }
     } else {
@@ -767,6 +769,15 @@ const _createSubmission = async ({
   }
 
   // Send success back to client
+  // clear cookies to log out user if isSingleSubmission form
+  if (
+    form.authType != FormAuthType.NIL &&
+    form.isSingleSubmission &&
+    checkIsIndividualSingpassAuthType(form.authType)
+  ) {
+    const authCookieName = getCookieNameByAuthType(form.authType)
+    res.clearCookie(authCookieName)
+  }
   res.json({
     message: 'Form submission successful.',
     submissionId,

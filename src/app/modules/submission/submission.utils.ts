@@ -19,6 +19,7 @@ import { MYINFO_ATTRIBUTE_MAP } from '../../../../shared/constants/field/myinfo'
 import {
   BasicField,
   FormAuthType,
+  FormAuthType,
   FormField,
   FormResponseMode,
   MyInfoAttribute,
@@ -81,6 +82,7 @@ import {
   PrivateFormError,
 } from '../form/form.errors'
 import { isFormEncryptModeOrMultirespondent } from '../form/form.utils'
+import { MYINFO_LOGIN_COOKIE_NAME } from '../myinfo/myinfo.constants'
 import {
   MyInfoCookieStateError,
   MyInfoHashDidNotMatchError,
@@ -96,6 +98,10 @@ import {
   PaymentNotFoundError,
 } from '../payments/payments.errors'
 import {
+  SGID_COOKIE_NAME,
+  SGID_MYINFO_LOGIN_COOKIE_NAME,
+} from '../sgid/sgid.constants'
+import {
   SgidInvalidJwtError,
   SgidMissingJwtError,
   SgidVerifyJwtError,
@@ -106,6 +112,7 @@ import {
   MissingJwtError,
   VerifyJwtError,
 } from '../spcp/spcp.errors'
+import { JwtName } from '../spcp/spcp.types'
 import { MissingUserError } from '../user/user.errors'
 
 import { MYINFO_PREFIX } from './email-submission/email-submission.constants'
@@ -782,4 +789,28 @@ export const checkIsIndividualSingpassAuthType = (
  */
 export const generateHashedSubmitterId = (id: string) => {
   return id
+}
+
+/**
+ * Returns the cookie name based on auth type
+ * Valid AuthTypes are SP / CP / MyInfo / SGID
+ */
+export const getCookieNameByAuthType = (
+  authType:
+    | FormAuthType.SP
+    | FormAuthType.CP
+    | FormAuthType.MyInfo
+    | FormAuthType.SGID
+    | FormAuthType.SGID_MyInfo,
+): string => {
+  switch (authType) {
+    case FormAuthType.SGID_MyInfo:
+      return SGID_MYINFO_LOGIN_COOKIE_NAME
+    case FormAuthType.MyInfo:
+      return MYINFO_LOGIN_COOKIE_NAME
+    case FormAuthType.SGID:
+      return SGID_COOKIE_NAME
+    default:
+      return JwtName[authType]
+  }
 }
