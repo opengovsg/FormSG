@@ -282,7 +282,7 @@ describe('encrypt-submission.controller', () => {
       // Assert
       // email notification should be sent with the masked nric
       expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
-      // Assert nric is not masked
+      // Assert nric is masked
       expect(
         MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData[0]
           .answer,
