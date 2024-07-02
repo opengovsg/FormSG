@@ -48,13 +48,12 @@ export class WebhookFailedWithUnknownError extends ApplicationError {
  * Webhook returned non-200 status, error is instance of AxiosError
  */
 export class WebhookFailedWithAxiosError extends ApplicationError {
+  meta: {
+    originalError: AxiosError<unknown>
+  }
   constructor(error: AxiosError<unknown>, message = 'Webhook POST failed') {
-    const meta: {
-      originalError: AxiosError<unknown>
-    } = {
-      originalError: error,
-    }
-    super(message, meta, ErrorCodes.WebhookFailedWithAxios)
+    super(message, undefined, ErrorCodes.WebhookFailedWithAxios)
+    this.meta = { originalError: error }
   }
 }
 
