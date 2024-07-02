@@ -74,6 +74,8 @@ export const BaseSectionField = forwardRef<
       },
     )
 
+    console.log(descriptionTranslations)
+
     // If there exists a translation for description based on the selected language,
     // use that. If not default to english
     if (descriptionTranslationIdx !== -1) {
@@ -97,7 +99,7 @@ export const BaseSectionField = forwardRef<
         {description && (
           <Box mt="1rem">
             <MarkdownText multilineBreaks components={mdComponents}>
-              {schema.description}
+              {description}
             </MarkdownText>
           </Box>
         )}
