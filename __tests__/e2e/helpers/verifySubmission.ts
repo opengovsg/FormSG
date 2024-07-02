@@ -204,11 +204,12 @@ export const verifyEncryptSubmission = async (
     // Verify form responses in email
     for (const field of formFields) {
       const responseArray = getResponseArray(field, {
-        mode: FormResponseMode.Email,
+        mode: FormResponseMode.Encrypt,
+        csv: false,
       })
       if (!responseArray) continue
       expectSubmissionContains([
-        getResponseTitle(field, { mode: FormResponseMode.Email }),
+        getResponseTitle(field, { mode: FormResponseMode.Encrypt, csv: false }),
         ...responseArray,
       ])
       if (!submission.attachments) continue
