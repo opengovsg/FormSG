@@ -171,10 +171,7 @@ const addSettings = async (
   await expect(page).toHaveURL(ADMIN_FORM_PAGE_SETTINGS(formId))
 
   await addGeneralSettings(page, formSettings)
-  // Encrypt mode forms don't have an email
-  if (formResponseMode.responseMode === FormResponseMode.Encrypt) {
-    await addAdminEmails(page, formSettings)
-  }
+  await addAdminEmails(page, formSettings)
   await addAuthSettings(page, formSettings)
   await addCollaborators(page, formSettings)
 
@@ -384,6 +381,8 @@ const addAdminEmails = async (
     await page.keyboard.press('Backspace')
 
     await emailInput.fill(formSettings.emails.join(', '))
+
+    await page.keyboard.press('Tab')
 
     await expectToast(page, /emails successfully updated/i)
   }

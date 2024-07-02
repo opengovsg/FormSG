@@ -51,9 +51,11 @@ import * as VerifiedContentService from '../../verified-content/verified-content
 import * as EmailSubmissionService from '../email-submission/email-submission.service'
 import { SubmissionEmailObj } from '../email-submission/email-submission.util'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
+import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
 import { SubmissionFailedError } from '../submission.errors'
 import { uploadAttachments } from '../submission.service'
+import { ProcessedFieldResponse } from '../submission.types'
 import { mapRouteError } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
@@ -131,6 +133,10 @@ const submitEncryptModeForm = async (
   // Create Incoming Submission
   const { encryptedContent, responseMetadata, paymentProducts } =
     encryptedPayload
+
+  // This is because NRIC masking is done in the controller, but we parse the fields in the
+  // middleware for encrypt forms
+  const parsedResponses = new ParsedResponsesObject(req.body.responses)
 
   // Checks if user is SPCP-authenticated before allowing submission
   let uinFin
@@ -257,6 +263,30 @@ const submitEncryptModeForm = async (
     uinFin = maskNric(uinFin)
   }
 
+  // Add NDI responses
+  switch (form.authType) {
+    case FormAuthType.CP: {
+      if (!uinFin || !userInfo) break
+      parsedResponses.addNdiResponses({
+        authType,
+        uinFin,
+        userInfo,
+      })
+      break
+    }
+    case FormAuthType.SP:
+    case FormAuthType.SGID:
+    case FormAuthType.MyInfo:
+    case FormAuthType.SGID_MyInfo: {
+      if (!uinFin) break
+      parsedResponses.addNdiResponses({
+        authType: form.authType,
+        uinFin,
+      })
+      break
+    }
+  }
+
   // Encrypt Verified SPCP Fields
   let verified
   if (
@@ -351,6 +381,7 @@ const submitEncryptModeForm = async (
     formId,
     form,
     responses: req.formsg.filteredResponses,
+    emailFields: parsedResponses.getAllResponses(),
     responseMetadata,
     submissionContent,
   })
@@ -613,11 +644,13 @@ const _createSubmission = async ({
   form,
   responseMetadata,
   responses,
+  emailFields,
 }: {
   req: Parameters<SubmitEncryptModeFormHandlerType>[0]
   res: Parameters<SubmitEncryptModeFormHandlerType>[1]
   responseMetadata: EncryptSubmissionDto['responseMetadata']
   responses: ParsedClearFormFieldResponse[]
+  emailFields: ProcessedFieldResponse[]
   formId: string
   form: IPopulatedEncryptedForm
   submissionContent: EncryptSubmissionContent
@@ -667,7 +700,7 @@ const _createSubmission = async ({
   })
 
   const emailData = new SubmissionEmailObj(
-    responses,
+    emailFields,
     new Set(), // the MyInfo prefixes are already inserted in middleware
     form.authType,
   )
@@ -677,7 +710,7 @@ const _createSubmission = async ({
   // stop the storage of the data in the db
   if (((form as IEncryptedForm)?.emails || []).length > 0) {
     void MailService.sendSubmissionToAdmin({
-      replyToEmails: EmailSubmissionService.extractEmailAnswers(responses),
+      replyToEmails: EmailSubmissionService.extractEmailAnswers(emailFields),
       form,
       submission: {
         created: createdTime,
