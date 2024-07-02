@@ -17,4 +17,13 @@ export interface PublicForm {
     verifiedFieldExpired_one: string
     verifiedFieldExpired_other: string
   }
+  components: {
+    PublicFormSubmitButton: {
+      loadingText: string
+      visuallyHidden: string
+      preventSubmission: string
+      proceedToPay: string
+      submitNow: string
+    }
+  }
 }

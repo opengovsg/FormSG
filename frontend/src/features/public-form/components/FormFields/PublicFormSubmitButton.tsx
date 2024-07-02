@@ -1,5 +1,6 @@
 import { MouseEventHandler, useMemo, useState } from 'react'
 import { useFormState, UseFormTrigger, useWatch } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Stack, useDisclosure, VisuallyHidden } from '@chakra-ui/react'
 
 import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
@@ -37,6 +38,7 @@ export const PublicFormSubmitButton = ({
   onSubmit,
   trigger,
 }: PublicFormSubmitButtonProps): JSX.Element => {
+  const { t } = useTranslation()
   const [prevPaymentId, setPrevPaymentId] = useState('')
 
   const isMobile = useIsMobile()
@@ -103,15 +105,27 @@ export const PublicFormSubmitButton = ({
         type="button"
         isLoading={isSubmitting}
         isDisabled={!!preventSubmissionLogic || !onSubmit}
-        loadingText="Submitting"
+        loadingText={t(
+          'features.publicForm.components.PublicFormSubmitButton.loadingText',
+        )}
         onClick={isPaymentEnabled && !isPreview ? checkBeforeOpen : onSubmit}
       >
-        <VisuallyHidden>End of form.</VisuallyHidden>
+        <VisuallyHidden>
+          {t(
+            'features.publicForm.components.PublicFormSubmitButton.visuallyHidden',
+          )}
+        </VisuallyHidden>
         {preventSubmissionLogic
-          ? 'Submission disabled'
+          ? t(
+              'features.publicForm.components.PublicFormSubmitButton.preventSubmission',
+            )
           : isPaymentEnabled
-            ? 'Proceed to pay'
-            : 'Submit now'}
+            ? t(
+                'features.publicForm.components.PublicFormSubmitButton.proceedToPay',
+              )
+            : t(
+                'features.publicForm.components.PublicFormSubmitButton.submitNow',
+              )}
       </Button>
       {preventSubmissionLogic ? (
         <InlineMessage variant="warning">
