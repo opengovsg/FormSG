@@ -79,7 +79,14 @@ export const RadioField = ({
       return translation.language === selectedLanguage
     })
 
-    if (translationIdx !== -1) {
+    // Check if translations for field options exist and whether
+    // each field option has its own respective translation. If not
+    // render the default field options in English.
+    if (
+      translationIdx !== -1 &&
+      fieldOptionsTranslations[translationIdx].translation.length ===
+        defaultEnglishRadioOptions.length
+    ) {
       return fieldOptionsTranslations[translationIdx].translation
     } else {
       return defaultEnglishRadioOptions
@@ -89,6 +96,8 @@ export const RadioField = ({
     schema?.fieldOptionsTranslations,
     selectedLanguage,
   ])
+
+  console.log(fieldOptions)
 
   return (
     <FieldContainer

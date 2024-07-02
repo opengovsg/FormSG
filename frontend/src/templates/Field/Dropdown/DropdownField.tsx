@@ -39,7 +39,14 @@ export const DropdownField = ({
       return translation.language === selectedLanguage
     })
 
-    if (translationIdx !== -1) {
+    // Check if translations for field options exist and whether
+    // each field option has its own respective translation. If not
+    // render the default field options in English.
+    if (
+      translationIdx !== -1 &&
+      fieldOptionsTranslations[translationIdx].translation.length ===
+        defaultEnglishFieldOptions.length
+    ) {
       const translatedFieldOptions =
         fieldOptionsTranslations[translationIdx].translation
 

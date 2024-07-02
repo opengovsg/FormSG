@@ -95,13 +95,20 @@ const DropdownColumnCell = ({
   const fieldOptions: ComboboxItem[] = useMemo(() => {
     const defaultEnglishFieldOptions = schema.fieldOptions ?? []
     const fieldOptionsTranslations = schema?.fieldOptionsTranslations ?? []
-    const translationsIdx = fieldOptionsTranslations.findIndex(
+    const translationIdx = fieldOptionsTranslations.findIndex(
       (translation) => translation.language === selectedLanguage,
     )
 
-    if (translationsIdx !== -1) {
+    // Check if translations for field options exist and whether
+    // each field option has its own respective translation. If not
+    // render the default field options in English.
+    if (
+      translationIdx !== -1 &&
+      fieldOptionsTranslations[translationIdx].translation.length ===
+        defaultEnglishFieldOptions.length
+    ) {
       const translatedFieldOptions =
-        fieldOptionsTranslations[translationsIdx].translation
+        fieldOptionsTranslations[translationIdx].translation
 
       // The label will be the translated option while the value is the
       // default English option so that upon form submission, the value recorded

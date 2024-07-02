@@ -13,7 +13,7 @@ import {
 } from '@chakra-ui/react'
 import _ from 'lodash'
 
-import { FormField, FormFieldDto, Language } from '~shared/types'
+import { BasicField, FormField, FormFieldDto, Language } from '~shared/types'
 
 import { PhHandsClapping } from '~assets/icons'
 import { BxsDockTop } from '~assets/icons/BxsDockTop'
@@ -195,6 +195,21 @@ export const TranslationListSection = ({
             false)
       }
 
+      // Check if all the field options have their own translations
+      if (
+        form_field.fieldType === BasicField.Checkbox ||
+        form_field.fieldType === BasicField.Radio ||
+        form_field.fieldType === BasicField.Dropdown
+      ) {
+        const fieldOptionsTranslation =
+          form_field.fieldOptionsTranslations.find(
+            (translation) => translation.language === uppercaseLanguage,
+          )?.translation ?? []
+
+        hasTranslations =
+          hasTranslations &&
+          form_field.fieldOptions.length === fieldOptionsTranslation.length
+      }
       return hasTranslations
     },
     [uppercaseLanguage],
@@ -229,7 +244,7 @@ export const TranslationListSection = ({
             </>
           )}
 
-          {form?.form_fields.map((form_field, id, arr) => {
+          {form?.form_fields.map((form_field, id) => {
             const isMyInfoField = isMyInfo(form_field)
 
             const questionIcon = isMyInfoField

@@ -541,7 +541,6 @@ export const TranslationSection = ({
   const titleTranslationInput = watch('titleTranslation')
   const descriptionTranslationInput = watch('descriptionTranslation')
   const paragraphTranslationInput = watch('paragraphTranslations')
-  const fieldOptionsTranslationInput = watch('fieldOptionsTranslations')
 
   const toast = useToast({ status: 'danger' })
 
@@ -695,7 +694,12 @@ export const TranslationSection = ({
           const optionsTranslationsInput = getValues(
             `tableColumnDropdownTranslations.${index}`,
           )
-          const optionsTranslationsArr = optionsTranslationsInput?.split('\n')
+
+          let optionsTranslationsArr = optionsTranslationsInput.split('\n')
+
+          optionsTranslationsArr = optionsTranslationsArr.filter(
+            (optionsTranslation) => !_.isEmpty(optionsTranslation),
+          )
 
           // find if there exists translations for the options
           let updatedOptionsTranslations = column.fieldOptionsTranslations ?? []
@@ -795,6 +799,16 @@ export const TranslationSection = ({
         formFieldData.fieldType === BasicField.Checkbox ||
         formFieldData.fieldType === BasicField.Dropdown
       ) {
+        const fieldOptionsTranslationInput = watch('fieldOptionsTranslations')
+
+        // filter out empty strings from input
+        let fieldOptionsTranslationsArr =
+          fieldOptionsTranslationInput.split('\n')
+
+        fieldOptionsTranslationsArr = fieldOptionsTranslationsArr.filter(
+          (fieldOptionsTranslation) => !_.isEmpty(fieldOptionsTranslation),
+        )
+
         // get existing options translations if any
         const existingOptionsTranslations =
           formFieldData?.fieldOptionsTranslations ?? []
@@ -810,13 +824,13 @@ export const TranslationSection = ({
         // there are existing translations for the options
         if (translationIdx !== -1) {
           updatedOptionsTranslations[translationIdx].translation =
-            fieldOptionsTranslationInput.split('\n')
+            fieldOptionsTranslationsArr
         } else {
           updatedOptionsTranslations = [
             ...existingOptionsTranslations,
             {
               language: capitalisedLanguage as Language,
-              translation: fieldOptionsTranslationInput.split('\n'),
+              translation: fieldOptionsTranslationsArr,
             },
           ]
         }
@@ -825,7 +839,7 @@ export const TranslationSection = ({
       }
       return []
     },
-    [capitalisedLanguage, fieldOptionsTranslationInput],
+    [capitalisedLanguage, watch],
   )
 
   const handleOnSaveClick = useCallback(() => {
