@@ -3,9 +3,14 @@ import { Link as ReactLink } from 'react-router-dom'
 import { Box, ButtonProps, chakra, Flex, Text } from '@chakra-ui/react'
 import dayjs from 'dayjs'
 
-import { AdminDashboardFormMetaDto, FormStatus } from '~shared/types/form/form'
+import {
+  AdminDashboardFormMetaDto,
+  FormResponseMode,
+  FormStatus,
+} from '~shared/types/form/form'
 
 import { ADMINFORM_ROUTE } from '~constants/routes'
+import Badge from '~components/Badge'
 
 import { FormStatusLabel } from './FormStatusLabel'
 import { RowActions } from './RowActions'
@@ -21,6 +26,12 @@ const RELATIVE_DATE_FORMAT = {
   nextWeek: 'ddd, D MMM YYYY h:mma', // Tue, 17 Oct 2021 9:30pm
   lastWeek: 'ddd, D MMM YYYY h:mma', // Tue, 17 Oct 2021 9:30pm
   sameElse: 'D MMM YYYY h:mma', // 6 Oct 2021 9:30pm
+}
+
+const RESPONSE_MODE_TO_TEXT: { [key in FormResponseMode]: string } = {
+  [FormResponseMode.Multirespondent]: 'Multi-respondent form',
+  [FormResponseMode.Email]: 'Email form',
+  [FormResponseMode.Encrypt]: 'Storage form',
 }
 
 export const WorkspaceFormRow = ({
@@ -45,12 +56,12 @@ export const WorkspaceFormRow = ({
         justifyContent="space-between"
         gridTemplateColumns={{
           base: '1fr 2.75rem',
-          md: '1fr 4rem 8rem',
+          md: '1fr 10rem 4rem 8rem',
         }}
         gridTemplateRows={{ base: 'auto 2.75rem', md: 'auto' }}
         gridTemplateAreas={{
-          base: "'title title' 'status actions'",
-          md: "'title status actions'",
+          base: "'title title' 'formType' 'status actions'",
+          md: "'title formType status actions'",
         }}
         gridGap={{ base: '0.5rem', md: '1.5rem' }}
         _hover={{
@@ -83,6 +94,11 @@ export const WorkspaceFormRow = ({
             Edited {prettyLastModified}
           </Text>
         </Flex>
+        <Box gridArea="formType" alignSelf="center">
+          <Badge bgColor="primary.100" color="secondary.500">
+            {RESPONSE_MODE_TO_TEXT[formMeta.responseMode]}
+          </Badge>
+        </Box>
         <Box gridArea="status" alignSelf="center">
           <FormStatusLabel status={formMeta.status} />
         </Box>
