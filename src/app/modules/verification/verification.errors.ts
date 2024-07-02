@@ -88,7 +88,8 @@ export class NonVerifiedFieldTypeError extends ApplicationError {
   constructor(unsupportedFieldType: string) {
     super(
       `Unsupported field type for OTP verification: ${unsupportedFieldType}`,
-      undefined, ErrorCodes.NonVerifiedFieldType
+      undefined,
+      ErrorCodes.NonVerifiedFieldType,
     )
   }
 }
