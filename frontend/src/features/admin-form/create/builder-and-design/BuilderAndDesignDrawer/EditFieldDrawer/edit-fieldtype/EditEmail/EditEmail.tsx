@@ -130,14 +130,9 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
 
   const { data: form } = useCreateTabForm()
   const isPdfResponseEnabled = useMemo(
-    () => form?.responseMode !== FormResponseMode.Encrypt,
+    () => form?.responseMode !== FormResponseMode.Multirespondent,
     [form],
   )
-  const pdfResponseToggleDescription = useMemo(() => {
-    if (!isPdfResponseEnabled) {
-      return 'For security reasons, PDF responses are not included in email confirmations for Storage mode forms'
-    }
-  }, [isPdfResponseEnabled])
 
   // email confirmation is not supported on MRF
   const isToggleEmailConfirmationDisabled = useMemo(
@@ -239,7 +234,6 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
               <Toggle
                 {...register('autoReplyOptions.includeFormSummary')}
                 label="Include PDF response"
-                description={pdfResponseToggleDescription}
                 isDisabled={!isPdfResponseEnabled}
               />
             </FormControl>
