@@ -314,7 +314,8 @@ export const submitEmailModeForm: ControllerHandler<
             (response) => response.fieldType === BasicField.Nric,
           ) as ProcessedSingleAnswerResponse
           submitterId =
-            ndiResponse?.answer ?? generateHashedSubmitterId(ndiResponse.answer)
+            ndiResponse?.answer ??
+            generateHashedSubmitterId(ndiResponse.answer, form.id)
         }
 
         if (form.isNricMaskEnabled) {

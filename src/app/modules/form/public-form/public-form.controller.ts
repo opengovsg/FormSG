@@ -326,7 +326,7 @@ export const handleGetPublicForm: ControllerHandler<
   const hasSingleSubmissionValidationFailureResult =
     await FormService.checkHasSingleSubmissionValidationFailure(
       publicForm,
-      generateHashedSubmitterId(spcpSession.userName),
+      generateHashedSubmitterId(spcpSession.userName, form.id),
     )
 
   if (hasSingleSubmissionValidationFailureResult.isErr()) {

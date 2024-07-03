@@ -259,7 +259,7 @@ const submitEncryptModeForm = async (
   let submitterId
   // Generate submitterId for Singpass (excluding Corppass) auth types.
   if (uinFin && checkIsIndividualSingpassAuthType(form.authType)) {
-    submitterId = generateHashedSubmitterId(uinFin)
+    submitterId = generateHashedSubmitterId(uinFin, form.id)
   }
 
   // Mask if Nric masking is enabled
@@ -673,8 +673,7 @@ const _createSubmission = async ({
   try {
     if (
       form.isSingleSubmission &&
-      checkIsIndividualSingpassAuthType(form.authType) &&
-      form.authType !== FormAuthType.NIL
+      checkIsIndividualSingpassAuthType(form.authType)
     ) {
       if (!submissionContent.submitterId) {
         throw new ApplicationError(

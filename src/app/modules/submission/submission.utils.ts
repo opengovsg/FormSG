@@ -1,4 +1,5 @@
 import { encode as encodeBase64 } from '@stablelib/base64'
+import crypto from 'crypto'
 import StatusCodes from 'http-status-codes'
 import {
   chain,
@@ -18,7 +19,6 @@ import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
 import { MYINFO_ATTRIBUTE_MAP } from '../../../../shared/constants/field/myinfo'
 import {
   BasicField,
-  FormAuthType,
   FormAuthType,
   FormField,
   FormResponseMode,
@@ -787,8 +787,15 @@ export const checkIsIndividualSingpassAuthType = (
  * @param id
  * @returns
  */
-export const generateHashedSubmitterId = (id: string) => {
-  return id
+
+export const generateHashedSubmitterId = (id: string, salt: string) => {
+  // if (!id || !salt) {
+  //   throw new ApplicationError('id and salt must be provided to hash id')
+  // }
+  return crypto
+    .createHash('sha256')
+    .update(id + salt)
+    .digest('hex')
 }
 
 /**
