@@ -60,7 +60,7 @@ export const WorkspaceFormRow = ({
         }}
         gridTemplateRows={{ base: 'auto 2.75rem', md: 'auto' }}
         gridTemplateAreas={{
-          base: "'title title' 'formType' 'status actions'",
+          base: "'title title' 'formType formType' 'status actions'",
           md: "'title formType status actions'",
         }}
         gridGap={{ base: '0.5rem', md: '1.5rem' }}
