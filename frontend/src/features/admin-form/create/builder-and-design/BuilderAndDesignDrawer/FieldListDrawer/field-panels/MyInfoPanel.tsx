@@ -205,8 +205,7 @@ export const MyInfoFieldPanel = () => {
           </Box>
         )}
       </Droppable>
-      {user?.betaFlags?.children &&
-      form?.responseMode === FormResponseMode.Email ? (
+      {user?.betaFlags?.children ? (
         <Droppable isDropDisabled droppableId={CREATE_MYINFO_CHILDREN_DROP_ID}>
           {(provided) => (
             <Box ref={provided.innerRef} {...provided.droppableProps}>
