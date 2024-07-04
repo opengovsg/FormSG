@@ -226,11 +226,13 @@ export const PrivacyPolicyPage = (): JSX.Element => {
                     isNumericMarker
                     prependSequenceMarker="6."
                   >
-                    We may share your personal data with non-Government Agency entities 
-                    that have been authorised to carry out specific Government agency
-                    services. We will NOT share your personal data with other non-Government
-                    Agency entities without your consent, except where such sharing is necessary
-                    for fulfilling any of the purposes herein, or complies with the law.
+                    We may share your personal data with non-Government Agency
+                    entities that have been authorised to carry out specific
+                    Government agency services. We will NOT share your personal
+                    data with other non-Government Agency entities without your
+                    consent, except where such sharing is necessary for
+                    fulfilling any of the purposes herein, or complies with the
+                    law.
                   </SubSectionListItem>
                   <SubSectionListItem
                     isNumericMarker
