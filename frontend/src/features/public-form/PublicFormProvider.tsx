@@ -544,6 +544,13 @@ export const PublicFormProvider = ({
         submissionId: string
         timestamp: number
       }) => {
+        if (
+          data &&
+          form.isSingleSubmission &&
+          form.authType != FormAuthType.NIL
+        ) {
+          data.spcpSession = undefined
+        }
         setHasSingleSubmissionValidationError(false)
         setSubmissionData({
           id: submissionId,
@@ -699,6 +706,14 @@ export const PublicFormProvider = ({
                       storePaymentMemory(paymentData.paymentId)
                       return
                     }
+                    if (
+                      data &&
+                      form.isSingleSubmission &&
+                      form.authType != FormAuthType.NIL
+                    ) {
+                      data.spcpSession = undefined
+                    }
+                    setHasSingleSubmissionValidationError(false)
                     setSubmissionData({
                       id: submissionId,
                       timestamp,
@@ -749,12 +764,19 @@ export const PublicFormProvider = ({
                   paymentData,
                 }) => {
                   trackSubmitForm(form)
-
                   if (paymentData) {
                     navigate(getPaymentPageUrl(formId, paymentData.paymentId))
                     storePaymentMemory(paymentData.paymentId)
                     return
                   }
+                  if (
+                    data &&
+                    form.isSingleSubmission &&
+                    form.authType != FormAuthType.NIL
+                  ) {
+                    data.spcpSession = undefined
+                  }
+                  setHasSingleSubmissionValidationError(false)
                   setSubmissionData({
                     id: submissionId,
                     timestamp,
