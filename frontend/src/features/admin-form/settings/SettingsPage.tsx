@@ -19,16 +19,11 @@ import {
   Tabs,
 } from '@chakra-ui/react'
 
-import { FormResponseMode, SeenFlags } from '~shared/types'
+import { FormResponseMode } from '~shared/types'
 import { isNonEmpty } from '~shared/utils/isNonEmpty'
 
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
-
-import { SeenFlagsMapVersion } from '~features/user/constants'
-import { useUserMutations } from '~features/user/mutations'
-import { useUser } from '~features/user/queries'
-import { getShowFeatureFlagLastSeen } from '~features/user/utils'
 
 import { useAdminFormCollaborators } from '../common/queries'
 
@@ -47,18 +42,11 @@ interface TabEntry {
   component: () => JSX.Element
   path: string
   showRedDot?: boolean
-  onClick?: () => void
 }
 
 export const SettingsPage = (): JSX.Element => {
   const { formId, settingsTab } = useParams()
   const { data: settings } = useAdminFormSettings()
-  const { user, isLoading: isUserLoading } = useUser()
-  const { updateLastSeenFlagMutation } = useUserMutations()
-  const shouldShowSettingsEmailNotiReddot = useMemo(() => {
-    if (isUserLoading || !user) return false
-    return getShowFeatureFlagLastSeen(user, SeenFlags.SettingsEmailNotification)
-  }, [isUserLoading, user])
 
   if (!formId) throw new Error('No formId provided')
 
@@ -81,16 +69,7 @@ export const SettingsPage = (): JSX.Element => {
             icon: BiMailSend,
             component: SettingsEmailsPage,
             path: 'email-notifications',
-            showRedDot: shouldShowSettingsEmailNotiReddot,
-            onClick: () => {
-              if (shouldShowSettingsEmailNotiReddot) {
-                updateLastSeenFlagMutation.mutate({
-                  flag: SeenFlags.SettingsEmailNotification,
-                  version:
-                    SeenFlagsMapVersion[SeenFlags.SettingsEmailNotification],
-                })
-              }
-            },
+            showRedDot: true,
           }
         : null
 
@@ -129,11 +108,7 @@ export const SettingsPage = (): JSX.Element => {
     ]
 
     return baseConfig.filter(isNonEmpty)
-  }, [
-    settings?.responseMode,
-    shouldShowSettingsEmailNotiReddot,
-    updateLastSeenFlagMutation,
-  ])
+  }, [settings?.responseMode])
 
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
 
@@ -157,7 +132,7 @@ export const SettingsPage = (): JSX.Element => {
         index={tabIndex === -1 ? 0 : tabIndex}
         onChange={(index) => {
           handleTabChange(index)
-          tabConfig[index].onClick?.()
+          tabConfig[index]
         }}
       >
         <Flex
@@ -192,7 +167,7 @@ export const SettingsPage = (): JSX.Element => {
                 key={tab.label}
                 label={tab.label}
                 icon={tab.icon}
-                showRedDot={tab.showRedDot}
+                showNewBadge={tab.showRedDot}
               />
             ))}
           </TabList>
