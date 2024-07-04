@@ -71,7 +71,7 @@ UserRouter.post(
  */
 UserRouter.post(
   '/flag/new-features-last-seen',
-  UserController.handleUpdateUserLastSeenFlagVersion,
+  UserController.handleUpdateNewFeaturesUserLastSeenVersion,
 )
 
 export default UserRouter
