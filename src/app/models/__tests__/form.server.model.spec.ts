@@ -55,6 +55,7 @@ const MOCK_ADMIN_EMAIL = `test@${MOCK_ADMIN_DOMAIN}`
 const MOCK_FORM_PARAMS = {
   title: 'Test Form',
   admin: MOCK_ADMIN_OBJ_ID,
+  supportedLanguages: [],
 }
 const MOCK_ENCRYPTED_FORM_PARAMS = {
   ...MOCK_FORM_PARAMS,
@@ -84,12 +85,15 @@ const FORM_DEFAULTS = {
     logo: {
       state: FormLogoState.Default,
     },
+    paragraphTranslations: [],
   },
   endPage: {
     title: 'Thank you for filling out the form.',
     buttonText: 'Submit another response',
     paymentTitle: 'Thank you, your payment has been made successfully.',
     paymentParagraph: 'Your form has been submitted and payment has been made.',
+    titleTranslations: [],
+    paragraphTranslations: [],
   },
   hasCaptcha: true,
   hasIssueNotification: true,
@@ -1873,7 +1877,11 @@ describe('Form Model', () => {
         expect(actual?.toObject()).toEqual({
           ...form,
           lastModified: expect.any(Date),
-          endPage: { ...updatedEndPage },
+          endPage: {
+            ...updatedEndPage,
+            paragraphTranslations: [],
+            titleTranslations: [],
+          },
         })
       })
 
@@ -1904,6 +1912,8 @@ describe('Form Model', () => {
             paymentParagraph:
               'Your form has been submitted and payment has been made.',
             paymentTitle: 'Thank you, your payment has been made successfully.',
+            paragraphTranslations: [],
+            titleTranslations: [],
           },
         })
       })
@@ -2167,6 +2177,7 @@ describe('Form Model', () => {
             logo: {
               state: FormLogoState.Default,
             },
+            paragraphTranslations: [],
           },
         })
       })
