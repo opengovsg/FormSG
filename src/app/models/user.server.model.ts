@@ -77,7 +77,8 @@ const compileUserModel = (db: Mongoose) => {
         postmanSms: Boolean,
       },
       flags: {
-        lastSeenFeatureUpdateVersion: Number,
+        type: Schema.Types.Map, // of SeenFlags
+        of: Number,
       },
       apiToken: {
         select: false,

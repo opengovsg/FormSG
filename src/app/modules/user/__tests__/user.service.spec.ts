@@ -4,6 +4,7 @@ import { zipWith } from 'lodash'
 import MockDate from 'mockdate'
 import mongoose, { LeanDocument, Query } from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
+import { SeenFlags } from 'shared/types'
 
 import getAdminVerificationModel from 'src/app/models/admin_verification.server.model'
 import getUserModel from 'src/app/models/user.server.model'
@@ -310,28 +311,31 @@ describe('user.service', () => {
     })
   })
 
-  describe('updateUserLastSeenFeatureUpdateVersion', () => {
+  describe('updateUserLastSeenFlagVersion', () => {
     const MOCK_FEATURE_VERSION = 10
+    const MOCK_FEATURE_FLAG = SeenFlags.CreateBuilderMrfWorkflow
 
     it('should update user successfully', async () => {
       const user = await dbHandler.insertUser({
         agencyId: defaultAgency._id,
-        mailName: 'updateUserLastSeenFeatureUpdateVersion',
+        mailName: 'updateUserLastSeenFlagVersion',
       })
 
-      expect(user.flags?.lastSeenFeatureUpdateVersion).toBeUndefined()
+      expect(user.flags?.get(MOCK_FEATURE_FLAG)).toBeUndefined()
 
-      const actualResult =
-        await UserService.updateUserLastSeenFeatureUpdateVersion(
-          user._id,
-          MOCK_FEATURE_VERSION,
-        )
+      const actualResult = await UserService.updateUserLastSeenFlagVersion(
+        user._id,
+        MOCK_FEATURE_VERSION,
+        MOCK_FEATURE_FLAG,
+      )
 
       const updatedUser = await UserService.getPopulatedUserById(user._id)
       expect(actualResult.isOk()).toEqual(true)
       expect(
-        updatedUser._unsafeUnwrap()?.toObject().flags
-          ?.lastSeenFeatureUpdateVersion,
+        updatedUser
+          ._unsafeUnwrap()
+          ?.toObject<IUserSchema>()
+          .flags?.get(MOCK_FEATURE_FLAG),
       ).toEqual(MOCK_FEATURE_VERSION)
     })
 
@@ -340,11 +344,11 @@ describe('user.service', () => {
       const invalidUserId = new ObjectID()
 
       // Act
-      const actualResult =
-        await UserService.updateUserLastSeenFeatureUpdateVersion(
-          invalidUserId,
-          MOCK_FEATURE_VERSION,
-        )
+      const actualResult = await UserService.updateUserLastSeenFlagVersion(
+        invalidUserId,
+        MOCK_FEATURE_VERSION,
+        MOCK_FEATURE_FLAG,
+      )
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(MissingUserError)
     })

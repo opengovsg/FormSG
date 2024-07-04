@@ -1,10 +1,15 @@
 import { z } from 'zod'
-import type { Opaque } from 'type-fest'
+import type { Tagged } from 'type-fest'
 
 import { DateString } from './generic'
 import { AgencyBase, AgencyDto, PublicAgencyDto } from './agency'
+export type UserId = Tagged<string, 'UserId'>
 
-export type UserId = Opaque<string, 'UserId'>
+export enum SeenFlags {
+  LastSeenFeatureUpdateVersion = 'lastSeenFeatureUpdateVersion',
+  SettingsEmailNotification = 'settingsEmailNotification',
+  CreateBuilderMrfWorkflow = 'createBuilderMrfWorkflow',
+}
 
 // Base used for being referenced by schema/model in the backend.
 // Note the lack of typing of _id.
@@ -18,9 +23,7 @@ export const UserBase = z.object({
       postmanSms: z.boolean().optional(),
     })
     .optional(),
-  flags: z
-    .object({ lastSeenFeatureUpdateVersion: z.number().optional() })
-    .optional(),
+  flags: z.map(z.nativeEnum(SeenFlags), z.number()).optional(),
   created: z.date(),
   lastAccessed: z.date().optional(),
   updatedAt: z.date(),
@@ -81,4 +84,8 @@ export type TransferOwnershipResponseDto = {
   email: string
   formIds: string[]
   error: string
+}
+export type UpdateUserLastSeenFlagDto = {
+  version: number
+  flag: SeenFlags
 }
