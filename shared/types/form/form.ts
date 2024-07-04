@@ -1,5 +1,10 @@
 import { PublicUserDto, UserDto } from '../user'
-import { FormField, FormFieldDto, MyInfoChildData } from '../field'
+import {
+  FormField,
+  FormFieldDto,
+  MyInfoChildData,
+  TranslationMapping,
+} from '../field'
 
 import { FormLogo } from './form_logo'
 import type { Merge, Tagged, PartialDeep } from 'type-fest'
@@ -36,11 +41,17 @@ export type FormPermission = {
   write: boolean
 }
 
+export type TranslationOptionMapping = {
+  language: Language
+  translation: string[]
+}
+
 export type FormStartPage = {
   logo: FormLogo
   colorTheme: FormColorTheme
   estTimeTaken?: number
   paragraph?: string
+  paragraphTranslations?: TranslationMapping[]
 }
 
 export type FormEndPage = {
@@ -50,6 +61,8 @@ export type FormEndPage = {
   buttonText: string
   paymentTitle: string
   paymentParagraph: string
+  titleTranslations?: TranslationMapping[]
+  paragraphTranslations?: TranslationMapping[]
 }
 
 export enum FormAuthType {
@@ -61,10 +74,22 @@ export enum FormAuthType {
   SGID_MyInfo = 'SGID_MyInfo',
 }
 
+export enum Language {
+  ENGLISH = 'en-SG',
+  CHINESE = 'zh-SG',
+  MALAY = 'ms-SG',
+  TAMIL = 'ta-SG',
+}
+
 export enum FormStatus {
   Private = 'PRIVATE',
   Public = 'PUBLIC',
   Archived = 'ARCHIVED',
+}
+
+export type FormSupportedLanguages = {
+  nextSupportedLanguages?: Language[]
+  selectedLanguage?: Language | null
 }
 
 export type FormWebhook = {
@@ -164,6 +189,9 @@ export interface FormBase {
   responseMode: FormResponseMode
 
   goLinkSuffix?: string
+
+  hasMultiLang?: boolean
+  supportedLanguages?: Language[]
 }
 
 export interface EmailFormBase extends FormBase {

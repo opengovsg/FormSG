@@ -51,6 +51,8 @@ export const generateDefaultField = (
     fieldType,
     required: true,
     disabled: false,
+    titleTranslations: [],
+    descriptionTranslations: [],
   }
   switch (fieldType) {
     case BasicField.Table:
@@ -77,6 +79,7 @@ export const generateDefaultField = (
       return {
         ...defaultParams,
         fieldOptions: ['Option 1', 'Option 2'],
+        fieldOptionsTranslations: [],
         getQuestion: () => defaultParams.title,
         ValidationOptions: {
           customMin: null,
@@ -116,6 +119,7 @@ export const generateDefaultField = (
       return {
         ...defaultParams,
         fieldOptions: ['Option 1', 'Option 2'],
+        fieldOptionsTranslations: [],
         getQuestion: () => defaultParams.title,
         ...customParams,
       } as IDropdownFieldSchema
@@ -376,6 +380,7 @@ export const generateTableDropdownColumn = (
     required: true,
     _id: new ObjectId().toHexString(),
     fieldOptions: ['a', 'b', 'c'],
+    fieldOptionsTranslations: [],
     ...customParams,
     toObject() {
       // mock toObject method of mongoose document
@@ -385,6 +390,7 @@ export const generateTableDropdownColumn = (
         required: true,
         _id: new ObjectId().toHexString(),
         fieldOptions: ['a', 'b', 'c'],
+        fieldOptionsTranslations: [],
         ...customParams,
       }
     },

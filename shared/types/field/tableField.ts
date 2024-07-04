@@ -1,5 +1,5 @@
 import type { Merge } from 'type-fest'
-import { FieldBase, BasicField } from './base'
+import { FieldBase, BasicField, TranslationMapping } from './base'
 import { DropdownFieldBase } from './dropdownField'
 import { ShortTextFieldBase } from './shortTextField'
 
@@ -7,6 +7,7 @@ import { ShortTextFieldBase } from './shortTextField'
 type ColumnBase<T extends FieldBase> = Omit<T, keyof FieldBase> & {
   title: string
   required: boolean
+  titleTranslations?: TranslationMapping[]
 }
 export interface ShortTextColumnBase extends ColumnBase<ShortTextFieldBase> {
   columnType: BasicField.ShortText
