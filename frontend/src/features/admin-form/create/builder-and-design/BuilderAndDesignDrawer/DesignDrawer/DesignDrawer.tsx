@@ -331,6 +331,16 @@ export const DesignInput = (): JSX.Element | null => {
         isInvalid={!!errors.estTimeTaken}
         onFocus={setToEditingHeader}
       >
+        <FormLabel>Form name</FormLabel>
+        <Textarea onFocus={setToEditingInstructions} />
+        <FormErrorMessage>{errors.estTimeTaken?.message}</FormErrorMessage>
+      </FormControl>
+
+      <FormControl
+        isReadOnly={startPageMutation.isLoading}
+        isInvalid={!!errors.estTimeTaken}
+        onFocus={setToEditingHeader}
+      >
         <FormLabel>Time taken to complete form (minutes)</FormLabel>
         <Controller
           name="estTimeTaken"
