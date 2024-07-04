@@ -8,6 +8,8 @@ jobs:
   test:
     timeout-minutes: 40
     runs-on: ubuntu-latest
+    env:
+      AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
