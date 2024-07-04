@@ -17,6 +17,7 @@ import {
   validateContactOtpVerificationParams,
   validateContactSendOtpParams,
   validateUpdateUserLastSeenFlagVersion,
+  validateUpdateUserNewFeaturesLastSeenVersion,
 } from './user.middleware'
 import {
   createContactOtp,
@@ -253,6 +254,27 @@ export const _handleUpdateUserLastSeenFlagVersion: ControllerHandler<
 }
 
 export const handleUpdateUserLastSeenFlagVersion = [
+  validateUpdateUserLastSeenFlagVersion,
+  _handleUpdateUserLastSeenFlagVersion,
+] as ControllerHandler[]
+
+const injectUserNewFeatureFlag: ControllerHandler<
+  unknown,
+  unknown,
+  { version: number; flag?: SeenFlags }
+> = (req, res, next) => {
+  req.body.flag = SeenFlags.LastSeenFeatureUpdateVersion
+  return next()
+}
+
+/**
+ * @deprecated handler
+ * Backwards compatibility for the old route
+ * Use handleUpdateUserLastSeenFlagVersion instead that contains flag params
+ */
+export const handleUpdateNewFeaturesUserLastSeenVersion = [
+  validateUpdateUserNewFeaturesLastSeenVersion,
+  injectUserNewFeatureFlag,
   validateUpdateUserLastSeenFlagVersion,
   _handleUpdateUserLastSeenFlagVersion,
 ] as ControllerHandler[]

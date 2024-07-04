@@ -31,6 +31,19 @@ export const validateContactOtpVerificationParams = celebrate({
 export const validateUpdateUserLastSeenFlagVersion = celebrate({
   [Segments.BODY]: Joi.object({
     version: Joi.number().required(),
-    flag: Joi.string().valid(...Object.values(SeenFlags)),
+    flag: Joi.string()
+      .valid(...Object.values(SeenFlags))
+      .required(),
+  }),
+})
+
+/**
+ * @deprecated validator
+ * Backwards compatibility for the old route
+ * use validateUpdateUserLastSeenFlagVersion instead
+ */
+export const validateUpdateUserNewFeaturesLastSeenVersion = celebrate({
+  [Segments.BODY]: Joi.object({
+    version: Joi.number().required(),
   }),
 })
