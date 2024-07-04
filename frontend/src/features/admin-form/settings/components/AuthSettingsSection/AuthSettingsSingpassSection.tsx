@@ -22,8 +22,15 @@ export const AuthSettingsSingpassSection = ({
         settings={settings}
         isDisabled={isFormPublic || containsMyInfoFields}
       />
-      <Divider my="2.5rem" />
-      <FormNricMaskToggle settings={settings} isDisabled={isFormPublic} />
+
+      {/* Hide the NRIC mask toggle if they have not yet enabled it as part of
+      PMO circular */}
+      {settings.isNricMaskEnabled ? (
+        <>
+          <Divider my="2.5rem" />
+          <FormNricMaskToggle settings={settings} isDisabled={isFormPublic} />
+        </>
+      ) : null}
     </>
   )
 }
