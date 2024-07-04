@@ -1,4 +1,5 @@
 import { Schema } from 'mongoose'
+import { Language } from 'shared/types'
 
 import { IDropdownFieldSchema } from '../../../types'
 
@@ -8,6 +9,18 @@ const createDropdownFieldSchema = () => {
   return new Schema<IDropdownFieldSchema>({
     fieldOptions: [String],
     optionsToRecipientsMap: { type: Object, of: [String] },
+    fieldOptionsTranslations: {
+      type: [
+        {
+          language: {
+            type: String,
+            enum: Object.values(Language),
+          },
+          translation: [String],
+        },
+      ],
+      default: [],
+    },
     myInfo: MyInfoSchema,
   })
 }

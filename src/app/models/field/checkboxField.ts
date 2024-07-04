@@ -1,4 +1,5 @@
 import { Schema } from 'mongoose'
+import { Language } from 'shared/types'
 
 import { ICheckboxFieldSchema } from '../../../types'
 
@@ -12,6 +13,18 @@ const createCheckboxFieldSchema = () => {
         },
         message: 'Please ensure that there are no duplicate checkbox options.',
       },
+    },
+    fieldOptionsTranslations: {
+      type: [
+        {
+          language: {
+            type: String,
+            enum: Object.values(Language),
+          },
+          translation: [String],
+        },
+      ],
+      default: [],
     },
     othersRadioButton: {
       type: Boolean,

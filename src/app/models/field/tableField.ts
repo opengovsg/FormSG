@@ -1,7 +1,7 @@
 import { isEmpty } from 'lodash'
 import { Schema } from 'mongoose'
 
-import { BasicField } from '../../../../shared/types'
+import { BasicField, Language } from '../../../../shared/types'
 import { IColumnSchema, ITableFieldSchema } from '../../../types'
 
 const createColumnSchema = () => {
@@ -15,6 +15,18 @@ const createColumnSchema = () => {
       required: {
         type: Boolean,
         required: true,
+      },
+      titleTranslations: {
+        type: [
+          {
+            language: {
+              type: String,
+              enum: Object.values(Language),
+            },
+            translation: [String],
+          },
+        ],
+        default: [],
       },
     },
     {

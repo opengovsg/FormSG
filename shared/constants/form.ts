@@ -9,8 +9,10 @@ const PUBLIC_FORM_FIELDS = [
   'form_logics',
   'hasCaptcha',
   'hasIssueNotification',
+  'hasMultiLang',
   'startPage',
   'status',
+  'supportedLanguages',
   'title',
   '_id',
   'responseMode',
@@ -43,6 +45,8 @@ const FORM_SETTINGS_FIELDS = [
   'submissionLimit',
   'title',
   'webhook',
+  'hasMultiLang',
+  'supportedLanguages',
 ] as const
 
 export const EMAIL_FORM_SETTINGS_FIELDS = [
