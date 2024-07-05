@@ -1,9 +1,8 @@
-import { useMemo } from 'react'
 import { Skeleton, Wrap } from '@chakra-ui/react'
 
-import { FormResponseMode } from '~shared/types/form'
-
 import Badge from '~components/Badge'
+
+import { RESPONSE_MODE_TO_TEXT } from '~features/admin-form/common/constants'
 
 import { useAdminFormSettings } from '../queries'
 
@@ -13,17 +12,10 @@ export const GeneralTabHeader = (): JSX.Element => {
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
-  const readableFormResponseMode = useMemo(() => {
-    switch (settings?.responseMode) {
-      case FormResponseMode.Email:
-        return 'Email mode'
-      case FormResponseMode.Encrypt:
-        return 'Storage mode'
-      case FormResponseMode.Multirespondent:
-        return 'Multi-respondent form'
-    }
-    return 'Loading...'
-  }, [settings?.responseMode])
+  const readableFormResponseMode = !settings
+    ? 'Loading...'
+    : RESPONSE_MODE_TO_TEXT[settings.responseMode]
+
   return (
     <Wrap
       shouldWrapChildren
