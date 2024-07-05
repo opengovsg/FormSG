@@ -1,198 +1,99 @@
 /**
- * Global error code registry.
- * TODO: Not sure how many errors there actually are in total and how big to make the segments
- * - Form Errors [1000 - 1099]
- *   - General Form Errors [100]
- * - Database Errors [1100 - 1199]
- * - Payment Errors [1200 - 1299]
- *   - Stripe Errors [1210 - 1219]
- * TODO: Should make one giant OTP 100 block
+ * Global Error Code Registry
  *
- * Errors from the same feature start with the same multiple of 100 and
- * be contiguous.
+ * - [10xx] FormSG Errors
+ * - [11xx] Auth Errors
+ * - [12xx] Database Errors
+ * - [13xx] Payment Errors
+ * - [14xx] Communication Channel Errors
+ * - [15xx] Verification Errors
+ * - [19xx] Other Errors
  */
 export enum ErrorCodes {
-  // Form Errors [1000 - 1099]
-  PrivateForm = 1001,
-  FormNotFound = 1002,
-  FormDeleted = 1003,
-  ForbiddenForm = 1004,
-  TransferOwnership = 1005,
-  LogicNotFound = 1006,
-  AuthTypeMismatch = 1007,
-  FormAuthNoEsrveld = 1008,
+  // [10xx] FormSG Errors ---
+  // [1000 - 1009] General
+  PrivateForm = 1000,
+  FormNotFound = 1001,
+  FormDeleted = 1002,
+  ForbiddenForm = 1003,
+  TransferOwnership = 1004,
+  LogicNotFound = 1005,
+  AuthTypeMismatch = 1006,
+  FormAuthNoEsrvcId = 1007,
+  // [1010 - 1039] Submission Errors
+  SubmissionConflict = 1010,
+  SubmissionNotFound = 1011,
+  PendingSubmissionNotFound = 1012,
+  InvalidSubmissionType = 1013,
+  InvalidEncoding = 1014,
+  SubmissionProcessing = 1015,
+  ValidateField = 1016,
+  SendEmailConfirmation = 1017,
+  WrongResponseMode = 1018,
+  AttachmentTooLarge = 1019,
+  InvalidFileExtension = 1020,
+  SubmissionFailed = 1021,
+  InvalidFieldId = 1022,
+  AttachmentSizeLimitExceeded = 1023,
+  FeatureDisabled = 1024,
+  InvalidFileKey = 1025,
+  VirusScanFailed = 1026,
+  JsonParseFailed = 1027,
+  DownloadCleanFileFailed = 1028,
+  ParseVirusScannerLambdaPayload = 1029,
+  MaliciousFileDetected = 1030,
+  InvalidWorkflowType = 1031,
+  // Receiver Errors
+  InitialiseMultipartReceiver = 1032,
+  MultipartContentLimit = 1033,
+  MultipartContentParsing = 1034,
+  MultipartError = 1035,
+  // [1040 - 1049] Encrypt Submission Errors
+  FormsgReqBodyExists = 1040,
+  EncryptedPayloadExists = 1041,
+  // [1050 - 1059] Email Submission Errors
+  SubmissionHash = 1050,
+  // [1060 - 1069] Feedback Errors
+  MissingAdminFeedback = 1060,
+  InvalidSubmissionId = 1061,
+  DuplicateFeedbackSubmission = 1062,
+  // [1070 - 1079] Workspace Errors
+  WorkspaceNotFound = 1070,
+  ForbiddenWorkspace = 1071,
+  // [1080 - 1099] Admin Form Errors
+  InvalidFileType = 1080,
+  EditField = 1081,
+  FieldNotFound = 1082,
+  InvalidCollaborator = 1083,
+  PaymentChannelNotFound = 1084,
+  GoGov = 1085,
+  GoGovValidation = 1086,
+  GoGovAlreadyExist = 1087,
+  GoGovRequestLimit = 1088,
+  GoGovBadGateway = 1089,
+  GoGovServer = 1090,
+  // End FormSG Errors ---
 
-  // Database Errors [1100 - 1199]
-  DatabaseError = 1100,
-  DatabaseValidation = 1101,
-  DatabaseConflict = 1102,
-  DatabasePayloadSize = 1103,
-  DatabaseDuplicateKey = 1104,
-  DatabaseWriteConflict = 1105,
-  SecretsManager = 1106,
-  SecretsManagerNotFound = 1107,
-  SecretsManagerConflict = 1108,
-
-  // Payment Errors [1200 - 1299]
-  InvalidPaymentAmount = 1200,
-  PaymentNotFound = 1201,
-  ConfirmedPaymentNotFound = 1202,
-  PaymentAlreadyConfirmed = 1203,
-  PaymentAccountInformation = 1204,
-  InvalidPaymentProducts = 1205,
-  PaymentConfiguration = 1206,
-  SuccessfulChargeNotFound = 1210,
-  StripeTransactionFeeNotFound = 1211,
-  MalformedStripeChargeObject = 1212,
-  MalformedStripeEventObject = 1213,
-  StripeMetadataInvalid = 1214,
-  StripeMetadataValidPaymentIdNotFound = 1215,
-  StripeMetadataIncorrectEnv = 1216,
-  StripeFetch = 1217,
-  StripeAccount = 1218,
-  ComputePaymentState = 1219,
-  // Billing Errors
-  FormHasNoAuth = 1220,
-  // Payment Proof Errors
-  InvoicePdfGeneration = 1221,
-  PaymentProofUploadS3 = 1222,
-  PaymentProofPresignS3 = 1223,
-
-  // Submission Errors [1300 - 1399]
-  SubmissionConflict = 1300,
-  SubmissionNotFound = 1301,
-  PendingSubmissionNotFound = 1302,
-  InvalidSubmissionType = 1303,
-  InvalidEncoding = 1304,
-  SubmissionProcessing = 1305,
-  ValidateField = 1306,
-  SendEmailConfirmation = 1307,
-  WrongResponseMode = 1308,
-  AttachmentTooLarge = 1309,
-  InvalidFileExtension = 1310,
-  SubmissionFailed = 1311,
-  InvalidFieldId = 1312,
-  AttachmentSizeLimitExceeded = 1313,
-  FeatureDisabled = 1314,
-  InvalidFileKey = 1315,
-  VirusScanFailed = 1316,
-  JsonParseFailed = 1317,
-  DownloadCleanFileFailed = 1318,
-  ParseVirusScannerLambdaPayload = 1319,
-  MaliciousFileDetected = 1320,
-  InvalidWorkflowType = 1321,
-  // Encrypt Submission Errors
-  FormsgReqBodyExists = 1322,
-  EncryptedPayloadExists = 1323,
-  // Email Submission Errors
-  SubmissionHash = 1324,
-
-  // Admin Form Errors [1400 - 1499]
-  InvalidFileType = 1400,
-  EditField = 1401,
-  FieldNotFound = 1402,
-  InvalidCollaborator = 1403,
-  PaymentChannelNotFound = 1404,
-  GoGov = 1405,
-  GoGovValidation = 1406,
-  GoGovAlreadyExist = 1407,
-  GoGovRequestLimit = 1408,
-  GoGovBadGateway = 1409,
-  GoGovServer = 1410,
-
-  // Twilio Errors [2000 - 2009]
-  TwilioCache = 2000,
-  MalformedParameters = 2001,
-  AttachmentUpload = 2002,
-  EmptyErrorField = 2003,
-
-  // Captcha Errors [2010 - 2019]
-  CaptchaConnection = 2010,
-  VerifyCaptcha = 2011,
-  MissingCaptcha = 2012,
-
-  // Sms Errors [2020 - 2029]
-  SmsSend = 2020,
-  InvalidNumber = 2021,
-
-  // User Errors [2030 - 2039]
-  UserInvalidOtp = 2031,
-  MissingUser = 2032,
-
-  // Auth Errors [2040 - 2049]
-  InvalidDomain = 2040,
-  AuthInvalidOtp = 2041,
-  InvalidToken = 2042,
-  MissingToken = 2043,
-  Unauthorized = 2044,
-
-  // SPCP Errors [2050 - 2059]
-  CreateRedirectUrl = 2050,
-  VerifyJwt = 2051,
-  MissingAttributes = 2052,
-  InvalidJwt = 2053,
-  MissingJwt = 2054,
-  InvalidIdToken = 2055,
-  InvalidState = 2056,
-  CreateJwt = 2057,
-  ExchangeAuthToken = 2058,
-
-  // SgID Errors [2060 - 2069]
-  SgidCreateRedirectUrl = 2060,
-  SgidInvalidState = 2061,
-  SgidFetchAccessToken = 2062,
-  SgidFetchUserInfo = 2063,
-  SgidMalformedMyInfoCookie = 2064,
-  SgidVerifyJwt = 2065,
-  SgidInvalidJwt = 2066,
-  SgidMissingJwt = 2067,
-
-  // Mail Errors [2070 - 2079]
-  MailSend = 2071,
-  MailGeneration = 2072,
-
-  // MyInfo Errors [2080 - 2089]
-  MyInfoCircuitBreaker = 2080,
-  MyInfoFetch = 2081,
-  MyInfoHashing = 2082,
-  MyInfoMissingHash = 2083,
-  MyInfoHashDidNotMatch = 2084,
-  MyinfoParseRelayState = 2085,
-  MyInfoMissingLoginCookie = 2086,
-  MyInfoInvalidLoginCookie = 2087,
-  MyInfoInvalidAuthCodeCookie = 2088,
-  MyInfoCookieState = 2089,
-
-  // Webhook Errors [2090 - 2099]
-  WebhookValidation = 2090,
-  WebhookFailedWithPresignedUrlGeneration = 2091,
-  WebhookFailedWithUnknown = 2092,
-  WebhookFailedWithAxios = 2093,
-  WebhookQueueMessageParsing = 2094,
-  WebhookNoMoreRetries = 2095,
-  WebhookPushToQueue = 2096,
-  WebhookRetriesNotEnabled = 2097,
-
-  // Bounce Errors [2100 - 2109]
-  InvalidNotification = 2100,
-  SendBounceSmsNotification = 2101,
-  MissingEmailHeaders = 2102,
-  ParseNotification = 2103,
-
-  // Feedback Errors [2110 - 2119]
-  MissingAdminFeedback = 2110,
-  InvalidSubmissionId = 2111,
-  DuplicateFeedbackSubmission = 2112,
-
-  // Workspace Errors [2120 - 2129]
-  WorkspaceNotFound = 2120,
-  ForbiddenWorkspace = 2121,
-
-  // Turnstile Errors [2130 - 2139]
-  TurnstileConnection = 2130,
-  VerifyTurnstile = 2131,
-  MissingTurnstile = 2132,
-
+  // [11xx] Auth Errors ---
+  // [1100 - 1109] General Auth Errors
+  InvalidDomain = 1100,
+  AuthInvalidOtp = 1101,
+  InvalidToken = 1102,
+  MissingToken = 1103,
+  Unauthorized = 1104,
+  CaptchaConnection = 1105,
+  VerifyCaptcha = 1106,
+  MissingCaptcha = 1107,
+  // [1110 - 1119] SPCP Errors
+  CreateRedirectUrl = 1110,
+  VerifyJwt = 1111,
+  MissingAttributes = 1112,
+  InvalidJwt = 1113,
+  MissingJwt = 1114,
+  InvalidIdToken = 1115,
+  InvalidState = 1116,
+  CreateJwt = 1117,
+  ExchangeAuthToken = 1118,
   // SPCP OIDC Client Errors [2140 - 2149]
   CreateAuthorisationUrl = 2140,
   OidcCreateJwt = 2141,
@@ -204,34 +105,123 @@ export enum ErrorCodes {
   MissingIdToken = 2147,
   VerificationKey = 2148,
   OidcExchangeAuthToken = 2149,
+  // [1120 - 1139] MyInfo Errors
+  MyInfoCircuitBreaker = 1120,
+  MyInfoFetch = 1121,
+  MyInfoHashing = 1122,
+  MyInfoMissingHash = 1123,
+  MyInfoHashDidNotMatch = 1124,
+  MyinfoParseRelayState = 1125,
+  MyInfoMissingLoginCookie = 1126,
+  MyInfoInvalidLoginCookie = 1127,
+  MyInfoInvalidAuthCodeCookie = 1128,
+  MyInfoCookieState = 1129,
+  // [1140 - 1149] SgID Errors
+  SgidCreateRedirectUrl = 1140,
+  SgidInvalidState = 1141,
+  SgidFetchAccessToken = 1142,
+  SgidFetchUserInfo = 1143,
+  SgidMalformedMyInfoCookie = 1144,
+  SgidVerifyJwt = 1145,
+  SgidInvalidJwt = 1146,
+  SgidMissingJwt = 1147,
+  // End of Auth Errors ---
 
-  // Postman SMS Errors [2150 - 2159]
-  PostmanSmsSend = 2150,
-  PostmanInvalidNumber = 2151,
+  // [12xx] Database Errors ---
+  DatabaseError = 1200,
+  DatabaseValidation = 1201,
+  DatabaseConflict = 1202,
+  DatabasePayloadSize = 1203,
+  DatabaseDuplicateKey = 1204,
+  DatabaseWriteConflict = 1205,
+  SecretsManager = 1206,
+  SecretsManagerNotFound = 1207,
+  SecretsManagerConflict = 1208,
+  // End of Database Errors ---
 
-  // Verification Errors [2160 - 2179]
-  TransactionNotFound = 2160,
-  FieldNotFoundInTransaction = 2161,
-  TransactionExpired = 2162,
-  OtpExpired = 2163,
-  MissingHashData = 2164,
-  OtpRetryExceeded = 2165,
-  WrongOtp = 2166,
-  WaitForOtp = 2167,
-  OtpRequestCountExceeded = 2168,
-  NonVerifiedFieldType = 2169,
-  SmsLimitExceeded = 2170,
-  OtpRequestError = 2171,
+  // [13xx] Payment Errors ---
+  // [1300 - 1309] General Payment Errors
+  InvalidPaymentAmount = 1300,
+  PaymentNotFound = 1301,
+  ConfirmedPaymentNotFound = 1302,
+  PaymentAlreadyConfirmed = 1303,
+  PaymentAccountInformation = 1304,
+  InvalidPaymentProducts = 1305,
+  PaymentConfiguration = 1306,
+  // [1310 - 1329] Stripe Errors
+  SuccessfulChargeNotFound = 1310,
+  StripeTransactionFeeNotFound = 1311,
+  MalformedStripeChargeObject = 1312,
+  MalformedStripeEventObject = 1313,
+  StripeMetadataInvalid = 1314,
+  StripeMetadataValidPaymentIdNotFound = 1315,
+  StripeMetadataIncorrectEnv = 1316,
+  StripeFetch = 1317,
+  StripeAccount = 1318,
+  ComputePaymentState = 1319,
+  // [1330 - 1339] Billing Errors
+  FormHasNoAuth = 1330,
+  // [1340 - 1349] Payment Proof Errors
+  InvoicePdfGeneration = 1340,
+  PaymentProofUploadS3 = 1341,
+  PaymentProofPresignS3 = 1342,
+  // End of Payment Errors ---
 
-  // Receiver Errors [2180 - 2189]
-  InitialiseMultipartReceiver = 2180,
-  MultipartContentLimit = 2181,
-  MultipartContentParsing = 2182,
-  MultipartError = 2183,
+  // [14xx] Communication Channel Errors (SMS, Email, Webhook) ---
+  // [1400 - 1419] SMS Errors
+  TwilioCache = 1400,
+  SmsSend = 1401,
+  InvalidNumber = 1402,
+  SmsLimitExceeded = 1403,
+  UserInvalidOtp = 1404,
+  // [1420 - 1439] Mail Errors
+  MailSend = 1420,
+  MailGeneration = 1421,
+  // [1440 - 1459] Webhook Errors
+  WebhookValidation = 1440,
+  WebhookFailedWithPresignedUrlGeneration = 1441,
+  WebhookFailedWithUnknown = 1442,
+  WebhookFailedWithAxios = 1443,
+  WebhookQueueMessageParsing = 1444,
+  WebhookNoMoreRetries = 1445,
+  WebhookPushToQueue = 1446,
+  WebhookRetriesNotEnabled = 1447,
+  // [1460 - 1469] Bounce Errors
+  InvalidNotification = 1460,
+  SendBounceSmsNotification = 1461,
+  MissingEmailHeaders = 1462,
+  ParseNotification = 1463,
+  // End of Communication Channel Errors ---
 
-  // Verified Content Error [2190 - 2199]
-  MalformedVerifiedContent = 2190,
-  EncryptVerifiedContent = 2191,
+  // [15xx] Verification Errors
+  TransactionNotFound = 1500,
+  FieldNotFoundInTransaction = 1501,
+  TransactionExpired = 1502,
+  OtpExpired = 1503,
+  MissingHashData = 1504,
+  OtpRetryExceeded = 1505,
+  WrongOtp = 1506,
+  WaitForOtp = 1507,
+  OtpRequestCountExceeded = 1508,
+  NonVerifiedFieldType = 1509,
+  OtpRequestError = 1510,
+  // End of Verification Errors ---
+
+  // [19xx] Other Errors ---
+  // [1900 - 1909] Core Errors
+  MalformedParameters = 1900,
+  AttachmentUpload = 1901,
+  EmptyErrorField = 1902,
+  // [1910 - 1919] User Errors
+  MissingUser = 1910,
+  // [1920 - 1929] Turnstile Errors
+  TurnstileConnection = 1920,
+  VerifyTurnstile = 1921,
+  MissingTurnstile = 1922,
+  // [1930 - 1939] Verified Content Errors
+  MalformedVerifiedContent = 1930,
+  EncryptVerifiedContent = 1931,
+  // End of Other Errors ---
 }
 
 /**

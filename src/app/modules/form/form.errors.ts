@@ -84,7 +84,7 @@ export class FormAuthNoEsrvcIdError extends ApplicationError {
     super(
       `Attempted to validate form ${formId} which did not have an eServiceId`,
       undefined,
-      ErrorCodes.FormAuthNoEsrveld,
+      ErrorCodes.FormAuthNoEsrvcId,
     )
   }
 }
