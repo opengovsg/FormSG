@@ -42,6 +42,7 @@ import {
   checkIsIndividualSingpassAuthType,
   extractEmailConfirmationData,
   generateHashedSubmitterId,
+  getCookieNameByAuthType,
   mapAttachmentsFromResponses,
 } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
@@ -313,9 +314,9 @@ export const submitEmailModeForm: ControllerHandler<
           const ndiResponse = parsedResponses.ndiResponses.find(
             (response) => response.fieldType === BasicField.Nric,
           ) as ProcessedSingleAnswerResponse
-          submitterId =
-            ndiResponse?.answer ??
-            generateHashedSubmitterId(ndiResponse.answer, form.id)
+          submitterId = ndiResponse?.answer
+            ? generateHashedSubmitterId(ndiResponse.answer, form.id)
+            : undefined
         }
 
         if (form.isNricMaskEnabled) {
@@ -466,6 +467,14 @@ export const submitEmailModeForm: ControllerHandler<
             error,
           })
         })
+
+        // logout on success if is single submission as users
+        // are not allowed to submit again with same auth details
+        if (form.isSingleSubmission && form.authType != FormAuthType.NIL) {
+          const authCookieName = getCookieNameByAuthType(form.authType)
+          res.clearCookie(authCookieName)
+        }
+
         // MyInfo access token is single-use, so clear it
         // Similarly for sgID-MyInfo
         return res
