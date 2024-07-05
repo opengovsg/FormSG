@@ -124,6 +124,7 @@ export enum ErrorCodes {
   AuthInvalidOtp = 2041,
   InvalidToken = 2042,
   MissingToken = 2043,
+  Unauthorized = 2044,
 
   // SPCP Errors [2050 - 2059]
   CreateRedirectUrl = 2050,

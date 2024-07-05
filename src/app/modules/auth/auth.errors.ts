@@ -26,3 +26,9 @@ export class MissingTokenError extends ApplicationError {
     super(message, undefined, ErrorCodes.MissingToken)
   }
 }
+
+export class UnauthorizedError extends ApplicationError {
+  constructor(message = 'User is unauthorized.') {
+    super(message, undefined, ErrorCodes.Unauthorized)
+  }
+}

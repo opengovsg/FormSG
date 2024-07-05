@@ -5,9 +5,11 @@ import { StatusCodes } from 'http-status-codes'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
+import { setErrorCode } from '../datadog/datadog.utils'
 import { UNAUTHORIZED_USER_MESSAGE } from '../user/user.constant'
 import * as UserService from '../user/user.service'
 
+import { UnauthorizedError } from './auth.errors'
 import { getUserByApiKey } from './auth.service'
 import {
   getUserIdFromSession,
@@ -29,6 +31,8 @@ export const withUserAuthentication: ControllerHandler = (req, res, next) => {
   if (isUserInSession(req.session)) {
     return next()
   }
+
+  setErrorCode(new UnauthorizedError())
 
   return res
     .status(StatusCodes.UNAUTHORIZED)
