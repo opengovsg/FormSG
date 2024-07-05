@@ -28,7 +28,7 @@ import {
 import format from 'date-fns/format'
 
 import { SeenFlags } from '~shared/types'
-import { AdminFormDto } from '~shared/types/form/form'
+import { AdminFormDto, FormResponseMode } from '~shared/types/form/form'
 
 import {
   ACTIVE_ADMINFORM_BUILDER_ROUTE_REGEX,
@@ -55,7 +55,7 @@ export interface AdminFormNavbarProps {
    * Minimum form info needed to render the navbar.
    * If not provided, the navbar will be in a loading state.
    */
-  formInfo?: Pick<AdminFormDto, 'title' | 'lastModified'>
+  formInfo?: AdminFormDto
   viewOnly: boolean
   handleAddCollabButtonClick: () => void
   handleShareButtonClick: () => void
@@ -79,9 +79,11 @@ export const AdminFormNavbar = ({
   const { user, isLoading: isUserLoading } = useUser()
   const { updateLastSeenFlagMutation } = useUserMutations()
   const shouldShowSettingsReddot = useMemo(() => {
-    if (isUserLoading || !user) return false
+    const isMrf = formInfo?.responseMode === FormResponseMode.Multirespondent
+
+    if (isUserLoading || !user || isMrf) return false
     return getShowFeatureFlagLastSeen(user, SeenFlags.SettingsNotification)
-  }, [isUserLoading, user])
+  }, [isUserLoading, user, formInfo?.responseMode])
 
   const tabResponsiveVariant = useBreakpointValue({
     base: 'line-dark',
