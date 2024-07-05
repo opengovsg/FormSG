@@ -166,21 +166,38 @@ EmailSubmissionSchema.statics.saveIfSubmitterIdIsUnique = async function (
   submitterId: string,
   submissionContent: EmailSubmissionContent,
 ): Promise<IEmailSubmissionSchema | null> {
-  const res = await this.findOneAndUpdate(
-    { form: formId, submitterId },
-    { $set: {}, $setOnInsert: { ...submissionContent } },
-    { upsert: true, new: true, rawResult: true },
-  ).exec()
-
-  if (!res.lastErrorObject) {
-    throw new DatabaseError(
-      "Execution result from findOneAndUpdatedid did not include expected field 'lastErrorObject'",
-    )
-  }
-  if (res.lastErrorObject.updatedExisting) {
+  const session = await this.startSession()
+  session.startTransaction()
+  const beforeCreateRes = await this.exists({
+    form: formId,
+    submitterId,
+  })
+    .setOptions({ readPreference: 'primary' })
+    .session(session)
+    .exec()
+  if (beforeCreateRes) {
+    await session.abortTransaction()
+    await session.endSession()
     return null
   }
-  return res.value
+
+  await this.create([submissionContent], { session })
+
+  const afterCreateRes = await this.find({ form: formId, submitterId }, null, {
+    limit: 2,
+    readPreference: 'primary',
+  })
+    .session(session)
+    .exec()
+  if (afterCreateRes.length > 1) {
+    await session.abortTransaction()
+    await session.endSession()
+    return null
+  }
+
+  await session.commitTransaction()
+  await session.endSession()
+  return afterCreateRes[0]
 }
 
 const webhookResponseSchema = new Schema<IWebhookResponseSchema>(
@@ -369,21 +386,38 @@ EncryptSubmissionSchema.statics.saveIfSubmitterIdIsUnique = async function (
   submitterId: string,
   submissionContent: EncryptSubmissionContent,
 ): Promise<IEncryptedSubmissionSchema | null> {
-  const res = await this.findOneAndUpdate(
-    { form: formId, submitterId },
-    { $set: {}, $setOnInsert: { ...submissionContent } },
-    { upsert: true, new: true, rawResult: true },
-  ).exec()
-
-  if (!res.lastErrorObject) {
-    throw new DatabaseError(
-      "Execution result from findOneAndUpdatedid did not include expected field 'lastErrorObject'",
-    )
-  }
-  if (res.lastErrorObject.updatedExisting) {
+  const session = await this.startSession()
+  session.startTransaction()
+  const beforeCreateRes = await this.exists({
+    form: formId,
+    submitterId,
+  })
+    .setOptions({ readPreference: 'primary' })
+    .session(session)
+    .exec()
+  if (beforeCreateRes) {
+    await session.abortTransaction()
+    await session.endSession()
     return null
   }
-  return res.value
+
+  await this.create([submissionContent], { session })
+
+  const afterCreateRes = await this.find({ form: formId, submitterId }, null, {
+    limit: 2,
+    readPreference: 'primary',
+  })
+    .session(session)
+    .exec()
+  if (afterCreateRes.length > 1) {
+    await session.abortTransaction()
+    await session.endSession()
+    return null
+  }
+
+  await session.commitTransaction()
+  await session.endSession()
+  return afterCreateRes[0]
 }
 
 /**
