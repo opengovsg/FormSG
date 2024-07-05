@@ -3,14 +3,12 @@ import { Link as ReactLink } from 'react-router-dom'
 import { Box, ButtonProps, chakra, Flex, Text } from '@chakra-ui/react'
 import dayjs from 'dayjs'
 
-import {
-  AdminDashboardFormMetaDto,
-  FormResponseMode,
-  FormStatus,
-} from '~shared/types/form/form'
+import { AdminDashboardFormMetaDto, FormStatus } from '~shared/types/form/form'
 
 import { ADMINFORM_ROUTE } from '~constants/routes'
 import Badge from '~components/Badge'
+
+import { RESPONSE_MODE_TO_TEXT } from '~features/admin-form/common/constants'
 
 import { FormStatusLabel } from './FormStatusLabel'
 import { RowActions } from './RowActions'
@@ -26,12 +24,6 @@ const RELATIVE_DATE_FORMAT = {
   nextWeek: 'ddd, D MMM YYYY h:mma', // Tue, 17 Oct 2021 9:30pm
   lastWeek: 'ddd, D MMM YYYY h:mma', // Tue, 17 Oct 2021 9:30pm
   sameElse: 'D MMM YYYY h:mma', // 6 Oct 2021 9:30pm
-}
-
-const RESPONSE_MODE_TO_TEXT: { [key in FormResponseMode]: string } = {
-  [FormResponseMode.Multirespondent]: 'Multi-respondent form',
-  [FormResponseMode.Email]: 'Email form',
-  [FormResponseMode.Encrypt]: 'Storage form',
 }
 
 export const WorkspaceFormRow = ({
