@@ -5,12 +5,12 @@ export class SmsSendError extends ApplicationError {
     message = 'Error sending OTP. Please try again later and if the problem persists, contact us.',
     meta?: unknown,
   ) {
-    super(message, meta, ErrorCodes.PostmanSmsSend)
+    super(message, meta, ErrorCodes.SmsSend)
   }
 }
 
 export class InvalidNumberError extends ApplicationError {
   constructor(message = 'Please enter a valid phone number') {
-    super(message, undefined, ErrorCodes.PostmanInvalidNumber)
+    super(message, undefined, ErrorCodes.InvalidNumber)
   }
 }
