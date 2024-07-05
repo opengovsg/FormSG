@@ -88,3 +88,5 @@ export const E2EE_SUBMISSION_VERSION = 1
 export const VIRUS_SCANNER_SUBMISSION_VERSION = 2.1
 // MRF RFC: https://www.notion.so/opengov/RFC-Multi-respondent-forms-8ab40a8c17674937b345450d9dd2c81d?pvs=4
 export const MULTIRESPONDENT_FORM_SUBMISSION_VERSION = 3
+
+export const MULTIRESPONDENT_FORM_SUBMISSION_SECRET_KEY_URL_PARAM_KEY = 'key'

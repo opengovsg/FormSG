@@ -33,3 +33,9 @@ export const EMERGENCY_CONTACT_KEY_PREFIX = 'has-seen-emergency-contact'
  * Key to store when was the last time user has seen the admin feedback modal
  */
 export const ADMIN_FEEDBACK_HISTORY_PREFIX = 'last-seen-admin-feedback-'
+
+/**
+ * Key to store MRF secret key after load
+ */
+export const MULTIRESPONDENT_FORM_SUBMISSION_SECRET_KEY_PREFIX =
+  'mrf-secret-key-'

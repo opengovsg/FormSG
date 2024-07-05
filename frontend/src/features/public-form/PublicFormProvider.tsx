@@ -18,6 +18,7 @@ import get from 'lodash/get'
 
 import {
   featureFlags,
+  MULTIRESPONDENT_FORM_SUBMISSION_SECRET_KEY_URL_PARAM_KEY,
   PAYMENT_CONTACT_FIELD_ID,
   PAYMENT_PRODUCT_FIELD_ID,
   PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID,
@@ -33,6 +34,7 @@ import {
 import { maskNric } from '~shared/utils/nric-mask'
 import { dollarsToCents } from '~shared/utils/payments'
 
+import { MULTIRESPONDENT_FORM_SUBMISSION_SECRET_KEY_PREFIX as MULTIRESPONDENT_FORM_SUBMISSION_SECRET_KEY_LOCAL_STORAGE_KEY_PREFIX } from '~constants/localStorage'
 import { MONGODB_ID_REGEX } from '~constants/routes'
 import { useBrowserStm } from '~hooks/payments'
 import { useTimeout } from '~hooks/useTimeout'
@@ -176,12 +178,47 @@ export const PublicFormProvider = ({
 
   const [searchParams] = useSearchParams()
 
-  // MRF key
+  // Loading of MRF key: retrieve from search params and move to local storage on load
+  // This avoids the key unintentionally being sent to the backend at all.
   let submissionSecretKey = ''
-  try {
-    submissionSecretKey = decodeURIComponent(searchParams.get('key') ?? '')
-  } catch (e) {
-    console.log(e)
+  const submissionSecretKeyLocalStorageKey = previousSubmissionId
+    ? MULTIRESPONDENT_FORM_SUBMISSION_SECRET_KEY_LOCAL_STORAGE_KEY_PREFIX +
+      previousSubmissionId
+    : undefined
+
+  // If it is on the mrf /:formId/edit/:previousSubmissionId page
+  if (submissionSecretKeyLocalStorageKey) {
+    // Grab secret key from search params if any.
+    let submissionSecretKeyFromSearchParams = ''
+    try {
+      submissionSecretKeyFromSearchParams = decodeURIComponent(
+        searchParams.get(
+          MULTIRESPONDENT_FORM_SUBMISSION_SECRET_KEY_URL_PARAM_KEY,
+        ) ?? '',
+      )
+    } catch (e) {
+      console.log(e)
+    }
+
+    if (submissionSecretKeyFromSearchParams) {
+      // First load: set local storage item, and delete key from search params
+      localStorage.setItem(
+        submissionSecretKeyLocalStorageKey,
+        submissionSecretKeyFromSearchParams,
+      )
+      searchParams.delete(
+        MULTIRESPONDENT_FORM_SUBMISSION_SECRET_KEY_URL_PARAM_KEY,
+      )
+      window.location.search = searchParams.toString()
+    } else {
+      // Subsequent loads: As long as form has not yet been submitted, use submission secret key from local storage
+      const submissionSecretKeyFromLocalStorage = localStorage.getItem(
+        submissionSecretKeyLocalStorageKey,
+      )
+      if (submissionSecretKeyFromLocalStorage) {
+        submissionSecretKey = submissionSecretKeyFromLocalStorage
+      }
+    }
   }
 
   useEffect(() => {
@@ -765,6 +802,10 @@ export const PublicFormProvider = ({
                   id: submissionId,
                   timestamp,
                 })
+                // Delete this submission's secret key from local storage
+                if (submissionSecretKeyLocalStorageKey) {
+                  localStorage.removeItem(submissionSecretKeyLocalStorageKey)
+                }
               },
             })
             .catch(async (error) => {
@@ -793,6 +834,7 @@ export const PublicFormProvider = ({
       navigate,
       formId,
       storePaymentMemory,
+      submissionSecretKeyLocalStorageKey,
     ],
   )
 

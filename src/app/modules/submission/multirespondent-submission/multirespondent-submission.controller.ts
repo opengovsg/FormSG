@@ -5,6 +5,7 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { MailSendError } from 'src/app/services/mail/mail.errors'
 import { EncryptSubmissionDto } from 'src/types/api'
 
+import { MULTIRESPONDENT_FORM_SUBMISSION_SECRET_KEY_URL_PARAM_KEY } from '../../../../../shared/constants'
 import {
   ErrorDto,
   FieldResponsesV3,
@@ -267,7 +268,10 @@ const _createSubmission = async ({
       responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
         form._id,
         submissionId,
-        { key: submissionSecretKey },
+        {
+          [MULTIRESPONDENT_FORM_SUBMISSION_SECRET_KEY_URL_PARAM_KEY]:
+            submissionSecretKey,
+        },
       )}`,
       formId: form._id,
       submissionId,
@@ -481,7 +485,10 @@ const updateMultirespondentSubmission = async (
       responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
         form._id,
         submissionId,
-        { key: submissionSecretKey },
+        {
+          [MULTIRESPONDENT_FORM_SUBMISSION_SECRET_KEY_URL_PARAM_KEY]:
+            submissionSecretKey,
+        },
       )}`,
       formId: form._id,
       submissionId,
