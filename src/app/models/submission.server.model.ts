@@ -34,7 +34,6 @@ import {
   WebhookData,
   WebhookView,
 } from '../../types'
-import { DatabaseError } from '../modules/core/core.errors'
 import { getPaymentWebhookEventObject } from '../modules/payments/payment.service.utils'
 import { EmailSubmissionContent } from '../modules/submission/email-submission/email-submission.types'
 import { EncryptSubmissionContent } from '../modules/submission/encrypt-submission/encrypt-submission.types'
