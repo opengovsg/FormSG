@@ -2,7 +2,6 @@ import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import helmet from 'helmet'
 
 import config from 'src/app/config/config'
-import { sentryConfig } from 'src/app/config/features/sentry.config'
 
 import { CSP_CORE_DIRECTIVES } from '../constants'
 import helmetMiddlewares from '../helmet'
@@ -12,8 +11,6 @@ describe('helmetMiddlewares', () => {
   const mockHelmet = jest.mocked(helmet)
   jest.mock('src/app/config/config')
   const mockConfig = jest.mocked(config)
-  jest.mock('src/app/config/features/sentry.config')
-  const mockSentryConfig = jest.mocked(sentryConfig)
 
   const cspCoreDirectives = CSP_CORE_DIRECTIVES
 
@@ -85,20 +82,17 @@ describe('helmetMiddlewares', () => {
   })
 
   it('should call helmet.contentSecurityPolicy() with the correct directives if cspReportUri and !isDev', () => {
-    mockSentryConfig.cspReportUri = 'value'
     mockConfig.isDev = false
     helmetMiddlewares()
     expect(mockHelmet.contentSecurityPolicy).toHaveBeenCalledWith({
       useDefaults: true,
       directives: {
         ...cspCoreDirectives,
-        reportUri: ['value'],
       },
     })
   })
 
   it('should call helmet.contentSecurityPolicy() with the correct directives if !cspReportUri and isDev', () => {
-    mockSentryConfig.cspReportUri = ''
     mockConfig.isDev = true
     helmetMiddlewares()
     expect(mockHelmet.contentSecurityPolicy).toHaveBeenCalledWith({

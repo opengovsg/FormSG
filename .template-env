@@ -59,9 +59,6 @@ FORMSG_SDK_MODE=
 # GOOGLE_CAPTCHA=
 # GOOGLE_CAPTCHA_PUBLIC=
 
-## Sentry
-## If the below variable exists, the [sentry] feature will be enabled.
-# SENTRY_CONFIG_URL=
 
 ## Keys for storage mode
 # If forking this repository, you will also need to fork @opengovsg/formsg-sdk
