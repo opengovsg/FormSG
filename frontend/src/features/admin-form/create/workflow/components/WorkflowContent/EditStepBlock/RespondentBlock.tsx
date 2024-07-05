@@ -170,7 +170,7 @@ const RespondentInput = ({ isLoading, formMethods }: RespondentInputProps) => {
             control={control}
             name="field"
             rules={{
-              required: 'Please select a question',
+              required: 'Please select a field',
               validate: (value) =>
                 !emailFormFields ||
                 emailFormFields.some(({ _id }) => _id === value) ||
@@ -180,7 +180,7 @@ const RespondentInput = ({ isLoading, formMethods }: RespondentInputProps) => {
               <SingleSelect
                 isDisabled={isLoading}
                 isClearable={false}
-                placeholder="Select a question"
+                placeholder="Select a field"
                 items={emailFieldItems}
                 value={value}
                 {...rest}
