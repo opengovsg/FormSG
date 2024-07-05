@@ -8,7 +8,6 @@ export class InvalidDomainError extends ApplicationError {
   }
 }
 
-// What's the difference between this and user.errors.ts:InvalidOtpError?
 export class InvalidOtpError extends ApplicationError {
   constructor(message = 'OTP has expired. Please request for a new OTP.') {
     super(message, undefined, ErrorCodes.AuthInvalidOtp)
