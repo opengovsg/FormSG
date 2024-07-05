@@ -1,4 +1,5 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 import { okAsync } from 'neverthrow'
 
@@ -14,6 +15,11 @@ const FormModel = getFormModel(mongoose)
 
 const TEST_NUMBER = '+15005550006'
 
+const MOCK_RECIPIENT_EMAIL = 'recipientEmail@email.com'
+const MOCK_ADMIN_EMAIL = 'adminEmail@email.com'
+const MOCK_ADMIN_ID = new ObjectId().toHexString()
+const MOCK_FORM_ID = new ObjectId().toHexString()
+const MOCK_FORM_TITLE = 'formTitle'
 const MOCK_SENDER_IP = '200.000.000.000'
 
 describe('postman-sms.service', () => {
@@ -28,179 +34,115 @@ describe('postman-sms.service', () => {
   afterEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
 
-  //   describe('sendFormDeactivatedSms', () => {
-  //     it('should send SMS and log success when sending is successful', async () => {
-  //       const expectedMessage = renderFormDeactivatedSms(MOCK_FORM_TITLE)
+  describe('sendFormDeactivatedSms', () => {
+    it('should send SMS through internal channel when sending is successful', async () => {
+      // Arrange
+      const postmanInternalSendSpy = jest
+        .spyOn(PostmanSmsService, '_sendInternalSms')
+        .mockResolvedValueOnce(okAsync(true))
 
-  //       await PostmanSmsService.sendFormDeactivatedSms(
-  //         {
-  //           recipient: TWILIO_TEST_NUMBER,
-  //           adminEmail: MOCK_ADMIN_EMAIL,
-  //           adminId: MOCK_ADMIN_ID,
-  //           formId: MOCK_FORM_ID,
-  //           formTitle: MOCK_FORM_TITLE,
-  //           recipientEmail: MOCK_RECIPIENT_EMAIL,
-  //         },
-  //         MOCK_VALID_CONFIG,
-  //       )
+      const postmanMopSendSpy = jest
+        .spyOn(PostmanSmsService, '_sendMopSms')
+        .mockResolvedValueOnce(okAsync(true))
 
-  //       expect(twilioSuccessSpy).toHaveBeenCalledWith({
-  //         to: TWILIO_TEST_NUMBER,
-  //         body: expectedMessage,
-  //         from: MOCK_VALID_CONFIG.msgSrvcSid,
-  //         forceDelivery: true,
-  //         statusCallback: expect.stringContaining(MOCK_TWILIO_WEBHOOK_ROUTE),
-  //       })
+      // Act
+      await PostmanSmsService.sendFormDeactivatedSms(
+        TEST_NUMBER,
+        MOCK_ADMIN_EMAIL,
+        MOCK_ADMIN_ID,
+        MOCK_FORM_ID,
+        MOCK_FORM_TITLE,
+        MOCK_RECIPIENT_EMAIL,
+      )
 
-  //       expect(twilioSuccessSpy.mock.calls[0][0].statusCallback).toEqual(
-  //         expect.not.stringContaining('?senderIp'),
-  //       )
+      // Assert
+      expect(postmanInternalSendSpy).toHaveBeenCalledOnce()
+      expect(postmanMopSendSpy).not.toHaveBeenCalled()
+    })
 
-  //       expect(smsCountSpy).toHaveBeenCalledWith({
-  //         smsData: {
-  //           form: MOCK_FORM_ID,
-  //           collaboratorEmail: MOCK_RECIPIENT_EMAIL,
-  //           recipientNumber: TWILIO_TEST_NUMBER,
-  //           formAdmin: {
-  //             email: MOCK_ADMIN_EMAIL,
-  //             userId: MOCK_ADMIN_ID,
-  //           },
-  //         },
-  //         smsType: SmsType.DeactivatedForm,
-  //         msgSrvcSid: MOCK_VALID_CONFIG.msgSrvcSid,
-  //         logType: LogType.success,
-  //       })
-  //     })
+    it('should return InvalidNumberError when invalid number is supplied', async () => {
+      // Arrange
+      const postmanInternalSendSpy = jest
+        .spyOn(PostmanSmsService, '_sendInternalSms')
+        .mockResolvedValueOnce(okAsync(true))
 
-  //     it('should log failure when sending fails', async () => {
-  //       // Arrange
-  //       const expectedMessage = renderFormDeactivatedSms(MOCK_FORM_TITLE)
+      const postmanMopSendSpy = jest
+        .spyOn(PostmanSmsService, '_sendMopSms')
+        .mockResolvedValueOnce(okAsync(true))
 
-  //       // Act
-  //       const actualResult = await SmsService.sendFormDeactivatedSms(
-  //         {
-  //           recipient: TWILIO_TEST_NUMBER,
-  //           adminEmail: MOCK_ADMIN_EMAIL,
-  //           adminId: MOCK_ADMIN_ID,
-  //           formId: MOCK_FORM_ID,
-  //           formTitle: MOCK_FORM_TITLE,
-  //           recipientEmail: MOCK_RECIPIENT_EMAIL,
-  //         },
-  //         MOCK_INVALID_CONFIG,
-  //       )
+      const invalidNumber = '1+11'
 
-  //       // Assert
-  //       expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidNumberError())
-  //       expect(twilioFailureSpy).toHaveBeenCalledWith({
-  //         to: TWILIO_TEST_NUMBER,
-  //         body: expectedMessage,
-  //         from: MOCK_INVALID_CONFIG.msgSrvcSid,
-  //         forceDelivery: true,
-  //         statusCallback: expect.stringContaining(MOCK_TWILIO_WEBHOOK_ROUTE),
-  //       })
-  //       expect(smsCountSpy).toHaveBeenCalledWith({
-  //         smsData: {
-  //           form: MOCK_FORM_ID,
-  //           collaboratorEmail: MOCK_RECIPIENT_EMAIL,
-  //           recipientNumber: TWILIO_TEST_NUMBER,
-  //           formAdmin: {
-  //             email: MOCK_ADMIN_EMAIL,
-  //             userId: MOCK_ADMIN_ID,
-  //           },
-  //         },
-  //         smsType: SmsType.DeactivatedForm,
-  //         msgSrvcSid: MOCK_INVALID_CONFIG.msgSrvcSid,
-  //         logType: LogType.failure,
-  //       })
-  //     })
-  //   })
+      // Act
+      const actualResult = await PostmanSmsService.sendFormDeactivatedSms(
+        invalidNumber,
+        MOCK_ADMIN_EMAIL,
+        MOCK_ADMIN_ID,
+        MOCK_FORM_ID,
+        MOCK_FORM_TITLE,
+        MOCK_RECIPIENT_EMAIL,
+      )
 
-  //   describe('sendBouncedSubmissionSms', () => {
-  //     it('should send SMS and log success when sending is successful', async () => {
-  //       const expectedMessage = renderBouncedSubmissionSms(MOCK_FORM_TITLE)
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidNumberError())
+      expect(postmanInternalSendSpy).not.toHaveBeenCalled()
+      expect(postmanMopSendSpy).not.toHaveBeenCalled()
+    })
+  })
 
-  //       await SmsService.sendBouncedSubmissionSms(
-  //         {
-  //           recipient: TWILIO_TEST_NUMBER,
-  //           adminEmail: MOCK_ADMIN_EMAIL,
-  //           adminId: MOCK_ADMIN_ID,
-  //           formId: MOCK_FORM_ID,
-  //           formTitle: MOCK_FORM_TITLE,
-  //           recipientEmail: MOCK_RECIPIENT_EMAIL,
-  //         },
-  //         MOCK_VALID_CONFIG,
-  //       )
+  describe('sendBouncedSubmissionSms', () => {
+    it('should send SMS through internal channel success when sending is successful', async () => {
+      // Arrange
+      const postmanInternalSendSpy = jest
+        .spyOn(PostmanSmsService, '_sendInternalSms')
+        .mockResolvedValueOnce(okAsync(true))
 
-  //       expect(twilioSuccessSpy).toHaveBeenCalledWith({
-  //         to: TWILIO_TEST_NUMBER,
-  //         body: expectedMessage,
-  //         from: MOCK_VALID_CONFIG.msgSrvcSid,
-  //         forceDelivery: true,
-  //         statusCallback: expect.stringContaining(MOCK_TWILIO_WEBHOOK_ROUTE),
-  //       })
+      const postmanMopSendSpy = jest
+        .spyOn(PostmanSmsService, '_sendMopSms')
+        .mockResolvedValueOnce(okAsync(true))
 
-  //       expect(twilioSuccessSpy.mock.calls[0][0].statusCallback).toEqual(
-  //         expect.not.stringContaining('?senderIp'),
-  //       )
+      // Act
+      await PostmanSmsService.sendBouncedSubmissionSms(
+        TEST_NUMBER,
+        MOCK_ADMIN_EMAIL,
+        MOCK_ADMIN_ID,
+        MOCK_FORM_ID,
+        MOCK_FORM_TITLE,
+        MOCK_RECIPIENT_EMAIL,
+      )
 
-  //       expect(smsCountSpy).toHaveBeenCalledWith({
-  //         smsData: {
-  //           form: MOCK_FORM_ID,
-  //           collaboratorEmail: MOCK_RECIPIENT_EMAIL,
-  //           recipientNumber: TWILIO_TEST_NUMBER,
-  //           formAdmin: {
-  //             email: MOCK_ADMIN_EMAIL,
-  //             userId: MOCK_ADMIN_ID,
-  //           },
-  //         },
-  //         smsType: SmsType.BouncedSubmission,
-  //         msgSrvcSid: MOCK_VALID_CONFIG.msgSrvcSid,
-  //         logType: LogType.success,
-  //       })
-  //     })
+      expect(postmanInternalSendSpy).toHaveBeenCalledOnce()
+      expect(postmanMopSendSpy).not.toHaveBeenCalled()
+    })
 
-  //     it('should log failure when sending fails', async () => {
-  //       // Arrange
-  //       const expectedMessage = renderBouncedSubmissionSms(MOCK_FORM_TITLE)
+    it('should return InvalidNumberError when invalid number is supplied', async () => {
+      // Arrange
+      const postmanInternalSendSpy = jest
+        .spyOn(PostmanSmsService, '_sendInternalSms')
+        .mockResolvedValueOnce(okAsync(true))
 
-  //       // Act
-  //       const actualResult = await SmsService.sendBouncedSubmissionSms(
-  //         {
-  //           recipient: TWILIO_TEST_NUMBER,
-  //           adminEmail: MOCK_ADMIN_EMAIL,
-  //           adminId: MOCK_ADMIN_ID,
-  //           formId: MOCK_FORM_ID,
-  //           formTitle: MOCK_FORM_TITLE,
-  //           recipientEmail: MOCK_RECIPIENT_EMAIL,
-  //         },
-  //         MOCK_INVALID_CONFIG,
-  //       )
+      const postmanMopSendSpy = jest
+        .spyOn(PostmanSmsService, '_sendMopSms')
+        .mockResolvedValueOnce(okAsync(true))
 
-  //       // Assert
-  //       expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidNumberError())
-  //       expect(twilioFailureSpy).toHaveBeenCalledWith({
-  //         to: TWILIO_TEST_NUMBER,
-  //         body: expectedMessage,
-  //         from: MOCK_INVALID_CONFIG.msgSrvcSid,
-  //         forceDelivery: true,
-  //         statusCallback: expect.stringContaining(MOCK_TWILIO_WEBHOOK_ROUTE),
-  //       })
-  //       expect(smsCountSpy).toHaveBeenCalledWith({
-  //         smsData: {
-  //           form: MOCK_FORM_ID,
-  //           collaboratorEmail: MOCK_RECIPIENT_EMAIL,
-  //           recipientNumber: TWILIO_TEST_NUMBER,
-  //           formAdmin: {
-  //             email: MOCK_ADMIN_EMAIL,
-  //             userId: MOCK_ADMIN_ID,
-  //           },
-  //         },
-  //         smsType: SmsType.BouncedSubmission,
-  //         msgSrvcSid: MOCK_INVALID_CONFIG.msgSrvcSid,
-  //         logType: LogType.failure,
-  //       })
-  //     })
-  //   })
+      const invalidNumber = '1+11'
+
+      // Act
+      const actualResult = await PostmanSmsService.sendBouncedSubmissionSms(
+        invalidNumber,
+        MOCK_ADMIN_EMAIL,
+        MOCK_ADMIN_ID,
+        MOCK_FORM_ID,
+        MOCK_FORM_TITLE,
+        MOCK_RECIPIENT_EMAIL,
+      )
+
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidNumberError())
+
+      expect(postmanInternalSendSpy).not.toHaveBeenCalled()
+      expect(postmanMopSendSpy).not.toHaveBeenCalled()
+    })
+  })
 
   describe('sendVerificationOtp', () => {
     let mockOtpData: FormOtpData
@@ -228,7 +170,7 @@ describe('postman-sms.service', () => {
       // Return null on Form method
       jest.spyOn(FormModel, 'getOtpData').mockResolvedValueOnce(null)
       const postmanSendSpy = jest
-        .spyOn(PostmanSmsService, 'sendMopSms')
+        .spyOn(PostmanSmsService, '_sendMopSms')
         .mockResolvedValueOnce(okAsync(true))
 
       // Act
@@ -254,7 +196,7 @@ describe('postman-sms.service', () => {
       jest.spyOn(FormModel, 'getOtpData').mockResolvedValueOnce(mockOtpData)
 
       const postmanSendSpy = jest
-        .spyOn(PostmanSmsService, 'sendMopSms')
+        .spyOn(PostmanSmsService, '_sendMopSms')
         .mockResolvedValueOnce(okAsync(true))
 
       // Act
@@ -271,11 +213,11 @@ describe('postman-sms.service', () => {
       expect(postmanSendSpy).toHaveBeenCalledOnce()
     })
 
-    it('should return InvalidNumberError when verification OTP fails to send due to invalid number', async () => {
+    it('should return InvalidNumberError when invalid number is supplied', async () => {
       // Arrange
       jest.spyOn(FormModel, 'getOtpData').mockResolvedValueOnce(mockOtpData)
       const postmanSendSpy = jest
-        .spyOn(PostmanSmsService, 'sendMopSms')
+        .spyOn(PostmanSmsService, '_sendMopSms')
         .mockResolvedValueOnce(okAsync(true))
 
       const invalidNumber = '1+11123'
@@ -294,93 +236,55 @@ describe('postman-sms.service', () => {
     })
   })
 
-  //   describe('sendAdminContactOtp', () => {
-  //     it('should log and send contact OTP when sending has no errors', async () => {
-  //       // Act
-  //       const actualResult = await SmsService.sendAdminContactOtp(
-  //         /* recipient= */ TWILIO_TEST_NUMBER,
-  //         /* otp= */ '111111',
-  //         /* userId= */ testUser._id,
-  //         /* senderIp= */ MOCK_SENDER_IP,
-  //         /* defaultConfig= */ MOCK_VALID_CONFIG,
-  //       )
+  describe('sendAdminContactOtp', () => {
+    it('should log and send contact OTP when sending has no errors', async () => {
+      // Arrange
+      const postmanInternalSendSpy = jest
+        .spyOn(PostmanSmsService, '_sendInternalSms')
+        .mockResolvedValueOnce(okAsync(true))
 
-  //       // Assert
-  //       expect(twilioSuccessSpy.mock.calls[0][0].statusCallback).toEqual(
-  //         expect.stringContaining('?senderIp'),
-  //       )
+      const postmanMopSendSpy = jest
+        .spyOn(PostmanSmsService, '_sendMopSms')
+        .mockResolvedValueOnce(okAsync(true))
 
-  //       // Should resolve to true
-  //       expect(actualResult.isOk()).toEqual(true)
-  //       expect(actualResult._unsafeUnwrap()).toEqual(true)
-  //       // Logging should also have happened.
-  //       const expectedLogParams = {
-  //         smsData: {
-  //           admin: testUser._id,
-  //         },
-  //         msgSrvcSid: MOCK_MSG_SRVC_SID,
-  //         smsType: SmsType.AdminContact,
-  //         logType: LogType.success,
-  //       }
-  //       expect(smsCountSpy).toHaveBeenCalledWith(expectedLogParams)
-  //     })
-  //   })
+      // Act
+      const actualResult = await PostmanSmsService.sendAdminContactOtp(
+        TEST_NUMBER,
+        '111111',
+        testUser._id,
+        MOCK_SENDER_IP,
+      )
 
-  //   describe('retrieveFreeSmsCounts', () => {
-  //     const VERIFICATION_SMS_COUNT = 3
+      // Assert
+      expect(actualResult._unsafeUnwrap()).toEqual(true)
+      expect(postmanInternalSendSpy).toHaveBeenCalledOnce()
+      expect(postmanMopSendSpy).not.toHaveBeenCalled()
+    })
 
-  //     it('should retrieve sms counts correctly for a specified user', async () => {
-  //       // Arrange
-  //       const retrieveSpy = jest.spyOn(SmsCountModel, 'retrieveFreeSmsCounts')
-  //       retrieveSpy.mockResolvedValueOnce(VERIFICATION_SMS_COUNT)
+    it('should return InvalidNumberError when invalid number is supplied', async () => {
+      // Arrange
+      const postmanInternalSendSpy = jest
+        .spyOn(PostmanSmsService, '_sendInternalSms')
+        .mockResolvedValueOnce(okAsync(true))
 
-  //       // Act
-  //       const actual = await SmsService.retrieveFreeSmsCounts(testUser._id)
+      const postmanMopSendSpy = jest
+        .spyOn(PostmanSmsService, '_sendMopSms')
+        .mockResolvedValueOnce(okAsync(true))
 
-  //       // Assert
-  //       expect(actual._unsafeUnwrap()).toBe(VERIFICATION_SMS_COUNT)
-  //     })
+      const invalidNumber = '1+11123'
 
-  //     it('should return a database error when retrieval fails', async () => {
-  //       // Arrange
-  //       const retrieveSpy = jest.spyOn(SmsCountModel, 'retrieveFreeSmsCounts')
-  //       retrieveSpy.mockRejectedValueOnce('ohno')
+      // Act
+      const actualResult = await PostmanSmsService.sendAdminContactOtp(
+        invalidNumber,
+        '111111',
+        testUser._id,
+        MOCK_SENDER_IP,
+      )
 
-  //       // Act
-  //       const actual = await SmsService.retrieveFreeSmsCounts(testUser._id)
-
-  //       // Assert
-  //       expect(actual._unsafeUnwrapErr()).toEqual(
-  //         new DatabaseError(getMongoErrorMessage('ohno')),
-  //       )
-  //     })
-  //   })
-
-  //   it('should log failure and throw error when contact OTP fails to send', async () => {
-  //     // Act
-  //     const actualResult = await SmsService.sendAdminContactOtp(
-  //       /* recipient= */ TWILIO_TEST_NUMBER,
-  //       /* otp= */ '111111',
-  //       /* userId= */ testUser._id,
-  //       /* senderIp= */ MOCK_SENDER_IP,
-  //       /* defaultConfig= */ MOCK_INVALID_CONFIG,
-  //     )
-
-  //     // Assert
-  //     const expectedError = new Error(VfnErrors.InvalidMobileNumber)
-  //     expectedError.name = VfnErrors.SendOtpFailed
-
-  //     expect(actualResult.isErr()).toEqual(true)
-
-  //     // Logging should also have happened.
-  //     const expectedLogParams = {
-  //       smsData: {
-  //         admin: testUser._id,
-  //       },
-  //       msgSrvcSid: MOCK_MSG_SRVC_SID,
-  //       smsType: SmsType.AdminContact,
-  //       logType: LogType.failure,
-  //     }
-  //     expect(smsCountSpy).toHaveBeenCalledWith(expectedLogParams)
-  //   })
+      // Assert
+      expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidNumberError())
+      expect(postmanInternalSendSpy).not.toHaveBeenCalled()
+      expect(postmanMopSendSpy).not.toHaveBeenCalled()
+    })
+  })
 })
