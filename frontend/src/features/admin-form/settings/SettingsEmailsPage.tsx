@@ -22,7 +22,7 @@ const AdminEmailSection = () => {
 
   // should render null
   if (!isEmailOrStorageMode) {
-    return false
+    return null
   }
 
   return <EmailFormSection settings={settings} />

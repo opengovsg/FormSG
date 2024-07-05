@@ -41,6 +41,7 @@ interface TabEntry {
   icon: IconType
   component: () => JSX.Element
   path: string
+  showRedDot?: boolean
 }
 
 export const SettingsPage = (): JSX.Element => {
@@ -68,6 +69,7 @@ export const SettingsPage = (): JSX.Element => {
             icon: BiMailSend,
             component: SettingsEmailsPage,
             path: 'email-notifications',
+            showRedDot: true,
           }
         : null
 
@@ -106,7 +108,7 @@ export const SettingsPage = (): JSX.Element => {
     ]
 
     return baseConfig.filter(isNonEmpty)
-  }, [settings])
+  }, [settings?.responseMode])
 
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
 
@@ -128,7 +130,10 @@ export const SettingsPage = (): JSX.Element => {
         py={{ base: '2.5rem', lg: '3.125rem' }}
         px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
         index={tabIndex === -1 ? 0 : tabIndex}
-        onChange={handleTabChange}
+        onChange={(index) => {
+          handleTabChange(index)
+          tabConfig[index]
+        }}
       >
         <Flex
           h="max-content"
@@ -158,7 +163,12 @@ export const SettingsPage = (): JSX.Element => {
             mb="calc(0.5rem - 2px)"
           >
             {tabConfig.map((tab) => (
-              <SettingsTab key={tab.label} label={tab.label} icon={tab.icon} />
+              <SettingsTab
+                key={tab.label}
+                label={tab.label}
+                icon={tab.icon}
+                showNewBadge={tab.showRedDot}
+              />
             ))}
           </TabList>
         </Flex>

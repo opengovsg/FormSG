@@ -5,6 +5,7 @@ import {
   BiShow,
   BiUserPlus,
 } from 'react-icons/bi'
+import { GoPrimitiveDot } from 'react-icons/go'
 import { Link as ReactLink, useLocation } from 'react-router-dom'
 import {
   Box,
@@ -18,6 +19,7 @@ import {
   Flex,
   Grid,
   GridItem,
+  Icon,
   Skeleton,
   Text,
   useBreakpointValue,
@@ -25,6 +27,7 @@ import {
 } from '@chakra-ui/react'
 import format from 'date-fns/format'
 
+import { SeenFlags } from '~shared/types'
 import { AdminFormDto } from '~shared/types/form/form'
 
 import {
@@ -39,6 +42,11 @@ import Button, { ButtonProps } from '~components/Button'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 import { NavigationTab, NavigationTabList } from '~templates/NavigationTabs'
+
+import { SeenFlagsMapVersion } from '~features/user/constants'
+import { useUserMutations } from '~features/user/mutations'
+import { useUser } from '~features/user/queries'
+import { getShowFeatureFlagLastSeen } from '~features/user/utils'
 
 import { AdminFormNavbarBreadcrumbs } from './AdminFormNavbarBreadcrumbs'
 
@@ -67,6 +75,13 @@ export const AdminFormNavbar = ({
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
   const { isOpen, onClose, onOpen } = useDisclosure()
   const { pathname } = useLocation()
+
+  const { user, isLoading: isUserLoading } = useUser()
+  const { updateLastSeenFlagMutation } = useUserMutations()
+  const shouldShowSettingsReddot = useMemo(() => {
+    if (isUserLoading || !user) return false
+    return getShowFeatureFlagLastSeen(user, SeenFlags.SettingsNotification)
+  }, [isUserLoading, user])
 
   const tabResponsiveVariant = useBreakpointValue({
     base: 'line-dark',
@@ -171,8 +186,25 @@ export const AdminFormNavbar = ({
           hidden={viewOnly}
           to={ADMINFORM_SETTINGS_SUBROUTE}
           isActive={checkTabActive(ADMINFORM_SETTINGS_SUBROUTE)}
+          onClick={() => {
+            if (shouldShowSettingsReddot) {
+              updateLastSeenFlagMutation.mutate({
+                flag: SeenFlags.SettingsNotification,
+                version: SeenFlagsMapVersion[SeenFlags.SettingsNotification],
+              })
+            }
+          }}
         >
           Settings
+          {shouldShowSettingsReddot ? (
+            <Icon
+              as={GoPrimitiveDot}
+              color="danger.500"
+              position="absolute"
+              right="-8px"
+              top="2px"
+            />
+          ) : null}
         </NavigationTab>
         <NavigationTab
           to={ADMINFORM_RESULTS_SUBROUTE}

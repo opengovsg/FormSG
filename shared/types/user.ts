@@ -7,7 +7,7 @@ export type UserId = Tagged<string, 'UserId'>
 
 export enum SeenFlags {
   LastSeenFeatureUpdateVersion = 'lastSeenFeatureUpdateVersion',
-  SettingsEmailNotification = 'settingsEmailNotification',
+  SettingsNotification = 'settingsNotification',
   CreateBuilderMrfWorkflow = 'createBuilderMrfWorkflow',
 }
 

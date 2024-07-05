@@ -8,6 +8,6 @@ const LegacySeenFlags = {
 
 export const SeenFlagsMapVersion: { [key in SeenFlags]: number } = {
   ...LegacySeenFlags,
-  [SeenFlags.SettingsEmailNotification]: 0, // stub
-  [SeenFlags.CreateBuilderMrfWorkflow]: 0, // stub
+  [SeenFlags.SettingsNotification]: 0,
+  [SeenFlags.CreateBuilderMrfWorkflow]: 0,
 }
