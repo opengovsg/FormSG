@@ -31,8 +31,8 @@ const createEmailFieldSchema = (): Schema<IEmailFieldSchema> => {
         type: Boolean,
         default: false,
         set: function (this: IEmailFieldSchema, v: boolean) {
-          // Set to false if encrypt mode regardless of initial value.
-          return this.parent().responseMode === FormResponseMode.Encrypt
+          // Set to false if mrf mode regardless of initial value.
+          return this.parent().responseMode === FormResponseMode.Multirespondent
             ? false
             : v
         },

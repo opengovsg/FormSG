@@ -6,6 +6,9 @@ import dayjs from 'dayjs'
 import { AdminDashboardFormMetaDto, FormStatus } from '~shared/types/form/form'
 
 import { ADMINFORM_ROUTE } from '~constants/routes'
+import Badge from '~components/Badge'
+
+import { RESPONSE_MODE_TO_TEXT } from '~features/admin-form/common/constants'
 
 import { FormStatusLabel } from './FormStatusLabel'
 import { RowActions } from './RowActions'
@@ -45,12 +48,12 @@ export const WorkspaceFormRow = ({
         justifyContent="space-between"
         gridTemplateColumns={{
           base: '1fr 2.75rem',
-          md: '1fr 4rem 8rem',
+          md: '1fr 10rem 4rem 8rem',
         }}
         gridTemplateRows={{ base: 'auto 2.75rem', md: 'auto' }}
         gridTemplateAreas={{
-          base: "'title title' 'status actions'",
-          md: "'title status actions'",
+          base: "'title title' 'formType formType' 'status actions'",
+          md: "'title formType status actions'",
         }}
         gridGap={{ base: '0.5rem', md: '1.5rem' }}
         _hover={{
@@ -83,6 +86,11 @@ export const WorkspaceFormRow = ({
             Edited {prettyLastModified}
           </Text>
         </Flex>
+        <Box gridArea="formType" alignSelf="center">
+          <Badge bgColor="primary.100" color="secondary.500">
+            {RESPONSE_MODE_TO_TEXT[formMeta.responseMode]}
+          </Badge>
+        </Box>
         <Box gridArea="status" alignSelf="center">
           <FormStatusLabel status={formMeta.status} />
         </Box>

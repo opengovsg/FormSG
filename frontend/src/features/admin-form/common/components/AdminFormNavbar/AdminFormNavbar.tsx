@@ -6,6 +6,7 @@ import {
   BiShow,
   BiUserPlus,
 } from 'react-icons/bi'
+import { GoPrimitiveDot } from 'react-icons/go'
 import { Link as ReactLink, useLocation } from 'react-router-dom'
 import {
   Box,
@@ -19,6 +20,7 @@ import {
   Flex,
   Grid,
   GridItem,
+  Icon,
   Skeleton,
   Text,
   useBreakpointValue,
@@ -26,7 +28,8 @@ import {
 } from '@chakra-ui/react'
 import format from 'date-fns/format'
 
-import { AdminFormDto } from '~shared/types/form/form'
+import { SeenFlags } from '~shared/types'
+import { AdminFormDto, FormResponseMode } from '~shared/types/form/form'
 
 import {
   ACTIVE_ADMINFORM_BUILDER_ROUTE_REGEX,
@@ -41,6 +44,11 @@ import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 import { NavigationTab, NavigationTabList } from '~templates/NavigationTabs'
 
+import { SeenFlagsMapVersion } from '~features/user/constants'
+import { useUserMutations } from '~features/user/mutations'
+import { useUser } from '~features/user/queries'
+import { getShowFeatureFlagLastSeen } from '~features/user/utils'
+
 import { AdminFormNavbarBreadcrumbs } from './AdminFormNavbarBreadcrumbs'
 
 export interface AdminFormNavbarProps {
@@ -48,7 +56,7 @@ export interface AdminFormNavbarProps {
    * Minimum form info needed to render the navbar.
    * If not provided, the navbar will be in a loading state.
    */
-  formInfo?: Pick<AdminFormDto, 'title' | 'lastModified'>
+  formInfo?: AdminFormDto
   viewOnly: boolean
   handleAddCollabButtonClick: () => void
   handleShareButtonClick: () => void
@@ -69,6 +77,15 @@ export const AdminFormNavbar = ({
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
   const { isOpen, onClose, onOpen } = useDisclosure()
   const { pathname } = useLocation()
+
+  const { user, isLoading: isUserLoading } = useUser()
+  const { updateLastSeenFlagMutation } = useUserMutations()
+  const shouldShowSettingsReddot = useMemo(() => {
+    const isMrf = formInfo?.responseMode === FormResponseMode.Multirespondent
+
+    if (isUserLoading || !user || isMrf) return false
+    return getShowFeatureFlagLastSeen(user, SeenFlags.SettingsNotification)
+  }, [isUserLoading, user, formInfo?.responseMode])
 
   const tabResponsiveVariant = useBreakpointValue({
     base: 'line-dark',
@@ -173,8 +190,25 @@ export const AdminFormNavbar = ({
           hidden={viewOnly}
           to={ADMINFORM_SETTINGS_SUBROUTE}
           isActive={checkTabActive(ADMINFORM_SETTINGS_SUBROUTE)}
+          onClick={() => {
+            if (shouldShowSettingsReddot) {
+              updateLastSeenFlagMutation.mutate({
+                flag: SeenFlags.SettingsNotification,
+                version: SeenFlagsMapVersion[SeenFlags.SettingsNotification],
+              })
+            }
+          }}
         >
           {t('features.adminFormNavbar.tabs.settings')}
+          {shouldShowSettingsReddot ? (
+            <Icon
+              as={GoPrimitiveDot}
+              color="danger.500"
+              position="absolute"
+              right="-8px"
+              top="2px"
+            />
+          ) : null}
         </NavigationTab>
         <NavigationTab
           to={ADMINFORM_RESULTS_SUBROUTE}

@@ -41,8 +41,6 @@ services:
       - SES_HOST=maildev
       - WEBHOOK_SQS_URL=http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/local-webhooks-sqs-main
       - INTRANET_IP_LIST_PATH
-      - SENTRY_CONFIG_URL=https://random@sentry.io/123456
-      - CSP_REPORT_URI=https://random@sentry.io/123456
       # This needs to be removed and replaced with a real tracking ID in a local .env file
       # in order to enable GA in a local environment
       # TODO: remove after React rollout #4786

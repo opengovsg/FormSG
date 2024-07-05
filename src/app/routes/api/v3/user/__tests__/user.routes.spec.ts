@@ -589,7 +589,7 @@ describe('user.routes', () => {
       const mockErrorString = 'Database goes boom'
       // Mock database error from service call.
       const retrieveUserSpy = jest
-        .spyOn(UserService, 'updateUserLastSeenFeatureUpdateVersion')
+        .spyOn(UserService, 'updateUserLastSeenFlagVersion')
         .mockReturnValueOnce(errAsync(new DatabaseError(mockErrorString)))
 
       // Act

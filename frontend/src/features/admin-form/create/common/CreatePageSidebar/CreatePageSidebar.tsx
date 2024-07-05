@@ -1,8 +1,8 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { BiGitMerge, BiQuestionMark } from 'react-icons/bi'
 import { Divider, Stack } from '@chakra-ui/react'
 
-import { FormResponseMode } from '~shared/types'
+import { FormResponseMode, SeenFlags } from '~shared/types'
 
 import { MultiParty, PhHandsClapping } from '~assets/icons'
 import { BxsDockTop } from '~assets/icons/BxsDockTop'
@@ -17,6 +17,10 @@ import {
   DrawerTabs,
   useCreatePageSidebar,
 } from '~features/admin-form/create/common/CreatePageSidebarContext/CreatePageSidebarContext'
+import { SeenFlagsMapVersion } from '~features/user/constants'
+import { useUserMutations } from '~features/user/mutations'
+import { useUser } from '~features/user/queries'
+import { getShowFeatureFlagLastSeen } from '~features/user/utils'
 
 import {
   isDirtySelector,
@@ -34,6 +38,13 @@ export const CreatePageSidebar = (): JSX.Element | null => {
   const isMobile = useIsMobile()
 
   const { data } = useAdminForm()
+  const { user, isLoading: isUserLoading } = useUser()
+  const { updateLastSeenFlagMutation } = useUserMutations()
+
+  const shouldShowMrfWorkflowReddot = useMemo(() => {
+    if (isUserLoading || !user) return false
+    return getShowFeatureFlagLastSeen(user, SeenFlags.CreateBuilderMrfWorkflow)
+  }, [isUserLoading, user])
 
   const setFieldsToInactive = useFieldBuilderStore(setToInactiveSelector)
   const isDirty = useDirtyFieldStore(isDirtySelector)
@@ -69,10 +80,20 @@ export const CreatePageSidebar = (): JSX.Element | null => {
     [handleEndpageClick, isDirty],
   )
 
-  const handleDrawerWorkflowClick = useCallback(
-    () => handleWorkflowClick(isDirty),
-    [handleWorkflowClick, isDirty],
-  )
+  const handleDrawerWorkflowClick = useCallback(() => {
+    handleWorkflowClick(isDirty)
+    if (shouldShowMrfWorkflowReddot) {
+      updateLastSeenFlagMutation.mutate({
+        flag: SeenFlags.CreateBuilderMrfWorkflow,
+        version: SeenFlagsMapVersion.createBuilderMrfWorkflow,
+      })
+    }
+  }, [
+    handleWorkflowClick,
+    updateLastSeenFlagMutation,
+    shouldShowMrfWorkflowReddot,
+    isDirty,
+  ])
 
   return (
     <Stack
@@ -123,6 +144,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
               icon={<MultiParty fontSize="1.5rem" />}
               onClick={handleDrawerWorkflowClick}
               isActive={activeTab === DrawerTabs.Workflow}
+              showRedDot={shouldShowMrfWorkflowReddot}
             />
           </>
         )}
