@@ -4,7 +4,6 @@ import config from '../../config/config'
 import { captchaConfig } from '../../config/features/captcha.config'
 import { googleAnalyticsConfig } from '../../config/features/google-analytics.config'
 import { paymentConfig } from '../../config/features/payment.config'
-import { sentryConfig } from '../../config/features/sentry.config'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 
 // Construct js with environment variables needed by frontend
@@ -16,7 +15,6 @@ const frontendVars = {
   logoBucketUrl: config.aws.logoBucketUrl, // S3 bucket
   formsgSdkMode: config.formsgSdkMode,
   captchaPublicKey: captchaConfig.captchaPublicKey, // Recaptcha
-  sentryConfigUrl: sentryConfig.sentryConfigUrl, // Sentry.IO
   isSPMaintenance: spcpMyInfoConfig.isSPMaintenance, // Singpass maintenance message
   isCPMaintenance: spcpMyInfoConfig.isCPMaintenance, // Corppass maintenance message
   myInfoBannerContent: spcpMyInfoConfig.myInfoBannerContent, // MyInfo maintenance message
@@ -47,8 +45,6 @@ const environment = ejs.render(
     var GATrackingID = "<%= GATrackingID%>"
     // Recaptcha
     var captchaPublicKey = "<%= captchaPublicKey %>"
-    // Sentry.IO
-    var sentryConfigUrl = "<%= sentryConfigUrl%>"
     // S3 bucket
     var logoBucketUrl = "<%= logoBucketUrl%>"
     // Node env

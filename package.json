@@ -65,8 +65,6 @@
     "@opengovsg/sgid-client": "^2.0.0",
     "@react-email/components": "^0.0.15",
     "@react-email/render": "^0.0.12",
-    "@sentry/browser": "^7.51.2",
-    "@sentry/integrations": "^6.19.7",
     "@stablelib/base64": "^1.0.1",
     "abortcontroller-polyfill": "^1.7.5",
     "aws-info": "^1.2.0",
