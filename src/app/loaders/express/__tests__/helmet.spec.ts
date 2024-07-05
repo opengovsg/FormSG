@@ -88,7 +88,6 @@ describe('helmetMiddlewares', () => {
       useDefaults: true,
       directives: {
         ...cspCoreDirectives,
-        reportUri: ['value'],
       },
     })
   })
