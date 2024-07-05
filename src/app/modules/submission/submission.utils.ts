@@ -781,7 +781,6 @@ export const checkIsIndividualSingpassAuthType = (
   )
 }
 
-// TODO: choose a hash later on (should be collision resistant & preferably reasonably one-way)
 /**
  * Generates a hash to mask the original submitterId.
  * @param id
@@ -789,9 +788,6 @@ export const checkIsIndividualSingpassAuthType = (
  */
 
 export const generateHashedSubmitterId = (id: string, salt: string) => {
-  // if (!id || !salt) {
-  //   throw new ApplicationError('id and salt must be provided to hash id')
-  // }
   return crypto
     .createHash('sha256')
     .update(id + salt)
