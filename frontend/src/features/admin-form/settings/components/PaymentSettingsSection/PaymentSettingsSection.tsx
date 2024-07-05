@@ -39,20 +39,47 @@ import {
   StripeConnectButtonStates,
 } from './StripeConnectButton'
 
-const PaymentsNotAllowedMessage = () => {
-  return (
-    <Box w="100%">
-      <InlineMessage>
-        <Text>
-          To enable payment fields, remove all recipients from{' '}
-          <Link as={ReactLink} to={'email-notifications'}>
-            email notifications
-          </Link>
-          .
-        </Text>
-      </InlineMessage>
-    </Box>
-  )
+const getPaymentsNotAllowedMessageText = (
+  isEmailsPresent: boolean,
+  isSingleSubmission: boolean,
+) => {
+  if (isEmailsPresent && isSingleSubmission) {
+    return (
+      <Text>
+        To enable payment fields, remove all recipients from{' '}
+        <Link as={ReactLink} to={'email-notifications'}>
+          email notifications
+        </Link>{' '}
+        and disable{' '}
+        <Link as={ReactLink} to={'singpass'}>
+          only one submission per NRIC/FIN
+        </Link>
+        .
+      </Text>
+    )
+  } else if (isEmailsPresent) {
+    return (
+      <Text>
+        To enable payment fields, remove all recipients from{' '}
+        <Link as={ReactLink} to={'email-notifications'}>
+          email notifications
+        </Link>{' '}
+        .
+      </Text>
+    )
+  } else if (isSingleSubmission) {
+    return (
+      <Text>
+        To enable payment fields, disable{' '}
+        <Link as={ReactLink} to={'singpass'}>
+          only one submission per NRIC/FIN
+        </Link>{' '}
+        .
+      </Text>
+    )
+  } else {
+    return null
+  }
 }
 
 const BeforeConnectionInstructions = ({
@@ -78,6 +105,15 @@ const BeforeConnectionInstructions = ({
     )
   }, [settings])
 
+  const isSingleSubmission = !!settings?.isSingleSubmission
+
+  const isPaymentsDisabled = isEmailsPresent || isSingleSubmission
+
+  const PaymentsNotAllowedMessageText = getPaymentsNotAllowedMessageText(
+    isEmailsPresent,
+    isSingleSubmission,
+  )
+
   if (isInvalidDomain) {
     return (
       <>
@@ -95,8 +131,10 @@ const BeforeConnectionInstructions = ({
   if (isProductionEnv) {
     return (
       <VStack spacing="2.5rem" alignItems="start">
-        {isEmailsPresent ? (
-          <PaymentsNotAllowedMessage />
+        {PaymentsNotAllowedMessageText ? (
+          <Box w="100%">
+            <InlineMessage>{PaymentsNotAllowedMessageText}</InlineMessage>
+          </Box>
         ) : (
           <InlineMessage useMarkdown>
             {`Read [our guide](${paymentGuideLink}) to set up a Stripe account. If your agency already has a Stripe account, you can connect it to this form.`}
@@ -128,7 +166,7 @@ const BeforeConnectionInstructions = ({
         </Checkbox>
         <StripeConnectButton
           connectState={
-            allowConnect && !isEmailsPresent
+            allowConnect && !isPaymentsDisabled
               ? StripeConnectButtonStates.ENABLED
               : StripeConnectButtonStates.DISABLED
           }
@@ -140,8 +178,10 @@ const BeforeConnectionInstructions = ({
   return (
     <>
       <VStack spacing="2.5rem" alignItems="start">
-        {isEmailsPresent ? (
-          <PaymentsNotAllowedMessage />
+        {PaymentsNotAllowedMessageText ? (
+          <Box w="100%">
+            <InlineMessage>{PaymentsNotAllowedMessageText}</InlineMessage>
+          </Box>
         ) : (
           <InlineMessage variant="info">
             <Text>
@@ -152,9 +192,9 @@ const BeforeConnectionInstructions = ({
         )}
         <StripeConnectButton
           connectState={
-            isEmailsPresent
-              ? StripeConnectButtonStates.DISABLED
-              : StripeConnectButtonStates.ENABLED
+            !isPaymentsDisabled
+              ? StripeConnectButtonStates.ENABLED
+              : StripeConnectButtonStates.DISABLED
           }
         />
       </VStack>
