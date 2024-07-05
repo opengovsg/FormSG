@@ -1068,12 +1068,13 @@ export const updateFormSettings = (
     )
   }
 
-  // Don't allow emails updates if payments_field is enabled on the form and vice versa
+  // Don't allow emails updates or single response per submitterId
+  // if payments_field is enabled on the form
   if (isFormEncryptMode(originalForm)) {
     if (
       (originalForm.payments_channel.channel !== PaymentChannel.Unconnected ||
         originalForm.payments_field.enabled) &&
-      (body as StorageFormSettings).emails
+      ((body as StorageFormSettings).emails || body.isSingleSubmission)
     ) {
       return errAsync(
         new MalformedParametersError(
