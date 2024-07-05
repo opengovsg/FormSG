@@ -1,4 +1,7 @@
-import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
+import {
+  InvalidNumberError,
+  SmsSendError,
+} from '../../services/postman-sms/postman-sms.errors'
 import { ApplicationError } from '../core/core.errors'
 
 /**

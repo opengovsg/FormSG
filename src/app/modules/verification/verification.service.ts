@@ -17,8 +17,11 @@ import formsgSdk from '../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../config/logger'
 import { MailSendError } from '../../services/mail/mail.errors'
 import MailService from '../../services/mail/mail.service'
+import {
+  InvalidNumberError,
+  SmsSendError,
+} from '../../services/postman-sms/postman-sms.errors'
 import PostmanSmsService from '../../services/postman-sms/postman-sms.service'
-import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
 import { SmsFactory } from '../../services/sms/sms.factory'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 import { compareHash, HashingError } from '../../utils/hash'

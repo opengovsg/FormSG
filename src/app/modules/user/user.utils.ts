@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import { UserContactView } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
-import * as SmsErrors from '../../services/sms/sms.errors'
+import * as SmsErrors from '../../services/postman-sms/postman-sms.errors'
 import { HashingError } from '../../utils/hash'
 import * as CoreErrors from '../core/core.errors'
 import { ErrorResponseData } from '../core/core.types'

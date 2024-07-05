@@ -133,6 +133,8 @@ services:
       - WOGAA_FEEDBACK_ENDPOINT
       - POSTMAN_MOP_CAMPAIGN_ID=campaign_test
       - POSTMAN_MOP_CAMPAIGN_API_KEY=key_test_123
+      - POSTMAN_INTERNAL_CAMPAIGN_ID=campaign_test_2
+      - POSTMAN_INTERNAL_CAMPAIGN_API_KEY=key_test_456
       - POSTMAN_BASE_URL=https://test.postman.gov.sg/api/v2
 
   mockpass:

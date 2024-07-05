@@ -9,8 +9,8 @@ import {
   MissingUserError,
 } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
-import { SmsSendError } from 'src/app/services/sms/sms.errors'
-import { SmsFactory } from 'src/app/services/sms/sms.factory'
+import { SmsSendError } from 'src/app/services/postman-sms/postman-sms.errors'
+import PostmanSmsService from 'src/app/services/postman-sms/postman-sms.service'
 import { HashingError } from 'src/app/utils/hash'
 import { IPopulatedUser } from 'src/types'
 
@@ -18,9 +18,9 @@ import { DatabaseError } from '../../core/core.errors'
 import { UNAUTHORIZED_USER_MESSAGE } from '../user.constant'
 
 jest.mock('src/app/modules/user/user.service')
-jest.mock('src/app/services/sms/sms.factory')
+jest.mock('src/app/services/postman-sms/postman-sms.service')
 const MockUserService = jest.mocked(UserService)
-const MockSmsFactory = jest.mocked(SmsFactory)
+const MockPostmanSmsService = jest.mocked(PostmanSmsService)
 
 describe('user.controller', () => {
   afterEach(() => {
@@ -49,7 +49,9 @@ describe('user.controller', () => {
 
       // Mock UserService and SmsFactory to pass without errors.
       MockUserService.createContactOtp.mockReturnValueOnce(okAsync(expectedOtp))
-      MockSmsFactory.sendAdminContactOtp.mockReturnValueOnce(okAsync(true))
+      MockPostmanSmsService.sendAdminContactOtp.mockReturnValueOnce(
+        okAsync(true),
+      )
 
       // Act
       await UserController._handleContactSendOtp(MOCK_REQ, mockRes, jest.fn())
@@ -60,7 +62,7 @@ describe('user.controller', () => {
         MOCK_REQ.body.userId,
         MOCK_REQ.body.contact,
       )
-      expect(MockSmsFactory.sendAdminContactOtp).toHaveBeenCalledWith(
+      expect(MockPostmanSmsService.sendAdminContactOtp).toHaveBeenCalledWith(
         MOCK_REQ.body.contact,
         expectedOtp,
         MOCK_REQ.body.userId,
@@ -134,7 +136,7 @@ describe('user.controller', () => {
       // Mock UserService to pass without errors.
       MockUserService.createContactOtp.mockReturnValueOnce(okAsync('123456'))
       // Mock SmsFactory to return error.
-      MockSmsFactory.sendAdminContactOtp.mockReturnValueOnce(
+      MockPostmanSmsService.sendAdminContactOtp.mockReturnValueOnce(
         errAsync(new SmsSendError(mockErrorString)),
       )
 
