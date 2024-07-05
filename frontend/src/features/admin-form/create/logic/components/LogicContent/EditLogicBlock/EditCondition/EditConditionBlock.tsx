@@ -308,7 +308,7 @@ export const EditConditionBlock = ({
               control={control}
               name={`${name}.field`}
               rules={{
-                required: 'Please select a question.',
+                required: 'Please select a field.',
                 validate: (value) =>
                   !logicableFields ||
                   Object.keys(logicableFields).includes(value) ||
@@ -318,7 +318,7 @@ export const EditConditionBlock = ({
                 <SingleSelect
                   isDisabled={isLoading}
                   isClearable={false}
-                  placeholder="Select a question"
+                  placeholder="Select a field"
                   items={allowedIfConditionFieldsOptions}
                   {...field}
                 />
