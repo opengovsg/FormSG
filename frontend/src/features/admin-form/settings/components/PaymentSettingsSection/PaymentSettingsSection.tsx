@@ -63,7 +63,7 @@ const getPaymentsNotAllowedMessageText = (
         To enable payment fields, remove all recipients from{' '}
         <Link as={ReactLink} to={'email-notifications'}>
           email notifications
-        </Link>{' '}
+        </Link>
         .
       </Text>
     )
@@ -73,7 +73,7 @@ const getPaymentsNotAllowedMessageText = (
         To enable payment fields, disable{' '}
         <Link as={ReactLink} to={'singpass'}>
           only one submission per NRIC/FIN
-        </Link>{' '}
+        </Link>
         .
       </Text>
     )
