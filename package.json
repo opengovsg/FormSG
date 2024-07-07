@@ -98,7 +98,7 @@
     "fetch-readablestream": "^0.2.0",
     "file-saver": "^2.0.5",
     "font-awesome": "4.7.0",
-    "fp-ts": "^2.13.1",
+    "fp-ts": "^2.16.8",
     "helmet": "^6.0.1",
     "hot-shots": "^9.3.0",
     "html-entities": "^2.3.3",
