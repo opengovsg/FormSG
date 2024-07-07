@@ -486,7 +486,7 @@ export class MailService {
     formData,
   }: {
     replyToEmails?: string[]
-    form: Pick<IFormHasEmailSchema, '_id' | 'title' | 'emails'>
+    form: Pick<IFormHasEmailSchema, '_id' | 'title' | 'emails' | 'responseMode'>
     submission: Pick<ISubmissionSchema, 'id' | 'created'>
     attachments?: Mail.Attachment[]
     formData: EmailAdminDataField[]
@@ -497,6 +497,8 @@ export class MailService {
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
     const refNo = String(submission.id)
     const formTitle = form.title
+    const formId: string = String(form._id)
+    const responseMode: string = form.responseMode
     const submissionTime = moment(submission.created)
       .tz('Asia/Singapore')
       .format('ddd, DD MMM YYYY hh:mm:ss A')
@@ -506,6 +508,8 @@ export class MailService {
     const htmlData: SubmissionToAdminHtmlData = {
       appName: this.#appName,
       formTitle,
+      formId,
+      responseMode,
       refNo,
       submissionTime,
       formData,

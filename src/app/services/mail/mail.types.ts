@@ -1,7 +1,7 @@
 import Mail from 'nodemailer/lib/mailer'
 import { OperationOptions } from 'retry'
 
-import { AutoReplyOptions } from '../../../../shared/types'
+import { AutoReplyOptions, FormResponseMode } from '../../../../shared/types'
 import { SMS_WARNING_TIERS } from '../../../../shared/utils/verification'
 import {
   EmailAdminDataField,
@@ -65,6 +65,8 @@ export type MailOptions = Omit<Mail.Options, 'to'> & {
 export type SubmissionToAdminHtmlData = {
   refNo: string
   formTitle: string
+  formId: string
+  responseMode: string
   submissionTime: string
   formData: EmailAdminDataField[]
   dataCollationData?: {
