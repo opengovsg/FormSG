@@ -1,7 +1,7 @@
 import Mail from 'nodemailer/lib/mailer'
 import { OperationOptions } from 'retry'
 
-import { AutoReplyOptions, FormResponseMode } from '../../../../shared/types'
+import { AutoReplyOptions } from '../../../../shared/types'
 import { SMS_WARNING_TIERS } from '../../../../shared/utils/verification'
 import {
   EmailAdminDataField,
