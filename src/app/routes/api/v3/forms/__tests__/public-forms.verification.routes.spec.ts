@@ -22,7 +22,7 @@ import {
 } from 'src/app/modules/verification/__tests__/verification.test.helpers'
 import getVerificationModel from 'src/app/modules/verification/verification.model'
 import MailService from 'src/app/services/mail/mail.service'
-import { SmsSendError } from 'src/app/services/sms/sms.errors'
+import { SmsSendError } from 'src/app/services/postman-sms/postman-sms.errors'
 import * as SmsService from 'src/app/services/sms/sms.service'
 import * as OtpUtils from 'src/app/utils/otp'
 import { IVerificationSchema } from 'src/types'

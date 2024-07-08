@@ -21,23 +21,19 @@ import {
   getMongoErrorMessage,
   transformMongoError,
 } from '../../utils/handle-mongo-error'
-
-import { InvalidNumberError, SmsSendError } from './sms.errors'
 import {
-  BouncedSubmissionSmsData,
-  BounceNotificationSmsParams,
-  FormDeactivatedSmsData,
+  InvalidNumberError,
+  SmsSendError,
+} from '../postman-sms/postman-sms.errors'
+import { renderVerificationSms } from '../postman-sms/postman-sms.util'
+
+import {
   LogSmsParams,
   LogType,
   SmsType,
   TwilioConfig,
   TwilioCredentials,
 } from './sms.types'
-import {
-  renderBouncedSubmissionSms,
-  renderFormDeactivatedSms,
-  renderVerificationSms,
-} from './sms.util'
 import getSmsCountModel from './sms_count.server.model'
 
 const logger = createLoggerWithLabel(module)
@@ -360,139 +356,6 @@ export const sendVerificationOtp = (
       )
     })
   })
-}
-
-export const sendAdminContactOtp = (
-  recipient: string,
-  otp: string,
-  userId: string,
-  senderIp: string,
-  defaultConfig: TwilioConfig,
-): ResultAsync<true, SmsSendError | InvalidNumberError> => {
-  logger.info({
-    message: `Sending admin contact verification OTP for ${userId}`,
-    meta: {
-      action: 'sendAdminContactOtp',
-      userId,
-    },
-  })
-
-  const message = `Use the OTP ${otp} to verify your emergency contact number.`
-
-  const otpData: AdminContactOtpData = {
-    admin: userId,
-  }
-
-  return sendSms(
-    defaultConfig,
-    otpData,
-    recipient,
-    message,
-    SmsType.AdminContact,
-    senderIp,
-  )
-}
-
-/**
- * Informs recipient that the given form was deactivated.
- * @param params Data for SMS to be sent
- * @param params.recipient Mobile number to be SMSed
- * @param params.recipientEmail The email address of the recipient being SMSed
- * @param params.adminId User ID of the admin of the deactivated form
- * @param params.adminEmail Email of the admin of the deactivated form
- * @param params.formId Form ID of deactivated form
- * @param params.formTitle Title of deactivated form
- * @param defaultConfig Twilio configuration
- */
-export const sendFormDeactivatedSms = (
-  {
-    recipient,
-    recipientEmail,
-    adminId,
-    adminEmail,
-    formId,
-    formTitle,
-  }: BounceNotificationSmsParams,
-  defaultConfig: TwilioConfig,
-): ResultAsync<true, SmsSendError | InvalidNumberError> => {
-  logger.info({
-    message: `Sending form deactivation notification for ${recipientEmail}`,
-    meta: {
-      action: 'sendFormDeactivatedSms',
-      formId,
-    },
-  })
-
-  const message = renderFormDeactivatedSms(formTitle)
-
-  const smsData: FormDeactivatedSmsData = {
-    form: formId,
-    collaboratorEmail: recipientEmail,
-    recipientNumber: recipient,
-    formAdmin: {
-      email: adminEmail,
-      userId: adminId,
-    },
-  }
-
-  return sendSms(
-    defaultConfig,
-    smsData,
-    recipient,
-    message,
-    SmsType.DeactivatedForm,
-  )
-}
-
-/**
- * Informs recipient that a response for the given form was lost due to email bounces.
- * @param params Data for SMS to be sent
- * @param params.recipient Mobile number to be SMSed
- * @param params.recipientEmail The email address of the recipient being SMSed
- * @param params.adminId User ID of the admin of the form
- * @param params.adminEmail Email of the admin of the form
- * @param params.formId Form ID of form
- * @param params.formTitle Title of form
- * @param defaultConfig Twilio configuration
- */
-export const sendBouncedSubmissionSms = (
-  {
-    recipient,
-    recipientEmail,
-    adminId,
-    adminEmail,
-    formId,
-    formTitle,
-  }: BounceNotificationSmsParams,
-  defaultConfig: TwilioConfig,
-): ResultAsync<true, SmsSendError | InvalidNumberError> => {
-  logger.info({
-    message: `Sending bounced submission notification for ${recipientEmail}`,
-    meta: {
-      action: 'sendBouncedSubmissionSms',
-      formId,
-    },
-  })
-
-  const message = renderBouncedSubmissionSms(formTitle)
-
-  const smsData: BouncedSubmissionSmsData = {
-    form: formId,
-    collaboratorEmail: recipientEmail,
-    recipientNumber: recipient,
-    formAdmin: {
-      email: adminEmail,
-      userId: adminId,
-    },
-  }
-
-  return sendSms(
-    defaultConfig,
-    smsData,
-    recipient,
-    message,
-    SmsType.BouncedSubmission,
-  )
 }
 
 /**

@@ -54,17 +54,24 @@ UserRouter.post(
 )
 
 /**
- * Verify the contact verification one-time password (OTP) for the user as part
- * of the contact verification process
- * @route POST /user/flag/new-features-last-seen
+ * @route POST /user/flag/last-seen
  * @returns 200 when user last seen feature update updates sucessfully
  * @returns 401 if user is not currently logged in
  * @returns 422 when userId does not exist in the database
  * @returns 500 when database errors occurs
  */
 UserRouter.post(
+  '/flag/last-seen',
+  UserController.handleUpdateUserLastSeenFlagVersion,
+)
+/**
+ * @deprecated route
+ * Backwards compatibility for the old route
+ * Use /flag/last-seen instead
+ */
+UserRouter.post(
   '/flag/new-features-last-seen',
-  UserController.handleUpdateUserLastSeenFeatureUpdateVersion,
+  UserController.handleUpdateNewFeaturesUserLastSeenVersion,
 )
 
 export default UserRouter

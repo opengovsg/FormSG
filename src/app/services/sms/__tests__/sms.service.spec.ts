@@ -1,5 +1,4 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import { ObjectId } from 'bson'
 import mongoose from 'mongoose'
 
 import getFormModel from 'src/app/models/form.server.model'
@@ -11,14 +10,9 @@ import { getMongoErrorMessage } from 'src/app/utils/handle-mongo-error'
 import { FormOtpData, IFormSchema, IUserSchema } from 'src/types'
 
 import { FormResponseMode } from '../../../../../shared/types'
-import { VfnErrors } from '../../../../../shared/utils/verification'
-import { InvalidNumberError } from '../sms.errors'
+import { InvalidNumberError } from '../../postman-sms/postman-sms.errors'
 import * as SmsService from '../sms.service'
 import { LogType, SmsType, TwilioConfig } from '../sms.types'
-import {
-  renderBouncedSubmissionSms,
-  renderFormDeactivatedSms,
-} from '../sms.util'
 import getSmsCountModel from '../sms_count.server.model'
 
 const FormModel = getFormModel(mongoose)
@@ -28,14 +22,7 @@ const SmsCountModel = getSmsCountModel(mongoose)
 // https://www.twilio.com/docs/iam/test-credentials
 const TWILIO_TEST_NUMBER = '+15005550006'
 const MOCK_MSG_SRVC_SID = 'mockMsgSrvcSid'
-const MOCK_RECIPIENT_EMAIL = 'recipientEmail@email.com'
-const MOCK_ADMIN_EMAIL = 'adminEmail@email.com'
-const MOCK_ADMIN_ID = new ObjectId().toHexString()
-const MOCK_FORM_ID = new ObjectId().toHexString()
-const MOCK_FORM_TITLE = 'formTitle'
 const MOCK_SENDER_IP = '200.000.000.000'
-
-const MOCK_TWILIO_WEBHOOK_ROUTE = '/api/v3/notifications/twilio'
 
 const twilioSuccessSpy = jest.fn().mockResolvedValue({
   status: 'testStatus',
@@ -79,180 +66,6 @@ describe('sms.service', () => {
   })
   afterEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
-
-  describe('sendFormDeactivatedSms', () => {
-    it('should send SMS and log success when sending is successful', async () => {
-      const expectedMessage = renderFormDeactivatedSms(MOCK_FORM_TITLE)
-
-      await SmsService.sendFormDeactivatedSms(
-        {
-          recipient: TWILIO_TEST_NUMBER,
-          adminEmail: MOCK_ADMIN_EMAIL,
-          adminId: MOCK_ADMIN_ID,
-          formId: MOCK_FORM_ID,
-          formTitle: MOCK_FORM_TITLE,
-          recipientEmail: MOCK_RECIPIENT_EMAIL,
-        },
-        MOCK_VALID_CONFIG,
-      )
-
-      expect(twilioSuccessSpy).toHaveBeenCalledWith({
-        to: TWILIO_TEST_NUMBER,
-        body: expectedMessage,
-        from: MOCK_VALID_CONFIG.msgSrvcSid,
-        forceDelivery: true,
-        statusCallback: expect.stringContaining(MOCK_TWILIO_WEBHOOK_ROUTE),
-      })
-
-      expect(twilioSuccessSpy.mock.calls[0][0].statusCallback).toEqual(
-        expect.not.stringContaining('?senderIp'),
-      )
-
-      expect(smsCountSpy).toHaveBeenCalledWith({
-        smsData: {
-          form: MOCK_FORM_ID,
-          collaboratorEmail: MOCK_RECIPIENT_EMAIL,
-          recipientNumber: TWILIO_TEST_NUMBER,
-          formAdmin: {
-            email: MOCK_ADMIN_EMAIL,
-            userId: MOCK_ADMIN_ID,
-          },
-        },
-        smsType: SmsType.DeactivatedForm,
-        msgSrvcSid: MOCK_VALID_CONFIG.msgSrvcSid,
-        logType: LogType.success,
-      })
-    })
-
-    it('should log failure when sending fails', async () => {
-      // Arrange
-      const expectedMessage = renderFormDeactivatedSms(MOCK_FORM_TITLE)
-
-      // Act
-      const actualResult = await SmsService.sendFormDeactivatedSms(
-        {
-          recipient: TWILIO_TEST_NUMBER,
-          adminEmail: MOCK_ADMIN_EMAIL,
-          adminId: MOCK_ADMIN_ID,
-          formId: MOCK_FORM_ID,
-          formTitle: MOCK_FORM_TITLE,
-          recipientEmail: MOCK_RECIPIENT_EMAIL,
-        },
-        MOCK_INVALID_CONFIG,
-      )
-
-      // Assert
-      expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidNumberError())
-      expect(twilioFailureSpy).toHaveBeenCalledWith({
-        to: TWILIO_TEST_NUMBER,
-        body: expectedMessage,
-        from: MOCK_INVALID_CONFIG.msgSrvcSid,
-        forceDelivery: true,
-        statusCallback: expect.stringContaining(MOCK_TWILIO_WEBHOOK_ROUTE),
-      })
-      expect(smsCountSpy).toHaveBeenCalledWith({
-        smsData: {
-          form: MOCK_FORM_ID,
-          collaboratorEmail: MOCK_RECIPIENT_EMAIL,
-          recipientNumber: TWILIO_TEST_NUMBER,
-          formAdmin: {
-            email: MOCK_ADMIN_EMAIL,
-            userId: MOCK_ADMIN_ID,
-          },
-        },
-        smsType: SmsType.DeactivatedForm,
-        msgSrvcSid: MOCK_INVALID_CONFIG.msgSrvcSid,
-        logType: LogType.failure,
-      })
-    })
-  })
-
-  describe('sendBouncedSubmissionSms', () => {
-    it('should send SMS and log success when sending is successful', async () => {
-      const expectedMessage = renderBouncedSubmissionSms(MOCK_FORM_TITLE)
-
-      await SmsService.sendBouncedSubmissionSms(
-        {
-          recipient: TWILIO_TEST_NUMBER,
-          adminEmail: MOCK_ADMIN_EMAIL,
-          adminId: MOCK_ADMIN_ID,
-          formId: MOCK_FORM_ID,
-          formTitle: MOCK_FORM_TITLE,
-          recipientEmail: MOCK_RECIPIENT_EMAIL,
-        },
-        MOCK_VALID_CONFIG,
-      )
-
-      expect(twilioSuccessSpy).toHaveBeenCalledWith({
-        to: TWILIO_TEST_NUMBER,
-        body: expectedMessage,
-        from: MOCK_VALID_CONFIG.msgSrvcSid,
-        forceDelivery: true,
-        statusCallback: expect.stringContaining(MOCK_TWILIO_WEBHOOK_ROUTE),
-      })
-
-      expect(twilioSuccessSpy.mock.calls[0][0].statusCallback).toEqual(
-        expect.not.stringContaining('?senderIp'),
-      )
-
-      expect(smsCountSpy).toHaveBeenCalledWith({
-        smsData: {
-          form: MOCK_FORM_ID,
-          collaboratorEmail: MOCK_RECIPIENT_EMAIL,
-          recipientNumber: TWILIO_TEST_NUMBER,
-          formAdmin: {
-            email: MOCK_ADMIN_EMAIL,
-            userId: MOCK_ADMIN_ID,
-          },
-        },
-        smsType: SmsType.BouncedSubmission,
-        msgSrvcSid: MOCK_VALID_CONFIG.msgSrvcSid,
-        logType: LogType.success,
-      })
-    })
-
-    it('should log failure when sending fails', async () => {
-      // Arrange
-      const expectedMessage = renderBouncedSubmissionSms(MOCK_FORM_TITLE)
-
-      // Act
-      const actualResult = await SmsService.sendBouncedSubmissionSms(
-        {
-          recipient: TWILIO_TEST_NUMBER,
-          adminEmail: MOCK_ADMIN_EMAIL,
-          adminId: MOCK_ADMIN_ID,
-          formId: MOCK_FORM_ID,
-          formTitle: MOCK_FORM_TITLE,
-          recipientEmail: MOCK_RECIPIENT_EMAIL,
-        },
-        MOCK_INVALID_CONFIG,
-      )
-
-      // Assert
-      expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidNumberError())
-      expect(twilioFailureSpy).toHaveBeenCalledWith({
-        to: TWILIO_TEST_NUMBER,
-        body: expectedMessage,
-        from: MOCK_INVALID_CONFIG.msgSrvcSid,
-        forceDelivery: true,
-        statusCallback: expect.stringContaining(MOCK_TWILIO_WEBHOOK_ROUTE),
-      })
-      expect(smsCountSpy).toHaveBeenCalledWith({
-        smsData: {
-          form: MOCK_FORM_ID,
-          collaboratorEmail: MOCK_RECIPIENT_EMAIL,
-          recipientNumber: TWILIO_TEST_NUMBER,
-          formAdmin: {
-            email: MOCK_ADMIN_EMAIL,
-            userId: MOCK_ADMIN_ID,
-          },
-        },
-        smsType: SmsType.BouncedSubmission,
-        msgSrvcSid: MOCK_INVALID_CONFIG.msgSrvcSid,
-        logType: LogType.failure,
-      })
-    })
-  })
 
   describe('sendVerificationOtp', () => {
     let mockOtpData: FormOtpData
@@ -355,38 +168,6 @@ describe('sms.service', () => {
     })
   })
 
-  describe('sendAdminContactOtp', () => {
-    it('should log and send contact OTP when sending has no errors', async () => {
-      // Act
-      const actualResult = await SmsService.sendAdminContactOtp(
-        /* recipient= */ TWILIO_TEST_NUMBER,
-        /* otp= */ '111111',
-        /* userId= */ testUser._id,
-        /* senderIp= */ MOCK_SENDER_IP,
-        /* defaultConfig= */ MOCK_VALID_CONFIG,
-      )
-
-      // Assert
-      expect(twilioSuccessSpy.mock.calls[0][0].statusCallback).toEqual(
-        expect.stringContaining('?senderIp'),
-      )
-
-      // Should resolve to true
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(true)
-      // Logging should also have happened.
-      const expectedLogParams = {
-        smsData: {
-          admin: testUser._id,
-        },
-        msgSrvcSid: MOCK_MSG_SRVC_SID,
-        smsType: SmsType.AdminContact,
-        logType: LogType.success,
-      }
-      expect(smsCountSpy).toHaveBeenCalledWith(expectedLogParams)
-    })
-  })
-
   describe('retrieveFreeSmsCounts', () => {
     const VERIFICATION_SMS_COUNT = 3
 
@@ -415,33 +196,5 @@ describe('sms.service', () => {
         new DatabaseError(getMongoErrorMessage('ohno')),
       )
     })
-  })
-
-  it('should log failure and throw error when contact OTP fails to send', async () => {
-    // Act
-    const actualResult = await SmsService.sendAdminContactOtp(
-      /* recipient= */ TWILIO_TEST_NUMBER,
-      /* otp= */ '111111',
-      /* userId= */ testUser._id,
-      /* senderIp= */ MOCK_SENDER_IP,
-      /* defaultConfig= */ MOCK_INVALID_CONFIG,
-    )
-
-    // Assert
-    const expectedError = new Error(VfnErrors.InvalidMobileNumber)
-    expectedError.name = VfnErrors.SendOtpFailed
-
-    expect(actualResult.isErr()).toEqual(true)
-
-    // Logging should also have happened.
-    const expectedLogParams = {
-      smsData: {
-        admin: testUser._id,
-      },
-      msgSrvcSid: MOCK_MSG_SRVC_SID,
-      smsType: SmsType.AdminContact,
-      logType: LogType.failure,
-    }
-    expect(smsCountSpy).toHaveBeenCalledWith(expectedLogParams)
   })
 })

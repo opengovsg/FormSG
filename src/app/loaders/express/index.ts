@@ -24,7 +24,6 @@ import helmetMiddlewares from './helmet'
 import appLocals from './locals'
 import loggingMiddleware from './logging'
 import parserMiddlewares from './parser'
-import sentryMiddlewares from './sentry'
 import sessionMiddlewares from './session'
 
 const loadExpressApp = async (connection: Connection) => {
@@ -136,7 +135,6 @@ const loadExpressApp = async (connection: Connection) => {
 
   app.use('/', FrontendRouter)
 
-  app.use(sentryMiddlewares())
   app.use(errorHandlerMiddlewares())
 
   const server = http.createServer(app)

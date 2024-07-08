@@ -22,7 +22,10 @@ import {
   SmsLimitExceededError,
 } from '../../modules/verification/verification.errors'
 import { MailSendError } from '../../services/mail/mail.errors'
-import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
+import {
+  InvalidNumberError,
+  SmsSendError,
+} from '../../services/postman-sms/postman-sms.errors'
 import { HashingError } from '../../utils/hash'
 import {
   DatabaseConflictError,

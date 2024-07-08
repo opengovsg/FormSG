@@ -10,8 +10,8 @@ import supertest, { Session } from 'supertest-session'
 
 import getUserModel from 'src/app/models/user.server.model'
 import { UNAUTHORIZED_USER_MESSAGE } from 'src/app/modules/user/user.constant'
-import { SmsSendError } from 'src/app/services/sms/sms.errors'
-import * as SmsService from 'src/app/services/sms/sms.service'
+import { SmsSendError } from 'src/app/services/postman-sms/postman-sms.errors'
+import PostmanSmsService from 'src/app/services/postman-sms/postman-sms.service'
 import * as OtpUtils from 'src/app/utils/otp'
 import { AgencyDocument, IUserSchema } from 'src/types'
 
@@ -113,7 +113,7 @@ describe('user.routes', () => {
       // Arrange
       const session = await createAuthedSession(defaultUser.email, request)
       const sendSmsOtpSpy = jest
-        .spyOn(SmsService, 'sendAdminContactOtp')
+        .spyOn(PostmanSmsService, 'sendAdminContactOtp')
         .mockReturnValueOnce(okAsync(true))
 
       // Act
@@ -205,7 +205,7 @@ describe('user.routes', () => {
       const mockErrorString = 'mock sms send error! oh no'
       const session = await createAuthedSession(defaultUser.email, request)
       const sendSmsOtpSpy = jest
-        .spyOn(SmsService, 'sendAdminContactOtp')
+        .spyOn(PostmanSmsService, 'sendAdminContactOtp')
         .mockReturnValueOnce(errAsync(new SmsSendError(mockErrorString)))
 
       // Act
@@ -589,7 +589,7 @@ describe('user.routes', () => {
       const mockErrorString = 'Database goes boom'
       // Mock database error from service call.
       const retrieveUserSpy = jest
-        .spyOn(UserService, 'updateUserLastSeenFeatureUpdateVersion')
+        .spyOn(UserService, 'updateUserLastSeenFlagVersion')
         .mockReturnValueOnce(errAsync(new DatabaseError(mockErrorString)))
 
       // Act
@@ -613,7 +613,7 @@ const requestForContactOtp = async (
 ) => {
   // Set that so no real mail is sent.
   const sendSmsOtpSpy = jest
-    .spyOn(SmsService, 'sendAdminContactOtp')
+    .spyOn(PostmanSmsService, 'sendAdminContactOtp')
     .mockReturnValueOnce(okAsync(true))
 
   // Act

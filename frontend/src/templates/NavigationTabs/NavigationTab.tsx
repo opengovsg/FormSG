@@ -7,6 +7,7 @@ const Link = chakra(ReactLink)
 interface NavigationTabProps extends ComponentProps<typeof Link> {
   isActive?: boolean
   isDisabled?: boolean
+  showReddot?: boolean
 }
 
 /** Must be nested inside NavigationTabList component, uses styles provided by that component. */
