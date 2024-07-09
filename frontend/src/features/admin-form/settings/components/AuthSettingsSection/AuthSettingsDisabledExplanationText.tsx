@@ -8,9 +8,9 @@ interface AuthSettingsDisabledExplanationTextProps {
 }
 
 const CONTAINS_MYINFO_FIELDS_DISABLED_EXPLANATION_TEXT =
-  'To change Singpass authentication settings, close your form to new responses and remove all existing Myinfo fields.'
+  'To change Singpass settings, close your form to new responses. For Singpass authentication mode changes, additionally remove all existing MyInfo fields. '
 const FORM_IS_PUBLIC_DISABLED_EXPLANATION_TEXT =
-  'To change Singpass authentication settings, close your form to new responses.'
+  'To change Singpass settings, close your form to new responses.'
 
 export const AuthSettingsDisabledExplanationText = ({
   isFormPublic,
