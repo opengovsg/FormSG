@@ -35,8 +35,6 @@ import {
   WebhookView,
 } from '../../types'
 import { getPaymentWebhookEventObject } from '../modules/payments/payment.service.utils'
-import { EmailSubmissionContent } from '../modules/submission/email-submission/email-submission.types'
-import { EncryptSubmissionContent } from '../modules/submission/encrypt-submission/encrypt-submission.types'
 import { createQueryWithDateParam } from '../utils/date'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
@@ -120,51 +118,17 @@ SubmissionSchema.statics.findFormsWithSubsAbove = function (
   ]).exec()
 }
 
-// Exported for use in pending submissions model
-export const EmailSubmissionSchema = new Schema<IEmailSubmissionSchema>({
-  recipientEmails: {
-    type: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
-  },
-  responseHash: {
-    type: String,
-    trim: true,
-    required: true,
-  },
-  responseSalt: {
-    type: String,
-    trim: true,
-    required: true,
-  },
-  hasBounced: {
-    type: Boolean,
-    default: false,
-  },
-})
-
-// EmailSubmission Instance methods
-/**
- * Returns null as email submission does not have a webhook view
- */
-EmailSubmissionSchema.methods.getWebhookView = function (): Promise<null> {
-  return Promise.resolve(null)
-}
-
 /**
  * Creates a new email submission only if provided submitterId is unique.
  * This method ensures that isSingleSubmission is enforced.
  * @param submitterId uniquely identifies the submitter
  * @returns created submission if successful, null otherwise
  */
-EmailSubmissionSchema.statics.saveIfSubmitterIdIsUnique = async function (
-  formId: string,
-  submitterId: string,
-  submissionContent: EmailSubmissionContent,
-): Promise<IEmailSubmissionSchema | null> {
+SubmissionSchema.statics.saveIfSubmitterIdIsUnique = async function (
+  formId,
+  submitterId,
+  submissionContent,
+) {
   const session = await this.startSession()
   session.startTransaction()
   const beforeCreateRes = await this.exists({
@@ -197,6 +161,40 @@ EmailSubmissionSchema.statics.saveIfSubmitterIdIsUnique = async function (
   await session.commitTransaction()
   await session.endSession()
   return afterCreateRes[0]
+}
+
+// Exported for use in pending submissions model
+export const EmailSubmissionSchema = new Schema<IEmailSubmissionSchema>({
+  recipientEmails: {
+    type: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+  },
+  responseHash: {
+    type: String,
+    trim: true,
+    required: true,
+  },
+  responseSalt: {
+    type: String,
+    trim: true,
+    required: true,
+  },
+  hasBounced: {
+    type: Boolean,
+    default: false,
+  },
+})
+
+// EmailSubmission Instance methods
+/**
+ * Returns null as email submission does not have a webhook view
+ */
+EmailSubmissionSchema.methods.getWebhookView = function (): Promise<null> {
+  return Promise.resolve(null)
 }
 
 const webhookResponseSchema = new Schema<IWebhookResponseSchema>(
@@ -372,51 +370,6 @@ EncryptSubmissionSchema.statics.findSingleMetadata = function (
 
     return metadata
   })
-}
-
-/**
- * Creates a new encrypt submission only if provided submitterId is unique.
- * This method ensures that isSingleSubmission is enforced.
- * @param submitterId uniquely identifies the submitter
- * @returns created submission if successful, null otherwise
- */
-EncryptSubmissionSchema.statics.saveIfSubmitterIdIsUnique = async function (
-  formId: string,
-  submitterId: string,
-  submissionContent: EncryptSubmissionContent,
-): Promise<IEncryptedSubmissionSchema | null> {
-  const session = await this.startSession()
-  session.startTransaction()
-  const beforeCreateRes = await this.exists({
-    form: formId,
-    submitterId,
-  })
-    .setOptions({ readPreference: 'primary' })
-    .session(session)
-    .exec()
-  if (beforeCreateRes) {
-    await session.abortTransaction()
-    await session.endSession()
-    return null
-  }
-
-  await this.create([submissionContent], { session })
-
-  const afterCreateRes = await this.find({ form: formId, submitterId }, null, {
-    limit: 2,
-    readPreference: 'primary',
-  })
-    .session(session)
-    .exec()
-  if (afterCreateRes.length > 1) {
-    await session.abortTransaction()
-    await session.endSession()
-    return null
-  }
-
-  await session.commitTransaction()
-  await session.endSession()
-  return afterCreateRes[0]
 }
 
 /**

@@ -64,10 +64,32 @@ export interface ISubmissionSchema extends SubmissionBase, Document {
 
 export type IPendingSubmissionSchema = ISubmissionSchema
 
+export type SaveIfSubmitterIdIsUniqueType = EmailSaveIfSubmitterIdIsUniqueType &
+  EncryptSaveIfSubmitterIdIsUniqueType
+
+type EmailSaveIfSubmitterIdIsUniqueType = (
+  formId: string,
+  submitterId: string,
+  submissionContent: EmailSubmissionContent,
+) => Promise<IEmailSubmissionSchema | null>
+
+type EncryptSaveIfSubmitterIdIsUniqueType = (
+  formId: string,
+  submitterId: string,
+  submissionContent: EncryptSubmissionContent,
+) => Promise<IEncryptedSubmissionSchema | null>
+
 export interface ISubmissionModel extends Model<ISubmissionSchema> {
   findFormsWithSubsAbove(
     minSubCount: number,
   ): Promise<FindFormsWithSubsAboveResult[]>
+  /**
+   * Creates a new submission only if provided submitterId is unique.
+   * This method ensures that isSingleSubmission is enforced.
+   * @param submitterId uniquely identifies the submitter
+   * @returns created submission if successful, null otherwise
+   */
+  saveIfSubmitterIdIsUnique: SaveIfSubmitterIdIsUniqueType
 }
 
 export interface IEmailSubmissionSchema
@@ -169,19 +191,7 @@ export type SubmissionData =
   | MultirespondentSubmissionData
 
 export type IEmailSubmissionModel = Model<IEmailSubmissionSchema> &
-  ISubmissionModel & {
-    /**
-     * Creates a new email submission only if provided submitterId is unique.
-     * This method ensures that isSingleSubmission is enforced.
-     * @param submitterId uniquely identifies the submitter
-     * @returns created submission if successful, null otherwise
-     */
-    saveIfSubmitterIdIsUnique(
-      formId: string,
-      submitterId: string,
-      submissionContent: EmailSubmissionContent,
-    ): Promise<IEmailSubmissionSchema | null>
-  }
+  ISubmissionModel
 export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
   ISubmissionModel & {
     /**
@@ -255,12 +265,6 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
     retrieveWebhookInfoById(
       submissionId: string,
     ): Promise<SubmissionWebhookInfo | null>
-
-    saveIfSubmitterIdIsUnique(
-      formId: string,
-      submitterId: string,
-      submissionContent: EncryptSubmissionContent,
-    ): Promise<IEncryptedSubmissionSchema | null>
   }
 
 export type IMultirespondentSubmissionModel =
