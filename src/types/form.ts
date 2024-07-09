@@ -104,6 +104,7 @@ export type PickDuplicateForm = Pick<
   | 'endPage'
   | 'authType'
   | 'isNricMaskEnabled'
+  | 'isSingleSubmission'
   | 'inactiveMessage'
   | 'submissionLimit'
   | 'responseMode'
