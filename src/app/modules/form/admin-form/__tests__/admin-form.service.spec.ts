@@ -1490,7 +1490,13 @@ describe('admin-form.service', () => {
         emails: ['test@example.com', 'test2@example.com'],
       }
 
-      const PAYMENT_ENABLED_FORM = merge({}, MOCK_ENCRYPT_FORM, {
+      const PAYMENT_ENABLED_FORM_TYPE_1 = merge({}, MOCK_ENCRYPT_FORM, {
+        payments_channel: {
+          channel: PaymentChannel.Stripe,
+        },
+      })
+
+      const PAYMENT_ENABLED_FORM_TYPE_2 = merge({}, MOCK_ENCRYPT_FORM, {
         payments_field: {
           enabled: true,
           amount_cents: 54.22,
@@ -1501,12 +1507,69 @@ describe('admin-form.service', () => {
 
       // Act
       const actualResult = await AdminFormService.updateFormSettings(
-        PAYMENT_ENABLED_FORM,
+        PAYMENT_ENABLED_FORM_TYPE_1,
+        settingsToUpdate,
+      )
+
+      const actualResult2 = await AdminFormService.updateFormSettings(
+        PAYMENT_ENABLED_FORM_TYPE_2,
         settingsToUpdate,
       )
 
       // Assert
       expect(actualResult.isErr()).toBeTrue()
+      actualResult.mapErr((err) => {
+        expect(err).toBeInstanceOf(MalformedParametersError)
+      })
+
+      expect(actualResult2.isErr()).toBeTrue()
+      actualResult2.mapErr((err) => {
+        expect(err).toBeInstanceOf(MalformedParametersError)
+      })
+    })
+
+    it('should not allow isSingleSubmission update to true for payment forms', async () => {
+      // Arrange
+      const settingsToUpdate: SettingsUpdateDto = {
+        isSingleSubmission: true,
+      }
+
+      // Act
+      const PAYMENT_ENABLED_FORM_TYPE_1 = merge({}, MOCK_ENCRYPT_FORM, {
+        payments_channel: {
+          channel: PaymentChannel.Stripe,
+        },
+      })
+
+      const PAYMENT_ENABLED_FORM_TYPE_2 = merge({}, MOCK_ENCRYPT_FORM, {
+        payments_field: {
+          enabled: true,
+          amount_cents: 54.22,
+          description: 'some payment',
+          payment_type: null,
+        },
+      })
+
+      // Assert
+      const actualResult = await AdminFormService.updateFormSettings(
+        PAYMENT_ENABLED_FORM_TYPE_1,
+        settingsToUpdate,
+      )
+
+      const actualResult2 = await AdminFormService.updateFormSettings(
+        PAYMENT_ENABLED_FORM_TYPE_2,
+        settingsToUpdate,
+      )
+
+      expect(actualResult.isErr()).toBeTrue()
+      actualResult.mapErr((err) => {
+        expect(err).toBeInstanceOf(MalformedParametersError)
+      })
+
+      expect(actualResult2.isErr()).toBeTrue()
+      actualResult2.mapErr((err) => {
+        expect(err).toBeInstanceOf(MalformedParametersError)
+      })
     })
   })
 
