@@ -348,6 +348,12 @@ export const handleGetPublicForm: ControllerHandler<
     spcpSession = undefined
     const authCookieName = PublicFormService.getCookieNameByAuthType(authType)
     res.clearCookie(authCookieName)
+
+    return res.json({
+      form: publicForm, // do not need to pre-fill even if MyInfo since user is not logged in
+      isIntranetUser,
+      hasSingleSubmissionValidationFailure: true,
+    })
   }
 
   // generate form response based on authType
@@ -358,7 +364,6 @@ export const handleGetPublicForm: ControllerHandler<
         form: publicForm,
         isIntranetUser,
         spcpSession,
-        hasSingleSubmissionValidationFailure,
       })
     case FormAuthType.MyInfo: {
       if (!myInfoFields) {
@@ -414,7 +419,6 @@ export const handleGetPublicForm: ControllerHandler<
           myInfoChildrenBirthRecords: (
             myInfoFields as MyInfoData
           ).getChildrenBirthRecords(form.getUniqueMyInfoAttrs()),
-          hasSingleSubmissionValidationFailure,
         })
     }
     case FormAuthType.SGID:
@@ -422,7 +426,6 @@ export const handleGetPublicForm: ControllerHandler<
         form: publicForm,
         isIntranetUser,
         spcpSession,
-        hasSingleSubmissionValidationFailure,
       })
     case FormAuthType.SGID_MyInfo: {
       if (!myInfoFields) {
@@ -473,7 +476,6 @@ export const handleGetPublicForm: ControllerHandler<
           },
           spcpSession: { userName: myInfoFields.getUinFin() },
           isIntranetUser,
-          hasSingleSubmissionValidationFailure,
         })
     }
     default:

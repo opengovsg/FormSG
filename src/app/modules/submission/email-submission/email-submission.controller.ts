@@ -347,9 +347,9 @@ export const submitEmailModeForm: ControllerHandler<
           .andThen((submissionHash) =>
             EmailSubmissionService.saveSubmissionMetadata(
               form,
-              submitterId,
               submissionHash,
               responseMetadata,
+              submitterId,
             ),
           )
           .map((submission) => ({

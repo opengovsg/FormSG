@@ -91,9 +91,9 @@ export const hashSubmission = (
  */
 export const saveSubmissionMetadata = (
   form: IPopulatedEmailForm,
-  submitterId: string | undefined,
   submissionHash: SubmissionHash,
   responseMetadata?: ResponseMetadata,
+  submitterId?: string,
 ): ResultAsync<IEmailSubmissionSchema | null, DatabaseError> => {
   const params: EmailSubmissionContent = {
     form: form._id,

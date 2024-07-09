@@ -133,6 +133,9 @@ describe('public-form.controller', () => {
 
       beforeAll(() => {
         MockFormService.checkIsIntranetFormAccess.mockReturnValue(false)
+        MockFormService.checkHasSingleSubmissionValidationFailure.mockReturnValue(
+          okAsync(false),
+        )
       })
 
       it('should return 200 when there is no FormAuthType on the request', async () => {

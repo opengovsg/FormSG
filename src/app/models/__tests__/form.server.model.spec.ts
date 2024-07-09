@@ -73,6 +73,7 @@ const MOCK_MULTIRESPONDENT_FORM_PARAMS = {
 const FORM_DEFAULTS = {
   authType: 'NIL',
   isNricMaskEnabled: false,
+  isSingleSubmission: false,
   inactiveMessage:
     'If you think this is a mistake, please contact the agency that gave you the form link.',
   isListed: true,

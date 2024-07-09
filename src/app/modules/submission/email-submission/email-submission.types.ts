@@ -35,7 +35,7 @@ export interface IPopulatedStorageFormWithResponsesAndHash {
 export interface EmailSubmissionContent {
   form: IPopulatedEmailForm['_id']
   authType: IPopulatedEmailForm['authType']
-  submitterId: string | undefined
+  submitterId?: string
   myInfoFields: MyInfoKey[]
   recipientEmails: string[]
   responseHash: string
