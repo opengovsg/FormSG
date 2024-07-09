@@ -27,8 +27,9 @@ export const FormSingleSubmissionToggle = ({
   const isPaymentsEnabled =
     settings &&
     settings.responseMode === FormResponseMode.Encrypt &&
-    (settings.payments_channel.channel !== PaymentChannel.Unconnected ||
-      settings.payments_field.enabled)
+    ((settings?.payments_channel?.channel &&
+      settings.payments_channel.channel !== PaymentChannel.Unconnected) ||
+      settings?.payments_field?.enabled)
 
   const handleToggleIsSingleSubmission = useCallback(() => {
     if (isLoading) return
