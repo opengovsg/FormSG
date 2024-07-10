@@ -17,7 +17,7 @@ import {
 } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEmailSubmissionModel } from '../../../models/submission.server.model'
-import { DatabaseError } from '../../core/core.errors'
+import { ApplicationError, DatabaseError } from '../../core/core.errors'
 import { isEmailModeForm, transformEmails } from '../../form/form.utils'
 import { ResponseModeError } from '../submission.errors'
 import { ProcessedFieldResponse } from '../submission.types'
@@ -115,7 +115,7 @@ export const saveSubmissionMetadata = (
       ) {
         if (!submitterId) {
           return Promise.reject(
-            new DatabaseError(
+            new ApplicationError(
               'submitterId must be defined for isSingleSubmission enabled form',
             ),
           )
