@@ -7,6 +7,6 @@ export class FormHasNoAuthError extends ApplicationError {
   constructor(
     message = 'Attempted to add Login record for form with no authentication',
   ) {
-    super(message, undefined, ErrorCodes.FormHasNoAuth)
+    super(message, undefined, ErrorCodes.BILLING_FORM_HAS_NO_AUTH)
   }
 }
