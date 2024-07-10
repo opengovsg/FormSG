@@ -443,6 +443,52 @@ CorppassSingleSubmissionFailuredMessage.parameters = {
   ],
 }
 
+export const SgIdSingleSubmissionFailureModalAfterSubmit = Template.bind({})
+SgIdSingleSubmissionFailureModalAfterSubmit.storyName =
+  'SGID/Single Submission Per NRIC/FIN/UEN Failure Modal After Submit'
+SgIdSingleSubmissionFailureModalAfterSubmit.parameters = {
+  msw: [
+    ...envHandlers,
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          title: 'SGID login form',
+          authType: FormAuthType.SGID,
+          isSingleSubmission: true,
+        },
+        spcpSession: {
+          userName: 'S1234567A',
+        },
+        hasSingleSubmissionValidationFailure: true,
+      },
+    }),
+  ],
+}
+
+export const CpSingleSubmissionFailureModalAfterSubmit = Template.bind({})
+CpSingleSubmissionFailureModalAfterSubmit.storyName =
+  'CP/Single Submission Per NRIC/FIN/UEN Failure Modal After Submit'
+CpSingleSubmissionFailureModalAfterSubmit.parameters = {
+  msw: [
+    ...envHandlers,
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          title: 'CP login form',
+          authType: FormAuthType.CP,
+          isSingleSubmission: true,
+        },
+        spcpSession: {
+          userName: 'uen-123456789A',
+        },
+        hasSingleSubmissionValidationFailure: true,
+      },
+    }),
+  ],
+}
+
 export const VerifiedFieldsExpiry = Template.bind({})
 VerifiedFieldsExpiry.parameters = {
   msw: [
