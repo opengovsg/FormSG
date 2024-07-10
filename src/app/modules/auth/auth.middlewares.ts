@@ -5,7 +5,6 @@ import { StatusCodes } from 'http-status-codes'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
-import { setErrorCode } from '../datadog/datadog.utils'
 import { UNAUTHORIZED_USER_MESSAGE } from '../user/user.constant'
 import * as UserService from '../user/user.service'
 
@@ -31,12 +30,9 @@ export const withUserAuthentication: ControllerHandler = (req, res, next) => {
   if (isUserInSession(req.session)) {
     return next()
   }
+  const { errorMessage, statusCode } = mapRouteError(new UnauthorizedError())
 
-  setErrorCode(new UnauthorizedError())
-
-  return res
-    .status(StatusCodes.UNAUTHORIZED)
-    .json({ message: 'User is unauthorized.' })
+  return res.status(statusCode).json({ message: errorMessage })
 }
 
 /**
