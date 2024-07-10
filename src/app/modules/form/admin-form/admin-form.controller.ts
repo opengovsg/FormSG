@@ -65,7 +65,6 @@ import {
   DatabaseValidationError,
 } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
-import { setErrorCode } from '../../datadog/datadog.utils'
 import * as FeedbackService from '../../feedback/feedback.service'
 import * as EmailSubmissionMiddleware from '../../submission/email-submission/email-submission.middleware'
 import * as EmailSubmissionService from '../../submission/email-submission/email-submission.service'
@@ -1733,7 +1732,6 @@ export const submitEncryptPreview: ControllerHandler<
       })
     })
     .mapErr((error) => {
-      setErrorCode(error)
       const { errorMessage, statusCode } = mapSubmissionError(error)
       return res.status(statusCode).json({ message: errorMessage })
     })
@@ -1786,7 +1784,6 @@ export const submitEmailPreview: ControllerHandler<
       meta: logMeta,
       error: formResult.error,
     })
-    setErrorCode(formResult.error)
     const { errorMessage, statusCode } = mapEmailSubmissionError(
       formResult.error,
     )
@@ -1804,7 +1801,6 @@ export const submitEmailPreview: ControllerHandler<
       meta: logMeta,
       error: parsedResponsesResult.error,
     })
-    setErrorCode(parsedResponsesResult.error)
     const { errorMessage, statusCode } = mapEmailSubmissionError(
       parsedResponsesResult.error,
     )
@@ -1857,7 +1853,6 @@ export const submitEmailPreview: ControllerHandler<
       meta: logMeta,
       error: sendAdminEmailResult.error,
     })
-    setErrorCode(sendAdminEmailResult.error)
     const { statusCode, errorMessage } = mapEmailSubmissionError(
       sendAdminEmailResult.error,
     )
