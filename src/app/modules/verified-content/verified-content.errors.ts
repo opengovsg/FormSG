@@ -5,7 +5,7 @@ import { ApplicationError, ErrorCodes } from '../core/core.errors'
  */
 export class MalformedVerifiedContentError extends ApplicationError {
   constructor(message = 'Verified content is malformed') {
-    super(message, undefined, ErrorCodes.MalformedVerifiedContent)
+    super(message, undefined, ErrorCodes.VERIFIED_CONTENT_MALFORMED)
   }
 }
 
@@ -14,6 +14,6 @@ export class MalformedVerifiedContentError extends ApplicationError {
  */
 export class EncryptVerifiedContentError extends ApplicationError {
   constructor(message = 'Failed to encrypt verified content') {
-    super(message, undefined, ErrorCodes.EncryptVerifiedContent)
+    super(message, undefined, ErrorCodes.VERIFIED_CONTENT_ENCRYPT_FAILURE)
   }
 }

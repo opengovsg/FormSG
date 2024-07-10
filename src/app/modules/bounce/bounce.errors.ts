@@ -9,7 +9,7 @@ import { ApplicationError, ErrorCodes } from '../core/core.errors'
  */
 export class InvalidNotificationError extends ApplicationError {
   constructor(message = 'Notification from AWS could not be validated') {
-    super(message, undefined, ErrorCodes.InvalidNotification)
+    super(message, undefined, ErrorCodes.BOUNCE_INVALID_NOTIFCATION)
   }
 }
 
@@ -27,7 +27,7 @@ export class SendBounceSmsNotificationError extends ApplicationError {
     contact: string,
     message = 'Error while sending bounce notification via SMS',
   ) {
-    super(message, undefined, ErrorCodes.SendBounceSmsNotification)
+    super(message, undefined, ErrorCodes.BOUNCE_SEND_BOUNCE_SMS_NOTIFICATION)
     this.meta = {
       contact,
       originalError,
@@ -42,7 +42,7 @@ export class MissingEmailHeadersError extends ApplicationError {
   constructor(
     message = 'Email is missing custom header containing form or submission ID',
   ) {
-    super(message, undefined, ErrorCodes.MissingEmailHeaders)
+    super(message, undefined, ErrorCodes.BOUNCE_MISSING_EMAIL_HEADERS)
   }
 }
 
@@ -51,6 +51,6 @@ export class MissingEmailHeadersError extends ApplicationError {
  */
 export class ParseNotificationError extends ApplicationError {
   constructor(message = 'Could not parse SNS notification') {
-    super(message, undefined, ErrorCodes.ParseNotification)
+    super(message, undefined, ErrorCodes.BOUNCE_PARSE_NOTIFICATION)
   }
 }

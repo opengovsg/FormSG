@@ -188,3 +188,12 @@ export class InvalidWorkflowTypeError extends ApplicationError {
     super(message, undefined, ErrorCodes.SUBMISSION_INVALID_WORKFLOW_TYPE)
   }
 }
+
+/**
+ * Error thrown when attachment upload fails
+ */
+export class AttachmentUploadError extends ApplicationError {
+  constructor(message = 'Error while uploading encrypted attachments to S3') {
+    super(message, undefined, ErrorCodes.SUBMISSION_ATTACHMENT_UPLOAD)
+  }
+}

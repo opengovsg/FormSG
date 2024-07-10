@@ -5,7 +5,7 @@ import { ApplicationError, ErrorCodes } from '../../core/core.errors'
  */
 export class InitialiseMultipartReceiverError extends ApplicationError {
   constructor(message = 'Error while initialising multipart receiver') {
-    super(message, undefined, ErrorCodes.InitialiseMultipartReceiver)
+    super(message, undefined, ErrorCodes.RECEIVER_INITIALISE_MULTIPART_RECEIVER)
   }
 }
 
@@ -14,7 +14,7 @@ export class InitialiseMultipartReceiverError extends ApplicationError {
  */
 export class MultipartContentLimitError extends ApplicationError {
   constructor(message = 'Multipart content size limit exceeded') {
-    super(message, undefined, ErrorCodes.MultipartContentLimit)
+    super(message, undefined, ErrorCodes.RECEIVER_MULTIPART_CONTENT_LIMIT)
   }
 }
 
@@ -23,12 +23,12 @@ export class MultipartContentLimitError extends ApplicationError {
  */
 export class MultipartContentParsingError extends ApplicationError {
   constructor(message = 'Could not parse multipart form content') {
-    super(message, undefined, ErrorCodes.MultipartContentParsing)
+    super(message, undefined, ErrorCodes.RECEIVER_MULTIPART_CONTENT_PARSING)
   }
 }
 
 export class MultipartError extends ApplicationError {
   constructor(message = 'Error while receiving multipart content') {
-    super(message, undefined, ErrorCodes.MultipartError)
+    super(message, undefined, ErrorCodes.RECEIVER_MULTIPART_ERROR)
   }
 }

@@ -5,7 +5,7 @@ import { ApplicationError, ErrorCodes } from '../core/core.errors'
  */
 export class MyInfoCircuitBreakerError extends ApplicationError {
   constructor(message = 'Circuit breaker tripped') {
-    super(message, undefined, ErrorCodes.MyInfoCircuitBreaker)
+    super(message, undefined, ErrorCodes.MYINFO_CIRCUIT_BREAKER)
   }
 }
 
@@ -14,7 +14,7 @@ export class MyInfoCircuitBreakerError extends ApplicationError {
  */
 export class MyInfoFetchError extends ApplicationError {
   constructor(message = 'Error while requesting MyInfo data') {
-    super(message, undefined, ErrorCodes.MyInfoFetch)
+    super(message, undefined, ErrorCodes.MYINFO_FETCH)
   }
 }
 
@@ -23,7 +23,7 @@ export class MyInfoFetchError extends ApplicationError {
  */
 export class MyInfoHashingError extends ApplicationError {
   constructor(message = 'Error occurred while hashing data') {
-    super(message, undefined, ErrorCodes.MyInfoHashing)
+    super(message, undefined, ErrorCodes.MYINFO_HASHING)
   }
 }
 
@@ -32,7 +32,7 @@ export class MyInfoHashingError extends ApplicationError {
  */
 export class MyInfoMissingHashError extends ApplicationError {
   constructor(message = 'Requested hashes not found in database') {
-    super(message, undefined, ErrorCodes.MyInfoMissingHash)
+    super(message, undefined, ErrorCodes.MYINFO_MISSING_HASH)
   }
 }
 
@@ -41,7 +41,7 @@ export class MyInfoMissingHashError extends ApplicationError {
  */
 export class MyInfoHashDidNotMatchError extends ApplicationError {
   constructor(message = 'Responses did not match hashed values') {
-    super(message, undefined, ErrorCodes.MyInfoHashDidNotMatch)
+    super(message, undefined, ErrorCodes.MYINFO_HASH_DID_NOT_MATCH)
   }
 }
 
@@ -52,7 +52,7 @@ export class MyInfoParseRelayStateError extends ApplicationError {
   constructor(
     message = 'Relay state received from MyInfo had incorrect format',
   ) {
-    super(message, undefined, ErrorCodes.MyinfoParseRelayState)
+    super(message, undefined, ErrorCodes.MYINFO_PARSE_RELAY_STATE)
   }
 }
 
@@ -61,7 +61,7 @@ export class MyInfoParseRelayStateError extends ApplicationError {
  */
 export class MyInfoMissingLoginCookieError extends ApplicationError {
   constructor(message = 'Login cookie not present on MyInfo submission') {
-    super(message, undefined, ErrorCodes.MyInfoMissingLoginCookie)
+    super(message, undefined, ErrorCodes.MYINFO_MISSING_LOGIN_COOKIE)
   }
 }
 
@@ -70,7 +70,7 @@ export class MyInfoMissingLoginCookieError extends ApplicationError {
  */
 export class MyInfoInvalidLoginCookieError extends ApplicationError {
   constructor(message = 'Login cookie could not be verified') {
-    super(message, undefined, ErrorCodes.MyInfoInvalidLoginCookie)
+    super(message, undefined, ErrorCodes.MYINFO_INVALID_LOGIN_COOKIE)
   }
 }
 
@@ -82,7 +82,7 @@ export class MyInfoInvalidAuthCodeCookieError extends ApplicationError {
     super(
       `${message}: ${cookie}`,
       undefined,
-      ErrorCodes.MyInfoInvalidAuthCodeCookie,
+      ErrorCodes.MYINFO_INVALID_AUTH_CODE_COOKIE,
     )
   }
 }
@@ -92,6 +92,6 @@ export class MyInfoInvalidAuthCodeCookieError extends ApplicationError {
  */
 export class MyInfoCookieStateError extends ApplicationError {
   constructor(message = 'MyInfo cookie is in error state') {
-    super(message, undefined, ErrorCodes.MyInfoCookieState)
+    super(message, undefined, ErrorCodes.MYINFO_COOKIE_STATE)
   }
 }
