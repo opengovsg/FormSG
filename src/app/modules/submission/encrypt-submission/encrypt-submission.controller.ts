@@ -58,7 +58,6 @@ import { SubmissionFailedError } from '../submission.errors'
 import { uploadAttachments } from '../submission.service'
 import { ProcessedFieldResponse } from '../submission.types'
 import {
-  checkIsIndividualSingpassAuthType,
   generateHashedSubmitterId,
   getCookieNameByAuthType,
   mapRouteError,
@@ -145,7 +144,7 @@ const submitEncryptModeForm = async (
   const parsedResponses = new ParsedResponsesObject(req.body.responses)
 
   // Checks if user is SPCP-authenticated before allowing submission
-  let uinFin
+  let userName
   let userInfo
   const { authType } = formDef
   switch (authType) {
@@ -168,7 +167,7 @@ const submitEncryptModeForm = async (
           spcpSubmissionFailure: true,
         })
       }
-      uinFin = jwtPayloadResult.value.userName
+      userName = jwtPayloadResult.value.userName
       break
     }
     case FormAuthType.CP: {
@@ -190,7 +189,7 @@ const submitEncryptModeForm = async (
           spcpSubmissionFailure: true,
         })
       }
-      uinFin = jwtPayloadResult.value.userName
+      userName = jwtPayloadResult.value.userName
       userInfo = jwtPayloadResult.value.userInfo
       break
     }
@@ -230,7 +229,7 @@ const submitEncryptModeForm = async (
           spcpSubmissionFailure: true,
         })
       }
-      uinFin = jwtPayloadResult.value
+      userName = jwtPayloadResult.value
       break
     }
     case FormAuthType.SGID: {
@@ -251,20 +250,20 @@ const submitEncryptModeForm = async (
           spcpSubmissionFailure: true,
         })
       }
-      uinFin = jwtPayloadResult.value.userName
+      userName = jwtPayloadResult.value.userName
       break
     }
   }
 
   let submitterId
-  // Generate submitterId for Singpass (excluding Corppass) auth types.
-  if (uinFin && checkIsIndividualSingpassAuthType(form.authType)) {
-    submitterId = generateHashedSubmitterId(uinFin, form.id)
+  // Generate submitterId for Singpass auth modes
+  if (userName && form.authType !== FormAuthType.NIL) {
+    submitterId = generateHashedSubmitterId(userName, form.id)
   }
 
   // Mask if Nric masking is enabled
   if (
-    uinFin &&
+    userName &&
     form.isNricMaskEnabled &&
     (form.authType === FormAuthType.SP ||
       form.authType === FormAuthType.CP ||
@@ -272,16 +271,16 @@ const submitEncryptModeForm = async (
       form.authType === FormAuthType.MyInfo ||
       form.authType === FormAuthType.SGID_MyInfo)
   ) {
-    uinFin = maskNric(uinFin)
+    userName = maskNric(userName)
   }
 
   // Add NDI responses
   switch (form.authType) {
     case FormAuthType.CP: {
-      if (!uinFin || !userInfo) break
+      if (!userName || !userInfo) break
       parsedResponses.addNdiResponses({
         authType,
-        uinFin,
+        uinFin: userName,
         userInfo,
       })
       break
@@ -290,10 +289,10 @@ const submitEncryptModeForm = async (
     case FormAuthType.SGID:
     case FormAuthType.MyInfo:
     case FormAuthType.SGID_MyInfo: {
-      if (!uinFin) break
+      if (!userName) break
       parsedResponses.addNdiResponses({
         authType: form.authType,
-        uinFin,
+        uinFin: userName,
       })
       break
     }
@@ -311,7 +310,7 @@ const submitEncryptModeForm = async (
     const encryptVerifiedContentResult =
       VerifiedContentService.getVerifiedContent({
         type: form.authType,
-        data: { uinFin, userInfo },
+        data: { uinFin: userName, userInfo },
       }).andThen((verifiedContent) =>
         VerifiedContentService.encryptVerifiedContent({
           verifiedContent,
@@ -671,10 +670,7 @@ const _createSubmission = async ({
 }) => {
   let submission
   try {
-    if (
-      form.isSingleSubmission &&
-      checkIsIndividualSingpassAuthType(form.authType)
-    ) {
+    if (form.isSingleSubmission && form.authType !== FormAuthType.NIL) {
       if (!submissionContent.submitterId) {
         throw new ApplicationError(
           'Failed to find submitterId which is mandatory for isSingleSubmission enabled forms',
@@ -690,7 +686,7 @@ const _createSubmission = async ({
       if (!submission) {
         return res.status(StatusCodes.BAD_REQUEST).json({
           message:
-            'Your NRIC/FIN has already been used to respond to this form.',
+            'Your NRIC/FIN/UEN has already been used to respond to this form.',
           hasSingleSubmissionValidationFailure: true,
         })
       }
@@ -769,11 +765,7 @@ const _createSubmission = async ({
 
   // Send success back to client
   // clear cookies to log out user if isSingleSubmission form
-  if (
-    form.authType != FormAuthType.NIL &&
-    form.isSingleSubmission &&
-    checkIsIndividualSingpassAuthType(form.authType)
-  ) {
+  if (form.authType != FormAuthType.NIL && form.isSingleSubmission) {
     const authCookieName = getCookieNameByAuthType(form.authType)
     res.clearCookie(authCookieName)
   }

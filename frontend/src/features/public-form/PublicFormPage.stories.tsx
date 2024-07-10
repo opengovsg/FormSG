@@ -383,6 +383,66 @@ SgidAuthorized.parameters = {
   ],
 }
 
+export const SgIdSingleSubmissionFailureMessage = Template.bind({})
+SgIdSingleSubmissionFailureMessage.storyName =
+  'SGID/Single Submission Per NRIC/FIN/UEN Failure Sign In Screen Message'
+SgIdSingleSubmissionFailureMessage.parameters = {
+  msw: [
+    ...envHandlers,
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          title: 'SGID login form',
+          authType: FormAuthType.SGID,
+          isSingleSubmission: true,
+        },
+        hasSingleSubmissionValidationFailure: true,
+      },
+    }),
+  ],
+}
+
+export const SingpassSingleSubmissionFailureMessage = Template.bind({})
+SingpassSingleSubmissionFailureMessage.storyName =
+  'Singpass/Single Submission Per NRIC/FIN/UEN Failure Sign In Screen Message'
+SingpassSingleSubmissionFailureMessage.parameters = {
+  msw: [
+    ...envHandlers,
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          title: 'SP login form',
+          authType: FormAuthType.SP,
+          isSingleSubmission: true,
+        },
+        hasSingleSubmissionValidationFailure: true,
+      },
+    }),
+  ],
+}
+
+export const CorppassSingleSubmissionFailuredMessage = Template.bind({})
+CorppassSingleSubmissionFailuredMessage.storyName =
+  'Corppass/Single Submission Per NRIC/FIN/UEN Failure Sign In Screen Message'
+CorppassSingleSubmissionFailuredMessage.parameters = {
+  msw: [
+    ...envHandlers,
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          title: 'CP login form',
+          authType: FormAuthType.CP,
+          isSingleSubmission: true,
+        },
+        hasSingleSubmissionValidationFailure: true,
+      },
+    }),
+  ],
+}
+
 export const VerifiedFieldsExpiry = Template.bind({})
 VerifiedFieldsExpiry.parameters = {
   msw: [

@@ -768,20 +768,6 @@ export const getAnswersForChild = (
 }
 
 /**
- * Returns true if the authType is Singpass (with NRIC/FIN) and false if nil or Corppass.
- */
-export const checkIsIndividualSingpassAuthType = (
-  authType: FormAuthType,
-): boolean => {
-  return (
-    authType === FormAuthType.SP ||
-    authType === FormAuthType.MyInfo ||
-    authType === FormAuthType.SGID ||
-    authType === FormAuthType.SGID_MyInfo
-  )
-}
-
-/**
  * Generates a hash to mask the original submitterId.
  * @param id
  * @returns

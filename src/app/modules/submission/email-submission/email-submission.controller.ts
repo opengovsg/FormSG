@@ -9,7 +9,11 @@ import {
 } from '../../../../../shared/types'
 import { CaptchaTypes } from '../../../../../shared/types/captcha'
 import { maskNric } from '../../../../../shared/utils/nric-mask'
-import { IPopulatedEmailForm } from '../../../../types'
+import {
+  IPopulatedEmailForm,
+  SgidFieldTitle,
+  SPCPFieldTitle,
+} from '../../../../types'
 import { ParsedEmailModeSubmissionBody } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
@@ -39,7 +43,6 @@ import * as ReceiverMiddleware from '../receiver/receiver.middleware'
 import * as SubmissionService from '../submission.service'
 import { ProcessedSingleAnswerResponse } from '../submission.types'
 import {
-  checkIsIndividualSingpassAuthType,
   extractEmailConfirmationData,
   generateHashedSubmitterId,
   getCookieNameByAuthType,
@@ -310,9 +313,12 @@ export const submitEmailModeForm: ControllerHandler<
       })
       .andThen(({ form, parsedResponses, hashedFields }) => {
         let submitterId: string | undefined = undefined
-        if (checkIsIndividualSingpassAuthType(form.authType)) {
+        if (form.authType !== FormAuthType.NIL) {
           const ndiResponse = parsedResponses.ndiResponses.find(
-            (response) => response.fieldType === BasicField.Nric,
+            (response) =>
+              response.question === SPCPFieldTitle.SpNric ||
+              response.question === SPCPFieldTitle.CpUen ||
+              response.question === SgidFieldTitle.SgidNric,
           ) as ProcessedSingleAnswerResponse
           submitterId = ndiResponse?.answer
             ? generateHashedSubmitterId(ndiResponse.answer, form.id)
@@ -438,12 +444,12 @@ export const submitEmailModeForm: ControllerHandler<
         if (!submission) {
           logger.info({
             message:
-              'Submission not created since NRIC/FIN already submitted and form has isSingleSubmission enabled',
+              'Submission not created since NRIC/FIN/UEN already submitted and form has isSingleSubmission enabled',
             meta: logMeta,
           })
           return res.status(StatusCodes.BAD_REQUEST).json({
             message:
-              'Your NRIC/FIN has already been used to respond to this form.',
+              'Your NRIC/FIN/UEN has already been used to respond to this form.',
             hasSingleSubmissionValidationFailure: true,
           })
         }

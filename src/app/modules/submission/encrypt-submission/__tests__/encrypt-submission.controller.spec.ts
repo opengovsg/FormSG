@@ -19,7 +19,10 @@ import MailService from 'src/app/services/mail/mail.service'
 import { FormFieldSchema, IPopulatedEncryptedForm } from 'src/types'
 import { EncryptSubmissionDto, FormCompleteDto } from 'src/types/api'
 
-import { getCookieNameByAuthType } from '../../submission.utils'
+import {
+  generateHashedSubmitterId,
+  getCookieNameByAuthType,
+} from '../../submission.utils'
 import { submitEncryptModeFormForTest } from '../encrypt-submission.controller'
 import {
   EncryptSubmissionContent,
@@ -90,15 +93,178 @@ describe('encrypt-submission.controller', () => {
       MockMailService.sendSubmissionToAdmin.mockResolvedValue(okAsync(true))
     })
 
-    it('should hash submitterId if form is individual singpass type', async () => {
+    it('should have same submitterId if same uen but different nric for corppass', async () => {
+      // Arrange
+      const saveIfSubmitterIdIsUniqueSpy = jest
+        .spyOn(EncryptSubmission, 'saveIfSubmitterIdIsUnique')
+        .mockResolvedValueOnce(null)
+      const UEN = 'uen'
+      const NRIC_1 = 'S1234567A'
+      const NRIC_2 = 'S1234567B'
+      const MOCK_JWT_PAYLOAD_1 = {
+        userName: UEN,
+        userInfo: NRIC_1,
+        rememberMe: false,
+      }
+      const MOCK_JWT_PAYLOAD_2 = {
+        userName: UEN,
+        userInfo: NRIC_2,
+        rememberMe: false,
+      }
+      MockOidcService.getOidcService.mockReset()
+      MockOidcService.getOidcService
+        .mockReturnValueOnce({
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          extractJwt: (_arg1) => ok('jwt'),
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          extractJwtPayload: (_arg1) =>
+            okAsync(merge(MOCK_JWT_PAYLOAD_1, MOCK_COOKIE_TIMESTAMP)),
+        } as OidcServiceType<FormAuthType.CP>)
+        .mockReturnValueOnce({
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          extractJwt: (_arg1) => ok('jwt'),
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          extractJwtPayload: (_arg1) =>
+            okAsync(merge(MOCK_JWT_PAYLOAD_2, MOCK_COOKIE_TIMESTAMP)),
+        } as OidcServiceType<FormAuthType.CP>)
+
+      const mockFormId = new ObjectId()
+      const mockCpAuthTypeAndIsSingleSubmissionEnabledForm = {
+        _id: mockFormId,
+        title: 'some form',
+        authType: FormAuthType.CP,
+        isSingleSubmission: true,
+        form_fields: [] as FormFieldSchema[],
+        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
+      } as IPopulatedEncryptedForm
+
+      const mockReq = merge(
+        expressHandler.mockRequest({
+          params: { formId: 'some id' },
+          body: {
+            responses: [],
+          },
+        }),
+        {
+          formsg: {
+            encryptedPayload: {
+              encryptedContent: 'encryptedContent',
+              version: 1,
+            },
+            formDef: {
+              authType: FormAuthType.CP,
+            },
+            encryptedFormDef: mockCpAuthTypeAndIsSingleSubmissionEnabledForm,
+          } as unknown as EncryptSubmissionDto,
+        } as unknown as FormCompleteDto,
+      ) as unknown as SubmitEncryptModeFormHandlerRequest
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await submitEncryptModeFormForTest(mockReq, mockRes)
+      await submitEncryptModeFormForTest(mockReq, mockRes)
+
+      // Assert
+      expect(saveIfSubmitterIdIsUniqueSpy).toHaveBeenCalledTimes(2)
+      expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][1]).toEqual(
+        saveIfSubmitterIdIsUniqueSpy.mock.calls[1][1],
+      )
+      expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][2].submitterId).toEqual(
+        saveIfSubmitterIdIsUniqueSpy.mock.calls[1][2].submitterId,
+      )
+    })
+
+    it('should have different submitterId if different uen but same nric for corppass', async () => {
+      // Arrange
+      const saveIfSubmitterIdIsUniqueSpy = jest
+        .spyOn(EncryptSubmission, 'saveIfSubmitterIdIsUnique')
+        .mockResolvedValueOnce(null)
+      const UEN_1 = 'uen1'
+      const UEN_2 = 'uen2'
+      const NRIC = 'S1234567A'
+      const MOCK_JWT_PAYLOAD_1 = {
+        userName: UEN_1,
+        userInfo: NRIC,
+        rememberMe: false,
+      }
+      const MOCK_JWT_PAYLOAD_2 = {
+        userName: UEN_2,
+        userInfo: NRIC,
+        rememberMe: false,
+      }
+      MockOidcService.getOidcService.mockReset()
+      MockOidcService.getOidcService
+        .mockReturnValueOnce({
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          extractJwt: (_arg1) => ok('jwt'),
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          extractJwtPayload: (_arg1) =>
+            okAsync(merge(MOCK_JWT_PAYLOAD_1, MOCK_COOKIE_TIMESTAMP)),
+        } as OidcServiceType<FormAuthType.CP>)
+        .mockReturnValueOnce({
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          extractJwt: (_arg1) => ok('jwt'),
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          extractJwtPayload: (_arg1) =>
+            okAsync(merge(MOCK_JWT_PAYLOAD_2, MOCK_COOKIE_TIMESTAMP)),
+        } as OidcServiceType<FormAuthType.CP>)
+
+      const mockFormId = new ObjectId()
+      const mockCpAuthTypeAndIsSingleSubmissionEnabledForm = {
+        _id: mockFormId,
+        title: 'some form',
+        authType: FormAuthType.CP,
+        isSingleSubmission: true,
+        form_fields: [] as FormFieldSchema[],
+        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
+      } as IPopulatedEncryptedForm
+
+      const mockReq = merge(
+        expressHandler.mockRequest({
+          params: { formId: 'some id' },
+          body: {
+            responses: [],
+          },
+        }),
+        {
+          formsg: {
+            encryptedPayload: {
+              encryptedContent: 'encryptedContent',
+              version: 1,
+            },
+            formDef: {
+              authType: FormAuthType.CP,
+            },
+            encryptedFormDef: mockCpAuthTypeAndIsSingleSubmissionEnabledForm,
+          } as unknown as EncryptSubmissionDto,
+        } as unknown as FormCompleteDto,
+      ) as unknown as SubmitEncryptModeFormHandlerRequest
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await submitEncryptModeFormForTest(mockReq, mockRes)
+      await submitEncryptModeFormForTest(mockReq, mockRes)
+
+      // Assert
+      expect(saveIfSubmitterIdIsUniqueSpy).toHaveBeenCalledTimes(2)
+      expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][1]).not.toEqual(
+        saveIfSubmitterIdIsUniqueSpy.mock.calls[1][1],
+      )
+      expect(
+        saveIfSubmitterIdIsUniqueSpy.mock.calls[0][2].submitterId,
+      ).not.toEqual(saveIfSubmitterIdIsUniqueSpy.mock.calls[1][2].submitterId)
+    })
+
+    it('should hash submitterId for SP form', async () => {
+      // Arrange
       const saveIfSubmitterIdIsUniqueSpy = jest
         .spyOn(EncryptSubmission, 'saveIfSubmitterIdIsUnique')
         .mockResolvedValueOnce(null)
 
-      // Arrange
       const mockFormId = new ObjectId()
       const mockSpAuthTypeAndIsSingleSubmissionEnabledForm = {
         _id: mockFormId,
+        id: mockFormId.toHexString(),
         title: 'some form',
         authType: FormAuthType.SP,
         isSingleSubmission: true,
@@ -134,10 +300,88 @@ describe('encrypt-submission.controller', () => {
       // Assert that submitterId is hashed
       expect(saveIfSubmitterIdIsUniqueSpy).toHaveBeenCalledTimes(1)
       expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][1]).toEqual(
-        '151c329a583a82e4a768f16ab8c9b7ae621fcfdea574e87925dd56d7f73e367d',
+        generateHashedSubmitterId(
+          MOCK_JWT_PAYLOAD.userName,
+          mockSpAuthTypeAndIsSingleSubmissionEnabledForm.id,
+        ),
       )
       expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][2].submitterId).toEqual(
-        '151c329a583a82e4a768f16ab8c9b7ae621fcfdea574e87925dd56d7f73e367d',
+        generateHashedSubmitterId(
+          MOCK_JWT_PAYLOAD.userName,
+          mockSpAuthTypeAndIsSingleSubmissionEnabledForm.id,
+        ),
+      )
+    })
+
+    it('should hash submitterId for CP form', async () => {
+      // Arrange
+      const MOCK_JWT_PAYLOAD = {
+        userName: 'uen',
+        userInfo: 'S1234567A',
+        rememberMe: false,
+      }
+      MockOidcService.getOidcService.mockReset()
+      MockOidcService.getOidcService.mockReturnValueOnce({
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        extractJwt: (_arg1) => ok('jwt'),
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        extractJwtPayload: (_arg1) =>
+          okAsync(merge(MOCK_JWT_PAYLOAD, MOCK_COOKIE_TIMESTAMP)),
+      } as OidcServiceType<FormAuthType.CP>)
+
+      const saveIfSubmitterIdIsUniqueSpy = jest
+        .spyOn(EncryptSubmission, 'saveIfSubmitterIdIsUnique')
+        .mockResolvedValueOnce(null)
+
+      const mockFormId = new ObjectId()
+      const mockCpAuthTypeAndIsSingleSubmissionEnabledForm = {
+        _id: mockFormId,
+        id: mockFormId.toHexString(),
+        title: 'some form',
+        authType: FormAuthType.CP,
+        isSingleSubmission: true,
+        form_fields: [] as FormFieldSchema[],
+        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
+      } as IPopulatedEncryptedForm
+
+      const mockReq = merge(
+        expressHandler.mockRequest({
+          params: { formId: 'some id' },
+          body: {
+            responses: [],
+          },
+        }),
+        {
+          formsg: {
+            encryptedPayload: {
+              encryptedContent: 'encryptedContent',
+              version: 1,
+            },
+            formDef: {
+              authType: FormAuthType.CP,
+            },
+            encryptedFormDef: mockCpAuthTypeAndIsSingleSubmissionEnabledForm,
+          } as unknown as EncryptSubmissionDto,
+        } as unknown as FormCompleteDto,
+      ) as unknown as SubmitEncryptModeFormHandlerRequest
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await submitEncryptModeFormForTest(mockReq, mockRes)
+
+      // Assert that submitterId is hashed
+      expect(saveIfSubmitterIdIsUniqueSpy).toHaveBeenCalledTimes(1)
+      expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][1]).toEqual(
+        generateHashedSubmitterId(
+          MOCK_JWT_PAYLOAD.userName,
+          mockFormId.toHexString(),
+        ),
+      )
+      expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][2].submitterId).toEqual(
+        generateHashedSubmitterId(
+          MOCK_JWT_PAYLOAD.userName,
+          mockFormId.toHexString(),
+        ),
       )
     })
   })
@@ -234,7 +478,7 @@ describe('encrypt-submission.controller', () => {
 
       expect(performEncryptPostSubmissionActionsSpy).toHaveBeenCalledTimes(1)
     })
-    it('should return json response with single submission validation failure flag when submission is not unique and does not save submission', async () => {
+    it('should return json response with single submission validation failure flag when submissionId is not unique and does not save submission', async () => {
       jest
         .spyOn(EncryptSubmission, 'saveIfSubmitterIdIsUnique')
         .mockResolvedValueOnce(null)
@@ -277,7 +521,8 @@ describe('encrypt-submission.controller', () => {
 
       // Assert that response has the single submission validation failure flag
       expect(mockRes.json).toHaveBeenCalledWith({
-        message: 'Your NRIC/FIN has already been used to respond to this form.',
+        message:
+          'Your NRIC/FIN/UEN has already been used to respond to this form.',
         hasSingleSubmissionValidationFailure: true,
       })
 

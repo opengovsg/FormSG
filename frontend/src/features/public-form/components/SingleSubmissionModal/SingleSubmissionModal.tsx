@@ -53,7 +53,7 @@ export const SingleSubmissionModal = ({
       <ModalContent>
         <ModalCloseButton />
         <ModalHeader pb={'2rem'} w="90%">
-          Only one submission per NRIC/FIN allowed
+          Only one submission per NRIC/FIN/UEN allowed
         </ModalHeader>
         <ModalBody flexGrow={0}>
           <Stack>

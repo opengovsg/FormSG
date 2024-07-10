@@ -52,7 +52,7 @@ const getPaymentsNotAllowedMessageText = (
         </Link>{' '}
         and disable{' '}
         <Link as={ReactLink} to={'singpass'}>
-          only one submission per NRIC/FIN
+          only one submission per NRIC/FIN/UEN
         </Link>
         .
       </Text>
@@ -72,7 +72,7 @@ const getPaymentsNotAllowedMessageText = (
       <Text>
         To enable payment fields, disable{' '}
         <Link as={ReactLink} to={'singpass'}>
-          only one submission per NRIC/FIN
+          only one submission per NRIC/FIN/UEN
         </Link>
         .
       </Text>

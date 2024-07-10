@@ -335,8 +335,8 @@ export const useMutateFormSettings = () => {
         handleSuccess({
           newData,
           toastDescription: newData.isSingleSubmission
-            ? 'Single submission per NRIC/FIN is now enabled on your form.'
-            : 'Single submission per NRIC/FIN is now disabled on your form.',
+            ? 'Single submission per NRIC/FIN/UEN is now enabled on your form.'
+            : 'Single submission per NRIC/FIN/UEN is now disabled on your form.',
         })
       },
       onError: handleError,

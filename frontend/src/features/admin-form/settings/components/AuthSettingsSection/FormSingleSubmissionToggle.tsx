@@ -44,13 +44,13 @@ export const FormSingleSubmissionToggle = ({
         isDisabled={isDisabled || isPaymentsEnabled}
         isLoading={isLoading}
         isChecked={isSingleSubmission}
-        label="Limit each unique NRIC/FIN to one response"
+        label="Limit each unique NRIC/FIN/UEN to one response"
         onChange={handleToggleIsSingleSubmission}
       />
       {isPaymentsEnabled ? (
         <InlineMessage mt="1rem">
           <Text>
-            To allow only one submission per NRIC/FIN,{' '}
+            To allow only one submission per NRIC/FIN/UEN,{' '}
             <Link as={ReactLink} to={'payments'}>
               disconnect your stripe account
             </Link>
