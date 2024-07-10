@@ -1,226 +1,228 @@
+import { setErrorCode } from '../datadog/datadog.utils'
+
 /**
  * Global Error Code Registry
  *
- * - [10xx] FormSG Errors
- * - [11xx] Auth Errors
- * - [12xx] Database Errors
- * - [13xx] Payment Errors
- * - [14xx] Communication Channel Errors
- * - [15xx] Verification Errors
- * - [19xx] Other Errors
+ * - [10xxxx] FormSG Errors
+ * - [11xxxx] Auth Errors
+ * - [12xxxx] Database Errors
+ * - [13xxxx] Payment Errors
+ * - [14xxxx] Communication Channel Errors
+ * - [15xxxx] Verification Errors
+ * - [19xxxx] Other Errors
  */
 export enum ErrorCodes {
-  // [10xx] FormSG Errors ---
-  // [1000 - 1009] General
-  PrivateForm = 1000,
-  FormNotFound = 1001,
-  FormDeleted = 1002,
-  ForbiddenForm = 1003,
-  TransferOwnership = 1004,
-  LogicNotFound = 1005,
-  AuthTypeMismatch = 1006,
-  FormAuthNoEsrvcId = 1007,
-  // [1010 - 1039] Submission Errors
-  SubmissionConflict = 1010,
-  SubmissionNotFound = 1011,
-  PendingSubmissionNotFound = 1012,
-  InvalidSubmissionType = 1013,
-  InvalidEncoding = 1014,
-  SubmissionProcessing = 1015,
-  ValidateField = 1016,
-  SendEmailConfirmation = 1017,
-  WrongResponseMode = 1018,
-  AttachmentTooLarge = 1019,
-  InvalidFileExtension = 1020,
-  SubmissionFailed = 1021,
-  InvalidFieldId = 1022,
-  AttachmentSizeLimitExceeded = 1023,
-  FeatureDisabled = 1024,
-  InvalidFileKey = 1025,
-  VirusScanFailed = 1026,
-  JsonParseFailed = 1027,
-  DownloadCleanFileFailed = 1028,
-  ParseVirusScannerLambdaPayload = 1029,
-  MaliciousFileDetected = 1030,
-  InvalidWorkflowType = 1031,
+  // [10xxxx] FormSG Errors ---
+  // [100000 - 100099] General
+  FORM_PRIVATE_FORM = 100000,
+  FORM_NOT_FOUND = 100001,
+  FORM_DELETED = 100002,
+  FORM_FORBIDDEN_FORM = 100003,
+  FORM_TRANSFER_OWNERSHIP = 100004,
+  FORM_LOGIC_NOT_FOUND = 100005,
+  FORM_AUTH_TYPE_MISMATCH = 100006,
+  FORM_AUTH_NO_ESRVC_ID = 100007,
+  // [100100 - 100199] Submission Errors
+  SUBMISSION_CONFLICT = 100100,
+  SUBMISSION_NOT_FOUND = 100101,
+  SUBMISSION_PENDING_NOT_FOUND = 100102,
+  SUBMISSION_INVALID_TYPE = 100103,
+  SUBMISSION_INVALID_ENCODING = 100104,
+  SUBMISSION_PROCESSING = 100105,
+  SUBMISSION_VALIDATE_FIELD = 100106,
+  SUBMISSION_SEND_EMAIL_CONFIRMATION = 100107,
+  SUBMISSION_WRONG_RESPONSE_MODE = 100108,
+  SUBMISSION_ATTACHMENT_TOO_LARGE = 100109,
+  SUBMISSION_INVALID_FILE_EXTENSION = 100110,
+  SUBMISSION_FAILED = 100111,
+  SUBMISSION_INVALID_FIELD_ID = 100112,
+  SUBMISSION_ATTACHMENT_SIZE_LIMIT_EXCEEDED = 100113,
+  SUBMISSION_FEATURE_DISABLED = 100114,
+  SUBMISSION_INVALID_FILE_KEY = 100115,
+  SUBMISSION_VIRUS_SCAN_FAILED = 100116,
+  SUBMISSION_JSON_PARSE_FAILED = 100117,
+  SUBMISSION_DOWNLOAD_CLEAN_FILE_FAILED = 100118,
+  SUBMISSION_PARSE_VIRUS_SCANNER_LAMBDA_PAYLOAD = 100119,
+  SUBMISSION_MALICIOUS_FILE_DETECTED = 100120,
+  SUBMISSION_INVALID_WORKFLOW_TYPE = 100121,
   // Receiver Errors
-  InitialiseMultipartReceiver = 1032,
-  MultipartContentLimit = 1033,
-  MultipartContentParsing = 1034,
-  MultipartError = 1035,
-  // [1040 - 1049] Encrypt Submission Errors
-  FormsgReqBodyExists = 1040,
-  EncryptedPayloadExists = 1041,
-  // [1050 - 1059] Email Submission Errors
-  SubmissionHash = 1050,
-  // [1060 - 1069] Feedback Errors
-  MissingAdminFeedback = 1060,
-  InvalidSubmissionId = 1061,
-  DuplicateFeedbackSubmission = 1062,
-  // [1070 - 1079] Workspace Errors
-  WorkspaceNotFound = 1070,
-  ForbiddenWorkspace = 1071,
-  // [1080 - 1099] Admin Form Errors
-  InvalidFileType = 1080,
-  EditField = 1081,
-  FieldNotFound = 1082,
-  InvalidCollaborator = 1083,
-  PaymentChannelNotFound = 1084,
-  GoGov = 1085,
-  GoGovValidation = 1086,
-  GoGovAlreadyExist = 1087,
-  GoGovRequestLimit = 1088,
-  GoGovBadGateway = 1089,
-  GoGovServer = 1090,
+  InitialiseMultipartReceiver = 100122,
+  MultipartContentLimit = 100123,
+  MultipartContentParsing = 100124,
+  MultipartError = 100125,
+  // Encrypt Submission Errors
+  FormsgReqBodyExists = 100126,
+  EncryptedPayloadExists = 100127,
+  // Email Submission Errors
+  SubmissionHash = 100128,
+  // [100200 - 100299] Feedback Errors
+  MissingAdminFeedback = 100200,
+  InvalidSubmissionId = 100201,
+  DuplicateFeedbackSubmission = 100202,
+  // [100300 - 100399] Workspace Errors
+  WorkspaceNotFound = 100300,
+  ForbiddenWorkspace = 100301,
+  // [100400 - 100499] Admin Form Errors
+  InvalidFileType = 100400,
+  EditField = 100401,
+  FieldNotFound = 100402,
+  InvalidCollaborator = 100403,
+  PaymentChannelNotFound = 100404,
+  GoGov = 100405,
+  GoGovValidation = 100406,
+  GoGovAlreadyExist = 100407,
+  GoGovRequestLimit = 100408,
+  GoGovBadGateway = 100409,
+  GoGovServer = 100410,
   // End FormSG Errors ---
 
-  // [11xx] Auth Errors ---
-  // [1100 - 1109] General Auth Errors
-  InvalidDomain = 1100,
-  AuthInvalidOtp = 1101,
-  InvalidToken = 1102,
-  MissingToken = 1103,
-  Unauthorized = 1104,
-  CaptchaConnection = 1105,
-  VerifyCaptcha = 1106,
-  MissingCaptcha = 1107,
-  // [1110 - 1119] SPCP Errors
-  CreateRedirectUrl = 1110,
-  VerifyJwt = 1111,
-  MissingAttributes = 1112,
-  InvalidJwt = 1113,
-  MissingJwt = 1114,
-  InvalidIdToken = 1115,
-  InvalidState = 1116,
-  CreateJwt = 1117,
-  ExchangeAuthToken = 1118,
-  // SPCP OIDC Client Errors [2140 - 2149]
-  CreateAuthorisationUrl = 2140,
-  OidcCreateJwt = 2141,
-  GetSigningKey = 2142,
-  GetDecryptionKey = 2143,
-  GetVerificationKey = 2144,
-  OidcInvalidIdToken = 2145,
-  JwkShapeInvalid = 2146,
-  MissingIdToken = 2147,
-  VerificationKey = 2148,
-  OidcExchangeAuthToken = 2149,
-  // [1120 - 1139] MyInfo Errors
-  MyInfoCircuitBreaker = 1120,
-  MyInfoFetch = 1121,
-  MyInfoHashing = 1122,
-  MyInfoMissingHash = 1123,
-  MyInfoHashDidNotMatch = 1124,
-  MyinfoParseRelayState = 1125,
-  MyInfoMissingLoginCookie = 1126,
-  MyInfoInvalidLoginCookie = 1127,
-  MyInfoInvalidAuthCodeCookie = 1128,
-  MyInfoCookieState = 1129,
-  // [1140 - 1149] SgID Errors
-  SgidCreateRedirectUrl = 1140,
-  SgidInvalidState = 1141,
-  SgidFetchAccessToken = 1142,
-  SgidFetchUserInfo = 1143,
-  SgidMalformedMyInfoCookie = 1144,
-  SgidVerifyJwt = 1145,
-  SgidInvalidJwt = 1146,
-  SgidMissingJwt = 1147,
+  // [11xxxx] Auth Errors ---
+  // [110000 - 110099] General Auth Errors
+  InvalidDomain = 110000,
+  AuthInvalidOtp = 110001,
+  InvalidToken = 110002,
+  MissingToken = 110003,
+  Unauthorized = 110004,
+  CaptchaConnection = 110005,
+  VerifyCaptcha = 110006,
+  MissingCaptcha = 110007,
+  // [110100 - 110199] SPCP Errors
+  CreateRedirectUrl = 110100,
+  VerifyJwt = 110101,
+  MissingAttributes = 110102,
+  InvalidJwt = 110103,
+  MissingJwt = 110104,
+  InvalidIdToken = 110105,
+  InvalidState = 110106,
+  CreateJwt = 110107,
+  ExchangeAuthToken = 110108,
+  // SPCP OIDC Client Errors
+  CreateAuthorisationUrl = 110109,
+  OidcCreateJwt = 110110,
+  GetSigningKey = 110111,
+  GetDecryptionKey = 110112,
+  GetVerificationKey = 110113,
+  OidcInvalidIdToken = 110114,
+  JwkShapeInvalid = 110115,
+  MissingIdToken = 110116,
+  VerificationKey = 110117,
+  OidcExchangeAuthToken = 110118,
+  // [110200 - 110299] MyInfo Errors
+  MyInfoCircuitBreaker = 110201,
+  MyInfoFetch = 110202,
+  MyInfoHashing = 110203,
+  MyInfoMissingHash = 110204,
+  MyInfoHashDidNotMatch = 110205,
+  MyinfoParseRelayState = 110206,
+  MyInfoMissingLoginCookie = 110207,
+  MyInfoInvalidLoginCookie = 110208,
+  MyInfoInvalidAuthCodeCookie = 110209,
+  MyInfoCookieState = 110210,
+  // [110300 - 110399] SgID Errors
+  SgidCreateRedirectUrl = 110300,
+  SgidInvalidState = 110301,
+  SgidFetchAccessToken = 110302,
+  SgidFetchUserInfo = 110303,
+  SgidMalformedMyInfoCookie = 110304,
+  SgidVerifyJwt = 110305,
+  SgidInvalidJwt = 110306,
+  SgidMissingJwt = 110307,
   // End of Auth Errors ---
 
-  // [12xx] Database Errors ---
-  DatabaseError = 1200,
-  DatabaseValidation = 1201,
-  DatabaseConflict = 1202,
-  DatabasePayloadSize = 1203,
-  DatabaseDuplicateKey = 1204,
-  DatabaseWriteConflict = 1205,
-  SecretsManager = 1206,
-  SecretsManagerNotFound = 1207,
-  SecretsManagerConflict = 1208,
+  // [12xxxx] Database Errors ---
+  DatabaseError = 120000,
+  DatabaseValidation = 120001,
+  DatabaseConflict = 120002,
+  DatabasePayloadSize = 120003,
+  DatabaseDuplicateKey = 120004,
+  DatabaseWriteConflict = 120005,
+  SecretsManager = 120006,
+  SecretsManagerNotFound = 120007,
+  SecretsManagerConflict = 120008,
   // End of Database Errors ---
 
-  // [13xx] Payment Errors ---
-  // [1300 - 1309] General Payment Errors
-  InvalidPaymentAmount = 1300,
-  PaymentNotFound = 1301,
-  ConfirmedPaymentNotFound = 1302,
-  PaymentAlreadyConfirmed = 1303,
-  PaymentAccountInformation = 1304,
-  InvalidPaymentProducts = 1305,
-  PaymentConfiguration = 1306,
-  // [1310 - 1329] Stripe Errors
-  SuccessfulChargeNotFound = 1310,
-  StripeTransactionFeeNotFound = 1311,
-  MalformedStripeChargeObject = 1312,
-  MalformedStripeEventObject = 1313,
-  StripeMetadataInvalid = 1314,
-  StripeMetadataValidPaymentIdNotFound = 1315,
-  StripeMetadataIncorrectEnv = 1316,
-  StripeFetch = 1317,
-  StripeAccount = 1318,
-  ComputePaymentState = 1319,
-  // [1330 - 1339] Billing Errors
-  FormHasNoAuth = 1330,
-  // [1340 - 1349] Payment Proof Errors
-  InvoicePdfGeneration = 1340,
-  PaymentProofUploadS3 = 1341,
-  PaymentProofPresignS3 = 1342,
+  // [13xxxx] Payment Errors ---
+  // [130000 - 130099] General Payment Errors
+  InvalidPaymentAmount = 130000,
+  PaymentNotFound = 130001,
+  ConfirmedPaymentNotFound = 130002,
+  PaymentAlreadyConfirmed = 130003,
+  PaymentAccountInformation = 130004,
+  InvalidPaymentProducts = 130005,
+  PaymentConfiguration = 130006,
+  // [130100 - 130199] Stripe Errors
+  SuccessfulChargeNotFound = 130100,
+  StripeTransactionFeeNotFound = 130101,
+  MalformedStripeChargeObject = 130102,
+  MalformedStripeEventObject = 130103,
+  StripeMetadataInvalid = 130104,
+  StripeMetadataValidPaymentIdNotFound = 130105,
+  StripeMetadataIncorrectEnv = 130106,
+  StripeFetch = 130107,
+  StripeAccount = 130108,
+  ComputePaymentState = 130109,
+  // [130200 - 130299] Billing Errors
+  FormHasNoAuth = 130200,
+  // [130300 - 130399] Payment Proof Errors
+  InvoicePdfGeneration = 130300,
+  PaymentProofUploadS3 = 130301,
+  PaymentProofPresignS3 = 130302,
   // End of Payment Errors ---
 
-  // [14xx] Communication Channel Errors (SMS, Email, Webhook) ---
-  // [1400 - 1419] SMS Errors
-  TwilioCache = 1400,
-  SmsSend = 1401,
-  InvalidNumber = 1402,
-  SmsLimitExceeded = 1403,
-  UserInvalidOtp = 1404,
-  // [1420 - 1439] Mail Errors
-  MailSend = 1420,
-  MailGeneration = 1421,
-  // [1440 - 1459] Webhook Errors
-  WebhookValidation = 1440,
-  WebhookFailedWithPresignedUrlGeneration = 1441,
-  WebhookFailedWithUnknown = 1442,
-  WebhookFailedWithAxios = 1443,
-  WebhookQueueMessageParsing = 1444,
-  WebhookNoMoreRetries = 1445,
-  WebhookPushToQueue = 1446,
-  WebhookRetriesNotEnabled = 1447,
-  // [1460 - 1469] Bounce Errors
-  InvalidNotification = 1460,
-  SendBounceSmsNotification = 1461,
-  MissingEmailHeaders = 1462,
-  ParseNotification = 1463,
+  // [14xxxx] Communication Channel Errors (SMS, Email, Webhook) ---
+  // [140000 - 140099] SMS Errors
+  TwilioCache = 140000,
+  SmsSend = 140001,
+  InvalidNumber = 140002,
+  SmsLimitExceeded = 140003,
+  UserInvalidOtp = 140004,
+  // [140100 - 140199] Mail Errors
+  MailSend = 140100,
+  MailGeneration = 140101,
+  // [140200 - 140299] Webhook Errors
+  WebhookValidation = 140200,
+  WebhookFailedWithPresignedUrlGeneration = 140201,
+  WebhookFailedWithUnknown = 140202,
+  WebhookFailedWithAxios = 140203,
+  WebhookQueueMessageParsing = 140204,
+  WebhookNoMoreRetries = 140205,
+  WebhookPushToQueue = 140206,
+  WebhookRetriesNotEnabled = 140207,
+  // [140300 - 140399] Bounce Errors
+  InvalidNotification = 140300,
+  SendBounceSmsNotification = 140301,
+  MissingEmailHeaders = 140302,
+  ParseNotification = 140303,
   // End of Communication Channel Errors ---
 
-  // [15xx] Verification Errors
-  TransactionNotFound = 1500,
-  FieldNotFoundInTransaction = 1501,
-  TransactionExpired = 1502,
-  OtpExpired = 1503,
-  MissingHashData = 1504,
-  OtpRetryExceeded = 1505,
-  WrongOtp = 1506,
-  WaitForOtp = 1507,
-  OtpRequestCountExceeded = 1508,
-  NonVerifiedFieldType = 1509,
-  OtpRequestError = 1510,
+  // [15xxxx] Verification Errors
+  TransactionNotFound = 150000,
+  FieldNotFoundInTransaction = 150001,
+  TransactionExpired = 150002,
+  OtpExpired = 150003,
+  MissingHashData = 150004,
+  OtpRetryExceeded = 150005,
+  WrongOtp = 150006,
+  WaitForOtp = 150007,
+  OtpRequestCountExceeded = 150008,
+  NonVerifiedFieldType = 150009,
+  OtpRequestError = 150010,
   // End of Verification Errors ---
 
-  // [19xx] Other Errors ---
-  // [1900 - 1909] Core Errors
-  MalformedParameters = 1900,
-  AttachmentUpload = 1901,
-  EmptyErrorField = 1902,
-  // [1910 - 1919] User Errors
-  MissingUser = 1910,
-  // [1920 - 1929] Turnstile Errors
-  TurnstileConnection = 1920,
-  VerifyTurnstile = 1921,
-  MissingTurnstile = 1922,
-  // [1930 - 1939] Verified Content Errors
-  MalformedVerifiedContent = 1930,
-  EncryptVerifiedContent = 1931,
+  // [19xxxx] Other Errors ---
+  // [190000 - 190099] Core Errors
+  MalformedParameters = 190000,
+  AttachmentUpload = 190001,
+  EmptyErrorField = 190002,
+  // [190100 - 190199] User Errors
+  MissingUser = 190100,
+  // [190200 - 190299] Turnstile Errors
+  TurnstileConnection = 190200,
+  VerifyTurnstile = 190201,
+  MissingTurnstile = 190202,
+  // [190300 - 190399] Verified Content Errors
+  MalformedVerifiedContent = 190300,
+  EncryptVerifiedContent = 190301,
   // End of Other Errors ---
 }
 
@@ -239,14 +241,19 @@ export class ApplicationError extends Error {
   constructor(message?: string, meta?: unknown, errorCode?: number) {
     super()
 
-    Error.captureStackTrace(this, this.constructor)
-
     this.name = this.constructor.name
-
-    this.message = message || 'Something went wrong. Please try again.'
+    const defaultMessage = 'Something went wrong. Please try again.'
+    this.message = errorCode
+      ? `[${errorCode}] ${message || defaultMessage}`
+      : message || defaultMessage
+    Error.captureStackTrace(this, this.constructor)
 
     this.meta = meta
     this.code = errorCode
+
+    if (this.code) {
+      setErrorCode(this)
+    }
   }
 }
 

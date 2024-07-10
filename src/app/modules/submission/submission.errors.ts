@@ -7,25 +7,25 @@ import { ApplicationError, ErrorCodes } from '../core/core.errors'
  */
 export class ConflictError extends ApplicationError {
   constructor(message: string, meta?: unknown) {
-    super(message, meta, ErrorCodes.SubmissionConflict)
+    super(message, meta, ErrorCodes.SUBMISSION_CONFLICT)
   }
 }
 
 export class SubmissionNotFoundError extends ApplicationError {
   constructor(message = 'Submission not found for given ID') {
-    super(message, undefined, ErrorCodes.SubmissionNotFound)
+    super(message, undefined, ErrorCodes.SUBMISSION_NOT_FOUND)
   }
 }
 
 export class PendingSubmissionNotFoundError extends ApplicationError {
   constructor(message = 'Pending submission not found for given ID') {
-    super(message, undefined, ErrorCodes.PendingSubmissionNotFound)
+    super(message, undefined, ErrorCodes.SUBMISSION_PENDING_NOT_FOUND)
   }
 }
 
 export class InvalidSubmissionTypeError extends ApplicationError {
   constructor(message = 'Unexpected submission type encountered.') {
-    super(message, undefined, ErrorCodes.InvalidSubmissionType)
+    super(message, undefined, ErrorCodes.SUBMISSION_INVALID_TYPE)
   }
 }
 
@@ -34,7 +34,7 @@ export class InvalidSubmissionTypeError extends ApplicationError {
  */
 export class InvalidEncodingError extends ApplicationError {
   constructor(message = 'Error with encoding.') {
-    super(message, undefined, ErrorCodes.InvalidEncoding)
+    super(message, undefined, ErrorCodes.SUBMISSION_INVALID_ENCODING)
   }
 }
 
@@ -43,7 +43,7 @@ export class InvalidEncodingError extends ApplicationError {
  */
 export class ProcessingError extends ApplicationError {
   constructor(message = 'Error processing response.') {
-    super(message, undefined, ErrorCodes.SubmissionProcessing)
+    super(message, undefined, ErrorCodes.SUBMISSION_PROCESSING)
   }
 }
 
@@ -52,7 +52,7 @@ export class ProcessingError extends ApplicationError {
  */
 export class ValidateFieldError extends ApplicationError {
   constructor(message = 'Error validating field.', status = 400) {
-    super(message, status, ErrorCodes.ValidateField)
+    super(message, status, ErrorCodes.SUBMISSION_VALIDATE_FIELD)
   }
 }
 
@@ -61,7 +61,7 @@ export class ValidateFieldError extends ApplicationError {
  */
 export class SendEmailConfirmationError extends ApplicationError {
   constructor(message = 'Error while sending confirmation emails') {
-    super(message, undefined, ErrorCodes.SendEmailConfirmation)
+    super(message, undefined, ErrorCodes.SUBMISSION_SEND_EMAIL_CONFIRMATION)
   }
 }
 
@@ -76,7 +76,7 @@ export class ResponseModeError extends ApplicationError {
     super(
       `Attempted to submit ${formResponseMode} form to ${attemptedResponseMode} endpoint`,
       undefined,
-      ErrorCodes.WrongResponseMode,
+      ErrorCodes.SUBMISSION_WRONG_RESPONSE_MODE,
     )
   }
 }
@@ -86,7 +86,7 @@ export class ResponseModeError extends ApplicationError {
  */
 export class AttachmentTooLargeError extends ApplicationError {
   constructor(message = 'Attachment size limit exceeded') {
-    super(message, undefined, ErrorCodes.AttachmentTooLarge)
+    super(message, undefined, ErrorCodes.SUBMISSION_ATTACHMENT_TOO_LARGE)
   }
 }
 
@@ -95,7 +95,7 @@ export class AttachmentTooLargeError extends ApplicationError {
  */
 export class InvalidFileExtensionError extends ApplicationError {
   constructor(message = 'Invalid file extension found in attachment') {
-    super(message, undefined, ErrorCodes.InvalidFileExtension)
+    super(message, undefined, ErrorCodes.SUBMISSION_INVALID_FILE_EXTENSION)
   }
 }
 
@@ -103,7 +103,7 @@ export class SubmissionFailedError extends ApplicationError {
   constructor(
     message = 'The form submission could not be processed. Please try again.',
   ) {
-    super(message, undefined, ErrorCodes.SubmissionFailed)
+    super(message, undefined, ErrorCodes.SUBMISSION_FAILED)
   }
 }
 
@@ -111,7 +111,7 @@ export class InvalidFieldIdError extends ApplicationError {
   constructor(
     message = 'Invalid field id. Field id should be a valid MongoDB ObjectId.',
   ) {
-    super(message, undefined, ErrorCodes.InvalidFieldId)
+    super(message, undefined, ErrorCodes.SUBMISSION_INVALID_FIELD_ID)
   }
 }
 
@@ -119,31 +119,35 @@ export class AttachmentSizeLimitExceededError extends ApplicationError {
   constructor(
     message = `Total attachment size exceeds maximum file size limit. Please reduce your total attachment size and try again.`,
   ) {
-    super(message, undefined, ErrorCodes.AttachmentSizeLimitExceeded)
+    super(
+      message,
+      undefined,
+      ErrorCodes.SUBMISSION_ATTACHMENT_SIZE_LIMIT_EXCEEDED,
+    )
   }
 }
 
 export class FeatureDisabledError extends ApplicationError {
   constructor(message = 'This feature is disabled.') {
-    super(message, undefined, ErrorCodes.FeatureDisabled)
+    super(message, undefined, ErrorCodes.SUBMISSION_FEATURE_DISABLED)
   }
 }
 
 export class InvalidFileKeyError extends ApplicationError {
   constructor(message = 'Invalid file key. File keys should be valid UUIDs.') {
-    super(message, undefined, ErrorCodes.InvalidFileKey)
+    super(message, undefined, ErrorCodes.SUBMISSION_INVALID_FILE_KEY)
   }
 }
 
 export class VirusScanFailedError extends ApplicationError {
   constructor(message = 'Virus scan failed. Please try again.') {
-    super(message, undefined, ErrorCodes.VirusScanFailed)
+    super(message, undefined, ErrorCodes.SUBMISSION_VIRUS_SCAN_FAILED)
   }
 }
 
 export class JsonParseFailedError extends ApplicationError {
   constructor(message = 'JSON parsing failed. Please try again.') {
-    super(message, undefined, ErrorCodes.JsonParseFailed)
+    super(message, undefined, ErrorCodes.SUBMISSION_JSON_PARSE_FAILED)
   }
 }
 
@@ -151,13 +155,17 @@ export class DownloadCleanFileFailedError extends ApplicationError {
   constructor(
     message = 'Attempt to download clean file failed. Please try again.',
   ) {
-    super(message, undefined, ErrorCodes.DownloadCleanFileFailed)
+    super(message, undefined, ErrorCodes.SUBMISSION_DOWNLOAD_CLEAN_FILE_FAILED)
   }
 }
 
 export class ParseVirusScannerLambdaPayloadError extends ApplicationError {
   constructor(message = 'Unexpected payload from virus scanning lambda.') {
-    super(message, undefined, ErrorCodes.ParseVirusScannerLambdaPayload)
+    super(
+      message,
+      undefined,
+      ErrorCodes.SUBMISSION_PARSE_VIRUS_SCANNER_LAMBDA_PAYLOAD,
+    )
   }
 }
 
@@ -168,7 +176,7 @@ export class MaliciousFileDetectedError extends ApplicationError {
         filename ? `file "${filename}"` : 'attachments(s)'
       } has failed our virus scan. Try to create and upload it again.`,
       undefined,
-      ErrorCodes.MaliciousFileDetected,
+      ErrorCodes.SUBMISSION_MALICIOUS_FILE_DETECTED,
     )
   }
 }
@@ -177,6 +185,6 @@ export class InvalidWorkflowTypeError extends ApplicationError {
   constructor(
     message = 'Invalid workflow type encountered. Please contact the form admin and try again later.',
   ) {
-    super(message, undefined, ErrorCodes.InvalidWorkflowType)
+    super(message, undefined, ErrorCodes.SUBMISSION_INVALID_WORKFLOW_TYPE)
   }
 }

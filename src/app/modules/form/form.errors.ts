@@ -3,13 +3,13 @@ import { ApplicationError, ErrorCodes } from '../core/core.errors'
 
 export class FormNotFoundError extends ApplicationError {
   constructor(message = 'Form not found') {
-    super(message, undefined, ErrorCodes.FormNotFound)
+    super(message, undefined, ErrorCodes.FORM_NOT_FOUND)
   }
 }
 
 export class FormDeletedError extends ApplicationError {
   constructor(message = 'This form is no longer active') {
-    super(message, undefined, ErrorCodes.FormDeleted)
+    super(message, undefined, ErrorCodes.FORM_DELETED)
   }
 }
 
@@ -29,7 +29,7 @@ export class PrivateFormError extends ApplicationError {
     message = 'If you think this is a mistake, please contact the agency that gave you the form link.',
     formTitle: string,
   ) {
-    super(message, undefined, ErrorCodes.PrivateForm)
+    super(message, undefined, ErrorCodes.FORM_PRIVATE_FORM)
     this.formTitle = formTitle
   }
 }
@@ -40,7 +40,7 @@ export class PrivateFormError extends ApplicationError {
  */
 export class ForbiddenFormError extends ApplicationError {
   constructor(message: string) {
-    super(message, undefined, ErrorCodes.ForbiddenForm)
+    super(message, undefined, ErrorCodes.FORM_FORBIDDEN_FORM)
   }
 }
 
@@ -49,7 +49,7 @@ export class ForbiddenFormError extends ApplicationError {
  */
 export class TransferOwnershipError extends ApplicationError {
   constructor(message: string) {
-    super(message, undefined, ErrorCodes.TransferOwnership)
+    super(message, undefined, ErrorCodes.FORM_TRANSFER_OWNERSHIP)
   }
 }
 
@@ -58,7 +58,7 @@ export class TransferOwnershipError extends ApplicationError {
  */
 export class LogicNotFoundError extends ApplicationError {
   constructor(message = 'logicId does not exist on form') {
-    super(message, undefined, ErrorCodes.LogicNotFound)
+    super(message, undefined, ErrorCodes.FORM_LOGIC_NOT_FOUND)
   }
 }
 
@@ -70,7 +70,7 @@ export class AuthTypeMismatchError extends ApplicationError {
     super(
       `Attempted authentication type ${attemptedAuthType} did not match form auth type ${formAuthType}`,
       undefined,
-      ErrorCodes.AuthTypeMismatch,
+      ErrorCodes.FORM_AUTH_TYPE_MISMATCH,
     )
   }
 }
@@ -84,7 +84,7 @@ export class FormAuthNoEsrvcIdError extends ApplicationError {
     super(
       `Attempted to validate form ${formId} which did not have an eServiceId`,
       undefined,
-      ErrorCodes.FormAuthNoEsrvcId,
+      ErrorCodes.FORM_AUTH_NO_ESRVC_ID,
     )
   }
 }
