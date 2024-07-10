@@ -246,10 +246,7 @@ export class ApplicationError extends Error {
     super()
 
     this.name = this.constructor.name
-    const defaultMessage = 'Something went wrong. Please try again.'
-    this.message = errorCode
-      ? `[${errorCode}] ${message || defaultMessage}`
-      : message || defaultMessage
+    this.message = message || 'Something went wrong. Please try again.'
     Error.captureStackTrace(this, this.constructor)
 
     this.meta = meta
