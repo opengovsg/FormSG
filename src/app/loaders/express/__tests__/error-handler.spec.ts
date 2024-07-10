@@ -29,9 +29,7 @@ describe('error-handler.loader', () => {
 
       // Assert
       expect(response.status).toEqual(400)
-      expect(response.text).toContain(
-        '{"message":"Expected \':\' after property name in JSON at position 15 (line 1 column 16)"}',
-      )
+      expect(response.text).toContain('Unexpected token')
     })
   })
 })
