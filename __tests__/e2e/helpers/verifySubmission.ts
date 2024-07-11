@@ -1,5 +1,5 @@
 import { expect, Page } from '@playwright/test'
-// import { readFileSync } from 'fs'
+import { readFileSync } from 'fs'
 import { BasicField, FormAuthType, FormResponseMode } from 'shared/types'
 
 import { IFormSchema, SgidFieldTitle, SPCPFieldTitle } from 'src/types'
@@ -7,6 +7,7 @@ import { IFormSchema, SgidFieldTitle, SPCPFieldTitle } from 'src/types'
 import {
   ADMIN_EMAIL,
   ADMIN_FORM_PAGE_RESPONSES,
+  ADMIN_FORM_PAGE_RESPONSES_INDIVIDUAL,
   // ADMIN_FORM_PAGE_RESPONSES_INDIVIDUAL,
   E2eFieldMetadata,
   E2eFormResponseMode,
@@ -15,6 +16,7 @@ import {
 import {
   expectAttachment,
   expectContains,
+  expectToast,
   // expectToast,
   getAutoreplyEmail,
   getResponseArray,
@@ -252,55 +254,55 @@ export const verifyEncryptSubmission = async (
   await page.getByLabel(/Enter or upload Secret Key/).fill(secretKey)
   await page.getByRole('button', { name: 'Unlock responses' }).click()
 
-  // // Try downloading CSV and checking contents
-  // const downloadPromise = page.waitForEvent('download')
-  // await page.getByRole('button', { name: 'Download' }).click()
-  // await page.getByRole('menuitem', { name: 'CSV only' }).click()
-  // const download = await downloadPromise
-  // const path = await download.path()
-  // if (!path) throw new Error('CSV download failed')
+  // Try downloading CSV and checking contents
+  const downloadPromise = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Download' }).click()
+  await page.getByRole('menuitem', { name: 'CSV only' }).click()
+  const download = await downloadPromise
+  const path = await download.path()
+  if (!path) throw new Error('CSV download failed')
 
-  // await expectToast(page, /Success\. 1\/1 response was decrypted\./)
+  await expectToast(page, /Success\. 1\/1 response was decrypted\./)
 
-  // const content = readFileSync(path).toString()
-  // const expectSubmissionContains = expectContains(content)
+  const content = readFileSync(path).toString()
+  const expectSubmissionContains = expectContains(content)
 
-  // expectSubmissionContains([responseId])
-  // for (const field of formFields) {
-  //   const responseArray = getResponseArray(field, {
-  //     mode: FormResponseMode.Encrypt,
-  //     csv: true,
-  //   })
-  //   if (!responseArray) continue
-  //   expectSubmissionContains([field.title, ...responseArray])
-  // }
+  expectSubmissionContains([responseId])
+  for (const field of formFields) {
+    const responseArray = getResponseArray(field, {
+      mode: FormResponseMode.Encrypt,
+      csv: true,
+    })
+    if (!responseArray) continue
+    expectSubmissionContains([field.title, ...responseArray])
+  }
 
-  // // TODO: Attachments don't work in storage mode tests, so no need to download CSV with attachments.
+  // TODO: Attachments don't work in storage mode tests, so no need to download CSV with attachments.
 
-  // // Ensure there is a cell with the response ID and click into it
-  // await page.getByRole('cell', { name: responseId }).click()
+  // Ensure there is a cell with the response ID and click into it
+  await page.getByRole('cell', { name: responseId }).click()
 
-  // // We should be at the individual response page now.
-  // await expect(page).toHaveURL(
-  //   ADMIN_FORM_PAGE_RESPONSES_INDIVIDUAL(form._id, responseId),
-  // )
+  // We should be at the individual response page now.
+  await expect(page).toHaveURL(
+    ADMIN_FORM_PAGE_RESPONSES_INDIVIDUAL(form._id, responseId),
+  )
 
-  // // Expect all the content of the page
-  // for (const field of formFields) {
-  //   const responseArray = getResponseArray(field, {
-  //     mode: FormResponseMode.Encrypt,
-  //     csv: false,
-  //   })
-  //   if (!responseArray) continue
-  //   const responseTitle = getResponseTitle(field, {
-  //     mode: FormResponseMode.Encrypt,
-  //     csv: false,
-  //   })
-  //   await expect(page.getByText(responseTitle)).toBeVisible()
-  //   for (const response of responseArray) {
-  //     if (response) {
-  //       await expect(page.getByText(response, { exact: true })).toBeVisible()
-  //     }
-  //   }
-  // }
+  // Expect all the content of the page
+  for (const field of formFields) {
+    const responseArray = getResponseArray(field, {
+      mode: FormResponseMode.Encrypt,
+      csv: false,
+    })
+    if (!responseArray) continue
+    const responseTitle = getResponseTitle(field, {
+      mode: FormResponseMode.Encrypt,
+      csv: false,
+    })
+    await expect(page.getByText(responseTitle)).toBeVisible()
+    for (const response of responseArray) {
+      if (response) {
+        await expect(page.getByText(response, { exact: true })).toBeVisible()
+      }
+    }
+  }
 }
