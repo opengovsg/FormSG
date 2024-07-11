@@ -1,6 +1,5 @@
 import { RequestHandler } from 'express'
 import helmet from 'helmet'
-import { ContentSecurityPolicyOptions } from 'helmet/dist/types/middlewares/content-security-policy'
 
 import config from '../../config/config'
 
@@ -28,14 +27,13 @@ const helmetMiddlewares = () => {
     policy: 'strict-origin-when-cross-origin',
   })
 
-  const cspCoreDirectives: ContentSecurityPolicyOptions['directives'] =
-    CSP_CORE_DIRECTIVES
+  const cspCoreDirectives = CSP_CORE_DIRECTIVES
 
-  const cspOptionalDirectives: ContentSecurityPolicyOptions['directives'] = {}
-
-  // Remove upgradeInsecureRequest CSP header if config.isDev
-  // See https://github.com/helmetjs/helmet for use of null to disable default
-  if (config.isDev) cspOptionalDirectives.upgradeInsecureRequests = null
+  const cspOptionalDirectives = config.isDev
+    ? // Remove upgradeInsecureRequest CSP header if config.isDev
+      // See https://github.com/helmetjs/helmet for use of null to disable default
+      { upgradeInsecureRequests: null }
+    : null
 
   const contentSecurityPolicyMiddleware = helmet.contentSecurityPolicy({
     useDefaults: true,
