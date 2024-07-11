@@ -132,6 +132,7 @@ import {
   ResponseModeError,
   SubmissionFailedError,
   SubmissionNotFoundError,
+  UnsupportedSettingsError,
   ValidateFieldError,
   VirusScanFailedError,
 } from './submission.errors'
@@ -275,6 +276,11 @@ const errorMapper: MapRouteError = (
           'Missing Turnstile challenge. Please refresh and submit again.',
       }
     case MalformedParametersError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
+    case UnsupportedSettingsError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,

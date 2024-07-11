@@ -26,7 +26,6 @@ interface SingleSubmissionModalProps {
   isOpen: boolean
 }
 
-// TODO: check if need to handle preview behavior
 export const SingleSubmissionModal = ({
   formId,
   isOpen,
