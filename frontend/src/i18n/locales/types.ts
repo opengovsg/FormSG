@@ -1,12 +1,16 @@
-import { AdminFormNavbar, Common, Login, PublicForm } from './features'
+import { Navbar, Common, Login, PublicForm, Fields, HeaderAndInstructions, Logic, ThankYou} from './features'
 
 interface Translation {
   translation: {
     features: {
-      adminFormNavbar?: AdminFormNavbar
+      navbar?: Navbar
       common?: Common
       publicForm?: PublicForm
       login?: Login
+      fields?: Fields
+      headerAndInstructions?: HeaderAndInstructions
+      logic?: Logic
+      thankYou?: ThankYou
     }
   }
 }

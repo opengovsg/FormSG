@@ -1,6 +1,6 @@
-import { AdminFormNavbar } from '.'
+import { Navbar } from '.'
 
-export const enSG: AdminFormNavbar = {
+export const enSG: Navbar = {
   tabs: {
     create: 'Create',
     settings: 'Settings',
