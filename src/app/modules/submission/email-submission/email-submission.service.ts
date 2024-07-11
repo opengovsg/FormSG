@@ -4,6 +4,7 @@ import { err, ok, Result, ResultAsync } from 'neverthrow'
 
 import {
   BasicField,
+  FormAuthType,
   FormResponseMode,
   ResponseMetadata,
   SubmissionType,
@@ -21,7 +22,6 @@ import { ApplicationError, DatabaseError } from '../../core/core.errors'
 import { isEmailModeForm, transformEmails } from '../../form/form.utils'
 import { ResponseModeError } from '../submission.errors'
 import { ProcessedFieldResponse } from '../submission.types'
-import { checkIsIndividualSingpassAuthType } from '../submission.utils'
 
 import {
   DIGEST_TYPE,
@@ -109,10 +109,7 @@ export const saveSubmissionMetadata = (
 
   const saveEmailSubmissionMetadataBasedOnFormSettings =
     async (): Promise<IEmailSubmissionSchema | null> => {
-      if (
-        form.isSingleSubmission &&
-        checkIsIndividualSingpassAuthType(form.authType)
-      ) {
+      if (form.isSingleSubmission && form.authType !== FormAuthType.NIL) {
         if (!submitterId) {
           return Promise.reject(
             new ApplicationError(
