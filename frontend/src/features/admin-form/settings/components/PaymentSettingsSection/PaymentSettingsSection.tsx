@@ -46,37 +46,44 @@ const PaymentsDisabledRationaleText = ({
   isEmailsPresent: boolean
   isSingleSubmission: boolean
 }): JSX.Element => {
-  return isEmailsPresent && isSingleSubmission ? (
-    <Text>
-      To enable payment fields, remove all recipients from{' '}
-      <Link as={ReactLink} to={'email-notifications'}>
-        email notifications
-      </Link>{' '}
-      and disable{' '}
-      <Link as={ReactLink} to={'singpass'}>
-        only one submission per NRIC/FIN/UEN
-      </Link>
-      .
-    </Text>
-  ) : isEmailsPresent ? (
-    <Text>
-      To enable payment fields, remove all recipients from{' '}
-      <Link as={ReactLink} to={'email-notifications'}>
-        email notifications
-      </Link>
-      .
-    </Text>
-  ) : isSingleSubmission ? (
-    <Text>
-      To enable payment fields, disable{' '}
-      <Link as={ReactLink} to={'singpass'}>
-        only one submission per NRIC/FIN/UEN
-      </Link>
-      .
-    </Text>
-  ) : (
-    <></>
-  )
+  if (isEmailsPresent && isSingleSubmission) {
+    return (
+      <Text>
+        To enable payment fields, remove all recipients from{' '}
+        <Link as={ReactLink} to={'email-notifications'}>
+          email notifications
+        </Link>{' '}
+        and disable{' '}
+        <Link as={ReactLink} to={'singpass'}>
+          only one submission per NRIC/FIN/UEN
+        </Link>
+        .
+      </Text>
+    )
+  }
+  if (isEmailsPresent) {
+    return (
+      <Text>
+        To enable payment fields, remove all recipients from{' '}
+        <Link as={ReactLink} to={'email-notifications'}>
+          email notifications
+        </Link>
+        .
+      </Text>
+    )
+  }
+  if (isSingleSubmission) {
+    return (
+      <Text>
+        To enable payment fields, disable{' '}
+        <Link as={ReactLink} to={'singpass'}>
+          only one submission per NRIC/FIN/UEN
+        </Link>
+        .
+      </Text>
+    )
+  }
+  return <></>
 }
 
 const BeforeConnectionInstructions = ({
