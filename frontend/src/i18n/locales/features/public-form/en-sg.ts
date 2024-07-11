@@ -32,5 +32,15 @@ export const enSG: PublicForm = {
       proceedToPay: 'Proceed to pay',
       submitNow: 'Submit now',
     },
+
+    FeedbackBlock: {
+      feedbackTitlePayment:
+        'How was your experience making payment on this form?',
+      feedbackTitleGeneral: 'How was your form filling experience today?',
+      ratingLabel: 'Form feedback rating',
+      ratingError: 'Please select a rating',
+      commentPlaceholder: 'Tell us more about your experience',
+      submitButton: 'Submit feedback',
+    },
   },
 }
