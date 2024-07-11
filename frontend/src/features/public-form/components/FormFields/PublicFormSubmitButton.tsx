@@ -66,7 +66,11 @@ export const PublicFormSubmitButton = ({
   }, [formInputs, formFields, formLogics])
 
   // For payments submit and pay modal
-  const { isOpen, onOpen, onClose } = useDisclosure({ defaultIsOpen: false })
+  const {
+    isOpen: isPaymentsModalOpen,
+    onOpen: onPaymentsModalOpen,
+    onClose: onPaymentsModalClose,
+  } = useDisclosure({ defaultIsOpen: false })
 
   const checkBeforeOpen = async () => {
     const result = await trigger()
@@ -82,7 +86,7 @@ export const PublicFormSubmitButton = ({
       } catch (err) {
         setPrevPaymentId('')
       }
-      onOpen()
+      onPaymentsModalOpen()
     }
   }
 
@@ -93,12 +97,11 @@ export const PublicFormSubmitButton = ({
 
   return (
     <Stack px={{ base: '1rem', md: 0 }} pt="2.5rem" pb="4rem">
-      // Prevent opening of multiple modals
-      {isOpen && !isSingleSubmissionOnlyModalOpen ? (
+      {isPaymentsModalOpen && !isSingleSubmissionOnlyModalOpen ? (
         prevPaymentId ? (
           <DuplicatePaymentModal
             onSubmit={onSubmit}
-            onClose={onClose}
+            onClose={onPaymentsModalClose}
             isSubmitting={isSubmitting}
             formId={formId}
             paymentId={prevPaymentId}
@@ -106,7 +109,7 @@ export const PublicFormSubmitButton = ({
         ) : (
           <FormPaymentModal
             onSubmit={onSubmit}
-            onClose={onClose}
+            onClose={onPaymentsModalClose}
             isSubmitting={isSubmitting}
           />
         )

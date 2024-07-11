@@ -765,7 +765,7 @@ const _createSubmission = async ({
 
   // Send success back to client
   // clear cookies to log out user if isSingleSubmission form
-  if (form.authType != FormAuthType.NIL && form.isSingleSubmission) {
+  if (form.authType !== FormAuthType.NIL && form.isSingleSubmission) {
     const authCookieName = getCookieNameByAuthType(form.authType)
     res.clearCookie(authCookieName)
   }

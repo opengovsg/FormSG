@@ -276,7 +276,7 @@ export const checkFormSubmissionLimitAndDeactivateForm = (
 }
 
 /**
- * Verify that if the form is a single submission per submitterId form, the submitterId has not responded
+ * Verify that if the form is a single submission per submitterId form, the submitterId does not exist.
  * @param form the form to check for
  * @param submitterId submitterId of current submitter
  * @returns ok(true) if the form is not a single submission per submitterId form or the submitterId has not responded before

@@ -324,7 +324,6 @@ export const useMutateFormSettings = () => {
 
   const mutateIsSingleSubmission = useMutation(
     (nextIsSingleSubmissionPerNricEnabled: boolean) => {
-      console.log('mutating')
       return updateIsSingleSubmission(
         formId,
         nextIsSingleSubmissionPerNricEnabled,

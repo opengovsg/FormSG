@@ -547,7 +547,7 @@ export const PublicFormProvider = ({
         if (
           data &&
           form.isSingleSubmission &&
-          form.authType != FormAuthType.NIL
+          form.authType !== FormAuthType.NIL
         ) {
           data.spcpSession = undefined
         }
@@ -709,7 +709,7 @@ export const PublicFormProvider = ({
                     if (
                       data &&
                       form.isSingleSubmission &&
-                      form.authType != FormAuthType.NIL
+                      form.authType !== FormAuthType.NIL
                     ) {
                       data.spcpSession = undefined
                     }
@@ -772,7 +772,7 @@ export const PublicFormProvider = ({
                   if (
                     data &&
                     form.isSingleSubmission &&
-                    form.authType != FormAuthType.NIL
+                    form.authType !== FormAuthType.NIL
                   ) {
                     data.spcpSession = undefined
                   }
