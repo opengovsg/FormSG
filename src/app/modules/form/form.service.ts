@@ -292,31 +292,31 @@ export const checkHasSingleSubmissionValidationFailure = (
     action: 'checkHasSingleSubmissionValidationFailure',
     formId: form._id,
   }
-  if (form.isSingleSubmission) {
-    if (!submitterId) {
-      return errAsync(
-        new ApplicationError(
-          'Cannot find submitterId which is required for single submission per submitterId form',
-        ),
-      )
-    }
-    const submissionWithSameSubmitterIdExists = SubmissionModel.exists({
-      form: form._id,
-      submitterId,
-    }).then((result) => result != null)
-    return ResultAsync.fromPromise(
-      submissionWithSameSubmitterIdExists,
-      (error) => {
-        logger.error({
-          message: 'Error while counting submissions for form',
-          meta: logMeta,
-          error,
-        })
-        return transformMongoError(error)
-      },
+  if (!form.isSingleSubmission) {
+    return okAsync(false)
+  }
+
+  if (!submitterId) {
+    return errAsync(
+      new ApplicationError(
+        'Cannot find submitterId which is required for single submission per submitterId form',
+      ),
     )
   }
-  return okAsync(false)
+  return ResultAsync.fromPromise(
+    SubmissionModel.exists({
+      form: form._id,
+      submitterId,
+    }),
+    (error) => {
+      logger.error({
+        message: 'Error while counting submissions for form',
+        meta: logMeta,
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((result) => okAsync(result !== null))
 }
 
 export const getFormModelByResponseMode = (

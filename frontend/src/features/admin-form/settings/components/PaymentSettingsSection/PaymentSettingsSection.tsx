@@ -57,7 +57,8 @@ const getPaymentsNotAllowedMessageText = (
         .
       </Text>
     )
-  } else if (isEmailsPresent) {
+  }
+  if (isEmailsPresent) {
     return (
       <Text>
         To enable payment fields, remove all recipients from{' '}
@@ -67,7 +68,8 @@ const getPaymentsNotAllowedMessageText = (
         .
       </Text>
     )
-  } else if (isSingleSubmission) {
+  }
+  if (isSingleSubmission) {
     return (
       <Text>
         To enable payment fields, disable{' '}
@@ -77,9 +79,8 @@ const getPaymentsNotAllowedMessageText = (
         .
       </Text>
     )
-  } else {
-    return null
   }
+  return null
 }
 
 const BeforeConnectionInstructions = ({

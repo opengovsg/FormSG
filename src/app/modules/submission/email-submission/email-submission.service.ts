@@ -122,9 +122,8 @@ export const saveSubmissionMetadata = (
           submitterId,
           params,
         )
-      } else {
-        return EmailSubmissionModel.create(params)
       }
+      return EmailSubmissionModel.create(params)
     }
 
   return ResultAsync.fromPromise(
