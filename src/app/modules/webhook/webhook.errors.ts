@@ -1,6 +1,6 @@
 import { AxiosError } from 'axios'
 
-import { ApplicationError } from '../core/core.errors'
+import { ApplicationError, ErrorCodes } from '../core/core.errors'
 
 /**
  * A custom error class thrown by the webhook server controller
@@ -8,7 +8,7 @@ import { ApplicationError } from '../core/core.errors'
  */
 export class WebhookValidationError extends ApplicationError {
   constructor(message = 'Webhook URL is non-HTTPS or points to private IP') {
-    super(message)
+    super(message, undefined, ErrorCodes.WEBHOOK_VALIDATION)
   }
 }
 
@@ -21,7 +21,11 @@ export class WebhookFailedWithPresignedUrlGenerationError extends ApplicationErr
   }
 
   constructor(error: unknown, message = 'Presigned Url Generation failed') {
-    super(message)
+    super(
+      message,
+      undefined,
+      ErrorCodes.WEBHOOK_FAILED_WITH_PRESIGNED_URL_GENERATION,
+    )
     this.meta = { originalError: error }
   }
 }
@@ -35,7 +39,7 @@ export class WebhookFailedWithUnknownError extends ApplicationError {
   }
 
   constructor(error: unknown, message = 'Webhook POST failed') {
-    super(message)
+    super(message, undefined, ErrorCodes.WEBHOOK_FAILED_WITH_UNKNOWN_ERROR)
     this.meta = { originalError: error }
   }
 }
@@ -47,9 +51,8 @@ export class WebhookFailedWithAxiosError extends ApplicationError {
   meta: {
     originalError: AxiosError<unknown>
   }
-
   constructor(error: AxiosError<unknown>, message = 'Webhook POST failed') {
-    super(message)
+    super(message, undefined, ErrorCodes.WEBHOOK_FAILED_WITH_AXIOS_ERROR)
     this.meta = { originalError: error }
   }
 }
@@ -66,7 +69,7 @@ export class WebhookQueueMessageParsingError extends ApplicationError {
     error: unknown,
     message = 'Unable to parse body of webhook queue message',
   ) {
-    super(message)
+    super(message, undefined, ErrorCodes.WEBHOOK_QUEUE_MESSAGE_PARSING_ERROR)
     this.meta = { originalError: error }
   }
 }
@@ -76,7 +79,7 @@ export class WebhookQueueMessageParsingError extends ApplicationError {
  */
 export class WebhookNoMoreRetriesError extends ApplicationError {
   constructor(message = 'Maximum retries exceeded for webhook') {
-    super(message)
+    super(message, undefined, ErrorCodes.WEBHOOK_NO_MORE_RETRIES)
   }
 }
 
@@ -85,7 +88,7 @@ export class WebhookNoMoreRetriesError extends ApplicationError {
  */
 export class WebhookPushToQueueError extends ApplicationError {
   constructor(message = 'Failed to push webhook to message queue') {
-    super(message)
+    super(message, undefined, ErrorCodes.WEBHOOK_PUSH_TO_QUEUE)
   }
 }
 
@@ -104,7 +107,7 @@ export class WebhookRetriesNotEnabledError extends ApplicationError {
     isRetryEnabled: boolean,
     message = 'Unable to send webhook as form has no webhook URL or does not have retries enabled',
   ) {
-    super(message)
+    super(message, undefined, ErrorCodes.WEBHOOK_RETRIES_NOT_ENABLED)
     this.meta = {
       webhookUrl,
       isRetryEnabled,

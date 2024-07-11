@@ -8,6 +8,7 @@ import { ControllerHandler } from '../core/core.types'
 import { UNAUTHORIZED_USER_MESSAGE } from '../user/user.constant'
 import * as UserService from '../user/user.service'
 
+import { UnauthorizedError } from './auth.errors'
 import { getUserByApiKey } from './auth.service'
 import {
   getUserIdFromSession,
@@ -29,10 +30,9 @@ export const withUserAuthentication: ControllerHandler = (req, res, next) => {
   if (isUserInSession(req.session)) {
     return next()
   }
+  const { errorMessage, statusCode } = mapRouteError(new UnauthorizedError())
 
-  return res
-    .status(StatusCodes.UNAUTHORIZED)
-    .json({ message: 'User is unauthorized.' })
+  return res.status(statusCode).json({ message: errorMessage })
 }
 
 /**
