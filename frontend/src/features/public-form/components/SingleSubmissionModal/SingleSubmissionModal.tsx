@@ -18,7 +18,7 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import ButtonGroup from '~components/ButtonGroup'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
-import { getPublicFormResponseSingpassLoginUrl } from '~features/public-form/utils/urls'
+import { getPublicFormUrl } from '~features/public-form/utils/urls'
 
 interface SingleSubmissionModalProps {
   formId: string
@@ -39,7 +39,7 @@ export const SingleSubmissionModal = ({
   const singpassLogoutAndRedirectToFormLogin = () => {
     if (!handleLogout) return
     handleLogout()
-    navigate(getPublicFormResponseSingpassLoginUrl(formId))
+    navigate(getPublicFormUrl(formId))
   }
 
   return (

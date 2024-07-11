@@ -97,7 +97,7 @@ export const PublicFormSubmitButton = ({
 
   return (
     <Stack px={{ base: '1rem', md: 0 }} pt="2.5rem" pb="4rem">
-      {isPaymentsModalOpen && !isSingleSubmissionOnlyModalOpen ? (
+      {isPaymentsModalOpen ? (
         prevPaymentId ? (
           <DuplicatePaymentModal
             onSubmit={onSubmit}

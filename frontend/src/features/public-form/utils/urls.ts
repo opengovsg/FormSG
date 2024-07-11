@@ -16,6 +16,6 @@ export const getPaymentInvoiceDownloadUrl = (
   )}` as const
 }
 
-export const getPublicFormResponseSingpassLoginUrl = (formId: string) => {
+export const getPublicFormUrl = (formId: string) => {
   return `/${formId}` as const
 }
