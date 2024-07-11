@@ -127,6 +127,7 @@ export const getMetadata: ControllerHandler<
           meta: logMeta,
           error,
         })
+
         const { statusCode, errorMessage } = mapRouteError(error)
         return res.status(statusCode).json({
           message: errorMessage,
@@ -343,6 +344,7 @@ export const streamEncryptedResponses: ControllerHandler<
       meta: logMeta,
       error: cursorResult.error,
     })
+
     const { statusCode, errorMessage } = mapRouteError(cursorResult.error)
     return res.status(statusCode).json({
       message: errorMessage,
