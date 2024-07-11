@@ -39,7 +39,7 @@ import {
   StripeConnectButtonStates,
 } from './StripeConnectButton'
 
-const PaymentsNotAllowedMessageText = ({
+const PaymentsDisabledRationaleText = ({
   isEmailsPresent,
   isSingleSubmission,
 }: {
@@ -126,7 +126,7 @@ const BeforeConnectionInstructions = ({
         {isPaymentsDisabled ? (
           <Box w="100%">
             <InlineMessage>
-              <PaymentsNotAllowedMessageText
+              <PaymentsDisabledRationaleText
                 isEmailsPresent={isEmailsPresent}
                 isSingleSubmission={isSingleSubmission}
               />
@@ -178,7 +178,7 @@ const BeforeConnectionInstructions = ({
         {isPaymentsDisabled ? (
           <Box w="100%">
             <InlineMessage>
-              <PaymentsNotAllowedMessageText
+              <PaymentsDisabledRationaleText
                 isEmailsPresent={isEmailsPresent}
                 isSingleSubmission={isSingleSubmission}
               />
