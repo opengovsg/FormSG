@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   BiDotsHorizontalRounded,
   BiShareAlt,
@@ -72,6 +73,7 @@ export const AdminFormNavbar = ({
   handleShareButtonClick,
   previewFormLink,
 }: AdminFormNavbarProps): JSX.Element => {
+  const { t } = useTranslation()
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
   const { isOpen, onClose, onOpen } = useDisclosure()
   const { pathname } = useLocation()
@@ -182,7 +184,7 @@ export const AdminFormNavbar = ({
           to={ADMINFORM_BUILD_SUBROUTE}
           isActive={checkTabActive(ADMINFORM_BUILD_SUBROUTE)}
         >
-          Create
+          {t('features.adminFormNavbar.tabs.create')}
         </NavigationTab>
         <NavigationTab
           hidden={viewOnly}
@@ -197,7 +199,7 @@ export const AdminFormNavbar = ({
             }
           }}
         >
-          Settings
+          {t('features.adminFormNavbar.tabs.settings')}
           {shouldShowSettingsReddot ? (
             <Icon
               as={GoPrimitiveDot}
@@ -212,7 +214,7 @@ export const AdminFormNavbar = ({
           to={ADMINFORM_RESULTS_SUBROUTE}
           isActive={checkTabActive(ADMINFORM_RESULTS_SUBROUTE)}
         >
-          Results
+          {t('features.adminFormNavbar.tabs.results')}
         </NavigationTab>
       </NavigationTabList>
       <Flex
@@ -226,7 +228,7 @@ export const AdminFormNavbar = ({
       >
         <IconButton
           display={{ base: 'flex', md: 'none' }}
-          aria-label="Form actions"
+          aria-label={t('features.adminFormNavbar.formActions')}
           onClick={onOpen}
           icon={<BiDotsHorizontalRounded />}
         />
@@ -235,26 +237,28 @@ export const AdminFormNavbar = ({
             {renderLastModified}
           </Flex>
           <ButtonGroup spacing="0.5rem" isDisabled={!formInfo}>
-            <Tooltip label="Manage collaborators">
+            <Tooltip label={t('features.adminFormNavbar.manageCollaborators')}>
               <IconButton
-                aria-label="Manage collaborators"
+                aria-label={t('features.adminFormNavbar.manageCollaborators')}
                 variant="outline"
                 onClick={handleAddCollabButtonClick}
                 icon={<BiUserPlus />}
               />
             </Tooltip>
-            <Tooltip label="Preview form">
+            <Tooltip label={t('features.adminFormNavbar.previewForm')}>
               <IconButton
                 as={ReactLink}
-                aria-label="Preview form"
+                aria-label={t('features.adminFormNavbar.previewForm')}
                 variant="outline"
                 to={previewFormLink}
                 target="_blank"
                 icon={<BiShow />}
               />
             </Tooltip>
-            <Tooltip label="Share your form link">
-              <Button onClick={handleShareButtonClick}>Share</Button>
+            <Tooltip label={t('features.adminFormNavbar.shareBtn.tooltip')}>
+              <Button onClick={handleShareButtonClick}>
+                {t('features.adminFormNavbar.shareBtn.text')}
+              </Button>
             </Tooltip>
           </ButtonGroup>
         </Box>
@@ -278,21 +282,21 @@ export const AdminFormNavbar = ({
                 {...mobileDrawerExtraButtonProps}
                 leftIcon={<BiShow fontSize="1.25rem" />}
               >
-                Preview form
+                {t('features.adminFormNavbar.previewForm')}
               </Button>
               <Button
                 {...mobileDrawerExtraButtonProps}
                 onClick={handleShareButtonClick}
                 leftIcon={<BiShareAlt fontSize="1.25rem" />}
               >
-                Share form link
+                {t('features.adminFormNavbar.shareBtn.textMobile')}
               </Button>
               <Button
                 {...mobileDrawerExtraButtonProps}
                 onClick={handleAddCollabButtonClick}
                 leftIcon={<BiUserPlus fontSize="1.25rem" />}
               >
-                Manage collaborators
+                {t('features.adminFormNavbar.manageCollaborators')}
               </Button>
             </ButtonGroup>
           </DrawerBody>

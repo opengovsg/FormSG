@@ -33,7 +33,7 @@ services:
       - AWS_ACCESS_KEY_ID=fakeKey
       - AWS_SECRET_ACCESS_KEY=fakeSecret
       - SESSION_SECRET=thisisasecret
-      - AWS_ENDPOINT=http://localhost:4566
+      - AWS_ENDPOINT=http://127.0.0.1:4566
       - SECRET_ENV=development
       - SUBMISSIONS_RATE_LIMIT=200
       - SEND_AUTH_OTP_RATE_LIMIT=60
