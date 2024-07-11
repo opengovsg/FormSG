@@ -51,7 +51,6 @@ import {
   transformMongoError,
 } from '../../utils/handle-mongo-error'
 import {
-  AttachmentUploadError,
   DatabaseDuplicateKeyError,
   DatabaseError,
   MalformedParametersError,
@@ -64,6 +63,7 @@ import { PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS } from './submission.constants'
 import {
   AttachmentSizeLimitExceededError,
   AttachmentTooLargeError,
+  AttachmentUploadError,
   DownloadCleanFileFailedError,
   InvalidFieldIdError,
   InvalidFileExtensionError,

@@ -65,7 +65,6 @@ import {
 import { CreatePresignedPostError } from '../../utils/aws-s3'
 import { genericMapRouteErrorTransform } from '../../utils/error'
 import {
-  AttachmentUploadError,
   DatabaseConflictError,
   DatabaseError,
   DatabasePayloadSizeError,
@@ -112,6 +111,7 @@ import { ResponseFormattedForEmail } from './email-submission/email-submission.t
 import {
   AttachmentSizeLimitExceededError,
   AttachmentTooLargeError,
+  AttachmentUploadError,
   ConflictError,
   DownloadCleanFileFailedError,
   FeatureDisabledError,
