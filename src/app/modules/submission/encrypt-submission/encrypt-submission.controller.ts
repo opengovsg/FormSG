@@ -16,6 +16,7 @@ import {
 } from '../../../../../shared/types'
 import { maskNric } from '../../../../../shared/utils/nric-mask'
 import {
+  IAttachmentInfo,
   IEncryptedForm,
   IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
@@ -381,6 +382,7 @@ const submitEncryptModeForm = async (
     formId,
     form,
     responses: req.formsg.filteredResponses,
+    unencryptedAttachments: req.formsg.unencryptedAttachments,
     emailFields: parsedResponses.getAllResponses(),
     responseMetadata,
     submissionContent,
@@ -644,12 +646,14 @@ const _createSubmission = async ({
   form,
   responseMetadata,
   responses,
+  unencryptedAttachments,
   emailFields,
 }: {
   req: Parameters<SubmitEncryptModeFormHandlerType>[0]
   res: Parameters<SubmitEncryptModeFormHandlerType>[1]
   responseMetadata: EncryptSubmissionDto['responseMetadata']
   responses: ParsedClearFormFieldResponse[]
+  unencryptedAttachments?: IAttachmentInfo[]
   emailFields: ProcessedFieldResponse[]
   formId: string
   form: IPopulatedEncryptedForm
@@ -736,7 +740,12 @@ const _createSubmission = async ({
     timestamp: createdTime.getTime(),
   })
 
-  return await performEncryptPostSubmissionActions(submission, responses)
+  return await performEncryptPostSubmissionActions(
+    submission,
+    responses,
+    emailData,
+    unencryptedAttachments,
+  )
 }
 
 export const handleStorageSubmission = [
