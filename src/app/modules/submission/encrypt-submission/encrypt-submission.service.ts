@@ -133,7 +133,7 @@ export const createEncryptSubmissionWithoutSave = ({
 export const performEncryptPostSubmissionActions = (
   submission: IEncryptedSubmissionSchema,
   responses: FieldResponse[],
-  emailData: SubmissionEmailObj,
+  emailData?: SubmissionEmailObj,
   attachments?: IAttachmentInfo[],
 ): ResultAsync<
   true,
@@ -166,7 +166,7 @@ export const performEncryptPostSubmissionActions = (
         form,
         submission,
         attachments,
-        responsesData: emailData.autoReplyData,
+        responsesData: emailData?.autoReplyData,
         recipientData: extractEmailConfirmationData(
           responses,
           form.form_fields,
