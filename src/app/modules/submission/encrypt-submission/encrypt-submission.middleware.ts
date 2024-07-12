@@ -9,7 +9,7 @@ import {
   FormResponseMode,
   isPaymentsProducts,
 } from '../../../../../shared/types'
-import { IAttachmentInfo, IPopulatedForm } from '../../../../types'
+import { IPopulatedForm } from '../../../../types'
 import {
   EncryptAttachmentResponse,
   EncryptFormFieldResponse,
