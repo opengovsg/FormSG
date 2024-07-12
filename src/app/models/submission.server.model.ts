@@ -55,6 +55,9 @@ export const SubmissionSchema = new Schema<ISubmissionSchema, ISubmissionModel>(
       enum: Object.values(FormAuthType),
       default: FormAuthType.NIL,
     },
+    submitterId: {
+      type: String,
+    },
     myInfoFields: {
       type: [
         {
@@ -113,6 +116,51 @@ SubmissionSchema.statics.findFormsWithSubsAbove = function (
       },
     },
   ]).exec()
+}
+
+/**
+ * Creates a new email submission only if provided submitterId is unique.
+ * This method ensures that isSingleSubmission is enforced.
+ * @param submitterId uniquely identifies the submitter
+ * @returns created submission if successful, null otherwise
+ */
+SubmissionSchema.statics.saveIfSubmitterIdIsUnique = async function (
+  formId,
+  submitterId,
+  submissionContent,
+) {
+  const session = await this.startSession()
+  session.startTransaction()
+  const beforeCreateRes = await this.exists({
+    form: formId,
+    submitterId,
+  })
+    .setOptions({ readPreference: 'primary' })
+    .session(session)
+    .exec()
+  if (beforeCreateRes) {
+    await session.abortTransaction()
+    await session.endSession()
+    return null
+  }
+
+  await this.create([submissionContent], { session })
+
+  const afterCreateRes = await this.find({ form: formId, submitterId }, null, {
+    limit: 2,
+    readPreference: 'primary',
+  })
+    .session(session)
+    .exec()
+  if (afterCreateRes.length > 1) {
+    await session.abortTransaction()
+    await session.endSession()
+    return null
+  }
+
+  await session.commitTransaction()
+  await session.endSession()
+  return afterCreateRes[0]
 }
 
 // Exported for use in pending submissions model

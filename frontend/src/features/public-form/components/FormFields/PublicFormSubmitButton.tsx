@@ -18,6 +18,7 @@ import { usePublicFormContext } from '../../PublicFormContext'
 import { DuplicatePaymentModal } from '../DuplicatePaymentModal/DuplicatePaymentModal'
 import { FormPaymentModal } from '../FormPaymentModal/FormPaymentModal'
 import { getPreviousPaymentId } from '../FormPaymentPage/FormPaymentService'
+import { SingleSubmissionModal } from '../SingleSubmissionModal/SingleSubmissionModal'
 
 interface PublicFormSubmitButtonProps {
   formFields: MyInfoFormField<FormField>[]
@@ -44,7 +45,13 @@ export const PublicFormSubmitButton = ({
   const isMobile = useIsMobile()
   const { isSubmitting } = useFormState()
   const formInputs = useWatch<FormFieldValues>({}) as FormFieldValues
-  const { formId, isPaymentEnabled, isPreview } = usePublicFormContext()
+  const {
+    formId,
+    isPaymentEnabled,
+    isPreview,
+    hasSingleSubmissionValidationError,
+    setHasSingleSubmissionValidationError,
+  } = usePublicFormContext()
 
   const paymentEmailField = formInputs[
     PAYMENT_CONTACT_FIELD_ID
@@ -59,7 +66,11 @@ export const PublicFormSubmitButton = ({
   }, [formInputs, formFields, formLogics])
 
   // For payments submit and pay modal
-  const { isOpen, onOpen, onClose } = useDisclosure({ defaultIsOpen: false })
+  const {
+    isOpen: isPaymentsModalOpen,
+    onOpen: onPaymentsModalOpen,
+    onClose: onPaymentsModalClose,
+  } = useDisclosure({ defaultIsOpen: false })
 
   const checkBeforeOpen = async () => {
     const result = await trigger()
@@ -75,17 +86,22 @@ export const PublicFormSubmitButton = ({
       } catch (err) {
         setPrevPaymentId('')
       }
-      onOpen()
+      onPaymentsModalOpen()
     }
+  }
+
+  const isSingleSubmissionOnlyModalOpen = hasSingleSubmissionValidationError
+  const onSingleSubmissionModalClose = () => {
+    setHasSingleSubmissionValidationError(false)
   }
 
   return (
     <Stack px={{ base: '1rem', md: 0 }} pt="2.5rem" pb="4rem">
-      {isOpen ? (
+      {isPaymentsModalOpen ? (
         prevPaymentId ? (
           <DuplicatePaymentModal
             onSubmit={onSubmit}
-            onClose={onClose}
+            onClose={onPaymentsModalClose}
             isSubmitting={isSubmitting}
             formId={formId}
             paymentId={prevPaymentId}
@@ -93,11 +109,16 @@ export const PublicFormSubmitButton = ({
         ) : (
           <FormPaymentModal
             onSubmit={onSubmit}
-            onClose={onClose}
+            onClose={onPaymentsModalClose}
             isSubmitting={isSubmitting}
           />
         )
       ) : null}
+      <SingleSubmissionModal
+        formId={formId}
+        isOpen={isSingleSubmissionOnlyModalOpen}
+        onClose={onSingleSubmissionModalClose}
+      />
       <Button
         isFullWidth={isMobile}
         w="100%"

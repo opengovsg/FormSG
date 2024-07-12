@@ -1,3 +1,4 @@
+import { StatusCodes } from 'http-status-codes'
 import { ok, okAsync, ResultAsync } from 'neverthrow'
 
 import {
@@ -8,7 +9,11 @@ import {
 } from '../../../../../shared/types'
 import { CaptchaTypes } from '../../../../../shared/types/captcha'
 import { maskNric } from '../../../../../shared/utils/nric-mask'
-import { IPopulatedEmailForm } from '../../../../types'
+import {
+  IPopulatedEmailForm,
+  SgidFieldTitle,
+  SPCPFieldTitle,
+} from '../../../../types'
 import { ParsedEmailModeSubmissionBody } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
@@ -36,8 +41,11 @@ import * as EmailSubmissionMiddleware from '../email-submission/email-submission
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
 import * as SubmissionService from '../submission.service'
+import { ProcessedSingleAnswerResponse } from '../submission.types'
 import {
   extractEmailConfirmationData,
+  generateHashedSubmitterId,
+  getCookieNameByAuthType,
   mapAttachmentsFromResponses,
 } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
@@ -304,6 +312,19 @@ export const submitEmailModeForm: ControllerHandler<
         }
       })
       .andThen(({ form, parsedResponses, hashedFields }) => {
+        let submitterId: string | undefined = undefined
+        if (form.authType !== FormAuthType.NIL) {
+          const ndiResponse = parsedResponses.ndiResponses.find(
+            (response) =>
+              response.question === SPCPFieldTitle.SpNric ||
+              response.question === SPCPFieldTitle.CpUen ||
+              response.question === SgidFieldTitle.SgidNric,
+          ) as ProcessedSingleAnswerResponse
+          submitterId = ndiResponse?.answer
+            ? generateHashedSubmitterId(ndiResponse.answer, form.id)
+            : undefined
+        }
+
         if (form.isNricMaskEnabled) {
           parsedResponses.ndiResponses = parsedResponses.ndiResponses.map(
             (response) => {
@@ -334,6 +355,7 @@ export const submitEmailModeForm: ControllerHandler<
               form,
               submissionHash,
               responseMetadata,
+              submitterId,
             ),
           )
           .map((submission) => ({
@@ -360,6 +382,17 @@ export const submitEmailModeForm: ControllerHandler<
           emailData,
           responseMetadata,
         }) => {
+          if (!submission) {
+            return okAsync({
+              form,
+              parsedResponses,
+              submission,
+              emailData,
+              responseMetadata,
+              logMeta,
+            })
+          }
+
           const logMetaWithSubmission = {
             ...logMeta,
             submissionId: submission._id,
@@ -395,7 +428,7 @@ export const submitEmailModeForm: ControllerHandler<
               parsedResponses,
               submission,
               emailData,
-              logMetaWithSubmission,
+              logMeta: logMetaWithSubmission,
             }))
             .mapErr((error) => {
               logger.error({
@@ -407,50 +440,62 @@ export const submitEmailModeForm: ControllerHandler<
             })
         },
       )
-      .map(
-        ({
-          form,
-          parsedResponses,
-          submission,
-          emailData,
-          logMetaWithSubmission,
-        }) => {
-          // Send email confirmations
-          void SubmissionService.sendEmailConfirmations({
-            form,
-            submission,
-            attachments,
-            responsesData: emailData.autoReplyData,
-            recipientData: extractEmailConfirmationData(
-              parsedResponses.getAllResponses(),
-              form.form_fields,
-            ),
-          }).mapErr((error) => {
-            // NOTE: MyInfo access token is not cleared here.
-            // This is because if the reason for failure is not on the users' end,
-            // they should not be randomly signed out.
-            logger.error({
-              message: 'Error while sending email confirmations',
-              meta: logMetaWithSubmission,
-              error,
-            })
+      .map(({ form, parsedResponses, submission, emailData, logMeta }) => {
+        if (!submission) {
+          logger.info({
+            message:
+              'Submission not created since NRIC/FIN/UEN already submitted and form has isSingleSubmission enabled',
+            meta: logMeta,
           })
-          // MyInfo access token is single-use, so clear it
-          // Similarly for sgID-MyInfo
-          return res
-            .clearCookie(MYINFO_LOGIN_COOKIE_NAME, MYINFO_LOGIN_COOKIE_OPTIONS)
-            .clearCookie(
-              SGID_MYINFO_LOGIN_COOKIE_NAME,
-              MYINFO_LOGIN_COOKIE_OPTIONS,
-            )
-            .json({
-              // Return the reply early to the submitter
-              message: 'Form submission successful.',
-              submissionId: submission.id,
-              timestamp: (submission.created || new Date()).getTime(),
-            })
-        },
-      )
+          return res.status(StatusCodes.BAD_REQUEST).json({
+            message:
+              'Your NRIC/FIN/UEN has already been used to respond to this form.',
+            hasSingleSubmissionValidationFailure: true,
+          })
+        }
+        // Send email confirmations
+        void SubmissionService.sendEmailConfirmations({
+          form,
+          submission,
+          attachments,
+          responsesData: emailData.autoReplyData,
+          recipientData: extractEmailConfirmationData(
+            parsedResponses.getAllResponses(),
+            form.form_fields,
+          ),
+        }).mapErr((error) => {
+          // NOTE: MyInfo access token is not cleared here.
+          // This is because if the reason for failure is not on the users' end,
+          // they should not be randomly signed out.
+          logger.error({
+            message: 'Error while sending email confirmations',
+            meta: logMeta,
+            error,
+          })
+        })
+
+        // logout on success if is single submission as users
+        // are not allowed to submit again with same auth details
+        if (form.isSingleSubmission && form.authType != FormAuthType.NIL) {
+          const authCookieName = getCookieNameByAuthType(form.authType)
+          res.clearCookie(authCookieName)
+        }
+
+        // MyInfo access token is single-use, so clear it
+        // Similarly for sgID-MyInfo
+        return res
+          .clearCookie(MYINFO_LOGIN_COOKIE_NAME, MYINFO_LOGIN_COOKIE_OPTIONS)
+          .clearCookie(
+            SGID_MYINFO_LOGIN_COOKIE_NAME,
+            MYINFO_LOGIN_COOKIE_OPTIONS,
+          )
+          .json({
+            // Return the reply early to the submitter
+            message: 'Form submission successful.',
+            submissionId: submission.id,
+            timestamp: (submission.created || new Date()).getTime(),
+          })
+      })
       .mapErr((error) => {
         const { errorMessage, statusCode } = mapRouteError(error)
         return res

@@ -83,6 +83,14 @@ export const updatePayments = (
     )
   }
 
+  if (form.isSingleSubmission) {
+    return errAsync(
+      new PaymentConfigurationError(
+        'Cannot enable payment for form with single submission per submitterId enabled',
+      ),
+    )
+  }
+
   return ResultAsync.fromPromise(
     EncryptedFormModel.updatePaymentsById(formId, newPayments),
     (error) => {

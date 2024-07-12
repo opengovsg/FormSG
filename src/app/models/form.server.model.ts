@@ -522,6 +522,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         default: false,
       },
 
+      isSingleSubmission: {
+        type: Boolean,
+        default: false,
+      },
+
       // This must be before `status` since `status` has setters reliant on
       // whether esrvcId is available, and mongoose@v6 now saves objects with keys
       // in the order the keys are specifified in the schema instead of the object.
@@ -706,6 +711,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       'endPage',
       'authType',
       'isNricMaskEnabled',
+      'isSingleSubmission',
       'inactiveMessage',
       'responseMode',
       'submissionLimit',

@@ -178,9 +178,33 @@ describe('admin-form.payment.service', () => {
 
         // Assert
         expect(actualResult.isErr()).toBeTrue()
-        expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
-          PaymentConfigurationError,
+        actualResult.mapErr((err) => {
+          expect(err).toBeInstanceOf(PaymentConfigurationError)
+        })
+      })
+
+      it('should not allow payment updates for encrypt forms with isSingleSubmission true', async () => {
+        // Arrange
+        const updatedPaymentSettings: PaymentsUpdateDto = {
+          enabled: true,
+          amount_cents: 100,
+          description: 'some description',
+          payment_type: PaymentType.Fixed,
+        }
+        const mockForm = { ...MOCK_FORM, isSingleSubmission: true }
+
+        // Act
+        const actualResult = await AdminFormPaymentService.updatePayments(
+          mockFormId,
+          mockForm,
+          updatedPaymentSettings,
         )
+
+        // Assert
+        expect(actualResult.isErr()).toBeTrue()
+        actualResult.mapErr((err) => {
+          expect(err).toBeInstanceOf(PaymentConfigurationError)
+        })
       })
     })
 

@@ -29,6 +29,7 @@ import {
   ResponseModeError,
   SendEmailConfirmationError,
   SubmissionNotFoundError,
+  UnsupportedSettingsError,
 } from '../submission.errors'
 import { sendEmailConfirmations } from '../submission.service'
 import { extractEmailConfirmationData } from '../submission.utils'
@@ -82,6 +83,18 @@ export const checkFormIsEncryptMode = (
   return isFormEncryptMode(form)
     ? ok(form)
     : err(new ResponseModeError(FormResponseMode.Encrypt, form.responseMode))
+}
+
+export const assertFormIsSingleSubmissionDisabled = (
+  form: IPopulatedForm,
+): Result<IPopulatedForm, UnsupportedSettingsError> => {
+  return !form.isSingleSubmission
+    ? ok(form)
+    : err(
+        new UnsupportedSettingsError(
+          'isSingleSubmission cannot be enabled for payment forms as it is not currently supported',
+        ),
+      )
 }
 
 /**

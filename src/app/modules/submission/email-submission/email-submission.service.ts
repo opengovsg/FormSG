@@ -4,6 +4,7 @@ import { err, ok, Result, ResultAsync } from 'neverthrow'
 
 import {
   BasicField,
+  FormAuthType,
   FormResponseMode,
   ResponseMetadata,
   SubmissionType,
@@ -17,7 +18,7 @@ import {
 } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEmailSubmissionModel } from '../../../models/submission.server.model'
-import { DatabaseError } from '../../core/core.errors'
+import { ApplicationError, DatabaseError } from '../../core/core.errors'
 import { isEmailModeForm, transformEmails } from '../../form/form.utils'
 import { ResponseModeError } from '../submission.errors'
 import { ProcessedFieldResponse } from '../submission.types'
@@ -29,7 +30,10 @@ import {
   SALT_LENGTH,
 } from './email-submission.constants'
 import { SubmissionHashError } from './email-submission.errors'
-import { SubmissionHash } from './email-submission.types'
+import {
+  EmailSubmissionContent,
+  SubmissionHash,
+} from './email-submission.types'
 import { concatAttachmentsAndResponses } from './email-submission.util'
 
 const EmailSubmissionModel = getEmailSubmissionModel(mongoose)
@@ -89,10 +93,12 @@ export const saveSubmissionMetadata = (
   form: IPopulatedEmailForm,
   submissionHash: SubmissionHash,
   responseMetadata?: ResponseMetadata,
-): ResultAsync<IEmailSubmissionSchema, DatabaseError> => {
-  const params = {
+  submitterId?: string,
+): ResultAsync<IEmailSubmissionSchema | null, DatabaseError> => {
+  const params: EmailSubmissionContent = {
     form: form._id,
     authType: form.authType,
+    submitterId,
     myInfoFields: form.getUniqueMyInfoAttrs(),
     recipientEmails: transformEmails(form.emails),
     responseHash: submissionHash.hash,
@@ -100,8 +106,28 @@ export const saveSubmissionMetadata = (
     submissionType: SubmissionType.Email,
     responseMetadata,
   }
+
+  const saveEmailSubmissionMetadataBasedOnFormSettings =
+    async (): Promise<IEmailSubmissionSchema | null> => {
+      if (form.isSingleSubmission && form.authType !== FormAuthType.NIL) {
+        if (!submitterId) {
+          return Promise.reject(
+            new ApplicationError(
+              'submitterId must be defined for isSingleSubmission enabled form',
+            ),
+          )
+        }
+        return EmailSubmissionModel.saveIfSubmitterIdIsUnique(
+          form._id,
+          submitterId,
+          params,
+        )
+      }
+      return EmailSubmissionModel.create(params)
+    }
+
   return ResultAsync.fromPromise(
-    EmailSubmissionModel.create(params),
+    saveEmailSubmissionMetadataBasedOnFormSettings(),
     (error) => {
       logger.error({
         message: 'Error while saving submission to database',

@@ -100,6 +100,14 @@ export const updateFormNricMask: UpdateFormFn<'isNricMaskEnabled'> = async (
   })
 }
 
+export const updateIsSingleSubmission: UpdateFormFn<
+  'isSingleSubmission'
+> = async (formId, newIsSingleSubmission) => {
+  return updateFormSettings(formId, {
+    isSingleSubmission: newIsSingleSubmission,
+  })
+}
+
 export const updateFormEsrvcId: UpdateFormFn<'esrvcId'> = async (
   formId,
   newEsrvcId,

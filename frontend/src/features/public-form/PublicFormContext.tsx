@@ -66,6 +66,9 @@ export interface PublicFormContextProps
   /** Sets the current number of visible fields in the form in public forms only*/
   setNumVisibleFields?: Dispatch<SetStateAction<number>>
 
+  hasSingleSubmissionValidationError: boolean
+  setHasSingleSubmissionValidationError: Dispatch<SetStateAction<boolean>>
+
   encryptedPreviousSubmission?: MultirespondentSubmissionDto
   previousSubmission?: ReturnType<typeof decryptSubmission>
   previousAttachments?: Record<string, ArrayBuffer>
