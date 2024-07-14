@@ -159,7 +159,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.24.3",
-    "@babel/plugin-transform-runtime": "^7.21.4",
+    "@babel/plugin-transform-runtime": "^7.24.7",
     "@babel/preset-env": "^7.22.5",
     "@opengovsg/credits-generator": "^1.0.6",
     "@opengovsg/mockpass": "^4.1.0",
