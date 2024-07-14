@@ -162,7 +162,7 @@
     "@babel/plugin-transform-runtime": "^7.21.4",
     "@babel/preset-env": "^7.22.5",
     "@opengovsg/credits-generator": "^1.0.6",
-    "@opengovsg/mockpass": "^4.1.0",
+    "@opengovsg/mockpass": "^4.3.2",
     "@playwright/test": "^1.45.1",
     "@stoplight/prism-cli": "^5.5.4",
     "@types/bcrypt": "^5.0.0",
