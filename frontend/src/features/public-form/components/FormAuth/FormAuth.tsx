@@ -2,7 +2,10 @@ import { useMemo } from 'react'
 import { BiLogInCircle } from 'react-icons/bi'
 import { Box, Stack, Text } from '@chakra-ui/react'
 
+import { FORM_SINGLE_SUBMISSION_VALIDATION_ERROR_MESSAGE } from '~shared/constants'
 import { FormAuthType } from '~shared/types/form'
+
+import InlineMessage from '~/components/InlineMessage'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
@@ -14,9 +17,13 @@ import { AuthImageSvgr } from './AuthImageSvgr'
 
 export interface FormAuthProps {
   authType: Exclude<FormAuthType, FormAuthType.NIL>
+  hasSingleSubmissionValidationError: boolean
 }
 
-export const FormAuth = ({ authType }: FormAuthProps): JSX.Element => {
+export const FormAuth = ({
+  authType,
+  hasSingleSubmissionValidationError,
+}: FormAuthProps): JSX.Element => {
   const { formId, form } = usePublicFormContext()
 
   const buttonColorScheme = useMemo(() => {
@@ -80,6 +87,11 @@ export const FormAuth = ({ authType }: FormAuthProps): JSX.Element => {
         >
           {displayedInfo.helpText}
         </Text>
+        {hasSingleSubmissionValidationError ? (
+          <InlineMessage variant="error">
+            {FORM_SINGLE_SUBMISSION_VALIDATION_ERROR_MESSAGE}
+          </InlineMessage>
+        ) : null}
       </Stack>
     </Box>
   )

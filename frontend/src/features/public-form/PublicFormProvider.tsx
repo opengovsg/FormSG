@@ -38,7 +38,10 @@ import { useBrowserStm } from '~hooks/payments'
 import { useTimeout } from '~hooks/useTimeout'
 import { useToast } from '~hooks/useToast'
 import { isKeypairValid } from '~utils/secretKeyValidation'
-import { HttpError } from '~services/ApiService'
+import {
+  HttpError,
+  SingleSubmissionValidationError,
+} from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
@@ -131,6 +134,10 @@ export const PublicFormProvider = ({
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
   const [numVisibleFields, setNumVisibleFields] = useState(0)
+  const [
+    hasSingleSubmissionValidationError,
+    setHasSingleSubmissionValidationError,
+  ] = useState(false)
 
   const {
     data,
@@ -147,6 +154,18 @@ export const PublicFormProvider = ({
   if (data?.form.isNricMaskEnabled && data.spcpSession?.userName) {
     data.spcpSession.userName = maskNric(data.spcpSession.userName)
   }
+
+  useEffect(() => {
+    if (
+      data?.form.isSingleSubmission &&
+      data.hasSingleSubmissionValidationFailure
+    ) {
+      setHasSingleSubmissionValidationError(true)
+    }
+  }, [
+    data?.form.isSingleSubmission,
+    data?.hasSingleSubmissionValidationFailure,
+  ])
 
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
     useCommonFormProvider(formId)
@@ -438,6 +457,11 @@ export const PublicFormProvider = ({
 
   const { handleLogoutMutation } = usePublicAuthMutations(formId)
 
+  const handleLogout = useCallback(() => {
+    if (!data?.form || data.form.authType === FormAuthType.NIL) return
+    return handleLogoutMutation.mutate(data.form.authType)
+  }, [data?.form, handleLogoutMutation])
+
   const navigate = useNavigate()
   const [, storePaymentMemory] = useBrowserStm(formId)
   const handleSubmitForm: SubmitHandler<FormFieldValues> = useCallback(
@@ -520,11 +544,27 @@ export const PublicFormProvider = ({
         submissionId: string
         timestamp: number
       }) => {
+        if (
+          data &&
+          form.isSingleSubmission &&
+          form.authType !== FormAuthType.NIL
+        ) {
+          data.spcpSession = undefined
+        }
+        setHasSingleSubmissionValidationError(false)
         setSubmissionData({
           id: submissionId,
           timestamp,
         })
         trackSubmitForm(form)
+      }
+
+      const handleError = (error: Error, form: PublicFormDto) => {
+        if (error instanceof SingleSubmissionValidationError) {
+          setHasSingleSubmissionValidationError(true)
+        } else {
+          showErrorToast(error, form)
+        }
       }
 
       switch (form.responseMode) {
@@ -561,7 +601,7 @@ export const PublicFormProvider = ({
                     },
                   },
                 })
-                showErrorToast(error, form)
+                handleError(error, form)
               })
           }
 
@@ -607,7 +647,7 @@ export const PublicFormProvider = ({
                     axiosDebugFlow()
                     return submitEmailFormWithFetch()
                   } else {
-                    showErrorToast(error, form)
+                    handleError(error, form)
                   }
                 })
             )
@@ -666,6 +706,14 @@ export const PublicFormProvider = ({
                       storePaymentMemory(paymentData.paymentId)
                       return
                     }
+                    if (
+                      data &&
+                      form.isSingleSubmission &&
+                      form.authType !== FormAuthType.NIL
+                    ) {
+                      data.spcpSession = undefined
+                    }
+                    setHasSingleSubmissionValidationError(false)
                     setSubmissionData({
                       id: submissionId,
                       timestamp,
@@ -686,7 +734,7 @@ export const PublicFormProvider = ({
                     },
                   },
                 })
-                showErrorToast(error, form)
+                handleError(error, form)
               })
           }
 
@@ -716,12 +764,19 @@ export const PublicFormProvider = ({
                   paymentData,
                 }) => {
                   trackSubmitForm(form)
-
                   if (paymentData) {
                     navigate(getPaymentPageUrl(formId, paymentData.paymentId))
                     storePaymentMemory(paymentData.paymentId)
                     return
                   }
+                  if (
+                    data &&
+                    form.isSingleSubmission &&
+                    form.authType !== FormAuthType.NIL
+                  ) {
+                    data.spcpSession = undefined
+                  }
+                  setHasSingleSubmissionValidationError(false)
                   setSubmissionData({
                     id: submissionId,
                     timestamp,
@@ -748,7 +803,7 @@ export const PublicFormProvider = ({
                 // defaults to the safest option of storage submission without virus scanning
                 return submitStorageFormWithFetch()
               } else {
-                showErrorToast(error, form)
+                handleError(error, form)
               }
             })
         }
@@ -798,11 +853,6 @@ export const PublicFormProvider = ({
 
   useTimeout(generateVfnExpiryToast, expiryInMs)
 
-  const handleLogout = useCallback(() => {
-    if (!data?.form || data.form.authType === FormAuthType.NIL) return
-    return handleLogoutMutation.mutate(data.form.authType)
-  }, [data?.form, handleLogoutMutation])
-
   const isAuthRequired = useMemo(
     () =>
       !!data?.form &&
@@ -831,6 +881,8 @@ export const PublicFormProvider = ({
         isPaymentEnabled,
         isPreview: false,
         setNumVisibleFields,
+        hasSingleSubmissionValidationError,
+        setHasSingleSubmissionValidationError,
         encryptedPreviousSubmission,
         previousSubmission,
         previousAttachments,

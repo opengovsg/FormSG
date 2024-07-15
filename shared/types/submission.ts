@@ -27,6 +27,7 @@ export type ResponseMetadata = z.infer<typeof ResponseMetadata>
 export const SubmissionBase = z.object({
   form: z.string(),
   authType: z.nativeEnum(FormAuthType),
+  submitterId: z.string().optional(),
   myInfoFields: z.array(z.nativeEnum(MyInfoAttribute)).optional(),
   submissionType: z.nativeEnum(SubmissionType),
   responseMetadata: ResponseMetadata.optional(),
@@ -234,7 +235,10 @@ export type SubmissionResponseDto = {
   paymentData?: PaymentSubmissionData
 }
 
-export type SubmissionErrorDto = ErrorDto & { spcpSubmissionFailure?: true }
+export type SubmissionErrorDto = ErrorDto & {
+  spcpSubmissionFailure?: true
+  hasSingleSubmissionValidationFailure?: true
+}
 
 export type SubmissionCountQueryDto =
   | {

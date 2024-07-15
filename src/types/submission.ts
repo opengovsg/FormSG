@@ -1,5 +1,7 @@
 import { Cursor as QueryCursor, Document, Model, QueryOptions } from 'mongoose'
 
+import { EmailSubmissionContent } from 'src/app/modules/submission/email-submission/email-submission.types'
+import { EncryptSubmissionContent } from 'src/app/modules/submission/encrypt-submission/encrypt-submission.types'
 import { PaymentWebhookEventObject } from 'src/app/modules/webhook/webhook.types'
 
 import {
@@ -62,10 +64,32 @@ export interface ISubmissionSchema extends SubmissionBase, Document {
 
 export type IPendingSubmissionSchema = ISubmissionSchema
 
+export type SaveIfSubmitterIdIsUniqueType = EmailSaveIfSubmitterIdIsUniqueType &
+  EncryptSaveIfSubmitterIdIsUniqueType
+
+type EmailSaveIfSubmitterIdIsUniqueType = (
+  formId: string,
+  submitterId: string,
+  submissionContent: EmailSubmissionContent,
+) => Promise<IEmailSubmissionSchema | null>
+
+type EncryptSaveIfSubmitterIdIsUniqueType = (
+  formId: string,
+  submitterId: string,
+  submissionContent: EncryptSubmissionContent,
+) => Promise<IEncryptedSubmissionSchema | null>
+
 export interface ISubmissionModel extends Model<ISubmissionSchema> {
   findFormsWithSubsAbove(
     minSubCount: number,
   ): Promise<FindFormsWithSubsAboveResult[]>
+  /**
+   * Creates a new submission only if provided submitterId is unique.
+   * This method ensures that isSingleSubmission is enforced.
+   * @param submitterId uniquely identifies the submitter
+   * @returns created submission if successful, null otherwise
+   */
+  saveIfSubmitterIdIsUnique: SaveIfSubmitterIdIsUniqueType
 }
 
 export interface IEmailSubmissionSchema

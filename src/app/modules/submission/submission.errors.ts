@@ -81,6 +81,12 @@ export class ResponseModeError extends ApplicationError {
   }
 }
 
+export class UnsupportedSettingsError extends ApplicationError {
+  constructor(reason: string) {
+    super(`Unsupported form setting found: ${reason}`)
+  }
+}
+
 /**
  * Attachment greater than size limit
  */
