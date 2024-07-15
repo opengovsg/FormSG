@@ -117,3 +117,9 @@ FORMSG_SDK_MODE=
 # Used to check if BE Server is currently running on local development environment
 # One of boolean: "true" | "false"
 # USE_MOCK_TWILIO=
+
+## For magic form builder
+# GROWTHBOOK_CLIENT_KEY= # for feature flags
+# AZURE_OPENAI_API_KEY=
+# AZURE_OPENAI_ENDPOINT=
+# AZURE_OPENAI_DEPLOYMENT_ID= # same as deployment name
