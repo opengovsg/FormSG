@@ -40,6 +40,7 @@ export interface Fields {
       placeholder: string
     }
     duplicateOptionsError: string
+    otherInvalidInputError: string
   }
   checkbox: {
     selectionLimit: {

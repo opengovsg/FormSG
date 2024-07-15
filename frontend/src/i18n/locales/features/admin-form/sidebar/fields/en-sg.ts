@@ -40,6 +40,7 @@ export const enSG: Fields = {
       placeholder: 'Enter one option per line',
     },
     duplicateOptionsError: 'Please remove duplicate options',
+    otherInvalidInputError: 'Please specify a value for the "others" option',
   },
   checkbox: {
     selectionLimit: {
