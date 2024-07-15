@@ -14,6 +14,7 @@ export const FormFieldsContainer = (): JSX.Element | null => {
   const {
     form,
     isAuthRequired,
+    hasSingleSubmissionValidationError,
     isLoading,
     handleSubmitForm,
     submissionData,
@@ -35,9 +36,15 @@ export const FormFieldsContainer = (): JSX.Element | null => {
       return <div>Something went wrong</div>
     }
 
-    // Redundant conditional for type narrowing
     if (isAuthRequired && form.authType !== FormAuthType.NIL) {
-      return <FormAuth authType={form.authType} />
+      return (
+        <FormAuth
+          authType={form.authType}
+          hasSingleSubmissionValidationError={
+            hasSingleSubmissionValidationError
+          }
+        />
+      )
     }
 
     return (
@@ -67,6 +74,7 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     previousAttachments,
     workflowStep,
     handleSubmitForm,
+    hasSingleSubmissionValidationError,
   ])
 
   if (submissionData) return null

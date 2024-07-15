@@ -9,6 +9,7 @@ import {
   FormFieldDto,
   FormResponseMode,
   FormStatus,
+  PublicFormDto,
 } from '../../../../shared/types'
 import {
   IEmailFormModel,
@@ -272,6 +273,50 @@ export const checkFormSubmissionLimitAndDeactivateForm = (
       ),
     )
   })
+}
+
+/**
+ * Verify that if the form is a single submission per submitterId form, the submitterId does not exist.
+ * @param form the form to check for
+ * @param submitterId submitterId of current submitter
+ * @returns ok(true) if the form is not a single submission per submitterId form or the submitterId has not responded before
+ * @returns ok(false) if the form is a single submission per submitterId form and submitterId has already responded
+ * @returns err(ApplicationError) if the submitterId is not found
+ * @returns err(PossibleDatabaseError) if an error occurred while querying the database to check for previous responses by same submitterId
+ */
+export const checkHasSingleSubmissionValidationFailure = (
+  form: PublicFormDto,
+  submitterId: string,
+): ResultAsync<boolean, ApplicationError | PossibleDatabaseError> => {
+  const logMeta = {
+    action: 'checkHasSingleSubmissionValidationFailure',
+    formId: form._id,
+  }
+  if (!form.isSingleSubmission) {
+    return okAsync(false)
+  }
+
+  if (!submitterId) {
+    return errAsync(
+      new ApplicationError(
+        'Cannot find submitterId which is required for single submission per submitterId form',
+      ),
+    )
+  }
+  return ResultAsync.fromPromise(
+    SubmissionModel.exists({
+      form: form._id,
+      submitterId,
+    }),
+    (error) => {
+      logger.error({
+        message: 'Error while counting submissions for form',
+        meta: logMeta,
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((result) => okAsync(result !== null))
 }
 
 export const getFormModelByResponseMode = (

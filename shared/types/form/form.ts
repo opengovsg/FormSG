@@ -146,6 +146,7 @@ export interface FormBase {
   hasIssueNotification: boolean
   authType: FormAuthType
   isNricMaskEnabled: boolean
+  isSingleSubmission: boolean
 
   status: FormStatus
 
@@ -303,6 +304,7 @@ export type PublicFormViewDto = {
   isIntranetUser?: boolean
   myInfoError?: true
   myInfoChildrenBirthRecords?: MyInfoChildData
+  hasSingleSubmissionValidationFailure?: true
 }
 
 export type PreviewFormViewDto = Pick<PublicFormViewDto, 'form' | 'spcpSession'>

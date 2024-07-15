@@ -39,6 +39,7 @@ import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.midd
 import { Pipeline } from '../../../utils/pipeline-middleware'
 import { createReqMeta } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
+import { ApplicationError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
@@ -56,7 +57,11 @@ import * as ReceiverMiddleware from '../receiver/receiver.middleware'
 import { SubmissionFailedError } from '../submission.errors'
 import { uploadAttachments } from '../submission.service'
 import { ProcessedFieldResponse } from '../submission.types'
-import { mapRouteError } from '../submission.utils'
+import {
+  generateHashedSubmitterId,
+  getCookieNameByAuthType,
+  mapRouteError,
+} from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import {
@@ -139,7 +144,7 @@ const submitEncryptModeForm = async (
   const parsedResponses = new ParsedResponsesObject(req.body.responses)
 
   // Checks if user is SPCP-authenticated before allowing submission
-  let uinFin
+  let userName
   let userInfo
   const { authType } = formDef
   switch (authType) {
@@ -162,7 +167,7 @@ const submitEncryptModeForm = async (
           spcpSubmissionFailure: true,
         })
       }
-      uinFin = jwtPayloadResult.value.userName
+      userName = jwtPayloadResult.value.userName
       break
     }
     case FormAuthType.CP: {
@@ -184,7 +189,7 @@ const submitEncryptModeForm = async (
           spcpSubmissionFailure: true,
         })
       }
-      uinFin = jwtPayloadResult.value.userName
+      userName = jwtPayloadResult.value.userName
       userInfo = jwtPayloadResult.value.userInfo
       break
     }
@@ -224,7 +229,7 @@ const submitEncryptModeForm = async (
           spcpSubmissionFailure: true,
         })
       }
-      uinFin = jwtPayloadResult.value
+      userName = jwtPayloadResult.value
       break
     }
     case FormAuthType.SGID: {
@@ -245,14 +250,20 @@ const submitEncryptModeForm = async (
           spcpSubmissionFailure: true,
         })
       }
-      uinFin = jwtPayloadResult.value.userName
+      userName = jwtPayloadResult.value.userName
       break
     }
   }
 
+  let submitterId
+  // Generate submitterId for Singpass auth modes
+  if (userName && form.authType !== FormAuthType.NIL) {
+    submitterId = generateHashedSubmitterId(userName, form.id)
+  }
+
   // Mask if Nric masking is enabled
   if (
-    uinFin &&
+    userName &&
     form.isNricMaskEnabled &&
     (form.authType === FormAuthType.SP ||
       form.authType === FormAuthType.CP ||
@@ -260,16 +271,16 @@ const submitEncryptModeForm = async (
       form.authType === FormAuthType.MyInfo ||
       form.authType === FormAuthType.SGID_MyInfo)
   ) {
-    uinFin = maskNric(uinFin)
+    userName = maskNric(userName)
   }
 
   // Add NDI responses
   switch (form.authType) {
     case FormAuthType.CP: {
-      if (!uinFin || !userInfo) break
+      if (!userName || !userInfo) break
       parsedResponses.addNdiResponses({
         authType,
-        uinFin,
+        uinFin: userName,
         userInfo,
       })
       break
@@ -278,10 +289,10 @@ const submitEncryptModeForm = async (
     case FormAuthType.SGID:
     case FormAuthType.MyInfo:
     case FormAuthType.SGID_MyInfo: {
-      if (!uinFin) break
+      if (!userName) break
       parsedResponses.addNdiResponses({
         authType: form.authType,
-        uinFin,
+        uinFin: userName,
       })
       break
     }
@@ -299,7 +310,7 @@ const submitEncryptModeForm = async (
     const encryptVerifiedContentResult =
       VerifiedContentService.getVerifiedContent({
         type: form.authType,
-        data: { uinFin, userInfo },
+        data: { uinFin: userName, userInfo },
       }).andThen((verifiedContent) =>
         VerifiedContentService.encryptVerifiedContent({
           verifiedContent,
@@ -348,6 +359,7 @@ const submitEncryptModeForm = async (
   const submissionContent: EncryptSubmissionContent = {
     form: form._id,
     authType: form.authType,
+    submitterId,
     myInfoFields: form.getUniqueMyInfoAttrs(),
     encryptedContent: encryptedContent,
     verifiedContent: verified,
@@ -656,9 +668,32 @@ const _createSubmission = async ({
   submissionContent: EncryptSubmissionContent
   logMeta: CustomLoggerParams['meta']
 }) => {
-  const submission = new EncryptSubmission(submissionContent)
+  let submission
   try {
-    await submission.save()
+    if (form.isSingleSubmission && form.authType !== FormAuthType.NIL) {
+      if (!submissionContent.submitterId) {
+        throw new ApplicationError(
+          'Failed to find submitterId which is mandatory for isSingleSubmission enabled forms',
+        )
+      }
+      submission = await EncryptSubmission.saveIfSubmitterIdIsUnique(
+        form.id,
+        submissionContent.submitterId,
+        submissionContent,
+      )
+
+      // handles the case where submission has already been created for given submissionSingpassId
+      if (!submission) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          message:
+            'Your NRIC/FIN/UEN has already been used to respond to this form.',
+          hasSingleSubmissionValidationFailure: true,
+        })
+      }
+    } else {
+      submission = new EncryptSubmission(submissionContent)
+      await submission.save()
+    }
   } catch (err) {
     logger.error({
       message: 'Encrypt submission save error',
@@ -671,7 +706,6 @@ const _createSubmission = async ({
     return res.status(StatusCodes.BAD_REQUEST).json({
       message:
         'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
-      submissionId: submission._id,
     })
   }
 
@@ -730,6 +764,11 @@ const _createSubmission = async ({
   }
 
   // Send success back to client
+  // clear cookies to log out user if isSingleSubmission form
+  if (form.authType !== FormAuthType.NIL && form.isSingleSubmission) {
+    const authCookieName = getCookieNameByAuthType(form.authType)
+    res.clearCookie(authCookieName)
+  }
   res.json({
     message: 'Form submission successful.',
     submissionId,
