@@ -22,7 +22,7 @@ export const setFormTags = (form: IPopulatedForm) => {
 export const setErrorCode = (error: ApplicationError) => {
   const span = tracer.scope().active()
   if (span && error.code) {
-    span.setTag('error.type', String(error.code))
+    span.setTag('error.type', error.code)
     span.setTag('error.message', `[${error.code}] ${error.message}`)
     if (error.stack) span.setTag('error.stack', `${error.stack}`)
   }
