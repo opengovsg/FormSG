@@ -34,10 +34,7 @@ import {
   UnsupportedSettingsError,
 } from '../submission.errors'
 import { sendEmailConfirmations } from '../submission.service'
-import {
-  extractEmailConfirmationData,
-  mapAttachmentsFromResponses,
-} from '../submission.utils'
+import { extractEmailConfirmationData } from '../submission.utils'
 
 import { CHARTS_MAX_SUBMISSION_RESULTS } from './encrypt-submission.constants'
 import { SaveEncryptSubmissionParams } from './encrypt-submission.types'
