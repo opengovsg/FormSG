@@ -601,16 +601,16 @@ export class MailService {
     // Create a copy of attachments for attaching of autoreply pdf if needed.
     const attachmentsWithAutoreplyPdf = [...attachments]
     const isEncryptForm = form?.responseMode === FormResponseMode.Encrypt
-    const isPaymentDisabled =
+    const isPaymentEnabled =
       isEncryptForm &&
-      (form as IPopulatedEncryptedForm).payments_channel.channel ===
+      (form as IPopulatedEncryptedForm).payments_channel.channel !==
         PaymentChannel.Unconnected
 
     // Generate autoreply pdf and append into attachments if any of the mail has
     // to include a form summary.
     if (
       autoReplyMailDatas.some((data) => data.includeFormSummary) &&
-      isPaymentDisabled
+      !isPaymentEnabled
     ) {
       const pdfBufferResult = await generateAutoreplyPdf(renderData)
       if (pdfBufferResult.isErr()) {
