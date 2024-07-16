@@ -3,6 +3,7 @@ import { RegisterOptions } from 'react-hook-form'
 import { Box, FormControl, useMergeRefs } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
+import { PaymentChannel } from '~shared/types'
 import { EmailFieldBase } from '~shared/types/field'
 import { FormResponseMode } from '~shared/types/form'
 import { validateEmailDomains } from '~shared/utils/email-domain-validation'
@@ -129,18 +130,19 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
   )
 
   const { data: form } = useCreateTabForm()
-  const isPdfResponseEnabled = useMemo(
-    () => form?.responseMode !== FormResponseMode.Multirespondent,
-    [form],
-  )
+
+  const isEncryptMode = form?.responseMode === FormResponseMode.Encrypt
+  const isPaymentDisabled =
+    isEncryptMode &&
+    form.payments_channel.channel === PaymentChannel.Unconnected
+
+  const isPdfResponseEnabled =
+    form?.responseMode !== FormResponseMode.Multirespondent && isPaymentDisabled
 
   // email confirmation is not supported on MRF
-  const isToggleEmailConfirmationDisabled = useMemo(
-    () =>
-      form?.responseMode === FormResponseMode.Multirespondent &&
-      !field.autoReplyOptions.hasAutoReply,
-    [field.autoReplyOptions.hasAutoReply, form?.responseMode],
-  )
+  const isToggleEmailConfirmationDisabled =
+    form?.responseMode === FormResponseMode.Multirespondent &&
+    !field.autoReplyOptions.hasAutoReply
 
   return (
     <CreatePageDrawerContentContainer>

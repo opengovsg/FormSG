@@ -463,6 +463,21 @@ export const encryptSubmission = async (
       req.body.version,
     )
 
+  // Autoreplies are sent after the submission has been saved in the DB,
+  // but attachments are stripped here. To ensure that users receive their
+  // attachments in the autoreply we keep the attachments in req.formsg
+  if (req.formsg) {
+    req.formsg.unencryptedAttachments = req.body.responses
+      .filter(isAttachmentResponse)
+      .map((response) => {
+        return {
+          filename: response.filename,
+          content: response.content,
+          fieldId: response._id,
+        }
+      })
+  }
+
   const strippedBodyResponses = req.body.responses.map((response) => {
     if (isAttachmentResponse(response)) {
       return {

@@ -8,6 +8,7 @@ import {
 } from '../../../../../shared/types'
 import {
   FieldResponse,
+  IAttachmentInfo,
   IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
   IPopulatedForm,
@@ -25,6 +26,7 @@ import {
   WebhookValidationError,
 } from '../../webhook/webhook.errors'
 import { WebhookFactory } from '../../webhook/webhook.factory'
+import { SubmissionEmailObj } from '../email-submission/email-submission.util'
 import {
   ResponseModeError,
   SendEmailConfirmationError,
@@ -32,7 +34,10 @@ import {
   UnsupportedSettingsError,
 } from '../submission.errors'
 import { sendEmailConfirmations } from '../submission.service'
-import { extractEmailConfirmationData } from '../submission.utils'
+import {
+  extractEmailConfirmationData,
+  mapAttachmentsFromResponses,
+} from '../submission.utils'
 
 import { CHARTS_MAX_SUBMISSION_RESULTS } from './encrypt-submission.constants'
 import { SaveEncryptSubmissionParams } from './encrypt-submission.types'
@@ -141,6 +146,8 @@ export const createEncryptSubmissionWithoutSave = ({
 export const performEncryptPostSubmissionActions = (
   submission: IEncryptedSubmissionSchema,
   responses: FieldResponse[],
+  emailData?: SubmissionEmailObj,
+  attachments?: IAttachmentInfo[],
 ): ResultAsync<
   true,
   | FormNotFoundError
@@ -171,6 +178,8 @@ export const performEncryptPostSubmissionActions = (
       return sendEmailConfirmations({
         form,
         submission,
+        attachments,
+        responsesData: emailData?.autoReplyData,
         recipientData: extractEmailConfirmationData(
           responses,
           form.form_fields,

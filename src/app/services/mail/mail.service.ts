@@ -7,6 +7,7 @@ import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
 
+import { FormResponseMode, PaymentChannel } from '../../../../shared/types'
 import { centsToDollars } from '../../../../shared/utils/payments'
 import { getPaymentInvoiceDownloadUrlPath } from '../../../../shared/utils/urls'
 import {
@@ -18,6 +19,7 @@ import {
   EmailAdminDataField,
   IFormDocument,
   IFormHasEmailSchema,
+  IPopulatedEncryptedForm,
   IPopulatedForm,
   IPopulatedUser,
   ISubmissionSchema,
@@ -598,10 +600,27 @@ export class MailService {
 
     // Create a copy of attachments for attaching of autoreply pdf if needed.
     const attachmentsWithAutoreplyPdf = [...attachments]
+    // TODO: or i can disable for payment forms here itself
+    const isEncryptForm = form?.responseMode === FormResponseMode.Encrypt
+    const isPaymentForm =
+      isEncryptForm &&
+      (form as IPopulatedEncryptedForm).payments_channel.channel !==
+        PaymentChannel.Unconnected
+
+    console.log({
+      tejas: [],
+      isPaymentForm: isPaymentForm,
+      isEncryptForm: isEncryptForm,
+      autoReplyMailDatas: autoReplyMailDatas,
+      form: form,
+    })
 
     // Generate autoreply pdf and append into attachments if any of the mail has
     // to include a form summary.
-    if (autoReplyMailDatas.some((data) => data.includeFormSummary)) {
+    if (
+      autoReplyMailDatas.some((data) => data.includeFormSummary) &&
+      !isPaymentForm
+    ) {
       const pdfBufferResult = await generateAutoreplyPdf(renderData)
       if (pdfBufferResult.isErr()) {
         return Promise.allSettled([err(pdfBufferResult.error)])

@@ -1,8 +1,8 @@
 import { Schema } from 'mongoose'
 
-import { FormResponseMode } from '../../../../shared/types'
+import { FormResponseMode, PaymentChannel } from '../../../../shared/types'
 import { validateEmailDomains } from '../../../../shared/utils/email-domain-validation'
-import { IEmailFieldSchema } from '../../../types'
+import { IEmailFieldSchema, IEncryptedFormSchema } from '../../../types'
 
 const createEmailFieldSchema = (): Schema<IEmailFieldSchema> => {
   const EmailFieldSchema = new Schema<IEmailFieldSchema>({
@@ -32,7 +32,11 @@ const createEmailFieldSchema = (): Schema<IEmailFieldSchema> => {
         default: false,
         set: function (this: IEmailFieldSchema, v: boolean) {
           // Set to false if mrf mode regardless of initial value.
-          return this.parent().responseMode === FormResponseMode.Multirespondent
+          return this.parent().responseMode ===
+            FormResponseMode.Multirespondent ||
+            (this.parent().responseMode === FormResponseMode.Encrypt &&
+              (this.parent() as IEncryptedFormSchema).payments_channel
+                .channel !== PaymentChannel.Unconnected)
             ? false
             : v
         },
