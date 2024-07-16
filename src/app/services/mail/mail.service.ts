@@ -600,26 +600,17 @@ export class MailService {
 
     // Create a copy of attachments for attaching of autoreply pdf if needed.
     const attachmentsWithAutoreplyPdf = [...attachments]
-    // TODO: or i can disable for payment forms here itself
     const isEncryptForm = form?.responseMode === FormResponseMode.Encrypt
-    const isPaymentForm =
+    const isPaymentDisabled =
       isEncryptForm &&
-      (form as IPopulatedEncryptedForm).payments_channel.channel !==
+      (form as IPopulatedEncryptedForm).payments_channel.channel ===
         PaymentChannel.Unconnected
-
-    console.log({
-      tejas: [],
-      isPaymentForm: isPaymentForm,
-      isEncryptForm: isEncryptForm,
-      autoReplyMailDatas: autoReplyMailDatas,
-      form: form,
-    })
 
     // Generate autoreply pdf and append into attachments if any of the mail has
     // to include a form summary.
     if (
       autoReplyMailDatas.some((data) => data.includeFormSummary) &&
-      !isPaymentForm
+      isPaymentDisabled
     ) {
       const pdfBufferResult = await generateAutoreplyPdf(renderData)
       if (pdfBufferResult.isErr()) {
