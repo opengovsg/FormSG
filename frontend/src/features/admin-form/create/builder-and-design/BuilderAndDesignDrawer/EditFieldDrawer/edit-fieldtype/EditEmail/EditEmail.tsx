@@ -133,12 +133,12 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
   const { data: form } = useCreateTabForm()
 
   const isEncryptMode = form?.responseMode === FormResponseMode.Encrypt
-  const isPaymentDisabled =
+  const isPaymentDisabledForm =
     isEncryptMode &&
     form.payments_channel.channel === PaymentChannel.Unconnected
 
   const isPdfResponseEnabled =
-    form?.responseMode !== FormResponseMode.Multirespondent && isPaymentDisabled
+    form?.responseMode === FormResponseMode.Email || isPaymentDisabledForm
 
   const pdfResponseToggleDescription = useMemo(() => {
     if (!isPdfResponseEnabled) {
