@@ -65,7 +65,7 @@ export type MailOptions = Omit<Mail.Options, 'to'> & {
 export type SubmissionToAdminHtmlData = {
   refNo: string
   formTitle: string
-  formId: string
+  responseLink: string
   responseMode: string
   submissionTime: string
   formData: EmailAdminDataField[]

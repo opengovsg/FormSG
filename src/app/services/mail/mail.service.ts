@@ -1,3 +1,4 @@
+import { ADMIN_FORM_PAGE_RESPONSES_INDIVIDUAL } from '__tests__/e2e/constants'
 import { render } from '@react-email/render'
 import tracer from 'dd-trace'
 import { get, inRange, isEmpty } from 'lodash'
@@ -495,9 +496,13 @@ export class MailService {
       answer: string | number
     }[]
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
+    console.log({ tejas: `${process.env.APP_URL}` })
     const refNo = String(submission.id)
     const formTitle = form.title
-    const formId: string = String(form._id)
+    const responseLink: string =
+      process.env.NODE_ENV === 'production'
+        ? `https://form.gov.sg/admin/form/${form._id}/results/${refNo}`
+        : `localhost:3000/admin/form/${form._id}/results/${refNo}`
     const responseMode: string = form.responseMode
     const submissionTime = moment(submission.created)
       .tz('Asia/Singapore')
@@ -508,7 +513,7 @@ export class MailService {
     const htmlData: SubmissionToAdminHtmlData = {
       appName: this.#appName,
       formTitle,
-      formId,
+      responseLink,
       responseMode,
       refNo,
       submissionTime,

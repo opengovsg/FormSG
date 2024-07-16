@@ -4,8 +4,9 @@
   <body>
     <p>Hello there,</p>
     <p>A "<%= formTitle %>" form was submitted on <%= submissionTime %>.</p>
+    <br/>
     <% if (responseMode === 'encrypt') { %>
-      <p>View this submission and download attachments on <a href="http://localhost:3000/admin/form/<%= formId %>/results/<%= refNo %>">FormSG</a></p>
+      <p><a href="<%= responseLink %>">View this submission and download attachments on FormSG</a></p>
     <% } else { %>
       <br />
     <% } %>
