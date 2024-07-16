@@ -254,9 +254,27 @@ export class MyInfoServiceClass {
     myInfoData: MyInfoData | SGIDMyInfoData,
     currFormFields: LeanDocument<IFieldSchema[]>,
   ): ResultAsync<PossiblyPrefilledField[], MyInfoHashingError | DatabaseError> {
+    const logMeta = {
+      action: 'prefillAndSaveMyInfoFields',
+    }
+
+    logger.info({
+      message: 'Prefilling fields with data from myinfo fields',
+      meta: { ...logMeta, myInfoData, currFormFields },
+    })
+
     const allChildAttrs: InternalAttr[] = []
     const prefilledFields = currFormFields.map((field) => {
       const myInfoAttr = getMyInfoAttr(field)
+      logger.info({
+        message: 'Entering field data in myinfo',
+        meta: {
+          ...logMeta,
+          field,
+          myInfoAttr,
+          myInfoData,
+        },
+      })
       // Children field prefilling is handled by the frontend.
       if (isMyInfoChildrenBirthRecords(field.myInfo?.attr)) {
         // Compound field, explode subfields.
@@ -276,6 +294,10 @@ export class MyInfoServiceClass {
       // Check if field value exists in our constants lists. If it doesn't, log the error
       if (fieldValue) {
         const myInfoConstantsList = getMyInfoAttributeConstantsList(myInfoAttr)
+        logger.info({
+          message: 'Field value exists in MyInfo data',
+          meta: { ...logMeta, myInfoConstantsList },
+        })
         if (myInfoConstantsList) {
           logIfFieldValueNotInMyinfoList(
             fieldValue,
@@ -290,6 +312,17 @@ export class MyInfoServiceClass {
       prefilledField.fieldValue = fieldValue
       // Disable field
       prefilledField.disabled = isReadOnly
+
+      logger.info({
+        message: 'Positive field data in myinfo',
+        meta: {
+          ...logMeta,
+          fieldValue,
+          myInfoAttr,
+          myInfoData,
+          prefilledField,
+        },
+      })
       return prefilledField
     })
     return this.saveMyInfoHashes(

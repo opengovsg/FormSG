@@ -392,6 +392,14 @@ export class MyInfoData
       // Above cases should be exhaustive for all attributes supported by Form.
       // Fall back to undefined as data shape is unknown.
       default:
+        logger.info({
+          message: 'Unknown attribute found in Singpass MyInfo field',
+          meta: {
+            action: '_formatFieldValue',
+            attr,
+            personData: this.#personData,
+          },
+        })
         return undefined
     }
   }
