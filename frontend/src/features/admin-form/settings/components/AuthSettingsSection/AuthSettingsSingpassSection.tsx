@@ -4,6 +4,7 @@ import { FormResponseMode, FormSettings } from '~shared/types/form'
 
 import { FormNricMaskToggle } from './FormNricMaskToggle'
 import { FormSingleSubmissionToggle } from './FormSingleSubmissionToggle'
+import { FormWhitelistAttachmentField } from './FormWhitelistAttachmentField'
 import { SingpassAuthOptionsRadio } from './SingpassAuthOptionsRadio'
 
 export interface AuthSettingsSingpassSectionProps {
@@ -41,6 +42,8 @@ export const AuthSettingsSingpassSection = ({
           />
         </>
       ) : null}
+      <Divider my="2.5rem" />
+      <FormWhitelistAttachmentField />
     </>
   )
 }

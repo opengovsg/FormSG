@@ -42,6 +42,9 @@ export const AttachmentField = ({
     useFormContext<AttachmentFieldInput>()
 
   const maxSizeInBytes = useMemo(() => {
+    if (!schema.attachmentSize) {
+      return
+    }
     return parseInt(schema.attachmentSize) * MB
   }, [schema.attachmentSize])
 
