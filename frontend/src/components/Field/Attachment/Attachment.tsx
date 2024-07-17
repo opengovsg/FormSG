@@ -19,6 +19,7 @@ import { MB } from '~shared/constants/file'
 import { ATTACHMENT_THEME_KEY } from '~theme/components/Field/Attachment'
 import { ThemeColorScheme } from '~theme/foundations/colours'
 
+import { downloadFile } from './utils/downloadFile'
 import { AttachmentDropzone } from './AttachmentDropzone'
 import { AttachmentFileInfo } from './AttachmentFileInfo'
 import {
@@ -78,6 +79,16 @@ export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
    * Show attachment removal button
    */
   enableRemove?: boolean
+
+  /**
+   * Override callback function that is invoked when download button is clicked.
+   */
+  handleDownloadFileOverride?: () => void
+
+  /**
+   * Override callback function that is invoked when remove button is clicked.
+   */
+  handleRemoveFileOverride?: () => void
 }
 
 export const Attachment = forwardRef<AttachmentProps, 'div'>(
@@ -94,6 +105,8 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       title,
       enableDownload,
       enableRemove,
+      handleDownloadFileOverride,
+      handleRemoveFileOverride,
       ...props
     },
     ref,
@@ -220,21 +233,20 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       colorScheme,
     })
 
-    const handleRemoveFile = useCallback(() => {
+    const _handleRemoveFile = useCallback(() => {
       onChange(null)
       rootRef.current?.focus()
     }, [onChange, rootRef])
 
-    const handleDownloadFile = useCallback(() => {
+    const handleRemoveFile = handleRemoveFileOverride ?? _handleRemoveFile
+
+    const _handleDownloadFile = useCallback(() => {
       if (value) {
-        const url = URL.createObjectURL(value)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = value.name
-        a.click()
-        URL.revokeObjectURL(url)
+        downloadFile(value)
       }
     }, [value])
+
+    const handleDownloadFile = handleDownloadFileOverride ?? _handleDownloadFile
 
     // Bunch of memoization to avoid unnecessary re-renders.
     const processedRootProps = useMemo(() => {

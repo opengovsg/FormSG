@@ -13,7 +13,7 @@ export enum AttachmentSize {
 
 export interface AttachmentFieldBase extends FieldBase {
   fieldType: BasicField.Attachment
-  attachmentSize?: AttachmentSize
+  attachmentSize: AttachmentSize
 }
 
 export type AttachmentSizeMapType = {
