@@ -3,6 +3,7 @@ import { cloneDeep } from 'lodash'
 import moment from 'moment-timezone'
 import { err, ok, okAsync } from 'neverthrow'
 import Mail, { Attachment } from 'nodemailer/lib/mailer'
+import { FormResponseMode, PaymentChannel } from 'shared/types'
 
 import { extractFormLinkView } from 'src/app/modules/form/form.utils'
 import {
@@ -17,7 +18,12 @@ import {
   SendAutoReplyEmailsArgs,
 } from 'src/app/services/mail/mail.types'
 import * as MailUtils from 'src/app/services/mail/mail.utils'
-import { BounceType, IPopulatedForm, ISubmissionSchema } from 'src/types'
+import {
+  BounceType,
+  IPopulatedEncryptedForm,
+  IPopulatedForm,
+  ISubmissionSchema,
+} from 'src/types'
 
 import {
   HASH_EXPIRE_AFTER_SECONDS,
@@ -946,6 +952,57 @@ describe('mail.service', () => {
             filename: 'response.pdf',
           },
         ],
+      }
+      const expectedResponse = await Promise.allSettled([ok(true)])
+
+      // Act
+      const actualResult =
+        await mailService.sendAutoReplyEmails(customDataParams)
+
+      // Assert
+      expect(actualResult).toEqual(expectedResponse)
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).toHaveBeenCalledTimes(1)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
+    })
+
+    it.only('should send single autoreply mail without attachment if autoReply.includeFormSummary is true and payment enabled form', async () => {
+      // Arrange
+      sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
+
+      const customDataParams = cloneDeep(MOCK_AUTOREPLY_PARAMS)
+      customDataParams.autoReplyMailDatas[0].includeFormSummary = true
+      const formDef = {
+        ...customDataParams.form,
+        responseMode: FormResponseMode.Encrypt,
+        payments_channel: {
+          channel: PaymentChannel.Stripe,
+        },
+      } as IPopulatedEncryptedForm as IPopulatedForm
+      customDataParams.form = formDef
+
+      const expectedRenderData: AutoreplySummaryRenderData = {
+        formData: MOCK_AUTOREPLY_PARAMS.responsesData,
+        formTitle: MOCK_AUTOREPLY_PARAMS.form.title,
+        formUrl: `${MOCK_APP_URL}/${MOCK_AUTOREPLY_PARAMS.form._id}`,
+        refNo: MOCK_AUTOREPLY_PARAMS.submission.id,
+        submissionTime: moment(MOCK_AUTOREPLY_PARAMS.submission.created)
+          .tz('Asia/Singapore')
+          .format('ddd, DD MMM YYYY hh:mm:ss A'),
+      }
+      const expectedMailBody = (
+        await MailUtils.generateAutoreplyHtml({
+          submissionId: MOCK_AUTOREPLY_PARAMS.submission.id,
+          autoReplyBody: DEFAULT_AUTO_REPLY_BODY,
+          ...expectedRenderData,
+        })
+      )._unsafeUnwrap()
+
+      const expectedArg = {
+        ...defaultExpectedArg,
+        html: expectedMailBody,
+        // Attachments should be concatted with mock pdf response
+        attachments: [...(MOCK_AUTOREPLY_PARAMS.attachments ?? [])],
       }
       const expectedResponse = await Promise.allSettled([ok(true)])
 
