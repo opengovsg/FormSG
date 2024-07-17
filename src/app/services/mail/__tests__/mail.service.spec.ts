@@ -966,7 +966,7 @@ describe('mail.service', () => {
       expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
     })
 
-    it.only('should send single autoreply mail without attachment if autoReply.includeFormSummary is true and payment enabled form', async () => {
+    it('should send single autoreply mail without attachment if autoReply.includeFormSummary is true and payment enabled form', async () => {
       // Arrange
       sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
 
