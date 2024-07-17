@@ -1,6 +1,6 @@
 import { Divider } from '@chakra-ui/react'
 
-import { FormSettings } from '~shared/types/form'
+import { FormResponseMode, FormSettings } from '~shared/types/form'
 
 import { FormNricMaskToggle } from './FormNricMaskToggle'
 import { FormSingleSubmissionToggle } from './FormSingleSubmissionToggle'
@@ -31,11 +31,16 @@ export const AuthSettingsSingpassSection = ({
           <FormNricMaskToggle settings={settings} isDisabled={isFormPublic} />
         </>
       ) : null}
-      <Divider my="2.5rem" />
-      <FormSingleSubmissionToggle
-        settings={settings}
-        isDisabled={isFormPublic}
-      />
+      {settings.isSingleSubmission ||
+      settings.responseMode === FormResponseMode.Encrypt ? (
+        <>
+          <Divider my="2.5rem" />
+          <FormSingleSubmissionToggle
+            settings={settings}
+            isDisabled={isFormPublic}
+          />
+        </>
+      ) : null}
     </>
   )
 }
