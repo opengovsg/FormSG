@@ -84,7 +84,6 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
 
   const watchedHasAllowedEmailDomains = watch('hasAllowedEmailDomains')
   const watchedHasAutoReply = watch('autoReplyOptions.hasAutoReply')
-  const includeFormSummary = watch('autoReplyOptions.includeFormSummary')
 
   const requiredValidationRule = useMemo(
     () => createBaseValidationRules({ required: true }),
@@ -140,11 +139,9 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
   const isPdfResponseEnabled =
     form?.responseMode === FormResponseMode.Email || isPaymentDisabledForm
 
-  const pdfResponseToggleDescription = useMemo(() => {
-    if (!isPdfResponseEnabled) {
-      return 'For security reasons, PDF responses are not included in email confirmations for Storage mode forms'
-    }
-  }, [isPdfResponseEnabled])
+  const pdfResponseToggleDescription = isPdfResponseEnabled
+    ? undefined
+    : 'PDF responses are not supported for encrypt forms with active payment fields'
 
   // email confirmation is not supported on MRF
   const isToggleEmailConfirmationDisabled =
