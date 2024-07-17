@@ -38,12 +38,10 @@ import {
   OGP_ALL_PRODUCTS,
   OGP_FORMSG_REPO,
 } from '~constants/links'
-import { LOGIN_ROUTE, TOU_ROUTE } from '~constants/routes'
+import { LOGIN_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
-import { FeatureBanner } from '~components/FeatureBanner/FeatureBanner'
-import Link from '~components/Link'
 import { MarkdownText } from '~components/MarkdownText'
 import { Tab } from '~components/Tabs'
 import { LottieAnimation } from '~templates/LottieAnimation'
@@ -95,10 +93,6 @@ export const LandingPage = (): JSX.Element => {
         body="Respondents can now pay for fees and services directly on your form!"
         learnMoreLink={LANDING_PAYMENTS_ROUTE}
       /> */}
-      <FeatureBanner
-        body="We have updated FormSG's Terms of Use and Privacy Policy"
-        learnMoreLink={TOU_ROUTE}
-      />
       <AppPublicHeader />
       <LandingSection bg="primary.100" pt={{ base: '2rem', md: 0 }} px="0">
         <Stack
