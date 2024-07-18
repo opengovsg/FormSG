@@ -20,7 +20,7 @@ import { AttachmentFieldInput, AttachmentFieldSchema } from '../types'
 export interface AttachmentFieldProps extends BaseFieldProps {
   schema: AttachmentFieldSchema
   disableRequiredValidation?: boolean
-  enableDownload?: boolean
+  showDownload?: boolean
 }
 
 /**
@@ -29,7 +29,7 @@ export interface AttachmentFieldProps extends BaseFieldProps {
 export const AttachmentField = ({
   schema,
   disableRequiredValidation,
-  enableDownload,
+  showDownload,
   colorTheme = FormColorTheme.Blue,
 }: AttachmentFieldProps): JSX.Element => {
   const fieldName = schema._id
@@ -118,8 +118,8 @@ export const AttachmentField = ({
             onChange={handleFileChange(onChange)}
             onError={setErrorMessage}
             title={`${schema.questionNumber}. ${schema.title}`}
-            enableDownload={enableDownload}
-            enableRemove={!schema.disabled}
+            showDownload={showDownload}
+            showRemove={!schema.disabled}
           />
         )}
         name={fieldName}

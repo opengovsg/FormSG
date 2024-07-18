@@ -5,10 +5,11 @@ import {
   FormProvider,
   useForm,
 } from 'react-hook-form'
-import { Skeleton } from '@chakra-ui/react'
+import { Box, Skeleton } from '@chakra-ui/react'
 
 import { MB } from '~shared/constants'
-import { AttachmentSize, BasicField } from '~shared/types'
+import { AttachmentSize, BasicField, StorageFormSettings } from '~shared/types'
+import { VALID_WHITELIST_FILE_EXTENSIONS } from '~shared/utils/file-validation'
 
 import Attachment from '~components/Field/Attachment'
 import { AttachmentFieldSchema } from '~templates/Field'
@@ -16,11 +17,19 @@ import { FieldContainer } from '~templates/Field/FieldContainer'
 
 import { SecretKeyDownloadWhitelistFileModal } from './SecretKeyDownloadWhitelistFileModal'
 
-export const FormWhitelistAttachmentField = (): JSX.Element => {
+interface FormWhitelistAttachmentFieldProps {
+  settings: StorageFormSettings
+  isDisabled: boolean
+}
+
+export const FormWhitelistAttachmentField = ({
+  settings,
+  isDisabled,
+}: FormWhitelistAttachmentFieldProps): JSX.Element => {
   const [isLoading] = useState(false)
   const [isSecretKeyModalOpen, setIsSecretKeyModalOpen] = useState(false)
   const methods = useForm()
-  const { control, setValue } = methods
+  const { control, setValue, setError } = methods
   const fieldContainerSchema: AttachmentFieldSchema = {
     _id: 'whitelist-csv-attachment-field-container',
     title: 'Restrict form to eligible NRIC/FIN/UEN',
@@ -28,10 +37,12 @@ export const FormWhitelistAttachmentField = (): JSX.Element => {
       'Only NRIC/FIN/UENs in this list are allowed to submit a response. CSV file must include a “Respondent” column with all whitelisted NRIC/FIN/UENs. ' +
       '[Download a sample .csv file](https://go.gov.sg/formsg-whitelist-respondents-sample-csv)',
     required: true,
-    disabled: false,
+    disabled: isDisabled,
     fieldType: BasicField.Attachment,
     attachmentSize: AttachmentSize.TwentyMb,
   }
+
+  const { publicKey } = settings
 
   const maxSizeInBytes = useMemo(() => {
     if (!fieldContainerSchema.attachmentSize) {
@@ -39,6 +50,16 @@ export const FormWhitelistAttachmentField = (): JSX.Element => {
     }
     return parseInt(fieldContainerSchema.attachmentSize) * MB
   }, [fieldContainerSchema.attachmentSize])
+
+  const setWhitelistAttachmentFieldError = useCallback(
+    (errMsg: string) => {
+      setError(fieldContainerSchema._id, {
+        type: 'manual',
+        message: errMsg,
+      })
+    },
+    [setError, fieldContainerSchema._id],
+  )
 
   const onFileSelect = useCallback(
     (onChange: ControllerRenderProps['onChange']) => {
@@ -48,10 +69,11 @@ export const FormWhitelistAttachmentField = (): JSX.Element => {
         }
 
         // TODO: Handle uploading the file to backend
+        setWhitelistAttachmentFieldError('Error uploading whitelist file')
         onChange(file)
       }
     },
-    [],
+    [setWhitelistAttachmentFieldError],
   )
 
   const triggerSecretKeyInputTransition = useCallback(() => {
@@ -69,30 +91,38 @@ export const FormWhitelistAttachmentField = (): JSX.Element => {
       <SecretKeyDownloadWhitelistFileModal
         isOpen={isSecretKeyModalOpen}
         onClose={() => setIsSecretKeyModalOpen(false)}
-        publicKey={'JhJX184XrJf8hoG5Kl/qXj+w0dIJ8a2/jJ0GevPLxxs='}
+        publicKey={publicKey}
       />
-      <FormProvider {...methods}>
-        <FieldContainer schema={fieldContainerSchema}>
-          <Controller
-            name="whitelist-csv-attachment-field"
-            control={control}
-            render={({ field: { onChange, name, value } }) => (
-              <Skeleton isLoaded={!isLoading}>
-                <Attachment
-                  name={name}
-                  value={value}
-                  onChange={onFileSelect(onChange)}
-                  handleDownloadFileOverride={triggerSecretKeyInputTransition}
-                  handleRemoveFileOverride={removeWhitelist}
-                  showFileSize
-                  maxSize={maxSizeInBytes}
-                  enableDownload
-                />
-              </Skeleton>
-            )}
-          />
-        </FieldContainer>
-      </FormProvider>
+      <Box opacity={isDisabled ? 0.3 : 1}>
+        <FormProvider {...methods}>
+          <FieldContainer schema={fieldContainerSchema}>
+            <Controller
+              name="whitelist-csv-attachment-field"
+              control={control}
+              render={({ field: { onChange, name, value } }) => (
+                <Skeleton isLoaded={!isLoading}>
+                  <Attachment
+                    name={name}
+                    value={value}
+                    onChange={onFileSelect(onChange)}
+                    onError={setWhitelistAttachmentFieldError}
+                    handleDownloadFileOverride={triggerSecretKeyInputTransition}
+                    handleRemoveFileOverride={removeWhitelist}
+                    showFileSize
+                    maxSize={maxSizeInBytes}
+                    showDownload
+                    showRemove
+                    isDownloadDisabled={false}
+                    isRemoveDisabled={isDisabled}
+                    disabled={isDisabled}
+                    accept={VALID_WHITELIST_FILE_EXTENSIONS}
+                  />
+                </Skeleton>
+              )}
+            />
+          </FieldContainer>
+        </FormProvider>
+      </Box>
     </>
   )
 }

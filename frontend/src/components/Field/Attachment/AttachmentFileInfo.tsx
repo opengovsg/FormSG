@@ -8,16 +8,20 @@ import { getReadableFileSize } from './utils/getReadableFileSize'
 
 export interface AttachmentFileInfoProps {
   file: File
-  enableDownload?: boolean
-  enableRemove?: boolean
+  showDownload?: boolean
+  showRemove?: boolean
+  isDownloadDisabled?: boolean
+  isRemoveDisabled?: boolean
   handleRemoveFile: () => void
   handleDownloadFile: () => void
 }
 
 export const AttachmentFileInfo = ({
   file,
-  enableDownload = false,
-  enableRemove = true,
+  showDownload = false,
+  showRemove = true,
+  isDownloadDisabled = false,
+  isRemoveDisabled = false,
   handleRemoveFile,
   handleDownloadFile,
 }: AttachmentFileInfoProps) => {
@@ -26,7 +30,7 @@ export const AttachmentFileInfo = ({
     [file.size],
   )
 
-  const showDownloadButton = enableDownload && file
+  const showDownloadButton = showDownload && file
 
   return (
     <Flex justify="space-between" bg="primary.100" py="0.875rem" px="1rem">
@@ -46,13 +50,14 @@ export const AttachmentFileInfo = ({
         </Text>
       </Flex>
       <Flex>
-        {enableRemove ? (
+        {showRemove ? (
           <IconButton
             variant="clear"
             colorScheme="danger"
             aria-label="Click to remove file"
             icon={<BiTrash />}
             onClick={handleRemoveFile}
+            isDisabled={isRemoveDisabled}
           />
         ) : null}
         {showDownloadButton ? (
@@ -61,6 +66,7 @@ export const AttachmentFileInfo = ({
             aria-label="Click to download file"
             icon={<BiDownload />}
             onClick={handleDownloadFile}
+            isDisabled={isDownloadDisabled}
           />
         ) : null}
       </Flex>

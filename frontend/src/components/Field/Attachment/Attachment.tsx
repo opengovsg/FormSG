@@ -73,12 +73,22 @@ export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
   /**
    * Show attachment download button.
    */
-  enableDownload?: boolean
+  showDownload?: boolean
+
+  /**
+   * Disable download button.
+   */
+  isDownloadDisabled?: boolean
+
+  /**
+   * Disable remove button.
+   */
+  isRemoveDisabled?: boolean
 
   /**
    * Show attachment removal button
    */
-  enableRemove?: boolean
+  showRemove?: boolean
 
   /**
    * Override callback function that is invoked when download button is clicked.
@@ -103,8 +113,10 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       name,
       colorScheme,
       title,
-      enableDownload,
-      enableRemove,
+      showDownload,
+      showRemove,
+      isDownloadDisabled,
+      isRemoveDisabled,
       handleDownloadFileOverride,
       handleRemoveFileOverride,
       ...props
@@ -286,8 +298,10 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
                 file={value}
                 handleRemoveFile={handleRemoveFile}
                 handleDownloadFile={handleDownloadFile}
-                enableDownload={enableDownload}
-                enableRemove={enableRemove}
+                showDownload={showDownload}
+                showRemove={showRemove}
+                isDownloadDisabled={isDownloadDisabled}
+                isRemoveDisabled={isRemoveDisabled}
               />
             ) : (
               <AttachmentDropzone
