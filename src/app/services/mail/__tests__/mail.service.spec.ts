@@ -1044,15 +1044,6 @@ describe('mail.service', () => {
       } as IPopulatedEncryptedForm as IPopulatedForm
       customDataParams.form = formDef
 
-      const expectedRenderData: AutoreplySummaryRenderData = {
-        formData: MOCK_AUTOREPLY_PARAMS.responsesData,
-        formTitle: MOCK_AUTOREPLY_PARAMS.form.title,
-        formUrl: `${MOCK_APP_URL}/${MOCK_AUTOREPLY_PARAMS.form._id}`,
-        refNo: MOCK_AUTOREPLY_PARAMS.submission.id,
-        submissionTime: moment(MOCK_AUTOREPLY_PARAMS.submission.created)
-          .tz('Asia/Singapore')
-          .format('ddd, DD MMM YYYY hh:mm:ss A'),
-      }
       const expectedMailBody = (
         await MailUtils.generateAutoreplyHtml({
           submissionId: MOCK_AUTOREPLY_PARAMS.submission.id,
