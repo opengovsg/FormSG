@@ -966,7 +966,7 @@ describe('mail.service', () => {
       expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
     })
 
-    it('should send single autoreply mail without attachment if autoReply.includeFormSummary is true and payment enabled form', async () => {
+    it('should send single autoreply mail with PDF if autoReply.includeFormSummary == true and no active payment field', async () => {
       // Arrange
       sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
 
@@ -977,6 +977,9 @@ describe('mail.service', () => {
         responseMode: FormResponseMode.Encrypt,
         payments_channel: {
           channel: PaymentChannel.Stripe,
+        },
+        payments_field: {
+          enabled: false,
         },
       } as IPopulatedEncryptedForm as IPopulatedForm
       customDataParams.form = formDef
@@ -1002,6 +1005,66 @@ describe('mail.service', () => {
         ...defaultExpectedArg,
         html: expectedMailBody,
         // Attachments should be concatted with mock pdf response
+        attachments: [
+          ...(MOCK_AUTOREPLY_PARAMS.attachments ?? []),
+          {
+            content: MOCK_PDF,
+            filename: 'response.pdf',
+          },
+        ],
+      }
+      const expectedResponse = await Promise.allSettled([ok(true)])
+
+      // Act
+      const actualResult =
+        await mailService.sendAutoReplyEmails(customDataParams)
+
+      // Assert
+      expect(actualResult).toEqual(expectedResponse)
+      // Check arguments passed to sendNodeMail
+      expect(sendMailSpy).toHaveBeenCalledTimes(1)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
+    })
+
+    it('should send single autoreply mail without PDF if autoReply.includeFormSummary == true and has active payment field', async () => {
+      // Arrange
+      sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
+
+      const customDataParams = cloneDeep(MOCK_AUTOREPLY_PARAMS)
+      customDataParams.autoReplyMailDatas[0].includeFormSummary = true
+      const formDef = {
+        ...customDataParams.form,
+        responseMode: FormResponseMode.Encrypt,
+        payments_channel: {
+          channel: PaymentChannel.Stripe,
+        },
+        payments_field: {
+          enabled: true,
+        },
+      } as IPopulatedEncryptedForm as IPopulatedForm
+      customDataParams.form = formDef
+
+      const expectedRenderData: AutoreplySummaryRenderData = {
+        formData: MOCK_AUTOREPLY_PARAMS.responsesData,
+        formTitle: MOCK_AUTOREPLY_PARAMS.form.title,
+        formUrl: `${MOCK_APP_URL}/${MOCK_AUTOREPLY_PARAMS.form._id}`,
+        refNo: MOCK_AUTOREPLY_PARAMS.submission.id,
+        submissionTime: moment(MOCK_AUTOREPLY_PARAMS.submission.created)
+          .tz('Asia/Singapore')
+          .format('ddd, DD MMM YYYY hh:mm:ss A'),
+      }
+      const expectedMailBody = (
+        await MailUtils.generateAutoreplyHtml({
+          submissionId: MOCK_AUTOREPLY_PARAMS.submission.id,
+          autoReplyBody: DEFAULT_AUTO_REPLY_BODY,
+          ...expectedRenderData,
+        })
+      )._unsafeUnwrap()
+
+      const expectedArg = {
+        ...defaultExpectedArg,
+        html: expectedMailBody,
+        // Attachments should not be concatted with mock pdf response
         attachments: [...(MOCK_AUTOREPLY_PARAMS.attachments ?? [])],
       }
       const expectedResponse = await Promise.allSettled([ok(true)])
