@@ -1,19 +1,23 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Controller,
   ControllerRenderProps,
   FormProvider,
   useForm,
 } from 'react-hook-form'
+import { useParams } from 'react-router'
 import { Box, Skeleton } from '@chakra-ui/react'
 
 import { MB } from '~shared/constants'
 import { AttachmentSize, BasicField, StorageFormSettings } from '~shared/types'
 import { VALID_WHITELIST_FILE_EXTENSIONS } from '~shared/utils/file-validation'
 
+import csvFileToCsvStringReadableStream from '~utils/csvFileToCsvStringReadableStream'
 import Attachment from '~components/Field/Attachment'
 import { AttachmentFieldSchema } from '~templates/Field'
 import { FieldContainer } from '~templates/Field/FieldContainer'
+
+import { useMutateFormSettings } from '../../mutations'
 
 import { SecretKeyDownloadWhitelistFileModal } from './SecretKeyDownloadWhitelistFileModal'
 
@@ -22,16 +26,25 @@ interface FormWhitelistAttachmentFieldProps {
   isDisabled: boolean
 }
 
+const FormWhitelistAttachmentFieldContainerName =
+  'whitelist-csv-attachment-field-container'
+const FormWhitelistAttachmentFieldName = 'whitelist-csv-attachment-field'
+
 export const FormWhitelistAttachmentField = ({
   settings,
   isDisabled,
 }: FormWhitelistAttachmentFieldProps): JSX.Element => {
-  const [isLoading] = useState(false)
+  const { mutateFormWhitelistSetting } = useMutateFormSettings()
+  const { formId } = useParams()
+
+  const isLoading = mutateFormWhitelistSetting.isLoading
   const [isSecretKeyModalOpen, setIsSecretKeyModalOpen] = useState(false)
+
   const methods = useForm()
   const { control, setValue, setError } = methods
+
   const fieldContainerSchema: AttachmentFieldSchema = {
-    _id: 'whitelist-csv-attachment-field-container',
+    _id: FormWhitelistAttachmentFieldContainerName,
     title: 'Restrict form to eligible NRIC/FIN/UEN',
     description:
       'Only NRIC/FIN/UENs in this list are allowed to submit a response. CSV file must include a “Respondent” column with all whitelisted NRIC/FIN/UENs. ' +
@@ -42,7 +55,19 @@ export const FormWhitelistAttachmentField = ({
     attachmentSize: AttachmentSize.TwentyMb,
   }
 
-  const { publicKey } = settings
+  const { publicKey, isWhitelistEnabled, whitelistFileSize } = settings
+
+  useEffect(() => {
+    // Set the whitelist attachment field with a mock representation file
+    // if whitelist is enabled so actual file can be lazily downloaded.
+    if (isWhitelistEnabled) {
+      setValue(FormWhitelistAttachmentFieldName, {
+        name: `whitelist_${formId}.csv`,
+        size: whitelistFileSize ?? 0,
+        type: 'text/csv',
+      })
+    }
+  }, [setValue, isWhitelistEnabled, whitelistFileSize, formId])
 
   const maxSizeInBytes = useMemo(() => {
     if (!fieldContainerSchema.attachmentSize) {
@@ -53,12 +78,12 @@ export const FormWhitelistAttachmentField = ({
 
   const setWhitelistAttachmentFieldError = useCallback(
     (errMsg: string) => {
-      setError(fieldContainerSchema._id, {
+      setError(FormWhitelistAttachmentFieldContainerName, {
         type: 'manual',
         message: errMsg,
       })
     },
-    [setError, fieldContainerSchema._id],
+    [setError],
   )
 
   const onFileSelect = useCallback(
@@ -68,12 +93,19 @@ export const FormWhitelistAttachmentField = ({
           return
         }
 
-        // TODO: Handle uploading the file to backend
-        setWhitelistAttachmentFieldError('Error uploading whitelist file')
-        onChange(file)
+        const csvStringStream = csvFileToCsvStringReadableStream<string>(file)
+        mutateFormWhitelistSetting.mutate(csvStringStream, {
+          onSuccess: () => {
+            onChange(file)
+          },
+          onError: (error, variables, context) => {
+            // TODO: update the validation error according to BE validation
+            setWhitelistAttachmentFieldError('Error uploading whitelist file')
+          },
+        })
       }
     },
-    [setWhitelistAttachmentFieldError],
+    [setWhitelistAttachmentFieldError, mutateFormWhitelistSetting],
   )
 
   const triggerSecretKeyInputTransition = useCallback(() => {
@@ -81,10 +113,12 @@ export const FormWhitelistAttachmentField = ({
   }, [])
 
   const removeWhitelist = useCallback(() => {
-    setValue('whitelist-csv-attachment-field', null)
-
-    // TODO: set the whitelist to null in the backend
-  }, [setValue])
+    mutateFormWhitelistSetting.mutate(null, {
+      onSuccess: () => {
+        setValue(FormWhitelistAttachmentFieldName, null)
+      },
+    })
+  }, [setValue, mutateFormWhitelistSetting])
 
   return (
     <>
@@ -97,7 +131,7 @@ export const FormWhitelistAttachmentField = ({
         <FormProvider {...methods}>
           <FieldContainer schema={fieldContainerSchema}>
             <Controller
-              name="whitelist-csv-attachment-field"
+              name={FormWhitelistAttachmentFieldName}
               control={control}
               render={({ field: { onChange, name, value } }) => (
                 <Skeleton isLoaded={!isLoading}>

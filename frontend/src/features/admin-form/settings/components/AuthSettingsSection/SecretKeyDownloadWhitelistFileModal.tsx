@@ -17,10 +17,12 @@ import {
 
 import { isKeypairValid, SECRET_KEY_REGEX } from '~utils/secretKeyValidation'
 import Button from '~components/Button'
+import { downloadFile } from '~components/Field/Attachment/utils/downloadFile'
 import { FormErrorMessage } from '~components/FormControl/FormErrorMessage/FormErrorMessage'
 import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 
+import { useAdminFormWhitelistCsvFile } from '../../queries'
 import { FormActivationSvg } from '../FormActivationSvg'
 
 export interface SecretKeyDownloadWhitelistFileModalProps
@@ -47,6 +49,12 @@ const useSecretKeyWhitelistFileModal = ({
     watch,
   } = useForm<SecretKeyFormInputs>()
 
+  const {
+    data: whitelistCsvFile,
+    isLoading,
+    refetch,
+  } = useAdminFormWhitelistCsvFile()
+
   const fileUploadRef = useRef<HTMLInputElement | null>(null)
 
   const verifyKeyPairAndDownloadWhitelistFile = handleSubmit(
@@ -65,9 +73,13 @@ const useSecretKeyWhitelistFileModal = ({
           },
         )
       }
-    },
 
-    // TODO: Download the whitelist file
+      refetch().then(() => {
+        if (whitelistCsvFile) {
+          downloadFile(whitelistCsvFile)
+        }
+      })
+    },
   )
 
   const readValidateSetSecretKeyFormFieldFromFile = useCallback(
@@ -116,7 +128,7 @@ const useSecretKeyWhitelistFileModal = ({
     register,
     errors,
     fileUploadRef,
-    isLoading: false, // TODO: Add loading state based on the pulling of file
+    isLoading,
     handleSubmit: verifyKeyPairAndDownloadWhitelistFile,
     handleFileSelect: readValidateSetSecretKeyFormFieldFromFile,
     handleOnClose: handleFormClose,

@@ -6,7 +6,11 @@ import { FormSettings } from '~shared/types/form/form'
 
 import { adminFormKeys } from '../common/queries'
 
-import { getFormSettings, validateStripeAccount } from './SettingsService'
+import {
+  getFormSettings,
+  getFormWhitelistCsvFile,
+  validateStripeAccount,
+} from './SettingsService'
 
 export const adminFormSettingsKeys = {
   base: [...adminFormKeys.base, 'settings'] as const,
@@ -15,6 +19,8 @@ export const adminFormSettingsKeys = {
     [...adminFormSettingsKeys.id(id), 'payment_channel'] as const,
   payment_field: (id: string) =>
     [...adminFormSettingsKeys.id(id), 'payment_field'] as const,
+  whitelistCsvFile: (id: string) =>
+    [...adminFormSettingsKeys.id(id), 'whitelistCsvFile'] as const,
 }
 
 /**
@@ -28,6 +34,17 @@ export const useAdminFormSettings = (): UseQueryResult<FormSettings> => {
     adminFormSettingsKeys.id(formId),
     () => getFormSettings(formId),
     { staleTime: 0 },
+  )
+}
+
+export const useAdminFormWhitelistCsvFile = () => {
+  const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
+
+  return useQuery(
+    adminFormSettingsKeys.whitelistCsvFile(formId),
+    () => getFormWhitelistCsvFile(formId),
+    { staleTime: 0, enabled: false },
   )
 }
 

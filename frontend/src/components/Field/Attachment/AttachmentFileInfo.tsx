@@ -18,12 +18,12 @@ export interface AttachmentFileInfoProps {
 
 export const AttachmentFileInfo = ({
   file,
+  handleRemoveFile,
+  handleDownloadFile,
   showDownload = false,
   showRemove = true,
   isDownloadDisabled = false,
   isRemoveDisabled = false,
-  handleRemoveFile,
-  handleDownloadFile,
 }: AttachmentFileInfoProps) => {
   const readableFileSize = useMemo(
     () => getReadableFileSize(file.size),

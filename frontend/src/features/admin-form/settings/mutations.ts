@@ -41,6 +41,7 @@ import {
   updateFormTitle,
   updateFormWebhookRetries,
   updateFormWebhookUrl,
+  updateFormWhitelistSetting,
   updateGstEnabledFlag,
   updateIsSingleSubmission,
   updateTwilioCredentials,
@@ -342,6 +343,21 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateFormWhitelistSetting = useMutation(
+    (whitelistCsvString: ReadableStream<string> | null) => {
+      return updateFormWhitelistSetting(formId, whitelistCsvString)
+    },
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: 'Your CSV has been uploaded successfully.',
+        })
+      },
+      onError: handleError,
+    },
+  )
+
   const mutateFormWebhookUrl = useMutation(
     (nextUrl?: string) => updateFormWebhookUrl(formId, nextUrl),
     {
@@ -413,6 +429,7 @@ export const useMutateFormSettings = () => {
     mutateFormAuthType,
     mutateNricMask,
     mutateIsSingleSubmission,
+    mutateFormWhitelistSetting,
     mutateFormEsrvcId,
     mutateFormBusiness,
     mutateGST,

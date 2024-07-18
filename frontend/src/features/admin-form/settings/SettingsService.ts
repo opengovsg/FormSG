@@ -22,6 +22,11 @@ type UpdateStorageFormFn<T extends keyof StorageFormSettings> = (
   settingsToUpdate: StorageFormSettings[T],
 ) => Promise<FormSettings>
 
+type UpdateStorageFormWhitelistSettingFn = (
+  formId: string,
+  whitelistCsvString: ReadableStream<string> | null,
+) => Promise<FormSettings>
+
 type UpdateFormFn<T extends keyof FormSettings> = (
   formId: string,
   settingsToUpdate: FormSettings[T],
@@ -32,6 +37,16 @@ export const getFormSettings = async (
 ): Promise<FormSettings> => {
   return ApiService.get<FormSettings>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/settings`,
+  ).then(({ data }) => data)
+}
+
+// TODO: update this to work with backend
+export const getFormWhitelistCsvFile = async (
+  formId: string,
+): Promise<File> => {
+  return ApiService.get<File>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/settings/whitelistCsvFile`,
+    { responseType: 'blob' },
   ).then(({ data }) => data)
 }
 
@@ -168,6 +183,17 @@ const updateFormSettings = async (
     settingsToUpdate,
   ).then(({ data }) => data)
 }
+
+// TODO: update this to work with backend
+export const updateFormWhitelistSetting: UpdateStorageFormWhitelistSettingFn =
+  async (formId: string, whitelistCsvString: ReadableStream<string> | null) => {
+    return ApiService.patchForm<FormSettings>(
+      `${ADMIN_FORM_ENDPOINT}/${formId}/settings`,
+      {
+        whitelistCsvString,
+      },
+    ).then(({ data }) => data)
+  }
 
 export const updateTwilioCredentials = async (
   formId: string,
