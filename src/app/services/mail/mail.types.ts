@@ -23,6 +23,7 @@ export type SendSingleAutoreplyMailArgs = {
   attachments: Mail.Attachment[]
   formSummaryRenderData: AutoreplySummaryRenderData
   index: number
+  isPaymentEnabled?: boolean
 }
 
 export type SendAutoReplyEmailsArgs = {

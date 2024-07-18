@@ -1057,7 +1057,6 @@ describe('mail.service', () => {
         await MailUtils.generateAutoreplyHtml({
           submissionId: MOCK_AUTOREPLY_PARAMS.submission.id,
           autoReplyBody: DEFAULT_AUTO_REPLY_BODY,
-          ...expectedRenderData,
         })
       )._unsafeUnwrap()
 

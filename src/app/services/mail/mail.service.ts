@@ -277,6 +277,7 @@ export class MailService {
     form,
     submission,
     index,
+    isPaymentEnabled,
   }: SendSingleAutoreplyMailArgs): ResultAsync<
     true,
     MailSendError | MailGenerationError
@@ -295,8 +296,11 @@ export class MailService {
     const templateData = {
       submissionId: submission.id,
       autoReplyBody,
-      // Only destructure formSummaryRenderData if form summary is included.
-      ...(autoReplyMailData.includeFormSummary && formSummaryRenderData),
+      // Only destructure formSummaryRenderData if form summary is included
+      // and there aren't any active payment fields (defaults to false)
+      ...(autoReplyMailData.includeFormSummary &&
+        !(isPaymentEnabled ?? false) &&
+        formSummaryRenderData),
     }
 
     return generateAutoreplyHtml(templateData).andThen((mailHtml) => {
@@ -635,6 +639,7 @@ export class MailService {
           autoReplyMailData: mailData,
           formSummaryRenderData: renderData,
           index,
+          isPaymentEnabled,
         })
       }),
     )
