@@ -557,7 +557,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
     }
     case BasicField.Date: {
       const sampleValue = faker.date.anytime().toLocaleDateString('en-SG', {
-        day: 'numeric',
+        day: '2-digit',
         month: 'short',
         year: 'numeric',
       })
