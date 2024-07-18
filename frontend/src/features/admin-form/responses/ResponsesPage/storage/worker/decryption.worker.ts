@@ -25,7 +25,7 @@ if (process.env.NODE_ENV !== 'production') {
   ;(global as any).$RefreshSig$ = () => () => {}
 }
 
-const queue = new PQueue({ concurrency: 1 })
+const queue = new PQueue()
 
 /**
  * Verifies that the signatures for every field that has a corresponding
