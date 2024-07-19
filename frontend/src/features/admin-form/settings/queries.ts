@@ -19,8 +19,8 @@ export const adminFormSettingsKeys = {
     [...adminFormSettingsKeys.id(id), 'payment_channel'] as const,
   payment_field: (id: string) =>
     [...adminFormSettingsKeys.id(id), 'payment_field'] as const,
-  whitelistCsvFile: (id: string) =>
-    [...adminFormSettingsKeys.id(id), 'whitelistCsvFile'] as const,
+  csv_file: (id: string) =>
+    [...adminFormSettingsKeys.id(id), 'csv_file'] as const,
 }
 
 /**
@@ -37,13 +37,20 @@ export const useAdminFormSettings = (): UseQueryResult<FormSettings> => {
   )
 }
 
+/**
+ * Need to use React query's `refetch` to trigger a fetch.
+ * @precondition Must be wrapped in a Router as `useParam` is used.
+ */
 export const useAdminFormWhitelistCsvFile = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
   return useQuery(
-    adminFormSettingsKeys.whitelistCsvFile(formId),
+    adminFormSettingsKeys.csv_file(formId),
     () => getFormWhitelistCsvFile(formId),
+    // Disable caching by setting stale time to 0.
+    // Disable React query sync by setting enabled to false
+    // to ensure file is downloaded only when event occurs and not on useQuery mount.
     { staleTime: 0, enabled: false },
   )
 }

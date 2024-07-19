@@ -348,10 +348,12 @@ export const useMutateFormSettings = () => {
       return updateFormWhitelistSetting(formId, whitelistCsvString)
     },
     {
-      onSuccess: (newData) => {
-        handleSuccess({
-          newData,
-          toastDescription: 'Your CSV has been uploaded successfully.',
+      onSuccess: (_newData, variable) => {
+        toast.closeAll()
+        toast({
+          description: variable
+            ? 'Your CSV has been uploaded successfully.'
+            : 'Your CSV has been removed successfully.',
         })
       },
       onError: handleError,

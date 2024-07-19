@@ -67,7 +67,7 @@ export const FormWhitelistAttachmentField = ({
         type: 'text/csv',
       })
     }
-  }, [setValue, isWhitelistEnabled, whitelistFileSize, formId])
+  }, [isWhitelistEnabled, whitelistFileSize, setValue, formId])
 
   const maxSizeInBytes = useMemo(() => {
     if (!fieldContainerSchema.attachmentSize) {
@@ -95,7 +95,8 @@ export const FormWhitelistAttachmentField = ({
 
         const csvStringStream = csvFileToCsvStringReadableStream<string>(file)
         mutateFormWhitelistSetting.mutate(csvStringStream, {
-          onSuccess: () => {
+          onSuccess: (data, variables, context) => {
+            // TODO: check if file name should be standard or use uploaded file name
             onChange(file)
           },
           onError: (error, variables, context) => {

@@ -40,12 +40,12 @@ export const getFormSettings = async (
   ).then(({ data }) => data)
 }
 
-// TODO: update this to work with backend
+// TODO: check if works with backend
 export const getFormWhitelistCsvFile = async (
   formId: string,
 ): Promise<File> => {
   return ApiService.get<File>(
-    `${ADMIN_FORM_ENDPOINT}/${formId}/settings/whitelistCsvFile`,
+    `${ADMIN_FORM_ENDPOINT}/${formId}/settings/whitelist`,
     { responseType: 'blob' },
   ).then(({ data }) => data)
 }
@@ -187,8 +187,8 @@ const updateFormSettings = async (
 // TODO: update this to work with backend
 export const updateFormWhitelistSetting: UpdateStorageFormWhitelistSettingFn =
   async (formId: string, whitelistCsvString: ReadableStream<string> | null) => {
-    return ApiService.patchForm<FormSettings>(
-      `${ADMIN_FORM_ENDPOINT}/${formId}/settings`,
+    return ApiService.putForm<FormSettings>(
+      `${ADMIN_FORM_ENDPOINT}/${formId}/settings/whitelist`,
       {
         whitelistCsvString,
       },

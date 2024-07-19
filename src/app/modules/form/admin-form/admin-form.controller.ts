@@ -5,6 +5,7 @@ import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
+import multer from 'multer'
 import { ResultAsync } from 'neverthrow'
 
 import {
@@ -1482,6 +1483,20 @@ export const handleUpdateSettings = [
   _handleUpdateSettings,
 ] as ControllerHandler[]
 
+const handleMultipartFormDataBody = multer()
+
+const _handleUpdateWhitelistSetting: ControllerHandler = (req, res) => {
+  console.log('req.body', req.body)
+  return res.status(StatusCodes.OK).send()
+}
+
+export const handleUpdateWhitelistSetting = [
+  handleMultipartFormDataBody.none(), // expecting text/csv
+  // TODO: implement the validation logic
+  // whitelistSettingValidator,
+  _handleUpdateWhitelistSetting,
+] as ControllerHandler[]
+
 /**
  * Handler for PATCH api/public/v1/admin/forms/:formId/webhooksettings.
  * @security session
@@ -1598,6 +1613,8 @@ export const handleGetSettings: ControllerHandler<
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
+
+export const handleGetWhitelistSetting = () => {}
 
 /**
  * Handler for POST api/public/v1/admin/forms/:formId/webhooksettings.

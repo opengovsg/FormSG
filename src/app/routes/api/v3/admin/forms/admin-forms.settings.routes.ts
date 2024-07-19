@@ -39,6 +39,11 @@ AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/settings')
    */
   .get(AdminFormController.handleGetSettings)
 
+AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/settings/whitelist')
+  // TODO: Add rate limiting for get and update whitelist setting
+  .put(AdminFormController.handleUpdateWhitelistSetting)
+  .get(AdminFormController.handleGetWhitelistSetting)
+
 AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/collaborators')
   /**
    * Updates the collaborator list for a given formId
