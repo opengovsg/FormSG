@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { Box, Container, Grid, useDisclosure } from '@chakra-ui/react'
 
-import { GUIDE_PAYMENTS_ENTRY } from '~constants/links'
 import { ROLLOUT_ANNOUNCEMENT_KEY_PREFIX } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import InlineMessage from '~components/InlineMessage'
@@ -17,6 +16,14 @@ import {
 import { WorkspaceFormRows } from './components/WorkspaceFormRow'
 import { WorkspaceHeader } from './components/WorkspaceHeader'
 import { useWorkspaceContext } from './WorkspaceContext'
+
+/**
+ * Dashboard Message
+ * TODO: move to growthbook
+ *
+ * Example usage DASHBOARD_MESSAGE = `Introducing payments! Citizens can now pay for fees and services directly on your form. [Learn more](${GUIDE_PAYMENTS_ENTRY})`
+ */
+const DASHBOARD_MESSAGE = ``
 
 export const WorkspaceContent = (): JSX.Element => {
   const { isLoading, totalFormsCount, isDefaultWorkspace } =
@@ -35,8 +42,6 @@ export const WorkspaceContent = (): JSX.Element => {
     () => !isUserLoading && hasSeenAnnouncement === false,
     [isUserLoading, hasSeenAnnouncement],
   )
-
-  const dashboardMessage = `Introducing payments! Citizens can now pay for fees and services directly on your form. [Learn more](${GUIDE_PAYMENTS_ENTRY})`
 
   return (
     <>
@@ -65,14 +70,14 @@ export const WorkspaceContent = (): JSX.Element => {
             px={{ base: '2rem', md: '4rem' }}
             py="1rem"
           >
-            {isDefaultWorkspace && (
+            {isDefaultWorkspace && DASHBOARD_MESSAGE && (
               <InlineMessage
                 useMarkdown
                 mb="2rem"
                 mx="-2rem"
                 justifyContent="center"
               >
-                {dashboardMessage}
+                {DASHBOARD_MESSAGE}
               </InlineMessage>
             )}
             <WorkspaceHeader
