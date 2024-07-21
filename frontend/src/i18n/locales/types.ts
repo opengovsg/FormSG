@@ -3,8 +3,8 @@ import { Navbar, Common, Login, PublicForm, Fields, HeaderAndInstructions, Logic
 interface Translation {
   translation: {
     features: {
-      adminForm: {
-        sidebar: {
+      adminForm?: {
+        sidebar?: {
           fields?: Fields
           headerAndInstructions?: HeaderAndInstructions
           logic?: Logic
