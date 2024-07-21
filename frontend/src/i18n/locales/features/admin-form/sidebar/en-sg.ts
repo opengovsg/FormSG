@@ -4,8 +4,8 @@ import { enSG as logic } from './logic'
 import { enSG as thankYou } from './thank-you'
 
 export const enSG = {
-    fields,
-    headerAndInstructions,
-    logic,
-    thankYou,
+  fields,
+  headerAndInstructions,
+  logic,
+  thankYou,
 }

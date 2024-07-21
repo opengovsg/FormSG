@@ -1,4 +1,13 @@
-import { Navbar, Common, Login, PublicForm, Fields, HeaderAndInstructions, Logic, ThankYou} from './features'
+import {
+  Common,
+  Fields,
+  HeaderAndInstructions,
+  Logic,
+  Login,
+  Navbar,
+  PublicForm,
+  ThankYou,
+} from './features'
 
 interface Translation {
   translation: {
