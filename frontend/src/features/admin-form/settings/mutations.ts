@@ -73,6 +73,27 @@ export const useMutateFormSettings = () => {
     [formId, queryClient],
   )
 
+  const generateErrorToast = useCallback(
+    (message) => {
+      toast.closeAll()
+      toast({
+        description: message,
+        status: 'danger',
+      })
+    },
+    [toast],
+  )
+
+  const generateSuccessToast = useCallback(
+    (message) => {
+      toast.closeAll()
+      toast({
+        description: message,
+      })
+    },
+    [toast],
+  )
+
   const handleSuccess = useCallback(
     ({
       newData,
@@ -81,24 +102,17 @@ export const useMutateFormSettings = () => {
       newData: FormSettings
       toastDescription: string
     }) => {
-      toast.closeAll()
       updateFormData(newData)
-      toast({
-        description: toastDescription,
-      })
+      generateSuccessToast(toastDescription)
     },
-    [toast, updateFormData],
+    [updateFormData, generateSuccessToast],
   )
 
   const handleError = useCallback(
     (error: Error) => {
-      toast.closeAll()
-      toast({
-        description: error.message,
-        status: 'danger',
-      })
+      generateErrorToast(error.message)
     },
-    [toast],
+    [generateErrorToast],
   )
 
   const mutateFormStatus = useMutation(
@@ -343,20 +357,22 @@ export const useMutateFormSettings = () => {
     },
   )
 
-  const mutateFormWhitelistSetting = useMutation(
+  // TODO: fix the TS typing
+  const mutateFormWhitelistSetting = useMutation<any, Error, any, any>(
     (whitelistCsvString: Promise<string> | null) => {
       return updateFormWhitelistSetting(formId, whitelistCsvString)
     },
     {
       onSuccess: (_newData, variable) => {
-        toast.closeAll()
-        toast({
-          description: variable
+        generateSuccessToast(
+          variable
             ? 'Your CSV has been uploaded successfully.'
             : 'Your CSV has been removed successfully.',
-        })
+        )
       },
-      onError: handleError,
+      onError: () => {
+        generateErrorToast('An error occurred while uploading your CSV.')
+      },
     },
   )
 

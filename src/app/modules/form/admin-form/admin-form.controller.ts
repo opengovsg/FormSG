@@ -1532,7 +1532,7 @@ const _validateWhitelistEntries: ControllerHandler = (req, res, next) => {
   // check for invalid entries
   if (invalidEntries.length > 0) {
     return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
-      message: `Your CSV contains NRIC/FINS that are not in the correct format. (e.g, ${invalidEntries[0]})`,
+      message: `Your CSV contains NRIC/FIN/UEN(s) that are not in the correct format. (e.g, ${invalidEntries[0]})`,
     })
   }
 

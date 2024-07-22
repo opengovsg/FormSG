@@ -41,7 +41,7 @@ export const FormWhitelistAttachmentField = ({
   const [isSecretKeyModalOpen, setIsSecretKeyModalOpen] = useState(false)
 
   const methods = useForm()
-  const { control, setValue, setError } = methods
+  const { control, setValue, setError, clearErrors } = methods
 
   const fieldContainerSchema: AttachmentFieldSchema = {
     _id: FormWhitelistAttachmentFieldContainerName,
@@ -86,6 +86,10 @@ export const FormWhitelistAttachmentField = ({
     [setError],
   )
 
+  const clearWhitelistAttachmentFieldError = useCallback(() => {
+    clearErrors(FormWhitelistAttachmentFieldContainerName)
+  }, [clearErrors])
+
   const onFileSelect = useCallback(
     (onChange: ControllerRenderProps['onChange']) => {
       return (file: File | null) => {
@@ -96,18 +100,22 @@ export const FormWhitelistAttachmentField = ({
         const csvString = parseCsvFileToCsvStringWithoutChunking(file)
 
         mutateFormWhitelistSetting.mutate(csvString, {
-          onSuccess: (data, variables, context) => {
-            // TODO: check if file name should be standard or use uploaded file name
+          onSuccess: () => {
+            // TODO: update file name to standard file name
+            clearWhitelistAttachmentFieldError()
             onChange(file)
           },
-          onError: (error, variables, context) => {
-            // TODO: update the validation error according to BE validation
-            setWhitelistAttachmentFieldError('Error uploading whitelist file')
+          onError: (error) => {
+            setWhitelistAttachmentFieldError(error.message)
           },
         })
       }
     },
-    [setWhitelistAttachmentFieldError, mutateFormWhitelistSetting],
+    [
+      setWhitelistAttachmentFieldError,
+      clearWhitelistAttachmentFieldError,
+      mutateFormWhitelistSetting,
+    ],
   )
 
   const triggerSecretKeyInputTransition = useCallback(() => {
