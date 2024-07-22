@@ -12,7 +12,7 @@ import { MB } from '~shared/constants'
 import { AttachmentSize, BasicField, StorageFormSettings } from '~shared/types'
 import { VALID_WHITELIST_FILE_EXTENSIONS } from '~shared/utils/file-validation'
 
-import csvFileToCsvStringReadableStream from '~utils/csvFileToCsvStringReadableStream'
+import { parseCsvFileToCsvStringWithoutChunking } from '~utils/parseCsvFileToCsvString'
 import Attachment from '~components/Field/Attachment'
 import { AttachmentFieldSchema } from '~templates/Field'
 import { FieldContainer } from '~templates/Field/FieldContainer'
@@ -93,8 +93,9 @@ export const FormWhitelistAttachmentField = ({
           return
         }
 
-        const csvStringStream = csvFileToCsvStringReadableStream<string>(file)
-        mutateFormWhitelistSetting.mutate(csvStringStream, {
+        const csvString = parseCsvFileToCsvStringWithoutChunking(file)
+
+        mutateFormWhitelistSetting.mutate(csvString, {
           onSuccess: (data, variables, context) => {
             // TODO: check if file name should be standard or use uploaded file name
             onChange(file)

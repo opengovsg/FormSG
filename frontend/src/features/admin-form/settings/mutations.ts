@@ -344,7 +344,7 @@ export const useMutateFormSettings = () => {
   )
 
   const mutateFormWhitelistSetting = useMutation(
-    (whitelistCsvString: ReadableStream<string> | null) => {
+    (whitelistCsvString: Promise<string> | null) => {
       return updateFormWhitelistSetting(formId, whitelistCsvString)
     },
     {

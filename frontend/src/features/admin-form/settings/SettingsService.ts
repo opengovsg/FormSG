@@ -24,7 +24,7 @@ type UpdateStorageFormFn<T extends keyof StorageFormSettings> = (
 
 type UpdateStorageFormWhitelistSettingFn = (
   formId: string,
-  whitelistCsvString: ReadableStream<string> | null,
+  whitelistCsvString: Promise<string> | null,
 ) => Promise<FormSettings>
 
 type UpdateFormFn<T extends keyof FormSettings> = (
@@ -186,11 +186,13 @@ const updateFormSettings = async (
 
 // TODO: update this to work with backend
 export const updateFormWhitelistSetting: UpdateStorageFormWhitelistSettingFn =
-  async (formId: string, whitelistCsvString: ReadableStream<string> | null) => {
+  async (formId: string, whitelistCsvString: Promise<string> | null) => {
+    const str = await whitelistCsvString
+    console.log('whitelistCsvString', str)
     return ApiService.putForm<FormSettings>(
       `${ADMIN_FORM_ENDPOINT}/${formId}/settings/whitelist`,
       {
-        whitelistCsvString,
+        whitelistCsvString: str,
       },
     ).then(({ data }) => data)
   }

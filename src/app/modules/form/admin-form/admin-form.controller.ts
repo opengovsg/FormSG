@@ -46,6 +46,11 @@ import {
   SubmissionCountQueryDto,
   WebhookSettingsUpdateDto,
 } from '../../../../../shared/types'
+import {
+  isMFinSeriesValid,
+  isNricValid,
+} from '../../../../../shared/utils/nric-validation'
+import { isUenValid } from '../../../../../shared/utils/uen-validation'
 import { IFormDocument, IPopulatedForm } from '../../../../types'
 import {
   EncryptSubmissionDto,
@@ -1483,17 +1488,81 @@ export const handleUpdateSettings = [
   _handleUpdateSettings,
 ] as ControllerHandler[]
 
-const handleMultipartFormDataBody = multer()
+const TWENTY_MB_IN_BYTES = 20 * 1024 * 1024
+const handleWhitelistSettingMultipartBody = multer({
+  limits: {
+    fieldSize: TWENTY_MB_IN_BYTES,
+    fields: 1, // only allow csv string field
+    files: 0,
+  },
+})
 
-const _handleUpdateWhitelistSetting: ControllerHandler = (req, res) => {
-  console.log('req.body', req.body)
+// Checks if the CSV entries contained are valid.
+const _validateWhitelistEntries: ControllerHandler = (req, res, next) => {
+  const { whitelistCsvString } = req.body
+
+  // If no whitelistCsvString is provided, skip validation.
+  // Since it means to update to not have any whitelist entries.
+  if (!whitelistCsvString) {
+    return next()
+  }
+
+  const whitelistEntries = whitelistCsvString
+    .split('\r\n')
+    .map((entry: string) => entry.trim())
+
+  // check for empty rows/entries
+  const emptyRowIndex = whitelistEntries.findIndex(
+    (entry: string) => entry === '',
+  )
+  if (emptyRowIndex !== -1) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: `There are empty row(s) in your CSV (e.g, row number ${emptyRowIndex + 1})`,
+    })
+  }
+
+  // check for invalid NRIC/FIN/UEN format
+  const invalidEntries = whitelistEntries.filter((entry: string) => {
+    return !(
+      isNricValid(entry) ||
+      isMFinSeriesValid(entry) ||
+      isUenValid(entry)
+    )
+  })
+  // check for invalid entries
+  if (invalidEntries.length > 0) {
+    return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+      message: `Your CSV contains NRIC/FINS that are not in the correct format. (e.g, ${invalidEntries[0]})`,
+    })
+  }
+
+  // check for duplicates
+  if (new Set(whitelistEntries).size !== whitelistEntries.length) {
+    return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+      message: 'There are duplicate entries in your CSV',
+    })
+  }
+
+  // no validation errors found, proceed to next middleware
+  next()
+}
+
+const _handleUpdateWhitelistSetting: ControllerHandler<
+  { formId: string },
+  object,
+  {
+    whitelistCsvString: string | null
+  }
+> = async (req, res) => {
+  // TODO: create TS type for request
+  const { whitelistCsvString } = req.body
+
   return res.status(StatusCodes.OK).send()
 }
 
 export const handleUpdateWhitelistSetting = [
-  handleMultipartFormDataBody.none(), // expecting text/csv
-  // TODO: implement the validation logic
-  // whitelistSettingValidator,
+  handleWhitelistSettingMultipartBody.none(), // expecting string field
+  _validateWhitelistEntries,
   _handleUpdateWhitelistSetting,
 ] as ControllerHandler[]
 
