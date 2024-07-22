@@ -187,12 +187,10 @@ const updateFormSettings = async (
 // TODO: update this to work with backend
 export const updateFormWhitelistSetting: UpdateStorageFormWhitelistSettingFn =
   async (formId: string, whitelistCsvString: Promise<string> | null) => {
-    const str = await whitelistCsvString
-    console.log('whitelistCsvString', str)
     return ApiService.putForm<FormSettings>(
       `${ADMIN_FORM_ENDPOINT}/${formId}/settings/whitelist`,
       {
-        whitelistCsvString: str,
+        whitelistCsvString: await whitelistCsvString,
       },
     ).then(({ data }) => data)
   }
