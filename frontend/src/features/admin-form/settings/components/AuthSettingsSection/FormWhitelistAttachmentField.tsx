@@ -55,7 +55,11 @@ export const FormWhitelistAttachmentField = ({
     attachmentSize: AttachmentSize.TwentyMb,
   }
 
-  const { publicKey, isWhitelistEnabled, whitelistFileSize } = settings
+  const { publicKey, whitelistedSubmitterIds } = settings
+
+  const isWhitelistEnabled =
+    whitelistedSubmitterIds && whitelistedSubmitterIds.length > 0
+  const whitelistFileSize = 0
 
   useEffect(() => {
     // Set the whitelist attachment field with a mock representation file

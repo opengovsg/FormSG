@@ -293,6 +293,7 @@ export interface IEncryptedForm extends IForm {
   payments_field: FormPaymentsField
   business?: FormBusinessField
   emails?: string[]
+  whitelistedSubmitterIds?: string[]
 }
 
 export type IEncryptedFormSchema = IEncryptedForm & IFormSchema

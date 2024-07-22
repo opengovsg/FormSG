@@ -54,8 +54,7 @@ export const STORAGE_FORM_SETTINGS_FIELDS = <const>[
   'publicKey',
   'business',
   'emails',
-  'isWhitelistEnabled',
-  'whitelistFileSize',
+  'whitelistedSubmitterIds',
 ]
 
 export const MULTIRESPONDENT_FORM_SETTINGS_FIELDS = <const>[

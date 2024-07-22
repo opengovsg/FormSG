@@ -218,6 +218,21 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
     // TODO: Make this required after all forms have been migrated
     required: false,
   },
+  whitelistedSubmitterIds: {
+    type: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    validate: [
+      (v: string[]) => {
+        return Array.isArray(v) || v == null
+      },
+      'Encrypted whitelisted submitter ids provided must be in an array.',
+    ],
+    required: false,
+  },
   payments_channel: {
     channel: {
       type: String,

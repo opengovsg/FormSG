@@ -177,8 +177,7 @@ export interface StorageFormBase extends FormBase {
   payments_channel: FormPaymentsChannel
   payments_field: FormPaymentsField
   business?: FormBusinessField
-  isWhitelistEnabled?: boolean
-  whitelistFileSize?: number
+  whitelistedSubmitterIds?: string[]
 }
 
 export interface MultirespondentFormBase extends FormBase {

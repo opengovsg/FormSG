@@ -59,6 +59,7 @@ import {
 } from '../../../../types/api'
 import { goGovConfig } from '../../../config/features/gogov.config'
 import { smsConfig } from '../../../config/features/sms.config'
+import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
 import MailService from '../../../services/mail/mail.service'
 import * as SmsService from '../../../services/sms/sms.service'
@@ -1499,6 +1500,7 @@ const handleWhitelistSettingMultipartBody = multer({
 
 // Checks if the CSV entries contained are valid.
 const _validateWhitelistEntries: ControllerHandler = (req, res, next) => {
+  // TODO: create TS type for request
   const { whitelistCsvString } = req.body
 
   // If no whitelistCsvString is provided, skip validation.
@@ -1507,12 +1509,12 @@ const _validateWhitelistEntries: ControllerHandler = (req, res, next) => {
     return next()
   }
 
-  const whitelistEntries = whitelistCsvString
+  const whitelistedSubmitterIds = whitelistCsvString
     .split('\r\n')
     .map((entry: string) => entry.trim())
 
   // check for empty rows/entries
-  const emptyRowIndex = whitelistEntries.findIndex(
+  const emptyRowIndex = whitelistedSubmitterIds.findIndex(
     (entry: string) => entry === '',
   )
   if (emptyRowIndex !== -1) {
@@ -1522,7 +1524,7 @@ const _validateWhitelistEntries: ControllerHandler = (req, res, next) => {
   }
 
   // check for invalid NRIC/FIN/UEN format
-  const invalidEntries = whitelistEntries.filter((entry: string) => {
+  const invalidEntries = whitelistedSubmitterIds.filter((entry: string) => {
     return !(
       isNricValid(entry) ||
       isMFinSeriesValid(entry) ||
@@ -1537,33 +1539,117 @@ const _validateWhitelistEntries: ControllerHandler = (req, res, next) => {
   }
 
   // check for duplicates
-  if (new Set(whitelistEntries).size !== whitelistEntries.length) {
+  if (
+    new Set(whitelistedSubmitterIds).size !== whitelistedSubmitterIds.length
+  ) {
     return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
       message: 'There are duplicate entries in your CSV',
     })
   }
 
+  req.body = {
+    whitelistedSubmitterIds,
+  }
+
   // no validation errors found, proceed to next middleware
-  next()
+  return next()
 }
 
-const _handleUpdateWhitelistSetting: ControllerHandler<
-  { formId: string },
+const _getFormPublicKey: ControllerHandler<
+  {
+    formId: string
+    formPublicKey: string
+  },
+  any,
+  any
+> = async (req, res, next) => {
+  const formId = req.params.formId
+
+  const logMeta = {
+    action: '_getFormPublicKey',
+    ...createReqMeta(req),
+    formId,
+  }
+
+  const formResult = await FormService.retrieveFullFormById(formId)
+  if (formResult.isErr()) {
+    logger.warn({
+      message: 'Failed to retrieve form from database',
+      meta: logMeta,
+      error: formResult.error,
+    })
+    const { errorMessage, statusCode } = mapRouteError(formResult.error)
+    return res.status(statusCode).json({ message: errorMessage })
+  }
+
+  const checkFormIsEncryptModeResult =
+    EncryptSubmissionService.checkFormIsEncryptMode(formResult.value)
+  if (checkFormIsEncryptModeResult.isErr()) {
+    logger.error({
+      message:
+        'Trying to submit non-encrypt mode submission on encrypt-form submission endpoint',
+      meta: logMeta,
+    })
+    const { statusCode, errorMessage } = mapRouteError(
+      checkFormIsEncryptModeResult.error,
+    )
+    return res.status(statusCode).json({
+      message: errorMessage,
+    })
+  }
+
+  const publicKey = formResult.value.publicKey
+  if (!publicKey) {
+    logger.warn({
+      message: 'Form does not have a public key',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: 'Form does not have a public key',
+    })
+  }
+
+  req.params.formPublicKey = publicKey
+
+  return next()
+}
+
+const _encryptWhitelistAndSetWhitelistUpdateField: ControllerHandler<
+  { formId: string; formPublicKey: string },
   object,
   {
-    whitelistCsvString: string | null
+    whitelistedSubmitterIds: string[] | null
   }
-> = async (req, res) => {
-  // TODO: create TS type for request
-  const { whitelistCsvString } = req.body
+> = async (req, res, next) => {
+  const { formPublicKey } = req.params
+  const { whitelistedSubmitterIds } = req.body
 
-  return res.status(StatusCodes.OK).send()
+  if (!whitelistedSubmitterIds || whitelistedSubmitterIds.length <= 0) {
+    req.body = {
+      whitelistedSubmitterIds: null,
+    }
+    return next()
+  }
+
+  // Encrypt whitelist entries
+  const encryptedWhitelistedSubmitterIds = whitelistedSubmitterIds.map(
+    (submitterId) => {
+      return formsgSdk.crypto.encrypt(submitterId, formPublicKey)
+    },
+  )
+  req.body = {
+    whitelistedSubmitterIds: encryptedWhitelistedSubmitterIds,
+  }
+
+  return next()
 }
 
 export const handleUpdateWhitelistSetting = [
   handleWhitelistSettingMultipartBody.none(), // expecting string field
   _validateWhitelistEntries,
-  _handleUpdateWhitelistSetting,
+  _getFormPublicKey,
+  _encryptWhitelistAndSetWhitelistUpdateField,
+  _handleUpdateSettings,
 ] as ControllerHandler[]
 
 /**
