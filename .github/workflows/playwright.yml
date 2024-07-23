@@ -32,12 +32,18 @@ jobs:
           REACT_APP_FORMSG_SDK_MODE: 'test'
         run: npm run build
       - name: Run Playwright tests (login)
+        env:
+          NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
         run: npx playwright test __tests__/e2e/login.spec.ts
         timeout-minutes: 5
       - name: Run Playwright tests (email-submission)
+        env:
+          NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
         run: npx playwright test __tests__/e2e/email-submission.spec.ts
         timeout-minutes: 15
       - name: Run Playwright tests (encrypt-submission)
+        env:
+          NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
         run: npx playwright test __tests__/e2e/encrypt-submission.spec.ts
         timeout-minutes: 15
       - uses: actions/upload-artifact@v3
