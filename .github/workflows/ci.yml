@@ -86,7 +86,7 @@ jobs:
 
   frontend_test:
     needs: [changes, install]
-    if: ${{ needs.changes.outputs.frontend == 'true' }}
+    # if: ${{ needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -141,7 +141,7 @@ jobs:
 
   backend_test:
     needs: [changes, install, build]
-    if: ${{ needs.changes.outputs.backend == 'true' }}
+    # if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
       # prevent CI from failing when worker runs out of memory
