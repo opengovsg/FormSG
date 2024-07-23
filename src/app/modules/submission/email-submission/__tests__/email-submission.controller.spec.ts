@@ -24,6 +24,7 @@ import {
 } from '../../submission.utils'
 import { submitEmailModeForm } from '../email-submission.controller'
 
+jest.mock('src/app/modules/datadog/datadog.utils')
 jest.mock(
   'src/app/modules/submission/email-submission/email-submission.service',
 )
