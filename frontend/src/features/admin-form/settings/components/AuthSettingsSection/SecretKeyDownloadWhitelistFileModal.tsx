@@ -19,6 +19,7 @@ import { EncryptedFileContent } from '@opengovsg/formsg-sdk/dist/types'
 import { decode as decodeBase64 } from '@stablelib/base64'
 import Papa from 'papaparse'
 
+import { useToast } from '~hooks/useToast'
 import formsgSdk from '~utils/formSdk'
 import { isKeypairValid, SECRET_KEY_REGEX } from '~utils/secretKeyValidation'
 import Button from '~components/Button'
@@ -53,6 +54,7 @@ const useSecretKeyWhitelistFileModal = ({
   'publicKey' | 'onClose' | 'formId' | 'downloadFileName'
 >) => {
   const queryClient = useQueryClient()
+  const toast = useToast({ status: 'success', isClosable: true })
   const {
     formState: { errors },
     setError,
@@ -118,8 +120,8 @@ const useSecretKeyWhitelistFileModal = ({
               secretKey,
             )
 
-            Promise.all(decryptedSubmitterIdsPromises).then(
-              (decryptedSubmitterIds) => {
+            Promise.all(decryptedSubmitterIdsPromises)
+              .then((decryptedSubmitterIds) => {
                 const submitterIds = decryptedSubmitterIds.filter(
                   (id) => id !== null,
                 )
@@ -143,8 +145,14 @@ const useSecretKeyWhitelistFileModal = ({
                   type: 'text/csv',
                 })
                 downloadFile(csvFile)
-              },
-            )
+              })
+              .then(() => {
+                handleFormClose()
+                toast.closeAll()
+                toast({
+                  description: 'Whitelist setting file downloaded successfully',
+                })
+              })
           }
         },
       )

@@ -1623,7 +1623,7 @@ const _encryptWhitelistAndSetWhitelistUpdateField: ControllerHandler<
   {
     whitelistedSubmitterIds: string[] | EncryptedFileContent[] | null
   }
-> = async (req, res, next) => {
+> = async (req, _res, next) => {
   const { formPublicKey } = req.params
   const { whitelistedSubmitterIds } = req.body
 
