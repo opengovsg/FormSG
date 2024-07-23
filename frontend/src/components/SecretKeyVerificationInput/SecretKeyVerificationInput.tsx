@@ -185,7 +185,7 @@ export const SecretKeyVerificationInput = ({
               placeholder={
                 dragging
                   ? 'Drop your Secret Key here'
-                  : 'Enter or upload your Secret Key to continue'
+                  : 'Enter or drop your Secret Key to continue'
               }
               {...register(SECRET_KEY_NAME, secretKeyValidationRules)}
             />
