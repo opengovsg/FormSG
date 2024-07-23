@@ -187,6 +187,12 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
    * Retrieve form settings.
    */
   getSettings(): FormSettings
+
+  /**
+   * Retrieve the whitelistedSubmitterIds of the form.
+   */
+  getWhitelistedSubmitterIds(): string[]
+
   /**
    * Retrieve form webhook settings.
    */

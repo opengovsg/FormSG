@@ -1,3 +1,4 @@
+import { EncryptedFileContent } from '@opengovsg/formsg-sdk/dist/types'
 import Stripe from 'stripe'
 
 import {
@@ -40,14 +41,16 @@ export const getFormSettings = async (
   ).then(({ data }) => data)
 }
 
-// TODO: check if works with backend
-export const getFormWhitelistCsvFile = async (
+export const getFormEncryptedWhitelistedSubmitterIds = async (
   formId: string,
-): Promise<File> => {
-  return ApiService.get<File>(
-    `${ADMIN_FORM_ENDPOINT}/${formId}/settings/whitelist`,
-    { responseType: 'blob' },
-  ).then(({ data }) => data)
+): Promise<{
+  encryptedWhitelistedSubmitterIds: EncryptedFileContent[] | null
+}> => {
+  return ApiService.get<{
+    encryptedWhitelistedSubmitterIds: EncryptedFileContent[] | null
+  }>(`${ADMIN_FORM_ENDPOINT}/${formId}/settings/whitelist`, {
+    responseType: 'json',
+  }).then(({ data }) => data)
 }
 
 export const updateFormStatus: UpdateFormFn<'status'> = async (

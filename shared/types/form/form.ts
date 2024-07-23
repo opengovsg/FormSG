@@ -17,6 +17,7 @@ import { FormLogic, LogicDto } from './form_logic'
 import { PaymentChannel, PaymentMethodType, PaymentType } from '../payment'
 import { Product } from './product'
 import { FormWorkflow, FormWorkflowDto } from './workflow'
+import { EncryptedFileContent } from '@opengovsg/formsg-sdk/dist/types'
 
 export type FormId = Tagged<string, 'FormId'>
 
@@ -177,7 +178,7 @@ export interface StorageFormBase extends FormBase {
   payments_channel: FormPaymentsChannel
   payments_field: FormPaymentsField
   business?: FormBusinessField
-  whitelistedSubmitterIds?: string[]
+  whitelistedSubmitterIds?: EncryptedFileContent[]
 }
 
 export interface MultirespondentFormBase extends FormBase {

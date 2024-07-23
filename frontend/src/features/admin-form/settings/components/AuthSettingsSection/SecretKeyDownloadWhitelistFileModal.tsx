@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { BiRightArrowAlt, BiUpload } from 'react-icons/bi'
+import { useQueryClient } from 'react-query'
 import {
   Container,
   FormControl,
@@ -14,7 +15,11 @@ import {
   useBreakpointValue,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
+import { EncryptedFileContent } from '@opengovsg/formsg-sdk/dist/types'
+import { decode as decodeBase64 } from '@stablelib/base64'
+import Papa from 'papaparse'
 
+import formsgSdk from '~utils/formSdk'
 import { isKeypairValid, SECRET_KEY_REGEX } from '~utils/secretKeyValidation'
 import Button from '~components/Button'
 import { downloadFile } from '~components/Field/Attachment/utils/downloadFile'
@@ -22,13 +27,16 @@ import { FormErrorMessage } from '~components/FormControl/FormErrorMessage/FormE
 import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 
-import { useAdminFormWhitelistCsvFile } from '../../queries'
+import { fetchAdminFormEncryptedWhitelistedSubmitterIds } from '../../queries'
 import { FormActivationSvg } from '../FormActivationSvg'
 
 export interface SecretKeyDownloadWhitelistFileModalProps
   extends Pick<UseDisclosureReturn, 'onClose' | 'isOpen'> {
   publicKey: string
+  formId: string
+  downloadFileName: string
 }
+
 const SECRET_KEY_NAME = 'secretKey'
 
 interface SecretKeyFormInputs {
@@ -38,7 +46,13 @@ interface SecretKeyFormInputs {
 const useSecretKeyWhitelistFileModal = ({
   publicKey,
   onClose,
-}: Pick<SecretKeyDownloadWhitelistFileModalProps, 'publicKey' | 'onClose'>) => {
+  formId,
+  downloadFileName,
+}: Pick<
+  SecretKeyDownloadWhitelistFileModalProps,
+  'publicKey' | 'onClose' | 'formId' | 'downloadFileName'
+>) => {
+  const queryClient = useQueryClient()
   const {
     formState: { errors },
     setError,
@@ -49,13 +63,31 @@ const useSecretKeyWhitelistFileModal = ({
     watch,
   } = useForm<SecretKeyFormInputs>()
 
-  const {
-    data: whitelistCsvFile,
-    isLoading,
-    refetch,
-  } = useAdminFormWhitelistCsvFile()
-
   const fileUploadRef = useRef<HTMLInputElement | null>(null)
+
+  // TODO: possibly move this to a web worker only if needed
+  const decryptSubmitterIds = useCallback(
+    (encryptedSubmitterIds: EncryptedFileContent[], secretKey: string) => {
+      const decoder = new TextDecoder('utf-8')
+      return encryptedSubmitterIds.map((encryptedSubmitterId) => {
+        encryptedSubmitterId.binary = decodeBase64(
+          encryptedSubmitterId.binary as unknown as string,
+        )
+        const decryptedSubmitterId = formsgSdk.crypto
+          .decryptFile(secretKey, encryptedSubmitterId)
+          .then((decryptedSubmitterIdBinary) => {
+            if (!decryptedSubmitterIdBinary) return null
+            const decryptedSubmitterId = decoder.decode(
+              decryptedSubmitterIdBinary,
+            )
+            return decryptedSubmitterId
+          })
+
+        return decryptedSubmitterId
+      })
+    },
+    [],
+  )
 
   const verifyKeyPairAndDownloadWhitelistFile = handleSubmit(
     ({ secretKey }) => {
@@ -73,12 +105,49 @@ const useSecretKeyWhitelistFileModal = ({
           },
         )
       }
+      fetchAdminFormEncryptedWhitelistedSubmitterIds(formId, queryClient).then(
+        (data) => {
+          const { encryptedWhitelistedSubmitterIds } = data
+          if (
+            encryptedWhitelistedSubmitterIds &&
+            Array.isArray(encryptedWhitelistedSubmitterIds)
+          ) {
+            // convert data string to csv file
+            const decryptedSubmitterIdsPromises = decryptSubmitterIds(
+              encryptedWhitelistedSubmitterIds,
+              secretKey,
+            )
 
-      refetch().then(() => {
-        if (whitelistCsvFile) {
-          downloadFile(whitelistCsvFile)
-        }
-      })
+            Promise.all(decryptedSubmitterIdsPromises).then(
+              (decryptedSubmitterIds) => {
+                const submitterIds = decryptedSubmitterIds.filter(
+                  (id) => id !== null,
+                )
+                if (!submitterIds || submitterIds.length === 0) {
+                  return
+                }
+
+                // generate and download csv file
+                const csvData = submitterIds.map((subnmitterId) => ({
+                  Respondents: subnmitterId,
+                }))
+                const csvString = Papa.unparse(csvData, {
+                  header: true,
+                  delimiter: ',',
+                  skipEmptyLines: 'greedy',
+                })
+                const csvBlob = new Blob([csvString], {
+                  type: 'text/csv',
+                })
+                const csvFile = new File([csvBlob], downloadFileName, {
+                  type: 'text/csv',
+                })
+                downloadFile(csvFile)
+              },
+            )
+          }
+        },
+      )
     },
   )
 
@@ -128,7 +197,6 @@ const useSecretKeyWhitelistFileModal = ({
     register,
     errors,
     fileUploadRef,
-    isLoading,
     handleSubmit: verifyKeyPairAndDownloadWhitelistFile,
     handleFileSelect: readValidateSetSecretKeyFormFieldFromFile,
     handleOnClose: handleFormClose,
@@ -140,6 +208,8 @@ export const SecretKeyDownloadWhitelistFileModal = ({
   onClose,
   isOpen,
   publicKey,
+  downloadFileName,
+  formId,
 }: SecretKeyDownloadWhitelistFileModalProps): JSX.Element => {
   const modalSize = useBreakpointValue({
     base: 'mobile',
@@ -151,12 +221,16 @@ export const SecretKeyDownloadWhitelistFileModal = ({
     errors,
     register,
     fileUploadRef,
-    isLoading,
     handleSubmit,
     handleFileSelect,
     handleOnClose,
     isSecretKeyUploaded,
-  } = useSecretKeyWhitelistFileModal({ publicKey, onClose })
+  } = useSecretKeyWhitelistFileModal({
+    publicKey,
+    onClose,
+    formId,
+    downloadFileName,
+  })
 
   return (
     <Modal isOpen={isOpen} onClose={handleOnClose} size={modalSize}>
@@ -180,12 +254,7 @@ export const SecretKeyDownloadWhitelistFileModal = ({
           <Container maxW="42.5rem">
             <FormActivationSvg mb="2rem" />
             <form onSubmit={handleSubmit} noValidate>
-              <FormControl
-                isRequired
-                isInvalid={!!errors.secretKey}
-                mb="1rem"
-                isDisabled={isLoading}
-              >
+              <FormControl isRequired isInvalid={!!errors.secretKey} mb="1rem">
                 <FormLabel>Enter or upload Secret Key</FormLabel>
                 <Stack direction="row" spacing="0.5rem">
                   <Input
@@ -200,7 +269,6 @@ export const SecretKeyDownloadWhitelistFileModal = ({
                     placeholder="Enter or upload your Secret Key to continue"
                   />
                   <IconButton
-                    isDisabled={isLoading}
                     variant="outline"
                     aria-label="Pass secret key from file"
                     icon={<BiUpload />}
@@ -214,7 +282,6 @@ export const SecretKeyDownloadWhitelistFileModal = ({
                 type="submit"
                 isFullWidth
                 isDisabled={!isSecretKeyUploaded}
-                isLoading={isLoading}
               >
                 Download
               </Button>

@@ -43,6 +43,8 @@ export const FormWhitelistAttachmentField = ({
   const methods = useForm()
   const { control, setValue, setError, clearErrors } = methods
 
+  const standardCsvDownloadFileName = `whitelist_${formId}.csv`
+
   const fieldContainerSchema: AttachmentFieldSchema = {
     _id: FormWhitelistAttachmentFieldContainerName,
     title: 'Restrict form to eligible NRIC/FIN/UEN',
@@ -66,12 +68,17 @@ export const FormWhitelistAttachmentField = ({
     // if whitelist is enabled so actual file can be lazily downloaded.
     if (isWhitelistEnabled) {
       setValue(FormWhitelistAttachmentFieldName, {
-        name: `whitelist_${formId}.csv`,
+        name: standardCsvDownloadFileName,
         size: whitelistFileSize ?? 0,
         type: 'text/csv',
       })
     }
-  }, [isWhitelistEnabled, whitelistFileSize, setValue, formId])
+  }, [
+    isWhitelistEnabled,
+    whitelistFileSize,
+    setValue,
+    standardCsvDownloadFileName,
+  ])
 
   const maxSizeInBytes = useMemo(() => {
     if (!fieldContainerSchema.attachmentSize) {
@@ -140,6 +147,8 @@ export const FormWhitelistAttachmentField = ({
         isOpen={isSecretKeyModalOpen}
         onClose={() => setIsSecretKeyModalOpen(false)}
         publicKey={publicKey}
+        formId={formId!}
+        downloadFileName={standardCsvDownloadFileName}
       />
       <Box opacity={isDisabled ? 0.3 : 1}>
         <FormProvider {...methods}>

@@ -221,7 +221,7 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   whitelistedSubmitterIds: {
     type: [
       {
-        type: String,
+        type: Object,
         trim: true,
       },
     ],
@@ -267,6 +267,10 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
 
 const EncryptedFormDocumentSchema =
   EncryptedFormSchema as unknown as Schema<IEncryptedFormDocument>
+
+EncryptedFormDocumentSchema.methods.getWhitelistedSubmitterIds = function () {
+  return this.whitelistedSubmitterIds ?? []
+}
 
 EncryptedFormDocumentSchema.methods.addPaymentAccountId = async function ({
   accountId,

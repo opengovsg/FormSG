@@ -1,4 +1,5 @@
 import JoiDate from '@joi/date'
+import { EncryptedFileContent } from '@opengovsg/formsg-sdk/dist/types'
 import axios from 'axios'
 import { ObjectId } from 'bson'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
@@ -7,6 +8,7 @@ import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import multer from 'multer'
 import { ResultAsync } from 'neverthrow'
+import { decodeUTF8 } from 'tweetnacl-util'
 
 import {
   MAX_UPLOAD_FILE_SIZE,
@@ -1614,11 +1616,12 @@ const _getFormPublicKey: ControllerHandler<
   return next()
 }
 
+// TODO: Implement an encrypt method for non-file and non-submission
 const _encryptWhitelistAndSetWhitelistUpdateField: ControllerHandler<
   { formId: string; formPublicKey: string },
   object,
   {
-    whitelistedSubmitterIds: string[] | null
+    whitelistedSubmitterIds: string[] | EncryptedFileContent[] | null
   }
 > = async (req, res, next) => {
   const { formPublicKey } = req.params
@@ -1632,10 +1635,17 @@ const _encryptWhitelistAndSetWhitelistUpdateField: ControllerHandler<
   }
 
   // Encrypt whitelist entries
-  const encryptedWhitelistedSubmitterIds = whitelistedSubmitterIds.map(
+  const encryptedWhitelistedSubmitterIdsPromises = whitelistedSubmitterIds.map(
     (submitterId) => {
-      return formsgSdk.crypto.encrypt(submitterId, formPublicKey)
+      return formsgSdk.crypto.encryptFile(
+        decodeUTF8(submitterId as string),
+        formPublicKey,
+      )
     },
+  )
+
+  const encryptedWhitelistedSubmitterIds = await Promise.all(
+    encryptedWhitelistedSubmitterIdsPromises,
   )
   req.body = {
     whitelistedSubmitterIds: encryptedWhitelistedSubmitterIds,
@@ -1769,7 +1779,48 @@ export const handleGetSettings: ControllerHandler<
     })
 }
 
-export const handleGetWhitelistSetting = () => {}
+export const handleGetWhitelistSetting: ControllerHandler<
+  {
+    formId: string
+  },
+  | {
+      encryptedWhitelistedSubmitterIds: string[] | null
+    }
+  | ErrorDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Retrieve form for settings as well as for permissions checking
+      FormService.retrieveFullFormById(formId).map((form) => ({
+        form,
+        user,
+      })),
+    )
+    .andThen(AuthService.checkFormForPermissions(PermissionLevel.Read))
+    .andThen((form) => EncryptSubmissionService.checkFormIsEncryptMode(form))
+    .map((form) => {
+      return res.status(StatusCodes.OK).json({
+        encryptedWhitelistedSubmitterIds: form.getWhitelistedSubmitterIds(),
+      })
+    })
+    .mapErr((error: Error) => {
+      logger.error({
+        message: 'Error occurred when retrieving form whitelist settings',
+        meta: {
+          action: 'handleGetWhitelistSetting',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
 
 /**
  * Handler for POST api/public/v1/admin/forms/:formId/webhooksettings.
