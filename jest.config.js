@@ -1,4 +1,6 @@
+/** @type {import('jest').Config} */
 module.exports = {
+  automock: true,
   preset: 'ts-jest',
   testMatch: ['**/?(*.)+(spec|test).[t]s?(x)'],
   modulePaths: ['<rootDir>', '<rootDir>/serverless/virus-scanner/'],
