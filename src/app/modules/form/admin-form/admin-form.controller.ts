@@ -1,5 +1,4 @@
 import JoiDate from '@joi/date'
-import { EncryptedFileContent } from '@opengovsg/formsg-sdk/dist/types'
 import axios from 'axios'
 import { ObjectId } from 'bson'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
@@ -8,7 +7,6 @@ import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import multer from 'multer'
 import { ResultAsync } from 'neverthrow'
-import { decodeUTF8 } from 'tweetnacl-util'
 
 import {
   MAX_UPLOAD_FILE_SIZE,
@@ -49,6 +47,10 @@ import {
   WebhookSettingsUpdateDto,
 } from '../../../../../shared/types'
 import {
+  EncryptedStringContent,
+  encryptStringsMessage,
+} from '../../../../../shared/utils/crypto'
+import {
   isMFinSeriesValid,
   isNricValid,
 } from '../../../../../shared/utils/nric-validation'
@@ -61,7 +63,6 @@ import {
 } from '../../../../types/api'
 import { goGovConfig } from '../../../config/features/gogov.config'
 import { smsConfig } from '../../../config/features/sms.config'
-import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
 import MailService from '../../../services/mail/mail.service'
 import * as SmsService from '../../../services/sms/sms.service'
@@ -1621,7 +1622,7 @@ const _encryptWhitelistAndSetWhitelistUpdateField: ControllerHandler<
   { formId: string; formPublicKey: string },
   object,
   {
-    whitelistedSubmitterIds: string[] | EncryptedFileContent[] | null
+    whitelistedSubmitterIds: string[] | EncryptedStringContent[] | null
   }
 > = async (req, _res, next) => {
   const { formPublicKey } = req.params
@@ -1635,20 +1636,14 @@ const _encryptWhitelistAndSetWhitelistUpdateField: ControllerHandler<
   }
 
   // Encrypt whitelist entries
-  const encryptedWhitelistedSubmitterIdsPromises = whitelistedSubmitterIds.map(
-    (submitterId) => {
-      return formsgSdk.crypto.encryptFile(
-        decodeUTF8(submitterId as string),
-        formPublicKey,
-      )
-    },
+
+  const encryptedWhitelistedSubmitterIdsContent = encryptStringsMessage(
+    whitelistedSubmitterIds as string[],
+    formPublicKey,
   )
 
-  const encryptedWhitelistedSubmitterIds = await Promise.all(
-    encryptedWhitelistedSubmitterIdsPromises,
-  )
   req.body = {
-    whitelistedSubmitterIds: encryptedWhitelistedSubmitterIds,
+    whitelistedSubmitterIds: encryptedWhitelistedSubmitterIdsContent,
   }
 
   return next()
@@ -1656,6 +1651,7 @@ const _encryptWhitelistAndSetWhitelistUpdateField: ControllerHandler<
 
 export const handleUpdateWhitelistSetting = [
   handleWhitelistSettingMultipartBody.none(), // expecting string field
+  // TODO: Add joi validation for body
   _validateWhitelistEntries,
   _getFormPublicKey,
   _encryptWhitelistAndSetWhitelistUpdateField,

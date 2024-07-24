@@ -15,12 +15,11 @@ import {
   useBreakpointValue,
   UseDisclosureReturn,
 } from '@chakra-ui/react'
-import { EncryptedFileContent } from '@opengovsg/formsg-sdk/dist/types'
-import { decode as decodeBase64 } from '@stablelib/base64'
 import Papa from 'papaparse'
 
+import { decryptString, EncryptedStringContent } from '~shared/utils/crypto'
+
 import { useToast } from '~hooks/useToast'
-import formsgSdk from '~utils/formSdk'
 import { isKeypairValid, SECRET_KEY_REGEX } from '~utils/secretKeyValidation'
 import Button from '~components/Button'
 import { downloadFile } from '~components/Field/Attachment/utils/downloadFile'
@@ -69,22 +68,15 @@ const useSecretKeyWhitelistFileModal = ({
 
   // TODO: possibly move this to a web worker only if needed
   const decryptSubmitterIds = useCallback(
-    (encryptedSubmitterIds: EncryptedFileContent[], secretKey: string) => {
-      const decoder = new TextDecoder('utf-8')
-      return encryptedSubmitterIds.map((encryptedSubmitterId) => {
-        encryptedSubmitterId.binary = decodeBase64(
-          encryptedSubmitterId.binary as unknown as string,
+    (
+      encryptedSubmitterIdContent: EncryptedStringContent[],
+      secretKey: string,
+    ) => {
+      return encryptedSubmitterIdContent.map((encryptedSubmitterIdContent) => {
+        const decryptedSubmitterId = decryptString(
+          secretKey,
+          encryptedSubmitterIdContent,
         )
-        const decryptedSubmitterId = formsgSdk.crypto
-          .decryptFile(secretKey, encryptedSubmitterId)
-          .then((decryptedSubmitterIdBinary) => {
-            if (!decryptedSubmitterIdBinary) return null
-            const decryptedSubmitterId = decoder.decode(
-              decryptedSubmitterIdBinary,
-            )
-            return decryptedSubmitterId
-          })
-
         return decryptedSubmitterId
       })
     },
@@ -112,47 +104,42 @@ const useSecretKeyWhitelistFileModal = ({
           const { encryptedWhitelistedSubmitterIds } = data
           if (
             encryptedWhitelistedSubmitterIds &&
-            Array.isArray(encryptedWhitelistedSubmitterIds)
+            Array.isArray(encryptedWhitelistedSubmitterIds) &&
+            encryptedWhitelistedSubmitterIds.length > 0
           ) {
-            // convert data string to csv file
-            const decryptedSubmitterIdsPromises = decryptSubmitterIds(
+            const decryptedSubmitterIds = decryptSubmitterIds(
               encryptedWhitelistedSubmitterIds,
               secretKey,
             )
+            const submitterIds = decryptedSubmitterIds.filter(
+              (id) => id !== null,
+            )
+            if (!submitterIds || submitterIds.length === 0) {
+              return
+            }
 
-            Promise.all(decryptedSubmitterIdsPromises)
-              .then((decryptedSubmitterIds) => {
-                const submitterIds = decryptedSubmitterIds.filter(
-                  (id) => id !== null,
-                )
-                if (!submitterIds || submitterIds.length === 0) {
-                  return
-                }
+            // generate and download csv file
+            const csvData = submitterIds.map((subnmitterId) => ({
+              Respondents: subnmitterId,
+            }))
+            const csvString = Papa.unparse(csvData, {
+              header: true,
+              delimiter: ',',
+              skipEmptyLines: 'greedy',
+            })
+            const csvBlob = new Blob([csvString], {
+              type: 'text/csv',
+            })
+            const csvFile = new File([csvBlob], downloadFileName, {
+              type: 'text/csv',
+            })
+            downloadFile(csvFile)
 
-                // generate and download csv file
-                const csvData = submitterIds.map((subnmitterId) => ({
-                  Respondents: subnmitterId,
-                }))
-                const csvString = Papa.unparse(csvData, {
-                  header: true,
-                  delimiter: ',',
-                  skipEmptyLines: 'greedy',
-                })
-                const csvBlob = new Blob([csvString], {
-                  type: 'text/csv',
-                })
-                const csvFile = new File([csvBlob], downloadFileName, {
-                  type: 'text/csv',
-                })
-                downloadFile(csvFile)
-              })
-              .then(() => {
-                handleFormClose()
-                toast.closeAll()
-                toast({
-                  description: 'Whitelist setting file downloaded successfully',
-                })
-              })
+            handleFormClose()
+            toast.closeAll()
+            toast({
+              description: 'Whitelist setting file downloaded successfully',
+            })
           }
         },
       )

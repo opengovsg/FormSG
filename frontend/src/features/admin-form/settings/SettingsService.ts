@@ -1,4 +1,3 @@
-import { EncryptedFileContent } from '@opengovsg/formsg-sdk/dist/types'
 import Stripe from 'stripe'
 
 import {
@@ -7,6 +6,7 @@ import {
   SettingsUpdateDto,
   StorageFormSettings,
 } from '~shared/types/form/form'
+import { EncryptedStringContent } from '~shared/utils/crypto'
 
 import { ApiService } from '~services/ApiService'
 
@@ -44,10 +44,10 @@ export const getFormSettings = async (
 export const getFormEncryptedWhitelistedSubmitterIds = async (
   formId: string,
 ): Promise<{
-  encryptedWhitelistedSubmitterIds: EncryptedFileContent[] | null
+  encryptedWhitelistedSubmitterIds: EncryptedStringContent[] | null
 }> => {
   return ApiService.get<{
-    encryptedWhitelistedSubmitterIds: EncryptedFileContent[] | null
+    encryptedWhitelistedSubmitterIds: EncryptedStringContent[] | null
   }>(`${ADMIN_FORM_ENDPOINT}/${formId}/settings/whitelist`, {
     responseType: 'json',
   }).then(({ data }) => data)
