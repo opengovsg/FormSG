@@ -2,6 +2,7 @@ import {
   MyInfoAddress,
   MyInfoAddressType,
   MyInfoCodeField,
+  MyInfoDrivingLicence,
   MyInfoNotApplicable,
   MyInfoOccupation,
   MyInfoPhoneNumber,
@@ -10,6 +11,7 @@ import {
   MyInfoVehicle,
 } from '@opengovsg/myinfo-gov-client'
 
+import { DrivingLicenceAttributes } from '../../../../shared/types'
 import { createLoggerWithLabel } from '../../config/logger'
 
 const logger = createLoggerWithLabel(module)
@@ -218,4 +220,35 @@ export const formatWorkpassStatus = (
     originalValue.slice(0, 1).toUpperCase() +
     originalValue.slice(1).toLowerCase()
   )
+}
+
+export const formatDrivingLicenceField = (
+  field: MyInfoDrivingLicence | MyInfoNotApplicable | undefined,
+  attr: DrivingLicenceAttributes | undefined,
+): string => {
+  if (
+    !field ||
+    field.source === MyInfoSource.NotApplicable ||
+    field.unavailable
+  ) {
+    return ''
+  }
+
+  switch (attr) {
+    case DrivingLicenceAttributes.ComStatus:
+      return field.comstatus?.desc || ''
+    case DrivingLicenceAttributes.TotalDemeritPoints:
+      return String(field.totaldemeritpoints?.value) || ''
+    case DrivingLicenceAttributes.SuspensionStartDate:
+      return String(field.suspension?.startdate?.value) || ''
+    case DrivingLicenceAttributes.SuspensionEndDate:
+      return String(field.suspension?.enddate?.value) || ''
+    case DrivingLicenceAttributes.DisqualificationStartDate:
+      return String(field.disqualification?.startdate?.value) || ''
+
+    default: {
+      const never: never = attr
+      return never
+    }
+  }
 }

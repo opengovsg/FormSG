@@ -58,12 +58,19 @@ export enum MyInfoAttribute {
   ChildGender = 'childgender',
   ChildRace = 'childrace',
   ChildSecondaryRace = 'childsecondaryrace',
-
   DrivingLicenceComStatus = 'drivinglicencecomstatus',
   DrivingLicenceTotalDemeritPoints = 'drivinglicencetotaldemeritpoints',
   DrivingLicenceSuspensionStartDate = 'drivinglicencesuspensionstartdate',
   DrivingLicenceSuspensionEndDate = 'drivinglicencesuspensionenddate',
   DrivingLicenceDisqualificationStartDate = 'drivinglicencedisqualificationstartdate',
+}
+
+export enum DrivingLicenceAttributes {
+  ComStatus = MyInfoAttribute.DrivingLicenceComStatus,
+  TotalDemeritPoints = MyInfoAttribute.DrivingLicenceTotalDemeritPoints,
+  SuspensionStartDate = MyInfoAttribute.DrivingLicenceSuspensionStartDate,
+  SuspensionEndDate = MyInfoAttribute.DrivingLicenceSuspensionEndDate,
+  DisqualificationStartDate = MyInfoAttribute.DrivingLicenceDisqualificationStartDate,
 }
 
 // We need to write this manually otherwise TS merges the names and keys

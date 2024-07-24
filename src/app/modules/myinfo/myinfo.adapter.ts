@@ -9,6 +9,7 @@ import {
 } from '@opengovsg/myinfo-gov-client'
 
 import {
+  DrivingLicenceAttributes,
   MyInfoAttribute as InternalAttr,
   MyInfoChildAttributes,
   MyInfoChildData,
@@ -21,6 +22,7 @@ import {
   formatAddress,
   formatBasicField,
   formatDescriptionField,
+  formatDrivingLicenceField,
   formatOccupation,
   formatPhoneNumber,
   formatVehicleNumbers,
@@ -117,8 +119,7 @@ export const internalAttrToScope = (attr: InternalAttr): MyInfoScope => {
       return `${ExternalAttr.ChildrenBirthRecords}.secondaryrace`
     // ref https://public.cloud.myinfo.gov.sg/myinfo/api/myinfo-kyc-v4.0.html#section/Authentication
     case InternalAttr.DrivingLicenceComStatus:
-      return `${ExternalAttr.DrivingLicence}.comstatus`
-    // return `${ExternalAttr.DrivingLicence}.comstatus` // Driving Licence - Certificate of Merit Status
+      return `${ExternalAttr.DrivingLicence}.comstatus` // Driving Licence - Certificate of Merit Status
     case InternalAttr.DrivingLicenceTotalDemeritPoints:
       return `${ExternalAttr.DrivingLicence}.totaldemeritpoints` // Driving Licence - Total Demerit Points
     case InternalAttr.DrivingLicenceSuspensionStartDate:
@@ -353,16 +354,20 @@ export class MyInfoData
     return result
   }
 
-  _formatFieldValue(attr: ExternalAttr): string | undefined {
-    switch (attr) {
+  // TODO(Ken): update interface to support internal attributes for sgid
+  _formatFieldValue(
+    externalAttr: ExternalAttr,
+    internalAttr: InternalAttr,
+  ): string | undefined {
+    switch (externalAttr) {
       case ExternalAttr.MobileNo:
-        return formatPhoneNumber(this.#personData[attr])
+        return formatPhoneNumber(this.#personData[externalAttr])
       case ExternalAttr.RegisteredAddress:
-        return formatAddress(this.#personData[attr])
+        return formatAddress(this.#personData[externalAttr])
       case ExternalAttr.Vehicles:
-        return formatVehicleNumbers(this.#personData[attr])
+        return formatVehicleNumbers(this.#personData[externalAttr])
       case ExternalAttr.Occupation:
-        return formatOccupation(this.#personData[attr])
+        return formatOccupation(this.#personData[externalAttr])
       // Where field has code and description, return description
       case ExternalAttr.Sex:
       case ExternalAttr.Race:
@@ -374,10 +379,10 @@ export class MyInfoData
       case ExternalAttr.HDBType:
       case ExternalAttr.MaritalStatus:
       case ExternalAttr.CountryOfMarriage:
-        return formatDescriptionField(this.#personData[attr])
+        return formatDescriptionField(this.#personData[externalAttr])
       // Deal with workpass status bug where value is returned in uppercase
       case ExternalAttr.PassStatus:
-        return formatWorkpassStatus(this.#personData[attr])
+        return formatWorkpassStatus(this.#personData[externalAttr])
       // Remaining fields should only have 'value' key
       case ExternalAttr.Name:
       case ExternalAttr.PassportNumber:
@@ -387,8 +392,13 @@ export class MyInfoData
       case ExternalAttr.PassportExpiryDate:
       case ExternalAttr.MarriageDate:
       case ExternalAttr.DivorceDate:
+      case ExternalAttr.DrivingLicence:
+        return formatDrivingLicenceField(
+          this.#personData[externalAttr],
+          internalAttr as unknown as DrivingLicenceAttributes,
+        )
       case ExternalAttr.PassExpiryDate:
-        return formatBasicField(this.#personData[attr])
+        return formatBasicField(this.#personData[externalAttr])
       // Above cases should be exhaustive for all attributes supported by Form.
       // Fall back to undefined as data shape is unknown.
       default:
@@ -396,7 +406,7 @@ export class MyInfoData
           message: 'Unknown attribute found in Singpass MyInfo field',
           meta: {
             action: '_formatFieldValue',
-            attr,
+            attr: externalAttr,
             personData: this.#personData,
           },
         })
@@ -466,6 +476,14 @@ export class MyInfoData
           !data.unavailable
         )
       }
+      case ExternalAttr.DrivingLicence: {
+        const data = this.#personData[attr]
+        return (
+          !!data &&
+          data.source === MyInfoSource.GovtVerified &&
+          !data.unavailable
+        )
+      }
       // Fields required to always be editable according to MyInfo docs
       case ExternalAttr.MaritalStatus:
       case ExternalAttr.MarriageDate:
@@ -497,7 +515,7 @@ export class MyInfoData
     isReadOnly: boolean
   } {
     const externalAttr = internalAttrToExternal(attr)
-    const fieldValue = this._formatFieldValue(externalAttr)
+    const fieldValue = this._formatFieldValue(externalAttr, attr)
     return {
       fieldValue,
       isReadOnly: this._isDataReadOnly(externalAttr, fieldValue),
