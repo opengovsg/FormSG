@@ -443,6 +443,11 @@ export class MyInfoData
     attr: ExternalAttr,
     myInfoValue: string | undefined,
   ): boolean {
+    // HACK: force override for driving licence
+    // For real e-service, all fields must be regarded as non-editable
+    if (attr === ExternalAttr.DrivingLicence) {
+      return true
+    }
     const data = this.#personData[attr]
     if (!data || !myInfoValue) return false
 
@@ -476,14 +481,7 @@ export class MyInfoData
           !data.unavailable
         )
       }
-      case ExternalAttr.DrivingLicence: {
-        const data = this.#personData[attr]
-        return (
-          !!data &&
-          data.source === MyInfoSource.GovtVerified &&
-          !data.unavailable
-        )
-      }
+
       // Fields required to always be editable according to MyInfo docs
       case ExternalAttr.MaritalStatus:
       case ExternalAttr.MarriageDate:
