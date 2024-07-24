@@ -3,6 +3,7 @@ import { ok, okAsync, ResultAsync } from 'neverthrow'
 
 import {
   BasicField,
+  ErrorCode,
   FormAuthType,
   SubmissionErrorDto,
   SubmissionResponseDto,
@@ -450,7 +451,7 @@ export const submitEmailModeForm: ControllerHandler<
           return res.status(StatusCodes.BAD_REQUEST).json({
             message:
               'Your NRIC/FIN/UEN has already been used to respond to this form.',
-            hasSingleSubmissionValidationFailure: true,
+            errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
           })
         }
         // Send email confirmations

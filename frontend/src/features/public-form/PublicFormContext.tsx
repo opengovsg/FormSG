@@ -68,6 +68,7 @@ export interface PublicFormContextProps
 
   hasSingleSubmissionValidationError: boolean
   setHasSingleSubmissionValidationError: Dispatch<SetStateAction<boolean>>
+  hasRespondentNotWhitelistedError: boolean
 
   encryptedPreviousSubmission?: MultirespondentSubmissionDto
   previousSubmission?: ReturnType<typeof decryptSubmission>

@@ -112,7 +112,6 @@ export const FormWhitelistAttachmentField = ({
 
         mutateFormWhitelistSetting.mutate(csvString, {
           onSuccess: () => {
-            // TODO: update file name to standard file name
             clearWhitelistAttachmentFieldError()
             onChange(file)
           },

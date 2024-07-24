@@ -11,3 +11,6 @@ export const GO_ALREADY_EXIST_ERROR_MESSAGE = 'GoGov link already exists'
 
 export const FORM_SINGLE_SUBMISSION_VALIDATION_ERROR_MESSAGE =
   'You have already submitted a response using this NRIC/FIN/UEN. If you think this is a mistake, please contact the agency that gave you the form link.'
+
+export const FORM_RESPONDENT_NOT_WHITELISTED_ERROR_MESSAGE =
+  'You do not have access to this form. If you think this is a mistake, please contact the agency that gave you the form link.'

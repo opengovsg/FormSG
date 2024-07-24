@@ -5,6 +5,7 @@ import { err, ok, Result } from 'neverthrow'
 import { UnreachableCaseError } from 'ts-essentials'
 
 import {
+  ErrorCode,
   ErrorDto,
   FormAuthType,
   FormFieldDto,
@@ -352,7 +353,7 @@ export const handleGetPublicForm: ControllerHandler<
     return res.json({
       form: publicForm, // do not need to pre-fill even if MyInfo since user is not logged in
       isIntranetUser,
-      hasSingleSubmissionValidationFailure: true,
+      errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
     })
   }
 

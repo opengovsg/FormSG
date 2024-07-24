@@ -18,6 +18,7 @@ import { PaymentChannel, PaymentMethodType, PaymentType } from '../payment'
 import { Product } from './product'
 import { FormWorkflow, FormWorkflowDto } from './workflow'
 import { EncryptedFileContent } from '@opengovsg/formsg-sdk/dist/types'
+import { ErrorCode } from '../errorCodes'
 
 export type FormId = Tagged<string, 'FormId'>
 
@@ -304,9 +305,8 @@ export type PublicFormViewDto = {
   form: PublicFormDto
   spcpSession?: SpcpSession
   isIntranetUser?: boolean
-  myInfoError?: true
   myInfoChildrenBirthRecords?: MyInfoChildData
-  hasSingleSubmissionValidationFailure?: true
+  errorCodes?: ErrorCode[]
 }
 
 export type PreviewFormViewDto = Pick<PublicFormViewDto, 'form' | 'spcpSession'>

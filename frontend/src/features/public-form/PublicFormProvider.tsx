@@ -24,6 +24,7 @@ import {
 } from '~shared/constants'
 import { BasicField, PaymentType } from '~shared/types'
 import { CaptchaTypes } from '~shared/types/captcha'
+import { ErrorCode } from '~shared/types/errorCodes'
 import {
   FormAuthType,
   FormResponseMode,
@@ -133,11 +134,6 @@ export const PublicFormProvider = ({
 
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
-  const [numVisibleFields, setNumVisibleFields] = useState(0)
-  const [
-    hasSingleSubmissionValidationError,
-    setHasSingleSubmissionValidationError,
-  ] = useState(false)
 
   const {
     data,
@@ -150,22 +146,46 @@ export const PublicFormProvider = ({
     /* enabled= */ !submissionData,
   )
 
+  const [numVisibleFields, setNumVisibleFields] = useState(0)
+
+  // Respondent access error states
+  const [
+    hasSingleSubmissionValidationError,
+    setHasSingleSubmissionValidationError,
+  ] = useState(false)
+  const [
+    hasRespondentNotWhitelistedError,
+    setHasRespondentNotWhitelistedError,
+  ] = useState(false)
+
+  const clearRespondentAccessErrors = useCallback(() => {
+    setHasRespondentNotWhitelistedError(false)
+    setHasSingleSubmissionValidationError(false)
+  }, [])
+
+  useEffect(() => {
+    if (
+      data?.errorCodes?.find(
+        (errorCode) =>
+          errorCode === ErrorCode.respondentSingleSubmissionValidationFailure,
+      )
+    ) {
+      setHasSingleSubmissionValidationError(true)
+    }
+
+    if (
+      data?.errorCodes?.find(
+        (errorCode) => errorCode === ErrorCode.respondentNotWhitelisted,
+      )
+    ) {
+      setHasRespondentNotWhitelistedError(true)
+    }
+  }, [data?.errorCodes])
+
   // Mask Nric if isNricMaskEnabled is true
   if (data?.form.isNricMaskEnabled && data.spcpSession?.userName) {
     data.spcpSession.userName = maskNric(data.spcpSession.userName)
   }
-
-  useEffect(() => {
-    if (
-      data?.form.isSingleSubmission &&
-      data.hasSingleSubmissionValidationFailure
-    ) {
-      setHasSingleSubmissionValidationError(true)
-    }
-  }, [
-    data?.form.isSingleSubmission,
-    data?.hasSingleSubmissionValidationFailure,
-  ])
 
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
     useCommonFormProvider(formId)
@@ -369,14 +389,19 @@ export const PublicFormProvider = ({
     data?.form.responseMode === FormResponseMode.Encrypt &&
     data.form.payments_field.enabled
 
+  const hasMyInfoError = !!(
+    data?.errorCodes &&
+    data.errorCodes.find((errorCode) => errorCode === ErrorCode.myInfo)
+  )
+
   useEffect(() => {
-    if (data?.myInfoError) {
+    if (hasMyInfoError) {
       toast({
         status: 'danger',
         description: t('features.publicForm.errors.myinfo'),
       })
     }
-  }, [data, toast, t])
+  }, [hasMyInfoError, toast, t])
 
   const showErrorToast = useCallback(
     (error, form: PublicFormDto) => {
@@ -551,7 +576,6 @@ export const PublicFormProvider = ({
         ) {
           data.spcpSession = undefined
         }
-        setHasSingleSubmissionValidationError(false)
         setSubmissionData({
           id: submissionId,
           timestamp,
@@ -713,7 +737,7 @@ export const PublicFormProvider = ({
                     ) {
                       data.spcpSession = undefined
                     }
-                    setHasSingleSubmissionValidationError(false)
+                    clearRespondentAccessErrors()
                     setSubmissionData({
                       id: submissionId,
                       timestamp,
@@ -776,7 +800,7 @@ export const PublicFormProvider = ({
                   ) {
                     data.spcpSession = undefined
                   }
-                  setHasSingleSubmissionValidationError(false)
+                  clearRespondentAccessErrors()
                   setSubmissionData({
                     id: submissionId,
                     timestamp,
@@ -848,6 +872,7 @@ export const PublicFormProvider = ({
       navigate,
       formId,
       storePaymentMemory,
+      clearRespondentAccessErrors,
     ],
   )
 
@@ -883,6 +908,7 @@ export const PublicFormProvider = ({
         setNumVisibleFields,
         hasSingleSubmissionValidationError,
         setHasSingleSubmissionValidationError,
+        hasRespondentNotWhitelistedError,
         encryptedPreviousSubmission,
         previousSubmission,
         previousAttachments,

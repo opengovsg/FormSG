@@ -2,6 +2,8 @@ import { datadogLogs } from '@datadog/browser-logs'
 import axios, { AxiosError } from 'axios'
 import { StatusCodes } from 'http-status-codes'
 
+import { ErrorCode } from '~shared/types/errorCodes'
+
 import { ApiError } from '~typings/core'
 
 import { LOCAL_STORAGE_EVENT, LOGGED_IN_KEY } from '~constants/localStorage'
@@ -30,7 +32,12 @@ export const transformAxiosError = (error: Error): ApiError => {
   if (axios.isAxiosError(error)) {
     if (error.response) {
       const statusCode = error.response.status
-      if (error.response.data?.hasSingleSubmissionValidationFailure) {
+      if (
+        error.response.data?.errorCodes?.find(
+          (errorCode: ErrorCode) =>
+            errorCode === ErrorCode.respondentSingleSubmissionValidationFailure,
+        )
+      ) {
         return new SingleSubmissionValidationError()
       }
       if (statusCode === StatusCodes.TOO_MANY_REQUESTS) {
