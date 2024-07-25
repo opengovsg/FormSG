@@ -18,7 +18,7 @@ import { PaymentChannel, PaymentMethodType, PaymentType } from '../payment'
 import { Product } from './product'
 import { FormWorkflow, FormWorkflowDto } from './workflow'
 import { ErrorCode } from '../errorCodes'
-import { EncryptedStringsMessageContent } from '../../utils/crypto'
+import { EncryptedStringsMessageContentWithMyPrivateKey } from '../../utils/crypto'
 
 export type FormId = Tagged<string, 'FormId'>
 
@@ -179,7 +179,10 @@ export interface StorageFormBase extends FormBase {
   payments_channel: FormPaymentsChannel
   payments_field: FormPaymentsField
   business?: FormBusinessField
-  whitelistedSubmitterIds?: EncryptedStringsMessageContent | null
+  whitelistedSubmitterIds?:
+    | EncryptedStringsMessageContentWithMyPrivateKey
+    | null
+    | true
 }
 
 export interface MultirespondentFormBase extends FormBase {

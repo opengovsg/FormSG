@@ -5,6 +5,10 @@ import {
   Model,
   ToObjectOptions,
 } from 'mongoose'
+import {
+  EncryptedStringsMessageContent,
+  EncryptedStringsMessageContentWithMyPrivateKey,
+} from 'shared/utils/crypto'
 import { DeepRequired } from 'ts-essentials'
 import type { Merge, SetOptional } from 'type-fest'
 
@@ -191,7 +195,14 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   /**
    * Retrieve the whitelistedSubmitterIds of the form.
    */
-  getWhitelistedSubmitterIds(): string[]
+  getWhitelistedSubmitterIds(): EncryptedStringsMessageContent | null
+
+  /**
+   * Retrieve the whitelistedSubmitterIds of the form with myPrivateKey.
+   * NOTE: Should only be used when myPrivateKey + nonce is needed
+   * for deterministic encryption for lookup.
+   */
+  getWhitelistedSubmitterIdsWithMyPrivateKey(): EncryptedStringsMessageContentWithMyPrivateKey | null
 
   /**
    * Retrieve form webhook settings.

@@ -8,6 +8,7 @@ import mongoose, {
   SchemaOptions,
   Types,
 } from 'mongoose'
+import { EncryptedStringsMessageContentWithMyPrivateKey } from 'shared/utils/crypto'
 import validator from 'validator'
 import isEmail from 'validator/lib/isEmail'
 
@@ -192,8 +193,12 @@ export const formPaymentsFieldSchema = {
   },
 }
 
-export const formEncryptedWhitelistedSubmitterIdSchema = new Schema({
-  publicKey: {
+export const formEncryptedWhitelistedSubmitterIdSchema = {
+  myPublicKey: {
+    type: String,
+    required: true,
+  },
+  myPrivateKey: {
     type: String,
     required: true,
   },
@@ -212,7 +217,7 @@ export const formEncryptedWhitelistedSubmitterIdSchema = new Schema({
     ],
   },
   _id: { id: false },
-})
+}
 
 const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   publicKey: {
@@ -243,6 +248,15 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   whitelistedSubmitterIds: {
     type: formEncryptedWhitelistedSubmitterIdSchema,
     required: false,
+    // Avoid loading whitelist payload by default as it is large.
+    // Use getter methods to access raw data.
+    get: (v: EncryptedStringsMessageContentWithMyPrivateKey) => {
+      if (!v) {
+        return null
+      } else {
+        return true
+      }
+    },
   },
   payments_channel: {
     channel: {
@@ -279,11 +293,35 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
 const EncryptedFormDocumentSchema =
   EncryptedFormSchema as unknown as Schema<IEncryptedFormDocument>
 
-EncryptedFormDocumentSchema.methods.getWhitelistedSubmitterIds = function () {
-  return this.whitelistedSubmitterIds ?? []
-}
+EncryptedFormDocumentSchema.methods.getWhitelistedSubmitterIds =
+  async function () {
+    if (!this.whitelistedSubmitterIds) {
+      return null
+    }
+    const rawWhitelistedSubmitterIds = this.get(
+      'whitelistedSubmitterIds',
+      null,
+      {
+        getters: false,
+      },
+    )
+    return {
+      myPublicKey: rawWhitelistedSubmitterIds.myPublicKey,
+      nonce: rawWhitelistedSubmitterIds.nonce,
+      cipherTexts: rawWhitelistedSubmitterIds.cipherTexts,
+    }
+  }
 
-EncryptedFormDocumentSchema.methods.addPaymentAccountId = async function ({
+EncryptedFormDocumentSchema.methods.getWhitelistedSubmitterIdsWithMyPrivateKey =
+  function () {
+    if (!this.whitelistedSubmitterIds) {
+      return null
+    }
+
+    return this.get('whitelistedSubmitterIds', null, { getters: false })
+  }
+
+EncryptedFormDocumentSchema.methods.addPaymentAccountId = function ({
   accountId,
   publishableKey,
 }: {

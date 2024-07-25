@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import { decodeBase64 } from 'tweetnacl-util'
 
 import {
   BasicField,
@@ -11,6 +12,7 @@ import {
   FormStatus,
   PublicFormDto,
 } from '../../../../shared/types'
+import { encryptString } from '../../../../shared/utils/crypto'
 import {
   IEmailFormModel,
   IEncryptedFormModel,
@@ -273,6 +275,55 @@ export const checkFormSubmissionLimitAndDeactivateForm = (
       ),
     )
   })
+}
+
+export const checkHasRespondentNotWhitelistedFailure = (
+  form: IPopulatedForm,
+  submitterId: string,
+): Result<boolean, ApplicationError> => {
+  // check since whitelist is only for encrypt mode forms
+  if (form.responseMode !== FormResponseMode.Encrypt) {
+    return ok(false)
+  }
+  const whitelistedSubmitterIds =
+    form.getWhitelistedSubmitterIdsWithMyPrivateKey()
+  // whitelist setting not enabled for form
+  if (!whitelistedSubmitterIds) {
+    return ok(false)
+  }
+
+  if (!form.publicKey) {
+    logger.error({
+      message: 'Encrypt mode form does not have a public key',
+      meta: {
+        action: 'checkHasRespondentNotWhitelistedFailure',
+        formId: form._id,
+      },
+    })
+    return err(
+      new ApplicationError('Encrypt mode form does not have a public key'),
+    )
+  }
+
+  const { myPublicKey, myPrivateKey, nonce, cipherTexts } =
+    whitelistedSubmitterIds
+  const myKeyPair = {
+    publicKey: myPublicKey,
+    privateKey: myPrivateKey,
+  }
+  const usedNonce = decodeBase64(nonce)
+
+  const submitterIdForLookup = encryptString(
+    submitterId,
+    form.publicKey,
+    usedNonce,
+    myKeyPair,
+  ).cipherText
+
+  const submitterIdInWhitelist = cipherTexts.includes(submitterIdForLookup)
+
+  const hasRespondentNotWhitelistedError = !submitterIdInWhitelist
+  return ok(hasRespondentNotWhitelistedError)
 }
 
 /**

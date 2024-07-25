@@ -46,7 +46,11 @@ import {
   SubmissionCountQueryDto,
   WebhookSettingsUpdateDto,
 } from '../../../../../shared/types'
-import { encryptStringsMessage } from '../../../../../shared/utils/crypto'
+import {
+  EncryptedStringsMessageContent,
+  EncryptedStringsMessageContentWithMyPrivateKey,
+  encryptStringsMessage,
+} from '../../../../../shared/utils/crypto'
 import { IFormDocument, IPopulatedForm } from '../../../../types'
 import {
   EncryptSubmissionDto,
@@ -1729,7 +1733,7 @@ export const handleGetWhitelistSetting: ControllerHandler<
     formId: string
   },
   | {
-      encryptedWhitelistedSubmitterIds: string[] | null
+      encryptedWhitelistedSubmitterIds: EncryptedStringsMessageContent | null
     }
   | ErrorDto
 > = (req, res) => {
@@ -1747,8 +1751,9 @@ export const handleGetWhitelistSetting: ControllerHandler<
     .andThen(AuthService.checkFormForPermissions(PermissionLevel.Read))
     .andThen((form) => EncryptSubmissionService.checkFormIsEncryptMode(form))
     .map((form) => {
+      const formWhitelistedSubmitterIds = form.getWhitelistedSubmitterIds()
       return res.status(StatusCodes.OK).json({
-        encryptedWhitelistedSubmitterIds: form.getWhitelistedSubmitterIds(),
+        encryptedWhitelistedSubmitterIds: formWhitelistedSubmitterIds,
       })
     })
     .mapErr((error: Error) => {

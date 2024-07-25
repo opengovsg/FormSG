@@ -213,7 +213,7 @@ export const handleGetPublicForm: ControllerHandler<
         // NOTE: If the user does not have any cookie, clearing the cookie still has the same result
         return res.json({
           form: publicForm,
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
           isIntranetUser,
         })
       }
@@ -290,7 +290,7 @@ export const handleGetPublicForm: ControllerHandler<
         })
         return res.json({
           form: publicForm,
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
           isIntranetUser,
         })
       }
@@ -309,7 +309,7 @@ export const handleGetPublicForm: ControllerHandler<
         })
         return res.json({
           form: publicForm,
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
           isIntranetUser,
         })
       }
@@ -321,6 +321,33 @@ export const handleGetPublicForm: ControllerHandler<
     default: {
       return new UnreachableCaseError(authType)
     }
+  }
+
+  // validate if respondent is whitelisted
+  const hasRespondentNotWhitelistedErrorResult =
+    await FormService.checkHasRespondentNotWhitelistedFailure(
+      form,
+      spcpSession.userName,
+    )
+
+  if (hasRespondentNotWhitelistedErrorResult.isErr()) {
+    const error = hasRespondentNotWhitelistedErrorResult.error
+    logger.error({
+      message: 'Error validating respondent whitelisting',
+      meta: logMeta,
+      error,
+    })
+    return res.sendStatus(HttpStatusCode.InternalServerError)
+  }
+
+  const hasRespondentNotWhitelistedError =
+    hasRespondentNotWhitelistedErrorResult.value
+  if (hasRespondentNotWhitelistedError) {
+    return res.json({
+      form: publicForm,
+      isIntranetUser,
+      errorCodes: [ErrorCode.respondentNotWhitelisted],
+    })
   }
 
   // validate for isSingleSubmission
@@ -376,7 +403,7 @@ export const handleGetPublicForm: ControllerHandler<
         // NOTE: If the user does not have any cookie, clearing the cookie still has the same result
         return res.json({
           form: publicForm,
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
           isIntranetUser,
         })
       }
@@ -397,7 +424,7 @@ export const handleGetPublicForm: ControllerHandler<
         })
         return res.json({
           form: publicForm,
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
           isIntranetUser,
         })
       }
@@ -438,7 +465,7 @@ export const handleGetPublicForm: ControllerHandler<
         // NOTE: If the user does not have any cookie, clearing the cookie still has the same result
         return res.json({
           form: publicForm,
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
           isIntranetUser,
         })
       }
@@ -458,7 +485,7 @@ export const handleGetPublicForm: ControllerHandler<
         })
         return res.json({
           form: publicForm,
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
           isIntranetUser,
         })
       }

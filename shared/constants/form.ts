@@ -21,6 +21,7 @@ export const STORAGE_PUBLIC_FORM_FIELDS = <const>[
   ...PUBLIC_FORM_FIELDS,
   'payments_field',
   'publicKey',
+  'whitelistedSubmitterIds',
 ]
 export const MULTIRESPONDENT_PUBLIC_FORM_FIELDS = <const>[
   ...PUBLIC_FORM_FIELDS,

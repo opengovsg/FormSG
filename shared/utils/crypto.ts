@@ -15,30 +15,40 @@ const _generateKeyPair = () => {
 }
 
 type EncryptedStringContent = {
-  publicKey: string
+  myPublicKey: string
   nonce: string
   cipherText: string
 }
 
 export type EncryptedStringsMessageContent = {
-  publicKey: string
+  myPublicKey: string
   nonce: string
   cipherTexts: string[]
 }
 
+// Should only be used for encryption which requires lookup as well.
+// WARNING: By storing private key, confidentiality is still enforced but authenticity is compromised.
+// NOTE: my private key should not be passed to client and should be kept in server only.
+// Rationale: This tradeoff is necessary for lookup functionality ie. generate same ciphertext for given plaintext.
+export type EncryptedStringsMessageContentWithMyPrivateKey =
+  EncryptedStringsMessageContent & {
+    myPrivateKey: string
+  }
+
 export const encryptStringsMessage = (
   plainTexts: string[],
-  publicKey: string,
-): EncryptedStringsMessageContent => {
+  peerPublicKey: string,
+): EncryptedStringsMessageContentWithMyPrivateKey => {
   const nonce = nacl.randomBytes(24)
   const generatedKeyPair = _generateKeyPair()
 
   return {
-    publicKey: generatedKeyPair.publicKey,
+    myPublicKey: generatedKeyPair.publicKey,
+    myPrivateKey: generatedKeyPair.privateKey,
     nonce: encodeBase64(nonce),
     cipherTexts: encryptStrings(
       plainTexts,
-      publicKey,
+      peerPublicKey,
       nonce,
       generatedKeyPair,
     ).map((content) => content.cipherText),
@@ -51,28 +61,28 @@ export const encryptStringsMessage = (
  * In this case, this list of strings is considered a single message.
  * @param plainTexts
  * @param nonce
- * @param publicKey
+ * @param peerPublicKey
  * @returns
  */
 const encryptStrings = (
   plainTexts: string[],
-  publicKey: string,
+  peerPublicKey: string,
   nonce?: Uint8Array,
-  generatedKeyPair?: { publicKey: string; privateKey: string },
+  myKeyPair?: { publicKey: string; privateKey: string },
 ): EncryptedStringContent[] => {
   return plainTexts.map((plainText) =>
-    encryptString(plainText, publicKey, nonce, generatedKeyPair),
+    encryptString(plainText, peerPublicKey, nonce, myKeyPair),
   )
 }
 
-const encryptString = (
+export const encryptString = (
   plainText: string,
-  publicKey: string,
+  peerPublicKey: string,
   nonce?: Uint8Array,
-  generatedKeyPair?: { publicKey: string; privateKey: string },
+  myKeyPair?: { publicKey: string; privateKey: string },
 ): EncryptedStringContent => {
-  if (!generatedKeyPair) {
-    generatedKeyPair = _generateKeyPair()
+  if (!myKeyPair) {
+    myKeyPair = _generateKeyPair()
   }
   if (!nonce) {
     nonce = nacl.randomBytes(24)
@@ -80,29 +90,29 @@ const encryptString = (
   const plainTextBinary = decodeUTF8(plainText)
 
   return {
-    publicKey: generatedKeyPair.publicKey,
+    myPublicKey: myKeyPair.publicKey,
     nonce: encodeBase64(nonce),
     cipherText: encodeBase64(
       nacl.box(
         plainTextBinary,
         nonce,
-        decodeBase64(publicKey),
-        decodeBase64(generatedKeyPair.privateKey),
+        decodeBase64(peerPublicKey),
+        decodeBase64(myKeyPair.privateKey),
       ),
     ),
   }
 }
 
 export const decryptStringMessage = (
-  privateKey: string,
+  peerPrivateKey: string,
   encryptedStringsMessageContent: EncryptedStringsMessageContent,
 ): (string | null)[] => {
   const nonce = encryptedStringsMessageContent.nonce
-  const publicKey = encryptedStringsMessageContent.publicKey
+  const myPublicKey = encryptedStringsMessageContent.myPublicKey
 
   return encryptedStringsMessageContent.cipherTexts.map((cipherText) =>
-    decryptString(privateKey, {
-      publicKey,
+    decryptString(peerPrivateKey, {
+      myPublicKey,
       nonce,
       cipherText,
     }),
@@ -110,14 +120,14 @@ export const decryptStringMessage = (
 }
 
 const decryptString = (
-  privateKey: string,
+  peerPrivateKey: string,
   encryptStringContent: EncryptedStringContent,
 ): string | null => {
   const decryptedBinary = nacl.box.open(
     decodeBase64(encryptStringContent.cipherText),
     decodeBase64(encryptStringContent.nonce),
-    decodeBase64(encryptStringContent.publicKey),
-    decodeBase64(privateKey),
+    decodeBase64(encryptStringContent.myPublicKey),
+    decodeBase64(peerPrivateKey),
   )
 
   if (!decryptedBinary) {

@@ -8,7 +8,7 @@ import {
 import { assignIn, last, omit } from 'lodash'
 import mongoose, { ClientSession } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
-import { EncryptedStringsMessageContent } from 'shared/utils/crypto'
+import { EncryptedStringsMessageContentWithMyPrivateKey } from 'shared/utils/crypto'
 import type { Except, Merge } from 'type-fest'
 
 import {
@@ -1089,7 +1089,7 @@ export const checkIsWhitelistSettingValid = (
 
 export const updateFormWhitelistSetting = (
   originalForm: IPopulatedForm,
-  encryptedWhitelistedSubmitterIdsContent: EncryptedStringsMessageContent | null,
+  encryptedWhitelistedSubmitterIdsContent: EncryptedStringsMessageContentWithMyPrivateKey | null,
 ) => {
   if (originalForm.responseMode !== FormResponseMode.Encrypt) {
     return errAsync(
