@@ -362,6 +362,18 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 10,
       env: 'DOWNLOAD_PAYMENT_RECEIPT_RATE_LIMIT',
     },
+    downloadFormWhitelist: {
+      doc: 'Per-minute, per-IP request limit to download the form whitelist',
+      format: 'int',
+      default: 10,
+      env: 'DOWNLOAD_FORM_WHITELIST_RATE_LIMIT',
+    },
+    uploadFormWhitelist: {
+      doc: 'Per-minute, per-IP request limit to upload the form whitelist',
+      format: 'int',
+      default: 10,
+      env: 'UPLOAD_FORM_WHITELIST_RATE_LIMIT',
+    },
     publicApi: {
       doc: 'Per-minute, per-IP, per-instance request limit for public APIs',
       format: 'int',

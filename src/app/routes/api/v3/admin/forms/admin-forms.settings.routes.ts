@@ -1,6 +1,8 @@
 import { Router } from 'express'
 
+import { rateLimitConfig } from '../../../../../config/config'
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
+import { limitRate } from '../../../../../utils/limit-rate'
 
 export const AdminFormsSettingsRouter = Router()
 
@@ -40,9 +42,14 @@ AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/settings')
   .get(AdminFormController.handleGetSettings)
 
 AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/settings/whitelist')
-  // TODO: Add rate limiting for get and update whitelist setting
-  .put(AdminFormController.handleUpdateWhitelistSetting)
-  .get(AdminFormController.handleGetWhitelistSetting)
+  .get(
+    limitRate({ max: rateLimitConfig.downloadFormWhitelist }),
+    AdminFormController.handleGetWhitelistSetting,
+  )
+  .put(
+    limitRate({ max: rateLimitConfig.uploadFormWhitelist }),
+    AdminFormController.handleUpdateWhitelistSetting,
+  )
 
 AdminFormsSettingsRouter.route('/:formId([a-fA-F0-9]{24})/collaborators')
   /**
