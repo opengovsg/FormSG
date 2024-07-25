@@ -297,6 +297,9 @@ export const getMyInfoFieldCreationMeta = (
     }
 
     case MyInfoAttribute.DrivingLicenceComStatus:
+    case MyInfoAttribute.DrivingLicenceTotalDemeritPoints:
+    case MyInfoAttribute.DrivingLicenceSuspensionStartDate:
+    case MyInfoAttribute.DrivingLicenceSuspensionEndDate:
     case MyInfoAttribute.DrivingLicenceDisqualificationStartDate:
       return {
         ...baseMeta,

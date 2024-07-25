@@ -108,6 +108,9 @@ export const CREATE_MYINFO_CHILDREN_FIELDS_ORDERED = [
 
 export const CREATE_MYINFO_DRIVING_LICENCE_FIELDS_ORDERED = [
   MyInfoAttribute.DrivingLicenceComStatus,
+  MyInfoAttribute.DrivingLicenceTotalDemeritPoints,
+  MyInfoAttribute.DrivingLicenceSuspensionStartDate,
+  MyInfoAttribute.DrivingLicenceSuspensionEndDate,
   MyInfoAttribute.DrivingLicenceDisqualificationStartDate,
 ]
 

@@ -15,6 +15,7 @@ import {
   BiCalendarX,
   BiCar,
   BiCaretDownSquare,
+  BiCertification,
   BiCloudUpload,
   BiFlag,
   BiGlobe,
@@ -363,13 +364,29 @@ export const MYINFO_FIELD_TO_DRAWER_META: {
   // driver licence
   [MyInfoAttribute.DrivingLicenceComStatus]: {
     label: 'Driving Licence Certificate of Merit Status',
-    icon: BiDummyIcon,
+    icon: BiCertification,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.DrivingLicenceTotalDemeritPoints]: {
+    label: 'Driving Licence Total Demerit Points',
+    icon: BiCertification,
     isSubmitted: true,
   },
   // driver licence
   [MyInfoAttribute.DrivingLicenceDisqualificationStartDate]: {
     label: 'Driving Licence Disqualification Start Date',
-    icon: BiDummyIcon,
+    icon: BiCertification,
+    isSubmitted: true,
+  },
+
+  [MyInfoAttribute.DrivingLicenceSuspensionStartDate]: {
+    label: 'Driving Licence Suspension Start Date',
+    icon: BiCertification,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.DrivingLicenceSuspensionEndDate]: {
+    label: 'Driving Licence Suspension End Date',
+    icon: BiCertification,
     isSubmitted: true,
   },
 }
