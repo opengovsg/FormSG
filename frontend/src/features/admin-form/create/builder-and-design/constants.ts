@@ -114,6 +114,10 @@ export const CREATE_MYINFO_DRIVING_LICENCE_FIELDS_ORDERED = [
   MyInfoAttribute.DrivingLicenceDisqualificationStartDate,
 ]
 
+export const CREATE_MYINFO_FREE_TEXT_FIELDS_ORDERED = [
+  MyInfoAttribute.__CUSTOM_FREE_TEXT__,
+]
+
 export const CREATE_FIELD_DROP_ID = 'create-fields-field'
 
 export const CREATE_MYINFO_PERSONAL_DROP_ID = 'create-myinfo-personal'
@@ -128,6 +132,8 @@ export const CREATE_MYINFO_CHILDREN_DROP_ID = 'create-myinfo-children'
 
 export const CREATE_MYINFO_DRIVING_LICENCE_DROP_ID =
   'create-myinfo-driving-licence'
+
+export const CREATE_MYINFO_FREE_TEXT_ID = 'create-myinfo-free-text-id'
 
 export const FIELD_LIST_DROP_ID = 'formFieldList'
 export const PENDING_CREATE_FIELD_ID = 'FIELD-PENDING-CREATION'

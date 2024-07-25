@@ -389,6 +389,11 @@ export const MYINFO_FIELD_TO_DRAWER_META: {
     icon: BiCertification,
     isSubmitted: true,
   },
+  [MyInfoAttribute.__CUSTOM_FREE_TEXT__]: {
+    label: 'Custom free text field',
+    icon: BiCertification,
+    isSubmitted: true,
+  },
 }
 // TODO: remove after 28 Jun 2024 as this would have fully taken effect
 function updateLabelsBasedOnDate() {

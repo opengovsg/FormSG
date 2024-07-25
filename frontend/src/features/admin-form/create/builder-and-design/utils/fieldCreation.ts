@@ -306,6 +306,12 @@ export const getMyInfoFieldCreationMeta = (
         fieldType: BasicField.ShortText,
         ...MYINFO_TEXTFIELD_META,
       }
+    case MyInfoAttribute.__CUSTOM_FREE_TEXT__:
+      return {
+        ...baseMeta,
+        fieldType: BasicField.ShortText,
+        ...MYINFO_TEXTFIELD_META,
+      }
 
     default: {
       const exception: never = myInfoAttribute

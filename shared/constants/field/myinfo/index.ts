@@ -441,8 +441,16 @@ export const types: MyInfoFieldBlock[] = [
     description: 'The suspension end date of the form-filler.',
     fieldType: BasicField.ShortText,
     previewValue: '2020-03-31',
+  },
+  {
+    name: MyInfoAttribute.__CUSTOM_FREE_TEXT__,
+    value: 'Free text field',
+    category: 'personal',
+    verified: [],
+    source: 'Unknown',
+    description: 'Unknown',
     fieldType: BasicField.ShortText,
-    previewValue: 'Eligible (TEMP)',
+    previewValue: 'Unknown',
   },
 ]
 

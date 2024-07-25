@@ -29,6 +29,8 @@ import {
   CREATE_MYINFO_CONTACT_FIELDS_ORDERED,
   CREATE_MYINFO_DRIVING_LICENCE_DROP_ID,
   CREATE_MYINFO_DRIVING_LICENCE_FIELDS_ORDERED,
+  CREATE_MYINFO_FREE_TEXT_FIELDS_ORDERED,
+  CREATE_MYINFO_FREE_TEXT_ID,
   CREATE_MYINFO_MARRIAGE_DROP_ID,
   CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED,
   CREATE_MYINFO_PARTICULARS_DROP_ID,
@@ -139,6 +141,15 @@ export const BuilderAndDesignTab = (): JSX.Element => {
           return setToCreating(
             getMyInfoFieldCreationMeta(
               CREATE_MYINFO_DRIVING_LICENCE_FIELDS_ORDERED[source.index],
+            ),
+            destination.index,
+          )
+        }
+
+        case CREATE_MYINFO_FREE_TEXT_ID: {
+          return setToCreating(
+            getMyInfoFieldCreationMeta(
+              CREATE_MYINFO_FREE_TEXT_FIELDS_ORDERED[source.index],
             ),
             destination.index,
           )

@@ -63,6 +63,7 @@ export enum MyInfoAttribute {
   DrivingLicenceSuspensionStartDate = 'drivinglicencesuspensionstartdate',
   DrivingLicenceSuspensionEndDate = 'drivinglicencesuspensionenddate',
   DrivingLicenceDisqualificationStartDate = 'drivinglicencedisqualificationstartdate',
+  __CUSTOM_FREE_TEXT__ = '__custom_free_text',
 }
 
 export type DrivingLicenceAttributes =
