@@ -46,15 +46,7 @@ import {
   SubmissionCountQueryDto,
   WebhookSettingsUpdateDto,
 } from '../../../../../shared/types'
-import {
-  EncryptedStringContent,
-  encryptStringsMessage,
-} from '../../../../../shared/utils/crypto'
-import {
-  isMFinSeriesValid,
-  isNricValid,
-} from '../../../../../shared/utils/nric-validation'
-import { isUenValid } from '../../../../../shared/utils/uen-validation'
+import { encryptStringsMessage } from '../../../../../shared/utils/crypto'
 import { IFormDocument, IPopulatedForm } from '../../../../types'
 import {
   EncryptSubmissionDto,
@@ -63,7 +55,10 @@ import {
 } from '../../../../types/api'
 import { goGovConfig } from '../../../config/features/gogov.config'
 import { smsConfig } from '../../../config/features/sms.config'
-import { createLoggerWithLabel } from '../../../config/logger'
+import {
+  createLoggerWithLabel,
+  CustomLoggerParams,
+} from '../../../config/logger'
 import MailService from '../../../services/mail/mail.service'
 import * as SmsService from '../../../services/sms/sms.service'
 import { createReqMeta } from '../../../utils/request'
@@ -1501,109 +1496,76 @@ const handleWhitelistSettingMultipartBody = multer({
   },
 })
 
-// Checks if the CSV entries contained are valid.
-const _validateWhitelistEntries: ControllerHandler = (req, res, next) => {
-  // TODO: create TS type for request
-  const { whitelistCsvString } = req.body
-
-  // If no whitelistCsvString is provided, skip validation.
-  // Since it means to update to not have any whitelist entries.
-  if (!whitelistCsvString) {
-    return next()
-  }
-
-  const whitelistedSubmitterIds = whitelistCsvString
-    .split('\r\n')
-    .map((entry: string) => entry.trim())
-
-  // check for empty rows/entries
-  const emptyRowIndex = whitelistedSubmitterIds.findIndex(
-    (entry: string) => entry === '',
-  )
-  if (emptyRowIndex !== -1) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message: `There are empty row(s) in your CSV (e.g, row number ${emptyRowIndex + 1})`,
-    })
-  }
-
-  // check for invalid NRIC/FIN/UEN format
-  const invalidEntries = whitelistedSubmitterIds.filter((entry: string) => {
-    return !(
-      isNricValid(entry) ||
-      isMFinSeriesValid(entry) ||
-      isUenValid(entry)
-    )
-  })
-  // check for invalid entries
-  if (invalidEntries.length > 0) {
-    return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
-      message: `Your CSV contains NRIC/FIN/UEN(s) that are not in the correct format. (e.g, ${invalidEntries[0]})`,
-    })
-  }
-
-  // check for duplicates
-  if (
-    new Set(whitelistedSubmitterIds).size !== whitelistedSubmitterIds.length
-  ) {
-    return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
-      message: 'There are duplicate entries in your CSV',
-    })
-  }
-
-  req.body = {
-    whitelistedSubmitterIds,
-  }
-
-  // no validation errors found, proceed to next middleware
+const _handleUpdateWhitelistSettingValidator = (req, res, next) => {
   return next()
 }
 
-const _getFormPublicKey: ControllerHandler<
-  {
-    formId: string
-    formPublicKey: string
-  },
-  any,
-  any
-> = async (req, res, next) => {
-  const formId = req.params.formId
+const _parseWhitelistCsvString = (whitelistCsvString: string) => {
+  if (!whitelistCsvString) {
+    return null
+  }
+  return whitelistCsvString.split('\r\n').map((entry: string) => entry.trim())
+}
+
+const _handleUpdateWhitelistSetting: ControllerHandler<
+  { formId: string },
+  object,
+  { whitelistCsvString: string }
+> = async (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
 
   const logMeta = {
-    action: '_getFormPublicKey',
+    action: '_handleUpdateWhitelistSetting',
     ...createReqMeta(req),
+    userId: sessionUserId,
     formId,
   }
 
-  const formResult = await FormService.retrieveFullFormById(formId)
+  // Step 1: Retrieve form only if currently logged in user has write permissions for form.
+  const formResult = await UserService.getPopulatedUserById(
+    sessionUserId,
+  ).andThen((user) =>
+    AuthService.getFormAfterPermissionChecks({
+      user,
+      formId,
+      level: PermissionLevel.Write,
+    }),
+  )
+
   if (formResult.isErr()) {
-    logger.warn({
-      message: 'Failed to retrieve form from database',
+    const { error } = formResult
+    logger.error({
+      message: 'Error occurred when updating form settings',
       meta: logMeta,
-      error: formResult.error,
+      error,
     })
-    const { errorMessage, statusCode } = mapRouteError(formResult.error)
+    const { errorMessage, statusCode } = mapRouteError(error)
     return res.status(statusCode).json({ message: errorMessage })
   }
 
-  const checkFormIsEncryptModeResult =
-    EncryptSubmissionService.checkFormIsEncryptMode(formResult.value)
-  if (checkFormIsEncryptModeResult.isErr()) {
+  const form = formResult.value
+
+  const { whitelistCsvString } = req.body
+  const whitelistedSubmitterIds = _parseWhitelistCsvString(whitelistCsvString)
+
+  // Step 2: perform validation on submitted whitelist setting
+  const isWhitelistSettingValid = AdminFormService.checkIsWhitelistSettingValid(
+    whitelistedSubmitterIds,
+  )
+  if (!isWhitelistSettingValid.isValid) {
     logger.error({
-      message:
-        'Trying to submit non-encrypt mode submission on encrypt-form submission endpoint',
+      message: 'Invalid whitelist setting',
       meta: logMeta,
     })
-    const { statusCode, errorMessage } = mapRouteError(
-      checkFormIsEncryptModeResult.error,
-    )
-    return res.status(statusCode).json({
-      message: errorMessage,
+    return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+      message: isWhitelistSettingValid.invalidReason,
     })
   }
 
-  const publicKey = formResult.value.publicKey
-  if (!publicKey) {
-    logger.warn({
+  // Step 3: Encrypt whitelist settings
+  if (!form.publicKey) {
+    logger.error({
       message: 'Form does not have a public key',
       meta: logMeta,
     })
@@ -1611,51 +1573,38 @@ const _getFormPublicKey: ControllerHandler<
       message: 'Form does not have a public key',
     })
   }
+  const formPublicKey = form.publicKey
+  const encryptedWhitelistSubmitterIdsContent = whitelistedSubmitterIds
+    ? encryptStringsMessage(whitelistedSubmitterIds, formPublicKey)
+    : null
 
-  req.params.formPublicKey = publicKey
-
-  return next()
-}
-
-// TODO: Implement an encrypt method for non-file and non-submission
-const _encryptWhitelistAndSetWhitelistUpdateField: ControllerHandler<
-  { formId: string; formPublicKey: string },
-  object,
-  {
-    whitelistedSubmitterIds: string[] | EncryptedStringContent[] | null
-  }
-> = async (req, _res, next) => {
-  const { formPublicKey } = req.params
-  const { whitelistedSubmitterIds } = req.body
-
-  if (!whitelistedSubmitterIds || whitelistedSubmitterIds.length <= 0) {
-    req.body = {
-      whitelistedSubmitterIds: null,
-    }
-    return next()
-  }
-
-  // Encrypt whitelist entries
-
-  const encryptedWhitelistedSubmitterIdsContent = encryptStringsMessage(
-    whitelistedSubmitterIds as string[],
-    formPublicKey,
+  // Step 4: Update form with encrypted whitelist settings
+  return AdminFormService.updateFormWhitelistSetting(
+    form,
+    encryptedWhitelistSubmitterIdsContent,
   )
-
-  req.body = {
-    whitelistedSubmitterIds: encryptedWhitelistedSubmitterIdsContent,
-  }
-
-  return next()
+    .map((updatedSettings) => res.status(StatusCodes.OK).json(updatedSettings))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when updating form settings',
+        meta: {
+          action: 'handleUpdateSettings',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          // do not log the whitelist setting as it may contain sensitive data and be large in size
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
 }
 
 export const handleUpdateWhitelistSetting = [
   handleWhitelistSettingMultipartBody.none(), // expecting string field
-  // TODO: Add joi validation for body
-  _validateWhitelistEntries,
-  _getFormPublicKey,
-  _encryptWhitelistAndSetWhitelistUpdateField,
-  _handleUpdateSettings,
+  _handleUpdateWhitelistSettingValidator,
+  _handleUpdateWhitelistSetting,
 ] as ControllerHandler[]
 
 /**

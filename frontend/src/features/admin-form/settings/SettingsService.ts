@@ -6,7 +6,7 @@ import {
   SettingsUpdateDto,
   StorageFormSettings,
 } from '~shared/types/form/form'
-import { EncryptedStringContent } from '~shared/utils/crypto'
+import { EncryptedStringsMessageContent } from '~shared/utils/crypto'
 
 import { ApiService } from '~services/ApiService'
 
@@ -44,10 +44,10 @@ export const getFormSettings = async (
 export const getFormEncryptedWhitelistedSubmitterIds = async (
   formId: string,
 ): Promise<{
-  encryptedWhitelistedSubmitterIds: EncryptedStringContent[] | null
+  encryptedWhitelistedSubmitterIds: EncryptedStringsMessageContent | null
 }> => {
   return ApiService.get<{
-    encryptedWhitelistedSubmitterIds: EncryptedStringContent[] | null
+    encryptedWhitelistedSubmitterIds: EncryptedStringsMessageContent | null
   }>(`${ADMIN_FORM_ENDPOINT}/${formId}/settings/whitelist`, {
     responseType: 'json',
   }).then(({ data }) => data)

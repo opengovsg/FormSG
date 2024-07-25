@@ -8,6 +8,7 @@ import {
 import { assignIn, last, omit } from 'lodash'
 import mongoose, { ClientSession } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import { EncryptedStringsMessageContent } from 'shared/utils/crypto'
 import type { Except, Merge } from 'type-fest'
 
 import {
@@ -32,6 +33,11 @@ import {
   StartPageUpdateDto,
   StorageFormSettings,
 } from '../../../../../shared/types'
+import {
+  isMFinSeriesValid,
+  isNricValid,
+} from '../../../../../shared/utils/nric-validation'
+import { isUenValid } from '../../../../../shared/utils/uen-validation'
 import { EditFieldActions } from '../../../../shared/constants'
 import {
   FormFieldSchema,
@@ -1028,6 +1034,99 @@ export const updateFormCollaborators = (
       )
       .andThen(({ permissionList }) => okAsync(permissionList))
   )
+}
+
+export const checkIsWhitelistSettingValid = (
+  whitelistedSubmitterIds: string[] | null,
+): { isValid: boolean; invalidReason?: string } => {
+  if (!whitelistedSubmitterIds || whitelistedSubmitterIds.length <= 0) {
+    return {
+      isValid: true,
+    }
+  }
+
+  // check for empty rows/entries
+  const emptyRowIndex = whitelistedSubmitterIds.findIndex(
+    (entry: string) => entry === '',
+  )
+  if (emptyRowIndex !== -1) {
+    return {
+      isValid: false,
+      invalidReason: `Your CSV contains an empty row at row ${emptyRowIndex + 1}`,
+    }
+  }
+
+  // check for invalid NRIC/FIN/UEN format
+  const invalidEntries = whitelistedSubmitterIds.filter((entry: string) => {
+    return !(
+      isNricValid(entry) ||
+      isMFinSeriesValid(entry) ||
+      isUenValid(entry)
+    )
+  })
+  // check for invalid entries
+  if (invalidEntries.length > 0) {
+    return {
+      isValid: false,
+      invalidReason: `Your CSV contains NRIC/FIN/UEN(s) that are not in the correct format. (e.g, ${invalidEntries[0]})`,
+    }
+  }
+
+  // check for duplicates
+  if (
+    new Set(whitelistedSubmitterIds).size !== whitelistedSubmitterIds.length
+  ) {
+    return {
+      isValid: false,
+      invalidReason: 'There are duplicate entries in your CSV',
+    }
+  }
+
+  return {
+    isValid: true,
+  }
+}
+
+export const updateFormWhitelistSetting = (
+  originalForm: IPopulatedForm,
+  encryptedWhitelistedSubmitterIdsContent: EncryptedStringsMessageContent | null,
+) => {
+  if (originalForm.responseMode !== FormResponseMode.Encrypt) {
+    return errAsync(
+      new MalformedParametersError(
+        'Whitelist setting does not exist for non-encrypt mode forms',
+      ),
+    )
+  }
+
+  const updateObject: Pick<StorageFormSettings, 'whitelistedSubmitterIds'> = {
+    whitelistedSubmitterIds: encryptedWhitelistedSubmitterIdsContent,
+  }
+  const ModelToUse = getFormModelByResponseMode(originalForm.responseMode)
+  return ResultAsync.fromPromise(
+    ModelToUse.findByIdAndUpdate(originalForm._id, updateObject, {
+      new: true,
+      runValidators: true,
+    }).exec(),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while updating form whitelist setting',
+        meta: {
+          action: 'updateFormWhitelistSetting',
+          formId: originalForm._id,
+          // Body is not logged in case sensitive data such as emails are stored.
+        },
+        error,
+      })
+
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync(updatedForm.getSettings())
+  })
 }
 
 /**

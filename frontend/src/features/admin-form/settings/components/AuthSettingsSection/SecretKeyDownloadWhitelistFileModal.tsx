@@ -17,7 +17,10 @@ import {
 } from '@chakra-ui/react'
 import Papa from 'papaparse'
 
-import { decryptString, EncryptedStringContent } from '~shared/utils/crypto'
+import {
+  decryptStringMessage,
+  EncryptedStringsMessageContent,
+} from '~shared/utils/crypto'
 
 import { useToast } from '~hooks/useToast'
 import { isKeypairValid, SECRET_KEY_REGEX } from '~utils/secretKeyValidation'
@@ -69,16 +72,10 @@ const useSecretKeyWhitelistFileModal = ({
   // TODO: possibly move this to a web worker only if needed
   const decryptSubmitterIds = useCallback(
     (
-      encryptedSubmitterIdContent: EncryptedStringContent[],
+      encryptedSubmitterIdContent: EncryptedStringsMessageContent,
       secretKey: string,
     ) => {
-      return encryptedSubmitterIdContent.map((encryptedSubmitterIdContent) => {
-        const decryptedSubmitterId = decryptString(
-          secretKey,
-          encryptedSubmitterIdContent,
-        )
-        return decryptedSubmitterId
-      })
+      return decryptStringMessage(secretKey, encryptedSubmitterIdContent)
     },
     [],
   )
@@ -102,11 +99,7 @@ const useSecretKeyWhitelistFileModal = ({
       fetchAdminFormEncryptedWhitelistedSubmitterIds(formId, queryClient).then(
         (data) => {
           const { encryptedWhitelistedSubmitterIds } = data
-          if (
-            encryptedWhitelistedSubmitterIds &&
-            Array.isArray(encryptedWhitelistedSubmitterIds) &&
-            encryptedWhitelistedSubmitterIds.length > 0
-          ) {
+          if (encryptedWhitelistedSubmitterIds) {
             const decryptedSubmitterIds = decryptSubmitterIds(
               encryptedWhitelistedSubmitterIds,
               secretKey,

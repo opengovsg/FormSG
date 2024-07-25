@@ -192,6 +192,28 @@ export const formPaymentsFieldSchema = {
   },
 }
 
+export const formEncryptedWhitelistedSubmitterIdSchema = new Schema({
+  publicKey: {
+    type: String,
+    required: true,
+  },
+  nonce: {
+    type: String,
+    required: true,
+  },
+  cipherTexts: {
+    type: [{ type: String, required: true }],
+    required: true,
+    validate: [
+      (v: string[]) => {
+        return Array.isArray(v) && v.length > 0
+      },
+      'cipherTexts must be non-empty array',
+    ],
+  },
+  _id: { id: false },
+})
+
 const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   publicKey: {
     type: String,
@@ -219,18 +241,7 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
     required: false,
   },
   whitelistedSubmitterIds: {
-    type: [
-      {
-        type: Object,
-        trim: true,
-      },
-    ],
-    validate: [
-      (v: string[]) => {
-        return Array.isArray(v) || v == null
-      },
-      'Encrypted whitelisted submitter ids provided must be in an array.',
-    ],
+    type: formEncryptedWhitelistedSubmitterIdSchema,
     required: false,
   },
   payments_channel: {

@@ -14,18 +14,35 @@ const _generateKeyPair = () => {
   }
 }
 
-export type EncryptedStringContent = {
+type EncryptedStringContent = {
   publicKey: string
   nonce: string
   cipherText: string
 }
 
+export type EncryptedStringsMessageContent = {
+  publicKey: string
+  nonce: string
+  cipherTexts: string[]
+}
+
 export const encryptStringsMessage = (
   plainTexts: string[],
   publicKey: string,
-): EncryptedStringContent[] => {
+): EncryptedStringsMessageContent => {
   const nonce = nacl.randomBytes(24)
-  return encryptStrings(plainTexts, nonce, publicKey)
+  const generatedKeyPair = _generateKeyPair()
+
+  return {
+    publicKey: generatedKeyPair.publicKey,
+    nonce: encodeBase64(nonce),
+    cipherTexts: encryptStrings(
+      plainTexts,
+      publicKey,
+      nonce,
+      generatedKeyPair,
+    ).map((content) => content.cipherText),
+  }
 }
 
 /**
@@ -39,20 +56,27 @@ export const encryptStringsMessage = (
  */
 const encryptStrings = (
   plainTexts: string[],
-  nonce: Uint8Array,
   publicKey: string,
+  nonce?: Uint8Array,
+  generatedKeyPair?: { publicKey: string; privateKey: string },
 ): EncryptedStringContent[] => {
   return plainTexts.map((plainText) =>
-    encryptString(plainText, nonce, publicKey),
+    encryptString(plainText, publicKey, nonce, generatedKeyPair),
   )
 }
 
-export const encryptString = (
+const encryptString = (
   plainText: string,
-  nonce: Uint8Array,
   publicKey: string,
+  nonce?: Uint8Array,
+  generatedKeyPair?: { publicKey: string; privateKey: string },
 ): EncryptedStringContent => {
-  const generatedKeyPair = _generateKeyPair()
+  if (!generatedKeyPair) {
+    generatedKeyPair = _generateKeyPair()
+  }
+  if (!nonce) {
+    nonce = nacl.randomBytes(24)
+  }
   const plainTextBinary = decodeUTF8(plainText)
 
   return {
@@ -69,7 +93,23 @@ export const encryptString = (
   }
 }
 
-export const decryptString = (
+export const decryptStringMessage = (
+  privateKey: string,
+  encryptedStringsMessageContent: EncryptedStringsMessageContent,
+): (string | null)[] => {
+  const nonce = encryptedStringsMessageContent.nonce
+  const publicKey = encryptedStringsMessageContent.publicKey
+
+  return encryptedStringsMessageContent.cipherTexts.map((cipherText) =>
+    decryptString(privateKey, {
+      publicKey,
+      nonce,
+      cipherText,
+    }),
+  )
+}
+
+const decryptString = (
   privateKey: string,
   encryptStringContent: EncryptedStringContent,
 ): string | null => {

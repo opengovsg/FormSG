@@ -59,8 +59,7 @@ export const FormWhitelistAttachmentField = ({
 
   const { publicKey, whitelistedSubmitterIds } = settings
 
-  const isWhitelistEnabled =
-    whitelistedSubmitterIds && whitelistedSubmitterIds.length > 0
+  const isWhitelistEnabled = whitelistedSubmitterIds
   const whitelistFileSize = 0
 
   useEffect(() => {
