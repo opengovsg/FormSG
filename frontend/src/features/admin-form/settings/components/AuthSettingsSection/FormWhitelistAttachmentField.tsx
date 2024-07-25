@@ -60,7 +60,6 @@ export const FormWhitelistAttachmentField = ({
   const { publicKey, whitelistedSubmitterIds } = settings
 
   const isWhitelistEnabled = whitelistedSubmitterIds
-  const whitelistFileSize = 0
 
   useEffect(() => {
     // Set the whitelist attachment field with a mock representation file
@@ -68,16 +67,11 @@ export const FormWhitelistAttachmentField = ({
     if (isWhitelistEnabled) {
       setValue(FormWhitelistAttachmentFieldName, {
         name: standardCsvDownloadFileName,
-        size: whitelistFileSize ?? 0,
+        size: null,
         type: 'text/csv',
       })
     }
-  }, [
-    isWhitelistEnabled,
-    whitelistFileSize,
-    setValue,
-    standardCsvDownloadFileName,
-  ])
+  }, [isWhitelistEnabled, setValue, standardCsvDownloadFileName])
 
   const maxSizeInBytes = useMemo(() => {
     if (!fieldContainerSchema.attachmentSize) {

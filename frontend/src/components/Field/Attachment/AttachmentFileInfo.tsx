@@ -26,7 +26,7 @@ export const AttachmentFileInfo = ({
   isRemoveDisabled = false,
 }: AttachmentFileInfoProps) => {
   const readableFileSize = useMemo(
-    () => getReadableFileSize(file.size),
+    () => (file.size ? getReadableFileSize(file.size) : null),
     [file.size],
   )
 
