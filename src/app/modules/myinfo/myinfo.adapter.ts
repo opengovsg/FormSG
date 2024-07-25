@@ -128,6 +128,14 @@ export const internalAttrToScope = (attr: InternalAttr): MyInfoScope => {
       return `${ExternalAttr.DrivingLicence}.suspension.enddate` // Driving Licence - Suspension End Date
     case InternalAttr.DrivingLicenceDisqualificationStartDate:
       return `${ExternalAttr.DrivingLicence}.disqualification.startdate` // Driving Licence - Disqualification Start Date
+    case InternalAttr.DrivingLicencePhotocardSerialNo:
+      return `${ExternalAttr.DrivingLicence}.photocardserialno` // Driving Licence - Photo Card Serial Number
+    case InternalAttr.DrivingLicenceQdlClasses:
+      return `${ExternalAttr.DrivingLicence}.qdl.classes` // Driving Licence - Qualified Driving Licence Class
+    case InternalAttr.DrivingLicenceQdlExpiryDate:
+      return `${ExternalAttr.DrivingLicence}.qdl.expirydate` // Driving Licence - Qualified Driving Licence Expiry Date
+    case InternalAttr.DrivingLicenceQdlValidity:
+      return `${ExternalAttr.DrivingLicence}.qdl.validity` // Driving Licence - Qualified Driving Licence Validity
     case InternalAttr.__CUSTOM_FREE_TEXT__:
       return `${ExternalAttr.DrivingLicence}.disqualification.startdate` // Driving Licence - Disqualification Start Date
   }
@@ -204,6 +212,10 @@ export const internalAttrToExternal = (attr: InternalAttr): ExternalAttr => {
     case InternalAttr.DrivingLicenceSuspensionStartDate:
     case InternalAttr.DrivingLicenceSuspensionEndDate:
     case InternalAttr.DrivingLicenceDisqualificationStartDate:
+    case InternalAttr.DrivingLicenceQdlClasses:
+    case InternalAttr.DrivingLicenceQdlValidity:
+    case InternalAttr.DrivingLicenceQdlExpiryDate:
+    case InternalAttr.DrivingLicencePhotocardSerialNo:
       // return `drivinglicence.comstatus`
       // return `drivinglicence.totaldemeritpoints`
       // return `drivinglicence.suspension.startdate`

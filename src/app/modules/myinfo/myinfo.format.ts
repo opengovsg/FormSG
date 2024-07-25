@@ -244,11 +244,25 @@ export const formatDrivingLicenceField = (
     case MyInfoAttribute.DrivingLicenceTotalDemeritPoints:
       return String(field.totaldemeritpoints?.value) || ''
     case MyInfoAttribute.DrivingLicenceSuspensionStartDate:
-      return String(field.suspension?.startdate?.value) || ''
+      return String(field.suspension?.startdate?.value) || 'Nil'
     case MyInfoAttribute.DrivingLicenceSuspensionEndDate:
-      return String(field.suspension?.enddate?.value) || ''
+      return String(field.suspension?.enddate?.value) || 'Nil'
     case MyInfoAttribute.DrivingLicenceDisqualificationStartDate:
-      return String(field.disqualification?.startdate?.value) || ''
+      return String(field.disqualification?.startdate?.value) || 'Nil'
+    case MyInfoAttribute.DrivingLicencePhotocardSerialNo:
+      return String(field.photocardserialno?.value) || ''
+    case MyInfoAttribute.DrivingLicenceQdlClasses:
+      return (
+        field.qdl?.classes
+          ?.map((f) => f.class?.value)
+          .filter(Boolean)
+          .join('') || ''
+      )
+
+    case MyInfoAttribute.DrivingLicenceQdlExpiryDate:
+      return String(field.qdl?.expirydate?.value) || 'Nil'
+    case MyInfoAttribute.DrivingLicenceQdlValidity:
+      return String(field.qdl?.validity?.desc) || ''
 
     default: {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -389,6 +389,26 @@ export const MYINFO_FIELD_TO_DRAWER_META: {
     icon: BiCertification,
     isSubmitted: true,
   },
+  [MyInfoAttribute.DrivingLicenceQdlClasses]: {
+    label: 'Driving Licence Qualified Driving Licence Class',
+    icon: BiCertification,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.DrivingLicenceQdlValidity]: {
+    label: 'Driving Licence Qualified Driving Licence Validity',
+    icon: BiCertification,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.DrivingLicenceQdlExpiryDate]: {
+    label: 'Driving Licence Qualified Driving Licence Expiry Date',
+    icon: BiCertification,
+    isSubmitted: true,
+  },
+  [MyInfoAttribute.DrivingLicencePhotocardSerialNo]: {
+    label: 'Driving Licence Photo Card Serial Number',
+    icon: BiCertification,
+    isSubmitted: true,
+  },
   [MyInfoAttribute.__CUSTOM_FREE_TEXT__]: {
     label: 'Custom free text field',
     icon: BiCertification,

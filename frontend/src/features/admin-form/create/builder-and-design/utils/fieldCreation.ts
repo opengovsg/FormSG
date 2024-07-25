@@ -301,6 +301,10 @@ export const getMyInfoFieldCreationMeta = (
     case MyInfoAttribute.DrivingLicenceSuspensionStartDate:
     case MyInfoAttribute.DrivingLicenceSuspensionEndDate:
     case MyInfoAttribute.DrivingLicenceDisqualificationStartDate:
+    case MyInfoAttribute.DrivingLicenceQdlClasses:
+    case MyInfoAttribute.DrivingLicenceQdlValidity:
+    case MyInfoAttribute.DrivingLicenceQdlExpiryDate:
+    case MyInfoAttribute.DrivingLicencePhotocardSerialNo:
       return {
         ...baseMeta,
         fieldType: BasicField.ShortText,

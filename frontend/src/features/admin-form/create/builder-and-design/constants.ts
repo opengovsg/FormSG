@@ -112,6 +112,10 @@ export const CREATE_MYINFO_DRIVING_LICENCE_FIELDS_ORDERED = [
   MyInfoAttribute.DrivingLicenceSuspensionStartDate,
   MyInfoAttribute.DrivingLicenceSuspensionEndDate,
   MyInfoAttribute.DrivingLicenceDisqualificationStartDate,
+  MyInfoAttribute.DrivingLicenceQdlClasses,
+  MyInfoAttribute.DrivingLicenceQdlValidity,
+  MyInfoAttribute.DrivingLicenceQdlExpiryDate,
+  MyInfoAttribute.DrivingLicencePhotocardSerialNo,
 ]
 
 export const CREATE_MYINFO_FREE_TEXT_FIELDS_ORDERED = [
