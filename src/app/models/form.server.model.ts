@@ -293,24 +293,19 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
 const EncryptedFormDocumentSchema =
   EncryptedFormSchema as unknown as Schema<IEncryptedFormDocument>
 
-EncryptedFormDocumentSchema.methods.getWhitelistedSubmitterIds =
-  async function () {
-    if (!this.whitelistedSubmitterIds) {
-      return null
-    }
-    const rawWhitelistedSubmitterIds = this.get(
-      'whitelistedSubmitterIds',
-      null,
-      {
-        getters: false,
-      },
-    )
-    return {
-      myPublicKey: rawWhitelistedSubmitterIds.myPublicKey,
-      nonce: rawWhitelistedSubmitterIds.nonce,
-      cipherTexts: rawWhitelistedSubmitterIds.cipherTexts,
-    }
+EncryptedFormDocumentSchema.methods.getWhitelistedSubmitterIds = function () {
+  if (!this.whitelistedSubmitterIds) {
+    return null
   }
+  const rawWhitelistedSubmitterIds = this.get('whitelistedSubmitterIds', null, {
+    getters: false,
+  })
+  return {
+    myPublicKey: rawWhitelistedSubmitterIds.myPublicKey,
+    nonce: rawWhitelistedSubmitterIds.nonce,
+    cipherTexts: rawWhitelistedSubmitterIds.cipherTexts,
+  }
+}
 
 EncryptedFormDocumentSchema.methods.getWhitelistedSubmitterIdsWithMyPrivateKey =
   function () {
