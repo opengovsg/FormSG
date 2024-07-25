@@ -11,7 +11,10 @@ import {
   MyInfoVehicle,
 } from '@opengovsg/myinfo-gov-client'
 
-import { DrivingLicenceAttributes } from '../../../../shared/types'
+import {
+  DrivingLicenceAttributes,
+  MyInfoAttribute,
+} from '../../../../shared/types'
 import { createLoggerWithLabel } from '../../config/logger'
 
 const logger = createLoggerWithLabel(module)
@@ -229,24 +232,26 @@ export const formatDrivingLicenceField = (
   if (
     !field ||
     field.source === MyInfoSource.NotApplicable ||
-    field.unavailable
+    field.unavailable ||
+    !attr
   ) {
     return ''
   }
 
   switch (attr) {
-    case DrivingLicenceAttributes.ComStatus:
+    case MyInfoAttribute.DrivingLicenceComStatus:
       return field.comstatus?.desc || ''
-    case DrivingLicenceAttributes.TotalDemeritPoints:
+    case MyInfoAttribute.DrivingLicenceTotalDemeritPoints:
       return String(field.totaldemeritpoints?.value) || ''
-    case DrivingLicenceAttributes.SuspensionStartDate:
+    case MyInfoAttribute.DrivingLicenceSuspensionStartDate:
       return String(field.suspension?.startdate?.value) || ''
-    case DrivingLicenceAttributes.SuspensionEndDate:
+    case MyInfoAttribute.DrivingLicenceSuspensionEndDate:
       return String(field.suspension?.enddate?.value) || ''
-    case DrivingLicenceAttributes.DisqualificationStartDate:
+    case MyInfoAttribute.DrivingLicenceDisqualificationStartDate:
       return String(field.disqualification?.startdate?.value) || ''
 
     default: {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const never: never = attr
       return never
     }

@@ -7,7 +7,7 @@ export interface MyInfoDataTransformer<T, U> {
   /**
    * Formats the sgID information to a string.
    */
-  _formatFieldValue(attr: T): string | undefined
+  _formatFieldValue(attr: T, attr2: U | undefined): string | undefined
 
   /**
    * Determine if frontend should lock the field to prevent it from being
