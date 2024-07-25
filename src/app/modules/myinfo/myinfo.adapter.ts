@@ -128,6 +128,8 @@ export const internalAttrToScope = (attr: InternalAttr): MyInfoScope => {
       return `${ExternalAttr.DrivingLicence}.suspension.enddate` // Driving Licence - Suspension End Date
     case InternalAttr.DrivingLicenceDisqualificationStartDate:
       return `${ExternalAttr.DrivingLicence}.disqualification.startdate` // Driving Licence - Disqualification Start Date
+    case InternalAttr.__CUSTOM_FREE_TEXT__:
+      return `${ExternalAttr.DrivingLicence}.disqualification.startdate` // Driving Licence - Disqualification Start Date
   }
 }
 
@@ -208,7 +210,8 @@ export const internalAttrToExternal = (attr: InternalAttr): ExternalAttr => {
       // return `drivinglicence.suspension.enddate`
       // return `drivinglicence.disqualification.startdate`
       return ExternalAttr.DrivingLicence
-
+    case InternalAttr.__CUSTOM_FREE_TEXT__:
+      return ExternalAttr.DrivingLicence
     default: {
       // Force TS to emit an error if the cases above are not exhaustive
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
