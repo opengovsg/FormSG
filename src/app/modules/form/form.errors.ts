@@ -88,3 +88,23 @@ export class FormAuthNoEsrvcIdError extends ApplicationError {
     )
   }
 }
+
+export class FormRespondentNotWhitelistedError extends ApplicationError {
+  constructor() {
+    super(
+      'Your NRIC/FIN/UEN is not authorised to submit this form. If you think this is a mistake, please contact the agency that gave you the form link.',
+      undefined,
+      ErrorCodes.FORM_RESPONDENT_NOT_WHITELISTED,
+    )
+  }
+}
+
+export class FormRespondentSingleSubmissionValidationError extends ApplicationError {
+  constructor() {
+    super(
+      'Your NRIC/FIN/UEN has already been used to respond to this form. If you think this is a mistake, please contact the agency that gave you the form link.',
+      undefined,
+      ErrorCodes.FORM_RESPONDENT_SINGLE_SUBMISSION_VALIDATION_FAILED,
+    )
+  }
+}

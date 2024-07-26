@@ -48,7 +48,6 @@ import {
 } from '../../../../../shared/types'
 import {
   EncryptedStringsMessageContent,
-  EncryptedStringsMessageContentWithMyPrivateKey,
   encryptStringsMessage,
 } from '../../../../../shared/utils/crypto'
 import { IFormDocument, IPopulatedForm } from '../../../../types'
@@ -59,10 +58,7 @@ import {
 } from '../../../../types/api'
 import { goGovConfig } from '../../../config/features/gogov.config'
 import { smsConfig } from '../../../config/features/sms.config'
-import {
-  createLoggerWithLabel,
-  CustomLoggerParams,
-} from '../../../config/logger'
+import { createLoggerWithLabel } from '../../../config/logger'
 import MailService from '../../../services/mail/mail.service'
 import * as SmsService from '../../../services/sms/sms.service'
 import { createReqMeta } from '../../../utils/request'

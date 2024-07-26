@@ -285,6 +285,9 @@ export const checkHasRespondentNotWhitelistedFailure = (
   if (form.responseMode !== FormResponseMode.Encrypt) {
     return ok(false)
   }
+  if (form.authType === FormAuthType.NIL) {
+    return ok(false)
+  }
   const whitelistedSubmitterIds =
     form.getWhitelistedSubmitterIdsWithMyPrivateKey()
   // whitelist setting not enabled for form

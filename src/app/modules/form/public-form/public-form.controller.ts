@@ -55,7 +55,12 @@ import {
   validateSpcpForm,
 } from '../../spcp/spcp.util'
 import { generateHashedSubmitterId } from '../../submission/submission.utils'
-import { AuthTypeMismatchError, PrivateFormError } from '../form.errors'
+import {
+  AuthTypeMismatchError,
+  FormRespondentNotWhitelistedError,
+  FormRespondentSingleSubmissionValidationError,
+  PrivateFormError,
+} from '../form.errors'
 import * as FormService from '../form.service'
 
 import * as PublicFormService from './public-form.service'
@@ -333,7 +338,7 @@ export const handleGetPublicForm: ControllerHandler<
   if (hasRespondentNotWhitelistedErrorResult.isErr()) {
     const error = hasRespondentNotWhitelistedErrorResult.error
     logger.error({
-      message: 'Error validating respondent whitelisting',
+      message: 'Error validating if respondent is whitelisted',
       meta: logMeta,
       error,
     })
@@ -343,6 +348,14 @@ export const handleGetPublicForm: ControllerHandler<
   const hasRespondentNotWhitelistedError =
     hasRespondentNotWhitelistedErrorResult.value
   if (hasRespondentNotWhitelistedError) {
+    // created for Datadog logging of error code
+    new FormRespondentNotWhitelistedError()
+
+    // log user out
+    spcpSession = undefined
+    const authCookieName = PublicFormService.getCookieNameByAuthType(authType)
+    res.clearCookie(authCookieName)
+
     return res.json({
       form: publicForm,
       isIntranetUser,
@@ -370,9 +383,11 @@ export const handleGetPublicForm: ControllerHandler<
   const hasSingleSubmissionValidationFailure =
     hasSingleSubmissionValidationFailureResult.value
 
-  // Do not log user in for the form
-  // if there is a single submission validation failure
   if (hasSingleSubmissionValidationFailure) {
+    // Created for Datadog logging of error code
+    new FormRespondentSingleSubmissionValidationError()
+
+    // log user out
     spcpSession = undefined
     const authCookieName = PublicFormService.getCookieNameByAuthType(authType)
     res.clearCookie(authCookieName)

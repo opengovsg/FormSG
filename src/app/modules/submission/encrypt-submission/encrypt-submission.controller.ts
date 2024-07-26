@@ -45,6 +45,11 @@ import { ApplicationError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
+import {
+  FormRespondentNotWhitelistedError,
+  FormRespondentSingleSubmissionValidationError,
+} from '../../form/form.errors'
+import * as FormService from '../../form/form.service'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
 import { SgidService } from '../../sgid/sgid.service'
@@ -257,10 +262,52 @@ const submitEncryptModeForm = async (
     }
   }
 
-  let submitterId
+  if (
+    userName &&
+    form.whitelistedSubmitterIds &&
+    (form.authType === FormAuthType.SP ||
+      form.authType === FormAuthType.CP ||
+      form.authType === FormAuthType.SGID ||
+      form.authType === FormAuthType.MyInfo ||
+      form.authType === FormAuthType.SGID_MyInfo)
+  ) {
+    const hasRespondentNotWhitelistedErrorResult =
+      FormService.checkHasRespondentNotWhitelistedFailure(form, userName)
+
+    if (hasRespondentNotWhitelistedErrorResult.isErr()) {
+      const error = hasRespondentNotWhitelistedErrorResult.error
+      logger.error({
+        message: 'Error validating if respondent is whitelisted',
+        meta: logMeta,
+        error,
+      })
+      return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR)
+    }
+
+    const hasRespondentNotWhitelistedError =
+      hasRespondentNotWhitelistedErrorResult.value
+
+    // Note: hasRespondentNotWhitelistedError occur if admin opens form,
+    // updates whitelist which excludes submitterId,
+    // then opens form before respondent submits.
+    if (hasRespondentNotWhitelistedError) {
+      const formRespondentNotWhitelistedError =
+        new FormRespondentNotWhitelistedError()
+      logger.error({
+        message: formRespondentNotWhitelistedError.message,
+        meta: logMeta,
+        error: formRespondentNotWhitelistedError,
+      })
+      return res.status(StatusCodes.FORBIDDEN).json({
+        message: formRespondentNotWhitelistedError.message,
+      })
+    }
+  }
+
+  let hashedSubmitterId
   // Generate submitterId for Singpass auth modes
   if (userName && form.authType !== FormAuthType.NIL) {
-    submitterId = generateHashedSubmitterId(userName, form.id)
+    hashedSubmitterId = generateHashedSubmitterId(userName, form.id)
   }
 
   // Mask if Nric masking is enabled
@@ -361,7 +408,7 @@ const submitEncryptModeForm = async (
   const submissionContent: EncryptSubmissionContent = {
     form: form._id,
     authType: form.authType,
-    submitterId,
+    submitterId: hashedSubmitterId,
     myInfoFields: form.getUniqueMyInfoAttrs(),
     encryptedContent: encryptedContent,
     verifiedContent: verified,
@@ -689,9 +736,15 @@ const _createSubmission = async ({
 
       // handles the case where submission has already been created for given submissionSingpassId
       if (!submission) {
+        const formSingleSubmissionError =
+          new FormRespondentSingleSubmissionValidationError()
+        logger.error({
+          message: formSingleSubmissionError.message,
+          meta: logMeta,
+          error: formSingleSubmissionError,
+        })
         return res.status(StatusCodes.BAD_REQUEST).json({
-          message:
-            'Your NRIC/FIN/UEN has already been used to respond to this form.',
+          message: formSingleSubmissionError.message,
           errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
         })
       }
