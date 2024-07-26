@@ -313,8 +313,10 @@ export const checkHasRespondentNotWhitelistedFailure = (
   }
   const usedNonce = decodeBase64(nonce)
 
+  const upperCaseSubmitterId = submitterId.toUpperCase()
+
   const submitterIdForLookup = encryptString(
-    submitterId,
+    upperCaseSubmitterId,
     form.publicKey,
     usedNonce,
     myKeyPair,

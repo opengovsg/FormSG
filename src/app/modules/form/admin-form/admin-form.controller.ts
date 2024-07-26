@@ -1560,9 +1560,13 @@ const _handleUpdateWhitelistSetting: ControllerHandler<
   const { whitelistCsvString } = req.body
   const whitelistedSubmitterIds = _parseWhitelistCsvString(whitelistCsvString)
 
+  const upperCaseWhitelistedSubmitterIds = whitelistedSubmitterIds
+    ? whitelistedSubmitterIds.map((id) => id.toUpperCase())
+    : null
+
   // Step 2: perform validation on submitted whitelist setting
   const isWhitelistSettingValid = AdminFormService.checkIsWhitelistSettingValid(
-    whitelistedSubmitterIds,
+    upperCaseWhitelistedSubmitterIds,
   )
   if (!isWhitelistSettingValid.isValid) {
     logger.error({
@@ -1585,8 +1589,8 @@ const _handleUpdateWhitelistSetting: ControllerHandler<
     })
   }
   const formPublicKey = form.publicKey
-  const encryptedWhitelistSubmitterIdsContent = whitelistedSubmitterIds
-    ? encryptStringsMessage(whitelistedSubmitterIds, formPublicKey)
+  const encryptedWhitelistSubmitterIdsContent = upperCaseWhitelistedSubmitterIds
+    ? encryptStringsMessage(upperCaseWhitelistedSubmitterIds, formPublicKey)
     : null
 
   // Step 4: Update form with encrypted whitelist settings
