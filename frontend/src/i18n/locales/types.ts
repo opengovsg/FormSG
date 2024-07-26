@@ -8,6 +8,7 @@ import {
   PublicForm,
   ThankYou,
 } from './features'
+import { DeepRequired } from 'ts-essentials'
 
 interface Translation {
   translation: {
@@ -28,22 +29,10 @@ interface Translation {
   }
 }
 
+
 export interface FallbackTranslation extends Translation {
   translation: {
-    features: {
-      adminForm: {
-        sidebar: {
-          fields: Fields
-          headerAndInstructions: HeaderAndInstructions
-          logic: Logic
-          thankYou: ThankYou
-        }
-        navbar: Navbar
-      }
-      common: Common
-      publicForm: PublicForm
-      login: Login
-    }
+    features: DeepRequired<Translation['translation']['features']>
   }
 }
 
