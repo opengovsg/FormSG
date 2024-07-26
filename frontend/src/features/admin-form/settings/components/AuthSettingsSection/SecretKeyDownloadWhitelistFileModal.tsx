@@ -112,8 +112,8 @@ const useSecretKeyWhitelistFileModal = ({
             }
 
             // generate and download csv file
-            const csvData = submitterIds.map((subnmitterId) => ({
-              Respondents: subnmitterId,
+            const csvData = submitterIds.map((submitterId) => ({
+              Respondent: submitterId,
             }))
             const csvString = Papa.unparse(csvData, {
               header: true,

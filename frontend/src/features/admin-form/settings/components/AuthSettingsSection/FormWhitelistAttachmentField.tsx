@@ -49,7 +49,7 @@ export const FormWhitelistAttachmentField = ({
     _id: FormWhitelistAttachmentFieldContainerName,
     title: 'Restrict form to eligible NRIC/FIN/UEN',
     description:
-      'Only NRIC/FIN/UENs in this list are allowed to submit a response. CSV file must include a “Respondent” column with all whitelisted NRIC/FIN/UENs. ' +
+      'Only NRIC/FIN/UENs in this list are allowed to submit a response. CSV file should include all whitelisted NRIC/FIN/UENs in a single column with the "Respondent" header. ' +
       '[Download a sample .csv file](https://go.gov.sg/formsg-whitelist-respondents-sample-csv)',
     required: true,
     disabled: isDisabled,
@@ -101,7 +101,19 @@ export const FormWhitelistAttachmentField = ({
           return
         }
 
-        const csvString = parseCsvFileToCsvStringWithoutChunking(file)
+        const csvString = parseCsvFileToCsvStringWithoutChunking(
+          file,
+          (headerRow) => {
+            return {
+              isValid:
+                headerRow &&
+                headerRow.length === 1 &&
+                headerRow[0].toLowerCase() === 'respondent',
+              invalidReason:
+                'Your CSV file should only contain a single column with the "Respondent" header.',
+            }
+          },
+        )
 
         mutateFormWhitelistSetting.mutate(csvString, {
           onSuccess: () => {
