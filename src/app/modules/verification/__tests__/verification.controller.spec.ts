@@ -74,6 +74,7 @@ import {
 
 const VerificationModel = getVerificationModel(mongoose)
 
+jest.mock('src/app/modules/datadog/datadog.utils')
 jest.mock('../verification.service')
 const MockVerificationService = jest.mocked(VerificationService)
 jest.mock('src/app/utils/otp')

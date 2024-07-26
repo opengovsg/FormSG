@@ -14,8 +14,10 @@ jobs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: dorny/paths-filter@v2
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dorny/paths-filter@v3
         id: filter
         with:
           filters: |
@@ -33,7 +35,9 @@ jobs:
   install:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
@@ -51,7 +55,9 @@ jobs:
     needs: install
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - run: mkdir -p build-output/
       - name: Use Node.js
         uses: actions/setup-node@v3
@@ -80,10 +86,12 @@ jobs:
 
   frontend_test:
     needs: [changes, install]
-    if: ${{ needs.changes.outputs.frontend == 'true' }}
+    # if: ${{ needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
@@ -96,9 +104,16 @@ jobs:
         with:
           path: '**/node_modules'
           key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+      - name: Configure Datadog Test Visibility
+        uses: datadog/test-visibility-github-action@v1.0.5
+        with:
+          languages: js
+          service-name: ${{ secrets.DD_SERVICE }}
+          api-key: ${{ secrets.DD_API_KEY }}
       - name: Run frontend test
         env:
-          NODE_OPTIONS: --max-old-space-size=4096
+          DD_TAGS: layer:frontend
+          NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}
           AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
         run: npm run test:frontend
 
@@ -107,7 +122,9 @@ jobs:
     if: ${{ needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
@@ -124,7 +141,7 @@ jobs:
 
   backend_test:
     needs: [changes, install, build]
-    if: ${{ needs.changes.outputs.backend == 'true' }}
+    # if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
       # prevent CI from failing when worker runs out of memory
@@ -138,7 +155,9 @@ jobs:
           sudo mkswap /swapfile
           sudo swapon /swapfile
           sudo swapon --show
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/download-artifact@v3
         if: always()
         with:
@@ -156,9 +175,16 @@ jobs:
           path: '**/node_modules'
           key: ${{ runner.OS }}-node-modules-${{ hashFiles('**/package-lock.json') }}
       - run: npm ci --prefix serverless/virus-scanner
+      - name: Configure Datadog Test Visibility
+        uses: datadog/test-visibility-github-action@v1.0.5
+        with:
+          languages: js
+          service-name: ${{ secrets.DD_SERVICE }}
+          api-key: ${{ secrets.DD_API_KEY }}
       - run: npm run test:backend:ci
         env:
-          NODE_OPTIONS: '--max-old-space-size=4096'
+          DD_TAGS: layer:backend
+          NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}
           AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
       - name: Coveralls
         uses: coverallsapp/github-action@master
@@ -170,7 +196,9 @@ jobs:
     if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:

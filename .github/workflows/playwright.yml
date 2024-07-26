@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
+      DD_TAGS: layer:e2e
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -19,18 +20,30 @@ jobs:
         run: npm ci
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
+      - name: Configure Datadog Test Visibility
+        uses: datadog/test-visibility-github-action@v1.0.5
+        with:
+          languages: js
+          service-name: ${{ secrets.DD_SERVICE }}
+          api-key: ${{ secrets.DD_API_KEY }}
       - name: Build
         env:
-          NODE_OPTIONS: '--max-old-space-size=4096 --openssl-legacy-provider'
+          NODE_OPTIONS: --max-old-space-size=4096 --openssl-legacy-provider -r ${{ env.DD_TRACE_PACKAGE }}
           REACT_APP_FORMSG_SDK_MODE: 'test'
         run: npm run build
       - name: Run Playwright tests (login)
+        env:
+          NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
         run: npx playwright test __tests__/e2e/login.spec.ts
         timeout-minutes: 5
       - name: Run Playwright tests (email-submission)
+        env:
+          NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
         run: npx playwright test __tests__/e2e/email-submission.spec.ts
         timeout-minutes: 15
       - name: Run Playwright tests (encrypt-submission)
+        env:
+          NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
         run: npx playwright test __tests__/e2e/encrypt-submission.spec.ts
         timeout-minutes: 15
       - uses: actions/upload-artifact@v3
