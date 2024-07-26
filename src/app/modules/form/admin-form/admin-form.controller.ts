@@ -1500,9 +1500,16 @@ const handleWhitelistSettingMultipartBody = multer({
   },
 })
 
-const _handleUpdateWhitelistSettingValidator = (req, res, next) => {
-  return next()
-}
+const _handleUpdateWhitelistSettingValidator = celebrate({
+  [Segments.PARAMS]: {
+    formId: Joi.string()
+      .required()
+      .pattern(/^[a-fA-F0-9]{24}$/),
+  },
+  [Segments.BODY]: {
+    whitelistCsvString: Joi.string().pattern(/^[a-zA-Z0-9,\r\n]+$/),
+  },
+})
 
 const _parseWhitelistCsvString = (whitelistCsvString: string) => {
   if (!whitelistCsvString) {
