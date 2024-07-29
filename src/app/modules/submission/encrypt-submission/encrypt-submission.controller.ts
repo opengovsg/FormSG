@@ -141,12 +141,8 @@ const submitEncryptModeForm = async (
     encryptedPayload
 
   // This is because NRIC masking is done in the controller, but we parse the fields in the
-  // middleware for encrypt forms. Only being used for email notifications
-  // In the case of unwrapOr, the isVisible field will be stripped out
-  const parsedResponses = ParsedResponsesObject.parseResponses(
-    formDef,
-    req.body.responses,
-  ).unwrapOr(new ParsedResponsesObject(req.body.responses))
+  // middleware for encrypt forms
+  const parsedResponses = new ParsedResponsesObject(req.body.responses)
 
   // Checks if user is SPCP-authenticated before allowing submission
   let userName
