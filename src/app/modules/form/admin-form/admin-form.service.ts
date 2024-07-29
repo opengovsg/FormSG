@@ -5,7 +5,7 @@ import {
   DeleteSecretRequest,
   PutSecretValueRequest,
 } from 'aws-sdk/clients/secretsmanager'
-import { assignIn, last, omit } from 'lodash'
+import { assignIn, last, omit, pick } from 'lodash'
 import mongoose, { ClientSession } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import {
@@ -17,6 +17,7 @@ import type { Except, Merge } from 'type-fest'
 import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
+  WHITELISTED_SUBMITTER_ID_DECRYPTION_FIELDS,
 } from '../../../../../shared/constants'
 import { MYINFO_ATTRIBUTE_MAP } from '../../../../../shared/constants/field/myinfo'
 import {
@@ -1117,7 +1118,10 @@ export const getFormWhitelistSetting = (
   return ResultAsync.fromPromise(
     FormWhitelistedSubmitterIdsModel.findById(encryptedWhitelistedSubmitterIds)
       .lean()
-      .exec() as Promise<EncryptedStringsMessageContent>,
+      .exec()
+      .then((whitelistSetting) =>
+        pick(whitelistSetting, WHITELISTED_SUBMITTER_ID_DECRYPTION_FIELDS),
+      ) as Promise<EncryptedStringsMessageContent>,
     (error) => {
       logger.error({
         message: 'Error encountered while retrieving form whitelist setting',

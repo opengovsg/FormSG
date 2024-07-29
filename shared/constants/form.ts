@@ -64,6 +64,13 @@ export const MULTIRESPONDENT_FORM_SETTINGS_FIELDS = <const>[
   'workflow',
 ]
 
+// Fields that are necessary for decrypting the cipherTexts given peer's private key
+export const WHITELISTED_SUBMITTER_ID_DECRYPTION_FIELDS = <const>[
+  'myPublicKey',
+  'nonce',
+  'cipherTexts',
+]
+
 export const WEBHOOK_SETTINGS_FIELDS = <const>['responseMode', 'webhook']
 
 export const ADMIN_FORM_META_FIELDS = <const>[
