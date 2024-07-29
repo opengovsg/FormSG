@@ -256,7 +256,7 @@ export const formatDrivingLicenceField = (
         field.qdl?.classes
           ?.map((f) => f.class?.value)
           .filter(Boolean)
-          .join('') || ''
+          .join(', ') || ''
       )
 
     case MyInfoAttribute.DrivingLicenceQdlExpiryDate:
