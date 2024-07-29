@@ -27,6 +27,7 @@ import getFormModel, {
   getEncryptedFormModel,
   getMultirespondentFormModel,
 } from '../../models/form.server.model'
+import getFormWhitelistSubmitterIdsModel from '../../models/form_whitelist.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
 import {
   getMongoErrorMessage,
@@ -43,6 +44,7 @@ import { getMyInfoFieldOptions } from '../myinfo/myinfo.util'
 import {
   FormDeletedError,
   FormNotFoundError,
+  FormWhitelistSettingNotFoundError,
   PrivateFormError,
 } from './form.errors'
 
@@ -52,6 +54,8 @@ const EmailFormModel = getEmailFormModel(mongoose)
 const EncryptedFormModel = getEncryptedFormModel(mongoose)
 const MultirespondentFormModel = getMultirespondentFormModel(mongoose)
 const SubmissionModel = getSubmissionModel(mongoose)
+const FormWhitelistSubmitterIdsModel =
+  getFormWhitelistSubmitterIdsModel(mongoose)
 
 /**
  * Deactivates a given form by its id
@@ -280,22 +284,27 @@ export const checkFormSubmissionLimitAndDeactivateForm = (
 export const checkHasRespondentNotWhitelistedFailure = (
   form: IPopulatedForm,
   submitterId: string,
-): Result<boolean, ApplicationError> => {
+): ResultAsync<boolean, ApplicationError> => {
   // check since whitelist is only for encrypt mode forms
   if (form.responseMode !== FormResponseMode.Encrypt) {
-    return ok(false)
+    return okAsync(false)
   }
   if (form.authType === FormAuthType.NIL) {
-    return ok(false)
-  }
-  const whitelistedSubmitterIds =
-    form.getWhitelistedSubmitterIdsWithMyPrivateKey()
-  // whitelist setting not enabled for form
-  if (!whitelistedSubmitterIds) {
-    return ok(false)
+    return okAsync(false)
   }
 
-  if (!form.publicKey) {
+  const { isWhitelistEnabled, encryptedWhitelistedSubmitterIds: whitelistId } =
+    form.getWhitelistedSubmitterIds()
+
+  if (!isWhitelistEnabled) {
+    return okAsync(false)
+  }
+  if (isWhitelistEnabled && !whitelistId) {
+    return errAsync(new FormWhitelistSettingNotFoundError())
+  }
+
+  const formPublicKey = form.publicKey
+  if (!formPublicKey) {
     logger.error({
       message: 'Encrypt mode form does not have a public key',
       meta: {
@@ -303,32 +312,48 @@ export const checkHasRespondentNotWhitelistedFailure = (
         formId: form._id,
       },
     })
-    return err(
+    return errAsync(
       new ApplicationError('Encrypt mode form does not have a public key'),
     )
   }
+  return ResultAsync.fromPromise(
+    FormWhitelistSubmitterIdsModel.findEncryptionPropertiesById(
+      whitelistId,
+    ).then(({ myPublicKey, myPrivateKey, nonce }) => {
+      const myKeyPair = {
+        publicKey: myPublicKey,
+        privateKey: myPrivateKey,
+      }
+      const usedNonce = decodeBase64(nonce)
 
-  const { myPublicKey, myPrivateKey, nonce, cipherTexts } =
-    whitelistedSubmitterIds
-  const myKeyPair = {
-    publicKey: myPublicKey,
-    privateKey: myPrivateKey,
-  }
-  const usedNonce = decodeBase64(nonce)
+      const upperCaseSubmitterId = submitterId.toUpperCase()
 
-  const upperCaseSubmitterId = submitterId.toUpperCase()
+      const submitterIdForLookup = encryptString(
+        upperCaseSubmitterId,
+        formPublicKey,
+        usedNonce,
+        myKeyPair,
+      ).cipherText
 
-  const submitterIdForLookup = encryptString(
-    upperCaseSubmitterId,
-    form.publicKey,
-    usedNonce,
-    myKeyPair,
-  ).cipherText
-
-  const submitterIdInWhitelist = cipherTexts.includes(submitterIdForLookup)
-
-  const hasRespondentNotWhitelistedError = !submitterIdInWhitelist
-  return ok(hasRespondentNotWhitelistedError)
+      return FormWhitelistSubmitterIdsModel.checkIfSubmitterIdIsWhitelisted(
+        whitelistId,
+        submitterIdForLookup,
+      ).then((isWhitelisted) => !isWhitelisted)
+    }),
+    (err) => {
+      logger.error({
+        message: 'Error while checking if submitterId is whitelisted',
+        meta: {
+          action: 'checkHasRespondentNotWhitelistedFailure',
+          formId: form._id,
+          err,
+        },
+      })
+      return new ApplicationError(
+        'Error while checking if submitterId is whitelisted',
+      )
+    },
+  )
 }
 
 /**

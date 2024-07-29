@@ -8,7 +8,6 @@ import mongoose, {
   SchemaOptions,
   Types,
 } from 'mongoose'
-import { EncryptedStringsMessageContentWithMyPrivateKey } from 'shared/utils/crypto'
 import validator from 'validator'
 import isEmail from 'validator/lib/isEmail'
 
@@ -110,6 +109,7 @@ import LogicSchema, {
   ShowFieldsLogicSchema,
 } from './form_logic.server.schema'
 import { CustomFormLogoSchema, FormLogoSchema } from './form_logo.server.schema'
+import { FORM_WHITELISTED_SUBMITTER_IDS_ID } from './form_whitelist.server.model'
 import WorkflowStepSchema, {
   WorkflowStepDynamicSchema,
   WorkflowStepStaticSchema,
@@ -193,28 +193,17 @@ export const formPaymentsFieldSchema = {
   },
 }
 
-export const formEncryptedWhitelistedSubmitterIdSchema = {
-  myPublicKey: {
-    type: String,
+const whitelistedSubmitterIdNestedPath = {
+  isWhitelistEnabled: {
+    type: Boolean,
     required: true,
+    default: false,
   },
-  myPrivateKey: {
-    type: String,
-    required: true,
-  },
-  nonce: {
-    type: String,
-    required: true,
-  },
-  cipherTexts: {
-    type: [{ type: String, required: true }],
-    required: true,
-    validate: [
-      (v: string[]) => {
-        return Array.isArray(v) && v.length > 0
-      },
-      'cipherTexts must be non-empty array',
-    ],
+  encryptedWhitelistedSubmitterIds: {
+    type: Schema.Types.ObjectId,
+    ref: FORM_WHITELISTED_SUBMITTER_IDS_ID,
+    required: false,
+    default: undefined,
   },
   _id: { id: false },
 }
@@ -246,17 +235,12 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
     required: false,
   },
   whitelistedSubmitterIds: {
-    type: formEncryptedWhitelistedSubmitterIdSchema,
+    type: whitelistedSubmitterIdNestedPath,
     required: false,
-    // Avoid loading whitelist payload by default as it is large.
-    // Use getter methods to access raw data.
-    get: (v: EncryptedStringsMessageContentWithMyPrivateKey) => {
-      if (!v) {
-        return null
-      } else {
-        return true
-      }
-    },
+    get: (v: { isWhitelistEnabled: boolean }) => ({
+      // remove the ObjectId link to whitelist collection's document by default unless asked for.
+      isWhitelistEnabled: v.isWhitelistEnabled,
+    }),
   },
   payments_channel: {
     channel: {
@@ -294,27 +278,10 @@ const EncryptedFormDocumentSchema =
   EncryptedFormSchema as unknown as Schema<IEncryptedFormDocument>
 
 EncryptedFormDocumentSchema.methods.getWhitelistedSubmitterIds = function () {
-  if (!this.whitelistedSubmitterIds) {
-    return null
-  }
-  const rawWhitelistedSubmitterIds = this.get('whitelistedSubmitterIds', null, {
+  return this.get('whitelistedSubmitterIds', null, {
     getters: false,
   })
-  return {
-    myPublicKey: rawWhitelistedSubmitterIds.myPublicKey,
-    nonce: rawWhitelistedSubmitterIds.nonce,
-    cipherTexts: rawWhitelistedSubmitterIds.cipherTexts,
-  }
 }
-
-EncryptedFormDocumentSchema.methods.getWhitelistedSubmitterIdsWithMyPrivateKey =
-  function () {
-    if (!this.whitelistedSubmitterIds) {
-      return null
-    }
-
-    return this.get('whitelistedSubmitterIds', null, { getters: false })
-  }
 
 EncryptedFormDocumentSchema.methods.addPaymentAccountId = function ({
   accountId,

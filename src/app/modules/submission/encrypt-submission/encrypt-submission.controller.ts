@@ -272,7 +272,7 @@ const submitEncryptModeForm = async (
       form.authType === FormAuthType.SGID_MyInfo)
   ) {
     const hasRespondentNotWhitelistedErrorResult =
-      FormService.checkHasRespondentNotWhitelistedFailure(form, userName)
+      await FormService.checkHasRespondentNotWhitelistedFailure(form, userName)
 
     if (hasRespondentNotWhitelistedErrorResult.isErr()) {
       const error = hasRespondentNotWhitelistedErrorResult.error

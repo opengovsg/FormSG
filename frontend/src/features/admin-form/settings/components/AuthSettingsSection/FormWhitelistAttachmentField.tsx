@@ -59,7 +59,8 @@ export const FormWhitelistAttachmentField = ({
 
   const { publicKey, whitelistedSubmitterIds } = settings
 
-  const isWhitelistEnabled = whitelistedSubmitterIds
+  const isWhitelistEnabled =
+    whitelistedSubmitterIds && whitelistedSubmitterIds.isWhitelistEnabled
 
   useEffect(() => {
     // Set the whitelist attachment field with a mock representation file

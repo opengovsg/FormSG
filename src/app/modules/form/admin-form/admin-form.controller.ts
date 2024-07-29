@@ -1757,8 +1757,9 @@ export const handleGetWhitelistSetting: ControllerHandler<
     )
     .andThen(AuthService.checkFormForPermissions(PermissionLevel.Read))
     .andThen((form) => EncryptSubmissionService.checkFormIsEncryptMode(form))
-    .map((form) => {
-      const formWhitelistedSubmitterIds = form.getWhitelistedSubmitterIds()
+    .map(async (form) => AdminFormService.getFormWhitelistSetting(form))
+    .andThen((formWhitelistedSubmitterIds) => formWhitelistedSubmitterIds)
+    .map((formWhitelistedSubmitterIds) => {
       return res.status(StatusCodes.OK).json({
         encryptedWhitelistedSubmitterIds: formWhitelistedSubmitterIds,
       })

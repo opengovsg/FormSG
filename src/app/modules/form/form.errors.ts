@@ -99,6 +99,16 @@ export class FormRespondentNotWhitelistedError extends ApplicationError {
   }
 }
 
+export class FormWhitelistSettingNotFoundError extends ApplicationError {
+  constructor(message = 'Whitelist setting not found') {
+    super(
+      message,
+      undefined,
+      ErrorCodes.FORM_UNEXPECTED_WHITELIST_SETTING_NOT_FOUND,
+    )
+  }
+}
+
 export class FormRespondentSingleSubmissionValidationError extends ApplicationError {
   constructor() {
     super(

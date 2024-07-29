@@ -172,6 +172,15 @@ export interface EmailFormBase extends FormBase {
   emails: string[]
 }
 
+export interface WhitelistedSubmitterIds {
+  isWhitelistEnabled: boolean
+}
+
+export interface WhitelistedSubmitterIdsWithReferenceOid
+  extends WhitelistedSubmitterIds {
+  encryptedWhitelistedSubmitterIds: string // Object id of the encrypted whitelist
+}
+
 export interface StorageFormBase extends FormBase {
   responseMode: FormResponseMode.Encrypt
   publicKey: string
@@ -179,10 +188,7 @@ export interface StorageFormBase extends FormBase {
   payments_channel: FormPaymentsChannel
   payments_field: FormPaymentsField
   business?: FormBusinessField
-  whitelistedSubmitterIds?:
-    | EncryptedStringsMessageContentWithMyPrivateKey
-    | null
-    | true
+  whitelistedSubmitterIds?: WhitelistedSubmitterIds | null
 }
 
 export interface MultirespondentFormBase extends FormBase {
