@@ -52,18 +52,6 @@ export const APP_FOOTER_LINKS = [
 
 export const LANDING_PAGE_EXAMPLE_FORMS = [
   {
-    href: 'https://form.gov.sg/600c490b7c026600138d4ca9',
-    label: 'Register for COVID-19 Vaccination',
-  },
-  {
-    href: 'https://form.gov.sg/5eb38e989bd7d80011066a02',
-    label: 'Daily Reporting Health Symptoms',
-  },
-  {
-    href: 'https://form.gov.sg/6057667b248bbc0012ceda2f',
-    label: 'Gov.sg WhatsApp Subscription',
-  },
-  {
     href: 'https://form.gov.sg/6041e9f8bd47260012395250',
     label: 'Post-ICT Survey',
   },
