@@ -84,7 +84,12 @@ import { useLanding } from './queries'
 export const LandingPage = (): JSX.Element => {
   const { data } = useLanding()
   const isMobile = useIsMobile()
-  const mdComponents = useMdComponents()
+  const mdComponents = useMdComponents({
+    styles: {
+      text: { whiteSpace: 'initial' },
+      listItem: { marginBottom: '1rem' },
+    },
+  })
 
   return (
     <>
