@@ -67,7 +67,7 @@ export interface PublicFormContextProps
   setNumVisibleFields?: Dispatch<SetStateAction<number>>
 
   hasSingleSubmissionValidationError: boolean
-  setHasSingleSubmissionValidationError: Dispatch<SetStateAction<boolean>>
+  setHasSingleSubmissionValidationError?: Dispatch<SetStateAction<boolean>>
 
   encryptedPreviousSubmission?: MultirespondentSubmissionDto
   previousSubmission?: ReturnType<typeof decryptSubmission>

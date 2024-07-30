@@ -92,7 +92,9 @@ export const PublicFormSubmitButton = ({
 
   const isSingleSubmissionOnlyModalOpen = hasSingleSubmissionValidationError
   const onSingleSubmissionModalClose = () => {
-    setHasSingleSubmissionValidationError(false)
+    // the setter will only exist for public forms and will be undefined for preview
+    if (setHasSingleSubmissionValidationError)
+      setHasSingleSubmissionValidationError(false)
   }
 
   return (

@@ -337,6 +337,7 @@ export const PreviewFormProvider = ({
         handleLogout: undefined,
         isPaymentEnabled,
         isPreview: true,
+        hasSingleSubmissionValidationError: false,
         ...commonFormValues,
         ...data,
         ...rest,
