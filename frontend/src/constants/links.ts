@@ -38,7 +38,8 @@ export const GUIDE_PAYMENTS_INVOICE_DIFFERENCES =
   'https://go.gov.sg/formsg-payments-invoice-differences'
 export const GUIDE_ENCRYPTION_BOUNDARY_SHIFT =
   'https://guide.form.gov.sg/faq/faq/storage-mode-virus-scanning-and-content-validation'
-export const ACCEPTED_FILETYPES_SPREADSHEET = 'https://go.gov.sg/formsg-cwl'
+export const ACCEPTED_FILETYPES_SPREADSHEET =
+  'https://go.gov.sg/formsg-guide-attachments'
 
 export const APP_FOOTER_LINKS = [
   { label: 'Guide', href: FORM_GUIDE },
