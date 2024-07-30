@@ -370,8 +370,8 @@ export const useMutateFormSettings = () => {
             : 'Your CSV has been removed successfully.',
         )
       },
-      onError: () => {
-        generateErrorToast('An error occurred while uploading your CSV.')
+      onError: (error: Error) => {
+        generateErrorToast(error.message)
       },
     },
   )

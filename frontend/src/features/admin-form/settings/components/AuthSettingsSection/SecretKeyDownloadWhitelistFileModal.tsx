@@ -57,6 +57,7 @@ const useSecretKeyWhitelistFileModal = ({
 >) => {
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
+  const errorToast = useToast({ status: 'danger', isClosable: true })
   const {
     formState: { errors },
     setError,
@@ -66,6 +67,16 @@ const useSecretKeyWhitelistFileModal = ({
     reset,
     watch,
   } = useForm<SecretKeyFormInputs>()
+
+  const handleError = useCallback(
+    (error: Error) => {
+      errorToast.closeAll()
+      errorToast({
+        description: error.message,
+      })
+    },
+    [errorToast],
+  )
 
   const fileUploadRef = useRef<HTMLInputElement | null>(null)
 
@@ -96,8 +107,8 @@ const useSecretKeyWhitelistFileModal = ({
           },
         )
       }
-      fetchAdminFormEncryptedWhitelistedSubmitterIds(formId, queryClient).then(
-        (data) => {
+      fetchAdminFormEncryptedWhitelistedSubmitterIds(formId, queryClient)
+        .then((data) => {
           const { encryptedWhitelistedSubmitterIds } = data
           if (encryptedWhitelistedSubmitterIds) {
             const decryptedSubmitterIds = decryptSubmitterIds(
@@ -134,8 +145,8 @@ const useSecretKeyWhitelistFileModal = ({
               description: 'Whitelist setting file downloaded successfully',
             })
           }
-        },
-      )
+        })
+        .catch(handleError)
     },
   )
 
