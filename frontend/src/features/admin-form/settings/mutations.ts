@@ -357,8 +357,7 @@ export const useMutateFormSettings = () => {
     },
   )
 
-  // TODO: fix the TS typing
-  const mutateFormWhitelistSetting = useMutation<any, Error, any, any>(
+  const mutateFormWhitelistSetting = useMutation(
     (whitelistCsvString: Promise<string> | null) => {
       return updateFormWhitelistSetting(formId, whitelistCsvString)
     },
