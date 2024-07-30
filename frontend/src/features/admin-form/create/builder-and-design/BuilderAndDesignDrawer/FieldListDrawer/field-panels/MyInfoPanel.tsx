@@ -12,7 +12,7 @@ import {
   MyInfoAttribute,
 } from '~shared/types'
 
-import { GUIDE_EMAIL_MODE } from '~constants/links'
+import { GUIDE_MYINFO_BUILDER_FIELD } from '~constants/links'
 import { ADMINFORM_SETTINGS_SINGPASS_SUBROUTE } from '~constants/routes'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
@@ -269,7 +269,7 @@ const MyInfoText = ({
   return (
     <Text>
       {`Only 30 MyInfo fields are allowed (${numMyInfoFields}/30). `}
-      <Link isExternal href={GUIDE_EMAIL_MODE}>
+      <Link isExternal href={GUIDE_MYINFO_BUILDER_FIELD}>
         Learn more
       </Link>
     </Text>

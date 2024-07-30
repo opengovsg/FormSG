@@ -84,7 +84,12 @@ import { useLanding } from './queries'
 export const LandingPage = (): JSX.Element => {
   const { data } = useLanding()
   const isMobile = useIsMobile()
-  const mdComponents = useMdComponents()
+  const mdComponents = useMdComponents({
+    styles: {
+      text: { whiteSpace: 'initial' },
+      listItem: { marginBottom: '1rem' },
+    },
+  })
 
   return (
     <>
@@ -452,7 +457,8 @@ export const LandingPage = (): JSX.Element => {
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={5} />
-                  Download your responses as a CSV
+                  Download your responses as a CSV and collect responses at your
+                  email address
                 </ListItem>
               </OrderedList>
             </TabPanel>
