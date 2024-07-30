@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
   <head> </head>
   <body>
@@ -35,7 +35,7 @@
     <br /><br /><br />
     <p>The <%= appName %> Support Team</p>
     <br /><br /><br />
-    ===============
+    <% if (typeof dataCollationData !== 'undefined') { %> ===============
     <p>
       Please ignore this section. It is meant for the Data Collation Tool to
       process.
@@ -43,5 +43,6 @@
     <p>-- Start of JSON --</p>
     <%= JSON.stringify(dataCollationData) %>
     <p>-- End of JSON --</p>
+    <% } %>
   </body>
 </html>

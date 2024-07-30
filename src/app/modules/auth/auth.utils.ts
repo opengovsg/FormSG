@@ -22,6 +22,7 @@ const logger = createLoggerWithLabel(module)
  */
 export const mapRouteError: MapRouteError = (error, coreErrorMessage) => {
   switch (error.constructor) {
+    case AuthErrors.UnauthorizedError:
     case AuthErrors.InvalidDomainError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,

@@ -6,6 +6,7 @@ import {
   CreateStorageFormBodyDto,
   DuplicateFormBodyDto,
   FormDto,
+  FormId,
 } from '~shared/types/form/form'
 import { WorkspaceDto } from '~shared/types/workspace'
 
@@ -95,8 +96,16 @@ export const createEmailModeForm = async (
   )
 }
 
-export const createStorageModeOrMultirespondentForm = async (
-  body: CreateStorageFormBodyDto | CreateMultirespondentFormBodyDto,
+export const createStorageModeForm = async (
+  body: CreateStorageFormBodyDto,
+): Promise<FormDto> => {
+  return ApiService.post<FormDto>(ADMIN_FORM_ENDPOINT, { form: body }).then(
+    ({ data }) => data,
+  )
+}
+
+export const createMultirespondentModeForm = async (
+  body: CreateMultirespondentFormBodyDto,
 ): Promise<FormDto> => {
   return ApiService.post<FormDto>(ADMIN_FORM_ENDPOINT, { form: body }).then(
     ({ data }) => data,
@@ -113,7 +122,17 @@ export const dupeEmailModeForm = async (
   ).then(({ data }) => data)
 }
 
-export const dupeStorageModeOrMultirespondentForm = async (
+export const dupeStorageModeForm = async (
+  formId: FormId,
+  body: DuplicateFormBodyDto,
+): Promise<FormDto> => {
+  return ApiService.post<FormDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/duplicate`,
+    body,
+  ).then(({ data }) => data)
+}
+
+export const dupeMultirespondentModeForm = async (
   formId: string,
   body: DuplicateFormBodyDto,
 ): Promise<FormDto> => {

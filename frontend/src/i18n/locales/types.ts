@@ -1,8 +1,9 @@
-import { Common, Login, PublicForm } from './features'
+import { AdminFormNavbar, Common, Login, PublicForm } from './features'
 
 interface Translation {
   translation: {
     features: {
+      adminFormNavbar?: AdminFormNavbar
       common?: Common
       publicForm?: PublicForm
       login?: Login

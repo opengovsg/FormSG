@@ -1,6 +1,8 @@
 import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 
+import { SeenFlags } from '../../../../shared/types'
+
 const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
 
 /**
@@ -26,7 +28,21 @@ export const validateContactOtpVerificationParams = celebrate({
   }),
 })
 
-export const validateUpdateUserLastSeenFeatureUpdateVersion = celebrate({
+export const validateUpdateUserLastSeenFlagVersion = celebrate({
+  [Segments.BODY]: Joi.object({
+    version: Joi.number().required(),
+    flag: Joi.string()
+      .valid(...Object.values(SeenFlags))
+      .required(),
+  }),
+})
+
+/**
+ * @deprecated validator
+ * Backwards compatibility for the old route
+ * use validateUpdateUserLastSeenFlagVersion instead
+ */
+export const validateUpdateUserNewFeaturesLastSeenVersion = celebrate({
   [Segments.BODY]: Joi.object({
     version: Joi.number().required(),
   }),

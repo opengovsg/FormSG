@@ -38,7 +38,10 @@ import {
 import { ErrorResponseData } from '../../core/core.types'
 import { InvalidPaymentAmountError } from '../../payments/payments.errors'
 import { StripeAccountError } from '../../payments/stripe.errors'
-import { ResponseModeError } from '../../submission/submission.errors'
+import {
+  ResponseModeError,
+  UnsupportedSettingsError,
+} from '../../submission/submission.errors'
 import { MissingUserError } from '../../user/user.errors'
 import { SmsLimitExceededError } from '../../verification/verification.errors'
 import {
@@ -127,6 +130,11 @@ export const mapRouteError = (
         errorMessage: error.message,
       }
     case MalformedParametersError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
+    case UnsupportedSettingsError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
@@ -347,7 +355,15 @@ export const processDuplicateOverrideProps = (
   }
 
   switch (params.responseMode) {
+    // For encrypt forms, we don't want emails to be carried over in case of
+    // 1. Unexpected spam of emails after duplicating a form
+    // 2. Standardize with `use-template` (security issue if duplicator is able
+    //  to see the emails of the duplicatee)
     case FormResponseMode.Encrypt:
+      overrideProps.publicKey = params.publicKey
+      overrideProps.submissionLimit = null
+      overrideProps.emails = []
+      break
     case FormResponseMode.Multirespondent:
       overrideProps.publicKey = params.publicKey
       overrideProps.submissionLimit = null

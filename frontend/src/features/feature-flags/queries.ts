@@ -1,6 +1,6 @@
 import { useQuery, UseQueryResult } from 'react-query'
 
-import { getEnabledFeatureFlags } from '~services/FeatureFlagService'
+import { getEnabledFeatureFlags } from '~features/feature-flags/FeatureFlagService'
 
 export const featureFlagsKeys = {
   base: ['feature-flags'] as const,

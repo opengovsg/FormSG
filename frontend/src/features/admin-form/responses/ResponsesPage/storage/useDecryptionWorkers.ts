@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useMutation, UseMutationOptions } from 'react-query'
 import { datadogLogs } from '@datadog/browser-logs'
 
+import { waitForMs } from '~utils/waitForMs'
+
 import { useAdminForm } from '~features/admin-form/common/queries'
 import {
   trackDownloadNetworkFailure,
@@ -26,6 +28,12 @@ import {
 } from './types'
 
 const NUM_OF_METADATA_ROWS = 5
+
+// We will download attachments in convoys of 5
+// This is to prevent the script from downloading too many attachments at once
+// which could cause it to block downloads.
+const ATTACHMENT_DOWNLOAD_CONVOY_SIZE = 5
+const ATTACHMENT_DOWNLOAD_CONVOY_MINIMUM_SEPARATION_TIME = 1000
 
 const killWorkers = (workers: CleanableDecryptionWorkerApi[]): void => {
   return workers.forEach((worker) => worker.cleanup())
@@ -141,6 +149,7 @@ const useDecryptionWorkers = ({
       const downloadStartTime = performance.now()
 
       let progress = 0
+      let timeSinceLastXAttachmentDownload = 0
 
       return new Promise<DownloadResult>((resolve, reject) => {
         reader
@@ -181,7 +190,24 @@ const useDecryptionWorkers = ({
                       errorCount++
                       console.error('Error in getResponseInstance', e)
                     }
+
                     if (downloadAttachments && decryptResult.downloadBlob) {
+                      // Ensure attachments downloads are spaced out to avoid browser blocking downloads
+                      if (progress % ATTACHMENT_DOWNLOAD_CONVOY_SIZE === 0) {
+                        const now = new Date().getTime()
+                        const elapsedSinceXDownloads =
+                          now - timeSinceLastXAttachmentDownload
+
+                        const waitTime = Math.max(
+                          0,
+                          ATTACHMENT_DOWNLOAD_CONVOY_MINIMUM_SEPARATION_TIME -
+                            elapsedSinceXDownloads,
+                        )
+                        if (waitTime > 0) {
+                          await waitForMs(waitTime)
+                        }
+                        timeSinceLastXAttachmentDownload = now
+                      }
                       await downloadResponseAttachment(
                         decryptResult.downloadBlob,
                         decryptResult.id,

@@ -23,7 +23,10 @@ import {
   unlinkStripeAccountFromForm,
   validateAccount,
 } from '../../payments/stripe.service'
-import { checkFormIsEncryptMode } from '../../submission/encrypt-submission/encrypt-submission.service'
+import {
+  assertFormIsSingleSubmissionDisabled,
+  checkFormIsEncryptMode,
+} from '../../submission/encrypt-submission/encrypt-submission.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as UserService from '../../user/user.service'
 
@@ -70,6 +73,9 @@ export const handleConnectAccount: ControllerHandler<{
           level: PermissionLevel.Write,
         }),
       )
+      // Payments should not be allowed to connect
+      // since single submission forms do not support it currently.
+      .andThen(assertFormIsSingleSubmissionDisabled)
       // Ensure that the form is encrypt mode.
       .andThen(checkFormIsEncryptMode)
       // Get the auth URL and state, and pass the auth URL for redirection.
@@ -248,7 +254,7 @@ const _handleUpdatePayments: ControllerHandler<
       )
       // Proceed to allow updating of start page
       .andThen((form) => {
-        return AdminFormPaymentService.updatePayments(formId, {
+        return AdminFormPaymentService.updatePayments(formId, form, {
           ...req.body,
           // prevent APIs from updating global_min_amount_override
           global_min_amount_override:

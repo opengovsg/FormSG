@@ -22,6 +22,7 @@ import {
   PUBLICFORM_ROUTE,
   RESULTS_CHARTS_SUBROUTE,
   RESULTS_FEEDBACK_SUBROUTE,
+  TEMP_LOGIN_ROUTE,
   TOU_ROUTE,
   USE_TEMPLATE_REDIRECT_SUBROUTE,
 } from '~constants/routes'
@@ -58,6 +59,7 @@ const WorkspacePage = loadable(() => import('~features/workspace'))
 const LandingPage = loadable(() => import('~pages/Landing/Home'))
 const LandingPaymentsPage = loadable(() => import('~pages/Landing/Payments'))
 const LoginPage = loadable(() => import('~features/login'))
+const TempLoginPage = loadable(() => import('~features/login/TempLoginPage'))
 const PrivacyPolicyPage = loadable(() => import('~pages/PrivacyPolicy'))
 const TermsOfUsePage = loadable(() => import('~pages/TermsOfUse'))
 const PreviewFormPage = loadable(() => import('~features/admin-form/preview'))
@@ -96,6 +98,10 @@ export const AppRouter = (): JSX.Element => {
         <Route
           path={LOGIN_ROUTE}
           element={<PublicElement strict element={<LoginPage />} />}
+        />
+        <Route
+          path={TEMP_LOGIN_ROUTE}
+          element={<PublicElement strict element={<TempLoginPage />} />}
         />
         <Route
           path={LOGIN_CALLBACK_ROUTE}

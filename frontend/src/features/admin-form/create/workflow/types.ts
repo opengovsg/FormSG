@@ -12,9 +12,6 @@ export enum AdminEditWorkflowState {
 
 export type EditStepInputs = Omit<FormWorkflowStep, 'emails'> & {
   workflow_type: WorkflowType
-  // Should be FormWorkflowStepStatic['emails'], but the model accomodates an
-  // array of strings while on the frontend, we only want to show one email input
-  // for now.
-  emails?: FormWorkflowStepStatic['emails'][number]
+  emails?: FormWorkflowStepStatic['emails']
   field?: FormWorkflowStepDynamic['field']
 }

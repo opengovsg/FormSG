@@ -15,3 +15,7 @@ export const getPaymentInvoiceDownloadUrl = (
     paymentId,
   )}` as const
 }
+
+export const getPublicFormUrl = (formId: string) => {
+  return `/${formId}` as const
+}

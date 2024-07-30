@@ -124,26 +124,36 @@ const createFormValidator = celebrate({
         title: Joi.string().min(4).max(200).required(),
         // Require emails string (for backwards compatibility) or string
         // array if form to be created in Email mode.
+        // Must be string array (which can be empty) if form is to be created in Encrypt mode.
         emails: Joi.when('responseMode', {
-          is: FormResponseMode.Email,
-          then: Joi.alternatives()
-            .try(Joi.array().items(Joi.string()).min(1), Joi.string())
-            .required(),
-          // TODO (#2264): disallow the 'emails' key when responseMode is not Email
-          // Allow old clients to send this key but optionally and without restrictions
-          // on array length or type
-          otherwise: Joi.alternatives().try(
-            Joi.array(),
-            Joi.string().allow(''),
-          ),
+          switch: [
+            {
+              is: FormResponseMode.Email,
+              then: Joi.alternatives()
+                .try(
+                  Joi.array().items(Joi.string().email()).min(1),
+                  Joi.string().email(),
+                )
+                .required(),
+            },
+            {
+              is: FormResponseMode.Encrypt,
+              then: Joi.array().items(Joi.string().email()).required(),
+            },
+            {
+              is: FormResponseMode.Multirespondent,
+              then: Joi.forbidden(),
+            },
+          ],
+          otherwise: Joi.forbidden(),
         }),
-        // Require publicKey field if form to be created in Storage mode.
-        publicKey: Joi.string()
-          .allow('')
-          .when('responseMode', {
-            is: [FormResponseMode.Encrypt, FormResponseMode.Multirespondent],
-            then: Joi.string().required().disallow(''),
-          }),
+        // Require publicKey field if form to be created in Storage mode or
+        // Multirespondent mode
+        publicKey: Joi.when('responseMode', {
+          is: [FormResponseMode.Encrypt, FormResponseMode.Multirespondent],
+          then: Joi.string().required().disallow(''),
+          otherwise: Joi.forbidden(),
+        }),
         workspaceId: Joi.string(),
       })
       .required()
@@ -165,22 +175,36 @@ const duplicateFormValidator = celebrate({
     // Require emails string (for backwards compatibility) or string array
     // if form to be duplicated in Email mode.
     emails: Joi.when('responseMode', {
-      is: FormResponseMode.Email,
-      then: Joi.alternatives()
-        .try(Joi.array().items(Joi.string()).min(1), Joi.string())
-        .required(),
-      // TODO (#2264): disallow the 'emails' key when responseMode is not Email
-      // Allow old clients to send this key but optionally and without restrictions
-      // on array length or type
-      otherwise: Joi.alternatives().try(Joi.array(), Joi.string().allow('')),
+      switch: [
+        {
+          is: FormResponseMode.Email,
+          then: Joi.alternatives()
+            .try(
+              Joi.array().items(Joi.string().email()).min(1),
+              Joi.string().email(),
+            )
+            .required(),
+        },
+        {
+          // When duplicating forms, we reset the `emails` field to be empty
+          // Refer to `admin-form.utils.ts`.
+          is: FormResponseMode.Encrypt,
+          then: Joi.forbidden(),
+        },
+        {
+          is: FormResponseMode.Multirespondent,
+          then: Joi.forbidden(),
+        },
+      ],
+      otherwise: Joi.forbidden(),
     }),
-    // Require publicKey field if form to be duplicated in Storage mode.
-    publicKey: Joi.string()
-      .allow('')
-      .when('responseMode', {
-        is: [FormResponseMode.Encrypt, FormResponseMode.Multirespondent],
-        then: Joi.string().required().disallow(''),
-      }),
+    // Require publicKey field if form to be duplicated in Storage mode or
+    // Multirespondent mode
+    publicKey: Joi.when('responseMode', {
+      is: [FormResponseMode.Encrypt, FormResponseMode.Multirespondent],
+      then: Joi.string().required().disallow(''),
+      otherwise: Joi.forbidden(),
+    }),
     workspaceId: Joi.string(),
   }),
 })
@@ -1443,7 +1467,7 @@ export const _handleUpdateWebhookSettings: ControllerHandler<
  * @security session
  *
  * @returns 200 with updated form settings
- * @returns 400 when body is malformed; can happen when email parameter is passed for encrypt-mode forms
+ * @returns 400 when body is malformed
  * @returns 403 when current user does not have permissions to update form settings
  * @returns 404 when form to update settings for cannot be found
  * @returns 409 when saving form settings incurs a conflict in the database

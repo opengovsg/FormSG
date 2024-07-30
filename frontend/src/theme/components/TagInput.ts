@@ -32,6 +32,9 @@ const baseStyle = definePartsStyle({
     _disabled: {
       cursor: 'not-allowed',
     },
+    _placeholder: {
+      color: 'neutral.500',
+    },
   },
 })
 

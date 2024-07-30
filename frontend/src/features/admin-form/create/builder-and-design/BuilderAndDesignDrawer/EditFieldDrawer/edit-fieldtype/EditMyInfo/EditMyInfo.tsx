@@ -1,9 +1,10 @@
 import { BiCheck, BiData, BiX } from 'react-icons/bi'
-import { HStack, Icon, Text, VStack } from '@chakra-ui/react'
+import { Box, HStack, Icon, Text, VStack } from '@chakra-ui/react'
 
 import { MyInfoField } from '~shared/types'
 
 import { SINGPASS_FAQ } from '~constants/links'
+import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 
 import {
@@ -44,9 +45,34 @@ export const EditMyInfo = ({ field }: EditMyInfoProps): JSX.Element => {
       },
     })
 
+  function conditionallyDisplayInfoBox() {
+    const currentDate = new Date().toLocaleString('en-US', {
+      timeZone: 'Asia/Singapore',
+    })
+    const targetDate = new Date('2024-06-28T00:00:00').toLocaleString('en-US', {
+      timeZone: 'Asia/Singapore',
+    })
+
+    if (new Date(currentDate) <= new Date(targetDate)) {
+      return (
+        <>
+          <Box pb="1.5rem">
+            <InlineMessage variant="warning">
+              To align with MyInfo terminology, the “Gender” field will be
+              renamed to “Sex” from 28 Jun 2024.
+            </InlineMessage>
+          </Box>{' '}
+        </>
+      )
+    } else {
+      return null
+    }
+  }
+
   return (
     <CreatePageDrawerContentContainer>
       <VStack align="flex-start">
+        {conditionallyDisplayInfoBox()}
         <Text textStyle="subhead-1">Data source</Text>
         {extendedField.dataSource.map((dataSource, idx) => (
           <HStack key={idx} align="flex-start">

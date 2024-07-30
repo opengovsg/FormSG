@@ -1,6 +1,8 @@
 const PUBLIC_FORM_FIELDS = [
   'admin',
   'authType',
+  'isNricMaskEnabled',
+  'isSingleSubmission',
   'endPage',
   'esrvcId',
   'form_fields',
@@ -29,6 +31,8 @@ export const MULTIRESPONDENT_PUBLIC_FORM_FIELDS = [
 const FORM_SETTINGS_FIELDS = [
   'responseMode',
   'authType',
+  'isNricMaskEnabled',
+  'isSingleSubmission',
   'esrvcId',
   'hasCaptcha',
   'hasIssueNotification',
@@ -49,6 +53,7 @@ export const STORAGE_FORM_SETTINGS_FIELDS = [
   'payments_field',
   'publicKey',
   'business',
+  'emails',
 ] as const
 
 export const MULTIRESPONDENT_FORM_SETTINGS_FIELDS = [

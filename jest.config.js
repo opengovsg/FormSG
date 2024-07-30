@@ -1,3 +1,4 @@
+/** @type {import('jest').Config} */
 module.exports = {
   preset: 'ts-jest',
   testMatch: ['**/?(*.)+(spec|test).[t]s?(x)'],

@@ -12,6 +12,7 @@ import {
   StorageFormSettings,
 } from '~shared/types/form/form'
 import { TwilioCredentials } from '~shared/types/twilio'
+import { PAYMENT_DELETE_DEFAULT } from '~shared/utils/payments'
 
 import { ApiError } from '~typings/core'
 
@@ -19,6 +20,7 @@ import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
 import { useToast } from '~hooks/useToast'
 import { formatOrdinal } from '~utils/stringFormat'
 
+import { updateFormPayments } from '../common/AdminFormPageService'
 import { adminFormKeys } from '../common/queries'
 
 import { adminFormSettingsKeys } from './queries'
@@ -34,11 +36,13 @@ import {
   updateFormInactiveMessage,
   updateFormIssueNotification,
   updateFormLimit,
+  updateFormNricMask,
   updateFormStatus,
   updateFormTitle,
   updateFormWebhookRetries,
   updateFormWebhookUrl,
   updateGstEnabledFlag,
+  updateIsSingleSubmission,
   updateTwilioCredentials,
 } from './SettingsService'
 
@@ -227,55 +231,116 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const generateFormAuthTypeMutationToastMessageText = (
+    prevAuthType: FormAuthType | undefined,
+    nextAuthType: FormAuthType,
+  ) => {
+    if (prevAuthType === FormAuthType.NIL) {
+      return 'Singpass authentication successfully enabled.'
+    }
+    if (nextAuthType === FormAuthType.NIL) {
+      return 'Singpass authentication successfully disabled.'
+    }
+    return 'Singpass authentication successfully updated.'
+  }
+
   const mutateFormAuthType = useMutation<
     FormSettings,
     ApiError,
     FormAuthType,
     { previousSettings?: FormSettings }
-  >((nextAuthType: FormAuthType) => updateFormAuthType(formId, nextAuthType), {
-    // Optimistic update
-    onMutate: async (newData) => {
-      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-      await queryClient.cancelQueries(formSettingsQueryKey)
+  >(
+    (nextAuthType: FormAuthType) => {
+      return updateFormAuthType(formId, nextAuthType)
+    },
+    {
+      // Optimistic update
+      onMutate: async (newData) => {
+        // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+        await queryClient.cancelQueries(formSettingsQueryKey)
 
-      // Snapshot the previous value
-      const previousSettings =
-        queryClient.getQueryData<FormSettings>(formSettingsQueryKey)
+        // Snapshot the previous value
+        const previousSettings =
+          queryClient.getQueryData<FormSettings>(formSettingsQueryKey)
 
-      // Optimistically update to the new value
-      queryClient.setQueryData<FormSettings | undefined>(
-        formSettingsQueryKey,
-        (old) => {
-          if (!old) return
-          return {
-            ...old,
-            authType: newData,
-          }
-        },
+        // Optimistically update to the new value
+        queryClient.setQueryData<FormSettings | undefined>(
+          formSettingsQueryKey,
+          (old) => {
+            if (!old) return
+            return {
+              ...old,
+              authType: newData,
+            }
+          },
+        )
+
+        // Return a context object with the snapshotted value
+        return { previousSettings }
+      },
+      onSuccess: (newData, newAuthType, context) => {
+        const prevAuthType = context?.previousSettings?.authType
+        handleSuccess({
+          newData,
+          toastDescription: generateFormAuthTypeMutationToastMessageText(
+            prevAuthType,
+            newAuthType,
+          ),
+        })
+      },
+      onError: (error, _newData, context) => {
+        if (context?.previousSettings) {
+          queryClient.setQueryData(
+            formSettingsQueryKey,
+            context.previousSettings,
+          )
+        }
+        handleError(error)
+      },
+      onSettled: (_data, error) => {
+        if (error) {
+          // Refetch data if any error occurs
+          queryClient.invalidateQueries(formSettingsQueryKey)
+        }
+      },
+    },
+  )
+
+  const mutateNricMask = useMutation(
+    (nextIsNricMaskEnabled: boolean) =>
+      updateFormNricMask(formId, nextIsNricMaskEnabled),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: newData.isNricMaskEnabled
+            ? 'NRIC masking is now enabled on your form.'
+            : 'NRIC masking is now disabled on your form.',
+        })
+      },
+      onError: handleError,
+    },
+  )
+
+  const mutateIsSingleSubmission = useMutation(
+    (nextIsSingleSubmissionPerNricEnabled: boolean) => {
+      return updateIsSingleSubmission(
+        formId,
+        nextIsSingleSubmissionPerNricEnabled,
       )
-
-      // Return a context object with the snapshotted value
-      return { previousSettings }
     },
-    onSuccess: (newData) => {
-      handleSuccess({
-        newData,
-        toastDescription: 'Form authentication successfully updated.',
-      })
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: newData.isSingleSubmission
+            ? 'Single submission per NRIC/FIN/UEN is now enabled on your form.'
+            : 'Single submission per NRIC/FIN/UEN is now disabled on your form.',
+        })
+      },
+      onError: handleError,
     },
-    onError: (error, _newData, context) => {
-      if (context?.previousSettings) {
-        queryClient.setQueryData(formSettingsQueryKey, context.previousSettings)
-      }
-      handleError(error)
-    },
-    onSettled: (_data, error) => {
-      if (error) {
-        // Refetch data if any error occurs
-        queryClient.invalidateQueries(formSettingsQueryKey)
-      }
-    },
-  })
+  )
 
   const mutateFormWebhookUrl = useMutation(
     (nextUrl?: string) => updateFormWebhookUrl(formId, nextUrl),
@@ -346,6 +411,8 @@ export const useMutateFormSettings = () => {
     mutateFormEmails,
     mutateFormTitle,
     mutateFormAuthType,
+    mutateNricMask,
+    mutateIsSingleSubmission,
     mutateFormEsrvcId,
     mutateFormBusiness,
     mutateGST,
@@ -424,7 +491,10 @@ export const useMutateStripeAccount = () => {
   )
 
   const unlinkStripeAccountMutation = useMutation(
-    () => unlinkStripeAccount(formId),
+    () => {
+      updateFormPayments(formId, PAYMENT_DELETE_DEFAULT)
+      return unlinkStripeAccount(formId)
+    },
     {
       onSuccess: () => {
         queryClient.invalidateQueries(adminFormKeys.id(formId))

@@ -1,4 +1,5 @@
 import { encode as encodeBase64 } from '@stablelib/base64'
+import crypto from 'crypto'
 import StatusCodes from 'http-status-codes'
 import {
   chain,
@@ -18,6 +19,7 @@ import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
 import { MYINFO_ATTRIBUTE_MAP } from '../../../../shared/constants/field/myinfo'
 import {
   BasicField,
+  FormAuthType,
   FormField,
   FormResponseMode,
   MyInfoAttribute,
@@ -65,7 +67,6 @@ import {
 import { CreatePresignedPostError } from '../../utils/aws-s3'
 import { genericMapRouteErrorTransform } from '../../utils/error'
 import {
-  AttachmentUploadError,
   DatabaseConflictError,
   DatabaseError,
   DatabasePayloadSizeError,
@@ -80,6 +81,7 @@ import {
   PrivateFormError,
 } from '../form/form.errors'
 import { isFormEncryptModeOrMultirespondent } from '../form/form.utils'
+import { MYINFO_LOGIN_COOKIE_NAME } from '../myinfo/myinfo.constants'
 import {
   MyInfoCookieStateError,
   MyInfoHashDidNotMatchError,
@@ -95,6 +97,10 @@ import {
   PaymentNotFoundError,
 } from '../payments/payments.errors'
 import {
+  SGID_COOKIE_NAME,
+  SGID_MYINFO_LOGIN_COOKIE_NAME,
+} from '../sgid/sgid.constants'
+import {
   SgidInvalidJwtError,
   SgidMissingJwtError,
   SgidVerifyJwtError,
@@ -105,6 +111,7 @@ import {
   MissingJwtError,
   VerifyJwtError,
 } from '../spcp/spcp.errors'
+import { JwtName } from '../spcp/spcp.types'
 import { MissingUserError } from '../user/user.errors'
 
 import { MYINFO_PREFIX } from './email-submission/email-submission.constants'
@@ -112,6 +119,7 @@ import { ResponseFormattedForEmail } from './email-submission/email-submission.t
 import {
   AttachmentSizeLimitExceededError,
   AttachmentTooLargeError,
+  AttachmentUploadError,
   ConflictError,
   DownloadCleanFileFailedError,
   FeatureDisabledError,
@@ -124,6 +132,7 @@ import {
   ResponseModeError,
   SubmissionFailedError,
   SubmissionNotFoundError,
+  UnsupportedSettingsError,
   ValidateFieldError,
   VirusScanFailedError,
 } from './submission.errors'
@@ -267,6 +276,11 @@ const errorMapper: MapRouteError = (
           'Missing Turnstile challenge. Please refresh and submit again.',
       }
     case MalformedParametersError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+      }
+    case UnsupportedSettingsError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
@@ -757,4 +771,41 @@ export const getAnswersForChild = (
       }
     })
   })
+}
+
+/**
+ * Generates a hash to mask the original submitterId.
+ * @param id
+ * @returns
+ */
+
+export const generateHashedSubmitterId = (id: string, salt: string) => {
+  return crypto
+    .createHash('sha256')
+    .update(id + salt)
+    .digest('hex')
+}
+
+/**
+ * Returns the cookie name based on auth type
+ * Valid AuthTypes are SP / CP / MyInfo / SGID
+ */
+export const getCookieNameByAuthType = (
+  authType:
+    | FormAuthType.SP
+    | FormAuthType.CP
+    | FormAuthType.MyInfo
+    | FormAuthType.SGID
+    | FormAuthType.SGID_MyInfo,
+): string => {
+  switch (authType) {
+    case FormAuthType.SGID_MyInfo:
+      return SGID_MYINFO_LOGIN_COOKIE_NAME
+    case FormAuthType.MyInfo:
+      return MYINFO_LOGIN_COOKIE_NAME
+    case FormAuthType.SGID:
+      return SGID_COOKIE_NAME
+    default:
+      return JwtName[authType]
+  }
 }

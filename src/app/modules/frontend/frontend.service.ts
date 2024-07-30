@@ -5,7 +5,6 @@ import { goGovConfig } from '../../config/features/gogov.config'
 import { googleAnalyticsConfig } from '../../config/features/google-analytics.config'
 import { growthbookConfig } from '../../config/features/growthbook.config'
 import { paymentConfig } from '../../config/features/payment.config'
-import { sentryConfig } from '../../config/features/sentry.config'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 import { turnstileConfig } from '../../config/features/turnstile.config'
 
@@ -19,7 +18,6 @@ export const getClientEnvVars = (): ClientEnvVars => {
     formsgSdkMode: config.formsgSdkMode,
     captchaPublicKey: captchaConfig.captchaPublicKey, // Recaptcha
     turnstileSiteKey: turnstileConfig.turnstileSiteKey,
-    sentryConfigUrl: sentryConfig.sentryConfigUrl, // Sentry.IO
     isSPMaintenance: spcpMyInfoConfig.isSPMaintenance, // Singpass maintenance message
     isCPMaintenance: spcpMyInfoConfig.isCPMaintenance, // Corppass maintenance message
     myInfoBannerContent: spcpMyInfoConfig.myInfoBannerContent, // MyInfo maintenance message

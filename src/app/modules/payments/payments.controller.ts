@@ -1,3 +1,4 @@
+import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../config/logger'
@@ -72,7 +73,7 @@ export const handleGetPreviousPaymentId: ControllerHandler<
   )
 }
 
-export const handleSendOnboardingEmail: ControllerHandler<
+export const _handleSendOnboardingEmail: ControllerHandler<
   unknown,
   unknown,
   { email: string }
@@ -114,3 +115,12 @@ export const handleSendOnboardingEmail: ControllerHandler<
       }
     })
 }
+
+export const handleSendOnboardingEmail = [
+  celebrate({
+    [Segments.BODY]: Joi.object({
+      email: Joi.string().email().required(),
+    }),
+  }),
+  _handleSendOnboardingEmail,
+] as ControllerHandler[]

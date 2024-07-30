@@ -6,13 +6,20 @@ import {
   PaymentsUpdateDto,
   PaymentType,
 } from '../../../../../shared/types'
-import { IEncryptedFormDocument } from '../../../../types'
+import {
+  IEncryptedForm,
+  IEncryptedFormDocument,
+  IPopulatedEncryptedForm,
+} from '../../../../types'
 import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { getEncryptedFormModel } from '../../../models/form.server.model'
 import { transformMongoError } from '../../../utils/handle-mongo-error'
 import { PossibleDatabaseError } from '../../core/core.errors'
-import { InvalidPaymentAmountError } from '../../payments/payments.errors'
+import {
+  InvalidPaymentAmountError,
+  PaymentConfigurationError,
+} from '../../payments/payments.errors'
 import { FormNotFoundError } from '../form.errors'
 
 const logger = createLoggerWithLabel(module)
@@ -26,13 +33,18 @@ const EncryptedFormModel = getEncryptedFormModel(mongoose)
  * @returns err(FormNotFoundError) if form cannot be found
  * @returns err(PossibleDatabaseError) if start page update fails
  * @returns err(InvalidPaymentAmountError) if payment amount exceeds MAX_PAYMENT_AMOUNT
+ * @returns err()
  */
 export const updatePayments = (
   formId: string,
+  form: IPopulatedEncryptedForm,
   newPayments: PaymentsUpdateDto,
 ): ResultAsync<
   IEncryptedFormDocument['payments_field'],
-  PossibleDatabaseError | FormNotFoundError | InvalidPaymentAmountError
+  | PossibleDatabaseError
+  | FormNotFoundError
+  | InvalidPaymentAmountError
+  | PaymentConfigurationError
 > => {
   const { enabled } = newPayments
 
@@ -61,6 +73,22 @@ export const updatePayments = (
     if (max_amount > paymentConfig.maxPaymentAmountCents) {
       return errAsync(new InvalidPaymentAmountError())
     }
+  }
+
+  if (((form as IEncryptedForm)?.emails || []).length !== 0) {
+    return errAsync(
+      new PaymentConfigurationError(
+        'Cannot enable payment for form with emails',
+      ),
+    )
+  }
+
+  if (form.isSingleSubmission) {
+    return errAsync(
+      new PaymentConfigurationError(
+        'Cannot enable payment for form with single submission per submitterId enabled',
+      ),
+    )
   }
 
   return ResultAsync.fromPromise(

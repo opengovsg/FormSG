@@ -83,6 +83,7 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
 
   const watchedHasAllowedEmailDomains = watch('hasAllowedEmailDomains')
   const watchedHasAutoReply = watch('autoReplyOptions.hasAutoReply')
+  const includeFormSummary = watch('autoReplyOptions.includeFormSummary')
 
   const requiredValidationRule = useMemo(
     () => createBaseValidationRules({ required: true }),
@@ -130,9 +131,12 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
 
   const { data: form } = useCreateTabForm()
   const isPdfResponseEnabled = useMemo(
-    () => form?.responseMode !== FormResponseMode.Encrypt,
-    [form],
+    () =>
+      form?.responseMode === FormResponseMode.Email ||
+      (form?.responseMode === FormResponseMode.Encrypt && includeFormSummary),
+    [form, includeFormSummary],
   )
+
   const pdfResponseToggleDescription = useMemo(() => {
     if (!isPdfResponseEnabled) {
       return 'For security reasons, PDF responses are not included in email confirmations for Storage mode forms'

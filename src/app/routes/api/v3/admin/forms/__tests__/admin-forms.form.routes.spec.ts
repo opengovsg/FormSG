@@ -107,6 +107,7 @@ describe('admin-form.form.routes', () => {
       const collabForm = await EncryptFormModel.create({
         title: 'Collab form',
         publicKey: 'some public key',
+        emails: [],
         admin: collabUser._id,
         permissionList: [{ email: defaultUser.email }],
       })
@@ -123,6 +124,7 @@ describe('admin-form.form.routes', () => {
       await EncryptFormModel.create({
         title: 'Does not matter',
         publicKey: 'abracadabra',
+        emails: [],
         admin: collabUser._id,
         // No permissions for anyone else.
       })
@@ -233,6 +235,9 @@ describe('admin-form.form.routes', () => {
           responseMode: 'encrypt',
           title: 'storage mode form test',
           publicKey: 'some random public key',
+          emails: [],
+          // Extra keys should be fine.
+          someExtraKey: 'extra value that will be ignored.',
         },
       }
 
@@ -247,6 +252,7 @@ describe('admin-form.form.routes', () => {
         expect.objectContaining({
           admin: String(defaultUser._id),
           publicKey: createStorageParams.form.publicKey,
+          emails: [],
           responseMode: FormResponseMode.Encrypt,
           status: FormStatus.Private,
           title: createStorageParams.form.title,
@@ -262,6 +268,7 @@ describe('admin-form.form.routes', () => {
         form: {
           responseMode: 'encrypt',
           title: 'storage mode form test',
+          emails: [],
           // Missing publicKey value.
         },
       })
@@ -270,6 +277,55 @@ describe('admin-form.form.routes', () => {
       expect(response.status).toEqual(400)
       expect(response.body).toEqual(
         buildCelebrateError({ body: { key: 'form.publicKey' } }),
+      )
+    })
+
+    it('should return 200 when body.form.emails is an empty array when creating an encrypt form', async () => {
+      // Act
+      const response = await request.post('/admin/forms').send({
+        form: {
+          title: 'new encrypt form',
+          responseMode: FormResponseMode.Encrypt,
+          publicKey: 'some random public key',
+          emails: [],
+        },
+      })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          admin: String(defaultUser._id),
+          emails: [],
+          responseMode: FormResponseMode.Encrypt,
+          status: FormStatus.Private,
+          title: 'new encrypt form',
+          form_fields: [],
+          form_logics: [],
+        }),
+      )
+    })
+
+    it('should return 400 when body.form.emails is not present when creating an encrypt form', async () => {
+      // Prepare
+      const createStorageParams = {
+        form: {
+          responseMode: 'encrypt',
+          title: 'storage mode form test',
+          publicKey: 'some random public key',
+          // Missing emails value.
+        },
+      }
+
+      // Act
+      const response = await request
+        .post('/admin/forms')
+        .send(createStorageParams)
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({ body: { key: 'form.emails' } }),
       )
     })
 
@@ -376,6 +432,7 @@ describe('admin-form.form.routes', () => {
         form: {
           title: 'new storage mode form',
           responseMode: FormResponseMode.Encrypt,
+          emails: [],
           // publicKey missing.
         },
       })
@@ -397,6 +454,7 @@ describe('admin-form.form.routes', () => {
         form: {
           title: 'new storage mode form',
           responseMode: FormResponseMode.Encrypt,
+          emails: [],
           publicKey: '',
         },
       })
@@ -434,6 +492,7 @@ describe('admin-form.form.routes', () => {
           responseMode: 'encrypt',
           title: 'storage mode form test',
           publicKey: 'some random public key',
+          emails: [],
         },
       }
 
@@ -506,6 +565,7 @@ describe('admin-form.form.routes', () => {
           responseMode: 'encrypt',
           title: 'storage mode form test',
           publicKey: 'some random public key',
+          emails: [],
         },
       }
 
@@ -708,6 +768,7 @@ describe('admin-form.form.routes', () => {
       const collabForm = await EncryptFormModel.create({
         title: 'Collab form',
         publicKey: 'some public key',
+        emails: [],
         admin: collabUser._id,
         permissionList: [{ email: defaultUser.email, write: false }],
       })
@@ -1010,6 +1071,7 @@ describe('admin-form.form.routes', () => {
         title: 'some form',
         admin: defaultUser._id,
         publicKey: 'some random key',
+        emails: [],
       })
 
       // Act
@@ -1036,6 +1098,7 @@ describe('admin-form.form.routes', () => {
         title: 'some form',
         admin: defaultUser._id,
         publicKey: 'some random key',
+        emails: [],
       })
 
       // Act
@@ -1065,6 +1128,7 @@ describe('admin-form.form.routes', () => {
         title: 'some form',
         admin: defaultUser._id,
         publicKey: 'some random key',
+        emails: [],
       })
 
       // Act
@@ -1094,6 +1158,7 @@ describe('admin-form.form.routes', () => {
         title: 'some form',
         admin: defaultUser._id,
         publicKey: 'some random key',
+        emails: [],
       })
 
       // Act
@@ -1116,12 +1181,78 @@ describe('admin-form.form.routes', () => {
       )
     })
 
+    it('should return 200 when body.emails is an empty array when duplicating to an storage form', async () => {
+      // Arrange
+      const formToDupe = await EncryptFormModel.create({
+        title: 'some form',
+        admin: defaultUser._id,
+        publicKey: 'some random key',
+        emails: [],
+      })
+
+      // Act
+      const dupeParams = {
+        title: 'new storage mode form',
+        responseMode: FormResponseMode.Encrypt,
+        publicKey: 'another random key',
+      }
+      const response = await request
+        .post(`/admin/forms/${formToDupe._id}/duplicate`)
+        .send(dupeParams)
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          _id: expect.any(String),
+          admin: expect.objectContaining({
+            _id: String(defaultUser._id),
+          }),
+          responseMode: dupeParams.responseMode,
+          title: dupeParams.title,
+          status: FormStatus.Private,
+        }),
+      )
+    })
+
+    it('should have empty body.emails when duplicating from non-empty emails form', async () => {
+      // Arrange
+      const formToDupe = await EmailFormModel.create({
+        title: 'some form',
+        admin: defaultUser._id,
+        publicKey: 'some random key',
+        emails: ['test@example.com'],
+      })
+
+      // Act
+      const dupeParams = {
+        title: 'new storage mode form',
+        responseMode: FormResponseMode.Encrypt,
+        publicKey: 'another random key',
+      }
+      const response = await request
+        .post(`/admin/forms/${formToDupe._id}/duplicate`)
+        .send(dupeParams)
+
+      // Because duplicate endpoint returns dashboard view, which doesn't
+      // contain emails for us to compare
+      const get_response = await request.get(
+        `/admin/forms/${response.body._id}`,
+      )
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(get_response.status).toEqual(200)
+      expect(get_response.body.form.emails).toEqual([])
+    })
+
     it('should return 400 when body.publicKey is an empty string when duplicating to a storage mode form', async () => {
       // Arrange
       const formToDupe = await EncryptFormModel.create({
         title: 'some form',
         admin: defaultUser._id,
         publicKey: 'some random key',
+        emails: [],
       })
 
       // Act
@@ -1140,6 +1271,37 @@ describe('admin-form.form.routes', () => {
           body: {
             key: 'publicKey',
             message: '"publicKey" contains an invalid value',
+          },
+        }),
+      )
+    })
+
+    it('should return 400 when body.emails is present when duplicating to a storage mode form', async () => {
+      // Arrange
+      const formToDupe = await EncryptFormModel.create({
+        title: 'some form',
+        admin: defaultUser._id,
+        publicKey: 'some random key',
+        emails: [],
+      })
+
+      // Act
+      const response = await request
+        .post(`/admin/forms/${formToDupe._id}/duplicate`)
+        .send({
+          title: 'new storage mode form',
+          responseMode: FormResponseMode.Encrypt,
+          publicKey: 'another random key',
+          emails: [],
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'emails',
+            message: '"emails" is not allowed',
           },
         }),
       )
@@ -1231,6 +1393,7 @@ describe('admin-form.form.routes', () => {
         title: 'form that user has no delete access to',
         admin: someUser._id,
         publicKey: 'some random key',
+        emails: [],
         // Current user has no access to this form,
         permissionList: [],
       })
@@ -1312,7 +1475,7 @@ describe('admin-form.form.routes', () => {
       expect(response.body).toEqual({ message: 'User not found' })
     })
 
-    it('should return 500 when database error occurs whilst duplicating form', async () => {
+    it('should return 400 when duplicating form with invalid email', async () => {
       // Arrange
       // Create form.
       const formToDupe = await EmailFormModel.create({
@@ -1321,8 +1484,6 @@ describe('admin-form.form.routes', () => {
         admin: defaultUser._id,
       })
 
-      // Force validation error that will be returned as database error
-      // TODO(#614): Return transformMongoError instead of DatabaseError for better mongoose error handling.
       const invalidEmailDupeParams = {
         responseMode: FormResponseMode.Email,
         emails: 'notAnEmail, should return error',
@@ -1335,12 +1496,15 @@ describe('admin-form.form.routes', () => {
         .send(invalidEmailDupeParams)
 
       // Assert
-      expect(response.status).toEqual(500)
-      expect(response.body).toEqual({
-        message: expect.stringContaining(
-          'Please provide valid email addresses',
-        ),
-      })
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'emails',
+            message: '"emails" must be a valid email',
+          },
+        }),
+      )
     })
   })
 

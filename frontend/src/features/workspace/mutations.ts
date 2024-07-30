@@ -9,6 +9,7 @@ import {
   CreateStorageFormBodyDto,
   DuplicateFormBodyDto,
   FormDto,
+  FormId,
 } from '~shared/types/form/form'
 
 import { ApiError } from '~typings/core'
@@ -23,12 +24,14 @@ import { workspaceKeys } from './queries'
 import {
   createAdminFeedback,
   createEmailModeForm,
-  createStorageModeOrMultirespondentForm,
+  createMultirespondentModeForm,
+  createStorageModeForm,
   createWorkspace,
   deleteAdminForm,
   deleteWorkspace,
   dupeEmailModeForm,
-  dupeStorageModeOrMultirespondentForm,
+  dupeMultirespondentModeForm,
+  dupeStorageModeForm,
   moveFormsToWorkspace,
   removeFormsFromWorkspaces,
   updateAdminFeedback,
@@ -77,18 +80,28 @@ export const useCreateFormMutations = () => {
     onError: handleError,
   })
 
-  const createStorageModeOrMultirespondentFormMutation = useMutation<
+  const createStorageModeFormMutation = useMutation<
     FormDto,
     ApiError,
-    CreateStorageFormBodyDto | CreateMultirespondentFormBodyDto
-  >((params) => createStorageModeOrMultirespondentForm(params), {
+    CreateStorageFormBodyDto
+  >((params) => createStorageModeForm(params), {
+    onSuccess: handleSuccess,
+    onError: handleError,
+  })
+
+  const createMultirespondentModeFormMutation = useMutation<
+    FormDto,
+    ApiError,
+    CreateMultirespondentFormBodyDto
+  >((params) => createMultirespondentModeForm(params), {
     onSuccess: handleSuccess,
     onError: handleError,
   })
 
   return {
     createEmailModeFormMutation,
-    createStorageModeOrMultirespondentFormMutation,
+    createStorageModeFormMutation,
+    createMultirespondentModeFormMutation,
   }
 }
 
@@ -98,7 +111,7 @@ export const useDuplicateFormMutations = () => {
   const dupeEmailModeFormMutation = useMutation<
     FormDto,
     ApiError,
-    DuplicateFormBodyDto & { formIdToDuplicate: string }
+    DuplicateFormBodyDto & { formIdToDuplicate: FormId }
   >(
     ({ formIdToDuplicate, ...params }) =>
       dupeEmailModeForm(formIdToDuplicate, params),
@@ -108,13 +121,26 @@ export const useDuplicateFormMutations = () => {
     },
   )
 
-  const dupeStorageModeOrMultirespondentFormMutation = useMutation<
+  const dupeStorageModeFormMutation = useMutation<
     FormDto,
     ApiError,
-    DuplicateFormBodyDto & { formIdToDuplicate: string }
+    DuplicateFormBodyDto & { formIdToDuplicate: FormId }
   >(
     ({ formIdToDuplicate, ...params }) =>
-      dupeStorageModeOrMultirespondentForm(formIdToDuplicate, params),
+      dupeStorageModeForm(formIdToDuplicate, params),
+    {
+      onSuccess: handleSuccess,
+      onError: handleError,
+    },
+  )
+
+  const dupeMultirespondentModeFormMutation = useMutation<
+    FormDto,
+    ApiError,
+    DuplicateFormBodyDto & { formIdToDuplicate: FormId }
+  >(
+    ({ formIdToDuplicate, ...params }) =>
+      dupeMultirespondentModeForm(formIdToDuplicate, params),
     {
       onSuccess: handleSuccess,
       onError: handleError,
@@ -123,7 +149,8 @@ export const useDuplicateFormMutations = () => {
 
   return {
     dupeEmailModeFormMutation,
-    dupeStorageModeOrMultirespondentFormMutation,
+    dupeStorageModeFormMutation,
+    dupeMultirespondentModeFormMutation,
   }
 }
 
@@ -154,7 +181,7 @@ export const useDeleteFormMutation = () => {
   )
 
   const deleteFormMutation = useMutation(
-    (formId: string) => deleteAdminForm(formId),
+    (formId: FormId) => deleteAdminForm(formId),
     {
       onSuccess: (_, formId) => handleSuccess(formId),
       onError: handleError,
@@ -208,7 +235,7 @@ export const useWorkspaceMutations = () => {
 
   const moveWorkspaceMutation = useMutation(
     (params: {
-      formIds: string[]
+      formIds: FormId[]
       destWorkspaceId: string
       destWorkspaceTitle: string
     }) => moveFormsToWorkspace(params),
@@ -239,7 +266,7 @@ export const useWorkspaceMutations = () => {
   // to remove a singular form mutation
   // can be extended to remove multiple forms from workspaces
   const removeFormFromWorkspacesMutation = useMutation(
-    (params: { formId: string }) =>
+    (params: { formId: FormId }) =>
       removeFormsFromWorkspaces({ formIds: [params.formId] }),
     {
       onSuccess: () =>

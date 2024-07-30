@@ -14,16 +14,15 @@ import {
   PaymentType,
   StorageModeSubmissionContentDto,
 } from '../../../../../shared/types'
+import { maskNric } from '../../../../../shared/utils/nric-mask'
 import {
+  IEncryptedForm,
   IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
   StripePaymentMetadataDto,
 } from '../../../../types'
-import {
-  EncryptSubmissionDto,
-  FormCompleteDto,
-  ParsedClearFormFieldResponse,
-} from '../../../../types/api'
+import { EncryptSubmissionDto, FormCompleteDto } from '../../../../types/api'
+import { ParsedClearFormFieldResponse } from '../../../../types/api/submission'
 import config from '../../../config/config'
 import { paymentConfig } from '../../../config/features/payment.config'
 import {
@@ -35,10 +34,12 @@ import getPaymentModel from '../../../models/payment.server.model'
 import { getEncryptPendingSubmissionModel } from '../../../models/pending_submission.server.model'
 import { getEncryptSubmissionModel } from '../../../models/submission.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
+import MailService from '../../../services/mail/mail.service'
 import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
 import { Pipeline } from '../../../utils/pipeline-middleware'
 import { createReqMeta } from '../../../utils/request'
 import { getFormAfterPermissionChecks } from '../../auth/auth.service'
+import { ApplicationError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
@@ -48,11 +49,19 @@ import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
+import * as EmailSubmissionService from '../email-submission/email-submission.service'
+import { SubmissionEmailObj } from '../email-submission/email-submission.util'
 import * as EncryptSubmissionMiddleware from '../encrypt-submission/encrypt-submission.middleware'
+import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
 import { SubmissionFailedError } from '../submission.errors'
 import { uploadAttachments } from '../submission.service'
-import { mapRouteError } from '../submission.utils'
+import { ProcessedFieldResponse } from '../submission.types'
+import {
+  generateHashedSubmitterId,
+  getCookieNameByAuthType,
+  mapRouteError,
+} from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import {
@@ -130,8 +139,12 @@ const submitEncryptModeForm = async (
   const { encryptedContent, responseMetadata, paymentProducts } =
     encryptedPayload
 
+  // This is because NRIC masking is done in the controller, but we parse the fields in the
+  // middleware for encrypt forms
+  const parsedResponses = new ParsedResponsesObject(req.body.responses)
+
   // Checks if user is SPCP-authenticated before allowing submission
-  let uinFin
+  let userName
   let userInfo
   const { authType } = formDef
   switch (authType) {
@@ -154,7 +167,7 @@ const submitEncryptModeForm = async (
           spcpSubmissionFailure: true,
         })
       }
-      uinFin = jwtPayloadResult.value.userName
+      userName = jwtPayloadResult.value.userName
       break
     }
     case FormAuthType.CP: {
@@ -176,7 +189,7 @@ const submitEncryptModeForm = async (
           spcpSubmissionFailure: true,
         })
       }
-      uinFin = jwtPayloadResult.value.userName
+      userName = jwtPayloadResult.value.userName
       userInfo = jwtPayloadResult.value.userInfo
       break
     }
@@ -216,7 +229,7 @@ const submitEncryptModeForm = async (
           spcpSubmissionFailure: true,
         })
       }
-      uinFin = jwtPayloadResult.value
+      userName = jwtPayloadResult.value
       break
     }
     case FormAuthType.SGID: {
@@ -237,7 +250,50 @@ const submitEncryptModeForm = async (
           spcpSubmissionFailure: true,
         })
       }
-      uinFin = jwtPayloadResult.value.userName
+      userName = jwtPayloadResult.value.userName
+      break
+    }
+  }
+
+  let submitterId
+  // Generate submitterId for Singpass auth modes
+  if (userName && form.authType !== FormAuthType.NIL) {
+    submitterId = generateHashedSubmitterId(userName, form.id)
+  }
+
+  // Mask if Nric masking is enabled
+  if (
+    userName &&
+    form.isNricMaskEnabled &&
+    (form.authType === FormAuthType.SP ||
+      form.authType === FormAuthType.CP ||
+      form.authType === FormAuthType.SGID ||
+      form.authType === FormAuthType.MyInfo ||
+      form.authType === FormAuthType.SGID_MyInfo)
+  ) {
+    userName = maskNric(userName)
+  }
+
+  // Add NDI responses
+  switch (form.authType) {
+    case FormAuthType.CP: {
+      if (!userName || !userInfo) break
+      parsedResponses.addNdiResponses({
+        authType,
+        uinFin: userName,
+        userInfo,
+      })
+      break
+    }
+    case FormAuthType.SP:
+    case FormAuthType.SGID:
+    case FormAuthType.MyInfo:
+    case FormAuthType.SGID_MyInfo: {
+      if (!userName) break
+      parsedResponses.addNdiResponses({
+        authType: form.authType,
+        uinFin: userName,
+      })
       break
     }
   }
@@ -254,7 +310,7 @@ const submitEncryptModeForm = async (
     const encryptVerifiedContentResult =
       VerifiedContentService.getVerifiedContent({
         type: form.authType,
-        data: { uinFin, userInfo },
+        data: { uinFin: userName, userInfo },
       }).andThen((verifiedContent) =>
         VerifiedContentService.encryptVerifiedContent({
           verifiedContent,
@@ -302,7 +358,8 @@ const submitEncryptModeForm = async (
 
   const submissionContent: EncryptSubmissionContent = {
     form: form._id,
-    auth: form.authType,
+    authType: form.authType,
+    submitterId,
     myInfoFields: form.getUniqueMyInfoAttrs(),
     encryptedContent: encryptedContent,
     verifiedContent: verified,
@@ -334,11 +391,15 @@ const submitEncryptModeForm = async (
     res,
     logMeta,
     formId,
+    form,
     responses: req.formsg.filteredResponses,
+    emailFields: parsedResponses.getAllResponses(),
     responseMetadata,
     submissionContent,
   })
 }
+
+export const submitEncryptModeFormForTest = submitEncryptModeForm
 
 const _createPaymentSubmission = async ({
   req,
@@ -592,21 +653,47 @@ const _createSubmission = async ({
   submissionContent,
   logMeta,
   formId,
+  form,
   responseMetadata,
   responses,
+  emailFields,
 }: {
   req: Parameters<SubmitEncryptModeFormHandlerType>[0]
   res: Parameters<SubmitEncryptModeFormHandlerType>[1]
   responseMetadata: EncryptSubmissionDto['responseMetadata']
   responses: ParsedClearFormFieldResponse[]
+  emailFields: ProcessedFieldResponse[]
   formId: string
+  form: IPopulatedEncryptedForm
   submissionContent: EncryptSubmissionContent
   logMeta: CustomLoggerParams['meta']
 }) => {
-  const submission = new EncryptSubmission(submissionContent)
-
+  let submission
   try {
-    await submission.save()
+    if (form.isSingleSubmission && form.authType !== FormAuthType.NIL) {
+      if (!submissionContent.submitterId) {
+        throw new ApplicationError(
+          'Failed to find submitterId which is mandatory for isSingleSubmission enabled forms',
+        )
+      }
+      submission = await EncryptSubmission.saveIfSubmitterIdIsUnique(
+        form.id,
+        submissionContent.submitterId,
+        submissionContent,
+      )
+
+      // handles the case where submission has already been created for given submissionSingpassId
+      if (!submission) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          message:
+            'Your NRIC/FIN/UEN has already been used to respond to this form.',
+          hasSingleSubmissionValidationFailure: true,
+        })
+      }
+    } else {
+      submission = new EncryptSubmission(submissionContent)
+      await submission.save()
+    }
   } catch (err) {
     logger.error({
       message: 'Encrypt submission save error',
@@ -619,7 +706,6 @@ const _createSubmission = async ({
     return res.status(StatusCodes.BAD_REQUEST).json({
       message:
         'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
-      submissionId: submission._id,
     })
   }
 
@@ -634,6 +720,41 @@ const _createSubmission = async ({
     },
   })
 
+  const createdTime = submission.created || new Date()
+
+  const logMetaWithSubmission = {
+    ...logMeta,
+    submissionId,
+    responseMetadata,
+  }
+
+  logger.info({
+    message: 'Sending admin notification mail',
+    meta: logMetaWithSubmission,
+  })
+
+  const emailData = new SubmissionEmailObj(
+    emailFields,
+    new Set(), // the MyInfo prefixes are already inserted in middleware
+    form.authType,
+  )
+
+  // We don't await for email submission, as the submission gets saved for encrypt
+  // submissions regardless, the email is more of a notification and shouldn't
+  // stop the storage of the data in the db
+  if (((form as IEncryptedForm)?.emails || []).length > 0) {
+    void MailService.sendSubmissionToAdmin({
+      replyToEmails: EmailSubmissionService.extractEmailAnswers(emailFields),
+      form,
+      submission: {
+        created: createdTime,
+        id: submission.id,
+      },
+      attachments: undefined, // Don't send attachments in the email notifications
+      formData: emailData.formData,
+    })
+  }
+
   // TODO 6395 make responseMetadata mandatory
   if (responseMetadata) {
     reportSubmissionResponseTime(responseMetadata, {
@@ -643,10 +764,15 @@ const _createSubmission = async ({
   }
 
   // Send success back to client
+  // clear cookies to log out user if isSingleSubmission form
+  if (form.authType !== FormAuthType.NIL && form.isSingleSubmission) {
+    const authCookieName = getCookieNameByAuthType(form.authType)
+    res.clearCookie(authCookieName)
+  }
   res.json({
     message: 'Form submission successful.',
     submissionId,
-    timestamp: (submission.created || new Date()).getTime(),
+    timestamp: createdTime.getTime(),
   })
 
   return await performEncryptPostSubmissionActions(submission, responses)

@@ -33,7 +33,7 @@ services:
       - AWS_ACCESS_KEY_ID=fakeKey
       - AWS_SECRET_ACCESS_KEY=fakeSecret
       - SESSION_SECRET=thisisasecret
-      - AWS_ENDPOINT=http://localhost:4566
+      - AWS_ENDPOINT=http://127.0.0.1:4566
       - SECRET_ENV=development
       - SUBMISSIONS_RATE_LIMIT=200
       - SEND_AUTH_OTP_RATE_LIMIT=60
@@ -41,8 +41,6 @@ services:
       - SES_HOST=maildev
       - WEBHOOK_SQS_URL=http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/local-webhooks-sqs-main
       - INTRANET_IP_LIST_PATH
-      - SENTRY_CONFIG_URL=https://random@sentry.io/123456
-      - CSP_REPORT_URI=https://random@sentry.io/123456
       # This needs to be removed and replaced with a real tracking ID in a local .env file
       # in order to enable GA in a local environment
       # TODO: remove after React rollout #4786
@@ -133,7 +131,11 @@ services:
       - WOGAA_START_ENDPOINT
       - WOGAA_SUBMIT_ENDPOINT
       - WOGAA_FEEDBACK_ENDPOINT
-
+      - POSTMAN_MOP_CAMPAIGN_ID=campaign_test
+      - POSTMAN_MOP_CAMPAIGN_API_KEY=key_test_123
+      - POSTMAN_INTERNAL_CAMPAIGN_ID=campaign_test_2
+      - POSTMAN_INTERNAL_CAMPAIGN_API_KEY=key_test_456
+      - POSTMAN_BASE_URL=https://test.postman.gov.sg/api/v2
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git#v4.3.1

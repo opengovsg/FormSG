@@ -1,7 +1,10 @@
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
-import { PAYMENT_CONTACT_FIELD_ID } from '../../../../shared/constants'
+import {
+  featureFlags,
+  PAYMENT_CONTACT_FIELD_ID,
+} from '../../../../shared/constants'
 import { BasicField } from '../../../../shared/types'
 import { startsWithSgPrefix } from '../../../../shared/utils/phone-num-validation'
 import { NUM_OTP_RETRIES } from '../../../../shared/utils/verification'
@@ -14,7 +17,11 @@ import formsgSdk from '../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../config/logger'
 import { MailSendError } from '../../services/mail/mail.errors'
 import MailService from '../../services/mail/mail.service'
-import { InvalidNumberError, SmsSendError } from '../../services/sms/sms.errors'
+import {
+  InvalidNumberError,
+  SmsSendError,
+} from '../../services/postman-sms/postman-sms.errors'
+import PostmanSmsService from '../../services/postman-sms/postman-sms.service'
 import { SmsFactory } from '../../services/sms/sms.factory'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 import { compareHash, HashingError } from '../../utils/hash'
@@ -23,6 +30,7 @@ import {
   MalformedParametersError,
   PossibleDatabaseError,
 } from '../core/core.errors'
+import * as FeatureFlagService from '../feature-flags/feature-flags.service'
 import { FormNotFoundError } from '../form/form.errors'
 import * as FormService from '../form/form.service'
 
@@ -447,6 +455,10 @@ const sendOtpForField = (
   | OtpRequestError
 > => {
   const { fieldType, _id: fieldId } = field
+  const logMeta = {
+    action: 'sendOtpForField',
+    formId,
+  }
   switch (fieldType) {
     case BasicField.Mobile:
       return fieldId
@@ -455,16 +467,33 @@ const sendOtpForField = (
             .andThen((form) =>
               shouldGenerateMobileOtp(form, fieldId, recipient),
             )
-            // call sms - it should validate the recipient
-            .andThen(() =>
-              SmsFactory.sendVerificationOtp(
+            .andThen(() => {
+              return FeatureFlagService.getFeatureFlag(
+                featureFlags.postmanSms,
+                {
+                  fallbackValue: false,
+                  logMeta,
+                },
+              )
+            })
+            .andThen((shouldUsePostmanSms) => {
+              if (!shouldUsePostmanSms) {
+                return SmsFactory.sendVerificationOtp(
+                  recipient,
+                  otp,
+                  otpPrefix,
+                  formId,
+                  senderIp,
+                )
+              }
+              return PostmanSmsService.sendVerificationOtp(
                 recipient,
                 otp,
                 otpPrefix,
                 formId,
                 senderIp,
-              ),
-            )
+              )
+            })
         : errAsync(new MalformedParametersError('Field id not present'))
     case BasicField.Email:
       // call email - it should validate the recipient

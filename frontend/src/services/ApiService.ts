@@ -15,6 +15,12 @@ export class HttpError extends Error {
   }
 }
 
+export class SingleSubmissionValidationError extends HttpError {
+  constructor() {
+    super('Single submission validation failed', StatusCodes.BAD_REQUEST)
+  }
+}
+
 /**
  * Converts possible AxiosError objects to normal Error objects
  *
@@ -24,6 +30,9 @@ export const transformAxiosError = (error: Error): ApiError => {
   if (axios.isAxiosError(error)) {
     if (error.response) {
       const statusCode = error.response.status
+      if (error.response.data?.hasSingleSubmissionValidationFailure) {
+        return new SingleSubmissionValidationError()
+      }
       if (statusCode === StatusCodes.TOO_MANY_REQUESTS) {
         return new HttpError('Please try again later.', statusCode)
       }

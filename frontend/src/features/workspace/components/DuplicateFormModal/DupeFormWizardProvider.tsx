@@ -61,7 +61,8 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
 
   const {
     dupeEmailModeFormMutation,
-    dupeStorageModeOrMultirespondentFormMutation,
+    dupeStorageModeFormMutation,
+    dupeMultirespondentModeFormMutation,
   } = useDuplicateFormMutations()
 
   const { activeWorkspace, isDefaultWorkspace } = useWorkspaceContext()
@@ -72,23 +73,35 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
 
   const handleCreateStorageModeOrMultirespondentForm = handleSubmit(
     ({ title, responseMode }) => {
-      if (
-        !(
-          responseMode === FormResponseMode.Encrypt ||
-          responseMode === FormResponseMode.Multirespondent
-        ) ||
-        !activeFormMeta?._id
-      ) {
+      if (!activeFormMeta?._id) {
         return
       }
 
-      return dupeStorageModeOrMultirespondentFormMutation.mutate({
-        formIdToDuplicate: activeFormMeta._id,
-        title,
-        responseMode,
-        publicKey: keypair.publicKey,
-        workspaceId,
-      })
+      switch (responseMode) {
+        case FormResponseMode.Encrypt:
+          return dupeStorageModeFormMutation.mutate({
+            formIdToDuplicate: activeFormMeta._id,
+            title,
+            responseMode,
+            publicKey: keypair.publicKey,
+            workspaceId,
+          })
+        case FormResponseMode.Email:
+          return
+        case FormResponseMode.Multirespondent:
+          return dupeMultirespondentModeFormMutation.mutate({
+            formIdToDuplicate: activeFormMeta._id,
+            title,
+            responseMode,
+            publicKey: keypair.publicKey,
+            workspaceId,
+          })
+        default: {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const _: never = responseMode
+          throw new Error('Invalid response mode')
+        }
+      }
     },
   )
 
@@ -110,7 +123,8 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
     isFetching: isWorkspaceLoading || isPreviewFormLoading,
     isLoading:
       dupeEmailModeFormMutation.isLoading ||
-      dupeStorageModeOrMultirespondentFormMutation.isLoading,
+      dupeStorageModeFormMutation.isLoading ||
+      dupeMultirespondentModeFormMutation.isLoading,
     keypair,
     currentStep,
     direction,

@@ -52,6 +52,7 @@ import {
 import * as FormService from '../../form.service'
 import * as PublicFormController from '../public-form.controller'
 import * as PublicFormService from '../public-form.service'
+import { getCookieNameByAuthType } from '../public-form.service'
 
 jest.mock('../public-form.service')
 jest.mock('../../form.service')
@@ -133,6 +134,9 @@ describe('public-form.controller', () => {
 
       beforeAll(() => {
         MockFormService.checkIsIntranetFormAccess.mockReturnValue(false)
+        MockFormService.checkHasSingleSubmissionValidationFailure.mockReturnValue(
+          okAsync(false),
+        )
       })
 
       it('should return 200 when there is no FormAuthType on the request', async () => {
@@ -601,6 +605,70 @@ describe('public-form.controller', () => {
           form: MOCK_CP_FORM.getPublicView(),
           isIntranetUser: false,
         })
+      })
+    })
+
+    describe('errors due to single submission per submitterId violation', () => {
+      const MOCK_SP_FORM = {
+        ...BASE_FORM,
+        authType: FormAuthType.SP,
+      } as unknown as IPopulatedForm
+      const MOCK_SPCP_SESSION = {
+        userName: 'submitterId',
+        exp: 1000000000,
+        iat: 100000000,
+        rememberMe: false,
+      }
+      it('should return 200 but with single submission validation failure flag when submitterId already submitted for form id', async () => {
+        MockAuthService.getFormIfPublic.mockReturnValueOnce(
+          okAsync(MOCK_SP_FORM),
+        )
+        MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
+          okAsync(MOCK_SP_FORM),
+        )
+        jest
+          .spyOn(SpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
+          .mockReturnValueOnce(okAsync(MOCK_SPCP_SESSION))
+
+        const checkHasSingleSubmissionValidationFailureSpy = jest
+          .spyOn(MockFormService, 'checkHasSingleSubmissionValidationFailure')
+          .mockResolvedValueOnce(okAsync(true))
+
+        const mockRes = expressHandler.mockResponse()
+
+        // Act
+        await PublicFormController.handleGetPublicForm(
+          MOCK_REQ,
+          mockRes,
+          jest.fn(),
+        )
+
+        // Assert that the submitterId is hashed when compared
+        expect(
+          checkHasSingleSubmissionValidationFailureSpy.mock.calls[0][1],
+        ).toEqual(
+          '151c329a583a82e4a768f16ab8c9b7ae621fcfdea574e87925dd56d7f73e367d',
+        )
+
+        // Assert that status is not set, which defaults to intended 200 ok
+        expect(mockRes.status).not.toHaveBeenCalled()
+        // Assert that the form details is still returned so that FE can populate the title
+        expect((mockRes.json as jest.Mock).mock.calls[0][0].form).toEqual(
+          MOCK_SP_FORM.getPublicView(),
+        )
+        // Assert that the response contains the single submission validation failure flag
+        expect(
+          (mockRes.json as jest.Mock).mock.calls[0][0]
+            .hasSingleSubmissionValidationFailure,
+        ).toEqual(true)
+
+        // Assert user is logged out
+        expect((mockRes.json as jest.Mock).mock.calls[0][0]).not.toContainKey(
+          'spcpSession',
+        )
+        expect(mockRes.clearCookie).toHaveBeenCalledOnceWith(
+          getCookieNameByAuthType(FormAuthType.SP),
+        )
       })
     })
 

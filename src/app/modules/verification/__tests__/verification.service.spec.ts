@@ -30,13 +30,15 @@ import {
 } from 'src/app/modules/verification/verification.errors'
 import { MailSendError } from 'src/app/services/mail/mail.errors'
 import MailService from 'src/app/services/mail/mail.service'
-import { SmsSendError } from 'src/app/services/sms/sms.errors'
+import { SmsSendError } from 'src/app/services/postman-sms/postman-sms.errors'
+import PostmanSmsService from 'src/app/services/postman-sms/postman-sms.service'
 import { SmsFactory } from 'src/app/services/sms/sms.factory'
 import * as HashUtils from 'src/app/utils/hash'
 import { IFormSchema, IVerificationSchema, UpdateFieldData } from 'src/types'
 
 import { BasicField } from '../../../../../shared/types'
 import { DatabaseError } from '../../core/core.errors'
+import * as FeatureFlagService from '../../feature-flags/feature-flags.service'
 import { FormNotFoundError } from '../../form/form.errors'
 import {
   FieldNotFoundInTransactionError,
@@ -335,6 +337,48 @@ describe('Verification service', () => {
           answer: MOCK_LOCAL_RECIPIENT,
         })
         expect(result._unsafeUnwrap()).toEqual(mockTransactionSuccessful)
+      })
+
+      it('should send OTP with postman if platform has feature flag on', async () => {
+        jest
+          .spyOn(FeatureFlagService, 'getFeatureFlag')
+          .mockReturnValue(okAsync(true))
+
+        const postmanSpy = jest
+          .spyOn(PostmanSmsService, 'sendVerificationOtp')
+          .mockResolvedValueOnce(okAsync(true))
+
+        await VerificationService.sendNewOtp(mockSendNewFormOtpValidInput)
+
+        // Default mock params has fieldType: 'mobile'
+        expect(MockSmsFactory.sendVerificationOtp).not.toHaveBeenCalled()
+
+        expect(postmanSpy).toHaveBeenCalledOnce()
+      })
+
+      it('should send OTP with twilio if platform has feature flag off', async () => {
+        jest
+          .spyOn(FeatureFlagService, 'getFeatureFlag')
+          .mockReturnValue(okAsync(false))
+        const postmanSpy = jest
+          .spyOn(PostmanSmsService, 'sendVerificationOtp')
+          .mockResolvedValueOnce(okAsync(true))
+
+        await VerificationService.sendNewOtp(mockSendNewFormOtpValidInput)
+
+        // Default mock params has fieldType: 'mobile'
+        expect(MockSmsFactory.sendVerificationOtp).toHaveBeenCalledWith(
+          MOCK_LOCAL_RECIPIENT,
+          MOCK_OTP,
+          MOCK_OTP_PREFIX,
+          mockTransaction.formId,
+          MOCK_SENDER_IP,
+        )
+
+        // Default mock params has fieldType: 'mobile'
+        expect(MockSmsFactory.sendVerificationOtp).toHaveBeenCalled()
+
+        expect(postmanSpy).not.toHaveBeenCalled()
       })
 
       it('should return TransactionNotFoundError when transaction ID does not exist', async () => {

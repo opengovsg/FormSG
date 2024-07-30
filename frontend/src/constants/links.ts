@@ -79,7 +79,7 @@ export const LANDING_PAGE_EXAMPLE_FORMS = [
 
 export const OGP_ALL_PRODUCTS = 'https://www.open.gov.sg/products/overview'
 export const OGP_POSTMAN = 'https://postman.gov.sg'
-export const OGP_FORMSG_COLLATE = 'https://collate.form.gov.sg'
+export const OGP_PLUMBER = 'https://plumber.gov.sg/'
 export const OGP_SGID = 'https://go.gov.sg/sgid-formsg'
 
 export const OGP_FORMSG_REPO = 'https://github.com/opengovsg/formsg'

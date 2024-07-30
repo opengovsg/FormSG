@@ -1,12 +1,13 @@
 import { StatusCodes } from 'http-status-codes'
 
 import {
+  SeenFlags,
   SendUserContactOtpDto,
   VerifyUserContactOtpDto,
 } from '../../../../shared/types'
 import { IPopulatedUser } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
-import { SmsFactory } from '../../services/sms/sms.factory'
+import PostmanSmsService from '../../services/postman-sms/postman-sms.service'
 import { getRequestIp } from '../../utils/request'
 import { getUserIdFromSession } from '../auth/auth.utils'
 import { ControllerHandler } from '../core/core.types'
@@ -15,13 +16,14 @@ import { UNAUTHORIZED_USER_MESSAGE } from './user.constant'
 import {
   validateContactOtpVerificationParams,
   validateContactSendOtpParams,
-  validateUpdateUserLastSeenFeatureUpdateVersion,
+  validateUpdateUserLastSeenFlagVersion,
+  validateUpdateUserNewFeaturesLastSeenVersion,
 } from './user.middleware'
 import {
   createContactOtp,
   getPopulatedUserById,
   updateUserContact,
-  updateUserLastSeenFeatureUpdateVersion,
+  updateUserLastSeenFlagVersion,
   verifyContactOtp,
 } from './user.service'
 import { mapRouteError } from './user.utils'
@@ -68,7 +70,7 @@ export const _handleContactSendOtp: ControllerHandler<
 
   // Step 2: No error, send verification OTP to contact.
   const otp = createResult.value
-  const sendOtpResult = await SmsFactory.sendAdminContactOtp(
+  const sendOtpResult = await PostmanSmsService.sendAdminContactOtp(
     contact,
     otp,
     userId,
@@ -218,10 +220,10 @@ export const handleFetchUser: ControllerHandler = async (req, res) => {
  * @returns 422 when user id does not exist in the database
  * @returns 500 database errors occurs
  */
-export const _handleUpdateUserLastSeenFeatureUpdateVersion: ControllerHandler<
+export const _handleUpdateUserLastSeenFlagVersion: ControllerHandler<
   unknown,
   IPopulatedUser | string,
-  { version: number }
+  { flag: SeenFlags; version: number }
 > = async (req, res) => {
   const sessionUserId = getUserIdFromSession(req.session)
 
@@ -229,18 +231,18 @@ export const _handleUpdateUserLastSeenFeatureUpdateVersion: ControllerHandler<
     return res.status(StatusCodes.UNAUTHORIZED).json(UNAUTHORIZED_USER_MESSAGE)
   }
 
-  const { version } = req.body
+  const { flag, version } = req.body
 
-  return updateUserLastSeenFeatureUpdateVersion(sessionUserId, version)
+  return updateUserLastSeenFlagVersion(sessionUserId, version, flag)
     .map((updatedUser) => {
       return res.status(StatusCodes.OK).json(updatedUser)
     })
     .mapErr((error) => {
       logger.error({
         message:
-          'Error occurred while updating user last seen feature update date',
+          'Error occurred while updating user last seen flag update date',
         meta: {
-          action: 'handleUpdateUserLastSeenFeatureUpdate',
+          action: 'handleUpdateUserLastSeenFlagUpdate',
           userId: sessionUserId,
         },
         error,
@@ -251,7 +253,28 @@ export const _handleUpdateUserLastSeenFeatureUpdateVersion: ControllerHandler<
     })
 }
 
-export const handleUpdateUserLastSeenFeatureUpdateVersion = [
-  validateUpdateUserLastSeenFeatureUpdateVersion,
-  _handleUpdateUserLastSeenFeatureUpdateVersion,
+export const handleUpdateUserLastSeenFlagVersion = [
+  validateUpdateUserLastSeenFlagVersion,
+  _handleUpdateUserLastSeenFlagVersion,
+] as ControllerHandler[]
+
+const injectUserNewFeatureFlag: ControllerHandler<
+  unknown,
+  unknown,
+  { version: number; flag?: SeenFlags }
+> = (req, res, next) => {
+  req.body.flag = SeenFlags.LastSeenFeatureUpdateVersion
+  return next()
+}
+
+/**
+ * @deprecated handler
+ * Backwards compatibility for the old route
+ * Use handleUpdateUserLastSeenFlagVersion instead that contains flag params
+ */
+export const handleUpdateNewFeaturesUserLastSeenVersion = [
+  validateUpdateUserNewFeaturesLastSeenVersion,
+  injectUserNewFeatureFlag,
+  validateUpdateUserLastSeenFlagVersion,
+  _handleUpdateUserLastSeenFlagVersion,
 ] as ControllerHandler[]

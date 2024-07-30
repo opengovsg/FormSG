@@ -59,9 +59,6 @@ FORMSG_SDK_MODE=
 # GOOGLE_CAPTCHA=
 # GOOGLE_CAPTCHA_PUBLIC=
 
-## Sentry
-## If the below variable exists, the [sentry] feature will be enabled.
-# SENTRY_CONFIG_URL=
 
 ## Keys for storage mode
 # If forking this repository, you will also need to fork @opengovsg/formsg-sdk
@@ -117,3 +114,10 @@ FORMSG_SDK_MODE=
 # Used to check if BE Server is currently running on local development environment
 # One of boolean: "true" | "false"
 # USE_MOCK_TWILIO=
+# USE_MOCK_POSTMAN_SMS=
+
+# POSTMAN_MOP_CAMPAIGN_ID=
+# POSTMAN_MOP_CAMPAIGN_API_KEY=
+# POSTMAN_INTERNAL_CAMPAIGN_ID=
+# POSTMAN_INTERNAL_CAMPAIGN_API_KEY=
+# POSTMAN_BASE_URL=https://test.postman.gov.sg/api/v2

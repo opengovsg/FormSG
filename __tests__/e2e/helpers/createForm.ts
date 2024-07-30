@@ -171,6 +171,7 @@ const addSettings = async (
   await expect(page).toHaveURL(ADMIN_FORM_PAGE_SETTINGS(formId))
 
   await addGeneralSettings(page, formSettings)
+  await addAdminEmails(page, formSettings)
   await addAuthSettings(page, formSettings)
   await addCollaborators(page, formSettings)
 
@@ -271,18 +272,6 @@ const addGeneralSettings = async (
       .getByLabel('Set message for closed form')
       .fill(formSettings.closedFormMessage)
   }
-
-  if (formSettings.emails) {
-    const emailInput = page.getByLabel('Emails where responses will be sent')
-    await emailInput.focus()
-
-    // Clear the current admin email
-    await page.keyboard.press('Backspace')
-
-    await emailInput.fill(formSettings.emails.join(', '))
-
-    await expectToast(page, /emails successfully updated/i)
-  }
 }
 
 /** Goes to Singpass settings frame and adds auth settings.
@@ -299,20 +288,30 @@ const addAuthSettings = async (
   await page.getByRole('tab', { name: 'Singpass' }).click()
 
   // Ensure that we are on the auth page
-  await expect(
-    page.getByRole('heading', { name: 'Enable Singpass authentication' }),
-  ).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Singpass' })).toBeVisible()
 
   await page
     .locator('label', {
-      has: page.locator(
-        `input[type='radio'][value='${formSettings.authType}']`,
-      ),
+      has: page.locator('[aria-label="Enable Singpass authentication"]'),
     })
-    .first() // Since 'Singpass' will match all radio options, pick the first matching one.
-    .click({ position: { x: 1, y: 1 } }) // Clicking the center of the sgid button launches the sgid contact form, put this here until we get rid of the link
+    .click()
 
-  await expectToast(page, /form authentication successfully updated/i)
+  await expectToast(page, /singpass authentication successfully enabled/i)
+
+  // Don't need to click if SGID is desired auth type
+  // since SGID is the default once Singpass is enabled
+  if (formSettings.authType !== FormAuthType.SGID) {
+    await page
+      .locator('label', {
+        has: page.locator(
+          `input[type='radio'][value='${formSettings.authType}']`,
+        ),
+      })
+      .first() // Since 'Singpass' will match all radio options, pick the first matching one.
+      .click({ position: { x: 1, y: 1 } }) // Clicking the center of the sgid button launches the sgid contact form, put this here until we get rid of the link
+
+    await expectToast(page, /singpass authentication successfully updated/i)
+  }
 
   switch (formSettings.authType) {
     case FormAuthType.SP:
@@ -363,6 +362,31 @@ const addCollaborators = async (
   await page.getByRole('button', { name: 'Close' }).click()
 }
 
+const addAdminEmails = async (
+  page: Page,
+  formSettings: E2eSettingsOptions,
+): Promise<void> => {
+  await page.getByRole('tab', { name: 'Email notifications' }).click()
+
+  // Ensure that we are on the email notifications page
+  await expect(
+    page.getByRole('heading', { name: 'Email notifications' }),
+  ).toBeVisible()
+
+  if (formSettings.emails) {
+    const emailInput = page.getByLabel('Send an email copy of new responses')
+    await emailInput.focus()
+
+    // Clear the current admin email
+    await page.keyboard.press('Backspace')
+
+    await emailInput.fill(formSettings.emails.join(', '))
+
+    await page.keyboard.press('Tab')
+
+    await expectToast(page, /emails successfully updated/i)
+  }
+}
 const addFieldsAndLogic = async (
   page: Page,
   {

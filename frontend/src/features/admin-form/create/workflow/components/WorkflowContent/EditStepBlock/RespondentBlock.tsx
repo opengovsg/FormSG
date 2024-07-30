@@ -1,13 +1,14 @@
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { Flex, FormControl, Stack, Text } from '@chakra-ui/react'
+import { get } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
 import { WorkflowType } from '~shared/types'
 
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import Input from '~components/Input'
 import Radio from '~components/Radio'
+import { TagInput } from '~components/TagInput'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { EditStepInputs } from '~features/admin-form/create/workflow/types'
@@ -56,23 +57,29 @@ export const RespondentBlock = ({
             isInvalid={!!errors.workflow_type}
           >
             <Radio.RadioGroup defaultValue={defaultWorkflowType}>
-              <Flex flexDir="row">
-                <Radio
-                  isDisabled={isLoading}
-                  allowDeselect={false}
-                  value={WorkflowType.Static}
-                  {...register('workflow_type')}
-                >
-                  Assign by a specific email
-                </Radio>
-                <Radio
-                  isDisabled={isLoading}
-                  allowDeselect={false}
-                  value={WorkflowType.Dynamic}
-                  {...register('workflow_type')}
-                >
-                  Assign from email field on form
-                </Radio>
+              <Flex flexDir="row" justifyContent="space-between">
+                <Flex>
+                  <Radio
+                    isDisabled={isLoading}
+                    allowDeselect={false}
+                    value={WorkflowType.Static}
+                    {...register('workflow_type')}
+                    px="8px"
+                  >
+                    Enter specific email(s)
+                  </Radio>
+                </Flex>
+                <Flex>
+                  <Radio
+                    isDisabled={isLoading}
+                    allowDeselect={false}
+                    value={WorkflowType.Dynamic}
+                    {...register('workflow_type')}
+                    px="8px"
+                  >
+                    Select an email field from your form
+                  </Radio>
+                </Flex>
               </Flex>
             </Radio.RadioGroup>
             <FormErrorMessage>{errors.workflow_type?.message}</FormErrorMessage>
@@ -106,6 +113,8 @@ const RespondentInput = ({ isLoading, formMethods }: RespondentInputProps) => {
 
   const watchedWorkflowType = watch('workflow_type')
 
+  const staticTagInputErrorMessage = get(errors, 'emails.message')
+
   switch (watchedWorkflowType) {
     case WorkflowType.Static:
       return (
@@ -120,21 +129,33 @@ const RespondentInput = ({ isLoading, formMethods }: RespondentInputProps) => {
             name="emails"
             control={control}
             rules={{
-              required: 'Please add an email',
               validate: {
-                isEmails: (email) =>
-                  !email || isEmail(email) || 'Please enter a valid email',
+                required: (emails) =>
+                  !emails || emails.length === 0
+                    ? 'You must enter at least one email to receive responses'
+                    : true,
+                isEmails: (emails) =>
+                  !emails ||
+                  emails.every((email) => isEmail(email)) ||
+                  'Please enter valid email(s) (e.g. me@example.com) separated by commas, as invalid emails will not be saved',
               },
             }}
             render={({ field }) => (
-              <Input
+              <TagInput
                 isDisabled={isLoading}
                 placeholder="me@example.com"
+                tagValidation={isEmail}
                 {...field}
               />
             )}
           />
-          <FormErrorMessage>{errors.emails?.message}</FormErrorMessage>
+          {staticTagInputErrorMessage ? (
+            <FormErrorMessage>{staticTagInputErrorMessage}</FormErrorMessage>
+          ) : (
+            <Text textStyle="body-2" my="0.5rem" py="0.125rem">
+              Separate multiple emails with a comma
+            </Text>
+          )}
         </FormControl>
       )
     case WorkflowType.Dynamic:
@@ -149,7 +170,7 @@ const RespondentInput = ({ isLoading, formMethods }: RespondentInputProps) => {
             control={control}
             name="field"
             rules={{
-              required: 'Please select a question',
+              required: 'Please select a field',
               validate: (value) =>
                 !emailFormFields ||
                 emailFormFields.some(({ _id }) => _id === value) ||
@@ -159,7 +180,7 @@ const RespondentInput = ({ isLoading, formMethods }: RespondentInputProps) => {
               <SingleSelect
                 isDisabled={isLoading}
                 isClearable={false}
-                placeholder="Select a question"
+                placeholder="Select a field"
                 items={emailFieldItems}
                 value={value}
                 {...rest}

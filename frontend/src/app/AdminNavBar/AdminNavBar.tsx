@@ -13,6 +13,8 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 
+import { SeenFlags } from '~shared/types'
+
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { BxsRocket } from '~assets/icons/BxsRocket'
 import BrandMarkSvg from '~assets/svgs/brand/brand-mark-colour.svg?react'
@@ -31,12 +33,12 @@ import IconButton from '~components/IconButton'
 import Link from '~components/Link'
 import { AvatarMenu, AvatarMenuDivider } from '~templates/AvatarMenu/AvatarMenu'
 
+import { SeenFlagsMapVersion } from '~features/user/constants'
 import { EmergencyContactModal } from '~features/user/emergency-contact/EmergencyContactModal'
 import { useUserMutations } from '~features/user/mutations'
 import { useUser } from '~features/user/queries'
 import { TransferOwnershipModal } from '~features/user/transfer-ownership/TransferOwnershipModal'
-import { FEATURE_UPDATE_LIST } from '~features/whats-new/FeatureUpdateList'
-import { getShowLatestFeatureUpdateNotification } from '~features/whats-new/utils/utils'
+import { getShowFeatureFlagLastSeen } from '~features/user/utils'
 import { WhatsNewDrawer } from '~features/whats-new/WhatsNewDrawer'
 
 import Menu from '../../components/Menu'
@@ -156,7 +158,7 @@ export interface AdminNavBarProps {
 
 export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
   const { user, isLoading: isUserLoading, removeQuery } = useUser()
-  const { updateLastSeenFeatureVersionMutation } = useUserMutations()
+  const { updateLastSeenFlagMutation } = useUserMutations()
 
   const whatsNewFeatureDrawerDisclosure = useDisclosure()
 
@@ -199,26 +201,27 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
 
   const shouldShowFeatureUpdateNotification = useMemo(() => {
     if (isUserLoading || !user) return false
-    return getShowLatestFeatureUpdateNotification(user)
+    return getShowFeatureFlagLastSeen(
+      user,
+      SeenFlags.LastSeenFeatureUpdateVersion,
+    )
   }, [isUserLoading, user])
 
   const onWhatsNewDrawerOpen = useCallback(() => {
     if (isUserLoading || !user) return
-    // Update version if current user version is not set or is less than the latest version.
-    if (
-      user.flags?.lastSeenFeatureUpdateVersion === undefined ||
-      user.flags?.lastSeenFeatureUpdateVersion < FEATURE_UPDATE_LIST.version
-    ) {
-      updateLastSeenFeatureVersionMutation.mutateAsync(
-        FEATURE_UPDATE_LIST.version,
-      )
+    if (shouldShowFeatureUpdateNotification) {
+      updateLastSeenFlagMutation.mutateAsync({
+        version: SeenFlagsMapVersion.lastSeenFeatureUpdateVersion,
+        flag: SeenFlags.LastSeenFeatureUpdateVersion,
+      })
     }
     whatsNewFeatureDrawerDisclosure.onOpen()
   }, [
     isUserLoading,
-    updateLastSeenFeatureVersionMutation,
+    updateLastSeenFlagMutation,
     user,
     whatsNewFeatureDrawerDisclosure,
+    shouldShowFeatureUpdateNotification,
   ])
 
   // Emergency contact modal appears after the rollout announcement modal
