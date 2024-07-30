@@ -4792,6 +4792,25 @@ describe('admin-form.controller', () => {
     })
   })
 
+  // TODO: Kevin - Add tests for handleUpdateWhitelistSetting
+  describe('handleUpdateWhitelistSetting', () => {
+    it('should only update whitelist if user has write permissions for the form', () => {})
+
+    it('should return duplicate submitter id error message if whitelist csv string has duplicate submitter ids', () => {})
+    it('should return empty row not allowed error message if whitelist csv string has empty rows', () => {})
+    it('should return invalid submitter id error message if whitelist csv string has invalid submitter ids', () => {})
+
+    it('should allow admin with form write permissions to update whitelist setting successfully and return updated settings without full encrypted whitelisted submitterIds list', () => {})
+
+    it('should allow admin with form write permissions to delete whitelist setting and return updated settings without full encrypted whitelisted submitterIds list', () => {})
+  })
+
+  describe('handleGetWhitelistSetting', () => {
+    it('should return encrypted whitelist settings if user has read permissions for the form', () => {})
+
+    it('should not return myPrivateKey to the client when fetching full encrypted whitelist settings', () => {})
+  })
+
   describe('handleUpdateSettings', () => {
     const MOCK_USER_ID = new ObjectId().toHexString()
     const MOCK_FORM_ID = new ObjectId().toHexString()
@@ -5201,6 +5220,9 @@ describe('admin-form.controller', () => {
         },
       },
     })
+
+    // TODO: Kevin - Add tests for handleGetSettings
+    it('should not return full encrypted whitelisted submitter id list when fetching settings', () => {})
 
     it('should return 200 with settings', async () => {
       // Arrange

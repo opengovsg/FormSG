@@ -24,6 +24,7 @@ import {
   LogicType,
   PaymentChannel,
   PaymentType,
+  WhitelistedSubmitterIdsWithReferenceOid,
   WorkflowType,
 } from 'shared/types'
 
@@ -101,6 +102,13 @@ const FORM_DEFAULTS = {
   status: 'PRIVATE',
   submissionLimit: null,
   goLinkSuffix: '',
+}
+
+const ENCRYPT_MODE_SETTINGS_DEFAULTS = {
+  emails: [],
+  whitelistedSubmitterIds: {
+    isWhitelistEnabled: false,
+  },
 }
 
 const PAYMENTS_DEFAULTS = {
@@ -445,8 +453,9 @@ describe('Form Model', () => {
 
     describe('Encrypted form schema', () => {
       const ENCRYPT_FORM_DEFAULTS = merge(
-        { responseMode: 'encrypt', emails: [] },
+        { responseMode: 'encrypt' },
         FORM_DEFAULTS,
+        ENCRYPT_MODE_SETTINGS_DEFAULTS,
         PAYMENTS_DEFAULTS,
       )
 
@@ -2668,6 +2677,29 @@ describe('Form Model', () => {
         expect(duplicatedForm.isSingleSubmission).toEqual(
           MOCK_ALL_FORM_PARAMS.isSingleSubmission,
         )
+      })
+
+      it('should not duplicate unwanted fields', () => {
+        const whitelistedSubmitterIdsParam: WhitelistedSubmitterIdsWithReferenceOid =
+          {
+            isWhitelistEnabled: true,
+            encryptedWhitelistedSubmitterIds: 'some object id',
+          }
+        const MOCK_ALL_FORM_PARAMS = {
+          whitelistedSubmitterIds: whitelistedSubmitterIdsParam,
+        }
+        const MOCK_ALL_OVERRIDE_PARAMS = {
+          admin: 'duplicated admin',
+          title: 'duplicated title',
+          responseMode: FormResponseMode.Encrypt,
+        }
+
+        const sourceForm = new Form(MOCK_ALL_FORM_PARAMS)
+        const duplicatedForm = sourceForm.getDuplicateParams(
+          MOCK_ALL_OVERRIDE_PARAMS,
+        )
+
+        expect(duplicatedForm).not.toHaveProperty('whitelistedSubmitterIds')
       })
     })
 

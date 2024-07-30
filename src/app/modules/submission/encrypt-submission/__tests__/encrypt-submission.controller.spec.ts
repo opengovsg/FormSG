@@ -4,7 +4,12 @@ import { ObjectId } from 'bson'
 import { merge } from 'lodash'
 import mongoose from 'mongoose'
 import { ok, okAsync } from 'neverthrow'
-import { BasicField, FormAuthType, MyInfoAttribute } from 'shared/types'
+import {
+  BasicField,
+  ErrorCode,
+  FormAuthType,
+  MyInfoAttribute,
+} from 'shared/types'
 
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
 import * as OidcService from 'src/app/modules/spcp/spcp.oidc.service/index'
@@ -389,6 +394,13 @@ describe('encrypt-submission.controller', () => {
     })
   })
 
+  // TODO: Kevin - Add tests for encrypt submission
+  describe('respondent not whitelisted', () => {
+    it('should return 200 ok when successfully submit form and submitterId is whitelisted', () => {})
+
+    it('should return 403 with submitterId not whitelisted failure flag when submitterId is not whitelisted', () => {})
+  })
+
   describe('single submission per submitterId', () => {
     const MOCK_JWT_PAYLOAD = {
       userName: 'submitterId',
@@ -525,8 +537,8 @@ describe('encrypt-submission.controller', () => {
       // Assert that response has the single submission validation failure flag
       expect(mockRes.json).toHaveBeenCalledWith({
         message:
-          'Your NRIC/FIN/UEN has already been used to respond to this form.',
-        hasSingleSubmissionValidationFailure: true,
+          'Your NRIC/FIN/UEN has already been used to respond to this form. If you think this is a mistake, please contact the agency that gave you the form link.',
+        errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
       })
 
       // Assert that the submission is not saved

@@ -27,7 +27,11 @@ import {
   PublicForm,
 } from 'src/types'
 
-import { FormAuthType, MyInfoAttribute } from '../../../../../../shared/types'
+import {
+  ErrorCode,
+  FormAuthType,
+  MyInfoAttribute,
+} from '../../../../../../shared/types'
 import * as AuthService from '../../../auth/auth.service'
 import * as BillingService from '../../../billing/billing.service'
 import {
@@ -135,6 +139,9 @@ describe('public-form.controller', () => {
       beforeAll(() => {
         MockFormService.checkIsIntranetFormAccess.mockReturnValue(false)
         MockFormService.checkHasSingleSubmissionValidationFailure.mockReturnValue(
+          okAsync(false),
+        )
+        MockFormService.checkHasRespondentNotWhitelistedFailure.mockReturnValue(
           okAsync(false),
         )
       })
@@ -298,6 +305,11 @@ describe('public-form.controller', () => {
       })
     })
 
+    // TODO: Kevin - Add test for handleGetPublicForm
+    describe('success cases for submitterId whitelisting', () => {
+      it('should return 200 ok without any failure flags when user is whitelisted', () => {})
+    })
+
     // Errors
     describe('errors in myInfo', () => {
       const MOCK_MYINFO_FORM = {
@@ -377,7 +389,7 @@ describe('public-form.controller', () => {
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_MYINFO_FORM.getPublicView(),
           isIntranetUser: false,
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
         })
       })
 
@@ -413,7 +425,7 @@ describe('public-form.controller', () => {
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_MYINFO_FORM.getPublicView(),
           isIntranetUser: false,
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
         })
       })
 
@@ -441,7 +453,7 @@ describe('public-form.controller', () => {
         expect(mockRes.clearCookie).toHaveBeenCalled()
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_MYINFO_FORM.getPublicView(),
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
           isIntranetUser: false,
         })
       })
@@ -469,7 +481,7 @@ describe('public-form.controller', () => {
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_MYINFO_FORM.getPublicView(),
           isIntranetUser: false,
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
         })
       })
 
@@ -496,7 +508,7 @@ describe('public-form.controller', () => {
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_MYINFO_FORM.getPublicView(),
           isIntranetUser: false,
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
         })
       })
 
@@ -529,7 +541,7 @@ describe('public-form.controller', () => {
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_MYINFO_FORM.getPublicView(),
           isIntranetUser: false,
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
         })
       })
     })
@@ -608,6 +620,11 @@ describe('public-form.controller', () => {
       })
     })
 
+    // TODO: Kevin - Add test for handleGetPublicForm
+    describe('errors due to submitterId whitelisting', () => {
+      it('should return 200 but with respondent not whitelisted failure flag when submitterId is not in whitelist', () => {})
+    })
+
     describe('errors due to single submission per submitterId violation', () => {
       const MOCK_SP_FORM = {
         ...BASE_FORM,
@@ -657,10 +674,9 @@ describe('public-form.controller', () => {
           MOCK_SP_FORM.getPublicView(),
         )
         // Assert that the response contains the single submission validation failure flag
-        expect(
-          (mockRes.json as jest.Mock).mock.calls[0][0]
-            .hasSingleSubmissionValidationFailure,
-        ).toEqual(true)
+        expect((mockRes.json as jest.Mock).mock.calls[0][0].errorCodes).toEqual(
+          [ErrorCode.respondentSingleSubmissionValidationFailure],
+        )
 
         // Assert user is logged out
         expect((mockRes.json as jest.Mock).mock.calls[0][0]).not.toContainKey(
