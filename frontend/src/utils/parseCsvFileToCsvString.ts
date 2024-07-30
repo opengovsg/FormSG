@@ -21,6 +21,9 @@ export const parseCsvFileToCsvStringWithoutChunking = (
           }
         }
         const csvString = Papa.unparse(contentRows, { delimiter: ',' })
+        if (!csvString) {
+          reject(new Error('Your CSV file body cannot be empty.'))
+        }
         resolve(csvString)
       },
       error: (error) => {

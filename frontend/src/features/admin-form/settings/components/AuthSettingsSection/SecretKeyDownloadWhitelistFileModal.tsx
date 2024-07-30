@@ -110,7 +110,13 @@ const useSecretKeyWhitelistFileModal = ({
       fetchAdminFormEncryptedWhitelistedSubmitterIds(formId, queryClient)
         .then((data) => {
           const { encryptedWhitelistedSubmitterIds } = data
-          if (encryptedWhitelistedSubmitterIds) {
+          if (
+            encryptedWhitelistedSubmitterIds &&
+            encryptedWhitelistedSubmitterIds.myPublicKey &&
+            encryptedWhitelistedSubmitterIds.nonce &&
+            encryptedWhitelistedSubmitterIds.cipherTexts &&
+            encryptedWhitelistedSubmitterIds.cipherTexts.length > 0
+          ) {
             const decryptedSubmitterIds = decryptSubmitterIds(
               encryptedWhitelistedSubmitterIds,
               secretKey,
@@ -143,6 +149,11 @@ const useSecretKeyWhitelistFileModal = ({
             toast.closeAll()
             toast({
               description: 'Whitelist setting file downloaded successfully',
+            })
+          } else {
+            errorToast.closeAll()
+            errorToast({
+              description: 'Whitelist settings could not be decrypted',
             })
           }
         })
