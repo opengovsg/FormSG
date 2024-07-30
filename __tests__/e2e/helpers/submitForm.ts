@@ -111,8 +111,8 @@ const authForm = async (
         formSettings.authType === FormAuthType.CP
           ? ' (Corporate)'
           : formSettings.authType === FormAuthType.SGID
-          ? ' app'
-          : ''
+            ? ' app'
+            : ''
       }`,
     })
     .click()
@@ -235,7 +235,7 @@ const fillFields = async (
         for (let i = 0; i < vals.length; i++) {
           if (optionNums[i] === -1) {
             // Click and fill "Others", which is always the last element.
-            await options.last().click()
+            await options.last().dispatchEvent('click')
             await page
               .locator(`[name="${field._id}.othersInput"]`)
               .fill(vals[i])

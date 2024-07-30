@@ -12,13 +12,12 @@ dotenv.config({
 export default defineConfig({
   testDir: './__tests__/e2e',
   /* Maximum time one test can run for. */
-  timeout: 120 * 1000,
   expect: {
     /**
      * Maximum time expect() should wait for the condition to be met.
      * For example in `await expect(locator).toHaveText();`
      */
-    timeout: 5000,
+    timeout: 3000,
   },
   /* Run tests in files in parallel */
   fullyParallel: true,

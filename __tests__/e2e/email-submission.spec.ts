@@ -1,3 +1,4 @@
+/* eslint-disable playwright/expect-expect -- assertions are in helper */
 import mongoose from 'mongoose'
 import {
   BasicField,
@@ -55,6 +56,7 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with all fields', async ({
     page,
   }) => {
+    test.setTimeout(60 * 1000)
     // Define
     const formFields = ALL_FIELDS
     const formLogics = NO_LOGIC
@@ -71,6 +73,7 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with all fields optional', async ({
     page,
   }) => {
+    test.setTimeout(60 * 1000)
     // Define
     const formFields = ALL_FIELDS.map((ff) =>
       createBlankVersion(createOptionalVersion(ff)),
@@ -148,6 +151,7 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with Singpass authentication', async ({
     page,
   }) => {
+    test.setTimeout(60 * 1000)
     // Define
     const formFields = ALL_FIELDS
     const formLogics = NO_LOGIC
@@ -166,6 +170,7 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with Corppass authentication', async ({
     page,
   }) => {
+    test.setTimeout(60 * 1000)
     // Define
     const formFields = ALL_FIELDS
     const formLogics = NO_LOGIC
@@ -184,6 +189,7 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with SGID authentication', async ({
     page,
   }) => {
+    test.setTimeout(60 * 1000)
     // Define
     const formFields = ALL_FIELDS
     const formLogics = NO_LOGIC
@@ -231,6 +237,7 @@ test.describe('Email form submission', () => {
   test('Create and submit email mode form with all fields shown by logic', async ({
     page,
   }) => {
+    test.setTimeout(60 * 1000)
     // Define
     const { formFields, formLogics } = TEST_ALL_FIELDS_SHOWN_BY_LOGIC
     const formSettings = getEmailSettings()
