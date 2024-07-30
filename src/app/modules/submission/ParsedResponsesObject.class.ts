@@ -41,7 +41,7 @@ type NdiUserInfo =
 
 export default class ParsedResponsesObject {
   public ndiResponses: ProcessedFieldResponse[] = []
-  private constructor(public responses: ProcessedFieldResponse[]) {}
+  constructor(public responses: ProcessedFieldResponse[]) {}
 
   addNdiResponses(info: NdiUserInfo): ParsedResponsesObject {
     /**

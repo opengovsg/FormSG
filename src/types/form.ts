@@ -63,6 +63,8 @@ type FormDefaultableKey =
   | 'hasCaptcha'
   | 'hasIssueNotification'
   | 'authType'
+  | 'isNricMaskEnabled'
+  | 'isSingleSubmission'
   | 'status'
   | 'inactiveMessage'
   | 'submissionLimit'
@@ -101,6 +103,8 @@ export type PickDuplicateForm = Pick<
   | 'startPage'
   | 'endPage'
   | 'authType'
+  | 'isNricMaskEnabled'
+  | 'isSingleSubmission'
   | 'inactiveMessage'
   | 'submissionLimit'
   | 'responseMode'
@@ -259,6 +263,8 @@ interface IFormBaseDocument<T extends IFormSchema> {
   hasCaptcha: NonNullable<T['hasCaptcha']>
   hasIssueNotification: NonNullable<T['hasIssueNotification']>
   authType: NonNullable<T['authType']>
+  isNricMaskEnabled: NonNullable<T['isNricMaskEnabled']>
+  isSingleSubmission: NonNullable<T['isSingleSubmission']>
   status: NonNullable<T['status']>
   inactiveMessage: NonNullable<T['inactiveMessage']>
   // NOTE: Due to the way creating a form works, creating a form without specifying submissionLimit will throw an error.
@@ -286,7 +292,7 @@ export interface IEncryptedForm extends IForm {
   payments_channel: FormPaymentsChannel
   payments_field: FormPaymentsField
   business?: FormBusinessField
-  emails?: never
+  emails?: string[]
 }
 
 export type IEncryptedFormSchema = IEncryptedForm & IFormSchema
@@ -306,6 +312,8 @@ export interface IEmailForm extends IForm {
 }
 
 export type IEmailFormSchema = IEmailForm & IFormSchema
+
+export type IFormHasEmailSchema = IEmailFormSchema | IEncryptedFormSchema
 
 export type IPopulatedEmailForm = IPopulatedForm & IEmailForm
 

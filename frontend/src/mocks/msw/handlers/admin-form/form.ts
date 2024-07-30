@@ -1,5 +1,5 @@
 import cuid from 'cuid'
-import { merge } from 'lodash'
+import { merge, mergeWith } from 'lodash'
 import { rest } from 'msw'
 
 import { PaymentChannel } from '~shared/types'
@@ -577,12 +577,14 @@ export const MOCK_FORM_LOGICS = [
     ],
   },
 ]
-
+// https://github.com/lodash/lodash/issues/1313
+// Arrays are merged by index, not overwritten so we need to use mergeWith
+// with a customizer to enforce empty arrays.
 export const createMockForm = (
   props: Partial<AdminFormDto> = {},
 ): AdminFormViewDto => {
   return {
-    form: merge(
+    form: mergeWith(
       {
         _id: 'random-id' as FormId,
         isListed: true,
@@ -629,6 +631,11 @@ export const createMockForm = (
         lastModified: '2021-09-14T07:23:56.581Z' as DateString,
       },
       props,
+      (objValue, srcValue) => {
+        if (Array.isArray(objValue) && srcValue.length === 0) {
+          return srcValue
+        }
+      },
     ) as AdminFormDto,
   }
 }

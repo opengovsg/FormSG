@@ -16,8 +16,8 @@ import {
 import {
   BounceType,
   EmailAdminDataField,
-  IEmailFormSchema,
   IFormDocument,
+  IFormHasEmailSchema,
   IPopulatedForm,
   IPopulatedUser,
   ISubmissionSchema,
@@ -26,7 +26,10 @@ import config from '../../config/config'
 import { smsConfig } from '../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import * as FormService from '../../modules/form/form.service'
-import { extractFormLinkView } from '../../modules/form/form.utils'
+import {
+  extractFormLinkView,
+  getAdminEmails,
+} from '../../modules/form/form.utils'
 import { formatAsPercentage } from '../../utils/formatters'
 import MrfWorkflowEmail, {
   WorkflowEmailData,
@@ -48,6 +51,7 @@ import {
   SendAutoReplyEmailsArgs,
   SendMailOptions,
   SendSingleAutoreplyMailArgs,
+  SubmissionToAdminHtmlData,
 } from './mail.types'
 import {
   generateAutoreplyHtml,
@@ -482,11 +486,11 @@ export class MailService {
     formData,
   }: {
     replyToEmails?: string[]
-    form: Pick<IEmailFormSchema, '_id' | 'title' | 'emails'>
+    form: Pick<IFormHasEmailSchema, '_id' | 'title' | 'emails'>
     submission: Pick<ISubmissionSchema, 'id' | 'created'>
     attachments?: Mail.Attachment[]
     formData: EmailAdminDataField[]
-    dataCollationData: {
+    dataCollationData?: {
       question: string
       answer: string | number
     }[]
@@ -499,30 +503,34 @@ export class MailService {
 
     // Add in additional metadata to dataCollationData.
     // Unshift is not used as it mutates the array.
-    const fullDataCollationData = [
-      {
-        question: 'Response ID',
-        answer: refNo,
-      },
-      {
-        question: 'Timestamp',
-        answer: submissionTime,
-      },
-      ...dataCollationData,
-    ]
-
-    const htmlData = {
+    const htmlData: SubmissionToAdminHtmlData = {
       appName: this.#appName,
       formTitle,
       refNo,
       submissionTime,
-      dataCollationData: fullDataCollationData,
       formData,
     }
 
+    if (dataCollationData) {
+      const fullDataCollationData = [
+        {
+          question: 'Response ID',
+          answer: refNo,
+        },
+        {
+          question: 'Timestamp',
+          answer: submissionTime,
+        },
+        ...dataCollationData,
+      ]
+      htmlData.dataCollationData = fullDataCollationData
+    }
+
+    const adminEmails: string[] = getAdminEmails(form)
+
     return generateSubmissionToAdminHtml(htmlData).andThen((mailHtml) => {
       const mail: MailOptions = {
-        to: form.emails,
+        to: adminEmails,
         from: this.#senderFromString,
         subject: `formsg-auto: ${formTitle} (#${refNo})`,
         html: mailHtml,
@@ -1047,7 +1055,7 @@ export class MailService {
     const mail: MailOptions = {
       to: emails,
       from: this.#senderFromString,
-      subject: `Action required - ${formTitle}`,
+      subject: `Action required - ${formTitle} (${responseId})`,
       html,
       headers: {
         [EMAIL_HEADERS.emailType]: EmailType.WorkflowNotification,

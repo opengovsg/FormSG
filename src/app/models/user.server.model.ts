@@ -74,9 +74,11 @@ const compileUserModel = (db: Mongoose) => {
       betaFlags: {
         payment: Boolean,
         children: Boolean,
+        postmanSms: Boolean,
       },
       flags: {
-        lastSeenFeatureUpdateVersion: Number,
+        type: Schema.Types.Map, // of SeenFlags
+        of: Number,
       },
       apiToken: {
         select: false,

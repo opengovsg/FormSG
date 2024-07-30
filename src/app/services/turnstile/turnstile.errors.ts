@@ -1,11 +1,11 @@
-import { ApplicationError } from '../../modules/core/core.errors'
+import { ApplicationError, ErrorCodes } from '../../modules/core/core.errors'
 
 /**
  * Error connecting to captcha server
  */
 export class TurnstileConnectionError extends ApplicationError {
   constructor(message = 'Error while connecting to Turnstile server.') {
-    super(message)
+    super(message, undefined, ErrorCodes.TURNSTILE_CONNECTION)
   }
 }
 
@@ -14,7 +14,7 @@ export class TurnstileConnectionError extends ApplicationError {
  */
 export class VerifyTurnstileError extends ApplicationError {
   constructor(message = 'Incorrect Turnstile response.') {
-    super(message)
+    super(message, undefined, ErrorCodes.TURNSTILE_RESPONSE_ERROR)
   }
 }
 
@@ -23,6 +23,6 @@ export class VerifyTurnstileError extends ApplicationError {
  */
 export class MissingTurnstileError extends ApplicationError {
   constructor(message = 'Missing Turnstile response.') {
-    super(message)
+    super(message, undefined, ErrorCodes.TURNSTILE_MISSING)
   }
 }

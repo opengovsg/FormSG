@@ -73,9 +73,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             ) : null}
           </FormControl>
           <FormControl isRequired isInvalid={!!errors.responseMode} mb="2.5rem">
-            <FormLabel>
-              How do you want to receive your form responses?
-            </FormLabel>
+            <FormLabel>What type of form do you need?</FormLabel>
             <Skeleton isLoaded={!isFetching}>
               <Controller
                 name="responseMode"

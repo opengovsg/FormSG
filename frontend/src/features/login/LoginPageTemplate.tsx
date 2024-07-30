@@ -116,11 +116,6 @@ export const LoginPageTemplate: FC = ({ children }) => {
           {bannerProps.msg}
         </Banner>
       ) : null}
-      <FeatureBanner
-        bannerColorIntensity={bannerColorIntensity}
-        body={t('features.login.LoginPage.banner')}
-        learnMoreLink={LANDING_PAYMENTS_ROUTE}
-      />
       <BaseGridLayout flex={1}>
         <NonMobileSidebarGridArea>
           <LoginImageSvgr maxW="100%" aria-hidden />

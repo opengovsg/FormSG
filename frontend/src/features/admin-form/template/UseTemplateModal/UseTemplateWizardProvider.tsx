@@ -45,27 +45,39 @@ export const useUseTemplateWizardContext = (
 
   const {
     useEmailModeFormTemplateMutation,
-    useStorageModeOrMultirespondentFormTemplateMutation,
+    useStorageModeFormTemplateMutation,
+    useMultirespondentFormTemplateMutation,
   } = useUseTemplateMutations()
 
   const handleCreateStorageModeOrMultirespondentForm = handleSubmit(
     ({ title, responseMode }) => {
-      if (
-        !(
-          responseMode === FormResponseMode.Encrypt ||
-          responseMode === FormResponseMode.Multirespondent
-        ) ||
-        !formId
-      ) {
-        return
+      if (!formId) return
+      switch (responseMode) {
+        case FormResponseMode.Encrypt: {
+          return useStorageModeFormTemplateMutation.mutate({
+            formIdToDuplicate: formId,
+            title,
+            responseMode,
+            publicKey: keypair.publicKey,
+            emails: [],
+          })
+        }
+        case FormResponseMode.Multirespondent: {
+          return useMultirespondentFormTemplateMutation.mutate({
+            formIdToDuplicate: formId,
+            title,
+            responseMode,
+            publicKey: keypair.publicKey,
+          })
+        }
+        case FormResponseMode.Email: {
+          return
+        }
+        default: {
+          const _: never = responseMode
+          throw new Error(`Unhandled response mode: ${_}`)
+        }
       }
-
-      return useStorageModeOrMultirespondentFormTemplateMutation.mutate({
-        formIdToDuplicate: formId,
-        title,
-        responseMode,
-        publicKey: keypair.publicKey,
-      })
     },
   )
 
@@ -86,7 +98,8 @@ export const useUseTemplateWizardContext = (
     isFetching: isTemplateFormLoading,
     isLoading:
       useEmailModeFormTemplateMutation.isLoading ||
-      useStorageModeOrMultirespondentFormTemplateMutation.isLoading,
+      useStorageModeFormTemplateMutation.isLoading ||
+      useMultirespondentFormTemplateMutation.isLoading,
     keypair,
     currentStep,
     direction,

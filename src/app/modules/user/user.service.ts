@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import validator from 'validator'
 
+import { SeenFlags } from '../../../../shared/types'
 import {
   IAdminVerificationDoc,
   IAgencySchema,
@@ -164,25 +165,26 @@ export const updateUserContact = (
 }
 
 /**
- * Updates the user document with the userId with the given latest seen feature update date and
+ * Updates the user document with the userId with the given flag version and
  * returns the populated updated user.
  * @param userId the user id of the user document to update
  * @returns ok(true) if update was successful
  * @returns err(MissingUserError) if user document cannot be found
  * @returns err(DatabaseError) if any error occurs whilst querying the database
  */
-export const updateUserLastSeenFeatureUpdateVersion = (
+export const updateUserLastSeenFlagVersion = (
   userId: IUserSchema['_id'],
   version: number,
+  flag: SeenFlags,
 ): ResultAsync<IPopulatedUser, MissingUserError | DatabaseError> => {
   // Retrieve user from database and
-  // update user's last seen feature update date attribute.
+  // update user's last seen feature version.
   return ResultAsync.fromPromise(
     UserModel.findByIdAndUpdate(
       userId,
       {
         $set: {
-          flags: { lastSeenFeatureUpdateVersion: version },
+          [`flags.${flag}`]: version,
         },
       },
       { new: true },
@@ -195,8 +197,8 @@ export const updateUserLastSeenFeatureUpdateVersion = (
     (error) => {
       logger.error({
         message:
-          'Database error when updating user last seen feature update version',
-        meta: { action: 'updateUserLastSeenFeatureUpdateVersion', userId },
+          'Database error when updating user last seen flag update version',
+        meta: { action: 'updateUserSeenFlagVersion', flag, userId },
         error,
       })
 

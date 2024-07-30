@@ -19,6 +19,7 @@ jobs:
           types: |
             feat
             fix
+            hotfix
             docs
             style
             refactor

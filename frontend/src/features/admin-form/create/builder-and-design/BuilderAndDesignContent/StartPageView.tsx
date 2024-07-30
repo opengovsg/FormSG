@@ -6,7 +6,10 @@ import { FormAuthType, FormLogoState, FormStartPage } from '~shared/types'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 
-import { PREVIEW_MOCK_UINFIN } from '~features/admin-form/preview/constants'
+import {
+  PREVIEW_MASKED_MOCK_UINFIN as PREVIEW_MASKED_MOCK_UINFIN,
+  PREVIEW_MOCK_UINFIN,
+} from '~features/admin-form/preview/constants'
 import { useEnv } from '~features/env/queries'
 import { FormInstructions } from '~features/public-form/components/FormInstructions/FormInstructions'
 import {
@@ -197,7 +200,9 @@ export const StartPageView = () => {
           showHeader
           loggedInId={
             form && form.authType !== FormAuthType.NIL
-              ? PREVIEW_MOCK_UINFIN
+              ? form.isNricMaskEnabled
+                ? PREVIEW_MASKED_MOCK_UINFIN
+                : PREVIEW_MOCK_UINFIN
               : undefined
           }
           {...formHeaderProps}

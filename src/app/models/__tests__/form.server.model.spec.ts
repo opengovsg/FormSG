@@ -72,6 +72,8 @@ const MOCK_MULTIRESPONDENT_FORM_PARAMS = {
 
 const FORM_DEFAULTS = {
   authType: 'NIL',
+  isNricMaskEnabled: false,
+  isSingleSubmission: false,
   inactiveMessage:
     'If you think this is a mistake, please contact the agency that gave you the form link.',
   isListed: true,
@@ -443,7 +445,7 @@ describe('Form Model', () => {
 
     describe('Encrypted form schema', () => {
       const ENCRYPT_FORM_DEFAULTS = merge(
-        { responseMode: 'encrypt' },
+        { responseMode: 'encrypt', emails: [] },
         FORM_DEFAULTS,
         PAYMENTS_DEFAULTS,
       )
@@ -2616,6 +2618,56 @@ describe('Form Model', () => {
 
         // Assert
         expect(actual).toBeInstanceOf(mongoose.Error.ValidationError)
+      })
+    })
+
+    describe('getDuplicateParams', () => {
+      it('should duplicate all required fields', () => {
+        // Arrange
+        const MOCK_ALL_OVERRIDE_PARAMS = {
+          admin: 'duplicated admin',
+          title: 'duplicated title',
+          responseMode: FormResponseMode.Email,
+          emails: ['duplicated email'],
+          submissionLimit: null,
+        }
+        const MOCK_ALL_FORM_PARAMS = {
+          title: 'Test Form',
+          admin: MOCK_ADMIN_OBJ_ID,
+          authType: FormAuthType.SP,
+          isNricMaskEnabled: true,
+          isSingleSubmission: true,
+          inactiveMessage: 'inactive_test',
+          responseMode: FormResponseMode.Encrypt,
+          submissionLimit: 1000,
+        }
+        const sourceForm = new Form(MOCK_ALL_FORM_PARAMS)
+
+        // Act
+        const duplicatedForm = sourceForm.getDuplicateParams(
+          MOCK_ALL_OVERRIDE_PARAMS,
+        )
+
+        // Assert
+        expect(duplicatedForm.title).toEqual(MOCK_ALL_OVERRIDE_PARAMS.title)
+        expect(duplicatedForm.admin).toEqual(MOCK_ALL_OVERRIDE_PARAMS.admin)
+        expect(duplicatedForm.responseMode).toEqual(
+          MOCK_ALL_OVERRIDE_PARAMS.responseMode,
+        )
+        expect(duplicatedForm.emails).toEqual(MOCK_ALL_OVERRIDE_PARAMS.emails)
+        expect(duplicatedForm.submissionLimit).toEqual(
+          MOCK_ALL_OVERRIDE_PARAMS.submissionLimit,
+        )
+        expect(duplicatedForm.authType).toEqual(MOCK_ALL_FORM_PARAMS.authType)
+        expect(duplicatedForm.isNricMaskEnabled).toEqual(
+          MOCK_ALL_FORM_PARAMS.isNricMaskEnabled,
+        )
+        expect(duplicatedForm.inactiveMessage).toEqual(
+          MOCK_ALL_FORM_PARAMS.inactiveMessage,
+        )
+        expect(duplicatedForm.isSingleSubmission).toEqual(
+          MOCK_ALL_FORM_PARAMS.isSingleSubmission,
+        )
       })
     })
 

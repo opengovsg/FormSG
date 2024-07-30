@@ -1,10 +1,12 @@
 import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   BiDotsHorizontalRounded,
   BiShareAlt,
   BiShow,
   BiUserPlus,
 } from 'react-icons/bi'
+import { GoPrimitiveDot } from 'react-icons/go'
 import { Link as ReactLink, useLocation } from 'react-router-dom'
 import {
   Box,
@@ -18,6 +20,7 @@ import {
   Flex,
   Grid,
   GridItem,
+  Icon,
   Skeleton,
   Text,
   useBreakpointValue,
@@ -25,7 +28,8 @@ import {
 } from '@chakra-ui/react'
 import format from 'date-fns/format'
 
-import { AdminFormDto } from '~shared/types/form/form'
+import { SeenFlags } from '~shared/types'
+import { AdminFormDto, FormResponseMode } from '~shared/types/form/form'
 
 import {
   ACTIVE_ADMINFORM_BUILDER_ROUTE_REGEX,
@@ -40,6 +44,11 @@ import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 import { NavigationTab, NavigationTabList } from '~templates/NavigationTabs'
 
+import { SeenFlagsMapVersion } from '~features/user/constants'
+import { useUserMutations } from '~features/user/mutations'
+import { useUser } from '~features/user/queries'
+import { getShowFeatureFlagLastSeen } from '~features/user/utils'
+
 import { AdminFormNavbarBreadcrumbs } from './AdminFormNavbarBreadcrumbs'
 
 export interface AdminFormNavbarProps {
@@ -47,7 +56,7 @@ export interface AdminFormNavbarProps {
    * Minimum form info needed to render the navbar.
    * If not provided, the navbar will be in a loading state.
    */
-  formInfo?: Pick<AdminFormDto, 'title' | 'lastModified'>
+  formInfo?: AdminFormDto
   viewOnly: boolean
   handleAddCollabButtonClick: () => void
   handleShareButtonClick: () => void
@@ -64,9 +73,19 @@ export const AdminFormNavbar = ({
   handleShareButtonClick,
   previewFormLink,
 }: AdminFormNavbarProps): JSX.Element => {
+  const { t } = useTranslation()
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
   const { isOpen, onClose, onOpen } = useDisclosure()
   const { pathname } = useLocation()
+
+  const { user, isLoading: isUserLoading } = useUser()
+  const { updateLastSeenFlagMutation } = useUserMutations()
+  const shouldShowSettingsReddot = useMemo(() => {
+    const isMrf = formInfo?.responseMode === FormResponseMode.Multirespondent
+
+    if (isUserLoading || !user || isMrf) return false
+    return getShowFeatureFlagLastSeen(user, SeenFlags.SettingsNotification)
+  }, [isUserLoading, user, formInfo?.responseMode])
 
   const tabResponsiveVariant = useBreakpointValue({
     base: 'line-dark',
@@ -165,20 +184,37 @@ export const AdminFormNavbar = ({
           to={ADMINFORM_BUILD_SUBROUTE}
           isActive={checkTabActive(ADMINFORM_BUILD_SUBROUTE)}
         >
-          Create
+          {t('features.adminFormNavbar.tabs.create')}
         </NavigationTab>
         <NavigationTab
           hidden={viewOnly}
           to={ADMINFORM_SETTINGS_SUBROUTE}
           isActive={checkTabActive(ADMINFORM_SETTINGS_SUBROUTE)}
+          onClick={() => {
+            if (shouldShowSettingsReddot) {
+              updateLastSeenFlagMutation.mutate({
+                flag: SeenFlags.SettingsNotification,
+                version: SeenFlagsMapVersion[SeenFlags.SettingsNotification],
+              })
+            }
+          }}
         >
-          Settings
+          {t('features.adminFormNavbar.tabs.settings')}
+          {shouldShowSettingsReddot ? (
+            <Icon
+              as={GoPrimitiveDot}
+              color="danger.500"
+              position="absolute"
+              right="-8px"
+              top="2px"
+            />
+          ) : null}
         </NavigationTab>
         <NavigationTab
           to={ADMINFORM_RESULTS_SUBROUTE}
           isActive={checkTabActive(ADMINFORM_RESULTS_SUBROUTE)}
         >
-          Results
+          {t('features.adminFormNavbar.tabs.results')}
         </NavigationTab>
       </NavigationTabList>
       <Flex
@@ -192,7 +228,7 @@ export const AdminFormNavbar = ({
       >
         <IconButton
           display={{ base: 'flex', md: 'none' }}
-          aria-label="Form actions"
+          aria-label={t('features.adminFormNavbar.formActions')}
           onClick={onOpen}
           icon={<BiDotsHorizontalRounded />}
         />
@@ -201,26 +237,28 @@ export const AdminFormNavbar = ({
             {renderLastModified}
           </Flex>
           <ButtonGroup spacing="0.5rem" isDisabled={!formInfo}>
-            <Tooltip label="Manage collaborators">
+            <Tooltip label={t('features.adminFormNavbar.manageCollaborators')}>
               <IconButton
-                aria-label="Manage collaborators"
+                aria-label={t('features.adminFormNavbar.manageCollaborators')}
                 variant="outline"
                 onClick={handleAddCollabButtonClick}
                 icon={<BiUserPlus />}
               />
             </Tooltip>
-            <Tooltip label="Preview form">
+            <Tooltip label={t('features.adminFormNavbar.previewForm')}>
               <IconButton
                 as={ReactLink}
-                aria-label="Preview form"
+                aria-label={t('features.adminFormNavbar.previewForm')}
                 variant="outline"
                 to={previewFormLink}
                 target="_blank"
                 icon={<BiShow />}
               />
             </Tooltip>
-            <Tooltip label="Share your form link">
-              <Button onClick={handleShareButtonClick}>Share</Button>
+            <Tooltip label={t('features.adminFormNavbar.shareBtn.tooltip')}>
+              <Button onClick={handleShareButtonClick}>
+                {t('features.adminFormNavbar.shareBtn.text')}
+              </Button>
             </Tooltip>
           </ButtonGroup>
         </Box>
@@ -244,21 +282,21 @@ export const AdminFormNavbar = ({
                 {...mobileDrawerExtraButtonProps}
                 leftIcon={<BiShow fontSize="1.25rem" />}
               >
-                Preview form
+                {t('features.adminFormNavbar.previewForm')}
               </Button>
               <Button
                 {...mobileDrawerExtraButtonProps}
                 onClick={handleShareButtonClick}
                 leftIcon={<BiShareAlt fontSize="1.25rem" />}
               >
-                Share form link
+                {t('features.adminFormNavbar.shareBtn.textMobile')}
               </Button>
               <Button
                 {...mobileDrawerExtraButtonProps}
                 onClick={handleAddCollabButtonClick}
                 leftIcon={<BiUserPlus fontSize="1.25rem" />}
               >
-                Manage collaborators
+                {t('features.adminFormNavbar.manageCollaborators')}
               </Button>
             </ButtonGroup>
           </DrawerBody>

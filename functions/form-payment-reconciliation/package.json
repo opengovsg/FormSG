@@ -18,7 +18,7 @@
   },
   "private": true,
   "dependencies": {
-    "@aws-sdk/client-secrets-manager": "^3.360.0",
-    "@aws-sdk/client-ssm": "^3.360.0"
+    "@aws-sdk/client-secrets-manager": "^3.529.1",
+    "@aws-sdk/client-ssm": "^3.525.0"
   }
 }

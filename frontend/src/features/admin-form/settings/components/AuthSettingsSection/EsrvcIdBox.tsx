@@ -7,7 +7,6 @@ import {
   InputGroup,
   InputRightElement,
   Stack,
-  Text,
   VisuallyHidden,
 } from '@chakra-ui/react'
 
@@ -18,6 +17,8 @@ import Input from '~components/Input'
 import Spinner from '~components/Spinner'
 
 import { useMutateFormSettings } from '../../mutations'
+
+import { EsrvcHelperText } from './EsrvcHelperText'
 
 interface EsrvcIdBoxProps {
   settings: FormSettings
@@ -60,17 +61,6 @@ export const EsrvcIdBox = ({
     return errors.esrvcId ? reset() : onSubmit()
   }, [errors, onSubmit, reset])
 
-  const renderedHelperText = useMemo(() => {
-    switch (settings.authType) {
-      case FormAuthType.SP:
-      case FormAuthType.CP:
-      case FormAuthType.MyInfo:
-        return 'Contact askNDI@tech.gov.sg for your e-service ID'
-      default:
-        return ''
-    }
-  }, [settings.authType])
-
   const placeHolder = useMemo(
     () =>
       `Enter ${
@@ -81,9 +71,7 @@ export const EsrvcIdBox = ({
   return (
     <form onSubmit={onSubmit} onBlur={handleBlur}>
       <Stack ml="2.75rem" mb="1.25rem">
-        <Text textStyle="body-2" color="secondary.400">
-          {renderedHelperText}
-        </Text>
+        <EsrvcHelperText authType={settings.authType} />
         <VisuallyHidden>
           <FormLabel htmlFor="esrvcId">e-service ID:</FormLabel>
         </VisuallyHidden>

@@ -19,7 +19,8 @@ import { workspaceKeys } from '~features/workspace/queries'
 
 import {
   createEmailModeTemplateForm,
-  createStorageModeOrMultirespondentTemplateForm,
+  createMultirespondentTemplateForm,
+  createStorageModeTemplateForm,
 } from './TemplateFormService'
 
 const useCommonHooks = () => {
@@ -68,15 +69,30 @@ export const useUseTemplateMutations = () => {
     },
   )
 
-  const useStorageModeOrMultirespondentFormTemplateMutation = useMutation<
+  const useStorageModeFormTemplateMutation = useMutation<
     FormDto,
     ApiError,
-    (CreateStorageFormBodyDto | CreateMultirespondentFormBodyDto) & {
+    CreateStorageFormBodyDto & {
       formIdToDuplicate: string
     }
   >(
     ({ formIdToDuplicate, ...params }) =>
-      createStorageModeOrMultirespondentTemplateForm(formIdToDuplicate, params),
+      createStorageModeTemplateForm(formIdToDuplicate, params),
+    {
+      onSuccess: handleSuccess,
+      onError: handleError,
+    },
+  )
+
+  const useMultirespondentFormTemplateMutation = useMutation<
+    FormDto,
+    ApiError,
+    CreateMultirespondentFormBodyDto & {
+      formIdToDuplicate: string
+    }
+  >(
+    ({ formIdToDuplicate, ...params }) =>
+      createMultirespondentTemplateForm(formIdToDuplicate, params),
     {
       onSuccess: handleSuccess,
       onError: handleError,
@@ -85,6 +101,7 @@ export const useUseTemplateMutations = () => {
 
   return {
     useEmailModeFormTemplateMutation,
-    useStorageModeOrMultirespondentFormTemplateMutation,
+    useStorageModeFormTemplateMutation,
+    useMultirespondentFormTemplateMutation,
   }
 }

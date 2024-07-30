@@ -8,6 +8,7 @@ import {
   AdminStorageFormDto,
   PaymentsUpdateDto,
 } from '~shared/types/form'
+import { PAYMENT_DELETE_DEFAULT } from '~shared/utils/payments'
 
 import { useToast } from '~hooks/useToast'
 
@@ -35,12 +36,6 @@ import {
 export const useDeleteFormField = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
-
-  const paymentDeleteDefault: PaymentsUpdateDto = {
-    enabled: false,
-    payment_type: PaymentType.Products,
-    products: [],
-  }
 
   const { stateData, setToInactive } = useFieldBuilderStore(
     useCallback(
@@ -114,7 +109,7 @@ export const useDeleteFormField = () => {
   )
 
   const deletePaymentFieldMutation = useMutation(
-    () => updateFormPayments(formId, paymentDeleteDefault),
+    () => updateFormPayments(formId, PAYMENT_DELETE_DEFAULT),
     {
       onSuccess: (newData) => {
         toast.closeAll()

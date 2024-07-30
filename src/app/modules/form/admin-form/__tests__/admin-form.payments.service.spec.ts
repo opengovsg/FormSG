@@ -9,8 +9,11 @@ import {
 import * as PaymentConfig from 'src/app/config/features/payment.config'
 import { getEncryptedFormModel } from 'src/app/models/form.server.model'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
-import { InvalidPaymentAmountError } from 'src/app/modules/payments/payments.errors'
-import { IEncryptedFormDocument } from 'src/types'
+import {
+  InvalidPaymentAmountError,
+  PaymentConfigurationError,
+} from 'src/app/modules/payments/payments.errors'
+import { IEncryptedFormDocument, IPopulatedEncryptedForm } from 'src/types'
 
 import { FormNotFoundError } from '../../form.errors'
 import * as AdminFormPaymentService from '../admin-form.payments.service'
@@ -19,6 +22,11 @@ const EncryptFormModel = getEncryptedFormModel(mongoose)
 describe('admin-form.payment.service', () => {
   describe('updatePayments', () => {
     const mockFormId = new ObjectId().toString()
+    const MOCK_FORM: IPopulatedEncryptedForm = {
+      publicKey: 'public key',
+      emails: [],
+    } as any as IPopulatedEncryptedForm
+
     describe('When Payment Type is Fixed', () => {
       beforeEach(() => {
         jest.clearAllMocks()
@@ -52,6 +60,7 @@ describe('admin-form.payment.service', () => {
         // Act
         const actualResult = await AdminFormPaymentService.updatePayments(
           mockFormId,
+          MOCK_FORM,
           updatedPaymentSettingsExceeded,
         )
 
@@ -76,6 +85,7 @@ describe('admin-form.payment.service', () => {
         // Act
         const actualResult = await AdminFormPaymentService.updatePayments(
           mockFormId,
+          MOCK_FORM,
           updatedPaymentSettingsBelow,
         )
 
@@ -97,6 +107,7 @@ describe('admin-form.payment.service', () => {
         // Act
         const actualResult = await AdminFormPaymentService.updatePayments(
           mockFormId,
+          MOCK_FORM,
           updatedPaymentSettings,
         )
 
@@ -117,6 +128,7 @@ describe('admin-form.payment.service', () => {
         // Act
         const actualResult = await AdminFormPaymentService.updatePayments(
           mockFormId,
+          MOCK_FORM,
           updatedPaymentSettings,
         )
 
@@ -135,6 +147,7 @@ describe('admin-form.payment.service', () => {
         // Act
         const actualResult = await AdminFormPaymentService.updatePayments(
           mockFormId,
+          MOCK_FORM,
           updatedPaymentSettings,
         )
 
@@ -144,6 +157,54 @@ describe('admin-form.payment.service', () => {
         expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
           FormNotFoundError,
         )
+      })
+
+      it('should not allow payment updates for encrypt forms with emails', async () => {
+        // Arrange
+        const updatedPaymentSettings: PaymentsUpdateDto = {
+          enabled: true,
+          amount_cents: 100,
+          description: 'some description',
+          payment_type: PaymentType.Fixed,
+        }
+        jest.replaceProperty(MOCK_FORM, 'emails', ['test@example.com'])
+
+        // Act
+        const actualResult = await AdminFormPaymentService.updatePayments(
+          mockFormId,
+          MOCK_FORM,
+          updatedPaymentSettings,
+        )
+
+        // Assert
+        expect(actualResult.isErr()).toBeTrue()
+        actualResult.mapErr((err) => {
+          expect(err).toBeInstanceOf(PaymentConfigurationError)
+        })
+      })
+
+      it('should not allow payment updates for encrypt forms with isSingleSubmission true', async () => {
+        // Arrange
+        const updatedPaymentSettings: PaymentsUpdateDto = {
+          enabled: true,
+          amount_cents: 100,
+          description: 'some description',
+          payment_type: PaymentType.Fixed,
+        }
+        const mockForm = { ...MOCK_FORM, isSingleSubmission: true }
+
+        // Act
+        const actualResult = await AdminFormPaymentService.updatePayments(
+          mockFormId,
+          mockForm,
+          updatedPaymentSettings,
+        )
+
+        // Assert
+        expect(actualResult.isErr()).toBeTrue()
+        actualResult.mapErr((err) => {
+          expect(err).toBeInstanceOf(PaymentConfigurationError)
+        })
       })
     })
 
@@ -178,6 +239,7 @@ describe('admin-form.payment.service', () => {
         // Act
         const actualResult = await AdminFormPaymentService.updatePayments(
           mockFormId,
+          MOCK_FORM,
           updatedPaymentSettingsMaxAboveMin,
         )
 
@@ -211,6 +273,7 @@ describe('admin-form.payment.service', () => {
         // Act
         const actualResult = await AdminFormPaymentService.updatePayments(
           mockFormId,
+          MOCK_FORM,
           updatedPaymentSettingsMaxAboveMin,
         )
 
@@ -236,6 +299,7 @@ describe('admin-form.payment.service', () => {
         // Act
         const actualResult = await AdminFormPaymentService.updatePayments(
           mockFormId,
+          MOCK_FORM,
           updatedPaymentSettingsMaxBelowMin,
         )
 
@@ -262,6 +326,7 @@ describe('admin-form.payment.service', () => {
         // Act
         const actualResult = await AdminFormPaymentService.updatePayments(
           mockFormId,
+          MOCK_FORM,
           updatedPaymentSettingsBelow,
         )
 
@@ -292,6 +357,7 @@ describe('admin-form.payment.service', () => {
         // Act
         const actualResult = await AdminFormPaymentService.updatePayments(
           mockFormId,
+          MOCK_FORM,
           updatedPaymentSettingsMaxAboveMin,
         )
 
@@ -318,6 +384,7 @@ describe('admin-form.payment.service', () => {
         // Act
         const actualResult = await AdminFormPaymentService.updatePayments(
           mockFormId,
+          MOCK_FORM,
           updatedPaymentSettingsMaxAboveMin,
         )
 

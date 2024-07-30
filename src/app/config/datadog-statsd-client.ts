@@ -1,3 +1,8 @@
 import { StatsD } from 'hot-shots'
 
-export const statsdClient = new StatsD({ useDefaultRoute: true })
+import config from './config'
+
+export const statsdClient = new StatsD({
+  useDefaultRoute: true,
+  mock: config.isDev,
+})

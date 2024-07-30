@@ -280,7 +280,7 @@ describe('payments.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await PaymentsController.handleSendOnboardingEmail(
+      await PaymentsController._handleSendOnboardingEmail(
         mockReq,
         mockRes,
         jest.fn(),
@@ -297,7 +297,7 @@ describe('payments.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await PaymentsController.handleSendOnboardingEmail(
+      await PaymentsController._handleSendOnboardingEmail(
         mockReq,
         mockRes,
         jest.fn(),
@@ -315,7 +315,7 @@ describe('payments.controller', () => {
       const mockRes = expressHandler.mockResponse()
 
       // Act
-      await PaymentsController.handleSendOnboardingEmail(
+      await PaymentsController._handleSendOnboardingEmail(
         mockReq,
         mockRes,
         jest.fn(),
@@ -335,7 +335,7 @@ describe('payments.controller', () => {
       await dbHandler.closeDatabase()
 
       // Act
-      await PaymentsController.handleSendOnboardingEmail(
+      await PaymentsController._handleSendOnboardingEmail(
         mockReq,
         mockRes,
         jest.fn(),

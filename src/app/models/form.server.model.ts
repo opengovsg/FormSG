@@ -197,7 +197,27 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
     type: String,
     required: true,
   },
-
+  emails: {
+    type: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    set: transformEmails,
+    validate: [
+      (v: string[]) => {
+        if (!Array.isArray(v)) return false
+        if (v.length === 0) return true
+        return v.every((email) => validator.isEmail(email))
+      },
+      'Please provide valid email addresses',
+    ],
+    // Mongoose v6 only checks if the type is an array, not whether the array
+    // is non-empty. We allow this field to not exist for backwards compatibility
+    // TODO: Make this required after all forms have been migrated
+    required: false,
+  },
   payments_channel: {
     channel: {
       type: String,
@@ -284,7 +304,7 @@ const EmailFormSchema = new Schema<IEmailFormSchema, IEmailFormModel>({
     ],
     // Mongoose v5 only checks if the type is an array, not whether the array
     // is non-empty.
-    required: true,
+    required: [true, 'Emails field is required'],
   },
 })
 
@@ -497,6 +517,16 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         },
       },
 
+      isNricMaskEnabled: {
+        type: Boolean,
+        default: false,
+      },
+
+      isSingleSubmission: {
+        type: Boolean,
+        default: false,
+      },
+
       // This must be before `status` since `status` has setters reliant on
       // whether esrvcId is available, and mongoose@v6 now saves objects with keys
       // in the order the keys are specifified in the schema instead of the object.
@@ -680,6 +710,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       'startPage',
       'endPage',
       'authType',
+      'isNricMaskEnabled',
+      'isSingleSubmission',
       'inactiveMessage',
       'responseMode',
       'submissionLimit',

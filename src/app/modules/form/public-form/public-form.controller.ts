@@ -20,6 +20,7 @@ import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormIfPublic } from '../../auth/auth.service'
 import * as BillingService from '../../billing/billing.service'
 import { ControllerHandler } from '../../core/core.types'
+import { MyInfoData } from '../../myinfo/myinfo.adapter'
 import {
   MYINFO_AUTH_CODE_COOKIE_NAME,
   MYINFO_AUTH_CODE_COOKIE_OPTIONS,
@@ -52,6 +53,7 @@ import {
   getRedirectTargetSpcpOidc,
   validateSpcpForm,
 } from '../../spcp/spcp.util'
+import { generateHashedSubmitterId } from '../../submission/submission.utils'
 import { AuthTypeMismatchError, PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 
@@ -120,57 +122,61 @@ export const handleGetPublicForm: ControllerHandler<
     form,
   )
 
+  if (authType === FormAuthType.NIL) {
+    return res.json({ form: publicForm, isIntranetUser })
+  }
+
+  let spcpSession
+  let myInfoFields
+
+  // extract spcpSession and myInfoFields based on authType
   switch (authType) {
-    case FormAuthType.NIL:
-      return res.json({ form: publicForm, isIntranetUser })
-    case FormAuthType.SP:
-      return getOidcService(FormAuthType.SP)
-        .extractJwtPayloadFromRequest(req.cookies)
-        .map((spcpSession) => {
-          return res.json({
-            form: publicForm,
-            isIntranetUser,
-            spcpSession,
+    case FormAuthType.SP: {
+      const oidcService = getOidcService(FormAuthType.SP)
+      const jwtPayloadResult = await oidcService.extractJwtPayloadFromRequest(
+        req.cookies,
+      )
+      if (jwtPayloadResult.isErr()) {
+        const error = jwtPayloadResult.error
+        // Report only relevant errors - verification failed for user here
+        if (
+          error instanceof VerifyJwtError ||
+          error instanceof InvalidJwtError
+        ) {
+          logger.error({
+            message: 'Error getting public form',
+            meta: logMeta,
+            error,
           })
-        })
-        .mapErr((error) => {
-          // Report only relevant errors - verification failed for user here
-          if (
-            error instanceof VerifyJwtError ||
-            error instanceof InvalidJwtError
-          ) {
-            logger.error({
-              message: 'Error getting public form',
-              meta: logMeta,
-              error,
-            })
-          }
-          return res.json({ form: publicForm, isIntranetUser })
-        })
-    case FormAuthType.CP:
-      return getOidcService(FormAuthType.CP)
-        .extractJwtPayloadFromRequest(req.cookies)
-        .map((spcpSession) => {
-          return res.json({
-            form: publicForm,
-            isIntranetUser,
-            spcpSession,
+        }
+        return res.json({ form: publicForm, isIntranetUser })
+      }
+      spcpSession = jwtPayloadResult.value
+      break
+    }
+    case FormAuthType.CP: {
+      const oidcService = getOidcService(FormAuthType.CP)
+      const jwtPayloadResult = await oidcService.extractJwtPayloadFromRequest(
+        req.cookies,
+      )
+      if (jwtPayloadResult.isErr()) {
+        const error = jwtPayloadResult.error
+        // Report only relevant errors - verification failed for user here
+        if (
+          error instanceof VerifyJwtError ||
+          error instanceof InvalidJwtError
+        ) {
+          logger.error({
+            message: 'Error getting public form',
+            meta: logMeta,
+            error,
           })
-        })
-        .mapErr((error) => {
-          // Report only relevant errors - verification failed for user here
-          if (
-            error instanceof VerifyJwtError ||
-            error instanceof InvalidJwtError
-          ) {
-            logger.error({
-              message: 'Error getting public form',
-              meta: logMeta,
-              error,
-            })
-          }
-          return res.json({ form: publicForm, isIntranetUser })
-        })
+        }
+        return res.json({ form: publicForm, isIntranetUser })
+      }
+      spcpSession = jwtPayloadResult.value
+      break
+    }
     case FormAuthType.MyInfo: {
       // We always want to clear existing login cookies because we no longer
       // have the prefilled data
@@ -184,103 +190,60 @@ export const handleGetPublicForm: ControllerHandler<
           isIntranetUser,
         })
       }
-
       // Clear auth code cookie once found, as it can't be reused
       res.clearCookie(
         MYINFO_AUTH_CODE_COOKIE_NAME,
         MYINFO_AUTH_CODE_COOKIE_OPTIONS,
       )
-
-      // Step 1. Fetch required data and fill the form based off data retrieved
-      return extractAuthCode(authCodeCookie)
+      const myInfoFieldsResult = await extractAuthCode(authCodeCookie)
         .asyncAndThen((authCode) => MyInfoService.retrieveAccessToken(authCode))
         .andThen((accessToken) =>
           MyInfoService.getMyInfoDataForForm(form, accessToken),
         )
-        .andThen((myInfoData) =>
-          BillingService.recordLoginByForm(form).map(() => myInfoData),
-        )
-        .andThen((myInfoData) => {
-          return MyInfoService.prefillAndSaveMyInfoFields(
-            form._id,
-            myInfoData,
-            form.toJSON().form_fields,
-          ).map((prefilledFields) => ({
-            prefilledFields,
-            spcpSession: { userName: myInfoData.getUinFin() },
-            myInfoLoginCookie: createMyInfoLoginCookie(myInfoData.getUinFin()),
-            myInfoChildrenBirthRecords: myInfoData.getChildrenBirthRecords(
-              form.getUniqueMyInfoAttrs(),
-            ),
-          }))
+
+      if (myInfoFieldsResult.isErr()) {
+        const error = myInfoFieldsResult.error
+        logger.error({
+          message: 'MyInfo login error',
+          meta: logMeta,
+          error,
         })
-        .map(
-          ({
-            myInfoLoginCookie,
-            prefilledFields,
-            spcpSession,
-            myInfoChildrenBirthRecords,
-          }) => {
-            // Set the updated cookie accordingly and return the form back to the user
-            return res
-              .cookie(
-                MYINFO_LOGIN_COOKIE_NAME,
-                myInfoLoginCookie,
-                MYINFO_LOGIN_COOKIE_OPTIONS,
-              )
-              .json({
-                spcpSession,
-                form: {
-                  ...publicForm,
-                  form_fields: prefilledFields as FormFieldDto[],
-                },
-                isIntranetUser,
-                myInfoChildrenBirthRecords,
-              })
-          },
-        )
-        .mapErr((error) => {
+        // No need for cookie if data could not be retrieved
+        // NOTE: If the user does not have any cookie, clearing the cookie still has the same result
+        return res.json({
+          form: publicForm,
+          myInfoError: true,
+          isIntranetUser,
+        })
+      }
+      myInfoFields = myInfoFieldsResult.value
+      spcpSession = { userName: myInfoFields.getUinFin() }
+      break
+    }
+    case FormAuthType.SGID: {
+      const jwtPayloadResult = await SgidService.extractSgidSingpassJwtPayload(
+        req.cookies[SGID_COOKIE_NAME],
+      )
+      if (jwtPayloadResult.isErr()) {
+        const error = jwtPayloadResult.error
+        // Report only relevant errors - verification failed for user here
+        if (
+          error instanceof SgidVerifyJwtError ||
+          error instanceof SgidInvalidJwtError
+        ) {
           logger.error({
-            message: 'MyInfo login error',
+            message: 'Error getting public form',
             meta: logMeta,
             error,
           })
-          // No need for cookie if data could not be retrieved
-          // NOTE: If the user does not have any cookie, clearing the cookie still has the same result
-          return res.json({
-            form: publicForm,
-            myInfoError: true,
-            isIntranetUser,
-          })
-        })
+        }
+        return res.json({ form: publicForm, isIntranetUser })
+      }
+      spcpSession = jwtPayloadResult.value
+      break
     }
-    case FormAuthType.SGID:
-      return SgidService.extractSgidSingpassJwtPayload(
-        req.cookies[SGID_COOKIE_NAME],
-      )
-        .map((spcpSession) => {
-          return res.json({
-            form: publicForm,
-            isIntranetUser,
-            spcpSession,
-          })
-        })
-        .mapErr((error) => {
-          // Report only relevant errors - verification failed for user here
-          if (
-            error instanceof SgidVerifyJwtError ||
-            error instanceof SgidInvalidJwtError
-          ) {
-            logger.error({
-              message: 'Error getting public form',
-              meta: logMeta,
-              error,
-            })
-          }
-          return res.json({ form: publicForm, isIntranetUser })
-        })
     case FormAuthType.SGID_MyInfo: {
-      const parseSgidMyInfoCookie = Result.fromThrowable(
+      const parseSgidMyInfoCookieResult = Result.fromThrowable(
         () =>
           JSON.parse(req.cookies[SGID_MYINFO_COOKIE_NAME] ?? '{}') as {
             jwt?: string
@@ -294,65 +257,225 @@ export const handleGetPublicForm: ControllerHandler<
           })
           return new SgidMalformedMyInfoCookieError()
         },
-      )
-      return parseSgidMyInfoCookie()
-        .mapErr(() =>
-          res.json({
-            form: publicForm,
-            isIntranetUser,
-          }),
+      )()
+
+      if (parseSgidMyInfoCookieResult.isErr()) {
+        return res.json({
+          form: publicForm,
+          isIntranetUser,
+        })
+      }
+
+      const parseSgidMyInfoCookie = parseSgidMyInfoCookieResult.value
+      const { jwt: accessToken = '', sub = '' } = parseSgidMyInfoCookie
+
+      if (!accessToken) {
+        return res.json({
+          form: publicForm,
+          isIntranetUser,
+        })
+      }
+      res.clearCookie(SGID_MYINFO_COOKIE_NAME)
+      res.clearCookie(SGID_MYINFO_LOGIN_COOKIE_NAME)
+
+      const jwtPayloadResult =
+        await SgidService.extractSgidJwtMyInfoPayload(accessToken)
+      if (jwtPayloadResult.isErr()) {
+        const error = jwtPayloadResult.error
+        logger.error({
+          message: 'sgID: MyInfo login error',
+          meta: logMeta,
+          error,
+        })
+        return res.json({
+          form: publicForm,
+          myInfoError: true,
+          isIntranetUser,
+        })
+      }
+      const jwtPayload = jwtPayloadResult.value
+      const myInfoFieldsResult = await SgidService.retrieveUserInfo({
+        accessToken: jwtPayload.accessToken,
+        sub,
+      })
+
+      if (myInfoFieldsResult.isErr()) {
+        const error = myInfoFieldsResult.error
+        logger.error({
+          message: 'sgID: MyInfo login error',
+          meta: logMeta,
+          error,
+        })
+        return res.json({
+          form: publicForm,
+          myInfoError: true,
+          isIntranetUser,
+        })
+      }
+
+      myInfoFields = new SGIDMyInfoData(myInfoFieldsResult.value.data)
+      spcpSession = { userName: myInfoFields.getUinFin() }
+      break
+    }
+    default: {
+      return new UnreachableCaseError(authType)
+    }
+  }
+
+  // validate for isSingleSubmission
+  const hasSingleSubmissionValidationFailureResult =
+    await FormService.checkHasSingleSubmissionValidationFailure(
+      publicForm,
+      generateHashedSubmitterId(spcpSession.userName, form.id),
+    )
+
+  if (hasSingleSubmissionValidationFailureResult.isErr()) {
+    const error = hasSingleSubmissionValidationFailureResult.error
+    logger.error({
+      message: 'Error validating single submission constraint',
+      meta: logMeta,
+      error,
+    })
+    return res.sendStatus(HttpStatusCode.InternalServerError)
+  }
+
+  const hasSingleSubmissionValidationFailure =
+    hasSingleSubmissionValidationFailureResult.value
+
+  // Do not log user in for the form
+  // if there is a single submission validation failure
+  if (hasSingleSubmissionValidationFailure) {
+    spcpSession = undefined
+    const authCookieName = PublicFormService.getCookieNameByAuthType(authType)
+    res.clearCookie(authCookieName)
+
+    return res.json({
+      form: publicForm, // do not need to pre-fill even if MyInfo since user is not logged in
+      isIntranetUser,
+      hasSingleSubmissionValidationFailure: true,
+    })
+  }
+
+  // generate form response based on authType
+  switch (authType) {
+    case FormAuthType.SP:
+    case FormAuthType.CP:
+      return res.json({
+        form: publicForm,
+        isIntranetUser,
+        spcpSession,
+      })
+    case FormAuthType.MyInfo: {
+      if (!myInfoFields) {
+        logger.error({
+          message: 'Failed to load MyInfo fields',
+          meta: logMeta,
+        })
+        // No need for cookie if data could not be retrieved
+        // NOTE: If the user does not have any cookie, clearing the cookie still has the same result
+        return res.json({
+          form: publicForm,
+          myInfoError: true,
+          isIntranetUser,
+        })
+      }
+      await BillingService.recordLoginByForm(form)
+      const prefilledFieldsResult =
+        await MyInfoService.prefillAndSaveMyInfoFields(
+          form._id,
+          myInfoFields,
+          form.toJSON().form_fields,
         )
-        .map(({ jwt: accessToken = '', sub = '' }) => {
-          if (!accessToken) {
-            return res.json({
-              form: publicForm,
-              isIntranetUser,
-            })
-          }
-          res.clearCookie(SGID_MYINFO_COOKIE_NAME)
-          res.clearCookie(SGID_MYINFO_LOGIN_COOKIE_NAME)
-          return SgidService.extractSgidJwtMyInfoPayload(accessToken)
-            .asyncAndThen((auth) =>
-              SgidService.retrieveUserInfo({
-                accessToken: auth.accessToken,
-                sub,
-              }),
-            )
-            .andThen((userInfo) => {
-              const data = new SGIDMyInfoData(userInfo.data)
-              return MyInfoService.prefillAndSaveMyInfoFields(
-                form._id,
-                data,
-                form.toJSON().form_fields,
-              ).map((prefilledFields) => {
-                return res
-                  .cookie(
-                    SGID_MYINFO_LOGIN_COOKIE_NAME,
-                    createMyInfoLoginCookie(data.getUinFin()),
-                    MYINFO_LOGIN_COOKIE_OPTIONS,
-                  )
-                  .json({
-                    form: {
-                      ...publicForm,
-                      form_fields: prefilledFields as FormFieldDto[],
-                    },
-                    spcpSession: { userName: data.getUinFin() },
-                    isIntranetUser,
-                  })
-              })
-            })
-            .mapErr((error) => {
-              logger.error({
-                message: 'sgID: MyInfo login error',
-                meta: logMeta,
-                error,
-              })
-              return res.json({
-                form: publicForm,
-                myInfoError: true,
-                isIntranetUser,
-              })
-            })
+
+      if (prefilledFieldsResult.isErr()) {
+        const error = prefilledFieldsResult.error
+        logger.error({
+          message: 'MyInfo: Failed to prefill and save MyInfo fields',
+          meta: logMeta,
+          error,
+        })
+        return res.json({
+          form: publicForm,
+          myInfoError: true,
+          isIntranetUser,
+        })
+      }
+
+      const prefilledFields = prefilledFieldsResult.value
+
+      return res
+        .cookie(
+          MYINFO_LOGIN_COOKIE_NAME,
+          createMyInfoLoginCookie(myInfoFields.getUinFin()),
+          MYINFO_LOGIN_COOKIE_OPTIONS,
+        )
+        .json({
+          spcpSession,
+          form: {
+            ...publicForm,
+            form_fields: prefilledFields as FormFieldDto[],
+          },
+          isIntranetUser,
+          myInfoChildrenBirthRecords: (
+            myInfoFields as MyInfoData
+          ).getChildrenBirthRecords(form.getUniqueMyInfoAttrs()),
+        })
+    }
+    case FormAuthType.SGID:
+      return res.json({
+        form: publicForm,
+        isIntranetUser,
+        spcpSession,
+      })
+    case FormAuthType.SGID_MyInfo: {
+      if (!myInfoFields) {
+        logger.error({
+          message: 'sgID_MyInfo: Failed to load MyInfo fields',
+          meta: logMeta,
+        })
+        // No need for cookie if data could not be retrieved
+        // NOTE: If the user does not have any cookie, clearing the cookie still has the same result
+        return res.json({
+          form: publicForm,
+          myInfoError: true,
+          isIntranetUser,
+        })
+      }
+      const prefilledFieldsResult =
+        await MyInfoService.prefillAndSaveMyInfoFields(
+          form._id,
+          myInfoFields,
+          form.toJSON().form_fields,
+        )
+
+      if (prefilledFieldsResult.isErr()) {
+        const error = prefilledFieldsResult.error
+        logger.error({
+          message: 'sgID_MyInfo: Failed to prefill and save MyInfo fields',
+          meta: logMeta,
+          error,
+        })
+        return res.json({
+          form: publicForm,
+          myInfoError: true,
+          isIntranetUser,
+        })
+      }
+
+      const prefilledFields = prefilledFieldsResult.value
+      return res
+        .cookie(
+          SGID_MYINFO_LOGIN_COOKIE_NAME,
+          createMyInfoLoginCookie(myInfoFields.getUinFin()),
+          MYINFO_LOGIN_COOKIE_OPTIONS,
+        )
+        .json({
+          form: {
+            ...publicForm,
+            form_fields: prefilledFields as FormFieldDto[],
+          },
+          spcpSession: { userName: myInfoFields.getUinFin() },
+          isIntranetUser,
         })
     }
     default:

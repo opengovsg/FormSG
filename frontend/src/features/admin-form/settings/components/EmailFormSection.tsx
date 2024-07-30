@@ -10,27 +10,47 @@ import { Flex, FormControl, Icon } from '@chakra-ui/react'
 import { get, isEmpty, isEqual } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
-import { GUIDE_FORM_MRF, GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
+import { PaymentChannel } from '~shared/types'
+import {
+  EmailFormSettings,
+  FormResponseMode,
+  FormStatus,
+  StorageFormSettings,
+} from '~shared/types/form'
+
+import {
+  GUIDE_FORM_MRF,
+  GUIDE_PREVENT_EMAIL_BOUNCE,
+  OGP_PLUMBER,
+} from '~constants/links'
 import { useMdComponents } from '~hooks/useMdComponents'
-import { ADMIN_EMAIL_VALIDATION_RULES } from '~utils/formValidation'
+import {
+  OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES,
+  REQUIRED_ADMIN_EMAIL_VALIDATION_RULES,
+} from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
+import InlineMessage from '~components/InlineMessage'
 import { MarkdownText } from '~components/MarkdownText'
 import { TagInput } from '~components/TagInput'
 
 import { useMutateFormSettings } from '../mutations'
+import { useAdminFormSettings } from '../queries'
 
 interface EmailFormSectionProps {
-  emails: string[]
+  settings: EmailFormSettings | StorageFormSettings
 }
 
 export const EmailFormSection = ({
-  emails: initialEmails,
+  settings,
 }: EmailFormSectionProps): JSX.Element => {
-  const initialEmailSet = useMemo(() => new Set(initialEmails), [initialEmails])
+  const initialEmailSet = useMemo(
+    () => new Set(settings.emails),
+    [settings.emails],
+  )
   const formMethods = useForm({
     mode: 'onChange',
-    defaultValues: { emails: initialEmails },
+    defaultValues: { emails: settings.emails },
   })
 
   const {
@@ -40,6 +60,16 @@ export const EmailFormSection = ({
 
   const { mutateFormEmails } = useMutateFormSettings()
 
+  const isFormPublic = settings.status === FormStatus.Public
+
+  const isPaymentsEnabled =
+    settings &&
+    settings.responseMode === FormResponseMode.Encrypt &&
+    (settings.payments_channel.channel !== PaymentChannel.Unconnected ||
+      settings.payments_field.enabled)
+
+  const isEmailsDisabled = isFormPublic || isPaymentsEnabled
+
   const handleSubmitEmails = useCallback(
     ({ emails }: { emails: string[] }) => {
       if (isEqual(new Set(emails.filter(Boolean)), initialEmailSet)) return
@@ -48,22 +78,46 @@ export const EmailFormSection = ({
     [initialEmailSet, mutateFormEmails],
   )
 
-  useEffect(() => reset({ emails: initialEmails }), [initialEmails, reset])
+  useEffect(() => reset({ emails: settings.emails }), [settings.emails, reset])
+
+  const isEmailMode = settings.responseMode === FormResponseMode.Email
+
+  const emailModeDescription = `Add at least **2 recipients** to prevent loss of response.`
+  const storageModeDescription = `FormSG securely stores responses in an encrypted format and does not retain any associated emails.`
 
   return (
     <>
-      <MRFAdvertisingInfobox />
+      <EmailNotificationsHeader
+        isFormPublic={isFormPublic}
+        isPaymentsEnabled={isPaymentsEnabled}
+        isFormResponseModeEmail={isEmailMode}
+      />
       <FormProvider {...formMethods}>
-        <FormControl isInvalid={!isEmpty(errors)}>
+        <FormControl isInvalid={!isEmpty(errors)} isDisabled={isEmailsDisabled}>
           <FormLabel
-            isRequired
+            isRequired={isEmailMode}
             useMarkdownForDescription
-            description={`Add at least **2 recipients** to prevent loss of response. Learn more on [how to guard against email bounces](${GUIDE_PREVENT_EMAIL_BOUNCE}).`}
+            description={
+              (isEmailMode ? emailModeDescription : storageModeDescription) +
+              ` Learn more on [how to guard against email bounces](${GUIDE_PREVENT_EMAIL_BOUNCE}).`
+            }
           >
-            Emails where responses will be sent
+            Send an email copy of new responses
           </FormLabel>
-          <AdminEmailRecipientsInput onSubmit={handleSubmitEmails} />
+          <AdminEmailRecipientsInput
+            onSubmit={handleSubmitEmails}
+            isEmailsDisabled={isEmailsDisabled}
+          />
           <FormErrorMessage>{get(errors, 'emails.message')}</FormErrorMessage>
+          {isEmpty(errors) ? (
+            <FormLabel.Description
+              color="secondary.400"
+              mt="0.5rem"
+              opacity={isEmailsDisabled ? '0.3' : '1'}
+            >
+              Separate multiple email addresses with a comma
+            </FormLabel.Description>
+          ) : null}
         </FormControl>
       </FormProvider>
     </>
@@ -74,7 +128,7 @@ const MRFAdvertisingInfobox = () => {
   const mdComponents = useMdComponents()
 
   return (
-    <Flex bg="primary.100" p="1rem">
+    <Flex bg="primary.100" p="1rem" marginBottom="40px">
       <Icon as={BiBulb} color="primary.500" fontSize="1.5rem" mr="0.5rem" />
       <MarkdownText
         components={mdComponents}
@@ -83,8 +137,43 @@ const MRFAdvertisingInfobox = () => {
   )
 }
 
+interface EmailNotificationsHeaderProps {
+  isFormPublic: boolean
+  isPaymentsEnabled: boolean
+  isFormResponseModeEmail: boolean
+}
+
+const EmailNotificationsHeader = ({
+  isFormPublic,
+  isPaymentsEnabled,
+  isFormResponseModeEmail,
+}: EmailNotificationsHeaderProps) => {
+  if (isFormPublic) {
+    return (
+      <InlineMessage marginBottom="40px">
+        To change admin email recipients, close your form to new responses.
+      </InlineMessage>
+    )
+  }
+
+  if (isPaymentsEnabled) {
+    return (
+      <InlineMessage useMarkdown marginBottom="40px">
+        {`Email notifications for payment forms are not available in FormSG. You can configure them using [Plumber](${OGP_PLUMBER}).`}
+      </InlineMessage>
+    )
+  }
+
+  if (isFormResponseModeEmail) {
+    return <MRFAdvertisingInfobox />
+  }
+
+  return null
+}
+
 interface AdminEmailRecipientsInputProps {
   onSubmit: (params: { emails: string[] }) => void
+  isEmailsDisabled: boolean
 }
 
 const AdminEmailRecipientsInput = ({
@@ -92,7 +181,10 @@ const AdminEmailRecipientsInput = ({
 }: AdminEmailRecipientsInputProps): JSX.Element => {
   const { getValues, setValue, control, handleSubmit } = useFormContext<{
     emails: string[]
+    isRequired: boolean
   }>()
+
+  const { data: settings } = useAdminFormSettings()
 
   const tagValidation = useMemo(() => isEmail, [])
 
@@ -100,7 +192,7 @@ const AdminEmailRecipientsInput = ({
     // Get rid of bad tags before submitting.
     setValue(
       'emails',
-      getValues('emails').filter((email) => tagValidation(email)),
+      (getValues('emails') || []).filter((email) => tagValidation(email)),
     )
     handleSubmit(onSubmit)()
   }, [getValues, handleSubmit, onSubmit, setValue, tagValidation])
@@ -109,10 +201,18 @@ const AdminEmailRecipientsInput = ({
     <Controller
       control={control}
       name="emails"
-      rules={ADMIN_EMAIL_VALIDATION_RULES}
+      rules={
+        settings?.responseMode === FormResponseMode.Email
+          ? REQUIRED_ADMIN_EMAIL_VALIDATION_RULES
+          : OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES
+      }
       render={({ field }) => (
         <TagInput
-          placeholder="Separate emails with a comma"
+          {...(getValues('emails')?.length > 0
+            ? {}
+            : {
+                placeholder: 'me@example.com',
+              })}
           {...field}
           tagValidation={tagValidation}
           onBlur={handleBlur}

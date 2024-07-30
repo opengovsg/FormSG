@@ -1,11 +1,11 @@
 {
   "name": "form-frontend",
-  "version": "6.124.1",
+  "version": "6.137.0",
   "homepage": ".",
   "private": true,
   "dependencies": {
     "@chakra-ui/react": "^1.8.6",
-    "@datadog/browser-logs": "^4.28.1",
+    "@datadog/browser-logs": "^4.50.1",
     "@datadog/browser-rum": "^4.34.1",
     "@emotion/react": "^11.7.0",
     "@emotion/styled": "^11.6.0",

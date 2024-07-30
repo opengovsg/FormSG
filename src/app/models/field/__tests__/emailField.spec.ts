@@ -44,7 +44,7 @@ describe('models.fields.emailField', () => {
   beforeEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
 
-  it('should set includeFormSummary to false on ResponseMode.Encrypt forms', async () => {
+  it('should set includeFormSummary to given value on ResponseMode.Encrypt forms', async () => {
     // Arrange
     const mockEmailField = {
       autoReplyOptions: {
@@ -66,8 +66,7 @@ describe('models.fields.emailField', () => {
     const expected = merge(EMAIL_FIELD_DEFAULTS, mockEmailField, {
       _id: expect.anything(),
       autoReplyOptions: {
-        // Regardless, should be false since ResponseMode is Encrypt.
-        includeFormSummary: false,
+        includeFormSummary: true,
       },
     })
     expect(actual.field.toObject()).toEqual(expected)

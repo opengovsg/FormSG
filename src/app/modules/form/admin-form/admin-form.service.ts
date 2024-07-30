@@ -27,8 +27,10 @@ import {
   FormResponseMode,
   FormSettings,
   LogicDto,
+  PaymentChannel,
   SettingsUpdateDto,
   StartPageUpdateDto,
+  StorageFormSettings,
 } from '../../../../../shared/types'
 import { EditFieldActions } from '../../../../shared/constants'
 import {
@@ -80,6 +82,7 @@ import {
   getFormFieldById,
   getFormFieldIndexById,
   getLogicById,
+  isFormEncryptMode,
 } from '../form.utils'
 
 import {
@@ -1063,6 +1066,22 @@ export const updateFormSettings = (
     return errAsync(
       new MalformedParametersError('Webhooks not supported on MRF'),
     )
+  }
+
+  // Don't allow emails updates or single response per submitterId
+  // if payments_field is enabled on the form
+  if (isFormEncryptMode(originalForm)) {
+    if (
+      (originalForm.payments_channel.channel !== PaymentChannel.Unconnected ||
+        originalForm.payments_field.enabled) &&
+      ((body as StorageFormSettings).emails || body.isSingleSubmission)
+    ) {
+      return errAsync(
+        new MalformedParametersError(
+          'Cannot update form settings when payments_field is enabled',
+        ),
+      )
+    }
   }
 
   const dotifiedSettingsToUpdate = dotifyObject(body)

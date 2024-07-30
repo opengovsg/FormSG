@@ -1,5 +1,13 @@
-import { useEffect, useState } from 'react'
-import { BiCodeBlock, BiCog, BiDollar, BiKey, BiMessage } from 'react-icons/bi'
+import { useEffect, useMemo } from 'react'
+import {
+  BiCodeBlock,
+  BiCog,
+  BiDollar,
+  BiKey,
+  BiMailSend,
+  BiMessage,
+} from 'react-icons/bi'
+import { IconType } from 'react-icons/lib'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   Box,
@@ -11,28 +19,34 @@ import {
   Tabs,
 } from '@chakra-ui/react'
 
+import { FormResponseMode } from '~shared/types'
+import { isNonEmpty } from '~shared/utils/isNonEmpty'
+
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
 
 import { useAdminFormCollaborators } from '../common/queries'
 
 import { SettingsTab } from './components/SettingsTab'
+import { useAdminFormSettings } from './queries'
 import { SettingsAuthPage } from './SettingsAuthPage'
+import { SettingsEmailsPage } from './SettingsEmailsPage'
 import { SettingsGeneralPage } from './SettingsGeneralPage'
 import { SettingsPaymentsPage } from './SettingsPaymentsPage'
 import { SettingsTwilioPage } from './SettingsTwilioPage'
 import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 
-const settingsTabsOrder = [
-  'general',
-  'singpass',
-  'twilio',
-  'webhooks',
-  'payments',
-]
+interface TabEntry {
+  label: string
+  icon: IconType
+  component: () => JSX.Element
+  path: string
+  showRedDot?: boolean
+}
 
 export const SettingsPage = (): JSX.Element => {
   const { formId, settingsTab } = useParams()
+  const { data: settings } = useAdminFormSettings()
 
   if (!formId) throw new Error('No formId provided')
 
@@ -46,17 +60,64 @@ export const SettingsPage = (): JSX.Element => {
       navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_RESULTS_SUBROUTE}`)
   }, [formId, hasEditAccess, isCollabLoading, navigate])
 
+  const tabConfig = useMemo(() => {
+    const emailsNotificationsTab =
+      settings?.responseMode === FormResponseMode.Encrypt ||
+      settings?.responseMode === FormResponseMode.Email
+        ? {
+            label: 'Email notifications',
+            icon: BiMailSend,
+            component: SettingsEmailsPage,
+            path: 'email-notifications',
+            showRedDot: true,
+          }
+        : null
+
+    const baseConfig: (TabEntry | null)[] = [
+      {
+        label: 'General',
+        icon: BiCog,
+        component: SettingsGeneralPage,
+        path: 'general',
+      },
+      {
+        label: 'Singpass',
+        icon: BiKey,
+        component: SettingsAuthPage,
+        path: 'singpass',
+      },
+      emailsNotificationsTab,
+      {
+        label: 'Twilio credentials',
+        icon: BiMessage,
+        component: SettingsTwilioPage,
+        path: 'twilio-credentials',
+      },
+      {
+        label: 'Webhooks',
+        icon: BiCodeBlock,
+        component: SettingsWebhooksPage,
+        path: 'webhooks',
+      },
+      {
+        label: 'Payments',
+        icon: BiDollar,
+        component: SettingsPaymentsPage,
+        path: 'payments',
+      },
+    ]
+
+    return baseConfig.filter(isNonEmpty)
+  }, [settings?.responseMode])
+
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
 
-  const [tabIndex, setTabIndex] = useState(
-    settingsTabsOrder.indexOf(settingsTab ?? ''),
+  const tabIndex = tabConfig.findIndex(
+    (tab) => tab.path === (settingsTab ?? 'general').toLowerCase(),
   )
 
   const handleTabChange = (index: number) => {
-    setTabIndex(index)
-    navigate(
-      `${ADMINFORM_ROUTE}/${formId}/settings/${settingsTabsOrder[index]}`,
-    )
+    navigate(`${ADMINFORM_ROUTE}/${formId}/settings/${tabConfig[index].path}`)
   }
 
   return (
@@ -69,7 +130,10 @@ export const SettingsPage = (): JSX.Element => {
         py={{ base: '2.5rem', lg: '3.125rem' }}
         px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
         index={tabIndex === -1 ? 0 : tabIndex}
-        onChange={handleTabChange}
+        onChange={(index) => {
+          handleTabChange(index)
+          tabConfig[index]
+        }}
       >
         <Flex
           h="max-content"
@@ -98,11 +162,14 @@ export const SettingsPage = (): JSX.Element => {
             mr={{ base: '1.5rem', md: '4rem', lg: '2rem' }}
             mb="calc(0.5rem - 2px)"
           >
-            <SettingsTab label="General" icon={BiCog} />
-            <SettingsTab label="Singpass" icon={BiKey} />
-            <SettingsTab label="Twilio credentials" icon={BiMessage} />
-            <SettingsTab label="Webhooks" icon={BiCodeBlock} />
-            <SettingsTab label="Payments" icon={BiDollar} />
+            {tabConfig.map((tab) => (
+              <SettingsTab
+                key={tab.label}
+                label={tab.label}
+                icon={tab.icon}
+                showNewBadge={tab.showRedDot}
+              />
+            ))}
           </TabList>
         </Flex>
         <TabPanels
@@ -110,21 +177,11 @@ export const SettingsPage = (): JSX.Element => {
           // Offset start of tabpanel text from tablist.
           mt={{ md: '1rem' }}
         >
-          <TabPanel>
-            <SettingsGeneralPage />
-          </TabPanel>
-          <TabPanel>
-            <SettingsAuthPage />
-          </TabPanel>
-          <TabPanel>
-            <SettingsTwilioPage />
-          </TabPanel>
-          <TabPanel>
-            <SettingsWebhooksPage />
-          </TabPanel>
-          <TabPanel>
-            <SettingsPaymentsPage />
-          </TabPanel>
+          {tabConfig.map((tab) => (
+            <TabPanel key={tab.label}>
+              <tab.component />
+            </TabPanel>
+          ))}
         </TabPanels>
         <Spacer />
       </Tabs>

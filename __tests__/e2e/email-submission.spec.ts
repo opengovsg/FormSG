@@ -28,7 +28,7 @@ import {
   createMyInfoField,
   createOptionalVersion,
   deleteDocById,
-  getSettings,
+  getEmailSettings,
   makeModel,
   makeMongooseFixtures,
 } from './utils'
@@ -58,7 +58,7 @@ test.describe('Email form submission', () => {
     // Define
     const formFields = ALL_FIELDS
     const formLogics = NO_LOGIC
-    const formSettings = getSettings()
+    const formSettings = getEmailSettings()
 
     // Test
     await runEmailSubmissionTest(page, Form, {
@@ -76,7 +76,7 @@ test.describe('Email form submission', () => {
       createBlankVersion(createOptionalVersion(ff)),
     )
     const formLogics = NO_LOGIC
-    const formSettings = getSettings()
+    const formSettings = getEmailSettings()
 
     // Test
     await runEmailSubmissionTest(page, Form, {
@@ -98,10 +98,10 @@ test.describe('Email form submission', () => {
           title: `Attachment ${i}`,
           path: `__tests__/e2e/files/att-folder-${i}/test-att.txt`,
           val: `${i === 2 ? '' : `${2 - i}-`}test-att.txt`,
-        } as E2eFieldMetadata),
+        }) as E2eFieldMetadata,
     )
     const formLogics = NO_LOGIC
-    const formSettings = getSettings()
+    const formSettings = getEmailSettings()
 
     // Test
     await runEmailSubmissionTest(page, Form, {
@@ -135,7 +135,7 @@ test.describe('Email form submission', () => {
       } as E2eFieldMetadata,
     ]
     const formLogics = NO_LOGIC
-    const formSettings = getSettings()
+    const formSettings = getEmailSettings()
 
     // Test
     await runEmailSubmissionTest(page, Form, {
@@ -151,7 +151,7 @@ test.describe('Email form submission', () => {
     // Define
     const formFields = ALL_FIELDS
     const formLogics = NO_LOGIC
-    const formSettings = getSettings({
+    const formSettings = getEmailSettings({
       authType: FormAuthType.SP,
     })
 
@@ -169,7 +169,7 @@ test.describe('Email form submission', () => {
     // Define
     const formFields = ALL_FIELDS
     const formLogics = NO_LOGIC
-    const formSettings = getSettings({
+    const formSettings = getEmailSettings({
       authType: FormAuthType.CP,
     })
 
@@ -187,7 +187,7 @@ test.describe('Email form submission', () => {
     // Define
     const formFields = ALL_FIELDS
     const formLogics = NO_LOGIC
-    const formSettings = getSettings({
+    const formSettings = getEmailSettings({
       authType: FormAuthType.SGID,
     })
 
@@ -216,7 +216,7 @@ test.describe('Email form submission', () => {
       createMyInfoField(MyInfoAttribute.WorkpassStatus, 'Live', false),
     ]
     const formLogics = NO_LOGIC
-    const formSettings = getSettings({
+    const formSettings = getEmailSettings({
       authType: FormAuthType.MyInfo,
     })
 
@@ -233,7 +233,7 @@ test.describe('Email form submission', () => {
   }) => {
     // Define
     const { formFields, formLogics } = TEST_ALL_FIELDS_SHOWN_BY_LOGIC
-    const formSettings = getSettings()
+    const formSettings = getEmailSettings()
 
     // Test
     await runEmailSubmissionTest(page, Form, {
@@ -248,7 +248,7 @@ test.describe('Email form submission', () => {
   }) => {
     // Define
     const { formFields, formLogics } = TEST_FIELD_HIDDEN_BY_LOGIC
-    const formSettings = getSettings()
+    const formSettings = getEmailSettings()
 
     // Test
     await runEmailSubmissionTest(page, Form, {
@@ -264,7 +264,7 @@ test.describe('Email form submission', () => {
     // Define
     const { formFields, formLogics, preventSubmitMessage } =
       TEST_SUBMISSION_DISABLED_BY_CHAINED_LOGIC
-    const formSettings = getSettings()
+    const formSettings = getEmailSettings()
 
     // Test
     const { form } = await createForm(page, Form, FormResponseMode.Email, {

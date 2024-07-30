@@ -1,9 +1,7 @@
 import { RequestHandler } from 'express'
 import helmet from 'helmet'
-import { ContentSecurityPolicyOptions } from 'helmet/dist/types/middlewares/content-security-policy'
 
 import config from '../../config/config'
-import { sentryConfig } from '../../config/features/sentry.config'
 
 import { CSP_CORE_DIRECTIVES } from './constants'
 
@@ -29,23 +27,13 @@ const helmetMiddlewares = () => {
     policy: 'strict-origin-when-cross-origin',
   })
 
-  const cspCoreDirectives: ContentSecurityPolicyOptions['directives'] =
-    CSP_CORE_DIRECTIVES
+  const cspCoreDirectives = CSP_CORE_DIRECTIVES
 
-  const reportUri = sentryConfig.cspReportUri
-
-  const cspOptionalDirectives: ContentSecurityPolicyOptions['directives'] = {}
-
-  // Add on reportUri CSP header if ReportUri exists
-  // It is necessary to have the if statement for optional directives because falsey values
-  // do not work - e.g. cspOptionalDirectives.reportUri = [false] will still set the reportUri header
-  // See https://github.com/helmetjs/csp/issues/36 and
-  // https://github.com/helmetjs/helmet/blob/cb170160e7c1ccac314cc19d3b979cfc771f1349/middlewares/content-security-policy/index.ts#L135
-  if (reportUri) cspOptionalDirectives.reportUri = [reportUri]
-
-  // Remove upgradeInsecureRequest CSP header if config.isDev
-  // See https://github.com/helmetjs/helmet for use of null to disable default
-  if (config.isDev) cspOptionalDirectives.upgradeInsecureRequests = null
+  const cspOptionalDirectives = config.isDev
+    ? // Remove upgradeInsecureRequest CSP header if config.isDev
+      // See https://github.com/helmetjs/helmet for use of null to disable default
+      { upgradeInsecureRequests: null }
+    : null
 
   const contentSecurityPolicyMiddleware = helmet.contentSecurityPolicy({
     useDefaults: true,
