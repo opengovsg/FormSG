@@ -38,10 +38,6 @@ export const useAdminFormSettings = (): UseQueryResult<FormSettings> => {
   )
 }
 
-/**
- * Need to use React query's `refetch` to trigger a fetch.
- * @precondition Must be wrapped in a Router as `useParam` is used.
- */
 export const fetchAdminFormEncryptedWhitelistedSubmitterIds = (
   formId: string,
   queryClient: QueryClient,

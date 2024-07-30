@@ -389,9 +389,8 @@ export const PublicFormProvider = ({
     data?.form.responseMode === FormResponseMode.Encrypt &&
     data.form.payments_field.enabled
 
-  const hasMyInfoError = !!(
-    data?.errorCodes &&
-    data.errorCodes.find((errorCode) => errorCode === ErrorCode.myInfo)
+  const hasMyInfoError = !!data?.errorCodes?.find(
+    (errorCode) => errorCode === ErrorCode.myInfo,
   )
 
   useEffect(() => {
