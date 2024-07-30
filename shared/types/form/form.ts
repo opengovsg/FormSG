@@ -18,7 +18,6 @@ import { PaymentChannel, PaymentMethodType, PaymentType } from '../payment'
 import { Product } from './product'
 import { FormWorkflow, FormWorkflowDto } from './workflow'
 import { ErrorCode } from '../errorCodes'
-import { EncryptedStringsMessageContentWithMyPrivateKey } from '../../utils/crypto'
 
 export type FormId = Tagged<string, 'FormId'>
 
