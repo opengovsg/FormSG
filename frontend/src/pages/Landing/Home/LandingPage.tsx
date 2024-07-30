@@ -457,7 +457,8 @@ export const LandingPage = (): JSX.Element => {
                 </ListItem>
                 <ListItem textStyle="body-2">
                   <OrderedListIcon index={5} />
-                  Download your responses as a CSV
+                  Download your responses as a CSV and collect responses at your
+                  email address
                 </ListItem>
               </OrderedList>
             </TabPanel>
