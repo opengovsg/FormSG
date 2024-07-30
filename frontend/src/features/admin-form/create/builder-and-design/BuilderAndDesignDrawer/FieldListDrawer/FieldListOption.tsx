@@ -1,12 +1,12 @@
 import { CSSProperties, useCallback, useMemo } from 'react'
+import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
 import {
   Draggable,
   DraggableProvided,
   DraggableStateSnapshot,
-} from 'react-beautiful-dnd'
-import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
+} from '@hello-pangea/dnd'
 
-import { BasicField, MyInfoAttribute } from '~shared/types/field'
+import { AllowedMyInfoFieldOption, BasicField } from '~shared/types/field'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 
@@ -50,7 +50,7 @@ interface BasicFieldOptionProps extends FieldOptionProps {
 }
 
 interface MyInfoFieldOptionProps extends FieldOptionProps {
-  fieldType: MyInfoAttribute
+  fieldType: AllowedMyInfoFieldOption
 }
 
 interface DraggableBasicFieldOptionProps
@@ -62,13 +62,12 @@ interface DraggableBasicFieldOptionProps
 interface DraggableMyInfoFieldOptionProps
   extends Omit<FieldOptionProps, 'isActive'> {
   index: number
-  fieldType: MyInfoAttribute
+  fieldType: AllowedMyInfoFieldOption
 }
 
 export const DraggableBasicFieldListOption = ({
   fieldType,
   index,
-  children,
   isDisabled,
   ...props
 }: DraggableBasicFieldOptionProps): JSX.Element => {
@@ -111,7 +110,6 @@ export const DraggableBasicFieldListOption = ({
 export const DraggableMyInfoFieldListOption = ({
   fieldType,
   index,
-  children,
   isDisabled,
   ...props
 }: DraggableMyInfoFieldOptionProps): JSX.Element => (

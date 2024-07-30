@@ -1,6 +1,5 @@
 import { MouseEvent, MouseEventHandler } from 'react'
 import {
-  Button,
   Link,
   Modal,
   ModalBody,
@@ -13,6 +12,7 @@ import {
 } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
+import Button from '~components/Button'
 import ButtonGroup from '~components/ButtonGroup'
 import { ModalCloseButton } from '~components/Modal'
 

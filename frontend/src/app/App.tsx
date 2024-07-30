@@ -1,4 +1,3 @@
-import React from 'react'
 import { Inspector, InspectParams } from 'react-dev-inspector'
 import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from 'react-query'
@@ -65,6 +64,8 @@ export const App = (): JSX.Element => {
         />
       )}
       <HelmetProvider>
+        {/* FIXME: react 18 types */}
+        {/* @ts-expect-error missing FC type in old version */}
         <QueryClientProvider client={queryClient}>
           <ReactQueryDevtools initialIsOpen={false} />
           <AppHelmet />

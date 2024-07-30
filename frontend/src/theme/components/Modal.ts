@@ -1,27 +1,37 @@
 import { modalAnatomy as parts } from '@chakra-ui/anatomy'
+import { cssVar, defineStyle } from '@chakra-ui/react'
 import {
   PartsStyleFunction,
   PartsStyleObject,
-  SystemStyleFunction,
   SystemStyleObject,
 } from '@chakra-ui/theme-tools'
 
 import { textStyles } from '../textStyles'
+
+const $bg = cssVar('modal-bg')
+const $shadow = cssVar('modal-shadow')
 
 const baseStyleOverlay: SystemStyleObject = {
   bg: 'rgba(0, 0, 0, 0.65)',
   zIndex: 'overlay',
 }
 
-const baseStyleDialog: SystemStyleFunction = (props) => {
-  const { scrollBehavior } = props
+const baseStyleDialog = defineStyle((props) => {
+  const { isCentered, scrollBehavior } = props
+
   return {
-    borderRadius: '0.25rem',
-    my: '4rem',
-    maxH: scrollBehavior === 'inside' ? 'calc(100% - 16rem)' : undefined,
-    boxShadow: 'md',
+    borderRadius: '4px',
+    color: 'inherit',
+    my: isCentered ? 'auto' : '4rem',
+    mx: isCentered ? 'auto' : undefined,
+    zIndex: 'modal',
+    maxH: scrollBehavior === 'inside' ? 'calc(100% - 7.5rem)' : undefined,
+    [$bg.variable]: 'white',
+    [$shadow.variable]: 'shadows.md',
+    bg: $bg.reference,
+    boxShadow: $shadow.reference,
   }
-}
+})
 
 const baseStyle: PartsStyleFunction<typeof parts> = (props) => ({
   overlay: baseStyleOverlay,

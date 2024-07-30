@@ -1,11 +1,8 @@
 import { createContext, useContext } from 'react'
-import {
-  Strategy,
-  UseFloatingReturn,
-} from '@floating-ui/react-dom-interactions'
+import { type Strategy, type UseFloatingReturn } from '@floating-ui/react'
 
 interface SelectPopoverContextReturn {
-  floatingRef: UseFloatingReturn['floating']
+  floatingRef: UseFloatingReturn['refs']['setFloating']
   floatingStyles: {
     position: Strategy
     top: number

@@ -1,5 +1,7 @@
-import { FC, forwardRef, useCallback } from 'react'
+import { forwardRef, useCallback } from 'react'
 import { Box, chakra, Flex, Icon, useMergeRefs } from '@chakra-ui/react'
+
+import { FCC } from '~typings/react'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
@@ -9,7 +11,7 @@ import { useSelectContext } from '../../SelectContext'
 
 import { SelectedItems } from './SelectedItems'
 
-const MultiItemsContainer: FC = ({ children }) => {
+const MultiItemsContainer: FCC = ({ children }) => {
   return (
     <Box
       display="inline-flex"

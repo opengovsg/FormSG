@@ -91,11 +91,6 @@ export const LandingPage = (): JSX.Element => {
 
   return (
     <>
-      {/* <FeatureBanner
-        title="Introducing Payments"
-        body="Respondents can now pay for fees and services directly on your form!"
-        learnMoreLink={LANDING_PAYMENTS_ROUTE}
-      /> */}
       <FeatureBanner
         body="We have updated FormSG's Terms of Use and Privacy Policy"
         learnMoreLink={TOU_ROUTE}
@@ -120,7 +115,7 @@ export const LandingPage = (): JSX.Element => {
             >
               Build secure government forms in minutes.
             </Text>
-            <SectionBodyText>
+            <SectionBodyText mt="1rem">
               Instant, customisable forms with zero code or cost, to safely
               collect classified and sensitive data.
             </SectionBodyText>
@@ -192,7 +187,7 @@ export const LandingPage = (): JSX.Element => {
             <SectionTitleText>
               No onboarding, no fees, no code.
             </SectionTitleText>
-            <SectionBodyText>
+            <SectionBodyText mt="1rem">
               Sign in with your government email address, and start building
               forms immediately. It’s free, and requires no onboarding or
               approvals.
@@ -254,7 +249,7 @@ export const LandingPage = (): JSX.Element => {
         <SectionTitleText>
           Supporting national and emergent use cases
         </SectionTitleText>
-        <SectionBodyText textAlign={{ lg: 'center' }}>
+        <SectionBodyText textAlign={{ lg: 'center' }} mt="1rem">
           Form is a critical enabler of many agency workflows. Notable forms
           launched include:
         </SectionBodyText>
@@ -276,7 +271,7 @@ export const LandingPage = (): JSX.Element => {
         title="Secure collection of responses"
         imgSrc={storageModeImg}
       >
-        <SectionBodyText>
+        <SectionBodyText mt="1rem">
           All form responses are either encrypted end-to-end (Storage mode) or
           sent directly to your email inbox (Email mode). This means third
           parties, including FormSG, will not be able to access or view your
@@ -315,7 +310,7 @@ export const LandingPage = (): JSX.Element => {
         imgSrc={openSourceImg}
         direction={{ base: 'column', lg: 'row-reverse' }}
       >
-        <SectionBodyText>
+        <SectionBodyText mt="1rem">
           Our code is open source, meaning anyone can help improve it and build
           on it, including governments of other countries.
         </SectionBodyText>
@@ -332,7 +327,7 @@ export const LandingPage = (): JSX.Element => {
         direction={{ base: 'column', lg: 'row' }}
       >
         <Box>
-          <SectionBodyText>
+          <SectionBodyText mt="1rem">
             Have a question? Most answers can be found in our self-service Help
             Center. Common questions include:
           </SectionBodyText>
@@ -509,7 +504,7 @@ export const LandingPage = (): JSX.Element => {
         imgSrc={ogpSuiteImg}
         direction={{ base: 'column', lg: 'row' }}
       >
-        <SectionBodyText>
+        <SectionBodyText mt="1rem">
           FormSG is part of the **Open Government Products Suite**, and as a
           public officer you can mix and match from our set of productivity and
           collaboration tools.

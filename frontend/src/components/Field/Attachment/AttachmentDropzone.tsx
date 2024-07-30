@@ -1,8 +1,10 @@
 import { DropzoneInputProps, DropzoneState } from 'react-dropzone'
-import { chakra, Icon, Text, useStyles, VisuallyHidden } from '@chakra-ui/react'
+import { chakra, Icon, Text, VisuallyHidden } from '@chakra-ui/react'
 
 import { BxsCloudUpload } from '~assets/icons/BxsCloudUpload'
 import Link from '~components/Link'
+
+import { useAttachmentStyles } from './AttachmentContext'
 
 interface AttachmentDropzoneProps {
   inputProps: DropzoneInputProps
@@ -17,7 +19,7 @@ export const AttachmentDropzone = ({
   readableMaxSize,
   question,
 }: AttachmentDropzoneProps): JSX.Element => {
-  const styles = useStyles()
+  const styles = useAttachmentStyles()
 
   return (
     <>

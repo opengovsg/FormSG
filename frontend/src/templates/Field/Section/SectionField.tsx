@@ -16,7 +16,7 @@ export const SectionField = forwardRef<SectionFieldContainerProps, 'div'>(
     return (
       <Box
         _notFirst={{
-          mt: '3.75rem',
+          mt: '1.5rem',
         }}
       >
         <BaseSectionField {...props} ref={ref} />

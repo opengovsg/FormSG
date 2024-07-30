@@ -148,7 +148,7 @@ export const TableField = ({
   return (
     <TableFieldContainer schema={schema}>
       <Box
-        d="block"
+        display="block"
         w="100%"
         overflowX="auto"
         sx={{

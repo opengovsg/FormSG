@@ -176,7 +176,7 @@ export const TransferOwnershipModal = ({
                   <Button variant="link" onClick={resetModal}>
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={!!errors['email']}>
+                  <Button type="submit" isDisabled={!!errors['email']}>
                     Transfer ownership
                   </Button>
                 </ButtonGroup>

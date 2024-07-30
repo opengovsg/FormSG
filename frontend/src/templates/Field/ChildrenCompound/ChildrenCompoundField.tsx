@@ -357,7 +357,7 @@ const ChildrenBody = ({
             icon={<BiTrash />}
             aria-label="Remove child"
             alignSelf="end"
-            disabled={fields.length <= 1}
+            isDisabled={fields.length <= 1}
             onClick={() => {
               if (fields.length > 1) {
                 remove(fields.length - 1)

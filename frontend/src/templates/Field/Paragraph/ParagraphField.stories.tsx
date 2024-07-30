@@ -22,9 +22,8 @@ export default {
 const baseSchema: ParagraphFieldSchema = {
   title: 'Actually hidden',
   description: `1. This form allows companies to apply for crew changes under various circumstances. Please refer to Port Marine Circular No.s 26, 27 and 38 of 2020 for more details.
-
   2. All crew change applications must be submitted to MPA at least 14 days in advance of the planned crew change.
-
+  
   3. Please make separate applications for off-signers and on-signers. You will have to make more than one application if you have more than 20 off-signers and/or on-signers.`,
   required: true,
   disabled: false,

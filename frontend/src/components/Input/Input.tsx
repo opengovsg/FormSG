@@ -10,6 +10,7 @@ import {
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 import { omit } from '@chakra-ui/utils'
+import { merge } from 'lodash'
 
 import { BxsCheckCircle } from '~assets/icons/BxsCheckCircle'
 
@@ -89,7 +90,8 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
             {...preventDefault}
             {...inputProps}
             isDisabled={true}
-            sx={props.sx ?? inputStyles.field}
+            // Padding to allow for lock icon overflow.
+            sx={merge({ pr: '2.75rem' }, inputStyles.field, props.sx)}
           />
           <InputRightElement>
             <BxLockAlt />

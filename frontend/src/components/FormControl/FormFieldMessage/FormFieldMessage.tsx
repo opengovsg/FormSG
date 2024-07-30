@@ -1,8 +1,13 @@
-import { Box, FormHelperText, HelpTextProps, Icon } from '@chakra-ui/react'
+import {
+  Box,
+  FormHelperText,
+  FormHelperTextProps,
+  Icon,
+} from '@chakra-ui/react'
 
 import { BxsCheckCircle } from '~assets/icons'
 
-export interface FormFieldMessageProps extends HelpTextProps {
+export interface FormFieldMessageProps extends FormHelperTextProps {
   /**
    * Variant of input message, determines the styling. Defaults to `info`.
    */

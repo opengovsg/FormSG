@@ -1,4 +1,3 @@
-import { FC } from 'react'
 import {
   AccordionButton,
   AccordionIcon,
@@ -7,11 +6,13 @@ import {
   Text,
 } from '@chakra-ui/react'
 
+import { FCC } from '~typings/react'
+
 interface HelpAccordionItemProps {
   title: string
 }
 
-export const HelpAccordionItem: FC<HelpAccordionItemProps> = ({
+export const HelpAccordionItem: FCC<HelpAccordionItemProps> = ({
   title,
   children,
 }) => {

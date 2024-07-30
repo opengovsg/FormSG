@@ -104,7 +104,7 @@ export const PreviewFormBanner = ({
               <Stack
                 spacing="1rem"
                 direction="row"
-                d={{ base: 'none', md: 'flex' }}
+                display={{ base: 'none', md: 'flex' }}
               >
                 <Link
                   variant="standalone"

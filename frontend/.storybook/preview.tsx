@@ -3,7 +3,6 @@
  * @see https://storybook.js.org/docs/react/configure/overview#configure-story-rendering
  */
 import 'inter-ui/inter.css'
-import 'focus-visible/dist/focus-visible.min.js'
 
 import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from 'react-query'
@@ -35,6 +34,8 @@ const withReactQuery: Decorator = (storyFn) => {
     },
   })
   return (
+    // FIXME: react 18 types
+    // @ts-expect-error missing FC type in old version
     <QueryClientProvider client={queryClient}>
       <AuthProvider>{storyFn()}</AuthProvider>
     </QueryClientProvider>

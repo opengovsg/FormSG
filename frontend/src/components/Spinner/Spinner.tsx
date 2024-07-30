@@ -7,8 +7,8 @@ import {
   IconProps,
   keyframes,
   usePrefersReducedMotion,
+  VisuallyHidden,
 } from '@chakra-ui/react'
-import VisuallyHidden from '@chakra-ui/visually-hidden'
 
 interface SpinnerProps extends FlexProps {
   /**

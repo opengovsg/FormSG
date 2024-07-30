@@ -1,5 +1,4 @@
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react'
-import { Draggable } from 'react-beautiful-dnd'
 import { FormProvider, useForm } from 'react-hook-form'
 import { BiCog, BiDuplicate, BiGridHorizontal, BiTrash } from 'react-icons/bi'
 import { useIsMutating } from 'react-query'
@@ -12,6 +11,7 @@ import {
   Flex,
   Icon,
 } from '@chakra-ui/react'
+import { Draggable } from '@hello-pangea/dnd'
 import { isEqual, times } from 'lodash'
 
 import { FormColorTheme, FormResponseMode } from '~shared/types'
@@ -471,7 +471,7 @@ const FieldRow = ({ field, ...rest }: FieldRowProps) => {
     case BasicField.Mobile:
       return field.isVerifiable ? (
         <VerifiableFieldBuilderContainer schema={field} {...rest}>
-          <MobileFieldInput schema={field} responseMode={rest.responseMode} />
+          <MobileFieldInput schema={field} />
         </VerifiableFieldBuilderContainer>
       ) : (
         <MobileField schema={field} {...rest} />
@@ -481,7 +481,7 @@ const FieldRow = ({ field, ...rest }: FieldRowProps) => {
     case BasicField.Email:
       return field.isVerifiable ? (
         <VerifiableFieldBuilderContainer schema={field} {...rest}>
-          <EmailFieldInput schema={field} responseMode={rest.responseMode} />
+          <EmailFieldInput schema={field} />
         </VerifiableFieldBuilderContainer>
       ) : (
         <EmailField schema={field} {...rest} />
