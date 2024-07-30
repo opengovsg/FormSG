@@ -19,7 +19,7 @@ type BillingColumnData = Pick<
   'formName' | 'adminEmail' | 'authType' | 'total'
 >
 
-const AUTHTYPE_TO_TEXT = {
+const AUTHTYPE_TO_TEXT: { [K in FormAuthType]?: string } = {
   [FormAuthType.NIL]: '-',
   [FormAuthType.SP]: 'Singpass',
   [FormAuthType.SGID]: 'sgID',

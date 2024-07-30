@@ -30,7 +30,7 @@ const makeMinimumRowsValidator: TableValidatorConstructor =
     const { answerArray } = response
     const { minimumRows } = tableField
 
-    return answerArray.length >= minimumRows
+    return answerArray.length >= (minimumRows || 0)
       ? right(response)
       : left(`TableValidator:\tanswer has less than the minimum number of rows`)
   }

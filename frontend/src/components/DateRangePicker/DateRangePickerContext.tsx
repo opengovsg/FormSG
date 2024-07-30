@@ -14,6 +14,7 @@ import {
 import {
   CSSObject,
   FormControlProps,
+  ThemingProps,
   useControllableState,
   useDisclosure,
   UseDisclosureReturn,
@@ -22,7 +23,6 @@ import {
 } from '@chakra-ui/react'
 import { format, isValid, parse } from 'date-fns'
 
-import { ThemeColorScheme } from '~theme/foundations/colours'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { DateRangeValue } from '~components/Calendar'
 
@@ -51,7 +51,7 @@ interface DateRangePickerContextReturn {
   isDateUnavailable?: (date: Date) => boolean
   disclosureProps: UseDisclosureReturn
   labelSeparator: string
-  colorScheme: ThemeColorScheme
+  colorScheme?: ThemingProps<'DatePicker'>['colorScheme']
   monthsToDisplay?: number
 }
 

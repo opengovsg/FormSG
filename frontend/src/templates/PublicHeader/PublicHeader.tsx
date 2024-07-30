@@ -28,7 +28,7 @@ export interface PublicHeaderProps {
   /** Header links to display, if provided. */
   publicHeaderLinks?: PublicHeaderLinkProps[]
   /** Call to action element to render, if any. */
-  ctaElement?: React.ReactChild
+  ctaElement?: React.ReactNode
   /** Background colour to use for the header, if specified. */
   bg?: string
 }

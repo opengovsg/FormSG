@@ -98,6 +98,10 @@ export const StorageModeAckScreen = () => {
         Promise.resolve(console.log('create storage mode form')),
       secretKey,
       register,
+      handleCreateStorageModeOrMultirespondentForm: () =>
+        Promise.resolve(
+          console.log('create storage mode or multirespondent form'),
+        ),
     }
   }, [handleCopyKey, hasCopiedKey, register])
 

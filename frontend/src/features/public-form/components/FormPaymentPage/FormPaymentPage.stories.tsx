@@ -94,7 +94,6 @@ export const CompleteWithoutReceipt = Template(
       min_amount: 50,
       max_amount: 200,
     }}
-    paymentDate={new Date(Date.now())}
   />,
 ).bind({})
 CompleteWithoutReceipt.parameters = {
@@ -119,7 +118,6 @@ export const CompleteWithReceipt = Template(
       min_amount: 50,
       max_amount: 200,
     }}
-    paymentDate={new Date(Date.now())}
   />,
 ).bind({})
 CompleteWithReceipt.parameters = {

@@ -7,6 +7,7 @@ import {
   useMemo,
   useState,
 } from 'react'
+import { ThemingProps } from '@chakra-ui/react'
 import cuid from 'cuid'
 import {
   addMonths,
@@ -17,8 +18,6 @@ import {
 import { Props as DayzedProps, RenderProps, useDayzed } from 'dayzed'
 import { inRange } from 'lodash'
 import { useKey } from 'rooks'
-
-import { ThemeColorScheme } from '~theme/foundations/colours'
 
 import { CalendarProps } from '../Calendar'
 
@@ -71,7 +70,10 @@ type PassthroughProps = {
   /**
    * Color scheme of date input
    */
-  colorScheme?: ThemeColorScheme
+  colorScheme?: ThemingProps<'Calendar'>['colorScheme']
+
+  /** Size of the component */
+  size?: ThemingProps<'Calendar'>['size']
 }
 export type UseProvideCalendarProps = Pick<DayzedProps, 'monthsToDisplay'> &
   PassthroughProps
