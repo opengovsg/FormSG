@@ -199,6 +199,11 @@ const useDecryptionWorkers = ({
               })
             }
             break
+          default: {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const _: never = decryptResult.status
+            throw new Error('Invalid decryptResult status encountered.')
+          }
         }
         return workerIdx
       }
