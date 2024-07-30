@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { PaymentChannel, PaymentType } from '~shared/types'
 import { FormResponseMode, FormSettings, FormStatus } from '~shared/types/form'
@@ -88,7 +88,7 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <SettingsEmailsPage />
+const Template: StoryFn = () => <SettingsEmailsPage />
 
 export const PrivateStorageForm = Template.bind({})
 PrivateStorageForm.parameters = {
