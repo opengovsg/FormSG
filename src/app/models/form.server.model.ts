@@ -236,10 +236,12 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   },
   whitelistedSubmitterIds: {
     type: whitelistedSubmitterIdNestedPath,
-    required: false,
     get: (v: { isWhitelistEnabled: boolean }) => ({
       // remove the ObjectId link to whitelist collection's document by default unless asked for.
       isWhitelistEnabled: v.isWhitelistEnabled,
+    }),
+    default: () => ({
+      isWhitelistEnabled: false,
     }),
   },
   payments_channel: {
