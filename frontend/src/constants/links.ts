@@ -21,7 +21,7 @@ export const GUIDE_ENABLE_SPCP =
   'https://go.gov.sg/formsg-guide-singpass-myinfo-enable'
 export const GUIDE_TWILIO = 'https://go.gov.sg/formsg-guide-verified-smses'
 export const GUIDE_ATTACHMENT_SIZE_LIMIT =
-  'https://go.gov.sg/formsg-guide-attachment-size-increase'
+  'https://go.gov.sg/formsg-guide-attachments'
 export const GUIDE_E2EE = 'https://go.gov.sg/formsg-guide-e2e'
 export const GUIDE_TRANSFER_OWNERSHIP =
   'https://go.gov.sg/formsg-guide-transfer-ownership'
