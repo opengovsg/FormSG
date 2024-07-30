@@ -4,6 +4,7 @@ export interface Fields {
   builder: {
     title: string
     createField: string
+    addField: string
     image: string
     statement: string
     section: string
@@ -134,6 +135,7 @@ export interface Fields {
     maxFileSize: string
     ariaLabelRemove: string
     error: {
+      fileEmpty: string
       fileTooLarge: string
       fileInvalidType: string
       tooManyFiles: string
@@ -168,6 +170,7 @@ export interface Fields {
     error: {
       validationType: string
       numOfCharacter: string
+      validDecimal: string
       min: string
       max: string
       rangeValue: string

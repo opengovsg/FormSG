@@ -5,6 +5,7 @@ import {
   useForm,
   useWatch,
 } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { useMutation } from 'react-query'
 import { useParams } from 'react-router-dom'
 import { useDebounce } from 'react-use'
@@ -63,6 +64,7 @@ type DesignDrawerProps = {
 }
 
 export const DesignInput = (): JSX.Element | null => {
+  const { t } = useTranslation()
   const toast = useToast({ status: 'danger' })
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
@@ -230,21 +232,21 @@ export const DesignInput = (): JSX.Element | null => {
             value={FormLogoState.Default}
             {...register('logo.state')}
           >
-            Default
+            {t('features.adminForm.sidebar.headerAndInstructions.logo.default')}
           </Radio>
           <Radio
             allowDeselect={false}
             value={FormLogoState.None}
             {...register('logo.state')}
           >
-            None
+            {t('features.adminForm.sidebar.headerAndInstructions.logo.none')}
           </Radio>
           <Radio
             allowDeselect={false}
             value={FormLogoState.Custom}
             {...register('logo.state')}
           >
-            Upload custom logo (jpg, png, or gif)
+            {t('features.adminForm.sidebar.headerAndInstructions.logo.custom')}
           </Radio>
           <FormControl
             id="attachment"
@@ -288,7 +290,9 @@ export const DesignInput = (): JSX.Element | null => {
         isInvalid={!isEmpty(errors.colorTheme)}
         onFocus={setToEditingHeader}
       >
-        <FormLabel>Theme colour</FormLabel>
+        <FormLabel>
+          {t('features.adminForm.sidebar.headerAndInstructions.themeColour.title')}
+        </FormLabel>
         <Radio.RadioGroup
           defaultValue={startPageData.colorTheme}
           isDisabled={startPageMutation.isLoading}
@@ -331,7 +335,7 @@ export const DesignInput = (): JSX.Element | null => {
         isInvalid={!!errors.estTimeTaken}
         onFocus={setToEditingHeader}
       >
-        <FormLabel>Time taken to complete form (minutes)</FormLabel>
+        <FormLabel>{t('features.adminForm.sidebar.headerAndInstructions.minutes')}</FormLabel>
         <Controller
           name="estTimeTaken"
           control={control}
@@ -357,7 +361,7 @@ export const DesignInput = (): JSX.Element | null => {
         isReadOnly={startPageMutation.isLoading}
         isInvalid={!!errors.paragraph}
       >
-        <FormLabel>Instructions for your form</FormLabel>
+        <FormLabel>{t('features.adminForm.sidebar.headerAndInstructions.instruction')}</FormLabel>
         <Textarea
           onFocus={setToEditingInstructions}
           {...register('paragraph')}
@@ -369,7 +373,7 @@ export const DesignInput = (): JSX.Element | null => {
         isLoading={startPageMutation.isLoading}
         handleClick={handleClick}
         handleCancel={handleCloseDrawer}
-        buttonText="Save design"
+        buttonText={t('features.adminForm.sidebar.headerAndInstructions.cta')}
       />
     </CreatePageDrawerContentContainer>
   )
@@ -378,6 +382,7 @@ export const DesignInput = (): JSX.Element | null => {
 export const DesignDrawer = ({
   startPage,
 }: DesignDrawerProps): JSX.Element | null => {
+  const { t } = useTranslation()
   const { data: { logoBucketUrl } = {} } = useEnv()
 
   const {
@@ -435,7 +440,7 @@ export const DesignDrawer = ({
       <Box pt="1rem" px="1.5rem" bg="white">
         <Flex justify="space-between">
           <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
-            Edit header and instructions
+            {t('features.adminForm.sidebar.headerAndInstructions.title')}
           </Text>
           <CreatePageDrawerCloseButton />
         </Flex>

@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiGitMerge, BiQuestionMark } from 'react-icons/bi'
 import { Divider, Stack } from '@chakra-ui/react'
 
@@ -35,6 +36,7 @@ import { FEATURE_TOUR } from '../../featureTour/constants'
 import { DrawerTabIcon } from './DrawerTabIcon'
 
 export const CreatePageSidebar = (): JSX.Element | null => {
+  const { t } = useTranslation()
   const isMobile = useIsMobile()
 
   const { data } = useAdminForm()
@@ -109,28 +111,28 @@ export const CreatePageSidebar = (): JSX.Element | null => {
     >
       <Stack spacing="0.5rem">
         <DrawerTabIcon
-          label="Add fields"
+          label={t('features.adminForm.sidebar.fields.addFields')}
           icon={<BxsWidget fontSize="1.5rem" />}
           onClick={handleDrawerBuilderClick}
           isActive={activeTab === DrawerTabs.Builder}
           id={FEATURE_TOUR[0].id}
         />
         <DrawerTabIcon
-          label="Edit header and instructions"
+          label={t('features.adminForm.sidebar.headerAndInstructions.title')}
           icon={<BxsDockTop fontSize="1.5rem" />}
           onClick={handleDrawerDesignClick}
           isActive={activeTab === DrawerTabs.Design}
           id={FEATURE_TOUR[1].id}
         />
         <DrawerTabIcon
-          label="Add logic"
+          label={t('features.adminForm.sidebar.logic.addLogicBtn')}
           icon={<BiGitMerge fontSize="1.5rem" />}
           onClick={handleDrawerLogicClick}
           isActive={activeTab === DrawerTabs.Logic}
           id={FEATURE_TOUR[2].id}
         />
         <DrawerTabIcon
-          label="Edit Thank you page"
+          label={t('features.adminForm.sidebar.thankYou.thankYouPage.title')}
           icon={<PhHandsClapping fontSize="1.5rem" />}
           onClick={handleDrawerEndpageClick}
           isActive={activeTab === DrawerTabs.EndPage}

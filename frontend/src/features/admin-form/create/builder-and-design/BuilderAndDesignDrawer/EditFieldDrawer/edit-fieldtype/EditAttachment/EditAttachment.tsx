@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { FormControl, Skeleton } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
@@ -62,6 +63,7 @@ const transformAttachmentEditFormToField = (
 }
 
 export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
+  const { t } = useTranslation()
   const { data: form } = useCreateTabForm()
   const {
     register,
@@ -128,8 +130,9 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
       validate: (val) => {
         return (
           maxTotalSizeMb - otherAttachmentsSize >= Number(val) ||
-          `You have exceeded your form's attachment size limit of ${maxTotalSizeMb} MB
-`
+          t('features.adminForm.sidebar.fields.attachment.error.exceedSize', {
+            maxTotalSizeMb,
+          })
         )
       },
     }),
@@ -168,7 +171,7 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
         isReadOnly={isLoading}
         isInvalid={!!errors.attachmentSize}
       >
-        <FormLabel isRequired>Maximum size of individual attachment</FormLabel>
+        <FormLabel isRequired>{t('features.adminForm.sidebar.fields.attachment.maximumSize')}</FormLabel>
         <Skeleton isLoaded={!!form}>
           <Controller
             control={control}
@@ -197,7 +200,10 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
         />
       </FormControl>
       <InlineMessage useMarkdown>
-        {`View our [complete list](${ACCEPTED_FILETYPES_SPREADSHEET}) of accepted file types. Please also read our [FAQ on email reliability](${GUIDE_EMAIL_RELIABILITY}) relating to unaccepted file types.`}
+        {t('features.adminForm.sidebar.fields.attachment.info', {
+          acceptedFiletypes: ACCEPTED_FILETYPES_SPREADSHEET,
+          guideEmailReliability: GUIDE_EMAIL_RELIABILITY,
+        })}
       </InlineMessage>
       <FormFieldDrawerActions
         isLoading={isLoading}

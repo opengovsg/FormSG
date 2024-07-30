@@ -6,6 +6,7 @@ import {
   UnpackNestedValue,
   useFormState,
 } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { FormControl, Stack } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
@@ -73,6 +74,7 @@ const transformTableEditFormToField = (
 }
 
 export const EditTable = ({ field }: EditTableProps): JSX.Element => {
+  const { t } = useTranslation()
   const preSubmitTransform = useCallback(
     ({ columns, ...rest }: EditTableInputs, output: TableFieldBase) => {
       // Columns may have temporary ids due to admins adding new columns when editing the field.
@@ -120,12 +122,16 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
   return (
     <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
-        <FormLabel>Question</FormLabel>
+        <FormLabel>
+          {t('features.adminForm.sidebar.fields.commonFieldComponents.title')}
+        </FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
       <FormControl isReadOnly={isLoading} isInvalid={!!errors.description}>
-        <FormLabel>Description</FormLabel>
+        <FormLabel>
+          {t('features.adminForm.sidebar.fields.commonFieldComponents.description')}
+        </FormLabel>
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
@@ -135,7 +141,9 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
           isReadOnly={isLoading}
           isInvalid={!!errors.minimumRows}
         >
-          <FormLabel>Minimum rows</FormLabel>
+          <FormLabel>
+            {t('features.adminForm.sidebar.fields.table.minimumRows')}
+          </FormLabel>
           <Controller
             name="minimumRows"
             control={control}
@@ -143,7 +151,7 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
               required: REQUIRED_ERROR,
               min: {
                 value: 1,
-                message: 'Minimum rows must be greater than 0',
+                message: t('features.adminForm.sidebar.fields.table.error.minRow'),
               },
               deps: ['maximumRows'],
             }}
@@ -160,7 +168,7 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
         <FormControl isReadOnly={isLoading}>
           <Toggle
             {...register('addMoreRows')}
-            label="Allow respondent to add more rows"
+            label={t('features.adminForm.sidebar.fields.table.allowAddMoreRows')}
           />
         </FormControl>
         {getValues('addMoreRows') ? (
@@ -169,20 +177,22 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
             isReadOnly={isLoading}
             isInvalid={!!errors.maximumRows}
           >
-            <FormLabel>Maximum rows allowed</FormLabel>
+            <FormLabel>
+              {t('features.adminForm.sidebar.fields.table.maximumRows')}
+            </FormLabel>
             <Controller
               name="maximumRows"
               defaultValue=""
               rules={{
                 min: {
                   value: 1,
-                  message: 'Maximum rows must be greater than 0',
+                  message: t('features.adminForm.sidebar.fields.table.error.maxRow'),
                 },
                 // Must be greater than minimum rows
                 validate: (value) =>
                   !value ||
                   value > getValues('minimumRows') ||
-                  'Maximum rows must be greater than minimum rows',
+                  t('features.adminForm.sidebar.fields.table.error.maxRowGreaterThanMin'),
               }}
               control={control}
               render={({ field: { onChange, ...rest } }) => (

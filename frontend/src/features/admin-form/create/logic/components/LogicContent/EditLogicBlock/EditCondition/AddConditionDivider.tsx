@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
 import { Divider, Flex } from '@chakra-ui/react'
 
@@ -12,6 +13,7 @@ export const AddConditionDivider = ({
   handleAddCondition,
   isDisabled,
 }: AddConditionDividerProps): JSX.Element => {
+  const { t } = useTranslation()
   return (
     <Flex
       flexDir="row"
@@ -25,7 +27,7 @@ export const AddConditionDivider = ({
         leftIcon={<BiPlus fontSize="1.5rem" />}
         onClick={handleAddCondition}
       >
-        Add condition
+        {t('features.adminForm.sidebar.logic.logicClause.addConditionCta')}
       </Button>
       <Divider flex={1} />
     </Flex>

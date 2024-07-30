@@ -5,6 +5,7 @@ import { Logic } from '.'
 export const enSG: Logic = {
   title: 'Start creating logic for your form',
   and: 'and',
+  saveChangesBtn: 'Save changes',
   helperText:
     'Show or hide fields depending on user input, or disable form submission for invalid answers.',
   helperTextCta: 'Learn to work with logic',
