@@ -101,9 +101,7 @@ const useDecryptionWorkers = ({
       // Create a pool of decryption workers
       // If we are downloading attachments, we restrict the number of threads
       // to one to limit resource usage on the client's browser.
-      const numWorkers = downloadAttachments
-        ? 1
-        : window.navigator.hardwareConcurrency || 4
+      const numWorkers = window.navigator.hardwareConcurrency || 4
       let errorCount = 0
       let unverifiedCount = 0
       let attachmentErrorCount = 0
