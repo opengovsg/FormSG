@@ -80,7 +80,6 @@ const useSecretKeyWhitelistFileModal = ({
 
   const fileUploadRef = useRef<HTMLInputElement | null>(null)
 
-  // TODO: possibly move this to a web worker only if needed
   const decryptSubmitterIds = useCallback(
     (
       encryptedSubmitterIdContent: EncryptedStringsMessageContent,

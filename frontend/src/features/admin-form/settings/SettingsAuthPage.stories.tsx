@@ -13,6 +13,7 @@ import {
   getAdminFormSettings,
   MOCK_FORM_FIELDS_WITH_MYINFO,
   patchAdminFormSettings,
+  putFormWhitelistSettingSimulateCsvStringValidationError,
 } from '~/mocks/msw/handlers/admin-form'
 
 import { StoryRouter, viewports } from '~utils/storybook'
@@ -173,9 +174,9 @@ PrivateEmailSingpassFormSingleSubmissionEnabled.parameters = {
 }
 
 // purpose: displays all available singpass settings in an enabled state
-export const PrivateEmailSingpassFormAllTogglesEnabled = Template.bind({})
-PrivateEmailSingpassFormAllTogglesEnabled.parameters = {
-  msw: buildEmailModeMswRoutes({
+export const PrivateStorageSingpassFormAllTogglesEnabled = Template.bind({})
+PrivateStorageSingpassFormAllTogglesEnabled.parameters = {
+  msw: buildEncryptModeMswRoutes({
     status: FormStatus.Private,
     authType: FormAuthType.SGID,
     isSingleSubmission: true,
@@ -183,12 +184,13 @@ PrivateEmailSingpassFormAllTogglesEnabled.parameters = {
   }),
 }
 
-export const PublicStorageCorppassAllTogglesEnabledForm = Template.bind({})
-PublicStorageCorppassAllTogglesEnabledForm.parameters = {
-  msw: buildEncryptModeMswRoutes({
+export const PublicEmailCorppassAllTogglesEnabledForm = Template.bind({})
+PublicEmailCorppassAllTogglesEnabledForm.parameters = {
+  msw: buildEmailModeMswRoutes({
     status: FormStatus.Public,
     authType: FormAuthType.CP,
     isSingleSubmission: true,
+    isNricMaskEnabled: true,
   }),
 }
 
@@ -232,13 +234,50 @@ PrivateStorageSgidPaymentEnabledForm.parameters = {
   ],
 }
 
+// stories for whitelist setting
+export const PrivateStorageSgidWhitelistEnabledForm = Template.bind({})
+PrivateStorageSgidWhitelistEnabledForm.parameters = {
+  msw: [
+    ...buildEncryptModeMswRoutes({
+      status: FormStatus.Private,
+      authType: FormAuthType.SGID,
+      responseMode: FormResponseMode.Encrypt,
+      whitelistedSubmitterIds: {
+        isWhitelistEnabled: true,
+      },
+    }),
+  ],
+}
+
+export const PrivateStorageMyInfoUpdateWhitelistValidationErrorForm =
+  Template.bind({})
+PrivateStorageMyInfoUpdateWhitelistValidationErrorForm.parameters = {
+  msw: [
+    ...buildEncryptModeMswRoutes({
+      status: FormStatus.Private,
+      authType: FormAuthType.MyInfo,
+      responseMode: FormResponseMode.Encrypt,
+      whitelistedSubmitterIds: {
+        isWhitelistEnabled: false,
+      },
+    }),
+    putFormWhitelistSettingSimulateCsvStringValidationError('12345'),
+  ],
+  docs: {
+    description: {
+      story:
+        'Uploading a valid CSV file should display a mock validation error. This story is used to simulate validation errors are displayed correctly in the UI.',
+    },
+  },
+}
+
 export const Tablet = Template.bind({})
 Tablet.parameters = {
   viewport: {
     defaultViewport: 'tablet',
   },
   chromatic: { viewports: [viewports.md] },
-  msw: PrivateEmailSingpassFormAllTogglesEnabled.parameters.msw,
+  msw: PrivateStorageSingpassFormAllTogglesEnabled.parameters.msw,
 }
 
 export const Mobile = Template.bind({})
@@ -247,7 +286,7 @@ Mobile.parameters = {
     defaultViewport: 'mobile1',
   },
   chromatic: { viewports: [viewports.xs] },
-  msw: PrivateEmailSingpassFormAllTogglesEnabled.parameters.msw,
+  msw: PrivateStorageSingpassFormAllTogglesEnabled.parameters.msw,
 }
 
 export const Loading = Template.bind({})
