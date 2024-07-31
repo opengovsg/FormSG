@@ -5221,9 +5221,6 @@ describe('admin-form.controller', () => {
       },
     })
 
-    // TODO: Kevin - Add tests for handleGetSettings
-    it('should not return full encrypted whitelisted submitter id list when fetching settings', () => {})
-
     it('should return 200 with settings', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()

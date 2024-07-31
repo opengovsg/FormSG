@@ -24,6 +24,7 @@ import {
   LogicType,
   PaymentChannel,
   PaymentType,
+  StorageFormSettings,
   WhitelistedSubmitterIdsWithReferenceOid,
   WorkflowType,
 } from 'shared/types'
@@ -883,6 +884,32 @@ describe('Form Model', () => {
         // Assert
         await expect(invalidForm.save()).rejects.toThrow(
           '`null` is not a valid enum value for path `payments_field.payment_type`',
+        )
+      })
+
+      it('should not get full list of whitelisted submitter id when getSettings', async () => {
+        // Arrange
+        const whitelistData = {
+          whitelistedSubmitterIds: {
+            isWhitelistEnabled: true,
+            encryptedWhitelistedSubmitterIds: new ObjectId(),
+          },
+        }
+        const MOCK_ENCRYPTED_FORM_PARAMS_WITH_WHITELIST = {
+          ...MOCK_ENCRYPTED_FORM_PARAMS,
+          ...whitelistData,
+        }
+
+        const validForm = new EncryptedForm(
+          MOCK_ENCRYPTED_FORM_PARAMS_WITH_WHITELIST,
+        )
+
+        // Act
+        const settings = validForm.getSettings() as StorageFormSettings
+
+        // Assert
+        expect(settings.whitelistedSubmitterIds).toEqual(
+          pick(whitelistData.whitelistedSubmitterIds, 'isWhitelistEnabled'),
         )
       })
     })
