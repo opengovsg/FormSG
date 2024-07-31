@@ -278,8 +278,8 @@ const useDecryptionWorkers = ({
               })
 
               downloadStatsdClient.distribution(
-                'latency.failure',
-                timeDifference,
+                'old.latency.failure',
+                timeDifference / responsesCount,
               )
 
               trackDownloadResponseFailure(
@@ -316,8 +316,8 @@ const useDecryptionWorkers = ({
                 })
 
                 downloadStatsdClient.distribution(
-                  'latency.partial_failure',
-                  timeDifference,
+                  'old.latency.partial_failure',
+                  timeDifference / responsesCount,
                 )
 
                 trackPartialDecryptionFailure(
@@ -362,8 +362,8 @@ const useDecryptionWorkers = ({
                 })
 
                 downloadStatsdClient.distribution(
-                  'latency.success',
-                  timeDifference,
+                  'old.latency.success',
+                  timeDifference / responsesCount,
                 )
 
                 trackDownloadResponseSuccess(
@@ -593,8 +593,8 @@ const useDecryptionWorkers = ({
               })
 
               downloadStatsdClient.distribution(
-                'latency.failure',
-                timeDifference,
+                'new.latency.failure',
+                timeDifference / responsesCount,
               )
 
               trackDownloadResponseFailure(
@@ -628,12 +628,13 @@ const useDecryptionWorkers = ({
                     error_count: errorCount,
                     unverified_count: unverifiedCount,
                     attachment_error_count: attachmentErrorCount,
+                    unknown_status_count: unknownStatusCount,
                   },
                 })
 
                 downloadStatsdClient.distribution(
-                  'latency.partial_failure',
-                  timeDifference,
+                  'new.latency.partial_failure',
+                  timeDifference / responsesCount,
                 )
 
                 trackPartialDecryptionFailure(
@@ -676,6 +677,11 @@ const useDecryptionWorkers = ({
                     duration: timeDifference,
                   },
                 })
+
+                downloadStatsdClient.distribution(
+                  'new.latency.success',
+                  timeDifference / responsesCount,
+                )
 
                 trackDownloadResponseSuccess(
                   adminForm,
