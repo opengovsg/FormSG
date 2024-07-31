@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { FormControl } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
@@ -49,6 +50,7 @@ const transformDropdownEditFormToField = (
 }
 
 export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
+  const { t } = useTranslation()
   const {
     register,
     formState: { errors },
@@ -90,9 +92,13 @@ export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
         isReadOnly={isLoading}
         isInvalid={!!errors.fieldOptionsString}
       >
-        <FormLabel>Options</FormLabel>
+        <FormLabel>
+          {t('features.adminForm.sidebar.fields.radio.options.title')}
+        </FormLabel>
         <Textarea
-          placeholder="Enter one option per line"
+          placeholder={t(
+            'features.adminForm.sidebar.fields.radio.options.placeholder',
+          )}
           {...register('fieldOptionsString', {
             validate: SPLIT_TEXTAREA_VALIDATION,
           })}

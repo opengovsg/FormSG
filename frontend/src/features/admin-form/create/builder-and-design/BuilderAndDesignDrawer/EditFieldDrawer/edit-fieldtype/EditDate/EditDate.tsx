@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { Controller, RegisterOptions, useWatch } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   CheckboxGroup,
@@ -159,6 +160,7 @@ const transformDateEditFormToField = (
 }
 
 export const EditDate = ({ field }: EditDateProps): JSX.Element => {
+  const { t } = useTranslation()
   const preSubmitTransform = useCallback(
     (inputs: EditDateInputs, output: DateFieldBase): DateFieldBase => {
       // normalize time to UTC before saving
@@ -221,9 +223,20 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
             getValues('dateValidation.selectedDateValidation') ===
               DateSelectedValidation.Custom &&
             !!getValues('dateValidation.customMaxDate')
-          return !!val || hasMaxValue || 'You must specify at least one date.'
+          return (
+            !!val ||
+            hasMaxValue ||
+            t(
+              'features.adminForm.sidebar.fields.date.dateValidation.atLeastOneDateError',
+            )
+          )
         },
-        validDate: (val) => !val || isValid(val) || 'Please enter a valid date',
+        validDate: (val) =>
+          !val ||
+          isValid(val) ||
+          t(
+            'features.adminForm.sidebar.fields.date.dateValidation.validDateError',
+          ),
         inRange: (val) => {
           const maxDate = getValues('dateValidation.customMaxDate')
 
@@ -232,7 +245,9 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
             !val || // Only max date
             isEqual(val, maxDate) ||
             isBefore(val, maxDate) ||
-            'Max date cannot be less than min date.'
+            t(
+              'features.adminForm.sidebar.fields.date.dateValidation.maxMinError',
+            )
           )
         },
       },
@@ -262,7 +277,9 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
         isReadOnly={isLoading}
         isInvalid={!isEmpty(errors.dateValidation)}
       >
-        <FormLabel isRequired>Date validation</FormLabel>
+        <FormLabel isRequired>
+          {t('features.adminForm.sidebar.fields.date.dateValidation.title')}
+        </FormLabel>
         <SimpleGrid mt="0.5rem" columns={2} spacing="0.5rem">
           <Box gridColumn="1/3">
             <Controller

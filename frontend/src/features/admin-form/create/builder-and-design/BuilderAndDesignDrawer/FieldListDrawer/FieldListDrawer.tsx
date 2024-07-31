@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Divider,
@@ -24,6 +25,7 @@ import {
 } from './field-panels'
 
 export const FieldListDrawer = (): JSX.Element => {
+  const { t } = useTranslation()
   const { fieldListTabIndex, setFieldListTabIndex } = useCreatePageSidebar()
   const { isLoading } = useCreateTabForm()
 
@@ -64,7 +66,7 @@ export const FieldListDrawer = (): JSX.Element => {
       <Box pt="1rem" px="1.5rem" bg="white">
         <Flex justify="space-between">
           <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
-            Fields
+            {t('features.adminForm.sidebar.fields.builder.title')}
           </Text>
           <CreatePageDrawerCloseButton />
         </Flex>

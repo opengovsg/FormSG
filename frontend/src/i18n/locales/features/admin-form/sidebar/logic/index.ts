@@ -5,6 +5,7 @@ export * from './en-sg'
 export interface Logic {
   title: string
   and: string
+  saveChangesBtn: string
   helperText: string
   helperTextCta: string
   allowedFields: string

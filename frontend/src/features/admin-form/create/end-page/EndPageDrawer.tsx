@@ -6,6 +6,7 @@ import {
   useForm,
   useWatch,
 } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { useDebounce } from 'react-use'
 import { Box, Divider, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
@@ -60,6 +61,7 @@ export const EndPageInput = ({
   isPayment: boolean
 }): JSX.Element => {
   const isMobile = useIsMobile()
+  const { t } = useTranslation()
   const { endPageMutation } = useMutateFormPage()
 
   const setIsDirty = useDirtyFieldStore(setIsDirtySelector)
@@ -147,7 +149,7 @@ export const EndPageInput = ({
           isReadOnly={endPageMutation.isLoading}
           isInvalid={!!errors.title}
         >
-          <FormLabel isRequired>Title</FormLabel>
+          <FormLabel isRequired>{t('features.common.title')}</FormLabel>
           <Input
             autoFocus
             {...register(paymentTitle, { required: REQUIRED_ERROR })}
@@ -158,7 +160,11 @@ export const EndPageInput = ({
           isReadOnly={endPageMutation.isLoading}
           isInvalid={!!errors.paragraph}
         >
-          <FormLabel isRequired>Follow-up instructions</FormLabel>
+          <FormLabel isRequired>
+            {t(
+              'features.adminForm.sidebar.thankYou.thankYouPage.followUpInstruction',
+            )}
+          </FormLabel>
           <Textarea {...register(paymentParagraph)} />
           <FormErrorMessage>{errors.paragraph?.message}</FormErrorMessage>
         </FormControl>
@@ -168,9 +174,13 @@ export const EndPageInput = ({
             isInvalid={!!errors.buttonText}
             isDisabled={isPayment}
           >
-            <FormLabel isRequired>Button text</FormLabel>
+            <FormLabel isRequired>
+              {t('features.adminForm.sidebar.thankYou.thankYouPage.buttonText')}
+            </FormLabel>
             <Input
-              placeholder="Submit another response"
+              placeholder={t(
+                'features.adminForm.sidebar.thankYou.thankYouPage.defaultButtonText',
+              )}
               {...register('buttonText')}
             />
             <FormErrorMessage>{errors.buttonText?.message}</FormErrorMessage>
@@ -180,7 +190,11 @@ export const EndPageInput = ({
             isInvalid={!!errors.buttonLink}
             isDisabled={isPayment}
           >
-            <FormLabel isRequired>Button redirect link</FormLabel>
+            <FormLabel isRequired>
+              {t(
+                'features.adminForm.sidebar.thankYou.thankYouPage.redirectLink',
+              )}
+            </FormLabel>
             <Input
               placeholder={formPlaceholder}
               {...register('buttonLink', buttonLinkRules)}
@@ -200,7 +214,7 @@ export const EndPageInput = ({
           onClick={handleUpdateEndPage}
           isLoading={endPageMutation.isLoading}
         >
-          Save page
+          {t('features.adminForm.sidebar.thankYou.thankYouPage.savePageBtn')}
         </Button>
         <Button
           isFullWidth={isMobile}
@@ -209,7 +223,7 @@ export const EndPageInput = ({
           isDisabled={endPageMutation.isLoading}
           onClick={() => handleCloseDrawer()}
         >
-          Cancel
+          {t('features.common.cancel')}
         </Button>
       </Stack>
     </CreatePageDrawerContentContainer>
@@ -228,6 +242,7 @@ export const EndPageDrawer = (): JSX.Element | null => {
       [],
     ),
   )
+  const { t } = useTranslation()
 
   const isPaymentEnabled =
     form?.responseMode === FormResponseMode.Encrypt &&
@@ -247,7 +262,7 @@ export const EndPageDrawer = (): JSX.Element | null => {
           <Box pt="1rem" px="1.5rem" bg="white">
             <Flex justify="space-between">
               <Text textStyle="subhead-3" color="secondary.500" mb="1rem">
-                Edit thank you page
+                {t('features.adminForm.sidebar.thankYou.thankYouPage.title')}
               </Text>
               <CreatePageDrawerCloseButton />
             </Flex>

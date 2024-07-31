@@ -1,4 +1,5 @@
 import { memo, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import {
   BasicField,
@@ -51,6 +52,7 @@ import {
 } from './edit-fieldtype'
 
 export const EditFieldDrawer = (): JSX.Element | null => {
+  const { t } = useTranslation()
   const stateData = useFieldBuilderStore(stateDataSelector)
 
   const fieldToEdit: FieldCreateDto | undefined = useMemo(() => {

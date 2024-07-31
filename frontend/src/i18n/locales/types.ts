@@ -1,3 +1,5 @@
+import { DeepRequired } from 'ts-essentials'
+
 import {
   Common,
   Fields,
@@ -8,7 +10,6 @@ import {
   PublicForm,
   ThankYou,
 } from './features'
-import { DeepRequired } from 'ts-essentials'
 
 interface Translation {
   translation: {
@@ -28,7 +29,6 @@ interface Translation {
     }
   }
 }
-
 
 export interface FallbackTranslation extends Translation {
   translation: {

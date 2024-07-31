@@ -1,4 +1,5 @@
 import { FieldValues, UseFormHandleSubmit } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Stack } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -19,6 +20,7 @@ export const FormFieldDrawerActions = ({
   buttonText,
   isDisabled,
 }: FormFieldDrawerActionsProps): JSX.Element => {
+  const { t } = useTranslation()
   const isMobile = useIsMobile()
 
   return (
@@ -43,7 +45,7 @@ export const FormFieldDrawerActions = ({
         colorScheme="secondary"
         onClick={handleCancel}
       >
-        Cancel
+        {t('features.common.cancel')}
       </Button>
     </Stack>
   )
