@@ -264,7 +264,7 @@ const submitEncryptModeForm = async (
 
   if (
     userName &&
-    form.whitelistedSubmitterIds &&
+    form.whitelistedSubmitterIds?.isWhitelistEnabled &&
     (form.authType === FormAuthType.SP ||
       form.authType === FormAuthType.CP ||
       form.authType === FormAuthType.SGID ||

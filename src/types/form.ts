@@ -25,6 +25,7 @@ import {
   LogicDto,
   MyInfoAttribute,
   PublicFormDto,
+  WhitelistedSubmitterIds,
   WhitelistedSubmitterIdsWithReferenceOid,
 } from '../../shared/types'
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
@@ -300,7 +301,7 @@ export interface IEncryptedForm extends IForm {
   payments_field: FormPaymentsField
   business?: FormBusinessField
   emails?: string[]
-  whitelistedSubmitterIds?: string[]
+  whitelistedSubmitterIds?: WhitelistedSubmitterIds
 }
 
 export type IEncryptedFormSchema = IEncryptedForm & IFormSchema
