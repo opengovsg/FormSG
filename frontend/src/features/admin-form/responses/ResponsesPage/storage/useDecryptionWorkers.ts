@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useMutation, UseMutationOptions } from 'react-query'
 import { datadogLogs } from '@datadog/browser-logs'
+import { useFeature } from '@growthbook/growthbook-react'
 
 import { waitForMs } from '~utils/waitForMs'
 
@@ -13,8 +14,6 @@ import {
   trackPartialDecryptionFailure,
 } from '~features/analytics/AnalyticsService'
 import { useUser } from '~features/user/queries'
-
-import { statsdClient } from '../../../../../../../src/app/config/datadog-statsd-client'
 
 import { downloadResponseAttachment } from './utils/downloadCsv'
 import { EncryptedResponseCsvGenerator } from './utils/EncryptedResponseCsvGenerator'
@@ -36,10 +35,6 @@ const NUM_OF_METADATA_ROWS = 5
 // which could cause it to block downloads.
 const ATTACHMENT_DOWNLOAD_CONVOY_SIZE = 5
 const ATTACHMENT_DOWNLOAD_CONVOY_MINIMUM_SEPARATION_TIME = 1000
-
-const downloadStatsdClient = statsdClient.childClient({
-  prefix: 'formsg.downloads.',
-})
 
 const killWorkers = (workers: CleanableDecryptionWorkerApi[]): void => {
   return workers.forEach((worker) => worker.cleanup())
@@ -84,8 +79,10 @@ const useDecryptionWorkers = ({
   const { data: adminForm } = useAdminForm()
   const { user } = useUser()
 
-  const fasterDownloads = user?.betaFlags?.fasterDownloads || false
-  // TODO: Remove this
+  const isDev = process.env.NODE_ENV === 'development'
+
+  const fasterDownloadsFeature = useFeature('faster-downloads')
+  const fasterDownloads = fasterDownloadsFeature.on || isDev
   if (fasterDownloads) {
     console.log('Faster downloads is enabled ⚡')
   }
@@ -277,11 +274,6 @@ const useDecryptionWorkers = ({
                 },
               })
 
-              downloadStatsdClient.distribution(
-                'old.latency.failure',
-                timeDifference / responsesCount,
-              )
-
               trackDownloadResponseFailure(
                 adminForm,
                 numWorkers,
@@ -314,11 +306,6 @@ const useDecryptionWorkers = ({
                     attachment_error_count: attachmentErrorCount,
                   },
                 })
-
-                downloadStatsdClient.distribution(
-                  'old.latency.partial_failure',
-                  timeDifference / responsesCount,
-                )
 
                 trackPartialDecryptionFailure(
                   adminForm,
@@ -360,11 +347,6 @@ const useDecryptionWorkers = ({
                     duration: timeDifference,
                   },
                 })
-
-                downloadStatsdClient.distribution(
-                  'old.latency.success',
-                  timeDifference / responsesCount,
-                )
 
                 trackDownloadResponseSuccess(
                   adminForm,
@@ -592,11 +574,6 @@ const useDecryptionWorkers = ({
                 },
               })
 
-              downloadStatsdClient.distribution(
-                'new.latency.failure',
-                timeDifference / responsesCount,
-              )
-
               trackDownloadResponseFailure(
                 adminForm,
                 numWorkers,
@@ -631,11 +608,6 @@ const useDecryptionWorkers = ({
                     unknown_status_count: unknownStatusCount,
                   },
                 })
-
-                downloadStatsdClient.distribution(
-                  'new.latency.partial_failure',
-                  timeDifference / responsesCount,
-                )
 
                 trackPartialDecryptionFailure(
                   adminForm,
@@ -677,11 +649,6 @@ const useDecryptionWorkers = ({
                     duration: timeDifference,
                   },
                 })
-
-                downloadStatsdClient.distribution(
-                  'new.latency.success',
-                  timeDifference / responsesCount,
-                )
 
                 trackDownloadResponseSuccess(
                   adminForm,
