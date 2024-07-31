@@ -47,7 +47,7 @@ export const FormWhitelistAttachmentField = ({
 
   const fieldContainerSchema: AttachmentFieldSchema = {
     _id: FormWhitelistAttachmentFieldContainerName,
-    title: 'Restrict form to eligible NRIC/FIN/UEN',
+    title: 'Restrict form to eligible NRIC/FIN/UENs only',
     description:
       'Only NRIC/FIN/UENs in this list are allowed to submit a response. CSV file should include all whitelisted NRIC/FIN/UENs in a single column with the "Respondent" header. ' +
       '[Download a sample .csv file](https://go.gov.sg/formsg-whitelist-respondents-sample-csv)',
