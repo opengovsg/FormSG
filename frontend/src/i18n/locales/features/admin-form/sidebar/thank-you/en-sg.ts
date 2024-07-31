@@ -2,7 +2,7 @@ import { ThankYou } from '.'
 
 export const enSG: ThankYou = {
   thankYouPage: {
-    title: 'Edit Thank You page',
+    title: 'Customise Thank You page',
     buttonText: 'Button text',
     savePageBtn: 'Save page',
     defaultButtonText: 'Submit another response',
