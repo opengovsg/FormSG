@@ -14,6 +14,8 @@ import {
 } from '~features/analytics/AnalyticsService'
 import { useUser } from '~features/user/queries'
 
+import { statsdClient } from '../../../../../../../src/app/config/datadog-statsd-client'
+
 import { downloadResponseAttachment } from './utils/downloadCsv'
 import { EncryptedResponseCsvGenerator } from './utils/EncryptedResponseCsvGenerator'
 import {
@@ -34,6 +36,10 @@ const NUM_OF_METADATA_ROWS = 5
 // which could cause it to block downloads.
 const ATTACHMENT_DOWNLOAD_CONVOY_SIZE = 5
 const ATTACHMENT_DOWNLOAD_CONVOY_MINIMUM_SEPARATION_TIME = 1000
+
+const downloadStatsdClient = statsdClient.childClient({
+  prefix: 'formsg.downloads.',
+})
 
 const killWorkers = (workers: CleanableDecryptionWorkerApi[]): void => {
   return workers.forEach((worker) => worker.cleanup())
@@ -79,6 +85,10 @@ const useDecryptionWorkers = ({
   const { user } = useUser()
 
   const fasterDownloads = user?.betaFlags?.fasterDownloads || false
+  // TODO: Remove this
+  if (fasterDownloads) {
+    console.log('Faster downloads is enabled ⚡')
+  }
 
   useEffect(() => {
     return () => killWorkers(workers)
@@ -113,7 +123,12 @@ const useDecryptionWorkers = ({
 
       if (workers.length) killWorkers(workers)
 
-      const numWorkers = window.navigator.hardwareConcurrency || 4
+      // Create a pool of decryption workers
+      // If we are downloading attachments, we restrict the number of threads
+      // to one to limit resource usage on the client's browser.
+      const numWorkers = downloadAttachments
+        ? 1
+        : window.navigator.hardwareConcurrency || 4
       let errorCount = 0
       let unverifiedCount = 0
       let attachmentErrorCount = 0
@@ -262,6 +277,11 @@ const useDecryptionWorkers = ({
                 },
               })
 
+              downloadStatsdClient.distribution(
+                'latency.failure',
+                timeDifference,
+              )
+
               trackDownloadResponseFailure(
                 adminForm,
                 numWorkers,
@@ -294,6 +314,11 @@ const useDecryptionWorkers = ({
                     attachment_error_count: attachmentErrorCount,
                   },
                 })
+
+                downloadStatsdClient.distribution(
+                  'latency.partial_failure',
+                  timeDifference,
+                )
 
                 trackPartialDecryptionFailure(
                   adminForm,
@@ -335,6 +360,11 @@ const useDecryptionWorkers = ({
                     duration: timeDifference,
                   },
                 })
+
+                downloadStatsdClient.distribution(
+                  'latency.success',
+                  timeDifference,
+                )
 
                 trackDownloadResponseSuccess(
                   adminForm,
@@ -388,6 +418,7 @@ const useDecryptionWorkers = ({
       let unverifiedCount = 0
       let attachmentErrorCount = 0
       let receivedRecordCount = 0
+      let unknownStatusCount = 0
 
       const logMeta = {
         action: 'downloadEncryptedReponses',
@@ -427,84 +458,109 @@ const useDecryptionWorkers = ({
         freshAbortController,
       )
 
-      const reader = stream.getReader()
-      let read: (result: ReadableStreamDefaultReadResult<string>) => void
+      const processTask = async (value: string, workerIdx: number) => {
+        const { workerApi } = workerPool[workerIdx]
+
+        const decryptResult = await workerApi.decryptIntoCsv({
+          line: value,
+          secretKey,
+          downloadAttachments,
+          formId: adminForm._id,
+          hostOrigin: window.location.origin,
+        })
+
+        switch (decryptResult.status) {
+          case CsvRecordStatus.Ok:
+            try {
+              csvGenerator.addRecord(decryptResult.submissionData)
+              receivedRecordCount++
+            } catch (e) {
+              errorCount++
+              console.error('Error in getResponseInstance', e)
+            }
+
+            // It's fine to hog on to the worker here while waiting for the browser
+            // rate limit to pass. If decryption is fast, we would wait regardless.
+            // If decryption is slow, we won't hit rate limits.
+            if (downloadAttachments && decryptResult.downloadBlob) {
+              await downloadResponseAttachment(
+                decryptResult.downloadBlob,
+                decryptResult.id,
+              )
+            }
+            break
+          case CsvRecordStatus.Unknown:
+            unknownStatusCount++
+            break
+          case CsvRecordStatus.Error:
+            errorCount++
+            break
+          case CsvRecordStatus.AttachmentError:
+            errorCount++
+            attachmentErrorCount++
+            break
+          case CsvRecordStatus.Unverified:
+            unverifiedCount++
+            break
+          default: {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const _: never = decryptResult.status
+            throw new Error('Invalid decryptResult status encountered.')
+          }
+        }
+        return workerIdx
+      }
+
+      const readAndQueueTask = async () => {
+        const reader = stream.getReader()
+        let progress = 0
+        let pendingTasks: Promise<number>[] = []
+
+        try {
+          while (progress < responsesCount) {
+            const { done, value } = await reader.read()
+            if (done) break
+
+            progress += 1
+            onProgress(progress)
+
+            while (idleWorkers.length === 0) {
+              const finishedTasks: number[] = []
+              for (let i = 0; i < pendingTasks.length; i++) {
+                try {
+                  const freedWorkerIdx = await withTimeout(pendingTasks[i], 10)
+                  idleWorkers.push(freedWorkerIdx)
+                  finishedTasks.push(i)
+                } catch (e) {
+                  if (
+                    e instanceof Error &&
+                    e.message === 'Operation timed out'
+                  ) {
+                    continue
+                  }
+                  console.error(`Error in task ${i}`, e)
+                }
+              }
+              pendingTasks = pendingTasks.filter(
+                (_, i) => !finishedTasks.includes(i),
+              )
+            }
+
+            const workerIdx = idleWorkers.shift()!
+            pendingTasks.push(processTask(value, workerIdx))
+          }
+          await Promise.all(pendingTasks)
+        } catch (e) {
+          console.error('Error reading stream', e)
+        } finally {
+          reader.releaseLock()
+        }
+      }
+
       const downloadStartTime = performance.now()
 
-      let progress = 0
-      let timeSinceLastXAttachmentDownload = 0
-
       return new Promise<DownloadResult>((resolve, reject) => {
-        reader
-          .read()
-          .then(
-            (read = async (result) => {
-              if (result.done) return
-              try {
-                // round-robin scheduling
-                const { workerApi } =
-                  workerPool[receivedRecordCount % numWorkers]
-                const decryptResult = await workerApi.decryptIntoCsv({
-                  line: result.value,
-                  secretKey,
-                  downloadAttachments,
-                  formId: adminForm._id,
-                  hostOrigin: window.location.origin,
-                })
-                progress += 1
-                onProgress(progress)
-
-                switch (decryptResult.status) {
-                  case CsvRecordStatus.Error:
-                    errorCount++
-                    break
-                  case CsvRecordStatus.Unverified:
-                    unverifiedCount++
-                    break
-                  case CsvRecordStatus.AttachmentError:
-                    errorCount++
-                    attachmentErrorCount++
-                    break
-                  case CsvRecordStatus.Ok: {
-                    try {
-                      csvGenerator.addRecord(decryptResult.submissionData)
-                      receivedRecordCount++
-                    } catch (e) {
-                      errorCount++
-                      console.error('Error in getResponseInstance', e)
-                    }
-
-                    if (downloadAttachments && decryptResult.downloadBlob) {
-                      // Ensure attachments downloads are spaced out to avoid browser blocking downloads
-                      if (progress % ATTACHMENT_DOWNLOAD_CONVOY_SIZE === 0) {
-                        const now = performance.now()
-                        const elapsedSinceXDownloads =
-                          now - timeSinceLastXAttachmentDownload
-
-                        const waitTime = Math.max(
-                          0,
-                          ATTACHMENT_DOWNLOAD_CONVOY_MINIMUM_SEPARATION_TIME -
-                            elapsedSinceXDownloads,
-                        )
-                        if (waitTime > 0) {
-                          await waitForMs(waitTime)
-                        }
-                        timeSinceLastXAttachmentDownload = now
-                      }
-                      await downloadResponseAttachment(
-                        decryptResult.downloadBlob,
-                        decryptResult.id,
-                      )
-                    }
-                  }
-                }
-              } catch (e) {
-                console.error('Error parsing JSON', e)
-              }
-              // recurse through the stream
-              return reader.read().then(read)
-            }),
-          )
+        readAndQueueTask()
           .catch((err) => {
             if (!downloadStartTime) {
               // No start time, means did not even start http request.
@@ -518,6 +574,7 @@ const useDecryptionWorkers = ({
                   },
                 },
               })
+
               trackDownloadNetworkFailure(adminForm, err)
             } else {
               const downloadFailedTime = performance.now()
@@ -535,6 +592,11 @@ const useDecryptionWorkers = ({
                 },
               })
 
+              downloadStatsdClient.distribution(
+                'latency.failure',
+                timeDifference,
+              )
+
               trackDownloadResponseFailure(
                 adminForm,
                 numWorkers,
@@ -542,20 +604,21 @@ const useDecryptionWorkers = ({
                 timeDifference,
                 err,
               )
-            }
 
-            console.error(
-              'Failed to download data, is there a network issue?',
-              err,
-            )
-            killWorkers(workerPool)
-            reject(err)
+              console.error(
+                'Failed to download data, is there a network issue?',
+                err,
+              )
+              killWorkers(workerPool)
+              reject(err)
+            }
           })
           .finally(() => {
             const checkComplete = () => {
               // If all the records could not be decrypted
               if (errorCount + unverifiedCount === responsesCount) {
                 const failureEndTime = performance.now()
+                // todo: check the timedifference redeclaration
                 const timeDifference = failureEndTime - downloadStartTime
 
                 datadogLogs.logger.info('Partial decryption failure', {
@@ -567,6 +630,11 @@ const useDecryptionWorkers = ({
                     attachment_error_count: attachmentErrorCount,
                   },
                 })
+
+                downloadStatsdClient.distribution(
+                  'latency.partial_failure',
+                  timeDifference,
+                )
 
                 trackPartialDecryptionFailure(
                   adminForm,
