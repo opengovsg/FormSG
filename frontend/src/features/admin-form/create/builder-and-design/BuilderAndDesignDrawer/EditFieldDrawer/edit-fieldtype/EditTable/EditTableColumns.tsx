@@ -139,7 +139,9 @@ export const EditTableColumns = ({
           <FormControl isReadOnly={isLoading}>
             <Toggle
               {...register(`columns.${index}.required`)}
-              label={t('features.adminForm.sidebar.fields.commonFieldComponents.required')}
+              label={t(
+                'features.adminForm.sidebar.fields.commonFieldComponents.required',
+              )}
             />
           </FormControl>
         </Stack>

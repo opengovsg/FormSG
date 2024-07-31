@@ -226,7 +226,10 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
         <Toggle {...register('required')} label="Required" />
       </FormControl>
       <FormControl isReadOnly={isLoading}>
-        <Toggle {...register('othersRadioButton')} label={t('features.adminForm.sidebar.fields.radio.others')} />
+        <Toggle
+          {...register('othersRadioButton')}
+          label={t('features.adminForm.sidebar.fields.radio.others')}
+        />
       </FormControl>
       <FormControl
         isRequired
@@ -234,10 +237,12 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
         isInvalid={!!errors.fieldOptions}
       >
         <FormLabel>
-        {t('features.adminForm.sidebar.fields.radio.options.title')}
+          {t('features.adminForm.sidebar.fields.radio.options.title')}
         </FormLabel>
         <Textarea
-          placeholder={t('features.adminForm.sidebar.fields.radio.options.placeholder')}
+          placeholder={t(
+            'features.adminForm.sidebar.fields.radio.options.placeholder',
+          )}
           {...register('fieldOptions', {
             validate: optionsValidation,
           })}
@@ -247,8 +252,12 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
       <Box>
         <Toggle
           {...register('validateByValue')}
-          label={t('features.adminForm.sidebar.fields.checkbox.selectionLimit.label')}
-          description={t('features.adminForm.sidebar.fields.checkbox.selectionLimit.description')}
+          label={t(
+            'features.adminForm.sidebar.fields.checkbox.selectionLimit.label',
+          )}
+          description={t(
+            'features.adminForm.sidebar.fields.checkbox.selectionLimit.description',
+          )}
         />
         <FormControl
           isDisabled={!watchedInputs.validateByValue}
@@ -272,7 +281,9 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
                   showSteppers={false}
                   onChange={validateNumberInput(onChange)}
                   {...rest}
-                  placeholder={t('features.adminForm.sidebar.fields.checkbox.selectionLimit.minimum')}
+                  placeholder={t(
+                    'features.adminForm.sidebar.fields.checkbox.selectionLimit.minimum',
+                  )}
                 />
               )}
             />
@@ -288,7 +299,9 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
                   showSteppers={false}
                   onChange={validateNumberInput(onChange)}
                   {...rest}
-                  placeholder={t('features.adminForm.sidebar.fields.checkbox.selectionLimit.maximum')}
+                  placeholder={t(
+                    'features.adminForm.sidebar.fields.checkbox.selectionLimit.maximum',
+                  )}
                 />
               )}
             />

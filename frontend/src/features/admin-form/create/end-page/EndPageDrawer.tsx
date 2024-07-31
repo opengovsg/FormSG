@@ -161,7 +161,9 @@ export const EndPageInput = ({
           isInvalid={!!errors.paragraph}
         >
           <FormLabel isRequired>
-            {t('features.adminForm.sidebar.thankYou.thankYouPage.followUpInstruction')}
+            {t(
+              'features.adminForm.sidebar.thankYou.thankYouPage.followUpInstruction',
+            )}
           </FormLabel>
           <Textarea {...register(paymentParagraph)} />
           <FormErrorMessage>{errors.paragraph?.message}</FormErrorMessage>
@@ -176,7 +178,9 @@ export const EndPageInput = ({
               {t('features.adminForm.sidebar.thankYou.thankYouPage.buttonText')}
             </FormLabel>
             <Input
-              placeholder={t('features.adminForm.sidebar.thankYou.thankYouPage.defaultButtonText')}
+              placeholder={t(
+                'features.adminForm.sidebar.thankYou.thankYouPage.defaultButtonText',
+              )}
               {...register('buttonText')}
             />
             <FormErrorMessage>{errors.buttonText?.message}</FormErrorMessage>
@@ -187,7 +191,9 @@ export const EndPageInput = ({
             isDisabled={isPayment}
           >
             <FormLabel isRequired>
-              {t('features.adminForm.sidebar.thankYou.thankYouPage.redirectLink')}
+              {t(
+                'features.adminForm.sidebar.thankYou.thankYouPage.redirectLink',
+              )}
             </FormLabel>
             <Input
               placeholder={formPlaceholder}

@@ -182,7 +182,9 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
     () => ({
       required: {
         value: true,
-        message: t('features.adminForm.sidebar.fields.number.error.validationType'),
+        message: t(
+          'features.adminForm.sidebar.fields.number.error.validationType',
+        ),
       },
     }),
     [t],
@@ -208,11 +210,11 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
       },
       min: {
         value: 1,
-        message: t('features.adminForm.sidebar.fields.number.error.min')
+        message: t('features.adminForm.sidebar.fields.number.error.min'),
       },
       max: {
         value: 10000,
-        message: t('features.adminForm.sidebar.fields.number.error.max')
+        message: t('features.adminForm.sidebar.fields.number.error.max'),
       },
     }),
     [getValues, t],
@@ -252,7 +254,9 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
       },
       min: {
         value: 1,
-        message: t('features.adminForm.sidebar.fields.number.error.minRangeValue')
+        message: t(
+          'features.adminForm.sidebar.fields.number.error.minRangeValue',
+        ),
       },
     }),
     [getValues, t],
@@ -265,7 +269,9 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
     () => ({
       min: {
         value: 1,
-        message: t('features.adminForm.sidebar.fields.number.error.maxRangeValue')
+        message: t(
+          'features.adminForm.sidebar.fields.number.error.maxRangeValue',
+        ),
       },
     }),
     [t],
@@ -301,13 +307,20 @@ export const EditNumber = ({ field }: EditNumberProps): JSX.Element => {
         isInvalid={!!errors.description}
       >
         <FormLabel>
-          {t('features.adminForm.sidebar.fields.commonFieldComponents.required')}
+          {t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.required',
+          )}
         </FormLabel>
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
       <FormControl isReadOnly={isLoading}>
-        <Toggle {...register('required')} label={t('features.adminForm.sidebar.fields.commonFieldComponents.required')} />
+        <Toggle
+          {...register('required')}
+          label={t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.required',
+          )}
+        />
       </FormControl>
       <FormControl
         isReadOnly={isLoading}

@@ -27,7 +27,7 @@ export const EmptyLogic = (): JSX.Element => {
       pt={{ base: '0.5rem', md: '2.75rem' }}
     >
       <Text textStyle="h2" as="h2">
-      {t('features.adminForm.sidebar.logic.title')}
+        {t('features.adminForm.sidebar.logic.title')}
       </Text>
       <Text textStyle="body-1" mt="1rem">
         {t('features.adminForm.sidebar.logic.helperText')}{' '}

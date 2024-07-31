@@ -34,7 +34,9 @@ export const EditTableDropdownInput = forwardRef<
       ref={ref}
       value={_value}
       onChange={handleInputChange}
-      placeholder={t('features.adminForm.sidebar.fields.radio.options.placeholder')}
+      placeholder={t(
+        'features.adminForm.sidebar.fields.radio.options.placeholder',
+      )}
     />
   )
 })

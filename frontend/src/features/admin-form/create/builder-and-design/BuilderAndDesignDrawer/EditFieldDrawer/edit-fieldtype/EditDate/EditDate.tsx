@@ -223,13 +223,20 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
             getValues('dateValidation.selectedDateValidation') ===
               DateSelectedValidation.Custom &&
             !!getValues('dateValidation.customMaxDate')
-          return !!val || hasMaxValue ||
-          t(
-            'features.adminForm.sidebar.fields.date.dateValidation.atLeastOneDateError',
+          return (
+            !!val ||
+            hasMaxValue ||
+            t(
+              'features.adminForm.sidebar.fields.date.dateValidation.atLeastOneDateError',
+            )
           )
         },
-        validDate: (val) => !val || isValid(val) ||
-        t('features.adminForm.sidebar.fields.date.dateValidation.validDateError'),
+        validDate: (val) =>
+          !val ||
+          isValid(val) ||
+          t(
+            'features.adminForm.sidebar.fields.date.dateValidation.validDateError',
+          ),
         inRange: (val) => {
           const maxDate = getValues('dateValidation.customMaxDate')
 
@@ -238,7 +245,9 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
             !val || // Only max date
             isEqual(val, maxDate) ||
             isBefore(val, maxDate) ||
-            t('features.adminForm.sidebar.fields.date.dateValidation.maxMinError')
+            t(
+              'features.adminForm.sidebar.fields.date.dateValidation.maxMinError',
+            )
           )
         },
       },
@@ -268,7 +277,9 @@ export const EditDate = ({ field }: EditDateProps): JSX.Element => {
         isReadOnly={isLoading}
         isInvalid={!isEmpty(errors.dateValidation)}
       >
-        <FormLabel isRequired>{t('features.adminForm.sidebar.fields.date.dateValidation.title')}</FormLabel>
+        <FormLabel isRequired>
+          {t('features.adminForm.sidebar.fields.date.dateValidation.title')}
+        </FormLabel>
         <SimpleGrid mt="0.5rem" columns={2} spacing="0.5rem">
           <Box gridColumn="1/3">
             <Controller

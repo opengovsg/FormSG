@@ -68,7 +68,12 @@ export const EditHomeno = ({ field }: EditHomenoProps): JSX.Element => {
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
       <FormControl isReadOnly={isLoading}>
-        <Toggle {...register('required')} label={t('features.adminForm.sidebar.fields.commonFieldComponents.required')} />
+        <Toggle
+          {...register('required')}
+          label={t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.required',
+          )}
+        />
       </FormControl>
       <FormControl isReadOnly={isLoading}>
         <Toggle

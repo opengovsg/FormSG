@@ -193,9 +193,10 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
   )
 
   const buttonText = useMemo(
-    () => isPendingField
-      ? t('features.adminForm.sidebar.fields.builder.createField')
-      : t('features.common.save'),
+    () =>
+      isPendingField
+        ? t('features.adminForm.sidebar.fields.builder.createField')
+        : t('features.common.save'),
     [isPendingField, t],
   )
 

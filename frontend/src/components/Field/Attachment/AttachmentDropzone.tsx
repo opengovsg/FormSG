@@ -36,7 +36,9 @@ export const AttachmentDropzone = ({
       ) : (
         <Text aria-hidden>
           <Link isDisabled={inputProps.disabled}>
-            {t('features.adminForm.sidebar.fields.imageAttachment.fileUploaderLink')}
+            {t(
+              'features.adminForm.sidebar.fields.imageAttachment.fileUploaderLink',
+            )}
           </Link>
           {t('features.adminForm.sidebar.fields.imageAttachment.dragAndDrop')}
         </Text>

@@ -136,7 +136,9 @@ export const EditDecimal = ({ field }: EditDecimalProps): JSX.Element => {
               render={({ field: { value, ...field } }) => (
                 <NumberInput
                   showSteppers={false}
-                  placeholder={t('features.adminForm.sidebar.fields.number.minValue')}
+                  placeholder={t(
+                    'features.adminForm.sidebar.fields.number.minValue',
+                  )}
                   value={value ?? ''}
                   {...field}
                 />
@@ -151,7 +153,9 @@ export const EditDecimal = ({ field }: EditDecimalProps): JSX.Element => {
                   showSteppers={false}
                   value={value ?? ''}
                   {...field}
-                  placeholder={t('features.adminForm.sidebar.fields.number.maxValue')}
+                  placeholder={t(
+                    'features.adminForm.sidebar.fields.number.maxValue',
+                  )}
                 />
               )}
             />

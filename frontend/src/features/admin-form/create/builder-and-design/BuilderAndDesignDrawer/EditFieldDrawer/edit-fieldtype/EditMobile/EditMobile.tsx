@@ -76,13 +76,20 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
           isInvalid={!!errors.description}
         >
           <FormLabel>
-            {t('features.adminForm.sidebar.fields.commonFieldComponents.description')}
+            {t(
+              'features.adminForm.sidebar.fields.commonFieldComponents.description',
+            )}
           </FormLabel>
           <Textarea {...register('description')} />
           <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
         </FormControl>
         <FormControl isReadOnly={isLoading}>
-          <Toggle {...register('required')} label={t('features.adminForm.sidebar.fields.commonFieldComponents.required')} />
+          <Toggle
+            {...register('required')}
+            label={t(
+              'features.adminForm.sidebar.fields.commonFieldComponents.required',
+            )}
+          />
         </FormControl>
         <FormControl isReadOnly={isLoading}>
           <Toggle

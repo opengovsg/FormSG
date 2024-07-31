@@ -130,7 +130,9 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
       </FormControl>
       <FormControl isReadOnly={isLoading} isInvalid={!!errors.description}>
         <FormLabel>
-          {t('features.adminForm.sidebar.fields.commonFieldComponents.description')}
+          {t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.description',
+          )}
         </FormLabel>
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
@@ -151,7 +153,9 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
               required: REQUIRED_ERROR,
               min: {
                 value: 1,
-                message: t('features.adminForm.sidebar.fields.table.error.minRow'),
+                message: t(
+                  'features.adminForm.sidebar.fields.table.error.minRow',
+                ),
               },
               deps: ['maximumRows'],
             }}
@@ -168,7 +172,9 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
         <FormControl isReadOnly={isLoading}>
           <Toggle
             {...register('addMoreRows')}
-            label={t('features.adminForm.sidebar.fields.table.allowAddMoreRows')}
+            label={t(
+              'features.adminForm.sidebar.fields.table.allowAddMoreRows',
+            )}
           />
         </FormControl>
         {getValues('addMoreRows') ? (
@@ -186,13 +192,17 @@ export const EditTable = ({ field }: EditTableProps): JSX.Element => {
               rules={{
                 min: {
                   value: 1,
-                  message: t('features.adminForm.sidebar.fields.table.error.maxRow'),
+                  message: t(
+                    'features.adminForm.sidebar.fields.table.error.maxRow',
+                  ),
                 },
                 // Must be greater than minimum rows
                 validate: (value) =>
                   !value ||
                   value > getValues('minimumRows') ||
-                  t('features.adminForm.sidebar.fields.table.error.maxRowGreaterThanMin'),
+                  t(
+                    'features.adminForm.sidebar.fields.table.error.maxRowGreaterThanMin',
+                  ),
               }}
               control={control}
               render={({ field: { onChange, ...rest } }) => (

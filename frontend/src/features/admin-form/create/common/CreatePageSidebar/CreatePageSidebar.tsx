@@ -111,7 +111,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
     >
       <Stack spacing="0.5rem">
         <DrawerTabIcon
-          label={t('features.adminForm.sidebar.fields.addFields')}
+          label={t('features.adminForm.sidebar.fields.builder.addField')}
           icon={<BxsWidget fontSize="1.5rem" />}
           onClick={handleDrawerBuilderClick}
           isActive={activeTab === DrawerTabs.Builder}

@@ -172,7 +172,12 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
       <FormControl isReadOnly={isLoading}>
-        <Toggle {...register('required')} label={t('features.adminForm.sidebar.fields.commonFieldComponents.required')} />
+        <Toggle
+          {...register('required')}
+          label={t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.required',
+          )}
+        />
       </FormControl>
       <FormControl isReadOnly={isLoading}>
         <Toggle
@@ -230,7 +235,9 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
             description={t(
               'features.adminForm.sidebar.fields.email.emailConfirmation.description',
             )}
-            label={t('features.adminForm.sidebar.fields.email.emailConfirmation.title')}
+            label={t(
+              'features.adminForm.sidebar.fields.email.emailConfirmation.title',
+            )}
           />
         </FormControl>
         {watchedHasAutoReply && (

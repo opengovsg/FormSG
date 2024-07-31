@@ -139,8 +139,8 @@ export const enSG: Fields = {
     maxFileSize: 'Maximum file size: {{readableMaxSize}}',
     ariaLabelRemove: 'Click to remove file',
     error: {
-      fileEmpty: 
-      'You have uploaded an empty file, please upload a valid attachment',
+      fileEmpty:
+        'You have uploaded an empty file, please upload a valid attachment',
       fileTooLarge:
         'You have exceeded the limit, please upload a file below {{readableMaxSize}}',
       fileInvalidType:

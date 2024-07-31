@@ -164,7 +164,9 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
             }
           } catch {
             return onError?.(
-              t('features.adminForm.sidebar.fields.imageAttachment.error.zipParsing'),
+              t(
+                'features.adminForm.sidebar.fields.imageAttachment.error.zipParsing',
+              ),
             )
           }
         }
@@ -209,7 +211,9 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
           if (file.size === 0) {
             return {
               code: 'file-empty',
-              message: t('features.adminForm.sidebar.fields.imageAttachment.error.zipParsing'),
+              message: t(
+                'features.adminForm.sidebar.fields.imageAttachment.error.zipParsing',
+              ),
             }
           }
         }
@@ -309,9 +313,12 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
               textStyle="body-2"
               aria-hidden
             >
-              {t('features.adminForm.sidebar.fields.imageAttachment.maxFileSize', {
-                readableMaxSize,
-              })}
+              {t(
+                'features.adminForm.sidebar.fields.imageAttachment.maxFileSize',
+                {
+                  readableMaxSize,
+                },
+              )}
             </Text>
           ) : null}
         </Box>

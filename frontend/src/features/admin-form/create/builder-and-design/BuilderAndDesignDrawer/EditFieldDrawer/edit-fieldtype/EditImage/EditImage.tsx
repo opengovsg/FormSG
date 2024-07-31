@@ -170,7 +170,9 @@ export const EditImage = ({ field }: EditImageProps): JSX.Element => {
           rules={{
             validate: (val) => {
               if (val?.file && val.srcUrl) return true
-              return t('features.adminForm.sidebar.fields.imageAttachment.requiredError')
+              return t(
+                'features.adminForm.sidebar.fields.imageAttachment.requiredError',
+              )
             },
           }}
           name="attachment"

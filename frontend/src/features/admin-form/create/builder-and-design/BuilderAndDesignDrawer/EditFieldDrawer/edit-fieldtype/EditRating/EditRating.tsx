@@ -76,8 +76,10 @@ export const EditRating = ({ field }: EditRatingProps): JSX.Element => {
       </FormControl>
       <FormControl isReadOnly={isLoading}>
         <Toggle
-        {...register('required')}
-        label={t('features.adminForm.sidebar.fields.commonFieldComponents.required')}
+          {...register('required')}
+          label={t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.required',
+          )}
         />
       </FormControl>
       <FormControl id="ratingOptions.steps" isReadOnly={isLoading}>

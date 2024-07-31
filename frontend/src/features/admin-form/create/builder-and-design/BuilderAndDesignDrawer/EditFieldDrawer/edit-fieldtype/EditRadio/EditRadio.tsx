@@ -101,7 +101,9 @@ export const EditRadio = ({ field }: EditRadioProps): JSX.Element => {
       </FormControl>
       <FormControl isReadOnly={isLoading} isInvalid={!!errors.description}>
         <FormLabel>
-          {t('features.adminForm.sidebar.fields.commonFieldComponents.description')}
+          {t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.description',
+          )}
         </FormLabel>
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
@@ -109,11 +111,13 @@ export const EditRadio = ({ field }: EditRadioProps): JSX.Element => {
       <FormControl isReadOnly={isLoading}>
         <Toggle
           {...register('required')}
-          label={t('features.adminForm.sidebar.fields.commonFieldComponents.required')}
+          label={t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.required',
+          )}
         />
       </FormControl>
       <FormControl isReadOnly={isLoading}>
-        <Toggle 
+        <Toggle
           {...register('othersRadioButton')}
           label={t('features.adminForm.sidebar.fields.radio.others')}
         />
@@ -127,7 +131,9 @@ export const EditRadio = ({ field }: EditRadioProps): JSX.Element => {
           {t('features.adminForm.sidebar.fields.radio.options.title')}
         </FormLabel>
         <Textarea
-          placeholder={t('features.adminForm.sidebar.fields.radio.options.placeholder')}
+          placeholder={t(
+            'features.adminForm.sidebar.fields.radio.options.placeholder',
+          )}
           {...register('fieldOptionsString', {
             validate: optionsValidation,
           })}

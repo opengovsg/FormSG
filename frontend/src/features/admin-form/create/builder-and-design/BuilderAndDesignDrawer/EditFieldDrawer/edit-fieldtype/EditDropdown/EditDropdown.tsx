@@ -96,7 +96,9 @@ export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
           {t('features.adminForm.sidebar.fields.radio.options.title')}
         </FormLabel>
         <Textarea
-          placeholder={t('features.adminForm.sidebar.fields.radio.options.placeholder')}
+          placeholder={t(
+            'features.adminForm.sidebar.fields.radio.options.placeholder',
+          )}
           {...register('fieldOptionsString', {
             validate: SPLIT_TEXTAREA_VALIDATION,
           })}

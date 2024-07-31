@@ -156,12 +156,14 @@ export const EditConditionBlock = ({
       case BasicField.YesNo:
         return [
           t('features.adminForm.sidebar.fields.yesNo.yes'),
-          t('features.adminForm.sidebar.fields.yesNo.no')
+          t('features.adminForm.sidebar.fields.yesNo.no'),
         ]
       case BasicField.Radio:
         if (mappedField.othersRadioButton) {
           // 'Others' does not show up in fieldOptions
-          return mappedField.fieldOptions.concat(t('features.adminForm.sidebar.fields.radio.others'))
+          return mappedField.fieldOptions.concat(
+            t('features.adminForm.sidebar.fields.radio.others'),
+          )
         }
         return mappedField.fieldOptions
       case BasicField.Dropdown:
@@ -196,9 +198,11 @@ export const EditConditionBlock = ({
         case LogicIfValue.Number: {
           if (currentSelectedField?.fieldType === BasicField.Decimal)
             // Mimics behavior of actual decimal field in public forms
-            return !val ||
-            !isNaN(Number(val)) ||
-            t('features.adminForm.sidebar.fields.number.error.validDecimal')
+            return (
+              !val ||
+              !isNaN(Number(val)) ||
+              t('features.adminForm.sidebar.fields.number.error.validDecimal')
+            )
           return true
         }
         default:

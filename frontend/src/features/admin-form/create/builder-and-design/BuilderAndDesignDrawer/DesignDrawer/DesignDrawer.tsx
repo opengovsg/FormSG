@@ -291,7 +291,9 @@ export const DesignInput = (): JSX.Element | null => {
         onFocus={setToEditingHeader}
       >
         <FormLabel>
-          {t('features.adminForm.sidebar.headerAndInstructions.themeColour.title')}
+          {t(
+            'features.adminForm.sidebar.headerAndInstructions.themeColour.title',
+          )}
         </FormLabel>
         <Radio.RadioGroup
           defaultValue={startPageData.colorTheme}
@@ -335,7 +337,9 @@ export const DesignInput = (): JSX.Element | null => {
         isInvalid={!!errors.estTimeTaken}
         onFocus={setToEditingHeader}
       >
-        <FormLabel>{t('features.adminForm.sidebar.headerAndInstructions.minutes')}</FormLabel>
+        <FormLabel>
+          {t('features.adminForm.sidebar.headerAndInstructions.minutes')}
+        </FormLabel>
         <Controller
           name="estTimeTaken"
           control={control}
@@ -361,7 +365,9 @@ export const DesignInput = (): JSX.Element | null => {
         isReadOnly={startPageMutation.isLoading}
         isInvalid={!!errors.paragraph}
       >
-        <FormLabel>{t('features.adminForm.sidebar.headerAndInstructions.instruction')}</FormLabel>
+        <FormLabel>
+          {t('features.adminForm.sidebar.headerAndInstructions.instruction')}
+        </FormLabel>
         <Textarea
           onFocus={setToEditingInstructions}
           {...register('paragraph')}

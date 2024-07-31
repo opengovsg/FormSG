@@ -171,7 +171,9 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
         isReadOnly={isLoading}
         isInvalid={!!errors.attachmentSize}
       >
-        <FormLabel isRequired>{t('features.adminForm.sidebar.fields.attachment.maximumSize')}</FormLabel>
+        <FormLabel isRequired>
+          {t('features.adminForm.sidebar.fields.attachment.maximumSize')}
+        </FormLabel>
         <Skeleton isLoaded={!!form}>
           <Controller
             control={control}
