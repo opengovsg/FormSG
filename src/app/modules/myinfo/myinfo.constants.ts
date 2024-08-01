@@ -6,7 +6,7 @@ import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
  * We make this a constant because it is part of the route
  * registered with MyInfo.
  */
-export const MYINFO_ROUTER_PREFIX = '/myinfo'
+export const MYINFO_ROUTER_PREFIX = '/mi'
 
 /**
  * Path to be added after MYINFO_ROUTER_PREFIX for the login
