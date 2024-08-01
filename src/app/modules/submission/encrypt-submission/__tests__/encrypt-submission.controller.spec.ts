@@ -29,6 +29,7 @@ import {
   SubmitEncryptModeFormHandlerRequest,
 } from '../encrypt-submission.types'
 
+jest.mock('src/app/modules/datadog/datadog.utils')
 jest.mock('src/app/utils/pipeline-middleware', () => {
   const MockPipeline = jest.fn().mockImplementation(() => {
     return {
