@@ -1,8 +1,7 @@
 import {
   FORM_RESPONDENT_NOT_WHITELISTED_ERROR_MESSAGE,
   FORM_SINGLE_SUBMISSION_VALIDATION_ERROR_MESSAGE,
-} from 'shared/constants/errors'
-
+} from '../../../../shared/constants/errors'
 import { FormAuthType } from '../../../../shared/types'
 import { ApplicationError, ErrorCodes } from '../core/core.errors'
 
