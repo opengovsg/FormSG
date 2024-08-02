@@ -1,3 +1,8 @@
+import {
+  FORM_RESPONDENT_NOT_WHITELISTED_ERROR_MESSAGE,
+  FORM_SINGLE_SUBMISSION_VALIDATION_ERROR_MESSAGE,
+} from 'shared/constants/errors'
+
 import { FormAuthType } from '../../../../shared/types'
 import { ApplicationError, ErrorCodes } from '../core/core.errors'
 
@@ -26,7 +31,7 @@ export class PrivateFormError extends ApplicationError {
    * @param formTitle Extra meta for form title
    */
   constructor(
-    message = 'If you think this is a mistake, please contact the agency that gave you the form link.',
+    message = 'If you require further assistance, please contact the agency that gave you the form link.',
     formTitle: string,
   ) {
     super(message, undefined, ErrorCodes.FORM_PRIVATE_FORM)
@@ -92,7 +97,7 @@ export class FormAuthNoEsrvcIdError extends ApplicationError {
 export class FormRespondentNotWhitelistedError extends ApplicationError {
   constructor() {
     super(
-      'Your NRIC/FIN/UEN is not authorised to submit this form. If you think this is a mistake, please contact the agency that gave you the form link.',
+      FORM_RESPONDENT_NOT_WHITELISTED_ERROR_MESSAGE,
       undefined,
       ErrorCodes.FORM_RESPONDENT_NOT_WHITELISTED,
     )
@@ -112,7 +117,7 @@ export class FormWhitelistSettingNotFoundError extends ApplicationError {
 export class FormRespondentSingleSubmissionValidationError extends ApplicationError {
   constructor() {
     super(
-      'Your NRIC/FIN/UEN has already been used to respond to this form. If you think this is a mistake, please contact the agency that gave you the form link.',
+      FORM_SINGLE_SUBMISSION_VALIDATION_ERROR_MESSAGE,
       undefined,
       ErrorCodes.FORM_RESPONDENT_SINGLE_SUBMISSION_VALIDATION_FAILED,
     )

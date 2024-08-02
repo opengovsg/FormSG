@@ -5,6 +5,10 @@ import { merge } from 'lodash'
 import mongoose from 'mongoose'
 import { ok, okAsync } from 'neverthrow'
 import {
+  FORM_RESPONDENT_NOT_WHITELISTED_ERROR_MESSAGE,
+  FORM_SINGLE_SUBMISSION_VALIDATION_ERROR_MESSAGE,
+} from 'shared/constants/errors'
+import {
   BasicField,
   ErrorCode,
   FormAuthType,
@@ -70,7 +74,6 @@ jest.mock('src/app/modules/verified-content/verified-content.service', () => {
 const MockOidcService = jest.mocked(OidcService)
 const MockMailService = jest.mocked(MailService)
 const MockVerifiedContentService = jest.mocked(VerifiedContentService)
-const MockFormService = jest.mocked(FormService)
 
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 
@@ -636,7 +639,7 @@ describe('encrypt-submission.controller', () => {
       expect(mockRes.status).toHaveBeenCalledOnceWith(403)
 
       expect((mockRes.json as jest.Mock).mock.calls[0][0].message).toEqual(
-        'Your NRIC/FIN/UEN is not authorised to submit this form. If you think this is a mistake, please contact the agency that gave you the form link.',
+        FORM_RESPONDENT_NOT_WHITELISTED_ERROR_MESSAGE,
       )
 
       expect(performEncryptPostSubmissionActionsSpy).not.toHaveBeenCalled()
@@ -777,8 +780,7 @@ describe('encrypt-submission.controller', () => {
 
       // Assert that response has the single submission validation failure flag
       expect(mockRes.json).toHaveBeenCalledWith({
-        message:
-          'Your NRIC/FIN/UEN has already been used to respond to this form. If you think this is a mistake, please contact the agency that gave you the form link.',
+        message: FORM_SINGLE_SUBMISSION_VALIDATION_ERROR_MESSAGE,
         errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
       })
 

@@ -77,7 +77,7 @@ const FORM_DEFAULTS = {
   isNricMaskEnabled: false,
   isSingleSubmission: false,
   inactiveMessage:
-    'If you think this is a mistake, please contact the agency that gave you the form link.',
+    'If you require further assistance, please contact the agency that gave you the form link.',
   isListed: true,
   startPage: {
     colorTheme: 'blue',
