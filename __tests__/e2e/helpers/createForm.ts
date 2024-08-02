@@ -195,7 +195,7 @@ const addSettings = async (
     if (formResponseMode.responseMode === FormResponseMode.Encrypt) {
       // Upload the secret key and confirm to open the form.
       await page
-        .getByPlaceholder('Enter or upload your Secret Key to continue')
+        .getByPlaceholder('Enter or drop your Secret Key to continue')
         .fill(formResponseMode.secretKey)
       await page
         .locator('label')
