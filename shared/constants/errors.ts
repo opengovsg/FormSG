@@ -16,7 +16,7 @@ export const FORM_RESPONDENT_NOT_WHITELISTED_ERROR_MESSAGE =
   'You do not have access to this form. If you require further assistance, please contact the agency that gave you the form link.'
 
 export const FORM_WHITELIST_SETTING_CONTAINS_DUPLICATES_ERROR_MESSAGE =
-  'There are duplicate entries in your CSV'
+  'Your CSV contains duplicate entries.'
 
 export const FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE =
   (exampleInvalidSubmitterId: string) =>
