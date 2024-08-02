@@ -328,12 +328,12 @@ export const handleGetPublicForm: ControllerHandler<
     }
   }
 
+  // for consistency with whitelist lookup which also uppercases all submitterIds when saving
+  const submitterId = spcpSession.userName.toUpperCase()
+
   // validate if respondent is whitelisted
   const hasRespondentNotWhitelistedErrorResult =
-    await FormService.checkHasRespondentNotWhitelistedFailure(
-      form,
-      spcpSession.userName,
-    )
+    await FormService.checkHasRespondentNotWhitelistedFailure(form, submitterId)
 
   if (hasRespondentNotWhitelistedErrorResult.isErr()) {
     const error = hasRespondentNotWhitelistedErrorResult.error
@@ -367,7 +367,7 @@ export const handleGetPublicForm: ControllerHandler<
   const hasSingleSubmissionValidationFailureResult =
     await FormService.checkHasSingleSubmissionValidationFailure(
       publicForm,
-      generateHashedSubmitterId(spcpSession.userName, form.id),
+      generateHashedSubmitterId(submitterId, form.id),
     )
 
   if (hasSingleSubmissionValidationFailureResult.isErr()) {

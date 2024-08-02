@@ -262,8 +262,10 @@ const submitEncryptModeForm = async (
     }
   }
 
+  const submitterId = userName?.toUpperCase()
+
   if (
-    userName &&
+    submitterId &&
     form.whitelistedSubmitterIds?.isWhitelistEnabled &&
     (form.authType === FormAuthType.SP ||
       form.authType === FormAuthType.CP ||
@@ -272,7 +274,10 @@ const submitEncryptModeForm = async (
       form.authType === FormAuthType.SGID_MyInfo)
   ) {
     const hasRespondentNotWhitelistedErrorResult =
-      await FormService.checkHasRespondentNotWhitelistedFailure(form, userName)
+      await FormService.checkHasRespondentNotWhitelistedFailure(
+        form,
+        submitterId,
+      )
 
     if (hasRespondentNotWhitelistedErrorResult.isErr()) {
       const error = hasRespondentNotWhitelistedErrorResult.error
@@ -306,8 +311,8 @@ const submitEncryptModeForm = async (
 
   let hashedSubmitterId
   // Generate submitterId for Singpass auth modes
-  if (userName && form.authType !== FormAuthType.NIL) {
-    hashedSubmitterId = generateHashedSubmitterId(userName, form.id)
+  if (submitterId && form.authType !== FormAuthType.NIL) {
+    hashedSubmitterId = generateHashedSubmitterId(submitterId, form.id)
   }
 
   // Mask if Nric masking is enabled

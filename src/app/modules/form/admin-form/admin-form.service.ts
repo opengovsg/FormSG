@@ -15,6 +15,9 @@ import {
 import type { Except, Merge } from 'type-fest'
 
 import {
+  FORM_WHITELIST_CONTAINS_EMPTY_ROWS_ERROR_MESSAGE,
+  FORM_WHITELIST_SETTING_CONTAINS_DUPLICATES_ERROR_MESSAGE,
+  FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE,
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
   WHITELISTED_SUBMITTER_ID_DECRYPTION_FIELDS,
@@ -1060,7 +1063,7 @@ export const checkIsWhitelistSettingValid = (
   if (emptyRowIndex !== -1) {
     return {
       isValid: false,
-      invalidReason: `Your CSV contains an empty row at row ${emptyRowIndex + 1}`,
+      invalidReason: FORM_WHITELIST_CONTAINS_EMPTY_ROWS_ERROR_MESSAGE,
     }
   }
 
@@ -1076,7 +1079,10 @@ export const checkIsWhitelistSettingValid = (
   if (invalidEntries.length > 0) {
     return {
       isValid: false,
-      invalidReason: `Your CSV contains NRIC/FIN/UEN(s) that are not in the correct format. (e.g, ${invalidEntries[0]})`,
+      invalidReason:
+        FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE(
+          invalidEntries[0],
+        ),
     }
   }
 
@@ -1086,7 +1092,7 @@ export const checkIsWhitelistSettingValid = (
   ) {
     return {
       isValid: false,
-      invalidReason: 'There are duplicate entries in your CSV',
+      invalidReason: FORM_WHITELIST_SETTING_CONTAINS_DUPLICATES_ERROR_MESSAGE,
     }
   }
 

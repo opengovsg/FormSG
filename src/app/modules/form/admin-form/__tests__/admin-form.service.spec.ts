@@ -6,6 +6,10 @@ import { assignIn, cloneDeep, merge, omit, pick } from 'lodash'
 import mongoose, { ClientSession } from 'mongoose'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 import { Workspace } from 'shared/types/workspace'
+import {
+  EncryptedStringsMessageContent,
+  EncryptedStringsMessageContentWithMyPrivateKey,
+} from 'shared/utils/crypto'
 
 import config, { aws } from 'src/app/config/config'
 import getAgencyModel from 'src/app/models/agency.server.model'
@@ -13,6 +17,7 @@ import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,
 } from 'src/app/models/form.server.model'
+import getFormWhitelistSubmitterIdsModel from 'src/app/models/form_whitelist.server.model'
 import { getWorkspaceModel } from 'src/app/models/workspace.server.model'
 import {
   ApplicationError,
@@ -33,12 +38,19 @@ import {
   IEmailFormSchema,
   IFormDocument,
   IFormSchema,
+  IFormWhitelistedSubmitterIdsSchema,
+  IPopulatedEncryptedForm,
   IPopulatedForm,
   IUserSchema,
   PickDuplicateForm,
 } from 'src/types'
 import { EditFormFieldParams } from 'src/types/api'
 
+import {
+  FORM_WHITELIST_CONTAINS_EMPTY_ROWS_ERROR_MESSAGE,
+  FORM_WHITELIST_SETTING_CONTAINS_DUPLICATES_ERROR_MESSAGE,
+  FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE,
+} from '../../../../../../shared/constants/errors'
 import { VALID_UPLOAD_FILE_TYPES } from '../../../../../../shared/constants/file'
 import {
   AdminDashboardFormMetaDto,
@@ -84,6 +96,8 @@ const EmailFormModel = getEmailFormModel(mongoose)
 const EncryptFormModel = getEncryptedFormModel(mongoose)
 const AgencyModel = getAgencyModel(mongoose)
 const WorkspaceModel = getWorkspaceModel(mongoose)
+const FormWhitelistedSubmitterIdsModel =
+  getFormWhitelistSubmitterIdsModel(mongoose)
 
 jest.mock('src/app/modules/user/user.service')
 const MockUserService = jest.mocked(UserService)
@@ -2875,6 +2889,188 @@ describe('admin-form.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(1)
 
       expect(twilioCacheSpy).toHaveBeenCalledWith(MSG_SRVC_NAME)
+    })
+  })
+
+  describe('checkIsWhitelistSettingValid', () => {
+    const MOCK_VALID_UEN = '53244311W'
+    const MOCK_VALID_FIN = 'F1612366T'
+    const MOCK_VALID_NRIC = 'S7101844Z'
+
+    it('should return isValid as true without invalidReason if whitelist setting contains valid submitterIds', () => {
+      // Arrange
+      const MOCK_WHITELIST_SETTING = [
+        MOCK_VALID_NRIC,
+        MOCK_VALID_FIN,
+        MOCK_VALID_UEN,
+      ]
+
+      // Act
+      const result = AdminFormService.checkIsWhitelistSettingValid(
+        MOCK_WHITELIST_SETTING,
+      )
+
+      // Assert
+      expect(result).toEqual({
+        isValid: true,
+      })
+    })
+
+    it('should return isValid as true without invalidReason if whitelist setting contains no submitterIds', () => {
+      // Arrange
+      const MOCK_WHITELIST_SETTING: string[] = []
+
+      // Act
+      const result = AdminFormService.checkIsWhitelistSettingValid(
+        MOCK_WHITELIST_SETTING,
+      )
+
+      // Assert
+      expect(result).toEqual({
+        isValid: true,
+      })
+    })
+
+    it('should return isValid as true without invalidReason if whitelist setting is null which means setting as isWhitelistEnabled to false', () => {
+      // Arrange
+      const MOCK_WHITELIST_SETTING = null
+
+      // Act
+      const result = AdminFormService.checkIsWhitelistSettingValid(
+        MOCK_WHITELIST_SETTING,
+      )
+
+      // Assert
+      expect(result).toEqual({
+        isValid: true,
+      })
+    })
+
+    it('should return duplicate submitter id error message if whitelist csv string has duplicate submitter ids', () => {
+      // Arrange
+      const MOCK_WHITELIST_SETTING = [
+        MOCK_VALID_NRIC,
+        MOCK_VALID_FIN,
+        MOCK_VALID_UEN,
+        MOCK_VALID_UEN,
+      ]
+
+      // Act
+      const result = AdminFormService.checkIsWhitelistSettingValid(
+        MOCK_WHITELIST_SETTING,
+      )
+
+      // Assert
+      expect(result).toEqual({
+        isValid: false,
+        invalidReason: FORM_WHITELIST_SETTING_CONTAINS_DUPLICATES_ERROR_MESSAGE,
+      })
+    })
+
+    it('should return empty row not allowed error message if whitelist csv string has empty rows', () => {
+      // Arrange
+      const MOCK_WHITELIST_SETTING = [
+        MOCK_VALID_NRIC,
+        MOCK_VALID_FIN,
+        '',
+        MOCK_VALID_UEN,
+      ]
+
+      // Act
+      const result = AdminFormService.checkIsWhitelistSettingValid(
+        MOCK_WHITELIST_SETTING,
+      )
+
+      // Assert
+      expect(result).toEqual({
+        isValid: false,
+        invalidReason: FORM_WHITELIST_CONTAINS_EMPTY_ROWS_ERROR_MESSAGE,
+      })
+    })
+
+    it('should return invalid submitter id error message if whitelist csv string has invalid submitter ids', () => {
+      // Arrange
+      const invalidSubmitterId = 'invalid'
+      const MOCK_WHITELIST_SETTING = [
+        MOCK_VALID_NRIC,
+        MOCK_VALID_FIN,
+        MOCK_VALID_UEN,
+        invalidSubmitterId,
+      ]
+
+      // Act
+      const result = AdminFormService.checkIsWhitelistSettingValid(
+        MOCK_WHITELIST_SETTING,
+      )
+
+      // Assert
+      expect(result).toEqual({
+        isValid: false,
+        invalidReason:
+          FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE(
+            invalidSubmitterId,
+          ),
+      })
+    })
+  })
+
+  describe('getFormWhitelistSetting', () => {
+    it('should not include myPrivateKey when fetching the whitelist setting', async () => {
+      // Arrange
+      const MOCK_FORM_ID = new ObjectId()
+
+      const MOCK_WHITELISTED_SUBMITTER_IDS_CONTENT: EncryptedStringsMessageContent =
+        {
+          myPublicKey: 'some public key',
+          cipherTexts: ['abc', 'def'],
+          nonce: 'some nonce',
+        }
+      const MOCK_WHITELISTED_SUBMITTER_IDS_CONTENT_WITH_PK: EncryptedStringsMessageContentWithMyPrivateKey =
+        {
+          ...MOCK_WHITELISTED_SUBMITTER_IDS_CONTENT,
+          myPrivateKey: 'some private key',
+        }
+
+      const LEAN_WHITELISTED_SUBMITTER_IDS_DOC = {
+        formId: MOCK_FORM_ID,
+        ...MOCK_WHITELISTED_SUBMITTER_IDS_CONTENT_WITH_PK,
+      }
+
+      const MOCK_WHITELISTED_SUBMITTER_ID_QUERY = {
+        exec: jest.fn().mockResolvedValue(LEAN_WHITELISTED_SUBMITTER_IDS_DOC),
+      }
+
+      const formWhitelistedSubmitterIdsModelCreateSpy = jest
+        .spyOn(FormWhitelistedSubmitterIdsModel, 'findById')
+        .mockReturnValueOnce({
+          lean: jest
+            .fn()
+            .mockReturnValue(MOCK_WHITELISTED_SUBMITTER_ID_QUERY) as any,
+        } as any)
+
+      const MOCK_ENCRYPTED_WHITELIST_DOCUMENT_ID = new ObjectId()
+
+      const MOCK_FORM_DOCUMENT = {
+        getWhitelistedSubmitterIds: jest.fn().mockReturnValue({
+          isWhitelistEnabled: true,
+          encryptedWhitelistedSubmitterIds:
+            MOCK_ENCRYPTED_WHITELIST_DOCUMENT_ID,
+        }),
+      } as unknown as IPopulatedEncryptedForm
+
+      // Act
+      const whitelistedSettingResult =
+        await AdminFormService.getFormWhitelistSetting(MOCK_FORM_DOCUMENT)
+
+      // Assert no error occurred
+      expect(formWhitelistedSubmitterIdsModelCreateSpy).toHaveBeenCalledWith(
+        MOCK_ENCRYPTED_WHITELIST_DOCUMENT_ID,
+      )
+      expect(whitelistedSettingResult.isOk()).toEqual(true)
+      // Assert that the myPrivateKey is not included in the fetched whitelist settings
+      expect(whitelistedSettingResult._unsafeUnwrap()).toEqual(
+        MOCK_WHITELISTED_SUBMITTER_IDS_CONTENT,
+      )
     })
   })
 })

@@ -321,7 +321,8 @@ export const submitEmailModeForm: ControllerHandler<
               response.question === SPCPFieldTitle.CpUen ||
               response.question === SgidFieldTitle.SgidNric,
           ) as ProcessedSingleAnswerResponse
-          submitterId = ndiResponse?.answer
+          submitterId = ndiResponse?.answer?.toUpperCase() ?? null
+          submitterId = submitterId
             ? generateHashedSubmitterId(ndiResponse.answer, form.id)
             : undefined
         }

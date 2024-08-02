@@ -307,17 +307,17 @@ describe('encrypt-submission.controller', () => {
       // Act
       await submitEncryptModeFormForTest(mockReq, mockRes)
 
-      // Assert that submitterId is hashed
+      // Assert that submitterId is uppercased and then hashed
       expect(saveIfSubmitterIdIsUniqueSpy).toHaveBeenCalledTimes(1)
       expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][1]).toEqual(
         generateHashedSubmitterId(
-          MOCK_JWT_PAYLOAD.userName,
+          MOCK_JWT_PAYLOAD.userName.toUpperCase(),
           mockSpAuthTypeAndIsSingleSubmissionEnabledForm.id,
         ),
       )
       expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][2].submitterId).toEqual(
         generateHashedSubmitterId(
-          MOCK_JWT_PAYLOAD.userName,
+          MOCK_JWT_PAYLOAD.userName.toUpperCase(),
           mockSpAuthTypeAndIsSingleSubmissionEnabledForm.id,
         ),
       )
@@ -379,18 +379,18 @@ describe('encrypt-submission.controller', () => {
       // Act
       await submitEncryptModeFormForTest(mockReq, mockRes)
 
-      // Assert that submitterId is hashed
+      // Assert that submitterId is uppercased then hashed
       expect(saveIfSubmitterIdIsUniqueSpy).toHaveBeenCalledTimes(1)
       expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][1]).toEqual(
         generateHashedSubmitterId(
-          MOCK_JWT_PAYLOAD.userName,
-          mockFormId.toHexString(),
+          MOCK_JWT_PAYLOAD.userName.toUpperCase(),
+          mockCpAuthTypeAndIsSingleSubmissionEnabledForm.id,
         ),
       )
       expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][2].submitterId).toEqual(
         generateHashedSubmitterId(
-          MOCK_JWT_PAYLOAD.userName,
-          mockFormId.toHexString(),
+          MOCK_JWT_PAYLOAD.userName.toUpperCase(),
+          mockCpAuthTypeAndIsSingleSubmissionEnabledForm.id,
         ),
       )
     })

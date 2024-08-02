@@ -1507,7 +1507,7 @@ const _handleUpdateWhitelistSettingValidator = celebrate({
   },
 })
 
-const _parseWhitelistCsvString = (whitelistCsvString: string) => {
+const _parseWhitelistCsvString = (whitelistCsvString: string | null) => {
   if (!whitelistCsvString) {
     return null
   }
@@ -1517,7 +1517,7 @@ const _parseWhitelistCsvString = (whitelistCsvString: string) => {
 const _handleUpdateWhitelistSetting: ControllerHandler<
   { formId: string },
   object,
-  { whitelistCsvString: string }
+  { whitelistCsvString: string | null }
 > = async (req, res) => {
   const { formId } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
@@ -1556,9 +1556,10 @@ const _handleUpdateWhitelistSetting: ControllerHandler<
   const { whitelistCsvString } = req.body
   const whitelistedSubmitterIds = _parseWhitelistCsvString(whitelistCsvString)
 
-  const upperCaseWhitelistedSubmitterIds = whitelistedSubmitterIds
-    ? whitelistedSubmitterIds.map((id) => id.toUpperCase())
-    : null
+  const upperCaseWhitelistedSubmitterIds =
+    whitelistedSubmitterIds && whitelistedSubmitterIds.length > 0
+      ? whitelistedSubmitterIds.map((id) => id.toUpperCase())
+      : null
 
   // Step 2: perform validation on submitted whitelist setting
   const isWhitelistSettingValid = AdminFormService.checkIsWhitelistSettingValid(
@@ -1611,6 +1612,9 @@ const _handleUpdateWhitelistSetting: ControllerHandler<
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
+
+export const _handleUpdateWhitelistSettingForTest =
+  _handleUpdateWhitelistSetting
 
 export const handleUpdateWhitelistSetting = [
   handleWhitelistSettingMultipartBody.none(), // expecting string field

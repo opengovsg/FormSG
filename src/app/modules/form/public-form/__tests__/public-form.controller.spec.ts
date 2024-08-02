@@ -48,6 +48,7 @@ import {
 import { CpOidcServiceClass } from '../../../spcp/spcp.oidc.service/spcp.oidc.service.cp'
 import { SpOidcServiceClass } from '../../../spcp/spcp.oidc.service/spcp.oidc.service.sp'
 import { JwtName } from '../../../spcp/spcp.types'
+import { generateHashedSubmitterId } from '../../../submission/submission.utils'
 import {
   AuthTypeMismatchError,
   FormAuthNoEsrvcIdError,
@@ -772,11 +773,14 @@ describe('public-form.controller', () => {
           jest.fn(),
         )
 
-        // Assert that the submitterId is hashed when compared
+        // Assert that the submitterId is upper cased and then hashed when compared
         expect(
           checkHasSingleSubmissionValidationFailureSpy.mock.calls[0][1],
         ).toEqual(
-          '151c329a583a82e4a768f16ab8c9b7ae621fcfdea574e87925dd56d7f73e367d',
+          generateHashedSubmitterId(
+            MOCK_SPCP_SESSION.userName.toUpperCase(),
+            MOCK_SP_FORM.id,
+          ),
         )
 
         // Assert that status is not set, which defaults to intended 200 ok
