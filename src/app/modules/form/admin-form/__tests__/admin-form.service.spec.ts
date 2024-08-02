@@ -38,7 +38,6 @@ import {
   IEmailFormSchema,
   IFormDocument,
   IFormSchema,
-  IFormWhitelistedSubmitterIdsSchema,
   IPopulatedEncryptedForm,
   IPopulatedForm,
   IUserSchema,
