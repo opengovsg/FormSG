@@ -30,9 +30,7 @@ export const AttachmentDropzone = ({
       <Icon aria-hidden as={BxsCloudUpload} __css={styles.icon} />
 
       {isDragActive ? (
-        <Text aria-hidden>
-          {t('features.adminForm.sidebar.fields.imageAttachment.dragActive')}
-        </Text>
+        <Text aria-hidden>Drop the file here...</Text>
       ) : (
         <Text aria-hidden>
           <Link isDisabled={inputProps.disabled}>
