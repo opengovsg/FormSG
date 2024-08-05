@@ -542,7 +542,7 @@ const getAutoReplyFormattedResponse = (
   const { question, answer, isVisible } = response
   const answerSplitByNewLine = answer.split('\n')
   // Auto reply email will contain only visible fields
-  if (isVisible) {
+  if (isVisible !== false) {
     return {
       question, // No prefixes for autoreply
       answerTemplate: answerSplitByNewLine,

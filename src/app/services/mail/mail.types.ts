@@ -23,10 +23,11 @@ export type SendSingleAutoreplyMailArgs = {
   attachments: Mail.Attachment[]
   formSummaryRenderData: AutoreplySummaryRenderData
   index: number
+  isPaymentEnabled?: boolean
 }
 
 export type SendAutoReplyEmailsArgs = {
-  form: Pick<IPopulatedForm, 'admin' | '_id' | 'title'>
+  form: IPopulatedForm
   submission: Pick<ISubmissionSchema, 'id' | 'created'>
   attachments?: Mail.Attachment[]
   responsesData: Pick<EmailAdminDataField, 'question' | 'answerTemplate'>[]
