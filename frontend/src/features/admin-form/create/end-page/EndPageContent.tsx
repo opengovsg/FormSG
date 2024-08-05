@@ -93,7 +93,7 @@ export const EndPageContent = (): JSX.Element => {
           onLogout={undefined}
           loggedInId={
             form && form.authType !== FormAuthType.NIL
-              ? form.isNricMaskEnabled
+              ? form.isSubmitterIdCollectionEnabled
                 ? PREVIEW_MASKED_MOCK_UINFIN
                 : PREVIEW_MOCK_UINFIN
               : undefined

@@ -327,7 +327,7 @@ export const submitEmailModeForm: ControllerHandler<
             : undefined
         }
 
-        if (form.isNricMaskEnabled) {
+        if (form.isSubmitterIdCollectionEnabled) {
           parsedResponses.ndiResponses = parsedResponses.ndiResponses.map(
             (response) => {
               if (response.fieldType === BasicField.Nric) {

@@ -2,7 +2,7 @@ import { Divider } from '@chakra-ui/react'
 
 import { FormResponseMode, FormSettings } from '~shared/types/form'
 
-import { FormNricMaskToggle } from './FormNricMaskToggle'
+import { FormSubmitterIdCollectionToggle } from './FormNricCollectionToggle'
 import { FormSingleSubmissionToggle } from './FormSingleSubmissionToggle'
 import { FormWhitelistAttachmentField } from './FormWhitelistAttachmentField'
 import { SingpassAuthOptionsRadio } from './SingpassAuthOptionsRadio'
@@ -29,17 +29,11 @@ export const AuthSettingsSingpassSection = ({
         settings={settings}
         isDisabled={isSinglepassAuthOptionsDisabled}
       />
-      {/* Hide the NRIC mask toggle if they have not yet enabled it as part of
-      PMO circular */}
-      {settings.isNricMaskEnabled ? (
-        <>
-          <Divider my="2.5rem" />
-          <FormNricMaskToggle
-            settings={settings}
-            isDisabled={isSingpassSettingsDisabled}
-          />
-        </>
-      ) : null}
+      <Divider my="2.5rem" />
+      <FormSubmitterIdCollectionToggle
+        settings={settings}
+        isDisabled={isFormPublic}
+      />
       {isEncryptMode || settings.isSingleSubmission ? (
         <>
           <Divider my="2.5rem" />

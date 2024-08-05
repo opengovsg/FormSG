@@ -200,7 +200,7 @@ export const StartPageView = () => {
           showHeader
           loggedInId={
             form && form.authType !== FormAuthType.NIL
-              ? form.isNricMaskEnabled
+              ? form.isSubmitterIdCollectionEnabled
                 ? PREVIEW_MASKED_MOCK_UINFIN
                 : PREVIEW_MOCK_UINFIN
               : undefined

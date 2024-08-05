@@ -36,7 +36,6 @@ import {
   updateFormInactiveMessage,
   updateFormIssueNotification,
   updateFormLimit,
-  updateFormNricMask,
   updateFormStatus,
   updateFormTitle,
   updateFormWebhookRetries,
@@ -44,6 +43,7 @@ import {
   updateFormWhitelistSetting,
   updateGstEnabledFlag,
   updateIsSingleSubmission,
+  updateIsSubmitterIdCollectionEnabled,
   updateTwilioCredentials,
 } from './SettingsService'
 
@@ -321,16 +321,19 @@ export const useMutateFormSettings = () => {
     },
   )
 
-  const mutateNricMask = useMutation(
-    (nextIsNricMaskEnabled: boolean) =>
-      updateFormNricMask(formId, nextIsNricMaskEnabled),
+  const mutateIsSubmitterIdCollectionEnabled = useMutation(
+    (nextIsSubmitterIdCollectionEnabled: boolean) =>
+      updateIsSubmitterIdCollectionEnabled(
+        formId,
+        nextIsSubmitterIdCollectionEnabled,
+      ),
     {
       onSuccess: (newData) => {
         handleSuccess({
           newData,
-          toastDescription: newData.isNricMaskEnabled
-            ? 'NRIC masking is now enabled on your form.'
-            : 'NRIC masking is now disabled on your form.',
+          toastDescription: newData.isSubmitterIdCollectionEnabled
+            ? 'NRIC/FIN/UEN collection is now enabled on your form.'
+            : 'NRIC/FIN/UEN collection is now disabled on your form.',
         })
       },
       onError: handleError,
@@ -444,7 +447,7 @@ export const useMutateFormSettings = () => {
     mutateFormEmails,
     mutateFormTitle,
     mutateFormAuthType,
-    mutateNricMask,
+    mutateIsSubmitterIdCollectionEnabled,
     mutateIsSingleSubmission,
     mutateFormWhitelistSetting,
     mutateFormEsrvcId,

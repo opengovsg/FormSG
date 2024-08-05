@@ -77,13 +77,13 @@ PublicStorageNilAuthForm.parameters = {
   }),
 }
 
-// purpose: tests that isNricMaskEnabled should not affect setting options available
+// purpose: tests that isSubmitterIdCollectionEnabled should not affect setting options available
 export const PublicStorageNilAuthFormNricMaskingEnabled = Template.bind({})
 PublicStorageNilAuthFormNricMaskingEnabled.parameters = {
   msw: buildEncryptModeMswRoutes({
     responseMode: FormResponseMode.Encrypt,
     status: FormStatus.Public,
-    isNricMaskEnabled: true,
+    isSubmitterIdCollectionEnabled: true,
   }),
 }
 
@@ -148,7 +148,7 @@ PrivateEmailSingpassFormNricMaskingEnabled.parameters = {
   msw: buildEmailModeMswRoutes({
     status: FormStatus.Private,
     authType: FormAuthType.SGID,
-    isNricMaskEnabled: true,
+    isSubmitterIdCollectionEnabled: true,
   }),
 }
 export const PrivateEmailMyInfoFormNricMaskingEnabled = Template.bind({})
@@ -158,7 +158,7 @@ PrivateEmailMyInfoFormNricMaskingEnabled.parameters = {
       status: FormStatus.Private,
       authType: FormAuthType.MyInfo,
       esrvcId: 'STORYBOOK-TEST',
-      isNricMaskEnabled: true,
+      isSubmitterIdCollectionEnabled: true,
     }),
     ...createFormBuilderMocks({ form_fields: MOCK_FORM_FIELDS_WITH_MYINFO }),
   ],
@@ -180,7 +180,7 @@ PrivateStorageSingpassFormAllTogglesEnabled.parameters = {
     status: FormStatus.Private,
     authType: FormAuthType.SGID,
     isSingleSubmission: true,
-    isNricMaskEnabled: true,
+    isSubmitterIdCollectionEnabled: true,
   }),
 }
 

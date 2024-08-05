@@ -62,7 +62,7 @@ export const previewForm = async (
       // and if server has not already sent back a mock authenticated state.
       if (data.form.authType !== FormAuthType.NIL && !data.spcpSession) {
         data.spcpSession = {
-          userName: data.form.isNricMaskEnabled
+          userName: data.form.isSubmitterIdCollectionEnabled
             ? PREVIEW_MASKED_MOCK_UINFIN
             : PREVIEW_MOCK_UINFIN,
         }
@@ -95,7 +95,7 @@ export const viewFormTemplate = async (
       // and if server has not already sent back a mock authenticated state.
       if (data.form.authType !== FormAuthType.NIL && !data.spcpSession) {
         data.spcpSession = {
-          userName: data.form.isNricMaskEnabled
+          userName: data.form.isSubmitterIdCollectionEnabled
             ? PREVIEW_MASKED_MOCK_UINFIN
             : PREVIEW_MOCK_UINFIN,
         }

@@ -469,14 +469,14 @@ describe('email-submission.controller', () => {
     })
 
     describe('nricMask', () => {
-      it('should mask nric if form isNricMaskEnabled is true', async () => {
+      it('should mask nric if form isSubmitterIdCollectionEnabled is true', async () => {
         // Arrange
         const mockFormId = new ObjectId()
         const mockSgidAuthTypeAndNricMaskingEnabledForm = {
           _id: mockFormId,
           title: 'some form',
           authType: FormAuthType.SGID,
-          isNricMaskEnabled: true,
+          isSubmitterIdCollectionEnabled: true,
           form_fields: [] as FormFieldSchema[],
         } as IPopulatedForm
         const MOCK_JWT_PAYLOAD_WITH_NRIC = {
@@ -524,14 +524,14 @@ describe('email-submission.controller', () => {
         ).toEqual('*****567A')
       })
 
-      it('should not mask nric if form isNricMaskEnabled is false', async () => {
+      it('should not mask nric if form isSubmitterIdCollectionEnabled is false', async () => {
         // Arrange
         const mockFormId = new ObjectId()
         const mockSgidAuthTypeAndNricMaskingDisabledForm = {
           _id: mockFormId,
           title: 'some form',
           authType: FormAuthType.SGID,
-          isNricMaskEnabled: false,
+          isSubmitterIdCollectionEnabled: false,
           form_fields: [] as FormFieldSchema[],
         } as IPopulatedForm
         const MOCK_JWT_PAYLOAD_WITH_NRIC = {

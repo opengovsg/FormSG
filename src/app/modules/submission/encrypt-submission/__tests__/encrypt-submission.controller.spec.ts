@@ -813,14 +813,14 @@ describe('encrypt-submission.controller', () => {
       MockMailService.sendSubmissionToAdmin.mockResolvedValue(okAsync(true))
     })
 
-    it('should mask nric if form isNricMaskEnabled is true', async () => {
+    it('should mask nric if form isSubmitterIdCollectionEnabled is true', async () => {
       // Arrange
       const mockFormId = new ObjectId()
       const mockSpAuthTypeAndNricMaskingEnabledForm = {
         _id: mockFormId,
         title: 'some form',
         authType: FormAuthType.SP,
-        isNricMaskEnabled: true,
+        isSubmitterIdCollectionEnabled: true,
         form_fields: [] as FormFieldSchema[],
         getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
       } as IPopulatedEncryptedForm
@@ -865,14 +865,14 @@ describe('encrypt-submission.controller', () => {
       expect(savedSubmission!.verifiedContent).toEqual(MOCK_MASKED_NRIC)
     })
 
-    it('should not mask nric if form isNricMaskEnabled is false', async () => {
+    it('should not mask nric if form isSubmitterIdCollectionEnabled is false', async () => {
       // Arrange
       const mockFormId = new ObjectId()
       const mockSpAuthTypeAndNricMaskingEnabledForm = {
         _id: mockFormId,
         title: 'some form',
         authType: FormAuthType.SP,
-        isNricMaskEnabled: false,
+        isSubmitterIdCollectionEnabled: false,
         form_fields: [] as FormFieldSchema[],
         getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
       } as IPopulatedEncryptedForm
@@ -917,14 +917,14 @@ describe('encrypt-submission.controller', () => {
       expect(savedSubmission!.verifiedContent).toEqual(MOCK_NRIC)
     })
 
-    it('should not mask nric in email notification if form isNricMaskEnabled is false', async () => {
+    it('should not mask nric in email notification if form isSubmitterIdCollectionEnabled is false', async () => {
       // Arrange
       const mockFormId = new ObjectId()
       const mockSpAuthTypeAndNricMaskingDisabledForm = {
         _id: mockFormId,
         title: 'some form',
         authType: FormAuthType.SP,
-        isNricMaskEnabled: false,
+        isSubmitterIdCollectionEnabled: false,
         form_fields: [] as FormFieldSchema[],
         emails: ['test@example.com'],
         getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
@@ -965,14 +965,14 @@ describe('encrypt-submission.controller', () => {
       ).toEqual(MOCK_NRIC)
     })
 
-    it('should mask nric in email notification if form isNricMaskEnabled is true', async () => {
+    it('should mask nric in email notification if form isSubmitterIdCollectionEnabled is true', async () => {
       // Arrange
       const mockFormId = new ObjectId()
       const mockSpAuthTypeAndNricMaskingEnabledForm = {
         _id: mockFormId,
         title: 'some form',
         authType: FormAuthType.SP,
-        isNricMaskEnabled: true,
+        isSubmitterIdCollectionEnabled: true,
         form_fields: [] as FormFieldSchema[],
         emails: ['test@example.com'],
         getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
@@ -1026,7 +1026,7 @@ describe('encrypt-submission.controller', () => {
         _id: mockFormId,
         title: 'some form',
         authType: FormAuthType.NIL,
-        isNricMaskEnabled: false,
+        isSubmitterIdCollectionEnabled: false,
         form_fields: [
           {
             _id: new ObjectId(),
