@@ -151,11 +151,13 @@ const BeforeConnectionInstructions = ({
   }, [settings])
 
   const isPDFResponseEnabled = useMemo(() => {
-    return formDef?.form_fields
-      .filter((field) => field.fieldType === 'email')
-      .map((field) => field as EmailFieldBase)
-      .map((field) => field.autoReplyOptions.includeFormSummary)
-      .some((x) => x)
+    return (
+      formDef?.form_fields
+        .filter((field) => field.fieldType === 'email')
+        .map((field) => field as EmailFieldBase)
+        .map((field) => field.autoReplyOptions.includeFormSummary)
+        .some((x) => x) ?? false
+    )
   }, [formDef?.form_fields])
 
   const isSingleSubmission = !!settings?.isSingleSubmission
