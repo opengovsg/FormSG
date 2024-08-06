@@ -27,8 +27,7 @@ const SubmitterIdCollectionInfoText = ({
         return (
           <Text>
             Your login Singpass ID and corporate Entity ID{' '}
-            <Text as="b">will be included</Text>
-            with your form submission.
+            <Text as="b">will be included</Text> with your form submission.
           </Text>
         )
     }

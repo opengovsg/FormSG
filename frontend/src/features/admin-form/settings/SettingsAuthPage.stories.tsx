@@ -77,9 +77,9 @@ PublicStorageNilAuthForm.parameters = {
   }),
 }
 
-// purpose: tests that isSubmitterIdCollectionEnabled should not affect setting options available
-export const PublicStorageNilAuthFormNricMaskingEnabled = Template.bind({})
-PublicStorageNilAuthFormNricMaskingEnabled.parameters = {
+export const PublicStorageNilAuthFormSubmitterIdCollectionEnabled =
+  Template.bind({})
+PublicStorageNilAuthFormSubmitterIdCollectionEnabled.parameters = {
   msw: buildEncryptModeMswRoutes({
     responseMode: FormResponseMode.Encrypt,
     status: FormStatus.Public,
@@ -143,16 +143,19 @@ PublicEmailMyInfoForm.parameters = {
   ],
 }
 
-export const PrivateEmailSingpassFormNricMaskingEnabled = Template.bind({})
-PrivateEmailSingpassFormNricMaskingEnabled.parameters = {
+export const PrivateEmailSingpassFormSubmitterIdCollectionEnabled =
+  Template.bind({})
+PrivateEmailSingpassFormSubmitterIdCollectionEnabled.parameters = {
   msw: buildEmailModeMswRoutes({
     status: FormStatus.Private,
     authType: FormAuthType.SGID,
     isSubmitterIdCollectionEnabled: true,
   }),
 }
-export const PrivateEmailMyInfoFormNricMaskingEnabled = Template.bind({})
-PrivateEmailMyInfoFormNricMaskingEnabled.parameters = {
+export const PrivateEmailMyInfoFormSubmitterIdCollectionEnabled = Template.bind(
+  {},
+)
+PrivateEmailMyInfoFormSubmitterIdCollectionEnabled.parameters = {
   msw: [
     ...buildEmailModeMswRoutes({
       status: FormStatus.Private,
@@ -190,7 +193,7 @@ PublicEmailCorppassAllTogglesEnabledForm.parameters = {
     status: FormStatus.Public,
     authType: FormAuthType.CP,
     isSingleSubmission: true,
-    isNricMaskEnabled: true,
+    isSubmitterIdCollectionEnabled: true,
   }),
 }
 
