@@ -150,15 +150,12 @@ const BeforeConnectionInstructions = ({
   }, [settings])
 
   const isPDFResponseEnabled = useMemo(() => {
-    if (formDef?.responseMode !== FormResponseMode.Encrypt) return false
-    const emailFields: EmailFieldBase[] = formDef.form_fields.filter(
-      (field) => field.fieldType === 'email',
-    ) as EmailFieldBase[]
-    const hasEmailFieldWithFormSummary = emailFields.some(
-      (field) => field.autoReplyOptions.includeFormSummary,
-    )
-    return hasEmailFieldWithFormSummary
-  }, [formDef])
+    return formDef?.form_fields
+      .filter((field) => field.fieldType === 'email')
+      .map((field) => field as EmailFieldBase)
+      .map((field) => field.autoReplyOptions.includeFormSummary)
+      .some((x) => x)
+  }, [formDef?.form_fields])
 
   const isSingleSubmission = !!settings?.isSingleSubmission
 
