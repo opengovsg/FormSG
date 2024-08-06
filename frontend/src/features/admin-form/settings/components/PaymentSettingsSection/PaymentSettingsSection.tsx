@@ -57,6 +57,8 @@ const PaymentsDisabledRationaleText = ({
     isPDFResponseEnabled,
   ].filter(Boolean).length
 
+  const { data: formDef } = useAdminForm()
+
   if (disabledCount > 1) {
     return (
       <Text>
@@ -71,7 +73,7 @@ const PaymentsDisabledRationaleText = ({
           ) : undefined}
           {isPDFResponseEnabled ? (
             <ListItem>
-              <Link as={ReactLink} to={'settings'}>
+              <Link as={ReactLink} to={`/admin/form/${formDef!._id}`}>
                 Turn off "Include PDF responses" in all email fields
               </Link>
             </ListItem>
@@ -114,7 +116,7 @@ const PaymentsDisabledRationaleText = ({
     return (
       <Text>
         To enable payment fields,{' '}
-        <Link as={ReactLink} to={''}>
+        <Link as={ReactLink} to={`/admin/form/${formDef!._id}`}>
           turn off "Include PDF Responses" in all email fields.
         </Link>
       </Text>
