@@ -157,7 +157,6 @@ const BeforeConnectionInstructions = ({
     const hasEmailFieldWithFormSummary = emailFields.some(
       (field) => field.autoReplyOptions.includeFormSummary,
     )
-    console.log({ hasEmailFieldWithFormSummary })
     return hasEmailFieldWithFormSummary
   }, [formDef])
 
