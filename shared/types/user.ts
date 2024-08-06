@@ -21,7 +21,6 @@ export const UserBase = z.object({
       payment: z.boolean().optional(),
       children: z.boolean().optional(),
       postmanSms: z.boolean().optional(),
-      fasterDownloads: z.boolean().optional(),
     })
     .optional(),
   flags: z.map(z.nativeEnum(SeenFlags), z.number()).optional(),

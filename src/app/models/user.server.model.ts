@@ -75,7 +75,6 @@ const compileUserModel = (db: Mongoose) => {
         payment: Boolean,
         children: Boolean,
         postmanSms: Boolean,
-        fasterDownloads: Boolean,
       },
       flags: {
         type: Schema.Types.Map, // of SeenFlags
