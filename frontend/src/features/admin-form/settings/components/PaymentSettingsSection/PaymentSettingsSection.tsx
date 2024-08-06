@@ -7,8 +7,10 @@ import {
   Flex,
   FormControl,
   Icon,
+  ListItem,
   Skeleton,
   Text,
+  UnorderedList,
   VStack,
 } from '@chakra-ui/react'
 import { get, isEmpty } from 'lodash'
@@ -17,7 +19,7 @@ import {
   DISALLOW_CONNECT_NON_WHITELIST_STRIPE_ACCOUNT,
   ERROR_QUERY_PARAM_KEY,
 } from '~shared/constants'
-import { FormResponseMode, PaymentChannel } from '~shared/types'
+import { EmailFieldBase, FormResponseMode, PaymentChannel } from '~shared/types'
 
 import { BxsCheckCircle, BxsError, BxsInfoCircle } from '~assets/icons'
 import { GUIDE_STRIPE_ONBOARDING } from '~constants/links'
@@ -27,6 +29,7 @@ import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 import Link from '~components/Link'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
 import { useEnv } from '~features/env/queries'
 
 import { useAdminFormPayments, useAdminFormSettings } from '../../queries'
@@ -40,28 +43,52 @@ import {
 } from './StripeConnectButton'
 
 const PaymentsDisabledRationaleText = ({
-  isEmailsPresent,
+  isAdminEmailsPresent,
   isSingleSubmission,
+  isPDFResponseEnabled,
 }: {
-  isEmailsPresent: boolean
+  isAdminEmailsPresent: boolean
   isSingleSubmission: boolean
+  isPDFResponseEnabled: boolean
 }): JSX.Element => {
-  if (isEmailsPresent && isSingleSubmission) {
+  const disabledCount = [
+    isAdminEmailsPresent,
+    isSingleSubmission,
+    isPDFResponseEnabled,
+  ].filter(Boolean).length
+
+  if (disabledCount > 1) {
     return (
       <Text>
-        To enable payment fields, remove all recipients from{' '}
-        <Link as={ReactLink} to={'email-notifications'}>
-          email notifications
-        </Link>{' '}
-        and disable{' '}
-        <Link as={ReactLink} to={'singpass'}>
-          only one submission per NRIC/FIN/UEN
-        </Link>
-        .
+        To enable payment fields,
+        <UnorderedList spacing="0.5rem" mt="1rem">
+          {isAdminEmailsPresent ? (
+            <ListItem>
+              <Link as={ReactLink} to={'email-notifications'}>
+                Remove all recipients from email notifications
+              </Link>
+            </ListItem>
+          ) : undefined}
+          {isPDFResponseEnabled ? (
+            <ListItem>
+              <Link as={ReactLink} to={'settings'}>
+                Turn off "Include PDF responses" in all email fields
+              </Link>
+            </ListItem>
+          ) : undefined}
+          {isSingleSubmission ? (
+            <ListItem>
+              <Link as={ReactLink} to={'singpass'}>
+                Disable only one submission per NRIC/FIN/UEN
+              </Link>
+            </ListItem>
+          ) : undefined}
+        </UnorderedList>
       </Text>
     )
   }
-  if (isEmailsPresent) {
+
+  if (isAdminEmailsPresent) {
     return (
       <Text>
         To enable payment fields, remove all recipients from{' '}
@@ -83,6 +110,16 @@ const PaymentsDisabledRationaleText = ({
       </Text>
     )
   }
+  if (isPDFResponseEnabled) {
+    return (
+      <Text>
+        To enable payment fields,{' '}
+        <Link as={ReactLink} to={''}>
+          turn off "Include PDF Responses" in all email fields.
+        </Link>
+      </Text>
+    )
+  }
   return <></>
 }
 
@@ -95,13 +132,14 @@ const BeforeConnectionInstructions = ({
   const { data: paymentGuideLink } = usePaymentGuideLink()
   const [searchParams] = useSearchParams()
   const { data: settings } = useAdminFormSettings()
+  const { data: formDef } = useAdminForm()
 
   const queryParams = Object.fromEntries([...searchParams])
   const isInvalidDomain =
     queryParams[ERROR_QUERY_PARAM_KEY] ===
     DISALLOW_CONNECT_NON_WHITELIST_STRIPE_ACCOUNT
 
-  const isEmailsPresent = useMemo(() => {
+  const isAdminEmailsPresent = useMemo(() => {
     return (
       (settings?.responseMode === FormResponseMode.Email ||
         settings?.responseMode === FormResponseMode.Encrypt) &&
@@ -109,9 +147,22 @@ const BeforeConnectionInstructions = ({
     )
   }, [settings])
 
+  const isPDFResponseEnabled = useMemo(() => {
+    if (formDef?.responseMode !== FormResponseMode.Encrypt) return false
+    const emailFields: EmailFieldBase[] = formDef.form_fields.filter(
+      (field) => field.fieldType === 'email',
+    ) as EmailFieldBase[]
+    const hasEmailFieldWithFormSummary = emailFields.some(
+      (field) => field.autoReplyOptions.includeFormSummary,
+    )
+    console.log({ hasEmailFieldWithFormSummary })
+    return hasEmailFieldWithFormSummary
+  }, [formDef])
+
   const isSingleSubmission = !!settings?.isSingleSubmission
 
-  const isPaymentsDisabled = isEmailsPresent || isSingleSubmission
+  const isPaymentsDisabled =
+    isAdminEmailsPresent || isSingleSubmission || isPDFResponseEnabled
 
   if (isInvalidDomain) {
     return (
@@ -134,8 +185,9 @@ const BeforeConnectionInstructions = ({
           <Box w="100%">
             <InlineMessage>
               <PaymentsDisabledRationaleText
-                isEmailsPresent={isEmailsPresent}
+                isAdminEmailsPresent={isAdminEmailsPresent}
                 isSingleSubmission={isSingleSubmission}
+                isPDFResponseEnabled={isPDFResponseEnabled}
               />
             </InlineMessage>
           </Box>
@@ -186,8 +238,9 @@ const BeforeConnectionInstructions = ({
           <Box w="100%">
             <InlineMessage>
               <PaymentsDisabledRationaleText
-                isEmailsPresent={isEmailsPresent}
+                isAdminEmailsPresent={isAdminEmailsPresent}
                 isSingleSubmission={isSingleSubmission}
+                isPDFResponseEnabled={isPDFResponseEnabled}
               />
             </InlineMessage>
           </Box>

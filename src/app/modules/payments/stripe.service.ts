@@ -9,6 +9,7 @@ import isURL from 'validator/lib/isURL'
 
 import { featureFlags } from '../../../../shared/constants'
 import {
+  EmailFieldBase,
   PaymentStatus,
   ReconciliationReportLine,
 } from '../../../../shared/types'
@@ -27,7 +28,11 @@ import {
 } from '../../utils/handle-mongo-error'
 import { InvalidDomainError } from '../auth/auth.errors'
 import * as AuthService from '../auth/auth.service'
-import { DatabaseError, DatabaseWriteConflictError } from '../core/core.errors'
+import {
+  ApplicationError,
+  DatabaseError,
+  DatabaseWriteConflictError,
+} from '../core/core.errors'
 import { getFeatureFlag } from '../feature-flags/feature-flags.service'
 import { FormNotFoundError } from '../form/form.errors'
 import {
@@ -681,6 +686,18 @@ export const linkStripeAccountToForm = (
     stripeAccountId: accountId,
     stripePublishableKey: publishableKey,
     formId: form._id,
+  }
+
+  const hasEmailFieldWithFormSummary = form.form_fields
+    .filter((field) => field.fieldType === 'email')
+    .map((field) => field as EmailFieldBase)
+    .map((field) => field.autoReplyOptions.includeFormSummary)
+    .some((x) => x)
+
+  if (hasEmailFieldWithFormSummary) {
+    return errAsync(
+      new StripeAccountError('Email fields with pdf summary is not allowed'),
+    )
   }
 
   return getFeatureFlag(featureFlags.validateStripeEmailDomain, {
