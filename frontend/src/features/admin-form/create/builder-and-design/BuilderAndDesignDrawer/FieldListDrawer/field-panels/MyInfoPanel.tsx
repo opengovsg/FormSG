@@ -90,26 +90,20 @@ export const MyInfoFieldPanel = () => {
     }
   }, [growthbook, user])
 
-  const showSgidMyInfoV2 = useFeatureIsOn(featureFlags.myinfoSgid)
-
-  const sgidSupportedFinal = useMemo(() => {
-    return showSgidMyInfoV2 ? SGID_SUPPORTED_V2 : SGID_SUPPORTED_V1
-  }, [showSgidMyInfoV2])
-
   /**
    * If sgID is used, checks if the corresponding
    * MyInfo field is supported by sgID.
    */
   const sgIDUnSupported = useCallback(
     (form: AdminFormDto | undefined, fieldType: MyInfoAttribute): boolean => {
-      const sgidSupported: Set<MyInfoAttribute> = new Set(sgidSupportedFinal)
+      const sgidSupported: Set<MyInfoAttribute> = new Set(SGID_SUPPORTED_V2)
 
       return (
         form?.authType === FormAuthType.SGID_MyInfo &&
         !sgidSupported.has(fieldType)
       )
     },
-    [sgidSupportedFinal],
+    [],
   )
 
   // myInfo should be disabled if
