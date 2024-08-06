@@ -28,11 +28,7 @@ import {
 } from '../../utils/handle-mongo-error'
 import { InvalidDomainError } from '../auth/auth.errors'
 import * as AuthService from '../auth/auth.service'
-import {
-  ApplicationError,
-  DatabaseError,
-  DatabaseWriteConflictError,
-} from '../core/core.errors'
+import { DatabaseError, DatabaseWriteConflictError } from '../core/core.errors'
 import { getFeatureFlag } from '../feature-flags/feature-flags.service'
 import { FormNotFoundError } from '../form/form.errors'
 import {
