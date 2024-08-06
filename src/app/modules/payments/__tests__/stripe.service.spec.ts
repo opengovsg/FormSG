@@ -856,6 +856,54 @@ describe('stripe.service', () => {
       expect(result.isOk()).toBeTrue()
     })
 
+    it('should connect stripe account when form has email fields with pdf summary disabled', async () => {
+      // Arrange
+      const mockForm = (await new EncryptedForm({
+        admin: MOCK_USER,
+        title: 'Test Form',
+        publicKey: 'mockPublicKey',
+        form_fields: [
+          {
+            _id: new mongoose.Types.ObjectId(),
+            fieldType: BasicField.Email,
+            title: 'Email Field',
+            autoReplyOptions: {
+              hasAutoReply: true,
+              includeFormSummary: false,
+            },
+          },
+        ],
+      }).populate('admin')) as IPopulatedEncryptedForm
+
+      const getFeatureFlagSpy = jest
+        .spyOn(FeatureFlagService, 'getFeatureFlag')
+        .mockReturnValueOnce(okAsync(true))
+      const addPaymentAccountIdSpy = jest.spyOn(mockForm, 'addPaymentAccountId')
+      const stripeAccountsRetrieveApiSpy = jest
+        .spyOn(stripe.accounts, 'retrieve')
+        .mockReturnValueOnce(
+          Promise.resolve({
+            email: 'mockEmail',
+          } as unknown as Stripe.Response<Stripe.Account>),
+        )
+      const authServiceSpy = jest
+        .spyOn(AuthService, 'validateEmailDomain')
+        .mockReturnValue(okAsync(true) as any)
+
+      // Act
+      const result = await StripeService.linkStripeAccountToForm(mockForm, {
+        accountId: 'accountId',
+        publishableKey: 'publishableKey',
+      })
+
+      // Assert
+      expect(getFeatureFlagSpy).toHaveBeenCalledTimes(1)
+      expect(stripeAccountsRetrieveApiSpy).toHaveBeenCalledTimes(1)
+      expect(authServiceSpy).toHaveBeenCalledTimes(1)
+      expect(addPaymentAccountIdSpy).toHaveBeenCalledTimes(1)
+      expect(result.isOk()).toBeTrue()
+    })
+
     it('should not connect stripe account when form has email fields with pdf summary enabled', async () => {
       // Arrange
       const mockForm = (await new EncryptedForm({
