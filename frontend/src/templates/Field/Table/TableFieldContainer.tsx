@@ -32,6 +32,7 @@ export const TableFieldContainer = ({
       isInvalid={!!errors[schema._id]}
     >
       <FormLabel
+        useMarkdownForDescription
         questionNumber={
           schema.questionNumber ? `${schema.questionNumber}.` : undefined
         }
