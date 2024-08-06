@@ -58,6 +58,7 @@ const PaymentsDisabledRationaleText = ({
   ].filter(Boolean).length
 
   const { data: formDef } = useAdminForm()
+  if (!formDef) return <></>
 
   if (disabledCount > 1) {
     return (
