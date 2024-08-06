@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link as ReactLink, useSearchParams } from 'react-router-dom'
+import { Link as ReactLink, useParams, useSearchParams } from 'react-router-dom'
 import {
   As,
   Box,
@@ -57,8 +57,8 @@ const PaymentsDisabledRationaleText = ({
     isPDFResponseEnabled,
   ].filter(Boolean).length
 
-  const { data: formDef } = useAdminForm()
-  if (!formDef) return <></>
+  const { formId } = useParams()
+  if (!formId) return <></>
 
   if (disabledCount > 1) {
     return (
@@ -74,7 +74,7 @@ const PaymentsDisabledRationaleText = ({
           ) : undefined}
           {isPDFResponseEnabled ? (
             <ListItem>
-              <Link as={ReactLink} to={`/admin/form/${formDef!._id}`}>
+              <Link as={ReactLink} to={`/admin/form/${formId}`}>
                 Turn off "Include PDF responses" in all email fields
               </Link>
             </ListItem>
@@ -117,7 +117,7 @@ const PaymentsDisabledRationaleText = ({
     return (
       <Text>
         To enable payment fields,{' '}
-        <Link as={ReactLink} to={`/admin/form/${formDef!._id}`}>
+        <Link as={ReactLink} to={`/admin/form/${formId}`}>
           turn off "Include PDF Responses" in all email fields.
         </Link>
       </Text>
