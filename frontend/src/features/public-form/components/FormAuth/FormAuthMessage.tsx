@@ -19,14 +19,14 @@ const SubmitterIdCollectionInfoText = ({
       case FormAuthType.SGID_MyInfo:
         return (
           <Text>
-            'Your login Singpass ID <Text as="b">will be included</Text> with
+            'Your Singpass login ID <Text as="b">will be included</Text> with
             your form submission.'
           </Text>
         )
       case FormAuthType.CP:
         return (
           <Text>
-            Your login Singpass ID and corporate Entity ID{' '}
+            Your Singpass login ID and corporate Entity login ID{' '}
             <Text as="b">will be included</Text> with your form submission.
           </Text>
         )
