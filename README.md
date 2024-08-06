@@ -70,6 +70,11 @@ Notable features include:
 
 Install [docker and docker-compose](https://docs.docker.com/get-docker/) and the [node version manager](https://github.com/nvm-sh/nvm).
 
+- Note: If you're using macOS, you may encounter an [issue](https://github.com/docker/for-mac/issues/7345) where the `docker-compose` command is not found. To fix this, run the following command manually (as documented in [this comment](https://github.com/docker/for-mac/issues/7345#issuecomment-2213570298)).
+  ```
+  sudo ln -sf /Applications/Docker.app/Contents/Resources/cli-plugins/docker-compose /usr/local/bin/docker-compose
+  ```
+
 ### First Setup
 
 First, make sure to install and use the node version used by the project:
