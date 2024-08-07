@@ -46,6 +46,13 @@ export const transformAxiosError = (error: Error): ApiError => {
       if (typeof error.response.data === 'string') {
         return new HttpError(error.response.data, statusCode)
       }
+      // handle celebrate errors
+      if (error.response.data?.validation?.body?.message) {
+        return new HttpError(
+          error.response.data?.validation?.body?.message,
+          statusCode,
+        )
+      }
       if (error.response.data?.message) {
         return new HttpError(error.response.data.message, statusCode)
       }

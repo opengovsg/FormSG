@@ -20,23 +20,16 @@ export const parseCsvFileToCsvStringWithoutChunking = (
             reject(new Error(invalidReason))
           }
         }
-        const hasLastRow = contentRows.length >= 1
-        if (hasLastRow) {
-          const lastRowCols = contentRows[contentRows.length - 1]
-          const isLastRowEmpty =
-            lastRowCols.length === 0 || lastRowCols.every((col) => col === '')
-          // What: remove last row if empty
-          // Why: On excel and text editors, the last row may be empty but cannot be seen since it is a \n character.
-          // This causes admins to submit empty rows unintentionally for the last row which we will remove.
-          if (isLastRowEmpty) {
-            contentRows.splice(-1, 1)
-          }
-        }
-        const csvString = Papa.unparse(contentRows, { delimiter: ',' })
-        if (!csvString) {
+        const csvString = Papa.unparse(contentRows, {
+          newline: '\r\n',
+        })
+        // strip quotes to account for mixed CRLF and LF line endings.
+        // strip newline/empty spaces at the end of string to account for invisible trailing newlines and empty last rows.
+        const strippedCsvString = csvString.replaceAll('"', '').trim()
+        if (!strippedCsvString) {
           reject(new Error('Your CSV file body cannot be empty.'))
         }
-        resolve(csvString)
+        resolve(strippedCsvString)
       },
       error: (error) => {
         reject(error)

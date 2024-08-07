@@ -1500,10 +1500,16 @@ const _handleUpdateWhitelistSettingValidator = celebrate({
   [Segments.PARAMS]: {
     formId: Joi.string()
       .required()
-      .pattern(/^[a-fA-F0-9]{24}$/),
+      .pattern(/^[a-fA-F0-9]{24}$/)
+      .message('Your form ID is invalid.'),
   },
   [Segments.BODY]: {
-    whitelistCsvString: Joi.string().pattern(/^[a-zA-Z0-9,\r\n]+$/),
+    whitelistCsvString: Joi.string()
+      .pattern(/^[a-zA-Z0-9,\r\n]+$/)
+      .messages({
+        'string.empty': 'Your csv is empty.',
+        'string.pattern.base': 'Your csv has one or more invalid characters.',
+      }),
   },
 })
 

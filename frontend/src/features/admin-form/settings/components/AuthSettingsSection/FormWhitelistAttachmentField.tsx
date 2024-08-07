@@ -109,7 +109,8 @@ export const FormWhitelistAttachmentField = ({
               isValid:
                 headerRow &&
                 headerRow.length === 1 &&
-                headerRow[0].toLowerCase() === 'respondent',
+                headerRow[0].replace(/(\r\n|\n|\r)/gm, '').toLowerCase() ===
+                  'respondent',
               invalidReason:
                 'Your CSV file should only contain a single column with the "Respondent" header.',
             }
