@@ -91,7 +91,7 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
             <Toggle
               {...register('isVerifiable')}
               label="OTP verification"
-              description="Respondents must verify by entering a code sent to them. If you have added Twilio credentials, please test this OTP verification feature to make sure your credentials are accurate."
+              description="Respondents must verify by entering a code sent to them."
             />
           </FormControl>
           <SmsCountMessage freeSmsCount={freeSmsCount} />

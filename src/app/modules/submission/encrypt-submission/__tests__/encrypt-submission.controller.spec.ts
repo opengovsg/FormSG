@@ -4,7 +4,7 @@ import { ObjectId } from 'bson'
 import { merge } from 'lodash'
 import mongoose from 'mongoose'
 import { ok, okAsync } from 'neverthrow'
-import { FormAuthType, MyInfoAttribute } from 'shared/types'
+import { BasicField, FormAuthType, MyInfoAttribute } from 'shared/types'
 
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
 import * as OidcService from 'src/app/modules/spcp/spcp.oidc.service/index'
@@ -19,6 +19,8 @@ import MailService from 'src/app/services/mail/mail.service'
 import { FormFieldSchema, IPopulatedEncryptedForm } from 'src/types'
 import { EncryptSubmissionDto, FormCompleteDto } from 'src/types/api'
 
+import { SubmissionEmailObj } from '../../email-submission/email-submission.util'
+import { ProcessedFieldResponse } from '../../submission.types'
 import {
   generateHashedSubmitterId,
   getCookieNameByAuthType,
@@ -754,6 +756,80 @@ describe('encrypt-submission.controller', () => {
         MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData[0]
           .answer,
       ).toEqual(MOCK_MASKED_NRIC)
+    })
+  })
+
+  describe('emailData', () => {
+    it('should have the isVisible field set to true for form fields', async () => {
+      // Arrange
+      const performEncryptPostSubmissionActionsSpy = jest.spyOn(
+        EncryptSubmissionService,
+        'performEncryptPostSubmissionActions',
+      )
+      const mockFormId = new ObjectId()
+      const mockEncryptForm = {
+        _id: mockFormId,
+        title: 'some form',
+        authType: FormAuthType.NIL,
+        isNricMaskEnabled: false,
+        form_fields: [
+          {
+            _id: new ObjectId(),
+            fieldType: BasicField.ShortText,
+            title: 'Long answer',
+            description: '',
+            required: false,
+            disabled: false,
+          },
+        ] as FormFieldSchema[],
+        emails: ['test@example.com'],
+        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
+      } as IPopulatedEncryptedForm
+
+      const mockResponses = [
+        {
+          _id: new ObjectId(),
+          question: 'Long answer',
+          answer: 'this is an answer',
+          fieldType: 'textarea',
+          isVisible: true,
+        },
+      ]
+
+      const mockReq = merge(
+        expressHandler.mockRequest({
+          params: { formId: 'some id' },
+          body: {
+            responses: mockResponses,
+          },
+        }),
+        {
+          formsg: {
+            encryptedPayload: {
+              encryptedContent: 'encryptedContent',
+              version: 1,
+            },
+            formDef: {},
+            encryptedFormDef: mockEncryptForm,
+          } as unknown as EncryptSubmissionDto,
+        } as unknown as FormCompleteDto,
+      ) as unknown as SubmitEncryptModeFormHandlerRequest
+      const mockRes = expressHandler.mockResponse()
+
+      // Setup the SubmissionEmailObj
+      const emailData = new SubmissionEmailObj(
+        mockResponses as any as ProcessedFieldResponse[],
+        new Set(),
+        FormAuthType.NIL,
+      )
+
+      // Act
+      await submitEncryptModeFormForTest(mockReq, mockRes)
+
+      // Assert
+      expect(performEncryptPostSubmissionActionsSpy.mock.calls[0][2]).toEqual(
+        emailData,
+      )
     })
   })
 })

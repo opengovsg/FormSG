@@ -3,6 +3,7 @@ import { FormResponseMode } from 'shared/types'
 
 import { SgidUser } from '../../app/modules/auth/auth.types'
 import { EncryptSubmissionDto, MultirespondentSubmissionDto } from '../api'
+import { IAttachmentInfo } from '../email_mode_data'
 import { IPopulatedMultirespondentForm } from '../form'
 import { IPopulatedEncryptedForm, IPopulatedForm, IUserSchema } from '../types'
 
@@ -33,6 +34,7 @@ declare global {
             featureFlags?: string[]
             encryptedPayload?: EncryptSubmissionDto
             encryptedFormDef?: IPopulatedEncryptedForm
+            unencryptedAttachments?: IAttachmentInfo[]
           }
         | {
             responseMode: FormResponseMode.Multirespondent
