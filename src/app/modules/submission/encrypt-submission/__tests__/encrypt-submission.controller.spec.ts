@@ -796,6 +796,61 @@ describe('encrypt-submission.controller', () => {
       // Assert that the submission is not saved
       expect(await EncryptSubmission.countDocuments()).toEqual(0)
     })
+
+    it('should return json response with single submission validation failure flag when submissionId is not unique and does not save submission even when isSubmitterIdCollectedEnabled is true', async () => {
+      jest
+        .spyOn(EncryptSubmission, 'saveIfSubmitterIdIsUnique')
+        .mockResolvedValueOnce(null)
+
+      // Arrange
+      const mockFormId = new ObjectId()
+      const mockSpAuthTypeAndIsSingleSubmissionEnabledAndIsSubmitterIdCollectionEnabledForm =
+        {
+          _id: mockFormId,
+          title: 'some form',
+          authType: FormAuthType.SP,
+          isSingleSubmission: true,
+          isSubmitterIdCollectionEnabled: true,
+          form_fields: [] as FormFieldSchema[],
+          getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
+        } as IPopulatedEncryptedForm
+
+      const mockReq = merge(
+        expressHandler.mockRequest({
+          params: { formId: 'some id' },
+          body: {
+            responses: [],
+          },
+        }),
+        {
+          formsg: {
+            encryptedPayload: {
+              encryptedContent: 'encryptedContent',
+              version: 1,
+            },
+            formDef: {
+              authType: FormAuthType.SP,
+            },
+            encryptedFormDef:
+              mockSpAuthTypeAndIsSingleSubmissionEnabledAndIsSubmitterIdCollectionEnabledForm,
+          } as unknown as EncryptSubmissionDto,
+        } as unknown as FormCompleteDto,
+      ) as unknown as SubmitEncryptModeFormHandlerRequest
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await submitEncryptModeFormForTest(mockReq, mockRes)
+
+      // Assert that response has the single submission validation failure flag
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message:
+          'Your NRIC/FIN/UEN has already been used to respond to this form.',
+        hasSingleSubmissionValidationFailure: true,
+      })
+
+      // Assert that the submission is not saved
+      expect(await EncryptSubmission.countDocuments()).toEqual(0)
+    })
   })
 
   describe('submitter login ids collection', () => {
