@@ -790,7 +790,6 @@ const _createSubmission = async ({
     new Set(), // the MyInfo prefixes are already inserted in middleware
     form.authType,
   )
-
   // We don't await for email submission, as the submission gets saved for encrypt
   // submissions regardless, the email is more of a notification and shouldn't
   // stop the storage of the data in the db

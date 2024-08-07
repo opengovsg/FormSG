@@ -17,6 +17,9 @@ import {
 
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
 import * as FormService from 'src/app/modules/form/form.service'
+import { MyInfoService } from 'src/app/modules/myinfo/myinfo.service'
+import * as MyInfoUtil from 'src/app/modules/myinfo/myinfo.util'
+import { SgidService } from 'src/app/modules/sgid/sgid.service'
 import * as OidcService from 'src/app/modules/spcp/spcp.oidc.service/index'
 import { OidcServiceType } from 'src/app/modules/spcp/spcp.oidc.service/spcp.oidc.service.types'
 import * as EncryptSubmissionService from 'src/app/modules/submission/encrypt-submission/encrypt-submission.service'
@@ -56,6 +59,9 @@ jest.mock('src/app/utils/pipeline-middleware', () => {
   }
 })
 jest.mock('src/app/modules/spcp/spcp.oidc.service')
+jest.mock('src/app/modules/myinfo/myinfo.util')
+jest.mock('src/app/modules/myinfo/myinfo.service')
+jest.mock('src/app/modules/sgid/sgid.service')
 jest.mock('src/app/services/mail/mail.service')
 jest.mock('src/app/modules/verified-content/verified-content.service', () => {
   const originalModule = jest.requireActual(
@@ -66,12 +72,15 @@ jest.mock('src/app/modules/verified-content/verified-content.service', () => {
     getVerifiedContent: jest.fn(originalModule.getVerifiedContent),
     encryptVerifiedContent: jest.fn(
       ({ verifiedContent }: EncryptVerificationContentParams) =>
-        ok((verifiedContent as SpVerifiedContent).uinFin),
+        ok(JSON.stringify(verifiedContent as SpVerifiedContent)),
     ),
   }
 })
 
 const MockOidcService = jest.mocked(OidcService)
+const MockSgidService = jest.mocked(SgidService)
+const MockMyInfoUtil = jest.mocked(MyInfoUtil)
+const MockMyInfoService = jest.mocked(MyInfoService)
 const MockMailService = jest.mocked(MailService)
 const MockVerifiedContentService = jest.mocked(VerifiedContentService)
 
@@ -789,19 +798,35 @@ describe('encrypt-submission.controller', () => {
     })
   })
 
-  describe('nricMask', () => {
+  describe('submitter login ids collection', () => {
     const MOCK_NRIC = 'S1234567A'
-    const MOCK_MASKED_NRIC = '*****567A'
+    const MOCK_UEN = '123456789A'
 
     const MOCK_JWT_PAYLOAD = {
       userName: MOCK_NRIC,
       rememberMe: false,
+    }
+    const MOCK_JWT_CP_PAYLOAD = {
+      userName: MOCK_UEN,
+      userInfo: MOCK_NRIC,
+      rememberMe: false,
+    }
+    const MOCK_MYINFO_LOGIN_COOKIE_PAYLOAD = {
+      uinFin: MOCK_NRIC,
     }
     const MOCK_COOKIE_TIMESTAMP = {
       iat: 1,
       exp: 1,
     }
     beforeEach(() => {
+      MockSgidService.extractSgidSingpassJwtPayload.mockReturnValue(
+        ok(MOCK_JWT_PAYLOAD),
+      )
+      MockMyInfoUtil.extractMyInfoLoginJwt.mockReturnValue(ok('jwt'))
+      MockMyInfoService.verifyLoginJwt.mockReturnValue(
+        ok(MOCK_MYINFO_LOGIN_COOKIE_PAYLOAD),
+      )
+
       MockOidcService.getOidcService.mockReturnValue({
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         extractJwt: (_arg1) => ok('jwt'),
@@ -813,10 +838,10 @@ describe('encrypt-submission.controller', () => {
       MockMailService.sendSubmissionToAdmin.mockResolvedValue(okAsync(true))
     })
 
-    it('should mask nric if form isSubmitterIdCollectionEnabled is true', async () => {
+    it('should store login nric in verifiedContent if form isSubmitterIdCollectionEnabled is true for SP authType', async () => {
       // Arrange
       const mockFormId = new ObjectId()
-      const mockSpAuthTypeAndNricMaskingEnabledForm = {
+      const mockSpAuthTypeAndSubmitterIdCollectionEnabledForm = {
         _id: mockFormId,
         title: 'some form',
         authType: FormAuthType.SP,
@@ -841,38 +866,110 @@ describe('encrypt-submission.controller', () => {
             formDef: {
               authType: FormAuthType.SP,
             },
-            encryptedFormDef: mockSpAuthTypeAndNricMaskingEnabledForm,
+            encryptedFormDef: mockSpAuthTypeAndSubmitterIdCollectionEnabledForm,
           } as unknown as EncryptSubmissionDto,
         } as unknown as FormCompleteDto,
       ) as unknown as SubmitEncryptModeFormHandlerRequest
       const mockRes = expressHandler.mockResponse()
+      const expectedVerifiedContent = { uinFin: MOCK_NRIC, userInfo: undefined }
+
+      // Act
+      await submitEncryptModeFormForTest(MOCK_REQ, mockRes)
+      // Assert
+      // that verified content is generated since submitter login id is collected
+      expect(
+        MockVerifiedContentService.getVerifiedContent,
+      ).toHaveBeenCalledWith({
+        type: mockSpAuthTypeAndSubmitterIdCollectionEnabledForm.authType,
+        data: expectedVerifiedContent,
+      })
+
+      // that the saved submission is contains the correct verified content
+      const savedSubmission = await EncryptSubmission.findOne()
+
+      expect(savedSubmission).toBeDefined()
+      expect(savedSubmission).not.toBeNull()
+      expect(savedSubmission?.verifiedContent).toEqual(
+        JSON.stringify(expectedVerifiedContent),
+      )
+    })
+
+    it('should store login nric and uen in verifiedContent if form isSubmitterIdCollectionEnabled is true for CP authType', async () => {
+      // Arrange
+      MockOidcService.getOidcService.mockReturnValue({
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        extractJwt: (_arg1) => ok('jwt'),
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        extractJwtPayload: (_arg1) =>
+          okAsync(merge(MOCK_JWT_CP_PAYLOAD, MOCK_COOKIE_TIMESTAMP)),
+      } as OidcServiceType<FormAuthType.CP>)
+
+      const mockFormId = new ObjectId()
+      const mockCpAuthTypeAndSubmitterIdCollectionEnabledForm = {
+        _id: mockFormId,
+        title: 'some form',
+        authType: FormAuthType.CP,
+        isSubmitterIdCollectionEnabled: true,
+        form_fields: [] as FormFieldSchema[],
+        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
+      } as IPopulatedEncryptedForm
+
+      const MOCK_REQ = merge(
+        expressHandler.mockRequest({
+          params: { formId: 'some id' },
+          body: {
+            responses: [],
+          },
+        }),
+        {
+          formsg: {
+            encryptedPayload: {
+              encryptedContent: 'encryptedContent',
+              version: 1,
+            },
+            formDef: {
+              authType: FormAuthType.CP,
+            },
+            encryptedFormDef: mockCpAuthTypeAndSubmitterIdCollectionEnabledForm,
+          } as unknown as EncryptSubmissionDto,
+        } as unknown as FormCompleteDto,
+      ) as unknown as SubmitEncryptModeFormHandlerRequest
+      const mockRes = expressHandler.mockResponse()
+      const expectedGetVerifiedContentArg = {
+        uinFin: MOCK_UEN,
+        userInfo: MOCK_NRIC,
+      }
+      const expectedVerifiedContent = { cpUen: MOCK_UEN, cpUid: MOCK_NRIC }
 
       // Act
       await submitEncryptModeFormForTest(MOCK_REQ, mockRes)
 
       // Assert
-      // that verified content is generated using the masked nric
+      // that verified content is generated since submitter login id is collected
       expect(
         MockVerifiedContentService.getVerifiedContent,
       ).toHaveBeenCalledWith({
-        type: mockSpAuthTypeAndNricMaskingEnabledForm.authType,
-        data: { uinFin: MOCK_MASKED_NRIC, userInfo: undefined },
+        type: mockCpAuthTypeAndSubmitterIdCollectionEnabledForm.authType,
+        data: expectedGetVerifiedContentArg,
       })
-      // that the saved submission is masked
+
+      // that the saved submission is contains the correct verified content
       const savedSubmission = await EncryptSubmission.findOne()
 
       expect(savedSubmission).toBeDefined()
-      expect(savedSubmission!.verifiedContent).toEqual(MOCK_MASKED_NRIC)
+      expect(savedSubmission).not.toBeNull()
+      expect(savedSubmission?.verifiedContent).toEqual(
+        JSON.stringify(expectedVerifiedContent),
+      )
     })
 
-    it('should not mask nric if form isSubmitterIdCollectionEnabled is false', async () => {
+    it('should not collect nric if form isSubmitterIdCollectionEnabled is undefined for SP authType', async () => {
       // Arrange
       const mockFormId = new ObjectId()
       const mockSpAuthTypeAndNricMaskingEnabledForm = {
         _id: mockFormId,
         title: 'some form',
         authType: FormAuthType.SP,
-        isSubmitterIdCollectionEnabled: false,
         form_fields: [] as FormFieldSchema[],
         getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
       } as IPopulatedEncryptedForm
@@ -903,27 +1000,83 @@ describe('encrypt-submission.controller', () => {
       await submitEncryptModeFormForTest(MOCK_REQ, mockRes)
 
       // Assert
-      // that verified content is generated using the masked nric
+      // that verified content is not generated
       expect(
         MockVerifiedContentService.getVerifiedContent,
-      ).toHaveBeenCalledWith({
-        type: mockSpAuthTypeAndNricMaskingEnabledForm.authType,
-        data: { uinFin: MOCK_NRIC, userInfo: undefined },
-      })
-      // that the saved submission is masked
+      ).not.toHaveBeenCalled()
+      // that the saved submission is does not contain verified content
       const savedSubmission = await EncryptSubmission.findOne()
 
       expect(savedSubmission).toBeDefined()
-      expect(savedSubmission!.verifiedContent).toEqual(MOCK_NRIC)
+      expect(savedSubmission).not.toBeNull()
+      expect(savedSubmission!.verifiedContent).toBeUndefined()
     })
 
-    it('should not mask nric in email notification if form isSubmitterIdCollectionEnabled is false', async () => {
+    it('should not collect nric or uen if form isSubmitterIdCollectionEnabled is false for CP authType', async () => {
       // Arrange
+      MockOidcService.getOidcService.mockReturnValue({
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        extractJwt: (_arg1) => ok('jwt'),
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        extractJwtPayload: (_arg1) =>
+          okAsync(merge(MOCK_JWT_CP_PAYLOAD, MOCK_COOKIE_TIMESTAMP)),
+      } as OidcServiceType<FormAuthType.CP>)
+
       const mockFormId = new ObjectId()
-      const mockSpAuthTypeAndNricMaskingDisabledForm = {
+      const mockSpAuthTypeAndNricMaskingEnabledForm = {
         _id: mockFormId,
         title: 'some form',
-        authType: FormAuthType.SP,
+        authType: FormAuthType.CP,
+        form_fields: [] as FormFieldSchema[],
+        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
+        isSubmitterIdCollectionEnabled: false,
+      } as IPopulatedEncryptedForm
+
+      const MOCK_REQ = merge(
+        expressHandler.mockRequest({
+          params: { formId: 'some id' },
+          body: {
+            responses: [],
+          },
+        }),
+        {
+          formsg: {
+            encryptedPayload: {
+              encryptedContent: 'encryptedContent',
+              version: 1,
+            },
+            formDef: {
+              authType: FormAuthType.CP,
+            },
+            encryptedFormDef: mockSpAuthTypeAndNricMaskingEnabledForm,
+          } as unknown as EncryptSubmissionDto,
+        } as unknown as FormCompleteDto,
+      ) as unknown as SubmitEncryptModeFormHandlerRequest
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await submitEncryptModeFormForTest(MOCK_REQ, mockRes)
+
+      // Assert
+      // that verified content is not generated
+      expect(
+        MockVerifiedContentService.getVerifiedContent,
+      ).not.toHaveBeenCalled()
+      // that the saved submission is does not contain verified content
+      const savedSubmission = await EncryptSubmission.findOne()
+
+      expect(savedSubmission).toBeDefined()
+      expect(savedSubmission).not.toBeNull()
+      expect(savedSubmission!.verifiedContent).toBeUndefined()
+    })
+
+    it('should not include nric in email notification and not store nric if form isSubmitterIdCollectionEnabled is false for MyInfo authType', async () => {
+      // Arrange
+      const mockFormId = new ObjectId()
+      const mockMyInfoAuthTypeAndSubmitterIdCollectionDisabledForm = {
+        _id: mockFormId,
+        title: 'some form',
+        authType: FormAuthType.MyInfo,
         isSubmitterIdCollectionEnabled: false,
         form_fields: [] as FormFieldSchema[],
         emails: ['test@example.com'],
@@ -944,9 +1097,10 @@ describe('encrypt-submission.controller', () => {
               version: 1,
             },
             formDef: {
-              authType: FormAuthType.SP,
+              authType: FormAuthType.MyInfo,
             },
-            encryptedFormDef: mockSpAuthTypeAndNricMaskingDisabledForm,
+            encryptedFormDef:
+              mockMyInfoAuthTypeAndSubmitterIdCollectionDisabledForm,
           } as unknown as EncryptSubmissionDto,
         } as unknown as FormCompleteDto,
       ) as unknown as SubmitEncryptModeFormHandlerRequest
@@ -955,62 +1109,96 @@ describe('encrypt-submission.controller', () => {
       // Act
       await submitEncryptModeFormForTest(MOCK_REQ, mockRes)
 
+      // not verified content is added
+      expect(
+        MockVerifiedContentService.getVerifiedContent,
+      ).not.toHaveBeenCalled()
+      // that the saved submission is does not contain verified content
+      const savedSubmission = await EncryptSubmission.findOne()
+
+      expect(savedSubmission).toBeDefined()
+      expect(savedSubmission).not.toBeNull()
+      expect(savedSubmission!.verifiedContent).toBeUndefined()
+
       // Assert
-      // email notification should be sent with the unmasked nric
+      // email notification should be sent
       expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
-      // Assert nric is not masked
+      // Assert nric is not contained - formData empty array since no parsed responses to be included in email
+      expect(
+        MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData,
+      ).toEqual([])
+    })
+
+    it('should include nric in email notification and store nric in verifiedContent if form isSubmitterIdCollectionEnabled is true for SgId authType', async () => {
+      // Arrange
+      const mockFormId = new ObjectId()
+      const mockSgidAuthTypeAndSubmitterIdCollectionEnabledForm = {
+        _id: mockFormId,
+        title: 'some form',
+        authType: FormAuthType.SGID,
+        isSubmitterIdCollectionEnabled: true,
+        form_fields: [] as FormFieldSchema[],
+        emails: ['test@example.com'],
+        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
+      } as IPopulatedEncryptedForm
+
+      const MOCK_REQ = merge(
+        expressHandler.mockRequest({
+          params: { formId: 'some id' },
+          body: {
+            responses: [],
+          },
+        }),
+        {
+          formsg: {
+            encryptedPayload: {
+              encryptedContent: 'encryptedContent',
+              version: 1,
+            },
+            formDef: {
+              authType: FormAuthType.SGID,
+            },
+            encryptedFormDef:
+              mockSgidAuthTypeAndSubmitterIdCollectionEnabledForm,
+          } as unknown as EncryptSubmissionDto,
+        } as unknown as FormCompleteDto,
+      ) as unknown as SubmitEncryptModeFormHandlerRequest
+      const mockRes = expressHandler.mockResponse()
+
+      const expectedGetVerifiedContentArg = {
+        uinFin: MOCK_NRIC,
+        userInfo: undefined,
+      }
+      const expectedVerifiedContent = { sgidUinFin: MOCK_NRIC }
+
+      // Act
+      await submitEncryptModeFormForTest(MOCK_REQ, mockRes)
+
+      // Assert
+
+      // that verified content is generated since submitter login id is collected
+      expect(
+        MockVerifiedContentService.getVerifiedContent,
+      ).toHaveBeenCalledWith({
+        type: mockSgidAuthTypeAndSubmitterIdCollectionEnabledForm.authType,
+        data: expectedGetVerifiedContentArg,
+      })
+
+      // that the saved submission is contains the correct verified content
+      const savedSubmission = await EncryptSubmission.findOne()
+
+      expect(savedSubmission).toBeDefined()
+      expect(savedSubmission).not.toBeNull()
+      expect(savedSubmission?.verifiedContent).toEqual(
+        JSON.stringify(expectedVerifiedContent),
+      )
+
+      // email notification should be sent with nric included
+      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
       expect(
         MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData[0]
           .answer,
       ).toEqual(MOCK_NRIC)
-    })
-
-    it('should mask nric in email notification if form isSubmitterIdCollectionEnabled is true', async () => {
-      // Arrange
-      const mockFormId = new ObjectId()
-      const mockSpAuthTypeAndNricMaskingEnabledForm = {
-        _id: mockFormId,
-        title: 'some form',
-        authType: FormAuthType.SP,
-        isSubmitterIdCollectionEnabled: true,
-        form_fields: [] as FormFieldSchema[],
-        emails: ['test@example.com'],
-        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
-      } as IPopulatedEncryptedForm
-
-      const MOCK_REQ = merge(
-        expressHandler.mockRequest({
-          params: { formId: 'some id' },
-          body: {
-            responses: [],
-          },
-        }),
-        {
-          formsg: {
-            encryptedPayload: {
-              encryptedContent: 'encryptedContent',
-              version: 1,
-            },
-            formDef: {
-              authType: FormAuthType.SP,
-            },
-            encryptedFormDef: mockSpAuthTypeAndNricMaskingEnabledForm,
-          } as unknown as EncryptSubmissionDto,
-        } as unknown as FormCompleteDto,
-      ) as unknown as SubmitEncryptModeFormHandlerRequest
-      const mockRes = expressHandler.mockResponse()
-
-      // Act
-      await submitEncryptModeFormForTest(MOCK_REQ, mockRes)
-
-      // Assert
-      // email notification should be sent with the masked nric
-      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
-      // Assert nric is masked
-      expect(
-        MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData[0]
-          .answer,
-      ).toEqual(MOCK_MASKED_NRIC)
     })
   })
 
