@@ -26,7 +26,7 @@ const SubmitterIdCollectionInfoText = ({
       case FormAuthType.CP:
         return (
           <Text>
-            Your Singpass login ID and corporate Entity login ID{' '}
+            Your Singpass and Corppass login ID{' '}
             <Text as="b">will be included</Text> with your form submission.
           </Text>
         )
@@ -46,7 +46,7 @@ const SubmitterIdCollectionInfoText = ({
       case FormAuthType.CP:
         return (
           <Text>
-            Your Singpass login ID and Corporate Entity login ID will{' '}
+            Your Singpass and Corppass login ID will{' '}
             <Text as="b">not be included</Text> with your form submission.
           </Text>
         )
