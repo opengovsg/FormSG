@@ -86,9 +86,6 @@ const useDecryptionWorkers = ({
 
   const fasterDownloadsFeature = useFeature('faster-downloads')
   const fasterDownloads = fasterDownloadsFeature.on || isDev
-  if (fasterDownloads) {
-    console.log('Faster downloads is enabled ⚡')
-  }
 
   useEffect(() => {
     return () => killWorkers(workers)
@@ -176,6 +173,8 @@ const useDecryptionWorkers = ({
       let progress = 0
       let timeSinceLastXAttachmentDownload = 0
 
+      let totalBlobDownloadTime = 0
+
       return new Promise<DownloadResult>((resolve, reject) => {
         reader
           .read()
@@ -186,13 +185,16 @@ const useDecryptionWorkers = ({
                 // round-robin scheduling
                 const { workerApi } =
                   workerPool[receivedRecordCount % numWorkers]
-                const decryptResult = await workerApi.decryptIntoCsv({
-                  line: result.value,
-                  secretKey,
-                  downloadAttachments,
-                  formId: adminForm._id,
-                  hostOrigin: window.location.origin,
-                })
+                const decryptResult = await workerApi.decryptIntoCsv(
+                  {
+                    line: result.value,
+                    secretKey,
+                    downloadAttachments,
+                    formId: adminForm._id,
+                    hostOrigin: window.location.origin,
+                  },
+                  fasterDownloads,
+                )
                 progress += 1
                 onProgress(progress)
 
@@ -233,10 +235,13 @@ const useDecryptionWorkers = ({
                         }
                         timeSinceLastXAttachmentDownload = now
                       }
+                      const startTime = performance.now()
                       await downloadResponseAttachment(
                         decryptResult.downloadBlob,
                         decryptResult.id,
                       )
+                      const delta = performance.now() - startTime
+                      totalBlobDownloadTime += delta
                     }
                   }
                 }
@@ -358,6 +363,11 @@ const useDecryptionWorkers = ({
                   timeDifference,
                 )
 
+                console.log({
+                  'Time it took to download blob url':
+                    totalBlobDownloadTime / csvGenerator.length(),
+                })
+
                 resolve({
                   expectedCount: responsesCount,
                   successCount: csvGenerator.length(),
@@ -373,7 +383,7 @@ const useDecryptionWorkers = ({
           })
       })
     },
-    [adminForm, onProgress, user?._id, workers],
+    [adminForm, onProgress, user?._id, workers, fasterDownloads],
   )
 
   const downloadEncryptedResponsesFaster = useCallback(
@@ -391,6 +401,8 @@ const useDecryptionWorkers = ({
           errorCount: 0,
         })
       }
+
+      console.log('Faster downloads is enabled ⚡')
 
       abortControllerRef.current.abort()
       const freshAbortController = new AbortController()
@@ -442,16 +454,21 @@ const useDecryptionWorkers = ({
         freshAbortController,
       )
 
+      let totalBlobDownloadTime = 0
+
       const processTask = async (value: string, workerIdx: number) => {
         const { workerApi } = workerPool[workerIdx]
 
-        const decryptResult = await workerApi.decryptIntoCsv({
-          line: value,
-          secretKey,
-          downloadAttachments,
-          formId: adminForm._id,
-          hostOrigin: window.location.origin,
-        })
+        const decryptResult = await workerApi.decryptIntoCsv(
+          {
+            line: value,
+            secretKey,
+            downloadAttachments,
+            formId: adminForm._id,
+            hostOrigin: window.location.origin,
+          },
+          fasterDownloads,
+        )
 
         switch (decryptResult.status) {
           case CsvRecordStatus.Ok:
@@ -466,12 +483,14 @@ const useDecryptionWorkers = ({
             // rate limit to pass. If decryption is fast, we would wait regardless.
             // If decryption is slow, we won't hit rate limits.
             if (downloadAttachments && decryptResult.downloadBlobURL) {
+              const startTime = performance.now()
               await downloadResponseAttachmentURL(
                 decryptResult.downloadBlobURL,
                 decryptResult.id,
-              ).then(() => {
-                URL.revokeObjectURL(decryptResult.downloadBlobURL!)
-              })
+              )
+              URL.revokeObjectURL(decryptResult.downloadBlobURL!)
+              const delta = performance.now() - startTime
+              totalBlobDownloadTime += delta
             }
             break
           case CsvRecordStatus.Unknown:
@@ -660,6 +679,11 @@ const useDecryptionWorkers = ({
                   timeDifference,
                 )
 
+                console.log({
+                  'Time it took to download blob url':
+                    totalBlobDownloadTime / csvGenerator.length(),
+                })
+
                 resolve({
                   expectedCount: responsesCount,
                   successCount: csvGenerator.length(),
@@ -675,7 +699,7 @@ const useDecryptionWorkers = ({
           })
       })
     },
-    [adminForm, onProgress, user?._id, workers],
+    [adminForm, onProgress, user?._id, workers, fasterDownloads],
   )
 
   const handleExportCsvMutation = useMutation(

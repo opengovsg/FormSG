@@ -66,7 +66,10 @@ function verifySignature(
  * main thread.
  * @param data The data to decrypt into a csvRecord.
  */
-async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
+async function decryptIntoCsv(
+  data: LineData,
+  fasterDownloads: boolean,
+): Promise<MaterializedCsvRecord> {
   // This needs to be dynamically imported due to sharing code between main app and worker code.
   // Fixes issue raised at https://stackoverflow.com/questions/66472945/referenceerror-refreshreg-is-not-defined
   // Something to do with babel-loader.
@@ -185,12 +188,15 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
               attachmentDecryptionKey,
             ),
           )
-          csvRecord.downloadBlobURL = URL.createObjectURL(downloadBlob) // remember to revokeObjectURL on the link in the main thread
           csvRecord.setStatus(
             CsvRecordStatus.Ok,
             'Success (with Downloaded Attachment)',
           )
-          // csvRecord.setDownloadBlob(downloadBlob)
+          if (fasterDownloads) {
+            csvRecord.downloadBlobURL = URL.createObjectURL(downloadBlob)
+          } else {
+            csvRecord.setDownloadBlob(downloadBlob)
+          }
         } catch (error) {
           csvRecord.setStatus(
             CsvRecordStatus.AttachmentError,
