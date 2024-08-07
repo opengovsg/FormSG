@@ -42,7 +42,10 @@ export const FormResponseOptions = forwardRef<
         flex={1}
       >
         <Tile.Title>Storage mode form</Tile.Title>
-        <Tile.Subtitle>View or download responses in FormSG</Tile.Subtitle>
+        <Tile.Subtitle>
+          View and download responses in FormSG or receive responses in your
+          inbox
+        </Tile.Subtitle>
         <OptionDescription
           listItems={[
             'Attachments: up to 20MB per form',
@@ -62,7 +65,7 @@ export const FormResponseOptions = forwardRef<
         flex={1}
       >
         <Tile.Title>Email mode form</Tile.Title>
-        <Tile.Subtitle>Receive responses in your inbox</Tile.Subtitle>
+        <Tile.Subtitle>Receive responses in your inbox only</Tile.Subtitle>
         <OptionDescription
           listItems={[
             'Attachments: up to 7MB per form',
