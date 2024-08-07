@@ -185,11 +185,12 @@ async function decryptIntoCsv(data: LineData): Promise<MaterializedCsvRecord> {
               attachmentDecryptionKey,
             ),
           )
+          csvRecord.downloadBlobURL = URL.createObjectURL(downloadBlob) // remember to revokeObjectURL on the link in the main thread
           csvRecord.setStatus(
             CsvRecordStatus.Ok,
             'Success (with Downloaded Attachment)',
           )
-          csvRecord.setDownloadBlob(downloadBlob)
+          // csvRecord.setDownloadBlob(downloadBlob)
         } catch (error) {
           csvRecord.setStatus(
             CsvRecordStatus.AttachmentError,

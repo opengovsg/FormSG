@@ -15,7 +15,10 @@ import {
 } from '~features/analytics/AnalyticsService'
 import { useUser } from '~features/user/queries'
 
-import { downloadResponseAttachment } from './utils/downloadCsv'
+import {
+  downloadResponseAttachment,
+  downloadResponseAttachmentURL,
+} from './utils/downloadCsv'
 import { EncryptedResponseCsvGenerator } from './utils/EncryptedResponseCsvGenerator'
 import {
   EncryptedResponsesStreamParams,
@@ -463,10 +466,12 @@ const useDecryptionWorkers = ({
             // rate limit to pass. If decryption is fast, we would wait regardless.
             // If decryption is slow, we won't hit rate limits.
             if (downloadAttachments && decryptResult.downloadBlob) {
-              await downloadResponseAttachment(
-                decryptResult.downloadBlob,
+              await downloadResponseAttachmentURL(
+                decryptResult.downloadBlobURL!,
                 decryptResult.id,
-              )
+              ).then(() => {
+                URL.revokeObjectURL(decryptResult.downloadBlobURL!)
+              })
             }
             break
           case CsvRecordStatus.Unknown:
