@@ -19,8 +19,8 @@ const SubmitterIdCollectionInfoText = ({
       case FormAuthType.SGID_MyInfo:
         return (
           <Text>
-            'Your Singpass login ID <Text as="b">will be included</Text> with
-            your form submission.'
+            Your Singpass login ID <Text as="b">will be included</Text> with
+            your form submission.
           </Text>
         )
       case FormAuthType.CP:
@@ -39,8 +39,8 @@ const SubmitterIdCollectionInfoText = ({
       case FormAuthType.SGID_MyInfo:
         return (
           <Text>
-            'Your Singpass login ID will <Text as="b">not be included</Text>{' '}
-            with your form submission.
+            Your Singpass login ID will <Text as="b">not be included</Text> with
+            your form submission.
           </Text>
         )
       case FormAuthType.CP:
