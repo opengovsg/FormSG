@@ -517,7 +517,7 @@ const useDecryptionWorkers = ({
               const finishedTasks: number[] = []
               for (let i = 0; i < pendingTasks.length; i++) {
                 try {
-                  const freedWorkerIdx = await withTimeout(pendingTasks[i], 100)
+                  const freedWorkerIdx = await withTimeout(pendingTasks[i], 50)
                   idleWorkers.push(freedWorkerIdx)
                   finishedTasks.push(i)
                 } catch (e) {
