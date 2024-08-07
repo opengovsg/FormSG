@@ -399,7 +399,6 @@ const useDecryptionWorkers = ({
       let errorCount = 0
       let unverifiedCount = 0
       let attachmentErrorCount = 0
-      let receivedRecordCount = 0
       let unknownStatusCount = 0
 
       const logMeta = {
@@ -455,7 +454,6 @@ const useDecryptionWorkers = ({
           case CsvRecordStatus.Ok:
             try {
               csvGenerator.addRecord(decryptResult.submissionData)
-              receivedRecordCount++
             } catch (e) {
               errorCount++
               console.error('Error in getResponseInstance', e)
