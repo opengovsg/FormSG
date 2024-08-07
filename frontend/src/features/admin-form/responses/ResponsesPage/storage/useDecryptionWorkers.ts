@@ -173,8 +173,6 @@ const useDecryptionWorkers = ({
       let progress = 0
       let timeSinceLastXAttachmentDownload = 0
 
-      let totalBlobDownloadTime = 0
-
       return new Promise<DownloadResult>((resolve, reject) => {
         reader
           .read()
@@ -235,13 +233,10 @@ const useDecryptionWorkers = ({
                         }
                         timeSinceLastXAttachmentDownload = now
                       }
-                      const startTime = performance.now()
                       await downloadResponseAttachment(
                         decryptResult.downloadBlob,
                         decryptResult.id,
                       )
-                      const delta = performance.now() - startTime
-                      totalBlobDownloadTime += delta
                     }
                   }
                 }
@@ -363,11 +358,6 @@ const useDecryptionWorkers = ({
                   timeDifference,
                 )
 
-                console.log({
-                  'Time it took to download blob url':
-                    totalBlobDownloadTime / csvGenerator.length(),
-                })
-
                 resolve({
                   expectedCount: responsesCount,
                   successCount: csvGenerator.length(),
@@ -454,8 +444,6 @@ const useDecryptionWorkers = ({
         freshAbortController,
       )
 
-      let totalBlobDownloadTime = 0
-
       const processTask = async (value: string, workerIdx: number) => {
         const { workerApi } = workerPool[workerIdx]
 
@@ -483,14 +471,11 @@ const useDecryptionWorkers = ({
             // rate limit to pass. If decryption is fast, we would wait regardless.
             // If decryption is slow, we won't hit rate limits.
             if (downloadAttachments && decryptResult.downloadBlobURL) {
-              const startTime = performance.now()
               await downloadResponseAttachmentURL(
                 decryptResult.downloadBlobURL,
                 decryptResult.id,
               )
-              URL.revokeObjectURL(decryptResult.downloadBlobURL!)
-              const delta = performance.now() - startTime
-              totalBlobDownloadTime += delta
+              URL.revokeObjectURL(decryptResult.downloadBlobURL)
             }
             break
           case CsvRecordStatus.Unknown:
@@ -532,7 +517,7 @@ const useDecryptionWorkers = ({
               const finishedTasks: number[] = []
               for (let i = 0; i < pendingTasks.length; i++) {
                 try {
-                  const freedWorkerIdx = await withTimeout(pendingTasks[i], 10)
+                  const freedWorkerIdx = await withTimeout(pendingTasks[i], 100)
                   idleWorkers.push(freedWorkerIdx)
                   finishedTasks.push(i)
                 } catch (e) {
@@ -678,11 +663,6 @@ const useDecryptionWorkers = ({
                   NUM_OF_METADATA_ROWS,
                   timeDifference,
                 )
-
-                console.log({
-                  'Time it took to download blob url':
-                    totalBlobDownloadTime / csvGenerator.length(),
-                })
 
                 resolve({
                   expectedCount: responsesCount,
