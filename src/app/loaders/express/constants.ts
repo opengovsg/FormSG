@@ -1,3 +1,5 @@
+import { RequestHandler } from 'express'
+
 import config from '../../config/config'
 
 export const CSP_CORE_DIRECTIVES = {
@@ -31,6 +33,8 @@ export const CSP_CORE_DIRECTIVES = {
     'https://*.cloudflareinsights.com/', // Cloudflare web analytics https://developers.cloudflare.com/analytics/types-of-analytics/#web-analytics
     'https://www.gstatic.com/charts/', // React Google Charts for FormSG charts
     'https://www.gstatic.cn',
+    (_req: Parameters<RequestHandler>[0], res: Parameters<RequestHandler>[1]) =>
+      `'nonce-${res.locals.nonce}'`,
   ],
   connectSrc: [
     "'self'",
