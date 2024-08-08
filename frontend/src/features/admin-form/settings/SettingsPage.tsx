@@ -121,7 +121,7 @@ export const SettingsPage = (): JSX.Element => {
   }
 
   return (
-    <Box overflow="auto" flex={1}>
+    <Box overflow="auto" position="sticky" flex={1}>
       <Tabs
         isLazy
         isManual
