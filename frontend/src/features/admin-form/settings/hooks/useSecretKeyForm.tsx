@@ -12,7 +12,7 @@ export interface SecretKeyFormInputs {
 
 export interface UseSecretKeyFormProps {
   publicKey: string
-  onSecretKeyFormSubmit: ({ secretKey, ack }: SecretKeyFormInputs) => void
+  onSubmit: ({ secretKey, ack }: SecretKeyFormInputs) => void
   onClose: () => void
   hasAck: boolean
 }
@@ -24,7 +24,7 @@ export interface UseSecretKeyFormProps {
 export const useSecretKeyForm = ({
   publicKey,
   onClose,
-  onSecretKeyFormSubmit,
+  onSubmit,
   hasAck = false,
 }: UseSecretKeyFormProps) => {
   const {
@@ -60,7 +60,7 @@ export const useSecretKeyForm = ({
         )
       }
 
-      onSecretKeyFormSubmit({ secretKey, ack })
+      onSubmit({ secretKey, ack })
     },
   )
 

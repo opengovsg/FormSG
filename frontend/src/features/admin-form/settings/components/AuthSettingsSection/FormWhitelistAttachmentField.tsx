@@ -12,7 +12,7 @@ import { MB } from '~shared/constants'
 import { AttachmentSize, BasicField, StorageFormSettings } from '~shared/types'
 import { VALID_WHITELIST_FILE_EXTENSIONS } from '~shared/utils/file-validation'
 
-import { parseCsvFileToCsvStringWithoutChunking } from '~utils/parseCsvFileToCsvString'
+import { parseCsvFileToCsvString } from '~utils/parseCsvFileToCsvString'
 import Attachment from '~components/Field/Attachment'
 import { AttachmentFieldSchema } from '~templates/Field'
 import { FieldContainer } from '~templates/Field/FieldContainer'
@@ -102,20 +102,17 @@ export const FormWhitelistAttachmentField = ({
           return
         }
 
-        const csvString = parseCsvFileToCsvStringWithoutChunking(
-          file,
-          (headerRow) => {
-            return {
-              isValid:
-                headerRow &&
-                headerRow.length === 1 &&
-                headerRow[0].replace(/(\r\n|\n|\r)/gm, '').toLowerCase() ===
-                  'respondent',
-              invalidReason:
-                'Your CSV file should only contain a single column with the "Respondent" header.',
-            }
-          },
-        )
+        const csvString = parseCsvFileToCsvString(file, (headerRow) => {
+          return {
+            isValid:
+              headerRow &&
+              headerRow.length === 1 &&
+              headerRow[0].replace(/(\r\n|\n|\r)/gm, '').toLowerCase() ===
+                'respondent',
+            invalidReason:
+              'Your CSV file should only contain a single column with the "Respondent" header.',
+          }
+        })
 
         mutateFormWhitelistSetting.mutate(csvString, {
           onSuccess: () => {

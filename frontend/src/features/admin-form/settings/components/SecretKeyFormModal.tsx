@@ -35,7 +35,7 @@ export interface SecretKeyFormModalProps
   publicKey: string
   modalActionText: string
   submitButtonText: string
-  onSecretKeyFormSubmit: (secretKeyFormInputs: SecretKeyFormInputs) => void
+  onSubmit: (secretKeyFormInputs: SecretKeyFormInputs) => void
   hasAck?: boolean
 }
 
@@ -46,7 +46,7 @@ export const SecretKeyFormModal = ({
   publicKey,
   modalActionText,
   submitButtonText,
-  onSecretKeyFormSubmit,
+  onSubmit,
   hasAck = false,
 }: SecretKeyFormModalProps): JSX.Element => {
   const {
@@ -61,7 +61,7 @@ export const SecretKeyFormModal = ({
   } = useSecretKeyForm({
     publicKey,
     onClose,
-    onSecretKeyFormSubmit,
+    onSubmit,
     hasAck,
   })
 

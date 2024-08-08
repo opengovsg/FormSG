@@ -18,7 +18,7 @@ export const SecretKeyActivationModal = ({
 }: SecretKeyActivationModalProps): JSX.Element => {
   const { mutateFormStatus } = useMutateFormSettings()
 
-  const onSecretKeyFormSubmit = () => {
+  const onSubmit = () => {
     return mutateFormStatus.mutate(FormStatus.Public, { onSuccess: onClose })
   }
   const isLoading = mutateFormStatus.isLoading
@@ -31,8 +31,8 @@ export const SecretKeyActivationModal = ({
       publicKey={publicKey}
       modalActionText="Active your form"
       submitButtonText="Activate form"
-      onSecretKeyFormSubmit={onSecretKeyFormSubmit}
-      hasAck={true}
+      onSubmit={onSubmit}
+      hasAck
     />
   )
 }

@@ -1,6 +1,6 @@
 import Papa from 'papaparse'
 
-export const parseCsvFileToCsvStringWithoutChunking = (
+export const parseCsvFileToCsvString = (
   file: File,
   validateHeader?: (headerRow: string[]) => {
     isValid: boolean

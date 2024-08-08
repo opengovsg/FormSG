@@ -126,7 +126,7 @@ export const SecretKeyDownloadWhitelistFileModal = ({
   return (
     <SecretKeyFormModal
       isLoading={false}
-      onSecretKeyFormSubmit={handleWhitelistCsvDownload}
+      onSubmit={handleWhitelistCsvDownload}
       onClose={onClose}
       isOpen={isOpen}
       publicKey={publicKey}
