@@ -37,7 +37,7 @@ export const AttachmentFileInfo = ({
       <VisuallyHidden>
         File attached: {file.name} with file size of {readableFileSize}
       </VisuallyHidden>
-      <Flex flexDir="column" aria-hidden>
+      <Flex flexDir="column" justify="center" aria-hidden>
         <Text
           textStyle="subhead-1"
           color="secondary.500"
