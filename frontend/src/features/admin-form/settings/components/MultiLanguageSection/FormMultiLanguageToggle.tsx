@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { BiEditAlt } from 'react-icons/bi'
 import { GoEye, GoEyeClosed } from 'react-icons/go'
 import {
@@ -14,7 +14,10 @@ import _ from 'lodash'
 
 import { Language } from '~shared/types'
 
-import { convertUnicodeLocaleToLanguage } from '~utils/multiLanguage'
+import {
+  convertUnicodeLocaleToLanguage,
+  getDefaultSupportedLanguages,
+} from '~utils/multiLanguage'
 import Badge from '~components/Badge'
 import Toggle from '~components/Toggle'
 
@@ -48,31 +51,24 @@ const LanguageTranslationRow = ({
 
   const { mutateFormSupportedLanguages } = useMutateFormSettings()
 
-  const handleToggleSupportedLanague = useCallback(
+  const handleToggleSupportedLanguage = useCallback(
     (language: Language) => {
       if (supportedLanguages == null) return
 
-      // Remove support for this language if it exists in supportedLanguages
-      const existingSupportedLanguageIdx = supportedLanguages.indexOf(language)
-      if (existingSupportedLanguageIdx !== -1) {
-        supportedLanguages.splice(existingSupportedLanguageIdx, 1)
-        setIsLanguageSupported(false)
-        return mutateFormSupportedLanguages.mutate({
-          nextSupportedLanguages: supportedLanguages,
-          selectedLanguage: language,
-        })
-      }
+      const isLanguageSupportedPreviously = !!supportedLanguages.find(
+        (supportedLanguage) => supportedLanguage == language,
+      )
+      const isAddSupport = !isLanguageSupportedPreviously
+      const updatedSupportedLanguages = isAddSupport
+        ? supportedLanguages.concat(language)
+        : supportedLanguages.filter((l) => l !== language)
 
-      // If selected language is not in supportedLanguages then add this language
-      // to supportedLanguages
-      else {
-        const updatedSupportedLanguages = supportedLanguages.concat(language)
-        setIsLanguageSupported(true)
-        return mutateFormSupportedLanguages.mutate({
-          nextSupportedLanguages: updatedSupportedLanguages,
-          selectedLanguage: language,
-        })
-      }
+      setIsLanguageSupported(isAddSupport)
+
+      return mutateFormSupportedLanguages.mutate({
+        nextSupportedLanguages: updatedSupportedLanguages,
+        selectedLanguage: language,
+      })
     },
     [mutateFormSupportedLanguages, supportedLanguages],
   )
@@ -101,7 +97,7 @@ const LanguageTranslationRow = ({
               }
               colorScheme="secondary"
               aria-label={`Select ${unicodeLocale} as the form's default language`}
-              onClick={() => handleToggleSupportedLanague(unicodeLocale)}
+              onClick={() => handleToggleSupportedLanguage(unicodeLocale)}
             />
             <IconButton
               variant="clear"
@@ -114,7 +110,7 @@ const LanguageTranslationRow = ({
           </HStack>
         )}
       </Flex>
-      {!isLast && <Divider />}
+      {!isLast ? <Divider /> : null}
     </>
   )
 }
@@ -122,7 +118,7 @@ const LanguageTranslationRow = ({
 const LanguageTranslationSection = ({
   defaultLanguage,
 }: LanguageTranslationSectionProps): JSX.Element => {
-  let unicodeLocales = Object.values(Language)
+  let unicodeLocales = getDefaultSupportedLanguages()
 
   const idxToRemove = unicodeLocales.indexOf(defaultLanguage)
   unicodeLocales.splice(idxToRemove, 1)
@@ -152,10 +148,7 @@ export const FormMultiLanguageToggle = (): JSX.Element => {
   const { mutateFormSupportedLanguages, mutateFormHasMultiLang } =
     useMutateFormSettings()
 
-  const hasMultiLang = useMemo(
-    () => settings && settings?.hasMultiLang,
-    [settings],
-  )
+  const hasMultiLang = settings && settings?.hasMultiLang
 
   const handleToggleMultiLang = useCallback(() => {
     if (!settings || isLoadingSettings || mutateFormHasMultiLang.isLoading)
@@ -163,20 +156,16 @@ export const FormMultiLanguageToggle = (): JSX.Element => {
 
     const nextHasMultiLang = !settings.hasMultiLang
 
-    const currentSupportedLanguages = settings?.supportedLanguages
-
-    // Restore back previously supported languages.
-    let nextSupportedLanguages = currentSupportedLanguages
+    const currentSupportedLanguages = settings.supportedLanguages
 
     // Add all languages as this is the first instance user turns on
     // toggle
     if (_.isEmpty(currentSupportedLanguages) && nextHasMultiLang) {
-      nextSupportedLanguages = Object.values(Language)
+      const nextSupportedLanguages = getDefaultSupportedLanguages()
+      mutateFormSupportedLanguages.mutate({ nextSupportedLanguages })
     }
 
-    mutateFormSupportedLanguages.mutate({ nextSupportedLanguages })
-
-    return mutateFormHasMultiLang.mutate(nextHasMultiLang)
+    mutateFormHasMultiLang.mutate(nextHasMultiLang)
   }, [
     isLoadingSettings,
     mutateFormHasMultiLang,
@@ -192,11 +181,11 @@ export const FormMultiLanguageToggle = (): JSX.Element => {
         label="Enable multi-language"
         description="This will allow respondents to select a language they prefer to view your form in. Translations are not automated."
       />
-      {settings && hasMultiLang && (
+      {settings && hasMultiLang ? (
         <Skeleton isLoaded={true}>
           <LanguageTranslationSection defaultLanguage={Language.ENGLISH} />
         </Skeleton>
-      )}
+      ) : null}
     </Skeleton>
   )
 }

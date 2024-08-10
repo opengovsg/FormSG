@@ -171,6 +171,7 @@ export const useMutateFormSettings = () => {
             : 'Multi-language disabled.',
         })
       },
+      onError: handleError,
     },
   )
 
@@ -189,17 +190,15 @@ export const useMutateFormSettings = () => {
             newSupportedLanguages.selectedLanguage,
           )
 
-          let successMessage: string
-          if (
-            supportedLanguages.includes(newSupportedLanguages.selectedLanguage)
-          ) {
-            successMessage = `Respondents will now be able to select and view your form in ${languageToDisplay}.`
-          } else {
-            successMessage = `${languageToDisplay} is now hidden. Respondents will not be able to see it.`
-          }
+          const isSelectedLanguageSupported = supportedLanguages.includes(
+            newSupportedLanguages.selectedLanguage,
+          )
+            ? `Respondents will now be able to select and view your form in ${languageToDisplay}.`
+            : `${languageToDisplay} is now hidden. Respondents will not be able to see it.`
+
           handleSuccess({
             newData,
-            toastDescription: successMessage,
+            toastDescription: isSelectedLanguageSupported,
           })
         }
       },

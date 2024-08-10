@@ -10,8 +10,9 @@ export const convertUnicodeLocaleToLanguage = (language: Language) => {
       return 'Malay'
     case Language.TAMIL:
       return 'Tamil'
-    // This case should not occur
     default:
       throw new Error('Invalid unicode locale')
   }
 }
+
+export const getDefaultSupportedLanguages = () => Object.values(Language)
