@@ -20,6 +20,7 @@ import {
 } from '~utils/multiLanguage'
 import Badge from '~components/Badge'
 import Toggle from '~components/Toggle'
+import Tooltip from '~components/Tooltip'
 
 import { useMutateFormSettings } from '../../mutations'
 import { useAdminFormSettings } from '../../queries'
@@ -86,27 +87,31 @@ const LanguageTranslationRow = ({
         </Flex>
         {!isDefaultLanguage && (
           <HStack spacing="0.75rem">
-            <IconButton
-              variant="clear"
-              icon={
-                isLanguageSupported ? (
-                  <GoEye width="44px" />
-                ) : (
-                  <GoEyeClosed width="44px" />
-                )
-              }
-              colorScheme="secondary"
-              aria-label={`Select ${unicodeLocale} as the form's default language`}
-              onClick={() => handleToggleSupportedLanguage(unicodeLocale)}
-            />
-            <IconButton
-              variant="clear"
-              icon={<BiEditAlt width="44px" />}
-              colorScheme="secondary"
-              aria-label={`Add ${unicodeLocale} translations`}
-              // TODO: Will add redirection to translation section in next PR
-              onClick={() => console.log('Edit translations')}
-            />
+            <Tooltip label="Hide/show language on form">
+              <IconButton
+                variant="clear"
+                icon={
+                  isLanguageSupported ? (
+                    <GoEye width="44px" />
+                  ) : (
+                    <GoEyeClosed width="44px" />
+                  )
+                }
+                colorScheme="secondary"
+                aria-label={`Select ${unicodeLocale} as the form's default language`}
+                onClick={() => handleToggleSupportedLanguage(unicodeLocale)}
+              />
+            </Tooltip>
+            <Tooltip label="Edit translation">
+              <IconButton
+                variant="clear"
+                icon={<BiEditAlt width="44px" />}
+                colorScheme="secondary"
+                aria-label={`Add ${unicodeLocale} translations`}
+                // TODO: Will add redirection to translation section in next PR
+                onClick={() => console.log('Edit translations')}
+              />
+            </Tooltip>
           </HStack>
         )}
       </Flex>
