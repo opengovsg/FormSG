@@ -136,6 +136,8 @@ services:
       - POSTMAN_INTERNAL_CAMPAIGN_ID=campaign_test_2
       - POSTMAN_INTERNAL_CAMPAIGN_API_KEY=key_test_456
       - POSTMAN_BASE_URL=https://test.postman.gov.sg/api/v2
+      - DOWNLOAD_FORM_WHITELIST_RATE_LIMIT
+      - UPLOAD_FORM_WHITELIST_RATE_LIMIT
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git#v4.3.1
