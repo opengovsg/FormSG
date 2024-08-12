@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useRef } from 'react'
-import { useForm } from 'react-hook-form'
+import { useCallback, useMemo, useRef, useState } from 'react'
+import { useForm, UseFormSetError, UseFormSetValue } from 'react-hook-form'
 import { BiRightArrowAlt, BiUpload } from 'react-icons/bi'
 import {
   Container,
@@ -54,6 +54,8 @@ const useSecretKeyActivationModal = ({
     handleSubmit,
   } = useForm<SecretKeyFormInputs>()
 
+  const [dragging, setDragging] = useState(false)
+
   const fileUploadRef = useRef<HTMLInputElement | null>(null)
 
   const { mutateFormStatus } = useMutateFormSettings()
@@ -76,6 +78,64 @@ const useSecretKeyActivationModal = ({
     return mutateFormStatus.mutate(FormStatus.Public, { onSuccess: onClose })
   })
 
+  const processFile = (
+    file: File,
+    setError: UseFormSetError<SecretKeyFormInputs>,
+    setValue: UseFormSetValue<SecretKeyFormInputs>,
+  ) => {
+    const reader = new FileReader()
+    reader.onload = async (e) => {
+      if (!e.target) return
+      const text = e.target.result?.toString()
+
+      if (!text || !SECRET_KEY_REGEX.test(text)) {
+        return setError(
+          SECRET_KEY_NAME,
+          {
+            type: 'invalidFile',
+            message: 'Selected file seems to be invalid',
+          },
+          { shouldFocus: true },
+        )
+      }
+
+      setValue(SECRET_KEY_NAME, text, { shouldValidate: true })
+    }
+    reader.readAsText(file)
+  }
+
+  const preventDefaults = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      preventDefaults(e)
+      setDragging(false)
+
+      const file = e.dataTransfer.files?.[0]
+      if (!file) return
+
+      processFile(file, setError, setValue)
+    },
+    [setError, setValue],
+  )
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    preventDefaults(e)
+    setDragging(true)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    preventDefaults(e)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    preventDefaults(e)
+    setDragging(false)
+  }
+
   const handleFileSelect = useCallback(
     ({ target }: React.ChangeEvent<HTMLInputElement>) => {
       const file = target.files?.[0]
@@ -87,25 +147,7 @@ const useSecretKeyActivationModal = ({
 
       if (!file) return
 
-      const reader = new FileReader()
-      reader.onload = async (e) => {
-        if (!e.target) return
-        const text = e.target.result?.toString()
-
-        if (!text || !SECRET_KEY_REGEX.test(text)) {
-          return setError(
-            SECRET_KEY_NAME,
-            {
-              type: 'invalidFile',
-              message: 'Selected file seems to be invalid',
-            },
-            { shouldFocus: true },
-          )
-        }
-
-        setValue(SECRET_KEY_NAME, text, { shouldValidate: true })
-      }
-      reader.readAsText(file)
+      processFile(file, setError, setValue)
     },
     [setError, setValue],
   )
@@ -133,10 +175,15 @@ const useSecretKeyActivationModal = ({
     fileUploadRef,
     handleFileSelect,
     handleVerifyKeypair,
+    handleDragEnter,
+    handleDragLeave,
+    handleDragOver,
+    handleDrop,
     register,
     secretKeyNotUploaded,
     activateDisabled,
     errors,
+    dragging,
     isLoading: mutateFormStatus.isLoading,
     handleOnClose,
   }
@@ -151,9 +198,14 @@ export const SecretKeyActivationModal = ({
     fileUploadRef,
     handleFileSelect,
     handleVerifyKeypair,
+    handleDragEnter,
+    handleDragLeave,
+    handleDragOver,
+    handleDrop,
     register,
     secretKeyNotUploaded,
     activateDisabled,
+    dragging,
     errors,
     isLoading,
     handleOnClose,
@@ -202,7 +254,15 @@ export const SecretKeyActivationModal = ({
                         message: 'The secret key provided is invalid',
                       },
                     })}
-                    placeholder="Enter or upload your Secret Key to continue"
+                    placeholder={
+                      dragging
+                        ? 'Drop your Secret Key here'
+                        : 'Enter or drop your Secret Key to continue'
+                    }
+                    onDragEnter={handleDragEnter}
+                    onDragLeave={handleDragLeave}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
                   />
                   <IconButton
                     isDisabled={isLoading}
