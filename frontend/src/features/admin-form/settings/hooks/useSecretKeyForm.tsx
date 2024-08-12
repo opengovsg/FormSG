@@ -1,5 +1,5 @@
-import { useCallback, useRef } from 'react'
-import { useForm } from 'react-hook-form'
+import { useCallback, useRef, useState } from 'react'
+import { useForm, UseFormSetError, UseFormSetValue } from 'react-hook-form'
 
 import { isKeypairValid, SECRET_KEY_REGEX } from '~utils/secretKeyValidation'
 
@@ -36,6 +36,66 @@ export const useSecretKeyForm = ({
     watch,
     handleSubmit,
   } = useForm<SecretKeyFormInputs>()
+
+  const [dragging, setDragging] = useState(false)
+
+  const preventDefaults = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  const processFile = (
+    file: File,
+    setError: UseFormSetError<SecretKeyFormInputs>,
+    setValue: UseFormSetValue<SecretKeyFormInputs>,
+  ) => {
+    const reader = new FileReader()
+    reader.onload = async (e) => {
+      if (!e.target) return
+      const text = e.target.result?.toString()
+
+      if (!text || !SECRET_KEY_REGEX.test(text)) {
+        return setError(
+          SECRET_KEY_NAME,
+          {
+            type: 'invalidFile',
+            message: 'Selected file seems to be invalid',
+          },
+          { shouldFocus: true },
+        )
+      }
+
+      setValue(SECRET_KEY_NAME, text, { shouldValidate: true })
+    }
+    reader.readAsText(file)
+  }
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      preventDefaults(e)
+      setDragging(false)
+
+      const file = e.dataTransfer.files?.[0]
+      if (!file) return
+
+      processFile(file, setError, setValue)
+    },
+    [setError, setValue],
+  )
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    preventDefaults(e)
+    setDragging(true)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    preventDefaults(e)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    preventDefaults(e)
+    setDragging(false)
+  }
 
   const watchedSecretKey = watch(SECRET_KEY_NAME)
   const watchedAck = watch(ACK_NAME)
@@ -75,25 +135,7 @@ export const useSecretKeyForm = ({
 
       if (!file) return
 
-      const reader = new FileReader()
-      reader.onload = async (e) => {
-        if (!e.target) return
-        const text = e.target.result?.toString()
-
-        if (!text || !SECRET_KEY_REGEX.test(text)) {
-          return setError(
-            SECRET_KEY_NAME,
-            {
-              type: 'invalidFile',
-              message: 'Selected file seems to be invalid',
-            },
-            { shouldFocus: true },
-          )
-        }
-
-        setValue(SECRET_KEY_NAME, text, { shouldValidate: true })
-      }
-      reader.readAsText(file)
+      processFile(file, setError, setValue)
     },
     [setError, setValue],
   )
@@ -105,13 +147,18 @@ export const useSecretKeyForm = ({
   }, [onClose, reset])
 
   return {
-    secretKeyFileUploadRef,
-    handleSecretKeyFileChange,
-    handleVerifyKeyPairAndSubmit,
-    handleSecretKeyFormClose,
-    isSecretKeyUploaded,
-    isSecretKeyFormCompleted,
-    register,
+    dragging,
     errors,
+    handleDragEnter,
+    handleDragLeave,
+    handleDragOver,
+    handleDrop,
+    handleSecretKeyFileChange,
+    handleSecretKeyFormClose,
+    handleVerifyKeyPairAndSubmit,
+    isSecretKeyFormCompleted,
+    isSecretKeyUploaded,
+    register,
+    secretKeyFileUploadRef,
   }
 }

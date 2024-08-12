@@ -50,14 +50,19 @@ export const SecretKeyFormModal = ({
   hasAck = false,
 }: SecretKeyFormModalProps): JSX.Element => {
   const {
-    secretKeyFileUploadRef,
-    handleSecretKeyFileChange,
-    handleVerifyKeyPairAndSubmit,
-    handleSecretKeyFormClose,
-    isSecretKeyUploaded,
-    isSecretKeyFormCompleted,
-    register,
+    dragging,
     errors,
+    handleDragEnter,
+    handleDragLeave,
+    handleDragOver,
+    handleDrop,
+    handleSecretKeyFileChange,
+    handleSecretKeyFormClose,
+    handleVerifyKeyPairAndSubmit,
+    isSecretKeyFormCompleted,
+    isSecretKeyUploaded,
+    register,
+    secretKeyFileUploadRef,
   } = useSecretKeyForm({
     publicKey,
     onClose,
@@ -108,7 +113,15 @@ export const SecretKeyFormModal = ({
                         message: 'The secret key provided is invalid',
                       },
                     })}
-                    placeholder="Enter or upload your Secret Key to continue"
+                    placeholder={
+                      dragging
+                        ? 'Drop your Secret Key here'
+                        : 'Enter or drop your Secret Key to continue'
+                    }
+                    onDragEnter={handleDragEnter}
+                    onDragLeave={handleDragLeave}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
                   />
                   <IconButton
                     isDisabled={isLoading}
