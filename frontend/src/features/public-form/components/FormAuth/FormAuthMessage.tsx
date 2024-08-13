@@ -54,22 +54,24 @@ const SubmitterIdCollectionInfoText = ({
   }
 }
 
+const getSignInText = (authType: Exclude<FormAuthType, FormAuthType.NIL>) => {
+  switch (authType) {
+    case FormAuthType.SP:
+    case FormAuthType.MyInfo:
+      return 'Sign in with Singpass to access this form.\n'
+    case FormAuthType.CP:
+      return 'Corporate entity login is required for this form.\n'
+    case FormAuthType.SGID:
+    case FormAuthType.SGID_MyInfo:
+      return 'Sign in with the Singpass app to access this form.\n'
+  }
+}
+
 export const FormAuthMessage = ({
   authType,
   isSubmitterIdCollectionEnabled,
 }: FormAuthMessageProps) => {
-  const signInText = (() => {
-    switch (authType) {
-      case FormAuthType.SP:
-      case FormAuthType.MyInfo:
-        return 'Sign in with Singpass to access this form.\n'
-      case FormAuthType.CP:
-        return 'Corporate entity login is required for this form.\n'
-      case FormAuthType.SGID:
-      case FormAuthType.SGID_MyInfo:
-        return 'Sign in with the Singpass app to access this form.\n'
-    }
-  })()
+  const signInText = getSignInText(authType)
 
   return (
     <Text

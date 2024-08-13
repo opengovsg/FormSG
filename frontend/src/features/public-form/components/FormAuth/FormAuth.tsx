@@ -19,6 +19,21 @@ import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 import { AuthImageSvgr } from './AuthImageSvgr'
 import { FormAuthMessage } from './FormAuthMessage'
 
+const getDispayedAuthTypeText = (
+  authType: Exclude<FormAuthType, FormAuthType.NIL>,
+) => {
+  switch (authType) {
+    case FormAuthType.SP:
+    case FormAuthType.MyInfo:
+      return 'Singpass'
+    case FormAuthType.CP:
+      return 'Singpass (Corporate)'
+    case FormAuthType.SGID:
+    case FormAuthType.SGID_MyInfo:
+      return 'Singpass app'
+  }
+}
+
 export interface FormAuthProps {
   authType: Exclude<FormAuthType, FormAuthType.NIL>
   isSubmitterIdCollectionEnabled: boolean
@@ -40,21 +55,8 @@ export const FormAuth = ({
   }, [form])
 
   const isMobile = useIsMobile()
-
-  const displayedAuthTypeText = (() => {
-    switch (authType) {
-      case FormAuthType.SP:
-      case FormAuthType.MyInfo:
-        return 'Singpass'
-      case FormAuthType.CP:
-        return 'Singpass (Corporate)'
-      case FormAuthType.SGID:
-      case FormAuthType.SGID_MyInfo:
-        return 'Singpass app'
-    }
-  })()
-
   const { handleLoginMutation } = usePublicAuthMutations(formId)
+  const displayedAuthTypeText = getDispayedAuthTypeText(authType)
 
   return (
     <Box
