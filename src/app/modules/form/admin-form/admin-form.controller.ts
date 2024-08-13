@@ -5,6 +5,7 @@ import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
+import multer from 'multer'
 import { ResultAsync } from 'neverthrow'
 
 import {
@@ -45,6 +46,10 @@ import {
   SubmissionCountQueryDto,
   WebhookSettingsUpdateDto,
 } from '../../../../../shared/types'
+import {
+  EncryptedStringsMessageContent,
+  encryptStringsMessage,
+} from '../../../../../shared/utils/crypto'
 import { IFormDocument, IPopulatedForm } from '../../../../types'
 import {
   EncryptSubmissionDto,
@@ -1482,6 +1487,147 @@ export const handleUpdateSettings = [
   _handleUpdateSettings,
 ] as ControllerHandler[]
 
+const TWENTY_MB_IN_BYTES = 20 * 1024 * 1024
+const handleWhitelistSettingMultipartBody = multer({
+  limits: {
+    fieldSize: TWENTY_MB_IN_BYTES,
+    fields: 1, // only allow csv string field
+    files: 0,
+  },
+})
+
+const _handleUpdateWhitelistSettingValidator = celebrate({
+  [Segments.PARAMS]: {
+    formId: Joi.string()
+      .required()
+      .pattern(/^[a-fA-F0-9]{24}$/)
+      .message('Your form ID is invalid.'),
+  },
+  [Segments.BODY]: {
+    whitelistCsvString: Joi.string()
+      .pattern(/^[a-zA-Z0-9,\r\n]+$/)
+      .messages({
+        'string.empty': 'Your csv is empty.',
+        'string.pattern.base': 'Your csv has one or more invalid characters.',
+      }),
+  },
+})
+
+const _parseWhitelistCsvString = (whitelistCsvString: string | null) => {
+  if (!whitelistCsvString) {
+    return null
+  }
+  return whitelistCsvString.split('\r\n').map((entry: string) => entry.trim())
+}
+
+const _handleUpdateWhitelistSetting: ControllerHandler<
+  { formId: string },
+  object,
+  { whitelistCsvString: string | null }
+> = async (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  const logMeta = {
+    action: '_handleUpdateWhitelistSetting',
+    ...createReqMeta(req),
+    userId: sessionUserId,
+    formId,
+  }
+
+  // Step 1: Retrieve form only if currently logged in user has write permissions for form.
+  const formResult = await UserService.getPopulatedUserById(
+    sessionUserId,
+  ).andThen((user) =>
+    AuthService.getFormAfterPermissionChecks({
+      user,
+      formId,
+      level: PermissionLevel.Write,
+    }),
+  )
+
+  if (formResult.isErr()) {
+    const { error } = formResult
+    logger.error({
+      message: 'Error occurred when updating form settings',
+      meta: logMeta,
+      error,
+    })
+    const { errorMessage, statusCode } = mapRouteError(error)
+    return res.status(statusCode).json({ message: errorMessage })
+  }
+
+  const form = formResult.value
+
+  const { whitelistCsvString } = req.body
+  const whitelistedSubmitterIds = _parseWhitelistCsvString(whitelistCsvString)
+
+  const upperCaseWhitelistedSubmitterIds =
+    whitelistedSubmitterIds && whitelistedSubmitterIds.length > 0
+      ? whitelistedSubmitterIds.map((id) => id.toUpperCase())
+      : null
+
+  // Step 2: perform validation on submitted whitelist setting
+  const isWhitelistSettingValid = AdminFormService.checkIsWhitelistSettingValid(
+    upperCaseWhitelistedSubmitterIds,
+  )
+  if (!isWhitelistSettingValid.isValid) {
+    logger.error({
+      message: 'Invalid whitelist setting',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+      message: isWhitelistSettingValid.invalidReason,
+    })
+  }
+
+  // Step 3: Encrypt whitelist settings
+  if (!form.publicKey) {
+    logger.error({
+      message: 'Form does not have a public key',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: 'Form does not have a public key',
+    })
+  }
+  const formPublicKey = form.publicKey
+  const encryptedWhitelistSubmitterIdsContent = upperCaseWhitelistedSubmitterIds
+    ? encryptStringsMessage(upperCaseWhitelistedSubmitterIds, formPublicKey)
+    : null
+
+  // Step 4: Update form with encrypted whitelist settings
+  return AdminFormService.updateFormWhitelistSetting(
+    form,
+    encryptedWhitelistSubmitterIdsContent,
+  )
+    .map((updatedSettings) => res.status(StatusCodes.OK).json(updatedSettings))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when updating form settings',
+        meta: {
+          action: 'handleUpdateSettings',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          // do not log the whitelist setting as it may contain sensitive data and be large in size
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+export const _handleUpdateWhitelistSettingForTest =
+  _handleUpdateWhitelistSetting
+
+export const handleUpdateWhitelistSetting = [
+  handleWhitelistSettingMultipartBody.none(), // expecting string field
+  _handleUpdateWhitelistSettingValidator,
+  _handleUpdateWhitelistSetting,
+] as ControllerHandler[]
+
 /**
  * Handler for PATCH api/public/v1/admin/forms/:formId/webhooksettings.
  * @security session
@@ -1588,6 +1734,51 @@ export const handleGetSettings: ControllerHandler<
         message: 'Error occurred when retrieving form settings',
         meta: {
           action: 'handleGetSettings',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+export const handleGetWhitelistSetting: ControllerHandler<
+  {
+    formId: string
+  },
+  | {
+      encryptedWhitelistedSubmitterIds: EncryptedStringsMessageContent | null
+    }
+  | ErrorDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Retrieve form for settings as well as for permissions checking
+      FormService.retrieveFullFormById(formId).map((form) => ({
+        form,
+        user,
+      })),
+    )
+    .andThen(AuthService.checkFormForPermissions(PermissionLevel.Read))
+    .andThen((form) => EncryptSubmissionService.checkFormIsEncryptMode(form))
+    .map(async (form) => AdminFormService.getFormWhitelistSetting(form))
+    .andThen((formWhitelistedSubmitterIds) => formWhitelistedSubmitterIds)
+    .map((formWhitelistedSubmitterIds) => {
+      return res.status(StatusCodes.OK).json({
+        encryptedWhitelistedSubmitterIds: formWhitelistedSubmitterIds,
+      })
+    })
+    .mapErr((error: Error) => {
+      logger.error({
+        message: 'Error occurred when retrieving form whitelist settings',
+        meta: {
+          action: 'handleGetWhitelistSetting',
           ...createReqMeta(req),
           userId: sessionUserId,
           formId,

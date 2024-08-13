@@ -3,6 +3,7 @@ import { ok, okAsync, ResultAsync } from 'neverthrow'
 
 import {
   BasicField,
+  ErrorCode,
   FormAuthType,
   SubmissionErrorDto,
   SubmissionResponseDto,
@@ -320,7 +321,8 @@ export const submitEmailModeForm: ControllerHandler<
               response.question === SPCPFieldTitle.CpUen ||
               response.question === SgidFieldTitle.SgidNric,
           ) as ProcessedSingleAnswerResponse
-          submitterId = ndiResponse?.answer
+          submitterId = ndiResponse?.answer?.toUpperCase() ?? null
+          submitterId = submitterId
             ? generateHashedSubmitterId(ndiResponse.answer, form.id)
             : undefined
         }
@@ -450,7 +452,7 @@ export const submitEmailModeForm: ControllerHandler<
           return res.status(StatusCodes.BAD_REQUEST).json({
             message:
               'Your NRIC/FIN/UEN has already been used to respond to this form.',
-            hasSingleSubmissionValidationFailure: true,
+            errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
           })
         }
         // Send email confirmations

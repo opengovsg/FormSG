@@ -41,6 +41,7 @@ import {
   updateFormTitle,
   updateFormWebhookRetries,
   updateFormWebhookUrl,
+  updateFormWhitelistSetting,
   updateGstEnabledFlag,
   updateIsSingleSubmission,
   updateTwilioCredentials,
@@ -72,6 +73,27 @@ export const useMutateFormSettings = () => {
     [formId, queryClient],
   )
 
+  const generateErrorToast = useCallback(
+    (message) => {
+      toast.closeAll()
+      toast({
+        description: message,
+        status: 'danger',
+      })
+    },
+    [toast],
+  )
+
+  const generateSuccessToast = useCallback(
+    (message) => {
+      toast.closeAll()
+      toast({
+        description: message,
+      })
+    },
+    [toast],
+  )
+
   const handleSuccess = useCallback(
     ({
       newData,
@@ -80,24 +102,17 @@ export const useMutateFormSettings = () => {
       newData: FormSettings
       toastDescription: string
     }) => {
-      toast.closeAll()
       updateFormData(newData)
-      toast({
-        description: toastDescription,
-      })
+      generateSuccessToast(toastDescription)
     },
-    [toast, updateFormData],
+    [updateFormData, generateSuccessToast],
   )
 
   const handleError = useCallback(
     (error: Error) => {
-      toast.closeAll()
-      toast({
-        description: error.message,
-        status: 'danger',
-      })
+      generateErrorToast(error.message)
     },
-    [toast],
+    [generateErrorToast],
   )
 
   const mutateFormStatus = useMutation(
@@ -342,6 +357,24 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateFormWhitelistSetting = useMutation(
+    (whitelistCsvString: Promise<string> | null) => {
+      return updateFormWhitelistSetting(formId, whitelistCsvString)
+    },
+    {
+      onSuccess: (_newData, variable) => {
+        generateSuccessToast(
+          variable
+            ? 'Your CSV has been uploaded successfully.'
+            : 'Your CSV has been removed successfully.',
+        )
+      },
+      onError: (error: Error) => {
+        generateErrorToast(error.message)
+      },
+    },
+  )
+
   const mutateFormWebhookUrl = useMutation(
     (nextUrl?: string) => updateFormWebhookUrl(formId, nextUrl),
     {
@@ -413,6 +446,7 @@ export const useMutateFormSettings = () => {
     mutateFormAuthType,
     mutateNricMask,
     mutateIsSingleSubmission,
+    mutateFormWhitelistSetting,
     mutateFormEsrvcId,
     mutateFormBusiness,
     mutateGST,

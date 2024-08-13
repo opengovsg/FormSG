@@ -21,6 +21,7 @@ export const STORAGE_PUBLIC_FORM_FIELDS = <const>[
   ...PUBLIC_FORM_FIELDS,
   'payments_field',
   'publicKey',
+  'whitelistedSubmitterIds',
 ]
 export const MULTIRESPONDENT_PUBLIC_FORM_FIELDS = <const>[
   ...PUBLIC_FORM_FIELDS,
@@ -54,12 +55,20 @@ export const STORAGE_FORM_SETTINGS_FIELDS = <const>[
   'publicKey',
   'business',
   'emails',
+  'whitelistedSubmitterIds',
 ]
 
 export const MULTIRESPONDENT_FORM_SETTINGS_FIELDS = <const>[
   ...FORM_SETTINGS_FIELDS,
   'publicKey',
   'workflow',
+]
+
+// Fields that are necessary for decrypting the cipherTexts given peer's private key
+export const WHITELISTED_SUBMITTER_ID_DECRYPTION_FIELDS = <const>[
+  'myPublicKey',
+  'nonce',
+  'cipherTexts',
 ]
 
 export const WEBHOOK_SETTINGS_FIELDS = <const>['responseMode', 'webhook']

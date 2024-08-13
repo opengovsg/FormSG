@@ -73,3 +73,19 @@ export const patchAdminFormSettings = ({
     },
   )
 }
+
+export const putFormWhitelistSettingSimulateCsvStringValidationError = (
+  formId: string,
+) => {
+  return rest.put<Partial<FormSettings>>(
+    `/api/v3/admin/forms/${formId}/settings/whitelist`,
+    (req, res, ctx) => {
+      return res(
+        ctx.status(422),
+        ctx.json({
+          message: 'Storybook whitelist update mock validation error',
+        }),
+      )
+    },
+  )
+}
