@@ -1,3 +1,4 @@
+import crypto from 'crypto'
 import { RequestHandler } from 'express'
 import helmet from 'helmet'
 
@@ -13,6 +14,12 @@ const helmetMiddlewares = () => {
     } else next()
   }
 
+  const generateNonceMiddleware: RequestHandler = (req, res, next) => {
+    res.locals.nonce =
+      res.locals.nonce || crypto.randomBytes(32).toString('hex')
+
+    next()
+  }
   const xssFilterMiddleware = helmet.xssFilter()
 
   const noSniffMiddleware = helmet.noSniff()
@@ -37,12 +44,14 @@ const helmetMiddlewares = () => {
 
   const contentSecurityPolicyMiddleware = helmet.contentSecurityPolicy({
     useDefaults: true,
+    // @ts-expect-error: cspCoreDirectives types are not properly exported by helmet
     directives: {
       ...cspCoreDirectives,
       ...cspOptionalDirectives,
     },
   })
   return [
+    generateNonceMiddleware,
     xssFilterMiddleware,
     noSniffMiddleware,
     ieNoOpenMiddlware,
