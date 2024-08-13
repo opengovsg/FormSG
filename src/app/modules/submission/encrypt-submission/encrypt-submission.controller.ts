@@ -5,6 +5,7 @@ import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 import Stripe from 'stripe'
 
+import { featureFlags } from '../../../../../shared/constants/feature-flags'
 import {
   DateString,
   ErrorCode,
@@ -314,9 +315,13 @@ const submitEncryptModeForm = async (
     hashedSubmitterId = generateHashedSubmitterId(submitterId, form.id)
   }
 
+  // TODO: (E-voting v1.0.1) Cleanup this feature flag check once all existing Singpass forms are opt-in
+  const gb = req.growthbook
+  const isForceCollectSubmitterId = gb.isOff(featureFlags.submitterIdCollection)
+
   // Encrypt Verified SPCP Fields
   let verified
-  if (form.isSubmitterIdCollectionEnabled) {
+  if (form.isSubmitterIdCollectionEnabled || isForceCollectSubmitterId) {
     // Add NDI responses to email payload
     switch (form.authType) {
       case FormAuthType.CP: {

@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { ok, okAsync, ResultAsync } from 'neverthrow'
 
+import { featureFlags } from '../../../../../shared/constants/feature-flags'
 import {
   ErrorCode,
   FormAuthType,
@@ -318,9 +319,15 @@ export const submitEmailModeForm: ControllerHandler<
           )
         }
 
+        // TODO: (E-voting v1.0.1) Cleanup this feature flag check once all existing Singpass forms are opt-in
+        const gb = req.growthbook
+        const isForceCollectSubmitterId = gb.isOff(
+          featureFlags.submitterIdCollection,
+        )
+
         if (
           form.authType !== FormAuthType.NIL &&
-          form.isSubmitterIdCollectionEnabled &&
+          (form.isSubmitterIdCollectionEnabled || isForceCollectSubmitterId) &&
           ndiUserInfo
         ) {
           parsedResponses = parsedResponses.addNdiResponses(ndiUserInfo)

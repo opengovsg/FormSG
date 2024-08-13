@@ -11,4 +11,5 @@ export const featureFlags = {
   chartsMaxResponseCount: 'charts-max-response-count' as const,
   addingTwilioDisabled: 'adding-twilio-disabled' as const,
   postmanSms: 'postmanSms' as const,
+  submitterIdCollection: 'submitter-id-collection' as const,
 }

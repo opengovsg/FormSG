@@ -1,11 +1,10 @@
 import { GrowthBook } from '@growthbook/growthbook'
 import { RequestHandler } from 'express'
-import { GROWTHBOOK_DEV_PROXY } from 'shared/constants'
-import { GROWTHBOOK_API_HOST_PATH } from 'shared/constants/routes'
 
-import { growthbookConfig } from 'src/app/config/features/growthbook.config'
-
+import { GROWTHBOOK_DEV_PROXY } from '../../../../shared/constants/links'
+import { GROWTHBOOK_API_HOST_PATH } from '../../../../shared/constants/routes'
 import config from '../../config/config'
+import { growthbookConfig } from '../../config/features/growthbook.config'
 
 const growthbookMiddleware: RequestHandler = async (req, res, next) => {
   req.growthbook = new GrowthBook({
