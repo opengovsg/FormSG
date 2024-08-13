@@ -275,7 +275,7 @@ describe('email-submission.controller', () => {
         MockEmailSubmissionService.saveSubmissionMetadata.mock.calls[0][3],
       ).toEqual(
         generateHashedSubmitterId(
-          MOCK_JWT_PAYLOAD_WITH_NRIC.userName,
+          MOCK_JWT_PAYLOAD_WITH_NRIC.userName.toUpperCase(),
           mockIsSingleSubmissionEnabledEmailModeForm.id,
         ),
       )
@@ -336,7 +336,7 @@ describe('email-submission.controller', () => {
         MockEmailSubmissionService.saveSubmissionMetadata.mock.calls[0][3],
       ).toEqual(
         generateHashedSubmitterId(
-          MOCK_JWT_PAYLOAD.userName,
+          MOCK_JWT_PAYLOAD.userName.toUpperCase(),
           mockIsSingleSubmissionEnabledEmailModeForm.id,
         ),
       )

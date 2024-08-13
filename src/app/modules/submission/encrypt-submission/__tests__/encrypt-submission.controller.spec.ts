@@ -844,8 +844,8 @@ describe('encrypt-submission.controller', () => {
       // Assert that response has the single submission validation failure flag
       expect(mockRes.json).toHaveBeenCalledWith({
         message:
-          'Your NRIC/FIN/UEN has already been used to respond to this form.',
-        hasSingleSubmissionValidationFailure: true,
+          'You have already submitted a response using this NRIC/FIN/UEN. If you require further assistance, please contact the agency that gave you the form link.',
+        errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
       })
 
       // Assert that the submission is not saved
