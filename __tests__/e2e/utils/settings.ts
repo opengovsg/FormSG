@@ -5,28 +5,17 @@ import { E2eSettingsOptions } from '../constants/settings'
 
 export const getEncryptSettings = (
   custom?: Partial<E2eSettingsOptions>,
-  isSubmitterIdCollectionEnabled = false,
 ): E2eSettingsOptions => {
-  return _getSettings(
-    FormResponseMode.Encrypt,
-    isSubmitterIdCollectionEnabled,
-    custom,
-  )
+  return _getSettings(FormResponseMode.Encrypt, custom)
 }
 
 export const getEmailSettings = (
   custom?: Partial<E2eSettingsOptions>,
-  isSubmitterIdCollectionEnabled = false,
 ): E2eSettingsOptions => {
-  return _getSettings(
-    FormResponseMode.Email,
-    isSubmitterIdCollectionEnabled,
-    custom,
-  )
+  return _getSettings(FormResponseMode.Email, custom)
 }
 const _getSettings = (
   responseMode: FormResponseMode,
-  isSubmitterIdCollectionEnabled: boolean,
   custom?: Partial<E2eSettingsOptions>,
 ): E2eSettingsOptions => {
   // Inject form auth settings
@@ -53,7 +42,7 @@ const _getSettings = (
     status: FormStatus.Public,
     collaborators: [],
     authType: FormAuthType.NIL,
-    isSubmitterIdCollectionEnabled,
+    isSubmitterIdCollectionEnabled: false,
     // By default, if emails is undefined, only the admin (current user) will receive.
     ...custom,
   }
