@@ -74,6 +74,8 @@ export const VALID_EXTENSIONS = [
   '.zip',
 ]
 
+export const VALID_WHITELIST_FILE_EXTENSIONS = ['.csv']
+
 /**
  * Extracts the file extension of a given filename.
  *

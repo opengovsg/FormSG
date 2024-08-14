@@ -143,7 +143,7 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
 
   const pdfResponseToggleDescription = isPdfResponseEnabled
     ? undefined
-    : 'PDF responses are not supported for encrypt forms with active payment fields'
+    : 'PDF responses are not available for payment forms.'
 
   // email confirmation is not supported on MRF
   const isToggleEmailConfirmationDisabled =

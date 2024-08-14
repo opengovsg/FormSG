@@ -60,6 +60,8 @@ export type RateLimitConfig = {
   submissions: number
   sendAuthOtp: number
   downloadPaymentReceipt: number
+  downloadFormWhitelist: number
+  uploadFormWhitelist: number
   publicApi: number
   platformApi: number
 }
@@ -187,6 +189,8 @@ export interface IOptionalVarsSchema {
     submissions: number
     sendAuthOtp: number
     downloadPaymentReceipt: number
+    downloadFormWhitelist: number
+    uploadFormWhitelist: number
     publicApi: number
     platformApi: number
   }

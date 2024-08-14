@@ -3,6 +3,7 @@ import { Meta, Story } from '@storybook/react'
 import { userEvent, waitFor, within } from '@storybook/testing-library'
 import dedent from 'dedent'
 
+import { ErrorCode } from '~shared/types'
 import { BasicField } from '~shared/types/field'
 import {
   FormAuthType,
@@ -397,7 +398,7 @@ SgIdSingleSubmissionFailureMessage.parameters = {
           authType: FormAuthType.SGID,
           isSingleSubmission: true,
         },
-        hasSingleSubmissionValidationFailure: true,
+        errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
       },
     }),
   ],
@@ -417,16 +418,16 @@ SingpassSingleSubmissionFailureMessage.parameters = {
           authType: FormAuthType.SP,
           isSingleSubmission: true,
         },
-        hasSingleSubmissionValidationFailure: true,
+        errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
       },
     }),
   ],
 }
 
-export const CorppassSingleSubmissionFailuredMessage = Template.bind({})
-CorppassSingleSubmissionFailuredMessage.storyName =
+export const CorppassSingleSubmissionFailureMessage = Template.bind({})
+CorppassSingleSubmissionFailureMessage.storyName =
   'Corppass/Single Submission Per NRIC/FIN/UEN Failure Sign In Screen Message'
-CorppassSingleSubmissionFailuredMessage.parameters = {
+CorppassSingleSubmissionFailureMessage.parameters = {
   msw: [
     ...envHandlers,
     getPublicFormResponse({
@@ -437,7 +438,7 @@ CorppassSingleSubmissionFailuredMessage.parameters = {
           authType: FormAuthType.CP,
           isSingleSubmission: true,
         },
-        hasSingleSubmissionValidationFailure: true,
+        errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
       },
     }),
   ],
@@ -460,7 +461,7 @@ SgIdSingleSubmissionFailureModalAfterSubmit.parameters = {
         spcpSession: {
           userName: 'S1234567A',
         },
-        hasSingleSubmissionValidationFailure: true,
+        errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
       },
     }),
   ],
@@ -483,7 +484,51 @@ CpSingleSubmissionFailureModalAfterSubmit.parameters = {
         spcpSession: {
           userName: 'uen-123456789A',
         },
-        hasSingleSubmissionValidationFailure: true,
+        errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
+      },
+    }),
+  ],
+}
+
+export const SgIdRespondentNotWhitelistedFailureMessage = Template.bind({})
+SgIdRespondentNotWhitelistedFailureMessage.storyName =
+  'SGID/Respondent Not Whitelisted Failure Sign In Screen Message'
+SgIdRespondentNotWhitelistedFailureMessage.parameters = {
+  msw: [
+    ...envHandlers,
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          title: 'SGID login form',
+          authType: FormAuthType.SGID,
+          whitelistedSubmitterIds: {
+            isWhitelistEnabled: true,
+          },
+        },
+        errorCodes: [ErrorCode.respondentNotWhitelisted],
+      },
+    }),
+  ],
+}
+
+export const MyInfoRespondentNotWhitelistedFailureMessage = Template.bind({})
+MyInfoRespondentNotWhitelistedFailureMessage.storyName =
+  'MyInfo/Respondent Not Whitelisted Failure Sign In Screen Message'
+MyInfoRespondentNotWhitelistedFailureMessage.parameters = {
+  msw: [
+    ...envHandlers,
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          title: 'MyInfo login form',
+          authType: FormAuthType.MyInfo,
+          whitelistedSubmitterIds: {
+            isWhitelistEnabled: true,
+          },
+        },
+        errorCodes: [ErrorCode.respondentNotWhitelisted],
       },
     }),
   ],

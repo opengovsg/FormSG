@@ -40,7 +40,6 @@ export const MoneyInput = forwardRef<MoneyInputProps, 'input'>(
       focusInputOnChange = false,
       isSuccess,
       isPrefilled,
-      colorScheme,
       preventDefaultOnEnter,
       ...props
     },

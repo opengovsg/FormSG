@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import { decodeBase64 } from 'tweetnacl-util'
 
 import {
   BasicField,
@@ -11,6 +12,7 @@ import {
   FormStatus,
   PublicFormDto,
 } from '../../../../shared/types'
+import { encryptString } from '../../../../shared/utils/crypto'
 import {
   IEmailFormModel,
   IEncryptedFormModel,
@@ -25,6 +27,7 @@ import getFormModel, {
   getEncryptedFormModel,
   getMultirespondentFormModel,
 } from '../../models/form.server.model'
+import getFormWhitelistSubmitterIdsModel from '../../models/form_whitelist.server.model'
 import getSubmissionModel from '../../models/submission.server.model'
 import {
   getMongoErrorMessage,
@@ -41,6 +44,7 @@ import { getMyInfoFieldOptions } from '../myinfo/myinfo.util'
 import {
   FormDeletedError,
   FormNotFoundError,
+  FormWhitelistSettingNotFoundError,
   PrivateFormError,
 } from './form.errors'
 
@@ -50,6 +54,8 @@ const EmailFormModel = getEmailFormModel(mongoose)
 const EncryptedFormModel = getEncryptedFormModel(mongoose)
 const MultirespondentFormModel = getMultirespondentFormModel(mongoose)
 const SubmissionModel = getSubmissionModel(mongoose)
+const FormWhitelistSubmitterIdsModel =
+  getFormWhitelistSubmitterIdsModel(mongoose)
 
 /**
  * Deactivates a given form by its id
@@ -273,6 +279,81 @@ export const checkFormSubmissionLimitAndDeactivateForm = (
       ),
     )
   })
+}
+
+export const checkHasRespondentNotWhitelistedFailure = (
+  form: IPopulatedForm,
+  submitterId: string,
+): ResultAsync<boolean, ApplicationError> => {
+  // check since whitelist is only for encrypt mode forms
+  if (form.responseMode !== FormResponseMode.Encrypt) {
+    return okAsync(false)
+  }
+  if (form.authType === FormAuthType.NIL) {
+    return okAsync(false)
+  }
+
+  const { isWhitelistEnabled, encryptedWhitelistedSubmitterIds: whitelistId } =
+    form.getWhitelistedSubmitterIds()
+
+  if (!isWhitelistEnabled) {
+    return okAsync(false)
+  }
+  if (isWhitelistEnabled && !whitelistId) {
+    return errAsync(new FormWhitelistSettingNotFoundError())
+  }
+
+  const formPublicKey = form.publicKey
+  if (!formPublicKey) {
+    logger.error({
+      message: 'Encrypt mode form does not have a public key',
+      meta: {
+        action: 'checkHasRespondentNotWhitelistedFailure',
+        formId: form._id,
+      },
+    })
+    return errAsync(
+      new ApplicationError('Encrypt mode form does not have a public key'),
+    )
+  }
+  return ResultAsync.fromPromise(
+    FormWhitelistSubmitterIdsModel.findEncryptionPropertiesById(
+      whitelistId,
+    ).then(({ myPublicKey, myPrivateKey, nonce }) => {
+      const myKeyPair = {
+        publicKey: myPublicKey,
+        privateKey: myPrivateKey,
+      }
+      const usedNonce = decodeBase64(nonce)
+
+      const upperCaseSubmitterId = submitterId.toUpperCase()
+
+      const submitterIdForLookup = encryptString(
+        upperCaseSubmitterId,
+        formPublicKey,
+        usedNonce,
+        myKeyPair,
+      ).cipherText
+
+      return FormWhitelistSubmitterIdsModel.checkIfSubmitterIdIsWhitelisted(
+        whitelistId,
+        submitterIdForLookup,
+      ).then((isWhitelisted) => !isWhitelisted)
+    }),
+    (err) => {
+      logger.error({
+        message: 'Error while checking if submitterId is whitelisted',
+        meta: {
+          action: 'checkHasRespondentNotWhitelistedFailure',
+          formId: form._id,
+          err,
+        },
+      })
+      return new ApplicationError(
+        'Error while checking if submitterId is whitelisted',
+      )
+    },
+  )
 }
 
 /**

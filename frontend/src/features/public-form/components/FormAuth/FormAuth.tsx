@@ -2,7 +2,10 @@ import { useMemo } from 'react'
 import { BiLogInCircle } from 'react-icons/bi'
 import { Box, Stack, Text } from '@chakra-ui/react'
 
-import { FORM_SINGLE_SUBMISSION_VALIDATION_ERROR_MESSAGE } from '~shared/constants'
+import {
+  FORM_RESPONDENT_NOT_WHITELISTED_ERROR_MESSAGE,
+  FORM_SINGLE_SUBMISSION_VALIDATION_ERROR_MESSAGE,
+} from '~shared/constants'
 import { FormAuthType } from '~shared/types/form'
 
 import InlineMessage from '~/components/InlineMessage'
@@ -18,11 +21,13 @@ import { AuthImageSvgr } from './AuthImageSvgr'
 export interface FormAuthProps {
   authType: Exclude<FormAuthType, FormAuthType.NIL>
   hasSingleSubmissionValidationError: boolean
+  hasRespondentNotWhitelistedError: boolean
 }
 
 export const FormAuth = ({
   authType,
   hasSingleSubmissionValidationError,
+  hasRespondentNotWhitelistedError,
 }: FormAuthProps): JSX.Element => {
   const { formId, form } = usePublicFormContext()
 
@@ -90,6 +95,11 @@ export const FormAuth = ({
         {hasSingleSubmissionValidationError ? (
           <InlineMessage variant="error">
             {FORM_SINGLE_SUBMISSION_VALIDATION_ERROR_MESSAGE}
+          </InlineMessage>
+        ) : null}
+        {hasRespondentNotWhitelistedError ? (
+          <InlineMessage variant="error">
+            {FORM_RESPONDENT_NOT_WHITELISTED_ERROR_MESSAGE}
           </InlineMessage>
         ) : null}
       </Stack>

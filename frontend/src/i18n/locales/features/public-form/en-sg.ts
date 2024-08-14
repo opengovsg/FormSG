@@ -6,13 +6,13 @@ export const enSG: PublicForm = {
     notFound: 'Form not found',
     deleted: 'This form is no longer active',
     private:
-      'If you think this is a mistake, please contact the agency that gave you the form link.',
+      'If you require further assistance, please contact the agency that gave you the form link.',
 
     submissionSecretKeyInvalid: {
       title: 'Invalid form link',
       header: 'This form link is no longer valid.',
       message:
-        'A submission may have already been made using this link. If you think this is a mistake, please contact the agency that gave you the form link.',
+        'A submission may have already been made using this link. If you require further assistance, please contact the agency that gave you the form link.',
     },
 
     myinfo:

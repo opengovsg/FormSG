@@ -2,7 +2,7 @@ import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { ObjectId } from 'bson'
 import { merge } from 'lodash'
 import { ok, okAsync } from 'neverthrow'
-import { FormAuthType } from 'shared/types'
+import { ErrorCode, FormAuthType } from 'shared/types'
 
 import * as FormService from 'src/app/modules/form/form.service'
 import { SgidService } from 'src/app/modules/sgid/sgid.service'
@@ -463,7 +463,7 @@ describe('email-submission.controller', () => {
         expect(mockRes.json).toHaveBeenCalledWith({
           message:
             'Your NRIC/FIN/UEN has already been used to respond to this form.',
-          hasSingleSubmissionValidationFailure: true,
+          errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
         })
       })
     })

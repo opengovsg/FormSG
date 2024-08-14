@@ -47,14 +47,30 @@ describe('helmetMiddlewares', () => {
     expect(mockHelmet.contentSecurityPolicy).toHaveBeenCalled()
   })
 
+  it('should call generateNonceMiddleware before contentSecurityPolicyMiddleware', () => {
+    const generateNonceMiddlewareFnIdx = helmetMiddlewares().findIndex(
+      (result) =>
+        typeof result === 'function' &&
+        result.name === 'generateNonceMiddleware',
+    )
+
+    const contentSecurityPolicyIdx = helmetMiddlewares().findIndex(
+      (result) =>
+        typeof result === 'string' && result === 'contentSecurityPolicy',
+    )
+
+    // generateNonceMiddleware should be called before contentSecurityPolicyMiddleware
+    expect(generateNonceMiddlewareFnIdx).toBeLessThan(contentSecurityPolicyIdx)
+  })
+
   it('should call helmet.hsts() if req.secure', () => {
     const mockReq = expressHandler.mockRequest({ secure: true })
     const mockRes = expressHandler.mockResponse()
     const mockNext = jest.fn()
 
-    // Find works for helmet.hsts() because the other functions are mocked to return a string
     const hstsFn = helmetMiddlewares().find(
-      (result) => typeof result === 'function',
+      (result) =>
+        typeof result === 'function' && result.name === 'hstsMiddleware',
     )
     // Necessary to check for hstsFn because find() returns undefined by default, otherwise
     // will throw TypeError

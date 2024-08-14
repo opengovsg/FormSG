@@ -140,7 +140,8 @@ const FormLabelDescription = ({
   const mdComponents = useMdComponents({
     styles: mdComponentsStyles,
     overrides: {
-      p: ({ node, ...mdProps }) => (
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      p: ({ node: _, ...mdProps }) => (
         <Text {...fieldProps} {...mdProps} sx={mdComponentsStyles.text} />
       ),
     },
