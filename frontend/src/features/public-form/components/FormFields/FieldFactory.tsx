@@ -79,13 +79,13 @@ export const FieldFactory = memo(
       case BasicField.Uen:
         return <UenField schema={field} {...rest} />
       case BasicField.Attachment: {
-        const enableDownload =
+        const showDownload =
           form?.responseMode === FormResponseMode.Multirespondent
         return (
           <AttachmentField
             schema={field}
             {...rest}
-            enableDownload={enableDownload}
+            showDownload={showDownload}
           />
         )
       }

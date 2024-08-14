@@ -6,6 +6,7 @@ import {
   SettingsUpdateDto,
   StorageFormSettings,
 } from '~shared/types/form/form'
+import { EncryptedStringsMessageContent } from '~shared/utils/crypto'
 
 import { ApiService } from '~services/ApiService'
 
@@ -22,6 +23,11 @@ type UpdateStorageFormFn<T extends keyof StorageFormSettings> = (
   settingsToUpdate: StorageFormSettings[T],
 ) => Promise<FormSettings>
 
+type UpdateStorageFormWhitelistSettingFn = (
+  formId: string,
+  whitelistCsvString: Promise<string> | null,
+) => Promise<FormSettings>
+
 type UpdateFormFn<T extends keyof FormSettings> = (
   formId: string,
   settingsToUpdate: FormSettings[T],
@@ -33,6 +39,18 @@ export const getFormSettings = async (
   return ApiService.get<FormSettings>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/settings`,
   ).then(({ data }) => data)
+}
+
+export const getFormEncryptedWhitelistedSubmitterIds = async (
+  formId: string,
+): Promise<{
+  encryptedWhitelistedSubmitterIds: EncryptedStringsMessageContent | null
+}> => {
+  return ApiService.get<{
+    encryptedWhitelistedSubmitterIds: EncryptedStringsMessageContent | null
+  }>(`${ADMIN_FORM_ENDPOINT}/${formId}/settings/whitelist`, {
+    responseType: 'json',
+  }).then(({ data }) => data)
 }
 
 export const updateFormStatus: UpdateFormFn<'status'> = async (
@@ -168,6 +186,17 @@ const updateFormSettings = async (
     settingsToUpdate,
   ).then(({ data }) => data)
 }
+
+// TODO: update this to work with backend
+export const updateFormWhitelistSetting: UpdateStorageFormWhitelistSettingFn =
+  async (formId: string, whitelistCsvString: Promise<string> | null) => {
+    return ApiService.putForm<FormSettings>(
+      `${ADMIN_FORM_ENDPOINT}/${formId}/settings/whitelist`,
+      {
+        whitelistCsvString: await whitelistCsvString,
+      },
+    ).then(({ data }) => data)
+  }
 
 export const updateTwilioCredentials = async (
   formId: string,

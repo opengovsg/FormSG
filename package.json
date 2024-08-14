@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.140.0",
+  "version": "6.141.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -120,6 +120,7 @@
     "mongodb-memory-server-core": "^9.1.7",
     "mongodb-uri": "^0.9.7",
     "mongoose": "^6.12.0",
+    "multer": "^1.4.5-lts.1",
     "multiparty": ">=4.2.3",
     "nan": "^2.19.0",
     "neverthrow": "^6.1.0",
@@ -160,7 +161,7 @@
   "devDependencies": {
     "@babel/core": "^7.24.3",
     "@babel/plugin-transform-runtime": "^7.24.7",
-    "@babel/preset-env": "^7.22.5",
+    "@babel/preset-env": "^7.25.3",
     "@opengovsg/credits-generator": "^1.0.6",
     "@opengovsg/mockpass": "^4.3.2",
     "@playwright/test": "^1.45.1",
@@ -188,6 +189,7 @@
     "@types/jwk-to-pem": "^2.0.3",
     "@types/lodash": "^4.17.6",
     "@types/mongodb-uri": "^0.9.4",
+    "@types/multer": "^1.4.11",
     "@types/node": "^14.18.23",
     "@types/nodemailer": "^6.4.15",
     "@types/opossum": "^6.2.3",
@@ -209,7 +211,6 @@
     "copyfiles": "^2.4.1",
     "core-js": "^3.28.0",
     "coveralls": "^3.1.1",
-    "csv-parse": "^5.3.6",
     "env-cmd": "^10.1.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^8.10.0",

@@ -15,6 +15,7 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     form,
     isAuthRequired,
     hasSingleSubmissionValidationError,
+    hasRespondentNotWhitelistedError,
     isLoading,
     handleSubmitForm,
     submissionData,
@@ -43,6 +44,7 @@ export const FormFieldsContainer = (): JSX.Element | null => {
           hasSingleSubmissionValidationError={
             hasSingleSubmissionValidationError
           }
+          hasRespondentNotWhitelistedError={hasRespondentNotWhitelistedError}
         />
       )
     }
@@ -75,6 +77,7 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     workflowStep,
     handleSubmitForm,
     hasSingleSubmissionValidationError,
+    hasRespondentNotWhitelistedError,
   ])
 
   if (submissionData) return null

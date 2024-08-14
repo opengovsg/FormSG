@@ -25,6 +25,8 @@ import {
   LogicDto,
   MyInfoAttribute,
   PublicFormDto,
+  WhitelistedSubmitterIds,
+  WhitelistedSubmitterIdsWithReferenceOid,
 } from '../../shared/types'
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
 
@@ -187,6 +189,12 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
    * Retrieve form settings.
    */
   getSettings(): FormSettings
+
+  /**
+   * Retrieve the full whitelistedSubmitterId property of the form document.
+   */
+  getWhitelistedSubmitterIds(): WhitelistedSubmitterIdsWithReferenceOid
+
   /**
    * Retrieve form webhook settings.
    */
@@ -293,6 +301,7 @@ export interface IEncryptedForm extends IForm {
   payments_field: FormPaymentsField
   business?: FormBusinessField
   emails?: string[]
+  whitelistedSubmitterIds?: WhitelistedSubmitterIds
 }
 
 export type IEncryptedFormSchema = IEncryptedForm & IFormSchema

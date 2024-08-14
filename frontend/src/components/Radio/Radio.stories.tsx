@@ -76,7 +76,6 @@ const PlaygroundTemplate: Story = ({
   name = 'radio',
   othersInputName = 'others-input',
   label,
-  isDisabled,
   isRequired,
   hasOthers,
   ...args

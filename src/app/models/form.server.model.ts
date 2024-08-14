@@ -109,6 +109,7 @@ import LogicSchema, {
   ShowFieldsLogicSchema,
 } from './form_logic.server.schema'
 import { CustomFormLogoSchema, FormLogoSchema } from './form_logo.server.schema'
+import { FORM_WHITELISTED_SUBMITTER_IDS_ID } from './form_whitelist.server.model'
 import WorkflowStepSchema, {
   WorkflowStepDynamicSchema,
   WorkflowStepStaticSchema,
@@ -192,6 +193,21 @@ export const formPaymentsFieldSchema = {
   },
 }
 
+const whitelistedSubmitterIdNestedPath = {
+  isWhitelistEnabled: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
+  encryptedWhitelistedSubmitterIds: {
+    type: Schema.Types.ObjectId,
+    ref: FORM_WHITELISTED_SUBMITTER_IDS_ID,
+    required: false,
+    default: undefined,
+  },
+  _id: { id: false },
+}
+
 const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   publicKey: {
     type: String,
@@ -217,6 +233,16 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
     // is non-empty. We allow this field to not exist for backwards compatibility
     // TODO: Make this required after all forms have been migrated
     required: false,
+  },
+  whitelistedSubmitterIds: {
+    type: whitelistedSubmitterIdNestedPath,
+    get: (v: { isWhitelistEnabled: boolean }) => ({
+      // remove the ObjectId link to whitelist collection's document by default unless asked for.
+      isWhitelistEnabled: v.isWhitelistEnabled,
+    }),
+    default: () => ({
+      isWhitelistEnabled: false,
+    }),
   },
   payments_channel: {
     channel: {
@@ -253,7 +279,13 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
 const EncryptedFormDocumentSchema =
   EncryptedFormSchema as unknown as Schema<IEncryptedFormDocument>
 
-EncryptedFormDocumentSchema.methods.addPaymentAccountId = async function ({
+EncryptedFormDocumentSchema.methods.getWhitelistedSubmitterIds = function () {
+  return this.get('whitelistedSubmitterIds', null, {
+    getters: false,
+  })
+}
+
+EncryptedFormDocumentSchema.methods.addPaymentAccountId = function ({
   accountId,
   publishableKey,
 }: {
@@ -560,7 +592,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       inactiveMessage: {
         type: String,
         default:
-          'If you think this is a mistake, please contact the agency that gave you the form link.',
+          'If you require further assistance, please contact the agency that gave you the form link.',
       },
 
       isListed: {

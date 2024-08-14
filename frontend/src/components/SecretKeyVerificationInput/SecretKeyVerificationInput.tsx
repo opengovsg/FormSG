@@ -1,5 +1,10 @@
-import { useCallback, useMemo, useRef } from 'react'
-import { RegisterOptions, useForm } from 'react-hook-form'
+import { useCallback, useMemo, useRef, useState } from 'react'
+import {
+  RegisterOptions,
+  useForm,
+  UseFormSetError,
+  UseFormSetValue,
+} from 'react-hook-form'
 import { BiUpload } from 'react-icons/bi'
 import {
   FormControl,
@@ -57,6 +62,8 @@ export const SecretKeyVerificationInput = ({
     defaultValues: { secretKey: prefillSecretKey },
   })
 
+  const [dragging, setDragging] = useState(false)
+
   const fileUploadRef = useRef<HTMLInputElement | null>(null)
 
   const secretKeyValidationRules: RegisterOptions = useMemo(() => {
@@ -76,6 +83,64 @@ export const SecretKeyVerificationInput = ({
     return setSecretKey(secretKey.trim())
   })
 
+  const processFile = (
+    file: File,
+    setError: UseFormSetError<SecretKeyFormInputs>,
+    setValue: UseFormSetValue<SecretKeyFormInputs>,
+  ) => {
+    const reader = new FileReader()
+    reader.onload = async (e) => {
+      if (!e.target) return
+      const text = e.target.result?.toString()
+
+      if (!text || !SECRET_KEY_REGEX.test(text)) {
+        return setError(
+          SECRET_KEY_NAME,
+          {
+            type: 'invalidFile',
+            message: 'Selected file seems to be invalid',
+          },
+          { shouldFocus: true },
+        )
+      }
+
+      setValue(SECRET_KEY_NAME, text, { shouldValidate: true })
+    }
+    reader.readAsText(file)
+  }
+
+  const preventDefaults = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      preventDefaults(e)
+      setDragging(false)
+
+      const file = e.dataTransfer.files?.[0]
+      if (!file) return
+
+      processFile(file, setError, setValue)
+    },
+    [setError, setValue],
+  )
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    preventDefaults(e)
+    setDragging(true)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    preventDefaults(e)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    preventDefaults(e)
+    setDragging(false)
+  }
+
   const handleFileSelect = useCallback(
     ({ target }: React.ChangeEvent<HTMLInputElement>) => {
       const file = target.files?.[0]
@@ -87,25 +152,7 @@ export const SecretKeyVerificationInput = ({
 
       if (!file) return
 
-      const reader = new FileReader()
-      reader.onload = async (e) => {
-        if (!e.target) return
-        const text = e.target.result?.toString().trim()
-
-        if (!text || !SECRET_KEY_REGEX.test(text)) {
-          return setError(
-            SECRET_KEY_NAME,
-            {
-              type: 'invalidFile',
-              message: 'Selected file seems to be invalid',
-            },
-            { shouldFocus: true },
-          )
-        }
-
-        setValue(SECRET_KEY_NAME, text, { shouldValidate: true })
-      }
-      reader.readAsText(file)
+      processFile(file, setError, setValue)
     },
     [setError, setValue],
   )
@@ -131,6 +178,15 @@ export const SecretKeyVerificationInput = ({
               data-testid="secretKey"
               type="password"
               isDisabled={isLoading}
+              onDragEnter={handleDragEnter}
+              onDragLeave={handleDragLeave}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+              placeholder={
+                dragging
+                  ? 'Drop your Secret Key here'
+                  : 'Enter or drop your Secret Key to continue'
+              }
               {...register(SECRET_KEY_NAME, secretKeyValidationRules)}
             />
           </Skeleton>

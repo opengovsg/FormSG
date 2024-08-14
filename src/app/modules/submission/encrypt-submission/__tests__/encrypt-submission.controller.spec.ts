@@ -4,9 +4,19 @@ import { ObjectId } from 'bson'
 import { merge } from 'lodash'
 import mongoose from 'mongoose'
 import { ok, okAsync } from 'neverthrow'
-import { BasicField, FormAuthType, MyInfoAttribute } from 'shared/types'
+import {
+  FORM_RESPONDENT_NOT_WHITELISTED_ERROR_MESSAGE,
+  FORM_SINGLE_SUBMISSION_VALIDATION_ERROR_MESSAGE,
+} from 'shared/constants/errors'
+import {
+  BasicField,
+  ErrorCode,
+  FormAuthType,
+  MyInfoAttribute,
+} from 'shared/types'
 
 import { getEncryptSubmissionModel } from 'src/app/models/submission.server.model'
+import * as FormService from 'src/app/modules/form/form.service'
 import * as OidcService from 'src/app/modules/spcp/spcp.oidc.service/index'
 import { OidcServiceType } from 'src/app/modules/spcp/spcp.oidc.service/spcp.oidc.service.types'
 import * as EncryptSubmissionService from 'src/app/modules/submission/encrypt-submission/encrypt-submission.service'
@@ -300,17 +310,17 @@ describe('encrypt-submission.controller', () => {
       // Act
       await submitEncryptModeFormForTest(mockReq, mockRes)
 
-      // Assert that submitterId is hashed
+      // Assert that submitterId is uppercased and then hashed
       expect(saveIfSubmitterIdIsUniqueSpy).toHaveBeenCalledTimes(1)
       expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][1]).toEqual(
         generateHashedSubmitterId(
-          MOCK_JWT_PAYLOAD.userName,
+          MOCK_JWT_PAYLOAD.userName.toUpperCase(),
           mockSpAuthTypeAndIsSingleSubmissionEnabledForm.id,
         ),
       )
       expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][2].submitterId).toEqual(
         generateHashedSubmitterId(
-          MOCK_JWT_PAYLOAD.userName,
+          MOCK_JWT_PAYLOAD.userName.toUpperCase(),
           mockSpAuthTypeAndIsSingleSubmissionEnabledForm.id,
         ),
       )
@@ -372,20 +382,267 @@ describe('encrypt-submission.controller', () => {
       // Act
       await submitEncryptModeFormForTest(mockReq, mockRes)
 
-      // Assert that submitterId is hashed
+      // Assert that submitterId is uppercased then hashed
       expect(saveIfSubmitterIdIsUniqueSpy).toHaveBeenCalledTimes(1)
       expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][1]).toEqual(
         generateHashedSubmitterId(
-          MOCK_JWT_PAYLOAD.userName,
-          mockFormId.toHexString(),
+          MOCK_JWT_PAYLOAD.userName.toUpperCase(),
+          mockCpAuthTypeAndIsSingleSubmissionEnabledForm.id,
         ),
       )
       expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][2].submitterId).toEqual(
         generateHashedSubmitterId(
-          MOCK_JWT_PAYLOAD.userName,
-          mockFormId.toHexString(),
+          MOCK_JWT_PAYLOAD.userName.toUpperCase(),
+          mockCpAuthTypeAndIsSingleSubmissionEnabledForm.id,
         ),
       )
+    })
+  })
+
+  describe('submitterId whitelisting', () => {
+    const MOCK_JWT_PAYLOAD = {
+      userName: 'submitterId',
+      rememberMe: false,
+    }
+    const MOCK_COOKIE_TIMESTAMP = {
+      iat: 1,
+      exp: 1,
+    }
+    beforeEach(() => {
+      MockOidcService.getOidcService.mockReturnValue({
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        extractJwt: (_arg1) => ok('jwt'),
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        extractJwtPayload: (_arg1) =>
+          okAsync(merge(MOCK_JWT_PAYLOAD, MOCK_COOKIE_TIMESTAMP)),
+      } as OidcServiceType<FormAuthType.SP>)
+
+      MockMailService.sendSubmissionToAdmin.mockResolvedValue(okAsync(true))
+    })
+
+    it('should return 200 ok when successfully submit form and submitterId is whitelisted', async () => {
+      // Arrange
+      const checkHasRespondentNotWhitelistedFailureSpy = jest
+        .spyOn(FormService, 'checkHasRespondentNotWhitelistedFailure')
+        .mockReturnValue(okAsync(false))
+      const checkHasSingleSubmissionValidationFailureSpy = jest
+        .spyOn(FormService, 'checkHasSingleSubmissionValidationFailure')
+        .mockReturnValue(okAsync(false))
+      const performEncryptPostSubmissionActionsSpy = jest.spyOn(
+        EncryptSubmissionService,
+        'performEncryptPostSubmissionActions',
+      )
+      const mockFormId = new ObjectId()
+      const mockSpAuthTypeAndIsSingleSubmissionEnabledForm = {
+        _id: mockFormId,
+        title: 'some form',
+        authType: FormAuthType.SP,
+        isSingleSubmission: false,
+        whitelistedSubmitterIds: {
+          isWhitelistEnabled: true,
+        },
+        form_fields: [] as FormFieldSchema[],
+        emails: ['test@example.com'],
+        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
+      } as IPopulatedEncryptedForm
+
+      const mockReq = merge(
+        expressHandler.mockRequest({
+          params: { formId: 'some id' },
+          body: {
+            responses: [],
+          },
+        }),
+        {
+          formsg: {
+            encryptedPayload: {
+              encryptedContent: 'encryptedContent',
+              version: 1,
+            },
+            formDef: {
+              authType: FormAuthType.SP,
+            },
+            encryptedFormDef: mockSpAuthTypeAndIsSingleSubmissionEnabledForm,
+          } as unknown as EncryptSubmissionDto,
+        } as unknown as FormCompleteDto,
+      ) as unknown as SubmitEncryptModeFormHandlerRequest
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await submitEncryptModeFormForTest(mockReq, mockRes)
+
+      // Assert that only whitelist failure validation is run for whitelist enabled but single submission disabled settings
+      expect(checkHasRespondentNotWhitelistedFailureSpy).toHaveBeenCalledTimes(
+        1,
+      )
+      expect(
+        checkHasSingleSubmissionValidationFailureSpy,
+      ).not.toHaveBeenCalled()
+
+      // Assert email notification should be sent
+      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
+
+      // Assert that status is not called, which defaults to intended 200 OK
+      expect(mockRes.status).not.toHaveBeenCalled()
+      // Assert that response does not any error codes
+      expect(
+        (mockRes.json as jest.Mock).mock.calls[0][0].errorCodes,
+      ).not.toBeDefined()
+
+      expect(performEncryptPostSubmissionActionsSpy).toHaveBeenCalledTimes(1)
+    })
+
+    // purpose: used to test that whitelisting and single submission work together
+    it('should return 200 ok when successfully submit form and submitterId is whitelisted and no single submission validation error', async () => {
+      // Arrange
+      const checkHasRespondentNotWhitelistedFailureSpy = jest
+        .spyOn(FormService, 'checkHasRespondentNotWhitelistedFailure')
+        .mockReturnValue(okAsync(false))
+      const saveIfSubmitterIdIsUniqueSpy = jest
+        .spyOn(EncryptSubmission, 'saveIfSubmitterIdIsUnique')
+        .mockResolvedValueOnce(
+          new EncryptSubmission({
+            id: 'dummySubmissionId',
+          } as unknown as EncryptSubmissionContent),
+        )
+      const performEncryptPostSubmissionActionsSpy = jest.spyOn(
+        EncryptSubmissionService,
+        'performEncryptPostSubmissionActions',
+      )
+      const mockFormId = new ObjectId()
+      const mockSpAuthTypeAndIsSingleSubmissionEnabledForm = {
+        _id: mockFormId,
+        title: 'some form',
+        authType: FormAuthType.SP,
+        isSingleSubmission: true,
+        whitelistedSubmitterIds: {
+          isWhitelistEnabled: true,
+        },
+        form_fields: [] as FormFieldSchema[],
+        emails: ['test@example.com'],
+        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
+      } as IPopulatedEncryptedForm
+
+      const mockReq = merge(
+        expressHandler.mockRequest({
+          params: { formId: 'some id' },
+          body: {
+            responses: [],
+          },
+        }),
+        {
+          formsg: {
+            encryptedPayload: {
+              encryptedContent: 'encryptedContent',
+              version: 1,
+            },
+            formDef: {
+              authType: FormAuthType.SP,
+            },
+            encryptedFormDef: mockSpAuthTypeAndIsSingleSubmissionEnabledForm,
+          } as unknown as EncryptSubmissionDto,
+        } as unknown as FormCompleteDto,
+      ) as unknown as SubmitEncryptModeFormHandlerRequest
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await submitEncryptModeFormForTest(mockReq, mockRes)
+
+      // Assert
+      expect(checkHasRespondentNotWhitelistedFailureSpy).toHaveBeenCalledTimes(
+        1,
+      )
+      expect(saveIfSubmitterIdIsUniqueSpy).toHaveBeenCalledTimes(1)
+
+      // Assert email notification should be sent
+      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
+
+      // Assert that status is not called, which defaults to intended 200 OK
+      expect(mockRes.status).not.toHaveBeenCalled()
+      // Assert that response does not any error codes
+      expect(
+        (mockRes.json as jest.Mock).mock.calls[0][0].errorCodes,
+      ).not.toBeDefined()
+
+      // Assert that user is logged out
+      expect(mockRes.clearCookie).toHaveBeenCalledWith(
+        getCookieNameByAuthType(
+          mockSpAuthTypeAndIsSingleSubmissionEnabledForm.authType as FormAuthType.SP,
+        ),
+      )
+
+      expect(performEncryptPostSubmissionActionsSpy).toHaveBeenCalledTimes(1)
+    })
+
+    it('should return 403 with submitterId not whitelisted failure flag when submitterId is not whitelisted', async () => {
+      // Arrange
+      const checkHasRespondentNotWhitelistedFailureSpy = jest
+        .spyOn(FormService, 'checkHasRespondentNotWhitelistedFailure')
+        .mockReturnValue(okAsync(true))
+      const checkHasSingleSubmissionValidationFailureSpy = jest
+        .spyOn(FormService, 'checkHasSingleSubmissionValidationFailure')
+        .mockReturnValue(okAsync(false))
+      const performEncryptPostSubmissionActionsSpy = jest.spyOn(
+        EncryptSubmissionService,
+        'performEncryptPostSubmissionActions',
+      )
+      const mockFormId = new ObjectId()
+      const mockSpAuthTypeAndIsSingleSubmissionEnabledForm = {
+        _id: mockFormId,
+        title: 'some form',
+        authType: FormAuthType.SP,
+        isSingleSubmission: false,
+        whitelistedSubmitterIds: {
+          isWhitelistEnabled: true,
+        },
+        form_fields: [] as FormFieldSchema[],
+        emails: ['test@example.com'],
+        getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
+      } as IPopulatedEncryptedForm
+
+      const mockReq = merge(
+        expressHandler.mockRequest({
+          params: { formId: 'some id' },
+          body: {
+            responses: [],
+          },
+        }),
+        {
+          formsg: {
+            encryptedPayload: {
+              encryptedContent: 'encryptedContent',
+              version: 1,
+            },
+            formDef: {
+              authType: FormAuthType.SP,
+            },
+            encryptedFormDef: mockSpAuthTypeAndIsSingleSubmissionEnabledForm,
+          } as unknown as EncryptSubmissionDto,
+        } as unknown as FormCompleteDto,
+      ) as unknown as SubmitEncryptModeFormHandlerRequest
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await submitEncryptModeFormForTest(mockReq, mockRes)
+
+      // Assert that the submitterId related validations are run
+      expect(checkHasRespondentNotWhitelistedFailureSpy).toHaveBeenCalledTimes(
+        1,
+      )
+      expect(
+        checkHasSingleSubmissionValidationFailureSpy,
+      ).not.toHaveBeenCalled()
+
+      // Assert email notification not sent since submission not allowed
+      expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(0)
+
+      expect(mockRes.status).toHaveBeenCalledOnceWith(403)
+
+      expect((mockRes.json as jest.Mock).mock.calls[0][0].message).toEqual(
+        FORM_RESPONDENT_NOT_WHITELISTED_ERROR_MESSAGE,
+      )
+
+      expect(performEncryptPostSubmissionActionsSpy).not.toHaveBeenCalled()
     })
   })
 
@@ -468,8 +725,7 @@ describe('encrypt-submission.controller', () => {
       expect(mockRes.status).not.toHaveBeenCalled()
       // Assert that response does not have the single submission validation failure flag
       expect(
-        (mockRes.json as jest.Mock).mock.calls[0][0]
-          .hasSingleSubmissionValidationFailure,
+        (mockRes.json as jest.Mock).mock.calls[0][0].errorCodes,
       ).not.toBeDefined()
 
       // Assert that user is logged out
@@ -524,9 +780,8 @@ describe('encrypt-submission.controller', () => {
 
       // Assert that response has the single submission validation failure flag
       expect(mockRes.json).toHaveBeenCalledWith({
-        message:
-          'Your NRIC/FIN/UEN has already been used to respond to this form.',
-        hasSingleSubmissionValidationFailure: true,
+        message: FORM_SINGLE_SUBMISSION_VALIDATION_ERROR_MESSAGE,
+        errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
       })
 
       // Assert that the submission is not saved

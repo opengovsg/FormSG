@@ -8,32 +8,36 @@ import { getReadableFileSize } from './utils/getReadableFileSize'
 
 export interface AttachmentFileInfoProps {
   file: File
-  enableDownload?: boolean
-  enableRemove?: boolean
+  showDownload?: boolean
+  showRemove?: boolean
+  isDownloadDisabled?: boolean
+  isRemoveDisabled?: boolean
   handleRemoveFile: () => void
   handleDownloadFile: () => void
 }
 
 export const AttachmentFileInfo = ({
   file,
-  enableDownload = false,
-  enableRemove = true,
   handleRemoveFile,
   handleDownloadFile,
+  showDownload = false,
+  showRemove = true,
+  isDownloadDisabled = false,
+  isRemoveDisabled = false,
 }: AttachmentFileInfoProps) => {
   const readableFileSize = useMemo(
-    () => getReadableFileSize(file.size),
+    () => (file.size ? getReadableFileSize(file.size) : null),
     [file.size],
   )
 
-  const showDownloadButton = enableDownload && file
+  const showDownloadButton = showDownload && file
 
   return (
     <Flex justify="space-between" bg="primary.100" py="0.875rem" px="1rem">
       <VisuallyHidden>
         File attached: {file.name} with file size of {readableFileSize}
       </VisuallyHidden>
-      <Flex flexDir="column" aria-hidden>
+      <Flex flexDir="column" justify="center" aria-hidden>
         <Text
           textStyle="subhead-1"
           color="secondary.500"
@@ -46,13 +50,14 @@ export const AttachmentFileInfo = ({
         </Text>
       </Flex>
       <Flex>
-        {enableRemove ? (
+        {showRemove ? (
           <IconButton
             variant="clear"
             colorScheme="danger"
             aria-label="Click to remove file"
             icon={<BiTrash />}
             onClick={handleRemoveFile}
+            isDisabled={isRemoveDisabled}
           />
         ) : null}
         {showDownloadButton ? (
@@ -61,6 +66,7 @@ export const AttachmentFileInfo = ({
             aria-label="Click to download file"
             icon={<BiDownload />}
             onClick={handleDownloadFile}
+            isDisabled={isDownloadDisabled}
           />
         ) : null}
       </Flex>
