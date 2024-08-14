@@ -2,9 +2,8 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { Droppable } from 'react-beautiful-dnd'
 import { Link as ReactLink } from 'react-router-dom'
 import { Box, Text } from '@chakra-ui/react'
-import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
+import { useGrowthBook } from '@growthbook/growthbook-react'
 
-import { featureFlags } from '~shared/constants'
 import {
   AdminFormDto,
   FormAuthType,

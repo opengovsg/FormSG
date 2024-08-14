@@ -10,9 +10,14 @@ const growthbookMiddleware: RequestHandler = async (req, res, next) => {
   req.growthbook = new GrowthBook({
     apiHost: `${config.isDev ? GROWTHBOOK_DEV_PROXY : config.app.appUrl}${GROWTHBOOK_API_HOST_PATH}`,
     clientKey: growthbookConfig.growthbookClientKey,
+    enableDevMode: config.isDev,
   })
 
-  res.on('close', () => req.growthbook.destroy())
+  res.on('close', () => {
+    if (req.growthbook) {
+      req.growthbook.destroy()
+    }
+  })
 
   await req.growthbook.init({ timeout: 1000 }).then(() => next())
 }

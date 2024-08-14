@@ -38,16 +38,16 @@ const compulsoryVars = convict(compulsoryVarsSchema)
 // Deep merge nested objects optionalVars and compulsoryVars
 const basicVars = merge(optionalVars, compulsoryVars)
 
-const isDev =
-  basicVars.core.nodeEnv === Environment.Dev ||
-  basicVars.core.nodeEnv === Environment.Test
-const nodeEnv = isDev ? basicVars.core.nodeEnv : Environment.Prod
+const isDev = basicVars.core.nodeEnv === Environment.Dev
+const isTest = basicVars.core.nodeEnv === Environment.Test
+const isDevOrTest = isDev || isTest
+const nodeEnv = isDevOrTest ? basicVars.core.nodeEnv : Environment.Prod
 
 // Load and validate configuration values which are compulsory only in production
 // If environment variables are not present, an error will be thrown
 // They may still be referenced in development
 let prodOnlyVars
-if (isDev) {
+if (isDevOrTest) {
   prodOnlyVars = convict(prodOnlyVarsSchema).getProperties()
 } else {
   // Perform validation before accessing ses config
@@ -63,7 +63,7 @@ if (isDev) {
 
 // Perform validation before accessing s3 Bucket Urls
 const s3BucketUrlSchema = loadS3BucketUrlSchema({
-  isDev,
+  isDev: isDevOrTest,
   region: basicVars.awsConfig.region,
 })
 const awsEndpoint = convict(s3BucketUrlSchema).getProperties().endPoint
@@ -89,8 +89,8 @@ const s3 = new aws.S3({
   // Unset and use default if not in development mode
   // Endpoint and path style overrides are needed only in development mode
   // for localstack to work, or for Cloudflare R2.
-  endpoint: isDev || hasR2Buckets ? s3BucketUrlVars.endPoint : undefined,
-  s3ForcePathStyle: isDev || hasR2Buckets ? true : undefined,
+  endpoint: isDevOrTest || hasR2Buckets ? s3BucketUrlVars.endPoint : undefined,
+  s3ForcePathStyle: isDevOrTest || hasR2Buckets ? true : undefined,
 })
 
 // using aws-sdk v3 (FRM-993)
@@ -99,7 +99,7 @@ const virusScannerLambda = new Lambda({
   // For dev mode or where specified, endpoint is set to point to the separate docker container running the lambda function.
   // host.docker.internal is a special DNS name which resolves to the internal IP address used by the host.
   // Reference: https://docs.docker.com/desktop/networking/#i-want-to-connect-from-a-container-to-a-service-on-the-host
-  ...(isDev || basicVars.awsConfig.virusScannerLambdaEndpoint
+  ...(isDevOrTest || basicVars.awsConfig.virusScannerLambdaEndpoint
     ? {
         endpoint:
           basicVars.awsConfig.virusScannerLambdaEndpoint ||
@@ -116,7 +116,7 @@ const awsConfig: AwsConfig = {
 }
 
 let dbUri: string | undefined
-if (isDev) {
+if (isDevOrTest) {
   if (basicVars.core.nodeEnv === Environment.Dev && prodOnlyVars.dbHost) {
     dbUri = prodOnlyVars.dbHost
   } else if (basicVars.core.nodeEnv === Environment.Test) {
@@ -134,7 +134,7 @@ const dbConfig: DbConfig = {
     user: '',
     pass: '',
     // Only create indexes in dev env to avoid adverse production impact.
-    autoIndex: isDev,
+    autoIndex: isDevOrTest,
     promiseLibrary: global.Promise,
   },
 }
@@ -148,7 +148,7 @@ const mailConfig: MailConfig = (function () {
 
   // Creating mail transport
   let transporter: Mail
-  if (!isDev) {
+  if (!isDevOrTest) {
     const options: SMTPPool.Options = {
       host: prodOnlyVars.host,
       auth: {
@@ -189,7 +189,7 @@ const mailConfig: MailConfig = (function () {
 // Cookie settings needed for express-session configuration
 const cookieSettings: SessionOptions['cookie'] = {
   httpOnly: true, // JavaScript will not be able to read the cookie in case of XSS exploitation
-  secure: !isDev, // true prevents cookie from being accessed over http
+  secure: !isDevOrTest, // true prevents cookie from being accessed over http
   maxAge: 24 * 60 * 60 * 1000, // 24 hours
   sameSite: 'strict', // Cookie will not be sent if navigating from another domain
 }
@@ -198,7 +198,7 @@ const cookieSettings: SessionOptions['cookie'] = {
  * Fetches AWS credentials
  */
 const configureAws = async () => {
-  if (!isDev) {
+  if (!isDevOrTest) {
     const getCredentials = () => {
       return new Promise<void>((resolve, reject) => {
         aws.config.getCredentials((err) => {
@@ -220,7 +220,7 @@ const configureAws = async () => {
   }
 }
 
-const apiEnv = isDev ? 'test' : 'live'
+const apiEnv = isDevOrTest ? 'test' : 'live'
 const publicApiConfig: PublicApiConfig = {
   apiEnv,
   apiKeyVersion: basicVars.publicApi.apiKeyVersion,
@@ -233,6 +233,8 @@ const config: Config = {
   mail: mailConfig,
   cookieSettings,
   isDev,
+  isTest,
+  isDevOrTest,
   useMockTwilio: basicVars.core.useMockTwilio,
   useMockPostmanSms: basicVars.core.useMockPostmanSms,
   nodeEnv,

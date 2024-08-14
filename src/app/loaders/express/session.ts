@@ -6,7 +6,7 @@ import { Connection } from 'mongoose'
 
 import config from '../../config/config'
 
-export const ADMIN_LOGIN_SESSION_COOKIE_NAME = config.isDev
+export const ADMIN_LOGIN_SESSION_COOKIE_NAME = config.isDevOrTest
   ? 'formsg.connect.sid'
   : 'connect.sid'
 

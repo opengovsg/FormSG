@@ -13,9 +13,9 @@ declare global {
     export interface Request {
       id?: string
       /**
-       * This property is added to all requests for Growthbook feature flagging purposes.
+       * This property is added to all requests for Growthbook feature flagging purposes except on test env.
        */
-      growthbook: GrowthBook
+      growthbook?: GrowthBook
       /**
        * This property is added to all requests with the `limit`, `current`,
        * and `remaining` number of requests and, if the store provides it, a `resetTime` Date object.
