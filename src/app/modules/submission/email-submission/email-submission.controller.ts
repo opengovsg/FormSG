@@ -11,6 +11,7 @@ import {
 import { CaptchaTypes } from '../../../../../shared/types/captcha'
 import { IPopulatedEmailForm } from '../../../../types'
 import { ParsedEmailModeSubmissionBody } from '../../../../types/api'
+import { isTest } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as CaptchaService from '../../../services/captcha/captcha.service'
@@ -322,7 +323,7 @@ export const submitEmailModeForm: ControllerHandler<
         // TODO: (E-voting v1.0.1) Cleanup this feature flag check once all existing Singpass forms are opt-in
         const gb = req.growthbook
         const isSubmitterIdCollectionFeatureEnabled =
-          gb && gb.isOn(featureFlags.submitterIdCollection)
+          isTest || gb?.isOn(featureFlags.submitterIdCollection)
         const isForceCollectSubmitterId = !isSubmitterIdCollectionFeatureEnabled
 
         if (

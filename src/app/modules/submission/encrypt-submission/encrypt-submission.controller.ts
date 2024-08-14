@@ -318,7 +318,7 @@ const submitEncryptModeForm = async (
   // TODO: (E-voting v1.0.1) Cleanup this feature flag check once all existing Singpass forms are opt-in
   const gb = req.growthbook
   const isSubmitterIdCollectionFeatureEnabled =
-    gb && gb.isOn(featureFlags.submitterIdCollection)
+    config.isTest || gb?.isOn(featureFlags.submitterIdCollection)
   const isForceCollectSubmitterId = !isSubmitterIdCollectionFeatureEnabled
 
   // Encrypt Verified SPCP Fields
