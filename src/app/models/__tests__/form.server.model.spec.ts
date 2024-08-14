@@ -74,7 +74,7 @@ const MOCK_MULTIRESPONDENT_FORM_PARAMS = {
 
 const FORM_DEFAULTS = {
   authType: 'NIL',
-  isSubmitterIdCollectionEnabled: false,
+  isSubmitterIdCollectionEnabled: true, // TODO: (E-voting v1.0.1) Set to false after patching existing forms in production
   isSingleSubmission: false,
   inactiveMessage:
     'If you require further assistance, please contact the agency that gave you the form link.',
