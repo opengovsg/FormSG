@@ -27,7 +27,7 @@ const FormEmailSectionContainer = ({
   settings,
 }: FormEmailSectionContainerProps): JSX.Element => {
   if (settings.responseMode === FormResponseMode.Multirespondent) {
-    return <MrfFormEmailSection />
+    return <MrfFormEmailSection settings={settings} />
   } else {
     return <FormEmailSection settings={settings} />
   }

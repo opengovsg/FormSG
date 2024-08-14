@@ -10,9 +10,11 @@ import {
 } from '@chakra-ui/react'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
+import { BxsInfoCircle } from '~assets/icons/BxsInfoCircle'
 import { useMdComponents } from '~hooks/useMdComponents'
 import { MarkdownText } from '~components/MarkdownText'
 import Tooltip from '~components/Tooltip'
+import { TooltipProps } from '~components/Tooltip/Tooltip'
 
 export interface FormLabelProps extends ChakraFormLabelProps {
   /**
@@ -23,6 +25,14 @@ export interface FormLabelProps extends ChakraFormLabelProps {
    * Tooltip text to be postfixed at the end of each label, if any.
    */
   tooltipText?: string
+  /**
+   * Tooltip placement for the tooltip text, if any.
+   */
+  tooltipPlacement?: TooltipProps['placement']
+  /**
+   * Determines Tooltip icon used for the tooltip text. Defaults to help.
+   */
+  tooltipVariant?: 'info' | 'help'
   /**
    * Description text to be shown below the label text, if any.
    */
@@ -55,6 +65,8 @@ export interface FormLabelProps extends ChakraFormLabelProps {
 export const FormLabel = ({
   isRequired,
   tooltipText,
+  tooltipPlacement,
+  tooltipVariant,
   questionNumber,
   description,
   useMarkdownForDescription = false,
@@ -76,11 +88,15 @@ export const FormLabel = ({
         {children}
         <FormLabel.OptionalIndicator isRequired={isRequired} />
         {tooltipText && (
-          <Tooltip label={tooltipText} aria-label="Label tooltip">
+          <Tooltip
+            placement={tooltipPlacement}
+            label={tooltipText}
+            aria-label="Label tooltip"
+          >
             <Icon
               ml="0.5rem"
               color="secondary.500"
-              as={BxsHelpCircle}
+              as={tooltipVariant === 'info' ? BxsInfoCircle : BxsHelpCircle}
               verticalAlign="middle"
             />
           </Tooltip>
