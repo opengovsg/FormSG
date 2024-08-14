@@ -1,49 +1,49 @@
-import { FormControl, Skeleton } from '@chakra-ui/react'
+import { Skeleton } from '@chakra-ui/react'
 
-import { FormResponseMode } from '~shared/types'
+import { FormResponseMode, FormSettings } from '~shared/types/form'
 
 import FormLabel from '~components/FormControl/FormLabel'
 import { TagInput } from '~components/TagInput'
 
 import { CategoryHeader } from './components/CategoryHeader'
-import { EmailFormSection } from './components/EmailFormSection'
+import { FormEmailSection } from './components/FormEmailSection'
+import { MrfFormEmailSection } from './components/MrfFormEmailSection'
 import { useAdminFormSettings } from './queries'
 
-const AdminEmailSection = () => {
-  const { data: settings } = useAdminFormSettings()
-
-  if (!settings) {
-    return <EmailFormSectionSkeleton />
-  }
-
-  const isEmailOrStorageMode =
-    settings?.responseMode === FormResponseMode.Email ||
-    settings?.responseMode === FormResponseMode.Encrypt
-
-  // should render null
-  if (!isEmailOrStorageMode) {
-    return null
-  }
-
-  return <EmailFormSection settings={settings} />
-}
-
-const EmailFormSectionSkeleton = (): JSX.Element => {
+const FormEmailSectionSkeleton = (): JSX.Element => {
   return (
-    <FormControl isRequired>
+    <Skeleton>
       <FormLabel>Send an email copy of new responses</FormLabel>
-      <Skeleton>
-        <TagInput placeholder="me@example.com" isDisabled />
-      </Skeleton>
-    </FormControl>
+      <TagInput placeholder="me@example.com" isDisabled />
+    </Skeleton>
   )
 }
 
+interface FormEmailSectionContainerProps {
+  settings: FormSettings
+}
+
+const FormEmailSectionContainer = ({
+  settings,
+}: FormEmailSectionContainerProps): JSX.Element => {
+  if (settings.responseMode === FormResponseMode.Multirespondent) {
+    return <MrfFormEmailSection />
+  } else {
+    return <FormEmailSection settings={settings} />
+  }
+}
+
 export const SettingsEmailsPage = (): JSX.Element => {
+  const { data: settings } = useAdminFormSettings()
+
   return (
     <>
       <CategoryHeader>Email notifications</CategoryHeader>
-      <AdminEmailSection />
+      {settings ? (
+        <FormEmailSectionContainer settings={settings} />
+      ) : (
+        <FormEmailSectionSkeleton />
+      )}
     </>
   )
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import {
   BiCodeBlock,
   BiCog,
@@ -19,16 +19,12 @@ import {
   Tabs,
 } from '@chakra-ui/react'
 
-import { FormResponseMode } from '~shared/types'
-import { isNonEmpty } from '~shared/utils/isNonEmpty'
-
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
 
 import { useAdminFormCollaborators } from '../common/queries'
 
 import { SettingsTab } from './components/SettingsTab'
-import { useAdminFormSettings } from './queries'
 import { SettingsAuthPage } from './SettingsAuthPage'
 import { SettingsEmailsPage } from './SettingsEmailsPage'
 import { SettingsGeneralPage } from './SettingsGeneralPage'
@@ -46,7 +42,6 @@ interface TabEntry {
 
 export const SettingsPage = (): JSX.Element => {
   const { formId, settingsTab } = useParams()
-  const { data: settings } = useAdminFormSettings()
 
   if (!formId) throw new Error('No formId provided')
 
@@ -60,55 +55,45 @@ export const SettingsPage = (): JSX.Element => {
       navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_RESULTS_SUBROUTE}`)
   }, [formId, hasEditAccess, isCollabLoading, navigate])
 
-  const tabConfig = useMemo(() => {
-    const emailsNotificationsTab =
-      settings?.responseMode === FormResponseMode.Encrypt ||
-      settings?.responseMode === FormResponseMode.Email
-        ? {
-            label: 'Email notifications',
-            icon: BiMailSend,
-            component: SettingsEmailsPage,
-            path: 'email-notifications',
-            showRedDot: true,
-          }
-        : null
-
-    const baseConfig: (TabEntry | null)[] = [
-      {
-        label: 'General',
-        icon: BiCog,
-        component: SettingsGeneralPage,
-        path: 'general',
-      },
-      {
-        label: 'Singpass',
-        icon: BiKey,
-        component: SettingsAuthPage,
-        path: 'singpass',
-      },
-      emailsNotificationsTab,
-      {
-        label: 'Twilio credentials',
-        icon: BiMessage,
-        component: SettingsTwilioPage,
-        path: 'twilio-credentials',
-      },
-      {
-        label: 'Webhooks',
-        icon: BiCodeBlock,
-        component: SettingsWebhooksPage,
-        path: 'webhooks',
-      },
-      {
-        label: 'Payments',
-        icon: BiDollar,
-        component: SettingsPaymentsPage,
-        path: 'payments',
-      },
-    ]
-
-    return baseConfig.filter(isNonEmpty)
-  }, [settings?.responseMode])
+  const tabConfig: TabEntry[] = [
+    {
+      label: 'General',
+      icon: BiCog,
+      component: SettingsGeneralPage,
+      path: 'general',
+    },
+    {
+      label: 'Singpass',
+      icon: BiKey,
+      component: SettingsAuthPage,
+      path: 'singpass',
+    },
+    {
+      label: 'Email notifications',
+      icon: BiMailSend,
+      component: SettingsEmailsPage,
+      path: 'email-notifications',
+      showRedDot: true,
+    },
+    {
+      label: 'Twilio credentials',
+      icon: BiMessage,
+      component: SettingsTwilioPage,
+      path: 'twilio-credentials',
+    },
+    {
+      label: 'Webhooks',
+      icon: BiCodeBlock,
+      component: SettingsWebhooksPage,
+      path: 'webhooks',
+    },
+    {
+      label: 'Payments',
+      icon: BiDollar,
+      component: SettingsPaymentsPage,
+      path: 'payments',
+    },
+  ]
 
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
 

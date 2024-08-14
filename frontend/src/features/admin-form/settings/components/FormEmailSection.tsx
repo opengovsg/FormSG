@@ -41,7 +41,7 @@ interface EmailFormSectionProps {
   settings: EmailFormSettings | StorageFormSettings
 }
 
-export const EmailFormSection = ({
+export const FormEmailSection = ({
   settings,
 }: EmailFormSectionProps): JSX.Element => {
   const initialEmailSet = useMemo(
