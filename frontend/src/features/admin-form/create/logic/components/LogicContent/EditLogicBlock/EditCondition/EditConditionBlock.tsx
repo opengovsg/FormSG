@@ -40,7 +40,7 @@ export interface EditConditionBlockProps {
   handleRemoveCondition?: (index?: number | number[] | undefined) => void
   formMethods: UseFormReturn<EditLogicInputs>
   logicableFields: Dictionary<FormFieldWithQuestionNo> | null
-  mapIdToField: Record<string, FormFieldWithQuestionNo> | null
+  idToFieldMap: Record<string, FormFieldWithQuestionNo> | null
 }
 
 export const EditConditionBlock = ({
@@ -49,7 +49,7 @@ export const EditConditionBlock = ({
   handleRemoveCondition,
   formMethods,
   logicableFields,
-  mapIdToField,
+  idToFieldMap,
 }: EditConditionBlockProps): JSX.Element => {
   const name = useMemo(() => `conditions.${index}` as const, [index])
 
@@ -72,23 +72,23 @@ export const EditConditionBlock = ({
   const logicTypeValue = watch('logicType')
   const showValueWatch = useWatchDependency(watch, 'show')
   const currentSelectedField = useMemo(() => {
-    if (!ifFieldIdValue || !mapIdToField) return
-    return mapIdToField[ifFieldIdValue]
-  }, [ifFieldIdValue, mapIdToField])
+    if (!ifFieldIdValue || !idToFieldMap) return
+    return idToFieldMap[ifFieldIdValue]
+  }, [ifFieldIdValue, idToFieldMap])
 
   /**
    * Effect to set value and error if the user conditions on a deleted field.
    */
   useEffect(() => {
-    if (!ifFieldIdValue || !mapIdToField) return
-    if (!(ifFieldIdValue in mapIdToField)) {
+    if (!ifFieldIdValue || !idToFieldMap) return
+    if (!(ifFieldIdValue in idToFieldMap)) {
       resetField(`${name}.field`)
       setError(`${name}.field`, {
         type: 'manual',
         message: 'This field was deleted, please select another field',
       })
     }
-  }, [ifFieldIdValue, mapIdToField, name, resetField, setError])
+  }, [ifFieldIdValue, idToFieldMap, name, resetField, setError])
 
   /**
    * Effect to reset the field if the field to apply a condition on is changed.
@@ -147,8 +147,8 @@ export const EditConditionBlock = ({
   }, [currentSelectedField])
 
   const conditionValueItems = useMemo(() => {
-    if (!ifFieldIdValue || !mapIdToField) return []
-    const mappedField = mapIdToField[ifFieldIdValue]
+    if (!ifFieldIdValue || !idToFieldMap) return []
+    const mappedField = idToFieldMap[ifFieldIdValue]
     if (!mappedField) return []
     switch (mappedField.fieldType) {
       case BasicField.YesNo:
@@ -166,7 +166,7 @@ export const EditConditionBlock = ({
       default:
         return []
     }
-  }, [ifFieldIdValue, mapIdToField])
+  }, [ifFieldIdValue, idToFieldMap])
 
   const logicTypeWrapperWidth = useMemo(() => {
     if (!currentSelectedField) return '9rem'

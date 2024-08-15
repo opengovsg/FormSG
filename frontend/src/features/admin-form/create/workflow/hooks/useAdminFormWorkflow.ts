@@ -20,7 +20,7 @@ export const useAdminFormWorkflow = () => {
     form?.form_fields.map(augmentWithMyInfo) ?? [],
   )
 
-  const mapIdToField = useMemo(
+  const idToFieldMap = useMemo(
     () => keyBy(augmentedFormFields, '_id'),
     [augmentedFormFields],
   )
@@ -43,7 +43,7 @@ export const useAdminFormWorkflow = () => {
       form?.responseMode !== FormResponseMode.Multirespondent
         ? undefined
         : form?.workflow,
-    mapIdToField,
+    idToFieldMap,
     emailFormFields,
   }
 }

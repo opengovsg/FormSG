@@ -26,14 +26,14 @@ interface ThenShowBlockProps {
   isLoading: boolean
   formMethods: UseFormReturn<EditLogicInputs>
   formFields?: FormFieldDto[]
-  mapIdToField: Record<string, FormFieldWithQuestionNo> | null
+  idToFieldMap: Record<string, FormFieldWithQuestionNo> | null
 }
 
 export const ThenShowBlock = ({
   isLoading,
   formMethods,
   formFields,
-  mapIdToField,
+  idToFieldMap,
 }: ThenShowBlockProps): JSX.Element => {
   const {
     watch,
@@ -91,11 +91,11 @@ export const ThenShowBlock = ({
     if (
       logicTypeValue !== LogicType.ShowFields ||
       !showValueWatch.value?.length ||
-      !mapIdToField
+      !idToFieldMap
     )
       return
     const filteredShowFields = showValueWatch.value.filter(
-      (field) => field in mapIdToField,
+      (field) => field in idToFieldMap,
     )
     const deletedFieldsCount =
       showValueWatch.value.length - filteredShowFields.length
@@ -112,7 +112,7 @@ export const ThenShowBlock = ({
     else setDeletedFieldsCount(deletedFieldsCount)
   }, [
     logicTypeValue,
-    mapIdToField,
+    idToFieldMap,
     resetField,
     setError,
     setValue,
@@ -182,7 +182,7 @@ export const ThenShowBlock = ({
         </BlockLabelText>
         <ThenLogicInput
           formFields={formFields}
-          mapIdToField={mapIdToField}
+          idToFieldMap={idToFieldMap}
           formMethods={formMethods}
           isLoading={isLoading}
         />
@@ -195,7 +195,7 @@ const ThenLogicInput = ({
   isLoading,
   formMethods,
   formFields,
-  mapIdToField,
+  idToFieldMap,
 }: ThenShowBlockProps) => {
   const {
     watch,
@@ -211,7 +211,7 @@ const ThenLogicInput = ({
   const thenValueItems = useMemo(() => {
     // Return every field except fields that are already used in the logic.
     if (logicTypeValue === LogicType.ShowFields) {
-      if (!formFields || !mapIdToField) return []
+      if (!formFields || !idToFieldMap) return []
       const usedFieldIds = new Set(
         logicConditionsWatch.value.map((condition) => condition.field),
       )
@@ -219,14 +219,14 @@ const ThenLogicInput = ({
         .filter((f) => !usedFieldIds.has(f._id))
         .map((f) => ({
           value: f._id,
-          label: getLogicFieldLabel(mapIdToField[f._id]),
+          label: getLogicFieldLabel(idToFieldMap[f._id]),
           icon: BASICFIELD_TO_DRAWER_META[f.fieldType].icon,
         }))
     }
     return []
     // Watch entire <***>Watch variables since <***>Watch.value is a Proxy object
     // and will not update if <***>Watch.value is mutated.
-  }, [formFields, logicConditionsWatch, mapIdToField, logicTypeValue])
+  }, [formFields, logicConditionsWatch, idToFieldMap, logicTypeValue])
 
   if (logicTypeValue === LogicType.PreventSubmit) {
     return (

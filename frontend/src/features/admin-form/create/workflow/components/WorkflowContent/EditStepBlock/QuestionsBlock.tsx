@@ -36,7 +36,7 @@ export const QuestionsBlock = ({
     base: 'top',
     md: 'right',
   })
-  const { formFields = [], mapIdToField } = useAdminFormWorkflow()
+  const { formFields = [], idToFieldMap } = useAdminFormWorkflow()
   const {
     formState: { errors },
     control,
@@ -50,7 +50,7 @@ export const QuestionsBlock = ({
     )
     .map((f) => ({
       value: f._id,
-      label: getLogicFieldLabel(mapIdToField[f._id]),
+      label: getLogicFieldLabel(idToFieldMap[f._id]),
       icon: BASICFIELD_TO_DRAWER_META[f.fieldType].icon,
     }))
 
