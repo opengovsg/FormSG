@@ -1,14 +1,26 @@
 import { Controller, UseFormReturn } from 'react-hook-form'
-import { Flex, FormControl, Stack, Text } from '@chakra-ui/react'
+import {
+  Box,
+  Flex,
+  FormControl,
+  Icon,
+  PlacementWithLogical,
+  Stack,
+  Text,
+  useBreakpointValue,
+} from '@chakra-ui/react'
 import { get } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
 import { WorkflowType } from '~shared/types'
 
+import { BxsInfoCircleAlt } from '~assets/icons/BxsInfoCircleAlt'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import FormLabel from '~components/FormControl/FormLabel'
 import Radio from '~components/Radio'
 import { TagInput } from '~components/TagInput'
+import Tooltip from '~components/Tooltip'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { EditStepInputs } from '~features/admin-form/create/workflow/types'
@@ -22,6 +34,8 @@ interface RespondentBlockProps {
   formMethods: UseFormReturn<EditStepInputs>
 }
 
+type TooltipPlacement = PlacementWithLogical | undefined
+
 export const RespondentBlock = ({
   stepNumber,
   isLoading,
@@ -32,6 +46,11 @@ export const RespondentBlock = ({
     register,
     getValues,
   } = formMethods
+
+  const tooltipPlacement: TooltipPlacement = useBreakpointValue({
+    base: 'top',
+    md: 'right',
+  })
 
   const defaultWorkflowType = getValues('workflow_type')
 
@@ -44,12 +63,34 @@ export const RespondentBlock = ({
       py="1.5rem"
       px={{ base: '1.5rem', md: '2rem' }}
     >
-      <Text textStyle="subhead-3">Respondent in this step</Text>
-
       {isFirstStep ? (
-        <Text>Anyone you share the form link with</Text>
+        <>
+          <Flex alignItems="center" gap="0.5rem">
+            <Text textStyle="subhead-3">Respondent in this step</Text>
+            <Tooltip
+              placement={tooltipPlacement}
+              label="Anyone you share the form link with"
+            >
+              <Icon as={BxsInfoCircleAlt} />
+            </Tooltip>
+          </Flex>
+          <FormLabel>Email address for notifications</FormLabel>
+          <Box my="0.75rem">
+            <SingleSelect
+              name=""
+              items={['email1@gmail.com', 'email2@gmail.com']}
+              value=""
+              onChange={() => {
+                console.log('example')
+              }}
+              isClearable={false}
+              placeholder="Select an email field from your form"
+            />
+          </Box>
+        </>
       ) : (
         <>
+          <Text textStyle="subhead-3">Respondent in this step</Text>
           <FormControl
             isReadOnly={isLoading}
             id="workflowType"

@@ -1,5 +1,13 @@
 import { Controller, UseFormReturn } from 'react-hook-form'
-import { Flex, FormControl, Icon, Stack, Text } from '@chakra-ui/react'
+import {
+  Flex,
+  FormControl,
+  Icon,
+  PlacementWithLogical,
+  Stack,
+  Text,
+  useBreakpointValue,
+} from '@chakra-ui/react'
 
 import { BxsInfoCircleAlt } from '~assets/icons'
 import { MultiSelect } from '~components/Dropdown'
@@ -18,10 +26,16 @@ interface QuestionsBlockProps {
   formMethods: UseFormReturn<EditStepInputs>
 }
 
+type TooltipPlacement = PlacementWithLogical | undefined
+
 export const QuestionsBlock = ({
   isLoading,
   formMethods,
 }: QuestionsBlockProps): JSX.Element => {
+  const tooltipPlacement: TooltipPlacement = useBreakpointValue({
+    base: 'top',
+    md: 'right',
+  })
   const { formFields = [], mapIdToField } = useAdminFormWorkflow()
   const {
     formState: { errors },
@@ -51,7 +65,10 @@ export const QuestionsBlock = ({
     >
       <Flex alignItems="center" gap="0.5rem">
         <Text textStyle="subhead-3">Fields to fill</Text>
-        <Tooltip label="Respondent will only be able to fill the fields you have selected">
+        <Tooltip
+          placement={tooltipPlacement}
+          label="Respondent will only be able to fill the fields you have selected"
+        >
           <Icon as={BxsInfoCircleAlt} />
         </Tooltip>
       </Flex>
