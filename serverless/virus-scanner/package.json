@@ -16,7 +16,7 @@
     "@aws-sdk/client-s3": "^3.529.1",
     "@aws-sdk/client-ssm": "^3.363.0",
     "aws-lambda-ric": "^2.1.0",
-    "axios": "^1.6.4",
+    "axios": "^1.7.4",
     "clamscan": "^2.1.2",
     "convict": "^6.2.4",
     "http-status-codes": "^2.2.0",
@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.101",
-    "@types/clamscan": "^2.0.2",
+    "@types/clamscan": "^2.0.8",
     "@types/convict": "^6.1.1",
     "@types/jest": "^29.5.1",
     "@types/node": "^18.0.1",
