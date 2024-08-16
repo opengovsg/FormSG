@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { Controller, useForm } from 'react-hook-form'
-import { Box, Skeleton } from '@chakra-ui/react'
-import { debounce } from 'lodash'
+import { Box, FormControl, FormErrorMessage, Skeleton } from '@chakra-ui/react'
+import { debounce, get, isEmpty } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
 import {
@@ -77,7 +77,13 @@ const MrfEmailNotificationsForm = ({
     [checkIsEmail],
   )
 
-  const { handleSubmit, control, setValue, getValues } = useForm<{
+  const {
+    handleSubmit,
+    control,
+    setValue,
+    getValues,
+    formState: { errors },
+  } = useForm<{
     [WorkflowEmailMultiSelectA11yName]: string[]
     [OtherPartiesEmailInputName]: string[]
   }>({
@@ -137,34 +143,45 @@ const MrfEmailNotificationsForm = ({
         </Skeleton>
       </Box>
       <Box my="2rem">
-        <FormLabel
-          tooltipVariant="info"
-          tooltipPlacement="top"
-          tooltipText="Include the admin's email to inform them whenever a workflow is completed"
+        <FormControl
+          isInvalid={!isEmpty(errors[OtherPartiesEmailInputName])}
+          isDisabled={isDisabled}
         >
-          Notify other parties
-        </FormLabel>
-        <Controller
-          name={OtherPartiesEmailInputName}
-          control={control}
-          rules={OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES}
-          render={({ field }) => (
-            <TagInput
-              {...(getValues(OtherPartiesEmailInputName)?.length > 0
-                ? {}
-                : {
-                    placeholder: 'me@example.com',
-                  })}
-              {...field}
-              isDisabled={isDisabled}
-              onBlur={handleOtherPartiesEmailInputBlur}
-              tagValidation={checkIsEmail}
-            />
+          <FormLabel
+            tooltipVariant="info"
+            tooltipPlacement="top"
+            tooltipText="Include the admin's email to inform them whenever a workflow is completed"
+          >
+            Notify other parties
+          </FormLabel>
+          <Controller
+            name={OtherPartiesEmailInputName}
+            control={control}
+            rules={OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES}
+            render={({ field }) => (
+              <TagInput
+                {...(getValues(OtherPartiesEmailInputName)?.length > 0
+                  ? {}
+                  : {
+                      placeholder: 'me@example.com',
+                    })}
+                {...field}
+                isDisabled={isDisabled}
+                onBlur={handleOtherPartiesEmailInputBlur}
+                tagValidation={checkIsEmail}
+              />
+            )}
+          />
+          {isEmpty(errors[OtherPartiesEmailInputName]) ? (
+            <FormLabel.Description color="secondary.400" mt="0.5rem">
+              Separate multiple email addresses with a comma
+            </FormLabel.Description>
+          ) : (
+            <FormErrorMessage>
+              {get(errors, `${OtherPartiesEmailInputName}.message`)}
+            </FormErrorMessage>
           )}
-        />
-        <FormLabel.Description color="secondary.400" mt="0.5rem">
-          Separate multiple email addresses with a comma
-        </FormLabel.Description>
+        </FormControl>
       </Box>
     </form>
   )
