@@ -33,7 +33,7 @@ export const EmailNotificationsHeader = ({
   if (isFormPublic) {
     return (
       <InlineMessage marginBottom="40px">
-        To change admin email recipients, close your form to new responses.
+        To change email recipients, close your form to new responses.
       </InlineMessage>
     )
   }
