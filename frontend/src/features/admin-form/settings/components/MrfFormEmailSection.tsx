@@ -5,10 +5,8 @@ import { debounce } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
 import {
-  FormStatus,
   FormWorkflowStepDynamic,
   FormWorkflowStepStatic,
-  MultirespondentFormSettings,
   WorkflowType,
 } from '~shared/types/form'
 
@@ -20,16 +18,16 @@ import { TagInput } from '~components/TagInput'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { useAdminFormWorkflow } from '~features/admin-form/create/workflow/hooks/useAdminFormWorkflow'
 
-import { EmailNotificationsHeader } from './EmailNotificationsHeader'
-
-interface MrfFormEmailSectionProps {
-  settings: MultirespondentFormSettings
+interface MrfEmailNotificationsFormProps {
+  isDisabled: boolean
 }
 
 const WorkflowEmailMultiSelectA11yName = 'Select respondents from your form'
 const OtherPartiesEmailInputName = 'other-parties-email-input'
 
-const MrfEmailNotificationsForm = () => {
+const MrfEmailNotificationsForm = ({
+  isDisabled,
+}: MrfEmailNotificationsFormProps) => {
   const { isLoading, formWorkflow, idToFieldMap } = useAdminFormWorkflow()
 
   const formWorkflowStepsWithStepNumber = formWorkflow?.map((step, index) => ({
@@ -130,7 +128,7 @@ const MrfEmailNotificationsForm = () => {
                   }}
                   placeholder="Select respondents from your form"
                   isSelectedItemFullWidth
-                  isDisabled={isLoading}
+                  isDisabled={isLoading || isDisabled}
                   {...rest}
                 />
               )}
@@ -158,6 +156,7 @@ const MrfEmailNotificationsForm = () => {
                     placeholder: 'me@example.com',
                   })}
               {...field}
+              isDisabled={isDisabled}
               onBlur={handleOtherPartiesEmailInputBlur}
               tagValidation={checkIsEmail}
             />
@@ -171,19 +170,16 @@ const MrfEmailNotificationsForm = () => {
   )
 }
 
-export const MrfFormEmailSection = ({
-  settings,
-}: MrfFormEmailSectionProps): JSX.Element => {
-  const isFormPublic = settings.status === FormStatus.Public
+interface MrfFormEmailSectionProps {
+  isDisabled: boolean
+}
 
+export const MrfFormEmailSection = ({
+  isDisabled,
+}: MrfFormEmailSectionProps): JSX.Element => {
   return (
-    <>
-      <EmailNotificationsHeader
-        isFormPublic={isFormPublic}
-        isPaymentsEnabled={false}
-        isFormResponseModeEmail={false}
-      />
-      <MrfEmailNotificationsForm />
-    </>
+    <Box opacity={isDisabled ? 0.3 : 1}>
+      <MrfEmailNotificationsForm isDisabled={isDisabled} />
+    </Box>
   )
 }

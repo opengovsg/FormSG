@@ -9,11 +9,9 @@ import { FormControl } from '@chakra-ui/react'
 import { get, isEmpty, isEqual } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
-import { PaymentChannel } from '~shared/types'
 import {
   EmailFormSettings,
   FormResponseMode,
-  FormStatus,
   StorageFormSettings,
 } from '~shared/types/form'
 
@@ -29,15 +27,13 @@ import { TagInput } from '~components/TagInput'
 import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
 
-import { EmailNotificationsHeader } from './EmailNotificationsHeader'
-
 interface EmailFormSectionProps {
+  isDisabled: boolean
   settings: EmailFormSettings | StorageFormSettings
 }
 
 interface AdminEmailRecipientsInputProps {
   onSubmit: (params: { emails: string[] }) => void
-  isEmailsDisabled: boolean
 }
 
 const AdminEmailRecipientsInput = ({
@@ -87,6 +83,7 @@ const AdminEmailRecipientsInput = ({
 }
 
 export const FormEmailSection = ({
+  isDisabled,
   settings,
 }: EmailFormSectionProps): JSX.Element => {
   const initialEmailSet = useMemo(
@@ -105,16 +102,6 @@ export const FormEmailSection = ({
 
   const { mutateFormEmails } = useMutateFormSettings()
 
-  const isFormPublic = settings.status === FormStatus.Public
-
-  const isPaymentsEnabled =
-    settings &&
-    settings.responseMode === FormResponseMode.Encrypt &&
-    (settings.payments_channel.channel !== PaymentChannel.Unconnected ||
-      settings.payments_field.enabled)
-
-  const isEmailsDisabled = isFormPublic || isPaymentsEnabled
-
   const handleSubmitEmails = useCallback(
     ({ emails }: { emails: string[] }) => {
       if (isEqual(new Set(emails.filter(Boolean)), initialEmailSet)) return
@@ -132,13 +119,8 @@ export const FormEmailSection = ({
 
   return (
     <>
-      <EmailNotificationsHeader
-        isFormPublic={isFormPublic}
-        isPaymentsEnabled={isPaymentsEnabled}
-        isFormResponseModeEmail={isEmailMode}
-      />
       <FormProvider {...formMethods}>
-        <FormControl isInvalid={!isEmpty(errors)} isDisabled={isEmailsDisabled}>
+        <FormControl isInvalid={!isEmpty(errors)} isDisabled={isDisabled}>
           <FormLabel
             isRequired={isEmailMode}
             useMarkdownForDescription
@@ -149,16 +131,13 @@ export const FormEmailSection = ({
           >
             Send an email copy of new responses
           </FormLabel>
-          <AdminEmailRecipientsInput
-            onSubmit={handleSubmitEmails}
-            isEmailsDisabled={isEmailsDisabled}
-          />
+          <AdminEmailRecipientsInput onSubmit={handleSubmitEmails} />
           <FormErrorMessage>{get(errors, 'emails.message')}</FormErrorMessage>
           {isEmpty(errors) ? (
             <FormLabel.Description
               color="secondary.400"
               mt="0.5rem"
-              opacity={isEmailsDisabled ? '0.3' : '1'}
+              opacity={isDisabled ? '0.3' : '1'}
             >
               Separate multiple email addresses with a comma
             </FormLabel.Description>
