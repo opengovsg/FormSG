@@ -65,7 +65,7 @@ const SubsequentStepRespondentBadges = ({
       return (
         <>
           {step.emails.map((email) => (
-            <LogicBadge>{email}</LogicBadge>
+            <LogicBadge key={email}>{email}</LogicBadge>
           ))}
         </>
       )
