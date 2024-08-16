@@ -140,7 +140,7 @@ const MrfEmailNotificationsForm = ({
         <FormLabel
           tooltipVariant="info"
           tooltipPlacement="top"
-          tooltipText="Include the form admin's email to inform them when a new submission's workflow is completed"
+          tooltipText="Include the admin's email to inform them whenever a workflow is completed"
         >
           Notify other parties
         </FormLabel>
