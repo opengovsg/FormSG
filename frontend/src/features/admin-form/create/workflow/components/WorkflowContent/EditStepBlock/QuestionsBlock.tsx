@@ -3,7 +3,6 @@ import {
   Flex,
   FormControl,
   Icon,
-  PlacementWithLogical,
   Stack,
   Text,
   useBreakpointValue,
@@ -13,6 +12,7 @@ import { BxsInfoCircleAlt } from '~assets/icons'
 import { MultiSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Tooltip from '~components/Tooltip'
+import { TooltipProps } from '~components/Tooltip/Tooltip'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { getLogicFieldLabel } from '~features/admin-form/create/logic/components/LogicContent/utils/getLogicFieldLabel'
@@ -26,16 +26,15 @@ interface QuestionsBlockProps {
   formMethods: UseFormReturn<EditStepInputs>
 }
 
-type TooltipPlacement = PlacementWithLogical | undefined
-
 export const QuestionsBlock = ({
   isLoading,
   formMethods,
 }: QuestionsBlockProps): JSX.Element => {
-  const tooltipPlacement: TooltipPlacement = useBreakpointValue({
-    base: 'top',
-    md: 'right',
-  })
+  const tooltipPlacement: TooltipProps['placement'] | undefined =
+    useBreakpointValue({
+      base: 'top',
+      md: 'right',
+    })
   const { formFields = [], idToFieldMap } = useAdminFormWorkflow()
   const {
     formState: { errors },

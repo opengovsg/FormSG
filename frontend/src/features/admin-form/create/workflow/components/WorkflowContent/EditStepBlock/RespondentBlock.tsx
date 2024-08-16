@@ -34,8 +34,6 @@ interface RespondentBlockProps {
   formMethods: UseFormReturn<EditStepInputs>
 }
 
-type TooltipPlacement = PlacementWithLogical | undefined
-
 export const RespondentBlock = ({
   stepNumber,
   isLoading,
@@ -47,10 +45,12 @@ export const RespondentBlock = ({
     getValues,
   } = formMethods
 
-  const tooltipPlacement: TooltipPlacement = useBreakpointValue({
-    base: 'top',
-    md: 'right',
-  })
+  const tooltipPlacement: PlacementWithLogical | undefined = useBreakpointValue(
+    {
+      base: 'top',
+      md: 'right',
+    },
+  )
 
   const defaultWorkflowType = getValues('workflow_type')
 
