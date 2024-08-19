@@ -1,9 +1,10 @@
 import { useCallback, useMemo } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { Box, FormControl, FormErrorMessage, Skeleton } from '@chakra-ui/react'
-import { debounce, get, isEmpty } from 'lodash'
+import { debounce, get, isEmpty, uniq } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
+import { FormFieldDto } from '~shared/types'
 import {
   FormWorkflowStepDynamic,
   FormWorkflowStepStatic,
@@ -24,7 +25,12 @@ interface MrfEmailNotificationsFormProps {
   isDisabled: boolean
 }
 
-const WorkflowEmailMultiSelectA11yName = 'Select respondents from your form'
+interface WorkflowEmailMultiSelectValue {
+  type: 'email' | 'form_field'
+  value: string | FormFieldDto['_id']
+}
+
+const WorkflowEmailMultiSelectName = 'email-multi-select'
 const OtherPartiesEmailInputName = 'other-parties-email-input'
 
 const MrfEmailNotificationsForm = ({
@@ -86,11 +92,11 @@ const MrfEmailNotificationsForm = ({
     getValues,
     formState: { errors },
   } = useForm<{
-    [WorkflowEmailMultiSelectA11yName]: string[]
+    [WorkflowEmailMultiSelectName]: WorkflowEmailMultiSelectValue[]
     [OtherPartiesEmailInputName]: string[]
   }>({
     defaultValues: {
-      [WorkflowEmailMultiSelectA11yName]: [],
+      [WorkflowEmailMultiSelectName]: [],
       [OtherPartiesEmailInputName]: [],
     },
   })
@@ -100,7 +106,6 @@ const MrfEmailNotificationsForm = ({
   const handleSubmitEmailNotificationSettings = useCallback(
     (nextStaticEmails, nextEmailFields) => {
       // TODO: (Kevin Foong) handle if the settings are unchanged, dont send
-
       return mutateMrfEmailNotifications.mutate({
         notification_emails: nextStaticEmails,
         notification_email_fields: nextEmailFields,
@@ -109,12 +114,34 @@ const MrfEmailNotificationsForm = ({
     [mutateMrfEmailNotifications],
   )
   const DEBOUNCE_DELAY_IN_MS = 1500
-  const onSubmit = useCallback(() => {
-    // TODO: (Kevin Foong) pass in the correct settings values to update and handle the debouncing
-    return handleSubmitEmailNotificationSettings([], [])
-  }, [handleSubmitEmailNotificationSettings])
+  const onSubmit = useCallback(
+    (formData) => {
+      const workflowEmailMultiSelectValues: WorkflowEmailMultiSelectValue[] =
+        formData[WorkflowEmailMultiSelectName]
+      const otherPartiesEmails = formData[OtherPartiesEmailInputName]
+
+      const nextStaticEmailsFromMultiSelect = workflowEmailMultiSelectValues
+        .filter((val) => val.type === 'email')
+        .map((val) => val.value)
+      const nextStaticEmails = uniq(
+        nextStaticEmailsFromMultiSelect.concat(otherPartiesEmails),
+      )
+
+      const nextEmailFields = uniq(
+        workflowEmailMultiSelectValues
+          .filter((val) => val.type === 'form_field')
+          .map((val) => val.value),
+      )
+
+      return handleSubmitEmailNotificationSettings(
+        nextStaticEmails,
+        nextEmailFields,
+      )
+    },
+    [handleSubmitEmailNotificationSettings],
+  )
   const onSubmitDebounced = useCallback(
-    () => debounce(onSubmit, DEBOUNCE_DELAY_IN_MS)(),
+    (formData) => debounce(() => onSubmit(formData), DEBOUNCE_DELAY_IN_MS)(),
     [onSubmit],
   )
 
@@ -139,13 +166,18 @@ const MrfEmailNotificationsForm = ({
           <Box my="0.75rem">
             <Controller
               control={control}
-              name={WorkflowEmailMultiSelectA11yName}
-              render={({ field: { value: values, onChange, ...rest } }) => (
+              name={WorkflowEmailMultiSelectName}
+              render={({
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                field: { value: values, onChange, ...rest },
+              }) => (
                 <MultiSelect
                   items={workflowRespondentSelectItems}
-                  values={values}
+                  values={values.map((val) => JSON.stringify(val))}
                   onChange={(values) => {
-                    onChange(values)
+                    onChange(
+                      values.map((valString: string) => JSON.parse(valString)),
+                    )
                     handleWorkflowEmailMultiSelectChange()
                   }}
                   placeholder="Select respondents from your form"
