@@ -35,7 +35,6 @@ const FirstStepRespondentBadge = ({
   step,
   idToFieldMap,
 }: RespondentBadgeProps): JSX.Element | null => {
-  // TODO: (MRF-EMAIL-NOTIF): Clean this up to perhaps have first step always be dynamic
   if (step.workflow_type === WorkflowType.Static && step.emails.length > 0) {
     throw new Error('First step must not have static emails.')
   }
