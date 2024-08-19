@@ -1,5 +1,6 @@
 import { Controller, UseFormReturn } from 'react-hook-form'
 import {
+  As,
   Box,
   Flex,
   FormControl,
@@ -43,7 +44,18 @@ export const RespondentBlock = ({
     formState: { errors },
     register,
     getValues,
+    control,
   } = formMethods
+
+  const { emailFormFields = [] } = useAdminFormWorkflow()
+
+  const emailFieldItems = emailFormFields.map(
+    ({ _id, questionNumber, title, fieldType }) => ({
+      label: `${questionNumber}. ${title}`,
+      value: _id,
+      icon: BASICFIELD_TO_DRAWER_META[fieldType].icon,
+    }),
+  )
 
   const tooltipPlacement: PlacementWithLogical | undefined = useBreakpointValue(
     {
@@ -74,19 +86,37 @@ export const RespondentBlock = ({
               <Icon as={BxsInfoCircleAlt} />
             </Tooltip>
           </Flex>
-          <FormLabel>Email address for notifications</FormLabel>
-          <Box my="0.75rem">
-            <SingleSelect
-              name=""
-              items={['email1@gmail.com', 'email2@gmail.com']}
-              value=""
-              onChange={() => {
-                console.log('example')
-              }}
-              isClearable={false}
-              placeholder="Select an email field from your form"
-            />
-          </Box>
+          <FormControl isInvalid={!!errors.field} isRequired={false}>
+            <FormLabel>Email address for notifications</FormLabel>
+            <Box my="0.75rem">
+              <Controller
+                name="field"
+                rules={{
+                  validate: (selectedValue) => {
+                    return (
+                      !selectedValue ||
+                      !emailFieldItems ||
+                      emailFieldItems.some(
+                        ({ value: fieldValue }) => fieldValue === selectedValue,
+                      ) ||
+                      'Field is not an email field'
+                    )
+                  },
+                }}
+                control={control}
+                render={({ field: { value = undefined, ...rest } }) => (
+                  <SingleSelect
+                    placeholder="Select an email field from your form"
+                    items={emailFieldItems}
+                    value={value}
+                    isClearable
+                    {...rest}
+                  />
+                )}
+              />
+            </Box>
+            <FormErrorMessage>{errors.field?.message}</FormErrorMessage>
+          </FormControl>
         </>
       ) : (
         <>
@@ -126,26 +156,31 @@ export const RespondentBlock = ({
             <FormErrorMessage>{errors.workflow_type?.message}</FormErrorMessage>
           </FormControl>
 
-          <RespondentInput isLoading={isLoading} formMethods={formMethods} />
+          <RespondentInput
+            isLoading={isLoading}
+            formMethods={formMethods}
+            emailFieldItems={emailFieldItems}
+          />
         </>
       )}
     </Stack>
   )
 }
 
-type RespondentInputProps = Omit<RespondentBlockProps, 'stepNumber'>
+interface RespondentInputProps
+  extends Omit<RespondentBlockProps, 'stepNumber'> {
+  emailFieldItems: {
+    label: string
+    value: string
+    icon?: As
+  }[]
+}
 
-const RespondentInput = ({ isLoading, formMethods }: RespondentInputProps) => {
-  const { emailFormFields = [] } = useAdminFormWorkflow()
-
-  const emailFieldItems = emailFormFields.map(
-    ({ _id, questionNumber, title, fieldType }) => ({
-      label: `${questionNumber}. ${title}`,
-      value: _id,
-      icon: BASICFIELD_TO_DRAWER_META[fieldType].icon,
-    }),
-  )
-
+const RespondentInput = ({
+  isLoading,
+  formMethods,
+  emailFieldItems,
+}: RespondentInputProps) => {
   const {
     formState: { errors },
     control,
@@ -212,9 +247,11 @@ const RespondentInput = ({ isLoading, formMethods }: RespondentInputProps) => {
             name="field"
             rules={{
               required: 'Please select a field',
-              validate: (value) =>
-                !emailFormFields ||
-                emailFormFields.some(({ _id }) => _id === value) ||
+              validate: (selectedValue) =>
+                !emailFieldItems ||
+                emailFieldItems.some(
+                  ({ value: fieldValue }) => fieldValue === selectedValue,
+                ) ||
                 'Field is not an email field',
             }}
             render={({ field: { value = '', ...rest } }) => (

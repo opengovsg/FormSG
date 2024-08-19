@@ -57,6 +57,22 @@ export const EditStepBlock = ({
   }, [])
 
   const handleSubmit = formMethods.handleSubmit((inputs: EditStepInputs) => {
+    if (isFirstStepByStepNumber(stepNumber)) {
+      if (inputs.field) {
+        return onSubmit({
+          ...inputs,
+          workflow_type: WorkflowType.Dynamic,
+          field: inputs.field,
+        })
+      } else {
+        return onSubmit({
+          ...inputs,
+          workflow_type: WorkflowType.Static,
+          emails: inputs.emails ?? [],
+        })
+      }
+    }
+
     let step: FormWorkflowStep
     switch (inputs.workflow_type) {
       case WorkflowType.Static: {
