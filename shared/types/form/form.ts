@@ -194,6 +194,8 @@ export interface MultirespondentFormBase extends FormBase {
   responseMode: FormResponseMode.Multirespondent
   publicKey: string
   workflow: FormWorkflow
+  notification_emails: string[]
+  notification_email_fields: string[]
 }
 
 /**

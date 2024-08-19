@@ -18,6 +18,8 @@ import { TagInput } from '~components/TagInput'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { useAdminFormWorkflow } from '~features/admin-form/create/workflow/hooks/useAdminFormWorkflow'
 
+import { useMutateFormSettings } from '../mutations'
+
 interface MrfEmailNotificationsFormProps {
   isDisabled: boolean
 }
@@ -93,10 +95,24 @@ const MrfEmailNotificationsForm = ({
     },
   })
 
+  const { mutateMrfEmailNotifications } = useMutateFormSettings()
+
+  const handleSubmitEmailNotificationSettings = useCallback(
+    (nextStaticEmails, nextEmailFields) => {
+      // TODO: (Kevin Foong) handle if the settings are unchanged, dont send
+
+      return mutateMrfEmailNotifications.mutate({
+        notification_emails: nextStaticEmails,
+        notification_email_fields: nextEmailFields,
+      })
+    },
+    [mutateMrfEmailNotifications],
+  )
   const DEBOUNCE_DELAY_IN_MS = 1500
   const onSubmit = useCallback(() => {
-    console.log('submitting')
-  }, [])
+    // TODO: (Kevin Foong) pass in the correct settings values to update and handle the debouncing
+    return handleSubmitEmailNotificationSettings([], [])
+  }, [handleSubmitEmailNotificationSettings])
   const onSubmitDebounced = useCallback(
     () => debounce(onSubmit, DEBOUNCE_DELAY_IN_MS)(),
     [onSubmit],

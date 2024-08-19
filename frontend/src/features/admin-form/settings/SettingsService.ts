@@ -3,6 +3,7 @@ import Stripe from 'stripe'
 import {
   EmailFormSettings,
   FormSettings,
+  MultirespondentFormSettings,
   SettingsUpdateDto,
   StorageFormSettings,
 } from '~shared/types/form/form'
@@ -22,6 +23,15 @@ type UpdateStorageFormFn<T extends keyof StorageFormSettings> = (
   formId: string,
   settingsToUpdate: StorageFormSettings[T],
 ) => Promise<FormSettings>
+
+export interface MrfEmailNotificationSettings {
+  notification_emails: string[]
+  notification_email_fields: string[]
+}
+
+type UpdateMultiRespondentFormFn<
+  T extends Partial<MultirespondentFormSettings>,
+> = (formId: string, settingsToUpdate: T) => Promise<FormSettings>
 
 type UpdateStorageFormWhitelistSettingFn = (
   formId: string,
@@ -100,6 +110,12 @@ export const updateFormEmails: UpdateEmailFormFn<'emails'> = async (
   newEmails,
 ) => {
   return updateFormSettings(formId, { emails: newEmails })
+}
+
+export const updateMrfEmailNotifications: UpdateMultiRespondentFormFn<
+  MrfEmailNotificationSettings
+> = async (formId, newSettings) => {
+  return updateFormSettings(formId, newSettings)
 }
 
 export const updateFormAuthType: UpdateFormFn<'authType'> = async (
