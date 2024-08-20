@@ -146,7 +146,7 @@ export interface FormBase {
   hasCaptcha: boolean
   hasIssueNotification: boolean
   authType: FormAuthType
-  isNricMaskEnabled: boolean
+  isSubmitterIdCollectionEnabled: boolean
   isSingleSubmission: boolean
 
   status: FormStatus

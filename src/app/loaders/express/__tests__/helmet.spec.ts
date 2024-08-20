@@ -98,7 +98,7 @@ describe('helmetMiddlewares', () => {
   })
 
   it('should call helmet.contentSecurityPolicy() with the correct directives if cspReportUri and !isDev', () => {
-    mockConfig.isDev = false
+    mockConfig.isDevOrTest = false
     helmetMiddlewares()
     expect(mockHelmet.contentSecurityPolicy).toHaveBeenCalledWith({
       useDefaults: true,
@@ -109,7 +109,7 @@ describe('helmetMiddlewares', () => {
   })
 
   it('should call helmet.contentSecurityPolicy() with the correct directives if !cspReportUri and isDev', () => {
-    mockConfig.isDev = true
+    mockConfig.isDevOrTest = true
     helmetMiddlewares()
     expect(mockHelmet.contentSecurityPolicy).toHaveBeenCalledWith({
       useDefaults: true,

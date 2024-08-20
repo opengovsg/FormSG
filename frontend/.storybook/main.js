@@ -41,4 +41,10 @@ module.exports = {
       },
     }
   },
+  // For injecitng environment variables into Storybook runs
+  // (see: https://github.com/storybookjs/storybook/issues/12270#issuecomment-1139104523)
+  env: (config) => ({
+    ...config,
+    NODE_ENV: 'test',
+  }),
 }

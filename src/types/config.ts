@@ -84,6 +84,8 @@ export type Config = {
   cookieSettings: SessionOptions['cookie']
   // Consts
   isDev: boolean
+  isTest: boolean
+  isDevOrTest: boolean
   nodeEnv: Environment
   useMockTwilio: boolean
   useMockPostmanSms: boolean

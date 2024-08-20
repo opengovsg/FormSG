@@ -28,7 +28,7 @@ import {
 } from './submission.types'
 import { getFilteredResponses } from './submission.utils'
 
-type NdiUserInfo =
+export type NdiUserInfo =
   | {
       authType:
         | FormAuthType.SP

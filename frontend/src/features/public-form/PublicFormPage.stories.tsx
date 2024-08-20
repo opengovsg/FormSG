@@ -284,6 +284,30 @@ SingpassUnauthorized.parameters = {
   ],
 }
 
+export const SingpassUnauthorizedSubmitterIdCollectionEnabled = Template.bind(
+  {},
+)
+SingpassUnauthorizedSubmitterIdCollectionEnabled.storyName =
+  'Singpass/Unauthorized/Submitter ID Collection Enabled'
+SingpassUnauthorizedSubmitterIdCollectionEnabled.parameters = {
+  msw: [
+    ...envHandlers,
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          title: 'Singpass login form',
+          authType: FormAuthType.SP,
+          startPage: {
+            colorTheme: FormColorTheme.Grey,
+          },
+          isSubmitterIdCollectionEnabled: true,
+        },
+      },
+    }),
+  ],
+}
+
 export const UnauthedMobile = Template.bind({})
 UnauthedMobile.parameters = {
   ...SingpassUnauthorized.parameters,
@@ -327,6 +351,27 @@ CorppassUnauthorized.parameters = {
   ],
 }
 
+export const CorppassUnauthorizedSubmitterIdCollectionEnabled = Template.bind(
+  {},
+)
+CorppassUnauthorizedSubmitterIdCollectionEnabled.storyName =
+  'Corppass/Unauthorized/Submitter ID Collection Enabled'
+CorppassUnauthorizedSubmitterIdCollectionEnabled.parameters = {
+  msw: [
+    ...envHandlers,
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          title: 'Corppass login form',
+          authType: FormAuthType.CP,
+          isSubmitterIdCollectionEnabled: true,
+        },
+      },
+    }),
+  ],
+}
+
 export const CorppassAuthorized = Template.bind({})
 CorppassAuthorized.storyName = 'Corppass/Authorized'
 CorppassAuthorized.parameters = {
@@ -364,6 +409,25 @@ SgidUnauthorized.parameters = {
   ],
 }
 
+export const SgidUnauthorizedSubmitterIdCollectionEnabled = Template.bind({})
+SgidUnauthorizedSubmitterIdCollectionEnabled.storyName =
+  'SGID/Unauthorized/Submitter ID Collection Enabled'
+SgidUnauthorizedSubmitterIdCollectionEnabled.parameters = {
+  msw: [
+    ...envHandlers,
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          title: 'SGID login form',
+          authType: FormAuthType.SGID,
+          isSubmitterIdCollectionEnabled: true,
+        },
+      },
+    }),
+  ],
+}
+
 export const SgidAuthorized = Template.bind({})
 SgidAuthorized.storyName = 'SGID/Authorized'
 SgidAuthorized.parameters = {
@@ -378,6 +442,81 @@ SgidAuthorized.parameters = {
         },
         spcpSession: {
           userName: 'S0000000Z',
+        },
+      },
+    }),
+  ],
+}
+
+export const SgidMyInfoUnauthorized = Template.bind({})
+SgidMyInfoUnauthorized.storyName = 'SGID_MyInfo/Unauthorized'
+SgidMyInfoUnauthorized.parameters = {
+  msw: [
+    ...envHandlers,
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          title: 'SGID_MyInfo login form',
+          authType: FormAuthType.SGID_MyInfo,
+        },
+      },
+    }),
+  ],
+}
+
+export const SgidMyInfoUnauthorizedSubmitterIdCollectionEnabled = Template.bind(
+  {},
+)
+SgidMyInfoUnauthorizedSubmitterIdCollectionEnabled.storyName =
+  'SGID_MyInfo/Unauthorized/Submitter ID Collection Enabled'
+SgidMyInfoUnauthorizedSubmitterIdCollectionEnabled.parameters = {
+  msw: [
+    ...envHandlers,
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          title: 'SGID_MyInfo login form',
+          authType: FormAuthType.SGID_MyInfo,
+          isSubmitterIdCollectionEnabled: true,
+        },
+      },
+    }),
+  ],
+}
+
+export const SingpassMyInfoUnauthorized = Template.bind({})
+SingpassMyInfoUnauthorized.storyName = 'SP_MyInfo/Unauthorized'
+SingpassMyInfoUnauthorized.parameters = {
+  msw: [
+    ...envHandlers,
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          title: 'SP_MyInfo login form',
+          authType: FormAuthType.MyInfo,
+        },
+      },
+    }),
+  ],
+}
+
+export const SingpassMyInfoUnauthorizedSubmitterIdCollectionEnabled =
+  Template.bind({})
+SingpassMyInfoUnauthorizedSubmitterIdCollectionEnabled.storyName =
+  'SP_MyInfo/Unauthorized/Submitter ID Collection Enabled'
+SingpassMyInfoUnauthorizedSubmitterIdCollectionEnabled.parameters = {
+  msw: [
+    ...envHandlers,
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          title: 'SP_MyInfo login form',
+          authType: FormAuthType.MyInfo,
+          isSubmitterIdCollectionEnabled: true,
         },
       },
     }),

@@ -109,7 +109,7 @@ export const handleLogin: ControllerHandler<
       maxAge,
       httpOnly: true,
       sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
-      secure: !config.isDev,
+      secure: !config.isDevOrTest,
       ...SgidService.getCookieSettings(),
     })
     return res.redirect(target)
@@ -141,7 +141,7 @@ export const handleLogin: ControllerHandler<
     maxAge,
     httpOnly: true,
     sameSite: 'lax', // Setting to 'strict' prevents Singpass login on Safari, Firefox
-    secure: !config.isDev,
+    secure: !config.isDevOrTest,
     ...SgidService.getCookieSettings(),
   })
   return res.redirect(target)

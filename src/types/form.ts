@@ -65,7 +65,7 @@ type FormDefaultableKey =
   | 'hasCaptcha'
   | 'hasIssueNotification'
   | 'authType'
-  | 'isNricMaskEnabled'
+  | 'isSubmitterIdCollectionEnabled'
   | 'isSingleSubmission'
   | 'status'
   | 'inactiveMessage'
@@ -105,7 +105,7 @@ export type PickDuplicateForm = Pick<
   | 'startPage'
   | 'endPage'
   | 'authType'
-  | 'isNricMaskEnabled'
+  | 'isSubmitterIdCollectionEnabled'
   | 'isSingleSubmission'
   | 'inactiveMessage'
   | 'submissionLimit'
@@ -271,7 +271,9 @@ interface IFormBaseDocument<T extends IFormSchema> {
   hasCaptcha: NonNullable<T['hasCaptcha']>
   hasIssueNotification: NonNullable<T['hasIssueNotification']>
   authType: NonNullable<T['authType']>
-  isNricMaskEnabled: NonNullable<T['isNricMaskEnabled']>
+  isSubmitterIdCollectionEnabled: NonNullable<
+    T['isSubmitterIdCollectionEnabled']
+  >
   isSingleSubmission: NonNullable<T['isSingleSubmission']>
   status: NonNullable<T['status']>
   inactiveMessage: NonNullable<T['inactiveMessage']>

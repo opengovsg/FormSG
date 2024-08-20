@@ -1,8 +1,10 @@
 import { Divider } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
+import { featureFlags } from '~shared/constants/feature-flags'
 import { FormResponseMode, FormSettings } from '~shared/types/form'
 
-import { FormNricMaskToggle } from './FormNricMaskToggle'
+import { FormSubmitterIdCollectionToggle } from './FormNricCollectionToggle'
 import { FormSingleSubmissionToggle } from './FormSingleSubmissionToggle'
 import { FormWhitelistAttachmentField } from './FormWhitelistAttachmentField'
 import { SingpassAuthOptionsRadio } from './SingpassAuthOptionsRadio'
@@ -23,20 +25,25 @@ export const AuthSettingsSingpassSection = ({
     isSingpassSettingsDisabled || containsMyInfoFields
   const isEncryptMode = settings.responseMode === FormResponseMode.Encrypt
 
+  const isSubmitterIdCollectionFeatureOn = useFeatureIsOn(
+    featureFlags.submitterIdCollection,
+  )
+  const isTest = process.env.NODE_ENV === 'test'
+  const isSubmitterIdCollectionEnabled =
+    isTest || isSubmitterIdCollectionFeatureOn
+
   return (
     <>
       <SingpassAuthOptionsRadio
         settings={settings}
         isDisabled={isSinglepassAuthOptionsDisabled}
       />
-      {/* Hide the NRIC mask toggle if they have not yet enabled it as part of
-      PMO circular */}
-      {settings.isNricMaskEnabled ? (
+      {isSubmitterIdCollectionEnabled ? (
         <>
           <Divider my="2.5rem" />
-          <FormNricMaskToggle
+          <FormSubmitterIdCollectionToggle
             settings={settings}
-            isDisabled={isSingpassSettingsDisabled}
+            isDisabled={isFormPublic}
           />
         </>
       ) : null}

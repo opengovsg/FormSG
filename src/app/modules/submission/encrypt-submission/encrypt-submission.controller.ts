@@ -5,6 +5,7 @@ import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
 import Stripe from 'stripe'
 
+import { featureFlags } from '../../../../../shared/constants/feature-flags'
 import {
   DateString,
   ErrorCode,
@@ -15,7 +16,6 @@ import {
   PaymentType,
   StorageModeSubmissionContentDto,
 } from '../../../../../shared/types'
-import { maskNric } from '../../../../../shared/utils/nric-mask'
 import {
   IAttachmentInfo,
   IEncryptedForm,
@@ -315,77 +315,73 @@ const submitEncryptModeForm = async (
     hashedSubmitterId = generateHashedSubmitterId(submitterId, form.id)
   }
 
-  // Mask if Nric masking is enabled
-  if (
-    userName &&
-    form.isNricMaskEnabled &&
-    (form.authType === FormAuthType.SP ||
-      form.authType === FormAuthType.CP ||
-      form.authType === FormAuthType.SGID ||
-      form.authType === FormAuthType.MyInfo ||
-      form.authType === FormAuthType.SGID_MyInfo)
-  ) {
-    userName = maskNric(userName)
-  }
-
-  // Add NDI responses
-  switch (form.authType) {
-    case FormAuthType.CP: {
-      if (!userName || !userInfo) break
-      parsedResponses.addNdiResponses({
-        authType,
-        uinFin: userName,
-        userInfo,
-      })
-      break
-    }
-    case FormAuthType.SP:
-    case FormAuthType.SGID:
-    case FormAuthType.MyInfo:
-    case FormAuthType.SGID_MyInfo: {
-      if (!userName) break
-      parsedResponses.addNdiResponses({
-        authType: form.authType,
-        uinFin: userName,
-      })
-      break
-    }
-  }
+  // TODO: (E-voting v1.0.1) Cleanup this feature flag check once all existing Singpass forms are opt-in
+  const gb = req.growthbook
+  const isSubmitterIdCollectionFeatureEnabled =
+    config.isTest || gb?.isOn(featureFlags.submitterIdCollection)
+  const isForceCollectSubmitterId = !isSubmitterIdCollectionFeatureEnabled
 
   // Encrypt Verified SPCP Fields
   let verified
-  if (
-    form.authType === FormAuthType.SP ||
-    form.authType === FormAuthType.CP ||
-    form.authType === FormAuthType.SGID ||
-    form.authType === FormAuthType.MyInfo ||
-    form.authType === FormAuthType.SGID_MyInfo
-  ) {
-    const encryptVerifiedContentResult =
-      VerifiedContentService.getVerifiedContent({
-        type: form.authType,
-        data: { uinFin: userName, userInfo },
-      }).andThen((verifiedContent) =>
-        VerifiedContentService.encryptVerifiedContent({
-          verifiedContent,
-          formPublicKey: form.publicKey,
-        }),
-      )
+  if (form.isSubmitterIdCollectionEnabled || isForceCollectSubmitterId) {
+    // Add NDI responses to email payload
+    switch (form.authType) {
+      case FormAuthType.CP: {
+        if (!userName || !userInfo) break
+        parsedResponses.addNdiResponses({
+          authType,
+          uinFin: userName,
+          userInfo,
+        })
+        break
+      }
+      case FormAuthType.SP:
+      case FormAuthType.SGID:
+      case FormAuthType.MyInfo:
+      case FormAuthType.SGID_MyInfo: {
+        if (!userName) break
+        parsedResponses.addNdiResponses({
+          authType: form.authType,
+          uinFin: userName,
+        })
+        break
+      }
+    }
 
-    if (encryptVerifiedContentResult.isErr()) {
-      const { error } = encryptVerifiedContentResult
-      logger.error({
-        message: 'Unable to encrypt verified content',
-        meta: logMeta,
-        error,
-      })
+    // generate verified content which is used to construct submitter login id for form response
+    if (
+      form.authType === FormAuthType.SP ||
+      form.authType === FormAuthType.CP ||
+      form.authType === FormAuthType.SGID ||
+      form.authType === FormAuthType.MyInfo ||
+      form.authType === FormAuthType.SGID_MyInfo
+    ) {
+      const encryptVerifiedContentResult =
+        VerifiedContentService.getVerifiedContent({
+          type: form.authType,
+          data: { uinFin: userName, userInfo },
+        }).andThen((verifiedContent) =>
+          VerifiedContentService.encryptVerifiedContent({
+            verifiedContent,
+            formPublicKey: form.publicKey,
+          }),
+        )
 
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: 'Invalid data was found. Please submit again.' })
-    } else {
-      // No errors, set local variable to the encrypted string.
-      verified = encryptVerifiedContentResult.value
+      if (encryptVerifiedContentResult.isErr()) {
+        const { error } = encryptVerifiedContentResult
+        logger.error({
+          message: 'Unable to encrypt verified content',
+          meta: logMeta,
+          error,
+        })
+
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .json({ message: 'Invalid data was found. Please submit again.' })
+      } else {
+        // No errors, set local variable to the encrypted string.
+        verified = encryptVerifiedContentResult.value
+      }
     }
   }
 
@@ -801,7 +797,6 @@ const _createSubmission = async ({
     new Set(), // the MyInfo prefixes are already inserted in middleware
     form.authType,
   )
-
   // We don't await for email submission, as the submission gets saved for encrypt
   // submissions regardless, the email is more of a notification and shouldn't
   // stop the storage of the data in the db

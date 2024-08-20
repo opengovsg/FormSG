@@ -20,6 +20,7 @@ import {
   catchNonExistentStaticRoutesMiddleware,
   errorHandlerMiddlewares,
 } from './error-handler'
+import growthbookMiddleware from './growthbook'
 import helmetMiddlewares from './helmet'
 import appLocals from './locals'
 import loggingMiddleware from './logging'
@@ -104,6 +105,11 @@ const loadExpressApp = async (connection: Connection) => {
 
   // Log intranet usage
   app.use(IntranetMiddleware.logIntranetUsage)
+
+  // Growthbook should not be enabled in test environment to avoid flakiness
+  if (!config.isTest) {
+    app.use(growthbookMiddleware)
+  }
 
   // jwks endpoint for SP OIDC
   app.use('/singpass/.well-known/jwks.json', SpOidcJwksRouter)

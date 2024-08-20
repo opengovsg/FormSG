@@ -24,10 +24,7 @@ import {
   filterHiddenInputs,
 } from '~features/public-form/utils'
 
-import {
-  PREVIEW_MASKED_MOCK_UINFIN,
-  PREVIEW_MOCK_UINFIN,
-} from '../preview/constants'
+import { PREVIEW_MOCK_UINFIN } from '../preview/constants'
 
 // endpoint exported for testing
 export const ADMIN_FORM_ENDPOINT = '/admin/forms'
@@ -62,9 +59,7 @@ export const previewForm = async (
       // and if server has not already sent back a mock authenticated state.
       if (data.form.authType !== FormAuthType.NIL && !data.spcpSession) {
         data.spcpSession = {
-          userName: data.form.isNricMaskEnabled
-            ? PREVIEW_MASKED_MOCK_UINFIN
-            : PREVIEW_MOCK_UINFIN,
+          userName: PREVIEW_MOCK_UINFIN,
         }
       }
 
@@ -95,9 +90,7 @@ export const viewFormTemplate = async (
       // and if server has not already sent back a mock authenticated state.
       if (data.form.authType !== FormAuthType.NIL && !data.spcpSession) {
         data.spcpSession = {
-          userName: data.form.isNricMaskEnabled
-            ? PREVIEW_MASKED_MOCK_UINFIN
-            : PREVIEW_MOCK_UINFIN,
+          userName: PREVIEW_MOCK_UINFIN,
         }
       }
 

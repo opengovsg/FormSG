@@ -549,9 +549,9 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         },
       },
 
-      isNricMaskEnabled: {
+      isSubmitterIdCollectionEnabled: {
         type: Boolean,
-        default: false,
+        default: true, // TODO: (E-voting v1.0.1) Set back to false once all existing Singpass forms are opt-in
       },
 
       isSingleSubmission: {
@@ -742,7 +742,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       'startPage',
       'endPage',
       'authType',
-      'isNricMaskEnabled',
+      'isSubmitterIdCollectionEnabled',
       'isSingleSubmission',
       'inactiveMessage',
       'responseMode',
