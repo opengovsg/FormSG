@@ -30,6 +30,11 @@ const SubmitterIdCollectionInfoText = ({
             <Text as="b">will be included</Text> with your form submission.
           </Text>
         )
+      default: {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _: never = authType
+        throw new Error('Invalid auth type')
+      }
     }
   } else {
     switch (authType) {
@@ -50,6 +55,11 @@ const SubmitterIdCollectionInfoText = ({
             <Text as="b">not be included</Text> with your form submission.
           </Text>
         )
+      default: {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _: never = authType
+        throw new Error('Invalid auth type')
+      }
     }
   }
 }
@@ -64,6 +74,11 @@ const getSignInText = (authType: Exclude<FormAuthType, FormAuthType.NIL>) => {
     case FormAuthType.SGID:
     case FormAuthType.SGID_MyInfo:
       return 'Sign in with the Singpass app to access this form.\n'
+    default: {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _: never = authType
+      throw new Error('Invalid auth type')
+    }
   }
 }
 
