@@ -42,7 +42,7 @@ export const MYINFO_LOGIN_COOKIE_OPTIONS = {
   // Important for security - access token cannot be read by client-side JS
   httpOnly: true,
   sameSite: 'lax' as const, // Setting to 'strict' prevents Singpass login on Safari, Firefox
-  secure: !config.isDev,
+  secure: !config.isDevOrTest,
   maxAge: spcpMyInfoConfig.spCookieMaxAge,
 }
 
@@ -52,7 +52,7 @@ export const MYINFO_LOGIN_COOKIE_OPTIONS = {
 export const MYINFO_AUTH_CODE_COOKIE_OPTIONS = {
   // Important for security - auth code cannot be read by client-side JS
   httpOnly: true,
-  secure: !config.isDev,
+  secure: !config.isDevOrTest,
   maxAge: MYINFO_AUTH_CODE_COOKIE_AGE_MS,
 }
 

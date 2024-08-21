@@ -68,7 +68,7 @@ function verifySignature(
  */
 async function decryptIntoCsv(
   data: LineData,
-  fasterDownloads: boolean,
+  isFasterDownloadsEnabled: boolean,
 ): Promise<MaterializedCsvRecord> {
   // This needs to be dynamically imported due to sharing code between main app and worker code.
   // Fixes issue raised at https://stackoverflow.com/questions/66472945/referenceerror-refreshreg-is-not-defined
@@ -192,7 +192,7 @@ async function decryptIntoCsv(
             CsvRecordStatus.Ok,
             'Success (with Downloaded Attachment)',
           )
-          if (fasterDownloads) {
+          if (isFasterDownloadsEnabled) {
             csvRecord.downloadBlobURL = URL.createObjectURL(downloadBlob)
           } else {
             csvRecord.setDownloadBlob(downloadBlob)

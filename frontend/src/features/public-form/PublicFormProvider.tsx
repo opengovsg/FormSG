@@ -31,7 +31,6 @@ import {
   ProductItem,
   PublicFormDto,
 } from '~shared/types/form'
-import { maskNric } from '~shared/utils/nric-mask'
 import { dollarsToCents } from '~shared/utils/payments'
 
 import { MONGODB_ID_REGEX } from '~constants/routes'
@@ -181,11 +180,6 @@ export const PublicFormProvider = ({
       setHasRespondentNotWhitelistedError(true)
     }
   }, [data?.errorCodes])
-
-  // Mask Nric if isNricMaskEnabled is true
-  if (data?.form.isNricMaskEnabled && data.spcpSession?.userName) {
-    data.spcpSession.userName = maskNric(data.spcpSession.userName)
-  }
 
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
     useCommonFormProvider(formId)
