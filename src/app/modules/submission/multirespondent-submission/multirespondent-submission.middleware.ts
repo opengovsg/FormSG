@@ -461,6 +461,20 @@ export const validateMultirespondentSubmission = async (
                 const previousResponses =
                   previousSubmissionDecryptedContent.responses as ParsedClearFormFieldResponsesV3
 
+                const previousNonEditableFieldIdsWithResponses = Object.keys(
+                  previousResponses,
+                ).filter((fieldId) => !editableFieldIds.includes(fieldId))
+                if (
+                  previousNonEditableFieldIdsWithResponses.length !==
+                  nonEditableFieldIdsWithResponses.length
+                ) {
+                  return err(
+                    new ProcessingError(
+                      'Number of non-editable fields in previous submission does not match number of non-editable fields in current submission',
+                    ),
+                  )
+                }
+
                 return Result.combine(
                   nonEditableFieldIdsWithResponses.map((fieldId) => {
                     const incomingResField = req.body.responses[fieldId]
