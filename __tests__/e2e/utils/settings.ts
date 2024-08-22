@@ -42,7 +42,7 @@ const _getSettings = (
     status: FormStatus.Public,
     collaborators: [],
     authType: FormAuthType.NIL,
-    isSubmitterIdCollectionEnabled: true, // TODO: (E-voting v1.0.1) Set back to false when form.server.model default is set to false
+    isSubmitterIdCollectionEnabled: false,
     // By default, if emails is undefined, only the admin (current user) will receive.
     ...custom,
   }
