@@ -424,6 +424,7 @@ export const validateMultirespondentSubmission = async (
               )
               .andThen(() => {
                 // Step 3: Match non-editable response fields to previous version
+
                 const nonEditableFieldIdsWithResponses = Object.keys(
                   req.body.responses,
                 ).filter((fieldId) => !editableFieldIds.includes(fieldId))
@@ -460,6 +461,17 @@ export const validateMultirespondentSubmission = async (
 
                 const previousResponses =
                   previousSubmissionDecryptedContent.responses as ParsedClearFormFieldResponsesV3
+
+                const previousNonEditableFieldIdsWithResponses = Object.keys(
+                  previousResponses,
+                ).filter((fieldId) => !editableFieldIds.includes(fieldId))
+
+                for (const fieldId of previousNonEditableFieldIdsWithResponses) {
+                  // ensure that respondents cannot alter a non-editable field by omitting the field in the submission by re-inserting the previous fields that are non-editable
+                  if (!req.body.responses[fieldId]) {
+                    req.body.responses[fieldId] = previousResponses[fieldId]
+                  }
+                }
 
                 return Result.combine(
                   nonEditableFieldIdsWithResponses.map((fieldId) => {
