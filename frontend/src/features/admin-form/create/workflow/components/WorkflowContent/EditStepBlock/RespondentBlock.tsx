@@ -57,13 +57,6 @@ export const RespondentBlock = ({
     }),
   )
 
-  const tooltipPlacement: PlacementWithLogical | undefined = useBreakpointValue(
-    {
-      base: 'top',
-      md: 'right',
-    },
-  )
-
   const defaultWorkflowType = getValues('workflow_type')
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
@@ -80,7 +73,7 @@ export const RespondentBlock = ({
           <Flex alignItems="center" gap="0.5rem">
             <Text textStyle="subhead-3">Respondent in this step</Text>
             <Tooltip
-              placement={tooltipPlacement}
+              placement="top"
               label="Anyone you share the form link with"
             >
               <Icon as={BxsInfoCircleAlt} />

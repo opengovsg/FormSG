@@ -30,11 +30,6 @@ export const QuestionsBlock = ({
   isLoading,
   formMethods,
 }: QuestionsBlockProps): JSX.Element => {
-  const tooltipPlacement: TooltipProps['placement'] | undefined =
-    useBreakpointValue({
-      base: 'top',
-      md: 'right',
-    })
   const { formFields = [], idToFieldMap } = useAdminFormWorkflow()
   const {
     formState: { errors },
@@ -65,7 +60,7 @@ export const QuestionsBlock = ({
       <Flex alignItems="center" gap="0.5rem">
         <Text textStyle="subhead-3">Fields to fill</Text>
         <Tooltip
-          placement={tooltipPlacement}
+          placement="top"
           label="Respondent will only be able to fill the fields you have selected"
         >
           <Icon as={BxsInfoCircleAlt} />
