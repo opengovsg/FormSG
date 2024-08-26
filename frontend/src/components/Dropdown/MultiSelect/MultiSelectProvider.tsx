@@ -62,7 +62,7 @@ export interface MultiSelectProviderProps<
    * Any props to override the default props of `downshift#useMultipleSelection` set by this component.
    */
   downshiftMultiSelectProps?: Partial<UseMultipleSelectionProps<Item>>
-  virtualListItemHeight?: number
+  overrideVirtualListItemHeight?: number
 }
 
 export const MultiSelectProvider = ({
