@@ -1,15 +1,5 @@
 import { Controller, UseFormReturn } from 'react-hook-form'
-import {
-  As,
-  Box,
-  Flex,
-  FormControl,
-  Icon,
-  PlacementWithLogical,
-  Stack,
-  Text,
-  useBreakpointValue,
-} from '@chakra-ui/react'
+import { As, Box, Flex, FormControl, Icon, Stack, Text } from '@chakra-ui/react'
 import { get } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
