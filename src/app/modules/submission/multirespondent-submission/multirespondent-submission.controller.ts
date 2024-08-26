@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { flatten } from 'lodash'
 import mongoose from 'mongoose'
-import { errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { MailSendError } from 'src/app/services/mail/mail.errors'
 import { EncryptSubmissionDto } from 'src/types/api'
