@@ -436,7 +436,9 @@ const sendMrfOutcomeEmails = ({
   const emailsToNotify = form.emails ?? []
 
   const validWorkflowStepsToNotify = form.stepsToNotify
-    .map((stepId) => form.workflow.find((step) => step._id === stepId))
+    .map((stepId) =>
+      form.workflow.find((step) => step._id.toString() === stepId),
+    )
     .filter(
       (workflowStep) => workflowStep !== undefined,
     ) as FormWorkflowStepDto[]
@@ -456,15 +458,18 @@ const sendMrfOutcomeEmails = ({
         })
         return error
       })
-      .andThen((workflowStepEmailsToNotifyList) =>
-        ok(flatten(workflowStepEmailsToNotifyList)),
-      )
+      .map((workflowStepEmailsToNotifyList) => {
+        return flatten(workflowStepEmailsToNotifyList)
+      })
       // Step 2: Combine static emails and workflow step emails that are selected to notify
-      .andThen((workflowStepEmailsToNotify) => {
-        return ok([...workflowStepEmailsToNotify, ...emailsToNotify])
+      .map((workflowStepEmailsToNotify) => {
+        return [...workflowStepEmailsToNotify, ...emailsToNotify]
       })
       // Step 3: Send outcome emails based on type
       .asyncAndThen((destinationEmails) => {
+        if (!destinationEmails || destinationEmails.length <= 0)
+          return okAsync(true)
+
         return sendMrfCompletionEmailIfWorkflowCompleted({
           currentStepNumber,
           formWorkflow: form.workflow,
