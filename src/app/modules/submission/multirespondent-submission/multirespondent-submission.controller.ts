@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
+import { flatten } from 'lodash'
 import mongoose from 'mongoose'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { MailSendError } from 'src/app/services/mail/mail.errors'
 import { EncryptSubmissionDto } from 'src/types/api'
@@ -10,6 +11,7 @@ import {
   FieldResponsesV3,
   FormAuthType,
   FormWorkflowDto,
+  FormWorkflowStepDto,
   MultirespondentSubmissionDto,
   SubmissionType,
 } from '../../../../../shared/types'
@@ -259,10 +261,12 @@ const _createSubmission = async ({
   // TODO(MRF/FRM-1591): Add post-submission actions handling
   // return await performEncryptPostSubmissionActions(submission, responses)
 
+  const currentStepNumber = submissionContent.workflowStep
+
   try {
-    await runMultirespondentWorkflow({
-      nextWorkflowStep: submissionContent.workflowStep + 1, // we want to send emails to the addresses linked to the next step of the workflow
-      formWorkflow: form.workflow ?? [],
+    await sendNextStepEmail({
+      nextStepNumber: currentStepNumber + 1, // we want to send emails to the addresses linked to the next step of the workflow
+      form,
       formTitle: form.title,
       responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
         form._id,
@@ -279,7 +283,28 @@ const _createSubmission = async ({
       meta: {
         ...logMeta,
         ...createReqMeta(req),
-        currentWorkflowStep: submissionContent.workflowStep,
+        currentWorkflowStep: currentStepNumber,
+        formId: form._id,
+        submissionId,
+      },
+      error: err,
+    })
+  }
+
+  try {
+    await sendMrfOutcomeEmails({
+      currentStepNumber,
+      form,
+      responses,
+      submissionId,
+    })
+  } catch (err) {
+    logger.error({
+      message: 'Send mrf outcome email error',
+      meta: {
+        ...logMeta,
+        ...createReqMeta(req),
+        currentWorkflowStep: currentStepNumber,
         formId: form._id,
         submissionId,
       },
@@ -288,17 +313,17 @@ const _createSubmission = async ({
   }
 }
 
-const runMultirespondentWorkflow = ({
-  nextWorkflowStep,
-  formWorkflow,
+const sendNextStepEmail = ({
+  nextStepNumber,
+  form,
   formTitle,
   responseUrl,
   formId,
   submissionId,
   responses,
 }: {
-  nextWorkflowStep: number
-  formWorkflow: FormWorkflowDto
+  nextStepNumber: number
+  form: IPopulatedMultirespondentForm
   formTitle: string
   responseUrl: string
   formId: string
@@ -309,15 +334,17 @@ const runMultirespondentWorkflow = ({
     action: 'runMultirespondentWorkflow',
     formId,
     submissionId,
-    nextWorkflowStep,
+    nextWorkflowStep: nextStepNumber,
   }
+
+  const nextStep = form.workflow[nextStepNumber]
+  if (!nextStep) {
+    return okAsync(true)
+  }
+
   return (
     // Step 1: Retrieve email addresses for current workflow step
-    retrieveWorkflowStepEmailAddresses(
-      formWorkflow,
-      nextWorkflowStep,
-      responses,
-    )
+    retrieveWorkflowStepEmailAddresses(nextStep, responses)
       .mapErr((error) => {
         logger.error({
           message: 'Failed to retrieve workflow step email addresses',
@@ -326,8 +353,7 @@ const runMultirespondentWorkflow = ({
         })
         return error
       })
-
-      // Step 2: send out workflow email
+      // Step 2: send out next workflow step email
       .asyncAndThen((emails) => {
         if (!emails) return okAsync(true)
         return MailService.sendMRFWorkflowStepEmail({
@@ -342,6 +368,110 @@ const runMultirespondentWorkflow = ({
             error,
           })
           return errAsync(error)
+        })
+      })
+  )
+}
+
+const sendMrfCompletionEmailIfWorkflowCompleted = ({
+  currentStepNumber,
+  formWorkflow,
+  destinationEmails,
+  formId,
+  formTitle,
+  submissionId,
+}: {
+  currentStepNumber: number
+  formWorkflow: FormWorkflowDto
+  destinationEmails: string[]
+  formId: string
+  formTitle: string
+  submissionId: string
+}): ResultAsync<true, MailSendError> => {
+  const logMeta = {
+    action: 'sendMrfCompletionEmail',
+    formId,
+    submissionId,
+  }
+
+  const lastStepNumber = formWorkflow.length - 1
+  const isLastStep = currentStepNumber === lastStepNumber
+  const isWorkflowCompleted = isLastStep
+
+  if (isWorkflowCompleted) {
+    return MailService.sendMrfWorkflowCompletionEmail({
+      emails: destinationEmails,
+      formId,
+      formTitle,
+      responseId: submissionId,
+    }).orElse((error) => {
+      logger.error({
+        message: 'Failed to send workflow completion email',
+        meta: { ...logMeta, destinationEmails },
+        error,
+      })
+      return errAsync(error)
+    })
+  } else {
+    return okAsync(true)
+  }
+}
+
+const sendMrfOutcomeEmails = ({
+  currentStepNumber,
+  form,
+  responses,
+  submissionId,
+}: {
+  currentStepNumber: number
+  form: IPopulatedMultirespondentForm
+  responses: FieldResponsesV3
+  submissionId: string
+}): ResultAsync<true, InvalidWorkflowTypeError | MailSendError> => {
+  const logMeta = {
+    action: 'sendMrfOutcomeEmails',
+    formId: form._id,
+    submissionId,
+  }
+  const emailsToNotify = form.emails ?? []
+
+  const validWorkflowStepsToNotify = form.stepsToNotify
+    .map((stepId) => form.workflow.find((step) => step._id === stepId))
+    .filter(
+      (workflowStep) => workflowStep !== undefined,
+    ) as FormWorkflowStepDto[]
+
+  return (
+    // Step 1: Fetch email address from all workflow steps that are selected to notify
+    Result.combine(
+      validWorkflowStepsToNotify.map((workflowStep) =>
+        retrieveWorkflowStepEmailAddresses(workflowStep, responses),
+      ),
+    )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Failed to retrieve workflow step email addresses',
+          meta: logMeta,
+          error,
+        })
+        return error
+      })
+      .andThen((workflowStepEmailsToNotifyList) =>
+        ok(flatten(workflowStepEmailsToNotifyList)),
+      )
+      // Step 2: Combine static emails and workflow step emails that are selected to notify
+      .andThen((workflowStepEmailsToNotify) => {
+        return ok([...workflowStepEmailsToNotify, ...emailsToNotify])
+      })
+      // Step 3: Send outcome emails based on type
+      .asyncAndThen((destinationEmails) => {
+        return sendMrfCompletionEmailIfWorkflowCompleted({
+          currentStepNumber,
+          formWorkflow: form.workflow,
+          destinationEmails,
+          formId: form._id,
+          formTitle: form.title,
+          submissionId,
         })
       })
   )
@@ -474,9 +604,9 @@ const updateMultirespondentSubmission = async (
   })
 
   try {
-    await runMultirespondentWorkflow({
-      nextWorkflowStep: workflowStep + 1, // we want to send emails to the addresses linked to the next step of the workflow
-      formWorkflow: submission.workflow,
+    await sendNextStepEmail({
+      nextStepNumber: workflowStep + 1,
+      form,
       formTitle: form.title,
       responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
         form._id,
@@ -490,6 +620,27 @@ const updateMultirespondentSubmission = async (
   } catch (err) {
     logger.error({
       message: 'Send multirespondent workflow email error',
+      meta: {
+        ...logMeta,
+        ...createReqMeta(req),
+        currentWorkflowStep: workflowStep,
+        formId: form._id,
+        submissionId,
+      },
+      error: err,
+    })
+  }
+
+  try {
+    await sendMrfOutcomeEmails({
+      currentStepNumber: workflowStep,
+      form,
+      responses,
+      submissionId,
+    })
+  } catch (err) {
+    logger.error({
+      message: 'Send mrf outcome email error',
       meta: {
         ...logMeta,
         ...createReqMeta(req),

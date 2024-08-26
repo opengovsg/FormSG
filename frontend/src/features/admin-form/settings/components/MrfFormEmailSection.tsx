@@ -1,79 +1,39 @@
 import { useCallback, useMemo } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { Box, FormControl, FormErrorMessage, Skeleton } from '@chakra-ui/react'
-import { debounce, get, isEmpty, uniq } from 'lodash'
+import { debounce, get, isEmpty, isEqual, uniq } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
-import { FormFieldDto } from '~shared/types'
-import {
-  FormWorkflowStepDynamic,
-  FormWorkflowStepStatic,
-  WorkflowType,
-} from '~shared/types/form'
+import { MultirespondentFormSettings } from '~shared/types/form'
 
 import { OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES } from '~utils/formValidation'
 import { MultiSelect } from '~components/Dropdown'
 import FormLabel from '~components/FormControl/FormLabel'
 import { TagInput } from '~components/TagInput'
 
-import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { useAdminFormWorkflow } from '~features/admin-form/create/workflow/hooks/useAdminFormWorkflow'
 
 import { useMutateFormSettings } from '../mutations'
 
 interface MrfEmailNotificationsFormProps {
+  settings: MultirespondentFormSettings
   isDisabled: boolean
-}
-
-interface WorkflowEmailMultiSelectValue {
-  type: 'email' | 'form_field'
-  value: string | FormFieldDto['_id']
 }
 
 const WorkflowEmailMultiSelectName = 'email-multi-select'
 const OtherPartiesEmailInputName = 'other-parties-email-input'
 
 const MrfEmailNotificationsForm = ({
+  settings,
   isDisabled,
 }: MrfEmailNotificationsFormProps) => {
-  const { isLoading, formWorkflow, idToFieldMap } = useAdminFormWorkflow()
+  const { isLoading, formWorkflow } = useAdminFormWorkflow()
 
-  const formWorkflowStepsWithStepNumber = formWorkflow?.map((step, index) => ({
-    ...step,
-    stepNumber: index + 1,
-  }))
-
-  const workflowRespondentStaticEmailItems =
-    formWorkflowStepsWithStepNumber
-      ?.filter((step) => step.workflow_type === WorkflowType.Static)
-      .flatMap((step) => {
-        const { emails } = step as FormWorkflowStepStatic
-        return emails.map((email) => ({ stepNumber: step.stepNumber, email }))
-      })
-      .map(({ email, stepNumber }) => ({
-        label: email,
-        value: JSON.stringify({ type: 'email', value: email }),
-        description: `Respondent in Step ${stepNumber}`,
-      })) ?? []
-
-  const workflowRespondentDynamicEmailFieldItems =
-    formWorkflowStepsWithStepNumber
-      ?.filter((step) => step.workflow_type === WorkflowType.Dynamic)
-      .map((step) => ({
-        stepNumber: step.stepNumber,
-        ...idToFieldMap[(step as FormWorkflowStepDynamic).field],
-      }))
-      .map(({ _id, questionNumber, title, fieldType, stepNumber }) => ({
-        label: `${questionNumber}. ${title}`,
-        value: JSON.stringify({ type: 'form_field', value: _id }),
-        description: `Respondent in Step ${stepNumber}`,
-        icon: BASICFIELD_TO_DRAWER_META[fieldType].icon,
-      })) ?? []
-
-  const workflowRespondentSelectItems = [
-    ...workflowRespondentStaticEmailItems,
-    ...workflowRespondentDynamicEmailFieldItems,
-  ]
+  const formWorkflowStepsWithStepNumber =
+    formWorkflow?.map((step, index) => ({
+      ...step,
+      stepNumber: index + 1,
+    })) ?? []
 
   const checkIsEmail = useMemo(() => isEmail, [])
 
@@ -85,6 +45,8 @@ const MrfEmailNotificationsForm = ({
     [checkIsEmail],
   )
 
+  const { stepsToNotify, emails } = settings
+
   const {
     handleSubmit,
     control,
@@ -92,51 +54,42 @@ const MrfEmailNotificationsForm = ({
     getValues,
     formState: { errors },
   } = useForm<{
-    [WorkflowEmailMultiSelectName]: WorkflowEmailMultiSelectValue[]
+    [WorkflowEmailMultiSelectName]: string[]
     [OtherPartiesEmailInputName]: string[]
   }>({
     defaultValues: {
-      [WorkflowEmailMultiSelectName]: [],
-      [OtherPartiesEmailInputName]: [],
+      [WorkflowEmailMultiSelectName]: stepsToNotify,
+      [OtherPartiesEmailInputName]: emails,
     },
   })
 
   const { mutateMrfEmailNotifications } = useMutateFormSettings()
 
   const handleSubmitEmailNotificationSettings = useCallback(
-    (nextStaticEmails, nextEmailFields) => {
-      // TODO: (Kevin Foong) handle if the settings are unchanged, dont send
+    ({ nextStaticEmails, nextStepsToNotify }) => {
+      if (
+        isEqual(nextStaticEmails, emails) &&
+        isEqual(nextStepsToNotify, stepsToNotify)
+      ) {
+        return
+      }
       return mutateMrfEmailNotifications.mutate({
-        notification_emails: nextStaticEmails,
-        notification_email_fields: nextEmailFields,
+        emails: nextStaticEmails,
+        stepsToNotify: nextStepsToNotify,
       })
     },
-    [mutateMrfEmailNotifications],
+    [mutateMrfEmailNotifications, emails, stepsToNotify],
   )
-  const DEBOUNCE_DELAY_IN_MS = 1500
+  const DEBOUNCE_DELAY_IN_MS = 800
   const onSubmit = useCallback(
     (formData) => {
-      const workflowEmailMultiSelectValues: WorkflowEmailMultiSelectValue[] =
-        formData[WorkflowEmailMultiSelectName]
-      const otherPartiesEmails = formData[OtherPartiesEmailInputName]
+      const selectedSteps = formData[WorkflowEmailMultiSelectName]
+      const selectedEmails = formData[OtherPartiesEmailInputName]
 
-      const nextStaticEmailsFromMultiSelect = workflowEmailMultiSelectValues
-        .filter((val) => val.type === 'email')
-        .map((val) => val.value)
-      const nextStaticEmails = uniq(
-        nextStaticEmailsFromMultiSelect.concat(otherPartiesEmails),
-      )
-
-      const nextEmailFields = uniq(
-        workflowEmailMultiSelectValues
-          .filter((val) => val.type === 'form_field')
-          .map((val) => val.value),
-      )
-
-      return handleSubmitEmailNotificationSettings(
-        nextStaticEmails,
-        nextEmailFields,
-      )
+      return handleSubmitEmailNotificationSettings({
+        nextStepsToNotify: selectedSteps,
+        nextStaticEmails: selectedEmails,
+      })
     },
     [handleSubmitEmailNotificationSettings],
   )
@@ -150,11 +103,10 @@ const MrfEmailNotificationsForm = ({
   }, [handleSubmit, onSubmitDebounced])
 
   const handleOtherPartiesEmailInputBlur = useCallback(() => {
-    // Get rid of bad emails before submitting.
-    setValue(
-      OtherPartiesEmailInputName,
+    const uniqueValidEmails = uniq(
       filterInvalidEmails(getValues(OtherPartiesEmailInputName)),
     )
+    setValue(OtherPartiesEmailInputName, uniqueValidEmails)
     handleSubmit(onSubmit)()
   }, [getValues, handleSubmit, onSubmit, setValue, filterInvalidEmails])
 
@@ -169,15 +121,16 @@ const MrfEmailNotificationsForm = ({
               name={WorkflowEmailMultiSelectName}
               render={({
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                field: { value: values, onChange, ...rest },
+                field: { value: values = [], onChange, ...rest },
               }) => (
                 <MultiSelect
-                  items={workflowRespondentSelectItems}
-                  values={values.map((val) => JSON.stringify(val))}
+                  items={formWorkflowStepsWithStepNumber.map((step) => ({
+                    label: `Respondent(s) in Step ${step.stepNumber}`,
+                    value: step._id,
+                  }))}
+                  values={values}
                   onChange={(values) => {
-                    onChange(
-                      values.map((valString: string) => JSON.parse(valString)),
-                    )
+                    onChange(values)
                     handleWorkflowEmailMultiSelectChange()
                   }}
                   placeholder="Select respondents from your form"
@@ -236,15 +189,17 @@ const MrfEmailNotificationsForm = ({
 }
 
 interface MrfFormEmailSectionProps {
+  settings: MultirespondentFormSettings
   isDisabled: boolean
 }
 
 export const MrfFormEmailSection = ({
+  settings,
   isDisabled,
 }: MrfFormEmailSectionProps): JSX.Element => {
   return (
     <Box opacity={isDisabled ? 0.3 : 1}>
-      <MrfEmailNotificationsForm isDisabled={isDisabled} />
+      <MrfEmailNotificationsForm settings={settings} isDisabled={isDisabled} />
     </Box>
   )
 }

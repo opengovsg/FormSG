@@ -330,8 +330,8 @@ export type IPopulatedEmailForm = IPopulatedForm & IEmailForm
 
 export interface IMultirespondentForm extends IForm {
   publicKey: string
-  emails?: never
   workflow: FormWorkflowDto
+  stepsToNotify: string[]
 }
 
 export type IMultirespondentFormSchema = IMultirespondentForm & IFormSchema

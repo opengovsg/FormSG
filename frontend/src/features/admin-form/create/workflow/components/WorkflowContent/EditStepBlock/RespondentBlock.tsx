@@ -87,7 +87,9 @@ export const RespondentBlock = ({
             </Tooltip>
           </Flex>
           <FormControl isInvalid={!!errors.field} isRequired={false}>
-            <FormLabel>Email address for notifications</FormLabel>
+            <FormLabel>
+              Select a destination email field for receiving notifications
+            </FormLabel>
             <Box my="0.75rem">
               <Controller
                 name="field"

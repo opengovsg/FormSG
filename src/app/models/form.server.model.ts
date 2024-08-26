@@ -348,6 +348,38 @@ const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
   workflow: {
     type: [WorkflowStepSchema],
   },
+  emails: {
+    type: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    set: transformEmails,
+    validate: [
+      (v: string[]) => {
+        if (!Array.isArray(v)) return false
+        if (v.length === 0) return true
+        return v.every((email) => validator.isEmail(email))
+      },
+      'Please provide valid email addresses',
+    ],
+    required: true,
+  },
+  stepsToNotify: {
+    type: [{ type: String }],
+    validate: [
+      {
+        validator: (v: string[]) => {
+          if (!Array.isArray(v)) return false
+          if (v.length === 0) return true
+          return v.every((fieldId) => ObjectId.isValid(fieldId))
+        },
+        message: 'Please provide valid form field ids',
+      },
+    ],
+    required: true,
+  },
 })
 
 const MultirespondentFormWorkflowPath = MultirespondentFormSchema.path(

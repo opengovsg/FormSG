@@ -25,8 +25,8 @@ type UpdateStorageFormFn<T extends keyof StorageFormSettings> = (
 ) => Promise<FormSettings>
 
 export interface MrfEmailNotificationSettings {
-  notification_emails: string[]
-  notification_email_fields: string[]
+  emails: string[]
+  stepsToNotify: string[]
 }
 
 type UpdateMultiRespondentFormFn<
