@@ -1,7 +1,5 @@
 import { Divider } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
-import { featureFlags } from '~shared/constants/feature-flags'
 import { FormResponseMode, FormSettings } from '~shared/types/form'
 
 import { FormSubmitterIdCollectionToggle } from './FormNricCollectionToggle'
@@ -25,28 +23,19 @@ export const AuthSettingsSingpassSection = ({
     isSingpassSettingsDisabled || containsMyInfoFields
   const isEncryptMode = settings.responseMode === FormResponseMode.Encrypt
 
-  const isSubmitterIdCollectionFeatureOn = useFeatureIsOn(
-    featureFlags.submitterIdCollection,
-  )
-  const isTest = process.env.NODE_ENV === 'test'
-  const isSubmitterIdCollectionEnabled =
-    isTest || isSubmitterIdCollectionFeatureOn
-
   return (
     <>
       <SingpassAuthOptionsRadio
         settings={settings}
         isDisabled={isSinglepassAuthOptionsDisabled}
       />
-      {isSubmitterIdCollectionEnabled ? (
-        <>
-          <Divider my="2.5rem" />
-          <FormSubmitterIdCollectionToggle
-            settings={settings}
-            isDisabled={isFormPublic}
-          />
-        </>
-      ) : null}
+      <>
+        <Divider my="2.5rem" />
+        <FormSubmitterIdCollectionToggle
+          settings={settings}
+          isDisabled={isFormPublic}
+        />
+      </>
       {isEncryptMode || settings.isSingleSubmission ? (
         <>
           <Divider my="2.5rem" />

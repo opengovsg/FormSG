@@ -33,7 +33,6 @@ export const FormSubmitterIdCollectionToggle = ({
       isLoading={!settings || mutateIsSubmitterIdCollectionEnabled.isLoading}
       isChecked={isSubmitterIdCollectionEnabled}
       label="Collect NRIC/FIN/UENs with form submissions"
-      description="NRIC/FIN/UENs are not collected or stored with form submissions by default"
       onChange={handleToggleCollection}
     />
   )

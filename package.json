@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.143.1",
+  "version": "6.144.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -114,7 +114,7 @@
     "JSONStream": "^1.3.5",
     "jsonwebtoken": "^9.0.2",
     "jszip": "^3.10.1",
-    "jwk-to-pem": "^2.0.5",
+    "jwk-to-pem": "^2.0.6",
     "libphonenumber-js": "^1.10.59",
     "lodash": "^4.17.21",
     "moment-timezone": "0.5.41",
@@ -168,7 +168,7 @@
     "@playwright/test": "^1.45.1",
     "@stoplight/prism-cli": "^5.5.4",
     "@types/bcrypt": "^5.0.0",
-    "@types/bluebird": "^3.5.38",
+    "@types/bluebird": "^3.5.42",
     "@types/busboy": "^1.5.3",
     "@types/compression": "^1.7.5",
     "@types/connect-datadog": "0.0.6",
@@ -210,7 +210,7 @@
     "axios-mock-adapter": "^1.22.0",
     "concurrently": "^7.6.0",
     "copyfiles": "^2.4.1",
-    "core-js": "^3.28.0",
+    "core-js": "^3.38.1",
     "coveralls": "^3.1.1",
     "env-cmd": "^10.1.0",
     "eslint": "^8.57.0",
