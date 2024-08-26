@@ -3,11 +3,44 @@ import { rest } from 'msw'
 
 import {
   EMAIL_FORM_SETTINGS_FIELDS,
+  MULTIRESPONDENT_FORM_SETTINGS_FIELDS,
   STORAGE_FORM_SETTINGS_FIELDS,
 } from '~shared/constants/form'
-import { FormId, FormResponseMode, FormSettings } from '~shared/types/form/form'
+import {
+  AdminFormDto,
+  FormId,
+  FormResponseMode,
+  FormSettings,
+} from '~shared/types/form/form'
 
 import { createMockForm } from './form'
+
+export const getAdminFormView = ({
+  delay = 0,
+  overrides,
+  mode = FormResponseMode.Email,
+}: {
+  delay?: number | 'infinite'
+  overrides?: Partial<FormSettings>
+  mode?: FormResponseMode
+} = {}) => {
+  return rest.get<AdminFormDto>(
+    '/api/v3/admin/forms/:formId',
+    (req, res, ctx) => {
+      return res(
+        ctx.delay(delay),
+        ctx.status(200),
+        ctx.json(
+          createMockForm({
+            _id: req.params.formId as FormId,
+            responseMode: mode,
+            ...overrides,
+          }),
+        ),
+      )
+    },
+  )
+}
 
 export const getAdminFormSettings = ({
   delay = 0,
@@ -33,7 +66,9 @@ export const getAdminFormSettings = ({
             }).form,
             mode === FormResponseMode.Email
               ? EMAIL_FORM_SETTINGS_FIELDS
-              : STORAGE_FORM_SETTINGS_FIELDS,
+              : mode === FormResponseMode.Encrypt
+                ? STORAGE_FORM_SETTINGS_FIELDS
+                : MULTIRESPONDENT_FORM_SETTINGS_FIELDS,
           ),
         ),
       )
