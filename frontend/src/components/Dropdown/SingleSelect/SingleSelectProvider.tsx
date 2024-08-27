@@ -21,7 +21,7 @@ export interface SingleSelectProviderProps<
 > extends SharedSelectContextReturnProps<Item>,
     FormControlOptions {
   /** Controlled selected value */
-  value: string | undefined
+  value: string
   /** Controlled selected item onChange handler */
   onChange: (value: string) => void
   /** Function based on which items in dropdown are filtered. Default filter filters by fuzzy match. */

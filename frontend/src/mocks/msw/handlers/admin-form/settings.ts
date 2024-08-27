@@ -51,6 +51,12 @@ export const getAdminFormSettings = ({
   overrides?: Partial<FormSettings>
   mode?: FormResponseMode
 } = {}) => {
+  const MODE_TO_SETTINGS_FIELDS_MAP = {
+    [FormResponseMode.Email]: EMAIL_FORM_SETTINGS_FIELDS,
+    [FormResponseMode.Encrypt]: STORAGE_FORM_SETTINGS_FIELDS,
+    [FormResponseMode.Multirespondent]: MULTIRESPONDENT_FORM_SETTINGS_FIELDS,
+  }
+
   return rest.get<FormSettings>(
     '/api/v3/admin/forms/:formId/settings',
     (req, res, ctx) => {
@@ -64,11 +70,7 @@ export const getAdminFormSettings = ({
               responseMode: mode,
               ...overrides,
             }).form,
-            mode === FormResponseMode.Email
-              ? EMAIL_FORM_SETTINGS_FIELDS
-              : mode === FormResponseMode.Encrypt
-                ? STORAGE_FORM_SETTINGS_FIELDS
-                : MULTIRESPONDENT_FORM_SETTINGS_FIELDS,
+            MODE_TO_SETTINGS_FIELDS_MAP[mode],
           ),
         ),
       )

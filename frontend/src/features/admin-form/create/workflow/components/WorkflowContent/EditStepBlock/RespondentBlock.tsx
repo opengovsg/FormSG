@@ -89,7 +89,7 @@ export const RespondentBlock = ({
                   },
                 }}
                 control={control}
-                render={({ field: { value = undefined, ...rest } }) => (
+                render={({ field: { value = '', ...rest } }) => (
                   <SingleSelect
                     placeholder="Select an email field from your form"
                     items={emailFieldItems}

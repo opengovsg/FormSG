@@ -35,10 +35,6 @@ const FirstStepRespondentBadge = ({
   step,
   idToFieldMap,
 }: RespondentBadgeProps): JSX.Element | null => {
-  if (step.workflow_type === WorkflowType.Static && step.emails.length > 0) {
-    throw new Error('First step must not have static emails.')
-  }
-
   if (
     step.workflow_type === WorkflowType.Static ||
     (step.workflow_type === WorkflowType.Dynamic && !step.field)
