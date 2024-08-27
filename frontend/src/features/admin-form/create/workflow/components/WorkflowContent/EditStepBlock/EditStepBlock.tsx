@@ -64,13 +64,12 @@ export const EditStepBlock = ({
           workflow_type: WorkflowType.Dynamic,
           field: inputs.field,
         })
-      } else {
-        return onSubmit({
-          ...inputs,
-          workflow_type: WorkflowType.Static,
-          emails: inputs.emails ?? [],
-        })
       }
+      return onSubmit({
+        ...inputs,
+        workflow_type: WorkflowType.Static,
+        emails: inputs.emails ?? [],
+      })
     }
 
     let step: FormWorkflowStep

@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { Box, FormControl, FormErrorMessage, Skeleton } from '@chakra-ui/react'
 import { debounce, get, isEmpty, isEqual, uniq } from 'lodash'
@@ -20,8 +20,9 @@ interface MrfEmailNotificationsFormProps {
   isDisabled: boolean
 }
 
-const WorkflowEmailMultiSelectName = 'email-multi-select'
-const OtherPartiesEmailInputName = 'other-parties-email-input'
+const WORKFLOW_EMAIL_MULTISELECT_NAME = 'email-multi-select'
+const OTHER_PARTIES_EMAIL_INPUT_NAME = 'other-parties-email-input'
+const DEBOUNCE_DELAY_IN_MS = 800
 
 const MrfEmailNotificationsForm = ({
   settings,
@@ -35,15 +36,10 @@ const MrfEmailNotificationsForm = ({
       stepNumber: index + 1,
     })) ?? []
 
-  const checkIsEmail = useMemo(() => isEmail, [])
-
-  const filterInvalidEmails = useCallback(
-    (emails: string[]) => {
-      if (!emails) return []
-      return emails.filter((email) => checkIsEmail(email))
-    },
-    [checkIsEmail],
-  )
+  const filterInvalidEmails = useCallback((emails: string[]) => {
+    if (!emails) return []
+    return emails.filter((email) => isEmail(email))
+  }, [])
 
   const { stepsToNotify, emails } = settings
 
@@ -54,12 +50,12 @@ const MrfEmailNotificationsForm = ({
     getValues,
     formState: { errors },
   } = useForm<{
-    [WorkflowEmailMultiSelectName]: string[]
-    [OtherPartiesEmailInputName]: string[]
+    [WORKFLOW_EMAIL_MULTISELECT_NAME]: string[]
+    [OTHER_PARTIES_EMAIL_INPUT_NAME]: string[]
   }>({
     defaultValues: {
-      [WorkflowEmailMultiSelectName]: stepsToNotify,
-      [OtherPartiesEmailInputName]: emails,
+      [WORKFLOW_EMAIL_MULTISELECT_NAME]: stepsToNotify,
+      [OTHER_PARTIES_EMAIL_INPUT_NAME]: emails,
     },
   })
 
@@ -80,11 +76,10 @@ const MrfEmailNotificationsForm = ({
     },
     [mutateMrfEmailNotifications, emails, stepsToNotify],
   )
-  const DEBOUNCE_DELAY_IN_MS = 800
   const onSubmit = useCallback(
     (formData) => {
-      const selectedSteps = formData[WorkflowEmailMultiSelectName]
-      const selectedEmails = formData[OtherPartiesEmailInputName]
+      const selectedSteps = formData[WORKFLOW_EMAIL_MULTISELECT_NAME]
+      const selectedEmails = formData[OTHER_PARTIES_EMAIL_INPUT_NAME]
 
       return handleSubmitEmailNotificationSettings({
         nextStepsToNotify: selectedSteps,
@@ -104,9 +99,9 @@ const MrfEmailNotificationsForm = ({
 
   const handleOtherPartiesEmailInputBlur = useCallback(() => {
     const uniqueValidEmails = uniq(
-      filterInvalidEmails(getValues(OtherPartiesEmailInputName)),
+      filterInvalidEmails(getValues(OTHER_PARTIES_EMAIL_INPUT_NAME)),
     )
-    setValue(OtherPartiesEmailInputName, uniqueValidEmails)
+    setValue(OTHER_PARTIES_EMAIL_INPUT_NAME, uniqueValidEmails)
     handleSubmit(onSubmit)()
   }, [getValues, handleSubmit, onSubmit, setValue, filterInvalidEmails])
 
@@ -118,7 +113,7 @@ const MrfEmailNotificationsForm = ({
           <Box my="0.75rem">
             <Controller
               control={control}
-              name={WorkflowEmailMultiSelectName}
+              name={WORKFLOW_EMAIL_MULTISELECT_NAME}
               render={({
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 field: { value: values = [], onChange, ...rest },
@@ -145,7 +140,7 @@ const MrfEmailNotificationsForm = ({
       </Box>
       <Box my="2rem">
         <FormControl
-          isInvalid={!isEmpty(errors[OtherPartiesEmailInputName])}
+          isInvalid={!isEmpty(errors[OTHER_PARTIES_EMAIL_INPUT_NAME])}
           isDisabled={isDisabled}
         >
           <FormLabel
@@ -156,12 +151,12 @@ const MrfEmailNotificationsForm = ({
             Notify other parties
           </FormLabel>
           <Controller
-            name={OtherPartiesEmailInputName}
+            name={OTHER_PARTIES_EMAIL_INPUT_NAME}
             control={control}
             rules={OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES}
             render={({ field }) => (
               <TagInput
-                {...(getValues(OtherPartiesEmailInputName)?.length > 0
+                {...(getValues(OTHER_PARTIES_EMAIL_INPUT_NAME)?.length > 0
                   ? {}
                   : {
                       placeholder: 'me@example.com',
@@ -169,17 +164,17 @@ const MrfEmailNotificationsForm = ({
                 {...field}
                 isDisabled={isDisabled}
                 onBlur={handleOtherPartiesEmailInputBlur}
-                tagValidation={checkIsEmail}
+                tagValidation={isEmail}
               />
             )}
           />
-          {isEmpty(errors[OtherPartiesEmailInputName]) ? (
+          {isEmpty(errors[OTHER_PARTIES_EMAIL_INPUT_NAME]) ? (
             <FormLabel.Description color="secondary.400" mt="0.5rem">
               Separate multiple email addresses with a comma
             </FormLabel.Description>
           ) : (
             <FormErrorMessage>
-              {get(errors, `${OtherPartiesEmailInputName}.message`)}
+              {get(errors, `${OTHER_PARTIES_EMAIL_INPUT_NAME}.message`)}
             </FormErrorMessage>
           )}
         </FormControl>

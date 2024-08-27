@@ -1,18 +1,10 @@
 import { Controller, UseFormReturn } from 'react-hook-form'
-import {
-  Flex,
-  FormControl,
-  Icon,
-  Stack,
-  Text,
-  useBreakpointValue,
-} from '@chakra-ui/react'
+import { Flex, FormControl, Icon, Stack, Text } from '@chakra-ui/react'
 
 import { BxsInfoCircleAlt } from '~assets/icons'
 import { MultiSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Tooltip from '~components/Tooltip'
-import { TooltipProps } from '~components/Tooltip/Tooltip'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { getLogicFieldLabel } from '~features/admin-form/create/logic/components/LogicContent/utils/getLogicFieldLabel'

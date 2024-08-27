@@ -1,5 +1,5 @@
 import moment from 'moment'
-import { err, ok } from 'neverthrow'
+import { err, ok, Result } from 'neverthrow'
 
 import {
   BasicField,
@@ -44,7 +44,7 @@ export const createMultirespondentSubmissionDto = (
 export const retrieveWorkflowStepEmailAddresses = (
   step: FormWorkflowStepDto,
   responses: FieldResponsesV3,
-) => {
+): Result<string[], InvalidWorkflowTypeError> => {
   if (!step) return ok([]) // Not an error, just that the form has gone past its predefined workflow
   switch (step.workflow_type) {
     case WorkflowType.Static: {

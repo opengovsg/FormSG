@@ -69,7 +69,7 @@ export const RespondentBlock = ({
               <Icon as={BxsInfoCircleAlt} />
             </Tooltip>
           </Flex>
-          <FormControl isInvalid={!!errors.field} isRequired={false}>
+          <FormControl isInvalid={!!errors.field}>
             <FormLabel>
               Add an email field for notifications to be sent to this respondent
             </FormLabel>

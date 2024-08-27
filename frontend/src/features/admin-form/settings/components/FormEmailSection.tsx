@@ -46,16 +46,14 @@ const AdminEmailRecipientsInput = ({
 
   const { data: settings } = useAdminFormSettings()
 
-  const tagValidation = useMemo(() => isEmail, [])
-
   const handleBlur = useCallback(() => {
     // Get rid of bad tags before submitting.
     setValue(
       'emails',
-      (getValues('emails') || []).filter((email) => tagValidation(email)),
+      (getValues('emails') || []).filter((email) => isEmail(email)),
     )
     handleSubmit(onSubmit)()
-  }, [getValues, handleSubmit, onSubmit, setValue, tagValidation])
+  }, [getValues, handleSubmit, onSubmit, setValue])
 
   return (
     <Controller
@@ -74,7 +72,7 @@ const AdminEmailRecipientsInput = ({
                 placeholder: 'me@example.com',
               })}
           {...field}
-          tagValidation={tagValidation}
+          tagValidation={isEmail}
           onBlur={handleBlur}
         />
       )}
