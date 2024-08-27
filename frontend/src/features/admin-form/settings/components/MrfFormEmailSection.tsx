@@ -105,6 +105,11 @@ const MrfEmailNotificationsForm = ({
     handleSubmit(onSubmit)()
   }, [getValues, handleSubmit, onSubmit, setValue, filterInvalidEmails])
 
+  const otherPartiesEmailInputPlaceholder =
+    getValues(OTHER_PARTIES_EMAIL_INPUT_NAME)?.length > 0
+      ? undefined
+      : 'me@example.com'
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Box>
@@ -156,11 +161,7 @@ const MrfEmailNotificationsForm = ({
             rules={OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES}
             render={({ field }) => (
               <TagInput
-                {...(getValues(OTHER_PARTIES_EMAIL_INPUT_NAME)?.length > 0
-                  ? {}
-                  : {
-                      placeholder: 'me@example.com',
-                    })}
+                placeholder={otherPartiesEmailInputPlaceholder}
                 {...field}
                 isDisabled={isDisabled}
                 onBlur={handleOtherPartiesEmailInputBlur}

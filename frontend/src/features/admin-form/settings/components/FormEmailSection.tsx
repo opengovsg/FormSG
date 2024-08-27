@@ -36,6 +36,8 @@ interface AdminEmailRecipientsInputProps {
   onSubmit: (params: { emails: string[] }) => void
 }
 
+const EMAILS_FIELD_NAME = 'emails'
+
 const AdminEmailRecipientsInput = ({
   onSubmit,
 }: AdminEmailRecipientsInputProps): JSX.Element => {
@@ -55,10 +57,13 @@ const AdminEmailRecipientsInput = ({
     handleSubmit(onSubmit)()
   }, [getValues, handleSubmit, onSubmit, setValue])
 
+  const emailsFieldPlaceholder =
+    getValues(EMAILS_FIELD_NAME)?.length > 0 ? undefined : 'me@example.com'
+
   return (
     <Controller
       control={control}
-      name="emails"
+      name={EMAILS_FIELD_NAME}
       rules={
         settings?.responseMode === FormResponseMode.Email
           ? REQUIRED_ADMIN_EMAIL_VALIDATION_RULES
@@ -66,11 +71,7 @@ const AdminEmailRecipientsInput = ({
       }
       render={({ field }) => (
         <TagInput
-          {...(getValues('emails')?.length > 0
-            ? {}
-            : {
-                placeholder: 'me@example.com',
-              })}
+          placeholder={emailsFieldPlaceholder}
           {...field}
           tagValidation={isEmail}
           onBlur={handleBlur}
