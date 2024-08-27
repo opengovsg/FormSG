@@ -191,6 +191,8 @@ const submitMultirespondentForm = async (
   })
 }
 
+export const submitMultirespondentFormForTest = submitMultirespondentForm
+
 const _createSubmission = async ({
   req,
   res,
@@ -331,7 +333,7 @@ const sendNextStepEmail = ({
   responses: FieldResponsesV3
 }): ResultAsync<true, InvalidWorkflowTypeError | MailSendError> => {
   const logMeta = {
-    action: 'runMultirespondentWorkflow',
+    action: 'sendNextStepEmail',
     formId,
     submissionId,
     nextWorkflowStep: nextStepNumber,
@@ -435,7 +437,7 @@ const sendMrfOutcomeEmails = ({
   }
   const emailsToNotify = form.emails ?? []
 
-  const validWorkflowStepsToNotify = form.stepsToNotify
+  const validWorkflowStepsToNotify = (form.stepsToNotify ?? [])
     .map((stepId) =>
       form.workflow.find((step) => step._id.toString() === stepId),
     )
@@ -657,6 +659,9 @@ const updateMultirespondentSubmission = async (
     })
   }
 }
+
+export const updateMultirespondentSubmissionForTest =
+  updateMultirespondentSubmission
 
 export const handleMultirespondentSubmission = [
   CaptchaMiddleware.validateCaptchaParams,
