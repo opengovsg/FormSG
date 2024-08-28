@@ -15,6 +15,8 @@ import {
   updateMultirespondentSubmissionForTest,
 } from '../multirespondent-submission.controller'
 
+jest.mock('src/app/modules/datadog/datadog.utils')
+
 const MultiRespondentSubmission = getMultirespondentSubmissionModel(mongoose)
 
 const MockFormService = jest.mocked(FormService)
