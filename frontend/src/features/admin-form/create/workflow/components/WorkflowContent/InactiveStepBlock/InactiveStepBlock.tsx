@@ -11,6 +11,7 @@ import IconButton from '~components/IconButton'
 import { FieldLogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/FieldLogicBadge'
 import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
 import { FormFieldWithQuestionNo } from '~features/form/types'
+import { useUser } from '~features/user/queries'
 
 import {
   createOrEditDataSelector,
@@ -82,6 +83,9 @@ export const InactiveStepBlock = ({
   const { idToFieldMap } = useAdminFormWorkflow()
   const setToEditing = useAdminWorkflowStore(setToEditingSelector)
   const stateData = useAdminWorkflowStore(createOrEditDataSelector)
+
+  const { user } = useUser()
+  const isTest = process.env.NODE_ENV === 'test'
 
   // Prevent editing step if some other step is being edited.
   const isPreventEdit = useMemo(() => !!stateData, [stateData])
@@ -166,10 +170,14 @@ export const InactiveStepBlock = ({
           <Stack>
             <Text textStyle="subhead-3">Respondent in this step</Text>
             {isFirstStep ? (
-              <FirstStepRespondentBadge
-                step={step}
-                idToFieldMap={idToFieldMap}
-              />
+              isTest || user?.betaFlags?.mrfEmailNotifications ? (
+                <FirstStepRespondentBadge
+                  step={step}
+                  idToFieldMap={idToFieldMap}
+                />
+              ) : (
+                <Text>Anyone you share the form link with</Text>
+              )
             ) : (
               <Flex
                 flexDir={{ base: 'column', md: 'row' }}

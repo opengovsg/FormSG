@@ -20,7 +20,7 @@ import {
   Environment,
   IPopulatedMultirespondentForm,
 } from '../../../../../src/types'
-import config from '../../../config/config'
+import config, { isTest } from '../../../config/config'
 import {
   createLoggerWithLabel,
   CustomLoggerParams,
@@ -293,25 +293,27 @@ const _createSubmission = async ({
     })
   }
 
-  try {
-    await sendMrfOutcomeEmails({
-      currentStepNumber,
-      form,
-      responses,
-      submissionId,
-    })
-  } catch (err) {
-    logger.error({
-      message: 'Send mrf outcome email error',
-      meta: {
-        ...logMeta,
-        ...createReqMeta(req),
-        currentWorkflowStep: currentStepNumber,
-        formId: form._id,
+  if (isTest || form.admin.betaFlags.mrfEmailNotifications) {
+    try {
+      await sendMrfOutcomeEmails({
+        currentStepNumber,
+        form,
+        responses,
         submissionId,
-      },
-      error: err,
-    })
+      })
+    } catch (err) {
+      logger.error({
+        message: 'Send mrf outcome email error',
+        meta: {
+          ...logMeta,
+          ...createReqMeta(req),
+          currentWorkflowStep: currentStepNumber,
+          formId: form._id,
+          submissionId,
+        },
+        error: err,
+      })
+    }
   }
 }
 
@@ -638,25 +640,27 @@ const updateMultirespondentSubmission = async (
     })
   }
 
-  try {
-    await sendMrfOutcomeEmails({
-      currentStepNumber: workflowStep,
-      form,
-      responses,
-      submissionId,
-    })
-  } catch (err) {
-    logger.error({
-      message: 'Send mrf outcome email error',
-      meta: {
-        ...logMeta,
-        ...createReqMeta(req),
-        currentWorkflowStep: workflowStep,
-        formId: form._id,
+  if (isTest || form.admin.betaFlags.mrfEmailNotifications) {
+    try {
+      await sendMrfOutcomeEmails({
+        currentStepNumber: workflowStep,
+        form,
+        responses,
         submissionId,
-      },
-      error: err,
-    })
+      })
+    } catch (err) {
+      logger.error({
+        message: 'Send mrf outcome email error',
+        meta: {
+          ...logMeta,
+          ...createReqMeta(req),
+          currentWorkflowStep: workflowStep,
+          formId: form._id,
+          submissionId,
+        },
+        error: err,
+      })
+    }
   }
 }
 

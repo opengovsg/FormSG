@@ -75,6 +75,7 @@ const compileUserModel = (db: Mongoose) => {
         payment: Boolean,
         children: Boolean,
         postmanSms: Boolean,
+        mrfEmailNotifications: Boolean,
       },
       flags: {
         type: Schema.Types.Map, // of SeenFlags

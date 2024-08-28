@@ -15,6 +15,7 @@ import Tooltip from '~components/Tooltip'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { EditStepInputs } from '~features/admin-form/create/workflow/types'
+import { useUser } from '~features/user/queries'
 
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
@@ -36,6 +37,10 @@ export const RespondentBlock = ({
     getValues,
     control,
   } = formMethods
+
+  const isTest = process.env.NODE_ENV === 'test'
+  const { user, isLoading: isUserLoading } = useUser()
+  isLoading = isLoading || isUserLoading
 
   const { emailFormFields = [] } = useAdminFormWorkflow()
 
@@ -69,39 +74,45 @@ export const RespondentBlock = ({
               <Icon as={BxsInfoCircleAlt} />
             </Tooltip>
           </Flex>
-          <FormControl isInvalid={!!errors.field}>
-            <FormLabel>
-              Add an email field for notifications to be sent to this respondent
-            </FormLabel>
-            <Box my="0.75rem">
-              <Controller
-                name="field"
-                rules={{
-                  validate: (selectedValue) => {
-                    return (
-                      !selectedValue ||
-                      !emailFieldItems ||
-                      emailFieldItems.some(
-                        ({ value: fieldValue }) => fieldValue === selectedValue,
-                      ) ||
-                      'Field is not an email field'
-                    )
-                  },
-                }}
-                control={control}
-                render={({ field: { value = '', ...rest } }) => (
-                  <SingleSelect
-                    placeholder="Select an email field from your form"
-                    items={emailFieldItems}
-                    value={value}
-                    isClearable
-                    {...rest}
-                  />
-                )}
-              />
-            </Box>
-            <FormErrorMessage>{errors.field?.message}</FormErrorMessage>
-          </FormControl>
+          {isTest || user?.betaFlags?.mrfEmailNotifications ? (
+            <FormControl isInvalid={!!errors.field}>
+              <FormLabel>
+                Add an email field for notifications to be sent to this
+                respondent
+              </FormLabel>
+              <Box my="0.75rem">
+                <Controller
+                  name="field"
+                  rules={{
+                    validate: (selectedValue) => {
+                      return (
+                        !selectedValue ||
+                        !emailFieldItems ||
+                        emailFieldItems.some(
+                          ({ value: fieldValue }) =>
+                            fieldValue === selectedValue,
+                        ) ||
+                        'Field is not an email field'
+                      )
+                    },
+                  }}
+                  control={control}
+                  render={({ field: { value = '', ...rest } }) => (
+                    <SingleSelect
+                      placeholder="Select an email field from your form"
+                      items={emailFieldItems}
+                      value={value}
+                      isClearable
+                      {...rest}
+                    />
+                  )}
+                />
+              </Box>
+              <FormErrorMessage>{errors.field?.message}</FormErrorMessage>
+            </FormControl>
+          ) : (
+            <Text>Anyone you share the form link with</Text>
+          )}
         </>
       ) : (
         <>
