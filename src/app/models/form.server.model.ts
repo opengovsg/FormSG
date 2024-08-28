@@ -41,6 +41,8 @@ import {
   FormStatus,
   FormWebhookResponseModeSettings,
   FormWebhookSettings,
+  FormWorkflowDto,
+  FormWorkflowStepStatic,
   LogicConditionState,
   LogicDto,
   LogicType,
@@ -69,6 +71,7 @@ import {
   IMultirespondentFormModel,
   IMultirespondentFormSchema,
   IPopulatedForm,
+  IWorkflowStepSchema,
   PickDuplicateForm,
   PublicForm,
 } from '../../types'
@@ -347,6 +350,13 @@ const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
   },
   workflow: {
     type: [WorkflowStepSchema],
+    default: [
+      {
+        workflow_type: WorkflowType.Static,
+        emails: [],
+        edit: [],
+      } as FormWorkflowStepStatic,
+    ] as FormWorkflowDto,
   },
   emails: {
     type: [
@@ -394,6 +404,18 @@ MultirespondentFormWorkflowPath.discriminator(
   WorkflowType.Dynamic,
   WorkflowStepDynamicSchema,
 )
+
+MultirespondentFormSchema.post('save', async function (doc, next) {
+  // Set the first step to notify by default
+  const workflowSteps = doc.workflow
+  if (workflowSteps.length > 0) {
+    const firstStepId = workflowSteps[0]._id
+    await doc
+      .updateOne({ stepsToNotify: [firstStepId] })
+      .catch((err) => next(err))
+    next()
+  }
+})
 
 const compileFormModel = (db: Mongoose): IFormModel => {
   const User = getUserModel(db)
