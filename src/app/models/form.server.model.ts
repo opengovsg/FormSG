@@ -71,7 +71,6 @@ import {
   IMultirespondentFormModel,
   IMultirespondentFormSchema,
   IPopulatedForm,
-  IWorkflowStepSchema,
   PickDuplicateForm,
   PublicForm,
 } from '../../types'
