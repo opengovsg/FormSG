@@ -36,7 +36,7 @@ const helmetMiddlewares = () => {
 
   const cspCoreDirectives = CSP_CORE_DIRECTIVES
 
-  const cspOptionalDirectives = config.isDev
+  const cspOptionalDirectives = config.isDevOrTest
     ? // Remove upgradeInsecureRequest CSP header if config.isDev
       // See https://github.com/helmetjs/helmet for use of null to disable default
       { upgradeInsecureRequests: null }

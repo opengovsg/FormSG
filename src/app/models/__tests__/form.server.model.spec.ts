@@ -74,7 +74,7 @@ const MOCK_MULTIRESPONDENT_FORM_PARAMS = {
 
 const FORM_DEFAULTS = {
   authType: 'NIL',
-  isNricMaskEnabled: false,
+  isSubmitterIdCollectionEnabled: false,
   isSingleSubmission: false,
   inactiveMessage:
     'If you require further assistance, please contact the agency that gave you the form link.',
@@ -2671,7 +2671,7 @@ describe('Form Model', () => {
           title: 'Test Form',
           admin: MOCK_ADMIN_OBJ_ID,
           authType: FormAuthType.SP,
-          isNricMaskEnabled: true,
+          isSubmitterIdCollectionEnabled: true,
           isSingleSubmission: true,
           inactiveMessage: 'inactive_test',
           responseMode: FormResponseMode.Encrypt,
@@ -2695,8 +2695,8 @@ describe('Form Model', () => {
           MOCK_ALL_OVERRIDE_PARAMS.submissionLimit,
         )
         expect(duplicatedForm.authType).toEqual(MOCK_ALL_FORM_PARAMS.authType)
-        expect(duplicatedForm.isNricMaskEnabled).toEqual(
-          MOCK_ALL_FORM_PARAMS.isNricMaskEnabled,
+        expect(duplicatedForm.isSubmitterIdCollectionEnabled).toEqual(
+          MOCK_ALL_FORM_PARAMS.isSubmitterIdCollectionEnabled,
         )
         expect(duplicatedForm.inactiveMessage).toEqual(
           MOCK_ALL_FORM_PARAMS.inactiveMessage,

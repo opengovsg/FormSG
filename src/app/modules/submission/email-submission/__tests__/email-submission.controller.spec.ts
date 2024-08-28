@@ -275,7 +275,7 @@ describe('email-submission.controller', () => {
         MockEmailSubmissionService.saveSubmissionMetadata.mock.calls[0][3],
       ).toEqual(
         generateHashedSubmitterId(
-          MOCK_JWT_PAYLOAD_WITH_NRIC.userName,
+          MOCK_JWT_PAYLOAD_WITH_NRIC.userName.toUpperCase(),
           mockIsSingleSubmissionEnabledEmailModeForm.id,
         ),
       )
@@ -336,7 +336,7 @@ describe('email-submission.controller', () => {
         MockEmailSubmissionService.saveSubmissionMetadata.mock.calls[0][3],
       ).toEqual(
         generateHashedSubmitterId(
-          MOCK_JWT_PAYLOAD.userName,
+          MOCK_JWT_PAYLOAD.userName.toUpperCase(),
           mockIsSingleSubmissionEnabledEmailModeForm.id,
         ),
       )
@@ -468,90 +468,57 @@ describe('email-submission.controller', () => {
       })
     })
 
-    describe('nricMask', () => {
-      it('should mask nric if form isNricMaskEnabled is true', async () => {
-        // Arrange
-        const mockFormId = new ObjectId()
-        const mockSgidAuthTypeAndNricMaskingEnabledForm = {
-          _id: mockFormId,
-          title: 'some form',
-          authType: FormAuthType.SGID,
-          isNricMaskEnabled: true,
-          form_fields: [] as FormFieldSchema[],
-        } as IPopulatedForm
-        const MOCK_JWT_PAYLOAD_WITH_NRIC = {
-          userName: 'S1234567A',
-        }
-        const MOCK_VALID_SGID_PAYLOAD = {
-          userName: MOCK_JWT_PAYLOAD_WITH_NRIC.userName,
-          rememberMe: false,
-        }
-        MockFormService.retrieveFullFormById.mockReturnValueOnce(
-          okAsync(mockSgidAuthTypeAndNricMaskingEnabledForm),
-        )
-        MockEmailSubmissionService.checkFormIsEmailMode.mockReturnValueOnce(
-          ok(mockSgidAuthTypeAndNricMaskingEnabledForm as IPopulatedEmailForm),
-        )
-        MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
-          okAsync(mockSgidAuthTypeAndNricMaskingEnabledForm),
-        )
+    describe('submitter login id collection', () => {
+      const MOCK_JWT_PAYLOAD = {
+        userName: 'nric',
+      }
+      const MOCK_VALID_SGID_PAYLOAD = {
+        userName: MOCK_JWT_PAYLOAD.userName,
+        rememberMe: false,
+      }
+
+      const MOCK_CP_JWT_PAYLOAD = {
+        userName: 'uen',
+        userInfo: 'nric',
+        rememberMe: false,
+      }
+
+      beforeEach(() => {
+        // For SGID auth type
         MockSgidService.extractSgidSingpassJwtPayload.mockReturnValueOnce(
           ok(MOCK_VALID_SGID_PAYLOAD),
         )
 
-        const MOCK_REQ = expressHandler.mockRequest({
-          params: { formId: 'some id' },
-          body: {
-            responses: [],
-          },
-        })
-        const mockRes = expressHandler.mockResponse({
-          clearCookie: jest.fn().mockReturnThis(),
-        })
-
-        // Act
-        await submitEmailModeForm(MOCK_REQ, mockRes, jest.fn())
-
-        // Assert email should be sent
-        expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
-        expect(
-          MockSubmissionService.sendEmailConfirmations,
-        ).toHaveBeenCalledTimes(1)
-        // Assert nric is masked in email payload
-        expect(
-          MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData[0]
-            .answer,
-        ).toEqual('*****567A')
+        // For CP auth type
+        MockOidcService.getOidcService.mockReturnValueOnce({
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          extractJwt: (_arg1) => ok('jwt'),
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          extractJwtPayload: (_arg1) =>
+            okAsync(merge(MOCK_CP_JWT_PAYLOAD, MOCK_COOKIE_TIMESTAMP)),
+        } as OidcServiceType<FormAuthType.CP>)
       })
 
-      it('should not mask nric if form isNricMaskEnabled is false', async () => {
+      it('should send nric if form isSubmitterIdCollectionEnabled is true for SgId authType', async () => {
         // Arrange
         const mockFormId = new ObjectId()
-        const mockSgidAuthTypeAndNricMaskingDisabledForm = {
+        const mockSgidAuthTypeAndSubmitterIdCollectionEnabledForm = {
           _id: mockFormId,
           title: 'some form',
           authType: FormAuthType.SGID,
-          isNricMaskEnabled: false,
+          isSubmitterIdCollectionEnabled: true,
           form_fields: [] as FormFieldSchema[],
         } as IPopulatedForm
-        const MOCK_JWT_PAYLOAD_WITH_NRIC = {
-          userName: 'S1234567A',
-        }
-        const MOCK_VALID_SGID_PAYLOAD = {
-          userName: MOCK_JWT_PAYLOAD_WITH_NRIC.userName,
-          rememberMe: false,
-        }
         MockFormService.retrieveFullFormById.mockReturnValueOnce(
-          okAsync(mockSgidAuthTypeAndNricMaskingDisabledForm),
+          okAsync(mockSgidAuthTypeAndSubmitterIdCollectionEnabledForm),
         )
         MockEmailSubmissionService.checkFormIsEmailMode.mockReturnValueOnce(
-          ok(mockSgidAuthTypeAndNricMaskingDisabledForm as IPopulatedEmailForm),
+          ok(
+            mockSgidAuthTypeAndSubmitterIdCollectionEnabledForm as IPopulatedEmailForm,
+          ),
         )
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
-          okAsync(mockSgidAuthTypeAndNricMaskingDisabledForm),
-        )
-        MockSgidService.extractSgidSingpassJwtPayload.mockReturnValueOnce(
-          ok(MOCK_VALID_SGID_PAYLOAD),
+          okAsync(mockSgidAuthTypeAndSubmitterIdCollectionEnabledForm),
         )
 
         const MOCK_REQ = expressHandler.mockRequest({
@@ -572,11 +539,159 @@ describe('email-submission.controller', () => {
         expect(
           MockSubmissionService.sendEmailConfirmations,
         ).toHaveBeenCalledTimes(1)
-        // Assert nric is not masked
+        // Assert nric and uen is included in email payload
         expect(
           MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData[0]
             .answer,
-        ).toEqual(MOCK_JWT_PAYLOAD_WITH_NRIC.userName)
+        ).toEqual(MOCK_JWT_PAYLOAD.userName)
+      })
+
+      it('should not send nric if form isSubmitterIdCollectionEnabled is false for SgId authType', async () => {
+        // Arrange
+        const mockFormId = new ObjectId()
+        const mockSgidAuthTypeAndSubmitterIdCollectionDisabledForm = {
+          _id: mockFormId,
+          title: 'some form',
+          authType: FormAuthType.SGID,
+          isSubmitterIdCollectionEnabled: false,
+          form_fields: [] as FormFieldSchema[],
+        } as IPopulatedForm
+        MockFormService.retrieveFullFormById.mockReturnValueOnce(
+          okAsync(mockSgidAuthTypeAndSubmitterIdCollectionDisabledForm),
+        )
+        MockEmailSubmissionService.checkFormIsEmailMode.mockReturnValueOnce(
+          ok(
+            mockSgidAuthTypeAndSubmitterIdCollectionDisabledForm as IPopulatedEmailForm,
+          ),
+        )
+        MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
+          okAsync(mockSgidAuthTypeAndSubmitterIdCollectionDisabledForm),
+        )
+
+        const MOCK_REQ = expressHandler.mockRequest({
+          params: { formId: 'some id' },
+          body: {
+            responses: [],
+          },
+        })
+        const mockRes = expressHandler.mockResponse({
+          clearCookie: jest.fn().mockReturnThis(),
+        })
+
+        // Act
+        await submitEmailModeForm(MOCK_REQ, mockRes, jest.fn())
+
+        // Assert email should be sent
+        expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
+        expect(
+          MockSubmissionService.sendEmailConfirmations,
+        ).toHaveBeenCalledTimes(1)
+        // Assert nric is not contained in email payload, hence empty array since no other fields
+        expect(
+          MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData,
+        ).toEqual([])
+      })
+
+      it('should send nric if form isSubmitterIdCollectionEnabled is true for Cp authType', async () => {
+        // Arrange
+        const mockFormId = new ObjectId()
+        const mockCpAuthTypeAndSubmitterIdCollectionEnabledForm = {
+          _id: mockFormId,
+          title: 'some form',
+          authType: FormAuthType.CP,
+          isSubmitterIdCollectionEnabled: true,
+          form_fields: [] as FormFieldSchema[],
+        } as IPopulatedForm
+        MockFormService.retrieveFullFormById.mockReturnValueOnce(
+          okAsync(mockCpAuthTypeAndSubmitterIdCollectionEnabledForm),
+        )
+        MockEmailSubmissionService.checkFormIsEmailMode.mockReturnValueOnce(
+          ok(
+            mockCpAuthTypeAndSubmitterIdCollectionEnabledForm as IPopulatedEmailForm,
+          ),
+        )
+        MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
+          okAsync(mockCpAuthTypeAndSubmitterIdCollectionEnabledForm),
+        )
+
+        const MOCK_REQ = expressHandler.mockRequest({
+          params: { formId: 'some id' },
+          body: {
+            responses: [],
+          },
+        })
+        const mockRes = expressHandler.mockResponse({
+          clearCookie: jest.fn().mockReturnThis(),
+        })
+
+        // Act
+        await submitEmailModeForm(MOCK_REQ, mockRes, jest.fn())
+
+        // Assert email should be sent
+        expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
+        expect(
+          MockSubmissionService.sendEmailConfirmations,
+        ).toHaveBeenCalledTimes(1)
+        // Assert nric is included in email payload
+        expect(
+          MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData,
+        ).toHaveLength(2)
+        expect(
+          MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData.filter(
+            (r) => r.question === 'CorpPass Validated UEN',
+          )[0].answer,
+        ).toEqual(MOCK_CP_JWT_PAYLOAD.userName)
+        expect(
+          MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData.filter(
+            (r) => r.question === 'CorpPass Validated UID',
+          )[0].answer,
+        ).toEqual(MOCK_CP_JWT_PAYLOAD.userInfo)
+      })
+
+      it('should not send nric if form isSubmitterIdCollectionEnabled is false for Cp authType', async () => {
+        // Arrange
+        const mockFormId = new ObjectId()
+        const mockSgidAuthTypeAndSubmitterIdCollectionDisabledForm = {
+          _id: mockFormId,
+          title: 'some form',
+          authType: FormAuthType.CP,
+          isSubmitterIdCollectionEnabled: false,
+          form_fields: [] as FormFieldSchema[],
+        } as IPopulatedForm
+        MockFormService.retrieveFullFormById.mockReturnValueOnce(
+          okAsync(mockSgidAuthTypeAndSubmitterIdCollectionDisabledForm),
+        )
+        MockEmailSubmissionService.checkFormIsEmailMode.mockReturnValueOnce(
+          ok(
+            mockSgidAuthTypeAndSubmitterIdCollectionDisabledForm as IPopulatedEmailForm,
+          ),
+        )
+        MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
+          okAsync(mockSgidAuthTypeAndSubmitterIdCollectionDisabledForm),
+        )
+
+        const MOCK_REQ = expressHandler.mockRequest({
+          params: { formId: 'some id' },
+          body: {
+            responses: [],
+          },
+        })
+        const mockRes = expressHandler.mockResponse({
+          clearCookie: jest.fn().mockReturnThis(),
+        })
+
+        // Act
+        await submitEmailModeForm(MOCK_REQ, mockRes, jest.fn())
+
+        // Assert email should be sent
+        expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(1)
+        expect(
+          MockSubmissionService.sendEmailConfirmations,
+        ).toHaveBeenCalledTimes(1)
+        // Assert nric is not contained in email payload, hence empty array since no other fields
+        expect(
+          MockMailService.sendSubmissionToAdmin.mock.calls[0][0].formData,
+        ).toEqual([])
       })
     })
   })

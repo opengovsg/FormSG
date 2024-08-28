@@ -549,7 +549,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         },
       },
 
-      isNricMaskEnabled: {
+      isSubmitterIdCollectionEnabled: {
         type: Boolean,
         default: false,
       },
@@ -742,7 +742,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       'startPage',
       'endPage',
       'authType',
-      'isNricMaskEnabled',
+      'isSubmitterIdCollectionEnabled',
       'isSingleSubmission',
       'inactiveMessage',
       'responseMode',

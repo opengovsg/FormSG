@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useMutation, UseMutationOptions } from 'react-query'
 import { datadogLogs } from '@datadog/browser-logs'
-import { useFeature } from '@growthbook/growthbook-react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import { waitForMs } from '~utils/waitForMs'
 
@@ -82,10 +82,9 @@ const useDecryptionWorkers = ({
   const { data: adminForm } = useAdminForm()
   const { user } = useUser()
 
-  const isDev = process.env.NODE_ENV === 'development'
-
-  const fasterDownloadsFeature = useFeature('faster-downloads')
-  const fasterDownloads = fasterDownloadsFeature.on || isDev
+  const isTest = process.env.NODE_ENV === 'test'
+  const isFasterDownloadsFeatureOn = useFeatureIsOn('faster-downloads')
+  const isFasterDownloadsEnabled = isTest || isFasterDownloadsFeatureOn
 
   useEffect(() => {
     return () => killWorkers(workers)
@@ -191,7 +190,7 @@ const useDecryptionWorkers = ({
                     formId: adminForm._id,
                     hostOrigin: window.location.origin,
                   },
-                  fasterDownloads,
+                  isFasterDownloadsEnabled,
                 )
                 progress += 1
                 onProgress(progress)
@@ -373,7 +372,7 @@ const useDecryptionWorkers = ({
           })
       })
     },
-    [adminForm, onProgress, user?._id, workers, fasterDownloads],
+    [adminForm, onProgress, user?._id, workers, isFasterDownloadsEnabled],
   )
 
   const downloadEncryptedResponsesFaster = useCallback(
@@ -455,7 +454,7 @@ const useDecryptionWorkers = ({
             formId: adminForm._id,
             hostOrigin: window.location.origin,
           },
-          fasterDownloads,
+          isFasterDownloadsEnabled,
         )
 
         switch (decryptResult.status) {
@@ -679,12 +678,12 @@ const useDecryptionWorkers = ({
           })
       })
     },
-    [adminForm, onProgress, user?._id, workers, fasterDownloads],
+    [adminForm, onProgress, user?._id, workers, isFasterDownloadsEnabled],
   )
 
   const handleExportCsvMutation = useMutation(
     (params: DownloadEncryptedParams) =>
-      fasterDownloads
+      isFasterDownloadsEnabled
         ? downloadEncryptedResponsesFaster(params)
         : downloadEncryptedResponses(params),
     mutateProps,

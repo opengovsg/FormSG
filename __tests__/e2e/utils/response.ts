@@ -150,6 +150,18 @@ export const expectContains =
   }
 
 /**
+ * Tests that container does not contain any of the values in contained.
+ * @param {string} container string in which to search
+ * @param {string[]} containedArray Array of values to search for
+ */
+export const expectNotToContain =
+  (container: string) => (containedArray: string[]) => {
+    for (const contained of containedArray) {
+      expect(container).not.toContain(contained)
+    }
+  }
+
+/**
  * Checks that an attachment field's attachment is contained in the email.
  * @param {E2eFieldMetadata} field field used to create and fill form
  * @param {Record<string, string>} attachments map of attachment names to content

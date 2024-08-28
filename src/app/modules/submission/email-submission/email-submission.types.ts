@@ -2,7 +2,9 @@ import { ResponseMetadata, SubmissionType } from 'shared/types'
 
 import { FieldResponse, IPopulatedEmailForm } from '../../../../types'
 import { MyInfoKey } from '../../myinfo/myinfo.types'
-import ParsedResponsesObject from '../ParsedResponsesObject.class'
+import ParsedResponsesObject, {
+  NdiUserInfo,
+} from '../ParsedResponsesObject.class'
 import { ProcessedResponse } from '../submission.types'
 
 // When a response has been formatted for email, all answerArray
@@ -24,6 +26,7 @@ export interface SubmissionHash {
 export interface IPopulatedEmailFormWithResponsesAndHash {
   form: IPopulatedEmailForm
   parsedResponses: ParsedResponsesObject
+  ndiUserInfo?: NdiUserInfo
   hashedFields?: Set<MyInfoKey>
 }
 
