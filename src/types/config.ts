@@ -59,6 +59,7 @@ export type MailConfig = {
 export type RateLimitConfig = {
   submissions: number
   sendAuthOtp: number
+  publicFormIssueFeedback: number
   downloadPaymentReceipt: number
   downloadFormWhitelist: number
   uploadFormWhitelist: number
@@ -190,6 +191,7 @@ export interface IOptionalVarsSchema {
   rateLimit: {
     submissions: number
     sendAuthOtp: number
+    publicFormIssueFeedback: number
     downloadPaymentReceipt: number
     downloadFormWhitelist: number
     uploadFormWhitelist: number
