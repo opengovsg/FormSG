@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { Box, FormControl, FormErrorMessage, Skeleton } from '@chakra-ui/react'
-import { debounce, get, isEmpty, isEqual, uniq } from 'lodash'
+import { get, isEmpty, isEqual, uniq } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
 import { MultirespondentFormSettings } from '~shared/types/form'
@@ -22,7 +22,6 @@ interface MrfEmailNotificationsFormProps {
 
 const WORKFLOW_EMAIL_MULTISELECT_NAME = 'email-multi-select'
 const OTHER_PARTIES_EMAIL_INPUT_NAME = 'other-parties-email-input'
-const DEBOUNCE_DELAY_IN_MS = 1000
 
 interface FormData {
   [WORKFLOW_EMAIL_MULTISELECT_NAME]: string[]
@@ -95,11 +94,6 @@ const MrfEmailNotificationsForm = ({
     })
   }
 
-  const handleWorkflowEmailMultiSelectChange = debounce(
-    handleSubmit(onSubmit),
-    DEBOUNCE_DELAY_IN_MS,
-  )
-
   const handleOtherPartiesEmailInputBlur = () => {
     const uniqueValidEmails = uniq(
       filterInvalidEmails(getValues(OTHER_PARTIES_EMAIL_INPUT_NAME)),
@@ -124,7 +118,7 @@ const MrfEmailNotificationsForm = ({
               name={WORKFLOW_EMAIL_MULTISELECT_NAME}
               render={({
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                field: { value: values = [], onChange, ...rest },
+                field: { value: values = [], onChange, onBlur, ...rest },
               }) => (
                 <MultiSelect
                   items={formWorkflowStepsWithStepNumber.map((step) => ({
@@ -132,10 +126,8 @@ const MrfEmailNotificationsForm = ({
                     value: step._id,
                   }))}
                   values={values}
-                  onChange={(values) => {
-                    onChange(values)
-                    handleWorkflowEmailMultiSelectChange()
-                  }}
+                  onChange={onChange}
+                  onBlur={handleSubmit(onSubmit)}
                   placeholder="Select respondents from your form"
                   isSelectedItemFullWidth
                   isDisabled={isLoading || isDisabled}

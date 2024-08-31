@@ -35,6 +35,7 @@ export interface MultiSelectProviderProps<
   values: string[]
   /** Controlled selection onChange handler */
   onChange: (value: string[]) => void
+  onBlur: () => void
   /** Function based on which items in dropdown are filtered. Default filter filters by fuzzy match. */
   filter?(items: Item[], value: string): Item[]
   /** Initial dropdown opened state. Defaults to `false`. */
@@ -69,6 +70,7 @@ export const MultiSelectProvider = ({
   items: rawItems,
   values,
   onChange,
+  onBlur,
   name,
   filter = defaultFilter,
   nothingFoundLabel = 'No matching results',
@@ -341,6 +343,7 @@ export const MultiSelectProvider = ({
           isSelectedItemFullWidth,
           activeIndex,
           setActiveIndex,
+          onBlur,
         }}
       >
         {children}
