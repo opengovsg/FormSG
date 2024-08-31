@@ -20,6 +20,7 @@ import {
   Environment,
   IPopulatedMultirespondentForm,
 } from '../../../../../src/types'
+// TODO: (MRF-email-notif) Remove isTest import when MRF email notifications is out of beta
 import config, { isTest } from '../../../config/config'
 import {
   createLoggerWithLabel,
@@ -293,6 +294,7 @@ const _createSubmission = async ({
     })
   }
 
+  // TODO: (MRF-email-notif) Remove isTest and betaFlag check when MRF email notifications is out of beta
   if (isTest || form.admin.betaFlags.mrfEmailNotifications) {
     try {
       await sendMrfOutcomeEmails({
@@ -640,6 +642,7 @@ const updateMultirespondentSubmission = async (
     })
   }
 
+  // TODO: (MRF-email-notif) Remove isTest and betaFlag check when MRF email notifications is out of beta
   if (isTest || form.admin.betaFlags.mrfEmailNotifications) {
     try {
       await sendMrfOutcomeEmails({

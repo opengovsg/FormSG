@@ -85,6 +85,7 @@ export const InactiveStepBlock = ({
   const stateData = useAdminWorkflowStore(createOrEditDataSelector)
 
   const { user } = useUser()
+  // TODO: (MRF-email-notif) Remove isTest check when MRF email notifications is out of beta
   const isTest = process.env.NODE_ENV === 'test'
 
   // Prevent editing step if some other step is being edited.
@@ -169,6 +170,8 @@ export const InactiveStepBlock = ({
 
           <Stack>
             <Text textStyle="subhead-3">Respondent in this step</Text>
+            {/* TODO: (MRF-email-notif) Remove isTest and betaFlag check when MRF email
+            notifications is out of beta */}
             {isFirstStep ? (
               isTest || user?.betaFlags?.mrfEmailNotifications ? (
                 <FirstStepRespondentBadge

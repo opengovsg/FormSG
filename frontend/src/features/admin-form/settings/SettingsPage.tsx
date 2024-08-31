@@ -68,6 +68,7 @@ export const SettingsPage = (): JSX.Element => {
   const emailNotificationsTab =
     isUserLoading ||
     isFormSettingLoading ||
+    // TODO: (MRF-email-notif) Remove isTest and betaFlag check when MRF email notifications is out of beta
     (!isTest &&
       formSettings?.responseMode === FormResponseMode.Multirespondent &&
       !user?.betaFlags?.mrfEmailNotifications)

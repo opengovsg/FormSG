@@ -38,6 +38,7 @@ export const RespondentBlock = ({
     control,
   } = formMethods
 
+  // TODO: (MRF-email-notif) Remove isTest check when MRF email notifications is out of beta
   const isTest = process.env.NODE_ENV === 'test'
   const { user, isLoading: isUserLoading } = useUser()
   isLoading = isLoading || isUserLoading
@@ -74,6 +75,8 @@ export const RespondentBlock = ({
               <Icon as={BxsInfoCircleAlt} />
             </Tooltip>
           </Flex>
+          {/* TODO: (MRF-email-notif) Remove isTest check when MRF email
+          notifications is out of beta */}
           {isTest || user?.betaFlags?.mrfEmailNotifications ? (
             <FormControl isInvalid={!!errors.field}>
               <FormLabel>
