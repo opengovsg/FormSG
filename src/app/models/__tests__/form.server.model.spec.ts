@@ -20,6 +20,7 @@ import {
   FormResponseMode,
   FormStartPage,
   FormStatus,
+  FormWorkflowStepDto,
   LogicDto,
   LogicType,
   PaymentChannel,
@@ -40,6 +41,7 @@ import {
   IFormDocument,
   IFormSchema,
   ILogicSchema,
+  IMultirespondentForm,
   IPopulatedUser,
 } from 'src/types'
 
@@ -986,6 +988,49 @@ describe('Form Model', () => {
         await expect(invalidForm.save()).rejects.toThrow(
           mongoose.Error.ValidationError,
         )
+      })
+
+      it('should create empty workflow step 1 and assign it to stepsToNotify by default when no explicit workflow provided', async () => {
+        // Arrange
+        const newForm = new MultirespondentForm(
+          MOCK_MULTIRESPONDENT_FORM_PARAMS,
+        )
+
+        // Act
+        const saved = await newForm.save()
+
+        // Assert
+        // Object Id should be defined when successfully saved to MongoDB.
+        expect(saved._id).toBeDefined()
+
+        // Fetch the mrf form object after post-save middleware has run
+        const actualSavedObjectAfterPostSaveMiddleware =
+          (await MultirespondentForm.findById(
+            saved._id,
+          ).lean()) as IMultirespondentForm
+        expect(actualSavedObjectAfterPostSaveMiddleware).toBeDefined()
+
+        // Workflow and stepsToNotify created by default should have 1 step exactly
+        expect(actualSavedObjectAfterPostSaveMiddleware.workflow).toHaveLength(
+          1,
+        )
+        expect(
+          actualSavedObjectAfterPostSaveMiddleware.stepsToNotify,
+        ).toHaveLength(1)
+        expect(
+          (
+            actualSavedObjectAfterPostSaveMiddleware
+              .workflow[0] as FormWorkflowStepDto
+          )._id,
+        ).toBeDefined()
+        const defaultStepOneId = (
+          actualSavedObjectAfterPostSaveMiddleware
+            .workflow[0] as FormWorkflowStepDto
+        )._id.toString()
+        // stepsToNotify should contain the ID of the default first step
+        expect(actualSavedObjectAfterPostSaveMiddleware.stepsToNotify).toEqual([
+          defaultStepOneId,
+        ])
       })
     })
 
