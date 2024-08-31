@@ -1,7 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
-import { flatten } from 'lodash'
 import mongoose from 'mongoose'
-import { errAsync, okAsync, Result, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import { MailSendError } from 'src/app/services/mail/mail.errors'
 import { EncryptSubmissionDto } from 'src/types/api'
@@ -10,8 +9,6 @@ import {
   ErrorDto,
   FieldResponsesV3,
   FormAuthType,
-  FormWorkflowDto,
-  FormWorkflowStepDto,
   MultirespondentSubmissionDto,
   SubmissionType,
 } from '../../../../../shared/types'
@@ -57,7 +54,10 @@ import { mapRouteError } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import * as MultirespondentSubmissionMiddleware from './multirespondent-submission.middleware'
-import { checkFormIsMultirespondent } from './multirespondent-submission.service'
+import {
+  checkFormIsMultirespondent,
+  sendMrfOutcomeEmails,
+} from './multirespondent-submission.service'
 import {
   MultirespondentSubmissionContent,
   SubmitMultirespondentFormHandlerRequest,
@@ -374,115 +374,6 @@ const sendNextStepEmail = ({
             error,
           })
           return errAsync(error)
-        })
-      })
-  )
-}
-
-const sendMrfCompletionEmailIfWorkflowCompleted = ({
-  currentStepNumber,
-  formWorkflow,
-  destinationEmails,
-  formId,
-  formTitle,
-  submissionId,
-}: {
-  currentStepNumber: number
-  formWorkflow: FormWorkflowDto
-  destinationEmails: string[]
-  formId: string
-  formTitle: string
-  submissionId: string
-}): ResultAsync<true, MailSendError> => {
-  const logMeta = {
-    action: 'sendMrfCompletionEmail',
-    formId,
-    submissionId,
-  }
-
-  const lastStepNumber = formWorkflow.length - 1
-  const isLastStep = currentStepNumber === lastStepNumber
-  const isWorkflowCompleted = isLastStep
-
-  if (isWorkflowCompleted) {
-    return MailService.sendMrfWorkflowCompletionEmail({
-      emails: destinationEmails,
-      formId,
-      formTitle,
-      responseId: submissionId,
-    }).orElse((error) => {
-      logger.error({
-        message: 'Failed to send workflow completion email',
-        meta: { ...logMeta, destinationEmails },
-        error,
-      })
-      return errAsync(error)
-    })
-  } else {
-    return okAsync(true)
-  }
-}
-
-const sendMrfOutcomeEmails = ({
-  currentStepNumber,
-  form,
-  responses,
-  submissionId,
-}: {
-  currentStepNumber: number
-  form: IPopulatedMultirespondentForm
-  responses: FieldResponsesV3
-  submissionId: string
-}): ResultAsync<true, InvalidWorkflowTypeError | MailSendError> => {
-  const logMeta = {
-    action: 'sendMrfOutcomeEmails',
-    formId: form._id,
-    submissionId,
-  }
-  const emailsToNotify = form.emails ?? []
-
-  const validWorkflowStepsToNotify = (form.stepsToNotify ?? [])
-    .map((stepId) =>
-      form.workflow.find((step) => step._id.toString() === stepId),
-    )
-    .filter(
-      (workflowStep) => workflowStep !== undefined,
-    ) as FormWorkflowStepDto[]
-
-  return (
-    // Step 1: Fetch email address from all workflow steps that are selected to notify
-    Result.combine(
-      validWorkflowStepsToNotify.map((workflowStep) =>
-        retrieveWorkflowStepEmailAddresses(workflowStep, responses),
-      ),
-    )
-      .mapErr((error) => {
-        logger.error({
-          message: 'Failed to retrieve workflow step email addresses',
-          meta: logMeta,
-          error,
-        })
-        return error
-      })
-      .map((workflowStepEmailsToNotifyList) => {
-        return flatten(workflowStepEmailsToNotifyList)
-      })
-      // Step 2: Combine static emails and workflow step emails that are selected to notify
-      .map((workflowStepEmailsToNotify) => {
-        return [...workflowStepEmailsToNotify, ...emailsToNotify]
-      })
-      // Step 3: Send outcome emails based on type
-      .asyncAndThen((destinationEmails) => {
-        if (!destinationEmails || destinationEmails.length <= 0)
-          return okAsync(true)
-
-        return sendMrfCompletionEmailIfWorkflowCompleted({
-          currentStepNumber,
-          formWorkflow: form.workflow,
-          destinationEmails,
-          formId: form._id,
-          formTitle: form.title,
-          submissionId,
         })
       })
   )

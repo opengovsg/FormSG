@@ -113,7 +113,7 @@ export const SettingsPage = (): JSX.Element => {
       component: SettingsPaymentsPage,
       path: 'payments',
     },
-  ].filter((tab) => tab !== null) as TabEntry[]
+  ].filter(Boolean) as TabEntry[]
 
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
 
