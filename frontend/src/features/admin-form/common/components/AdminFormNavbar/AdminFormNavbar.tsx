@@ -184,7 +184,7 @@ export const AdminFormNavbar = ({
           to={ADMINFORM_BUILD_SUBROUTE}
           isActive={checkTabActive(ADMINFORM_BUILD_SUBROUTE)}
         >
-          {t('features.adminFormNavbar.tabs.create')}
+          {t('features.adminForm.navbar.tabs.create')}
         </NavigationTab>
         <NavigationTab
           hidden={viewOnly}
@@ -199,7 +199,7 @@ export const AdminFormNavbar = ({
             }
           }}
         >
-          {t('features.adminFormNavbar.tabs.settings')}
+          {t('features.adminForm.navbar.tabs.settings')}
           {shouldShowSettingsReddot ? (
             <Icon
               as={GoPrimitiveDot}
@@ -214,7 +214,7 @@ export const AdminFormNavbar = ({
           to={ADMINFORM_RESULTS_SUBROUTE}
           isActive={checkTabActive(ADMINFORM_RESULTS_SUBROUTE)}
         >
-          {t('features.adminFormNavbar.tabs.results')}
+          {t('features.adminForm.navbar.tabs.results')}
         </NavigationTab>
       </NavigationTabList>
       <Flex
@@ -228,7 +228,7 @@ export const AdminFormNavbar = ({
       >
         <IconButton
           display={{ base: 'flex', md: 'none' }}
-          aria-label={t('features.adminFormNavbar.formActions')}
+          aria-label={t('features.adminForm.navbar.formActions')}
           onClick={onOpen}
           icon={<BiDotsHorizontalRounded />}
         />
@@ -237,27 +237,27 @@ export const AdminFormNavbar = ({
             {renderLastModified}
           </Flex>
           <ButtonGroup spacing="0.5rem" isDisabled={!formInfo}>
-            <Tooltip label={t('features.adminFormNavbar.manageCollaborators')}>
+            <Tooltip label={t('features.adminForm.navbar.manageCollaborators')}>
               <IconButton
-                aria-label={t('features.adminFormNavbar.manageCollaborators')}
+                aria-label={t('features.adminForm.navbar.manageCollaborators')}
                 variant="outline"
                 onClick={handleAddCollabButtonClick}
                 icon={<BiUserPlus />}
               />
             </Tooltip>
-            <Tooltip label={t('features.adminFormNavbar.previewForm')}>
+            <Tooltip label={t('features.adminForm.navbar.previewForm')}>
               <IconButton
                 as={ReactLink}
-                aria-label={t('features.adminFormNavbar.previewForm')}
+                aria-label={t('features.adminForm.navbar.previewForm')}
                 variant="outline"
                 to={previewFormLink}
                 target="_blank"
                 icon={<BiShow />}
               />
             </Tooltip>
-            <Tooltip label={t('features.adminFormNavbar.shareBtn.tooltip')}>
+            <Tooltip label={t('features.adminForm.navbar.shareBtn.tooltip')}>
               <Button onClick={handleShareButtonClick}>
-                {t('features.adminFormNavbar.shareBtn.text')}
+                {t('features.adminForm.navbar.shareBtn.text')}
               </Button>
             </Tooltip>
           </ButtonGroup>
@@ -282,21 +282,21 @@ export const AdminFormNavbar = ({
                 {...mobileDrawerExtraButtonProps}
                 leftIcon={<BiShow fontSize="1.25rem" />}
               >
-                {t('features.adminFormNavbar.previewForm')}
+                {t('features.adminForm.navbar.previewForm')}
               </Button>
               <Button
                 {...mobileDrawerExtraButtonProps}
                 onClick={handleShareButtonClick}
                 leftIcon={<BiShareAlt fontSize="1.25rem" />}
               >
-                {t('features.adminFormNavbar.shareBtn.textMobile')}
+                {t('features.adminForm.navbar.shareBtn.textMobile')}
               </Button>
               <Button
                 {...mobileDrawerExtraButtonProps}
                 onClick={handleAddCollabButtonClick}
                 leftIcon={<BiUserPlus fontSize="1.25rem" />}
               >
-                {t('features.adminFormNavbar.manageCollaborators')}
+                {t('features.adminForm.navbar.manageCollaborators')}
               </Button>
             </ButtonGroup>
           </DrawerBody>

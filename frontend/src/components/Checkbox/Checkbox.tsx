@@ -1,4 +1,5 @@
 import { ChangeEventHandler, ReactNode, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Checkbox as ChakraCheckbox,
@@ -89,6 +90,7 @@ const OthersWrapper = ({
  * Wrapper for the checkbox part of the Others option.
  */
 const OthersCheckbox = forwardRef<CheckboxProps, 'input'>((props, ref) => {
+  const { t } = useTranslation()
   const { checkboxRef, inputRef } = useCheckboxOthers()
   // Passing all props for cleanliness but size and colorScheme are the most relevant
   const styles = useMultiStyleConfig(CHECKBOX_THEME_KEY, props)
@@ -111,7 +113,7 @@ const OthersCheckbox = forwardRef<CheckboxProps, 'input'>((props, ref) => {
       {...props}
       onChange={handleCheckboxChange}
     >
-      Others
+      {t('features.adminForm.sidebar.fields.radio.others')}
     </Checkbox>
   )
 })

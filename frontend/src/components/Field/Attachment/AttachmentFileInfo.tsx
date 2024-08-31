@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiDownload, BiTrash } from 'react-icons/bi'
 import { Flex, Text, VisuallyHidden } from '@chakra-ui/react'
 
@@ -25,6 +26,7 @@ export const AttachmentFileInfo = ({
   isDownloadDisabled = false,
   isRemoveDisabled = false,
 }: AttachmentFileInfoProps) => {
+  const { t } = useTranslation()
   const readableFileSize = useMemo(
     () => (file.size ? getReadableFileSize(file.size) : null),
     [file.size],
@@ -54,7 +56,9 @@ export const AttachmentFileInfo = ({
           <IconButton
             variant="clear"
             colorScheme="danger"
-            aria-label="Click to remove file"
+            aria-label={t(
+              'features.adminFormBuilder.imageAttachment.ariaLabelRemove',
+            )}
             icon={<BiTrash />}
             onClick={handleRemoveFile}
             isDisabled={isRemoveDisabled}

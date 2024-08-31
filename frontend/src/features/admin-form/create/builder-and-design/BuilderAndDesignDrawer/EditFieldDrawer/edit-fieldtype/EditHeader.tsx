@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { FormControl } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
@@ -21,6 +22,7 @@ type EditHeaderProps = EditFieldProps<SectionFieldBase>
 type EditHeaderInputs = Pick<SectionFieldBase, 'title' | 'description'>
 
 export const EditHeader = ({ field }: EditHeaderProps): JSX.Element => {
+  const { t } = useTranslation()
   const {
     register,
     formState: { errors },
@@ -45,7 +47,9 @@ export const EditHeader = ({ field }: EditHeaderProps): JSX.Element => {
   return (
     <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
-        <FormLabel>Section heading</FormLabel>
+        <FormLabel>
+          {t('features.adminForm.sidebar.fields.section.heading')}
+        </FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>

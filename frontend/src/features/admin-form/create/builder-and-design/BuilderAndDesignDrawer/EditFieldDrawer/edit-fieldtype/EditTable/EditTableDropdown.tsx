@@ -1,4 +1,5 @@
 import { Controller, useFormContext, useFormState } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { FormControl } from '@chakra-ui/react'
 import { get } from 'lodash'
 
@@ -16,12 +17,15 @@ interface EditTableDropdownProps {
 export const EditTableDropdown = ({
   inputName,
 }: EditTableDropdownProps): JSX.Element => {
+  const { t } = useTranslation()
   const { control } = useFormContext<EditTableInputs>()
   const { errors } = useFormState<EditTableInputs>()
 
   return (
     <FormControl id={inputName} isRequired isInvalid={get(errors, inputName)}>
-      <FormLabel>Options</FormLabel>
+      <FormLabel>
+        {t('features.adminForm.sidebar.fields.radio.options.title')}
+      </FormLabel>
       <Controller
         name={inputName}
         control={control}
@@ -32,7 +36,7 @@ export const EditTableDropdown = ({
           validate: (value) => {
             return (
               new Set(value).size === value.length ||
-              'Please remove duplicate options.'
+              t('features.adminForm.sidebar.fields.radio.duplicateOptionsError')
             )
           },
         }}

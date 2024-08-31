@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { DropzoneProps, useDropzone } from 'react-dropzone'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   forwardRef,
@@ -123,6 +124,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
     },
     ref,
   ) => {
+    const { t } = useTranslation()
     // Merge given props with any form control props, if they exist.
     const inputProps = useFormControl(props)
     // id to set on the rendered max size FormFieldMessage component.
@@ -146,11 +148,16 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
           switch (firstError.code) {
             case 'file-invalid-type': {
               const fileExt = getFileExtension(rejectedFiles[0].file.name)
-              errorMessage = `Your file's extension ending in *${fileExt} is not allowed`
+              errorMessage = t(
+                `features.adminForm.sidebar.fields.imageAttachment.error.fileInvalidType`,
+                { fileExt },
+              )
               break
             }
             case 'too-many-files': {
-              errorMessage = 'You can only upload a single file in this input'
+              errorMessage = t(
+                `features.adminForm.sidebar.fields.imageAttachment.error.tooManyFiles`,
+              )
               break
             }
             default:
@@ -172,12 +179,19 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
               const hiddenQty = [numInvalidFiles, null]
               const stringOfInvalidExtensions = invalidFilesInZip.join(', ')
               return onError?.(
-                simplur`The following file ${hiddenQty} extension[|s] in your zip file ${hiddenQty} [is|are] not valid: ${stringOfInvalidExtensions}`,
+                simplur(
+                  t(
+                    'features.adminForm.sidebar.fields.imageAttachment.error.zipFileInvalidType',
+                    { hiddenQty, stringOfInvalidExtensions },
+                  ),
+                ),
               )
             }
           } catch {
             return onError?.(
-              'An error has occurred whilst parsing your zip file',
+              t(
+                'features.adminForm.sidebar.fields.imageAttachment.error.zipParsing',
+              ),
             )
           }
         }
@@ -204,7 +218,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
         }
         onChange(acceptedFile)
       },
-      [accept, maxSize, onChange, onError],
+      [accept, maxSize, onChange, onError, t],
     )
 
     const fileValidator = useCallback<NonNullable<DropzoneProps['validator']>>(
@@ -213,19 +227,24 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
           if (maxSize && file.size > maxSize) {
             return {
               code: 'file-too-large',
-              message: `You have exceeded the limit, please upload a file below ${readableMaxSize}`,
+              message: t(
+                'features.adminForm.sidebar.fields.imageAttachment.error.fileTooLarge',
+                { readableMaxSize },
+              ),
             }
           }
           if (file.size === 0) {
             return {
               code: 'file-empty',
-              message: `You have uploaded an empty file, please upload a valid attachment`,
+              message: t(
+                'features.adminForm.sidebar.fields.imageAttachment.error.zipParsing',
+              ),
             }
           }
         }
         return null
       },
-      [maxSize, readableMaxSize],
+      [maxSize, readableMaxSize, t],
     )
 
     const { getRootProps, getInputProps, isDragActive, rootRef } = useDropzone({
@@ -320,7 +339,12 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
               textStyle="body-2"
               aria-hidden
             >
-              Maximum file size: {readableMaxSize}
+              {t(
+                'features.adminForm.sidebar.fields.imageAttachment.maxFileSize',
+                {
+                  readableMaxSize,
+                },
+              )}
             </Text>
           ) : null}
         </Box>

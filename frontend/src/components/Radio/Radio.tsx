@@ -25,6 +25,7 @@ import {
   useEffect,
   useMemo,
 } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   chakra,
@@ -245,6 +246,7 @@ export const Radio = forwardRef<RadioProps, 'input'>(
  * Wrapper for the radio part of the Others option.
  */
 const OthersRadio = forwardRef<RadioProps, 'input'>((props, ref) => {
+  const { t } = useTranslation()
   const { othersRadioRef, othersInputRef } = useRadioGroupWithOthers()
   const { value: valueProp } = props
   const styles = useMultiStyleConfig(RADIO_THEME_KEY, {
@@ -275,7 +277,7 @@ const OthersRadio = forwardRef<RadioProps, 'input'>((props, ref) => {
       // Required should apply to radio group rather than individual radio.
       isRequired={false}
     >
-      Others
+      {t('features.adminForm.sidebar.fields.radio.others')}
     </Radio>
   )
 })

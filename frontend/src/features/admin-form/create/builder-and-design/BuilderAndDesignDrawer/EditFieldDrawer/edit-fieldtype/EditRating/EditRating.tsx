@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Controller } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { FormControl } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
@@ -38,6 +39,7 @@ const EDIT_RATING_OPTIONS = {
 }
 
 export const EditRating = ({ field }: EditRatingProps): JSX.Element => {
+  const { t } = useTranslation()
   const {
     register,
     control,
@@ -73,10 +75,17 @@ export const EditRating = ({ field }: EditRatingProps): JSX.Element => {
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
       <FormControl isReadOnly={isLoading}>
-        <Toggle {...register('required')} label="Required" />
+        <Toggle
+          {...register('required')}
+          label={t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.required',
+          )}
+        />
       </FormControl>
       <FormControl id="ratingOptions.steps" isReadOnly={isLoading}>
-        <FormLabel isRequired>Number of steps</FormLabel>
+        <FormLabel isRequired>
+          {t('features.adminForm.sidebar.fields.rating.numOfSteps')}
+        </FormLabel>
         <Controller
           control={control}
           name="ratingOptions.steps"
@@ -91,7 +100,9 @@ export const EditRating = ({ field }: EditRatingProps): JSX.Element => {
         />
       </FormControl>
       <FormControl id="ratingOptions.shape" isReadOnly={isLoading}>
-        <FormLabel isRequired>Shape</FormLabel>
+        <FormLabel isRequired>
+          {t('features.adminForm.sidebar.fields.rating.shape')}
+        </FormLabel>
         <Controller
           control={control}
           name="ratingOptions.shape"

@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { FormControl } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
@@ -55,6 +56,7 @@ const transformRadioEditFormToField = (
 }
 
 export const EditRadio = ({ field }: EditRadioProps): JSX.Element => {
+  const { t } = useTranslation()
   const {
     register,
     formState: { errors },
@@ -91,29 +93,47 @@ export const EditRadio = ({ field }: EditRadioProps): JSX.Element => {
   return (
     <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
-        <FormLabel>Question</FormLabel>
+        <FormLabel>
+          {t('features.adminForm.sidebar.fields.commonFieldComponents.title')}
+        </FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
       <FormControl isReadOnly={isLoading} isInvalid={!!errors.description}>
-        <FormLabel>Description</FormLabel>
+        <FormLabel>
+          {t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.description',
+          )}
+        </FormLabel>
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
       <FormControl isReadOnly={isLoading}>
-        <Toggle {...register('required')} label="Required" />
+        <Toggle
+          {...register('required')}
+          label={t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.required',
+          )}
+        />
       </FormControl>
       <FormControl isReadOnly={isLoading}>
-        <Toggle {...register('othersRadioButton')} label="Others" />
+        <Toggle
+          {...register('othersRadioButton')}
+          label={t('features.adminForm.sidebar.fields.radio.others')}
+        />
       </FormControl>
       <FormControl
         isRequired
         isReadOnly={isLoading}
         isInvalid={!!errors.fieldOptionsString}
       >
-        <FormLabel>Options</FormLabel>
+        <FormLabel>
+          {t('features.adminForm.sidebar.fields.radio.options.title')}
+        </FormLabel>
         <Textarea
-          placeholder="Enter one option per line"
+          placeholder={t(
+            'features.adminForm.sidebar.fields.radio.options.placeholder',
+          )}
           {...register('fieldOptionsString', {
             validate: optionsValidation,
           })}

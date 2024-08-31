@@ -1,6 +1,6 @@
 export * from './en-sg'
 
-export interface AdminFormNavbar {
+export interface Navbar {
   tabs: {
     create: string
     settings: string
