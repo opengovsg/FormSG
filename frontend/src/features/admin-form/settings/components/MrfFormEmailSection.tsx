@@ -22,7 +22,12 @@ interface MrfEmailNotificationsFormProps {
 
 const WORKFLOW_EMAIL_MULTISELECT_NAME = 'email-multi-select'
 const OTHER_PARTIES_EMAIL_INPUT_NAME = 'other-parties-email-input'
-const DEBOUNCE_DELAY_IN_MS = 800
+const DEBOUNCE_DELAY_IN_MS = 1000
+
+interface FormData {
+  [WORKFLOW_EMAIL_MULTISELECT_NAME]: string[]
+  [OTHER_PARTIES_EMAIL_INPUT_NAME]: string[]
+}
 
 const MrfEmailNotificationsForm = ({
   settings,
@@ -61,49 +66,47 @@ const MrfEmailNotificationsForm = ({
 
   const { mutateMrfEmailNotifications } = useMutateFormSettings()
 
-  const handleSubmitEmailNotificationSettings = useCallback(
-    ({ nextStaticEmails, nextStepsToNotify }) => {
-      if (
-        isEqual(nextStaticEmails, emails) &&
-        isEqual(nextStepsToNotify, stepsToNotify)
-      ) {
-        return
-      }
-      return mutateMrfEmailNotifications.mutate({
-        emails: nextStaticEmails,
-        stepsToNotify: nextStepsToNotify,
-      })
-    },
-    [mutateMrfEmailNotifications, emails, stepsToNotify],
-  )
-  const onSubmit = useCallback(
-    (formData) => {
-      const selectedSteps = formData[WORKFLOW_EMAIL_MULTISELECT_NAME]
-      const selectedEmails = formData[OTHER_PARTIES_EMAIL_INPUT_NAME]
+  const handleSubmitEmailNotificationSettings = ({
+    nextStaticEmails,
+    nextStepsToNotify,
+  }: {
+    nextStaticEmails: string[]
+    nextStepsToNotify: string[]
+  }) => {
+    if (
+      isEqual(nextStaticEmails, emails) &&
+      isEqual(nextStepsToNotify, stepsToNotify)
+    ) {
+      return
+    }
+    return mutateMrfEmailNotifications.mutate({
+      emails: nextStaticEmails,
+      stepsToNotify: nextStepsToNotify,
+    })
+  }
 
-      return handleSubmitEmailNotificationSettings({
-        nextStepsToNotify: selectedSteps,
-        nextStaticEmails: selectedEmails,
-      })
-    },
-    [handleSubmitEmailNotificationSettings],
-  )
-  const onSubmitDebounced = useCallback(
-    (formData) => debounce(() => onSubmit(formData), DEBOUNCE_DELAY_IN_MS)(),
-    [onSubmit],
+  const onSubmit = (formData: FormData) => {
+    const selectedSteps = formData[WORKFLOW_EMAIL_MULTISELECT_NAME]
+    const selectedEmails = formData[OTHER_PARTIES_EMAIL_INPUT_NAME]
+
+    return handleSubmitEmailNotificationSettings({
+      nextStepsToNotify: selectedSteps,
+      nextStaticEmails: selectedEmails,
+    })
+  }
+
+  const handleWorkflowEmailMultiSelectChange = debounce(
+    handleSubmit(onSubmit),
+    DEBOUNCE_DELAY_IN_MS,
   )
 
-  const handleWorkflowEmailMultiSelectChange = useCallback(() => {
-    handleSubmit(onSubmitDebounced)()
-  }, [handleSubmit, onSubmitDebounced])
-
-  const handleOtherPartiesEmailInputBlur = useCallback(() => {
+  const handleOtherPartiesEmailInputBlur = () => {
     const uniqueValidEmails = uniq(
       filterInvalidEmails(getValues(OTHER_PARTIES_EMAIL_INPUT_NAME)),
     )
     setValue(OTHER_PARTIES_EMAIL_INPUT_NAME, uniqueValidEmails)
     handleSubmit(onSubmit)()
-  }, [getValues, handleSubmit, onSubmit, setValue, filterInvalidEmails])
+  }
 
   const otherPartiesEmailInputPlaceholder =
     getValues(OTHER_PARTIES_EMAIL_INPUT_NAME)?.length > 0
