@@ -1,4 +1,5 @@
 import {
+  FormFieldDto,
   FormWorkflowStep,
   FormWorkflowStepDynamic,
   FormWorkflowStepStatic,
@@ -14,4 +15,5 @@ export type EditStepInputs = Omit<FormWorkflowStep, 'emails'> & {
   workflow_type: WorkflowType
   emails?: FormWorkflowStepStatic['emails']
   field?: FormWorkflowStepDynamic['field']
+  approval_field?: FormFieldDto['_id']
 }
