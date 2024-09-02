@@ -19,16 +19,23 @@ import {
   textStyle,
 } from './styles'
 
-export type WorkflowEmailData = {
+export enum WorkflowOutcome {
+  APPROVED = 'Approved', 
+  NOT_APPROVED = 'Not approved' 
+}  
+
+export type WorkflowOutcomeEmailData = {
   formTitle: string
   responseId: string
+  outcome: WorkflowOutcome 
 }
 
-export const MrfWorkflowCompletionEmail = ({
+export const MrfWorkflowOutcomeEmail = ({
   // Defaults are provided only for testing purposes in react-email-preview.
+  outcome = WorkflowOutcome.APPROVED, 
   formTitle = 'Test form title',
   responseId = '64303c45828035f732088a41'
-}: WorkflowEmailData): JSX.Element => {
+}: WorkflowOutcomeEmailData): JSX.Element => {
   return (
     <Html>
       <Head />
@@ -42,8 +49,16 @@ export const MrfWorkflowCompletionEmail = ({
           <Row style={{ paddingTop: '16px' }}>
             <Column>
               <Heading style={headingStyle}>
-                {formTitle} has been completed by all respondents.
+                The outcome for {formTitle}.
               </Heading>
+            </Column>
+          </Row>
+          <Row style={{ paddingTop: '16px' }}>
+            <Column>
+              <Text style={textStyle}>Outcome</Text>
+            </Column>
+            <Column style={textStyle}>
+              <Text>{outcome}</Text>
             </Column>
           </Row>
           <Row style={{ paddingTop: '16px' }}>
@@ -72,4 +87,4 @@ export const MrfWorkflowCompletionEmail = ({
   )
 }
 
-export default MrfWorkflowCompletionEmail
+export default MrfWorkflowOutcomeEmail
