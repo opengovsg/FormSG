@@ -48,13 +48,15 @@ export const useAdminFormWorkflow = () => {
     [augmentedFormFields],
   )
 
+  const formWorkflow =
+    form?.responseMode !== FormResponseMode.Multirespondent
+      ? undefined
+      : form?.workflow
+
   return {
     isLoading,
     formFields: form?.form_fields,
-    formWorkflow:
-      form?.responseMode !== FormResponseMode.Multirespondent
-        ? undefined
-        : form?.workflow,
+    formWorkflow,
     idToFieldMap,
     emailFormFields,
     yesNoFormFields,
