@@ -22,6 +22,8 @@ import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { StepLabel } from '../StepLabel'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
+import { InactiveApprovalsBlock } from './InactiveApprovalsBlock'
+
 interface InactiveStepBlockProps {
   stepNumber: number
   step: FormWorkflowStepDto
@@ -202,6 +204,10 @@ export const InactiveStepBlock = ({
               {questionBadges}
             </Stack>
           </Stack>
+
+          {!isFirstStep ? (
+            <InactiveApprovalsBlock step={step} idToFieldMap={idToFieldMap} />
+          ) : null}
         </Stack>
       </chakra.button>
       {!isFirstStep && (
