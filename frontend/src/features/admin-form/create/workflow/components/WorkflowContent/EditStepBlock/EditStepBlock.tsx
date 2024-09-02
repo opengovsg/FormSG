@@ -128,7 +128,9 @@ export const EditStepBlock = ({
         isLoading={isLoading}
       />
       <QuestionsBlock formMethods={formMethods} isLoading={isLoading} />
-      {!isFirstStep ? <ApprovalsBlock formMethods={formMethods} /> : null}
+      {!isFirstStep ? (
+        <ApprovalsBlock formMethods={formMethods} stepNumber={stepNumber} />
+      ) : null}
       <SaveActionGroup
         isLoading={isLoading}
         handleSubmit={handleSubmit}
