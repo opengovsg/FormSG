@@ -178,9 +178,6 @@ describe('multirespondent-submission.controller', () => {
         .fn()
         .mockReturnValue(okAsync(mockMrfForm))
 
-      // const mrfFindByIdSpy = jest
-      //   .mock(MultiRespondentSubmission, 'findById')
-      //   .mockReturnValue({} as any)
       MultiRespondentSubmission.findById = jest.fn().mockReturnValue({
         save: () => true,
       })
