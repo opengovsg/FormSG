@@ -43,7 +43,17 @@ describe('multirespondent-submission.controller', () => {
 
   const mockSubmissionId = new ObjectId().toHexString()
 
-  describe('mrf completion email notification', () => {
+  describe('mrf approval email notification when approval step exists', () => {
+    it('sends approved outcome email when mrf is approved for single step MRF', async () => {})
+
+    it('sends approved outcome email when mrf is approved for multiple step MRF', async () => {})
+
+    it('sends not approved outcome email when mrf is rejected for single step MRF', async () => {})
+
+    it('sends not approved outcome email when mrf is rejected for multiple step MRF', async () => {})
+  })
+
+  describe('mrf completion email notification when no approval step exists', () => {
     beforeAll(() => {
       MockFormService.isFormPublic = jest.fn().mockReturnValue(ok(true))
       MockFormService.checkIsIntranetFormAccess = jest
