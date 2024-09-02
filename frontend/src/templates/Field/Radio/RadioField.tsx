@@ -100,6 +100,7 @@ export const RadioField = ({
                 {...(idx === 0 ? { ref } : {})}
                 // Required should apply to radio group rather than individual radio.
                 isRequired={false}
+                isDisabled={schema.disabled}
               >
                 {option}
               </Radio>

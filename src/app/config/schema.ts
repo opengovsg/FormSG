@@ -356,6 +356,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 60,
       env: 'SEND_AUTH_OTP_RATE_LIMIT',
     },
+    publicFormIssueFeedback: {
+      doc: 'Per-minute, per-IP, per form request limit for public form issue feedback endpoints',
+      format: 'int',
+      default: 3,
+      env: 'PUBLIC_FORM_ISSUE_FEEDBACK_RATE_LIMIT',
+    },
     downloadPaymentReceipt: {
       doc: 'Per-minute, per-IP request limit to download the payment receipt from Stripe',
       format: 'int',

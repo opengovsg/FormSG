@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.144.0",
+  "version": "6.145.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -181,7 +181,7 @@
     "@types/express-session": "^1.18.0",
     "@types/helmet": "4.0.0",
     "@types/html-escaper": "^3.0.2",
-    "@types/http-errors": "^2.0.1",
+    "@types/http-errors": "^2.0.4",
     "@types/ip": "^1.1.0",
     "@types/jest": "^29.5.1",
     "@types/json-stringify-safe": "^5.0.3",
