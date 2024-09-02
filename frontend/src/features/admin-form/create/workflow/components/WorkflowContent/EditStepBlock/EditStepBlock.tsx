@@ -58,6 +58,10 @@ export const EditStepBlock = ({
   }, [])
 
   const handleSubmit = formMethods.handleSubmit((inputs: EditStepInputs) => {
+    if (inputs.approval_field === '') {
+      inputs.approval_field = undefined
+    }
+
     if (isFirstStepByStepNumber(stepNumber)) {
       if (inputs.field) {
         return onSubmit({

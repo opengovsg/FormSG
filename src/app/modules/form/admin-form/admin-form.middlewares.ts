@@ -56,6 +56,7 @@ export const updateSettingsValidator = celebrate({
             then: Joi.string().required(),
           }),
           edit: Joi.array().items(Joi.string()).required(),
+          approval_field: Joi.string().optional(),
         }),
       )
       .optional(),

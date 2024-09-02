@@ -16,12 +16,15 @@ interface ApprovalsBlockProps {
   formMethods: UseFormReturn<EditStepInputs>
 }
 
+const APPROVAL_FIELD_NAME = 'approval_field'
 export const ApprovalsBlock = ({
   formMethods,
 }: ApprovalsBlockProps): JSX.Element => {
-  const [isApprovalToggleChecked, setIsApprovalToggleChecked] = useState(false)
-
-  const { control } = formMethods
+  const { control, getValues, setValue } = formMethods
+  const selectedApprovalField = getValues(APPROVAL_FIELD_NAME)
+  const [isApprovalToggleChecked, setIsApprovalToggleChecked] = useState(
+    !!selectedApprovalField,
+  )
   const { yesNoFormFields = [] } = useAdminFormWorkflow()
 
   const yesNoFieldItems = yesNoFormFields.map(
@@ -32,13 +35,21 @@ export const ApprovalsBlock = ({
     }),
   )
 
+  const onApprovalToggleChange = () => {
+    const nextIsApprovalToggleChecked = !isApprovalToggleChecked
+    if (!nextIsApprovalToggleChecked) {
+      setValue(APPROVAL_FIELD_NAME, '')
+    }
+    setIsApprovalToggleChecked(nextIsApprovalToggleChecked)
+  }
+
   return (
     <FormStepWithHeader
       headerText="Approval step"
       tooltipText="Use this for steps that involve any type of decision, such as reviews or endorsements"
     >
       <Toggle
-        onChange={() => setIsApprovalToggleChecked(!isApprovalToggleChecked)}
+        onChange={onApprovalToggleChange}
         isChecked={isApprovalToggleChecked}
         label="Enable approval for this step"
         description="If the respondent selects yes, the workflow continues. If they select no, it stops."
@@ -46,7 +57,7 @@ export const ApprovalsBlock = ({
       {isApprovalToggleChecked ? (
         <FormControl>
           <Controller
-            name="approval_field"
+            name={APPROVAL_FIELD_NAME}
             control={control}
             render={({ field: { value = '', ...rest } }) => (
               <SingleSelect
