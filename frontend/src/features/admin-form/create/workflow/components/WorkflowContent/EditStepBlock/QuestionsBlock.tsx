@@ -1,10 +1,8 @@
 import { Controller, UseFormReturn } from 'react-hook-form'
-import { Flex, FormControl, Icon, Stack, Text } from '@chakra-ui/react'
+import { FormControl } from '@chakra-ui/react'
 
-import { BxsInfoCircleAlt } from '~assets/icons'
 import { MultiSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import Tooltip from '~components/Tooltip'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { getLogicFieldLabel } from '~features/admin-form/create/logic/components/LogicContent/utils/getLogicFieldLabel'
@@ -12,6 +10,8 @@ import { EditStepInputs } from '~features/admin-form/create/workflow/types'
 import { NON_RESPONSE_FIELD_SET } from '~features/form/constants'
 
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
+
+import { FormStepWithHeader } from './FormStepWithHeader'
 
 interface QuestionsBlockProps {
   isLoading: boolean
@@ -41,24 +41,10 @@ export const QuestionsBlock = ({
     }))
 
   return (
-    <Stack
-      direction="column"
-      spacing="0.75rem"
-      py="1.5rem"
-      px={{ base: '1.5rem', md: '2rem' }}
-      borderTopWidth="1px"
-      borderTopColor="secondary.200"
+    <FormStepWithHeader
+      headerText="Fields to fill"
+      tooltipText="Respondent will only be able to fill the fields you have selected"
     >
-      <Flex alignItems="center" gap="0.5rem">
-        <Text textStyle="subhead-3">Fields to fill</Text>
-        <Tooltip
-          placement="top"
-          label="Respondent will only be able to fill the fields you have selected"
-        >
-          <Icon as={BxsInfoCircleAlt} />
-        </Tooltip>
-      </Flex>
-
       <FormControl
         isReadOnly={isLoading}
         id="edit"
@@ -81,6 +67,6 @@ export const QuestionsBlock = ({
         />
         <FormErrorMessage>{errors.workflow_type?.message}</FormErrorMessage>
       </FormControl>
-    </Stack>
+    </FormStepWithHeader>
   )
 }

@@ -14,6 +14,7 @@ import { EditStepInputs } from '../../../types'
 import { StepLabel } from '../StepLabel'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
+import { ApprovalsBlock } from './ApprovalsBlock'
 import { QuestionsBlock } from './QuestionsBlock'
 import { RespondentBlock } from './RespondentBlock'
 
@@ -114,12 +115,7 @@ export const EditStepBlock = ({
       transitionProperty="common"
       transitionDuration="normal"
     >
-      <Box
-        py="1.5rem"
-        px={{ base: '1.5rem', md: '2rem' }}
-        borderBottomWidth="1px"
-        borderBottomColor="secondary.200"
-      >
+      <Box py="1.5rem" px={{ base: '1.5rem', md: '2rem' }}>
         <StepLabel stepNumber={stepNumber} />
       </Box>
       <RespondentBlock
@@ -128,6 +124,7 @@ export const EditStepBlock = ({
         isLoading={isLoading}
       />
       <QuestionsBlock formMethods={formMethods} isLoading={isLoading} />
+      <ApprovalsBlock />
       <SaveActionGroup
         isLoading={isLoading}
         handleSubmit={handleSubmit}
