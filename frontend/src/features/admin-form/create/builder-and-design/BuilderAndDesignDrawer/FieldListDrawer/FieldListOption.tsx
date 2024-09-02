@@ -9,6 +9,7 @@ import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
 import { BasicField, MyInfoAttribute } from '~shared/types/field'
 
 import { useIsMobile } from '~hooks/useIsMobile'
+import Badge from '~components/Badge'
 
 import {
   BASICFIELD_TO_DRAWER_META,
@@ -178,6 +179,11 @@ export const BasicFieldOption = forwardRef<BasicFieldOptionProps, 'button'>(
       >
         <Icon fontSize="1.5rem" as={meta.icon} />
         <Text textStyle="body-1">{meta.label}</Text>
+        {fieldType === BasicField.YesNo ? (
+          <Badge maxW="100%" variant="subtle" colorScheme="secondary">
+            <Text noOfLines={1}>Use for approvals</Text>
+          </Badge>
+        ) : null}
       </FieldListOption>
     )
   },
