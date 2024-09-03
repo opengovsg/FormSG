@@ -25,6 +25,7 @@ import {
 import { MYINFO_ATTRIBUTE_MAP } from '../../../../../shared/constants/field/myinfo'
 import {
   AdminDashboardFormMetaDto,
+  BasicField,
   DuplicateFormOverwriteDto,
   EndPageUpdateDto,
   FieldCreateDto,
@@ -35,6 +36,7 @@ import {
   FormResponseMode,
   FormSettings,
   LogicDto,
+  MultirespondentFormSettings,
   PaymentChannel,
   SettingsUpdateDto,
   StartPageUpdateDto,
@@ -1280,6 +1282,28 @@ export const updateFormSettings = (
     return errAsync(
       new MalformedParametersError('Webhooks not supported on MRF'),
     )
+  }
+
+  if (originalForm.responseMode === FormResponseMode.Multirespondent) {
+    const workflow = (body as MultirespondentFormSettings).workflow ?? []
+
+    const selectedApprovalFields = workflow
+      .map((steps) => steps.approval_field)
+      .filter(Boolean)
+    const isApprovalFieldsYesNo = selectedApprovalFields.every((fieldId) => {
+      const field = originalForm.form_fields.find(
+        (field) => field._id.toString() === fieldId,
+      )
+      return field && field.fieldType === BasicField.YesNo
+    })
+
+    if (!isApprovalFieldsYesNo) {
+      return errAsync(
+        new MalformedParametersError(
+          'Approval fields must be valid Yes/No fields',
+        ),
+      )
+    }
   }
 
   // Don't allow emails updates or single response per submitterId
