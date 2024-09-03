@@ -56,6 +56,8 @@ import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 import * as MultirespondentSubmissionMiddleware from './multirespondent-submission.middleware'
 import {
   checkFormIsMultirespondent,
+  checkIsFormApproval,
+  checkIsStepRejected,
   sendMrfOutcomeEmails,
 } from './multirespondent-submission.service'
 import {
@@ -505,6 +507,29 @@ const updateMultirespondentSubmission = async (
     timestamp: (submission.created || new Date()).getTime(),
   })
 
+  const checkIsStepRejectedResult = checkIsStepRejected({
+    zeroIndexedStepNumber: workflowStep,
+    form,
+    responses,
+  })
+
+  if (checkIsStepRejectedResult.isErr()) {
+    // throw some error
+    return
+  }
+
+  const isStepRejected = checkIsStepRejectedResult.value
+  if (isStepRejected) {
+    return await sendMrfOutcomeEmails({
+      currentStepNumber: workflowStep,
+      form,
+      responses,
+      submissionId,
+      isApproval: true,
+      isRejected: true,
+    })
+  }
+
   try {
     await sendNextStepEmail({
       nextStepNumber: workflowStep + 1,
@@ -541,6 +566,8 @@ const updateMultirespondentSubmission = async (
         form,
         responses,
         submissionId,
+        isApproval: checkIsFormApproval(form),
+        isRejected: false,
       })
     } catch (err) {
       logger.error({

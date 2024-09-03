@@ -30,7 +30,7 @@ export type WorkflowOutcomeEmailData = {
   outcome: WorkflowOutcome 
 }
 
-export const MrfWorkflowOutcomeEmail = ({
+export const MrfApprovalOutcomeEmail = ({
   // Defaults are provided only for testing purposes in react-email-preview.
   outcome = WorkflowOutcome.APPROVED, 
   formTitle = 'Test form title',
@@ -87,4 +87,4 @@ export const MrfWorkflowOutcomeEmail = ({
   )
 }
 
-export default MrfWorkflowOutcomeEmail
+export default MrfApprovalOutcomeEmail

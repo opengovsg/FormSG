@@ -33,6 +33,9 @@ import {
   getAdminEmails,
 } from '../../modules/form/form.utils'
 import { formatAsPercentage } from '../../utils/formatters'
+import MrfApprovalOutcomeEmail, {
+  WorkflowOutcome,
+} from '../../views/templates/MrfApprovalOutcomeEmail'
 import MrfWorkflowCompletionEmail from '../../views/templates/MrfWorkflowCompletionEmail'
 import MrfWorkflowEmail, {
   WorkflowEmailData,
@@ -1104,6 +1107,43 @@ export class MailService {
       to: emails,
       from: this.#senderFromString,
       subject: `Completed - ${formTitle} (${responseId})`,
+      html,
+      headers: {
+        [EMAIL_HEADERS.emailType]: EmailType.WorkflowNotification,
+      },
+    }
+
+    return this.#sendNodeMail(mail, { formId, mailId: 'workflowNotification' })
+  }
+
+  sendMrfApprovalEmail = ({
+    emails,
+    formId,
+    formTitle,
+    responseId,
+    isRejected,
+  }: {
+    emails: string[]
+    formId: string
+    formTitle: string
+    responseId: string
+    isRejected: boolean
+  }) => {
+    const outcome = isRejected
+      ? WorkflowOutcome.NOT_APPROVED
+      : WorkflowOutcome.APPROVED
+    const htmlData = {
+      formTitle,
+      responseId,
+      outcome,
+    }
+
+    const html = render(MrfApprovalOutcomeEmail(htmlData))
+
+    const mail: MailOptions = {
+      to: emails,
+      from: this.#senderFromString,
+      subject: `${outcome} - ${formTitle} (${responseId})`,
       html,
       headers: {
         [EMAIL_HEADERS.emailType]: EmailType.WorkflowNotification,
