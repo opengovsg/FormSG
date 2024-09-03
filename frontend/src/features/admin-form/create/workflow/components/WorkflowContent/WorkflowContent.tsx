@@ -5,6 +5,8 @@ import { WorkflowType } from '~shared/types'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 
+import { useUser } from '~features/user/queries'
+
 import {
   setToEditingSelector,
   useAdminWorkflowStore,
@@ -18,6 +20,8 @@ import { WorkflowBlockFactory } from './WorkflowBlockFactory'
 
 export const WorkflowContent = (): JSX.Element | null => {
   const { formWorkflow, isLoading } = useAdminFormWorkflow()
+  const { user } = useUser()
+
   const setToEditing = useAdminWorkflowStore(setToEditingSelector)
 
   const hasOnlyStepOne = formWorkflow?.length === 1
@@ -36,6 +40,11 @@ export const WorkflowContent = (): JSX.Element | null => {
 
   if (isLoading) return null
 
+  // TODO: (MRF-email-notif) Remove isTest and betaFlag check when MRF email notifications is out of beta
+  const isTest = process.env.NODE_ENV === 'test'
+  const showMmrfEmailNotification =
+    isTest || user?.betaFlags?.mrfEmailNotifications
+
   return (
     <Stack color="secondary.500" spacing="1rem">
       <HeaderBlock />
@@ -45,7 +54,7 @@ export const WorkflowContent = (): JSX.Element | null => {
         ))}
         <NewStepBlock />
       </Stack>
-      <DefaultOutcomeNotificationBlock />
+      {showMmrfEmailNotification && <DefaultOutcomeNotificationBlock />}
     </Stack>
   )
 }
