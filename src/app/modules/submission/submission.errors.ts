@@ -203,3 +203,19 @@ export class AttachmentUploadError extends ApplicationError {
     super(message, undefined, ErrorCodes.SUBMISSION_ATTACHMENT_UPLOAD)
   }
 }
+
+export class InvalidApprovalFieldTypeError extends ApplicationError {
+  constructor(
+    message = 'Invalid field type for approval step selected. Please select a Yes/No field',
+  ) {
+    super(message, undefined, ErrorCodes.ADMIN_FORM_INVALID_APPROVAL_FIELD_TYPE)
+  }
+}
+
+export class ExpectedResponseNotFoundError extends ApplicationError {
+  constructor(
+    message = 'Response for the Yes/No field for this approval step is not found',
+  ) {
+    super(message, undefined, ErrorCodes.SUBMISSION_EXPECTED_RESPONSE_NOT_FOUND)
+  }
+}
