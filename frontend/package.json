@@ -63,6 +63,7 @@
     "react-joyride": "^2.8.1",
     "react-markdown": "^9.0.1",
     "react-query": "^3.34.2",
+    "react-remove-scroll": "^2.5.10",
     "react-router-dom": "^6.0.2",
     "react-roving-tabindex": "^3.2.0",
     "react-swipeable": "^7.0.0",
