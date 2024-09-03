@@ -46,7 +46,11 @@ export const checkIsStepRejected = ({
   boolean,
   ExpectedResponseNotFoundError | InvalidApprovalFieldTypeError
 > => {
-  const approvalFieldId = form.workflow[zeroIndexedStepNumber].approval_field
+  const currentStep = form.workflow[zeroIndexedStepNumber]
+  if (!currentStep) {
+    return ok(false)
+  }
+  const approvalFieldId = currentStep.approval_field
   const isApprovalStep = !!approvalFieldId
 
   if (!isApprovalStep) {
