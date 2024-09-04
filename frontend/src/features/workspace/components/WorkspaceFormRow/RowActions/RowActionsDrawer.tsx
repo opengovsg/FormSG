@@ -58,6 +58,14 @@ export const RowActionsDrawer = ({
     handleShareForm,
   } = useRowAction(formMeta)
 
+  const onClickDefault = useCallback(
+    (onClick: () => void) => () => {
+      onClose()
+      onClick()
+    },
+    [onClose],
+  )
+
   const buttonProps: Partial<ButtonProps> = useMemo(
     () => ({
       isFullWidth: true,
@@ -124,21 +132,21 @@ export const RowActionsDrawer = ({
                   </Button>
                   <Button
                     {...buttonProps}
-                    onClick={handleDuplicateForm}
+                    onClick={onClickDefault(handleDuplicateForm)}
                     leftIcon={<BiDuplicate fontSize="1.25rem" />}
                   >
                     Duplicate
                   </Button>
                   <Button
                     {...buttonProps}
-                    onClick={handleShareForm}
+                    onClick={onClickDefault(handleShareForm)}
                     leftIcon={<BiShareAlt fontSize="1.25rem" />}
                   >
                     Share form
                   </Button>
                   <Button
                     {...buttonProps}
-                    onClick={handleCollaborators}
+                    onClick={onClickDefault(handleCollaborators)}
                     leftIcon={<BiUserPlus fontSize="1.25rem" />}
                   >
                     Manage form admins
@@ -162,7 +170,7 @@ export const RowActionsDrawer = ({
                       <Divider />
                       <Button
                         {...buttonProps}
-                        onClick={handleDeleteForm}
+                        onClick={onClickDefault(handleDeleteForm)}
                         color="danger.500"
                         leftIcon={<BiTrash fontSize="1.25rem" />}
                       >
