@@ -916,7 +916,7 @@ describe('Form Model', () => {
 
     describe('Multirespondent form schema', () => {
       const MULTIRESPONDENT_FORM_DEFAULTS = merge(
-        { responseMode: 'multirespondent' },
+        { responseMode: 'multirespondent', stepsToNotify: [], emails: [] },
         FORM_DEFAULTS,
       )
 

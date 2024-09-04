@@ -1,10 +1,16 @@
 import { Meta, Story } from '@storybook/react'
 
 import { PaymentChannel, PaymentType } from '~shared/types'
-import { FormResponseMode, FormSettings, FormStatus } from '~shared/types/form'
+import {
+  FormResponseMode,
+  FormSettings,
+  FormStatus,
+  WorkflowType,
+} from '~shared/types/form'
 
 import {
   getAdminFormSettings,
+  getAdminFormView,
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
 
@@ -73,6 +79,7 @@ const buildMswRoutes = ({
   mode?: FormResponseMode
   delay?: number | 'infinite'
 } = {}) => [
+  getAdminFormView({ overrides, mode, delay }),
   getAdminFormSettings({ overrides, mode, delay }),
   patchAdminFormSettings({ overrides, mode, delay }),
 ]
@@ -112,6 +119,32 @@ PrivateEmailForm.parameters = {
   }),
 }
 
+export const PrivateMultiRespondentForm = Template.bind({})
+PrivateMultiRespondentForm.parameters = {
+  msw: buildMswRoutes({
+    mode: FormResponseMode.Multirespondent,
+    overrides: {
+      status: FormStatus.Private,
+      emails: [],
+      stepsToNotify: [],
+      workflow: [
+        {
+          _id: 'field_id_1',
+          workflow_type: WorkflowType.Dynamic,
+          field: 'email_field_id',
+          edit: [],
+        },
+        {
+          _id: 'field_id_2',
+          workflow_type: WorkflowType.Static,
+          emails: [],
+          edit: [],
+        },
+      ],
+    },
+  }),
+}
+
 export const PublicForm = Template.bind({})
 PublicForm.parameters = {
   msw: buildMswRoutes({
@@ -119,6 +152,33 @@ PublicForm.parameters = {
     overrides: {
       status: FormStatus.Public,
       emails: [],
+      ...PAYMENTS_DISABLED,
+    },
+  }),
+}
+
+export const PublicMultiRespondentForm = Template.bind({})
+PublicMultiRespondentForm.parameters = {
+  msw: buildMswRoutes({
+    mode: FormResponseMode.Multirespondent,
+    overrides: {
+      status: FormStatus.Public,
+      emails: ['expected1@example.com', 'expected2@example.com'],
+      stepsToNotify: ['field_1_id'],
+      workflow: [
+        {
+          _id: 'field_1_id',
+          workflow_type: WorkflowType.Dynamic,
+          field: 'email_field_id',
+          edit: [],
+        },
+        {
+          _id: 'field_2_id',
+          workflow_type: WorkflowType.Static,
+          emails: [],
+          edit: [],
+        },
+      ],
       ...PAYMENTS_DISABLED,
     },
   }),

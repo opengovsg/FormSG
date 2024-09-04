@@ -21,8 +21,15 @@ export const MultiSelectItem = ({
   index,
   ...props
 }: MultiSelectItemProps): JSX.Element => {
-  const { isDisabled, isReadOnly, setIsFocused, closeMenu, isOpen, styles } =
-    useSelectContext()
+  const {
+    isDisabled,
+    isReadOnly,
+    setIsFocused,
+    inputRef,
+    closeMenu,
+    isOpen,
+    styles,
+  } = useSelectContext()
   const { getSelectedItemProps, removeSelectedItem } = useMultiSelectContext()
 
   const itemMeta = useMemo(() => {
@@ -38,9 +45,12 @@ export const MultiSelectItem = ({
       // stealing focus due to parent's onClick handler.
       e.stopPropagation()
       if (isDisabled || isReadOnly) return
+      inputRef?.current?.focus()
+      setIsFocused(true)
+
       removeSelectedItem(item)
     },
-    [isDisabled, isReadOnly, item, removeSelectedItem],
+    [isDisabled, isReadOnly, item, removeSelectedItem, setIsFocused, inputRef],
   )
 
   const handleTagClick = useCallback(
@@ -49,12 +59,14 @@ export const MultiSelectItem = ({
       // stealing focus due to parent's onClick handler.
       e.stopPropagation()
       if (isDisabled || isReadOnly) return
+      inputRef?.current?.focus()
       setIsFocused(true)
+
       if (isOpen) {
         closeMenu()
       }
     },
-    [closeMenu, isDisabled, isOpen, isReadOnly, setIsFocused],
+    [closeMenu, isDisabled, isOpen, isReadOnly, setIsFocused, inputRef],
   )
 
   return (
@@ -67,6 +79,12 @@ export const MultiSelectItem = ({
         selectedItem: item,
         index,
         disabled: isDisabled,
+        onMouseDown: (event) => {
+          // What: Prevent default focus on tab when clicking remove tag, to avoid invoking MultiSelect's onBlur
+          // callback function.
+          // Why: This allows onBlur of MultiSelect to be invoked only when user clicks out of the MultiSelect component.
+          event.preventDefault()
+        },
         onKeyDown: (event) => {
           if (
             (isDisabled || isReadOnly) &&

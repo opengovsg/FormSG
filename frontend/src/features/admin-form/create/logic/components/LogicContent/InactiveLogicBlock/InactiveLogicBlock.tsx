@@ -33,7 +33,7 @@ export const InactiveLogicBlock = ({
   logic,
   handleOpenDeleteModal,
 }: InactiveLogicBlockProps): JSX.Element | null => {
-  const { mapIdToField } = useAdminFormLogic()
+  const { idToFieldMap } = useAdminFormLogic()
   const setToEditing = useAdminLogicStore(setToEditingSelector)
   const stateData = useAdminLogicStore(createOrEditDataSelector)
 
@@ -41,12 +41,12 @@ export const InactiveLogicBlock = ({
   const isPreventEdit = useMemo(() => !!stateData, [stateData])
 
   const renderThenContent = useMemo(() => {
-    if (!mapIdToField) return null
+    if (!idToFieldMap) return null
 
     switch (logic.logicType) {
       case LogicType.ShowFields: {
         const allInvalid = logic.show.every(
-          (fieldId) => !(fieldId in mapIdToField),
+          (fieldId) => !(fieldId in idToFieldMap),
         )
         return (
           <>
@@ -64,7 +64,7 @@ export const InactiveLogicBlock = ({
                 logic.show.map((fieldId, index) => (
                   <FieldLogicBadge
                     key={index}
-                    field={mapIdToField[fieldId]}
+                    field={idToFieldMap[fieldId]}
                     defaults={{
                       variant: 'info',
                       message:
@@ -85,7 +85,7 @@ export const InactiveLogicBlock = ({
           </>
         )
     }
-  }, [logic, mapIdToField])
+  }, [logic, idToFieldMap])
 
   const handleClick = useCallback(() => {
     if (isPreventEdit) {
@@ -94,7 +94,7 @@ export const InactiveLogicBlock = ({
     setToEditing(logic._id)
   }, [isPreventEdit, logic._id, setToEditing])
 
-  if (!mapIdToField) return null
+  if (!idToFieldMap) return null
 
   return (
     <Box pos="relative">
@@ -137,7 +137,7 @@ export const InactiveLogicBlock = ({
               <Stack>
                 <Text>{index === 0 ? 'If' : 'and'}</Text>
                 <FieldLogicBadge
-                  field={mapIdToField[condition.field]}
+                  field={idToFieldMap[condition.field]}
                   defaults={{
                     variant: 'error',
                     message:

@@ -1,13 +1,17 @@
 import { useCallback, useMemo } from 'react'
 import { BiTrash } from 'react-icons/bi'
 import { Box, chakra, Flex, Stack, Text } from '@chakra-ui/react'
+import { Dictionary } from 'lodash'
 
+import { FormField } from '~shared/types'
 import { FormWorkflowStepDto, WorkflowType } from '~shared/types/form'
 
 import IconButton from '~components/IconButton'
 
 import { FieldLogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/FieldLogicBadge'
 import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
+import { FormFieldWithQuestionNo } from '~features/form/types'
+import { useUser } from '~features/user/queries'
 
 import {
   createOrEditDataSelector,
@@ -24,14 +28,65 @@ interface InactiveStepBlockProps {
   handleOpenDeleteModal: () => void
 }
 
+interface RespondentBadgeProps {
+  step: FormWorkflowStepDto
+  idToFieldMap: Dictionary<FormFieldWithQuestionNo<FormField>>
+}
+const FirstStepRespondentBadge = ({
+  step,
+  idToFieldMap,
+}: RespondentBadgeProps): JSX.Element | null => {
+  if (
+    step.workflow_type === WorkflowType.Static ||
+    (step.workflow_type === WorkflowType.Dynamic && !step.field)
+  ) {
+    return (
+      <FieldLogicBadge
+        defaults={{
+          variant: 'info',
+          message: 'No email field included in this step',
+        }}
+      />
+    )
+  }
+  return <FieldLogicBadge field={idToFieldMap[step.field]} />
+}
+
+const SubsequentStepRespondentBadges = ({
+  step,
+  idToFieldMap,
+}: RespondentBadgeProps): JSX.Element => {
+  switch (step.workflow_type) {
+    case WorkflowType.Static:
+      return (
+        <>
+          {step.emails.map((email) => (
+            <LogicBadge key={email}>{email}</LogicBadge>
+          ))}
+        </>
+      )
+    case WorkflowType.Dynamic:
+      return <FieldLogicBadge field={idToFieldMap[step.field]} />
+    default: {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _: never = step
+      throw new Error('Unexpected workflow type encountered')
+    }
+  }
+}
+
 export const InactiveStepBlock = ({
   stepNumber,
   step,
   handleOpenDeleteModal,
 }: InactiveStepBlockProps): JSX.Element | null => {
-  const { mapIdToField } = useAdminFormWorkflow()
+  const { idToFieldMap } = useAdminFormWorkflow()
   const setToEditing = useAdminWorkflowStore(setToEditingSelector)
   const stateData = useAdminWorkflowStore(createOrEditDataSelector)
+
+  const { user } = useUser()
+  // TODO: (MRF-email-notif) Remove isTest check when MRF email notifications is out of beta
+  const isTest = process.env.NODE_ENV === 'test'
 
   // Prevent editing step if some other step is being edited.
   const isPreventEdit = useMemo(() => !!stateData, [stateData])
@@ -45,20 +100,6 @@ export const InactiveStepBlock = ({
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
-  const respondentBadges = useMemo(() => {
-    switch (step.workflow_type) {
-      case WorkflowType.Static:
-        return step.emails.map((email) => <LogicBadge>{email}</LogicBadge>)
-      case WorkflowType.Dynamic:
-        return <FieldLogicBadge field={mapIdToField[step.field]} />
-      default: {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const _: never = step
-        throw new Error('Unexpected workflow type encountered')
-      }
-    }
-  }, [mapIdToField, step])
-
   const questionBadges = useMemo(() => {
     if (step.edit.length === 0) {
       return (
@@ -71,7 +112,7 @@ export const InactiveStepBlock = ({
       )
     }
 
-    const allInvalid = step.edit.every((fieldId) => !(fieldId in mapIdToField))
+    const allInvalid = step.edit.every((fieldId) => !(fieldId in idToFieldMap))
 
     if (allInvalid) {
       return (
@@ -88,7 +129,7 @@ export const InactiveStepBlock = ({
     return step.edit.map((fieldId, index) => (
       <FieldLogicBadge
         key={index}
-        field={mapIdToField[fieldId]}
+        field={idToFieldMap[fieldId]}
         defaults={{
           variant: 'info',
           message:
@@ -96,7 +137,7 @@ export const InactiveStepBlock = ({
         }}
       />
     ))
-  }, [mapIdToField, step.edit])
+  }, [idToFieldMap, step.edit])
 
   return (
     <Box pos="relative">
@@ -129,8 +170,17 @@ export const InactiveStepBlock = ({
 
           <Stack>
             <Text textStyle="subhead-3">Respondent in this step</Text>
+            {/* TODO: (MRF-email-notif) Remove isTest and betaFlag check when MRF email
+            notifications is out of beta */}
             {isFirstStep ? (
-              <Text>Anyone you share the form link with</Text>
+              isTest || user?.betaFlags?.mrfEmailNotifications ? (
+                <FirstStepRespondentBadge
+                  step={step}
+                  idToFieldMap={idToFieldMap}
+                />
+              ) : (
+                <Text>Anyone you share the form link with</Text>
+              )
             ) : (
               <Flex
                 flexDir={{ base: 'column', md: 'row' }}
@@ -138,7 +188,10 @@ export const InactiveStepBlock = ({
                 rowGap={{ md: '0.5rem' }}
                 wrap="wrap"
               >
-                {respondentBadges}
+                <SubsequentStepRespondentBadges
+                  step={step}
+                  idToFieldMap={idToFieldMap}
+                />
               </Flex>
             )}
           </Stack>
