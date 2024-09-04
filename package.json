@@ -234,7 +234,7 @@
     "mockdate": "^3.0.5",
     "prettier": "^3.3.2",
     "regenerator": "^0.14.10",
-    "rimraf": "^5.0.5",
+    "rimraf": "^6.0.1",
     "stripe-event-types": "^3.1.0",
     "supertest": "^6.3.3",
     "supertest-session": "^5.0.1",
