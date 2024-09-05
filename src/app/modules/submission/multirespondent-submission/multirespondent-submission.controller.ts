@@ -514,7 +514,17 @@ const updateMultirespondentSubmission = async (
   })
 
   if (checkIsStepRejectedResult.isErr()) {
-    // throw some error
+    logger.error({
+      message: 'Error checking if step is rejected',
+      meta: {
+        ...logMeta,
+        ...createReqMeta(req),
+        currentWorkflowStep: workflowStep,
+        formId: form._id,
+        submissionId,
+      },
+      error: checkIsStepRejectedResult.error,
+    })
     return
   }
 
