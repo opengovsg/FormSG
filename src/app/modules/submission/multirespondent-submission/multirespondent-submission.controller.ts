@@ -567,7 +567,6 @@ const updateMultirespondentSubmission = async (
         responses,
         submissionId,
         isApproval: checkIsFormApproval(form),
-        isRejected: false,
       })
     } catch (err) {
       logger.error({

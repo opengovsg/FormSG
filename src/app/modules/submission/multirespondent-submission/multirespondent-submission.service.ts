@@ -121,15 +121,15 @@ export const sendMrfOutcomeEmails = ({
   form,
   responses,
   submissionId,
-  isApproval,
-  isRejected,
+  isApproval = false,
+  isRejected = false,
 }: {
   currentStepNumber: number
   form: IPopulatedMultirespondentForm
   responses: FieldResponsesV3
   submissionId: string
-  isApproval: boolean
-  isRejected: boolean
+  isApproval?: boolean
+  isRejected?: boolean
 }): ResultAsync<true, InvalidWorkflowTypeError | MailSendError> => {
   const logMeta = {
     action: 'sendMrfOutcomeEmails',
