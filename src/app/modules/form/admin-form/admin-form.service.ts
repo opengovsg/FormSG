@@ -1304,6 +1304,20 @@ export const updateFormSettings = (
         ),
       )
     }
+
+    const isApprovalFieldInEditFields = workflow.every(
+      (step) =>
+        !step.approval_field ||
+        (step.edit && step.edit.includes(step.approval_field)),
+    )
+
+    if (!isApprovalFieldInEditFields) {
+      return errAsync(
+        new MalformedParametersError(
+          "Approval field for each step must also be in the same step's edit fields",
+        ),
+      )
+    }
   }
 
   // Don't allow emails updates or single response per submitterId
