@@ -18,18 +18,20 @@ interface ApprovalsBlockProps {
 }
 
 const APPROVAL_FIELD_NAME = 'approval_field'
+const FIELDS_TO_EDIT_NAME = 'edit'
 export const ApprovalsBlock = ({
   formMethods,
   stepNumber,
 }: ApprovalsBlockProps): JSX.Element => {
   const {
     control,
-    getValues,
     setValue,
     formState: { errors },
+    clearErrors,
+    watch,
   } = formMethods
-  const selectedApprovalField = getValues(APPROVAL_FIELD_NAME)
-  const selectedEditFields = getValues('edit')
+  const selectedApprovalField = watch(APPROVAL_FIELD_NAME)
+  const selectedEditFields = watch(FIELDS_TO_EDIT_NAME)
   const [isApprovalToggleChecked, setIsApprovalToggleChecked] = useState(
     !!selectedApprovalField,
   )
@@ -58,6 +60,7 @@ export const ApprovalsBlock = ({
     const nextIsApprovalToggleChecked = !isApprovalToggleChecked
     if (!nextIsApprovalToggleChecked) {
       setValue(APPROVAL_FIELD_NAME, '')
+      clearErrors(APPROVAL_FIELD_NAME)
     }
     setIsApprovalToggleChecked(nextIsApprovalToggleChecked)
   }
