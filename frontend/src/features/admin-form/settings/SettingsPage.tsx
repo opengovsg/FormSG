@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import {
   BiCodeBlock,
   BiCog,
@@ -20,10 +20,11 @@ import {
 } from '@chakra-ui/react'
 
 import { FormResponseMode } from '~shared/types'
-import { isNonEmpty } from '~shared/utils/isNonEmpty'
 
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
+
+import { useUser } from '~features/user/queries'
 
 import { useAdminFormCollaborators } from '../common/queries'
 
@@ -46,7 +47,9 @@ interface TabEntry {
 
 export const SettingsPage = (): JSX.Element => {
   const { formId, settingsTab } = useParams()
-  const { data: settings } = useAdminFormSettings()
+  const { data: formSettings, isLoading: isFormSettingLoading } =
+    useAdminFormSettings()
+  const { user, isLoading: isUserLoading } = useUser()
 
   if (!formId) throw new Error('No formId provided')
 
@@ -60,55 +63,57 @@ export const SettingsPage = (): JSX.Element => {
       navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_RESULTS_SUBROUTE}`)
   }, [formId, hasEditAccess, isCollabLoading, navigate])
 
-  const tabConfig = useMemo(() => {
-    const emailsNotificationsTab =
-      settings?.responseMode === FormResponseMode.Encrypt ||
-      settings?.responseMode === FormResponseMode.Email
-        ? {
-            label: 'Email notifications',
-            icon: BiMailSend,
-            component: SettingsEmailsPage,
-            path: 'email-notifications',
-            showRedDot: true,
-          }
-        : null
+  const isTest = process.env.NODE_ENV === 'test'
+  // For beta flagging email notifications tab.
+  const emailNotificationsTab =
+    isUserLoading ||
+    isFormSettingLoading ||
+    // TODO: (MRF-email-notif) Remove isTest and betaFlag check when MRF email notifications is out of beta
+    (!isTest &&
+      formSettings?.responseMode === FormResponseMode.Multirespondent &&
+      !user?.betaFlags?.mrfEmailNotifications)
+      ? null
+      : {
+          label: 'Email notifications',
+          icon: BiMailSend,
+          component: SettingsEmailsPage,
+          path: 'email-notifications',
+          showRedDot: true,
+        }
 
-    const baseConfig: (TabEntry | null)[] = [
-      {
-        label: 'General',
-        icon: BiCog,
-        component: SettingsGeneralPage,
-        path: 'general',
-      },
-      {
-        label: 'Singpass',
-        icon: BiKey,
-        component: SettingsAuthPage,
-        path: 'singpass',
-      },
-      emailsNotificationsTab,
-      {
-        label: 'Twilio credentials',
-        icon: BiMessage,
-        component: SettingsTwilioPage,
-        path: 'twilio-credentials',
-      },
-      {
-        label: 'Webhooks',
-        icon: BiCodeBlock,
-        component: SettingsWebhooksPage,
-        path: 'webhooks',
-      },
-      {
-        label: 'Payments',
-        icon: BiDollar,
-        component: SettingsPaymentsPage,
-        path: 'payments',
-      },
-    ]
-
-    return baseConfig.filter(isNonEmpty)
-  }, [settings?.responseMode])
+  const tabConfig: TabEntry[] = [
+    {
+      label: 'General',
+      icon: BiCog,
+      component: SettingsGeneralPage,
+      path: 'general',
+    },
+    {
+      label: 'Singpass',
+      icon: BiKey,
+      component: SettingsAuthPage,
+      path: 'singpass',
+    },
+    emailNotificationsTab,
+    {
+      label: 'Twilio credentials',
+      icon: BiMessage,
+      component: SettingsTwilioPage,
+      path: 'twilio-credentials',
+    },
+    {
+      label: 'Webhooks',
+      icon: BiCodeBlock,
+      component: SettingsWebhooksPage,
+      path: 'webhooks',
+    },
+    {
+      label: 'Payments',
+      icon: BiDollar,
+      component: SettingsPaymentsPage,
+      path: 'payments',
+    },
+  ].filter(Boolean) as TabEntry[]
 
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
 

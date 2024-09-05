@@ -31,11 +31,11 @@ export const DeleteFieldModal = (): JSX.Element => {
   const {
     deleteFieldModalDisclosure: { onClose },
   } = useBuilderAndDesignContext()
-  const { mapIdToField, logicedFieldIdsSet } = useAdminFormLogic()
+  const { idToFieldMap, logicedFieldIdsSet } = useAdminFormLogic()
 
   const { fieldIsInLogic, fieldIcon, fieldLabel } = useMemo(() => {
     if (stateData.state !== FieldBuilderState.EditingField) return {}
-    const questionNumber = mapIdToField?.[stateData.field._id].questionNumber
+    const questionNumber = idToFieldMap?.[stateData.field._id].questionNumber
     const fieldTitle = stateData.field.title
     return {
       fieldIsInLogic: logicedFieldIdsSet?.has(stateData.field._id),
@@ -44,7 +44,7 @@ export const DeleteFieldModal = (): JSX.Element => {
         ? `${questionNumber}. ${fieldTitle}`
         : fieldTitle,
     }
-  }, [mapIdToField, stateData, logicedFieldIdsSet])
+  }, [idToFieldMap, stateData, logicedFieldIdsSet])
 
   const { deleteFieldMutation } = useDeleteFormField()
 

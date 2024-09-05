@@ -9,7 +9,6 @@ import {
   ErrorDto,
   FieldResponsesV3,
   FormAuthType,
-  FormWorkflowDto,
   MultirespondentSubmissionDto,
   SubmissionType,
 } from '../../../../../shared/types'
@@ -18,7 +17,8 @@ import {
   Environment,
   IPopulatedMultirespondentForm,
 } from '../../../../../src/types'
-import config from '../../../config/config'
+// TODO: (MRF-email-notif) Remove isTest import when MRF email notifications is out of beta
+import config, { isTest } from '../../../config/config'
 import {
   createLoggerWithLabel,
   CustomLoggerParams,
@@ -54,7 +54,10 @@ import { mapRouteError } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import * as MultirespondentSubmissionMiddleware from './multirespondent-submission.middleware'
-import { checkFormIsMultirespondent } from './multirespondent-submission.service'
+import {
+  checkFormIsMultirespondent,
+  sendMrfOutcomeEmails,
+} from './multirespondent-submission.service'
 import {
   MultirespondentSubmissionContent,
   SubmitMultirespondentFormHandlerRequest,
@@ -189,6 +192,8 @@ const submitMultirespondentForm = async (
   })
 }
 
+export const submitMultirespondentFormForTest = submitMultirespondentForm
+
 const _createSubmission = async ({
   req,
   res,
@@ -259,10 +264,12 @@ const _createSubmission = async ({
   // TODO(MRF/FRM-1591): Add post-submission actions handling
   // return await performEncryptPostSubmissionActions(submission, responses)
 
+  const currentStepNumber = submissionContent.workflowStep
+
   try {
-    await runMultirespondentWorkflow({
-      nextWorkflowStep: submissionContent.workflowStep + 1, // we want to send emails to the addresses linked to the next step of the workflow
-      formWorkflow: form.workflow ?? [],
+    await sendNextStepEmail({
+      nextStepNumber: currentStepNumber + 1, // we want to send emails to the addresses linked to the next step of the workflow
+      form,
       formTitle: form.title,
       responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
         form._id,
@@ -279,26 +286,50 @@ const _createSubmission = async ({
       meta: {
         ...logMeta,
         ...createReqMeta(req),
-        currentWorkflowStep: submissionContent.workflowStep,
+        currentWorkflowStep: currentStepNumber,
         formId: form._id,
         submissionId,
       },
       error: err,
     })
   }
+
+  // TODO: (MRF-email-notif) Remove isTest and betaFlag check when MRF email notifications is out of beta
+  if (isTest || form.admin.betaFlags.mrfEmailNotifications) {
+    try {
+      await sendMrfOutcomeEmails({
+        currentStepNumber,
+        form,
+        responses,
+        submissionId,
+      })
+    } catch (err) {
+      logger.error({
+        message: 'Send mrf outcome email error',
+        meta: {
+          ...logMeta,
+          ...createReqMeta(req),
+          currentWorkflowStep: currentStepNumber,
+          formId: form._id,
+          submissionId,
+        },
+        error: err,
+      })
+    }
+  }
 }
 
-const runMultirespondentWorkflow = ({
-  nextWorkflowStep,
-  formWorkflow,
+const sendNextStepEmail = ({
+  nextStepNumber,
+  form,
   formTitle,
   responseUrl,
   formId,
   submissionId,
   responses,
 }: {
-  nextWorkflowStep: number
-  formWorkflow: FormWorkflowDto
+  nextStepNumber: number
+  form: IPopulatedMultirespondentForm
   formTitle: string
   responseUrl: string
   formId: string
@@ -306,18 +337,20 @@ const runMultirespondentWorkflow = ({
   responses: FieldResponsesV3
 }): ResultAsync<true, InvalidWorkflowTypeError | MailSendError> => {
   const logMeta = {
-    action: 'runMultirespondentWorkflow',
+    action: 'sendNextStepEmail',
     formId,
     submissionId,
-    nextWorkflowStep,
+    nextWorkflowStep: nextStepNumber,
   }
+
+  const nextStep = form.workflow[nextStepNumber]
+  if (!nextStep) {
+    return okAsync(true)
+  }
+
   return (
     // Step 1: Retrieve email addresses for current workflow step
-    retrieveWorkflowStepEmailAddresses(
-      formWorkflow,
-      nextWorkflowStep,
-      responses,
-    )
+    retrieveWorkflowStepEmailAddresses(nextStep, responses)
       .mapErr((error) => {
         logger.error({
           message: 'Failed to retrieve workflow step email addresses',
@@ -326,8 +359,7 @@ const runMultirespondentWorkflow = ({
         })
         return error
       })
-
-      // Step 2: send out workflow email
+      // Step 2: send out next workflow step email
       .asyncAndThen((emails) => {
         if (!emails) return okAsync(true)
         return MailService.sendMRFWorkflowStepEmail({
@@ -474,9 +506,9 @@ const updateMultirespondentSubmission = async (
   })
 
   try {
-    await runMultirespondentWorkflow({
-      nextWorkflowStep: workflowStep + 1, // we want to send emails to the addresses linked to the next step of the workflow
-      formWorkflow: submission.workflow,
+    await sendNextStepEmail({
+      nextStepNumber: workflowStep + 1,
+      form,
       formTitle: form.title,
       responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
         form._id,
@@ -500,7 +532,34 @@ const updateMultirespondentSubmission = async (
       error: err,
     })
   }
+
+  // TODO: (MRF-email-notif) Remove isTest and betaFlag check when MRF email notifications is out of beta
+  if (isTest || form.admin.betaFlags.mrfEmailNotifications) {
+    try {
+      await sendMrfOutcomeEmails({
+        currentStepNumber: workflowStep,
+        form,
+        responses,
+        submissionId,
+      })
+    } catch (err) {
+      logger.error({
+        message: 'Send mrf outcome email error',
+        meta: {
+          ...logMeta,
+          ...createReqMeta(req),
+          currentWorkflowStep: workflowStep,
+          formId: form._id,
+          submissionId,
+        },
+        error: err,
+      })
+    }
+  }
 }
+
+export const updateMultirespondentSubmissionForTest =
+  updateMultirespondentSubmission
 
 export const handleMultirespondentSubmission = [
   CaptchaMiddleware.validateCaptchaParams,

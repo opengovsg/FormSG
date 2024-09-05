@@ -33,6 +33,7 @@ import {
   getAdminEmails,
 } from '../../modules/form/form.utils'
 import { formatAsPercentage } from '../../utils/formatters'
+import MrfWorkflowCompletionEmail from '../../views/templates/MrfWorkflowCompletionEmail'
 import MrfWorkflowEmail, {
   WorkflowEmailData,
 } from '../../views/templates/MrfWorkflowEmail'
@@ -1079,6 +1080,37 @@ export class MailService {
     }
 
     return this.#sendNodeMail(mail, { mailId: 'workflowNotification' })
+  }
+
+  sendMrfWorkflowCompletionEmail = ({
+    emails,
+    formId,
+    formTitle,
+    responseId,
+  }: {
+    emails: string[]
+    formId: string
+    formTitle: string
+    responseId: string
+  }) => {
+    const htmlData = {
+      formTitle,
+      responseId,
+    }
+
+    const html = render(MrfWorkflowCompletionEmail(htmlData))
+
+    const mail: MailOptions = {
+      to: emails,
+      from: this.#senderFromString,
+      subject: `Completed - ${formTitle} (${responseId})`,
+      html,
+      headers: {
+        [EMAIL_HEADERS.emailType]: EmailType.WorkflowNotification,
+      },
+    }
+
+    return this.#sendNodeMail(mail, { formId, mailId: 'workflowNotification' })
   }
 }
 

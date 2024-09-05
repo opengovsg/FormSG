@@ -22,7 +22,7 @@ export const QuestionsBlock = ({
   isLoading,
   formMethods,
 }: QuestionsBlockProps): JSX.Element => {
-  const { formFields = [], mapIdToField } = useAdminFormWorkflow()
+  const { formFields = [], idToFieldMap } = useAdminFormWorkflow()
   const {
     formState: { errors },
     control,
@@ -36,7 +36,7 @@ export const QuestionsBlock = ({
     )
     .map((f) => ({
       value: f._id,
-      label: getLogicFieldLabel(mapIdToField[f._id]),
+      label: getLogicFieldLabel(idToFieldMap[f._id]),
       icon: BASICFIELD_TO_DRAWER_META[f.fieldType].icon,
     }))
 
@@ -51,7 +51,10 @@ export const QuestionsBlock = ({
     >
       <Flex alignItems="center" gap="0.5rem">
         <Text textStyle="subhead-3">Fields to fill</Text>
-        <Tooltip label="Respondent will only be able to fill the fields you have selected">
+        <Tooltip
+          placement="top"
+          label="Respondent will only be able to fill the fields you have selected"
+        >
           <Icon as={BxsInfoCircleAlt} />
         </Tooltip>
       </Flex>

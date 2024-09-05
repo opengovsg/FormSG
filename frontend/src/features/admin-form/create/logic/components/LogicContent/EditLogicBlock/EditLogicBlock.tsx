@@ -30,7 +30,7 @@ export const useEditLogicBlock = ({
   onSubmit,
 }: UseEditLogicBlockProps) => {
   const setToInactive = useAdminLogicStore(setToInactiveSelector)
-  const { logicableFields, mapIdToField, formFields } = useAdminFormLogic()
+  const { logicableFields, idToFieldMap, formFields } = useAdminFormLogic()
 
   const formMethods = useForm<EditLogicInputs>({
     defaultValues: merge({ conditions: [{}] }, defaultValues),
@@ -86,7 +86,7 @@ export const useEditLogicBlock = ({
     wrapperRef,
     setToInactive,
     logicableFields,
-    mapIdToField,
+    idToFieldMap,
     formFields,
   }
 }
@@ -113,7 +113,7 @@ export const EditLogicBlock = ({
     handleRemoveCondition,
     setToInactive,
     logicableFields,
-    mapIdToField,
+    idToFieldMap,
     formFields,
   } = useEditLogicBlock({ defaultValues, onSubmit })
 
@@ -129,7 +129,7 @@ export const EditLogicBlock = ({
           return (
             <EditConditionBlock
               logicableFields={logicableFields}
-              mapIdToField={mapIdToField}
+              idToFieldMap={idToFieldMap}
               formMethods={formMethods}
               isLoading={isLoading}
               key={block.id}
@@ -146,7 +146,7 @@ export const EditLogicBlock = ({
       <ThenShowBlock
         formFields={formFields}
         formMethods={formMethods}
-        mapIdToField={mapIdToField}
+        idToFieldMap={idToFieldMap}
         isLoading={isLoading}
       />
       <SaveActionGroup
