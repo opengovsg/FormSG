@@ -1,4 +1,4 @@
-import { flatten } from 'lodash'
+import { flatten, uniq } from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
@@ -166,7 +166,7 @@ export const sendMrfOutcomeEmails = ({
       })
       // Step 2: Combine static emails and workflow step emails that are selected to notify
       .map((workflowStepEmailsToNotify) => {
-        return [...workflowStepEmailsToNotify, ...emailsToNotify]
+        return uniq([...workflowStepEmailsToNotify, ...emailsToNotify])
       })
       // Step 3: Send outcome emails based on type
       .asyncAndThen((destinationEmails) => {
