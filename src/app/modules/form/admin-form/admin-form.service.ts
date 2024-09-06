@@ -42,6 +42,7 @@ import {
   SettingsUpdateDto,
   StartPageUpdateDto,
   StorageFormSettings,
+  WorkflowType,
 } from '../../../../../shared/types'
 import {
   isMFinSeriesValid,
@@ -518,25 +519,56 @@ export const createForm = (
     formParams,
   }
 
+  // verify that approval fields in workflow are valid
   if (formParams.responseMode === FormResponseMode.Multirespondent) {
     const workflow = (formParams as MultirespondentFormToCreate).workflow ?? []
 
-    const selectedApprovalFields = workflow
-      .map((steps) => steps.approval_field)
-      .filter(Boolean)
-    const isApprovalFieldsYesNo = selectedApprovalFields.every((fieldId) => {
-      const field = formParams.form_fields?.find(
-        (field) => field._id.toString() === fieldId,
+    const emailFieldIds = formParams.form_fields
+      ?.filter((field) => field.fieldType === BasicField.Email)
+      .map((field) => field._id.toString())
+    const isRespondentFieldEmail = workflow?.every((step) => {
+      return (
+        step.workflow_type !== WorkflowType.Dynamic ||
+        (step.field && emailFieldIds?.includes(step.field))
       )
-      return field && field.fieldType === BasicField.YesNo
     })
-    if (!isApprovalFieldsYesNo) {
+    if (!isRespondentFieldEmail) {
       return errAsync(
         new MalformedParametersError(
-          'Approval fields must be valid Yes/No fields',
+          'All respondent fields in workflow must be email fields',
         ),
       )
     }
+
+    const yesNoFieldIds = formParams.form_fields
+      ?.filter((field) => field.fieldType === BasicField.YesNo)
+      .map((field) => field._id.toString())
+    const isApprovalFieldYesNo = workflow.every((step) => {
+      return (
+        !step.approval_field || yesNoFieldIds?.includes(step.approval_field)
+      )
+    })
+    if (!isApprovalFieldYesNo) {
+      return errAsync(
+        new MalformedParametersError(
+          'All approval fields must be yes/no fields',
+        ),
+      )
+    }
+
+    const selectedApprovalFields = workflow
+      .map((step) => step.approval_field)
+      .filter(Boolean)
+    const isApprovalFieldUnique =
+      new Set(selectedApprovalFields).size === selectedApprovalFields.length
+    if (!isApprovalFieldUnique) {
+      return errAsync(
+        new MalformedParametersError(
+          'Each yes/no field cannot be used in more than one approval step',
+        ),
+      )
+    }
+
     const isApprovalFieldInEditFields = workflow.every(
       (step) =>
         !step.approval_field ||
@@ -545,7 +577,7 @@ export const createForm = (
     if (!isApprovalFieldInEditFields) {
       return errAsync(
         new MalformedParametersError(
-          "Approval field for each step must also be in the same step's edit fields",
+          "For all steps, the selected approval field must also be included in same step's edit fields",
         ),
       )
     }
@@ -1292,13 +1324,72 @@ export const updateFormWhitelistSetting = (
 export const createWorkflowStep = (
   originalForm: IPopulatedForm,
   newWorkflowStep: FormWorkflowStepDto,
-): ResultAsync<FormWorkflowDto, DatabaseError> => {
+): ResultAsync<FormWorkflowDto, DatabaseError | FormNotFoundError> => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
       new MalformedParametersError(
         'Cannot update workflow step for non-multirespondent mode forms',
       ),
     )
+  }
+
+  if (
+    newWorkflowStep.workflow_type === WorkflowType.Dynamic &&
+    newWorkflowStep.field
+  ) {
+    const emailFieldIds = originalForm.form_fields
+      .filter((field) => field.fieldType === BasicField.Email)
+      .map((field) => field._id.toString())
+    const isEmailField = emailFieldIds.includes(newWorkflowStep.field)
+    if (!isEmailField) {
+      return errAsync(
+        new MalformedParametersError(
+          'Respondent field must be a valid email field',
+        ),
+      )
+    }
+  }
+
+  const selectedApprovalField = newWorkflowStep.approval_field
+  if (selectedApprovalField) {
+    const yesNoFieldIds = originalForm.form_fields
+      .filter((field) => field.fieldType === BasicField.YesNo)
+      .map((field) => field._id.toString())
+    const isYesNoField = yesNoFieldIds.includes(selectedApprovalField)
+    if (!isYesNoField) {
+      return errAsync(
+        new MalformedParametersError(
+          'Approval field must be a valid yes/no field',
+        ),
+      )
+    }
+
+    const otherApprovalFields = (
+      originalForm as IPopulatedMultirespondentForm
+    ).workflow
+      .map((step) => step.approval_field)
+      .filter(Boolean)
+
+    const isAlreadyUsed = otherApprovalFields.includes(selectedApprovalField)
+    if (isAlreadyUsed) {
+      return errAsync(
+        new MalformedParametersError(
+          'Approval field has already been used in another step',
+        ),
+      )
+    }
+
+    const editFields = newWorkflowStep.edit ?? []
+    const isApprovalFieldInEditFields = editFields.includes(
+      selectedApprovalField,
+    )
+    if (!isApprovalFieldInEditFields) {
+      return errAsync(
+        new MalformedParametersError(
+          "Approval field must also be in the same step's edit fields",
+        ),
+      )
+    }
   }
 
   const originalMrfForm = originalForm as IPopulatedMultirespondentForm
@@ -1345,13 +1436,72 @@ export const updateFormWorkflowStep = (
   originalForm: IPopulatedForm,
   stepNumber: number,
   updatedWorkflowStep: FormWorkflowStepDto,
-): ResultAsync<FormWorkflowDto, DatabaseError> => {
+): ResultAsync<FormWorkflowDto, DatabaseError | FormNotFoundError> => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
       new MalformedParametersError(
         'Cannot update workflow step for non-multirespondent mode forms',
       ),
     )
+  }
+
+  if (
+    updatedWorkflowStep.workflow_type === WorkflowType.Dynamic &&
+    updatedWorkflowStep.field
+  ) {
+    const emailFieldIds = originalForm.form_fields
+      .filter((field) => field.fieldType === BasicField.Email)
+      .map((field) => field._id.toString())
+    const isEmailField = emailFieldIds.includes(updatedWorkflowStep.field)
+    if (!isEmailField) {
+      return errAsync(
+        new MalformedParametersError(
+          'Respondent field must be a valid email field',
+        ),
+      )
+    }
+  }
+
+  const selectedApprovalField = updatedWorkflowStep.approval_field
+  if (selectedApprovalField) {
+    const yesNoFieldIds = originalForm.form_fields
+      .filter((field) => field.fieldType === BasicField.YesNo)
+      .map((field) => field._id.toString())
+    const isYesNoField = yesNoFieldIds.includes(selectedApprovalField)
+    if (!isYesNoField) {
+      return errAsync(
+        new MalformedParametersError(
+          'Approval field must be a valid yes/no field',
+        ),
+      )
+    }
+
+    const otherApprovalFields = (
+      originalForm as IPopulatedMultirespondentForm
+    ).workflow
+      .map((step, index) => (index !== stepNumber ? step.approval_field : null))
+      .filter(Boolean)
+
+    const isAlreadyUsed = otherApprovalFields.includes(selectedApprovalField)
+    if (isAlreadyUsed) {
+      return errAsync(
+        new MalformedParametersError(
+          'Approval field has already been used in another step',
+        ),
+      )
+    }
+
+    const editFields = updatedWorkflowStep.edit ?? []
+    const isApprovalFieldInEditFields = editFields.includes(
+      selectedApprovalField,
+    )
+    if (!isApprovalFieldInEditFields) {
+      return errAsync(
+        new MalformedParametersError(
+          "Approval field must also be in the same step's edit fields",
+        ),
+      )
+    }
   }
 
   const originalMrfForm = originalForm as IPopulatedMultirespondentForm
@@ -1406,10 +1556,7 @@ export const updateFormWorkflowStep = (
 export const deleteFormWorkflowStep = (
   originalForm: IPopulatedForm,
   stepNumber: number,
-): ResultAsync<
-  FormWorkflowDto,
-  DatabaseError | LogicNotFoundError | FormNotFoundError
-> => {
+): ResultAsync<FormWorkflowDto, DatabaseError | FormNotFoundError> => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
       new MalformedParametersError(
