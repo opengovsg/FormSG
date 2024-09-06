@@ -83,3 +83,49 @@ export const getWebhookSettingsValidator = celebrate({
     userEmail: Joi.string().email().optional(),
   }),
 })
+
+/**
+ * Joi validator for POST /forms/:formId/workflow/ route.
+ */
+export const createWorkflowStepValidator = celebrate({
+  [Segments.BODY]: Joi.object({
+    workflow_type: Joi.string().valid(...Object.values(WorkflowType)),
+    emails: Joi.when('workflow_type', {
+      is: WorkflowType.Static,
+      then: Joi.array().items(Joi.string().email()).required(),
+    }),
+    field: Joi.when('workflow_type', {
+      is: WorkflowType.Dynamic,
+      then: Joi.string().required(),
+    }),
+    edit: Joi.array().items(Joi.string()).required(),
+    approval_field: Joi.string().optional(),
+  }),
+  [Segments.PARAMS]: Joi.object({
+    formId: Joi.string().hex().length(24).required(),
+  }),
+})
+
+/**
+ * Joi validator for PUT /forms/:formId/workflow/:stepNumber route.
+ */
+export const updateWorkflowStepValidator = celebrate({
+  [Segments.BODY]: Joi.object({
+    _id: Joi.string().required(),
+    workflow_type: Joi.string().valid(...Object.values(WorkflowType)),
+    emails: Joi.when('workflow_type', {
+      is: WorkflowType.Static,
+      then: Joi.array().items(Joi.string().email()).required(),
+    }),
+    field: Joi.when('workflow_type', {
+      is: WorkflowType.Dynamic,
+      then: Joi.string().required(),
+    }),
+    edit: Joi.array().items(Joi.string()).required(),
+    approval_field: Joi.string().optional(),
+  }),
+  [Segments.PARAMS]: Joi.object({
+    formId: Joi.string().hex().length(24).required(),
+    stepNumber: Joi.number().integer().min(0).required(),
+  }),
+})

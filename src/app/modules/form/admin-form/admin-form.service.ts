@@ -35,8 +35,9 @@ import {
   FormPermission,
   FormResponseMode,
   FormSettings,
+  FormWorkflowDto,
+  FormWorkflowStepDto,
   LogicDto,
-  MultirespondentFormSettings,
   PaymentChannel,
   SettingsUpdateDto,
   StartPageUpdateDto,
@@ -54,7 +55,11 @@ import {
   IForm,
   IFormDocument,
   IFormSchema,
+  IMultirespondentForm,
+  IMultirespondentFormModel,
+  IMultirespondentFormSchema,
   IPopulatedForm,
+  IPopulatedMultirespondentForm,
   IPopulatedUser,
 } from '../../../../types'
 import { EditFormFieldParams, FormUpdateParams } from '../../../../types/api'
@@ -486,6 +491,11 @@ export const transferAllFormsOwnership = (
   )
 }
 
+type MultirespondentFormToCreate = Merge<
+  IMultirespondentForm,
+  { admin: string }
+>
+
 /**
  * Creates a form with the given form params
  * @param formParams parameters for the form to be created.
@@ -506,6 +516,39 @@ export const createForm = (
   const logMeta = {
     action: 'createForm',
     formParams,
+  }
+
+  if (formParams.responseMode === FormResponseMode.Multirespondent) {
+    const workflow = (formParams as MultirespondentFormToCreate).workflow ?? []
+
+    const selectedApprovalFields = workflow
+      .map((steps) => steps.approval_field)
+      .filter(Boolean)
+    const isApprovalFieldsYesNo = selectedApprovalFields.every((fieldId) => {
+      const field = formParams.form_fields?.find(
+        (field) => field._id.toString() === fieldId,
+      )
+      return field && field.fieldType === BasicField.YesNo
+    })
+    if (!isApprovalFieldsYesNo) {
+      return errAsync(
+        new MalformedParametersError(
+          'Approval fields must be valid Yes/No fields',
+        ),
+      )
+    }
+    const isApprovalFieldInEditFields = workflow.every(
+      (step) =>
+        !step.approval_field ||
+        (step.edit && step.edit.includes(step.approval_field)),
+    )
+    if (!isApprovalFieldInEditFields) {
+      return errAsync(
+        new MalformedParametersError(
+          "Approval field for each step must also be in the same step's edit fields",
+        ),
+      )
+    }
   }
 
   if (workspaceId)
@@ -1246,6 +1289,182 @@ export const updateFormWhitelistSetting = (
   })
 }
 
+export const createWorkflowStep = (
+  originalForm: IPopulatedForm,
+  newWorkflowStep: FormWorkflowStepDto,
+): ResultAsync<FormWorkflowDto, DatabaseError> => {
+  if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
+    return errAsync(
+      new MalformedParametersError(
+        'Cannot update workflow step for non-multirespondent mode forms',
+      ),
+    )
+  }
+
+  const originalMrfForm = originalForm as IPopulatedMultirespondentForm
+  const originalWorkflow = originalMrfForm.workflow ?? []
+
+  // Create new workflow step
+  const updatedWorkflow = originalWorkflow.concat(newWorkflowStep)
+
+  const MultirespondentFormModel = getFormModelByResponseMode(
+    originalForm.responseMode,
+  ) as IMultirespondentFormModel
+
+  return ResultAsync.fromPromise(
+    MultirespondentFormModel.findByIdAndUpdate(
+      originalMrfForm._id,
+      { workflow: updatedWorkflow },
+      {
+        new: true,
+        runValidators: true,
+      },
+    ).exec(),
+    (error) => {
+      logger.error({
+        message:
+          'Error encountered while creating new form workflow step in database',
+        meta: {
+          action: 'createWorkflowStep',
+          formId: originalMrfForm._id,
+          newWorkflowStep,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
+  })
+}
+
+export const updateFormWorkflowStep = (
+  originalForm: IPopulatedForm,
+  stepNumber: number,
+  updatedWorkflowStep: FormWorkflowStepDto,
+): ResultAsync<FormWorkflowDto, DatabaseError> => {
+  if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
+    return errAsync(
+      new MalformedParametersError(
+        'Cannot update workflow step for non-multirespondent mode forms',
+      ),
+    )
+  }
+
+  const originalMrfForm = originalForm as IPopulatedMultirespondentForm
+  const originalWorkflow = originalMrfForm.workflow ?? []
+
+  const isStepNumberValid =
+    stepNumber >= 0 && stepNumber < originalWorkflow.length
+  if (!isStepNumberValid) {
+    return errAsync(new MalformedParametersError('Invalid step number'))
+  }
+
+  const updatedWorkflow = originalMrfForm.workflow.map((step, index) =>
+    index === stepNumber ? updatedWorkflowStep : step,
+  )
+
+  const MultirespondentFormModel = getFormModelByResponseMode(
+    originalForm.responseMode,
+  ) as IMultirespondentFormModel
+
+  return ResultAsync.fromPromise(
+    MultirespondentFormModel.findByIdAndUpdate(
+      originalMrfForm._id,
+      { workflow: updatedWorkflow },
+      {
+        new: true,
+        runValidators: true,
+      },
+    ).exec(),
+    (error) => {
+      logger.error({
+        message:
+          'Error encountered while updating form workflow step in database',
+        meta: {
+          action: 'updateFormWorkflowStep',
+          formId: originalMrfForm._id,
+          stepNumber,
+          updatedWorkflowStep,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+
+    return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
+  })
+}
+
+export const deleteFormWorkflowStep = (
+  originalForm: IPopulatedForm,
+  stepNumber: number,
+): ResultAsync<
+  FormWorkflowDto,
+  DatabaseError | LogicNotFoundError | FormNotFoundError
+> => {
+  if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
+    return errAsync(
+      new MalformedParametersError(
+        'Cannot update workflow step for non-multirespondent mode forms',
+      ),
+    )
+  }
+
+  const originalMrfForm = originalForm as IPopulatedMultirespondentForm
+  const originalWorkflow = originalMrfForm.workflow ?? []
+
+  const isStepNumberValid =
+    stepNumber >= 0 && stepNumber < originalWorkflow.length
+  if (!isStepNumberValid) {
+    return errAsync(new MalformedParametersError('Invalid step number'))
+  }
+
+  // Remove step with stepNumber from workflow
+  const updatedWorkflow = originalWorkflow
+  updatedWorkflow.splice(stepNumber, 1)
+
+  const MultirespondentFormModel = getFormModelByResponseMode(
+    originalForm.responseMode,
+  ) as IMultirespondentFormModel
+
+  return ResultAsync.fromPromise(
+    MultirespondentFormModel.findByIdAndUpdate(
+      originalMrfForm._id,
+      { workflow: updatedWorkflow },
+      {
+        new: true,
+        runValidators: true,
+      },
+    ).exec(),
+    (error) => {
+      logger.error({
+        message:
+          'Error encountered while deleting form workflow step in database',
+        meta: {
+          action: 'deleteFormWorkflowStep',
+          formId: originalMrfForm._id,
+          stepNumber,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
+  })
+}
+
 /**
  * Updates form settings.
  * @param originalForm The original form to update settings for
@@ -1282,42 +1501,6 @@ export const updateFormSettings = (
     return errAsync(
       new MalformedParametersError('Webhooks not supported on MRF'),
     )
-  }
-
-  if (originalForm.responseMode === FormResponseMode.Multirespondent) {
-    const workflow = (body as MultirespondentFormSettings).workflow ?? []
-
-    const selectedApprovalFields = workflow
-      .map((steps) => steps.approval_field)
-      .filter(Boolean)
-    const isApprovalFieldsYesNo = selectedApprovalFields.every((fieldId) => {
-      const field = originalForm.form_fields.find(
-        (field) => field._id.toString() === fieldId,
-      )
-      return field && field.fieldType === BasicField.YesNo
-    })
-
-    if (!isApprovalFieldsYesNo) {
-      return errAsync(
-        new MalformedParametersError(
-          'Approval fields must be valid Yes/No fields',
-        ),
-      )
-    }
-
-    const isApprovalFieldInEditFields = workflow.every(
-      (step) =>
-        !step.approval_field ||
-        (step.edit && step.edit.includes(step.approval_field)),
-    )
-
-    if (!isApprovalFieldInEditFields) {
-      return errAsync(
-        new MalformedParametersError(
-          "Approval field for each step must also be in the same step's edit fields",
-        ),
-      )
-    }
   }
 
   // Don't allow emails updates or single response per submitterId
