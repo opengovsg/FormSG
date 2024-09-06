@@ -41,25 +41,6 @@ export const updateSettingsValidator = celebrate({
       gstRegNo: Joi.string().allow(''),
     }),
     payments_field: Joi.object({ gst_enabled: Joi.boolean() }),
-    workflow: Joi.array()
-      .items(
-        Joi.object({
-          _id: Joi.string(),
-          workflow_type: Joi.string().valid(...Object.values(WorkflowType)),
-          emails: Joi.when('workflow_type', {
-            is: WorkflowType.Static,
-            then: Joi.array().items(Joi.string().email()).required(),
-          }),
-          // TODO: Add regex validation that these are valid mongo IDs
-          field: Joi.when('workflow_type', {
-            is: WorkflowType.Dynamic,
-            then: Joi.string().required(),
-          }),
-          edit: Joi.array().items(Joi.string()).required(),
-          approval_field: Joi.string().optional(),
-        }),
-      )
-      .optional(),
   })
     .min(1)
     .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),
