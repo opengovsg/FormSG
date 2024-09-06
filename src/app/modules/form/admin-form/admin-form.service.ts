@@ -519,7 +519,6 @@ export const createForm = (
     formParams,
   }
 
-  // verify that approval fields in workflow are valid
   if (formParams.responseMode === FormResponseMode.Multirespondent) {
     const workflow = (formParams as MultirespondentFormToCreate).workflow ?? []
 
