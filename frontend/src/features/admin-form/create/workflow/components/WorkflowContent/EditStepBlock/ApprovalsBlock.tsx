@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { FormControl, FormErrorMessage } from '@chakra-ui/react'
 
@@ -48,6 +48,7 @@ export const ApprovalsBlock = ({
       icon: BASICFIELD_TO_DRAWER_META[fieldType].icon,
     }),
   )
+  const yesNoFieldIds = yesNoFormFields.map(({ _id }) => _id)
 
   const approvalFieldsFromOtherSteps = formWorkflow
     .map((step, i) => {
@@ -64,6 +65,17 @@ export const ApprovalsBlock = ({
     }
     setIsApprovalToggleChecked(nextIsApprovalToggleChecked)
   }
+
+  const getValueIfNotDeleted = useCallback(
+    (value: string) => {
+      if (value === '' || yesNoFieldIds.includes(value)) {
+        return value
+      }
+      setValue(APPROVAL_FIELD_NAME, '')
+      return ''
+    },
+    [setValue, yesNoFieldIds],
+  )
 
   return (
     <FormStepWithHeader
@@ -99,7 +111,7 @@ export const ApprovalsBlock = ({
               <SingleSelect
                 placeholder="Select a Yes/No field from your form"
                 items={yesNoFieldItems}
-                value={value}
+                value={getValueIfNotDeleted(value)}
                 isClearable
                 isDisabled={isLoading}
                 {...rest}
