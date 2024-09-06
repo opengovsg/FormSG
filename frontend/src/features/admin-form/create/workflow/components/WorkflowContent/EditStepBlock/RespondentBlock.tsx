@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { As, Box, Flex, FormControl, Text } from '@chakra-ui/react'
 import { get } from 'lodash'
@@ -35,6 +36,7 @@ export const RespondentBlock = ({
     formState: { errors },
     register,
     getValues,
+    setValue,
     control,
   } = formMethods
 
@@ -51,6 +53,18 @@ export const RespondentBlock = ({
       value: _id,
       icon: BASICFIELD_TO_DRAWER_META[fieldType].icon,
     }),
+  )
+  const emailFieldIds = emailFormFields.map(({ _id }) => _id)
+
+  const getValueIfNotDeleted = useCallback(
+    (value) => {
+      if (value === '' || emailFieldIds.includes(value)) {
+        return value
+      }
+      setValue('field', '')
+      return ''
+    },
+    [setValue, emailFieldIds],
   )
 
   const defaultWorkflowType = getValues('workflow_type')
@@ -93,7 +107,7 @@ export const RespondentBlock = ({
                     <SingleSelect
                       placeholder="Select an email field from your form"
                       items={emailFieldItems}
-                      value={value}
+                      value={getValueIfNotDeleted(value)}
                       isClearable
                       {...rest}
                     />
