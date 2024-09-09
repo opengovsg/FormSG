@@ -3,6 +3,7 @@ import { FormControl } from '@chakra-ui/react'
 
 import { MultiSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import FormLabel from '~components/FormControl/FormLabel'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { getLogicFieldLabel } from '~features/admin-form/create/logic/components/LogicContent/utils/getLogicFieldLabel'
@@ -11,7 +12,7 @@ import { NON_RESPONSE_FIELD_SET } from '~features/form/constants'
 
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 
-import { FormStepWithHeader } from './FormStepWithHeader'
+import { EditStepBlockContainer } from './EditStepBlockContainer'
 
 interface QuestionsBlockProps {
   isLoading: boolean
@@ -41,23 +42,21 @@ export const QuestionsBlock = ({
     }))
 
   return (
-    <FormStepWithHeader
-      headerText="Fields to fill"
-      tooltipText="Respondent will only be able to fill the fields you have selected"
-    >
+    <EditStepBlockContainer>
       <FormControl
         isReadOnly={isLoading}
         id="edit"
         isRequired
         isInvalid={!!errors.edit}
       >
+        <FormLabel>Select field(s) for this respondent to fill</FormLabel>
         <Controller
           control={control}
           name="edit"
           render={({ field: { value, ...field } }) => (
             <MultiSelect
               isDisabled={isLoading}
-              placeholder="Select fields from your form"
+              placeholder="Select field(s) from your form"
               items={items}
               isSelectedItemFullWidth
               values={value}
@@ -67,6 +66,6 @@ export const QuestionsBlock = ({
         />
         <FormErrorMessage>{errors.workflow_type?.message}</FormErrorMessage>
       </FormControl>
-    </FormStepWithHeader>
+    </EditStepBlockContainer>
   )
 }

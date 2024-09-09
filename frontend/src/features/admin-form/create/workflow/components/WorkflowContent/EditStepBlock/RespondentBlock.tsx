@@ -1,11 +1,12 @@
 import { useCallback } from 'react'
 import { Controller, UseFormReturn } from 'react-hook-form'
-import { As, Box, Flex, FormControl, Text } from '@chakra-ui/react'
+import { As, FormControl, Stack, Text } from '@chakra-ui/react'
 import { get } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
 import { WorkflowType } from '~shared/types'
 
+import { textStyles } from '~theme/textStyles'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -19,7 +20,162 @@ import { useUser } from '~features/user/queries'
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
-import { FormStepWithHeader } from './FormStepWithHeader'
+import { EditStepBlockContainer } from './EditStepBlockContainer'
+
+interface RespondentOptionProps {
+  isLoading: boolean
+  formMethods: UseFormReturn<EditStepInputs>
+  selectedWorkflowType: WorkflowType
+}
+
+const StaticRespondentOption = ({
+  isLoading,
+  formMethods,
+  selectedWorkflowType,
+}: RespondentOptionProps) => {
+  const {
+    register,
+    control,
+    formState: { errors },
+  } = formMethods
+  const staticTagInputErrorMessage = get(errors, 'emails.message')
+
+  return (
+    <>
+      <Radio
+        isDisabled={isLoading}
+        isLabelFullWidth
+        allowDeselect={false}
+        value={WorkflowType.Static}
+        {...register('workflow_type')}
+        px="8px"
+        __css={{
+          _focusWithin: {
+            boxShadow: 'none',
+          },
+        }}
+      >
+        <Text>Fixed email(s)</Text>
+        {selectedWorkflowType === WorkflowType.Static ? (
+          <FormControl
+            pt="0.5rem"
+            isReadOnly={isLoading}
+            id="emails"
+            isRequired
+            isInvalid={staticTagInputErrorMessage}
+            key="emails"
+          >
+            <Controller
+              name="emails"
+              control={control}
+              rules={{
+                validate: {
+                  required: (emails) =>
+                    !emails || emails.length === 0
+                      ? 'You must enter at least one email to receive responses'
+                      : true,
+                  isEmails: (emails) =>
+                    !emails ||
+                    emails.every((email) => isEmail(email)) ||
+                    'Please enter valid email(s) (e.g. me@example.com) separated by commas, as invalid emails will not be saved',
+                },
+              }}
+              render={({ field }) => (
+                <TagInput
+                  isDisabled={isLoading}
+                  placeholder="me@example.com"
+                  tagValidation={isEmail}
+                  {...field}
+                />
+              )}
+            />
+            <FormErrorMessage>{staticTagInputErrorMessage}</FormErrorMessage>
+            {!staticTagInputErrorMessage ? (
+              <Text textStyle="body-2" mt="0.5rem">
+                Separate multiple emails with a comma
+              </Text>
+            ) : null}
+          </FormControl>
+        ) : null}
+      </Radio>
+    </>
+  )
+}
+
+interface DynamicRespondentOptionProps extends RespondentOptionProps {
+  emailFieldItems: {
+    label: string
+    value: string
+    icon?: As
+  }[]
+}
+
+const DynamicRespondentOption = ({
+  isLoading,
+  selectedWorkflowType,
+  formMethods,
+  emailFieldItems,
+}: DynamicRespondentOptionProps) => {
+  const {
+    register,
+    formState: { errors },
+    control,
+  } = formMethods
+
+  return (
+    <>
+      <Radio
+        isDisabled={isLoading}
+        isLabelFullWidth
+        allowDeselect={false}
+        value={WorkflowType.Dynamic}
+        {...register('workflow_type')}
+        px="8px"
+        __css={{
+          _focusWithin: {
+            boxShadow: 'none',
+          },
+        }}
+      >
+        <Text>An email field from the form</Text>
+        {selectedWorkflowType === WorkflowType.Dynamic ? (
+          <FormControl
+            pt="0.5rem"
+            isReadOnly={isLoading}
+            id="field"
+            isRequired
+            isInvalid={!!errors.field}
+          >
+            <Controller
+              control={control}
+              name="field"
+              rules={{
+                required: 'Please select a field',
+                validate: (selectedValue) =>
+                  !emailFieldItems ||
+                  emailFieldItems.some(
+                    ({ value: fieldValue }) => fieldValue === selectedValue,
+                  ) ||
+                  'Field is not an email field',
+              }}
+              render={({ field: { value = '', ...rest } }) => (
+                <SingleSelect
+                  isDisabled={isLoading}
+                  isClearable={false}
+                  placeholder="Select a field"
+                  items={emailFieldItems}
+                  value={value}
+                  {...rest}
+                />
+              )}
+            />
+            <FormErrorMessage>{errors.field?.message}</FormErrorMessage>
+          </FormControl>
+        ) : null}
+      </Radio>
+    </>
+  )
+}
 
 interface RespondentBlockProps {
   stepNumber: number
@@ -34,8 +190,7 @@ export const RespondentBlock = ({
 }: RespondentBlockProps): JSX.Element => {
   const {
     formState: { errors },
-    register,
-    getValues,
+    watch,
     setValue,
     control,
   } = formMethods
@@ -57,63 +212,60 @@ export const RespondentBlock = ({
   const emailFieldIds = emailFormFields.map(({ _id }) => _id)
 
   const getValueIfNotDeleted = useCallback(
+    // Why: When the field has been deleted and no yes no item can be found,
+    // the field will be set to the invalid id but cannot be seen/cleared.
+    // Hence, we want to clear this invalid id for the user.
     (value) => {
-      if (value === '' || emailFieldIds.includes(value)) {
-        return value
+      if (value !== '' && !emailFieldIds.includes(value)) {
+        setValue('field', '')
+        return ''
       }
-      setValue('field', '')
-      return ''
+      return value
     },
     [setValue, emailFieldIds],
   )
 
-  const defaultWorkflowType = getValues('workflow_type')
+  const selectedWorkflowType = watch('workflow_type')
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
-  const headerText = 'Respondent in this step'
-  const tooltipText = isFirstStep ? 'Anyone you share the form link with' : ''
-
   return (
-    <FormStepWithHeader headerText={headerText} tooltipText={tooltipText}>
+    <EditStepBlockContainer>
       {isFirstStep ? (
         <>
           {/* TODO: (MRF-email-notif) Remove isTest check when MRF email
           notifications is out of beta */}
           {isTest || user?.betaFlags?.mrfEmailNotifications ? (
             <FormControl isInvalid={!!errors.field}>
-              <FormLabel>
-                Add an email field for notifications to be sent to this
+              <FormLabel style={textStyles.h4}>
+                Select email field for notifications to be sent to this
                 respondent
               </FormLabel>
-              <Box my="0.75rem">
-                <Controller
-                  name="field"
-                  rules={{
-                    validate: (selectedValue) => {
-                      return (
-                        !selectedValue ||
-                        !emailFieldItems ||
-                        emailFieldItems.some(
-                          ({ value: fieldValue }) =>
-                            fieldValue === selectedValue,
-                        ) ||
-                        'Field is not an email field'
-                      )
-                    },
-                  }}
-                  control={control}
-                  render={({ field: { value = '', ...rest } }) => (
-                    <SingleSelect
-                      placeholder="Select an email field from your form"
-                      items={emailFieldItems}
-                      value={getValueIfNotDeleted(value)}
-                      isClearable
-                      {...rest}
-                    />
-                  )}
-                />
-              </Box>
+              <Controller
+                name="field"
+                rules={{
+                  validate: (selectedValue) => {
+                    return (
+                      !selectedValue ||
+                      !emailFieldItems ||
+                      emailFieldItems.some(
+                        ({ value: fieldValue }) => fieldValue === selectedValue,
+                      ) ||
+                      'Field is not an email field'
+                    )
+                  },
+                }}
+                control={control}
+                render={({ field: { value = '', ...rest } }) => (
+                  <SingleSelect
+                    placeholder="Select an email field from your form"
+                    items={emailFieldItems}
+                    value={getValueIfNotDeleted(value)}
+                    isClearable
+                    {...rest}
+                  />
+                )}
+              />
               <FormErrorMessage>{errors.field?.message}</FormErrorMessage>
             </FormControl>
           ) : (
@@ -128,151 +280,26 @@ export const RespondentBlock = ({
             isRequired
             isInvalid={!!errors.workflow_type}
           >
-            <Radio.RadioGroup defaultValue={defaultWorkflowType}>
-              <Flex flexDir="row" justifyContent="space-between">
-                <Flex>
-                  <Radio
-                    isDisabled={isLoading}
-                    allowDeselect={false}
-                    value={WorkflowType.Static}
-                    {...register('workflow_type')}
-                    px="8px"
-                  >
-                    Enter specific email(s)
-                  </Radio>
-                </Flex>
-                <Flex>
-                  <Radio
-                    isDisabled={isLoading}
-                    allowDeselect={false}
-                    value={WorkflowType.Dynamic}
-                    {...register('workflow_type')}
-                    px="8px"
-                  >
-                    Select an email field from your form
-                  </Radio>
-                </Flex>
-              </Flex>
-            </Radio.RadioGroup>
+            <FormLabel style={textStyles.h4}>Select a respondent</FormLabel>
+            <Stack spacing="0.25rem">
+              <Radio.RadioGroup value={selectedWorkflowType}>
+                <DynamicRespondentOption
+                  selectedWorkflowType={selectedWorkflowType}
+                  emailFieldItems={emailFieldItems}
+                  formMethods={formMethods}
+                  isLoading={isLoading}
+                />
+                <StaticRespondentOption
+                  selectedWorkflowType={selectedWorkflowType}
+                  formMethods={formMethods}
+                  isLoading={isLoading}
+                />
+              </Radio.RadioGroup>
+            </Stack>
             <FormErrorMessage>{errors.workflow_type?.message}</FormErrorMessage>
           </FormControl>
-
-          <RespondentInput
-            isLoading={isLoading}
-            formMethods={formMethods}
-            emailFieldItems={emailFieldItems}
-          />
         </>
       )}
-    </FormStepWithHeader>
+    </EditStepBlockContainer>
   )
-}
-
-interface RespondentInputProps
-  extends Omit<RespondentBlockProps, 'stepNumber'> {
-  emailFieldItems: {
-    label: string
-    value: string
-    icon?: As
-  }[]
-}
-
-const RespondentInput = ({
-  isLoading,
-  formMethods,
-  emailFieldItems,
-}: RespondentInputProps) => {
-  const {
-    formState: { errors },
-    control,
-    watch,
-  } = formMethods
-
-  const watchedWorkflowType = watch('workflow_type')
-
-  const staticTagInputErrorMessage = get(errors, 'emails.message')
-
-  switch (watchedWorkflowType) {
-    case WorkflowType.Static:
-      return (
-        <FormControl
-          isReadOnly={isLoading}
-          id="emails"
-          isRequired
-          isInvalid={!!errors.emails}
-          key="emails"
-        >
-          <Controller
-            name="emails"
-            control={control}
-            rules={{
-              validate: {
-                required: (emails) =>
-                  !emails || emails.length === 0
-                    ? 'You must enter at least one email to receive responses'
-                    : true,
-                isEmails: (emails) =>
-                  !emails ||
-                  emails.every((email) => isEmail(email)) ||
-                  'Please enter valid email(s) (e.g. me@example.com) separated by commas, as invalid emails will not be saved',
-              },
-            }}
-            render={({ field }) => (
-              <TagInput
-                isDisabled={isLoading}
-                placeholder="me@example.com"
-                tagValidation={isEmail}
-                {...field}
-              />
-            )}
-          />
-          {staticTagInputErrorMessage ? (
-            <FormErrorMessage>{staticTagInputErrorMessage}</FormErrorMessage>
-          ) : (
-            <Text textStyle="body-2" my="0.5rem" py="0.125rem">
-              Separate multiple emails with a comma
-            </Text>
-          )}
-        </FormControl>
-      )
-    case WorkflowType.Dynamic:
-      return (
-        <FormControl
-          isReadOnly={isLoading}
-          id="field"
-          isRequired
-          isInvalid={!!errors.field}
-        >
-          <Controller
-            control={control}
-            name="field"
-            rules={{
-              required: 'Please select a field',
-              validate: (selectedValue) =>
-                !emailFieldItems ||
-                emailFieldItems.some(
-                  ({ value: fieldValue }) => fieldValue === selectedValue,
-                ) ||
-                'Field is not an email field',
-            }}
-            render={({ field: { value = '', ...rest } }) => (
-              <SingleSelect
-                isDisabled={isLoading}
-                isClearable={false}
-                placeholder="Select a field"
-                items={emailFieldItems}
-                value={value}
-                {...rest}
-              />
-            )}
-          />
-          <FormErrorMessage>{errors.field?.message}</FormErrorMessage>
-        </FormControl>
-      )
-    default: {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _: never = watchedWorkflowType
-      throw new Error('Invalid workflow type')
-    }
-  }
 }
