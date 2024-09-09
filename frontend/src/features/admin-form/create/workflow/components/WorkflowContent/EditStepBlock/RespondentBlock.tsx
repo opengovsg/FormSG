@@ -22,6 +22,15 @@ import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { EditStepBlockContainer } from './EditStepBlockContainer'
 
+const WORKFLOW_TYPE_VALIDATION = {
+  required: 'Please select a respondent type',
+  validate: (value: WorkflowType) => {
+    if (![WorkflowType.Static, WorkflowType.Dynamic].includes(value)) {
+      return 'The selected respondent type is invalid'
+    }
+  },
+}
+
 interface RespondentOptionProps {
   isLoading: boolean
   formMethods: UseFormReturn<EditStepInputs>
@@ -47,7 +56,7 @@ const StaticRespondentOption = ({
         isLabelFullWidth
         allowDeselect={false}
         value={WorkflowType.Static}
-        {...register('workflow_type')}
+        {...register('workflow_type', WORKFLOW_TYPE_VALIDATION)}
         px="8px"
         __css={{
           _focusWithin: {
@@ -129,7 +138,7 @@ const DynamicRespondentOption = ({
         isLabelFullWidth
         allowDeselect={false}
         value={WorkflowType.Dynamic}
-        {...register('workflow_type')}
+        {...register('workflow_type', WORKFLOW_TYPE_VALIDATION)}
         px="8px"
         __css={{
           _focusWithin: {

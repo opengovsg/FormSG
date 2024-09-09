@@ -38,7 +38,7 @@ export const NewStepBlock = () => {
       stepNumber={formWorkflow.length}
       isLoading={createStepMutation.isLoading}
       onSubmit={handleSubmit}
-      defaultValues={{ workflow_type: WorkflowType.Static, edit: [] }}
+      defaultValues={{ edit: [] }}
       submitButtonLabel="Add step"
     />
   ) : (
