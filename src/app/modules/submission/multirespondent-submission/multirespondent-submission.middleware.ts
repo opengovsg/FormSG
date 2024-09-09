@@ -243,8 +243,9 @@ export const scanAndRetrieveAttachments = async (
       .map((id) => {
         const response = req.body.responses[id]
         if (
-          response.fieldType !== BasicField.Attachment ||
-          response.answer.hasBeenScanned
+          response.fieldType !== BasicField.Attachment
+          // TODO: FRM-1839 + FRM-1590 Skip scanning if attachment has already been scanned
+          // || response.answer.hasBeenScanned
         ) {
           return null
         }
@@ -293,6 +294,7 @@ export const scanAndRetrieveAttachments = async (
   // Step 3: Update responses with new values.
   for (const idTaggedAttachmentResponse of scanAndRetrieveFilesResult.value) {
     const { id, ...attachmentResponse } = idTaggedAttachmentResponse
+    // TODO: FRM-1839 Skip scanning if attachment has already been scanned
     attachmentResponse.answer.hasBeenScanned = true
     // Store the md5 hash in the DB as well for comparison later on.
     attachmentResponse.answer.md5Hash = crypto
@@ -478,6 +480,7 @@ export const validateMultirespondentSubmission = async (
                     const incomingResField = req.body.responses[fieldId]
                     const prevResField = previousResponses[fieldId]
 
+                    console.log({ prevResField, incomingResField })
                     const resp = isFieldResponseV3Equal(
                       incomingResField,
                       prevResField,
