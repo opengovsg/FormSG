@@ -221,9 +221,10 @@ export const RespondentBlock = ({
   const emailFieldIds = emailFormFields.map(({ _id }) => _id)
 
   const getValueIfNotDeleted = useCallback(
-    // Why: When the field has been deleted and no yes no item can be found,
-    // the field will be set to the invalid id but cannot be seen/cleared.
-    // Hence, we want to clear this invalid id for the user.
+    // Why: When the Yes/No field has been deleted, the approval_field is still set to the
+    // invalid form field id but cannot be seen or cleared in the SingleSelect component
+    // since no matching Yes/No item can be found.
+    // Hence, we clear the approval_field to allow the user to re-select a new valid value.
     (value) => {
       if (value !== '' && !emailFieldIds.includes(value)) {
         setValue('field', '')
