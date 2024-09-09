@@ -29,7 +29,7 @@ export const SecretKeyActivationModal = ({
       onClose={onClose}
       isOpen={isOpen}
       publicKey={publicKey}
-      modalActionText="Active your form"
+      modalActionText="Activate your form"
       submitButtonText="Activate form"
       onSubmit={onSubmit}
       hasAck
