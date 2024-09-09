@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
-import { Box, Stack } from '@chakra-ui/react'
+import { Box, Divider, Stack } from '@chakra-ui/react'
 
 import { FormWorkflowStep, WorkflowType } from '~shared/types'
 
@@ -107,10 +107,15 @@ export const EditStepBlock = ({
   })
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
+  const stepTooltip = isFirstStep
+    ? 'Anyone who can access your form'
+    : undefined
 
   return (
     <Stack
       ref={wrapperRef}
+      py="2rem"
+      spacing="1.5rem"
       borderRadius="4px"
       bg="white"
       border="1px solid"
@@ -119,18 +124,24 @@ export const EditStepBlock = ({
       transitionProperty="common"
       transitionDuration="normal"
     >
-      <Box py="1.5rem" px={{ base: '1.5rem', md: '2rem' }}>
-        <StepLabel stepNumber={stepNumber} />
+      <Box px={{ base: '1.5rem', md: '2rem' }}>
+        <StepLabel tooltipLabel={stepTooltip} stepNumber={stepNumber} />
       </Box>
+      <Divider />
       <RespondentBlock
         stepNumber={stepNumber}
         formMethods={formMethods}
         isLoading={isLoading}
       />
+      <Divider />
       <QuestionsBlock formMethods={formMethods} isLoading={isLoading} />
       {!isFirstStep ? (
-        <ApprovalsBlock formMethods={formMethods} stepNumber={stepNumber} />
+        <>
+          <Divider />
+          <ApprovalsBlock formMethods={formMethods} stepNumber={stepNumber} />
+        </>
       ) : null}
+      <Divider />
       <SaveActionGroup
         isLoading={isLoading}
         handleSubmit={handleSubmit}

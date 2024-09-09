@@ -102,6 +102,10 @@ export const InactiveStepBlock = ({
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
+  const stepLabelTooltip = isFirstStep
+    ? 'Anyone who can access your form'
+    : undefined
+
   const questionBadges = useMemo(() => {
     if (step.edit.length === 0) {
       return (
@@ -168,7 +172,7 @@ export const InactiveStepBlock = ({
         onClick={handleClick}
       >
         <Stack spacing="1.5rem" p={{ base: '1.5rem', md: '2rem' }}>
-          <StepLabel stepNumber={stepNumber} />
+          <StepLabel tooltipLabel={stepLabelTooltip} stepNumber={stepNumber} />
 
           <Stack>
             <Text textStyle="subhead-3">Respondent in this step</Text>

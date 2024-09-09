@@ -10,7 +10,7 @@ import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { EditStepInputs } from '../../../types'
 
-import { FormStepWithHeader } from './FormStepWithHeader'
+import { EditStepBlockContainer } from './EditStepBlockContainer'
 
 interface ApprovalsBlockProps {
   formMethods: UseFormReturn<EditStepInputs>
@@ -68,20 +68,20 @@ export const ApprovalsBlock = ({
 
   const getValueIfNotDeleted = useCallback(
     (value: string) => {
-      if (value === '' || yesNoFieldIds.includes(value)) {
-        return value
+      // Why: When the field has been deleted and no yes no item can be found,
+      // the field will be set to the invalid id but cannot be seen/cleared.
+      // Hence, we want to clear this invalid id for the user.
+      if (value !== '' && !yesNoFieldIds.includes(value)) {
+        setValue(APPROVAL_FIELD_NAME, '')
+        return ''
       }
-      setValue(APPROVAL_FIELD_NAME, '')
-      return ''
+      return value
     },
     [setValue, yesNoFieldIds],
   )
 
   return (
-    <FormStepWithHeader
-      headerText="Approval step"
-      tooltipText="Use this for steps that involve any type of decision, such as reviews or endorsements"
-    >
+    <EditStepBlockContainer>
       <Toggle
         isLoading={isLoading}
         onChange={onApprovalToggleChange}
@@ -121,6 +121,6 @@ export const ApprovalsBlock = ({
           <FormErrorMessage>{errors.approval_field?.message}</FormErrorMessage>
         </FormControl>
       ) : null}
-    </FormStepWithHeader>
+    </EditStepBlockContainer>
   )
 }

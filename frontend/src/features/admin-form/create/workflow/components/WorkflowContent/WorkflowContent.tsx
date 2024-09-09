@@ -7,6 +7,7 @@ import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 import { HeaderBlock } from './HeaderBlock'
 import { NewStepBlock } from './NewStepBlock'
 import { WorkflowBlockFactory } from './WorkflowBlockFactory'
+import { WorkflowCompletionMessageBlock } from './WorkflowCompletionMessageBlock'
 
 export const WorkflowContent = (): JSX.Element | null => {
   const { formWorkflow, isLoading } = useAdminFormWorkflow()
@@ -22,6 +23,7 @@ export const WorkflowContent = (): JSX.Element | null => {
         ))}
         <NewStepBlock />
       </Stack>
+      <WorkflowCompletionMessageBlock />
     </Stack>
   )
 }
