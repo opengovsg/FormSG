@@ -480,7 +480,6 @@ export const validateMultirespondentSubmission = async (
                     const incomingResField = req.body.responses[fieldId]
                     const prevResField = previousResponses[fieldId]
 
-                    console.log({ prevResField, incomingResField })
                     const resp = isFieldResponseV3Equal(
                       incomingResField,
                       prevResField,
