@@ -100,12 +100,12 @@ export const addAttachmentToResponses = (
       responses.forEach((response) => {
         if (checkIsAttachmentResponsesIdInMap(attachmentMap, response._id)) {
           const file = attachmentMap[response._id]
-          response = {
-            ...response,
-            filename: file.filename,
-            content: file.content,
-            answer: isVirusScannerEnabled ? file.filename : undefined,
-          } as ParsedClearAttachmentResponse
+          const attachmentResponse = response as ParsedClearAttachmentResponse
+          attachmentResponse.filename = file.filename
+          attachmentResponse.content = file.content
+          if (!isVirusScannerEnabled) {
+            attachmentResponse.answer = file.filename
+          }
         }
       })
     }
