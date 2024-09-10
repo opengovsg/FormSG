@@ -8,6 +8,7 @@ import {
   useMergeRefs,
 } from '@chakra-ui/react'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import Input from '~components/Input'
 
 import { useSelectContext } from '../../SelectContext'
@@ -35,6 +36,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
       inputRef,
     } = useSelectContext()
 
+    const isMobile = useIsMobile()
     const mergedInputRef = useMergeRefs(inputRef, ref)
 
     const selectedItemMeta = useMemo(
@@ -52,13 +54,13 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
 
     return (
       <Flex>
-        <InputGroup pos="relative" display="grid" gridTemplateColumns="1fr">
+        <InputGroup display="grid" pos="relative">
           <Stack
             visibility={inputValue ? 'hidden' : 'initial'}
             direction="row"
             spacing="1rem"
-            gridArea="1 / 1 / 2 / 2"
             pointerEvents="none"
+            gridArea="1 / 1"
             pl="calc(1rem + 1px)"
             pr="calc(2.75rem + 1px)"
             align="center"
@@ -76,13 +78,17 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
             ) : null}
             <Text
               textStyle="body-1"
-              noOfLines={1}
+              maxW={isMobile ? '50vw' : undefined}
               color={isDisabled ? 'neutral.500' : undefined}
             >
               {selectedItemMeta.label}
             </Text>
+            <ToggleChevron />
           </Stack>
           <Input
+            h="100%"
+            gridArea="1 / 1"
+            zIndex={1}
             isReadOnly={!isSearchable || isReadOnly}
             isInvalid={isInvalid}
             isDisabled={isDisabled}
@@ -98,7 +104,6 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
               'aria-expanded': !!isOpen,
             })}
           />
-          <ToggleChevron />
         </InputGroup>
         <ComboboxClearButton />
       </Flex>

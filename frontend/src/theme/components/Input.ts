@@ -8,6 +8,7 @@ const size = {
   md: {
     px: '1rem',
     h: '2.75rem',
+    minH: '2.75rem',
     borderRadius: '0.25rem',
   },
 }

@@ -13,7 +13,9 @@ export const ToggleChevron = (): JSX.Element => {
     <InputRightElement
       as="button"
       type="button"
+      h="100%"
       display="flex"
+      alignItems="center"
       _disabled={{
         cursor: 'not-allowed',
       }}

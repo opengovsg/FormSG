@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { BiX } from 'react-icons/bi'
-import { VisuallyHidden } from '@chakra-ui/react'
+import { Flex, VisuallyHidden } from '@chakra-ui/react'
 
 import IconButton from '~components/IconButton'
 
@@ -36,7 +36,7 @@ export const ComboboxClearButton = (): JSX.Element | null => {
   if (!isClearable) return null
 
   return (
-    <>
+    <Flex justifyContent="center">
       <IconButton
         // Prevent form submission from triggering this button.
         type="button"
@@ -55,6 +55,6 @@ export const ComboboxClearButton = (): JSX.Element | null => {
           Selection has been cleared
         </VisuallyHidden>
       )}
-    </>
+    </Flex>
   )
 }

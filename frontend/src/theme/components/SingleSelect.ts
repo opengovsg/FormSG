@@ -86,8 +86,7 @@ const baseStyle: PartsStyleFunction<typeof parts> = (props) => {
 const sizes: Record<string, PartsStyleObject<typeof parts>> = {
   md: {
     clearbutton: {
-      // Remove extra 1px of border.
-      p: '11px',
+      h: '100%',
       w: 'auto',
       fontSize: '1.25rem',
       minW: '2.75rem',
