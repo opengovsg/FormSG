@@ -54,16 +54,16 @@ export const mapRouteError: MapRouteError = (error) => {
 }
 
 /**
- * Checks whether attachmentMap contains the given response
- * @param attachmentMap Map of field IDs to attachments
- * @param response The response to check
+ * Checks whether attachmentMap contains the given response id.
+ * @param attachmentMap Map of field ids to attachments
+ * @param response The response field id to check
  * @returns true if response is in map, false otherwise
  */
-const isAttachmentResponseFromMap = (
+const checkIsAttachmentResponsesIdInMap = (
   attachmentMap: Record<IAttachmentInfo['fieldId'], IAttachmentInfo>,
-  response: ParsedClearFormFieldResponse,
-): response is ParsedClearAttachmentResponse => {
-  return !!attachmentMap[response._id]
+  responseId: string,
+): boolean => {
+  return !!attachmentMap[responseId]
 }
 
 /**
@@ -82,7 +82,7 @@ export const addAttachmentToResponses = (
   // default to 0 for email mode forms where version is undefined
   // TODO (FRM-1413): change to a version existence guardrail when
   // virus scanning has completed rollout, so that virus scanning
-  // cannot be bypassed on storage mode submissions.
+  // cannot be bypassed on storage mode subscanAndRetrieveAttachmentsmissions.
   const isVirusScannerEnabled =
     (body.version ?? 0) >= VIRUS_SCANNER_SUBMISSION_VERSION
 
@@ -98,13 +98,14 @@ export const addAttachmentToResponses = (
     if (responses) {
       // matches responses to attachments using id, adding filename and content to response
       responses.forEach((response) => {
-        if (isAttachmentResponseFromMap(attachmentMap, response)) {
+        if (checkIsAttachmentResponsesIdInMap(attachmentMap, response._id)) {
           const file = attachmentMap[response._id]
-          response.filename = file.filename
-          response.content = file.content
-          if (!isVirusScannerEnabled) {
-            response.answer = file.filename
-          }
+          response = {
+            ...response,
+            filename: file.filename,
+            content: file.content,
+            answer: isVirusScannerEnabled ? file.filename : undefined,
+          } as ParsedClearAttachmentResponse
         }
       })
     }
@@ -113,7 +114,10 @@ export const addAttachmentToResponses = (
   if (isBodyVersion3AndAbove(body)) {
     Object.keys(body.responses).forEach((id) => {
       const response = body.responses[id] as ParsedClearFormFieldResponseV3
-      if (response.fieldType === BasicField.Attachment) {
+      if (
+        response.fieldType === BasicField.Attachment &&
+        checkIsAttachmentResponsesIdInMap(attachmentMap, id)
+      ) {
         const file = attachmentMap[id]
         response.answer.filename = file.filename
         response.answer.content = file.content
