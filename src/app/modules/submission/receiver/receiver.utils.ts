@@ -82,7 +82,7 @@ export const addAttachmentToResponses = (
   // default to 0 for email mode forms where version is undefined
   // TODO (FRM-1413): change to a version existence guardrail when
   // virus scanning has completed rollout, so that virus scanning
-  // cannot be bypassed on storage mode subscanAndRetrieveAttachmentsmissions.
+  // cannot be bypassed on storage mode submissions.
   const isVirusScannerEnabled =
     (body.version ?? 0) >= VIRUS_SCANNER_SUBMISSION_VERSION
 
