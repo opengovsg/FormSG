@@ -17,6 +17,11 @@ export const isBodyVersion2AndBelow = (
   return (body.version ?? 0) < 3
 }
 
+/**
+ * MRF belongs to version 3
+ * @param body
+ * @returns
+ */
 export const isBodyVersion3AndAbove = (
   body: ParsedMultipartForm<unknown>,
 ): body is ParsedMultipartForm<FieldResponsesV3> => {
