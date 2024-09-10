@@ -41,6 +41,14 @@ export const FieldLogicBadge = ({
     }
   }, [defaults.variant, fieldMeta])
 
+  const badgeBgColor = useMemo(() => {
+    if (fieldMeta) return undefined
+    if (defaults.variant === 'error') {
+      return 'red.100'
+    }
+    return undefined
+  }, [defaults.variant, fieldMeta])
+
   const tooltipLabel = useMemo(
     () => (!fieldMeta ? defaults.message : `${fieldMeta.label} field`),
     [fieldMeta, defaults.message],
@@ -57,7 +65,7 @@ export const FieldLogicBadge = ({
   }, [defaults.variant, fieldMeta])
 
   return (
-    <LogicBadge display="inline-flex">
+    <LogicBadge display="inline-flex" bgColor={badgeBgColor}>
       <Stack direction="row" spacing="0.25rem" maxW="100%" align="center">
         <Tooltip placement="top" label={tooltipLabel}>
           <Box display="inline-flex" alignItems="center">
