@@ -354,7 +354,7 @@ const createResponsesV3 = (
         returnedInputs[ff._id] = {
           fieldType: ff.fieldType,
           answer: {
-            hasBeenScanned: false, //TODO(MRF/FRM-1590): conditionally set to true if not replaced by respondent 2 onwards
+            hasBeenScanned: false, //TODO: FRM-1839 + FRM-1590 conditionally set to true if not replaced by respondent 2 onwards
             answer: fieldIdToQuarantineKeyEntry.quarantineBucketKey,
           },
         }
