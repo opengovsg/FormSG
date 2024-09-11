@@ -539,6 +539,15 @@ export const createForm = (
       )
     }
 
+    const isFirstStepApproval = workflow[0] && workflow[0].approval_field
+    if (isFirstStepApproval) {
+      return errAsync(
+        new MalformedParametersError(
+          'First step of workflow cannot be an approval step',
+        ),
+      )
+    }
+
     const yesNoFieldIds = formParams.form_fields
       ?.filter((field) => field.fieldType === BasicField.YesNo)
       .map((field) => field._id.toString())
@@ -1349,6 +1358,16 @@ export const createWorkflowStep = (
     }
   }
 
+  const isFirstStep =
+    (originalForm as IPopulatedMultirespondentForm).workflow.length === 0
+  if (isFirstStep && newWorkflowStep.approval_field) {
+    return errAsync(
+      new MalformedParametersError(
+        'First step of workflow cannot be an approval step',
+      ),
+    )
+  }
+
   const selectedApprovalField = newWorkflowStep.approval_field
   if (selectedApprovalField) {
     const yesNoFieldIds = originalForm.form_fields
@@ -1459,6 +1478,15 @@ export const updateFormWorkflowStep = (
         ),
       )
     }
+  }
+
+  const isFirstStep = stepNumber === 0
+  if (isFirstStep && updatedWorkflowStep.approval_field) {
+    return errAsync(
+      new MalformedParametersError(
+        'First step of workflow cannot be an approval step',
+      ),
+    )
   }
 
   const selectedApprovalField = updatedWorkflowStep.approval_field
