@@ -21,7 +21,7 @@ export const getAdminFormView = ({
   mode = FormResponseMode.Email,
 }: {
   delay?: number | 'infinite'
-  overrides?: Partial<FormSettings>
+  overrides?: Partial<AdminFormDto>
   mode?: FormResponseMode
 } = {}) => {
   return rest.get<AdminFormDto>(

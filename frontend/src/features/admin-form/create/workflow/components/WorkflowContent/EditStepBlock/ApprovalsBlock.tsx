@@ -1,8 +1,9 @@
 import { useCallback, useState } from 'react'
 import { Controller, UseFormReturn } from 'react-hook-form'
-import { FormControl, FormErrorMessage } from '@chakra-ui/react'
+import { FormControl } from '@chakra-ui/react'
 
 import { SingleSelect } from '~components/Dropdown'
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Toggle from '~components/Toggle'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
@@ -72,13 +73,13 @@ export const ApprovalsBlock = ({
       // invalid form field id but cannot be seen or cleared in the SingleSelect component
       // since no matching Yes/No item can be found.
       // Hence, we clear the approval_field to allow the user to re-select a new valid value.
-      if (value !== '' && !yesNoFieldIds.includes(value)) {
+      if (!isLoading && value && !yesNoFieldIds.includes(value)) {
         setValue(APPROVAL_FIELD_NAME, '')
         return ''
       }
       return value
     },
-    [setValue, yesNoFieldIds],
+    [isLoading, setValue, yesNoFieldIds],
   )
 
   return (
@@ -109,14 +110,16 @@ export const ApprovalsBlock = ({
               },
             }}
             render={({ field: { value = '', ...rest } }) => (
-              <SingleSelect
-                placeholder="Select a Yes/No field from your form"
-                items={yesNoFieldItems}
-                value={getValueIfNotDeleted(value)}
-                isClearable
-                isDisabled={isLoading}
-                {...rest}
-              />
+              <>
+                <SingleSelect
+                  placeholder="Select a Yes/No field from your form"
+                  items={yesNoFieldItems}
+                  value={getValueIfNotDeleted(value)}
+                  isClearable
+                  isDisabled={isLoading}
+                  {...rest}
+                />
+              </>
             )}
           />
           <FormErrorMessage>{errors.approval_field?.message}</FormErrorMessage>

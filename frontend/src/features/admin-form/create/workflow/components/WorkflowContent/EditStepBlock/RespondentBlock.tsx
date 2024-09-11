@@ -4,7 +4,7 @@ import { As, FormControl, Stack, Text } from '@chakra-ui/react'
 import { get } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
-import { WorkflowType } from '~shared/types'
+import { UserDto, WorkflowType } from '~shared/types'
 
 import { textStyles } from '~theme/textStyles'
 import { SingleSelect } from '~components/Dropdown'
@@ -15,7 +15,6 @@ import { TagInput } from '~components/TagInput'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { EditStepInputs } from '~features/admin-form/create/workflow/types'
-import { useUser } from '~features/user/queries'
 
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
@@ -160,22 +159,28 @@ const DynamicRespondentOption = ({
               name="field"
               rules={{
                 required: 'Please select a field',
-                validate: (selectedValue) =>
-                  !emailFieldItems ||
-                  emailFieldItems.some(
-                    ({ value: fieldValue }) => fieldValue === selectedValue,
-                  ) ||
-                  'Field is not an email field',
+                validate: (selectedValue) => {
+                  return (
+                    isLoading ||
+                    !emailFieldItems ||
+                    emailFieldItems.some(
+                      ({ value: fieldValue }) => fieldValue === selectedValue,
+                    ) ||
+                    'Field is not an email field'
+                  )
+                },
               }}
               render={({ field: { value = '', ...rest } }) => (
-                <SingleSelect
-                  isDisabled={isLoading}
-                  isClearable={false}
-                  placeholder="Select a field"
-                  items={emailFieldItems}
-                  value={value}
-                  {...rest}
-                />
+                <>
+                  <SingleSelect
+                    isDisabled={isLoading}
+                    isClearable={false}
+                    placeholder="Select a field"
+                    items={emailFieldItems}
+                    value={value}
+                    {...rest}
+                  />
+                </>
               )}
             />
             <FormErrorMessage>{errors.field?.message}</FormErrorMessage>
@@ -190,12 +195,14 @@ interface RespondentBlockProps {
   stepNumber: number
   isLoading: boolean
   formMethods: UseFormReturn<EditStepInputs>
+  user: UserDto | undefined
 }
 
 export const RespondentBlock = ({
   stepNumber,
   isLoading,
   formMethods,
+  user,
 }: RespondentBlockProps): JSX.Element => {
   const {
     formState: { errors },
@@ -206,8 +213,6 @@ export const RespondentBlock = ({
 
   // TODO: (MRF-email-notif) Remove isTest check when MRF email notifications is out of beta
   const isTest = process.env.NODE_ENV === 'test'
-  const { user, isLoading: isUserLoading } = useUser()
-  isLoading = isLoading || isUserLoading
 
   const { emailFormFields = [] } = useAdminFormWorkflow()
 
@@ -226,13 +231,13 @@ export const RespondentBlock = ({
     // since no matching Yes/No item can be found.
     // Hence, we clear the approval_field to allow the user to re-select a new valid value.
     (value) => {
-      if (value !== '' && !emailFieldIds.includes(value)) {
+      if (!isLoading && value && !emailFieldIds.includes(value)) {
         setValue('field', '')
         return ''
       }
       return value
     },
-    [setValue, emailFieldIds],
+    [isLoading, setValue, emailFieldIds],
   )
 
   const selectedWorkflowType = watch('workflow_type')
@@ -268,6 +273,7 @@ export const RespondentBlock = ({
                 control={control}
                 render={({ field: { value = '', ...rest } }) => (
                   <SingleSelect
+                    isDisabled={isLoading}
                     placeholder="Select an email field from your form"
                     items={emailFieldItems}
                     value={getValueIfNotDeleted(value)}
@@ -286,7 +292,7 @@ export const RespondentBlock = ({
         <>
           <FormControl
             isReadOnly={isLoading}
-            id="workflowType"
+            id="workflow_type"
             isRequired
             isInvalid={!!errors.workflow_type}
           >

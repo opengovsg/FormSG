@@ -53,7 +53,7 @@ export const QuestionsBlock = ({
         <Controller
           control={control}
           name="edit"
-          render={({ field: { value, ...field } }) => (
+          render={({ field: { value = [], ...field } }) => (
             <MultiSelect
               isDisabled={isLoading}
               placeholder="Select field(s) from your form"
