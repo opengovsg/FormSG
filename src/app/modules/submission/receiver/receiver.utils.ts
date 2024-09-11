@@ -54,19 +54,6 @@ export const mapRouteError: MapRouteError = (error) => {
 }
 
 /**
- * Checks whether attachmentMap contains the given response id.
- * @param attachmentMap Map of field ids to attachments
- * @param response The response field id to check
- * @returns true if response is in map, false otherwise
- */
-const checkIsAttachmentResponsesIdInMap = (
-  attachmentMap: Record<IAttachmentInfo['fieldId'], IAttachmentInfo>,
-  responseId: string,
-): boolean => {
-  return !!attachmentMap[responseId]
-}
-
-/**
  * Adds the attachment's content, filename to each response,
  * based on their fieldId.
  * The response's answer is also changed to the attachment's filename.
@@ -98,7 +85,10 @@ export const addAttachmentToResponses = (
     if (responses) {
       // matches responses to attachments using id, adding filename and content to response
       responses.forEach((response) => {
-        if (checkIsAttachmentResponsesIdInMap(attachmentMap, response._id)) {
+        if (
+          response.fieldType === BasicField.Attachment &&
+          response._id in attachmentMap
+        ) {
           const file = attachmentMap[response._id]
           const attachmentResponse = response as ParsedClearAttachmentResponse
           attachmentResponse.filename = file.filename
@@ -114,10 +104,7 @@ export const addAttachmentToResponses = (
   if (isBodyVersion3AndAbove(body)) {
     Object.keys(body.responses).forEach((id) => {
       const response = body.responses[id] as ParsedClearFormFieldResponseV3
-      if (
-        response.fieldType === BasicField.Attachment &&
-        checkIsAttachmentResponsesIdInMap(attachmentMap, id)
-      ) {
+      if (response.fieldType === BasicField.Attachment && id in attachmentMap) {
         const file = attachmentMap[id]
         response.answer.filename = file.filename
         response.answer.content = file.content
