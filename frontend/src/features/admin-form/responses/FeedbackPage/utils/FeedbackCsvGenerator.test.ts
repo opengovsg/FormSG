@@ -1,4 +1,5 @@
 import { stringify } from 'csv-string'
+import mockdate from 'mockdate'
 import moment from 'moment-timezone'
 
 import { DateString, FormFeedbackDto, FormId } from '~shared/types'
@@ -8,6 +9,14 @@ import { FeedbackCsvGenerator } from './FeedbackCsvGenerator'
 const UTF8_BYTE_ORDER_MARK = '\uFEFF'
 
 describe('FeedbackCsvGenerator', () => {
+  beforeEach(() => {
+    mockdate.set(moment().toDate())
+  })
+
+  afterEach(() => {
+    mockdate.reset()
+  })
+
   afterAll(() => {
     jest.clearAllMocks()
   })
