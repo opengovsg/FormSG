@@ -77,6 +77,53 @@ const form_field_4: FormFieldDto = {
   attachmentSize: AttachmentSize.OneMb,
 }
 
+const form_field_5: FormFieldDto = {
+  title: 'My email (for updates)',
+  description: '',
+  required: true,
+  disabled: false,
+  fieldType: BasicField.Email,
+  _id: '617a262d4fa0850013d1568f',
+  autoReplyOptions: {
+    hasAutoReply: false,
+    autoReplySubject: '',
+    autoReplySender: '',
+    autoReplyMessage: '',
+    includeFormSummary: false,
+  },
+  isVerifiable: false,
+  hasAllowedEmailDomains: false,
+  allowedEmailDomains: [],
+}
+
+const form_field_6: FormFieldDto = {
+  title: "Approver's email",
+  description: '',
+  required: true,
+  disabled: false,
+  fieldType: BasicField.Email,
+  _id: '61e6857c9c794b0012f1c6f7',
+  autoReplyOptions: {
+    hasAutoReply: false,
+    autoReplySubject: '',
+    autoReplySender: '',
+    autoReplyMessage: '',
+    includeFormSummary: false,
+  },
+  isVerifiable: false,
+  hasAllowedEmailDomains: false,
+  allowedEmailDomains: [],
+}
+
+const form_field_7: FormFieldDto = {
+  title: 'Approve time off?',
+  description: '',
+  required: true,
+  disabled: false,
+  fieldType: BasicField.YesNo,
+  _id: '61e6857c9c794b0012f1c6u9',
+}
+
 const workflow_step_1: FormWorkflowStepDto = {
   _id: '61e6857c9c794b0012f1c6f8',
   workflow_type: WorkflowType.Static,
@@ -91,9 +138,71 @@ const workflow_step_2: FormWorkflowStepDto = {
   edit: [form_field_3._id, form_field_4._id],
 }
 
+const workflow_step_2_with_deleted_field: FormWorkflowStepDto = {
+  _id: '61e6857c9c794b0012f1cnkl',
+  workflow_type: WorkflowType.Static,
+  emails: ['test_1@tech.gov.sg', 'test_2@tech.gov.sg'],
+  edit: ['deleted_object_id_1', form_field_4._id],
+}
+
+const workflow_step_2_with_all_fields_deleted: FormWorkflowStepDto = {
+  _id: '61e6857c9c794b0012f1cnkl',
+  workflow_type: WorkflowType.Static,
+  emails: ['test_1@tech.gov.sg', 'test_2@tech.gov.sg'],
+  edit: ['deleted_object_id_1', 'deleted_object_id_2'],
+}
+
+const workflow_step_1_with_respondent: FormWorkflowStepDto = {
+  _id: '61e6857c9c794b0012f1c6g1',
+  workflow_type: WorkflowType.Dynamic,
+  field: form_field_5._id,
+  edit: [
+    form_field_1._id,
+    form_field_2._id,
+    form_field_5._id,
+    form_field_6._id,
+  ],
+}
+
+const workflow_step_1_with_deleted_respondent: FormWorkflowStepDto = {
+  _id: '61e6857c9c794b0012f1c6g9',
+  workflow_type: WorkflowType.Dynamic,
+  field: 'invalid_object_id',
+  edit: [
+    form_field_1._id,
+    form_field_2._id,
+    form_field_5._id,
+    form_field_6._id,
+  ],
+}
+
+const workflow_step_3_with_approval: FormWorkflowStepDto = {
+  _id: '61e6857c9c794b0012f1c6g2',
+  workflow_type: WorkflowType.Dynamic,
+  field: form_field_6._id,
+  edit: [form_field_7._id],
+  approval_field: form_field_7._id,
+}
+
+const workflow_step_3_with_deleted_approval: FormWorkflowStepDto = {
+  _id: '61e6857c9c7ikb0012f1c6g3',
+  workflow_type: WorkflowType.Dynamic,
+  field: form_field_6._id,
+  edit: [form_field_7._id],
+  approval_field: 'deleted_object_id',
+}
+
 const FORM_WITH_WORKFLOW: Partial<AdminFormDto> = {
   responseMode: FormResponseMode.Multirespondent,
-  form_fields: [form_field_1, form_field_2, form_field_3, form_field_4],
+  form_fields: [
+    form_field_1,
+    form_field_2,
+    form_field_3,
+    form_field_4,
+    form_field_5,
+    form_field_6,
+    form_field_7,
+  ],
   workflow: [workflow_step_1, workflow_step_2],
 }
 
@@ -120,6 +229,58 @@ MobileWithWorkflow.parameters = {
     defaultViewport: 'mobile1',
   },
   chromatic: { viewports: [viewports.xs] },
+}
+
+export const Step1Respondent = Template.bind({})
+Step1Respondent.parameters = {
+  msw: buildMswRoutes({
+    ...FORM_WITH_WORKFLOW,
+    workflow: [workflow_step_1_with_respondent],
+  }),
+}
+
+export const Step3Approval = Template.bind({})
+Step3Approval.parameters = {
+  msw: buildMswRoutes({
+    ...FORM_WITH_WORKFLOW,
+    workflow: [workflow_step_1, workflow_step_2, workflow_step_3_with_approval],
+  }),
+}
+
+export const Step1RespondentDeleted = Template.bind({})
+Step1RespondentDeleted.parameters = {
+  msw: buildMswRoutes({
+    ...FORM_WITH_WORKFLOW,
+    workflow: [workflow_step_1_with_deleted_respondent],
+  }),
+}
+
+export const Step3ApprovalFieldDeleted = Template.bind({})
+Step3ApprovalFieldDeleted.parameters = {
+  msw: buildMswRoutes({
+    ...FORM_WITH_WORKFLOW,
+    workflow: [
+      workflow_step_1,
+      workflow_step_2,
+      workflow_step_3_with_deleted_approval,
+    ],
+  }),
+}
+
+export const Step2FieldDeleted = Template.bind({})
+Step2FieldDeleted.parameters = {
+  msw: buildMswRoutes({
+    ...FORM_WITH_WORKFLOW,
+    workflow: [workflow_step_1, workflow_step_2_with_deleted_field],
+  }),
+}
+
+export const Step2AllFieldsDeleted = Template.bind({})
+Step2AllFieldsDeleted.parameters = {
+  msw: buildMswRoutes({
+    ...FORM_WITH_WORKFLOW,
+    workflow: [workflow_step_1, workflow_step_2_with_all_fields_deleted],
+  }),
 }
 
 export const Loading = Template.bind({})
