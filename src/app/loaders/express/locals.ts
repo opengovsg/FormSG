@@ -2,7 +2,6 @@ import ejs from 'ejs'
 
 import config from '../../config/config'
 import { captchaConfig } from '../../config/features/captcha.config'
-import { googleAnalyticsConfig } from '../../config/features/google-analytics.config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 
