@@ -43,8 +43,6 @@ services:
       - INTRANET_IP_LIST_PATH
       # This needs to be removed and replaced with a real tracking ID in a local .env file
       # in order to enable GA in a local environment
-      # TODO: remove after React rollout #4786
-      - GA_TRACKING_ID=mockGATrackingId
       # Test credentials from reCAPTCHA docs
       # https://developers.google.com/recaptcha/docs/faq#id-like-to-run-automated-tests-with-recaptcha.-what-should-i-do
       - GOOGLE_CAPTCHA=6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe

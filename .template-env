@@ -53,8 +53,6 @@ FORMSG_SDK_MODE=
 # AWS_REGION=
 
 ## Google Services
-## If the below variable exists, the [google-analytics] feature will be enabled.
-# GA_TRACKING_ID=
 ## If the below variables exists, the [captcha] feature will be enabled.
 # GOOGLE_CAPTCHA=
 # GOOGLE_CAPTCHA_PUBLIC=
