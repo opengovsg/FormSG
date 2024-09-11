@@ -5,6 +5,7 @@ import { Box, Divider, Stack } from '@chakra-ui/react'
 import { FormWorkflowStep, WorkflowType } from '~shared/types'
 
 import { SaveActionGroup } from '~features/admin-form/create/logic/components/LogicContent/EditLogicBlock/EditCondition'
+import { useUser } from '~features/user/queries'
 
 import {
   setToInactiveSelector,
@@ -42,6 +43,8 @@ export const EditStepBlock = ({
   const formMethods = useForm<EditStepInputs>({
     defaultValues,
   })
+  const { user, isLoading: isUserLoading } = useUser()
+  isLoading = isLoading || isUserLoading
 
   const wrapperRef = useRef<HTMLDivElement | null>(null)
 
@@ -129,6 +132,7 @@ export const EditStepBlock = ({
       </Box>
       <Divider />
       <RespondentBlock
+        user={user}
         stepNumber={stepNumber}
         formMethods={formMethods}
         isLoading={isLoading}

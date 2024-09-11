@@ -49,7 +49,7 @@ export const SaveActionGroup = ({
         w="100%"
       >
         <Button
-          isLoading={isLoading}
+          isDisabled={isLoading}
           onClick={handleSubmit}
           isFullWidth={isMobile}
         >
