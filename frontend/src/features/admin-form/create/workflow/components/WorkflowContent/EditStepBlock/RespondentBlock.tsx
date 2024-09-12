@@ -248,7 +248,7 @@ export const RespondentBlock = ({
     <EditStepBlockContainer>
       {isFirstStep ? (
         <>
-          {/* TODO: (MRF-email-notif) Remove isTest check when MRF email
+          {/* TODO: (MRF-email-notif) Remove isTest and betaFlag check when MRF email
           notifications is out of beta */}
           {isTest || user?.betaFlags?.mrfEmailNotifications ? (
             <FormControl isInvalid={!!errors.field}>
