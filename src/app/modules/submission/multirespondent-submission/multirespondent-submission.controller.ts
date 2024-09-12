@@ -507,37 +507,40 @@ const updateMultirespondentSubmission = async (
     timestamp: (submission.created || new Date()).getTime(),
   })
 
-  const checkIsStepRejectedResult = checkIsStepRejected({
-    zeroIndexedStepNumber: workflowStep,
-    form,
-    responses,
-  })
-
-  if (checkIsStepRejectedResult.isErr()) {
-    logger.error({
-      message: 'Error checking if step is rejected',
-      meta: {
-        ...logMeta,
-        ...createReqMeta(req),
-        currentWorkflowStep: workflowStep,
-        formId: form._id,
-        submissionId,
-      },
-      error: checkIsStepRejectedResult.error,
-    })
-    return
-  }
-
-  const isStepRejected = checkIsStepRejectedResult.value
-  if (isStepRejected) {
-    return await sendMrfOutcomeEmails({
-      currentStepNumber: workflowStep,
+  // TODO: (MRF-email-notif): Remove flag once approvals is out of beta
+  if (isTest || form.admin.betaFlags.mrfEmailNotifications) {
+    const checkIsStepRejectedResult = checkIsStepRejected({
+      zeroIndexedStepNumber: workflowStep,
       form,
       responses,
-      submissionId,
-      isApproval: true,
-      isRejected: true,
     })
+
+    if (checkIsStepRejectedResult.isErr()) {
+      logger.error({
+        message: 'Error checking if step is rejected',
+        meta: {
+          ...logMeta,
+          ...createReqMeta(req),
+          currentWorkflowStep: workflowStep,
+          formId: form._id,
+          submissionId,
+        },
+        error: checkIsStepRejectedResult.error,
+      })
+      return
+    }
+
+    const isStepRejected = checkIsStepRejectedResult.value
+    if (isStepRejected) {
+      return await sendMrfOutcomeEmails({
+        currentStepNumber: workflowStep,
+        form,
+        responses,
+        submissionId,
+        isApproval: true,
+        isRejected: true,
+      })
+    }
   }
 
   try {

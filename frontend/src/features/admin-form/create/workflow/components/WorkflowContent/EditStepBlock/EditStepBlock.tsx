@@ -114,6 +114,9 @@ export const EditStepBlock = ({
     ? 'Anyone who can access your form'
     : undefined
 
+  // TODO: (MRF-email-notif) Remove isTest check when approvals is out of beta
+  const isTest = process.env.NODE_ENV === 'test'
+
   return (
     <Stack
       ref={wrapperRef}
@@ -139,11 +142,14 @@ export const EditStepBlock = ({
       />
       <Divider />
       <QuestionsBlock formMethods={formMethods} isLoading={isLoading} />
-      {!isFirstStep ? (
-        <>
-          <Divider />
-          <ApprovalsBlock formMethods={formMethods} stepNumber={stepNumber} />
-        </>
+      {/*TODO: (MRF-email-notif) Remove isTest and betaFlag check when approvals is out of beta */}
+      {isTest || user?.betaFlags?.mrfEmailNotifications ? (
+        !isFirstStep ? (
+          <>
+            <Divider />
+            <ApprovalsBlock formMethods={formMethods} stepNumber={stepNumber} />
+          </>
+        ) : null
       ) : null}
       <Divider />
       <SaveActionGroup
