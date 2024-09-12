@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.146.1",
+  "version": "6.147.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -73,7 +73,7 @@
     "axios": "^1.7.4",
     "bcrypt": "^5.1.1",
     "bluebird": "^3.5.2",
-    "body-parser": "^1.20.1",
+    "body-parser": "^1.20.3",
     "boxicons": "1.8.0",
     "bson": "^4.7.2",
     "busboy": "^1.6.0",
@@ -87,11 +87,11 @@
     "csv-string": "^4.1.1",
     "cuid": "^2.1.8",
     "date-fns": "^2.30.0",
-    "dd-trace": "^3.36.0",
+    "dd-trace": "^5.22.0",
     "dedent-js": "~1.0.1",
     "dotenv": "^16.0.3",
     "ejs": "^3.1.10",
-    "express": "^4.19.2",
+    "express": "^4.20.0",
     "express-rate-limit": "^7.2.0",
     "express-request-id": "^1.4.1",
     "express-session": "^1.18.0",
@@ -157,7 +157,7 @@
     "whatwg-fetch": "^3.6.2",
     "winston": "^3.13.0",
     "winston-cloudwatch": "^6.2.0",
-    "zod": "^3.22.4"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@babel/core": "^7.24.3",
