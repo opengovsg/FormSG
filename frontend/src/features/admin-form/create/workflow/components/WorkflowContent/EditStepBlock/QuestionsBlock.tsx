@@ -49,7 +49,13 @@ export const QuestionsBlock = ({
         isRequired
         isInvalid={!!errors.edit}
       >
-        <FormLabel>Select field(s) for this respondent to fill</FormLabel>
+        <FormLabel
+          tooltipVariant="info"
+          tooltipPlacement="top"
+          tooltipText="Respondent will only be able to fill the fields you have selected"
+        >
+          Select field(s) for this respondent to fill
+        </FormLabel>
         <Controller
           control={control}
           name="edit"

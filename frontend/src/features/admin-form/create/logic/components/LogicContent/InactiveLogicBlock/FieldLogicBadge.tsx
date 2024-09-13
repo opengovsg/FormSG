@@ -24,7 +24,10 @@ interface FieldLogicBadgeProps {
  */
 export const FieldLogicBadge = ({
   field,
-  defaults = { variant: 'error', message: 'Field not found' },
+  defaults = {
+    variant: 'error',
+    message: 'This field was deleted and has been removed from your workflow',
+  },
 }: FieldLogicBadgeProps) => {
   const fieldMeta = useMemo(
     () => (field ? BASICFIELD_TO_DRAWER_META[field.fieldType] : null),
@@ -44,7 +47,7 @@ export const FieldLogicBadge = ({
   const badgeBgColor = useMemo(() => {
     if (fieldMeta) return undefined
     if (defaults.variant === 'error') {
-      return 'red.100'
+      return 'danger.100'
     }
     return undefined
   }, [defaults.variant, fieldMeta])

@@ -95,6 +95,7 @@ export const FormLabel = ({
           >
             <Icon
               ml="0.5rem"
+              mb="0.1rem"
               color="secondary.500"
               as={tooltipVariant === 'info' ? BxsInfoCircle : BxsHelpCircle}
               verticalAlign="middle"
