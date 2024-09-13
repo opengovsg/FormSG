@@ -338,6 +338,7 @@ export const PreviewFormProvider = ({
         isPaymentEnabled,
         isPreview: true,
         hasSingleSubmissionValidationError: false,
+        hasRespondentNotWhitelistedError: false,
         ...commonFormValues,
         ...data,
         ...rest,

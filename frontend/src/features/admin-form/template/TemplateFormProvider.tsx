@@ -93,6 +93,7 @@ export const TemplateFormProvider = ({
         isPreview: true,
         isPaymentEnabled: false,
         hasSingleSubmissionValidationError: false,
+        hasRespondentNotWhitelistedError: false,
         ...commonFormValues,
         ...data,
         ...rest,

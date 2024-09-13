@@ -165,7 +165,6 @@ FormWithPayment.parameters = {
       publishable_key: 'pk_samplekey',
     },
     payments_field: {
-      payment_type: PaymentType.Fixed,
       enabled: true,
       description: 'Test event registration fee',
       payment_type: PaymentType.Variable,

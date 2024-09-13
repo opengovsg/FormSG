@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "lib": ["DOM", "DOM.Iterable", "ES2020"],
+    "target": "ES2021",
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES2021"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -18,22 +22,58 @@
     "downlevelIteration": true,
     "baseUrl": ".",
     "paths": {
-      "~shared/*": ["../shared/*"],
-      "~assets/*": ["./src/assets/*"],
-      "~contexts/*": ["./src/contexts/*"],
-      "~constants/*": ["./src/constants/*"],
-      "~components/*": ["./src/components/*"],
-      "~templates/*": ["./src/templates/*"],
-      "~features/*": ["./src/features/*"],
-      "~hooks/*": ["./src/hooks/*"],
-      "~utils/*": ["./src/utils/*"],
-      "~pages/*": ["./src/pages/*"],
-      "~services/*": ["./src/services/*"],
-      "~theme/*": ["./src/theme/*"],
-      "~typings/*": ["./src/typings/*"],
-      "~/*": ["./src/*"]
+      "~shared/*": [
+        "../shared/*"
+      ],
+      "~assets/*": [
+        "./src/assets/*"
+      ],
+      "~contexts/*": [
+        "./src/contexts/*"
+      ],
+      "~constants/*": [
+        "./src/constants/*"
+      ],
+      "~components/*": [
+        "./src/components/*"
+      ],
+      "~templates/*": [
+        "./src/templates/*"
+      ],
+      "~features/*": [
+        "./src/features/*"
+      ],
+      "~hooks/*": [
+        "./src/hooks/*"
+      ],
+      "~utils/*": [
+        "./src/utils/*"
+      ],
+      "~pages/*": [
+        "./src/pages/*"
+      ],
+      "~services/*": [
+        "./src/services/*"
+      ],
+      "~theme/*": [
+        "./src/theme/*"
+      ],
+      "~typings/*": [
+        "./src/typings/*"
+      ],
+      "~/*": [
+        "./src/*"
+      ]
     }
   },
-  "include": ["src/**/*", ".storybook/**/*", "./vitest-setup.ts"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": [
+    "src/**/*",
+    ".storybook/**/*",
+    "./vitest-setup.ts"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ]
 }
