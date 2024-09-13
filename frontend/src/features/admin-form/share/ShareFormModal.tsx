@@ -105,13 +105,42 @@ export interface ShareFormModalProps {
   isFormPrivate: boolean | undefined
 }
 
+const FormActivationMessage = ({
+  isFormPrivate,
+  formId,
+  onClose,
+}: {
+  isFormPrivate: boolean | undefined
+  onClose: () => void
+  formId: string | undefined
+}) => {
+  const navigate = useNavigate()
+  const handleRedirectToSettings = useCallback(() => {
+    onClose()
+    navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_SETTINGS_SUBROUTE}`)
+  }, [formId, navigate, onClose])
+
+  if (!isFormPrivate) return null
+
+  return (
+    <InlineMessage variant="warning" mb="1rem">
+      <Box>
+        This form is currently closed to new responses. Activate your form in{' '}
+        <Button p={0} variant="link" onClick={handleRedirectToSettings}>
+          Settings
+        </Button>{' '}
+        to allow new responses or to share it as a template.
+      </Box>
+    </InlineMessage>
+  )
+}
+
 export const ShareFormModal = ({
   isOpen,
   onClose,
   formId,
   isFormPrivate,
 }: ShareFormModalProps): JSX.Element => {
-  const navigate = useNavigate()
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
@@ -178,11 +207,6 @@ export const ShareFormModal = ({
       </div>
     `)
   }, [shareLink])
-
-  const handleRedirectToSettings = useCallback(() => {
-    onClose()
-    navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_SETTINGS_SUBROUTE}`)
-  }, [formId, navigate, onClose])
 
   const { data: goLinkSuffixData } = useGoLink(formId ?? '')
   const [goLinkSuffixInput, setGoLinkSuffixInput] = useState('')
@@ -344,22 +368,6 @@ export const ShareFormModal = ({
           <ModalCloseButton />
           <ModalHeader color="secondary.700">Share form</ModalHeader>
           <ModalBody whiteSpace="pre-wrap">
-            {isFormPrivate ? (
-              <InlineMessage variant="warning" mb="1rem">
-                <Box>
-                  This form is currently closed to new responses. Activate your
-                  form in{' '}
-                  <Button
-                    p={0}
-                    variant="link"
-                    onClick={handleRedirectToSettings}
-                  >
-                    Settings
-                  </Button>{' '}
-                  to allow new responses or to share it as a template.
-                </Box>
-              </InlineMessage>
-            ) : null}
             <Tabs
               pos="relative"
               h="100%"
@@ -377,6 +385,11 @@ export const ShareFormModal = ({
               </Box>
               <TabPanels mt="1.5rem" pb="2rem" flex={1} overflowY="auto">
                 <TabPanel>
+                  <FormActivationMessage
+                    isFormPrivate={isFormPrivate}
+                    formId={formId}
+                    onClose={onClose}
+                  />
                   <FormLinkSection />
                   {/* GoLinkSection */}
                   {(displayGoLink && whitelisted) ||
@@ -435,9 +448,19 @@ export const ShareFormModal = ({
                   ) : null}
                 </TabPanel>
                 <TabPanel>
+                  <FormActivationMessage
+                    isFormPrivate={isFormPrivate}
+                    formId={formId}
+                    onClose={onClose}
+                  />
                   <TemplateSection />
                 </TabPanel>
                 <TabPanel>
+                  <FormActivationMessage
+                    isFormPrivate={isFormPrivate}
+                    formId={formId}
+                    onClose={onClose}
+                  />
                   <EmbedSection />
                 </TabPanel>
               </TabPanels>

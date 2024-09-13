@@ -76,7 +76,7 @@ jobs:
           NODE_OPTIONS: '--max-old-space-size=4096 --openssl-legacy-provider'
           AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
       - name: Upload build files
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: always()
         with:
           name: build-output
@@ -144,17 +144,6 @@ jobs:
     # if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      # prevent CI from failing when worker runs out of memory
-      # https://github.com/actions/runner-images/discussions/7188#discussioncomment-6750749
-      - name: Increase swapfile
-        run: |
-          df -h
-          sudo swapoff -a
-          sudo fallocate -l 15G /swapfile
-          sudo chmod 600 /swapfile
-          sudo mkswap /swapfile
-          sudo swapon /swapfile
-          sudo swapon --show
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0

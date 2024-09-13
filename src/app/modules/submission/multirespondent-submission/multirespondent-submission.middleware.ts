@@ -243,8 +243,9 @@ export const scanAndRetrieveAttachments = async (
       .map((id) => {
         const response = req.body.responses[id]
         if (
-          response.fieldType !== BasicField.Attachment ||
-          response.answer.hasBeenScanned
+          response.fieldType !== BasicField.Attachment
+          // TODO: FRM-1839 + FRM-1590 Skip scanning if attachment has already been scanned
+          // || response.answer.hasBeenScanned
         ) {
           return null
         }
@@ -293,6 +294,7 @@ export const scanAndRetrieveAttachments = async (
   // Step 3: Update responses with new values.
   for (const idTaggedAttachmentResponse of scanAndRetrieveFilesResult.value) {
     const { id, ...attachmentResponse } = idTaggedAttachmentResponse
+    // TODO: FRM-1839 Skip scanning if attachment has already been scanned
     attachmentResponse.answer.hasBeenScanned = true
     // Store the md5 hash in the DB as well for comparison later on.
     attachmentResponse.answer.md5Hash = crypto
@@ -424,6 +426,7 @@ export const validateMultirespondentSubmission = async (
               )
               .andThen(() => {
                 // Step 3: Match non-editable response fields to previous version
+
                 const nonEditableFieldIdsWithResponses = Object.keys(
                   req.body.responses,
                 ).filter((fieldId) => !editableFieldIds.includes(fieldId))
@@ -460,6 +463,17 @@ export const validateMultirespondentSubmission = async (
 
                 const previousResponses =
                   previousSubmissionDecryptedContent.responses as ParsedClearFormFieldResponsesV3
+
+                const previousNonEditableFieldIdsWithResponses = Object.keys(
+                  previousResponses,
+                ).filter((fieldId) => !editableFieldIds.includes(fieldId))
+
+                for (const fieldId of previousNonEditableFieldIdsWithResponses) {
+                  // ensure that respondents cannot alter a non-editable field by omitting the field in the submission by re-inserting the previous fields that are non-editable
+                  if (!req.body.responses[fieldId]) {
+                    req.body.responses[fieldId] = previousResponses[fieldId]
+                  }
+                }
 
                 return Result.combine(
                   nonEditableFieldIdsWithResponses.map((fieldId) => {

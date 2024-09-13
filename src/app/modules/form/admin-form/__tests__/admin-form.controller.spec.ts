@@ -76,6 +76,7 @@ import {
   FormStatus,
   LogicDto,
 } from '../../../../../../shared/types'
+import * as CryptoUtil from '../../../../../../shared/utils/crypto'
 import { smsConfig } from '../../../../config/features/sms.config'
 import * as SmsService from '../../../../services/sms/sms.service'
 import ParsedResponsesObject from '../../../submission/ParsedResponsesObject.class'
@@ -4789,6 +4790,399 @@ describe('admin-form.controller', () => {
       })
       expect(updateFormSpy).toHaveBeenCalledTimes(1)
       expect(editFormFieldSpy).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('handleUpdateWhitelistSetting', () => {
+    const MOCK_VALID_UEN = '53244311W'
+    const MOCK_LOWERCASE_UEN = '53244311w'
+    const MOCK_VALID_FIN = 'F1612366T'
+    const MOCK_VALID_NRIC = 'S7101844Z'
+    const MOCK_LOWERCASE_NRIC = 's7101844z'
+
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+
+    const MOCK_STORAGE_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      title: 'mock title',
+      publicKey: 'some public key',
+    } as IPopulatedEncryptedForm
+
+    const MOCK_UPDATED_SETTINGS = {
+      authType: FormAuthType.NIL,
+      hasCaptcha: false,
+      inactiveMessage: 'some inactive message',
+      status: FormStatus.Private,
+      submissionLimit: 42069,
+      title: 'new title',
+      webhook: {
+        isRetryEnabled: true,
+        url: '',
+      },
+      whitelistedSubmitterIds: {
+        isWhitelistEnabled: true,
+      },
+    } as FormSettings
+
+    const MOCK_BASE_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+      },
+      session: {
+        user: {
+          _id: MOCK_USER_ID,
+        },
+      },
+    })
+
+    const updateFormWhitelistSettingSpy = jest.spyOn(
+      AdminFormService,
+      'updateFormWhitelistSetting',
+    )
+
+    const MOCK_ENCRYPTED_WHITELISTED_SUBMITTER_IDS = {
+      cipherTexts: ['abc'],
+      nonce: 'some nonce',
+      myPrivateKey: 'some private key',
+      myPublicKey: 'some public key',
+    }
+    const encryptStringsMessageSpy = jest
+      .spyOn(CryptoUtil, 'encryptStringsMessage')
+      .mockReturnValue(MOCK_ENCRYPTED_WHITELISTED_SUBMITTER_IDS)
+
+    beforeEach(() => {
+      MockAdminFormService.checkIsWhitelistSettingValid.mockReturnValue({
+        isValid: true,
+      })
+    })
+
+    it('should return 403 if user does not have write permissions for the form', async () => {
+      // Arrange
+      const MOCK_VALID_UPDATE_WHITELIST_REQ = assignIn(
+        cloneDeep(MOCK_BASE_REQ),
+        {
+          body: {
+            whitelistCsvString: `${MOCK_LOWERCASE_NRIC}\r\n${MOCK_VALID_FIN}\r\n${MOCK_VALID_UEN}`,
+          },
+        },
+      )
+
+      const mockRes = expressHandler.mockResponse()
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+
+      const expectedErrorString = 'no write permissions'
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        errAsync(new ForbiddenFormError(expectedErrorString)),
+      )
+
+      // Act
+      await AdminFormController._handleUpdateWhitelistSettingForTest(
+        MOCK_VALID_UPDATE_WHITELIST_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(updateFormWhitelistSettingSpy).not.toHaveBeenCalled()
+    })
+
+    it('should uppercase all whitelist strings before encrypting them for consistency in matching submitterIds', async () => {
+      // Arrange
+      const MOCK_VALID_UPDATE_WHITELIST_REQ = assignIn(
+        cloneDeep(MOCK_BASE_REQ),
+        {
+          body: {
+            whitelistCsvString: `${MOCK_VALID_FIN}\r\n${MOCK_LOWERCASE_NRIC}\r\n${MOCK_LOWERCASE_UEN}`,
+          },
+        },
+      )
+
+      const mockRes = expressHandler.mockResponse()
+
+      const expectedFormSettings = MOCK_UPDATED_SETTINGS
+      updateFormWhitelistSettingSpy.mockReturnValueOnce(
+        okAsync(expectedFormSettings),
+      )
+
+      // Mock services to return success results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_STORAGE_FORM),
+      )
+
+      // Act
+      await AdminFormController._handleUpdateWhitelistSettingForTest(
+        MOCK_VALID_UPDATE_WHITELIST_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.json).toHaveBeenCalledWith(expectedFormSettings)
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(encryptStringsMessageSpy).toHaveBeenCalledWith(
+        [MOCK_VALID_FIN, MOCK_VALID_NRIC, MOCK_VALID_UEN],
+        MOCK_STORAGE_FORM.publicKey,
+      )
+      expect(updateFormWhitelistSettingSpy).toHaveBeenCalledTimes(1)
+    })
+
+    it('should return 200 ok with form settings and allow admin with form write permissions to update whitelist setting successfully', async () => {
+      // Arrange
+      const MOCK_VALID_UPDATE_WHITELIST_REQ = assignIn(
+        cloneDeep(MOCK_BASE_REQ),
+        {
+          body: {
+            whitelistCsvString: `${MOCK_VALID_NRIC}\r\n${MOCK_VALID_FIN}\r\n${MOCK_VALID_UEN}`,
+          },
+        },
+      )
+
+      const mockRes = expressHandler.mockResponse()
+
+      const expectedFormSettings = MOCK_UPDATED_SETTINGS
+      updateFormWhitelistSettingSpy.mockReturnValueOnce(
+        okAsync(expectedFormSettings),
+      )
+
+      // Mock services to return success results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_STORAGE_FORM),
+      )
+
+      // Act
+      await AdminFormController._handleUpdateWhitelistSettingForTest(
+        MOCK_VALID_UPDATE_WHITELIST_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.json).toHaveBeenCalledWith(expectedFormSettings)
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(encryptStringsMessageSpy).toHaveBeenCalledWith(
+        [MOCK_VALID_NRIC, MOCK_VALID_FIN, MOCK_VALID_UEN],
+        MOCK_STORAGE_FORM.publicKey,
+      )
+      expect(updateFormWhitelistSettingSpy).toHaveBeenCalledTimes(1)
+    })
+
+    it('should return 200 ok with form settings and allow admin with form write permissions to delete whitelist setting successfully', async () => {
+      // Arrange
+      const MOCK_VALID_DISABLE_WHITELIST_REQ = assignIn(
+        cloneDeep(MOCK_BASE_REQ),
+        {
+          body: {
+            whitelistCsvString: null,
+          },
+        },
+      )
+
+      const mockRes = expressHandler.mockResponse()
+
+      const expectedFormSettings = {
+        ...MOCK_UPDATED_SETTINGS,
+        whitelistedSubmitterIds: {
+          isWhitelistEnabled: false,
+        },
+      }
+      updateFormWhitelistSettingSpy.mockReturnValueOnce(
+        okAsync(expectedFormSettings),
+      )
+
+      // Mock services to return success results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_STORAGE_FORM),
+      )
+
+      // Act
+      await AdminFormController._handleUpdateWhitelistSettingForTest(
+        MOCK_VALID_DISABLE_WHITELIST_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.json).toHaveBeenCalledWith(expectedFormSettings)
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(encryptStringsMessageSpy).not.toHaveBeenCalledWith() // since no whitelist, no need to encrypt
+      expect(updateFormWhitelistSettingSpy).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('handleGetWhitelistSetting', () => {
+    const MOCK_FORM_SETTINGS = {
+      authType: FormAuthType.NIL,
+      hasCaptcha: false,
+      inactiveMessage: 'some inactive message',
+      status: FormStatus.Private,
+      submissionLimit: 42069,
+      title: 'mock title',
+      webhook: {
+        isRetryEnabled: true,
+        url: '',
+      },
+    } as FormSettings
+    const MOCK_USER_ID = new ObjectId().toHexString()
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const MOCK_USER = {
+      _id: MOCK_USER_ID,
+      email: 'somerandom@example.com',
+    } as IPopulatedUser
+    const MOCK_FORM = {
+      admin: MOCK_USER,
+      _id: MOCK_FORM_ID,
+      getSettings: () => MOCK_FORM_SETTINGS,
+    } as IPopulatedForm
+
+    const MOCK_REQ = expressHandler.mockRequest({
+      params: {
+        formId: MOCK_FORM_ID,
+      },
+      session: {
+        user: {
+          _id: MOCK_USER_ID,
+        },
+      },
+    })
+
+    it('should return 200 ok with encrypted whitelist settings if admin has read permissions for the form', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      // Mock various services to return expected results.
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockFormService.retrieveFullFormById.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      const adminCheck = jest.fn(
+        ({
+          form,
+        }: {
+          form: IPopulatedForm
+        }): Result<IPopulatedForm, FormDeletedError | ForbiddenFormError> =>
+          ok(form),
+      )
+      MockAuthService.checkFormForPermissions.mockReturnValueOnce(adminCheck)
+
+      MockEncryptSubmissionService.checkFormIsEncryptMode.mockReturnValueOnce(
+        ok(MOCK_FORM as IPopulatedEncryptedForm),
+      )
+
+      const getForWhitelistSettingSpy = jest.spyOn(
+        AdminFormService,
+        'getFormWhitelistSetting',
+      )
+
+      const MOCK_ENCRYPTED_WHITELIST_SETTING: CryptoUtil.EncryptedStringsMessageContent =
+        {
+          myPublicKey: 'some public key',
+          cipherTexts: ['some encrypted string'],
+          nonce: 'some nonce',
+        }
+
+      getForWhitelistSettingSpy.mockReturnValueOnce(
+        okAsync(MOCK_ENCRYPTED_WHITELIST_SETTING),
+      )
+
+      // Act
+      await AdminFormController.handleGetWhitelistSetting(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.json).toHaveBeenCalledWith({
+        encryptedWhitelistedSubmitterIds: MOCK_ENCRYPTED_WHITELIST_SETTING,
+      })
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
+      expect(MockAuthService.checkFormForPermissions).toHaveBeenCalledWith(
+        PermissionLevel.Read,
+      )
+      expect(adminCheck).toHaveBeenCalledWith({
+        user: MOCK_USER,
+        form: MOCK_FORM,
+      })
+      expect(getForWhitelistSettingSpy).toHaveBeenCalledWith(MOCK_FORM)
+    })
+
+    it('should return 403 when current admin does not have permissions to view whitelist settings', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockFormService.retrieveFullFormById.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+
+      const expectedErrorString = 'no write permissions'
+      const adminCheck = jest.fn(
+        (): Result<IPopulatedForm, FormDeletedError | ForbiddenFormError> =>
+          err(new ForbiddenFormError(expectedErrorString)),
+      )
+      MockAuthService.checkFormForPermissions.mockReturnValueOnce(adminCheck)
+
+      const getForWhitelistSettingSpy = jest.spyOn(
+        AdminFormService,
+        'getFormWhitelistSetting',
+      )
+
+      // Act
+      await AdminFormController.handleGetWhitelistSetting(
+        MOCK_REQ,
+        mockRes,
+        jest.fn(),
+      )
+      // Assert
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expectedErrorString,
+      })
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(MockUserService.getPopulatedUserById).toHaveBeenCalledWith(
+        MOCK_USER_ID,
+      )
+      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
+      expect(MockAuthService.checkFormForPermissions).toHaveBeenCalledWith(
+        PermissionLevel.Read,
+      )
+      expect(adminCheck).toHaveBeenCalledWith({
+        user: MOCK_USER,
+        form: MOCK_FORM,
+      })
+      expect(getForWhitelistSettingSpy).not.toHaveBeenCalled()
     })
   })
 

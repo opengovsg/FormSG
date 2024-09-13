@@ -12,7 +12,7 @@ import {
   UseMultipleSelectionProps,
 } from 'downshift'
 
-import { VIRTUAL_LIST_MAX_HEIGHT } from '../constants'
+import { VIRTUAL_LIST_ITEM_HEIGHT, VIRTUAL_LIST_MAX_HEIGHT } from '../constants'
 import { useItems } from '../hooks/useItems'
 import { MultiSelectContext } from '../MultiSelectContext'
 import { SelectContext, SharedSelectContextReturnProps } from '../SelectContext'
@@ -35,6 +35,7 @@ export interface MultiSelectProviderProps<
   values: string[]
   /** Controlled selection onChange handler */
   onChange: (value: string[]) => void
+  onBlur: () => void
   /** Function based on which items in dropdown are filtered. Default filter filters by fuzzy match. */
   filter?(items: Item[], value: string): Item[]
   /** Initial dropdown opened state. Defaults to `false`. */
@@ -62,12 +63,14 @@ export interface MultiSelectProviderProps<
    * Any props to override the default props of `downshift#useMultipleSelection` set by this component.
    */
   downshiftMultiSelectProps?: Partial<UseMultipleSelectionProps<Item>>
+  overrideVirtualListItemHeight?: number
 }
 
 export const MultiSelectProvider = ({
   items: rawItems,
   values,
   onChange,
+  onBlur,
   name,
   filter = defaultFilter,
   nothingFoundLabel = 'No matching results',
@@ -84,6 +87,7 @@ export const MultiSelectProvider = ({
   downshiftComboboxProps = {},
   downshiftMultiSelectProps = {},
   inputAria,
+  overrideVirtualListItemHeight, // NOTE: for use when virtual list item height is not VIRTUAL_LIST_ITEM_HEIGHT e.g, when adding description line
   children,
 }: MultiSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
@@ -282,11 +286,13 @@ export const MultiSelectProvider = ({
   })
 
   const virtualListHeight = useMemo(() => {
-    const totalHeight = filteredItems.length * 48
+    const totalHeight =
+      filteredItems.length *
+      (overrideVirtualListItemHeight ?? VIRTUAL_LIST_ITEM_HEIGHT)
     // If the total height is less than the max height, just return the total height.
     // Otherwise, return the max height.
     return Math.min(totalHeight, VIRTUAL_LIST_MAX_HEIGHT)
-  }, [filteredItems.length])
+  }, [filteredItems.length, overrideVirtualListItemHeight])
 
   return (
     <SelectContext.Provider
@@ -338,6 +344,7 @@ export const MultiSelectProvider = ({
           isSelectedItemFullWidth,
           activeIndex,
           setActiveIndex,
+          onBlur,
         }}
       >
         {children}

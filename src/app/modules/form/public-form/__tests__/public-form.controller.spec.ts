@@ -22,12 +22,17 @@ import { MOCK_LOGIN_DOC } from 'src/app/modules/spcp/__tests__/spcp.test.constan
 import { JwtPayload, SpcpForm } from 'src/app/modules/spcp/spcp.types'
 import {
   IFormDocument,
+  IPopulatedEncryptedForm,
   IPopulatedForm,
   IPopulatedUser,
   PublicForm,
 } from 'src/types'
 
-import { FormAuthType, MyInfoAttribute } from '../../../../../../shared/types'
+import {
+  ErrorCode,
+  FormAuthType,
+  MyInfoAttribute,
+} from '../../../../../../shared/types'
 import * as AuthService from '../../../auth/auth.service'
 import * as BillingService from '../../../billing/billing.service'
 import {
@@ -43,6 +48,7 @@ import {
 import { CpOidcServiceClass } from '../../../spcp/spcp.oidc.service/spcp.oidc.service.cp'
 import { SpOidcServiceClass } from '../../../spcp/spcp.oidc.service/spcp.oidc.service.sp'
 import { JwtName } from '../../../spcp/spcp.types'
+import { generateHashedSubmitterId } from '../../../submission/submission.utils'
 import {
   AuthTypeMismatchError,
   FormAuthNoEsrvcIdError,
@@ -135,6 +141,9 @@ describe('public-form.controller', () => {
       beforeAll(() => {
         MockFormService.checkIsIntranetFormAccess.mockReturnValue(false)
         MockFormService.checkHasSingleSubmissionValidationFailure.mockReturnValue(
+          okAsync(false),
+        )
+        MockFormService.checkHasRespondentNotWhitelistedFailure.mockReturnValue(
           okAsync(false),
         )
       })
@@ -298,6 +307,68 @@ describe('public-form.controller', () => {
       })
     })
 
+    describe('success cases for submitterId whitelisting', () => {
+      it('should return 200 ok without any failure flags when user is whitelisted', async () => {
+        // Arrange
+        MockFormService.checkHasRespondentNotWhitelistedFailure.mockReturnValueOnce(
+          okAsync(false),
+        )
+        const MOCK_MYINFO_AUTH_FORM_WITH_WHITELIST_ENABLED = {
+          ...BASE_FORM,
+          esrvcId: 'mockEsrvcId',
+          authType: FormAuthType.MyInfo,
+          whitelistedSubmitterIds: {
+            isWhitelistEnabled: true,
+          },
+          toJSON: jest.fn().mockReturnValue(BASE_FORM),
+        } as unknown as IPopulatedEncryptedForm
+        const MOCK_MYINFO_DATA = new MyInfoData({
+          uinFin: 'mockUinFin',
+        } as IPersonResponse)
+        const MOCK_SPCP_SESSION = { userName: MOCK_MYINFO_DATA.getUinFin() }
+        const mockRes = expressHandler.mockResponse({
+          clearCookie: jest.fn().mockReturnThis(),
+          cookie: jest.fn().mockReturnThis(),
+        })
+        MockAuthService.getFormIfPublic.mockReturnValueOnce(
+          okAsync(MOCK_MYINFO_AUTH_FORM_WITH_WHITELIST_ENABLED),
+        )
+        MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
+          okAsync(MOCK_MYINFO_AUTH_FORM_WITH_WHITELIST_ENABLED),
+        )
+        MockMyInfoService.retrieveAccessToken.mockReturnValueOnce(
+          okAsync(MOCK_ACCESS_TOKEN),
+        )
+        MockMyInfoService.getMyInfoDataForForm.mockReturnValueOnce(
+          okAsync(MOCK_MYINFO_DATA),
+        )
+        MockBillingService.recordLoginByForm.mockReturnValueOnce(
+          okAsync(MOCK_LOGIN_DOC),
+        )
+        MockMyInfoService.prefillAndSaveMyInfoFields.mockReturnValueOnce(
+          okAsync([]),
+        )
+
+        // Act
+        await PublicFormController.handleGetPublicForm(
+          mockReqWithCookies,
+          mockRes,
+          jest.fn(),
+        )
+
+        // Assert
+        expect(mockRes.cookie).toHaveBeenCalled()
+        expect(mockRes.json).toHaveBeenCalledWith({
+          form: {
+            ...MOCK_MYINFO_AUTH_FORM_WITH_WHITELIST_ENABLED.getPublicView(),
+            form_fields: [],
+          },
+          spcpSession: MOCK_SPCP_SESSION,
+          isIntranetUser: false,
+        })
+      })
+    })
+
     // Errors
     describe('errors in myInfo', () => {
       const MOCK_MYINFO_FORM = {
@@ -377,7 +448,7 @@ describe('public-form.controller', () => {
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_MYINFO_FORM.getPublicView(),
           isIntranetUser: false,
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
         })
       })
 
@@ -413,7 +484,7 @@ describe('public-form.controller', () => {
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_MYINFO_FORM.getPublicView(),
           isIntranetUser: false,
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
         })
       })
 
@@ -441,7 +512,7 @@ describe('public-form.controller', () => {
         expect(mockRes.clearCookie).toHaveBeenCalled()
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_MYINFO_FORM.getPublicView(),
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
           isIntranetUser: false,
         })
       })
@@ -469,7 +540,7 @@ describe('public-form.controller', () => {
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_MYINFO_FORM.getPublicView(),
           isIntranetUser: false,
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
         })
       })
 
@@ -496,7 +567,7 @@ describe('public-form.controller', () => {
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_MYINFO_FORM.getPublicView(),
           isIntranetUser: false,
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
         })
       })
 
@@ -529,7 +600,7 @@ describe('public-form.controller', () => {
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_MYINFO_FORM.getPublicView(),
           isIntranetUser: false,
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
         })
       })
     })
@@ -608,6 +679,65 @@ describe('public-form.controller', () => {
       })
     })
 
+    describe('errors due to submitterId whitelisting', () => {
+      it('should return 200 but with respondent not whitelisted failure flag when submitterId is not in whitelist', async () => {
+        // Arrange
+        MockFormService.checkHasRespondentNotWhitelistedFailure.mockReturnValueOnce(
+          okAsync(true),
+        )
+        const MOCK_MYINFO_AUTH_FORM_WITH_WHITELIST_ENABLED = {
+          ...BASE_FORM,
+          esrvcId: 'mockEsrvcId',
+          authType: FormAuthType.MyInfo,
+          whitelistedSubmitterIds: {
+            isWhitelistEnabled: true,
+          },
+          toJSON: jest.fn().mockReturnValue(BASE_FORM),
+        } as unknown as IPopulatedEncryptedForm
+        const MOCK_MYINFO_DATA = new MyInfoData({
+          uinFin: 'mockUinFin',
+        } as IPersonResponse)
+        const mockRes = expressHandler.mockResponse({
+          clearCookie: jest.fn().mockReturnThis(),
+          cookie: jest.fn().mockReturnThis(),
+        })
+        MockAuthService.getFormIfPublic.mockReturnValueOnce(
+          okAsync(MOCK_MYINFO_AUTH_FORM_WITH_WHITELIST_ENABLED),
+        )
+        MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
+          okAsync(MOCK_MYINFO_AUTH_FORM_WITH_WHITELIST_ENABLED),
+        )
+        MockMyInfoService.retrieveAccessToken.mockReturnValueOnce(
+          okAsync(MOCK_ACCESS_TOKEN),
+        )
+        MockMyInfoService.getMyInfoDataForForm.mockReturnValueOnce(
+          okAsync(MOCK_MYINFO_DATA),
+        )
+        MockBillingService.recordLoginByForm.mockReturnValueOnce(
+          okAsync(MOCK_LOGIN_DOC),
+        )
+        MockMyInfoService.prefillAndSaveMyInfoFields.mockReturnValueOnce(
+          okAsync([]),
+        )
+
+        // Act
+        await PublicFormController.handleGetPublicForm(
+          mockReqWithCookies,
+          mockRes,
+          jest.fn(),
+        )
+
+        // Assert that user is logged out and myInfo fields are not passed
+        expect(mockRes.json).toHaveBeenCalledWith({
+          form: {
+            ...MOCK_MYINFO_AUTH_FORM_WITH_WHITELIST_ENABLED.getPublicView(),
+          },
+          isIntranetUser: false,
+          errorCodes: [ErrorCode.respondentNotWhitelisted],
+        })
+      })
+    })
+
     describe('errors due to single submission per submitterId violation', () => {
       const MOCK_SP_FORM = {
         ...BASE_FORM,
@@ -643,11 +773,14 @@ describe('public-form.controller', () => {
           jest.fn(),
         )
 
-        // Assert that the submitterId is hashed when compared
+        // Assert that the submitterId is upper cased and then hashed when compared
         expect(
           checkHasSingleSubmissionValidationFailureSpy.mock.calls[0][1],
         ).toEqual(
-          '151c329a583a82e4a768f16ab8c9b7ae621fcfdea574e87925dd56d7f73e367d',
+          generateHashedSubmitterId(
+            MOCK_SPCP_SESSION.userName.toUpperCase(),
+            MOCK_SP_FORM.id,
+          ),
         )
 
         // Assert that status is not set, which defaults to intended 200 ok
@@ -657,10 +790,9 @@ describe('public-form.controller', () => {
           MOCK_SP_FORM.getPublicView(),
         )
         // Assert that the response contains the single submission validation failure flag
-        expect(
-          (mockRes.json as jest.Mock).mock.calls[0][0]
-            .hasSingleSubmissionValidationFailure,
-        ).toEqual(true)
+        expect((mockRes.json as jest.Mock).mock.calls[0][0].errorCodes).toEqual(
+          [ErrorCode.respondentSingleSubmissionValidationFailure],
+        )
 
         // Assert user is logged out
         expect((mockRes.json as jest.Mock).mock.calls[0][0]).not.toContainKey(

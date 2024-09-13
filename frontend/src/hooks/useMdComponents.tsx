@@ -20,9 +20,13 @@ type MdComponentStyles = {
    */
   text?: SystemStyleObject
   /**
-   * If exists, will be used for styling text
+   * If exists, will be used for styling lists
    */
   list?: SystemStyleObject
+  /**
+   * If exists, will be used for styling ordered lists
+   */
+  listItem?: SystemStyleObject
 }
 
 type UseMdComponentsProps = {
@@ -55,6 +59,15 @@ export const useMdComponents = ({
     [styles.link],
   )
 
+  const listItemStyle = useMemo(
+    () => ({
+      sx: {
+        ...(styles.listItem ?? {}),
+      },
+    }),
+    [styles.listItem],
+  )
+
   const listStyles = useMemo(
     () => ({
       sx: {
@@ -76,7 +89,9 @@ export const useMdComponents = ({
         />
       ),
       ul: ({ node, ...props }) => <UnorderedList {...props} {...listStyles} />,
-      li: ({ node, ...props }) => <ListItem {...props} {...textStyles} />,
+      li: ({ node, ...props }) => (
+        <ListItem {...props} {...textStyles} {...listItemStyle} />
+      ),
       a: ({ node, ...props }) => {
         const { href } = props
         const isExternal =
@@ -87,7 +102,7 @@ export const useMdComponents = ({
       p: ({ node, ...props }) => <Text {...props} {...textStyles} />,
       ...overrides,
     }),
-    [linkStyles, overrides, textStyles, listStyles],
+    [linkStyles, overrides, textStyles, listStyles, listItemStyle],
   )
 
   return mdComponents

@@ -358,6 +358,7 @@ export const validateStorageSubmission = async (
     .map((parsedResponses) => {
       const responses = [] as EncryptFormFieldResponse[]
       for (const response of parsedResponses.getAllResponses()) {
+        // `isVisible` is being stripped out here. Why: https://github.com/opengovsg/FormSG/pull/6907
         if (response.isVisible) {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { isVisible: _, ...rest } = response
@@ -462,6 +463,21 @@ export const encryptSubmission = async (
       publicKey,
       req.body.version,
     )
+
+  // Autoreplies are sent after the submission has been saved in the DB,
+  // but attachments are stripped here. To ensure that users receive their
+  // attachments in the autoreply we keep the attachments in req.formsg
+  if (req.formsg) {
+    req.formsg.unencryptedAttachments = req.body.responses
+      .filter(isAttachmentResponse)
+      .map((response) => {
+        return {
+          filename: response.filename,
+          content: response.content,
+          fieldId: response._id,
+        }
+      })
+  }
 
   const strippedBodyResponses = req.body.responses.map((response) => {
     if (isAttachmentResponse(response)) {

@@ -1,8 +1,10 @@
+import { GrowthBook } from '@growthbook/growthbook'
 import { RateLimitInfo } from 'express-rate-limit'
 import { FormResponseMode } from 'shared/types'
 
 import { SgidUser } from '../../app/modules/auth/auth.types'
 import { EncryptSubmissionDto, MultirespondentSubmissionDto } from '../api'
+import { IAttachmentInfo } from '../email_mode_data'
 import { IPopulatedMultirespondentForm } from '../form'
 import { IPopulatedEncryptedForm, IPopulatedForm, IUserSchema } from '../types'
 
@@ -10,6 +12,10 @@ declare global {
   namespace Express {
     export interface Request {
       id?: string
+      /**
+       * This property is added to all requests for Growthbook feature flagging purposes except on test env.
+       */
+      growthbook?: GrowthBook
       /**
        * This property is added to all requests with the `limit`, `current`,
        * and `remaining` number of requests and, if the store provides it, a `resetTime` Date object.
@@ -33,6 +39,7 @@ declare global {
             featureFlags?: string[]
             encryptedPayload?: EncryptSubmissionDto
             encryptedFormDef?: IPopulatedEncryptedForm
+            unencryptedAttachments?: IAttachmentInfo[]
           }
         | {
             responseMode: FormResponseMode.Multirespondent

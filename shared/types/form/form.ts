@@ -16,7 +16,8 @@ import { DateString } from '../generic'
 import { FormLogic, LogicDto } from './form_logic'
 import { PaymentChannel, PaymentMethodType, PaymentType } from '../payment'
 import { Product } from './product'
-import { FormWorkflow, FormWorkflowDto } from './workflow'
+import { FormWorkflow, FormWorkflowDto, FormWorkflowStepDto } from './workflow'
+import { ErrorCode } from '../errorCodes'
 
 export type FormId = Tagged<string, 'FormId'>
 
@@ -145,7 +146,7 @@ export interface FormBase {
   hasCaptcha: boolean
   hasIssueNotification: boolean
   authType: FormAuthType
-  isNricMaskEnabled: boolean
+  isSubmitterIdCollectionEnabled: boolean
   isSingleSubmission: boolean
 
   status: FormStatus
@@ -170,6 +171,15 @@ export interface EmailFormBase extends FormBase {
   emails: string[]
 }
 
+export interface WhitelistedSubmitterIds {
+  isWhitelistEnabled: boolean
+}
+
+export interface WhitelistedSubmitterIdsWithReferenceOid
+  extends WhitelistedSubmitterIds {
+  encryptedWhitelistedSubmitterIds: string // Object id of the encrypted whitelist
+}
+
 export interface StorageFormBase extends FormBase {
   responseMode: FormResponseMode.Encrypt
   publicKey: string
@@ -177,12 +187,15 @@ export interface StorageFormBase extends FormBase {
   payments_channel: FormPaymentsChannel
   payments_field: FormPaymentsField
   business?: FormBusinessField
+  whitelistedSubmitterIds?: WhitelistedSubmitterIds | null
 }
 
 export interface MultirespondentFormBase extends FormBase {
   responseMode: FormResponseMode.Multirespondent
   publicKey: string
   workflow: FormWorkflow
+  emails: string[]
+  stepsToNotify: FormWorkflowStepDto['_id'][]
 }
 
 /**
@@ -302,9 +315,8 @@ export type PublicFormViewDto = {
   form: PublicFormDto
   spcpSession?: SpcpSession
   isIntranetUser?: boolean
-  myInfoError?: true
   myInfoChildrenBirthRecords?: MyInfoChildData
-  hasSingleSubmissionValidationFailure?: true
+  errorCodes?: ErrorCode[]
 }
 
 export type PreviewFormViewDto = Pick<PublicFormViewDto, 'form' | 'spcpSession'>

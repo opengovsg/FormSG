@@ -45,7 +45,7 @@ export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
       getToggleButtonProps,
     } = useSelectContext()
 
-    const { getDropdownProps } = useMultiSelectContext()
+    const { getDropdownProps, onBlur } = useMultiSelectContext()
 
     const mergedRefs = useMergeRefs(inputRef, ref)
 
@@ -77,6 +77,7 @@ export const MultiSelectCombobox = forwardRef<HTMLInputElement>(
         aria-readonly={isReadOnly}
         __css={styles.fieldwrapper}
         onClick={handleToggleMenu}
+        onBlur={onBlur}
       >
         <MultiItemsContainer>
           <SelectedItems />

@@ -5,6 +5,7 @@ import { err, ok, Result } from 'neverthrow'
 import { UnreachableCaseError } from 'ts-essentials'
 
 import {
+  ErrorCode,
   ErrorDto,
   FormAuthType,
   FormFieldDto,
@@ -54,7 +55,12 @@ import {
   validateSpcpForm,
 } from '../../spcp/spcp.util'
 import { generateHashedSubmitterId } from '../../submission/submission.utils'
-import { AuthTypeMismatchError, PrivateFormError } from '../form.errors'
+import {
+  AuthTypeMismatchError,
+  FormRespondentNotWhitelistedError,
+  FormRespondentSingleSubmissionValidationError,
+  PrivateFormError,
+} from '../form.errors'
 import * as FormService from '../form.service'
 
 import * as PublicFormService from './public-form.service'
@@ -212,7 +218,7 @@ export const handleGetPublicForm: ControllerHandler<
         // NOTE: If the user does not have any cookie, clearing the cookie still has the same result
         return res.json({
           form: publicForm,
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
           isIntranetUser,
         })
       }
@@ -289,7 +295,7 @@ export const handleGetPublicForm: ControllerHandler<
         })
         return res.json({
           form: publicForm,
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
           isIntranetUser,
         })
       }
@@ -308,7 +314,7 @@ export const handleGetPublicForm: ControllerHandler<
         })
         return res.json({
           form: publicForm,
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
           isIntranetUser,
         })
       }
@@ -322,11 +328,46 @@ export const handleGetPublicForm: ControllerHandler<
     }
   }
 
+  // for consistency with whitelist lookup which also uppercases all submitterIds when saving
+  const submitterId = spcpSession.userName.toUpperCase()
+
+  // validate if respondent is whitelisted
+  const hasRespondentNotWhitelistedErrorResult =
+    await FormService.checkHasRespondentNotWhitelistedFailure(form, submitterId)
+
+  if (hasRespondentNotWhitelistedErrorResult.isErr()) {
+    const error = hasRespondentNotWhitelistedErrorResult.error
+    logger.error({
+      message: 'Error validating if respondent is whitelisted',
+      meta: logMeta,
+      error,
+    })
+    return res.sendStatus(HttpStatusCode.InternalServerError)
+  }
+
+  const hasRespondentNotWhitelistedError =
+    hasRespondentNotWhitelistedErrorResult.value
+  if (hasRespondentNotWhitelistedError) {
+    // created for Datadog logging of error code
+    new FormRespondentNotWhitelistedError()
+
+    // log user out
+    spcpSession = undefined
+    const authCookieName = PublicFormService.getCookieNameByAuthType(authType)
+    res.clearCookie(authCookieName)
+
+    return res.json({
+      form: publicForm,
+      isIntranetUser,
+      errorCodes: [ErrorCode.respondentNotWhitelisted],
+    })
+  }
+
   // validate for isSingleSubmission
   const hasSingleSubmissionValidationFailureResult =
     await FormService.checkHasSingleSubmissionValidationFailure(
       publicForm,
-      generateHashedSubmitterId(spcpSession.userName, form.id),
+      generateHashedSubmitterId(submitterId, form.id),
     )
 
   if (hasSingleSubmissionValidationFailureResult.isErr()) {
@@ -342,9 +383,11 @@ export const handleGetPublicForm: ControllerHandler<
   const hasSingleSubmissionValidationFailure =
     hasSingleSubmissionValidationFailureResult.value
 
-  // Do not log user in for the form
-  // if there is a single submission validation failure
   if (hasSingleSubmissionValidationFailure) {
+    // Created for Datadog logging of error code
+    new FormRespondentSingleSubmissionValidationError()
+
+    // log user out
     spcpSession = undefined
     const authCookieName = PublicFormService.getCookieNameByAuthType(authType)
     res.clearCookie(authCookieName)
@@ -352,7 +395,7 @@ export const handleGetPublicForm: ControllerHandler<
     return res.json({
       form: publicForm, // do not need to pre-fill even if MyInfo since user is not logged in
       isIntranetUser,
-      hasSingleSubmissionValidationFailure: true,
+      errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
     })
   }
 
@@ -375,7 +418,7 @@ export const handleGetPublicForm: ControllerHandler<
         // NOTE: If the user does not have any cookie, clearing the cookie still has the same result
         return res.json({
           form: publicForm,
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
           isIntranetUser,
         })
       }
@@ -396,7 +439,7 @@ export const handleGetPublicForm: ControllerHandler<
         })
         return res.json({
           form: publicForm,
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
           isIntranetUser,
         })
       }
@@ -437,7 +480,7 @@ export const handleGetPublicForm: ControllerHandler<
         // NOTE: If the user does not have any cookie, clearing the cookie still has the same result
         return res.json({
           form: publicForm,
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
           isIntranetUser,
         })
       }
@@ -457,7 +500,7 @@ export const handleGetPublicForm: ControllerHandler<
         })
         return res.json({
           form: publicForm,
-          myInfoError: true,
+          errorCodes: [ErrorCode.myInfo],
           isIntranetUser,
         })
       }

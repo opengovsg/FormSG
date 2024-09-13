@@ -59,7 +59,10 @@ export type MailConfig = {
 export type RateLimitConfig = {
   submissions: number
   sendAuthOtp: number
+  publicFormIssueFeedback: number
   downloadPaymentReceipt: number
+  downloadFormWhitelist: number
+  uploadFormWhitelist: number
   publicApi: number
   platformApi: number
 }
@@ -82,6 +85,8 @@ export type Config = {
   cookieSettings: SessionOptions['cookie']
   // Consts
   isDev: boolean
+  isTest: boolean
+  isDevOrTest: boolean
   nodeEnv: Environment
   useMockTwilio: boolean
   useMockPostmanSms: boolean
@@ -186,7 +191,10 @@ export interface IOptionalVarsSchema {
   rateLimit: {
     submissions: number
     sendAuthOtp: number
+    publicFormIssueFeedback: number
     downloadPaymentReceipt: number
+    downloadFormWhitelist: number
+    uploadFormWhitelist: number
     publicApi: number
     platformApi: number
   }

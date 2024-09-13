@@ -54,6 +54,3 @@ export const ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX = new RegExp(
 
 export const PAYMENT_PAGE_SUBROUTE = 'payment/:paymentId'
 export const EDIT_SUBMISSION_PAGE_SUBROUTE = 'edit/:submissionId'
-
-// Path for growthbook api proxy, set up on cloudflare workers. Worker script: https://github.com/opengovsg/formsg-private/pull/171.
-export const GROWTHBOOK_API_HOST_PATH = '/api/v1/proxy/growthbook'

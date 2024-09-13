@@ -24,6 +24,8 @@ import {
   LogicType,
   PaymentChannel,
   PaymentType,
+  StorageFormSettings,
+  WhitelistedSubmitterIdsWithReferenceOid,
   WorkflowType,
 } from 'shared/types'
 
@@ -72,10 +74,10 @@ const MOCK_MULTIRESPONDENT_FORM_PARAMS = {
 
 const FORM_DEFAULTS = {
   authType: 'NIL',
-  isNricMaskEnabled: false,
+  isSubmitterIdCollectionEnabled: false,
   isSingleSubmission: false,
   inactiveMessage:
-    'If you think this is a mistake, please contact the agency that gave you the form link.',
+    'If you require further assistance, please contact the agency that gave you the form link.',
   isListed: true,
   startPage: {
     colorTheme: 'blue',
@@ -101,6 +103,13 @@ const FORM_DEFAULTS = {
   status: 'PRIVATE',
   submissionLimit: null,
   goLinkSuffix: '',
+}
+
+const ENCRYPT_MODE_SETTINGS_DEFAULTS = {
+  emails: [],
+  whitelistedSubmitterIds: {
+    isWhitelistEnabled: false,
+  },
 }
 
 const PAYMENTS_DEFAULTS = {
@@ -445,8 +454,9 @@ describe('Form Model', () => {
 
     describe('Encrypted form schema', () => {
       const ENCRYPT_FORM_DEFAULTS = merge(
-        { responseMode: 'encrypt', emails: [] },
+        { responseMode: 'encrypt' },
         FORM_DEFAULTS,
+        ENCRYPT_MODE_SETTINGS_DEFAULTS,
         PAYMENTS_DEFAULTS,
       )
 
@@ -876,11 +886,37 @@ describe('Form Model', () => {
           '`null` is not a valid enum value for path `payments_field.payment_type`',
         )
       })
+
+      it('should not get full list of whitelisted submitter id when getSettings', async () => {
+        // Arrange
+        const whitelistData = {
+          whitelistedSubmitterIds: {
+            isWhitelistEnabled: true,
+            encryptedWhitelistedSubmitterIds: new ObjectId(),
+          },
+        }
+        const MOCK_ENCRYPTED_FORM_PARAMS_WITH_WHITELIST = {
+          ...MOCK_ENCRYPTED_FORM_PARAMS,
+          ...whitelistData,
+        }
+
+        const validForm = new EncryptedForm(
+          MOCK_ENCRYPTED_FORM_PARAMS_WITH_WHITELIST,
+        )
+
+        // Act
+        const settings = validForm.getSettings() as StorageFormSettings
+
+        // Assert
+        expect(settings.whitelistedSubmitterIds).toEqual(
+          pick(whitelistData.whitelistedSubmitterIds, 'isWhitelistEnabled'),
+        )
+      })
     })
 
     describe('Multirespondent form schema', () => {
       const MULTIRESPONDENT_FORM_DEFAULTS = merge(
-        { responseMode: 'multirespondent' },
+        { responseMode: 'multirespondent', stepsToNotify: [], emails: [] },
         FORM_DEFAULTS,
       )
 
@@ -2635,7 +2671,7 @@ describe('Form Model', () => {
           title: 'Test Form',
           admin: MOCK_ADMIN_OBJ_ID,
           authType: FormAuthType.SP,
-          isNricMaskEnabled: true,
+          isSubmitterIdCollectionEnabled: true,
           isSingleSubmission: true,
           inactiveMessage: 'inactive_test',
           responseMode: FormResponseMode.Encrypt,
@@ -2659,8 +2695,8 @@ describe('Form Model', () => {
           MOCK_ALL_OVERRIDE_PARAMS.submissionLimit,
         )
         expect(duplicatedForm.authType).toEqual(MOCK_ALL_FORM_PARAMS.authType)
-        expect(duplicatedForm.isNricMaskEnabled).toEqual(
-          MOCK_ALL_FORM_PARAMS.isNricMaskEnabled,
+        expect(duplicatedForm.isSubmitterIdCollectionEnabled).toEqual(
+          MOCK_ALL_FORM_PARAMS.isSubmitterIdCollectionEnabled,
         )
         expect(duplicatedForm.inactiveMessage).toEqual(
           MOCK_ALL_FORM_PARAMS.inactiveMessage,
@@ -2668,6 +2704,29 @@ describe('Form Model', () => {
         expect(duplicatedForm.isSingleSubmission).toEqual(
           MOCK_ALL_FORM_PARAMS.isSingleSubmission,
         )
+      })
+
+      it('should not duplicate unwanted fields', () => {
+        const whitelistedSubmitterIdsParam: WhitelistedSubmitterIdsWithReferenceOid =
+          {
+            isWhitelistEnabled: true,
+            encryptedWhitelistedSubmitterIds: 'some object id',
+          }
+        const MOCK_ALL_FORM_PARAMS = {
+          whitelistedSubmitterIds: whitelistedSubmitterIdsParam,
+        }
+        const MOCK_ALL_OVERRIDE_PARAMS = {
+          admin: 'duplicated admin',
+          title: 'duplicated title',
+          responseMode: FormResponseMode.Encrypt,
+        }
+
+        const sourceForm = new Form(MOCK_ALL_FORM_PARAMS)
+        const duplicatedForm = sourceForm.getDuplicateParams(
+          MOCK_ALL_OVERRIDE_PARAMS,
+        )
+
+        expect(duplicatedForm).not.toHaveProperty('whitelistedSubmitterIds')
       })
     })
 

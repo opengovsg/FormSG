@@ -46,7 +46,6 @@ SMS
 
 Analytics and Monitoring
 
-- Sentry.io
 - Google Analytics
 
 Spam protection
@@ -269,16 +268,6 @@ Forms can be protected with [recaptcha](https://www.google.com/recaptcha/about/)
 | Variable                  | Description                   |
 | :------------------------ | ----------------------------- |
 | `VITE_APP_GA_TRACKING_ID` | Google Analytics tracking ID. |
-
-#### Sentry.io
-
-Client-side error events are piped to [sentry.io](https://sentry.io/welcome/) for monitoring purposes.
-
-| Variable            | Description                                                                                           |
-| :------------------ | ----------------------------------------------------------------------------------------------------- |
-| `CSP_REPORT_URI`    | Reporting URL for Content Security Policy violdations. Can be configured to use a Sentry.io endpoint. |
-| `SENTRY_CONFIG_URL` | Sentry.io URL for configuring the Raven SDK.                                                          |
-| `CSP_REPORT_URI`    | Reporting URL for Content Security Policy violdations. Can be configured to use a Sentry.io endpoint. |
 
 #### SMS with Twilio
 

@@ -604,7 +604,7 @@ export const createMockForm = (
         authType: FormAuthType.NIL,
         status: FormStatus.Public,
         inactiveMessage:
-          'If you think this is a mistake, please contact the agency that gave you the form link!',
+          'If you require further assistance, please contact the agency that gave you the form link.',
         submissionLimit: null,
         form_fields: [],
         form_logics: [],

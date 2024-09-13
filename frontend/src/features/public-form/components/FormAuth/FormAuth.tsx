@@ -1,8 +1,11 @@
 import { useMemo } from 'react'
 import { BiLogInCircle } from 'react-icons/bi'
-import { Box, Stack, Text } from '@chakra-ui/react'
+import { Box, Stack } from '@chakra-ui/react'
 
-import { FORM_SINGLE_SUBMISSION_VALIDATION_ERROR_MESSAGE } from '~shared/constants'
+import {
+  FORM_RESPONDENT_NOT_WHITELISTED_ERROR_MESSAGE,
+  FORM_SINGLE_SUBMISSION_VALIDATION_ERROR_MESSAGE,
+} from '~shared/constants'
 import { FormAuthType } from '~shared/types/form'
 
 import InlineMessage from '~/components/InlineMessage'
@@ -14,15 +17,35 @@ import { usePublicAuthMutations } from '~features/public-form/mutations'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { AuthImageSvgr } from './AuthImageSvgr'
+import { FormAuthMessage } from './FormAuthMessage'
+
+const getDispayedAuthTypeText = (
+  authType: Exclude<FormAuthType, FormAuthType.NIL>,
+) => {
+  switch (authType) {
+    case FormAuthType.SP:
+    case FormAuthType.MyInfo:
+      return 'Singpass'
+    case FormAuthType.CP:
+      return 'Singpass (Corporate)'
+    case FormAuthType.SGID:
+    case FormAuthType.SGID_MyInfo:
+      return 'Singpass app'
+  }
+}
 
 export interface FormAuthProps {
   authType: Exclude<FormAuthType, FormAuthType.NIL>
+  isSubmitterIdCollectionEnabled: boolean
   hasSingleSubmissionValidationError: boolean
+  hasRespondentNotWhitelistedError: boolean
 }
 
 export const FormAuth = ({
   authType,
+  isSubmitterIdCollectionEnabled,
   hasSingleSubmissionValidationError,
+  hasRespondentNotWhitelistedError,
 }: FormAuthProps): JSX.Element => {
   const { formId, form } = usePublicFormContext()
 
@@ -32,33 +55,8 @@ export const FormAuth = ({
   }, [form])
 
   const isMobile = useIsMobile()
-
-  const displayedInfo = useMemo(() => {
-    switch (authType) {
-      case FormAuthType.SP:
-      case FormAuthType.MyInfo:
-        return {
-          authType: 'Singpass',
-          helpText:
-            'Sign in with Singpass to access this form.\nYour Singpass ID will be included with your form submission.',
-        }
-      case FormAuthType.CP:
-        return {
-          authType: 'Singpass (Corporate)',
-          helpText:
-            'Corporate entity login is required for this form.\nYour Singpass ID and corporate Entity ID will be included with your form submission.',
-        }
-      case FormAuthType.SGID:
-      case FormAuthType.SGID_MyInfo:
-        return {
-          authType: 'Singpass app',
-          helpText:
-            'Sign in with the Singpass app to access this form.\nYour Singpass ID will be included with your form submission.',
-        }
-    }
-  }, [authType])
-
   const { handleLoginMutation } = usePublicAuthMutations(formId)
+  const displayedAuthTypeText = getDispayedAuthTypeText(authType)
 
   return (
     <Box
@@ -77,19 +75,20 @@ export const FormAuth = ({
           onClick={() => handleLoginMutation.mutate()}
           isLoading={handleLoginMutation.isLoading}
         >
-          Log in with {displayedInfo.authType}
+          Log in with {displayedAuthTypeText}
         </Button>
-        <Text
-          textStyle="body-2"
-          color="secondary.500"
-          textAlign="center"
-          whiteSpace="pre-wrap"
-        >
-          {displayedInfo.helpText}
-        </Text>
+        <FormAuthMessage
+          isSubmitterIdCollectionEnabled={isSubmitterIdCollectionEnabled}
+          authType={authType}
+        />
         {hasSingleSubmissionValidationError ? (
           <InlineMessage variant="error">
             {FORM_SINGLE_SUBMISSION_VALIDATION_ERROR_MESSAGE}
+          </InlineMessage>
+        ) : null}
+        {hasRespondentNotWhitelistedError ? (
+          <InlineMessage variant="error">
+            {FORM_RESPONDENT_NOT_WHITELISTED_ERROR_MESSAGE}
           </InlineMessage>
         ) : null}
       </Stack>

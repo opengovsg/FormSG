@@ -42,6 +42,7 @@ const _getSettings = (
     status: FormStatus.Public,
     collaborators: [],
     authType: FormAuthType.NIL,
+    isSubmitterIdCollectionEnabled: false,
     // By default, if emails is undefined, only the admin (current user) will receive.
     ...custom,
   }

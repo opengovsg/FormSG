@@ -5,14 +5,22 @@ import {
   DeleteSecretRequest,
   PutSecretValueRequest,
 } from 'aws-sdk/clients/secretsmanager'
-import { assignIn, last, omit } from 'lodash'
+import { assignIn, last, omit, pick } from 'lodash'
 import mongoose, { ClientSession } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
+import {
+  EncryptedStringsMessageContent,
+  EncryptedStringsMessageContentWithMyPrivateKey,
+} from 'shared/utils/crypto'
 import type { Except, Merge } from 'type-fest'
 
 import {
+  FORM_WHITELIST_CONTAINS_EMPTY_ROWS_ERROR_MESSAGE,
+  FORM_WHITELIST_SETTING_CONTAINS_DUPLICATES_ERROR_MESSAGE,
+  FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE,
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
+  WHITELISTED_SUBMITTER_ID_DECRYPTION_FIELDS,
 } from '../../../../../shared/constants'
 import { MYINFO_ATTRIBUTE_MAP } from '../../../../../shared/constants/field/myinfo'
 import {
@@ -32,6 +40,11 @@ import {
   StartPageUpdateDto,
   StorageFormSettings,
 } from '../../../../../shared/types'
+import {
+  isMFinSeriesValid,
+  isNricValid,
+} from '../../../../../shared/utils/nric-validation'
+import { isUenValid } from '../../../../../shared/utils/uen-validation'
 import { EditFieldActions } from '../../../../shared/constants'
 import {
   FormFieldSchema,
@@ -47,6 +60,7 @@ import config, { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getAgencyModel from '../../../models/agency.server.model'
 import getFormModel from '../../../models/form.server.model'
+import getFormWhitelistSubmitterIdsModel from '../../../models/form_whitelist.server.model'
 import { getWorkspaceModel } from '../../../models/workspace.server.model'
 import { twilioClientCache } from '../../../services/sms/sms.service'
 import {
@@ -74,6 +88,7 @@ import * as UserService from '../../user/user.service'
 import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
 import {
   FormNotFoundError,
+  FormWhitelistSettingNotFoundError,
   LogicNotFoundError,
   TransferOwnershipError,
 } from '../form.errors'
@@ -108,6 +123,8 @@ const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
 const AgencyModel = getAgencyModel(mongoose)
 const WorkspaceModel = getWorkspaceModel(mongoose)
+const FormWhitelistedSubmitterIdsModel =
+  getFormWhitelistSubmitterIdsModel(mongoose)
 
 export const secretsManager = new SecretsManager({
   region: config.aws.region,
@@ -1028,6 +1045,203 @@ export const updateFormCollaborators = (
       )
       .andThen(({ permissionList }) => okAsync(permissionList))
   )
+}
+
+export const checkIsWhitelistSettingValid = (
+  whitelistedSubmitterIds: string[] | null,
+): { isValid: boolean; invalidReason?: string } => {
+  if (!whitelistedSubmitterIds || whitelistedSubmitterIds.length <= 0) {
+    return {
+      isValid: true,
+    }
+  }
+
+  // check for empty rows/entries
+  const emptyRowIndex = whitelistedSubmitterIds.findIndex(
+    (entry: string) => entry === '',
+  )
+  if (emptyRowIndex !== -1) {
+    return {
+      isValid: false,
+      invalidReason: FORM_WHITELIST_CONTAINS_EMPTY_ROWS_ERROR_MESSAGE,
+    }
+  }
+
+  // check for invalid NRIC/FIN/UEN format
+  const invalidEntries = whitelistedSubmitterIds.filter((entry: string) => {
+    return !(
+      isNricValid(entry) ||
+      isMFinSeriesValid(entry) ||
+      isUenValid(entry)
+    )
+  })
+  // check for invalid entries
+  if (invalidEntries.length > 0) {
+    return {
+      isValid: false,
+      invalidReason:
+        FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE(
+          invalidEntries[0],
+        ),
+    }
+  }
+
+  // check for duplicates
+  if (
+    new Set(whitelistedSubmitterIds).size !== whitelistedSubmitterIds.length
+  ) {
+    return {
+      isValid: false,
+      invalidReason: FORM_WHITELIST_SETTING_CONTAINS_DUPLICATES_ERROR_MESSAGE,
+    }
+  }
+
+  return {
+    isValid: true,
+  }
+}
+
+/**
+ * Fetches the whitelist setting document without myPrivateKey for the client to use for decryption.
+ */
+export const getFormWhitelistSetting = (
+  form: IPopulatedForm,
+): ResultAsync<
+  EncryptedStringsMessageContent | null,
+  FormWhitelistSettingNotFoundError | PossibleDatabaseError
+> => {
+  const { isWhitelistEnabled, encryptedWhitelistedSubmitterIds } =
+    form.getWhitelistedSubmitterIds()
+
+  if (!isWhitelistEnabled) {
+    return okAsync(null)
+  }
+
+  if (isWhitelistEnabled && !encryptedWhitelistedSubmitterIds) {
+    return errAsync(new FormWhitelistSettingNotFoundError())
+  }
+
+  return ResultAsync.fromPromise(
+    FormWhitelistedSubmitterIdsModel.findById(encryptedWhitelistedSubmitterIds)
+      .lean()
+      .exec()
+      .then((whitelistSetting) =>
+        pick(whitelistSetting, WHITELISTED_SUBMITTER_ID_DECRYPTION_FIELDS),
+      ) as Promise<EncryptedStringsMessageContent>,
+    (error) => {
+      logger.error({
+        message: 'Error encountered while retrieving form whitelist setting',
+        meta: {
+          action: 'getFormWhitelistSetting',
+          formId: form._id,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((whitelistSetting) => {
+    if (!whitelistSetting) {
+      return errAsync(new FormWhitelistSettingNotFoundError())
+    }
+    return okAsync(whitelistSetting)
+  })
+}
+
+export const updateFormWhitelistSetting = (
+  originalForm: IPopulatedForm,
+  encryptedWhitelistedSubmitterIdsContent: EncryptedStringsMessageContentWithMyPrivateKey | null,
+) => {
+  if (originalForm.responseMode !== FormResponseMode.Encrypt) {
+    return errAsync(
+      new MalformedParametersError(
+        'Whitelist setting does not exist for non-encrypt mode forms',
+      ),
+    )
+  }
+
+  const FormModelToUse = getFormModelByResponseMode(originalForm.responseMode)
+
+  const updateFormWhitelistSettingPromise = async () => {
+    const session = await FormModelToUse.startSession()
+    session.startTransaction()
+
+    if (encryptedWhitelistedSubmitterIdsContent) {
+      // create whitelisted submitter id collection document and update reference to it
+      const createdWhitelistedSubmitterIdsDocument =
+        await FormWhitelistedSubmitterIdsModel.create({
+          formId: originalForm._id,
+          ...encryptedWhitelistedSubmitterIdsContent,
+        })
+      const updatedForm = await FormModelToUse.findByIdAndUpdate(
+        originalForm._id,
+        {
+          whitelistedSubmitterIds: {
+            isWhitelistEnabled: true,
+            encryptedWhitelistedSubmitterIds:
+              createdWhitelistedSubmitterIdsDocument._id,
+          },
+        },
+        {
+          new: true,
+          runValidators: true,
+        },
+      ).exec()
+
+      if (!updateForm) {
+        await session.abortTransaction()
+        return
+      }
+
+      await session.commitTransaction()
+      await session.endSession()
+
+      return updatedForm
+    } else {
+      // delete whitelisted submitter id collection document and update reference to null
+      await FormWhitelistedSubmitterIdsModel.deleteMany({
+        formId: originalForm._id,
+      })
+      const updatedForm = await FormModelToUse.findByIdAndUpdate(
+        originalForm._id,
+        {
+          whitelistedSubmitterIds: {
+            isWhitelistEnabled: false,
+            encryptedWhitelistedSubmitterIds: undefined,
+          },
+        },
+        { new: true, runValidators: true },
+      ).exec()
+
+      if (!updatedForm) {
+        await session.abortTransaction()
+        return
+      }
+      await session.commitTransaction()
+      await session.endSession()
+      return updatedForm
+    }
+  }
+
+  return ResultAsync.fromPromise(
+    updateFormWhitelistSettingPromise(),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while updating form whitelist setting',
+        meta: {
+          action: 'updateFormWhitelistSetting',
+          formId: originalForm._id,
+          // Body is not logged in case sensitive data such as emails are stored.
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync(updatedForm.getSettings())
+  })
 }
 
 /**

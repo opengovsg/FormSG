@@ -43,8 +43,6 @@ services:
       - INTRANET_IP_LIST_PATH
       # This needs to be removed and replaced with a real tracking ID in a local .env file
       # in order to enable GA in a local environment
-      # TODO: remove after React rollout #4786
-      - GA_TRACKING_ID=mockGATrackingId
       # Test credentials from reCAPTCHA docs
       # https://developers.google.com/recaptcha/docs/faq#id-like-to-run-automated-tests-with-recaptcha.-what-should-i-do
       - GOOGLE_CAPTCHA=6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
@@ -136,6 +134,8 @@ services:
       - POSTMAN_INTERNAL_CAMPAIGN_ID=campaign_test_2
       - POSTMAN_INTERNAL_CAMPAIGN_API_KEY=key_test_456
       - POSTMAN_BASE_URL=https://test.postman.gov.sg/api/v2
+      - DOWNLOAD_FORM_WHITELIST_RATE_LIMIT
+      - UPLOAD_FORM_WHITELIST_RATE_LIMIT
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git#v4.3.1

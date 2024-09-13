@@ -1,7 +1,7 @@
 const PUBLIC_FORM_FIELDS = [
   'admin',
   'authType',
-  'isNricMaskEnabled',
+  'isSubmitterIdCollectionEnabled',
   'isSingleSubmission',
   'endPage',
   'esrvcId',
@@ -21,7 +21,9 @@ export const STORAGE_PUBLIC_FORM_FIELDS = [
   ...PUBLIC_FORM_FIELDS,
   'payments_field',
   'publicKey',
+  'whitelistedSubmitterIds',
 ] as const
+
 export const MULTIRESPONDENT_PUBLIC_FORM_FIELDS = [
   ...PUBLIC_FORM_FIELDS,
   'publicKey',
@@ -31,7 +33,7 @@ export const MULTIRESPONDENT_PUBLIC_FORM_FIELDS = [
 const FORM_SETTINGS_FIELDS = [
   'responseMode',
   'authType',
-  'isNricMaskEnabled',
+  'isSubmitterIdCollectionEnabled',
   'isSingleSubmission',
   'esrvcId',
   'hasCaptcha',
@@ -54,12 +56,15 @@ export const STORAGE_FORM_SETTINGS_FIELDS = [
   'publicKey',
   'business',
   'emails',
+  'whitelistedSubmitterIds',
 ] as const
 
 export const MULTIRESPONDENT_FORM_SETTINGS_FIELDS = [
   ...FORM_SETTINGS_FIELDS,
   'publicKey',
   'workflow',
+  'emails',
+  'stepsToNotify',
 ] as const
 
 export const WEBHOOK_SETTINGS_FIELDS = ['responseMode', 'webhook'] as const

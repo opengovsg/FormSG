@@ -42,7 +42,7 @@ jest.mock('src/app/modules/form/form.service')
 const FormService = jest.mocked(RealFormService)
 jest.mock('src/app/config/config')
 const MockConfig = jest.mocked(config)
-MockConfig.isDev = false
+MockConfig.isDevOrTest = false
 
 const app = setupApp('/sgid', SgidRouter)
 

@@ -24,7 +24,7 @@ const minutes = (m: number) => m * 60
  * then the second retry is attempted between 15 and 25 seconds after
  * the submission.
  */
-export const RETRY_INTERVALS: RetryInterval[] = config.isDev
+export const RETRY_INTERVALS: RetryInterval[] = config.isDevOrTest
   ? [
       { base: 10, jitter: 5 },
       { base: 20, jitter: 5 },

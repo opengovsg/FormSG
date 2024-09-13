@@ -19,6 +19,7 @@ import { ATTACHMENT_THEME_KEY } from '~theme/components/Field/Attachment'
 import { ThemeColorScheme } from '~theme/foundations/colours'
 
 import { AttachmentStylesProvider } from './AttachmentContext'
+import { downloadFile } from './utils/downloadFile'
 import { AttachmentDropzone } from './AttachmentDropzone'
 import { AttachmentFileInfo } from './AttachmentFileInfo'
 import {
@@ -72,12 +73,32 @@ export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
   /**
    * Show attachment download button.
    */
-  enableDownload?: boolean
+  showDownload?: boolean
+
+  /**
+   * Disable download button.
+   */
+  isDownloadDisabled?: boolean
+
+  /**
+   * Disable remove button.
+   */
+  isRemoveDisabled?: boolean
 
   /**
    * Show attachment removal button
    */
-  enableRemove?: boolean
+  showRemove?: boolean
+
+  /**
+   * Override callback function that is invoked when download button is clicked.
+   */
+  handleDownloadFileOverride?: () => void
+
+  /**
+   * Override callback function that is invoked when remove button is clicked.
+   */
+  handleRemoveFileOverride?: () => void
 }
 
 export const Attachment = forwardRef<AttachmentProps, 'div'>(
@@ -92,8 +113,12 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       name,
       colorScheme,
       title,
-      enableDownload,
-      enableRemove,
+      showDownload,
+      showRemove,
+      isDownloadDisabled,
+      isRemoveDisabled,
+      handleDownloadFileOverride,
+      handleRemoveFileOverride,
       ...props
     },
     ref,
@@ -220,21 +245,20 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       colorScheme,
     })
 
-    const handleRemoveFile = useCallback(() => {
+    const _handleRemoveFile = useCallback(() => {
       onChange(null)
       rootRef.current?.focus()
     }, [onChange, rootRef])
 
-    const handleDownloadFile = useCallback(() => {
+    const handleRemoveFile = handleRemoveFileOverride ?? _handleRemoveFile
+
+    const _handleDownloadFile = useCallback(() => {
       if (value) {
-        const url = URL.createObjectURL(value)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = value.name
-        a.click()
-        URL.revokeObjectURL(url)
+        downloadFile(value)
       }
     }, [value])
+
+    const handleDownloadFile = handleDownloadFileOverride ?? _handleDownloadFile
 
     // Bunch of memoization to avoid unnecessary re-renders.
     const processedRootProps = useMemo(() => {
@@ -274,8 +298,10 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
                 file={value}
                 handleRemoveFile={handleRemoveFile}
                 handleDownloadFile={handleDownloadFile}
-                enableDownload={enableDownload}
-                enableRemove={enableRemove}
+                showDownload={showDownload}
+                showRemove={showRemove}
+                isDownloadDisabled={isDownloadDisabled}
+                isRemoveDisabled={isRemoveDisabled}
               />
             ) : (
               <AttachmentDropzone

@@ -7,6 +7,7 @@ import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
 
+import { FormResponseMode, PaymentChannel } from '../../../../shared/types'
 import { centsToDollars } from '../../../../shared/utils/payments'
 import { getPaymentInvoiceDownloadUrlPath } from '../../../../shared/utils/urls'
 import {
@@ -18,6 +19,7 @@ import {
   EmailAdminDataField,
   IFormDocument,
   IFormHasEmailSchema,
+  IPopulatedEncryptedForm,
   IPopulatedForm,
   IPopulatedUser,
   ISubmissionSchema,
@@ -31,6 +33,7 @@ import {
   getAdminEmails,
 } from '../../modules/form/form.utils'
 import { formatAsPercentage } from '../../utils/formatters'
+import MrfWorkflowCompletionEmail from '../../views/templates/MrfWorkflowCompletionEmail'
 import MrfWorkflowEmail, {
   WorkflowEmailData,
 } from '../../views/templates/MrfWorkflowEmail'
@@ -275,6 +278,7 @@ export class MailService {
     form,
     submission,
     index,
+    isPaymentEnabled,
   }: SendSingleAutoreplyMailArgs): ResultAsync<
     true,
     MailSendError | MailGenerationError
@@ -293,8 +297,11 @@ export class MailService {
     const templateData = {
       submissionId: submission.id,
       autoReplyBody,
-      // Only destructure formSummaryRenderData if form summary is included.
-      ...(autoReplyMailData.includeFormSummary && formSummaryRenderData),
+      // Only destructure formSummaryRenderData if form summary is included
+      // and there aren't any active payment fields (defaults to false)
+      ...(autoReplyMailData.includeFormSummary &&
+        !(isPaymentEnabled ?? false) &&
+        formSummaryRenderData),
     }
 
     return generateAutoreplyHtml(templateData).andThen((mailHtml) => {
@@ -598,10 +605,19 @@ export class MailService {
 
     // Create a copy of attachments for attaching of autoreply pdf if needed.
     const attachmentsWithAutoreplyPdf = [...attachments]
+    const isEncryptForm = form?.responseMode === FormResponseMode.Encrypt
+    const encryptFormDef = form as IPopulatedEncryptedForm
+    const isPaymentEnabled =
+      isEncryptForm &&
+      encryptFormDef.payments_channel.channel !== PaymentChannel.Unconnected &&
+      encryptFormDef.payments_field.enabled === true
 
     // Generate autoreply pdf and append into attachments if any of the mail has
     // to include a form summary.
-    if (autoReplyMailDatas.some((data) => data.includeFormSummary)) {
+    if (
+      autoReplyMailDatas.some((data) => data.includeFormSummary) &&
+      !isPaymentEnabled
+    ) {
       const pdfBufferResult = await generateAutoreplyPdf(renderData)
       if (pdfBufferResult.isErr()) {
         return Promise.allSettled([err(pdfBufferResult.error)])
@@ -624,6 +640,7 @@ export class MailService {
           autoReplyMailData: mailData,
           formSummaryRenderData: renderData,
           index,
+          isPaymentEnabled,
         })
       }),
     )
@@ -1063,6 +1080,37 @@ export class MailService {
     }
 
     return this.#sendNodeMail(mail, { mailId: 'workflowNotification' })
+  }
+
+  sendMrfWorkflowCompletionEmail = ({
+    emails,
+    formId,
+    formTitle,
+    responseId,
+  }: {
+    emails: string[]
+    formId: string
+    formTitle: string
+    responseId: string
+  }) => {
+    const htmlData = {
+      formTitle,
+      responseId,
+    }
+
+    const html = render(MrfWorkflowCompletionEmail(htmlData))
+
+    const mail: MailOptions = {
+      to: emails,
+      from: this.#senderFromString,
+      subject: `Completed - ${formTitle} (${responseId})`,
+      html,
+      headers: {
+        [EMAIL_HEADERS.emailType]: EmailType.WorkflowNotification,
+      },
+    }
+
+    return this.#sendNodeMail(mail, { formId, mailId: 'workflowNotification' })
   }
 }
 

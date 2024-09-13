@@ -7,6 +7,7 @@ import Stripe from 'stripe'
 
 import {
   DateString,
+  ErrorCode,
   ErrorDto,
   FormAuthType,
   Payment,
@@ -14,8 +15,8 @@ import {
   PaymentType,
   StorageModeSubmissionContentDto,
 } from '../../../../../shared/types'
-import { maskNric } from '../../../../../shared/utils/nric-mask'
 import {
+  IAttachmentInfo,
   IEncryptedForm,
   IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
@@ -43,6 +44,11 @@ import { ApplicationError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
+import {
+  FormRespondentNotWhitelistedError,
+  FormRespondentSingleSubmissionValidationError,
+} from '../../form/form.errors'
+import * as FormService from '../../form/form.service'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
 import { SgidService } from '../../sgid/sgid.service'
@@ -255,83 +261,120 @@ const submitEncryptModeForm = async (
     }
   }
 
-  let submitterId
-  // Generate submitterId for Singpass auth modes
-  if (userName && form.authType !== FormAuthType.NIL) {
-    submitterId = generateHashedSubmitterId(userName, form.id)
-  }
+  const submitterId = userName?.toUpperCase()
 
-  // Mask if Nric masking is enabled
   if (
-    userName &&
-    form.isNricMaskEnabled &&
+    submitterId &&
+    form.whitelistedSubmitterIds?.isWhitelistEnabled &&
     (form.authType === FormAuthType.SP ||
       form.authType === FormAuthType.CP ||
       form.authType === FormAuthType.SGID ||
       form.authType === FormAuthType.MyInfo ||
       form.authType === FormAuthType.SGID_MyInfo)
   ) {
-    userName = maskNric(userName)
+    const hasRespondentNotWhitelistedErrorResult =
+      await FormService.checkHasRespondentNotWhitelistedFailure(
+        form,
+        submitterId,
+      )
+
+    if (hasRespondentNotWhitelistedErrorResult.isErr()) {
+      const error = hasRespondentNotWhitelistedErrorResult.error
+      logger.error({
+        message: 'Error validating if respondent is whitelisted',
+        meta: logMeta,
+        error,
+      })
+      return res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR)
+    }
+
+    const hasRespondentNotWhitelistedError =
+      hasRespondentNotWhitelistedErrorResult.value
+
+    // Note: hasRespondentNotWhitelistedError occur if admin opens form,
+    // updates whitelist which excludes submitterId,
+    // then opens form before respondent submits.
+    if (hasRespondentNotWhitelistedError) {
+      const formRespondentNotWhitelistedError =
+        new FormRespondentNotWhitelistedError()
+      logger.error({
+        message: formRespondentNotWhitelistedError.message,
+        meta: logMeta,
+        error: formRespondentNotWhitelistedError,
+      })
+      return res.status(StatusCodes.FORBIDDEN).json({
+        message: formRespondentNotWhitelistedError.message,
+      })
+    }
   }
 
-  // Add NDI responses
-  switch (form.authType) {
-    case FormAuthType.CP: {
-      if (!userName || !userInfo) break
-      parsedResponses.addNdiResponses({
-        authType,
-        uinFin: userName,
-        userInfo,
-      })
-      break
-    }
-    case FormAuthType.SP:
-    case FormAuthType.SGID:
-    case FormAuthType.MyInfo:
-    case FormAuthType.SGID_MyInfo: {
-      if (!userName) break
-      parsedResponses.addNdiResponses({
-        authType: form.authType,
-        uinFin: userName,
-      })
-      break
-    }
+  let hashedSubmitterId
+  // Generate submitterId for Singpass auth modes
+  if (submitterId && form.authType !== FormAuthType.NIL) {
+    hashedSubmitterId = generateHashedSubmitterId(submitterId, form.id)
   }
 
   // Encrypt Verified SPCP Fields
   let verified
-  if (
-    form.authType === FormAuthType.SP ||
-    form.authType === FormAuthType.CP ||
-    form.authType === FormAuthType.SGID ||
-    form.authType === FormAuthType.MyInfo ||
-    form.authType === FormAuthType.SGID_MyInfo
-  ) {
-    const encryptVerifiedContentResult =
-      VerifiedContentService.getVerifiedContent({
-        type: form.authType,
-        data: { uinFin: userName, userInfo },
-      }).andThen((verifiedContent) =>
-        VerifiedContentService.encryptVerifiedContent({
-          verifiedContent,
-          formPublicKey: form.publicKey,
-        }),
-      )
+  if (form.isSubmitterIdCollectionEnabled) {
+    // Add NDI responses to email payload
+    switch (form.authType) {
+      case FormAuthType.CP: {
+        if (!userName || !userInfo) break
+        parsedResponses.addNdiResponses({
+          authType,
+          uinFin: userName,
+          userInfo,
+        })
+        break
+      }
+      case FormAuthType.SP:
+      case FormAuthType.SGID:
+      case FormAuthType.MyInfo:
+      case FormAuthType.SGID_MyInfo: {
+        if (!userName) break
+        parsedResponses.addNdiResponses({
+          authType: form.authType,
+          uinFin: userName,
+        })
+        break
+      }
+    }
 
-    if (encryptVerifiedContentResult.isErr()) {
-      const { error } = encryptVerifiedContentResult
-      logger.error({
-        message: 'Unable to encrypt verified content',
-        meta: logMeta,
-        error,
-      })
+    // generate verified content which is used to construct submitter login id for form response
+    if (
+      form.authType === FormAuthType.SP ||
+      form.authType === FormAuthType.CP ||
+      form.authType === FormAuthType.SGID ||
+      form.authType === FormAuthType.MyInfo ||
+      form.authType === FormAuthType.SGID_MyInfo
+    ) {
+      const encryptVerifiedContentResult =
+        VerifiedContentService.getVerifiedContent({
+          type: form.authType,
+          data: { uinFin: userName, userInfo },
+        }).andThen((verifiedContent) =>
+          VerifiedContentService.encryptVerifiedContent({
+            verifiedContent,
+            formPublicKey: form.publicKey,
+          }),
+        )
 
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: 'Invalid data was found. Please submit again.' })
-    } else {
-      // No errors, set local variable to the encrypted string.
-      verified = encryptVerifiedContentResult.value
+      if (encryptVerifiedContentResult.isErr()) {
+        const { error } = encryptVerifiedContentResult
+        logger.error({
+          message: 'Unable to encrypt verified content',
+          meta: logMeta,
+          error,
+        })
+
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .json({ message: 'Invalid data was found. Please submit again.' })
+      } else {
+        // No errors, set local variable to the encrypted string.
+        verified = encryptVerifiedContentResult.value
+      }
     }
   }
 
@@ -359,7 +402,7 @@ const submitEncryptModeForm = async (
   const submissionContent: EncryptSubmissionContent = {
     form: form._id,
     authType: form.authType,
-    submitterId,
+    submitterId: hashedSubmitterId,
     myInfoFields: form.getUniqueMyInfoAttrs(),
     encryptedContent: encryptedContent,
     verifiedContent: verified,
@@ -393,6 +436,7 @@ const submitEncryptModeForm = async (
     formId,
     form,
     responses: req.formsg.filteredResponses,
+    unencryptedAttachments: req.formsg.unencryptedAttachments,
     emailFields: parsedResponses.getAllResponses(),
     responseMetadata,
     submissionContent,
@@ -656,12 +700,14 @@ const _createSubmission = async ({
   form,
   responseMetadata,
   responses,
+  unencryptedAttachments,
   emailFields,
 }: {
   req: Parameters<SubmitEncryptModeFormHandlerType>[0]
   res: Parameters<SubmitEncryptModeFormHandlerType>[1]
   responseMetadata: EncryptSubmissionDto['responseMetadata']
   responses: ParsedClearFormFieldResponse[]
+  unencryptedAttachments?: IAttachmentInfo[]
   emailFields: ProcessedFieldResponse[]
   formId: string
   form: IPopulatedEncryptedForm
@@ -684,10 +730,16 @@ const _createSubmission = async ({
 
       // handles the case where submission has already been created for given submissionSingpassId
       if (!submission) {
+        const formSingleSubmissionError =
+          new FormRespondentSingleSubmissionValidationError()
+        logger.error({
+          message: formSingleSubmissionError.message,
+          meta: logMeta,
+          error: formSingleSubmissionError,
+        })
         return res.status(StatusCodes.BAD_REQUEST).json({
-          message:
-            'Your NRIC/FIN/UEN has already been used to respond to this form.',
-          hasSingleSubmissionValidationFailure: true,
+          message: formSingleSubmissionError.message,
+          errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
         })
       }
     } else {
@@ -738,7 +790,6 @@ const _createSubmission = async ({
     new Set(), // the MyInfo prefixes are already inserted in middleware
     form.authType,
   )
-
   // We don't await for email submission, as the submission gets saved for encrypt
   // submissions regardless, the email is more of a notification and shouldn't
   // stop the storage of the data in the db
@@ -775,7 +826,12 @@ const _createSubmission = async ({
     timestamp: createdTime.getTime(),
   })
 
-  return await performEncryptPostSubmissionActions(submission, responses)
+  return await performEncryptPostSubmissionActions(
+    submission,
+    responses,
+    emailData,
+    unencryptedAttachments,
+  )
 }
 
 export const handleStorageSubmission = [

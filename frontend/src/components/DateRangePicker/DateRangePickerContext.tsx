@@ -96,7 +96,6 @@ const useProvideDateRangePicker = ({
   allowManualInput = true,
   allowInvalidDates = true,
   closeCalendarOnChange = true,
-  onBlur,
   onClick,
   colorScheme = 'primary',
   monthsToDisplay,
@@ -180,8 +179,8 @@ const useProvideDateRangePicker = ({
     ...props,
   })
 
-  const handleInputBlur: FocusEventHandler<HTMLInputElement> = useCallback(
-    (e) => {
+  const handleInputBlur: FocusEventHandler<HTMLInputElement> =
+    useCallback(() => {
       const startDate = parse(startInputDisplay, dateFormat, new Date())
       const endDate = parse(endInputDisplay, dateFormat, new Date())
       // Clear if input is invalid on blur if invalid dates are not allowed.
@@ -192,15 +191,13 @@ const useProvideDateRangePicker = ({
         setEndInputDisplay('')
       }
       handleUpdateInputs([startDate, endDate])
-    },
-    [
+    }, [
       startInputDisplay,
       dateFormat,
       endInputDisplay,
       allowInvalidDates,
       handleUpdateInputs,
-    ],
-  )
+    ])
 
   const handleInputClick: MouseEventHandler<HTMLInputElement> = useCallback(
     (e) => {

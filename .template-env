@@ -53,8 +53,6 @@ FORMSG_SDK_MODE=
 # AWS_REGION=
 
 ## Google Services
-## If the below variable exists, the [google-analytics] feature will be enabled.
-# GA_TRACKING_ID=
 ## If the below variables exists, the [captcha] feature will be enabled.
 # GOOGLE_CAPTCHA=
 # GOOGLE_CAPTCHA_PUBLIC=
@@ -110,6 +108,8 @@ FORMSG_SDK_MODE=
 ## Per-minute, per-IP request limits applied to specific endpoints
 # SUBMISSIONS_RATE_LIMIT=
 # SEND_AUTH_OTP_RATE_LIMIT=
+# DOWNLOAD_FORM_WHITELIST_RATE_LIMIT=
+# UPLOAD_FORM_WHITELIST_RATE_LIMIT=
 
 # Used to check if BE Server is currently running on local development environment
 # One of boolean: "true" | "false"

@@ -27,6 +27,7 @@ import { adminFormSettingsKeys } from './queries'
 import {
   createStripeAccount,
   deleteTwilioCredentials,
+  MrfEmailNotificationSettings,
   unlinkStripeAccount,
   updateBusinessInfo,
   updateFormAuthType,
@@ -36,13 +37,15 @@ import {
   updateFormInactiveMessage,
   updateFormIssueNotification,
   updateFormLimit,
-  updateFormNricMask,
   updateFormStatus,
   updateFormTitle,
   updateFormWebhookRetries,
   updateFormWebhookUrl,
+  updateFormWhitelistSetting,
   updateGstEnabledFlag,
   updateIsSingleSubmission,
+  updateIsSubmitterIdCollectionEnabled,
+  updateMrfEmailNotifications,
   updateTwilioCredentials,
 } from './SettingsService'
 
@@ -72,6 +75,27 @@ export const useMutateFormSettings = () => {
     [formId, queryClient],
   )
 
+  const generateErrorToast = useCallback(
+    (message) => {
+      toast.closeAll()
+      toast({
+        description: message,
+        status: 'danger',
+      })
+    },
+    [toast],
+  )
+
+  const generateSuccessToast = useCallback(
+    (message) => {
+      toast.closeAll()
+      toast({
+        description: message,
+      })
+    },
+    [toast],
+  )
+
   const handleSuccess = useCallback(
     ({
       newData,
@@ -80,24 +104,17 @@ export const useMutateFormSettings = () => {
       newData: FormSettings
       toastDescription: string
     }) => {
-      toast.closeAll()
       updateFormData(newData)
-      toast({
-        description: toastDescription,
-      })
+      generateSuccessToast(toastDescription)
     },
-    [toast, updateFormData],
+    [updateFormData, generateSuccessToast],
   )
 
   const handleError = useCallback(
     (error: Error) => {
-      toast.closeAll()
-      toast({
-        description: error.message,
-        status: 'danger',
-      })
+      generateErrorToast(error.message)
     },
-    [toast],
+    [generateErrorToast],
   )
 
   const mutateFormStatus = useMutation(
@@ -218,6 +235,20 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateMrfEmailNotifications = useMutation(
+    (MrfEmailNotificationSettings: MrfEmailNotificationSettings) =>
+      updateMrfEmailNotifications(formId, MrfEmailNotificationSettings),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: 'Emails successfully updated.',
+        })
+      },
+      onError: handleError,
+    },
+  )
+
   const mutateFormEsrvcId = useMutation(
     (nextEsrvcId?: string) => updateFormEsrvcId(formId, nextEsrvcId),
     {
@@ -306,16 +337,19 @@ export const useMutateFormSettings = () => {
     },
   )
 
-  const mutateNricMask = useMutation(
-    (nextIsNricMaskEnabled: boolean) =>
-      updateFormNricMask(formId, nextIsNricMaskEnabled),
+  const mutateIsSubmitterIdCollectionEnabled = useMutation(
+    (nextIsSubmitterIdCollectionEnabled: boolean) =>
+      updateIsSubmitterIdCollectionEnabled(
+        formId,
+        nextIsSubmitterIdCollectionEnabled,
+      ),
     {
       onSuccess: (newData) => {
         handleSuccess({
           newData,
-          toastDescription: newData.isNricMaskEnabled
-            ? 'NRIC masking is now enabled on your form.'
-            : 'NRIC masking is now disabled on your form.',
+          toastDescription: newData.isSubmitterIdCollectionEnabled
+            ? 'NRIC/FIN/UEN collection is now enabled on your form.'
+            : 'NRIC/FIN/UEN collection is now disabled on your form.',
         })
       },
       onError: handleError,
@@ -339,6 +373,24 @@ export const useMutateFormSettings = () => {
         })
       },
       onError: handleError,
+    },
+  )
+
+  const mutateFormWhitelistSetting = useMutation(
+    (whitelistCsvString: Promise<string> | null) => {
+      return updateFormWhitelistSetting(formId, whitelistCsvString)
+    },
+    {
+      onSuccess: (_newData, variable) => {
+        generateSuccessToast(
+          variable
+            ? 'Your CSV has been uploaded successfully.'
+            : 'Your CSV has been removed successfully.',
+        )
+      },
+      onError: (error: Error) => {
+        generateErrorToast(error.message)
+      },
     },
   )
 
@@ -409,10 +461,12 @@ export const useMutateFormSettings = () => {
     mutateFormCaptcha,
     mutateFormIssueNotification,
     mutateFormEmails,
+    mutateMrfEmailNotifications,
     mutateFormTitle,
     mutateFormAuthType,
-    mutateNricMask,
+    mutateIsSubmitterIdCollectionEnabled,
     mutateIsSingleSubmission,
+    mutateFormWhitelistSetting,
     mutateFormEsrvcId,
     mutateFormBusiness,
     mutateGST,

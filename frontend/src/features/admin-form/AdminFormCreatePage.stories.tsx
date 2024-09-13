@@ -107,6 +107,7 @@ TabletAllFields.parameters = {
 export const TabletLoading = Template.bind({})
 TabletLoading.parameters = {
   ...getTabletViewParameters(),
+  mockdate: new Date('2024-09-11T13:00:00.000Z'),
   msw: buildMswRoutes({}, 'infinite'),
 }
 
@@ -166,8 +167,10 @@ FormWithPayment.parameters = {
     payments_field: {
       payment_type: PaymentType.Fixed,
       enabled: true,
-      amount_cents: 5000,
       description: 'Test event registration fee',
+      payment_type: PaymentType.Variable,
+      min_amount: 1000,
+      max_amount: 5000,
     },
   }),
 }

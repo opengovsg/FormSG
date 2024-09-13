@@ -77,8 +77,6 @@ export const Playground: StoryFn = ({
   othersInputName = 'others-input',
   othersCheckboxName = 'others-checkbox',
   label,
-  isDisabled,
-  isRequired,
   ...args
 }) => {
   const options = useMemo(() => ['Option 1', 'Option 2', 'Option 3'], [])

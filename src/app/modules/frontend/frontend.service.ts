@@ -2,7 +2,6 @@ import { ClientEnvVars } from '../../../../shared/types/core'
 import config from '../../config/config'
 import { captchaConfig } from '../../config/features/captcha.config'
 import { goGovConfig } from '../../config/features/gogov.config'
-import { googleAnalyticsConfig } from '../../config/features/google-analytics.config'
 import { growthbookConfig } from '../../config/features/growthbook.config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
@@ -21,9 +20,6 @@ export const getClientEnvVars = (): ClientEnvVars => {
     isSPMaintenance: spcpMyInfoConfig.isSPMaintenance, // Singpass maintenance message
     isCPMaintenance: spcpMyInfoConfig.isCPMaintenance, // Corppass maintenance message
     myInfoBannerContent: spcpMyInfoConfig.myInfoBannerContent, // MyInfo maintenance message
-    // TODO: remove after React rollout #4786
-    GATrackingID: googleAnalyticsConfig.GATrackingID,
-
     spcpCookieDomain: spcpMyInfoConfig.spcpCookieDomain, // Cookie domain used for removing spcp cookies
     stripePublishableKey: paymentConfig.stripePublishableKey,
     maxPaymentAmountCents: paymentConfig.maxPaymentAmountCents,

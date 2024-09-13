@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { Link as ReactLink } from 'react-router-dom'
 import { Box, Text } from '@chakra-ui/react'
-import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 import { Droppable } from '@hello-pangea/dnd'
+import { useGrowthBook } from '@growthbook/growthbook-react'
 
-import { featureFlags } from '~shared/constants'
 import {
   AdminFormDto,
   FormAuthType,
@@ -12,7 +11,7 @@ import {
   MyInfoAttribute,
 } from '~shared/types'
 
-import { GUIDE_EMAIL_MODE } from '~constants/links'
+import { GUIDE_MYINFO_BUILDER_FIELD } from '~constants/links'
 import { ADMINFORM_SETTINGS_SINGPASS_SUBROUTE } from '~constants/routes'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
@@ -90,26 +89,20 @@ export const MyInfoFieldPanel = () => {
     }
   }, [growthbook, user])
 
-  const showSgidMyInfoV2 = useFeatureIsOn(featureFlags.myinfoSgid)
-
-  const sgidSupportedFinal = useMemo(() => {
-    return showSgidMyInfoV2 ? SGID_SUPPORTED_V2 : SGID_SUPPORTED_V1
-  }, [showSgidMyInfoV2])
-
   /**
    * If sgID is used, checks if the corresponding
    * MyInfo field is supported by sgID.
    */
   const sgIDUnSupported = useCallback(
     (form: AdminFormDto | undefined, fieldType: MyInfoAttribute): boolean => {
-      const sgidSupported: Set<MyInfoAttribute> = new Set(sgidSupportedFinal)
+      const sgidSupported: Set<MyInfoAttribute> = new Set(SGID_SUPPORTED_V2)
 
       return (
         form?.authType === FormAuthType.SGID_MyInfo &&
         !sgidSupported.has(fieldType)
       )
     },
-    [sgidSupportedFinal],
+    [],
   )
 
   // myInfo should be disabled if
@@ -269,7 +262,7 @@ const MyInfoText = ({
   return (
     <Text>
       {`Only 30 MyInfo fields are allowed (${numMyInfoFields}/30). `}
-      <Link isExternal href={GUIDE_EMAIL_MODE}>
+      <Link isExternal href={GUIDE_MYINFO_BUILDER_FIELD}>
         Learn more
       </Link>
     </Text>

@@ -25,6 +25,8 @@ import {
   LogicDto,
   MyInfoAttribute,
   PublicFormDto,
+  WhitelistedSubmitterIds,
+  WhitelistedSubmitterIdsWithReferenceOid,
 } from '../../shared/types'
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
 
@@ -63,7 +65,7 @@ type FormDefaultableKey =
   | 'hasCaptcha'
   | 'hasIssueNotification'
   | 'authType'
-  | 'isNricMaskEnabled'
+  | 'isSubmitterIdCollectionEnabled'
   | 'isSingleSubmission'
   | 'status'
   | 'inactiveMessage'
@@ -103,7 +105,7 @@ export type PickDuplicateForm = Pick<
   | 'startPage'
   | 'endPage'
   | 'authType'
-  | 'isNricMaskEnabled'
+  | 'isSubmitterIdCollectionEnabled'
   | 'isSingleSubmission'
   | 'inactiveMessage'
   | 'submissionLimit'
@@ -187,6 +189,12 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
    * Retrieve form settings.
    */
   getSettings(): FormSettings
+
+  /**
+   * Retrieve the full whitelistedSubmitterId property of the form document.
+   */
+  getWhitelistedSubmitterIds(): WhitelistedSubmitterIdsWithReferenceOid
+
   /**
    * Retrieve form webhook settings.
    */
@@ -263,7 +271,9 @@ interface IFormBaseDocument<T extends IFormSchema> {
   hasCaptcha: NonNullable<T['hasCaptcha']>
   hasIssueNotification: NonNullable<T['hasIssueNotification']>
   authType: NonNullable<T['authType']>
-  isNricMaskEnabled: NonNullable<T['isNricMaskEnabled']>
+  isSubmitterIdCollectionEnabled: NonNullable<
+    T['isSubmitterIdCollectionEnabled']
+  >
   isSingleSubmission: NonNullable<T['isSingleSubmission']>
   status: NonNullable<T['status']>
   inactiveMessage: NonNullable<T['inactiveMessage']>
@@ -293,6 +303,7 @@ export interface IEncryptedForm extends IForm {
   payments_field: FormPaymentsField
   business?: FormBusinessField
   emails?: string[]
+  whitelistedSubmitterIds?: WhitelistedSubmitterIds
 }
 
 export type IEncryptedFormSchema = IEncryptedForm & IFormSchema
@@ -319,8 +330,8 @@ export type IPopulatedEmailForm = IPopulatedForm & IEmailForm
 
 export interface IMultirespondentForm extends IForm {
   publicKey: string
-  emails?: never
   workflow: FormWorkflowDto
+  stepsToNotify: string[]
 }
 
 export type IMultirespondentFormSchema = IMultirespondentForm & IFormSchema

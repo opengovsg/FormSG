@@ -138,6 +138,56 @@ describe('email-submission.util', () => {
       ])
     })
 
+    it('should include undefined isVisible fields from autoreply data', async () => {
+      // Arrange
+      const response = generateNewSingleAnswerResponse(BasicField.ShortText, {
+        isVisible: undefined,
+      })
+
+      // Assert
+      const emailData = new SubmissionEmailObj(
+        [response],
+        new Set(),
+        FormAuthType.NIL,
+      )
+
+      // Assert
+      expect(emailData.dataCollationData).toEqual([
+        generateSingleAnswerJson(response),
+      ])
+      expect(emailData.autoReplyData).toEqual([
+        generateSingleAnswerAutoreply(response),
+      ])
+      expect(emailData.formData).toEqual([
+        generateSingleAnswerFormData(response),
+      ])
+    })
+
+    it('should include isVisible true fields from autoreply data', async () => {
+      // Arrange
+      const response = generateNewSingleAnswerResponse(BasicField.ShortText, {
+        isVisible: true,
+      })
+
+      // Assert
+      const emailData = new SubmissionEmailObj(
+        [response],
+        new Set(),
+        FormAuthType.NIL,
+      )
+
+      // Assert
+      expect(emailData.dataCollationData).toEqual([
+        generateSingleAnswerJson(response),
+      ])
+      expect(emailData.autoReplyData).toEqual([
+        generateSingleAnswerAutoreply(response),
+      ])
+      expect(emailData.formData).toEqual([
+        generateSingleAnswerFormData(response),
+      ])
+    })
+
     it('should generate table answers with [table] prefix in form and JSON data', () => {
       const response = generateNewTableResponse()
 
