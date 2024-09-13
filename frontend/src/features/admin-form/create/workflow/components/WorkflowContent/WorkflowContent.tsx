@@ -19,7 +19,7 @@ export const WorkflowContent = (): JSX.Element | null => {
   if (isLoading) return null
 
   return (
-    <Stack color="secondary.500" spacing="1rem">
+    <Stack color="secondary.500" spacing="2.75rem">
       <Stack spacing="0" divider={<WorkflowStepBlockDivider />}>
         {formWorkflow?.map((step, i) => (
           <WorkflowBlockFactory key={i} stepNumber={i} step={step} />
