@@ -48,7 +48,7 @@
     "lint:frontend": "npm run --prefix frontend lint",
     "lint-ci": "eslint src/ shared/ --quiet",
     "version": "auto-changelog -p && git add CHANGELOG.md",
-    "prepare": "husky install",
+    "prepare": "husky",
     "pre-commit": "lint-staged",
     "storybook": "npm run --prefix frontend storybook",
     "postinstall:frontend": "npm --prefix frontend install",
