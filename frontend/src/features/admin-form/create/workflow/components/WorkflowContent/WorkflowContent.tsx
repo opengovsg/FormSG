@@ -6,7 +6,6 @@ import { useUser } from '~features/user/queries'
 
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 
-import { HeaderBlock } from './HeaderBlock'
 import { NewStepBlock } from './NewStepBlock'
 import { WorkflowBlockFactory } from './WorkflowBlockFactory'
 import { WorkflowCompletionMessageBlock } from './WorkflowCompletionMessageBlock'
@@ -21,7 +20,6 @@ export const WorkflowContent = (): JSX.Element | null => {
 
   return (
     <Stack color="secondary.500" spacing="1rem">
-      <HeaderBlock />
       <Stack spacing="0" divider={<WorkflowStepBlockDivider />}>
         {formWorkflow?.map((step, i) => (
           <WorkflowBlockFactory key={i} stepNumber={i} step={step} />

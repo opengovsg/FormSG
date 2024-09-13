@@ -4,6 +4,7 @@ import { FormControl } from '@chakra-ui/react'
 
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import FormLabel from '~components/FormControl/FormLabel'
 import Toggle from '~components/Toggle'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
@@ -84,12 +85,21 @@ export const ApprovalsBlock = ({
 
   return (
     <EditStepBlockContainer>
+      <FormLabel
+        mb="0"
+        isRequired
+        tooltipVariant="info"
+        tooltipPlacement="top"
+        tooltipText="Use this for steps that involve any type of decision, such as reviews or endorsements"
+      >
+        Approval
+      </FormLabel>
       <Toggle
         isLoading={isLoading}
         onChange={onApprovalToggleChange}
         isChecked={isApprovalToggleChecked}
-        label="Enable approval for this step"
-        description="If the respondent selects yes, the workflow continues. If they select no, it stops."
+        label="Enable approval"
+        description="If the respondent selects yes, the workflow continues. If they select no, it ends."
       />
       {isApprovalToggleChecked ? (
         <FormControl isInvalid={!!errors.approval_field?.message}>

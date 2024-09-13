@@ -53,8 +53,8 @@ export const InactiveApprovalsBlock = ({
     : undefined
 
   const headerText = approvalFormField
-    ? 'Approval step enabled'
-    : 'Approval step not enabled'
+    ? 'Approval enabled'
+    : 'Approval not enabled'
 
   return (
     <Stack>
