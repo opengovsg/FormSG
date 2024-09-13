@@ -1,6 +1,12 @@
 import { useCallback } from 'react'
 import { Controller, useForm } from 'react-hook-form'
-import { Box, FormControl, FormErrorMessage, Skeleton } from '@chakra-ui/react'
+import {
+  Box,
+  FormControl,
+  FormErrorMessage,
+  Skeleton,
+  Text,
+} from '@chakra-ui/react'
 import { get, isEmpty, isEqual, uniq } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
@@ -110,7 +116,16 @@ const MrfEmailNotificationsForm = ({
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Box>
-        <FormLabel>Notify respondents in your workflow</FormLabel>
+        <Text textStyle="h3" textColor="secondary.500" mb="0.25rem">
+          Workflow Outcome Notifications
+        </Text>
+        <Text textStyle="body-1" textColor="secondary.700" mb="2.5rem">
+          Send an email to inform selected respondents when the form and/or
+          workflow is complete.
+        </Text>
+        <FormLabel textColor="secondary.700">
+          Notify respondents in your workflow
+        </FormLabel>
         <Skeleton isLoaded={!isLoading}>
           <Box my="0.75rem">
             <Controller
@@ -144,6 +159,7 @@ const MrfEmailNotificationsForm = ({
           isDisabled={isDisabled}
         >
           <FormLabel
+            textColor="secondary.700"
             tooltipVariant="info"
             tooltipPlacement="top"
             tooltipText="Include the admin's email to inform them whenever a workflow is completed"
