@@ -101,7 +101,7 @@
     "font-awesome": "4.7.0",
     "fp-ts": "^2.16.8",
     "helmet": "^7.1.0",
-    "hot-shots": "^10.0.0",
+    "hot-shots": "^10.1.1",
     "html-entities": "^2.5.2",
     "html-escaper": "^3.0.3",
     "http-errors": "^2.0.0",
