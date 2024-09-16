@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "dependencies": {
-    "date-fns": "^2.26.0",
+    "date-fns": "^4.0.0",
     "json-stringify-safe": "^5.0.1",
     "jszip": "^3.7.1",
     "libphonenumber-js": "^1.10.48",
