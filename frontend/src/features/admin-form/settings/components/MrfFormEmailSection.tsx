@@ -117,7 +117,7 @@ const MrfEmailNotificationsForm = ({
     <form onSubmit={handleSubmit(onSubmit)}>
       <Box>
         <Text textStyle="h3" textColor="secondary.500" mb="0.25rem">
-          Workflow Outcome Notifications
+          Workflow outcome notifications
         </Text>
         <Text textStyle="body-1" textColor="secondary.700" mb="2.5rem">
           Send an email to inform selected respondents when the form and/or
