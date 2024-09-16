@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import {
   Box,
+  Flex,
   FormLabel as ChakraFormLabel,
   FormLabelProps as ChakraFormLabelProps,
   Icon,
@@ -81,7 +82,7 @@ export const FormLabel = ({
       overflowWrap="break-word"
       {...labelProps}
     >
-      <Box overflowWrap="anywhere">
+      <Flex overflowWrap="anywhere" flexDirection="row" alignItems="center">
         {questionNumber && (
           <FormLabel.QuestionNumber>{questionNumber}</FormLabel.QuestionNumber>
         )}
@@ -95,14 +96,13 @@ export const FormLabel = ({
           >
             <Icon
               ml="0.5rem"
-              mb="0.1rem"
               color="secondary.500"
               as={tooltipVariant === 'info' ? BxsInfoCircle : BxsHelpCircle}
               verticalAlign="middle"
             />
           </Tooltip>
         )}
-      </Box>
+      </Flex>
       {description && (
         <FormLabel.Description
           useMarkdown={useMarkdownForDescription}
