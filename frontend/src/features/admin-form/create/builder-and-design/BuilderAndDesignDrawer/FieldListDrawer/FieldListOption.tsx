@@ -71,7 +71,6 @@ interface DraggableMyInfoFieldOptionProps
 export const DraggableBasicFieldListOption = ({
   fieldType,
   index,
-  children,
   isDisabled,
   ...props
 }: DraggableBasicFieldOptionProps): JSX.Element => {
@@ -114,7 +113,6 @@ export const DraggableBasicFieldListOption = ({
 export const DraggableMyInfoFieldListOption = ({
   fieldType,
   index,
-  children,
   isDisabled,
   ...props
 }: DraggableMyInfoFieldOptionProps): JSX.Element => (
