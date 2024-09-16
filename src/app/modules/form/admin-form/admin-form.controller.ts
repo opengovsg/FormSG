@@ -1542,7 +1542,7 @@ export const _handleCreateWorkflowStep: ControllerHandler<
         logger.error({
           message: 'Error occurred when creating form field',
           meta: {
-            action: '_handleCreateFormField',
+            action: 'handleCreateFormField',
             ...createReqMeta(req),
             userId: sessionUserId,
             formId,
