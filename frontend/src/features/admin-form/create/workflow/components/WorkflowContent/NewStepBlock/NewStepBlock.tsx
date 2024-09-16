@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { BiPlus } from 'react-icons/bi'
 import { Button } from '@chakra-ui/react'
 
-import { FormWorkflowStep, WorkflowType } from '~shared/types'
+import { FormWorkflowStep } from '~shared/types'
 
 import {
   isCreatingStateSelector,
