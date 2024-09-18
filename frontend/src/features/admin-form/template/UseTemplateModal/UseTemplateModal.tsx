@@ -7,7 +7,8 @@ import {
 
 import { ModalCloseButton } from '~components/Modal'
 
-import { CreateFormModalContent } from '~features/workspace/components/CreateFormModal/CreateFormModalContent'
+// Explicit import to avoid circular dependency warnings by rollup
+import { CreateFormModalContent } from '~features/workspace/components/CreateFormModal/CreateFormModalContent/CreateFormModalContent'
 
 import { UseTemplateWizardProvider } from './UseTemplateWizardProvider'
 
