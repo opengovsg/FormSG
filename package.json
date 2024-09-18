@@ -121,7 +121,7 @@
     "multer": "^1.4.5-lts.1",
     "multiparty": ">=4.2.3",
     "nan": "^2.19.0",
-    "neverthrow": "^6.1.0",
+    "neverthrow": "^8.0.0",
     "nocache": "^3.0.4",
     "node-cache": "^5.1.2",
     "nodemailer": "^6.9.13",
