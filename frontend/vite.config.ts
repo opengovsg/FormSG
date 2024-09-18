@@ -8,6 +8,10 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 const baseRollupOptions = {
   // Silence Rollup "use client" warnings
   // Adapted from https://github.com/vitejs/vite-plugin-react/pull/144
+  onLog(log, defaultHandler) {
+    return
+  },
+
   onwarn(warning, defaultHandler) {
     if (
       warning.code === 'MODULE_LEVEL_DIRECTIVE' &&
@@ -32,7 +36,7 @@ export default defineConfig(() => {
             'datadog-chunk': ['datadog-chunk.ts'],
           },
         },
-        logLevel: 'silent' as const,
+        // logLevel: 'silent' as const,
       },
     },
     base: './',

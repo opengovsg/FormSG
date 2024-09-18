@@ -18,7 +18,9 @@ const config: StorybookConfig = {
   ],
   framework: {
     name: '@storybook/react-vite',
-    options: {},
+    options: {
+      builder: { viteConfigPath: './vite.config.ts' },
+    },
   },
   // For injecitng environment variables into Storybook runs
   // (see: https://github.com/storybookjs/storybook/issues/12270#issuecomment-1139104523)
@@ -26,6 +28,24 @@ const config: StorybookConfig = {
     ...config,
     NODE_ENV: 'test',
   }),
+  async viteFinal(config, { configType }) {
+    const { mergeConfig } = await import('vite')
+
+    if (configType === 'DEVELOPMENT') {
+      // Your development configuration goes here
+    }
+    if (configType === 'PRODUCTION') {
+      // Your production configuration goes here.
+    }
+    return mergeConfig(config, {
+      // Your environment configuration here
+      build: {
+        rollupOptions: {
+          logLevel: 'silent',
+        },
+      },
+    })
+  },
 }
 
 export default config
