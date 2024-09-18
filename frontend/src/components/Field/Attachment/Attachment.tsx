@@ -18,8 +18,8 @@ import { MB } from '~shared/constants/file'
 import { ATTACHMENT_THEME_KEY } from '~theme/components/Field/Attachment'
 import { ThemeColorScheme } from '~theme/foundations/colours'
 
-import { AttachmentStylesProvider } from './AttachmentContext'
 import { downloadFile } from './utils/downloadFile'
+import { AttachmentStylesProvider } from './AttachmentContext'
 import { AttachmentDropzone } from './AttachmentDropzone'
 import { AttachmentFileInfo } from './AttachmentFileInfo'
 import {
