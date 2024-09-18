@@ -67,6 +67,13 @@ export const MULTIRESPONDENT_FORM_SETTINGS_FIELDS = [
   'stepsToNotify',
 ] as const
 
+// Fields that are necessary for decrypting the cipherTexts given peer's private key
+export const WHITELISTED_SUBMITTER_ID_DECRYPTION_FIELDS = [
+  'myPublicKey',
+  'nonce',
+  'cipherTexts',
+] as const
+
 export const WEBHOOK_SETTINGS_FIELDS = ['responseMode', 'webhook'] as const
 
 export const ADMIN_FORM_META_FIELDS = [
