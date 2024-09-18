@@ -116,6 +116,12 @@ interface UseTemplateWizardProviderProps {
   children: React.ReactNode
 }
 
+/**
+ * Note: "Use Template" is Application feature / terminology that the users do.
+ * The "use" in "UseTemplateWizardProvider" is not referring to hooks or React's "use" convention.
+ * @param param0
+ * @returns
+ */
 export const UseTemplateWizardProvider = ({
   formId,
   children,

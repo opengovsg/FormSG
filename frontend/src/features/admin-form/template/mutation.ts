@@ -53,6 +53,12 @@ const useCommonHooks = () => {
   }
 }
 
+/**
+ * Note: "Use Template" is Application feature / terminology that the users do.
+ * The "use" in "useUseTemplateMutations" is not referring to hooks or React's "use" convention.
+ * @param param0
+ * @returns
+ */
 export const useUseTemplateMutations = () => {
   const { handleSuccess, handleError } = useCommonHooks()
 
