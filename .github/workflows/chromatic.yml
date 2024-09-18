@@ -66,13 +66,7 @@ jobs:
           exitOnceUploaded: true
           onlyChanged: true
           storybookBaseDir: frontend
-          allowConsoleErrors: true
-          logFile: 'chromatic.log'
           # Skip running Chromatic on dependabot PRs
           skip: dependabot/**
           # Only run when the frontend directory has changes
           untraced: '!(frontend)/**'
-          # temp debug options
-          # debug: true
-          # diagnosticsFile: true
-          # logFile: true
