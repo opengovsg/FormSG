@@ -33,6 +33,10 @@ export interface InputProps extends ChakraInputProps {
    * Whether to prevent default on user pressing the 'Enter' key.
    */
   preventDefaultOnEnter?: boolean
+  /**
+   * Whether there's an input right element. Used to provide additional padding
+   */
+  hasInputRightElement?: boolean
 }
 
 export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
@@ -45,6 +49,7 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
     'isPrefilled',
     'isPrefillLocked',
     'preventDefaultOnEnter',
+    'hasInputRightElement',
   ])
 
   const preventDefault = useMemo(
@@ -102,7 +107,11 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
           ref={ref}
           {...preventDefault}
           {...inputProps}
-          sx={props.sx ?? inputStyles.field}
+          sx={merge(
+            props.hasInputRightElement ? { pr: '2.75rem' } : {},
+            inputStyles.field,
+            props.sx,
+          )}
         />
       )
     }

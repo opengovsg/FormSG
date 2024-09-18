@@ -279,6 +279,7 @@ export const ShareFormModal = ({
               data-chromatic="ignore"
               isReadOnly
               value={shareLink}
+              hasInputRightElement={Boolean(formId)}
             />
             {formId ? (
               <InputRightElement>
@@ -314,6 +315,7 @@ export const ShareFormModal = ({
             isReadOnly
             isDisabled={isFormPrivate}
             value={`${templateLink}`}
+            hasInputRightElement={Boolean(formId)}
           />
           {formId ? (
             <InputRightElement>
@@ -412,6 +414,7 @@ export const ShareFormModal = ({
                                 setGoLinkHelperText(undefined)
                               }}
                               isReadOnly={goLinkSaved}
+                              hasInputRightElement={goLinkSaved}
                             />
                             {goLinkSaved ? (
                               <InputRightElement>

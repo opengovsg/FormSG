@@ -55,6 +55,8 @@ jobs:
       - name: Publish to Chromatic
         uses: chromaui/action@v1
         # Chromatic GitHub Action options
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           # 👇 Chromatic projectToken, refer to the manage page to obtain it.
@@ -68,3 +70,7 @@ jobs:
           skip: dependabot/**
           # Only run when the frontend directory has changes
           untraced: '!(frontend)/**'
+          # temp debug options
+          # debug: true
+          # diagnosticsFile: true
+          # logFile: true
