@@ -42,7 +42,9 @@ jobs:
     runs-on: ubuntu-latest
     # Job steps
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
@@ -55,8 +57,6 @@ jobs:
       - name: Publish to Chromatic
         uses: chromaui/action@v1
         # Chromatic GitHub Action options
-        env:
-          NODE_OPTIONS: --max-old-space-size=8192
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           # 👇 Chromatic projectToken, refer to the manage page to obtain it.
@@ -66,6 +66,8 @@ jobs:
           exitOnceUploaded: true
           onlyChanged: true
           storybookBaseDir: frontend
+          allowConsoleErrors: true
+          logFile: 'chromatic.log'
           # Skip running Chromatic on dependabot PRs
           skip: dependabot/**
           # Only run when the frontend directory has changes
