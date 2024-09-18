@@ -76,7 +76,7 @@ jobs:
           NODE_OPTIONS: '--max-old-space-size=4096 --openssl-legacy-provider'
           AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
       - name: Upload build files
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: always()
         with:
           name: build-output
