@@ -10,7 +10,6 @@ export const EditStepBlockContainer = ({
       direction="column"
       spacing="0.75rem"
       px={{ base: '1.5rem', md: '2rem' }}
-      borderTopColor="secondary.200"
     >
       {children}
     </Stack>

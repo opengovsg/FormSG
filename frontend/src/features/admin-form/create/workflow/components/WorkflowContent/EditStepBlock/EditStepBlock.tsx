@@ -44,7 +44,7 @@ export const EditStepBlock = ({
     defaultValues,
   })
   const { user, isLoading: isUserLoading } = useUser()
-  isLoading = isLoading || isUserLoading
+  const _isLoading = isLoading || isUserLoading
 
   const wrapperRef = useRef<HTMLDivElement | null>(null)
 
@@ -138,10 +138,10 @@ export const EditStepBlock = ({
         user={user}
         stepNumber={stepNumber}
         formMethods={formMethods}
-        isLoading={isLoading}
+        isLoading={_isLoading}
       />
       <Divider />
-      <QuestionsBlock formMethods={formMethods} isLoading={isLoading} />
+      <QuestionsBlock formMethods={formMethods} isLoading={_isLoading} />
       {/*TODO: (MRF-email-notif) Remove isTest and betaFlag check when approvals is out of beta */}
       {isTest || user?.betaFlags?.mrfEmailNotifications ? (
         !isFirstStep ? (
@@ -153,7 +153,7 @@ export const EditStepBlock = ({
       ) : null}
       <Divider />
       <SaveActionGroup
-        isLoading={isLoading}
+        isLoading={_isLoading}
         handleSubmit={handleSubmit}
         handleDelete={isFirstStep ? undefined : handleOpenDeleteModal}
         handleCancel={setToInactive}

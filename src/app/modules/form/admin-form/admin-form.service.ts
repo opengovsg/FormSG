@@ -585,7 +585,7 @@ export const createForm = (
     if (!isApprovalFieldInEditFields) {
       return errAsync(
         new MalformedParametersError(
-          "For all steps, the selected approval field must also be included in same step's edit fields",
+          'Approval fields must be included in edit fields.',
         ),
       )
     }

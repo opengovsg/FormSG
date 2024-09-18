@@ -56,7 +56,7 @@ const StaticRespondentOption = ({
         allowDeselect={false}
         value={WorkflowType.Static}
         {...register('workflow_type', WORKFLOW_TYPE_VALIDATION)}
-        px="8px"
+        px="0.5rem"
         __css={{
           _focusWithin: {
             boxShadow: 'none',
@@ -138,7 +138,7 @@ const DynamicRespondentOption = ({
         allowDeselect={false}
         value={WorkflowType.Dynamic}
         {...register('workflow_type', WORKFLOW_TYPE_VALIDATION)}
-        px="8px"
+        px="0.5rem"
         __css={{
           _focusWithin: {
             boxShadow: 'none',
@@ -289,32 +289,29 @@ export const RespondentBlock = ({
           )}
         </>
       ) : (
-        <>
-          <FormControl
-            isReadOnly={isLoading}
-            id="workflow_type"
-            isRequired
-            isInvalid={!!errors.workflow_type}
-          >
-            <FormLabel style={textStyles.h4}>Select a respondent</FormLabel>
-            <Stack spacing="0.25rem">
-              <Radio.RadioGroup value={selectedWorkflowType}>
-                <DynamicRespondentOption
-                  selectedWorkflowType={selectedWorkflowType}
-                  emailFieldItems={emailFieldItems}
-                  formMethods={formMethods}
-                  isLoading={isLoading}
-                />
-                <StaticRespondentOption
-                  selectedWorkflowType={selectedWorkflowType}
-                  formMethods={formMethods}
-                  isLoading={isLoading}
-                />
-              </Radio.RadioGroup>
-            </Stack>
-            <FormErrorMessage>{errors.workflow_type?.message}</FormErrorMessage>
-          </FormControl>
-        </>
+        <FormControl
+          isReadOnly={isLoading}
+          isRequired
+          isInvalid={!!errors.workflow_type}
+        >
+          <FormLabel style={textStyles.h4}>Select a respondent</FormLabel>
+          <Stack spacing="0.25rem">
+            <Radio.RadioGroup value={selectedWorkflowType}>
+              <DynamicRespondentOption
+                selectedWorkflowType={selectedWorkflowType}
+                emailFieldItems={emailFieldItems}
+                formMethods={formMethods}
+                isLoading={isLoading}
+              />
+              <StaticRespondentOption
+                selectedWorkflowType={selectedWorkflowType}
+                formMethods={formMethods}
+                isLoading={isLoading}
+              />
+            </Radio.RadioGroup>
+          </Stack>
+          <FormErrorMessage>{errors.workflow_type?.message}</FormErrorMessage>
+        </FormControl>
       )}
     </EditStepBlockContainer>
   )

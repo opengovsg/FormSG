@@ -49,9 +49,9 @@ export const useAdminFormWorkflow = () => {
   )
 
   const formWorkflow =
-    form?.responseMode !== FormResponseMode.Multirespondent
-      ? undefined
-      : form?.workflow
+    form?.responseMode === FormResponseMode.Multirespondent
+      ? form.workflow
+      : undefined
 
   return {
     isLoading,

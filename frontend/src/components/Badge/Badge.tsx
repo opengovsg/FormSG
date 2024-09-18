@@ -10,7 +10,7 @@ export interface BadgeProps extends ChakraBadgeProps {
    * The theme of the tag to display
    */
   variant?: BadgeVariants
-  bgColor?: string
+  colorScheme?: string
 }
 
 export const Badge = (props: BadgeProps): JSX.Element => {

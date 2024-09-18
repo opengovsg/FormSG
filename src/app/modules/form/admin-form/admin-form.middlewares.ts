@@ -77,13 +77,13 @@ export const createWorkflowStepValidator = celebrate({
     }),
     field: Joi.when('workflow_type', {
       is: WorkflowType.Dynamic,
-      then: Joi.string().hex().length(24).required(),
+      then: Joi.string().required(),
     }),
-    edit: Joi.array().items(Joi.string().hex().length(24)).required(),
-    approval_field: Joi.string().hex().length(24).optional(),
+    edit: Joi.array().items(Joi.string()).required(),
+    approval_field: Joi.string().optional(),
   }),
   [Segments.PARAMS]: Joi.object({
-    formId: Joi.string().hex().length(24).required(),
+    formId: Joi.string().required(),
   }),
 })
 
@@ -92,7 +92,7 @@ export const createWorkflowStepValidator = celebrate({
  */
 export const updateWorkflowStepValidator = celebrate({
   [Segments.BODY]: Joi.object({
-    _id: Joi.string().hex().length(24).required(),
+    _id: Joi.string().required(),
     workflow_type: Joi.string().valid(...Object.values(WorkflowType)),
     emails: Joi.when('workflow_type', {
       is: WorkflowType.Static,
@@ -100,13 +100,13 @@ export const updateWorkflowStepValidator = celebrate({
     }),
     field: Joi.when('workflow_type', {
       is: WorkflowType.Dynamic,
-      then: Joi.string().hex().length(24).required(),
+      then: Joi.string().required(),
     }),
     edit: Joi.array().items(Joi.string().hex().length(24)).required(),
-    approval_field: Joi.string().hex().length(24).optional(),
+    approval_field: Joi.string().optional(),
   }),
   [Segments.PARAMS]: Joi.object({
-    formId: Joi.string().hex().length(24).required(),
+    formId: Joi.string().required(),
     stepNumber: Joi.number().integer().min(0).required(),
   }),
 })
