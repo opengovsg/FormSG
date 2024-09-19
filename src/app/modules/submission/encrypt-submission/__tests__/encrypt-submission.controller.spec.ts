@@ -645,7 +645,7 @@ describe('encrypt-submission.controller', () => {
       // Assert email notification not sent since submission not allowed
       expect(MockMailService.sendSubmissionToAdmin).toHaveBeenCalledTimes(0)
 
-      expect(mockRes.status).toHaveBeenCalledOnceWith(403)
+      expect(mockRes.status).toHaveBeenCalledExactlyOnceWith(403)
 
       expect((mockRes.json as jest.Mock).mock.calls[0][0].message).toEqual(
         FORM_RESPONDENT_NOT_WHITELISTED_ERROR_MESSAGE,
