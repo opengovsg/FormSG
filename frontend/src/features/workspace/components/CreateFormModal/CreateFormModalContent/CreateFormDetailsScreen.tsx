@@ -48,6 +48,9 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
   const titleInputValue = watch('title')
   const responseModeValue = watch('responseMode')
 
+  const trackingSubmitActionName = (
+    'dashboard.create.create_' + responseModeValue
+  ).toLowerCase()
   return (
     <>
       <ModalHeader color="secondary.700">
@@ -112,6 +115,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             isDisabled={isFetching}
             onClick={handleDetailsSubmit}
             isFullWidth
+            data-dd-action-name={trackingSubmitActionName}
           >
             <Text lineHeight="1.5rem">Next step</Text>
           </Button>
