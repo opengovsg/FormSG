@@ -8,12 +8,20 @@ import {
   FormResponseMode,
   FormWorkflowStepDto,
 } from '../../../../../shared/types'
+import { getMultirespondentSubmissionEditPath } from '../../../../../shared/utils/urls'
 import {
+  Environment,
   IMultirespondentSubmissionSchema,
   IPopulatedForm,
   IPopulatedMultirespondentForm,
 } from '../../../../types'
-import { createLoggerWithLabel } from '../../../config/logger'
+import { MultirespondentSubmissionDto } from '../../../../types/api'
+// TODO: (MRF-email-notif) Remove isTest import when MRF email notifications is out of beta
+import config, { isTest } from '../../../config/config'
+import {
+  createLoggerWithLabel,
+  CustomLoggerParams,
+} from '../../../config/logger'
 import { getMultirespondentSubmissionModel } from '../../../models/submission.server.model'
 import { MailSendError } from '../../../services/mail/mail.errors'
 import MailService from '../../../services/mail/mail.service'
@@ -21,20 +29,49 @@ import { transformMongoError } from '../../../utils/handle-mongo-error'
 import { DatabaseError } from '../../core/core.errors'
 import { isFormMultirespondent } from '../../form/form.utils'
 import {
+  AttachmentUploadError,
   ExpectedResponseNotFoundError,
   InvalidApprovalFieldTypeError,
   InvalidWorkflowTypeError,
   ResponseModeError,
   SubmissionNotFoundError,
+  SubmissionSaveError,
 } from '../submission.errors'
+import { uploadAttachments } from '../submission.service'
+import { AttachmentMetadata } from '../submission.types'
+import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
+import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
 import { retrieveWorkflowStepEmailAddresses } from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
-
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
+const appUrl =
+  process.env.NODE_ENV === Environment.Dev
+    ? config.app.feAppUrl
+    : config.app.appUrl
 
-export const checkIsStepRejected = ({
+export const checkFormIsMultirespondent = (
+  form: IPopulatedForm,
+): Result<IPopulatedMultirespondentForm, ResponseModeError> => {
+  return isFormMultirespondent(form)
+    ? ok(form)
+    : err(
+        new ResponseModeError(
+          FormResponseMode.Multirespondent,
+          form.responseMode,
+        ),
+      )
+}
+
+const checkIsFormApproval = (form: IPopulatedMultirespondentForm): boolean => {
+  return (
+    form.workflow &&
+    form.workflow.map((step) => step.approval_field).filter(Boolean).length > 0
+  )
+}
+
+const checkIsStepRejected = ({
   zeroIndexedStepNumber,
   form,
   responses,
@@ -68,55 +105,67 @@ export const checkIsStepRejected = ({
   return ok(approvalFieldResponse.answer === 'No')
 }
 
-export const checkIsFormApproval = (
-  form: IPopulatedMultirespondentForm,
-): boolean => {
+const sendNextStepEmail = ({
+  nextStepNumber,
+  form,
+  formTitle,
+  responseUrl,
+  formId,
+  submissionId,
+  responses,
+}: {
+  nextStepNumber: number
+  form: IPopulatedMultirespondentForm
+  formTitle: string
+  responseUrl: string
+  formId: string
+  submissionId: string
+  responses: FieldResponsesV3
+}): ResultAsync<true, InvalidWorkflowTypeError | MailSendError> => {
+  const logMeta = {
+    action: 'sendNextStepEmail',
+    formId,
+    submissionId,
+    nextWorkflowStep: nextStepNumber,
+  }
+
+  const nextStep = form.workflow[nextStepNumber]
+  if (!nextStep) {
+    return okAsync(true)
+  }
+
   return (
-    form.workflow.map((step) => step.approval_field).filter(Boolean).length > 0
+    // Step 1: Retrieve email addresses for current workflow step
+    retrieveWorkflowStepEmailAddresses(nextStep, responses)
+      .mapErr((error) => {
+        logger.error({
+          message: 'Failed to retrieve workflow step email addresses',
+          meta: logMeta,
+          error,
+        })
+        return error
+      })
+      // Step 2: send out next workflow step email
+      .asyncAndThen((emails) => {
+        if (!emails) return okAsync(true)
+        return MailService.sendMRFWorkflowStepEmail({
+          emails,
+          formTitle,
+          responseId: submissionId,
+          responseUrl,
+        }).orElse((error) => {
+          logger.error({
+            message: 'Failed to send workflow email',
+            meta: { ...logMeta, emails },
+            error,
+          })
+          return errAsync(error)
+        })
+      })
   )
 }
 
-export const checkFormIsMultirespondent = (
-  form: IPopulatedForm,
-): Result<IPopulatedMultirespondentForm, ResponseModeError> => {
-  return isFormMultirespondent(form)
-    ? ok(form)
-    : err(
-        new ResponseModeError(
-          FormResponseMode.Multirespondent,
-          form.responseMode,
-        ),
-      )
-}
-
-export const getMultirespondentSubmission = (
-  submissionId: string,
-): ResultAsync<
-  IMultirespondentSubmissionSchema,
-  DatabaseError | SubmissionNotFoundError
-> =>
-  ResultAsync.fromPromise(
-    MultirespondentSubmission.findById(submissionId).exec(),
-    (error) => {
-      logger.error({
-        message:
-          'Error encountered while retrieving multirespondent submission',
-        meta: {
-          action: 'getMultirespondentSubmission',
-          submissionId,
-        },
-        error,
-      })
-      return transformMongoError(error)
-    },
-  ).andThen((submission) => {
-    if (!submission) {
-      return errAsync(new SubmissionNotFoundError())
-    }
-    return okAsync(submission)
-  })
-
-export const sendMrfOutcomeEmails = ({
+const sendMrfOutcomeEmails = ({
   currentStepNumber,
   form,
   responses,
@@ -221,3 +270,402 @@ export const sendMrfOutcomeEmails = ({
       })
   )
 }
+
+const saveAttachmentsToDbIfExists = ({
+  formId,
+  attachments,
+}: {
+  formId: string
+  attachments: MultirespondentSubmissionDto['attachments']
+}): ResultAsync<AttachmentMetadata, AttachmentUploadError> => {
+  return attachments
+    ? uploadAttachments(formId, attachments)
+    : okAsync(new Map<string, string>())
+}
+
+export const createMultiRespondentFormSubmission = ({
+  form,
+  encryptedPayload,
+  logMeta,
+}: {
+  form: IPopulatedMultirespondentForm
+  encryptedPayload: MultirespondentSubmissionDto
+  logMeta: CustomLoggerParams['meta']
+}): ResultAsync<
+  IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId },
+  AttachmentUploadError | SubmissionSaveError
+> => {
+  logMeta = {
+    ...logMeta,
+    action: 'createMultiRespondentFormSubmission',
+  }
+
+  return saveAttachmentsToDbIfExists({
+    formId: form._id,
+    attachments: encryptedPayload.attachments,
+  }).map(async (attachmentMetadata) => {
+    // Create Incoming Submission
+    const {
+      submissionPublicKey,
+      encryptedSubmissionSecretKey,
+      encryptedContent,
+      responseMetadata,
+      version,
+      mrfVersion,
+    } = encryptedPayload
+
+    const submissionContent: MultirespondentSubmissionContent = {
+      form: form._id,
+      authType: form.authType,
+      myInfoFields: form.getUniqueMyInfoAttrs(),
+      form_fields: form.form_fields,
+      form_logics: form.form_logics,
+      workflow: form.workflow,
+      submissionPublicKey,
+      encryptedSubmissionSecretKey,
+      encryptedContent,
+      attachmentMetadata,
+      version,
+      workflowStep: 0,
+      mrfVersion,
+    }
+
+    const submission = new MultirespondentSubmission(submissionContent)
+
+    try {
+      await submission.save()
+    } catch (error) {
+      logger.error({
+        message: 'Multirespondent submission save error',
+        meta: logMeta,
+        error,
+      })
+      // eslint-disable-next-line typesafe/no-throw-sync-func
+      throw new SubmissionSaveError()
+    }
+
+    const submissionId = submission.id
+    logger.info({
+      message: 'Saved submission to MongoDB',
+      meta: { ...logMeta, submissionId, responseMetadata },
+    })
+
+    // TODO 6395 make responseMetadata mandatory
+    if (responseMetadata) {
+      reportSubmissionResponseTime(responseMetadata, {
+        mode: 'multirespodent',
+        payment: 'false',
+      })
+    }
+
+    return submission
+  })
+}
+
+export const performMultiRespondentPostSubmissionCreateActions = ({
+  submissionId,
+  form,
+  encryptedPayload,
+  logMeta,
+}: {
+  submissionId: string
+  form: IPopulatedMultirespondentForm
+  encryptedPayload: MultirespondentSubmissionDto
+  logMeta: CustomLoggerParams['meta']
+}): ResultAsync<boolean, InvalidWorkflowTypeError | MailSendError> => {
+  const { submissionSecretKey, responses } = encryptedPayload
+  const currentStepNumber = 0
+
+  logMeta = {
+    ...logMeta,
+    action: 'performMultiRespondentPostSubmissionCreateActions',
+    currentWorkflowStep: currentStepNumber,
+    formId: form._id,
+    submissionId,
+  }
+
+  return sendNextStepEmail({
+    nextStepNumber: currentStepNumber + 1, // we want to send emails to the addresses linked to the next step of the workflow
+    form,
+    formTitle: form.title,
+    responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
+      form._id,
+      submissionId,
+      { key: submissionSecretKey },
+    )}`,
+    formId: form._id,
+    submissionId,
+    responses,
+  })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Send multirespondent workflow email error',
+        meta: logMeta,
+        error,
+      })
+      return error
+    })
+    .andThen(() => {
+      // TODO: (MRF-email-notif) Remove isTest and betaFlag check when MRF email notifications is out of beta
+      if (isTest || form.admin.betaFlags.mrfEmailNotifications) {
+        return sendMrfOutcomeEmails({
+          currentStepNumber,
+          form,
+          responses,
+          submissionId,
+        })
+      }
+      return okAsync(true)
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Send mrf outcome email error',
+        meta: logMeta,
+        error,
+      })
+      return error
+    })
+}
+
+export const updateMultiRespondentFormSubmission = ({
+  submissionId,
+  form,
+  encryptedPayload,
+  logMeta,
+}: {
+  formId: string
+  submissionId: string
+  form: IPopulatedMultirespondentForm
+  encryptedPayload: MultirespondentSubmissionDto
+  logMeta: CustomLoggerParams['meta']
+}): ResultAsync<
+  IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId },
+  AttachmentUploadError | SubmissionSaveError | SubmissionNotFoundError
+> => {
+  logMeta = {
+    ...logMeta,
+    action: 'updateMultiRespondentFormSubmission',
+  }
+
+  return saveAttachmentsToDbIfExists({
+    formId: form._id,
+    attachments: encryptedPayload.attachments,
+  })
+    .map(async (attachmentMetadata) => {
+      const submission = await MultirespondentSubmission.findById(submissionId)
+      if (!submission) {
+        logger.error({
+          message: 'Submission not found',
+          meta: { ...logMeta, submissionId },
+        })
+        // eslint-disable-next-line typesafe/no-throw-sync-func
+        throw new SubmissionNotFoundError()
+      }
+      return { submission, attachmentMetadata }
+    })
+    .map(async ({ submission, attachmentMetadata }) => {
+      const {
+        responseMetadata,
+        submissionPublicKey,
+        encryptedSubmissionSecretKey,
+        encryptedContent,
+        version,
+        workflowStep,
+        mrfVersion,
+      } = encryptedPayload
+
+      submission.responseMetadata = responseMetadata
+      submission.submissionPublicKey = submissionPublicKey
+      submission.encryptedSubmissionSecretKey = encryptedSubmissionSecretKey
+      submission.encryptedContent = encryptedContent
+      submission.version = version
+      submission.workflowStep = workflowStep
+      submission.attachmentMetadata = attachmentMetadata
+      submission.mrfVersion = mrfVersion
+
+      try {
+        await submission.save()
+      } catch (err) {
+        logger.error({
+          message: 'Multirespondent submission save error',
+          meta: logMeta,
+          error: err,
+        })
+        // eslint-disable-next-line typesafe/no-throw-sync-func
+        throw new SubmissionSaveError()
+      }
+
+      logger.info({
+        message: 'Saved submission to MongoDB',
+        meta: { ...logMeta, submissionId: submission.id, responseMetadata },
+      })
+
+      return submission
+    })
+}
+
+export const performMultiRespondentPostSubmissionUpdateActions = ({
+  submissionId,
+  form,
+  currentStepNumber,
+  encryptedPayload,
+  logMeta,
+}: {
+  submissionId: string
+  form: IPopulatedMultirespondentForm
+  currentStepNumber: number
+  encryptedPayload: MultirespondentSubmissionDto
+  logMeta: CustomLoggerParams['meta']
+}): ResultAsync<
+  boolean,
+  | InvalidWorkflowTypeError
+  | MailSendError
+  | ExpectedResponseNotFoundError
+  | InvalidApprovalFieldTypeError
+> => {
+  const { responses, submissionSecretKey } = encryptedPayload
+
+  logMeta = {
+    ...logMeta,
+    action: 'performMultiRespondentPostSubmissionUpdateActions',
+    currentWorkflowStep: currentStepNumber,
+    formId: form._id,
+    submissionId,
+  }
+
+  const isStepRejectedResult =
+    // TODO: (MRF-email-notif): Remove flag once approvals is out of beta
+    isTest || form.admin.betaFlags.mrfEmailNotifications
+      ? checkIsStepRejected({
+          zeroIndexedStepNumber: currentStepNumber,
+          form,
+          responses,
+        }).mapErr((error) => {
+          logger.error({
+            message: 'Error checking if step is rejected',
+            meta: logMeta,
+            error,
+          })
+          // eslint-disable-next-line typesafe/no-throw-sync-func
+          throw error
+        })
+      : ok(false)
+
+  if (isStepRejectedResult.isErr()) {
+    logger.error({
+      message: 'Error checking if step is rejected',
+      meta: logMeta,
+      error: isStepRejectedResult.error,
+    })
+    // eslint-disable-next-line typesafe/no-throw-sync-func
+    throw isStepRejectedResult.error
+  }
+
+  const isStepRejected = isStepRejectedResult.value
+
+  // TODO: (MRF-email-notif): Remove flag once approvals is out of beta
+  if (isTest || form.admin.betaFlags.mrfEmailNotifications) {
+    if (isStepRejected) {
+      return sendMrfOutcomeEmails({
+        currentStepNumber,
+        form,
+        responses,
+        submissionId,
+        isApproval: true,
+        isRejected: true,
+      }).mapErr((error) => {
+        logger.error({
+          message: 'Send mrf outcome email error',
+          meta: logMeta,
+          error,
+        })
+        return error
+      })
+    }
+    return sendMrfOutcomeEmails({
+      currentStepNumber,
+      form,
+      responses,
+      submissionId,
+      isApproval: checkIsFormApproval(form),
+    })
+      .mapErr((error) => {
+        logger.error({
+          message: 'Send mrf outcome email error',
+          meta: logMeta,
+          error,
+        })
+        return error
+      })
+      .andThen(() =>
+        sendNextStepEmail({
+          nextStepNumber: currentStepNumber + 1,
+          form,
+          formTitle: form.title,
+          responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
+            form._id,
+            submissionId,
+            { key: submissionSecretKey },
+          )}`,
+          formId: form._id,
+          submissionId,
+          responses,
+        }).mapErr((error) => {
+          logger.error({
+            message: 'Send multirespondent workflow email error',
+            meta: logMeta,
+            error,
+          })
+          return error
+        }),
+      )
+  }
+  // TODO: (MRF-email-notif): Remove this case once approvals is out of beta
+  return sendNextStepEmail({
+    nextStepNumber: currentStepNumber + 1,
+    form,
+    formTitle: form.title,
+    responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
+      form._id,
+      submissionId,
+      { key: submissionSecretKey },
+    )}`,
+    formId: form._id,
+    submissionId,
+    responses,
+  }).mapErr((error) => {
+    logger.error({
+      message: 'Send multirespondent workflow email error',
+      meta: logMeta,
+      error,
+    })
+    return error
+  })
+}
+
+export const getMultirespondentSubmission = (
+  submissionId: string,
+): ResultAsync<
+  IMultirespondentSubmissionSchema,
+  DatabaseError | SubmissionNotFoundError
+> =>
+  ResultAsync.fromPromise(
+    MultirespondentSubmission.findById(submissionId).exec(),
+    (error) => {
+      logger.error({
+        message:
+          'Error encountered while retrieving multirespondent submission',
+        meta: {
+          action: 'getMultirespondentSubmission',
+          submissionId,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((submission) => {
+    if (!submission) {
+      return errAsync(new SubmissionNotFoundError())
+    }
+    return okAsync(submission)
+  })

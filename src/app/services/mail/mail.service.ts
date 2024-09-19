@@ -1066,7 +1066,7 @@ export class MailService {
   }): ResultAsync<true, MailSendError> => {
     const htmlData: WorkflowEmailData = {
       formTitle,
-      responseId,
+      responseId: responseId.toString(),
       responseUrl,
     }
 
@@ -1098,7 +1098,7 @@ export class MailService {
   }) => {
     const htmlData = {
       formTitle,
-      responseId,
+      responseId: responseId.toString(),
     }
 
     const html = render(MrfWorkflowCompletionEmail(htmlData))
@@ -1134,7 +1134,7 @@ export class MailService {
       : WorkflowOutcome.APPROVED
     const htmlData = {
       formTitle,
-      responseId,
+      responseId: responseId.toString(),
       outcome,
     }
 

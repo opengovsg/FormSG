@@ -65,6 +65,7 @@ export enum ErrorCodes {
   SUBMISSION_INVALID_WORKFLOW_TYPE = 100221,
   SUBMISSION_ATTACHMENT_UPLOAD = 100222,
   SUBMISSION_EXPECTED_RESPONSE_NOT_FOUND = 100224,
+  SUBMISSION_SAVE_FAILURE = 100225,
   // Email Submission Errors (email mode deprecated soon)
   EMAIL_SUBMISSION_HASH = 100223,
   // [100300 - 100399] Receiver Errors (/modules/submission/receiver)
