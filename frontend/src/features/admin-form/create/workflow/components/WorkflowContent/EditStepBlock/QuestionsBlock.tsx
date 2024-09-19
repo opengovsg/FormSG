@@ -12,6 +12,7 @@ import { NON_RESPONSE_FIELD_SET } from '~features/form/constants'
 
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 
+import { FIELDS_TO_EDIT_NAME } from './EditStepBlock'
 import { EditStepBlockContainer } from './EditStepBlockContainer'
 
 interface QuestionsBlockProps {
@@ -45,7 +46,7 @@ export const QuestionsBlock = ({
     <EditStepBlockContainer>
       <FormControl
         isReadOnly={isLoading}
-        id="edit"
+        id={FIELDS_TO_EDIT_NAME}
         isRequired
         isInvalid={!!errors.edit}
       >
@@ -58,7 +59,7 @@ export const QuestionsBlock = ({
         </FormLabel>
         <Controller
           control={control}
-          name="edit"
+          name={FIELDS_TO_EDIT_NAME}
           render={({ field: { value = [], ...field } }) => (
             <MultiSelect
               isDisabled={isLoading}

@@ -30,6 +30,8 @@ export interface EditLogicBlockProps {
   isLoading: boolean
 }
 
+export const FIELDS_TO_EDIT_NAME = 'edit'
+
 export const EditStepBlock = ({
   stepNumber,
   onSubmit,

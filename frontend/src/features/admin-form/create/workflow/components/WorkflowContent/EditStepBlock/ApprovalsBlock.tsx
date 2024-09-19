@@ -12,6 +12,7 @@ import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { EditStepInputs } from '../../../types'
 
+import { FIELDS_TO_EDIT_NAME } from './EditStepBlock'
 import { EditStepBlockContainer } from './EditStepBlockContainer'
 
 interface ApprovalsBlockProps {
@@ -20,7 +21,6 @@ interface ApprovalsBlockProps {
 }
 
 const APPROVAL_FIELD_NAME = 'approval_field'
-const FIELDS_TO_EDIT_NAME = 'edit'
 export const ApprovalsBlock = ({
   formMethods,
   stepNumber,
