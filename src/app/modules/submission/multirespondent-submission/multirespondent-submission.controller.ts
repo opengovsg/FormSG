@@ -117,14 +117,6 @@ const submitMultirespondentForm = async (
   if (createMultiRespondentFormSubmissionResult.isErr()) {
     const error = createMultiRespondentFormSubmissionResult.error
 
-    if (error instanceof SubmissionSaveError) {
-      const { submissionId } = error.meta as { submissionId: string }
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message: error.message,
-        submissionId,
-      })
-    }
-
     const { errorMessage, statusCode } = mapRouteError(error)
     return res.status(statusCode).json({ message: errorMessage })
   }
@@ -202,7 +194,7 @@ const updateMultirespondentSubmission = async (
     const error = updateMultiRespondentFormSubmissionResult.error
 
     if (error instanceof SubmissionSaveError) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: error.message,
         submissionId,
       })

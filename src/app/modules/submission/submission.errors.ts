@@ -14,7 +14,7 @@ export class ConflictError extends ApplicationError {
 export class SubmissionSaveError extends ApplicationError {
   constructor() {
     super(
-      'Could not send submission. For assistance, please contact the person who asked you to fill in this form.',
+      'Failed to save submission. Please try again later.',
       undefined,
       ErrorCodes.SUBMISSION_SAVE_FAILURE,
     )
