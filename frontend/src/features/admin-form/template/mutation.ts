@@ -54,10 +54,8 @@ const useCommonHooks = () => {
 }
 
 /**
- * Note: "Use Template" is Application feature / terminology that the users do.
- * The "use" in "useUseTemplateMutations" is not referring to hooks or React's "use" convention.
- * @param param0
- * @returns
+ * Note: The word "Use" in "useUseTemplateWizardProvider" is not referring to React's "use" convention for hooks.
+ * "UseTemplate" is a FormSG functionality referring to the FormSG feature of utilising another form as a starting template.
  */
 export const useUseTemplateMutations = () => {
   const { handleSuccess, handleError } = useCommonHooks()
