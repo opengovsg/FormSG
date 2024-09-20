@@ -1,5 +1,4 @@
 import { useCallback } from 'react'
-import { datadogRum } from '@datadog/browser-rum'
 
 import { FormWorkflowStep, FormWorkflowStepDto } from '~shared/types'
 
@@ -16,6 +15,9 @@ export interface ActiveStepBlockProps {
   handleOpenDeleteModal: () => void
 }
 
+// Hack
+// @ts-expect-error hack
+const datadogRum = window.DD_RUM
 const handleTracking = (step: FormWorkflowStep, stepNumber: number) => {
   // stepNumber is 0-indexed
   if (stepNumber === 0) {
