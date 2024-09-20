@@ -29,6 +29,24 @@ import { FormResponseOptions } from './FormResponseOptions'
 /** The length of form title to start showing warning text */
 const FORM_TITLE_LENGTH_WARNING = 65
 
+const getTrackingSubmissionActionName = (
+  responseModeValue: FormResponseMode,
+) => {
+  switch (responseModeValue) {
+    case FormResponseMode.Email:
+      return 'dashboard.create.create_email'
+    case FormResponseMode.Encrypt:
+      return 'dashboard.create.create_encrypt'
+    case FormResponseMode.Multirespondent:
+      return 'dashboard.create.create_multirespondent'
+
+    default: {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _exhaustiveCheck: never = responseModeValue
+    }
+  }
+}
+
 export const CreateFormDetailsScreen = (): JSX.Element => {
   const {
     formMethods,
@@ -48,9 +66,6 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
   const titleInputValue = watch('title')
   const responseModeValue = watch('responseMode')
 
-  const trackingSubmitActionName = (
-    'dashboard.create.create_' + responseModeValue
-  ).toLowerCase()
   return (
     <>
       <ModalHeader color="secondary.700">
@@ -115,7 +130,9 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             isDisabled={isFetching}
             onClick={handleDetailsSubmit}
             isFullWidth
-            data-dd-action-name={trackingSubmitActionName}
+            data-dd-action-name={getTrackingSubmissionActionName(
+              responseModeValue,
+            )}
           >
             <Text lineHeight="1.5rem">Next step</Text>
           </Button>

@@ -9,7 +9,6 @@ import {
 } from '../../../adminWorkflowStore'
 import { useWorkflowMutations } from '../../../mutations'
 import { EditStepBlock } from '../EditStepBlock'
-import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 export interface ActiveStepBlockProps {
   stepNumber: number
