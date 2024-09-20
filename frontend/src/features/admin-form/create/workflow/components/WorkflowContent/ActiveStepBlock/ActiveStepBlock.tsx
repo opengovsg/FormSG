@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { datadogRum } from '@datadog/browser-rum'
 
 import { FormWorkflowStep, FormWorkflowStepDto } from '~shared/types'
 
@@ -8,11 +9,33 @@ import {
 } from '../../../adminWorkflowStore'
 import { useWorkflowMutations } from '../../../mutations'
 import { EditStepBlock } from '../EditStepBlock'
+import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 export interface ActiveStepBlockProps {
   stepNumber: number
   step: FormWorkflowStepDto
   handleOpenDeleteModal: () => void
+}
+
+const handleTracking = (step: FormWorkflowStep, stepNumber: number) => {
+  // stepNumber is 0-indexed
+  if (stepNumber === 0) {
+    const hasFieldsSelected = step.edit.length > 0
+    if (hasFieldsSelected) {
+      datadogRum.addAction(
+        'workflow_builder.active_step_block.step_one_save_action',
+      )
+    }
+  }
+
+  if (stepNumber === 1) {
+    const hasFieldsSelected = step.edit.length > 0
+    if (hasFieldsSelected) {
+      datadogRum.addAction(
+        'workflow_builder.active_step_block.step_two_save_action',
+      )
+    }
+  }
 }
 
 export const ActiveStepBlock = ({
@@ -24,7 +47,8 @@ export const ActiveStepBlock = ({
   const setToInactive = useAdminWorkflowStore(setToInactiveSelector)
 
   const handleSubmit = useCallback(
-    (step: FormWorkflowStep) =>
+    (step: FormWorkflowStep) => {
+      handleTracking(step, stepNumber)
       updateStepMutation.mutate(
         {
           stepNumber,
@@ -33,7 +57,8 @@ export const ActiveStepBlock = ({
         {
           onSuccess: () => setToInactive(),
         },
-      ),
+      )
+    },
     [updateStepMutation, stepNumber, setToInactive],
   )
 
