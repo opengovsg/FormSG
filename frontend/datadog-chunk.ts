@@ -7,7 +7,7 @@ import { datadogRum, RumInitConfiguration } from '@datadog/browser-rum'
 
 // Discard benign RUM errors.
 // Ensure that beforeSend returns true to keep the event and false to discard it.
-export const ddBeforeSend: RumInitConfiguration['beforeSend'] = (event) => {
+const ddBeforeSend: RumInitConfiguration['beforeSend'] = (event) => {
   if (event.type !== 'error') return true
 
   // Caused by @chakra-ui/react@latest-v1 -> @chakra-ui/modal@1.11.1 -> react-remove-scroll@2.4.1
