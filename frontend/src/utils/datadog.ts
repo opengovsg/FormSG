@@ -8,6 +8,7 @@ import type { RumGlobal } from '@datadog/browser-rum'
  * */
 const _datadogRum = window.DD_RUM as RumGlobal | undefined
 
+// eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {}
 const handler = {
   get: (target: RumGlobal, prop: keyof RumGlobal) => {
