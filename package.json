@@ -161,7 +161,7 @@
     "@stoplight/prism-cli": "^5.10.0",
     "@types/bcrypt": "^5.0.0",
     "@types/bluebird": "^3.5.42",
-    "@types/busboy": "^1.5.3",
+    "@types/busboy": "^1.5.4",
     "@types/compression": "^1.7.5",
     "@types/connect-datadog": "0.0.6",
     "@types/convict": "^6.1.6",
