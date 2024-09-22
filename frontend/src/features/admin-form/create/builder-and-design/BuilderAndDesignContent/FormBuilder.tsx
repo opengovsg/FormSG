@@ -1,6 +1,13 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Flex, FlexProps, Skeleton, Stack } from '@chakra-ui/react'
+import {
+  Box,
+  Flex,
+  FlexProps,
+  Skeleton,
+  Stack,
+  useDisclosure,
+} from '@chakra-ui/react'
 import { Droppable } from '@hello-pangea/dnd'
 
 import Button from '~components/Button'
@@ -33,6 +40,7 @@ import { EmptyFormPlaceholder } from './BuilderAndDesignPlaceholder/EmptyFormPla
 import { FormBuilderFieldsSkeleton } from './FormBuilder/FormBuilderFieldsSkeleton'
 import BuilderAndDesignPlaceholder from './BuilderAndDesignPlaceholder'
 import { BuilderFields } from './BuilderFields'
+import { TextPromptModal } from './MagicFormBuilderModal'
 import { PaymentView } from './PaymentView'
 import { StartPageView } from './StartPageView'
 import { useBuilderFields } from './useBuilderFields'
@@ -58,6 +66,10 @@ export const FormBuilder = ({
     endPageState: endPageStateSelector(state),
     setEditingEndPageState: setToEditingEndPageSelector(state),
   }))
+
+  const { isOpen, onClose, onOpen } = useDisclosure()
+
+  const handleMagicFormButtonClick = onOpen
 
   const visibleFieldIds = useMemo(
     () =>
@@ -97,102 +109,111 @@ export const FormBuilder = ({
   if (!form) return null
 
   return (
-    <Flex
-      mb={0}
-      flex={1}
-      bg="neutral.200"
-      // Using margin for margin collapse when there are inline messages above.
-      mt={{ base: 0, md: '1rem' }}
-      pt={{ base: 0, md: '1rem' }}
-      pb={{ base: 0, md: '2rem' }}
-      px={{ base: 0, md: '2rem' }}
-      justify="center"
-      {...props}
-    >
-      <Stack
-        direction="column"
-        w="100%"
-        h="fit-content"
-        spacing={{ base: 0, md: '1.5rem' }}
-        bg={bg}
+    <>
+      <TextPromptModal isOpen={isOpen} onClose={onClose} />
+      <Flex
+        mb={0}
+        flex={1}
+        bg="neutral.200"
+        // Using margin for margin collapse when there are inline messages above.
+        mt={{ base: 0, md: '1rem' }}
+        pt={{ base: 0, md: '1rem' }}
+        pb={{ base: 0, md: '2rem' }}
+        px={{ base: 0, md: '2rem' }}
+        justify="center"
+        {...props}
       >
-        <StartPageView />
-        <Flex
-          flexDir="column"
-          alignSelf="center"
+        <Stack
+          direction="column"
           w="100%"
-          px={{ base: 0, md: '1.5rem', lg: '2.5rem' }}
+          h="fit-content"
+          spacing={{ base: 0, md: '1.5rem' }}
+          bg={bg}
         >
-          <Box
-            bg="white"
-            w="100%"
-            maxW="57rem"
+          <StartPageView />
+          <Flex
+            flexDir="column"
             alignSelf="center"
-            px={{ base: '1.5rem', md: '1.625rem' }}
-            py={{ base: '1.5rem', md: '2.5rem' }}
+            w="100%"
+            px={{ base: 0, md: '1.5rem', lg: '2.5rem' }}
           >
-            {isLoading || !builderFields ? (
-              <FormBuilderFieldsSkeleton />
-            ) : (
-              <Droppable droppableId={FIELD_LIST_DROP_ID}>
-                {(provided, snapshot) =>
-                  builderFields?.length ? (
-                    <Box
-                      pos="relative"
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                    >
-                      <BuilderFields
-                        responseMode={form?.responseMode}
-                        fields={builderFields}
-                        visibleFieldIds={visibleFieldIds}
-                        isDraggingOver={snapshot.isDraggingOver}
-                      />
-                      {provided.placeholder}
-                      <BuilderAndDesignPlaceholder
-                        placeholderProps={placeholderProps}
-                        isDraggingOver={snapshot.isDraggingOver}
-                      />
-                    </Box>
-                  ) : (
-                    <EmptyFormPlaceholder
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                      isDraggingOver={snapshot.isDraggingOver}
-                      onClick={handlePlaceholderClick}
-                    />
-                  )
-                }
-              </Droppable>
-            )}
-          </Box>
-
-          <PaymentView />
-        </Flex>
-
-        <Flex
-          justify="center"
-          w="100%"
-          pt={{ base: '1rem', md: 0 }}
-          px={{ base: '1rem', md: '1.5rem', lg: '2.5rem' }}
-        >
-          <Skeleton isLoaded={!isLoading} mb="1.5rem" maxW="57rem" width="100%">
-            <Button
-              _hover={{ bg: 'primary.200' }}
-              py="1.5rem"
-              width="100%"
-              variant="outline"
-              borderColor="secondary.200"
-              colorScheme="secondary"
-              height="auto"
-              onClick={handleEditEndPageClick}
-              textStyle="subhead-2"
+            <Box
+              bg="white"
+              w="100%"
+              maxW="57rem"
+              alignSelf="center"
+              px={{ base: '1.5rem', md: '1.625rem' }}
+              py={{ base: '1.5rem', md: '2.5rem' }}
             >
-              {t('features.adminForm.sidebar.thankYou.thankYouPage.title')}
-            </Button>
-          </Skeleton>
-        </Flex>
-      </Stack>
-    </Flex>
+              {isLoading || !builderFields ? (
+                <FormBuilderFieldsSkeleton />
+              ) : (
+                <Droppable droppableId={FIELD_LIST_DROP_ID}>
+                  {(provided, snapshot) =>
+                    builderFields?.length ? (
+                      <Box
+                        pos="relative"
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                      >
+                        <BuilderFields
+                          responseMode={form?.responseMode}
+                          fields={builderFields}
+                          visibleFieldIds={visibleFieldIds}
+                          isDraggingOver={snapshot.isDraggingOver}
+                        />
+                        {provided.placeholder}
+                        <BuilderAndDesignPlaceholder
+                          placeholderProps={placeholderProps}
+                          isDraggingOver={snapshot.isDraggingOver}
+                        />
+                      </Box>
+                    ) : (
+                      <EmptyFormPlaceholder
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                        isDraggingOver={snapshot.isDraggingOver}
+                        onClick={handlePlaceholderClick}
+                        onMagicFormButtonClick={handleMagicFormButtonClick}
+                      />
+                    )
+                  }
+                </Droppable>
+              )}
+            </Box>
+
+            <PaymentView />
+          </Flex>
+
+          <Flex
+            justify="center"
+            w="100%"
+            pt={{ base: '1rem', md: 0 }}
+            px={{ base: '1rem', md: '1.5rem', lg: '2.5rem' }}
+          >
+            <Skeleton
+              isLoaded={!isLoading}
+              mb="1.5rem"
+              maxW="57rem"
+              width="100%"
+            >
+              <Button
+                _hover={{ bg: 'primary.200' }}
+                py="1.5rem"
+                width="100%"
+                variant="outline"
+                borderColor="secondary.200"
+                colorScheme="secondary"
+                height="auto"
+                onClick={handleEditEndPageClick}
+                textStyle="subhead-2"
+              >
+                {t('features.adminForm.sidebar.thankYou.thankYouPage.title')}
+              </Button>
+            </Skeleton>
+          </Flex>
+        </Stack>
+      </Flex>
+    </>
   )
 }
