@@ -18,6 +18,8 @@ import {
 import Button from '~components/Button'
 import Textarea from '~components/Textarea'
 
+import { useAssistanceMutations } from '~features/admin-form/assistance/mutations'
+
 const TEXT_PROMPT_PLACEHOLDER = 'This is a placeholder for text prompt'
 
 interface TextPromptInputs {
@@ -37,6 +39,8 @@ export const TextPromptModal = ({
     formState: { errors },
   } = useForm<TextPromptInputs>()
 
+  const { useMakeTextPromptMutation } = useAssistanceMutations()
+
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
@@ -48,9 +52,10 @@ export const TextPromptModal = ({
     onClose()
   }
 
-  const onSubmit = ({ prompt }: TextPromptInputs) => {
-    console.log('Submitting:', prompt)
-    onFormClose()
+  const onSubmit = async ({ prompt }: TextPromptInputs) => {
+    useMakeTextPromptMutation.mutate(prompt, {
+      onSettled: onFormClose,
+    })
   }
 
   return (
@@ -82,6 +87,7 @@ export const TextPromptModal = ({
                   rightIcon={<BiRightArrowAlt fontSize="1.5rem" />}
                   type="submit"
                   isFullWidth
+                  isLoading={useMakeTextPromptMutation.isLoading}
                 >
                   Create form
                 </Button>
