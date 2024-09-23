@@ -2,6 +2,8 @@ import { celebrate, Joi, Segments } from 'celebrate'
 
 import { ControllerHandler } from '../../core/core.types'
 
+import { sendPromptToModel } from './admin-form.assistance.service'
+
 const handleTextPromptValidator = celebrate({
   [Segments.PARAMS]: {
     formId: Joi.string()
@@ -20,13 +22,13 @@ interface ITextPrompt {
 
 const _handleTextPrompt: ControllerHandler<
   { formId: string },
-  undefined,
+  { message: string },
   ITextPrompt
-> = (req, res) => {
-  setTimeout(() => {
-    res.send()
-  }, 3_000)
-  return
+> = async (req, res) => {
+  const response = await sendPromptToModel(req.body.prompt)
+  return res.json({
+    message: response ?? 'No response received from model',
+  })
 }
 
 export const handleTextPrompt = [
