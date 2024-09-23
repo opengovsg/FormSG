@@ -21,6 +21,7 @@ export interface Logic {
     show: string
     selectQuestion: string
     selectResultType: string
+    selectField: string
   }
   logicCondition: {
     [LogicConditionState.Equal]: string

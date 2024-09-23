@@ -339,12 +339,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
               textStyle="body-2"
               aria-hidden
             >
-              {t(
-                'features.adminForm.sidebar.fields.imageAttachment.maxFileSize',
-                {
-                  readableMaxSize,
-                },
-              )}
+              Maximum file size: {readableMaxSize}
             </Text>
           ) : null}
         </Box>

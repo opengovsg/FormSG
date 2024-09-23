@@ -196,7 +196,7 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
     () =>
       isPendingField
         ? t('features.adminForm.sidebar.fields.builder.createField')
-        : t('features.common.save'),
+        : t('features.common.saveField'),
     [isPendingField, t],
   )
 

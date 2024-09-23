@@ -330,7 +330,7 @@ export const EditConditionBlock = ({
                   isDisabled={isLoading}
                   isClearable={false}
                   placeholder={t(
-                    'features.adminForm.sidebar.logic.logicClause.selectQuestion',
+                    'features.adminForm.sidebar.logic.logicClause.selectField',
                   )}
                   items={allowedIfConditionFieldsOptions}
                   {...field}

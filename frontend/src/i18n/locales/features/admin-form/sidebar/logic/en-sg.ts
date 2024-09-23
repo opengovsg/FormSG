@@ -11,7 +11,7 @@ export const enSG: Logic = {
   helperTextCta: 'Learn to work with logic',
   allowedFields: 'Allowed fields',
   addLogicBtn: 'Add logic',
-  logic: 'logic',
+  logic: 'Logic',
   logicInstruction:
     'Please test your form thoroughly to ensure the logic works as expected.',
   logicClause: {
@@ -23,6 +23,7 @@ export const enSG: Logic = {
     show: 'show',
     selectQuestion: 'Select a question',
     selectResultType: 'Select a type of result',
+    selectField: 'Select a field',
   },
   logicCondition: {
     [LogicConditionState.Equal]: LogicConditionState.Equal,
