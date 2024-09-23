@@ -67,6 +67,7 @@ import {
 
 import { FormNotFound } from './components/FormNotFound'
 import { decryptAttachment, decryptSubmission } from './utils/decryptSubmission'
+import { postIFrameMessage } from './utils/iframeMessaging'
 import { usePublicAuthMutations, usePublicFormMutations } from './mutations'
 import { PublicFormContext, SubmissionData } from './PublicFormContext'
 import { useEncryptedSubmission, usePublicFormView } from './queries'
@@ -584,6 +585,8 @@ export const PublicFormProvider = ({
         }
       }
 
+      postIFrameMessage({ state: 'submitting' })
+
       switch (form.responseMode) {
         case FormResponseMode.Email: {
           // Using mutateAsync so react-hook-form goes into loading state.
@@ -717,6 +720,7 @@ export const PublicFormProvider = ({
                     paymentData,
                   }) => {
                     trackSubmitForm(form)
+                    postIFrameMessage({ state: 'submitted', submissionId })
 
                     if (paymentData) {
                       navigate(getPaymentPageUrl(formId, paymentData.paymentId))
@@ -739,6 +743,7 @@ export const PublicFormProvider = ({
                 },
               )
               .catch(async (error) => {
+                postIFrameMessage({ state: 'submitError' })
                 datadogLogs.logger.warn(`handleSubmitForm: ${error.message}`, {
                   meta: {
                     ...logMeta,
@@ -781,6 +786,7 @@ export const PublicFormProvider = ({
                   paymentData,
                 }) => {
                   trackSubmitForm(form)
+                  postIFrameMessage({ state: 'submitted', submissionId })
                   if (paymentData) {
                     navigate(getPaymentPageUrl(formId, paymentData.paymentId))
                     storePaymentMemory(paymentData.paymentId)
@@ -802,6 +808,7 @@ export const PublicFormProvider = ({
               },
             )
             .catch(async (error) => {
+              postIFrameMessage({ state: 'submitError' })
               // TODO(#5826): Remove when we have resolved the Network Error
               datadogLogs.logger.warn(
                 `handleSubmitForm: submit with virus scan`,
