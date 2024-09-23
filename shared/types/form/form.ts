@@ -16,7 +16,7 @@ import { DateString } from '../generic'
 import { FormLogic, LogicDto } from './form_logic'
 import { PaymentChannel, PaymentMethodType, PaymentType } from '../payment'
 import { Product } from './product'
-import { FormWorkflow, FormWorkflowDto } from './workflow'
+import { FormWorkflow, FormWorkflowDto, FormWorkflowStepDto } from './workflow'
 import { ErrorCode } from '../errorCodes'
 
 export type FormId = Tagged<string, 'FormId'>
@@ -194,6 +194,8 @@ export interface MultirespondentFormBase extends FormBase {
   responseMode: FormResponseMode.Multirespondent
   publicKey: string
   workflow: FormWorkflow
+  emails: string[]
+  stepsToNotify: FormWorkflowStepDto['_id'][]
 }
 
 /**

@@ -1,10 +1,6 @@
 import { useCallback } from 'react'
 
-import {
-  FormWorkflowStep,
-  FormWorkflowStepDto,
-  WorkflowType,
-} from '~shared/types'
+import { FormWorkflowStep, FormWorkflowStepDto } from '~shared/types'
 
 import {
   setToInactiveSelector,

@@ -27,6 +27,7 @@ import { adminFormSettingsKeys } from './queries'
 import {
   createStripeAccount,
   deleteTwilioCredentials,
+  MrfEmailNotificationSettings,
   unlinkStripeAccount,
   updateBusinessInfo,
   updateFormAuthType,
@@ -44,6 +45,7 @@ import {
   updateGstEnabledFlag,
   updateIsSingleSubmission,
   updateIsSubmitterIdCollectionEnabled,
+  updateMrfEmailNotifications,
   updateTwilioCredentials,
 } from './SettingsService'
 
@@ -222,6 +224,20 @@ export const useMutateFormSettings = () => {
 
   const mutateFormEmails = useMutation(
     (nextEmails: string[]) => updateFormEmails(formId, nextEmails),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: 'Emails successfully updated.',
+        })
+      },
+      onError: handleError,
+    },
+  )
+
+  const mutateMrfEmailNotifications = useMutation(
+    (MrfEmailNotificationSettings: MrfEmailNotificationSettings) =>
+      updateMrfEmailNotifications(formId, MrfEmailNotificationSettings),
     {
       onSuccess: (newData) => {
         handleSuccess({
@@ -445,6 +461,7 @@ export const useMutateFormSettings = () => {
     mutateFormCaptcha,
     mutateFormIssueNotification,
     mutateFormEmails,
+    mutateMrfEmailNotifications,
     mutateFormTitle,
     mutateFormAuthType,
     mutateIsSubmitterIdCollectionEnabled,

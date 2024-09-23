@@ -6,7 +6,7 @@ import Badge, { BadgeProps } from '~components/Badge'
  * Styled badge for displaying logic values and fields
  */
 export const LogicBadge = (props: BadgeProps) => (
-  <Flex>
+  <Flex maxW="100%">
     <Badge
       maxW="100%"
       variant="subtle"

@@ -154,6 +154,7 @@ export const Radio = forwardRef<RadioProps, 'input'>(
 
     const handleSelect = useCallback(
       (e: SyntheticEvent) => {
+        if (props.isDisabled) return
         if (isChecked && allowDeselect) {
           e.preventDefault()
           // Toggle off if onChange is given.
@@ -162,17 +163,18 @@ export const Radio = forwardRef<RadioProps, 'input'>(
           onChange?.({ target: { value: '' } })
         }
       },
-      [allowDeselect, isChecked, onChange],
+      [allowDeselect, isChecked, onChange, props.isDisabled],
     )
 
     const handleSpacebar = useCallback(
       (e: KeyboardEvent<HTMLInputElement>) => {
+        if (props.isDisabled) return
         if (e.key !== ' ') return
         if (isChecked && allowDeselect) {
           handleSelect(e)
         }
       },
-      [allowDeselect, handleSelect, isChecked],
+      [allowDeselect, handleSelect, isChecked, props.isDisabled],
     )
 
     // Update labelProps to include props to allow deselection of radio value if

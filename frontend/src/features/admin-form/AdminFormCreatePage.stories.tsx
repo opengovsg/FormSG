@@ -1,6 +1,6 @@
 import { Meta, Story } from '@storybook/react'
 
-import { PaymentChannel, UserId } from '~shared/types'
+import { PaymentChannel, PaymentType, UserId } from '~shared/types'
 import {
   AdminFormDto,
   FormAuthType,
@@ -25,6 +25,7 @@ import {
   getMobileViewParameters,
   getTabletViewParameters,
   LoggedInDecorator,
+  mockDateDecorator,
   ViewedFeatureTourDecorator,
 } from '~utils/storybook'
 
@@ -66,6 +67,7 @@ export default {
     ViewedFeatureTourDecorator,
     AdminFormCreatePageDecorator,
     LoggedInDecorator,
+    mockDateDecorator,
   ],
   parameters: {
     // Required so skeleton "animation" does not hide content.
@@ -104,6 +106,7 @@ TabletAllFields.parameters = {
 export const TabletLoading = Template.bind({})
 TabletLoading.parameters = {
   ...getTabletViewParameters(),
+  mockdate: new Date('2024-09-11T13:00:00.000Z'),
   msw: buildMswRoutes({}, 'infinite'),
 }
 
@@ -162,8 +165,10 @@ FormWithPayment.parameters = {
     },
     payments_field: {
       enabled: true,
-      amount_cents: 5000,
       description: 'Test event registration fee',
+      payment_type: PaymentType.Variable,
+      min_amount: 1000,
+      max_amount: 5000,
     },
   }),
 }

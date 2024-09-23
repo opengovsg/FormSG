@@ -2,7 +2,6 @@ import ejs from 'ejs'
 
 import config from '../../config/config'
 import { captchaConfig } from '../../config/features/captcha.config'
-import { googleAnalyticsConfig } from '../../config/features/google-analytics.config'
 import { paymentConfig } from '../../config/features/payment.config'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 
@@ -18,8 +17,6 @@ const frontendVars = {
   isSPMaintenance: spcpMyInfoConfig.isSPMaintenance, // Singpass maintenance message
   isCPMaintenance: spcpMyInfoConfig.isCPMaintenance, // Corppass maintenance message
   myInfoBannerContent: spcpMyInfoConfig.myInfoBannerContent, // MyInfo maintenance message
-  // TODO: remove after React rollout #4786
-  GATrackingID: googleAnalyticsConfig.GATrackingID,
   spcpCookieDomain: spcpMyInfoConfig.spcpCookieDomain, // Cookie domain used for removing spcp cookies
   // payment variables
   reactMigrationUseFetchForSubmissions:
@@ -40,9 +37,7 @@ const environment = ejs.render(
     var isGeneralMaintenance = "<%- isGeneralMaintenance %>"
     var isLoginBanner = "<%- isLoginBanner %>"
     var siteBannerContent = "<%- siteBannerContent %>"
-    var adminBannerContent = "<%- adminBannerContent %>"
-    // Google Analytics
-    var GATrackingID = "<%= GATrackingID%>"
+    var adminBannerContent = "<%- adminBannerContent %>" 
     // Recaptcha
     var captchaPublicKey = "<%= captchaPublicKey %>"
     // S3 bucket

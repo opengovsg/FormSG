@@ -12,7 +12,7 @@ import { augmentWithMyInfo } from '~features/myinfo/utils'
 export const useAdminFormLogic = () => {
   const { data: form, isLoading } = useAdminForm()
 
-  const mapIdToField = useMemo(() => {
+  const idToFieldMap = useMemo(() => {
     if (!form) return null
 
     const augmentedFormFields = augmentWithQuestionNo(
@@ -22,9 +22,9 @@ export const useAdminFormLogic = () => {
   }, [form])
 
   const logicableFields = useMemo(() => {
-    if (!mapIdToField) return null
-    return pickBy(mapIdToField, (f) => ALLOWED_LOGIC_FIELDS.has(f.fieldType))
-  }, [mapIdToField])
+    if (!idToFieldMap) return null
+    return pickBy(idToFieldMap, (f) => ALLOWED_LOGIC_FIELDS.has(f.fieldType))
+  }, [idToFieldMap])
 
   const logicedFieldIdsSet = useMemo(
     () =>
@@ -39,24 +39,24 @@ export const useAdminFormLogic = () => {
   )
 
   const hasError = useMemo(() => {
-    if (!mapIdToField || !form?.form_logics) return false
+    if (!idToFieldMap || !form?.form_logics) return false
     return form.form_logics.some(
       (logic) =>
         // Logic is errored if some condition does not exist, or all the
         // show fields do not exist.
         logic.conditions.some(
-          (condition) => !(condition.field in mapIdToField),
+          (condition) => !(condition.field in idToFieldMap),
         ) ||
         (logic.logicType === LogicType.ShowFields &&
-          logic.show.every((field) => !(field in mapIdToField))),
+          logic.show.every((field) => !(field in idToFieldMap))),
     )
-  }, [form?.form_logics, mapIdToField])
+  }, [form?.form_logics, idToFieldMap])
 
   return {
     isLoading,
     formLogics: form?.form_logics,
     formFields: form?.form_fields,
-    mapIdToField,
+    idToFieldMap,
     logicableFields,
     logicedFieldIdsSet,
     hasError,

@@ -27,6 +27,7 @@ export const updateSettingsValidator = celebrate({
       Joi.array().items(Joi.string().email()),
       Joi.string().email({ multiple: true }),
     ),
+    stepsToNotify: Joi.array().items(Joi.string()),
     esrvcId: Joi.string().allow(''),
     hasCaptcha: Joi.boolean(),
     hasIssueNotification: Joi.boolean(),
