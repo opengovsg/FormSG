@@ -15,6 +15,7 @@ export interface Common {
     product: string
   }
   save: string
+  saveField: string
   create: string
   removeReenter: string
   share: string
@@ -79,4 +80,8 @@ export interface Common {
     storage: string
   }
   formName: string
+  editForm: {
+    text: string
+    ariaLabel: string
+  }
 }

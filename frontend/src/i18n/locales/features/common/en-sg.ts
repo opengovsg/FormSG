@@ -15,6 +15,7 @@ export const enSG: Common = {
     product: 'product',
   },
   save: 'Save',
+  saveField: 'Save field',
   create: 'Create',
   removeReenter: 'Remove and re-enter',
   share: 'Share',
@@ -79,4 +80,8 @@ export const enSG: Common = {
     storage: 'Storage mode',
   },
   formName: 'Form name',
+  editForm: {
+    text: 'Edit form',
+    ariaLabel: 'Click to edit form',
+  },
 }

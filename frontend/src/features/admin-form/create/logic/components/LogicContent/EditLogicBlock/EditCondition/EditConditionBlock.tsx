@@ -4,6 +4,7 @@ import {
   ControllerRenderProps,
   UseFormReturn,
 } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { BiTrash } from 'react-icons/bi'
 import {
   Box,
@@ -51,6 +52,7 @@ export const EditConditionBlock = ({
   logicableFields,
   idToFieldMap,
 }: EditConditionBlockProps): JSX.Element => {
+  const { t } = useTranslation()
   const name = useMemo(() => `conditions.${index}` as const, [index])
 
   const {
@@ -152,11 +154,16 @@ export const EditConditionBlock = ({
     if (!mappedField) return []
     switch (mappedField.fieldType) {
       case BasicField.YesNo:
-        return ['Yes', 'No']
+        return [
+          t('features.adminForm.sidebar.fields.yesNo.yes'),
+          t('features.adminForm.sidebar.fields.yesNo.no'),
+        ]
       case BasicField.Radio:
         if (mappedField.othersRadioButton) {
           // 'Others' does not show up in fieldOptions
-          return mappedField.fieldOptions.concat('Others')
+          return mappedField.fieldOptions.concat(
+            t('features.adminForm.sidebar.fields.radio.others'),
+          )
         }
         return mappedField.fieldOptions
       case BasicField.Dropdown:
@@ -166,7 +173,7 @@ export const EditConditionBlock = ({
       default:
         return []
     }
-  }, [ifFieldIdValue, idToFieldMap])
+  }, [ifFieldIdValue, idToFieldMap, t])
 
   const logicTypeWrapperWidth = useMemo(() => {
     if (!currentSelectedField) return '9rem'
@@ -191,14 +198,18 @@ export const EditConditionBlock = ({
         case LogicIfValue.Number: {
           if (currentSelectedField?.fieldType === BasicField.Decimal)
             // Mimics behavior of actual decimal field in public forms
-            return !val || !isNaN(Number(val)) || 'Please enter a valid decimal'
+            return (
+              !val ||
+              !isNaN(Number(val)) ||
+              t('features.adminForm.sidebar.fields.number.error.validDecimal')
+            )
           return true
         }
         default:
           return true
       }
     },
-    [currentSelectedField?.fieldType, ifValueTypeValue],
+    [currentSelectedField?.fieldType, ifValueTypeValue, t],
   )
 
   const renderValueInputComponent = useCallback(
@@ -284,7 +295,7 @@ export const EditConditionBlock = ({
           }}
         >
           <BlockLabelText id={`${name}.field-label`} htmlFor={`${name}.field`}>
-            IF
+            {t('features.adminForm.sidebar.logic.logicClause.if').toUpperCase()}
           </BlockLabelText>
           {handleRemoveCondition ? (
             <IconButton
@@ -318,7 +329,9 @@ export const EditConditionBlock = ({
                 <SingleSelect
                   isDisabled={isLoading}
                   isClearable={false}
-                  placeholder="Select a field"
+                  placeholder={t(
+                    'features.adminForm.sidebar.logic.logicClause.selectField',
+                  )}
                   items={allowedIfConditionFieldsOptions}
                   {...field}
                 />
@@ -334,7 +347,7 @@ export const EditConditionBlock = ({
           spacing={{ base: 0, md: '0.5rem' }}
         >
           <BlockLabelText id={`${name}.state-label`} htmlFor={`${name}.state`}>
-            IS
+            {t('features.adminForm.sidebar.logic.logicClause.is').toUpperCase()}
           </BlockLabelText>
           <Flex flexDir="column" flex={1} as="fieldset" minW={0}>
             <VisuallyHidden as="legend">Logic criteria</VisuallyHidden>
@@ -385,7 +398,9 @@ export const EditConditionBlock = ({
                   control={control}
                   name={`${name}.value`}
                   rules={{
-                    required: 'Please enter logic criteria.',
+                    required: t(
+                      'features.adminForm.sidebar.logic.errors.missingLogicCriteria',
+                    ),
                     validate: validateValueInputComponent,
                   }}
                   render={({ field }) => renderValueInputComponent(field)}

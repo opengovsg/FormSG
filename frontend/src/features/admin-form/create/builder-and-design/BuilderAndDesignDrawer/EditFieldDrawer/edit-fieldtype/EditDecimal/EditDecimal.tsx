@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { FormControl, SimpleGrid } from '@chakra-ui/react'
 import { extend, isEmpty, pick } from 'lodash'
 
@@ -51,6 +52,7 @@ const transformDecimalEditFormToField = (
 }
 
 export const EditDecimal = ({ field }: EditDecimalProps): JSX.Element => {
+  const { t } = useTranslation()
   const {
     register,
     formState: { errors },
@@ -87,7 +89,7 @@ export const EditDecimal = ({ field }: EditDecimalProps): JSX.Element => {
           !val ||
           !getValues('validateByValue') ||
           Number(val) >= Number(getValues('ValidationOptions.customMin')) ||
-          'Maximum value cannot be smaller than the minimum value.'
+          t('features.adminForm.sidebar.fields.number.maxValueGreaterThanMin')
         )
       },
     }
@@ -120,7 +122,7 @@ export const EditDecimal = ({ field }: EditDecimalProps): JSX.Element => {
           {...register('validateByValue', {
             deps: ['ValidationOptions'],
           })}
-          label="Number validation"
+          label={t('features.adminForm.sidebar.fields.number.validation')}
         />
         {watchValidateByValue ? (
           <SimpleGrid
@@ -134,7 +136,9 @@ export const EditDecimal = ({ field }: EditDecimalProps): JSX.Element => {
               render={({ field: { value, ...field } }) => (
                 <NumberInput
                   showSteppers={false}
-                  placeholder="Minimum value"
+                  placeholder={t(
+                    'features.adminForm.sidebar.fields.number.minValue',
+                  )}
                   value={value ?? ''}
                   {...field}
                 />
@@ -149,7 +153,9 @@ export const EditDecimal = ({ field }: EditDecimalProps): JSX.Element => {
                   showSteppers={false}
                   value={value ?? ''}
                   {...field}
-                  placeholder="Maximum value"
+                  placeholder={t(
+                    'features.adminForm.sidebar.fields.number.maxValue',
+                  )}
                 />
               )}
             />

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { VirtuosoHandle } from 'react-virtuoso'
 import {
   FormControlOptions,
@@ -67,6 +68,7 @@ export const SingleSelectProvider = ({
 }: SingleSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
   const [isFocused, setIsFocused] = useState(false)
+  const { t } = useTranslation()
 
   const { isInvalid, isDisabled, isReadOnly, isRequired } = useFormControlProps(
     {
@@ -79,8 +81,8 @@ export const SingleSelectProvider = ({
 
   const placeholder = useMemo(() => {
     if (placeholderProp === null) return ''
-    return placeholderProp ?? 'Select an option'
-  }, [placeholderProp])
+    return placeholderProp ?? t('features.common.dropdown.placeholder')
+  }, [placeholderProp, t])
 
   const getFilteredItems = useCallback(
     (filterValue?: string) =>

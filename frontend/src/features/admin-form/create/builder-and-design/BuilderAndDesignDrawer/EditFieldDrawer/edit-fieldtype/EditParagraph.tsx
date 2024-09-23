@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { FormControl } from '@chakra-ui/react'
 import { extend } from 'lodash'
 
@@ -20,6 +21,7 @@ type EditParagraphProps = EditFieldProps<StatementFieldBase>
 type EditParagraphInputs = Pick<StatementFieldBase, 'description'>
 
 export const EditParagraph = ({ field }: EditParagraphProps): JSX.Element => {
+  const { t } = useTranslation()
   const {
     register,
     formState: { errors },
@@ -51,7 +53,9 @@ export const EditParagraph = ({ field }: EditParagraphProps): JSX.Element => {
         isReadOnly={isLoading}
         isInvalid={!!errors.description}
       >
-        <FormLabel>Paragraph</FormLabel>
+        <FormLabel>
+          {t('features.adminForm.sidebar.fields.paragraph')}
+        </FormLabel>
         <Textarea
           autoFocus
           {...register('description', requiredValidationRule)}

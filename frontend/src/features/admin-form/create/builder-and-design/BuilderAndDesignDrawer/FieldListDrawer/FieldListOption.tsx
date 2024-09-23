@@ -4,6 +4,7 @@ import {
   DraggableProvided,
   DraggableStateSnapshot,
 } from 'react-beautiful-dnd'
+import { useTranslation } from 'react-i18next'
 import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
 
 import { BasicField, MyInfoAttribute } from '~shared/types/field'
@@ -149,6 +150,7 @@ export const DraggableMyInfoFieldListOption = ({
 
 export const BasicFieldOption = forwardRef<BasicFieldOptionProps, 'button'>(
   ({ fieldType, isDisabled, ...props }, ref) => {
+    const { t } = useTranslation()
     const meta = useMemo(
       () => BASICFIELD_TO_DRAWER_META[fieldType],
       [fieldType],

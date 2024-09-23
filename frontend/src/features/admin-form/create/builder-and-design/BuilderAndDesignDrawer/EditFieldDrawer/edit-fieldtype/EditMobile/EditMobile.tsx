@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box, FormControl } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
@@ -33,6 +34,7 @@ type EditMobileProps = EditFieldProps<MobileFieldBase>
 type EditMobileInputs = Pick<MobileFieldBase, (typeof EDIT_MOBILE_KEYS)[number]>
 
 export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
+  const { t } = useTranslation()
   const {
     register,
     formState: { errors },
@@ -73,25 +75,40 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
           isReadOnly={isLoading}
           isInvalid={!!errors.description}
         >
-          <FormLabel>Description</FormLabel>
+          <FormLabel>
+            {t(
+              'features.adminForm.sidebar.fields.commonFieldComponents.description',
+            )}
+          </FormLabel>
           <Textarea {...register('description')} />
           <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
         </FormControl>
         <FormControl isReadOnly={isLoading}>
-          <Toggle {...register('required')} label="Required" />
+          <Toggle
+            {...register('required')}
+            label={t(
+              'features.adminForm.sidebar.fields.commonFieldComponents.required',
+            )}
+          />
         </FormControl>
         <FormControl isReadOnly={isLoading}>
           <Toggle
             {...register('allowIntlNumbers')}
-            label="Allow international numbers"
+            label={t(
+              'features.adminForm.sidebar.fields.mobileNo.allowInternationalNumber',
+            )}
           />
         </FormControl>
         <Box>
           <FormControl isReadOnly={isLoading}>
             <Toggle
               {...register('isVerifiable')}
-              label="OTP verification"
-              description="Respondents must verify by entering a code sent to them."
+              label={t(
+                'features.adminForm.sidebar.fields.email.otpVerification.title',
+              )}
+              description={t(
+                'features.adminForm.sidebar.fields.email.otpVerification.description',
+              )}
             />
           </FormControl>
           <SmsCountMessage freeSmsCount={freeSmsCount} />

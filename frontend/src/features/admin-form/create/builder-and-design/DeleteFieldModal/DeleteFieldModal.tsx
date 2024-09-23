@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   ButtonGroup,
   Icon,
@@ -27,6 +28,7 @@ import {
 } from '../useFieldBuilderStore'
 
 export const DeleteFieldModal = (): JSX.Element => {
+  const { t } = useTranslation()
   const stateData = useFieldBuilderStore(stateDataSelector)
   const {
     deleteFieldModalDisclosure: { onClose },
@@ -96,7 +98,7 @@ export const DeleteFieldModal = (): JSX.Element => {
         <ModalFooter>
           <ButtonGroup>
             <Button variant="clear" colorScheme="secondary" onClick={onClose}>
-              Cancel
+              {t('features.common.cancel')}
             </Button>
             <Button
               colorScheme="danger"
