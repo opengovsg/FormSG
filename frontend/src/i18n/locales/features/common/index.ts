@@ -83,5 +83,5 @@ export interface Common {
   editForm: {
     text: string
     ariaLabel: string
-  },
+  }
 }
