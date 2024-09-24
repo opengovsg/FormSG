@@ -115,6 +115,7 @@ export const EmptyFormPlaceholder = forwardRef<
           <Box
             bottom="2.375rem"
             w="100%"
+            px="2rem"
             position="absolute"
             display="flex"
             justifyContent="center"
