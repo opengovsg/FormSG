@@ -86,8 +86,8 @@ export const TextPromptModal = ({
                     {...register('prompt', {
                       required: 'Please enter a prompt.',
                       maxLength: {
-                        value: 200,
-                        message: 'Please enter at most 200 characters.',
+                        value: 300,
+                        message: 'Please enter at most 300 characters.',
                       },
                     })}
                   />
