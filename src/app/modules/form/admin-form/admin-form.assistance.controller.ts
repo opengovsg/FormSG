@@ -69,6 +69,9 @@ const _handleTextPrompt: ControllerHandler<
           },
           error,
         })
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          message: 'Error occurred creating form fields using text prompt.',
+        })
       }),
   )
 }

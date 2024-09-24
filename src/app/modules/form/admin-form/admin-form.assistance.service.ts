@@ -111,9 +111,9 @@ const generateFormCreationPrompt = (userPrompt: string) => {
         // Provide context to model on when to use each field type
         'You will make generate form fields for a form. The details of this form will be provided in the next prompt.' +
         'Your next response must be an ordered array of json objects with compulsory properties named "title" of type string, "fieldType" of type string and "required" of type boolean and optional properties named "description" of type string.' +
-        'You must respond starting with "[" and ending with "]" following the array notation in json. Do not include the 3 backticks in the response. It is crucial that the response can be parsed successfully by Javascript JSON.parse().' +
+        'You must respond starting with "[" and ending with "]" following the array notation in json. Do not include the 3 backticks, newline or any code blocks in the response. It is crucial that the response can be parsed successfully by Javascript JSON.parse().' +
         `The field type must only be a string composed of the following ${basicFieldNames}` +
-        'You can refer to these guidelines for choosing form field types to use:' +
+        'You must refer to these rules when choosing form field types to use:' +
         // Organising fields
         '"Section" and "Statment" field types are not meant to collect data. It is encouraged to use "Section" to organise the form fields neatly into sections.' +
         '"Statement" can be used to provide details about subsequent form fields or used together with "YesNo" to ask respondent for approval or agreement"' +
@@ -137,7 +137,7 @@ const generateFormCreationPrompt = (userPrompt: string) => {
     {
       // Provide general topic + example fields that user wants to collect.
       role: Role.User,
-      content: `Create a form that collects ${userPrompt}.`,
+      content: `Create a form that collects ${userPrompt}. Double check that the output follows the rules above.`,
     },
   ]
 
@@ -207,63 +207,59 @@ export const createFormFieldsUsingTextPrompt = ({
   form: IPopulatedForm
   userPrompt: string
 }): ResultAsync<undefined, any> => {
-  return sendPromptToModel(userPrompt)
-    .map(async (modelResponse) => {
-      if (!modelResponse) {
-        const error = new Error('Error when generating response from model')
-        logger.error({
-          message: 'Error generating response from model',
-          meta: {
-            action: 'createFormFieldsUsingTextPrompt',
-            modelResponse,
-            error,
-          },
-        })
-        // eslint-disable-next-line typesafe/no-throw-sync-func
-        throw error
-      }
+  return sendPromptToModel(userPrompt).map(async (modelResponse) => {
+    if (!modelResponse) {
+      const error = new Error('Error when generating response from model')
+      logger.error({
+        message: 'Error generating response from model',
+        meta: {
+          action: 'createFormFieldsUsingTextPrompt',
+          modelResponse,
+          error,
+        },
+      })
+      // eslint-disable-next-line typesafe/no-throw-sync-func
+      throw error
+    }
 
-      let suggestedFormFields
-      try {
-        suggestedFormFields = JSON.parse(modelResponse)
-      } catch (error) {
-        logger.error({
-          message: 'Error parsing model response as json',
-          meta: {
-            action: 'createFormFieldsUsingTextPrompt',
-            modelResponse,
-            error,
-          },
-        })
-        // eslint-disable-next-line typesafe/no-throw-sync-func
-        throw error
-      }
+    let suggestedFormFields
+    try {
+      suggestedFormFields = JSON.parse(modelResponse)
+    } catch (error) {
+      logger.error({
+        message: 'Error parsing model response as json',
+        meta: {
+          action: 'createFormFieldsUsingTextPrompt',
+          modelResponse,
+          error,
+        },
+      })
+      // eslint-disable-next-line typesafe/no-throw-sync-func
+      throw error
+    }
 
-      const parseSuggestedFormFieldsResult =
-        suggestedFormFieldsSchema.safeParse(suggestedFormFields)
+    const parseSuggestedFormFieldsResult =
+      suggestedFormFieldsSchema.safeParse(suggestedFormFields)
 
-      if (!parseSuggestedFormFieldsResult.success) {
-        logger.error({
-          message: 'Error parsing suggested form fields by model',
-          meta: {
-            action: 'createFormFieldsUsingTextPrompt',
-            suggestedFormFields,
-            error: parseSuggestedFormFieldsResult.error,
-          },
-        })
-        // eslint-disable-next-line typesafe/no-throw-sync-func
-        throw parseSuggestedFormFieldsResult.error
-      }
+    if (!parseSuggestedFormFieldsResult.success) {
+      logger.error({
+        message: 'Error parsing suggested form fields by model',
+        meta: {
+          action: 'createFormFieldsUsingTextPrompt',
+          suggestedFormFields,
+          error: parseSuggestedFormFieldsResult.error,
+        },
+      })
+      // eslint-disable-next-line typesafe/no-throw-sync-func
+      throw parseSuggestedFormFieldsResult.error
+    }
 
-      const parsedSuggestedFormFields = parseSuggestedFormFieldsResult.data
+    const parsedSuggestedFormFields = parseSuggestedFormFieldsResult.data
 
-      const formFieldsToCreate = mapSuggestedFormFieldToFieldCreateDto(
-        parsedSuggestedFormFields,
-      )
-      await createFormFields({ form, newFields: formFieldsToCreate, to: 0 })
-      return undefined
-    })
-    .mapErr((error) => {
-      return errAsync(error)
-    })
+    const formFieldsToCreate = mapSuggestedFormFieldToFieldCreateDto(
+      parsedSuggestedFormFields,
+    )
+    await createFormFields({ form, newFields: formFieldsToCreate, to: 0 })
+    return undefined
+  })
 }
