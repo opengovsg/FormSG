@@ -6,7 +6,7 @@ export const MagicFormButton = ({
 }: {
   onClick: () => void
 }): JSX.Element => (
-  <Button leftIcon={<BxsMagicWand />} onClick={onClick}>
+  <Button maxW="100%" leftIcon={<BxsMagicWand />} onClick={onClick}>
     Try out Magic Form Builder
   </Button>
 )
