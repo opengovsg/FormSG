@@ -5,8 +5,10 @@ export const MagicFormButton = ({
   onClick,
 }: {
   onClick: () => void
-}): JSX.Element => (
-  <Button maxW="100%" leftIcon={<BxsMagicWand />} onClick={onClick}>
-    Try out Magic Form Builder
-  </Button>
-)
+}): JSX.Element => {
+  return (
+    <Button maxW="100%" rightIcon={<BxsMagicWand />} onClick={onClick}>
+      Add fields with AI
+    </Button>
+  )
+}
