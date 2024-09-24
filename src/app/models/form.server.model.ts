@@ -978,6 +978,21 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     return this.save()
   }
 
+  FormDocumentSchema.methods.insertFormFields = function (
+    newFields: FormField[],
+    to?: number,
+  ) {
+    const formFields = this.form_fields as Types.DocumentArray<IFieldSchema>
+    // Must use undefined check since number can be 0; i.e. falsey.
+    if (to !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      formFields.splice(to, 0, ...(newFields as any[])) // Typings are not complete for splice.
+    } else {
+      formFields.push(...newFields)
+    }
+    return this.save()
+  }
+
   FormDocumentSchema.method<IFormDocument>(
     'duplicateFormFieldByIdAndIndex',
     function (fieldId: string, insertionIndex: number) {

@@ -886,6 +886,72 @@ export const createFormField = (
 }
 
 /**
+ * Inserts new form fields into given form's fields.
+ * @param form the form to insert the new field into
+ * @param newFields the new fields to insert
+ * @param to optional index to insert the new field at
+ * @returns ok(array of created form fields)
+ * @returns err(PossibleDatabaseError) when database errors arise
+ */
+export const createFormFields = ({
+  form,
+  newFields,
+  to,
+}: {
+  form: IPopulatedForm
+  newFields: FieldCreateDto[]
+  to?: number
+}): ResultAsync<
+  FormFieldSchema[],
+  PossibleDatabaseError | FormNotFoundError | FieldNotFoundError
+> => {
+  // If MyInfo field, override field title to store name.
+  const fieldsToSave = newFields.map((newField) => {
+    if (newField.myInfo?.attr) {
+      return {
+        ...newField,
+        title:
+          MYINFO_ATTRIBUTE_MAP[newField.myInfo.attr]?.value ?? newField.title,
+      }
+    } else {
+      return newField
+    }
+  })
+
+  return ResultAsync.fromPromise(
+    form.insertFormFields(fieldsToSave, to),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while inserting new form fields',
+        meta: {
+          action: 'createFormFields',
+          formId: form._id,
+          newFields,
+        },
+        error,
+      })
+
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    // if to does not exist, end of prev form fields
+    let startIndex = updatedForm.form_fields.length - newFields.length
+    // Must use undefined check since number can be 0; i.e. falsey.
+    if (to !== undefined) {
+      startIndex = to
+    }
+    const endIndex = newFields.length + startIndex
+    const updatedFields = updatedForm.form_fields.slice(startIndex, endIndex)
+    return updatedFields
+      ? okAsync(updatedFields)
+      : errAsync(new FieldNotFoundError())
+  })
+}
+
+/**
  * Reorders field with given fieldId to the given newPosition
  * @param form the form to reorder the field from
  * @param fieldId the id of the field to reorder
