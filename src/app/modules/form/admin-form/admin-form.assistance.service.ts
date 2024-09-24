@@ -3,6 +3,8 @@ import { errAsync, ResultAsync } from 'neverthrow'
 import { z } from 'zod'
 
 import {
+  AttachmentFieldBase,
+  AttachmentSize,
   BasicField,
   CheckboxFieldBase,
   FormField,
@@ -77,6 +79,15 @@ const mapSuggestedFormFieldToFieldCreateDto = (
         othersRadioButton: false,
         validateByValue: false,
       } as CheckboxFieldBase | RadioFieldBase
+    } else if (basicFieldType === BasicField.Attachment) {
+      return {
+        fieldType: BasicField.Attachment,
+        title: formField.title,
+        required: formField.required,
+        description: formField.description ?? '',
+        disabled: false,
+        attachmentSize: AttachmentSize.OneMb,
+      } as AttachmentFieldBase
     }
     return {
       fieldType: basicFieldType,
@@ -195,7 +206,7 @@ export const createFormFieldsUsingTextPrompt = ({
 }: {
   form: IPopulatedForm
   userPrompt: string
-}): ResultAsync<any, any> => {
+}): ResultAsync<undefined, any> => {
   return sendPromptToModel(userPrompt)
     .map(async (modelResponse) => {
       if (!modelResponse) {
@@ -208,7 +219,8 @@ export const createFormFieldsUsingTextPrompt = ({
             error,
           },
         })
-        return errAsync(error)
+        // eslint-disable-next-line typesafe/no-throw-sync-func
+        throw error
       }
 
       let suggestedFormFields
@@ -223,7 +235,8 @@ export const createFormFieldsUsingTextPrompt = ({
             error,
           },
         })
-        return errAsync(error)
+        // eslint-disable-next-line typesafe/no-throw-sync-func
+        throw error
       }
 
       const parseSuggestedFormFieldsResult =
@@ -238,16 +251,15 @@ export const createFormFieldsUsingTextPrompt = ({
             error: parseSuggestedFormFieldsResult.error,
           },
         })
-        return errAsync(parseSuggestedFormFieldsResult.error)
+        // eslint-disable-next-line typesafe/no-throw-sync-func
+        throw parseSuggestedFormFieldsResult.error
       }
 
       const parsedSuggestedFormFields = parseSuggestedFormFieldsResult.data
-      console.log('parsed suggested form fields', parsedSuggestedFormFields)
 
       const formFieldsToCreate = mapSuggestedFormFieldToFieldCreateDto(
         parsedSuggestedFormFields,
       )
-      console.log('form fields to create:', formFieldsToCreate)
       await createFormFields({ form, newFields: formFieldsToCreate, to: 0 })
       return undefined
     })
