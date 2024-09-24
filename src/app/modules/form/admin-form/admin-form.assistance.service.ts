@@ -1,4 +1,13 @@
+import { errAsync, ResultAsync } from 'neverthrow'
+
+import { FieldCreateDto } from '../../../../../shared/types'
+import { IPopulatedForm } from '../../../../types'
+import { createLoggerWithLabel } from '../../../config/logger'
+
+import { createFormFields } from './admin-form.service'
 import { Role, sendUserTextPrompt } from './ai-model'
+
+const logger = createLoggerWithLabel(module)
 
 const generateFormCreationPrompt = (userPrompt: string) => {
   const messages = [
@@ -24,7 +33,31 @@ const generateFormCreationPrompt = (userPrompt: string) => {
   return messages
 }
 
-export const sendPromptToModel = async (prompt: string) => {
+const sendPromptToModel = (
+  prompt: string,
+): ResultAsync<string | null, unknown> => {
   const messages = generateFormCreationPrompt(prompt)
-  return await sendUserTextPrompt({ messages })
+  return ResultAsync.fromPromise(sendUserTextPrompt({ messages }), (error) => {
+    logger.error({
+      message: 'Error when generating response from model',
+      meta: { action: 'sendPromptToModel' },
+      error,
+    })
+    return errAsync(error)
+  })
+}
+
+export const createFormFieldsUsingTextPrompt = ({
+  form,
+  userPrompt,
+}: {
+  form: IPopulatedForm
+  userPrompt: string
+}): ResultAsync<undefined, unknown> => {
+  return sendPromptToModel(userPrompt).map(async (modelResponse) => {
+    console.log('modelResponse:', modelResponse)
+    const formFieldsToCreate: FieldCreateDto[] = []
+    await createFormFields({ form, newFields: formFieldsToCreate, to: 0 })
+    return undefined
+  })
 }
