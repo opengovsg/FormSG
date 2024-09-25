@@ -10,6 +10,7 @@ import * as UserService from '../../user/user.service'
 
 import { createFormFieldsUsingTextPrompt } from './admin-form.assistance.service'
 import { PermissionLevel } from './admin-form.types'
+import { verifyUserBetaflag } from './admin-form.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -37,42 +38,47 @@ const _handleTextPrompt: ControllerHandler<
   const { formId } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
-  // Step 1: Retrieve currently logged in user.
-  return UserService.getPopulatedUserById(sessionUserId).andThen((user) =>
-    // Step 2: Retrieve form with write permission check.
-    AuthService.getFormAfterPermissionChecks({
-      user,
-      formId,
-      level: PermissionLevel.Write,
-    })
-      // Step 3: Create form fields using text prompt.
-      .andThen((form) =>
-        createFormFieldsUsingTextPrompt({
-          form,
-          userPrompt: req.body.prompt,
-        }),
-      )
-      .map(() =>
-        res.status(StatusCodes.OK).json({
-          message: 'Created form fields using text prompt successfully.',
-        }),
-      )
-      .mapErr((error) => {
-        logger.error({
-          message: 'Error occurred creating form fields using text prompt.',
-          meta: {
-            action: '_handleTextPrompt',
-            ...createReqMeta(req),
-            userId: sessionUserId,
-            formId,
-            userPrompt: req.body.prompt,
-          },
-          error,
+  // Step 1a: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      // Step 1b: Verify user has mfb betaFlag.
+      .andThen((user) => verifyUserBetaflag(user, 'mfb'))
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
         })
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-          message: 'Error occurred creating form fields using text prompt.',
-        })
-      }),
+          // Step 3: Create form fields using text prompt.
+          .andThen((form) =>
+            createFormFieldsUsingTextPrompt({
+              form,
+              userPrompt: req.body.prompt,
+            }),
+          )
+          .map(() =>
+            res.status(StatusCodes.OK).json({
+              message: 'Created form fields using text prompt successfully.',
+            }),
+          )
+          .mapErr((error) => {
+            logger.error({
+              message: 'Error occurred creating form fields using text prompt.',
+              meta: {
+                action: '_handleTextPrompt',
+                ...createReqMeta(req),
+                userId: sessionUserId,
+                formId,
+                userPrompt: req.body.prompt,
+              },
+              error,
+            })
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+              message: 'Error occurred creating form fields using text prompt.',
+            })
+          }),
+      )
   )
 }
 
