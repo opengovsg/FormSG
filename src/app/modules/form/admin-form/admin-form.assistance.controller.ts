@@ -10,7 +10,7 @@ import * as UserService from '../../user/user.service'
 
 import { createFormFieldsUsingTextPrompt } from './admin-form.assistance.service'
 import { PermissionLevel } from './admin-form.types'
-import { verifyUserBetaflag } from './admin-form.utils'
+import { mapRouteError, verifyUserBetaflag } from './admin-form.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -74,9 +74,7 @@ const _handleTextPrompt: ControllerHandler<
               },
               error,
             })
-            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-              message: 'Error occurred creating form fields using text prompt.',
-            })
+            return mapRouteError(error)
           }),
       )
   )
