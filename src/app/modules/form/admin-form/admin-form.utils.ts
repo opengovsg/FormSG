@@ -232,7 +232,7 @@ export const mapRouteError = (
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage:
-          'Something went wrong with generating your form. Please change your prompt and try again.',
+          'Something went wrong when generating your form. Please change your prompt and try again.',
       }
     default:
       logger.error({

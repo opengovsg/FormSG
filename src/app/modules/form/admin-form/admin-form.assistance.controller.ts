@@ -74,7 +74,8 @@ const _handleTextPrompt: ControllerHandler<
               },
               error,
             })
-            return mapRouteError(error)
+            const { errorMessage, statusCode } = mapRouteError(error)
+            return res.status(statusCode).json({ message: errorMessage })
           }),
       )
   )
