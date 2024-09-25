@@ -1,5 +1,5 @@
 import { omit } from 'lodash'
-import { errAsync, ResultAsync } from 'neverthrow'
+import { ResultAsync } from 'neverthrow'
 import { z } from 'zod'
 
 import {
@@ -13,7 +13,15 @@ import {
 } from '../../../../../shared/types'
 import { IPopulatedForm } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
+import { PossibleDatabaseError } from '../../core/core.errors'
+import { FormNotFoundError } from '../form.errors'
 
+import {
+  FieldNotFoundError,
+  ModelResponseFailureError,
+  ModelResponseInvalidSchemaFormatError,
+  ModelResponseInvalidSyntaxError,
+} from './admin-form.errors'
 import { createFormFields } from './admin-form.service'
 import { Role, sendUserTextPrompt } from './ai-model'
 
@@ -144,6 +152,9 @@ const generateFormCreationPrompt = (userPrompt: string) => {
   return messages
 }
 
+/**
+ * Used to validate model response format for suggested form fields.
+ */
 const suggestedBaseFieldSchema = z.object({
   title: z.string(),
   fieldType: z.string(),
@@ -151,6 +162,9 @@ const suggestedBaseFieldSchema = z.object({
   description: z.string().optional(),
 })
 
+/**
+ * Used to validate model response format for suggested 'Table' field type form fields.
+ */
 const suggestedTableFieldSchema = z
   .object({
     fieldType: z.literal('Table'),
@@ -161,6 +175,9 @@ const suggestedTableFieldSchema = z
   })
   .merge(suggestedBaseFieldSchema)
 
+/**
+ * Used to validate model response format for suggested 'Checkbox' and 'Radio' field type form fields.
+ */
 const suggestedChoicesFieldSchema = z
   .object({
     fieldType: z.literal('Checkbox').or(z.literal('Radio')),
@@ -188,7 +205,7 @@ const suggestedFormFieldsSchema = z.array(
 
 const sendPromptToModel = (
   prompt: string,
-): ResultAsync<string | null, unknown> => {
+): ResultAsync<string | null, ModelResponseFailureError> => {
   const messages = generateFormCreationPrompt(prompt)
   return ResultAsync.fromPromise(sendUserTextPrompt({ messages }), (error) => {
     logger.error({
@@ -196,70 +213,84 @@ const sendPromptToModel = (
       meta: { action: 'sendPromptToModel' },
       error,
     })
-    return errAsync(error)
+    return new ModelResponseFailureError()
   })
 }
 
+/**
+ * Sends text prompt to model to generate model response. Then, uses the model response to create form fields.
+ * @param form form to generate fields for using text prompt
+ * @param userPrompt user prompt to send to model
+ */
 export const createFormFieldsUsingTextPrompt = ({
   form,
   userPrompt,
 }: {
   form: IPopulatedForm
   userPrompt: string
-}): ResultAsync<undefined, any> => {
-  return sendPromptToModel(userPrompt).map(async (modelResponse) => {
-    if (!modelResponse) {
-      const error = new Error('Error when generating response from model')
-      logger.error({
-        message: 'Error generating response from model',
-        meta: {
-          action: 'createFormFieldsUsingTextPrompt',
-          modelResponse,
-          error,
-        },
-      })
-      // eslint-disable-next-line typesafe/no-throw-sync-func
-      throw error
-    }
+}): ResultAsync<
+  true,
+  | ModelResponseFailureError
+  | ModelResponseInvalidSchemaFormatError
+  | ModelResponseInvalidSyntaxError
+  | PossibleDatabaseError
+  | FormNotFoundError
+  | FieldNotFoundError
+> => {
+  return sendPromptToModel(userPrompt)
+    .map(async (modelResponse) => {
+      if (!modelResponse) {
+        const modelResponseFailureError = new ModelResponseFailureError()
+        logger.error({
+          message: 'Error generating response from model',
+          meta: {
+            action: 'createFormFieldsUsingTextPrompt',
+            modelResponse,
+            error: modelResponseFailureError,
+          },
+        })
+        // eslint-disable-next-line typesafe/no-throw-sync-func
+        throw modelResponseFailureError
+      }
 
-    let suggestedFormFields
-    try {
-      suggestedFormFields = JSON.parse(modelResponse)
-    } catch (error) {
-      logger.error({
-        message: 'Error parsing model response as json',
-        meta: {
-          action: 'createFormFieldsUsingTextPrompt',
-          modelResponse,
-          error,
-        },
-      })
-      // eslint-disable-next-line typesafe/no-throw-sync-func
-      throw error
-    }
+      let suggestedFormFields
+      try {
+        suggestedFormFields = JSON.parse(modelResponse)
+      } catch (error) {
+        logger.error({
+          message: 'Error parsing model response as json',
+          meta: {
+            action: 'createFormFieldsUsingTextPrompt',
+            modelResponse,
+            error,
+          },
+        })
+        // eslint-disable-next-line typesafe/no-throw-sync-func
+        throw new ModelResponseInvalidSyntaxError()
+      }
 
-    const parseSuggestedFormFieldsResult =
-      suggestedFormFieldsSchema.safeParse(suggestedFormFields)
+      const parseSuggestedFormFieldsResult =
+        suggestedFormFieldsSchema.safeParse(suggestedFormFields)
 
-    if (!parseSuggestedFormFieldsResult.success) {
-      logger.error({
-        message: 'Error parsing suggested form fields by model',
-        meta: {
-          action: 'createFormFieldsUsingTextPrompt',
-          suggestedFormFields,
-          error: parseSuggestedFormFieldsResult.error,
-        },
-      })
-      // eslint-disable-next-line typesafe/no-throw-sync-func
-      throw parseSuggestedFormFieldsResult.error
-    }
+      if (!parseSuggestedFormFieldsResult.success) {
+        logger.error({
+          message: 'Error parsing suggested form fields by model',
+          meta: {
+            action: 'createFormFieldsUsingTextPrompt',
+            suggestedFormFields,
+            error: parseSuggestedFormFieldsResult.error,
+          },
+        })
+        // eslint-disable-next-line typesafe/no-throw-sync-func
+        throw new ModelResponseInvalidSchemaFormatError()
+      }
 
-    const parsedSuggestedFormFields = parseSuggestedFormFieldsResult.data
+      const parsedSuggestedFormFields = parseSuggestedFormFieldsResult.data
 
-    const formFieldsToCreate = mapSuggestedFormFieldToFieldCreateDto(
-      parsedSuggestedFormFields,
-    )
-    await createFormFields({ form, newFields: formFieldsToCreate, to: 0 })
-    return undefined
-  })
+      const formFieldsToCreate = mapSuggestedFormFieldToFieldCreateDto(
+        parsedSuggestedFormFields,
+      )
+      return createFormFields({ form, newFields: formFieldsToCreate, to: 0 })
+    })
+    .map(() => true)
 }
