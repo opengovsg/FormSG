@@ -303,63 +303,68 @@ export const createMultiRespondentFormSubmission = ({
   return saveAttachmentsToDbIfExists({
     formId: form._id,
     attachments: encryptedPayload.attachments,
-  }).map(async (attachmentMetadata) => {
-    // Create Incoming Submission
-    const {
-      submissionPublicKey,
-      encryptedSubmissionSecretKey,
-      encryptedContent,
-      responseMetadata,
-      version,
-      mrfVersion,
-    } = encryptedPayload
-
-    const submissionContent: MultirespondentSubmissionContent = {
-      form: form._id,
-      authType: form.authType,
-      myInfoFields: form.getUniqueMyInfoAttrs(),
-      form_fields: form.form_fields,
-      form_logics: form.form_logics,
-      workflow: form.workflow,
-      submissionPublicKey,
-      encryptedSubmissionSecretKey,
-      encryptedContent,
-      attachmentMetadata,
-      version,
-      workflowStep: 0,
-      mrfVersion,
-    }
-
-    const submission = new MultirespondentSubmission(submissionContent)
-
-    try {
-      await submission.save()
-    } catch (error) {
-      logger.error({
-        message: 'Multirespondent submission save error',
-        meta: logMeta,
-        error,
-      })
-      // eslint-disable-next-line typesafe/no-throw-sync-func
-      throw new SubmissionSaveError()
-    }
-
-    const submissionId = submission.id
-    logger.info({
-      message: 'Saved submission to MongoDB',
-      meta: { ...logMeta, submissionId, responseMetadata },
-    })
-
-    // TODO 6395 make responseMetadata mandatory
-    if (responseMetadata) {
-      reportSubmissionResponseTime(responseMetadata, {
-        mode: 'multirespodent',
-        payment: 'false',
-      })
-    }
-
-    return submission
   })
+    .andThen((attachmentMetadata) => {
+      // Create Incoming Submission
+      const {
+        submissionPublicKey,
+        encryptedSubmissionSecretKey,
+        encryptedContent,
+        responseMetadata,
+        version,
+        mrfVersion,
+      } = encryptedPayload
+
+      const submissionContent: MultirespondentSubmissionContent = {
+        form: form._id,
+        authType: form.authType,
+        myInfoFields: form.getUniqueMyInfoAttrs(),
+        form_fields: form.form_fields,
+        form_logics: form.form_logics,
+        workflow: form.workflow,
+        submissionPublicKey,
+        encryptedSubmissionSecretKey,
+        encryptedContent,
+        attachmentMetadata,
+        version,
+        workflowStep: 0,
+        mrfVersion,
+      }
+
+      const submission = new MultirespondentSubmission(submissionContent)
+
+      return ResultAsync.fromPromise(
+        submission.save().then(() => ({
+          submission,
+          responseMetadata,
+        })),
+        (error) => {
+          logger.error({
+            message: 'Multirespondent submission save error',
+            meta: logMeta,
+            error,
+          })
+          return new SubmissionSaveError()
+        },
+      )
+    })
+    .map(({ submission, responseMetadata }) => {
+      const submissionId = submission.id
+      logger.info({
+        message: 'Saved submission to MongoDB',
+        meta: { ...logMeta, submissionId, responseMetadata },
+      })
+
+      // TODO 6395 make responseMetadata mandatory
+      if (responseMetadata) {
+        reportSubmissionResponseTime(responseMetadata, {
+          mode: 'multirespodent',
+          payment: 'false',
+        })
+      }
+
+      return submission
+    })
 }
 
 export const performMultiRespondentPostSubmissionCreateActions = ({
@@ -453,17 +458,19 @@ export const updateMultiRespondentFormSubmission = ({
   })
     .map(async (attachmentMetadata) => {
       const submission = await MultirespondentSubmission.findById(submissionId)
+      return { submission, attachmentMetadata }
+    })
+    .andThen(({ submission, attachmentMetadata }) => {
       if (!submission) {
         logger.error({
           message: 'Submission not found',
           meta: { ...logMeta, submissionId },
         })
-        // eslint-disable-next-line typesafe/no-throw-sync-func
-        throw new SubmissionNotFoundError()
+        return errAsync(new SubmissionNotFoundError())
       }
-      return { submission, attachmentMetadata }
+      return okAsync({ submission, attachmentMetadata })
     })
-    .map(async ({ submission, attachmentMetadata }) => {
+    .andThen(({ submission, attachmentMetadata }) => {
       const {
         responseMetadata,
         submissionPublicKey,
@@ -483,18 +490,19 @@ export const updateMultiRespondentFormSubmission = ({
       submission.attachmentMetadata = attachmentMetadata
       submission.mrfVersion = mrfVersion
 
-      try {
-        await submission.save()
-      } catch (err) {
-        logger.error({
-          message: 'Multirespondent submission save error',
-          meta: logMeta,
-          error: err,
-        })
-        // eslint-disable-next-line typesafe/no-throw-sync-func
-        throw new SubmissionSaveError()
-      }
-
+      return ResultAsync.fromPromise(
+        submission.save().then(() => ({ submission, responseMetadata })),
+        (error) => {
+          logger.error({
+            message: 'Multirespondent submission save error',
+            meta: logMeta,
+            error,
+          })
+          return new SubmissionSaveError()
+        },
+      )
+    })
+    .map(({ submission, responseMetadata }) => {
       logger.info({
         message: 'Saved submission to MongoDB',
         meta: { ...logMeta, submissionId: submission.id, responseMetadata },
@@ -546,8 +554,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
             meta: logMeta,
             error,
           })
-          // eslint-disable-next-line typesafe/no-throw-sync-func
-          throw error
+          return error
         })
       : ok(false)
 
@@ -557,8 +564,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
       meta: logMeta,
       error: isStepRejectedResult.error,
     })
-    // eslint-disable-next-line typesafe/no-throw-sync-func
-    throw isStepRejectedResult.error
+    return errAsync(isStepRejectedResult.error)
   }
 
   const isStepRejected = isStepRejectedResult.value
