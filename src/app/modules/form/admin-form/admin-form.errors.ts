@@ -78,13 +78,13 @@ export class GoGovServerError extends GoGovError {
 }
 
 export class ModelResponseInvalidSyntaxError extends ApplicationError {
-  constructor(message = 'Model response syntax error') {
+  constructor(message = 'Model response has invalid syntax') {
     super(message, ErrorCodes.ADMIN_FORM_MODEL_RESPONSE_INVALID_SYNTAX)
   }
 }
 
 export class ModelResponseInvalidSchemaFormatError extends ApplicationError {
-  constructor(message = 'Model response schema has invlaid format') {
+  constructor(message = 'Model response schema has invalid format') {
     super(message, ErrorCodes.ADMIN_FORM_MODEL_RESPONSE_INVALID_SCHEMA_FORMAT)
   }
 }

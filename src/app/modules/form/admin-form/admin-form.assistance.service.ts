@@ -1,5 +1,5 @@
 import { omit } from 'lodash'
-import { ResultAsync } from 'neverthrow'
+import { errAsync, ResultAsync } from 'neverthrow'
 import { z } from 'zod'
 
 import {
@@ -229,7 +229,7 @@ export const createFormFieldsUsingTextPrompt = ({
   form: IPopulatedForm
   userPrompt: string
 }): ResultAsync<
-  true,
+  undefined,
   | ModelResponseFailureError
   | ModelResponseInvalidSchemaFormatError
   | ModelResponseInvalidSyntaxError
@@ -238,7 +238,7 @@ export const createFormFieldsUsingTextPrompt = ({
   | FieldNotFoundError
 > => {
   return sendPromptToModel(userPrompt)
-    .map(async (modelResponse) => {
+    .andThen((modelResponse) => {
       if (!modelResponse) {
         const modelResponseFailureError = new ModelResponseFailureError()
         logger.error({
@@ -249,8 +249,7 @@ export const createFormFieldsUsingTextPrompt = ({
             error: modelResponseFailureError,
           },
         })
-        // eslint-disable-next-line typesafe/no-throw-sync-func
-        throw modelResponseFailureError
+        return errAsync(modelResponseFailureError)
       }
 
       let suggestedFormFields
@@ -265,8 +264,7 @@ export const createFormFieldsUsingTextPrompt = ({
             error,
           },
         })
-        // eslint-disable-next-line typesafe/no-throw-sync-func
-        throw new ModelResponseInvalidSyntaxError()
+        return errAsync(new ModelResponseInvalidSyntaxError())
       }
 
       const parseSuggestedFormFieldsResult =
@@ -281,8 +279,7 @@ export const createFormFieldsUsingTextPrompt = ({
             error: parseSuggestedFormFieldsResult.error,
           },
         })
-        // eslint-disable-next-line typesafe/no-throw-sync-func
-        throw new ModelResponseInvalidSchemaFormatError()
+        return errAsync(new ModelResponseInvalidSchemaFormatError())
       }
 
       const parsedSuggestedFormFields = parseSuggestedFormFieldsResult.data
@@ -292,5 +289,5 @@ export const createFormFieldsUsingTextPrompt = ({
       )
       return createFormFields({ form, newFields: formFieldsToCreate, to: 0 })
     })
-    .map(() => true)
+    .map(() => undefined)
 }
