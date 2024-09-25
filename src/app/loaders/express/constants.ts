@@ -41,6 +41,7 @@ export const CSP_CORE_DIRECTIVES = {
     'https://www.google-analytics.com/',
     'https://ssl.google-analytics.com/',
     'https://*.browser-intake-datadoghq.com',
+    'https://browser-intake-datadoghq.com',
     config.aws.attachmentBucketUrl,
     config.aws.imageBucketUrl,
     config.aws.logoBucketUrl,
