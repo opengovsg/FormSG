@@ -200,6 +200,7 @@ export interface IOptionalVarsSchema {
     uploadFormWhitelist: number
     publicApi: number
     platformApi: number
+    makeTextPrompt: number
   }
   reactMigration: {
     // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
