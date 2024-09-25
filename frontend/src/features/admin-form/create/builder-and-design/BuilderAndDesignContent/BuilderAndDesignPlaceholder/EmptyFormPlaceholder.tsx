@@ -16,6 +16,7 @@ import { BxsWidget } from '~assets/icons/BxsWidget'
 import { useIsMobile } from '~hooks/useIsMobile'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { useUser } from '~features/user/queries'
 
 import { MagicFormButton } from './MagicFormButton'
 
@@ -56,9 +57,10 @@ export const EmptyFormPlaceholder = forwardRef<
     ref,
   ): JSX.Element => {
     const isMobile = useIsMobile()
+    const { user } = useUser()
     const { data: form } = useAdminForm()
     const isStorageMode = form?.responseMode === FormResponseMode.Encrypt
-    const isMagicFormBuilderEnabled = isStorageMode
+    const isMagicFormBuilderEnabled = user?.betaFlags?.mfb && isStorageMode
 
     const placeholderText = useMemo(() => {
       if (isDraggingOver) {

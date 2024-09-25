@@ -78,6 +78,7 @@ const compileUserModel = (db: Mongoose) => {
         // TODO: (MRF-email-notif) Remove betaFlag when MRF email notifications is out of beta
         mrfEmailNotifications: Boolean,
         mrfAdminSubmissionKey: Boolean,
+        mfb: Boolean,
       },
       flags: {
         type: Schema.Types.Map, // of SeenFlags
