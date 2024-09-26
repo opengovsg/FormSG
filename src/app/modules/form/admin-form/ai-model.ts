@@ -3,7 +3,8 @@ import type { ChatCompletionCreateParamsNonStreaming } from 'openai/resources/in
 
 import { azureOpenAIConfig } from '../../../config/features/azureopenai.config'
 
-const { endpoint, apiKey, apiVersion, deploymentName } = azureOpenAIConfig
+const { endpoint, apiKey, apiVersion, deploymentName, model } =
+  azureOpenAIConfig
 
 const getClient = (): AzureOpenAI => {
   return new AzureOpenAI({
@@ -18,8 +19,6 @@ export enum Role {
   User = 'user',
   System = 'system',
 }
-
-const MODEL = 'gpt-4o-mini'
 
 export interface Message {
   role: Role
@@ -37,7 +36,7 @@ export const sendUserTextPrompt = async ({
 
   const chatCompletionPrompt: ChatCompletionCreateParamsNonStreaming = {
     messages,
-    model: MODEL,
+    model,
     ...options,
   }
 
