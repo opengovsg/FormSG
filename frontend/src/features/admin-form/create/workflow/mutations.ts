@@ -43,21 +43,18 @@ export const useWorkflowMutations = () => {
 
   const createStepMutation = useMutation(
     (createStepBody: FormWorkflowStep) =>
-      createWorkflowStep(formId, formWorkflow, createStepBody),
+      createWorkflowStep(formId, createStepBody),
     {
-      onSuccess: (newSettings) => {
+      onSuccess: (updatedWorkflow) => {
         toast.closeAll()
         queryClient.setQueryData<AdminFormDto>(adminFormKey, (prev) => {
           // Should not happen, should not be able to update field if there is no
           // existing data.
           if (!prev) throw new Error('Query should have been set')
-          if (
-            prev.responseMode !== FormResponseMode.Multirespondent ||
-            newSettings.responseMode !== FormResponseMode.Multirespondent
-          ) {
+          if (prev.responseMode !== FormResponseMode.Multirespondent) {
             throw new Error('Invalid response mode')
           }
-          return { ...prev, workflow: newSettings.workflow }
+          return { ...prev, workflow: updatedWorkflow }
         })
         toast({
           description: 'The step was successfully created.',
@@ -68,22 +65,18 @@ export const useWorkflowMutations = () => {
   )
 
   const deleteStepMutation = useMutation(
-    (stepNumber: number) =>
-      deleteWorkflowStep(formId, formWorkflow, stepNumber),
+    (stepNumber: number) => deleteWorkflowStep(formId, stepNumber),
     {
-      onSuccess: (newSettings) => {
+      onSuccess: (updatedWorkflow) => {
         toast.closeAll()
         queryClient.setQueryData<AdminFormDto>(adminFormKey, (prev) => {
           // Should not happen, should not be able to update field if there is no
           // existing data.
           if (!prev) throw new Error('Query should have been set')
-          if (
-            prev.responseMode !== FormResponseMode.Multirespondent ||
-            newSettings.responseMode !== FormResponseMode.Multirespondent
-          ) {
+          if (prev.responseMode !== FormResponseMode.Multirespondent) {
             throw new Error('Invalid response mode')
           }
-          return { ...prev, workflow: newSettings.workflow }
+          return { ...prev, workflow: updatedWorkflow }
         })
         toast({
           description: 'The step was successfully deleted.',
@@ -100,21 +93,18 @@ export const useWorkflowMutations = () => {
     }: {
       stepNumber: number
       updateStepBody: FormWorkflowStep
-    }) => updateWorkflowStep(formId, formWorkflow, stepNumber, updateStepBody),
+    }) => updateWorkflowStep(formId, stepNumber, updateStepBody),
     {
-      onSuccess: (newSettings) => {
+      onSuccess: (updatedWorkflow) => {
         toast.closeAll()
         queryClient.setQueryData<AdminFormDto>(adminFormKey, (prev) => {
           // Should not happen, should not be able to update field if there is no
           // existing data.
           if (!prev) throw new Error('Query should have been set')
-          if (
-            prev.responseMode !== FormResponseMode.Multirespondent ||
-            newSettings.responseMode !== FormResponseMode.Multirespondent
-          ) {
+          if (prev.responseMode !== FormResponseMode.Multirespondent) {
             throw new Error('Invalid response mode')
           }
-          return { ...prev, workflow: newSettings.workflow }
+          return { ...prev, workflow: updatedWorkflow }
         })
         toast({
           description: 'The step was successfully updated.',

@@ -32,6 +32,8 @@ import {
   FormSettings,
   FormWebhookResponseModeSettings,
   FormWebhookSettings,
+  FormWorkflowDto,
+  FormWorkflowStepDto,
   LogicConditionState,
   LogicDto,
   LogicIfValue,
@@ -99,9 +101,11 @@ import {
 } from './admin-form.constants'
 import { EditFieldError, GoGovServerError } from './admin-form.errors'
 import {
+  createWorkflowStepValidator,
   getWebhookSettingsValidator,
   updateSettingsValidator,
   updateWebhookSettingsValidator,
+  updateWorkflowStepValidator,
 } from './admin-form.middlewares'
 import * as AdminFormService from './admin-form.service'
 import { PermissionLevel } from './admin-form.types'
@@ -1410,6 +1414,26 @@ export const _handleUpdateSettings: ControllerHandler<
     })
 }
 
+/**
+ * Handler for PATCH /forms/:formId/settings.
+ * @security session
+ *
+ * @returns 200 with updated form settings
+ * @returns 400 when body is malformed
+ * @returns 403 when current user does not have permissions to update form settings
+ * @returns 404 when form to update settings for cannot be found
+ * @returns 409 when saving form settings incurs a conflict in the database
+ * @returns 410 when updating settings for archived form
+ * @returns 413 when updating settings causes form to be too large to be saved in the database
+ * @returns 422 when an invalid settings update is attempted on the form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleUpdateSettings = [
+  updateSettingsValidator,
+  _handleUpdateSettings,
+] as ControllerHandler[]
+
 export const _handleUpdateWebhookSettings: ControllerHandler<
   { formId: string },
   FormWebhookSettings | ErrorDto,
@@ -1468,24 +1492,172 @@ export const _handleUpdateWebhookSettings: ControllerHandler<
 }
 
 /**
- * Handler for PATCH /forms/:formId/settings.
+ * Handler for PATCH api/public/v1/admin/forms/:formId/webhooksettings.
  * @security session
  *
  * @returns 200 with updated form settings
  * @returns 400 when body is malformed
- * @returns 403 when current user does not have permissions to update form settings
+ * @returns 403 when user email does not have permissions to update form settings
  * @returns 404 when form to update settings for cannot be found
  * @returns 409 when saving form settings incurs a conflict in the database
  * @returns 410 when updating settings for archived form
  * @returns 413 when updating settings causes form to be too large to be saved in the database
  * @returns 422 when an invalid settings update is attempted on the form
- * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 422 when user from user email cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleUpdateSettings = [
-  updateSettingsValidator,
-  _handleUpdateSettings,
+export const handleUpdateWebhookSettings = [
+  updateWebhookSettingsValidator,
+  _handleUpdateWebhookSettings,
 ] as ControllerHandler[]
+
+export const _handleCreateWorkflowStep: ControllerHandler<
+  { formId: string },
+  FormWorkflowDto | ErrorDto,
+  FormWorkflowStepDto
+> = (req, res) => {
+  const { formId } = req.params
+  const workflowStepToCreate = req.body
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: User has permissions, proceed to create form field with provided body.
+      .andThen((form) =>
+        AdminFormService.createWorkflowStep(form, workflowStepToCreate),
+      )
+      .map((updatedWorkflow) =>
+        res.status(StatusCodes.OK).json(updatedWorkflow),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when creating form field',
+          meta: {
+            action: 'handleCreateFormField',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            workflowStepToCreate,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+export const handleCreateWorkflowStep = [
+  createWorkflowStepValidator,
+  _handleCreateWorkflowStep,
+]
+
+const _handleUpdateWorkflowStep: ControllerHandler<
+  {
+    formId: string
+    stepNumber: number
+  },
+  FormWorkflowDto | ErrorDto,
+  FormWorkflowStepDto
+> = (req, res) => {
+  const { formId, stepNumber } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+  const updatedWorkflowStep = req.body
+
+  // Step 1: Retrieve currently logged in user.
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Step 2: Retrieve form with write permission check.
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((retrievedForm) =>
+      AdminFormService.updateFormWorkflowStep(
+        retrievedForm,
+        stepNumber,
+        updatedWorkflowStep,
+      ),
+    )
+    .map((updatedWorkflow) => res.status(StatusCodes.OK).json(updatedWorkflow))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when updating form workflow step',
+        meta: {
+          action: 'handleUpdateWorkflowStep',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          updatedWorkflowStep,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+export const handleUpdateWorkflowStep = [
+  updateWorkflowStepValidator,
+  _handleUpdateWorkflowStep,
+] as ControllerHandler[]
+
+export const handleDeleteWorkflowStep: ControllerHandler<
+  {
+    formId: string
+    stepNumber: number
+  },
+  FormWorkflowDto | ErrorDto
+> = (req, res) => {
+  const { formId, stepNumber } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        // Step 2: Retrieve form with write permission check.
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Write,
+        }),
+      )
+      // Step 3: Delete workflow step.
+      .andThen((retrievedForm) =>
+        AdminFormService.deleteFormWorkflowStep(retrievedForm, stepNumber),
+      )
+      .map((updatedWorkflow) =>
+        res.status(StatusCodes.OK).json(updatedWorkflow),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred when deleting form workflow step',
+          meta: {
+            action: 'handleDeleteWorkflowStep',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            stepNumber,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
 
 const TWENTY_MB_IN_BYTES = 20 * 1024 * 1024
 const handleWhitelistSettingMultipartBody = multer({
@@ -1626,26 +1798,6 @@ export const handleUpdateWhitelistSetting = [
   handleWhitelistSettingMultipartBody.none(), // expecting string field
   _handleUpdateWhitelistSettingValidator,
   _handleUpdateWhitelistSetting,
-] as ControllerHandler[]
-
-/**
- * Handler for PATCH api/public/v1/admin/forms/:formId/webhooksettings.
- * @security session
- *
- * @returns 200 with updated form settings
- * @returns 400 when body is malformed
- * @returns 403 when user email does not have permissions to update form settings
- * @returns 404 when form to update settings for cannot be found
- * @returns 409 when saving form settings incurs a conflict in the database
- * @returns 410 when updating settings for archived form
- * @returns 413 when updating settings causes form to be too large to be saved in the database
- * @returns 422 when an invalid settings update is attempted on the form
- * @returns 422 when user from user email cannot be retrieved from the database
- * @returns 500 when database error occurs
- */
-export const handleUpdateWebhookSettings = [
-  updateWebhookSettingsValidator,
-  _handleUpdateWebhookSettings,
 ] as ControllerHandler[]
 
 /**

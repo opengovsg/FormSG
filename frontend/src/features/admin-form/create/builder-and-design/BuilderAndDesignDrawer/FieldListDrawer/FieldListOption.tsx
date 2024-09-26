@@ -6,14 +6,17 @@ import {
 } from 'react-beautiful-dnd'
 import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
 
+import { FormResponseMode } from '~shared/types'
 import { BasicField, MyInfoAttribute } from '~shared/types/field'
 
 import { useIsMobile } from '~hooks/useIsMobile'
+import Badge from '~components/Badge'
 
 import {
   BASICFIELD_TO_DRAWER_META,
   MYINFO_FIELD_TO_DRAWER_META,
 } from '~features/admin-form/create/constants'
+import { useUser } from '~features/user/queries'
 
 import { useCreateTabForm } from '../../useCreateTabForm'
 import {
@@ -68,7 +71,6 @@ interface DraggableMyInfoFieldOptionProps
 export const DraggableBasicFieldListOption = ({
   fieldType,
   index,
-  children,
   isDisabled,
   ...props
 }: DraggableBasicFieldOptionProps): JSX.Element => {
@@ -111,7 +113,6 @@ export const DraggableBasicFieldListOption = ({
 export const DraggableMyInfoFieldListOption = ({
   fieldType,
   index,
-  children,
   isDisabled,
   ...props
 }: DraggableMyInfoFieldOptionProps): JSX.Element => (
@@ -149,12 +150,16 @@ export const DraggableMyInfoFieldListOption = ({
 
 export const BasicFieldOption = forwardRef<BasicFieldOptionProps, 'button'>(
   ({ fieldType, isDisabled, ...props }, ref) => {
+    // TODO: (MRF-email-notif) Remove isTest and useUser when approvals is out of beta
+    const isTest = process.env.NODE_ENV === 'test'
+    const { user } = useUser()
     const meta = useMemo(
       () => BASICFIELD_TO_DRAWER_META[fieldType],
       [fieldType],
     )
     const { data: form } = useCreateTabForm()
-    const numFields = useMemo(() => form?.form_fields?.length ?? 0, [form])
+    const isMrf = form?.responseMode === FormResponseMode.Multirespondent
+    const numFields = form?.form_fields?.length ?? 0
 
     const newFieldMeta = useMemo(
       () => getFieldCreationMeta(fieldType),
@@ -178,6 +183,14 @@ export const BasicFieldOption = forwardRef<BasicFieldOptionProps, 'button'>(
       >
         <Icon fontSize="1.5rem" as={meta.icon} />
         <Text textStyle="body-1">{meta.label}</Text>
+        {/* TODO: (MRF-email-notif) Remove isTest and betaFlag check when approvals is out of beta */}
+        {isTest || user?.betaFlags?.mrfEmailNotifications ? (
+          isMrf && fieldType === BasicField.YesNo ? (
+            <Badge maxW="100%" variant="subtle" colorScheme="secondary">
+              <Text noOfLines={1}>Use for approvals</Text>
+            </Badge>
+          ) : null
+        ) : null}
       </FieldListOption>
     )
   },

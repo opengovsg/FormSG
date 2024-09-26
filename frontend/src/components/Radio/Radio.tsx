@@ -75,6 +75,10 @@ export interface RadioProps
    */
   isFullWidth?: boolean
   /**
+   * If `true`, the radio children will occupy the full width of the radio container.
+   */
+  isLabelFullWidth?: boolean
+  /**
    * Background and shadow colors.
    */
   colorScheme?: FieldColorScheme
@@ -121,6 +125,7 @@ export const Radio = forwardRef<RadioProps, 'input'>(
       spacing = '0.5rem',
       children,
       isFullWidth,
+      isLabelFullWidth = false,
       ...rest
     } = omitThemingProps(props)
 
@@ -203,6 +208,7 @@ export const Radio = forwardRef<RadioProps, 'input'>(
     }
 
     const labelStyles: SystemStyleObject = {
+      width: isLabelFullWidth ? 'full' : undefined,
       userSelect: 'none',
       marginStart: spacing,
       ...styles.label,

@@ -16,6 +16,10 @@ export type UseTemplateModalProps = Pick<
   'onClose' | 'isOpen'
 > & { formId: string }
 
+/**
+ * Note: The word "Use" in "UseTemplateModal" is not referring to React's "use" convention for hooks.
+ * "UseTemplate" is a FormSG functionality referring to the FormSG feature of utilising another form as a starting template.
+ */
 export const UseTemplateModal = ({
   formId,
   isOpen,

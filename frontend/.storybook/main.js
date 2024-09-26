@@ -37,6 +37,32 @@ module.exports = {
             test: /\.mjs$/,
             include: /node_modules/,
           },
+          {
+            // Added to fix ticket:
+            // https://linear.app/ogp/issue/FRM-1857/fix-chromatic-build-failure-due-es2018-features-not-supported
+            test: /\.(?:jsx?|tsx?|vue)$/,
+            use: [
+              {
+                loader: 'babel-loader',
+                options: {
+                  presets: [
+                    '@babel/preset-env',
+                    [
+                      '@babel/preset-react',
+                      {
+                        runtime: 'automatic',
+                      },
+                    ],
+                    '@babel/preset-typescript',
+                  ],
+                  plugins: [
+                    '@babel/plugin-transform-async-to-generator',
+                    '@babel/plugin-proposal-async-generator-functions',
+                  ],
+                },
+              },
+            ],
+          },
         ],
       },
     }

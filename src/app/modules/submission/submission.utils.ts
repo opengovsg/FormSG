@@ -132,6 +132,7 @@ import {
   ResponseModeError,
   SubmissionFailedError,
   SubmissionNotFoundError,
+  SubmissionSaveError,
   UnsupportedSettingsError,
   ValidateFieldError,
   VirusScanFailedError,
@@ -170,6 +171,11 @@ const errorMapper: MapRouteError = (
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'Could not upload attachments for submission. For assistance, please contact the person who asked you to fill in this form.',
+      }
+    case SubmissionSaveError:
+      return {
+        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+        errorMessage: error.message,
       }
     case CreateRedirectUrlError:
       return {
