@@ -53,7 +53,7 @@ export const MrfApprovalOutcomeEmail = ({
               </Heading>
             </Column>
           </Row>
-          <Row align="left" style={{ paddingTop: '16px' }}>
+          <Row style={{ paddingTop: '16px' }}>
             <Column width="30%">
               <Text style={textStyle}>Outcome</Text>
             </Column>
