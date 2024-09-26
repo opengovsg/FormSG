@@ -63,6 +63,7 @@ export const SettingsPage = (): JSX.Element => {
       navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_RESULTS_SUBROUTE}`)
   }, [formId, hasEditAccess, isCollabLoading, navigate])
 
+  // TODO: (MRF-email-notif) Remove isTest when email notifications is out of beta
   const isTest = process.env.NODE_ENV === 'test'
   // For beta flagging email notifications tab.
   const emailNotificationsTab =

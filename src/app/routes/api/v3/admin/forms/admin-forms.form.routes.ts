@@ -212,6 +212,16 @@ AdminFormsFormRouter.post(
   AdminFormController.handleCreateFormField,
 )
 
+AdminFormsFormRouter.route('/:formId([a-fA-F0-9]{24})/workflow').post(
+  AdminFormController.handleCreateWorkflowStep,
+)
+
+AdminFormsFormRouter.route(
+  '/:formId([a-fA-F0-9]{24})/workflow/:stepNumber(\\d+)',
+)
+  .put(AdminFormController.handleUpdateWorkflowStep)
+  .delete(AdminFormController.handleDeleteWorkflowStep)
+
 AdminFormsFormRouter.put(
   '/:formId([a-fA-F0-9]{24})/end-page',
   AdminFormController.handleUpdateEndPage,

@@ -22,6 +22,8 @@ import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { StepLabel } from '../StepLabel'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
+import { InactiveApprovalsBlock } from './InactiveApprovalsBlock'
+
 interface InactiveStepBlockProps {
   stepNumber: number
   step: FormWorkflowStepDto
@@ -85,7 +87,7 @@ export const InactiveStepBlock = ({
   const stateData = useAdminWorkflowStore(createOrEditDataSelector)
 
   const { user } = useUser()
-  // TODO: (MRF-email-notif) Remove isTest check when MRF email notifications is out of beta
+  // TODO: (MRF-email-notif) Remove isTest check when MRF email notifications and approvals are both out of beta
   const isTest = process.env.NODE_ENV === 'test'
 
   // Prevent editing step if some other step is being edited.
@@ -99,6 +101,10 @@ export const InactiveStepBlock = ({
   }, [isPreventEdit, stepNumber, setToEditing])
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
+
+  const stepLabelTooltip = isFirstStep
+    ? 'Anyone who can access your form'
+    : undefined
 
   const questionBadges = useMemo(() => {
     if (step.edit.length === 0) {
@@ -166,7 +172,7 @@ export const InactiveStepBlock = ({
         onClick={handleClick}
       >
         <Stack spacing="1.5rem" p={{ base: '1.5rem', md: '2rem' }}>
-          <StepLabel stepNumber={stepNumber} />
+          <StepLabel tooltipLabel={stepLabelTooltip} stepNumber={stepNumber} />
 
           <Stack>
             <Text textStyle="subhead-3">Respondent in this step</Text>
@@ -202,6 +208,12 @@ export const InactiveStepBlock = ({
               {questionBadges}
             </Stack>
           </Stack>
+          {/* TODO: (MRF-email-notif) Remove isTest and betaFlag check when approvals is out of beta */}
+          {isTest || user?.betaFlags?.mrfEmailNotifications ? (
+            !isFirstStep ? (
+              <InactiveApprovalsBlock step={step} idToFieldMap={idToFieldMap} />
+            ) : null
+          ) : null}
         </Stack>
       </chakra.button>
       {!isFirstStep && (

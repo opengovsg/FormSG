@@ -1,10 +1,11 @@
 import { useLayoutEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
-import { Box, Stack } from '@chakra-ui/react'
+import { Box, Divider, Stack } from '@chakra-ui/react'
 
 import { FormWorkflowStep, WorkflowType } from '~shared/types'
 
 import { SaveActionGroup } from '~features/admin-form/create/logic/components/LogicContent/EditLogicBlock/EditCondition'
+import { useUser } from '~features/user/queries'
 
 import {
   setToInactiveSelector,
@@ -14,6 +15,7 @@ import { EditStepInputs } from '../../../types'
 import { StepLabel } from '../StepLabel'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
+import { ApprovalsBlock } from './ApprovalsBlock'
 import { QuestionsBlock } from './QuestionsBlock'
 import { RespondentBlock } from './RespondentBlock'
 
@@ -28,6 +30,8 @@ export interface EditLogicBlockProps {
   isLoading: boolean
 }
 
+export const FIELDS_TO_EDIT_NAME = 'edit'
+
 export const EditStepBlock = ({
   stepNumber,
   onSubmit,
@@ -41,6 +45,8 @@ export const EditStepBlock = ({
   const formMethods = useForm<EditStepInputs>({
     defaultValues,
   })
+  const { user, isLoading: isUserLoading } = useUser()
+  const _isLoading = isLoading || isUserLoading
 
   const wrapperRef = useRef<HTMLDivElement | null>(null)
 
@@ -57,6 +63,10 @@ export const EditStepBlock = ({
   }, [])
 
   const handleSubmit = formMethods.handleSubmit((inputs: EditStepInputs) => {
+    if (inputs.approval_field === '') {
+      inputs.approval_field = undefined
+    }
+
     if (isFirstStepByStepNumber(stepNumber)) {
       if (inputs.field) {
         return onSubmit({
@@ -102,10 +112,18 @@ export const EditStepBlock = ({
   })
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
+  const stepTooltip = isFirstStep
+    ? 'Anyone who can access your form'
+    : undefined
+
+  // TODO: (MRF-email-notif) Remove isTest check when approvals is out of beta
+  const isTest = process.env.NODE_ENV === 'test'
 
   return (
     <Stack
       ref={wrapperRef}
+      py="2rem"
+      spacing="1.5rem"
       borderRadius="4px"
       bg="white"
       border="1px solid"
@@ -114,22 +132,30 @@ export const EditStepBlock = ({
       transitionProperty="common"
       transitionDuration="normal"
     >
-      <Box
-        py="1.5rem"
-        px={{ base: '1.5rem', md: '2rem' }}
-        borderBottomWidth="1px"
-        borderBottomColor="secondary.200"
-      >
-        <StepLabel stepNumber={stepNumber} />
+      <Box px={{ base: '1.5rem', md: '2rem' }}>
+        <StepLabel tooltipLabel={stepTooltip} stepNumber={stepNumber} />
       </Box>
+      <Divider />
       <RespondentBlock
+        user={user}
         stepNumber={stepNumber}
         formMethods={formMethods}
-        isLoading={isLoading}
+        isLoading={_isLoading}
       />
-      <QuestionsBlock formMethods={formMethods} isLoading={isLoading} />
+      <Divider />
+      <QuestionsBlock formMethods={formMethods} isLoading={_isLoading} />
+      {/*TODO: (MRF-email-notif) Remove isTest and betaFlag check when approvals is out of beta */}
+      {isTest || user?.betaFlags?.mrfEmailNotifications ? (
+        !isFirstStep ? (
+          <>
+            <Divider />
+            <ApprovalsBlock formMethods={formMethods} stepNumber={stepNumber} />
+          </>
+        ) : null
+      ) : null}
+      <Divider />
       <SaveActionGroup
-        isLoading={isLoading}
+        isLoading={_isLoading}
         handleSubmit={handleSubmit}
         handleDelete={isFirstStep ? undefined : handleOpenDeleteModal}
         handleCancel={setToInactive}
