@@ -39,7 +39,7 @@ export const MrfWorkflowCompletionEmail = ({
               <Img src={FORMSG_LOGO_URL} alt="FormSG" />
             </Column>
           </Row>
-          <Row style={{ paddingTop: '16px' }}>
+          <Row style={{ paddingTop: '32px' }}>
             <Column>
               <Heading style={headingStyle}>
                 {formTitle} has been completed by all respondents.
