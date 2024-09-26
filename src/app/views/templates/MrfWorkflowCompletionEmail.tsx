@@ -47,11 +47,11 @@ export const MrfWorkflowCompletionEmail = ({
             </Column>
           </Row>
           <Row style={{ paddingTop: '16px' }}>
-            <Column>
+            <Column width="30%">
               <Text style={textStyle}>Response ID</Text>
             </Column>
-            <Column style={textStyle}>
-              <Text>{responseId}</Text>
+            <Column>
+              <Text style={textStyle}>{responseId}</Text>
             </Column>
           </Row>
           <Row style={{ paddingTop: '32px' }}>
