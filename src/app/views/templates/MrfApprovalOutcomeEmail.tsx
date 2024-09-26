@@ -46,7 +46,7 @@ export const MrfApprovalOutcomeEmail = ({
               <Img src={FORMSG_LOGO_URL} alt="FormSG" />
             </Column>
           </Row>
-          <Row style={{ paddingTop: '16px' }}>
+          <Row style={{ paddingTop: '32px' }}>
             <Column>
               <Heading style={headingStyle}>
                 The outcome for {formTitle}.
@@ -54,19 +54,19 @@ export const MrfApprovalOutcomeEmail = ({
             </Column>
           </Row>
           <Row style={{ paddingTop: '16px' }}>
-            <Column>
+            <Column width="30%">
               <Text style={textStyle}>Outcome</Text>
             </Column>
-            <Column style={textStyle}>
-              <Text>{outcome}</Text>
+            <Column>
+              <Text style={textStyle}>{outcome}</Text>
             </Column>
           </Row>
           <Row style={{ paddingTop: '16px' }}>
-            <Column>
+            <Column width="30%">
               <Text style={textStyle}>Response ID</Text>
             </Column>
-            <Column style={textStyle}>
-              <Text>{responseId}</Text>
+            <Column>
+              <Text style={textStyle}>{responseId}</Text>
             </Column>
           </Row>
           <Row style={{ paddingTop: '32px' }}>
