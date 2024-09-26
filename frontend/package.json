@@ -136,7 +136,7 @@
   },
   "devDependencies": {
     "@chakra-ui/cli": "^1.9.0",
-    "@craco/craco": "^6.4.3",
+    "@craco/craco": "^7.1.0",
     "@storybook/addon-a11y": "^6.5.5",
     "@storybook/addon-actions": "^6.5.5",
     "@storybook/addon-essentials": "^6.5.5",
@@ -195,7 +195,7 @@
     "prettier": "^3.2.5",
     "puppeteer": "^13.0.0",
     "react-refresh": "^0.14.0",
-    "react-scripts": "^4.0.3",
+    "react-scripts": "^5.0.1",
     "resize-observer-polyfill": "^1.5.1",
     "rimraf": "^3.0.2",
     "storybook-addon-turbo-build": "^1.1.0",
