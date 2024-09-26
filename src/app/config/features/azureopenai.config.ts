@@ -5,6 +5,7 @@ export interface IAzureOpenAi {
   endpoint: string
   deploymentName: string
   apiVersion: string
+  model: string
 }
 
 const azureOpenAISchema: Schema<IAzureOpenAi> = {
@@ -31,6 +32,12 @@ const azureOpenAISchema: Schema<IAzureOpenAi> = {
     format: String,
     default: '',
     env: 'AZURE_OPENAI_API_VERSION',
+  },
+  model: {
+    doc: 'Name of model to use',
+    format: String,
+    default: 'gpt-4o-mini',
+    env: 'AZURE_OPENAI_MODEL',
   },
 }
 
