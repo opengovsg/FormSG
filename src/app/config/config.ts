@@ -183,6 +183,7 @@ const mailConfig: MailConfig = (function () {
     official,
     mailer,
     transporter,
+    sesConfigSet: prodOnlyVars.sesConfigSet,
   }
 })()
 
