@@ -247,10 +247,21 @@ export class MailService {
     }
 
     return ResultAsync.fromPromise(
-      this.#sendMailWithRetries(mail, {
-        mailId: sendOptions?.mailId,
-        formId: sendOptions?.formId,
-      }),
+      this.#sendMailWithRetries(
+        {
+          ...mail,
+          headers: config.mail.sesConfigSet
+            ? {
+                'X-SES-CONFIGURATION-SET': config.mail.sesConfigSet,
+                ...mail.headers,
+              }
+            : mail.headers,
+        },
+        {
+          mailId: sendOptions?.mailId,
+          formId: sendOptions?.formId,
+        },
+      ),
       (error) => {
         logger.error({
           message: 'Error returned from sendMail retries',
