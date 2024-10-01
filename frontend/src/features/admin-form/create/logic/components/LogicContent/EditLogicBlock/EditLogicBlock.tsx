@@ -122,7 +122,7 @@ export const EditLogicBlock = ({
       <Stack
         divider={<EditConditionBlockDivider />}
         direction="column"
-        py="1.5rem"
+        pb="1.5rem"
         px={{ base: '1.5rem', md: '2rem' }}
       >
         {logicConditionBlocks.map((block, index) => {
