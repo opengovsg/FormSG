@@ -13,6 +13,7 @@ export const EditConditionWrapper = forwardRef<
       ref={ref}
       borderRadius="4px"
       bg="white"
+      py="1.5rem"
       border="1px solid"
       borderColor="primary.500"
       boxShadow="0 0 0 1px var(--chakra-colors-primary-500)"
