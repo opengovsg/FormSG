@@ -23,6 +23,30 @@ export enum BasicField {
   Children = 'children',
 }
 
+/**
+ * Contains field types where the answer property is a string.
+ */
+export enum StringAnswerResponseFieldV3 {
+  Section = 'section',
+  Statement = 'statement',
+  Email = 'email',
+  Mobile = 'mobile',
+  HomeNo = 'homeno',
+  Number = 'number',
+  Decimal = 'decimal',
+  Image = 'image',
+  ShortText = 'textfield',
+  LongText = 'textarea',
+  Dropdown = 'dropdown',
+  CountryRegion = 'country_region',
+  YesNo = 'yes_no',
+  Radio = 'radiobutton',
+  Date = 'date',
+  Rating = 'rating',
+  Nric = 'nric',
+  Uen = 'uen',
+}
+
 export enum MyInfoAttribute {
   Name = 'name',
   PassportNumber = 'passportnumber',

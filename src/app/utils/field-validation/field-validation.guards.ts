@@ -1,7 +1,11 @@
 import { get } from 'lodash'
 
 import { types as basicTypes } from '../../../../shared/constants/field/basic'
-import { BasicField, TableRow } from '../../../../shared/types'
+import {
+  BasicField,
+  StringAnswerResponseFieldV3,
+  TableRow,
+} from '../../../../shared/types'
 import { IEmailFieldSchema } from '../../../types'
 import {
   ColumnResponse,
@@ -101,4 +105,16 @@ export const isPossibleEmailFieldSchema = (
   field: unknown,
 ): field is Partial<IEmailFieldSchema> => {
   return get(field, 'fieldType') === BasicField.Email
+}
+
+/**
+ * Checks if the fieldType has an answer that is a string.
+ * @param fieldType the fieldType to check
+ * @returns true if the fieldType has an answer that is a string.
+ */
+export const isSingleStringResponseV3 = (fieldType: string): boolean => {
+  const singleStringFieldTypesV3: string[] = Object.values(
+    StringAnswerResponseFieldV3,
+  )
+  return singleStringFieldTypesV3.includes(fieldType)
 }

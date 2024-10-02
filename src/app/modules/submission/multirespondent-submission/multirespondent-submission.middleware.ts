@@ -4,9 +4,12 @@ import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
+import { validateFieldV3 } from 'src/app/utils/field-validation'
+
 import {
   BasicField,
   FormDto,
+  FormFieldDto,
   FormResponseMode,
   SubmissionType,
 } from '../../../../../shared/types'
@@ -20,6 +23,7 @@ import { MultirespondentFormLoadedDto } from '../../../../types/api/multirespond
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
+  FieldIdSet,
   getLogicUnitPreventingSubmitV3,
   getVisibleFieldIdsV3,
 } from '../../../utils/logic-adaptor'
@@ -35,6 +39,7 @@ import {
   InvalidSubmissionTypeError,
   MaliciousFileDetectedError,
   ProcessingError,
+  ValidateFieldError,
   VirusScanFailedError,
 } from '../submission.errors'
 import {
@@ -309,10 +314,56 @@ export const scanAndRetrieveAttachments = async (
 }
 
 /**
+ * Validates each field by individual field rules.
+ * @param formId formId, used for logging
+ * @param formFields all form fields in the form. Purpose: used to validate responses against the form field properties.
+ * @param responses responses to validate
+ * @returns initial responses if all responses are valid, else an error.
+ */
+const validateFieldResponsesV3 = (
+  formId: string,
+  visibleFieldIds: FieldIdSet,
+  formFields: FormDto['form_fields'],
+  responses: ParsedClearFormFieldResponsesV3,
+): Result<
+  ParsedClearFormFieldResponsesV3,
+  ValidateFieldError | ProcessingError
+> => {
+  const idToFieldMap = formFields.reduce<{
+    [fieldId: string]: FormFieldDto
+  }>((acc, field) => {
+    acc[field._id] = field
+    return acc
+  }, {})
+
+  for (const [responseId, response] of Object.entries(responses)) {
+    const formField = idToFieldMap[responseId]
+    if (!formField) {
+      return err(
+        new ProcessingError('Response Id does not match form field Ids'),
+      )
+    }
+
+    const validateFieldV3Result = validateFieldV3({
+      formId,
+      formField,
+      response,
+      isVisible: visibleFieldIds.has(responseId),
+    })
+    if (validateFieldV3Result.isErr()) {
+      return err(validateFieldV3Result.error)
+    }
+  }
+
+  return ok(responses)
+}
+
+/**
  * What types of fields are there?
- *                Visible                     Not visible
- * Editable       Regular field validation    Not allowed
- * Non-editable   Not allowed / prev submiss  Not allowed
+ *              |  Visible                    | Not visible
+ * -------------|-----------------------------|-------------------
+ * Editable     |  Regular field validation   | Not allowed
+ * Non-editable |  Not allowed / prev submiss | Not allowed
  *
  * Initial submission:
  * 1. Retrieve form object
@@ -514,7 +565,7 @@ export const validateMultirespondentSubmission = async (
               })
               .andThen(() =>
                 // TODO: Step 4: Validate each field content with each field's validator rules individually.
-                ok(undefined),
+                validateFieldResponsesV3(),
               ),
           )
         },

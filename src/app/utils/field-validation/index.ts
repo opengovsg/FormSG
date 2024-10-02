@@ -2,7 +2,12 @@ import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 import { err, ok, Result } from 'neverthrow'
 
 import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
-import { BasicField } from '../../../../shared/types'
+import {
+  BasicField,
+  FormField,
+  FormFieldDto,
+  StringAnswerFieldResponseV3,
+} from '../../../../shared/types'
 import {
   ProcessedAttachmentResponse,
   ProcessedCheckboxResponse,
@@ -11,6 +16,7 @@ import {
   ProcessedSingleAnswerResponse,
   ProcessedTableResponse,
 } from '../../../app/modules/submission/submission.types'
+import { ParsedClearFormFieldResponseV3 } from '../../../types/api/submission'
 import {
   FieldValidationSchema,
   ITableFieldSchema,
@@ -33,6 +39,7 @@ import {
   isProcessedChildResponse,
   isProcessedSingleAnswerResponse,
   isProcessedTableResponse,
+  isSingleStringResponseV3,
 } from './field-validation.guards'
 
 const logger = createLoggerWithLabel(module)
@@ -149,7 +156,7 @@ const tableRequiresValidation = (
  */
 const logInvalidAnswer = (
   formId: string,
-  formField: FieldValidationSchema,
+  formField: FieldValidationSchema | FormFieldDto<FormField>,
   message: string,
 ) => {
   logger.error({
@@ -270,4 +277,100 @@ export const validateField = (
     return err(new ValidateFieldError('Response has invalid shape'))
   }
   return ok(true)
+}
+
+const isResponsePresentOnHiddenFieldV3 = (
+  response: ParsedClearFormFieldResponseV3,
+  isVisible: boolean,
+) => {
+  if (isVisible) return false
+
+  if (isSingleStringResponseV3(response.fieldType)) {
+    const answer = (response as StringAnswerFieldResponseV3).answer
+    const isStringAnswerEmpty = answer.toString().trim() === ''
+    return !isStringAnswerEmpty
+  }
+  switch (response.fieldType) {
+    case BasicField.Checkbox:
+      if (response.answer.value.length > 0) {
+        return true
+      }
+      break
+    case BasicField.Table:
+      if (
+        !response.answer.every((rowObject) =>
+          Object.values(rowObject).every((value) => value === ''),
+        )
+      ) {
+        return true
+      }
+      break
+    case BasicField.Attachment:
+      if (
+        (response.answer.filename && response.answer.filename.trim() !== '') || // filename is defined only if there is a file uploaded for the response
+        response.answer.content
+      ) {
+        return true
+      }
+      break
+  }
+  return false
+}
+
+const validateResponseWithValidatorV3 = <
+  T extends ParsedClearFormFieldResponseV3,
+>(
+  validator: ResponseValidator<T>,
+  formId: string,
+  formField: FormFieldDto<FormField>,
+  response: T,
+): Result<true, ValidateFieldError> => {
+  const validEither = validator(response)
+  if (isLeft(validEither)) {
+    logInvalidAnswer(formId, formField, validEither.left)
+    return err(new ValidateFieldError('Invalid answer submitted'))
+  }
+  return ok(true)
+}
+
+export const validateFieldV3 = ({
+  formId,
+  formField,
+  response,
+  isVisible,
+}: {
+  formId: string
+  formField: FormFieldDto<FormField>
+  response: ParsedClearFormFieldResponseV3
+  isVisible: boolean
+}): Result<true, ValidateFieldError> => {
+  const isFieldTypeValid = !FIELDS_TO_REJECT.includes(response.fieldType)
+  if (!isFieldTypeValid) {
+    return err(
+      new ValidateFieldError(`Rejected field type "${response.fieldType}"`),
+    )
+  }
+
+  const isFieldTypeMatching = formField.fieldType === response.fieldType
+  if (!isFieldTypeMatching) {
+    return err(
+      new ValidateFieldError(
+        `Response fieldType (${response.fieldType}) did not match field ${formField.fieldType}`,
+      ),
+    )
+  }
+
+  if (isResponsePresentOnHiddenFieldV3(response, isVisible)) {
+    return err(
+      new ValidateFieldError(`Attempted to submit response on a hidden field`),
+    )
+  }
+
+  const validator = constructFieldResponseValidatorV3({
+    formId,
+    response,
+    formField,
+    isVisible,
+  })
+  return validateResponseWithValidatorV3(validator, formId, formField, response)
 }
