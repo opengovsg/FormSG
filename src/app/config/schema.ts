@@ -452,6 +452,13 @@ export const prodOnlyVarsSchema: Schema<IProdOnlyVarsSchema> = {
     env: 'SES_PASS',
     sensitive: true,
   },
+  sesConfigSet: {
+    doc: 'Config set for SES when sending email',
+    format: String,
+    default: null,
+    env: 'SES_CONFIG_SET',
+    sensitive: true,
+  },
   dbHost: {
     doc: 'Database URI',
     format: (val) => {

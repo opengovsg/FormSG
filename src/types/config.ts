@@ -54,6 +54,7 @@ export type MailConfig = {
   }
   official: string
   transporter: Mail
+  sesConfigSet: string
 }
 
 export type RateLimitConfig = {
@@ -121,6 +122,7 @@ export interface IProdOnlyVarsSchema {
   user: string
   pass: string
   dbHost: string
+  sesConfigSet: string
 }
 
 export interface ICompulsoryVarsSchema {
