@@ -46,14 +46,14 @@ describe('postman-sms.service', () => {
         .mockResolvedValueOnce(okAsync(true))
 
       // Act
-      await PostmanSmsService.sendFormDeactivatedSms(
-        TEST_NUMBER,
-        MOCK_ADMIN_EMAIL,
-        MOCK_ADMIN_ID,
-        MOCK_FORM_ID,
-        MOCK_FORM_TITLE,
-        MOCK_RECIPIENT_EMAIL,
-      )
+      await PostmanSmsService.sendFormDeactivatedSms({
+        recipientPhoneNumber: TEST_NUMBER,
+        recipientEmail: MOCK_RECIPIENT_EMAIL,
+        adminEmail: MOCK_ADMIN_EMAIL,
+        adminId: MOCK_ADMIN_ID,
+        formId: MOCK_FORM_ID,
+        formTitle: MOCK_FORM_TITLE,
+      })
 
       // Assert
       expect(postmanInternalSendSpy).toHaveBeenCalledOnce()
@@ -73,14 +73,14 @@ describe('postman-sms.service', () => {
       const invalidNumber = '1+11'
 
       // Act
-      const actualResult = await PostmanSmsService.sendFormDeactivatedSms(
-        invalidNumber,
-        MOCK_ADMIN_EMAIL,
-        MOCK_ADMIN_ID,
-        MOCK_FORM_ID,
-        MOCK_FORM_TITLE,
-        MOCK_RECIPIENT_EMAIL,
-      )
+      const actualResult = await PostmanSmsService.sendFormDeactivatedSms({
+        recipientPhoneNumber: invalidNumber,
+        recipientEmail: MOCK_RECIPIENT_EMAIL,
+        adminEmail: MOCK_ADMIN_EMAIL,
+        adminId: MOCK_ADMIN_ID,
+        formId: MOCK_FORM_ID,
+        formTitle: MOCK_FORM_TITLE,
+      })
 
       // Assert
       expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidNumberError())
@@ -101,14 +101,14 @@ describe('postman-sms.service', () => {
         .mockResolvedValueOnce(okAsync(true))
 
       // Act
-      await PostmanSmsService.sendBouncedSubmissionSms(
-        TEST_NUMBER,
-        MOCK_ADMIN_EMAIL,
-        MOCK_ADMIN_ID,
-        MOCK_FORM_ID,
-        MOCK_FORM_TITLE,
-        MOCK_RECIPIENT_EMAIL,
-      )
+      await PostmanSmsService.sendBouncedSubmissionSms({
+        recipientPhoneNumber: TEST_NUMBER,
+        recipientEmail: MOCK_RECIPIENT_EMAIL,
+        adminEmail: MOCK_ADMIN_EMAIL,
+        adminId: MOCK_ADMIN_ID,
+        formId: MOCK_FORM_ID,
+        formTitle: MOCK_FORM_TITLE,
+      })
 
       expect(postmanInternalSendSpy).toHaveBeenCalledOnce()
       expect(postmanMopSendSpy).not.toHaveBeenCalled()
@@ -127,14 +127,14 @@ describe('postman-sms.service', () => {
       const invalidNumber = '1+11'
 
       // Act
-      const actualResult = await PostmanSmsService.sendBouncedSubmissionSms(
-        invalidNumber,
-        MOCK_ADMIN_EMAIL,
-        MOCK_ADMIN_ID,
-        MOCK_FORM_ID,
-        MOCK_FORM_TITLE,
-        MOCK_RECIPIENT_EMAIL,
-      )
+      const actualResult = await PostmanSmsService.sendBouncedSubmissionSms({
+        recipientPhoneNumber: invalidNumber,
+        recipientEmail: MOCK_RECIPIENT_EMAIL,
+        adminEmail: MOCK_ADMIN_EMAIL,
+        adminId: MOCK_ADMIN_ID,
+        formId: MOCK_FORM_ID,
+        formTitle: MOCK_FORM_TITLE,
+      })
 
       // Assert
       expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidNumberError())
@@ -174,13 +174,13 @@ describe('postman-sms.service', () => {
         .mockResolvedValueOnce(okAsync(true))
 
       // Act
-      const actualResult = await PostmanSmsService.sendVerificationOtp(
-        TEST_NUMBER,
-        '111111',
-        'ABC',
-        testForm._id,
-        MOCK_SENDER_IP,
-      )
+      const actualResult = await PostmanSmsService.sendVerificationOtp({
+        recipientPhoneNumber: TEST_NUMBER,
+        otp: '111111',
+        otpPrefix: 'ABC',
+        formId: testForm._id,
+        senderIp: MOCK_SENDER_IP,
+      })
 
       // Assert
       expect(actualResult._unsafeUnwrapErr()).toEqual(
@@ -200,13 +200,13 @@ describe('postman-sms.service', () => {
         .mockResolvedValueOnce(okAsync(true))
 
       // Act
-      const actualResult = await PostmanSmsService.sendVerificationOtp(
-        TEST_NUMBER,
-        '111111',
-        'ABC',
-        testForm._id,
-        MOCK_SENDER_IP,
-      )
+      const actualResult = await PostmanSmsService.sendVerificationOtp({
+        recipientPhoneNumber: TEST_NUMBER,
+        otp: '111111',
+        otpPrefix: 'ABC',
+        formId: testForm._id,
+        senderIp: MOCK_SENDER_IP,
+      })
 
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(true)
@@ -222,13 +222,13 @@ describe('postman-sms.service', () => {
 
       const invalidNumber = '1+11123'
       // Act
-      const actualResult = await PostmanSmsService.sendVerificationOtp(
-        invalidNumber,
-        '111111',
-        'ABC',
-        testForm._id,
-        MOCK_SENDER_IP,
-      )
+      const actualResult = await PostmanSmsService.sendVerificationOtp({
+        recipientPhoneNumber: invalidNumber,
+        otp: '111111',
+        otpPrefix: 'ABC',
+        formId: testForm._id,
+        senderIp: MOCK_SENDER_IP,
+      })
 
       // Assert
       expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidNumberError())
@@ -248,12 +248,12 @@ describe('postman-sms.service', () => {
         .mockResolvedValueOnce(okAsync(true))
 
       // Act
-      const actualResult = await PostmanSmsService.sendAdminContactOtp(
-        TEST_NUMBER,
-        '111111',
-        testUser._id,
-        MOCK_SENDER_IP,
-      )
+      const actualResult = await PostmanSmsService.sendAdminContactOtp({
+        recipientPhoneNumber: TEST_NUMBER,
+        otp: '111111',
+        userId: testUser._id,
+        senderIp: MOCK_SENDER_IP,
+      })
 
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(true)
@@ -274,12 +274,12 @@ describe('postman-sms.service', () => {
       const invalidNumber = '1+11123'
 
       // Act
-      const actualResult = await PostmanSmsService.sendAdminContactOtp(
-        invalidNumber,
-        '111111',
-        testUser._id,
-        MOCK_SENDER_IP,
-      )
+      const actualResult = await PostmanSmsService.sendAdminContactOtp({
+        recipientPhoneNumber: invalidNumber,
+        otp: '111111',
+        userId: testUser._id,
+        senderIp: MOCK_SENDER_IP,
+      })
 
       // Assert
       expect(actualResult._unsafeUnwrapErr()).toEqual(new InvalidNumberError())
