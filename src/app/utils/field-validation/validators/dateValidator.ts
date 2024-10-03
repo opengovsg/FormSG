@@ -3,16 +3,28 @@ import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 import moment from 'moment-timezone'
 
-import { DateSelectedValidation } from '../../../../../shared/types'
+import { ParsedClearFormFieldResponseV3 } from 'src/types/api'
+
+import {
+  BasicField,
+  DateResponseV3,
+  DateSelectedValidation,
+} from '../../../../../shared/types'
 import { convertInvalidDaysOfTheWeekToNumberSet as convertInvalidDaysToNumberSet } from '../../../../../shared/utils/date-validation'
 import {
   IDateFieldSchema,
   OmitUnusedValidatorProps,
 } from '../../../../types/field'
-import { ResponseValidator } from '../../../../types/field/utils/validation'
+import {
+  ResponseValidator,
+  ResponseValidatorConstructor,
+} from '../../../../types/field/utils/validation'
 import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
 
-import { notEmptySingleAnswerResponse } from './common'
+import {
+  notEmptySingleAnswerResponse,
+  notEmptySingleAnswerResponseV3,
+} from './common'
 
 type DateValidator = ResponseValidator<ProcessedSingleAnswerResponse>
 type DateValidatorConstructor = (
@@ -135,3 +147,128 @@ export const constructDateValidator: DateValidatorConstructor = (dateField) =>
     chain(makeDateValidator(dateField)),
     chain(makeInvalidDaysValidator(dateField)),
   )
+
+const isDateResponseV3: ResponseValidator<
+  ParsedClearFormFieldResponseV3,
+  DateResponseV3
+> = (response) => {
+  if (response.fieldType !== BasicField.Date) {
+    return left(`DateValidatorV3.fieldTypeMismatch:\tfieldType is not date`)
+  }
+  return right(response)
+}
+
+/**
+ * Return a validator to check if date format is correct.
+ */
+const dateFormatValidatorV3: ResponseValidator<DateResponseV3> = (response) => {
+  const { answer } = response
+  return createMomentFromDateString(answer).isValid()
+    ? right(response)
+    : left(`DateValidator:\t answer is not a valid date`)
+}
+
+/**
+ * Returns a validator to check if date is in the future.
+ */
+const pastOnlyValidatorV3: ResponseValidator<DateResponseV3> = (response) => {
+  // Today takes two possible values - a min (in makeFutureOnlyValidator) and max (here)
+  // Add 14 hours here to account for up to UTC + 14 timezone
+  // This allows validation to pass as long as user is on the correct date (locally)
+  // Even if they are in a different timezone
+  const todayMax = moment().utc().add(14, 'hours').startOf('day')
+  const { answer } = response
+  const answerDate = createMomentFromDateString(answer)
+
+  return answerDate.isAfter(todayMax)
+    ? left(`DateValidator:\t answer does not pass date logic validation`)
+    : right(response)
+}
+
+/**
+ * Returns a validator to check if date is in the past.
+ */
+const futureOnlyValidatorV3: ResponseValidator<DateResponseV3> = (response) => {
+  // Today takes two possible values - a min (here) and max (in makePastOnlyValidator)
+  // Subtract 12 hours here to account for up to UTC - 12 timezone
+  // This allows validation to pass as long as user is on the correct date (locally)
+  // Even if they are in a different timezone
+  const todayMin = moment().utc().subtract(12, 'hours').startOf('day')
+  const { answer } = response
+  const answerDate = createMomentFromDateString(answer)
+
+  return answerDate.isBefore(todayMin)
+    ? left(`DateValidator:\t answer does not pass date logic validation`)
+    : right(response)
+}
+
+/**
+ * Returns a validator to check if date is within the
+ * specified custom date range.
+ */
+const makeCustomDateValidatorV3: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<IDateFieldSchema>,
+  DateResponseV3
+> = (dateField) => (response) => {
+  const { answer } = response
+  const answerDate = createMomentFromDateString(answer)
+
+  const { customMinDate, customMaxDate } = dateField.dateValidation || {}
+
+  return (customMinDate && answerDate.isBefore(customMinDate)) ||
+    (customMaxDate && answerDate.isAfter(customMaxDate))
+    ? left(`DateValidator:\t answer does not pass date logic validation`)
+    : right(response)
+}
+
+/**
+ * Returns the appropriate validator
+ * based on the date validation option selected.
+ */
+const makeDateValidatorV3: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<IDateFieldSchema>,
+  DateResponseV3
+> = (dateField) => {
+  const { selectedDateValidation } = dateField.dateValidation || {}
+  switch (selectedDateValidation) {
+    case DateSelectedValidation.NoFuture:
+      return pastOnlyValidatorV3
+    case DateSelectedValidation.NoPast:
+      return futureOnlyValidatorV3
+    case DateSelectedValidation.Custom:
+      return makeCustomDateValidatorV3(dateField)
+    default:
+      return right
+  }
+}
+
+/**
+ * Returns a validator to check if date is an invalid day
+ */
+const makeInvalidDaysValidatorV3: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<IDateFieldSchema>,
+  DateResponseV3
+> = (dateField) => (response) => {
+  const { answer } = response
+  const invalidDays = convertInvalidDaysToNumberSet(dateField.invalidDays ?? [])
+  // Convert date response to a ISO day of the week number format
+  const dateResponseNumberFormat = parseInt(format(new Date(answer), 'i'))
+
+  return invalidDays.has(dateResponseNumberFormat)
+    ? left(`DateValidator:\t answer is an invalid day`)
+    : right(response)
+}
+
+export const constructDateValidatorV3: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<IDateFieldSchema>,
+  ParsedClearFormFieldResponseV3,
+  DateResponseV3
+> = (dateField) => {
+  return flow(
+    isDateResponseV3,
+    chain(notEmptySingleAnswerResponseV3),
+    chain(dateFormatValidatorV3),
+    chain(makeDateValidatorV3(dateField)),
+    chain(makeInvalidDaysValidatorV3(dateField)),
+  )
+}

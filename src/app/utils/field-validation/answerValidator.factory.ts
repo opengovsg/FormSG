@@ -22,9 +22,15 @@ import {
   constructCountryRegionValidator,
   constructCountryRegionValidatorV3,
 } from './validators/countryRegionValidator'
-import { constructDateValidator } from './validators/dateValidator'
+import {
+  constructDateValidator,
+  constructDateValidatorV3,
+} from './validators/dateValidator'
 import { constructDecimalValidator } from './validators/decimalValidator'
-import { constructDropdownValidator } from './validators/dropdownValidator'
+import {
+  constructDropdownValidator,
+  constructDropdownValidatorV3,
+} from './validators/dropdownValidator'
 import { constructEmailValidator } from './validators/emailValidator'
 import {
   constructHomeNoValidator,
@@ -155,7 +161,7 @@ const constructGenericStringAnswerResponseValidatorV3 = (
     case BasicField.HomeNo:
       return constructHomeNoValidatorV3(formField)
     case BasicField.Dropdown:
-      return () => left('Not implemented')
+      return constructDropdownValidatorV3(formField)
     case BasicField.Rating:
       return constructRatingValidatorV3(formField)
     case BasicField.Nric:
@@ -163,7 +169,7 @@ const constructGenericStringAnswerResponseValidatorV3 = (
     case BasicField.Uen:
       return constructUenValidatorV3()
     case BasicField.Date:
-      return () => left('Not implemented')
+      return constructDateValidatorV3(formField)
     case BasicField.CountryRegion:
       return constructCountryRegionValidatorV3()
   }
