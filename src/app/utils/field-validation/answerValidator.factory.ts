@@ -37,7 +37,9 @@ import {
   constructSectionValidatorV3,
 } from './validators/sectionValidator'
 import { constructTableValidator } from './validators/tableValidator'
-import constructTextValidator from './validators/textValidator'
+import constructTextValidator, {
+  constructTextValidatorV3,
+} from './validators/textValidator'
 import { constructUenValidator } from './validators/uenValidator'
 import { constructYesNoValidator } from './validators/yesNoValidator'
 import { isGenericStringAnswerResponseV3 } from './field-validation.guards'
@@ -133,9 +135,8 @@ const constructGenericStringAnswerResponseValidatorV3 = (
     case BasicField.Decimal:
       return () => left('Not implemented')
     case BasicField.ShortText:
-      return () => left('Not implemented')
     case BasicField.LongText:
-      return () => left('Not implemented')
+      return constructTextValidatorV3(formField)
     case BasicField.HomeNo:
       return () => left('Not implemented')
     case BasicField.Dropdown:
@@ -165,9 +166,9 @@ export const constructFieldResponseValidatorV3 = ({
   formField: FormFieldDto<FormField>
   isVisible: boolean
 }): ResponseValidator<ParsedClearFormFieldResponseV3> => {
-  // if (isGenericStringAnswerResponseV3(response.fieldType)) {
-  //   return constructGenericStringAnswerResponseValidatorV3(formField)
-  // }
+  if (isGenericStringAnswerResponseV3(response.fieldType)) {
+    return constructGenericStringAnswerResponseValidatorV3(formField)
+  }
   switch (formField.fieldType) {
     case BasicField.Section:
       return constructSectionValidatorV3()
@@ -178,7 +179,6 @@ export const constructFieldResponseValidatorV3 = ({
     case BasicField.Mobile:
       return () => left('Not implemented')
     case BasicField.Table:
-      // return constructTableValidator(formField)
       return () => left('Not implemented')
     case BasicField.Radio:
       return constructRadioButtonValidatorV3(formField)

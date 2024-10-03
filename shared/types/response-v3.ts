@@ -7,7 +7,6 @@ export type FieldResponseV3 =
   | RadioResponseV3
   | CheckboxResponseV3
   | AttachmentResponseV3
-  | DateResponseV3
   | TableResponseV3
   | ChildBirthRecordsResponseV3
   | YesNoResponseV3
