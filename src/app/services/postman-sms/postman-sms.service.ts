@@ -36,23 +36,29 @@ class PostmanSmsService {
    * SMSes will be sent using govsg sender id.
    * Messages to any member of public MUST be sent using this method.
    */
-  _sendMopSms(
-    smsData: FormOtpData,
-    recipient: string,
-    message: string,
-    smsType: SmsType,
-    senderIp?: string,
-  ): ResultAsync<true, SmsSendError> {
+  _sendMopSms({
+    smsData,
+    recipientPhoneNumber,
+    message,
+    smsType,
+    senderIp,
+  }: {
+    smsData: FormOtpData
+    recipientPhoneNumber: string
+    message: string
+    smsType: SmsType
+    senderIp?: string
+  }): ResultAsync<true, SmsSendError> {
     const logMeta = {
       action: 'sendMopSms',
-      recipient,
+      recipientPhoneNumber,
       smsType,
       smsData,
       senderIp,
     }
 
     const body = {
-      recipient: recipient.replace('+', ''),
+      recipient: recipientPhoneNumber.replace('+', ''),
       language: 'english',
       values: { body: message },
     }
@@ -96,26 +102,32 @@ class PostmanSmsService {
    *
    * SMSes will be sent using FormSG sender id.
    */
-  _sendInternalSms(
+  _sendInternalSms({
+    smsData,
+    recipientPhoneNumber,
+    message,
+    smsType,
+    senderIp,
+  }: {
     smsData:
       | FormDeactivatedSmsData
       | BouncedSubmissionSmsData
-      | AdminContactOtpData,
-    recipient: string,
-    message: string,
-    smsType: SmsType,
-    senderIp?: string,
-  ): ResultAsync<true, SmsSendError | InvalidNumberError> {
+      | AdminContactOtpData
+    recipientPhoneNumber: string
+    message: string
+    smsType: SmsType
+    senderIp?: string
+  }): ResultAsync<true, SmsSendError | InvalidNumberError> {
     const logMeta = {
       action: '_sendInternalSms',
-      recipient,
+      recipientPhoneNumber,
       smsType,
       smsData,
       senderIp,
     }
 
     const body = {
-      recipient: recipient.replace('+', ''),
+      recipient: recipientPhoneNumber.replace('+', ''),
       language: 'english',
       values: { body: message },
     }
@@ -156,19 +168,25 @@ class PostmanSmsService {
 
   /**
    * Sends an otp to a valid phonenumber through the MOP SMS flow
-   * @param recipient The phone number to send to
+   * @param recipientPhoneNumber The phone number to send to
    * @param otp The OTP to send
    * @param otpPrefix The OTP Prefix to send
    * @param formId Form id for retrieving otp data.
    * @param senderIp The ip address of the person triggering the SMS
    */
-  public sendVerificationOtp(
-    recipient: string,
-    otp: string,
-    otpPrefix: string,
-    formId: string,
-    senderIp: string,
-  ): ResultAsync<
+  public sendVerificationOtp({
+    recipientPhoneNumber,
+    otp,
+    otpPrefix,
+    formId,
+    senderIp,
+  }: {
+    recipientPhoneNumber: string
+    otp: string
+    otpPrefix: string
+    formId: string
+    senderIp: string
+  }): ResultAsync<
     true,
     DatabaseError | MalformedParametersError | SmsSendError | InvalidNumberError
   > {
@@ -181,9 +199,9 @@ class PostmanSmsService {
       meta: logMeta,
     })
 
-    if (!isPhoneNumber(recipient)) {
+    if (!isPhoneNumber(recipientPhoneNumber)) {
       logger.warn({
-        message: `${recipient} is not a valid phone number`,
+        message: `${recipientPhoneNumber} is not a valid phone number`,
         meta: logMeta,
       })
       return errAsync(new InvalidNumberError())
@@ -209,24 +227,31 @@ class PostmanSmsService {
       }
 
       const message = renderVerificationSms(otp, otpPrefix)
-      return this._sendMopSms(
-        otpData,
-        recipient,
+      return this._sendMopSms({
+        smsData: otpData,
+        recipientPhoneNumber,
         message,
-        SmsType.Verification,
+        smsType: SmsType.Verification,
         senderIp,
-      )
+      })
     })
   }
 
-  public sendBouncedSubmissionSms(
-    recipient: string,
-    recipientEmail: string,
-    adminId: string,
-    adminEmail: string,
-    formId: string,
-    formTitle: string,
-  ): ResultAsync<true, SmsSendError | InvalidNumberError> {
+  public sendBouncedSubmissionSms({
+    recipientPhoneNumber,
+    recipientEmail,
+    adminId,
+    adminEmail,
+    formId,
+    formTitle,
+  }: {
+    recipientPhoneNumber: string
+    recipientEmail: string
+    adminId: string
+    adminEmail: string
+    formId: string
+    formTitle: string
+  }): ResultAsync<true, SmsSendError | InvalidNumberError> {
     const logMeta = {
       action: 'sendBouncedSubmissionSms',
       formId,
@@ -237,9 +262,9 @@ class PostmanSmsService {
       meta: logMeta,
     })
 
-    if (!isPhoneNumber(recipient)) {
-      logger.warn({
-        message: `${recipient} is not a valid phone number`,
+    if (!isPhoneNumber(recipientPhoneNumber)) {
+      logger.error({
+        message: `${recipientPhoneNumber} is not a valid phone number`,
         meta: logMeta,
       })
       return errAsync(new InvalidNumberError())
@@ -250,29 +275,36 @@ class PostmanSmsService {
     const smsData: BouncedSubmissionSmsData = {
       form: formId,
       collaboratorEmail: recipientEmail,
-      recipientNumber: recipient,
+      recipientNumber: recipientPhoneNumber,
       formAdmin: {
         email: adminEmail,
         userId: adminId,
       },
     }
 
-    return this._sendInternalSms(
+    return this._sendInternalSms({
       smsData,
-      recipient,
+      recipientPhoneNumber,
       message,
-      SmsType.BouncedSubmission,
-    )
+      smsType: SmsType.BouncedSubmission,
+    })
   }
 
-  public sendFormDeactivatedSms(
-    recipient: string,
-    recipientEmail: string,
-    adminId: string,
-    adminEmail: string,
-    formId: string,
-    formTitle: string,
-  ): ResultAsync<true, SmsSendError | InvalidNumberError> {
+  public sendFormDeactivatedSms({
+    recipientPhoneNumber,
+    recipientEmail,
+    adminId,
+    adminEmail,
+    formId,
+    formTitle,
+  }: {
+    recipientPhoneNumber: string
+    recipientEmail: string
+    adminId: string
+    adminEmail: string
+    formId: string
+    formTitle: string
+  }): ResultAsync<true, SmsSendError | InvalidNumberError> {
     const logMeta = {
       action: 'sendFormDeactivatedSms',
       formId,
@@ -283,9 +315,9 @@ class PostmanSmsService {
       meta: logMeta,
     })
 
-    if (!isPhoneNumber(recipient)) {
+    if (!isPhoneNumber(recipientPhoneNumber)) {
       logger.warn({
-        message: `${recipient} is not a valid phone number`,
+        message: `${recipientPhoneNumber} is not a valid phone number`,
         meta: logMeta,
       })
       return errAsync(new InvalidNumberError())
@@ -296,27 +328,32 @@ class PostmanSmsService {
     const smsData: FormDeactivatedSmsData = {
       form: formId,
       collaboratorEmail: recipientEmail,
-      recipientNumber: recipient,
+      recipientNumber: recipientPhoneNumber,
       formAdmin: {
         email: adminEmail,
         userId: adminId,
       },
     }
 
-    return this._sendInternalSms(
+    return this._sendInternalSms({
       smsData,
-      recipient,
+      recipientPhoneNumber,
       message,
-      SmsType.DeactivatedForm,
-    )
+      smsType: SmsType.DeactivatedForm,
+    })
   }
 
-  public sendAdminContactOtp(
-    recipient: string,
-    otp: string,
-    userId: string,
-    senderIp: string,
-  ): ResultAsync<true, SmsSendError | InvalidNumberError> {
+  public sendAdminContactOtp({
+    recipientPhoneNumber,
+    otp,
+    userId,
+    senderIp,
+  }: {
+    recipientPhoneNumber: string
+    otp: string
+    userId: string
+    senderIp: string
+  }): ResultAsync<true, SmsSendError | InvalidNumberError> {
     const logMeta = {
       action: 'sendAdminContactOtp',
       userId,
@@ -327,9 +364,9 @@ class PostmanSmsService {
       meta: logMeta,
     })
 
-    if (!isPhoneNumber(recipient)) {
+    if (!isPhoneNumber(recipientPhoneNumber)) {
       logger.warn({
-        message: `${recipient} is not a valid phone number`,
+        message: `${recipientPhoneNumber} is not a valid phone number`,
         meta: logMeta,
       })
       return errAsync(new InvalidNumberError())
@@ -341,13 +378,13 @@ class PostmanSmsService {
       admin: userId,
     }
 
-    return this._sendInternalSms(
-      otpData,
-      recipient,
+    return this._sendInternalSms({
+      smsData: otpData,
+      recipientPhoneNumber,
       message,
-      SmsType.AdminContact,
+      smsType: SmsType.AdminContact,
       senderIp,
-    )
+    })
   }
 }
 

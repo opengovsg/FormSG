@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.149.3",
+  "version": "6.150.0",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -60,7 +60,7 @@
     "@babel/runtime": "^7.24.7",
     "@faker-js/faker": "^8.4.1",
     "@growthbook/growthbook": "^1.1.0",
-    "@joi/date": "^2.1.0",
+    "@joi/date": "^2.1.1",
     "@opengovsg/formsg-sdk": "^0.12.0-alpha.1",
     "@opengovsg/myinfo-gov-client": "^4.1.2",
     "@opengovsg/sgid-client": "^2.2.0",

@@ -179,7 +179,7 @@ jobs:
         uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          allow-empty: false
+          allow-empty: true
 
   backend_lint:
     needs: [changes, install]
