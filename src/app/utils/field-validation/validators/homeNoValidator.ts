@@ -1,5 +1,8 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
+import { BasicField, HomeNoResponseV3 } from 'shared/types'
+
+import { ParsedClearFormFieldResponseV3 } from 'src/types/api'
 
 import {
   isHomePhoneNumber,
@@ -9,10 +12,16 @@ import {
   IHomenoFieldSchema,
   OmitUnusedValidatorProps,
 } from '../../../../types/field'
-import { ResponseValidator } from '../../../../types/field/utils/validation'
+import {
+  ResponseValidator,
+  ResponseValidatorConstructor,
+} from '../../../../types/field/utils/validation'
 import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
 
-import { notEmptySingleAnswerResponse } from './common'
+import {
+  notEmptySingleAnswerResponse,
+  notEmptySingleAnswerResponseV3,
+} from './common'
 
 type HomeNoValidator = ResponseValidator<ProcessedSingleAnswerResponse>
 type HomeNoValidatorConstructor = (
@@ -59,4 +68,63 @@ export const constructHomeNoValidator: HomeNoValidatorConstructor = (
     notEmptySingleAnswerResponse,
     chain(homePhoneNumberValidator),
     chain(makePrefixValidator(homeNumberField)),
+  )
+
+const isHomePhoneNumberV3: ResponseValidator<
+  ParsedClearFormFieldResponseV3,
+  HomeNoResponseV3
+> = (response) => {
+  if (response.fieldType !== BasicField.HomeNo) {
+    return left(
+      'HomeNoValidatorV3.fieldTypeMismatch:\t fieldType is not homeno',
+    )
+  }
+  return right(response)
+}
+
+/**
+ * Returns a validator to check if home number
+ * format is correct.
+ */
+const homePhoneNumberValidatorV3: ResponseValidator<HomeNoResponseV3> = (
+  response,
+) => {
+  return isHomePhoneNumber(response.answer)
+    ? right(response)
+    : left(`HomeNoValidator:\t answer is not a valid home phone number`)
+}
+
+/**
+ * Returns a validator to check if home
+ * number starts with singapore prefix.
+ */
+const sgPrefixValidatorV3: ResponseValidator<HomeNoResponseV3> = (response) => {
+  return startsWithSgPrefix(response.answer)
+    ? right(response)
+    : left(
+        `HomeNoValidator:\t answer is not an SG number but intl numbers are not allowed`,
+      )
+}
+
+/**
+ * Returns a validation function to check if home
+ * number prefix is correct.
+ */
+const makePrefixValidatorV3: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<IHomenoFieldSchema>,
+  HomeNoResponseV3
+> = (homeNumberField) => {
+  return homeNumberField.allowIntlNumbers ? right : sgPrefixValidatorV3
+}
+
+export const constructHomeNoValidatorV3: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<IHomenoFieldSchema>,
+  ParsedClearFormFieldResponseV3,
+  HomeNoResponseV3
+> = (formField) =>
+  flow(
+    isHomePhoneNumberV3,
+    chain(notEmptySingleAnswerResponseV3),
+    chain(homePhoneNumberValidatorV3),
+    chain(makePrefixValidatorV3(formField)),
   )

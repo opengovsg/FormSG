@@ -113,7 +113,9 @@ const isTextFieldV3: ResponseValidator<
   ) {
     return right(response)
   }
-  return left('Field is not a text field')
+  return left(
+    `TextValidatorV3.fieldTypeMismatch:\tfield type is not textfield or textarea`,
+  )
 }
 
 /**
@@ -129,7 +131,7 @@ const minLengthValidatorV3: ResponseValidatorConstructor<
   if (min === null) return right(response)
   return response.answer.length >= min
     ? right(response)
-    : left(`TextValidator.minLength:\tanswer is less than minimum of ${min}`)
+    : left(`TextValidatorV3.minLength:\tanswer is less than minimum of ${min}`)
 }
 
 /**
@@ -145,7 +147,9 @@ const maxLengthValidatorV3: ResponseValidatorConstructor<
   if (max === null) return right(response)
   return response.answer.length <= max
     ? right(response)
-    : left(`TextValidator.maxLength:\tanswer is greater than maximum of ${max}`)
+    : left(
+        `TextValidatorV3.maxLength:\tanswer is greater than maximum of ${max}`,
+      )
 }
 
 /**
@@ -162,7 +166,7 @@ const exactLengthValidatorV3: ResponseValidatorConstructor<
   return response.answer.length === exact
     ? right(response)
     : left(
-        `TextValidator.exactLength:\tanswer is not exactly equal to ${exact}`,
+        `TextValidatorV3.exactLength:\tanswer is not exactly equal to ${exact}`,
       )
 }
 

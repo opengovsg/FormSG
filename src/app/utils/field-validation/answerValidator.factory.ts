@@ -18,12 +18,18 @@ import {
   constructCheckboxValidatorV3,
 } from './validators/checkboxValidator'
 import { constructChildrenValidator } from './validators/childrenValidator'
-import { constructCountryRegionValidator } from './validators/countryRegionValidator'
+import {
+  constructCountryRegionValidator,
+  constructCountryRegionValidatorV3,
+} from './validators/countryRegionValidator'
 import { constructDateValidator } from './validators/dateValidator'
 import { constructDecimalValidator } from './validators/decimalValidator'
 import { constructDropdownValidator } from './validators/dropdownValidator'
 import { constructEmailValidator } from './validators/emailValidator'
-import { constructHomeNoValidator } from './validators/homeNoValidator'
+import {
+  constructHomeNoValidator,
+  constructHomeNoValidatorV3,
+} from './validators/homeNoValidator'
 import { constructMobileNoValidator } from './validators/mobileNoValidator'
 import { constructNricValidator } from './validators/nricValidator'
 import { constructNumberValidator } from './validators/numberValidator'
@@ -31,7 +37,10 @@ import {
   constructRadioButtonValidator,
   constructRadioButtonValidatorV3,
 } from './validators/radioButtonValidator'
-import { constructRatingValidator } from './validators/ratingValidator'
+import {
+  constructRatingValidator,
+  constructRatingValidatorV3,
+} from './validators/ratingValidator'
 import {
   constructSectionValidator,
   constructSectionValidatorV3,
@@ -138,11 +147,11 @@ const constructGenericStringAnswerResponseValidatorV3 = (
     case BasicField.LongText:
       return constructTextValidatorV3(formField)
     case BasicField.HomeNo:
-      return () => left('Not implemented')
+      return constructHomeNoValidatorV3(formField)
     case BasicField.Dropdown:
       return () => left('Not implemented')
     case BasicField.Rating:
-      return () => left('Not implemented')
+      return constructRatingValidatorV3(formField)
     case BasicField.Nric:
       return () => left('Not implemented')
     case BasicField.Uen:
@@ -150,7 +159,7 @@ const constructGenericStringAnswerResponseValidatorV3 = (
     case BasicField.Date:
       return () => left('Not implemented')
     case BasicField.CountryRegion:
-      return () => left('Not implemented')
+      return constructCountryRegionValidatorV3()
   }
   return () => left('Unsupported field type')
 }
