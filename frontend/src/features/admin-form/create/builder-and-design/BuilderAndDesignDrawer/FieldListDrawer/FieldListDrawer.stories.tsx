@@ -1,4 +1,4 @@
-import { DragDropContext } from 'react-beautiful-dnd'
+import { DragDropContext } from '@hello-pangea/dnd'
 import { StoryFn } from '@storybook/react'
 
 import { FormResponseMode } from '~shared/types'

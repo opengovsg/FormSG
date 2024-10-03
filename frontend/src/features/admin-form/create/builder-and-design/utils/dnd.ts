@@ -4,7 +4,7 @@ import { FIELD_LIST_DROP_ID } from '~features/admin-form/create/builder-and-desi
 
 /**
  * onDrag handler functions to get props to render placeholders since
- * react-beautiful-dnd does not natively support custom placeholders.
+ * @hello-pangea/dnd does not natively support custom placeholders.
  * See https://medium.com/@Dedanade/how-to-add-a-custom-placeholder-for-more-than-one-column-react-beautiful-dnd-3d59b64fe2d2
  * for original code.
  */
