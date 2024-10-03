@@ -12,7 +12,10 @@ import {
   ProcessedTableResponse,
 } from '../../modules/submission/submission.types'
 
-import { constructAttachmentValidator } from './validators/attachmentValidator'
+import {
+  constructAttachmentFieldValidatorV3,
+  constructAttachmentValidator,
+} from './validators/attachmentValidator'
 import {
   constructCheckboxValidator,
   constructCheckboxValidatorV3,
@@ -215,7 +218,7 @@ export const constructFieldResponseValidatorV3 = ({
     case BasicField.Checkbox:
       return constructCheckboxValidatorV3(formField)
     case BasicField.Attachment:
-      return () => left('Not implemented')
+      return constructAttachmentFieldValidatorV3(formField)
     case BasicField.Children:
       return () => left('Not implemented')
   }
