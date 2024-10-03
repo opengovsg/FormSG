@@ -1,13 +1,13 @@
 import { left } from 'fp-ts/lib/Either'
 
-import { BasicField } from '../../../../shared/types'
+import { BasicField, FormField, FormFieldDto } from '../../../../shared/types'
 import { FieldValidationSchema } from '../../../types'
+import { ParsedClearFormFieldResponseV3 } from '../../../types/api'
 import { ResponseValidator } from '../../../types/field/utils/validation'
 import {
   ProcessedAttachmentResponse,
   ProcessedCheckboxResponse,
   ProcessedChildrenResponse,
-  ProcessedSingleAnswerResponse,
   ProcessedTableResponse,
 } from '../../modules/submission/submission.types'
 
@@ -30,6 +30,7 @@ import { constructTableValidator } from './validators/tableValidator'
 import constructTextValidator from './validators/textValidator'
 import { constructUenValidator } from './validators/uenValidator'
 import { constructYesNoValidator } from './validators/yesNoValidator'
+import { isGenericStringAnswerResponseV3 } from './field-validation.guards'
 
 /**
  * Constructs a validation function for a single answer response, using a form field field as a specification.
@@ -37,7 +38,7 @@ import { constructYesNoValidator } from './validators/yesNoValidator'
  */
 export const constructSingleAnswerValidator = (
   formField: FieldValidationSchema,
-): ResponseValidator<ProcessedSingleAnswerResponse> => {
+): ResponseValidator<StringAnswerResponse> => {
   switch (formField.fieldType) {
     case BasicField.Section:
       return constructSectionValidator()
@@ -110,5 +111,72 @@ export const constructTableFieldValidator = (
   if (formField.fieldType === BasicField.Table) {
     return constructTableValidator(formField)
   }
+  return () => left('Unsupported field type')
+}
+
+const constructGenericStringAnswerResponseValidatorV3 = (
+  formField: FormFieldDto<FormField>,
+): ResponseValidator<ParsedClearFormFieldResponseV3> => {
+  switch (formField.fieldType) {
+    case BasicField.Number:
+      return () => left('Not implemented')
+    case BasicField.Decimal:
+      return () => left('Not implemented')
+    case BasicField.ShortText:
+      return () => left('Not implemented')
+    case BasicField.LongText:
+      return () => left('Not implemented')
+    case BasicField.HomeNo:
+      return () => left('Not implemented')
+    case BasicField.Dropdown:
+      return () => left('Not implemented')
+    case BasicField.Rating:
+      return () => left('Not implemented')
+    case BasicField.Nric:
+      return () => left('Not implemented')
+    case BasicField.Uen:
+      return () => left('Not implemented')
+    case BasicField.Date:
+      return () => left('Not implemented')
+    case BasicField.CountryRegion:
+      return () => left('Not implemented')
+  }
+  return () => left('Unsupported field type')
+}
+
+export const constructFieldResponseValidatorV3 = ({
+  formId,
+  response,
+  formField,
+  isVisible,
+}: {
+  formId: string
+  response: ParsedClearFormFieldResponseV3
+  formField: FormFieldDto<FormField>
+  isVisible: boolean
+}): ResponseValidator<ParsedClearFormFieldResponseV3> => {
+  if (isGenericStringAnswerResponseV3(response.fieldType)) {
+    return constructGenericStringAnswerResponseValidatorV3(formField)
+  }
+  switch (formField.fieldType) {
+    case BasicField.YesNo:
+      return () => left('Not implemented')
+    case BasicField.Email:
+      return () => left('Not implemented')
+    case BasicField.Mobile:
+      return () => left('Not implemented')
+    case BasicField.Table:
+      // return constructTableValidator(formField)
+      return () => left('Not implemented')
+    case BasicField.Radio:
+      return () => left('Not implemented')
+    case BasicField.Checkbox:
+      return () => left('Not implemented')
+    case BasicField.Attachment:
+      return () => left('Not implemented')
+    case BasicField.Children:
+      return () => left('Not implemented')
+  }
+
   return () => left('Unsupported field type')
 }

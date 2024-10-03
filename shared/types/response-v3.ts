@@ -13,9 +13,9 @@ export type FieldResponseV3 =
   | YesNoResponseV3
   | EmailResponseV3
   | MobileResponseV3
-  | StringAnswerFieldResponseV3
+  | GenericStringAnswerFieldResponseV3
 
-export type StringAnswerFieldResponseV3 =
+export type GenericStringAnswerFieldResponseV3 =
   | NumberResponseV3
   | DecimalResponseV3
   | ShortTextResponseV3
@@ -61,8 +61,8 @@ export type FieldResponseV3Base = {
   fieldType: BasicField
 }
 export type FieldResponseAnswerMapV3<F extends BasicField = BasicField> =
-  F extends SingleAnswerResponseFieldTypeV3
-    ? SingleAnswerResponseV3
+  F extends GenericStringAnswerResponseFieldTypeV3
+    ? StringAnswerResponseV3
     : F extends BasicField.YesNo
       ? YesNoFieldResponseV3
       : F extends BasicField.Attachment
@@ -79,20 +79,20 @@ export type FieldResponseAnswerMapV3<F extends BasicField = BasicField> =
                   ? ChildrenCompoundFieldResponsesV3
                   : never
 
-export type SingleAnswerResponseFieldTypeV3 =
-  | BasicField.Number
-  | BasicField.Decimal
-  | BasicField.ShortText
-  | BasicField.LongText
-  | BasicField.HomeNo
-  | BasicField.Dropdown
-  | BasicField.Rating
-  | BasicField.Nric
-  | BasicField.Uen
-  | BasicField.Date
-  | BasicField.CountryRegion
+export type GenericStringAnswerResponseFieldTypeV3 =
+  | NumberResponseV3['fieldType']
+  | DecimalResponseV3['fieldType']
+  | ShortTextResponseV3['fieldType']
+  | LongTextResponseV3['fieldType']
+  | HomeNoResponseV3['fieldType']
+  | DropdownResponseV3['fieldType']
+  | RatingResponseV3['fieldType']
+  | NricResponseV3['fieldType']
+  | UenResponseV3['fieldType']
+  | DateResponseV3['fieldType']
+  | CountryRegionResponseV3['fieldType']
 
-export type SingleAnswerResponseV3 = string
+export type StringAnswerResponseV3 = string
 export type YesNoFieldResponseV3 = 'Yes' | 'No'
 export type VerifiableFieldResponsesV3 = {
   signature?: string

@@ -24,7 +24,7 @@ export enum BasicField {
 }
 
 /**
- * Contains field types where the answer property is a string.
+ * Contains field types where the answer property is a string type, includes enums that evaluate to string.
  */
 export enum StringAnswerResponseFieldV3 {
   Section = 'section',
@@ -45,6 +45,23 @@ export enum StringAnswerResponseFieldV3 {
   Rating = 'rating',
   Nric = 'nric',
   Uen = 'uen',
+}
+
+/**
+ * Contains field types where the answer is a generic string type
+ */
+export enum GenericStringAnswerResponseFieldV3 {
+  Number = 'number',
+  Decimal = 'decimal',
+  ShortText = 'textfield',
+  LongText = 'textarea',
+  HomeNo = 'homeno',
+  Dropdown = 'dropdown',
+  Rating = 'rating',
+  Nric = 'nric',
+  Uen = 'uen',
+  Date = 'date',
+  CountryRegion = 'country_region',
 }
 
 export enum MyInfoAttribute {

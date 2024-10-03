@@ -3,6 +3,7 @@ import { get } from 'lodash'
 import { types as basicTypes } from '../../../../shared/constants/field/basic'
 import {
   BasicField,
+  GenericStringAnswerResponseFieldV3,
   StringAnswerResponseFieldV3,
   TableRow,
 } from '../../../../shared/types'
@@ -108,13 +109,24 @@ export const isPossibleEmailFieldSchema = (
 }
 
 /**
- * Checks if the fieldType has an answer that is a string.
+ * Checks if the fieldType has an answer that is a string type, including enums that evaluate to string.
  * @param fieldType the fieldType to check
- * @returns true if the fieldType has an answer that is a string.
  */
-export const isSingleStringResponseV3 = (fieldType: string): boolean => {
-  const singleStringFieldTypesV3: string[] = Object.values(
+export const isStringAnswerResponseV3 = (fieldType: string): boolean => {
+  const stringAnswerFieldTypesV3: string[] = Object.values(
     StringAnswerResponseFieldV3,
   )
-  return singleStringFieldTypesV3.includes(fieldType)
+  return stringAnswerFieldTypesV3.includes(fieldType)
+}
+
+/**
+ *
+ * Checks if the fieldType has an answer that is a generic string type, does not include enums that evaluate to string.
+ * @param fieldType the fieldType to check
+ */
+export const isGenericStringAnswerResponseV3 = (fieldType: string): boolean => {
+  const genericStringAnswerFieldTypesV3: string[] = Object.values(
+    GenericStringAnswerResponseFieldV3,
+  )
+  return genericStringAnswerFieldTypesV3.includes(fieldType)
 }

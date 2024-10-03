@@ -2,12 +2,7 @@ import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 import { err, ok, Result } from 'neverthrow'
 
 import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
-import {
-  BasicField,
-  FormField,
-  FormFieldDto,
-  StringAnswerFieldResponseV3,
-} from '../../../../shared/types'
+import { BasicField, FormField, FormFieldDto } from '../../../../shared/types'
 import {
   ProcessedAttachmentResponse,
   ProcessedCheckboxResponse,
@@ -30,6 +25,7 @@ import {
   constructAttachmentFieldValidator,
   constructCheckboxFieldValidator,
   constructChildFieldValidator,
+  constructFieldResponseValidatorV3,
   constructSingleAnswerValidator,
   constructTableFieldValidator,
 } from './answerValidator.factory'
@@ -39,7 +35,7 @@ import {
   isProcessedChildResponse,
   isProcessedSingleAnswerResponse,
   isProcessedTableResponse,
-  isSingleStringResponseV3,
+  isStringAnswerResponseV3,
 } from './field-validation.guards'
 
 const logger = createLoggerWithLabel(module)
@@ -285,8 +281,8 @@ const isResponsePresentOnHiddenFieldV3 = (
 ) => {
   if (isVisible) return false
 
-  if (isSingleStringResponseV3(response.fieldType)) {
-    const answer = (response as StringAnswerFieldResponseV3).answer
+  if (isStringAnswerResponseV3(response.fieldType)) {
+    const answer = response.answer
     const isStringAnswerEmpty = answer.toString().trim() === ''
     return !isStringAnswerEmpty
   }
