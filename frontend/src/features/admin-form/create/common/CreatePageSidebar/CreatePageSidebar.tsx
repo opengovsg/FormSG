@@ -110,6 +110,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
       <Stack spacing="0.5rem">
         <DrawerTabIcon
           label="Add fields"
+          trackingLabel="create_builder.drawer_tab.add_fields"
           icon={<BxsWidget fontSize="1.5rem" />}
           onClick={handleDrawerBuilderClick}
           isActive={activeTab === DrawerTabs.Builder}
@@ -117,6 +118,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
         />
         <DrawerTabIcon
           label="Edit header and instructions"
+          trackingLabel="create_builder.drawer_tab.edit_header"
           icon={<BxsDockTop fontSize="1.5rem" />}
           onClick={handleDrawerDesignClick}
           isActive={activeTab === DrawerTabs.Design}
@@ -124,6 +126,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
         />
         <DrawerTabIcon
           label="Add logic"
+          trackingLabel="create_builder.drawer_tab.add_logic"
           icon={<BiGitMerge fontSize="1.5rem" />}
           onClick={handleDrawerLogicClick}
           isActive={activeTab === DrawerTabs.Logic}
@@ -131,6 +134,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
         />
         <DrawerTabIcon
           label="Edit Thank you page"
+          trackingLabel="create_builder.drawer_tab.edit_thank_you_page"
           icon={<PhHandsClapping fontSize="1.5rem" />}
           onClick={handleDrawerEndpageClick}
           isActive={activeTab === DrawerTabs.EndPage}
@@ -141,6 +145,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
             <Divider />
             <DrawerTabIcon
               label="Add workflow"
+              trackingLabel="create_builder.drawer_tab.add_workflow"
               icon={<MultiParty fontSize="1.5rem" />}
               onClick={handleDrawerWorkflowClick}
               isActive={activeTab === DrawerTabs.Workflow}
@@ -157,6 +162,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           icon={<BiQuestionMark />}
           borderRadius="full"
           aria-label="Help"
+          data-dd-action-name="create_builder.drawer_tab.help"
           onClick={(e) => {
             e.preventDefault()
             window.open(FORM_GUIDE)

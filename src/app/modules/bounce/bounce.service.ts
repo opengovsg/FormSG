@@ -219,14 +219,14 @@ export const sendSmsBounceNotification = (
   // empty array as list of recipients.
 ): ResultAsync<UserWithContactNumber[], never> => {
   const smsResults = possibleSmsRecipients.map((recipient) =>
-    PostmanSmsService.sendBouncedSubmissionSms(
-      form.admin.email,
-      String(form.admin._id),
-      form._id,
-      form.title,
-      recipient.contact,
-      recipient.email,
-    )
+    PostmanSmsService.sendBouncedSubmissionSms({
+      adminEmail: form.admin.email,
+      adminId: String(form.admin._id),
+      formId: form._id,
+      formTitle: form.title,
+      recipientPhoneNumber: recipient.contact,
+      recipientEmail: recipient.email,
+    })
       .map(() => recipient)
       .mapErr(
         (error) => new SendBounceSmsNotificationError(error, recipient.contact),
@@ -368,14 +368,14 @@ export const notifyAdminsOfDeactivation = (
   // Best-effort attempt to send SMSes, don't propagate error upwards
 ): ResultAsync<true, never> => {
   const smsResults = possibleSmsRecipients.map((recipient) =>
-    PostmanSmsService.sendFormDeactivatedSms(
-      form.admin.email,
-      String(form.admin._id),
-      form._id,
-      form.title,
-      recipient.contact,
-      recipient.email,
-    ),
+    PostmanSmsService.sendFormDeactivatedSms({
+      adminEmail: form.admin.email,
+      adminId: String(form.admin._id),
+      formId: form._id,
+      formTitle: form.title,
+      recipientPhoneNumber: recipient.contact,
+      recipientEmail: recipient.email,
+    }),
   )
   return ResultAsync.combineWithAllErrors(smsResults)
     .map(() => true as const)

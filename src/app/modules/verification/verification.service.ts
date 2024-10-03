@@ -486,13 +486,13 @@ const sendOtpForField = (
                   senderIp,
                 )
               }
-              return PostmanSmsService.sendVerificationOtp(
-                recipient,
+              return PostmanSmsService.sendVerificationOtp({
+                recipientPhoneNumber: recipient,
                 otp,
                 otpPrefix,
                 formId,
                 senderIp,
-              )
+              })
             })
         : errAsync(new MalformedParametersError('Field id not present'))
     case BasicField.Email:

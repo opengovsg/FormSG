@@ -33,6 +33,9 @@ import {
   getAdminEmails,
 } from '../../modules/form/form.utils'
 import { formatAsPercentage } from '../../utils/formatters'
+import MrfApprovalOutcomeEmail, {
+  WorkflowOutcome,
+} from '../../views/templates/MrfApprovalOutcomeEmail'
 import MrfWorkflowCompletionEmail from '../../views/templates/MrfWorkflowCompletionEmail'
 import MrfWorkflowEmail, {
   WorkflowEmailData,
@@ -244,10 +247,21 @@ export class MailService {
     }
 
     return ResultAsync.fromPromise(
-      this.#sendMailWithRetries(mail, {
-        mailId: sendOptions?.mailId,
-        formId: sendOptions?.formId,
-      }),
+      this.#sendMailWithRetries(
+        {
+          ...mail,
+          headers: config.mail.sesConfigSet
+            ? {
+                'X-SES-CONFIGURATION-SET': config.mail.sesConfigSet,
+                ...mail.headers,
+              }
+            : mail.headers,
+        },
+        {
+          mailId: sendOptions?.mailId,
+          formId: sendOptions?.formId,
+        },
+      ),
       (error) => {
         logger.error({
           message: 'Error returned from sendMail retries',
@@ -1063,7 +1077,7 @@ export class MailService {
   }): ResultAsync<true, MailSendError> => {
     const htmlData: WorkflowEmailData = {
       formTitle,
-      responseId,
+      responseId: responseId.toString(),
       responseUrl,
     }
 
@@ -1095,7 +1109,7 @@ export class MailService {
   }) => {
     const htmlData = {
       formTitle,
-      responseId,
+      responseId: responseId.toString(),
     }
 
     const html = render(MrfWorkflowCompletionEmail(htmlData))
@@ -1104,6 +1118,43 @@ export class MailService {
       to: emails,
       from: this.#senderFromString,
       subject: `Completed - ${formTitle} (${responseId})`,
+      html,
+      headers: {
+        [EMAIL_HEADERS.emailType]: EmailType.WorkflowNotification,
+      },
+    }
+
+    return this.#sendNodeMail(mail, { formId, mailId: 'workflowNotification' })
+  }
+
+  sendMrfApprovalEmail = ({
+    emails,
+    formId,
+    formTitle,
+    responseId,
+    isRejected,
+  }: {
+    emails: string[]
+    formId: string
+    formTitle: string
+    responseId: string
+    isRejected: boolean
+  }) => {
+    const outcome = isRejected
+      ? WorkflowOutcome.NOT_APPROVED
+      : WorkflowOutcome.APPROVED
+    const htmlData = {
+      formTitle,
+      responseId: responseId.toString(),
+      outcome,
+    }
+
+    const html = render(MrfApprovalOutcomeEmail(htmlData))
+
+    const mail: MailOptions = {
+      to: emails,
+      from: this.#senderFromString,
+      subject: `${outcome} - ${formTitle} (${responseId})`,
       html,
       headers: {
         [EMAIL_HEADERS.emailType]: EmailType.WorkflowNotification,

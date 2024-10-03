@@ -62,7 +62,6 @@ export const STORAGE_FORM_SETTINGS_FIELDS = [
 export const MULTIRESPONDENT_FORM_SETTINGS_FIELDS = [
   ...FORM_SETTINGS_FIELDS,
   'publicKey',
-  'workflow',
   'emails',
   'stepsToNotify',
 ] as const

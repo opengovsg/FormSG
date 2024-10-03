@@ -798,7 +798,7 @@ describe('public-form.controller', () => {
         expect((mockRes.json as jest.Mock).mock.calls[0][0]).not.toContainKey(
           'spcpSession',
         )
-        expect(mockRes.clearCookie).toHaveBeenCalledOnceWith(
+        expect(mockRes.clearCookie).toHaveBeenCalledExactlyOnceWith(
           getCookieNameByAuthType(FormAuthType.SP),
         )
       })

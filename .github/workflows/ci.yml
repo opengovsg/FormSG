@@ -176,9 +176,10 @@ jobs:
           NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}
           AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
       - name: Coveralls
-        uses: coverallsapp/github-action@master
+        uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          allow-empty: true
 
   backend_lint:
     needs: [changes, install]

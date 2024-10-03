@@ -6,6 +6,7 @@ import {
   EmailFieldBase,
   FormFieldDto,
   FormResponseMode,
+  YesNoFieldBase,
 } from '~shared/types'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -36,14 +37,28 @@ export const useAdminFormWorkflow = () => {
     [augmentedFormFields],
   )
 
+  const yesNoFormFields = useMemo(
+    () =>
+      augmentedFormFields.filter(
+        (
+          field,
+        ): field is FormFieldWithQuestionNo<FormFieldDto<YesNoFieldBase>> =>
+          field.fieldType === BasicField.YesNo,
+      ),
+    [augmentedFormFields],
+  )
+
+  const formWorkflow =
+    form?.responseMode === FormResponseMode.Multirespondent
+      ? form.workflow
+      : undefined
+
   return {
     isLoading,
     formFields: form?.form_fields,
-    formWorkflow:
-      form?.responseMode !== FormResponseMode.Multirespondent
-        ? undefined
-        : form?.workflow,
+    formWorkflow,
     idToFieldMap,
     emailFormFields,
+    yesNoFormFields,
   }
 }

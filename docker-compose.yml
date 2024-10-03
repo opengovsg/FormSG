@@ -151,7 +151,6 @@ services:
 
   database:
     image: 'bitnami/mongodb:4.4'
-    container_name: 'formsg-db'
     environment:
       - MONGODB_DATABASE=formsg
       - MONGODB_ADVERTISED_HOSTNAME=database
@@ -165,7 +164,6 @@ services:
 
   localstack:
     image: localstack/localstack:3.3
-    container_name: formsg-localstack
     depends_on:
       - backend
     environment:
@@ -186,7 +184,6 @@ services:
 
   stripe-cli:
     image: stripe/stripe-cli
-    container_name: stripe-webhook-listener
     command: 'listen --api-key ${STRIPE_API_KEY} --device-name ${STRIPE_DEVICE_NAME} --forward-to host.docker.internal:5001/api/v3/notifications/stripe'
     environment:
       - STRIPE_API_KEY
@@ -194,7 +191,6 @@ services:
 
   mocktwilio:
     image: stoplight/prism:4
-    container_name: formsg-mocktwilio
     network_mode: 'service:backend' # reuse backend service's network stack so that it can resolve localhost:4010 to prismtwilio:4010
     command: mock https://raw.githubusercontent.com/twilio/twilio-oai/main/spec/json/twilio_api_v2010.json
 
