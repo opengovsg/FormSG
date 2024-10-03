@@ -3,8 +3,7 @@ import { flow } from 'fp-ts/lib/function'
 import { BasicField } from 'shared/types'
 import { RadioResponseV3 } from 'shared/types/response-v3'
 
-import { ParsedClearFormFieldResponseV3 } from 'src/types/api'
-
+import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
 import {
   IRadioFieldSchema,
   OmitUnusedValidatorProps,

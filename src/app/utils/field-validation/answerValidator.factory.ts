@@ -31,7 +31,10 @@ import {
   constructHomeNoValidatorV3,
 } from './validators/homeNoValidator'
 import { constructMobileNoValidator } from './validators/mobileNoValidator'
-import { constructNricValidator } from './validators/nricValidator'
+import {
+  constructNricValidator,
+  constructNricValidatorV3,
+} from './validators/nricValidator'
 import { constructNumberValidator } from './validators/numberValidator'
 import {
   constructRadioButtonValidator,
@@ -49,7 +52,10 @@ import { constructTableValidator } from './validators/tableValidator'
 import constructTextValidator, {
   constructTextValidatorV3,
 } from './validators/textValidator'
-import { constructUenValidator } from './validators/uenValidator'
+import {
+  constructUenValidator,
+  constructUenValidatorV3,
+} from './validators/uenValidator'
 import { constructYesNoValidator } from './validators/yesNoValidator'
 import { isGenericStringAnswerResponseV3 } from './field-validation.guards'
 
@@ -153,9 +159,9 @@ const constructGenericStringAnswerResponseValidatorV3 = (
     case BasicField.Rating:
       return constructRatingValidatorV3(formField)
     case BasicField.Nric:
-      return () => left('Not implemented')
+      return constructNricValidatorV3()
     case BasicField.Uen:
-      return () => left('Not implemented')
+      return constructUenValidatorV3()
     case BasicField.Date:
       return () => left('Not implemented')
     case BasicField.CountryRegion:

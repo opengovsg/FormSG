@@ -2,12 +2,11 @@ import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 import { BasicField, HomeNoResponseV3 } from 'shared/types'
 
-import { ParsedClearFormFieldResponseV3 } from 'src/types/api'
-
 import {
   isHomePhoneNumber,
   startsWithSgPrefix,
 } from '../../../../../shared/utils/phone-num-validation'
+import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
 import {
   IHomenoFieldSchema,
   OmitUnusedValidatorProps,
