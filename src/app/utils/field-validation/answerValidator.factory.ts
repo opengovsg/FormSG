@@ -31,12 +31,18 @@ import {
   constructDropdownValidator,
   constructDropdownValidatorV3,
 } from './validators/dropdownValidator'
-import { constructEmailValidator } from './validators/emailValidator'
+import {
+  constructEmailValidator,
+  constructEmailValidatorV3,
+} from './validators/emailValidator'
 import {
   constructHomeNoValidator,
   constructHomeNoValidatorV3,
 } from './validators/homeNoValidator'
-import { constructMobileNoValidator } from './validators/mobileNoValidator'
+import {
+  constructMobileNoValidator,
+  constructMobileNoValidatorV3,
+} from './validators/mobileNoValidator'
 import {
   constructNricValidator,
   constructNricValidatorV3,
@@ -62,7 +68,10 @@ import {
   constructUenValidator,
   constructUenValidatorV3,
 } from './validators/uenValidator'
-import { constructYesNoValidator } from './validators/yesNoValidator'
+import {
+  constructYesNoValidator,
+  constructYesNoValidatorV3,
+} from './validators/yesNoValidator'
 import { isGenericStringAnswerResponseV3 } from './field-validation.guards'
 
 /**
@@ -194,11 +203,11 @@ export const constructFieldResponseValidatorV3 = ({
     case BasicField.Section:
       return constructSectionValidatorV3()
     case BasicField.YesNo:
-      return () => left('Not implemented')
+      return constructYesNoValidatorV3()
     case BasicField.Email:
-      return () => left('Not implemented')
+      return constructEmailValidatorV3(formField)
     case BasicField.Mobile:
-      return () => left('Not implemented')
+      return constructMobileNoValidatorV3(formField)
     case BasicField.Table:
       return () => left('Not implemented')
     case BasicField.Radio:

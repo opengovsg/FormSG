@@ -1,11 +1,20 @@
 import { left, right } from 'fp-ts/lib/Either'
+import {
+  EmailResponseV3,
+  MobileResponseV3,
+  StringAnswerResponseV3,
+  VerifiableFieldResponseV3,
+} from 'shared/types'
 
 import {
   IEmailFieldSchema,
   IMobileFieldSchema,
   OmitUnusedValidatorProps,
 } from '../../../../types/field'
-import { ResponseValidator } from '../../../../types/field/utils/validation'
+import {
+  ResponseValidator,
+  ResponseValidatorConstructor,
+} from '../../../../types/field/utils/validation'
 import formsgSdk from '../../../config/formsg-sdk'
 import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
 
@@ -22,12 +31,27 @@ export const notEmptySingleAnswerResponse: ResponseValidator<
   return right(response)
 }
 
-export const notEmptySingleAnswerResponseV3 = <T extends { answer: string }>(
+export const notEmptySingleAnswerResponseV3 = <
+  T extends { answer: StringAnswerResponseV3 },
+>(
   response: T,
 ) => {
   if (response.answer.trim().length === 0) {
     return left(
-      'CommonValidator.notEmptySingleAnswerResponseV3:\tanswer is an empty string',
+      'CommonValidatorV3.notEmptySingleAnswerResponseV3:\tanswer is an empty string',
+    )
+  }
+  return right(response)
+}
+
+export const notEmptyVerifiableAnswerResponseV3 = <
+  T extends { answer: VerifiableFieldResponseV3 },
+>(
+  response: T,
+) => {
+  if (response.answer.value.trim().length === 0) {
+    return left(
+      'CommonValidatorV3.notEmptyVerifiableAnswerResponseV3:\tanswer is an empty string',
     )
   }
   return right(response)
@@ -66,5 +90,42 @@ export const makeSignatureValidator: (
       ? right(response)
       : left(
           `CommonValidator.makeSignatureValidator:\t answer does not have valid signature`,
+        )
+  }
+
+/**
+ * A function which returns a signature validator constructor for mobile and email verified field.
+ * The validator checks if field has correct signature.
+ */
+export const makeSignatureValidatorV3 =
+  <T extends { answer: VerifiableFieldResponseV3 }>(
+    formField:
+      | OmitUnusedValidatorProps<IEmailFieldSchema>
+      | OmitUnusedValidatorProps<IMobileFieldSchema>,
+  ) =>
+  (response: T) => {
+    const { isVerifiable, _id } = formField
+    if (!isVerifiable) {
+      return right(response) // no validation occurred
+    }
+    const { value, signature } = response.answer
+    if (!signature) {
+      return left(
+        `CommonValidatorV3.makeSignatureValidator:\t answer does not have valid signature`,
+      )
+    }
+    const isSigned =
+      formsgSdk.verification.authenticate &&
+      formsgSdk.verification.authenticate({
+        signatureString: signature,
+        submissionCreatedAt: Date.now(),
+        fieldId: _id,
+        answer: value,
+      })
+
+    return isSigned
+      ? right(response)
+      : left(
+          `CommonValidatorV3.makeSignatureValidator:\t answer does not have valid signature`,
         )
   }

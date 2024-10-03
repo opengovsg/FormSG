@@ -67,7 +67,7 @@ export type FieldResponseAnswerMapV3<F extends BasicField = BasicField> =
       : F extends BasicField.Attachment
         ? AttachmentFieldResponseV3
         : F extends BasicField.Email | BasicField.Mobile
-          ? VerifiableFieldResponsesV3
+          ? VerifiableFieldResponseV3
           : F extends BasicField.Table
             ? TableFieldResponsesV3
             : F extends BasicField.Radio
@@ -93,7 +93,7 @@ export type GenericStringAnswerResponseFieldTypeV3 =
 
 export type StringAnswerResponseV3 = string
 export type YesNoFieldResponseV3 = 'Yes' | 'No'
-export type VerifiableFieldResponsesV3 = {
+export type VerifiableFieldResponseV3 = {
   signature?: string
   value: string
 }
