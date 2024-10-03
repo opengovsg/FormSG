@@ -8,6 +8,7 @@ import {
   FormResponseMode,
   FormSettings,
   FormStatus,
+  FormSupportedLanguages,
   StorageFormSettings,
 } from '~shared/types/form/form'
 import { TwilioCredentials } from '~shared/types/twilio'
@@ -17,6 +18,7 @@ import { ApiError } from '~typings/core'
 
 import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
 import { useToast } from '~hooks/useToast'
+import { convertUnicodeLocaleToLanguage } from '~utils/multiLanguage'
 import { formatOrdinal } from '~utils/stringFormat'
 
 import { updateFormPayments } from '../common/AdminFormPageService'
@@ -33,10 +35,12 @@ import {
   updateFormCaptcha,
   updateFormEmails,
   updateFormEsrvcId,
+  updateFormHasMultiLang,
   updateFormInactiveMessage,
   updateFormIssueNotification,
   updateFormLimit,
   updateFormStatus,
+  updateFormSupportedLanguages,
   updateFormTitle,
   updateFormWebhookRetries,
   updateFormWebhookUrl,
@@ -149,6 +153,53 @@ export const useMutateFormSettings = () => {
             ]} submission.`
           : 'The submission limit on your form is removed.'
         handleSuccess({ newData, toastDescription: toastStatusMessage })
+      },
+      onError: handleError,
+    },
+  )
+
+  const mutateFormHasMultiLang = useMutation(
+    (nextHasMultiLang: boolean) =>
+      updateFormHasMultiLang(formId, nextHasMultiLang),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: newData.hasMultiLang
+            ? 'Multi-language enabled. Respondents can now select other languages to view your form in.'
+            : 'Multi-language disabled.',
+        })
+      },
+      onError: handleError,
+    },
+  )
+
+  const mutateFormSupportedLanguages = useMutation(
+    (nextSupportedLanguages?: FormSupportedLanguages) =>
+      updateFormSupportedLanguages(
+        formId,
+        nextSupportedLanguages?.nextSupportedLanguages,
+      ),
+    {
+      onSuccess: (newData, newSupportedLanguages) => {
+        if (newSupportedLanguages && newSupportedLanguages.selectedLanguage) {
+          const supportedLanguages =
+            newSupportedLanguages.nextSupportedLanguages ?? []
+          const languageToDisplay = convertUnicodeLocaleToLanguage(
+            newSupportedLanguages.selectedLanguage,
+          )
+
+          const isSelectedLanguageSupported = supportedLanguages.includes(
+            newSupportedLanguages.selectedLanguage,
+          )
+            ? `Respondents will now be able to select and view your form in ${languageToDisplay}.`
+            : `${languageToDisplay} is now hidden. Respondents will not be able to see it.`
+
+          handleSuccess({
+            newData,
+            toastDescription: isSelectedLanguageSupported,
+          })
+        }
       },
       onError: handleError,
     },
@@ -456,6 +507,8 @@ export const useMutateFormSettings = () => {
     mutateFormWebhookUrl,
     mutateFormStatus,
     mutateFormLimit,
+    mutateFormHasMultiLang,
+    mutateFormSupportedLanguages,
     mutateFormInactiveMessage,
     mutateFormCaptcha,
     mutateFormIssueNotification,

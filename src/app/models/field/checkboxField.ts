@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose'
-import { Language } from 'shared/types'
 
+import { Language } from '../../../../shared/types'
 import { ICheckboxFieldSchema } from '../../../types'
 
 const createCheckboxFieldSchema = () => {
