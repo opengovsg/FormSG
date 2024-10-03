@@ -22,6 +22,17 @@ export const notEmptySingleAnswerResponse: ResponseValidator<
   return right(response)
 }
 
+export const notEmptySingleAnswerResponseV3 = <T extends { answer: string }>(
+  response: T,
+) => {
+  if (response.answer.trim().length === 0) {
+    return left(
+      'CommonValidator.notEmptySingleAnswerResponseV3:\tanswer is an empty string',
+    )
+  }
+  return right(response)
+}
+
 /**
  * A function which returns a signature validator constructor for mobile and email verified field.
  * The validator checks if field has correct signature.

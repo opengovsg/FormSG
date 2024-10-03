@@ -320,12 +320,17 @@ export const scanAndRetrieveAttachments = async (
  * @param responses responses to validate
  * @returns initial responses if all responses are valid, else an error.
  */
-const validateFieldResponsesV3 = (
-  formId: string,
-  visibleFieldIds: FieldIdSet,
-  formFields: FormDto['form_fields'],
-  responses: ParsedClearFormFieldResponsesV3,
-): Result<
+const validateFieldResponsesV3 = ({
+  formId,
+  visibleFieldIds,
+  formFields,
+  responses,
+}: {
+  formId: string
+  visibleFieldIds: FieldIdSet
+  formFields: FormDto['form_fields']
+  responses: ParsedClearFormFieldResponsesV3
+}): Result<
   ParsedClearFormFieldResponsesV3,
   ValidateFieldError | ProcessingError
 > => {
@@ -564,8 +569,12 @@ export const validateMultirespondentSubmission = async (
                 ).map(() => undefined)
               })
               .andThen(() =>
-                // TODO: Step 4: Validate each field content with each field's validator rules individually.
-                validateFieldResponsesV3(),
+                validateFieldResponsesV3({
+                  formId,
+                  visibleFieldIds,
+                  formFields: form_fields as FormDto['form_fields'],
+                  responses: req.body.responses,
+                }),
               ),
           )
         },

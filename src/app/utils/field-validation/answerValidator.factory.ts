@@ -8,11 +8,15 @@ import {
   ProcessedAttachmentResponse,
   ProcessedCheckboxResponse,
   ProcessedChildrenResponse,
+  ProcessedSingleAnswerResponse,
   ProcessedTableResponse,
 } from '../../modules/submission/submission.types'
 
 import { constructAttachmentValidator } from './validators/attachmentValidator'
-import { constructCheckboxValidator } from './validators/checkboxValidator'
+import {
+  constructCheckboxValidator,
+  constructCheckboxValidatorV3,
+} from './validators/checkboxValidator'
 import { constructChildrenValidator } from './validators/childrenValidator'
 import { constructCountryRegionValidator } from './validators/countryRegionValidator'
 import { constructDateValidator } from './validators/dateValidator'
@@ -23,9 +27,15 @@ import { constructHomeNoValidator } from './validators/homeNoValidator'
 import { constructMobileNoValidator } from './validators/mobileNoValidator'
 import { constructNricValidator } from './validators/nricValidator'
 import { constructNumberValidator } from './validators/numberValidator'
-import { constructRadioButtonValidator } from './validators/radioButtonValidator'
+import {
+  constructRadioButtonValidator,
+  constructRadioButtonValidatorV3,
+} from './validators/radioButtonValidator'
 import { constructRatingValidator } from './validators/ratingValidator'
-import { constructSectionValidator } from './validators/sectionValidator'
+import {
+  constructSectionValidator,
+  constructSectionValidatorV3,
+} from './validators/sectionValidator'
 import { constructTableValidator } from './validators/tableValidator'
 import constructTextValidator from './validators/textValidator'
 import { constructUenValidator } from './validators/uenValidator'
@@ -38,7 +48,7 @@ import { isGenericStringAnswerResponseV3 } from './field-validation.guards'
  */
 export const constructSingleAnswerValidator = (
   formField: FieldValidationSchema,
-): ResponseValidator<StringAnswerResponse> => {
+): ResponseValidator<ProcessedSingleAnswerResponse> => {
   switch (formField.fieldType) {
     case BasicField.Section:
       return constructSectionValidator()
@@ -155,10 +165,12 @@ export const constructFieldResponseValidatorV3 = ({
   formField: FormFieldDto<FormField>
   isVisible: boolean
 }): ResponseValidator<ParsedClearFormFieldResponseV3> => {
-  if (isGenericStringAnswerResponseV3(response.fieldType)) {
-    return constructGenericStringAnswerResponseValidatorV3(formField)
-  }
+  // if (isGenericStringAnswerResponseV3(response.fieldType)) {
+  //   return constructGenericStringAnswerResponseValidatorV3(formField)
+  // }
   switch (formField.fieldType) {
+    case BasicField.Section:
+      return constructSectionValidatorV3()
     case BasicField.YesNo:
       return () => left('Not implemented')
     case BasicField.Email:
@@ -169,9 +181,9 @@ export const constructFieldResponseValidatorV3 = ({
       // return constructTableValidator(formField)
       return () => left('Not implemented')
     case BasicField.Radio:
-      return () => left('Not implemented')
+      return constructRadioButtonValidatorV3(formField)
     case BasicField.Checkbox:
-      return () => left('Not implemented')
+      return constructCheckboxValidatorV3(formField)
     case BasicField.Attachment:
       return () => left('Not implemented')
     case BasicField.Children:

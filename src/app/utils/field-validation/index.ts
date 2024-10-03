@@ -275,6 +275,13 @@ export const validateField = (
   return ok(true)
 }
 
+/**
+ * Checks if a response is present on a field that is hidden.
+ * The expected behavior is that a response should no be present on a hidden field.
+ * @param response to check for
+ * @param isVisible whether the field is visible
+ * @returns
+ */
 const isResponsePresentOnHiddenFieldV3 = (
   response: ParsedClearFormFieldResponseV3,
   isVisible: boolean,
@@ -340,8 +347,10 @@ export const validateFieldV3 = ({
   response: ParsedClearFormFieldResponseV3
   isVisible: boolean
 }): Result<true, ValidateFieldError> => {
-  const isFieldTypeValid = !FIELDS_TO_REJECT.includes(response.fieldType)
-  if (!isFieldTypeValid) {
+  const isFieldTypeSubmitExpected = !FIELDS_TO_REJECT.includes(
+    response.fieldType,
+  )
+  if (!isFieldTypeSubmitExpected) {
     return err(
       new ValidateFieldError(`Rejected field type "${response.fieldType}"`),
     )

@@ -1,11 +1,17 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
+import { BasicField, CheckboxResponseV3 } from 'shared/types'
+
+import { ParsedClearFormFieldResponseV3 } from 'src/types/api'
 
 import {
   ICheckboxFieldSchema,
   OmitUnusedValidatorProps,
 } from '../../../../types/field'
-import { ResponseValidator } from '../../../../types/field/utils/validation'
+import {
+  ResponseValidator,
+  ResponseValidatorConstructor,
+} from '../../../../types/field/utils/validation'
 import { ProcessedCheckboxResponse } from '../../../modules/submission/submission.types'
 
 import { isOtherOption } from './options'
@@ -179,4 +185,130 @@ export const constructCheckboxValidator: CheckboxValidatorConstructor = (
     chain(validOptionsValidator(checkboxField)),
     chain(duplicateNonOtherOptionsValidator(checkboxField)),
     chain(duplicateOtherOptionsValidator(checkboxField)),
+  )
+
+const isCheckboxFieldTypeV3: ResponseValidator<
+  ParsedClearFormFieldResponseV3,
+  CheckboxResponseV3
+> = (response) => {
+  if (response.fieldType !== BasicField.Checkbox) {
+    return left(
+      'CheckboxValidatorV3.fieldTypeMismatch:\tfield type is not checkbox',
+    )
+  }
+  return right(response)
+}
+
+/**
+ * Checks if the checkbox has no answers selected.
+ */
+const isCheckboxAnswerEmptyV3: ResponseValidator<CheckboxResponseV3> = (
+  response,
+) => {
+  const { answer } = response
+
+  return answer.value.length === 0 && !answer.othersInput
+    ? left(`CheckboxValidatorV3:\t Answer is empty`)
+    : right(response)
+}
+
+/**
+ * Returns a validation function to check if number of
+ * selected checkbox options is less than the minimum number specified.
+ */
+const makeMinOptionsValidatorV3: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<ICheckboxFieldSchema>,
+  CheckboxResponseV3
+> = (checkboxField) => (response) => {
+  const { validateByValue } = checkboxField
+  const { customMin } = checkboxField.ValidationOptions
+  const { answer } = response
+
+  if (!validateByValue || !customMin) return right(response)
+
+  const numSelected = answer.value.length + (answer.othersInput ? 1 : 0)
+
+  return numSelected >= customMin
+    ? right(response)
+    : left(
+        `CheckboxValidatorV3:\t answer has less options selected than minimum specified`,
+      )
+}
+
+/**
+ * Returns a validation function to check if number of
+ * selected checkbox options is more than the maximum number specified.
+ */
+const makeMaxOptionsValidatorV3: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<ICheckboxFieldSchema>,
+  CheckboxResponseV3
+> = (checkboxField) => (response) => {
+  const { validateByValue } = checkboxField
+  const { customMax } = checkboxField.ValidationOptions
+  const { answer } = response
+
+  if (!validateByValue || !customMax) return right(response)
+
+  const numSelected = answer.value.length + (answer.othersInput ? 1 : 0)
+
+  return numSelected <= customMax
+    ? right(response)
+    : left(
+        `CheckboxValidatorV3:\t answer has more options selected than maximum specified`,
+      )
+}
+
+/**
+ * Returns a validation function to check if the
+ * answers are all either within the specified field options or
+ * have the correct format for 'others' answer, if others is enabled.
+ * The logic is that there are two types of answers: those starting with "Others: " and those which do not.
+ * For those which do not start with "Others: ", they must be one of the fieldOptions since they cannot possibly be an "Others" option.
+ * For those which start with "Others: ", they must also be one of the fieldOptions unless othersRadioButton is enabled.
+ */
+const makeValidOptionsValidatorV3: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<ICheckboxFieldSchema>,
+  CheckboxResponseV3
+> = (checkboxField) => (response) => {
+  const { fieldOptions, othersRadioButton } = checkboxField
+  const { answer } = response
+
+  return answer.value.every((selectedOption) =>
+    fieldOptions.includes(selectedOption),
+  ) &&
+    (!answer.othersInput ||
+      isOtherOption(othersRadioButton, answer.othersInput))
+    ? right(response)
+    : left(`CheckboxValidator:\t answer is not valid`)
+}
+
+/**
+ * Returns a validation function to check if there are any
+ * duplicates amongst the answers.
+ * Note: if admin creates fieldOptions that look like ['Option 1', 'Others: A'] and the respondent adds a new 'A' othersInput, the validation will fail.
+ */
+const isDuplicateSelectedOptionsPresent: ResponseValidator<
+  CheckboxResponseV3
+> = (response) => {
+  const { answer } = response
+
+  const selectedOptions = [...answer.value, answer.othersInput]
+
+  return selectedOptions.length === new Set(selectedOptions).size
+    ? right(response)
+    : left(`CheckboxValidatorV3:\t duplicate answers in response`)
+}
+
+export const constructCheckboxValidatorV3: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<ICheckboxFieldSchema>,
+  ParsedClearFormFieldResponseV3,
+  CheckboxResponseV3
+> = (checkboxField) =>
+  flow(
+    isCheckboxFieldTypeV3,
+    chain(isCheckboxAnswerEmptyV3),
+    chain(makeMinOptionsValidatorV3(checkboxField)),
+    chain(makeMaxOptionsValidatorV3(checkboxField)),
+    chain(makeValidOptionsValidatorV3(checkboxField)),
+    chain(isDuplicateSelectedOptionsPresent),
   )
