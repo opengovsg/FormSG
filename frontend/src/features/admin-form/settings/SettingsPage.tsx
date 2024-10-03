@@ -13,6 +13,7 @@ import {
   Tabs,
 } from '@chakra-ui/react'
 
+import { LanguageTranslation } from '~assets/icons/LanguageTranslation'
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
 
@@ -22,6 +23,7 @@ import { SettingsTab } from './components/SettingsTab'
 import { SettingsAuthPage } from './SettingsAuthPage'
 import { SettingsEmailsPage } from './SettingsEmailsPage'
 import { SettingsGeneralPage } from './SettingsGeneralPage'
+import { SettingsMultiLangPage } from './SettingsMultiLangPage'
 import { SettingsPaymentsPage } from './SettingsPaymentsPage'
 import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 
@@ -80,6 +82,12 @@ export const SettingsPage = (): JSX.Element => {
       icon: BiDollar,
       component: SettingsPaymentsPage,
       path: 'payments',
+    },
+    {
+      label: 'Multi-language',
+      icon: LanguageTranslation,
+      component: SettingsMultiLangPage,
+      path: 'multi-language',
     },
   ].filter(Boolean) as TabEntry[]
 

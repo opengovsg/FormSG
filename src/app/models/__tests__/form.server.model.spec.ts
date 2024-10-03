@@ -55,7 +55,6 @@ const MOCK_ADMIN_EMAIL = `test@${MOCK_ADMIN_DOMAIN}`
 const MOCK_FORM_PARAMS = {
   title: 'Test Form',
   admin: MOCK_ADMIN_OBJ_ID,
-  supportedLanguages: [],
 }
 const MOCK_ENCRYPTED_FORM_PARAMS = {
   ...MOCK_FORM_PARAMS,
@@ -97,9 +96,11 @@ const FORM_DEFAULTS = {
   },
   hasCaptcha: true,
   hasIssueNotification: true,
+  hasMultiLang: false,
   form_fields: [],
   form_logics: [],
   permissionList: [],
+  supportedLanguages: [],
   webhook: {
     url: '',
     isRetryEnabled: false,

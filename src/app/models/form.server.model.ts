@@ -736,6 +736,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       hasMultiLang: {
         type: Boolean,
         required: false,
+        default: false,
       },
 
       // languages that is supported by form for translations
