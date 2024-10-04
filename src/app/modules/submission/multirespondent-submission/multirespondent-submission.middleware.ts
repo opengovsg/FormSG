@@ -4,8 +4,6 @@ import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import { validateFieldV3 } from 'src/app/utils/field-validation'
-
 import {
   BasicField,
   FormDto,
@@ -22,6 +20,7 @@ import {
 import { MultirespondentFormLoadedDto } from '../../../../types/api/multirespondent_submission'
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
+import { validateFieldV3 } from '../../../utils/field-validation'
 import {
   FieldIdSet,
   getLogicUnitPreventingSubmitV3,

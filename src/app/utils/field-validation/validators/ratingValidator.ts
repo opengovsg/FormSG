@@ -1,10 +1,9 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
-import { BasicField, RatingResponseV3 } from 'shared/types'
 import isInt from 'validator/lib/isInt'
 
-import { ParsedClearFormFieldResponseV3 } from 'src/types/api'
-
+import { BasicField, RatingResponseV3 } from '../../../../../shared/types'
+import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
 import {
   IRatingFieldSchema,
   OmitUnusedValidatorProps,

@@ -1,7 +1,7 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
-import { BasicField, UenResponseV3 } from 'shared/types'
 
+import { BasicField, UenResponseV3 } from '../../../../../shared/types'
 import { isUenValid } from '../../../../../shared/utils/uen-validation'
 import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
 import { ResponseValidator } from '../../../../types/field/utils/validation'

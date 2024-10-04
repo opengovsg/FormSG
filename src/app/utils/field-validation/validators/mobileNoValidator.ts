@@ -1,13 +1,12 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
-import { BasicField, MobileResponseV3 } from 'shared/types'
 
-import { ParsedClearFormFieldResponseV3 } from 'src/types/api'
-
+import { BasicField, MobileResponseV3 } from '../../../../../shared/types'
 import {
   isMobilePhoneNumber,
   startsWithSgPrefix,
 } from '../../../../../shared/utils/phone-num-validation'
+import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
 import {
   IMobileFieldSchema,
   OmitUnusedValidatorProps,

@@ -20,7 +20,10 @@ import {
   constructCheckboxValidator,
   constructCheckboxValidatorV3,
 } from './validators/checkboxValidator'
-import { constructChildrenValidator } from './validators/childrenValidator'
+import {
+  constructChildrenValidator,
+  constructChildrenValidatorV3,
+} from './validators/childrenValidator'
 import {
   constructCountryRegionValidator,
   constructCountryRegionValidatorV3,
@@ -29,7 +32,10 @@ import {
   constructDateValidator,
   constructDateValidatorV3,
 } from './validators/dateValidator'
-import { constructDecimalValidator } from './validators/decimalValidator'
+import {
+  constructDecimalValidator,
+  constructDecimalValidatorV3,
+} from './validators/decimalValidator'
 import {
   constructDropdownValidator,
   constructDropdownValidatorV3,
@@ -50,7 +56,10 @@ import {
   constructNricValidator,
   constructNricValidatorV3,
 } from './validators/nricValidator'
-import { constructNumberValidator } from './validators/numberValidator'
+import {
+  constructNumberValidator,
+  constructNumberValidatorV3,
+} from './validators/numberValidator'
 import {
   constructRadioButtonValidator,
   constructRadioButtonValidatorV3,
@@ -164,9 +173,9 @@ const constructGenericStringAnswerResponseValidatorV3 = (
 ): ResponseValidator<ParsedClearFormFieldResponseV3> => {
   switch (formField.fieldType) {
     case BasicField.Number:
-      return () => left('Not implemented')
+      return constructNumberValidatorV3(formField)
     case BasicField.Decimal:
-      return () => left('Not implemented')
+      return constructDecimalValidatorV3(formField)
     case BasicField.ShortText:
     case BasicField.LongText:
       return constructTextValidatorV3(formField)
@@ -219,8 +228,6 @@ export const constructFieldResponseValidatorV3 = ({
       return constructCheckboxValidatorV3(formField)
     case BasicField.Attachment:
       return constructAttachmentFieldValidatorV3(formField)
-    case BasicField.Children:
-      return () => left('Not implemented')
   }
 
   return () => left('Unsupported field type')

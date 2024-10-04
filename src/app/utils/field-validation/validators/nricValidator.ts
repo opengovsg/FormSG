@@ -1,7 +1,7 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
-import { BasicField, NricResponseV3 } from 'shared/types'
 
+import { BasicField, NricResponseV3 } from '../../../../../shared/types'
 import {
   isMFinSeriesValid,
   isNricValid,
