@@ -186,6 +186,8 @@ export const constructCheckboxValidator: CheckboxValidatorConstructor = (
     chain(duplicateOtherOptionsValidator(checkboxField)),
   )
 
+const CHECKBOX_OTHERS_INPUT_VALUE = '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
+
 const isCheckboxFieldTypeV3: ResponseValidator<
   ParsedClearFormFieldResponseV3,
   CheckboxResponseV3
@@ -272,9 +274,6 @@ const makeValidOptionsValidatorV3: ResponseValidatorConstructor<
   const { fieldOptions, othersRadioButton } = checkboxField
   const { answer } = response
 
-  const CHECKBOX_OTHERS_INPUT_VALUE =
-    '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
-
   return answer.value.every(
     (selectedOption) =>
       fieldOptions.includes(selectedOption) ||
@@ -298,7 +297,10 @@ const isDuplicateSelectedOptionsPresent: ResponseValidator<
   const { answer } = response
 
   const selectedOptions = [...answer.value]
-  if (answer.othersInput) {
+  if (
+    selectedOptions.includes(CHECKBOX_OTHERS_INPUT_VALUE) &&
+    answer.othersInput
+  ) {
     // Why: Since 'Others: ' is prepended to the othersInput value in the frontend. To match response V1 and V2 behaviour.
     selectedOptions.push(`Others: ${answer.othersInput}`)
   }

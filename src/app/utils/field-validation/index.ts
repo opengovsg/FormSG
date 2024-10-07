@@ -332,11 +332,7 @@ const isValidationRequiredV3 = (
       response.answer.toString().trim() !== ''
     )
   } else if (response.fieldType === BasicField.Checkbox) {
-    return (
-      (formField.required && isVisible) ||
-      response.answer.value.length > 0 ||
-      response.answer.othersInput
-    )
+    return (formField.required && isVisible) || response.answer.value.length > 0
   } else if (
     response.fieldType === BasicField.Table &&
     formField.fieldType === BasicField.Table

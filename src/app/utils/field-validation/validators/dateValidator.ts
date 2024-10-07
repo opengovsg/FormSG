@@ -159,13 +159,23 @@ const isDateResponseV3: ResponseValidator<
 }
 
 /**
+ * @param date
+ * @returns a moment with the date in the format 'DD/MM/YYYY'
+ */
+const createMomentFromDateStringV3 = (date: string): moment.Moment => {
+  const DATE_FORMAT = 'DD/MM/YYYY'
+
+  return moment(date, DATE_FORMAT, true)
+}
+
+/**
  * Return a validator to check if date format is correct.
  */
 const dateFormatValidatorV3: ResponseValidator<DateResponseV3> = (response) => {
   const { answer } = response
-  return createMomentFromDateString(answer).isValid()
+  return createMomentFromDateStringV3(answer).isValid()
     ? right(response)
-    : left(`DateValidator:\t answer is not a valid date`)
+    : left(`DateValidatorV3:\t answer is not a valid date`)
 }
 
 /**
@@ -181,7 +191,7 @@ const pastOnlyValidatorV3: ResponseValidator<DateResponseV3> = (response) => {
   const answerDate = createMomentFromDateString(answer)
 
   return answerDate.isAfter(todayMax)
-    ? left(`DateValidator:\t answer does not pass date logic validation`)
+    ? left(`DateValidatorV3:\t answer does not pass date logic validation`)
     : right(response)
 }
 
@@ -198,7 +208,7 @@ const futureOnlyValidatorV3: ResponseValidator<DateResponseV3> = (response) => {
   const answerDate = createMomentFromDateString(answer)
 
   return answerDate.isBefore(todayMin)
-    ? left(`DateValidator:\t answer does not pass date logic validation`)
+    ? left(`DateValidatorV3:\t answer does not pass date logic validation`)
     : right(response)
 }
 
@@ -217,7 +227,7 @@ const makeCustomDateValidatorV3: ResponseValidatorConstructor<
 
   return (customMinDate && answerDate.isBefore(customMinDate)) ||
     (customMaxDate && answerDate.isAfter(customMaxDate))
-    ? left(`DateValidator:\t answer does not pass date logic validation`)
+    ? left(`DateValidatorV3:\t answer does not pass date logic validation`)
     : right(response)
 }
 
@@ -255,7 +265,7 @@ const makeInvalidDaysValidatorV3: ResponseValidatorConstructor<
   const dateResponseNumberFormat = parseInt(format(new Date(answer), 'i'))
 
   return invalidDays.has(dateResponseNumberFormat)
-    ? left(`DateValidator:\t answer is an invalid day`)
+    ? left(`DateValidatorV3:\t answer is an invalid day`)
     : right(response)
 }
 
