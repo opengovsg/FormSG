@@ -101,7 +101,7 @@ export type CheckboxFieldResponsesV3 = {
   value: string[]
   othersInput?: string
 }
-export type RadioFieldResponsesV3 = { value: string } & { othersInput: string }
+export type RadioFieldResponsesV3 = { value: string } | { othersInput: string }
 export type TableRowFieldResponseV3 = {
   [columnId: string]: string
 }

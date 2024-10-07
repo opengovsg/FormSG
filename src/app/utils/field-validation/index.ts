@@ -312,8 +312,9 @@ const isResponsePresentOnHiddenFieldV3 = ({
       )
     case BasicField.Radio:
       return ok(
-        response.answer.value?.trim() !== '' ||
-          response.answer.othersInput?.trim() !== '',
+        ('value' in response.answer && response.answer.value.trim() !== '') ||
+          ('othersInput' in response.answer &&
+            response.answer.othersInput.trim() !== ''),
       )
     case BasicField.Checkbox:
       return ok(response.answer.value?.length > 0)
@@ -363,8 +364,9 @@ const isValidationRequiredV3 = ({
   } else if (response.fieldType === BasicField.Radio) {
     return ok(
       (formField.required && isVisible) ||
-        response.answer.value?.trim() !== '' ||
-        response.answer.othersInput?.trim() !== '',
+        ('value' in response.answer && response.answer.value.trim() !== '') ||
+        ('othersInput' in response.answer &&
+          response.answer.othersInput.trim() !== ''),
     )
   } else if (response.fieldType === BasicField.Checkbox) {
     return (
