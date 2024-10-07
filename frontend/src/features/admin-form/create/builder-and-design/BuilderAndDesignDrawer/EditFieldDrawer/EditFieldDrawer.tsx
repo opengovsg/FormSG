@@ -13,7 +13,7 @@ import {
 import { isMyInfo } from '~features/myinfo/utils'
 import { useUser } from '~features/user/queries'
 
-import { useBuilderFields } from '../../BuilderAndDesignContent/useBuilderFields'
+// import { useBuilderFields } from '../../BuilderAndDesignContent/useBuilderFields'
 import {
   FieldBuilderState,
   stateDataSelector,
@@ -78,17 +78,17 @@ export const EditFieldDrawer = (): JSX.Element | null => {
   // changes. If the user was editing an existing field then clicked
   // into another existing field, causing the edits to be discarded,
   // then fieldIndex changes.
-  const { builderFields } = useBuilderFields()
-  const fieldIndex = useMemo(() => {
-    if (stateData.state === FieldBuilderState.CreatingField) {
-      return stateData.insertionIndex
-    } else if (stateData.state === FieldBuilderState.EditingField) {
-      return builderFields?.findIndex(
-        (field) => field._id === stateData.field._id,
-      )
-    }
-  }, [builderFields, stateData])
-  const numFields = useMemo(() => builderFields?.length, [builderFields])
+  // const { builderFields } = useBuilderFields()
+  // const fieldIndex = useMemo(() => {
+  //   if (stateData.state === FieldBuilderState.CreatingField) {
+  //     return stateData.insertionIndex
+  //   } else if (stateData.state === FieldBuilderState.EditingField) {
+  //     return builderFields?.findIndex(
+  //       (field) => field._id === stateData.field._id,
+  //     )
+  //   }
+  // }, [builderFields, stateData])
+  // const numFields = useMemo(() => builderFields?.length, [builderFields])
 
   if (!fieldToEdit) return null
 
@@ -96,7 +96,7 @@ export const EditFieldDrawer = (): JSX.Element | null => {
     <BuilderDrawerContainer title={basicFieldText}>
       <MemoFieldDrawerContent
         field={fieldToEdit}
-        key={`${fieldIndex}-${numFields}`}
+        // key={`${fieldIndex}-${numFields}`}
       />
     </BuilderDrawerContainer>
   )

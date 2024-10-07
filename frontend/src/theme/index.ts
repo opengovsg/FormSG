@@ -37,6 +37,11 @@ export const theme = extendTheme({
         outline: 'none',
       },
       '.focus-visible': { outline: 'none' },
+      // override react-beautiful-dnd drag handle
+      //https://github.com/atlassian/react-beautiful-dnd/blob/master/docs/guides/preset-styles.md
+      '[data-rbd-drag-handle-context-id][data-rbd-drag-handle-context-id]': {
+        cursor: 'move',
+      },
     },
   },
   colors: colours,
