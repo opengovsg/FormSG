@@ -14,6 +14,7 @@ import {
 import { ParsedClearFormFieldResponseV3 } from '../../../types/api/submission'
 import {
   FieldValidationSchema,
+  FormFieldSchema,
   ITableFieldSchema,
   OmitUnusedValidatorProps,
 } from '../../../types/field'
@@ -325,7 +326,7 @@ const validateResponseWithValidatorV3 = <
 >(
   validator: ResponseValidator<T>,
   formId: string,
-  formField: FormFieldDto<FormField>,
+  formField: FormFieldSchema,
   response: T,
 ): Result<true, ValidateFieldError> => {
   const validEither = validator(response)
@@ -343,7 +344,7 @@ export const validateFieldV3 = ({
   isVisible,
 }: {
   formId: string
-  formField: FormFieldDto<FormField>
+  formField: FormFieldSchema
   response: ParsedClearFormFieldResponseV3
   isVisible: boolean
 }): Result<true, ValidateFieldError> => {

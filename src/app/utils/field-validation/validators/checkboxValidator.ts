@@ -272,11 +272,17 @@ const makeValidOptionsValidatorV3: ResponseValidatorConstructor<
   const { fieldOptions, othersRadioButton } = checkboxField
   const { answer } = response
 
-  return answer.value.every((selectedOption) =>
-    fieldOptions.includes(selectedOption),
+  const CHECKBOX_OTHERS_INPUT_VALUE =
+    '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
+
+  return answer.value.every(
+    (selectedOption) =>
+      fieldOptions.includes(selectedOption) ||
+      (selectedOption === CHECKBOX_OTHERS_INPUT_VALUE &&
+        othersRadioButton &&
+        answer.othersInput),
   ) &&
-    (!answer.othersInput ||
-      isOtherOption(othersRadioButton, answer.othersInput))
+    (!answer.othersInput || (answer.othersInput && othersRadioButton))
     ? right(response)
     : left(`CheckboxValidator:\t answer is not valid`)
 }
@@ -291,7 +297,11 @@ const isDuplicateSelectedOptionsPresent: ResponseValidator<
 > = (response) => {
   const { answer } = response
 
-  const selectedOptions = [...answer.value, answer.othersInput]
+  const selectedOptions = [...answer.value]
+  if (answer.othersInput) {
+    // Why: Since 'Others: ' is prepended to the othersInput value in the frontend. To match response V1 and V2 behaviour.
+    selectedOptions.push(`Others: ${answer.othersInput}`)
+  }
 
   return selectedOptions.length === new Set(selectedOptions).size
     ? right(response)

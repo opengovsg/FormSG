@@ -1,7 +1,7 @@
 import { left } from 'fp-ts/lib/Either'
 
-import { BasicField, FormField, FormFieldDto } from '../../../../shared/types'
-import { FieldValidationSchema } from '../../../types'
+import { BasicField } from '../../../../shared/types'
+import { FieldValidationSchema, FormFieldSchema } from '../../../types'
 import { ParsedClearFormFieldResponseV3 } from '../../../types/api'
 import { ResponseValidator } from '../../../types/field/utils/validation'
 import {
@@ -172,7 +172,7 @@ export const constructTableFieldValidator = (
 }
 
 const constructGenericStringAnswerResponseValidatorV3 = (
-  formField: FormFieldDto<FormField>,
+  formField: FormFieldSchema,
 ): ResponseValidator<ParsedClearFormFieldResponseV3> => {
   switch (formField.fieldType) {
     case BasicField.Number:
@@ -208,7 +208,7 @@ export const constructFieldResponseValidatorV3 = ({
 }: {
   formId: string
   response: ParsedClearFormFieldResponseV3
-  formField: FormFieldDto<FormField>
+  formField: FormFieldSchema
   isVisible: boolean
 }): ResponseValidator<ParsedClearFormFieldResponseV3> => {
   if (isGenericStringAnswerResponseV3(response.fieldType)) {

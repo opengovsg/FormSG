@@ -4,10 +4,11 @@ import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
+import { FormFieldSchema } from 'src/types'
+
 import {
   BasicField,
   FormDto,
-  FormFieldDto,
   FormResponseMode,
   SubmissionType,
 } from '../../../../../shared/types'
@@ -327,14 +328,14 @@ const validateMrfFieldResponses = ({
 }: {
   formId: string
   visibleFieldIds: FieldIdSet
-  formFields: FormDto['form_fields']
+  formFields: FormFieldSchema[]
   responses: ParsedClearFormFieldResponsesV3
 }): Result<
   ParsedClearFormFieldResponsesV3,
   ValidateFieldError | ProcessingError
 > => {
   const idToFieldMap = formFields.reduce<{
-    [fieldId: string]: FormFieldDto
+    [fieldId: string]: FormFieldSchema
   }>((acc, field) => {
     acc[field._id] = field
     return acc
@@ -580,7 +581,7 @@ export const validateMultirespondentSubmission = async (
                 validateMrfFieldResponses({
                   formId,
                   visibleFieldIds,
-                  formFields: form_fields as FormDto['form_fields'],
+                  formFields: form_fields as FormFieldSchema[],
                   responses: req.body.responses,
                 }),
               ),
