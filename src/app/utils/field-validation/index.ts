@@ -31,12 +31,12 @@ import {
   constructTableFieldValidator,
 } from './answerValidator.factory'
 import {
+  isGenericStringAnswerResponseV3,
   isProcessedAttachmentResponse,
   isProcessedCheckboxResponse,
   isProcessedChildResponse,
   isProcessedSingleAnswerResponse,
   isProcessedTableResponse,
-  isStringAnswerResponseV3,
 } from './field-validation.guards'
 
 const logger = createLoggerWithLabel(module)
@@ -283,56 +283,93 @@ export const validateField = (
  * @param isVisible whether the field is visible
  * @returns
  */
-const isResponsePresentOnHiddenFieldV3 = (
-  response: ParsedClearFormFieldResponseV3,
-  isVisible: boolean,
-) => {
-  if (isVisible) return false
+const isResponsePresentOnHiddenFieldV3 = ({
+  formField,
+  response,
+  isVisible,
+  formId,
+}: {
+  formField: FormFieldSchema
+  response: ParsedClearFormFieldResponseV3
+  isVisible: boolean
+  formId: string
+}): Result<boolean, ValidateFieldError> => {
+  if (isVisible) return ok(false)
 
-  if (isStringAnswerResponseV3(response)) {
+  if (isGenericStringAnswerResponseV3(response)) {
     const answer = response.answer
     const isStringAnswerEmpty = answer.toString().trim() === ''
-    return !isStringAnswerEmpty
+    return ok(!isStringAnswerEmpty)
   }
   switch (response.fieldType) {
+    case BasicField.YesNo:
+      return ok(response.answer.trim() !== '')
+    case BasicField.Email:
+    case BasicField.Mobile:
+      return ok(
+        response.answer.value.trim() !== '' ||
+          response.answer.signature?.trim() !== '',
+      )
+    case BasicField.Radio:
+      return ok(
+        response.answer.value?.trim() !== '' ||
+          response.answer.othersInput?.trim() !== '',
+      )
     case BasicField.Checkbox:
-      if (response.answer.value.length > 0) {
-        return true
-      }
-      break
+      return ok(response.answer.value?.length > 0)
     case BasicField.Table:
-      if (
+      return ok(
         !response.answer.every((rowObject) =>
           Object.values(rowObject).every((value) => value === ''),
-        )
-      ) {
-        return true
-      }
-      break
+        ),
+      )
     case BasicField.Attachment:
-      if (
+      return ok(
         (response.answer.filename && response.answer.filename.trim() !== '') || // filename is defined only if there is a file uploaded for the response
-        response.answer.content
-      ) {
-        return true
-      }
-      break
+          !!response.answer.content,
+      )
+    case BasicField.Children:
+      return ok(
+        (response.answer.child && response.answer.child.length > 1) ||
+          (response.answer.child.length === 1 &&
+            response.answer.child[0] &&
+            response.answer.child[0].every((val) => val !== '')), // If only 1 element which has fields all empty, same as no child selected.
+      )
   }
-  return false
+  logInvalidAnswer(formId, formField, 'Invalid response shape')
+  return err(new ValidateFieldError('Response has invalid shape'))
 }
 
-const isValidationRequiredV3 = (
-  formField: FormFieldSchema,
-  response: ParsedClearFormFieldResponseV3,
-  isVisible: boolean,
-) => {
-  if (isStringAnswerResponseV3(response)) {
-    return (
+const isValidationRequiredV3 = ({
+  formField,
+  response,
+  isVisible,
+  formId,
+}: {
+  formField: FormFieldSchema
+  response: ParsedClearFormFieldResponseV3
+  isVisible: boolean
+  formId: string
+}): Result<boolean, ValidateFieldError> => {
+  if (isGenericStringAnswerResponseV3(response)) {
+    return ok(
       (formField.required && isVisible) ||
-      response.answer.toString().trim() !== ''
+        response.answer.toString().trim() !== '',
+    )
+  } else if (response.fieldType === BasicField.YesNo) {
+    return ok(
+      (formField.required && isVisible) || response.answer.trim() !== '',
+    )
+  } else if (response.fieldType === BasicField.Radio) {
+    return ok(
+      (formField.required && isVisible) ||
+        response.answer.value?.trim() !== '' ||
+        response.answer.othersInput?.trim() !== '',
     )
   } else if (response.fieldType === BasicField.Checkbox) {
-    return (formField.required && isVisible) || response.answer.value.length > 0
+    return (
+      ok(formField.required && isVisible) || response.answer.value.length > 0
+    )
   } else if (
     response.fieldType === BasicField.Table &&
     formField.fieldType === BasicField.Table
@@ -343,21 +380,23 @@ const isValidationRequiredV3 = (
     const isAnswerPresent = !response.answer.every((row) =>
       Object.values(row).every((value) => value === ''),
     )
-    return isRequiredColumnsVisible || isAnswerPresent
+    return ok(isRequiredColumnsVisible || isAnswerPresent)
   } else if (response.fieldType === BasicField.Attachment) {
-    return (
+    return ok(
       (formField.required && isVisible) ||
-      (response.answer &&
-        response.answer.content &&
-        response.answer.filename.trim() !== '')
+        (response.answer &&
+          response.answer.content &&
+          response.answer.filename.trim() !== ''),
     )
   } else if (response.fieldType === BasicField.Children) {
-    return (
+    return ok(
       (formField.required && isVisible) ||
-      response.answer.child.length > 0 ||
-      response.answer.childFields.length > 0
+        response.answer.child.length > 0 ||
+        response.answer.childFields.length > 0,
     )
   }
+  logInvalidAnswer(formId, formField, 'Invalid response shape')
+  return err(new ValidateFieldError('Response has invalid shape'))
 }
 
 const validateResponseWithValidatorV3 = <
@@ -405,13 +444,31 @@ export const validateFieldV3 = ({
     )
   }
 
-  if (isResponsePresentOnHiddenFieldV3(response, isVisible)) {
+  const isResponsePresentOnHiddenFieldV3Result =
+    isResponsePresentOnHiddenFieldV3({ formField, response, isVisible, formId })
+
+  if (isResponsePresentOnHiddenFieldV3Result.isErr()) {
+    return err(isResponsePresentOnHiddenFieldV3Result.error)
+  }
+
+  if (isResponsePresentOnHiddenFieldV3Result.value) {
     return err(
       new ValidateFieldError(`Attempted to submit response on a hidden field`),
     )
   }
 
-  if (!isValidationRequiredV3(formField, response, isVisible)) {
+  const isValidationRequiredV3Result = isValidationRequiredV3({
+    formField,
+    response,
+    isVisible,
+    formId,
+  })
+
+  if (isValidationRequiredV3Result.isErr()) {
+    return err(isValidationRequiredV3Result.error)
+  }
+
+  if (!isValidationRequiredV3Result.value) {
     return ok(true)
   }
 

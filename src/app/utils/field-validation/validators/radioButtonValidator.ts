@@ -61,6 +61,17 @@ const isRadioFieldTypeV3: ResponseValidator<
   return right(response)
 }
 
+const isEitherOthersInputOrValueExistV3: ResponseValidator<RadioResponseV3> = (
+  response,
+) => {
+  if ('value' in response.answer && 'othersInput' in response.answer) {
+    return left(
+      'RadioButtonValidatorV3.valueAndOthersInputExist:\tanswer should only contain one of value or othersInputs',
+    )
+  }
+  return right(response)
+}
+
 export const isRadioAnsweEmptyV3: ResponseValidator<RadioResponseV3> = (
   response,
 ) => {
@@ -84,11 +95,12 @@ const makeIsRadioOptionValidatorV3: ResponseValidatorConstructor<
 > = (radioButtonField) => (response) => {
   const { answer } = response
   const { fieldOptions, othersRadioButton } = radioButtonField
-  const isInvalid =
-    ('value' in answer && !isOneOfOptions(fieldOptions, answer.value)) ||
-    ('othersInput' in answer &&
-      !isOtherOption(othersRadioButton, answer.othersInput))
 
+  const isInvalid =
+    'value' in answer &&
+    !isOneOfOptions(fieldOptions, answer.value) &&
+    othersRadioButton &&
+    'othersInput' in answer
   if (isInvalid) {
     return left(
       `RadioButtonValidatorV3:\tanswer is not a valid radio button option`,
@@ -105,6 +117,7 @@ export const constructRadioButtonValidatorV3: ResponseValidatorConstructor<
 > = (formField) =>
   flow(
     isRadioFieldTypeV3,
+    chain(isEitherOthersInputOrValueExistV3),
     chain(isRadioAnsweEmptyV3),
     chain(makeIsRadioOptionValidatorV3(formField)),
   )
