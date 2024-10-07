@@ -319,7 +319,7 @@ export const scanAndRetrieveAttachments = async (
  * @param responses responses to validate
  * @returns initial responses if all responses are valid, else an error.
  */
-const validateFieldResponsesV3 = ({
+const validateMrfFieldResponses = ({
   formId,
   visibleFieldIds,
   formFields,
@@ -345,6 +345,15 @@ const validateFieldResponsesV3 = ({
     if (!formField) {
       return err(
         new ProcessingError('Response Id does not match form field Ids'),
+      )
+    }
+
+    // Since Myinfo fields are not currently supported for MRF
+    if (response.fieldType === BasicField.Children) {
+      return err(
+        new ValidateFieldError(
+          'Children field type is not supported for MRF submisisons',
+        ),
       )
     }
 
@@ -568,7 +577,7 @@ export const validateMultirespondentSubmission = async (
                 ).map(() => undefined)
               })
               .andThen(() =>
-                validateFieldResponsesV3({
+                validateMrfFieldResponses({
                   formId,
                   visibleFieldIds,
                   formFields: form_fields as FormDto['form_fields'],

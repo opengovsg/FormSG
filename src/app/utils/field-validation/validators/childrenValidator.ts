@@ -72,6 +72,7 @@ const validChildAnswerConsistency: ChildrenValidator = (response) => {
  */
 const validChildAnswersNonEmpty: ChildrenValidator = (response) => {
   const { childSubFieldsArray, answerArray } = response
+
   const first = answerArray[0]
 
   // Account for the case where no child is selected
@@ -187,7 +188,7 @@ const isChildBirthRecordsResponseV3: ResponseValidator<
 }
 
 /**
- * Returns a validator to check if answerArray is empty
+ * Returns a validator to check that the answer.child array is not empty
  */
 const isChildAnswerNonEmptyV3: ResponseValidator<
   ChildBirthRecordsResponseV3
@@ -236,37 +237,37 @@ const isChildElementsSameLengthV3: ResponseValidator<
 
 /**
  * Returns a validation function to check if
- * all the answers are non-empty if first answer array element has length > 0 and a child is selected
+ * all the answers are non-empty if the child answer does not represent no child being selected.
  */
-const isSelectedChildrenAnswersValid: ResponseValidator<
+const isValidChildAnswersNonEmpty: ResponseValidator<
   ChildBirthRecordsResponseV3
 > = (response) => {
   const { childFields, child } = response.answer
-  const first = child[0]
 
-  // Account for the case where no child is selected
   const numChildrenSubFields = childFields?.length ?? 1
-  const noChildSelectedAnswerArray = Array(numChildrenSubFields).fill('')
-  // Similar to transformToChildOutput in inputTransformation, this is a string of empty strings (which represents number of children subfields).
-  const noChildSelectedAnswer = noChildSelectedAnswerArray[0]
+  const noChildSelectedAnswer = Array(numChildrenSubFields).fill('')
 
-  console.log('actualChildAnswer', child.toString())
-  return Array.isArray(first) &&
-    first.length > 0 &&
-    first[0] !== noChildSelectedAnswer
-    ? child.every((childAnsArr) =>
-        childAnsArr.every((val) => typeof val === 'string' && !!val.trim()),
-      )
+  const isNoChildSelected =
+    child.length === 0 ||
+    (child.length === 1 && _.isEqual(child[0], noChildSelectedAnswer))
+
+  return isNoChildSelected
+    ? right(response)
+    : child.every((childAns) =>
+          childAns.every(
+            (subFieldAns) =>
+              typeof subFieldAns === 'string' && !!subFieldAns.trim(),
+          ),
+        )
       ? right(response)
       : left(
           `ChildrenValidatorV3.validChildAnswersNonEmpty:\t inconsistent answer array subarrays`,
         )
-    : right(response)
 }
 
 /**
  * Returns a validation function to check if the
- * answerArray and subFields array are equal length.
+ * first element in child.answer and childFields array are equal length.
  */
 const isChildrenAnswerAndSubfieldSameLengthV3: ResponseValidator<
   ChildBirthRecordsResponseV3
@@ -282,7 +283,7 @@ const isChildrenAnswerAndSubfieldSameLengthV3: ResponseValidator<
 
 /**
  * Returns a validation function to check if there are
- * invalid subfields given for children.
+ * invalid subfields in the form field given for children.
  */
 const isSubfieldsValidAttributeV3: ResponseValidatorConstructor<
   ChildrenCompoundFieldBase,
@@ -300,7 +301,7 @@ const isSubfieldsValidAttributeV3: ResponseValidatorConstructor<
 
 /**
  * Returns a validation function to check if there are
- * invalid subfields given for children.
+ * invalid subfields in the response given for children.
  */
 const isChildFieldValidAttributeV3: ResponseValidator<
   ChildBirthRecordsResponseV3
@@ -317,7 +318,7 @@ const isChildFieldValidAttributeV3: ResponseValidator<
 
 /**
  * Returns a validation function to check if the subfields
- * for both the response and the field itself match.
+ * for both the response and the form field match.
  */
 const isChildSubFieldsAndResponseSubFieldsMatchingV3: ResponseValidatorConstructor<
   ChildrenCompoundFieldBase,
@@ -334,7 +335,6 @@ const isChildSubFieldsAndResponseSubFieldsMatchingV3: ResponseValidatorConstruct
 }
 
 export const constructChildrenValidatorV3: ResponseValidatorConstructor<
-  // OmitUnusedValidatorProps<IChildrenCompoundFieldSchema>,
   ChildrenCompoundFieldBase,
   ParsedClearFormFieldResponseV3,
   ChildBirthRecordsResponseV3
@@ -344,7 +344,7 @@ export const constructChildrenValidatorV3: ResponseValidatorConstructor<
     chain(isChildAnswerNonEmptyV3),
     chain(isChildFirstElementLengthGtZeroV3),
     chain(isChildElementsSameLengthV3),
-    chain(isSelectedChildrenAnswersValid),
+    chain(isValidChildAnswersNonEmpty),
     chain(isChildrenAnswerAndSubfieldSameLengthV3),
     chain(isChildFieldValidAttributeV3),
     chain(isSubfieldsValidAttributeV3(childrenField)),

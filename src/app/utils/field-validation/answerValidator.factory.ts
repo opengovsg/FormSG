@@ -72,7 +72,10 @@ import {
   constructSectionValidator,
   constructSectionValidatorV3,
 } from './validators/sectionValidator'
-import { constructTableValidator } from './validators/tableValidator'
+import {
+  constructTableValidator,
+  constructTableValidatorV3,
+} from './validators/tableValidator'
 import constructTextValidator, {
   constructTextValidatorV3,
 } from './validators/textValidator'
@@ -221,13 +224,20 @@ export const constructFieldResponseValidatorV3 = ({
     case BasicField.Mobile:
       return constructMobileNoValidatorV3(formField)
     case BasicField.Table:
-      return () => left('Not implemented')
+      return constructTableValidatorV3({
+        tableField: formField,
+        formId,
+        isVisible,
+        isDisabled: formField.disabled,
+      })
     case BasicField.Radio:
       return constructRadioButtonValidatorV3(formField)
     case BasicField.Checkbox:
       return constructCheckboxValidatorV3(formField)
     case BasicField.Attachment:
       return constructAttachmentFieldValidatorV3(formField)
+    case BasicField.Children:
+      return constructChildrenValidatorV3(formField)
   }
 
   return () => left('Unsupported field type')
