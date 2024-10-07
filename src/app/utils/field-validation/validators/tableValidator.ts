@@ -297,7 +297,7 @@ const makeTableCellValidatorV3: ResponseValidatorConstructor<
             formField,
             response: answerResponse,
             isVisible,
-          })
+          }).isOk()
         }
 
         return false
