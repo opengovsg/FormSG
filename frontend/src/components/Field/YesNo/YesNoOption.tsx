@@ -4,6 +4,7 @@ import {
   Box,
   forwardRef,
   Icon,
+  ThemingProps,
   useMultiStyleConfig,
   useRadio,
   UseRadioGroupReturn,
@@ -40,6 +41,8 @@ interface YesNoOptionProps extends UseRadioProps {
    * instead of the default event-only argument.
    */
   onChange?: UseRadioGroupReturn['onChange']
+
+  size?: ThemingProps<'Radio'>['size']
 }
 
 /**
@@ -85,6 +88,7 @@ export const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
         as="label"
         __css={styles.container}
         data-testid={`${props.name}-${props.side}`}
+        ml={props.side === 'right' ? '-1px' : undefined}
         role="button"
         ref={ref}
         aria-label={`${props.title} ${label} option, ${

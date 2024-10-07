@@ -265,9 +265,9 @@ Forms can be protected with [recaptcha](https://www.google.com/recaptcha/about/)
 
 [Google Analytics](https://analytics.google.com/analytics/web) is used to track website traffic. Examples of events include number of visits to various forms, number of successful submissions and number of submission failures.
 
-| Variable                   | Description                   |
-| :------------------------- | ----------------------------- |
-| `REACT_APP_GA_TRACKING_ID` | Google Analytics tracking ID. |
+| Variable                  | Description                   |
+| :------------------------ | ----------------------------- |
+| `VITE_APP_GA_TRACKING_ID` | Google Analytics tracking ID. |
 
 #### SMS with Twilio
 

@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { viewports } from '~utils/storybook'
 
@@ -38,7 +38,7 @@ export default {
   args: DEFAULT_ARGS,
 } as Meta<FooterProps>
 
-const Template: Story<FooterProps> = (args) => <Footer {...args} />
+const Template: StoryFn<FooterProps> = (args) => <Footer {...args} />
 export const Default = Template.bind({})
 
 export const CompactVariant = Template.bind({})

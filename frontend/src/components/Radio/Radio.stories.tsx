@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { FieldError, useForm } from 'react-hook-form'
 import { FormControl, VStack } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { get, isEmpty } from 'lodash'
 
 import { viewports } from '~utils/storybook'
@@ -17,7 +17,7 @@ export default {
   component: Radio,
 } as Meta
 
-const Template: Story<RadioProps> = (args) => (
+const Template: StoryFn<RadioProps> = (args) => (
   <Radio {...args}>{args.name}</Radio>
 )
 
@@ -48,7 +48,7 @@ Tablet.parameters = {
   chromatic: { viewports: [viewports.md] },
 }
 
-const AllStates: Story<RadioProps> = (args) => {
+const AllStates: StoryFn<RadioProps> = (args) => {
   return (
     <VStack>
       <Radio {...args}>Unselected</Radio>
@@ -72,7 +72,7 @@ const AllStates: Story<RadioProps> = (args) => {
 
 export const RadioStates = AllStates.bind({})
 
-const PlaygroundTemplate: Story = ({
+const PlaygroundTemplate: StoryFn = ({
   name = 'radio',
   othersInputName = 'others-input',
   label,

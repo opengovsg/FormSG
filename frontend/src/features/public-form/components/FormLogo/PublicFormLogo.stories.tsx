@@ -1,5 +1,5 @@
 import { MemoryRouter } from 'react-router-dom'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { FormLogoState } from '~shared/types/form/form_logo'
 
@@ -37,7 +37,7 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <PublicFormLogo />
+const Template: StoryFn = () => <PublicFormLogo />
 
 export const Loading = Template.bind({})
 Loading.parameters = {

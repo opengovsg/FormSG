@@ -178,7 +178,7 @@ const addSettings = async (
   // Open the form as the last thing to do!
   if (formSettings.status === FormStatus.Public) {
     // Go back to general settings, to open the form if necessary!
-    await page.getByRole('tab', { name: 'General' }).click()
+    await page.getByRole('tab', { name: 'General' }).dispatchEvent('click')
 
     // Ensure that we are on the general settings page
     await expect(

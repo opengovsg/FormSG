@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { BiLockAlt, BiMailSend } from 'react-icons/bi'
 import { Stack, UnorderedList } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { values } from 'lodash'
 
 import Badge from '~components/Badge'
@@ -40,7 +40,7 @@ interface TileTemplateProps extends TileProps {
   listItems: Record<string, string>
 }
 
-const Template: Story<TileTemplateProps> = ({
+const Template: StoryFn<TileTemplateProps> = ({
   title,
   subtitle,
   listTitle,
@@ -86,7 +86,7 @@ Simple.args = {
   icon: BiMailSend,
 }
 
-export const Playground: Story = () => {
+export const Playground: StoryFn = () => {
   const [selected, setSelected] = useState('')
 
   return (

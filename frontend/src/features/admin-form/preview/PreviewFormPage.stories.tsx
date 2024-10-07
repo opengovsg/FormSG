@@ -1,6 +1,5 @@
-import { expect } from '@storybook/jest'
-import { Meta, Story } from '@storybook/react'
-import { userEvent, waitFor, within } from '@storybook/testing-library'
+import { Meta, StoryFn } from '@storybook/react'
+import { expect, userEvent, waitFor, within } from '@storybook/test'
 import dedent from 'dedent'
 
 import { BasicField } from '~shared/types/field'
@@ -71,7 +70,7 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <PreviewFormPage />
+const Template: StoryFn = () => <PreviewFormPage />
 export const Default = Template.bind({})
 
 export const WithShortInstructions = Template.bind({})

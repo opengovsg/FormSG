@@ -4,6 +4,7 @@ import {
   Divider,
   forwardRef,
   Icon,
+  Input,
   InputGroup,
   InputLeftElement,
   InputRightElement,
@@ -15,7 +16,6 @@ import {
 } from '@chakra-ui/react'
 
 import Button from '~components/Button'
-import Input from '~components/Input'
 import Menu from '~components/Menu'
 
 import { FilterOption } from '~features/workspace/types'

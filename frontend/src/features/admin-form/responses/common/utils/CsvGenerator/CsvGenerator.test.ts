@@ -1,17 +1,15 @@
 import { stringify } from 'csv-string'
 import FileSaver from 'file-saver'
-import { mocked } from 'jest-mock'
 
 import { CsvGenerator } from './CsvGenerator'
 
 const UTF8_BYTE_ORDER_MARK = '\uFEFF'
 
-jest.mock('file-saver')
-const MockFileSaver = mocked(FileSaver)
+vi.mock('file-saver')
 
 describe('CsvGenerator', () => {
   afterAll(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe('Constructor', () => {
@@ -129,22 +127,24 @@ describe('CsvGenerator', () => {
   })
 
   describe('triggerFileDownload', () => {
-    it('should call triggerFileDownload with the correct parameters', () => {
+    it('should call triggerFileDownload with the correct parameters', async () => {
       // Arrange
       const expectedNumberOfRecords = 1
       const numOfMetaDataRows = 0
       const csv = new CsvGenerator(expectedNumberOfRecords, numOfMetaDataRows)
       const lineToAdd = [1, 2]
-      const blob = new Blob(csv.records, {
-        type: 'text/csv;charset=utf-8',
-      })
+      const saveAsSpy = vi.spyOn(FileSaver, 'saveAs')
+      const testFileName = 'some filename'
 
       // Act
       csv.addLine(lineToAdd)
-      csv.triggerFileDownload('some filename')
+      csv.triggerFileDownload(testFileName)
 
       // Assert
-      expect(MockFileSaver.saveAs).toHaveBeenCalledWith(blob, 'some filename')
+      const blob = new Blob(csv.records, {
+        type: 'text/csv;charset=utf-8',
+      })
+      expect(saveAsSpy).toHaveBeenCalledWith(blob, testFileName)
     })
   })
 

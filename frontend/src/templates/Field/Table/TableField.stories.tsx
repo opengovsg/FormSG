@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { assign, merge, times } from 'lodash'
 
 import { BasicField } from '~shared/types/field'
@@ -104,7 +104,7 @@ interface StoryTableFieldProps extends TableFieldProps {
   triggerValidation?: boolean
 }
 
-const Template: Story<StoryTableFieldProps> = ({
+const Template: StoryFn<StoryTableFieldProps> = ({
   defaultValue,
   triggerValidation,
   ...args

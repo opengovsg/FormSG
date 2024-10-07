@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { addDays, lightFormat, parse } from 'date-fns'
 
 import { DATE_DISPLAY_FORMAT } from '~shared/constants/dates'
@@ -66,7 +66,7 @@ interface StoryDateFieldProps extends DateFieldProps {
   defaultValue?: string
 }
 
-const Template: Story<StoryDateFieldProps> = ({ defaultValue, ...args }) => {
+const Template: StoryFn<StoryDateFieldProps> = ({ defaultValue, ...args }) => {
   const formMethods = useForm({
     defaultValues: {
       [args.schema._id]: defaultValue,

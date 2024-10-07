@@ -12,7 +12,6 @@ dotenv.config({
 export default defineConfig({
   testDir: './__tests__/e2e',
   /* Maximum time one test can run for. */
-  timeout: 120 * 1000,
   expect: {
     /**
      * Maximum time expect() should wait for the condition to be met.

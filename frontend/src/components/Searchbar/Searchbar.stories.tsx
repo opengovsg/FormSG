@@ -1,5 +1,5 @@
 import { Box, Flex, Text } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { Searchbar, SearchbarProps } from './Searchbar'
 import { useSearchbar } from './useSearchbar'
@@ -10,13 +10,15 @@ export default {
   decorators: [],
 } as Meta
 
-export const Default: Story<SearchbarProps> = (args) => <Searchbar {...args} />
+export const Default: StoryFn<SearchbarProps> = (args) => (
+  <Searchbar {...args} />
+)
 Default.args = {
   onChange: (newValue) => console.log('typed: ', newValue),
   onSearch: (query) => console.log(query),
 }
 
-export const ExpandableClosed: Story<SearchbarProps> = ({
+export const ExpandableClosed: StoryFn<SearchbarProps> = ({
   isExpanded: isInitiallyExpanded,
   ...args
 }) => {
@@ -41,7 +43,7 @@ ExpandableClosed.args = {
 }
 ExpandableClosed.storyName = 'Expandable/Closed'
 
-export const ExpandableOpen: Story<SearchbarProps> = ({
+export const ExpandableOpen: StoryFn<SearchbarProps> = ({
   isExpanded: isInitiallyExpanded,
   ...args
 }) => {
@@ -67,7 +69,8 @@ ExpandableOpen.args = {
 }
 ExpandableOpen.storyName = 'Expandable/Open'
 
-export const Unexpandable: Story<SearchbarProps> = ({
+export const Unexpandable: StoryFn<SearchbarProps> = ({
+  isExpandable,
   isExpanded: isInitiallyExpanded,
   ...args
 }) => {
@@ -94,7 +97,7 @@ Unexpandable.args = {
   onSearch: (query) => console.log(query),
 }
 
-export const Playground: Story<SearchbarProps> = ({
+export const Playground: StoryFn<SearchbarProps> = ({
   isExpanded: isInitiallyExpanded,
   ...args
 }) => {

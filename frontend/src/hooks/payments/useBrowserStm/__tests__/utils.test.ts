@@ -4,14 +4,14 @@ const EMPTY_OBJ = {}
 describe('useBrowserStm', () => {
   describe('processEviction', () => {
     afterEach(() => {
-      jest.useRealTimers()
+      vi.useRealTimers()
     })
     beforeEach(() => {
       processEviction.cancel()
     })
     it('should only be called once if called in quick succession', () => {
       // Arrange
-      const mockFn = jest.fn()
+      const mockFn = vi.fn()
 
       // Act, Assert
       processEviction(EMPTY_OBJ, mockFn)
@@ -20,25 +20,26 @@ describe('useBrowserStm', () => {
       expect(mockFn).toBeCalledTimes(1)
     })
 
-    it('should evict entries that are old', (done) => {
-      // Arrange
-      const tempId = 'form1'
-      const mockDate = new Date('2020-12-21')
+    it('should evict entries that are old', () =>
+      new Promise<void>((resolve) => {
+        // Arrange
+        const tempId = 'form1'
+        const mockDate = new Date('2020-12-21')
 
-      jest.useFakeTimers('modern').setSystemTime(mockDate)
-      const entryObj = addEntry(EMPTY_OBJ, {
-        formId: tempId,
-        paymentId: 'payment1',
-      })
-      jest.useRealTimers()
-      const mockFn = (retObject: BrowserStmDto) => {
-        // Assert
-        expect(getEntry(retObject, tempId)).toBeFalsy()
-        done()
-      }
+        vi.useFakeTimers().setSystemTime(mockDate)
+        const entryObj = addEntry(EMPTY_OBJ, {
+          formId: tempId,
+          paymentId: 'payment1',
+        })
+        vi.useRealTimers()
+        const mockFn = (retObject: BrowserStmDto) => {
+          // Assert
+          expect(getEntry(retObject, tempId)).toBeFalsy()
+          resolve()
+        }
 
-      // Act
-      processEviction(entryObj, mockFn)
-    })
+        // Act
+        processEviction(entryObj, mockFn)
+      }))
   })
 })

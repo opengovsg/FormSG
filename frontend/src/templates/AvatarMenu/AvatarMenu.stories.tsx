@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import Menu from '../../components/Menu'
 
@@ -25,7 +25,7 @@ export default {
   },
 } as Meta<AvatarMenuProps>
 
-const AvatarTemplate: Story<AvatarMenuProps> = (args) => (
+const AvatarTemplate: StoryFn<AvatarMenuProps> = (args) => (
   <AvatarMenu {...args} />
 )
 

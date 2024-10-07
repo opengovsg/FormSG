@@ -1,13 +1,13 @@
 import { CSSProperties, useCallback, useMemo } from 'react'
+import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
 import {
   Draggable,
   DraggableProvided,
   DraggableStateSnapshot,
-} from 'react-beautiful-dnd'
-import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
+} from '@hello-pangea/dnd'
 
 import { FormResponseMode } from '~shared/types'
-import { BasicField, MyInfoAttribute } from '~shared/types/field'
+import { AllowedMyInfoFieldOption, BasicField } from '~shared/types/field'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Badge from '~components/Badge'
@@ -53,7 +53,7 @@ interface BasicFieldOptionProps extends FieldOptionProps {
 }
 
 interface MyInfoFieldOptionProps extends FieldOptionProps {
-  fieldType: MyInfoAttribute
+  fieldType: AllowedMyInfoFieldOption
 }
 
 interface DraggableBasicFieldOptionProps
@@ -65,7 +65,7 @@ interface DraggableBasicFieldOptionProps
 interface DraggableMyInfoFieldOptionProps
   extends Omit<FieldOptionProps, 'isActive'> {
   index: number
-  fieldType: MyInfoAttribute
+  fieldType: AllowedMyInfoFieldOption
 }
 
 export const DraggableBasicFieldListOption = ({
@@ -151,7 +151,7 @@ export const DraggableMyInfoFieldListOption = ({
 export const BasicFieldOption = forwardRef<BasicFieldOptionProps, 'button'>(
   ({ fieldType, isDisabled, ...props }, ref) => {
     // TODO: (MRF-email-notif) Remove isTest and useUser when approvals is out of beta
-    const isTest = process.env.NODE_ENV === 'test'
+    const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
     const { user } = useUser()
     const meta = useMemo(
       () => BASICFIELD_TO_DRAWER_META[fieldType],

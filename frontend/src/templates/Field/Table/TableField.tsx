@@ -87,14 +87,15 @@ export const TableField = ({
   useEffect(() => {
     // Update field array when min rows changes.
     if (hasMinRowsChanged) {
+      const minRows = schema.minimumRows || 0
       const prevRowLength = fields.length
-      if (schema.minimumRows > prevRowLength) {
-        for (let i = prevRowLength; i < schema.minimumRows; i++) {
+      if (minRows > prevRowLength) {
+        for (let i = prevRowLength; i < minRows; i++) {
           appendTableRow()
         }
       } else {
         // Remove rows from field array
-        for (let i = prevRowLength; i > schema.minimumRows; i--) {
+        for (let i = prevRowLength; i > minRows; i--) {
           remove(i - 1)
         }
       }
@@ -102,7 +103,11 @@ export const TableField = ({
   }, [appendTableRow, fields.length, hasMinRowsChanged, remove, schema])
 
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
-    useTable({ columns: columnsData, data: fields })
+    useTable({
+      // @ts-expect-error Loose types, cell props will be passed during render, but will be fixed if upgrade to v8.
+      columns: columnsData,
+      data: fields,
+    })
 
   const handleAddRow = useCallback(() => {
     if (
@@ -115,7 +120,8 @@ export const TableField = ({
 
   const handleRemoveRow = useCallback(
     (rowIndex: number) => {
-      if (fields.length <= schema.minimumRows || rowIndex >= fields.length) {
+      const minRows = schema.minimumRows || 0
+      if (fields.length <= minRows || rowIndex >= fields.length) {
         return
       }
       return remove(rowIndex)
@@ -148,7 +154,7 @@ export const TableField = ({
   return (
     <TableFieldContainer schema={schema}>
       <Box
-        d="block"
+        display="block"
         w="100%"
         overflowX="auto"
         sx={{
@@ -228,7 +234,8 @@ export const TableField = ({
                     >
                       <IconButton
                         isDisabled={
-                          schema.disabled || fields.length <= schema.minimumRows
+                          schema.disabled ||
+                          fields.length <= (schema.minimumRows || 0)
                         }
                         variant="clear"
                         colorScheme="danger"

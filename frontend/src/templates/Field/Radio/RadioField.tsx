@@ -124,6 +124,7 @@ export const RadioField = ({
                     ml={styles.othersInput?.ml as string}
                     mb={0}
                   >
+                    {/* @ts-expect-error FIXME: type inference */}
                     {get(errors, `${othersInputName}.message`)}
                   </FormErrorMessage>
                 </FormControl>

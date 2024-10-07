@@ -1,4 +1,4 @@
-import { FC, useLayoutEffect, useMemo, useRef } from 'react'
+import { useLayoutEffect, useMemo, useRef } from 'react'
 import { Box, useMergeRefs, useOutsideClick } from '@chakra-ui/react'
 import {
   autoUpdate,
@@ -7,18 +7,26 @@ import {
   offset,
   size,
   useFloating,
-} from '@floating-ui/react-dom-interactions'
+} from '@floating-ui/react'
 
-import { useSelectContext } from '~components/Dropdown/SelectContext'
+import type { FCC } from '~typings/react'
+
+import { useSelectContext } from '../../SelectContext'
 
 import { SelectPopoverContext } from './SelectPopoverContext'
 
-export const SelectPopoverProvider: FC = ({ children }): JSX.Element => {
-  const { styles, setIsFocused, isOpen } = useSelectContext()
+export const SelectPopoverProvider: FCC = ({ children }): JSX.Element => {
+  const { setIsFocused, isOpen } = useSelectContext()
 
   const wrapperRef = useRef<HTMLDivElement | null>(null)
 
-  const { x, y, refs, reference, floating, strategy, update } = useFloating({
+  const {
+    x,
+    y,
+    refs: { reference, floating, setFloating, setReference },
+    strategy,
+    update,
+  } = useFloating({
     placement: 'bottom-start',
     strategy: 'absolute',
     open: isOpen,
@@ -28,6 +36,7 @@ export const SelectPopoverProvider: FC = ({ children }): JSX.Element => {
       flip(),
       hide(),
       // Set width to be the same as the reference element.
+      // @ts-expect-error type mismatch for some reason.
       size({
         apply({ rects, elements }) {
           Object.assign(elements.floating.style, {
@@ -38,7 +47,7 @@ export const SelectPopoverProvider: FC = ({ children }): JSX.Element => {
     ],
   })
 
-  const mergedReferenceRefs = useMergeRefs(reference, wrapperRef)
+  const mergedReferenceRefs = useMergeRefs(wrapperRef, setReference)
 
   const floatingStyles = useMemo(
     () => ({
@@ -49,12 +58,11 @@ export const SelectPopoverProvider: FC = ({ children }): JSX.Element => {
     [strategy, x, y],
   )
 
-  // Allows
   useLayoutEffect(() => {
-    if (isOpen && refs.reference.current && refs.floating.current) {
-      return autoUpdate(refs.reference.current, refs.floating.current, update)
+    if (isOpen && reference.current && floating.current) {
+      return autoUpdate(reference.current, floating.current, update)
     }
-  }, [isOpen, update, refs.floating, refs.reference])
+  }, [floating, isOpen, reference, update])
 
   useOutsideClick({
     ref: wrapperRef,
@@ -64,13 +72,11 @@ export const SelectPopoverProvider: FC = ({ children }): JSX.Element => {
   return (
     <SelectPopoverContext.Provider
       value={{
-        floatingRef: floating,
+        floatingRef: setFloating,
         floatingStyles,
       }}
     >
-      <Box ref={mergedReferenceRefs} sx={styles.container}>
-        {children}
-      </Box>
+      <Box ref={mergedReferenceRefs}>{children}</Box>
     </SelectPopoverContext.Provider>
   )
 }

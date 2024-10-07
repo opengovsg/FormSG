@@ -1,5 +1,5 @@
 import { useDisclosure } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { fullScreenDecorator, getMobileViewParameters } from '~utils/storybook'
 
@@ -19,7 +19,7 @@ export default {
   },
 } as Meta<ProgressModalProps>
 
-const Template: Story<ProgressModalProps> = (args) => {
+const Template: StoryFn<ProgressModalProps> = (args) => {
   const modalProps = useDisclosure({ defaultIsOpen: true })
   return (
     <ProgressModal

@@ -1,6 +1,6 @@
 import { Controller, useForm } from 'react-hook-form'
 import { FormControl } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -14,7 +14,7 @@ export default {
   decorators: [],
 } as Meta
 
-const Template: Story<AttachmentProps> = (args) => {
+const Template: StoryFn<AttachmentProps> = (args) => {
   return <Attachment {...args} />
 }
 
@@ -54,7 +54,7 @@ WithUploadedFile.args = {
   onChange: () => console.log('delete button pressed'),
 }
 
-export const Playground: Story<AttachmentProps> = ({
+export const Playground: StoryFn<AttachmentProps> = ({
   isDisabled,
   isReadOnly,
   ...args

@@ -18,7 +18,7 @@ describe('FeedbackCsvGenerator', () => {
   })
 
   afterAll(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe('Constructor', () => {
@@ -51,6 +51,7 @@ describe('FeedbackCsvGenerator', () => {
       const MOCK_FEEDBACK_COMMENT = 'great!'
       const MOCK_FEEDBACK_RATING = 5
       const lineToAdd: FormFeedbackDto = {
+        submissionId: 'testSubmissionId',
         rating: MOCK_FEEDBACK_RATING,
         comment: MOCK_FEEDBACK_COMMENT,
         formId: 'formId' as FormId,
@@ -89,6 +90,7 @@ describe('FeedbackCsvGenerator', () => {
         .tz('Asia/Singapore')
         .format('DD MMM YYYY hh:mm:ss A')
       const lineToAdd: FormFeedbackDto = {
+        submissionId: 'testSubmissionId',
         rating: MOCK_FEEDBACK_RATING,
         comment: MOCK_FEEDBACK_COMMENT,
         formId: 'formId' as FormId,
@@ -123,6 +125,7 @@ describe('FeedbackCsvGenerator', () => {
         .format('DD MMM YYYY hh:mm:ss A')
       const MOCK_MODIFIED_TIME = moment().toISOString()
       const lineToAdd: FormFeedbackDto = {
+        submissionId: 'testSubmissionId',
         rating: MOCK_FEEDBACK_RATING,
         comment: MOCK_FEEDBACK_COMMENT,
         formId: 'formId' as FormId,

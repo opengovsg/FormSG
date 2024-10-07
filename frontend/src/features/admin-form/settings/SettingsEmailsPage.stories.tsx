@@ -1,9 +1,10 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { PaymentChannel, PaymentType } from '~shared/types'
 import {
+  AdminFormDto,
+  FormDto,
   FormResponseMode,
-  FormSettings,
   FormStatus,
   WorkflowType,
 } from '~shared/types/form'
@@ -75,7 +76,7 @@ const buildMswRoutes = ({
   mode,
   delay,
 }: {
-  overrides?: Partial<FormSettings>
+  overrides?: Partial<FormDto & AdminFormDto>
   mode?: FormResponseMode
   delay?: number | 'infinite'
 } = {}) => [
@@ -95,7 +96,7 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <SettingsEmailsPage />
+const Template: StoryFn = () => <SettingsEmailsPage />
 
 export const PrivateStorageForm = Template.bind({})
 PrivateStorageForm.parameters = {

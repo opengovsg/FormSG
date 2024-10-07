@@ -339,6 +339,8 @@ const ChildrenBody = ({
                 onChange={(name) => {
                   // This is bad practice but we have no choice because our
                   // custom Select doesn't forward the event.
+                  // FIXME: Fix types
+                  // @ts-expect-error type inference issue
                   setValue(childNamePath, name, { shouldValidate: true })
                 }}
                 ref={(e) => {
@@ -357,7 +359,7 @@ const ChildrenBody = ({
             icon={<BiTrash />}
             aria-label="Remove child"
             alignSelf="end"
-            disabled={fields.length <= 1}
+            isDisabled={fields.length <= 1}
             onClick={() => {
               if (fields.length > 1) {
                 remove(fields.length - 1)
@@ -388,6 +390,8 @@ const ChildrenBody = ({
             // We need to do this as the underlying data is not updated
             // by the field's value, but rather by onChange, which we did
             // not trigger via prefill.
+            // FIXME: Fix types
+            // @ts-expect-error type inference issue
             setValue(fieldPath, myInfoFormattedValue, { shouldValidate: true })
           }
           const isDisabled = isSubmitting || !!myInfoValue
@@ -436,6 +440,8 @@ const ChildrenBody = ({
                     onChange={(option) =>
                       // This is bad practice but we have no choice because our
                       // custom Select doesn't forward the event.
+                      // FIXME: Fix types
+                      // @ts-expect-error type inference issue
                       setValue(fieldPath, option, { shouldValidate: true })
                     }
                   />
@@ -462,6 +468,8 @@ const ChildrenBody = ({
                     displayFormat={DATE_DISPLAY_FORMAT}
                     inputValue={value}
                     onInputValueChange={(date) => {
+                      // FIXME: Fix types
+                      // @ts-expect-error type inference issue
                       setValue(fieldPath, date, { shouldValidate: true })
                     }}
                     colorScheme={`theme-${colorTheme}`}

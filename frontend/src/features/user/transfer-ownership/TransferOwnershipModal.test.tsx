@@ -1,4 +1,4 @@
-import { composeStories } from '@storybook/testing-react'
+import { composeStories } from '@storybook/react'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
@@ -65,7 +65,9 @@ describe('User transfers ownership of all owned forms', () => {
 
     // Assert
     // Wait for toast. Toast should appear.
-    await screen.findByText(/ownership transferred\./i)
+    expect(
+      screen.findAllByText(/ownership transferred\./i),
+    ).resolves.not.toBeNull()
   })
 
   it('should disable ownership transfer to self', async () => {

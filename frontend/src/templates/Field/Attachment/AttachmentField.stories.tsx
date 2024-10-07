@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { AttachmentSize, BasicField } from '~shared/types/field'
 
@@ -44,7 +44,7 @@ interface StoryAttachmentFieldProps extends AttachmentFieldProps {
   defaultValue?: File
 }
 
-const Template: Story<StoryAttachmentFieldProps> = ({
+const Template: StoryFn<StoryAttachmentFieldProps> = ({
   defaultValue,
   ...args
 }) => {

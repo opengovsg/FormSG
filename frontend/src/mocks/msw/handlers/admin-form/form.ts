@@ -19,6 +19,7 @@ import {
   LogicType,
 } from '~shared/types/form'
 import {
+  AdminDashboardFormMetaDto,
   AdminFormDto,
   AdminFormViewDto,
   FormAuthType,
@@ -815,4 +816,14 @@ export const deleteLogic = (delay?: number | 'infinite') => {
       return res(ctx.delay(delay), ctx.status(200))
     },
   )
+}
+
+export const getAdminForms = {
+  empty: () =>
+    rest.get<AdminDashboardFormMetaDto[]>(
+      '/api/v3/admin/forms',
+      (req, res, ctx) => {
+        return res(ctx.json([]))
+      },
+    ),
 }

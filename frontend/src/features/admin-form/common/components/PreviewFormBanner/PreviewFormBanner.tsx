@@ -27,7 +27,8 @@ import Link from '~components/Link'
 import { UseTemplateModal } from '~features/admin-form/template/UseTemplateModal'
 import { useEnv } from '~features/env/queries'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
-import { DuplicateFormModal } from '~features/workspace/components/DuplicateFormModal'
+// Explicit import to avoid circular dependency warnings by rollup
+import { DuplicateFormModal } from '~features/workspace/components/DuplicateFormModal/DuplicateFormModal'
 
 export const StickyPreviewHeader = ({
   isOpen,
@@ -104,7 +105,7 @@ export const PreviewFormBanner = ({
               <Stack
                 spacing="1rem"
                 direction="row"
-                d={{ base: 'none', md: 'flex' }}
+                display={{ base: 'none', md: 'flex' }}
               >
                 <Link
                   variant="standalone"

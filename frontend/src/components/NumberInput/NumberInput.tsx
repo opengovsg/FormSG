@@ -7,14 +7,11 @@ import {
   forwardRef,
   NumberInputProps as ChakraNumberInputProps,
   useFormControlProps,
-  useMergeRefs,
   useMultiStyleConfig,
   useNumberInput,
 } from '@chakra-ui/react'
 
-import { ThemeColorScheme } from '~theme/foundations/colours'
-
-import IconButton from '../IconButton'
+import IconButton from '~components/IconButton'
 
 export interface NumberInputProps extends ChakraNumberInputProps {
   /**
@@ -29,14 +26,13 @@ export interface NumberInputProps extends ChakraNumberInputProps {
    * Whether to show the increment and decrement steppers. Defaults to true.
    */
   showSteppers?: boolean
-  /**
-   * Color scheme of number input.
-   */
-  colorScheme?: ThemeColorScheme
+
   /**
    * Whether to prevent default on user pressing the 'Enter' key.
    */
   preventDefaultOnEnter?: boolean
+
+  placeholder?: string
 }
 
 export const NumberInput = forwardRef<NumberInputProps, 'input'>(
@@ -55,6 +51,7 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
   ) => {
     const styles = useMultiStyleConfig('NumberInput', {
       ...props,
+      colorScheme,
       isSuccess,
       isPrefilled,
     })
@@ -79,10 +76,9 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
     })
 
     const inputProps = getInputProps({ placeholder: props.placeholder })
+
     const incProps = getIncrementButtonProps()
     const decProps = getDecrementButtonProps()
-
-    const inputRef = useMergeRefs(inputProps.ref, ref)
 
     const inputEndPadding = showSteppers
       ? stepperWrapperRef.current?.offsetWidth
@@ -110,7 +106,7 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
           // the parent.
           // No point passing the ref to the div wrapper as the main component
           // is this input.
-          ref={inputRef}
+          ref={ref}
           __css={styles.field}
         />
         {showSteppers && (
@@ -124,7 +120,7 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
               icon={<BiMinus />}
               {...decProps}
             />
-            <Divider __css={styles.stepperDivider} orientation="vertical" />
+            <Divider sx={styles.stepperDivider} orientation="vertical" />
             <IconButton
               sx={styles.stepperButton}
               colorScheme={colorScheme}
@@ -140,3 +136,5 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
     )
   },
 )
+
+NumberInput.displayName = 'NumberInput'

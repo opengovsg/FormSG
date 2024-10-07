@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BiLinkExternal } from 'react-icons/bi'
+import { RemoveScroll } from 'react-remove-scroll'
 import { useNavigate } from 'react-router-dom'
 import {
   Box,
@@ -278,6 +279,7 @@ export const ShareFormModal = ({
               data-chromatic="ignore"
               isReadOnly
               value={shareLink}
+              hasInputRightElement={Boolean(formId)}
             />
             {formId ? (
               <InputRightElement>
@@ -313,6 +315,7 @@ export const ShareFormModal = ({
             isReadOnly
             isDisabled={isFormPrivate}
             value={`${templateLink}`}
+            hasInputRightElement={Boolean(formId)}
           />
           {formId ? (
             <InputRightElement>
@@ -358,104 +361,116 @@ export const ShareFormModal = ({
 
   return (
     <Modal size={modalSize} isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalCloseButton />
-        <ModalHeader color="secondary.700">Share form</ModalHeader>
-        <ModalBody whiteSpace="pre-wrap">
-          <Tabs pos="relative" h="100%" display="flex" flexDir="column" isLazy>
-            <Box bg="white">
-              <TabList mx="-0.25rem" w="100%">
-                <Tab>Link</Tab>
-                <Tab>Template</Tab>
-                <Tab>Embed</Tab>
-              </TabList>
-              <Divider w="auto" />
-            </Box>
-            <TabPanels mt="1.5rem" pb="2rem" flex={1} overflowY="auto">
-              <TabPanel>
-                <FormActivationMessage
-                  isFormPrivate={isFormPrivate}
-                  formId={formId}
-                  onClose={onClose}
-                />
-                <FormLinkSection />
-                {/* GoLinkSection */}
-                {(displayGoLink && whitelisted) ||
-                goLinkSuffixData?.goLinkSuffix ? (
-                  <FormControl mt="1rem">
-                    <FormLabel
-                      isRequired
-                      description="Create an official short link and share it over the Internet."
-                    >
-                      Go link
-                    </FormLabel>
-                    <Skeleton isLoaded={!!formId}>
-                      <Stack direction="row" align="center">
-                        <InputGroup>
-                          <InputLeftAddon children={`go.gov.sg/`} />
-                          <Input
-                            value={goLinkSuffixInput}
-                            onChange={(e) => {
-                              setGoLinkSuffixInput(e.target.value)
-                              setGoLinkHelperText(undefined)
-                            }}
-                            isReadOnly={goLinkSaved}
-                          />
-                          {goLinkSaved ? (
-                            <InputRightElement>
-                              <CopyButton
-                                colorScheme="secondary"
-                                stringToCopy={`${goGovBaseUrl}/${goLinkSuffixInput}`}
-                                aria-label="Copy respondent form link"
-                              />
-                            </InputRightElement>
-                          ) : null}
-                        </InputGroup>
-                        {goLinkSaved ? null : (
-                          <Button
-                            aria-label="Claim Go link"
-                            onClick={handleClaimGoLinkClick}
-                            isDisabled={!goLinkSuffixInput}
-                            isLoading={claimGoLoading}
-                          >
-                            Claim
-                          </Button>
+      {/* HACK: Chakra isn't able to cleanly handle nested scroll locks https://github.com/chakra-ui/chakra-ui/issues/7723 
+          We'll override chakra's <RemoveScroll /> manually as react-remove-scroll give priority to the latest mounted instance 
+      */}
+      <RemoveScroll>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalCloseButton />
+          <ModalHeader color="secondary.700">Share form</ModalHeader>
+          <ModalBody whiteSpace="pre-wrap">
+            <Tabs
+              pos="relative"
+              h="100%"
+              display="flex"
+              flexDir="column"
+              isLazy
+            >
+              <Box bg="white">
+                <TabList mx="-0.25rem" w="100%">
+                  <Tab>Link</Tab>
+                  <Tab>Template</Tab>
+                  <Tab>Embed</Tab>
+                </TabList>
+                <Divider w="auto" />
+              </Box>
+              <TabPanels mt="1.5rem" pb="2rem" flex={1} overflowY="auto">
+                <TabPanel>
+                  <FormActivationMessage
+                    isFormPrivate={isFormPrivate}
+                    formId={formId}
+                    onClose={onClose}
+                  />
+                  <FormLinkSection />
+                  {/* GoLinkSection */}
+                  {(displayGoLink && whitelisted) ||
+                  goLinkSuffixData?.goLinkSuffix ? (
+                    <FormControl mt="1rem">
+                      <FormLabel
+                        isRequired
+                        description="Create an official short link and share it over the Internet."
+                      >
+                        Go link
+                      </FormLabel>
+                      <Skeleton isLoaded={!!formId}>
+                        <Stack direction="row" align="center">
+                          <InputGroup>
+                            <InputLeftAddon children={`go.gov.sg/`} />
+                            <Input
+                              value={goLinkSuffixInput}
+                              onChange={(e) => {
+                                setGoLinkSuffixInput(e.target.value)
+                                setGoLinkHelperText(undefined)
+                              }}
+                              isReadOnly={goLinkSaved}
+                              hasInputRightElement={goLinkSaved}
+                            />
+                            {goLinkSaved ? (
+                              <InputRightElement>
+                                <CopyButton
+                                  colorScheme="secondary"
+                                  stringToCopy={`${goGovBaseUrl}/${goLinkSuffixInput}`}
+                                  aria-label="Copy respondent form link"
+                                />
+                              </InputRightElement>
+                            ) : null}
+                          </InputGroup>
+                          {goLinkSaved ? null : (
+                            <Button
+                              aria-label="Claim Go link"
+                              onClick={handleClaimGoLinkClick}
+                              isDisabled={!goLinkSuffixInput}
+                              isLoading={claimGoLoading}
+                            >
+                              Claim
+                            </Button>
+                          )}
+                        </Stack>
+                        {goLinkHelperText && (
+                          // padding on icon box to emulate padding from <Text>
+                          <FormHelperText color={goLinkHelperText.color}>
+                            <HStack alignItems="flex-start">
+                              <Box py="2px">{goLinkHelperText.icon}</Box>
+                              <Box>{goLinkHelperText.text}</Box>
+                            </HStack>
+                          </FormHelperText>
                         )}
-                      </Stack>
-                      {goLinkHelperText && (
-                        // padding on icon box to emulate padding from <Text>
-                        <FormHelperText color={goLinkHelperText.color}>
-                          <HStack alignItems="flex-start">
-                            <Box py="2px">{goLinkHelperText.icon}</Box>
-                            <Box>{goLinkHelperText.text}</Box>
-                          </HStack>
-                        </FormHelperText>
-                      )}
-                    </Skeleton>
-                  </FormControl>
-                ) : null}
-              </TabPanel>
-              <TabPanel>
-                <FormActivationMessage
-                  isFormPrivate={isFormPrivate}
-                  formId={formId}
-                  onClose={onClose}
-                />
-                <TemplateSection />
-              </TabPanel>
-              <TabPanel>
-                <FormActivationMessage
-                  isFormPrivate={isFormPrivate}
-                  formId={formId}
-                  onClose={onClose}
-                />
-                <EmbedSection />
-              </TabPanel>
-            </TabPanels>
-          </Tabs>
-        </ModalBody>
-      </ModalContent>
+                      </Skeleton>
+                    </FormControl>
+                  ) : null}
+                </TabPanel>
+                <TabPanel>
+                  <FormActivationMessage
+                    isFormPrivate={isFormPrivate}
+                    formId={formId}
+                    onClose={onClose}
+                  />
+                  <TemplateSection />
+                </TabPanel>
+                <TabPanel>
+                  <FormActivationMessage
+                    isFormPrivate={isFormPrivate}
+                    formId={formId}
+                    onClose={onClose}
+                  />
+                  <EmbedSection />
+                </TabPanel>
+              </TabPanels>
+            </Tabs>
+          </ModalBody>
+        </ModalContent>
+      </RemoveScroll>
     </Modal>
   )
 }

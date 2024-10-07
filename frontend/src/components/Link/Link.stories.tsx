@@ -1,7 +1,6 @@
 import { BiRightArrowAlt } from 'react-icons/bi'
-import Icon from '@chakra-ui/icon'
-import { SimpleGrid, Text } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Icon, SimpleGrid, Text } from '@chakra-ui/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { Link, LinkProps } from './Link'
 
@@ -11,7 +10,7 @@ export default {
   decorators: [],
 } as Meta
 
-const Template: Story<LinkProps> = (args) => <Link {...args} />
+const Template: StoryFn<LinkProps> = (args) => <Link {...args} />
 export const Default = Template.bind({})
 Default.args = {
   children: 'Link',
@@ -53,7 +52,7 @@ VariantStandalone.args = {
   href: '',
 }
 
-const TemplateGroup: Story<LinkProps> = (args) => (
+const TemplateGroup: StoryFn<LinkProps> = (args) => (
   <SimpleGrid
     columns={2}
     spacing={8}

@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { Box, forwardRef } from '@chakra-ui/react'
 
 import { FormColorTheme } from '~shared/types'
@@ -7,19 +6,9 @@ import { useMdComponents } from '~hooks/useMdComponents'
 import { MarkdownText } from '~components/MarkdownText'
 
 import { SectionFieldContainerProps } from './SectionFieldContainer'
+import { useSectionColor } from './useSectionColor'
 
 export type SectionFieldProps = SectionFieldContainerProps
-
-export const useSectionColor = (colorTheme?: FormColorTheme) =>
-  useMemo(() => {
-    switch (colorTheme) {
-      case FormColorTheme.Orange:
-      case FormColorTheme.Red:
-        return `theme-${colorTheme}.600` as const
-      default:
-        return `theme-${colorTheme}.500` as const
-    }
-  }, [colorTheme])
 
 // Used by SectionFieldContainer
 export const SectionField = forwardRef<SectionFieldContainerProps, 'div'>(
@@ -27,7 +16,7 @@ export const SectionField = forwardRef<SectionFieldContainerProps, 'div'>(
     return (
       <Box
         _notFirst={{
-          mt: '3.75rem',
+          mt: '1.5rem',
         }}
       >
         <BaseSectionField {...props} ref={ref} />

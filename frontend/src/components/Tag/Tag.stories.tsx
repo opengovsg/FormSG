@@ -1,6 +1,6 @@
 import { BiRadioCircleMarked } from 'react-icons/bi'
 import { SimpleGrid, Text } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { Tag, TagCloseButton, TagLeftIcon, TagProps, TagRightIcon } from './Tag'
 
@@ -10,7 +10,7 @@ export default {
   decorators: [],
 } as Meta
 
-const Template: Story<TagProps> = (args) => <Tag {...args} />
+const Template: StoryFn<TagProps> = (args) => <Tag {...args} />
 
 export const Subtle = Template.bind({})
 Subtle.args = {
@@ -49,7 +49,7 @@ WithLeftRightIcon.args = {
   colorScheme: 'secondary',
 }
 
-const TemplateGroup: Story<TagProps> = (args) => (
+const TemplateGroup: StoryFn<TagProps> = (args) => (
   <SimpleGrid
     columns={3}
     spacing={8}

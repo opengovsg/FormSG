@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { BasicField } from '~shared/types/field'
 
@@ -40,13 +40,13 @@ const requiredSchema: YesNoFieldSchema = {
   _id: '611b94dfbb9e300012f702a7',
 }
 
-const Template: Story<YesNoFieldProps> = (args) => {
+const Template: StoryFn<YesNoFieldProps> = (args) => {
   const formMethods = useForm()
 
   const [submitValues, setSubmitValues] = useState<string>()
 
   const onSubmit = (values: Record<string, string>) => {
-    setSubmitValues(values[args.schema._id] ?? 'Nothing was selected')
+    setSubmitValues(values[args.schema._id] || 'Nothing was selected')
   }
 
   return (

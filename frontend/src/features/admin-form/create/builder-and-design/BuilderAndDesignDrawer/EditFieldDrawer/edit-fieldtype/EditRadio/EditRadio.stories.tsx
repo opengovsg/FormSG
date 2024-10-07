@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { BasicField, RadioFieldBase } from '~shared/types'
 
@@ -35,7 +35,7 @@ interface StoryArgs {
   field: RadioFieldBase
 }
 
-const Template: Story<StoryArgs> = ({ field }) => {
+const Template: StoryFn<StoryArgs> = ({ field }) => {
   return <EditRadio field={field} />
 }
 

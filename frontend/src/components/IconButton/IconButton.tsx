@@ -6,7 +6,6 @@ import {
 } from '@chakra-ui/react'
 
 import { ThemeButtonVariant } from '~theme/components/Button'
-import { ThemeColorScheme } from '~theme/foundations/colours'
 
 import Spinner from '../Spinner'
 
@@ -19,11 +18,6 @@ export interface IconButtonProps extends ChakraIconButtonProps {
    * The variant of the button.
    */
   variant?: ThemeButtonVariant
-
-  /**
-   * Color scheme of button.
-   */
-  colorScheme?: ThemeColorScheme
 }
 
 export const IconButton = forwardRef<IconButtonProps, 'button'>(

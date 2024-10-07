@@ -3,12 +3,12 @@
  * @see https://storybook.js.org/docs/react/configure/overview#configure-story-rendering
  */
 import 'inter-ui/inter.css'
-import 'focus-visible/dist/focus-visible.min.js'
 
 import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { ChakraProvider } from '@chakra-ui/react'
-import { DecoratorFn } from '@storybook/react'
+import { withThemeFromJSXProvider } from '@storybook/addon-themes'
+import { Decorator, ReactRenderer } from '@storybook/react'
 import { initialize, mswDecorator } from 'msw-storybook-addon'
 
 import { AuthProvider } from '~contexts/AuthContext'
@@ -19,10 +19,12 @@ import { theme } from '../src/theme'
 
 import { StorybookTheme } from './themes'
 
-initialize()
+initialize({
+  onUnhandledRequest: 'bypass',
+})
 dayjsUtils.init()
 
-const withReactQuery: DecoratorFn = (storyFn) => {
+const withReactQuery: Decorator = (storyFn) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -32,23 +34,29 @@ const withReactQuery: DecoratorFn = (storyFn) => {
     },
   })
   return (
+    // FIXME: react 18 types
+    // @ts-expect-error missing FC type in old version
     <QueryClientProvider client={queryClient}>
       <AuthProvider>{storyFn()}</AuthProvider>
     </QueryClientProvider>
   )
 }
 
-const withChakra: DecoratorFn = (storyFn) => (
-  <ChakraProvider resetCSS theme={theme}>
-    {storyFn()}
-  </ChakraProvider>
-)
-
-const withHelmet: DecoratorFn = (storyFn) => (
+const withHelmet: Decorator = (storyFn) => (
   <HelmetProvider>{storyFn()}</HelmetProvider>
 )
 
-export const decorators = [withReactQuery, withChakra, withHelmet, mswDecorator]
+export const decorators = [
+  withReactQuery,
+  withHelmet,
+  withThemeFromJSXProvider<ReactRenderer>({
+    themes: {
+      default: theme,
+    },
+    Provider: ChakraProvider,
+  }),
+  mswDecorator,
+]
 
 export const parameters = {
   i18n,
@@ -56,6 +64,7 @@ export const parameters = {
   locales: {
     'en-SG': 'English',
   },
+  layout: 'fullscreen',
   docs: {
     theme: StorybookTheme.docs,
     inlineStories: true,

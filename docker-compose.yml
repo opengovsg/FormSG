@@ -122,7 +122,7 @@ services:
       # Bearer token API key format
       - API_KEY_VERSION=v1
       # env vars for growthbook
-      - GROWTHBOOK_CLIENT_KEY
+      - GROWTHBOOK_CLIENT_KEY=growthbook_client_key
       # env vars for virus scanner
       - VIRUS_SCANNER_LAMBDA_FUNCTION_NAME=function
       - WOGAA_SECRET_KEY

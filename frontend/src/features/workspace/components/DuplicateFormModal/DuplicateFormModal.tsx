@@ -1,3 +1,4 @@
+import { RemoveScroll } from 'react-remove-scroll'
 import {
   Modal,
   ModalContent,
@@ -19,20 +20,26 @@ export type DuplicateFormModalProps = Pick<
 export const DuplicateFormModal = ({
   isOpen,
   onClose,
-}: DuplicateFormModalProps): JSX.Element => {
+}: DuplicateFormModalProps) => {
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
     md: 'full',
   })
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
-      <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
-        <ModalCloseButton />
-        <DupeFormWizardProvider>
-          <CreateFormModalContent />
-        </DupeFormWizardProvider>
-      </ModalContent>
+      {/* HACK: Chakra isn't able to cleanly handle nested scroll locks https://github.com/chakra-ui/chakra-ui/issues/7723 
+          We'll override chakra's <RemoveScroll /> manually as react-remove-scroll give priority to the latest mounted instance 
+      */}
+      <RemoveScroll>
+        <ModalContent py={{ base: 'initial', md: '4.5rem' }}>
+          <ModalCloseButton />
+          <DupeFormWizardProvider>
+            <CreateFormModalContent />
+          </DupeFormWizardProvider>
+        </ModalContent>
+      </RemoveScroll>
     </Modal>
   )
 }

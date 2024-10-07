@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
 import ReactDOM from 'react-dom'
 import { useDisclosure } from '@chakra-ui/hooks'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
+import { getAdminForms } from '~/mocks/msw/handlers/admin-form'
 import { transferAllFormsOwnership } from '~/mocks/msw/handlers/admin-form/transfer-ownership'
 import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 
@@ -24,6 +25,7 @@ export default {
     chromatic: { pauseAnimationAtEnd: true },
     msw: [
       getUser({ delay: 0, mockUser: MOCK_USER }),
+      getAdminForms.empty(),
       transferAllFormsOwnership(),
     ],
   },
@@ -32,7 +34,7 @@ export default {
 const modalRoot = document.createElement('div')
 document.body.appendChild(modalRoot)
 
-const Template: Story = () => {
+const Template: StoryFn = () => {
   const modalProps = useDisclosure({ defaultIsOpen: true })
 
   const el = document.createElement('div')

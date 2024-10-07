@@ -1,4 +1,3 @@
-import { FC } from 'react'
 import {
   Box,
   Container,
@@ -13,6 +12,8 @@ import {
 import { AppFooter } from '~/app/AppFooter'
 import { AppPublicHeader } from '~/app/AppPublicHeader'
 
+import { FCC } from '~typings/react'
+
 import Link from '~components/Link'
 
 import {
@@ -21,7 +22,7 @@ import {
   SubSubSectionOrderedList,
 } from '../TermsOfUse/TermsOfUsePage'
 
-const SectionListItem: FC<ListItemProps> = ({
+const SectionListItem: FCC<ListItemProps> = ({
   children,
   listStyleType = 'decimal',
 }) => (
@@ -30,7 +31,7 @@ const SectionListItem: FC<ListItemProps> = ({
   </ListItem>
 )
 
-const SectionParagraph: FC = ({ children }) => (
+const SectionParagraph: FCC = ({ children }) => (
   <Text mb="1.5rem">{children}</Text>
 )
 

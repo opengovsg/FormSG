@@ -8,7 +8,9 @@
     "jszip": "^3.7.1",
     "libphonenumber-js": "^1.10.48",
     "lodash": "^4.17.21",
-    "type-fest": "^4.1.0",
+    "tweetnacl": "^1.0.3",
+    "tweetnacl-util": "^0.15.1",
+    "type-fest": "^4.17.0",
     "validator": "^13.7.0",
     "zod": "^3.11.6"
   },

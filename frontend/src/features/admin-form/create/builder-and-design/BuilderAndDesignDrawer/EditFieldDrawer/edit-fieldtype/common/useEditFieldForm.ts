@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import {
   DeepPartial,
+  FieldValues,
   Mode,
   UnpackNestedValue,
   useForm,
@@ -61,7 +62,7 @@ type UseEditFieldFormProps<
   mode?: Mode
 }
 
-export type UseEditFieldFormReturn<U> = UseFormReturn<U> & {
+export type UseEditFieldFormReturn<U extends FieldValues> = UseFormReturn<U> & {
   handleUpdateField: () => Promise<void>
   handleCancel: () => void
   buttonText: string
@@ -69,7 +70,10 @@ export type UseEditFieldFormReturn<U> = UseFormReturn<U> & {
   formMethods: UseFormReturn<U>
 }
 
-export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
+export const useEditFieldForm = <
+  FormShape extends FieldValues,
+  FieldShape extends FormField,
+>({
   field,
   transform,
   mode,
@@ -134,12 +138,8 @@ export const useEditFieldForm = <FormShape, FieldShape extends FormField>({
   )
 
   const onSaveSuccess = useCallback(
-    (newField) => {
-      editForm.reset(
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        transform.input(newField),
-      )
+    (newField: FormField) => {
+      editForm.reset(transform.input(newField as FieldShape))
       setToInactive()
     },
     [editForm, transform, setToInactive],

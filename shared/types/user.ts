@@ -26,7 +26,7 @@ export const UserBase = z.object({
       mrfAdminSubmissionKey: z.boolean().optional(),
     })
     .optional(),
-  flags: z.map(z.nativeEnum(SeenFlags), z.number()).optional(),
+  flags: z.record(z.nativeEnum(SeenFlags), z.number()).optional(),
   created: z.date(),
   lastAccessed: z.date().optional(),
   updatedAt: z.date(),

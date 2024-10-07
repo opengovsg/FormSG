@@ -8,7 +8,7 @@ import { ApiError } from '~typings/core'
 
 import { LOCAL_STORAGE_EVENT, LOGGED_IN_KEY } from '~constants/localStorage'
 
-export const API_BASE_URL = process.env.REACT_APP_BASE_URL ?? '/api/v3'
+export const API_BASE_URL = import.meta.env.VITE_APP_BASE_URL ?? '/api/v3'
 export class HttpError extends Error {
   code: number
   constructor(message: string, code: number) {

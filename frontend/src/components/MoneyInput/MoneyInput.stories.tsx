@@ -4,7 +4,7 @@ import {
   FormErrorMessage,
   FormLabel,
 } from '@chakra-ui/form-control'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import Button from '../Button'
 
@@ -16,7 +16,7 @@ export default {
   decorators: [],
 } as Meta
 
-const Template: Story<MoneyInputProps> = (args) => <MoneyInput {...args} />
+const Template: StoryFn<MoneyInputProps> = (args) => <MoneyInput {...args} />
 export const Default = Template.bind({})
 Default.args = {
   placeholder: 'Test placeholder',
@@ -47,7 +47,7 @@ Disabled.args = {
   isDisabled: true,
 }
 
-export const Playground: Story = ({
+export const Playground: StoryFn = ({
   name,
   label,
   isDisabled,
@@ -68,6 +68,7 @@ export const Playground: Story = ({
         isDisabled={isDisabled}
         isInvalid={!!errors[name]}
         mb={6}
+        id={name}
       >
         <FormLabel htmlFor={name}>{label}</FormLabel>
         <Controller
