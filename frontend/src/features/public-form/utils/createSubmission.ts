@@ -368,7 +368,7 @@ const createResponsesV3 = (
           | FormFieldValue<typeof ff.fieldType>
           | undefined
         const isOthersSelected =
-          input?.value && input.value === CLIENT_RADIO_OTHERS_INPUT_VALUE
+          input?.value === CLIENT_RADIO_OTHERS_INPUT_VALUE
         if (!isOthersSelected && input?.value) {
           returnedInputs[ff._id] = {
             fieldType: ff.fieldType,
