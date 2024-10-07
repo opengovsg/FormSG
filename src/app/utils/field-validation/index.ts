@@ -289,7 +289,7 @@ const isResponsePresentOnHiddenFieldV3 = (
 ) => {
   if (isVisible) return false
 
-  if (isStringAnswerResponseV3(response.fieldType)) {
+  if (isStringAnswerResponseV3(response)) {
     const answer = response.answer
     const isStringAnswerEmpty = answer.toString().trim() === ''
     return !isStringAnswerEmpty
@@ -319,6 +319,49 @@ const isResponsePresentOnHiddenFieldV3 = (
       break
   }
   return false
+}
+
+const isValidationRequiredV3 = (
+  formField: FormFieldSchema,
+  response: ParsedClearFormFieldResponseV3,
+  isVisible: boolean,
+) => {
+  if (isStringAnswerResponseV3(response)) {
+    return (
+      (formField.required && isVisible) ||
+      response.answer.toString().trim() !== ''
+    )
+  } else if (response.fieldType === BasicField.Checkbox) {
+    return (
+      (formField.required && isVisible) ||
+      response.answer.value.length > 0 ||
+      response.answer.othersInput
+    )
+  } else if (
+    response.fieldType === BasicField.Table &&
+    formField.fieldType === BasicField.Table
+  ) {
+    const { columns } = formField
+    const isRequiredColumnsVisible =
+      columns.some((column) => column.required) && isVisible
+    const isAnswerPresent = !response.answer.every((row) =>
+      Object.values(row).every((value) => value === ''),
+    )
+    return isRequiredColumnsVisible || isAnswerPresent
+  } else if (response.fieldType === BasicField.Attachment) {
+    return (
+      (formField.required && isVisible) ||
+      (response.answer &&
+        response.answer.content &&
+        response.answer.filename.trim() !== '')
+    )
+  } else if (response.fieldType === BasicField.Children) {
+    return (
+      (formField.required && isVisible) ||
+      response.answer.child.length > 0 ||
+      response.answer.childFields.length > 0
+    )
+  }
 }
 
 const validateResponseWithValidatorV3 = <
@@ -372,9 +415,12 @@ export const validateFieldV3 = ({
     )
   }
 
+  if (!isValidationRequiredV3(formField, response, isVisible)) {
+    return ok(true)
+  }
+
   const validator = constructFieldResponseValidatorV3({
     formId,
-    response,
     formField,
     isVisible,
   })

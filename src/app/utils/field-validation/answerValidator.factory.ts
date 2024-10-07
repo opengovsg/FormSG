@@ -87,7 +87,6 @@ import {
   constructYesNoValidator,
   constructYesNoValidatorV3,
 } from './validators/yesNoValidator'
-import { isGenericStringAnswerResponseV3 } from './field-validation.guards'
 
 /**
  * Constructs a validation function for a single answer response, using a form field field as a specification.
@@ -171,9 +170,15 @@ export const constructTableFieldValidator = (
   return () => left('Unsupported field type')
 }
 
-const constructGenericStringAnswerResponseValidatorV3 = (
-  formField: FormFieldSchema,
-): ResponseValidator<ParsedClearFormFieldResponseV3> => {
+export const constructFieldResponseValidatorV3 = ({
+  formId,
+  formField,
+  isVisible,
+}: {
+  formId: string
+  formField: FormFieldSchema
+  isVisible: boolean
+}): ResponseValidator<ParsedClearFormFieldResponseV3> => {
   switch (formField.fieldType) {
     case BasicField.Number:
       return constructNumberValidatorV3(formField)
@@ -196,25 +201,6 @@ const constructGenericStringAnswerResponseValidatorV3 = (
       return constructDateValidatorV3(formField)
     case BasicField.CountryRegion:
       return constructCountryRegionValidatorV3()
-  }
-  return () => left('Unsupported field type')
-}
-
-export const constructFieldResponseValidatorV3 = ({
-  formId,
-  response,
-  formField,
-  isVisible,
-}: {
-  formId: string
-  response: ParsedClearFormFieldResponseV3
-  formField: FormFieldSchema
-  isVisible: boolean
-}): ResponseValidator<ParsedClearFormFieldResponseV3> => {
-  if (isGenericStringAnswerResponseV3(response.fieldType)) {
-    return constructGenericStringAnswerResponseValidatorV3(formField)
-  }
-  switch (formField.fieldType) {
     case BasicField.Section:
       return constructSectionValidatorV3()
     case BasicField.YesNo:
