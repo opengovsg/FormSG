@@ -364,12 +364,16 @@ const createResponsesV3 = (
         const input = formInputs[ff._id] as
           | FormFieldValue<typeof ff.fieldType>
           | undefined
-        if (!input?.value && !input?.othersInput) break
-        returnedInputs[ff._id] = {
-          fieldType: ff.fieldType,
-          answer: input.othersInput
-            ? { othersInput: input.othersInput }
-            : { value: input.value },
+        if (input?.value) {
+          returnedInputs[ff._id] = {
+            fieldType: ff.fieldType,
+            answer: { value: input.value },
+          }
+        } else if (input?.othersInput) {
+          returnedInputs[ff._id] = {
+            fieldType: ff.fieldType,
+            answer: { othersInput: input.othersInput },
+          }
         }
         break
       }
