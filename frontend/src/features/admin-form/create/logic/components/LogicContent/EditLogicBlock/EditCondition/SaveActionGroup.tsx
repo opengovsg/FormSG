@@ -28,7 +28,6 @@ export const SaveActionGroup = ({
     <Flex
       justify="space-between"
       align="center"
-      mt="1.5rem"
       px={{ base: '1.5rem', md: '2rem' }}
     >
       {handleDelete ? (
