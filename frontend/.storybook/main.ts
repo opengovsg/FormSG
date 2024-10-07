@@ -21,10 +21,10 @@ const config: StorybookConfig = {
     options: {},
   },
   // For injecitng environment variables into Storybook runs
-  // (see: https://github.com/storybookjs/storybook/issues/12270#issuecomment-1139104523)
+  // Envs must be prefixed with STORYBOOK_ on vite-builds
   env: (config) => ({
     ...config,
-    NODE_ENV: 'test',
+    STORYBOOK_NODE_ENV: 'test',
   }),
 }
 

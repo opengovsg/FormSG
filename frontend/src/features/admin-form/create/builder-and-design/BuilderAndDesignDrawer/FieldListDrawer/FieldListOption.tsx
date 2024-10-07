@@ -151,7 +151,7 @@ export const DraggableMyInfoFieldListOption = ({
 export const BasicFieldOption = forwardRef<BasicFieldOptionProps, 'button'>(
   ({ fieldType, isDisabled, ...props }, ref) => {
     // TODO: (MRF-email-notif) Remove isTest and useUser when approvals is out of beta
-    const isTest = process.env.NODE_ENV === 'test'
+    const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
     const { user } = useUser()
     const meta = useMemo(
       () => BASICFIELD_TO_DRAWER_META[fieldType],
