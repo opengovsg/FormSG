@@ -1,20 +1,12 @@
 import { left, right } from 'fp-ts/lib/Either'
-import {
-  EmailResponseV3,
-  MobileResponseV3,
-  StringAnswerResponseV3,
-  VerifiableFieldResponseV3,
-} from 'shared/types'
+import { StringAnswerResponseV3, VerifiableFieldResponseV3 } from 'shared/types'
 
 import {
   IEmailFieldSchema,
   IMobileFieldSchema,
   OmitUnusedValidatorProps,
 } from '../../../../types/field'
-import {
-  ResponseValidator,
-  ResponseValidatorConstructor,
-} from '../../../../types/field/utils/validation'
+import { ResponseValidator } from '../../../../types/field/utils/validation'
 import formsgSdk from '../../../config/formsg-sdk'
 import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
 
