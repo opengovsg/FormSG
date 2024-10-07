@@ -2,8 +2,9 @@ import { Meta, StoryFn } from '@storybook/react'
 
 import { PaymentChannel, PaymentType } from '~shared/types'
 import {
+  AdminFormDto,
+  FormDto,
   FormResponseMode,
-  FormSettings,
   FormStatus,
   WorkflowType,
 } from '~shared/types/form'
@@ -75,7 +76,7 @@ const buildMswRoutes = ({
   mode,
   delay,
 }: {
-  overrides?: Partial<FormSettings>
+  overrides?: Partial<FormDto & AdminFormDto>
   mode?: FormResponseMode
   delay?: number | 'infinite'
 } = {}) => [

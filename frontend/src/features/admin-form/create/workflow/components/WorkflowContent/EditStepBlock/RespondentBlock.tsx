@@ -230,7 +230,7 @@ export const RespondentBlock = ({
     // invalid form field id but cannot be seen or cleared in the SingleSelect component
     // since no matching Yes/No item can be found.
     // Hence, we clear the approval_field to allow the user to re-select a new valid value.
-    (value) => {
+    (value: string) => {
       if (!isLoading && value && !emailFieldIds.includes(value)) {
         setValue('field', '')
         return ''
