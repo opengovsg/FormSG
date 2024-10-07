@@ -2,7 +2,10 @@ import { datadogLogs } from '@datadog/browser-logs'
 import { encode as encodeBase64 } from '@stablelib/base64'
 import { chain, forOwn, isEmpty, keyBy, omit, pick } from 'lodash'
 
-import { E2EE_SUBMISSION_VERSION } from '~shared/constants'
+import {
+  CLIENT_RADIO_OTHERS_INPUT_VALUE,
+  E2EE_SUBMISSION_VERSION,
+} from '~shared/constants'
 import { FieldResponsesV3, FieldResponseV3, ProductItem } from '~shared/types'
 import { BasicField, FormFieldDto, PaymentFieldsDto } from '~shared/types/field'
 import {
@@ -364,12 +367,14 @@ const createResponsesV3 = (
         const input = formInputs[ff._id] as
           | FormFieldValue<typeof ff.fieldType>
           | undefined
-        if (input?.value) {
+        const isOthersSelected =
+          input?.value && input.value === CLIENT_RADIO_OTHERS_INPUT_VALUE
+        if (!isOthersSelected && input?.value) {
           returnedInputs[ff._id] = {
             fieldType: ff.fieldType,
             answer: { value: input.value },
           }
-        } else if (input?.othersInput) {
+        } else if (isOthersSelected && input?.othersInput) {
           returnedInputs[ff._id] = {
             fieldType: ff.fieldType,
             answer: { othersInput: input.othersInput },
