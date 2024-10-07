@@ -25,6 +25,7 @@ import {
   FormFieldValue,
   FormFieldValues,
 } from '~templates/Field'
+import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/constants'
 
 import { FieldIdToQuarantineKeyType } from '../PublicFormService'
 
@@ -364,12 +365,17 @@ const createResponsesV3 = (
         const input = formInputs[ff._id] as
           | FormFieldValue<typeof ff.fieldType>
           | undefined
-        if (!input?.value && !input?.othersInput) break
-        returnedInputs[ff._id] = {
-          fieldType: ff.fieldType,
-          answer: input.othersInput
-            ? { othersInput: input.othersInput }
-            : { value: input.value },
+        const isOthersSelected = input?.value === RADIO_OTHERS_INPUT_VALUE
+        if (!isOthersSelected && input?.value) {
+          returnedInputs[ff._id] = {
+            fieldType: ff.fieldType,
+            answer: { value: input.value },
+          }
+        } else if (isOthersSelected && input?.othersInput) {
+          returnedInputs[ff._id] = {
+            fieldType: ff.fieldType,
+            answer: { othersInput: input.othersInput },
+          }
         }
         break
       }
