@@ -46,6 +46,7 @@ import {
   GenericStringAnswerResponseFieldV3,
   MobileResponseV3,
   RadioFieldResponsesV3,
+  RadioResponseV3,
   ShortTextFieldBase,
   StringAnswerResponseV3,
   TableFieldResponsesV3,
@@ -496,7 +497,9 @@ export const generateTableResponseV3 = (
   }
 }
 
-export const generateRadioResponseV3 = (answer: RadioFieldResponsesV3) => {
+export const generateRadioResponseV3 = (
+  answer: RadioFieldResponsesV3,
+): RadioResponseV3 => {
   return {
     fieldType: BasicField.Radio,
     answer,

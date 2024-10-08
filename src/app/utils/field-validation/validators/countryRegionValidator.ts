@@ -74,7 +74,7 @@ const isCountryRegionValidV3: ResponseValidator<CountryRegionResponseV3> = (
   return isOneOfOptions(validOptionsInUpperCase, answer)
     ? right(response)
     : left(
-        `CountryRegionValidator:\t answer is not a valid country/region option`,
+        `CountryRegionValidatorV3:\t answer is not a valid country/region option`,
       )
 }
 

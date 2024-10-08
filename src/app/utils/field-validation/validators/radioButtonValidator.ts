@@ -97,10 +97,8 @@ const makeIsRadioOptionValidatorV3: ResponseValidatorConstructor<
   const { fieldOptions, othersRadioButton } = radioButtonField
 
   const isInvalid =
-    'value' in answer &&
-    !isOneOfOptions(fieldOptions, answer.value) &&
-    othersRadioButton &&
-    'othersInput' in answer
+    ('value' in answer && !isOneOfOptions(fieldOptions, answer.value)) ||
+    (!othersRadioButton && 'othersInput' in answer)
   if (isInvalid) {
     return left(
       `RadioButtonValidatorV3:\tanswer is not a valid radio button option`,
