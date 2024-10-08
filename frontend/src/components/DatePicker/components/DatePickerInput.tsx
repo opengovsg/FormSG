@@ -12,8 +12,7 @@ import {
 import { CalendarButton } from '../components/CalendarButton'
 import { useDatePicker } from '../DatePickerContext'
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export const DatePickerInput = forwardRef<{}, 'input'>((_props, ref) => {
+export const DatePickerInput = forwardRef<object, 'input'>((_props, ref) => {
   const {
     internalInputValue,
     handleInputChange,

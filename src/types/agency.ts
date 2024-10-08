@@ -24,5 +24,4 @@ export type AgencyDocument = HydratedDocument<
   AgencyInstanceMethods
 >
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export type IAgencyModel = Model<IAgencySchema, {}, AgencyInstanceMethods>
+export type IAgencyModel = Model<IAgencySchema, object, AgencyInstanceMethods>
