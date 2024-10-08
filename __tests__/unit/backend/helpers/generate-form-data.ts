@@ -43,7 +43,6 @@ import {
   EmailResponseV3,
   FormField,
   GenericStringAnswerFieldResponseV3,
-  GenericStringAnswerResponseFieldV3,
   MobileResponseV3,
   RadioFieldResponsesV3,
   RadioResponseV3,

@@ -308,7 +308,8 @@ const isResponsePresentOnHiddenFieldV3 = ({
     case BasicField.Mobile:
       return ok(
         response.answer.value.trim() !== '' ||
-          response.answer.signature?.trim() !== '',
+          (!!response.answer.signature &&
+            response.answer.signature.trim() !== ''),
       )
     case BasicField.Radio:
       return ok(
@@ -361,6 +362,16 @@ const isValidationRequiredV3 = ({
   } else if (response.fieldType === BasicField.YesNo) {
     return ok(
       (formField.required && isVisible) || response.answer.trim() !== '',
+    )
+  } else if (
+    response.fieldType === BasicField.Email ||
+    response.fieldType === BasicField.Mobile
+  ) {
+    return ok(
+      (formField.required && isVisible) ||
+        response.answer.value.trim() !== '' ||
+        (!!response.answer.signature &&
+          response.answer.signature.trim() !== ''),
     )
   } else if (response.fieldType === BasicField.Radio) {
     return ok(

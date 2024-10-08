@@ -2,7 +2,11 @@ import formsgSdk from 'src/app/config/formsg-sdk'
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
 import { validateField } from 'src/app/utils/field-validation'
-import { IEmailFieldSchema, OmitUnusedValidatorProps } from 'src/types/field'
+import {
+  FieldValidationSchema,
+  IEmailFieldSchema,
+  OmitUnusedValidatorProps,
+} from 'src/types/field'
 import { SingleAnswerFieldResponse } from 'src/types/response'
 
 import { BasicField } from '../../../../../../shared/types'
@@ -191,10 +195,10 @@ describe('Email field validation', () => {
       isVisible: true,
       answer: 'volunteer-testing@TeSt.GoV.Sg', // mixed case domain
       signature: 'some signature',
-    } as ISingleAnswerResponse
+    } as SingleAnswerFieldResponse
     const validateResult = validateField(
       'formId',
-      formField as unknown as IFieldSchema,
+      formField as FieldValidationSchema,
       response as ProcessedFieldResponse,
     )
     expect(validateResult.isOk()).toBe(true)
@@ -389,6 +393,13 @@ describe('Email field validation', () => {
       isVerifiable: false,
       hasAllowedEmailDomains: true,
       allowedEmailDomains: [],
+      autoReplyOptions: {
+        autoReplyMessage: 'some message',
+        autoReplySender: 'some sender',
+        autoReplySubject: 'some subject',
+        hasAutoReply: true,
+        includeFormSummary: true,
+      },
     } as OmitUnusedValidatorProps<IEmailFieldSchema>
     const response = {
       _id: 'abc123',
