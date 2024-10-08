@@ -4,8 +4,6 @@ import { NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import { FormFieldSchema } from 'src/types'
-
 import {
   BasicField,
   FormDto,
@@ -13,6 +11,7 @@ import {
   SubmissionType,
 } from '../../../../../shared/types'
 import { isDev } from '../../../../app/config/config'
+import { FormFieldSchema } from '../../../../types'
 import {
   ParsedClearAttachmentResponseV3,
   ParsedClearFormFieldResponsesV3,
