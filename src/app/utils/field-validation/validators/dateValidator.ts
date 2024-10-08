@@ -188,7 +188,7 @@ const pastOnlyValidatorV3: ResponseValidator<DateResponseV3> = (response) => {
   // Even if they are in a different timezone
   const todayMax = moment().utc().add(14, 'hours').startOf('day')
   const { answer } = response
-  const answerDate = createMomentFromDateString(answer)
+  const answerDate = createMomentFromDateStringV3(answer)
 
   return answerDate.isAfter(todayMax)
     ? left(`DateValidatorV3:\t answer does not pass date logic validation`)
@@ -205,7 +205,7 @@ const futureOnlyValidatorV3: ResponseValidator<DateResponseV3> = (response) => {
   // Even if they are in a different timezone
   const todayMin = moment().utc().subtract(12, 'hours').startOf('day')
   const { answer } = response
-  const answerDate = createMomentFromDateString(answer)
+  const answerDate = createMomentFromDateStringV3(answer)
 
   return answerDate.isBefore(todayMin)
     ? left(`DateValidatorV3:\t answer does not pass date logic validation`)
@@ -221,7 +221,7 @@ const makeCustomDateValidatorV3: ResponseValidatorConstructor<
   DateResponseV3
 > = (dateField) => (response) => {
   const { answer } = response
-  const answerDate = createMomentFromDateString(answer)
+  const answerDate = createMomentFromDateStringV3(answer)
 
   const { customMinDate, customMaxDate } = dateField.dateValidation || {}
 
@@ -261,10 +261,10 @@ const makeInvalidDaysValidatorV3: ResponseValidatorConstructor<
 > = (dateField) => (response) => {
   const { answer } = response
   const invalidDays = convertInvalidDaysToNumberSet(dateField.invalidDays ?? [])
-  // Convert date response to a ISO day of the week number format
-  const dateResponseNumberFormat = parseInt(format(new Date(answer), 'i'))
 
-  return invalidDays.has(dateResponseNumberFormat)
+  const dayOfWeekNumber = createMomentFromDateStringV3(answer).isoWeekday()
+
+  return invalidDays.has(dayOfWeekNumber)
     ? left(`DateValidatorV3:\t answer is an invalid day`)
     : right(response)
 }
