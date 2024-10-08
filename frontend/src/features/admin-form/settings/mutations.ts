@@ -4,7 +4,6 @@ import { useParams } from 'react-router-dom'
 import simplur from 'simplur'
 
 import {
-  AdminFormDto,
   FormAuthType,
   FormResponseMode,
   FormSettings,
@@ -61,7 +60,7 @@ export const useMutateFormSettings = () => {
     (newData: FormSettings) => {
       queryClient.setQueryData(adminFormSettingsKeys.id(formId), newData)
       // Only update adminForm if it already has prior data.
-      queryClient.setQueryData<AdminFormDto | undefined>(
+      queryClient.setQueryData<FormSettings | undefined>(
         adminFormKeys.id(formId),
         (oldData) =>
           oldData
@@ -76,7 +75,7 @@ export const useMutateFormSettings = () => {
   )
 
   const generateErrorToast = useCallback(
-    (message) => {
+    (message: string) => {
       toast.closeAll()
       toast({
         description: message,
@@ -87,7 +86,7 @@ export const useMutateFormSettings = () => {
   )
 
   const generateSuccessToast = useCallback(
-    (message) => {
+    (message: string) => {
       toast.closeAll()
       toast({
         description: message,

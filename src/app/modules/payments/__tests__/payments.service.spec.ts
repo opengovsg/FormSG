@@ -131,7 +131,7 @@ describe('payments.service', () => {
         {
           data: {
             ...mockValidProduct,
-            _id: new ObjectId() as unknown as ProductId,
+            _id: new ObjectId().toString() as ProductId,
           },
           quantity: 1,
           selected: true,

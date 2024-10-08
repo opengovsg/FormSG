@@ -13,7 +13,6 @@ WORKDIR /build
 COPY package.json package-lock.json ./
 COPY shared/package.json shared/package-lock.json ./shared/
 COPY frontend/package.json frontend/package-lock.json ./frontend/
-COPY frontend/patches ./frontend/patches
 
 # Allow running of postinstall scripts
 # RUN npm config set unsafe-perm true

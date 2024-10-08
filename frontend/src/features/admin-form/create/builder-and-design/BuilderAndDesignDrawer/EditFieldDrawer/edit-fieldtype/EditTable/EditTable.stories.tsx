@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { BasicField, TableFieldBase } from '~shared/types'
 
@@ -64,7 +64,7 @@ export default {
   },
 } as Meta<EditTableProps>
 
-const Template: Story<EditTableProps> = ({ field }) => {
+const Template: StoryFn<EditTableProps> = ({ field }) => {
   return <EditTable field={field} />
 }
 

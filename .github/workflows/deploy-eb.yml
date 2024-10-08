@@ -42,21 +42,21 @@ jobs:
           echo "APP_VERSION=$(jq -r .version package.json)-$(echo ${GITHUB_REF##*/})-$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
       - name: Inject frontend build env vars
         env:
-          REACT_APP_DD_RUM_APP_ID: ${{ secrets.DD_RUM_APP_ID }}
-          REACT_APP_DD_RUM_CLIENT_TOKEN: ${{ secrets.DD_RUM_CLIENT_TOKEN }}
-          REACT_APP_DD_RUM_ENV: ${{ secrets.DD_ENV }}
-          REACT_APP_DD_SAMPLE_RATE: ${{ secrets.DD_SAMPLE_RATE }}
-          REACT_APP_GA_TRACKING_ID: ${{ secrets.GA_TRACKING_ID }}
-          REACT_APP_FORMSG_SDK_MODE: ${{ secrets.REACT_APP_FORMSG_SDK_MODE }}
-          REACT_APP_URL: ${{ secrets.APP_URL }}
+          VITE_APP_DD_RUM_APP_ID: ${{ secrets.DD_RUM_APP_ID }}
+          VITE_APP_DD_RUM_CLIENT_TOKEN: ${{ secrets.DD_RUM_CLIENT_TOKEN }}
+          VITE_APP_DD_RUM_ENV: ${{ secrets.DD_ENV }}
+          VITE_APP_DD_SAMPLE_RATE: ${{ secrets.DD_SAMPLE_RATE }}
+          VITE_APP_GA_TRACKING_ID: ${{ secrets.GA_TRACKING_ID }}
+          VITE_APP_FORMSG_SDK_MODE: ${{ secrets.REACT_APP_FORMSG_SDK_MODE }}
+          VITE_APP_URL: ${{ secrets.APP_URL }}
         run: |
-          sed -i -e "s|@REACT_APP_URL|${{secrets.APP_URL}}|g" -e "s/@REACT_APP_DD_RUM_APP_ID/$REACT_APP_DD_RUM_APP_ID/g" -e "s/@REACT_APP_DD_RUM_CLIENT_TOKEN/$REACT_APP_DD_RUM_CLIENT_TOKEN/g" -e "s/@REACT_APP_DD_RUM_ENV/$REACT_APP_DD_RUM_ENV/g" -e "s/@REACT_APP_VERSION/${{env.APP_VERSION}}/g" -e "s/@REACT_APP_DD_SAMPLE_RATE/$REACT_APP_DD_SAMPLE_RATE/g" frontend/datadog-chunk.ts
-          echo REACT_APP_VERSION=${{env.APP_VERSION}} > frontend/.env
-          echo REACT_APP_URL=$REACT_APP_URL > frontend/.env
-          echo REACT_APP_GA_TRACKING_ID=$REACT_APP_GA_TRACKING_ID >> frontend/.env
-          echo REACT_APP_FORMSG_SDK_MODE=$REACT_APP_FORMSG_SDK_MODE >> frontend/.env
-          echo REACT_APP_DD_RUM_CLIENT_TOKEN=$REACT_APP_DD_RUM_CLIENT_TOKEN >> frontend/.env
-          echo REACT_APP_DD_RUM_ENV=$REACT_APP_DD_RUM_ENV >> frontend/.env
+          sed -i -e "s|@VITE_APP_URL|${{secrets.APP_URL}}|g" -e "s/@VITE_APP_DD_RUM_APP_ID/$VITE_APP_DD_RUM_APP_ID/g" -e "s/@VITE_APP_DD_RUM_CLIENT_TOKEN/$VITE_APP_DD_RUM_CLIENT_TOKEN/g" -e "s/@VITE_APP_DD_RUM_ENV/$VITE_APP_DD_RUM_ENV/g" -e "s/@VITE_APP_VERSION/${{env.APP_VERSION}}/g" -e "s/@VITE_APP_DD_SAMPLE_RATE/$VITE_APP_DD_SAMPLE_RATE/g" frontend/datadog-chunk.ts
+          echo VITE_APP_VERSION=${{env.APP_VERSION}} > frontend/.env
+          echo VITE_APP_URL=$VITE_APP_URL > frontend/.env
+          echo VITE_APP_GA_TRACKING_ID=$VITE_APP_GA_TRACKING_ID >> frontend/.env
+          echo VITE_APP_FORMSG_SDK_MODE=$VITE_APP_FORMSG_SDK_MODE >> frontend/.env
+          echo VITE_APP_DD_RUM_CLIENT_TOKEN=$VITE_APP_DD_RUM_CLIENT_TOKEN >> frontend/.env
+          echo VITE_APP_DD_RUM_ENV=$VITE_APP_DD_RUM_ENV >> frontend/.env
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1.7.0

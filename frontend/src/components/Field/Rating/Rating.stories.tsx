@@ -7,7 +7,7 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { viewports } from '~/utils/storybook'
 
@@ -21,9 +21,9 @@ export default {
   decorators: [],
 } as Meta
 
-const Template: Story<RatingProps> = (args) => <Rating {...args} />
+const Template: StoryFn<RatingProps> = (args) => <Rating {...args} />
 
-const ResponsiveGroup: Story<RatingProps> = (args) => (
+const ResponsiveGroup: StoryFn<RatingProps> = (args) => (
   <Stack spacing="2rem">
     <Rating
       {...args}
@@ -49,7 +49,7 @@ const ResponsiveGroup: Story<RatingProps> = (args) => (
   </Stack>
 )
 
-const TemplateGroup: Story<RatingProps> = (args) => (
+const TemplateGroup: StoryFn<RatingProps> = (args) => (
   <SimpleGrid
     columns={2}
     spacing={8}
@@ -197,7 +197,7 @@ Tablet.parameters = {
   chromatic: { viewports: [viewports.md] },
 }
 
-export const Playground: Story = ({
+export const Playground: StoryFn = ({
   name,
   label,
   isDisabled,
@@ -230,6 +230,8 @@ export const Playground: Story = ({
       >
         <FormLabel htmlFor={name}>{label}</FormLabel>
         <Rating
+          isRequired={isRequired}
+          fieldTitle="Test rating field title"
           variant={variant}
           numberOfRatings={numberOfRatings}
           {...args}

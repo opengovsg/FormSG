@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { DateString } from '~shared/types/generic'
 
@@ -6,10 +6,10 @@ import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
 
 import { AdminFormNavbar, AdminFormNavbarProps } from './AdminFormNavbar'
 
-const MOCK_FORM: AdminFormNavbarProps['formInfo'] = {
+const MOCK_FORM = {
   title: 'Storybook Test Form',
   lastModified: '2020-01-01T00:00:00.000Z' as DateString,
-} as const
+} as NonNullable<AdminFormNavbarProps['formInfo']>
 
 export default {
   title: 'Features/AdminForm/AdminFormNavbar',
@@ -24,7 +24,7 @@ export default {
   },
 } as Meta<AdminFormNavbarProps>
 
-const Template: Story<AdminFormNavbarProps> = (args) => (
+const Template: StoryFn<AdminFormNavbarProps> = (args) => (
   <AdminFormNavbar {...args} />
 )
 export const DefaultEditor = Template.bind({})

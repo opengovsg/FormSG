@@ -76,7 +76,6 @@ export const WorkspaceRowsProvider = ({
       }}
     >
       <DuplicateFormModal
-        formId={activeFormMeta?._id ?? ''}
         isOpen={dupeFormModalDisclosure.isOpen}
         onClose={dupeFormModalDisclosure.onClose}
       />

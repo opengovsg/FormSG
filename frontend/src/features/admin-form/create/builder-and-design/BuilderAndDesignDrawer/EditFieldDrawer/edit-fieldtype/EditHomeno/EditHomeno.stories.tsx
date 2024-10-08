@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { BasicField, HomenoFieldBase } from '~shared/types'
 
@@ -42,7 +42,7 @@ interface StoryArgs {
   field: HomenoFieldBase
 }
 
-const Template: Story<StoryArgs> = ({ field }) => {
+const Template: StoryFn<StoryArgs> = ({ field }) => {
   return <EditHomeno field={field} />
 }
 

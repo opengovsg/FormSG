@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { merge } from 'lodash'
 
 import {
@@ -50,7 +50,7 @@ interface StoryChildrenCompoundFieldProps extends ChildrenCompoundFieldProps {
   childrenBirthRecords: MyInfoChildData
 }
 
-const Template: Story<StoryChildrenCompoundFieldProps> = ({
+const Template: StoryFn<StoryChildrenCompoundFieldProps> = ({
   childrenBirthRecords,
   ...args
 }) => {

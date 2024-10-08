@@ -1,5 +1,5 @@
 import { useDisclosure } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { UserId } from '~shared/types'
 import { Workspace, WorkspaceId } from '~shared/types/workspace'
@@ -24,7 +24,7 @@ export default {
   },
 } as Meta
 
-const Template: Story<RenameWorkspaceModalProps> = (args) => {
+const Template: StoryFn<RenameWorkspaceModalProps> = (args) => {
   const modalProps = useDisclosure({ defaultIsOpen: true })
   const mockWorkspace: Workspace = {
     _id: '' as WorkspaceId,

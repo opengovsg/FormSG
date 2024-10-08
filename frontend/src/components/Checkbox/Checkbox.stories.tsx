@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { FormControl, VStack } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { isEmpty } from 'lodash'
 
 import { viewports } from '~utils/storybook'
@@ -17,7 +17,7 @@ export default {
   component: Checkbox,
 } as Meta
 
-const Template: Story<CheckboxProps> = (args) => {
+const Template: StoryFn<CheckboxProps> = (args) => {
   return <Checkbox {...args}>{args.name}</Checkbox>
 }
 
@@ -48,7 +48,7 @@ Tablet.parameters = {
   chromatic: { viewports: [viewports.md] },
 }
 
-const AllStates: Story<CheckboxProps> = (args) => {
+const AllStates: StoryFn<CheckboxProps> = (args) => {
   return (
     <VStack>
       <Checkbox {...args}>Unselected</Checkbox>
@@ -72,7 +72,7 @@ const AllStates: Story<CheckboxProps> = (args) => {
 
 export const CheckboxStates = AllStates.bind({})
 
-export const Playground: Story = ({
+export const Playground: StoryFn = ({
   name = 'checkbox',
   othersInputName = 'others-input',
   othersCheckboxName = 'others-checkbox',

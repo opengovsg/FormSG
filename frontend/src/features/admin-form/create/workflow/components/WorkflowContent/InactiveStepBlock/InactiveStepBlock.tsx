@@ -88,7 +88,7 @@ export const InactiveStepBlock = ({
 
   const { user } = useUser()
   // TODO: (MRF-email-notif) Remove isTest check when MRF email notifications and approvals are both out of beta
-  const isTest = process.env.NODE_ENV === 'test'
+  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
 
   // Prevent editing step if some other step is being edited.
   const isPreventEdit = useMemo(() => !!stateData, [stateData])

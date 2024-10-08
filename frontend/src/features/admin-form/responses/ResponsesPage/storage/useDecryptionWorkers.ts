@@ -82,7 +82,7 @@ const useDecryptionWorkers = ({
   const { data: adminForm } = useAdminForm()
   const { user } = useUser()
 
-  const isTest = process.env.NODE_ENV === 'test'
+  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
   const isFasterDownloadsFeatureOn = useFeatureIsOn('faster-downloads')
   const isFasterDownloadsEnabled = isTest || isFasterDownloadsFeatureOn
 
@@ -166,7 +166,7 @@ const useDecryptionWorkers = ({
         freshAbortController,
       )
       const reader = stream.getReader()
-      let read: (result: ReadableStreamDefaultReadResult<string>) => void
+      let read: (result: ReadableStreamReadResult<string>) => void
       const downloadStartTime = performance.now()
 
       let progress = 0

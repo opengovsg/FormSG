@@ -24,15 +24,7 @@ export const FormPaymentPage = () => {
         <Flex direction="column" css={fillMinHeightCss}>
           <FormBanner />
           <PaymentFormBannerLogo />
-          <Suspense
-            fallback={
-              <Skeleton w={'100%'} h={'350px'}>
-                <Text w={'100%'} textStyle="h3" textColor="primary.500">
-                  Loading Payment Information
-                </Text>
-              </Skeleton>
-            }
-          >
+          <Suspense fallback={<Skeleton w={'100%'} h={'350px'} />}>
             <StripePaymentElement paymentId={paymentId} />
           </Suspense>
           <FormFooter />

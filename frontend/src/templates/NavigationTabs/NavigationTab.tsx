@@ -1,10 +1,12 @@
-import { ComponentProps } from 'react'
-import { Link as ReactLink } from 'react-router-dom'
-import { chakra, useStyles } from '@chakra-ui/react'
+import { PropsWithChildren } from 'react'
+import { Link as ReactLink, LinkProps } from 'react-router-dom'
+import { chakra } from '@chakra-ui/react'
+
+import { useNavigationTabStyles } from './NavigationTabContext'
 
 const Link = chakra(ReactLink)
 
-interface NavigationTabProps extends ComponentProps<typeof Link> {
+interface NavigationTabProps extends LinkProps {
   isActive?: boolean
   isDisabled?: boolean
   showReddot?: boolean
@@ -16,15 +18,15 @@ export const NavigationTab = ({
   isDisabled,
   children,
   ...props
-}: NavigationTabProps) => {
-  const styles = useStyles()
+}: PropsWithChildren<NavigationTabProps>) => {
+  const styles = useNavigationTabStyles()
 
   if (isDisabled) {
     return (
       <chakra.a
         __css={styles.tab}
         aria-disabled
-        d="inline-flex"
+        display="inline-flex"
         alignItems="center"
       >
         {children}

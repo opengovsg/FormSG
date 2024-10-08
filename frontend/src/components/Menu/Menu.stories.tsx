@@ -7,40 +7,50 @@ import {
   Text,
   Th,
   Thead,
+  ThemingProps,
   Tr,
 } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
-
-import { MenuVariant } from '~theme/components/Menu'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { Menu, MenuButtonProps } from './Menu'
 
 export default {
   title: 'Components/Menu',
   component: Menu,
+  tags: ['autodocs'],
+  parameters: { docs: { source: { type: 'code' } } },
 } as Meta
 
-type MenuTemplateProps = MenuButtonProps
+type MenuTemplateProps = MenuButtonProps & {
+  size?: ThemingProps<'Menu'>['size']
+}
 type MenuGroupTemplateProps = {
-  variant: MenuVariant
+  variant: ThemingProps<'Menu'>['variant']
+  size?: ThemingProps<'Menu'>['size']
 }
 
-const MenuTemplate: Story<MenuTemplateProps> = ({
+const MenuTemplate: StoryFn<MenuTemplateProps> = ({
   variant,
   children,
   isStretch,
+  size,
   isOpen,
 }) => {
   return (
-    <Menu {...(isOpen ? { isOpen } : {})}>
+    <Menu size={size} isStretch={isStretch} isOpen={isOpen}>
       {({ isOpen }) => (
         <>
-          <Menu.Button variant={variant} isStretch={isStretch} isOpen={isOpen}>
+          <Menu.Button
+            size={size}
+            variant={variant}
+            isStretch={isStretch}
+            isOpen={isOpen}
+          >
             {children}
           </Menu.Button>
           <Menu.List>
             <Menu.Item>Last updated</Menu.Item>
-            <Menu.Item>Date created</Menu.Item>
+            <Menu.Item isDisabled>Date created</Menu.Item>
             <Menu.Item>Name</Menu.Item>
           </Menu.List>
         </>
@@ -49,7 +59,7 @@ const MenuTemplate: Story<MenuTemplateProps> = ({
   )
 }
 
-const MenuGroupTemplate: Story<MenuGroupTemplateProps> = ({ variant }) => {
+const MenuGroupTemplate: StoryFn<MenuGroupTemplateProps> = (props) => {
   return (
     <SimpleGrid
       columns={2}
@@ -64,8 +74,8 @@ const MenuGroupTemplate: Story<MenuGroupTemplateProps> = ({ variant }) => {
         templateColumns="inherit"
         alignItems="center"
       >
-        <MenuTemplate variant={variant}>Menu</MenuTemplate>
-        <MenuTemplate variant={variant} isStretch>
+        <MenuTemplate {...props}>Menu</MenuTemplate>
+        <MenuTemplate {...props} isStretch>
           Menu Stretch
         </MenuTemplate>
       </SimpleGrid>
@@ -76,10 +86,10 @@ const MenuGroupTemplate: Story<MenuGroupTemplateProps> = ({ variant }) => {
         templateColumns="inherit"
         alignItems="center"
       >
-        <MenuTemplate variant={variant} isOpen>
+        <MenuTemplate {...props} isOpen>
           Menu
         </MenuTemplate>
-        <MenuTemplate variant={variant} isStretch isOpen>
+        <MenuTemplate {...props} isStretch isOpen>
           Menu Stretch
         </MenuTemplate>
       </SimpleGrid>
@@ -99,7 +109,7 @@ Outline.args = { variant: 'outline' }
 export const Clear = MenuGroupTemplate.bind({})
 Clear.args = { variant: 'clear' }
 
-export const Playground: Story = () => {
+export const Playground: StoryFn = () => {
   return (
     <Box>
       <Menu>

@@ -5,30 +5,22 @@ import {
   IconProps,
 } from '@chakra-ui/react'
 
-import { ThemeButtonVariant } from '~theme/components/Button'
-import { ThemeColorScheme } from '~theme/foundations/colours'
-
 import Spinner from '../Spinner'
 
 export interface ButtonProps extends ChakraButtonProps {
   /**
-   * The variant of the button.
-   */
-  variant?: ThemeButtonVariant
-
-  /**
    * Loading spinner font size. Defaults to `1.5rem`.
    */
   spinnerFontSize?: IconProps['fontSize']
-
-  /**
-   * Color scheme of button.
-   */
-  colorScheme?: ThemeColorScheme
   /**
    * Base color intensity of button.
    */
   basecolorintensity?: 500 | 600
+
+  /**
+   * @note backwards compatibility with Chakra V1
+   */
+  isFullWidth?: boolean
 }
 
 export const Button = forwardRef<ButtonProps, 'button'>(
@@ -37,7 +29,7 @@ export const Button = forwardRef<ButtonProps, 'button'>(
       <ChakraButton
         ref={ref}
         spinner={<Spinner fontSize={spinnerFontSize ?? '1.5rem'} />}
-        isFullWidth={isFullWidth}
+        width={isFullWidth ? '100%' : undefined}
         {...props}
         {...(isFullWidth ? { minH: '3.5rem' } : {})}
       >

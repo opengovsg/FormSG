@@ -1,5 +1,5 @@
 import { SimpleGrid, Text } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { Badge, BadgeProps } from './Badge'
 
@@ -9,7 +9,7 @@ export default {
   decorators: [],
 } as Meta<BadgeProps>
 
-const Template: Story<BadgeProps> = (args) => <Badge {...args} />
+const Template: StoryFn<BadgeProps> = (args) => <Badge {...args} />
 
 export const Solid = Template.bind({})
 Solid.args = {
@@ -24,7 +24,7 @@ Subtle.args = {
   variant: 'subtle',
 }
 
-const TemplateGroup: Story<BadgeProps> = (args) => (
+const TemplateGroup: StoryFn<BadgeProps> = (args) => (
   <SimpleGrid
     columns={2}
     spacing={8}

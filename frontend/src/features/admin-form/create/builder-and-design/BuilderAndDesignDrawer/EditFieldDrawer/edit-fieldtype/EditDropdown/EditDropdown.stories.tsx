@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { BasicField, DropdownFieldBase } from '~shared/types'
 
@@ -42,7 +42,7 @@ interface StoryArgs {
   field: DropdownFieldBase
 }
 
-const Template: Story<StoryArgs> = ({ field }) => {
+const Template: StoryFn<StoryArgs> = ({ field }) => {
   return <EditDropdown field={field} />
 }
 

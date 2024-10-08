@@ -121,7 +121,7 @@ const StripeCheckoutForm = ({
           variant="solid"
           colorScheme={`theme-${colorTheme}`}
           type="submit"
-          disabled={!stripe || isStripeProcessing}
+          isDisabled={!stripe || isStripeProcessing}
           isLoading={isStripeProcessing}
           mt="2.5rem"
         >

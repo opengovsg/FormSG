@@ -129,8 +129,13 @@ export const ProductModal = ({
 
   const watchMultiQtyEnabled = watch(MULTI_QTY_KEY, product?.multi_qty ?? false)
   const handleSaveProduct = handleSubmit((product) => {
-    const { display_amount, ...rest } = product
-    onSaveProduct({ ...rest, amount_cents: dollarsToCents(display_amount) })
+    const { display_amount, _id, ...rest } = product
+    onSaveProduct({
+      ...rest,
+      // TODO: can this be undefined? Since Product may be null
+      _id: _id as Product['_id'], // react-hook-form types might have undone the Opaque type
+      amount_cents: dollarsToCents(display_amount),
+    })
     onClose()
   })
 

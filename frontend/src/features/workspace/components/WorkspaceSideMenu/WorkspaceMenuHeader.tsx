@@ -37,6 +37,7 @@ export const WorkspaceMenuHeader = ({
             variant="clear"
             colorScheme="primary"
             color="secondary.500"
+            mr="0.25rem"
           />
         )}
         <Text textStyle="h4" color="secondary.700">

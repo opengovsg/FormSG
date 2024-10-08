@@ -10,6 +10,7 @@ import {
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 import { omit } from '@chakra-ui/utils'
+import { merge } from 'lodash'
 
 import { BxsCheckCircle } from '~assets/icons/BxsCheckCircle'
 
@@ -32,6 +33,10 @@ export interface InputProps extends ChakraInputProps {
    * Whether to prevent default on user pressing the 'Enter' key.
    */
   preventDefaultOnEnter?: boolean
+  /**
+   * Whether there's an input right element. Used to provide additional padding
+   */
+  hasInputRightElement?: boolean
 }
 
 export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
@@ -44,6 +49,7 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
     'isPrefilled',
     'isPrefillLocked',
     'preventDefaultOnEnter',
+    'hasInputRightElement',
   ])
 
   const preventDefault = useMemo(
@@ -89,7 +95,8 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
             {...preventDefault}
             {...inputProps}
             isDisabled={true}
-            sx={props.sx ?? inputStyles.field}
+            // Padding to allow for lock icon overflow.
+            sx={merge({ pr: '2.75rem' }, inputStyles.field, props.sx)}
           />
           <InputRightElement>
             <BxLockAlt />
@@ -100,7 +107,11 @@ export const Input = forwardRef<InputProps, 'input'>((props, ref) => {
           ref={ref}
           {...preventDefault}
           {...inputProps}
-          sx={props.sx ?? inputStyles.field}
+          sx={merge(
+            props.hasInputRightElement ? { pr: '2.75rem' } : {},
+            inputStyles.field,
+            props.sx,
+          )}
         />
       )
     }

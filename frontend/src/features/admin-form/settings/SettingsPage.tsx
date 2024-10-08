@@ -64,7 +64,7 @@ export const SettingsPage = (): JSX.Element => {
   }, [formId, hasEditAccess, isCollabLoading, navigate])
 
   // TODO: (MRF-email-notif) Remove isTest when email notifications is out of beta
-  const isTest = process.env.NODE_ENV === 'test'
+  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
   // For beta flagging email notifications tab.
   const emailNotificationsTab =
     isUserLoading ||

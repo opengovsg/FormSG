@@ -1,6 +1,8 @@
+import { PartialDeep } from 'type-fest'
+
 import { Login } from '.'
 
-export const zhSG: Login = {
+export const zhSG: PartialDeep<Login> = {
   LoginPage: {
     slogan: '在几分钟内创建安全的政府表格',
   },

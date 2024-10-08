@@ -43,7 +43,7 @@ export const SecretKeyDownloadWhitelistFileModal = ({
     [errorToast],
   )
   const toastSuccessMessage = useCallback(
-    (message) => {
+    (message: string) => {
       toast.closeAll()
       toast({
         description: message,
@@ -62,7 +62,7 @@ export const SecretKeyDownloadWhitelistFileModal = ({
     [],
   )
   const handleWhitelistCsvDownload = useCallback(
-    ({ secretKey }) => {
+    ({ secretKey }: { secretKey: string }) => {
       fetchAdminFormEncryptedWhitelistedSubmitterIds(formId, queryClient)
         .then((data) => {
           const { encryptedWhitelistedSubmitterIds } = data

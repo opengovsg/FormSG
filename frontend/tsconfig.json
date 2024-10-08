@@ -1,11 +1,10 @@
 {
-  "extends": "./tsconfig.paths.json",
   "compilerOptions": {
-    "target": "es2015",
+    "target": "ES2021",
     "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
+      "DOM",
+      "DOM.Iterable",
+      "ES2021"
     ],
     "allowJs": true,
     "skipLibCheck": true,
@@ -14,16 +13,67 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
-    "module": "esnext",
+    "module": "ESNext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "baseUrl": ".",
+    "paths": {
+      "~shared/*": [
+        "../shared/*"
+      ],
+      "~assets/*": [
+        "./src/assets/*"
+      ],
+      "~contexts/*": [
+        "./src/contexts/*"
+      ],
+      "~constants/*": [
+        "./src/constants/*"
+      ],
+      "~components/*": [
+        "./src/components/*"
+      ],
+      "~templates/*": [
+        "./src/templates/*"
+      ],
+      "~features/*": [
+        "./src/features/*"
+      ],
+      "~hooks/*": [
+        "./src/hooks/*"
+      ],
+      "~utils/*": [
+        "./src/utils/*"
+      ],
+      "~pages/*": [
+        "./src/pages/*"
+      ],
+      "~services/*": [
+        "./src/services/*"
+      ],
+      "~theme/*": [
+        "./src/theme/*"
+      ],
+      "~typings/*": [
+        "./src/typings/*"
+      ],
+      "~/*": [
+        "./src/*"
+      ]
+    }
   },
   "include": [
     "src/**/*",
-    ".storybook/**/*"
+    ".storybook/**/*",
+    "./vitest-setup.ts"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
   ]
 }

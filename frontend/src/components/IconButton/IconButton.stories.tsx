@@ -1,6 +1,6 @@
 import { BiGitMerge } from 'react-icons/bi'
 import { ButtonGroup, SimpleGrid, Text } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { IconButton, IconButtonProps } from './IconButton'
 
@@ -10,11 +10,11 @@ export default {
   parameters: { backgrounds: { default: 'light' } },
 } as Meta
 
-const ButtonTemplate: Story<IconButtonProps> = (args) => (
+const ButtonTemplate: StoryFn<IconButtonProps> = (args) => (
   <IconButton {...args} />
 )
 
-const ButtonGroupTemplate: Story<IconButtonProps> = (args) => {
+const ButtonGroupTemplate: StoryFn<IconButtonProps> = (args) => {
   return (
     <SimpleGrid
       columns={2}

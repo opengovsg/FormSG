@@ -248,6 +248,7 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
                   field._id ??
                   'Field ID will be generated after this field is saved'
                 }
+                hasInputRightElement={Boolean(field._id)}
               />
               {field._id ? (
                 <InputRightElement>

@@ -92,6 +92,8 @@ export const TemplateFormProvider = ({
         handleLogout: undefined,
         isPreview: true,
         isPaymentEnabled: false,
+        hasSingleSubmissionValidationError: false,
+        hasRespondentNotWhitelistedError: false,
         ...commonFormValues,
         ...data,
         ...rest,

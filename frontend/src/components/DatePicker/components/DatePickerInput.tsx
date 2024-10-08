@@ -2,13 +2,12 @@ import { useMemo } from 'react'
 import ReactInputMask from 'react-input-mask'
 import {
   forwardRef,
+  Input,
   InputGroup,
   InputRightAddon,
   useMergeRefs,
   VisuallyHidden,
 } from '@chakra-ui/react'
-
-import Input from '~components/Input'
 
 import { CalendarButton } from '../components/CalendarButton'
 import { useDatePicker } from '../DatePickerContext'

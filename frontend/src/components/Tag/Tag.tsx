@@ -1,21 +1,24 @@
 import { BiX } from 'react-icons/bi'
 import {
   chakra,
+  createStylesContext,
   forwardRef,
   Icon,
   IconProps,
   Tag as ChakraTag,
   TagCloseButtonProps as ChakraTagCloseButtonProps,
   TagProps as ChakraTagProps,
-  useStyles,
+  useMultiStyleConfig,
 } from '@chakra-ui/react'
 
 export type TagProps = ChakraTagProps
 // Chakra's css prop type conflict with emotion, but we don't use the css prop anyways.
 export type TagIconProps = Omit<IconProps, 'css'>
 
+const [TagStylesProvider, useTagStyles] = createStylesContext('Tag')
+
 export const TagLeftIcon = forwardRef<TagIconProps, 'svg'>((props, ref) => {
-  const styles = useStyles()
+  const styles = useTagStyles()
   return (
     <Icon
       ref={ref}
@@ -27,7 +30,7 @@ export const TagLeftIcon = forwardRef<TagIconProps, 'svg'>((props, ref) => {
   )
 })
 export const TagRightIcon = forwardRef<TagIconProps, 'svg'>((props, ref) => {
-  const styles = useStyles()
+  const styles = useTagStyles()
   return (
     <Icon
       ref={ref}
@@ -50,7 +53,7 @@ export const TagCloseButton = ({
   children,
   ...rest
 }: TagCloseButtonProps): JSX.Element => {
-  const styles = useStyles()
+  const styles = useTagStyles()
 
   return (
     <chakra.button
@@ -66,5 +69,10 @@ export const TagCloseButton = ({
 }
 
 export const Tag = forwardRef<TagProps, 'span'>((props, ref): JSX.Element => {
-  return <ChakraTag {...props} ref={ref} />
+  const styles = useMultiStyleConfig('Tag', props)
+  return (
+    <TagStylesProvider value={styles}>
+      <ChakraTag {...props} ref={ref} />
+    </TagStylesProvider>
+  )
 })

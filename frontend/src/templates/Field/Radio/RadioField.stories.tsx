@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { merge } from 'lodash'
 
 import { BasicField } from '~shared/types/field'
@@ -42,7 +42,7 @@ const baseSchema: RadioFieldSchema = {
   _id: '611b94dfbb9e300012f702a7',
 }
 
-const Template: Story<RadioFieldProps> = (args) => {
+const Template: StoryFn<RadioFieldProps> = (args) => {
   const formMethods = useForm()
 
   const [submitValues, setSubmitValues] = useState<string>()

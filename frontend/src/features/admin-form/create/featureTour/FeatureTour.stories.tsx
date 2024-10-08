@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { AdminFormDto } from '~shared/types/form'
 
@@ -39,6 +39,6 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <CreatePage />
+const Template: StoryFn = () => <CreatePage />
 
 export const AdminFormBuilderFeatureTour = Template.bind({})

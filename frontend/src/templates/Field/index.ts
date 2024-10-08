@@ -15,13 +15,16 @@ import NumberField from './Number'
 import ParagraphField from './Paragraph'
 import RadioField from './Radio'
 import RatingField from './Rating'
-import SectionField from './Section'
+import SectionFieldContainer from './Section'
 import ShortTextField from './ShortText'
 import TableField from './Table'
 import UenField from './Uen'
 import YesNoField from './YesNo'
 
 export * from './types'
+
+// Storybook is unable to find the default export if the name is different when it is re-exported from another file.
+const SectionField = SectionFieldContainer
 
 export {
   AttachmentField,

@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { CountryRegion } from '~shared/constants/countryRegion'
 import { BasicField, CountryRegionFieldBase } from '~shared/types'
@@ -43,7 +43,7 @@ interface StoryArgs {
   field: CountryRegionFieldBase
 }
 
-const Template: Story<StoryArgs> = ({ field }) => {
+const Template: StoryFn<StoryArgs> = ({ field }) => {
   return <EditCountryRegion field={field} />
 }
 

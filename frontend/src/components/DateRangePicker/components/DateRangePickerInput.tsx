@@ -50,7 +50,7 @@ export const DateRangePickerInput = forwardRef<{}, 'input'>((_props, ref) => {
       overflowX="auto"
       sx={{
         // Hide scrollbars so dual inputs feel like a real normal input.
-        '-ms-overflow-style': 'none',
+        msOverflowStyle: 'none',
         scrollbarWidth: 'none',
         '&::-webkit-scrollbar': {
           display: 'none',

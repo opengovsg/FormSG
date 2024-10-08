@@ -8,7 +8,7 @@ import {
   useClipboard,
   useDisclosure,
 } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { UserId } from '~shared/types'
 import { Workspace, WorkspaceId } from '~shared/types/workspace'
@@ -48,7 +48,7 @@ export default {
   },
 } as Meta
 
-const Template: Story<CreateFormModalProps> = (args) => {
+const Template: StoryFn<CreateFormModalProps> = (args) => {
   const modalProps = useDisclosure({ defaultIsOpen: true })
 
   return (
@@ -98,6 +98,10 @@ export const StorageModeAckScreen = () => {
         Promise.resolve(console.log('create storage mode form')),
       secretKey,
       register,
+      handleCreateStorageModeOrMultirespondentForm: () =>
+        Promise.resolve(
+          console.log('create storage mode or multirespondent form'),
+        ),
     }
   }, [handleCopyKey, hasCopiedKey, register])
 

@@ -1,4 +1,4 @@
-import { FC, useMemo } from 'react'
+import { useMemo } from 'react'
 import {
   Box,
   Container,
@@ -14,6 +14,8 @@ import {
 import { AppFooter } from '~/app/AppFooter'
 import { AppPublicHeader } from '~/app/AppPublicHeader'
 
+import { FCC } from '~typings/react'
+
 import { OSS_README } from '~constants/links'
 import Link from '~components/Link'
 
@@ -24,7 +26,7 @@ interface listItemMarkerProps {
   sequenceMarkerOverride?: string
 }
 
-const SectionListItem: FC<ListItemProps> = ({
+const SectionListItem: FCC<ListItemProps> = ({
   children,
   listStyleType = 'decimal',
 }) => (
@@ -38,7 +40,7 @@ const SectionListItem: FC<ListItemProps> = ({
   </ListItem>
 )
 
-export const SubSectionOrderedList: FC<ListProps> = ({
+export const SubSectionOrderedList: FCC<ListProps> = ({
   children,
   ...props
 }) => (
@@ -52,7 +54,7 @@ export const SubSectionOrderedList: FC<ListProps> = ({
   </OrderedList>
 )
 
-export const SubSubSectionOrderedList: FC<ListProps> = ({
+export const SubSubSectionOrderedList: FCC<ListProps> = ({
   children,
   ...props
 }) => (
@@ -61,7 +63,7 @@ export const SubSubSectionOrderedList: FC<ListProps> = ({
   </SubSectionOrderedList>
 )
 
-export const SubSectionListItem: FC<ListItemProps & listItemMarkerProps> = ({
+export const SubSectionListItem: FCC<ListItemProps & listItemMarkerProps> = ({
   children,
   prependSequenceMarker,
   sequenceMarkerOverride,
@@ -108,7 +110,7 @@ export const SubSectionListItem: FC<ListItemProps & listItemMarkerProps> = ({
   )
 }
 
-const SectionTitle: FC = ({ children }) => <Text mb="1.5rem">{children}</Text>
+const SectionTitle: FCC = ({ children }) => <Text mb="1.5rem">{children}</Text>
 
 export const TermsOfUsePage = (): JSX.Element => {
   return (

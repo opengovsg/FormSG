@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { viewports } from '~utils/storybook'
 
@@ -16,7 +16,7 @@ export default {
   decorators: [],
 } as Meta
 
-const Template: Story<GovtMastheadProps> = (args) => (
+const Template: StoryFn<GovtMastheadProps> = (args) => (
   <GovtMastheadComponent {...args} />
 )
 

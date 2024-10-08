@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { getUnauthedUser } from '~/mocks/msw/handlers/user'
 
@@ -28,7 +28,7 @@ export default {
   },
 } as Meta<AdminForbiddenErrorPageProps>
 
-const Template: Story = (args: AdminForbiddenErrorPageProps) => (
+const Template: StoryFn = (args: AdminForbiddenErrorPageProps) => (
   <AdminForbiddenErrorPage {...args} />
 )
 export const NotLoggedIn = Template.bind({})

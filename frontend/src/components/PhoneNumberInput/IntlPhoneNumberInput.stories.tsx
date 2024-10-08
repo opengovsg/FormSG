@@ -5,7 +5,7 @@ import {
   FormErrorMessage,
   FormLabel,
 } from '@chakra-ui/form-control'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { isValidPhoneNumber } from 'libphonenumber-js/mobile'
 
 import Button from '../Button'
@@ -19,7 +19,7 @@ export default {
   decorators: [],
 } as Meta
 
-const Template: Story<PhoneNumberInputProps> = (args) => {
+const Template: StoryFn<PhoneNumberInputProps> = (args) => {
   const [value, setValue] = useState<string | undefined>(args.value ?? '')
   return (
     <PhoneNumberInput
@@ -60,7 +60,7 @@ Disabled.args = {
   isDisabled: true,
 }
 
-export const Playground: Story = ({
+export const Playground: StoryFn = ({
   name,
   label,
   isDisabled,

@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { AttachmentSize, BasicField, FormFieldDto } from '~shared/types/field'
 import {
@@ -206,7 +206,7 @@ const FORM_WITH_WORKFLOW: Partial<AdminFormDto> = {
   workflow: [workflow_step_1, workflow_step_2],
 }
 
-const Template: Story = () => <CreatePageWorkflowTab />
+const Template: StoryFn = () => <CreatePageWorkflowTab />
 export const NoWorkflow = Template.bind({})
 
 export const MobileNoWorkflow = Template.bind({})

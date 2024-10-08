@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { PaymentChannel } from '~shared/types'
 import {
@@ -47,7 +47,7 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <SettingsAuthPage />
+const Template: StoryFn = () => <SettingsAuthPage />
 export const PrivateEmailNilAuthForm = Template.bind({})
 PrivateEmailNilAuthForm.parameters = {
   msw: buildEmailModeMswRoutes({ status: FormStatus.Private }),

@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { BasicField, DecimalFieldBase } from '~shared/types'
 
@@ -35,7 +35,7 @@ interface StoryArgs {
   field: DecimalFieldBase
 }
 
-const Template: Story<StoryArgs> = ({ field }) => {
+const Template: StoryFn<StoryArgs> = ({ field }) => {
   return <EditDecimal field={field} />
 }
 

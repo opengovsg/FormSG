@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import ReactDOM from 'react-dom'
 import { useDisclosure } from '@chakra-ui/hooks'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { omit } from 'lodash'
 
 import {
@@ -35,7 +35,7 @@ export default {
 const modalRoot = document.createElement('div')
 document.body.appendChild(modalRoot)
 
-const Template: Story = () => {
+const Template: StoryFn = () => {
   const modalProps = useDisclosure({ defaultIsOpen: true })
 
   const el = document.createElement('div')

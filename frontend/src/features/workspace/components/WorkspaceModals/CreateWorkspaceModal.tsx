@@ -75,12 +75,11 @@ export const CreateWorkspaceModal = ({
           </FormControl>
         </ModalBody>
 
-        <ModalFooter>
+        <ModalFooter mt={{ base: '2rem', md: '0' }}>
           <Stack
             w="100vw"
             direction={{ base: 'column', md: 'row' }}
-            spacing={{ base: '2rem', md: '1rem' }}
-            gap={{ base: '1rem', md: 'inherit' }}
+            spacing={{ base: '1rem', md: '1rem' }}
             flexDir={{ base: 'column-reverse', md: 'inherit' }}
             justifyContent="flex-end"
           >

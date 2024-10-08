@@ -1,5 +1,5 @@
 import { TabList, TabPanel, TabPanels, Tabs, TabsProps } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import { useDraggable } from '~hooks/useDraggable'
 import { viewports } from '~utils/storybook'
@@ -20,7 +20,7 @@ export default {
   },
 } as Meta
 
-const TabTemplate: Story<TabsProps> = (args) => {
+const TabTemplate: StoryFn<TabsProps> = (args) => {
   const { ref, onMouseDown } = useDraggable()
 
   return (

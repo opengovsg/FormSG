@@ -1,5 +1,5 @@
 import { useControllableState } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 import { isWeekend } from 'date-fns'
 
 import { mockDateDecorator } from '~utils/storybook'
@@ -16,7 +16,7 @@ export default {
   },
 } as Meta<RangeCalendarProps>
 
-const RangeCalendarOnlyTemplate: Story<RangeCalendarProps> = ({
+const RangeCalendarOnlyTemplate: StoryFn<RangeCalendarProps> = ({
   value,
   onChange,
   ...args

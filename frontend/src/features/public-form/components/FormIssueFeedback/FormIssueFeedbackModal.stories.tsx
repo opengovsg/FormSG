@@ -1,5 +1,5 @@
 import { useDisclosure } from '@chakra-ui/react'
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import {
   fullScreenDecorator,
@@ -26,7 +26,7 @@ export default {
   },
 } as Meta
 
-const Template: Story<FormIssueFeedbackProps> = (args) => {
+const Template: StoryFn<FormIssueFeedbackProps> = (args) => {
   const modalProps = useDisclosure({ defaultIsOpen: true })
 
   return (

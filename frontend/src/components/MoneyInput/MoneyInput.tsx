@@ -5,16 +5,18 @@ import {
   InputGroup,
   InputLeftAddon,
   NumberInputProps as ChakraNumberInputProps,
+  PropsOf,
   Text,
   useFormControlProps,
-  useMergeRefs,
   useMultiStyleConfig,
   useNumberInput,
 } from '@chakra-ui/react'
 
 import { ThemeColorScheme } from '~theme/foundations/colours'
 
-export interface MoneyInputProps extends ChakraNumberInputProps {
+export interface MoneyInputProps
+  extends ChakraNumberInputProps,
+    Omit<PropsOf<'input'>, keyof ChakraNumberInputProps> {
   /**
    * Whether the input is in a prefilled state.
    */
@@ -65,8 +67,6 @@ export const MoneyInput = forwardRef<MoneyInputProps, 'input'>(
 
     const inputProps = getInputProps({ placeholder: props.placeholder })
 
-    const inputRef = useMergeRefs(inputProps.ref, ref)
-
     return (
       <Box {...htmlProps} __css={styles.root}>
         {/* Using base input wrapper instead of `Input` component as the Input 
@@ -98,7 +98,7 @@ export const MoneyInput = forwardRef<MoneyInputProps, 'input'>(
             // the parent.
             // No point passing the ref to the div wrapper as the main component
             // is this input.
-            ref={inputRef}
+            ref={ref}
             __css={styles.field}
             borderLeftRadius={0}
           />
