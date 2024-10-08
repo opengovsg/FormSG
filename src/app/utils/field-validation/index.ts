@@ -326,7 +326,8 @@ const isResponsePresentOnHiddenFieldV3 = ({
       )
     case BasicField.Attachment:
       return ok(
-        (response.answer.filename && response.answer.filename.trim() !== '') || // filename is defined only if there is a file uploaded for the response
+        response.answer.filename.trim() !== '' || // filename is defined only if there is a file uploaded for the response
+          response.answer.answer.trim() !== '' ||
           !!response.answer.content,
       )
     case BasicField.Children:
