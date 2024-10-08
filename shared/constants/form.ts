@@ -92,6 +92,9 @@ export const PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID =
 export const CLIENT_RADIO_OTHERS_INPUT_VALUE =
   '!!FORMSG_INTERNAL_RADIO_OTHERS_VALUE!!'
 
+export const CLIENT_CHECKBOX_OTHERS_INPUT_VALUE =
+  '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
+
 // The current encrypt version to assign to the encrypted submission.
 // This is needed if we ever break backwards compatibility with
 // end-to-end encryption

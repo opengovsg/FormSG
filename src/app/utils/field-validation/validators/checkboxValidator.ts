@@ -1,6 +1,7 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
+import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from '../../../../../shared/constants'
 import { BasicField, CheckboxResponseV3 } from '../../../../../shared/types'
 import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
 import {
@@ -186,8 +187,6 @@ export const constructCheckboxValidator: CheckboxValidatorConstructor = (
     chain(duplicateOtherOptionsValidator(checkboxField)),
   )
 
-const CHECKBOX_OTHERS_INPUT_VALUE = '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
-
 const isCheckboxFieldTypeV3: ResponseValidator<
   ParsedClearFormFieldResponseV3,
   CheckboxResponseV3
@@ -203,12 +202,17 @@ const isCheckboxFieldTypeV3: ResponseValidator<
 /**
  * Checks if the checkbox has no answers selected.
  */
-const isCheckboxAnswerEmptyV3: ResponseValidator<CheckboxResponseV3> = (
-  response,
-) => {
+const isCheckboxAnswerOrOthersInputEmptyV3: ResponseValidator<
+  CheckboxResponseV3
+> = (response) => {
   const { answer } = response
 
-  return answer.value.length === 0 && !answer.othersInput
+  const isValueEmpty = answer.value.length === 0
+  const isOthersInputPresentAndEmpty =
+    answer.value.includes(CLIENT_CHECKBOX_OTHERS_INPUT_VALUE) &&
+    (!answer.othersInput || answer.othersInput.trim() === '')
+
+  return isValueEmpty || isOthersInputPresentAndEmpty
     ? left(`CheckboxValidatorV3:\t Answer is empty`)
     : right(response)
 }
@@ -277,11 +281,12 @@ const makeValidOptionsValidatorV3: ResponseValidatorConstructor<
   return answer.value.every(
     (selectedOption) =>
       fieldOptions.includes(selectedOption) ||
-      (selectedOption === CHECKBOX_OTHERS_INPUT_VALUE &&
+      (selectedOption === CLIENT_CHECKBOX_OTHERS_INPUT_VALUE &&
         othersRadioButton &&
         answer.othersInput),
   ) &&
-    (!answer.othersInput || (answer.othersInput && othersRadioButton))
+    (!answer.value.includes(CLIENT_CHECKBOX_OTHERS_INPUT_VALUE) ||
+      othersRadioButton)
     ? right(response)
     : left(`CheckboxValidator:\t answer is not valid`)
 }
@@ -298,7 +303,7 @@ const isDuplicateSelectedOptionsPresent: ResponseValidator<
 
   const selectedOptions = [...answer.value]
   if (
-    selectedOptions.includes(CHECKBOX_OTHERS_INPUT_VALUE) &&
+    selectedOptions.includes(CLIENT_CHECKBOX_OTHERS_INPUT_VALUE) &&
     answer.othersInput
   ) {
     // Why: Since 'Others: ' is prepended to the othersInput value in the frontend. To match response V1 and V2 behaviour.
@@ -317,7 +322,7 @@ export const constructCheckboxValidatorV3: ResponseValidatorConstructor<
 > = (checkboxField) =>
   flow(
     isCheckboxFieldTypeV3,
-    chain(isCheckboxAnswerEmptyV3),
+    chain(isCheckboxAnswerOrOthersInputEmptyV3),
     chain(makeMinOptionsValidatorV3(checkboxField)),
     chain(makeMaxOptionsValidatorV3(checkboxField)),
     chain(makeValidOptionsValidatorV3(checkboxField)),
