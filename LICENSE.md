@@ -2,7 +2,8 @@ Except for any logos, trade marks, service marks, names, insignias, emblems, the
 
 (1)	The MIT License and the terms herein (collectively, the “Terms”) shall be governed by the laws of Singapore. Any dispute arising out of or in connection with the Terms, including any question regarding its existence, validity or termination, shall be referred to and finally resolved by arbitration administered by the Singapore International Arbitration Centre (“SIAC”) in accordance with the Arbitration Rules of the Singapore International Arbitration Centre (“SIAC Rules”) for the time being in force, which rules are deemed to be incorporated by reference in this clause. The seat of arbitration shall be Singapore. The Tribunal shall consist of one (1) arbitrator. The language of the arbitration shall be English.
 
-MIT License
+MIT License No: S9109528I 
+Ownership: CE6320195:S9109528I
 
 Copyright 2020 Government Technology Agency.
 
