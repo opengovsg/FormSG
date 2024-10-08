@@ -684,6 +684,52 @@ describe('Checkbox validation V3', () => {
       )
     })
 
+    it('should disallow more answers than customMax if selection limits are configured including others', () => {
+      const fieldOptions = ['a', 'b', 'c', 'd', 'e']
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
+        validateByValue: true,
+        othersRadioButton: true,
+        ValidationOptions: { customMax: 2, customMin: null },
+      })
+      const response = generateCheckboxResponseV3({
+        value: ['c', 'd', CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
+        othersInput: 'others',
+      })
+      const validateResult = validateFieldV3({
+        formId,
+        formField,
+        response,
+        isVisible: true,
+      })
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
+    })
+
+    it('should allow less than or equal answers than customMax if selection limits are configured including others', () => {
+      const fieldOptions = ['a', 'b', 'c', 'd', 'e']
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
+        validateByValue: true,
+        othersRadioButton: true,
+        ValidationOptions: { customMax: 2, customMin: null },
+      })
+      const response = generateCheckboxResponseV3({
+        value: ['c', CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
+        othersInput: 'others',
+      })
+      const validateResult = validateFieldV3({
+        formId,
+        formField,
+        response,
+        isVisible: true,
+      })
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
+    })
+
     it('should disallow fewer answers than customMin if selection limits are configured', () => {
       const fieldOptions = ['a', 'b', 'c', 'd', 'e']
       const formField = generateDefaultField(BasicField.Checkbox, {
@@ -704,6 +750,48 @@ describe('Checkbox validation V3', () => {
       expect(validateResult._unsafeUnwrapErr()).toEqual(
         new ValidateFieldError('Invalid answer submitted'),
       )
+    })
+
+    it('should allow more or equal answers than customMin if selection limits are configured', () => {
+      const fieldOptions = ['a', 'b', 'c', 'd', 'e']
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
+        validateByValue: true,
+        ValidationOptions: { customMax: null, customMin: 2 },
+      })
+      const response = generateCheckboxResponseV3({
+        value: ['c', 'b'],
+      })
+      const validateResult = validateFieldV3({
+        formId,
+        formField,
+        response,
+        isVisible: true,
+      })
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should allow more or equal answers than customMin if selection limits are configured including others', () => {
+      const fieldOptions = ['a', 'b', 'c', 'd', 'e']
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
+        validateByValue: true,
+        othersRadioButton: true,
+        ValidationOptions: { customMax: null, customMin: 2 },
+      })
+      const response = generateCheckboxResponseV3({
+        value: ['c', CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
+        othersInput: 'others',
+      })
+      const validateResult = validateFieldV3({
+        formId,
+        formField,
+        response,
+        isVisible: true,
+      })
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
 
     it('should allow more answers than customMax if selection limits are not configured', () => {

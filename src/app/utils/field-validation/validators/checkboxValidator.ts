@@ -231,8 +231,9 @@ const makeMinOptionsValidatorV3: ResponseValidatorConstructor<
 
   if (!validateByValue || !customMin) return right(response)
 
-  const numSelected = answer.value.length + (answer.othersInput ? 1 : 0)
-
+  // Note: no need to add 1 for othersInput since the CLIENT_CHECKBOX_OTHERS_INPUT_VALUE
+  // is included in the value array if othersInput is selected
+  const numSelected = answer.value.length
   return numSelected >= customMin
     ? right(response)
     : left(
@@ -254,7 +255,9 @@ const makeMaxOptionsValidatorV3: ResponseValidatorConstructor<
 
   if (!validateByValue || !customMax) return right(response)
 
-  const numSelected = answer.value.length + (answer.othersInput ? 1 : 0)
+  // Note: no need to add 1 for othersInput since the CLIENT_CHECKBOX_OTHERS_INPUT_VALUE
+  // is included in the value array if othersInput is selected
+  const numSelected = answer.value.length
 
   return numSelected <= customMax
     ? right(response)
