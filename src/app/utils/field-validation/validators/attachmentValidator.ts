@@ -90,12 +90,12 @@ const isParsedClearAttachmentResponseV3: ResponseValidator<
 /**
  * Returns a validator to check if answer is empty string.
  */
-const attachmentFilenameNotEmptyValidator: ResponseValidator<
+const attachmentAnswerNotEmptyValidatorV3: ResponseValidator<
   ParsedClearAttachmentResponseV3
 > = (response) => {
-  const { filename } = response.answer
+  const { answer } = response.answer
 
-  return filename.trim().length === 0
+  return answer.trim().length === 0
     ? left(`AttachmentValidatorV3:\t Answer is an empty string`)
     : right(response)
 }
@@ -143,7 +143,7 @@ export const constructAttachmentFieldValidatorV3: ResponseValidatorConstructor<
 > = (attachmentField) =>
   flow(
     isParsedClearAttachmentResponseV3,
-    chain(attachmentFilenameNotEmptyValidator),
+    chain(attachmentAnswerNotEmptyValidatorV3),
     chain(attachmentContentDefinedValidatorV3),
     chain(makeAttachmentSizeValidatorV3(attachmentField)),
   )

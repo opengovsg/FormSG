@@ -389,6 +389,7 @@ const isValidationRequiredV3 = ({
       (formField.required && isVisible) ||
         (response.answer &&
           response.answer.content &&
+          response.answer.answer.trim() !== '' &&
           response.answer.filename.trim() !== ''),
     )
   } else if (response.fieldType === BasicField.Children) {
