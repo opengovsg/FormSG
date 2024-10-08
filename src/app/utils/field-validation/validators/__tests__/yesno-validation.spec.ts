@@ -95,28 +95,28 @@ describe('Yes/No field validation', () => {
       const formField = generateDefaultField(BasicField.YesNo)
       const response = generateYesNoAnswerResponseV3('Yes')
 
-      const validateV3Result = validateFieldV3({
+      const validateResult = validateFieldV3({
         formId: 'formId',
         formField,
         response,
         isVisible: true,
       })
-      expect(validateV3Result.isOk()).toBe(true)
-      expect(validateV3Result._unsafeUnwrap()).toEqual(true)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
 
     it('should allow No', () => {
       const formField = generateDefaultField(BasicField.YesNo)
       const response = generateYesNoAnswerResponseV3('No')
 
-      const validateV3Result = validateFieldV3({
+      const validateResult = validateFieldV3({
         formId: 'formId',
         formField,
         response,
         isVisible: true,
       })
-      expect(validateV3Result.isOk()).toBe(true)
-      expect(validateV3Result._unsafeUnwrap()).toEqual(true)
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
     })
 
     it('should allow empty string when not required', () => {
