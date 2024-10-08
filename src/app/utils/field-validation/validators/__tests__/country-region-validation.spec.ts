@@ -29,8 +29,8 @@ describe('Country/region validation', () => {
   })
 
   it('should disallow invalid option', () => {
-    const formField = generateDefaultField(BasicField.Dropdown, {})
-    const response = generateNewSingleAnswerResponse(BasicField.Dropdown, {
+    const formField = generateDefaultField(BasicField.CountryRegion, {})
+    const response = generateNewSingleAnswerResponse(BasicField.CountryRegion, {
       answer: 'NOT A COUNTRY/REGION',
     })
     const validateResult = validateField('formId', formField, response)
