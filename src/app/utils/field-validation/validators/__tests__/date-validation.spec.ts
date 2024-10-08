@@ -820,7 +820,7 @@ describe('Date field validation V3', () => {
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
-  it.only('should disallow dates earlier than Custom Date Range if set', () => {
+  it('should disallow dates earlier than Custom Date Range if set', () => {
     const formField = generateDefaultField(BasicField.Date, {
       dateValidation: {
         selectedDateValidation: DateSelectedValidation.Custom,
