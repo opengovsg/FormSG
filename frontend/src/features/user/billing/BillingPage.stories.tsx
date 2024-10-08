@@ -6,7 +6,7 @@ import {
 } from '~/mocks/msw/handlers/billing'
 
 import { BILLING_ROUTE } from '~constants/routes'
-import { StoryRouter, viewports } from '~utils/storybook'
+import { mockDateDecorator, StoryRouter, viewports } from '~utils/storybook'
 
 import { BillCharges, BillChargesProps } from './BillCharges'
 import { BillingPage } from './BillingPage'
@@ -21,10 +21,12 @@ export default {
       initialEntries: [BILLING_ROUTE],
       path: BILLING_ROUTE,
     }),
+    mockDateDecorator,
   ],
   parameters: {
     layout: 'fullscreen',
     chromatic: { delay: 200 },
+    mockdate: new Date('2024-10-07T19:52:00.000Z'),
   },
 } as Meta
 

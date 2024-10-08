@@ -94,6 +94,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
             isInvalid={isInvalid}
             isDisabled={isDisabled}
             placeholder={selectedItem ? undefined : placeholder}
+            hasInputRightElement
             sx={styles.field}
             {...getInputProps({
               onClick: handleToggleMenu,
