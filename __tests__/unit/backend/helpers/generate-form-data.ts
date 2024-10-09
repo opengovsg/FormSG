@@ -17,6 +17,7 @@ import {
   IDateFieldSchema,
   IDecimalFieldSchema,
   IDropdownFieldSchema,
+  IEmailFieldSchema,
   IHomenoFieldSchema,
   IImageFieldSchema,
   IMobileFieldSchema,
@@ -152,6 +153,12 @@ export const generateDefaultField = (
         getQuestion: () => defaultParams.title,
         ...customParams,
       } as IDecimalFieldSchema
+    case BasicField.Email:
+      return {
+        ...defaultParams,
+        allowedEmailDomains: [],
+        ...customParams,
+      } as IEmailFieldSchema
     case BasicField.Mobile:
       return {
         ...defaultParams,
