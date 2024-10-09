@@ -30,8 +30,15 @@ window.gtag = gtag
 // Init dayjs
 dayjs.init()
 
-createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-)
+/**
+ * TODO(FRM-1855): Disable strict mode for validation to work properly
+ * This is not meant to be a permenant solution as the need to disable this
+ * reveals that there could be an existing issue with useEffect cleanup that is prevent
+ * pre-react 18.
+ */
+// createRoot(document.getElementById('root')!).render(
+//   <React.StrictMode>
+//     <App />,
+//   </React.StrictMode>,
+// )
+createRoot(document.getElementById('root')!).render(<App />)
