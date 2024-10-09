@@ -162,6 +162,11 @@ export const PublicFormProvider = ({
     setHasSingleSubmissionValidationError(false)
   }, [])
 
+  const [
+    hasPreviousSubmissionDecryptionError,
+    setHasPreviousSubmissionDecryptionError,
+  ] = useState(false)
+
   useEffect(() => {
     if (
       data?.errorCodes?.find(
@@ -240,10 +245,7 @@ export const PublicFormProvider = ({
           )
         } catch (e) {
           console.error(e, 'failed to decrypt attachment', id)
-          toast({
-            status: 'danger',
-            description: 'Failed to decrypt attachment',
-          })
+          setHasPreviousSubmissionDecryptionError(true)
         }
         if (!decryptedContent) return
 
@@ -274,12 +276,7 @@ export const PublicFormProvider = ({
         setPreviousAttachments(previousAttachments)
       }
     }
-  }, [
-    encryptedPreviousSubmission,
-    previousSubmission,
-    submissionSecretKey,
-    toast,
-  ])
+  }, [encryptedPreviousSubmission, previousSubmission, submissionSecretKey])
 
   if (
     previousSubmissionId &&
@@ -394,7 +391,13 @@ export const PublicFormProvider = ({
         description: t('features.publicForm.errors.myinfo'),
       })
     }
-  }, [hasMyInfoError, toast, t])
+    if (hasPreviousSubmissionDecryptionError) {
+      toast({
+        status: 'danger',
+        description: 'Failed to decrypt attachment',
+      })
+    }
+  }, [hasMyInfoError, hasPreviousSubmissionDecryptionError, toast, t])
 
   const showErrorToast = useCallback(
     (error: unknown, form: PublicFormDto) => {
