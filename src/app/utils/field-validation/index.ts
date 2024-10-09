@@ -399,12 +399,12 @@ const isValidationRequiredV3 = ({
     )
     return ok(isRequiredColumnsVisible || isAnswerPresent)
   } else if (response.fieldType === BasicField.Attachment) {
+    const answerObjectDefined = !!response.answer
+    const answerNotEmpty =
+      !!response.answer.answer && response.answer.answer.trim() !== ''
     return ok(
       (formField.required && isVisible) ||
-        (response.answer &&
-          response.answer.content &&
-          response.answer.answer.trim() !== '' &&
-          response.answer.filename.trim() !== ''),
+        (answerObjectDefined && answerNotEmpty),
     )
   } else if (response.fieldType === BasicField.Children) {
     return ok(
@@ -428,7 +428,6 @@ const validateResponseWithValidatorV3 = <
   const validEither = validator(response)
   if (isLeft(validEither)) {
     logInvalidAnswer(formId, formField, validEither.left)
-    console.log('actual ans:', validEither.left)
     return err(new ValidateFieldError('Invalid answer submitted'))
   }
   return ok(true)

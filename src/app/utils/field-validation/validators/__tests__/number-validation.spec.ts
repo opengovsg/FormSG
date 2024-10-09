@@ -349,6 +349,26 @@ describe('Base number field validation V3', () => {
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
+  it('should allow empty answer when not required', () => {
+    const formField = generateDefaultField(BasicField.Number, {
+      required: false,
+    })
+
+    const response = generateGenericStringAnswerResponseV3({
+      fieldType: BasicField.Number,
+      answer: '',
+    })
+
+    const validateResult = validateFieldV3({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
   it('should allow answer to be zero', () => {
     const formField = generateDefaultField(BasicField.Number)
 
