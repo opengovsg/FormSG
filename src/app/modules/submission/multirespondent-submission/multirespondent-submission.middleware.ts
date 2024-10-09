@@ -20,9 +20,7 @@ import {
 import { MultirespondentFormLoadedDto } from '../../../../types/api/multirespondent_submission'
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { validateFieldV3 } from '../../../utils/field-validation'
 import {
-  FieldIdSet,
   getLogicUnitPreventingSubmitV3,
   getVisibleFieldIdsV3,
 } from '../../../utils/logic-adaptor'
@@ -38,7 +36,6 @@ import {
   InvalidSubmissionTypeError,
   MaliciousFileDetectedError,
   ProcessingError,
-  ValidateFieldError,
   VirusScanFailedError,
 } from '../submission.errors'
 import {
@@ -62,6 +59,7 @@ import {
   ProcessedMultirespondentSubmissionHandlerType,
   StrippedAttachmentResponseV3,
 } from './multirespondent-submission.types'
+import { validateMrfFieldResponses } from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -310,65 +308,6 @@ export const scanAndRetrieveAttachments = async (
   }
 
   return next()
-}
-
-/**
- * Validates each field by individual field rules.
- * @param formId formId, used for logging
- * @param formFields all form fields in the form. Purpose: used to validate responses against the form field properties.
- * @param responses responses to validate
- * @returns initial responses if all responses are valid, else an error.
- */
-const validateMrfFieldResponses = ({
-  formId,
-  visibleFieldIds,
-  formFields,
-  responses,
-}: {
-  formId: string
-  visibleFieldIds: FieldIdSet
-  formFields: FormFieldSchema[]
-  responses: ParsedClearFormFieldResponsesV3
-}): Result<
-  ParsedClearFormFieldResponsesV3,
-  ValidateFieldError | ProcessingError
-> => {
-  const idToFieldMap = formFields.reduce<{
-    [fieldId: string]: FormFieldSchema
-  }>((acc, field) => {
-    acc[field._id] = field
-    return acc
-  }, {})
-
-  for (const [responseId, response] of Object.entries(responses)) {
-    const formField = idToFieldMap[responseId]
-    if (!formField) {
-      return err(
-        new ProcessingError('Response Id does not match form field Ids'),
-      )
-    }
-
-    // Since Myinfo fields are not currently supported for MRF
-    if (response.fieldType === BasicField.Children) {
-      return err(
-        new ValidateFieldError(
-          'Children field type is not supported for MRF submisisons',
-        ),
-      )
-    }
-
-    const validateFieldV3Result = validateFieldV3({
-      formId,
-      formField,
-      response,
-      isVisible: visibleFieldIds.has(responseId),
-    })
-    if (validateFieldV3Result.isErr()) {
-      return err(validateFieldV3Result.error)
-    }
-  }
-
-  return ok(responses)
 }
 
 /**
