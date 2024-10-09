@@ -45,8 +45,8 @@ const logger = createLoggerWithLabel(module)
  * Verifies whether the response field type should be accepted
  * @param response The submitted response
  */
-const isValidResponseFieldType = (response: ProcessedFieldResponse): boolean =>
-  FIELDS_TO_REJECT.includes(response.fieldType) ? false : true
+const isValidResponseFieldType = (fieldType: BasicField): boolean =>
+  FIELDS_TO_REJECT.includes(fieldType) ? false : true
 
 /**
  * Compares the response field type to the form field type
@@ -54,12 +54,12 @@ const isValidResponseFieldType = (response: ProcessedFieldResponse): boolean =>
  * @param response The submitted response
  */
 const doFieldTypesMatch = (
-  formField: FieldValidationSchema,
-  response: ProcessedFieldResponse,
+  formFieldType: BasicField,
+  responseFieldType: BasicField,
 ): Either<string, undefined> => {
-  return response.fieldType !== formField.fieldType
+  return responseFieldType !== formFieldType
     ? left(
-        `Response fieldType (${response.fieldType}) did not match field ${formField.fieldType}`,
+        `Response fieldType (${responseFieldType}) did not match field ${formFieldType}`,
       )
     : right(undefined)
 }
@@ -198,13 +198,16 @@ export const validateField = (
   formField: FieldValidationSchema,
   response: ProcessedFieldResponse,
 ): Result<true, ValidateFieldError> => {
-  if (!isValidResponseFieldType(response)) {
+  if (!isValidResponseFieldType(response.fieldType)) {
     return err(
       new ValidateFieldError(`Rejected field type "${response.fieldType}"`),
     )
   }
 
-  const fieldTypeEither = doFieldTypesMatch(formField, response)
+  const fieldTypeEither = doFieldTypesMatch(
+    formField.fieldType,
+    response.fieldType,
+  )
 
   if (isLeft(fieldTypeEither)) {
     return err(new ValidateFieldError(fieldTypeEither.left))
@@ -442,22 +445,19 @@ export const validateFieldV3 = ({
   response: ParsedClearFormFieldResponseV3
   isVisible: boolean
 }): Result<true, ValidateFieldError> => {
-  const isFieldTypeSubmitExpected = !FIELDS_TO_REJECT.includes(
-    response.fieldType,
-  )
-  if (!isFieldTypeSubmitExpected) {
+  if (!isValidResponseFieldType(response.fieldType)) {
     return err(
       new ValidateFieldError(`Rejected field type "${response.fieldType}"`),
     )
   }
 
-  const isFieldTypeMatching = formField.fieldType === response.fieldType
-  if (!isFieldTypeMatching) {
-    return err(
-      new ValidateFieldError(
-        `Response fieldType (${response.fieldType}) did not match field ${formField.fieldType}`,
-      ),
-    )
+  const fieldTypeEither = doFieldTypesMatch(
+    formField.fieldType,
+    response.fieldType,
+  )
+
+  if (isLeft(fieldTypeEither)) {
+    return err(new ValidateFieldError(fieldTypeEither.left))
   }
 
   const isResponsePresentOnHiddenFieldV3Result =
