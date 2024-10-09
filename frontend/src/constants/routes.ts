@@ -28,6 +28,10 @@ export const ADMINFORM_USETEMPLATE_ROUTE = 'use-template'
 export const ADMINFORM_SETTINGS_SINGPASS_SUBROUTE = `${ADMINFORM_SETTINGS_SUBROUTE}/singpass`
 export const ADMINFORM_SETTINGS_PAYMENTS_SUBROUTE = `${ADMINFORM_SETTINGS_SUBROUTE}/payments`
 
+// sub route for multi-language translation
+export const ADMINFORM_SETTINGS_MULTI_LANGUAGE_TRANSLATION_SUBROUTE =
+  'translation'
+
 /**
  * Regex for active path matching on adminform builder routes/subroutes.
  * @example Breakdown of regex:

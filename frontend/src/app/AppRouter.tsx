@@ -8,6 +8,7 @@ import {
   ADMINFORM_PREVIEW_ROUTE,
   ADMINFORM_RESULTS_SUBROUTE,
   ADMINFORM_ROUTE,
+  ADMINFORM_SETTINGS_MULTI_LANGUAGE_TRANSLATION_SUBROUTE,
   ADMINFORM_SETTINGS_SUBROUTE,
   ADMINFORM_USETEMPLATE_ROUTE,
   BILLING_ROUTE,
@@ -165,7 +166,14 @@ export const AppRouter = (): JSX.Element => {
         >
           <Route index element={<CreatePage />} />
           <Route path={ADMINFORM_SETTINGS_SUBROUTE} element={<SettingsPage />}>
-            <Route path={':settingsTab'} element={<SettingsPage />} />
+            <Route path={':settingsTab'} element={<SettingsPage />}>
+              <Route path={':language'} element={<SettingsPage />}>
+                <Route
+                  path={ADMINFORM_SETTINGS_MULTI_LANGUAGE_TRANSLATION_SUBROUTE}
+                  element={<SettingsPage />}
+                />
+              </Route>
+            </Route>
           </Route>
           <Route
             path={ADMINFORM_RESULTS_SUBROUTE}

@@ -1,5 +1,15 @@
+import { useParams } from 'react-router-dom'
+
 import { MultiLanguageSection } from './components/MultiLanguageSection/MultiLanguageSection'
+import { TranslationListSection } from './components/MultiLanguageSection/TranslationListSection'
 
 export const SettingsMultiLangPage = (): JSX.Element => {
-  return <MultiLanguageSection />
+  const { language } = useParams()
+
+  return (
+    <>
+      {language && <TranslationListSection language={language} />}
+      {!language && <MultiLanguageSection />}
+    </>
+  )
 }

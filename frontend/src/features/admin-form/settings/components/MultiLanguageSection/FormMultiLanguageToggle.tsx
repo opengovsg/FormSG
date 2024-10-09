@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import { BiEditAlt } from 'react-icons/bi'
 import { GoEye, GoEyeClosed } from 'react-icons/go'
+import { useNavigate, useParams } from 'react-router-dom'
 import {
   Box,
   Divider,
@@ -14,6 +15,7 @@ import _ from 'lodash'
 
 import { Language } from '~shared/types'
 
+import { ADMINFORM_ROUTE } from '~constants/routes'
 import {
   convertUnicodeLocaleToLanguage,
   getDefaultSupportedLanguages,
@@ -40,7 +42,9 @@ const LanguageTranslationRow = ({
   isDefaultLanguage,
   isLast,
 }: LanguageTranslationRowProps): JSX.Element => {
+  const { formId } = useParams()
   const { data: settings } = useAdminFormSettings()
+  const navigate = useNavigate()
 
   const supportedLanguages = settings?.supportedLanguages ?? null
 
@@ -72,6 +76,15 @@ const LanguageTranslationRow = ({
       })
     },
     [mutateFormSupportedLanguages, supportedLanguages],
+  )
+
+  const handleLanguageTranslationEditClick = useCallback(
+    (language: Language) => {
+      navigate(
+        `${ADMINFORM_ROUTE}/${formId}/settings/multi-language/${language.toString()}`,
+      )
+    },
+    [formId, navigate],
   )
 
   return (
@@ -109,7 +122,9 @@ const LanguageTranslationRow = ({
                 colorScheme="secondary"
                 aria-label={`Add ${unicodeLocale} translations`}
                 // TODO: Will add redirection to translation section in next PR
-                onClick={() => console.log('Edit translations')}
+                onClick={() =>
+                  handleLanguageTranslationEditClick(unicodeLocale)
+                }
               />
             </Tooltip>
           </HStack>
