@@ -425,6 +425,7 @@ const validateResponseWithValidatorV3 = <
   const validEither = validator(response)
   if (isLeft(validEither)) {
     logInvalidAnswer(formId, formField, validEither.left)
+    console.log('actual ans:', validEither.left)
     return err(new ValidateFieldError('Invalid answer submitted'))
   }
   return ok(true)

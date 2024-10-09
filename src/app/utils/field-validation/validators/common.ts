@@ -28,9 +28,9 @@ export const notEmptySingleAnswerResponseV3 = <
 >(
   response: T,
 ) => {
-  if (response.answer.trim().length === 0) {
+  if (!response.answer || response.answer.trim().length === 0) {
     return left(
-      'CommonValidatorV3.notEmptySingleAnswerResponseV3:\tanswer is an empty string',
+      'CommonValidatorV3.notEmptySingleAnswerResponseV3:\tanswer is an undefined or empty string',
     )
   }
   return right(response)

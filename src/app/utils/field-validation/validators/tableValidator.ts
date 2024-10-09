@@ -51,7 +51,7 @@ const makeAddMoreRowsValidator: TableValidatorConstructor =
     const { minimumRows, addMoreRows } = tableField
 
     if (addMoreRows) return right(response)
-    return answerArray.length === minimumRows
+    return answerArray.length === (minimumRows || 0)
       ? right(response)
       : left(
           `TableValidator:\tanswer has extra rows even though addMoreRows is false`,
@@ -196,7 +196,7 @@ const makeAddMoreRowsValidatorV3: ResponseValidatorConstructor<
     const { minimumRows, addMoreRows } = tableField
 
     if (addMoreRows) return right(response)
-    return answerRows.length === minimumRows
+    return answerRows.length === (minimumRows || 0)
       ? right(response)
       : left(
           `TableValidatorV3:\tanswer has extra rows even though addMoreRows is false`,

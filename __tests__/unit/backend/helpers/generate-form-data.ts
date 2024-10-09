@@ -385,7 +385,7 @@ export const generateNewTableResponse = (
 })
 
 export const generateTableDropdownColumn = (
-  customParams?: Partial<DropdownFieldBase>,
+  customParams?: Partial<DropdownFieldBase> & { _id?: string },
 ): Column => {
   return {
     title: 'some title',
@@ -409,7 +409,7 @@ export const generateTableDropdownColumn = (
 }
 
 export const generateTableShortTextColumn = (
-  customParams?: Partial<ShortTextFieldBase>,
+  customParams?: Partial<ShortTextFieldBase> & { _id?: string },
 ): Column => {
   return {
     title: 'some title',
