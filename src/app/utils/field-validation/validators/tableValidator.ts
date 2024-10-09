@@ -179,7 +179,7 @@ const makeMinimumRowsValidatorV3: ResponseValidatorConstructor<
     const answerRows = response.answer
     const { minimumRows } = tableField
 
-    return answerRows.length >= minimumRows
+    return answerRows.length >= (minimumRows || 0)
       ? right(response)
       : left(
           `TableValidatorV3:\tanswer has less than the minimum number of rows`,
