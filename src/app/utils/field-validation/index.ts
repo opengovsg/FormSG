@@ -330,8 +330,8 @@ const isResponsePresentOnHiddenFieldV3 = ({
       )
     case BasicField.Attachment:
       return ok(
-        response.answer.filename.trim() !== '' || // filename is defined only if there is a file uploaded for the response
-          response.answer.answer.trim() !== '' ||
+        (response.answer.filename && response.answer.filename.trim() !== '') || // filename is defined only if there is a file uploaded for the response
+          (response.answer.answer && response.answer.answer.trim() !== '') ||
           !!response.answer.content,
       )
     case BasicField.Children:
@@ -362,56 +362,58 @@ const isValidationRequiredV3 = ({
       (formField.required && isVisible) ||
         response.answer.toString().trim() !== '',
     )
-  } else if (response.fieldType === BasicField.YesNo) {
-    return ok(
-      (formField.required && isVisible) || response.answer.trim() !== '',
-    )
-  } else if (
-    response.fieldType === BasicField.Email ||
-    response.fieldType === BasicField.Mobile
-  ) {
-    return ok(
-      (formField.required && isVisible) ||
-        response.answer.value.trim() !== '' ||
-        (!!response.answer.signature &&
-          response.answer.signature.trim() !== ''),
-    )
-  } else if (response.fieldType === BasicField.Radio) {
-    return ok(
-      (formField.required && isVisible) ||
-        ('value' in response.answer && response.answer.value.trim() !== '') ||
-        ('othersInput' in response.answer &&
-          response.answer.othersInput.trim() !== ''),
-    )
-  } else if (response.fieldType === BasicField.Checkbox) {
-    return (
-      ok(formField.required && isVisible) || response.answer.value.length > 0
-    )
-  } else if (
-    response.fieldType === BasicField.Table &&
-    formField.fieldType === BasicField.Table
-  ) {
-    const { columns } = formField
-    const isRequiredColumnsVisible =
-      columns.some((column) => column.required) && isVisible
-    const isAnswerPresent = !response.answer.every((row) =>
-      Object.values(row).every((value) => value === ''),
-    )
-    return ok(isRequiredColumnsVisible || isAnswerPresent)
-  } else if (response.fieldType === BasicField.Attachment) {
-    const answerObjectDefined = !!response.answer
-    const answerNotEmpty =
-      !!response.answer.answer && response.answer.answer.trim() !== ''
-    return ok(
-      (formField.required && isVisible) ||
-        (answerObjectDefined && answerNotEmpty),
-    )
-  } else if (response.fieldType === BasicField.Children) {
-    return ok(
-      (formField.required && isVisible) ||
-        response.answer.child.length > 0 ||
-        response.answer.childFields.length > 0,
-    )
+  }
+
+  switch (response.fieldType) {
+    case BasicField.YesNo:
+      return ok(
+        (formField.required && isVisible) || response.answer.trim() !== '',
+      )
+    case BasicField.Email:
+    case BasicField.Mobile:
+      return ok(
+        (formField.required && isVisible) ||
+          response.answer.value.trim() !== '' ||
+          (!!response.answer.signature &&
+            response.answer.signature.trim() !== ''),
+      )
+    case BasicField.Radio:
+      return ok(
+        (formField.required && isVisible) ||
+          ('value' in response.answer && response.answer.value.trim() !== '') ||
+          ('othersInput' in response.answer &&
+            response.answer.othersInput.trim() !== ''),
+      )
+    case BasicField.Checkbox:
+      return ok(
+        (formField.required && isVisible) || response.answer.value.length > 0,
+      )
+    case BasicField.Table:
+      if (formField.fieldType === BasicField.Table) {
+        const { columns } = formField
+        const isRequiredColumnsVisible =
+          columns.some((column) => column.required) && isVisible
+        const isAnswerPresent = !response.answer.every((row) =>
+          Object.values(row).every((value) => value === ''),
+        )
+        return ok(isRequiredColumnsVisible || isAnswerPresent)
+      }
+      break
+    case BasicField.Attachment: {
+      const answerObjectDefined = !!response.answer
+      const answerNotEmpty =
+        !!response.answer.answer && response.answer.answer.trim() !== ''
+      return ok(
+        (formField.required && isVisible) ||
+          (answerObjectDefined && answerNotEmpty),
+      )
+    }
+    case BasicField.Children:
+      return ok(
+        (formField.required && isVisible) ||
+          response.answer.child.length > 0 ||
+          response.answer.childFields.length > 0,
+      )
   }
   logInvalidAnswer(formId, formField, 'Invalid response shape')
   return err(new ValidateFieldError('Response has invalid shape'))
