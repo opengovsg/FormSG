@@ -13,7 +13,7 @@ import {
 import { MultirespondentSubmissionData } from 'src/types'
 
 import * as fieldValidation from '../../../../utils/field-validation'
-import { ValidateFieldError } from '../../submission.errors'
+import { ValidateFieldErrorV3 } from '../../submission.errors'
 import {
   createMultirespondentSubmissionDto,
   validateMrfFieldResponses,
@@ -93,7 +93,7 @@ describe('multirespondent-submission.utils', () => {
 
       // Assert
       expect(result.isErr()).toBe(true)
-      expect(result._unsafeUnwrapErr()).toBeInstanceOf(ValidateFieldError)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(ValidateFieldErrorV3)
       expect(result._unsafeUnwrapErr().message).toBe(
         'Children field type is not supported for MRF submisisons',
       )

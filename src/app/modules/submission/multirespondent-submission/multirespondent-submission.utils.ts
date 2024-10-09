@@ -19,7 +19,7 @@ import { FieldIdSet } from '../../../utils/logic-adaptor'
 import {
   InvalidWorkflowTypeError,
   ProcessingError,
-  ValidateFieldError,
+  ValidateFieldErrorV3,
 } from '../submission.errors'
 
 /**
@@ -90,7 +90,7 @@ export const validateMrfFieldResponses = ({
   responses: ParsedClearFormFieldResponsesV3
 }): Result<
   ParsedClearFormFieldResponsesV3,
-  ValidateFieldError | ProcessingError
+  ValidateFieldErrorV3 | ProcessingError
 > => {
   const idToFieldMap = formFields.reduce<{
     [fieldId: string]: FormFieldSchema
@@ -110,7 +110,7 @@ export const validateMrfFieldResponses = ({
     // Since Myinfo fields are not currently supported for MRF
     if (response.fieldType === BasicField.Children) {
       return err(
-        new ValidateFieldError(
+        new ValidateFieldErrorV3(
           'Children field type is not supported for MRF submisisons',
         ),
       )

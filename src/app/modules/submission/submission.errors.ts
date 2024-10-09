@@ -58,11 +58,23 @@ export class ProcessingError extends ApplicationError {
 }
 
 /**
- * A custom error class returned when given submission has field validation failure
+ * A custom error class returned when given submission has field level response validation failure
  */
 export class ValidateFieldError extends ApplicationError {
-  constructor(message = 'Error validating field.', status = 400) {
+  constructor(message = 'Error when validating field response', status = 400) {
     super(message, status, ErrorCodes.SUBMISSION_VALIDATE_FIELD)
+  }
+}
+
+/**
+ * A custom error class returned when given submission has field level response validation failure
+ */
+export class ValidateFieldErrorV3 extends ApplicationError {
+  constructor(
+    message = 'Error when validating V3 field response',
+    status = 400,
+  ) {
+    super(message, status, ErrorCodes.SUBMISSION_VALIDATE_FIELD_V3)
   }
 }
 

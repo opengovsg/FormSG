@@ -20,7 +20,10 @@ import {
 } from '../../../types/field'
 import { ResponseValidator } from '../../../types/field/utils/validation'
 import { createLoggerWithLabel } from '../../config/logger'
-import { ValidateFieldError } from '../../modules/submission/submission.errors'
+import {
+  ValidateFieldError,
+  ValidateFieldErrorV3,
+} from '../../modules/submission/submission.errors'
 
 import {
   constructAttachmentFieldValidator,
@@ -296,7 +299,7 @@ const isResponsePresentOnHiddenFieldV3 = ({
   response: ParsedClearFormFieldResponseV3
   isVisible: boolean
   formId: string
-}): Result<boolean, ValidateFieldError> => {
+}): Result<boolean, ValidateFieldErrorV3> => {
   if (isVisible) return ok(false)
 
   if (isGenericStringAnswerResponseV3(response)) {
@@ -343,7 +346,7 @@ const isResponsePresentOnHiddenFieldV3 = ({
       )
   }
   logInvalidAnswer(formId, formField, 'Invalid response shape')
-  return err(new ValidateFieldError('Response has invalid shape'))
+  return err(new ValidateFieldErrorV3('Response has invalid shape'))
 }
 
 const isValidationRequiredV3 = ({
@@ -356,7 +359,7 @@ const isValidationRequiredV3 = ({
   response: ParsedClearFormFieldResponseV3
   isVisible: boolean
   formId: string
-}): Result<boolean, ValidateFieldError> => {
+}): Result<boolean, ValidateFieldErrorV3> => {
   if (isGenericStringAnswerResponseV3(response)) {
     return ok(
       (formField.required && isVisible) ||
@@ -416,7 +419,7 @@ const isValidationRequiredV3 = ({
       )
   }
   logInvalidAnswer(formId, formField, 'Invalid response shape')
-  return err(new ValidateFieldError('Response has invalid shape'))
+  return err(new ValidateFieldErrorV3('Response has invalid shape'))
 }
 
 const validateResponseWithValidatorV3 = <
@@ -426,11 +429,11 @@ const validateResponseWithValidatorV3 = <
   formId: string,
   formField: FormFieldSchema,
   response: T,
-): Result<true, ValidateFieldError> => {
+): Result<true, ValidateFieldErrorV3> => {
   const validEither = validator(response)
   if (isLeft(validEither)) {
     logInvalidAnswer(formId, formField, validEither.left)
-    return err(new ValidateFieldError('Invalid answer submitted'))
+    return err(new ValidateFieldErrorV3('Invalid answer submitted'))
   }
   return ok(true)
 }
@@ -445,10 +448,10 @@ export const validateFieldV3 = ({
   formField: FormFieldSchema
   response: ParsedClearFormFieldResponseV3
   isVisible: boolean
-}): Result<true, ValidateFieldError> => {
+}): Result<true, ValidateFieldErrorV3> => {
   if (!isValidResponseFieldType(response.fieldType)) {
     return err(
-      new ValidateFieldError(`Rejected field type "${response.fieldType}"`),
+      new ValidateFieldErrorV3(`Rejected field type "${response.fieldType}"`),
     )
   }
 
@@ -458,7 +461,7 @@ export const validateFieldV3 = ({
   )
 
   if (isLeft(fieldTypeEither)) {
-    return err(new ValidateFieldError(fieldTypeEither.left))
+    return err(new ValidateFieldErrorV3(fieldTypeEither.left))
   }
 
   const isResponsePresentOnHiddenFieldV3Result =
@@ -470,7 +473,9 @@ export const validateFieldV3 = ({
 
   if (isResponsePresentOnHiddenFieldV3Result.value) {
     return err(
-      new ValidateFieldError(`Attempted to submit response on a hidden field`),
+      new ValidateFieldErrorV3(
+        `Attempted to submit response on a hidden field`,
+      ),
     )
   }
 
