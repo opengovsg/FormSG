@@ -7,6 +7,7 @@ import {
   AttachmentSize,
   BasicField,
   CheckboxFieldBase,
+  DropdownFieldBase,
   FormField,
   RadioFieldBase,
   TableFieldBase,
@@ -31,11 +32,13 @@ const logger = createLoggerWithLabel(module)
 type SuggestedBaseField = z.infer<typeof suggestedBaseFieldSchema>
 type SuggestedTableField = z.infer<typeof suggestedTableFieldSchema>
 type SuggestedChoiceField = z.infer<typeof suggestedChoicesFieldSchema>
+type suggestedStatementField = z.infer<typeof suggestedStatementFieldSchema>
 
 type SuggestedFormField =
   | SuggestedBaseField
   | SuggestedTableField
   | SuggestedChoiceField
+  | suggestedStatementField
 
 const mapSuggestedFormFieldToFieldCreateDto = (
   suggestedFormFields: SuggestedFormField[],
@@ -85,7 +88,7 @@ const mapSuggestedFormFieldToFieldCreateDto = (
         disabled: false,
         othersRadioButton: false,
         validateByValue: false,
-      } as CheckboxFieldBase | RadioFieldBase
+      } as CheckboxFieldBase | RadioFieldBase | DropdownFieldBase
     } else if (basicFieldType === BasicField.Attachment) {
       return {
         fieldType: BasicField.Attachment,
@@ -102,7 +105,10 @@ const mapSuggestedFormFieldToFieldCreateDto = (
       required: formField.required,
       description: formField.description ?? '',
       disabled: false,
-    } as Exclude<FormField, TableFieldBase | CheckboxFieldBase | RadioFieldBase>
+    } as Exclude<
+      FormField,
+      TableFieldBase | CheckboxFieldBase | RadioFieldBase | DropdownFieldBase
+    >
   })
 }
 
@@ -159,7 +165,12 @@ const supportedFieldTypes = Object.keys(
   omit(BasicField, ['Children', 'Image']),
 ) as [string, ...string[]]
 
-const baseFieldTypesEnum = z.enum(supportedFieldTypes)
+/**
+ * Form field types that do not have specific object properties to validate.
+ */
+const baseFieldTypesEnum = z
+  .enum(supportedFieldTypes)
+  .exclude(['Table', 'Checkbox', 'Dropdown', 'Radio', 'Statement'])
 
 /**
  * Used to validate model response format for suggested form fields that do not have specific object properties to validate.
@@ -174,67 +185,64 @@ const suggestedBaseFieldSchema = z.object({
 /**
  * Used to validate model response format for suggested 'Table' field type form fields.
  */
-const suggestedTableFieldSchema = z
-  .object({
-    fieldType: z.literal('Table'),
-    columns: z.array(z.string().trim().min(1)),
-    minimumRows: z.number().int(),
-    maximumRows: z.number().int().optional(),
-    addMoreRows: z.boolean(),
-  })
-  .merge(suggestedBaseFieldSchema)
-  .refine((formField) => {
-    if (
-      formField.fieldType === BasicField.Table &&
-      formField.maximumRows !== undefined &&
-      formField.maximumRows < formField.minimumRows
-    ) {
-      return false
-    }
-    return true
-  }, 'Maximum rows must be greater than or equal minimum rows')
+const suggestedTableFieldSchema = suggestedBaseFieldSchema
+  .merge(
+    z.object({
+      fieldType: z.literal('Table'),
+      columns: z.array(z.string().trim().min(1)),
+      minimumRows: z.number().int().min(1),
+      maximumRows: z.number().int().min(1).optional(),
+      addMoreRows: z.boolean(),
+    }),
+  )
+  .refine(
+    (formField) => {
+      if (
+        formField.maximumRows !== undefined &&
+        formField.maximumRows < formField.minimumRows
+      ) {
+        return false
+      }
+      return true
+    },
+    {
+      message: 'Maximum rows must be greater than or equal to minimum rows',
+      path: ['maximumRows'],
+    },
+  )
 
 /**
  * Used to validate model response format for suggested 'Statement' field type form fields.
  */
-const suggestedStatementFieldSchema = z
-  .object({
+const suggestedStatementFieldSchema = suggestedBaseFieldSchema.merge(
+  z.object({
     fieldType: z.literal('Statement'),
     description: z.string().trim().min(1),
-  })
-  .merge(suggestedBaseFieldSchema)
-
+  }),
+)
 /**
  * Used to validate model response format for suggested 'Checkbox' and 'Radio' field type form fields.
  */
-const suggestedChoicesFieldSchema = z
-  .object({
+const suggestedChoicesFieldSchema = suggestedBaseFieldSchema.merge(
+  z.object({
     fieldType: z
       .literal('Checkbox')
       .or(z.literal('Radio'))
       .or(z.literal('Dropdown')),
     fieldOptions: z.array(z.string().trim().min(1)).nonempty(),
-  })
-  .merge(suggestedBaseFieldSchema)
+  }),
+)
 
-const suggestedFormFieldsSchema = z.array(
-  z
-    .union([
-      // Note: The order of the schemas here is important. Order from the most restrictive to the least restrictive.
+const suggestedFormFieldsSchema = z
+  .array(
+    z.union([
       suggestedTableFieldSchema,
       suggestedStatementFieldSchema,
       suggestedChoicesFieldSchema,
       suggestedBaseFieldSchema,
-    ])
-    .refine((formField) => {
-      const basicFieldType =
-        BasicField[formField.fieldType as keyof typeof BasicField]
-      if (!basicFieldType) {
-        return false
-      }
-      return true
-    }, 'Field type generated is invalid'),
-)
+    ]),
+  )
+  .nonempty()
 
 const sendPromptToModel = (
   prompt: string,
@@ -320,7 +328,6 @@ export const createFormFieldsUsingTextPrompt = ({
       }
 
       const parsedSuggestedFormFields = parseSuggestedFormFieldsResult.data
-
       const formFieldsToCreate = mapSuggestedFormFieldToFieldCreateDto(
         parsedSuggestedFormFields,
       )
