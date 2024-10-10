@@ -99,7 +99,7 @@ const StaticRespondentOption = ({
             />
             <FormErrorMessage>{staticTagInputErrorMessage}</FormErrorMessage>
             {!staticTagInputErrorMessage ? (
-              <Text textStyle="body-2" mt="0.5rem">
+              <Text textStyle="body-2" color="secondary.400" mt="0.5rem">
                 Separate multiple emails with a comma
               </Text>
             ) : null}
