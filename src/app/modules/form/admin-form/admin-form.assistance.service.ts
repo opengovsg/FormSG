@@ -67,14 +67,13 @@ const mapSuggestedFormFieldToFieldCreateDto = (
       } as TableFieldBase
     } else if (
       basicFieldType === BasicField.Checkbox ||
-      basicFieldType === BasicField.Radio
+      basicFieldType === BasicField.Radio ||
+      basicFieldType === BasicField.Dropdown
     ) {
       const choicesFormField = formField as SuggestedChoiceField
+      console.log('fieldOptions:', choicesFormField.fieldOptions)
       return {
-        fieldType:
-          formField.fieldType === BasicField.Checkbox.toString()
-            ? BasicField.Checkbox
-            : BasicField.Radio,
+        fieldType: basicFieldType,
         title: choicesFormField.title,
         required: choicesFormField.required,
         description: choicesFormField.description ?? '',
@@ -112,40 +111,42 @@ const generateFormCreationPrompt = (userPrompt: string) => {
     .map((fieldType) => `"${fieldType}"`)
     .toString()
 
+  console.log('basicFieldNames:', basicFieldNames)
+
   const messages = [
     {
       role: Role.System,
       content:
         // Provide context to model on when to use each field type
-        'You will make generate form fields for a form. The details of this form will be provided in the next prompt.' +
-        'Your next response must be an ordered array of json objects with compulsory properties named "title" of type string, "fieldType" of type string and "required" of type boolean and optional properties named "description" of type string.' +
-        'You must respond starting with "[" and ending with "]" following the array notation in json. Do not include the 3 backticks, newline or any code blocks in the response. It is crucial that the response can be parsed successfully by Javascript JSON.parse().' +
-        `The field type must only be a string composed of the following ${basicFieldNames}` +
-        'You must refer to these rules when choosing form field types to use:' +
+        'Generate form fields for a form which follow a set of rules:' +
+        'Rule 1: the form fields must be an ordered array of json objects starting with "[" and ending with "]" following the array notation in json.' +
+        'Rule 2: Each form field json object must have the compulsory properties named "title" of type string, "fieldType" of type string and "required" of type boolean and optional properties named "description" of type string.' +
+        'Rule 3: Do not include the 3 backticks, newline or any code blocks in the response. It is crucial that the response can be parsed successfully by Javascript JSON.parse().' +
+        `Rule 4: The field type must be a string only composed of the following ${basicFieldNames}.` +
         // Organising fields
-        '"Section" and "Statment" field types are not meant to collect data. It is encouraged to use "Section" to organise the form fields neatly into sections.' +
-        '"Statement" can be used to provide details about subsequent form fields or used together with "YesNo" to ask respondent for approval or agreement"' +
-        '"Number" is used to collect whole numbers and "Decimal" for decimal numbers, an example of "Decimal" usage is to represent money amount' +
+        'Info 1: "Section" and "Statment" field types are not meant to collect data. It is encouraged to use "Section" to organise the form fields neatly into sections.' +
+        'Info 2: "Statement" can be used to provide details about subsequent form fields or used together with "YesNo" to ask respondent for approval or agreement"' +
+        'Info 3: "Number" is used to collect whole numbers and "Decimal" for decimal numbers, an example of "Decimal" usage is to represent money amount' +
         // Choices fields
-        '"Radio" and "Checkbox" field types must have an additional property named "fieldOptions" that is an array of strings for the respondent to select from.' +
-        '"Yes/No" is used to collect a boolean response, for example, whether the respondent approves to something or agrees to a "Statement" field type above.' +
+        'Rule 5: If "Dropdown", "Radio" or "Checkbox" field types are used, the json object must include an additional property named "fieldOptions" that is an array of strings for the respondent to select from.' +
+        'Info 4: "Yes/No" is used to collect a boolean response, for example, whether the respondent approves to something or agrees to a "Statement" field type above.' +
         // Rating field
-        '"Rating" can be used to collect a rating from 1 to 5, for example, to rate the satisfaction level of a service.' +
+        'Info 5: "Rating" can be used to collect a rating from 1 to 5, for example, to rate the satisfaction level of a service.' +
         // Id fields
-        '"Nric" is used to collect the unique identity number issued to each respondent, it can be used to uniquely identify the respondent.' +
-        '"Uen" is a unique identifier for businesses, it can be used to uniquely identify a business.' +
+        'Info 6: "Nric" is used to collect the unique identity number issued to each respondent, it can be used to uniquely identify the respondent.' +
+        'Info 7: "Uen" is a unique identifier for businesses, it can be used to uniquely identify a business.' +
         // Mobile and home number fields
-        '"Mobile" is used to collect a mobile phone number. "HomeNo" is used to collect a home phone number.' +
+        'Info 8: "Mobile" is used to collect a mobile phone number. "HomeNo" is used to collect a home phone number.' +
         // Attachment field
-        '"Attachment is used for the respondent to upload files.' +
+        'Info 9: "Attachment is used for the respondent to upload files.' +
         // Table field
-        '"Table is used for the respondent to fill in a table of data. "Table" can be used for when the respondent needs to add an unknown number of rows to their form response.' +
-        'If "Table" is used, the "columns" property must be provided in the json and be an array of strings. There must also be integer "minimumRows" and boolean "addMoreRows" properties which defines whether the respondent can add more rows when responding and an optional integer "maximumRows" property.',
+        'Info 10: "Table is used for the respondent to fill in a table of data. "Table" can be used for when the respondent needs to add an unknown number of rows to their form response.' +
+        'Rule 6: If "Table" is used, the "columns" property must be provided in the json and be an array of strings. There must also be integer "minimumRows" and boolean "addMoreRows" properties which defines whether the respondent can add more rows when responding and an optional integer "maximumRows" property.',
     },
     {
       // Provide general topic + example fields that user wants to collect.
       role: Role.User,
-      content: `Create a form that collects ${userPrompt}. Double check that the output follows the rules above.`,
+      content: `Create a form that collects ${userPrompt}. The array of json objects that follows all rules, can be parsed by JSON.parse() and does not include 3 backticks, newline or codeblocks is`,
     },
   ]
 
@@ -180,8 +181,11 @@ const suggestedTableFieldSchema = z
  */
 const suggestedChoicesFieldSchema = z
   .object({
-    fieldType: z.literal('Checkbox').or(z.literal('Radio')),
-    fieldOptions: z.array(z.string()),
+    fieldType: z
+      .literal('Checkbox')
+      .or(z.literal('Radio'))
+      .or(z.literal('Dropdown')),
+    fieldOptions: z.array(z.string()).nonempty(),
   })
   .merge(suggestedBaseFieldSchema)
 
@@ -251,6 +255,8 @@ export const createFormFieldsUsingTextPrompt = ({
         })
         return errAsync(modelResponseFailureError)
       }
+
+      console.log('model response: Start--', modelResponse, '--End')
 
       let suggestedFormFields
       try {
