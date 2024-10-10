@@ -10,3 +10,5 @@ export const SGID_VALID_ORG_PAGE =
 // Growthbook proxy set up on cloudflare workers. For more info, see Worker script: https://github.com/opengovsg/formsg-private/pull/171.
 export const GROWTHBOOK_DEV_PROXY =
   'https://proxy-growthbook-stg.formsg.workers.dev'
+export const PAPERLESS_FORMSG_RESEARCH_LINK =
+  'https://go.gov.sg/paperformsresearch'
