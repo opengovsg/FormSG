@@ -18,6 +18,7 @@ import { FormNotFoundError } from '../form.errors'
 
 import {
   FieldNotFoundError,
+  ModelGetClientFailureError,
   ModelResponseFailureError,
   ModelResponseInvalidSchemaFormatError,
   ModelResponseInvalidSyntaxError,
@@ -237,15 +238,19 @@ const suggestedFormFieldsSchema = z.array(
 
 const sendPromptToModel = (
   prompt: string,
-): ResultAsync<string | null, ModelResponseFailureError> => {
+  formId: string,
+): ResultAsync<
+  string | null,
+  ModelResponseFailureError | ModelGetClientFailureError
+> => {
   const messages = generateFormCreationPrompt(prompt)
-  return ResultAsync.fromPromise(sendUserTextPrompt({ messages }), (error) => {
+  return sendUserTextPrompt({ messages, formId }).mapErr((error) => {
     logger.error({
       message: 'Error when generating response from model',
       meta: { action: 'sendPromptToModel' },
       error,
     })
-    return new ModelResponseFailureError()
+    return error
   })
 }
 
@@ -269,7 +274,7 @@ export const createFormFieldsUsingTextPrompt = ({
   | FormNotFoundError
   | FieldNotFoundError
 > => {
-  return sendPromptToModel(userPrompt)
+  return sendPromptToModel(userPrompt, form.id)
     .andThen((modelResponse) => {
       if (!modelResponse) {
         const modelResponseFailureError = new ModelResponseFailureError()
