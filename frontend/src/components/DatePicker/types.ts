@@ -1,4 +1,5 @@
 import { InputProps } from '@chakra-ui/react'
+import { Locale } from 'date-fns'
 
 export interface DatePickerBaseProps
   extends Omit<

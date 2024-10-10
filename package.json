@@ -85,7 +85,7 @@
     "cookie-parser": "~1.4.6",
     "csv-string": "^4.1.1",
     "cuid": "^2.1.8",
-    "date-fns": "^2.30.0",
+    "date-fns": "^3.6.0",
     "dd-trace": "^5.22.0",
     "dedent-js": "~1.0.1",
     "dotenv": "^16.4.5",
