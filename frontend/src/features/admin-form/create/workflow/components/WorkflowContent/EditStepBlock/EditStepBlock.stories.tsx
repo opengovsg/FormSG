@@ -129,6 +129,61 @@ export const Step2Empty = {
   },
 }
 
+export const Step2FixedEmailDefault = {
+  // due to the double registration of 'workflow_type' there would be a weird interaction
+  // where the default value will be reset
+  // thus we have to manually select the field again
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement)
+    await waitFor(
+      async () =>
+        expect(await canvas.getByText('Save step')).not.toBeDisabled(),
+      {
+        timeout: 5000,
+      },
+    )
+    await waitFor(
+      async () => {
+        await userEvent.click(await canvas.getByText('Fixed email(s)'))
+      },
+      {
+        timeout: 5000,
+      },
+    )
+  },
+  args: {
+    stepNumber: 1,
+    defaultValues: {
+      workflow_type: WorkflowType.Static,
+      emails: ['me@open.gov.sg', 'invalidemail'],
+    },
+  },
+}
+export const Step2FixedEmailEmpty = {
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement)
+    await waitFor(
+      async () =>
+        expect(await canvas.getByText('Save step')).not.toBeDisabled(),
+      {
+        timeout: 5000,
+      },
+    )
+    await waitFor(
+      async () => {
+        await userEvent.click(await canvas.getByText('Fixed email(s)'))
+      },
+      {
+        timeout: 5000,
+      },
+    )
+  },
+
+  args: {
+    stepNumber: 1,
+  },
+}
+
 export const DeletedApprovalFieldSelected = {
   args: {
     stepNumber: 1,
