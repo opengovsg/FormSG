@@ -305,11 +305,9 @@ export const DesignInput = (): JSX.Element | null => {
               value={color}
               {...register('colorTheme')}
               // CSS for inverted radio button
-              // TODO: anti-aliasing at interface of border and ::before?
               border="2px solid"
               borderRadius="50%"
               borderColor="white"
-              background={getTitleBg(color)}
               _checked={{ borderColor: getTitleBg(color) }}
               _before={{
                 content: '""',
@@ -319,6 +317,7 @@ export const DesignInput = (): JSX.Element | null => {
                 border: '2px solid',
                 borderColor: 'white',
                 borderRadius: '50%',
+                background: getTitleBg(color),
               }}
             />
           ))}
