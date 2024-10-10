@@ -3,9 +3,8 @@ import { AzureOpenAI } from 'openai'
 import { OpenAIError } from 'openai/error'
 import type { ChatCompletionCreateParamsNonStreaming } from 'openai/resources/index'
 
-import { createLoggerWithLabel } from 'src/app/config/logger'
-
 import { azureOpenAIConfig } from '../../../config/features/azureopenai.config'
+import { createLoggerWithLabel } from '../../../config/logger'
 
 import {
   ModelGetClientFailureError,
