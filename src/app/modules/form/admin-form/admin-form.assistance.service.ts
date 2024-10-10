@@ -71,7 +71,6 @@ const mapSuggestedFormFieldToFieldCreateDto = (
       basicFieldType === BasicField.Dropdown
     ) {
       const choicesFormField = formField as SuggestedChoiceField
-      console.log('fieldOptions:', choicesFormField.fieldOptions)
       return {
         fieldType: basicFieldType,
         title: choicesFormField.title,
@@ -111,8 +110,6 @@ const generateFormCreationPrompt = (userPrompt: string) => {
     .map((fieldType) => `"${fieldType}"`)
     .toString()
 
-  console.log('basicFieldNames:', basicFieldNames)
-
   const messages = [
     {
       role: Role.System,
@@ -126,9 +123,10 @@ const generateFormCreationPrompt = (userPrompt: string) => {
         // Organising fields
         'Info 1: "Section" and "Statment" field types are not meant to collect data. It is encouraged to use "Section" to organise the form fields neatly into sections.' +
         'Info 2: "Statement" can be used to provide details about subsequent form fields or used together with "YesNo" to ask respondent for approval or agreement"' +
+        'Rule 5: If "Statement" is used, the "description" property is compulsory.' +
         'Info 3: "Number" is used to collect whole numbers and "Decimal" for decimal numbers, an example of "Decimal" usage is to represent money amount' +
         // Choices fields
-        'Rule 5: If "Dropdown", "Radio" or "Checkbox" field types are used, the json object must include an additional property named "fieldOptions" that is an array of strings for the respondent to select from.' +
+        'Rule 6: If "Dropdown", "Radio" or "Checkbox" field types are used, the json object must include an additional property named "fieldOptions" that is an array of strings for the respondent to select from.' +
         'Info 4: "Yes/No" is used to collect a boolean response, for example, whether the respondent approves to something or agrees to a "Statement" field type above.' +
         // Rating field
         'Info 5: "Rating" can be used to collect a rating from 1 to 5, for example, to rate the satisfaction level of a service.' +
@@ -141,7 +139,7 @@ const generateFormCreationPrompt = (userPrompt: string) => {
         'Info 9: "Attachment is used for the respondent to upload files.' +
         // Table field
         'Info 10: "Table is used for the respondent to fill in a table of data. "Table" can be used for when the respondent needs to add an unknown number of rows to their form response.' +
-        'Rule 6: If "Table" is used, the "columns" property must be provided in the json and be an array of strings. There must also be integer "minimumRows" and boolean "addMoreRows" properties which defines whether the respondent can add more rows when responding and an optional integer "maximumRows" property.',
+        'Rule 7: If "Table" is used, the "columns" property must be provided in the json and be an array of strings. There must also be integer "minimumRows" and boolean "addMoreRows" properties which defines whether the respondent can add more rows when responding and an optional integer "maximumRows" property.',
     },
     {
       // Provide general topic + example fields that user wants to collect.
@@ -154,11 +152,20 @@ const generateFormCreationPrompt = (userPrompt: string) => {
 }
 
 /**
- * Used to validate model response format for suggested form fields.
+ * Field types supported by Mfb.
+ */
+const supportedFieldTypes = Object.keys(
+  omit(BasicField, ['Children', 'Image']),
+) as [string, ...string[]]
+
+const baseFieldTypesEnum = z.enum(supportedFieldTypes)
+
+/**
+ * Used to validate model response format for suggested form fields that do not have specific object properties to validate.
  */
 const suggestedBaseFieldSchema = z.object({
-  title: z.string(),
-  fieldType: z.string(),
+  title: z.string().min(1),
+  fieldType: baseFieldTypesEnum,
   required: z.boolean(),
   description: z.string().optional(),
 })
@@ -173,6 +180,26 @@ const suggestedTableFieldSchema = z
     minimumRows: z.number().int(),
     maximumRows: z.number().int().optional(),
     addMoreRows: z.boolean(),
+  })
+  .merge(suggestedBaseFieldSchema)
+  .refine((formField) => {
+    if (
+      formField.fieldType === BasicField.Table &&
+      formField.maximumRows !== undefined &&
+      formField.maximumRows < formField.minimumRows
+    ) {
+      return false
+    }
+    return true
+  }, 'Maximum rows must be greater than or equal minimum rows')
+
+/**
+ * Used to validate model response format for suggested 'Statement' field type form fields.
+ */
+const suggestedStatementFieldSchema = z
+  .object({
+    fieldType: z.literal('Statement'),
+    description: z.string().min(1),
   })
   .merge(suggestedBaseFieldSchema)
 
@@ -194,6 +221,7 @@ const suggestedFormFieldsSchema = z.array(
     .union([
       // Note: The order of the schemas here is important. Order from the most restrictive to the least restrictive.
       suggestedTableFieldSchema,
+      suggestedStatementFieldSchema,
       suggestedChoicesFieldSchema,
       suggestedBaseFieldSchema,
     ])
@@ -255,8 +283,6 @@ export const createFormFieldsUsingTextPrompt = ({
         })
         return errAsync(modelResponseFailureError)
       }
-
-      console.log('model response: Start--', modelResponse, '--End')
 
       let suggestedFormFields
       try {
