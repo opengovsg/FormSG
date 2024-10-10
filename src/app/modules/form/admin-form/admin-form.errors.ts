@@ -94,3 +94,9 @@ export class ModelResponseFailureError extends ApplicationError {
     super(message, ErrorCodes.ADMIN_FORM_MODEL_RESPONSE_FAILURE)
   }
 }
+
+export class ModelGetClientFailureError extends ApplicationError {
+  constructor(message = 'Failed to get model client') {
+    super(message, ErrorCodes.ADMIN_FORM_MODEL_GET_CLIENT_FAILURE)
+  }
+}
