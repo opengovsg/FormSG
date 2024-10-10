@@ -164,7 +164,7 @@ const baseFieldTypesEnum = z.enum(supportedFieldTypes)
  * Used to validate model response format for suggested form fields that do not have specific object properties to validate.
  */
 const suggestedBaseFieldSchema = z.object({
-  title: z.string().min(1),
+  title: z.string().trim().min(1),
   fieldType: baseFieldTypesEnum,
   required: z.boolean(),
   description: z.string().optional(),
@@ -176,7 +176,7 @@ const suggestedBaseFieldSchema = z.object({
 const suggestedTableFieldSchema = z
   .object({
     fieldType: z.literal('Table'),
-    columns: z.array(z.string()),
+    columns: z.array(z.string().trim().min(1)),
     minimumRows: z.number().int(),
     maximumRows: z.number().int().optional(),
     addMoreRows: z.boolean(),
@@ -199,7 +199,7 @@ const suggestedTableFieldSchema = z
 const suggestedStatementFieldSchema = z
   .object({
     fieldType: z.literal('Statement'),
-    description: z.string().min(1),
+    description: z.string().trim().min(1),
   })
   .merge(suggestedBaseFieldSchema)
 
@@ -212,7 +212,7 @@ const suggestedChoicesFieldSchema = z
       .literal('Checkbox')
       .or(z.literal('Radio'))
       .or(z.literal('Dropdown')),
-    fieldOptions: z.array(z.string()).nonempty(),
+    fieldOptions: z.array(z.string().trim().min(1)).nonempty(),
   })
   .merge(suggestedBaseFieldSchema)
 
