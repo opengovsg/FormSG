@@ -312,8 +312,8 @@ export const DesignInput = (): JSX.Element | null => {
               _before={{
                 content: '""',
                 display: 'inline-block',
-                width: '20px',
-                height: '20px',
+                width: '16px',
+                height: '16px',
                 border: '2px solid',
                 borderColor: 'white',
                 borderRadius: '50%',
