@@ -26,8 +26,8 @@ const TEXT_PROMPT_PLACEHOLDER =
   'A good prompt includes the purpose of the form, who is responding to the form and what you wish to collect (such as specific questions or sections to include).'
 
 const TEXT_PROMPT_IDEAS = [
-  'employee feedback on workplace satisfaction, including fields on overall job satisfaction, suggestions for improvement, and comments on company culture',
-  'community issue reports from citizens, including fields for location, description of the issue, and optional photo uploads"',
+  'employee feedback on workplace satisfaction, including fields on overall job satisfaction, suggestions for improvement, and comments on company culture.',
+  'community issue reports from citizens, including fields for location, description of the issue, and optional photo uploads.',
   'applications for government grants from business entities, incorporating sections for project details, budget breakdown, and applicant qualifications.',
 ]
 
