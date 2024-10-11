@@ -158,7 +158,11 @@ export const WorkspacePage = (): JSX.Element => {
             <InlineMessage>
               <Text>
                 Do you still have paper forms in your agency?{' '}
-                <Link href={PAPERLESS_FORMSG_RESEARCH_LINK} target="_blank">
+                <Link
+                  display="inline"
+                  href={PAPERLESS_FORMSG_RESEARCH_LINK}
+                  target="_blank"
+                >
                   Tell us more so that we can help you digitalise them.
                 </Link>
               </Text>
