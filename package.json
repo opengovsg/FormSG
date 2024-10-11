@@ -90,7 +90,7 @@
     "dedent-js": "~1.0.1",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
-    "express": "^4.20.0",
+    "express": "^4.21.1",
     "express-rate-limit": "^7.4.0",
     "express-request-id": "^1.4.1",
     "express-session": "^1.18.0",
