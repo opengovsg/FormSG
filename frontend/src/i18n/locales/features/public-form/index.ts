@@ -25,5 +25,13 @@ export interface PublicForm {
       proceedToPay: string
       submitNow: string
     }
+    FeedbackBlock: {
+      feedbackTitlePayment: string
+      feedbackTitleGeneral: string
+      ratingLabel: string
+      ratingError: string
+      commentPlaceholder: string
+      submitButton: string
+    }
   }
 }
