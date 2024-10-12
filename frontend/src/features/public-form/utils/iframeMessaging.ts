@@ -6,9 +6,7 @@ const TRUSTED_TARGET_ORIGINS = [
   'https://pay.gov.sg',
   'https://exp.pay.gov.sg',
   'https://staging.pay.gov.sg',
-].concat(
-  process.env.NODE_ENV === 'development' ? ['http://localhost:3000'] : [],
-)
+]
 
 export const postIFrameMessage = (message: PublicFormIFrameMessage): void => {
   // De-risk by wrapping in try-catch even though this is synchronous. This should
