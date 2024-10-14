@@ -11,8 +11,10 @@ const TRUSTED_TARGET_ORIGINS = [
 export const postIFrameMessage = (message: PublicFormIFrameMessage): void => {
   // De-risk by wrapping in try-catch even though this is synchronous. This should
   // never block form submission.
+  console.log('Posting iframe message', JSON.stringify(message))
   try {
     TRUSTED_TARGET_ORIGINS.forEach((origin) => {
+      console.log(`Posting iframe message to origin ${origin}`)
       window.parent.postMessage(message, origin)
     })
   } catch (error) {

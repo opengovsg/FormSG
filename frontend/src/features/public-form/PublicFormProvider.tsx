@@ -490,6 +490,7 @@ export const PublicFormProvider = ({
       [PAYMENT_PRODUCT_FIELD_ID]: paymentProducts,
       ...formInputs
     }) => {
+      console.log('Called handleSubmitForm')
       const { form } = data ?? {}
       if (!form) return
 
@@ -674,6 +675,7 @@ export const PublicFormProvider = ({
           }
         }
         case FormResponseMode.Encrypt: {
+          console.log('In handler for FormResponseMode.Encrypt')
           // Using mutateAsync so react-hook-form goes into loading state.
 
           const formPaymentData: {
@@ -719,6 +721,7 @@ export const PublicFormProvider = ({
                     // payment forms will have non-empty paymentData field
                     paymentData,
                   }) => {
+                    console.log('In onSuccess for submitStorageModeFormFetchMutation')
                     trackSubmitForm(form)
                     postIFrameMessage({ state: 'submitted', submissionId })
 
@@ -785,6 +788,7 @@ export const PublicFormProvider = ({
                   // payment forms will have non-empty paymentData field
                   paymentData,
                 }) => {
+                  console.log('In onSuccess for submitStorageModeFormMutation')
                   trackSubmitForm(form)
                   postIFrameMessage({ state: 'submitted', submissionId })
                   if (paymentData) {
