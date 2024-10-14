@@ -20,7 +20,7 @@ services:
       - DB_HOST=mongodb://database:27017/formsg?directConnection=true
       - APP_NAME=FormSG
       - APP_URL=http://localhost:5001
-      - FE_APP_URL=http://localhost:3000
+      - FE_APP_URL=http://localhost:5173
       - ATTACHMENT_S3_BUCKET=local-attachment-bucket
       - PAYMENT_PROOF_S3_BUCKET=local-payment-proof-bucket
       - IMAGE_S3_BUCKET=local-image-bucket
@@ -169,7 +169,7 @@ services:
     environment:
       - SERVICES=s3,sqs,secretsmanager
       - DNS_ADDRESS=0
-      - EXTRA_CORS_ALLOWED_ORIGINS=http://localhost:3000
+      - EXTRA_CORS_ALLOWED_ORIGINS=http://localhost:5173
     volumes:
       - ./.localstack/volume:/var/lib/localstack
       - /var/run/docker.sock:/var/run/docker.sock
