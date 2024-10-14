@@ -8,8 +8,8 @@ export const SettingsMultiLangPage = (): JSX.Element => {
 
   return (
     <>
-      {language && <TranslationListSection language={language} />}
-      {!language && <MultiLanguageSection />}
+      {!language ? <MultiLanguageSection /> : null}
+      {language ? <TranslationListSection language={language} /> : null}
     </>
   )
 }

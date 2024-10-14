@@ -11,15 +11,16 @@ import {
   Text,
   Tooltip,
 } from '@chakra-ui/react'
+import _ from 'lodash'
 
 import {
   BasicField,
-  CheckboxFieldBase,
-  DropdownFieldBase,
   FormField,
   FormFieldDto,
   Language,
-  RadioFieldBase,
+  TableFieldBase,
+  TranslationMapping,
+  TranslationOptionMapping,
 } from '~shared/types'
 
 import { PhHandsClapping } from '~assets/icons'
@@ -110,7 +111,9 @@ export const QuestionRow = ({
           </Flex>
 
           {!isMyInfoField && !hasTranslations && (
-            <Icon fontSize="1.5rem" as={BiError} color="warning.600" />
+            <Tooltip label="This field is missing translations">
+              <Icon fontSize="1.5rem" as={BiError} color="warning.600" />
+            </Tooltip>
           )}
           {!isMyInfoField && hasTranslations && (
             <Icon
@@ -126,6 +129,57 @@ export const QuestionRow = ({
   )
 }
 
+const getHasFormFieldBaseTranslations = ({
+  titleTranslations,
+  description,
+  descriptionTranslations,
+  unicodeLocale,
+}: {
+  titleTranslations: TranslationMapping[]
+  description: string
+  descriptionTranslations: TranslationMapping[]
+  unicodeLocale: Language
+}) => {
+  const hasTitleTranslation = titleTranslations.some(
+    (titleTranslation) =>
+      titleTranslation.language === unicodeLocale &&
+      titleTranslation.translation,
+  )
+
+  // Value to represent whether or not the required field have translations for description.
+  // If form field has no description, resolve to true because no translations are required for the field.
+  const hasDescriptionTranslation =
+    _.isEmpty(description) ||
+    descriptionTranslations.some(
+      (descriptionTranslation) =>
+        descriptionTranslation.language === unicodeLocale &&
+        descriptionTranslation.translation,
+    )
+
+  return hasTitleTranslation && hasDescriptionTranslation
+}
+
+const getHasFieldOptionsTranslation = ({
+  fieldOptions,
+  fieldOptionsTranslations,
+  unicodeLocale,
+}: {
+  fieldOptions: string[]
+  fieldOptionsTranslations: TranslationOptionMapping[]
+  unicodeLocale: Language
+}) => {
+  if (!_.isEmpty(fieldOptions)) {
+    const relevantTranslation = fieldOptionsTranslations?.find(
+      (translation) => translation.language === unicodeLocale,
+    )
+    return (
+      (relevantTranslation?.translation?.length ?? 0) === fieldOptions.length
+    )
+  }
+
+  return true
+}
+
 export const TranslationListSection = ({
   language,
 }: {
@@ -137,10 +191,13 @@ export const TranslationListSection = ({
 
   const unicodeLocale = language as Language
 
-  console.log(unicodeLocale)
+  const handleOnBackClick = useCallback(() => {
+    navigate(`${ADMINFORM_ROUTE}/${formId}/settings/multi-language`)
+  }, [formId, navigate])
 
   const hasStartPageTranslations = useMemo(() => {
     const startPageTranslations = form?.startPage?.paragraphTranslations ?? []
+
     return startPageTranslations.some(
       (translation) => translation.language === unicodeLocale,
     )
@@ -158,45 +215,32 @@ export const TranslationListSection = ({
     const hasEndPageTitleTranslations = titleTranslations.some(
       (translations) => translations.language === unicodeLocale,
     )
+    const hasEndPageParagraphTranslations = paragraphTranslations.some(
+      (translations) => translations.language === unicodeLocale,
+    )
 
-    const hasEndPageParagraphTranslations =
-      !paragraph ||
-      paragraphTranslations.some(
-        (translations) => translations.language === unicodeLocale,
-      )
-
-    return hasEndPageTitleTranslations && hasEndPageParagraphTranslations
+    return (
+      !_.isEmpty(paragraph) &&
+      hasEndPageTitleTranslations &&
+      hasEndPageParagraphTranslations
+    )
   }, [form?.endPage, unicodeLocale])
-
-  const handleOnBackClick = useCallback(() => {
-    navigate(`${ADMINFORM_ROUTE}/${formId}/settings/multi-language`)
-  }, [formId, navigate])
 
   const getHasTranslations = useCallback(
     (formField: FormFieldDto<FormField>): boolean => {
       const {
-        title,
-        titleTranslations,
+        titleTranslations = [],
         description,
-        descriptionTranslations,
+        descriptionTranslations = [],
         fieldType,
       } = formField
 
-      const hasTitleTranslation =
-        !title ||
-        (titleTranslations ?? []).some(
-          (titleTranslation) =>
-            titleTranslation.language === unicodeLocale &&
-            titleTranslation.translation,
-        )
-
-      const hasDescriptionTranslation =
-        !description ||
-        (descriptionTranslations ?? []).some(
-          (descriptionTranslation) =>
-            descriptionTranslation.language === unicodeLocale &&
-            descriptionTranslation.translation,
-        )
+      const hasFormFieldBaseTranslation = getHasFormFieldBaseTranslations({
+        titleTranslations,
+        description,
+        descriptionTranslations,
+        unicodeLocale,
+      })
 
       let hasFieldOptionsTranslation = true
       if (
@@ -204,25 +248,55 @@ export const TranslationListSection = ({
         fieldType === BasicField.Radio ||
         fieldType === BasicField.Dropdown
       ) {
-        const { fieldOptions, fieldOptionsTranslations } =
-          formField as FormFieldDto<
-            CheckboxFieldBase | RadioFieldBase | DropdownFieldBase
-          >
+        const { fieldOptions, fieldOptionsTranslations = [] } = formField
 
-        if (fieldOptions && fieldOptions.length > 0) {
-          const relevantTranslation = fieldOptionsTranslations?.find(
-            (translation) => translation.language === unicodeLocale,
-          )
-          hasFieldOptionsTranslation =
-            (relevantTranslation?.translation?.length ?? 0) ===
-            fieldOptions.length
-        }
+        hasFieldOptionsTranslation = getHasFieldOptionsTranslation({
+          fieldOptions,
+          fieldOptionsTranslations,
+          unicodeLocale,
+        })
+      }
+
+      let hasTableColumnTranslations = true
+      if (fieldType === BasicField.Table) {
+        const { columns } = formField as FormFieldDto<TableFieldBase>
+
+        // Filter out columns that have translations and check if
+        // filtered out array length is equal to number of columns of
+        // table field
+        hasTableColumnTranslations =
+          columns.filter((column) => {
+            const { titleTranslations = [] } = column
+
+            // ColumnBase does not have description and descriptionTranslations
+            const hasColumnBaseTranslations = getHasFormFieldBaseTranslations({
+              titleTranslations,
+              description: '',
+              descriptionTranslations: [],
+              unicodeLocale,
+            })
+
+            if (column.columnType === BasicField.Dropdown) {
+              const { fieldOptions, fieldOptionsTranslations = [] } = column
+
+              return (
+                hasColumnBaseTranslations &&
+                getHasFieldOptionsTranslation({
+                  fieldOptions,
+                  fieldOptionsTranslations,
+                  unicodeLocale,
+                })
+              )
+            }
+
+            return hasColumnBaseTranslations
+          }).length === columns.length
       }
 
       return (
-        hasTitleTranslation &&
-        hasDescriptionTranslation &&
-        hasFieldOptionsTranslation
+        hasFormFieldBaseTranslation &&
+        hasFieldOptionsTranslation &&
+        hasTableColumnTranslations
       )
     },
     [unicodeLocale],
