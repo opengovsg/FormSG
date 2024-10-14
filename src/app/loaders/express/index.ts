@@ -107,9 +107,9 @@ const loadExpressApp = async (connection: Connection) => {
   app.use(IntranetMiddleware.logIntranetUsage)
 
   // Growthbook should not be enabled in test environment to avoid flakiness
-  // if (!config.isTest) {
-  //   app.use(growthbookMiddleware)
-  // }
+  if (!config.isTest) {
+    app.use(growthbookMiddleware)
+  }
 
   // jwks endpoint for SP OIDC
   app.use('/singpass/.well-known/jwks.json', SpOidcJwksRouter)
