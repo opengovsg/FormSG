@@ -187,9 +187,16 @@ const sendMrfOutcomeEmails = ({
   }
   const emailsToNotify = form.emails ?? []
 
+  const stepIdsBeforeAndIncludingCurrStep = form.workflow.slice(
+    0,
+    currentStepNumber + 1,
+  )
+
   const validWorkflowStepsToNotify = (form.stepsToNotify ?? [])
     .map((stepId) =>
-      form.workflow.find((step) => step._id.toString() === stepId),
+      stepIdsBeforeAndIncludingCurrStep.find(
+        (step) => step._id.toString() === stepId,
+      ),
     )
     .filter(
       (workflowStep) => workflowStep !== undefined,
