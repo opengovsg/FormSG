@@ -9,8 +9,18 @@ import {
   SubmissionType,
   WorkflowType,
 } from '../../../../../shared/types'
-import { MultirespondentSubmissionData } from '../../../../types'
-import { InvalidWorkflowTypeError } from '../submission.errors'
+import {
+  FormFieldSchema,
+  MultirespondentSubmissionData,
+} from '../../../../types'
+import { ParsedClearFormFieldResponsesV3 } from '../../../../types/api'
+import { validateFieldV3 } from '../../../utils/field-validation'
+import { FieldIdSet } from '../../../utils/logic-adaptor'
+import {
+  InvalidWorkflowTypeError,
+  ProcessingError,
+  ValidateFieldErrorV3,
+} from '../submission.errors'
 
 /**
  * Creates and returns a MultirespondentSubmissionDto object from submissionData and
@@ -59,4 +69,63 @@ export const retrieveWorkflowStepEmailAddresses = (
       return err(new InvalidWorkflowTypeError())
     }
   }
+}
+
+/**
+ * Validates each field by individual field rules.
+ * @param formId formId, used for logging
+ * @param formFields all form fields in the form. Purpose: used to validate responses against the form field properties.
+ * @param responses responses to validate
+ * @returns initial responses if all responses are valid, else an error.
+ */
+export const validateMrfFieldResponses = ({
+  formId,
+  visibleFieldIds,
+  formFields,
+  responses,
+}: {
+  formId: string
+  visibleFieldIds: FieldIdSet
+  formFields: FormFieldSchema[]
+  responses: ParsedClearFormFieldResponsesV3
+}): Result<
+  ParsedClearFormFieldResponsesV3,
+  ValidateFieldErrorV3 | ProcessingError
+> => {
+  const idToFieldMap = formFields.reduce<{
+    [fieldId: string]: FormFieldSchema
+  }>((acc, field) => {
+    acc[field._id] = field
+    return acc
+  }, {})
+
+  for (const [responseId, response] of Object.entries(responses)) {
+    const formField = idToFieldMap[responseId]
+    if (!formField) {
+      return err(
+        new ProcessingError('Response Id does not match form field Ids'),
+      )
+    }
+
+    // Since Myinfo fields are not currently supported for MRF
+    if (response.fieldType === BasicField.Children) {
+      return err(
+        new ValidateFieldErrorV3(
+          'Children field type is not supported for MRF submisisons',
+        ),
+      )
+    }
+
+    const validateFieldV3Result = validateFieldV3({
+      formId,
+      formField,
+      response,
+      isVisible: visibleFieldIds.has(responseId),
+    })
+    if (validateFieldV3Result.isErr()) {
+      return err(validateFieldV3Result.error)
+    }
+  }
+
+  return ok(responses)
 }

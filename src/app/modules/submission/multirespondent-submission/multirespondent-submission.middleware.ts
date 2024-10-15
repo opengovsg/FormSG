@@ -11,6 +11,7 @@ import {
   SubmissionType,
 } from '../../../../../shared/types'
 import { isDev } from '../../../../app/config/config'
+import { FormFieldSchema } from '../../../../types'
 import {
   ParsedClearAttachmentResponseV3,
   ParsedClearFormFieldResponsesV3,
@@ -58,6 +59,7 @@ import {
   ProcessedMultirespondentSubmissionHandlerType,
   StrippedAttachmentResponseV3,
 } from './multirespondent-submission.types'
+import { validateMrfFieldResponses } from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -310,9 +312,10 @@ export const scanAndRetrieveAttachments = async (
 
 /**
  * What types of fields are there?
- *                Visible                     Not visible
- * Editable       Regular field validation    Not allowed
- * Non-editable   Not allowed / prev submiss  Not allowed
+ *              |  Visible                    | Not visible
+ * -------------|-----------------------------|-------------------
+ * Editable     |  Regular field validation   | Not allowed
+ * Non-editable |  Not allowed / prev submiss | Not allowed
  *
  * Initial submission:
  * 1. Retrieve form object
@@ -512,10 +515,17 @@ export const validateMultirespondentSubmission = async (
                   }),
                 ).map(() => undefined)
               })
-              .andThen(() =>
-                // TODO: Step 4: Validate each field content with each field's validator rules individually.
-                ok(undefined),
-              ),
+              .andThen(() => {
+                // TODO: (FRM-1688) Set to block after sure that validation logic works as expected.
+                validateMrfFieldResponses({
+                  formId,
+                  visibleFieldIds,
+                  formFields: form_fields as FormFieldSchema[],
+                  responses: req.body.responses,
+                })
+
+                return ok(req.body.responses)
+              }),
           )
         },
       )

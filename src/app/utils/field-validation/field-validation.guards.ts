@@ -1,8 +1,14 @@
 import { get } from 'lodash'
 
+import { ParsedClearFormFieldResponseV3 } from 'src/types/api'
+
 import { types as basicTypes } from '../../../../shared/constants/field/basic'
-import { BasicField, FormField, TableRow } from '../../../../shared/types'
-import { IEmailFieldSchema, IVerifiableMobileField } from '../../../types'
+import {
+  BasicField,
+  GenericStringAnswerResponseFieldV3,
+  TableRow,
+} from '../../../../shared/types'
+import { IEmailFieldSchema } from '../../../types'
 import {
   ColumnResponse,
   ProcessedAttachmentResponse,
@@ -103,8 +109,20 @@ export const isPossibleEmailFieldSchema = (
   return get(field, 'fieldType') === BasicField.Email
 }
 
-export const isVerifiableMobileField = (
-  formField: FormField,
-): formField is IVerifiableMobileField => {
-  return formField.fieldType === BasicField.Mobile && formField.isVerifiable
+/**
+ *
+ * Checks if the fieldType has an answer that is a generic string type, does not include enums that evaluate to string.
+ * @param fieldType the fieldType to check
+ */
+export const isGenericStringAnswerResponseV3 = (
+  response: ParsedClearFormFieldResponseV3,
+): boolean => {
+  const genericStringAnswerFieldTypesV3: string[] = Object.values(
+    GenericStringAnswerResponseFieldV3,
+  )
+  return (
+    genericStringAnswerFieldTypesV3.includes(response.fieldType) &&
+    'answer' in response &&
+    typeof response.answer === 'string'
+  )
 }
