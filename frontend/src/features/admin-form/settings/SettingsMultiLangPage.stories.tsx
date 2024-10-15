@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react'
+import { Meta, StoryFn } from '@storybook/react'
 
 import {
   FormColorTheme,
@@ -50,7 +50,7 @@ export default {
   },
 } as Meta
 
-const Template: Story = () => <SettingsMultiLangPage />
+const Template: StoryFn = () => <SettingsMultiLangPage />
 
 // Stories related to toggling multi language translation feature on and off
 // and choosing which language to enable translations for
