@@ -1,5 +1,5 @@
 import { compareAsc, isValid, parseISO } from 'date-fns'
-import { formatInTimeZone, zonedTimeToUtc } from 'date-fns-tz'
+import { formatInTimeZone, fromZonedTime } from 'date-fns-tz'
 import type { Dictionary } from 'lodash'
 import { keyBy } from 'lodash'
 import type { Merge } from 'type-fest'
@@ -179,8 +179,8 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
    */
   private _dateComparator(firstDate: string, secondDate: string): number {
     // cast to Asia/Singapore to ensure both dates are of the same timezone
-    const first = zonedTimeToUtc(firstDate, 'Asia/Singapore')
-    const second = zonedTimeToUtc(secondDate, 'Asia/Singapore')
+    const first = fromZonedTime(firstDate, 'Asia/Singapore')
+    const second = fromZonedTime(secondDate, 'Asia/Singapore')
     return compareAsc(first, second)
   }
 }

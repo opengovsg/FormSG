@@ -2,6 +2,7 @@ import { Meta, StoryFn } from '@storybook/react'
 import { times } from 'lodash'
 import { rest } from 'msw'
 
+import { UserId } from '~shared/types'
 import {
   AdminDashboardFormMetaDto,
   FormResponseMode,
@@ -163,8 +164,38 @@ AllOpenDesktop.parameters = {
     ...BASE_MSW_HANDLERS,
   ],
 }
+
+export const AllOpenDesktopNoAnnouncementModal = Template.bind({})
+AllOpenDesktopNoAnnouncementModal.parameters = {
+  ...AllOpenDesktop.parameters,
+  msw: [
+    ...envHandlers,
+    rest.get<AdminDashboardFormMetaDto[]>(
+      '/api/v3/admin/forms',
+      (req, res, ctx) => {
+        return res(ctx.json(THIRTY_FORMS))
+      },
+    ),
+    getWorkspaces(),
+    getUser({
+      delay: 0,
+      mockUser: {
+        ...MOCK_USER,
+        _id: 'undefined' as UserId,
+        email: 'meh@example.com',
+      },
+    }),
+  ],
+}
+
 export const AllOpenMobile = Template.bind({})
 AllOpenMobile.parameters = {
   ...Mobile.parameters,
   ...AllOpenDesktop.parameters,
+}
+
+export const AllOpenMobileNoAnnouncementModal = Template.bind({})
+AllOpenMobileNoAnnouncementModal.parameters = {
+  ...Mobile.parameters,
+  ...AllOpenDesktopNoAnnouncementModal.parameters,
 }

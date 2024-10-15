@@ -26,7 +26,7 @@ import {
   useBreakpointValue,
   useDisclosure,
 } from '@chakra-ui/react'
-import format from 'date-fns/format'
+import { format } from 'date-fns'
 
 import { SeenFlags } from '~shared/types'
 import { AdminFormDto, FormResponseMode } from '~shared/types/form/form'
