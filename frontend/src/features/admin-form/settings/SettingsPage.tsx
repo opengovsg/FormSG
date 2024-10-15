@@ -150,7 +150,6 @@ export const SettingsPage = (): JSX.Element => {
         index={tabIndex === -1 ? 0 : tabIndex}
         onChange={(index) => {
           handleTabChange(index)
-          tabConfig[index]
         }}
       >
         <Flex

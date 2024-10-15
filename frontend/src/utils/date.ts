@@ -110,7 +110,6 @@ export const mutableTransformAllIsoStringsToDate = (body: unknown) => {
   for (const key of Object.keys(body)) {
     const value = (body as Record<string, unknown>)[key]
     if (isIsoDateString(value)) {
-      // eslint-disable-next-line @typescript-eslint/no-extra-semi
       ;(body as Record<string, unknown>)[key] = parseISO(value)
     } else if (typeof value === 'object') {
       mutableTransformAllIsoStringsToDate(value)
