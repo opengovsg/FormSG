@@ -37,9 +37,10 @@ functions:
     image:
       name: virus-scanner
     # max timeout per invocation
-    timeout: 300
+    # cloudflare timesout after 60 seconds, so virus scanning cannot take too long
+    timeout: 50
     # allocate more memory as the default 1028 MB size will cause lambda to crash
-    memorySize: 2048
+    memorySize: 4096
     # Provision concurrency so at least one instance always hot
     # https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/#provisioned-concurrency
     # 1 for staging, 5 for prod
