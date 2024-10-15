@@ -1,13 +1,12 @@
 import {
   Body,
-  Column,
   Container,
   Head,
   Heading,
   Hr,
   Html,
   Img,
-  Row,
+  Section,
   Text,
 } from '@react-email/components'
 import { FORMSG_LOGO_URL } from '../../constants/formsg-logo'
@@ -17,6 +16,7 @@ import {
   containerStyle,
   headingTextStyle,
   mainStyle,
+  sectionStyle,
   titleTextStyle,
 } from './styles'
 
@@ -42,26 +42,28 @@ export const MrfWorkflowCompletionEmail = ({
       <Head /> 
       <Body style={mainStyle}>
           <Container style={containerStyle}>
-            <Img style={{height: '1.5rem', marginBottom: '2.5rem'}} src={FORMSG_LOGO_URL} alt="FormSG" />
-            <Heading style={headingTextStyle}>
-              {formTitle} has been completed by all respondents.
-            </Heading>
-            <Hr style={{marginTop: '2.5rem', marginBottom: '2.5rem'}}/>
-            <Heading style={{...headingTextStyle, marginBottom: '2.5rem'}}>
-              Responses for {formTitle} 
-            </Heading>
-            <Text style={{...titleTextStyle, marginBottom: '0.25rem'}}>Response ID</Text>
-            <Text style={{...bodyTextStyle, marginTop: '0.25rem'}}>{responseId}</Text>
-            { 
-              formQuestionAnswers.map((qa) => {
-              return <>
-                <Text style={{...titleTextStyle, marginBottom: '0.25rem'}}>{qa.question}</Text>
-                <Text style={{...bodyTextStyle, marginTop: '0.25rem'}}>{qa.answer}</Text>
-              </>})
-            }
-            <Text style={{...bodyTextStyle, paddingTop: '2.5rem'}}> 
-              For more details, please contact the respondent(s) or form administrator. 
-            </Text>
+            <Section style={sectionStyle}>
+              <Img style={{height: '1.5rem', marginBottom: '2.5rem'}} src={FORMSG_LOGO_URL} alt="FormSG" />
+              <Heading style={headingTextStyle}>
+                {formTitle} has been completed by all respondents.
+              </Heading>
+              <Hr style={{marginTop: '2.5rem', marginBottom: '2.5rem'}}/>
+              <Heading style={{...headingTextStyle, marginBottom: '2.5rem'}}>
+                Responses for {formTitle} 
+              </Heading>
+              <Text style={{...titleTextStyle, marginBottom: '0.25rem'}}>Response ID</Text>
+              <Text style={{...bodyTextStyle, marginTop: '0.25rem'}}>{responseId}</Text>
+              { 
+                formQuestionAnswers.map((qa) => {
+                return <>
+                  <Text style={{...titleTextStyle, marginBottom: '0.25rem'}}>{qa.question}</Text>
+                  <Text style={{...bodyTextStyle, marginTop: '0.25rem'}}>{qa.answer}</Text>
+                </>})
+              }
+              <Text style={{...bodyTextStyle, paddingTop: '2.5rem'}}> 
+                For more details, please contact the respondent(s) or form administrator. 
+              </Text>
+            </Section> 
           </Container>
       </Body>
     </Html>

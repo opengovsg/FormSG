@@ -87,8 +87,12 @@ export const mainStyle = {
 
 export const containerStyle = {
   maxWidth: '988px',
-  margin: '0 auto',
-  padding: '1.5rem',
+  margin: 'auto',
+  padding: '20px',
+}
+
+export const sectionStyle = {
+  padding: '2rem',
   backgroundColor: '#ffffff',
 }
 
