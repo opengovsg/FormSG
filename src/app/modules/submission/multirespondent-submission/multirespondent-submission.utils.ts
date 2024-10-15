@@ -1,6 +1,7 @@
 import moment from 'moment'
 import { err, ok, Result } from 'neverthrow'
 
+import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from '../../../../../shared/constants/form'
 import {
   BasicField,
   FieldResponsesV3,
@@ -14,6 +15,7 @@ import { MultirespondentSubmissionData } from '../../../../types'
 import { ParsedClearFormFieldResponsesV3 } from '../../../../types/api'
 import { validateFieldV3 } from '../../../utils/field-validation'
 import { FieldIdSet } from '../../../utils/logic-adaptor'
+import { QuestionAnswer } from '../../../views/templates/MrfWorkflowCompletionEmail'
 import {
   InvalidWorkflowTypeError,
   ProcessingError,
@@ -126,4 +128,107 @@ export const validateMrfFieldResponses = ({
   }
 
   return ok(responses)
+}
+
+/*
+ * Extracts question-answer pairs from form fields and responses.
+ * @param formFields - The form fields schema
+ * @param responses - The responses to the form fields
+ * @returns An array of QuestionAnswer objects
+ */
+export const getQuestionTitleAnswerString = ({
+  formFields,
+  responses,
+}: {
+  formFields: FormFieldSchema[]
+  responses: FieldResponsesV3
+}): QuestionAnswer[] => {
+  const questionAnswerPair = []
+  if (!formFields || !responses) {
+    return []
+  }
+  for (const formField of formFields) {
+    const questionTitle = formField.title
+    const response = responses[formField._id]
+
+    if (!response || !questionTitle) continue
+
+    let answer = ''
+    switch (response.fieldType) {
+      case BasicField.Attachment:
+        answer = response.answer.answer
+        questionAnswerPair.push({
+          question: `[Attachment] ${questionTitle}`,
+          answer,
+        })
+        continue
+      case BasicField.Email:
+      case BasicField.Mobile:
+        answer = response.answer.value
+        break
+      case BasicField.Table:
+        if (formField.fieldType !== BasicField.Table || !response.answer)
+          continue
+        // eslint-disable-next-line no-case-declarations
+        const idToColTitleMap = formField.columns.reduce(
+          (acc, col) => {
+            acc[col._id] = col.title
+            return acc
+          },
+          {} as Record<string, string>,
+        )
+
+        for (const [index, row] of response.answer.entries()) {
+          for (const [colId, colAns] of Object.entries(row)) {
+            if (!(colId in idToColTitleMap)) continue
+            const colTitle = idToColTitleMap[colId]
+
+            questionAnswerPair.push({
+              question: `[Table] Row ${index + 1}: ${colTitle}`,
+              answer: colAns ?? '',
+            })
+          }
+        }
+        continue
+      case BasicField.Radio:
+        answer =
+          'value' in response.answer
+            ? response.answer.value
+            : 'othersInput' in response.answer
+              ? response.answer.othersInput
+              : ''
+        break
+      case BasicField.Checkbox:
+        // eslint-disable-next-line no-case-declarations
+        const selectedAnswers =
+          (response.answer.othersInput
+            ? [...response.answer.value, response.answer.othersInput]
+            : [...response.answer.value]
+          ).filter((val) => val !== CLIENT_CHECKBOX_OTHERS_INPUT_VALUE) ?? []
+
+        answer = selectedAnswers.toString()
+        break
+      case BasicField.Children:
+        if (!response.answer.childFields || !response.answer.child) {
+          continue
+        }
+        for (const [index, child] of response.answer.child.entries()) {
+          questionAnswerPair.push({
+            question: `Child ${index + 1}: ${response.answer.childFields.toString()}`,
+            answer: child
+              ? child.toString()
+              : response.answer.childFields.map(() => '').toString(),
+          })
+        }
+        continue
+      default:
+        answer = response.answer
+    }
+
+    questionAnswerPair.push({
+      question: questionTitle,
+      answer,
+    })
+  }
+  return questionAnswerPair
 }

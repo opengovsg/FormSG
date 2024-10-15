@@ -2,7 +2,6 @@ import { flatten, uniq } from 'lodash'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
-import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from '../../../../../shared/constants/form'
 import {
   BasicField,
   FieldResponsesV3,
@@ -12,7 +11,6 @@ import {
 import { getMultirespondentSubmissionEditPath } from '../../../../../shared/utils/urls'
 import {
   Environment,
-  FormFieldSchema,
   IMultirespondentSubmissionSchema,
   IPopulatedForm,
   IPopulatedMultirespondentForm,
@@ -28,7 +26,6 @@ import { getMultirespondentSubmissionModel } from '../../../models/submission.se
 import { MailSendError } from '../../../services/mail/mail.errors'
 import MailService from '../../../services/mail/mail.service'
 import { transformMongoError } from '../../../utils/handle-mongo-error'
-import { QuestionAnswer } from '../../../views/templates/MrfWorkflowCompletionEmail'
 import { DatabaseError } from '../../core/core.errors'
 import { isFormMultirespondent } from '../../form/form.utils'
 import {
@@ -45,7 +42,10 @@ import { AttachmentMetadata } from '../submission.types'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
-import { retrieveWorkflowStepEmailAddresses } from './multirespondent-submission.utils'
+import {
+  getQuestionTitleAnswerString,
+  retrieveWorkflowStepEmailAddresses,
+} from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
@@ -166,98 +166,6 @@ const sendNextStepEmail = ({
         })
       })
   )
-}
-
-const getQuestionTitleAnswerString = ({
-  formFields,
-  responses,
-}: {
-  formFields: FormFieldSchema[]
-  responses: FieldResponsesV3
-}): QuestionAnswer[] => {
-  const questionAnswerPair = []
-  for (const formField of formFields) {
-    const questionTitle = formField.title
-    const response = responses[formField._id]
-
-    if (!response || !questionTitle) continue
-
-    let answer = ''
-    switch (response.fieldType) {
-      case BasicField.Attachment:
-        answer = response.answer.answer
-        questionAnswerPair.push({
-          question: `[Attachment] ${questionTitle}`,
-          answer,
-        })
-        continue
-      case BasicField.Email:
-      case BasicField.Mobile:
-        answer = response.answer.value
-        break
-      case BasicField.Table:
-        if (formField.fieldType !== BasicField.Table) continue
-        // eslint-disable-next-line no-case-declarations
-        const idToColTitleMap = formField.columns.reduce(
-          (acc, col) => {
-            acc[col._id] = col.title
-            return acc
-          },
-          {} as Record<string, string>,
-        )
-
-        for (const [index, row] of response.answer.entries()) {
-          for (const [colId, colAns] of Object.entries(row)) {
-            const colTitle = idToColTitleMap[colId]
-
-            questionAnswerPair.push({
-              question: `[Table] Row ${index + 1}: ${colTitle}`,
-              answer: colAns ?? '',
-            })
-          }
-        }
-        continue
-      case BasicField.Radio:
-        answer =
-          'value' in response.answer
-            ? response.answer.value
-            : 'othersInput' in response.answer
-              ? response.answer.othersInput
-              : ''
-        break
-      case BasicField.Checkbox:
-        // eslint-disable-next-line no-case-declarations
-        const selectedAnswers = (
-          response.answer.othersInput
-            ? [...response.answer.value, response.answer.othersInput]
-            : [...response.answer.value]
-        ).filter((val) => val !== CLIENT_CHECKBOX_OTHERS_INPUT_VALUE)
-
-        answer = selectedAnswers.toString()
-        break
-      case BasicField.Children:
-        if (!response.answer.childFields) {
-          continue
-        }
-        for (const [index, child] of response.answer.child.entries()) {
-          questionAnswerPair.push({
-            question: `Child ${index + 1}: ${response.answer.childFields.toString()}`,
-            answer: child
-              ? child.toString()
-              : response.answer.childFields.map(() => '').toString(),
-          })
-        }
-        continue
-      default:
-        answer = response.answer
-    }
-
-    questionAnswerPair.push({
-      question: questionTitle,
-      answer,
-    })
-  }
-  return questionAnswerPair
 }
 
 const sendMrfOutcomeEmails = ({
