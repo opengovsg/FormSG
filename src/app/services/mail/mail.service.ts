@@ -36,7 +36,9 @@ import { formatAsPercentage } from '../../utils/formatters'
 import MrfApprovalOutcomeEmail, {
   WorkflowOutcome,
 } from '../../views/templates/MrfApprovalOutcomeEmail'
-import MrfWorkflowCompletionEmail from '../../views/templates/MrfWorkflowCompletionEmail'
+import MrfWorkflowCompletionEmail, {
+  QuestionAnswer,
+} from '../../views/templates/MrfWorkflowCompletionEmail'
 import MrfWorkflowEmail, {
   WorkflowEmailData,
 } from '../../views/templates/MrfWorkflowEmail'
@@ -1101,15 +1103,18 @@ export class MailService {
     formId,
     formTitle,
     responseId,
+    formQuestionAnswers,
   }: {
     emails: string[]
     formId: string
     formTitle: string
     responseId: string
+    formQuestionAnswers: QuestionAnswer[]
   }) => {
     const htmlData = {
       formTitle,
       responseId: responseId.toString(),
+      formQuestionAnswers,
     }
 
     const html = render(MrfWorkflowCompletionEmail(htmlData))

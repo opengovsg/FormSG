@@ -56,3 +56,57 @@ export const linkStyle: NonNullable<LinkProps['style']> = {
   wordBreak: 'break-all',
   color: '#445fcd',
 }
+
+const textStyles = {
+  'body-1': {
+    fontStyle: 'normal',
+    fontFamily:
+      "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
+    fontWeight: 400,
+    fontSize: '1rem',
+    lineHeight: '1.5rem',
+    letterSpacing: '-0.011em',
+    fontFeatureSettings: "'tnum' on, 'lnum' on, 'cv05' on",
+  },
+  h4: {
+    fontWeight: 500,
+    fontFamily:
+      "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
+    fontSize: '1.125rem',
+    lineHeight: '1.5rem',
+    letterSpacing: '-0.014em',
+    fontFeatureSettings: "'tnum' on, 'lnum' on, 'cv05' on",
+  },
+}
+
+export const mainStyle = {
+  fontFamily:
+    "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
+  backgroundColor: '#f8f9fd',
+}
+
+export const containerStyle = {
+  maxWidth: '988px',
+  margin: '0 auto',
+  padding: '1.5rem',
+  backgroundColor: '#ffffff',
+}
+
+export const headingTextStyle: NonNullable<LinkProps['style']> = {
+  ...textStyles['h4'],
+  color: '#1B1F2C',
+  fontWeight: 600,
+  lineHeight: '2rem',
+  fontSize: '1.5rem',
+}
+
+export const titleTextStyle: NonNullable<LinkProps['style']> = {
+  ...textStyles['body-1'],
+  color: '#000000',
+  fontWeight: 700,
+}
+
+export const bodyTextStyle: NonNullable<LinkProps['style']> = {
+  ...textStyles['body-1'],
+  color: '#474747',
+}

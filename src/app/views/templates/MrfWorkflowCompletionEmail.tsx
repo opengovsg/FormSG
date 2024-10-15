@@ -13,60 +13,56 @@ import {
 import { FORMSG_LOGO_URL } from '../../constants/formsg-logo'
 
 import {
-  headingStyle,
-  innerContainerStyle,
-  outerContainerStyle,
-  textStyle,
+  bodyTextStyle,
+  containerStyle,
+  headingTextStyle,
+  mainStyle,
+  titleTextStyle,
 } from './styles'
+
+export type QuestionAnswer = {
+  question: string, 
+  answer: string 
+}
 
 export type WorkflowEmailData = {
   formTitle: string
   responseId: string
+  formQuestionAnswers: QuestionAnswer[]
 }
 
 export const MrfWorkflowCompletionEmail = ({
   // Defaults are provided only for testing purposes in react-email-preview.
   formTitle = 'Test form title',
-  responseId = '64303c45828035f732088a41'
+  responseId = '64303c45828035f732088a41', 
+  formQuestionAnswers = []
 }: WorkflowEmailData): JSX.Element => {
   return (
     <Html>
-      <Head />
-      <Body style={outerContainerStyle}>
-        <Container style={innerContainerStyle}>
-          <Row>
-            <Column>
-              <Img src={FORMSG_LOGO_URL} alt="FormSG" />
-            </Column>
-          </Row>
-          <Row style={{ paddingTop: '32px' }}>
-            <Column>
-              <Heading style={headingStyle}>
-                {formTitle} has been completed by all respondents.
-              </Heading>
-            </Column>
-          </Row>
-          <Row style={{ paddingTop: '16px' }}>
-            <Column width="30%">
-              <Text style={textStyle}>Response ID</Text>
-            </Column>
-            <Column>
-              <Text style={textStyle}>{responseId}</Text>
-            </Column>
-          </Row>
-          <Row style={{ paddingTop: '32px' }}>
-            <Column>
-              <Hr />
-            </Column>
-          </Row>
-          <Row>
-            <Column>
-              <Text style={{ ...textStyle, fontSize: '14px' }}>
-                For more details, please contact the respondent(s) or form administrator. 
-              </Text>
-            </Column>
-          </Row>
-        </Container>
+      <Head /> 
+      <Body style={mainStyle}>
+          <Container style={containerStyle}>
+            <Img style={{height: '1.5rem', marginBottom: '2.5rem'}} src={FORMSG_LOGO_URL} alt="FormSG" />
+            <Heading style={headingTextStyle}>
+              {formTitle} has been completed by all respondents.
+            </Heading>
+            <Hr style={{marginTop: '2.5rem', marginBottom: '2.5rem'}}/>
+            <Heading style={{...headingTextStyle, marginBottom: '2.5rem'}}>
+              Responses for {formTitle} 
+            </Heading>
+            <Text style={{...titleTextStyle, marginBottom: '0.25rem'}}>Response ID</Text>
+            <Text style={{...bodyTextStyle, marginTop: '0.25rem'}}>{responseId}</Text>
+            { 
+              formQuestionAnswers.map((qa) => {
+              return <>
+                <Text style={{...titleTextStyle, marginBottom: '0.25rem'}}>{qa.question}</Text>
+                <Text style={{...bodyTextStyle, marginTop: '0.25rem'}}>{qa.answer}</Text>
+              </>})
+            }
+            <Text style={{...bodyTextStyle, paddingTop: '2.5rem'}}> 
+              For more details, please contact the respondent(s) or form administrator. 
+            </Text>
+          </Container>
       </Body>
     </Html>
   )
