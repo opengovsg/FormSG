@@ -3245,61 +3245,63 @@ describe('CpOidcClient', () => {
       expect((result as InvalidIdTokenError).message).toContain(
         'idToken has incorrect shape',
       )
-    }),
-      it('should return InvalidIdTokenError if idToken is missing CPEntID', () => {
-        // Arrange
-        const EMPTY_UEN_ID_TOKEN = {
-          payload: {
-            entityInfo: {
-              something: 'A1234567A',
-            },
+    })
+
+    it('should return InvalidIdTokenError if idToken is missing CPEntID', () => {
+      // Arrange
+      const EMPTY_UEN_ID_TOKEN = {
+        payload: {
+          entityInfo: {
+            something: 'A1234567A',
           },
-        } as unknown as CPJWTVerifyResult
+        },
+      } as unknown as CPJWTVerifyResult
 
-        jest
-          .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
-          .mockResolvedValueOnce('ok' as unknown as Refresh)
+      jest
+        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-        // Act
+      // Act
 
-        const cpOidcClient = new CpOidcClient(cpOidcClientConfig)
-        const result =
-          cpOidcClient.extractCPEntityIdFromIdToken(EMPTY_UEN_ID_TOKEN)
+      const cpOidcClient = new CpOidcClient(cpOidcClientConfig)
+      const result =
+        cpOidcClient.extractCPEntityIdFromIdToken(EMPTY_UEN_ID_TOKEN)
 
-        // Assert
+      // Assert
 
-        expect(result).toBeInstanceOf(InvalidIdTokenError)
-        expect((result as InvalidIdTokenError).message).toContain(
-          'idToken has incorrect shape',
-        )
-      }),
-      it('should return InvalidIdTokenError if CPEntID is empty string', () => {
-        // Arrange
-        const EMPTY_UEN_ID_TOKEN = {
-          payload: {
-            entityInfo: {
-              CPEntID: '',
-            },
+      expect(result).toBeInstanceOf(InvalidIdTokenError)
+      expect((result as InvalidIdTokenError).message).toContain(
+        'idToken has incorrect shape',
+      )
+    })
+
+    it('should return InvalidIdTokenError if CPEntID is empty string', () => {
+      // Arrange
+      const EMPTY_UEN_ID_TOKEN = {
+        payload: {
+          entityInfo: {
+            CPEntID: '',
           },
-        } as unknown as CPJWTVerifyResult
+        },
+      } as unknown as CPJWTVerifyResult
 
-        jest
-          .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
-          .mockResolvedValueOnce('ok' as unknown as Refresh)
+      jest
+        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
 
-        // Act
+      // Act
 
-        const cpOidcClient = new CpOidcClient(cpOidcClientConfig)
-        const result =
-          cpOidcClient.extractCPEntityIdFromIdToken(EMPTY_UEN_ID_TOKEN)
+      const cpOidcClient = new CpOidcClient(cpOidcClientConfig)
+      const result =
+        cpOidcClient.extractCPEntityIdFromIdToken(EMPTY_UEN_ID_TOKEN)
 
-        // Assert
+      // Assert
 
-        expect(result).toBeInstanceOf(InvalidIdTokenError)
-        expect((result as InvalidIdTokenError).message).toContain(
-          'CPEntID attribute is empty string',
-        )
-      })
+      expect(result).toBeInstanceOf(InvalidIdTokenError)
+      expect((result as InvalidIdTokenError).message).toContain(
+        'CPEntID attribute is empty string',
+      )
+    })
 
     it('should extract CPEntID from CP ID Token and return correctly', () => {
       // Arrange
