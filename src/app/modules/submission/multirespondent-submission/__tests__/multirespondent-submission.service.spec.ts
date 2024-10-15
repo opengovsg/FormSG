@@ -638,7 +638,7 @@ describe('multirespondent-submission.service', () => {
         },
       } as FieldResponsesV3
 
-      const fourStepApprovalWorkflow: FormWorkflowStepDto[] = [
+      const fiveStepApprovalWorkflow: FormWorkflowStepDto[] = [
         {
           _id: stepOneId,
           workflow_type: WorkflowType.Dynamic,
@@ -673,14 +673,14 @@ describe('multirespondent-submission.service', () => {
         },
       ]
 
-      const currentStepNumber = 1 // 2nd step of 3 steps workflow
+      const currentStepNumber = 1 // 2nd step of 5 steps workflow
 
       // Act
       await performMultiRespondentPostSubmissionUpdateActions({
         submissionId: mockSubmissionId,
         form: {
           _id: mockFormId,
-          workflow: fourStepApprovalWorkflow,
+          workflow: fiveStepApprovalWorkflow,
           emails: [expectedEmails[1], expectedEmails[2]],
           stepsToNotify: [stepOneId, stepThreeId, stepFourId, stepFiveId],
         } as IPopulatedMultirespondentForm,
