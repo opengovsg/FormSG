@@ -16,9 +16,15 @@ import {
   containerStyle,
   headingTextStyle,
   mainStyle,
+  outcomeTextStyle,
   sectionStyle,
   titleTextStyle,
 } from './styles'
+
+export enum WorkflowOutcome {
+  APPROVED = 'Approved', 
+  NOT_APPROVED = 'Not approved' 
+}  
 
 export type QuestionAnswer = {
   question: string, 
@@ -29,13 +35,15 @@ export type WorkflowEmailData = {
   formTitle: string
   responseId: string
   formQuestionAnswers: QuestionAnswer[]
+  outcome?: WorkflowOutcome | undefined 
 }
 
 export const MrfWorkflowCompletionEmail = ({
   // Defaults are provided only for testing purposes in react-email-preview.
   formTitle = 'Test form title',
   responseId = '64303c45828035f732088a41', 
-  formQuestionAnswers = []
+  formQuestionAnswers = [], 
+  outcome
 }: WorkflowEmailData): JSX.Element => {
   return (
     <Html>
@@ -45,8 +53,18 @@ export const MrfWorkflowCompletionEmail = ({
             <Section style={sectionStyle}>
               <Img style={{height: '1.5rem', marginBottom: '2.5rem'}} src={FORMSG_LOGO_URL} alt="FormSG" />
               <Heading style={headingTextStyle}>
-                {formTitle} has been completed by all respondents.
+                {
+                  outcome 
+                    ? `The outcome for ${formTitle}` 
+                    : `${formTitle} has been completed by all respondents.` 
+                }
               </Heading>
+              {
+                outcome ? <>
+                  <Text style={{...outcomeTextStyle, marginTop: '2.5rem', marginBottom: '0.25rem'}}>Outcome</Text>
+                  <Text style={{...outcomeTextStyle, fontWeight: 400, marginTop: '0.25rem', color: '#474747'}}>{outcome}</Text>
+                </> : null 
+              }
               <Hr style={{marginTop: '2.5rem', marginBottom: '2.5rem'}}/>
               <Heading style={{...headingTextStyle, marginBottom: '2.5rem'}}>
                 Responses for {formTitle} 

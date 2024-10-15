@@ -60,8 +60,6 @@ export const linkStyle: NonNullable<LinkProps['style']> = {
 const textStyles = {
   'body-1': {
     fontStyle: 'normal',
-    fontFamily:
-      "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
     fontWeight: 400,
     fontSize: '1rem',
     lineHeight: '1.5rem',
@@ -70,10 +68,15 @@ const textStyles = {
   },
   h4: {
     fontWeight: 500,
-    fontFamily:
-      "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
     fontSize: '1.125rem',
     lineHeight: '1.5rem',
+    letterSpacing: '-0.014em',
+    fontFeatureSettings: "'tnum' on, 'lnum' on, 'cv05' on",
+  },
+  h5: {
+    fontWeight: 600,
+    fontSize: '1.25rem',
+    lineHeight: '1.75rem',
     letterSpacing: '-0.014em',
     fontFeatureSettings: "'tnum' on, 'lnum' on, 'cv05' on",
   },
@@ -102,6 +105,11 @@ export const headingTextStyle: NonNullable<LinkProps['style']> = {
   fontWeight: 600,
   lineHeight: '2rem',
   fontSize: '1.5rem',
+}
+
+export const outcomeTextStyle: NonNullable<LinkProps['style']> = {
+  ...textStyles['h5'],
+  color: '#000000',
 }
 
 export const titleTextStyle: NonNullable<LinkProps['style']> = {

@@ -240,6 +240,11 @@ const sendMrfOutcomeEmails = ({
           return okAsync(true)
         }
 
+        const formQuestionAnswers = getQuestionTitleAnswerString({
+          formFields: form.form_fields,
+          responses,
+        })
+
         if (isApproval) {
           return MailService.sendMrfApprovalEmail({
             emails: destinationEmails,
@@ -247,6 +252,7 @@ const sendMrfOutcomeEmails = ({
             formTitle: form.title,
             responseId: submissionId,
             isRejected,
+            formQuestionAnswers,
           }).orElse((error) => {
             logger.error({
               message: 'Failed to send approval email',
@@ -265,10 +271,7 @@ const sendMrfOutcomeEmails = ({
           formId: form._id,
           formTitle: form.title,
           responseId: submissionId,
-          formQuestionAnswers: getQuestionTitleAnswerString({
-            formFields: form.form_fields,
-            responses,
-          }),
+          formQuestionAnswers,
         }).orElse((error) => {
           logger.error({
             message: 'Failed to send workflow completion email',

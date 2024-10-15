@@ -33,11 +33,9 @@ import {
   getAdminEmails,
 } from '../../modules/form/form.utils'
 import { formatAsPercentage } from '../../utils/formatters'
-import MrfApprovalOutcomeEmail, {
-  WorkflowOutcome,
-} from '../../views/templates/MrfApprovalOutcomeEmail'
 import MrfWorkflowCompletionEmail, {
   QuestionAnswer,
+  WorkflowOutcome,
 } from '../../views/templates/MrfWorkflowCompletionEmail'
 import MrfWorkflowEmail, {
   WorkflowEmailData,
@@ -1138,12 +1136,14 @@ export class MailService {
     formTitle,
     responseId,
     isRejected,
+    formQuestionAnswers,
   }: {
     emails: string[]
     formId: string
     formTitle: string
     responseId: string
     isRejected: boolean
+    formQuestionAnswers: QuestionAnswer[]
   }) => {
     const outcome = isRejected
       ? WorkflowOutcome.NOT_APPROVED
@@ -1152,9 +1152,10 @@ export class MailService {
       formTitle,
       responseId: responseId.toString(),
       outcome,
+      formQuestionAnswers,
     }
 
-    const html = render(MrfApprovalOutcomeEmail(htmlData))
+    const html = render(MrfWorkflowCompletionEmail(htmlData))
 
     const mail: MailOptions = {
       to: emails,
