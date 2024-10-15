@@ -70,7 +70,6 @@ ExpandableOpen.args = {
 ExpandableOpen.storyName = 'Expandable/Open'
 
 export const Unexpandable: StoryFn<SearchbarProps> = ({
-  isExpandable,
   isExpanded: isInitiallyExpanded,
   ...args
 }) => {
