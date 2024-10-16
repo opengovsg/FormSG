@@ -94,7 +94,7 @@ export type OmitUnusedValidatorProps<F extends FormFieldSchema> = Merge<
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     ConditionalExcept<F, Function>,
     // Remove unused
-    'disabled' | 'description' | keyof Document
+    'description' | keyof Document
   >,
   // Omitting keyof Document removes the _id prop, but it is still needed for
   // some validator functions.

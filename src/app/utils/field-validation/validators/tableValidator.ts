@@ -1,11 +1,16 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { BasicField, TableResponseV3 } from '../../../../../shared/types'
+import {
+  BasicField,
+  DropdownFieldBase,
+  FormFieldWithId,
+  ShortTextFieldBase,
+  TableFieldBase,
+  TableResponseV3,
+} from '../../../../../shared/types'
 import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
 import {
-  IDropdownFieldSchema,
-  IShortTextFieldSchema,
   ITableFieldSchema,
   OmitUnusedValidatorProps,
 } from '../../../../types/field'
@@ -155,7 +160,7 @@ export const constructTableValidator: TableValidatorConstructor = (
   )
 
 interface TableValidatorData {
-  tableField: ITableFieldSchema
+  tableField: TableFieldBase
   formId: string
   isVisible: boolean
   isDisabled: boolean
@@ -262,9 +267,7 @@ const makeTableCellValidatorV3: ResponseValidatorConstructor<
 
     return answerRows.every((row) => {
       return Object.values(row).every((answer, i) => {
-        // NOTE: columns is passing a Mongoose Document.
-        // This is a workaround to convert it to a plain object.
-        const col = columns[i].toObject()
+        const col = columns[i]
         const answerResponse = {
           answer,
           fieldType: col.columnType,
@@ -276,7 +279,8 @@ const makeTableCellValidatorV3: ResponseValidatorConstructor<
             fieldType: col.columnType,
             description: '',
             disabled: isDisabled,
-          } as IDropdownFieldSchema
+            _id: '',
+          } as FormFieldWithId<DropdownFieldBase>
 
           return validateFieldV3({
             formId,
@@ -290,7 +294,8 @@ const makeTableCellValidatorV3: ResponseValidatorConstructor<
             fieldType: col.columnType,
             description: '',
             disabled: isDisabled,
-          } as IShortTextFieldSchema
+            _id: '',
+          } as FormFieldWithId<ShortTextFieldBase>
 
           return validateFieldV3({
             formId,
