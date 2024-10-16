@@ -13,8 +13,7 @@ import { useCalendarStyles } from './CalendarStyleProvider'
 import { DayOfMonth } from './DayOfMonth'
 import { DAY_NAMES, generateClassNameForDate, MONTH_NAMES } from './utils'
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export const CalendarPanel = forwardRef<{}, 'button'>(
+export const CalendarPanel = forwardRef<object, 'button'>(
   (_props, initialFocusRef): JSX.Element => {
     const styles = useCalendarStyles()
     const {

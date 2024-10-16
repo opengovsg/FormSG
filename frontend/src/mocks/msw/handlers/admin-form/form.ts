@@ -669,7 +669,6 @@ export const createFormBuilderMocks = (
           _id: cuid(),
         } as FormFieldDto
         if (req.body.fieldType === BasicField.Table) {
-          // eslint-disable-next-line @typescript-eslint/no-extra-semi
           ;(newField as TableFieldDto).columns = req.body.columns.map(
             (col) => ({
               ...col,
