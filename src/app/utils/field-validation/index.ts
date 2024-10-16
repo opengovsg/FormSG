@@ -14,7 +14,6 @@ import {
 import { ParsedClearFormFieldResponseV3 } from '../../../types/api/submission'
 import {
   FieldValidationSchema,
-  FormFieldSchema,
   ITableFieldSchema,
   OmitUnusedValidatorProps,
 } from '../../../types/field'
@@ -295,7 +294,7 @@ const isResponsePresentOnHiddenFieldV3 = ({
   isVisible,
   formId,
 }: {
-  formField: FormFieldSchema
+  formField: FormFieldDto
   response: ParsedClearFormFieldResponseV3
   isVisible: boolean
   formId: string
@@ -355,7 +354,7 @@ const isValidationRequiredV3 = ({
   isVisible,
   formId,
 }: {
-  formField: FormFieldSchema
+  formField: FormFieldDto
   response: ParsedClearFormFieldResponseV3
   isVisible: boolean
   formId: string
@@ -427,7 +426,7 @@ const validateResponseWithValidatorV3 = <
 >(
   validator: ResponseValidator<T>,
   formId: string,
-  formField: FormFieldSchema,
+  formField: FormFieldDto,
   response: T,
 ): Result<true, ValidateFieldErrorV3> => {
   const validEither = validator(response)
@@ -445,7 +444,7 @@ export const validateFieldV3 = ({
   isVisible,
 }: {
   formId: string
-  formField: FormFieldSchema
+  formField: FormFieldDto
   response: ParsedClearFormFieldResponseV3
   isVisible: boolean
 }): Result<true, ValidateFieldErrorV3> => {

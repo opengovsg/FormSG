@@ -1,7 +1,7 @@
 import { left } from 'fp-ts/lib/Either'
 
-import { BasicField } from '../../../../shared/types'
-import { FieldValidationSchema, FormFieldSchema } from '../../../types'
+import { BasicField, FormFieldDto } from '../../../../shared/types'
+import { FieldValidationSchema } from '../../../types'
 import { ParsedClearFormFieldResponseV3 } from '../../../types/api'
 import { ResponseValidator } from '../../../types/field/utils/validation'
 import {
@@ -176,7 +176,7 @@ export const constructFieldResponseValidatorV3 = ({
   isVisible,
 }: {
   formId: string
-  formField: FormFieldSchema
+  formField: FormFieldDto
   isVisible: boolean
 }): ResponseValidator<ParsedClearFormFieldResponseV3> => {
   switch (formField.fieldType) {

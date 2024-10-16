@@ -4,15 +4,13 @@ import { err, ok, Result } from 'neverthrow'
 import {
   BasicField,
   FieldResponsesV3,
+  FormFieldDto,
   FormWorkflowStepDto,
   MultirespondentSubmissionDto,
   SubmissionType,
   WorkflowType,
 } from '../../../../../shared/types'
-import {
-  FormFieldSchema,
-  MultirespondentSubmissionData,
-} from '../../../../types'
+import { MultirespondentSubmissionData } from '../../../../types'
 import { ParsedClearFormFieldResponsesV3 } from '../../../../types/api'
 import { validateFieldV3 } from '../../../utils/field-validation'
 import { FieldIdSet } from '../../../utils/logic-adaptor'
@@ -86,14 +84,14 @@ export const validateMrfFieldResponses = ({
 }: {
   formId: string
   visibleFieldIds: FieldIdSet
-  formFields: FormFieldSchema[]
+  formFields: FormFieldDto[]
   responses: ParsedClearFormFieldResponsesV3
 }): Result<
   ParsedClearFormFieldResponsesV3,
   ValidateFieldErrorV3 | ProcessingError
 > => {
   const idToFieldMap = formFields.reduce<{
-    [fieldId: string]: FormFieldSchema
+    [fieldId: string]: FormFieldDto
   }>((acc, field) => {
     acc[field._id] = field
     return acc

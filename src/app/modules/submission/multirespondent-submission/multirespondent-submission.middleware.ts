@@ -7,11 +7,11 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import {
   BasicField,
   FormDto,
+  FormFieldDto,
   FormResponseMode,
   SubmissionType,
 } from '../../../../../shared/types'
 import { isDev } from '../../../../app/config/config'
-import { FormFieldSchema } from '../../../../types'
 import {
   ParsedClearAttachmentResponseV3,
   ParsedClearFormFieldResponsesV3,
@@ -372,7 +372,9 @@ export const validateMultirespondentSubmission = async (
               previousSubmission: undefined,
               workflowStep: 0,
               workflow: req.formsg.formDef.workflow,
-              form_fields: req.formsg.formDef.form_fields,
+              form_fields: req.formsg.formDef.form_fields.map(
+                (ff) => ff.toObject() as FormFieldDto,
+              ),
               form_logics: req.formsg.formDef.form_logics,
             }),
       )
@@ -520,7 +522,7 @@ export const validateMultirespondentSubmission = async (
                 validateMrfFieldResponses({
                   formId,
                   visibleFieldIds,
-                  formFields: form_fields as FormFieldSchema[],
+                  formFields: form_fields,
                   responses: req.body.responses,
                 })
 
