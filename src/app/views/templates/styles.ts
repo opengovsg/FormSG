@@ -83,13 +83,13 @@ const textStyles = {
 }
 
 export const mainStyle = {
-  fontFamily:
-    "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
+  fontFamily: 'sans-serif',
   backgroundColor: '#f8f9fd',
 }
 
 export const containerStyle = {
-  maxWidth: '988px',
+  maxWidth: '100%',
+  width: '720px',
   margin: 'auto',
   padding: '20px',
 }
@@ -101,7 +101,7 @@ export const sectionStyle = {
 
 export const headingTextStyle: NonNullable<LinkProps['style']> = {
   ...textStyles['h4'],
-  color: '#1B1F2C',
+  color: '#2C2E34',
   fontWeight: 600,
   lineHeight: '2rem',
   fontSize: '1.5rem',
@@ -109,12 +109,12 @@ export const headingTextStyle: NonNullable<LinkProps['style']> = {
 
 export const outcomeTextStyle: NonNullable<LinkProps['style']> = {
   ...textStyles['h5'],
-  color: '#000000',
+  color: '#2C2E34',
 }
 
 export const titleTextStyle: NonNullable<LinkProps['style']> = {
   ...textStyles['body-1'],
-  color: '#000000',
+  color: '#2C2E34',
   fontWeight: 700,
 }
 

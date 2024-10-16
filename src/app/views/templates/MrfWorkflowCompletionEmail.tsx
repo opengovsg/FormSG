@@ -6,6 +6,7 @@ import {
   Hr,
   Html,
   Img,
+  Preview,
   Section,
   Text,
 } from '@react-email/components'
@@ -45,9 +46,14 @@ export const MrfWorkflowCompletionEmail = ({
   formQuestionAnswers = [], 
   outcome
 }: WorkflowEmailData): JSX.Element => {
+  const previewText = outcome
+    ?  `The outcome for ${formTitle}.` 
+    : `${formTitle} has been completed by all respondents.` 
+
   return (
     <Html>
       <Head /> 
+      <Preview>{previewText}</Preview>
       <Body style={mainStyle}>
           <Container style={containerStyle}>
             <Section style={sectionStyle}>
@@ -62,7 +68,7 @@ export const MrfWorkflowCompletionEmail = ({
               {
                 outcome ? <>
                   <Text style={{...outcomeTextStyle, marginTop: '2.5rem', marginBottom: '0.25rem'}}>Outcome</Text>
-                  <Text style={{...outcomeTextStyle, fontWeight: 400, marginTop: '0.25rem', color: '#474747'}}>{outcome}</Text>
+                  <Text style={{...outcomeTextStyle, fontWeight: 400, marginTop: '0.25rem'}}>{outcome}</Text>
                 </> : null 
               }
               <Hr style={{marginTop: '2.5rem', marginBottom: '2.5rem'}}/>
