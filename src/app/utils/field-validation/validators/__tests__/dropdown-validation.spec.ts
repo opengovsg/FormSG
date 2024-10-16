@@ -1,5 +1,6 @@
 import {
   generateDefaultField,
+  generateDefaultFieldV3,
   generateGenericStringAnswerResponseV3,
   generateNewSingleAnswerResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
@@ -122,7 +123,7 @@ describe('Dropdown validation', () => {
 
 describe('Dropdown validation V3', () => {
   it('should allow valid option', () => {
-    const formField = generateDefaultField(BasicField.Dropdown, {
+    const formField = generateDefaultFieldV3(BasicField.Dropdown, {
       fieldOptions: ['KISS', 'DRY', 'YAGNI'],
     })
     const response = generateGenericStringAnswerResponseV3({
@@ -141,7 +142,7 @@ describe('Dropdown validation V3', () => {
   })
 
   it('should disallow invalid option', () => {
-    const formField = generateDefaultField(BasicField.Dropdown, {
+    const formField = generateDefaultFieldV3(BasicField.Dropdown, {
       fieldOptions: ['KISS', 'DRY', 'YAGNI'],
     })
     const response = generateGenericStringAnswerResponseV3({
@@ -162,7 +163,7 @@ describe('Dropdown validation V3', () => {
   })
 
   it('should disallow empty answer when required', () => {
-    const formField = generateDefaultField(BasicField.Dropdown, {
+    const formField = generateDefaultFieldV3(BasicField.Dropdown, {
       fieldOptions: ['KISS', 'DRY', 'YAGNI'],
       required: true,
     })
@@ -184,7 +185,7 @@ describe('Dropdown validation V3', () => {
   })
 
   it('should allow empty answer when not required', () => {
-    const formField = generateDefaultField(BasicField.Dropdown, {
+    const formField = generateDefaultFieldV3(BasicField.Dropdown, {
       fieldOptions: ['KISS', 'DRY', 'YAGNI'],
       required: false,
     })
@@ -204,7 +205,7 @@ describe('Dropdown validation V3', () => {
   })
 
   it('should allow empty answer when it is required but not visible', () => {
-    const formField = generateDefaultField(BasicField.Dropdown, {
+    const formField = generateDefaultFieldV3(BasicField.Dropdown, {
       fieldOptions: ['KISS', 'DRY', 'YAGNI'],
       required: true,
     })
@@ -224,7 +225,7 @@ describe('Dropdown validation V3', () => {
   })
 
   it('should disallow empty answer when it is required and visible', () => {
-    const formField = generateDefaultField(BasicField.Dropdown, {
+    const formField = generateDefaultFieldV3(BasicField.Dropdown, {
       fieldOptions: ['KISS', 'DRY', 'YAGNI'],
       required: true,
     })
@@ -246,7 +247,7 @@ describe('Dropdown validation V3', () => {
   })
 
   it('should disallow multiple answers', () => {
-    const formField = generateDefaultField(BasicField.Dropdown, {
+    const formField = generateDefaultFieldV3(BasicField.Dropdown, {
       fieldOptions: ['KISS', 'DRY', 'YAGNI'],
     })
     const response = generateGenericStringAnswerResponseV3({
@@ -267,7 +268,7 @@ describe('Dropdown validation V3', () => {
   })
 
   it('should disallow responses submitted for hidden fields', () => {
-    const formField = generateDefaultField(BasicField.Dropdown, {
+    const formField = generateDefaultFieldV3(BasicField.Dropdown, {
       fieldOptions: ['KISS', 'DRY', 'YAGNI'],
       required: true,
     })

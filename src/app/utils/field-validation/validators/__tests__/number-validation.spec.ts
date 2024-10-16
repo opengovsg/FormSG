@@ -1,5 +1,6 @@
 import {
   generateDefaultField,
+  generateDefaultFieldV3,
   generateGenericStringAnswerResponseV3,
   generateNewSingleAnswerResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
@@ -314,7 +315,7 @@ describe('Range field validation', () => {
 
 describe('Base number field validation V3', () => {
   it('should allow number with no custom validation', () => {
-    const formField = generateDefaultField(BasicField.Number)
+    const formField = generateDefaultFieldV3(BasicField.Number)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Number,
       answer: '55',
@@ -330,7 +331,7 @@ describe('Base number field validation V3', () => {
   })
 
   it('should allow number with optional answer', () => {
-    const formField = generateDefaultField(BasicField.Number, {
+    const formField = generateDefaultFieldV3(BasicField.Number, {
       required: false,
     })
 
@@ -350,7 +351,7 @@ describe('Base number field validation V3', () => {
   })
 
   it('should allow empty answer when not required', () => {
-    const formField = generateDefaultField(BasicField.Number, {
+    const formField = generateDefaultFieldV3(BasicField.Number, {
       required: false,
     })
 
@@ -370,7 +371,7 @@ describe('Base number field validation V3', () => {
   })
 
   it('should allow answer to be zero', () => {
-    const formField = generateDefaultField(BasicField.Number)
+    const formField = generateDefaultFieldV3(BasicField.Number)
 
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Number,
@@ -388,7 +389,7 @@ describe('Base number field validation V3', () => {
   })
 
   it('should disallow negative answers', () => {
-    const formField = generateDefaultField(BasicField.Number)
+    const formField = generateDefaultFieldV3(BasicField.Number)
 
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Number,
@@ -408,7 +409,7 @@ describe('Base number field validation V3', () => {
   })
 
   it('should allow leading zeroes in answer', () => {
-    const formField = generateDefaultField(BasicField.Number)
+    const formField = generateDefaultFieldV3(BasicField.Number)
 
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Number,
@@ -426,7 +427,7 @@ describe('Base number field validation V3', () => {
   })
 
   it('should disallow responses submitted for hidden fields', () => {
-    const formField = generateDefaultField(BasicField.Number)
+    const formField = generateDefaultFieldV3(BasicField.Number)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Number,
       answer: '2',
@@ -447,7 +448,7 @@ describe('Base number field validation V3', () => {
 
 describe('Number field validation V3', () => {
   it('should allow number with valid maximum length', () => {
-    const formField = generateDefaultField(BasicField.Number, {
+    const formField = generateDefaultFieldV3(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: NumberSelectedValidation.Length,
         LengthValidationOptions: {
@@ -472,7 +473,7 @@ describe('Number field validation V3', () => {
   })
 
   it('should allow number with valid maximum length (inclusive)', () => {
-    const formField = generateDefaultField(BasicField.Number, {
+    const formField = generateDefaultFieldV3(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: NumberSelectedValidation.Length,
         LengthValidationOptions: {
@@ -496,7 +497,7 @@ describe('Number field validation V3', () => {
   })
 
   it('should disallow number with invalid maximum length', () => {
-    const formField = generateDefaultField(BasicField.Number, {
+    const formField = generateDefaultFieldV3(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: NumberSelectedValidation.Length,
         LengthValidationOptions: {
@@ -522,7 +523,7 @@ describe('Number field validation V3', () => {
   })
 
   it('should allow number with valid minimum length', () => {
-    const formField = generateDefaultField(BasicField.Number, {
+    const formField = generateDefaultFieldV3(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: NumberSelectedValidation.Length,
         LengthValidationOptions: {
@@ -546,7 +547,7 @@ describe('Number field validation V3', () => {
   })
 
   it('should allow number with valid minimum length (inclusive)', () => {
-    const formField = generateDefaultField(BasicField.Number, {
+    const formField = generateDefaultFieldV3(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: NumberSelectedValidation.Length,
         LengthValidationOptions: {
@@ -570,7 +571,7 @@ describe('Number field validation V3', () => {
   })
 
   it('should allow number with valid exact length', () => {
-    const formField = generateDefaultField(BasicField.Number, {
+    const formField = generateDefaultFieldV3(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: NumberSelectedValidation.Length,
         LengthValidationOptions: {
@@ -594,7 +595,7 @@ describe('Number field validation V3', () => {
   })
 
   it('should disallow number with invalid exact length', () => {
-    const formField = generateDefaultField(BasicField.Number, {
+    const formField = generateDefaultFieldV3(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: NumberSelectedValidation.Length,
         LengthValidationOptions: {
@@ -622,7 +623,7 @@ describe('Number field validation V3', () => {
 
 describe('Range field validation V3', () => {
   it('should allow number with that is within range (both min and max)', () => {
-    const formField = generateDefaultField(BasicField.Number, {
+    const formField = generateDefaultFieldV3(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: NumberSelectedValidation.Range,
         RangeValidationOptions: {
@@ -646,7 +647,7 @@ describe('Range field validation V3', () => {
   })
 
   it('should allow number with that is within maximum (inclusive)', () => {
-    const formField = generateDefaultField(BasicField.Number, {
+    const formField = generateDefaultFieldV3(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: NumberSelectedValidation.Range,
         RangeValidationOptions: {
@@ -670,7 +671,7 @@ describe('Range field validation V3', () => {
   })
 
   it('should allow number with that is within minimum (inclusive)', () => {
-    const formField = generateDefaultField(BasicField.Number, {
+    const formField = generateDefaultFieldV3(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: NumberSelectedValidation.Range,
         RangeValidationOptions: {
@@ -694,7 +695,7 @@ describe('Range field validation V3', () => {
   })
 
   it('should disallow number that is below minimum', () => {
-    const formField = generateDefaultField(BasicField.Number, {
+    const formField = generateDefaultFieldV3(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: NumberSelectedValidation.Range,
         RangeValidationOptions: {
@@ -720,7 +721,7 @@ describe('Range field validation V3', () => {
   })
 
   it('should disallow number that is above maximum', () => {
-    const formField = generateDefaultField(BasicField.Number, {
+    const formField = generateDefaultFieldV3(BasicField.Number, {
       ValidationOptions: {
         selectedValidation: NumberSelectedValidation.Range,
         RangeValidationOptions: {

@@ -1,5 +1,5 @@
 import {
-  generateDefaultField,
+  generateDefaultFieldV3,
   generateVerifiableAnswerResponseV3,
 } from '__tests__/unit/backend/helpers/generate-form-data'
 
@@ -257,6 +257,7 @@ describe('Email field validation', () => {
         hasAutoReply: true,
         includeFormSummary: true,
       },
+      disabled: false,
     } as OmitUnusedValidatorProps<IEmailFieldSchema>
 
     const response = {
@@ -405,6 +406,7 @@ describe('Email field validation', () => {
         hasAutoReply: true,
         includeFormSummary: true,
       },
+      disabled: false,
     } as OmitUnusedValidatorProps<IEmailFieldSchema>
     const response = {
       _id: 'abc123',
@@ -578,7 +580,7 @@ describe('Email field validation V3', () => {
   })
 
   it('should allow valid emails', () => {
-    const formField = generateDefaultField(BasicField.Email)
+    const formField = generateDefaultFieldV3(BasicField.Email)
     const response = generateVerifiableAnswerResponseV3({
       fieldType: BasicField.Email,
       answer: {
@@ -596,7 +598,7 @@ describe('Email field validation V3', () => {
   })
 
   it('should allow emails with 163.com domain', () => {
-    const formField = generateDefaultField(BasicField.Email)
+    const formField = generateDefaultFieldV3(BasicField.Email)
     const response = generateVerifiableAnswerResponseV3({
       fieldType: BasicField.Email,
       answer: {
@@ -614,7 +616,7 @@ describe('Email field validation V3', () => {
   })
 
   it('should allow emails with 126.com domain', () => {
-    const formField = generateDefaultField(BasicField.Email)
+    const formField = generateDefaultFieldV3(BasicField.Email)
     const response = generateVerifiableAnswerResponseV3({
       fieldType: BasicField.Email,
       answer: {
@@ -632,7 +634,7 @@ describe('Email field validation V3', () => {
   })
 
   it('should disallow invalid emails', () => {
-    const formField = generateDefaultField(BasicField.Email)
+    const formField = generateDefaultFieldV3(BasicField.Email)
     const response = generateVerifiableAnswerResponseV3({
       fieldType: BasicField.Email,
       answer: {
@@ -652,7 +654,7 @@ describe('Email field validation V3', () => {
   })
 
   it('should allow empty answer for required logic field that is not required', () => {
-    const formField = generateDefaultField(BasicField.Email, {
+    const formField = generateDefaultFieldV3(BasicField.Email, {
       required: false,
     })
     const response = generateVerifiableAnswerResponseV3({
@@ -672,7 +674,7 @@ describe('Email field validation V3', () => {
   })
 
   it('should allow non empty valid answer for required logic field that is not required', () => {
-    const formField = generateDefaultField(BasicField.Email, {
+    const formField = generateDefaultFieldV3(BasicField.Email, {
       required: false,
     })
     const response = generateVerifiableAnswerResponseV3({
@@ -692,7 +694,7 @@ describe('Email field validation V3', () => {
   })
 
   it('should allow empty answer for required logic field that is not visible', () => {
-    const formField = generateDefaultField(BasicField.Email)
+    const formField = generateDefaultFieldV3(BasicField.Email)
     const response = generateVerifiableAnswerResponseV3({
       fieldType: BasicField.Email,
       answer: {
@@ -710,7 +712,7 @@ describe('Email field validation V3', () => {
   })
 
   it('should allow email addresses whose email domain belongs to allowedEmailDomains when isVerifiable is true, hasAllowedEmailDomains is true and allowedEmailDomains is not empty', () => {
-    const formField = generateDefaultField(BasicField.Email, {
+    const formField = generateDefaultFieldV3(BasicField.Email, {
       isVerifiable: true,
       hasAllowedEmailDomains: true,
       allowedEmailDomains: ['@test.gov.sg'],
@@ -733,7 +735,7 @@ describe('Email field validation V3', () => {
   })
 
   it('should allow email addresses supplied with a mixed-case domain', () => {
-    const formField = generateDefaultField(BasicField.Email, {
+    const formField = generateDefaultFieldV3(BasicField.Email, {
       isVerifiable: true,
       hasAllowedEmailDomains: true,
       allowedEmailDomains: ['@test.gov.sg'], // note: domains are always read lowercased from store
@@ -756,7 +758,7 @@ describe('Email field validation V3', () => {
   })
 
   it('should not allow email addresses whose email domain does not belong to allowedEmailDomains when isVerifiable is true, hasAllowedEmailDomains is true and allowedEmailDomains is not empty', () => {
-    const formField = generateDefaultField(BasicField.Email, {
+    const formField = generateDefaultFieldV3(BasicField.Email, {
       isVerifiable: true,
       hasAllowedEmailDomains: true,
       allowedEmailDomains: ['@example.com'],
@@ -781,7 +783,7 @@ describe('Email field validation V3', () => {
   })
 
   it('should allow any valid email address when isVerifiable is true, hasAllowedEmailDomains is true but allowedEmailDomains is empty', () => {
-    const formField = generateDefaultField(BasicField.Email, {
+    const formField = generateDefaultFieldV3(BasicField.Email, {
       isVerifiable: true,
       hasAllowedEmailDomains: true,
       allowedEmailDomains: [],
@@ -811,7 +813,7 @@ describe('Email field validation V3', () => {
   })
 
   it('should allow any valid email address not in allowedEmailDomains when isVerifiable is true and hasAllowedEmailDomains is false, regardless of the cardinality of allowedEmailDomains', () => {
-    const formField = generateDefaultField(BasicField.Email, {
+    const formField = generateDefaultFieldV3(BasicField.Email, {
       isVerifiable: true,
       hasAllowedEmailDomains: false,
       allowedEmailDomains: ['@example.com'],
@@ -834,7 +836,7 @@ describe('Email field validation V3', () => {
   })
 
   it('should allow any email address with a domain in allowedEmailDomains when isVerifiable is true and hasAllowedEmailDomains is false, and allowedEmailDomains is not empty', () => {
-    const formField = generateDefaultField(BasicField.Email, {
+    const formField = generateDefaultFieldV3(BasicField.Email, {
       isVerifiable: true,
       hasAllowedEmailDomains: false,
       allowedEmailDomains: ['@example.com', '@test.gov.sg'],
@@ -857,7 +859,7 @@ describe('Email field validation V3', () => {
   })
 
   it('should not allow email address which are not in allowedEmailDomains when isVerifiable is false and hasAllowedEmailDomains is true, if allowedEmailDomains is not empty', () => {
-    const formField = generateDefaultField(BasicField.Email, {
+    const formField = generateDefaultFieldV3(BasicField.Email, {
       isVerifiable: false,
       hasAllowedEmailDomains: true,
       allowedEmailDomains: ['@example.com'],
@@ -881,7 +883,7 @@ describe('Email field validation V3', () => {
   })
 
   it('should allow email address which are in allowedEmailDomains when isVerifiable is false and hasAllowedEmailDomains is true, if allowedEmailDomains is not empty', () => {
-    const formField = generateDefaultField(BasicField.Email, {
+    const formField = generateDefaultFieldV3(BasicField.Email, {
       isVerifiable: false,
       hasAllowedEmailDomains: true,
       allowedEmailDomains: ['@example.com', '@test.gov.sg'],
@@ -903,7 +905,7 @@ describe('Email field validation V3', () => {
   })
 
   it('should allow any valid email address when isVerifiable is false and hasAllowedEmailDomains is true if allowedEmailDomains is empty', () => {
-    const formField = generateDefaultField(BasicField.Email, {
+    const formField = generateDefaultFieldV3(BasicField.Email, {
       isVerifiable: false,
       hasAllowedEmailDomains: true,
       allowedEmailDomains: [],
@@ -932,7 +934,7 @@ describe('Email field validation V3', () => {
   })
 
   it('should allow any valid email address not in allowedEmailDomains when isVerifiable is false and hasAllowedEmailDomains is false and allowedEmailDomains is not empty', () => {
-    const formField = generateDefaultField(BasicField.Email, {
+    const formField = generateDefaultFieldV3(BasicField.Email, {
       isVerifiable: false,
       hasAllowedEmailDomains: false,
       allowedEmailDomains: ['@example.com'],
@@ -954,7 +956,7 @@ describe('Email field validation V3', () => {
   })
 
   it('should allow any valid email address in allowedEmailDomains when isVerifiable is false and hasAllowedEmailDomains is false and allowedEmailDomains is not empty', () => {
-    const formField = generateDefaultField(BasicField.Email, {
+    const formField = generateDefaultFieldV3(BasicField.Email, {
       isVerifiable: false,
       hasAllowedEmailDomains: false,
       allowedEmailDomains: ['@example.com', '@test.gov.sg'],
@@ -976,7 +978,7 @@ describe('Email field validation V3', () => {
   })
 
   it('should disallow responses submitted for hidden fields', () => {
-    const formField = generateDefaultField(BasicField.Email, {
+    const formField = generateDefaultFieldV3(BasicField.Email, {
       isVerifiable: false,
       hasAllowedEmailDomains: true,
       allowedEmailDomains: ['@example.com'],
@@ -1000,7 +1002,7 @@ describe('Email field validation V3', () => {
   })
 
   it('should reject email addresses if isVerifiable is true but there is no signature present', () => {
-    const formField = generateDefaultField(BasicField.Email, {
+    const formField = generateDefaultFieldV3(BasicField.Email, {
       isVerifiable: true,
     })
     const response = generateVerifiableAnswerResponseV3({
@@ -1029,7 +1031,7 @@ describe('Email field validation V3', () => {
       )
       .mockImplementation(() => false)
 
-    const formField = generateDefaultField(BasicField.Email, {
+    const formField = generateDefaultFieldV3(BasicField.Email, {
       isVerifiable: true,
     })
     const response = generateVerifiableAnswerResponseV3({
