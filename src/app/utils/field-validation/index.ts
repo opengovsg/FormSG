@@ -14,7 +14,6 @@ import {
 import { ParsedClearFormFieldResponseV3 } from '../../../types/api/submission'
 import {
   FieldValidationSchema,
-  FormFieldSchema,
   ITableFieldSchema,
   OmitUnusedValidatorProps,
 } from '../../../types/field'
