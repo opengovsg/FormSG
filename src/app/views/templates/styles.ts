@@ -95,7 +95,7 @@ export const containerStyle = {
 }
 
 export const sectionStyle = {
-  padding: '2rem',
+  padding: '32px',
   backgroundColor: '#ffffff',
 }
 
