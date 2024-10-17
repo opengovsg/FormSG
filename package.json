@@ -65,7 +65,7 @@
     "@opengovsg/myinfo-gov-client": "^4.1.2",
     "@opengovsg/sgid-client": "^2.2.0",
     "@react-email/components": "^0.0.15",
-    "@react-email/render": "^0.0.12",
+    "@react-email/render": "^1.0.1",
     "@stablelib/base64": "^1.0.1",
     "aws-info": "^1.2.0",
     "aws-sdk": "^2.1691.0",
