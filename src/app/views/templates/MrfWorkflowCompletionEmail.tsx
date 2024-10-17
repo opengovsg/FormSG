@@ -22,7 +22,7 @@ import {
   primaryTextStyle,
   questionMargin,
   answerMargin,
-} from './styles'
+} from './mrfWorkflowCompletionEmailStyle'
 
 export enum WorkflowOutcome {
   APPROVED = 'Approved', 
