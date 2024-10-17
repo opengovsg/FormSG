@@ -9,11 +9,7 @@ import { mongo as mongodb } from 'mongoose'
 import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
 import { validateField, validateFieldV3 } from 'src/app/utils/field-validation/'
 
-import {
-  AttachmentSize,
-  BasicField,
-  FormFieldDto,
-} from '../../../../../../shared/types'
+import { AttachmentSize, BasicField } from '../../../../../../shared/types'
 
 const { ObjectId } = mongodb
 
