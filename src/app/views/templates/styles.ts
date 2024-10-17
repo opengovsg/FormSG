@@ -57,7 +57,7 @@ export const linkStyle: NonNullable<LinkProps['style']> = {
   color: '#445fcd',
 }
 
-const textStyles = {
+export const textStyles = {
   'body-1': {
     fontStyle: 'normal',
     fontWeight: 400,
@@ -82,6 +82,8 @@ const textStyles = {
   },
 }
 
+const colorBaseContentStrong = '#2C2E34'
+
 export const mainStyle = {
   fontFamily: 'sans-serif',
   backgroundColor: '#f8f9fd',
@@ -101,7 +103,7 @@ export const sectionStyle = {
 
 export const headingTextStyle: NonNullable<LinkProps['style']> = {
   ...textStyles['h4'],
-  color: '#2C2E34',
+  color: colorBaseContentStrong,
   fontWeight: 600,
   lineHeight: '32px',
   fontSize: '24px',
@@ -109,16 +111,24 @@ export const headingTextStyle: NonNullable<LinkProps['style']> = {
 
 export const outcomeTextStyle: NonNullable<LinkProps['style']> = {
   ...textStyles['h5'],
-  color: '#2C2E34',
+  color: colorBaseContentStrong,
 }
 
-export const titleTextStyle: NonNullable<LinkProps['style']> = {
+export const primaryTextStyle: NonNullable<LinkProps['style']> = {
   ...textStyles['body-1'],
-  color: '#2C2E34',
+  color: colorBaseContentStrong,
   fontWeight: 700,
 }
 
-export const bodyTextStyle: NonNullable<LinkProps['style']> = {
+export const secondaryTextStyle: NonNullable<LinkProps['style']> = {
   ...textStyles['body-1'],
   color: '#474747',
+}
+
+export const questionMargin: NonNullable<LinkProps['style']> = {
+  marginBottom: '4px',
+}
+
+export const answerMargin: NonNullable<LinkProps['style']> = {
+  marginTop: '4px',
 }

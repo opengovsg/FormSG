@@ -13,13 +13,15 @@ import {
 import { FORMSG_LOGO_URL } from '../../constants/formsg-logo'
 
 import {
-  bodyTextStyle,
+  secondaryTextStyle,
   containerStyle,
   headingTextStyle,
   mainStyle,
   outcomeTextStyle,
   sectionStyle,
-  titleTextStyle,
+  primaryTextStyle,
+  questionMargin,
+  answerMargin,
 } from './styles'
 
 export enum WorkflowOutcome {
@@ -40,51 +42,46 @@ export type WorkflowEmailData = {
 }
 
 export const MrfWorkflowCompletionEmail = ({
-  // Defaults are provided only for testing purposes in react-email-preview.
   formTitle = 'Test form title',
   responseId = '64303c45828035f732088a41', 
   formQuestionAnswers = [], 
   outcome
 }: WorkflowEmailData): JSX.Element => {
-  const previewText = outcome
-    ?  `The outcome for ${formTitle}.` 
-    : `${formTitle} has been completed by all respondents.` 
+  const headingText =  
+    outcome ? `The outcome for ${formTitle}` : `${formTitle} has been completed by all respondents.`
+
+  const renderQuestionAnswer = (qa: QuestionAnswer) => (
+    <>
+      <Text style={{...primaryTextStyle, ...questionMargin}}>{qa.question}</Text>
+      <Text style={{...secondaryTextStyle, ...answerMargin}}>{qa.answer}</Text>
+    </>
+  )
 
   return (
     <Html>
       <Head /> 
-      <Preview>{previewText}</Preview>
+      <Preview>{headingText}</Preview>
       <Body style={mainStyle}>
           <Container style={containerStyle}>
             <Section style={sectionStyle}>
-              <Img style={{height: '1.5rem', marginBottom: '2.5rem'}} src={FORMSG_LOGO_URL} alt="FormSG" />
-              <Heading style={headingTextStyle}>
-                {
-                  outcome 
-                    ? `The outcome for ${formTitle}` 
-                    : `${formTitle} has been completed by all respondents.` 
-                }
+              <Img style={{height: '24px', marginBottom: '40px'}} src={FORMSG_LOGO_URL} alt="FormSG" />
+              <Heading style={{...headingTextStyle, marginBottom: '40px'}}>
+                {headingText}
               </Heading>
-              {
-                outcome ? <>
-                  <Text style={{...outcomeTextStyle, marginTop: '2.5rem', marginBottom: '0.25rem'}}>Outcome</Text>
-                  <Text style={{...outcomeTextStyle, fontWeight: 400, marginTop: '0.25rem'}}>{outcome}</Text>
-                </> : null 
-              }
-              <Hr style={{marginTop: '2.5rem', marginBottom: '2.5rem'}}/>
-              <Heading style={{...headingTextStyle, marginBottom: '2.5rem'}}>
+              {outcome && (
+                <>
+                  <Text style={{...outcomeTextStyle, ...questionMargin}}>Outcome</Text>
+                  <Text style={{...outcomeTextStyle, fontWeight: 400, ...answerMargin}}>{outcome}</Text>
+                </>
+              )}
+              <Hr style={{margin: '40px 0'}}/>
+              <Heading style={{...headingTextStyle, marginBottom: '40px'}}>
                 Responses for {formTitle} 
               </Heading>
-              <Text style={{...titleTextStyle, marginBottom: '0.25rem'}}>Response ID</Text>
-              <Text style={{...bodyTextStyle, marginTop: '0.25rem'}}>{responseId}</Text>
-              { 
-                formQuestionAnswers.map((qa) => {
-                return <>
-                  <Text style={{...titleTextStyle, marginBottom: '0.25rem'}}>{qa.question}</Text>
-                  <Text style={{...bodyTextStyle, marginTop: '0.25rem'}}>{qa.answer}</Text>
-                </>})
-              }
-              <Text style={{...bodyTextStyle, paddingTop: '2.5rem'}}> 
+              <Text style={{...primaryTextStyle, ...questionMargin}}>Response ID</Text>
+              <Text style={{...secondaryTextStyle, ...answerMargin}}>{responseId}</Text>
+              {formQuestionAnswers.map(renderQuestionAnswer)}
+              <Text style={{...secondaryTextStyle, marginTop: '24px'}}> 
                 For more details, please contact the respondent(s) or form administrator. 
               </Text>
             </Section> 
