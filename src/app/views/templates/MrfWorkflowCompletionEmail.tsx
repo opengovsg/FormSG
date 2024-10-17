@@ -48,7 +48,7 @@ export const MrfWorkflowCompletionEmail = ({
   outcome
 }: WorkflowEmailData): JSX.Element => {
   const headingText =  
-    outcome ? `The outcome for ${formTitle}` : `${formTitle} has been completed by all respondents.`
+    outcome ? `The outcome for ${formTitle}.` : `${formTitle} has been completed by all respondents.`
 
   const renderQuestionAnswer = (qa: QuestionAnswer) => (
     <>
