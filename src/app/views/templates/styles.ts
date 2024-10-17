@@ -61,23 +61,23 @@ const textStyles = {
   'body-1': {
     fontStyle: 'normal',
     fontWeight: 400,
-    fontSize: '1rem',
-    lineHeight: '1.5rem',
-    letterSpacing: '-0.011em',
+    fontSize: '16px',
+    lineHeight: '24px',
+    letterSpacing: '-0.176px',
     fontFeatureSettings: "'tnum' on, 'lnum' on, 'cv05' on",
   },
   h4: {
     fontWeight: 500,
-    fontSize: '1.125rem',
-    lineHeight: '1.5rem',
-    letterSpacing: '-0.014em',
+    fontSize: '18px',
+    lineHeight: '24px',
+    letterSpacing: '-0.252px',
     fontFeatureSettings: "'tnum' on, 'lnum' on, 'cv05' on",
   },
   h5: {
     fontWeight: 600,
-    fontSize: '1.25rem',
-    lineHeight: '1.75rem',
-    letterSpacing: '-0.014em',
+    fontSize: '20px',
+    lineHeight: '28px',
+    letterSpacing: '-0.28px',
     fontFeatureSettings: "'tnum' on, 'lnum' on, 'cv05' on",
   },
 }
@@ -103,8 +103,8 @@ export const headingTextStyle: NonNullable<LinkProps['style']> = {
   ...textStyles['h4'],
   color: '#2C2E34',
   fontWeight: 600,
-  lineHeight: '2rem',
-  fontSize: '1.5rem',
+  lineHeight: '32px',
+  fontSize: '24px',
 }
 
 export const outcomeTextStyle: NonNullable<LinkProps['style']> = {
