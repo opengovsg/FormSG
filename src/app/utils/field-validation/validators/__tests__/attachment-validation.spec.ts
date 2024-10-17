@@ -226,7 +226,7 @@ describe('Attachment validation V3', () => {
     it('should disallow submission with no attachment if it is required', () => {
       const formField = generateDefaultFieldV3(BasicField.Attachment, {
         attachmentSize: AttachmentSize.OneMb,
-      }) as FormFieldDto
+      })
       const response = generateAttachmentResponseV3({
         content: undefined as unknown as Buffer,
         answer: 'Attachment answer',
