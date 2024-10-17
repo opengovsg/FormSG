@@ -1,5 +1,6 @@
 import {
   generateDefaultField,
+  generateDefaultFieldV3,
   generateNewSingleAnswerResponse,
   generateVerifiableAnswerResponseV3,
 } from '__tests__/unit/backend/helpers/generate-form-data'
@@ -206,7 +207,7 @@ describe('Mobile number validation tests V3', () => {
   })
 
   it('should allow empty answer for required logic field that is not visible', () => {
-    const formField = generateDefaultField(BasicField.Mobile)
+    const formField = generateDefaultFieldV3(BasicField.Mobile)
     const response = generateVerifiableAnswerResponseV3({
       fieldType: BasicField.Mobile,
       answer: {
@@ -225,7 +226,7 @@ describe('Mobile number validation tests V3', () => {
   })
 
   it('should allow empty answer for not required field', () => {
-    const formField = generateDefaultField(BasicField.Mobile, {
+    const formField = generateDefaultFieldV3(BasicField.Mobile, {
       required: false,
     })
     const response = generateVerifiableAnswerResponseV3({
@@ -246,7 +247,7 @@ describe('Mobile number validation tests V3', () => {
   })
 
   it('should not allow empty answer for required field', () => {
-    const formField = generateDefaultField(BasicField.Mobile)
+    const formField = generateDefaultFieldV3(BasicField.Mobile)
     const response = generateVerifiableAnswerResponseV3({
       fieldType: BasicField.Mobile,
       answer: {
@@ -267,7 +268,7 @@ describe('Mobile number validation tests V3', () => {
   })
 
   it('should allow valid mobile numbers for mobile fieldType', () => {
-    const formField = generateDefaultField(BasicField.Mobile)
+    const formField = generateDefaultFieldV3(BasicField.Mobile)
     const response = generateVerifiableAnswerResponseV3({
       fieldType: BasicField.Mobile,
       answer: {
@@ -286,7 +287,7 @@ describe('Mobile number validation tests V3', () => {
   })
 
   it('should disallow mobile numbers without "+" prefix', () => {
-    const formField = generateDefaultField(BasicField.Mobile)
+    const formField = generateDefaultFieldV3(BasicField.Mobile)
     const response = generateVerifiableAnswerResponseV3({
       fieldType: BasicField.Mobile,
       answer: {
@@ -307,7 +308,7 @@ describe('Mobile number validation tests V3', () => {
   })
 
   it('should disallow home numbers on mobile fieldType', () => {
-    const formField = generateDefaultField(BasicField.Mobile)
+    const formField = generateDefaultFieldV3(BasicField.Mobile)
     const response = generateVerifiableAnswerResponseV3({
       fieldType: BasicField.Mobile,
       answer: {
@@ -328,7 +329,7 @@ describe('Mobile number validation tests V3', () => {
   })
 
   it('should disallow international numbers when field does not allow for it', () => {
-    const formField = generateDefaultField(BasicField.Mobile, {
+    const formField = generateDefaultFieldV3(BasicField.Mobile, {
       allowIntlNumbers: false,
     })
     const response = generateVerifiableAnswerResponseV3({
@@ -351,7 +352,7 @@ describe('Mobile number validation tests V3', () => {
   })
 
   it('should allow international numbers when field allows for it', () => {
-    const formField = generateDefaultField(BasicField.Mobile, {
+    const formField = generateDefaultFieldV3(BasicField.Mobile, {
       allowIntlNumbers: true,
     })
     const response = generateVerifiableAnswerResponseV3({
@@ -372,7 +373,7 @@ describe('Mobile number validation tests V3', () => {
   })
 
   it('should disallow responses submitted for hidden fields', () => {
-    const formField = generateDefaultField(BasicField.Mobile, {
+    const formField = generateDefaultFieldV3(BasicField.Mobile, {
       allowIntlNumbers: true,
     })
     const response = generateVerifiableAnswerResponseV3({
@@ -396,7 +397,7 @@ describe('Mobile number validation tests V3', () => {
 
   describe('signature validation', () => {
     it('should allow mobile numbers if isVerifiable is true and signature is present and valid', () => {
-      const formField = generateDefaultField(BasicField.Mobile, {
+      const formField = generateDefaultFieldV3(BasicField.Mobile, {
         isVerifiable: true,
       })
       const response = generateVerifiableAnswerResponseV3({
@@ -418,7 +419,7 @@ describe('Mobile number validation tests V3', () => {
     })
 
     it('should reject mobile numbers if isVerifiable is true but there is no signature present', () => {
-      const formField = generateDefaultField(BasicField.Mobile, {
+      const formField = generateDefaultFieldV3(BasicField.Mobile, {
         isVerifiable: true,
       })
       const response = generateVerifiableAnswerResponseV3({
@@ -449,7 +450,7 @@ describe('Mobile number validation tests V3', () => {
         )
         .mockImplementation(() => false)
 
-      const formField = generateDefaultField(BasicField.Mobile, {
+      const formField = generateDefaultFieldV3(BasicField.Mobile, {
         isVerifiable: true,
       })
       const response = generateVerifiableAnswerResponseV3({

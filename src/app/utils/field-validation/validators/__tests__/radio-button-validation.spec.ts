@@ -1,5 +1,6 @@
 import {
   generateDefaultField,
+  generateDefaultFieldV3,
   generateNewSingleAnswerResponse,
   generateRadioResponseV3,
 } from '__tests__/unit/backend/helpers/generate-form-data'
@@ -163,7 +164,7 @@ describe('Radio button validation', () => {
 
 describe('Radio button validation V3', () => {
   it('should allow valid field option', () => {
-    const formField = generateDefaultField(BasicField.Radio, {
+    const formField = generateDefaultFieldV3(BasicField.Radio, {
       fieldOptions: ['a', 'b', 'c'],
     })
     const response = generateRadioResponseV3({
@@ -181,7 +182,7 @@ describe('Radio button validation V3', () => {
   })
 
   it('should disallow invalid field option', () => {
-    const formField = generateDefaultField(BasicField.Radio, {
+    const formField = generateDefaultFieldV3(BasicField.Radio, {
       fieldOptions: ['a', 'b', 'c'],
     })
     const response = generateRadioResponseV3({
@@ -201,7 +202,7 @@ describe('Radio button validation V3', () => {
   })
 
   it('should disallow empty answer when required and is visible', () => {
-    const formField = generateDefaultField(BasicField.Radio, {
+    const formField = generateDefaultFieldV3(BasicField.Radio, {
       fieldOptions: ['a', 'b', 'c'],
     })
     const response = generateRadioResponseV3({
@@ -221,7 +222,7 @@ describe('Radio button validation V3', () => {
   })
 
   it('should allow empty answer when not required', () => {
-    const formField = generateDefaultField(BasicField.Radio, {
+    const formField = generateDefaultFieldV3(BasicField.Radio, {
       fieldOptions: ['a', 'b', 'c'],
       required: false,
     })
@@ -240,7 +241,7 @@ describe('Radio button validation V3', () => {
   })
 
   it('should allow empty answer when required and not visible', () => {
-    const formField = generateDefaultField(BasicField.Radio, {
+    const formField = generateDefaultFieldV3(BasicField.Radio, {
       fieldOptions: ['a', 'b', 'c'],
     })
     const response = generateRadioResponseV3({
@@ -258,7 +259,7 @@ describe('Radio button validation V3', () => {
   })
 
   it('should disallow empty answer when required and visible', () => {
-    const formField = generateDefaultField(BasicField.Radio, {
+    const formField = generateDefaultFieldV3(BasicField.Radio, {
       fieldOptions: ['a', 'b', 'c'],
     })
     const response = generateRadioResponseV3({
@@ -278,7 +279,7 @@ describe('Radio button validation V3', () => {
   })
 
   it('should disallow empty othersInput answer when others is selected if required', () => {
-    const formField = generateDefaultField(BasicField.Radio, {
+    const formField = generateDefaultFieldV3(BasicField.Radio, {
       fieldOptions: ['a', 'b', 'c'],
       required: true,
       othersRadioButton: true,
@@ -300,7 +301,7 @@ describe('Radio button validation V3', () => {
   })
 
   it(`should allow othersInput when others option is selected`, () => {
-    const formField = generateDefaultField(BasicField.Radio, {
+    const formField = generateDefaultFieldV3(BasicField.Radio, {
       fieldOptions: ['a', 'b', 'c'],
       othersRadioButton: true,
     })
@@ -319,7 +320,7 @@ describe('Radio button validation V3', () => {
   })
 
   it(`should disallow othersInput when others option is not selected`, () => {
-    const formField = generateDefaultField(BasicField.Radio, {
+    const formField = generateDefaultFieldV3(BasicField.Radio, {
       fieldOptions: ['a', 'b', 'c'],
       othersRadioButton: false,
     })
@@ -340,7 +341,7 @@ describe('Radio button validation V3', () => {
   })
 
   it('should disallow responses submitted for hidden fields', () => {
-    const formField = generateDefaultField(BasicField.Radio, {
+    const formField = generateDefaultFieldV3(BasicField.Radio, {
       fieldOptions: ['a', 'b', 'c'],
     })
     const response = generateRadioResponseV3({
@@ -358,7 +359,7 @@ describe('Radio button validation V3', () => {
       new ValidateFieldError('Attempted to submit response on a hidden field'),
     )
 
-    const formFieldOthers = generateDefaultField(BasicField.Radio, {
+    const formFieldOthers = generateDefaultFieldV3(BasicField.Radio, {
       fieldOptions: ['a', 'b', 'c'],
       othersRadioButton: true,
     })

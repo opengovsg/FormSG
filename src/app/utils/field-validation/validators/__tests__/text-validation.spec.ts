@@ -1,5 +1,6 @@
 import {
   generateDefaultField,
+  generateDefaultFieldV3,
   generateGenericStringAnswerResponseV3,
   generateNewSingleAnswerResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
@@ -309,7 +310,7 @@ describe('Text validation', () => {
 describe('Text validation V3', () => {
   describe('Short text', () => {
     it('should allow valid short text answer when not required', () => {
-      const formField = generateDefaultField(BasicField.ShortText, {
+      const formField = generateDefaultFieldV3(BasicField.ShortText, {
         required: false,
       })
       const response = generateGenericStringAnswerResponseV3({
@@ -327,7 +328,7 @@ describe('Text validation V3', () => {
     })
 
     it('should disallow empty submissions if field is required', () => {
-      const formField = generateDefaultField(BasicField.ShortText, {
+      const formField = generateDefaultFieldV3(BasicField.ShortText, {
         required: true,
       })
       const response = generateGenericStringAnswerResponseV3({
@@ -348,7 +349,7 @@ describe('Text validation V3', () => {
     })
 
     it('should allow empty submissions if field is not required', () => {
-      const formField = generateDefaultField(BasicField.ShortText, {
+      const formField = generateDefaultFieldV3(BasicField.ShortText, {
         required: false,
       })
       const response = generateGenericStringAnswerResponseV3({
@@ -366,7 +367,7 @@ describe('Text validation V3', () => {
     })
 
     it('should allow any number of characters in submission if selectedValidation is not set', () => {
-      const formField = generateDefaultField(BasicField.ShortText)
+      const formField = generateDefaultFieldV3(BasicField.ShortText)
       const response = generateGenericStringAnswerResponseV3({
         fieldType: BasicField.ShortText,
         answer: 'dim sum',
@@ -382,7 +383,7 @@ describe('Text validation V3', () => {
     })
 
     it('should disallow whitespace answer if field is required', () => {
-      const formField = generateDefaultField(BasicField.ShortText)
+      const formField = generateDefaultFieldV3(BasicField.ShortText)
       const response = generateGenericStringAnswerResponseV3({
         fieldType: BasicField.ShortText,
         answer: ' ',
@@ -400,7 +401,7 @@ describe('Text validation V3', () => {
     })
 
     it('should disallow fewer characters than customVal if selectedValidation is Exact', () => {
-      const formField = generateDefaultField(BasicField.ShortText, {
+      const formField = generateDefaultFieldV3(BasicField.ShortText, {
         ValidationOptions: {
           selectedValidation: TextSelectedValidation.Exact,
           customVal: 10,
@@ -423,7 +424,7 @@ describe('Text validation V3', () => {
     })
 
     it('should disallow more characters than customVal if selectedValidation is Exact', () => {
-      const formField = generateDefaultField(BasicField.ShortText, {
+      const formField = generateDefaultFieldV3(BasicField.ShortText, {
         ValidationOptions: {
           selectedValidation: TextSelectedValidation.Exact,
           customVal: 10,
@@ -447,7 +448,7 @@ describe('Text validation V3', () => {
     })
 
     it('should disallow fewer characters than customVal if selectedValidation is Minimum', () => {
-      const formField = generateDefaultField(BasicField.ShortText, {
+      const formField = generateDefaultFieldV3(BasicField.ShortText, {
         ValidationOptions: {
           selectedValidation: TextSelectedValidation.Minimum,
           customVal: 10,
@@ -470,7 +471,7 @@ describe('Text validation V3', () => {
     })
 
     it('should allow more characters than customVal if selectedValidation is Minimum', () => {
-      const formField = generateDefaultField(BasicField.ShortText, {
+      const formField = generateDefaultFieldV3(BasicField.ShortText, {
         ValidationOptions: {
           selectedValidation: TextSelectedValidation.Minimum,
           customVal: 10,
@@ -491,7 +492,7 @@ describe('Text validation V3', () => {
     })
 
     it('should disallow more characters than customVal if selectedValidation is Maximum', () => {
-      const formField = generateDefaultField(BasicField.ShortText, {
+      const formField = generateDefaultFieldV3(BasicField.ShortText, {
         ValidationOptions: {
           selectedValidation: TextSelectedValidation.Maximum,
           customVal: 10,
@@ -514,7 +515,7 @@ describe('Text validation V3', () => {
     })
 
     it('should allow less characters than customVal if selectedValidation is Maximum', () => {
-      const formField = generateDefaultField(BasicField.ShortText, {
+      const formField = generateDefaultFieldV3(BasicField.ShortText, {
         ValidationOptions: {
           selectedValidation: TextSelectedValidation.Maximum,
           customVal: 10,
@@ -535,7 +536,7 @@ describe('Text validation V3', () => {
     })
 
     it('should disallow responses submitted for hidden fields', () => {
-      const formField = generateDefaultField(BasicField.ShortText, {
+      const formField = generateDefaultFieldV3(BasicField.ShortText, {
         ValidationOptions: {
           selectedValidation: null,
           customVal: null,
@@ -562,7 +563,7 @@ describe('Text validation V3', () => {
 
   describe('Long text', () => {
     it('should allow valid long text answer when not required', () => {
-      const formField = generateDefaultField(BasicField.LongText, {
+      const formField = generateDefaultFieldV3(BasicField.LongText, {
         required: false,
         ValidationOptions: {
           selectedValidation: null,
@@ -584,7 +585,7 @@ describe('Text validation V3', () => {
     })
 
     it('should disallow empty submissions if field is required', () => {
-      const formField = generateDefaultField(BasicField.LongText, {
+      const formField = generateDefaultFieldV3(BasicField.LongText, {
         required: true,
         ValidationOptions: {
           selectedValidation: null,
@@ -609,7 +610,7 @@ describe('Text validation V3', () => {
     })
 
     it('should allow empty submissions if field is not required', () => {
-      const formField = generateDefaultField(BasicField.LongText, {
+      const formField = generateDefaultFieldV3(BasicField.LongText, {
         required: false,
         ValidationOptions: {
           selectedValidation: null,
@@ -631,7 +632,7 @@ describe('Text validation V3', () => {
     })
 
     it('should allow any number of characters in submission if selectedValidation is not set', () => {
-      const formField = generateDefaultField(BasicField.LongText, {
+      const formField = generateDefaultFieldV3(BasicField.LongText, {
         ValidationOptions: {
           selectedValidation: null,
           customVal: null,
@@ -652,7 +653,7 @@ describe('Text validation V3', () => {
     })
 
     it('should disallow whitespace answer if field is required', () => {
-      const formField = generateDefaultField(BasicField.LongText, {
+      const formField = generateDefaultFieldV3(BasicField.LongText, {
         ValidationOptions: {
           selectedValidation: null,
           customVal: null,
@@ -675,7 +676,7 @@ describe('Text validation V3', () => {
     })
 
     it('should disallow fewer characters than customVal if selectedValidation is Exact', () => {
-      const formField = generateDefaultField(BasicField.LongText, {
+      const formField = generateDefaultFieldV3(BasicField.LongText, {
         ValidationOptions: {
           selectedValidation: TextSelectedValidation.Exact,
           customVal: 10,
@@ -698,7 +699,7 @@ describe('Text validation V3', () => {
     })
 
     it('should disallow more characters than customVal if selectedValidation is Exact', () => {
-      const formField = generateDefaultField(BasicField.LongText, {
+      const formField = generateDefaultFieldV3(BasicField.LongText, {
         ValidationOptions: {
           selectedValidation: TextSelectedValidation.Exact,
           customVal: 10,
@@ -722,7 +723,7 @@ describe('Text validation V3', () => {
     })
 
     it('should disallow fewer characters than customVal if selectedValidation is Minimum', () => {
-      const formField = generateDefaultField(BasicField.LongText, {
+      const formField = generateDefaultFieldV3(BasicField.LongText, {
         ValidationOptions: {
           selectedValidation: TextSelectedValidation.Minimum,
           customVal: 10,
@@ -745,7 +746,7 @@ describe('Text validation V3', () => {
     })
 
     it('should allow more characters than customVal if selectedValidation is Minimum', () => {
-      const formField = generateDefaultField(BasicField.LongText, {
+      const formField = generateDefaultFieldV3(BasicField.LongText, {
         ValidationOptions: {
           selectedValidation: TextSelectedValidation.Minimum,
           customVal: 10,
@@ -766,7 +767,7 @@ describe('Text validation V3', () => {
     })
 
     it('should disallow more characters than customVal if selectedValidation is Maximum', () => {
-      const formField = generateDefaultField(BasicField.LongText, {
+      const formField = generateDefaultFieldV3(BasicField.LongText, {
         ValidationOptions: {
           selectedValidation: TextSelectedValidation.Maximum,
           customVal: 10,
@@ -789,7 +790,7 @@ describe('Text validation V3', () => {
     })
 
     it('should allow less characters than customVal if selectedValidation is Maximum', () => {
-      const formField = generateDefaultField(BasicField.LongText, {
+      const formField = generateDefaultFieldV3(BasicField.LongText, {
         ValidationOptions: {
           selectedValidation: TextSelectedValidation.Maximum,
           customVal: 10,
@@ -810,7 +811,7 @@ describe('Text validation V3', () => {
     })
 
     it('should disallow responses submitted for hidden fields', () => {
-      const formField = generateDefaultField(BasicField.LongText, {
+      const formField = generateDefaultFieldV3(BasicField.LongText, {
         ValidationOptions: {
           selectedValidation: null,
           customVal: null,

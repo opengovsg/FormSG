@@ -1,5 +1,6 @@
 import {
   generateDefaultField,
+  generateDefaultFieldV3,
   generateGenericStringAnswerResponseV3,
   generateNewSingleAnswerResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
@@ -416,7 +417,7 @@ describe('Date field validation V3', () => {
     jest.clearAllMocks()
   })
   it('should allow valid date <DD/MM/YYYY>', () => {
-    const formField = generateDefaultField(BasicField.Date)
+    const formField = generateDefaultFieldV3(BasicField.Date)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Date,
       answer: '09/01/2019',
@@ -433,7 +434,9 @@ describe('Date field validation V3', () => {
   })
 
   it('should allow empty string when not required', () => {
-    const formField = generateDefaultField(BasicField.Date, { required: false })
+    const formField = generateDefaultFieldV3(BasicField.Date, {
+      required: false,
+    })
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Date,
       answer: '',
@@ -450,7 +453,9 @@ describe('Date field validation V3', () => {
   })
 
   it('should allow valid leap year date', () => {
-    const formField = generateDefaultField(BasicField.Date, { required: false })
+    const formField = generateDefaultFieldV3(BasicField.Date, {
+      required: false,
+    })
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Date,
       answer: '29/02/2016',
@@ -467,7 +472,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should disallow 00 date', () => {
-    const formField = generateDefaultField(BasicField.Date)
+    const formField = generateDefaultFieldV3(BasicField.Date)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Date,
       answer: '00/01/2019',
@@ -486,7 +491,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should disallow date less than 2 char', () => {
-    const formField = generateDefaultField(BasicField.Date)
+    const formField = generateDefaultFieldV3(BasicField.Date)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Date,
       answer: '9/01/2019',
@@ -505,7 +510,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should disallow date more than 2 char', () => {
-    const formField = generateDefaultField(BasicField.Date)
+    const formField = generateDefaultFieldV3(BasicField.Date)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Date,
       answer: '009/01/2019',
@@ -524,7 +529,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should disallow date not in month', () => {
-    const formField = generateDefaultField(BasicField.Date)
+    const formField = generateDefaultFieldV3(BasicField.Date)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Date,
       answer: '39/01/2019',
@@ -543,7 +548,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should disallow invalid month', () => {
-    const formField = generateDefaultField(BasicField.Date)
+    const formField = generateDefaultFieldV3(BasicField.Date)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Date,
       answer: '09/13/2019',
@@ -562,7 +567,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should disallow month less then 2 chars', () => {
-    const formField = generateDefaultField(BasicField.Date)
+    const formField = generateDefaultFieldV3(BasicField.Date)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Date,
       answer: '09/1/2019',
@@ -581,7 +586,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should disallow month more then 2 chars', () => {
-    const formField = generateDefaultField(BasicField.Date)
+    const formField = generateDefaultFieldV3(BasicField.Date)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Date,
       answer: '09/001/2019',
@@ -600,7 +605,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should disallow text year', () => {
-    const formField = generateDefaultField(BasicField.Date)
+    const formField = generateDefaultFieldV3(BasicField.Date)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Date,
       answer: '09/01/beans',
@@ -619,7 +624,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should disallow year less than 4 chars', () => {
-    const formField = generateDefaultField(BasicField.Date)
+    const formField = generateDefaultFieldV3(BasicField.Date)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Date,
       answer: '09/01/19',
@@ -638,7 +643,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should disallow year more than 4 chars', () => {
-    const formField = generateDefaultField(BasicField.Date)
+    const formField = generateDefaultFieldV3(BasicField.Date)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Date,
       answer: '09/01/02019',
@@ -657,7 +662,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should disallow empty string when required', () => {
-    const formField = generateDefaultField(BasicField.Date, {
+    const formField = generateDefaultFieldV3(BasicField.Date, {
       required: true,
     })
     const response = generateGenericStringAnswerResponseV3({
@@ -678,7 +683,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should disallow invalid leap year date', () => {
-    const formField = generateDefaultField(BasicField.Date)
+    const formField = generateDefaultFieldV3(BasicField.Date)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Date,
       answer: '29/02/2019',
@@ -697,7 +702,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should allow past dates for normal date fields', () => {
-    const formField = generateDefaultField(BasicField.Date)
+    const formField = generateDefaultFieldV3(BasicField.Date)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Date,
       answer: '01/01/2017',
@@ -714,7 +719,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should allow past dates if disallow past dates is not set', () => {
-    const formField = generateDefaultField(BasicField.Date)
+    const formField = generateDefaultFieldV3(BasicField.Date)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Date,
       answer: '01/01/2017',
@@ -731,7 +736,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should disallow past dates if disallow past dates is set', () => {
-    const formField = generateDefaultField(BasicField.Date, {
+    const formField = generateDefaultFieldV3(BasicField.Date, {
       dateValidation: {
         selectedDateValidation: DateSelectedValidation.NoPast,
         customMaxDate: null,
@@ -756,7 +761,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should allow future dates if disallow future dates is not set', () => {
-    const formField = generateDefaultField(BasicField.Date)
+    const formField = generateDefaultFieldV3(BasicField.Date)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Date,
       answer: '01/01/2022',
@@ -773,7 +778,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should disallow future dates if disallow future dates is set', () => {
-    const formField = generateDefaultField(BasicField.Date, {
+    const formField = generateDefaultFieldV3(BasicField.Date, {
       dateValidation: {
         selectedDateValidation: DateSelectedValidation.NoFuture,
         customMaxDate: null,
@@ -798,7 +803,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should allow dates inside of Custom Date Range if set', () => {
-    const formField = generateDefaultField(BasicField.Date, {
+    const formField = generateDefaultFieldV3(BasicField.Date, {
       dateValidation: {
         selectedDateValidation: DateSelectedValidation.Custom,
         customMinDate: new Date('2020-06-25'),
@@ -821,7 +826,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should disallow dates earlier than Custom Date Range if set', () => {
-    const formField = generateDefaultField(BasicField.Date, {
+    const formField = generateDefaultFieldV3(BasicField.Date, {
       dateValidation: {
         selectedDateValidation: DateSelectedValidation.Custom,
         customMinDate: new Date('2020-06-25'),
@@ -846,7 +851,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should disallow dates later than of Custom Date Range if set', () => {
-    const formField = generateDefaultField(BasicField.Date, {
+    const formField = generateDefaultFieldV3(BasicField.Date, {
       dateValidation: {
         selectedDateValidation: DateSelectedValidation.Custom,
         customMinDate: new Date('2020-06-25'),
@@ -871,7 +876,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should disallow responses submitted for hidden fields', () => {
-    const formField = generateDefaultField(BasicField.Date, {
+    const formField = generateDefaultFieldV3(BasicField.Date, {
       dateValidation: {
         selectedDateValidation: DateSelectedValidation.Custom,
         customMinDate: new Date('2020-06-25'),
@@ -896,7 +901,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should allow dates if invalid day array is empty', () => {
-    const formField = generateDefaultField(BasicField.Date, {
+    const formField = generateDefaultFieldV3(BasicField.Date, {
       dateValidation: {
         selectedDateValidation: null,
         customMinDate: null,
@@ -920,7 +925,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should allow dates that is not an invalid day', () => {
-    const formField = generateDefaultField(BasicField.Date, {
+    const formField = generateDefaultFieldV3(BasicField.Date, {
       dateValidation: {
         selectedDateValidation: null,
         customMinDate: null,
@@ -951,7 +956,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should disallow dates that is an invalid day', () => {
-    const formField = generateDefaultField(BasicField.Date, {
+    const formField = generateDefaultFieldV3(BasicField.Date, {
       dateValidation: {
         selectedDateValidation: null,
         customMinDate: null,

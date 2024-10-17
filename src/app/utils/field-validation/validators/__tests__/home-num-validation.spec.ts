@@ -1,5 +1,6 @@
 import {
   generateDefaultField,
+  generateDefaultFieldV3,
   generateGenericStringAnswerResponseV3,
   generateNewSingleAnswerResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
@@ -143,7 +144,7 @@ describe('Home phone number validation tests', () => {
 
 describe('Home phone number validation tests V3', () => {
   it('should allow empty answer for required field that is not visible', () => {
-    const formField = generateDefaultField(BasicField.HomeNo)
+    const formField = generateDefaultFieldV3(BasicField.HomeNo)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.HomeNo,
       answer: '',
@@ -160,7 +161,7 @@ describe('Home phone number validation tests V3', () => {
   })
 
   it('should allow empty answer for not required field', () => {
-    const formField = generateDefaultField(BasicField.HomeNo, {
+    const formField = generateDefaultFieldV3(BasicField.HomeNo, {
       required: false,
     })
     const response = generateGenericStringAnswerResponseV3({
@@ -179,7 +180,7 @@ describe('Home phone number validation tests V3', () => {
   })
 
   it('should not allow empty answer for required field', () => {
-    const formField = generateDefaultField(BasicField.HomeNo, {
+    const formField = generateDefaultFieldV3(BasicField.HomeNo, {
       required: true,
     })
     const response = generateGenericStringAnswerResponseV3({
@@ -199,7 +200,7 @@ describe('Home phone number validation tests V3', () => {
   })
 
   it('should allow valid home numbers for homeno fieldType', () => {
-    const formField = generateDefaultField(BasicField.HomeNo)
+    const formField = generateDefaultFieldV3(BasicField.HomeNo)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.HomeNo,
       answer: '+6563334444',
@@ -215,7 +216,7 @@ describe('Home phone number validation tests V3', () => {
   })
 
   it('should allow valid sg home numbers starting with 666 for homeno fieldType', () => {
-    const formField = generateDefaultField(BasicField.HomeNo)
+    const formField = generateDefaultFieldV3(BasicField.HomeNo)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.HomeNo,
       answer: '+6566634424',
@@ -231,7 +232,7 @@ describe('Home phone number validation tests V3', () => {
   })
 
   it('should allow valid sg home numbers starting with 3 for homeno fieldType', () => {
-    const formField = generateDefaultField(BasicField.HomeNo)
+    const formField = generateDefaultFieldV3(BasicField.HomeNo)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.HomeNo,
       answer: '+6536634424',
@@ -247,7 +248,7 @@ describe('Home phone number validation tests V3', () => {
   })
 
   it('should disallow home numbers without "+" prefix', () => {
-    const formField = generateDefaultField(BasicField.HomeNo)
+    const formField = generateDefaultFieldV3(BasicField.HomeNo)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.HomeNo,
       answer: '6563334444',
@@ -265,7 +266,7 @@ describe('Home phone number validation tests V3', () => {
   })
 
   it('should disallow mobile numbers on homeno fieldType', () => {
-    const formField = generateDefaultField(BasicField.HomeNo)
+    const formField = generateDefaultFieldV3(BasicField.HomeNo)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.HomeNo,
       answer: '+6598765432',
@@ -283,7 +284,7 @@ describe('Home phone number validation tests V3', () => {
   })
 
   it('should disallow international numbers when field does not allow for it', () => {
-    const formField = generateDefaultField(BasicField.HomeNo, {
+    const formField = generateDefaultFieldV3(BasicField.HomeNo, {
       allowIntlNumbers: false,
     })
     const response = generateGenericStringAnswerResponseV3({
@@ -304,7 +305,7 @@ describe('Home phone number validation tests V3', () => {
   })
 
   it('should allow international numbers when field allows for it', () => {
-    const formField = generateDefaultField(BasicField.HomeNo, {
+    const formField = generateDefaultFieldV3(BasicField.HomeNo, {
       allowIntlNumbers: true,
     })
     const response = generateGenericStringAnswerResponseV3({
@@ -323,7 +324,7 @@ describe('Home phone number validation tests V3', () => {
   })
 
   it('should disallow responses submitted for hidden fields', () => {
-    const formField = generateDefaultField(BasicField.HomeNo, {
+    const formField = generateDefaultFieldV3(BasicField.HomeNo, {
       required: true,
     })
     const response = generateGenericStringAnswerResponseV3({

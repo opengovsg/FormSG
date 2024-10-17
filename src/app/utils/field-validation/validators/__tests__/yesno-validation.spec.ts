@@ -1,5 +1,6 @@
 import {
   generateDefaultField,
+  generateDefaultFieldV3,
   generateNewSingleAnswerResponse,
   generateYesNoAnswerResponseV3,
 } from '__tests__/unit/backend/helpers/generate-form-data'
@@ -92,7 +93,7 @@ describe('Yes/No field validation', () => {
 
 describe('Yes/No field validation V3', () => {
   it('should allow Yes', () => {
-    const formField = generateDefaultField(BasicField.YesNo)
+    const formField = generateDefaultFieldV3(BasicField.YesNo)
     const response = generateYesNoAnswerResponseV3('Yes')
 
     const validateResult = validateFieldV3({
@@ -106,7 +107,7 @@ describe('Yes/No field validation V3', () => {
   })
 
   it('should allow No', () => {
-    const formField = generateDefaultField(BasicField.YesNo)
+    const formField = generateDefaultFieldV3(BasicField.YesNo)
     const response = generateYesNoAnswerResponseV3('No')
 
     const validateResult = validateFieldV3({
@@ -120,7 +121,7 @@ describe('Yes/No field validation V3', () => {
   })
 
   it('should allow empty string when not required', () => {
-    const formField = generateDefaultField(BasicField.YesNo, {
+    const formField = generateDefaultFieldV3(BasicField.YesNo, {
       required: false,
     })
     const response = generateYesNoAnswerResponseV3(
@@ -138,7 +139,7 @@ describe('Yes/No field validation V3', () => {
   })
 
   it('should disallow empty string when required', () => {
-    const formField = generateDefaultField(BasicField.YesNo, {
+    const formField = generateDefaultFieldV3(BasicField.YesNo, {
       required: true,
     })
     const response = generateYesNoAnswerResponseV3(
@@ -158,7 +159,7 @@ describe('Yes/No field validation V3', () => {
   })
 
   it('should disallow invalid input', () => {
-    const formField = generateDefaultField(BasicField.YesNo, {
+    const formField = generateDefaultFieldV3(BasicField.YesNo, {
       required: true,
     })
     const response = generateYesNoAnswerResponseV3(
@@ -177,7 +178,7 @@ describe('Yes/No field validation V3', () => {
   })
 
   it('should perform validation and disallow invalid field even when not required', () => {
-    const formField = generateDefaultField(BasicField.YesNo, {
+    const formField = generateDefaultFieldV3(BasicField.YesNo, {
       required: false,
     })
     const response = generateYesNoAnswerResponseV3(
@@ -196,7 +197,7 @@ describe('Yes/No field validation V3', () => {
   })
 
   it('should disallow responses submitted for hidden fields', () => {
-    const formField = generateDefaultField(BasicField.YesNo)
+    const formField = generateDefaultFieldV3(BasicField.YesNo)
     const response = generateYesNoAnswerResponseV3('No')
 
     const validateResult = validateFieldV3({
