@@ -25,8 +25,10 @@ export const ParagraphField = ({
   })
 
   return (
-    <MarkdownText multilineBreaks components={mdComponents}>
-      {schema.description}
-    </MarkdownText>
+    <div>
+      <MarkdownText multilineBreaks components={mdComponents}>
+        {schema.description}
+      </MarkdownText>
+    </div>
   )
 }
