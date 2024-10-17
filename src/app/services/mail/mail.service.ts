@@ -7,6 +7,8 @@ import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
 
+import { BounceNotificationTransient } from 'src/app/views/templates/BounceNotificationTransient'
+
 import { FormResponseMode, PaymentChannel } from '../../../../shared/types'
 import { centsToDollars } from '../../../../shared/utils/payments'
 import { getPaymentInvoiceDownloadUrlPath } from '../../../../shared/utils/urls'
@@ -455,37 +457,38 @@ export class MailService {
       appName: this.#appName,
     }
 
-    return generateBounceNotificationHtml(htmlData, bounceType).andThen(
-      (mailHtml) => {
-        const mail: MailOptions = {
-          to: emailRecipients,
-          from: this.#senderFromString,
-          subject: '[Urgent] FormSG Response Delivery Failure / Bounce',
-          html: mailHtml,
-          headers: {
-            [EMAIL_HEADERS.emailType]: EmailType.AdminBounce,
-            [EMAIL_HEADERS.formId]: formId,
-          },
-        }
+    const generatedHtml =
+      bounceType === BounceType.Permanent
+        ? generateBounceNotificationHtml(htmlData, bounceType)
+        : okAsync(render(BounceNotificationTransient(htmlData)))
 
-        return this.#sendNodeMail(mail, { mailId: 'bounce' }).mapErr(
-          (error) => {
-            // Add additional logging.
-            logger.error({
-              message: 'Error sending bounce notification email',
-              meta: {
-                action: 'sendBounceNotification',
-                bounceType,
-                formTitle,
-                formId,
-              },
-              error,
-            })
-            return error
+    return generatedHtml.andThen((mailHtml) => {
+      const mail: MailOptions = {
+        to: emailRecipients,
+        from: this.#senderFromString,
+        subject: '[Urgent] FormSG Response Delivery Failure / Bounce',
+        html: mailHtml,
+        headers: {
+          [EMAIL_HEADERS.emailType]: EmailType.AdminBounce,
+          [EMAIL_HEADERS.formId]: formId,
+        },
+      }
+
+      return this.#sendNodeMail(mail, { mailId: 'bounce' }).mapErr((error) => {
+        // Add additional logging.
+        logger.error({
+          message: 'Error sending bounce notification email',
+          meta: {
+            action: 'sendBounceNotification',
+            bounceType,
+            formTitle,
+            formId,
           },
-        )
-      },
-    )
+          error,
+        })
+        return error
+      })
+    })
   }
 
   /**
