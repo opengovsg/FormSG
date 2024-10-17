@@ -178,7 +178,7 @@
     "@types/jest": "^29.5.1",
     "@types/json-stringify-safe": "^5.0.3",
     "@types/jsonfile": "^6.1.1",
-    "@types/jsonwebtoken": "^9.0.6",
+    "@types/jsonwebtoken": "^9.0.7",
     "@types/jwk-to-pem": "^2.0.3",
     "@types/lodash": "^4.17.6",
     "@types/mongodb-uri": "^0.9.4",
