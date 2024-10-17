@@ -5,6 +5,7 @@ import {
   withUserAuthentication,
 } from '../../../../../modules/auth/auth.middlewares'
 
+import { AdminFormsAssistanceRouter } from './admin-forms.assistance.routes'
 import { AdminFormsFeedbackRouter } from './admin-forms.feedback.routes'
 import { AdminFormsFormRouter } from './admin-forms.form.routes'
 import { AdminFormsGoGovRouter } from './admin-forms.gogov.routes'
@@ -36,3 +37,4 @@ AdminFormsRouter.use(AdminFormsTwilioRouter)
 AdminFormsRouter.use(AdminFormsPaymentsRouter)
 AdminFormsRouter.use(AdminFormsGoGovRouter)
 AdminFormsRouter.use(AdminFormsIssueRouter)
+AdminFormsFormRouter.use(AdminFormsAssistanceRouter)
