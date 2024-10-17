@@ -1,72 +1,91 @@
 import {
   Body,
-  Column,
   Container,
   Head,
   Heading,
   Hr,
   Html,
   Img,
-  Row,
+  Preview,
+  Section,
   Text,
 } from '@react-email/components'
 import { FORMSG_LOGO_URL } from '../../constants/formsg-logo'
 
 import {
-  headingStyle,
-  innerContainerStyle,
-  outerContainerStyle,
-  textStyle,
-} from './styles'
+  secondaryTextStyle,
+  containerStyle,
+  headingTextStyle,
+  mainStyle,
+  outcomeTextStyle,
+  sectionStyle,
+  primaryTextStyle,
+  questionMargin,
+  answerMargin,
+} from './mrfWorkflowCompletionEmailStyle'
+
+export enum WorkflowOutcome {
+  APPROVED = 'Approved', 
+  NOT_APPROVED = 'Not approved' 
+}  
+
+export type QuestionAnswer = {
+  question: string, 
+  answer: string 
+}
 
 export type WorkflowEmailData = {
   formTitle: string
   responseId: string
+  formQuestionAnswers: QuestionAnswer[]
+  outcome?: WorkflowOutcome | undefined 
 }
 
 export const MrfWorkflowCompletionEmail = ({
-  // Defaults are provided only for testing purposes in react-email-preview.
   formTitle = 'Test form title',
-  responseId = '64303c45828035f732088a41'
+  responseId = '64303c45828035f732088a41', 
+  formQuestionAnswers = [], 
+  outcome
 }: WorkflowEmailData): JSX.Element => {
+  const headingText =  
+    outcome ? `The outcome for ${formTitle}.` : `${formTitle} has been completed by all respondents.`
+
+  const renderQuestionAnswer = (qa: QuestionAnswer) => (
+    <>
+      <Text style={{...primaryTextStyle, ...questionMargin}}>{qa.question}</Text>
+      <Text style={{...secondaryTextStyle, ...answerMargin}}>{qa.answer}</Text>
+    </>
+  )
+
   return (
     <Html>
-      <Head />
-      <Body style={outerContainerStyle}>
-        <Container style={innerContainerStyle}>
-          <Row>
-            <Column>
-              <Img src={FORMSG_LOGO_URL} alt="FormSG" />
-            </Column>
-          </Row>
-          <Row style={{ paddingTop: '32px' }}>
-            <Column>
-              <Heading style={headingStyle}>
-                {formTitle} has been completed by all respondents.
+      <Head /> 
+      <Preview>{headingText}</Preview>
+      <Body style={mainStyle}>
+          <Container style={containerStyle}>
+            <Section style={sectionStyle}>
+              <Img style={{height: '24px', marginBottom: '40px'}} src={FORMSG_LOGO_URL} alt="FormSG" />
+              <Heading style={{...headingTextStyle, marginBottom: '40px'}}>
+                {headingText}
               </Heading>
-            </Column>
-          </Row>
-          <Row style={{ paddingTop: '16px' }}>
-            <Column width="30%">
-              <Text style={textStyle}>Response ID</Text>
-            </Column>
-            <Column>
-              <Text style={textStyle}>{responseId}</Text>
-            </Column>
-          </Row>
-          <Row style={{ paddingTop: '32px' }}>
-            <Column>
-              <Hr />
-            </Column>
-          </Row>
-          <Row>
-            <Column>
-              <Text style={{ ...textStyle, fontSize: '14px' }}>
+              {outcome && (
+                <>
+                  <Text style={{...outcomeTextStyle, ...questionMargin}}>Outcome</Text>
+                  <Text style={{...outcomeTextStyle, fontWeight: 400, ...answerMargin}}>{outcome}</Text>
+                </>
+              )}
+              <Hr style={{margin: '40px 0'}}/>
+              <Heading style={{...headingTextStyle, marginBottom: '40px'}}>
+                Responses for {formTitle} 
+              </Heading>
+              <Text style={{...primaryTextStyle, ...questionMargin}}>Response ID</Text>
+              <Text style={{...secondaryTextStyle, ...answerMargin}}>{responseId}</Text>
+              {formQuestionAnswers.map(renderQuestionAnswer)}
+              <Text style={{...secondaryTextStyle, marginTop: '24px'}}> 
                 For more details, please contact the respondent(s) or form administrator. 
               </Text>
-            </Column>
-          </Row>
-        </Container>
+            </Section> 
+          </Container>
       </Body>
     </Html>
   )

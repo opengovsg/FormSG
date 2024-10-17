@@ -42,7 +42,10 @@ import { AttachmentMetadata } from '../submission.types'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
-import { retrieveWorkflowStepEmailAddresses } from './multirespondent-submission.utils'
+import {
+  getQuestionTitleAnswerString,
+  retrieveWorkflowStepEmailAddresses,
+} from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
@@ -237,6 +240,11 @@ const sendMrfOutcomeEmails = ({
           return okAsync(true)
         }
 
+        const formQuestionAnswers = getQuestionTitleAnswerString({
+          formFields: form.form_fields,
+          responses,
+        })
+
         if (isApproval) {
           return MailService.sendMrfApprovalEmail({
             emails: destinationEmails,
@@ -244,6 +252,7 @@ const sendMrfOutcomeEmails = ({
             formTitle: form.title,
             responseId: submissionId,
             isRejected,
+            formQuestionAnswers,
           }).orElse((error) => {
             logger.error({
               message: 'Failed to send approval email',
@@ -262,6 +271,7 @@ const sendMrfOutcomeEmails = ({
           formId: form._id,
           formTitle: form.title,
           responseId: submissionId,
+          formQuestionAnswers,
         }).orElse((error) => {
           logger.error({
             message: 'Failed to send workflow completion email',
