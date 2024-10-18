@@ -1,6 +1,7 @@
 import {
   generateCheckboxResponseV3,
   generateDefaultField,
+  generateDefaultFieldV3,
   generateNewCheckboxResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
 import { mongo as mongodb } from 'mongoose'
@@ -318,7 +319,7 @@ describe('Checkbox validation V3', () => {
   describe('Required or optional', () => {
     it('should disallow empty submission if checkbox is required', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
       })
       const response = generateCheckboxResponseV3({ value: [] })
@@ -336,7 +337,7 @@ describe('Checkbox validation V3', () => {
 
     it('should allow empty submission if checkbox is optional', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
         required: false,
       })
@@ -355,7 +356,7 @@ describe('Checkbox validation V3', () => {
   describe('Validation of field options', () => {
     it('should disallow responses submitted for hidden fields', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
         required: true,
       })
@@ -378,7 +379,7 @@ describe('Checkbox validation V3', () => {
 
     it('should allow a valid option to be selected', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
       })
       const response = generateCheckboxResponseV3({ value: ['a'] })
@@ -394,7 +395,7 @@ describe('Checkbox validation V3', () => {
 
     it('should allow multiple valid options to be selected', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
       })
       const response = generateCheckboxResponseV3({ value: ['a', 'b'] })
@@ -410,7 +411,7 @@ describe('Checkbox validation V3', () => {
 
     it('should disallow answers not in fieldOptions', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
       })
       const response = generateCheckboxResponseV3({
@@ -430,7 +431,7 @@ describe('Checkbox validation V3', () => {
 
     it('should disallow duplicate answers', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
       })
       const response = generateCheckboxResponseV3({
@@ -450,7 +451,7 @@ describe('Checkbox validation V3', () => {
 
     it('should allow self-configured others options in field options', () => {
       const fieldOptions = ['a', 'b', 'c', 'Others: <please specify>']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
       })
       const response = generateCheckboxResponseV3({
@@ -468,7 +469,7 @@ describe('Checkbox validation V3', () => {
 
     it('should allow Others option to be submitted if field is configured for Others', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
         othersRadioButton: true,
       })
@@ -488,7 +489,7 @@ describe('Checkbox validation V3', () => {
 
     it('should disallow Others option to be submitted if field is configured for Others but othersInput is undefined', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
         othersRadioButton: true,
       })
@@ -509,7 +510,7 @@ describe('Checkbox validation V3', () => {
 
     it('should disallow Others option to be submitted if field is not configured for Others', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
         othersRadioButton: false,
       })
@@ -531,7 +532,7 @@ describe('Checkbox validation V3', () => {
 
     it('should allow Others option to be submitted with admin defined Others: if field is configured for Others', () => {
       const fieldOptions = ['a', 'b', 'c', 'Others: xyz']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
         othersRadioButton: true,
       })
@@ -551,7 +552,7 @@ describe('Checkbox validation V3', () => {
 
     it('should disallow Others option to be submitted with empty string answer if field is configured for Others', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
         othersRadioButton: true,
       })
@@ -573,7 +574,7 @@ describe('Checkbox validation V3', () => {
 
     it('should disallow Others option to be submitted with whitespace answer if field is configured for Others', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
         othersRadioButton: true,
       })
@@ -595,7 +596,7 @@ describe('Checkbox validation V3', () => {
 
     it('should disallow multiple CLIENT_CHECKBOX_OTHERS_INPUT_VALUE to be submitted if field is configured for Others', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
         othersRadioButton: true,
       })
@@ -621,7 +622,7 @@ describe('Checkbox validation V3', () => {
 
     it('should disallow admin defined Others: and othersInput option which causes string collision to be submitted if field is configured for Others', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
         othersRadioButton: true,
       })
@@ -643,7 +644,7 @@ describe('Checkbox validation V3', () => {
 
     it('should allow submission without Others option even if field is configured for Others', () => {
       const fieldOptions = ['a', 'b', 'c']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
         othersRadioButton: true,
       })
@@ -664,7 +665,7 @@ describe('Checkbox validation V3', () => {
   describe('Selection limits', () => {
     it('should disallow more answers than customMax if selection limits are configured', () => {
       const fieldOptions = ['a', 'b', 'c', 'd', 'e']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
         validateByValue: true,
         ValidationOptions: { customMax: 2, customMin: null },
@@ -686,7 +687,7 @@ describe('Checkbox validation V3', () => {
 
     it('should disallow more answers than customMax if selection limits are configured including others', () => {
       const fieldOptions = ['a', 'b', 'c', 'd', 'e']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
         validateByValue: true,
         othersRadioButton: true,
@@ -710,7 +711,7 @@ describe('Checkbox validation V3', () => {
 
     it('should allow less than or equal answers than customMax if selection limits are configured including others', () => {
       const fieldOptions = ['a', 'b', 'c', 'd', 'e']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
         validateByValue: true,
         othersRadioButton: true,
@@ -732,7 +733,7 @@ describe('Checkbox validation V3', () => {
 
     it('should disallow fewer answers than customMin if selection limits are configured', () => {
       const fieldOptions = ['a', 'b', 'c', 'd', 'e']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
         validateByValue: true,
         ValidationOptions: { customMax: null, customMin: 2 },
@@ -754,7 +755,7 @@ describe('Checkbox validation V3', () => {
 
     it('should allow more or equal answers than customMin if selection limits are configured', () => {
       const fieldOptions = ['a', 'b', 'c', 'd', 'e']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
         validateByValue: true,
         ValidationOptions: { customMax: null, customMin: 2 },
@@ -774,7 +775,7 @@ describe('Checkbox validation V3', () => {
 
     it('should allow more or equal answers than customMin if selection limits are configured including others', () => {
       const fieldOptions = ['a', 'b', 'c', 'd', 'e']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
         validateByValue: true,
         othersRadioButton: true,
@@ -796,7 +797,7 @@ describe('Checkbox validation V3', () => {
 
     it('should allow more answers than customMax if selection limits are not configured', () => {
       const fieldOptions = ['a', 'b', 'c', 'd', 'e']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
         validateByValue: false,
         ValidationOptions: { customMax: 2, customMin: null },
@@ -816,7 +817,7 @@ describe('Checkbox validation V3', () => {
 
     it('should allow fewer answers than customMin if selection limits are not configured', () => {
       const fieldOptions = ['a', 'b', 'c', 'd', 'e']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
         validateByValue: false,
         ValidationOptions: { customMax: null, customMin: 2 },
@@ -836,7 +837,7 @@ describe('Checkbox validation V3', () => {
 
     it('should disallow more answers than customMax, and fewer answers than customMin, if selection limits are configured', () => {
       const fieldOptions = ['a', 'b', 'c', 'd', 'e']
-      const formField = generateDefaultField(BasicField.Checkbox, {
+      const formField = generateDefaultFieldV3(BasicField.Checkbox, {
         fieldOptions,
         validateByValue: true,
         ValidationOptions: { customMax: 4, customMin: 2 },

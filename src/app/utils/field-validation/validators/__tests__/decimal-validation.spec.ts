@@ -1,5 +1,6 @@
 import {
   generateDefaultField,
+  generateDefaultFieldV3,
   generateGenericStringAnswerResponseV3,
   generateNewSingleAnswerResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
@@ -280,7 +281,7 @@ describe('Decimal Validation', () => {
 
 describe('Decimal Validation V3', () => {
   it('should allow decimal with valid maximum', () => {
-    const formField = generateDefaultField(BasicField.Decimal, {
+    const formField = generateDefaultFieldV3(BasicField.Decimal, {
       ValidationOptions: {
         customMin: null,
         customMax: 5,
@@ -302,7 +303,7 @@ describe('Decimal Validation V3', () => {
   })
 
   it('should allow decimal with valid maximum (inclusive)', () => {
-    const formField = generateDefaultField(BasicField.Decimal, {
+    const formField = generateDefaultFieldV3(BasicField.Decimal, {
       ValidationOptions: {
         customMin: null,
         customMax: 5,
@@ -324,7 +325,7 @@ describe('Decimal Validation V3', () => {
   })
 
   it('should disallow decimal with invalid maximum', () => {
-    const formField = generateDefaultField(BasicField.Decimal, {
+    const formField = generateDefaultFieldV3(BasicField.Decimal, {
       ValidationOptions: {
         customMin: null,
         customMax: 5,
@@ -347,7 +348,7 @@ describe('Decimal Validation V3', () => {
   })
 
   it('should allow decimal with valid minimum', () => {
-    const formField = generateDefaultField(BasicField.Decimal, {
+    const formField = generateDefaultFieldV3(BasicField.Decimal, {
       ValidationOptions: {
         customMin: 2,
         customMax: null,
@@ -368,7 +369,7 @@ describe('Decimal Validation V3', () => {
   })
 
   it('should allow decimal with valid minimum (inclusive)', () => {
-    const formField = generateDefaultField(BasicField.Decimal, {
+    const formField = generateDefaultFieldV3(BasicField.Decimal, {
       ValidationOptions: {
         customMin: 2,
         customMax: null,
@@ -389,7 +390,7 @@ describe('Decimal Validation V3', () => {
   })
 
   it('should disallow decimal with invalid minimum', () => {
-    const formField = generateDefaultField(BasicField.Decimal, {
+    const formField = generateDefaultFieldV3(BasicField.Decimal, {
       ValidationOptions: {
         customMin: 2,
         customMax: null,
@@ -412,7 +413,7 @@ describe('Decimal Validation V3', () => {
   })
 
   it('should allow decimal with no custom validation', () => {
-    const formField = generateDefaultField(BasicField.Decimal, {
+    const formField = generateDefaultFieldV3(BasicField.Decimal, {
       ValidationOptions: {
         customMin: null,
         customMax: null,
@@ -433,7 +434,7 @@ describe('Decimal Validation V3', () => {
   })
 
   it('should allow empty answer with optional field', () => {
-    const formField = generateDefaultField(BasicField.Decimal, {
+    const formField = generateDefaultFieldV3(BasicField.Decimal, {
       required: false,
     })
     const response = generateGenericStringAnswerResponseV3({
@@ -451,7 +452,7 @@ describe('Decimal Validation V3', () => {
   })
 
   it('should allow answer to be zero', () => {
-    const formField = generateDefaultField(BasicField.Decimal)
+    const formField = generateDefaultFieldV3(BasicField.Decimal)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Decimal,
       answer: '0',
@@ -467,7 +468,7 @@ describe('Decimal Validation V3', () => {
   })
 
   it('should allow negative answers', () => {
-    const formField = generateDefaultField(BasicField.Decimal)
+    const formField = generateDefaultFieldV3(BasicField.Decimal)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Decimal,
       answer: '-5.0',
@@ -483,7 +484,7 @@ describe('Decimal Validation V3', () => {
   })
 
   it('should disallow leading zeroes', () => {
-    const formField = generateDefaultField(BasicField.Decimal)
+    const formField = generateDefaultFieldV3(BasicField.Decimal)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Decimal,
       answer: '001.3',
@@ -502,7 +503,7 @@ describe('Decimal Validation V3', () => {
   })
 
   it('should disallow decimal points with no leading numbers', () => {
-    const formField = generateDefaultField(BasicField.Decimal)
+    const formField = generateDefaultFieldV3(BasicField.Decimal)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Decimal,
       answer: '.3',
@@ -521,7 +522,7 @@ describe('Decimal Validation V3', () => {
   })
 
   it('should disallow negative answers with no leading number', () => {
-    const formField = generateDefaultField(BasicField.Decimal)
+    const formField = generateDefaultFieldV3(BasicField.Decimal)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Decimal,
       answer: '-.3',
@@ -540,7 +541,7 @@ describe('Decimal Validation V3', () => {
   })
 
   it('should disallow floats (<16 decimal places) that are out of range (min)', () => {
-    const formField = generateDefaultField(BasicField.Decimal, {
+    const formField = generateDefaultFieldV3(BasicField.Decimal, {
       ValidationOptions: {
         customMin: 2,
         customMax: null,
@@ -564,7 +565,7 @@ describe('Decimal Validation V3', () => {
   })
 
   it('should disallow floats (<16 decimal places) that are out of range (max)', () => {
-    const formField = generateDefaultField(BasicField.Decimal, {
+    const formField = generateDefaultFieldV3(BasicField.Decimal, {
       ValidationOptions: {
         customMin: null,
         customMax: 2,
@@ -588,7 +589,7 @@ describe('Decimal Validation V3', () => {
   })
 
   it('should disallow floats less than 0 when customMin is 0', () => {
-    const formField = generateDefaultField(BasicField.Decimal, {
+    const formField = generateDefaultFieldV3(BasicField.Decimal, {
       ValidationOptions: {
         customMin: 0,
         customMax: null,
@@ -611,7 +612,7 @@ describe('Decimal Validation V3', () => {
     )
   })
   it('should disallow floats more than 0 when customMax is 0', () => {
-    const formField = generateDefaultField(BasicField.Decimal, {
+    const formField = generateDefaultFieldV3(BasicField.Decimal, {
       ValidationOptions: {
         customMin: null,
         customMax: 0,
@@ -635,7 +636,7 @@ describe('Decimal Validation V3', () => {
   })
 
   it('should disallow responses submitted for hidden fields', () => {
-    const formField = generateDefaultField(BasicField.Decimal)
+    const formField = generateDefaultFieldV3(BasicField.Decimal)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Decimal,
       answer: '3',

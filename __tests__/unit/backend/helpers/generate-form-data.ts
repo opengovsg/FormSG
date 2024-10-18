@@ -17,7 +17,6 @@ import {
   IDateFieldSchema,
   IDecimalFieldSchema,
   IDropdownFieldSchema,
-  IEmailFieldSchema,
   IHomenoFieldSchema,
   IImageFieldSchema,
   IMobileFieldSchema,
@@ -43,6 +42,7 @@ import {
   DropdownFieldBase,
   EmailResponseV3,
   FormField,
+  FormFieldDto,
   GenericStringAnswerFieldResponseV3,
   MobileResponseV3,
   RadioFieldResponsesV3,
@@ -56,6 +56,13 @@ import {
   YesNoFieldResponseV3,
   YesNoResponseV3,
 } from '../../../../shared/types'
+
+export const generateDefaultFieldV3 = (
+  fieldType: BasicField,
+  customParams?: Partial<FormField> & { _id?: string },
+): FormFieldDto => {
+  return generateDefaultField(fieldType, customParams) as FormFieldDto
+}
 
 export const generateDefaultField = (
   fieldType: BasicField,

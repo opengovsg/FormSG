@@ -1,5 +1,6 @@
 import {
   generateDefaultField,
+  generateDefaultFieldV3,
   generateGenericStringAnswerResponseV3,
   generateNewSingleAnswerResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
@@ -144,7 +145,7 @@ describe('NRIC field validation', () => {
 
 describe('NRIC field validation V3', () => {
   it('should allow valid NRIC with S prefix', () => {
-    const formField = generateDefaultField(BasicField.Nric)
+    const formField = generateDefaultFieldV3(BasicField.Nric)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Nric,
       answer: 'S9912345A',
@@ -161,7 +162,7 @@ describe('NRIC field validation V3', () => {
   })
 
   it('should allow valid NRIC with T prefix', () => {
-    const formField = generateDefaultField(BasicField.Nric)
+    const formField = generateDefaultFieldV3(BasicField.Nric)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Nric,
       answer: 'T1394524H',
@@ -178,7 +179,7 @@ describe('NRIC field validation V3', () => {
   })
 
   it('should allow valid NRIC with F prefix', () => {
-    const formField = generateDefaultField(BasicField.Nric)
+    const formField = generateDefaultFieldV3(BasicField.Nric)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Nric,
       answer: 'F0477844T',
@@ -195,7 +196,7 @@ describe('NRIC field validation V3', () => {
   })
 
   it('should allow valid NRIC with G prefix', () => {
-    const formField = generateDefaultField(BasicField.Nric)
+    const formField = generateDefaultFieldV3(BasicField.Nric)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Nric,
       answer: 'G9592927W',
@@ -212,7 +213,7 @@ describe('NRIC field validation V3', () => {
   })
 
   it('should disallow invalid NRIC with S prefix', () => {
-    const formField = generateDefaultField(BasicField.Nric)
+    const formField = generateDefaultFieldV3(BasicField.Nric)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Nric,
       answer: 'S9912345B',
@@ -232,7 +233,7 @@ describe('NRIC field validation V3', () => {
   })
 
   it('should disallow invalid NRIC with T prefix', () => {
-    const formField = generateDefaultField(BasicField.Nric)
+    const formField = generateDefaultFieldV3(BasicField.Nric)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Nric,
       answer: 'T1394524I',
@@ -252,7 +253,7 @@ describe('NRIC field validation V3', () => {
   })
 
   it('should disallow invalid NRIC with F prefix', () => {
-    const formField = generateDefaultField(BasicField.Nric)
+    const formField = generateDefaultFieldV3(BasicField.Nric)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Nric,
       answer: 'F0477844U',
@@ -271,7 +272,7 @@ describe('NRIC field validation V3', () => {
   })
 
   it('should disallow invalid NRIC with G prefix', () => {
-    const formField = generateDefaultField(BasicField.Nric)
+    const formField = generateDefaultFieldV3(BasicField.Nric)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Nric,
       answer: 'G9592927X',
@@ -290,7 +291,7 @@ describe('NRIC field validation V3', () => {
   })
 
   it('should allow empty string for not required NRIC', () => {
-    const formField = generateDefaultField(BasicField.Nric, {
+    const formField = generateDefaultFieldV3(BasicField.Nric, {
       required: false,
     })
     const response = generateGenericStringAnswerResponseV3({
@@ -308,7 +309,7 @@ describe('NRIC field validation V3', () => {
   })
 
   it('should disallow empty string for required NRIC', () => {
-    const formField = generateDefaultField(BasicField.Nric, {
+    const formField = generateDefaultFieldV3(BasicField.Nric, {
       required: true,
     })
     const response = generateGenericStringAnswerResponseV3({
@@ -328,7 +329,7 @@ describe('NRIC field validation V3', () => {
   })
 
   it('should disallow responses submitted for hidden fields', () => {
-    const formField = generateDefaultField(BasicField.Nric)
+    const formField = generateDefaultFieldV3(BasicField.Nric)
     const response = generateGenericStringAnswerResponseV3({
       fieldType: BasicField.Nric,
       answer: 'S9912345A',
