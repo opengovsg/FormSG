@@ -156,6 +156,18 @@ const MrfEmailNotificationsForm = ({
           </FormLabel>
           <Skeleton isLoaded={!isLoading}>
             <Controller
+              rules={{
+                validate: (selectedValue) => {
+                  return (
+                    !selectedValue ||
+                    !emailFieldItems ||
+                    emailFieldItems.some(
+                      ({ value: fieldValue }) => fieldValue === selectedValue,
+                    ) ||
+                    'Field is not an email field'
+                  )
+                },
+              }}
               control={control}
               name={STEP_1_RESPONDENT_NOTIFY_EMAIL_SINGLESELECT_NAME}
               render={({
