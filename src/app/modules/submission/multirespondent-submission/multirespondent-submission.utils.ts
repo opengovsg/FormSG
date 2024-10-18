@@ -54,6 +54,15 @@ export const createMultirespondentSubmissionDto = (
   }
 }
 
+export const getEmailFromResponses = (
+  fieldId: string,
+  responses: FieldResponsesV3,
+): string | null => {
+  const field = responses[fieldId]
+  if (!field || field.fieldType !== BasicField.Email) return null // Not an error, misconfigured or respondent has not filled.
+  return field.answer.value
+}
+
 export const retrieveWorkflowStepEmailAddresses = (
   step: FormWorkflowStepDto,
   responses: FieldResponsesV3,
@@ -64,9 +73,9 @@ export const retrieveWorkflowStepEmailAddresses = (
       return ok(step.emails)
     }
     case WorkflowType.Dynamic: {
-      const field = responses[step.field]
-      if (!field || field.fieldType !== BasicField.Email) return ok([]) // Not an error, misconfigured or respondent has not filled.
-      return ok([field.answer.value])
+      const email = getEmailFromResponses(step.field, responses)
+      if (!email) return ok([])
+      return ok([email])
     }
     default: {
       return err(new InvalidWorkflowTypeError())
