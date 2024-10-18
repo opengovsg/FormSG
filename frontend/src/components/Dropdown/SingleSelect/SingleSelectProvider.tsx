@@ -24,6 +24,7 @@ export interface SingleSelectProviderProps<
   value: string
   /** Controlled selected item onChange handler */
   onChange: (value: string) => void
+  onBlur?: () => void
   /** Function based on which items in dropdown are filtered. Default filter filters by fuzzy match. */
   filter?(items: Item[], value: string): Item[]
   /** Initial dropdown opened state. */
@@ -45,6 +46,7 @@ export interface SingleSelectProviderProps<
 export const SingleSelectProvider = ({
   items: rawItems,
   value,
+  onBlur,
   onChange,
   name,
   filter = defaultFilter,
@@ -272,6 +274,7 @@ export const SingleSelectProvider = ({
         virtualListRef,
         virtualListHeight,
         fullWidth,
+        onBlur,
       }}
     >
       {children}

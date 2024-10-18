@@ -33,6 +33,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
       isOpen,
       resetInputValue,
       inputRef,
+      onBlur,
     } = useSelectContext()
 
     const mergedInputRef = useMergeRefs(inputRef, ref)
@@ -51,7 +52,7 @@ export const SelectCombobox = forwardRef<HTMLInputElement>(
     }, [isDisabled, isReadOnly, toggleMenu])
 
     return (
-      <Flex>
+      <Flex onBlur={onBlur}>
         <InputGroup
           pos="relative"
           display="grid"
