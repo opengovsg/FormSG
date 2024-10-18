@@ -2,20 +2,37 @@ import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-fo
 import { ObjectId } from 'bson'
 import moment from 'moment-timezone'
 import { ok } from 'neverthrow'
+import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'shared/constants/form'
 import {
+  AttachmentResponseV3,
   BasicField,
+  CheckboxResponseV3,
   ChildBirthRecordsResponseV3,
+  EmailResponseV3,
+  FieldResponsesV3,
   LongTextResponseV3,
+  NumberResponseV3,
   ShortTextResponseV3,
   SubmissionType,
+  TableResponseV3,
 } from 'shared/types'
 
-import { MultirespondentSubmissionData } from 'src/types'
+import {
+  FormFieldSchema,
+  IAttachmentFieldSchema,
+  ICheckboxFieldSchema,
+  IEmailFieldSchema,
+  INumberFieldSchema,
+  IShortTextFieldSchema,
+  ITableFieldSchema,
+  MultirespondentSubmissionData,
+} from 'src/types'
 
 import * as fieldValidation from '../../../../utils/field-validation'
 import { ValidateFieldErrorV3 } from '../../submission.errors'
 import {
   createMultirespondentSubmissionDto,
+  getQuestionTitleAnswerString,
   validateMrfFieldResponses,
 } from '../multirespondent-submission.utils'
 
@@ -185,5 +202,161 @@ describe('multirespondent-submission.utils', () => {
 
       expect(validateFieldV3Mock).toHaveBeenCalledTimes(2)
     })
+  })
+
+  describe('getQuestionTitleAnswerString', () => {
+    it('should extract question-answer pairs for basic field types', () => {
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'Short Text',
+          fieldType: BasicField.ShortText,
+        } as IShortTextFieldSchema,
+        {
+          _id: '2',
+          title: 'Number',
+          fieldType: BasicField.Number,
+        } as INumberFieldSchema,
+        {
+          _id: '3',
+          title: 'Email',
+          fieldType: BasicField.Email,
+        } as IEmailFieldSchema,
+      ]
+      const responses: FieldResponsesV3 = {
+        '1': {
+          fieldType: BasicField.ShortText,
+          answer: 'Test answer',
+        } as ShortTextResponseV3,
+        '2': { fieldType: BasicField.Number, answer: '42' } as NumberResponseV3,
+        '3': {
+          fieldType: BasicField.Email,
+          answer: { value: 'test@example.com' },
+        } as EmailResponseV3,
+      }
+
+      const result = getQuestionTitleAnswerString({ formFields, responses })
+
+      expect(result).toEqual([
+        { question: 'Short Text', answer: 'Test answer' },
+        { question: 'Number', answer: '42' },
+        { question: 'Email', answer: 'test@example.com' },
+      ])
+    })
+
+    it('should handle attachment fields correctly', () => {
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'File Upload',
+          fieldType: BasicField.Attachment,
+        } as IAttachmentFieldSchema,
+      ]
+      const responses: FieldResponsesV3 = {
+        '1': {
+          fieldType: BasicField.Attachment,
+          answer: { answer: 'file.pdf' },
+        } as AttachmentResponseV3,
+      }
+
+      const result = getQuestionTitleAnswerString({ formFields, responses })
+
+      expect(result).toEqual([
+        { question: '[Attachment] File Upload', answer: 'file.pdf' },
+      ])
+    })
+
+    it('should handle table fields correctly', () => {
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'Table',
+          fieldType: BasicField.Table,
+          columns: [
+            { _id: 'col1', title: 'Name' },
+            { _id: 'col2', title: 'Age' },
+          ],
+        } as ITableFieldSchema,
+      ]
+      const responses: FieldResponsesV3 = {
+        '1': {
+          fieldType: BasicField.Table,
+          answer: [
+            { col1: 'Alice', col2: '30' },
+            { col1: 'Bob', col2: '25' },
+          ],
+        } as TableResponseV3,
+      }
+
+      const result = getQuestionTitleAnswerString({ formFields, responses })
+
+      expect(result).toEqual([
+        { question: '[Table] Row 1: Name', answer: 'Alice' },
+        { question: '[Table] Row 1: Age', answer: '30' },
+        { question: '[Table] Row 2: Name', answer: 'Bob' },
+        { question: '[Table] Row 2: Age', answer: '25' },
+      ])
+    })
+
+    it('should handle checkbox fields correctly', () => {
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'Checkbox',
+          fieldType: BasicField.Checkbox,
+        } as ICheckboxFieldSchema,
+      ]
+      const responses: FieldResponsesV3 = {
+        '1': {
+          fieldType: BasicField.Checkbox,
+          answer: {
+            value: ['Option 1', 'Option 2', CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
+            othersInput: 'Custom Option',
+          },
+        } as CheckboxResponseV3,
+      }
+
+      const result = getQuestionTitleAnswerString({ formFields, responses })
+
+      expect(result).toEqual([
+        { question: 'Checkbox', answer: 'Option 1,Option 2,Custom Option' },
+      ])
+    })
+  })
+
+  it('should return an empty array when formFields is not iterable', () => {
+    const formFields = null as unknown as FormFieldSchema[]
+    const responses: FieldResponsesV3 = {
+      '1': {
+        fieldType: BasicField.ShortText,
+        answer: 'Test answer',
+      } as ShortTextResponseV3,
+    }
+
+    const result = getQuestionTitleAnswerString({ formFields, responses })
+
+    expect(result).toEqual([])
+  })
+
+  it('should return an empty array when responses is undefined or null', () => {
+    const formFields: FormFieldSchema[] = [
+      {
+        _id: '1',
+        title: 'Short Text',
+        fieldType: BasicField.ShortText,
+      } as IShortTextFieldSchema,
+    ]
+
+    const undefinedResult = getQuestionTitleAnswerString({
+      formFields,
+      responses: undefined as unknown as FieldResponsesV3,
+    })
+    expect(undefinedResult).toEqual([])
+
+    const nullResult = getQuestionTitleAnswerString({
+      formFields,
+      responses: null as unknown as FieldResponsesV3,
+    })
+    expect(nullResult).toEqual([])
   })
 })
