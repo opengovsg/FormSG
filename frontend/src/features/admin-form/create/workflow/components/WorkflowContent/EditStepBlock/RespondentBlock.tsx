@@ -1,4 +1,3 @@
-import { useCallback } from 'react'
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { As, FormControl, Stack, Text } from '@chakra-ui/react'
 import { get } from 'lodash'
@@ -202,17 +201,11 @@ export const RespondentBlock = ({
   stepNumber,
   isLoading,
   formMethods,
-  user,
 }: RespondentBlockProps): JSX.Element => {
   const {
     formState: { errors },
     watch,
-    setValue,
-    control,
   } = formMethods
-
-  // TODO: (MRF-email-notif) Remove isTest check when MRF email notifications is out of beta
-  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
 
   const { emailFormFields = [] } = useAdminFormWorkflow()
 
@@ -223,22 +216,6 @@ export const RespondentBlock = ({
       icon: BASICFIELD_TO_DRAWER_META[fieldType].icon,
     }),
   )
-  const emailFieldIds = emailFormFields.map(({ _id }) => _id)
-
-  const getValueIfNotDeleted = useCallback(
-    // Why: When the Yes/No field has been deleted, the approval_field is still set to the
-    // invalid form field id but cannot be seen or cleared in the SingleSelect component
-    // since no matching Yes/No item can be found.
-    // Hence, we clear the approval_field to allow the user to re-select a new valid value.
-    (value: string) => {
-      if (!isLoading && value && !emailFieldIds.includes(value)) {
-        setValue('field', '')
-        return ''
-      }
-      return value
-    },
-    [isLoading, setValue, emailFieldIds],
-  )
 
   const selectedWorkflowType = watch('workflow_type')
 
@@ -247,47 +224,10 @@ export const RespondentBlock = ({
   return (
     <EditStepBlockContainer>
       {isFirstStep ? (
-        <>
-          {/* TODO: (MRF-email-notif) Remove isTest and betaFlag check when MRF email
-          notifications is out of beta */}
-          {isTest || user?.betaFlags?.mrfEmailNotifications ? (
-            <FormControl isInvalid={!!errors.field}>
-              <FormLabel style={textStyles.h4}>
-                Select email field for notifications to be sent to this
-                respondent
-              </FormLabel>
-              <Controller
-                name="field"
-                rules={{
-                  validate: (selectedValue) => {
-                    return (
-                      !selectedValue ||
-                      !emailFieldItems ||
-                      emailFieldItems.some(
-                        ({ value: fieldValue }) => fieldValue === selectedValue,
-                      ) ||
-                      'Field is not an email field'
-                    )
-                  },
-                }}
-                control={control}
-                render={({ field: { value = '', ...rest } }) => (
-                  <SingleSelect
-                    isDisabled={isLoading}
-                    placeholder="Select an email field from your form"
-                    items={emailFieldItems}
-                    value={getValueIfNotDeleted(value)}
-                    isClearable
-                    {...rest}
-                  />
-                )}
-              />
-              <FormErrorMessage>{errors.field?.message}</FormErrorMessage>
-            </FormControl>
-          ) : (
-            <Text>Anyone you share the form link with</Text>
-          )}
-        </>
+        <Stack spacing="0.5rem">
+          <Text style={textStyles.h4}>Respondent in this step</Text>
+          <Text>Anyone who has access to your form</Text>
+        </Stack>
       ) : (
         <FormControl
           isReadOnly={isLoading}
