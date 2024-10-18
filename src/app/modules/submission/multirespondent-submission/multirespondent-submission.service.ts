@@ -42,7 +42,10 @@ import { AttachmentMetadata } from '../submission.types'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
-import { retrieveWorkflowStepEmailAddresses } from './multirespondent-submission.utils'
+import {
+  getEmailFromResponses,
+  retrieveWorkflowStepEmailAddresses,
+} from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
@@ -185,16 +188,23 @@ const sendMrfOutcomeEmails = ({
     formId: form._id,
     submissionId,
   }
-  const emailsToNotify = form.emails ?? []
+  const emailsToNotify =
+    form.emails && Array.isArray(form.emails) ? form.emails : []
 
-  const stepIdsBeforeAndIncludingCurrStep = form.workflow.slice(
-    0,
+  const stepOneEmailNotificationFieldId = form.stepOneEmailNotificationFieldId
+  const stepOneEmailToNotify = stepOneEmailNotificationFieldId
+    ? getEmailFromResponses(stepOneEmailNotificationFieldId, responses)
+    : null
+  if (stepOneEmailToNotify) emailsToNotify.push(stepOneEmailToNotify)
+
+  const stepsToNotifyUpToCurrentStep = form.workflow.slice(
+    1, // exclude first step since notification is indicated by `stepOneEmailNotificationFieldId`
     currentStepNumber + 1,
   )
 
   const validWorkflowStepsToNotify = (form.stepsToNotify ?? [])
     .map((stepId) =>
-      stepIdsBeforeAndIncludingCurrStep.find(
+      stepsToNotifyUpToCurrentStep.find(
         (step) => step._id.toString() === stepId,
       ),
     )
