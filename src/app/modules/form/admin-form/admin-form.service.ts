@@ -32,6 +32,7 @@ import {
   FieldUpdateDto,
   FormAuthType,
   FormLogoState,
+  FormMetadata,
   FormPermission,
   FormResponseMode,
   FormSettings,
@@ -1769,7 +1770,7 @@ export const updateFormSettings = (
     }).exec(),
     (error) => {
       logger.error({
-        message: 'Error encountered while updating form',
+        message: 'Error encountered while updating form settings',
         meta: {
           action: 'updateFormSettings',
           formId: originalForm._id,
@@ -1785,6 +1786,46 @@ export const updateFormSettings = (
       return errAsync(new FormNotFoundError())
     }
     return okAsync(updatedForm.getSettings())
+  })
+}
+
+/**
+ * Updates the metadata of a given form by merging the new metadata with the existing metadata.
+ * @param form The form to update metadata for
+ * @param metadata The new metadata object to merge with the current one
+ * @returns ok(updated metadata object) when update is successful
+ * @returns err(FormNotFoundError) if form cannot be found
+ * @returns err(DatabaseError) if any database errors occur during the update
+ */
+export const updateFormMetadata = (
+  form: IPopulatedForm,
+  metadata: FormMetadata,
+): ResultAsync<FormMetadata | undefined, DatabaseError | FormNotFoundError> => {
+  const ModelToUse = getFormModelByResponseMode(form.responseMode)
+
+  return ResultAsync.fromPromise(
+    ModelToUse.findByIdAndUpdate(
+      form._id,
+      { metadata: { ...form.metadata, ...metadata } },
+      { new: true },
+    ).exec(),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while updating form metadata',
+        meta: {
+          action: 'updateFormMetadata',
+          formId: form._id,
+          metadata,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync(updatedForm.metadata)
   })
 }
 

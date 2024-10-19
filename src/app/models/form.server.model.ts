@@ -670,6 +670,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         required: false,
         default: '',
       },
+
+      metadata: {
+        type: Object,
+        required: false,
+      },
     },
     formSchemaOptions,
   )

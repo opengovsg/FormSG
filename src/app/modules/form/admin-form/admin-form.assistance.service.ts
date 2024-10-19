@@ -24,7 +24,7 @@ import {
   ModelResponseInvalidSchemaFormatError,
   ModelResponseInvalidSyntaxError,
 } from './admin-form.errors'
-import { createFormFields } from './admin-form.service'
+import { createFormFields, updateFormMetadata } from './admin-form.service'
 import { Role, sendUserTextPrompt } from './ai-model'
 
 const logger = createLoggerWithLabel(module)
@@ -333,5 +333,6 @@ export const createFormFieldsUsingTextPrompt = ({
       )
       return createFormFields({ form, newFields: formFieldsToCreate, to: 0 })
     })
+    .andThen(() => updateFormMetadata(form, { ...form.metadata, mfb: true }))
     .map(() => undefined)
 }
