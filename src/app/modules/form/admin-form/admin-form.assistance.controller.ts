@@ -22,7 +22,7 @@ const handleTextPromptValidator = celebrate({
       .message('Your form ID is invalid.'),
   },
   [Segments.BODY]: {
-    prompt: Joi.string().required().max(300),
+    prompt: Joi.string().required().max(500),
   },
 })
 
