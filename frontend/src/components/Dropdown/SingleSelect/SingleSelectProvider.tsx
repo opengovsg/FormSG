@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ChangeHandler } from 'react-hook-form'
 import { VirtuosoHandle } from 'react-virtuoso'
 import {
   FormControlOptions,
@@ -25,7 +24,7 @@ export interface SingleSelectProviderProps<
   value: string
   /** Controlled selected item onChange handler */
   onChange: (value: string) => void
-  onBlur?: (() => void) | ChangeHandler
+  onBlur?: () => void
   /** Function based on which items in dropdown are filtered. Default filter filters by fuzzy match. */
   filter?: (items: Item[], value: string) => Item[]
   /** Initial dropdown opened state. */
