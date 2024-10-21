@@ -152,30 +152,6 @@ const workflow_step_2_with_all_fields_deleted: FormWorkflowStepDto = {
   edit: ['deleted_object_id_1', 'deleted_object_id_2'],
 }
 
-const workflow_step_1_with_respondent: FormWorkflowStepDto = {
-  _id: '61e6857c9c794b0012f1c6g1',
-  workflow_type: WorkflowType.Dynamic,
-  field: form_field_5._id,
-  edit: [
-    form_field_1._id,
-    form_field_2._id,
-    form_field_5._id,
-    form_field_6._id,
-  ],
-}
-
-const workflow_step_1_with_deleted_respondent: FormWorkflowStepDto = {
-  _id: '61e6857c9c794b0012f1c6g9',
-  workflow_type: WorkflowType.Dynamic,
-  field: 'invalid_object_id',
-  edit: [
-    form_field_1._id,
-    form_field_2._id,
-    form_field_5._id,
-    form_field_6._id,
-  ],
-}
-
 const workflow_step_3_with_approval: FormWorkflowStepDto = {
   _id: '61e6857c9c794b0012f1c6g2',
   workflow_type: WorkflowType.Dynamic,
@@ -231,12 +207,16 @@ MobileWithWorkflow.parameters = {
   chromatic: { viewports: [viewports.xs] },
 }
 
-export const Step1Respondent = Template.bind({})
-Step1Respondent.parameters = {
+export const Step1 = Template.bind({})
+Step1.parameters = {
   msw: buildMswRoutes({
     ...FORM_WITH_WORKFLOW,
-    workflow: [workflow_step_1_with_respondent],
+    workflow: [workflow_step_1],
   }),
+  documentation: {
+    storyDescription:
+      'Step 1 of a workflow should not show any respondent selected',
+  },
 }
 
 export const Step3Approval = Template.bind({})
@@ -244,14 +224,6 @@ Step3Approval.parameters = {
   msw: buildMswRoutes({
     ...FORM_WITH_WORKFLOW,
     workflow: [workflow_step_1, workflow_step_2, workflow_step_3_with_approval],
-  }),
-}
-
-export const Step1RespondentDeleted = Template.bind({})
-Step1RespondentDeleted.parameters = {
-  msw: buildMswRoutes({
-    ...FORM_WITH_WORKFLOW,
-    workflow: [workflow_step_1_with_deleted_respondent],
   }),
 }
 
