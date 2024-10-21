@@ -1,5 +1,5 @@
 import { errAsync, okAsync } from 'neverthrow'
-import { BasicField } from 'shared/types'
+import { BasicField, FormMetadata } from 'shared/types'
 
 import { FormFieldSchema, IPopulatedForm } from 'src/types'
 
@@ -15,7 +15,19 @@ import * as AiModel from '../ai-model'
 
 const MockedAiModel = jest.mocked(AiModel)
 
+jest.mock('../admin-form.service', () => ({
+  ...jest.requireActual('../admin-form.service'),
+  createFormFields: jest.fn(),
+  updateFormMetadata: jest.fn(),
+}))
+
 describe('admin-form.assistance.service', () => {
+  beforeEach(() => {
+    const mockedUpdateformMetadata =
+      AdminFormService.updateFormMetadata as jest.Mock
+    mockedUpdateformMetadata.mockReturnValue(okAsync({} as FormMetadata))
+  })
+
   afterEach(() => {
     jest.resetAllMocks()
   })
@@ -33,6 +45,12 @@ describe('admin-form.assistance.service', () => {
     } as unknown as IPopulatedForm
     const mockUserPrompt = 'mock user prompt'
     describe('valid model response', () => {
+      beforeEach(() => {
+        const mockedCreateFormFields =
+          AdminFormService.createFormFields as jest.Mock
+        mockedCreateFormFields.mockReturnValue(okAsync({} as FormFieldSchema[]))
+      })
+
       it('should successfully invoke createNewFields with correct # of fields when model response is valid', async () => {
         // Arrange
         const VALID_ALL_FIELDS_INCLUDED_RESPONSE =
@@ -41,9 +59,6 @@ describe('admin-form.assistance.service', () => {
         MockedAiModel.sendUserTextPrompt = jest
           .fn()
           .mockReturnValue(okAsync(VALID_ALL_FIELDS_INCLUDED_RESPONSE))
-        const createFormFieldsSpy = jest
-          .spyOn(AdminFormService, 'createFormFields')
-          .mockReturnValue(okAsync({} as FormFieldSchema[]))
 
         // Act
         await createFormFieldsUsingTextPrompt({
@@ -52,13 +67,14 @@ describe('admin-form.assistance.service', () => {
         })
 
         // Assert
-        expect(createFormFieldsSpy).toHaveBeenCalledTimes(1)
-        expect(createFormFieldsSpy).toHaveBeenCalledWith({
+        expect(AdminFormService.createFormFields).toHaveBeenCalledTimes(1)
+        expect(AdminFormService.createFormFields).toHaveBeenCalledWith({
           form: mockForm,
           newFields: expect.arrayContaining([expect.any(Object)]),
           to: 0,
         })
-        const calledNewFields = createFormFieldsSpy.mock.calls[0][0].newFields
+        const calledNewFields = (AdminFormService.createFormFields as jest.Mock)
+          .mock.calls[0][0].newFields
         expect(calledNewFields).toHaveLength(20)
       })
 
@@ -70,9 +86,6 @@ describe('admin-form.assistance.service', () => {
         MockedAiModel.sendUserTextPrompt = jest
           .fn()
           .mockReturnValue(okAsync(VALID_RADIO_ONLY_RESPONSE))
-        const createFormFieldsSpy = jest
-          .spyOn(AdminFormService, 'createFormFields')
-          .mockReturnValue(okAsync({} as FormFieldSchema[]))
 
         // Act
         await createFormFieldsUsingTextPrompt({
@@ -81,13 +94,14 @@ describe('admin-form.assistance.service', () => {
         })
 
         // Assert
-        expect(createFormFieldsSpy).toHaveBeenCalledTimes(1)
-        expect(createFormFieldsSpy).toHaveBeenCalledWith({
+        expect(AdminFormService.createFormFields).toHaveBeenCalledTimes(1)
+        expect(AdminFormService.createFormFields).toHaveBeenCalledWith({
           form: mockForm,
           newFields: expect.arrayContaining([expect.any(Object)]),
           to: 0,
         })
-        const calledNewFields = createFormFieldsSpy.mock.calls[0][0].newFields
+        const calledNewFields = (AdminFormService.createFormFields as jest.Mock)
+          .mock.calls[0][0].newFields
         expect(calledNewFields).toHaveLength(1)
         expect(calledNewFields[0].fieldType).toEqual(BasicField.Radio)
         expect(calledNewFields[0]).toContainKey('fieldOptions')
@@ -101,9 +115,6 @@ describe('admin-form.assistance.service', () => {
         MockedAiModel.sendUserTextPrompt = jest
           .fn()
           .mockReturnValue(okAsync(VALID_CHECKBOX_ONLY_RESPONSE))
-        const createFormFieldsSpy = jest
-          .spyOn(AdminFormService, 'createFormFields')
-          .mockReturnValue(okAsync({} as FormFieldSchema[]))
 
         // Act
         await createFormFieldsUsingTextPrompt({
@@ -112,13 +123,14 @@ describe('admin-form.assistance.service', () => {
         })
 
         // Assert
-        expect(createFormFieldsSpy).toHaveBeenCalledTimes(1)
-        expect(createFormFieldsSpy).toHaveBeenCalledWith({
+        expect(AdminFormService.createFormFields).toHaveBeenCalledTimes(1)
+        expect(AdminFormService.createFormFields).toHaveBeenCalledWith({
           form: mockForm,
           newFields: expect.arrayContaining([expect.any(Object)]),
           to: 0,
         })
-        const calledNewFields = createFormFieldsSpy.mock.calls[0][0].newFields
+        const calledNewFields = (AdminFormService.createFormFields as jest.Mock)
+          .mock.calls[0][0].newFields
         expect(calledNewFields).toHaveLength(1)
         expect(calledNewFields[0].fieldType).toEqual(BasicField.Checkbox)
         expect(calledNewFields[0]).toContainKey('fieldOptions')
@@ -132,9 +144,6 @@ describe('admin-form.assistance.service', () => {
         MockedAiModel.sendUserTextPrompt = jest
           .fn()
           .mockReturnValue(okAsync(VALID_DROPDOWN_ONLY_RESPONSE))
-        const createFormFieldsSpy = jest
-          .spyOn(AdminFormService, 'createFormFields')
-          .mockReturnValue(okAsync({} as FormFieldSchema[]))
 
         // Act
         await createFormFieldsUsingTextPrompt({
@@ -143,13 +152,14 @@ describe('admin-form.assistance.service', () => {
         })
 
         // Assert
-        expect(createFormFieldsSpy).toHaveBeenCalledTimes(1)
-        expect(createFormFieldsSpy).toHaveBeenCalledWith({
+        expect(AdminFormService.createFormFields).toHaveBeenCalledTimes(1)
+        expect(AdminFormService.createFormFields).toHaveBeenCalledWith({
           form: mockForm,
           newFields: expect.arrayContaining([expect.any(Object)]),
           to: 0,
         })
-        const calledNewFields = createFormFieldsSpy.mock.calls[0][0].newFields
+        const calledNewFields = (AdminFormService.createFormFields as jest.Mock)
+          .mock.calls[0][0].newFields
         expect(calledNewFields).toHaveLength(1)
         expect(calledNewFields[0].fieldType).toEqual(BasicField.Dropdown)
         expect(calledNewFields[0]).toContainKey('fieldOptions')
@@ -163,9 +173,6 @@ describe('admin-form.assistance.service', () => {
         MockedAiModel.sendUserTextPrompt = jest
           .fn()
           .mockReturnValue(okAsync(VALID_STATEMENT_RESPONSE))
-        const createFormFieldsSpy = jest
-          .spyOn(AdminFormService, 'createFormFields')
-          .mockReturnValue(okAsync({} as FormFieldSchema[]))
 
         // Act
         await createFormFieldsUsingTextPrompt({
@@ -174,13 +181,14 @@ describe('admin-form.assistance.service', () => {
         })
 
         // Assert
-        expect(createFormFieldsSpy).toHaveBeenCalledTimes(1)
-        expect(createFormFieldsSpy).toHaveBeenCalledWith({
+        expect(AdminFormService.createFormFields).toHaveBeenCalledTimes(1)
+        expect(AdminFormService.createFormFields).toHaveBeenCalledWith({
           form: mockForm,
           newFields: expect.arrayContaining([expect.any(Object)]),
           to: 0,
         })
-        const calledNewFields = createFormFieldsSpy.mock.calls[0][0].newFields
+        const calledNewFields = (AdminFormService.createFormFields as jest.Mock)
+          .mock.calls[0][0].newFields
         expect(calledNewFields).toHaveLength(1)
         expect(calledNewFields[0].fieldType).toEqual(BasicField.Statement)
         expect(calledNewFields[0].description).toBeTruthy()
