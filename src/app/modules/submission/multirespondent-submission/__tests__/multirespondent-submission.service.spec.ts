@@ -1,6 +1,5 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
-import { email } from 'convict-format-with-validator'
 import {
   BasicField,
   FieldResponsesV3,
