@@ -1,7 +1,8 @@
 import { left } from 'fp-ts/lib/Either'
 
-import { BasicField } from '../../../../shared/types'
+import { BasicField, FormFieldDto } from '../../../../shared/types'
 import { FieldValidationSchema } from '../../../types'
+import { ParsedClearFormFieldResponseV3 } from '../../../types/api'
 import { ResponseValidator } from '../../../types/field/utils/validation'
 import {
   ProcessedAttachmentResponse,
@@ -11,25 +12,81 @@ import {
   ProcessedTableResponse,
 } from '../../modules/submission/submission.types'
 
-import { constructAttachmentValidator } from './validators/attachmentValidator'
-import { constructCheckboxValidator } from './validators/checkboxValidator'
-import { constructChildrenValidator } from './validators/childrenValidator'
-import { constructCountryRegionValidator } from './validators/countryRegionValidator'
-import { constructDateValidator } from './validators/dateValidator'
-import { constructDecimalValidator } from './validators/decimalValidator'
-import { constructDropdownValidator } from './validators/dropdownValidator'
-import { constructEmailValidator } from './validators/emailValidator'
-import { constructHomeNoValidator } from './validators/homeNoValidator'
-import { constructMobileNoValidator } from './validators/mobileNoValidator'
-import { constructNricValidator } from './validators/nricValidator'
-import { constructNumberValidator } from './validators/numberValidator'
-import { constructRadioButtonValidator } from './validators/radioButtonValidator'
-import { constructRatingValidator } from './validators/ratingValidator'
-import { constructSectionValidator } from './validators/sectionValidator'
-import { constructTableValidator } from './validators/tableValidator'
-import constructTextValidator from './validators/textValidator'
-import { constructUenValidator } from './validators/uenValidator'
-import { constructYesNoValidator } from './validators/yesNoValidator'
+import {
+  constructAttachmentFieldValidatorV3,
+  constructAttachmentValidator,
+} from './validators/attachmentValidator'
+import {
+  constructCheckboxValidator,
+  constructCheckboxValidatorV3,
+} from './validators/checkboxValidator'
+import {
+  constructChildrenValidator,
+  constructChildrenValidatorV3,
+} from './validators/childrenValidator'
+import {
+  constructCountryRegionValidator,
+  constructCountryRegionValidatorV3,
+} from './validators/countryRegionValidator'
+import {
+  constructDateValidator,
+  constructDateValidatorV3,
+} from './validators/dateValidator'
+import {
+  constructDecimalValidator,
+  constructDecimalValidatorV3,
+} from './validators/decimalValidator'
+import {
+  constructDropdownValidator,
+  constructDropdownValidatorV3,
+} from './validators/dropdownValidator'
+import {
+  constructEmailValidator,
+  constructEmailValidatorV3,
+} from './validators/emailValidator'
+import {
+  constructHomeNoValidator,
+  constructHomeNoValidatorV3,
+} from './validators/homeNoValidator'
+import {
+  constructMobileNoValidator,
+  constructMobileNoValidatorV3,
+} from './validators/mobileNoValidator'
+import {
+  constructNricValidator,
+  constructNricValidatorV3,
+} from './validators/nricValidator'
+import {
+  constructNumberValidator,
+  constructNumberValidatorV3,
+} from './validators/numberValidator'
+import {
+  constructRadioButtonValidator,
+  constructRadioButtonValidatorV3,
+} from './validators/radioButtonValidator'
+import {
+  constructRatingValidator,
+  constructRatingValidatorV3,
+} from './validators/ratingValidator'
+import {
+  constructSectionValidator,
+  constructSectionValidatorV3,
+} from './validators/sectionValidator'
+import {
+  constructTableValidator,
+  constructTableValidatorV3,
+} from './validators/tableValidator'
+import constructTextValidator, {
+  constructTextValidatorV3,
+} from './validators/textValidator'
+import {
+  constructUenValidator,
+  constructUenValidatorV3,
+} from './validators/uenValidator'
+import {
+  constructYesNoValidator,
+  constructYesNoValidatorV3,
+} from './validators/yesNoValidator'
 
 /**
  * Constructs a validation function for a single answer response, using a form field field as a specification.
@@ -111,4 +168,70 @@ export const constructTableFieldValidator = (
     return constructTableValidator(formField)
   }
   return () => left('Unsupported field type')
+}
+
+export const constructFieldResponseValidatorV3 = ({
+  formId,
+  formField,
+  isVisible,
+}: {
+  formId: string
+  formField: FormFieldDto
+  isVisible: boolean
+}): ResponseValidator<ParsedClearFormFieldResponseV3> => {
+  switch (formField.fieldType) {
+    case BasicField.Number:
+      return constructNumberValidatorV3(formField)
+    case BasicField.Decimal:
+      return constructDecimalValidatorV3(formField)
+    case BasicField.ShortText:
+    case BasicField.LongText:
+      return constructTextValidatorV3(formField)
+    case BasicField.HomeNo:
+      return constructHomeNoValidatorV3(formField)
+    case BasicField.Dropdown:
+      return constructDropdownValidatorV3(formField)
+    case BasicField.Rating:
+      return constructRatingValidatorV3(formField)
+    case BasicField.Nric:
+      return constructNricValidatorV3()
+    case BasicField.Uen:
+      return constructUenValidatorV3()
+    case BasicField.Date:
+      return constructDateValidatorV3(formField)
+    case BasicField.CountryRegion:
+      return constructCountryRegionValidatorV3()
+    case BasicField.Section:
+      return constructSectionValidatorV3()
+    case BasicField.YesNo:
+      return constructYesNoValidatorV3()
+    case BasicField.Email:
+      return constructEmailValidatorV3(formField)
+    case BasicField.Mobile:
+      return constructMobileNoValidatorV3(formField)
+    case BasicField.Table:
+      return constructTableValidatorV3({
+        tableField: formField,
+        formId,
+        isVisible,
+        isDisabled: formField.disabled,
+      })
+    case BasicField.Radio:
+      return constructRadioButtonValidatorV3(formField)
+    case BasicField.Checkbox:
+      return constructCheckboxValidatorV3(formField)
+    case BasicField.Attachment:
+      return constructAttachmentFieldValidatorV3(formField)
+    case BasicField.Children:
+      return constructChildrenValidatorV3(formField)
+    case BasicField.Image: // fall-through
+    case BasicField.Statement:
+      return () =>
+        left('Unsupported field type: field should not be part of response')
+    default: {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const exhaustiveCheck: never = formField
+      return () => left('Unsupported field type')
+    }
+  }
 }

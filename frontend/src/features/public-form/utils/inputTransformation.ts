@@ -9,7 +9,7 @@ import {
   FieldResponseAnswerMapV3,
   RadioFieldResponsesV3,
   TableFieldResponsesV3,
-  VerifiableFieldResponsesV3,
+  VerifiableFieldResponseV3,
   YesNoFieldResponseV3,
 } from '~shared/types'
 import { BasicField, FormFieldDto } from '~shared/types/field'
@@ -65,7 +65,7 @@ const transformToVerifiableOutput = <
   F extends EmailFieldSchema | MobileFieldSchema,
 >(
   schema: F,
-  input?: VerifiableFieldValues | VerifiableFieldResponsesV3,
+  input?: VerifiableFieldValues | VerifiableFieldResponseV3,
 ): VerifiableAnswerOutput<F> => {
   return {
     ...pickBaseOutputFromSchema(schema),

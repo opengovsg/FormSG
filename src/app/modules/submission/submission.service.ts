@@ -22,6 +22,8 @@ import {
 import {
   EmailRespondentConfirmationField,
   IAttachmentInfo,
+  IEncryptSubmissionModel,
+  IMultirespondentSubmissionModel,
   IPopulatedForm,
   ISubmissionSchema,
   StorageModeSubmissionCursorData,
@@ -35,10 +37,7 @@ import {
 import { aws as AwsConfig } from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import getPendingSubmissionModel from '../../models/pending_submission.server.model'
-import getSubmissionModel, {
-  getEncryptSubmissionModel,
-  getMultirespondentSubmissionModel,
-} from '../../models/submission.server.model'
+import getSubmissionModel from '../../models/submission.server.model'
 import MailService from '../../services/mail/mail.service'
 import { AutoReplyMailData } from '../../services/mail/mail.types'
 import {
@@ -96,9 +95,6 @@ import {
 const logger = createLoggerWithLabel(module)
 const SubmissionModel = getSubmissionModel(mongoose)
 const PendingSubmissionModel = getPendingSubmissionModel(mongoose)
-const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
-const MultirespondentSubmissionModel =
-  getMultirespondentSubmissionModel(mongoose)
 
 /**
  * Returns number of form submissions of given form id in the given date range.
@@ -764,8 +760,8 @@ export const getSubmissionCursor = (
   } = {},
 ): Result<
   ReturnType<
-    | typeof EncryptSubmissionModel.getSubmissionCursorByFormId
-    | typeof MultirespondentSubmissionModel.getSubmissionCursorByFormId
+    | IEncryptSubmissionModel['getSubmissionCursorByFormId']
+    | IMultirespondentSubmissionModel['getSubmissionCursorByFormId']
   >,
   MalformedParametersError
 > => {

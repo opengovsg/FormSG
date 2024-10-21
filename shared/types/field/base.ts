@@ -23,6 +23,23 @@ export enum BasicField {
   Children = 'children',
 }
 
+/**
+ * Contains field types where the answer is a generic string type
+ */
+export enum GenericStringAnswerResponseFieldV3 {
+  Number = 'number',
+  Decimal = 'decimal',
+  ShortText = 'textfield',
+  LongText = 'textarea',
+  HomeNo = 'homeno',
+  Dropdown = 'dropdown',
+  Rating = 'rating',
+  Nric = 'nric',
+  Uen = 'uen',
+  Date = 'date',
+  CountryRegion = 'country_region',
+}
+
 export enum MyInfoAttribute {
   Name = 'name',
   PassportNumber = 'passportnumber',

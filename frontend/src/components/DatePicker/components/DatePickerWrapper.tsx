@@ -4,8 +4,7 @@ import { useDatePicker } from '../DatePickerContext'
 
 import { DatePickerInput } from './DatePickerInput'
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export const DatePickerWrapper = forwardRef<{}, 'input'>(
+export const DatePickerWrapper = forwardRef<object, 'input'>(
   ({ children }, ref) => {
     const {
       disclosureProps,

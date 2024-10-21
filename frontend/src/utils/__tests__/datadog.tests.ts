@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 describe('datadogRum', () => {
   describe('DD_RUM is undefined', () => {
     beforeEach(() => {
@@ -11,7 +12,6 @@ describe('datadogRum', () => {
     it('should return a noop function for addAction', () => {
       // Arrange
 
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const datadogRum = require('../datadog').datadogRum
       // Assert
       expect(window.DD_RUM).not.toBeDefined()
@@ -35,7 +35,6 @@ describe('datadogRum', () => {
 
     it('should call addAction without throwing', () => {
       // Arrange
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const datadogRum = require('../datadog').datadogRum
 
       // Assert

@@ -7,6 +7,7 @@ import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import {
   BasicField,
   FormDto,
+  FormFieldDto,
   FormResponseMode,
   SubmissionType,
 } from '../../../../../shared/types'
@@ -58,6 +59,7 @@ import {
   ProcessedMultirespondentSubmissionHandlerType,
   StrippedAttachmentResponseV3,
 } from './multirespondent-submission.types'
+import { validateMrfFieldResponses } from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -310,9 +312,10 @@ export const scanAndRetrieveAttachments = async (
 
 /**
  * What types of fields are there?
- *                Visible                     Not visible
- * Editable       Regular field validation    Not allowed
- * Non-editable   Not allowed / prev submiss  Not allowed
+ *              |  Visible                    | Not visible
+ * -------------|-----------------------------|-------------------
+ * Editable     |  Regular field validation   | Not allowed
+ * Non-editable |  Not allowed / prev submiss | Not allowed
  *
  * Initial submission:
  * 1. Retrieve form object
@@ -369,7 +372,9 @@ export const validateMultirespondentSubmission = async (
               previousSubmission: undefined,
               workflowStep: 0,
               workflow: req.formsg.formDef.workflow,
-              form_fields: req.formsg.formDef.form_fields,
+              form_fields: req.formsg.formDef.form_fields.map(
+                (ff) => ff.toObject() as FormFieldDto,
+              ),
               form_logics: req.formsg.formDef.form_logics,
             }),
       )
@@ -512,10 +517,17 @@ export const validateMultirespondentSubmission = async (
                   }),
                 ).map(() => undefined)
               })
-              .andThen(() =>
-                // TODO: Step 4: Validate each field content with each field's validator rules individually.
-                ok(undefined),
-              ),
+              .andThen(() => {
+                // TODO: (FRM-1688) Set to block after sure that validation logic works as expected.
+                validateMrfFieldResponses({
+                  formId,
+                  visibleFieldIds,
+                  formFields: form_fields,
+                  responses: req.body.responses,
+                })
+
+                return ok(req.body.responses)
+              }),
           )
         },
       )

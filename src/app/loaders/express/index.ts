@@ -85,7 +85,7 @@ const loadExpressApp = async (connection: Connection) => {
   app.set('showStackError', true)
 
   // Set EJS as the template engine
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   app.engine('server.view.html', require('ejs').__express)
 
   // Set views path and view engine
