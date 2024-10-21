@@ -332,6 +332,7 @@ export interface IMultirespondentForm extends IForm {
   publicKey: string
   workflow: FormWorkflowDto
   stepsToNotify: string[]
+  stepOneEmailNotificationFieldId: string
 }
 
 export type IMultirespondentFormSchema = IMultirespondentForm & IFormSchema

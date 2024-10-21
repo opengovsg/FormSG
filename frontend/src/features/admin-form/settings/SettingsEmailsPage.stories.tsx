@@ -1,6 +1,11 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { PaymentChannel, PaymentType } from '~shared/types'
+import {
+  BasicField,
+  FormFieldDto,
+  PaymentChannel,
+  PaymentType,
+} from '~shared/types'
 import {
   AdminFormDto,
   FormDto,
@@ -125,9 +130,17 @@ PrivateMultiRespondentForm.parameters = {
   msw: buildMswRoutes({
     mode: FormResponseMode.Multirespondent,
     overrides: {
+      form_fields: [
+        {
+          _id: 'email_field_id',
+          fieldType: BasicField.Email,
+          title: 'Respondent 1 Email',
+        } as FormFieldDto,
+      ],
       status: FormStatus.Private,
-      emails: [],
-      stepsToNotify: [],
+      stepOneEmailNotificationFieldId: 'email_field_id',
+      emails: ['selected_email@example.com', 'selected_email_2@example.com'],
+      stepsToNotify: ['field_id_2'],
       workflow: [
         {
           _id: 'field_id_1',
@@ -142,6 +155,48 @@ PrivateMultiRespondentForm.parameters = {
           edit: [],
         },
       ],
+    },
+  }),
+}
+
+export const PrivateMultiRespondentFormWithInvalidStepOneEmailNotificationFieldId =
+  Template.bind({})
+PrivateMultiRespondentFormWithInvalidStepOneEmailNotificationFieldId.parameters =
+  {
+    msw: buildMswRoutes({
+      mode: FormResponseMode.Multirespondent,
+      overrides: {
+        status: FormStatus.Private,
+        stepOneEmailNotificationFieldId: 'invalid_field_id',
+        emails: ['selected_email@example.com', 'selected_email_2@example.com'],
+        stepsToNotify: ['field_id_2'],
+        workflow: [
+          {
+            _id: 'field_id_1',
+            workflow_type: WorkflowType.Dynamic,
+            field: 'email_field_id',
+            edit: [],
+          },
+          {
+            _id: 'field_id_2',
+            workflow_type: WorkflowType.Static,
+            emails: [],
+            edit: [],
+          },
+        ],
+      },
+    }),
+  }
+
+export const PrivateMultiRespondentFormNothingSelected = Template.bind({})
+PrivateMultiRespondentFormNothingSelected.parameters = {
+  msw: buildMswRoutes({
+    mode: FormResponseMode.Multirespondent,
+    overrides: {
+      status: FormStatus.Private,
+      emails: [],
+      stepsToNotify: [],
+      stepOneEmailNotificationFieldId: undefined,
     },
   }),
 }
@@ -163,24 +218,31 @@ PublicMultiRespondentForm.parameters = {
   msw: buildMswRoutes({
     mode: FormResponseMode.Multirespondent,
     overrides: {
+      form_fields: [
+        {
+          _id: 'email_field_id',
+          fieldType: BasicField.Email,
+          title: 'Respondent 1 Email',
+        } as FormFieldDto,
+      ],
       status: FormStatus.Public,
-      emails: ['expected1@example.com', 'expected2@example.com'],
-      stepsToNotify: ['field_1_id'],
+      stepOneEmailNotificationFieldId: 'email_field_id',
+      emails: ['selected_email@example.com', 'selected_email_2@example.com'],
+      stepsToNotify: ['field_id_2'],
       workflow: [
         {
-          _id: 'field_1_id',
+          _id: 'field_id_1',
           workflow_type: WorkflowType.Dynamic,
           field: 'email_field_id',
           edit: [],
         },
         {
-          _id: 'field_2_id',
+          _id: 'field_id_2',
           workflow_type: WorkflowType.Static,
           emails: [],
           edit: [],
         },
       ],
-      ...PAYMENTS_DISABLED,
     },
   }),
 }

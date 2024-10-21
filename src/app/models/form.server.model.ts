@@ -380,6 +380,10 @@ const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
     ],
     required: true,
   },
+  stepOneEmailNotificationFieldId: {
+    type: String,
+    default: '',
+  },
 })
 
 const MultirespondentFormWorkflowPath = MultirespondentFormSchema.path(

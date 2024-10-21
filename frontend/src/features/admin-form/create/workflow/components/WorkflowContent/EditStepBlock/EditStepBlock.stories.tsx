@@ -203,36 +203,6 @@ export const DeletedApprovalFieldSelected = {
   },
 }
 
-export const DeletedStep1RespondentSelected = {
-  args: {
-    stepNumber: 0,
-    defaultValues: {
-      workflow_type: WorkflowType.Dynamic,
-      field: 'deleted_objectId',
-      edit: [form_field_3._id],
-    },
-  },
-  parameters: {
-    docs: {
-      description: {
-        component:
-          'When submit is clicked, no validation error should occur since email field is set to empty string',
-      },
-    },
-  },
-}
-
-export const Step1RespondentSelected = {
-  args: {
-    stepNumber: 0,
-    defaultValues: {
-      workflow_type: WorkflowType.Dynamic,
-      field: form_field_3._id,
-      edit: [form_field_3._id],
-    },
-  },
-}
-
 export const Step3AllSelectedValid = {
   args: {
     stepNumber: 2,

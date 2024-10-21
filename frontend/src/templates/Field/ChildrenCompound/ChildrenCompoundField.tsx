@@ -229,6 +229,7 @@ const ChildrenBody = ({
   const {
     ref: childNameRegisterRef,
     onChange: selectOnChange,
+    onBlur: selectOnBlur,
     ...selectRest
   } = register(childNamePath, validationRules)
 
@@ -421,6 +422,7 @@ const ChildrenBody = ({
             case MyInfoChildAttributes.ChildGender:
             case MyInfoChildAttributes.ChildRace:
             case MyInfoChildAttributes.ChildSecondaryRace: {
+              const { onBlur, ...rest } = register(fieldPath, validationRules)
               return (
                 <FormControl
                   key={key}
@@ -432,7 +434,7 @@ const ChildrenBody = ({
                     {MYINFO_ATTRIBUTE_MAP[subField].description}
                   </FormLabel>
                   <SingleSelect
-                    {...register(fieldPath, validationRules)}
+                    {...rest}
                     value={value}
                     items={
                       MYINFO_ATTRIBUTE_MAP[subField].fieldOptions as string[]

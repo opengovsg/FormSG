@@ -34,25 +34,6 @@ interface RespondentBadgeProps {
   step: FormWorkflowStepDto
   idToFieldMap: Dictionary<FormFieldWithQuestionNo<FormField>>
 }
-const FirstStepRespondentBadge = ({
-  step,
-  idToFieldMap,
-}: RespondentBadgeProps): JSX.Element | null => {
-  if (
-    step.workflow_type === WorkflowType.Static ||
-    (step.workflow_type === WorkflowType.Dynamic && !step.field)
-  ) {
-    return (
-      <FieldLogicBadge
-        defaults={{
-          variant: 'info',
-          message: 'No email field included in this step',
-        }}
-      />
-    )
-  }
-  return <FieldLogicBadge field={idToFieldMap[step.field]} />
-}
 
 const SubsequentStepRespondentBadges = ({
   step,
@@ -179,14 +160,7 @@ export const InactiveStepBlock = ({
             {/* TODO: (MRF-email-notif) Remove isTest and betaFlag check when MRF email
             notifications is out of beta */}
             {isFirstStep ? (
-              isTest || user?.betaFlags?.mrfEmailNotifications ? (
-                <FirstStepRespondentBadge
-                  step={step}
-                  idToFieldMap={idToFieldMap}
-                />
-              ) : (
-                <Text>Anyone you share the form link with</Text>
-              )
+              <Text>Anyone who has access to your form</Text>
             ) : (
               <Flex
                 flexDir={{ base: 'column', md: 'row' }}

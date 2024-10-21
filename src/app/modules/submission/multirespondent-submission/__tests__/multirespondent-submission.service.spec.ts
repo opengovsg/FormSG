@@ -89,8 +89,8 @@ describe('multirespondent-submission.service', () => {
       const threeStepApprovalWorkflow: FormWorkflowStepDto[] = [
         {
           _id: stepOneId,
-          workflow_type: WorkflowType.Dynamic,
-          field: emailFieldId1,
+          workflow_type: WorkflowType.Static,
+          emails: [],
           edit: [],
         },
         {
@@ -118,7 +118,7 @@ describe('multirespondent-submission.service', () => {
           _id: mockFormId,
           workflow: threeStepApprovalWorkflow,
           emails: [expectedEmails[1]],
-          stepsToNotify: [stepOneId],
+          stepOneEmailNotificationFieldId: emailFieldId1,
         } as IPopulatedMultirespondentForm,
         currentStepNumber: currentStepNumber,
         encryptedPayload: {
@@ -137,9 +137,9 @@ describe('multirespondent-submission.service', () => {
       expect(sendMrfWorkflowCompletionEmailSpy).not.toHaveBeenCalled()
       expect(sendMRFWorkflowStepEmailSpy).toHaveBeenCalledTimes(1)
       // destination emails are correct
-      expect(sendMRFWorkflowStepEmailSpy.mock.calls[0][0].emails).toEqual(
-        expectedEmails,
-      )
+      expect(
+        sendMRFWorkflowStepEmailSpy.mock.calls[0][0].emails,
+      ).toContainValues(expectedEmails)
       expect(sendMRFWorkflowStepEmailSpy.mock.calls[0][0].emails.length).toBe(
         expectedEmails.length,
       )
@@ -198,8 +198,8 @@ describe('multirespondent-submission.service', () => {
       const threeStepApprovalWorkflow: FormWorkflowStepDto[] = [
         {
           _id: stepOneId,
-          workflow_type: WorkflowType.Dynamic,
-          field: emailFieldId1,
+          workflow_type: WorkflowType.Static,
+          emails: [],
           edit: [],
         },
         {
@@ -227,7 +227,7 @@ describe('multirespondent-submission.service', () => {
           _id: mockFormId,
           workflow: threeStepApprovalWorkflow,
           emails: [expectedEmails[1]],
-          stepsToNotify: [stepOneId],
+          stepOneEmailNotificationFieldId: emailFieldId1,
         } as IPopulatedMultirespondentForm,
         currentStepNumber: currentWorkflowStep,
         encryptedPayload: {
@@ -247,7 +247,7 @@ describe('multirespondent-submission.service', () => {
       expect(sendMRFWorkflowStepEmailSpy).not.toHaveBeenCalled()
       // is approve email and destination emails are correct
       expect(sendMrfApprovalEmailSpy.mock.calls[0][0].isRejected).toBeFalse()
-      expect(sendMrfApprovalEmailSpy.mock.calls[0][0].emails).toEqual(
+      expect(sendMrfApprovalEmailSpy.mock.calls[0][0].emails).toContainValues(
         expectedEmails,
       )
       expect(sendMrfApprovalEmailSpy.mock.calls[0][0].emails.length).toBe(
@@ -313,8 +313,8 @@ describe('multirespondent-submission.service', () => {
       const threeStepApprovalWorkflow: FormWorkflowStepDto[] = [
         {
           _id: stepOneId,
-          workflow_type: WorkflowType.Dynamic,
-          field: emailFieldId1,
+          workflow_type: WorkflowType.Static,
+          emails: [],
           edit: [],
         },
         {
@@ -342,7 +342,8 @@ describe('multirespondent-submission.service', () => {
           _id: mockFormId,
           workflow: threeStepApprovalWorkflow,
           emails: [expectedEmails[3]],
-          stepsToNotify: [stepOneId, stepTwoId, stepThreeId],
+          stepsToNotify: [stepTwoId, stepThreeId],
+          stepOneEmailNotificationFieldId: emailFieldId1,
         } as IPopulatedMultirespondentForm,
         currentStepNumber: currentWorkflowStep,
         encryptedPayload: {
@@ -362,7 +363,7 @@ describe('multirespondent-submission.service', () => {
       expect(sendMRFWorkflowStepEmailSpy).not.toHaveBeenCalled()
       // is approve email and destination emails are correct
       expect(sendMrfApprovalEmailSpy.mock.calls[0][0].isRejected).toBeFalse()
-      expect(sendMrfApprovalEmailSpy.mock.calls[0][0].emails).toEqual(
+      expect(sendMrfApprovalEmailSpy.mock.calls[0][0].emails).toContainValues(
         expectedEmails,
       )
       expect(sendMrfApprovalEmailSpy.mock.calls[0][0].emails.length).toBe(
@@ -423,8 +424,8 @@ describe('multirespondent-submission.service', () => {
       const threeStepApprovalWorkflow: FormWorkflowStepDto[] = [
         {
           _id: stepOneId,
-          workflow_type: WorkflowType.Dynamic,
-          field: emailFieldId1,
+          workflow_type: WorkflowType.Static,
+          emails: [],
           edit: [],
         },
         {
@@ -452,7 +453,7 @@ describe('multirespondent-submission.service', () => {
           _id: mockFormId,
           workflow: threeStepApprovalWorkflow,
           emails: [expectedEmails[1]],
-          stepsToNotify: [stepOneId],
+          stepOneEmailNotificationFieldId: emailFieldId1,
         } as IPopulatedMultirespondentForm,
         currentStepNumber: currentWorkflowStep,
         encryptedPayload: {
@@ -472,7 +473,7 @@ describe('multirespondent-submission.service', () => {
       expect(sendMRFWorkflowStepEmailSpy).not.toHaveBeenCalled()
       // is approve email and destination emails are correct
       expect(sendMrfApprovalEmailSpy.mock.calls[0][0].isRejected).toBeFalse()
-      expect(sendMrfApprovalEmailSpy.mock.calls[0][0].emails).toEqual(
+      expect(sendMrfApprovalEmailSpy.mock.calls[0][0].emails).toContainValues(
         expectedEmails,
       )
       expect(sendMrfApprovalEmailSpy.mock.calls[0][0].emails.length).toBe(
@@ -529,8 +530,8 @@ describe('multirespondent-submission.service', () => {
       const threeStepApprovalWorkflow: FormWorkflowStepDto[] = [
         {
           _id: stepOneId,
-          workflow_type: WorkflowType.Dynamic,
-          field: emailFieldId1,
+          workflow_type: WorkflowType.Static,
+          emails: [],
           edit: [],
         },
         {
@@ -558,7 +559,7 @@ describe('multirespondent-submission.service', () => {
           _id: mockFormId,
           workflow: threeStepApprovalWorkflow,
           emails: [expectedEmails[1]],
-          stepsToNotify: [stepOneId],
+          stepOneEmailNotificationFieldId: emailFieldId1,
         } as IPopulatedMultirespondentForm,
         currentStepNumber: currentStepNumber,
         encryptedPayload: {
@@ -578,7 +579,7 @@ describe('multirespondent-submission.service', () => {
       expect(sendMRFWorkflowStepEmailSpy).not.toHaveBeenCalled()
       // is rejected email and destination emails are correct
       expect(sendMrfApprovalEmailSpy.mock.calls[0][0].isRejected).toBeTrue()
-      expect(sendMrfApprovalEmailSpy.mock.calls[0][0].emails).toEqual(
+      expect(sendMrfApprovalEmailSpy.mock.calls[0][0].emails).toContainValues(
         expectedEmails,
       )
       expect(sendMrfApprovalEmailSpy.mock.calls[0][0].emails.length).toBe(
@@ -641,8 +642,8 @@ describe('multirespondent-submission.service', () => {
       const fiveStepApprovalWorkflow: FormWorkflowStepDto[] = [
         {
           _id: stepOneId,
-          workflow_type: WorkflowType.Dynamic,
-          field: emailFieldId1,
+          workflow_type: WorkflowType.Static,
+          emails: [],
           edit: [],
         },
         {
@@ -682,7 +683,8 @@ describe('multirespondent-submission.service', () => {
           _id: mockFormId,
           workflow: fiveStepApprovalWorkflow,
           emails: [expectedEmails[1], expectedEmails[2]],
-          stepsToNotify: [stepOneId, stepThreeId, stepFourId, stepFiveId],
+          stepsToNotify: [stepThreeId, stepFourId, stepFiveId],
+          stepOneEmailNotificationFieldId: emailFieldId1,
         } as IPopulatedMultirespondentForm,
         currentStepNumber: currentStepNumber,
         encryptedPayload: {
@@ -702,7 +704,7 @@ describe('multirespondent-submission.service', () => {
       expect(sendMRFWorkflowStepEmailSpy).not.toHaveBeenCalled()
       // is rejected email and destination emails are correct
       expect(sendMrfApprovalEmailSpy.mock.calls[0][0].isRejected).toBeTrue()
-      expect(sendMrfApprovalEmailSpy.mock.calls[0][0].emails).toEqual(
+      expect(sendMrfApprovalEmailSpy.mock.calls[0][0].emails).toContainValues(
         expectedEmails,
       )
       expect(sendMrfApprovalEmailSpy.mock.calls[0][0].emails.length).toBe(
@@ -763,8 +765,8 @@ describe('multirespondent-submission.service', () => {
       const threeStepApprovalWorkflow: FormWorkflowStepDto[] = [
         {
           _id: stepOneId,
-          workflow_type: WorkflowType.Dynamic,
-          field: emailFieldId1,
+          workflow_type: WorkflowType.Static,
+          emails: [],
           edit: [],
         },
         {
@@ -792,7 +794,7 @@ describe('multirespondent-submission.service', () => {
           _id: mockFormId,
           workflow: threeStepApprovalWorkflow,
           emails: [expectedEmails[1]],
-          stepsToNotify: [stepOneId],
+          stepOneEmailNotificationFieldId: emailFieldId1,
         } as IPopulatedMultirespondentForm,
         currentStepNumber,
         encryptedPayload: {
@@ -812,7 +814,7 @@ describe('multirespondent-submission.service', () => {
       expect(sendMRFWorkflowStepEmailSpy).not.toHaveBeenCalled()
       // is rejected email and destination emails are correct
       expect(sendMrfApprovalEmailSpy.mock.calls[0][0].isRejected).toBeTrue()
-      expect(sendMrfApprovalEmailSpy.mock.calls[0][0].emails).toEqual(
+      expect(sendMrfApprovalEmailSpy.mock.calls[0][0].emails).toContainValues(
         expectedEmails,
       )
       expect(sendMrfApprovalEmailSpy.mock.calls[0][0].emails.length).toBe(
@@ -857,9 +859,9 @@ describe('multirespondent-submission.service', () => {
 
       // Assert
       expect(sendMrfWorkflowCompletionEmailSpy).toHaveBeenCalledTimes(1)
-      expect(sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails).toEqual(
-        ['email1@example.com'],
-      )
+      expect(
+        sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails,
+      ).toContainValues(['email1@example.com'])
       expect(
         sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails.length,
       ).toBe(1)
@@ -905,8 +907,8 @@ describe('multirespondent-submission.service', () => {
       const fourStepWorkflow: FormWorkflowStepDto[] = [
         {
           _id: stepOneId,
-          workflow_type: WorkflowType.Dynamic,
-          field: emailFieldId1,
+          workflow_type: WorkflowType.Static,
+          emails: [],
           edit: [],
         },
         {
@@ -938,7 +940,8 @@ describe('multirespondent-submission.service', () => {
           _id: mockFormId,
           workflow: fourStepWorkflow,
           emails: [expectedEmails[3]],
-          stepsToNotify: [stepOneId, stepFourId],
+          stepsToNotify: [stepFourId],
+          stepOneEmailNotificationFieldId: emailFieldId1,
         } as IPopulatedMultirespondentForm,
         currentStepNumber,
         encryptedPayload: {
@@ -955,9 +958,9 @@ describe('multirespondent-submission.service', () => {
       // Assert
       expect(sendMrfWorkflowCompletionEmailSpy).toHaveBeenCalledTimes(1)
       // The emails sent to should only be the expected emails exactly
-      expect(sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails).toEqual(
-        expectedEmails,
-      )
+      expect(
+        sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails,
+      ).toContainValues(expectedEmails)
       expect(
         sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails.length,
       ).toBe(expectedEmails.length)
@@ -1003,8 +1006,8 @@ describe('multirespondent-submission.service', () => {
       const fourStepWorkflow: FormWorkflowStepDto[] = [
         {
           _id: stepOneId,
-          workflow_type: WorkflowType.Dynamic,
-          field: emailFieldId1,
+          workflow_type: WorkflowType.Static,
+          emails: [],
           edit: [],
         },
         {
@@ -1036,7 +1039,8 @@ describe('multirespondent-submission.service', () => {
           _id: mockFormId,
           workflow: fourStepWorkflow,
           emails: [selectedEmails[3]],
-          stepsToNotify: [stepOneId, stepFourId],
+          stepsToNotify: [stepFourId],
+          stepOneEmailNotificationFieldId: emailFieldId1,
         } as IPopulatedMultirespondentForm,
         currentStepNumber,
         encryptedPayload: {
@@ -1052,6 +1056,322 @@ describe('multirespondent-submission.service', () => {
 
       // Assert
       expect(sendMrfWorkflowCompletionEmailSpy).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('step one email notification field id', () => {
+    const mockFormId = new ObjectId().toHexString()
+    const mockSubmissionId = new ObjectId().toHexString()
+
+    it('sends completion email to step one email notification field id, stepsToNotify and static emails when step one email notification field id is set', async () => {
+      // Arrange
+      const sendMrfWorkflowCompletionEmailSpy = jest.spyOn(
+        MailService,
+        'sendMrfWorkflowCompletionEmail',
+      )
+      const stepOneEmailNotificationFieldId = new ObjectId().toHexString()
+      const stepOneEditEmailFieldId = new ObjectId().toHexString()
+
+      const expectedStepOneEmail = 'expected_step_one_email@example.com'
+      const notExpectedStepOneEmail = 'not_expected_step_one_email@example.com'
+      const expectedStaticEmail = 'expected_static_email@example.com'
+      const expectedStepTwoEmail = 'expected_step_two_static_email@example.com'
+
+      const expectedEmails = [
+        expectedStepOneEmail,
+        expectedStaticEmail,
+        expectedStepTwoEmail,
+      ]
+
+      const stepOneId = new ObjectId().toHexString()
+      const stepTwoId = new ObjectId().toHexString()
+
+      const workflow: FormWorkflowStepDto[] = [
+        {
+          _id: stepOneId,
+          workflow_type: WorkflowType.Dynamic,
+          field: stepOneEditEmailFieldId,
+          edit: [stepOneEditEmailFieldId],
+        },
+        {
+          _id: stepTwoId,
+          workflow_type: WorkflowType.Static,
+          emails: [expectedStepTwoEmail],
+          edit: [],
+        },
+      ]
+
+      const form: IPopulatedMultirespondentForm = {
+        _id: mockFormId,
+        workflow,
+        emails: [expectedStaticEmail],
+        stepsToNotify: [stepOneId, stepTwoId], // Including step one in stepsToNotify
+        stepOneEmailNotificationFieldId,
+      } as IPopulatedMultirespondentForm
+
+      const submissionResponses: FieldResponsesV3 = {
+        [stepOneEmailNotificationFieldId]: {
+          fieldType: BasicField.Email,
+          answer: {
+            value: expectedStepOneEmail,
+          },
+        },
+        [stepOneEditEmailFieldId]: {
+          fieldType: BasicField.Email,
+          answer: {
+            value: notExpectedStepOneEmail,
+          },
+        },
+      }
+
+      // Act
+      await performMultiRespondentPostSubmissionUpdateActions({
+        submissionId: mockSubmissionId,
+        form,
+        currentStepNumber: workflow.length - 1,
+        encryptedPayload: {
+          encryptedContent: 'encryptedContent',
+          version: 1,
+          submissionPublicKey: 'submissionPublicKey',
+          encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+          responses: submissionResponses,
+          workflowStep: workflow.length - 1,
+        } as MultirespondentSubmissionDto,
+        logMeta: {} as any,
+      })
+
+      // Assert
+      expect(sendMrfWorkflowCompletionEmailSpy).toHaveBeenCalledTimes(1)
+      expect(
+        sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails,
+      ).toContainValues(expectedEmails)
+      expect(
+        sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails.length,
+      ).toBe(expectedEmails.length)
+      expect(
+        sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails.includes(
+          notExpectedStepOneEmail,
+        ),
+      ).toBe(false)
+    })
+
+    it('does not send completion to step one email notification field id but still sends to stepsToNotify and static emails when step one email notification field id is not set', async () => {
+      // Arrange
+      const sendMrfWorkflowCompletionEmailSpy = jest.spyOn(
+        MailService,
+        'sendMrfWorkflowCompletionEmail',
+      )
+      const staticEmail = 'expected_static_email@example.com'
+      const stepTwoEmail = 'expected_step_two_static_email@example.com'
+      const expectedEmails = [staticEmail, stepTwoEmail]
+
+      const stepOneId = new ObjectId().toHexString()
+      const stepTwoId = new ObjectId().toHexString()
+
+      const workflow: FormWorkflowStepDto[] = [
+        {
+          _id: stepOneId,
+          workflow_type: WorkflowType.Static,
+          emails: [],
+          edit: [],
+        },
+        {
+          _id: stepTwoId,
+          workflow_type: WorkflowType.Static,
+          emails: [stepTwoEmail],
+          edit: [],
+        },
+      ]
+
+      const form: IPopulatedMultirespondentForm = {
+        _id: mockFormId,
+        workflow,
+        emails: [staticEmail],
+        stepsToNotify: [stepTwoId],
+      } as IPopulatedMultirespondentForm
+
+      // Act
+      await performMultiRespondentPostSubmissionUpdateActions({
+        submissionId: mockSubmissionId,
+        form,
+        currentStepNumber: workflow.length - 1,
+        encryptedPayload: {
+          encryptedContent: 'encryptedContent',
+          version: 1,
+          submissionPublicKey: 'submissionPublicKey',
+          encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+          workflowStep: workflow.length - 1,
+        } as MultirespondentSubmissionDto,
+        logMeta: {} as any,
+      })
+
+      // Assert
+      expect(sendMrfWorkflowCompletionEmailSpy).toHaveBeenCalledTimes(1)
+      expect(
+        sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails,
+      ).toContainValues(expectedEmails)
+      expect(
+        sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails.length,
+      ).toBe(expectedEmails.length)
+    })
+
+    it('does not send completion email to step one email notification field id but still sends to stepsToNotify and static emails when it is deleted', async () => {
+      // Arrange
+      const sendMrfWorkflowCompletionEmailSpy = jest.spyOn(
+        MailService,
+        'sendMrfWorkflowCompletionEmail',
+      )
+      const stepOneEmailNotificationFieldId = new ObjectId().toHexString()
+      const staticEmail = 'expected_static_email@example.com'
+      const stepTwoEmail = 'expected_step_two_static_email@example.com'
+
+      const stepOneId = new ObjectId().toHexString()
+      const stepTwoId = new ObjectId().toHexString()
+      const expectedEmails = [staticEmail, stepTwoEmail]
+
+      const workflow: FormWorkflowStepDto[] = [
+        {
+          _id: stepOneId,
+          workflow_type: WorkflowType.Static,
+          emails: [],
+          edit: [],
+        },
+        {
+          _id: stepTwoId,
+          workflow_type: WorkflowType.Static,
+          emails: [stepTwoEmail],
+          edit: [],
+        },
+      ]
+
+      const form: IPopulatedMultirespondentForm = {
+        _id: mockFormId,
+        workflow,
+        emails: [staticEmail],
+        stepsToNotify: [stepTwoId],
+        stepOneEmailNotificationFieldId,
+      } as IPopulatedMultirespondentForm
+
+      const submissionResponses: FieldResponsesV3 = {
+        // stepOneEmailNotificationFieldId is not present in responses
+      }
+
+      // Act
+      await performMultiRespondentPostSubmissionUpdateActions({
+        submissionId: mockSubmissionId,
+        form,
+        currentStepNumber: workflow.length - 1,
+        encryptedPayload: {
+          encryptedContent: 'encryptedContent',
+          version: 1,
+          submissionPublicKey: 'submissionPublicKey',
+          encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+          responses: submissionResponses,
+          workflowStep: workflow.length - 1,
+        } as MultirespondentSubmissionDto,
+        logMeta: {} as any,
+      })
+
+      // Assert
+      expect(sendMrfWorkflowCompletionEmailSpy).toHaveBeenCalledTimes(1)
+      expect(
+        sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails,
+      ).toContainValues(expectedEmails)
+      expect(
+        sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails.length,
+      ).toBe(expectedEmails.length)
+    })
+
+    it('does not send duplicate completion email to step one in stepsToNotify', async () => {
+      // Arrange
+      const sendMrfWorkflowCompletionEmailSpy = jest.spyOn(
+        MailService,
+        'sendMrfWorkflowCompletionEmail',
+      )
+      const stepOneEmailNotificationFieldId = new ObjectId().toHexString()
+      const emailFieldId2 = new ObjectId().toHexString()
+
+      const expectedStepOneEmail = 'expected_step_one_email@example.com'
+      const notExpectedStepOneEmail = 'not_expected_step_one_email@example.com'
+      const expectedStaticEmail = 'expected_static_email@example.com'
+      const expectedStepTwoEmail = 'expected_step_two_static_email@example.com'
+
+      const expectedEmails = [
+        expectedStepOneEmail,
+        expectedStaticEmail,
+        expectedStepTwoEmail,
+      ]
+
+      const stepOneId = new ObjectId().toHexString()
+      const stepTwoId = new ObjectId().toHexString()
+
+      const workflow: FormWorkflowStepDto[] = [
+        {
+          _id: stepOneId,
+          workflow_type: WorkflowType.Dynamic,
+          field: emailFieldId2,
+          edit: [emailFieldId2],
+        },
+        {
+          _id: stepTwoId,
+          workflow_type: WorkflowType.Static,
+          emails: [expectedStepTwoEmail],
+          edit: [],
+        },
+      ]
+
+      const form: IPopulatedMultirespondentForm = {
+        _id: mockFormId,
+        workflow,
+        emails: [expectedStaticEmail],
+        stepsToNotify: [stepOneId, stepTwoId], // Including step one in stepsToNotify
+        stepOneEmailNotificationFieldId,
+      } as IPopulatedMultirespondentForm
+
+      const submissionResponses: FieldResponsesV3 = {
+        [stepOneEmailNotificationFieldId]: {
+          fieldType: BasicField.Email,
+          answer: {
+            value: expectedStepOneEmail,
+          },
+        },
+        [emailFieldId2]: {
+          fieldType: BasicField.Email,
+          answer: {
+            value: notExpectedStepOneEmail,
+          },
+        },
+      }
+
+      // Act
+      await performMultiRespondentPostSubmissionUpdateActions({
+        submissionId: mockSubmissionId,
+        form,
+        currentStepNumber: workflow.length - 1,
+        encryptedPayload: {
+          encryptedContent: 'encryptedContent',
+          version: 1,
+          submissionPublicKey: 'submissionPublicKey',
+          encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+          responses: submissionResponses,
+          workflowStep: workflow.length - 1,
+        } as MultirespondentSubmissionDto,
+        logMeta: {} as any,
+      })
+
+      // Assert
+      expect(sendMrfWorkflowCompletionEmailSpy).toHaveBeenCalledTimes(1)
+      expect(
+        sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails,
+      ).toContainValues(expectedEmails)
+      expect(
+        sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails.length,
+      ).toBe(expectedEmails.length)
+      expect(
+        sendMrfWorkflowCompletionEmailSpy.mock.calls[0][0].emails.includes(
+          notExpectedStepOneEmail,
+        ),
+      ).toBe(false)
     })
   })
 })
