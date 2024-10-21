@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import {
   Box,
@@ -140,32 +140,6 @@ const MrfEmailNotificationsForm = ({
       ? undefined
       : 'me@example.com'
 
-  const isStepOneEmailFieldDeleted = useMemo(() => {
-    return Boolean(
-      !isLoading &&
-        stepOneEmailNotificationFieldId &&
-        !emailFieldItems
-          .map(({ value: fieldValue }) => fieldValue)
-          .includes(stepOneEmailNotificationFieldId),
-    )
-  }, [isLoading, stepOneEmailNotificationFieldId, emailFieldItems])
-
-  const getValueIfNotDeleted = useCallback(
-    (value: string) => {
-      // Why: When previously selected email field has been deleted, the value is still set to the previous,
-      // we need to clear the value to allow the user to re-select a new valid value.
-      if (
-        value === stepOneEmailNotificationFieldId &&
-        isStepOneEmailFieldDeleted
-      ) {
-        setValue(STEP_1_RESPONDENT_NOTIFY_EMAIL_SINGLESELECT_NAME, '')
-        return ''
-      }
-      return value
-    },
-    [setValue, isStepOneEmailFieldDeleted, stepOneEmailNotificationFieldId],
-  )
-
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Box>
@@ -177,48 +151,29 @@ const MrfEmailNotificationsForm = ({
           workflow is complete.
         </Text>
         <Box>
-          <FormControl isInvalid={isStepOneEmailFieldDeleted}>
-            <FormLabel mb="0.75rem" textColor="secondary.700">
-              Notify Respondent in Step 1
-            </FormLabel>
-            <Skeleton isLoaded={!isLoading}>
-              <Controller
-                // rules={{
-                //   validate: (selectedValue) => {
-                //     return (
-                //       !selectedValue ||
-                //       !emailFieldItems ||
-                //       emailFieldItems.some(
-                //         ({ value: fieldValue }) => fieldValue === selectedValue,
-                //       ) ||
-                //       'Field is not an email field'
-                //     )
-                //   },
-                // }}
-                control={control}
-                name={STEP_1_RESPONDENT_NOTIFY_EMAIL_SINGLESELECT_NAME}
-                render={({
-                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                  field: { value, onBlur, ...rest },
-                }) => (
-                  <SingleSelect
-                    isDisabled={isLoading || isDisabled}
-                    placeholder="Select an email field from your form"
-                    items={emailFieldItems}
-                    onBlur={handleSubmit(onSubmit)}
-                    isClearable
-                    value={value}
-                    {...rest}
-                  />
-                )}
-              />
-            </Skeleton>
-            <FormErrorMessage>
-              {errors[STEP_1_RESPONDENT_NOTIFY_EMAIL_SINGLESELECT_NAME]
-                ?.message ||
-                'The previously selected email field has been deleted'}
-            </FormErrorMessage>
-          </FormControl>
+          <FormLabel mb="0.75rem" textColor="secondary.700">
+            Notify Respondent in Step 1
+          </FormLabel>
+          <Skeleton isLoaded={!isLoading}>
+            <Controller
+              control={control}
+              name={STEP_1_RESPONDENT_NOTIFY_EMAIL_SINGLESELECT_NAME}
+              render={({
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                field: { value, onBlur, ...rest },
+              }) => (
+                <SingleSelect
+                  isDisabled={isLoading || isDisabled}
+                  placeholder="Select an email field from your form"
+                  items={emailFieldItems}
+                  onBlur={handleSubmit(onSubmit)}
+                  isClearable
+                  value={value}
+                  {...rest}
+                />
+              )}
+            />
+          </Skeleton>
         </Box>
         <Box my="1.5rem">
           <FormLabel mb="0.75rem" textColor="secondary.700">
