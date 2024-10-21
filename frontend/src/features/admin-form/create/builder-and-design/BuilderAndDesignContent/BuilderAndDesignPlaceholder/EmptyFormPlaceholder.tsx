@@ -56,11 +56,15 @@ export const EmptyFormPlaceholder = forwardRef<
     { isDraggingOver, onClick, onMagicFormButtonClick, ...props },
     ref,
   ): JSX.Element => {
+    // TODO: (MFB) Remove isTest check when MFB is out of beta
+    const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
     const isMobile = useIsMobile()
     const { user } = useUser()
     const { data: form } = useAdminForm()
     const isStorageMode = form?.responseMode === FormResponseMode.Encrypt
-    const isMagicFormBuilderEnabled = user?.betaFlags?.mfb && isStorageMode
+    // TODO: (MFB) Remove isTest check when MFB is out of beta
+    const isMagicFormBuilderEnabled =
+      isStorageMode && (isTest || user?.betaFlags?.mfb)
 
     const placeholderText = useMemo(() => {
       if (isDraggingOver) {
