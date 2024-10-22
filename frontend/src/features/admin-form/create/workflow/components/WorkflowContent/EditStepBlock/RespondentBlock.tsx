@@ -1,6 +1,14 @@
 import { useCallback } from 'react'
 import { Controller, UseFormReturn } from 'react-hook-form'
-import { As, FormControl, Stack, Text } from '@chakra-ui/react'
+import { BiPlus } from 'react-icons/bi'
+import {
+  As,
+  Button,
+  FormControl,
+  Stack,
+  Text,
+  useDisclosure,
+} from '@chakra-ui/react'
 import { get } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
@@ -19,12 +27,13 @@ import { EditStepInputs } from '~features/admin-form/create/workflow/types'
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
+import { ConditionalRoutingOptionModal } from './ConditionalRoutingOptionModal'
 import { EditStepBlockContainer } from './EditStepBlockContainer'
 
 const WORKFLOW_TYPE_VALIDATION = {
   required: 'Please select a respondent type',
   validate: (value: WorkflowType) => {
-    if (![WorkflowType.Static, WorkflowType.Dynamic].includes(value)) {
+    if (!Object.values(WorkflowType).includes(value)) {
       return 'The selected respondent type is invalid'
     }
   },
@@ -34,6 +43,12 @@ interface RespondentOptionProps {
   isLoading: boolean
   formMethods: UseFormReturn<EditStepInputs>
   selectedWorkflowType: WorkflowType
+}
+
+export interface FieldItem {
+  label: string
+  value: string
+  icon?: As
 }
 
 const StaticRespondentOption = ({
@@ -111,11 +126,7 @@ const StaticRespondentOption = ({
 }
 
 interface DynamicRespondentOptionProps extends RespondentOptionProps {
-  emailFieldItems: {
-    label: string
-    value: string
-    icon?: As
-  }[]
+  emailFieldItems: FieldItem[]
 }
 
 const DynamicRespondentOption = ({
@@ -185,6 +196,62 @@ const DynamicRespondentOption = ({
             />
             <FormErrorMessage>{errors.field?.message}</FormErrorMessage>
           </FormControl>
+        ) : null}
+      </Radio>
+    </>
+  )
+}
+
+interface ConditionalRoutingOptionProps extends RespondentOptionProps {
+  conditionalFieldItems: FieldItem[]
+}
+
+const ConditionalRoutingOption = ({
+  isLoading,
+  formMethods,
+  selectedWorkflowType,
+  conditionalFieldItems,
+}: ConditionalRoutingOptionProps) => {
+  const { register } = formMethods
+
+  const { isOpen, onOpen, onClose } = useDisclosure()
+
+  return (
+    <>
+      <Radio
+        isDisabled={isLoading}
+        isLabelFullWidth
+        allowDeselect={false}
+        value={WorkflowType.Conditional}
+        {...register('workflow_type', WORKFLOW_TYPE_VALIDATION)}
+        px="0.5rem"
+        __css={{
+          _focusWithin: {
+            boxShadow: 'none',
+          },
+        }}
+      >
+        <Text mb="0.5rem">
+          Email(s) assigned to options in a dropdown or radio field
+        </Text>
+        {selectedWorkflowType === WorkflowType.Conditional ? (
+          <>
+            <ConditionalRoutingOptionModal
+              conditionalFieldItems={conditionalFieldItems}
+              formMethods={formMethods}
+              isLoading={isLoading}
+              isOpen={isOpen}
+              onClose={onClose}
+            />
+            <Button
+              w="100%"
+              variant="outline"
+              leftIcon={<BiPlus fontSize="1.5rem" />}
+              onClick={onOpen}
+            >
+              Select a field and add email(s) to options
+            </Button>
+          </>
         ) : null}
       </Radio>
     </>
@@ -305,6 +372,12 @@ export const RespondentBlock = ({
               />
               <StaticRespondentOption
                 selectedWorkflowType={selectedWorkflowType}
+                formMethods={formMethods}
+                isLoading={isLoading}
+              />
+              <ConditionalRoutingOption
+                selectedWorkflowType={selectedWorkflowType}
+                conditionalFieldItems={[]}
                 formMethods={formMethods}
                 isLoading={isLoading}
               />
