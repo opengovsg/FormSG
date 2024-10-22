@@ -16,4 +16,5 @@ export type EditStepInputs = Omit<FormWorkflowStep, 'emails'> & {
   emails?: FormWorkflowStepStatic['emails']
   field?: FormWorkflowStepDynamic['field']
   approval_field?: FormFieldDto['_id']
+  conditional_field?: FormFieldDto['_id']
 }

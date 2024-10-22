@@ -3,6 +3,7 @@ import { FormFieldDto } from '../field'
 export enum WorkflowType {
   Static = 'static',
   Dynamic = 'dynamic',
+  Conditional = 'conditional',
 }
 
 export interface FormWorkflowStepBase {
