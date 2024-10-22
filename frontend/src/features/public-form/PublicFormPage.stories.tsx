@@ -15,6 +15,8 @@ import { envHandlers } from '~/mocks/msw/handlers/env'
 import {
   getPublicFormErrorResponse,
   getPublicFormResponse,
+  getPublicFormSubmissionSuccessResponse,
+  getPublicFormWithoutSectionsResponse,
   postGenerateVfnOtpResponse,
   postVerifyVfnOtpResponse,
   postVfnTransactionResponse,
@@ -790,6 +792,7 @@ FormNotFoundMobile.parameters = {
 }
 
 export const WithMyInfo = Template.bind({})
+WithMyInfo.storyName = 'With MyInfo'
 WithMyInfo.parameters = {
   msw: [
     getPublicFormResponse({
@@ -820,4 +823,43 @@ WithPayment.parameters = {
     }),
     ...DEFAULT_MSW_HANDLERS,
   ],
+}
+
+export const ThankYouPage = Template.bind({})
+ThankYouPage.parameters = {
+  msw: [
+    getPublicFormWithoutSectionsResponse(),
+    getPublicFormSubmissionSuccessResponse(),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+ThankYouPage.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement)
+  await waitFor(async () => {
+    await expect(canvas.getByText(/yes\/no/i)).toBeInTheDocument
+  })
+  await waitFor(async () => {
+    const noQuestionChoice = canvas.getByRole('button', {
+      name: /1\. yes\/no no option, unselected/i,
+    })
+    await userEvent.click(noQuestionChoice)
+  })
+  await waitFor(
+    async () => {
+      await userEvent.click(canvas.getByRole('button', { name: /submit/i }))
+    },
+    {
+      timeout: 5000,
+    },
+  )
+  await waitFor(
+    async () => {
+      await expect(
+        canvas.getByRole('link', { name: /submit another form/i }),
+      ).toBeInTheDocument()
+    },
+    {
+      timeout: 5000,
+    },
+  )
 }
