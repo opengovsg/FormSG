@@ -32,6 +32,7 @@ import {
   FieldUpdateDto,
   FormAuthType,
   FormLogoState,
+  FormMetadata,
   FormPermission,
   FormResponseMode,
   FormSettings,
@@ -886,6 +887,72 @@ export const createFormField = (
 }
 
 /**
+ * Inserts new form fields into given form's fields.
+ * @param form the form to insert the new field into
+ * @param newFields the new fields to insert
+ * @param to optional index to insert the new field at
+ * @returns ok(array of created form fields)
+ * @returns err(PossibleDatabaseError) when database errors arise
+ */
+export const createFormFields = ({
+  form,
+  newFields,
+  to,
+}: {
+  form: IPopulatedForm
+  newFields: FieldCreateDto[]
+  to?: number
+}): ResultAsync<
+  FormFieldSchema[],
+  PossibleDatabaseError | FormNotFoundError | FieldNotFoundError
+> => {
+  // If MyInfo field, override field title to store name.
+  const fieldsToSave = newFields.map((newField) => {
+    if (newField.myInfo?.attr) {
+      return {
+        ...newField,
+        title:
+          MYINFO_ATTRIBUTE_MAP[newField.myInfo.attr]?.value ?? newField.title,
+      }
+    } else {
+      return newField
+    }
+  })
+
+  return ResultAsync.fromPromise(
+    form.insertFormFields(fieldsToSave, to),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while inserting new form fields',
+        meta: {
+          action: 'createFormFields',
+          formId: form._id,
+          newFields,
+        },
+        error,
+      })
+
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    // if to does not exist, end of prev form fields
+    let startIndex = updatedForm.form_fields.length - newFields.length
+    // Must use undefined check since number can be 0; i.e. falsey.
+    if (to !== undefined) {
+      startIndex = to
+    }
+    const endIndex = newFields.length + startIndex
+    const updatedFields = updatedForm.form_fields.slice(startIndex, endIndex)
+    return updatedFields
+      ? okAsync(updatedFields)
+      : errAsync(new FieldNotFoundError())
+  })
+}
+
+/**
  * Reorders field with given fieldId to the given newPosition
  * @param form the form to reorder the field from
  * @param fieldId the id of the field to reorder
@@ -1703,7 +1770,7 @@ export const updateFormSettings = (
     }).exec(),
     (error) => {
       logger.error({
-        message: 'Error encountered while updating form',
+        message: 'Error encountered while updating form settings',
         meta: {
           action: 'updateFormSettings',
           formId: originalForm._id,
@@ -1719,6 +1786,46 @@ export const updateFormSettings = (
       return errAsync(new FormNotFoundError())
     }
     return okAsync(updatedForm.getSettings())
+  })
+}
+
+/**
+ * Updates the metadata of a given form by merging the new metadata with the existing metadata.
+ * @param form The form to update metadata for
+ * @param metadata The new metadata object to merge with the current one
+ * @returns ok(updated metadata object) when update is successful
+ * @returns err(FormNotFoundError) if form cannot be found
+ * @returns err(DatabaseError) if any database errors occur during the update
+ */
+export const updateFormMetadata = (
+  form: IPopulatedForm,
+  metadata: FormMetadata,
+): ResultAsync<FormMetadata | undefined, DatabaseError | FormNotFoundError> => {
+  const ModelToUse = getFormModelByResponseMode(form.responseMode)
+
+  return ResultAsync.fromPromise(
+    ModelToUse.findByIdAndUpdate(
+      form._id,
+      { metadata: { ...form.metadata, ...metadata } },
+      { new: true },
+    ).exec(),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while updating form metadata',
+        meta: {
+          action: 'updateFormMetadata',
+          formId: form._id,
+          metadata,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync(updatedForm.metadata)
   })
 }
 

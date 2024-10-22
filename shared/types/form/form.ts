@@ -78,6 +78,10 @@ export enum FormResponseMode {
   Multirespondent = 'multirespondent',
 }
 
+export interface FormMetadata {
+  mfb?: boolean
+}
+
 export type FormPaymentsChannel = {
   payment_methods?: PaymentMethodType[]
   channel: PaymentChannel
@@ -164,6 +168,8 @@ export interface FormBase {
   responseMode: FormResponseMode
 
   goLinkSuffix?: string
+
+  metadata?: FormMetadata
 }
 
 export interface EmailFormBase extends FormBase {

@@ -392,6 +392,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: 100,
       env: 'PLATFORM_API_RATE_LIMIT',
     },
+    makeTextPrompt: {
+      doc: 'Per-minute, per-IP request limit for making text prompts',
+      format: 'int',
+      default: 5,
+      env: 'MAKE_TEXT_PROMPT_RATE_LIMIT',
+    },
   },
   reactMigration: {
     useFetchForSubmissions: {
