@@ -8,7 +8,7 @@ export const MagicFormButton = ({
 }): JSX.Element => {
   return (
     <Button maxW="100%" rightIcon={<BxsMagicWand />} onClick={onClick}>
-      Create fields with AI prompt
+      Create fields with AI
     </Button>
   )
 }
