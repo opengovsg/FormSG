@@ -38,6 +38,7 @@ export const TextPromptIdeasSelector = ({
               onClick={() => handleIdeaClick(idea)}
             >
               <Text
+                textAlign="left"
                 textStyle="subhead-1"
                 color="secondary.500"
                 fontWeight="400"
