@@ -64,6 +64,7 @@ export const MULTIRESPONDENT_FORM_SETTINGS_FIELDS = [
   'publicKey',
   'emails',
   'stepsToNotify',
+  'stepOneEmailNotificationFieldId',
 ] as const
 
 // Fields that are necessary for decrypting the cipherTexts given peer's private key

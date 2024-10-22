@@ -13,10 +13,11 @@ import isEmail from 'validator/lib/isEmail'
 import { MultirespondentFormSettings } from '~shared/types/form'
 
 import { OPTIONAL_ADMIN_EMAIL_VALIDATION_RULES } from '~utils/formValidation'
-import { MultiSelect } from '~components/Dropdown'
+import { MultiSelect, SingleSelect } from '~components/Dropdown'
 import FormLabel from '~components/FormControl/FormLabel'
 import { TagInput } from '~components/TagInput'
 
+import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { useAdminFormWorkflow } from '~features/admin-form/create/workflow/hooks/useAdminFormWorkflow'
 
 import { useMutateFormSettings } from '../mutations'
@@ -27,18 +28,25 @@ interface MrfEmailNotificationsFormProps {
 }
 
 const WORKFLOW_EMAIL_MULTISELECT_NAME = 'email-multi-select'
+const STEP_1_RESPONDENT_NOTIFY_EMAIL_SINGLESELECT_NAME =
+  'step-1-notify-single-select'
 const OTHER_PARTIES_EMAIL_INPUT_NAME = 'other-parties-email-input'
 
 interface FormData {
   [WORKFLOW_EMAIL_MULTISELECT_NAME]: string[]
   [OTHER_PARTIES_EMAIL_INPUT_NAME]: string[]
+  [STEP_1_RESPONDENT_NOTIFY_EMAIL_SINGLESELECT_NAME]: string
 }
 
 const MrfEmailNotificationsForm = ({
   settings,
   isDisabled,
 }: MrfEmailNotificationsFormProps) => {
-  const { isLoading, formWorkflow } = useAdminFormWorkflow()
+  const {
+    isLoading,
+    formWorkflow,
+    emailFormFields = [],
+  } = useAdminFormWorkflow()
 
   const formWorkflowStepsWithStepNumber =
     formWorkflow?.map((step, index) => ({
@@ -46,12 +54,20 @@ const MrfEmailNotificationsForm = ({
       stepNumber: index + 1,
     })) ?? []
 
+  const emailFieldItems = emailFormFields.map(
+    ({ _id, questionNumber, title, fieldType }) => ({
+      label: `${questionNumber}. ${title}`,
+      value: _id,
+      icon: BASICFIELD_TO_DRAWER_META[fieldType].icon,
+    }),
+  )
+
   const filterInvalidEmails = useCallback((emails: string[]) => {
     if (!emails) return []
     return emails.filter((email) => isEmail(email))
   }, [])
 
-  const { stepsToNotify, emails } = settings
+  const { stepsToNotify, emails, stepOneEmailNotificationFieldId } = settings
 
   const {
     handleSubmit,
@@ -60,12 +76,15 @@ const MrfEmailNotificationsForm = ({
     getValues,
     formState: { errors },
   } = useForm<{
+    [STEP_1_RESPONDENT_NOTIFY_EMAIL_SINGLESELECT_NAME]: string
     [WORKFLOW_EMAIL_MULTISELECT_NAME]: string[]
     [OTHER_PARTIES_EMAIL_INPUT_NAME]: string[]
   }>({
     defaultValues: {
       [WORKFLOW_EMAIL_MULTISELECT_NAME]: stepsToNotify,
       [OTHER_PARTIES_EMAIL_INPUT_NAME]: emails,
+      [STEP_1_RESPONDENT_NOTIFY_EMAIL_SINGLESELECT_NAME]:
+        stepOneEmailNotificationFieldId,
     },
   })
 
@@ -74,29 +93,37 @@ const MrfEmailNotificationsForm = ({
   const handleSubmitEmailNotificationSettings = ({
     nextStaticEmails,
     nextStepsToNotify,
+    nextStepOneEmailNotificationFieldId,
   }: {
     nextStaticEmails: string[]
     nextStepsToNotify: string[]
+    nextStepOneEmailNotificationFieldId: string
   }) => {
     if (
       isEqual(nextStaticEmails, emails) &&
-      isEqual(nextStepsToNotify, stepsToNotify)
+      isEqual(nextStepsToNotify, stepsToNotify) &&
+      nextStepOneEmailNotificationFieldId === stepOneEmailNotificationFieldId
     ) {
       return
     }
     return mutateMrfEmailNotifications.mutate({
       emails: nextStaticEmails,
       stepsToNotify: nextStepsToNotify,
+      stepOneEmailNotificationFieldId: nextStepOneEmailNotificationFieldId,
     })
   }
 
   const onSubmit = (formData: FormData) => {
     const selectedSteps = formData[WORKFLOW_EMAIL_MULTISELECT_NAME]
     const selectedEmails = formData[OTHER_PARTIES_EMAIL_INPUT_NAME]
+    const selectedStepOneEmailNotificationFieldId =
+      formData[STEP_1_RESPONDENT_NOTIFY_EMAIL_SINGLESELECT_NAME]
 
     return handleSubmitEmailNotificationSettings({
       nextStepsToNotify: selectedSteps,
       nextStaticEmails: selectedEmails,
+      nextStepOneEmailNotificationFieldId:
+        selectedStepOneEmailNotificationFieldId,
     })
   }
 
@@ -119,15 +146,40 @@ const MrfEmailNotificationsForm = ({
         <Text textStyle="h3" textColor="secondary.500" mb="0.25rem">
           Workflow outcome notifications
         </Text>
-        <Text textStyle="body-1" textColor="secondary.700" mb="2.5rem">
+        <Text textStyle="body-1" textColor="secondary.700" mb="1.5rem">
           Send an email to inform selected respondents when the form and/or
           workflow is complete.
         </Text>
-        <FormLabel textColor="secondary.700">
-          Notify respondents in your workflow
-        </FormLabel>
-        <Skeleton isLoaded={!isLoading}>
-          <Box my="0.75rem">
+        <Box>
+          <FormLabel mb="0.75rem" textColor="secondary.700">
+            Notify Respondent in Step 1
+          </FormLabel>
+          <Skeleton isLoaded={!isLoading}>
+            <Controller
+              control={control}
+              name={STEP_1_RESPONDENT_NOTIFY_EMAIL_SINGLESELECT_NAME}
+              render={({
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                field: { value, onBlur, ...rest },
+              }) => (
+                <SingleSelect
+                  isDisabled={isLoading || isDisabled}
+                  placeholder="Select an email field from your form"
+                  items={emailFieldItems}
+                  onBlur={handleSubmit(onSubmit)}
+                  isClearable
+                  value={value}
+                  {...rest}
+                />
+              )}
+            />
+          </Skeleton>
+        </Box>
+        <Box my="1.5rem">
+          <FormLabel mb="0.75rem" textColor="secondary.700">
+            Notify other respondents in your workflow
+          </FormLabel>
+          <Skeleton isLoaded={!isLoading}>
             <Controller
               control={control}
               name={WORKFLOW_EMAIL_MULTISELECT_NAME}
@@ -136,10 +188,12 @@ const MrfEmailNotificationsForm = ({
                 field: { value: values = [], onChange, onBlur, ...rest },
               }) => (
                 <MultiSelect
-                  items={formWorkflowStepsWithStepNumber.map((step) => ({
-                    label: `Respondent(s) in Step ${step.stepNumber}`,
-                    value: step._id,
-                  }))}
+                  items={formWorkflowStepsWithStepNumber
+                    .filter((step) => step.stepNumber > 1)
+                    .map((step) => ({
+                      label: `Respondent(s) in Step ${step.stepNumber}`,
+                      value: step._id,
+                    }))}
                   values={values}
                   onChange={onChange}
                   onBlur={handleSubmit(onSubmit)}
@@ -150,16 +204,17 @@ const MrfEmailNotificationsForm = ({
                 />
               )}
             />
-          </Box>
-        </Skeleton>
+          </Skeleton>
+        </Box>
       </Box>
-      <Box my="2rem">
+      <Box my="1.5rem">
         <FormControl
           isInvalid={!isEmpty(errors[OTHER_PARTIES_EMAIL_INPUT_NAME])}
           isDisabled={isDisabled}
         >
           <FormLabel
             textColor="secondary.700"
+            mb="0.75rem"
             tooltipVariant="info"
             tooltipPlacement="top"
             tooltipText="Include the admin's email to inform them whenever a workflow is completed"

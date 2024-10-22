@@ -196,6 +196,7 @@ export interface MultirespondentFormBase extends FormBase {
   workflow: FormWorkflow
   emails: string[]
   stepsToNotify: FormWorkflowStepDto['_id'][]
+  stepOneEmailNotificationFieldId?: string
 }
 
 /**
