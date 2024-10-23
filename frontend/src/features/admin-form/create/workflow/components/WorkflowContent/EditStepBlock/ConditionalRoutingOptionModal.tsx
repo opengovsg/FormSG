@@ -1,6 +1,10 @@
 import { useState } from 'react'
 import { Controller, UseFormReturn } from 'react-hook-form'
+import { BiDownload } from 'react-icons/bi'
 import {
+  Box,
+  Button,
+  Image,
   Modal,
   ModalBody,
   ModalContent,
@@ -9,9 +13,9 @@ import {
   ModalOverlay,
   Stack,
   Text,
-  useBreakpointValue,
 } from '@chakra-ui/react'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import { NextAndBackButtonGroup } from '~components/Button'
 import { SingleSelect } from '~components/Dropdown'
 import { ModalCloseButton } from '~components/Modal'
@@ -22,14 +26,6 @@ import { EditStepInputs } from '../../../types'
 import { FieldItem } from './RespondentBlock'
 
 const NUM_STEPS = 3
-
-interface ConditionalRoutingOptionModalProps {
-  isOpen: boolean
-  onClose: () => void
-  conditionalFieldItems: FieldItem[]
-  formMethods: UseFormReturn<EditStepInputs>
-  isLoading: boolean
-}
 
 interface StepOneModalContentProps {
   stepNumber: number
@@ -108,8 +104,18 @@ const StepOneModalContent = ({
   </ModalContent>
 )
 
-const StepTwoModalContent = ({ stepNumber, setStepNumber }) => (
-  <ModalContent>
+interface StepTwoModalContentProps {
+  stepNumber: number
+  setStepNumber: (step: number) => void
+  isMobile: boolean
+}
+
+const StepTwoModalContent = ({
+  stepNumber,
+  setStepNumber,
+  isMobile,
+}: StepTwoModalContentProps) => (
+  <ModalContent minW="fit-content">
     <ModalCloseButton />
     <ModalHeader>
       <Text mb="0.25rem">Step 2: Add emails to options</Text>
@@ -119,7 +125,59 @@ const StepTwoModalContent = ({ stepNumber, setStepNumber }) => (
         onClick={setStepNumber}
       />
     </ModalHeader>
-    <ModalBody></ModalBody>
+    <ModalBody>
+      <Stack
+        justifyContent="center"
+        spacing="3rem"
+        direction={isMobile ? 'column' : 'row'}
+      >
+        <Box w={isMobile ? '100%' : '25rem'}>
+          <Stack spacing="0.5rem" mb="2.5rem">
+            <Text textStyle="body-2">
+              We have created a CSV template with the options from the field you
+              selected.{' '}
+              <Text as="span" fontWeight="semibold">
+                Please download the CSV template and add the emails for each
+                option.
+              </Text>
+            </Text>
+            <Button w="100%" leftIcon={<BiDownload fontSize="1.5rem" />}>
+              Download and edit CSV
+            </Button>
+          </Stack>
+          <Stack spacing="1rem">
+            <Text textStyle="subhead-1">How to use the CSV template:</Text>
+            <Box>
+              <Text textStyle="subhead-1">Column A</Text>
+              <Text textStyle="body-2">
+                This contains all the options from your field.{' '}
+                <Text as="span" fontWeight="semibold">
+                  Do not edit, reorder or delete anything in this column.
+                </Text>
+              </Text>
+            </Box>
+            <Box>
+              <Text textStyle="subhead-1">Column B</Text>
+              <Text textStyle="body-2">
+                Add the email(s) to send the form to for each option.{' '}
+                <Text as="span" fontWeight="semibold">
+                  Separate multiple email(s) with a comma.
+                </Text>
+              </Text>
+            </Box>
+          </Stack>
+        </Box>
+        <Stack spacing="1rem" alignItems="center">
+          <Image
+            w="466px"
+            src={'public/static/images/conditional-routing-example.png'}
+          />
+          <Text textStyle="caption-2">
+            Your CSV template should look like this
+          </Text>
+        </Stack>
+      </Stack>
+    </ModalBody>
     <ModalFooter>
       <NextAndBackButtonGroup
         nextButtonLabel="Next: Upload CSV template"
@@ -132,7 +190,15 @@ const StepTwoModalContent = ({ stepNumber, setStepNumber }) => (
   </ModalContent>
 )
 
-const StepThreeModalContent = ({ stepNumber, setStepNumber }) => (
+interface StepThreeModalContentProps {
+  stepNumber: number
+  setStepNumber: (step: number) => void
+}
+
+const StepThreeModalContent = ({
+  stepNumber,
+  setStepNumber,
+}: StepThreeModalContentProps) => (
   <ModalContent>
     <ModalCloseButton />
     <ModalHeader>
@@ -158,6 +224,14 @@ const StepThreeModalContent = ({ stepNumber, setStepNumber }) => (
   </ModalContent>
 )
 
+interface ConditionalRoutingOptionModalProps {
+  isOpen: boolean
+  onClose: () => void
+  conditionalFieldItems: FieldItem[]
+  formMethods: UseFormReturn<EditStepInputs>
+  isLoading: boolean
+}
+
 export const ConditionalRoutingOptionModal = ({
   isOpen,
   onClose,
@@ -165,11 +239,7 @@ export const ConditionalRoutingOptionModal = ({
   formMethods,
   isLoading,
 }: ConditionalRoutingOptionModalProps): JSX.Element => {
-  const modalSize = useBreakpointValue({
-    base: 'mobile',
-    xs: 'mobile',
-    md: 'md',
-  })
+  const isMobile = useIsMobile()
 
   const { control } = formMethods
   const [stepNumber, setStepNumber] = useState<number>(0)
@@ -180,7 +250,11 @@ export const ConditionalRoutingOptionModal = ({
   }
 
   return (
-    <Modal size={modalSize} isOpen={isOpen} onClose={onModalClose}>
+    <Modal
+      size={isMobile ? 'mobile' : undefined}
+      isOpen={isOpen}
+      onClose={onModalClose}
+    >
       <ModalOverlay />
       {stepNumber === 0 && (
         <StepOneModalContent
@@ -194,6 +268,7 @@ export const ConditionalRoutingOptionModal = ({
       )}
       {stepNumber === 1 && (
         <StepTwoModalContent
+          isMobile={isMobile}
           stepNumber={stepNumber}
           setStepNumber={setStepNumber}
         />
