@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { BiEditAlt } from 'react-icons/bi'
 import { GoEye, GoEyeClosed } from 'react-icons/go'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   Box,
   Divider,
@@ -15,7 +15,6 @@ import _ from 'lodash'
 
 import { Language } from '~shared/types'
 
-import { ADMINFORM_ROUTE } from '~constants/routes'
 import {
   convertUnicodeLocaleToLanguage,
   getDefaultSupportedLanguages,
@@ -45,6 +44,9 @@ const LanguageTranslationRow = ({
   const { formId } = useParams()
   const { data: settings } = useAdminFormSettings()
   const navigate = useNavigate()
+  const [_, setSearchParams] = useSearchParams()
+
+  if (!formId) throw new Error('No formId provided')
 
   const supportedLanguages = settings?.supportedLanguages ?? null
 
@@ -80,9 +82,7 @@ const LanguageTranslationRow = ({
 
   const handleLanguageTranslationEditClick = useCallback(
     (language: Language) => {
-      navigate(
-        `${ADMINFORM_ROUTE}/${formId}/settings/multi-language/${language.toString()}`,
-      )
+      setSearchParams({ unicodeLocale: language.toString() })
     },
     [formId, navigate],
   )
@@ -121,7 +121,6 @@ const LanguageTranslationRow = ({
                 icon={<BiEditAlt width="44px" />}
                 colorScheme="secondary"
                 aria-label={`Add ${unicodeLocale} translations`}
-                // TODO: Will add redirection to translation section in next PR
                 onClick={() =>
                   handleLanguageTranslationEditClick(unicodeLocale)
                 }

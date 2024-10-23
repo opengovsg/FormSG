@@ -82,8 +82,8 @@ MultiLangEnglishChineseMalaySelected.parameters = {
 export const MultiLangListOfFormFieldsWithNoTranslations = Template.bind({})
 MultiLangListOfFormFieldsWithNoTranslations.parameters = {
   router: {
-    initialEntries: ['/61540ece3d4a6e50ac0cc6ff/settings/multi-language/zh-SG'],
-    path: '/:formId/settings/multi-language/:language',
+    initialEntries: ['/61540ece3d4a6e50ac0cc6ff/settings/language'],
+    path: '/:formId/settings/language',
   },
   msw: [
     ...createFormBuilderMocks({
@@ -93,6 +93,8 @@ MultiLangListOfFormFieldsWithNoTranslations.parameters = {
         logo: { state: FormLogoState.Default },
         paragraph: 'Test start page',
       },
+      hasMultiLang: true,
+      supportedLanguages: [Language.ENGLISH, Language.CHINESE, Language.MALAY],
     }),
     getAdminFormSettings(),
     patchAdminFormSettings(),
@@ -104,8 +106,8 @@ export const MultiLangListOfFormFieldsWithCompletedTranslations = Template.bind(
 )
 MultiLangListOfFormFieldsWithCompletedTranslations.parameters = {
   router: {
-    initialEntries: ['/61540ece3d4a6e50ac0cc6ff/settings/multi-language/zh-SG'],
-    path: '/:formId/settings/multi-language/:language',
+    initialEntries: ['/61540ece3d4a6e50ac0cc6ff/settings/language'],
+    path: '/:formId/settings/language',
   },
   msw: [
     ...createFormBuilderMocks({
@@ -136,6 +138,8 @@ MultiLangListOfFormFieldsWithCompletedTranslations.parameters = {
         paymentTitle: 'payment title',
         paymentParagraph: 'payment paragraph',
       },
+      hasMultiLang: true,
+      supportedLanguages: [Language.ENGLISH, Language.CHINESE, Language.MALAY],
     }),
     getAdminFormSettings(),
     patchAdminFormSettings(),

@@ -42,48 +42,21 @@ interface QuestionRowProps {
   questionTitle: string
   icon: As
   isMyInfoField: boolean
-  formFieldNum: number
   hasTranslations: boolean
-  isStartPage?: boolean
-  isEndPage?: boolean
 }
 
 export const QuestionRow = ({
   questionTitle,
   icon,
   isMyInfoField,
-  formFieldNum,
   hasTranslations,
-  isStartPage,
-  isEndPage,
 }: QuestionRowProps): JSX.Element => {
-  const { formId, language } = useParams()
-  const navigate = useNavigate()
   const isTranslationRowDisabled = isMyInfoField
 
+  // TODO: Introduce view for user to add in translation input in next PR
   const handleOnListClick = useCallback(() => {
-    // check if translation row is not disabled
-    if (!isTranslationRowDisabled)
-      navigate(
-        `${ADMINFORM_ROUTE}/${formId}/settings/multi-language/${language}`,
-        {
-          state: {
-            isTranslation: true,
-            formFieldNum,
-            isStartPage: isStartPage ?? false,
-            isEndPage: isEndPage ?? false,
-          },
-        },
-      )
-  }, [
-    formFieldNum,
-    formId,
-    isEndPage,
-    isStartPage,
-    isTranslationRowDisabled,
-    language,
-    navigate,
-  ])
+    console.log('handleOnListClick')
+  }, [])
 
   return (
     <Flex direction="row">
@@ -111,9 +84,7 @@ export const QuestionRow = ({
           </Flex>
 
           {!isMyInfoField && !hasTranslations && (
-            <Tooltip label="This field is missing translations">
-              <Icon fontSize="1.5rem" as={BiError} color="warning.600" />
-            </Tooltip>
+            <Icon fontSize="1.5rem" as={BiError} color="warning.600" />
           )}
           {!isMyInfoField && hasTranslations && (
             <Icon
@@ -192,7 +163,7 @@ export const TranslationListSection = ({
   const unicodeLocale = language as Language
 
   const handleOnBackClick = useCallback(() => {
-    navigate(`${ADMINFORM_ROUTE}/${formId}/settings/multi-language`)
+    navigate(`${ADMINFORM_ROUTE}/${formId}/settings/language`)
   }, [formId, navigate])
 
   const hasStartPageTranslations = useMemo(() => {
@@ -330,8 +301,6 @@ export const TranslationListSection = ({
                 icon={BxsDockTop}
                 isMyInfoField={false}
                 hasTranslations={hasStartPageTranslations}
-                formFieldNum={-1}
-                isStartPage={true}
               />
               <Divider />
             </>
@@ -350,7 +319,6 @@ export const TranslationListSection = ({
                   questionTitle={form_field.title}
                   icon={questionIcon}
                   isMyInfoField={isMyInfoField}
-                  formFieldNum={id}
                   hasTranslations={getHasTranslations(form_field)}
                 />
                 <Divider />
@@ -365,8 +333,6 @@ export const TranslationListSection = ({
               icon={PhHandsClapping}
               isMyInfoField={false}
               hasTranslations={hasEndPageTranslations}
-              formFieldNum={-1}
-              isEndPage={true}
             />
           )}
         </Flex>
