@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Controller, UseFormReturn } from 'react-hook-form'
+import { Controller, useForm, UseFormReturn } from 'react-hook-form'
 import { BiDownload } from 'react-icons/bi'
 import {
   Box,
@@ -15,22 +15,28 @@ import {
   Text,
 } from '@chakra-ui/react'
 
+import { MAX_UPLOAD_FILE_SIZE } from '~shared/constants'
+
 import { useIsMobile } from '~hooks/useIsMobile'
 import { NextAndBackButtonGroup } from '~components/Button'
 import { SingleSelect } from '~components/Dropdown'
+import Attachment from '~components/Field/Attachment'
 import { ModalCloseButton } from '~components/Modal'
 import { ProgressIndicator } from '~components/ProgressIndicator/ProgressIndicator'
-
-import { EditStepInputs } from '../../../types'
 
 import { FieldItem } from './RespondentBlock'
 
 const NUM_STEPS = 3
 
+interface ConditionalRoutingConfig {
+  conditionalFieldId: string
+  csvFile: File
+}
+
 interface StepOneModalContentProps {
   stepNumber: number
   setStepNumber: (step: number) => void
-  control: UseFormReturn<EditStepInputs>['control']
+  control: UseFormReturn<ConditionalRoutingConfig>['control']
   conditionalFieldItems: FieldItem[]
   isLoading: boolean
   onClose: () => void
@@ -61,7 +67,7 @@ const StepOneModalContent = ({
         </Text>
         <Controller
           control={control}
-          name={'conditional_field'}
+          name={'conditionalFieldId'}
           rules={{
             required: 'Please select a field',
             validate: (selectedValue) => {
@@ -193,11 +199,13 @@ const StepTwoModalContent = ({
 interface StepThreeModalContentProps {
   stepNumber: number
   setStepNumber: (step: number) => void
+  control: UseFormReturn<ConditionalRoutingConfig>['control']
 }
 
 const StepThreeModalContent = ({
   stepNumber,
   setStepNumber,
+  control,
 }: StepThreeModalContentProps) => (
   <ModalContent>
     <ModalCloseButton />
@@ -209,7 +217,31 @@ const StepThreeModalContent = ({
         onClick={setStepNumber}
       />
     </ModalHeader>
-    <ModalBody></ModalBody>
+    <ModalBody>
+      <Text mb="2.5rem">
+        Please ensure that your file is saved in{' '}
+        <Text as="span" fontWeight="semibold">
+          comma-separated values (.csv)
+        </Text>{' '}
+        format.
+      </Text>
+      <Controller
+        name="csvFile"
+        control={control}
+        render={({ field: { onChange, name, value } }) => (
+          <Attachment
+            onChange={onChange}
+            value={value}
+            name={name}
+            isRequired
+            showFileSize
+            showDownload
+            showRemove
+            maxSize={MAX_UPLOAD_FILE_SIZE}
+          />
+        )}
+      />
+    </ModalBody>
     <ModalFooter>
       <NextAndBackButtonGroup
         nextButtonLabel="Save CSV template"
@@ -228,7 +260,6 @@ interface ConditionalRoutingOptionModalProps {
   isOpen: boolean
   onClose: () => void
   conditionalFieldItems: FieldItem[]
-  formMethods: UseFormReturn<EditStepInputs>
   isLoading: boolean
 }
 
@@ -236,13 +267,13 @@ export const ConditionalRoutingOptionModal = ({
   isOpen,
   onClose,
   conditionalFieldItems,
-  formMethods,
   isLoading,
 }: ConditionalRoutingOptionModalProps): JSX.Element => {
   const isMobile = useIsMobile()
 
-  const { control } = formMethods
   const [stepNumber, setStepNumber] = useState<number>(0)
+
+  const { control } = useForm<ConditionalRoutingConfig>()
 
   const onModalClose = () => {
     setStepNumber(0)
@@ -275,6 +306,7 @@ export const ConditionalRoutingOptionModal = ({
       )}
       {stepNumber === 2 && (
         <StepThreeModalContent
+          control={control}
           stepNumber={stepNumber}
           setStepNumber={setStepNumber}
         />
