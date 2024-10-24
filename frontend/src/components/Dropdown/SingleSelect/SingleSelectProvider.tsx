@@ -43,6 +43,7 @@ export interface SingleSelectProviderProps<
   /** Variant of component */
   variant?: 'clear'
   fullWidth?: boolean
+  zIndex?: number
 }
 export const SingleSelectProvider = ({
   items: rawItems,
@@ -67,6 +68,7 @@ export const SingleSelectProvider = ({
   comboboxProps = {},
   variant,
   fullWidth = false,
+  zIndex,
 }: SingleSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
   const [isFocused, setIsFocused] = useState(false)
@@ -277,6 +279,7 @@ export const SingleSelectProvider = ({
         virtualListHeight,
         fullWidth,
         onBlur,
+        zIndex,
       }}
     >
       {children}

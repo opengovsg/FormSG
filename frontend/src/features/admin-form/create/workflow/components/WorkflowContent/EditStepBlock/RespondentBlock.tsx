@@ -1,4 +1,5 @@
-import { Controller, UseFormReturn } from 'react-hook-form'
+import { useCallback } from 'react'
+import { Controller, useForm, UseFormReturn } from 'react-hook-form'
 import { BiPlus } from 'react-icons/bi'
 import {
   As,
@@ -15,6 +16,7 @@ import { UserDto, WorkflowType } from '~shared/types'
 
 import { textStyles } from '~theme/textStyles'
 import { SingleSelect } from '~components/Dropdown'
+import Attachment from '~components/Field/Attachment'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Radio from '~components/Radio'
@@ -181,16 +183,14 @@ const DynamicRespondentOption = ({
                 },
               }}
               render={({ field: { value = '', ...rest } }) => (
-                <>
-                  <SingleSelect
-                    isDisabled={isLoading}
-                    isClearable={false}
-                    placeholder="Select a field"
-                    items={emailFieldItems}
-                    value={value}
-                    {...rest}
-                  />
-                </>
+                <SingleSelect
+                  isDisabled={isLoading}
+                  isClearable={false}
+                  placeholder="Select a field"
+                  items={emailFieldItems}
+                  value={value}
+                  {...rest}
+                />
               )}
             />
             <FormErrorMessage>{errors.field?.message}</FormErrorMessage>
@@ -205,6 +205,11 @@ interface ConditionalRoutingOptionProps extends RespondentOptionProps {
   conditionalFieldItems: FieldItem[]
 }
 
+export interface ConditionalRoutingConfig {
+  conditionalFieldId: string
+  csvFile: File
+}
+
 const ConditionalRoutingOption = ({
   isLoading,
   formMethods,
@@ -213,10 +218,26 @@ const ConditionalRoutingOption = ({
 }: ConditionalRoutingOptionProps) => {
   const { register } = formMethods
 
+  const {
+    control: conditionalRoutingConfigControl,
+    watch: watchConditionalRoutingConfig,
+  } = useForm<ConditionalRoutingConfig>()
+
+  const isConditionalRoutingFieldSelected =
+    watchConditionalRoutingConfig('csvFile') &&
+    watchConditionalRoutingConfig('conditionalFieldId')
+
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   return (
     <>
+      <ConditionalRoutingOptionModal
+        conditionalFieldItems={conditionalFieldItems}
+        isLoading={isLoading}
+        isOpen={isOpen}
+        onClose={onClose}
+        control={conditionalRoutingConfigControl}
+      />
       <Radio
         isDisabled={isLoading}
         isLabelFullWidth
@@ -235,21 +256,29 @@ const ConditionalRoutingOption = ({
         </Text>
         {selectedWorkflowType === WorkflowType.Conditional ? (
           <>
-            <ConditionalRoutingOptionModal
-              conditionalFieldItems={conditionalFieldItems}
-              formMethods={formMethods}
-              isLoading={isLoading}
-              isOpen={isOpen}
-              onClose={onClose}
-            />
-            <Button
-              w="100%"
-              variant="outline"
-              leftIcon={<BiPlus fontSize="1.5rem" />}
-              onClick={onOpen}
-            >
-              Select a field and add email(s) to options
-            </Button>
+            {isConditionalRoutingFieldSelected ? (
+              <Controller
+                name="csvFile"
+                control={conditionalRoutingConfigControl}
+                render={({ field: { onChange, name, value } }) => (
+                  <Attachment
+                    name={name}
+                    onChange={onChange}
+                    value={value}
+                    showDownload
+                  />
+                )}
+              />
+            ) : (
+              <Button
+                w="100%"
+                variant="outline"
+                leftIcon={<BiPlus fontSize="1.5rem" />}
+                onClick={onOpen}
+              >
+                Select a field and add email(s) to options
+              </Button>
+            )}
           </>
         ) : null}
       </Radio>
@@ -274,7 +303,14 @@ export const RespondentBlock = ({
     watch,
   } = formMethods
 
-  const { emailFormFields = [] } = useAdminFormWorkflow()
+  // TODO: (MRF-email-notif) Remove isTest check when MRF email notifications is out of beta
+  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
+
+  const {
+    emailFormFields = [],
+    radioFormFields = [],
+    dropdownFormFields = [],
+  } = useAdminFormWorkflow()
 
   const emailFieldItems = emailFormFields.map(
     ({ _id, questionNumber, title, fieldType }) => ({
@@ -282,6 +318,30 @@ export const RespondentBlock = ({
       value: _id,
       icon: BASICFIELD_TO_DRAWER_META[fieldType].icon,
     }),
+  )
+  const emailFieldIds = emailFormFields.map(({ _id }) => _id)
+
+  const conditionalFieldItems = [...radioFormFields, ...dropdownFormFields].map(
+    ({ _id, questionNumber, title, fieldType }) => ({
+      label: `${questionNumber}. ${title}`,
+      value: _id,
+      icon: BASICFIELD_TO_DRAWER_META[fieldType].icon,
+    }),
+  )
+
+  const getValueIfNotDeleted = useCallback(
+    // Why: When the Yes/No field has been deleted, the approval_field is still set to the
+    // invalid form field id but cannot be seen or cleared in the SingleSelect component
+    // since no matching Yes/No item can be found.
+    // Hence, we clear the approval_field to allow the user to re-select a new valid value.
+    (value: string) => {
+      if (!isLoading && value && !emailFieldIds.includes(value)) {
+        setValue('field', '')
+        return ''
+      }
+      return value
+    },
+    [isLoading, setValue, emailFieldIds],
   )
 
   const selectedWorkflowType = watch('workflow_type')
@@ -317,7 +377,7 @@ export const RespondentBlock = ({
               />
               <ConditionalRoutingOption
                 selectedWorkflowType={selectedWorkflowType}
-                conditionalFieldItems={[]}
+                conditionalFieldItems={conditionalFieldItems}
                 formMethods={formMethods}
                 isLoading={isLoading}
               />

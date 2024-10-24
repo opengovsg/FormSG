@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Controller, useForm, UseFormReturn } from 'react-hook-form'
+import { Controller, UseFormReturn } from 'react-hook-form'
 import { BiDownload } from 'react-icons/bi'
 import {
   Box,
   Button,
+  FormControl,
   Image,
   Modal,
   ModalBody,
@@ -24,14 +25,9 @@ import Attachment from '~components/Field/Attachment'
 import { ModalCloseButton } from '~components/Modal'
 import { ProgressIndicator } from '~components/ProgressIndicator/ProgressIndicator'
 
-import { FieldItem } from './RespondentBlock'
+import { ConditionalRoutingConfig, FieldItem } from './RespondentBlock'
 
 const NUM_STEPS = 3
-
-interface ConditionalRoutingConfig {
-  conditionalFieldId: string
-  csvFile: File
-}
 
 interface StepOneModalContentProps {
   stepNumber: number
@@ -49,66 +45,75 @@ const StepOneModalContent = ({
   conditionalFieldItems,
   isLoading,
   onClose,
-}: StepOneModalContentProps) => (
-  <ModalContent>
-    <ModalCloseButton />
-    <ModalHeader color="secondary.700">
-      <Text mb="0.25rem">Step 1: Select a field from your form</Text>
-      <ProgressIndicator
-        numIndicators={NUM_STEPS}
-        currActiveIdx={stepNumber}
-        onClick={setStepNumber}
-      />
-    </ModalHeader>
-    <ModalBody>
-      <Stack spacing="0.75rem">
-        <Text textStyle="subhead-1" color="secondary.700">
-          Route the form based on the options in this field:
-        </Text>
-        <Controller
-          control={control}
-          name={'conditionalFieldId'}
-          rules={{
-            required: 'Please select a field',
-            validate: (selectedValue) => {
-              return (
-                isLoading ||
-                !conditionalFieldItems ||
-                conditionalFieldItems.some(
-                  ({ value: fieldValue }) => fieldValue === selectedValue,
-                ) ||
-                'Field is not a dropdown or radio field'
-              )
-            },
-          }}
-          render={({ field: { value = '', ...rest } }) => (
-            <>
-              <SingleSelect
-                isDisabled={isLoading}
-                isClearable={false}
-                placeholder="Select a dropdown or radio field from your form"
-                items={conditionalFieldItems}
-                value={value}
-                {...rest}
-              />
-            </>
-          )}
+}: StepOneModalContentProps) => {
+  return (
+    <ModalContent>
+      <ModalCloseButton />
+      <ModalHeader color="secondary.700">
+        <Text mb="0.25rem">Step 1: Select a field from your form</Text>
+        <ProgressIndicator
+          numIndicators={NUM_STEPS}
+          currActiveIdx={stepNumber}
+          onClick={setStepNumber}
         />
-      </Stack>
-    </ModalBody>
-    <ModalFooter>
-      <NextAndBackButtonGroup
-        nextButtonLabel="Next: Add emails to options"
-        backButtonLabel="Back to workflow"
-        handleBack={onClose}
-        handleNext={() => {
-          setStepNumber(1)
-        }}
-        isNextDisabled={isLoading}
-      />
-    </ModalFooter>
-  </ModalContent>
-)
+      </ModalHeader>
+      <ModalBody>
+        <Stack spacing="0.75rem">
+          <Text textStyle="subhead-1" color="secondary.700">
+            Route the form based on the options in this field:
+          </Text>
+          <FormControl
+            pt="0.5rem"
+            isReadOnly={isLoading}
+            id="field"
+            isRequired
+            // isInvalid={!!errors.field}
+          >
+            <Controller
+              control={control}
+              name={'conditionalFieldId'}
+              rules={{
+                required: 'Please select a field',
+                validate: (selectedValue) => {
+                  return (
+                    isLoading ||
+                    !conditionalFieldItems ||
+                    conditionalFieldItems.some(
+                      ({ value: fieldValue }) => fieldValue === selectedValue,
+                    ) ||
+                    'Field is not a dropdown or radio field'
+                  )
+                },
+              }}
+              render={({ field: { value = '', ...rest } }) => (
+                <SingleSelect
+                  zIndex={1400}
+                  isDisabled={isLoading}
+                  isClearable={false}
+                  placeholder="Select a dropdown or radio field from your form"
+                  items={conditionalFieldItems}
+                  value={value}
+                  {...rest}
+                />
+              )}
+            />
+          </FormControl>
+        </Stack>
+      </ModalBody>
+      <ModalFooter>
+        <NextAndBackButtonGroup
+          nextButtonLabel="Next: Add emails to options"
+          backButtonLabel="Back to workflow"
+          handleBack={onClose}
+          handleNext={() => {
+            setStepNumber(1)
+          }}
+          isNextDisabled={isLoading}
+        />
+      </ModalFooter>
+    </ModalContent>
+  )
+}
 
 interface StepTwoModalContentProps {
   stepNumber: number
@@ -261,6 +266,7 @@ interface ConditionalRoutingOptionModalProps {
   onClose: () => void
   conditionalFieldItems: FieldItem[]
   isLoading: boolean
+  control: UseFormReturn<ConditionalRoutingConfig>['control']
 }
 
 export const ConditionalRoutingOptionModal = ({
@@ -268,12 +274,11 @@ export const ConditionalRoutingOptionModal = ({
   onClose,
   conditionalFieldItems,
   isLoading,
+  control,
 }: ConditionalRoutingOptionModalProps): JSX.Element => {
   const isMobile = useIsMobile()
 
   const [stepNumber, setStepNumber] = useState<number>(0)
-
-  const { control } = useForm<ConditionalRoutingConfig>()
 
   const onModalClose = () => {
     setStepNumber(0)

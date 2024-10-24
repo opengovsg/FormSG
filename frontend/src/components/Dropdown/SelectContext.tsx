@@ -55,6 +55,7 @@ interface SelectContextReturn<Item extends ComboboxItem = ComboboxItem>
   /** Height to assign to virtual list */
   virtualListHeight: number
   onBlur?: () => void
+  zIndex?: number
 }
 
 export const SelectContext = createContext<SelectContextReturn | undefined>(
