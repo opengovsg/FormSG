@@ -102,6 +102,13 @@ export const EditStepBlock = ({
         }
         break
       }
+      case WorkflowType.Conditional: {
+        step = {
+          ...inputs,
+          workflow_type: WorkflowType.Conditional,
+        }
+        break
+      }
       default: {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _: never = inputs.workflow_type

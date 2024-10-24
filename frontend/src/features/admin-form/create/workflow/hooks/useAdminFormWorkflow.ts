@@ -3,9 +3,11 @@ import { keyBy } from 'lodash'
 
 import {
   BasicField,
+  DropdownFieldBase,
   EmailFieldBase,
   FormFieldDto,
   FormResponseMode,
+  RadioFieldBase,
   YesNoFieldBase,
 } from '~shared/types'
 
@@ -48,6 +50,28 @@ export const useAdminFormWorkflow = () => {
     [augmentedFormFields],
   )
 
+  const radioFormFields = useMemo(
+    () =>
+      augmentedFormFields.filter(
+        (
+          field,
+        ): field is FormFieldWithQuestionNo<FormFieldDto<RadioFieldBase>> =>
+          field.fieldType === BasicField.Radio,
+      ),
+    [augmentedFormFields],
+  )
+
+  const dropdownFormFields = useMemo(
+    () =>
+      augmentedFormFields.filter(
+        (
+          field,
+        ): field is FormFieldWithQuestionNo<FormFieldDto<DropdownFieldBase>> =>
+          field.fieldType === BasicField.Dropdown,
+      ),
+    [augmentedFormFields],
+  )
+
   const formWorkflow =
     form?.responseMode === FormResponseMode.Multirespondent
       ? form.workflow
@@ -60,5 +84,7 @@ export const useAdminFormWorkflow = () => {
     idToFieldMap,
     emailFormFields,
     yesNoFormFields,
+    radioFormFields,
+    dropdownFormFields,
   }
 }

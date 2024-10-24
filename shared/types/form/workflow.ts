@@ -3,6 +3,7 @@ import { FormFieldDto } from '../field'
 export enum WorkflowType {
   Static = 'static',
   Dynamic = 'dynamic',
+  Conditional = 'conditional',
 }
 
 export interface FormWorkflowStepBase {
@@ -21,7 +22,16 @@ export interface FormWorkflowStepDynamic extends FormWorkflowStepBase {
   field: FormFieldDto['_id']
 }
 
-export type FormWorkflowStep = FormWorkflowStepStatic | FormWorkflowStepDynamic
+export interface FormWorkflowStepConditional extends FormWorkflowStepBase {
+  workflow_type: WorkflowType.Conditional
+  conditionalFieldId?: FormFieldDto['_id']
+  optionToRecipientsMap?: string
+}
+
+export type FormWorkflowStep =
+  | FormWorkflowStepStatic
+  | FormWorkflowStepDynamic
+  | FormWorkflowStepConditional
 
 export type FormWorkflow = Array<FormWorkflowStep>
 

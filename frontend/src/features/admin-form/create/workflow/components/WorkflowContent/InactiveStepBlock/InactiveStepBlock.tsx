@@ -69,6 +69,17 @@ const SubsequentStepRespondentBadges = ({
       )
     case WorkflowType.Dynamic:
       return <FieldLogicBadge field={idToFieldMap[step.field]} />
+    case WorkflowType.Conditional: {
+      return (
+        <FieldLogicBadge
+          field={
+            step.conditionalFieldId
+              ? idToFieldMap[step.conditionalFieldId]
+              : undefined
+          }
+        />
+      )
+    }
     default: {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _: never = step
