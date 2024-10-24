@@ -54,6 +54,7 @@ interface SelectContextReturn<Item extends ComboboxItem = ComboboxItem>
   virtualListRef: RefObject<VirtuosoHandle>
   /** Height to assign to virtual list */
   virtualListHeight: number
+  zIndex?: number
 }
 
 export const SelectContext = createContext<SelectContextReturn | undefined>(
