@@ -7,8 +7,6 @@ import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
 
-import { BounceNotificationTransient } from 'src/app/views/templates/BounceNotificationTransient'
-
 import { FormResponseMode, PaymentChannel } from '../../../../shared/types'
 import { centsToDollars } from '../../../../shared/utils/payments'
 import { getPaymentInvoiceDownloadUrlPath } from '../../../../shared/utils/urls'
@@ -35,6 +33,7 @@ import {
   getAdminEmails,
 } from '../../modules/form/form.utils'
 import { formatAsPercentage } from '../../utils/formatters'
+import { BounceNotification } from '../../views/templates/BounceNotification'
 import MrfWorkflowCompletionEmail, {
   QuestionAnswer,
   WorkflowOutcome,
@@ -64,7 +63,6 @@ import {
 import {
   generateAutoreplyHtml,
   generateAutoreplyPdf,
-  generateBounceNotificationHtml,
   generateIssueReportedNotificationHtml,
   generateLoginOtpHtml,
   generatePaymentConfirmationHtml,
@@ -457,10 +455,7 @@ export class MailService {
       appName: this.#appName,
     }
 
-    const generatedHtml =
-      bounceType === BounceType.Permanent
-        ? generateBounceNotificationHtml(htmlData, bounceType)
-        : okAsync(render(BounceNotificationTransient(htmlData)))
+    const generatedHtml = okAsync(render(BounceNotification(htmlData)))
 
     return generatedHtml.andThen((mailHtml) => {
       const mail: MailOptions = {

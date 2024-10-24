@@ -1,17 +1,17 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import BounceNotificationTransient, {
+import BounceNotification, {
   type BounceNotificationHtmlData,
-} from './BounceNotificationTransient'
+} from './BounceNotification'
 
 export default {
-  title: 'EmailPreview/BounceNotificationTransient',
-  component: BounceNotificationTransient,
+  title: 'EmailPreview/BounceNotification',
+  component: BounceNotification,
   decorators: [],
 } as Meta
 
 const Template: StoryFn<BounceNotificationHtmlData> = (args) => (
-  <BounceNotificationTransient {...args} />
+  <BounceNotification {...args} />
 )
 
 export const Default = Template.bind({})

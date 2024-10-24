@@ -3,7 +3,7 @@ import { Body, Head, Html, Text, Link } from '@react-email/components'
 import { outerContainerStyle } from './styles'
 import { BounceNotificationHtmlData } from '../../services/mail/mail.types'
 
-export const BounceNotificationTransient = ({
+export const BounceNotification = ({
   formTitle,
   formLink,
   bouncedRecipients,
