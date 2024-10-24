@@ -1186,30 +1186,6 @@ describe('mail.service', () => {
     const MOCK_FORM_TITLE = 'You are all individuals!'
     const MOCK_BOUNCE_TYPE = BounceType.Permanent
 
-    const generateExpectedArg = async (bounceType: BounceType) => {
-      return {
-        to: MOCK_RECIPIENTS,
-        from: MOCK_SENDER_STRING,
-        subject: `[Urgent] FormSG Response Delivery Failure / Bounce`,
-        html: (
-          await MailUtils.generateBounceNotificationHtml(
-            {
-              appName: MOCK_APP_NAME,
-              bouncedRecipients: MOCK_BOUNCED_EMAILS.join(', '),
-              formLink: `${MOCK_APP_URL}/${MOCK_FORM_ID}`,
-              formTitle: MOCK_FORM_TITLE,
-            },
-            bounceType,
-          )
-        )._unsafeUnwrap(),
-        headers: {
-          // Hardcode in tests in case something changes this.
-          'X-Formsg-Email-Type': 'Admin (bounce notification)',
-          'X-Formsg-Form-ID': MOCK_FORM_ID,
-        },
-      }
-    }
-
     it('should send permanent bounce notification successfully', async () => {
       // Arrange
       // sendMail should return mocked success response
@@ -1223,12 +1199,19 @@ describe('mail.service', () => {
         formId: MOCK_FORM_ID,
         formTitle: MOCK_FORM_TITLE,
       })
-      const expectedArgs = await generateExpectedArg(BounceType.Permanent)
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(true)
       // Check arguments passed to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledTimes(1)
-      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgs)
+      expect(sendMailSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: MOCK_RECIPIENTS,
+          from: MOCK_SENDER_STRING,
+          subject: `[Urgent] FormSG Response Delivery Failure / Bounce`,
+          html: expect.stringMatching(MOCK_FORM_ID),
+        }),
+      )
+      expect(sendMailSpy).toMatchSnapshot()
     })
 
     it('should send transient bounce notification successfully', async () => {
@@ -1244,12 +1227,19 @@ describe('mail.service', () => {
         formId: MOCK_FORM_ID,
         formTitle: MOCK_FORM_TITLE,
       })
-      const expectedArgs = await generateExpectedArg(BounceType.Transient)
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(true)
       // Check arguments passed to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledTimes(1)
-      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgs)
+      expect(sendMailSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: MOCK_RECIPIENTS,
+          from: MOCK_SENDER_STRING,
+          subject: `[Urgent] FormSG Response Delivery Failure / Bounce`,
+          html: expect.stringMatching(MOCK_FORM_ID),
+        }),
+      )
+      expect(sendMailSpy).toMatchSnapshot()
     })
 
     it('should reject with error when email is invalid', async () => {
