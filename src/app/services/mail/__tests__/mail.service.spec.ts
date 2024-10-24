@@ -1186,30 +1186,6 @@ describe('mail.service', () => {
     const MOCK_FORM_TITLE = 'You are all individuals!'
     const MOCK_BOUNCE_TYPE = BounceType.Permanent
 
-    const generateExpectedArg = async (bounceType: BounceType) => {
-      return {
-        to: MOCK_RECIPIENTS,
-        from: MOCK_SENDER_STRING,
-        subject: `[Urgent] FormSG Response Delivery Failure / Bounce`,
-        html: (
-          await MailUtils.generateBounceNotificationHtml(
-            {
-              appName: MOCK_APP_NAME,
-              bouncedRecipients: MOCK_BOUNCED_EMAILS.join(', '),
-              formLink: `${MOCK_APP_URL}/${MOCK_FORM_ID}`,
-              formTitle: MOCK_FORM_TITLE,
-            },
-            bounceType,
-          )
-        )._unsafeUnwrap(),
-        headers: {
-          // Hardcode in tests in case something changes this.
-          'X-Formsg-Email-Type': 'Admin (bounce notification)',
-          'X-Formsg-Form-ID': MOCK_FORM_ID,
-        },
-      }
-    }
-
     it('should send permanent bounce notification successfully', async () => {
       // Arrange
       // sendMail should return mocked success response
@@ -1223,12 +1199,19 @@ describe('mail.service', () => {
         formId: MOCK_FORM_ID,
         formTitle: MOCK_FORM_TITLE,
       })
-      const expectedArgs = await generateExpectedArg(BounceType.Permanent)
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(true)
       // Check arguments passed to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledTimes(1)
-      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgs)
+      expect(sendMailSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: MOCK_RECIPIENTS,
+          from: MOCK_SENDER_STRING,
+          subject: `[Urgent] FormSG Response Delivery Failure / Bounce`,
+          html: expect.stringMatching(MOCK_FORM_ID),
+        }),
+      )
+      expect(sendMailSpy).toMatchSnapshot()
     })
 
     it('should send transient bounce notification successfully', async () => {
@@ -1244,12 +1227,19 @@ describe('mail.service', () => {
         formId: MOCK_FORM_ID,
         formTitle: MOCK_FORM_TITLE,
       })
-      const expectedArgs = await generateExpectedArg(BounceType.Transient)
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(true)
       // Check arguments passed to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledTimes(1)
-      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgs)
+      expect(sendMailSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: MOCK_RECIPIENTS,
+          from: MOCK_SENDER_STRING,
+          subject: `[Urgent] FormSG Response Delivery Failure / Bounce`,
+          html: expect.stringMatching(MOCK_FORM_ID),
+        }),
+      )
+      expect(sendMailSpy).toMatchSnapshot()
     })
 
     it('should reject with error when email is invalid', async () => {
@@ -1290,7 +1280,6 @@ describe('mail.service', () => {
         formId: MOCK_FORM_ID,
         formTitle: MOCK_FORM_TITLE,
       })
-      const expectedArgs = await generateExpectedArg(MOCK_BOUNCE_TYPE)
 
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(true)
@@ -1298,8 +1287,6 @@ describe('mail.service', () => {
       // Should have been called two times since it rejected the first one and
       // resolved
       expect(sendMailSpy).toHaveBeenCalledTimes(2)
-      expect(sendMailSpy).toHaveBeenNthCalledWith(1, expectedArgs)
-      expect(sendMailSpy).toHaveBeenNthCalledWith(2, expectedArgs)
     })
 
     it('should autoretry MOCK_RETRY_COUNT times and return error when all retries fail with 4xx errors', async () => {
@@ -1318,7 +1305,6 @@ describe('mail.service', () => {
         formId: MOCK_FORM_ID,
         formTitle: MOCK_FORM_TITLE,
       })
-      const expectedArgs = await generateExpectedArg(MOCK_BOUNCE_TYPE)
 
       // Assert
       const actualError = actualResult._unsafeUnwrapErr()
@@ -1327,7 +1313,6 @@ describe('mail.service', () => {
       // Check arguments passed to sendNodeMail
       // Should have been called MOCK_RETRY_COUNT + 1 times
       expect(sendMailSpy).toHaveBeenCalledTimes(MOCK_RETRY_COUNT + 1)
-      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgs)
     })
 
     it('should stop autoretrying when the returned error is not a 4xx error', async () => {
@@ -1349,7 +1334,6 @@ describe('mail.service', () => {
         formId: MOCK_FORM_ID,
         formTitle: MOCK_FORM_TITLE,
       })
-      const expectedArgs = await generateExpectedArg(MOCK_BOUNCE_TYPE)
 
       // Assert
       const actualError = actualResult._unsafeUnwrapErr()
@@ -1360,7 +1344,6 @@ describe('mail.service', () => {
       // Should retry two times and stop since the second rejected value is
       // non-4xx error.
       expect(sendMailSpy).toHaveBeenCalledTimes(2)
-      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgs)
     })
   })
 

@@ -33,6 +33,7 @@ import {
   getAdminEmails,
 } from '../../modules/form/form.utils'
 import { formatAsPercentage } from '../../utils/formatters'
+import { BounceNotification } from '../../views/templates/BounceNotification'
 import MrfWorkflowCompletionEmail, {
   QuestionAnswer,
   WorkflowOutcome,
@@ -62,7 +63,6 @@ import {
 import {
   generateAutoreplyHtml,
   generateAutoreplyPdf,
-  generateBounceNotificationHtml,
   generateIssueReportedNotificationHtml,
   generateLoginOtpHtml,
   generatePaymentConfirmationHtml,
@@ -455,37 +455,35 @@ export class MailService {
       appName: this.#appName,
     }
 
-    return generateBounceNotificationHtml(htmlData, bounceType).andThen(
-      (mailHtml) => {
-        const mail: MailOptions = {
-          to: emailRecipients,
-          from: this.#senderFromString,
-          subject: '[Urgent] FormSG Response Delivery Failure / Bounce',
-          html: mailHtml,
-          headers: {
-            [EMAIL_HEADERS.emailType]: EmailType.AdminBounce,
-            [EMAIL_HEADERS.formId]: formId,
-          },
-        }
+    const generatedHtml = okAsync(render(BounceNotification(htmlData)))
 
-        return this.#sendNodeMail(mail, { mailId: 'bounce' }).mapErr(
-          (error) => {
-            // Add additional logging.
-            logger.error({
-              message: 'Error sending bounce notification email',
-              meta: {
-                action: 'sendBounceNotification',
-                bounceType,
-                formTitle,
-                formId,
-              },
-              error,
-            })
-            return error
+    return generatedHtml.andThen((mailHtml) => {
+      const mail: MailOptions = {
+        to: emailRecipients,
+        from: this.#senderFromString,
+        subject: '[Urgent] FormSG Response Delivery Failure / Bounce',
+        html: mailHtml,
+        headers: {
+          [EMAIL_HEADERS.emailType]: EmailType.AdminBounce,
+          [EMAIL_HEADERS.formId]: formId,
+        },
+      }
+
+      return this.#sendNodeMail(mail, { mailId: 'bounce' }).mapErr((error) => {
+        // Add additional logging.
+        logger.error({
+          message: 'Error sending bounce notification email',
+          meta: {
+            action: 'sendBounceNotification',
+            bounceType,
+            formTitle,
+            formId,
           },
-        )
-      },
-    )
+          error,
+        })
+        return error
+      })
+    })
   }
 
   /**
