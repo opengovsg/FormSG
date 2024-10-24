@@ -119,12 +119,14 @@ interface StepTwoModalContentProps {
   stepNumber: number
   setStepNumber: (step: number) => void
   isMobile: boolean
+  onDownloadCsvClick: () => void
 }
 
 const StepTwoModalContent = ({
   stepNumber,
   setStepNumber,
   isMobile,
+  onDownloadCsvClick,
 }: StepTwoModalContentProps) => (
   <ModalContent minW="fit-content">
     <ModalCloseButton />
@@ -152,7 +154,11 @@ const StepTwoModalContent = ({
                 option.
               </Text>
             </Text>
-            <Button w="100%" leftIcon={<BiDownload fontSize="1.5rem" />}>
+            <Button
+              w="100%"
+              leftIcon={<BiDownload fontSize="1.5rem" />}
+              onClick={onDownloadCsvClick}
+            >
               Download and edit CSV
             </Button>
           </Stack>
@@ -267,6 +273,7 @@ interface ConditionalRoutingOptionModalProps {
   conditionalFieldItems: FieldItem[]
   isLoading: boolean
   control: UseFormReturn<ConditionalRoutingConfig>['control']
+  onDownloadCsvClick: () => void
 }
 
 export const ConditionalRoutingOptionModal = ({
@@ -275,6 +282,7 @@ export const ConditionalRoutingOptionModal = ({
   conditionalFieldItems,
   isLoading,
   control,
+  onDownloadCsvClick,
 }: ConditionalRoutingOptionModalProps): JSX.Element => {
   const isMobile = useIsMobile()
 
@@ -307,6 +315,7 @@ export const ConditionalRoutingOptionModal = ({
           isMobile={isMobile}
           stepNumber={stepNumber}
           setStepNumber={setStepNumber}
+          onDownloadCsvClick={onDownloadCsvClick}
         />
       )}
       {stepNumber === 2 && (

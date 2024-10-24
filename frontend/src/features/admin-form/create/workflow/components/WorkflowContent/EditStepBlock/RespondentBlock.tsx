@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { Controller, useForm, UseFormReturn } from 'react-hook-form'
 import { BiPlus } from 'react-icons/bi'
+import { useParams } from 'react-router'
 import {
   As,
   Button,
@@ -10,13 +11,21 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 import { get } from 'lodash'
+import Papa from 'papaparse'
 import isEmail from 'validator/lib/isEmail'
 
-import { UserDto, WorkflowType } from '~shared/types'
+import {
+  DropdownFieldBase,
+  FormFieldDto,
+  RadioFieldBase,
+  UserDto,
+  WorkflowType,
+} from '~shared/types'
 
 import { textStyles } from '~theme/textStyles'
 import { SingleSelect } from '~components/Dropdown'
 import Attachment from '~components/Field/Attachment'
+import { downloadFile } from '~components/Field/Attachment/utils/downloadFile'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Radio from '~components/Radio'
@@ -24,6 +33,7 @@ import { TagInput } from '~components/TagInput'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { EditStepInputs } from '~features/admin-form/create/workflow/types'
+import { FormFieldWithQuestionNo } from '~features/form/types'
 
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
@@ -202,7 +212,10 @@ const DynamicRespondentOption = ({
 }
 
 interface ConditionalRoutingOptionProps extends RespondentOptionProps {
-  conditionalFieldItems: FieldItem[]
+  conditionalFormFields: FormFieldWithQuestionNo<
+    FormFieldDto<DropdownFieldBase | RadioFieldBase>
+  >[]
+  stepNumber: number
 }
 
 export interface ConditionalRoutingConfig {
@@ -214,13 +227,25 @@ const ConditionalRoutingOption = ({
   isLoading,
   formMethods,
   selectedWorkflowType,
-  conditionalFieldItems,
+  conditionalFormFields,
+  stepNumber,
 }: ConditionalRoutingOptionProps) => {
   const { register } = formMethods
+
+  const { formId } = useParams()
+
+  const conditionalFieldItems = conditionalFormFields.map(
+    ({ _id, questionNumber, title, fieldType }) => ({
+      label: `${questionNumber}. ${title}`,
+      value: _id,
+      icon: BASICFIELD_TO_DRAWER_META[fieldType].icon,
+    }),
+  )
 
   const {
     control: conditionalRoutingConfigControl,
     watch: watchConditionalRoutingConfig,
+    getValues: getConditionalRoutingConfigValues,
   } = useForm<ConditionalRoutingConfig>()
 
   const isConditionalRoutingFieldSelected =
@@ -228,6 +253,46 @@ const ConditionalRoutingOption = ({
     watchConditionalRoutingConfig('conditionalFieldId')
 
   const { isOpen, onOpen, onClose } = useDisclosure()
+
+  const handleCsvDownload =
+    (formId: string = '', stepNumber: number) =>
+    () => {
+      const getFieldOptions = (conditionalFieldId: string) => {
+        const conditionalField = conditionalFormFields.find(
+          (field) => field._id === conditionalFieldId,
+        )
+        return conditionalField?.fieldOptions
+      }
+      const generateCsvContent = (fieldOptions: string[] | undefined) => {
+        const headerRow = ['Options', 'Add email(s) in this column']
+        const optionsRows = fieldOptions?.map((field) => [field, '']) ?? []
+        const jsonContent = [headerRow, ...optionsRows]
+        return Papa.unparse(jsonContent, {
+          header: true,
+          delimiter: ',',
+        })
+      }
+
+      const csvStringToFile = (csvString: string, downloadFileName: string) => {
+        const csvBlob = new Blob([csvString], {
+          type: 'text/csv',
+        })
+        const csvFile = new File([csvBlob], downloadFileName, {
+          type: 'text/csv',
+        })
+        return csvFile
+      }
+
+      const conditionalFieldId =
+        getConditionalRoutingConfigValues().conditionalFieldId
+      const fieldOptions = getFieldOptions(conditionalFieldId)
+      const csvContent = generateCsvContent(fieldOptions)
+      const csvFile = csvStringToFile(
+        csvContent,
+        `conditional_routing_form_${formId}_step_${stepNumber + 1}.csv`,
+      )
+      downloadFile(csvFile)
+    }
 
   return (
     <>
@@ -237,6 +302,7 @@ const ConditionalRoutingOption = ({
         isOpen={isOpen}
         onClose={onClose}
         control={conditionalRoutingConfigControl}
+        onDownloadCsvClick={handleCsvDownload(formId, stepNumber)}
       />
       <Radio
         isDisabled={isLoading}
@@ -315,6 +381,8 @@ export const RespondentBlock = ({
     dropdownFormFields = [],
   } = useAdminFormWorkflow()
 
+  const conditionalFormFields = [...radioFormFields, ...dropdownFormFields]
+
   const emailFieldItems = emailFormFields.map(
     ({ _id, questionNumber, title, fieldType }) => ({
       label: `${questionNumber}. ${title}`,
@@ -323,14 +391,6 @@ export const RespondentBlock = ({
     }),
   )
   const emailFieldIds = emailFormFields.map(({ _id }) => _id)
-
-  const conditionalFieldItems = [...radioFormFields, ...dropdownFormFields].map(
-    ({ _id, questionNumber, title, fieldType }) => ({
-      label: `${questionNumber}. ${title}`,
-      value: _id,
-      icon: BASICFIELD_TO_DRAWER_META[fieldType].icon,
-    }),
-  )
 
   const getValueIfNotDeleted = useCallback(
     // Why: When the Yes/No field has been deleted, the approval_field is still set to the
@@ -417,9 +477,10 @@ export const RespondentBlock = ({
               />
               <ConditionalRoutingOption
                 selectedWorkflowType={selectedWorkflowType}
-                conditionalFieldItems={conditionalFieldItems}
+                conditionalFormFields={conditionalFormFields}
                 formMethods={formMethods}
                 isLoading={isLoading}
+                stepNumber={stepNumber}
               />
             </Radio.RadioGroup>
           </Stack>
