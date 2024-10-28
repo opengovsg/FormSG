@@ -502,7 +502,7 @@ export const loadS3BucketUrlSchema = ({
       doc: 'Endpoint for S3 buckets',
       format: (val) =>
         validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
-      default: 'https://s3.ap-southeast-1.amazonaws.com', // NOTE NO TRAILING / AT THE END OF THIS URL!
+      default: `https://s3.${region}.amazonaws.com`, // NOTE NO TRAILING / AT THE END OF THIS URL!
       env: 'AWS_ENDPOINT',
     },
     attachmentBucketUrl: {
