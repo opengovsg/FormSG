@@ -152,7 +152,7 @@ const MrfEmailNotificationsForm = ({
         </Text>
         <Box>
           <FormLabel mb="0.75rem" textColor="secondary.700">
-            Notify Respondent in Step 1
+            Notify respondent in Step 1
           </FormLabel>
           <Skeleton isLoaded={!isLoading}>
             <Controller
