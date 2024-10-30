@@ -49,35 +49,34 @@ const _handleTextPrompt: ControllerHandler<
           user,
           formId,
           level: PermissionLevel.Write,
-        })
-          // Step 3: Create form fields using text prompt.
-          .andThen((form) =>
-            createFormFieldsUsingTextPrompt({
-              form,
-              userPrompt: req.body.prompt,
-            }),
-          )
-          .map(() =>
-            res.status(StatusCodes.OK).json({
-              message: 'Created form fields using text prompt successfully.',
-            }),
-          )
-          .mapErr((error) => {
-            logger.error({
-              message: 'Error occurred creating form fields using text prompt.',
-              meta: {
-                action: '_handleTextPrompt',
-                ...createReqMeta(req),
-                userId: sessionUserId,
-                formId,
-                userPrompt: req.body.prompt,
-              },
-              error,
-            })
-            const { errorMessage, statusCode } = mapRouteError(error)
-            return res.status(statusCode).json({ message: errorMessage })
-          }),
+        }),
+      ) // Step 3: Create form fields using text prompt.
+      .andThen((form) =>
+        createFormFieldsUsingTextPrompt({
+          form,
+          userPrompt: req.body.prompt,
+        }),
       )
+      .map(() =>
+        res.status(StatusCodes.OK).json({
+          message: 'Created form fields using text prompt successfully.',
+        }),
+      )
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error occurred creating form fields using text prompt.',
+          meta: {
+            action: '_handleTextPrompt',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+            userPrompt: req.body.prompt,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
   )
 }
 
