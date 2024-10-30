@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { BiCommentDetail } from 'react-icons/bi'
-import { GoPrimitiveDot } from 'react-icons/go'
+import { GoDotFill } from 'react-icons/go'
 import { Link as ReactLink } from 'react-router-dom'
 import {
   As,
@@ -117,7 +117,7 @@ const WhatsNewNavBarTab = ({
         />
         {shouldShowNotiifcation && (
           <Icon
-            as={GoPrimitiveDot}
+            as={GoDotFill}
             color="danger.500"
             position="absolute"
             ml="-15px"
@@ -140,12 +140,7 @@ const WhatsNewNavBarTab = ({
         {WHATS_NEW_LABEL}
       </Button>
       {shouldShowNotiifcation && (
-        <Icon
-          as={GoPrimitiveDot}
-          color="danger.500"
-          position="absolute"
-          ml="-5px"
-        />
+        <Icon as={GoDotFill} color="danger.500" position="absolute" ml="-5px" />
       )}
     </Box>
   )

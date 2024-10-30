@@ -6,7 +6,7 @@ import {
   BiShow,
   BiUserPlus,
 } from 'react-icons/bi'
-import { GoPrimitiveDot } from 'react-icons/go'
+import { GoDotFill } from 'react-icons/go'
 import { Link as ReactLink, useLocation } from 'react-router-dom'
 import {
   Box,
@@ -202,7 +202,7 @@ export const AdminFormNavbar = ({
           {t('features.adminForm.navbar.tabs.settings')}
           {shouldShowSettingsReddot ? (
             <Icon
-              as={GoPrimitiveDot}
+              as={GoDotFill}
               color="danger.500"
               position="absolute"
               right="-8px"

@@ -1,4 +1,4 @@
-import { GoPrimitiveDot } from 'react-icons/go'
+import { GoDotFill } from 'react-icons/go'
 import { Box, Icon } from '@chakra-ui/react'
 
 import IconButton from '~components/IconButton'
@@ -37,7 +37,7 @@ export const DrawerTabIcon = ({
         />
         {showRedDot ? (
           <Icon
-            as={GoPrimitiveDot}
+            as={GoDotFill}
             color="danger.500"
             position="absolute"
             ml="-15px"
