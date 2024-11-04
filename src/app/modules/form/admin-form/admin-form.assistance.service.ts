@@ -51,13 +51,13 @@ const mapSuggestedFormFieldToFieldCreateDto = (
       return {
         fieldType: BasicField.Table,
         title: tableFormField.title,
-        required: tableFormField.required,
+        required: true,
         description: tableFormField.description ?? '',
         columns: tableFormField.columns.map((colTitle) => {
           // Only support short text columns for now
           return {
             title: colTitle,
-            required: true,
+            required: tableFormField.required,
             columnType: BasicField.ShortText,
             ValidationOptions: {
               customVal: null,
