@@ -23,12 +23,13 @@ export const TextPromptIdeasSelector = ({
           Try one of these
         </Text>
       </Flex>
-      {!promptIdeas || !promptIdeas.length ? (
+      {!promptIdeas?.length ? (
         <Text>No prompt ideas found</Text>
       ) : (
         <Stack>
           {promptIdeas.map((idea: string) => (
             <Button
+              key={idea}
               h="100%"
               w="100%"
               borderColor="secondary.200"
