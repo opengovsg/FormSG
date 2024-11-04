@@ -15,10 +15,12 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react'
+import { S } from 'msw/lib/glossary-de6278a9'
 
 import { MAX_UPLOAD_FILE_SIZE } from '~shared/constants'
 
 import { useIsMobile } from '~hooks/useIsMobile'
+import { parseCsvFileToCsvString } from '~utils/parseCsvFileToCsvString'
 import { NextAndBackButtonGroup } from '~components/Button'
 import { SingleSelect } from '~components/Dropdown'
 import Attachment from '~components/Field/Attachment'
@@ -211,12 +213,16 @@ interface StepThreeModalContentProps {
   stepNumber: number
   setStepNumber: (step: number) => void
   control: UseFormReturn<ConditionalRoutingConfig>['control']
+  onSubmit: () => void
+  isSubmitDisabled: boolean
 }
 
 const StepThreeModalContent = ({
   stepNumber,
   setStepNumber,
   control,
+  onSubmit,
+  isSubmitDisabled,
 }: StepThreeModalContentProps) => (
   <ModalContent>
     <ModalCloseButton />
@@ -258,10 +264,8 @@ const StepThreeModalContent = ({
         nextButtonLabel="Save CSV template"
         backButtonLabel="Back to previous step"
         handleBack={() => setStepNumber(1)}
-        handleNext={() => {
-          console.log('Parsing csv')
-        }}
-        isNextDisabled={true}
+        handleNext={onSubmit}
+        isNextDisabled={isSubmitDisabled}
       />
     </ModalFooter>
   </ModalContent>
@@ -274,6 +278,8 @@ interface ConditionalRoutingOptionModalProps {
   isLoading: boolean
   control: UseFormReturn<ConditionalRoutingConfig>['control']
   onDownloadCsvClick: () => void
+  onSubmit: () => void
+  isSubmitDisabled: boolean
 }
 
 export const ConditionalRoutingOptionModal = ({
@@ -283,6 +289,8 @@ export const ConditionalRoutingOptionModal = ({
   isLoading,
   control,
   onDownloadCsvClick,
+  onSubmit,
+  isSubmitDisabled,
 }: ConditionalRoutingOptionModalProps): JSX.Element => {
   const isMobile = useIsMobile()
 
@@ -323,6 +331,8 @@ export const ConditionalRoutingOptionModal = ({
           control={control}
           stepNumber={stepNumber}
           setStepNumber={setStepNumber}
+          onSubmit={onSubmit}
+          isSubmitDisabled={isSubmitDisabled}
         />
       )}
     </Modal>

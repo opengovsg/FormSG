@@ -11,6 +11,12 @@ export class FormNotFoundError extends ApplicationError {
   }
 }
 
+export class FormInvalidResponseModeError extends ApplicationError {
+  constructor(message = 'Invalid response mode') {
+    super(message, undefined, ErrorCodes.FORM_INVALID_RESPONSE_MODE)
+  }
+}
+
 export class FormDeletedError extends ApplicationError {
   constructor(message = 'This form is no longer active') {
     super(message, undefined, ErrorCodes.FORM_DELETED)

@@ -222,6 +222,10 @@ AdminFormsFormRouter.route(
   .put(AdminFormController.handleUpdateWorkflowStep)
   .delete(AdminFormController.handleDeleteWorkflowStep)
 
+AdminFormsFormRouter.route(
+  '/:formId([a-fA-F0-9]{24})/workflow/:stepNumber(\\d+)/conditionalRoutingConfig',
+).put(AdminFormController.handleUpdateConditionalRoutingConfig)
+
 AdminFormsFormRouter.put(
   '/:formId([a-fA-F0-9]{24})/end-page',
   AdminFormController.handleUpdateEndPage,

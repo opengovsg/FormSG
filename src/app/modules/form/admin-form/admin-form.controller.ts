@@ -90,7 +90,7 @@ import {
 } from '../../submission/submission.utils'
 import * as UserService from '../../user/user.service'
 import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
-import { PrivateFormError } from '../form.errors'
+import { FormInvalidResponseModeError, PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 
 import { TwilioCredentials } from './../../../services/sms/sms.types'
@@ -1658,6 +1658,93 @@ export const handleDeleteWorkflowStep: ControllerHandler<
       })
   )
 }
+
+const TWO_MB_IN_BYTES = 2 * 1024 * 1024
+const handleUpdateConditionalRoutingConfigMultipartBody = multer({
+  limits: {
+    fieldSize: TWO_MB_IN_BYTES,
+    fields: 2,
+    files: 0,
+  },
+})
+
+const _handleUpdateConditionalRoutingConfigValidator = celebrate({
+  [Segments.PARAMS]: {
+    formId: Joi.string()
+      .required()
+      .pattern(/^[a-fA-F0-9]{24}$/)
+      .message('Your form ID is invalid.'),
+    stepNumber: Joi.number().integer().min(0).required(),
+  },
+  [Segments.BODY]: {
+    conditionalRoutingCsvString: Joi.string()
+      .messages({
+        'string.empty': 'Your csv is empty.',
+      })
+      .required(),
+    conditionalFieldId: Joi.string().required(),
+  },
+})
+
+const _handleUpdateConditionalRoutingConfig: ControllerHandler<
+  {
+    formId: string
+    stepNumber: number
+  },
+  object,
+  {
+    conditionalFieldId: string
+    conditionalRoutingCsvString: string
+  }
+> = async (req, res) => {
+  console.log('req received:', req.body)
+  const { formId, stepNumber } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+  const { conditionalFieldId, conditionalRoutingCsvString } = req.body
+
+  // Step 1: Retrieve currently logged in user.
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Step 2: Retrieve form with write permission check.
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((retrievedForm) =>
+      AdminFormService.updateFormWorkflowStepConditionalRoutingConfig(
+        retrievedForm,
+        stepNumber,
+        conditionalFieldId,
+        conditionalRoutingCsvString,
+      ),
+    )
+    .map((updatedWorkflow) => res.status(StatusCodes.OK).json(updatedWorkflow))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when updating form workflow step',
+        meta: {
+          action: '_handleUpdateConditionalRoutingConfig',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          stepNumber,
+          conditionalFieldId,
+          conditionalRoutingCsvString,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+export const handleUpdateConditionalRoutingConfig = [
+  handleUpdateConditionalRoutingConfigMultipartBody.none(),
+  _handleUpdateConditionalRoutingConfigValidator,
+  _handleUpdateConditionalRoutingConfig,
+] as ControllerHandler[]
 
 const TWENTY_MB_IN_BYTES = 20 * 1024 * 1024
 const handleWhitelistSettingMultipartBody = multer({

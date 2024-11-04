@@ -1,4 +1,3 @@
-import { useCallback } from 'react'
 import { Controller, useForm, UseFormReturn } from 'react-hook-form'
 import { BiPlus } from 'react-icons/bi'
 import { useParams } from 'react-router'
@@ -23,6 +22,7 @@ import {
 } from '~shared/types'
 
 import { textStyles } from '~theme/textStyles'
+import { parseCsvFileToCsvString } from '~utils/parseCsvFileToCsvString'
 import { SingleSelect } from '~components/Dropdown'
 import Attachment from '~components/Field/Attachment'
 import { downloadFile } from '~components/Field/Attachment/utils/downloadFile'
@@ -36,6 +36,7 @@ import { EditStepInputs } from '~features/admin-form/create/workflow/types'
 import { FormFieldWithQuestionNo } from '~features/form/types'
 
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
+import { useWorkflowMutations } from '../../../mutations'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { ConditionalRoutingOptionModal } from './ConditionalRoutingOptionModal'
@@ -246,6 +247,7 @@ const ConditionalRoutingOption = ({
     control: conditionalRoutingConfigControl,
     watch: watchConditionalRoutingConfig,
     getValues: getConditionalRoutingConfigValues,
+    handleSubmit,
   } = useForm<ConditionalRoutingConfig>()
 
   const isConditionalRoutingFieldSelected =
@@ -294,6 +296,37 @@ const ConditionalRoutingOption = ({
       downloadFile(csvFile)
     }
 
+  const { updateStepConditionalRoutingConfig } = useWorkflowMutations()
+
+  const handleConditionalRoutingConfigSubmit = async (
+    data: ConditionalRoutingConfig,
+  ) => {
+    if (!(data.csvFile && data.conditionalFieldId)) {
+      return
+    }
+
+    const conditionalRoutingCsvString = await parseCsvFileToCsvString(
+      data.csvFile,
+      (headerRow) => {
+        return {
+          isValid:
+            headerRow &&
+            headerRow.length === 2 &&
+            headerRow[0] === 'Options' &&
+            headerRow[1] === 'Add email(s) in this column',
+          invalidReason:
+            'Your CSV file should only contain 2 columns with the "Options" and "Add email(s) in this column" headers.',
+        }
+      },
+    )
+
+    updateStepConditionalRoutingConfig.mutate({
+      stepNumber,
+      conditionalFieldId: data.conditionalFieldId,
+      conditionalRoutingCsvString,
+    })
+  }
+
   return (
     <>
       <ConditionalRoutingOptionModal
@@ -303,6 +336,13 @@ const ConditionalRoutingOption = ({
         onClose={onClose}
         control={conditionalRoutingConfigControl}
         onDownloadCsvClick={handleCsvDownload(formId, stepNumber)}
+        onSubmit={handleSubmit(handleConditionalRoutingConfigSubmit)}
+        isSubmitDisabled={
+          !(
+            watchConditionalRoutingConfig().csvFile &&
+            watchConditionalRoutingConfig().conditionalFieldId
+          )
+        }
       />
       <Radio
         isDisabled={isLoading}
@@ -369,9 +409,6 @@ export const RespondentBlock = ({
     watch,
   } = formMethods
 
-  // TODO: (MRF-email-notif) Remove isTest check when MRF email notifications is out of beta
-  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
-
   const {
     emailFormFields = [],
     radioFormFields = [],
@@ -386,22 +423,6 @@ export const RespondentBlock = ({
       value: _id,
       icon: BASICFIELD_TO_DRAWER_META[fieldType].icon,
     }),
-  )
-  const emailFieldIds = emailFormFields.map(({ _id }) => _id)
-
-  const getValueIfNotDeleted = useCallback(
-    // Why: When the Yes/No field has been deleted, the approval_field is still set to the
-    // invalid form field id but cannot be seen or cleared in the SingleSelect component
-    // since no matching Yes/No item can be found.
-    // Hence, we clear the approval_field to allow the user to re-select a new valid value.
-    (value: string) => {
-      if (!isLoading && value && !emailFieldIds.includes(value)) {
-        setValue('field', '')
-        return ''
-      }
-      return value
-    },
-    [isLoading, setValue, emailFieldIds],
   )
 
   const selectedWorkflowType = watch('workflow_type')
