@@ -190,16 +190,29 @@ export const getQuestionTitleAnswerString = ({
           {} as Record<string, string>,
         )
 
-        for (const [index, row] of response.answer.entries()) {
-          for (const [colId, colAns] of Object.entries(row)) {
-            if (!(colId in idToColTitleMap)) continue
-            const colTitle = idToColTitleMap[colId]
+        for (const row of response.answer) {
+          const validColumns = Object.entries(row).filter(
+            ([colId]) => colId in idToColTitleMap,
+          )
 
-            questionAnswerPair.push({
-              question: `[Table] Row ${index + 1}: ${colTitle}`,
-              answer: colAns ?? '',
+          const delimitedColumnTitles = validColumns
+            .map(([colId]) => {
+              const colTitle = idToColTitleMap[colId]
+              return `${colTitle}`
             })
-          }
+            .join('; ')
+
+          const delimitedColumnAnswers = validColumns
+            .map(([, colAns]) => colAns ?? '')
+            .join('; ')
+
+          const question = `[Table] ${formField.title} (${delimitedColumnTitles})`
+          const answer = delimitedColumnAnswers
+
+          questionAnswerPair.push({
+            question,
+            answer,
+          })
         }
         continue
       case BasicField.Radio:
