@@ -270,11 +270,20 @@ describe('multirespondent-submission.utils', () => {
       const formFields: FormFieldSchema[] = [
         {
           _id: '1',
-          title: 'Table',
+          title: 'Table of Name and Age',
           fieldType: BasicField.Table,
           columns: [
             { _id: 'col1', title: 'Name' },
             { _id: 'col2', title: 'Age' },
+          ],
+        } as ITableFieldSchema,
+        {
+          _id: '2',
+          title: 'Table of Hobbies',
+          fieldType: BasicField.Table,
+          columns: [
+            { _id: 'col3', title: 'Hobby' },
+            { _id: 'col4', title: 'Years' },
           ],
         } as ITableFieldSchema,
       ]
@@ -286,15 +295,34 @@ describe('multirespondent-submission.utils', () => {
             { col1: 'Bob', col2: '25' },
           ],
         } as TableResponseV3,
+        '2': {
+          fieldType: BasicField.Table,
+          answer: [
+            { col3: 'Swimming', col4: '5' },
+            { col3: 'Reading', col4: '10' },
+          ],
+        } as TableResponseV3,
       }
 
       const result = getQuestionTitleAnswerString({ formFields, responses })
 
       expect(result).toEqual([
-        { question: '[Table] Row 1: Name', answer: 'Alice' },
-        { question: '[Table] Row 1: Age', answer: '30' },
-        { question: '[Table] Row 2: Name', answer: 'Bob' },
-        { question: '[Table] Row 2: Age', answer: '25' },
+        {
+          question: '[Table] Table of Name and Age (Name; Age)',
+          answer: 'Alice; 30',
+        },
+        {
+          question: '[Table] Table of Name and Age (Name; Age)',
+          answer: 'Bob; 25',
+        },
+        {
+          question: '[Table] Table of Hobbies (Hobby; Years)',
+          answer: 'Swimming; 5',
+        },
+        {
+          question: '[Table] Table of Hobbies (Hobby; Years)',
+          answer: 'Reading; 10',
+        },
       ])
     })
 
