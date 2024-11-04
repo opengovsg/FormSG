@@ -125,7 +125,7 @@
     "nocache": "^3.0.4",
     "node-cache": "^5.1.2",
     "nodemailer": "^6.9.13",
-    "openai": "^4.63.0",
+    "openai": "^4.70.3",
     "openid-client": "^5.3.1",
     "opossum": "^8.1.4",
     "promise-retry": "^2.0.1",
