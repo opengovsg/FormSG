@@ -21,7 +21,7 @@ import {
   VisuallyHidden,
   VStack,
 } from '@chakra-ui/react'
-import { get } from 'lodash'
+import { debounce, get } from 'lodash'
 import simplur from 'simplur'
 
 import { DATE_DISPLAY_FORMAT } from '~shared/constants/dates'
@@ -439,13 +439,15 @@ const ChildrenBody = ({
                     items={
                       MYINFO_ATTRIBUTE_MAP[subField].fieldOptions as string[]
                     }
-                    onChange={(option) =>
-                      // This is bad practice but we have no choice because our
-                      // custom Select doesn't forward the event.
-                      // FIXME: Fix types
-                      // @ts-expect-error type inference issue
-                      setValue(fieldPath, option, { shouldValidate: true })
-                    }
+                    onChange={debounce(
+                      (option) =>
+                        // This is bad practice but we have no choice because our
+                        // custom Select doesn't forward the event.
+                        // FIXME: Fix types
+                        setValue(fieldPath, option, { shouldValidate: true }),
+                      200,
+                      { leading: true },
+                    )}
                   />
                   <FormErrorMessage>
                     {childrenSubFieldError?.message}
