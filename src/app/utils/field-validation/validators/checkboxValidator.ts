@@ -291,7 +291,7 @@ const makeValidOptionsValidatorV3: ResponseValidatorConstructor<
     (!answer.value.includes(CLIENT_CHECKBOX_OTHERS_INPUT_VALUE) ||
       othersRadioButton)
     ? right(response)
-    : left(`CheckboxValidator:\t answer is not valid`)
+    : left(`CheckboxValidatorV3:\t answer is not valid`)
 }
 
 /**
