@@ -21,7 +21,7 @@ import {
   VisuallyHidden,
   VStack,
 } from '@chakra-ui/react'
-import { debounce, get } from 'lodash'
+import { get } from 'lodash'
 import simplur from 'simplur'
 
 import { DATE_DISPLAY_FORMAT } from '~shared/constants/dates'
@@ -439,15 +439,20 @@ const ChildrenBody = ({
                     items={
                       MYINFO_ATTRIBUTE_MAP[subField].fieldOptions as string[]
                     }
-                    onChange={debounce(
-                      (option) =>
+                    onChange={(option) => {
+                      // prevent updates if there's no change to the values
+                      // there's an infinite loop on the update
+                      // upgrading to v8.xx, or v9.xx doesn't seem to have resolved the issue
+                      // https://github.com/downshift-js/downshift/issues/1511#issuecomment-1598307130
+
+                      setTimeout(() =>
                         // This is bad practice but we have no choice because our
                         // custom Select doesn't forward the event.
                         // FIXME: Fix types
+                        // @ts-expect-error type inference issue
                         setValue(fieldPath, option, { shouldValidate: true }),
-                      200,
-                      { leading: true },
-                    )}
+                      )
+                    }}
                   />
                   <FormErrorMessage>
                     {childrenSubFieldError?.message}
