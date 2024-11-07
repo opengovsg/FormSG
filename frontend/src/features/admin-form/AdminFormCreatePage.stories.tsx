@@ -17,7 +17,6 @@ import {
   MOCK_FORM_FIELDS_WITH_MYINFO,
   MOCK_FORM_LOGICS,
 } from '~/mocks/msw/handlers/admin-form'
-import { getFreeSmsQuota } from '~/mocks/msw/handlers/admin-form/twilio'
 import { getUser, MOCK_USER } from '~/mocks/msw/handlers/user'
 
 import {
@@ -56,7 +55,6 @@ const buildMswRoutes = (
       delay: 0,
       mockUser: { ...MOCK_USER, _id: 'adminFormTestUserId' as UserId },
     }),
-    getFreeSmsQuota({ delay }),
   ]
 }
 

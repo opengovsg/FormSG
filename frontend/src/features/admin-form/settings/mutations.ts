@@ -10,7 +10,6 @@ import {
   FormStatus,
   StorageFormSettings,
 } from '~shared/types/form/form'
-import { TwilioCredentials } from '~shared/types/twilio'
 import { PAYMENT_DELETE_DEFAULT } from '~shared/utils/payments'
 
 import { ApiError } from '~typings/core'
@@ -25,7 +24,6 @@ import { adminFormKeys } from '../common/queries'
 import { adminFormSettingsKeys } from './queries'
 import {
   createStripeAccount,
-  deleteTwilioCredentials,
   MrfEmailNotificationSettings,
   unlinkStripeAccount,
   updateBusinessInfo,
@@ -45,7 +43,6 @@ import {
   updateIsSingleSubmission,
   updateIsSubmitterIdCollectionEnabled,
   updateMrfEmailNotifications,
-  updateTwilioCredentials,
 } from './SettingsService'
 
 export const useMutateFormSettings = () => {
@@ -469,62 +466,6 @@ export const useMutateFormSettings = () => {
     mutateFormEsrvcId,
     mutateFormBusiness,
     mutateGST,
-  }
-}
-
-export const useMutateTwilioCreds = () => {
-  const { formId } = useParams()
-  if (!formId) throw new Error('No formId provided')
-
-  const queryClient = useQueryClient()
-  const toast = useToast({ status: 'success', isClosable: true })
-
-  const mutateFormTwilioDetails = useMutation(
-    (credentials: TwilioCredentials) =>
-      updateTwilioCredentials(formId, credentials),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(adminFormKeys.id(formId))
-        toast.closeAll()
-        // Show toast on success.
-        toast({
-          description: 'Updated Twilio credentials',
-        })
-      },
-      onError: (error: Error) => {
-        toast.closeAll()
-        toast({
-          description: error.message,
-          status: 'danger',
-        })
-      },
-    },
-  )
-
-  const mutateFormTwilioDeletion = useMutation(
-    () => deleteTwilioCredentials(formId),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(adminFormKeys.id(formId))
-        toast.closeAll()
-        // Show toast on success.
-        toast({
-          description: 'Deleted Twilio credentials',
-        })
-      },
-      onError: (error: Error) => {
-        toast.closeAll()
-        toast({
-          description: error.message,
-          status: 'danger',
-        })
-      },
-    },
-  )
-
-  return {
-    mutateFormTwilioDeletion,
-    mutateFormTwilioDetails,
   }
 }
 

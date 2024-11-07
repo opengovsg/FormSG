@@ -34,7 +34,6 @@ import { SettingsAuthPage } from './SettingsAuthPage'
 import { SettingsEmailsPage } from './SettingsEmailsPage'
 import { SettingsGeneralPage } from './SettingsGeneralPage'
 import { SettingsPaymentsPage } from './SettingsPaymentsPage'
-import { SettingsTwilioPage } from './SettingsTwilioPage'
 import { SettingsWebhooksPage } from './SettingsWebhooksPage'
 
 interface TabEntry {
@@ -96,12 +95,6 @@ export const SettingsPage = (): JSX.Element => {
       path: 'singpass',
     },
     emailNotificationsTab,
-    {
-      label: 'Twilio credentials',
-      icon: BiMessage,
-      component: SettingsTwilioPage,
-      path: 'twilio-credentials',
-    },
     {
       label: 'Webhooks',
       icon: BiCodeBlock,

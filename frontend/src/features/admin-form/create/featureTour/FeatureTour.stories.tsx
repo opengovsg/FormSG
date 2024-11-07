@@ -6,7 +6,6 @@ import {
   createFormBuilderMocks,
   getAdminFormCollaborators,
 } from '~/mocks/msw/handlers/admin-form'
-import { getFreeSmsQuota } from '~/mocks/msw/handlers/admin-form/twilio'
 import { getUser } from '~/mocks/msw/handlers/user'
 
 import { AdminFormCreatePageDecorator } from '~utils/storybook'
@@ -21,7 +20,6 @@ const buildMswRoutes = (
     ...createFormBuilderMocks(overrides, delay),
     getUser(),
     getAdminFormCollaborators(),
-    getFreeSmsQuota({ delay }),
   ]
 }
 

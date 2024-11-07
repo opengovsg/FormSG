@@ -14,7 +14,6 @@ import { useUser } from '~features/user/queries'
 import {
   getAdminFormView,
   getFormCollaborators,
-  getFreeSmsQuota,
   previewForm,
   viewFormTemplate,
 } from './AdminViewFormService'
@@ -64,17 +63,6 @@ export const useAdminFormWithId = (
     adminFormKeys.id(formId),
     () => getAdminFormView(formId),
     props,
-  )
-}
-
-export const useFreeSmsQuota = () => {
-  const { formId } = useParams()
-  if (!formId) throw new Error('No formId provided to useFreeSmsQuota')
-
-  return useQuery(
-    adminFormKeys.freeSmsCount(formId),
-    () => getFreeSmsQuota(formId),
-    { staleTime: 0 },
   )
 }
 

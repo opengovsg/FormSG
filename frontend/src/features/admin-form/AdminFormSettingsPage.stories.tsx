@@ -15,7 +15,6 @@ import {
   getAdminFormSubmissions,
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
-import { getFreeSmsQuota } from '~/mocks/msw/handlers/admin-form/twilio'
 import { getUser } from '~/mocks/msw/handlers/user'
 
 import { ADMINFORM_ROUTE, ADMINFORM_SETTINGS_SUBROUTE } from '~constants/routes'
@@ -55,7 +54,6 @@ export default {
     chromatic: { pauseAnimationAtEnd: true },
     layout: 'fullscreen',
     msw: [
-      getFreeSmsQuota(),
       ...createFormBuilderMocks(),
       getAdminFormSettings(),
       getAdminFormSubmissions(),
@@ -73,7 +71,6 @@ export const PreventActivation = Template.bind({})
 PreventActivation.parameters = {
   msw: [
     ...createFormBuilderMocks(),
-    getFreeSmsQuota(),
     getAdminFormSubmissions(),
     patchAdminFormSettings(),
     getAdminFormSettings({
@@ -112,7 +109,6 @@ StorageModeSettings.parameters = {
     storyDescription: `The passing secret key is ${storageModeKeypair.secretKey}`,
   },
   msw: [
-    getFreeSmsQuota(),
     ...createFormBuilderMocks({ responseMode: FormResponseMode.Encrypt }),
     getAdminFormSettings({
       mode: FormResponseMode.Encrypt,

@@ -12,14 +12,10 @@ import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
-import { useFreeSmsQuota } from '~features/admin-form/common/queries'
-
 import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
-
-import { SmsCountMessage } from './SmsCountMessage'
 
 const EDIT_MOBILE_KEYS = [
   'title',
@@ -55,8 +51,6 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
     () => createBaseValidationRules({ required: true }),
     [],
   )
-
-  const { data: freeSmsCount } = useFreeSmsQuota()
 
   return (
     <>
@@ -111,7 +105,6 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
               )}
             />
           </FormControl>
-          <SmsCountMessage freeSmsCount={freeSmsCount} />
         </Box>
         <FormFieldDrawerActions
           isLoading={isLoading}

@@ -11,7 +11,6 @@ import { EncryptedStringsMessageContent } from '~shared/utils/crypto'
 
 import { ApiService } from '~services/ApiService'
 
-import { TwilioCredentials } from '../../../../../shared/types/twilio'
 import { ADMIN_FORM_ENDPOINT } from '../common/AdminViewFormService'
 
 type UpdateEmailFormFn<T extends keyof EmailFormSettings> = (
@@ -213,22 +212,6 @@ export const updateFormWhitelistSetting: UpdateStorageFormWhitelistSettingFn =
       },
     ).then(({ data }) => data)
   }
-
-export const updateTwilioCredentials = async (
-  formId: string,
-  credentials: TwilioCredentials,
-) => {
-  return ApiService.put<void>(
-    `${ADMIN_FORM_ENDPOINT}/${formId}/twilio`,
-    credentials,
-  ).then(({ data }) => data)
-}
-
-export const deleteTwilioCredentials = async (formId: string) => {
-  return ApiService.delete<void>(
-    `${ADMIN_FORM_ENDPOINT}/${formId}/twilio`,
-  ).then(({ data }) => data)
-}
 
 export const createStripeAccount = async (formId: string) => {
   return ApiService.post<{ authUrl: string }>(

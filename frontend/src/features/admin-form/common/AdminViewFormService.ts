@@ -104,12 +104,6 @@ export const viewFormTemplate = async (
     .then(transformAllIsoStringsToDate)
 }
 
-export const getFreeSmsQuota = async (formId: string) => {
-  return ApiService.get<SmsCountsDto>(
-    `${ADMIN_FORM_ENDPOINT}/${formId}/verified-sms/count/free`,
-  ).then(({ data }) => data)
-}
-
 export const getFormCollaborators = async (
   formId: string,
 ): Promise<FormPermissionsDto> => {

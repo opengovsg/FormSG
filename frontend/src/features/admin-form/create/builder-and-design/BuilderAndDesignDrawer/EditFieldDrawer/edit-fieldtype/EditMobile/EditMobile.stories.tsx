@@ -3,7 +3,6 @@ import { Meta, StoryFn } from '@storybook/react'
 import { BasicField, MobileFieldBase } from '~shared/types'
 
 import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
-import { getFreeSmsQuota } from '~/mocks/msw/handlers/admin-form/twilio'
 
 import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 
@@ -33,7 +32,7 @@ export default {
   parameters: {
     // Required so skeleton "animation" does not hide content.
     chromatic: { pauseAnimationAtEnd: true },
-    msw: [getFreeSmsQuota(), ...createFormBuilderMocks({}, 0)],
+    msw: [...createFormBuilderMocks({}, 0)],
   },
   args: {
     field: DEFAULT_MOBILE_FIELD,
@@ -58,34 +57,5 @@ Default.args = {
 
 export const Loading = Template.bind({})
 Loading.parameters = {
-  msw: [
-    getFreeSmsQuota({ delay: 'infinite' }),
-    ...createFormBuilderMocks({}, 0),
-  ],
-}
-
-export const VerifiedQuotaExceeded = Template.bind({})
-VerifiedQuotaExceeded.parameters = {
-  msw: [
-    getFreeSmsQuota({
-      override: {
-        freeSmsCounts: 10000,
-        quota: 10000,
-      },
-    }),
-    ...createFormBuilderMocks({}, 0),
-  ],
-}
-
-export const HasCustomCredentials = Template.bind({})
-HasCustomCredentials.parameters = {
-  msw: [
-    getFreeSmsQuota({
-      override: {
-        freeSmsCounts: 10000,
-        quota: 10000,
-      },
-    }),
-    ...createFormBuilderMocks({ msgSrvcName: 'custom-credentials' }, 0),
-  ],
+  msw: [...createFormBuilderMocks({}, 0)],
 }
