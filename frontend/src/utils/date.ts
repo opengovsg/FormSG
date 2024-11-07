@@ -41,13 +41,18 @@ export const isDateAfterToday = (date: number | Date) => {
 }
 
 export const normalizeDateToUtc = (date: Date | null) => {
-  if (!date) return date
+  if (!date) return null
   return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
 }
 
-export const loadDateFromNormalizedDate = (date: Date | null) => {
+export const loadDateFromNormalizedDate = (date: string | Date | null) => {
   if (!date) return date
-  return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+  const parsedDate = typeof date === 'string' ? parseISO(date) : date
+  return new Date(
+    parsedDate.getUTCFullYear(),
+    parsedDate.getUTCMonth(),
+    parsedDate.getUTCDate(),
+  )
 }
 
 /**
