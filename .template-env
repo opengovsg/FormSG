@@ -68,12 +68,6 @@ FORMSG_SDK_MODE=
 ## If the variable exists, the [verified] feature will be enabled.
 # VERIFICATION_SECRET_KEY=
 
-## Twilio
-## If the below variables exists, the [sms] feature will be enabled.
-# TWILIO_ACCOUNT_SID=
-# TWILIO_API_KEY=
-# TWILIO_API_SECRET=
-# TWILIO_MESSAGING_SERVICE_SID=
 
 ## SingPass, CorpPass related environment variables
 # If you are not a member of the Singapore Government, you can safely exclude
@@ -113,7 +107,6 @@ FORMSG_SDK_MODE=
 
 # Used to check if BE Server is currently running on local development environment
 # One of boolean: "true" | "false"
-# USE_MOCK_TWILIO=
 # USE_MOCK_POSTMAN_SMS=
 
 # POSTMAN_MOP_CAMPAIGN_ID=
