@@ -431,6 +431,7 @@ describe('admin-form.controller', () => {
       responseMode: FormResponseMode.Encrypt,
       publicKey: 'some public key',
       title: 'some form title',
+      emails: [],
     }
     const MOCK_REQ = expressHandler.mockRequest({
       session: {
@@ -3002,7 +3003,9 @@ describe('admin-form.controller', () => {
       MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
         okAsync(MOCK_FORM as IPopulatedForm),
       )
-      MockAdminFormService.archiveForm.mockReturnValueOnce(okAsync(true))
+      MockAdminFormService.archiveForm.mockReturnValueOnce(
+        okAsync(true as unknown as IFormSchema),
+      )
       MockWorkspaceService.removeFormsFromAllWorkspaces.mockReturnValueOnce(
         okAsync(true),
       )
@@ -10666,6 +10669,4 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.getFormField).not.toHaveBeenCalled()
     })
   })
-
-
 })
