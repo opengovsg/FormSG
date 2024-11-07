@@ -46,7 +46,7 @@ export const normalizeDateToUtc = (date: Date | null) => {
 }
 
 export const loadDateFromNormalizedDate = (date: string | Date | null) => {
-  if (!date) return date
+  if (!date) return null
   const parsedDate = typeof date === 'string' ? parseISO(date) : date
   return new Date(
     parsedDate.getUTCFullYear(),
