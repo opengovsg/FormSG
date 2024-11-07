@@ -66,7 +66,7 @@ export const makeSignatureValidator: (
     const { signature, answer } = response
     if (!signature) {
       return left(
-        `CommonValidator.makeSignatureValidator:\t answer does not have valid signature`,
+        `CommonValidator.makeSignatureValidator:\t answer signature is missing`,
       )
     }
     const isSigned =
@@ -102,8 +102,9 @@ export const makeSignatureValidatorV3 =
     }
     const { value, signature } = response.answer
     if (!signature) {
+      // TODO: (FM-1688) Remove this log after sure that validation logic works as expected.
       return left(
-        `CommonValidatorV3.makeSignatureValidator:\t answer does not have valid signature`,
+        `CommonValidatorV3.makeSignatureValidator:\t answer signature is missing. full ans: ${response.answer}, value: ${value}, signature: ${signature}`,
       )
     }
     const isSigned =
@@ -117,7 +118,8 @@ export const makeSignatureValidatorV3 =
 
     return isSigned
       ? right(response)
-      : left(
-          `CommonValidatorV3.makeSignatureValidator:\t answer does not have valid signature`,
+      : // TODO: (FM-1688) Remove this log after sure that validation logic works as expected.
+        left(
+          `CommonValidatorV3.makeSignatureValidator:\t answer does not have valid signature. full ans: ${response.answer}, value: ${value}, signature: ${signature}`,
         )
   }
