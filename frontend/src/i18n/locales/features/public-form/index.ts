@@ -1,3 +1,5 @@
+import { Table } from './table'
+
 export * from './en-sg'
 
 export interface PublicForm {
@@ -24,5 +26,6 @@ export interface PublicForm {
       proceedToPay: string
       submitNow: string
     }
+    table: Table
   }
 }

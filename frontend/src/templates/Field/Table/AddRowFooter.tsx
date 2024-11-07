@@ -1,7 +1,7 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
 import { Box, Stack, Text, VisuallyHidden } from '@chakra-ui/react'
-import simplur from 'simplur'
 
 import Button from '~components/Button'
 
@@ -18,19 +18,18 @@ export const AddRowFooter = ({
   maxRows,
   handleAddRow: handleAddRowProp,
 }: AddRowFooterProps): JSX.Element => {
+  const { t } = useTranslation()
+
   // State to decide whether to announce row changes to screen readers
   const [hasAddedRows, setHasAddedRows] = useState(false)
-  const maxRowDescription = useMemo(() => {
-    return maxRows
-      ? simplur`${currentRows} out of max ${maxRows} row[|s]`
-      : simplur`${currentRows} row[|s]`
-  }, [currentRows, maxRows])
-
-  const maxRowAriaDescription = useMemo(() => {
-    return maxRows
-      ? simplur`There [is|are] currently ${currentRows} out of max ${maxRows} row[|s].`
-      : simplur`There [is|are] currently ${currentRows} row[|s].`
-  }, [currentRows, maxRows])
+  const maxRowDescription = Number.isInteger(maxRows)
+    ? t('features.publicForm.components.table.rowMax', {
+        currentRows,
+        count: Number(maxRows),
+      })
+    : t('features.publicForm.components.table.row', {
+        count: currentRows,
+      })
 
   const handleAddRow = useCallback(() => {
     handleAddRowProp()
@@ -51,15 +50,16 @@ export const AddRowFooter = ({
         type="button"
         onClick={handleAddRow}
       >
-        Add another row
+        {t('features.publicForm.components.table.addAnotherRow')}
         <VisuallyHidden>
-          to the table field. {maxRowAriaDescription}
+          {t('features.publicForm.components.table.addAnotherRowAria')}
         </VisuallyHidden>
       </Button>
 
       <Box>
         <VisuallyHidden aria-live={hasAddedRows ? 'polite' : 'off'} aria-atomic>
-          The table field currently has {maxRowDescription}
+          {t('features.publicForm.components.table.rowAria')}{' '}
+          {maxRowDescription}
         </VisuallyHidden>
 
         <Text aria-hidden textStyle="body-2" color="secondary.400">

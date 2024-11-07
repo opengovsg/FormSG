@@ -1,3 +1,4 @@
+import { enSG as table } from './table'
 import { PublicForm } from '.'
 
 export const enSG: PublicForm = {
@@ -30,5 +31,6 @@ export const enSG: PublicForm = {
       proceedToPay: 'Proceed to pay',
       submitNow: 'Submit now',
     },
+    table,
   },
 }
