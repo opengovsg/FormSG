@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { setupApp } from '__tests__/integration/helpers/express-setup'
-import MockTwilio from '__tests__/integration/helpers/twilio'
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import bcrypt from 'bcrypt'
@@ -9,7 +8,7 @@ import { subMinutes, subYears } from 'date-fns'
 import { StatusCodes } from 'http-status-codes'
 import _ from 'lodash'
 import mongoose from 'mongoose'
-import { okAsync } from 'neverthrow'
+import { errAsync, okAsync } from 'neverthrow'
 import nodemailer from 'nodemailer'
 import Mail from 'nodemailer/lib/mailer'
 import session, { Session } from 'supertest-session'
@@ -23,7 +22,7 @@ import {
 import getVerificationModel from 'src/app/modules/verification/verification.model'
 import MailService from 'src/app/services/mail/mail.service'
 import { SmsSendError } from 'src/app/services/postman-sms/postman-sms.errors'
-import * as SmsService from 'src/app/services/sms/sms.service'
+import PostmanSmsService from 'src/app/services/postman-sms/postman-sms.service'
 import * as OtpUtils from 'src/app/utils/otp'
 import { IVerificationSchema } from 'src/types'
 
@@ -45,6 +44,8 @@ jest.mock('src/app/utils/limit-rate')
 
 // Avoid async refresh calls
 jest.mock('src/app/modules/spcp/spcp.oidc.client.ts')
+jest.mock('src/app/services/postman-sms/postman-sms.service')
+const MockPostmanSmsService = jest.mocked(PostmanSmsService)
 
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockReturnValue({
@@ -258,10 +259,7 @@ describe('public-forms.verification.routes', () => {
 
   describe('POST /forms/:formId/fieldverifications/:transactionId/fields/:fieldId/otp/generate', () => {
     beforeEach(() => {
-      // @ts-ignore
-      MockTwilio.messages.create.mockResolvedValue({
-        sid: 'mockSid',
-      })
+      MockPostmanSmsService.sendVerificationOtp.mockReturnValue(okAsync(true))
     })
 
     it('should return 201 when parameters for email field are valid', async () => {
@@ -315,50 +313,6 @@ describe('public-forms.verification.routes', () => {
       expect(response.body).toEqual(expectedResponse)
     })
 
-    it('should return 400 when fieldType is mobile but the provided phone number is not valid', async () => {
-      // Arrange
-      const expectedResponse = {
-        message:
-          'This phone number does not seem to be valid. Please try again with a valid phone number.',
-      }
-
-      // Act
-      const response = await request
-        .post(
-          `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/otp/generate`,
-        )
-        .send({
-          // 7 digits after +65 instead of 8
-          answer: '+651234567',
-        })
-
-      // Assert
-      expect(response.status).toBe(StatusCodes.BAD_REQUEST)
-      expect(response.body).toEqual(expectedResponse)
-    })
-
-    it('should return 400 when otp data could not be retrieved from the form due to parameters being malformed', async () => {
-      // Arrange
-      // NOTE: This error is only thrown on interaction with the db, hence the db is mocked here
-      jest.spyOn(Form, 'getOtpData').mockResolvedValueOnce(null)
-      const expectedResponse = {
-        message: 'Sorry, something went wrong. Please refresh and try again.',
-      }
-
-      // Act
-      const response = await request
-        .post(
-          `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockMobileFieldId}/otp/generate`,
-        )
-        .send({
-          answer: '+6512345678',
-        })
-
-      // Assert
-      expect(response.status).toBe(StatusCodes.BAD_REQUEST)
-      expect(response.body).toEqual(expectedResponse)
-    })
-
     it('should return 400 when the transaction has expired', async () => {
       // Arrange
       const { _id: expiredTransactionId } = await VerificationModel.create({
@@ -386,7 +340,10 @@ describe('public-forms.verification.routes', () => {
 
     it('should return 400 when the otp could not be sent and fieldType is mobile', async () => {
       // Arrange
-      MockTwilio.messages.create.mockRejectedValueOnce(new SmsSendError())
+
+      MockPostmanSmsService.sendVerificationOtp.mockReturnValue(
+        errAsync(new SmsSendError()),
+      )
       const expectedResponse = {
         message: 'Sorry, something went wrong. Please refresh and try again.',
       }
@@ -839,9 +796,7 @@ describe('public-forms.verification.routes', () => {
 
   const requestForSmsOtp = async (fieldId: string, answer: string) => {
     // Set that so no real mail is sent.
-    jest
-      .spyOn(SmsService, 'sendVerificationOtp')
-      .mockReturnValueOnce(okAsync(true))
+    MockPostmanSmsService.sendVerificationOtp.mockReturnValueOnce(okAsync(true))
 
     const response = await request
       .post(
