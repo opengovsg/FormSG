@@ -18,8 +18,9 @@ export enum InvalidDaysOptions {
 }
 
 export type DateValidationOptions = {
-  customMaxDate: Date | null
-  customMinDate: Date | null
+  // NOTE: the customMaxDate and customMinDate becomes a string when fetched as a response from the server.
+  customMaxDate: Date | string | null
+  customMinDate: Date | string | null
   selectedDateValidation: DateSelectedValidation | null
 }
 
