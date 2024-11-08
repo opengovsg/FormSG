@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import {
+  Controller,
   FieldArrayWithId,
   FieldError,
   useFieldArray,
@@ -214,7 +215,7 @@ const ChildrenBody = ({
   formContext,
   error,
 }: ChildrenBodyProps): JSX.Element => {
-  const { register, getValues, setValue, watch } = formContext
+  const { register, getValues, setValue, watch, control } = formContext
 
   const childNamePath = useMemo(
     () => `${schema._id}.child.${currChildBodyIdx}.0`,
@@ -225,13 +226,6 @@ const ChildrenBody = ({
     () => createChildrenValidationRules(schema, disableRequiredValidation),
     [schema, disableRequiredValidation],
   )
-
-  const {
-    ref: childNameRegisterRef,
-    onChange: selectOnChange,
-    onBlur: selectOnBlur,
-    ...selectRest
-  } = register(childNamePath, validationRules)
 
   const childNameRef = useRef<HTMLInputElement | null>(null)
 
@@ -329,27 +323,30 @@ const ChildrenBody = ({
         <Flex align="stretch" alignItems="stretch" justify="space-between">
           <Box flexGrow={10}>
             <FormControl key={field.id} isRequired isInvalid={!!childNameError}>
-              <SingleSelect
-                isRequired
-                {...selectRest}
-                placeholder={"Select your child's name"}
-                colorScheme={`theme-${colorTheme}`}
-                items={childNameValues}
-                value={childName}
-                isDisabled={isSubmitting}
-                onChange={(name) => {
-                  // This is bad practice but we have no choice because our
-                  // custom Select doesn't forward the event.
-                  // FIXME: Fix types
-                  // @ts-expect-error type inference issue
-                  setValue(childNamePath, name, { shouldValidate: true })
-                }}
-                ref={(e) => {
-                  childNameRegisterRef(e)
-                  if (e) {
-                    childNameRef.current = e
-                  }
-                }}
+              <Controller
+                control={control}
+                name={childNamePath}
+                rules={validationRules}
+                render={({
+                  field: { value, onChange, onBlur, ref, ...rest },
+                }) => (
+                  <SingleSelect
+                    isRequired
+                    {...rest}
+                    placeholder={"Select your child's name"}
+                    colorScheme={`theme-${colorTheme}`}
+                    items={childNameValues}
+                    value={value as unknown as string}
+                    isDisabled={isSubmitting}
+                    onChange={onChange}
+                    ref={(e) => {
+                      ref(e)
+                      if (e) {
+                        childNameRef.current = e
+                      }
+                    }}
+                  />
+                )}
               />
               <FormErrorMessage>{childNameError?.message}</FormErrorMessage>
             </FormControl>
@@ -422,7 +419,6 @@ const ChildrenBody = ({
             case MyInfoChildAttributes.ChildGender:
             case MyInfoChildAttributes.ChildRace:
             case MyInfoChildAttributes.ChildSecondaryRace: {
-              const { onBlur, ...rest } = register(fieldPath, validationRules)
               return (
                 <FormControl
                   key={key}
@@ -433,26 +429,22 @@ const ChildrenBody = ({
                   <FormLabel useMarkdownForDescription gridArea="formlabel">
                     {MYINFO_ATTRIBUTE_MAP[subField].description}
                   </FormLabel>
-                  <SingleSelect
-                    {...rest}
-                    value={value}
-                    items={
-                      MYINFO_ATTRIBUTE_MAP[subField].fieldOptions as string[]
-                    }
-                    onChange={(option) => {
-                      // prevent updates if there's no change to the values
-                      // there's an infinite loop on the update
-                      // upgrading to v8.xx, or v9.xx doesn't seem to have resolved the issue
-                      // https://github.com/downshift-js/downshift/issues/1511#issuecomment-1598307130
-
-                      setTimeout(() =>
-                        // This is bad practice but we have no choice because our
-                        // custom Select doesn't forward the event.
-                        // FIXME: Fix types
-                        // @ts-expect-error type inference issue
-                        setValue(fieldPath, option, { shouldValidate: true }),
-                      )
-                    }}
+                  <Controller
+                    control={control}
+                    name={fieldPath}
+                    render={({
+                      field: { value, onChange, onBlur, ...rest },
+                    }) => (
+                      <SingleSelect
+                        {...rest}
+                        value={value as unknown as string}
+                        items={
+                          MYINFO_ATTRIBUTE_MAP[subField]
+                            .fieldOptions as string[]
+                        }
+                        onChange={onChange}
+                      />
+                    )}
                   />
                   <FormErrorMessage>
                     {childrenSubFieldError?.message}
@@ -461,7 +453,6 @@ const ChildrenBody = ({
               )
             }
             case MyInfoChildAttributes.ChildDateOfBirth: {
-              const { onChange, ...rest } = register(fieldPath, validationRules)
               return (
                 <FormControl
                   key={key}
@@ -472,16 +463,18 @@ const ChildrenBody = ({
                   <FormLabel useMarkdownForDescription gridArea="formlabel">
                     {MYINFO_ATTRIBUTE_MAP[subField].description}
                   </FormLabel>
-                  <DatePicker
-                    {...rest}
-                    displayFormat={DATE_DISPLAY_FORMAT}
-                    inputValue={value}
-                    onInputValueChange={(date) => {
-                      // FIXME: Fix types
-                      // @ts-expect-error type inference issue
-                      setValue(fieldPath, date, { shouldValidate: true })
-                    }}
-                    colorScheme={`theme-${colorTheme}`}
+                  <Controller
+                    control={control}
+                    name={fieldPath}
+                    render={({ field: { value, onChange, ...rest } }) => (
+                      <DatePicker
+                        {...rest}
+                        displayFormat={DATE_DISPLAY_FORMAT}
+                        inputValue={value as unknown as string}
+                        onInputValueChange={onChange}
+                        colorScheme={`theme-${colorTheme}`}
+                      />
+                    )}
                   />
                   <FormErrorMessage>
                     {childrenSubFieldError?.message}
