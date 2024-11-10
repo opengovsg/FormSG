@@ -2,7 +2,6 @@ import { AxiosError } from 'axios'
 import { type Joi } from 'celebrate'
 import { StatusCodes } from 'http-status-codes'
 import { err, ok, Result } from 'neverthrow'
-import { v4 as uuidv4 } from 'uuid'
 
 import {
   BasicField,

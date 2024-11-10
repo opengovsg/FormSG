@@ -13,7 +13,6 @@ import nodemailer from 'nodemailer'
 import Mail from 'nodemailer/lib/mailer'
 import session, { Session } from 'supertest-session'
 
-import getFormModel from 'src/app/models/form.server.model'
 import {
   generateFieldParams,
   MOCK_HASHED_OTP,
@@ -33,8 +32,6 @@ import {
 } from '../../../../../../../shared/utils/verification'
 import { MOCK_OTP } from '../../../../../modules/verification/__tests__/verification.test.helpers'
 import { PublicFormsVerificationRouter } from '../public-forms.verification.routes'
-
-const Form = getFormModel(mongoose)
 
 const verificationApp = setupApp('/forms', PublicFormsVerificationRouter)
 const VerificationModel = getVerificationModel(mongoose)
