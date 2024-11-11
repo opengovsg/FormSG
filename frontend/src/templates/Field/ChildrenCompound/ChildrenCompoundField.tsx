@@ -203,6 +203,8 @@ interface ChildrenBodyProps {
   error: FieldError[] | undefined
 }
 
+const CHILD_NAME_INDEX = 0
+
 const ChildrenBody = ({
   currChildBodyIdx,
   schema,
@@ -315,7 +317,11 @@ const ChildrenBody = ({
         <FormLabel gridArea="formlabel">Child</FormLabel>
         <Flex align="stretch" alignItems="stretch" justify="space-between">
           <Box flexGrow={10}>
-            <FormControl key={field.id} isRequired isInvalid={!!error?.[0]}>
+            <FormControl
+              key={field.id}
+              isRequired
+              isInvalid={!!error?.[CHILD_NAME_INDEX]}
+            >
               <Controller
                 control={control}
                 name={childNamePath}
@@ -336,7 +342,9 @@ const ChildrenBody = ({
                   />
                 )}
               />
-              <FormErrorMessage>{error?.[0]?.message}</FormErrorMessage>
+              <FormErrorMessage>
+                {error?.[CHILD_NAME_INDEX]?.message}
+              </FormErrorMessage>
             </FormControl>
           </Box>
           <IconButton
