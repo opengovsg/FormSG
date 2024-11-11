@@ -136,8 +136,8 @@ const transformDateEditFormToField = (
     case DateSelectedValidation.Custom: {
       nextValidationOptions = {
         selectedDateValidation: inputs.dateValidation.selectedDateValidation,
-        customMinDate: inputs.dateValidation.customMinDate,
-        customMaxDate: inputs.dateValidation.customMaxDate,
+        customMinDate: normalizeDateToUtc(inputs.dateValidation.customMinDate),
+        customMaxDate: normalizeDateToUtc(inputs.dateValidation.customMaxDate),
       }
     }
   }
