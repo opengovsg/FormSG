@@ -87,7 +87,7 @@ export const SettingsPage = (): JSX.Element => {
       label: 'Multi-language',
       icon: LanguageTranslation,
       component: SettingsMultiLangPage,
-      path: 'multi-language',
+      path: 'language',
     },
   ].filter(Boolean) as TabEntry[]
 
