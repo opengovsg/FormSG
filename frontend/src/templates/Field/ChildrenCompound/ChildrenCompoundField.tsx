@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import {
   Controller,
   FieldArrayWithId,
@@ -36,6 +36,7 @@ import {
 } from '~shared/types'
 import { formatMyinfoDate } from '~shared/utils/dates'
 
+import { REQUIRED_ERROR } from '~constants/validation'
 import { createChildrenValidationRules } from '~utils/fieldValidation'
 import { Button } from '~components/Button/Button'
 import { DatePicker } from '~components/DatePicker'
@@ -222,18 +223,10 @@ const ChildrenBody = ({
     [schema._id, currChildBodyIdx],
   )
 
-  const validationRules = useMemo(
+  const childrenValidationRules = useMemo(
     () => createChildrenValidationRules(schema, disableRequiredValidation),
     [schema, disableRequiredValidation],
   )
-
-  const childNameRef = useRef<HTMLInputElement | null>(null)
-
-  const childNameError = error
-    ? error.find(
-        (e) => (e?.ref as HTMLInputElement)?.id === childNameRef.current?.id,
-      )
-    : undefined
 
   const childName = watch(childNamePath) as unknown as string
 
@@ -322,16 +315,17 @@ const ChildrenBody = ({
         <FormLabel gridArea="formlabel">Child</FormLabel>
         <Flex align="stretch" alignItems="stretch" justify="space-between">
           <Box flexGrow={10}>
-            <FormControl key={field.id} isRequired isInvalid={!!childNameError}>
+            <FormControl key={field.id} isRequired isInvalid={!!error?.[0]}>
               <Controller
                 control={control}
                 name={childNamePath}
-                rules={validationRules}
+                rules={{
+                  required: REQUIRED_ERROR,
+                }}
                 render={({
                   field: { value, onChange, onBlur, ref, ...rest },
                 }) => (
                   <SingleSelect
-                    isRequired
                     {...rest}
                     placeholder={"Select your child's name"}
                     colorScheme={`theme-${colorTheme}`}
@@ -339,16 +333,10 @@ const ChildrenBody = ({
                     value={value as unknown as string}
                     isDisabled={isSubmitting}
                     onChange={onChange}
-                    ref={(e) => {
-                      ref(e)
-                      if (e) {
-                        childNameRef.current = e
-                      }
-                    }}
                   />
                 )}
               />
-              <FormErrorMessage>{childNameError?.message}</FormErrorMessage>
+              <FormErrorMessage>{error?.[0]?.message}</FormErrorMessage>
             </FormControl>
           </Box>
           <IconButton
@@ -406,7 +394,7 @@ const ChildrenBody = ({
                     {MYINFO_ATTRIBUTE_MAP[subField].description}
                   </FormLabel>
                   <ChakraInput
-                    {...register(fieldPath, validationRules)}
+                    {...register(fieldPath, childrenValidationRules)}
                     value={value}
                   />
                   <FormErrorMessage>
@@ -432,7 +420,7 @@ const ChildrenBody = ({
                   <Controller
                     control={control}
                     name={fieldPath}
-                    rules={validationRules}
+                    rules={childrenValidationRules}
                     render={({
                       field: { value, onChange, onBlur, ...rest },
                     }) => (
@@ -467,7 +455,7 @@ const ChildrenBody = ({
                   <Controller
                     control={control}
                     name={fieldPath}
-                    rules={validationRules}
+                    rules={childrenValidationRules}
                     render={({ field: { value, onChange, ...rest } }) => (
                       <DatePicker
                         {...rest}
