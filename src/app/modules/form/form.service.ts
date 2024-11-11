@@ -16,7 +16,6 @@ import { encryptString } from '../../../../shared/utils/crypto'
 import {
   IEmailFormModel,
   IEncryptedFormModel,
-  IFormDocument,
   IFormSchema,
   IMultirespondentFormModel,
   IPopulatedForm,
@@ -447,41 +446,6 @@ export const checkIsIntranetFormAccess = (
     })
   }
   return isIntranetUser
-}
-
-export const retrievePublicFormsWithSmsVerification = (
-  userId: string,
-): ResultAsync<IFormDocument[], PossibleDatabaseError> => {
-  return ResultAsync.fromPromise(
-    FormModel.retrievePublicFormsWithSmsVerification(userId),
-    (error) => {
-      logger.error({
-        message: 'Error retrieving public forms with sms verifications',
-        meta: {
-          action: 'retrievePublicFormsWithSmsVerification',
-          userId: userId,
-        },
-        error,
-      })
-
-      return transformMongoError(error)
-    },
-  ).andThen((forms) => {
-    if (!forms.length) {
-      // NOTE: Warn here because this is supposed to be called to generate a list of form titles
-      // When the admin has used up their sms verification limit.
-      // It is not an error because there are potential cases where the admins privatize their form after.
-      logger.warn({
-        message:
-          'Attempted to retrieve public forms with sms verifications but none was found',
-        meta: {
-          action: 'retrievePublicFormsWithSmsVerification',
-          userId: userId,
-        },
-      })
-    }
-    return okAsync(forms)
-  })
 }
 
 export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {

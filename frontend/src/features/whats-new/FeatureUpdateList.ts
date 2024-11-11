@@ -113,14 +113,5 @@ export const FEATURE_UPDATE_LIST: FeatureUpdateList = {
         alt: 'The new FormSG experience',
       },
     },
-    {
-      title: 'Big little improvements',
-      date: new Date('12 October 2022 GMT+8'),
-      description: dedent`
-      * Easily paste options into Radio fields
-      * Add your Twilio credentials so form-fillers can verify their mobile number
-      * Enhanced security to prevent malicious inputs in form responses, [read more about it here](https://formsg.gitbook.io/form-user-guide/faq/faq/storage-mode#why-do-i-have-an-additional-quote-in-some-of-my-responses)
-      `,
-    },
   ],
 }

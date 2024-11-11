@@ -90,7 +90,6 @@ export type Config = {
   isTest: boolean
   isDevOrTest: boolean
   nodeEnv: Environment
-  useMockTwilio: boolean
   useMockPostmanSms: boolean
   port: number
   sessionSecret: string
@@ -165,7 +164,6 @@ export interface IOptionalVarsSchema {
     otpLifeSpan: number
     submissionsTopUp: number
     nodeEnv: Environment
-    useMockTwilio: boolean
     useMockPostmanSms: boolean
   }
   banner: {

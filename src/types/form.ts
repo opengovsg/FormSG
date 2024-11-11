@@ -393,15 +393,6 @@ export interface IFormModel extends Model<IFormSchema> {
   ): Promise<AdminDashboardFormMetaDto[]>
 
   /**
-   * Retrieves all the public forms for a user which has sms verifications enabled
-   * @param userId The userId to retrieve the forms for
-   * @returns All public forms that have sms verifications enabled
-   */
-  retrievePublicFormsWithSmsVerification(
-    userId: IUserSchema['_id'],
-  ): Promise<IFormDocument[]>
-
-  /**
    * Update the end page of form with given endpage object.
    * @param formId the id of the form to update
    * @param newEndPage the new EndPage object to replace with
@@ -488,9 +479,4 @@ export type IMultirespondentFormModel = IFormModel &
 
 export type IOnboardedForm<T extends IForm> = T & {
   msgSrvcName: string
-}
-
-export type FormLinkView<T extends IFormDocument> = {
-  title: T['title']
-  link: string
 }

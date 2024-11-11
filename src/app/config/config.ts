@@ -236,7 +236,6 @@ const config: Config = {
   isDev,
   isTest,
   isDevOrTest,
-  useMockTwilio: basicVars.core.useMockTwilio,
   useMockPostmanSms: basicVars.core.useMockPostmanSms,
   nodeEnv,
   formsgSdkMode: basicVars.formsgSdkMode,

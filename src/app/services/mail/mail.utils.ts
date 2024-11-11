@@ -11,13 +11,9 @@ import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
 
 import { MailGenerationError, MailSendError } from './mail.errors'
 import {
-  AdminSmsDisabledData,
-  AdminSmsWarningData,
   AutoreplyHtmlData,
   AutoreplySummaryRenderData,
   BounceNotificationHtmlData,
-  CollabSmsDisabledData,
-  CollabSmsWarningData,
   IssueReportedNotificationData,
   PaymentConfirmationData,
   SubmissionToAdminHtmlData,
@@ -204,70 +200,6 @@ export const isToFieldValid = (addresses: string | string[]): boolean => {
 
   // Every address must be an email to be valid.
   return mails.every((addr) => validator.isEmail(addr))
-}
-
-export const generateSmsVerificationDisabledHtmlForAdmin = (
-  htmlData: AdminSmsDisabledData,
-): ResultAsync<string, MailGenerationError> => {
-  const pathToTemplate = `${process.cwd()}/src/app/views/templates/sms-verification-disabled-admin.server.view.html`
-  logger.info({
-    message: 'generateSmsVerificationDisabledHtmlForAdmin',
-    meta: {
-      action: 'generateSmsVerificationDisabledHtmlForAdmin',
-      pathToTemplate,
-      __dirname,
-      cwd: process.cwd(),
-    },
-  })
-  return safeRenderFile(pathToTemplate, htmlData)
-}
-
-export const generateSmsVerificationDisabledHtmlForCollab = (
-  htmlData: CollabSmsDisabledData,
-): ResultAsync<string, MailGenerationError> => {
-  const pathToTemplate = `${process.cwd()}/src/app/views/templates/sms-verification-disabled-collab.server.view.html`
-  logger.info({
-    message: 'generateSmsVerificationDisabledHtmlForCollab',
-    meta: {
-      action: 'generateSmsVerificationDisabledHtmlForCollab',
-      pathToTemplate,
-      __dirname,
-      cwd: process.cwd(),
-    },
-  })
-  return safeRenderFile(pathToTemplate, htmlData)
-}
-
-export const generateSmsVerificationWarningHtmlForAdmin = (
-  htmlData: AdminSmsWarningData,
-): ResultAsync<string, MailGenerationError> => {
-  const pathToTemplate = `${process.cwd()}/src/app/views/templates/sms-verification-warning-admin.view.html`
-  logger.info({
-    message: 'generateSmsVerificationWarningHtmlForAdmin',
-    meta: {
-      action: 'generateSmsVerificationWarningHtmlForAdmin',
-      pathToTemplate,
-      __dirname,
-      cwd: process.cwd(),
-    },
-  })
-  return safeRenderFile(pathToTemplate, htmlData)
-}
-
-export const generateSmsVerificationWarningHtmlForCollab = (
-  htmlData: CollabSmsWarningData,
-): ResultAsync<string, MailGenerationError> => {
-  const pathToTemplate = `${process.cwd()}/src/app/views/templates/sms-verification-warning-collab.view.html`
-  logger.info({
-    message: 'generateSmsVerificationWarningHtmlForCollab',
-    meta: {
-      action: 'generateSmsVerificationWarningHtmlForCollab',
-      pathToTemplate,
-      __dirname,
-      cwd: process.cwd(),
-    },
-  })
-  return safeRenderFile(pathToTemplate, htmlData)
 }
 
 export const generatePaymentConfirmationHtml = ({
