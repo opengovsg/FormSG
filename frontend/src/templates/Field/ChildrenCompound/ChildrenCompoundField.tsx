@@ -432,6 +432,7 @@ const ChildrenBody = ({
                   <Controller
                     control={control}
                     name={fieldPath}
+                    rules={validationRules}
                     render={({
                       field: { value, onChange, onBlur, ...rest },
                     }) => (
@@ -466,6 +467,7 @@ const ChildrenBody = ({
                   <Controller
                     control={control}
                     name={fieldPath}
+                    rules={validationRules}
                     render={({ field: { value, onChange, ...rest } }) => (
                       <DatePicker
                         {...rest}
