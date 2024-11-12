@@ -1052,4 +1052,131 @@ describe('Email field validation V3', () => {
       new ValidateFieldError('Invalid answer submitted'),
     )
   })
+
+  describe('validation occurs based on if the value and signature of the current response are the same as the previous response', () => {
+    let authenticateSpy: jest.SpyInstance
+
+    beforeEach(() => {
+      authenticateSpy = jest
+        .spyOn(
+          formsgSdk.verification as unknown as VerificationMock,
+          'authenticate',
+        )
+        .mockImplementation(() => true)
+    })
+
+    afterEach(() => {
+      authenticateSpy.mockClear()
+    })
+
+    it('should validate if no previous response is present', () => {
+      const formField = generateDefaultFieldV3(BasicField.Email, {
+        isVerifiable: true,
+      })
+      const response = generateVerifiableAnswerResponseV3({
+        fieldType: BasicField.Email,
+        answer: {
+          value: 'valid@email.com',
+          signature: 'some signature',
+        },
+      })
+      const validateResult = validateFieldV3({
+        formId: 'formId',
+        formField,
+        response,
+        prevResponse: undefined,
+        isVisible: true,
+      })
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
+      expect(authenticateSpy).toHaveBeenCalled()
+    })
+
+    it('should not validate if the value and signature are the same as the previous response', () => {
+      const formField = generateDefaultFieldV3(BasicField.Email, {
+        isVerifiable: true,
+      })
+      const response = generateVerifiableAnswerResponseV3({
+        fieldType: BasicField.Email,
+        answer: {
+          value: 'valid@email.com',
+          signature: 'some signature',
+        },
+      })
+      const validateResult = validateFieldV3({
+        formId: 'formId',
+        formField,
+        response,
+        prevResponse: { ...response },
+        isVisible: true,
+      })
+      expect(authenticateSpy).not.toHaveBeenCalled()
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should validate if the value is different from the previous response', () => {
+      authenticateSpy.mockImplementation(() => false)
+
+      const formField = generateDefaultFieldV3(BasicField.Email, {
+        isVerifiable: true,
+      })
+      const response = generateVerifiableAnswerResponseV3({
+        fieldType: BasicField.Email,
+        answer: {
+          value: 'valid@email.com',
+          signature: 'some signature',
+        },
+      })
+      const prevResponse = generateVerifiableAnswerResponseV3({
+        fieldType: BasicField.Email,
+        answer: {
+          value: 'different@email.com',
+          signature: 'some signature',
+        },
+      })
+      const validateResult = validateFieldV3({
+        formId: 'formId',
+        formField,
+        response,
+        prevResponse,
+        isVisible: true,
+      })
+      expect(authenticateSpy).toHaveBeenCalled()
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldError('Invalid answer submitted'),
+      )
+    })
+
+    it('should validate if the signature is different from the previous response', () => {
+      const formField = generateDefaultFieldV3(BasicField.Email, {
+        isVerifiable: true,
+      })
+      const response = generateVerifiableAnswerResponseV3({
+        fieldType: BasicField.Email,
+        answer: {
+          value: 'valid@email.com',
+          signature: 'new signature',
+        },
+      })
+      const prevResponse = generateVerifiableAnswerResponseV3({
+        fieldType: BasicField.Email,
+        answer: {
+          value: 'valid@email.com',
+          signature: 'old signature',
+        },
+      })
+      const validateResult = validateFieldV3({
+        formId: 'formId',
+        formField,
+        response,
+        prevResponse,
+        isVisible: true,
+      })
+      expect(authenticateSpy).toHaveBeenCalled()
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
+    })
+  })
 })
