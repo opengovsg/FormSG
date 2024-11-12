@@ -351,11 +351,13 @@ const isResponsePresentOnHiddenFieldV3 = ({
 const isValidationRequiredV3 = ({
   formField,
   response,
+  prevResponse,
   isVisible,
   formId,
 }: {
   formField: FormFieldDto
   response: ParsedClearFormFieldResponseV3
+  prevResponse?: ParsedClearFormFieldResponseV3
   isVisible: boolean
   formId: string
 }): Result<boolean, ValidateFieldErrorV3> => {
@@ -373,6 +375,16 @@ const isValidationRequiredV3 = ({
       )
     case BasicField.Email:
     case BasicField.Mobile:
+      // For verifiable field, if the value and signature are the same as the previous response,
+      // then the field does not need to be validated again.
+      if (
+        prevResponse &&
+        response.fieldType === prevResponse.fieldType &&
+        prevResponse.answer.value === response.answer.value &&
+        prevResponse.answer.signature === response.answer.signature
+      ) {
+        return ok(false)
+      }
       return ok(
         (formField.required && isVisible) ||
           response.answer.value.trim() !== '' ||
@@ -441,11 +453,13 @@ export const validateFieldV3 = ({
   formId,
   formField,
   response,
+  prevResponse,
   isVisible,
 }: {
   formId: string
   formField: FormFieldDto
   response: ParsedClearFormFieldResponseV3
+  prevResponse?: ParsedClearFormFieldResponseV3
   isVisible: boolean
 }): Result<true, ValidateFieldErrorV3> => {
   if (!isValidResponseFieldType(response.fieldType)) {
@@ -498,5 +512,11 @@ export const validateFieldV3 = ({
     formField,
     isVisible,
   })
-  return validateResponseWithValidatorV3(validator, formId, formField, response)
+  return validateResponseWithValidatorV3(
+    validator,
+    formId,
+    formField,
+    response,
+    prevResponse,
+  )
 }

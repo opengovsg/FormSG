@@ -515,15 +515,18 @@ export const validateMultirespondentSubmission = async (
 
                     return ok(undefined)
                   }),
-                ).map(() => undefined)
+                ).map(() => {
+                  return previousResponses
+                })
               })
-              .andThen(() => {
+              .andThen((previousResponses) => {
                 // TODO: (FRM-1688) Set to block after sure that validation logic works as expected.
                 validateMrfFieldResponses({
                   formId,
                   visibleFieldIds,
                   formFields: form_fields,
                   responses: req.body.responses,
+                  previousResponses,
                 })
 
                 return ok(req.body.responses)

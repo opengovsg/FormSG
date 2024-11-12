@@ -95,11 +95,13 @@ export const validateMrfFieldResponses = ({
   visibleFieldIds,
   formFields,
   responses,
+  previousResponses,
 }: {
   formId: string
   visibleFieldIds: FieldIdSet
   formFields: FormFieldDto[]
   responses: ParsedClearFormFieldResponsesV3
+  previousResponses?: ParsedClearFormFieldResponsesV3
 }): Result<
   ParsedClearFormFieldResponsesV3,
   ValidateFieldErrorV3 | ProcessingError
@@ -132,6 +134,7 @@ export const validateMrfFieldResponses = ({
       formId,
       formField,
       response,
+      prevResponse: previousResponses?.[responseId],
       isVisible: visibleFieldIds.has(responseId),
     })
     if (validateFieldV3Result.isErr()) {
