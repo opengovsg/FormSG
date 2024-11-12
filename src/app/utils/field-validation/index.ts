@@ -495,6 +495,7 @@ export const validateFieldV3 = ({
   const isValidationRequiredV3Result = isValidationRequiredV3({
     formField,
     response,
+    prevResponse,
     isVisible,
     formId,
   })
@@ -512,11 +513,5 @@ export const validateFieldV3 = ({
     formField,
     isVisible,
   })
-  return validateResponseWithValidatorV3(
-    validator,
-    formId,
-    formField,
-    response,
-    prevResponse,
-  )
+  return validateResponseWithValidatorV3(validator, formId, formField, response)
 }
