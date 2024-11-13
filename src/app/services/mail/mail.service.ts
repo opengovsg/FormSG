@@ -2,7 +2,14 @@ import { render } from '@react-email/render'
 import tracer from 'dd-trace'
 import { get, inRange, isEmpty } from 'lodash'
 import moment from 'moment-timezone'
-import { err, errAsync, okAsync, Result, ResultAsync } from 'neverthrow'
+import {
+  err,
+  errAsync,
+  fromPromise,
+  okAsync,
+  Result,
+  ResultAsync,
+} from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
@@ -455,7 +462,14 @@ export class MailService {
       appName: this.#appName,
     }
 
-    const generatedHtml = okAsync(render(BounceNotification(htmlData)))
+    const generatedHtml = fromPromise(
+      render(BounceNotification(htmlData)),
+      () => {
+        return new MailGenerationError(
+          'Error generating bounce notification email',
+        )
+      },
+    )
 
     return generatedHtml.andThen((mailHtml) => {
       const mail: MailOptions = {
@@ -1079,19 +1093,30 @@ export class MailService {
       responseUrl,
     }
 
-    const html = render(MrfWorkflowEmail(htmlData))
+    console.log(render(MrfWorkflowEmail(htmlData)))
 
-    const mail: MailOptions = {
-      to: emails,
-      from: this.#senderFromString,
-      subject: `Action required - ${formTitle} (${responseId})`,
-      html,
-      headers: {
-        [EMAIL_HEADERS.emailType]: EmailType.WorkflowNotification,
+    const generatedHtml = fromPromise(
+      render(MrfWorkflowEmail(htmlData)),
+      () => {
+        return new MailGenerationError(
+          'Error generating bounce notification email',
+        )
       },
-    }
+    )
 
-    return this.#sendNodeMail(mail, { mailId: 'workflowNotification' })
+    return generatedHtml.andThen((mailHtml) => {
+      const mail: MailOptions = {
+        to: emails,
+        from: this.#senderFromString,
+        subject: `Action required - ${formTitle} (${responseId})`,
+        html: mailHtml,
+        headers: {
+          [EMAIL_HEADERS.emailType]: EmailType.WorkflowNotification,
+        },
+      }
+
+      return this.#sendNodeMail(mail, { mailId: 'workflowNotification' })
+    })
   }
 
   sendMrfWorkflowCompletionEmail = ({
@@ -1113,19 +1138,31 @@ export class MailService {
       formQuestionAnswers,
     }
 
-    const html = render(MrfWorkflowCompletionEmail(htmlData))
-
-    const mail: MailOptions = {
-      to: emails,
-      from: this.#senderFromString,
-      subject: `Completed - ${formTitle} (${responseId})`,
-      html,
-      headers: {
-        [EMAIL_HEADERS.emailType]: EmailType.WorkflowNotification,
+    const generatedHtml = fromPromise(
+      render(MrfWorkflowCompletionEmail(htmlData)),
+      () => {
+        return new MailGenerationError(
+          'Error generating bounce notification email',
+        )
       },
-    }
+    )
 
-    return this.#sendNodeMail(mail, { formId, mailId: 'workflowNotification' })
+    return generatedHtml.andThen((mailHtml) => {
+      const mail: MailOptions = {
+        to: emails,
+        from: this.#senderFromString,
+        subject: `Completed - ${formTitle} (${responseId})`,
+        html: mailHtml,
+        headers: {
+          [EMAIL_HEADERS.emailType]: EmailType.WorkflowNotification,
+        },
+      }
+
+      return this.#sendNodeMail(mail, {
+        formId,
+        mailId: 'workflowNotification',
+      })
+    })
   }
 
   sendMrfApprovalEmail = ({
@@ -1153,19 +1190,31 @@ export class MailService {
       formQuestionAnswers,
     }
 
-    const html = render(MrfWorkflowCompletionEmail(htmlData))
-
-    const mail: MailOptions = {
-      to: emails,
-      from: this.#senderFromString,
-      subject: `${outcome} - ${formTitle} (${responseId})`,
-      html,
-      headers: {
-        [EMAIL_HEADERS.emailType]: EmailType.WorkflowNotification,
+    const generatedHtml = fromPromise(
+      render(MrfWorkflowCompletionEmail(htmlData)),
+      () => {
+        return new MailGenerationError(
+          'Error generating bounce notification email',
+        )
       },
-    }
+    )
 
-    return this.#sendNodeMail(mail, { formId, mailId: 'workflowNotification' })
+    return generatedHtml.andThen((mailHtml) => {
+      const mail: MailOptions = {
+        to: emails,
+        from: this.#senderFromString,
+        subject: `${outcome} - ${formTitle} (${responseId})`,
+        html: mailHtml,
+        headers: {
+          [EMAIL_HEADERS.emailType]: EmailType.WorkflowNotification,
+        },
+      }
+
+      return this.#sendNodeMail(mail, {
+        formId,
+        mailId: 'workflowNotification',
+      })
+    })
   }
 }
 
