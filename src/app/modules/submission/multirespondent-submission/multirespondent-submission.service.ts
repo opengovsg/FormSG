@@ -140,7 +140,7 @@ const sendNextStepEmail = ({
 
   return (
     // Step 1: Retrieve email addresses for current workflow step
-    retrieveWorkflowStepEmailAddresses(nextStep, responses)
+    retrieveWorkflowStepEmailAddresses(form, nextStep, responses)
       .mapErr((error) => {
         logger.error({
           message: 'Failed to retrieve workflow step email addresses',
@@ -217,7 +217,7 @@ const sendMrfOutcomeEmails = ({
     // Step 1: Fetch email address from all workflow steps that are selected to notify
     Result.combine(
       validWorkflowStepsToNotify.map((workflowStep) =>
-        retrieveWorkflowStepEmailAddresses(workflowStep, responses),
+        retrieveWorkflowStepEmailAddresses(form, workflowStep, responses),
       ),
     )
       .mapErr((error) => {
