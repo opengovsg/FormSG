@@ -8,15 +8,8 @@ RUN chown 1001:1001 /mongodb_data
 
 ENV CHROMIUM_BIN=/usr/bin/chromium-browser
 ENV NODE_ENV=development
-# --openssl-legacy-provider flag
-# A breaking change in the SSL provider was introduced in node 17. This caused
-# webpack 4 to break. This is an interim solution; we should investigate removing
-# this flag once angular has been removed and we have upgraded to CRA5 (which uses
-# webpack 5).
-# See also:
-# * https://stackoverflow.com/questions/69692842/error-message-error0308010cdigital-envelope-routinesunsupported
-# * https://github.com/webpack/webpack/issues/14532#issuecomment-1304378535
-ENV NODE_OPTIONS="--max-old-space-size=2048 --openssl-legacy-provider"
+
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 RUN apk update && apk upgrade && \
     # Build dependencies for node_modules
     apk add --virtual native-deps \

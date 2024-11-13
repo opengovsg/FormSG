@@ -28,7 +28,7 @@ jobs:
           api-key: ${{ secrets.DD_API_KEY }}
       - name: Build
         env:
-          NODE_OPTIONS: --max-old-space-size=4096 --openssl-legacy-provider -r ${{ env.DD_TRACE_PACKAGE }}
+          NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}
           VITE_APP_FORMSG_SDK_MODE: 'test'
         run: npm run build
       - name: Run Playwright tests (login)

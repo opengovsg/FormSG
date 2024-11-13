@@ -28,16 +28,8 @@ RUN npm ci --legacy-peer-deps
 
 COPY . ./
 
-# --openssl-legacy-provider flag
-# A breaking change in the SSL provider was introduced in node 17. This caused
-# webpack 4 to break. This is an interim solution; we should investigate removing
-# this flag once angular has been removed and we have upgraded to CRA5 (which uses
-# webpack 5).
-# See also:
-# * https://stackoverflow.com/questions/69692842/error-message-error0308010cdigital-envelope-routinesunsupported
-# * https://github.com/webpack/webpack/issues/14532#issuecomment-1304378535
 # These options are only used in the build stage, not the start stage.
-ENV NODE_OPTIONS="--max-old-space-size=4096 --openssl-legacy-provider"
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 RUN npm run build
 
