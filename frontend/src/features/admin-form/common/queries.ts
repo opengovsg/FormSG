@@ -21,8 +21,6 @@ import {
 export const adminFormKeys = {
   base: ['adminForm'] as const,
   id: (id: string) => ['adminForm', id] as const,
-  freeSmsCount: (id: string) =>
-    [...adminFormKeys.id(id), 'freeSmsCount'] as const,
   collaborators: (id: string) =>
     [...adminFormKeys.id(id), 'collaborators'] as const,
   previewForm: (id: string) =>
