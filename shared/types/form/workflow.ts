@@ -24,8 +24,7 @@ export interface FormWorkflowStepDynamic extends FormWorkflowStepBase {
 
 export interface FormWorkflowStepConditional extends FormWorkflowStepBase {
   workflow_type: WorkflowType.Conditional
-  conditionalFieldId?: FormFieldDto['_id']
-  optionToRecipientsMap?: string
+  conditionalFieldId: FormFieldDto['_id']
 }
 
 export type FormWorkflowStep =
