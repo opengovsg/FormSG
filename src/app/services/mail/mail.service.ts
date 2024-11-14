@@ -1093,8 +1093,6 @@ export class MailService {
       responseUrl,
     }
 
-    console.log(render(MrfWorkflowEmail(htmlData)))
-
     const generatedHtml = fromPromise(
       render(MrfWorkflowEmail(htmlData)),
       () => {
