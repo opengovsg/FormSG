@@ -1,13 +1,6 @@
 import { useCallback, useMemo } from 'react'
-import { BiTrash } from 'react-icons/bi'
-import {
-  Box,
-  chakra,
-  Divider,
-  Stack,
-  StackDivider,
-  Text,
-} from '@chakra-ui/react'
+import { BiPencil } from 'react-icons/bi'
+import { Box, Divider, Stack, StackDivider, Text } from '@chakra-ui/react'
 
 import { LogicDto, LogicType } from '~shared/types/form'
 
@@ -26,12 +19,10 @@ import { LogicConditionValues } from './LogicConditionValues'
 
 interface InactiveLogicBlockProps {
   logic: LogicDto
-  handleOpenDeleteModal: () => void
 }
 
 export const InactiveLogicBlock = ({
   logic,
-  handleOpenDeleteModal,
 }: InactiveLogicBlockProps): JSX.Element | null => {
   const { idToFieldMap } = useAdminFormLogic()
   const setToEditing = useAdminLogicStore(setToEditingSelector)
@@ -98,29 +89,15 @@ export const InactiveLogicBlock = ({
 
   return (
     <Box pos="relative">
-      <chakra.button
-        type="button"
+      <Box
         w="100%"
         textAlign="start"
         borderRadius="4px"
         bg="white"
         border="1px solid"
         borderColor="neutral.300"
-        transitionProperty="common"
-        transitionDuration="normal"
         cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
-        disabled={isPreventEdit}
         aria-disabled={isPreventEdit}
-        _hover={{
-          _disabled: {
-            bg: 'white',
-          },
-          bg: 'primary.100',
-        }}
-        _focus={{
-          boxShadow: `0 0 0 4px var(--chakra-colors-primary-300)`,
-        }}
-        onClick={handleClick}
       >
         <Stack
           spacing="1.5rem"
@@ -161,16 +138,17 @@ export const InactiveLogicBlock = ({
         >
           {renderThenContent}
         </Stack>
-      </chakra.button>
+      </Box>
       <IconButton
         top={{ base: '0.5rem', md: '2rem' }}
         right={{ base: '0.5rem', md: '2rem' }}
         pos="absolute"
         aria-label="Delete logic"
         variant="clear"
-        colorScheme="danger"
-        onClick={handleOpenDeleteModal}
-        icon={<BiTrash fontSize="1.5rem" />}
+        onClick={handleClick}
+        icon={<BiPencil fontSize="1.5rem" />}
+        cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
+        aria-disabled={isPreventEdit}
       />
     </Box>
   )
