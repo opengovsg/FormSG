@@ -231,7 +231,7 @@ const ConditionalRoutingOption = ({
   conditionalFormFields,
   stepNumber,
 }: ConditionalRoutingOptionProps) => {
-  const { register } = formMethods
+  const { register, control, getValues } = formMethods
 
   const { formId } = useParams()
 
@@ -246,7 +246,6 @@ const ConditionalRoutingOption = ({
   const {
     control: conditionalRoutingConfigControl,
     watch: watchConditionalRoutingConfig,
-    getValues: getConditionalRoutingConfigValues,
     handleSubmit,
   } = useForm<ConditionalRoutingConfig>()
 
@@ -285,8 +284,7 @@ const ConditionalRoutingOption = ({
         return csvFile
       }
 
-      const conditionalFieldId =
-        getConditionalRoutingConfigValues().conditionalFieldId
+      const conditionalFieldId = getValues().conditional_field
       const fieldOptions = getFieldOptions(conditionalFieldId)
       const csvContent = generateCsvContent(fieldOptions)
       const csvFile = csvStringToFile(
@@ -376,14 +374,44 @@ const ConditionalRoutingOption = ({
                 )}
               />
             ) : (
-              <Button
-                w="100%"
-                variant="outline"
-                leftIcon={<BiPlus fontSize="1.5rem" />}
-                onClick={onOpen}
-              >
-                Select a field and add email(s) to options
-              </Button>
+              <>
+                <Controller
+                  control={control}
+                  name="conditional_field"
+                  rules={{
+                    required: 'Please select a field',
+                    validate: (selectedValue) => {
+                      return (
+                        isLoading ||
+                        !conditionalFieldItems ||
+                        conditionalFieldItems.some(
+                          ({ value: fieldValue }) =>
+                            fieldValue === selectedValue,
+                        ) ||
+                        'Field is not an dropdown field'
+                      )
+                    },
+                  }}
+                  render={({ field: { value = '', ...rest } }) => (
+                    <SingleSelect
+                      isDisabled={isLoading}
+                      isClearable={false}
+                      placeholder="Select a field"
+                      items={conditionalFieldItems}
+                      value={value}
+                      {...rest}
+                    />
+                  )}
+                />
+                <Button
+                  w="100%"
+                  variant="outline"
+                  leftIcon={<BiPlus fontSize="1.5rem" />}
+                  onClick={onOpen}
+                >
+                  Select a field and add email(s) to options
+                </Button>
+              </>
             )}
           </>
         ) : null}
@@ -409,13 +437,8 @@ export const RespondentBlock = ({
     watch,
   } = formMethods
 
-  const {
-    emailFormFields = [],
-    radioFormFields = [],
-    dropdownFormFields = [],
-  } = useAdminFormWorkflow()
-
-  const conditionalFormFields = [...radioFormFields, ...dropdownFormFields]
+  const { emailFormFields = [], dropdownFormFields = [] } =
+    useAdminFormWorkflow()
 
   const emailFieldItems = emailFormFields.map(
     ({ _id, questionNumber, title, fieldType }) => ({
@@ -458,7 +481,7 @@ export const RespondentBlock = ({
               />
               <ConditionalRoutingOption
                 selectedWorkflowType={selectedWorkflowType}
-                conditionalFormFields={conditionalFormFields}
+                conditionalFormFields={dropdownFormFields}
                 formMethods={formMethods}
                 isLoading={isLoading}
                 stepNumber={stepNumber}

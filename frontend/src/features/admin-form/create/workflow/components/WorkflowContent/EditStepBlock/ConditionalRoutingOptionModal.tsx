@@ -4,7 +4,6 @@ import { BiDownload } from 'react-icons/bi'
 import {
   Box,
   Button,
-  FormControl,
   Image,
   Modal,
   ModalBody,
@@ -15,125 +14,38 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react'
-import { S } from 'msw/lib/glossary-de6278a9'
 
 import { MAX_UPLOAD_FILE_SIZE } from '~shared/constants'
 
 import { useIsMobile } from '~hooks/useIsMobile'
-import { parseCsvFileToCsvString } from '~utils/parseCsvFileToCsvString'
 import { NextAndBackButtonGroup } from '~components/Button'
-import { SingleSelect } from '~components/Dropdown'
 import Attachment from '~components/Field/Attachment'
 import { ModalCloseButton } from '~components/Modal'
 import { ProgressIndicator } from '~components/ProgressIndicator/ProgressIndicator'
 
 import { ConditionalRoutingConfig, FieldItem } from './RespondentBlock'
 
-const NUM_STEPS = 3
+const NUM_STEPS = 2
 
 interface StepOneModalContentProps {
   stepNumber: number
   setStepNumber: (step: number) => void
-  control: UseFormReturn<ConditionalRoutingConfig>['control']
-  conditionalFieldItems: FieldItem[]
-  isLoading: boolean
+  isMobile: boolean
+  onDownloadCsvClick: () => void
   onClose: () => void
 }
 
 const StepOneModalContent = ({
   stepNumber,
   setStepNumber,
-  control,
-  conditionalFieldItems,
-  isLoading,
-  onClose,
-}: StepOneModalContentProps) => {
-  return (
-    <ModalContent>
-      <ModalCloseButton />
-      <ModalHeader color="secondary.700">
-        <Text mb="0.25rem">Step 1: Select a field from your form</Text>
-        <ProgressIndicator
-          numIndicators={NUM_STEPS}
-          currActiveIdx={stepNumber}
-          onClick={setStepNumber}
-        />
-      </ModalHeader>
-      <ModalBody>
-        <Stack spacing="0.75rem">
-          <Text textStyle="subhead-1" color="secondary.700">
-            Route the form based on the options in this field:
-          </Text>
-          <FormControl
-            pt="0.5rem"
-            isReadOnly={isLoading}
-            id="field"
-            isRequired
-            // isInvalid={!!errors.field}
-          >
-            <Controller
-              control={control}
-              name={'conditionalFieldId'}
-              rules={{
-                required: 'Please select a field',
-                validate: (selectedValue) => {
-                  return (
-                    isLoading ||
-                    !conditionalFieldItems ||
-                    conditionalFieldItems.some(
-                      ({ value: fieldValue }) => fieldValue === selectedValue,
-                    ) ||
-                    'Field is not a dropdown or radio field'
-                  )
-                },
-              }}
-              render={({ field: { value = '', ...rest } }) => (
-                <SingleSelect
-                  zIndex={1400}
-                  isDisabled={isLoading}
-                  isClearable={false}
-                  placeholder="Select a dropdown or radio field from your form"
-                  items={conditionalFieldItems}
-                  value={value}
-                  {...rest}
-                />
-              )}
-            />
-          </FormControl>
-        </Stack>
-      </ModalBody>
-      <ModalFooter>
-        <NextAndBackButtonGroup
-          nextButtonLabel="Next: Add emails to options"
-          backButtonLabel="Back to workflow"
-          handleBack={onClose}
-          handleNext={() => {
-            setStepNumber(1)
-          }}
-          isNextDisabled={isLoading}
-        />
-      </ModalFooter>
-    </ModalContent>
-  )
-}
-
-interface StepTwoModalContentProps {
-  stepNumber: number
-  setStepNumber: (step: number) => void
-  isMobile: boolean
-  onDownloadCsvClick: () => void
-}
-
-const StepTwoModalContent = ({
-  stepNumber,
-  setStepNumber,
   isMobile,
   onDownloadCsvClick,
-}: StepTwoModalContentProps) => (
+  onClose,
+}: StepOneModalContentProps) => (
   <ModalContent minW="fit-content">
     <ModalCloseButton />
     <ModalHeader>
-      <Text mb="0.25rem">Step 2: Add emails to options</Text>
+      <Text mb="0.25rem">Step 1: Add emails to options</Text>
       <ProgressIndicator
         numIndicators={NUM_STEPS}
         currActiveIdx={stepNumber}
@@ -200,16 +112,15 @@ const StepTwoModalContent = ({
     <ModalFooter>
       <NextAndBackButtonGroup
         nextButtonLabel="Next: Upload CSV template"
-        backButtonLabel="Back to previous step"
-        handleBack={() => setStepNumber(0)}
-        handleNext={() => setStepNumber(2)}
+        handleBack={onClose}
+        handleNext={() => setStepNumber(1)}
         isNextDisabled={false}
       />
     </ModalFooter>
   </ModalContent>
 )
 
-interface StepThreeModalContentProps {
+interface StepTwoModalContentProps {
   stepNumber: number
   setStepNumber: (step: number) => void
   control: UseFormReturn<ConditionalRoutingConfig>['control']
@@ -217,17 +128,17 @@ interface StepThreeModalContentProps {
   isSubmitDisabled: boolean
 }
 
-const StepThreeModalContent = ({
+const StepTwoModalContent = ({
   stepNumber,
   setStepNumber,
   control,
   onSubmit,
   isSubmitDisabled,
-}: StepThreeModalContentProps) => (
+}: StepTwoModalContentProps) => (
   <ModalContent>
     <ModalCloseButton />
     <ModalHeader>
-      <Text mb="0.25rem">Step 3: Upload your completed CSV template</Text>
+      <Text mb="0.25rem">Step 2: Upload your completed CSV template</Text>
       <ProgressIndicator
         numIndicators={NUM_STEPS}
         currActiveIdx={stepNumber}
@@ -262,8 +173,7 @@ const StepThreeModalContent = ({
     <ModalFooter>
       <NextAndBackButtonGroup
         nextButtonLabel="Save CSV template"
-        backButtonLabel="Back to previous step"
-        handleBack={() => setStepNumber(1)}
+        handleBack={() => setStepNumber(0)}
         handleNext={onSubmit}
         isNextDisabled={isSubmitDisabled}
       />
@@ -285,8 +195,6 @@ interface ConditionalRoutingOptionModalProps {
 export const ConditionalRoutingOptionModal = ({
   isOpen,
   onClose,
-  conditionalFieldItems,
-  isLoading,
   control,
   onDownloadCsvClick,
   onSubmit,
@@ -310,24 +218,15 @@ export const ConditionalRoutingOptionModal = ({
       <ModalOverlay />
       {stepNumber === 0 && (
         <StepOneModalContent
+          isMobile={isMobile}
           stepNumber={stepNumber}
           setStepNumber={setStepNumber}
-          control={control}
-          conditionalFieldItems={conditionalFieldItems}
-          isLoading={isLoading}
+          onDownloadCsvClick={onDownloadCsvClick}
           onClose={onModalClose}
         />
       )}
       {stepNumber === 1 && (
         <StepTwoModalContent
-          isMobile={isMobile}
-          stepNumber={stepNumber}
-          setStepNumber={setStepNumber}
-          onDownloadCsvClick={onDownloadCsvClick}
-        />
-      )}
-      {stepNumber === 2 && (
-        <StepThreeModalContent
           control={control}
           stepNumber={stepNumber}
           setStepNumber={setStepNumber}

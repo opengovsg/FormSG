@@ -50,17 +50,6 @@ export const useAdminFormWorkflow = () => {
     [augmentedFormFields],
   )
 
-  const radioFormFields = useMemo(
-    () =>
-      augmentedFormFields.filter(
-        (
-          field,
-        ): field is FormFieldWithQuestionNo<FormFieldDto<RadioFieldBase>> =>
-          field.fieldType === BasicField.Radio,
-      ),
-    [augmentedFormFields],
-  )
-
   const dropdownFormFields = useMemo(
     () =>
       augmentedFormFields.filter(
@@ -84,7 +73,6 @@ export const useAdminFormWorkflow = () => {
     idToFieldMap,
     emailFormFields,
     yesNoFormFields,
-    radioFormFields,
     dropdownFormFields,
   }
 }
