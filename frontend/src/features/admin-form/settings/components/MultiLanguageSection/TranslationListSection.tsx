@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { BiArrowBack, BiCheck, BiError } from 'react-icons/bi'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   As,
   Divider,
@@ -43,6 +43,10 @@ interface QuestionRowProps {
   icon: As
   isMyInfoField: boolean
   hasTranslations: boolean
+  unicodeLocale: string
+  formFieldNum?: number
+  isStartPage?: boolean
+  isEndPage?: boolean
 }
 
 export const QuestionRow = ({
@@ -50,13 +54,24 @@ export const QuestionRow = ({
   icon,
   isMyInfoField,
   hasTranslations,
+  unicodeLocale,
+  formFieldNum = -1,
+  isStartPage = false,
+  isEndPage = false,
 }: QuestionRowProps): JSX.Element => {
+  const [, setSearchParams] = useSearchParams()
+
   const isTranslationRowDisabled = isMyInfoField
 
-  // TODO: Introduce view for user to add in translation input in next PR
+  const translationInput = isEndPage
+    ? 'endPage'
+    : isStartPage
+      ? 'startPage'
+      : formFieldNum.toString()
+
   const handleOnListClick = useCallback(() => {
-    console.log('handleOnListClick')
-  }, [])
+    setSearchParams({ unicodeLocale, translationInput })
+  }, [setSearchParams, translationInput, unicodeLocale])
 
   return (
     <Flex direction="row">
@@ -301,6 +316,8 @@ export const TranslationListSection = ({
                 icon={BxsDockTop}
                 isMyInfoField={false}
                 hasTranslations={hasStartPageTranslations}
+                isStartPage={true}
+                unicodeLocale={language}
               />
               <Divider />
             </>
@@ -320,6 +337,8 @@ export const TranslationListSection = ({
                   icon={questionIcon}
                   isMyInfoField={isMyInfoField}
                   hasTranslations={getHasTranslations(form_field)}
+                  formFieldNum={id}
+                  unicodeLocale={language}
                 />
                 <Divider />
               </>
@@ -333,6 +352,8 @@ export const TranslationListSection = ({
               icon={PhHandsClapping}
               isMyInfoField={false}
               hasTranslations={hasEndPageTranslations}
+              isEndPage={true}
+              unicodeLocale={language}
             />
           )}
         </Flex>
