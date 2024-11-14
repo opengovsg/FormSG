@@ -91,7 +91,7 @@
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
     "express": "^4.21.1",
-    "express-rate-limit": "^7.4.0",
+    "express-rate-limit": "^7.4.1",
     "express-request-id": "^1.4.1",
     "express-session": "^1.18.0",
     "express-winston": "^4.2.0",
