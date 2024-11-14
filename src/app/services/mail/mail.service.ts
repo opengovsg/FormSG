@@ -464,7 +464,15 @@ export class MailService {
 
     const generatedHtml = fromPromise(
       render(BounceNotification(htmlData)),
-      () => {
+      (e) => {
+        logger.error({
+          message: 'Failed to render BounceNotification',
+          meta: {
+            action: 'sendBounceNotification',
+            error: e,
+          },
+        })
+
         return new MailGenerationError(
           'Error generating bounce notification email',
         )
@@ -1095,10 +1103,16 @@ export class MailService {
 
     const generatedHtml = fromPromise(
       render(MrfWorkflowEmail(htmlData)),
-      () => {
-        return new MailGenerationError(
-          'Error generating bounce notification email',
-        )
+      (e) => {
+        logger.error({
+          message: 'Failed to render MrfWorkflowEmail',
+          meta: {
+            action: 'sendMRFWorkflowStepEmail',
+            error: e,
+          },
+        })
+
+        return new MailGenerationError('Error generating mrf workflow email')
       },
     )
 
@@ -1138,9 +1152,17 @@ export class MailService {
 
     const generatedHtml = fromPromise(
       render(MrfWorkflowCompletionEmail(htmlData)),
-      () => {
+      (e) => {
+        logger.error({
+          message: 'Failed to render MrfWorkflowCompletionEmail',
+          meta: {
+            action: 'sendMrfWorkflowCompletionEmail',
+            error: e,
+          },
+        })
+
         return new MailGenerationError(
-          'Error generating bounce notification email',
+          'Error generating mrf workflow completion email',
         )
       },
     )
@@ -1190,9 +1212,17 @@ export class MailService {
 
     const generatedHtml = fromPromise(
       render(MrfWorkflowCompletionEmail(htmlData)),
-      () => {
+      (e) => {
+        logger.error({
+          message: 'Failed to render MrfWorkflowCompletionEmail',
+          meta: {
+            action: 'sendMrfApprovalEmail',
+            error: e,
+          },
+        })
+
         return new MailGenerationError(
-          'Error generating bounce notification email',
+          'Error generating mrf workflow completion email',
         )
       },
     )
