@@ -1,4 +1,5 @@
 import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
+import { isEqual } from 'lodash'
 import { err, ok, Result } from 'neverthrow'
 
 import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
@@ -348,6 +349,77 @@ const isResponsePresentOnHiddenFieldV3 = ({
   return err(new ValidateFieldErrorV3('Response has invalid shape'))
 }
 
+const isResponseChanged = ({
+  response,
+  prevResponse,
+}: {
+  response: ParsedClearFormFieldResponseV3
+  prevResponse?: ParsedClearFormFieldResponseV3
+}): boolean => {
+  if (!prevResponse) {
+    return true
+  }
+  if (response.fieldType !== prevResponse.fieldType) {
+    return true
+  }
+
+  if (isGenericStringAnswerResponseV3(response)) {
+    return response.answer.toString() !== prevResponse.answer.toString()
+  }
+
+  switch (response.fieldType) {
+    case BasicField.YesNo:
+      return response.answer !== prevResponse.answer
+    case BasicField.Email:
+    case BasicField.Mobile:
+      return !(
+        response.fieldType === prevResponse.fieldType &&
+        prevResponse.answer.value === response.answer.value &&
+        prevResponse.answer.signature === response.answer.signature
+      )
+    case BasicField.Radio:
+      if (prevResponse.fieldType !== response.fieldType) {
+        return true
+      }
+      // eslint-disable-next-line no-case-declarations
+      const prevResponseValue =
+        'value' in prevResponse.answer
+          ? prevResponse.answer.value
+          : 'othersInput' in prevResponse.answer
+            ? prevResponse.answer.othersInput
+            : null
+      // eslint-disable-next-line no-case-declarations
+      const responseValue =
+        'value' in response.answer
+          ? response.answer.value
+          : 'othersInput' in response.answer
+            ? response.answer.othersInput
+            : null
+      return prevResponseValue !== responseValue
+    case BasicField.Checkbox:
+      return (
+        response.fieldType === prevResponse.fieldType &&
+        !isEqual(
+          new Set(response.answer.value),
+          new Set(prevResponse.answer.value),
+        )
+      )
+    case BasicField.Table:
+      return (
+        JSON.stringify(response.answer) !== JSON.stringify(prevResponse.answer)
+      )
+    case BasicField.Attachment:
+      return (
+        response.fieldType === prevResponse.fieldType &&
+        response.answer.filename !== prevResponse.answer.filename &&
+        response.answer.answer !== prevResponse.answer.answer &&
+        response.answer.content !== prevResponse.answer.content
+      )
+    default:
+      return true
+  }
+}
+
 const isValidationRequiredV3 = ({
   formField,
   response,
@@ -361,6 +433,10 @@ const isValidationRequiredV3 = ({
   isVisible: boolean
   formId: string
 }): Result<boolean, ValidateFieldErrorV3> => {
+  if (!isResponseChanged({ response, prevResponse })) {
+    return ok(false)
+  }
+
   if (isGenericStringAnswerResponseV3(response)) {
     return ok(
       (formField.required && isVisible) ||
@@ -375,16 +451,6 @@ const isValidationRequiredV3 = ({
       )
     case BasicField.Email:
     case BasicField.Mobile:
-      // For verifiable field, if the value and signature are the same as the previous response,
-      // then the field does not need to be validated again.
-      if (
-        prevResponse &&
-        response.fieldType === prevResponse.fieldType &&
-        prevResponse.answer.value === response.answer.value &&
-        prevResponse.answer.signature === response.answer.signature
-      ) {
-        return ok(false)
-      }
       return ok(
         (formField.required && isVisible) ||
           response.answer.value.trim() !== '' ||
