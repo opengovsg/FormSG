@@ -28,7 +28,7 @@ export const enSG: Fields = {
     children: 'Children',
   },
   commonFieldComponents: {
-    title: 'Question',
+    title: 'Field Name',
     description: 'Description',
     required: 'Required',
     noCharactersAllowed: 'Number of characters allowed',

@@ -60,7 +60,7 @@ export const EditMobile = ({ field }: EditMobileProps): JSX.Element => {
           isReadOnly={isLoading}
           isInvalid={!!errors.title}
         >
-          <FormLabel>Question</FormLabel>
+          <FormLabel>Field Name</FormLabel>
           <Input autoFocus {...register('title', requiredValidationRule)} />
           <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
         </FormControl>
