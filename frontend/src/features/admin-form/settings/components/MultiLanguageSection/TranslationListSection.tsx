@@ -129,7 +129,7 @@ const getHasFormFieldBaseTranslations = ({
   const hasTitleTranslation = titleTranslations.some(
     (titleTranslation) =>
       titleTranslation.language === unicodeLocale &&
-      titleTranslation.translation,
+      !_.isEmpty(titleTranslation.translation),
   )
 
   // Value to represent whether or not the required field have translations for description.
@@ -332,7 +332,7 @@ export const TranslationListSection = ({
             return (
               <>
                 <QuestionRow
-                  key={id}
+                  key={form_field._id}
                   questionTitle={form_field.title}
                   icon={questionIcon}
                   isMyInfoField={isMyInfoField}

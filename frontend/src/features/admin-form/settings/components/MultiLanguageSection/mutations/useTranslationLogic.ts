@@ -88,6 +88,7 @@ export const useTranslationLogic = ({
           updatedTitleTranslation,
           updatedDescriptionTranslation,
         })
+
         editFieldMutation.mutate(
           { ...updatedTableData, _id: fieldId } as FormFieldDto,
           { onSuccess: handleOnBackClick },

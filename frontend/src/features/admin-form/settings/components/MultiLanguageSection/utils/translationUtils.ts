@@ -145,7 +145,6 @@ export const updateTableTranslations = ({
   })
 
   const updatedColumns = columns.map((column, columnIdx) => {
-    console.log(column)
     return {
       ...column,
       titleTranslations: updateTranslations({
