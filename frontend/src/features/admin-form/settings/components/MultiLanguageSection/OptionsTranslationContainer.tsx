@@ -1,6 +1,5 @@
-import React from 'react'
 import { useFormContext } from 'react-hook-form'
-import { Flex, FormControl, Text, Textarea } from '@chakra-ui/react'
+import { Flex, FormControl, Text } from '@chakra-ui/react'
 
 import {
   CheckboxFieldBase,
@@ -8,6 +7,8 @@ import {
   Language,
   RadioFieldBase,
 } from '~shared/types'
+
+import Textarea from '~components/Textarea'
 
 import { TranslationInput } from './TranslationSection'
 
@@ -34,7 +35,7 @@ export const OptionsTranslationContainer = ({
       ?.translation.join('\n') || []
 
   return (
-    <Flex direction="column" width="100%">
+    <Flex direction="column" width="100%" mb="2.5rem">
       <Flex alignItems="center" mb="2rem">
         <Text
           color="secondary.700"
@@ -51,6 +52,7 @@ export const OptionsTranslationContainer = ({
           padding="0.75rem"
           resize="none"
           height="max-content"
+          overflow="hidden"
         />
       </Flex>
       <Flex alignItems="center">

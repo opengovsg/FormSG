@@ -1,16 +1,11 @@
 import React from 'react'
 import { useFormContext } from 'react-hook-form'
-import {
-  Divider,
-  Flex,
-  FormControl,
-  Input,
-  Text,
-  Textarea,
-} from '@chakra-ui/react'
+import { Divider, Flex, FormControl, Text } from '@chakra-ui/react'
 
 import { Language } from '~shared/types'
 import { BasicField } from '~shared/types/field'
+
+import Textarea from '~components/Textarea'
 
 import { TranslationInput } from './TranslationSection'
 
@@ -28,41 +23,84 @@ interface TableTranslationContainerProps {
   unicodeLocale: Language
 }
 
-export const TableTranslationContainer: React.FC<TableTranslationContainerProps> =
-  React.memo(({ language, columns, unicodeLocale }) => {
-    const { register } = useFormContext<TranslationInput>()
+export const TableTranslationContainer = ({
+  language,
+  columns,
+  unicodeLocale,
+}: TableTranslationContainerProps) => {
+  const { register } = useFormContext<TranslationInput>()
 
-    return (
-      <>
-        {columns.map((column, index) => {
-          const previousColumnTitleTranslation =
-            column?.titleTranslations?.find(
+  return (
+    <>
+      {columns.map((column, index) => {
+        const previousColumnTitleTranslation =
+          column?.titleTranslations?.find(
+            (translation) => translation.language === unicodeLocale,
+          )?.translation ?? ''
+
+        let previousFieldOptionsTranslations: string[] = []
+
+        if (column.columnType === BasicField.Dropdown) {
+          previousFieldOptionsTranslations =
+            column?.fieldOptionsTranslations?.find(
               (translation) => translation.language === unicodeLocale,
-            )?.translation ?? ''
+            )?.translation ?? []
+        }
 
-          let previousFieldOptionsTranslations: string[] = []
+        const previousFieldOptionsTranslationsString =
+          previousFieldOptionsTranslations.join('\n')
 
-          if (column.columnType === BasicField.Dropdown) {
-            previousFieldOptionsTranslations =
-              column?.fieldOptionsTranslations?.find(
-                (translation) => translation.language === unicodeLocale,
-              )?.translation ?? []
-          }
-
-          const previousFieldOptionsTranslationsString =
-            previousFieldOptionsTranslations.join('\n')
-
-          return (
-            <Flex justifyContent="flex-start" mb="2.5rem" direction="column">
-              <Text
-                color="secondary.500"
-                fontSize="1.25rem"
-                fontWeight="600"
-                mb="1rem"
-              >
-                Column
-              </Text>
+        return (
+          <Flex justifyContent="flex-start" mb="2.5rem" direction="column">
+            <Text
+              color="secondary.500"
+              fontSize="1.25rem"
+              fontWeight="600"
+              mb="1rem"
+            >
+              Column
+            </Text>
+            <Flex direction="column" width="100%">
+              <Flex alignItems="center" mb="2rem">
+                <Text
+                  color="secondary.700"
+                  fontWeight="400"
+                  mr="7.5rem"
+                  width="6.25rem"
+                >
+                  Default
+                </Text>
+                <Textarea
+                  placeholder={column.title}
+                  width="100%"
+                  isDisabled={true}
+                  padding="0.75rem"
+                  resize="none"
+                />
+              </Flex>
+              <Flex alignItems="center">
+                <Text color="secondary.700" mr="7.5rem" width="6.25rem">
+                  {language}
+                </Text>
+                <FormControl>
+                  <Textarea
+                    defaultValue={previousColumnTitleTranslation}
+                    {...register(`tableColumnTitleTranslations.${index}`)}
+                  />
+                </FormControl>
+              </Flex>
+            </Flex>
+            {column.columnType === BasicField.Dropdown && (
               <Flex direction="column" width="100%">
+                <Text
+                  color="secondary.500"
+                  fontSize="1.25rem"
+                  fontWeight="600"
+                  mb="1rem"
+                  mt="2rem"
+                >
+                  Options
+                </Text>
                 <Flex alignItems="center" mb="2rem">
                   <Text
                     color="secondary.700"
@@ -73,11 +111,9 @@ export const TableTranslationContainer: React.FC<TableTranslationContainerProps>
                     Default
                   </Text>
                   <Textarea
-                    placeholder={column.title}
-                    width="100%"
+                    placeholder={column.fieldOptions?.join('\n') ?? ''}
                     isDisabled={true}
-                    padding="0.75rem"
-                    resize="none"
+                    overflow="hidden"
                   />
                 </Flex>
                 <Flex alignItems="center">
@@ -85,64 +121,19 @@ export const TableTranslationContainer: React.FC<TableTranslationContainerProps>
                     {language}
                   </Text>
                   <FormControl>
-                    <Input
-                      type="text"
+                    <Textarea
                       width="100%"
-                      {...register(`tableColumnTitleTranslations.${index}`)}
-                      defaultValue={previousColumnTitleTranslation}
+                      {...register(`tableColumnDropdownTranslations.${index}`)}
+                      defaultValue={previousFieldOptionsTranslationsString}
                     />
                   </FormControl>
                 </Flex>
               </Flex>
-              {column.columnType === BasicField.Dropdown && (
-                <Flex direction="column" width="100%">
-                  <Text
-                    color="secondary.500"
-                    fontSize="1.25rem"
-                    fontWeight="600"
-                    mb="1rem"
-                    mt="2rem"
-                  >
-                    Options
-                  </Text>
-                  <Flex alignItems="center" mb="2rem">
-                    <Text
-                      color="secondary.700"
-                      fontWeight="400"
-                      mr="7.5rem"
-                      width="6.25rem"
-                    >
-                      Default
-                    </Text>
-                    <Textarea
-                      placeholder={column.fieldOptions?.join('\n') ?? ''}
-                      width="100%"
-                      isDisabled={true}
-                      padding="0.75rem"
-                      resize="none"
-                      height="max-content"
-                    />
-                  </Flex>
-                  <Flex alignItems="center">
-                    <Text color="secondary.700" mr="7.5rem" width="6.25rem">
-                      {language}
-                    </Text>
-                    <FormControl>
-                      <Textarea
-                        width="100%"
-                        {...register(
-                          `tableColumnDropdownTranslations.${index}`,
-                        )}
-                        defaultValue={previousFieldOptionsTranslationsString}
-                      />
-                    </FormControl>
-                  </Flex>
-                </Flex>
-              )}
-              {index !== columns.length - 1 && <Divider mt="2.5rem" />}
-            </Flex>
-          )
-        })}
-      </>
-    )
-  })
+            )}
+            {index !== columns.length - 1 && <Divider mt="2.5rem" />}
+          </Flex>
+        )
+      })}
+    </>
+  )
+}

@@ -31,12 +31,12 @@ interface TranslationSectionProps {
   isEndPageTranslations?: boolean
 }
 
-export const TranslationSection: React.FC<TranslationSectionProps> = ({
+export const TranslationSection = ({
   language,
   formFieldNumToBeTranslated,
   isStartPageTranslations = false,
   isEndPageTranslations = false,
-}) => {
+}: TranslationSectionProps) => {
   const { data: form, isLoading } = useAdminForm()
   const methods = useForm<TranslationInput>()
   const { getValues } = methods
