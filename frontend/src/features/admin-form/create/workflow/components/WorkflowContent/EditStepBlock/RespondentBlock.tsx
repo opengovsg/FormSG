@@ -427,14 +427,6 @@ const ConditionalRoutingOption = ({
   ) => {
     if (!optionsToRecipientsMap || !selectedConditionalFieldOptions) return
 
-    const containsExcess =
-      selectedConditionalFieldOptions &&
-      selectedConditionalFieldOptions.some(
-        (option) => !optionsToRecipientsMap[option],
-      )
-    if (containsExcess) {
-      return 'Your CSV contains options that are not present in the selected field.'
-    }
     const missingOptions =
       selectedConditionalFieldOptions &&
       selectedConditionalFieldOptions.some(
@@ -442,6 +434,15 @@ const ConditionalRoutingOption = ({
       )
     if (missingOptions) {
       return 'Your CSV is missing options that are present in the selected field.'
+    }
+
+    const containsExcess =
+      selectedConditionalFieldOptions &&
+      [...Object.keys(optionsToRecipientsMap)].some(
+        (option) => !selectedConditionalFieldOptions.includes(option),
+      )
+    if (containsExcess) {
+      return 'Your CSV contains options that are not present in the selected field.'
     }
   }
 
@@ -564,7 +565,10 @@ const ConditionalRoutingOption = ({
           <FormControl
             id="conditional_field"
             isRequired
-            isInvalid={!!errors.conditional_field}
+            isInvalid={
+              !!validateOptionsToRecipientsMapErrorMessage ||
+              !!errors.conditional_field
+            }
           >
             <Stack spacing="0.625rem">
               <Controller
@@ -628,7 +632,8 @@ const ConditionalRoutingOption = ({
               ) : null}
             </Stack>
             <FormErrorMessage>
-              {errors.conditional_field?.message}
+              {validateOptionsToRecipientsMapErrorMessage ||
+                errors.conditional_field?.message}
             </FormErrorMessage>
           </FormControl>
         ) : null}

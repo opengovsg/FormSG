@@ -3,7 +3,7 @@ import { BiPencil } from 'react-icons/bi'
 import { Box, chakra, Flex, Stack, Text } from '@chakra-ui/react'
 import { Dictionary } from 'lodash'
 
-import { FormField } from '~shared/types'
+import { BasicField, FormField } from '~shared/types'
 import { FormWorkflowStepDto, WorkflowType } from '~shared/types/form'
 
 import IconButton from '~components/IconButton'
@@ -50,14 +50,43 @@ const SubsequentStepRespondentBadges = ({
     case WorkflowType.Dynamic:
       return <FieldLogicBadge field={idToFieldMap[step.field]} />
     case WorkflowType.Conditional: {
+      const selectedConditionalField = idToFieldMap[step.conditional_field]
+      if (
+        !selectedConditionalField ||
+        selectedConditionalField.fieldType !== BasicField.Dropdown
+      ) {
+        return <></>
+      }
+      const selectedConditionalFieldOptions =
+        selectedConditionalField.fieldOptions
+
+      const optionsToRecipientsMap =
+        selectedConditionalField.optionsToRecipientsMap
+
+      const isMissingOptions =
+        selectedConditionalFieldOptions &&
+        optionsToRecipientsMap &&
+        selectedConditionalFieldOptions.some(
+          (option) => !optionsToRecipientsMap[option],
+        )
       return (
-        <FieldLogicBadge
-          field={
-            step.conditional_field
-              ? idToFieldMap[step.conditional_field]
-              : undefined
-          }
-        />
+        <Stack direction="column" spacing="0.5rem">
+          <FieldLogicBadge
+            field={
+              step.conditional_field
+                ? idToFieldMap[step.conditional_field]
+                : undefined
+            }
+          />
+          {isMissingOptions ? (
+            <FieldLogicBadge
+              defaults={{
+                variant: 'error',
+                message: 'Please update your CSV options and emails',
+              }}
+            />
+          ) : null}
+        </Stack>
       )
     }
     default: {
@@ -124,8 +153,7 @@ export const InactiveStepBlock = ({
         field={idToFieldMap[fieldId]}
         defaults={{
           variant: 'info',
-          message:
-            'This field was deleted and has been removed from your workflow',
+          message: 'This field was deleted, please select another field',
         }}
       />
     ))
