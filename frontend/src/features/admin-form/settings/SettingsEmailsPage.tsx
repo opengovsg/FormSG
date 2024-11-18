@@ -15,7 +15,7 @@ import { useAdminFormSettings } from './queries'
 const FormEmailSectionSkeleton = (): JSX.Element => {
   return (
     <Skeleton>
-      <FormLabel>Send an email copy of new responses</FormLabel>
+      <FormLabel>Notifications for new responses</FormLabel>
       <TagInput placeholder="me@example.com" isDisabled />
     </Skeleton>
   )

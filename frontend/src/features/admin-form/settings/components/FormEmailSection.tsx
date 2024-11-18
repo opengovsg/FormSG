@@ -113,8 +113,7 @@ export const FormEmailSection = ({
 
   const isEmailMode = settings.responseMode === FormResponseMode.Email
 
-  const emailModeDescription = `Add at least **2 recipients** to prevent loss of response.`
-  const storageModeDescription = `FormSG securely stores responses in an encrypted format and does not retain any associated emails.`
+  const DESCRIPTION_TEXT = `All email addresses below will be notified. Learn more on [how to guard against email bounces](${GUIDE_PREVENT_EMAIL_BOUNCE}).`
 
   return (
     <>
@@ -123,12 +122,9 @@ export const FormEmailSection = ({
           <FormLabel
             isRequired={isEmailMode}
             useMarkdownForDescription
-            description={
-              (isEmailMode ? emailModeDescription : storageModeDescription) +
-              ` Learn more on [how to guard against email bounces](${GUIDE_PREVENT_EMAIL_BOUNCE}).`
-            }
+            description={DESCRIPTION_TEXT}
           >
-            Send an email copy of new responses
+            Notifications for new responses
           </FormLabel>
           <AdminEmailRecipientsInput onSubmit={handleSubmitEmails} />
           <FormErrorMessage>{get(errors, 'emails.message')}</FormErrorMessage>

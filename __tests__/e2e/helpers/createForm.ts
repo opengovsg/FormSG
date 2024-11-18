@@ -374,7 +374,7 @@ const addAdminEmails = async (
   ).toBeVisible()
 
   if (formSettings.emails) {
-    const emailInput = page.getByLabel('Send an email copy of new responses')
+    const emailInput = page.getByLabel('Notifications for new responses')
     await emailInput.focus()
 
     // Clear the current admin email
