@@ -144,7 +144,7 @@ export const Step2FixedEmailDefault = {
     )
     await waitFor(
       async () => {
-        await userEvent.click(await canvas.getByText('Fixed email(s)'))
+        await userEvent.click(await canvas.getByText('Specific email(s)'))
       },
       {
         timeout: 5000,
@@ -171,7 +171,7 @@ export const Step2FixedEmailEmpty = {
     )
     await waitFor(
       async () => {
-        await userEvent.click(await canvas.getByText('Fixed email(s)'))
+        await userEvent.click(await canvas.getByText('Specific email(s)'))
       },
       {
         timeout: 5000,
