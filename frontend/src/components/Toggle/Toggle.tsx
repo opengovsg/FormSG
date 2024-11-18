@@ -4,10 +4,16 @@ import {
   CSSObject,
   Flex,
   forwardRef,
+  Icon,
+  Tooltip,
+  TooltipProps,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 
 import { TOGGLE_THEME_KEY } from '~/theme/components/Toggle'
+
+import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
+import { BxsInfoCircle } from '~assets/icons/BxsInfoCircle'
 
 import FormLabel from '../FormControl/FormLabel'
 
@@ -22,6 +28,18 @@ export interface ToggleProps extends Omit<SwitchProps, 'children'> {
    * Secondary description text
    */
   description?: string
+  /**
+   * Tooltip text to be postfixed at the end of each label, if any.
+   */
+  tooltipText?: string
+  /**
+   * Tooltip placement for the tooltip text, if any.
+   */
+  tooltipPlacement?: TooltipProps['placement']
+  /**
+   * Determines Tooltip icon used for the tooltip text. Defaults to help.
+   */
+  tooltipVariant?: 'info' | 'help'
   /**
    * Overriding styles for the container which wraps the text
    * as well as the switch
@@ -49,6 +67,9 @@ export const Toggle = forwardRef<ToggleProps, 'input'>(
       containerStyles,
       labelStyles,
       descriptionStyles,
+      tooltipText,
+      tooltipPlacement,
+      tooltipVariant,
       ...props
     },
     ref,
@@ -58,9 +79,28 @@ export const Toggle = forwardRef<ToggleProps, 'input'>(
       <Flex __css={{ ...styles.overallContainer, ...containerStyles }}>
         {(label || description) && (
           <Box __css={styles.textContainer}>
-            <FormLabel.Label sx={{ ...styles.label, ...labelStyles }}>
-              {label}
-            </FormLabel.Label>
+            <Flex alignItems="center">
+              <FormLabel.Label sx={{ ...styles.label, ...labelStyles }}>
+                {label}
+              </FormLabel.Label>
+              {tooltipText && (
+                <Tooltip
+                  placement={tooltipPlacement}
+                  label={tooltipText}
+                  aria-label={`Tooltip content: ${tooltipText}`}
+                >
+                  <Icon
+                    ml="0.5rem"
+                    mt="0.1rem"
+                    color="secondary.500"
+                    as={
+                      tooltipVariant === 'info' ? BxsInfoCircle : BxsHelpCircle
+                    }
+                    verticalAlign="middle"
+                  />
+                </Tooltip>
+              )}
+            </Flex>
             {description && (
               <FormLabel.Description
                 useMarkdown
