@@ -231,7 +231,12 @@ const ConditionalRoutingOption = ({
 }: ConditionalRoutingOptionProps) => {
   const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] =
     useState(false)
-  const { register, control, watch } = formMethods
+  const {
+    register,
+    control,
+    watch,
+    formState: { errors },
+  } = formMethods
 
   const { formId } = useParams()
 
@@ -401,6 +406,34 @@ const ConditionalRoutingOption = ({
     )
   }
 
+  const validateOptionsToRecipientsMap = (
+    optionsToRecipientsMap: Record<string, string[]> | undefined,
+    selectedConditionalFieldOptions: string[] | undefined,
+  ) => {
+    console.log('optionsToRecipientsMap', optionsToRecipientsMap)
+    if (!optionsToRecipientsMap)
+      return 'You need to add emails to options before saving step.'
+
+    if (!selectedConditionalFieldOptions) return 'Something went wrong.'
+
+    const containsExcess =
+      selectedConditionalFieldOptions &&
+      selectedConditionalFieldOptions.some(
+        (option) => !optionsToRecipientsMap[option],
+      )
+    if (containsExcess) {
+      return 'Your CSV contains options that are not present in the selected field.'
+    }
+    const missingOptions =
+      selectedConditionalFieldOptions &&
+      selectedConditionalFieldOptions.some(
+        (option) => !optionsToRecipientsMap[option],
+      )
+    if (missingOptions) {
+      return 'Your CSV is missing options that are present in the selected field.'
+    }
+  }
+
   const validateCsvFile = async (
     file: File | null,
   ): Promise<string | undefined> => {
@@ -505,63 +538,102 @@ const ConditionalRoutingOption = ({
         </Text>
         {selectedWorkflowType === WorkflowType.Conditional ? (
           <Stack spacing="0.625rem">
-            <Controller
-              control={control}
-              name="conditional_field"
-              rules={{
-                required: 'Please select a field',
-                validate: (selectedValue) => {
-                  return (
-                    isLoading ||
-                    !conditionalFieldItems ||
-                    conditionalFieldItems.some(
-                      ({ value: fieldValue }) => fieldValue === selectedValue,
-                    ) ||
-                    'Field is not an dropdown field'
-                  )
-                },
-              }}
-              render={({ field: { value = '', ...rest } }) => (
-                <SingleSelect
-                  isDisabled={isLoading}
-                  isClearable={false}
-                  placeholder="Select a field"
-                  items={conditionalFieldItems}
-                  value={value}
-                  {...rest}
-                />
-              )}
-            />
+            <FormControl
+              id="conditional_field"
+              isRequired
+              isInvalid={
+                !!selectedConditionalFieldOptionsToRecipientsMap &&
+                !!errors.conditional_field
+              }
+            >
+              <Controller
+                control={control}
+                name="conditional_field"
+                rules={{
+                  required: 'Please select a field',
+                  validate: (selectedValue) => {
+                    if (!selectedConditionalFieldOptionsToRecipientsMap) {
+                      return 'You must add email(s) to options before saving step.'
+                    }
+                    return (
+                      isLoading ||
+                      !conditionalFieldItems ||
+                      conditionalFieldItems.some(
+                        ({ value: fieldValue }) => fieldValue === selectedValue,
+                      ) ||
+                      'Field is not an dropdown field'
+                    )
+                  },
+                }}
+                render={({ field: { value = '', ...rest } }) => (
+                  <SingleSelect
+                    isDisabled={isLoading}
+                    isClearable={false}
+                    placeholder="Select a field"
+                    items={conditionalFieldItems}
+                    value={value}
+                    {...rest}
+                  />
+                )}
+              />
+              <FormErrorMessage>
+                {errors.conditional_field?.message}
+              </FormErrorMessage>
+            </FormControl>
             {isConditionalFieldSelected ? (
               isOptionsToRecipientsMapAttached ? (
-                <Controller
-                  name="csvFile"
-                  control={conditionalRoutingConfigControl}
-                  render={({ field: { onChange, name, value } }) => (
-                    <Attachment
-                      name={name}
-                      onChange={onChange}
-                      value={value}
-                      showDownload
-                      showRemove
-                      handleDownloadFileOverride={handleMappingCsvDownload}
-                      handleRemoveFileOverride={() =>
-                        setIsDeleteConfirmModalOpen(true)
-                      }
-                      accept={['.csv']}
-                    />
-                  )}
-                />
-              ) : (
-                <Button
-                  w="100%"
-                  variant="outline"
-                  leftIcon={<BiPlus fontSize="1.5rem" />}
-                  onClick={onOpen}
-                  isDisabled={!watch('conditional_field')}
+                <FormControl
+                  id="csvFile"
+                  isRequired
+                  isInvalid={!!conditionalRoutingConfigErrors.csvFile}
                 >
-                  Add email(s) to options
-                </Button>
+                  <Controller
+                    name="csvFile"
+                    rules={{
+                      validate: () =>
+                        validateOptionsToRecipientsMap(
+                          selectedConditionalFieldOptionsToRecipientsMap,
+                          selectedConditionalField?.fieldOptions,
+                        ),
+                    }}
+                    control={conditionalRoutingConfigControl}
+                    render={({ field: { onChange, name, value } }) => (
+                      <Attachment
+                        name={name}
+                        onChange={onChange}
+                        value={value}
+                        showDownload
+                        showRemove
+                        handleDownloadFileOverride={handleMappingCsvDownload}
+                        handleRemoveFileOverride={() =>
+                          setIsDeleteConfirmModalOpen(true)
+                        }
+                        accept={['.csv']}
+                      />
+                    )}
+                  />
+                  <FormErrorMessage>
+                    {conditionalRoutingConfigErrors.csvFile?.message}
+                  </FormErrorMessage>
+                </FormControl>
+              ) : (
+                <FormControl id="conditional_field" isRequired isInvalid={true}>
+                  <Button
+                    w="100%"
+                    variant="outline"
+                    leftIcon={<BiPlus fontSize="1.5rem" />}
+                    onClick={onOpen}
+                    isDisabled={!watch('conditional_field')}
+                  >
+                    Add email(s) to options
+                  </Button>
+                  {!selectedConditionalFieldOptionsToRecipientsMap ? (
+                    <FormErrorMessage>
+                      {!selectedConditionalFieldOptionsToRecipientsMap &&
+                        errors.conditional_field?.message}
+                    </FormErrorMessage>
+                  ) : null}
+                </FormControl>
               )
             ) : null}
           </Stack>
