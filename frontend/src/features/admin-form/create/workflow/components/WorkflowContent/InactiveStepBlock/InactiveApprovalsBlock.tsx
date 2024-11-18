@@ -52,13 +52,9 @@ export const InactiveApprovalsBlock = ({
     ? idToFieldMap[step.approval_field]
     : undefined
 
-  const headerText = approvalFormField
-    ? 'Approval enabled'
-    : 'Approval not enabled'
-
   return (
     <Stack>
-      <Text textStyle="subhead-3">{headerText}</Text>
+      <Text textStyle="subhead-3">Approvals</Text>
       <Stack direction="column" spacing="0.25rem">
         <ApprovalStepBadge
           isDeleted={Boolean(step.approval_field && !approvalFormField)}
