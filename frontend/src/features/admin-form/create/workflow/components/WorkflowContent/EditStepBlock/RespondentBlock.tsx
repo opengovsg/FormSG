@@ -31,6 +31,7 @@ import FormLabel from '~components/FormControl/FormLabel'
 import Radio from '~components/Radio'
 import { TagInput } from '~components/TagInput'
 
+import { useEditFormField } from '~features/admin-form/create/builder-and-design/mutations/useEditFormField'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { EditStepInputs } from '~features/admin-form/create/workflow/types'
 import { FormFieldWithQuestionNo } from '~features/form/types'
@@ -220,7 +221,6 @@ interface ConditionalRoutingOptionProps extends RespondentOptionProps {
 }
 
 export interface ConditionalRoutingConfig {
-  conditionalFieldId: string
   csvFile: File
 }
 
@@ -231,7 +231,7 @@ const ConditionalRoutingOption = ({
   conditionalFormFields,
   stepNumber,
 }: ConditionalRoutingOptionProps) => {
-  const { register, control, getValues } = formMethods
+  const { register, control, watch } = formMethods
 
   const { formId } = useParams()
 
@@ -250,8 +250,7 @@ const ConditionalRoutingOption = ({
   } = useForm<ConditionalRoutingConfig>()
 
   const isConditionalRoutingFieldSelected =
-    watchConditionalRoutingConfig('csvFile') &&
-    watchConditionalRoutingConfig('conditionalFieldId')
+    watchConditionalRoutingConfig('csvFile') && watch('conditional_field')
 
   const { isOpen, onOpen, onClose } = useDisclosure()
 
@@ -284,7 +283,9 @@ const ConditionalRoutingOption = ({
         return csvFile
       }
 
-      const conditionalFieldId = getValues().conditional_field
+      const conditionalFieldId = watch('conditional_field')
+      if (!conditionalFieldId) return
+
       const fieldOptions = getFieldOptions(conditionalFieldId)
       const csvContent = generateCsvContent(fieldOptions)
       const csvFile = csvStringToFile(
@@ -294,36 +295,55 @@ const ConditionalRoutingOption = ({
       downloadFile(csvFile)
     }
 
-  const { updateStepConditionalRoutingConfig } = useWorkflowMutations()
+  const { editFieldMutation } = useEditFormField()
 
-  const handleConditionalRoutingConfigSubmit = async (
-    data: ConditionalRoutingConfig,
-  ) => {
-    if (!(data.csvFile && data.conditionalFieldId)) {
-      return
+  const handleConditionalRoutingConfigSubmit =
+    (conditionalFieldId: string | undefined) =>
+    async (data: ConditionalRoutingConfig) => {
+      if (!(data.csvFile && conditionalFieldId)) {
+        return
+      }
+
+      const conditionalRoutingCsvString = await parseCsvFileToCsvString(
+        data.csvFile,
+        (headerRow) => {
+          return {
+            isValid:
+              headerRow &&
+              headerRow.length === 2 &&
+              headerRow[0] === 'Options' &&
+              headerRow[1] === 'Add email(s) in this column',
+            invalidReason:
+              'Your CSV file should only contain 2 columns with the "Options" and "Add email(s) in this column" headers.',
+          }
+        },
+      )
+      const csvToOptionsToRecipientsMap = (csvString: string) => {
+        const csvRows = csvString.split('\r\n')
+        return csvRows.reduce((acc, row) => {
+          const [option, ...recipients] = row.split(',')
+          return {
+            ...acc,
+            [option]: recipients,
+          }
+        }, {})
+      }
+
+      const conditionalField = conditionalFormFields.find(
+        (field) => field._id === conditionalFieldId,
+      )
+
+      const updatedConditionalField = {
+        ...conditionalField,
+        optionsToRecipientsMap: csvToOptionsToRecipientsMap(
+          conditionalRoutingCsvString,
+        ),
+      }
+
+      editFieldMutation.mutate(
+        updatedConditionalField as FormFieldDto<DropdownFieldBase>,
+      )
     }
-
-    const conditionalRoutingCsvString = await parseCsvFileToCsvString(
-      data.csvFile,
-      (headerRow) => {
-        return {
-          isValid:
-            headerRow &&
-            headerRow.length === 2 &&
-            headerRow[0] === 'Options' &&
-            headerRow[1] === 'Add email(s) in this column',
-          invalidReason:
-            'Your CSV file should only contain 2 columns with the "Options" and "Add email(s) in this column" headers.',
-        }
-      },
-    )
-
-    updateStepConditionalRoutingConfig.mutate({
-      stepNumber,
-      conditionalFieldId: data.conditionalFieldId,
-      conditionalRoutingCsvString,
-    })
-  }
 
   return (
     <>
@@ -334,11 +354,13 @@ const ConditionalRoutingOption = ({
         onClose={onClose}
         control={conditionalRoutingConfigControl}
         onDownloadCsvClick={handleCsvDownload(formId, stepNumber)}
-        onSubmit={handleSubmit(handleConditionalRoutingConfigSubmit)}
+        onSubmit={handleSubmit(
+          handleConditionalRoutingConfigSubmit(watch('conditional_field')),
+        )}
         isSubmitDisabled={
           !(
             watchConditionalRoutingConfig().csvFile &&
-            watchConditionalRoutingConfig().conditionalFieldId
+            watch('conditional_field')
           )
         }
       />
@@ -360,6 +382,33 @@ const ConditionalRoutingOption = ({
         </Text>
         {selectedWorkflowType === WorkflowType.Conditional ? (
           <>
+            <Controller
+              control={control}
+              name="conditional_field"
+              rules={{
+                required: 'Please select a field',
+                validate: (selectedValue) => {
+                  return (
+                    isLoading ||
+                    !conditionalFieldItems ||
+                    conditionalFieldItems.some(
+                      ({ value: fieldValue }) => fieldValue === selectedValue,
+                    ) ||
+                    'Field is not an dropdown field'
+                  )
+                },
+              }}
+              render={({ field: { value = '', ...rest } }) => (
+                <SingleSelect
+                  isDisabled={isLoading}
+                  isClearable={false}
+                  placeholder="Select a field"
+                  items={conditionalFieldItems}
+                  value={value}
+                  {...rest}
+                />
+              )}
+            />
             {isConditionalRoutingFieldSelected ? (
               <Controller
                 name="csvFile"
@@ -374,44 +423,15 @@ const ConditionalRoutingOption = ({
                 )}
               />
             ) : (
-              <>
-                <Controller
-                  control={control}
-                  name="conditional_field"
-                  rules={{
-                    required: 'Please select a field',
-                    validate: (selectedValue) => {
-                      return (
-                        isLoading ||
-                        !conditionalFieldItems ||
-                        conditionalFieldItems.some(
-                          ({ value: fieldValue }) =>
-                            fieldValue === selectedValue,
-                        ) ||
-                        'Field is not an dropdown field'
-                      )
-                    },
-                  }}
-                  render={({ field: { value = '', ...rest } }) => (
-                    <SingleSelect
-                      isDisabled={isLoading}
-                      isClearable={false}
-                      placeholder="Select a field"
-                      items={conditionalFieldItems}
-                      value={value}
-                      {...rest}
-                    />
-                  )}
-                />
-                <Button
-                  w="100%"
-                  variant="outline"
-                  leftIcon={<BiPlus fontSize="1.5rem" />}
-                  onClick={onOpen}
-                >
-                  Select a field and add email(s) to options
-                </Button>
-              </>
+              <Button
+                w="100%"
+                variant="outline"
+                leftIcon={<BiPlus fontSize="1.5rem" />}
+                onClick={onOpen}
+                isDisabled={!watch('conditional_field')}
+              >
+                Add email(s) to options
+              </Button>
             )}
           </>
         ) : null}

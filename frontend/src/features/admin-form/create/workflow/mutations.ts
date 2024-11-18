@@ -16,7 +16,6 @@ import { useAdminFormWorkflow } from './hooks/useAdminFormWorkflow'
 import {
   createWorkflowStep,
   deleteWorkflowStep,
-  updateFormConditionalRoutingConfig,
   updateWorkflowStep,
 } from './FormWorkflowService'
 
@@ -115,31 +114,9 @@ export const useWorkflowMutations = () => {
     },
   )
 
-  const updateStepConditionalRoutingConfig = useMutation(
-    ({
-      stepNumber,
-      conditionalFieldId,
-      conditionalRoutingCsvString,
-    }: {
-      stepNumber: number
-      conditionalFieldId: string
-      conditionalRoutingCsvString: string
-    }) =>
-      updateFormConditionalRoutingConfig(
-        formId,
-        stepNumber,
-        conditionalFieldId,
-        conditionalRoutingCsvString,
-      ),
-    {
-      onError: handleError,
-    },
-  )
-
   return {
     createStepMutation,
     deleteStepMutation,
     updateStepMutation,
-    updateStepConditionalRoutingConfig,
   }
 }

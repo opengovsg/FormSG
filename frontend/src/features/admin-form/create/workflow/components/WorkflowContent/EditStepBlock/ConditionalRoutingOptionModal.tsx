@@ -45,7 +45,7 @@ const StepOneModalContent = ({
   <ModalContent minW="fit-content">
     <ModalCloseButton />
     <ModalHeader>
-      <Text mb="0.25rem">Step 1: Add emails to options</Text>
+      <Text mb="0.25rem">Step 1: Add email(s) to options</Text>
       <ProgressIndicator
         numIndicators={NUM_STEPS}
         currActiveIdx={stepNumber}

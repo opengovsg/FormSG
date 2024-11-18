@@ -4,8 +4,6 @@ import { ApiService } from '~services/ApiService'
 
 import { ADMIN_FORM_ENDPOINT } from '~features/admin-form/common/AdminViewFormService'
 
-import { ConditionalRoutingConfig } from './components/WorkflowContent/EditStepBlock/RespondentBlock'
-
 export const createWorkflowStep = (
   formId: string,
   createStepBody: FormWorkflowStep,
@@ -30,20 +28,5 @@ export const updateWorkflowStep = (
   return ApiService.put<FormWorkflowDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/workflow/${stepNumber}`,
     updateStepBody,
-  ).then(({ data }) => data)
-}
-
-export const updateFormConditionalRoutingConfig = (
-  formId: string,
-  stepNumber: number,
-  conditionalFieldId: string,
-  conditionalRoutingCsvString: string,
-) => {
-  return ApiService.putForm<FormWorkflowDto>(
-    `${ADMIN_FORM_ENDPOINT}/${formId}/workflow/${stepNumber}/conditionalRoutingConfig`,
-    {
-      conditionalFieldId,
-      conditionalRoutingCsvString,
-    },
   ).then(({ data }) => data)
 }

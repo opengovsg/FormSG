@@ -39,10 +39,6 @@ export interface IWorkflowStepConditionalSchema
     FormWorkflowStepConditional,
     Document {
   workflow_type: WorkflowType.Conditional
-  conditionalFieldId: IFieldSchema['_id']
   edit: IFieldSchema['_id'][]
+  conditional_field: IFieldSchema['_id']
 }
-
-export type FormWorkflowStepSchema =
-  | IWorkflowStepStaticSchema
-  | IWorkflowStepDynamicSchema

@@ -1697,7 +1697,6 @@ const _handleUpdateConditionalRoutingConfig: ControllerHandler<
     conditionalRoutingCsvString: string
   }
 > = async (req, res) => {
-  console.log('req received:', req.body)
   const { formId, stepNumber } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
   const { conditionalFieldId, conditionalRoutingCsvString } = req.body

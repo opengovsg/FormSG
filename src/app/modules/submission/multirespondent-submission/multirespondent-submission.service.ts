@@ -151,7 +151,7 @@ const sendNextStepEmail = ({
       })
       // Step 2: send out next workflow step email
       .asyncAndThen((emails) => {
-        if (!emails) return okAsync(true)
+        if (emails.length <= 0) return okAsync(true)
         return MailService.sendMRFWorkflowStepEmail({
           emails,
           formTitle,

@@ -70,7 +70,7 @@ const getConditionalFieldEmailRecipient = (
   responses: FieldResponsesV3,
 ): string[] => {
   const conditionalField = form.form_fields.find(
-    (field) => field._id === fieldId,
+    (field) => field._id.toString() === fieldId.toString(),
   )
   const conditionalFieldResponse = responses[fieldId]
 
@@ -87,12 +87,12 @@ const getConditionalFieldEmailRecipient = (
     return [] // Not an error, misconfigured or respondent has not filled.
   }
 
-  const emailRecipientsString =
-    conditionalField?.optionsToRecipientsMap?.[conditionalFieldResponse.answer]
+  const emailRecipients =
+    conditionalField?.optionsToRecipientsMap?.[
+      conditionalFieldResponse.answer
+    ] ?? []
 
-  const emailRecipients = emailRecipientsString?.split(',')
-
-  return emailRecipients ?? []
+  return emailRecipients
 }
 
 export const retrieveWorkflowStepEmailAddresses = (
@@ -114,7 +114,7 @@ export const retrieveWorkflowStepEmailAddresses = (
       return ok(
         getConditionalFieldEmailRecipient(
           form,
-          step.conditionalFieldId,
+          step.conditional_field,
           responses,
         ),
       )

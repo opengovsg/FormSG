@@ -3,6 +3,7 @@ import validator from 'validator'
 
 import { WorkflowType } from '../../../shared/types'
 import {
+  IWorkflowStepConditionalSchema,
   IWorkflowStepDynamicSchema,
   IWorkflowStepSchema,
   IWorkflowStepStaticSchema,
@@ -59,5 +60,13 @@ export const WorkflowStepDynamicSchema = new Schema<IWorkflowStepDynamicSchema>(
     },
   },
 )
+
+export const WorkflowStepConditionalSchema =
+  new Schema<IWorkflowStepConditionalSchema>({
+    conditional_field: {
+      type: Schema.Types.ObjectId,
+      required: true,
+    },
+  })
 
 export default WorkflowStepSchema

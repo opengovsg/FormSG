@@ -82,6 +82,11 @@ export const createWorkflowStepValidator = celebrate({
     }),
     edit: Joi.array().items(Joi.string()).required(),
     approval_field: Joi.string().optional(),
+    conditional_field: Joi.when('workflow_type', {
+      is: WorkflowType.Conditional,
+      then: Joi.string().required(),
+      otherwise: Joi.forbidden(),
+    }),
   }),
   [Segments.PARAMS]: Joi.object({
     formId: Joi.string().required(),
@@ -105,6 +110,11 @@ export const updateWorkflowStepValidator = celebrate({
     }),
     edit: Joi.array().items(Joi.string().hex().length(24)).required(),
     approval_field: Joi.string().optional(),
+    conditional_field: Joi.when('workflow_type', {
+      is: WorkflowType.Conditional,
+      then: Joi.string().required(),
+      otherwise: Joi.forbidden(),
+    }),
   }),
   [Segments.PARAMS]: Joi.object({
     formId: Joi.string().required(),
