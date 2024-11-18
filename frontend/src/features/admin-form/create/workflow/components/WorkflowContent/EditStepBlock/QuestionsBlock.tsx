@@ -1,6 +1,7 @@
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { FormControl } from '@chakra-ui/react'
 
+import { textStyles } from '~theme/textStyles'
 import { MultiSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -51,6 +52,7 @@ export const QuestionsBlock = ({
         isInvalid={!!errors.edit}
       >
         <FormLabel
+          style={textStyles.h4}
           tooltipVariant="info"
           tooltipPlacement="top"
           tooltipText="Respondent will only be able to fill the fields you have selected"
