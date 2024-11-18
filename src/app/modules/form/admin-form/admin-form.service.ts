@@ -31,6 +31,7 @@ import {
   FieldCreateDto,
   FieldUpdateDto,
   FormAuthType,
+  FormFieldDto,
   FormLogoState,
   FormMetadata,
   FormPermission,
@@ -736,6 +737,58 @@ export const duplicateForm = (
       return new DatabaseError(getMongoErrorMessage(error))
     },
   )
+}
+
+export const updateOptionsToRecipientsMap = (
+  form: IPopulatedForm,
+  fieldId: string,
+  optionsToRecipientsMap: Record<string, string[]>,
+): ResultAsync<FormFieldSchema, PossibleDatabaseError | FieldNotFoundError> => {
+  const formFieldToUpdate = getFormFieldById(form.form_fields, fieldId)
+
+  if (!formFieldToUpdate) {
+    return errAsync(new FieldNotFoundError())
+  }
+
+  if (formFieldToUpdate.fieldType !== BasicField.Dropdown) {
+    return errAsync(
+      new EditFieldError(
+        'Field is not a dropdown field, only dropdown fields contain options to recipients map',
+      ),
+    )
+  }
+
+  const updatedFormField = {
+    ...formFieldToUpdate.toObject(),
+    optionsToRecipientsMap,
+  }
+
+  return ResultAsync.fromPromise(
+    form.updateFormFieldById(
+      fieldId,
+      updatedFormField as FormFieldDto<DropdownFieldBase>,
+    ),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while updating options to recipients map',
+        meta: {
+          action: 'updateOptionsToRecipientsMap',
+          formId: form._id,
+          fieldId,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FieldNotFoundError())
+    }
+    const updatedFormField = getFormFieldById(updatedForm.form_fields, fieldId)
+    return updatedFormField
+      ? okAsync(updatedFormField)
+      : errAsync(new FieldNotFoundError())
+  })
 }
 
 /**
@@ -1647,67 +1700,6 @@ export const updateFormWorkflowStep = (
 
     return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
   })
-}
-
-/**
- * Converts from csv to json format for quick lookups.
- *
- * The CSV string is expected to have each line formatted as "option,email".
- * This function splits the string into rows, then each row into an option and an email,
- * trimming any whitespace. It returns a record where each option is mapped to its corresponding email.
- *
- * @param {string} conditionalRoutingCsvString - The CSV string containing options and emails.
- * @returns {Record<string, string>} A map where keys are options and values are corresponding emails.
- *
- * @example
- * const csvString = "Option1,email1@example.com\r\nOption2,email2@example.com";
- * const result = conditionalRoutingCsvStringToOptionToRecipientMap(csvString);
- * // result will be: { Option1: "email1@example.com", Option2: "email2@example.com" }
- */
-const conditionalRoutingCsvStringToOptionToRecipientMap = (
-  conditionalRoutingCsvString: string,
-) => {
-  const optionToRecipientMap: Record<string, string> = {}
-  const rows = conditionalRoutingCsvString.split('\r\n')
-
-  rows.forEach((row) => {
-    const [option, email] = row.split(',')
-    if (option && email) {
-      optionToRecipientMap[option.trim()] = email.trim()
-    }
-  })
-
-  return optionToRecipientMap
-}
-
-export const updateFormWorkflowStepConditionalRoutingConfig = (
-  originalForm: IPopulatedForm,
-  stepNumber: number,
-  conditionalFieldId: string,
-  conditionalRoutingCsvString: string,
-): ResultAsync<FormWorkflowDto, DatabaseError | FormNotFoundError> => {
-  if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
-    return errAsync(
-      new FormInvalidResponseModeError(
-        'Cannot update conditional routing config for non-multirespondent mode forms',
-      ),
-    )
-  }
-
-  const originalMrfForm = originalForm as IPopulatedMultirespondentForm
-  const updatedFormWorkflowStep = {
-    ...originalMrfForm.workflow[stepNumber],
-    conditional_field_id: conditionalFieldId,
-    option_to_recipient_map: conditionalRoutingCsvStringToOptionToRecipientMap(
-      conditionalRoutingCsvString,
-    ),
-  }
-
-  return updateFormWorkflowStep(
-    originalMrfForm,
-    stepNumber,
-    updatedFormWorkflowStep,
-  )
 }
 
 export const deleteFormWorkflowStep = (

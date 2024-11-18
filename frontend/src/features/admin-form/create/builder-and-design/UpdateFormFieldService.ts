@@ -1,4 +1,8 @@
-import { FieldCreateDto, FormFieldDto } from '~shared/types/field'
+import {
+  DropdownFieldBase,
+  FieldCreateDto,
+  FormFieldDto,
+} from '~shared/types/field'
 
 import { transformAllIsoStringsToDate } from '~utils/date'
 import { ApiService } from '~services/ApiService'
@@ -40,6 +44,23 @@ export const updateSingleFormField = async ({
   return ApiService.put<FormFieldDto>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/fields/${updateFieldBody._id}`,
     updateFieldBody,
+  )
+    .then(({ data }) => data)
+    .then(transformAllIsoStringsToDate)
+}
+
+export const updateOptionsToRecipientsMap = async ({
+  formId,
+  fieldId,
+  optionsToRecipientsMap,
+}: {
+  formId: string
+  fieldId: string
+  optionsToRecipientsMap: DropdownFieldBase['optionsToRecipientsMap']
+}): Promise<FormFieldDto> => {
+  return ApiService.put<FormFieldDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/fields/${fieldId}/options-to-recipients-map`,
+    { optionsToRecipientsMap },
   )
     .then(({ data }) => data)
     .then(transformAllIsoStringsToDate)

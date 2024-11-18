@@ -11,6 +11,7 @@ interface NextAndBackButtonProps {
   backButtonLabel?: string
   isNextDisabled?: boolean
   isBackDisabled?: boolean
+  nextButtonColorScheme?: 'danger'
 }
 
 export const NextAndBackButtonGroup = ({
@@ -20,6 +21,7 @@ export const NextAndBackButtonGroup = ({
   backButtonLabel = 'Back',
   isNextDisabled = false,
   isBackDisabled = false,
+  nextButtonColorScheme,
 }: NextAndBackButtonProps): JSX.Element => {
   const isMobile = useIsMobile()
 
@@ -32,6 +34,7 @@ export const NextAndBackButtonGroup = ({
       w="100%"
     >
       <Button
+        colorScheme={nextButtonColorScheme}
         isDisabled={isNextDisabled}
         onClick={handleNext}
         isFullWidth={isMobile}

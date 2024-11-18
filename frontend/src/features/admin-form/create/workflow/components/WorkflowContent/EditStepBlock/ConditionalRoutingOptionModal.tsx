@@ -166,6 +166,7 @@ const StepTwoModalContent = ({
             showDownload
             showRemove
             maxSize={MAX_UPLOAD_FILE_SIZE}
+            accept={['.csv']}
           />
         )}
       />

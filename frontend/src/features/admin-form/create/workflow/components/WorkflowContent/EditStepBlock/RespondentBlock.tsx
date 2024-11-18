@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react'
 import { Controller, useForm, UseFormReturn } from 'react-hook-form'
 import { BiPlus } from 'react-icons/bi'
 import { useParams } from 'react-router'
@@ -16,7 +17,6 @@ import isEmail from 'validator/lib/isEmail'
 import {
   DropdownFieldBase,
   FormFieldDto,
-  RadioFieldBase,
   UserDto,
   WorkflowType,
 } from '~shared/types'
@@ -37,9 +37,9 @@ import { EditStepInputs } from '~features/admin-form/create/workflow/types'
 import { FormFieldWithQuestionNo } from '~features/form/types'
 
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
-import { useWorkflowMutations } from '../../../mutations'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
+import { ConditionalRoutingMappingDeleteModal } from './ConditionalRoutingMappingDeleteModal'
 import { ConditionalRoutingOptionModal } from './ConditionalRoutingOptionModal'
 import { EditStepBlockContainer } from './EditStepBlockContainer'
 
@@ -215,13 +215,12 @@ const DynamicRespondentOption = ({
 
 interface ConditionalRoutingOptionProps extends RespondentOptionProps {
   conditionalFormFields: FormFieldWithQuestionNo<
-    FormFieldDto<DropdownFieldBase | RadioFieldBase>
+    FormFieldDto<DropdownFieldBase>
   >[]
-  stepNumber: number
 }
 
 export interface ConditionalRoutingConfig {
-  csvFile: File
+  csvFile: File | null
 }
 
 const ConditionalRoutingOption = ({
@@ -229,8 +228,9 @@ const ConditionalRoutingOption = ({
   formMethods,
   selectedWorkflowType,
   conditionalFormFields,
-  stepNumber,
 }: ConditionalRoutingOptionProps) => {
+  const [isDeleteConfirmModalOpen, setIsDeleteConfirmModalOpen] =
+    useState(false)
   const { register, control, watch } = formMethods
 
   const { formId } = useParams()
@@ -247,16 +247,49 @@ const ConditionalRoutingOption = ({
     control: conditionalRoutingConfigControl,
     watch: watchConditionalRoutingConfig,
     handleSubmit,
+    setValue: setConditionalRoutingConfigValue,
   } = useForm<ConditionalRoutingConfig>()
 
-  const isConditionalFieldSelected = watch('conditional_field')
+  const isConditionalFieldSelected = !!watch('conditional_field')
+  const selectedConditionalField = conditionalFormFields.find(
+    (field) => field._id === watch('conditional_field'),
+  )
+
+  const selectedConditionalFieldTitle = selectedConditionalField?.title
+  const selectedConditionalFieldOptionsToRecipientsMap =
+    selectedConditionalField?.optionsToRecipientsMap
+
   const isOptionsToRecipientsMapAttached =
-    watchConditionalRoutingConfig('csvFile')
+    !!watchConditionalRoutingConfig('csvFile')
+
+  const standardCsvDownloadFileName = `conditional_routing_form_${formId}_field_${selectedConditionalFieldTitle}_mapping.csv`
+
+  const placeholderOptionToEmailMappingCsv = useMemo(() => {
+    return {
+      name: standardCsvDownloadFileName,
+      type: 'text/csv',
+    } as File
+  }, [standardCsvDownloadFileName])
+
+  useEffect(() => {
+    if (selectedConditionalFieldOptionsToRecipientsMap) {
+      setConditionalRoutingConfigValue(
+        'csvFile',
+        placeholderOptionToEmailMappingCsv,
+      )
+    }
+  }, [
+    placeholderOptionToEmailMappingCsv,
+    setConditionalRoutingConfigValue,
+    selectedConditionalFieldOptionsToRecipientsMap,
+  ])
 
   const { isOpen, onOpen, onClose } = useDisclosure()
 
-  const handleCsvDownload =
-    (formId: string = '', stepNumber: number) =>
+  const handleMappingCsvDownload = () => {}
+
+  const handleSkeletonCsvDownload =
+    (formId: string = '') =>
     () => {
       const getFieldOptions = (conditionalFieldId: string) => {
         const conditionalField = conditionalFormFields.find(
@@ -291,12 +324,12 @@ const ConditionalRoutingOption = ({
       const csvContent = generateCsvContent(fieldOptions)
       const csvFile = csvStringToFile(
         csvContent,
-        `conditional_routing_form_${formId}_step_${stepNumber + 1}.csv`,
+        `conditional_routing_form_${formId}_field_${selectedConditionalFieldTitle}_mapping.csv`,
       )
       downloadFile(csvFile)
     }
 
-  const { editFieldMutation } = useEditFormField()
+  const { editOptionToRecipientsMutation } = useEditFormField()
 
   const handleConditionalRoutingConfigSubmit =
     (conditionalFieldId: string | undefined) =>
@@ -330,32 +363,55 @@ const ConditionalRoutingOption = ({
         }, {})
       }
 
-      const conditionalField = conditionalFormFields.find(
-        (field) => field._id === conditionalFieldId,
-      )
-
-      const updatedConditionalField = {
-        ...conditionalField,
-        optionsToRecipientsMap: csvToOptionsToRecipientsMap(
-          conditionalRoutingCsvString,
-        ),
-      }
-
-      editFieldMutation.mutate(
-        updatedConditionalField as FormFieldDto<DropdownFieldBase>,
-        { onSuccess: onClose },
+      editOptionToRecipientsMutation.mutate(
+        {
+          fieldId: conditionalFieldId,
+          optionsToRecipientsMap: csvToOptionsToRecipientsMap(
+            conditionalRoutingCsvString,
+          ),
+        },
+        {
+          onSuccess: () => {
+            setConditionalRoutingConfigValue(
+              'csvFile',
+              placeholderOptionToEmailMappingCsv,
+            )
+            onClose()
+          },
+        },
       )
     }
 
+  const removeOptionsToRecipientsMapping = () => {
+    if (!selectedConditionalField) return
+    editOptionToRecipientsMutation.mutate(
+      {
+        fieldId: selectedConditionalField._id,
+        optionsToRecipientsMap: {},
+      },
+      {
+        onSuccess: () => {
+          setConditionalRoutingConfigValue('csvFile', null)
+          setIsDeleteConfirmModalOpen(false)
+        },
+      },
+    )
+  }
+
   return (
     <>
+      <ConditionalRoutingMappingDeleteModal
+        isOpen={isDeleteConfirmModalOpen}
+        onClose={() => setIsDeleteConfirmModalOpen(false)}
+        handleDelete={removeOptionsToRecipientsMapping}
+      />
       <ConditionalRoutingOptionModal
         conditionalFieldItems={conditionalFieldItems}
         isLoading={isLoading}
         isOpen={isOpen}
         onClose={onClose}
         control={conditionalRoutingConfigControl}
-        onDownloadCsvClick={handleCsvDownload(formId, stepNumber)}
+        onDownloadCsvClick={handleSkeletonCsvDownload(formId)}
         onSubmit={handleSubmit(
           handleConditionalRoutingConfigSubmit(watch('conditional_field')),
         )}
@@ -422,6 +478,12 @@ const ConditionalRoutingOption = ({
                       onChange={onChange}
                       value={value}
                       showDownload
+                      showRemove
+                      handleDownloadFileOverride={handleMappingCsvDownload}
+                      handleRemoveFileOverride={() =>
+                        setIsDeleteConfirmModalOpen(true)
+                      }
+                      accept={['.csv']}
                     />
                   )}
                 />
@@ -508,7 +570,6 @@ export const RespondentBlock = ({
                 conditionalFormFields={dropdownFormFields}
                 formMethods={formMethods}
                 isLoading={isLoading}
-                stepNumber={stepNumber}
               />
             </Radio.RadioGroup>
           </Stack>
