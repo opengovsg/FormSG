@@ -2,14 +2,7 @@ import { render } from '@react-email/render'
 import tracer from 'dd-trace'
 import { get, inRange, isEmpty } from 'lodash'
 import moment from 'moment-timezone'
-import {
-  err,
-  errAsync,
-  fromPromise,
-  okAsync,
-  Result,
-  ResultAsync,
-} from 'neverthrow'
+import { err, errAsync, fromPromise, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
