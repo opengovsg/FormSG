@@ -248,12 +248,13 @@ const ConditionalRoutingOption = ({
     }),
   )
 
+  const [csvFile, setCsvFile] = useState<File | null>(null)
+
   const {
     control: conditionalRoutingConfigControl,
     formState: { errors: conditionalRoutingConfigErrors },
     watch: watchConditionalRoutingConfig,
     handleSubmit,
-    setValue: setConditionalRoutingConfigValue,
   } = useForm<ConditionalRoutingConfig>()
 
   const isConditionalFieldSelected = !!watch('conditional_field')
@@ -265,8 +266,7 @@ const ConditionalRoutingOption = ({
   const selectedConditionalFieldOptionsToRecipientsMap =
     selectedConditionalField?.optionsToRecipientsMap
 
-  const isOptionsToRecipientsMapAttached =
-    !!watchConditionalRoutingConfig('csvFile')
+  const isOptionsToRecipientsMapAttached = !!csvFile
 
   const standardCsvDownloadFileName = `conditional_routing_form_${formId}_field_${selectedConditionalFieldTitle}_mapping.csv`
 
@@ -279,16 +279,13 @@ const ConditionalRoutingOption = ({
 
   useEffect(() => {
     if (selectedConditionalFieldOptionsToRecipientsMap) {
-      setConditionalRoutingConfigValue(
-        'csvFile',
-        placeholderOptionToEmailMappingCsv,
-      )
+      setCsvFile(placeholderOptionToEmailMappingCsv)
     } else {
-      setConditionalRoutingConfigValue('csvFile', null)
+      setCsvFile(null)
     }
   }, [
     placeholderOptionToEmailMappingCsv,
-    setConditionalRoutingConfigValue,
+    setCsvFile,
     selectedConditionalFieldOptionsToRecipientsMap,
   ])
 
@@ -380,10 +377,7 @@ const ConditionalRoutingOption = ({
         },
         {
           onSuccess: () => {
-            setConditionalRoutingConfigValue(
-              'csvFile',
-              placeholderOptionToEmailMappingCsv,
-            )
+            setCsvFile(placeholderOptionToEmailMappingCsv)
             onClose()
           },
         },
@@ -399,7 +393,7 @@ const ConditionalRoutingOption = ({
       },
       {
         onSuccess: () => {
-          setConditionalRoutingConfigValue('csvFile', null)
+          setCsvFile(null)
           setIsDeleteConfirmModalOpen(false)
         },
       },
@@ -466,38 +460,40 @@ const ConditionalRoutingOption = ({
       return (error as Error).message
     }
 
-    const options = conditionalRoutingCsvString.split('\r\n').map((row) => {
+    const options = conditionalRoutingCsvString.split('\r\n')
+    const optionsSet = new Set<string>()
+
+    for (const row of options) {
       const [option, ...recipients] = row.split(',')
-      if (!recipients.length) return null
-      return option
-    })
-
-    const filledOptions = options.filter(Boolean) as string[]
-
-    if (filledOptions.length < options.length) {
-      return 'There are options with missing email(s) in your CSV.'
+      if (recipients.length <= 0 || !recipients[0]) {
+        return 'There are options with missing email(s) in your CSV.'
+      }
+      if (recipients.some((recipient) => !isEmail(recipient))) {
+        return 'Your CSV contains invalid email(s).'
+      }
+      optionsSet.add(option)
     }
 
     const selectedConditionalFieldOptions =
       selectedConditionalField?.fieldOptions
 
-    const optionsSet = new Set<string>(filledOptions)
-
     if (optionsSet.size < options.length) {
       return 'There are duplicate options in your CSV.'
     }
 
-    const containsExcess =
-      selectedConditionalFieldOptions &&
-      selectedConditionalFieldOptions.some((option) => !optionsSet.has(option))
-    if (containsExcess) {
-      return 'Your CSV contains options that are not present in the selected field.'
-    }
     const missingOptions =
       selectedConditionalFieldOptions &&
       selectedConditionalFieldOptions.some((option) => !optionsSet.has(option))
     if (missingOptions) {
       return 'Your CSV is missing options that are present in the selected field.'
+    }
+    const containsExcess =
+      selectedConditionalFieldOptions &&
+      [...optionsSet].some(
+        (option) => !selectedConditionalFieldOptions.includes(option),
+      )
+    if (containsExcess) {
+      return 'Your CSV contains options that are not present in the selected field.'
     }
   }
 
@@ -588,7 +584,7 @@ const ConditionalRoutingOption = ({
                   <Attachment
                     name={'csvFile'}
                     onChange={() => {}}
-                    value={watchConditionalRoutingConfig('csvFile')}
+                    value={csvFile}
                     showDownload
                     showRemove
                     handleDownloadFileOverride={handleMappingCsvDownload}
