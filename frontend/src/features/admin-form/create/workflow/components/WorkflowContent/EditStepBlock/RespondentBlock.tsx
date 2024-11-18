@@ -249,8 +249,9 @@ const ConditionalRoutingOption = ({
     handleSubmit,
   } = useForm<ConditionalRoutingConfig>()
 
-  const isConditionalRoutingFieldSelected =
-    watchConditionalRoutingConfig('csvFile') && watch('conditional_field')
+  const isConditionalFieldSelected = watch('conditional_field')
+  const isOptionsToRecipientsMapAttached =
+    watchConditionalRoutingConfig('csvFile')
 
   const { isOpen, onOpen, onClose } = useDisclosure()
 
@@ -342,6 +343,7 @@ const ConditionalRoutingOption = ({
 
       editFieldMutation.mutate(
         updatedConditionalField as FormFieldDto<DropdownFieldBase>,
+        { onSuccess: onClose },
       )
     }
 
@@ -381,7 +383,7 @@ const ConditionalRoutingOption = ({
           Email(s) assigned to options in a dropdown or radio field
         </Text>
         {selectedWorkflowType === WorkflowType.Conditional ? (
-          <>
+          <Stack spacing="0.625rem">
             <Controller
               control={control}
               name="conditional_field"
@@ -409,31 +411,33 @@ const ConditionalRoutingOption = ({
                 />
               )}
             />
-            {isConditionalRoutingFieldSelected ? (
-              <Controller
-                name="csvFile"
-                control={conditionalRoutingConfigControl}
-                render={({ field: { onChange, name, value } }) => (
-                  <Attachment
-                    name={name}
-                    onChange={onChange}
-                    value={value}
-                    showDownload
-                  />
-                )}
-              />
-            ) : (
-              <Button
-                w="100%"
-                variant="outline"
-                leftIcon={<BiPlus fontSize="1.5rem" />}
-                onClick={onOpen}
-                isDisabled={!watch('conditional_field')}
-              >
-                Add email(s) to options
-              </Button>
-            )}
-          </>
+            {isConditionalFieldSelected ? (
+              isOptionsToRecipientsMapAttached ? (
+                <Controller
+                  name="csvFile"
+                  control={conditionalRoutingConfigControl}
+                  render={({ field: { onChange, name, value } }) => (
+                    <Attachment
+                      name={name}
+                      onChange={onChange}
+                      value={value}
+                      showDownload
+                    />
+                  )}
+                />
+              ) : (
+                <Button
+                  w="100%"
+                  variant="outline"
+                  leftIcon={<BiPlus fontSize="1.5rem" />}
+                  onClick={onOpen}
+                  isDisabled={!watch('conditional_field')}
+                >
+                  Add email(s) to options
+                </Button>
+              )
+            ) : null}
+          </Stack>
         ) : null}
       </Radio>
     </>

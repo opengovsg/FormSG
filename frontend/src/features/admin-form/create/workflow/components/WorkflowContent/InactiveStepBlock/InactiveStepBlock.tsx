@@ -53,8 +53,8 @@ const SubsequentStepRespondentBadges = ({
       return (
         <FieldLogicBadge
           field={
-            step.conditionalFieldId
-              ? idToFieldMap[step.conditionalFieldId]
+            step.conditional_field
+              ? idToFieldMap[step.conditional_field]
               : undefined
           }
         />
