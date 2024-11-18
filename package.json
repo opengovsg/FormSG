@@ -122,7 +122,7 @@
     "multiparty": ">=4.2.3",
     "nan": "^2.19.0",
     "neverthrow": "^8.0.0",
-    "nocache": "^3.0.4",
+    "nocache": "^4.0.0",
     "node-cache": "^5.1.2",
     "nodemailer": "^6.9.16",
     "openai": "^4.70.3",
