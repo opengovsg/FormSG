@@ -245,6 +245,7 @@ const ConditionalRoutingOption = ({
 
   const {
     control: conditionalRoutingConfigControl,
+    formState: { errors: conditionalRoutingConfigErrors },
     watch: watchConditionalRoutingConfig,
     handleSubmit,
     setValue: setConditionalRoutingConfigValue,
@@ -400,6 +401,66 @@ const ConditionalRoutingOption = ({
     )
   }
 
+  const validateCsvFile = async (
+    file: File | null,
+  ): Promise<string | undefined> => {
+    if (!file) return 'Please upload a CSV file'
+
+    let conditionalRoutingCsvString
+    try {
+      conditionalRoutingCsvString = await parseCsvFileToCsvString(
+        file,
+        (headerRow) => {
+          return {
+            isValid:
+              headerRow &&
+              headerRow.length === 2 &&
+              headerRow[0] === 'Options' &&
+              headerRow[1] === 'Add email(s) in this column',
+            invalidReason:
+              'Your CSV file should only contain 2 columns with the "Options" and "Add email(s) in this column" headers.',
+          }
+        },
+      )
+    } catch (error) {
+      return (error as Error).message
+    }
+
+    const options = conditionalRoutingCsvString.split('\r\n').map((row) => {
+      const [option, ...recipients] = row.split(',')
+      if (!recipients.length) return null
+      return option
+    })
+
+    const filledOptions = options.filter(Boolean) as string[]
+
+    if (filledOptions.length < options.length) {
+      return 'There are options with missing email(s) in your CSV.'
+    }
+
+    const selectedConditionalFieldOptions =
+      selectedConditionalField?.fieldOptions
+
+    const optionsSet = new Set<string>(filledOptions)
+
+    if (optionsSet.size < options.length) {
+      return 'There are duplicate options in your CSV.'
+    }
+
+    const containsExcess =
+      selectedConditionalFieldOptions &&
+      selectedConditionalFieldOptions.some((option) => !optionsSet.has(option))
+    if (containsExcess) {
+      return 'Your CSV contains options that are not present in the selected field.'
+    }
+    const missingOptions =
+      selectedConditionalFieldOptions &&
+      selectedConditionalFieldOptions.some((option) => !optionsSet.has(option))
+    if (missingOptions) {
+      return 'Your CSV is missing options that are present in the selected field.'
+    }
+  }
+
   return (
     <>
       <ConditionalRoutingMappingDeleteModal
@@ -413,6 +474,7 @@ const ConditionalRoutingOption = ({
         isOpen={isOpen}
         onClose={onClose}
         control={conditionalRoutingConfigControl}
+        errors={conditionalRoutingConfigErrors}
         onDownloadCsvClick={handleSkeletonCsvDownload(formId)}
         onSubmit={handleSubmit(
           handleConditionalRoutingConfigSubmit(watch('conditional_field')),
@@ -423,6 +485,7 @@ const ConditionalRoutingOption = ({
             watch('conditional_field')
           )
         }
+        validateCsvFile={validateCsvFile}
       />
       <Radio
         isDisabled={isLoading}

@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Controller, UseFormReturn } from 'react-hook-form'
+import { Controller, FieldErrors, UseFormReturn } from 'react-hook-form'
 import { BiDownload } from 'react-icons/bi'
 import {
   Box,
   Button,
+  FormControl,
   Image,
   Modal,
   ModalBody,
@@ -20,6 +21,7 @@ import { MAX_UPLOAD_FILE_SIZE } from '~shared/constants'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { NextAndBackButtonGroup } from '~components/Button'
 import Attachment from '~components/Field/Attachment'
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import { ModalCloseButton } from '~components/Modal'
 import { ProgressIndicator } from '~components/ProgressIndicator/ProgressIndicator'
 
@@ -31,8 +33,8 @@ interface StepOneModalContentProps {
   stepNumber: number
   setStepNumber: (step: number) => void
   isMobile: boolean
-  onDownloadCsvClick: () => void
-  onClose: () => void
+  onDownloadCsvClick: ConditionalRoutingOptionModalProps['onDownloadCsvClick']
+  onClose: ConditionalRoutingOptionModalProps['onClose']
 }
 
 const StepOneModalContent = ({
@@ -123,17 +125,21 @@ const StepOneModalContent = ({
 interface StepTwoModalContentProps {
   stepNumber: number
   setStepNumber: (step: number) => void
-  control: UseFormReturn<ConditionalRoutingConfig>['control']
-  onSubmit: () => void
-  isSubmitDisabled: boolean
+  control: ConditionalRoutingOptionModalProps['control']
+  errors: ConditionalRoutingOptionModalProps['errors']
+  onSubmit: ConditionalRoutingOptionModalProps['onSubmit']
+  isSubmitDisabled: ConditionalRoutingOptionModalProps['isSubmitDisabled']
+  validateCsvFile: ConditionalRoutingOptionModalProps['validateCsvFile']
 }
 
 const StepTwoModalContent = ({
   stepNumber,
   setStepNumber,
   control,
+  errors,
   onSubmit,
   isSubmitDisabled,
+  validateCsvFile,
 }: StepTwoModalContentProps) => (
   <ModalContent>
     <ModalCloseButton />
@@ -153,23 +159,30 @@ const StepTwoModalContent = ({
         </Text>{' '}
         format.
       </Text>
-      <Controller
-        name="csvFile"
-        control={control}
-        render={({ field: { onChange, name, value } }) => (
-          <Attachment
-            onChange={onChange}
-            value={value}
-            name={name}
-            isRequired
-            showFileSize
-            showDownload
-            showRemove
-            maxSize={MAX_UPLOAD_FILE_SIZE}
-            accept={['.csv']}
-          />
-        )}
-      />
+      <FormControl isInvalid={!!errors.csvFile}>
+        <Controller
+          name="csvFile"
+          control={control}
+          rules={{
+            required: 'Please upload a CSV file',
+            validate: validateCsvFile,
+          }}
+          render={({ field: { onChange, name, value } }) => (
+            <Attachment
+              onChange={onChange}
+              value={value}
+              name={name}
+              isRequired
+              showFileSize
+              showDownload
+              showRemove
+              maxSize={MAX_UPLOAD_FILE_SIZE}
+              accept={['.csv']}
+            />
+          )}
+        />
+        <FormErrorMessage>{errors.csvFile?.message}</FormErrorMessage>
+      </FormControl>
     </ModalBody>
     <ModalFooter>
       <NextAndBackButtonGroup
@@ -188,18 +201,22 @@ interface ConditionalRoutingOptionModalProps {
   conditionalFieldItems: FieldItem[]
   isLoading: boolean
   control: UseFormReturn<ConditionalRoutingConfig>['control']
+  errors: FieldErrors<ConditionalRoutingConfig>
   onDownloadCsvClick: () => void
   onSubmit: () => void
   isSubmitDisabled: boolean
+  validateCsvFile: (value: File | null) => Promise<string | undefined>
 }
 
 export const ConditionalRoutingOptionModal = ({
   isOpen,
   onClose,
   control,
+  errors,
   onDownloadCsvClick,
   onSubmit,
   isSubmitDisabled,
+  validateCsvFile,
 }: ConditionalRoutingOptionModalProps): JSX.Element => {
   const isMobile = useIsMobile()
 
@@ -229,10 +246,12 @@ export const ConditionalRoutingOptionModal = ({
       {stepNumber === 1 && (
         <StepTwoModalContent
           control={control}
+          errors={errors}
           stepNumber={stepNumber}
           setStepNumber={setStepNumber}
           onSubmit={onSubmit}
           isSubmitDisabled={isSubmitDisabled}
+          validateCsvFile={validateCsvFile}
         />
       )}
     </Modal>
