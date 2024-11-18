@@ -86,7 +86,6 @@
     "tweetnacl": "^1.0.3",
     "type-fest": "^4.17.0",
     "typescript": "^5.4.5",
-    "use-debounce": "^7.0.1",
     "use-draggable-scroll": "^0.1.0",
     "validator": "^13.7.0",
     "vite-plugin-node-stdlib-browser": "^0.2.1",
