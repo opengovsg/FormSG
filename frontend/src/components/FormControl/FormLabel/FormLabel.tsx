@@ -92,7 +92,7 @@ export const FormLabel = ({
           <Tooltip
             placement={tooltipPlacement}
             label={tooltipText}
-            aria-label="Label tooltip"
+            aria-label={`Tooltip content: ${tooltipText}`}
           >
             <Icon
               ml="0.5rem"
