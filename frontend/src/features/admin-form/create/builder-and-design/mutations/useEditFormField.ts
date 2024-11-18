@@ -98,10 +98,20 @@ export const useEditFormField = () => {
         })
       },
       {
-        onSuccess: () => {
+        onSuccess: (newField: FormFieldDto) => {
           toast.closeAll()
           toast({
             description: 'The options to email(s) mapping was updated.',
+          })
+          queryClient.setQueryData<AdminFormDto>(adminFormKey, (oldForm) => {
+            // Should not happen, should not be able to update field if there is no
+            // existing data.
+            if (!oldForm) throw new Error('Query should have been set')
+            const currentFieldIndex = oldForm.form_fields.findIndex(
+              (ff) => ff._id === newField._id,
+            )
+            oldForm.form_fields[currentFieldIndex] = newField
+            return oldForm
           })
         },
         onError: handleError,

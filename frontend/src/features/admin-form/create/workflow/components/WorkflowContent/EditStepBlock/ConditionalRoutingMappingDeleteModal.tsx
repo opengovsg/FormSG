@@ -26,12 +26,15 @@ export const ConditionalRoutingMappingDeleteModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader>Delete options to email(s) mapping</ModalHeader>
-        <ModalBody>This action cannot be undone.</ModalBody>
+        <ModalHeader>Delete CSV file</ModalHeader>
+        <ModalBody>
+          Are you sure you want to delete this CSV file? This action is not
+          reversible.
+        </ModalBody>
         <ModalFooter>
           <NextAndBackButtonGroup
-            nextButtonLabel="Delete mapping"
-            backButtonLabel="Cancel"
+            nextButtonLabel="Yes, delete CSV file"
+            backButtonLabel="No, don't delete"
             handleBack={onClose}
             handleNext={handleDelete}
             nextButtonColorScheme="danger"
