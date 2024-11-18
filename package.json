@@ -122,7 +122,6 @@
     "multiparty": ">=4.2.3",
     "nan": "^2.19.0",
     "neverthrow": "^8.0.0",
-    "nocache": "^3.0.4",
     "node-cache": "^5.1.2",
     "nodemailer": "^6.9.16",
     "openai": "^4.70.3",
@@ -180,7 +179,6 @@
     "@types/ip": "^1.1.0",
     "@types/jest": "^29.5.1",
     "@types/json-stringify-safe": "^5.0.3",
-    "@types/jsonfile": "^6.1.1",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/jwk-to-pem": "^2.0.3",
     "@types/lodash": "^4.17.6",
@@ -225,7 +223,6 @@
     "maildev": "^2.1.0",
     "mockdate": "^3.0.5",
     "prettier": "^3.3.3",
-    "regenerator": "^0.14.10",
     "rimraf": "^5.0.5",
     "stripe-event-types": "^3.1.0",
     "supertest": "^6.3.3",
@@ -236,8 +233,6 @@
     "ts-node-dev": "^2.0.0",
     "type-fest": "^4.17.0",
     "typescript": "^5.4.5",
-    "webpack": "^4.46.0",
-    "webpack-cli": "^4.10.0",
     "worker-loader": "^2.0.0"
   },
   "config": {

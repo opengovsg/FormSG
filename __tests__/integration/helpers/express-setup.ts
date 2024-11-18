@@ -2,7 +2,6 @@ import compression from 'compression'
 import cookieParser from 'cookie-parser'
 import express, { Express, Router } from 'express'
 import session from 'express-session'
-import nocache from 'nocache'
 
 import { errorHandlerMiddlewares } from 'src/app/loaders/express/error-handler'
 import helmetMiddlewares from 'src/app/loaders/express/helmet'
@@ -37,7 +36,6 @@ export const setupApp = (
   app.use(compression())
   app.use(parserMiddlewares())
   app.use(helmetMiddlewares())
-  app.use(nocache())
 
   app.use(testSessionMiddlewares())
 
