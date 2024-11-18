@@ -116,9 +116,9 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             <FormControl isRequired isInvalid={!!errors.emails} mb="2.25rem">
               <FormLabel
                 useMarkdownForDescription
-                description={`Specify up to 30 emails. [How to guard against bounce emails](${GUIDE_PREVENT_EMAIL_BOUNCE}).`}
+                description={`All email addresses below will be notified. Learn more on [how to guard against email bounces](${GUIDE_PREVENT_EMAIL_BOUNCE}).`}
               >
-                Emails where responses will be sent
+                Notifications for new responses
               </FormLabel>
               <EmailFormRecipientsInput />
             </FormControl>
