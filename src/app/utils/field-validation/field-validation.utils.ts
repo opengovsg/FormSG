@@ -34,18 +34,16 @@ export const checkIsResponseChangedV3 = ({
         prevResponse.answer.value === response.answer.value &&
         prevResponse.answer.signature === response.answer.signature
       )
-    case BasicField.Radio:
+    case BasicField.Radio: {
       if (prevResponse.fieldType !== response.fieldType) {
         return true
       }
-      // eslint-disable-next-line no-case-declarations
       const prevResponseValue =
         'value' in prevResponse.answer
           ? prevResponse.answer.value
           : 'othersInput' in prevResponse.answer
             ? prevResponse.answer.othersInput
             : null
-      // eslint-disable-next-line no-case-declarations
       const responseValue =
         'value' in response.answer
           ? response.answer.value
@@ -53,15 +51,14 @@ export const checkIsResponseChangedV3 = ({
             ? response.answer.othersInput
             : null
       return prevResponseValue !== responseValue
-    case BasicField.Checkbox:
+    }
+    case BasicField.Checkbox: {
       if (prevResponse.fieldType !== response.fieldType) {
         return true
       }
-      // eslint-disable-next-line no-case-declarations
       const isOthersInputSelected = response.answer.value.includes(
         CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
       )
-      // eslint-disable-next-line no-case-declarations
       const isOthersInputSelectedPrev = prevResponse.answer.value.includes(
         CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
       )
@@ -76,6 +73,7 @@ export const checkIsResponseChangedV3 = ({
           isOthersInputSelectedPrev &&
           response.answer.othersInput !== prevResponse.answer.othersInput)
       )
+    }
     case BasicField.Table:
       return (
         JSON.stringify(response.answer) !== JSON.stringify(prevResponse.answer)
