@@ -277,6 +277,8 @@ const ConditionalRoutingOption = ({
         'csvFile',
         placeholderOptionToEmailMappingCsv,
       )
+    } else {
+      setConditionalRoutingConfigValue('csvFile', null)
     }
   }, [
     placeholderOptionToEmailMappingCsv,
