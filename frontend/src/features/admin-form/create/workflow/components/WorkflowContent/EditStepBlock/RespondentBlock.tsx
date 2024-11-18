@@ -291,7 +291,28 @@ const ConditionalRoutingOption = ({
 
   const { isOpen, onOpen, onClose } = useDisclosure()
 
-  const handleMappingCsvDownload = () => {}
+  const handleCsvDownload = () => {
+    if (!selectedConditionalFieldOptionsToRecipientsMap) return
+    const csvData = {
+      fields: ['Options', 'Add email(s) in this column'],
+      data: Object.entries(selectedConditionalFieldOptionsToRecipientsMap).map(
+        ([option, recipients]) => [option, recipients.join(',')],
+      ),
+    }
+
+    const csvString = Papa.unparse(csvData, {
+      header: true,
+      delimiter: ',',
+      skipEmptyLines: 'greedy',
+    })
+    const csvBlob = new Blob([csvString], {
+      type: 'text/csv',
+    })
+    const csvFile = new File([csvBlob], standardCsvDownloadFileName, {
+      type: 'text/csv',
+    })
+    downloadFile(csvFile)
+  }
 
   const handleSkeletonCsvDownload =
     (formId: string = '') =>
@@ -587,7 +608,7 @@ const ConditionalRoutingOption = ({
                     value={csvFile}
                     showDownload
                     showRemove
-                    handleDownloadFileOverride={handleMappingCsvDownload}
+                    handleDownloadFileOverride={handleCsvDownload}
                     handleRemoveFileOverride={() =>
                       setIsDeleteConfirmModalOpen(true)
                     }
