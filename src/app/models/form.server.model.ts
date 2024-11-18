@@ -1251,27 +1251,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     ).exec()
   }
 
-  /**
-   * Retrieves all the public forms for a user which has sms verifications enabled
-   * This only retrieves forms that are using FormSG credentials
-   * @param userId The userId to retrieve the forms for
-   * @returns All public forms that have sms verifications enabled
-   */
-  FormSchema.statics.retrievePublicFormsWithSmsVerification = async function (
-    userId: IUserSchema['_id'],
-  ) {
-    return this.find({
-      admin: userId,
-      'form_fields.fieldType': BasicField.Mobile,
-      'form_fields.isVerifiable': true,
-      status: FormStatus.Public,
-      msgSrvcName: {
-        $exists: false,
-      },
-    })
-      .read('secondary')
-      .exec()
-  }
   FormSchema.statics.getGoLinkSuffix = async function (formId: string) {
     return this.findById(formId, 'goLinkSuffix').exec()
   }
