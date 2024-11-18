@@ -36,7 +36,7 @@ export const OptionsTranslationContainer = ({
 
   return (
     <Flex direction="column" width="100%" mb="2.5rem">
-      <Flex alignItems="center" mb="2rem">
+      <Flex alignItems="flex-start" mb="2rem">
         <Text
           color="secondary.700"
           fontWeight="400"
@@ -55,7 +55,7 @@ export const OptionsTranslationContainer = ({
           overflow="hidden"
         />
       </Flex>
-      <Flex alignItems="center">
+      <Flex alignItems="flex-start">
         <Text color="secondary.700" mr="7.5rem" width="6.25rem">
           {language}
         </Text>
