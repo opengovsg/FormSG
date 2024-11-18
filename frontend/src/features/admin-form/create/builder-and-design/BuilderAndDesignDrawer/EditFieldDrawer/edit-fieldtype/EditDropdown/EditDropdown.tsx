@@ -8,6 +8,7 @@ import { DropdownFieldBase } from '~shared/types/field'
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
+import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
@@ -106,6 +107,10 @@ export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
         <FormErrorMessage>
           {errors?.fieldOptionsString?.message}
         </FormErrorMessage>
+        <InlineMessage useMarkdown mt="1rem" variant="warning">
+          If this field is used for conditional routing, the options here must
+          match the options to email mapping in your workflow.
+        </InlineMessage>
       </FormControl>
       <FormFieldDrawerActions
         isLoading={isLoading}
