@@ -112,9 +112,6 @@ export const EditStepBlock = ({
   })
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
-  const stepTooltip = isFirstStep
-    ? 'Anyone who can access your form'
-    : undefined
 
   // TODO: (MRF-email-notif) Remove isTest check when approvals is out of beta
   const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
@@ -133,7 +130,7 @@ export const EditStepBlock = ({
       transitionDuration="normal"
     >
       <Box px={{ base: '1.5rem', md: '2rem' }}>
-        <StepLabel tooltipLabel={stepTooltip} stepNumber={stepNumber} />
+        <StepLabel stepNumber={stepNumber} />
       </Box>
       <Divider />
       <RespondentBlock

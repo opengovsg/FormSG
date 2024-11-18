@@ -1,26 +1,10 @@
-import {
-  Flex,
-  Icon,
-  PlacementWithLogical,
-  Stack,
-  Text,
-  useBreakpointValue,
-} from '@chakra-ui/react'
-
-import { BxsInfoCircle } from '~assets/icons'
-import Tooltip from '~components/Tooltip'
+import { Flex, Stack, Text } from '@chakra-ui/react'
 
 type StepLabelProps = {
   stepNumber: number
-  tooltipLabel?: string
 }
 
-export const StepLabel = ({ stepNumber, tooltipLabel }: StepLabelProps) => {
-  const tooltipPlacement = useBreakpointValue({
-    base: 'auto',
-    md: 'right',
-  }) as PlacementWithLogical
-
+export const StepLabel = ({ stepNumber }: StepLabelProps) => {
   return (
     <Stack
       direction="row"
@@ -39,13 +23,6 @@ export const StepLabel = ({ stepNumber, tooltipLabel }: StepLabelProps) => {
       </Text>
       <Flex direction="row">
         <Text>Step {stepNumber + 1}</Text>
-        {tooltipLabel ? (
-          <Tooltip label={tooltipLabel} placement={tooltipPlacement}>
-            <Flex ml="0.5rem" justify="center" align="center">
-              <Icon as={BxsInfoCircle} fontSize="1rem" />
-            </Flex>
-          </Tooltip>
-        ) : null}
       </Flex>
     </Stack>
   )
