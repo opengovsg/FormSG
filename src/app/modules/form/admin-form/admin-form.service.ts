@@ -781,17 +781,8 @@ const validateOptionsToRecipientsMap = (
       ),
     )
   }
-
   // Check if there are missing options or emails
   for (const [option, recipients] of Object.entries(optionsToRecipientsMap)) {
-    if (!option || !recipients || recipients.length <= 0) {
-      return err(
-        new MalformedParametersError(
-          CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,
-        ),
-      )
-    }
-
     // Check if all recipients are valid emails
     if (
       recipients.some((recipientEmail) => !validator.isEmail(recipientEmail))
@@ -799,6 +790,14 @@ const validateOptionsToRecipientsMap = (
       return err(
         new MalformedParametersError(
           CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE,
+        ),
+      )
+    }
+
+    if (!option || !recipients || recipients.length <= 0) {
+      return err(
+        new MalformedParametersError(
+          CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,
         ),
       )
     }
