@@ -10,11 +10,13 @@ import {
   ChildBirthRecordsResponseV3,
   EmailResponseV3,
   FieldResponsesV3,
+  FormWorkflowStepDto,
   LongTextResponseV3,
   NumberResponseV3,
   ShortTextResponseV3,
   SubmissionType,
   TableResponseV3,
+  WorkflowType,
 } from 'shared/types'
 
 import {
@@ -23,6 +25,7 @@ import {
   ICheckboxFieldSchema,
   IEmailFieldSchema,
   INumberFieldSchema,
+  IPopulatedForm,
   IShortTextFieldSchema,
   ITableFieldSchema,
   MultirespondentSubmissionData,
@@ -33,6 +36,7 @@ import { ValidateFieldErrorV3 } from '../../submission.errors'
 import {
   createMultirespondentSubmissionDto,
   getQuestionTitleAnswerString,
+  retrieveWorkflowStepEmailAddresses,
   validateMrfFieldResponses,
 } from '../multirespondent-submission.utils'
 
@@ -349,6 +353,213 @@ describe('multirespondent-submission.utils', () => {
       expect(result).toEqual([
         { question: 'Checkbox', answer: 'Option 1,Option 2,Custom Option' },
       ])
+    })
+  })
+
+  describe('retrieveWorkflowStepEmailAddresses', () => {
+    describe('conditional workflow type', () => {
+      it('should return correct emails for response for conditional routing workflow step', () => {
+        // Arrange
+        const mockConditionalFieldId = 'conditionalField'
+        const mockShortTextFieldId = 'shortTextField'
+        const mockForm = {
+          form_fields: [
+            generateDefaultField(BasicField.Dropdown, {
+              _id: mockConditionalFieldId,
+              fieldOptions: ['Option A', 'Option B'],
+              optionsToRecipientsMap: {
+                'Option A': ['test1@example.com'],
+                'Option B': ['test2@example.com', 'test3@example.com'],
+              },
+            }),
+            generateDefaultField(BasicField.ShortText, {
+              _id: mockShortTextFieldId,
+            }),
+          ],
+        } as IPopulatedForm
+
+        // Test Option A
+        const mockResponsesA = {
+          [mockConditionalFieldId]: {
+            fieldType: BasicField.Dropdown,
+            answer: 'Option A',
+          },
+          [mockShortTextFieldId]: {
+            fieldType: BasicField.ShortText,
+            answer: 'Some text response',
+          },
+        } as FieldResponsesV3
+
+        const mockWorkflowStep = {
+          workflow_type: WorkflowType.Conditional,
+          conditional_field: mockConditionalFieldId,
+        } as FormWorkflowStepDto
+
+        // Act & Assert for Option A
+        const resultA = retrieveWorkflowStepEmailAddresses(
+          mockForm,
+          mockWorkflowStep,
+          mockResponsesA,
+        )
+        expect(resultA._unsafeUnwrap()).toEqual(['test1@example.com'])
+
+        // Test Option B
+        const mockResponsesB = {
+          [mockConditionalFieldId]: {
+            fieldType: BasicField.Dropdown,
+            answer: 'Option B',
+          },
+          [mockShortTextFieldId]: {
+            fieldType: BasicField.ShortText,
+            answer: 'Some text response',
+          },
+        } as FieldResponsesV3
+
+        // Act & Assert for Option B
+        const resultB = retrieveWorkflowStepEmailAddresses(
+          mockForm,
+          mockWorkflowStep,
+          mockResponsesB,
+        )
+        expect(resultB._unsafeUnwrap()).toEqual([
+          'test2@example.com',
+          'test3@example.com',
+        ])
+      })
+
+      it('should return empty array if response for field id not found', () => {
+        // Arrange
+        const mockConditionalFieldId = 'conditionalField'
+        const mockForm = {
+          form_fields: [
+            generateDefaultField(BasicField.Dropdown, {
+              _id: mockConditionalFieldId,
+              fieldOptions: ['Option A', 'Option B'],
+              optionsToRecipientsMap: {
+                'Option A': ['test1@example.com'],
+                'Option B': ['test2@example.com'],
+              },
+            }),
+          ],
+        } as IPopulatedForm
+        const mockResponses = {} as FieldResponsesV3
+        const mockWorkflowStep = {
+          workflow_type: WorkflowType.Conditional,
+          conditional_field: mockConditionalFieldId,
+        } as FormWorkflowStepDto
+
+        // Act
+        const result = retrieveWorkflowStepEmailAddresses(
+          mockForm,
+          mockWorkflowStep,
+          mockResponses,
+        )
+
+        // Assert
+        expect(result._unsafeUnwrap()).toEqual([])
+      })
+
+      it('should return empty array if response is not a dropdown field', () => {
+        // Arrange
+        const mockConditionalFieldId = 'conditionalField'
+        const mockForm = {
+          form_fields: [
+            generateDefaultField(BasicField.ShortText, {
+              _id: mockConditionalFieldId,
+            }),
+          ],
+        } as IPopulatedForm
+        const mockResponses = {
+          [mockConditionalFieldId]: {
+            fieldType: BasicField.ShortText,
+            answer: 'Some text',
+          },
+        } as FieldResponsesV3
+        const mockWorkflowStep = {
+          workflow_type: WorkflowType.Conditional,
+          conditional_field: mockConditionalFieldId,
+        } as FormWorkflowStepDto
+
+        // Act
+        const result = retrieveWorkflowStepEmailAddresses(
+          mockForm,
+          mockWorkflowStep,
+          mockResponses,
+        )
+
+        // Assert
+        expect(result._unsafeUnwrap()).toEqual([])
+      })
+
+      it('should return empty array if no optionsToRecipientsMap is found for the conditional field', () => {
+        // Arrange
+        const mockConditionalFieldId = 'conditionalField'
+        const mockForm = {
+          form_fields: [
+            generateDefaultField(BasicField.Dropdown, {
+              _id: mockConditionalFieldId,
+              fieldOptions: ['Option A', 'Option B'],
+            }),
+          ],
+        } as IPopulatedForm
+        const mockResponses = {
+          [mockConditionalFieldId]: {
+            fieldType: BasicField.Dropdown,
+            answer: 'Option A',
+          },
+        } as FieldResponsesV3
+        const mockWorkflowStep = {
+          workflow_type: WorkflowType.Conditional,
+          conditional_field: mockConditionalFieldId,
+        } as FormWorkflowStepDto
+
+        // Act
+        const result = retrieveWorkflowStepEmailAddresses(
+          mockForm,
+          mockWorkflowStep,
+          mockResponses,
+        )
+
+        // Assert
+        expect(result._unsafeUnwrap()).toEqual([])
+      })
+    })
+
+    it('should return an empty array if the optionsToRecipientsMap does not contain an email mapping for the option selected', () => {
+      // Arrange
+      const mockConditionalFieldId = 'conditionalField'
+      const mockForm = {
+        form_fields: [
+          generateDefaultField(BasicField.Dropdown, {
+            _id: mockConditionalFieldId,
+            fieldOptions: ['Option A', 'Option B'],
+            optionsToRecipientsMap: {
+              'Option A': ['test1@example.com'],
+              'Option B': ['test2@example.com'],
+            },
+          }),
+        ],
+      } as IPopulatedForm
+      const mockResponses = {
+        [mockConditionalFieldId]: {
+          fieldType: BasicField.Dropdown,
+          answer: 'Option C', // Option not in mapping
+        },
+      } as FieldResponsesV3
+      const mockWorkflowStep = {
+        workflow_type: WorkflowType.Conditional,
+        conditional_field: mockConditionalFieldId,
+      } as FormWorkflowStepDto
+
+      // Act
+      const result = retrieveWorkflowStepEmailAddresses(
+        mockForm,
+        mockWorkflowStep,
+        mockResponses,
+      )
+
+      // Assert
+      expect(result._unsafeUnwrap()).toEqual([])
     })
   })
 
