@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { FormControl } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
+import { WorkflowType } from '~shared/types'
 import { DropdownFieldBase } from '~shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
@@ -13,6 +14,7 @@ import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
+import { useAdminFormWorkflow } from '../../../../../../create/workflow/hooks/useAdminFormWorkflow'
 import { CreatePageDrawerContentContainer } from '../../../../../common'
 import {
   SPLIT_TEXTAREA_TRANSFORM,
@@ -52,6 +54,7 @@ const transformDropdownEditFormToField = (
 
 export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
   const { t } = useTranslation()
+  const { formWorkflow } = useAdminFormWorkflow()
   const {
     register,
     formState: { errors },
@@ -72,6 +75,14 @@ export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
     () => createBaseValidationRules({ required: true }),
     [],
   )
+
+  const isFieldUsedForConditionalRouting = useMemo(() => {
+    return formWorkflow?.some(
+      (workflow) =>
+        workflow.workflow_type === WorkflowType.Conditional &&
+        workflow.conditional_field === field._id,
+    )
+  }, [formWorkflow, field._id])
 
   return (
     <CreatePageDrawerContentContainer>
@@ -107,10 +118,12 @@ export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
         <FormErrorMessage>
           {errors?.fieldOptionsString?.message}
         </FormErrorMessage>
-        <InlineMessage useMarkdown mt="1rem" variant="warning">
-          If this field is used for conditional routing, the options here must
-          match the options to email mapping in your workflow.
-        </InlineMessage>
+        {isFieldUsedForConditionalRouting ? (
+          <InlineMessage useMarkdown mt="1rem" variant="warning">
+            Please ensure the options here are included in the options to
+            email(s) mapping CSV file in the workflow builder.
+          </InlineMessage>
+        ) : null}
       </FormControl>
       <FormFieldDrawerActions
         isLoading={isLoading}

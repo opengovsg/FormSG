@@ -7,7 +7,6 @@ import {
   EmailFieldBase,
   FormFieldDto,
   FormResponseMode,
-  RadioFieldBase,
   YesNoFieldBase,
 } from '~shared/types'
 
