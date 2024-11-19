@@ -145,7 +145,7 @@
     "ts-essentials": "^10.0.1",
     "tweetnacl": "^1.0.1",
     "tweetnacl-util": "^0.15.1",
-    "twilio": "~4.19.3",
+    "twilio": "~5.3.6",
     "uid-generator": "^2.0.0",
     "ulid": "^2.3.0",
     "uuid": "^10.0.0",
