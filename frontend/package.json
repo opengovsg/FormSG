@@ -172,7 +172,7 @@
     "msw": "^1.3.3",
     "msw-storybook-addon": "^1.10.0",
     "prettier": "^3.2.5",
-    "puppeteer": "^13.0.0",
+    "puppeteer": "^13.7.0",
     "react-refresh": "^0.14.0",
     "resize-observer-polyfill": "^1.5.1",
     "rimraf": "^3.0.2",
