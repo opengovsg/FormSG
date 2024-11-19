@@ -15,14 +15,20 @@ import Papa from 'papaparse'
 import isEmail from 'validator/lib/isEmail'
 
 import {
+  CONDITIONAL_ROUTING_DUPLICATE_OPTIONS_ERROR_MESSAGE,
+  CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,
+  CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE,
+  CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
+} from '~shared/constants/errors'
+import {
   DropdownFieldBase,
   FormFieldDto,
   UserDto,
   WorkflowType,
 } from '~shared/types'
+import { checkIsOptionsMismatched } from '~shared/utils/options-recipients-map-validation'
 
 import { textStyles } from '~theme/textStyles'
-import { checkIsOptionsMismatched } from '~utils/optionsToEmailValidation'
 import { parseCsvFileToCsvString } from '~utils/parseCsvFileToCsvString'
 import { SingleSelect } from '~components/Dropdown'
 import Attachment from '~components/Field/Attachment'
@@ -223,13 +229,6 @@ interface ConditionalRoutingOptionProps extends RespondentOptionProps {
 export interface ConditionalRoutingConfig {
   csvFile: File | null
 }
-
-const MISMATCHED_OPTIONS_ERROR_MESSAGE =
-  'The options in your CSV and selected field do not match.'
-const EMAILS_OPTIONS_MISSING_ERROR_MESSAGE =
-  'The options and emails in your CSV do not match.'
-const INVALID_FORMAT_ERROR_MESSAGE =
-  'Your CSV file is not in the correct format.'
 
 const ConditionalRoutingOption = ({
   isLoading,
@@ -441,7 +440,7 @@ const ConditionalRoutingOption = ({
         selectedConditionalFieldOptions,
       )
     ) {
-      return MISMATCHED_OPTIONS_ERROR_MESSAGE
+      return CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE
     }
   }
 
@@ -486,10 +485,10 @@ const ConditionalRoutingOption = ({
     for (const row of options) {
       const [option, ...recipients] = row.split(',')
       if (recipients.length <= 0 || !recipients[0] || !option) {
-        return EMAILS_OPTIONS_MISSING_ERROR_MESSAGE
+        return CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE
       }
       if (recipients.some((recipient) => !isEmail(recipient))) {
-        return INVALID_FORMAT_ERROR_MESSAGE
+        return CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE
       }
       optionsSet.add(option)
     }
@@ -498,7 +497,7 @@ const ConditionalRoutingOption = ({
       selectedConditionalField?.fieldOptions
 
     if (optionsSet.size < options.length) {
-      return 'There are duplicate options in your CSV.'
+      return CONDITIONAL_ROUTING_DUPLICATE_OPTIONS_ERROR_MESSAGE
     }
 
     return validateOptions(

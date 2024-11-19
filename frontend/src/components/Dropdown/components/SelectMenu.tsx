@@ -57,7 +57,6 @@ export const SelectMenu = (): JSX.Element => {
     virtualListRef,
     virtualListHeight,
     fullWidth,
-    zIndex,
   } = useSelectContext()
 
   const { floatingRef, floatingStyles } = useSelectPopover()
@@ -76,7 +75,6 @@ export const SelectMenu = (): JSX.Element => {
           // See https://github.com/downshift-js/downshift/issues/1272#issuecomment-1063244446
           { suppressRefError: true },
         )}
-        zIndex={zIndex}
         style={floatingStyles}
         sx={listSx}
       >

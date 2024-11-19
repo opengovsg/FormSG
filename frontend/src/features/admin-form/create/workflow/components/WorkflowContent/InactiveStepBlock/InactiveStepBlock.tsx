@@ -5,8 +5,8 @@ import { Dictionary } from 'lodash'
 
 import { BasicField, FormField } from '~shared/types'
 import { FormWorkflowStepDto, WorkflowType } from '~shared/types/form'
+import { checkIsOptionsMismatched } from '~shared/utils/options-recipients-map-validation'
 
-import { checkIsOptionsMismatched } from '~utils/optionsToEmailValidation'
 import IconButton from '~components/IconButton'
 
 import { FieldLogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/FieldLogicBadge'

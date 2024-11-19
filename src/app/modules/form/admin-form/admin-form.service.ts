@@ -13,8 +13,13 @@ import {
   EncryptedStringsMessageContentWithMyPrivateKey,
 } from 'shared/utils/crypto'
 import type { Except, Merge } from 'type-fest'
+import validator from 'validator'
 
 import {
+  CONDITIONAL_ROUTING_DUPLICATE_OPTIONS_ERROR_MESSAGE,
+  CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,
+  CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE,
+  CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
   FORM_WHITELIST_CONTAINS_EMPTY_ROWS_ERROR_MESSAGE,
   FORM_WHITELIST_SETTING_CONTAINS_DUPLICATES_ERROR_MESSAGE,
   FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE,
@@ -51,6 +56,7 @@ import {
   isMFinSeriesValid,
   isNricValid,
 } from '../../../../../shared/utils/nric-validation'
+import { checkIsOptionsMismatched } from '../../../../../shared/utils/options-recipients-map-validation'
 import { isUenValid } from '../../../../../shared/utils/uen-validation'
 import { EditFieldActions } from '../../../../shared/constants'
 import {
@@ -740,6 +746,80 @@ export const duplicateForm = (
   )
 }
 
+/**
+ * Validates the mapping between dropdown/radio field options and recipient emails
+ * @param optionsToRecipientsMap Object mapping field options to arrays of recipient emails
+ * @param selectedConditionalFieldOptions Array of valid options for the selected field
+ * @returns Ok if validation passes, Error with appropriate message if validation fails
+ *
+ * Performs the following validations:
+ * - No duplicate options in the mapping
+ * - All options have at least one recipient email
+ * - Options cannot be empty strings
+ * - All recipient emails are valid email addresses
+ * - All options in mapping exist in the field's options and vice versa
+ */
+
+const validateOptionsToRecipientsMap = (
+  optionsToRecipientsMap: Record<string, string[]>,
+  selectedConditionalFieldOptions: string[],
+): Result<undefined, MalformedParametersError> => {
+  // Mapping is being removed
+  if (
+    !optionsToRecipientsMap ||
+    Object.entries(optionsToRecipientsMap).length === 0
+  ) {
+    return ok(undefined)
+  }
+
+  // Check for duplicate options
+  const options = Object.keys(optionsToRecipientsMap)
+  if (new Set(options).size !== options.length) {
+    return err(
+      new MalformedParametersError(
+        CONDITIONAL_ROUTING_DUPLICATE_OPTIONS_ERROR_MESSAGE,
+      ),
+    )
+  }
+
+  // Check if there are missing options or emails
+  for (const [option, recipients] of Object.entries(optionsToRecipientsMap)) {
+    if (!option || !recipients || recipients.length <= 0) {
+      return err(
+        new MalformedParametersError(
+          CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,
+        ),
+      )
+    }
+
+    // Check if all recipients are valid emails
+    if (
+      recipients.some((recipientEmail) => !validator.isEmail(recipientEmail))
+    ) {
+      return err(
+        new MalformedParametersError(
+          CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE,
+        ),
+      )
+    }
+  }
+
+  if (
+    checkIsOptionsMismatched(
+      Object.keys(optionsToRecipientsMap),
+      selectedConditionalFieldOptions,
+    )
+  ) {
+    return err(
+      new MalformedParametersError(
+        CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
+      ),
+    )
+  }
+
+  return ok(undefined)
+}
+
 export const updateOptionsToRecipientsMap = (
   form: IPopulatedForm,
   fieldId: string,
@@ -757,6 +837,24 @@ export const updateOptionsToRecipientsMap = (
         'Field is not a dropdown field, only dropdown fields contain options to recipients map',
       ),
     )
+  }
+
+  const validationResult = validateOptionsToRecipientsMap(
+    optionsToRecipientsMap,
+    formFieldToUpdate.fieldOptions,
+  )
+
+  if (validationResult.isErr()) {
+    logger.error({
+      message: 'Options to recipients map is invalid',
+      meta: {
+        action: 'updateOptionsToRecipientsMap',
+        formId: form._id,
+        fieldId,
+      },
+      error: validationResult.error,
+    })
+    return errAsync(validationResult.error)
   }
 
   const updatedFormField = {
