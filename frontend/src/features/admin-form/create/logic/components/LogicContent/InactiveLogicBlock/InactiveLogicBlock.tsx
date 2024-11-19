@@ -98,6 +98,7 @@ export const InactiveLogicBlock = ({
         borderColor="neutral.300"
         cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
         aria-disabled={isPreventEdit}
+        pointerEvents="none"
       >
         <Stack
           spacing="1.5rem"
