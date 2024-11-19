@@ -12,6 +12,7 @@ import {
 } from '@chakra-ui/react'
 import { get } from 'lodash'
 import Papa from 'papaparse'
+import { options } from 'timezone-mock'
 import isEmail from 'validator/lib/isEmail'
 
 import {
@@ -223,6 +224,13 @@ export interface ConditionalRoutingConfig {
   csvFile: File | null
 }
 
+const MISMATCHED_OPTIONS_ERROR_MESSAGE =
+  'The options in your CSV and selected field do not match.'
+const EMAILS_OPTIONS_MISSING_ERROR_MESSAGE =
+  'The options and emails in your CSV do not match.'
+const INVALID_FORMAT_ERROR_MESSAGE =
+  'Your CSV file is not in the correct format.'
+
 const ConditionalRoutingOption = ({
   isLoading,
   formMethods,
@@ -236,6 +244,7 @@ const ConditionalRoutingOption = ({
     control,
     watch,
     formState: { errors },
+    clearErrors,
   } = formMethods
 
   const { formId } = useParams()
@@ -399,6 +408,7 @@ const ConditionalRoutingOption = ({
         {
           onSuccess: () => {
             setCsvFile(placeholderOptionToEmailMappingCsv)
+            clearErrors('conditional_field')
             onClose()
           },
         },
@@ -421,40 +431,39 @@ const ConditionalRoutingOption = ({
     )
   }
 
-  const validateOptionsToRecipientsMap = (
-    optionsToRecipientsMap: Record<string, string[]> | undefined,
+  const checkMissingElement = (actual: string[], expected: Set<string>) => {
+    return [...actual].some((option) => !expected.has(option))
+  }
+
+  const validateOptions = (
+    optionsToRecipientsMapOptions: string[] | undefined,
     selectedConditionalFieldOptions: string[] | undefined,
   ) => {
-    if (!optionsToRecipientsMap || !selectedConditionalFieldOptions) return
+    if (!optionsToRecipientsMapOptions || !selectedConditionalFieldOptions)
+      return 'Your CSV or selected field does not contain any options'
 
-    const missingOptions =
-      selectedConditionalFieldOptions &&
-      selectedConditionalFieldOptions.some(
-        (option) => !optionsToRecipientsMap[option],
+    if (
+      checkMissingElement(
+        optionsToRecipientsMapOptions,
+        new Set<string>(selectedConditionalFieldOptions),
+      ) ||
+      checkMissingElement(
+        selectedConditionalFieldOptions,
+        new Set<string>([...Object.keys(optionsToRecipientsMapOptions)]),
       )
-    if (missingOptions) {
-      return 'Your CSV is missing options that are present in the selected field.'
-    }
-
-    const containsExcess =
-      selectedConditionalFieldOptions &&
-      [...Object.keys(optionsToRecipientsMap)].some(
-        (option) => !selectedConditionalFieldOptions.includes(option),
-      )
-    if (containsExcess) {
-      return 'Your CSV contains options that are not present in the selected field.'
+    ) {
+      return MISMATCHED_OPTIONS_ERROR_MESSAGE
     }
   }
 
-  const validateOptionsToRecipientsMapErrorMessage =
-    validateOptionsToRecipientsMap(
-      selectedConditionalFieldOptionsToRecipientsMap,
-      selectedConditionalField?.fieldOptions,
-    )
+  const validateOptionsToRecipientsMapErrorMessage = validateOptions(
+    [...Object.keys(selectedConditionalFieldOptionsToRecipientsMap || {})],
+    selectedConditionalField?.fieldOptions,
+  )
 
   const noEmailToOptionsMappingErrorMessage =
     !selectedConditionalFieldOptionsToRecipientsMap
-      ? 'You must add email(s) to options before saving step.'
+      ? 'You must add email(s) to options before saving this step'
       : null
 
   const validateCsvFile = async (
@@ -474,7 +483,7 @@ const ConditionalRoutingOption = ({
               headerRow[0] === 'Options' &&
               headerRow[1] === 'Add email(s) in this column',
             invalidReason:
-              'Your CSV file should only contain 2 columns with the "Options" and "Add email(s) in this column" headers.',
+              'Your CSV file should only contain 2 columns with the "Options" and "Add email(s) in this column" headers',
           }
         },
       )
@@ -487,11 +496,11 @@ const ConditionalRoutingOption = ({
 
     for (const row of options) {
       const [option, ...recipients] = row.split(',')
-      if (recipients.length <= 0 || !recipients[0]) {
-        return 'There are options with missing email(s) in your CSV.'
+      if (recipients.length <= 0 || !recipients[0] || !option) {
+        return EMAILS_OPTIONS_MISSING_ERROR_MESSAGE
       }
       if (recipients.some((recipient) => !isEmail(recipient))) {
-        return 'Your CSV contains invalid email(s).'
+        return INVALID_FORMAT_ERROR_MESSAGE
       }
       optionsSet.add(option)
     }
@@ -503,20 +512,7 @@ const ConditionalRoutingOption = ({
       return 'There are duplicate options in your CSV.'
     }
 
-    const missingOptions =
-      selectedConditionalFieldOptions &&
-      selectedConditionalFieldOptions.some((option) => !optionsSet.has(option))
-    if (missingOptions) {
-      return 'Your CSV is missing options that are present in the selected field.'
-    }
-    const containsExcess =
-      selectedConditionalFieldOptions &&
-      [...optionsSet].some(
-        (option) => !selectedConditionalFieldOptions.includes(option),
-      )
-    if (containsExcess) {
-      return 'Your CSV contains options that are not present in the selected field.'
-    }
+    return validateOptions([...optionsSet], selectedConditionalFieldOptions)
   }
 
   return (
