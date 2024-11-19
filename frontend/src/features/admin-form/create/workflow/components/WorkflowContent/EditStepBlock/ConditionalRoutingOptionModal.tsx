@@ -47,7 +47,7 @@ const StepOneModalContent = ({
   <ModalContent minW="fit-content">
     <ModalCloseButton />
     <ModalHeader>
-      <Text mb="0.25rem">Step 1: Add email(s) to options</Text>
+      <Text mb="0.25rem">Add email(s) to options</Text>
       <ProgressIndicator
         numIndicators={NUM_STEPS}
         currActiveIdx={stepNumber}
@@ -144,7 +144,7 @@ const StepTwoModalContent = ({
   <ModalContent>
     <ModalCloseButton />
     <ModalHeader>
-      <Text mb="0.25rem">Step 2: Upload your completed CSV template</Text>
+      <Text mb="0.25rem">Upload your completed CSV template</Text>
       <ProgressIndicator
         numIndicators={NUM_STEPS}
         currActiveIdx={stepNumber}
