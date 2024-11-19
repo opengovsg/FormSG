@@ -42,6 +42,8 @@ import { useEditFormField } from '~features/admin-form/create/builder-and-design
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { EditStepInputs } from '~features/admin-form/create/workflow/types'
 import { FormFieldWithQuestionNo } from '~features/form/types'
+// TODO (MRF-Conditional-Routing): Remove useUser import when conditional routing is out of beta
+import { useUser } from '~features/user/queries'
 
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
@@ -646,6 +648,10 @@ export const RespondentBlock = ({
     watch,
   } = formMethods
 
+  // TODO (MRF-Conditional-Routing): Remove isTest and user/useUser when conditional routing is out of beta
+  const { user } = useUser()
+  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
+
   const { emailFormFields = [], dropdownFormFields = [] } =
     useAdminFormWorkflow()
 
@@ -688,12 +694,16 @@ export const RespondentBlock = ({
                 formMethods={formMethods}
                 isLoading={isLoading}
               />
-              <ConditionalRoutingOption
-                selectedWorkflowType={selectedWorkflowType}
-                conditionalFormFields={dropdownFormFields}
-                formMethods={formMethods}
-                isLoading={isLoading}
-              />
+              {/* TODO (MRF-Conditional-Routing): Remove isTest and user check when
+              conditional routing is out of beta */}
+              {isTest || user?.betaFlags?.mrfConditionalRouting ? (
+                <ConditionalRoutingOption
+                  selectedWorkflowType={selectedWorkflowType}
+                  conditionalFormFields={dropdownFormFields}
+                  formMethods={formMethods}
+                  isLoading={isLoading}
+                />
+              ) : null}
             </Radio.RadioGroup>
           </Stack>
           <FormErrorMessage>{errors.workflow_type?.message}</FormErrorMessage>

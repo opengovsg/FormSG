@@ -24,6 +24,7 @@ export const UserBase = z.object({
       // TODO: (MRF-email-notif) Remove betaFlag when MRF email notifications is out of beta
       mrfEmailNotifications: z.boolean().optional(),
       mrfAdminSubmissionKey: z.boolean().optional(),
+      mrfConditionalRouting: z.boolean().optional(),
       mfb: z.boolean().optional(),
     })
     .optional(),
