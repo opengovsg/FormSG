@@ -1754,7 +1754,6 @@ export const updateFormWorkflowStep = (
   const originalMrfForm = originalForm as IPopulatedMultirespondentForm
   const originalWorkflow = originalMrfForm.workflow ?? []
 
-  console.log('stepNumber:', stepNumber)
   const isStepNumberValid =
     stepNumber >= 0 && stepNumber < originalWorkflow.length
   if (!isStepNumberValid) {
