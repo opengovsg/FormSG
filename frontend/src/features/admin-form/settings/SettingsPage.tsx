@@ -1,12 +1,5 @@
 import { useEffect } from 'react'
-import {
-  BiCodeBlock,
-  BiCog,
-  BiDollar,
-  BiKey,
-  BiMailSend,
-  BiMessage,
-} from 'react-icons/bi'
+import { BiCodeBlock, BiCog, BiDollar, BiKey, BiMailSend } from 'react-icons/bi'
 import { IconType } from 'react-icons/lib'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
@@ -19,17 +12,12 @@ import {
   Tabs,
 } from '@chakra-ui/react'
 
-import { FormResponseMode } from '~shared/types'
-
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
-
-import { useUser } from '~features/user/queries'
 
 import { useAdminFormCollaborators } from '../common/queries'
 
 import { SettingsTab } from './components/SettingsTab'
-import { useAdminFormSettings } from './queries'
 import { SettingsAuthPage } from './SettingsAuthPage'
 import { SettingsEmailsPage } from './SettingsEmailsPage'
 import { SettingsGeneralPage } from './SettingsGeneralPage'
@@ -46,9 +34,6 @@ interface TabEntry {
 
 export const SettingsPage = (): JSX.Element => {
   const { formId, settingsTab } = useParams()
-  const { data: formSettings, isLoading: isFormSettingLoading } =
-    useAdminFormSettings()
-  const { user, isLoading: isUserLoading } = useUser()
 
   if (!formId) throw new Error('No formId provided')
 
@@ -61,25 +46,6 @@ export const SettingsPage = (): JSX.Element => {
     if (!isCollabLoading && !hasEditAccess)
       navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_RESULTS_SUBROUTE}`)
   }, [formId, hasEditAccess, isCollabLoading, navigate])
-
-  // TODO: (MRF-email-notif) Remove isTest when email notifications is out of beta
-  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
-  // For beta flagging email notifications tab.
-  const emailNotificationsTab =
-    isUserLoading ||
-    isFormSettingLoading ||
-    // TODO: (MRF-email-notif) Remove isTest and betaFlag check when MRF email notifications is out of beta
-    (!isTest &&
-      formSettings?.responseMode === FormResponseMode.Multirespondent &&
-      !user?.betaFlags?.mrfEmailNotifications)
-      ? null
-      : {
-          label: 'Email notifications',
-          icon: BiMailSend,
-          component: SettingsEmailsPage,
-          path: 'email-notifications',
-          showRedDot: true,
-        }
 
   const tabConfig: TabEntry[] = [
     {
@@ -94,7 +60,13 @@ export const SettingsPage = (): JSX.Element => {
       component: SettingsAuthPage,
       path: 'singpass',
     },
-    emailNotificationsTab,
+    {
+      label: 'Email notifications',
+      icon: BiMailSend,
+      component: SettingsEmailsPage,
+      path: 'email-notifications',
+      showRedDot: true,
+    },
     {
       label: 'Webhooks',
       icon: BiCodeBlock,

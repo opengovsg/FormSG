@@ -16,7 +16,6 @@ import {
   BASICFIELD_TO_DRAWER_META,
   MYINFO_FIELD_TO_DRAWER_META,
 } from '~features/admin-form/create/constants'
-import { useUser } from '~features/user/queries'
 
 import { useCreateTabForm } from '../../useCreateTabForm'
 import {
@@ -150,9 +149,6 @@ export const DraggableMyInfoFieldListOption = ({
 
 export const BasicFieldOption = forwardRef<BasicFieldOptionProps, 'button'>(
   ({ fieldType, isDisabled, ...props }, ref) => {
-    // TODO: (MRF-email-notif) Remove isTest and useUser when approvals is out of beta
-    const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
-    const { user } = useUser()
     const meta = useMemo(
       () => BASICFIELD_TO_DRAWER_META[fieldType],
       [fieldType],
@@ -183,13 +179,10 @@ export const BasicFieldOption = forwardRef<BasicFieldOptionProps, 'button'>(
       >
         <Icon fontSize="1.5rem" as={meta.icon} />
         <Text textStyle="body-1">{meta.label}</Text>
-        {/* TODO: (MRF-email-notif) Remove isTest and betaFlag check when approvals is out of beta */}
-        {isTest || user?.betaFlags?.mrfEmailNotifications ? (
-          isMrf && fieldType === BasicField.YesNo ? (
-            <Badge maxW="100%" variant="subtle" colorScheme="secondary">
-              <Text noOfLines={1}>Use for approvals</Text>
-            </Badge>
-          ) : null
+        {isMrf && fieldType === BasicField.YesNo ? (
+          <Badge maxW="100%" variant="subtle" colorScheme="secondary">
+            <Text noOfLines={1}>Use for approvals</Text>
+          </Badge>
         ) : null}
       </FieldListOption>
     )

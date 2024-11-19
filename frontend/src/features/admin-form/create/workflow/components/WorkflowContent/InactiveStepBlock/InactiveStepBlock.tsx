@@ -11,7 +11,6 @@ import IconButton from '~components/IconButton'
 import { FieldLogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/FieldLogicBadge'
 import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
 import { FormFieldWithQuestionNo } from '~features/form/types'
-import { useUser } from '~features/user/queries'
 
 import {
   createOrEditDataSelector,
@@ -64,10 +63,6 @@ export const InactiveStepBlock = ({
   const { idToFieldMap } = useAdminFormWorkflow()
   const setToEditing = useAdminWorkflowStore(setToEditingSelector)
   const stateData = useAdminWorkflowStore(createOrEditDataSelector)
-
-  const { user } = useUser()
-  // TODO: (MRF-email-notif) Remove isTest check when MRF email notifications and approvals are both out of beta
-  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
 
   // Prevent editing step if some other step is being edited.
   const isPreventEdit = useMemo(() => !!stateData, [stateData])
@@ -141,8 +136,6 @@ export const InactiveStepBlock = ({
 
           <Stack>
             <Text textStyle="subhead-3">Respondent in this step</Text>
-            {/* TODO: (MRF-email-notif) Remove isTest and betaFlag check when MRF email
-            notifications is out of beta */}
             {isFirstStep ? (
               <Text>Anyone who has access to your form</Text>
             ) : (
@@ -166,11 +159,8 @@ export const InactiveStepBlock = ({
               {questionBadges}
             </Stack>
           </Stack>
-          {/* TODO: (MRF-email-notif) Remove isTest and betaFlag check when approvals is out of beta */}
-          {isTest || user?.betaFlags?.mrfEmailNotifications ? (
-            !isFirstStep ? (
-              <InactiveApprovalsBlock step={step} idToFieldMap={idToFieldMap} />
-            ) : null
+          {!isFirstStep ? (
+            <InactiveApprovalsBlock step={step} idToFieldMap={idToFieldMap} />
           ) : null}
         </Stack>
       </chakra.button>

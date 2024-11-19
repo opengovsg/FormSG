@@ -113,9 +113,6 @@ export const EditStepBlock = ({
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
-  // TODO: (MRF-email-notif) Remove isTest check when approvals is out of beta
-  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
-
   return (
     <Stack
       ref={wrapperRef}
@@ -141,14 +138,11 @@ export const EditStepBlock = ({
       />
       <Divider />
       <QuestionsBlock formMethods={formMethods} isLoading={_isLoading} />
-      {/*TODO: (MRF-email-notif) Remove isTest and betaFlag check when approvals is out of beta */}
-      {isTest || user?.betaFlags?.mrfEmailNotifications ? (
-        !isFirstStep ? (
-          <>
-            <Divider />
-            <ApprovalsBlock formMethods={formMethods} stepNumber={stepNumber} />
-          </>
-        ) : null
+      {!isFirstStep ? (
+        <>
+          <Divider />
+          <ApprovalsBlock formMethods={formMethods} stepNumber={stepNumber} />
+        </>
       ) : null}
       <Divider />
       <SaveActionGroup

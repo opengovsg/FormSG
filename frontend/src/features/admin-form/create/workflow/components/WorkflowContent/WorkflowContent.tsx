@@ -2,8 +2,6 @@ import { Box, Divider, Stack } from '@chakra-ui/react'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 
-import { useUser } from '~features/user/queries'
-
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 
 import { NewStepBlock } from './NewStepBlock'
@@ -12,9 +10,6 @@ import { WorkflowCompletionMessageBlock } from './WorkflowCompletionMessageBlock
 
 export const WorkflowContent = (): JSX.Element | null => {
   const { formWorkflow, isLoading } = useAdminFormWorkflow()
-  // TODO: (MRF-email-notif) Remove isTest and useUser when email notifications is out of beta
-  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
-  const { user } = useUser()
 
   if (isLoading) return null
 
@@ -26,10 +21,7 @@ export const WorkflowContent = (): JSX.Element | null => {
         ))}
         <NewStepBlock />
       </Stack>
-      {/*TODO: (MRF-email-notif) Remove flag check when email notifications is out of beta */}
-      {isTest || user?.betaFlags?.mrfEmailNotifications ? (
-        <WorkflowCompletionMessageBlock />
-      ) : null}
+      <WorkflowCompletionMessageBlock />
     </Stack>
   )
 }
