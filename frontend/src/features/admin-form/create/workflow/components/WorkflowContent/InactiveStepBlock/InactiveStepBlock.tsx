@@ -132,10 +132,9 @@ export const InactiveStepBlock = ({
         borderColor="neutral.300"
         transitionProperty="common"
         transitionDuration="normal"
-        cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
+        cursor={isPreventEdit ? 'not-allowed' : 'auto'}
         disabled={isPreventEdit}
         aria-disabled={isPreventEdit}
-        pointerEvents="none"
       >
         <Stack spacing="1.5rem" p={{ base: '1.5rem', md: '2rem' }}>
           <StepLabel stepNumber={stepNumber} />
