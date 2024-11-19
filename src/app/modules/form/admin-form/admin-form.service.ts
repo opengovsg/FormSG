@@ -26,6 +26,7 @@ import { MYINFO_ATTRIBUTE_MAP } from '../../../../../shared/constants/field/myin
 import {
   AdminDashboardFormMetaDto,
   BasicField,
+  DropdownFieldBase,
   DuplicateFormOverwriteDto,
   EndPageUpdateDto,
   FieldCreateDto,

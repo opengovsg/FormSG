@@ -103,9 +103,11 @@ export const EditStepBlock = ({
         break
       }
       case WorkflowType.Conditional: {
+        if (!inputs.conditional_field) return
         step = {
           ...inputs,
           workflow_type: WorkflowType.Conditional,
+          conditional_field: inputs.conditional_field,
         }
         break
       }
