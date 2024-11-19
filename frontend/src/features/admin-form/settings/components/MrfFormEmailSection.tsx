@@ -143,16 +143,12 @@ const MrfEmailNotificationsForm = ({
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Box>
-        <Text textStyle="h3" textColor="secondary.500" mb="0.25rem">
-          Workflow outcome notifications
-        </Text>
         <Text textStyle="body-1" textColor="secondary.700" mb="1.5rem">
-          Send an email to inform selected respondents when the form and/or
-          workflow is complete.
+          Select who to notify when the form and/or workflow is complete:
         </Text>
         <Box>
           <FormLabel mb="0.75rem" textColor="secondary.700">
-            Notify respondent in Step 1
+            Respondent in Step 1
           </FormLabel>
           <Skeleton isLoaded={!isLoading}>
             <Controller
@@ -177,7 +173,7 @@ const MrfEmailNotificationsForm = ({
         </Box>
         <Box my="1.5rem">
           <FormLabel mb="0.75rem" textColor="secondary.700">
-            Notify other respondents in your workflow
+            Other respondents in your workflow
           </FormLabel>
           <Skeleton isLoaded={!isLoading}>
             <Controller
@@ -219,7 +215,7 @@ const MrfEmailNotificationsForm = ({
             tooltipPlacement="top"
             tooltipText="Include the admin's email to inform them whenever a workflow is completed"
           >
-            Notify other parties
+            Others
           </FormLabel>
           <Controller
             name={OTHER_PARTIES_EMAIL_INPUT_NAME}
