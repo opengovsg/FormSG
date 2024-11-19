@@ -5,8 +5,6 @@ import {
   Flex,
   forwardRef,
   Icon,
-  Tooltip,
-  TooltipProps,
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 
@@ -14,6 +12,8 @@ import { TOGGLE_THEME_KEY } from '~/theme/components/Toggle'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { BxsInfoCircle } from '~assets/icons/BxsInfoCircle'
+import Tooltip from '~components/Tooltip'
+import { TooltipProps } from '~components/Tooltip/Tooltip'
 
 import FormLabel from '../FormControl/FormLabel'
 
