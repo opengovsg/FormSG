@@ -75,6 +75,7 @@ const compileUserModel = (db: Mongoose) => {
         payment: Boolean,
         children: Boolean,
         postmanSms: Boolean,
+        mrfEmailNotifications: Boolean, // Previously used for MRF email notifications, not currently used
         mrfAdminSubmissionKey: Boolean,
         mfb: Boolean,
       },

@@ -21,6 +21,7 @@ export const UserBase = z.object({
       payment: z.boolean().optional(),
       children: z.boolean().optional(),
       postmanSms: z.boolean().optional(),
+      mrfEmailNotifications: z.boolean().optional(), // Previously used for MRF email notifications, not currently used
       mrfAdminSubmissionKey: z.boolean().optional(),
       mfb: z.boolean().optional(),
     })
