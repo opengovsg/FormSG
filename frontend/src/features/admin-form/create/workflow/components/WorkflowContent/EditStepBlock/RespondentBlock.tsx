@@ -12,7 +12,6 @@ import {
 } from '@chakra-ui/react'
 import { get } from 'lodash'
 import Papa from 'papaparse'
-import { options } from 'timezone-mock'
 import isEmail from 'validator/lib/isEmail'
 
 import {
@@ -432,7 +431,7 @@ const ConditionalRoutingOption = ({
   }
 
   const checkMissingElement = (actual: string[], expected: Set<string>) => {
-    return [...actual].some((option) => !expected.has(option))
+    return actual.some((option) => !expected.has(option))
   }
 
   const validateOptions = (
@@ -449,7 +448,7 @@ const ConditionalRoutingOption = ({
       ) ||
       checkMissingElement(
         selectedConditionalFieldOptions,
-        new Set<string>([...Object.keys(optionsToRecipientsMapOptions)]),
+        new Set<string>(optionsToRecipientsMapOptions),
       )
     ) {
       return MISMATCHED_OPTIONS_ERROR_MESSAGE
