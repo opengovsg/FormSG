@@ -6,6 +6,7 @@ import { Dictionary } from 'lodash'
 import { BasicField, FormField } from '~shared/types'
 import { FormWorkflowStepDto, WorkflowType } from '~shared/types/form'
 
+import { checkIsOptionsMismatched } from '~utils/optionsToEmailValidation'
 import IconButton from '~components/IconButton'
 
 import { FieldLogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/FieldLogicBadge'
@@ -59,16 +60,14 @@ const SubsequentStepRespondentBadges = ({
       }
       const selectedConditionalFieldOptions =
         selectedConditionalField.fieldOptions
+      const optionsToRecipientsMapOptions = Object.keys(
+        selectedConditionalField.optionsToRecipientsMap || {},
+      )
 
-      const optionsToRecipientsMap =
-        selectedConditionalField.optionsToRecipientsMap
-
-      const isMissingOptions =
-        selectedConditionalFieldOptions &&
-        optionsToRecipientsMap &&
-        selectedConditionalFieldOptions.some(
-          (option) => !optionsToRecipientsMap[option],
-        )
+      const isOptionsMismatched = checkIsOptionsMismatched(
+        optionsToRecipientsMapOptions,
+        selectedConditionalFieldOptions,
+      )
       return (
         <Stack direction="column" spacing="0.5rem">
           <FieldLogicBadge
@@ -78,7 +77,7 @@ const SubsequentStepRespondentBadges = ({
                 : undefined
             }
           />
-          {isMissingOptions ? (
+          {isOptionsMismatched ? (
             <FieldLogicBadge
               defaults={{
                 variant: 'error',

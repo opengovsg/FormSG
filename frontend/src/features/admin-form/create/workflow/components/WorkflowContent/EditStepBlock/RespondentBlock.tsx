@@ -22,6 +22,7 @@ import {
 } from '~shared/types'
 
 import { textStyles } from '~theme/textStyles'
+import { checkIsOptionsMismatched } from '~utils/optionsToEmailValidation'
 import { parseCsvFileToCsvString } from '~utils/parseCsvFileToCsvString'
 import { SingleSelect } from '~components/Dropdown'
 import Attachment from '~components/Field/Attachment'
@@ -430,25 +431,14 @@ const ConditionalRoutingOption = ({
     )
   }
 
-  const checkMissingElement = (actual: string[], expected: Set<string>) => {
-    return actual.some((option) => !expected.has(option))
-  }
-
   const validateOptions = (
-    optionsToRecipientsMapOptions: string[] | undefined,
-    selectedConditionalFieldOptions: string[] | undefined,
+    optionsToRecipientsMapOptions: string[],
+    selectedConditionalFieldOptions: string[],
   ) => {
-    if (!optionsToRecipientsMapOptions || !selectedConditionalFieldOptions)
-      return 'Your CSV or selected field does not contain any options'
-
     if (
-      checkMissingElement(
+      checkIsOptionsMismatched(
         optionsToRecipientsMapOptions,
-        new Set<string>(selectedConditionalFieldOptions),
-      ) ||
-      checkMissingElement(
         selectedConditionalFieldOptions,
-        new Set<string>(optionsToRecipientsMapOptions),
       )
     ) {
       return MISMATCHED_OPTIONS_ERROR_MESSAGE
@@ -457,7 +447,7 @@ const ConditionalRoutingOption = ({
 
   const validateOptionsToRecipientsMapErrorMessage = validateOptions(
     [...Object.keys(selectedConditionalFieldOptionsToRecipientsMap || {})],
-    selectedConditionalField?.fieldOptions,
+    selectedConditionalField?.fieldOptions || [],
   )
 
   const noEmailToOptionsMappingErrorMessage =
@@ -511,7 +501,10 @@ const ConditionalRoutingOption = ({
       return 'There are duplicate options in your CSV.'
     }
 
-    return validateOptions([...optionsSet], selectedConditionalFieldOptions)
+    return validateOptions(
+      [...optionsSet],
+      selectedConditionalFieldOptions || [],
+    )
   }
 
   return (
