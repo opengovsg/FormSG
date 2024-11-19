@@ -28,7 +28,7 @@ export const CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE =
   'The options in your CSV and selected field do not match.'
 
 export const CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE =
-  'The options and emails in your CSV do not match.'
+  'There are missing options and/or emails in your CSV.'
 
 export const CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE =
   'Your CSV file is not in the correct format.'
