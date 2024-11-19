@@ -29,9 +29,6 @@ import {
   DatabasePayloadSizeError,
   DatabaseValidationError,
   MalformedParametersError,
-  SecretsManagerConflictError,
-  SecretsManagerError,
-  SecretsManagerNotFoundError,
 } from '../../core/core.errors'
 import { ErrorResponseData } from '../../core/core.types'
 import { InvalidPaymentAmountError } from '../../payments/payments.errors'
@@ -151,21 +148,6 @@ export const mapRouteError = (
         errorMessage: error.message,
       }
     case DatabaseError:
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: coreErrorMessage ?? error.message,
-      }
-    case SecretsManagerNotFoundError:
-      return {
-        statusCode: StatusCodes.NOT_FOUND,
-        errorMessage: coreErrorMessage ?? error.message,
-      }
-    case SecretsManagerConflictError:
-      return {
-        statusCode: StatusCodes.CONFLICT,
-        errorMessage: coreErrorMessage ?? error.message,
-      }
-    case SecretsManagerError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: coreErrorMessage ?? error.message,

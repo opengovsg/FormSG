@@ -1,4 +1,3 @@
-import { SecretsManager } from 'aws-sdk'
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { assignIn, last, omit, pick } from 'lodash'
 import mongoose, { ClientSession } from 'mongoose'
@@ -60,7 +59,7 @@ import {
   IPopulatedUser,
 } from '../../../../types'
 import { EditFormFieldParams, FormUpdateParams } from '../../../../types/api'
-import config, { aws as AwsConfig } from '../../../config/config'
+import { aws as AwsConfig } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import getAgencyModel from '../../../models/agency.server.model'
 import getFormModel from '../../../models/form.server.model'
@@ -119,11 +118,6 @@ const AgencyModel = getAgencyModel(mongoose)
 const WorkspaceModel = getWorkspaceModel(mongoose)
 const FormWhitelistedSubmitterIdsModel =
   getFormWhitelistSubmitterIdsModel(mongoose)
-
-export const secretsManager = new SecretsManager({
-  region: config.aws.region,
-  endpoint: process.env.AWS_ENDPOINT,
-})
 
 type PresignedPostUrlParams = {
   fileId: string
