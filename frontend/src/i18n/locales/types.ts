@@ -6,6 +6,7 @@ import {
   HeaderAndInstructions,
   Logic,
   Login,
+  Meta,
   Navbar,
   PublicForm,
   ThankYou,
@@ -22,6 +23,7 @@ interface Translation {
           thankYou?: ThankYou
         }
         navbar?: Navbar
+        meta?: Meta
       }
       common?: Common
       publicForm?: PublicForm

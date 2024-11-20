@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link as ReactLink } from 'react-router-dom'
 import { Box, ButtonProps, chakra, Flex, Text } from '@chakra-ui/react'
 import dayjs from 'dayjs'
@@ -7,8 +8,6 @@ import { AdminDashboardFormMetaDto, FormStatus } from '~shared/types/form/form'
 
 import { ADMINFORM_ROUTE } from '~constants/routes'
 import Badge from '~components/Badge'
-
-import { RESPONSE_MODE_TO_TEXT } from '~features/admin-form/common/constants'
 
 import { FormStatusLabel } from './FormStatusLabel'
 import { RowActions } from './RowActions'
@@ -30,6 +29,7 @@ export const WorkspaceFormRow = ({
   formMeta,
   ...buttonProps
 }: WorkspaceFormRowProps): JSX.Element => {
+  const { t } = useTranslation()
   const prettyLastModified = useMemo(() => {
     return dayjs(formMeta.lastModified).calendar(null, RELATIVE_DATE_FORMAT)
   }, [formMeta.lastModified])
@@ -83,12 +83,19 @@ export const WorkspaceFormRow = ({
             {formMeta.title}
           </Text>
           <Text textStyle="body-2" color="secondary.400">
-            Edited {prettyLastModified}
+            {t('features.adminForm.meta.prettyLastModified', {
+              prettyLastModified,
+            })}
           </Text>
         </Flex>
         <Box gridArea="formType" alignSelf="center">
           <Badge bgColor="primary.100" color="secondary.500">
-            {RESPONSE_MODE_TO_TEXT[formMeta.responseMode]}
+            {t(
+              `features.adminForm.meta.responseModeText.${formMeta.responseMode}`,
+              {
+                prettyLastModified,
+              },
+            )}
           </Badge>
         </Box>
         <Box gridArea="status" alignSelf="center">

@@ -1,20 +1,20 @@
+import { useTranslation } from 'react-i18next'
 import { Skeleton, Wrap } from '@chakra-ui/react'
 
 import Badge from '~components/Badge'
-
-import { RESPONSE_MODE_TO_TEXT } from '~features/admin-form/common/constants'
 
 import { useAdminFormSettings } from '../queries'
 
 import { CategoryHeader } from './CategoryHeader'
 
 export const GeneralTabHeader = (): JSX.Element => {
+  const { t } = useTranslation()
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
   const readableFormResponseMode = !settings
     ? 'Loading...'
-    : RESPONSE_MODE_TO_TEXT[settings.responseMode]
+    : t(`features.adminForm.meta.responseModeText.${settings.responseMode}`)
 
   return (
     <Wrap
