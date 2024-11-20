@@ -408,7 +408,7 @@ const FieldButtonGroup = ({
           <IconButton
             variant="clear"
             colorScheme="secondary"
-            aria-label="Edit field"
+            aria-label={t('features.common.tooltip.editField')}
             icon={<BiCog fontSize="1.25rem" />}
             onClick={handleEditFieldClick}
           />

@@ -7,6 +7,7 @@ import {
   Logic,
   Login,
   Meta,
+  Modals,
   Navbar,
   PublicForm,
   ThankYou,
@@ -24,6 +25,7 @@ interface Translation {
         }
         navbar?: Navbar
         meta?: Meta
+        modals?: Modals
       }
       common?: Common
       publicForm?: PublicForm

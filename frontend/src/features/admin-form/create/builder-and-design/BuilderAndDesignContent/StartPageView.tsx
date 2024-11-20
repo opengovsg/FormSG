@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiCog } from 'react-icons/bi'
 import { Box, ButtonGroup, Collapse, Flex, IconButton } from '@chakra-ui/react'
 
@@ -37,6 +38,7 @@ import {
 } from '../useFieldBuilderStore'
 
 export const StartPageView = () => {
+  const { t } = useTranslation()
   const isMobile = useIsMobile()
   const { data: form, isLoading } = useCreateTabForm()
   const setFieldBuilderToInactive = useFieldBuilderStore(
@@ -259,7 +261,7 @@ export const StartPageView = () => {
                         <IconButton
                           variant="clear"
                           colorScheme="secondary"
-                          aria-label="Edit field"
+                          aria-label={t('features.common.tooltip.editField')}
                           icon={<BiCog fontSize="1.25rem" />}
                           onClick={handleEditInstructionsClick}
                         />

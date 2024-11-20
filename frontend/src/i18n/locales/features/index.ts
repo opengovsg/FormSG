@@ -3,6 +3,7 @@ export {
   type HeaderAndInstructions,
   type Logic,
   type Meta,
+  type Modals,
   type Navbar,
   type ThankYou,
 } from './admin-form'

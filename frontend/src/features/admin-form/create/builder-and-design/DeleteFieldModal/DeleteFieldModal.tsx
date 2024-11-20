@@ -58,21 +58,20 @@ export const DeleteFieldModal = (): JSX.Element => {
     }
   }, [deleteFieldMutation, onClose, stateData])
 
+  const {
+    title,
+    description: { field, logic },
+    confirmButtonText,
+  } = t('features.adminForm.modals.deleteField', { returnObjects: true })
+
   return (
     <Modal isOpen onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader>Delete field</ModalHeader>
+        <ModalHeader>{title}</ModalHeader>
         <ModalBody>
-          <Text color="secondary.500">
-            {fieldIsInLogic
-              ? `This field is used in your form logic, so deleting it may cause
-                your logic to stop working correctly. Are you sure you want to 
-                delete this field?`
-              : `Are you sure you want to delete this field? This action
-                cannot be undone.`}
-          </Text>
+          <Text color="secondary.500">{fieldIsInLogic ? logic : field}</Text>
           <UnorderedList
             spacing="0.5rem"
             listStyleType="none"
@@ -105,7 +104,7 @@ export const DeleteFieldModal = (): JSX.Element => {
               onClick={handleDeleteConfirmation}
               isLoading={deleteFieldMutation.isLoading}
             >
-              Yes, delete field
+              {confirmButtonText}
             </Button>
           </ButtonGroup>
         </ModalFooter>

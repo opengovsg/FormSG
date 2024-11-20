@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import { UnsavedChangesModal } from '~templates/NavigationPrompt'
 
 import { usePaymentStore } from '~features/admin-form/create/builder-and-design/BuilderAndDesignDrawer/FieldListDrawer/field-panels/usePaymentStore'
@@ -93,12 +95,13 @@ export const useDirtyModal = () => {
 export const DirtyModal = (): JSX.Element => {
   const { isOpen, handleCancelNavigate, handleConfirmNavigate } =
     useDirtyModal()
+  const { t } = useTranslation()
 
   return (
     <UnsavedChangesModal
       isOpen={isOpen}
       onClose={handleCancelNavigate}
-      cancelButtonText="No, return to editing"
+      cancelButtonText={t('features.adminForm.modals.dirty.cancelButtonText')}
       onConfirm={handleConfirmNavigate}
       onCancel={handleCancelNavigate}
     />

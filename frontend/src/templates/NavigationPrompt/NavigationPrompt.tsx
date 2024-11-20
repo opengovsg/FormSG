@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { UnsavedChangesModal } from './UnsavedChangesModal'
 import { useNavigationPrompt } from './useNavigationPrompt'
@@ -26,7 +27,12 @@ export const NavigationPrompt = memo(
     confirmButtonText = 'Yes, discard changes',
     cancelButtonText = 'No, stay on page',
   }: NavigationPromptProps) => {
+    const { t } = useTranslation()
     const { isPromptShown, onCancel, onConfirm } = useNavigationPrompt(when)
+
+    const defaultText = t('features.adminForm.modals.unsavedChanges', {
+      returnObjects: true,
+    })
 
     return (
       <UnsavedChangesModal
