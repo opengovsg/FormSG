@@ -88,7 +88,6 @@ const StaticRespondentOption = ({
   return (
     <>
       <Radio
-        isDisabled={isLoading}
         isLabelFullWidth
         allowDeselect={false}
         value={WorkflowType.Static}
@@ -166,7 +165,6 @@ const DynamicRespondentOption = ({
   return (
     <>
       <Radio
-        isDisabled={isLoading}
         isLabelFullWidth
         allowDeselect={false}
         value={WorkflowType.Dynamic}
@@ -436,6 +434,9 @@ const ConditionalRoutingOption = ({
     optionsToRecipientsMapOptions: string[],
     selectedConditionalFieldOptions: string[],
   ) => {
+    if (optionsToRecipientsMapOptions.length <= 0) {
+      return
+    }
     if (
       checkIsOptionsMismatched(
         optionsToRecipientsMapOptions,
@@ -534,8 +535,8 @@ const ConditionalRoutingOption = ({
         }
         validateCsvFile={validateCsvFile}
       />
+
       <Radio
-        isDisabled={isLoading}
         isLabelFullWidth
         allowDeselect={false}
         value={WorkflowType.Conditional}
@@ -682,7 +683,10 @@ export const RespondentBlock = ({
         >
           <FormLabel style={textStyles.h4}>Select a respondent</FormLabel>
           <Stack spacing="0.25rem">
-            <Radio.RadioGroup value={selectedWorkflowType}>
+            <Radio.RadioGroup
+              isDisabled={isLoading}
+              value={selectedWorkflowType}
+            >
               <DynamicRespondentOption
                 selectedWorkflowType={selectedWorkflowType}
                 emailFieldItems={emailFieldItems}
@@ -697,12 +701,14 @@ export const RespondentBlock = ({
               {/* TODO (MRF-Conditional-Routing): Remove isTest and user check when
               conditional routing is out of beta */}
               {isTest || user?.betaFlags?.mrfConditionalRouting ? (
-                <ConditionalRoutingOption
-                  selectedWorkflowType={selectedWorkflowType}
-                  conditionalFormFields={dropdownFormFields}
-                  formMethods={formMethods}
-                  isLoading={isLoading}
-                />
+                <>
+                  <ConditionalRoutingOption
+                    selectedWorkflowType={selectedWorkflowType}
+                    conditionalFormFields={dropdownFormFields}
+                    formMethods={formMethods}
+                    isLoading={isLoading}
+                  />
+                </>
               ) : null}
             </Radio.RadioGroup>
           </Stack>
