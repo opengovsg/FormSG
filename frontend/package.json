@@ -96,7 +96,7 @@
   "scripts": {
     "postinstall": "npm run gen:theme-typings && npm --prefix ../shared install",
     "gen:theme-typings": "chakra-cli tokens --template augmentation src/theme/index.ts || true",
-    "start": "vite --port 3000",
+    "start": "vite",
     "build": "npx tsc && vite build",
     "test": "cross-env SKIP_PREFLIGHT_CHECK=true vitest",
     "storybook": "storybook dev -p 6006",
