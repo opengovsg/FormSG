@@ -16,23 +16,17 @@ export interface WorkspaceFormRowProps extends ButtonProps {
   formMeta: AdminDashboardFormMetaDto
 }
 
-const RELATIVE_DATE_FORMAT = {
-  sameDay: '[today,] D MMM h:mma', // today, 16 Jun 9:30am
-  nextDay: '[tomorrow,] D MMM h:mma', // tomorrow, 16 Jun 9:30am
-  lastDay: '[yesterday,] D MMM h:mma', // yesterday, 16 Jun 9:30am
-  nextWeek: 'ddd, D MMM YYYY h:mma', // Tue, 17 Oct 2021 9:30pm
-  lastWeek: 'ddd, D MMM YYYY h:mma', // Tue, 17 Oct 2021 9:30pm
-  sameElse: 'D MMM YYYY h:mma', // 6 Oct 2021 9:30pm
-}
-
 export const WorkspaceFormRow = ({
   formMeta,
   ...buttonProps
 }: WorkspaceFormRowProps): JSX.Element => {
   const { t } = useTranslation()
+  const relativeDateFormat = t('features.adminForm.meta.relativeDateFormat', {
+    returnObjects: true,
+  })
   const prettyLastModified = useMemo(() => {
-    return dayjs(formMeta.lastModified).calendar(null, RELATIVE_DATE_FORMAT)
-  }, [formMeta.lastModified])
+    return dayjs(formMeta.lastModified).calendar(null, relativeDateFormat)
+  }, [formMeta.lastModified, relativeDateFormat])
 
   return (
     <Box pos="relative">
