@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 
@@ -21,6 +22,7 @@ import {
 } from '../utils/getMutationMessage'
 
 export const useEditFormField = () => {
+  const { t } = useTranslation()
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
@@ -36,15 +38,14 @@ export const useEditFormField = () => {
       if (fieldBuilderState !== FieldBuilderState.EditingField) {
         toast({
           status: 'warning',
-          description:
-            'Something went wrong when editing your field. Please refresh and try again.',
+          description: t('features.adminForm.toasts.field.update.error'),
         })
         return
       }
       toast({
-        description: `The ${getMutationToastDescriptionFieldName(
-          newField,
-        )} was updated.`,
+        description: t('features.adminForm.toasts.field.update.success', {
+          field: getMutationToastDescriptionFieldName(newField),
+        }),
       })
       queryClient.setQueryData<AdminFormDto>(adminFormKey, (oldForm) => {
         // Should not happen, should not be able to update field if there is no
@@ -57,7 +58,7 @@ export const useEditFormField = () => {
         return oldForm
       })
     },
-    [adminFormKey, fieldBuilderState, queryClient, toast],
+    [adminFormKey, fieldBuilderState, queryClient, toast, t],
   )
 
   const handleError = useCallback(

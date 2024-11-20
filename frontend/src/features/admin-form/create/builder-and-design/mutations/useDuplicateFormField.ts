@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 
@@ -23,6 +24,7 @@ import {
 } from '../utils/getMutationMessage'
 
 export const useDuplicateFormField = () => {
+  const { t } = useTranslation()
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
   const fieldBuilderState = useFieldBuilderStore(fieldBuilderStateSelector)
@@ -40,20 +42,20 @@ export const useDuplicateFormField = () => {
       if (fieldBuilderState !== FieldBuilderState.EditingField) {
         toast({
           status: 'warning',
-          description:
-            'Something went wrong when creating your field. Please refresh and try again.',
+          description: t('features.adminForm.toasts.field.duplicate.error'),
         })
         return
       }
 
       toast({
-        description: `The ${getMutationToastDescriptionFieldName(
-          newField,
-        )} was duplicated.${
+        description: t(
           logicedFieldIdsSet?.has(fieldId)
-            ? ' Associated logic was not duplicated.'
-            : ''
-        }`,
+            ? 'features.adminForm.toasts.field.duplicate.successButNoLogic'
+            : 'features.adminForm.toasts.field.duplicate.success',
+          {
+            field: getMutationToastDescriptionFieldName(newField),
+          },
+        ),
       })
 
       queryClient.setQueryData<AdminFormDto>(adminFormKey, (oldForm) => {
@@ -80,6 +82,7 @@ export const useDuplicateFormField = () => {
       queryClient,
       adminFormKey,
       updateEditState,
+      t,
     ],
   )
 

@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 
@@ -34,6 +35,7 @@ import {
 } from '../utils/getMutationMessage'
 
 export const useDeleteFormField = () => {
+  const { t } = useTranslation()
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
@@ -66,15 +68,14 @@ export const useDeleteFormField = () => {
     if (stateData.state !== FieldBuilderState.EditingField) {
       toast({
         status: 'warning',
-        description:
-          'Something went wrong when deleting your field. Please refresh and try again.',
+        description: t('features.adminForm.toasts.field.delete.error'),
       })
       return
     }
     toast({
-      description: `The ${getMutationToastDescriptionFieldName(
-        stateData.field,
-      )} was deleted.`,
+      description: t('features.adminForm.toasts.field.delete.success', {
+        field: getMutationToastDescriptionFieldName(stateData.field),
+      }),
     })
     queryClient.setQueryData<AdminFormDto>(adminFormKey, (oldForm) => {
       // Should not happen, should not be able to update field if there is no
@@ -86,8 +87,7 @@ export const useDeleteFormField = () => {
       if (deletedFieldIndex < 0) {
         toast({
           status: 'warning',
-          description:
-            'Something went wrong when deleting your field. Please refresh and try again.',
+          description: t('features.adminForm.toasts.field.delete.error'),
         })
       } else {
         oldForm.form_fields.splice(deletedFieldIndex, 1)
@@ -95,7 +95,7 @@ export const useDeleteFormField = () => {
       return oldForm
     })
     setToInactive()
-  }, [adminFormKey, stateData, queryClient, setToInactive, toast])
+  }, [adminFormKey, stateData, queryClient, setToInactive, toast, t])
 
   const handleError = useCallback(
     (error: Error) => {
@@ -116,8 +116,7 @@ export const useDeleteFormField = () => {
         if (paymentState !== PaymentState.EditingPayment) {
           toast({
             status: 'warning',
-            description:
-              'Something went wrong when deleting your field. Please refresh and try again.',
+            description: t('features.adminForm.toasts.field.delete.error'),
           })
           return
         }
@@ -128,7 +127,9 @@ export const useDeleteFormField = () => {
           },
         )
         toast({
-          description: 'The payment was deleted.',
+          description: t('features.adminForm.toasts.field.delete.success', {
+            field: 'payment',
+          }),
         })
         setPaymentToInactive()
       },
