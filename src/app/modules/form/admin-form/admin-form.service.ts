@@ -823,7 +823,10 @@ export const updateOptionsToRecipientsMap = (
   form: IPopulatedForm,
   fieldId: string,
   optionsToRecipientsMap: Record<string, string[]>,
-): ResultAsync<FormFieldSchema, PossibleDatabaseError | FieldNotFoundError> => {
+): ResultAsync<
+  FormFieldSchema,
+  PossibleDatabaseError | FieldNotFoundError | MalformedParametersError
+> => {
   const formFieldToUpdate = getFormFieldById(form.form_fields, fieldId)
 
   if (!formFieldToUpdate) {
@@ -882,6 +885,7 @@ export const updateOptionsToRecipientsMap = (
     if (!updatedForm) {
       return errAsync(new FieldNotFoundError())
     }
+
     const updatedFormField = getFormFieldById(updatedForm.form_fields, fieldId)
     return updatedFormField
       ? okAsync(updatedFormField)
