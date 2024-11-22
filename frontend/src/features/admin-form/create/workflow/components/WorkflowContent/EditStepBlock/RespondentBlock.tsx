@@ -88,6 +88,7 @@ const StaticRespondentOption = ({
   return (
     <>
       <Radio
+        isDisabled={isLoading}
         isLabelFullWidth
         allowDeselect={false}
         value={WorkflowType.Static}
@@ -165,6 +166,7 @@ const DynamicRespondentOption = ({
   return (
     <>
       <Radio
+        isDisabled={isLoading}
         isLabelFullWidth
         allowDeselect={false}
         value={WorkflowType.Dynamic}
@@ -537,6 +539,7 @@ const ConditionalRoutingOption = ({
       />
 
       <Radio
+        isDisabled={isLoading}
         isLabelFullWidth
         allowDeselect={false}
         value={WorkflowType.Conditional}
@@ -683,10 +686,7 @@ export const RespondentBlock = ({
         >
           <FormLabel style={textStyles.h4}>Select a respondent</FormLabel>
           <Stack spacing="0.25rem">
-            <Radio.RadioGroup
-              isDisabled={isLoading}
-              value={selectedWorkflowType}
-            >
+            <Radio.RadioGroup value={selectedWorkflowType}>
               <DynamicRespondentOption
                 selectedWorkflowType={selectedWorkflowType}
                 emailFieldItems={emailFieldItems}
