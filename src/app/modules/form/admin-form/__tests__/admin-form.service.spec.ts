@@ -3077,6 +3077,76 @@ describe('admin-form.service', () => {
   })
 
   describe('updateOptionsToRecipientsMap', () => {
+    describe('validation of field', () => {
+      it('should return error if field is not a dropdown field', async () => {
+        // Arrange
+        const mockFormFields = [
+          {
+            _id: 'fieldId',
+            fieldType: BasicField.ShortText,
+          },
+        ]
+        const mockForm = {
+          _id: 'formId',
+          form_fields: mockFormFields,
+          updateFormFieldById: jest.fn().mockResolvedValue({
+            form_fields: [mockFormFields],
+          }),
+        } as unknown as IPopulatedForm
+
+        const optionsMap = {}
+
+        // Act
+        const result = await AdminFormService.updateOptionsToRecipientsMap(
+          mockForm,
+          'fieldId',
+          optionsMap,
+        )
+
+        // Assert
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(EditFieldError)
+      })
+
+      it('should allow operation if field is a dropdown field', async () => {
+        // Arrange
+        const mockFormFields = [
+          {
+            _id: 'fieldId',
+            fieldType: BasicField.Dropdown,
+            fieldOptions: ['option1'],
+            toObject: jest.fn().mockReturnValue({
+              _id: 'fieldId',
+              fieldType: BasicField.Dropdown,
+              fieldOptions: ['option1'],
+            }),
+          },
+        ]
+
+        const mockForm = {
+          _id: 'formId',
+          form_fields: mockFormFields,
+          updateFormFieldById: jest.fn().mockResolvedValue({
+            form_fields: mockFormFields,
+          }),
+        } as unknown as IPopulatedForm
+
+        const optionsMap = {
+          option1: ['test1@example.com'],
+        }
+
+        // Act
+        const result = await AdminFormService.updateOptionsToRecipientsMap(
+          mockForm,
+          'fieldId',
+          optionsMap,
+        )
+
+        // Assert
+        expect(result.isOk()).toBe(true)
+      })
+    })
+
     describe('validation of options to recipients map', () => {
       it('should return error if options to recipients map has options that are not in the field options', async () => {
         // Arrange
