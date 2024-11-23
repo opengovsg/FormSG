@@ -3,11 +3,11 @@ import { expect, screen, userEvent, waitFor } from '@storybook/test'
 
 import { StoryRouter } from '~utils/storybook'
 
+import { ConditionalRoutingConfig } from './ConditionalRoutingOption'
 import {
   ConditionalRoutingOptionModal,
   ConditionalRoutingOptionModalProps,
 } from './ConditionalRoutingOptionModal'
-import { ConditionalRoutingConfig } from './RespondentBlock'
 
 const ModalContainer = ({
   isOpen,

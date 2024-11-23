@@ -15,7 +15,6 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react'
-import CSV_TEMPLATE_EXAMPLE_IMAGE from 'src/features/admin-form/create/workflow/components/WorkflowContent/EditStepBlock/conditional-routing-example.png'
 
 import { MAX_UPLOAD_FILE_SIZE } from '~shared/constants'
 
@@ -26,7 +25,9 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import { ModalCloseButton } from '~components/Modal'
 import { ProgressIndicator } from '~components/ProgressIndicator/ProgressIndicator'
 
-import { ConditionalRoutingConfig, FieldItem } from './RespondentBlock'
+import CSV_TEMPLATE_EXAMPLE_IMAGE from './conditional-routing-example.png'
+import { ConditionalRoutingConfig } from './ConditionalRoutingOption'
+import { FieldItem } from './types'
 
 const NUM_STEPS = 2
 
