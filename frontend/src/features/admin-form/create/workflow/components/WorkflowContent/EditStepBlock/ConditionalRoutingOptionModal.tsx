@@ -28,6 +28,8 @@ import { ProgressIndicator } from '~components/ProgressIndicator/ProgressIndicat
 import { ConditionalRoutingConfig, FieldItem } from './RespondentBlock'
 
 const NUM_STEPS = 2
+const CSV_TEMPLATE_EXAMPLE_PATH =
+  'src/features/admin-form/create/workflow/components/WorkflowContent/EditStepBlock/conditional-routing-example.png'
 
 interface StepOneModalContentProps {
   stepNumber: number
@@ -101,10 +103,7 @@ const StepOneModalContent = ({
           </Stack>
         </Box>
         <Stack spacing="1rem" alignItems="center">
-          <Image
-            w="466px"
-            src={'public/static/images/conditional-routing-example.png'}
-          />
+          <Image w="466px" src={CSV_TEMPLATE_EXAMPLE_PATH} />
           <Text textStyle="caption-2">
             Your CSV template should look like this
           </Text>
