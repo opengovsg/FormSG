@@ -13,6 +13,7 @@ import Papa from 'papaparse'
 import isEmail from 'validator/lib/isEmail'
 
 import {
+  CONDITIONAL_ROUTING_CSV_PARSE_ERROR_MESSAGE,
   CONDITIONAL_ROUTING_DUPLICATE_OPTIONS_ERROR_MESSAGE,
   CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,
   CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE,
@@ -46,6 +47,25 @@ interface ConditionalRoutingOptionProps extends RespondentOptionProps {
 export interface ConditionalRoutingConfig {
   csvFile: File | null
 }
+
+/**
+ * Converts a CSV file into a string, validating that it has the required csv template file headers.
+ * @param csvFile - The CSV file to parse
+ * @returns A promise that resolves to the CSV content as a string
+ * @throws Error if CSV headers are invalid (must have 'Options' and 'Add email(s) in this column' columns)
+ */
+const parseCsvTemplateToString = async (csvFile: File) =>
+  parseCsvFileToCsvString(csvFile, (headerRow) => {
+    return {
+      isValid:
+        headerRow &&
+        headerRow.length === 2 &&
+        headerRow[0] === 'Options' &&
+        headerRow[1] === 'Add email(s) in this column',
+      invalidReason:
+        'Your CSV file should only contain 2 columns with the "Options" and "Add email(s) in this column" headers.',
+    }
+  })
 
 export const ConditionalRoutingOption = ({
   isLoading,
@@ -190,20 +210,13 @@ export const ConditionalRoutingOption = ({
         return
       }
 
-      const conditionalRoutingCsvString = await parseCsvFileToCsvString(
+      const conditionalRoutingCsvString = await parseCsvTemplateToString(
         data.csvFile,
-        (headerRow) => {
-          return {
-            isValid:
-              headerRow &&
-              headerRow.length === 2 &&
-              headerRow[0] === 'Options' &&
-              headerRow[1] === 'Add email(s) in this column',
-            invalidReason:
-              'Your CSV file should only contain 2 columns with the "Options" and "Add email(s) in this column" headers.',
-          }
-        },
-      )
+      ).catch(() => {
+        return null
+      })
+
+      if (!conditionalRoutingCsvString) return
       const csvToOptionsToRecipientsMap = (csvString: string) => {
         const csvRows = csvString.split('\r\n')
         return csvRows.reduce((acc, row) => {
@@ -248,7 +261,7 @@ export const ConditionalRoutingOption = ({
     )
   }
 
-  const validateOptions = (
+  const validateCsvOptionsWithFieldOptions = (
     optionsToRecipientsMapOptions: string[],
     selectedConditionalFieldOptions: string[],
   ) => {
@@ -265,10 +278,11 @@ export const ConditionalRoutingOption = ({
     }
   }
 
-  const validateOptionsToRecipientsMapErrorMessage = validateOptions(
-    [...Object.keys(selectedConditionalFieldOptionsToRecipientsMap || {})],
-    selectedConditionalField?.fieldOptions || [],
-  )
+  const validateOptionsToRecipientsMapErrorMessage =
+    validateCsvOptionsWithFieldOptions(
+      [...Object.keys(selectedConditionalFieldOptionsToRecipientsMap || {})],
+      selectedConditionalField?.fieldOptions || [],
+    )
 
   const noEmailToOptionsMappingErrorMessage =
     !selectedConditionalFieldOptionsToRecipientsMap
@@ -282,22 +296,12 @@ export const ConditionalRoutingOption = ({
 
     let conditionalRoutingCsvString
     try {
-      conditionalRoutingCsvString = await parseCsvFileToCsvString(
-        file,
-        (headerRow) => {
-          return {
-            isValid:
-              headerRow &&
-              headerRow.length === 2 &&
-              headerRow[0] === 'Options' &&
-              headerRow[1] === 'Add email(s) in this column',
-            invalidReason:
-              'Your CSV file should only contain 2 columns with the "Options" and "Add email(s) in this column" headers',
-          }
-        },
-      )
+      conditionalRoutingCsvString = await parseCsvTemplateToString(file)
     } catch (error) {
-      return (error as Error).message
+      if (error instanceof Error) {
+        return error.message
+      }
+      return CONDITIONAL_ROUTING_CSV_PARSE_ERROR_MESSAGE
     }
 
     const options = conditionalRoutingCsvString.split('\r\n')
@@ -321,7 +325,7 @@ export const ConditionalRoutingOption = ({
       return CONDITIONAL_ROUTING_DUPLICATE_OPTIONS_ERROR_MESSAGE
     }
 
-    return validateOptions(
+    return validateCsvOptionsWithFieldOptions(
       [...optionsSet],
       selectedConditionalFieldOptions || [],
     )

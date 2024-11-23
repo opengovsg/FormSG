@@ -9,9 +9,8 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio from '~components/Radio'
 import { TagInput } from '~components/TagInput'
 
-import { RespondentOptionProps } from '../RespondentBlock'
-
 import { WORKFLOW_TYPE_VALIDATION } from './common'
+import { RespondentOptionProps } from './types'
 
 export const StaticRespondentOption = ({
   isLoading,

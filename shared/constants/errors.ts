@@ -35,3 +35,6 @@ export const CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE =
 
 export const CONDITIONAL_ROUTING_DUPLICATE_OPTIONS_ERROR_MESSAGE =
   'Your CSV contains duplicate options.'
+
+export const CONDITIONAL_ROUTING_CSV_PARSE_ERROR_MESSAGE =
+  'An error occurred when parsing your CSV file'
