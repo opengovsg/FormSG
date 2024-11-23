@@ -67,6 +67,12 @@ const parseCsvTemplateToString = async (csvFile: File) =>
     }
   })
 
+const getFileName = (
+  formId: string | undefined,
+  fieldTitle: string | undefined,
+) =>
+  `conditional_routing_form_${formId ?? ''}_field_${fieldTitle ?? ''}_mapping.csv`
+
 export const ConditionalRoutingOption = ({
   isLoading,
   formMethods,
@@ -108,31 +114,35 @@ export const ConditionalRoutingOption = ({
   const selectedConditionalField = conditionalFormFields.find(
     (field) => field._id === selectedConditionalFieldId,
   )
-
   const selectedConditionalFieldTitle = selectedConditionalField?.title
   const selectedConditionalFieldOptionsToRecipientsMap =
     selectedConditionalField?.optionsToRecipientsMap
 
   const isOptionsToRecipientsMapAttached = !!csvFile
 
-  const standardCsvDownloadFileName = `conditional_routing_form_${formId}_field_${selectedConditionalFieldTitle}_mapping.csv`
+  const standardCsvDownloadFileName = getFileName(
+    formId,
+    selectedConditionalFieldTitle,
+  )
 
-  const placeholderOptionToEmailMappingCsv = useMemo(() => {
-    return {
-      name: standardCsvDownloadFileName,
-      type: 'text/csv',
-    } as File
-  }, [standardCsvDownloadFileName])
+  const placeholderOptionToEmailMappingCsvFile = useMemo(
+    () =>
+      ({
+        name: standardCsvDownloadFileName,
+        type: 'text/csv',
+      }) as File,
+    [standardCsvDownloadFileName],
+  )
 
   useEffect(() => {
     if (selectedConditionalFieldOptionsToRecipientsMap) {
-      setCsvFile(placeholderOptionToEmailMappingCsv)
+      setCsvFile(placeholderOptionToEmailMappingCsvFile)
     } else {
       setCsvFile(null)
     }
   }, [
-    placeholderOptionToEmailMappingCsv,
     setCsvFile,
+    placeholderOptionToEmailMappingCsvFile,
     selectedConditionalFieldOptionsToRecipientsMap,
   ])
 
@@ -196,7 +206,7 @@ export const ConditionalRoutingOption = ({
       const csvContent = generateCsvContent(fieldOptions)
       const csvFile = csvStringToFile(
         csvContent,
-        `conditional_routing_form_${formId}_field_${selectedConditionalFieldTitle}_mapping.csv`,
+        getFileName(formId, selectedConditionalFieldTitle),
       )
       downloadFile(csvFile)
     }
@@ -237,7 +247,7 @@ export const ConditionalRoutingOption = ({
         },
         {
           onSuccess: () => {
-            setCsvFile(placeholderOptionToEmailMappingCsv)
+            setCsvFile(placeholderOptionToEmailMappingCsvFile)
             clearErrors('conditional_field')
             onClose()
           },
