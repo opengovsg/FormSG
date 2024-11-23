@@ -244,6 +244,7 @@ const ConditionalRoutingOption = ({
     register,
     control,
     watch,
+    getValues,
     formState: { errors },
     clearErrors,
   } = formMethods
@@ -267,9 +268,10 @@ const ConditionalRoutingOption = ({
     handleSubmit,
   } = useForm<ConditionalRoutingConfig>()
 
-  const isConditionalFieldSelected = !!watch('conditional_field')
+  const selectedConditionalFieldId = watch('conditional_field')
+  const isConditionalFieldSelected = !!selectedConditionalFieldId
   const selectedConditionalField = conditionalFormFields.find(
-    (field) => field._id === watch('conditional_field'),
+    (field) => field._id === selectedConditionalFieldId,
   )
 
   const selectedConditionalFieldTitle = selectedConditionalField?.title
@@ -353,10 +355,9 @@ const ConditionalRoutingOption = ({
         return csvFile
       }
 
-      const conditionalFieldId = watch('conditional_field')
-      if (!conditionalFieldId) return
+      if (!selectedConditionalFieldId) return
 
-      const fieldOptions = getFieldOptions(conditionalFieldId)
+      const fieldOptions = getFieldOptions(selectedConditionalFieldId)
       const csvContent = generateCsvContent(fieldOptions)
       const csvFile = csvStringToFile(
         csvContent,
@@ -527,7 +528,7 @@ const ConditionalRoutingOption = ({
         errors={conditionalRoutingConfigErrors}
         onDownloadCsvClick={handleSkeletonCsvDownload(formId)}
         onSubmit={handleSubmit(
-          handleConditionalRoutingConfigSubmit(watch('conditional_field')),
+          handleConditionalRoutingConfigSubmit(getValues('conditional_field')),
         )}
         isSubmitDisabled={
           !(
@@ -617,7 +618,7 @@ const ConditionalRoutingOption = ({
                     variant="outline"
                     leftIcon={<BiPlus fontSize="1.5rem" />}
                     onClick={onOpen}
-                    isDisabled={!watch('conditional_field')}
+                    isDisabled={!isConditionalFieldSelected}
                   >
                     Add email(s) to options
                   </Button>
