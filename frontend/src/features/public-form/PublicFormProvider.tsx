@@ -123,6 +123,65 @@ export function useCommonFormProvider(formId: string) {
   }
 }
 
+// Country/region data must be upper-case in backend for myinfo-countries compatibility,
+// while displaying in title-case to users in the frontend.
+// Hence, we need to map the frontend title-case to upper-case when submitting to backend.
+const transformFormInputCountryRegionToUpperCase = (
+  formInputs: Record<string, unknown>,
+  form_fields: Array<{ fieldType: BasicField; _id: string }>,
+) => {
+  const countryRegionFieldIds = new Set(
+    form_fields
+      .filter((field) => field.fieldType === BasicField.CountryRegion)
+      .map((field) => field._id),
+  )
+
+  return Object.keys(formInputs).reduce(
+    (newFormInputs: typeof formInputs, fieldId) => {
+      const currentInput = formInputs[fieldId]
+      if (
+        countryRegionFieldIds.has(fieldId) &&
+        typeof currentInput === 'string'
+      ) {
+        newFormInputs[fieldId] = currentInput.toUpperCase()
+      } else {
+        newFormInputs[fieldId] = currentInput
+      }
+      return newFormInputs
+    },
+    {},
+  )
+}
+
+// Text inputs are trimmed duirng validation and hence should also be trimmed before sending to the backend.
+const transformFormInputTrimTextInputs = (
+  formInputs: Record<string, unknown>,
+  form_fields: Array<{ fieldType: BasicField; _id: string }>,
+) => {
+  const textFieldIds = new Set(
+    form_fields
+      .filter(
+        (field) =>
+          field.fieldType === BasicField.ShortText ||
+          field.fieldType === BasicField.LongText,
+      )
+      .map((field) => field._id),
+  )
+
+  return Object.keys(formInputs).reduce(
+    (newFormInputs: typeof formInputs, fieldId) => {
+      const currentInput = formInputs[fieldId]
+      if (textFieldIds.has(fieldId) && typeof currentInput === 'string') {
+        newFormInputs[fieldId] = currentInput.trim()
+      } else {
+        newFormInputs[fieldId] = currentInput
+      }
+      return newFormInputs
+    },
+    {},
+  )
+}
+
 export const PublicFormProvider = ({
   formId,
   submissionId: previousSubmissionId,
@@ -515,32 +574,18 @@ export const PublicFormProvider = ({
         }
       }
 
-      const countryRegionFieldIds = new Set(
-        form.form_fields
-          .filter((field) => field.fieldType === BasicField.CountryRegion)
-          .map((field) => field._id),
-      )
-      // We want users to see the country/region options in title-case but we also need the data in the backend to remain in upper-case.
-      // Country/region data in the backend needs to remain in upper-case so that they remain consistent with myinfo-countries.
-      const formInputsWithCountryRegionInUpperCase = Object.keys(
-        formInputs,
-      ).reduce((newFormInputs: typeof formInputs, fieldId) => {
-        const currentInput = formInputs[fieldId]
-        if (
-          countryRegionFieldIds.has(fieldId) &&
-          typeof currentInput === 'string'
-        ) {
-          newFormInputs[fieldId] = currentInput.toUpperCase()
-        } else {
-          newFormInputs[fieldId] = currentInput
-        }
-        return newFormInputs
-      }, {})
+      const transformedFormInputs = transformFormInputTrimTextInputs(
+        transformFormInputCountryRegionToUpperCase(
+          formInputs,
+          form.form_fields,
+        ),
+        form.form_fields,
+      ) as typeof formInputs
 
       const formData = {
         formFields: form.form_fields,
         formLogics: form.form_logics,
-        formInputs: formInputsWithCountryRegionInUpperCase,
+        formInputs: transformedFormInputs,
         captchaResponse,
         captchaType,
         responseMetadata: {
@@ -602,7 +647,7 @@ export const PublicFormProvider = ({
               .mutateAsync(
                 {
                   ...formData,
-                  formInputs: formInputsWithCountryRegionInUpperCase,
+                  formInputs: transformedFormInputs,
                 },
                 { onSuccess },
               )
@@ -640,7 +685,7 @@ export const PublicFormProvider = ({
                 .mutateAsync(
                   {
                     ...formData,
-                    formInputs: formInputsWithCountryRegionInUpperCase,
+                    formInputs: transformedFormInputs,
                   },
                   { onSuccess },
                 )
