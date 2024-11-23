@@ -233,7 +233,7 @@ export const ConditionalRoutingOption = ({
           const [option, ...recipients] = row.split(',')
           return {
             ...acc,
-            [option]: recipients,
+            [option]: recipients.map((email) => email.trim()),
           }
         }, {})
       }
