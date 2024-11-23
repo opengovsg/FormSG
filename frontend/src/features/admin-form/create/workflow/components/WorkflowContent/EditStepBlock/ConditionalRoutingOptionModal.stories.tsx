@@ -1,23 +1,55 @@
 import { useForm } from 'react-hook-form'
 import { expect, screen, userEvent, waitFor } from '@storybook/test'
-// eslint-disable-next-line storybook/use-storybook-testing-library
-import { renderHook } from '@testing-library/react'
 
 import { StoryRouter } from '~utils/storybook'
 
-import { ConditionalRoutingOptionModal } from './ConditionalRoutingOptionModal'
+import {
+  ConditionalRoutingOptionModal,
+  ConditionalRoutingOptionModalProps,
+} from './ConditionalRoutingOptionModal'
 import { ConditionalRoutingConfig } from './RespondentBlock'
 
-const { result } = renderHook(() => useForm<ConditionalRoutingConfig>())
+const ModalContainer = ({
+  isOpen,
+  onClose,
+  errors,
+  onDownloadCsvClick,
+  onSubmit,
+  isSubmitDisabled,
+  validateCsvFile,
+  csvFile,
+}: Omit<ConditionalRoutingOptionModalProps, 'control'> & {
+  csvFile?: File | null
+}) => {
+  const { control } = useForm<ConditionalRoutingConfig>({
+    defaultValues: {
+      csvFile,
+    },
+  })
+
+  return (
+    <ConditionalRoutingOptionModal
+      isOpen={isOpen}
+      onClose={onClose}
+      control={control}
+      errors={errors}
+      onDownloadCsvClick={onDownloadCsvClick}
+      onSubmit={onSubmit}
+      isSubmitDisabled={isSubmitDisabled}
+      validateCsvFile={validateCsvFile}
+      conditionalFieldItems={[]}
+      isLoading={false}
+    />
+  )
+}
 
 export default {
-  component: ConditionalRoutingOptionModal,
+  component: ModalContainer,
   title:
     'Features/AdminForm/create/workflow/components/WorkflowContent/EditStepBlock/ConditionalRoutingOptionModal',
   args: {
     isOpen: true,
     onClose: () => {},
-    control: result.current.control,
     errors: {},
     onDownloadCsvClick: () => {},
     onSubmit: () => {},
@@ -72,13 +104,7 @@ export const UploadCsvFileStepWithAttachmentSelected = {
     )
   },
   args: {
-    control: renderHook(() =>
-      useForm<ConditionalRoutingConfig>({
-        defaultValues: {
-          csvFile: new File([''], 'test.csv', { type: 'text/csv' }),
-        },
-      }),
-    ).result.current.control,
+    csvFile: new File([''], 'test.csv', { type: 'text/csv' }),
   },
 }
 
@@ -104,13 +130,7 @@ export const UploadCsvFileStepWithAttachmentSelectedDummyErrorMessage = {
     )
   },
   args: {
-    control: renderHook(() =>
-      useForm<ConditionalRoutingConfig>({
-        defaultValues: {
-          csvFile: new File([''], 'test.csv', { type: 'text/csv' }),
-        },
-      }),
-    ).result.current.control,
+    csvFile: new File([''], 'test.csv', { type: 'text/csv' }),
     errors: {
       csvFile: {
         message: 'Dummy error message',

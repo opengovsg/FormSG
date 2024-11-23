@@ -194,7 +194,7 @@ const StepTwoModalContent = ({
   </ModalContent>
 )
 
-interface ConditionalRoutingOptionModalProps {
+export interface ConditionalRoutingOptionModalProps {
   isOpen: boolean
   onClose: () => void
   conditionalFieldItems: FieldItem[]
