@@ -1,4 +1,4 @@
-import { expect, userEvent, waitFor, within } from '@storybook/test'
+import { expect, screen, userEvent, waitFor, within } from '@storybook/test'
 
 import {
   BasicField,
@@ -351,6 +351,13 @@ export const Step2ConditionalRoutingDeleteWarningModal = {
       async () => {
         const deleteButton = await canvas.getByLabelText('Click to remove file')
         await userEvent.click(deleteButton)
+      },
+      { timeout: 5000 },
+    )
+    // Assert the modal appears
+    await waitFor(
+      async () => {
+        expect(await screen.getByText('Delete CSV file')).toBeInTheDocument()
       },
       { timeout: 5000 },
     )
