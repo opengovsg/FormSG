@@ -325,6 +325,45 @@ export const Step2ConditionalRoutingValidOptionsUploaded = {
   },
 }
 
+export const Step2ConditionalRoutingDeleteWarningModal = {
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement)
+    await waitFor(
+      async () =>
+        expect(await canvas.getByText('Save step')).not.toBeDisabled(),
+      {
+        timeout: 5000,
+      },
+    )
+    await waitFor(
+      async () => {
+        await userEvent.click(
+          await canvas.getByText(
+            'Email(s) assigned to options in a dropdown or radio field',
+          ),
+        )
+      },
+      {
+        timeout: 5000,
+      },
+    )
+    await waitFor(
+      async () => {
+        const deleteButton = await canvas.getByLabelText('Click to remove file')
+        await userEvent.click(deleteButton)
+      },
+      { timeout: 5000 },
+    )
+  },
+  args: {
+    stepNumber: 1,
+    defaultValues: {
+      workflow_type: WorkflowType.Conditional,
+      conditional_field: dropdown_field_valid_mapping._id,
+    },
+  },
+}
+
 export const Step2ConditionalRoutingInvalidOptionsUploadedErrorMessage = {
   // due to the double registration of 'workflow_type' there would be a weird interaction
   // where the default value will be reset

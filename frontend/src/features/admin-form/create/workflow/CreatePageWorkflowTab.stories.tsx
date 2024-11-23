@@ -124,6 +124,37 @@ const form_field_7: FormFieldDto = {
   _id: '61e6857c9c794b0012f1c6u9',
 }
 
+const dropdown_field_valid_mapping: FormFieldDto = {
+  title: 'Department',
+  description: '',
+  required: true,
+  disabled: false,
+  fieldType: BasicField.Dropdown,
+  fieldOptions: ['Engineering', 'Design', 'Operations', 'Product'],
+  optionsToRecipientsMap: {
+    Engineering: ['kevin@example.com'],
+    Design: ['alicia@example.com'],
+    Operations: ['ruchel@example.com'],
+    Product: ['kenneth@example.com'],
+  },
+  _id: '6200e1534ad4f00012848d91',
+}
+
+const dropdown_field_missing_options_mapping: FormFieldDto = {
+  title: 'Department',
+  description: '',
+  required: true,
+  disabled: false,
+  fieldType: BasicField.Dropdown,
+  fieldOptions: ['Engineering', 'Design', 'Operations', 'Product'],
+  optionsToRecipientsMap: {
+    Engineering: ['kevin@example.com'],
+    Design: ['alicia@example.com'],
+    Operations: ['ruchel@example.com'],
+  },
+  _id: '6200e1534ad4f00012848d92',
+}
+
 const workflow_step_1: FormWorkflowStepDto = {
   _id: '61e6857c9c794b0012f1c6f8',
   workflow_type: WorkflowType.Static,
@@ -152,6 +183,21 @@ const workflow_step_2_with_all_fields_deleted: FormWorkflowStepDto = {
   edit: ['deleted_object_id_1', 'deleted_object_id_2'],
 }
 
+const workflow_step_2_with_valid_conditional_recipient: FormWorkflowStepDto = {
+  _id: '61e6857c9c794b001ak3cnkl',
+  workflow_type: WorkflowType.Conditional,
+  conditional_field: dropdown_field_valid_mapping._id,
+  edit: [form_field_3._id, form_field_4._id],
+}
+
+const workflow_step_2_with_invalid_conditional_recipient: FormWorkflowStepDto =
+  {
+    _id: '61e6857c9c794b001ak3cnkl',
+    workflow_type: WorkflowType.Conditional,
+    conditional_field: dropdown_field_missing_options_mapping._id,
+    edit: [form_field_3._id, form_field_4._id],
+  }
+
 const workflow_step_3_with_approval: FormWorkflowStepDto = {
   _id: '61e6857c9c794b0012f1c6g2',
   workflow_type: WorkflowType.Dynamic,
@@ -178,6 +224,8 @@ const FORM_WITH_WORKFLOW: Partial<AdminFormDto> = {
     form_field_5,
     form_field_6,
     form_field_7,
+    dropdown_field_valid_mapping,
+    dropdown_field_missing_options_mapping,
   ],
   workflow: [workflow_step_1, workflow_step_2],
 }
@@ -252,6 +300,28 @@ Step2AllFieldsDeleted.parameters = {
   msw: buildMswRoutes({
     ...FORM_WITH_WORKFLOW,
     workflow: [workflow_step_1, workflow_step_2_with_all_fields_deleted],
+  }),
+}
+
+export const Step2ValidConditionalRecipientSelected = Template.bind({})
+Step2ValidConditionalRecipientSelected.parameters = {
+  msw: buildMswRoutes({
+    ...FORM_WITH_WORKFLOW,
+    workflow: [
+      workflow_step_1,
+      workflow_step_2_with_valid_conditional_recipient,
+    ],
+  }),
+}
+
+export const Step2InvalidConditionalRecipientSelected = Template.bind({})
+Step2InvalidConditionalRecipientSelected.parameters = {
+  msw: buildMswRoutes({
+    ...FORM_WITH_WORKFLOW,
+    workflow: [
+      workflow_step_1,
+      workflow_step_2_with_invalid_conditional_recipient,
+    ],
   }),
 }
 
