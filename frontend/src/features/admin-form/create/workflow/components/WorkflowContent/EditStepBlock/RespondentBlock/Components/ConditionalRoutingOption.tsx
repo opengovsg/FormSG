@@ -322,7 +322,7 @@ export const ConditionalRoutingOption = ({
       if (recipients.length <= 0 || !recipients[0] || !option) {
         return CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE
       }
-      if (recipients.some((recipient) => !isEmail(recipient))) {
+      if (recipients.some((recipient) => !isEmail(recipient.trim()))) {
         return CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE
       }
       optionsSet.add(option)
