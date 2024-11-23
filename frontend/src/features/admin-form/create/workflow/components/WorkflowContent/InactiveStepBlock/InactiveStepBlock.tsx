@@ -64,13 +64,10 @@ const SubsequentStepRespondentBadges = ({
         selectedConditionalField.optionsToRecipientsMap || {},
       )
 
-      const isOptionsMismatched =
-        optionsToRecipientsMapOptions &&
-        optionsToRecipientsMapOptions.length > 0 &&
-        checkIsOptionsMismatched(
-          optionsToRecipientsMapOptions,
-          selectedConditionalFieldOptions,
-        )
+      const isOptionsMismatched = checkIsOptionsMismatched(
+        optionsToRecipientsMapOptions,
+        selectedConditionalFieldOptions,
+      )
       return (
         <Stack direction="column" spacing="0.5rem">
           <FieldLogicBadge
