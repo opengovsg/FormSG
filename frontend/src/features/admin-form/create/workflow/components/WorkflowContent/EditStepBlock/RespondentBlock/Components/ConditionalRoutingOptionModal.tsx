@@ -112,7 +112,7 @@ const StepOneModalContent = ({
     </ModalBody>
     <ModalFooter>
       <NextAndBackButtonGroup
-        nextButtonLabel="Next: Upload CSV template"
+        nextButtonLabel="Next: Upload CSV"
         handleBack={onClose}
         handleNext={() => setStepNumber(1)}
         isNextDisabled={false}
@@ -143,7 +143,7 @@ const StepTwoModalContent = ({
   <ModalContent>
     <ModalCloseButton />
     <ModalHeader>
-      <Text mb="0.25rem">Upload your completed CSV template</Text>
+      <Text mb="0.25rem">Upload your completed CSV</Text>
       <ProgressIndicator
         numIndicators={NUM_STEPS}
         currActiveIdx={stepNumber}
@@ -185,7 +185,7 @@ const StepTwoModalContent = ({
     </ModalBody>
     <ModalFooter>
       <NextAndBackButtonGroup
-        nextButtonLabel="Save CSV template"
+        nextButtonLabel="Save CSV"
         handleBack={() => setStepNumber(0)}
         handleNext={onSubmit}
         isNextDisabled={isSubmitDisabled}
