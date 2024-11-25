@@ -241,7 +241,7 @@ export const Step2ConditionalRoutingEmpty = {
       async () => {
         await userEvent.click(
           await canvas.getByText(
-            'Email(s) assigned to options in a dropdown or radio field',
+            'Emails assigned to options in a dropdown field',
           ),
         )
       },
@@ -272,7 +272,7 @@ export const Step2ConditionalRouting = {
       async () => {
         await userEvent.click(
           await canvas.getByText(
-            'Email(s) assigned to options in a dropdown or radio field',
+            'Emails assigned to options in a dropdown field',
           ),
         )
       },
@@ -307,7 +307,7 @@ export const Step2ConditionalRoutingValidOptionsUploaded = {
       async () => {
         await userEvent.click(
           await canvas.getByText(
-            'Email(s) assigned to options in a dropdown or radio field',
+            'Emails assigned to options in a dropdown field',
           ),
         )
       },
@@ -339,7 +339,7 @@ export const Step2ConditionalRoutingDeleteWarningModal = {
       async () => {
         await userEvent.click(
           await canvas.getByText(
-            'Email(s) assigned to options in a dropdown or radio field',
+            'Emails assigned to options in a dropdown field',
           ),
         )
       },
@@ -388,7 +388,7 @@ export const Step2ConditionalRoutingInvalidOptionsUploadedErrorMessage = {
       async () => {
         await userEvent.click(
           await canvas.getByText(
-            'Email(s) assigned to options in a dropdown or radio field',
+            'Emails assigned to options in a dropdown field',
           ),
         )
       },
@@ -423,7 +423,7 @@ export const Step2ConditionalRoutingNoFieldSelectedErrorMessage = {
       async () => {
         await userEvent.click(
           await canvas.getByText(
-            'Email(s) assigned to options in a dropdown or radio field',
+            'Emails assigned to options in a dropdown field',
           ),
         )
       },
@@ -466,7 +466,7 @@ export const Step2ConditionalRoutingNoOptionsToReicipientsMapErrorMessage = {
       async () => {
         await userEvent.click(
           await canvas.getByText(
-            'Email(s) assigned to options in a dropdown or radio field',
+            'Emails assigned to options in a dropdown field',
           ),
         )
       },

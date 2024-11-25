@@ -63,7 +63,15 @@ export const DownloadCsvTemplateStep = {}
 
 export const UploadCsvFileStep = {
   play: async () => {
-    const nextButton = screen.getByText('Next: Upload CSV template')
+    const downloadButton = screen.getByText('Download and edit CSV template')
+    const nextButton = screen.getByText('Next: Upload CSV file')
+    await waitFor(
+      async () => {
+        expect(downloadButton).not.toBeDisabled()
+        await userEvent.click(downloadButton)
+      },
+      { timeout: 5000 },
+    )
     await waitFor(
       async () => {
         expect(nextButton).not.toBeDisabled()
@@ -74,7 +82,7 @@ export const UploadCsvFileStep = {
     await waitFor(
       async () => {
         expect(
-          screen.getByText('Upload your completed CSV template'),
+          screen.getByText('Upload your completed CSV file'),
         ).toBeInTheDocument()
       },
       { timeout: 5000 },
@@ -84,8 +92,15 @@ export const UploadCsvFileStep = {
 
 export const UploadCsvFileStepWithAttachmentSelected = {
   play: async () => {
-    // First navigate to upload step
-    const nextButton = screen.getByText('Next: Upload CSV template')
+    const downloadButton = screen.getByText('Download and edit CSV template')
+    const nextButton = screen.getByText('Next: Upload CSV file')
+    await waitFor(
+      async () => {
+        expect(downloadButton).not.toBeDisabled()
+        await userEvent.click(downloadButton)
+      },
+      { timeout: 5000 },
+    )
     await waitFor(
       async () => {
         expect(nextButton).not.toBeDisabled()
@@ -97,7 +112,7 @@ export const UploadCsvFileStepWithAttachmentSelected = {
     await waitFor(
       async () => {
         expect(
-          screen.getByText('Upload your completed CSV template'),
+          screen.getByText('Upload your completed CSV file'),
         ).toBeInTheDocument()
       },
       { timeout: 5000 },
@@ -110,8 +125,15 @@ export const UploadCsvFileStepWithAttachmentSelected = {
 
 export const UploadCsvFileStepWithAttachmentSelectedDummyErrorMessage = {
   play: async () => {
-    // First navigate to upload step
-    const nextButton = screen.getByText('Next: Upload CSV template')
+    const downloadButton = screen.getByText('Download and edit CSV template')
+    const nextButton = screen.getByText('Next: Upload CSV file')
+    await waitFor(
+      async () => {
+        expect(downloadButton).not.toBeDisabled()
+        await userEvent.click(downloadButton)
+      },
+      { timeout: 5000 },
+    )
     await waitFor(
       async () => {
         expect(nextButton).not.toBeDisabled()
@@ -123,7 +145,7 @@ export const UploadCsvFileStepWithAttachmentSelectedDummyErrorMessage = {
     await waitFor(
       async () => {
         expect(
-          screen.getByText('Upload your completed CSV template'),
+          screen.getByText('Upload your completed CSV file'),
         ).toBeInTheDocument()
       },
       { timeout: 5000 },
