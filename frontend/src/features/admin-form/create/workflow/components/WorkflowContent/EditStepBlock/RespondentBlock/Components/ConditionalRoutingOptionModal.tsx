@@ -36,7 +36,7 @@ interface StepOneModalContentProps {
   setStepNumber: (step: number) => void
   isMobile: boolean
   onDownloadCsvClick: ConditionalRoutingOptionModalProps['onDownloadCsvClick']
-  isCsvTemplateDownloaded: boolean 
+  isCsvTemplateDownloaded: boolean
   onClose: ConditionalRoutingOptionModalProps['onClose']
 }
 
@@ -47,87 +47,93 @@ const StepOneModalContent = ({
   onDownloadCsvClick,
   isCsvTemplateDownloaded,
   onClose,
-}: StepOneModalContentProps) => {  
+}: StepOneModalContentProps) => {
   return (
-  <ModalContent minW="fit-content">
-    <ModalCloseButton />
-    <ModalHeader>
-      <Text mb="0.25rem">Add emails to options</Text>
-      <ProgressIndicator
-        numIndicators={NUM_STEPS}
-        currActiveIdx={stepNumber}
-        onClick={(selectedStepNumber) => {
-          if (selectedStepNumber > stepNumber && !isCsvTemplateDownloaded) {
-            return
-          }
-          setStepNumber(selectedStepNumber)
-        }}
-      />
-    </ModalHeader>
-    <ModalBody>
-      <Stack
-        justifyContent="center"
-        spacing="3rem"
-        direction={isMobile ? 'column' : 'row'}
-      >
-        <Box w={isMobile ? '100%' : '25rem'}>
-          <Stack spacing="0.5rem" mb="2.5rem">
-            <Text textStyle="body-2">
-              We have created a CSV template with the options from the field you
-              selected.{' '}
-              <Text as="span" fontWeight="semibold">
-                Please download the CSV template and add the emails for each
-                option.
+    <ModalContent minW="fit-content">
+      <ModalCloseButton />
+      <ModalHeader>
+        <Text mb="0.25rem">Add emails to options</Text>
+        <ProgressIndicator
+          numIndicators={NUM_STEPS}
+          currActiveIdx={stepNumber}
+          onClick={(selectedStepNumber) => {
+            if (selectedStepNumber > stepNumber && !isCsvTemplateDownloaded) {
+              return
+            }
+            setStepNumber(selectedStepNumber)
+          }}
+        />
+      </ModalHeader>
+      <ModalBody>
+        <Stack
+          justifyContent="center"
+          spacing="3rem"
+          direction={isMobile ? 'column' : 'row'}
+        >
+          <Box w={isMobile ? '100%' : '25rem'}>
+            <Stack spacing="0.5rem" mb="2.5rem">
+              <Text textStyle="body-2">
+                We have created a CSV template with the options from the field
+                you selected.{' '}
+                <Text as="span" fontWeight="semibold">
+                  Please download the CSV template and add the emails for each
+                  option.
+                </Text>
               </Text>
+              <Button
+                w="100%"
+                leftIcon={<BiDownload fontSize="1.5rem" />}
+                onClick={onDownloadCsvClick}
+              >
+                Download and edit CSV template
+              </Button>
+            </Stack>
+            <Stack spacing="1.5rem">
+              <Text textStyle="h4" color="secondary.500">
+                How to use the CSV template:
+              </Text>
+              <Box>
+                <Text textStyle="subhead-1" color="secondary.500">
+                  Column A
+                </Text>
+                <Text textStyle="body-2">
+                  This contains all the options from your field.{' '}
+                  <Text as="span" fontWeight="semibold">
+                    Do not edit, reorder or delete anything in this column.
+                  </Text>
+                </Text>
+              </Box>
+              <Box>
+                <Text textStyle="subhead-1" color="secondary.500">
+                  Column B
+                </Text>
+                <Text textStyle="body-2">
+                  Add the emails to send the form to for each option.{' '}
+                  <Text as="span" fontWeight="semibold">
+                    Separate multiple email(s) with a comma.
+                  </Text>
+                </Text>
+              </Box>
+            </Stack>
+          </Box>
+          <Stack spacing="1rem" alignItems="center">
+            <Image w="466px" src={CSV_TEMPLATE_EXAMPLE_IMAGE} />
+            <Text color="secondary.400" textStyle="caption-2">
+              Your CSV template should look like this
             </Text>
-            <Button
-              w="100%"
-              leftIcon={<BiDownload fontSize="1.5rem" />}
-              onClick={onDownloadCsvClick}
-            >
-              Download and edit CSV template
-            </Button>
           </Stack>
-          <Stack spacing="1.5rem">
-            <Text textStyle="h4" color="secondary.500">How to use the CSV template:</Text>
-            <Box>
-              <Text textStyle="subhead-1" color="secondary.500">Column A</Text>
-              <Text textStyle="body-2">
-                This contains all the options from your field.{' '}
-                <Text as="span" fontWeight="semibold">
-                  Do not edit, reorder or delete anything in this column.
-                </Text>
-              </Text>
-            </Box>
-            <Box>
-              <Text textStyle="subhead-1" color="secondary.500">Column B</Text>
-              <Text textStyle="body-2">
-                Add the emails to send the form to for each option.{' '}
-                <Text as="span" fontWeight="semibold">
-                  Separate multiple email(s) with a comma.
-                </Text>
-              </Text>
-            </Box>
-          </Stack>
-        </Box>
-        <Stack spacing="1rem" alignItems="center">
-          <Image w="466px" src={CSV_TEMPLATE_EXAMPLE_IMAGE} />
-          <Text color="secondary.400" textStyle="caption-2">
-            Your CSV template should look like this
-          </Text>
         </Stack>
-      </Stack>
-    </ModalBody>
-    <ModalFooter>
-      <NextAndBackButtonGroup
-        nextButtonLabel="Next: Upload CSV file"
-        handleBack={onClose}
-        handleNext={() => setStepNumber(1)}
-        isNextDisabled={!isCsvTemplateDownloaded}
-      />
-    </ModalFooter>
-  </ModalContent>
-)
+      </ModalBody>
+      <ModalFooter>
+        <NextAndBackButtonGroup
+          nextButtonLabel="Next: Upload CSV file"
+          handleBack={onClose}
+          handleNext={() => setStepNumber(1)}
+          isNextDisabled={!isCsvTemplateDownloaded}
+        />
+      </ModalFooter>
+    </ModalContent>
+  )
 }
 
 interface StepTwoModalContentProps {
@@ -249,7 +255,7 @@ export const ConditionalRoutingOptionModal = ({
           stepNumber={stepNumber}
           setStepNumber={setStepNumber}
           onDownloadCsvClick={() => {
-            onDownloadCsvClick() 
+            onDownloadCsvClick()
             setIsCsvTemplateDownloaded(true)
           }}
           isCsvTemplateDownloaded={isCsvTemplateDownloaded}

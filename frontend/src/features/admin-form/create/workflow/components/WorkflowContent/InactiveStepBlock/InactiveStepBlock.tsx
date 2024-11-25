@@ -52,7 +52,10 @@ const SubsequentStepRespondentBadges = ({
       return <FieldLogicBadge field={idToFieldMap[step.field]} />
     case WorkflowType.Conditional: {
       const selectedConditionalField = idToFieldMap[step.conditional_field]
-      if (!selectedConditionalField || selectedConditionalField.fieldType !== BasicField.Dropdown) {
+      if (
+        !selectedConditionalField ||
+        selectedConditionalField.fieldType !== BasicField.Dropdown
+      ) {
         return <FieldLogicBadge field={selectedConditionalField} />
       }
       const selectedConditionalFieldOptions =

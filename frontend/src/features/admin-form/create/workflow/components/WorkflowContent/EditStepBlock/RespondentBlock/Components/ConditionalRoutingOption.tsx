@@ -381,9 +381,7 @@ export const ConditionalRoutingOption = ({
           },
         }}
       >
-        <Text mb="0.5rem">
-          Emails assigned to options in a dropdown field
-        </Text>
+        <Text mb="0.5rem">Emails assigned to options in a dropdown field</Text>
         {selectedWorkflowType === WorkflowType.Conditional ? (
           <FormControl
             id="conditional_field"
