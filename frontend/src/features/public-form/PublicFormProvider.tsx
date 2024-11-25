@@ -153,7 +153,7 @@ const transformFormInputCountryRegionToUpperCase = (
   )
 }
 
-// Text inputs are trimmed duirng validation and hence should also be trimmed before sending to the backend.
+// Trim text inputs before sending to backend to match frontend validation
 const transformFormInputTrimTextInputs = (
   formInputs: Record<string, unknown>,
   form_fields: Array<{ fieldType: BasicField; _id: string }>,
