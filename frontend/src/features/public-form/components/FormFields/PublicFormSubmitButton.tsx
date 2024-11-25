@@ -129,26 +129,18 @@ export const PublicFormSubmitButton = ({
         isLoading={isSubmitting}
         isDisabled={!!preventSubmissionLogic || !onSubmit}
         loadingText={t(
-          'features.publicForm.components.PublicFormSubmitButton.loadingText',
+          'features.publicForm.components.submitButton.loadingText',
         )}
         onClick={isPaymentEnabled && !isPreview ? checkBeforeOpen : onSubmit}
       >
         <VisuallyHidden>
-          {t(
-            'features.publicForm.components.PublicFormSubmitButton.visuallyHidden',
-          )}
+          {t('features.publicForm.components.submitButton.visuallyHidden')}
         </VisuallyHidden>
         {preventSubmissionLogic
-          ? t(
-              'features.publicForm.components.PublicFormSubmitButton.preventSubmission',
-            )
+          ? t('features.publicForm.components.submitButton.preventSubmission')
           : isPaymentEnabled
-            ? t(
-                'features.publicForm.components.PublicFormSubmitButton.proceedToPay',
-              )
-            : t(
-                'features.publicForm.components.PublicFormSubmitButton.submitNow',
-              )}
+            ? t('features.publicForm.components.submitButton.proceedToPay')
+            : t('features.publicForm.components.submitButton.submitNow')}
       </Button>
       {preventSubmissionLogic ? (
         <InlineMessage variant="warning">
