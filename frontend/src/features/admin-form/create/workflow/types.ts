@@ -11,7 +11,8 @@ export enum AdminEditWorkflowState {
   EditingStep,
 }
 
-export type EditStepInputs = Omit<FormWorkflowStep, 'emails'> & {
+export type EditStepInputs = FormWorkflowStep & {
+  _id: string
   workflow_type: WorkflowType
   emails?: FormWorkflowStepStatic['emails']
   field?: FormWorkflowStepDynamic['field']
