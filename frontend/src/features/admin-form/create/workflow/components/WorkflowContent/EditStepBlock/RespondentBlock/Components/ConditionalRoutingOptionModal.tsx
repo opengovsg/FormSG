@@ -49,7 +49,7 @@ const StepOneModalContent = ({
   <ModalContent minW="fit-content">
     <ModalCloseButton />
     <ModalHeader>
-      <Text mb="0.25rem">Add email(s) to options</Text>
+      <Text mb="0.25rem">Add emails to options</Text>
       <ProgressIndicator
         numIndicators={NUM_STEPS}
         currActiveIdx={stepNumber}
@@ -77,13 +77,13 @@ const StepOneModalContent = ({
               leftIcon={<BiDownload fontSize="1.5rem" />}
               onClick={onDownloadCsvClick}
             >
-              Download and edit CSV
+              Download and edit CSV template
             </Button>
           </Stack>
-          <Stack spacing="1rem">
-            <Text textStyle="subhead-1">How to use the CSV template:</Text>
+          <Stack spacing="1.5rem">
+            <Text textStyle="h4" color="secondary.500">How to use the CSV template:</Text>
             <Box>
-              <Text textStyle="subhead-1">Column A</Text>
+              <Text textStyle="subhead-1" color="secondary.500">Column A</Text>
               <Text textStyle="body-2">
                 This contains all the options from your field.{' '}
                 <Text as="span" fontWeight="semibold">
@@ -92,9 +92,9 @@ const StepOneModalContent = ({
               </Text>
             </Box>
             <Box>
-              <Text textStyle="subhead-1">Column B</Text>
+              <Text textStyle="subhead-1" color="secondary.500">Column B</Text>
               <Text textStyle="body-2">
-                Add the email(s) to send the form to for each option.{' '}
+                Add the emails to send the form to for each option.{' '}
                 <Text as="span" fontWeight="semibold">
                   Separate multiple email(s) with a comma.
                 </Text>
@@ -104,7 +104,7 @@ const StepOneModalContent = ({
         </Box>
         <Stack spacing="1rem" alignItems="center">
           <Image w="466px" src={CSV_TEMPLATE_EXAMPLE_IMAGE} />
-          <Text textStyle="caption-2">
+          <Text color="secondary.400" textStyle="caption-2">
             Your CSV template should look like this
           </Text>
         </Stack>
@@ -112,7 +112,7 @@ const StepOneModalContent = ({
     </ModalBody>
     <ModalFooter>
       <NextAndBackButtonGroup
-        nextButtonLabel="Next: Upload CSV"
+        nextButtonLabel="Next: Upload CSV file"
         handleBack={onClose}
         handleNext={() => setStepNumber(1)}
         isNextDisabled={false}
@@ -143,7 +143,7 @@ const StepTwoModalContent = ({
   <ModalContent>
     <ModalCloseButton />
     <ModalHeader>
-      <Text mb="0.25rem">Upload your completed CSV</Text>
+      <Text mb="0.25rem">Upload your completed CSV file</Text>
       <ProgressIndicator
         numIndicators={NUM_STEPS}
         currActiveIdx={stepNumber}
@@ -185,7 +185,7 @@ const StepTwoModalContent = ({
     </ModalBody>
     <ModalFooter>
       <NextAndBackButtonGroup
-        nextButtonLabel="Save CSV"
+        nextButtonLabel="Save CSV file"
         handleBack={() => setStepNumber(0)}
         handleNext={onSubmit}
         isNextDisabled={isSubmitDisabled}

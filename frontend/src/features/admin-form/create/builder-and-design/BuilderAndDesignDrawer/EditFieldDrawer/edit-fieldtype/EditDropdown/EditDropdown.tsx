@@ -120,8 +120,9 @@ export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
         </FormErrorMessage>
         {isFieldUsedForConditionalRouting ? (
           <InlineMessage mt="1rem" variant="warning">
-            Please ensure the options here are included in the options to
-            email(s) mapping CSV file in the workflow builder.
+            This field is linked to a step in your workflow. If you make any
+            changes, ensure that the options and emails are updated in your CSV
+            file.
           </InlineMessage>
         ) : null}
       </FormControl>

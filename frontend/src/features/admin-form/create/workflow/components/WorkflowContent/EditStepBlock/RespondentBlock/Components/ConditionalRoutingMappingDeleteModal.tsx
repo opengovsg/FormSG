@@ -28,8 +28,8 @@ export const ConditionalRoutingMappingDeleteModal = ({
         <ModalCloseButton />
         <ModalHeader>Delete CSV file</ModalHeader>
         <ModalBody>
-          Are you sure you want to delete this CSV file? This action is not
-          reversible.
+          Are you sure you want to delete this CSV file? This action cannot be
+          undone.
         </ModalBody>
         <ModalFooter>
           <NextAndBackButtonGroup

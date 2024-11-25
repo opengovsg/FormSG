@@ -52,7 +52,7 @@ export interface ConditionalRoutingConfig {
  * Converts a CSV file into a string, validating that it has the required csv template file headers.
  * @param csvFile - The CSV file to parse
  * @returns A promise that resolves to the CSV content as a string
- * @throws Error if CSV headers are invalid (must have 'Options' and 'Add email(s) in this column' columns)
+ * @throws Error if CSV headers are invalid (must have 'Options' and 'Add emails in this column' columns)
  */
 const parseCsvTemplateToString = async (csvFile: File) =>
   parseCsvFileToCsvString(csvFile, (headerRow) => {
@@ -61,9 +61,9 @@ const parseCsvTemplateToString = async (csvFile: File) =>
         headerRow &&
         headerRow.length === 2 &&
         headerRow[0] === 'Options' &&
-        headerRow[1] === 'Add email(s) in this column',
+        headerRow[1] === 'Add emails in this column',
       invalidReason:
-        'Your CSV file should only contain 2 columns with the "Options" and "Add email(s) in this column" headers.',
+        'Your CSV file should only contain 2 columns with the headers "Options" and "Add emails in this column".',
     }
   })
 
@@ -110,10 +110,10 @@ export const ConditionalRoutingOption = ({
   } = useForm<ConditionalRoutingConfig>()
 
   const selectedConditionalFieldId = watch('conditional_field')
-  const isConditionalFieldSelected = !!selectedConditionalFieldId
   const selectedConditionalField = conditionalFormFields.find(
     (field) => field._id === selectedConditionalFieldId,
   )
+  const isSelectedConditionalFieldFound = !!selectedConditionalField
   const selectedConditionalFieldTitle = selectedConditionalField?.title
   const selectedConditionalFieldOptionsToRecipientsMap =
     selectedConditionalField?.optionsToRecipientsMap
@@ -151,7 +151,7 @@ export const ConditionalRoutingOption = ({
   const handleCsvDownload = () => {
     if (!selectedConditionalFieldOptionsToRecipientsMap) return
     const csvData = {
-      fields: ['Options', 'Add email(s) in this column'],
+      fields: ['Options', 'Add emails in this column'],
       data: Object.entries(selectedConditionalFieldOptionsToRecipientsMap).map(
         ([option, recipients]) => [option, recipients.join(',')],
       ),
@@ -181,7 +181,7 @@ export const ConditionalRoutingOption = ({
         return conditionalField?.fieldOptions
       }
       const generateCsvContent = (fieldOptions: string[] | undefined) => {
-        const headerRow = ['Options', 'Add email(s) in this column']
+        const headerRow = ['Options', 'Add emails in this column']
         const optionsRows = fieldOptions?.map((field) => [field, '']) ?? []
         const jsonContent = [headerRow, ...optionsRows]
         return Papa.unparse(jsonContent, {
@@ -296,7 +296,7 @@ export const ConditionalRoutingOption = ({
 
   const noEmailToOptionsMappingErrorMessage =
     !selectedConditionalFieldOptionsToRecipientsMap
-      ? 'You must add email(s) to options before saving this step'
+      ? 'You must add emails to options before saving this step.'
       : null
 
   const validateCsvFile = async (
@@ -382,7 +382,7 @@ export const ConditionalRoutingOption = ({
         }}
       >
         <Text mb="0.5rem">
-          Email(s) assigned to options in a dropdown or radio field
+          Emails assigned to options in a dropdown field
         </Text>
         {selectedWorkflowType === WorkflowType.Conditional ? (
           <FormControl
@@ -427,7 +427,7 @@ export const ConditionalRoutingOption = ({
                   />
                 )}
               />
-              {isConditionalFieldSelected ? (
+              {isSelectedConditionalFieldFound ? (
                 isOptionsToRecipientsMapAttached ? (
                   <Attachment
                     name={'csvFile'}
@@ -447,9 +447,9 @@ export const ConditionalRoutingOption = ({
                     variant="outline"
                     leftIcon={<BiPlus fontSize="1.5rem" />}
                     onClick={onOpen}
-                    isDisabled={!isConditionalFieldSelected}
+                    isDisabled={!isSelectedConditionalFieldFound}
                   >
-                    Add email(s) to options
+                    Add emails to options
                   </Button>
                 )
               ) : null}

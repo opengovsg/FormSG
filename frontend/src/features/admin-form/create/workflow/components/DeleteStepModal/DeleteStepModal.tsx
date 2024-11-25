@@ -61,8 +61,8 @@ export const DeleteStepModal = ({
         <ModalHeader color="secondary.700">Delete step</ModalHeader>
         <ModalBody whiteSpace="pre-wrap">
           <Text textStyle="body-2" color="secondary.500">
-            Are you sure you want to delete this step? This action is not
-            reversible.
+            Are you sure you want to delete this step? This action cannot be
+            undone.
           </Text>
         </ModalBody>
         <ModalFooter>

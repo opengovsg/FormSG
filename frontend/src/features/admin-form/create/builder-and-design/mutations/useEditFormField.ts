@@ -101,7 +101,7 @@ export const useEditFormField = () => {
         onSuccess: (newField: FormFieldDto) => {
           toast.closeAll()
           toast({
-            description: 'The options to email(s) mapping was updated.',
+            description: 'Your options and emails have been saved.',
           })
           queryClient.setQueryData<AdminFormDto>(adminFormKey, (oldForm) => {
             // Should not happen, should not be able to update field if there is no
