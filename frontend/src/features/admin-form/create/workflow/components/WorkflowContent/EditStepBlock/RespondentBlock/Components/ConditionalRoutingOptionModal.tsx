@@ -36,6 +36,7 @@ interface StepOneModalContentProps {
   setStepNumber: (step: number) => void
   isMobile: boolean
   onDownloadCsvClick: ConditionalRoutingOptionModalProps['onDownloadCsvClick']
+  isCsvTemplateDownloaded: boolean 
   onClose: ConditionalRoutingOptionModalProps['onClose']
 }
 
@@ -44,8 +45,10 @@ const StepOneModalContent = ({
   setStepNumber,
   isMobile,
   onDownloadCsvClick,
+  isCsvTemplateDownloaded,
   onClose,
-}: StepOneModalContentProps) => (
+}: StepOneModalContentProps) => {  
+  return (
   <ModalContent minW="fit-content">
     <ModalCloseButton />
     <ModalHeader>
@@ -53,7 +56,12 @@ const StepOneModalContent = ({
       <ProgressIndicator
         numIndicators={NUM_STEPS}
         currActiveIdx={stepNumber}
-        onClick={setStepNumber}
+        onClick={(selectedStepNumber) => {
+          if (selectedStepNumber > stepNumber && !isCsvTemplateDownloaded) {
+            return
+          }
+          setStepNumber(selectedStepNumber)
+        }}
       />
     </ModalHeader>
     <ModalBody>
@@ -115,11 +123,12 @@ const StepOneModalContent = ({
         nextButtonLabel="Next: Upload CSV file"
         handleBack={onClose}
         handleNext={() => setStepNumber(1)}
-        isNextDisabled={false}
+        isNextDisabled={!isCsvTemplateDownloaded}
       />
     </ModalFooter>
   </ModalContent>
 )
+}
 
 interface StepTwoModalContentProps {
   stepNumber: number
@@ -220,6 +229,7 @@ export const ConditionalRoutingOptionModal = ({
   const isMobile = useIsMobile()
 
   const [stepNumber, setStepNumber] = useState<number>(0)
+  const [isCsvTemplateDownloaded, setIsCsvTemplateDownloaded] = useState(false)
 
   const onModalClose = () => {
     setStepNumber(0)
@@ -238,7 +248,11 @@ export const ConditionalRoutingOptionModal = ({
           isMobile={isMobile}
           stepNumber={stepNumber}
           setStepNumber={setStepNumber}
-          onDownloadCsvClick={onDownloadCsvClick}
+          onDownloadCsvClick={() => {
+            onDownloadCsvClick() 
+            setIsCsvTemplateDownloaded(true)
+          }}
+          isCsvTemplateDownloaded={isCsvTemplateDownloaded}
           onClose={onModalClose}
         />
       )}
