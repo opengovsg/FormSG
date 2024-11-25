@@ -54,7 +54,7 @@ export const DynamicRespondentOption = ({
               control={control}
               name="field"
               rules={{
-                required: 'Please select a field',
+                required: 'Please select a field.',
                 validate: (selectedValue) => {
                   return (
                     isLoading ||

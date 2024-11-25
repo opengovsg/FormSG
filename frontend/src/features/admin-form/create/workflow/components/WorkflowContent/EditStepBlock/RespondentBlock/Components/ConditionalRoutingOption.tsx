@@ -396,7 +396,7 @@ export const ConditionalRoutingOption = ({
                 control={control}
                 name="conditional_field"
                 rules={{
-                  required: 'Please select a field',
+                  required: 'Please select a field.',
                   validate: (selectedValue) => {
                     if (noEmailToOptionsMappingErrorMessage) {
                       return noEmailToOptionsMappingErrorMessage
