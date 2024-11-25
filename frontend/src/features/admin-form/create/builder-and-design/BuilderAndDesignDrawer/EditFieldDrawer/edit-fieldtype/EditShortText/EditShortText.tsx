@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import {
   FormControl,
   InputGroup,
@@ -102,6 +103,7 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
       output: transformShortTextEditFormToField,
     },
   })
+  const { t } = useTranslation()
 
   const requiredValidationRule = useMemo(
     () => createBaseValidationRules({ required: true }),
@@ -175,7 +177,9 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
   return (
     <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
-        <FormLabel>Field Name</FormLabel>
+        <FormLabel>
+          {t('features.adminForm.sidebar.fields.commonFieldComponents.title')}
+        </FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
@@ -184,7 +188,11 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
         isReadOnly={isLoading}
         isInvalid={!!errors.description}
       >
-        <FormLabel>Description</FormLabel>
+        <FormLabel>
+          {t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.description',
+          )}
+        </FormLabel>
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>

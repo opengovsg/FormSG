@@ -54,7 +54,11 @@ export const EditHeader = ({ field }: EditHeaderProps): JSX.Element => {
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
       <FormControl isReadOnly={isLoading} isInvalid={!!errors.description}>
-        <FormLabel>Description</FormLabel>
+        <FormLabel>
+          {t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.description',
+          )}
+        </FormLabel>
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
