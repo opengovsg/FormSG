@@ -123,7 +123,6 @@ export const useTranslationLogic = ({
         language,
         updatedParagraphTranslation,
       })
-      console.log(updatedFormStartPage)
       startPageMutation.mutate(updatedFormStartPage as FormStartPage, {
         onSuccess: handleOnBackClick,
       })
@@ -136,8 +135,6 @@ export const useTranslationLogic = ({
         updatedTitleTranslation,
         updatedParagraphTranslation,
       })
-
-      console.log(updatedFormEndPage)
 
       endPageMutation.mutate(updatedFormEndPage as FormEndPage, {
         onSuccess: handleOnBackClick,

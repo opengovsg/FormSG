@@ -18,7 +18,7 @@ export const EndPageTranslationsContainer = ({
 }: EndPageTranslationsContainerProps) => {
   if (!endPage) return null
 
-  const hasParagraph = endPage.paragraph && endPage.paragraph.trim() !== ''
+  const hasParagraph = endPage.paragraph?.trim() !== ''
 
   const currentTitleTranslations = endPage.titleTranslations ?? []
   const currentParagraphTranslations = endPage.paragraphTranslations ?? []

@@ -15,26 +15,24 @@ export const SettingsMultiLangPage = (): JSX.Element => {
   const isEndPageTranslationInput = translationInput === 'endPage'
   const isStartPageTransltionInput = translationInput === 'startPage'
 
+  // Request user to select a language
+  if (!unicodeLocale) {
+    return <MultiLanguageSection />
+  }
+  // Request user to select fields to translate
+  if (!isTranslationInput) {
+    return <TranslationListSection language={unicodeLocale} />
+  }
   return (
-    <>
-      {unicodeLocale ? (
-        isTranslationInput ? (
-          <TranslationSection
-            language={unicodeLocale}
-            formFieldNumToBeTranslated={
-              isEndPageTranslationInput || isStartPageTransltionInput
-                ? -1
-                : _.toNumber(translationInput)
-            }
-            isEndPageTranslations={isEndPageTranslationInput}
-            isStartPageTranslations={isStartPageTransltionInput}
-          />
-        ) : (
-          <TranslationListSection language={unicodeLocale} />
-        )
-      ) : (
-        <MultiLanguageSection />
-      )}
-    </>
+    <TranslationSection
+      language={unicodeLocale}
+      formFieldNumToBeTranslated={
+        isEndPageTranslationInput || isStartPageTransltionInput
+          ? -1
+          : _.toNumber(translationInput)
+      }
+      isEndPageTranslations={isEndPageTranslationInput}
+      isStartPageTranslations={isStartPageTransltionInput}
+    />
   )
 }
