@@ -14,6 +14,7 @@ import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
 import { useGrowthBook } from '@growthbook/growthbook-react'
 import { differenceInMilliseconds, isPast } from 'date-fns'
+import { flow } from 'lodash'
 import get from 'lodash/get'
 
 import {
@@ -126,61 +127,59 @@ export function useCommonFormProvider(formId: string) {
 // Country/region data must be upper-case in backend for myinfo-countries compatibility,
 // while displaying in title-case to users in the frontend.
 // Hence, we need to map the frontend title-case to upper-case when submitting to backend.
-const transformFormInputCountryRegionToUpperCase = (
-  formInputs: Record<string, unknown>,
-  form_fields: Array<{ fieldType: BasicField; _id: string }>,
-) => {
-  const countryRegionFieldIds = new Set(
-    form_fields
-      .filter((field) => field.fieldType === BasicField.CountryRegion)
-      .map((field) => field._id),
-  )
+const transformFormInputCountryRegionToUpperCase =
+  (form_fields: Array<{ fieldType: BasicField; _id: string }>) =>
+  (formInputs: Record<string, unknown>) => {
+    const countryRegionFieldIds = new Set(
+      form_fields
+        .filter((field) => field.fieldType === BasicField.CountryRegion)
+        .map((field) => field._id),
+    )
 
-  return Object.keys(formInputs).reduce(
-    (newFormInputs: typeof formInputs, fieldId) => {
-      const currentInput = formInputs[fieldId]
-      if (
-        countryRegionFieldIds.has(fieldId) &&
-        typeof currentInput === 'string'
-      ) {
-        newFormInputs[fieldId] = currentInput.toUpperCase()
-      } else {
-        newFormInputs[fieldId] = currentInput
-      }
-      return newFormInputs
-    },
-    {},
-  )
-}
+    return Object.keys(formInputs).reduce(
+      (newFormInputs: typeof formInputs, fieldId) => {
+        const currentInput = formInputs[fieldId]
+        if (
+          countryRegionFieldIds.has(fieldId) &&
+          typeof currentInput === 'string'
+        ) {
+          newFormInputs[fieldId] = currentInput.toUpperCase()
+        } else {
+          newFormInputs[fieldId] = currentInput
+        }
+        return newFormInputs
+      },
+      {},
+    )
+  }
 
 // Trim text inputs before sending to backend to match frontend validation
-const transformFormInputTrimTextInputs = (
-  formInputs: Record<string, unknown>,
-  form_fields: Array<{ fieldType: BasicField; _id: string }>,
-) => {
-  const textFieldIds = new Set(
-    form_fields
-      .filter(
-        (field) =>
-          field.fieldType === BasicField.ShortText ||
-          field.fieldType === BasicField.LongText,
-      )
-      .map((field) => field._id),
-  )
+const transformFormInputTrimTextInputs =
+  (form_fields: Array<{ fieldType: BasicField; _id: string }>) =>
+  (formInputs: Record<string, unknown>) => {
+    const textFieldIds = new Set(
+      form_fields
+        .filter(
+          (field) =>
+            field.fieldType === BasicField.ShortText ||
+            field.fieldType === BasicField.LongText,
+        )
+        .map((field) => field._id),
+    )
 
-  return Object.keys(formInputs).reduce(
-    (newFormInputs: typeof formInputs, fieldId) => {
-      const currentInput = formInputs[fieldId]
-      if (textFieldIds.has(fieldId) && typeof currentInput === 'string') {
-        newFormInputs[fieldId] = currentInput.trim()
-      } else {
-        newFormInputs[fieldId] = currentInput
-      }
-      return newFormInputs
-    },
-    {},
-  )
-}
+    return Object.keys(formInputs).reduce(
+      (newFormInputs: typeof formInputs, fieldId) => {
+        const currentInput = formInputs[fieldId]
+        if (textFieldIds.has(fieldId) && typeof currentInput === 'string') {
+          newFormInputs[fieldId] = currentInput.trim()
+        } else {
+          newFormInputs[fieldId] = currentInput
+        }
+        return newFormInputs
+      },
+      {},
+    )
+  }
 
 export const PublicFormProvider = ({
   formId,
@@ -574,13 +573,10 @@ export const PublicFormProvider = ({
         }
       }
 
-      const transformedFormInputs = transformFormInputTrimTextInputs(
-        transformFormInputCountryRegionToUpperCase(
-          formInputs,
-          form.form_fields,
-        ),
-        form.form_fields,
-      ) as typeof formInputs
+      const transformedFormInputs = flow([
+        transformFormInputCountryRegionToUpperCase(form.form_fields),
+        transformFormInputTrimTextInputs(form.form_fields),
+      ])(formInputs) as typeof formInputs
 
       const formData = {
         formFields: form.form_fields,
