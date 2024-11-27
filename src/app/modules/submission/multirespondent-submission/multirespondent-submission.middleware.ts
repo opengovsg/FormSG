@@ -485,6 +485,16 @@ export const validateMultirespondentSubmission = async (
                     const incomingResField = req.body.responses[fieldId]
                     const prevResField = previousResponses[fieldId]
 
+                    if (
+                      prevResField.fieldType === BasicField.ShortText ||
+                      prevResField.fieldType === BasicField.LongText
+                    ) {
+                      // NOTE: this is done as prior to https://github.com/opengovsg/FormSG/pull/7937,
+                      // text fields were saved without trimming.
+                      // This caused isFieldResponseV3Equal to be false since the incomingResField is trimmed but the prevResField was not.
+                      prevResField.answer = prevResField.answer.trim()
+                    }
+
                     const resp = isFieldResponseV3Equal(
                       incomingResField,
                       prevResField,
