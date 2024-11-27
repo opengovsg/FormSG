@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { BiEditAlt } from 'react-icons/bi'
 import { GoEye, GoEyeClosed } from 'react-icons/go'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import {
   Box,
   Divider,
@@ -43,8 +43,7 @@ const LanguageTranslationRow = ({
 }: LanguageTranslationRowProps): JSX.Element => {
   const { formId } = useParams()
   const { data: settings } = useAdminFormSettings()
-  const navigate = useNavigate()
-  const [_, setSearchParams] = useSearchParams()
+  const [, setSearchParams] = useSearchParams()
 
   if (!formId) throw new Error('No formId provided')
 
@@ -84,7 +83,7 @@ const LanguageTranslationRow = ({
     (language: Language) => {
       setSearchParams({ unicodeLocale: language.toString() })
     },
-    [formId, navigate],
+    [setSearchParams],
   )
 
   return (

@@ -23,7 +23,9 @@ const createColumnSchema = () => {
               type: String,
               enum: Object.values(Language),
             },
-            translation: [String],
+            translation: {
+              type: String,
+            },
           },
         ],
         default: [],

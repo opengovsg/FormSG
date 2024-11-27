@@ -54,3 +54,7 @@ export const ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX = new RegExp(
 
 export const PAYMENT_PAGE_SUBROUTE = 'payment/:paymentId'
 export const EDIT_SUBMISSION_PAGE_SUBROUTE = 'edit/:submissionId'
+
+// Search param keys for multi-language
+export const UNICODE_LOCALE = 'unicodeLocale'
+export const TRANSLATION_INPUT = 'translationInput'
