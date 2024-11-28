@@ -35,8 +35,9 @@ jobs:
     steps:
       # checks out the latest code from the repo branch into the runner environment
       # dont need this as done directly by buildkit 
-      # - name: Checkout code
-      #   uses: actions/checkout@v4
+      # need this for the frontend build env vars
+      - name: Checkout code
+        uses: actions/checkout@v4
       - name: Setup secrets for datadog sourcemap deployment
         run: |
           echo "APP_VERSION=$(jq -r .version package.json)-$(echo ${GITHUB_REF##*/})-$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
@@ -78,7 +79,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           # not needed since done by Buildkit which uses git context
-          # context: .
+          context: .  
           file: Dockerfile.production
           push: true
           tags: |
