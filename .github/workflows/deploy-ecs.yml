@@ -37,6 +37,26 @@ jobs:
       # dont need this as done directly by buildkit 
       # - name: Checkout code
       #   uses: actions/checkout@v4
+      - name: Setup secrets for datadog sourcemap deployment
+        run: |
+          echo "APP_VERSION=$(jq -r .version package.json)-$(echo ${GITHUB_REF##*/})-$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
+      - name: Inject frontend build env vars
+        env:
+          VITE_APP_DD_RUM_APP_ID: ${{ secrets.DD_RUM_APP_ID }}
+          VITE_APP_DD_RUM_CLIENT_TOKEN: ${{ secrets.DD_RUM_CLIENT_TOKEN }}
+          VITE_APP_DD_RUM_ENV: ${{ secrets.DD_ENV }}
+          VITE_APP_DD_SAMPLE_RATE: ${{ secrets.DD_SAMPLE_RATE }}
+          VITE_APP_GA_TRACKING_ID: ${{ secrets.GA_TRACKING_ID }}
+          VITE_APP_FORMSG_SDK_MODE: ${{ secrets.REACT_APP_FORMSG_SDK_MODE }}
+          VITE_APP_URL: ${{ secrets.APP_URL }}
+        run: |
+          sed -i -e "s|@VITE_APP_URL|${{secrets.APP_URL}}|g" -e "s/@VITE_APP_DD_RUM_APP_ID/$VITE_APP_DD_RUM_APP_ID/g" -e "s/@VITE_APP_DD_RUM_CLIENT_TOKEN/$VITE_APP_DD_RUM_CLIENT_TOKEN/g" -e "s/@VITE_APP_DD_RUM_ENV/$VITE_APP_DD_RUM_ENV/g" -e "s/@VITE_APP_VERSION/${{env.APP_VERSION}}/g" -e "s/@VITE_APP_DD_SAMPLE_RATE/$VITE_APP_DD_SAMPLE_RATE/g" frontend/datadog-chunk.ts
+          echo VITE_APP_VERSION=${{env.APP_VERSION}} > frontend/.env
+          echo VITE_APP_URL=$VITE_APP_URL > frontend/.env
+          echo VITE_APP_GA_TRACKING_ID=$VITE_APP_GA_TRACKING_ID >> frontend/.env
+          echo VITE_APP_FORMSG_SDK_MODE=$VITE_APP_FORMSG_SDK_MODE >> frontend/.env
+          echo VITE_APP_DD_RUM_CLIENT_TOKEN=$VITE_APP_DD_RUM_CLIENT_TOKEN >> frontend/.env
+          echo VITE_APP_DD_RUM_ENV=$VITE_APP_DD_RUM_ENV >> frontend/.env
 
       # configures the runner environment with AWS credentials
       - name: Configure AWS credentials
