@@ -23,6 +23,7 @@ import { useToast } from '~hooks/useToast'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
 import {
+  AddressField,
   AttachmentField,
   CheckboxField,
   ChildrenCompoundField,
@@ -512,5 +513,7 @@ const FieldRow = ({ field, ...rest }: FieldRowProps) => {
       return <TableField schema={field} {...rest} />
     case BasicField.Children:
       return <ChildrenCompoundField schema={field} {...rest} />
+    case BasicField.Address:
+      return <AddressField schema={field} {...rest} />
   }
 }

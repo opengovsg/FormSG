@@ -138,6 +138,12 @@ export const types: BasicFieldBlock[] = [
     submitted: true,
     answerArray: true,
   },
+  {
+    name: BasicField.Address,
+    value: 'Address',
+    submitted: true,
+    answerArray: true,
+  },
 ]
 
 /**

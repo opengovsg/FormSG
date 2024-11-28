@@ -10,6 +10,7 @@ import validator from 'validator'
 
 import { DATE_PARSE_FORMAT } from '~shared/constants/dates'
 import {
+  AddressFieldBase,
   AttachmentFieldBase,
   BasicField,
   CheckboxFieldBase,
@@ -33,6 +34,7 @@ import {
   TextSelectedValidation,
   UenFieldBase,
 } from '~shared/types/field'
+import { validatePostalCode } from '~shared/utils/address-validation'
 import { isDateAnInvalidDay } from '~shared/utils/date-validation'
 import { isMFinSeriesValid, isNricValid } from '~shared/utils/nric-validation'
 import {
@@ -205,6 +207,43 @@ export const createHomeNoValidationRules: ValidationRuleFn<HomenoFieldBase> = (
         if (!val) return true
         return isHomePhoneNumber(val) || 'Please enter a valid landline number'
       },
+    },
+  }
+}
+
+export const createAddressValidationRules: ValidationRuleFn<
+  AddressFieldBase
+> = (schema, disableRequiredValidation): RegisterOptions => {
+  return {
+    validate: {
+      required: requiredSingleAnswerValidationFn(
+        schema,
+        disableRequiredValidation,
+      ),
+      postalCode: (value: number) => {
+        if (!value && schema.required && !disableRequiredValidation) {
+          return 'Postal code is required'
+        }
+        return validatePostalCode(value)
+      },
+      // blockNumber: (value: number) => {
+      //   if (!value && schema.required && !disableRequiredValidation) {
+      //     return 'Block number is required'
+      //   }
+      //   return validateBlockNumber(value)
+      // },
+      // roadName: (value: string) => {
+      //   if (!value && schema.required && !disableRequiredValidation) {
+      //     return 'Road name is required'
+      //   }
+      //   return validateRoadName(value)
+      // },
+      // unitNumber: (value: string | null) => {
+      //   if (!value && schema.required && !disableRequiredValidation) {
+      //     return 'Unit number is required'
+      //   }
+      //   return validateUnitNumber(value)
+      // },
     },
   }
 }

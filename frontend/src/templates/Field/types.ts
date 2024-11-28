@@ -11,6 +11,7 @@ import {
   VerifiableResponseBase,
 } from '~shared/types'
 import {
+  AddressFieldBase,
   AttachmentFieldBase,
   BasicField,
   CheckboxFieldBase,
@@ -61,6 +62,7 @@ export type FormFieldValues = Record<
   [PAYMENT_PRODUCT_FIELD_ID]?: ProductItemInput[]
 }
 
+export type AddressFieldInput = FieldInput<AddressFieldValues>
 export type AttachmentFieldInput = FieldInput<File | null>
 export type CheckboxFieldInputs = FieldInput<CheckboxFieldValues>
 export type RadioFieldInputs = FieldInput<RadioFieldValues>
@@ -98,7 +100,9 @@ export type FormFieldValue<F extends BasicField = BasicField> = F extends
               ? CheckboxFieldValues
               : F extends BasicField.Children
                 ? ChildrenCompoundFieldValues
-                : never
+                : F extends BasicField.Address
+                  ? AddressFieldValues
+                  : never
 
 // Input values, what each field contains
 export type SingleAnswerValue = string
@@ -143,12 +147,21 @@ export type ChildrenCompoundFieldValues = {
   childFields: MyInfoChildAttributes[]
 }
 
+export type AddressFieldValues = {
+  postalCode: number
+  blockNumber: number // or HouseNumber
+  roadName: string
+  building: string | null
+  unitNumber: string | null // unit number can be 01-07, or 6A
+}
+
 // Various schemas used by different fields
 export type SectionFieldSchema = FormFieldWithId<SectionFieldBase>
 export type ParagraphFieldSchema = FormFieldWithId<StatementFieldBase>
 export type ImageFieldSchema = FormFieldWithId<ImageFieldBase>
 
 // With question number
+export type AddressFieldSchema = FormFieldWithQuestionNo<AddressFieldBase>
 export type AttachmentFieldSchema = FormFieldWithQuestionNo<AttachmentFieldBase>
 export type CheckboxFieldSchema = FormFieldWithQuestionNo<CheckboxFieldBase>
 export type DateFieldSchema = FormFieldWithQuestionNo<DateFieldBase>
