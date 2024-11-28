@@ -38,6 +38,8 @@ jobs:
       # need this for the frontend build env vars
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Setup secrets for datadog sourcemap deployment
         run: |
           echo "APP_VERSION=$(jq -r .version package.json)-$(echo ${GITHUB_REF##*/})-$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
@@ -77,6 +79,9 @@ jobs:
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
+        env: 
+          DD_API_KEY: ${{ secrets.DD_API_KEY }}
+          DD_ENV: ${{ secrets.DD_ENV }}
         with:
           # not needed since done by Buildkit which uses git context
           context: .  
@@ -86,9 +91,9 @@ jobs:
             ${{ steps.login-ecr.outputs.registry }}/formsg/staging-alt3:${{ env.IMAGE_TAG }}
             ${{ steps.login-ecr.outputs.registry }}/formsg/staging-alt3:latest
           build-args: |
-            APP_VERSION=${{env.APP_VERSION}}
-            APP_URL=${{secrets.APP_URL}}
-            REPO_URL=${{github.server_url}}/${{github.repository}}
+            APP_VERSION=${{  env.APP_VERSION  }}
+            APP_URL=${{  secrets.APP_URL  }}
+            REPO_URL=${{  github.server_url  }}/${{  github.repository  }}
           secrets: |
             "dd_api_key=${{ secrets.DD_API_KEY }}"
       # - name: Update ECS service
