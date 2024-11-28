@@ -1,4 +1,4 @@
-import { expect, userEvent, waitFor, within } from '@storybook/test'
+import { expect, screen, userEvent, waitFor, within } from '@storybook/test'
 
 import {
   BasicField,
@@ -83,6 +83,47 @@ const form_field_5: FormFieldDto = {
   allowPrefill: false,
 }
 
+const dropdown_field_no_mapping: FormFieldDto = {
+  title: 'Department',
+  description: '',
+  required: true,
+  disabled: false,
+  fieldType: BasicField.Dropdown,
+  fieldOptions: ['Engineering', 'Design', 'Operations', 'Product'],
+  _id: '6200e1534ad4f00012848d90',
+}
+
+const dropdown_field_valid_mapping: FormFieldDto = {
+  title: 'Department',
+  description: '',
+  required: true,
+  disabled: false,
+  fieldType: BasicField.Dropdown,
+  fieldOptions: ['Engineering', 'Design', 'Operations', 'Product'],
+  optionsToRecipientsMap: {
+    Engineering: ['kevin@example.com'],
+    Design: ['alicia@example.com'],
+    Operations: ['ruchel@example.com'],
+    Product: ['kenneth@example.com'],
+  },
+  _id: '6200e1534ad4f00012848d91',
+}
+
+const dropdown_field_missing_options_mapping: FormFieldDto = {
+  title: 'Department',
+  description: '',
+  required: true,
+  disabled: false,
+  fieldType: BasicField.Dropdown,
+  fieldOptions: ['Engineering', 'Design', 'Operations', 'Product'],
+  optionsToRecipientsMap: {
+    Engineering: ['kevin@example.com'],
+    Design: ['alicia@example.com'],
+    Operations: ['ruchel@example.com'],
+  },
+  _id: '6200e1534ad4f00012848d92',
+}
+
 const mrfFormViewWithFields = [
   getAdminFormView({
     mode: FormResponseMode.Multirespondent,
@@ -93,6 +134,9 @@ const mrfFormViewWithFields = [
         form_field_3,
         form_field_4,
         form_field_5,
+        dropdown_field_no_mapping,
+        dropdown_field_valid_mapping,
+        dropdown_field_missing_options_mapping,
       ],
     },
   }),
@@ -178,9 +222,275 @@ export const Step2FixedEmailEmpty = {
       },
     )
   },
-
   args: {
     stepNumber: 1,
+  },
+}
+
+export const Step2ConditionalRoutingEmpty = {
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement)
+    await waitFor(
+      async () =>
+        expect(await canvas.getByText('Save step')).not.toBeDisabled(),
+      {
+        timeout: 5000,
+      },
+    )
+    await waitFor(
+      async () => {
+        await userEvent.click(
+          await canvas.getByText(
+            'Emails assigned to options in a dropdown field',
+          ),
+        )
+      },
+      {
+        timeout: 5000,
+      },
+    )
+  },
+  args: {
+    stepNumber: 1,
+  },
+}
+
+export const Step2ConditionalRouting = {
+  // due to the double registration of 'workflow_type' there would be a weird interaction
+  // where the default value will be reset
+  // thus we have to manually select the field again
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement)
+    await waitFor(
+      async () =>
+        expect(await canvas.getByText('Save step')).not.toBeDisabled(),
+      {
+        timeout: 5000,
+      },
+    )
+    await waitFor(
+      async () => {
+        await userEvent.click(
+          await canvas.getByText(
+            'Emails assigned to options in a dropdown field',
+          ),
+        )
+      },
+      {
+        timeout: 5000,
+      },
+    )
+  },
+  args: {
+    stepNumber: 1,
+    defaultValues: {
+      workflow_type: WorkflowType.Conditional,
+      conditional_field: dropdown_field_no_mapping._id,
+    },
+  },
+}
+
+export const Step2ConditionalRoutingValidOptionsUploaded = {
+  // due to the double registration of 'workflow_type' there would be a weird interaction
+  // where the default value will be reset
+  // thus we have to manually select the field again
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement)
+    await waitFor(
+      async () =>
+        expect(await canvas.getByText('Save step')).not.toBeDisabled(),
+      {
+        timeout: 5000,
+      },
+    )
+    await waitFor(
+      async () => {
+        await userEvent.click(
+          await canvas.getByText(
+            'Emails assigned to options in a dropdown field',
+          ),
+        )
+      },
+      {
+        timeout: 5000,
+      },
+    )
+  },
+  args: {
+    stepNumber: 1,
+    defaultValues: {
+      workflow_type: WorkflowType.Conditional,
+      conditional_field: dropdown_field_valid_mapping._id,
+    },
+  },
+}
+
+export const Step2ConditionalRoutingDeleteWarningModal = {
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement)
+    await waitFor(
+      async () =>
+        expect(await canvas.getByText('Save step')).not.toBeDisabled(),
+      {
+        timeout: 5000,
+      },
+    )
+    await waitFor(
+      async () => {
+        await userEvent.click(
+          await canvas.getByText(
+            'Emails assigned to options in a dropdown field',
+          ),
+        )
+      },
+      {
+        timeout: 5000,
+      },
+    )
+    await waitFor(
+      async () => {
+        const deleteButton = await canvas.getByLabelText('Click to remove file')
+        await userEvent.click(deleteButton)
+      },
+      { timeout: 5000 },
+    )
+    // Assert the modal appears
+    await waitFor(
+      async () => {
+        expect(await screen.getByText('Delete CSV file')).toBeInTheDocument()
+      },
+      { timeout: 5000 },
+    )
+  },
+  args: {
+    stepNumber: 1,
+    defaultValues: {
+      workflow_type: WorkflowType.Conditional,
+      conditional_field: dropdown_field_valid_mapping._id,
+    },
+  },
+}
+
+export const Step2ConditionalRoutingInvalidOptionsUploadedErrorMessage = {
+  // due to the double registration of 'workflow_type' there would be a weird interaction
+  // where the default value will be reset
+  // thus we have to manually select the field again
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement)
+    await waitFor(
+      async () =>
+        expect(await canvas.getByText('Save step')).not.toBeDisabled(),
+      {
+        timeout: 5000,
+      },
+    )
+    await waitFor(
+      async () => {
+        await userEvent.click(
+          await canvas.getByText(
+            'Emails assigned to options in a dropdown field',
+          ),
+        )
+      },
+      {
+        timeout: 5000,
+      },
+    )
+  },
+  args: {
+    stepNumber: 1,
+    defaultValues: {
+      workflow_type: WorkflowType.Conditional,
+      conditional_field: dropdown_field_missing_options_mapping._id,
+    },
+  },
+}
+
+export const Step2ConditionalRoutingNoFieldSelectedErrorMessage = {
+  // due to the double registration of 'workflow_type' there would be a weird interaction
+  // where the default value will be reset
+  // thus we have to manually select the field again
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement)
+    await waitFor(
+      async () =>
+        expect(await canvas.getByText('Save step')).not.toBeDisabled(),
+      {
+        timeout: 5000,
+      },
+    )
+    await waitFor(
+      async () => {
+        await userEvent.click(
+          await canvas.getByText(
+            'Emails assigned to options in a dropdown field',
+          ),
+        )
+      },
+      {
+        timeout: 5000,
+      },
+    )
+    await waitFor(
+      async () => {
+        const saveStep = canvas.getByText('Save step')
+        expect(saveStep).not.toBeDisabled()
+        await userEvent.click(saveStep)
+      },
+      {
+        timeout: 5000,
+      },
+    )
+  },
+  args: {
+    stepNumber: 1,
+    defaultValues: {
+      workflow_type: WorkflowType.Conditional,
+    },
+  },
+}
+
+export const Step2ConditionalRoutingNoOptionsToReicipientsMapErrorMessage = {
+  // due to the double registration of 'workflow_type' there would be a weird interaction
+  // where the default value will be reset
+  // thus we have to manually select the field again
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement)
+    await waitFor(
+      async () => await userEvent.click(canvas.getByText('Save step')),
+      {
+        timeout: 5000,
+      },
+    )
+    await waitFor(
+      async () => {
+        await userEvent.click(
+          await canvas.getByText(
+            'Emails assigned to options in a dropdown field',
+          ),
+        )
+      },
+      {
+        timeout: 5000,
+      },
+    )
+    await waitFor(
+      async () => {
+        const saveStep = canvas.getByText('Save step')
+        expect(saveStep).not.toBeDisabled()
+        await userEvent.click(saveStep)
+      },
+      {
+        timeout: 5000,
+      },
+    )
+  },
+  args: {
+    stepNumber: 1,
+    defaultValues: {
+      workflow_type: WorkflowType.Conditional,
+      conditional_field: dropdown_field_no_mapping._id,
+    },
   },
 }
 
@@ -207,7 +517,7 @@ export const Step3AllSelectedValid = {
   args: {
     stepNumber: 2,
     defaultValues: {
-      workflow_type: WorkflowType.Dynamic,
+      workflow_type: WorkflowType.Static,
       field: form_field_4._id,
       edit: [form_field_1._id, form_field_5._id],
       approval_field: form_field_1._id,

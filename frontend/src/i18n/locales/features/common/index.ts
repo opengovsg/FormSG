@@ -55,6 +55,7 @@ export interface Common {
   tooltip: {
     deleteField: string
     duplicateField: string
+    editField: string
   }
   dropdown: {
     placeholder: string

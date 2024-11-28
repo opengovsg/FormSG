@@ -2,7 +2,11 @@ import { useLayoutEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { Box, Divider, Stack } from '@chakra-ui/react'
 
-import { FormWorkflowStep, WorkflowType } from '~shared/types'
+import {
+  FormWorkflowStep,
+  FormWorkflowStepBase,
+  WorkflowType,
+} from '~shared/types'
 
 import { SaveActionGroup } from '~features/admin-form/create/logic/components/LogicContent/EditLogicBlock/EditCondition'
 import { useUser } from '~features/user/queries'
@@ -82,11 +86,19 @@ export const EditStepBlock = ({
       })
     }
 
-    let step: FormWorkflowStep
+    let step: FormWorkflowStep & { _id: string }
+
+    const workflowStepBase: FormWorkflowStepBase & { _id: string } = {
+      _id: inputs._id,
+      workflow_type: inputs.workflow_type,
+      edit: inputs.edit,
+      approval_field: inputs.approval_field,
+    }
+
     switch (inputs.workflow_type) {
       case WorkflowType.Static: {
         step = {
-          ...inputs,
+          ...workflowStepBase,
           // Need to explicitly set workflow_type in this object to help with typechecking.
           workflow_type: WorkflowType.Static,
           emails: inputs.emails ?? [],
@@ -96,15 +108,22 @@ export const EditStepBlock = ({
       case WorkflowType.Dynamic: {
         if (!inputs.field) return
         step = {
-          ...inputs,
+          ...workflowStepBase,
           workflow_type: WorkflowType.Dynamic,
           field: inputs.field,
         }
         break
       }
+      case WorkflowType.Conditional: {
+        if (!inputs.conditional_field) return
+        step = {
+          ...workflowStepBase,
+          workflow_type: WorkflowType.Conditional,
+          conditional_field: inputs.conditional_field,
+        }
+        break
+      }
       default: {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const _: never = inputs.workflow_type
         throw new Error('Invalid workflow type')
       }
     }
@@ -112,9 +131,6 @@ export const EditStepBlock = ({
   })
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
-
-  // TODO: (MRF-email-notif) Remove isTest check when approvals is out of beta
-  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
 
   return (
     <Stack
@@ -141,14 +157,11 @@ export const EditStepBlock = ({
       />
       <Divider />
       <QuestionsBlock formMethods={formMethods} isLoading={_isLoading} />
-      {/*TODO: (MRF-email-notif) Remove isTest and betaFlag check when approvals is out of beta */}
-      {isTest || user?.betaFlags?.mrfEmailNotifications ? (
-        !isFirstStep ? (
-          <>
-            <Divider />
-            <ApprovalsBlock formMethods={formMethods} stepNumber={stepNumber} />
-          </>
-        ) : null
+      {!isFirstStep ? (
+        <>
+          <Divider />
+          <ApprovalsBlock formMethods={formMethods} stepNumber={stepNumber} />
+        </>
       ) : null}
       <Divider />
       <SaveActionGroup

@@ -46,6 +46,9 @@ import {
 import { EditFormFieldParams } from 'src/types/api'
 
 import {
+  CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,
+  CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE,
+  CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
   FORM_WHITELIST_CONTAINS_EMPTY_ROWS_ERROR_MESSAGE,
   FORM_WHITELIST_SETTING_CONTAINS_DUPLICATES_ERROR_MESSAGE,
   FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE,
@@ -3070,6 +3073,293 @@ describe('admin-form.service', () => {
       expect(whitelistedSettingResult._unsafeUnwrap()).toEqual(
         MOCK_WHITELISTED_SUBMITTER_IDS_CONTENT,
       )
+    })
+  })
+
+  describe('updateOptionsToRecipientsMap', () => {
+    describe('validation of field', () => {
+      it('should return error if field is not a dropdown field', async () => {
+        // Arrange
+        const mockFormFields = [
+          {
+            _id: 'fieldId',
+            fieldType: BasicField.ShortText,
+          },
+        ]
+        const mockForm = {
+          _id: 'formId',
+          form_fields: mockFormFields,
+          updateFormFieldById: jest.fn().mockResolvedValue({
+            form_fields: [mockFormFields],
+          }),
+        } as unknown as IPopulatedForm
+
+        const optionsMap = {}
+
+        // Act
+        const result = await AdminFormService.updateOptionsToRecipientsMap(
+          mockForm,
+          'fieldId',
+          optionsMap,
+        )
+
+        // Assert
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(EditFieldError)
+      })
+
+      it('should allow operation if field is a dropdown field', async () => {
+        // Arrange
+        const mockFormFields = [
+          {
+            _id: 'fieldId',
+            fieldType: BasicField.Dropdown,
+            fieldOptions: ['option1'],
+            toObject: jest.fn().mockReturnValue({
+              _id: 'fieldId',
+              fieldType: BasicField.Dropdown,
+              fieldOptions: ['option1'],
+            }),
+          },
+        ]
+
+        const mockForm = {
+          _id: 'formId',
+          form_fields: mockFormFields,
+          updateFormFieldById: jest.fn().mockResolvedValue({
+            form_fields: mockFormFields,
+          }),
+        } as unknown as IPopulatedForm
+
+        const optionsMap = {
+          option1: ['test1@example.com'],
+        }
+
+        // Act
+        const result = await AdminFormService.updateOptionsToRecipientsMap(
+          mockForm,
+          'fieldId',
+          optionsMap,
+        )
+
+        // Assert
+        expect(result.isOk()).toBe(true)
+      })
+    })
+
+    describe('validation of options to recipients map', () => {
+      it('should return error if options to recipients map has options that are not in the field options', async () => {
+        // Arrange
+        const mockForm = {
+          _id: 'formId',
+          form_fields: [
+            {
+              _id: 'fieldId',
+              fieldType: BasicField.Dropdown,
+              fieldOptions: ['option1', 'option2'],
+            },
+          ],
+        } as unknown as IPopulatedForm
+
+        const invalidOptionsMap = {
+          option1: ['test1@example.com'],
+          option2: ['test2@example.com'],
+          option3: ['test3@example.com'],
+        }
+
+        // Act
+        const result = await AdminFormService.updateOptionsToRecipientsMap(
+          mockForm,
+          'fieldId',
+          invalidOptionsMap,
+        )
+
+        // Assert
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr().message).toBe(
+          CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
+        )
+      })
+
+      it('should return error if options to recipients map does not have options that are in the field options', async () => {
+        // Arrange
+        const mockForm = {
+          _id: 'formId',
+          form_fields: [
+            {
+              _id: 'fieldId',
+              fieldType: BasicField.Dropdown,
+              fieldOptions: ['option1', 'option2'],
+            },
+          ],
+        } as unknown as IPopulatedForm
+
+        const incompleteOptionsMap = {
+          option2: ['test2@example.com'],
+        }
+
+        // Act
+        const result = await AdminFormService.updateOptionsToRecipientsMap(
+          mockForm,
+          'fieldId',
+          incompleteOptionsMap,
+        )
+
+        // Assert
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr().message).toBe(
+          CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
+        )
+      })
+
+      it('should return error if some options is empty string', async () => {
+        // Arrange
+        const mockForm = {
+          _id: 'formId',
+          form_fields: [
+            {
+              _id: 'fieldId',
+              fieldType: BasicField.Dropdown,
+              fieldOptions: ['option1', ''],
+            },
+          ],
+        } as unknown as IPopulatedForm
+
+        const emptyOptionsMap = {
+          '': ['test@example.com'],
+          option2: ['test2@example.com'],
+        }
+
+        // Act
+        const result = await AdminFormService.updateOptionsToRecipientsMap(
+          mockForm,
+          'fieldId',
+          emptyOptionsMap,
+        )
+
+        // Assert
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr().message).toBe(
+          CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,
+        )
+      })
+
+      it('should return error if some recipients are invalid emails', async () => {
+        // Arrange
+        const mockForm = {
+          _id: 'formId',
+          form_fields: [
+            {
+              _id: 'fieldId',
+              fieldType: BasicField.Dropdown,
+              fieldOptions: ['option1'],
+            },
+          ],
+        } as unknown as IPopulatedForm
+
+        const invalidEmailsMap = {
+          option1: ['invalid-email', 'valid-email@example.com'],
+          option2: ['valid-email2@example.com'],
+        }
+
+        // Act
+        const result = await AdminFormService.updateOptionsToRecipientsMap(
+          mockForm,
+          'fieldId',
+          invalidEmailsMap,
+        )
+
+        // Assert
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr().message).toBe(
+          CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE,
+        )
+      })
+
+      it('should save if the options to recipients map is valid', async () => {
+        // Arrange
+        const mockFormField = {
+          _id: 'fieldId',
+          fieldType: BasicField.Dropdown,
+          fieldOptions: ['option1', 'option2'],
+          toObject: jest.fn().mockReturnValue({
+            _id: 'fieldId',
+            fieldType: BasicField.Dropdown,
+            fieldOptions: ['option1', 'option2'],
+          }),
+        }
+
+        const mockForm = {
+          _id: 'formId',
+          form_fields: [mockFormField],
+          updateFormFieldById: jest.fn().mockResolvedValue({
+            form_fields: [mockFormField],
+          }),
+        }
+
+        const validOptionsMap = {
+          option1: ['test@example.com'],
+          option2: [
+            'test2@example.com',
+            'test3@example.com',
+            'test4@example.com',
+          ],
+        }
+
+        // Act
+        const result = await AdminFormService.updateOptionsToRecipientsMap(
+          mockForm as unknown as IPopulatedForm,
+          'fieldId',
+          validOptionsMap,
+        )
+
+        // Assert
+        expect(result.isOk()).toBe(true)
+        expect(mockForm.updateFormFieldById).toHaveBeenCalledWith('fieldId', {
+          _id: 'fieldId',
+          fieldType: BasicField.Dropdown,
+          fieldOptions: ['option1', 'option2'],
+          optionsToRecipientsMap: validOptionsMap,
+        })
+      })
+
+      it('should save if the options to recipients map is empty aka deleted', async () => {
+        // Arrange
+        const mockFormField = {
+          _id: 'fieldId',
+          fieldType: BasicField.Dropdown,
+          fieldOptions: ['option1'],
+          toObject: jest.fn().mockReturnValue({
+            _id: 'fieldId',
+            fieldType: BasicField.Dropdown,
+            fieldOptions: ['option1'],
+          }),
+        }
+
+        const mockForm = {
+          _id: 'formId',
+          form_fields: [mockFormField],
+          updateFormFieldById: jest.fn().mockResolvedValue({
+            form_fields: [mockFormField],
+          }),
+        }
+
+        // Act
+        const result = await AdminFormService.updateOptionsToRecipientsMap(
+          mockForm as unknown as IPopulatedForm,
+          'fieldId',
+          {},
+        )
+
+        // Assert
+        expect(result.isOk()).toBe(true)
+        expect(mockForm.updateFormFieldById).toHaveBeenCalledWith('fieldId', {
+          _id: 'fieldId',
+          fieldType: BasicField.Dropdown,
+          fieldOptions: ['option1'],
+          optionsToRecipientsMap: {},
+        })
+      })
     })
   })
 })

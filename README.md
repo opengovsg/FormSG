@@ -103,7 +103,7 @@ npm run dev
 
 After the Docker image has finished building, the following local applications can be accessed:
 
-- React application can be accessed at [localhost:3000](localhost:3000)
+- React application can be accessed at [localhost:5173](localhost:5173)
 - The backend API server can be accessed at [localhost:5001](localhost:5001)
 - The development mail server can be accessed at [localhost:1080](localhost:1080)
 

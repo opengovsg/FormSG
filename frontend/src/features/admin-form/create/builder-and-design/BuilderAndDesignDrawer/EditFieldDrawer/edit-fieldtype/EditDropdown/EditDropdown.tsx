@@ -3,15 +3,18 @@ import { useTranslation } from 'react-i18next'
 import { FormControl } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
+import { WorkflowType } from '~shared/types'
 import { DropdownFieldBase } from '~shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
+import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
 
+import { useAdminFormWorkflow } from '../../../../../../create/workflow/hooks/useAdminFormWorkflow'
 import { CreatePageDrawerContentContainer } from '../../../../../common'
 import {
   SPLIT_TEXTAREA_TRANSFORM,
@@ -51,6 +54,7 @@ const transformDropdownEditFormToField = (
 
 export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
   const { t } = useTranslation()
+  const { formWorkflow } = useAdminFormWorkflow()
   const {
     register,
     formState: { errors },
@@ -71,6 +75,14 @@ export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
     () => createBaseValidationRules({ required: true }),
     [],
   )
+
+  const isFieldUsedForConditionalRouting = useMemo(() => {
+    return formWorkflow?.some(
+      (workflow) =>
+        workflow.workflow_type === WorkflowType.Conditional &&
+        workflow.conditional_field === field._id,
+    )
+  }, [formWorkflow, field._id])
 
   return (
     <CreatePageDrawerContentContainer>
@@ -106,6 +118,13 @@ export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
         <FormErrorMessage>
           {errors?.fieldOptionsString?.message}
         </FormErrorMessage>
+        {isFieldUsedForConditionalRouting ? (
+          <InlineMessage mt="1rem" variant="warning">
+            This field is linked to a step in your workflow. If you make any
+            changes, ensure that the options and emails are updated in your CSV
+            file.
+          </InlineMessage>
+        ) : null}
       </FormControl>
       <FormFieldDrawerActions
         isLoading={isLoading}

@@ -26,7 +26,7 @@ export const FieldLogicBadge = ({
   field,
   defaults = {
     variant: 'error',
-    message: 'This field was deleted and has been removed from your workflow',
+    message: 'This field was deleted, please select another field',
   },
 }: FieldLogicBadgeProps) => {
   const fieldMeta = useMemo(

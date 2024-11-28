@@ -26,7 +26,7 @@ export const FormIssueNotificationToggle = (): JSX.Element => {
       <Toggle
         isLoading={mutateFormIssueNotification.isLoading}
         isChecked={hasIssueNotification}
-        label="Enable email notifications for reports made by respondents"
+        label="Receive email notifications for issues reported by respondents"
         description="You will receive a maximum of one email per form, per day if there are any issues reported."
         onChange={() => handleToggleIssueNotification()}
       />

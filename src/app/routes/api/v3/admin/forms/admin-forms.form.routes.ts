@@ -183,6 +183,11 @@ AdminFormsFormRouter.route(
    */
   .get(AdminFormController.handleGetFormField)
 
+AdminFormsFormRouter.put(
+  '/:formId([a-fA-F0-9]{24})/fields/:fieldId([a-fA-F0-9]{24})/options-to-recipients-map',
+  AdminFormController.handleUpdateOptionsToRecipientsMap,
+)
+
 /**
  * Duplicates the form field with the fieldId from the specified form
  * @security session

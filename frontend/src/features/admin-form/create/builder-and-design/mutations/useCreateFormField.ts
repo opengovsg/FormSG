@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
 
@@ -22,6 +23,7 @@ import {
 } from '../utils/getMutationMessage'
 
 export const useCreateFormField = () => {
+  const { t } = useTranslation()
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
@@ -45,15 +47,14 @@ export const useCreateFormField = () => {
       if (stateData.state !== FieldBuilderState.CreatingField) {
         toast({
           status: 'warning',
-          description:
-            'Something went wrong when creating your field. Please refresh and try again.',
+          description: t('features.adminForm.toasts.field.create.error'),
         })
         return
       }
       toast({
-        description: `The ${getMutationToastDescriptionFieldName(
-          newField,
-        )} was created.`,
+        description: t('features.adminForm.toasts.field.create.success', {
+          field: getMutationToastDescriptionFieldName(newField),
+        }),
       })
       queryClient.setQueryData<AdminFormDto>(adminFormKey, (oldForm) => {
         // Should not happen, should not be able to update field if there is no
@@ -65,7 +66,7 @@ export const useCreateFormField = () => {
       // Switch from creation to editing
       updateEditState(newField)
     },
-    [adminFormKey, stateData, queryClient, updateEditState, toast],
+    [adminFormKey, stateData, queryClient, updateEditState, toast, t],
   )
 
   const handleError = useCallback(

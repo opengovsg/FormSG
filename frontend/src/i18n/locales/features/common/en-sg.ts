@@ -55,6 +55,7 @@ export const enSG: Common = {
   tooltip: {
     deleteField: 'Delete field',
     duplicateField: 'Duplicate field',
+    editField: 'Edit field',
   },
   dropdown: {
     placeholder: 'Select an option',

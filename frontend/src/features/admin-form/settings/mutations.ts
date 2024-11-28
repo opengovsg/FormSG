@@ -173,7 +173,7 @@ export const useMutateFormSettings = () => {
       onSuccess: (newData) => {
         handleSuccess({
           newData,
-          toastDescription: `Email notifications for reports are now ${
+          toastDescription: `Email notifications for issues reported are now ${
             newData.hasIssueNotification ? 'enabled' : 'disabled'
           } on your form.`,
         })

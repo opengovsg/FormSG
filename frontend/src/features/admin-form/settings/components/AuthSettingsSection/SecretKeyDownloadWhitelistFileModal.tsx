@@ -130,7 +130,7 @@ export const SecretKeyDownloadWhitelistFileModal = ({
       onClose={onClose}
       isOpen={isOpen}
       publicKey={publicKey}
-      modalActionText=" Download CSV file of whitelisted NRIC/FIN/UEN(s)"
+      modalActionText="Download CSV file of whitelisted NRIC/FIN/UEN(s)"
       submitButtonText="Download file"
       hasAck={false}
     />

@@ -16,8 +16,7 @@ import {
   IPopulatedMultirespondentForm,
 } from '../../../../types'
 import { MultirespondentSubmissionDto } from '../../../../types/api'
-// TODO: (MRF-email-notif) Remove isTest import when MRF email notifications is out of beta
-import config, { isTest } from '../../../config/config'
+import config from '../../../config/config'
 import {
   createLoggerWithLabel,
   CustomLoggerParams,
@@ -128,7 +127,7 @@ const sendNextStepEmail = ({
 }): ResultAsync<true, InvalidWorkflowTypeError | MailSendError> => {
   const logMeta = {
     action: 'sendNextStepEmail',
-    formId,
+    formId: formId.toString(),
     submissionId,
     nextWorkflowStep: nextStepNumber,
   }
@@ -140,7 +139,7 @@ const sendNextStepEmail = ({
 
   return (
     // Step 1: Retrieve email addresses for current workflow step
-    retrieveWorkflowStepEmailAddresses(nextStep, responses)
+    retrieveWorkflowStepEmailAddresses(form, nextStep, responses)
       .mapErr((error) => {
         logger.error({
           message: 'Failed to retrieve workflow step email addresses',
@@ -151,7 +150,13 @@ const sendNextStepEmail = ({
       })
       // Step 2: send out next workflow step email
       .asyncAndThen((emails) => {
-        if (!emails) return okAsync(true)
+        if (emails.length <= 0) {
+          logger.info({
+            message: 'No destination email found for MRF next step email',
+            meta: logMeta,
+          })
+          return okAsync(true)
+        }
         return MailService.sendMRFWorkflowStepEmail({
           emails,
           formTitle,
@@ -186,7 +191,7 @@ const sendMrfOutcomeEmails = ({
 }): ResultAsync<true, InvalidWorkflowTypeError | MailSendError> => {
   const logMeta = {
     action: 'sendMrfOutcomeEmails',
-    formId: form._id,
+    formId: form._id?.toString(),
     submissionId,
   }
   const emailsToNotify =
@@ -217,7 +222,7 @@ const sendMrfOutcomeEmails = ({
     // Step 1: Fetch email address from all workflow steps that are selected to notify
     Result.combine(
       validWorkflowStepsToNotify.map((workflowStep) =>
-        retrieveWorkflowStepEmailAddresses(workflowStep, responses),
+        retrieveWorkflowStepEmailAddresses(form, workflowStep, responses),
       ),
     )
       .mapErr((error) => {
@@ -237,8 +242,13 @@ const sendMrfOutcomeEmails = ({
       })
       // Step 3: Send outcome emails based on type
       .asyncAndThen((destinationEmails) => {
-        if (!destinationEmails || destinationEmails.length <= 0)
+        if (!destinationEmails || destinationEmails.length <= 0) {
+          logger.info({
+            message: 'No destination email found for MRF outcome email',
+            meta: logMeta,
+          })
           return okAsync(true)
+        }
 
         const lastStepNumber = form.workflow.length - 1
         const isLastStep = currentStepNumber === lastStepNumber
@@ -436,16 +446,12 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
       return error
     })
     .andThen(() => {
-      // TODO: (MRF-email-notif) Remove isTest and betaFlag check when MRF email notifications is out of beta
-      if (isTest || form.admin.betaFlags.mrfEmailNotifications) {
-        return sendMrfOutcomeEmails({
-          currentStepNumber,
-          form,
-          responses,
-          submissionId,
-        })
-      }
-      return okAsync(true)
+      return sendMrfOutcomeEmails({
+        currentStepNumber,
+        form,
+        responses,
+        submissionId,
+      })
     })
     .mapErr((error) => {
       logger.error({
@@ -566,22 +572,18 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     submissionId,
   }
 
-  const isStepRejectedResult =
-    // TODO: (MRF-email-notif): Remove flag once approvals is out of beta
-    isTest || form.admin.betaFlags.mrfEmailNotifications
-      ? checkIsStepRejected({
-          zeroIndexedStepNumber: currentStepNumber,
-          form,
-          responses,
-        }).mapErr((error) => {
-          logger.error({
-            message: 'Error checking if step is rejected',
-            meta: logMeta,
-            error,
-          })
-          return error
-        })
-      : ok(false)
+  const isStepRejectedResult = checkIsStepRejected({
+    zeroIndexedStepNumber: currentStepNumber,
+    form,
+    responses,
+  }).mapErr((error) => {
+    logger.error({
+      message: 'Error checking if step is rejected',
+      meta: logMeta,
+      error,
+    })
+    return error
+  })
 
   if (isStepRejectedResult.isErr()) {
     logger.error({
@@ -594,84 +596,60 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
 
   const isStepRejected = isStepRejectedResult.value
 
-  // TODO: (MRF-email-notif): Remove flag once approvals is out of beta
-  if (isTest || form.admin.betaFlags.mrfEmailNotifications) {
-    if (isStepRejected) {
-      return sendMrfOutcomeEmails({
-        currentStepNumber,
-        form,
-        responses,
-        submissionId,
-        isApproval: true,
-        isRejected: true,
-      }).mapErr((error) => {
-        logger.error({
-          message: 'Send mrf outcome email error',
-          meta: logMeta,
-          error,
-        })
-        return error
-      })
-    }
+  if (isStepRejected) {
     return sendMrfOutcomeEmails({
       currentStepNumber,
       form,
       responses,
       submissionId,
-      isApproval: checkIsFormApproval(form),
+      isApproval: true,
+      isRejected: true,
+    }).mapErr((error) => {
+      logger.error({
+        message: 'Send mrf outcome email error',
+        meta: logMeta,
+        error,
+      })
+      return error
     })
-      .mapErr((error) => {
+  }
+  return sendMrfOutcomeEmails({
+    currentStepNumber,
+    form,
+    responses,
+    submissionId,
+    isApproval: checkIsFormApproval(form),
+  })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Send mrf outcome email error',
+        meta: logMeta,
+        error,
+      })
+      return error
+    })
+    .andThen(() =>
+      sendNextStepEmail({
+        nextStepNumber: currentStepNumber + 1,
+        form,
+        formTitle: form.title,
+        responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
+          form._id,
+          submissionId,
+          { key: submissionSecretKey },
+        )}`,
+        formId: form._id,
+        submissionId,
+        responses,
+      }).mapErr((error) => {
         logger.error({
-          message: 'Send mrf outcome email error',
+          message: 'Send multirespondent workflow email error',
           meta: logMeta,
           error,
         })
         return error
-      })
-      .andThen(() =>
-        sendNextStepEmail({
-          nextStepNumber: currentStepNumber + 1,
-          form,
-          formTitle: form.title,
-          responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
-            form._id,
-            submissionId,
-            { key: submissionSecretKey },
-          )}`,
-          formId: form._id,
-          submissionId,
-          responses,
-        }).mapErr((error) => {
-          logger.error({
-            message: 'Send multirespondent workflow email error',
-            meta: logMeta,
-            error,
-          })
-          return error
-        }),
-      )
-  }
-  // TODO: (MRF-email-notif): Remove this case once approvals is out of beta
-  return sendNextStepEmail({
-    nextStepNumber: currentStepNumber + 1,
-    form,
-    formTitle: form.title,
-    responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
-      form._id,
-      submissionId,
-      { key: submissionSecretKey },
-    )}`,
-    formId: form._id,
-    submissionId,
-    responses,
-  }).mapErr((error) => {
-    logger.error({
-      message: 'Send multirespondent workflow email error',
-      meta: logMeta,
-      error,
-    })
-    return error
-  })
+      }),
+    )
 }
 
 export const getMultirespondentSubmission = (

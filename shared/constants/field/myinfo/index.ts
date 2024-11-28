@@ -53,12 +53,12 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.Sex,
-    value: 'Gender',
+    value: 'Sex',
     category: 'personal',
     verified: ['SG', 'PR', 'F'],
     source: 'Immigration & Checkpoints Authority / Ministry of Manpower',
     description:
-      'The gender of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
+      'The sex of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
     fieldType: BasicField.Dropdown,
     fieldOptions: ['FEMALE', 'MALE', 'UNKNOWN'],
     previewValue: 'MALE',
@@ -349,11 +349,11 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.ChildGender,
-    value: "Child's gender",
+    value: "Child's sex",
     category: 'children',
     verified: [],
     source: 'Immigration & Checkpoints Authority',
-    description: 'Gender',
+    description: 'Sex',
     fieldType: BasicField.ShortText,
     fieldOptions: ['FEMALE', 'MALE', 'UNKNOWN'],
     previewValue: 'MALE',
@@ -394,30 +394,3 @@ export const types: MyInfoFieldBlock[] = [
 ]
 
 export const MYINFO_ATTRIBUTE_MAP = keyBy(types, 'name')
-
-// TODO: remove after 28 Jun 2024 as this would have fully taken effect
-function updateLabelBasedOnDate() {
-  const currentDate = new Date().toLocaleString('en-US', {
-    timeZone: 'Asia/Singapore',
-  })
-  const targetDate = new Date('2024-06-28T00:00:00').toLocaleString('en-US', {
-    timeZone: 'Asia/Singapore',
-  })
-  if (new Date(currentDate) >= new Date(targetDate)) {
-    const sexAttribute = MYINFO_ATTRIBUTE_MAP[MyInfoAttribute.Sex]
-    if (sexAttribute) {
-      sexAttribute.description = 'Sex'
-      sexAttribute.value = 'Sex'
-      sexAttribute.description =
-        'The sex of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.'
-    }
-    const childGenderAttribute =
-      MYINFO_ATTRIBUTE_MAP[MyInfoAttribute.ChildGender]
-    if (childGenderAttribute) {
-      childGenderAttribute.value = "Child's Sex"
-      childGenderAttribute.description = 'Sex'
-    }
-  }
-}
-
-updateLabelBasedOnDate()

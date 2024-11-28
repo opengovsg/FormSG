@@ -13,6 +13,7 @@ import {
 } from '../../../../../shared/types'
 import {
   FormFieldSchema,
+  IPopulatedForm,
   MultirespondentSubmissionData,
 } from '../../../../types'
 import { ParsedClearFormFieldResponsesV3 } from '../../../../types/api'
@@ -63,7 +64,39 @@ export const getEmailFromResponses = (
   return field.answer.value
 }
 
+const getConditionalFieldEmailRecipient = (
+  form: IPopulatedForm,
+  fieldId: string,
+  responses: FieldResponsesV3,
+): string[] => {
+  const conditionalField = form.form_fields.find(
+    (field) => field._id.toString() === fieldId.toString(),
+  )
+  const conditionalFieldResponse = responses[fieldId]
+
+  const isFieldValid =
+    !!conditionalField &&
+    conditionalField.fieldType === BasicField.Dropdown &&
+    !!conditionalField.optionsToRecipientsMap
+
+  const isResponseValid =
+    !!conditionalFieldResponse &&
+    conditionalFieldResponse.fieldType === BasicField.Dropdown
+
+  if (!isFieldValid || !isResponseValid) {
+    return [] // Not an error, misconfigured or respondent has not filled.
+  }
+
+  const emailRecipients =
+    conditionalField?.optionsToRecipientsMap?.[
+      conditionalFieldResponse.answer
+    ] ?? []
+
+  return emailRecipients
+}
+
 export const retrieveWorkflowStepEmailAddresses = (
+  form: IPopulatedForm,
   step: FormWorkflowStepDto,
   responses: FieldResponsesV3,
 ): Result<string[], InvalidWorkflowTypeError> => {
@@ -76,6 +109,15 @@ export const retrieveWorkflowStepEmailAddresses = (
       const email = getEmailFromResponses(step.field, responses)
       if (!email) return ok([])
       return ok([email])
+    }
+    case WorkflowType.Conditional: {
+      return ok(
+        getConditionalFieldEmailRecipient(
+          form,
+          step.conditional_field,
+          responses,
+        ),
+      )
     }
     default: {
       return err(new InvalidWorkflowTypeError())

@@ -21,9 +21,9 @@ export const UserBase = z.object({
       payment: z.boolean().optional(),
       children: z.boolean().optional(),
       postmanSms: z.boolean().optional(),
-      // TODO: (MRF-email-notif) Remove betaFlag when MRF email notifications is out of beta
-      mrfEmailNotifications: z.boolean().optional(),
+      mrfEmailNotifications: z.boolean().optional(), // Previously used for MRF email notifications, not currently used
       mrfAdminSubmissionKey: z.boolean().optional(),
+      mrfConditionalRouting: z.boolean().optional(),
       mfb: z.boolean().optional(),
     })
     .optional(),

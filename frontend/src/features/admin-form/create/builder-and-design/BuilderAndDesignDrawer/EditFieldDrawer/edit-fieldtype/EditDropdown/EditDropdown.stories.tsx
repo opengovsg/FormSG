@@ -1,6 +1,13 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { BasicField, DropdownFieldBase } from '~shared/types'
+import {
+  BasicField,
+  DropdownFieldBase,
+  FormFieldDto,
+  FormResponseMode,
+  FormWorkflowStepDto,
+  WorkflowType,
+} from '~shared/types'
 
 import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 
@@ -8,7 +15,9 @@ import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 
 import { EditDropdown } from './EditDropdown'
 
-const DEFAULT_DROPDOWN_FIELD: DropdownFieldBase = {
+const DEFAULT_DROPDOWN_FIELD: DropdownFieldBase & {
+  _id: FormFieldDto['_id']
+} = {
   title: 'Storybook Dropdown',
   description: 'Some description about Dropdown',
   required: true,
@@ -16,6 +25,7 @@ const DEFAULT_DROPDOWN_FIELD: DropdownFieldBase = {
   fieldType: BasicField.Dropdown,
   fieldOptions: ['Option 1', 'Option 2', 'Option 3'],
   globalId: 'unused',
+  _id: 'dropdown_field_id',
 }
 
 export default {
@@ -39,7 +49,9 @@ export default {
 } as Meta<StoryArgs>
 
 interface StoryArgs {
-  field: DropdownFieldBase
+  field: DropdownFieldBase & {
+    _id: FormFieldDto['_id']
+  }
 }
 
 const Template: StoryFn<StoryArgs> = ({ field }) => {
@@ -48,3 +60,28 @@ const Template: StoryFn<StoryArgs> = ({ field }) => {
 
 export const Default = Template.bind({})
 Default.storyName = 'EditDropdown'
+
+const workflow_step_1: FormWorkflowStepDto = {
+  _id: '61e6857c9c794b0012f1c6f8',
+  workflow_type: WorkflowType.Static,
+  emails: [],
+  edit: [],
+}
+
+const workflow_step_2: FormWorkflowStepDto = {
+  _id: '61e6857c9c794b0012f1c6f8',
+  workflow_type: WorkflowType.Conditional,
+  conditional_field: DEFAULT_DROPDOWN_FIELD._id,
+  edit: [],
+}
+
+export const FieldUsedForConditionalRouting = Template.bind({})
+FieldUsedForConditionalRouting.parameters = {
+  msw: createFormBuilderMocks(
+    {
+      responseMode: FormResponseMode.Multirespondent,
+      workflow: [workflow_step_1, workflow_step_2],
+    },
+    0,
+  ),
+}

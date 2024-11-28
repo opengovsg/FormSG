@@ -75,9 +75,9 @@ const compileUserModel = (db: Mongoose) => {
         payment: Boolean,
         children: Boolean,
         postmanSms: Boolean,
-        // TODO: (MRF-email-notif) Remove betaFlag when MRF email notifications is out of beta
-        mrfEmailNotifications: Boolean,
+        mrfEmailNotifications: Boolean, // Previously used for MRF email notifications, not currently used
         mrfAdminSubmissionKey: Boolean,
+        mrfConditionalRouting: Boolean,
         mfb: Boolean,
       },
       flags: {

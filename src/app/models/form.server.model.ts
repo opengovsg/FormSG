@@ -111,6 +111,7 @@ import LogicSchema, {
 import { CustomFormLogoSchema, FormLogoSchema } from './form_logo.server.schema'
 import { FORM_WHITELISTED_SUBMITTER_IDS_ID } from './form_whitelist.server.model'
 import WorkflowStepSchema, {
+  WorkflowStepConditionalSchema,
   WorkflowStepDynamicSchema,
   WorkflowStepStaticSchema,
 } from './form_workflow_step.server.schema'
@@ -397,6 +398,10 @@ MultirespondentFormWorkflowPath.discriminator(
 MultirespondentFormWorkflowPath.discriminator(
   WorkflowType.Dynamic,
   WorkflowStepDynamicSchema,
+)
+MultirespondentFormWorkflowPath.discriminator(
+  WorkflowType.Conditional,
+  WorkflowStepConditionalSchema,
 )
 
 const compileFormModel = (db: Mongoose): IFormModel => {

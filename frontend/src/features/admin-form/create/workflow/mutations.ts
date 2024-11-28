@@ -114,5 +114,9 @@ export const useWorkflowMutations = () => {
     },
   )
 
-  return { createStepMutation, deleteStepMutation, updateStepMutation }
+  return {
+    createStepMutation,
+    deleteStepMutation,
+    updateStepMutation,
+  }
 }

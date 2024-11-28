@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { BiCog, BiTrash } from 'react-icons/bi'
 import { Box, ButtonGroup, Collapse, Flex } from '@chakra-ui/react'
 
@@ -147,10 +148,15 @@ const PaymentButtonGroup = ({
       handleBuilderClick(false)
     }
   }, [handleBuilderClick, isMobile])
+  const { t } = useTranslation()
 
   const {
     deletePaymentModalDisclosure: { onOpen: onDeleteModalOpen },
   } = useBuilderAndDesignContext()
+
+  const { deleteField, editField } = t('features.common.tooltip', {
+    returnObjects: true,
+  })
 
   return (
     <Flex
@@ -164,15 +170,15 @@ const PaymentButtonGroup = ({
           <IconButton
             variant="clear"
             colorScheme="secondary"
-            aria-label="Edit field"
+            aria-label={editField}
             icon={<BiCog fontSize="1.25rem" />}
             onClick={handleEditFieldClick}
           />
         )}
-        <Tooltip label="Delete field">
+        <Tooltip label={deleteField}>
           <IconButton
             colorScheme="danger"
-            aria-label="Delete field"
+            aria-label={deleteField}
             icon={<BiTrash fontSize="1.25rem" />}
             onClick={onDeleteModalOpen}
           />

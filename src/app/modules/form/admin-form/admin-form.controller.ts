@@ -2277,6 +2277,69 @@ export const handleUpdateFormField = [
   _handleUpdateFormField,
 ]
 
+const _handleUpdateOptionsToRecipientsMap: ControllerHandler<
+  {
+    formId: string
+    fieldId: string
+  },
+  FormFieldDto | ErrorDto,
+  { optionsToRecipientsMap: Record<string, string[]> }
+> = (req, res) => {
+  const { formId, fieldId } = req.params
+  const { optionsToRecipientsMap } = req.body
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  // Step 1: Retrieve currently logged in user.
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      // Step 2: Retrieve form with write permission check.
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((form) => {
+      return AdminFormService.updateOptionsToRecipientsMap(
+        form,
+        fieldId,
+        optionsToRecipientsMap,
+      )
+    })
+    .map((updatedFormField) =>
+      res.status(StatusCodes.OK).json(updatedFormField as FormFieldDto),
+    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when updating options to recipients map',
+        meta: {
+          action: '_handleUpdateOptionsToRecipientsMap',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          fieldId,
+          optionsToRecipientsMap,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+export const handleUpdateOptionsToRecipientsMap = [
+  celebrate({
+    [Segments.BODY]: Joi.object({
+      optionsToRecipientsMap: Joi.object(),
+    }),
+    [Segments.PARAMS]: Joi.object({
+      formId: Joi.string().required(),
+      fieldId: Joi.string().required(),
+    }),
+  }),
+  _handleUpdateOptionsToRecipientsMap,
+] as ControllerHandler[]
+
 /**
  * NOTE: Exported for testing.
  * Private handler for POST /forms/:formId/fields

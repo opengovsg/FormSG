@@ -3,15 +3,15 @@ import { BiPencil } from 'react-icons/bi'
 import { Box, chakra, Flex, Stack, Text } from '@chakra-ui/react'
 import { Dictionary } from 'lodash'
 
-import { FormField } from '~shared/types'
+import { BasicField, FormField } from '~shared/types'
 import { FormWorkflowStepDto, WorkflowType } from '~shared/types/form'
+import { checkIsOptionsMismatched } from '~shared/utils/options-recipients-map-validation'
 
 import IconButton from '~components/IconButton'
 
 import { FieldLogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/FieldLogicBadge'
 import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
 import { FormFieldWithQuestionNo } from '~features/form/types'
-import { useUser } from '~features/user/queries'
 
 import {
   createOrEditDataSelector,
@@ -49,6 +49,43 @@ const SubsequentStepRespondentBadges = ({
       )
     case WorkflowType.Dynamic:
       return <FieldLogicBadge field={idToFieldMap[step.field]} />
+    case WorkflowType.Conditional: {
+      const selectedConditionalField = idToFieldMap[step.conditional_field]
+      if (
+        !selectedConditionalField ||
+        selectedConditionalField.fieldType !== BasicField.Dropdown
+      ) {
+        return <FieldLogicBadge field={selectedConditionalField} />
+      }
+      const selectedConditionalFieldOptions =
+        selectedConditionalField.fieldOptions
+      const optionsToRecipientsMapOptions = Object.keys(
+        selectedConditionalField.optionsToRecipientsMap || {},
+      )
+      const isOptionsMismatched = checkIsOptionsMismatched(
+        optionsToRecipientsMapOptions,
+        selectedConditionalFieldOptions,
+      )
+      return (
+        <Stack direction="column" spacing="0.5rem">
+          <FieldLogicBadge
+            field={
+              step.conditional_field
+                ? idToFieldMap[step.conditional_field]
+                : undefined
+            }
+          />
+          {isOptionsMismatched ? (
+            <FieldLogicBadge
+              defaults={{
+                variant: 'error',
+                message: 'Please update your CSV options and emails',
+              }}
+            />
+          ) : null}
+        </Stack>
+      )
+    }
     default: {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _: never = step
@@ -64,10 +101,6 @@ export const InactiveStepBlock = ({
   const { idToFieldMap } = useAdminFormWorkflow()
   const setToEditing = useAdminWorkflowStore(setToEditingSelector)
   const stateData = useAdminWorkflowStore(createOrEditDataSelector)
-
-  const { user } = useUser()
-  // TODO: (MRF-email-notif) Remove isTest check when MRF email notifications and approvals are both out of beta
-  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
 
   // Prevent editing step if some other step is being edited.
   const isPreventEdit = useMemo(() => !!stateData, [stateData])
@@ -113,8 +146,7 @@ export const InactiveStepBlock = ({
         field={idToFieldMap[fieldId]}
         defaults={{
           variant: 'info',
-          message:
-            'This field was deleted and has been removed from your workflow',
+          message: 'This field was deleted, please select another field',
         }}
       />
     ))
@@ -141,8 +173,6 @@ export const InactiveStepBlock = ({
 
           <Stack>
             <Text textStyle="subhead-3">Respondent in this step</Text>
-            {/* TODO: (MRF-email-notif) Remove isTest and betaFlag check when MRF email
-            notifications is out of beta */}
             {isFirstStep ? (
               <Text>Anyone who has access to your form</Text>
             ) : (
@@ -166,11 +196,8 @@ export const InactiveStepBlock = ({
               {questionBadges}
             </Stack>
           </Stack>
-          {/* TODO: (MRF-email-notif) Remove isTest and betaFlag check when approvals is out of beta */}
-          {isTest || user?.betaFlags?.mrfEmailNotifications ? (
-            !isFirstStep ? (
-              <InactiveApprovalsBlock step={step} idToFieldMap={idToFieldMap} />
-            ) : null
+          {!isFirstStep ? (
+            <InactiveApprovalsBlock step={step} idToFieldMap={idToFieldMap} />
           ) : null}
         </Stack>
       </chakra.button>

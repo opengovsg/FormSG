@@ -6,9 +6,12 @@ import {
   HeaderAndInstructions,
   Logic,
   Login,
+  Meta,
+  Modals,
   Navbar,
   PublicForm,
   ThankYou,
+  Toasts,
 } from './features'
 
 interface Translation {
@@ -22,6 +25,9 @@ interface Translation {
           thankYou?: ThankYou
         }
         navbar?: Navbar
+        meta?: Meta
+        modals?: Modals
+        toasts?: Toasts
       }
       common?: Common
       publicForm?: PublicForm
