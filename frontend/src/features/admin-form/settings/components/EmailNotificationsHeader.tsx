@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { BiBulb } from 'react-icons/bi'
 import { Flex, Icon } from '@chakra-ui/react'
 
@@ -30,10 +31,13 @@ export const EmailNotificationsHeader = ({
   isPaymentsEnabled,
   isFormResponseModeEmail,
 }: EmailNotificationsHeaderProps) => {
+  const { t } = useTranslation()
   if (isFormPublic) {
     return (
       <InlineMessage marginBottom="40px">
-        To change email recipients, close your form to new responses.
+        {t(
+          'features.adminForm.settings.emailNotifications.header.closeFormFirst',
+        )}
       </InlineMessage>
     )
   }
@@ -41,7 +45,10 @@ export const EmailNotificationsHeader = ({
   if (isPaymentsEnabled) {
     return (
       <InlineMessage useMarkdown marginBottom="40px">
-        {`Email notifications for payment forms are not available in FormSG. You can configure them using [Plumber](${OGP_PLUMBER}).`}
+        {t(
+          'features.adminForm.settings.emailNotifications.header.noEmailsForPaymentForms',
+          { url: OGP_PLUMBER },
+        )}
       </InlineMessage>
     )
   }

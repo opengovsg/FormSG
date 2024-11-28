@@ -5,6 +5,7 @@ export {
   type Meta,
   type Modals,
   type Navbar,
+  type Settings,
   type ThankYou,
   type Toasts,
 } from './admin-form'

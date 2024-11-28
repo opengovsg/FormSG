@@ -30,6 +30,7 @@ export const enSG: Common = {
   back: 'Back',
   edit: 'Edit',
   loading: 'Loading',
+  loadingWithEllipsis: 'Loading...',
   saving: 'Saving',
   responses: 'Responses',
   feedback: 'Feedback',

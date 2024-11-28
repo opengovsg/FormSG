@@ -181,9 +181,7 @@ const addSettings = async (
     await page.getByRole('tab', { name: 'General' }).dispatchEvent('click')
 
     // Ensure that we are on the general settings page
-    await expect(
-      page.getByRole('heading', { name: 'General settings' }),
-    ).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'General' })).toBeVisible()
 
     // Toggle form to be open
     await page
@@ -226,9 +224,7 @@ const addGeneralSettings = async (
   await page.getByRole('tab', { name: 'General' }).click()
 
   // Ensure that we are on the general settings page
-  await expect(
-    page.getByRole('heading', { name: 'General settings' }),
-  ).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'General' })).toBeVisible()
 
   await expectToast(page, /your form is closed to new responses/i)
 

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Skeleton } from '@chakra-ui/react'
 
 import { FormResponseMode, FormSettings, FormStatus } from '~shared/types/form'
@@ -37,6 +38,7 @@ const FormEmailSectionContainer = ({
 }
 
 export const SettingsEmailsPage = (): JSX.Element => {
+  const { t } = useTranslation()
   const { data: settings } = useAdminFormSettings()
 
   const isFormPublic = settings?.status === FormStatus.Public
@@ -54,7 +56,9 @@ export const SettingsEmailsPage = (): JSX.Element => {
 
   return (
     <>
-      <CategoryHeader>Email notifications</CategoryHeader>
+      <CategoryHeader>
+        {t('features.adminForm.settings.emailNotifications.title')}
+      </CategoryHeader>
       {settings ? (
         <>
           <EmailNotificationsHeader

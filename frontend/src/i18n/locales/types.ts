@@ -10,6 +10,7 @@ import {
   Modals,
   Navbar,
   PublicForm,
+  Settings,
   ThankYou,
   Toasts,
 } from './features'
@@ -28,6 +29,7 @@ interface Translation {
         meta?: Meta
         modals?: Modals
         toasts?: Toasts
+        settings?: Settings
       }
       common?: Common
       publicForm?: PublicForm

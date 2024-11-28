@@ -1,4 +1,5 @@
 import { memo, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiDownload } from 'react-icons/bi'
 import { useParams } from 'react-router-dom'
 import {
@@ -76,6 +77,7 @@ const StackRow = ({
 }
 
 export const IndividualResponsePage = (): JSX.Element => {
+  const { t } = useTranslation()
   const { submissionId, formId } = useParams()
   if (!submissionId) throw new Error('Missing submissionId')
   if (!formId) throw new Error('Missing formId')
@@ -156,7 +158,9 @@ export const IndividualResponsePage = (): JSX.Element => {
           />
           <StackRow
             label="Timestamp"
-            value={data?.submissionTime ?? 'Loading...'}
+            value={
+              data?.submissionTime ?? t('features.common.loadingWithEllipsis')
+            }
             isLoading={isLoading}
             isError={isError}
           />

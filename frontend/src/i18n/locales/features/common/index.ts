@@ -30,6 +30,7 @@ export interface Common {
   back: string
   edit: string
   loading: string
+  loadingWithEllipsis: string
   saving: string
   responses: string
   feedback: string

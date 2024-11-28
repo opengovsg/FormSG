@@ -1,4 +1,5 @@
 import { ChangeEventHandler, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { GUIDE_WEBHOOKS } from '~constants/links'
 import Toggle from '~components/Toggle'
@@ -7,6 +8,7 @@ import { useMutateFormSettings } from '../../mutations'
 import { useAdminFormSettings } from '../../queries'
 
 export const RetryToggle = (): JSX.Element | null => {
+  const { t } = useTranslation()
   const { data: settings } = useAdminFormSettings()
   const { mutateWebhookRetries } = useMutateFormSettings()
 
@@ -24,8 +26,10 @@ export const RetryToggle = (): JSX.Element | null => {
     <Toggle
       isLoading={mutateWebhookRetries.isLoading}
       isChecked={settings.webhook.isRetryEnabled}
-      label="Enable retries"
-      description={`Your system must meet certain requirements before retries can be safely enabled. [Learn more](${GUIDE_WEBHOOKS})`}
+      {...t('features.adminForm.settings.webhooks.retry', {
+        returnObjects: true,
+        url: GUIDE_WEBHOOKS,
+      })}
       onChange={handleToggleRetry}
     />
   )
