@@ -1,0 +1,85 @@
+name: Deploy to AWS ECS 
+on:
+  push:
+    branches:
+      - staging-alt3 
+
+# used to configure IAM to trust Github's OIDC provider
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  # github.ref_name is the current branch name
+  # this sets the branch_name output to eg, staging-alt3 
+  # other jobs can use this output via needs.set_branch_name.outputs.branch_name
+  set_branch_name:
+    outputs:
+      branch_name: ${{ steps.set_branch_name.outputs.branch_name }}
+    runs-on: ubuntu-latest
+    steps:
+      - id: set_branch_name
+        # this uses github context which exists in the runner environment
+        run: echo "branch_name=${{github.ref_name}}" >> $GITHUB_OUTPUT
+
+  deploy:
+    name: Deploy to ECS
+    needs: set_branch_name
+    runs-on: ubuntu-latest
+    # can be used for env rules defined in GH repo settings
+    environment: ${{ needs.set_branch_name.outputs.branch_name }}
+    env:
+      # this is the unique tag for the built docker image
+      IMAGE_TAG: github-actions-${{ github.sha }}-${{ github.run_id }}-${{github.run_attempt}}
+    
+    steps:
+      # checks out the latest code from the repo branch into the runner environment
+      # dont need this as done directly by buildkit 
+      # - name: Checkout code
+      #   uses: actions/checkout@v4
+
+      # configures the runner environment with AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # to update later to use the new role
+          role-to-assume: arn:aws:iam::445567101234:role/Staging-Alt3-OIDC 
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      # logs into the Amazon ECR repository, requires the configure AWS credentials above
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          # not needed since done by Buildkit which uses git context
+          # context: .
+          file: Dockerfile.production
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/formsg/staging-alt3:${{ env.IMAGE_TAG }}
+            ${{ steps.login-ecr.outputs.registry }}/formsg/staging-alt3:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      # - name: Update ECS service
+      #   run: |
+      #     aws ecs update-service \
+      #       --cluster ${{ secrets.ECS_CLUSTER }} \
+      #       --service ${{ secrets.ECS_SERVICE }} \
+      #       --force-new-deployment \
+      #       --task-definition $(aws ecs register-task-definition \
+      #         --family ${{ secrets.ECS_TASK_FAMILY }} \
+      #         --execution-role-arn ${{ secrets.ECS_TASK_EXECUTION_ROLE }} \
+      #         --container-definitions '[{
+      #           "name": "${{ secrets.ECS_CONTAINER_NAME }}",
+      #           "image": "${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}",
+      #           "essential": true,
+      #           "portMappings": [{"containerPort": 8080, "protocol": "tcp"}]
+      #         }]' \
+      #         --query 'taskDefinition.taskDefinitionArn' --output text)
+
