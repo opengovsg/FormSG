@@ -38,6 +38,8 @@ jobs:
       # need this for the frontend build env vars
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Setup secrets for datadog sourcemap deployment
         run: |
           echo "APP_VERSION=$(jq -r .version package.json)-$(echo ${GITHUB_REF##*/})-$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
