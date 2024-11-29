@@ -50,7 +50,7 @@ export const FEATURE_UPDATE_LIST: FeatureUpdateList = {
       description: dedent`You can now enable approvals from Step 2 onwards using Yes/No fields. This allows you to determine whether an existing workflow should continue based on the approval of the current step.
 
 
-      Respondents will fill these fields at each approval step to determine the workflow's path. If Yes is selected, the form continues to the next step. If No is selected, the workflow ends at that step.`,
+      For every step that enables this feature, a Yes/No field is required. If Yes is selected, the form continues to the next step. If No is selected, the workflow ends at that step.`,
       image: {
         url: MrfApprovals,
         alt: 'Use Multi-respondent forms for approval workflows',
