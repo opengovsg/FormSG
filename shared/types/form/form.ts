@@ -161,6 +161,11 @@ export interface FormBase {
 
   esrvcId?: string
 
+  /**
+   * LEGACY: Used for sending with the correct Twilio.
+   * This is retained since DB records may still contain this field.
+   * @deprecated Twilio is no longer supported as we have moved the functionality to postman-sms
+   */
   msgSrvcName?: string
 
   webhook: FormWebhook
