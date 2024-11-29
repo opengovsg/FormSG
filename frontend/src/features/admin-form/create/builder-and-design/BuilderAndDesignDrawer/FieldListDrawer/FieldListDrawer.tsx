@@ -1,8 +1,14 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { BiSearch } from 'react-icons/bi'
 import {
   Box,
   Divider,
   Flex,
+  Icon,
+  Input,
+  InputGroup,
+  InputLeftElement,
   TabList,
   TabPanel,
   TabPanels,
@@ -24,10 +30,30 @@ import {
   PaymentsInputPanel,
 } from './field-panels'
 
+const FieldSearchBar = ({
+  searchValue,
+  onChange,
+}: {
+  searchValue: string
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+}) => (
+  <InputGroup>
+    <InputLeftElement>
+      <Icon as={BiSearch} color="secondary.500" fontSize="1.25rem" />
+    </InputLeftElement>
+    <Input
+      value={searchValue}
+      onChange={onChange}
+      placeholder="Search fields"
+    />
+  </InputGroup>
+)
+
 export const FieldListDrawer = (): JSX.Element => {
   const { t } = useTranslation()
   const { fieldListTabIndex, setFieldListTabIndex } = useCreatePageSidebar()
   const { isLoading } = useCreateTabForm()
+  const [searchValue, setSearchValue] = useState('')
 
   const tabsDataList = [
     {
@@ -51,7 +77,12 @@ export const FieldListDrawer = (): JSX.Element => {
       isDisabled: isLoading,
       key: FieldListTabIndex.Payments,
     },
-  ].filter((tab) => !tab.isHidden)
+  ].filter((tab) => !tab.isHidden) as {
+    header: string
+    component: (props: { searchValue?: string }) => JSX.Element
+    isDisabled: boolean
+    key: FieldListTabIndex
+  }[]
 
   return (
     <Tabs
@@ -70,7 +101,11 @@ export const FieldListDrawer = (): JSX.Element => {
           </Text>
           <CreatePageDrawerCloseButton />
         </Flex>
-        <TabList mx="-0.25rem" w="100%">
+        <FieldSearchBar
+          searchValue={searchValue}
+          onChange={(val) => setSearchValue(val.target.value)}
+        />
+        <TabList mt="0.5rem" mx="-0.25rem" w="100%">
           {tabsDataList.map((tab) => (
             <Tab key={tab.key} isDisabled={tab.isDisabled}>
               {tab.header}
@@ -82,7 +117,7 @@ export const FieldListDrawer = (): JSX.Element => {
       <TabPanels pb="1rem" flex={1} overflowY="auto">
         {tabsDataList.map((tab) => (
           <TabPanel key={tab.key}>
-            <tab.component />
+            <tab.component searchValue={searchValue} />
           </TabPanel>
         ))}
       </TabPanels>
