@@ -16,6 +16,8 @@ export const GUIDE_FORM_MRF = 'https://go.gov.sg/formsg-guide-mrf'
 export const GUIDE_MRF_MODE = 'http://go.gov.sg/formsg-mrf'
 export const GUIDE_MYINFO_BUILDER_FIELD =
   'https://go.gov.sg/formsg-guide-singpass-myinfo'
+export const GUIDE_SINGPASS_FEATURES =
+  'https://go.gov.sg/formsg-guide-singpass-myinfo'
 export const GUIDE_SPCP_ESRVCID =
   'https://go.gov.sg/formsg-guide-singpass-myinfo'
 export const GUIDE_ENABLE_SPCP =

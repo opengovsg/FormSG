@@ -65,9 +65,11 @@ export const WhatsNewContent = ({
         {title}
       </Text>
       <MarkdownText components={mdComponents}>{description}</MarkdownText>
-      <Box mt="2rem" role="presentation">
-        {renderedImage}
-      </Box>
+      {renderedImage ? (
+        <Box mt="2rem" role="presentation">
+          {renderedImage}
+        </Box>
+      ) : null}
     </Box>
   )
 }

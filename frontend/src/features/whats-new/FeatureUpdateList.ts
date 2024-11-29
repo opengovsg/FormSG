@@ -4,6 +4,7 @@ import { RequireExactlyOne } from 'type-fest'
 import {
   GUIDE_MRF_MODE,
   GUIDE_PAYMENTS_ENTRY,
+  GUIDE_SINGPASS_FEATURES,
   GUIDE_SPCP_ESRVCID,
 } from '~constants/links'
 
@@ -13,6 +14,8 @@ import Animation4 from './assets/4-dnd.json'
 import MyInfoStorageMode from './assets/6-myinfo-storage.svg'
 import ChartsSvg from './assets/7-charts_announcement.svg'
 import MrfAnimation from './assets/8-mrf_announcement.json'
+import MrfEmailNotifications from './assets/9-mrf-email-notifications.gif'
+import MrfApprovals from './assets/10-mrf-approvals.gif'
 import foldersDashboard from './assets/folders_dashboard.svg'
 
 // image can either be a static image (using url) or an animation (using animationData)
@@ -39,8 +42,42 @@ export interface FeatureUpdateList {
 // New features should be added at the top of the list.
 export const FEATURE_UPDATE_LIST: FeatureUpdateList = {
   // Update version whenever a new feature is added.
-  version: 6,
+  version: 7,
   features: [
+    {
+      title: 'Use Multi-respondent forms for approval workflows',
+      date: new Date('20 Nov 2024 GMT+8'),
+      description: dedent`You can now enable approvals from Step 2 onwards using Yes/No fields. This allows you to determine whether an existing workflow should continue based on the approval of the current step.
+
+
+      Respondents will fill these fields at each approval step to determine the workflow's path. If Yes is selected, the form continues to the next step. If No is selected, the workflow ends at that step.`,
+      image: {
+        url: MrfApprovals,
+        alt: 'Use Multi-respondent forms for approval workflows',
+      },
+    },
+    {
+      title:
+        'Email notifications and summary of responses for Multi-respondent forms',
+      date: new Date('20 Nov 2024 GMT+8'),
+      description: dedent`
+      You can now send the email summary of responses and approval outcomes (approved/rejected/completed) to both form respondents and other parties.`,
+      image: {
+        url: MrfEmailNotifications,
+        alt: 'Email notifications and summary of responses for Multi-respondent forms',
+      },
+    },
+    {
+      title: 'Enhanced Singpass features for Storage mode forms',
+      date: new Date('26 Aug 2024 GMT+8'),
+      description: dedent`
+      * Limit each NRIC/FIN/UEN to one submission per form 
+      * Whitelist respondents by NRIC 
+      * Opt out of collecting NRIC of respondents 
+      
+
+      Find out more under optional features [here](${GUIDE_SINGPASS_FEATURES})`,
+    },
     {
       title: 'Introducing Multi-respondent forms!',
       date: new Date('04 Apr 2024 GMT+8'),
