@@ -73,20 +73,6 @@ export const FormResponseOptions = forwardRef<
       <Tile
         ref={ref}
         variant="complex"
-        icon={BiMailSend}
-        isActive={value === FormResponseMode.Email}
-        onClick={() => onChange(FormResponseMode.Email)}
-        flex={1}
-      >
-        <Tile.Title>Email mode form</Tile.Title>
-        <Tile.Subtitle>Receive responses in your inbox only</Tile.Subtitle>
-        <OptionDescription
-          listItems={[{ text: 'Up to Restricted and Sensitive (High) data' }]}
-        />
-      </Tile>
-      <Tile
-        ref={ref}
-        variant="complex"
         icon={MultiParty}
         isActive={value === FormResponseMode.Multirespondent}
         onClick={() => onChange(FormResponseMode.Multirespondent)}
@@ -103,6 +89,20 @@ export const FormResponseOptions = forwardRef<
             { text: 'Supports approvals', badge: 'New' },
             { text: 'Up to Restricted and Sensitive (Normal) data' },
           ]}
+        />
+      </Tile>
+      <Tile
+        ref={ref}
+        variant="complex"
+        icon={BiMailSend}
+        isActive={value === FormResponseMode.Email}
+        onClick={() => onChange(FormResponseMode.Email)}
+        flex={1}
+      >
+        <Tile.Title>Email mode form</Tile.Title>
+        <Tile.Subtitle>Receive responses in your inbox only</Tile.Subtitle>
+        <OptionDescription
+          listItems={[{ text: 'Up to Restricted and Sensitive (High) data' }]}
         />
       </Tile>
     </Stack>
