@@ -103,12 +103,6 @@ export interface Fields {
     }
     allowInternationalNumber: string
     smsCounts: string
-    twilioCredentials: {
-      success: string
-      exceedQuota: string
-      noCredentials: string
-      cta: string
-    }
   }
   date: {
     dateValidation: {

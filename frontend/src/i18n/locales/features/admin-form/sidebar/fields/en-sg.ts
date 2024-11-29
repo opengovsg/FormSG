@@ -105,12 +105,6 @@ export const enSG: Fields = {
     },
     allowInternationalNumber: 'Allow international numbers',
     smsCounts: 'SMSes used',
-    twilioCredentials: {
-      success: 'Twilio credentials added',
-      exceedQuota: 'You have reached the free tier limit for SMS verification.',
-      noCredentials: 'Twilio credentials not added.',
-      cta: 'Add credentials now',
-    },
   },
   date: {
     dateValidation: {
