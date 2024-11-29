@@ -653,6 +653,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       },
 
       /**
+       * LEGACY: Used for sending with the correct Twilio.
+       * This is retained since DB records may still contain this field.
        * @deprecated Twilio is no longer supported as we have moved the functionality to postman-sms
        */
       msgSrvcName: {
@@ -1031,7 +1033,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   // Method to retrieve data for OTP verification
   FormSchema.statics.getOtpData = async function (formId: string) {
     try {
-      const data = await this.findById(formId, 'msgSrvcName admin').populate({
+      const data = await this.findById(formId, 'admin').populate({
         path: 'admin',
         select: 'email',
       })
@@ -1042,7 +1044,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
               email: data.admin.email,
               userId: data.admin._id,
             },
-            msgSrvcName: data.msgSrvcName,
           } as FormOtpData)
         : null
     } catch {

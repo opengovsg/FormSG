@@ -49,8 +49,6 @@ export type FormOtpData = {
     email: IUserSchema['email']
     userId: IUserSchema['_id']
   }
-  // Used for sending with the correct twilio
-  msgSrvcName?: string
 }
 
 /**
@@ -461,6 +459,4 @@ export type IEmailFormModel = IFormModel & Model<IEmailFormSchema>
 export type IMultirespondentFormModel = IFormModel &
   Model<IMultirespondentFormSchema>
 
-export type IOnboardedForm<T extends IForm> = T & {
-  msgSrvcName: string
-}
+export type IOnboardedForm<T extends IForm> = T

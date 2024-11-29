@@ -274,7 +274,6 @@ describe('Verification service', () => {
           _id: mockFieldIdObj as unknown as string,
         }),
       ],
-      msgSrvcName: 'abc',
     } as unknown as IFormSchema
 
     let updateHashSpy: jest.SpyInstance<

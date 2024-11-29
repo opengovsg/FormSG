@@ -1409,11 +1409,7 @@ describe('Form Model', () => {
 
       it('should return otpData of an email form when formId is valid', async () => {
         // Arrange
-        const emailFormParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
-          msgSrvcName: 'mockSrvcName',
-        })
-        // Create a form with msgSrvcName
-        const form = await Form.create(emailFormParams)
+        const form = await Form.create(MOCK_EMAIL_FORM_PARAMS)
 
         // Act
         const actualOtpData = await Form.getOtpData(form._id)
@@ -1428,18 +1424,13 @@ describe('Form Model', () => {
             email: populatedAdmin.email,
             userId: populatedAdmin._id,
           },
-          msgSrvcName: emailFormParams.msgSrvcName,
         }
         expect(actualOtpData).toEqual(expectedOtpData)
       })
 
       it('should return otpData of an encrypt form when formId is valid', async () => {
         // Arrange
-        const encryptFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
-          msgSrvcName: 'mockSrvcName',
-        })
-        // Create a form with msgSrvcName
-        const form = await Form.create(encryptFormParams)
+        const form = await Form.create(MOCK_ENCRYPTED_FORM_PARAMS)
 
         // Act
         const actualOtpData = await Form.getOtpData(form._id)
@@ -1454,7 +1445,6 @@ describe('Form Model', () => {
             email: populatedAdmin.email,
             userId: populatedAdmin._id,
           },
-          msgSrvcName: encryptFormParams.msgSrvcName,
         }
         expect(actualOtpData).toEqual(expectedOtpData)
       })
