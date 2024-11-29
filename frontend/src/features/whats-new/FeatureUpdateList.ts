@@ -76,7 +76,7 @@ export const FEATURE_UPDATE_LIST: FeatureUpdateList = {
       * Opt out of collecting NRIC of respondents 
       
 
-      Find out more under optional features [here](${GUIDE_SINGPASS_FEATURES})`,
+      Find out more about these optional features [here](${GUIDE_SINGPASS_FEATURES})`,
     },
     {
       title: 'Introducing Multi-respondent forms!',
