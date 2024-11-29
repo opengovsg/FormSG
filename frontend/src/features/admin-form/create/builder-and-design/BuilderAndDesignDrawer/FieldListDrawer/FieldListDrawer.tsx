@@ -103,7 +103,7 @@ export const FieldListDrawer = (): JSX.Element => {
         </Flex>
         <FieldSearchBar
           searchValue={searchValue}
-          onChange={(val) => setSearchValue(val.target.value)}
+          onChange={(e) => setSearchValue(e.target.value)}
         />
         <TabList mt="0.5rem" mx="-0.25rem" w="100%">
           {tabsDataList.map((tab) => (
