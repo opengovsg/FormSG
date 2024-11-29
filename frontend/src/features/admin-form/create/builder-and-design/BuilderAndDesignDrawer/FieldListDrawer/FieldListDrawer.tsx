@@ -18,6 +18,7 @@ import {
   Tooltip,
 } from '@chakra-ui/react'
 
+import { useIsMobile } from '~hooks/useIsMobile'
 import { Tab } from '~components/Tabs'
 
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
@@ -32,21 +33,24 @@ import {
   PaymentsInputPanel,
 } from './field-panels'
 
-const MagicFormBuilderButton = ({ ...styleProps }) => (
-  <Tooltip openDelay={800} hasArrow label="Create fields with AI">
-    <Button
-      padding="0"
-      backgroundColor="primary.200"
-      _hover={{
-        backgroundColor: 'primary.300',
-      }}
-      borderWidth={0}
-      {...styleProps}
-    >
-      <Icon as={BiSolidMagicWand} color="primary.500" fontSize="1.5rem" />
-    </Button>
-  </Tooltip>
-)
+const MagicFormBuilderButton = ({ ...styleProps }) => {
+  const isMobile = useIsMobile()
+  return !isMobile ? (
+    <Tooltip openDelay={800} hasArrow label="Create fields with AI">
+      <Button
+        padding="0"
+        backgroundColor="primary.200"
+        _hover={{
+          backgroundColor: 'primary.300',
+        }}
+        borderWidth={0}
+        {...styleProps}
+      >
+        <Icon as={BiSolidMagicWand} color="primary.500" fontSize="1.5rem" />
+      </Button>
+    </Tooltip>
+  ) : null
+}
 
 const FieldSearchBar = ({
   searchValue,
