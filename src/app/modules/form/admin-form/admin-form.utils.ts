@@ -18,7 +18,6 @@ import {
 import { EditFieldActions } from '../../../../shared/constants'
 import { FormFieldSchema, IPopulatedForm, IUserSchema } from '../../../../types'
 import { EditFormFieldParams } from '../../../../types/api'
-import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { CreatePresignedPostError } from '../../../utils/aws-s3'
 import { isPossibleEmailFieldSchema } from '../../../utils/field-validation/field-validation.guards'
