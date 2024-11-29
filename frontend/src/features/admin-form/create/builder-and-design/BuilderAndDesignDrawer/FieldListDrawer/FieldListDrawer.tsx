@@ -1,9 +1,14 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { BiSearch } from 'react-icons/bi'
 import {
   Box,
   Divider,
   Flex,
+  Icon,
+  Input,
+  InputGroup,
+  InputLeftElement,
   TabList,
   TabPanel,
   TabPanels,
@@ -24,7 +29,25 @@ import {
   MyInfoFieldPanel,
   PaymentsInputPanel,
 } from './field-panels'
-import { FieldSearchBar } from './FieldSearchBar'
+
+const FieldSearchBar = ({
+  searchValue,
+  onChange,
+}: {
+  searchValue: string
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+}) => (
+  <InputGroup>
+    <InputLeftElement>
+      <Icon as={BiSearch} color="secondary.500" fontSize="1.25rem" />
+    </InputLeftElement>
+    <Input
+      value={searchValue}
+      onChange={onChange}
+      placeholder="Search fields"
+    />
+  </InputGroup>
+)
 
 export const FieldListDrawer = (): JSX.Element => {
   const { t } = useTranslation()
