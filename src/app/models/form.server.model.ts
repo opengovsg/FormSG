@@ -653,9 +653,9 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       },
 
       /**
-       * LEGACY: Used for sending with the correct Twilio.
-       * This is retained since DB records may still contain this field.
-       * @deprecated Twilio is no longer supported as we have moved the functionality to postman-sms
+       * LEGACY: Was previously used for sending with the correct Twilio.
+       * @deprecated Twilio support is removed and replaced with postman-sms.
+       * This is retained since DB records may still contain this field for backward compatibility.
        */
       msgSrvcName: {
         // Name of credentials for messaging service, stored in secrets manager
