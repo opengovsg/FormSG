@@ -135,6 +135,7 @@ import {
   SubmissionSaveError,
   UnsupportedSettingsError,
   ValidateFieldError,
+  ValidateFieldErrorV3,
   VirusScanFailedError,
 } from './submission.errors'
 import {
@@ -309,6 +310,7 @@ const errorMapper: MapRouteError = (
           'Submission too large to be saved. Please reduce the size of your submission and try again.',
       }
     case ValidateFieldError:
+    case ValidateFieldErrorV3:
     case DatabaseValidationError:
     case InvalidFileExtensionError:
     case AttachmentTooLargeError:
