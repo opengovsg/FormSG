@@ -20,7 +20,7 @@ import { getNetAmount } from './utils'
 
 type ResponseColumnData = SubmissionMetadata
 
-const RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
+const NON_MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: '#',
     accessor: 'number',
@@ -43,6 +43,45 @@ const RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     disableResizing: true,
   },
 ]
+
+const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
+  {
+    Header: '#',
+    accessor: 'number',
+    minWidth: 30,
+    width: 40,
+    maxWidth: 50,
+  },
+  {
+    Header: 'Response ID',
+    accessor: 'refNo',
+    minWidth: 100,
+    maxWidth: 150,
+    width: 120,
+  },
+  {
+    Header: 'Status',
+    accessor: 'workflowStatus',
+    minWidth: 50,
+    maxWidth: 100,
+    width: 50,
+  },
+  {
+    Header: 'Current Step',
+    accessor: 'workflowStep',
+    minWidth: 50,
+    maxWidth: 100,
+    width: 50,
+  },
+  {
+    Header: 'Timestamp',
+    accessor: 'submissionTime',
+    minWidth: 250,
+    width: 250,
+    disableResizing: true,
+  },
+]
+
 const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: 'Email',
@@ -106,7 +145,7 @@ const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
 ]
 
 const PAYMENT_RESPONSE_TABLE_COLUMNS =
-  RESPONSE_TABLE_COLUMNS.concat(PAYMENT_COLUMNS)
+  NON_MRF_RESPONSE_TABLE_COLUMNS.concat(PAYMENT_COLUMNS)
 
 export const ResponsesTable = () => {
   const { data: form } = useAdminForm()
@@ -114,6 +153,8 @@ export const ResponsesTable = () => {
     form?.responseMode === FormResponseMode.Encrypt
       ? form.payments_field.enabled
       : false
+  const isMultiRespondentForm =
+    form?.responseMode === FormResponseMode.Multirespondent
 
   const {
     currentPage: currentPage1Indexed,
@@ -147,9 +188,11 @@ export const ResponsesTable = () => {
     gotoPage,
   } = useTable<ResponseColumnData>(
     {
-      columns: isPaymentsForm
-        ? PAYMENT_RESPONSE_TABLE_COLUMNS
-        : RESPONSE_TABLE_COLUMNS,
+      columns: isMultiRespondentForm
+        ? MRF_RESPONSE_TABLE_COLUMNS
+        : isPaymentsForm
+          ? PAYMENT_RESPONSE_TABLE_COLUMNS
+          : NON_MRF_RESPONSE_TABLE_COLUMNS,
       data: metadataToUse,
       // Server side pagination.
       manualPagination: true,

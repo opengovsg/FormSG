@@ -213,13 +213,19 @@ export type SubmissionPaymentMetadata = {
   email: string
 } | null
 
+type SubmissionMrfMetadata = {
+  workflow: FormWorkflowDto
+  workflowStep: number
+  workflowStatus: string | undefined // `undefined` is due to submissions before this PR not storing this value
+}
+
 export type SubmissionMetadata = {
   number: number
   refNo: SubmissionId
   /** Not a DateString, format is `Do MMM YYYY, h:mm:ss a` */
   submissionTime: string
   payments: SubmissionPaymentMetadata
-}
+} & SubmissionMrfMetadata
 
 export type SubmissionMetadataList = {
   metadata: SubmissionMetadata[]
