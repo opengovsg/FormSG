@@ -16,7 +16,6 @@ import {
   BiCar,
   BiCaretDownSquare,
   BiCloudUpload,
-  BiCurrentLocation,
   BiFlag,
   BiGlobe,
   BiGroup,

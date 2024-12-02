@@ -62,7 +62,7 @@ export type FormFieldValues = Record<
   [PAYMENT_PRODUCT_FIELD_ID]?: ProductItemInput[]
 }
 
-export type AddressFieldInput = FieldInput<AddressFieldValues>
+export type AddressFieldInput = AddressFieldValues // specific field-type defined in AddressFieldValues
 export type AttachmentFieldInput = FieldInput<File | null>
 export type CheckboxFieldInputs = FieldInput<CheckboxFieldValues>
 export type RadioFieldInputs = FieldInput<RadioFieldValues>
@@ -148,11 +148,12 @@ export type ChildrenCompoundFieldValues = {
 }
 
 export type AddressFieldValues = {
-  postalCode: number
-  blockNumber: number // or HouseNumber
-  roadName: string
-  building: string | null
-  unitNumber: string | null // unit number can be 01-07, or 6A
+  postalCode: string
+  blockNumber: string // or HouseNumber
+  streetName: string
+  buildingName: string
+  levelNumber: string
+  unitNumber: string // unit number can be 01-07, or 6A
 }
 
 // Various schemas used by different fields

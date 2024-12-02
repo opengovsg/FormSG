@@ -17,9 +17,7 @@ import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
 
-type EditAddressProps = EditFieldProps<AddressFieldBase>
-
-const EDIT_ADDRESS_FIELD_KEYS = ['title', 'description', 'required'] as const
+export type EditAddressProps = EditFieldProps<AddressFieldBase>
 
 type EditAddressInputs = Pick<
   AddressFieldBase,

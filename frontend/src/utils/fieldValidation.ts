@@ -4,7 +4,7 @@
  */
 import { RegisterOptions } from 'react-hook-form'
 import { isValid, parse } from 'date-fns'
-import { identity } from 'lodash'
+import { identity, String } from 'lodash'
 import simplur from 'simplur'
 import validator from 'validator'
 
@@ -34,7 +34,11 @@ import {
   TextSelectedValidation,
   UenFieldBase,
 } from '~shared/types/field'
-import { validatePostalCode } from '~shared/utils/address-validation'
+import {
+  validateBlockUnit,
+  validatePostalCode,
+  validateStreetName,
+} from '~shared/utils/address-validation'
 import { isDateAnInvalidDay } from '~shared/utils/date-validation'
 import { isMFinSeriesValid, isNricValid } from '~shared/utils/nric-validation'
 import {
@@ -211,7 +215,7 @@ export const createHomeNoValidationRules: ValidationRuleFn<HomenoFieldBase> = (
   }
 }
 
-export const createAddressValidationRules: ValidationRuleFn<
+export const createPostalCodeValidationRules: ValidationRuleFn<
   AddressFieldBase
 > = (schema, disableRequiredValidation): RegisterOptions => {
   return {
@@ -220,30 +224,56 @@ export const createAddressValidationRules: ValidationRuleFn<
         schema,
         disableRequiredValidation,
       ),
-      postalCode: (value: number) => {
-        if (!value && schema.required && !disableRequiredValidation) {
-          return 'Postal code is required'
-        }
+      validPostalCode: (value: string) => {
         return validatePostalCode(value)
       },
-      // blockNumber: (value: number) => {
-      //   if (!value && schema.required && !disableRequiredValidation) {
-      //     return 'Block number is required'
-      //   }
-      //   return validateBlockNumber(value)
-      // },
-      // roadName: (value: string) => {
-      //   if (!value && schema.required && !disableRequiredValidation) {
-      //     return 'Road name is required'
-      //   }
-      //   return validateRoadName(value)
-      // },
-      // unitNumber: (value: string | null) => {
-      //   if (!value && schema.required && !disableRequiredValidation) {
-      //     return 'Unit number is required'
-      //   }
-      //   return validateUnitNumber(value)
-      // },
+    },
+  }
+}
+
+export const createBlockNumberValidationRules = (
+  schema: AddressFieldBase,
+  disableRequiredValidation: boolean | undefined,
+): RegisterOptions => {
+  return {
+    validate: {
+      required: requiredSingleAnswerValidationFn(
+        schema,
+        disableRequiredValidation,
+      ),
+      validBlock: (value: string) => {
+        // Otherwise, run the standard validation logic
+        return validateBlockUnit(value)
+      },
+    },
+  }
+}
+
+export const createStreetNameValidationRules: ValidationRuleFn<
+  AddressFieldBase
+> = (schema, disableRequiredValidation): RegisterOptions => {
+  return {
+    validate: {
+      required: requiredSingleAnswerValidationFn(
+        schema,
+        disableRequiredValidation,
+      ),
+      validStreetName: (value: string) => {
+        return validateStreetName(value)
+      },
+    },
+  }
+}
+
+export const createUnitLevelNumberValidationRules: ValidationRuleFn<
+  AddressFieldBase
+> = (): RegisterOptions => {
+  return {
+    validate: {
+      validUnitLevel: (value: string) => {
+        console.log(value)
+        return validateBlockUnit(value)
+      },
     },
   }
 }
