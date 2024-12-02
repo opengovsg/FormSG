@@ -9,8 +9,8 @@ const checkSearchValueMatchesFieldMeta = (
   const lowerCaseSearchValue = searchValue.toLowerCase()
   return (
     fieldMeta.label.toLowerCase().includes(lowerCaseSearchValue) ||
-    fieldMeta.alias?.some((alias) =>
-      alias.toLowerCase().includes(lowerCaseSearchValue),
+    fieldMeta.searchAliases?.some((searchAlias) =>
+      searchAlias.toLowerCase().includes(lowerCaseSearchValue),
     )
   )
 }
