@@ -657,6 +657,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         },
       },
 
+      /**
+       * LEGACY: Was previously used for sending with the correct Twilio.
+       * @deprecated Twilio support is removed and replaced with postman-sms.
+       * This is retained since DB records may still contain this field for backward compatibility.
+       */
       msgSrvcName: {
         // Name of credentials for messaging service, stored in secrets manager
         type: String,
@@ -806,22 +811,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
     this.status = FormStatus.Archived
     return this.save()
-  }
-
-  FormSchema.methods.updateMsgSrvcName = async function (
-    msgSrvcName: string,
-    session?: ClientSession,
-  ) {
-    this.msgSrvcName = msgSrvcName
-
-    return this.save({ session })
-  }
-
-  FormSchema.methods.deleteMsgSrvcName = async function (
-    session?: ClientSession,
-  ) {
-    this.msgSrvcName = undefined
-    return this.save({ session })
   }
 
   const FormDocumentSchema = FormSchema as unknown as Schema<IFormDocument>
@@ -1049,7 +1038,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   // Method to retrieve data for OTP verification
   FormSchema.statics.getOtpData = async function (formId: string) {
     try {
-      const data = await this.findById(formId, 'msgSrvcName admin').populate({
+      const data = await this.findById(formId, 'admin').populate({
         path: 'admin',
         select: 'email',
       })
@@ -1060,7 +1049,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
               email: data.admin.email,
               userId: data.admin._id,
             },
-            msgSrvcName: data.msgSrvcName,
           } as FormOtpData)
         : null
     } catch {
@@ -1256,27 +1244,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     ).exec()
   }
 
-  /**
-   * Retrieves all the public forms for a user which has sms verifications enabled
-   * This only retrieves forms that are using FormSG credentials
-   * @param userId The userId to retrieve the forms for
-   * @returns All public forms that have sms verifications enabled
-   */
-  FormSchema.statics.retrievePublicFormsWithSmsVerification = async function (
-    userId: IUserSchema['_id'],
-  ) {
-    return this.find({
-      admin: userId,
-      'form_fields.fieldType': BasicField.Mobile,
-      'form_fields.isVerifiable': true,
-      status: FormStatus.Public,
-      msgSrvcName: {
-        $exists: false,
-      },
-    })
-      .read('secondary')
-      .exec()
-  }
   FormSchema.statics.getGoLinkSuffix = async function (formId: string) {
     return this.findById(formId, 'goLinkSuffix').exec()
   }

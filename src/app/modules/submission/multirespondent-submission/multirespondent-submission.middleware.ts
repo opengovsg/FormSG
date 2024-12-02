@@ -485,6 +485,17 @@ export const validateMultirespondentSubmission = async (
                     const incomingResField = req.body.responses[fieldId]
                     const prevResField = previousResponses[fieldId]
 
+                    if (
+                      prevResField.fieldType === BasicField.ShortText ||
+                      prevResField.fieldType === BasicField.LongText
+                    ) {
+                      // NOTE: LEGACY ISSUE
+                      // Since text fields were saved without trimming prior to https://github.com/opengovsg/FormSG/pull/7937.
+                      // Without this, isFieldResponseV3Equal fails since the prevResField was not trimmed,
+                      // causing a mismatch between the newly trimmed incomingResField.
+                      prevResField.answer = prevResField.answer.trim()
+                    }
+
                     const resp = isFieldResponseV3Equal(
                       incomingResField,
                       prevResField,
@@ -520,16 +531,13 @@ export const validateMultirespondentSubmission = async (
                 })
               })
               .andThen((previousResponses) => {
-                // TODO: (FRM-1688) Set to block after sure that validation logic works as expected.
-                validateMrfFieldResponses({
+                return validateMrfFieldResponses({
                   formId,
                   visibleFieldIds,
                   formFields: form_fields,
                   responses: req.body.responses,
                   previousResponses,
                 })
-
-                return ok(req.body.responses)
               }),
           )
         },

@@ -329,13 +329,6 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       default: Environment.Prod,
       env: 'NODE_ENV',
     },
-    // TODO(ken): to remove after twilio is no longer used
-    useMockTwilio: {
-      doc: 'Enables twilio API mocking and directs SMS body over to maildev',
-      format: 'Boolean',
-      default: false,
-      env: 'USE_MOCK_TWILIO',
-    },
     useMockPostmanSms: {
       doc: 'Enables Postman SMS API mocking and directs SMS body over to maildev',
       format: 'Boolean',

@@ -49,8 +49,6 @@ export type FormOtpData = {
     email: IUserSchema['email']
     userId: IUserSchema['_id']
   }
-  // Used for sending with the correct twilio
-  msgSrvcName?: string
 }
 
 /**
@@ -256,22 +254,6 @@ export interface IFormSchema extends IForm, Document, PublicView<PublicForm> {
   getDuplicateParams(
     overrideProps: OverrideProps,
   ): PickDuplicateForm & OverrideProps
-
-  /**
-   * Updates the msgSrvcName of the form with the specified msgSrvcName
-   * @param msgSrvcName msgSrvcName to update the Form docuemnt with
-   * @param session transaction session in which update operation is a part of
-   */
-  updateMsgSrvcName(
-    msgSrvcName: string,
-    session?: ClientSession,
-  ): Promise<IFormSchema>
-
-  /**
-   * Deletes the msgSrvcName of the form
-   * @param session transaction session in which delete operation is a part of
-   */
-  deleteMsgSrvcName(session?: ClientSession): Promise<IFormSchema>
 }
 
 /**
@@ -393,15 +375,6 @@ export interface IFormModel extends Model<IFormSchema> {
   ): Promise<AdminDashboardFormMetaDto[]>
 
   /**
-   * Retrieves all the public forms for a user which has sms verifications enabled
-   * @param userId The userId to retrieve the forms for
-   * @returns All public forms that have sms verifications enabled
-   */
-  retrievePublicFormsWithSmsVerification(
-    userId: IUserSchema['_id'],
-  ): Promise<IFormDocument[]>
-
-  /**
    * Update the end page of form with given endpage object.
    * @param formId the id of the form to update
    * @param newEndPage the new EndPage object to replace with
@@ -486,11 +459,4 @@ export type IEmailFormModel = IFormModel & Model<IEmailFormSchema>
 export type IMultirespondentFormModel = IFormModel &
   Model<IMultirespondentFormSchema>
 
-export type IOnboardedForm<T extends IForm> = T & {
-  msgSrvcName: string
-}
-
-export type FormLinkView<T extends IFormDocument> = {
-  title: T['title']
-  link: string
-}
+export type IOnboardedForm<T extends IForm> = T

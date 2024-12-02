@@ -1,7 +1,7 @@
 {
   "name": "FormSG",
   "description": "Form Manager for Government",
-  "version": "6.165.0",
+  "version": "6.166.1",
   "homepage": "https://form.gov.sg",
   "authors": [
     "FormSG <formsg@data.gov.sg>"
@@ -144,7 +144,6 @@
     "ts-essentials": "^10.0.1",
     "tweetnacl": "^1.0.1",
     "tweetnacl-util": "^0.15.1",
-    "twilio": "~4.19.3",
     "uid-generator": "^2.0.0",
     "ulid": "^2.3.0",
     "uuid": "^10.0.0",
@@ -160,7 +159,6 @@
     "@babel/preset-env": "^7.25.4",
     "@opengovsg/mockpass": "^4.3.4",
     "@playwright/test": "^1.49.0",
-    "@stoplight/prism-cli": "^5.10.0",
     "@types/bcrypt": "^5.0.0",
     "@types/bluebird": "^3.5.42",
     "@types/busboy": "^1.5.4",

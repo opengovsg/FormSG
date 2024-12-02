@@ -14,7 +14,6 @@ import {
   IVerificationSchema,
   MapRouteError,
 } from '../../../types'
-import { smsConfig } from '../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import {
   OtpRequestCountExceededError,
@@ -271,10 +270,6 @@ export const mapRouteError: MapRouteError = (
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
       }
   }
-}
-
-export const hasAdminExceededFreeSmsLimit = (smsCount: number): boolean => {
-  return smsCount > smsConfig.smsVerificationLimit
 }
 
 /**

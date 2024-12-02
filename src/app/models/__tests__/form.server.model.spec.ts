@@ -2,7 +2,7 @@
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
-import { cloneDeep, map, merge, omit, orderBy, pick, range } from 'lodash'
+import { cloneDeep, map, merge, omit, orderBy, pick } from 'lodash'
 import mongoose, { Types } from 'mongoose'
 import {
   EMAIL_PUBLIC_FORM_FIELDS,
@@ -1409,11 +1409,7 @@ describe('Form Model', () => {
 
       it('should return otpData of an email form when formId is valid', async () => {
         // Arrange
-        const emailFormParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
-          msgSrvcName: 'mockSrvcName',
-        })
-        // Create a form with msgSrvcName
-        const form = await Form.create(emailFormParams)
+        const form = await Form.create(MOCK_EMAIL_FORM_PARAMS)
 
         // Act
         const actualOtpData = await Form.getOtpData(form._id)
@@ -1428,18 +1424,13 @@ describe('Form Model', () => {
             email: populatedAdmin.email,
             userId: populatedAdmin._id,
           },
-          msgSrvcName: emailFormParams.msgSrvcName,
         }
         expect(actualOtpData).toEqual(expectedOtpData)
       })
 
       it('should return otpData of an encrypt form when formId is valid', async () => {
         // Arrange
-        const encryptFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
-          msgSrvcName: 'mockSrvcName',
-        })
-        // Create a form with msgSrvcName
-        const form = await Form.create(encryptFormParams)
+        const form = await Form.create(MOCK_ENCRYPTED_FORM_PARAMS)
 
         // Act
         const actualOtpData = await Form.getOtpData(form._id)
@@ -1454,7 +1445,6 @@ describe('Form Model', () => {
             email: populatedAdmin.email,
             userId: populatedAdmin._id,
           },
-          msgSrvcName: encryptFormParams.msgSrvcName,
         }
         expect(actualOtpData).toEqual(expectedOtpData)
       })
@@ -2196,55 +2186,6 @@ describe('Form Model', () => {
         // Assert
         expect(actual).toEqual(null)
         await expect(Form.countDocuments()).resolves.toEqual(0)
-      })
-    })
-
-    describe('retrievePublicFormsWithSmsVerification', () => {
-      const MOCK_MSG_SRVC_NAME = 'mockTwilioName'
-      it('should retrieve only public forms with verifiable mobile fields that are not onboarded', async () => {
-        // Arrange
-        const mockFormPromises = range(8).map((_, idx) => {
-          // Extract bits and use them to represent state
-          const isPublic = !!(idx % 2)
-          const isVerifiable = !!((idx >> 1) % 2)
-          const isOnboarded = !!((idx >> 2) % 2)
-          return Form.create({
-            admin: populatedAdmin._id,
-            responseMode: FormResponseMode.Email,
-            title: 'mock mobile form',
-            emails: [populatedAdmin.email],
-            status: isPublic ? FormStatus.Public : FormStatus.Private,
-            ...(isOnboarded && { msgSrvcName: MOCK_MSG_SRVC_NAME }),
-            form_fields: [
-              generateDefaultField(BasicField.Mobile, { isVerifiable }),
-            ],
-          })
-        })
-        await Promise.all(mockFormPromises)
-
-        // Act
-        const forms = await Form.retrievePublicFormsWithSmsVerification(
-          populatedAdmin._id,
-        )
-
-        // Assert
-        expect(forms.length).toBe(1)
-        expect(forms[0].form_fields[0].isVerifiable).toBe(true)
-        expect(forms[0].status).toBe(FormStatus.Public)
-        expect(forms[0].msgSrvcName).toBeUndefined()
-      })
-
-      it('should return an empty array when there are no forms', async () => {
-        // NOTE: This is an edge case and should never happen in prod as this method is called when
-        // a public form has a certain amount of verifications
-
-        // Act
-        const forms = await Form.retrievePublicFormsWithSmsVerification(
-          populatedAdmin._id,
-        )
-
-        // Assert
-        expect(forms.length).toBe(0)
       })
     })
   })
@@ -3018,40 +2959,6 @@ describe('Form Model', () => {
         await expect(actual).rejects.toBeInstanceOf(
           mongoose.Error.ValidationError,
         )
-      })
-    })
-
-    describe('updateMsgSrvcName', () => {
-      const MOCK_MSG_SRVC_NAME = 'mockTwilioName'
-      it('should update msgSrvcName of form to new msgSrvcName', async () => {
-        // Arrange
-        const form = await Form.create({
-          admin: populatedAdmin._id,
-          title: 'mock mobile form',
-        })
-
-        // Act
-        const updatedForm = await form.updateMsgSrvcName(MOCK_MSG_SRVC_NAME)
-        // Assert
-        expect(updatedForm?.msgSrvcName).toBe(MOCK_MSG_SRVC_NAME)
-      })
-    })
-
-    describe('deleteMsgSrvcName', () => {
-      const MOCK_MSG_SRVC_NAME = 'mockTwilioName'
-      it('should delete msgSrvcName of form', async () => {
-        // Arrange
-        const form = await Form.create({
-          admin: populatedAdmin._id,
-          title: 'mock mobile form',
-          msgSrvcName: MOCK_MSG_SRVC_NAME,
-        })
-
-        // Act
-        const updatedForm = await form.deleteMsgSrvcName()
-
-        // Assert
-        expect(updatedForm?.msgSrvcName).toBeUndefined()
       })
     })
   })

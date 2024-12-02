@@ -161,6 +161,11 @@ export interface FormBase {
 
   esrvcId?: string
 
+  /**
+   * LEGACY: Was previously used for sending with the correct Twilio.
+   * @deprecated Twilio support is removed and replaced with postman-sms.
+   * This is retained since DB records may still contain this field for backward compatibility.
+   */
   msgSrvcName?: string
 
   webhook: FormWebhook
@@ -327,11 +332,6 @@ export type PublicFormViewDto = {
 }
 
 export type PreviewFormViewDto = Pick<PublicFormViewDto, 'form' | 'spcpSession'>
-
-export type SmsCountsDto = {
-  quota: number
-  freeSmsCounts: number
-}
 
 export type AdminFormViewDto = {
   form: AdminFormDto

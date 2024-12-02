@@ -11,7 +11,7 @@ import {
   EncryptedStringsMessageContentWithMyPrivateKey,
 } from 'shared/utils/crypto'
 
-import config, { aws } from 'src/app/config/config'
+import { aws } from 'src/app/config/config'
 import getAgencyModel from 'src/app/models/agency.server.model'
 import getFormModel, {
   getEmailFormModel,
@@ -29,7 +29,6 @@ import {
 } from 'src/app/modules/core/core.errors'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
-import { TwilioCredentials } from 'src/app/services/sms/sms.types'
 import { CreatePresignedPostError } from 'src/app/utils/aws-s3'
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import { EditFieldActions } from 'src/shared/constants'
@@ -75,7 +74,6 @@ import {
   PaymentType,
   SettingsUpdateDto,
 } from '../../../../../../shared/types'
-import * as SmsService from '../../../../services/sms/sms.service'
 import {
   FormNotFoundError,
   LogicNotFoundError,
@@ -91,8 +89,6 @@ import * as AdminFormService from '../admin-form.service'
 import { OverrideProps } from '../admin-form.types'
 import * as AdminFormUtils from '../admin-form.utils'
 
-import { secretsManager } from './../admin-form.service'
-
 const FormModel = getFormModel(mongoose)
 const EmailFormModel = getEmailFormModel(mongoose)
 const EncryptFormModel = getEncryptedFormModel(mongoose)
@@ -103,9 +99,6 @@ const FormWhitelistedSubmitterIdsModel =
 
 jest.mock('src/app/modules/user/user.service')
 const MockUserService = jest.mocked(UserService)
-
-jest.mock('../../../../services/sms/sms.service')
-const MockSmsService = jest.mocked(SmsService)
 
 describe('admin-form.service', () => {
   beforeEach(async () => {
@@ -2734,163 +2727,6 @@ describe('admin-form.service', () => {
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toEqual(expectedError)
-    })
-  })
-
-  describe('createTwilioCredentials', () => {
-    const MOCK_FORM_ID = new mongoose.Types.ObjectId()
-    const MOCK_ADMIN_ID = new mongoose.Types.ObjectId()
-
-    const MOCK_FORM = {
-      _id: MOCK_FORM_ID,
-      admin: {
-        _id: MOCK_ADMIN_ID,
-      },
-    } as unknown as IPopulatedForm
-
-    const MOCK_ACCOUNT_SID = 'AC12345678'
-    const MOCK_API_KEY_SID = 'SK12345678'
-    const MOCK_API_KEY_SECRET = 'AZ12345678'
-    const MOCK_MESSAGING_SERVICE_SID = 'MG12345678'
-
-    const TWILIO_CREDENTIALS: TwilioCredentials = {
-      accountSid: MOCK_ACCOUNT_SID,
-      apiKey: MOCK_API_KEY_SID,
-      apiSecret: MOCK_API_KEY_SECRET,
-      messagingServiceSid: MOCK_MESSAGING_SERVICE_SID,
-    }
-
-    const sessionSpy = jest.spyOn(FormModel, 'startSession')
-
-    it('should return undefined when Twilio credentials was created successfully', async () => {
-      // Arrange
-      sessionSpy.mockResolvedValueOnce({
-        withTransaction: () => {
-          return {
-            then: () => undefined,
-          }
-        },
-      } as any)
-
-      // Act
-      const actualResult = await AdminFormService.createTwilioCredentials(
-        TWILIO_CREDENTIALS,
-        MOCK_FORM,
-      )
-
-      // Assert
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(undefined)
-
-      expect(sessionSpy).toHaveBeenCalled()
-    })
-  })
-
-  describe('updateTwilioCredentials', () => {
-    const MOCK_FORM_ID = new mongoose.Types.ObjectId()
-
-    const MOCK_ACCOUNT_SID = 'AC12345678'
-    const MOCK_API_KEY_SID = 'SK12345678'
-    const MOCK_API_KEY_SECRET = 'AZ12345678'
-    const MOCK_MESSAGING_SERVICE_SID = 'MG12345678'
-
-    const TWILIO_CREDENTIALS: TwilioCredentials = {
-      accountSid: MOCK_ACCOUNT_SID,
-      apiKey: MOCK_API_KEY_SID,
-      apiSecret: MOCK_API_KEY_SECRET,
-      messagingServiceSid: MOCK_MESSAGING_SERVICE_SID,
-    }
-
-    it('should return the response of performing PutSecretValue operation on the SecretsManager', async () => {
-      // Arrange
-      const msgSrvcName = `formsg/${config.secretEnv}/form/${MOCK_FORM_ID}/twilio`
-
-      const getSecretsSpy = jest
-        .spyOn(secretsManager, 'getSecretValue')
-        .mockImplementationOnce(() => {
-          return {
-            promise: () => {
-              return Promise.resolve({
-                Name: msgSrvcName,
-              })
-            },
-          } as any
-        })
-
-      const twilioCacheSpy = jest
-        .spyOn(MockSmsService.twilioClientCache, 'del')
-        .mockReturnValueOnce(1)
-
-      const putSecretsSpy = jest
-        .spyOn(secretsManager, 'putSecretValue')
-        .mockImplementationOnce(() => {
-          return {
-            promise: () => {
-              return Promise.resolve({
-                Name: msgSrvcName,
-              })
-            },
-          } as any
-        })
-
-      // Act
-
-      const actualResult = await AdminFormService.updateTwilioCredentials(
-        msgSrvcName,
-        TWILIO_CREDENTIALS,
-      )
-
-      // Assert
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(1)
-
-      expect(getSecretsSpy).toHaveBeenCalledWith({
-        SecretId: msgSrvcName,
-      })
-      expect(twilioCacheSpy).toHaveBeenCalledWith(msgSrvcName)
-      expect(putSecretsSpy).toHaveBeenCalledWith({
-        SecretId: msgSrvcName,
-        SecretString: JSON.stringify(TWILIO_CREDENTIALS),
-      })
-    })
-  })
-
-  describe('deleteTwilioCredentials', () => {
-    const MOCK_FORM_ID = new mongoose.Types.ObjectId()
-    const sessionSpy = jest.spyOn(FormModel, 'startSession')
-    const MSG_SRVC_NAME = `formsg/${config.secretEnv}/form/${MOCK_FORM_ID}/twilio`
-    const MOCK_FORM = {
-      _id: MOCK_FORM_ID,
-      save: () => MOCK_FORM,
-      msgSrvcName: MSG_SRVC_NAME,
-    } as unknown as IPopulatedForm
-
-    it('should return result of clearing TwilioCache entry when Twilio credentials was successfully deleted', async () => {
-      // Arrange
-      sessionSpy.mockResolvedValueOnce({
-        withTransaction: () => {
-          return {
-            then: () => undefined,
-          }
-        },
-      } as any)
-
-      // formSpy.mockResolvedValueOnce(MOCK_FORM)
-
-      const twilioCacheSpy = jest
-        .spyOn(MockSmsService.twilioClientCache, 'del')
-        .mockReturnValueOnce(1)
-
-      // Act
-
-      const actualResult =
-        await AdminFormService.deleteTwilioCredentials(MOCK_FORM)
-
-      // Assert
-      expect(actualResult.isOk()).toEqual(true)
-      expect(actualResult._unsafeUnwrap()).toEqual(1)
-
-      expect(twilioCacheSpy).toHaveBeenCalledWith(MSG_SRVC_NAME)
     })
   })
 

@@ -53,11 +53,6 @@ services:
       # Keep in sync with the development key in
       # https://github.com/opengovsg/formsg-javascript-sdk/blob/develop/src/resource/signing-keys.ts
       - SIGNING_SECRET_KEY=HDBXpu+2/gu10bLHpy8HjpN89xbA6boH9GwibPGJA8BOXmB+zOUpxCP33/S5p8vBWlPokC7gLR0ca8urVwfMUQ==
-      # Mock Twilio credentials. SMSes do not work in dev environment.
-      - TWILIO_ACCOUNT_SID=AC00000000000000000000000000000000
-      - TWILIO_API_KEY=mockTwilioApiKey
-      - TWILIO_API_SECRET=mockTwilioApiSecret
-      - TWILIO_MESSAGING_SERVICE_SID=MG00000000000000000000000000000000
       - SP_OIDC_NDI_DISCOVERY_ENDPOINT=http://localhost:5156/singpass/v2/.well-known/openid-configuration
       - SP_OIDC_NDI_JWKS_ENDPOINT=http://localhost:5156/singpass/v2/.well-known/keys
       - SP_OIDC_RP_CLIENT_ID=rpClientId
@@ -167,7 +162,7 @@ services:
     depends_on:
       - backend
     environment:
-      - SERVICES=s3,sqs,secretsmanager
+      - SERVICES=s3,sqs
       - DNS_ADDRESS=0
       - EXTRA_CORS_ALLOWED_ORIGINS=http://localhost:5173
     volumes:
@@ -188,11 +183,6 @@ services:
     environment:
       - STRIPE_API_KEY
       - STRIPE_DEVICE_NAME=StripeWebhookListener
-
-  mocktwilio:
-    image: stoplight/prism:4
-    network_mode: 'service:backend' # reuse backend service's network stack so that it can resolve localhost:4010 to prismtwilio:4010
-    command: mock https://raw.githubusercontent.com/twilio/twilio-oai/main/spec/json/twilio_api_v2010.json
 
 volumes:
   mongodb_data:

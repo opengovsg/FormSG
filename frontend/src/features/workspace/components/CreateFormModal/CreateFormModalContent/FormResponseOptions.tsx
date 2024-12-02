@@ -13,15 +13,32 @@ export interface FormResponseOptionsProps {
   isSingpass: boolean
 }
 
-const OptionDescription = ({ listItems = [] }: { listItems: string[] }) => {
+interface optionDescriptionIem {
+  text: string
+  badge?: string
+  badgeColorScheme?: string
+}
+
+const OptionDescription = ({
+  listItems = [],
+}: {
+  listItems: optionDescriptionIem[]
+}) => {
   return (
     <>
       <UnorderedList color="secondary.400" ml="1.5rem">
-        {listItems.map((text, index) => (
-          <Tile.ListItem key={index} textStyle="body-2" textAlign="left">
-            {text}
-          </Tile.ListItem>
-        ))}
+        {listItems.map(
+          ({ text, badge, badgeColorScheme = 'success' }, index) => (
+            <Tile.ListItem key={index} textStyle="body-2" textAlign="left">
+              {text}
+              {badge && (
+                <Badge size="xs" ml="0.2rem" colorScheme={badgeColorScheme}>
+                  {badge}
+                </Badge>
+              )}
+            </Tile.ListItem>
+          ),
+        )}
       </UnorderedList>
     </>
   )
@@ -47,10 +64,30 @@ export const FormResponseOptions = forwardRef<
         </Tile.Subtitle>
         <OptionDescription
           listItems={[
-            'Attachments: up to 20MB per form',
-            'Up to Restricted and Sensitive (Normal) data',
-            'Supports webhooks for responses',
-            'Supports payments',
+            { text: 'Supports webhooks for responses' },
+            { text: 'Supports payments' },
+            { text: 'Up to Restricted and Sensitive (Normal) data' },
+          ]}
+        />
+      </Tile>
+      <Tile
+        ref={ref}
+        variant="complex"
+        icon={MultiParty}
+        isActive={value === FormResponseMode.Multirespondent}
+        onClick={() => onChange(FormResponseMode.Multirespondent)}
+        flex={1}
+        isDisabled={isSingpass}
+      >
+        <Tile.Title>Multi-respondent form</Tile.Title>
+        <Tile.Subtitle>
+          Collect responses from multiple people by adding a workflow to your
+          form and assigning fields to each person
+        </Tile.Subtitle>
+        <OptionDescription
+          listItems={[
+            { text: 'Supports approvals', badge: 'New' },
+            { text: 'Up to Restricted and Sensitive (Normal) data' },
           ]}
         />
       </Tile>
@@ -65,32 +102,7 @@ export const FormResponseOptions = forwardRef<
         <Tile.Title>Email mode form</Tile.Title>
         <Tile.Subtitle>Receive responses in your inbox only</Tile.Subtitle>
         <OptionDescription
-          listItems={[
-            'Attachments: up to 7MB per form',
-            'Up to Restricted and Sensitive (High) data',
-          ]}
-        />
-      </Tile>
-      <Tile
-        ref={ref}
-        variant="complex"
-        icon={MultiParty}
-        badge={<Badge colorScheme="success">New</Badge>}
-        isActive={value === FormResponseMode.Multirespondent}
-        onClick={() => onChange(FormResponseMode.Multirespondent)}
-        flex={1}
-        isDisabled={isSingpass}
-      >
-        <Tile.Title>Multi-respondent form</Tile.Title>
-        <Tile.Subtitle>
-          Collect responses from multiple people by adding a workflow to your
-          form and assigning fields to each person
-        </Tile.Subtitle>
-        <OptionDescription
-          listItems={[
-            'Attachments: Up to 20MB per form',
-            'Up to Restricted and Sensitive (Normal) data',
-          ]}
+          listItems={[{ text: 'Up to Restricted and Sensitive (High) data' }]}
         />
       </Tile>
     </Stack>

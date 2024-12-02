@@ -13,33 +13,3 @@ export const MAX_OTP_REQUESTS = 10
  */
 export const WAIT_FOR_OTP_TOLERANCE_SECONDS = 2
 export const NUM_OTP_RETRIES = 4
-
-export enum VfnErrors {
-  ResendOtp = 'RESEND_OTP',
-  SendOtpFailed = 'SEND_OTP_FAILED',
-  WaitForOtp = 'WAIT_FOR_OTP',
-  InvalidOtp = 'INVALID_OTP',
-  FieldNotFound = 'FIELD_NOT_FOUND',
-  TransactionNotFound = 'TRANSACTION_NOT_FOUND',
-  InvalidMobileNumber = 'INVALID_MOBILE_NUMBER',
-}
-
-export enum ADMIN_VERIFIED_SMS_STATES {
-  limitExceeded = 'LIMIT_EXCEEDED',
-  belowLimit = 'BELOW_LIMIT',
-  hasMessageServiceId = 'MESSAGE_SERVICE_ID_OBTAINED',
-}
-
-export enum SMS_WARNING_TIERS {
-  LOW = 2500,
-  MED = 5000,
-  HIGH = 7500,
-}
-
-export const stringifiedSmsWarningTiers: {
-  [K in keyof typeof SMS_WARNING_TIERS]: string
-} = {
-  LOW: '2.5K',
-  MED: '5K',
-  HIGH: '7.5K',
-}

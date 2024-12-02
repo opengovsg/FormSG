@@ -233,50 +233,6 @@ const insertEncryptForm = async ({
   }
 }
 
-const insertFormWithMsgSrvcName = async ({
-  formId,
-  userId,
-  mailDomain = 'test.gov.sg',
-  mailName = 'test',
-  shortName = 'govtest',
-  formOptions = {},
-  msgSrvcName = 'mockMsgSrvcname',
-}: {
-  formId?: Schema.Types.ObjectId
-  userId?: Schema.Types.ObjectId
-  mailName?: string
-  mailDomain?: string
-  shortName?: string
-  formOptions?: Partial<IForm>
-  msgSrvcName?: string
-} = {}): Promise<{
-  form: IFormSchema
-  user: IUserSchema
-  agency: IAgencySchema
-}> => {
-  const { user, agency } = await insertFormCollectionReqs({
-    userId,
-    mailDomain,
-    mailName,
-    shortName,
-  })
-
-  const FormModel = getFormModel(mongoose)
-  const form = await FormModel.create({
-    title: 'example form title',
-    admin: user._id,
-    _id: formId,
-    ...formOptions,
-    msgSrvcName: msgSrvcName,
-  })
-
-  return {
-    form: form as IFormSchema,
-    user,
-    agency,
-  }
-}
-
 const getFullFormById = async (
   formId: string,
 ): Promise<IPopulatedForm | null> =>
@@ -344,7 +300,6 @@ const dbHandler = {
   clearCollection,
   insertEmailForm,
   insertEncryptForm,
-  insertFormWithMsgSrvcName,
   getFullFormById,
   insertFormSubmission,
   insertFormFeedback,

@@ -325,12 +325,6 @@ export class SecretsManagerConflictError extends ApplicationError {
   }
 }
 
-export class TwilioCacheError extends ApplicationError {
-  constructor(message?: string) {
-    super(message, undefined, ErrorCodes.TWILIO_CACHE)
-  }
-}
-
 /**
  * Union of all possible database errors
  */

@@ -2,14 +2,7 @@ import { render } from '@react-email/render'
 import tracer from 'dd-trace'
 import { get, inRange, isEmpty } from 'lodash'
 import moment from 'moment-timezone'
-import {
-  err,
-  errAsync,
-  fromPromise,
-  okAsync,
-  Result,
-  ResultAsync,
-} from 'neverthrow'
+import { err, errAsync, fromPromise, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
 import promiseRetry from 'promise-retry'
 import validator from 'validator'
@@ -17,29 +10,18 @@ import validator from 'validator'
 import { FormResponseMode, PaymentChannel } from '../../../../shared/types'
 import { centsToDollars } from '../../../../shared/utils/payments'
 import { getPaymentInvoiceDownloadUrlPath } from '../../../../shared/utils/urls'
-import {
-  HASH_EXPIRE_AFTER_SECONDS,
-  stringifiedSmsWarningTiers,
-} from '../../../../shared/utils/verification'
+import { HASH_EXPIRE_AFTER_SECONDS } from '../../../../shared/utils/verification'
 import {
   BounceType,
   EmailAdminDataField,
-  IFormDocument,
   IFormHasEmailSchema,
   IPopulatedEncryptedForm,
   IPopulatedForm,
-  IPopulatedUser,
   ISubmissionSchema,
 } from '../../../types'
 import config from '../../config/config'
-import { smsConfig } from '../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../config/logger'
-import * as FormService from '../../modules/form/form.service'
-import {
-  extractFormLinkView,
-  getAdminEmails,
-} from '../../modules/form/form.utils'
-import { formatAsPercentage } from '../../utils/formatters'
+import { getAdminEmails } from '../../modules/form/form.utils'
 import { BounceNotification } from '../../views/templates/BounceNotification'
 import MrfWorkflowCompletionEmail, {
   QuestionAnswer,
@@ -52,12 +34,8 @@ import MrfWorkflowEmail, {
 import { EMAIL_HEADERS, EmailType } from './mail.constants'
 import { MailGenerationError, MailSendError } from './mail.errors'
 import {
-  AdminSmsDisabledData,
-  AdminSmsWarningData,
   AutoreplySummaryRenderData,
   BounceNotificationHtmlData,
-  CollabSmsDisabledData,
-  CollabSmsWarningData,
   IssueReportedNotificationData,
   MailOptions,
   MailServiceParams,
@@ -74,10 +52,6 @@ import {
   generateLoginOtpHtml,
   generatePaymentConfirmationHtml,
   generatePaymentOnboardingHtml,
-  generateSmsVerificationDisabledHtmlForAdmin,
-  generateSmsVerificationDisabledHtmlForCollab,
-  generateSmsVerificationWarningHtmlForAdmin,
-  generateSmsVerificationWarningHtmlForCollab,
   generateSubmissionToAdminHtml,
   generateVerificationOtpHtml,
   isToFieldValid,
@@ -681,175 +655,6 @@ export class MailService {
   }
 
   /**
-   * Sends a email to the admin and collaborators of the form when the verified sms feature will be disabled.
-   * This happens only when the admin has hit a certain limit of sms verifications on his account.
-   *
-   * Note that the email sent to the admin and collaborators will differ.
-   * This is because the admin will see all of their forms that are affected but collaborators
-   * only see forms which they are a part of.
-   *
-   * @param form The form whose admin and collaborators will be issued the email
-   * @returns ok(true) when mail sending is successful
-   * @returns err(MailGenerationError) when there was an error in generating the html data for the mail
-   * @returns err(MailSendError) when there was an error in sending the mail
-   */
-  sendSmsVerificationDisabledEmail = (
-    form: Pick<IPopulatedForm, 'admin' | '_id'>,
-  ): ResultAsync<true, MailGenerationError | MailSendError> => {
-    // Step 1: Retrieve all public forms of admin that have sms verification enabled
-    return FormService.retrievePublicFormsWithSmsVerification(form.admin._id)
-      .andThen((forms) => {
-        // Step 2: Send the mail containing all the active forms to the admin
-        return this.sendDisabledMailForAdmin(forms, form.admin).map(() => forms)
-      })
-      .andThen((forms) => {
-        // Step 3: Send to each individual form
-        return ResultAsync.combine(
-          forms.map((f) =>
-            // If there are no collaborators, do not send out the email.
-            // Admin would already have received a summary email from Step 2.
-            f.permissionList.length
-              ? this.sendDisabledMailForCollab(f, form.admin)
-              : okAsync(true),
-          ),
-        )
-      })
-      .map(() => true)
-  }
-
-  // Helper method to send an email to all the collaborators of a given form that would be affected by
-  // Sms verifications being disabled for the form.
-  // Note that this method also emails the admin to notify them that the collaborators have been informed.
-  sendDisabledMailForCollab = (
-    form: IFormDocument,
-    admin: IPopulatedUser,
-  ): ResultAsync<true, MailGenerationError | MailSendError> => {
-    const formLink = extractFormLinkView(form, this.#appUrl)
-    const htmlData: CollabSmsDisabledData = {
-      form: formLink,
-      smsVerificationLimit:
-        // Formatted using localeString so that the displayed number has commas
-        smsConfig.smsVerificationLimit.toLocaleString('en-US'),
-      smsWarningTiers: stringifiedSmsWarningTiers,
-    }
-    const collaborators = form.permissionList.map(({ email }) => email)
-    const logMeta = {
-      form: formLink,
-      admin,
-      collaborators,
-      action: 'sendDisabledMailForCollab',
-    }
-
-    return generateSmsVerificationDisabledHtmlForCollab(htmlData).andThen(
-      (mailHtml) => {
-        const mailOptions: MailOptions = {
-          to: admin.email,
-          cc: collaborators,
-          from: this.#senderFromString,
-          html: mailHtml,
-          subject: 'Free Mobile Number Verification Disabled',
-          replyTo: this.#officialMail,
-          bcc: this.#senderMail,
-        }
-
-        logger.info({
-          message: 'Attempting to email collaborators about form disabling',
-          meta: logMeta,
-        })
-
-        return this.#sendNodeMail(mailOptions, {
-          formId: form._id,
-          mailId: 'sendDisabledMailForCollab',
-        })
-      },
-    )
-  }
-
-  // Helper method to send an email to a form admin which contains a summary of
-  // which forms would be impacted by sms verifications being removed.
-  sendDisabledMailForAdmin = (
-    forms: IPopulatedForm[],
-    admin: IPopulatedUser,
-  ): ResultAsync<true, MailGenerationError | MailSendError> => {
-    const formLinks = forms.map((f) => extractFormLinkView(f, this.#appUrl))
-    const logMeta = {
-      forms: formLinks,
-      admin,
-      action: 'sendDisabledMailForAdmin',
-    }
-
-    const htmlData: AdminSmsDisabledData = {
-      forms: formLinks,
-      smsVerificationLimit:
-        // Formatted using localeString so that the displayed number has commas
-        smsConfig.smsVerificationLimit.toLocaleString('en-US'),
-      smsWarningTiers: stringifiedSmsWarningTiers,
-    }
-
-    return (
-      // Step 1: Generate HTML data for admin
-      generateSmsVerificationDisabledHtmlForAdmin(htmlData).andThen(
-        (mailHtml) => {
-          const mailOptions: MailOptions = {
-            to: admin.email,
-            from: this.#senderFromString,
-            html: mailHtml,
-            subject: 'Free Mobile Number Verification Disabled',
-            replyTo: this.#officialMail,
-            bcc: this.#senderMail,
-          }
-
-          logger.info({
-            message: 'Attempting to email admin about form disabling',
-            meta: logMeta,
-          })
-
-          // Step 2: Send mail out to admin ONLY
-          return this.#sendNodeMail(mailOptions, {
-            mailId: 'sendDisabledMailForAdmin',
-          })
-        },
-      )
-    )
-  }
-
-  /**
-   * Sends a warning email to the admin of the form when their current verified sms counts hits a limit
-   * @param form The form whose admin will be issued a warning
-   * @param smsVerifications The current total sms verifications for the form
-   * @returns ok(true) when mail sending is successful
-   * @returns err(MailGenerationError) when there was an error in generating the html data for the mail
-   * @returns err(MailSendError) when there was an error in sending the mail
-   */
-  sendSmsVerificationWarningEmail = (
-    form: Pick<IPopulatedForm, 'admin' | '_id'>,
-    smsVerifications: number,
-  ): ResultAsync<true, MailGenerationError | MailSendError> => {
-    // Step 1: Retrieve all public forms of admin that have sms verification enabled
-    return FormService.retrievePublicFormsWithSmsVerification(form.admin._id)
-      .andThen((forms) => {
-        // Step 2: Send the mail containing all the active forms to the admin
-        return this.sendWarningMailForAdmin(
-          forms,
-          form.admin,
-          smsVerifications,
-        ).map(() => forms)
-      })
-      .andThen((forms) => {
-        // Step 3: Send to each individual form
-        return ResultAsync.combine(
-          forms.map((f) =>
-            // If there are no collaborators, do not send out the email.
-            // Admin would already have received a summary email from Step 2.
-            f.permissionList.length
-              ? this.sendWarningMailForCollab(f, form.admin, smsVerifications)
-              : okAsync(true),
-          ),
-        ).map(() => true as const)
-      })
-  }
-
-  /**
    * Sends a payment confirmation to a valid email
    * @param email the recipient email address
    * @param formTitle the form title of the payment form
@@ -917,110 +722,6 @@ export class MailService {
       },
     }
     return this.#sendNodeMail(mail, { mailId: 'paymentOnboarding' })
-  }
-
-  // Utility method to send a warning mail to the collaborators of a form.
-  // Note that this also sends the mail out to the admin of the form as well.
-  sendWarningMailForCollab = (
-    form: IFormDocument,
-    admin: IPopulatedUser,
-    smsVerifications: number,
-  ): ResultAsync<true, MailGenerationError | MailSendError> => {
-    const formLink = extractFormLinkView(form, this.#appUrl)
-    const percentageUsed = formatAsPercentage(
-      smsVerifications / smsConfig.smsVerificationLimit,
-    )
-    const htmlData: CollabSmsWarningData = {
-      form: formLink,
-      percentageUsed,
-      smsVerificationLimit:
-        smsConfig.smsVerificationLimit.toLocaleString('en-US'),
-    }
-    const collaborators = form.permissionList.map(({ email }) => email)
-    const logMeta = {
-      form: formLink,
-      admin,
-      collaborators,
-      smsVerifications,
-      action: 'sendWarningMailForCollab',
-    }
-
-    // Step 1: Generate HTML data for collab
-    return generateSmsVerificationWarningHtmlForCollab(htmlData).andThen(
-      (mailHtml) => {
-        const mailOptions: MailOptions = {
-          to: admin.email,
-          cc: collaborators,
-          from: this.#senderFromString,
-          html: mailHtml,
-          subject: 'Mobile Number Verification - Free Tier Limit Alert',
-          replyTo: this.#officialMail,
-          bcc: this.#senderMail,
-        }
-
-        logger.info({
-          message: 'Attempting to warn collaborators about sms limits',
-          meta: logMeta,
-        })
-
-        // Step 2: Send mail out to admin and collab
-        return this.#sendNodeMail(mailOptions, {
-          formId: form._id,
-          mailId: 'sendWarningMailForCollab',
-        })
-      },
-    )
-  }
-
-  // Utility method to send a warning mail to the admin of a form.
-  // This is triggered when the admin's sms verification counts hits a limit.
-  // This informs the admin of all forms that use sms verification
-  sendWarningMailForAdmin = (
-    forms: IPopulatedForm[],
-    admin: IPopulatedUser,
-    smsVerifications: number,
-  ): ResultAsync<true, MailGenerationError | MailSendError> => {
-    const formLinks = forms.map((f) => extractFormLinkView(f, this.#appUrl))
-    const htmlData: AdminSmsWarningData = {
-      forms: formLinks,
-      numAvailable: (
-        smsConfig.smsVerificationLimit - smsVerifications
-      ).toLocaleString('en-US'),
-      smsVerificationLimit:
-        smsConfig.smsVerificationLimit.toLocaleString('en-US'),
-    }
-    const logMeta = {
-      forms: formLinks,
-      admin,
-      smsVerifications,
-      action: 'sendWarningMailForAdmin',
-    }
-
-    return (
-      // Step 1: Generate HTML data for admin
-      generateSmsVerificationWarningHtmlForAdmin(htmlData).andThen(
-        (mailHtml) => {
-          const mailOptions: MailOptions = {
-            to: admin.email,
-            from: this.#senderFromString,
-            html: mailHtml,
-            subject: 'Mobile Number Verification - Free Tier Limit Alert',
-            replyTo: this.#officialMail,
-            bcc: this.#senderMail,
-          }
-
-          logger.info({
-            message: 'Attempting to warn admin about sms limits',
-            meta: logMeta,
-          })
-
-          // Step 2: Send mail out to admin ONLY
-          return this.#sendNodeMail(mailOptions, {
-            mailId: 'sendWarningMailForAdmin',
-          })
-        },
-      )
-    )
   }
 
   /**

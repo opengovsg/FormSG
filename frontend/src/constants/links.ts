@@ -16,11 +16,12 @@ export const GUIDE_FORM_MRF = 'https://go.gov.sg/formsg-guide-mrf'
 export const GUIDE_MRF_MODE = 'http://go.gov.sg/formsg-mrf'
 export const GUIDE_MYINFO_BUILDER_FIELD =
   'https://go.gov.sg/formsg-guide-singpass-myinfo'
+export const GUIDE_SINGPASS_FEATURES =
+  'https://go.gov.sg/formsg-guide-singpass-myinfo'
 export const GUIDE_SPCP_ESRVCID =
   'https://go.gov.sg/formsg-guide-singpass-myinfo'
 export const GUIDE_ENABLE_SPCP =
   'https://go.gov.sg/formsg-guide-singpass-myinfo-enable'
-export const GUIDE_TWILIO = 'https://go.gov.sg/formsg-guide-verified-smses'
 export const GUIDE_ATTACHMENT_SIZE_LIMIT =
   'https://go.gov.sg/formsg-guide-attachments'
 export const GUIDE_E2EE = 'https://go.gov.sg/formsg-guide-e2e'
