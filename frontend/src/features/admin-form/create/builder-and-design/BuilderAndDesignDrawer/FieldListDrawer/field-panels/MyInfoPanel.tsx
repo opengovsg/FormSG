@@ -36,6 +36,7 @@ import { useCreateTabForm } from '../../../../builder-and-design/useCreateTabFor
 import { DraggableMyInfoFieldListOption } from '../FieldListOption'
 
 import { FieldSection } from './FieldSection'
+import { filterFieldsBySearchValue } from './utils'
 
 const SGID_SUPPORTED_V1 = [
   MyInfoAttribute.Name,
@@ -126,40 +127,35 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
     [form, isDisabled, sgIDUnSupported],
   )
 
-  const filteredCreateMyInfoPersonalFields = useMemo(() => {
-    return CREATE_MYINFO_PERSONAL_FIELDS_ORDERED.filter((fieldType) => {
-      const meta = MYINFO_FIELD_TO_DRAWER_META[fieldType]
-      return meta.label.toLowerCase().includes(searchValue.toLowerCase())
-    })
-  }, [searchValue])
+  const filteredCreateMyInfoPersonalFields = filterFieldsBySearchValue(
+    searchValue,
+    CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
+    MYINFO_FIELD_TO_DRAWER_META,
+  )
 
-  const filteredCreateMyInfoContactFields = useMemo(() => {
-    return CREATE_MYINFO_CONTACT_FIELDS_ORDERED.filter((fieldType) => {
-      const meta = MYINFO_FIELD_TO_DRAWER_META[fieldType]
-      return meta.label.toLowerCase().includes(searchValue.toLowerCase())
-    })
-  }, [searchValue])
+  const filteredCreateMyInfoContactFields = filterFieldsBySearchValue(
+    searchValue,
+    CREATE_MYINFO_CONTACT_FIELDS_ORDERED,
+    MYINFO_FIELD_TO_DRAWER_META,
+  )
 
-  const filteredCreateMyInfoParticularsFields = useMemo(() => {
-    return CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED.filter((fieldType) => {
-      const meta = MYINFO_FIELD_TO_DRAWER_META[fieldType]
-      return meta.label.toLowerCase().includes(searchValue.toLowerCase())
-    })
-  }, [searchValue])
+  const filteredCreateMyInfoParticularsFields = filterFieldsBySearchValue(
+    searchValue,
+    CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED,
+    MYINFO_FIELD_TO_DRAWER_META,
+  )
 
-  const filteredCreateMyInfoMarriageFields = useMemo(() => {
-    return CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED.filter((fieldType) => {
-      const meta = MYINFO_FIELD_TO_DRAWER_META[fieldType]
-      return meta.label.toLowerCase().includes(searchValue.toLowerCase())
-    })
-  }, [searchValue])
+  const filteredCreateMyInfoMarriageFields = filterFieldsBySearchValue(
+    searchValue,
+    CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED,
+    MYINFO_FIELD_TO_DRAWER_META,
+  )
 
-  const filteredCreateMyInfoChildrenFields = useMemo(() => {
-    return CREATE_MYINFO_CHILDREN_FIELDS_ORDERED.filter((fieldType) => {
-      const meta = MYINFO_FIELD_TO_DRAWER_META[fieldType]
-      return meta.label.toLowerCase().includes(searchValue.toLowerCase())
-    })
-  }, [searchValue])
+  const filteredCreateMyInfoChildrenFields = filterFieldsBySearchValue(
+    searchValue,
+    CREATE_MYINFO_CHILDREN_FIELDS_ORDERED,
+    MYINFO_FIELD_TO_DRAWER_META,
+  )
 
   return (
     <>

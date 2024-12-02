@@ -47,11 +47,12 @@ import { As } from '@chakra-ui/react'
 
 import { BasicField, MyInfoAttribute } from '~shared/types/field'
 
-type BuilderSidebarFieldMeta = {
+export type BuilderSidebarFieldMeta = {
   label: string
   icon: As
   // Is this fieldType included in submissions?
   isSubmitted: boolean
+  alias?: string[]
 }
 
 // !!! Do not use this to reference field titles for MyInfo fields. !!!
@@ -63,126 +64,173 @@ export const BASICFIELD_TO_DRAWER_META: {
     label: 'Image',
     icon: BiImage,
     isSubmitted: false,
+    alias: ['photo', 'picture'],
   },
 
   [BasicField.Statement]: {
     label: 'Paragraph',
     icon: BiText,
     isSubmitted: false,
+    alias: ['description'],
   },
 
   [BasicField.Section]: {
     label: 'Heading',
     icon: BiHeading,
     isSubmitted: false,
+    alias: ['header', 'title', 'section'],
   },
 
   [BasicField.Attachment]: {
     label: 'Attachment',
     icon: BiCloudUpload,
     isSubmitted: true,
+    alias: ['document', 'file', 'upload'],
   },
 
   [BasicField.Checkbox]: {
     label: 'Checkbox',
     icon: BiSelectMultiple,
     isSubmitted: true,
+    alias: ['choice', 'options', 'multiple'],
   },
 
   [BasicField.Date]: {
     label: 'Date',
     icon: BiCalendarEvent,
     isSubmitted: true,
+    alias: [
+      'birthdate',
+      'dob',
+      'date of birth',
+      'event date',
+      'start date',
+      'end date',
+      'time',
+    ],
   },
 
   [BasicField.Decimal]: {
     label: 'Decimal',
     icon: BiCalculator,
     isSubmitted: true,
+    alias: ['price', 'amount', 'cost'],
   },
 
   [BasicField.Dropdown]: {
     label: 'Dropdown',
     icon: BiCaretDownSquare,
     isSubmitted: true,
+    alias: ['choice', 'options', 'category', 'type', 'status'],
   },
 
   [BasicField.CountryRegion]: {
     label: 'Country/Region',
     icon: BiFlag,
     isSubmitted: true,
+    alias: ['country', 'region', 'location', 'nationality'],
   },
 
   [BasicField.Email]: {
     label: 'Email',
     icon: BiMailSend,
     isSubmitted: true,
+    alias: ['contact'],
   },
 
   [BasicField.HomeNo]: {
     label: 'Home number',
     icon: BiPhone,
     isSubmitted: true,
+    alias: ['phone', 'contact', 'telephone'],
   },
 
   [BasicField.LongText]: {
     label: 'Long answer',
     icon: BiAlignLeft,
     isSubmitted: true,
+    alias: [
+      'text',
+      'description',
+      'comments',
+      'feedback',
+      'notes',
+      'details',
+      'explanation',
+      'paragraph',
+    ],
   },
 
   [BasicField.Mobile]: {
     label: 'Mobile number',
     icon: BiMobile,
     isSubmitted: true,
+    alias: ['phone', 'contact', 'telephone'],
   },
 
   [BasicField.Nric]: {
     label: 'NRIC/FIN',
     icon: BiUser,
     isSubmitted: true,
+    alias: ['id', 'identification', 'national', 'singpass', 'ic number'],
   },
 
   [BasicField.Number]: {
     label: 'Number',
     icon: BiHash,
     isSubmitted: true,
+    alias: ['age', 'quantity', 'count'],
   },
 
   [BasicField.Radio]: {
     label: 'Radio',
     icon: BiRadioCircleMarked,
     isSubmitted: true,
+    alias: ['choice', 'options', 'mcq', 'multiple'],
   },
 
   [BasicField.Rating]: {
     label: 'Rating',
     icon: BiStar,
     isSubmitted: true,
+    alias: ['satisfaction', 'quality', 'performance'],
   },
 
   [BasicField.ShortText]: {
     label: 'Short answer',
     icon: BiRename,
     isSubmitted: true,
+    alias: ['name', 'text'],
   },
 
   [BasicField.Table]: {
     label: 'Table',
     icon: BiTable,
     isSubmitted: true,
+    alias: [
+      'grid',
+      'spreadsheet',
+      'list',
+      'collection',
+      'entries',
+      'records',
+      'items',
+      'multiple',
+    ],
   },
 
   [BasicField.Uen]: {
     label: 'UEN',
     icon: BiBuilding,
     isSubmitted: true,
+    alias: ['business id', 'company registration', 'organization number'],
   },
 
   [BasicField.YesNo]: {
     label: 'Yes/No',
     icon: BiToggleLeft,
     isSubmitted: true,
+    alias: ['consent', 'agreement', 'confirmation', 'approval', 'accept_terms'],
   },
 
   [BasicField.Children]: {

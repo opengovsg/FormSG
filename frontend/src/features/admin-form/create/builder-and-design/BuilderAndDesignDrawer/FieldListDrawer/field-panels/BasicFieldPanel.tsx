@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { Box } from '@chakra-ui/react'
 import { Droppable } from '@hello-pangea/dnd'
 
@@ -12,16 +11,16 @@ import { useCreateTabForm } from '../../../../builder-and-design/useCreateTabFor
 import { DraggableBasicFieldListOption } from '../FieldListOption'
 
 import { FieldSection } from './FieldSection'
+import { filterFieldsBySearchValue } from './utils'
 
 export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
   const { isLoading } = useCreateTabForm()
 
-  const filteredCreateBasicFields = useMemo(() => {
-    return BASIC_FIELDS_ORDERED.filter((fieldType) => {
-      const meta = BASICFIELD_TO_DRAWER_META[fieldType]
-      return meta.label.toLowerCase().includes(searchValue.toLowerCase())
-    })
-  }, [searchValue])
+  const filteredCreateBasicFields = filterFieldsBySearchValue(
+    searchValue,
+    BASIC_FIELDS_ORDERED,
+    BASICFIELD_TO_DRAWER_META,
+  )
 
   return (
     <Droppable isDropDisabled droppableId={CREATE_FIELD_DROP_ID}>
