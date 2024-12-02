@@ -174,7 +174,7 @@ export const AddressField = ({
         isRequired={false} // unitNumber will always be optional
         isDisabled={schema.disabled}
         isReadOnly={isValid && isSubmitting}
-        isInvalid={!!errors?.levelNumber}
+        isInvalid={!!errors?.levelNumber || !!errors?.unitNumber}
       >
         <FormLabel>Unit Number</FormLabel>
         <Flex direction="row" gap={2} width="100%">

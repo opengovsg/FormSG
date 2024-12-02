@@ -17,10 +17,10 @@ export const validatePostalCode = (value: string) => {
 }
 
 export const validateBlockUnit = (value: string) => {
-  // if (value == 'MANUAL_ERROR') {
-  //   // TODO to update when developing api service work
-  //   return VALID_POSTAL_CODE_NO_ADDRESS_ERROR
-  // }
+  if (value == 'INVALID') {
+    // TODO to update when developing api service work
+    return VALID_POSTAL_CODE_NO_ADDRESS_ERROR
+  }
   if (value !== '' && !/^[A-Za-z0-9]+$/.test(value)) {
     return INVALID_BLOCK_UNIT_ERROR
   }
@@ -28,9 +28,9 @@ export const validateBlockUnit = (value: string) => {
 }
 
 export const validateStreetName = (value: string) => {
-  // if (value == 'MANUAL_ERROR') {
-  //   // TODO to update when developing api service work
-  //   return VALID_POSTAL_CODE_NO_ADDRESS_ERROR
-  // }
+  if (value == 'INVALID') {
+    // TODO to update when developing api service work
+    return VALID_POSTAL_CODE_NO_ADDRESS_ERROR
+  }
   return true
 }

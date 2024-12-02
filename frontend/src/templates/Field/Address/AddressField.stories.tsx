@@ -160,8 +160,15 @@ InvalidLevelUnit.args = {
   },
 }
 
-// export const ValidPostalCodeApiFail = Template.bind({})
-// ValidPostalCodeApiFail.args = {
-//   schema: baseSchema,
-//   defaultValue: '',
-// }
+export const ValidPostalCodeApiFail = Template.bind({})
+ValidPostalCodeApiFail.args = {
+  schema: baseSchema,
+  defaultValue: {
+    postalCode: '444444',
+    blockNumber: 'INVALID',
+    streetName: 'INVALID',
+    buildingName: '',
+    levelNumber: '',
+    unitNumber: '',
+  }
+}
