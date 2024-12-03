@@ -225,6 +225,7 @@ export const createPostalCodeValidationRules: ValidationRuleFn<
         disableRequiredValidation,
       ),
       validPostalCode: (value: string) => {
+        if (!schema.required && value == '') return true // if optional and empty, skip postal code validity
         return validatePostalCode(value)
       },
     },
@@ -271,7 +272,6 @@ export const createUnitLevelNumberValidationRules: ValidationRuleFn<
   return {
     validate: {
       validUnitLevel: (value: string) => {
-        console.log(value)
         return validateBlockUnit(value)
       },
     },
