@@ -287,7 +287,7 @@ export const transformInputsToOutputs = (
         field,
         input as FormFieldValueOrFieldResponseAnswerV3<typeof field.fieldType>,
       )
-    // case BasicField.Address:
+    case BasicField.Address: // TODO: address-field-be work
     case BasicField.Statement:
     case BasicField.Image:
       // No output needed.

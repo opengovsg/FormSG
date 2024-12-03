@@ -224,6 +224,7 @@ export const constructFieldResponseValidatorV3 = ({
       return constructAttachmentFieldValidatorV3(formField)
     case BasicField.Children:
       return constructChildrenValidatorV3(formField)
+    case BasicField.Address: // TODO: address-field-be work
     case BasicField.Image: // fall-through
     case BasicField.Statement:
       return () =>

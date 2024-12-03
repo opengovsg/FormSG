@@ -41,6 +41,7 @@ export const PublicFormSubmitButton = ({
 }: PublicFormSubmitButtonProps): JSX.Element => {
   const { t } = useTranslation()
   const [prevPaymentId, setPrevPaymentId] = useState('')
+
   const isMobile = useIsMobile()
   const { isSubmitting } = useFormState()
   const formInputs = useWatch<FormFieldValues>({}) as FormFieldValues

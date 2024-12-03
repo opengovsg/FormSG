@@ -1,11 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 
 import { BasicField } from '~shared/types/field'
 
-import { createBlockNumberValidationRules } from '~utils/fieldValidation'
 import Button from '~components/Button'
 
 import { AddressFieldInput, AddressFieldSchema } from '../types'
@@ -170,5 +169,5 @@ ValidPostalCodeApiFail.args = {
     buildingName: '',
     levelNumber: '',
     unitNumber: '',
-  }
+  },
 }

@@ -4,7 +4,7 @@
  */
 import { RegisterOptions } from 'react-hook-form'
 import { isValid, parse } from 'date-fns'
-import { identity, String } from 'lodash'
+import { identity } from 'lodash'
 import simplur from 'simplur'
 import validator from 'validator'
 

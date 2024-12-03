@@ -630,6 +630,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
         fieldType: field.fieldType,
       }
     }
+    case BasicField.Address: // TODO: address-field-be work
     case BasicField.Section:
     case BasicField.Statement:
     case BasicField.Image:

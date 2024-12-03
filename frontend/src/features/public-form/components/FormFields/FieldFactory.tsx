@@ -120,6 +120,8 @@ export const FieldFactory = memo(
         return <ImageField schema={field} {...rest} />
       case BasicField.Table:
         return <TableField schema={field} {...rest} />
+      case BasicField.Address:
+        return <AddressField schema={field} {...rest} />
       case BasicField.Children:
         return (
           <ChildrenCompoundField
@@ -128,8 +130,6 @@ export const FieldFactory = memo(
             {...rest}
           />
         )
-      case BasicField.Address:
-        return <AddressField schema={field} {...rest} />
     }
   },
   (prevProps, nextProps) =>

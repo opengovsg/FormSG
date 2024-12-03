@@ -142,7 +142,7 @@ export const types: BasicFieldBlock[] = [
     name: BasicField.Address,
     value: 'Address',
     submitted: true,
-    answerArray: true,
+    answerArray: false,
   },
 ]
 
