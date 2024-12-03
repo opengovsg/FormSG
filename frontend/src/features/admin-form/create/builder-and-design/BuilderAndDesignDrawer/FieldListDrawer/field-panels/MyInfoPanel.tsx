@@ -165,14 +165,16 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
           <Box ref={provided.innerRef} {...provided.droppableProps}>
             {filteredCreateMyInfoPersonalFields.length > 0 && (
               <FieldSection label="Personal">
-                {filteredCreateMyInfoPersonalFields.map((fieldType, index) => (
-                  <DraggableMyInfoFieldListOption
-                    index={index}
-                    isDisabled={isDisabledCheck(fieldType)}
-                    key={index}
-                    fieldType={fieldType}
-                  />
-                ))}
+                {filteredCreateMyInfoPersonalFields.map(
+                  ({ fieldType, originalIndex }) => (
+                    <DraggableMyInfoFieldListOption
+                      index={originalIndex}
+                      isDisabled={isDisabledCheck(fieldType)}
+                      key={originalIndex}
+                      fieldType={fieldType}
+                    />
+                  ),
+                )}
               </FieldSection>
             )}
             <Box display="none">{provided.placeholder}</Box>
@@ -184,14 +186,16 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
           <Box ref={provided.innerRef} {...provided.droppableProps}>
             {filteredCreateMyInfoContactFields.length > 0 && (
               <FieldSection label="Contact">
-                {filteredCreateMyInfoContactFields.map((fieldType, index) => (
-                  <DraggableMyInfoFieldListOption
-                    index={index}
-                    isDisabled={isDisabledCheck(fieldType)}
-                    key={index}
-                    fieldType={fieldType}
-                  />
-                ))}
+                {filteredCreateMyInfoContactFields.map(
+                  ({ fieldType, originalIndex }) => (
+                    <DraggableMyInfoFieldListOption
+                      index={originalIndex}
+                      isDisabled={isDisabledCheck(fieldType)}
+                      key={originalIndex}
+                      fieldType={fieldType}
+                    />
+                  ),
+                )}
               </FieldSection>
             )}
             <Box display="none">{provided.placeholder}</Box>
@@ -204,11 +208,11 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
             {filteredCreateMyInfoParticularsFields.length > 0 && (
               <FieldSection label="Particulars">
                 {filteredCreateMyInfoParticularsFields.map(
-                  (fieldType, index) => (
+                  ({ fieldType, originalIndex }) => (
                     <DraggableMyInfoFieldListOption
-                      index={index}
+                      index={originalIndex}
                       isDisabled={isDisabledCheck(fieldType)}
-                      key={index}
+                      key={originalIndex}
                       fieldType={fieldType}
                     />
                   ),
@@ -224,14 +228,16 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
           <Box ref={provided.innerRef} {...provided.droppableProps}>
             {filteredCreateMyInfoMarriageFields.length > 0 && (
               <FieldSection label="Family (Marriage)">
-                {filteredCreateMyInfoMarriageFields.map((fieldType, index) => (
-                  <DraggableMyInfoFieldListOption
-                    index={index}
-                    isDisabled={isDisabledCheck(fieldType)}
-                    key={index}
-                    fieldType={fieldType}
-                  />
-                ))}
+                {filteredCreateMyInfoMarriageFields.map(
+                  ({ fieldType, originalIndex }) => (
+                    <DraggableMyInfoFieldListOption
+                      index={originalIndex}
+                      isDisabled={isDisabledCheck(fieldType)}
+                      key={originalIndex}
+                      fieldType={fieldType}
+                    />
+                  ),
+                )}
               </FieldSection>
             )}
             <Box display="none">{provided.placeholder}</Box>
@@ -246,11 +252,11 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
               {filteredCreateMyInfoChildrenFields.length > 0 && (
                 <FieldSection label="Family (Children)">
                   {filteredCreateMyInfoChildrenFields.map(
-                    (fieldType, index) => (
+                    ({ fieldType, originalIndex }) => (
                       <DraggableMyInfoFieldListOption
-                        index={index}
+                        index={originalIndex}
                         isDisabled={isDisabledCheck(fieldType)}
-                        key={index}
+                        key={originalIndex}
                         fieldType={fieldType}
                       />
                     ),

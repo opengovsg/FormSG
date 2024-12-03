@@ -28,13 +28,13 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
         <Box ref={provided.innerRef} {...provided.droppableProps}>
           <FieldSection>
             <FieldSection label="Basic">
-              {filteredCreateBasicFields.map((fieldType, index) => {
+              {filteredCreateBasicFields.map(({ fieldType, originalIndex }) => {
                 const shouldDisableField = isLoading
                 return (
                   <DraggableBasicFieldListOption
-                    index={index}
+                    index={originalIndex}
                     isDisabled={shouldDisableField}
-                    key={index}
+                    key={originalIndex}
                     fieldType={fieldType}
                   />
                 )
