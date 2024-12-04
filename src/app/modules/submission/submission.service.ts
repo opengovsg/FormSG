@@ -552,6 +552,7 @@ export const uploadAttachments = (
       meta: {
         action: 'uploadAttachments',
         formId,
+        attachmentMetadata: Array.from(attachmentMetadata.entries()),
       },
     })
     return attachmentMetadata
