@@ -524,7 +524,17 @@ export const uploadAttachments = (
       })
       return new AttachmentUploadError()
     },
-  ).map(() => attachmentMetadata)
+  ).map(() => {
+    logger.info({
+      message: 'Successfully uploaded attachments to S3',
+      meta: {
+        action: 'uploadAttachments',
+        formId,
+        attachmentMetadata: Array.from(attachmentMetadata.entries()),
+      },
+    })
+    return attachmentMetadata
+  })
 }
 
 /**
