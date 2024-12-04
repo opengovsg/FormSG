@@ -12,6 +12,7 @@ import FormInstructions from './components/FormInstructions'
 import FormIssueFeedback from './components/FormIssueFeedback'
 import { PublicFormLogo } from './components/FormLogo'
 import FormStartPage from './components/FormStartPage'
+import LanguageControl from './components/LanguageControl'
 import { PublicFormWrapper } from './components/PublicFormWrapper'
 import { PublicFormProvider } from './PublicFormProvider'
 
@@ -34,6 +35,7 @@ export const PublicFormPage = (): JSX.Element => {
           <FormBanner />
           <PublicFormLogo />
           <FormStartPage />
+          <LanguageControl />
           <PublicFormWrapper>
             <FormInstructions />
             <FormFields />

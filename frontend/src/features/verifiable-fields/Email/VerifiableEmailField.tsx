@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { Box, VisuallyHidden } from '@chakra-ui/react'
 
+import { Language } from '~shared/types'
+
 import { baseEmailValidationFn } from '~utils/fieldValidation'
 import { EmailFieldInput, EmailFieldProps } from '~templates/Field/Email'
 import { EmailFieldSchema } from '~templates/Field/types'
@@ -24,6 +26,7 @@ export interface VerifiableEmailFieldProps extends EmailFieldProps {
 const InnerVerifiableEmailField = ({
   schema,
   disableRequiredValidation,
+  selectedLanguage = Language.ENGLISH,
   ...formContainerProps
 }: VerifiableEmailFieldProps): JSX.Element => {
   const { handleInputChange, handleVfnButtonClick, hasSignature } =
@@ -44,7 +47,11 @@ const InnerVerifiableEmailField = ({
   }, [hasSignature])
 
   return (
-    <VerifiableFieldContainer schema={schema} {...formContainerProps}>
+    <VerifiableFieldContainer
+      schema={schema}
+      {...formContainerProps}
+      selectedLanguage={selectedLanguage}
+    >
       <Box w="100%">
         <VisuallyHidden id={`verifiable-description-${schema._id}`}>
           {a11yLabel}
@@ -66,6 +73,7 @@ const InnerVerifiableEmailField = ({
 
 export const VerifiableEmailField = ({
   schema,
+  selectedLanguage = Language.ENGLISH,
   ...props
 }: VerifiableEmailFieldProps) => {
   const validateInputForVfn = baseEmailValidationFn(schema)
@@ -74,7 +82,11 @@ export const VerifiableEmailField = ({
       schema={schema}
       validateInputForVfn={validateInputForVfn}
     >
-      <InnerVerifiableEmailField schema={schema} {...props} />
+      <InnerVerifiableEmailField
+        schema={schema}
+        {...props}
+        selectedLanguage={selectedLanguage}
+      />
     </VerifiableFieldProvider>
   )
 }

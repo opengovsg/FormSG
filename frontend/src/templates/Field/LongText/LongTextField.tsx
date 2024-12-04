@@ -4,6 +4,8 @@
 import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
+import { Language } from '~shared/types'
+
 import { createTextValidationRules } from '~utils/fieldValidation'
 import Textarea from '~components/Textarea'
 
@@ -18,6 +20,7 @@ export interface LongTextFieldProps extends BaseFieldProps {
 export const LongTextField = ({
   schema,
   disableRequiredValidation,
+  selectedLanguage = Language.ENGLISH,
 }: LongTextFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createTextValidationRules(schema, disableRequiredValidation),
@@ -27,7 +30,7 @@ export const LongTextField = ({
   const { register } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema}>
+    <FieldContainer schema={schema} selectedLanguage={selectedLanguage}>
       <Textarea
         aria-label={`${schema.questionNumber}. ${schema.title}`}
         defaultValue=""

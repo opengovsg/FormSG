@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
+import { Language } from '~shared/types'
+
 import { createDecimalValidationRules } from '~utils/fieldValidation'
 import NumberInput from '~components/NumberInput'
 
@@ -18,6 +20,7 @@ export interface DecimalFieldProps extends BaseFieldProps {
 export const DecimalField = ({
   schema,
   disableRequiredValidation,
+  selectedLanguage = Language.ENGLISH,
 }: DecimalFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createDecimalValidationRules(schema, disableRequiredValidation),
@@ -27,7 +30,7 @@ export const DecimalField = ({
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema}>
+    <FieldContainer schema={schema} selectedLanguage={selectedLanguage}>
       <Controller
         control={control}
         rules={validationRules}

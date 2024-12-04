@@ -8,10 +8,11 @@ import {
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme, Language } from '~shared/types'
 
 import { CHECKBOX_THEME_KEY } from '~theme/components/Checkbox'
 import { createCheckboxValidationRules } from '~utils/fieldValidation'
+import { getFieldOptionsInSelectedLanguage } from '~utils/multiLanguage'
 import Checkbox from '~components/Checkbox'
 import { CheckboxProps } from '~components/Checkbox/Checkbox'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -36,6 +37,7 @@ export const CheckboxField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
+  selectedLanguage = Language.ENGLISH,
 }: CheckboxFieldProps): JSX.Element => {
   const fieldColorScheme = useMemo(
     () => `theme-${colorTheme}` as const,
@@ -59,9 +61,17 @@ export const CheckboxField = ({
     [disableRequiredValidation, schema],
   )
 
+  const defaultEnglishCheckboxOptions = schema.fieldOptions
+
   const { register, getValues, control } = useFormContext<CheckboxFieldInputs>()
   const { isValid, isSubmitting, errors } = useFormState<CheckboxFieldInputs>({
     name: schema._id,
+  })
+
+  const fieldOptions = getFieldOptionsInSelectedLanguage({
+    defaultValue: defaultEnglishCheckboxOptions,
+    translations: schema.fieldOptionsTranslations,
+    selectedLanguage,
   })
 
   const othersValidationRules = useMemo(
@@ -81,7 +91,11 @@ export const CheckboxField = ({
     [checkboxInputName, getValues],
   )
   return (
-    <FieldContainer schema={schema} errorKey={checkboxInputName}>
+    <FieldContainer
+      schema={schema}
+      errorKey={checkboxInputName}
+      selectedLanguage={selectedLanguage}
+    >
       <Box aria-label={`${schema.questionNumber}. ${schema.title}`} role="list">
         <Controller
           name={checkboxInputName}
@@ -89,19 +103,23 @@ export const CheckboxField = ({
           rules={validationRules}
           render={({ field: { ref, ...field } }) => (
             <CheckboxGroup {...field}>
-              {schema.fieldOptions.map((o, idx) => (
+              {fieldOptions.map((o, idx) => (
                 <Checkbox
                   name={checkboxInputName}
                   colorScheme={fieldColorScheme}
                   key={idx}
-                  value={o}
+                  // Value will always be the default english field option
+                  // so that upon form submission, the selected value submitted
+                  // and collected will always be the english field option regardless
+                  // of the language of the form.
+                  value={defaultEnglishCheckboxOptions[idx]}
                   aria-label={o}
                   {...(idx === 0 ? { ref } : {})}
                 >
                   {o}
                 </Checkbox>
               ))}
-              {schema.fieldOptions.length === 1 ? (
+              {fieldOptions.length === 1 ? (
                 // React-hook-form quirk where the value will not be set in an array if there is only a single checkbox option.
                 // This is a workaround to set the value in an array by registering a hidden checkbox with the same id.
                 // See https://github.com/react-hook-form/react-hook-form/issues/7834#issuecomment-1040735711.

@@ -4,7 +4,7 @@ import { UseTableCellProps } from 'react-table'
 import { FormControl, VisuallyHidden } from '@chakra-ui/react'
 import { get } from 'lodash'
 
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme, Language } from '~shared/types'
 import {
   BasicField,
   Column,
@@ -20,6 +20,7 @@ import {
   createDropdownValidationRules,
 } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown'
+import { ComboboxItem } from '~components/Dropdown/types'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
@@ -33,6 +34,7 @@ export interface ColumnCellProps
   disableRequiredValidation: boolean
   columnSchema: ColumnDto
   colorTheme: FormColorTheme
+  selectedLanguage: Language
 }
 
 export interface FieldColumnCellProps<T extends Column = Column> {
@@ -42,6 +44,7 @@ export interface FieldColumnCellProps<T extends Column = Column> {
   /** Represents `{schemaId}.{rowIndex}.{columnId}` */
   inputName: `${string}.${number}.${string}`
   colorTheme: FormColorTheme
+  selectedLanguage: Language
 }
 
 const ShortTextColumnCell = ({
@@ -81,12 +84,51 @@ const DropdownColumnCell = ({
   disableRequiredValidation,
   inputName,
   colorTheme,
+  selectedLanguage,
 }: FieldColumnCellProps<DropdownColumnBase>) => {
   const { control } = useFormContext<TableFieldInputs>()
   const rules = useMemo(
     () => createDropdownValidationRules(schema, disableRequiredValidation),
     [schema, disableRequiredValidation],
   )
+
+  const fieldOptions: ComboboxItem[] = useMemo(() => {
+    const defaultEnglishFieldOptions = schema.fieldOptions ?? []
+    const fieldOptionsTranslations = schema?.fieldOptionsTranslations ?? []
+    const translationIdx = fieldOptionsTranslations.findIndex(
+      (translation) => translation.language === selectedLanguage,
+    )
+
+    // Check if translations for field options exist and whether
+    // each field option has its own respective translation. If not
+    // render the default field options in English.
+    if (
+      translationIdx !== -1 &&
+      fieldOptionsTranslations[translationIdx].translation.length ===
+        defaultEnglishFieldOptions.length
+    ) {
+      const translatedFieldOptions =
+        fieldOptionsTranslations[translationIdx].translation
+
+      // The label will be the translated option while the value is the
+      // default English option so that upon form submission, the value recorded
+      // and collected will be the default english option. The indexes of the
+      // translated options and the default English options are corresponding
+      // with each other.
+      return translatedFieldOptions.map((translatedFieldOption, index) => {
+        return {
+          value: defaultEnglishFieldOptions[index],
+          label: translatedFieldOption,
+        }
+      })
+    } else {
+      return defaultEnglishFieldOptions.map((fieldOption) => {
+        return {
+          value: fieldOption,
+        }
+      })
+    }
+  }, [schema.fieldOptions, schema?.fieldOptionsTranslations, selectedLanguage])
 
   return (
     <Controller
@@ -99,7 +141,7 @@ const DropdownColumnCell = ({
           isDisabled={isDisabled}
           colorScheme={`theme-${colorTheme}`}
           // Possibility of fieldOptions being undefined during table field creation.
-          items={schema.fieldOptions ?? []}
+          items={fieldOptions ?? []}
           {...field}
         />
       )}
@@ -118,6 +160,7 @@ export const ColumnCell = ({
   column,
   columnSchema,
   colorTheme,
+  selectedLanguage,
 }: ColumnCellProps): JSX.Element => {
   const isMobile = useIsMobile()
   const isPrint = useIsPrint()
@@ -138,6 +181,7 @@ export const ColumnCell = ({
             isDisabled={isDisabled}
             disableRequiredValidation={disableRequiredValidation}
             inputName={inputName}
+            selectedLanguage={selectedLanguage}
           />
         )
       case BasicField.Dropdown:
@@ -148,6 +192,7 @@ export const ColumnCell = ({
             isDisabled={isDisabled}
             disableRequiredValidation={disableRequiredValidation}
             inputName={inputName}
+            selectedLanguage={selectedLanguage}
           />
         )
       default:
@@ -159,6 +204,7 @@ export const ColumnCell = ({
     disableRequiredValidation,
     inputName,
     isDisabled,
+    selectedLanguage,
   ])
 
   return (

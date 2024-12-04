@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { BiCheck } from 'react-icons/bi'
 import { Box, Stack } from '@chakra-ui/react'
 
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme, Language } from '~shared/types'
 import { BasicField, FormFieldWithId } from '~shared/types/field'
 
 import Button from '~components/Button'
@@ -27,6 +27,7 @@ export interface VerifiableFieldContainerProps
 export const VerifiableFieldContainer = ({
   schema,
   colorTheme = FormColorTheme.Blue,
+  selectedLanguage = Language.ENGLISH,
   children,
 }: VerifiableFieldContainerProps): JSX.Element => {
   const {
@@ -54,7 +55,7 @@ export const VerifiableFieldContainer = ({
 
   return (
     <Box>
-      <FieldContainer schema={schema}>
+      <FieldContainer schema={schema} selectedLanguage={selectedLanguage}>
         <Stack spacing="0.5rem" direction={{ base: 'column', md: 'row' }}>
           {children}
           <Box>

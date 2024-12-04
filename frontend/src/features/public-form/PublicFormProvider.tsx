@@ -29,6 +29,7 @@ import { ErrorCode } from '~shared/types/errorCodes'
 import {
   FormAuthType,
   FormResponseMode,
+  Language,
   ProductItem,
   PublicFormDto,
 } from '~shared/types/form'
@@ -204,6 +205,8 @@ export const PublicFormProvider = ({
   )
 
   const [numVisibleFields, setNumVisibleFields] = useState(0)
+  const [selectedPublicFormLanguage, setSelectedPublicFormLanguage] =
+    useState<Language>(Language.ENGLISH)
 
   // Respondent access error states
   const [
@@ -948,6 +951,8 @@ export const PublicFormProvider = ({
         previousSubmission,
         previousAttachments,
         setPreviousSubmission,
+        selectedPublicFormLanguage,
+        setSelectedPublicFormLanguage,
         ...commonFormValues,
         ...data,
         ...rest,

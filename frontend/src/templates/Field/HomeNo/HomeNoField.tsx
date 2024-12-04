@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
+import { Language } from '~shared/types'
+
 import { createHomeNoValidationRules } from '~utils/fieldValidation'
 import PhoneNumberInput from '~components/PhoneNumberInput'
 import landlineExamples from '~components/PhoneNumberInput/resources/examples.landline.json'
@@ -16,6 +18,7 @@ export interface HomeNoFieldProps extends BaseFieldProps {
 export const HomeNoField = ({
   schema,
   disableRequiredValidation,
+  selectedLanguage,
 }: HomeNoFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createHomeNoValidationRules(schema, disableRequiredValidation),
@@ -25,7 +28,7 @@ export const HomeNoField = ({
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema}>
+    <FieldContainer schema={schema} selectedLanguage={selectedLanguage}>
       <Controller
         control={control}
         rules={validationRules}

@@ -199,16 +199,19 @@ export const TranslationListSection = ({
     } = form.endPage
 
     const hasEndPageTitleTranslations = titleTranslations.some(
-      (translations) => translations.language === unicodeLocale,
+      (translations) =>
+        translations.language === unicodeLocale &&
+        !_.isEmpty(translations.translation),
     )
     const hasEndPageParagraphTranslations = paragraphTranslations.some(
-      (translations) => translations.language === unicodeLocale,
+      (translations) =>
+        translations.language === unicodeLocale &&
+        !_.isEmpty(translations.translation),
     )
 
     return (
-      !_.isEmpty(paragraph) &&
       hasEndPageTitleTranslations &&
-      hasEndPageParagraphTranslations
+      (_.isEmpty(paragraph) || hasEndPageParagraphTranslations)
     )
   }, [form?.endPage, unicodeLocale])
 

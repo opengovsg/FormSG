@@ -14,9 +14,15 @@ import { BasicField, FormFieldDto } from '~shared/types'
 import { FieldIdSet } from '~features/logic/types'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
-import { PUBLICFORM_INSTRUCTIONS_SECTIONID } from '../FormInstructions/FormInstructionsContainer'
+import {
+  PUBLICFORM_INSTRUCTIONS_SECTIONID,
+  startPageTitleTranslations,
+} from '../FormInstructions/FormInstructionsContainer'
 
-export type SidebarSectionMeta = Pick<FormFieldDto, 'title' | '_id'>
+export type SidebarSectionMeta = Pick<
+  FormFieldDto,
+  'title' | '_id' | 'titleTranslations'
+>
 
 interface FormSectionsContextProps {
   /** Scroll data to allow form-fillers to scroll to a particular section. */
@@ -49,6 +55,7 @@ export const FormSectionsProvider = ({
     if (form.startPage.paragraph)
       sections.push({
         title: 'Instructions',
+        titleTranslations: startPageTitleTranslations,
         _id: PUBLICFORM_INSTRUCTIONS_SECTIONID,
       })
     form.form_fields.forEach((f) => {
@@ -56,6 +63,7 @@ export const FormSectionsProvider = ({
         return
       sections.push({
         title: f.title,
+        titleTranslations: f.titleTranslations,
         _id: f._id,
       })
     })

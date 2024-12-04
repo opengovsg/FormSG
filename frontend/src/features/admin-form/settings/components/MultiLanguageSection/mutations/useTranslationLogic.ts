@@ -94,8 +94,9 @@ export const useTranslationLogic = ({
           { onSuccess: handleOnBackClick },
         )
       } else {
-        let updatedFieldOptionsTranslationArr =
-          updatedFieldOptionsTranslation.split('\n')
+        let updatedFieldOptionsTranslationArr = updatedFieldOptionsTranslation
+          ? updatedFieldOptionsTranslation.split('\n')
+          : []
 
         updatedFieldOptionsTranslationArr =
           updatedFieldOptionsTranslationArr.filter(

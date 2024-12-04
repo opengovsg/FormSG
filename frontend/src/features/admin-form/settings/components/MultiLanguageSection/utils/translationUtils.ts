@@ -187,12 +187,19 @@ const updateTranslations = ({
   )
 
   if (translationIndex !== -1) {
-    updatedTranslations[translationIndex].translation = newTranslation
+    // Remove translation mapping from array if new translation is an empty string
+    if (_.isEmpty(newTranslation)) {
+      updatedTranslations.splice(translationIndex, 1)
+    } else {
+      updatedTranslations[translationIndex].translation = newTranslation
+    }
   } else {
-    updatedTranslations.push({
-      language: language as Language,
-      translation: newTranslation,
-    })
+    if (!_.isEmpty(newTranslation)) {
+      updatedTranslations.push({
+        language: language as Language,
+        translation: newTranslation,
+      })
+    }
   }
 
   return updatedTranslations
@@ -213,12 +220,19 @@ const updateOptionsTranslations = ({
   )
 
   if (translationIndex !== -1) {
-    updatedTranslations[translationIndex].translation = newTranslations
+    // Remove translation mapping from array if new translation is an empty string
+    if (_.isEmpty(newTranslations)) {
+      updatedTranslations.splice(translationIndex, 1)
+    } else {
+      updatedTranslations[translationIndex].translation = newTranslations
+    }
   } else {
-    updatedTranslations.push({
-      language: language as Language,
-      translation: newTranslations,
-    })
+    if (!_.isEmpty(newTranslations)) {
+      updatedTranslations.push({
+        language: language as Language,
+        translation: newTranslations,
+      })
+    }
   }
 
   return updatedTranslations

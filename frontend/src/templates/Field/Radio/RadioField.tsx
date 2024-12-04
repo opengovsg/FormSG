@@ -3,10 +3,11 @@ import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { FormControl, useMultiStyleConfig } from '@chakra-ui/react'
 import { get } from 'lodash'
 
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme, Language } from '~shared/types'
 
 import { RADIO_THEME_KEY } from '~theme/components/Radio'
 import { createRadioValidationRules } from '~utils/fieldValidation'
+import { getFieldOptionsInSelectedLanguage } from '~utils/multiLanguage'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio, { OthersInput } from '~components/Radio'
 
@@ -27,6 +28,7 @@ export const RadioField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
+  selectedLanguage = Language.ENGLISH,
 }: RadioFieldProps): JSX.Element => {
   const fieldColorScheme = useMemo(
     () => `theme-${colorTheme}` as const,
@@ -50,6 +52,8 @@ export const RadioField = ({
     [disableRequiredValidation, schema],
   )
 
+  const defaultEnglishRadioOptions = schema.fieldOptions
+
   const { register, getValues, trigger } = useFormContext<RadioFieldInputs>()
   const { isValid, isSubmitting, errors } = useFormState<RadioFieldInputs>({
     name: schema._id,
@@ -69,8 +73,18 @@ export const RadioField = ({
     [getValues, radioInputName, schema.othersRadioButton],
   )
 
+  const fieldOptions = getFieldOptionsInSelectedLanguage({
+    defaultValue: defaultEnglishRadioOptions,
+    translations: schema.fieldOptionsTranslations,
+    selectedLanguage,
+  })
+
   return (
-    <FieldContainer schema={schema} errorKey={radioInputName}>
+    <FieldContainer
+      schema={schema}
+      errorKey={radioInputName}
+      selectedLanguage={selectedLanguage}
+    >
       <Controller
         name={radioInputName}
         rules={validationRules}
@@ -93,10 +107,14 @@ export const RadioField = ({
             }
             aria-required={schema.required}
           >
-            {schema.fieldOptions.map((option, idx) => (
+            {fieldOptions.map((option, idx) => (
               <Radio
                 key={idx}
-                value={option}
+                // Value will always be the default english field option
+                // so that upon form submission, the selected value submitted
+                // and collected will always be the english field option regardless
+                // of the language of the form.
+                value={defaultEnglishRadioOptions[idx]}
                 {...(idx === 0 ? { ref } : {})}
                 // Required should apply to radio group rather than individual radio.
                 isRequired={false}

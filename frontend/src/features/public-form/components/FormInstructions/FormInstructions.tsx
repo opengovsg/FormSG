@@ -8,11 +8,13 @@ import { useSectionColor } from '~templates/Field/Section/useSectionColor'
 
 interface FormInstructionsProps {
   content: string
+  title: string
   colorTheme?: FormColorTheme
 }
 
 export const FormInstructions = ({
   content,
+  title,
   colorTheme,
 }: FormInstructionsProps): JSX.Element => {
   const sectionColor = useSectionColor(colorTheme)
@@ -28,7 +30,7 @@ export const FormInstructions = ({
   return (
     <>
       <Box as="h2" textStyle="h2" color={sectionColor}>
-        Instructions
+        {title}
       </Box>
       <Box mt="1rem">
         <MarkdownText multilineBreaks components={mdComponents}>

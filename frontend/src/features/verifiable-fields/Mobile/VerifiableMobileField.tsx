@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import { Box, VisuallyHidden } from '@chakra-ui/react'
 
+import { Language } from '~shared/types'
+
 import { baseMobileValidationFn } from '~utils/fieldValidation'
 import { MobileFieldInput, MobileFieldProps } from '~templates/Field/Mobile'
 import { MobileFieldSchema } from '~templates/Field/types'
@@ -25,6 +27,7 @@ export interface VerifiableMobileFieldProps extends MobileFieldProps {
 const InnerVerifiableMobileField = ({
   schema,
   disableRequiredValidation,
+  selectedLanguage,
   ...formContainerProps
 }: VerifiableMobileFieldProps): JSX.Element => {
   const { handleInputChange, handleVfnButtonClick, hasSignature } =
@@ -45,7 +48,11 @@ const InnerVerifiableMobileField = ({
   }, [hasSignature])
 
   return (
-    <VerifiableFieldContainer schema={schema} {...formContainerProps}>
+    <VerifiableFieldContainer
+      schema={schema}
+      selectedLanguage={selectedLanguage}
+      {...formContainerProps}
+    >
       <Box w="100%">
         <VisuallyHidden id={`verifiable-description-${schema._id}`}>
           {a11yLabel}
@@ -67,6 +74,7 @@ const InnerVerifiableMobileField = ({
 
 export const VerifiableMobileField = ({
   schema,
+  selectedLanguage = Language.ENGLISH,
   ...props
 }: VerifiableMobileFieldProps) => {
   const validateInputForVfn = baseMobileValidationFn(schema)
@@ -75,7 +83,11 @@ export const VerifiableMobileField = ({
       schema={schema}
       validateInputForVfn={validateInputForVfn}
     >
-      <InnerVerifiableMobileField schema={schema} {...props} />
+      <InnerVerifiableMobileField
+        schema={schema}
+        selectedLanguage={selectedLanguage}
+        {...props}
+      />
     </VerifiableFieldProvider>
   )
 }
