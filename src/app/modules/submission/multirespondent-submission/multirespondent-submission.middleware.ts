@@ -204,6 +204,7 @@ const asyncVirusScanning = (
  */
 const devModeSyncVirusScanning = async (
   responses: IdTaggedParsedClearAttachmentResponseV3[],
+  formId: string,
 ): Promise<
   Result<
     IdTaggedParsedClearAttachmentResponseV3,
@@ -217,6 +218,7 @@ const devModeSyncVirusScanning = async (
     // await to pause for...of loop until the virus scanning and downloading of clean file is completed.
     const attachmentResponse = await triggerVirusScanThenDownloadCleanFileChain(
       response.answer,
+      formId,
     )
     if (attachmentResponse.isErr()) {
       results.push(err(attachmentResponse.error))
@@ -268,12 +270,15 @@ export const scanAndRetrieveAttachments = async (
     // Note on .combine: if any scans or downloads error out, it will short circuit and return the first error.
     isDev
       ? Result.combine(
-          await devModeSyncVirusScanning(attachmentResponsesToRetrieve),
+          await devModeSyncVirusScanning(
+            attachmentResponsesToRetrieve,
+            req.formsg.formDef._id.toString(),
+          ),
         )
       : await ResultAsync.combine(
           asyncVirusScanning(
             attachmentResponsesToRetrieve,
-            req.formsg.formDef._id,
+            req.formsg.formDef._id.toString(),
           ),
         )
 

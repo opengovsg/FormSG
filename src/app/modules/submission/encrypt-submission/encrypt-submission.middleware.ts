@@ -253,11 +253,14 @@ export const scanAndRetrieveAttachments = async (
       ? Result.combine(
           await devModeSyncVirusScanning(
             req.body.responses,
-            req.formsg.formDef._id,
+            req.formsg.formDef._id.toString(),
           ),
         )
       : await ResultAsync.combine(
-          asyncVirusScanning(req.body.responses, req.formsg.formDef._id),
+          asyncVirusScanning(
+            req.body.responses,
+            req.formsg.formDef._id.toString(),
+          ),
         )
 
   if (scanAndRetrieveFilesResult.isErr()) {
