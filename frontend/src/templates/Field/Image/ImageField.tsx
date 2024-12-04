@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Box, Image, Skeleton, useBreakpointValue } from '@chakra-ui/react'
 
+import { Language } from '~shared/types'
+
 import { useMdComponents } from '~hooks/useMdComponents'
+import { getDescriptionInSelectedLanguage } from '~utils/multiLanguage'
 import { MarkdownText } from '~components/MarkdownText'
 
 import { BaseFieldProps } from '../FieldContainer'
@@ -16,7 +19,10 @@ export interface ImageFieldProps extends BaseFieldProps {
 /**
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-export const ImageField = ({ schema }: ImageFieldProps): JSX.Element => {
+export const ImageField = ({
+  schema,
+  selectedLanguage = Language.ENGLISH,
+}: ImageFieldProps): JSX.Element => {
   const [fallbackType, setFallbackType] = useState<'loading' | 'error'>(
     'loading',
   )
@@ -51,18 +57,24 @@ export const ImageField = ({ schema }: ImageFieldProps): JSX.Element => {
     return <Skeleton height="10rem" />
   }, [fallbackType, schema.url])
 
+  const description = getDescriptionInSelectedLanguage({
+    defaultValue: schema.description,
+    translations: schema.descriptionTranslations ?? [],
+    selectedLanguage,
+  })
+
   return (
     <Box>
       <Image
         src={schema.url}
-        alt={schema.description}
+        alt={description}
         fallback={fallback}
         onError={() => setFallbackType('error')}
       />
-      {schema.description ? (
+      {description ? (
         <Box mt={{ base: '0.5rem', md: '1rem' }}>
           <MarkdownText multilineBreaks components={mdComponents}>
-            {schema.description}
+            {description}
           </MarkdownText>
         </Box>
       ) : null}

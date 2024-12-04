@@ -1,6 +1,6 @@
 import { Container, Flex, Stack, StackDivider } from '@chakra-ui/react'
 
-import { FormColorTheme, FormDto } from '~shared/types/form'
+import { FormColorTheme, FormDto, Language } from '~shared/types/form'
 
 import {
   SubmissionData,
@@ -19,6 +19,7 @@ export interface FormEndPageProps {
   handleSubmitFeedback: (inputs: FeedbackFormInput) => void
   isFeedbackSectionHidden: boolean
   colorTheme: FormColorTheme
+  selectedLanguage: Language
 }
 
 export const FormEndPage = ({

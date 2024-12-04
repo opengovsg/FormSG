@@ -28,6 +28,7 @@ import { DATE_DISPLAY_FORMAT } from '~shared/constants/dates'
 import { MYINFO_ATTRIBUTE_MAP } from '~shared/constants/field/myinfo'
 import {
   FormColorTheme,
+  Language,
   MyInfoAttribute,
   MyInfoChildAttributes,
   MyInfoChildData,
@@ -68,6 +69,7 @@ export const ChildrenCompoundField = ({
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
   myInfoChildrenBirthRecords,
+  selectedLanguage = Language.ENGLISH,
   ...fieldContainerProps
 }: ChildrenCompoundFieldProps): JSX.Element => {
   const childrenInputName = useMemo(
@@ -121,6 +123,7 @@ export const ChildrenCompoundField = ({
   return (
     <FieldContainer
       schema={schema}
+      selectedLanguage={selectedLanguage}
       {...fieldContainerProps}
       errorKey={childrenInputName}
     >

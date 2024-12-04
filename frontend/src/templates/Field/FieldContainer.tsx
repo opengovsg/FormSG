@@ -8,8 +8,12 @@ import { FieldError, useFormState } from 'react-hook-form'
 import { Box, FormControl, Grid } from '@chakra-ui/react'
 import { get } from 'lodash'
 
-import { FormColorTheme } from '~shared/types/form'
+import { FormColorTheme, Language } from '~shared/types/form'
 
+import {
+  getDescriptionInSelectedLanguage,
+  getTitleInSelectedLanguage,
+} from '~utils/multiLanguage'
 import Badge from '~components/Badge'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -19,7 +23,14 @@ import { FormFieldWithQuestionNo } from '~features/form/types'
 export type BaseFieldProps = {
   schema: Pick<
     FormFieldWithQuestionNo,
-    '_id' | 'required' | 'description' | 'title' | 'disabled' | 'questionNumber'
+    | '_id'
+    | 'required'
+    | 'description'
+    | 'title'
+    | 'disabled'
+    | 'questionNumber'
+    | 'titleTranslations'
+    | 'descriptionTranslations'
   >
   /**
    * Color theme of form, if available. Defaults to `FormColorTheme.Blue`
@@ -45,6 +56,11 @@ export type BaseFieldProps = {
    * Optional specification for error message variant.
    */
   errorVariant?: 'white'
+
+  /**
+   * Form language selected by user.
+   */
+  selectedLanguage?: Language
 }
 
 export interface FieldContainerProps extends BaseFieldProps {
@@ -57,10 +73,22 @@ export const FieldContainer = ({
   errorKey,
   showMyInfoBadge,
   errorVariant,
+  selectedLanguage = Language.ENGLISH,
 }: FieldContainerProps): JSX.Element => {
   const { errors, isSubmitting, isValid } = useFormState({ name: schema._id })
 
   const error: FieldError | undefined = get(errors, errorKey ?? schema._id)
+
+  const title = getTitleInSelectedLanguage({
+    defaultValue: schema.title,
+    translations: schema.titleTranslations,
+    selectedLanguage,
+  })
+  const description = getDescriptionInSelectedLanguage({
+    defaultValue: schema.description,
+    translations: schema.descriptionTranslations,
+    selectedLanguage,
+  })
 
   return (
     <FormControl
@@ -80,9 +108,9 @@ export const FieldContainer = ({
           questionNumber={
             schema.questionNumber ? `${schema.questionNumber}.` : undefined
           }
-          description={schema.description}
+          description={description}
         >
-          {schema.title}
+          {title}
         </FormLabel>
         {showMyInfoBadge && (
           <Box gridArea="myinfobadge">

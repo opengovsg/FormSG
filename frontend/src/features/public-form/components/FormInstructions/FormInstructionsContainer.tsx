@@ -1,5 +1,12 @@
 import { Box, Flex } from '@chakra-ui/react'
 
+import { Language, TranslationMapping } from '~shared/types'
+
+import {
+  getDescriptionInSelectedLanguage,
+  getTitleInSelectedLanguage,
+} from '~utils/multiLanguage'
+
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { useFormSections } from '../FormFields/FormSectionsContext'
@@ -8,11 +15,31 @@ import { FormInstructions } from './FormInstructions'
 
 export const PUBLICFORM_INSTRUCTIONS_SECTIONID = 'instructions'
 
+export const startPageTitleTranslations: TranslationMapping[] = [
+  { language: Language.ENGLISH, translation: 'Instructions' },
+  { language: Language.CHINESE, translation: '说明' },
+  { language: Language.MALAY, translation: 'Arahan' },
+  { language: Language.TAMIL, translation: 'வழிமுறைகள்' },
+]
+
 export const FormInstructionsContainer = (): JSX.Element | null => {
   const { sectionRefs } = useFormSections()
-  const { form, submissionData } = usePublicFormContext()
+  const { form, submissionData, selectedPublicFormLanguage } =
+    usePublicFormContext()
 
   if (submissionData || !form?.startPage.paragraph) return null
+
+  const title = getTitleInSelectedLanguage({
+    defaultValue: 'Instructions',
+    translations: startPageTitleTranslations,
+    selectedLanguage: selectedPublicFormLanguage,
+  })
+
+  const paragraph = getDescriptionInSelectedLanguage({
+    defaultValue: form.startPage.paragraph,
+    translations: form.startPage.paragraphTranslations,
+    selectedLanguage: selectedPublicFormLanguage,
+  })
 
   return (
     <Flex justify="center">
@@ -38,7 +65,8 @@ export const FormInstructionsContainer = (): JSX.Element | null => {
           tabIndex={-1}
         >
           <FormInstructions
-            content={form?.startPage.paragraph}
+            title={title}
+            content={paragraph}
             colorTheme={form?.startPage.colorTheme}
           />
         </Box>

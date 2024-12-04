@@ -1,4 +1,7 @@
+import { Language } from '~shared/types'
+
 import { useMdComponents } from '~hooks/useMdComponents'
+import { getDescriptionInSelectedLanguage } from '~utils/multiLanguage'
 import { MarkdownText } from '~components/MarkdownText'
 
 import { BaseFieldProps } from '../FieldContainer'
@@ -14,6 +17,7 @@ export interface ParagraphFieldProps extends BaseFieldProps {
  */
 export const ParagraphField = ({
   schema,
+  selectedLanguage = Language.ENGLISH,
 }: ParagraphFieldProps): JSX.Element => {
   const mdComponents = useMdComponents({
     styles: {
@@ -24,9 +28,15 @@ export const ParagraphField = ({
     },
   })
 
+  const description = getDescriptionInSelectedLanguage({
+    defaultValue: schema.description,
+    translations: schema.descriptionTranslations ?? [],
+    selectedLanguage,
+  })
+
   return (
     <MarkdownText multilineBreaks components={mdComponents}>
-      {schema.description}
+      {description}
     </MarkdownText>
   )
 }

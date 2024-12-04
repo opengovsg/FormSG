@@ -1,4 +1,8 @@
-import { Language } from '~shared/types'
+import {
+  Language,
+  TranslationMapping,
+  TranslationOptionMapping,
+} from '~shared/types'
 
 export const convertUnicodeLocaleToLanguage = (language: Language) => {
   switch (language) {
@@ -16,3 +20,87 @@ export const convertUnicodeLocaleToLanguage = (language: Language) => {
 }
 
 export const getDefaultSupportedLanguages = () => Object.values(Language)
+
+interface SelectedLanguageProps {
+  defaultValue: string
+  translations?: TranslationMapping[]
+  selectedLanguage: Language
+}
+
+interface SelectedLanguageFieldOptionProps {
+  defaultValue: string[]
+  translations?: TranslationOptionMapping[]
+  selectedLanguage: Language
+}
+
+export const getTitleInSelectedLanguage = ({
+  defaultValue,
+  translations,
+  selectedLanguage,
+}: SelectedLanguageProps) => {
+  let title = defaultValue
+
+  const titleTranslations = translations ?? []
+  // check if there are any title translations for the selected language
+  const titleTranslationIdx = titleTranslations.findIndex(
+    (titleTranslation) => {
+      return titleTranslation.language === selectedLanguage
+    },
+  )
+
+  // If there are title translations for the selected language, use the translation.
+  // If not default it to English.
+  if (titleTranslationIdx !== -1) {
+    title = titleTranslations[titleTranslationIdx].translation
+  }
+
+  return title
+}
+
+export const getDescriptionInSelectedLanguage = ({
+  defaultValue,
+  translations = [],
+  selectedLanguage,
+}: SelectedLanguageProps) => {
+  let description = defaultValue
+
+  const descriptionTranslations = translations
+  // check if there are any description translations for the selected language
+  const descriptionTranslationIdx = descriptionTranslations.findIndex(
+    (descriptionTranslation) =>
+      descriptionTranslation.language === selectedLanguage,
+  )
+
+  // If there are description translations for the language, use the translation.
+  // If not default it to English.
+  if (descriptionTranslationIdx !== -1) {
+    description = descriptionTranslations[descriptionTranslationIdx].translation
+  }
+
+  return description
+}
+
+export const getFieldOptionsInSelectedLanguage = ({
+  defaultValue,
+  translations = [],
+  selectedLanguage,
+}: SelectedLanguageFieldOptionProps) => {
+  const fieldOptionsTranslations = translations
+
+  const translationIdx = fieldOptionsTranslations.findIndex((translation) => {
+    return translation.language === selectedLanguage
+  })
+
+  // Check if translations for field options exist and whether
+  // each field option has its own respective translation. If not
+  // render the default field options in English.
+  if (
+    translationIdx !== -1 &&
+    fieldOptionsTranslations[translationIdx].translation.length ===
+      defaultValue.length
+  ) {
+    return fieldOptionsTranslations[translationIdx].translation
+  } else {
+    return defaultValue
+  }
+}

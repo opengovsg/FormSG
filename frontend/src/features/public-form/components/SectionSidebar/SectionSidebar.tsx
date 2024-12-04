@@ -35,6 +35,8 @@ export const SectionSidebar = (): JSX.Element => {
   } = usePublicFormContext()
   const isMobile = useIsMobile()
 
+  console.log(sectionScrollData)
+
   // Used for offsetting the section sidebar when the mini header is open.
   const sectionTopOffset = useMemo(() => {
     // Current height of the mini header + 52px from the top

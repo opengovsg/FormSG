@@ -13,7 +13,13 @@ import { PaymentEndPagePreview } from './components/PaymentEndPagePreview'
 import { FormEndPage } from './FormEndPage'
 
 export const FormEndPageContainer = (): JSX.Element | null => {
-  const { form, formId, submissionData, isPreview } = usePublicFormContext()
+  const {
+    form,
+    formId,
+    submissionData,
+    isPreview,
+    selectedPublicFormLanguage,
+  } = usePublicFormContext()
   const { submitFormFeedbackMutation } = useSubmitFormFeedbackMutation(
     formId,
     submissionData?.id ?? '',
@@ -87,6 +93,7 @@ export const FormEndPageContainer = (): JSX.Element | null => {
         endPage={form.endPage}
         isFeedbackSectionHidden={isFeedbackHidden}
         handleSubmitFeedback={handleSubmitFeedback}
+        selectedLanguage={selectedPublicFormLanguage}
       />
     </Box>
   )

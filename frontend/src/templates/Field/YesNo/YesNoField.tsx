@@ -4,7 +4,7 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme, Language } from '~shared/types'
 
 import { createBaseValidationRules } from '~/utils/fieldValidation'
 
@@ -22,6 +22,7 @@ export const YesNoField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
+  selectedLanguage = Language.ENGLISH,
 }: YesNoFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createBaseValidationRules(schema, disableRequiredValidation),
@@ -31,7 +32,7 @@ export const YesNoField = ({
   const { control } = useFormContext<YesNoFieldInput>()
 
   return (
-    <FieldContainer schema={schema}>
+    <FieldContainer schema={schema} selectedLanguage={selectedLanguage}>
       <Controller
         control={control}
         rules={validationRules}

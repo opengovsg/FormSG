@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { Box, Text, VisuallyHidden } from '@chakra-ui/react'
 import { format } from 'date-fns'
 
-import { FormColorTheme, FormDto } from '~shared/types/form'
+import { FormColorTheme, FormDto, Language } from '~shared/types/form'
 
 import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
@@ -17,6 +17,7 @@ export interface EndPageBlockProps {
   colorTheme?: FormColorTheme
   focusOnMount?: boolean
   isButtonHidden?: boolean
+  selectedLanguage: Language
 }
 
 export const EndPageBlock = ({
@@ -26,6 +27,7 @@ export const EndPageBlock = ({
   colorTheme = FormColorTheme.Blue,
   focusOnMount,
   isButtonHidden,
+  selectedLanguage,
 }: EndPageBlockProps): JSX.Element => {
   const focusRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -42,6 +44,42 @@ export const EndPageBlock = ({
       },
     },
   })
+
+  console.log(selectedLanguage)
+
+  const title = useMemo(() => {
+    let content = endPage.title
+
+    if (selectedLanguage !== Language.ENGLISH) {
+      const translations = endPage.titleTranslations ?? []
+      const titleTranslationIdx = translations.findIndex(
+        (translation) => translation.language === selectedLanguage,
+      )
+
+      if (titleTranslationIdx !== -1) {
+        content = translations[titleTranslationIdx].translation
+      }
+    }
+
+    return content
+  }, [endPage.title, endPage.titleTranslations, selectedLanguage])
+
+  const paragraph = useMemo(() => {
+    let content = endPage?.paragraph
+
+    if (selectedLanguage !== Language.ENGLISH) {
+      const translations = endPage.paragraphTranslations ?? []
+      const paragraphTranslationIdx = translations.findIndex(
+        (translation) => translation.language === selectedLanguage,
+      )
+
+      if (paragraphTranslationIdx !== -1) {
+        content = translations[paragraphTranslationIdx].translation
+      }
+    }
+
+    return content
+  }, [endPage?.paragraph, endPage.paragraphTranslations, selectedLanguage])
 
   const submissionTimestamp = useMemo(
     () => format(new Date(submissionData.timestamp), 'dd MMM yyyy, HH:mm:ss z'),
@@ -62,13 +100,11 @@ export const EndPageBlock = ({
           {submittedAriaText}
         </VisuallyHidden>
         <Text as="h2" textStyle="h2" textColor="secondary.500">
-          {endPage.title}
+          {title}
         </Text>
-        {endPage.paragraph ? (
+        {paragraph ? (
           <Box mt="0.75rem">
-            <MarkdownText components={mdComponents}>
-              {endPage.paragraph}
-            </MarkdownText>
+            <MarkdownText components={mdComponents}>{paragraph}</MarkdownText>
           </Box>
         ) : null}
       </Box>
