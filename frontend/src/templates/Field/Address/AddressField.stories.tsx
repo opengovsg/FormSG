@@ -163,9 +163,9 @@ export const ValidPostalCodeApiFail = Template.bind({})
 ValidPostalCodeApiFail.args = {
   schema: baseSchema,
   defaultValue: {
-    postalCode: '444444',
-    blockNumber: 'INVALID',
-    streetName: 'INVALID',
+    postalCode: '000000',
+    blockNumber: '',
+    streetName: '',
     buildingName: '',
     levelNumber: '',
     unitNumber: '',

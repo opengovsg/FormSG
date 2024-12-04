@@ -1,6 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { Box, Flex, FormControl, Stack } from '@chakra-ui/react'
+
+import { VALID_POSTAL_CODE_NO_ADDRESS_ERROR } from '~shared/utils/address-validation'
 
 import {
   createBlockNumberValidationRules,
@@ -13,6 +15,7 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 
+import { verifyAddress } from '../../../../../src/app/services/address/address.service'
 import { BaseFieldProps } from '../FieldContainer'
 import { AddressFieldInput, AddressFieldSchema } from '../types'
 
@@ -27,7 +30,8 @@ export const AddressField = ({
 }: AddressFieldProps): JSX.Element => {
   const { isSubmitting, isValid, errors } = useFormState<AddressFieldInput>()
 
-  const { setValue, control } = useFormContext<AddressFieldInput>()
+  const { getValues, setValue, control, trigger, setError } =
+    useFormContext<AddressFieldInput>()
 
   const postalCodeValidationRules = useMemo(
     () => createPostalCodeValidationRules(schema, disableRequiredValidation),
@@ -48,6 +52,32 @@ export const AddressField = ({
     () => createUnitLevelNumberValidationRules(schema),
     [schema],
   )
+
+  const handleVerifyAddress = async () => {
+    const postalCode = getValues('postalCode')
+
+    // Call the service to verify the address
+    const result = await verifyAddress(postalCode)
+    if (result.success && result.data) {
+      setValue('blockNumber', result.data?.blockNumber)
+      setValue('streetName', result.data?.streetName)
+      await trigger(['blockNumber', 'streetName']) // clear errors if first verification failed
+    } else {
+      if (!result.success) {
+        setError('blockNumber', {
+          type: 'manual',
+          message: VALID_POSTAL_CODE_NO_ADDRESS_ERROR,
+        })
+        setError('streetName', {
+          type: 'manual',
+          message: VALID_POSTAL_CODE_NO_ADDRESS_ERROR,
+        })
+        setValue('blockNumber', '') // reset values if verification failure
+        setValue('streetName', '')
+        await trigger(['postalCode']) // show postalCode error upon verification failure
+      }
+    }
+  }
 
   return (
     <Box>
@@ -86,13 +116,15 @@ export const AddressField = ({
                   aria-label={`${schema.questionNumber}. Postal Code`}
                   placeholder="e.g. 610161"
                 />
-                <Button> Find Address</Button>
+                <Button
+                  onClick={handleVerifyAddress}
+                  isLoading={isSubmitting}
+                  isDisabled={isSubmitting}
+                >
+                  Verify Address
+                </Button>
               </Flex>
-              <FormErrorMessage>
-                {errors.postalCode
-                  ? errors.postalCode.message
-                  : 'Invalid postal code'}
-              </FormErrorMessage>
+              <FormErrorMessage>{errors.postalCode?.message}</FormErrorMessage>
             </Stack>
           )}
         />

@@ -35,9 +35,9 @@ import {
   UenFieldBase,
 } from '~shared/types/field'
 import {
+  VALID_POSTAL_CODE_NO_ADDRESS_ERROR,
   validateBlockUnit,
   validatePostalCode,
-  validateStreetName,
 } from '~shared/utils/address-validation'
 import { isDateAnInvalidDay } from '~shared/utils/date-validation'
 import { isMFinSeriesValid, isNricValid } from '~shared/utils/nric-validation'
@@ -225,17 +225,16 @@ export const createPostalCodeValidationRules: ValidationRuleFn<
         disableRequiredValidation,
       ),
       validPostalCode: (value: string) => {
-        if (!schema.required && value == '') return true // if optional and empty, skip postal code validity
+        if (!schema.required && value == '') return true // if optional and empty, skip postal code validity //TODO fix
         return validatePostalCode(value)
       },
     },
   }
 }
 
-export const createBlockNumberValidationRules = (
-  schema: AddressFieldBase,
-  disableRequiredValidation: boolean | undefined,
-): RegisterOptions => {
+export const createBlockNumberValidationRules: ValidationRuleFn<
+  AddressFieldBase
+> = (schema, disableRequiredValidation): RegisterOptions => {
   return {
     validate: {
       required: requiredSingleAnswerValidationFn(
@@ -259,9 +258,6 @@ export const createStreetNameValidationRules: ValidationRuleFn<
         schema,
         disableRequiredValidation,
       ),
-      validStreetName: (value: string) => {
-        return validateStreetName(value)
-      },
     },
   }
 }

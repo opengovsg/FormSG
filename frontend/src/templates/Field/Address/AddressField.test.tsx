@@ -1,11 +1,19 @@
 import { composeStories } from '@storybook/react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { vi } from 'vitest'
+
+import {
+  INVALID_BLOCK_UNIT_ERROR,
+  INVALID_POSTAL_CODE_ERROR,
+  VALID_POSTAL_CODE_NO_ADDRESS_ERROR,
+} from '~shared/utils/address-validation'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 
+import { verifyAddress } from '../../../../../src/app/services/address/address.service'
+
 import * as stories from './AddressField.stories'
-import { INVALID_BLOCK_UNIT_ERROR, INVALID_POSTAL_CODE_ERROR, VALID_POSTAL_CODE_NO_ADDRESS_ERROR } from '~shared/utils/address-validation'
 
 const {
   ValidationRequired,
@@ -14,6 +22,11 @@ const {
   InvalidLevelUnit,
   ValidPostalCodeApiFail,
 } = composeStories(stories)
+
+// Mock the verifyAddress function
+vi.mock('../../../../../src/app/services/address/address.service', () => ({
+  verifyAddress: vi.fn(),
+}))
 
 describe('validation required', () => {
   it('renders error when field is not filled before submitting', async () => {
@@ -63,11 +76,14 @@ describe('validation required', () => {
   })
 
   it('renders failed api resp when api fails to grab address info', async () => {
+    ;(verifyAddress as jest.Mock).mockResolvedValue({
+      success: false,
+    })
     const user = userEvent.setup()
     render(<ValidPostalCodeApiFail />)
-    const submitButton = screen.getByText('Submit')
+    const verifyButton = screen.getByRole('button', { name: /Verify Address/i })
 
-    await user.click(submitButton)
+    await user.click(verifyButton)
     const error = screen.getAllByText(VALID_POSTAL_CODE_NO_ADDRESS_ERROR)
     expect(error).toHaveLength(2)
   })
