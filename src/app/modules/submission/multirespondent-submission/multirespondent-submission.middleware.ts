@@ -184,6 +184,7 @@ type IdTaggedParsedClearAttachmentResponseV3 =
  */
 const asyncVirusScanning = (
   responses: IdTaggedParsedClearAttachmentResponseV3[],
+  formId: string,
 ): ResultAsync<
   IdTaggedParsedClearAttachmentResponseV3,
   | VirusScanFailedError
@@ -191,7 +192,7 @@ const asyncVirusScanning = (
   | MaliciousFileDetectedError
 >[] =>
   responses.map((response) =>
-    triggerVirusScanThenDownloadCleanFileChain(response.answer).map(
+    triggerVirusScanThenDownloadCleanFileChain(response.answer, formId).map(
       (attachmentResponse) => ({ ...response, answer: attachmentResponse }),
     ),
   )
@@ -270,7 +271,10 @@ export const scanAndRetrieveAttachments = async (
           await devModeSyncVirusScanning(attachmentResponsesToRetrieve),
         )
       : await ResultAsync.combine(
-          asyncVirusScanning(attachmentResponsesToRetrieve),
+          asyncVirusScanning(
+            attachmentResponsesToRetrieve,
+            req.formsg.formDef._id,
+          ),
         )
 
   if (scanAndRetrieveFilesResult.isErr()) {
