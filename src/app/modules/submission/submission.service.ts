@@ -450,7 +450,7 @@ export const triggerVirusScanThenDownloadCleanFileChain = <
       .mapErr((error) => {
         if (error instanceof MaliciousFileDetectedError) {
           logger.error({
-            message: 'Malicious file detected in virus scanning lambda',
+            message: 'Malicious file detected during lambda virus scan',
             meta: logMeta,
             error,
           })
