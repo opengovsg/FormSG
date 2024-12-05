@@ -27,6 +27,7 @@ export const BASIC_FIELDS_ORDERED = [
   BasicField.Email,
   BasicField.Mobile,
   BasicField.HomeNo,
+  BasicField.Address,
   BasicField.Date,
   BasicField.Image,
   BasicField.Table,
@@ -35,7 +36,6 @@ export const BASIC_FIELDS_ORDERED = [
   BasicField.Decimal,
   BasicField.Nric,
   BasicField.Uen,
-  BasicField.Address,
 ]
 
 export const MYINFO_FIELDS_ORDERED = [

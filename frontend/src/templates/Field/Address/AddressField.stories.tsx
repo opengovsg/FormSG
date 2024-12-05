@@ -16,7 +16,7 @@ import {
 
 const baseSchema: AddressFieldSchema = {
   title: 'Address Field',
-  description: 'Add your local address',
+  description: '',
   required: true,
   disabled: false,
   fieldType: BasicField.Address,

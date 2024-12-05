@@ -9,7 +9,7 @@ import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 import { EditAddress, EditAddressProps } from './EditAddress'
 
 const DEFAULT_ADDRESS_FIELD: AddressFieldBase = {
-  title: 'Address field',
+  title: 'Local address',
   description: '',
   required: true,
   disabled: false,

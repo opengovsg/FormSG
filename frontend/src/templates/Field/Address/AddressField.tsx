@@ -1,8 +1,11 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { Box, Flex, FormControl, Stack } from '@chakra-ui/react'
 
-import { VALID_POSTAL_CODE_NO_ADDRESS_ERROR } from '~shared/utils/address-validation'
+import {
+  VALID_POSTAL_CODE_NO_ADDRESS_ERROR,
+  validatePostalCode,
+} from '~shared/utils/address-validation'
 
 import {
   createBlockNumberValidationRules,
@@ -53,30 +56,43 @@ export const AddressField = ({
     [schema],
   )
 
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false)
+
   const handleVerifyAddress = async () => {
+    setIsButtonDisabled(true)
+
     const postalCode = getValues('postalCode')
 
-    // Call the service to verify the address
-    const result = await verifyAddress(postalCode)
-    if (result.success && result.data) {
-      setValue('blockNumber', result.data?.blockNumber)
-      setValue('streetName', result.data?.streetName)
-      await trigger(['blockNumber', 'streetName']) // clear errors if first verification failed
+    if (validatePostalCode(postalCode) !== true) {
+      await trigger(['postalCode'])
     } else {
-      if (!result.success) {
-        setError('blockNumber', {
-          type: 'manual',
-          message: VALID_POSTAL_CODE_NO_ADDRESS_ERROR,
-        })
-        setError('streetName', {
-          type: 'manual',
-          message: VALID_POSTAL_CODE_NO_ADDRESS_ERROR,
-        })
-        setValue('blockNumber', '') // reset values if verification failure
-        setValue('streetName', '')
-        await trigger(['postalCode']) // show postalCode error upon verification failure
+      // Call the service to verify the address
+      const result = await verifyAddress(postalCode)
+      if (result.success && result.data) {
+        setValue('blockNumber', result.data?.blockNumber)
+        setValue('streetName', result.data?.streetName)
+        await trigger(['blockNumber', 'streetName']) // clear errors if first verification failed
+      } else {
+        if (!result.success) {
+          setError('blockNumber', {
+            type: 'manual',
+            message: VALID_POSTAL_CODE_NO_ADDRESS_ERROR,
+          })
+          setError('streetName', {
+            type: 'manual',
+            message: VALID_POSTAL_CODE_NO_ADDRESS_ERROR,
+          })
+          setValue('blockNumber', '') // reset values if verification failure
+          setValue('streetName', '')
+          await trigger(['postalCode']) // show postalCode error upon verification failure
+        }
       }
     }
+
+    // disable verify address button to handle throttling
+    setTimeout(() => {
+      setIsButtonDisabled(false)
+    }, 2000)
   }
 
   return (
@@ -97,7 +113,7 @@ export const AddressField = ({
         isReadOnly={isValid && isSubmitting}
         isInvalid={!!errors?.postalCode}
       >
-        <FormLabel>Postal Code</FormLabel>
+        <FormLabel isRequired>Postal code</FormLabel>
         <Controller
           name="postalCode"
           control={control}
@@ -114,14 +130,14 @@ export const AddressField = ({
                 <Input
                   {...field}
                   aria-label={`${schema.questionNumber}. Postal Code`}
-                  placeholder="e.g. 610161"
+                  placeholder="e.g. 650161"
                 />
                 <Button
                   onClick={handleVerifyAddress}
                   isLoading={isSubmitting}
-                  isDisabled={isSubmitting}
+                  isDisabled={isButtonDisabled}
                 >
-                  Verify Address
+                  Verify address
                 </Button>
               </Flex>
               <FormErrorMessage>{errors.postalCode?.message}</FormErrorMessage>
@@ -136,7 +152,7 @@ export const AddressField = ({
         isReadOnly={isValid && isSubmitting}
         isInvalid={!!errors?.blockNumber}
       >
-        <FormLabel>House/Block Number</FormLabel>
+        <FormLabel isRequired>House/Block number</FormLabel>
         <Controller
           name="blockNumber"
           control={control}
@@ -161,7 +177,7 @@ export const AddressField = ({
         isReadOnly={isValid && isSubmitting}
         isInvalid={!!errors?.streetName}
       >
-        <FormLabel>Street Name</FormLabel>
+        <FormLabel isRequired>Street name</FormLabel>
         <Controller
           name="streetName"
           control={control}
@@ -186,7 +202,7 @@ export const AddressField = ({
         isReadOnly={isValid && isSubmitting}
         isInvalid={!!errors?.buildingName}
       >
-        <FormLabel>Building Name</FormLabel>
+        <FormLabel>Building name</FormLabel>
         <Controller
           name="buildingName"
           control={control}
@@ -208,7 +224,7 @@ export const AddressField = ({
         isReadOnly={isValid && isSubmitting}
         isInvalid={!!errors?.levelNumber || !!errors?.unitNumber}
       >
-        <FormLabel>Unit Number</FormLabel>
+        <FormLabel>Unit number</FormLabel>
         <Flex direction="row" gap={2} width="100%">
           <Controller
             name="levelNumber"
@@ -219,7 +235,7 @@ export const AddressField = ({
               <Input
                 {...field}
                 aria-label={`${schema.questionNumber}. Level Number`}
-                placeholder="Level Number"
+                placeholder="Level number"
               />
             )}
           />
@@ -232,7 +248,7 @@ export const AddressField = ({
               <Input
                 {...field}
                 aria-label={`${schema.questionNumber}. Unit Number`}
-                placeholder="Unit Number"
+                placeholder="Unit number"
               />
             )}
           />

@@ -35,7 +35,6 @@ import {
   UenFieldBase,
 } from '~shared/types/field'
 import {
-  VALID_POSTAL_CODE_NO_ADDRESS_ERROR,
   validateBlockUnit,
   validatePostalCode,
 } from '~shared/utils/address-validation'
