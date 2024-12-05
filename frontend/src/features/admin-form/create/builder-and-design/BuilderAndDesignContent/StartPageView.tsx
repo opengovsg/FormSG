@@ -240,6 +240,7 @@ export const StartPageView = () => {
                   <FormInstructions
                     content={startPage?.paragraph}
                     colorTheme={startPage?.colorTheme}
+                    title="Instructions"
                   />
                 </Box>
                 {isMobile ? (
