@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { Box, chakra, useStyleConfig, VisuallyHidden } from '@chakra-ui/react'
 
-import { getTitleInSelectedLanguage } from '~utils/multiLanguage'
+import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
@@ -66,7 +66,7 @@ export const SidebarLink = ({
     variant: 'standalone',
   })
 
-  const title = getTitleInSelectedLanguage({
+  const title = getValueInSelectedLanguage({
     defaultValue: sectionMeta.title,
     translations: sectionMeta.titleTranslations,
     selectedLanguage: selectedPublicFormLanguage,

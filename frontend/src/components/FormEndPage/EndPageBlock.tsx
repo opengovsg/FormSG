@@ -5,6 +5,7 @@ import { format } from 'date-fns'
 import { FormColorTheme, FormDto, Language } from '~shared/types/form'
 
 import { useMdComponents } from '~hooks/useMdComponents'
+import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import Button from '~components/Button'
 import { MarkdownText } from '~components/MarkdownText'
 
@@ -47,22 +48,28 @@ export const EndPageBlock = ({
 
   console.log(selectedLanguage)
 
-  const title = useMemo(() => {
-    let content = endPage.title
+  const title = getValueInSelectedLanguage({
+    defaultValue: endPage.title,
+    translations: endPage.titleTranslations,
+    selectedLanguage,
+  })
 
-    if (selectedLanguage !== Language.ENGLISH) {
-      const translations = endPage.titleTranslations ?? []
-      const titleTranslationIdx = translations.findIndex(
-        (translation) => translation.language === selectedLanguage,
-      )
+  // useMemo(() => {
+  //   let content = endPage.title
 
-      if (titleTranslationIdx !== -1) {
-        content = translations[titleTranslationIdx].translation
-      }
-    }
+  //   if (selectedLanguage !== Language.ENGLISH) {
+  //     const translations = endPage.titleTranslations ?? []
+  //     const titleTranslationIdx = translations.findIndex(
+  //       (translation) => translation.language === selectedLanguage,
+  //     )
 
-    return content
-  }, [endPage.title, endPage.titleTranslations, selectedLanguage])
+  //     if (titleTranslationIdx !== -1) {
+  //       content = translations[titleTranslationIdx].translation
+  //     }
+  //   }
+
+  //   return content
+  // }, [endPage.title, endPage.titleTranslations, selectedLanguage])
 
   const paragraph = useMemo(() => {
     let content = endPage?.paragraph

@@ -10,10 +10,7 @@ import { get } from 'lodash'
 
 import { FormColorTheme, Language } from '~shared/types/form'
 
-import {
-  getDescriptionInSelectedLanguage,
-  getTitleInSelectedLanguage,
-} from '~utils/multiLanguage'
+import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import Badge from '~components/Badge'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -79,12 +76,12 @@ export const FieldContainer = ({
 
   const error: FieldError | undefined = get(errors, errorKey ?? schema._id)
 
-  const title = getTitleInSelectedLanguage({
+  const title = getValueInSelectedLanguage({
     defaultValue: schema.title,
     translations: schema.titleTranslations,
     selectedLanguage,
   })
-  const description = getDescriptionInSelectedLanguage({
+  const description = getValueInSelectedLanguage({
     defaultValue: schema.description,
     translations: schema.descriptionTranslations,
     selectedLanguage,

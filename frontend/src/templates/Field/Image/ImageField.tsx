@@ -4,7 +4,6 @@ import { Box, Image, Skeleton, useBreakpointValue } from '@chakra-ui/react'
 import { Language } from '~shared/types'
 
 import { useMdComponents } from '~hooks/useMdComponents'
-import { getDescriptionInSelectedLanguage } from '~utils/multiLanguage'
 import { MarkdownText } from '~components/MarkdownText'
 
 import { BaseFieldProps } from '../FieldContainer'
@@ -57,7 +56,7 @@ export const ImageField = ({
     return <Skeleton height="10rem" />
   }, [fallbackType, schema.url])
 
-  const description = getDescriptionInSelectedLanguage({
+  const description = getValueInSelectedLanguage({
     defaultValue: schema.description,
     translations: schema.descriptionTranslations ?? [],
     selectedLanguage,

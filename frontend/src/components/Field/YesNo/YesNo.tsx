@@ -9,11 +9,30 @@ import {
 } from '@chakra-ui/react'
 import pick from 'lodash/pick'
 
+import { Language } from '~shared/types'
+
 import { FieldColorScheme } from '~theme/foundations/colours'
 
 import { YesNoOption } from './YesNoOption'
 
 export type YesNoOptionValue = 'Yes' | 'No'
+
+type YesNoTranslations = {
+  Yes: string
+  No: string
+}
+
+type TranslationDataStructure = {
+  [key in Language]: YesNoTranslations
+}
+
+// TODO: port to i18next
+const yesNoTranslations: TranslationDataStructure = {
+  [Language.ENGLISH]: { Yes: 'Yes', No: 'No' },
+  [Language.CHINESE]: { Yes: '是', No: '否' },
+  [Language.MALAY]: { Yes: 'Ya', No: 'Tidak' },
+  [Language.TAMIL]: { Yes: 'ஆம்', No: 'இல்லை' },
+}
 
 export interface YesNoProps {
   /**
@@ -44,13 +63,15 @@ export interface YesNoProps {
    * Color scheme of the component to render. Defaults to `primary`.
    */
   colorScheme?: FieldColorScheme
+
+  selectedLanguage?: Language
 }
 
 /**
  * YesNo field component.
  */
 export const YesNo = forwardRef<YesNoProps, 'input'>(
-  ({ colorScheme, ...props }, ref) => {
+  ({ colorScheme, selectedLanguage = Language.ENGLISH, ...props }, ref) => {
     const formControlProps = useFormControlProps(props)
     const { getRootProps, getRadioProps, onChange } = useRadioGroup(props)
     const { t } = useTranslation()
@@ -80,6 +101,9 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
       return [noRadioProps, yesRadioProps]
     }, [formControlProps, getRadioProps, props.name])
 
+    const yesLabel = yesNoTranslations[selectedLanguage].Yes
+    const noLabel = yesNoTranslations[selectedLanguage].No
+
     return (
       <HStack spacing={0} {...groupProps}>
         <YesNoOption
@@ -88,7 +112,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           {...noProps}
           onChange={(value) => onChange(value as YesNoOptionValue)}
           leftIcon={BiX}
-          label={t('features.adminForm.sidebar.fields.yesNo.no')}
+          label={yesLabel ?? t('features.adminForm.sidebar.fields.yesNo.no')}
           // Ref is set here for tracking current value, and also so any errors
           // can focus this input.
           ref={ref}
@@ -100,7 +124,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           {...yesProps}
           onChange={(value) => onChange(value as YesNoOptionValue)}
           leftIcon={BiCheck}
-          label={t('features.adminForm.sidebar.fields.yesNo.yes')}
+          label={noLabel ?? t('features.adminForm.sidebar.fields.yesNo.yes')}
           title={props.title}
         />
       </HStack>
