@@ -19,7 +19,7 @@ import { FormColorTheme, Language } from '~shared/types'
 
 import { useHasChanged } from '~hooks/useHasChanged'
 import { useIsMobile } from '~hooks/useIsMobile'
-import { getTitleInSelectedLanguage } from '~utils/multiLanguage'
+import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import IconButton from '~components/IconButton'
 
@@ -53,7 +53,7 @@ export const TableField = ({
 
   const columnsData = useMemo(() => {
     return schema.columns.map((c) => {
-      const title = getTitleInSelectedLanguage({
+      const title = getValueInSelectedLanguage({
         defaultValue: c.title,
         translations: c.titleTranslations ?? [],
         selectedLanguage,

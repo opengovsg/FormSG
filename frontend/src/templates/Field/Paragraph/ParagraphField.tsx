@@ -1,7 +1,7 @@
 import { Language } from '~shared/types'
 
 import { useMdComponents } from '~hooks/useMdComponents'
-import { getDescriptionInSelectedLanguage } from '~utils/multiLanguage'
+import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import { MarkdownText } from '~components/MarkdownText'
 
 import { BaseFieldProps } from '../FieldContainer'
@@ -28,7 +28,7 @@ export const ParagraphField = ({
     },
   })
 
-  const description = getDescriptionInSelectedLanguage({
+  const description = getValueInSelectedLanguage({
     defaultValue: schema.description,
     translations: schema.descriptionTranslations ?? [],
     selectedLanguage,

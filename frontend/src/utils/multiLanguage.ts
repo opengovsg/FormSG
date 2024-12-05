@@ -33,7 +33,7 @@ interface SelectedLanguageFieldOptionProps {
   selectedLanguage: Language
 }
 
-export const getTitleInSelectedLanguage = ({
+export const getValueInSelectedLanguage = ({
   defaultValue,
   translations,
   selectedLanguage,
@@ -55,29 +55,6 @@ export const getTitleInSelectedLanguage = ({
   }
 
   return title
-}
-
-export const getDescriptionInSelectedLanguage = ({
-  defaultValue,
-  translations = [],
-  selectedLanguage,
-}: SelectedLanguageProps) => {
-  let description = defaultValue
-
-  const descriptionTranslations = translations
-  // check if there are any description translations for the selected language
-  const descriptionTranslationIdx = descriptionTranslations.findIndex(
-    (descriptionTranslation) =>
-      descriptionTranslation.language === selectedLanguage,
-  )
-
-  // If there are description translations for the language, use the translation.
-  // If not default it to English.
-  if (descriptionTranslationIdx !== -1) {
-    description = descriptionTranslations[descriptionTranslationIdx].translation
-  }
-
-  return description
 }
 
 export const getFieldOptionsInSelectedLanguage = ({

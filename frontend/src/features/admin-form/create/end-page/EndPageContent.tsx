@@ -6,6 +6,7 @@ import {
   FormColorTheme,
   FormLogoState,
   FormResponseMode,
+  Language,
 } from '~shared/types'
 
 import { EndPageBlock } from '~components/FormEndPage/EndPageBlock'
@@ -120,6 +121,7 @@ export const EndPageContent = (): JSX.Element => {
                   timestamp: Date.now(),
                 }}
                 colorTheme={colorTheme ?? FormColorTheme.Blue}
+                selectedLanguage={Language.ENGLISH}
               />
             </Box>
           )}

@@ -2,10 +2,7 @@ import { Box, Flex } from '@chakra-ui/react'
 
 import { Language, TranslationMapping } from '~shared/types'
 
-import {
-  getDescriptionInSelectedLanguage,
-  getTitleInSelectedLanguage,
-} from '~utils/multiLanguage'
+import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
@@ -29,13 +26,13 @@ export const FormInstructionsContainer = (): JSX.Element | null => {
 
   if (submissionData || !form?.startPage.paragraph) return null
 
-  const title = getTitleInSelectedLanguage({
+  const title = getValueInSelectedLanguage({
     defaultValue: 'Instructions',
     translations: startPageTitleTranslations,
     selectedLanguage: selectedPublicFormLanguage,
   })
 
-  const paragraph = getDescriptionInSelectedLanguage({
+  const paragraph = getValueInSelectedLanguage({
     defaultValue: form.startPage.paragraph,
     translations: form.startPage.paragraphTranslations,
     selectedLanguage: selectedPublicFormLanguage,
