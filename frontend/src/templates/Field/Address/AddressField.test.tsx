@@ -81,7 +81,7 @@ describe('validation required', () => {
     })
     const user = userEvent.setup()
     render(<ValidPostalCodeApiFail />)
-    const verifyButton = screen.getByRole('button', { name: /Verify Address/i })
+    const verifyButton = screen.getByRole('button', { name: /Find Address/i })
 
     await user.click(verifyButton)
     const error = screen.getAllByText(VALID_POSTAL_CODE_NO_ADDRESS_ERROR)

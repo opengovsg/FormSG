@@ -15,7 +15,7 @@ import {
 } from './AddressField'
 
 const baseSchema: AddressFieldSchema = {
-  title: 'Address Field',
+  title: 'Local address',
   description: '',
   required: true,
   disabled: false,

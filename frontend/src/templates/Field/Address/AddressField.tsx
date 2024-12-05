@@ -137,7 +137,7 @@ export const AddressField = ({
                   isLoading={isSubmitting}
                   isDisabled={isButtonDisabled}
                 >
-                  Verify address
+                  Find address
                 </Button>
               </Flex>
               <FormErrorMessage>{errors.postalCode?.message}</FormErrorMessage>
@@ -217,46 +217,61 @@ export const AddressField = ({
           )}
         />
       </FormControl>
-      <FormControl
-        id={`${schema._id}-unitNumber`}
-        isRequired={false} // unitNumber will always be optional
-        isDisabled={schema.disabled}
-        isReadOnly={isValid && isSubmitting}
-        isInvalid={!!errors?.levelNumber || !!errors?.unitNumber}
-      >
-        <FormLabel>Unit number</FormLabel>
-        <Flex direction="row" gap={2} width="100%">
+      <FormLabel>Unit number</FormLabel>
+      <Flex direction="row" gap={2} width="100%">
+        <FormControl
+          id={`${schema._id}-levelNumber`}
+          isRequired={false} // unitNumber will always be optional
+          isDisabled={schema.disabled}
+          isReadOnly={isValid && isSubmitting}
+          isInvalid={!!errors?.levelNumber}
+        >
           <Controller
             name="levelNumber"
             control={control}
             defaultValue=""
             rules={unitLevelNumberValidationRules}
             render={({ field }) => (
-              <Input
-                {...field}
-                aria-label={`${schema.questionNumber}. Level Number`}
-                placeholder="Level number"
-              />
+              <Stack direction="column" gap={0.5}>
+                <Input
+                  {...field}
+                  aria-label={`${schema.questionNumber}. Level Number`}
+                  placeholder="Level number"
+                />
+                <FormErrorMessage>
+                  {errors.levelNumber?.message}
+                </FormErrorMessage>
+              </Stack>
             )}
           />
+        </FormControl>
+        <FormControl
+          id={`${schema._id}-unitNumber`}
+          isRequired={false} // unitNumber will always be optional
+          isDisabled={schema.disabled}
+          isReadOnly={isValid && isSubmitting}
+          isInvalid={!!errors?.unitNumber}
+        >
           <Controller
             name="unitNumber"
             control={control}
             defaultValue=""
             rules={unitLevelNumberValidationRules}
             render={({ field }) => (
-              <Input
-                {...field}
-                aria-label={`${schema.questionNumber}. Unit Number`}
-                placeholder="Unit number"
-              />
+              <Stack direction="column" gap={0.5}>
+                <Input
+                  {...field}
+                  aria-label={`${schema.questionNumber}. Unit Number`}
+                  placeholder="Unit number"
+                />
+                <FormErrorMessage>
+                  {errors.unitNumber?.message}
+                </FormErrorMessage>
+              </Stack>
             )}
           />
-        </Flex>
-        <FormErrorMessage>
-          {errors.levelNumber?.message || errors.unitNumber?.message}
-        </FormErrorMessage>
-      </FormControl>
+        </FormControl>
+      </Flex>
     </Box>
   )
 }
