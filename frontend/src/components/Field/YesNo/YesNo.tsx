@@ -21,11 +21,11 @@ type YesNoTranslations = {
   No: string
 }
 
-type TranslationDataStructure = {
+type Translations = {
   [key in Language]: YesNoTranslations
 }
 
-const yesNoTranslations: TranslationDataStructure = {
+const yesNoTranslations: Translations = {
   [Language.ENGLISH]: { Yes: 'Yes', No: 'No' },
   [Language.CHINESE]: { Yes: '是', No: '否' },
   [Language.MALAY]: { Yes: 'Ya', No: 'Tidak' },

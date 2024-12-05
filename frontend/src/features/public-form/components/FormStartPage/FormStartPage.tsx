@@ -20,6 +20,7 @@ export const FormStartPage = ({
     miniHeaderRef,
     onMobileDrawerOpen,
     handleLogout,
+    selectedPublicFormLanguage,
   } = usePublicFormContext()
   const { activeSectionId } = useFormSections()
 
@@ -28,7 +29,10 @@ export const FormStartPage = ({
     [submissionData],
   )
 
-  const formHeaderProps = useFormHeader({ startPage: form?.startPage })
+  const formHeaderProps = useFormHeader({
+    startPage: form?.startPage,
+    selectedLanguage: selectedPublicFormLanguage,
+  })
 
   return (
     <FormHeader
