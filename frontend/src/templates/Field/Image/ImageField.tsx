@@ -4,6 +4,7 @@ import { Box, Image, Skeleton, useBreakpointValue } from '@chakra-ui/react'
 import { Language } from '~shared/types'
 
 import { useMdComponents } from '~hooks/useMdComponents'
+import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import { MarkdownText } from '~components/MarkdownText'
 
 import { BaseFieldProps } from '../FieldContainer'

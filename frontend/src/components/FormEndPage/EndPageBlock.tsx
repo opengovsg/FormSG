@@ -54,23 +54,6 @@ export const EndPageBlock = ({
     selectedLanguage,
   })
 
-  // useMemo(() => {
-  //   let content = endPage.title
-
-  //   if (selectedLanguage !== Language.ENGLISH) {
-  //     const translations = endPage.titleTranslations ?? []
-  //     const titleTranslationIdx = translations.findIndex(
-  //       (translation) => translation.language === selectedLanguage,
-  //     )
-
-  //     if (titleTranslationIdx !== -1) {
-  //       content = translations[titleTranslationIdx].translation
-  //     }
-  //   }
-
-  //   return content
-  // }, [endPage.title, endPage.titleTranslations, selectedLanguage])
-
   const paragraph = useMemo(() => {
     let content = endPage?.paragraph
 
