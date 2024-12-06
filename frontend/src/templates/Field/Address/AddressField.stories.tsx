@@ -13,6 +13,7 @@ import {
   AddressField as AddressFieldComponent,
   AddressFieldProps,
 } from './AddressField'
+import { userEvent, within } from '@storybook/test'
 
 const baseSchema: AddressFieldSchema = {
   title: 'Local address',
@@ -70,11 +71,19 @@ const Template: StoryFn<StoryAddressFieldProps> = ({
       formMethods.trigger()
     }
   }, [defaultValue, formMethods])
-  console.log('Form methods:', formMethods)
+
   return (
     <FormProvider {...formMethods}>
       <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
         <AddressFieldComponent {...args} />
+        <Button
+          mt="1rem"
+          type="submit"
+          isLoading={formMethods.formState.isSubmitting}
+          loadingText="Find address"
+        >
+          Find address
+        </Button>
         <Button
           mt="1rem"
           type="submit"
@@ -170,4 +179,11 @@ ValidPostalCodeApiFail.args = {
     levelNumber: '',
     unitNumber: '',
   },
+}
+
+ValidPostalCodeApiFail.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement)
+
+  // Simulate clicking the "Submit" button
+  userEvent.click(canvas.getByRole('button', { name: /Find Address/i }))
 }
