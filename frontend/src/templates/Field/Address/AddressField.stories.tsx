@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
+import { userEvent, within } from '@storybook/test'
 
 import { BasicField } from '~shared/types/field'
 
@@ -13,7 +14,6 @@ import {
   AddressField as AddressFieldComponent,
   AddressFieldProps,
 } from './AddressField'
-import { userEvent, within } from '@storybook/test'
 
 const baseSchema: AddressFieldSchema = {
   title: 'Local address',
@@ -76,14 +76,6 @@ const Template: StoryFn<StoryAddressFieldProps> = ({
     <FormProvider {...formMethods}>
       <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
         <AddressFieldComponent {...args} />
-        <Button
-          mt="1rem"
-          type="submit"
-          isLoading={formMethods.formState.isSubmitting}
-          loadingText="Find address"
-        >
-          Find address
-        </Button>
         <Button
           mt="1rem"
           type="submit"
