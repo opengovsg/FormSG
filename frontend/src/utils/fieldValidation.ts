@@ -9,6 +9,7 @@ import simplur from 'simplur'
 import validator from 'validator'
 
 import { DATE_PARSE_FORMAT } from '~shared/constants/dates'
+import { Language } from '~shared/types'
 import {
   AttachmentFieldBase,
   BasicField,
@@ -84,6 +85,7 @@ type ValidationRuleFn<T extends FieldBase = FieldBase> = (
 type ValidationRuleFnEmailAndMobile<T extends FieldBase = FieldBase> = (
   schema: MinimumFieldValidationPropsEmailAndMobile<T>,
   disableRequiredValidation?: boolean,
+  selectedLanguage?: Language,
 ) => RegisterOptions
 
 const requiredSingleAnswerValidationFn =
@@ -552,11 +554,11 @@ export const createRadioValidationRules: ValidationRuleFn<RadioFieldBase> = (
 
 export const createEmailValidationRules: ValidationRuleFnEmailAndMobile<
   EmailFieldBase
-> = (schema, disableRequiredValidation): RegisterOptions => {
+> = (schema, disableRequiredValidation, selectedLanguage): RegisterOptions => {
   return {
     validate: {
       baseValidations: (val?: VerifiableFieldValues) => {
-        return baseEmailValidationFn(schema)(val?.value)
+        return baseEmailValidationFn({ schema, selectedLanguage })(val?.value)
       },
       ...createBaseVfnFieldValidationRules(schema, disableRequiredValidation)
         .validate,
@@ -569,7 +571,13 @@ export const createEmailValidationRules: ValidationRuleFnEmailAndMobile<
  * @returns error string if field is invalid, true otherwise.
  */
 export const baseEmailValidationFn =
-  (schema: MinimumFieldValidationProps<EmailFieldBase>) =>
+  ({
+    schema,
+    selectedLanguage = Language.ENGLISH,
+  }: {
+    schema: MinimumFieldValidationProps<EmailFieldBase>
+    selectedLanguage?: Language
+  }) =>
   (inputValue?: string) => {
     if (!inputValue) return true
 
@@ -583,7 +591,7 @@ export const baseEmailValidationFn =
     if (allowedDomains.size !== 0) {
       const domainInValue = trimmedInputValue.split('@')[1].toLowerCase()
       if (domainInValue && !allowedDomains.has(`@${domainInValue}`)) {
-        return INVALID_EMAIL_DOMAIN_ERROR
+        return INVALID_EMAIL_DOMAIN_ERROR[selectedLanguage]
       }
     }
 

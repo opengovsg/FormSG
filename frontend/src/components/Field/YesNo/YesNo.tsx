@@ -17,17 +17,13 @@ import { YesNoOption } from './YesNoOption'
 
 export type YesNoOptionValue = 'Yes' | 'No'
 
+// TODO: port to i18next
 type YesNoTranslations = {
   Yes: string
   No: string
 }
 
-type Translations = {
-  [key in Language]: YesNoTranslations
-}
-
-// TODO: port to i18next
-const yesNoTranslations: Translations = {
+const yesNoTranslations: Record<Language, YesNoTranslations> = {
   [Language.ENGLISH]: { Yes: 'Yes', No: 'No' },
   [Language.CHINESE]: { Yes: '是', No: '否' },
   [Language.MALAY]: { Yes: 'Ya', No: 'Tidak' },
