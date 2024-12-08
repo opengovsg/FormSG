@@ -2,6 +2,8 @@ import { composeStories } from '@storybook/react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
+import { Language } from '~shared/types'
+
 import {
   INVALID_EMAIL_DOMAIN_ERROR,
   INVALID_EMAIL_ERROR,
@@ -147,6 +149,7 @@ describe('email validation', () => {
 
     // Assert
     // Should show error message.
-    expect(screen.getByText(INVALID_EMAIL_DOMAIN_ERROR)).not.toBeNull()
+    const errorMessage = INVALID_EMAIL_DOMAIN_ERROR[Language.ENGLISH]
+    expect(screen.getByText(errorMessage)).not.toBeNull()
   })
 })
