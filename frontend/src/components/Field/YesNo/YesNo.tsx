@@ -21,11 +21,7 @@ type YesNoTranslations = {
   No: string
 }
 
-type Translations = {
-  [key in Language]: YesNoTranslations
-}
-
-const yesNoTranslations: Translations = {
+const yesNoTranslations: Record<Language, YesNoTranslations> = {
   [Language.ENGLISH]: { Yes: 'Yes', No: 'No' },
   [Language.CHINESE]: { Yes: '是', No: '否' },
   [Language.MALAY]: { Yes: 'Ya', No: 'Tidak' },

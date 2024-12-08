@@ -8,6 +8,8 @@ import {
   InputLeftAddon,
 } from '@chakra-ui/react'
 
+import { Language } from '~shared/types'
+
 import ResendOtpButton from '~/templates/ResendOtpButton'
 
 import { HttpError } from '~services/ApiService'
@@ -29,6 +31,7 @@ export interface VerificationBoxProps {
   otpPrefix: string
   handleVerifyOtp: (otp: string) => Promise<string>
   handleResendOtp: () => Promise<void>
+  selectedLanguage?: Language
 }
 
 type UseVerificationBoxProps = Pick<VerificationBoxProps, 'handleVerifyOtp'>
@@ -67,6 +70,7 @@ export const VerificationBox = ({
   otpPrefix,
   handleResendOtp,
   handleVerifyOtp,
+  selectedLanguage = Language.ENGLISH,
 }: VerificationBoxProps): JSX.Element => {
   const {
     formMethods: {
@@ -103,7 +107,9 @@ export const VerificationBox = ({
             isInvalid={!!errors.otp}
             maxW="24.75rem"
           >
-            <FormLabel description={subheader}>{header}</FormLabel>
+            <FormLabel description={subheader[selectedLanguage]}>
+              {header[selectedLanguage]}
+            </FormLabel>
             <Flex>
               <InputGroup>
                 {otpPrefix ? (

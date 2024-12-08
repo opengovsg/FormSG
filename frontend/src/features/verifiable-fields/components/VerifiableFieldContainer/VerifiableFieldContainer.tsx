@@ -12,6 +12,21 @@ import { VerifiableFieldBase, VerifiableFieldSchema } from '../../types'
 import { useVerifiableField } from '../../VerifiableFieldContext'
 import { VerificationBox } from '../VerificationBox'
 
+type VerifyTranslations = {
+  Verify: string
+  Verified: string
+}
+
+const verifyTranslations: Record<Language, VerifyTranslations> = {
+  [Language.ENGLISH]: { Verify: 'Verify', Verified: 'Verified' },
+  [Language.CHINESE]: { Verify: '验证', Verified: '已验证' },
+  [Language.MALAY]: { Verify: 'Sahkan', Verified: 'Disahkan' },
+  [Language.TAMIL]: {
+    Verify: 'சரிபார்க்கவும்',
+    Verified: 'சரிபார்க்கப்பட்டது',
+  },
+}
+
 export interface BaseVerifiableFieldProps extends BaseFieldProps {
   schema: VerifiableFieldSchema<FormFieldWithId<VerifiableFieldBase>>
 }
@@ -53,6 +68,9 @@ export const VerifiableFieldContainer = ({
     }
   }, [hasSignature, schema.fieldType])
 
+  const verifyLabel = verifyTranslations[selectedLanguage].Verify
+  const verifiedLabel = verifyTranslations[selectedLanguage].Verified
+
   return (
     <Box>
       <FieldContainer schema={schema} selectedLanguage={selectedLanguage}>
@@ -73,7 +91,7 @@ export const VerifiableFieldContainer = ({
               }
               aria-label={verifyButtonAriaLabel}
             >
-              {hasSignature ? 'Verified' : 'Verify'}
+              {hasSignature ? verifiedLabel : verifyLabel}
             </Button>
           </Box>
         </Stack>
@@ -84,6 +102,7 @@ export const VerifiableFieldContainer = ({
           handleResendOtp={handleResendOtp}
           fieldType={schema.fieldType}
           otpPrefix={otpPrefix}
+          selectedLanguage={selectedLanguage}
         />
       )}
     </Box>

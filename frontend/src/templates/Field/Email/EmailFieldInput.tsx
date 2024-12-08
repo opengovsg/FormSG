@@ -5,6 +5,8 @@ import {
   useFormContext,
 } from 'react-hook-form'
 
+import { Language } from '~shared/types'
+
 import { createEmailValidationRules } from '~utils/fieldValidation'
 import Input, { InputProps } from '~components/Input'
 
@@ -21,6 +23,7 @@ export interface EmailFieldInputProps {
   ) => (value?: string) => void
   /** Any props to override internal input */
   inputProps?: Partial<InputProps>
+  selectedLanguage?: Language
 }
 
 export const EmailFieldInput = ({
@@ -28,10 +31,16 @@ export const EmailFieldInput = ({
   disableRequiredValidation,
   handleInputChange,
   inputProps = {},
+  selectedLanguage = Language.ENGLISH,
 }: EmailFieldInputProps): JSX.Element => {
   const validationRules = useMemo(
-    () => createEmailValidationRules(schema, disableRequiredValidation),
-    [schema, disableRequiredValidation],
+    () =>
+      createEmailValidationRules(
+        schema,
+        disableRequiredValidation,
+        selectedLanguage,
+      ),
+    [schema, disableRequiredValidation, selectedLanguage],
   )
 
   const { control } = useFormContext<VerifiableFieldInput>()

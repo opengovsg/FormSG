@@ -65,6 +65,7 @@ const InnerVerifiableEmailField = ({
             onKeyDown: handleKeyDown,
             'aria-describedby': `verifiable-description-${schema._id}`,
           }}
+          selectedLanguage={selectedLanguage}
         />
       </Box>
     </VerifiableFieldContainer>
@@ -76,7 +77,10 @@ export const VerifiableEmailField = ({
   selectedLanguage = Language.ENGLISH,
   ...props
 }: VerifiableEmailFieldProps) => {
-  const validateInputForVfn = baseEmailValidationFn(schema)
+  const validateInputForVfn = baseEmailValidationFn({
+    schema,
+    selectedLanguage,
+  })
   return (
     <VerifiableFieldProvider
       schema={schema}

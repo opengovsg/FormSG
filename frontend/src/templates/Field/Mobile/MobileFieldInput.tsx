@@ -5,6 +5,8 @@ import {
   useFormContext,
 } from 'react-hook-form'
 
+import { Language } from '~shared/types'
+
 import { createMobileValidationRules } from '~utils/fieldValidation'
 import PhoneNumberInput, {
   PhoneNumberInputProps,
@@ -23,6 +25,7 @@ export interface MobileFieldInputProps {
   ) => (value?: string) => void
   /** Any props to override internal input */
   phoneNumberInputProps?: Partial<PhoneNumberInputProps>
+  selectedLanguage?: Language
 }
 
 export const MobileFieldInput = ({
