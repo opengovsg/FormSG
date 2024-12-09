@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Box,
@@ -23,11 +24,13 @@ import {
   MyInfoFieldPanel,
   PaymentsInputPanel,
 } from './field-panels'
+import { FieldSearchBar } from './FieldSearchBar'
 
 export const FieldListDrawer = (): JSX.Element => {
   const { t } = useTranslation()
   const { fieldListTabIndex, setFieldListTabIndex } = useCreatePageSidebar()
   const { isLoading } = useCreateTabForm()
+  const [searchValue, setSearchValue] = useState('')
 
   const tabsDataList = [
     {
@@ -51,7 +54,12 @@ export const FieldListDrawer = (): JSX.Element => {
       isDisabled: isLoading,
       key: FieldListTabIndex.Payments,
     },
-  ].filter((tab) => !tab.isHidden)
+  ].filter((tab) => !tab.isHidden) as {
+    header: string
+    component: (props: { searchValue?: string }) => JSX.Element
+    isDisabled: boolean
+    key: FieldListTabIndex
+  }[]
 
   return (
     <Tabs
@@ -70,7 +78,11 @@ export const FieldListDrawer = (): JSX.Element => {
           </Text>
           <CreatePageDrawerCloseButton />
         </Flex>
-        <TabList mx="-0.25rem" w="100%">
+        <FieldSearchBar
+          searchValue={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
+        />
+        <TabList mt="0.5rem" mx="-0.25rem" w="100%">
           {tabsDataList.map((tab) => (
             <Tab key={tab.key} isDisabled={tab.isDisabled}>
               {tab.header}
@@ -82,7 +94,7 @@ export const FieldListDrawer = (): JSX.Element => {
       <TabPanels pb="1rem" flex={1} overflowY="auto">
         {tabsDataList.map((tab) => (
           <TabPanel key={tab.key}>
-            <tab.component />
+            <tab.component searchValue={searchValue} />
           </TabPanel>
         ))}
       </TabPanels>

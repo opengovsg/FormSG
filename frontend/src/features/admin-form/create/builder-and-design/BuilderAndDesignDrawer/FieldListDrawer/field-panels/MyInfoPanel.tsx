@@ -28,6 +28,7 @@ import {
   CREATE_MYINFO_PERSONAL_DROP_ID,
   CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
 } from '~features/admin-form/create/builder-and-design/constants'
+import { MYINFO_FIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { isMyInfo } from '~features/myinfo/utils'
 import { useUser } from '~features/user/queries'
 
@@ -35,6 +36,7 @@ import { useCreateTabForm } from '../../../../builder-and-design/useCreateTabFor
 import { DraggableMyInfoFieldListOption } from '../FieldListOption'
 
 import { FieldSection } from './FieldSection'
+import { filterFieldsBySearchValue } from './utils'
 
 const SGID_SUPPORTED_V1 = [
   MyInfoAttribute.Name,
@@ -70,7 +72,7 @@ const SGID_SUPPORTED_V2 = [
   MyInfoAttribute.DivorceDate,
 ]
 
-export const MyInfoFieldPanel = () => {
+export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
   const { data: form, isLoading } = useCreateTabForm()
 
   const { user } = useUser()
@@ -125,22 +127,56 @@ export const MyInfoFieldPanel = () => {
     [form, isDisabled, sgIDUnSupported],
   )
 
+  const filteredCreateMyInfoPersonalFields = filterFieldsBySearchValue(
+    searchValue,
+    CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
+    MYINFO_FIELD_TO_DRAWER_META,
+  )
+
+  const filteredCreateMyInfoContactFields = filterFieldsBySearchValue(
+    searchValue,
+    CREATE_MYINFO_CONTACT_FIELDS_ORDERED,
+    MYINFO_FIELD_TO_DRAWER_META,
+  )
+
+  const filteredCreateMyInfoParticularsFields = filterFieldsBySearchValue(
+    searchValue,
+    CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED,
+    MYINFO_FIELD_TO_DRAWER_META,
+  )
+
+  const filteredCreateMyInfoMarriageFields = filterFieldsBySearchValue(
+    searchValue,
+    CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED,
+    MYINFO_FIELD_TO_DRAWER_META,
+  )
+
+  const filteredCreateMyInfoChildrenFields = filterFieldsBySearchValue(
+    searchValue,
+    CREATE_MYINFO_CHILDREN_FIELDS_ORDERED,
+    MYINFO_FIELD_TO_DRAWER_META,
+  )
+
   return (
     <>
       <MyInfoMessage />
       <Droppable isDropDisabled droppableId={CREATE_MYINFO_PERSONAL_DROP_ID}>
         {(provided) => (
           <Box ref={provided.innerRef} {...provided.droppableProps}>
-            <FieldSection label="Personal">
-              {CREATE_MYINFO_PERSONAL_FIELDS_ORDERED.map((fieldType, index) => (
-                <DraggableMyInfoFieldListOption
-                  index={index}
-                  isDisabled={isDisabledCheck(fieldType)}
-                  key={index}
-                  fieldType={fieldType}
-                />
-              ))}
-            </FieldSection>
+            {filteredCreateMyInfoPersonalFields.length > 0 && (
+              <FieldSection label="Personal">
+                {filteredCreateMyInfoPersonalFields.map(
+                  ({ fieldType, originalIndex }) => (
+                    <DraggableMyInfoFieldListOption
+                      index={originalIndex}
+                      isDisabled={isDisabledCheck(fieldType)}
+                      key={originalIndex}
+                      fieldType={fieldType}
+                    />
+                  ),
+                )}
+              </FieldSection>
+            )}
             <Box display="none">{provided.placeholder}</Box>
           </Box>
         )}
@@ -148,16 +184,20 @@ export const MyInfoFieldPanel = () => {
       <Droppable isDropDisabled droppableId={CREATE_MYINFO_CONTACT_DROP_ID}>
         {(provided) => (
           <Box ref={provided.innerRef} {...provided.droppableProps}>
-            <FieldSection label="Contact">
-              {CREATE_MYINFO_CONTACT_FIELDS_ORDERED.map((fieldType, index) => (
-                <DraggableMyInfoFieldListOption
-                  index={index}
-                  isDisabled={isDisabledCheck(fieldType)}
-                  key={index}
-                  fieldType={fieldType}
-                />
-              ))}
-            </FieldSection>
+            {filteredCreateMyInfoContactFields.length > 0 && (
+              <FieldSection label="Contact">
+                {filteredCreateMyInfoContactFields.map(
+                  ({ fieldType, originalIndex }) => (
+                    <DraggableMyInfoFieldListOption
+                      index={originalIndex}
+                      isDisabled={isDisabledCheck(fieldType)}
+                      key={originalIndex}
+                      fieldType={fieldType}
+                    />
+                  ),
+                )}
+              </FieldSection>
+            )}
             <Box display="none">{provided.placeholder}</Box>
           </Box>
         )}
@@ -165,18 +205,20 @@ export const MyInfoFieldPanel = () => {
       <Droppable isDropDisabled droppableId={CREATE_MYINFO_PARTICULARS_DROP_ID}>
         {(provided) => (
           <Box ref={provided.innerRef} {...provided.droppableProps}>
-            <FieldSection label="Particulars">
-              {CREATE_MYINFO_PARTICULARS_FIELDS_ORDERED.map(
-                (fieldType, index) => (
-                  <DraggableMyInfoFieldListOption
-                    index={index}
-                    isDisabled={isDisabledCheck(fieldType)}
-                    key={index}
-                    fieldType={fieldType}
-                  />
-                ),
-              )}
-            </FieldSection>
+            {filteredCreateMyInfoParticularsFields.length > 0 && (
+              <FieldSection label="Particulars">
+                {filteredCreateMyInfoParticularsFields.map(
+                  ({ fieldType, originalIndex }) => (
+                    <DraggableMyInfoFieldListOption
+                      index={originalIndex}
+                      isDisabled={isDisabledCheck(fieldType)}
+                      key={originalIndex}
+                      fieldType={fieldType}
+                    />
+                  ),
+                )}
+              </FieldSection>
+            )}
             <Box display="none">{provided.placeholder}</Box>
           </Box>
         )}
@@ -184,16 +226,20 @@ export const MyInfoFieldPanel = () => {
       <Droppable isDropDisabled droppableId={CREATE_MYINFO_MARRIAGE_DROP_ID}>
         {(provided) => (
           <Box ref={provided.innerRef} {...provided.droppableProps}>
-            <FieldSection label="Family (Marriage)">
-              {CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED.map((fieldType, index) => (
-                <DraggableMyInfoFieldListOption
-                  index={index}
-                  isDisabled={isDisabledCheck(fieldType)}
-                  key={index}
-                  fieldType={fieldType}
-                />
-              ))}
-            </FieldSection>
+            {filteredCreateMyInfoMarriageFields.length > 0 && (
+              <FieldSection label="Family (Marriage)">
+                {filteredCreateMyInfoMarriageFields.map(
+                  ({ fieldType, originalIndex }) => (
+                    <DraggableMyInfoFieldListOption
+                      index={originalIndex}
+                      isDisabled={isDisabledCheck(fieldType)}
+                      key={originalIndex}
+                      fieldType={fieldType}
+                    />
+                  ),
+                )}
+              </FieldSection>
+            )}
             <Box display="none">{provided.placeholder}</Box>
           </Box>
         )}
@@ -203,18 +249,20 @@ export const MyInfoFieldPanel = () => {
         <Droppable isDropDisabled droppableId={CREATE_MYINFO_CHILDREN_DROP_ID}>
           {(provided) => (
             <Box ref={provided.innerRef} {...provided.droppableProps}>
-              <FieldSection label="Family (Children)">
-                {CREATE_MYINFO_CHILDREN_FIELDS_ORDERED.map(
-                  (fieldType, index) => (
-                    <DraggableMyInfoFieldListOption
-                      index={index}
-                      isDisabled={isDisabledCheck(fieldType)}
-                      key={index}
-                      fieldType={fieldType}
-                    />
-                  ),
-                )}
-              </FieldSection>
+              {filteredCreateMyInfoChildrenFields.length > 0 && (
+                <FieldSection label="Family (Children)">
+                  {filteredCreateMyInfoChildrenFields.map(
+                    ({ fieldType, originalIndex }) => (
+                      <DraggableMyInfoFieldListOption
+                        index={originalIndex}
+                        isDisabled={isDisabledCheck(fieldType)}
+                        key={originalIndex}
+                        fieldType={fieldType}
+                      />
+                    ),
+                  )}
+                </FieldSection>
+              )}
               <Box display="none">{provided.placeholder}</Box>
             </Box>
           )}
