@@ -123,14 +123,24 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   },
   {
     Header: 'Status',
-    accessor: 'workflowStatus',
+    accessor: ({ mrf }) => {
+      if (!mrf?.workflowStatus) {
+        return ''
+      }
+      return mrf.workflowStatus
+    },
     width: 176,
     minWidth: 176,
     maxWidth: 176,
   },
   {
     Header: 'Current Step',
-    accessor: 'workflowStep',
+    accessor: ({ mrf }) => {
+      if (!(mrf?.workflowCurrentStepNumber && mrf?.workflowNumTotalSteps)) {
+        return ''
+      }
+      return `Step ${mrf.workflowCurrentStepNumber} of ${mrf.workflowNumTotalSteps}`
+    },
     width: 176,
     minWidth: 176,
     maxWidth: 176,
