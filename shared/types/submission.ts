@@ -80,6 +80,39 @@ export type StorageModeSubmissionBase = z.infer<
  * Multirespondent submission typings as stored in the database.
  */
 
+export enum WorkflowStatus {
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  PENDING = 'PENDING',
+  COMPLETED = 'COMPLETED',
+}
+
+export const ApprovalStatus = z.enum([
+  WorkflowStatus.APPROVED,
+  WorkflowStatus.REJECTED,
+])
+
+const SubmittedNonApprovalStep = z.object({
+  isApproval: z.literal(false),
+  submittedAt: z.string(),
+})
+
+export type SubmittedNonApprovalStep = z.infer<typeof SubmittedNonApprovalStep>
+
+const SubmittedApprovalStep = SubmittedNonApprovalStep.extend({
+  isApproval: z.literal(true),
+  status: ApprovalStatus,
+})
+
+export type SubmittedApprovalStep = z.infer<typeof SubmittedApprovalStep>
+
+export const SubmittedStep = z.discriminatedUnion('isApproval', [
+  SubmittedApprovalStep,
+  SubmittedNonApprovalStep,
+])
+
+export type SubmittedStep = z.infer<typeof SubmittedStep>
+
 export const MultirespondentSubmissionBase = SubmissionBase.extend({
   // Store the form fields and logic here, to use as reference for future
   // submitters. Don't bother to validate since this is injected by the backend.
@@ -95,6 +128,7 @@ export const MultirespondentSubmissionBase = SubmissionBase.extend({
   version: z.number(),
   workflowStep: z.number(),
   mrfVersion: z.number().optional(),
+  submittedSteps: z.array(SubmittedStep).optional(),
 })
 
 export type MultirespondentSubmissionBase = z.infer<
@@ -212,13 +246,6 @@ export type SubmissionPaymentMetadata = {
   transactionFee: number | null
   email: string
 } | null
-
-export enum WorkflowStatus {
-  APPROVED = 'APPROVED',
-  REJECTED = 'REJECTED',
-  PENDING = 'PENDING',
-  COMPLETED = 'COMPLETED',
-}
 
 export type SubmissionMrfMetadata = {
   workflowCurrentStepNumber: number

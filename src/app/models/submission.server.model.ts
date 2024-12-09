@@ -11,6 +11,7 @@ import {
   MyInfoAttribute,
   SubmissionMetadata,
   SubmissionType,
+  SubmittedStep,
   WebhookResponse,
   WorkflowStatus,
 } from '../../../shared/types'
@@ -550,11 +551,15 @@ export const MultirespondentSubmissionSchema = new Schema<
   mrfVersion: {
     type: Number,
   },
+  submittedSteps: {
+    type: Array,
+    default: [],
+  },
 })
 
 type MultiRespondentAggregates = Pick<
   IMultirespondentSubmissionSchema,
-  'workflowStep' | 'workflow'
+  'workflowStep' | 'workflow' | 'submittedSteps'
 >
 type MultiRespondentAggregateResult = MetadataAggregateResult &
   MultiRespondentAggregates
@@ -585,6 +590,7 @@ MultirespondentSubmissionSchema.statics.findSingleMetadata = function (
     const mrfMeta = {
       workflowStep: result.workflowStep,
       workflow: result.workflow,
+      submittedSteps: result.submittedSteps,
     }
     // Build submissionMetadata object.
     const metadata = buildSubmissionMetadata(result, 1, undefined, mrfMeta)
@@ -620,6 +626,7 @@ MultirespondentSubmissionSchema.statics.findAllMetadataByFormId = function (
           created: 1,
           workflowStep: 1,
           workflow: 1,
+          submittedSteps: 1,
         },
       },
     ],
@@ -639,6 +646,7 @@ MultirespondentSubmissionSchema.statics.findAllMetadataByFormId = function (
       const mrfMeta = {
         workflowStep: result.workflowStep,
         workflow: result.workflow,
+        submittedSteps: result.submittedSteps,
       }
       const metadataEntry = buildSubmissionMetadata(
         result,
@@ -777,6 +785,33 @@ export const getMultirespondentSubmissionModel = (
   >(SubmissionType.Multirespondent)
 }
 
+const getWorkflowStatus = (
+  submittedSteps: SubmittedStep[],
+  numTotalSteps: number,
+): WorkflowStatus | undefined => {
+  if (submittedSteps.length <= 0 || numTotalSteps <= 0) {
+    // NOTE: this occurs when no steps are recorded for submissions prior to this change or when no workflow is defined.
+    return undefined
+  }
+  const latestSubmittedStep = submittedSteps[submittedSteps.length - 1]
+  if (
+    latestSubmittedStep.isApproval &&
+    latestSubmittedStep.status === WorkflowStatus.REJECTED
+  ) {
+    return WorkflowStatus.REJECTED
+  }
+  if (submittedSteps.length === numTotalSteps) {
+    if (
+      latestSubmittedStep.isApproval &&
+      latestSubmittedStep.status === WorkflowStatus.APPROVED
+    ) {
+      return WorkflowStatus.APPROVED
+    }
+    return WorkflowStatus.COMPLETED
+  }
+  return WorkflowStatus.PENDING
+}
+
 const buildSubmissionMetadata = (
   result: MetadataAggregateResult,
   currentNumber: number,
@@ -804,9 +839,12 @@ const buildSubmissionMetadata = (
       : null,
     mrf: mrfMeta
       ? {
-          workflowCurrentStepNumber: mrfMeta.workflowStep + 1 ?? 0,
+          workflowCurrentStepNumber: mrfMeta.workflowStep + 1 ?? 0, // need to add 1 as workflowStep is 0-indexed
           workflowNumTotalSteps: mrfMeta.workflow?.length ?? 0,
-          workflowStatus: WorkflowStatus.PENDING,
+          workflowStatus: getWorkflowStatus(
+            mrfMeta.submittedSteps ?? [],
+            mrfMeta.workflow?.length ?? 0,
+          ),
         }
       : null,
   }
