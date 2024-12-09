@@ -522,11 +522,21 @@ export const updateMultiRespondentFormSubmission = ({
       } = encryptedPayload
 
       const isApprovalForm = checkIsFormApproval(form)
-      const isStepRejected = checkIsStepRejected({
+      const isStepRejectedResult = checkIsStepRejected({
         zeroIndexedStepNumber: workflowStep,
         form,
         responses: encryptedPayload.responses,
       })
+      if (isStepRejectedResult.isErr()) {
+        logger.error({
+          message: 'Error occurred when checking if step is rejected',
+          meta: logMeta,
+          error: isStepRejectedResult.error,
+        })
+        return errAsync(isStepRejectedResult.error)
+      }
+
+      const isStepRejected = isStepRejectedResult.value
       const submittedStepMeta = isApprovalForm
         ? ({
             status: isStepRejected
