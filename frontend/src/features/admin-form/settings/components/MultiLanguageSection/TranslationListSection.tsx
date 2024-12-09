@@ -315,6 +315,7 @@ export const TranslationListSection = ({
           {form.startPage.paragraph && (
             <>
               <QuestionRow
+                key="Instructions"
                 questionTitle="Instructions"
                 icon={BxsDockTop}
                 isMyInfoField={false}
@@ -351,6 +352,7 @@ export const TranslationListSection = ({
           {/* End Page Translation */}
           {form.endPage && (
             <QuestionRow
+              key="End Page"
               questionTitle={form.endPage?.title ?? ''}
               icon={PhHandsClapping}
               isMyInfoField={false}

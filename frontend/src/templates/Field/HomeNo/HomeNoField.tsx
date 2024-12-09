@@ -1,8 +1,6 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 
-import { Language } from '~shared/types'
-
 import { createHomeNoValidationRules } from '~utils/fieldValidation'
 import PhoneNumberInput from '~components/PhoneNumberInput'
 import landlineExamples from '~components/PhoneNumberInput/resources/examples.landline.json'

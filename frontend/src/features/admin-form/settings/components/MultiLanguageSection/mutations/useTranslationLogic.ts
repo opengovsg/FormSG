@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react'
-import { UseFormGetValues } from 'react-hook-form'
+import { UseFormReturn } from 'react-hook-form'
 import { useSearchParams } from 'react-router-dom'
 import _ from 'lodash'
 
@@ -33,7 +33,7 @@ interface UseTranslationLogicProps {
   isStartPageTranslations: boolean
   isEndPageTranslations: boolean
   isFormField: boolean
-  getValues: UseFormGetValues<TranslationInput>
+  methods: UseFormReturn<TranslationInput>
 }
 
 export const useTranslationLogic = ({
@@ -43,8 +43,9 @@ export const useTranslationLogic = ({
   isStartPageTranslations,
   isEndPageTranslations,
   isFormField,
-  getValues,
+  methods,
 }: UseTranslationLogicProps) => {
+  const { getValues, setError, clearErrors } = methods
   const [, setSearchParams] = useSearchParams()
   const { editFieldMutation } = useEditFormField()
   const { endPageMutation, startPageMutation } = useMutateFormPage()
@@ -66,7 +67,7 @@ export const useTranslationLogic = ({
     setSearchParams({ unicodeLocale: language })
   }, [language, setSearchParams])
 
-  const handleOnSaveClick = useCallback(() => {
+  const handleOnSaveClick = () => {
     const updatedTitleTranslation = getValues('titleTranslation')
     const updatedDescriptionTranslation = getValues('descriptionTranslation')
     const updatedParagraphTranslation = getValues('paragraphTranslations')
@@ -80,6 +81,7 @@ export const useTranslationLogic = ({
 
     if (isFormField && formFieldData) {
       if (formFieldData.fieldType === BasicField.Table) {
+        clearErrors('tableColumnDropdownTranslations')
         const updatedTableData = updateTableTranslations({
           data: formFieldData,
           language,
@@ -88,6 +90,54 @@ export const useTranslationLogic = ({
           updatedTitleTranslation,
           updatedDescriptionTranslation,
         })
+
+        const tableColumns = updatedTableData.columns
+
+        tableColumns.forEach((column, index) => {
+          if (column.columnType !== BasicField.Dropdown) return
+
+          const translationIndex =
+            column.fieldOptionsTranslations?.findIndex(
+              (t) => t.language === language,
+            ) ?? -1
+
+          if (
+            column.fieldOptionsTranslations &&
+            translationIndex !== -1 &&
+            column.fieldOptionsTranslations[translationIndex].translation
+              .length !== column.fieldOptions.length
+          ) {
+            setError(`tableColumnDropdownTranslations.${index}`, {
+              type: 'custom',
+              message:
+                'Make sure the number of translated options match the options in the question.',
+            })
+            return
+          }
+        })
+
+        for (const [index, tableColumn] of tableColumns.entries()) {
+          if (tableColumn.columnType === BasicField.Dropdown) {
+            const translationIndex =
+              tableColumn.fieldOptionsTranslations?.findIndex(
+                (t) => t.language === language,
+              ) ?? -1
+
+            if (
+              tableColumn.fieldOptionsTranslations &&
+              translationIndex !== -1 &&
+              tableColumn.fieldOptionsTranslations[translationIndex].translation
+                .length !== tableColumn.fieldOptions.length
+            ) {
+              setError(`tableColumnDropdownTranslations.${index}`, {
+                type: 'custom',
+                message:
+                  'Make sure the number of translated options match the options in the question.',
+              })
+              return
+            }
+          }
+        }
 
         editFieldMutation.mutate(
           { ...updatedTableData, _id: fieldId } as FormFieldDto,
@@ -110,6 +160,33 @@ export const useTranslationLogic = ({
           updatedDescriptionTranslation,
           updatedFieldOptionsTranslation: updatedFieldOptionsTranslationArr,
         })
+
+        if (
+          updatedFormData.fieldType === BasicField.Dropdown ||
+          updatedFormData.fieldType === BasicField.Checkbox ||
+          updatedFormData.fieldType === BasicField.Radio
+        ) {
+          clearErrors('fieldOptionsTranslations')
+          const translationIndex =
+            updatedFormData.fieldOptionsTranslations?.findIndex(
+              (t) => t.language === language,
+            ) ?? -1
+          if (
+            updatedFormData.fieldOptionsTranslations &&
+            translationIndex !== -1 &&
+            updatedFormData.fieldOptionsTranslations[translationIndex]
+              .translation.length !== 0 &&
+            updatedFormData.fieldOptionsTranslations[translationIndex]
+              .translation.length !== updatedFormData.fieldOptions.length
+          ) {
+            setError('fieldOptionsTranslations', {
+              type: 'custom',
+              message:
+                'Make sure the number of translated options match the options in the question.',
+            })
+            return
+          }
+        }
 
         editFieldMutation.mutate(
           { ...updatedFormData, _id: fieldId } as FormFieldDto,
@@ -141,21 +218,7 @@ export const useTranslationLogic = ({
         onSuccess: handleOnBackClick,
       })
     }
-  }, [
-    getValues,
-    isFormField,
-    formFieldData,
-    isStartPageTranslations,
-    formStartPage,
-    isEndPageTranslations,
-    formEndPage,
-    language,
-    editFieldMutation,
-    fieldId,
-    handleOnBackClick,
-    startPageMutation,
-    endPageMutation,
-  ])
+  }
 
   return {
     handleOnSaveClick,
