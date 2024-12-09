@@ -17,9 +17,12 @@ import { LanguageTranslation } from '~assets/icons/LanguageTranslation'
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
 
+import { useUser } from '~features/user/queries'
+
 import { useAdminFormCollaborators } from '../common/queries'
 
 import { SettingsTab } from './components/SettingsTab'
+import { useAdminFormSettings } from './queries'
 import { SettingsAuthPage } from './SettingsAuthPage'
 import { SettingsEmailsPage } from './SettingsEmailsPage'
 import { SettingsGeneralPage } from './SettingsGeneralPage'
@@ -37,6 +40,8 @@ interface TabEntry {
 
 export const SettingsPage = (): JSX.Element => {
   const { formId, settingsTab } = useParams()
+  const { isLoading: isFormSettingLoading } = useAdminFormSettings()
+  const { user, isLoading: isUserLoading } = useUser()
   const { t } = useTranslation()
 
   if (!formId) throw new Error('No formId provided')
@@ -50,6 +55,18 @@ export const SettingsPage = (): JSX.Element => {
     if (!isCollabLoading && !hasEditAccess)
       navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_RESULTS_SUBROUTE}`)
   }, [formId, hasEditAccess, isCollabLoading, navigate])
+
+  const multiLangTab =
+    isUserLoading ||
+    isFormSettingLoading ||
+    !user?.betaFlags?.multiLangTranslation
+      ? null
+      : {
+          label: 'Multi-language',
+          icon: LanguageTranslation,
+          component: SettingsMultiLangPage,
+          path: 'language',
+        }
 
   const tabConfig: TabEntry[] = [
     {
@@ -83,12 +100,7 @@ export const SettingsPage = (): JSX.Element => {
       component: SettingsPaymentsPage,
       path: 'payments',
     },
-    {
-      label: 'Multi-language',
-      icon: LanguageTranslation,
-      component: SettingsMultiLangPage,
-      path: 'language',
-    },
+    multiLangTab,
   ].filter(Boolean) as TabEntry[]
 
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
