@@ -94,7 +94,7 @@ export const getMetadata: ControllerHandler<
           level: PermissionLevel.Read,
         }),
       )
-      // Step 3: Check whether form is encrypt mode.
+      // Step 3: Check whether form is encrypt or multirespondent mode.
       .andThen(checkFormIsEncryptModeOrMultirespondent)
       // Step 4: Retrieve submission metadata.
       .andThen((form) => {
