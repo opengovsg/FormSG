@@ -24,54 +24,16 @@ const NON_MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: '#',
     accessor: 'number',
-    minWidth: 80, // minWidth is only used as a limit for resizing
     width: 80, // width is used for both the flex-basis and flex-grow
+    minWidth: 80, // minWidth is only used as a limit for resizing
     maxWidth: 100, // maxWidth is only used as a limit for resizing
   },
   {
     Header: 'Response ID',
     accessor: 'refNo',
-    minWidth: 300,
     width: 300,
-    maxWidth: 240, // maxWidth is only used as a limit for resizing
-  },
-  {
-    Header: 'Timestamp',
-    accessor: 'submissionTime',
-    minWidth: 250,
-    width: 250,
-    disableResizing: true,
-  },
-]
-
-const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
-  {
-    Header: '#',
-    accessor: 'number',
-    minWidth: 30,
-    width: 40,
-    maxWidth: 50,
-  },
-  {
-    Header: 'Response ID',
-    accessor: 'refNo',
-    minWidth: 100,
-    maxWidth: 150,
-    width: 120,
-  },
-  {
-    Header: 'Status',
-    accessor: 'workflowStatus',
-    minWidth: 50,
-    maxWidth: 100,
-    width: 50,
-  },
-  {
-    Header: 'Current Step',
-    accessor: 'workflowStep',
-    minWidth: 50,
-    maxWidth: 100,
-    width: 50,
+    minWidth: 300,
+    maxWidth: 300,
   },
   {
     Header: 'Timestamp',
@@ -144,6 +106,44 @@ const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
   },
 ]
 
+const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
+  {
+    Header: '#',
+    accessor: 'number',
+    width: 80,
+    minWidth: 80,
+    maxWidth: 100,
+  },
+  {
+    Header: 'Response ID',
+    accessor: 'refNo',
+    width: 300,
+    minWidth: 300,
+    maxWidth: 300,
+  },
+  {
+    Header: 'Status',
+    accessor: 'workflowStatus',
+    width: 176,
+    minWidth: 176,
+    maxWidth: 176,
+  },
+  {
+    Header: 'Current Step',
+    accessor: 'workflowStep',
+    width: 176,
+    minWidth: 176,
+    maxWidth: 176,
+  },
+  {
+    Header: 'Timestamp of first response',
+    accessor: 'submissionTime',
+    width: 320,
+    minWidth: 320,
+    maxWidth: 320,
+  },
+]
+
 const PAYMENT_RESPONSE_TABLE_COLUMNS =
   NON_MRF_RESPONSE_TABLE_COLUMNS.concat(PAYMENT_COLUMNS)
 
@@ -179,6 +179,16 @@ export const ResponsesTable = () => {
     }
   }, [filteredMetadata, metadata, submissionId])
 
+  const columns = useMemo(() => {
+    if (isMultiRespondentForm) {
+      return MRF_RESPONSE_TABLE_COLUMNS
+    }
+    if (isPaymentsForm) {
+      return PAYMENT_RESPONSE_TABLE_COLUMNS
+    }
+    return NON_MRF_RESPONSE_TABLE_COLUMNS
+  }, [isMultiRespondentForm, isPaymentsForm])
+
   const {
     prepareRow,
     getTableProps,
@@ -188,11 +198,7 @@ export const ResponsesTable = () => {
     gotoPage,
   } = useTable<ResponseColumnData>(
     {
-      columns: isMultiRespondentForm
-        ? MRF_RESPONSE_TABLE_COLUMNS
-        : isPaymentsForm
-          ? PAYMENT_RESPONSE_TABLE_COLUMNS
-          : NON_MRF_RESPONSE_TABLE_COLUMNS,
+      columns,
       data: metadataToUse,
       // Server side pagination.
       manualPagination: true,
