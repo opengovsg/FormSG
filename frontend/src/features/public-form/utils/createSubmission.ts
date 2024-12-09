@@ -390,7 +390,6 @@ const createResponsesV3 = (
         }
         break
       }
-      case BasicField.Address:
       case BasicField.Section:
       case BasicField.Image:
       case BasicField.Statement: {

@@ -31,9 +31,8 @@ const addressValidator: AddressValidator = (response) => {
     : left(`AddressValidator:\t answer is not a valid postal code`)
 }
 
-export const constructAddressValidator: AddressValidatorConstructor = (
-  addressField,
-) => flow(notEmptySingleAnswerResponse, chain(addressValidator))
+export const constructAddressValidator: AddressValidatorConstructor = () =>
+  flow(notEmptySingleAnswerResponse, chain(addressValidator))
 
 // v3
 
@@ -50,7 +49,7 @@ const isAddressResponseV3: ResponseValidator<
 }
 
 const addressValidatorV3: ResponseValidator<AddressResponseV3> = (response) => {
-  return validatePostalCode(response.answer)
+  return validatePostalCode(response.answer.postalCode)
     ? right(response)
     : left(`AddressValidatorV3:\t answer is not a valid postal code`)
 }
@@ -62,6 +61,6 @@ export const constructAddressValidatorV3: ResponseValidatorConstructor<
 > = () =>
   flow(
     isAddressResponseV3,
-    chain(notEmptySingleAnswerResponseV3),
+    // chain(notEmptySingleAnswerResponseV3),
     chain(addressValidatorV3),
   )

@@ -219,6 +219,9 @@ export const getQuestionTitleAnswerString = ({
           answer,
         })
         continue
+      case BasicField.Address: // TODO
+        answer = response.answer.postalCode
+        break
       case BasicField.Email:
       case BasicField.Mobile:
         answer = response.answer.value

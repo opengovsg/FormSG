@@ -239,7 +239,7 @@ type FormFieldValueOrFieldResponseAnswerV3<T extends BasicField> =
 /**
  * Transforms form inputs to their desire output shapes for sending to the server
  * @param field schema to retrieve base field info
- * @param input the input corxresponding to the field in the form
+ * @param input the input corresponding to the field in the form
  * @returns If field type does not need an output, `null` is returned. Otherwise returns the transformed output.
  */
 export const transformInputsToOutputs = (

@@ -78,7 +78,9 @@ export type FieldResponseAnswerMapV3<F extends BasicField = BasicField> =
                 ? CheckboxFieldResponsesV3
                 : F extends BasicField.Children
                   ? ChildrenCompoundFieldResponsesV3
-                  : never
+                  : F extends BasicField.Address
+                    ? AddressFieldResponseV3
+                    : never
 
 export type GenericStringAnswerResponseFieldTypeV3 =
   | NumberResponseV3['fieldType']
@@ -122,4 +124,13 @@ export type AttachmentFieldResponseV3 = {
   hasBeenScanned: boolean
   answer: string
   md5Hash?: string
+}
+
+export type AddressFieldResponseV3 = {
+  postalCode: string
+  blockNumber: string
+  streetName: string
+  buildingName: string
+  levelNumber: string
+  unitNumber: string
 }
