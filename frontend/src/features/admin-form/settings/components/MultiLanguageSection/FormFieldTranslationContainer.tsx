@@ -1,4 +1,4 @@
-import React from 'react'
+import { FormState } from 'react-hook-form'
 import { Divider, Flex, Text } from '@chakra-ui/react'
 
 import { FormField, Language } from '~shared/types'
@@ -7,17 +7,20 @@ import { BasicField } from '~shared/types/field'
 import { OptionsTranslationContainer } from './OptionsTranslationContainer'
 import { TableTranslationContainer } from './TableTranslationContainer'
 import { TranslationContainer } from './TranslationContainer'
+import { TranslationInput } from './TranslationSection'
 
 interface FormFieldTranslationContainerProps {
   formFieldData: FormField | undefined
   capitalisedLanguage: string
   unicodeLocale: Language
+  formState: FormState<TranslationInput>
 }
 
 export const FormFieldTranslationContainer = ({
   formFieldData,
   capitalisedLanguage,
   unicodeLocale,
+  formState,
 }: FormFieldTranslationContainerProps) => {
   if (!formFieldData) return null
 
@@ -86,6 +89,7 @@ export const FormFieldTranslationContainer = ({
             unicodeLocale={unicodeLocale}
             language={capitalisedLanguage}
             formFieldData={formFieldData}
+            errors={formState.errors.fieldOptionsTranslations}
           />
         </>
       )}
@@ -96,6 +100,7 @@ export const FormFieldTranslationContainer = ({
             unicodeLocale={unicodeLocale}
             language={capitalisedLanguage}
             columns={formFieldData.columns}
+            errors={formState.errors.tableColumnDropdownTranslations}
           />
         </>
       )}

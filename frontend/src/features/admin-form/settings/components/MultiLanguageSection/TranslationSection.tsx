@@ -1,4 +1,3 @@
-import React from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { BiChevronLeft } from 'react-icons/bi'
 import { Button, Flex, Skeleton } from '@chakra-ui/react'
@@ -39,7 +38,7 @@ export const TranslationSection = ({
 }: TranslationSectionProps) => {
   const { data: form, isLoading } = useAdminForm()
   const methods = useForm<TranslationInput>()
-  const { getValues } = methods
+  const { formState } = methods
   const toast = useToast({ status: 'danger' })
   const isFormField = formFieldNumToBeTranslated !== -1
   const unicodeLocale = language as Language
@@ -60,12 +59,12 @@ export const TranslationSection = ({
     formEndPage,
   } = useTranslationLogic({
     form,
-    getValues,
     language,
     formFieldNumToBeTranslated,
     isStartPageTranslations,
     isEndPageTranslations,
     isFormField,
+    methods,
   })
 
   return (
@@ -97,6 +96,7 @@ export const TranslationSection = ({
               formFieldData={formFieldData}
               capitalisedLanguage={capitalisedLanguage}
               unicodeLocale={unicodeLocale}
+              formState={formState}
             />
           )}
           {isEndPageTranslations && formEndPage && (
