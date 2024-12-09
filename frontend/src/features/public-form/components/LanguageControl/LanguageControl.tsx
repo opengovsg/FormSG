@@ -66,6 +66,8 @@ export const LanguageControl = (): JSX.Element | null => {
   // end page.
   if (submissionData) return null
 
+  if (!shouldShowLanguageDropdown) return null
+
   return (
     <Flex
       background={bgColour}
@@ -74,35 +76,33 @@ export const LanguageControl = (): JSX.Element | null => {
       justifyContent={{ base: 'start', md: 'center' }}
     >
       <HStack mt="-32px" bg="white" borderRadius="4px" shadow="md">
-        {shouldShowLanguageDropdown && (
-          <Menu variant="clear">
-            <MenuButton
-              as={Button}
-              rightIcon={<BiChevronDown />}
-              variant="clear"
-              color="secondary.500"
-            >
-              {selectedLanguage}
-            </MenuButton>
-            <MenuList>
-              {languagesList.map((language) => {
-                return (
-                  <MenuItem
-                    onClick={() => {
-                      handleLanguageChange(language.language)
-                    }}
-                    px={4}
-                    h={12}
-                    w="140px"
-                    id={language.language}
-                  >
-                    {language.title}
-                  </MenuItem>
-                )
-              })}
-            </MenuList>
-          </Menu>
-        )}
+        <Menu variant="clear">
+          <MenuButton
+            as={Button}
+            rightIcon={<BiChevronDown />}
+            variant="clear"
+            color="secondary.500"
+          >
+            {selectedLanguage}
+          </MenuButton>
+          <MenuList>
+            {languagesList.map((language) => {
+              return (
+                <MenuItem
+                  onClick={() => {
+                    handleLanguageChange(language.language)
+                  }}
+                  px={4}
+                  h={12}
+                  w="140px"
+                  id={language.language}
+                >
+                  {language.title}
+                </MenuItem>
+              )
+            })}
+          </MenuList>
+        </Menu>
       </HStack>
     </Flex>
   )
