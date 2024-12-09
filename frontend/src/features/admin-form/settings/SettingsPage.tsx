@@ -84,6 +84,18 @@ export const SettingsPage = (): JSX.Element => {
           showRedDot: true,
         }
 
+  const multiLangTab =
+    isUserLoading ||
+    isFormSettingLoading ||
+    !user?.betaFlags?.multiLangTranslation
+      ? null
+      : {
+          label: 'Multi-language',
+          icon: LanguageTranslation,
+          component: SettingsMultiLangPage,
+          path: 'language',
+        }
+
   const tabConfig: TabEntry[] = [
     {
       label: 'General',
@@ -116,12 +128,7 @@ export const SettingsPage = (): JSX.Element => {
       component: SettingsPaymentsPage,
       path: 'payments',
     },
-    {
-      label: 'Multi-language',
-      icon: LanguageTranslation,
-      component: SettingsMultiLangPage,
-      path: 'language',
-    },
+    multiLangTab,
   ].filter(Boolean) as TabEntry[]
 
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
