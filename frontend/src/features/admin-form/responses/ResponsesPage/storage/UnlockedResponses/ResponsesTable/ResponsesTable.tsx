@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo } from 'react'
+import { BiCheckDouble, BiSolidHourglass } from 'react-icons/bi'
 import { useNavigate } from 'react-router-dom'
 import {
   Column,
@@ -7,10 +8,26 @@ import {
   useResizeColumns,
   useTable,
 } from 'react-table'
-import { Flex, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
+import {
+  Flex,
+  Icon,
+  Table,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+} from '@chakra-ui/react'
 
-import { FormResponseMode, SubmissionMetadata } from '~shared/types'
+import {
+  FormResponseMode,
+  SubmissionMetadata,
+  WorkflowStatus,
+} from '~shared/types'
 import { centsToDollars } from '~shared/utils/payments'
+
+import Badge from '~components/Badge'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
@@ -19,6 +36,30 @@ import { useUnlockedResponses } from '../UnlockedResponsesProvider'
 import { getNetAmount } from './utils'
 
 type ResponseColumnData = SubmissionMetadata
+
+const PendingBadge = () => (
+  <Badge
+    width="fit-content"
+    display="flex"
+    textColor="warning.700"
+    backgroundColor="warning.100"
+  >
+    <Icon as={BiSolidHourglass} mr="0.25rem" fontSize="1rem" />
+    <Text textStyle="caption-1">Pending</Text>
+  </Badge>
+)
+
+const CompletedBadge = () => (
+  <Badge
+    width="fit-content"
+    display="flex"
+    textColor="success.700"
+    backgroundColor="success.100"
+  >
+    <Icon as={BiCheckDouble} mr="0.25rem" fontSize="1rem" />
+    <Text textStyle="caption-1">Completed</Text>
+  </Badge>
+)
 
 const NON_MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
@@ -127,7 +168,10 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
       if (!mrf?.workflowStatus) {
         return ''
       }
-      return mrf.workflowStatus
+      if (mrf.workflowStatus === WorkflowStatus.PENDING) {
+        return <PendingBadge />
+      }
+      return <CompletedBadge />
     },
     width: 176,
     minWidth: 176,
