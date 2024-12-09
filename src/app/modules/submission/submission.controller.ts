@@ -127,7 +127,6 @@ export const getMetadata: ControllerHandler<
           meta: logMeta,
           error,
         })
-
         const { statusCode, errorMessage } = mapRouteError(error)
         return res.status(statusCode).json({
           message: errorMessage,

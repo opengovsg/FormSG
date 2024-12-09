@@ -154,6 +154,12 @@ export type SingleChildSubRecordResponse = z.infer<
   typeof SingleChildSubRecordResponse
 >
 
+// TODO: check fo multivalue response
+export const AddressResponse = SingleAnswerResponse.extend({
+  fieldType: z.literal(BasicField.Address),
+})
+export type AddressResponse = z.infer<typeof AddressResponse>
+
 export type FieldResponse =
   | HeaderResponse
   | EmailResponse
@@ -176,3 +182,4 @@ export type FieldResponse =
   | UenResponse
   | ChildBirthRecordsResponse
   | SingleChildSubRecordResponse
+  | AddressResponse

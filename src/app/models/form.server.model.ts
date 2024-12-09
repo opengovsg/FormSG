@@ -81,6 +81,7 @@ import { validateWebhookUrl } from '../modules/webhook/webhook.validation'
 import { ProductSchema } from './payments/productSchema'
 import {
   BaseFieldSchema,
+  createAddressFieldSchema,
   createAttachmentFieldSchema,
   createCheckboxFieldSchema,
   createchildrenCompoundFieldSchema,
@@ -731,6 +732,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     BasicField.Statement,
     createStatementFieldSchema(),
   )
+  FormFieldPath.discriminator(BasicField.Address, createAddressFieldSchema())
   FormFieldPath.discriminator(BasicField.Section, createSectionFieldSchema())
   FormFieldPath.discriminator(BasicField.Table, TableFieldSchema)
   const TableColumnPath = TableFieldSchema.path(

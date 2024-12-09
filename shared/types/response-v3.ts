@@ -13,6 +13,7 @@ export type FieldResponseV3 =
   | EmailResponseV3
   | MobileResponseV3
   | GenericStringAnswerFieldResponseV3
+  | AddressResponseV3
 
 export type GenericStringAnswerFieldResponseV3 =
   | NumberResponseV3
@@ -49,6 +50,7 @@ export type UenResponseV3 = FieldResponseFactoryV3<BasicField.Uen>
 export type ChildBirthRecordsResponseV3 =
   FieldResponseFactoryV3<BasicField.Children>
 export type AttachmentResponseV3 = FieldResponseFactoryV3<BasicField.Attachment>
+export type AddressResponseV3 = FieldResponseFactoryV3<BasicField.Address>
 
 export type FieldResponseFactoryV3<F extends BasicField = BasicField> =
   FieldResponseV3Base & {

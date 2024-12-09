@@ -630,7 +630,15 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
         fieldType: field.fieldType,
       }
     }
-    case BasicField.Address: // TODO: address-field-be work
+    case BasicField.Address: {
+      const sampleValue = faker.lorem.words()
+      return {
+        id: field._id,
+        question: field.title,
+        answer: sampleValue,
+        fieldType: field.fieldType,
+      }
+    }
     case BasicField.Section:
     case BasicField.Statement:
     case BasicField.Image:

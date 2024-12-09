@@ -14,6 +14,7 @@ import {
 } from '~shared/types'
 import { BasicField, FormFieldDto } from '~shared/types/field'
 import {
+  AddressResponse,
   AttachmentResponse,
   CheckboxResponse,
   ChildBirthRecordsResponse,
@@ -29,6 +30,8 @@ import { CHECKBOX_OTHERS_INPUT_VALUE } from '~templates/Field/Checkbox/constants
 import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/constants'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 import {
+  AddressFieldSchema,
+  AddressFieldValues,
   AttachmentFieldSchema,
   BaseFieldOutput,
   CheckboxFieldSchema,
@@ -217,6 +220,18 @@ const transformToChildOutput = (
   }
 }
 
+const transformToAddressOutput = (
+  schema: AddressFieldSchema,
+  input?: AddressFieldValues, // | AddressFieldResponseV3
+): AddressResponse => {
+  let answer = ''
+  if (input?.postalCode !== undefined) answer = input.postalCode // TODO: do for all input fields, just using postalCode to test now
+  return {
+    ...pickBaseOutputFromSchema(schema),
+    answer,
+  }
+}
+
 type FormFieldValueOrFieldResponseAnswerV3<T extends BasicField> =
   | FormFieldValue<T>
   | FieldResponseAnswerMapV3<T>
@@ -224,7 +239,7 @@ type FormFieldValueOrFieldResponseAnswerV3<T extends BasicField> =
 /**
  * Transforms form inputs to their desire output shapes for sending to the server
  * @param field schema to retrieve base field info
- * @param input the input corresponding to the field in the form
+ * @param input the input corxresponding to the field in the form
  * @returns If field type does not need an output, `null` is returned. Otherwise returns the transformed output.
  */
 export const transformInputsToOutputs = (
@@ -287,13 +302,17 @@ export const transformInputsToOutputs = (
         field,
         input as FormFieldValueOrFieldResponseAnswerV3<typeof field.fieldType>,
       )
-    case BasicField.Address: // TODO: address-field-be work
     case BasicField.Statement:
     case BasicField.Image:
       // No output needed.
       return null
     case BasicField.Children:
       return transformToChildOutput(
+        field,
+        input as FormFieldValueOrFieldResponseAnswerV3<typeof field.fieldType>,
+      )
+    case BasicField.Address:
+      return transformToAddressOutput(
         field,
         input as FormFieldValueOrFieldResponseAnswerV3<typeof field.fieldType>,
       )

@@ -13,6 +13,10 @@ import {
 } from '../../modules/submission/submission.types'
 
 import {
+  constructAddressValidator,
+  constructAddressValidatorV3,
+} from './validators/addressValidator'
+import {
   constructAttachmentFieldValidatorV3,
   constructAttachmentValidator,
 } from './validators/attachmentValidator'
@@ -96,6 +100,8 @@ export const constructSingleAnswerValidator = (
   formField: FieldValidationSchema,
 ): ResponseValidator<ProcessedSingleAnswerResponse> => {
   switch (formField.fieldType) {
+    case BasicField.Address:
+      return constructAddressValidator(formField)
     case BasicField.Section:
       return constructSectionValidator()
     case BasicField.ShortText:
@@ -224,11 +230,12 @@ export const constructFieldResponseValidatorV3 = ({
       return constructAttachmentFieldValidatorV3(formField)
     case BasicField.Children:
       return constructChildrenValidatorV3(formField)
-    case BasicField.Address: // TODO: address-field-be work
     case BasicField.Image: // fall-through
     case BasicField.Statement:
       return () =>
         left('Unsupported field type: field should not be part of response')
+    case BasicField.Address:
+      return constructAddressValidatorV3(formField)
     default: {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const exhaustiveCheck: never = formField
