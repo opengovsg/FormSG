@@ -23,7 +23,7 @@ type YesNoTranslations = {
   No: string
 }
 
-const yesNoTranslations: Record<Language, YesNoTranslations> = {
+const YES_NO_TRANSLATIONS: Record<Language, YesNoTranslations> = {
   [Language.ENGLISH]: { Yes: 'Yes', No: 'No' },
   [Language.CHINESE]: { Yes: '是', No: '否' },
   [Language.MALAY]: { Yes: 'Ya', No: 'Tidak' },
@@ -97,8 +97,8 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
       return [noRadioProps, yesRadioProps]
     }, [formControlProps, getRadioProps, props.name])
 
-    const yesLabel = yesNoTranslations[selectedLanguage].Yes
-    const noLabel = yesNoTranslations[selectedLanguage].No
+    const yesLabel = YES_NO_TRANSLATIONS[selectedLanguage].Yes
+    const noLabel = YES_NO_TRANSLATIONS[selectedLanguage].No
 
     return (
       <HStack spacing={0} {...groupProps}>

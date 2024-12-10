@@ -140,6 +140,7 @@ const DropdownColumnCell = ({
         <SingleSelect
           isDisabled={isDisabled}
           colorScheme={`theme-${colorTheme}`}
+          selectedLanguage={selectedLanguage}
           // Possibility of fieldOptions being undefined during table field creation.
           items={fieldOptions ?? []}
           {...field}

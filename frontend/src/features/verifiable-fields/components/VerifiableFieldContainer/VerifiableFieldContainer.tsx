@@ -17,7 +17,7 @@ type VerifyTranslations = {
   Verified: string
 }
 
-const verifyTranslations: Record<Language, VerifyTranslations> = {
+const VERIFY_LABEL_TRANSLATIONS: Record<Language, VerifyTranslations> = {
   [Language.ENGLISH]: { Verify: 'Verify', Verified: 'Verified' },
   [Language.CHINESE]: { Verify: '验证', Verified: '已验证' },
   [Language.MALAY]: { Verify: 'Sahkan', Verified: 'Disahkan' },
@@ -68,8 +68,8 @@ export const VerifiableFieldContainer = ({
     }
   }, [hasSignature, schema.fieldType])
 
-  const verifyLabel = verifyTranslations[selectedLanguage].Verify
-  const verifiedLabel = verifyTranslations[selectedLanguage].Verified
+  const verifyLabel = VERIFY_LABEL_TRANSLATIONS[selectedLanguage].Verify
+  const verifiedLabel = VERIFY_LABEL_TRANSLATIONS[selectedLanguage].Verified
 
   return (
     <Box>
@@ -90,6 +90,9 @@ export const VerifiableFieldContainer = ({
                 hasSignature ? <BiCheck fontSize="1.5rem" /> : undefined
               }
               aria-label={verifyButtonAriaLabel}
+              // This is to ensure that Chinese characters are not wrapped
+              // with new lines within the button.
+              whiteSpace="nowrap"
             >
               {hasSignature ? verifiedLabel : verifyLabel}
             </Button>
