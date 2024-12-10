@@ -138,6 +138,7 @@ export const CheckboxField = ({
                       colorScheme={fieldColorScheme}
                       value={CHECKBOX_OTHERS_INPUT_VALUE}
                       isInvalid={!!get(errors, checkboxInputName)}
+                      selectedLanguage={selectedLanguage}
                     />
                     <Checkbox.OthersInput
                       colorScheme={fieldColorScheme}
