@@ -64,6 +64,7 @@ export const CountryRegionField = ({
           <SingleSelect
             colorScheme={`theme-${colorTheme}`}
             items={schemaWithFieldOptions.fieldOptions}
+            selectedLanguage={selectedLanguage}
             {...field}
           />
         )}

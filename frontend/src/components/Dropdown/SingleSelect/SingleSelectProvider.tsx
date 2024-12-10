@@ -7,6 +7,8 @@ import {
 } from '@chakra-ui/react'
 import { useCombobox, UseComboboxProps } from 'downshift'
 
+import { Language } from '~shared/types'
+
 import { ThemeColorScheme } from '~theme/foundations/colours'
 
 import { VIRTUAL_LIST_MAX_HEIGHT } from '../constants'
@@ -15,6 +17,13 @@ import { SelectContext, SharedSelectContextReturnProps } from '../SelectContext'
 import { ComboboxItem } from '../types'
 import { defaultFilter } from '../utils/defaultFilter'
 import { isItemDisabled, itemToValue } from '../utils/itemUtils'
+
+const DEFAULT_PLACEHOLDER_TRANSLATIONS: Record<Language, string> = {
+  [Language.ENGLISH]: 'Select an option',
+  [Language.CHINESE]: '请选择一个选项',
+  [Language.MALAY]: 'Pilih satu pilihan',
+  [Language.TAMIL]: 'ஒரு விருப்பத்தை தேர்வு செய்யவும்',
+}
 
 export interface SingleSelectProviderProps<
   Item extends ComboboxItem = ComboboxItem,
@@ -41,6 +50,8 @@ export interface SingleSelectProviderProps<
   /** Variant of component */
   variant?: 'clear'
   fullWidth?: boolean
+  /** Selected language of default placeholder prop */
+  selectedLanguage?: Language
 }
 export const SingleSelectProvider = ({
   items: rawItems,
@@ -64,6 +75,7 @@ export const SingleSelectProvider = ({
   comboboxProps = {},
   variant,
   fullWidth = false,
+  selectedLanguage = Language.ENGLISH,
 }: SingleSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
   const [isFocused, setIsFocused] = useState(false)
@@ -79,8 +91,8 @@ export const SingleSelectProvider = ({
 
   const placeholder = useMemo(() => {
     if (placeholderProp === null) return ''
-    return placeholderProp ?? 'Select an option'
-  }, [placeholderProp])
+    return placeholderProp ?? DEFAULT_PLACEHOLDER_TRANSLATIONS[selectedLanguage]
+  }, [placeholderProp, selectedLanguage])
 
   const getFilteredItems = useCallback(
     (filterValue?: string) =>

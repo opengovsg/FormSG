@@ -84,6 +84,7 @@ export const DropdownField = ({
           <SingleSelect
             colorScheme={`theme-${colorTheme}`}
             items={fieldOptions}
+            selectedLanguage={selectedLanguage}
             {...field}
           />
         )}
