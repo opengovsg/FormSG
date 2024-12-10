@@ -18,12 +18,12 @@ import { Language } from '~shared/types'
 
 import { ATTACHMENT_THEME_KEY } from '~theme/components/Field/Attachment'
 import { ThemeColorScheme } from '~theme/foundations/colours'
+import { MAXIMUM_FILE_LABEL_TRANSLATIONS } from '~constants/fixedTranslations'
 
 import { downloadFile } from './utils/downloadFile'
 import { AttachmentStylesProvider } from './AttachmentContext'
 import { AttachmentDropzone } from './AttachmentDropzone'
 import { AttachmentFileInfo } from './AttachmentFileInfo'
-import { MAXIMUM_FILE_LABEL_TRANSLATIONS } from './constants'
 import {
   getFileExtension,
   getInvalidFileExtensionsInZip,

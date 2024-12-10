@@ -273,6 +273,7 @@ export const TableField = ({
           currentRows={fields.length}
           maxRows={schema.maximumRows}
           handleAddRow={handleAddRow}
+          selectedLanguage={selectedLanguage}
         />
       ) : null}
     </TableFieldContainer>

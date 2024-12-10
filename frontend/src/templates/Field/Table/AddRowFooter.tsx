@@ -3,6 +3,12 @@ import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
 import { Box, Stack, Text, VisuallyHidden } from '@chakra-ui/react'
 
+import { Language } from '~shared/types'
+
+import {
+  ADD_ANOTHER_ROW_LABEL_TRANSLATIONS,
+  getTranslationsForTableFieldRows,
+} from '~constants/fixedTranslations'
 import Button from '~components/Button'
 
 interface AddRowFooterProps {
@@ -10,6 +16,7 @@ interface AddRowFooterProps {
   handleAddRow: () => void
   currentRows: number
   maxRows: number | ''
+  selectedLanguage?: Language
 }
 
 export const AddRowFooter = ({
@@ -17,6 +24,7 @@ export const AddRowFooter = ({
   currentRows,
   maxRows,
   handleAddRow: handleAddRowProp,
+  selectedLanguage = Language.ENGLISH,
 }: AddRowFooterProps): JSX.Element => {
   const { t } = useTranslation()
 
@@ -36,6 +44,8 @@ export const AddRowFooter = ({
     setHasAddedRows(true)
   }, [handleAddRowProp])
 
+  const addRowLabel = ADD_ANOTHER_ROW_LABEL_TRANSLATIONS[selectedLanguage]
+
   return (
     <Stack
       mt="0.75rem"
@@ -50,7 +60,7 @@ export const AddRowFooter = ({
         type="button"
         onClick={handleAddRow}
       >
-        {t('features.publicForm.components.table.addAnotherRow')}
+        {addRowLabel ?? t('features.publicForm.components.table.addAnotherRow')}
         <VisuallyHidden>
           {t('features.publicForm.components.table.addAnotherRowAria')}
         </VisuallyHidden>
