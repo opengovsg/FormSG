@@ -14,6 +14,7 @@ import omit from 'lodash/omit'
 import simplur from 'simplur'
 
 import { MB } from '~shared/constants/file'
+import { Language } from '~shared/types'
 
 import { ATTACHMENT_THEME_KEY } from '~theme/components/Field/Attachment'
 import { ThemeColorScheme } from '~theme/foundations/colours'
@@ -22,6 +23,7 @@ import { downloadFile } from './utils/downloadFile'
 import { AttachmentStylesProvider } from './AttachmentContext'
 import { AttachmentDropzone } from './AttachmentDropzone'
 import { AttachmentFileInfo } from './AttachmentFileInfo'
+import { MAXIMUM_FILE_LABEL_TRANSLATIONS } from './constants'
 import {
   getFileExtension,
   getInvalidFileExtensionsInZip,
@@ -99,6 +101,11 @@ export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
    * Override callback function that is invoked when remove button is clicked.
    */
   handleRemoveFileOverride?: () => void
+
+  /**
+   * Selected language used for default labels
+   */
+  selectedLanguage?: Language
 }
 
 export const Attachment = forwardRef<AttachmentProps, 'div'>(
@@ -119,6 +126,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       isRemoveDisabled,
       handleDownloadFileOverride,
       handleRemoveFileOverride,
+      selectedLanguage = Language.ENGLISH,
       ...props
     },
     ref,
@@ -320,7 +328,8 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
               textStyle="body-2"
               aria-hidden
             >
-              Maximum file size: {readableMaxSize}
+              {MAXIMUM_FILE_LABEL_TRANSLATIONS[selectedLanguage]}{' '}
+              {readableMaxSize}
             </Text>
           ) : null}
         </Box>
