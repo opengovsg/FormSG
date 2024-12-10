@@ -14,6 +14,7 @@ import imageCompression from 'browser-image-compression'
 import omit from 'lodash/omit'
 
 import { MB } from '~shared/constants/file'
+import { Language } from '~shared/types'
 
 import { ATTACHMENT_THEME_KEY } from '~theme/components/Field/Attachment'
 import { ThemeColorScheme } from '~theme/foundations/colours'
@@ -22,6 +23,7 @@ import { downloadFile } from './utils/downloadFile'
 import { AttachmentStylesProvider } from './AttachmentContext'
 import { AttachmentDropzone } from './AttachmentDropzone'
 import { AttachmentFileInfo } from './AttachmentFileInfo'
+import { MAXIMUM_FILE_LABEL_TRANSLATIONS } from './constants'
 import {
   getFileExtension,
   getInvalidFileExtensionsInZip,
@@ -99,6 +101,11 @@ export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
    * Override callback function that is invoked when remove button is clicked.
    */
   handleRemoveFileOverride?: () => void
+
+  /**
+   * Selected language used for default labels
+   */
+  selectedLanguage?: Language
 }
 
 export const Attachment = forwardRef<AttachmentProps, 'div'>(
@@ -119,6 +126,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       isRemoveDisabled,
       handleDownloadFileOverride,
       handleRemoveFileOverride,
+      selectedLanguage = Language.ENGLISH,
       ...props
     },
     ref,
@@ -335,12 +343,14 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
               textStyle="body-2"
               aria-hidden
             >
-              {t(
-                'features.adminForm.sidebar.fields.imageAttachment.maxFileSize',
-                {
-                  readableMaxSize,
-                },
-              )}
+              {MAXIMUM_FILE_LABEL_TRANSLATIONS[selectedLanguage]
+                ? `${MAXIMUM_FILE_LABEL_TRANSLATIONS[selectedLanguage]} ${readableMaxSize}`
+                : t(
+                    'features.adminForm.sidebar.fields.imageAttachment.maxFileSize',
+                    {
+                      readableMaxSize,
+                    },
+                  )}
             </Text>
           ) : null}
         </Box>
