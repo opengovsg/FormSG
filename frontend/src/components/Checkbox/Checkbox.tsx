@@ -29,7 +29,7 @@ export interface CheckboxProps extends ChakraCheckboxProps {
   colorScheme?: FieldColorScheme
 
   /**
-   * Selected language to display label.
+   * Selected language to get translated label.
    */
   selectedLanguage?: Language
 }

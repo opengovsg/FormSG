@@ -3,6 +3,12 @@ import { BiPlus } from 'react-icons/bi'
 import { Box, Stack, Text, VisuallyHidden } from '@chakra-ui/react'
 import simplur from 'simplur'
 
+import { Language } from '~shared/types'
+
+import {
+  ADD_ANOTHER_ROW_LABEL_TRANSLATIONS,
+  getTranslationsForTableFieldRows,
+} from '~constants/fixedTranslations'
 import Button from '~components/Button'
 
 interface AddRowFooterProps {
@@ -10,6 +16,7 @@ interface AddRowFooterProps {
   handleAddRow: () => void
   currentRows: number
   maxRows: number | ''
+  selectedLanguage?: Language
 }
 
 export const AddRowFooter = ({
@@ -17,14 +24,17 @@ export const AddRowFooter = ({
   currentRows,
   maxRows,
   handleAddRow: handleAddRowProp,
+  selectedLanguage = Language.ENGLISH,
 }: AddRowFooterProps): JSX.Element => {
   // State to decide whether to announce row changes to screen readers
   const [hasAddedRows, setHasAddedRows] = useState(false)
   const maxRowDescription = useMemo(() => {
-    return maxRows
-      ? simplur`${currentRows} out of max ${maxRows} row[|s]`
-      : simplur`${currentRows} row[|s]`
-  }, [currentRows, maxRows])
+    return getTranslationsForTableFieldRows({
+      maxRows,
+      currentRows,
+      selectedLanguage,
+    })
+  }, [currentRows, maxRows, selectedLanguage])
 
   const maxRowAriaDescription = useMemo(() => {
     return maxRows
@@ -36,6 +46,10 @@ export const AddRowFooter = ({
     handleAddRowProp()
     setHasAddedRows(true)
   }, [handleAddRowProp])
+
+  const addRowLabel = useMemo(() => {
+    return ADD_ANOTHER_ROW_LABEL_TRANSLATIONS[selectedLanguage]
+  }, [selectedLanguage])
 
   return (
     <Stack
@@ -51,7 +65,7 @@ export const AddRowFooter = ({
         type="button"
         onClick={handleAddRow}
       >
-        Add another row
+        {addRowLabel}
         <VisuallyHidden>
           to the table field. {maxRowAriaDescription}
         </VisuallyHidden>
