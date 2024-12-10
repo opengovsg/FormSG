@@ -127,6 +127,7 @@ export const RadioField = ({
               <Radio.OthersWrapper
                 colorScheme={fieldColorScheme}
                 value={RADIO_OTHERS_INPUT_VALUE}
+                selectedLanguage={selectedLanguage}
               >
                 <FormControl
                   isRequired={schema.required}

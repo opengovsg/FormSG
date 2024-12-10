@@ -1,4 +1,4 @@
-import { ChangeEventHandler, ReactNode, useRef } from 'react'
+import { ChangeEventHandler, ReactNode, useMemo, useRef } from 'react'
 import {
   Box,
   Checkbox as ChakraCheckbox,
@@ -10,9 +10,13 @@ import {
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 
+import { Language } from '~shared/types'
+
 import { BxCheckAnimated } from '~/assets/icons'
 import { CHECKBOX_THEME_KEY } from '~/theme/components/Checkbox'
 import { FieldColorScheme } from '~/theme/foundations/colours'
+
+import { OTHERS_TRANSLATED_LABEL } from '~constants/fixedTranslations'
 
 import Input, { InputProps } from '../Input'
 
@@ -23,6 +27,11 @@ export interface CheckboxProps extends ChakraCheckboxProps {
    * Background and shadow colors of checkbox.
    */
   colorScheme?: FieldColorScheme
+
+  /**
+   * Selected language to display label.
+   */
+  selectedLanguage?: Language
 }
 
 type CheckboxWithOthers = ComponentWithAs<'input', CheckboxProps> & {
@@ -103,6 +112,10 @@ const OthersCheckbox = forwardRef<CheckboxProps, 'input'>((props, ref) => {
     props.onChange?.(e)
   }
 
+  const othersLabel = useMemo(() => {
+    return OTHERS_TRANSLATED_LABEL[props.selectedLanguage ?? Language.ENGLISH]
+  }, [props.selectedLanguage])
+
   return (
     <Checkbox
       ref={mergedCheckboxRef}
@@ -111,7 +124,7 @@ const OthersCheckbox = forwardRef<CheckboxProps, 'input'>((props, ref) => {
       {...props}
       onChange={handleCheckboxChange}
     >
-      Others
+      {othersLabel}
     </Checkbox>
   )
 })

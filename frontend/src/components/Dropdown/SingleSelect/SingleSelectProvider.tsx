@@ -10,6 +10,10 @@ import { useCombobox, UseComboboxProps } from 'downshift'
 import { Language } from '~shared/types'
 
 import { ThemeColorScheme } from '~theme/foundations/colours'
+import {
+  DEFAULT_PLACEHOLDER_TRANSLATIONS,
+  NOTHING_FOUND_LABEL_TRANSLATIONS,
+} from '~constants/fixedTranslations'
 
 import { VIRTUAL_LIST_MAX_HEIGHT } from '../constants'
 import { useItems } from '../hooks/useItems'
@@ -17,11 +21,6 @@ import { SelectContext, SharedSelectContextReturnProps } from '../SelectContext'
 import { ComboboxItem } from '../types'
 import { defaultFilter } from '../utils/defaultFilter'
 import { isItemDisabled, itemToValue } from '../utils/itemUtils'
-
-import {
-  DEFAULT_PLACEHOLDER_TRANSLATIONS,
-  NOTHING_FOUND_LABEL_TRANSLATIONS,
-} from './constants'
 
 export interface SingleSelectProviderProps<
   Item extends ComboboxItem = ComboboxItem,

@@ -1,5 +1,12 @@
 import { Language } from '~shared/types'
 
+export const OTHERS_TRANSLATED_LABEL: Record<Language, string> = {
+  [Language.ENGLISH]: 'Others',
+  [Language.CHINESE]: '其他',
+  [Language.MALAY]: 'Lain-lain',
+  [Language.TAMIL]: 'மற்றவை',
+}
+
 export const DEFAULT_PLACEHOLDER_TRANSLATIONS: Record<Language, string> = {
   [Language.ENGLISH]: 'Select an option',
   [Language.CHINESE]: '请选择一个选项',
