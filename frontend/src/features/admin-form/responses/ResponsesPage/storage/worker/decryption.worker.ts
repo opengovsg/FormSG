@@ -2,6 +2,8 @@ import { expose } from 'comlink'
 import { formatInTimeZone } from 'date-fns-tz'
 import PQueue from 'p-queue'
 
+import { MultirespondentSubmissionStreamDto } from '~shared/types/submission'
+
 import formsgSdk from '~utils/formSdk'
 
 import {
@@ -98,6 +100,14 @@ async function decryptIntoCsv(
       hostOrigin,
       submission.submissionType === SubmissionType.Encrypt
         ? submission.payment
+        : undefined,
+      submission.submissionType === SubmissionType.Multirespondent
+        ? {
+            workflowStatus: (submission as MultirespondentSubmissionStreamDto)
+              .workflowStatus,
+            workflowCurrentStepNumber: submission.workflowStep + 1,
+            workflowNumTotalSteps: submission.numTotalSteps,
+          }
         : undefined,
     )
     try {

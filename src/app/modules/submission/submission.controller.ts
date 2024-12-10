@@ -30,6 +30,7 @@ import { createMultirespondentSubmissionDto } from './multirespondent-submission
 import { InvalidSubmissionTypeError } from './submission.errors'
 import {
   addPaymentDataStream,
+  buildMrfMetadata,
   getEncryptedSubmissionData,
   getQuarantinePresignedPostData,
   getSubmissionCursor,
@@ -328,7 +329,7 @@ export const streamEncryptedResponses: ControllerHandler<
         level: PermissionLevel.Read,
       }),
     )
-    // Step 3: Check whether form is encrypt mode.
+    // Step 3: Check whether form is encrypt or multirespondent mode.
     .andThen(checkFormIsEncryptModeOrMultirespondent)
     // Step 4: Retrieve submissions cursor.
     .andThen((form) =>
@@ -370,6 +371,7 @@ export const streamEncryptedResponses: ControllerHandler<
         urlValidDuration: (req.session?.cookie.maxAge ?? 0) / 1000,
       }),
     )
+    .pipe(buildMrfMetadata())
     // TODO: Can we include this within the cursor query as aggregation pipeline
     // instead, so that we make one query to mongo rather than two.
     .pipe(addPaymentDataStream())

@@ -37,6 +37,7 @@ import {
   WebhookView,
 } from '../../types'
 import { getPaymentWebhookEventObject } from '../modules/payments/payment.service.utils'
+import { getMrfSubmissionWorkflowStatus } from '../modules/submission/submission.utils'
 import { createQueryWithDateParam } from '../utils/date'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
@@ -687,6 +688,8 @@ MultirespondentSubmissionSchema.statics.getSubmissionCursorByFormId = function (
         form_fields: 1,
         form_logics: 1,
         workflow: 1,
+        workflowStep: 1,
+        submittedSteps: 1,
         encryptedSubmissionSecretKey: 1,
         encryptedContent: 1,
         attachmentMetadata: 1,
@@ -785,33 +788,6 @@ export const getMultirespondentSubmissionModel = (
   >(SubmissionType.Multirespondent)
 }
 
-const getWorkflowStatus = (
-  submittedSteps: SubmittedStep[],
-  numTotalSteps: number,
-): WorkflowStatus | undefined => {
-  if (submittedSteps.length <= 0 || numTotalSteps <= 0) {
-    // NOTE: this occurs when no steps are recorded for submissions prior to this change or when no workflow is defined.
-    return undefined
-  }
-  const latestSubmittedStep = submittedSteps[submittedSteps.length - 1]
-  if (
-    latestSubmittedStep.isApproval &&
-    latestSubmittedStep.status === WorkflowStatus.REJECTED
-  ) {
-    return WorkflowStatus.REJECTED
-  }
-  if (submittedSteps.length === numTotalSteps) {
-    if (
-      latestSubmittedStep.isApproval &&
-      latestSubmittedStep.status === WorkflowStatus.APPROVED
-    ) {
-      return WorkflowStatus.APPROVED
-    }
-    return WorkflowStatus.COMPLETED
-  }
-  return WorkflowStatus.PENDING
-}
-
 const buildSubmissionMetadata = (
   result: MetadataAggregateResult,
   currentNumber: number,
@@ -841,7 +817,7 @@ const buildSubmissionMetadata = (
       ? {
           workflowCurrentStepNumber: mrfMeta.workflowStep + 1 ?? 0, // need to add 1 as workflowStep is 0-indexed
           workflowNumTotalSteps: mrfMeta.workflow?.length ?? 0,
-          workflowStatus: getWorkflowStatus(
+          workflowStatus: getMrfSubmissionWorkflowStatus(
             mrfMeta.submittedSteps ?? [],
             mrfMeta.workflow?.length ?? 0,
           ),

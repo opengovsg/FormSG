@@ -25,6 +25,8 @@ import {
   MyInfoAttribute,
   SubmissionAttachment,
   SubmissionAttachmentsMap,
+  SubmittedStep,
+  WorkflowStatus,
 } from '../../../../shared/types'
 import * as FileValidation from '../../../../shared/utils/file-validation'
 import {
@@ -145,10 +147,6 @@ import {
 } from './submission.types'
 
 const logger = createLoggerWithLabel(module)
-
-const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
-const MultirespondentSubmissionModel =
-  getMultirespondentSubmissionModel(mongoose)
 
 type ResponseModeFilterParam = {
   fieldType: BasicField
@@ -401,6 +399,10 @@ export const getEncryptedSubmissionModelByResponseMode = (
   IEncryptSubmissionModel | IMultirespondentSubmissionModel,
   ResponseModeError
 > => {
+  const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
+  const MultirespondentSubmissionModel =
+    getMultirespondentSubmissionModel(mongoose)
+
   switch (responseMode) {
     case FormResponseMode.Encrypt:
       return ok(EncryptSubmissionModel)
@@ -810,4 +812,38 @@ export const getCookieNameByAuthType = (
     default:
       return JwtName[authType]
   }
+}
+
+/**
+ * Determines the workflow status of a submission based on the submitted steps and the total number of steps.
+ * @param submittedSteps - The submitted steps of the submission.
+ * @param numTotalSteps - The total number of steps in the workflow.
+ * @returns The workflow status of the submission based on the enum `WorkflowStatus`.
+ * Otherwise, returns `undefined` if no submitted steps or total steps are found or when no workflow has been defined by the form admin.
+ */
+export const getMrfSubmissionWorkflowStatus = (
+  submittedSteps: SubmittedStep[],
+  numTotalSteps: number,
+): WorkflowStatus | undefined => {
+  if (submittedSteps.length <= 0 || numTotalSteps <= 0) {
+    // NOTE: this occurs when no steps are recorded for submissions prior to this change or when no workflow is defined.
+    return undefined
+  }
+  const latestSubmittedStep = submittedSteps[submittedSteps.length - 1]
+  if (
+    latestSubmittedStep.isApproval &&
+    latestSubmittedStep.status === WorkflowStatus.REJECTED
+  ) {
+    return WorkflowStatus.REJECTED
+  }
+  if (submittedSteps.length === numTotalSteps) {
+    if (
+      latestSubmittedStep.isApproval &&
+      latestSubmittedStep.status === WorkflowStatus.APPROVED
+    ) {
+      return WorkflowStatus.APPROVED
+    }
+    return WorkflowStatus.COMPLETED
+  }
+  return WorkflowStatus.PENDING
 }
