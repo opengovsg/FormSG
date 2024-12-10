@@ -18,12 +18,10 @@ import { ComboboxItem } from '../types'
 import { defaultFilter } from '../utils/defaultFilter'
 import { isItemDisabled, itemToValue } from '../utils/itemUtils'
 
-const DEFAULT_PLACEHOLDER_TRANSLATIONS: Record<Language, string> = {
-  [Language.ENGLISH]: 'Select an option',
-  [Language.CHINESE]: '请选择一个选项',
-  [Language.MALAY]: 'Pilih satu pilihan',
-  [Language.TAMIL]: 'ஒரு விருப்பத்தை தேர்வு செய்யவும்',
-}
+import {
+  DEFAULT_PLACEHOLDER_TRANSLATIONS,
+  NOTHING_FOUND_LABEL_TRANSLATIONS,
+} from './constants'
 
 export interface SingleSelectProviderProps<
   Item extends ComboboxItem = ComboboxItem,
@@ -59,7 +57,7 @@ export const SingleSelectProvider = ({
   onChange,
   name,
   filter = defaultFilter,
-  nothingFoundLabel = 'No matching results',
+  nothingFoundLabel: nothingFoundLabelProp = 'No matching results',
   placeholder: placeholderProp,
   clearButtonLabel = 'Clear selection',
   isClearable = true,
@@ -93,6 +91,17 @@ export const SingleSelectProvider = ({
     if (placeholderProp === null) return ''
     return placeholderProp ?? DEFAULT_PLACEHOLDER_TRANSLATIONS[selectedLanguage]
   }, [placeholderProp, selectedLanguage])
+
+  const nothingFoundLabel = useMemo(() => {
+    // Check if the nothingFoundLabel equals to the default label. If yes, return
+    // the label in the correct translation.
+    if (
+      nothingFoundLabelProp ===
+      NOTHING_FOUND_LABEL_TRANSLATIONS[Language.ENGLISH]
+    )
+      return NOTHING_FOUND_LABEL_TRANSLATIONS[selectedLanguage]
+    return nothingFoundLabelProp
+  }, [nothingFoundLabelProp, selectedLanguage])
 
   const getFilteredItems = useCallback(
     (filterValue?: string) =>
