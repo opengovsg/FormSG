@@ -61,5 +61,10 @@ export default defineConfig(() => {
       plugins: () => [tsconfigPaths()],
       format: 'es' as const,
     },
+    define: {
+      // On local dev, global is undefined, causing decryption workers to fail.
+      // This is a workaround based on https://github.com/vitejs/vite/discussions/5912.
+      global: 'globalThis',
+    },
   }
 })
