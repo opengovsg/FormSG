@@ -17,7 +17,6 @@ import {
   FormResponseMode,
   SubmissionMetadata,
   SubmissionMetadataList,
-  SubmissionMrfMetadata,
   SubmissionPaymentDto,
   SubmissionType,
 } from '../../../../shared/types'
@@ -89,10 +88,10 @@ import {
 } from './submission.types'
 import {
   areAttachmentsMoreThanLimit,
+  buildMrfMetadata,
   fileSizeLimitBytes,
   getEncryptedSubmissionModelByResponseMode,
   getInvalidFileExtensions,
-  getMrfSubmissionWorkflowStatus,
   mapAttachmentsFromResponses,
 } from './submission.utils'
 
@@ -807,7 +806,7 @@ export const getSubmissionCursor = (
 /**
  * Adds mrf metadata to each submission.
  */
-export const buildMrfMetadata = (): Transform => {
+export const addMrfMetadata = (): Transform => {
   return new Transform({
     objectMode: true,
     transform: async (
@@ -821,14 +820,11 @@ export const buildMrfMetadata = (): Transform => {
         const { workflow, workflowStep, submittedSteps, ...rest } = data
         const dataWithMrfMeta = {
           ...rest,
-          mrfMeta: {
-            workflowCurrentStepNumber: workflowStep,
-            workflowNumTotalSteps: workflow.length,
-            workflowStatus: getMrfSubmissionWorkflowStatus(
-              submittedSteps ?? [],
-              workflow.length,
-            ),
-          } as SubmissionMrfMetadata,
+          mrfMeta: buildMrfMetadata({
+            workflow,
+            workflowStep,
+            submittedSteps,
+          }),
         }
         return callback(null, dataWithMrfMeta)
       }

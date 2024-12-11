@@ -37,7 +37,7 @@ import {
   WebhookView,
 } from '../../types'
 import { getPaymentWebhookEventObject } from '../modules/payments/payment.service.utils'
-import { getMrfSubmissionWorkflowStatus } from '../modules/submission/submission.utils'
+import { buildMrfMetadata } from '../modules/submission/submission.utils'
 import { createQueryWithDateParam } from '../utils/date'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
@@ -814,14 +814,11 @@ const buildSubmissionMetadata = (
         }
       : null,
     mrf: mrfMeta
-      ? {
-          workflowCurrentStepNumber: mrfMeta.workflowStep + 1 ?? 0, // need to add 1 as workflowStep is 0-indexed
-          workflowNumTotalSteps: mrfMeta.workflow?.length ?? 0,
-          workflowStatus: getMrfSubmissionWorkflowStatus(
-            mrfMeta.submittedSteps ?? [],
-            mrfMeta.workflow?.length ?? 0,
-          ),
-        }
+      ? buildMrfMetadata({
+          workflow: mrfMeta.workflow,
+          workflowStep: mrfMeta.workflowStep,
+          submittedSteps: mrfMeta.submittedSteps,
+        })
       : null,
   }
 }

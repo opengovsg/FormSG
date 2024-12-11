@@ -25,6 +25,7 @@ import {
   MyInfoAttribute,
   SubmissionAttachment,
   SubmissionAttachmentsMap,
+  SubmissionMrfMetadata,
   SubmittedStep,
   WorkflowStatus,
 } from '../../../../shared/types'
@@ -36,6 +37,7 @@ import {
   IEncryptSubmissionModel,
   IFormDocument,
   IMultirespondentSubmissionModel,
+  IMultirespondentSubmissionSchema,
   IPopulatedEncryptedForm,
   IPopulatedForm,
   IPopulatedMultirespondentForm,
@@ -821,7 +823,7 @@ export const getCookieNameByAuthType = (
  * @returns The workflow status of the submission based on the enum `WorkflowStatus`.
  * Otherwise, returns `undefined` if no submitted steps or total steps are found or when no workflow has been defined by the form admin.
  */
-export const getMrfSubmissionWorkflowStatus = (
+const getMrfSubmissionWorkflowStatus = (
   submittedSteps: SubmittedStep[],
   numTotalSteps: number,
 ): WorkflowStatus | undefined => {
@@ -846,4 +848,28 @@ export const getMrfSubmissionWorkflowStatus = (
     return WorkflowStatus.COMPLETED
   }
   return WorkflowStatus.PENDING
+}
+
+/**
+ * Builds the metadata for a multirespondent form submission.
+ */
+export const buildMrfMetadata = ({
+  workflow,
+  workflowStep,
+  submittedSteps,
+}: Pick<
+  IMultirespondentSubmissionSchema,
+  'workflow' | 'workflowStep' | 'submittedSteps'
+>): SubmissionMrfMetadata => {
+  const workflowCurrentStepNumber = workflowStep + 1 // since workflowStep is zero indexed.
+  const workflowNumTotalSteps = workflow.length
+  const workflowStatus = getMrfSubmissionWorkflowStatus(
+    submittedSteps ?? [],
+    workflow.length,
+  )
+  return {
+    workflowCurrentStepNumber,
+    workflowNumTotalSteps,
+    workflowStatus,
+  }
 }

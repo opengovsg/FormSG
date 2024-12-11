@@ -29,8 +29,8 @@ import { createStorageModeSubmissionDto } from './encrypt-submission/encrypt-sub
 import { createMultirespondentSubmissionDto } from './multirespondent-submission/multirespondent-submission.utils'
 import { InvalidSubmissionTypeError } from './submission.errors'
 import {
+  addMrfMetadata,
   addPaymentDataStream,
-  buildMrfMetadata,
   getEncryptedSubmissionData,
   getQuarantinePresignedPostData,
   getSubmissionCursor,
@@ -371,7 +371,7 @@ export const streamEncryptedResponses: ControllerHandler<
         urlValidDuration: (req.session?.cookie.maxAge ?? 0) / 1000,
       }),
     )
-    .pipe(buildMrfMetadata())
+    .pipe(addMrfMetadata())
     // TODO: Can we include this within the cursor query as aggregation pipeline
     // instead, so that we make one query to mongo rather than two.
     .pipe(addPaymentDataStream())
