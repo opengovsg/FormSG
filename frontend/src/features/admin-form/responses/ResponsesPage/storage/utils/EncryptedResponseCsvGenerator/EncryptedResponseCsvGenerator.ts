@@ -4,7 +4,10 @@ import type { Dictionary } from 'lodash'
 import { keyBy } from 'lodash'
 import type { Merge } from 'type-fest'
 
-import { getCurrentStepString } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
+import {
+  getCurrentStepString,
+  getStatusFromWorkflowStatus,
+} from '~features/admin-form/responses/common/utils/mrfSubmissionView'
 
 import { CsvGenerator } from '../../../../common/utils'
 import type { DecryptedSubmissionData } from '../../types'
@@ -124,7 +127,10 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
       const row = [up.submissionId]
 
       if (this.isMrf) {
-        row.push(up.mrfMeta?.workflowStatus ?? '')
+        const mrfSubmissionStatus = getStatusFromWorkflowStatus(
+          up.mrfMeta?.workflowStatus,
+        )
+        row.push(mrfSubmissionStatus)
         const currentStepString = getCurrentStepString(
           up.mrfMeta?.workflowCurrentStepNumber,
           up.mrfMeta?.workflowNumTotalSteps,
