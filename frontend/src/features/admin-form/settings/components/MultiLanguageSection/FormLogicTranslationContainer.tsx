@@ -25,7 +25,7 @@ export const FormLogicTranslationContainer = ({
       {formLogics.map((formLogic, index) => {
         const defaultPreventSubmitMessage = formLogic.preventSubmitMessage
         const previousPreventSubmissionMessage =
-          formLogic.preventSubmitMessageTranslations.find(
+          formLogic.preventSubmitMessageTranslations?.find(
             (translationMapping) => {
               return translationMapping.language === unicodeLocale
             },

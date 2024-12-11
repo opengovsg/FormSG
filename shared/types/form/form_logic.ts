@@ -38,7 +38,7 @@ export interface ShowFieldLogic extends FormLogicBase {
 export interface PreventSubmitLogic extends FormLogicBase {
   logicType: LogicType.PreventSubmit
   preventSubmitMessage: string
-  preventSubmitMessageTranslations: TranslationMapping[]
+  preventSubmitMessageTranslations?: TranslationMapping[]
 }
 
 export type FormLogic = ShowFieldLogic | PreventSubmitLogic

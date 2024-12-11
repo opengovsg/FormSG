@@ -68,7 +68,7 @@ export const PublicFormSubmitButton = ({
 
   const preventSubmissionMessage = useMemo(() => {
     return (
-      preventSubmissionLogic?.preventSubmitMessageTranslations.find(
+      preventSubmissionLogic?.preventSubmitMessageTranslations?.find(
         (translation) => translation.language === selectedPublicFormLanguage,
       )?.translation ?? preventSubmissionLogic?.preventSubmitMessage
     )

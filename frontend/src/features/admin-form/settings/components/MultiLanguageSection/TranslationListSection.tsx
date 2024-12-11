@@ -205,7 +205,7 @@ export const TranslationListSection = ({
       form?.form_logics.filter((formLogic) => {
         return (
           formLogic.logicType === LogicType.PreventSubmit &&
-          formLogic.preventSubmitMessageTranslations.some(
+          formLogic.preventSubmitMessageTranslations?.some(
             (translation) =>
               translation.language === unicodeLocale &&
               !_.isEmpty(translation.translation),
