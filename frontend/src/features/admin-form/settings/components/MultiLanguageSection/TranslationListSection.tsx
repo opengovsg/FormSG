@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import { BiArrowBack, BiCheck, BiError } from 'react-icons/bi'
+import { BiArrowBack, BiCheck, BiError, BiGitMerge } from 'react-icons/bi'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   As,
@@ -18,6 +18,7 @@ import {
   FormField,
   FormFieldDto,
   Language,
+  LogicType,
   TableFieldBase,
   TranslationMapping,
   TranslationOptionMapping,
@@ -47,6 +48,7 @@ interface QuestionRowProps {
   formFieldNum?: number
   isStartPage?: boolean
   isEndPage?: boolean
+  isFormLogic?: boolean
 }
 
 export const QuestionRow = ({
@@ -58,6 +60,7 @@ export const QuestionRow = ({
   formFieldNum = -1,
   isStartPage = false,
   isEndPage = false,
+  isFormLogic = false,
 }: QuestionRowProps): JSX.Element => {
   const [, setSearchParams] = useSearchParams()
 
@@ -67,7 +70,9 @@ export const QuestionRow = ({
     ? 'endPage'
     : isStartPage
       ? 'startPage'
-      : formFieldNum.toString()
+      : isFormLogic
+        ? 'formLogic'
+        : formFieldNum.toString()
 
   const handleOnListClick = useCallback(() => {
     setSearchParams({ unicodeLocale, translationInput })
@@ -181,6 +186,12 @@ export const TranslationListSection = ({
     navigate(`${ADMINFORM_ROUTE}/${formId}/settings/language`)
   }, [formId, navigate])
 
+  const formLogicPreventSubmissions = useMemo(() => {
+    return form?.form_logics.filter((formLogic) => {
+      return formLogic.logicType === LogicType.PreventSubmit
+    })
+  }, [form?.form_logics])
+
   const hasStartPageTranslations = useMemo(() => {
     const startPageTranslations = form?.startPage?.paragraphTranslations ?? []
 
@@ -188,6 +199,21 @@ export const TranslationListSection = ({
       (translation) => translation.language === unicodeLocale,
     )
   }, [form?.startPage?.paragraphTranslations, unicodeLocale])
+
+  const hasFormLogicTranslations = useMemo(() => {
+    return (
+      form?.form_logics.filter((formLogic) => {
+        return (
+          formLogic.logicType === LogicType.PreventSubmit &&
+          formLogic.preventSubmitMessageTranslations.some(
+            (translation) =>
+              translation.language === unicodeLocale &&
+              !_.isEmpty(translation.translation),
+          )
+        )
+      }).length === formLogicPreventSubmissions?.length
+    )
+  }, [form?.form_logics, formLogicPreventSubmissions?.length, unicodeLocale])
 
   const hasEndPageTranslations = useMemo(() => {
     if (!form?.endPage) return false
@@ -348,6 +374,22 @@ export const TranslationListSection = ({
               </>
             )
           })}
+
+          {/* Form Logic Prevent Submission Message Translation */}
+          {formLogicPreventSubmissions && (
+            <>
+              <QuestionRow
+                key="Form Logic"
+                questionTitle="Logic"
+                icon={BiGitMerge}
+                isMyInfoField={false}
+                hasTranslations={hasFormLogicTranslations}
+                isFormLogic={true}
+                unicodeLocale={language}
+              />
+              <Divider />
+            </>
+          )}
 
           {/* End Page Translation */}
           {form.endPage && (

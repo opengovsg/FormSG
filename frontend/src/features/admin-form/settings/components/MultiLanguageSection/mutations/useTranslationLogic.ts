@@ -9,6 +9,8 @@ import {
   FormEndPage,
   FormFieldDto,
   FormStartPage,
+  LogicType,
+  PreventSubmitLogicDto,
 } from '~shared/types'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
@@ -17,6 +19,11 @@ import {
   updateEditStateSelector,
   useFieldBuilderStore,
 } from '~features/admin-form/create/builder-and-design/useFieldBuilderStore'
+import {
+  setToInactiveSelector,
+  useAdminLogicStore,
+} from '~features/admin-form/create/logic/adminLogicStore'
+import { useLogicMutations } from '~features/admin-form/create/logic/mutations'
 
 import { TranslationInput } from '../TranslationSection'
 import {
@@ -24,6 +31,7 @@ import {
   updateFormFieldTranslations,
   updateFormStartPageTranslations,
   updateTableTranslations,
+  updateTranslations,
 } from '../utils/translationUtils'
 
 interface UseTranslationLogicProps {
@@ -32,6 +40,7 @@ interface UseTranslationLogicProps {
   formFieldNumToBeTranslated: number
   isStartPageTranslations: boolean
   isEndPageTranslations: boolean
+  isFormLogicTranslations: boolean
   isFormField: boolean
   methods: UseFormReturn<TranslationInput>
 }
@@ -42,14 +51,17 @@ export const useTranslationLogic = ({
   formFieldNumToBeTranslated,
   isStartPageTranslations,
   isEndPageTranslations,
+  isFormLogicTranslations,
   isFormField,
   methods,
 }: UseTranslationLogicProps) => {
   const { getValues, setError, clearErrors } = methods
   const [, setSearchParams] = useSearchParams()
   const { editFieldMutation } = useEditFormField()
+  const { updateLogicMutation } = useLogicMutations()
   const { endPageMutation, startPageMutation } = useMutateFormPage()
   const updateEditState = useFieldBuilderStore(updateEditStateSelector)
+  const setToInactive = useAdminLogicStore(setToInactiveSelector)
 
   const formFieldData =
     formFieldNumToBeTranslated !== -1
@@ -57,6 +69,9 @@ export const useTranslationLogic = ({
       : undefined
   const formStartPage = form?.startPage
   const formEndPage = form?.endPage
+  const formLogicsPreventSubmissions = form?.form_logics.filter(
+    (formLogic) => formLogic.logicType === LogicType.PreventSubmit,
+  ) as PreventSubmitLogicDto[]
   const fieldId = formFieldData?._id
 
   useEffect(() => {
@@ -66,6 +81,21 @@ export const useTranslationLogic = ({
   const handleOnBackClick = useCallback(() => {
     setSearchParams({ unicodeLocale: language })
   }, [language, setSearchParams])
+
+  const handleUpdateFormLogics = (
+    updatedFormLogics: PreventSubmitLogicDto[],
+  ) => {
+    updatedFormLogics.forEach((updatedFormLogic) => {
+      updateLogicMutation.mutate(
+        { ...updatedFormLogic, _id: updatedFormLogic._id },
+        {
+          onSuccess: () => setToInactive(),
+        },
+      )
+    })
+
+    handleOnBackClick()
+  }
 
   const handleOnSaveClick = () => {
     const updatedTitleTranslation = getValues('titleTranslation')
@@ -77,6 +107,9 @@ export const useTranslationLogic = ({
     )
     const updatedTableColumnDropdownTranslation = getValues(
       'tableColumnDropdownTranslations',
+    )
+    const updatedPreventSubmitTranslations = getValues(
+      'preventSubmitMessageTranslations',
     )
 
     if (isFormField && formFieldData) {
@@ -206,6 +239,26 @@ export const useTranslationLogic = ({
       })
     }
 
+    if (isFormLogicTranslations && formLogicsPreventSubmissions) {
+      const updatedFormLogics = formLogicsPreventSubmissions.map(
+        (preventSubmission, id) => {
+          const updatedTranslation = updatedPreventSubmitTranslations[id]
+          const updatedPreventSubmitMessageTranslations = updateTranslations({
+            translations: preventSubmission.preventSubmitMessageTranslations,
+            language,
+            newTranslation: updatedTranslation,
+          })
+
+          return {
+            ...preventSubmission,
+            preventSubmitMessageTranslations:
+              updatedPreventSubmitMessageTranslations,
+          }
+        },
+      )
+
+      handleUpdateFormLogics(updatedFormLogics)
+    }
     if (isEndPageTranslations && formEndPage) {
       const updatedFormEndPage = updateFormEndPageTranslations({
         data: formEndPage,
@@ -225,6 +278,7 @@ export const useTranslationLogic = ({
     formFieldData,
     formStartPage,
     formEndPage,
+    formLogicsPreventSubmissions,
     handleOnBackClick,
   }
 }
