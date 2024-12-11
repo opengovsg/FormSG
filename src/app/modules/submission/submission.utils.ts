@@ -91,7 +91,6 @@ import {
   MyInfoMissingLoginCookieError,
 } from '../myinfo/myinfo.errors'
 import { MyInfoKey } from '../myinfo/myinfo.types'
-import { getMyInfoChildHashKey } from '../myinfo/myinfo.util'
 import {
   InvalidPaymentProductsError,
   PaymentNotFoundError,
