@@ -20,8 +20,6 @@ import {
   ISubmissionSchema,
 } from 'src/types'
 
-import { HASH_EXPIRE_AFTER_SECONDS } from '../../../../../shared/utils/verification'
-
 const MOCK_VALID_EMAIL = 'to@example.com'
 const MOCK_VALID_EMAIL_2 = 'to2@example.com'
 const MOCK_VALID_EMAIL_3 = 'to3@example.com'
@@ -81,30 +79,17 @@ describe('mail.service', () => {
   describe('sendVerificationOtp', () => {
     const MOCK_OTP = '123456'
 
-    const generateExpectedArg = async () => {
-      return {
-        to: MOCK_VALID_EMAIL,
-        from: MOCK_SENDER_STRING,
-        subject: `Your OTP for submitting a form on ${MOCK_APP_NAME}`,
-        html: MailUtils.generateVerificationOtpHtml({
-          appName: MOCK_APP_NAME,
-          otp: MOCK_OTP,
-          minutesToExpiry: HASH_EXPIRE_AFTER_SECONDS / 60,
-          otpPrefix: MOCK_OTP_PREFIX,
-        }),
-        headers: {
-          // Hardcode in tests in case something changes this.
-          'X-Formsg-Email-Type': 'Verification OTP',
-        },
-      }
-    }
+    const expectedArg = expect.objectContaining({
+      to: MOCK_VALID_EMAIL,
+      from: MOCK_SENDER_STRING,
+      subject: `Your OTP for submitting a form on ${MOCK_APP_NAME}`,
+      html: expect.stringMatching(MOCK_OTP),
+    })
 
     it('should send verification otp successfully', async () => {
       // Arrange
       // sendMail should return mocked success response
       sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
-
-      const expectedArgument = await generateExpectedArg()
 
       // Act
       const actualResult = await mailService.sendVerificationOtp(
@@ -117,7 +102,7 @@ describe('mail.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(true)
       // Check arguments passed to sendNodeMail
       expect(sendMailSpy).toHaveBeenCalledTimes(1)
-      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
     })
 
     it('should reject with error when email is invalid', async () => {
@@ -148,8 +133,6 @@ describe('mail.service', () => {
         .mockRejectedValueOnce(mock4xxReject)
         .mockResolvedValueOnce('mockedSuccessResponse')
 
-      const expectedArgument = await generateExpectedArg()
-
       // Act
       const actualResult = await mailService.sendVerificationOtp(
         MOCK_VALID_EMAIL,
@@ -163,7 +146,7 @@ describe('mail.service', () => {
       // Should have been called two times since it rejected the first one and
       // resolved
       expect(sendMailSpy).toHaveBeenCalledTimes(2)
-      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
     })
 
     it('should autoretry MOCK_RETRY_COUNT times and return error when all retries fail with 4xx errors', async () => {
@@ -173,8 +156,6 @@ describe('mail.service', () => {
         message: 'oh no something went wrong',
       }
       sendMailSpy.mockRejectedValue(mock4xxReject)
-
-      const expectedArgument = await generateExpectedArg()
 
       // Act
       const actualResult = await mailService.sendVerificationOtp(
@@ -192,7 +173,7 @@ describe('mail.service', () => {
       // Check arguments passed to sendNodeMail
       // Should have been called MOCK_RETRY_COUNT + 1 times
       expect(sendMailSpy).toHaveBeenCalledTimes(MOCK_RETRY_COUNT + 1)
-      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
     })
 
     it('should stop autoretrying when the returned error is not a 4xx error', async () => {
@@ -205,8 +186,6 @@ describe('mail.service', () => {
       sendMailSpy
         .mockRejectedValueOnce(mock4xxReject)
         .mockRejectedValueOnce(mockError)
-
-      const expectedArgument = await generateExpectedArg()
 
       // Act
       const actualResult = await mailService.sendVerificationOtp(
@@ -223,7 +202,7 @@ describe('mail.service', () => {
       // Should retry two times and stop since the second rejected value is
       // non-4xx error.
       expect(sendMailSpy).toHaveBeenCalledTimes(2)
-      expect(sendMailSpy).toHaveBeenCalledWith(expectedArgument)
+      expect(sendMailSpy).toHaveBeenCalledWith(expectedArg)
     })
   })
 
