@@ -132,6 +132,12 @@ export const UenResponse = SingleAnswerResponse.extend({
 })
 export type UenResponse = z.infer<typeof UenResponse>
 
+// TODO: check fo multivalue response
+export const AddressResponse = SingleAnswerResponse.extend({
+  fieldType: z.literal(BasicField.Address),
+})
+export type AddressResponse = z.infer<typeof AddressResponse>
+
 export const ChildBirthRecordsResponse = ResponseBase.merge(
   MyInfoResponseBase,
 ).extend({
@@ -153,12 +159,6 @@ export const SingleChildSubRecordResponse = MyInfoableSingleResponse.extend({
 export type SingleChildSubRecordResponse = z.infer<
   typeof SingleChildSubRecordResponse
 >
-
-// TODO: check fo multivalue response
-export const AddressResponse = SingleAnswerResponse.extend({
-  fieldType: z.literal(BasicField.Address),
-})
-export type AddressResponse = z.infer<typeof AddressResponse>
 
 export type FieldResponse =
   | HeaderResponse

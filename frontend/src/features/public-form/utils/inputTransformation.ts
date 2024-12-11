@@ -3,6 +3,7 @@ import { times } from 'lodash'
 
 import { DATE_PARSE_FORMAT } from '~shared/constants/dates'
 import {
+  AddressFieldResponseV3,
   AttachmentFieldResponseV3,
   CheckboxFieldResponsesV3,
   ChildrenCompoundFieldResponsesV3,
@@ -222,7 +223,7 @@ const transformToChildOutput = (
 
 const transformToAddressOutput = (
   schema: AddressFieldSchema,
-  input?: AddressFieldValues, // | AddressFieldResponseV3
+  input?: AddressFieldValues | AddressFieldResponseV3,
 ): AddressResponse => {
   let answer = ''
   if (input?.postalCode !== undefined) answer = input.postalCode // TODO: do for all input fields, just using postalCode to test now

@@ -272,7 +272,6 @@ export const submitStorageModeForm = async ({
     formInputs,
     formLogics,
   })
-
   const formData = createClearSubmissionWithVirusScanningFormData(
     {
       formFields,

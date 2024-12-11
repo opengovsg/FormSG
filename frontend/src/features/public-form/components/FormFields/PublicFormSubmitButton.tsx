@@ -45,6 +45,8 @@ export const PublicFormSubmitButton = ({
   const isMobile = useIsMobile()
   const { isSubmitting } = useFormState()
   const formInputs = useWatch<FormFieldValues>({}) as FormFieldValues
+  console.log(formFields)
+  console.log(formInputs)
   const {
     formId,
     isPaymentEnabled,

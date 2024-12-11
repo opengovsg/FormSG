@@ -1,11 +1,11 @@
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
-import { AddressResponseV3, BasicField } from 'shared/types'
-import { validatePostalCode } from 'shared/utils/address-validation'
 
 import { ProcessedSingleAnswerResponse } from 'src/app/modules/submission/submission.types'
 import { IAddressFieldSchema, OmitUnusedValidatorProps } from 'src/types'
 
+import { AddressResponseV3, BasicField } from '../../../../../shared/types'
+import { validatePostalCode } from '../../../../../shared/utils/address-validation'
 import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
 import {
   ResponseValidator,
@@ -14,7 +14,7 @@ import {
 
 import {
   notEmptySingleAnswerResponse,
-  notEmptySingleAnswerResponseV3,
+  // notEmptySingleAnswerResponseV3,
 } from './common'
 
 type AddressValidator = ResponseValidator<ProcessedSingleAnswerResponse>

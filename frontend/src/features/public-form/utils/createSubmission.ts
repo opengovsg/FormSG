@@ -270,7 +270,6 @@ const createResponsesV3 = (
       case BasicField.Uen:
       case BasicField.Date:
       case BasicField.CountryRegion:
-      case BasicField.Address: // for now treating as a postalCode single response
       case BasicField.YesNo: {
         const input = formInputs[ff._id] as
           | FormFieldValue<typeof ff.fieldType>
@@ -282,16 +281,24 @@ const createResponsesV3 = (
         } as FieldResponseV3
         break
       }
-      // case BasicField.Address:
-      //   const input = formInputs[ff._id] as
-      //     | FormFieldValue<typeof ff.fieldType>
-      //     | undefined
-      //   if (!input) break
-      //   returnedInputs[ff._id] = {
-      //     fieldType: ff.fieldType,
-      //     answer: input,
-      //   } as FieldResponseV3
-      //   break
+      case BasicField.Address: {
+        const input = formInputs[ff._id] as
+          | FormFieldValue<typeof ff.fieldType>
+          | undefined
+        if (!input) break
+        returnedInputs[ff._id] = {
+          fieldType: ff.fieldType,
+          answer: {
+            postalCode: input.postalCode,
+            blockNumber: input.blockNumber,
+            streetName: input.streetName,
+            buildingName: input.buildingName,
+            levelNumber: input.levelNumber,
+            unitNumber: input.unitNumber,
+          },
+        } as FieldResponseV3
+        break
+      }
       case BasicField.Email:
       case BasicField.Mobile: {
         const input = formInputs[ff._id] as
