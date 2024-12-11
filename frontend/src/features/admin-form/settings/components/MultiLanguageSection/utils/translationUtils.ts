@@ -172,7 +172,7 @@ export const updateTableTranslations = ({
   }
 }
 
-const updateTranslations = ({
+export const updateTranslations = ({
   translations,
   language,
   newTranslation,

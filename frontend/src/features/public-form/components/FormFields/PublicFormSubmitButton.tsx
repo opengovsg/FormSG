@@ -51,6 +51,7 @@ export const PublicFormSubmitButton = ({
     isPreview,
     hasSingleSubmissionValidationError,
     setHasSingleSubmissionValidationError,
+    selectedPublicFormLanguage,
   } = usePublicFormContext()
 
   const paymentEmailField = formInputs[
@@ -64,6 +65,18 @@ export const PublicFormSubmitButton = ({
       formLogics,
     })
   }, [formInputs, formFields, formLogics])
+
+  const preventSubmissionMessage = useMemo(() => {
+    return (
+      preventSubmissionLogic?.preventSubmitMessageTranslations.find(
+        (translation) => translation.language === selectedPublicFormLanguage,
+      )?.translation ?? preventSubmissionLogic?.preventSubmitMessage
+    )
+  }, [
+    preventSubmissionLogic?.preventSubmitMessage,
+    preventSubmissionLogic?.preventSubmitMessageTranslations,
+    selectedPublicFormLanguage,
+  ])
 
   // For payments submit and pay modal
   const {
@@ -144,7 +157,7 @@ export const PublicFormSubmitButton = ({
       </Button>
       {preventSubmissionLogic ? (
         <InlineMessage variant="warning">
-          {preventSubmissionLogic.preventSubmitMessage}
+          {preventSubmissionMessage}
         </InlineMessage>
       ) : null}
     </Stack>
