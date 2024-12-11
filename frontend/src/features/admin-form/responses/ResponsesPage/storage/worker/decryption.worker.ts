@@ -2,8 +2,6 @@ import { expose } from 'comlink'
 import { formatInTimeZone } from 'date-fns-tz'
 import PQueue from 'p-queue'
 
-import { MultirespondentSubmissionStreamDto } from '~shared/types/submission'
-
 import formsgSdk from '~utils/formSdk'
 
 import {

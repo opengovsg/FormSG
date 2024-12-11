@@ -101,6 +101,7 @@ describe('EncryptedResponseCsvGenerator', () => {
     generator = new EncryptedResponseCsvGenerator(
       mockExpectedNumberOfRecords,
       mockNumOfMetaDataRows,
+      false,
     )
   })
 

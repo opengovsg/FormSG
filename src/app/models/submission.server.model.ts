@@ -11,9 +11,7 @@ import {
   MyInfoAttribute,
   SubmissionMetadata,
   SubmissionType,
-  SubmittedStep,
   WebhookResponse,
-  WorkflowStatus,
 } from '../../../shared/types'
 import {
   FindFormsWithSubsAboveResult,

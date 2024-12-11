@@ -4,12 +4,11 @@ import type { Dictionary } from 'lodash'
 import { keyBy } from 'lodash'
 import type { Merge } from 'type-fest'
 
+import { CsvGenerator } from '../../../../common/utils'
 import {
   getCurrentStepString,
   getStatusFromWorkflowStatus,
-} from '~features/admin-form/responses/common/utils/mrfSubmissionView'
-
-import { CsvGenerator } from '../../../../common/utils'
+} from '../../../../common/utils/mrfSubmissionView'
 import type { DecryptedSubmissionData } from '../../types'
 import type { Response } from '../csv-response-classes'
 import { getDecryptedResponseInstance } from '../getDecryptedResponseInstance'

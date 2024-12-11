@@ -30,8 +30,8 @@ import { centsToDollars } from '~shared/utils/payments'
 import Badge from '~components/Badge'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
-import { getCurrentStepString } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
 
+import { getCurrentStepString } from '../../../../common/utils/mrfSubmissionView'
 import { useUnlockedResponses } from '../UnlockedResponsesProvider'
 
 import { getNetAmount } from './utils'
