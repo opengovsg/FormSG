@@ -103,10 +103,10 @@ async function decryptIntoCsv(
         : undefined,
       submission.submissionType === SubmissionType.Multirespondent
         ? {
-            workflowStatus: (submission as MultirespondentSubmissionStreamDto)
-              .workflowStatus,
-            workflowCurrentStepNumber: submission.workflowStep + 1,
-            workflowNumTotalSteps: submission.numTotalSteps,
+            workflowStatus: submission.mrfMeta.workflowStatus,
+            workflowCurrentStepNumber:
+              submission.mrfMeta.workflowCurrentStepNumber,
+            workflowNumTotalSteps: submission.mrfMeta.workflowNumTotalSteps,
           }
         : undefined,
     )

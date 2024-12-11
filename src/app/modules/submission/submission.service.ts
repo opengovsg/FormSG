@@ -804,6 +804,9 @@ export const getSubmissionCursor = (
   )
 }
 
+/**
+ * Adds mrf metadata to each submission.
+ */
 export const buildMrfMetadata = (): Transform => {
   return new Transform({
     objectMode: true,
@@ -816,7 +819,7 @@ export const buildMrfMetadata = (): Transform => {
     ) => {
       if (data.submissionType === SubmissionType.Multirespondent) {
         const { workflow, workflowStep, submittedSteps, ...rest } = data
-        return callback(null, {
+        const dataWithMrfMeta = {
           ...rest,
           mrfMeta: {
             workflowCurrentStepNumber: workflowStep,
@@ -826,7 +829,8 @@ export const buildMrfMetadata = (): Transform => {
               workflow.length,
             ),
           } as SubmissionMrfMetadata,
-        })
+        }
+        return callback(null, dataWithMrfMeta)
       }
       return callback(null, data)
     },

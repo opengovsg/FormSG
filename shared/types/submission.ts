@@ -223,13 +223,15 @@ export const MultirespondentSubmissionStreamDto =
     encryptedContent: true,
     version: true,
     mrfVersion: true,
-    workflowStep: true,
   }).extend({
     attachmentMetadata: z.record(z.string()),
     _id: SubmissionId,
     created: DateString,
-    workflowStatus: z.nativeEnum(WorkflowStatus),
-    numTotalSteps: z.number(),
+    mrfMeta: z.object({
+      workflowCurrentStepNumber: z.number(),
+      workflowNumTotalSteps: z.number(),
+      workflowStatus: z.nativeEnum(WorkflowStatus).optional(),
+    }),
   })
 
 export type MultirespondentSubmissionStreamDto = z.infer<

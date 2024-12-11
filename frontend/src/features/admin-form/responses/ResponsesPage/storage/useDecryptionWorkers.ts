@@ -386,6 +386,7 @@ const useDecryptionWorkers = ({
       secretKey,
       endDate,
       startDate,
+      isMrf,
     }: DownloadEncryptedParams) => {
       if (!adminForm || !responsesCount) {
         return Promise.resolve({
@@ -439,6 +440,7 @@ const useDecryptionWorkers = ({
       const csvGenerator = new EncryptedResponseCsvGenerator(
         responsesCount,
         NUM_OF_METADATA_ROWS,
+        isMrf,
       )
 
       const stream = await getEncryptedResponsesStream(

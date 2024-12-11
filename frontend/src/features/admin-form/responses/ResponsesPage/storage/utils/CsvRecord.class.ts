@@ -136,6 +136,7 @@ export class CsvRecord {
     this.submissionData = {
       created: this.created,
       submissionId: this.id,
+      mrfMeta: this.mrfData,
       record: output,
     }
   }
