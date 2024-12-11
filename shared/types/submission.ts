@@ -192,6 +192,8 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
 
   version: number
   mrfVersion: number
+
+  mrfMeta: SubmissionMrfMetadata
 }
 
 export type SubmissionDto =

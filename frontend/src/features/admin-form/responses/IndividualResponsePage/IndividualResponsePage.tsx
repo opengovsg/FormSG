@@ -22,6 +22,7 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 import { FormActivationSvg } from '~features/admin-form/settings/components/FormActivationSvg'
 import { useUser } from '~features/user/queries'
 
+import { getCurrentStepString } from '../common/utils/mrfSubmissionView'
 import { SecretKeyVerification } from '../components/SecretKeyVerification'
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
 
@@ -153,6 +154,21 @@ export const IndividualResponsePage = (): JSX.Element => {
           <StackRow
             label="Response ID"
             value={submissionId}
+            isLoading={isLoading}
+            isError={isError}
+          />
+          <StackRow
+            label="Status"
+            value={data?.mrf?.workflowStatus ?? ''}
+            isLoading={isLoading}
+            isError={isError}
+          />
+          <StackRow
+            label="Current step"
+            value={getCurrentStepString(
+              data?.mrf?.workflowCurrentStepNumber,
+              data?.mrf?.workflowNumTotalSteps,
+            )}
             isLoading={isLoading}
             isError={isError}
           />

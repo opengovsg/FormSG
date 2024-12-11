@@ -731,6 +731,7 @@ MultirespondentSubmissionSchema.statics.findEncryptedSubmissionById = function (
       version: 1,
       workflowStep: 1,
       mrfVersion: 1,
+      submittedSteps: 1,
     })
     .exec()
 }

@@ -30,6 +30,7 @@ import { centsToDollars } from '~shared/utils/payments'
 import Badge from '~components/Badge'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { getCurrentStepString } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
 
 import { useUnlockedResponses } from '../UnlockedResponsesProvider'
 
@@ -179,12 +180,11 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   },
   {
     Header: 'Current Step',
-    accessor: ({ mrf }) => {
-      if (!(mrf?.workflowCurrentStepNumber && mrf?.workflowNumTotalSteps)) {
-        return ''
-      }
-      return `Step ${mrf.workflowCurrentStepNumber} of ${mrf.workflowNumTotalSteps}`
-    },
+    accessor: ({ mrf }) =>
+      getCurrentStepString(
+        mrf?.workflowCurrentStepNumber,
+        mrf?.workflowNumTotalSteps,
+      ),
     width: 176,
     minWidth: 176,
     maxWidth: 176,

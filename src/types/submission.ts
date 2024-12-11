@@ -186,6 +186,7 @@ export type MultirespondentSubmissionData = {
   | 'version'
   | 'workflowStep'
   | 'mrfVersion'
+  | 'submittedSteps'
 > &
   Document
 
