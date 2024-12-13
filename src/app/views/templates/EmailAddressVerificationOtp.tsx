@@ -5,6 +5,7 @@ export type EmailAddressVerificationOtpHtmlData = {
   otp: string
   minutesToExpiry: number
   appName: string
+  formUrl: string
 }
 
 export const EmailAddressVerificationOtp = ({
@@ -12,15 +13,19 @@ export const EmailAddressVerificationOtp = ({
   otp,
   minutesToExpiry,
   appName,
+  formUrl,
 }: EmailAddressVerificationOtpHtmlData): JSX.Element => {
   return (
     <Html>
       <Head />
       <Body>
-        <Text>You are currently submitting a form on {appName}.</Text>
+        <Text>
+          You are trying to verify your email address on the following form:{' '}
+          <a href={formUrl}>{formUrl}</a>.
+        </Text>
         <Text>
           Your OTP is {otpPrefix}-<b>{otp}</b>. It will expire in{' '}
-          {minutesToExpiry} minutes. Please use this to verify your submission.
+          {minutesToExpiry} minutes.
         </Text>
         <Text>
           Never share your OTP with anyone else. If you did not request this

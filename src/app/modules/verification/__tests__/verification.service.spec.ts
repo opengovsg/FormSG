@@ -477,6 +477,7 @@ describe('Verification service', () => {
           MOCK_LOCAL_RECIPIENT,
           MOCK_OTP,
           MOCK_OTP_PREFIX,
+          new ObjectId(mockFormId),
         )
         expect(
           MockFormsgSdk.verification.generateSignature,
@@ -597,6 +598,7 @@ describe('Verification service', () => {
           MOCK_EMAIL_RECIPIENT,
           MOCK_OTP,
           MOCK_OTP_PREFIX,
+          new ObjectId(mockFormId),
         )
         expect(
           MockFormsgSdk.verification.generateSignature,
@@ -741,6 +743,7 @@ describe('Verification service', () => {
           MOCK_EMAIL_RECIPIENT,
           MOCK_OTP,
           MOCK_OTP_PREFIX,
+          new ObjectId(mockFormId),
         )
         expect(
           MockFormsgSdk.verification.generateSignature,
@@ -761,6 +764,7 @@ describe('Verification service', () => {
           MOCK_EMAIL_RECIPIENT,
           MOCK_OTP,
           MOCK_OTP_PREFIX,
+          new ObjectId(mockFormId),
         )
         expect(
           MockFormsgSdk.verification.generateSignature,

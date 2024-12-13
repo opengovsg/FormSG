@@ -338,15 +338,20 @@ export class MailService {
     recipient: string,
     otp: string,
     otpPrefix: string,
+    formId: string,
   ): ResultAsync<true, MailSendError> => {
     const minutesToExpiry = Math.floor(HASH_EXPIRE_AFTER_SECONDS / 60)
+
+    const formUrl = this.#appUrl + `/${formId}`
 
     const htmlData: EmailAddressVerificationOtpHtmlData = {
       appName: this.#appName,
       minutesToExpiry,
       otp,
       otpPrefix,
+      formUrl,
     }
+
     const generatedHtml = fromPromise(
       render(EmailAddressVerificationOtp(htmlData)),
       (e) => {

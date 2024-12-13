@@ -20,4 +20,5 @@ Default.args = {
   otp: '123456',
   minutesToExpiry: 30,
   appName: 'FormSG',
+  formUrl: 'https://form.gov.sg/645b5f5372deb40012fe98123',
 }
