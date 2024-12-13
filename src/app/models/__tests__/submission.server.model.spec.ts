@@ -9,6 +9,7 @@ import getSubmissionModel, {
   getEncryptSubmissionModel,
   getMultirespondentSubmissionModel,
 } from 'src/app/models/submission.server.model'
+import { buildMrfMetadata } from 'src/app/modules/submission/submission.utils'
 
 import {
   BasicField,
@@ -629,11 +630,13 @@ describe('Submission Model', () => {
 
         // Assert
         expect(result).toBeDefined()
-        expect(result?.mrf).toEqual({
-          workflowStep: submission.workflowStep,
-          workflow: submission.workflow,
-          submittedSteps: submission.submittedSteps,
-        })
+        expect(result?.mrf).toEqual(
+          buildMrfMetadata({
+            workflow: submission.workflow,
+            workflowStep: submission.workflowStep,
+            submittedSteps: submission.submittedSteps,
+          }),
+        )
         expect(result?.refNo).toBeDefined()
         expect(result?.number).toEqual(1)
       })
@@ -695,11 +698,13 @@ describe('Submission Model', () => {
 
         // Assert
         expect(result.count).toEqual(1)
-        expect(omit(result.metadata[0], ['_id', 'created'])).toEqual({
-          workflowStep: submission.workflowStep,
-          workflow: submission.workflow,
-          submittedSteps: submission.submittedSteps,
-        })
+        expect(result.metadata[0].mrf).toEqual(
+          buildMrfMetadata({
+            workflowStep: submission.workflowStep,
+            workflow: submission.workflow,
+            submittedSteps: submission.submittedSteps,
+          }),
+        )
         expect(result.metadata[0].refNo).toBeDefined()
         expect(result.metadata[0].number).toEqual(1)
       })
