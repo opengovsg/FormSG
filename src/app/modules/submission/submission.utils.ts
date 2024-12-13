@@ -26,6 +26,7 @@ import {
   SubmissionAttachment,
   SubmissionAttachmentsMap,
   SubmissionMrfMetadata,
+  SubmittedApprovalStep,
   SubmittedStep,
   WorkflowStatus,
 } from '../../../../shared/types'
@@ -839,9 +840,13 @@ const getMrfSubmissionWorkflowStatus = (
     return WorkflowStatus.REJECTED
   }
   if (submittedSteps.length === numTotalSteps) {
+    const latestApprovalStep = submittedSteps
+      .slice()
+      .reverse()
+      .find((step) => step.isApproval) as SubmittedApprovalStep | undefined
     if (
-      latestSubmittedStep.isApproval &&
-      latestSubmittedStep.status === WorkflowStatus.APPROVED
+      latestApprovalStep &&
+      latestApprovalStep.status === WorkflowStatus.APPROVED
     ) {
       return WorkflowStatus.APPROVED
     }
