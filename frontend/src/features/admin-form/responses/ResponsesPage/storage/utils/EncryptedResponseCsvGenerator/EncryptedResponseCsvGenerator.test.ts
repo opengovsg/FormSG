@@ -3,6 +3,18 @@ import { stringify } from 'csv-string'
 import { formatInTimeZone } from 'date-fns-tz'
 import { SetOptional } from 'type-fest'
 
+import { WorkflowStatus } from '~shared/types/submission'
+
+import {
+  getCurrentStepString,
+  MRF_STATUS,
+} from '~features/admin-form/responses/common/utils/mrfSubmissionView'
+import {
+  MRF_CURRENT_STEP_LABEL,
+  MRF_FIRST_STEP_TIMESTAMP_LABEL,
+  MRF_STATUS_LABEL,
+} from '~features/admin-form/responses/constants'
+
 import { CsvRecordData, DecryptedSubmissionData } from '../../types'
 import {
   DisplayedResponseWithoutAnswer,
@@ -359,6 +371,54 @@ describe('EncryptedResponseCsvGenerator', () => {
       // Act + Assert
       generator.process()
       expect(generator.hasBeenProcessed).toBe(true)
+    })
+
+    describe('mrf form submissions', () => {
+      it('should include header and data columns for mrf metadata', () => {
+        // Arrange
+        const mrfGenerator = new EncryptedResponseCsvGenerator(1, 0, true)
+        const mockDecryptedRecord = [generateRecord(1)]
+        const mockRecord = {
+          record: mockDecryptedRecord,
+          created: mockCreatedEarly,
+          submissionId: 'mockSubmissionId',
+          mrfMeta: {
+            workflowStatus: WorkflowStatus.REJECTED,
+            workflowCurrentStepNumber: 2,
+            workflowNumTotalSteps: 3,
+          },
+        }
+        mrfGenerator.addRecord(mockRecord)
+
+        // Act
+        mrfGenerator.process()
+
+        // Assert
+        // Should have 1 header row and 1 submission row
+        expect(mrfGenerator.records.length).toEqual(2 + BOM_LENGTH)
+        const expectedHeaderRow = stringify([
+          'Response ID',
+          MRF_STATUS_LABEL,
+          MRF_CURRENT_STEP_LABEL,
+          MRF_FIRST_STEP_TIMESTAMP_LABEL,
+          mockDecryptedRecord[0].question,
+        ])
+        const expectedSubmissionRow = stringify([
+          mockRecord.submissionId,
+          MRF_STATUS.COMPLETED,
+          getCurrentStepString(
+            mockRecord.mrfMeta.workflowCurrentStepNumber,
+            mockRecord.mrfMeta.workflowNumTotalSteps,
+          ),
+          getFormattedDate(mockRecord.created),
+          mockDecryptedRecord[0].answer,
+        ])
+        expect(mrfGenerator.records).toEqual([
+          UTF8_BYTE_ORDER_MARK,
+          expectedHeaderRow,
+          expectedSubmissionRow,
+        ])
+      })
     })
 
     describe('submissions with only answer key', () => {

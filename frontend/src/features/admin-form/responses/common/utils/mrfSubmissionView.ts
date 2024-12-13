@@ -1,5 +1,10 @@
 import { WorkflowStatus } from '~shared/types'
 
+export enum MRF_STATUS {
+  COMPLETED = 'Completed',
+  PENDING = 'Pending',
+}
+
 /** Gets the business friendly string for current step of workflow. */
 export const getCurrentStepString = (
   workflowCurrentStepNumber: number | undefined,
@@ -17,9 +22,9 @@ export const getStatusFromWorkflowStatus = (
     case WorkflowStatus.COMPLETED:
     case WorkflowStatus.APPROVED:
     case WorkflowStatus.REJECTED:
-      return 'Completed'
+      return MRF_STATUS.COMPLETED
     case WorkflowStatus.PENDING:
-      return 'Pending'
+      return MRF_STATUS.PENDING
     default:
       return ''
   }
