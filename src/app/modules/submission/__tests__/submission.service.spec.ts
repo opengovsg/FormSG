@@ -41,9 +41,12 @@ import {
   AutoReplyOptions,
   BasicField,
   FormResponseMode,
+  FormWorkflowStepDto,
   SubmissionId,
   SubmissionMetadata,
   SubmissionType,
+  SubmittedNonApprovalStep,
+  WorkflowType,
 } from '../../../../../shared/types'
 import { PaymentNotFoundError } from '../../payments/payments.errors'
 import * as PaymentsService from '../../payments/payments.service'
@@ -66,7 +69,10 @@ import {
   transformAttachmentMetasToSignedUrls,
   triggerVirusScanning,
 } from '../submission.service'
-import { extractEmailConfirmationData } from '../submission.utils'
+import {
+  buildMrfMetadata,
+  extractEmailConfirmationData,
+} from '../submission.utils'
 
 jest.mock('src/app/services/mail/mail.service')
 const MockMailService = jest.mocked(MailService)
@@ -1634,6 +1640,88 @@ describe('submission.service', () => {
         1,
         MOCK_SUB_CURSOR_DATA_1.paymentId,
       )
+    })
+  })
+
+  describe('addMrfMetadata', () => {
+    it('should return original object without mrf metadata when submission is not multirespondent submission type', () => {
+      // Arrange
+      const mockInput = new PassThrough()
+      const actualTransformedData: any[] = []
+
+      // Act
+      // Build pipeline for testing
+      mockInput.pipe(SubmissionService.addMrfMetadata()).on('data', (data) => {
+        actualTransformedData.push(data)
+      })
+
+      // Emit events
+      const mockData = {
+        submissionType: SubmissionType.Encrypt,
+        formId: 'mockFormId',
+        submissionId: 'mockSubmissionId',
+      }
+      mockInput.emit('data', mockData)
+      mockInput.end()
+
+      // Assert
+      expect(actualTransformedData).toEqual([mockData])
+    })
+
+    it('should add mrf metadata when submission is multirespondent type', () => {
+      // Arrange
+      const WORKFLOW_STEP_1: FormWorkflowStepDto = {
+        _id: 'step_1_id',
+        workflow_type: WorkflowType.Static,
+        emails: ['example@example.com'],
+        edit: [],
+      }
+      const WORKFLOW_STEP_2: FormWorkflowStepDto = {
+        _id: 'step_2_id',
+        workflow_type: WorkflowType.Static,
+        emails: ['example@example.com'],
+        edit: [],
+      }
+
+      const mockInput = new PassThrough()
+      const actualTransformedData: any[] = []
+
+      // Act
+      // Build pipeline for testing
+      mockInput.pipe(SubmissionService.addMrfMetadata()).on('data', (data) => {
+        actualTransformedData.push(data)
+      })
+
+      // Emit events
+      const mockData = {
+        submissionType: SubmissionType.Multirespondent,
+        formId: 'mockFormId',
+        submissionId: 'mockSubmissionId',
+        workflow: [WORKFLOW_STEP_1, WORKFLOW_STEP_2],
+        workflowStep: 0,
+        submittedSteps: [
+          {
+            isApproval: false,
+            submittedAt: '2024-01-01T00:00:00.000Z',
+          } as SubmittedNonApprovalStep,
+        ],
+      }
+      mockInput.emit('data', mockData)
+      mockInput.end()
+
+      // Assert
+      expect(actualTransformedData).toEqual([
+        {
+          submissionType: SubmissionType.Multirespondent,
+          formId: 'mockFormId',
+          submissionId: 'mockSubmissionId',
+          mrfMeta: buildMrfMetadata({
+            workflow: mockData.workflow,
+            workflowStep: mockData.workflowStep,
+            submittedSteps: mockData.submittedSteps,
+          }),
+        },
+      ])
     })
   })
 
