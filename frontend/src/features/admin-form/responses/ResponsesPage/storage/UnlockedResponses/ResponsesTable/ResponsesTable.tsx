@@ -80,7 +80,6 @@ const NON_MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: 'Timestamp',
     accessor: 'submissionTime',
-    minWidth: 250,
     width: 250,
     disableResizing: true,
   },
@@ -174,9 +173,9 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
       }
       return <CompletedBadge />
     },
-    width: 176,
-    minWidth: 176,
-    maxWidth: 176,
+    width: 200,
+    minWidth: 180,
+    maxWidth: 220,
   },
   {
     Header: 'Current Step',
@@ -185,16 +184,15 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
         mrf?.workflowCurrentStepNumber,
         mrf?.workflowNumTotalSteps,
       ),
-    width: 176,
-    minWidth: 176,
-    maxWidth: 176,
+    width: 200,
+    minWidth: 180,
+    maxWidth: 220,
   },
   {
     Header: 'Timestamp of first response',
     accessor: 'submissionTime',
-    width: 320,
-    minWidth: 320,
-    maxWidth: 320,
+    width: 250,
+    disableResizing: true
   },
 ]
 
