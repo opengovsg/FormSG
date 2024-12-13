@@ -254,11 +254,13 @@ export type SubmissionPaymentMetadata = {
   email: string
 } | null
 
-export type SubmissionMrfMetadata = {
-  workflowCurrentStepNumber: number
-  workflowNumTotalSteps: number
-  workflowStatus: WorkflowStatus | undefined // `undefined` is due to submissions before this PR not storing this value
-} | null
+export type SubmissionMrfMetadata =
+  | {
+      workflowCurrentStepNumber: number
+      workflowNumTotalSteps: number
+      workflowStatus: WorkflowStatus | undefined // `undefined` is due to submissions before this PR not storing this value
+    }
+  | undefined
 
 export type SubmissionMetadata = {
   number: number

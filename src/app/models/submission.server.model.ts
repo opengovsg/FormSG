@@ -818,7 +818,7 @@ const buildSubmissionMetadata = (
           workflowStep: mrfMeta.workflowStep,
           submittedSteps: mrfMeta.submittedSteps,
         })
-      : null,
+      : undefined,
   }
 }
 

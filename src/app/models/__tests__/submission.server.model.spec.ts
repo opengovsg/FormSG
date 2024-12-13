@@ -91,6 +91,7 @@ describe('Submission Model', () => {
           field: new ObjectId(),
         },
       ],
+      submittedSteps: [],
       submissionPublicKey: 'This is a public key',
       encryptedSubmissionSecretKey: 'This is an encrypted secret key',
       encryptedContent: MOCK_ENCRYPTED_CONTENT,
