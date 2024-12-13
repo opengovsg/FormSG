@@ -94,7 +94,7 @@ export const ApprovalStatus = z.enum([
 
 const SubmittedNonApprovalStep = z.object({
   isApproval: z.literal(false),
-  submittedAt: z.string(),
+  submittedAt: z.string().datetime({ precision: 3 }),
 })
 
 export type SubmittedNonApprovalStep = z.infer<typeof SubmittedNonApprovalStep>
