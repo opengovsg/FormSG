@@ -27,6 +27,11 @@ import {
   getStatusFromWorkflowStatus,
 } from '../common/utils/mrfSubmissionView'
 import { SecretKeyVerification } from '../components/SecretKeyVerification'
+import {
+  MRF_CURRENT_STEP_LABEL,
+  MRF_FIRST_STEP_TIMESTAMP_LABEL,
+  MRF_STATUS_LABEL,
+} from '../constants'
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
 
 import { DecryptedRow } from './DecryptedRow'
@@ -87,6 +92,8 @@ export const IndividualResponsePage = (): JSX.Element => {
   if (!formId) throw new Error('Missing formId')
 
   const { data: form } = useAdminForm()
+
+  const isMrf = form?.responseMode === FormResponseMode.Multirespondent
 
   const { user } = useUser()
   const { secretKey } = useStorageResponsesContext()
@@ -160,6 +167,25 @@ export const IndividualResponsePage = (): JSX.Element => {
             isLoading={isLoading}
             isError={isError}
           />
+          {isMrf ? (
+            <>
+              <StackRow
+                label={MRF_STATUS_LABEL}
+                value={getStatusFromWorkflowStatus(data?.mrf?.workflowStatus)}
+                isLoading={isLoading}
+                isError={isError}
+              />
+              <StackRow
+                label={MRF_CURRENT_STEP_LABEL}
+                value={getCurrentStepString(
+                  data?.mrf?.workflowCurrentStepNumber,
+                  data?.mrf?.workflowNumTotalSteps,
+                )}
+                isLoading={isLoading}
+                isError={isError}
+              />
+            </>
+          ) : null}
           <StackRow
             label="Status"
             value={getStatusFromWorkflowStatus(data?.mrf?.workflowStatus)}
@@ -176,7 +202,7 @@ export const IndividualResponsePage = (): JSX.Element => {
             isError={isError}
           />
           <StackRow
-            label="Timestamp"
+            label={isMrf ? MRF_FIRST_STEP_TIMESTAMP_LABEL : 'Timestamp'}
             value={
               data?.submissionTime ?? t('features.common.loadingWithEllipsis')
             }

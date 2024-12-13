@@ -4,6 +4,12 @@ import type { Dictionary } from 'lodash'
 import { keyBy } from 'lodash'
 import type { Merge } from 'type-fest'
 
+import {
+  MRF_CURRENT_STEP_LABEL,
+  MRF_FIRST_STEP_TIMESTAMP_LABEL,
+  MRF_STATUS_LABEL,
+} from '~features/admin-form/responses/constants'
+
 import { CsvGenerator } from '../../../../common/utils'
 import {
   getCurrentStepString,
@@ -21,9 +27,9 @@ type UnprocessedRecord = Merge<
 
 const MRF_CSV_HEADERS = [
   'Response ID',
-  'Status',
-  'Current step',
-  'Timestamp of first response',
+  MRF_STATUS_LABEL,
+  MRF_CURRENT_STEP_LABEL,
+  MRF_FIRST_STEP_TIMESTAMP_LABEL,
 ]
 
 const NON_MRF_CSV_HEADERS = ['Response ID', 'Timestamp']
