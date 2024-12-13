@@ -78,6 +78,8 @@ describe('mail.service', () => {
 
   describe('sendVerificationOtp', () => {
     const MOCK_OTP = '123456'
+    const MOCK_FORM_ID = 'mockFormId'
+    const MOCK_FORM_URL = `${MOCK_APP_URL}/${MOCK_FORM_ID}`
 
     const expectedArg = expect.objectContaining({
       to: MOCK_VALID_EMAIL,
@@ -96,6 +98,7 @@ describe('mail.service', () => {
         MOCK_VALID_EMAIL,
         MOCK_OTP,
         MOCK_OTP_PREFIX,
+        MOCK_FORM_URL,
       )
 
       // Assert
@@ -114,6 +117,7 @@ describe('mail.service', () => {
         invalidEmail,
         MOCK_OTP,
         MOCK_OTP_PREFIX,
+        MOCK_FORM_URL,
       )
 
       // Assert
@@ -138,6 +142,7 @@ describe('mail.service', () => {
         MOCK_VALID_EMAIL,
         MOCK_OTP,
         MOCK_OTP_PREFIX,
+        MOCK_FORM_URL,
       )
 
       // Assert
@@ -162,6 +167,7 @@ describe('mail.service', () => {
         MOCK_VALID_EMAIL,
         MOCK_OTP,
         MOCK_OTP_PREFIX,
+        MOCK_FORM_URL,
       )
 
       // Assert
@@ -192,6 +198,7 @@ describe('mail.service', () => {
         MOCK_VALID_EMAIL,
         MOCK_OTP,
         MOCK_OTP_PREFIX,
+        MOCK_FORM_URL,
       )
 
       // Assert
