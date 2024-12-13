@@ -579,8 +579,13 @@ describe('Submission Model', () => {
         // Arrange
         const formId = new ObjectId()
         const submission = await EncryptedSubmission.create({
-          form: formId,
           submissionType: SubmissionType.Encrypt,
+          form: formId,
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          version: 1,
+          authType: FormAuthType.NIL,
+          myInfoFields: [],
+          webhookResponses: [],
         })
 
         // Act
@@ -639,8 +644,13 @@ describe('Submission Model', () => {
         // Arrange
         const formId = new ObjectId()
         await EncryptedSubmission.create({
-          form: formId,
           submissionType: SubmissionType.Encrypt,
+          form: formId,
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          version: 1,
+          authType: FormAuthType.NIL,
+          myInfoFields: [],
+          webhookResponses: [],
         })
 
         // Act
