@@ -10,6 +10,7 @@ import {
   ChildBirthRecordsResponseV3,
   EmailResponseV3,
   FieldResponsesV3,
+  FormFieldDto,
   FormWorkflowStepDto,
   LongTextResponseV3,
   NumberResponseV3,
@@ -42,7 +43,7 @@ import {
 } from '../multirespondent-submission.utils'
 
 describe('multirespondent-submission.utils', () => {
-  const WORKFLOW_STEP_1 = {
+  const WORKFLOW_STEP_1: FormWorkflowStepDto = {
     _id: 'step_1_id',
     workflow_type: WorkflowType.Static,
     emails: ['example@example.com'],
@@ -140,7 +141,7 @@ describe('multirespondent-submission.utils', () => {
       const result = validateMrfFieldResponses({
         formId: mockFormId,
         visibleFieldIds: mockVisibleFieldIds,
-        formFields: mockFormFields,
+        formFields: mockFormFields as FormFieldDto[],
         responses: mockResponses,
       })
 
@@ -174,7 +175,7 @@ describe('multirespondent-submission.utils', () => {
       validateMrfFieldResponses({
         formId: mockFormId,
         visibleFieldIds: mockVisibleFieldIds,
-        formFields: mockFormFields,
+        formFields: mockFormFields as FormFieldDto[],
         responses: mockResponses,
       })
 
@@ -217,7 +218,7 @@ describe('multirespondent-submission.utils', () => {
       validateMrfFieldResponses({
         formId: mockFormId,
         visibleFieldIds: mockVisibleFieldIds,
-        formFields: mockFormFields,
+        formFields: mockFormFields as FormFieldDto[],
         responses: mockResponses,
       })
 
