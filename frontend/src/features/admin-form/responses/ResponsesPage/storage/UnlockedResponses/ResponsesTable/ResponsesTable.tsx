@@ -82,6 +82,7 @@ const NON_MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     Header: 'Timestamp',
     accessor: 'submissionTime',
     width: 250,
+    minWidth: 250,
     disableResizing: true,
   },
 ]
@@ -193,7 +194,8 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     Header: MRF_FIRST_STEP_TIMESTAMP_LABEL,
     accessor: 'submissionTime',
     width: 250,
-    disableResizing: true
+    minWidth: 250,
+    disableResizing: true,
   },
 ]
 
