@@ -68,7 +68,7 @@
     "@react-email/render": "^1.0.2",
     "@stablelib/base64": "^1.0.1",
     "aws-info": "^1.2.0",
-    "aws-sdk": "^2.1691.0",
+    "aws-sdk": "^2.1692.0",
     "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
     "bluebird": "^3.5.2",
