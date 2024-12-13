@@ -30,12 +30,16 @@ import { centsToDollars } from '~shared/utils/payments'
 import Badge from '~components/Badge'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import {
+  MRF_CURRENT_STEP_LABEL,
+  MRF_FIRST_STEP_TIMESTAMP_LABEL,
+  MRF_STATUS_LABEL,
+} from '~features/admin-form/responses/constants'
 
 import { getCurrentStepString } from '../../../../common/utils/mrfSubmissionView'
 import { useUnlockedResponses } from '../UnlockedResponsesProvider'
 
 import { getNetAmount } from './utils'
-import { MRF_CURRENT_STEP_LABEL, MRF_STATUS_LABEL, MRF_FIRST_STEP_TIMESTAMP_LABEL } from '~features/admin-form/responses/constants'
 
 type ResponseColumnData = SubmissionMetadata
 
