@@ -112,7 +112,7 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     if (this.hasBeenProcessed) return
 
     // Create a header row in CSV using the fieldIdToQuestion map.
-    const headers = this.isMrf ? MRF_CSV_HEADERS : NON_MRF_CSV_HEADERS
+    const headers = this.isMrf ? [...MRF_CSV_HEADERS] : [...NON_MRF_CSV_HEADERS]
     this.fieldIdToQuestion.forEach((value, fieldId) => {
       for (let i = 0; i < this.fieldIdToNumCols[fieldId]; i++) {
         headers.push(value.question)
