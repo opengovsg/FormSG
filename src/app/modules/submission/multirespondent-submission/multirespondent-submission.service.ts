@@ -353,7 +353,6 @@ export const createMultiRespondentFormSubmission = ({
         mrfVersion,
       } = encryptedPayload
 
-      // For non-approval steps, we only need isApproval: false and submittedAt
       const submittedStepMeta: SubmittedNonApprovalStep = {
         isApproval: false, // first step cannot be approval step
         submittedAt: new Date().toISOString(),
