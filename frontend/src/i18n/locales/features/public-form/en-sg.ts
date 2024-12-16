@@ -25,6 +25,10 @@ export const enSG: PublicForm = {
       'Your verified fields have expired. Please verify those fields again.',
   },
   components: {
+    header: {
+      estTime:
+        '{estTime, plural, =1 {# min} other {# mins}} estimated time to complete',
+    },
     submitButton: {
       loadingText: 'Submitting',
       visuallyHidden: 'End of form.',
@@ -45,6 +49,9 @@ export const enSG: PublicForm = {
       },
       commentPlaceholder: 'Tell us more about your experience',
       submitButton: 'Submit feedback',
+    },
+    instructions: {
+      title: 'Instructions',
     },
   },
 }

@@ -3,7 +3,13 @@ import { msSG as table } from './table'
 
 export const msSG = {
   components: {
+    header: {
+      estTime: 'Anggaran masa {estTime} min untuk selesai',
+    },
     fields,
     table,
+    instructions: {
+      title: 'Arahan',
+    },
   },
 }

@@ -20,6 +20,9 @@ export interface PublicForm {
     verifiedFieldExpired: string
   }
   components: {
+    header: {
+      estTime: string
+    }
     submitButton: {
       loadingText: string
       visuallyHidden: string
@@ -40,6 +43,9 @@ export interface PublicForm {
       }
       commentPlaceholder: string
       submitButton: string
+    }
+    instructions: {
+      title: string
     }
   }
 }

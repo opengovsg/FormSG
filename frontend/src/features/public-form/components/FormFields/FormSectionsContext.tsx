@@ -7,6 +7,7 @@ import {
   useMemo,
   useState,
 } from 'react'
+import { useTranslation } from 'react-i18next'
 import useScrollSpy from 'react-use-scrollspy'
 
 import { BasicField, FormFieldDto } from '~shared/types'
@@ -14,7 +15,6 @@ import { BasicField, FormFieldDto } from '~shared/types'
 import { FieldIdSet } from '~features/logic/types'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
-import { titleTranslations } from '../FormInstructions'
 import { PUBLICFORM_INSTRUCTIONS_SECTIONID } from '../FormInstructions/FormInstructionsContainer'
 
 export type SidebarSectionMeta = Pick<
@@ -43,6 +43,7 @@ interface FormSectionsProviderProps {
 export const FormSectionsProvider = ({
   children,
 }: FormSectionsProviderProps): JSX.Element => {
+  const { t } = useTranslation()
   const { form, isAuthRequired } = usePublicFormContext()
 
   const [visibleFieldIds, setVisibleFieldIds] = useState<FieldIdSet>()
@@ -52,8 +53,8 @@ export const FormSectionsProvider = ({
     const sections: SidebarSectionMeta[] = []
     if (form.startPage.paragraph)
       sections.push({
-        title: 'Instructions',
-        titleTranslations,
+        title: t('features.publicForm.components.instructions.title'),
+        titleTranslations: [],
         _id: PUBLICFORM_INSTRUCTIONS_SECTIONID,
       })
     form.form_fields.forEach((f) => {
@@ -66,7 +67,7 @@ export const FormSectionsProvider = ({
       })
     })
     return sections
-  }, [form, isAuthRequired, visibleFieldIds])
+  }, [form, isAuthRequired, visibleFieldIds, t])
 
   const [sectionRefs, setSectionRefs] = useState<
     Record<string, RefObject<HTMLDivElement>>
