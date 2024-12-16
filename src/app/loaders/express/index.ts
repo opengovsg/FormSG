@@ -12,6 +12,7 @@ import * as IntranetMiddleware from '../../modules/intranet/intranet.middleware'
 import { MYINFO_ROUTER_PREFIX } from '../../modules/myinfo/myinfo.constants'
 import { MyInfoRouter } from '../../modules/myinfo/myinfo.routes'
 import { SgidRouter } from '../../modules/sgid/sgid.routes'
+import { WellKnownRouter } from '../../routes/./.well-known'
 import { ApiRouter } from '../../routes/api'
 import { LegacyRedirectRouter } from '../../routes/legacy-redirect'
 import { SpOidcJwksRouter } from '../../routes/singpass'
@@ -123,6 +124,8 @@ const loadExpressApp = async (connection: Connection) => {
   app.use('/sgid', SgidRouter)
   app.use(MYINFO_ROUTER_PREFIX, MyInfoRouter)
 
+  app.use('/.well-known', WellKnownRouter)
+
   // Legacy frontend routes which may still be in use
   app.use(LegacyRedirectRouter)
 
@@ -135,10 +138,7 @@ const loadExpressApp = async (connection: Connection) => {
 
   // If requests for known static asset patterns were not served by
   // the static handlers above, middleware should try to fetch from s3 static bucket or else return 404s
-  app.get(
-    /^\/(public|static|\.well-known)\//,
-    catchNonExistentStaticRoutesMiddleware,
-  )
+  app.get(/^\/(public|static)\//, catchNonExistentStaticRoutesMiddleware)
 
   // Requests for root files (e.g. /robots.txt or /favicon.ico) that were
   // not served statically above will also return 404
