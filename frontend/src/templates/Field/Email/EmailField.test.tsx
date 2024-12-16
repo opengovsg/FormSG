@@ -2,13 +2,9 @@ import { composeStories } from '@storybook/react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import { Language } from '~shared/types'
+import { enSG } from '~/i18n/locales/features/public-form/fields'
 
-import {
-  INVALID_EMAIL_DOMAIN_ERROR,
-  INVALID_EMAIL_ERROR,
-  REQUIRED_ERROR,
-} from '~constants/validation'
+import { INVALID_EMAIL_ERROR, REQUIRED_ERROR } from '~constants/validation'
 
 import * as stories from './EmailField.stories'
 
@@ -149,7 +145,7 @@ describe('email validation', () => {
 
     // Assert
     // Should show error message.
-    const errorMessage = INVALID_EMAIL_DOMAIN_ERROR[Language.ENGLISH]
+    const errorMessage = enSG.email.validation.domainDisallowed
     expect(screen.getByText(errorMessage)).not.toBeNull()
   })
 })

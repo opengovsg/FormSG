@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { BiCheck } from 'react-icons/bi'
 import { Box, Stack } from '@chakra-ui/react'
 
-import { FormColorTheme, Language } from '~shared/types'
+import { FormColorTheme } from '~shared/types'
 import { BasicField, FormFieldWithId } from '~shared/types/field'
 
 import Button from '~components/Button'
@@ -12,8 +12,6 @@ import { BaseFieldProps, FieldContainer } from '~templates/Field/FieldContainer'
 import { VerifiableFieldBase, VerifiableFieldSchema } from '../../types'
 import { useVerifiableField } from '../../VerifiableFieldContext'
 import { VerificationBox } from '../VerificationBox'
-
-import { VERIFY_LABEL_TRANSLATIONS } from './constants'
 
 export interface BaseVerifiableFieldProps extends BaseFieldProps {
   schema: VerifiableFieldSchema<FormFieldWithId<VerifiableFieldBase>>
@@ -32,7 +30,7 @@ export const VerifiableFieldContainer = ({
   colorTheme = FormColorTheme.Blue,
   children,
 }: VerifiableFieldContainerProps): JSX.Element => {
-  const { i18n } = useTranslation()
+  const { t } = useTranslation()
   const {
     isVfnBoxOpen,
     otpPrefix,
@@ -55,10 +53,6 @@ export const VerifiableFieldContainer = ({
           : 'Verify mobile number'
     }
   }, [hasSignature, schema.fieldType])
-
-  const selectedLanguage = i18n.language as Language
-  const verifyLabel = VERIFY_LABEL_TRANSLATIONS[selectedLanguage].Verify
-  const verifiedLabel = VERIFY_LABEL_TRANSLATIONS[selectedLanguage].Verified
 
   return (
     <Box>
@@ -83,7 +77,9 @@ export const VerifiableFieldContainer = ({
               // with new lines within the button.
               whiteSpace="nowrap"
             >
-              {hasSignature ? verifiedLabel : verifyLabel}
+              {t(
+                `features.publicForm.components.fields.verification.button.label.${hasSignature ? 'verified' : 'verify'}`,
+              )}
             </Button>
           </Box>
         </Stack>
@@ -94,7 +90,6 @@ export const VerifiableFieldContainer = ({
           handleResendOtp={handleResendOtp}
           fieldType={schema.fieldType}
           otpPrefix={otpPrefix}
-          selectedLanguage={selectedLanguage}
         />
       )}
     </Box>

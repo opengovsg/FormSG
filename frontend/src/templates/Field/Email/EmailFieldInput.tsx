@@ -33,16 +33,19 @@ export const EmailFieldInput = ({
   handleInputChange,
   inputProps = {},
 }: EmailFieldInputProps): JSX.Element => {
-  const { i18n } = useTranslation()
-  const selectedLanguage = i18n.language as Language
+  const { t } = useTranslation()
+  const validationErrorMessages = t(
+    'features.publicForm.components.fields.email.validation',
+    { allowObjects: true },
+  )
   const validationRules = useMemo(
     () =>
       createEmailValidationRules(
         schema,
         disableRequiredValidation,
-        selectedLanguage,
+        validationErrorMessages,
       ),
-    [schema, disableRequiredValidation, selectedLanguage],
+    [schema, disableRequiredValidation, validationErrorMessages],
   )
 
   const { control } = useFormContext<VerifiableFieldInput>()

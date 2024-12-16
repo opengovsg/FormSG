@@ -156,8 +156,8 @@ export const EditConditionBlock = ({
     switch (mappedField.fieldType) {
       case BasicField.YesNo:
         return [
-          t('features.adminForm.sidebar.fields.yesNo.yes'),
-          t('features.adminForm.sidebar.fields.yesNo.no'),
+          t('features.publicForm.components.fields.yesNo.yes'),
+          t('features.publicForm.components.fields.yesNo.no'),
         ]
       case BasicField.Radio:
         if (mappedField.othersRadioButton) {

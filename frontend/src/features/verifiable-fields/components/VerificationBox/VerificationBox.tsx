@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import {
@@ -9,7 +9,7 @@ import {
   InputLeftAddon,
 } from '@chakra-ui/react'
 
-import { Language } from '~shared/types'
+import { BasicField } from '~shared/types'
 
 import ResendOtpButton from '~/templates/ResendOtpButton'
 
@@ -21,7 +21,8 @@ import Input from '~components/Input'
 
 import { VerifiableFieldType } from '../../types'
 
-import { VFN_RENDER_DATA } from './constants'
+import { EmailOtpSvgr } from './EmailOtpSvgr'
+import { MobileOtpSvgr } from './MobileOtpSvgr'
 
 type VfnFieldValues = {
   otp: string
@@ -32,7 +33,6 @@ export interface VerificationBoxProps {
   otpPrefix: string
   handleVerifyOtp: (otp: string) => Promise<string>
   handleResendOtp: () => Promise<void>
-  selectedLanguage?: Language
 }
 
 type UseVerificationBoxProps = Pick<VerificationBoxProps, 'handleVerifyOtp'>
@@ -72,7 +72,7 @@ export const VerificationBox = ({
   handleResendOtp,
   handleVerifyOtp,
 }: VerificationBoxProps): JSX.Element => {
-  const { i18n } = useTranslation()
+  const { t } = useTranslation()
   const {
     formMethods: {
       register,
@@ -84,13 +84,16 @@ export const VerificationBox = ({
     handleVerifyOtp,
   })
 
-  const {
-    logo: Logo,
-    header,
-    subheader,
-  } = useMemo(() => VFN_RENDER_DATA[fieldType], [fieldType])
+  const Logo = {
+    [BasicField.Mobile]: MobileOtpSvgr,
+    [BasicField.Email]: EmailOtpSvgr,
+  }[fieldType]
 
-  const selectedLanguage = i18n.language as Language
+  const { title, description } = t(
+    `features.publicForm.components.fields.verification.modal.${fieldType}`,
+    { allowObjects: true },
+  )
+
   return (
     <Flex
       p={{ base: '1.25rem', md: '2.25rem' }}
@@ -109,9 +112,7 @@ export const VerificationBox = ({
             isInvalid={!!errors.otp}
             maxW="24.75rem"
           >
-            <FormLabel description={subheader[selectedLanguage]}>
-              {header[selectedLanguage]}
-            </FormLabel>
+            <FormLabel description={description}>{title}</FormLabel>
             <Flex>
               <InputGroup>
                 {otpPrefix ? (

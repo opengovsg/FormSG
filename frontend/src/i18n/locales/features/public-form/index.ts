@@ -1,3 +1,4 @@
+import { Fields } from './fields'
 import { Table } from './table'
 
 export * from './en-sg'
@@ -27,6 +28,7 @@ export interface PublicForm {
       submitNow: string
     }
     table: Table
+    fields: Fields
     feedbackBlock: {
       title: {
         payment: string
@@ -41,3 +43,7 @@ export interface PublicForm {
     }
   }
 }
+
+export * from './ms-sg'
+export * from './ta-sg'
+export * from './zh-sg'

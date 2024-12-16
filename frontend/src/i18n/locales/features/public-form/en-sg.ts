@@ -1,3 +1,4 @@
+import { enSG as fields } from './fields'
 import { enSG as table } from './table'
 import { PublicForm } from '.'
 
@@ -32,6 +33,7 @@ export const enSG: PublicForm = {
       submitNow: 'Submit now',
     },
     table,
+    fields,
     feedbackBlock: {
       title: {
         payment: 'How was your experience making payment on this form?',

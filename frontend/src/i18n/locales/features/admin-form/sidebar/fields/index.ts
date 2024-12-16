@@ -51,10 +51,6 @@ export interface Fields {
       maximum: string
     }
   }
-  yesNo: {
-    yes: string
-    no: string
-  }
   paragraph: string
   section: {
     heading: string

@@ -9,7 +9,6 @@ import simplur from 'simplur'
 import validator from 'validator'
 
 import { DATE_PARSE_FORMAT } from '~shared/constants/dates'
-import { Language } from '~shared/types'
 import {
   AttachmentFieldBase,
   BasicField,
@@ -42,10 +41,11 @@ import {
 } from '~shared/utils/phone-num-validation'
 import { isUenValid } from '~shared/utils/uen-validation'
 
+import { Fields } from '~/i18n/locales/features/public-form/fields'
+
 import {
   INVALID_COUNTRY_REGION_OPTION_ERROR,
   INVALID_DROPDOWN_OPTION_ERROR,
-  INVALID_EMAIL_DOMAIN_ERROR,
   INVALID_EMAIL_ERROR,
   REQUIRED_ERROR,
 } from '~constants/validation'
@@ -64,6 +64,8 @@ import {
   loadDateFromNormalizedDate,
 } from './date'
 import { formatNumberToLocaleString } from './stringFormat'
+
+type EmailValidationErrorMessages = Fields['email']['validation']
 
 // Omit unused props
 type MinimumFieldValidationProps<T extends FieldBase> = Omit<
@@ -85,7 +87,7 @@ type ValidationRuleFn<T extends FieldBase = FieldBase> = (
 type ValidationRuleFnEmailAndMobile<T extends FieldBase = FieldBase> = (
   schema: MinimumFieldValidationPropsEmailAndMobile<T>,
   disableRequiredValidation?: boolean,
-  selectedLanguage?: Language,
+  validationErrorMessages?: EmailValidationErrorMessages,
 ) => RegisterOptions
 
 const requiredSingleAnswerValidationFn =
@@ -554,11 +556,17 @@ export const createRadioValidationRules: ValidationRuleFn<RadioFieldBase> = (
 
 export const createEmailValidationRules: ValidationRuleFnEmailAndMobile<
   EmailFieldBase
-> = (schema, disableRequiredValidation, selectedLanguage): RegisterOptions => {
+> = (
+  schema,
+  disableRequiredValidation,
+  validationErrorMessages,
+): RegisterOptions => {
   return {
     validate: {
       baseValidations: (val?: VerifiableFieldValues) => {
-        return baseEmailValidationFn({ schema, selectedLanguage })(val?.value)
+        return baseEmailValidationFn({ schema, validationErrorMessages })(
+          val?.value,
+        )
       },
       ...createBaseVfnFieldValidationRules(schema, disableRequiredValidation)
         .validate,
@@ -573,10 +581,10 @@ export const createEmailValidationRules: ValidationRuleFnEmailAndMobile<
 export const baseEmailValidationFn =
   ({
     schema,
-    selectedLanguage = Language.ENGLISH,
+    validationErrorMessages = { domainDisallowed: 'Domain disallowed' },
   }: {
     schema: MinimumFieldValidationProps<EmailFieldBase>
-    selectedLanguage?: Language
+    validationErrorMessages?: EmailValidationErrorMessages
   }) =>
   (inputValue?: string) => {
     if (!inputValue) return true
@@ -591,7 +599,7 @@ export const baseEmailValidationFn =
     if (allowedDomains.size !== 0) {
       const domainInValue = trimmedInputValue.split('@')[1].toLowerCase()
       if (domainInValue && !allowedDomains.has(`@${domainInValue}`)) {
-        return INVALID_EMAIL_DOMAIN_ERROR[selectedLanguage]
+        return validationErrorMessages.domainDisallowed
       }
     }
 

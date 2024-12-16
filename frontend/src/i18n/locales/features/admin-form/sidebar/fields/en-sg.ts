@@ -52,10 +52,6 @@ export const enSG: Fields = {
       maximum: 'Maximum',
     },
   },
-  yesNo: {
-    yes: 'Yes',
-    no: 'No',
-  },
   paragraph: 'Paragraph',
   section: {
     heading: 'Section heading',

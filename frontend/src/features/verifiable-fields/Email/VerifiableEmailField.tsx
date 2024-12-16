@@ -2,8 +2,6 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, VisuallyHidden } from '@chakra-ui/react'
 
-import { Language } from '~shared/types'
-
 import { baseEmailValidationFn } from '~utils/fieldValidation'
 import { EmailFieldInput, EmailFieldProps } from '~templates/Field/Email'
 import { EmailFieldSchema } from '~templates/Field/types'
@@ -71,10 +69,13 @@ export const VerifiableEmailField = ({
   schema,
   ...props
 }: VerifiableEmailFieldProps) => {
-  const { i18n } = useTranslation()
+  const { t } = useTranslation()
   const validateInputForVfn = baseEmailValidationFn({
     schema,
-    selectedLanguage: i18n.language as Language,
+    validationErrorMessages: t(
+      'features.publicForm.components.fields.email.validation',
+      { allowObjects: true },
+    ),
   })
   return (
     <VerifiableFieldProvider
