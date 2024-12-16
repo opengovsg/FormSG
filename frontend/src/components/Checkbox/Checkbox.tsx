@@ -11,13 +11,9 @@ import {
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 
-import { Language } from '~shared/types'
-
 import { BxCheckAnimated } from '~/assets/icons'
 import { CHECKBOX_THEME_KEY } from '~/theme/components/Checkbox'
 import { FieldColorScheme } from '~/theme/foundations/colours'
-
-import { OTHERS_TRANSLATED_LABEL } from '~constants/fixedTranslations'
 
 import Input, { InputProps } from '../Input'
 
@@ -94,7 +90,7 @@ const OthersWrapper = ({
  * Wrapper for the checkbox part of the Others option.
  */
 const OthersCheckbox = forwardRef<CheckboxProps, 'input'>((props, ref) => {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const { checkboxRef, inputRef } = useCheckboxOthers()
   // Passing all props for cleanliness but size and colorScheme are the most relevant
   const styles = useMultiStyleConfig(CHECKBOX_THEME_KEY, props)
@@ -109,9 +105,6 @@ const OthersCheckbox = forwardRef<CheckboxProps, 'input'>((props, ref) => {
     props.onChange?.(e)
   }
 
-  const othersLabel =
-    OTHERS_TRANSLATED_LABEL[(i18n.language as Language) ?? Language.ENGLISH]
-
   return (
     <Checkbox
       ref={mergedCheckboxRef}
@@ -120,7 +113,7 @@ const OthersCheckbox = forwardRef<CheckboxProps, 'input'>((props, ref) => {
       {...props}
       onChange={handleCheckboxChange}
     >
-      {othersLabel ?? t('features.adminForm.sidebar.fields.radio.others')}
+      {t('features.publicForm.components.fields.option.others')}
     </Checkbox>
   )
 })

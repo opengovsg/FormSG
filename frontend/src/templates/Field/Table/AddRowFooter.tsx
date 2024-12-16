@@ -3,12 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
 import { Box, Stack, Text, VisuallyHidden } from '@chakra-ui/react'
 
-import { Language } from '~shared/types'
-
-import {
-  ADD_ANOTHER_ROW_LABEL_TRANSLATIONS,
-  getTranslationsForTableFieldRows,
-} from '~constants/fixedTranslations'
 import Button from '~components/Button'
 
 interface AddRowFooterProps {
@@ -24,32 +18,23 @@ export const AddRowFooter = ({
   maxRows,
   handleAddRow: handleAddRowProp,
 }: AddRowFooterProps): JSX.Element => {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
 
   // State to decide whether to announce row changes to screen readers
   const [hasAddedRows, setHasAddedRows] = useState(false)
-
-  const selectedLanguage = i18n.language as Language
-  const maxRowDescription =
-    getTranslationsForTableFieldRows({
-      maxRows,
-      currentRows,
-      selectedLanguage,
-    }) ?? Number.isInteger(maxRows)
-      ? t('features.publicForm.components.table.rowMax', {
-          currentRows,
-          count: Number(maxRows),
-        })
-      : t('features.publicForm.components.table.row', {
-          count: currentRows,
-        })
+  const maxRowDescription = Number.isInteger(maxRows)
+    ? t('features.publicForm.components.table.rowMax', {
+        currentRows,
+        count: Number(maxRows),
+      })
+    : t('features.publicForm.components.table.row', {
+        count: currentRows,
+      })
 
   const handleAddRow = useCallback(() => {
     handleAddRowProp()
     setHasAddedRows(true)
   }, [handleAddRowProp])
-
-  const addRowLabel = ADD_ANOTHER_ROW_LABEL_TRANSLATIONS[selectedLanguage]
 
   return (
     <Stack
@@ -65,7 +50,7 @@ export const AddRowFooter = ({
         type="button"
         onClick={handleAddRow}
       >
-        {addRowLabel ?? t('features.publicForm.components.table.addAnotherRow')}
+        {t('features.publicForm.components.table.addAnotherRow')}
         <VisuallyHidden>
           {t('features.publicForm.components.table.addAnotherRowAria')}
         </VisuallyHidden>

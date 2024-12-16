@@ -7,6 +7,16 @@ export const zhSG: PartialDeep<Fields> = {
     yes: '是',
     no: '否',
   },
+  option: {
+    others: '其他',
+  },
+  dropdown: {
+    placeholder: '请选择一个选项',
+    nothingFound: '没有匹配结果',
+  },
+  attachment: {
+    maxFileSize: '文件限制：不超过 {readableMaxSize}',
+  },
   email: {
     validation: {
       domainDisallowed: '输入的电子邮箱不在允许域名之列',

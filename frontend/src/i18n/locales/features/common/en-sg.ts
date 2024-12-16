@@ -58,9 +58,6 @@ export const enSG: Common = {
     duplicateField: 'Duplicate field',
     editField: 'Edit field',
   },
-  dropdown: {
-    placeholder: 'Select an option',
-  },
   days: {
     Mondays: 'Monday',
     Tuesdays: 'Tuesday',

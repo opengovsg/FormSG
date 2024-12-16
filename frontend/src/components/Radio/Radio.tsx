@@ -46,12 +46,8 @@ import {
 } from '@chakra-ui/react'
 import { callAll, split } from '@chakra-ui/utils'
 
-import { Language } from '~shared/types'
-
 import { RADIO_THEME_KEY } from '~/theme/components/Radio'
 import { FieldColorScheme } from '~/theme/foundations/colours'
-
-import { OTHERS_TRANSLATED_LABEL } from '~constants/fixedTranslations'
 
 import Input, { InputProps } from '../Input'
 
@@ -256,7 +252,7 @@ export const Radio = forwardRef<RadioProps, 'input'>(
  * Wrapper for the radio part of the Others option.
  */
 const OthersRadio = forwardRef<RadioProps, 'input'>((props, ref) => {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const { othersRadioRef, othersInputRef } = useRadioGroupWithOthers()
   const { value: valueProp } = props
   const styles = useMultiStyleConfig(RADIO_THEME_KEY, {
@@ -273,11 +269,6 @@ const OthersRadio = forwardRef<RadioProps, 'input'>((props, ref) => {
     isChecked = group.value === valueProp
   }
 
-  const selectedLanguage = i18n.language as Language
-  const othersLabel = useMemo(() => {
-    return OTHERS_TRANSLATED_LABEL[selectedLanguage ?? Language.ENGLISH]
-  }, [selectedLanguage])
-
   useEffect(() => {
     if (isChecked) {
       othersInputRef.current?.focus()
@@ -292,7 +283,7 @@ const OthersRadio = forwardRef<RadioProps, 'input'>((props, ref) => {
       // Required should apply to radio group rather than individual radio.
       isRequired={false}
     >
-      {othersLabel ?? t('features.adminForm.sidebar.fields.radio.others')}
+      {t('features.publicForm.components.fields.option.others')}
     </Radio>
   )
 })

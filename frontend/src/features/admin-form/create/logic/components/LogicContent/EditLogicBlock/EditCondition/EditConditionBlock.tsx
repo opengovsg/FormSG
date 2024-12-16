@@ -163,7 +163,7 @@ export const EditConditionBlock = ({
         if (mappedField.othersRadioButton) {
           // 'Others' does not show up in fieldOptions
           return mappedField.fieldOptions.concat(
-            t('features.adminForm.sidebar.fields.radio.others'),
+            t('features.publicForm.components.fields.option.others'),
           )
         }
         return mappedField.fieldOptions

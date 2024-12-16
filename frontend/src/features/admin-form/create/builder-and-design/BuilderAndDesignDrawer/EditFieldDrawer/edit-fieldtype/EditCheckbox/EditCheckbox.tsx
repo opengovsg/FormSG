@@ -234,7 +234,7 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
       <FormControl isReadOnly={isLoading}>
         <Toggle
           {...register('othersRadioButton')}
-          label={t('features.adminForm.sidebar.fields.radio.others')}
+          label={t('features.publicForm.components.fields.option.others')}
         />
       </FormControl>
       <FormControl

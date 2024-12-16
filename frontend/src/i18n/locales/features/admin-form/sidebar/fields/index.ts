@@ -35,7 +35,6 @@ export interface Fields {
     charactersAllowedPlaceholder: string
   }
   radio: {
-    others: string
     options: {
       title: string
       placeholder: string
@@ -119,19 +118,6 @@ export interface Fields {
   imageAttachment: {
     title: string
     requiredError: string
-    fileUploaderLink: string
-    dragAndDrop: string
-    dragActive: string
-    maxFileSize: string
-    ariaLabelRemove: string
-    error: {
-      fileEmpty: string
-      fileTooLarge: string
-      fileInvalidType: string
-      tooManyFiles: string
-      zipFileInvalidType: string
-      zipParsing: string
-    }
   }
   table: {
     minimumRows: string

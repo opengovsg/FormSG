@@ -7,6 +7,16 @@ export const msSG: PartialDeep<Fields> = {
     yes: 'Ya',
     no: 'Tidak',
   },
+  option: {
+    others: 'Lain-lain',
+  },
+  dropdown: {
+    placeholder: 'Pilih satu pilihan',
+    nothingFound: 'Tiada hasil yang sepadan',
+  },
+  attachment: {
+    maxFileSize: 'Saiz fail maksimum: {readableMaxSize}',
+  },
   email: {
     validation: {
       domainDisallowed:

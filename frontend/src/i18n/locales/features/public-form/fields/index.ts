@@ -3,9 +3,31 @@ export interface Fields {
     yes: string
     no: string
   }
+  option: {
+    others: string
+  }
+  dropdown: {
+    placeholder: string
+    nothingFound: string
+  }
   email: {
     validation: {
       domainDisallowed: string
+    }
+  }
+  attachment: {
+    fileUploaderLink: string
+    dragAndDrop: string
+    dragActive: string
+    maxFileSize: string
+    ariaLabelRemove: string
+    error: {
+      fileEmpty: string
+      fileTooLarge: string
+      fileInvalidType: string
+      tooManyFiles: string
+      zipFileInvalidType: string
+      zipParsing: string
     }
   }
   verification: {

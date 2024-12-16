@@ -8,13 +8,7 @@ import {
 } from '@chakra-ui/react'
 import { useCombobox, UseComboboxProps } from 'downshift'
 
-import { Language } from '~shared/types'
-
 import { ThemeColorScheme } from '~theme/foundations/colours'
-import {
-  DEFAULT_PLACEHOLDER_TRANSLATIONS,
-  NOTHING_FOUND_LABEL_TRANSLATIONS,
-} from '~constants/fixedTranslations'
 
 import { VIRTUAL_LIST_MAX_HEIGHT } from '../constants'
 import { useItems } from '../hooks/useItems'
@@ -57,7 +51,6 @@ export const SingleSelectProvider = ({
   onChange,
   name,
   filter = defaultFilter,
-  nothingFoundLabel: nothingFoundLabelProp = 'No matching results',
   placeholder: placeholderProp,
   clearButtonLabel = 'Clear selection',
   isClearable = true,
@@ -76,9 +69,7 @@ export const SingleSelectProvider = ({
 }: SingleSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
   const [isFocused, setIsFocused] = useState(false)
-  const { t, i18n } = useTranslation()
-
-  const selectedLanguage = i18n.language as Language
+  const { t } = useTranslation()
 
   const { isInvalid, isDisabled, isReadOnly, isRequired } = useFormControlProps(
     {
@@ -93,21 +84,13 @@ export const SingleSelectProvider = ({
     if (placeholderProp === null) return ''
     return (
       placeholderProp ??
-      DEFAULT_PLACEHOLDER_TRANSLATIONS[selectedLanguage] ??
-      t('features.common.dropdown.placeholder')
+      t('features.publicForm.components.fields.dropdown.placeholder')
     )
-  }, [placeholderProp, selectedLanguage, t])
+  }, [placeholderProp, t])
 
-  const nothingFoundLabel = useMemo(() => {
-    // Check if the nothingFoundLabel equals to the default label. If yes, return
-    // the label in the correct translation.
-    if (
-      nothingFoundLabelProp ===
-      NOTHING_FOUND_LABEL_TRANSLATIONS[Language.ENGLISH]
-    )
-      return NOTHING_FOUND_LABEL_TRANSLATIONS[selectedLanguage]
-    return nothingFoundLabelProp
-  }, [nothingFoundLabelProp, selectedLanguage])
+  const nothingFoundLabel = t(
+    'features.publicForm.components.fields.dropdown.nothingFound',
+  )
 
   const getFilteredItems = useCallback(
     (filterValue?: string) =>

@@ -7,6 +7,16 @@ export const taSG: PartialDeep<Fields> = {
     yes: 'ஆம்',
     no: 'இல்லை',
   },
+  option: {
+    others: 'மற்றவை',
+  },
+  dropdown: {
+    placeholder: 'ஒரு விருப்பத்தை தேர்வு செய்யவும்',
+    nothingFound: 'முடிவுகள் எதுவும் பொருந்தவில்லை',
+  },
+  attachment: {
+    maxFileSize: 'கோப்பின் அதிகபட்ச அளவு: {readableMaxSize}',
+  },
   email: {
     validation: {
       domainDisallowed:

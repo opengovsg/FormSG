@@ -35,7 +35,6 @@ export const enSG: Fields = {
     charactersAllowedPlaceholder: 'Number of characters',
   },
   radio: {
-    others: 'Others',
     options: {
       title: 'Options',
       placeholder: 'Enter one option per line',
@@ -122,23 +121,6 @@ export const enSG: Fields = {
   imageAttachment: {
     title: 'Uploaded image',
     requiredError: 'Please upload an image',
-    fileUploaderLink: 'Choose file',
-    dragAndDrop: ' or drag and drop here',
-    dragActive: 'Drop the file here',
-    maxFileSize: 'Maximum file size: {readableMaxSize}',
-    ariaLabelRemove: 'Click to remove file',
-    error: {
-      fileEmpty:
-        'You have uploaded an empty file, please upload a valid attachment',
-      fileTooLarge:
-        'You have exceeded the limit, please upload a file below {readableMaxSize}',
-      fileInvalidType:
-        "Your file's extension ending in *{fileExt} is not allowed",
-      tooManyFiles: 'You can only upload a single file in this input',
-      zipFileInvalidType:
-        'The following file extensions in your zip file are not valid: {stringOfInvalidExtensions}',
-      zipParsing: 'An error has occurred whilst parsing your zip file',
-    },
   },
   table: {
     minimumRows: 'Minimum rows',

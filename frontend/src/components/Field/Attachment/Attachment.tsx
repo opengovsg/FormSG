@@ -14,11 +14,9 @@ import imageCompression from 'browser-image-compression'
 import omit from 'lodash/omit'
 
 import { MB } from '~shared/constants/file'
-import { Language } from '~shared/types'
 
 import { ATTACHMENT_THEME_KEY } from '~theme/components/Field/Attachment'
 import { ThemeColorScheme } from '~theme/foundations/colours'
-import { MAXIMUM_FILE_LABEL_TRANSLATIONS } from '~constants/fixedTranslations'
 
 import { downloadFile } from './utils/downloadFile'
 import { AttachmentStylesProvider } from './AttachmentContext'
@@ -125,7 +123,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
     },
     ref,
   ) => {
-    const { t, i18n } = useTranslation()
+    const { t } = useTranslation()
     // Merge given props with any form control props, if they exist.
     const inputProps = useFormControl(props)
     // id to set on the rendered max size FormFieldMessage component.
@@ -150,14 +148,14 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
             case 'file-invalid-type': {
               const fileExt = getFileExtension(rejectedFiles[0].file.name)
               errorMessage = t(
-                `features.adminForm.sidebar.fields.imageAttachment.error.fileInvalidType`,
+                `features.publicForm.components.fields.attachment.error.fileInvalidType`,
                 { fileExt },
               )
               break
             }
             case 'too-many-files': {
               errorMessage = t(
-                `features.adminForm.sidebar.fields.imageAttachment.error.tooManyFiles`,
+                `features.publicForm.components.fields.attachment.error.tooManyFiles`,
               )
               break
             }
@@ -180,7 +178,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
               const stringOfInvalidExtensions = invalidFilesInZip.join(', ')
               return onError?.(
                 t(
-                  'features.adminForm.sidebar.fields.imageAttachment.error.zipFileInvalidType',
+                  'features.publicForm.components.fields.attachment.error.zipFileInvalidType',
                   { stringOfInvalidExtensions },
                 ),
               )
@@ -188,7 +186,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
           } catch {
             return onError?.(
               t(
-                'features.adminForm.sidebar.fields.imageAttachment.error.zipParsing',
+                'features.publicForm.components.fields.attachment.error.zipParsing',
               ),
             )
           }
@@ -226,7 +224,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
             return {
               code: 'file-too-large',
               message: t(
-                'features.adminForm.sidebar.fields.imageAttachment.error.fileTooLarge',
+                'features.publicForm.components.fields.attachment.error.fileTooLarge',
                 { readableMaxSize },
               ),
             }
@@ -235,7 +233,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
             return {
               code: 'file-empty',
               message: t(
-                'features.adminForm.sidebar.fields.imageAttachment.error.zipParsing',
+                'features.publicForm.components.fields.attachment.error.zipParsing',
               ),
             }
           }
@@ -301,8 +299,6 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       })
     }, [getInputProps, inputProps, name])
 
-    const selectedLanguage = i18n.language as Language
-
     return (
       <AttachmentStylesProvider value={styles}>
         <Box __css={styles.container}>
@@ -339,14 +335,12 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
               textStyle="body-2"
               aria-hidden
             >
-              {MAXIMUM_FILE_LABEL_TRANSLATIONS[selectedLanguage]
-                ? `${MAXIMUM_FILE_LABEL_TRANSLATIONS[selectedLanguage]} ${readableMaxSize}`
-                : t(
-                    'features.adminForm.sidebar.fields.imageAttachment.maxFileSize',
-                    {
-                      readableMaxSize,
-                    },
-                  )}
+              {t(
+                'features.publicForm.components.fields.attachment.maxFileSize',
+                {
+                  readableMaxSize,
+                },
+              )}
             </Text>
           ) : null}
         </Box>
