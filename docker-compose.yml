@@ -132,6 +132,7 @@ services:
       - DOWNLOAD_FORM_WHITELIST_RATE_LIMIT
       - UPLOAD_FORM_WHITELIST_RATE_LIMIT
       - KILL_EMAIL_MODE_FEEDBACK_FORMID=67b2b52264eeaf439cfb4f28
+      - FORMSG_SDK_PUBLIC_JWKS={"keys":[{"kty":"RSA","kid":"old-key-id","use":"sig","alg":"RS256","n":"old-key-modulus","e":"old-key-exponent"},{"kty":"RSA","kid":"new-key-id","use":"sig","alg":"RS256","n":"new-key-modulus","e":"new-key-exponent"}]}
 
   mockpass:
     build: https://github.com/opengovsg/mockpass.git#v4.3.1
