@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { useFieldArray, useFormContext, useFormState } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { BiTrash } from 'react-icons/bi'
 import { useTable } from 'react-table'
 import {
@@ -46,10 +47,12 @@ export const TableField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
-  selectedLanguage = Language.ENGLISH,
 }: TableFieldProps): JSX.Element => {
+  const { i18n } = useTranslation()
   const hasMinRowsChanged = useHasChanged(schema.minimumRows)
   const isMobile = useIsMobile()
+
+  const selectedLanguage = i18n.language as Language
 
   const columnsData = useMemo(() => {
     return schema.columns.map((c) => {
@@ -162,7 +165,7 @@ export const TableField = ({
     schema.columns.length * rows.length * (2.75 + 2.25 + 1.5) + rows.length * 3
 
   return (
-    <TableFieldContainer schema={schema} selectedLanguage={selectedLanguage}>
+    <TableFieldContainer schema={schema}>
       <Box
         display="block"
         w="100%"
@@ -273,7 +276,6 @@ export const TableField = ({
           currentRows={fields.length}
           maxRows={schema.maximumRows}
           handleAddRow={handleAddRow}
-          selectedLanguage={selectedLanguage}
         />
       ) : null}
     </TableFieldContainer>

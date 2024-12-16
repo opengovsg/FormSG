@@ -50,195 +50,75 @@ interface FieldFactoryProps {
 
 export const FieldFactory = memo(
   ({ field, ...rest }: FieldFactoryProps) => {
-    const { myInfoChildrenBirthRecords, form, selectedPublicFormLanguage } =
-      usePublicFormContext()
+    const { myInfoChildrenBirthRecords, form } = usePublicFormContext()
     switch (field.fieldType) {
       case BasicField.Section:
-        return (
-          <SectionField
-            schema={field}
-            selectedLanguage={selectedPublicFormLanguage}
-            {...rest}
-          />
-        )
+        return <SectionField schema={field} {...rest} />
       case BasicField.Checkbox:
-        return (
-          <CheckboxField
-            schema={field}
-            selectedLanguage={selectedPublicFormLanguage}
-            {...rest}
-          />
-        )
+        return <CheckboxField schema={field} {...rest} />
       case BasicField.Radio:
-        return (
-          <RadioField
-            schema={field}
-            selectedLanguage={selectedPublicFormLanguage}
-            {...rest}
-          />
-        )
+        return <RadioField schema={field} {...rest} />
       case BasicField.Nric:
-        return (
-          <NricField
-            schema={field}
-            selectedLanguage={selectedPublicFormLanguage}
-            {...rest}
-          />
-        )
+        return <NricField schema={field} {...rest} />
       case BasicField.Number:
-        return (
-          <NumberField
-            schema={field}
-            selectedLanguage={selectedPublicFormLanguage}
-            {...rest}
-          />
-        )
+        return <NumberField schema={field} {...rest} />
       case BasicField.Decimal:
-        return (
-          <DecimalField
-            schema={field}
-            selectedLanguage={selectedPublicFormLanguage}
-            {...rest}
-          />
-        )
+        return <DecimalField schema={field} {...rest} />
       case BasicField.ShortText:
-        return (
-          <ShortTextField
-            schema={field}
-            selectedLanguage={selectedPublicFormLanguage}
-            {...rest}
-          />
-        )
+        return <ShortTextField schema={field} {...rest} />
       case BasicField.LongText:
-        return (
-          <LongTextField
-            schema={field}
-            selectedLanguage={selectedPublicFormLanguage}
-            {...rest}
-          />
-        )
+        return <LongTextField schema={field} {...rest} />
       case BasicField.YesNo:
-        return (
-          <YesNoField
-            schema={field}
-            selectedLanguage={selectedPublicFormLanguage}
-            {...rest}
-          />
-        )
+        return <YesNoField schema={field} {...rest} />
       case BasicField.Dropdown:
-        return (
-          <DropdownField
-            schema={field}
-            selectedLanguage={selectedPublicFormLanguage}
-            {...rest}
-          />
-        )
+        return <DropdownField schema={field} {...rest} />
       case BasicField.CountryRegion:
-        return (
-          <CountryRegionField
-            schema={field}
-            selectedLanguage={selectedPublicFormLanguage}
-            {...rest}
-          />
-        )
+        return <CountryRegionField schema={field} {...rest} />
       case BasicField.Date:
-        return (
-          <DateField
-            schema={field}
-            selectedLanguage={selectedPublicFormLanguage}
-            {...rest}
-          />
-        )
+        return <DateField schema={field} {...rest} />
       case BasicField.Uen:
-        return (
-          <UenField
-            schema={field}
-            selectedLanguage={selectedPublicFormLanguage}
-            {...rest}
-          />
-        )
+        return <UenField schema={field} {...rest} />
       case BasicField.Attachment: {
         const showDownload =
           form?.responseMode === FormResponseMode.Multirespondent
         return (
           <AttachmentField
             schema={field}
-            selectedLanguage={selectedPublicFormLanguage}
             {...rest}
             showDownload={showDownload}
           />
         )
       }
       case BasicField.HomeNo:
-        return (
-          <HomeNoField
-            schema={field}
-            selectedLanguage={selectedPublicFormLanguage}
-            {...rest}
-          />
-        )
+        return <HomeNoField schema={field} {...rest} />
       case BasicField.Mobile: {
         return field.isVerifiable ? (
           <VerifiableMobileField
             schema={field as VerifiableMobileFieldSchema}
-            selectedLanguage={selectedPublicFormLanguage}
             {...rest}
           />
         ) : (
-          <MobileField
-            schema={field}
-            selectedLanguage={selectedPublicFormLanguage}
-            {...rest}
-          />
+          <MobileField schema={field} {...rest} />
         )
       }
       case BasicField.Statement:
-        return (
-          <ParagraphField
-            schema={field}
-            selectedLanguage={selectedPublicFormLanguage}
-            {...rest}
-          />
-        )
+        return <ParagraphField schema={field} {...rest} />
       case BasicField.Rating:
-        return (
-          <RatingField
-            schema={field}
-            selectedLanguage={selectedPublicFormLanguage}
-            {...rest}
-          />
-        )
+        return <RatingField schema={field} {...rest} />
       case BasicField.Email: {
         return field.isVerifiable ? (
           <VerifiableEmailField
             schema={field as VerifiableEmailFieldSchema}
-            selectedLanguage={selectedPublicFormLanguage}
             {...rest}
           />
         ) : (
-          <EmailField
-            schema={field}
-            selectedLanguage={selectedPublicFormLanguage}
-            {...rest}
-          />
+          <EmailField schema={field} {...rest} />
         )
       }
       case BasicField.Image:
-        return (
-          <ImageField
-            schema={field}
-            selectedLanguage={selectedPublicFormLanguage}
-            {...rest}
-          />
-        )
+        return <ImageField schema={field} {...rest} />
       case BasicField.Table:
-        return (
-          <TableField
-            schema={field}
-            selectedLanguage={selectedPublicFormLanguage}
-            {...rest}
-          />
-        )
+        return <TableField schema={field} {...rest} />
       case BasicField.Children:
         return (
           <ChildrenCompoundField

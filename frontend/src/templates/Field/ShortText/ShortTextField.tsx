@@ -4,8 +4,6 @@
 import { useMemo } from 'react'
 import { useFormContext } from 'react-hook-form'
 
-import { Language } from '~shared/types'
-
 import { createTextValidationRules } from '~utils/fieldValidation'
 import Input from '~components/Input'
 
@@ -22,7 +20,6 @@ export interface ShortTextFieldProps extends BaseFieldProps {
 export const ShortTextField = ({
   schema,
   disableRequiredValidation,
-  selectedLanguage = Language.ENGLISH,
   ...fieldContainerProps
 }: ShortTextFieldProps): JSX.Element => {
   const validationRules = useMemo(
@@ -40,11 +37,7 @@ export const ShortTextField = ({
     isPrefilled && !!fieldContainerProps?.prefill?.lockPrefill
 
   return (
-    <FieldContainer
-      schema={schema}
-      selectedLanguage={selectedLanguage}
-      {...fieldContainerProps}
-    >
+    <FieldContainer schema={schema} {...fieldContainerProps}>
       <Input
         isPrefilled={isPrefilled}
         // Prevent editing of pre-filled fields if lockPrefill is true

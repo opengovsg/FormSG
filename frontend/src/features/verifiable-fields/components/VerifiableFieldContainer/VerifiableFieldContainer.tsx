@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiCheck } from 'react-icons/bi'
 import { Box, Stack } from '@chakra-ui/react'
 
@@ -29,9 +30,9 @@ export interface VerifiableFieldContainerProps
 export const VerifiableFieldContainer = ({
   schema,
   colorTheme = FormColorTheme.Blue,
-  selectedLanguage = Language.ENGLISH,
   children,
 }: VerifiableFieldContainerProps): JSX.Element => {
+  const { i18n } = useTranslation()
   const {
     isVfnBoxOpen,
     otpPrefix,
@@ -55,12 +56,13 @@ export const VerifiableFieldContainer = ({
     }
   }, [hasSignature, schema.fieldType])
 
+  const selectedLanguage = i18n.language as Language
   const verifyLabel = VERIFY_LABEL_TRANSLATIONS[selectedLanguage].Verify
   const verifiedLabel = VERIFY_LABEL_TRANSLATIONS[selectedLanguage].Verified
 
   return (
     <Box>
-      <FieldContainer schema={schema} selectedLanguage={selectedLanguage}>
+      <FieldContainer schema={schema}>
         <Stack spacing="0.5rem" direction={{ base: 'column', md: 'row' }}>
           {children}
           <Box>

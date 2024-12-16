@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box, Text, VisuallyHidden } from '@chakra-ui/react'
 import { format } from 'date-fns'
 
@@ -18,7 +19,6 @@ export interface EndPageBlockProps {
   colorTheme?: FormColorTheme
   focusOnMount?: boolean
   isButtonHidden?: boolean
-  selectedLanguage: Language
 }
 
 export const EndPageBlock = ({
@@ -28,8 +28,8 @@ export const EndPageBlock = ({
   colorTheme = FormColorTheme.Blue,
   focusOnMount,
   isButtonHidden,
-  selectedLanguage,
 }: EndPageBlockProps): JSX.Element => {
+  const { i18n } = useTranslation()
   const focusRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (focusOnMount) {
@@ -46,7 +46,7 @@ export const EndPageBlock = ({
     },
   })
 
-  console.log(selectedLanguage)
+  const selectedLanguage = i18n.language as Language
 
   const title = getValueInSelectedLanguage({
     defaultValue: endPage.title,

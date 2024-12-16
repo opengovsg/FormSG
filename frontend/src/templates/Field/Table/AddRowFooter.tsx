@@ -16,7 +16,6 @@ interface AddRowFooterProps {
   handleAddRow: () => void
   currentRows: number
   maxRows: number | ''
-  selectedLanguage?: Language
 }
 
 export const AddRowFooter = ({
@@ -24,20 +23,26 @@ export const AddRowFooter = ({
   currentRows,
   maxRows,
   handleAddRow: handleAddRowProp,
-  selectedLanguage = Language.ENGLISH,
 }: AddRowFooterProps): JSX.Element => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   // State to decide whether to announce row changes to screen readers
   const [hasAddedRows, setHasAddedRows] = useState(false)
-  const maxRowDescription = Number.isInteger(maxRows)
-    ? t('features.publicForm.components.table.rowMax', {
-        currentRows,
-        count: Number(maxRows),
-      })
-    : t('features.publicForm.components.table.row', {
-        count: currentRows,
-      })
+
+  const selectedLanguage = i18n.language as Language
+  const maxRowDescription =
+    getTranslationsForTableFieldRows({
+      maxRows,
+      currentRows,
+      selectedLanguage,
+    }) ?? Number.isInteger(maxRows)
+      ? t('features.publicForm.components.table.rowMax', {
+          currentRows,
+          count: Number(maxRows),
+        })
+      : t('features.publicForm.components.table.row', {
+          count: currentRows,
+        })
 
   const handleAddRow = useCallback(() => {
     handleAddRowProp()

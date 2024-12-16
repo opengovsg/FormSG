@@ -16,7 +16,6 @@ export interface HomeNoFieldProps extends BaseFieldProps {
 export const HomeNoField = ({
   schema,
   disableRequiredValidation,
-  selectedLanguage,
 }: HomeNoFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createHomeNoValidationRules(schema, disableRequiredValidation),
@@ -26,7 +25,7 @@ export const HomeNoField = ({
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema} selectedLanguage={selectedLanguage}>
+    <FieldContainer schema={schema}>
       <Controller
         control={control}
         rules={validationRules}

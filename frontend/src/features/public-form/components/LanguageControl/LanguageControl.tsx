@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiChevronDown } from 'react-icons/bi'
 import {
   Button,
@@ -28,12 +30,8 @@ const LANGUAGES: LanguageListType[] = [
 ]
 
 export const LanguageControl = (): JSX.Element | null => {
-  const {
-    form,
-    selectedPublicFormLanguage,
-    setSelectedPublicFormLanguage,
-    submissionData,
-  } = usePublicFormContext()
+  const { i18n } = useTranslation()
+  const { form, submissionData } = usePublicFormContext()
 
   const availableLanguages = new Set(form?.supportedLanguages ?? [])
 
@@ -52,14 +50,20 @@ export const LanguageControl = (): JSX.Element | null => {
   })
 
   const handleLanguageChange = (language: string) => {
-    if (setSelectedPublicFormLanguage) {
-      setSelectedPublicFormLanguage(language as Language)
-    }
+    i18n.changeLanguage(language)
   }
 
-  const selectedLanguage = LANGUAGES.find(
-    (language) => language.language === selectedPublicFormLanguage,
-  )?.title
+  const selectedI18nLanguage = languagesList.find(
+    ({ language }) => language === i18n.language,
+  )
+  const selectedLanguage =
+    selectedI18nLanguage ??
+    languagesList.find(({ language }) => language === Language.ENGLISH)
+
+  // For good measure, ensure i18n.language and selectedLanguage line up
+  useEffect(() => {
+    i18n.changeLanguage(selectedLanguage?.language)
+  }, [i18n, selectedLanguage])
 
   // Submission data is not undefined in the form end page. Use
   // this to not render the language control component in the form
@@ -83,7 +87,7 @@ export const LanguageControl = (): JSX.Element | null => {
             variant="clear"
             color="secondary.500"
           >
-            {selectedLanguage}
+            {selectedLanguage?.title}
           </MenuButton>
           <MenuList>
             {languagesList.map((language) => {

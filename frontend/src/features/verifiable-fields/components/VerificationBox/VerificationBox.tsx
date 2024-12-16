@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Flex,
@@ -70,8 +71,8 @@ export const VerificationBox = ({
   otpPrefix,
   handleResendOtp,
   handleVerifyOtp,
-  selectedLanguage = Language.ENGLISH,
 }: VerificationBoxProps): JSX.Element => {
+  const { i18n } = useTranslation()
   const {
     formMethods: {
       register,
@@ -89,6 +90,7 @@ export const VerificationBox = ({
     subheader,
   } = useMemo(() => VFN_RENDER_DATA[fieldType], [fieldType])
 
+  const selectedLanguage = i18n.language as Language
   return (
     <Flex
       p={{ base: '1.25rem', md: '2.25rem' }}

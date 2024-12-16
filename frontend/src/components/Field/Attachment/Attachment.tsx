@@ -101,11 +101,6 @@ export interface AttachmentProps extends UseFormControlProps<HTMLElement> {
    * Override callback function that is invoked when remove button is clicked.
    */
   handleRemoveFileOverride?: () => void
-
-  /**
-   * Selected language used for default labels
-   */
-  selectedLanguage?: Language
 }
 
 export const Attachment = forwardRef<AttachmentProps, 'div'>(
@@ -126,12 +121,11 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
       isRemoveDisabled,
       handleDownloadFileOverride,
       handleRemoveFileOverride,
-      selectedLanguage = Language.ENGLISH,
       ...props
     },
     ref,
   ) => {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
     // Merge given props with any form control props, if they exist.
     const inputProps = useFormControl(props)
     // id to set on the rendered max size FormFieldMessage component.
@@ -306,6 +300,8 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
         ...inputProps,
       })
     }, [getInputProps, inputProps, name])
+
+    const selectedLanguage = i18n.language as Language
 
     return (
       <AttachmentStylesProvider value={styles}>

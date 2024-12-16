@@ -1,4 +1,5 @@
 import { useFormState } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { FormControl } from '@chakra-ui/react'
 
 import { Language } from '~shared/types'
@@ -9,7 +10,6 @@ import { TableFieldSchema } from '../types'
 
 export type BaseTableFieldProps = {
   schema: TableFieldSchema
-  selectedLanguage: Language
 }
 
 export interface TableFieldContainerProps extends BaseTableFieldProps {
@@ -23,9 +23,11 @@ export interface TableFieldContainerProps extends BaseTableFieldProps {
 export const TableFieldContainer = ({
   schema,
   children,
-  selectedLanguage,
 }: TableFieldContainerProps): JSX.Element => {
+  const { i18n } = useTranslation()
   const { isSubmitting, isValid, errors } = useFormState({ name: schema._id })
+
+  const selectedLanguage = i18n.language as Language
 
   let title = schema.title
 

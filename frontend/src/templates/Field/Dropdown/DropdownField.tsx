@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 
 import { FormColorTheme, Language } from '~shared/types'
 
@@ -22,14 +23,16 @@ export const DropdownField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
-  selectedLanguage = Language.ENGLISH,
   ...fieldContainerProps
 }: DropdownFieldProps): JSX.Element => {
+  const { i18n } = useTranslation()
   const rules = useMemo(() => {
     return createDropdownValidationRules(schema, disableRequiredValidation)
   }, [schema, disableRequiredValidation])
 
   const { control } = useFormContext<SingleAnswerFieldInput>()
+
+  const selectedLanguage = i18n.language as Language
 
   const fieldOptions: ComboboxItem[] = useMemo(() => {
     const defaultEnglishFieldOptions = schema.fieldOptions
@@ -70,11 +73,7 @@ export const DropdownField = ({
   }, [schema.fieldOptions, schema?.fieldOptionsTranslations, selectedLanguage])
 
   return (
-    <FieldContainer
-      schema={schema}
-      selectedLanguage={selectedLanguage}
-      {...fieldContainerProps}
-    >
+    <FieldContainer schema={schema} {...fieldContainerProps}>
       <Controller
         control={control}
         rules={rules}
@@ -84,7 +83,6 @@ export const DropdownField = ({
           <SingleSelect
             colorScheme={`theme-${colorTheme}`}
             items={fieldOptions}
-            selectedLanguage={selectedLanguage}
             {...field}
           />
         )}

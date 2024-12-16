@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useTranslation } from 'react-i18next'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
-import { FormAuthType, Language } from '~shared/types/form'
+import { FormAuthType } from '~shared/types/form'
 
 import { useFormTemplate } from '~/features/admin-form/common/queries'
 import { FormNotFound } from '~/features/public-form/components/FormNotFound'
@@ -30,9 +30,6 @@ export const TemplateFormProvider = ({
 
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
     useCommonFormProvider(formId)
-
-  const [selectedPublicFormLanguage, setSelectedPublicFormLanguage] =
-    useState<Language>(Language.ENGLISH)
 
   useEffect(() => {
     return () => {
@@ -97,8 +94,6 @@ export const TemplateFormProvider = ({
         isPaymentEnabled: false,
         hasSingleSubmissionValidationError: false,
         hasRespondentNotWhitelistedError: false,
-        setSelectedPublicFormLanguage,
-        selectedPublicFormLanguage,
         ...commonFormValues,
         ...data,
         ...rest,

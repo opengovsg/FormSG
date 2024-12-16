@@ -22,7 +22,6 @@ export const YesNoField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
-  selectedLanguage,
 }: YesNoFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createBaseValidationRules(schema, disableRequiredValidation),
@@ -32,7 +31,7 @@ export const YesNoField = ({
   const { control } = useFormContext<YesNoFieldInput>()
 
   return (
-    <FieldContainer schema={schema} selectedLanguage={selectedLanguage}>
+    <FieldContainer schema={schema}>
       <Controller
         control={control}
         rules={validationRules}
@@ -41,7 +40,6 @@ export const YesNoField = ({
           <YesNo
             colorScheme={`theme-${colorTheme}`}
             title={`${schema.questionNumber}. ${schema.title}`}
-            selectedLanguage={selectedLanguage}
             {...field}
           />
         )}

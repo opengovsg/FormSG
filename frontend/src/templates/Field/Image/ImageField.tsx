@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box, Image, Skeleton, useBreakpointValue } from '@chakra-ui/react'
 
 import { Language } from '~shared/types'
@@ -19,10 +20,8 @@ export interface ImageFieldProps extends BaseFieldProps {
 /**
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
-export const ImageField = ({
-  schema,
-  selectedLanguage = Language.ENGLISH,
-}: ImageFieldProps): JSX.Element => {
+export const ImageField = ({ schema }: ImageFieldProps): JSX.Element => {
+  const { i18n } = useTranslation()
   const [fallbackType, setFallbackType] = useState<'loading' | 'error'>(
     'loading',
   )
@@ -60,7 +59,7 @@ export const ImageField = ({
   const description = getValueInSelectedLanguage({
     defaultValue: schema.description,
     translations: schema.descriptionTranslations ?? [],
-    selectedLanguage,
+    selectedLanguage: i18n.language as Language,
   })
 
   return (

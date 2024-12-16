@@ -59,18 +59,16 @@ export interface YesNoProps {
    * Color scheme of the component to render. Defaults to `primary`.
    */
   colorScheme?: FieldColorScheme
-
-  selectedLanguage?: Language
 }
 
 /**
  * YesNo field component.
  */
 export const YesNo = forwardRef<YesNoProps, 'input'>(
-  ({ colorScheme, selectedLanguage = Language.ENGLISH, ...props }, ref) => {
+  ({ colorScheme, ...props }, ref) => {
     const formControlProps = useFormControlProps(props)
     const { getRootProps, getRadioProps, onChange } = useRadioGroup(props)
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
 
     const groupProps = getRootProps()
     const [noProps, yesProps] = useMemo(() => {
@@ -97,6 +95,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
       return [noRadioProps, yesRadioProps]
     }, [formControlProps, getRadioProps, props.name])
 
+    const selectedLanguage = i18n.language as Language
     const yesLabel = YES_NO_TRANSLATIONS[selectedLanguage].Yes
     const noLabel = YES_NO_TRANSLATIONS[selectedLanguage].No
 
@@ -108,7 +107,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           {...noProps}
           onChange={(value) => onChange(value as YesNoOptionValue)}
           leftIcon={BiX}
-          label={yesLabel ?? t('features.adminForm.sidebar.fields.yesNo.no')}
+          label={noLabel ?? t('features.adminForm.sidebar.fields.yesNo.no')}
           // Ref is set here for tracking current value, and also so any errors
           // can focus this input.
           ref={ref}
@@ -120,7 +119,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           {...yesProps}
           onChange={(value) => onChange(value as YesNoOptionValue)}
           leftIcon={BiCheck}
-          label={noLabel ?? t('features.adminForm.sidebar.fields.yesNo.yes')}
+          label={yesLabel ?? t('features.adminForm.sidebar.fields.yesNo.yes')}
           title={props.title}
         />
       </HStack>

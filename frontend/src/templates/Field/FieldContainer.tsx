@@ -5,6 +5,7 @@
  * provides.
  */
 import { FieldError, useFormState } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Box, FormControl, Grid } from '@chakra-ui/react'
 import { get } from 'lodash'
 
@@ -53,11 +54,6 @@ export type BaseFieldProps = {
    * Optional specification for error message variant.
    */
   errorVariant?: 'white'
-
-  /**
-   * Form language selected by user.
-   */
-  selectedLanguage?: Language
 }
 
 export interface FieldContainerProps extends BaseFieldProps {
@@ -70,11 +66,12 @@ export const FieldContainer = ({
   errorKey,
   showMyInfoBadge,
   errorVariant,
-  selectedLanguage = Language.ENGLISH,
 }: FieldContainerProps): JSX.Element => {
+  const { i18n } = useTranslation()
   const { errors, isSubmitting, isValid } = useFormState({ name: schema._id })
 
   const error: FieldError | undefined = get(errors, errorKey ?? schema._id)
+  const selectedLanguage = i18n.language as Language
 
   const title = getValueInSelectedLanguage({
     defaultValue: schema.title,

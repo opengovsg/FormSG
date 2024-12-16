@@ -49,8 +49,6 @@ export interface SingleSelectProviderProps<
   /** Variant of component */
   variant?: 'clear'
   fullWidth?: boolean
-  /** Selected language of default placeholder prop */
-  selectedLanguage?: Language
 }
 export const SingleSelectProvider = ({
   items: rawItems,
@@ -75,11 +73,12 @@ export const SingleSelectProvider = ({
   comboboxProps = {},
   variant,
   fullWidth = false,
-  selectedLanguage = Language.ENGLISH,
 }: SingleSelectProviderProps): JSX.Element => {
   const { items, getItemByValue } = useItems({ rawItems })
   const [isFocused, setIsFocused] = useState(false)
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+
+  const selectedLanguage = i18n.language as Language
 
   const { isInvalid, isDisabled, isReadOnly, isRequired } = useFormControlProps(
     {

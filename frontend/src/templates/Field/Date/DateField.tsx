@@ -30,7 +30,6 @@ export const DateField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
-  selectedLanguage,
   ...fieldContainerProps
 }: DateFieldProps): JSX.Element => {
   const validationRules = useMemo(
@@ -74,11 +73,7 @@ export const DateField = ({
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer
-      schema={schema}
-      selectedLanguage={selectedLanguage}
-      {...fieldContainerProps}
-    >
+    <FieldContainer schema={schema} {...fieldContainerProps}>
       <Controller
         control={control}
         name={schema._id}

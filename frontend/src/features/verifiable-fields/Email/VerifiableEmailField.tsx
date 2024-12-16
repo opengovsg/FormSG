@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box, VisuallyHidden } from '@chakra-ui/react'
 
 import { Language } from '~shared/types'
@@ -26,7 +27,6 @@ export interface VerifiableEmailFieldProps extends EmailFieldProps {
 const InnerVerifiableEmailField = ({
   schema,
   disableRequiredValidation,
-  selectedLanguage = Language.ENGLISH,
   ...formContainerProps
 }: VerifiableEmailFieldProps): JSX.Element => {
   const { handleInputChange, handleVfnButtonClick, hasSignature } =
@@ -47,11 +47,7 @@ const InnerVerifiableEmailField = ({
   }, [hasSignature])
 
   return (
-    <VerifiableFieldContainer
-      schema={schema}
-      {...formContainerProps}
-      selectedLanguage={selectedLanguage}
-    >
+    <VerifiableFieldContainer schema={schema} {...formContainerProps}>
       <Box w="100%">
         <VisuallyHidden id={`verifiable-description-${schema._id}`}>
           {a11yLabel}
@@ -65,7 +61,6 @@ const InnerVerifiableEmailField = ({
             onKeyDown: handleKeyDown,
             'aria-describedby': `verifiable-description-${schema._id}`,
           }}
-          selectedLanguage={selectedLanguage}
         />
       </Box>
     </VerifiableFieldContainer>
@@ -74,23 +69,19 @@ const InnerVerifiableEmailField = ({
 
 export const VerifiableEmailField = ({
   schema,
-  selectedLanguage = Language.ENGLISH,
   ...props
 }: VerifiableEmailFieldProps) => {
+  const { i18n } = useTranslation()
   const validateInputForVfn = baseEmailValidationFn({
     schema,
-    selectedLanguage,
+    selectedLanguage: i18n.language as Language,
   })
   return (
     <VerifiableFieldProvider
       schema={schema}
       validateInputForVfn={validateInputForVfn}
     >
-      <InnerVerifiableEmailField
-        schema={schema}
-        {...props}
-        selectedLanguage={selectedLanguage}
-      />
+      <InnerVerifiableEmailField schema={schema} {...props} />
     </VerifiableFieldProvider>
   )
 }

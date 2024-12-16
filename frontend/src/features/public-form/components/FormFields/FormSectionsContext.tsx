@@ -14,10 +14,8 @@ import { BasicField, FormFieldDto } from '~shared/types'
 import { FieldIdSet } from '~features/logic/types'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
-import {
-  PUBLICFORM_INSTRUCTIONS_SECTIONID,
-  startPageTitleTranslations,
-} from '../FormInstructions/FormInstructionsContainer'
+import { titleTranslations } from '../FormInstructions'
+import { PUBLICFORM_INSTRUCTIONS_SECTIONID } from '../FormInstructions/FormInstructionsContainer'
 
 export type SidebarSectionMeta = Pick<
   FormFieldDto,
@@ -55,7 +53,7 @@ export const FormSectionsProvider = ({
     if (form.startPage.paragraph)
       sections.push({
         title: 'Instructions',
-        titleTranslations: startPageTitleTranslations,
+        titleTranslations,
         _id: PUBLICFORM_INSTRUCTIONS_SECTIONID,
       })
     form.form_fields.forEach((f) => {

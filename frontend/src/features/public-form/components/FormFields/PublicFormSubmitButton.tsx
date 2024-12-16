@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Stack, useDisclosure, VisuallyHidden } from '@chakra-ui/react'
 
 import { PAYMENT_CONTACT_FIELD_ID } from '~shared/constants'
-import { FormField, LogicDto, MyInfoFormField } from '~shared/types'
+import { FormField, Language, LogicDto, MyInfoFormField } from '~shared/types'
 
 import { ThemeColorScheme } from '~theme/foundations/colours'
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -39,7 +39,7 @@ export const PublicFormSubmitButton = ({
   onSubmit,
   trigger,
 }: PublicFormSubmitButtonProps): JSX.Element => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [prevPaymentId, setPrevPaymentId] = useState('')
 
   const isMobile = useIsMobile()
@@ -51,7 +51,6 @@ export const PublicFormSubmitButton = ({
     isPreview,
     hasSingleSubmissionValidationError,
     setHasSingleSubmissionValidationError,
-    selectedPublicFormLanguage,
   } = usePublicFormContext()
 
   const paymentEmailField = formInputs[
@@ -66,16 +65,17 @@ export const PublicFormSubmitButton = ({
     })
   }, [formInputs, formFields, formLogics])
 
+  const selectedLanguage = i18n.language as Language
   const preventSubmissionMessage = useMemo(() => {
     return (
       preventSubmissionLogic?.preventSubmitMessageTranslations?.find(
-        (translation) => translation.language === selectedPublicFormLanguage,
+        (translation) => translation.language === selectedLanguage,
       )?.translation ?? preventSubmissionLogic?.preventSubmitMessage
     )
   }, [
     preventSubmissionLogic?.preventSubmitMessage,
     preventSubmissionLogic?.preventSubmitMessageTranslations,
-    selectedPublicFormLanguage,
+    selectedLanguage,
   ])
 
   // For payments submit and pay modal

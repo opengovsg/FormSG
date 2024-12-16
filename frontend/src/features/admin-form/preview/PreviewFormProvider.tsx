@@ -6,7 +6,7 @@ import { datadogLogs } from '@datadog/browser-logs'
 import get from 'lodash/get'
 import simplur from 'simplur'
 
-import { FormAuthType, FormResponseMode, Language } from '~shared/types/form'
+import { FormAuthType, FormResponseMode } from '~shared/types/form'
 
 import { usePreviewForm } from '~/features/admin-form/common/queries'
 import { FormNotFound } from '~/features/public-form/components/FormNotFound'
@@ -45,9 +45,6 @@ export const PreviewFormProvider = ({
     // Stop querying once submissionData is present.
     /* enabled= */ !submissionData,
   )
-
-  const [selectedPublicFormLanguage, setSelectedPublicFormLanguage] =
-    useState<Language>(Language.ENGLISH)
 
   const { data: { useFetchForSubmissions } = {} } = useEnv()
 
@@ -342,8 +339,6 @@ export const PreviewFormProvider = ({
         isPreview: true,
         hasSingleSubmissionValidationError: false,
         hasRespondentNotWhitelistedError: false,
-        setSelectedPublicFormLanguage,
-        selectedPublicFormLanguage,
         ...commonFormValues,
         ...data,
         ...rest,

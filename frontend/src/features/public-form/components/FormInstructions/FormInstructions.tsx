@@ -1,22 +1,25 @@
+import { useTranslation } from 'react-i18next'
 import { Box } from '@chakra-ui/react'
 
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme, Language } from '~shared/types'
 
 import { useMdComponents } from '~hooks/useMdComponents'
+import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import { MarkdownText } from '~components/MarkdownText'
 import { useSectionColor } from '~templates/Field/Section/useSectionColor'
 
+import { titleTranslations } from '.'
+
 interface FormInstructionsProps {
   content: string
-  title: string
   colorTheme?: FormColorTheme
 }
 
 export const FormInstructions = ({
   content,
-  title,
   colorTheme,
 }: FormInstructionsProps): JSX.Element => {
+  const { i18n } = useTranslation()
   const sectionColor = useSectionColor(colorTheme)
   const mdComponents = useMdComponents({
     styles: {
@@ -25,6 +28,13 @@ export const FormInstructions = ({
         color: 'secondary.700',
       },
     },
+  })
+
+  const selectedLanguage = i18n.language as Language
+  const title = getValueInSelectedLanguage({
+    defaultValue: 'Instructions',
+    translations: titleTranslations,
+    selectedLanguage,
   })
 
   return (

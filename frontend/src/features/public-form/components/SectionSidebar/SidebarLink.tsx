@@ -1,5 +1,8 @@
 import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box, chakra, useStyleConfig, VisuallyHidden } from '@chakra-ui/react'
+
+import { Language } from '~shared/types'
 
 import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 
@@ -26,9 +29,9 @@ export const SidebarLink = ({
   isActive,
   sectionMeta,
 }: SidebarLinkProps): JSX.Element => {
+  const { i18n } = useTranslation()
   const { sectionRefs, setNavigatedSectionId } = useFormSections()
-  const { miniHeaderRef, onMobileDrawerClose, selectedPublicFormLanguage } =
-    usePublicFormContext()
+  const { miniHeaderRef, onMobileDrawerClose } = usePublicFormContext()
 
   const sectionRef = useMemo(
     () => sectionRefs[sectionMeta._id],
@@ -66,10 +69,11 @@ export const SidebarLink = ({
     variant: 'standalone',
   })
 
+  const selectedLanguage = i18n.language as Language
   const title = getValueInSelectedLanguage({
     defaultValue: sectionMeta.title,
     translations: sectionMeta.titleTranslations,
-    selectedLanguage: selectedPublicFormLanguage,
+    selectedLanguage,
   })
 
   return (

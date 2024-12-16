@@ -1,5 +1,6 @@
 import { forwardRef, useMemo } from 'react'
 import { Controller, get, useFormContext, useFormState } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   CheckboxGroup as ChakraCheckboxGroup,
@@ -37,8 +38,8 @@ export const CheckboxField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
-  selectedLanguage = Language.ENGLISH,
 }: CheckboxFieldProps): JSX.Element => {
+  const { i18n } = useTranslation()
   const fieldColorScheme = useMemo(
     () => `theme-${colorTheme}` as const,
     [colorTheme],
@@ -62,6 +63,7 @@ export const CheckboxField = ({
   )
 
   const defaultEnglishCheckboxOptions = schema.fieldOptions
+  const selectedLanguage = i18n.language as Language
 
   const { register, getValues, control } = useFormContext<CheckboxFieldInputs>()
   const { isValid, isSubmitting, errors } = useFormState<CheckboxFieldInputs>({
@@ -91,11 +93,7 @@ export const CheckboxField = ({
     [checkboxInputName, getValues],
   )
   return (
-    <FieldContainer
-      schema={schema}
-      errorKey={checkboxInputName}
-      selectedLanguage={selectedLanguage}
-    >
+    <FieldContainer schema={schema} errorKey={checkboxInputName}>
       <Box aria-label={`${schema.questionNumber}. ${schema.title}`} role="list">
         <Controller
           name={checkboxInputName}
@@ -138,7 +136,6 @@ export const CheckboxField = ({
                       colorScheme={fieldColorScheme}
                       value={CHECKBOX_OTHERS_INPUT_VALUE}
                       isInvalid={!!get(errors, checkboxInputName)}
-                      selectedLanguage={selectedLanguage}
                     />
                     <Checkbox.OthersInput
                       colorScheme={fieldColorScheme}

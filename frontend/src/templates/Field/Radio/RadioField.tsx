@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext, useFormState } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { FormControl, useMultiStyleConfig } from '@chakra-ui/react'
 import { get } from 'lodash'
 
@@ -28,8 +29,8 @@ export const RadioField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
-  selectedLanguage = Language.ENGLISH,
 }: RadioFieldProps): JSX.Element => {
+  const { i18n } = useTranslation()
   const fieldColorScheme = useMemo(
     () => `theme-${colorTheme}` as const,
     [colorTheme],
@@ -76,15 +77,11 @@ export const RadioField = ({
   const fieldOptions = getFieldOptionsInSelectedLanguage({
     defaultValue: defaultEnglishRadioOptions,
     translations: schema.fieldOptionsTranslations,
-    selectedLanguage,
+    selectedLanguage: i18n.language as Language,
   })
 
   return (
-    <FieldContainer
-      schema={schema}
-      errorKey={radioInputName}
-      selectedLanguage={selectedLanguage}
-    >
+    <FieldContainer schema={schema} errorKey={radioInputName}>
       <Controller
         name={radioInputName}
         rules={validationRules}
@@ -127,7 +124,6 @@ export const RadioField = ({
               <Radio.OthersWrapper
                 colorScheme={fieldColorScheme}
                 value={RADIO_OTHERS_INPUT_VALUE}
-                selectedLanguage={selectedLanguage}
               >
                 <FormControl
                   isRequired={schema.required}

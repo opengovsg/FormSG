@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext, useFormState } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { UseTableCellProps } from 'react-table'
 import { FormControl, VisuallyHidden } from '@chakra-ui/react'
 import { get } from 'lodash'
@@ -34,7 +35,6 @@ export interface ColumnCellProps
   disableRequiredValidation: boolean
   columnSchema: ColumnDto
   colorTheme: FormColorTheme
-  selectedLanguage: Language
 }
 
 export interface FieldColumnCellProps<T extends Column = Column> {
@@ -44,7 +44,6 @@ export interface FieldColumnCellProps<T extends Column = Column> {
   /** Represents `{schemaId}.{rowIndex}.{columnId}` */
   inputName: `${string}.${number}.${string}`
   colorTheme: FormColorTheme
-  selectedLanguage: Language
 }
 
 const ShortTextColumnCell = ({
@@ -84,14 +83,15 @@ const DropdownColumnCell = ({
   disableRequiredValidation,
   inputName,
   colorTheme,
-  selectedLanguage,
 }: FieldColumnCellProps<DropdownColumnBase>) => {
+  const { i18n } = useTranslation()
   const { control } = useFormContext<TableFieldInputs>()
   const rules = useMemo(
     () => createDropdownValidationRules(schema, disableRequiredValidation),
     [schema, disableRequiredValidation],
   )
 
+  const selectedLanguage = i18n.language as Language
   const fieldOptions: ComboboxItem[] = useMemo(() => {
     const defaultEnglishFieldOptions = schema.fieldOptions ?? []
     const fieldOptionsTranslations = schema?.fieldOptionsTranslations ?? []
@@ -140,7 +140,6 @@ const DropdownColumnCell = ({
         <SingleSelect
           isDisabled={isDisabled}
           colorScheme={`theme-${colorTheme}`}
-          selectedLanguage={selectedLanguage}
           // Possibility of fieldOptions being undefined during table field creation.
           items={fieldOptions ?? []}
           {...field}
@@ -161,7 +160,6 @@ export const ColumnCell = ({
   column,
   columnSchema,
   colorTheme,
-  selectedLanguage,
 }: ColumnCellProps): JSX.Element => {
   const isMobile = useIsMobile()
   const isPrint = useIsPrint()
@@ -182,7 +180,6 @@ export const ColumnCell = ({
             isDisabled={isDisabled}
             disableRequiredValidation={disableRequiredValidation}
             inputName={inputName}
-            selectedLanguage={selectedLanguage}
           />
         )
       case BasicField.Dropdown:
@@ -193,7 +190,6 @@ export const ColumnCell = ({
             isDisabled={isDisabled}
             disableRequiredValidation={disableRequiredValidation}
             inputName={inputName}
-            selectedLanguage={selectedLanguage}
           />
         )
       default:
@@ -205,7 +201,6 @@ export const ColumnCell = ({
     disableRequiredValidation,
     inputName,
     isDisabled,
-    selectedLanguage,
   ])
 
   return (

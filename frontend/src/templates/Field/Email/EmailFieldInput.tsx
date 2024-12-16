@@ -4,6 +4,7 @@ import {
   ControllerRenderProps,
   useFormContext,
 } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 
 import { Language } from '~shared/types'
 
@@ -31,8 +32,9 @@ export const EmailFieldInput = ({
   disableRequiredValidation,
   handleInputChange,
   inputProps = {},
-  selectedLanguage = Language.ENGLISH,
 }: EmailFieldInputProps): JSX.Element => {
+  const { i18n } = useTranslation()
+  const selectedLanguage = i18n.language as Language
   const validationRules = useMemo(
     () =>
       createEmailValidationRules(

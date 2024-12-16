@@ -28,11 +28,6 @@ export interface CheckboxProps extends ChakraCheckboxProps {
    * Background and shadow colors of checkbox.
    */
   colorScheme?: FieldColorScheme
-
-  /**
-   * Selected language to get translated label.
-   */
-  selectedLanguage?: Language
 }
 
 type CheckboxWithOthers = ComponentWithAs<'input', CheckboxProps> & {
@@ -99,7 +94,7 @@ const OthersWrapper = ({
  * Wrapper for the checkbox part of the Others option.
  */
 const OthersCheckbox = forwardRef<CheckboxProps, 'input'>((props, ref) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { checkboxRef, inputRef } = useCheckboxOthers()
   // Passing all props for cleanliness but size and colorScheme are the most relevant
   const styles = useMultiStyleConfig(CHECKBOX_THEME_KEY, props)
@@ -115,7 +110,7 @@ const OthersCheckbox = forwardRef<CheckboxProps, 'input'>((props, ref) => {
   }
 
   const othersLabel =
-    OTHERS_TRANSLATED_LABEL[props.selectedLanguage ?? Language.ENGLISH]
+    OTHERS_TRANSLATED_LABEL[(i18n.language as Language) ?? Language.ENGLISH]
 
   return (
     <Checkbox

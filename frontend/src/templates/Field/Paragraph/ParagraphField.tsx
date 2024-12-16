@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import { Language } from '~shared/types'
 
 import { useMdComponents } from '~hooks/useMdComponents'
@@ -17,8 +19,8 @@ export interface ParagraphFieldProps extends BaseFieldProps {
  */
 export const ParagraphField = ({
   schema,
-  selectedLanguage = Language.ENGLISH,
 }: ParagraphFieldProps): JSX.Element => {
+  const { i18n } = useTranslation()
   const mdComponents = useMdComponents({
     styles: {
       text: {
@@ -31,7 +33,7 @@ export const ParagraphField = ({
   const description = getValueInSelectedLanguage({
     defaultValue: schema.description,
     translations: schema.descriptionTranslations ?? [],
-    selectedLanguage,
+    selectedLanguage: i18n.language as Language,
   })
 
   return (

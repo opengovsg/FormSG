@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { FormColorTheme, FormStartPage, Language } from '~shared/types'
 
@@ -7,7 +8,6 @@ import { ThemeColorScheme } from '~theme/foundations/colours'
 interface UseFormHeaderProps {
   startPage?: FormStartPage
   hover?: boolean
-  selectedLanguage?: Language
 }
 
 const getEstTimeTranslation = ({
@@ -32,11 +32,8 @@ const getEstTimeTranslation = ({
 export const getTitleBg = (colorTheme?: FormColorTheme, hover?: boolean) =>
   colorTheme ? `theme-${colorTheme}.${hover ? 6 : 5}00` : `neutral.200`
 
-export const useFormHeader = ({
-  startPage,
-  hover,
-  selectedLanguage = Language.ENGLISH,
-}: UseFormHeaderProps) => {
+export const useFormHeader = ({ startPage, hover }: UseFormHeaderProps) => {
+  const { i18n } = useTranslation()
   const titleColor = useMemo(() => {
     if (startPage?.colorTheme === FormColorTheme.Orange) {
       return 'secondary.700'
@@ -49,6 +46,7 @@ export const useFormHeader = ({
     [hover, startPage?.colorTheme],
   )
 
+  const selectedLanguage = i18n.language as Language
   const estTimeString = useMemo(() => {
     if (!startPage?.estTimeTaken) return ''
     const title = getEstTimeTranslation({

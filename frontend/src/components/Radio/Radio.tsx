@@ -105,11 +105,6 @@ export interface RadioProps
    * @default true
    */
   allowDeselect?: boolean
-
-  /**
-   * Selected language to get translated label.
-   */
-  selectedLanguage?: Language
 }
 
 type RadioWithSubcomponentProps = ComponentWithAs<'input', RadioProps> & {
@@ -261,7 +256,7 @@ export const Radio = forwardRef<RadioProps, 'input'>(
  * Wrapper for the radio part of the Others option.
  */
 const OthersRadio = forwardRef<RadioProps, 'input'>((props, ref) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { othersRadioRef, othersInputRef } = useRadioGroupWithOthers()
   const { value: valueProp } = props
   const styles = useMultiStyleConfig(RADIO_THEME_KEY, {
@@ -278,9 +273,10 @@ const OthersRadio = forwardRef<RadioProps, 'input'>((props, ref) => {
     isChecked = group.value === valueProp
   }
 
+  const selectedLanguage = i18n.language as Language
   const othersLabel = useMemo(() => {
-    return OTHERS_TRANSLATED_LABEL[props?.selectedLanguage ?? Language.ENGLISH]
-  }, [props?.selectedLanguage])
+    return OTHERS_TRANSLATED_LABEL[selectedLanguage ?? Language.ENGLISH]
+  }, [selectedLanguage])
 
   useEffect(() => {
     if (isChecked) {

@@ -32,7 +32,6 @@ export const RatingField = ({
   schema,
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
-  selectedLanguage,
 }: RatingFieldProps): JSX.Element => {
   const validationRules = useMemo(
     () => createRatingValidationRules(schema, disableRequiredValidation),
@@ -52,7 +51,7 @@ export const RatingField = ({
   const { errors } = useFormState<SingleAnswerFieldInput>()
 
   return (
-    <FieldContainer schema={schema} selectedLanguage={selectedLanguage}>
+    <FieldContainer schema={schema}>
       <Controller
         rules={validationRules}
         control={control}
