@@ -8,14 +8,14 @@ import { BasicField } from '~shared/types/field'
 
 import Button from '~components/Button'
 
-import { AddressFieldInput, AddressFieldSchema } from '../types'
+import { AddressCompoundFieldInput, AddressCompoundFieldSchema } from '../types'
 
 import {
-  AddressField as AddressFieldComponent,
-  AddressFieldProps,
+  AddressCompoundField as AddressFieldComponent,
+  AddressCompoundFieldProps,
 } from './AddressField'
 
-const baseSchema: AddressFieldSchema = {
+const baseSchema: AddressCompoundFieldSchema = {
   title: 'Local address',
   description: '',
   required: true,
@@ -43,8 +43,8 @@ export default {
   },
 } as Meta
 
-interface StoryAddressFieldProps extends AddressFieldProps {
-  defaultValue?: AddressFieldInput
+interface StoryAddressFieldProps extends AddressCompoundFieldProps {
+  defaultValue?: AddressCompoundFieldInput
   apiError?: string | null
 }
 
@@ -52,26 +52,20 @@ const Template: StoryFn<StoryAddressFieldProps> = ({
   defaultValue,
   ...args
 }) => {
-  const formMethods = useForm<AddressFieldInput>({
+  const formMethods = useForm<AddressCompoundFieldInput>({
     defaultValues: defaultValue,
   })
 
   const [submitValues, setSubmitValues] = useState<string>()
 
-  const onSubmit = (values: Record<string, string | undefined>) => {
-    setSubmitValues(values[args.schema._id] || 'Nothing was selected')
+  // const onSubmit = (data: unknown) => alert(JSON.stringify(data))
+  const onSubmit = (values: AddressCompoundFieldInput) => {
+    const fieldValue = values[args.schema._id]?.addressSubFields || {}
+    const hasValues = Object.values(fieldValue).some((val) => val?.trim())
+    setSubmitValues(
+      hasValues ? JSON.stringify(fieldValue) : 'Nothing was selected',
+    )
   }
-
-  useEffect(() => {
-    if (defaultValue) {
-      Object.entries(defaultValue).forEach(([key, value]) => {
-        // Type assertion to ensure `key` is one of the valid keys of `AddressFieldValues`
-        formMethods.setValue(key as keyof AddressFieldInput, value)
-      })
-      formMethods.trigger()
-    }
-  }, [defaultValue, formMethods])
-
   return (
     <FormProvider {...formMethods}>
       <form onSubmit={formMethods.handleSubmit(onSubmit)} noValidate>
@@ -94,12 +88,16 @@ export const WithValues = Template.bind({})
 WithValues.args = {
   schema: baseSchema,
   defaultValue: {
-    postalCode: '123456',
-    blockNumber: '1',
-    streetName: 'Bukit Batok Street',
-    buildingName: '50',
-    levelNumber: '04',
-    unitNumber: '5A',
+    [baseSchema._id]: {
+      addressSubFields: {
+        postalCode: '123456',
+        blockNumber: '1',
+        streetName: 'Bukit Batok Street',
+        buildingName: '50',
+        levelNumber: '04',
+        unitNumber: '5A',
+      },
+    },
   },
 }
 
@@ -107,30 +105,50 @@ export const ValidationRequired = Template.bind({})
 ValidationRequired.args = {
   schema: baseSchema,
   defaultValue: {
-    postalCode: '',
-    blockNumber: '',
-    streetName: '',
-    buildingName: '',
-    levelNumber: '',
-    unitNumber: '',
+    [baseSchema._id]: {
+      addressSubFields: {
+        postalCode: '',
+        blockNumber: '',
+        streetName: '',
+        buildingName: '',
+        levelNumber: '',
+        unitNumber: '',
+      },
+    },
   },
 }
 
 export const ValidationNotRequired = Template.bind({})
 ValidationNotRequired.args = {
   schema: { ...baseSchema, required: false },
+  // defaultValue: {
+  //   [baseSchema._id]: {
+  //     addressSubFields: {
+  //       postalCode: '',
+  //       blockNumber: '',
+  //       streetName: '',
+  //       buildingName: '',
+  //       levelNumber: '',
+  //       unitNumber: '',
+  //     },
+  //   },
+  // },
 }
 
 export const InvalidPostalCode = Template.bind({})
 InvalidPostalCode.args = {
   schema: baseSchema,
   defaultValue: {
-    postalCode: '123az#$%',
-    blockNumber: '',
-    streetName: '',
-    buildingName: '',
-    levelNumber: '',
-    unitNumber: '',
+    [baseSchema._id]: {
+      addressSubFields: {
+        postalCode: '123az#$%',
+        blockNumber: '',
+        streetName: '',
+        buildingName: '',
+        levelNumber: '',
+        unitNumber: '',
+      },
+    },
   },
 }
 
@@ -138,12 +156,16 @@ export const InvalidBlockAndUnit = Template.bind({})
 InvalidBlockAndUnit.args = {
   schema: baseSchema,
   defaultValue: {
-    postalCode: '123456',
-    blockNumber: '%1',
-    streetName: 'Bukit Batok Street',
-    buildingName: '50',
-    levelNumber: '04',
-    unitNumber: '5A@',
+    [baseSchema._id]: {
+      addressSubFields: {
+        postalCode: '123456',
+        blockNumber: '%1',
+        streetName: 'Bukit Batok Street',
+        buildingName: '50',
+        levelNumber: '04',
+        unitNumber: '5A@',
+      },
+    },
   },
 }
 
@@ -151,12 +173,16 @@ export const InvalidLevelUnit = Template.bind({})
 InvalidLevelUnit.args = {
   schema: baseSchema,
   defaultValue: {
-    postalCode: '123456',
-    blockNumber: '1',
-    streetName: 'Bukit Batok Street',
-    buildingName: '50',
-    levelNumber: '04#',
-    unitNumber: '5A',
+    [baseSchema._id]: {
+      addressSubFields: {
+        postalCode: '123456',
+        blockNumber: '1',
+        streetName: 'Bukit Batok Street',
+        buildingName: '50',
+        levelNumber: '04#',
+        unitNumber: '5A',
+      },
+    },
   },
 }
 
@@ -164,12 +190,16 @@ export const ValidPostalCodeApiFail = Template.bind({})
 ValidPostalCodeApiFail.args = {
   schema: baseSchema,
   defaultValue: {
-    postalCode: '000000',
-    blockNumber: '',
-    streetName: '',
-    buildingName: '',
-    levelNumber: '',
-    unitNumber: '',
+    [baseSchema._id]: {
+      addressSubFields: {
+        postalCode: '000000',
+        blockNumber: '',
+        streetName: '',
+        buildingName: '',
+        levelNumber: '',
+        unitNumber: '',
+      },
+    },
   },
 }
 

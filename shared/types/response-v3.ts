@@ -1,4 +1,9 @@
-import { BasicField, FormFieldDto, MyInfoChildAttributes } from './field'
+import {
+  AddressAttributes,
+  BasicField,
+  FormFieldDto,
+  MyInfoChildAttributes,
+} from './field'
 
 export type FieldResponsesV3 = Record<FormFieldDto['_id'], FieldResponseV3>
 
@@ -79,7 +84,7 @@ export type FieldResponseAnswerMapV3<F extends BasicField = BasicField> =
                 : F extends BasicField.Children
                   ? ChildrenCompoundFieldResponsesV3
                   : F extends BasicField.Address
-                    ? AddressFieldResponseV3
+                    ? AddressCompoundFieldResponseV3
                     : never
 
 export type GenericStringAnswerResponseFieldTypeV3 =
@@ -126,11 +131,6 @@ export type AttachmentFieldResponseV3 = {
   md5Hash?: string
 }
 
-export type AddressFieldResponseV3 = {
-  postalCode: string
-  blockNumber: string
-  streetName: string
-  buildingName: string
-  levelNumber: string
-  unitNumber: string
+export type AddressCompoundFieldResponseV3 = {
+  addressSubFields: AddressAttributes
 }

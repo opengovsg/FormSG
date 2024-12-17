@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { AddressFieldBase, BasicField } from '~shared/types'
+import { AddressCompoundFieldBase, BasicField } from '~shared/types'
 
 import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 
@@ -8,7 +8,7 @@ import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 
 import { EditAddress, EditAddressProps } from './EditAddress'
 
-const DEFAULT_ADDRESS_FIELD: AddressFieldBase = {
+const DEFAULT_ADDRESS_FIELD: AddressCompoundFieldBase = {
   title: 'Local address',
   description: '',
   required: true,
@@ -38,7 +38,7 @@ export default {
 } as Meta<EditAddressProps>
 
 interface StoryArgs {
-  field: AddressFieldBase
+  field: AddressCompoundFieldBase
 }
 
 const Template: StoryFn<StoryArgs> = ({ field }) => {

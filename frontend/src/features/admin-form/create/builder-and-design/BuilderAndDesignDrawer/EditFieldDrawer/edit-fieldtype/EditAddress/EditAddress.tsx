@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { FormControl } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
-import { AddressFieldBase } from '~shared/types/field'
+import { AddressCompoundFieldBase } from '~shared/types/field'
 
 import { createBaseValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -17,10 +17,10 @@ import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
 
-export type EditAddressProps = EditFieldProps<AddressFieldBase>
+export type EditAddressProps = EditFieldProps<AddressCompoundFieldBase>
 
 type EditAddressInputs = Pick<
-  AddressFieldBase,
+  AddressCompoundFieldBase,
   'title' | 'description' | 'required'
 >
 
@@ -37,7 +37,7 @@ export const EditAddress = ({ field }: EditAddressProps): JSX.Element => {
     isLoading,
     handleCancel,
     setValue,
-  } = useEditFieldForm<EditAddressInputs, AddressFieldBase>({
+  } = useEditFieldForm<EditAddressInputs, AddressCompoundFieldBase>({
     field,
     transform: {
       input: (inputField) =>

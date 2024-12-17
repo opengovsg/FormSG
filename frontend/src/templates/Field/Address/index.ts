@@ -1,1 +1,1 @@
-export { AddressField as default } from './AddressField'
+export { AddressCompoundField as default } from './AddressField'

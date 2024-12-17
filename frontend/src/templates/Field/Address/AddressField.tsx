@@ -1,7 +1,16 @@
-import { useMemo, useState } from 'react'
-import { Controller, useFormContext, useFormState } from 'react-hook-form'
+import { useEffect, useMemo, useState } from 'react'
+import {
+  Controller,
+  FieldArrayWithId,
+  RegisterOptions,
+  useFieldArray,
+  useForm,
+  useFormContext,
+  useFormState,
+} from 'react-hook-form'
 import { Box, Flex, FormControl, Stack } from '@chakra-ui/react'
 
+import { AddressAttributes } from '~shared/types'
 import {
   VALID_POSTAL_CODE_NO_ADDRESS_ERROR,
   validatePostalCode,
@@ -20,21 +29,24 @@ import Input from '~components/Input'
 
 import { verifyAddress } from '../../../../../src/app/services/address/address.service'
 import { BaseFieldProps } from '../FieldContainer'
-import { AddressFieldInput, AddressFieldSchema } from '../types'
+import { AddressCompoundFieldInput, AddressCompoundFieldSchema } from '../types'
 
-export interface AddressFieldProps extends BaseFieldProps {
-  schema: AddressFieldSchema
+export interface AddressCompoundFieldProps extends BaseFieldProps {
+  schema: AddressCompoundFieldSchema
   disableRequiredValidation?: boolean
 }
 
-export const AddressField = ({
+export const AddressCompoundField = ({
   schema,
   disableRequiredValidation,
-}: AddressFieldProps): JSX.Element => {
-  const { isSubmitting, isValid, errors } = useFormState<AddressFieldInput>()
-
-  const { getValues, setValue, control, trigger, setError } =
-    useFormContext<AddressFieldInput>()
+}: AddressCompoundFieldProps): JSX.Element => {
+  const formContext = useFormContext<AddressCompoundFieldInput>()
+  const { getValues, setValue, trigger, setError } = formContext
+  const { isSubmitting, isValid, errors } =
+    useFormState<AddressCompoundFieldInput>({
+      name: schema._id,
+    })
+  const addressSubFieldErrors = errors?.[schema._id]?.addressSubFields // only one (first) set of address values
 
   const postalCodeValidationRules = useMemo(
     () => createPostalCodeValidationRules(schema, disableRequiredValidation),
@@ -61,29 +73,36 @@ export const AddressField = ({
   const handleVerifyAddress = async () => {
     setIsButtonDisabled(true)
 
-    const postalCode = getValues('postalCode')
+    const postalCode = getValues(`${schema._id}.addressSubFields.postalCode`)
 
     if (validatePostalCode(postalCode) !== true) {
       await trigger(['postalCode'])
     } else {
       // Call the service to verify the address
       const result = await verifyAddress(postalCode)
+
       if (result.success && result.data) {
-        setValue('blockNumber', result.data?.blockNumber)
-        setValue('streetName', result.data?.streetName)
+        setValue(
+          `${schema._id}.addressSubFields.blockNumber`,
+          result.data?.blockNumber,
+        )
+        setValue(
+          `${schema._id}.addressSubFields.streetName`,
+          result.data?.streetName,
+        )
         await trigger(['blockNumber', 'streetName']) // clear errors if first verification failed
       } else {
         if (!result.success) {
-          setError('blockNumber', {
+          setError(`${schema._id}.addressSubFields.blockNumber`, {
             type: 'manual',
             message: VALID_POSTAL_CODE_NO_ADDRESS_ERROR,
           })
-          setError('streetName', {
+          setError(`${schema._id}.addressSubFields.streetName`, {
             type: 'manual',
             message: VALID_POSTAL_CODE_NO_ADDRESS_ERROR,
           })
-          setValue('blockNumber', '') // reset values if verification failure
-          setValue('streetName', '')
+          setValue(`${schema._id}.addressSubFields.blockNumber`, '') // reset values if verification failure
+          setValue(`${schema._id}.addressSubFields.streetName`, '')
           await trigger(['postalCode']) // show postalCode error upon verification failure
         }
       }
@@ -106,117 +125,131 @@ export const AddressField = ({
       >
         {schema.title}
       </FormLabel>
+      {/** Postal Code */}
       <FormControl
-        id={`${schema._id}-postalCode`}
         isRequired={schema.required}
         isDisabled={schema.disabled}
         isReadOnly={isValid && isSubmitting}
-        isInvalid={!!errors?.postalCode}
+        id={`${schema._id}-postalCode`}
+        isInvalid={!!addressSubFieldErrors?.postalCode}
       >
         <FormLabel isRequired>Postal code</FormLabel>
         <Controller
-          name="postalCode"
-          control={control}
+          name={`${schema._id}.addressSubFields.postalCode`}
+          control={formContext.control}
+          // defaultValue="" // error but still works?
           defaultValue=""
           rules={postalCodeValidationRules}
-          render={({ field }) => (
-            <Stack direction="column" gap={0.5} marginBottom="1.5rem">
-              <Flex
-                direction="row"
-                gap={2}
-                justify="space-between"
-                width="100%"
-              >
-                <Input
-                  {...field}
-                  aria-label={`${schema.questionNumber}. Postal Code`}
-                  placeholder="e.g. 650161"
-                />
-                <Button
-                  onClick={handleVerifyAddress}
-                  isLoading={isSubmitting}
-                  isDisabled={isButtonDisabled}
+          render={({ field }) => {
+            return (
+              <Stack direction="column" gap={0.5} marginBottom="1.5rem">
+                <Flex
+                  direction="row"
+                  gap={2}
+                  justify="space-between"
+                  width="100%"
                 >
-                  Find address
-                </Button>
-              </Flex>
-              <FormErrorMessage>{errors.postalCode?.message}</FormErrorMessage>
-            </Stack>
-          )}
+                  <Input
+                    {...field}
+                    aria-label={`${schema.questionNumber}. Postal Code`}
+                    placeholder="e.g. 650161"
+                  />
+                  <Button
+                    onClick={handleVerifyAddress}
+                    isLoading={isSubmitting}
+                    isDisabled={isButtonDisabled}
+                  >
+                    Find address
+                  </Button>
+                </Flex>
+                <FormErrorMessage>
+                  {addressSubFieldErrors?.postalCode?.message}
+                </FormErrorMessage>
+              </Stack>
+            )
+          }}
         />
       </FormControl>
+      {/** Block Number */}
       <FormControl
-        id={`${schema._id}-blockNumber`}
         isRequired={schema.required}
         isDisabled={schema.disabled}
         isReadOnly={isValid && isSubmitting}
-        isInvalid={!!errors?.blockNumber}
+        id={`${schema._id}-blockNumber`}
+        isInvalid={!!addressSubFieldErrors?.blockNumber}
       >
-        <FormLabel isRequired>House/Block number</FormLabel>
+        <FormLabel isRequired>Block number</FormLabel>
         <Controller
-          name="blockNumber"
-          control={control}
+          name={`${schema._id}.addressSubFields.blockNumber`}
+          control={formContext.control}
           defaultValue=""
           rules={blockNumberValidationRules}
           render={({ field }) => (
-            <Box marginBottom="1.5rem">
+            <Stack direction="column" gap={0.5} marginBottom="1.5rem">
               <Input
                 {...field}
                 aria-label={`${schema.questionNumber}. Block Number`}
                 placeholder="e.g. 161"
               />
-              <FormErrorMessage>{errors.blockNumber?.message}</FormErrorMessage>
-            </Box>
+              <FormErrorMessage>
+                {addressSubFieldErrors?.blockNumber?.message}
+              </FormErrorMessage>
+            </Stack>
           )}
         />
       </FormControl>
+      {/** Street Name */}
       <FormControl
         id={`${schema._id}-streetName`}
         isRequired={schema.required}
         isDisabled={schema.disabled}
         isReadOnly={isValid && isSubmitting}
-        isInvalid={!!errors?.streetName}
+        isInvalid={!!addressSubFieldErrors?.streetName}
       >
         <FormLabel isRequired>Street name</FormLabel>
         <Controller
-          name="streetName"
-          control={control}
+          name={`${schema._id}.addressSubFields.streetName`}
+          control={formContext.control}
           defaultValue=""
           rules={streetNameValidationRules}
           render={({ field }) => (
             <Box marginBottom="1.5rem">
               <Input
                 {...field}
-                aria-label={`${schema.questionNumber}. Street Name`}
+                aria-label={`${schema.questionNumber}. Street name`}
                 placeholder="e.g. Bukit Batok Street 11"
               />
-              <FormErrorMessage>{errors.streetName?.message}</FormErrorMessage>
+              <FormErrorMessage>
+                {addressSubFieldErrors?.streetName?.message}
+              </FormErrorMessage>
             </Box>
           )}
         />
       </FormControl>
+      {/** Building name */}
       <FormControl
         id={`${schema._id}-buildingName`}
         isRequired={false} // buildingName will always be optional
         isDisabled={schema.disabled}
         isReadOnly={isValid && isSubmitting}
-        isInvalid={!!errors?.buildingName}
+        isInvalid={!!addressSubFieldErrors?.buildingName}
       >
         <FormLabel>Building name</FormLabel>
         <Controller
-          name="buildingName"
-          control={control}
+          name={`${schema._id}.addressSubFields.buildingName`}
+          control={formContext.control}
           defaultValue=""
           render={({ field }) => (
             <Box marginBottom="1.5rem">
               <Input
                 {...field}
-                aria-label={`${schema.questionNumber}. building Name`}
+                aria-label={`${schema.questionNumber}. Building name`}
               />
             </Box>
           )}
         />
       </FormControl>
+      {/** Unit Number & Level Number */}
       <FormLabel>Unit number</FormLabel>
       <Flex direction="row" gap={2} width="100%">
         <FormControl
@@ -224,22 +257,22 @@ export const AddressField = ({
           isRequired={false} // unitNumber will always be optional
           isDisabled={schema.disabled}
           isReadOnly={isValid && isSubmitting}
-          isInvalid={!!errors?.levelNumber}
+          isInvalid={!!addressSubFieldErrors?.levelNumber}
         >
           <Controller
-            name="levelNumber"
-            control={control}
+            name={`${schema._id}.addressSubFields.levelNumber`}
+            control={formContext.control}
             defaultValue=""
             rules={unitLevelNumberValidationRules}
             render={({ field }) => (
               <Stack direction="column" gap={0.5}>
                 <Input
                   {...field}
-                  aria-label={`${schema.questionNumber}. Level Number`}
+                  aria-label={`${schema.questionNumber}. Level number`}
                   placeholder="Level number"
                 />
                 <FormErrorMessage>
-                  {errors.levelNumber?.message}
+                  {addressSubFieldErrors?.levelNumber?.message}
                 </FormErrorMessage>
               </Stack>
             )}
@@ -250,11 +283,11 @@ export const AddressField = ({
           isRequired={false} // unitNumber will always be optional
           isDisabled={schema.disabled}
           isReadOnly={isValid && isSubmitting}
-          isInvalid={!!errors?.unitNumber}
+          isInvalid={!!addressSubFieldErrors?.unitNumber}
         >
           <Controller
-            name="unitNumber"
-            control={control}
+            name={`${schema._id}.addressSubFields.unitNumber`}
+            control={formContext.control}
             defaultValue=""
             rules={unitLevelNumberValidationRules}
             render={({ field }) => (
@@ -265,7 +298,7 @@ export const AddressField = ({
                   placeholder="Unit number"
                 />
                 <FormErrorMessage>
-                  {errors.unitNumber?.message}
+                  {addressSubFieldErrors?.unitNumber?.message}
                 </FormErrorMessage>
               </Stack>
             )}

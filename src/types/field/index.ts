@@ -1,7 +1,7 @@
 import type { Document } from 'mongoose'
 import type { ConditionalExcept, Merge } from 'type-fest'
 
-import type { IAddressFieldSchema } from './addressField'
+import type { IAddressCompoundFieldSchema } from './addressField'
 import type { IAttachmentFieldSchema } from './attachmentField'
 import type { ICheckboxFieldSchema } from './checkboxField'
 import type { IChildrenCompoundFieldSchema } from './childrenCompoundField'
@@ -62,7 +62,7 @@ export enum SgidFieldTitle {
 }
 
 export type FormFieldSchema =
-  | IAddressFieldSchema
+  | IAddressCompoundFieldSchema
   | IAttachmentFieldSchema
   | ICheckboxFieldSchema
   | IDateFieldSchema
@@ -105,7 +105,7 @@ export type OmitUnusedValidatorProps<F extends FormFieldSchema> = Merge<
 >
 
 export type FieldValidationSchema =
-  | OmitUnusedValidatorProps<IAddressFieldSchema>
+  | OmitUnusedValidatorProps<IAddressCompoundFieldSchema>
   | OmitUnusedValidatorProps<IAttachmentFieldSchema>
   | OmitUnusedValidatorProps<ICheckboxFieldSchema>
   | OmitUnusedValidatorProps<IDateFieldSchema>

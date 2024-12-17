@@ -1,6 +1,6 @@
 import type { Opaque } from 'type-fest'
 import { z } from 'zod'
-import { BasicField, MyInfoAttribute } from './field'
+import { AddressAttributes, BasicField, MyInfoAttribute } from './field'
 
 const ResponseBase = z.object({
   myInfo: z.never().optional(),
@@ -132,9 +132,10 @@ export const UenResponse = SingleAnswerResponse.extend({
 })
 export type UenResponse = z.infer<typeof UenResponse>
 
-// TODO: check fo multivalue response
-export const AddressResponse = SingleAnswerResponse.extend({
+// TODO: check fo multivalue response as a string[]
+export const AddressResponse = ResponseBase.extend({
   fieldType: z.literal(BasicField.Address),
+  answerArray: z.array(z.array(z.string())) as unknown as z.Schema<string[][]>,
 })
 export type AddressResponse = z.infer<typeof AddressResponse>
 

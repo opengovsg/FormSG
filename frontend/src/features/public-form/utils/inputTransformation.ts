@@ -1,9 +1,10 @@
+import { Address } from 'cluster'
 import { format, parse } from 'date-fns'
 import { times } from 'lodash'
 
 import { DATE_PARSE_FORMAT } from '~shared/constants/dates'
 import {
-  AddressFieldResponseV3,
+  AddressCompoundFieldResponseV3,
   AttachmentFieldResponseV3,
   CheckboxFieldResponsesV3,
   ChildrenCompoundFieldResponsesV3,
@@ -13,7 +14,11 @@ import {
   VerifiableFieldResponseV3,
   YesNoFieldResponseV3,
 } from '~shared/types'
-import { BasicField, FormFieldDto } from '~shared/types/field'
+import {
+  AddressAttributes,
+  BasicField,
+  FormFieldDto,
+} from '~shared/types/field'
 import {
   AddressResponse,
   AttachmentResponse,
@@ -31,8 +36,8 @@ import { CHECKBOX_OTHERS_INPUT_VALUE } from '~templates/Field/Checkbox/constants
 import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/constants'
 import { createTableRow } from '~templates/Field/Table/utils/createRow'
 import {
-  AddressFieldSchema,
-  AddressFieldValues,
+  AddressCompoundFieldSchema,
+  AddressCompoundFieldValues,
   AttachmentFieldSchema,
   BaseFieldOutput,
   CheckboxFieldSchema,
@@ -222,14 +227,32 @@ const transformToChildOutput = (
 }
 
 const transformToAddressOutput = (
-  schema: AddressFieldSchema,
-  input?: AddressFieldValues | AddressFieldResponseV3,
+  schema: AddressCompoundFieldSchema,
+  input?: AddressCompoundFieldValues | AddressCompoundFieldResponseV3,
 ): AddressResponse => {
-  let answer = ''
-  if (input?.postalCode !== undefined) answer = input.postalCode // TODO: do for all input fields, just using postalCode to test now
+  // let answerArray: AddressAttributes
+  const answerArray: string[][] = []
+  // if (input !== undefined) {
+  //   answerArray = input.addressSubFields
+  // } else {
+  //   answerArray = {
+  //     postalCode: '',
+  //     blockNumber: '',
+  //     streetName: '',
+  //     buildingName: '',
+  //     levelNumber: '',
+  //     unitNumber: '',
+  //   }
+  // }
+  if (input !== undefined) {
+    Object.entries(input.addressSubFields).map(([key, value]) =>
+      answerArray.push([`${key}: ${value}`]),
+    )
+  }
+
   return {
     ...pickBaseOutputFromSchema(schema),
-    answer,
+    answerArray,
   }
 }
 

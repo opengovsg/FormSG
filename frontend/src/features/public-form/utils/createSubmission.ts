@@ -163,6 +163,7 @@ export const createClearSubmissionWithVirusScanningFormData = (
       return response
     },
   )
+
   const attachments = getAttachmentsMap(formFields, formInputs)
 
   // Convert content to FormData object.
@@ -248,6 +249,9 @@ const createResponsesArray = (
     .map((ff) => transformInputsToOutputs(ff, formInputs[ff._id]))
     .filter((output): output is FieldResponse => output !== null)
 
+  const v = validateResponses(transformedResponses)
+  console.log('testing')
+  console.log(v)
   return validateResponses(transformedResponses)
 }
 
@@ -288,14 +292,7 @@ const createResponsesV3 = (
         if (!input) break
         returnedInputs[ff._id] = {
           fieldType: ff.fieldType,
-          answer: {
-            postalCode: input.postalCode,
-            blockNumber: input.blockNumber,
-            streetName: input.streetName,
-            buildingName: input.buildingName,
-            levelNumber: input.levelNumber,
-            unitNumber: input.unitNumber,
-          },
+          answer: input,
         } as FieldResponseV3
         break
       }

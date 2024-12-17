@@ -1,9 +1,9 @@
 import { Schema } from 'mongoose'
 
-import { IAddressFieldSchema } from 'src/types'
+import { IAddressCompoundFieldSchema } from 'src/types'
 
-const createAddressFieldSchema = () => {
-  return new Schema<IAddressFieldSchema>({})
+const createAddressCompoundFieldSchema = () => {
+  return new Schema<IAddressCompoundFieldSchema>({})
 }
 
-export default createAddressFieldSchema
+export default createAddressCompoundFieldSchema

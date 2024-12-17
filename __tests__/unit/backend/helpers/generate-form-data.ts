@@ -275,9 +275,12 @@ export const generateNewSingleAnswerResponse = (
   customParams?: Partial<ProcessedSingleAnswerResponse>,
 ): ProcessedSingleAnswerResponse => {
   if (
-    [BasicField.Attachment, BasicField.Table, BasicField.Checkbox].includes(
-      fieldType,
-    )
+    [
+      BasicField.Attachment,
+      BasicField.Table,
+      BasicField.Checkbox,
+      BasicField.Address,
+    ].includes(fieldType)
   ) {
     throw new Error(
       'Call the custom response generator functions for attachment, table and checkbox.',

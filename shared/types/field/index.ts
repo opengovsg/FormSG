@@ -1,4 +1,4 @@
-import type { AddressFieldBase } from './addressField'
+import type { AddressCompoundFieldBase } from './addressField'
 import type { AttachmentFieldBase } from './attachmentField'
 import type { CheckboxFieldBase } from './checkboxField'
 import type { CountryRegionFieldBase } from './countryRegionField'
@@ -51,7 +51,7 @@ export * from './yesNoField'
 export * from './childrenCompoundField'
 
 export type FormField =
-  | AddressFieldBase
+  | AddressCompoundFieldBase
   | AttachmentFieldBase
   | CheckboxFieldBase
   | DateFieldBase

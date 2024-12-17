@@ -28,6 +28,7 @@ import {
   VerifyTurnstileError,
 } from '../../../services/turnstile/turnstile.errors'
 import {
+  isProcessedAddressResponse,
   isProcessedCheckboxResponse,
   isProcessedChildResponse,
   isProcessedTableResponse,
@@ -73,6 +74,7 @@ import {
   ValidateFieldError,
 } from '../submission.errors'
 import {
+  ProcessedAddressResponse,
   ProcessedCheckboxResponse,
   ProcessedFieldResponse,
   ProcessedTableResponse,
@@ -190,6 +192,27 @@ export const getAnswerForCheckbox = (
     answer: response.answerArray.join(', '),
   }
 }
+
+/**
+ * Creates a response for address, with its answer formatted from the answerArray
+ * @param response
+ * @param response.answerArray is of type AddressAttributes
+ * @returns the response with formatted answer
+ */
+export const getAnswerForAddress = (
+  response: ProcessedAddressResponse,
+): ResponseFormattedForEmail => {
+  return {
+    _id: response._id,
+    fieldType: response.fieldType,
+    question: response.question,
+    myInfo: response.myInfo,
+    isVisible: response.isVisible,
+    isUserVerified: response.isUserVerified,
+    answer: JSON.stringify(response.answerArray),
+  }
+}
+
 
 /**
  *  Formats the response for sending to the submitter (autoReplyData),
@@ -442,6 +465,9 @@ const createFormattedDataForOneField = <T extends EmailDataFields | undefined>(
     return getAnswersForChild(response).map((childField) =>
       getFormattedFunction(childField, hashedFields),
     )
+  } else if (isProcessedAddressResponse(response)) {
+    const address = getAnswerForAddress(response)
+    return [getFormattedFunction(address, hashedFields)]
   } else {
     return [getFormattedFunction(response, hashedFields)]
   }

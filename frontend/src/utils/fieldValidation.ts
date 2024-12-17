@@ -10,7 +10,7 @@ import validator from 'validator'
 
 import { DATE_PARSE_FORMAT } from '~shared/constants/dates'
 import {
-  AddressFieldBase,
+  AddressCompoundFieldBase,
   AttachmentFieldBase,
   BasicField,
   CheckboxFieldBase,
@@ -215,7 +215,7 @@ export const createHomeNoValidationRules: ValidationRuleFn<HomenoFieldBase> = (
 }
 
 export const createPostalCodeValidationRules: ValidationRuleFn<
-  AddressFieldBase
+  AddressCompoundFieldBase
 > = (schema, disableRequiredValidation): RegisterOptions => {
   return {
     validate: {
@@ -232,7 +232,7 @@ export const createPostalCodeValidationRules: ValidationRuleFn<
 }
 
 export const createBlockNumberValidationRules: ValidationRuleFn<
-  AddressFieldBase
+  AddressCompoundFieldBase
 > = (schema, disableRequiredValidation): RegisterOptions => {
   return {
     validate: {
@@ -249,7 +249,7 @@ export const createBlockNumberValidationRules: ValidationRuleFn<
 }
 
 export const createStreetNameValidationRules: ValidationRuleFn<
-  AddressFieldBase
+  AddressCompoundFieldBase
 > = (schema, disableRequiredValidation): RegisterOptions => {
   return {
     validate: {
@@ -262,7 +262,7 @@ export const createStreetNameValidationRules: ValidationRuleFn<
 }
 
 export const createUnitLevelNumberValidationRules: ValidationRuleFn<
-  AddressFieldBase
+  AddressCompoundFieldBase
 > = (): RegisterOptions => {
   return {
     validate: {

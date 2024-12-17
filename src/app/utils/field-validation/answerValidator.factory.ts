@@ -5,6 +5,7 @@ import { FieldValidationSchema } from '../../../types'
 import { ParsedClearFormFieldResponseV3 } from '../../../types/api'
 import { ResponseValidator } from '../../../types/field/utils/validation'
 import {
+  ProcessedAddressResponse,
   ProcessedAttachmentResponse,
   ProcessedCheckboxResponse,
   ProcessedChildrenResponse,
@@ -100,8 +101,6 @@ export const constructSingleAnswerValidator = (
   formField: FieldValidationSchema,
 ): ResponseValidator<ProcessedSingleAnswerResponse> => {
   switch (formField.fieldType) {
-    case BasicField.Address:
-      return constructAddressValidator(formField)
     case BasicField.Section:
       return constructSectionValidator()
     case BasicField.ShortText:
@@ -172,6 +171,15 @@ export const constructTableFieldValidator = (
 ): ResponseValidator<ProcessedTableResponse> => {
   if (formField.fieldType === BasicField.Table) {
     return constructTableValidator(formField)
+  }
+  return () => left('Unsupported field type')
+}
+
+export const constructAddressFieldValidator = (
+  formField: FieldValidationSchema,
+): ResponseValidator<ProcessedAddressResponse> => {
+  if (formField.fieldType === BasicField.Address) {
+    return constructAddressValidator(formField)
   }
   return () => left('Unsupported field type')
 }
