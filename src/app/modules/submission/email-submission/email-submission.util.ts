@@ -213,7 +213,6 @@ export const getAnswerForAddress = (
   }
 }
 
-
 /**
  *  Formats the response for sending to the submitter (autoReplyData),
  *  the table that is sent to the admin (formData),

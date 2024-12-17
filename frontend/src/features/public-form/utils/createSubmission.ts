@@ -175,7 +175,8 @@ export const createClearSubmissionWithVirusScanningFormData = (
       ...formDataArgsRest,
     }),
   )
-
+  console.log('here i am')
+  console.log(formData.get('body'))
   if (!isEmpty(attachments)) {
     forOwn(attachments, (attachment, fieldId) => {
       if (attachment) {
@@ -249,9 +250,6 @@ const createResponsesArray = (
     .map((ff) => transformInputsToOutputs(ff, formInputs[ff._id]))
     .filter((output): output is FieldResponse => output !== null)
 
-  const v = validateResponses(transformedResponses)
-  console.log('testing')
-  console.log(v)
   return validateResponses(transformedResponses)
 }
 

@@ -230,20 +230,7 @@ const transformToAddressOutput = (
   schema: AddressCompoundFieldSchema,
   input?: AddressCompoundFieldValues | AddressCompoundFieldResponseV3,
 ): AddressResponse => {
-  // let answerArray: AddressAttributes
   const answerArray: string[][] = []
-  // if (input !== undefined) {
-  //   answerArray = input.addressSubFields
-  // } else {
-  //   answerArray = {
-  //     postalCode: '',
-  //     blockNumber: '',
-  //     streetName: '',
-  //     buildingName: '',
-  //     levelNumber: '',
-  //     unitNumber: '',
-  //   }
-  // }
   if (input !== undefined) {
     Object.entries(input.addressSubFields).map(([key, value]) =>
       answerArray.push([`${key}: ${value}`]),

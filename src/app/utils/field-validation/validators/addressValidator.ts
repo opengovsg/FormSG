@@ -1,4 +1,4 @@
-import { chain, left, right } from 'fp-ts/lib/Either'
+// import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
 import { ProcessedAddressResponse } from 'src/app/modules/submission/submission.types'
@@ -8,8 +8,8 @@ import {
 } from 'src/types'
 
 import {
-  AddressCompoundFieldBase,
-  AddressResponse,
+  // AddressCompoundFieldBase,
+  // AddressResponse,
   AddressResponseV3,
   BasicField,
 } from '../../../../../shared/types'
@@ -30,7 +30,7 @@ type AddressValidatorConstructor = (
  */
 const addressValidator: AddressValidator = (response) => {
   const { answerArray } = response
-  return validatePostalCode(answerArray.postalCode)
+  return validatePostalCode(answerArray[0][0]) // TODO
     ? right(response)
     : left(`AddressValidator:\t answer is not a valid postal code`)
 }
