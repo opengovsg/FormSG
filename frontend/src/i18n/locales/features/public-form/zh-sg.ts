@@ -11,5 +11,9 @@ export const zhSG = {
     instructions: {
       title: '说明',
     },
+    submitButton: {
+      preventSubmission: '已禁用提交',
+      submitNow: '立即提交',
+    },
   },
 }

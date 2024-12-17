@@ -12,5 +12,9 @@ export const taSG = {
     instructions: {
       title: 'வழிமுறைகள்',
     },
+    submitButton: {
+      preventSubmission: 'சமர்பித்தல் முடக்கப்பட்டது',
+      submitNow: 'இப்போது சமர்ப்பிக்கவும்',
+    },
   },
 }

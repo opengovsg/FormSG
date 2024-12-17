@@ -11,5 +11,9 @@ export const msSG = {
     instructions: {
       title: 'Arahan',
     },
+    submitButton: {
+      preventSubmission: 'Penyerahan dinyahdayakan',
+      submitNow: 'Serah sekarang',
+    },
   },
 }
