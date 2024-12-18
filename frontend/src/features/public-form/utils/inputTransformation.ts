@@ -233,7 +233,7 @@ const transformToAddressOutput = (
   const answerArray: string[][] = []
   if (input !== undefined) {
     Object.entries(input.addressSubFields).map(([key, value]) =>
-      answerArray.push([`${key}: ${value}`]),
+      answerArray.push([`${key}:${value}`]),
     )
   }
 

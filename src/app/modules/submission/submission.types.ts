@@ -2,7 +2,6 @@ import { StatusCodes } from 'http-status-codes'
 import type { Opaque } from 'type-fest'
 
 import {
-  AddressAttributes,
   AddressResponse,
   BasicField,
   CheckboxResponse,

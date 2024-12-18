@@ -140,6 +140,7 @@ import {
 } from './submission.errors'
 import {
   FilteredResponse,
+  ProcessedAddressResponse,
   ProcessedChildrenResponse,
   ProcessedFieldResponse,
   ProcessedSingleAnswerResponse,
@@ -778,6 +779,35 @@ export const getAnswersForChild = (
         answer,
       }
     })
+  })
+}
+
+/**
+ * Creates a response for address, with its answer formatted from the answerArray
+ * @param response
+ * @param response.answerArray is of type AddressAttributes
+ * @returns the response with formatted answer
+ */
+export const getAnswersForAddress = (
+  response: ProcessedAddressResponse,
+): ProcessedSingleAnswerResponse[] => {
+  const subFields = response.answerArray
+  if (!subFields) {
+    return []
+  }
+  // subField = ["postalCode:650161"]
+  return subFields.flatMap((subField) => {
+    const subFieldName = subField[0].split(':')[0].trim()
+    const subFieldValue = subField[0].split(':')[1].trim()
+    return {
+      _id: response._id + subFieldName, // check this
+      fieldType: response.fieldType,
+      question: response.question + subFieldName,
+      myInfo: response.myInfo,
+      isVisible: response.isVisible,
+      isUserVerified: response.isUserVerified,
+      answer: subFieldValue,
+    }
   })
 }
 

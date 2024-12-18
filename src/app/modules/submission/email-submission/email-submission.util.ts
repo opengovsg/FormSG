@@ -74,12 +74,15 @@ import {
   ValidateFieldError,
 } from '../submission.errors'
 import {
-  ProcessedAddressResponse,
   ProcessedCheckboxResponse,
   ProcessedFieldResponse,
   ProcessedTableResponse,
 } from '../submission.types'
-import { getAnswersForChild, getMyInfoPrefix } from '../submission.utils'
+import {
+  getAnswersForAddress,
+  getAnswersForChild,
+  getMyInfoPrefix,
+} from '../submission.utils'
 
 import {
   ATTACHMENT_PREFIX,
@@ -190,26 +193,6 @@ export const getAnswerForCheckbox = (
     isVisible: response.isVisible,
     isUserVerified: response.isUserVerified,
     answer: response.answerArray.join(', '),
-  }
-}
-
-/**
- * Creates a response for address, with its answer formatted from the answerArray
- * @param response
- * @param response.answerArray is of type AddressAttributes
- * @returns the response with formatted answer
- */
-export const getAnswerForAddress = (
-  response: ProcessedAddressResponse,
-): ResponseFormattedForEmail => {
-  return {
-    _id: response._id,
-    fieldType: response.fieldType,
-    question: response.question,
-    myInfo: response.myInfo,
-    isVisible: response.isVisible,
-    isUserVerified: response.isUserVerified,
-    answer: JSON.stringify(response.answerArray),
   }
 }
 
@@ -465,8 +448,9 @@ const createFormattedDataForOneField = <T extends EmailDataFields | undefined>(
       getFormattedFunction(childField, hashedFields),
     )
   } else if (isProcessedAddressResponse(response)) {
-    const address = getAnswerForAddress(response)
-    return [getFormattedFunction(address, hashedFields)]
+    return getAnswersForAddress(response).map((subField) =>
+      getFormattedFunction(subField, hashedFields),
+    )
   } else {
     return [getFormattedFunction(response, hashedFields)]
   }

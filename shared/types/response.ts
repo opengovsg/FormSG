@@ -1,6 +1,6 @@
 import type { Opaque } from 'type-fest'
 import { z } from 'zod'
-import { AddressAttributes, BasicField, MyInfoAttribute } from './field'
+import { BasicField, MyInfoAttribute } from './field'
 
 const ResponseBase = z.object({
   myInfo: z.never().optional(),
@@ -139,6 +139,11 @@ export const AddressResponse = ResponseBase.extend({
 })
 export type AddressResponse = z.infer<typeof AddressResponse>
 
+export const AddressSubFieldResponse = SingleAnswerResponse.extend({
+  fieldType: z.literal(BasicField.Address),
+})
+export type AddressSubFieldResponse = z.infer<typeof AddressSubFieldResponse>
+
 export const ChildBirthRecordsResponse = ResponseBase.merge(
   MyInfoResponseBase,
 ).extend({
@@ -184,3 +189,4 @@ export type FieldResponse =
   | ChildBirthRecordsResponse
   | SingleChildSubRecordResponse
   | AddressResponse
+  | AddressSubFieldResponse
