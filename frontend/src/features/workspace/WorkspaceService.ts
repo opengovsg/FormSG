@@ -1,4 +1,10 @@
-import { AdminFeedbackDto, AdminFeedbackRating } from '~shared/types'
+import {
+  AdminFeedbackDto,
+  AdminFeedbackRating,
+  AdminUseEmailModeFeedbackDto,
+  BasicField,
+  ErrorDto,
+} from '~shared/types'
 import {
   AdminDashboardFormMetaDto,
   CreateEmailFormBodyDto,
@@ -7,10 +13,15 @@ import {
   DuplicateFormBodyDto,
   FormDto,
   FormId,
+  PublicFormViewDto,
 } from '~shared/types/form/form'
 import { WorkspaceDto } from '~shared/types/workspace'
+import { removeAt } from '~shared/utils/immutable-array-fns'
 
 import { ApiService } from '~services/ApiService'
+import { CHECKBOX_OTHERS_INPUT_VALUE } from '~templates/Field/Checkbox/constants'
+
+import { PUBLIC_FORMS_ENDPOINT } from '~features/public-form/PublicFormService'
 
 export const ADMIN_FORM_ENDPOINT = '/admin/forms'
 const ADMIN_WORKSPACES_ENDPOINT = '/admin/workspaces'
@@ -110,6 +121,71 @@ export const createMultirespondentModeForm = async (
   return ApiService.post<FormDto>(ADMIN_FORM_ENDPOINT, { form: body }).then(
     ({ data }) => data,
   )
+}
+
+const createFeedbackResponses = (
+  formInputs: AdminUseEmailModeFeedbackDto,
+  feedbackForm: PublicFormViewDto,
+) => {
+  // const feedbackFormFieldsStructure: [string, number][] = [['reason', 0]]
+
+  const { fieldType, title, _id } = feedbackForm.form.form_fields[0]
+
+  const reasonCheckboxAnswerArray = formInputs['reason']
+  let answerArray: string[] = []
+  if (
+    reasonCheckboxAnswerArray !== undefined &&
+    reasonCheckboxAnswerArray.value
+  ) {
+    const othersIndex = reasonCheckboxAnswerArray.value.findIndex(
+      (v) => v === CHECKBOX_OTHERS_INPUT_VALUE,
+    )
+    // Others is checked, so we need to add the input at othersInput to the answer array
+    if (othersIndex !== -1) {
+      answerArray = removeAt(reasonCheckboxAnswerArray.value, othersIndex)
+      answerArray.push(`Others: ${reasonCheckboxAnswerArray.othersInput}`)
+    } else {
+      answerArray = reasonCheckboxAnswerArray.value
+    }
+  }
+
+  const responses = [
+    {
+      _id,
+      question: title,
+      answerArray,
+      fieldType,
+    },
+  ]
+  return responses
+}
+
+const createAdminEmailModeUseFeedback = (
+  formInputs: AdminUseEmailModeFeedbackDto,
+  feedbackForm: PublicFormViewDto,
+) => {
+  const responses = createFeedbackResponses(formInputs, feedbackForm)
+  // convert content to FormData object
+  const formData = new FormData()
+  formData.append('body', JSON.stringify({ responses, version: 2.1 }))
+
+  return formData
+}
+
+// TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
+export const submitUseEmailFormFeedback = async ({
+  body,
+  feedbackForm,
+}: {
+  body: AdminUseEmailModeFeedbackDto
+  feedbackForm: PublicFormViewDto
+}): Promise<boolean | ErrorDto> => {
+  if (!feedbackForm) return new Error('feedback form not provided')
+  const formData = createAdminEmailModeUseFeedback(body, feedbackForm)
+  return ApiService.post<boolean>(
+    `${PUBLIC_FORMS_ENDPOINT}/submissions/storage/email-mode-feedback?captchaResponse=null`,
+    formData,
+  ).then(({ data }) => data)
 }
 
 export const dupeEmailModeForm = async (

@@ -401,6 +401,15 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
       env: 'REACT_MIGRATION_USE_FETCH_FOR_SUBMISSIONS',
     },
   },
+  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
+  killEmailMode: {
+    feedbackFormid: {
+      doc: 'Form ID for feedback form in kill email mode',
+      format: String,
+      default: null,
+      env: 'KILL_EMAIL_MODE_FEEDBACK_FORMID',
+    },
+  },
   publicApi: {
     apiKeyVersion: {
       doc: 'API key version',

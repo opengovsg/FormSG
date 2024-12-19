@@ -252,6 +252,8 @@ const config: Config = {
   adminBannerContent: basicVars.banner.adminBannerContent,
   rateLimitConfig: basicVars.rateLimit,
   reactMigration: basicVars.reactMigration,
+  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
+  killEmailMode: basicVars.killEmailMode,
   configureAws,
   secretEnv: basicVars.core.secretEnv,
   envSiteName: basicVars.core.envSiteName,
