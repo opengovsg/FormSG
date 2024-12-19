@@ -4,6 +4,7 @@ import { Box, forwardRef } from '@chakra-ui/react'
 import { FormColorTheme, Language } from '~shared/types'
 
 import { useMdComponents } from '~hooks/useMdComponents'
+import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import { MarkdownText } from '~components/MarkdownText'
 
 import { SectionFieldContainerProps } from './SectionFieldContainer'
@@ -43,31 +44,17 @@ export const BaseSectionField = forwardRef<
 
   const selectedLanguage = i18n.language as Language
 
-  let title = schema.title
-  const titleTranslations = schema?.titleTranslations ?? []
-  const titleTranslationIdx = titleTranslations.findIndex((translation) => {
-    return translation.language === selectedLanguage
+  const title = getValueInSelectedLanguage({
+    defaultValue: schema.title,
+    translations: schema.titleTranslations,
+    selectedLanguage,
   })
 
-  // If there exists a translation for title based on the selected language,
-  // use that. If not default to english
-  if (titleTranslationIdx !== -1) {
-    title = titleTranslations[titleTranslationIdx].translation
-  }
-
-  let description = schema.description
-  const descriptionTranslations = schema?.descriptionTranslations ?? []
-  const descriptionTranslationIdx = descriptionTranslations.findIndex(
-    (translation) => {
-      return translation.language === selectedLanguage
-    },
-  )
-
-  // If there exists a translation for description based on the selected language,
-  // use that. If not default to english
-  if (descriptionTranslationIdx !== -1) {
-    description = descriptionTranslations[descriptionTranslationIdx].translation
-  }
+  const description = getValueInSelectedLanguage({
+    defaultValue: schema.description,
+    translations: schema.descriptionTranslations,
+    selectedLanguage,
+  })
 
   return (
     // id given so app can scrolled to this section.

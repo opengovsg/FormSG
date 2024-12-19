@@ -57,16 +57,16 @@ export const SettingsPage = (): JSX.Element => {
   }, [formId, hasEditAccess, isCollabLoading, navigate])
 
   const multiLangTab =
-    isUserLoading ||
-    isFormSettingLoading ||
-    !user?.betaFlags?.multiLangTranslation
-      ? null
-      : {
+    !isUserLoading &&
+    !isFormSettingLoading &&
+    user?.betaFlags?.multiLangTranslation
+      ? {
           label: 'Multi-language',
           icon: LanguageTranslation,
           component: SettingsMultiLangPage,
           path: 'language',
         }
+      : null
 
   const tabConfig: TabEntry[] = [
     {

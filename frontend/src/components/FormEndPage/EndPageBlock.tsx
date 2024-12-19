@@ -54,22 +54,11 @@ export const EndPageBlock = ({
     selectedLanguage,
   })
 
-  const paragraph = useMemo(() => {
-    let content = endPage?.paragraph
-
-    if (selectedLanguage !== Language.ENGLISH) {
-      const translations = endPage.paragraphTranslations ?? []
-      const paragraphTranslationIdx = translations.findIndex(
-        (translation) => translation.language === selectedLanguage,
-      )
-
-      if (paragraphTranslationIdx !== -1) {
-        content = translations[paragraphTranslationIdx].translation
-      }
-    }
-
-    return content
-  }, [endPage?.paragraph, endPage.paragraphTranslations, selectedLanguage])
+  const paragraph = getValueInSelectedLanguage({
+    defaultValue: endPage.paragraph ?? '',
+    translations: endPage.paragraphTranslations,
+    selectedLanguage,
+  })
 
   const submissionTimestamp = useMemo(
     () => format(new Date(submissionData.timestamp), 'dd MMM yyyy, HH:mm:ss z'),

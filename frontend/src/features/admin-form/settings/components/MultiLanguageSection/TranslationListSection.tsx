@@ -376,7 +376,7 @@ export const TranslationListSection = ({
           })}
 
           {/* Form Logic Prevent Submission Message Translation */}
-          {formLogicPreventSubmissions && (
+          {formLogicPreventSubmissions?.length !== 0 && (
             <>
               <QuestionRow
                 key="Form Logic"

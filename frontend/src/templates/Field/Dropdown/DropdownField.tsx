@@ -35,7 +35,7 @@ export const DropdownField = ({
   const selectedLanguage = i18n.language as Language
 
   const fieldOptions: ComboboxItem[] = useMemo(() => {
-    const defaultEnglishFieldOptions = schema.fieldOptions
+    const englishFieldOptions = schema.fieldOptions
     const fieldOptionsTranslations = schema?.fieldOptionsTranslations ?? []
 
     const translationIdx = fieldOptionsTranslations.findIndex((translation) => {
@@ -48,7 +48,7 @@ export const DropdownField = ({
     if (
       translationIdx !== -1 &&
       fieldOptionsTranslations[translationIdx].translation.length ===
-        defaultEnglishFieldOptions.length
+        englishFieldOptions.length
     ) {
       const translatedFieldOptions =
         fieldOptionsTranslations[translationIdx].translation
@@ -59,7 +59,7 @@ export const DropdownField = ({
       // and the default English options are corresponding with each other.
       return translatedFieldOptions.map((translatedFieldOption, index) => {
         return {
-          value: defaultEnglishFieldOptions[index],
+          value: englishFieldOptions[index],
           label: translatedFieldOption,
         }
       })

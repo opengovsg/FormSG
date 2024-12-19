@@ -62,7 +62,7 @@ export const CheckboxField = ({
     [disableRequiredValidation, schema],
   )
 
-  const defaultEnglishCheckboxOptions = schema.fieldOptions
+  const englishCheckboxOptions = schema.fieldOptions
   const selectedLanguage = i18n.language as Language
 
   const { register, getValues, control } = useFormContext<CheckboxFieldInputs>()
@@ -71,7 +71,7 @@ export const CheckboxField = ({
   })
 
   const fieldOptions = getFieldOptionsInSelectedLanguage({
-    defaultValue: defaultEnglishCheckboxOptions,
+    defaultValue: englishCheckboxOptions,
     translations: schema.fieldOptionsTranslations,
     selectedLanguage,
   })
@@ -110,7 +110,7 @@ export const CheckboxField = ({
                   // so that upon form submission, the selected value submitted
                   // and collected will always be the english field option regardless
                   // of the language of the form.
-                  value={defaultEnglishCheckboxOptions[idx]}
+                  value={englishCheckboxOptions[idx]}
                   aria-label={o}
                   {...(idx === 0 ? { ref } : {})}
                 >

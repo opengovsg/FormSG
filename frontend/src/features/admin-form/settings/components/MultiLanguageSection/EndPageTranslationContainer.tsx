@@ -1,4 +1,5 @@
 import { Divider, Flex, Text } from '@chakra-ui/react'
+import _ from 'lodash'
 
 import { FormEndPage, Language } from '~shared/types'
 
@@ -17,7 +18,7 @@ export const EndPageTranslationsContainer = ({
 }: EndPageTranslationsContainerProps) => {
   if (!endPage) return null
 
-  const hasParagraph = endPage.paragraph?.trim() !== ''
+  const hasParagraph = !_.isEmpty(endPage.paragraph?.trim())
 
   const currentTitleTranslations = endPage.titleTranslations ?? []
   const currentParagraphTranslations = endPage.paragraphTranslations ?? []

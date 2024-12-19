@@ -38,7 +38,7 @@ export const getValueInSelectedLanguage = ({
   translations,
   selectedLanguage,
 }: SelectedLanguageProps) => {
-  let title = defaultValue
+  let value = defaultValue
 
   const titleTranslations = translations ?? []
   // check if there are any title translations for the selected language
@@ -51,10 +51,10 @@ export const getValueInSelectedLanguage = ({
   // If there are title translations for the selected language, use the translation.
   // If not default it to English.
   if (titleTranslationIdx !== -1) {
-    title = titleTranslations[titleTranslationIdx].translation
+    value = titleTranslations[titleTranslationIdx].translation
   }
 
-  return title
+  return value
 }
 
 export const getFieldOptionsInSelectedLanguage = ({
@@ -77,7 +77,7 @@ export const getFieldOptionsInSelectedLanguage = ({
       defaultValue.length
   ) {
     return fieldOptionsTranslations[translationIdx].translation
-  } else {
-    return defaultValue
   }
+
+  return defaultValue
 }

@@ -87,8 +87,8 @@ export const types: MyInfoFieldBlock[] = [
     fieldType: BasicField.Date,
     previewValue: '1965-02-23',
     titleTranslations: [
-      { language: Language.CHINESE, translation: '生日日期' },
-      { language: Language.MALAY, translation: 'Tarikh Kelahiran' },
+      { language: Language.CHINESE, translation: '出生日期' },
+      { language: Language.MALAY, translation: 'Tarikh lahir' },
       { language: Language.TAMIL, translation: 'பிறந்த தேதி' },
     ],
   },
@@ -105,7 +105,7 @@ export const types: MyInfoFieldBlock[] = [
     previewValue: 'CHINESE',
     titleTranslations: [
       { language: Language.CHINESE, translation: '种族' },
-      { language: Language.MALAY, translation: 'Bangsa' },
+      { language: Language.MALAY, translation: 'Kaum' },
       { language: Language.TAMIL, translation: 'இனம்' },
     ],
   },
@@ -282,8 +282,8 @@ export const types: MyInfoFieldBlock[] = [
     fieldType: BasicField.ShortText,
     previewValue: '411 CHUA CHU KANG AVE 3, #12-3, SINGAPORE 238823',
     titleTranslations: [
-      { language: Language.CHINESE, translation: '注册地址' },
-      { language: Language.MALAY, translation: 'Alamat yang didaftar' },
+      { language: Language.CHINESE, translation: '登记地址' },
+      { language: Language.MALAY, translation: 'Alamat berdaftar' },
       { language: Language.TAMIL, translation: 'பதிவு செய்யப்பட்ட முகவரி' },
     ],
   },
@@ -416,8 +416,8 @@ export const types: MyInfoFieldBlock[] = [
     fieldType: BasicField.Mobile,
     previewValue: '98765432',
     titleTranslations: [
-      { language: Language.CHINESE, translation: '手机电话' },
-      { language: Language.MALAY, translation: 'Nombor Telefon' },
+      { language: Language.CHINESE, translation: '手机号码' },
+      { language: Language.MALAY, translation: 'Nombor telefon bimbit' },
       { language: Language.TAMIL, translation: 'கைப்பேசி எண்' },
     ],
   },

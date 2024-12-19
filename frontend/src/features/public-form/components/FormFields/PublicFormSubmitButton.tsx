@@ -8,6 +8,7 @@ import { FormField, Language, LogicDto, MyInfoFormField } from '~shared/types'
 
 import { ThemeColorScheme } from '~theme/foundations/colours'
 import { useIsMobile } from '~hooks/useIsMobile'
+import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 import { FormFieldValues, VerifiableFieldValues } from '~templates/Field'
@@ -65,18 +66,11 @@ export const PublicFormSubmitButton = ({
     })
   }, [formInputs, formFields, formLogics])
 
-  const selectedLanguage = i18n.language as Language
-  const preventSubmissionMessage = useMemo(() => {
-    return (
-      preventSubmissionLogic?.preventSubmitMessageTranslations?.find(
-        (translation) => translation.language === selectedLanguage,
-      )?.translation ?? preventSubmissionLogic?.preventSubmitMessage
-    )
-  }, [
-    preventSubmissionLogic?.preventSubmitMessage,
-    preventSubmissionLogic?.preventSubmitMessageTranslations,
-    selectedLanguage,
-  ])
+  const preventSubmissionMessage = getValueInSelectedLanguage({
+    defaultValue: preventSubmissionLogic?.preventSubmitMessage ?? '',
+    translations: preventSubmissionLogic?.preventSubmitMessageTranslations,
+    selectedLanguage: i18n.language as Language,
+  })
 
   // For payments submit and pay modal
   const {

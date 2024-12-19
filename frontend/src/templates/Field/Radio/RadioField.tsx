@@ -53,7 +53,7 @@ export const RadioField = ({
     [disableRequiredValidation, schema],
   )
 
-  const defaultEnglishRadioOptions = schema.fieldOptions
+  const englishRadioOptions = schema.fieldOptions
 
   const { register, getValues, trigger } = useFormContext<RadioFieldInputs>()
   const { isValid, isSubmitting, errors } = useFormState<RadioFieldInputs>({
@@ -75,7 +75,7 @@ export const RadioField = ({
   )
 
   const fieldOptions = getFieldOptionsInSelectedLanguage({
-    defaultValue: defaultEnglishRadioOptions,
+    defaultValue: englishRadioOptions,
     translations: schema.fieldOptionsTranslations,
     selectedLanguage: i18n.language as Language,
   })
@@ -111,7 +111,7 @@ export const RadioField = ({
                 // so that upon form submission, the selected value submitted
                 // and collected will always be the english field option regardless
                 // of the language of the form.
-                value={defaultEnglishRadioOptions[idx]}
+                value={englishRadioOptions[idx]}
                 {...(idx === 0 ? { ref } : {})}
                 // Required should apply to radio group rather than individual radio.
                 isRequired={false}

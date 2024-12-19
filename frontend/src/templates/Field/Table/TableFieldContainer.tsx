@@ -4,6 +4,7 @@ import { FormControl } from '@chakra-ui/react'
 
 import { Language } from '~shared/types'
 
+import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import FormLabel from '~components/FormControl/FormLabel'
 
 import { TableFieldSchema } from '../types'
@@ -29,36 +30,17 @@ export const TableFieldContainer = ({
 
   const selectedLanguage = i18n.language as Language
 
-  let title = schema.title
+  const title = getValueInSelectedLanguage({
+    defaultValue: schema.title,
+    translations: schema.titleTranslations,
+    selectedLanguage: selectedLanguage,
+  })
 
-  const titleTranslations = schema.titleTranslations ?? []
-  // check if there are any title translations for the selected language
-  const titleTranslationIdx = titleTranslations.findIndex(
-    (titleTranslation) => {
-      return titleTranslation.language === selectedLanguage
-    },
-  )
-
-  // If there are title translations for the selected language, use the translation.
-  // If not default it to English.
-  if (titleTranslationIdx !== -1) {
-    title = titleTranslations[titleTranslationIdx].translation
-  }
-
-  let description = schema.description
-
-  const descriptionTranslations = schema.descriptionTranslations ?? []
-  // check if there are any description translations for the selected language
-  const descriptionTranslationIdx = descriptionTranslations.findIndex(
-    (descriptionTranslation) =>
-      descriptionTranslation.language === selectedLanguage,
-  )
-
-  // If there are description translations for the language, use the translation.
-  // If not default it to English.
-  if (descriptionTranslationIdx !== -1) {
-    description = descriptionTranslations[descriptionTranslationIdx].translation
-  }
+  const description = getValueInSelectedLanguage({
+    defaultValue: schema.description,
+    translations: schema.descriptionTranslations,
+    selectedLanguage: selectedLanguage,
+  })
 
   return (
     <FormControl
