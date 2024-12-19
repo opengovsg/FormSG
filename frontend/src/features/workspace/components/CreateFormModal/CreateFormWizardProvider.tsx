@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
@@ -15,7 +16,7 @@ import {
   CreateFormWizardInputProps,
 } from './CreateFormWizardContext'
 
-export const INITIAL_STEP_STATE: [CreateFormFlowStates, -1 | 1 | 0] = [
+const INITIAL_STEP_STATE: [CreateFormFlowStates, -1 | 1 | 0] = [
   CreateFormFlowStates.Details,
   -1,
 ]
