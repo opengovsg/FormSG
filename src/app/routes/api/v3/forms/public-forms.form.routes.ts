@@ -3,6 +3,8 @@ import { Router } from 'express'
 import * as PublicFormController from '../../../../modules/form/public-form/public-form.controller'
 import * as WogaaController from '../../../../modules/wogaa/wogaa.controller'
 
+import { injectFeedbackFormUrl } from './public-form.middleware'
+
 export const PublicFormsFormRouter = Router()
 
 /**
@@ -36,4 +38,18 @@ PublicFormsFormRouter.route('/:formId([a-fA-F0-9]{24})').get(
  */
 PublicFormsFormRouter.route('/:formId([a-fA-F0-9]{24})/sample-submission').get(
   PublicFormController.handleGetPublicFormSampleSubmission,
+)
+/**
+ * TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
+ *
+ * @route GET /admin-use-email-feedback
+ *
+ * @returns 200 with form when form exists and is public
+ * @returns 404 when form is private or form with given ID does not exist
+ * @returns 410 when form is archived
+ * @returns 500 when database error occurs
+ */
+PublicFormsFormRouter.route('/admin-use-email-feedback').get(
+  injectFeedbackFormUrl,
+  PublicFormController.handleGetPublicForm,
 )

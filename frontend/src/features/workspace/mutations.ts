@@ -2,7 +2,10 @@ import { useCallback } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
 import { useNavigate } from 'react-router-dom'
 
-import { AdminFeedbackRating } from '~shared/types'
+import {
+  AdminFeedbackRating,
+  AdminUseEmailModeFeedbackDto,
+} from '~shared/types'
 import {
   CreateEmailFormBodyDto,
   CreateMultirespondentFormBodyDto,
@@ -10,6 +13,7 @@ import {
   DuplicateFormBodyDto,
   FormDto,
   FormId,
+  PublicFormViewDto,
 } from '~shared/types/form/form'
 
 import { ApiError } from '~typings/core'
@@ -34,6 +38,7 @@ import {
   dupeStorageModeForm,
   moveFormsToWorkspace,
   removeFormsFromWorkspaces,
+  submitUseEmailFormFeedback,
   updateAdminFeedback,
   updateWorkspaceTitle,
 } from './WorkspaceService'
@@ -98,10 +103,19 @@ export const useCreateFormMutations = () => {
     onError: handleError,
   })
 
+  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
+  const emailModeFeedbackMutation = useMutation(
+    (params: {
+      body: AdminUseEmailModeFeedbackDto
+      feedbackForm: PublicFormViewDto
+    }) => submitUseEmailFormFeedback(params),
+  )
+
   return {
     createEmailModeFormMutation,
     createStorageModeFormMutation,
     createMultirespondentModeFormMutation,
+    emailModeFeedbackMutation,
   }
 }
 
