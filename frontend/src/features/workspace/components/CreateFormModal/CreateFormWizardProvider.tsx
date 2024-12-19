@@ -6,7 +6,10 @@ import { FormResponseMode, PublicFormViewDto } from '~shared/types'
 
 import formsgSdk from '~utils/formSdk'
 
-import { useCreateFormMutations } from '~features/workspace/mutations'
+import {
+  useCreateFormMutations,
+  useEmailModeFeedbackMutation,
+} from '~features/workspace/mutations'
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
 import {
@@ -64,8 +67,9 @@ const useCreateFormWizardContext = (): CreateFormWizardContextReturn => {
     createEmailModeFormMutation,
     createStorageModeFormMutation,
     createMultirespondentModeFormMutation,
-    emailModeFeedbackMutation,
   } = useCreateFormMutations()
+
+  const { emailModeFeedbackMutation } = useEmailModeFeedbackMutation()
 
   const { activeWorkspace, isDefaultWorkspace } = useWorkspaceContext()
 

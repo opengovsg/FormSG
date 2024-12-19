@@ -1,9 +1,12 @@
 import { useEffect } from 'react'
 
-import { FormResponseMode } from '~shared/types'
+import { FormResponseMode, PublicFormViewDto } from '~shared/types'
 
 import { usePreviewForm } from '~features/admin-form/common/queries'
-import { useDuplicateFormMutations } from '~features/workspace/mutations'
+import {
+  useDuplicateFormMutations,
+  useEmailModeFeedbackMutation,
+} from '~features/workspace/mutations'
 import { useDashboard } from '~features/workspace/queries'
 import { makeDuplicateFormTitle } from '~features/workspace/utils/createDuplicateFormTitle'
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
@@ -57,13 +60,15 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
     dashboardForms,
   ])
 
-  const { handleSubmit } = formMethods
+  const { handleSubmit, setValue } = formMethods
 
   const {
     dupeEmailModeFormMutation,
     dupeStorageModeFormMutation,
     dupeMultirespondentModeFormMutation,
   } = useDuplicateFormMutations()
+
+  const { emailModeFeedbackMutation } = useEmailModeFeedbackMutation()
 
   const { activeWorkspace, isDefaultWorkspace } = useWorkspaceContext()
 
@@ -106,17 +111,36 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
     },
   )
 
-  const handleDetailsSubmit = handleSubmit((inputs) => {
-    if (!activeFormMeta?._id) return
-    if (inputs.responseMode === FormResponseMode.Email) {
+  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
+  // Collect email mode usage feedback before creating the form
+  const handleEmailFeedbackSubmit = () => {
+    // explicit set response to email as email feedback "button" interaction
+    // is not handled handled in FormResponseOptions
+    setValue('responseMode', FormResponseMode.Email)
+    setCurrentStep([CreateFormFlowStates.EmailFeedback, 1])
+  }
+
+  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
+  const handleCreateEmailModeForm = (feedbackForm: PublicFormViewDto) =>
+    handleSubmit((inputs) => {
+      if (!activeFormMeta?._id) return
+      if (!inputs.reason) {
+        return new Error('Reason is required')
+      }
+      emailModeFeedbackMutation.mutate({
+        body: { reason: inputs.reason },
+        feedbackForm,
+      })
       return dupeEmailModeFormMutation.mutate({
         formIdToDuplicate: activeFormMeta._id,
         emails: inputs.emails.filter(Boolean),
         title: inputs.title,
-        responseMode: inputs.responseMode,
+        responseMode: FormResponseMode.Email,
         workspaceId,
       })
-    }
+    })
+
+  const handleDetailsSubmit = handleSubmit(() => {
     setCurrentStep([CreateFormFlowStates.Landing, 1])
   })
 
@@ -132,6 +156,8 @@ export const useDupeFormWizardContext = (): CreateFormWizardContextReturn => {
     formMethods,
     handleDetailsSubmit,
     handleCreateStorageModeOrMultirespondentForm,
+    handleEmailFeedbackSubmit,
+    handleCreateEmailModeForm,
     isSingpass,
     modalHeader: 'Duplicate form',
   }
