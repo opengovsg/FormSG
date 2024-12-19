@@ -8,7 +8,7 @@ import * as SubmissionController from '../../../../modules/submission/submission
 import * as WogaaController from '../../../../modules/wogaa/wogaa.controller'
 import { limitRate } from '../../../../utils/limit-rate'
 
-import { injectFeedbackFormUrl } from './public-form.middleware'
+import { authAndInjectFeedbackFormUrl } from './public-form.middleware'
 
 export const PublicFormsSubmissionsRouter = Router()
 
@@ -60,7 +60,7 @@ PublicFormsSubmissionsRouter.route(
   '/submissions/storage/email-mode-feedback',
 ).post(
   limitRate({ max: rateLimitConfig.submissions }),
-  injectFeedbackFormUrl,
+  authAndInjectFeedbackFormUrl,
   EncryptSubmissionController.handleStorageSubmission,
 )
 
