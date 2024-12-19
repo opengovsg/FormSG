@@ -103,19 +103,10 @@ export const useCreateFormMutations = () => {
     onError: handleError,
   })
 
-  // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
-  const emailModeFeedbackMutation = useMutation(
-    (params: {
-      body: AdminUseEmailModeFeedbackDto
-      feedbackForm: PublicFormViewDto
-    }) => submitUseEmailFormFeedback(params),
-  )
-
   return {
     createEmailModeFormMutation,
     createStorageModeFormMutation,
     createMultirespondentModeFormMutation,
-    emailModeFeedbackMutation,
   }
 }
 
@@ -296,4 +287,16 @@ export const useWorkspaceMutations = () => {
     deleteWorkspaceMutation,
     removeFormFromWorkspacesMutation,
   }
+}
+
+// TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
+export const useEmailModeFeedbackMutation = () => {
+  const emailModeFeedbackMutation = useMutation(
+    (params: {
+      body: AdminUseEmailModeFeedbackDto
+      feedbackForm: PublicFormViewDto
+    }) => submitUseEmailFormFeedback(params),
+  )
+
+  return { emailModeFeedbackMutation }
 }
