@@ -3,7 +3,7 @@ import { Router } from 'express'
 import * as PublicFormController from '../../../../modules/form/public-form/public-form.controller'
 import * as WogaaController from '../../../../modules/wogaa/wogaa.controller'
 
-import { injectFeedbackFormUrl } from './public-form.middleware'
+import { authAndInjectFeedbackFormUrl } from './public-form.middleware'
 
 export const PublicFormsFormRouter = Router()
 
@@ -50,6 +50,6 @@ PublicFormsFormRouter.route('/:formId([a-fA-F0-9]{24})/sample-submission').get(
  * @returns 500 when database error occurs
  */
 PublicFormsFormRouter.route('/admin-use-email-feedback').get(
-  injectFeedbackFormUrl,
+  authAndInjectFeedbackFormUrl,
   PublicFormController.handleGetPublicForm,
 )
