@@ -13,7 +13,7 @@ export const authAndInjectFeedbackFormUrl: ControllerHandler = (
   res,
   next,
 ) => {
-  const formId = killEmailMode.feedbackFormid
+  const formId = killEmailMode.feedbackFormId
   req.params = { formId: formId }
   const sessionUserId = (req.session as AuthedSessionData).user._id
 

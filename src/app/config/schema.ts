@@ -403,10 +403,12 @@ export const optionalVarsSchema: Schema<IOptionalVarsSchema> = {
   },
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
   killEmailMode: {
-    feedbackFormid: {
+    feedbackFormId: {
       doc: 'Form ID for feedback form in kill email mode',
       format: String,
-      default: null,
+      // this form id is not part of the critical path,
+      // thus we don't want to crash the system even if this is not available
+      default: '',
       env: 'KILL_EMAIL_MODE_FEEDBACK_FORMID',
     },
   },

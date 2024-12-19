@@ -206,7 +206,7 @@ export interface IOptionalVarsSchema {
     useFetchForSubmissions: boolean
   }
   killEmailMode: {
-    feedbackFormid: string
+    feedbackFormId: string
   }
   publicApi: {
     apiKeyVersion: string
