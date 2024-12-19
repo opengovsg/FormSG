@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { FormControl } from '@chakra-ui/react'
 
+import { textStyles } from '~theme/textStyles'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -89,6 +90,7 @@ export const ApprovalsBlock = ({
         isLoading={isLoading}
         onChange={onApprovalToggleChange}
         isChecked={isApprovalToggleChecked}
+        labelStyles={textStyles.h4}
         label="This respondent is an approver"
         description="If they select Yes, the form continues to the next step. If they select No, it stops here."
         tooltipText="Use this for steps that involve any type of decision, such as reviews or endorsements"
