@@ -4,6 +4,7 @@ import { err, ok, Result } from 'neverthrow'
 import { FIELDS_TO_REJECT } from '../../../../shared/constants/field/basic'
 import { BasicField, FormField, FormFieldDto } from '../../../../shared/types'
 import {
+  ProcessedAddressResponse,
   ProcessedAttachmentResponse,
   ProcessedCheckboxResponse,
   ProcessedChildrenResponse,
@@ -25,6 +26,7 @@ import {
 } from '../../modules/submission/submission.errors'
 
 import {
+  constructAddressFieldValidator,
   constructAttachmentFieldValidator,
   constructCheckboxFieldValidator,
   constructChildFieldValidator,
@@ -34,6 +36,7 @@ import {
 } from './answerValidator.factory'
 import {
   isGenericStringAnswerResponseV3,
+  isProcessedAddressResponse,
   isProcessedAttachmentResponse,
   isProcessedCheckboxResponse,
   isProcessedChildResponse,
@@ -145,6 +148,12 @@ const tableRequiresValidation = (
   )
   return requiredVisible || answerPresent
 }
+
+const addressRequiresValidation = (
+  formField: FieldValidationSchema,
+  response: ProcessedAddressResponse,
+) =>
+  (formField.required && response.isVisible) || response.answerArray.length > 0
 
 /**
  * Generic logging function for invalid fields.
@@ -268,6 +277,16 @@ export const validateField = (
   ) {
     if (tableRequiresValidation(formField, response)) {
       const validator = constructTableFieldValidator(formField)
+      return validateResponseWithValidator(
+        validator,
+        formId,
+        formField,
+        response,
+      )
+    }
+  } else if (isProcessedAddressResponse(response)) {
+    if (addressRequiresValidation(formField, response)) {
+      const validator = constructAddressFieldValidator(formField)
       return validateResponseWithValidator(
         validator,
         formId,

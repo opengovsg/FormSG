@@ -186,8 +186,6 @@ export const submitEmailModeForm = async ({
     formInputs: filteredInputs,
     responseMetadata,
   })
-  console.log('here i am')
-  console.log(formData.get('body'))
   return ApiService.post<SubmissionResponseDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/email`,
     formData,
@@ -286,6 +284,7 @@ export const submitStorageModeForm = async ({
     fieldIdToQuarantineKeyMap,
   )
   console.log('here i am')
+  console.log(formFields)
   console.log(formData.get('body'))
   return ApiService.post<SubmissionResponseDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/storage`,

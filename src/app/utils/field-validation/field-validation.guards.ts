@@ -62,10 +62,11 @@ export const isProcessedAddressResponse = (
   return (
     response.fieldType === BasicField.Address &&
     'answerArray' in response &&
-    Array.isArray(response.answerArray) &&
-    response.answerArray.every(
-      (item) => typeof item === 'object' && item !== null, // Assuming AddressAttribute is an object
-    )
+    Array.isArray(response.answerArray)
+    // &&
+    // response.answerArray.every(
+    //   (item) => typeof item === 'object' && item !== null,
+    // )
   )
 }
 

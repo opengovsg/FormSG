@@ -795,20 +795,25 @@ export const getAnswersForAddress = (
   if (!subFields) {
     return []
   }
-  // subField = ["postalCode:650161"]
-  return subFields.flatMap((subField) => {
-    const subFieldName = subField[0].split(':')[0].trim()
-    const subFieldValue = subField[0].split(':')[1].trim()
-    return {
-      _id: response._id + subFieldName, // check this
+  const subFieldResponses: ProcessedSingleAnswerResponse[] = []
+  // Object.entries(obj).forEach(([key, value]) => {
+  //   console.log(`${key}: ${value}`); // Output each key-value pair
+  // });
+
+  Object.entries(subFields).forEach((subField) => {
+    const key = subField[0].split(':')[0].trim()
+    const value = subField[0].split(':')[1].trim()
+    subFieldResponses.push({
+      _id: response._id + key, // check this
       fieldType: response.fieldType,
-      question: response.question + subFieldName,
+      question: response.question + key,
       myInfo: response.myInfo,
       isVisible: response.isVisible,
       isUserVerified: response.isUserVerified,
-      answer: subFieldValue,
-    }
+      answer: value,
+    })
   })
+  return subFieldResponses
 }
 
 /**
