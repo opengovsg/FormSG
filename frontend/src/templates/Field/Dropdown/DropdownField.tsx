@@ -34,6 +34,10 @@ export const DropdownField = ({
 
   const selectedLanguage = i18n.language as Language
 
+  // This has to be done because of how the SingleSelect function
+  // extracts the value attribute from the fieldOption to set
+  // as the selected option which will then be used to validate
+  // against the schema fieldOptions which are the defaultFieldOptions.
   const fieldOptions: ComboboxItem[] = useMemo(() => {
     const englishFieldOptions = schema.fieldOptions
     const fieldOptionsTranslations = schema?.fieldOptionsTranslations ?? []
@@ -42,9 +46,6 @@ export const DropdownField = ({
       return translation.language === selectedLanguage
     })
 
-    // Check if translations for field options exist and whether
-    // each field option has its own respective translation. If not
-    // render the default field options in English.
     if (
       translationIdx !== -1 &&
       fieldOptionsTranslations[translationIdx].translation.length ===
@@ -53,10 +54,6 @@ export const DropdownField = ({
       const translatedFieldOptions =
         fieldOptionsTranslations[translationIdx].translation
 
-      // The label will be the translated option while the value is the
-      // default English option so that upon form submission, the value recorded
-      // will be the default english option. The indexes of the translated options
-      // and the default English options are corresponding with each other.
       return translatedFieldOptions.map((translatedFieldOption, index) => {
         return {
           value: englishFieldOptions[index],

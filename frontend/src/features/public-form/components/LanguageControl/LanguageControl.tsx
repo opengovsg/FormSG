@@ -79,7 +79,13 @@ export const LanguageControl = (): JSX.Element | null => {
       px={{ base: '1.5rem', md: 0 }}
       justifyContent={{ base: 'start', md: 'center' }}
     >
-      <HStack mt="-2rem" bg="white" borderRadius="0.25rem" shadow="md">
+      <HStack
+        mt={{ base: '-1rem', md: '-2rem' }}
+        mb={{ base: '1rem', md: 0 }}
+        bg="white"
+        borderRadius="0.25rem"
+        shadow="md"
+      >
         <Menu variant="clear">
           <MenuButton
             as={Button}
