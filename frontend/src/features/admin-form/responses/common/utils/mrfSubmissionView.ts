@@ -17,7 +17,7 @@ export const getCurrentStepString = (
 /** Gets the business friendly string for MRF submission status. */
 export const getStatusFromWorkflowStatus = (
   workflowStatus: WorkflowStatus | undefined,
-) => {
+): MRF_STATUS | '' => {
   switch (workflowStatus) {
     case WorkflowStatus.COMPLETED:
     case WorkflowStatus.APPROVED:
@@ -25,7 +25,7 @@ export const getStatusFromWorkflowStatus = (
       return MRF_STATUS.COMPLETED
     case WorkflowStatus.PENDING:
       return MRF_STATUS.PENDING
-    default:
+    case undefined:
       return ''
   }
 }
