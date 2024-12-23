@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BiSearch, BiSolidMagicWand } from 'react-icons/bi'
+import { BiSearch } from 'react-icons/bi'
 import {
   Box,
-  Button,
   Divider,
   Flex,
   Icon,
@@ -15,10 +14,8 @@ import {
   TabPanels,
   Tabs,
   Text,
-  Tooltip,
 } from '@chakra-ui/react'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import { Tab } from '~components/Tabs'
 
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
@@ -32,25 +29,7 @@ import {
   MyInfoFieldPanel,
   PaymentsInputPanel,
 } from './field-panels'
-
-const MagicFormBuilderButton = ({ ...styleProps }) => {
-  const isMobile = useIsMobile()
-  return !isMobile ? (
-    <Tooltip openDelay={800} hasArrow label="Create fields with AI">
-      <Button
-        padding="0"
-        backgroundColor="primary.200"
-        _hover={{
-          backgroundColor: 'primary.300',
-        }}
-        borderWidth={0}
-        {...styleProps}
-      >
-        <Icon as={BiSolidMagicWand} color="primary.500" fontSize="1.5rem" />
-      </Button>
-    </Tooltip>
-  ) : null
-}
+import { MagicFormBuilderContainer } from './MagicFormBuilderContainer'
 
 const FieldSearchBar = ({
   searchValue,
@@ -58,21 +37,24 @@ const FieldSearchBar = ({
 }: {
   searchValue: string
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-}) => (
-  <>
-    <InputGroup>
-      <InputLeftElement>
-        <Icon as={BiSearch} color="secondary.500" fontSize="1.25rem" />
-      </InputLeftElement>
-      <Input
-        value={searchValue}
-        onChange={onChange}
-        placeholder="Search fields"
-      />
-      <MagicFormBuilderButton ml="0.5rem" />
-    </InputGroup>
-  </>
-)
+}) => {
+  return (
+    <>
+      <InputGroup>
+        <InputLeftElement>
+          <Icon as={BiSearch} color="secondary.500" fontSize="1.25rem" />
+        </InputLeftElement>
+        <Input
+          mr="0.5rem"
+          value={searchValue}
+          onChange={onChange}
+          placeholder="Search fields"
+        />
+        <MagicFormBuilderContainer />
+      </InputGroup>
+    </>
+  )
+}
 
 export const FieldListDrawer = (): JSX.Element => {
   const { t } = useTranslation()
