@@ -67,7 +67,7 @@ const CompletedBadge = () => (
   </Badge>
 )
 
-const NON_MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
+const BASE_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: '#',
     accessor: 'number',
@@ -204,7 +204,7 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
 ]
 
 const PAYMENT_RESPONSE_TABLE_COLUMNS =
-  NON_MRF_RESPONSE_TABLE_COLUMNS.concat(PAYMENT_COLUMNS)
+  BASE_RESPONSE_TABLE_COLUMNS.concat(PAYMENT_COLUMNS)
 
 export const ResponsesTable = () => {
   const { data: form } = useAdminForm()
@@ -245,7 +245,7 @@ export const ResponsesTable = () => {
     if (isPaymentsForm) {
       return PAYMENT_RESPONSE_TABLE_COLUMNS
     }
-    return NON_MRF_RESPONSE_TABLE_COLUMNS
+    return BASE_RESPONSE_TABLE_COLUMNS
   }, [isMultiRespondentForm, isPaymentsForm])
 
   const {
