@@ -367,7 +367,11 @@ EncryptSubmissionSchema.statics.findSingleMetadata = function (
     const paymentMeta = result.payments?.[0]
 
     // Build submissionMetadata object.
-    const metadata = buildSubmissionMetadata(result, 1, paymentMeta)
+    const metadata = buildSubmissionMetadata({
+      result,
+      currentNumber: 1,
+      paymentMeta,
+    })
 
     return metadata
   })
@@ -436,11 +440,11 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
 
     const metadata = results.map((result) => {
       const paymentMeta = result.payments?.[0]
-      const metadataEntry = buildSubmissionMetadata(
+      const metadataEntry = buildSubmissionMetadata({
         result,
         currentNumber,
         paymentMeta,
-      )
+      })
 
       currentNumber--
       return metadataEntry
@@ -592,7 +596,11 @@ MultirespondentSubmissionSchema.statics.findSingleMetadata = function (
       submittedSteps: result.submittedSteps,
     }
     // Build submissionMetadata object.
-    const metadata = buildSubmissionMetadata(result, 1, undefined, mrfMeta)
+    const metadata = buildSubmissionMetadata({
+      result,
+      currentNumber: 1,
+      mrfMeta,
+    })
 
     return metadata
   })
@@ -647,12 +655,12 @@ MultirespondentSubmissionSchema.statics.findAllMetadataByFormId = function (
         workflow: result.workflow,
         submittedSteps: result.submittedSteps,
       }
-      const metadataEntry = buildSubmissionMetadata(
+      const metadataEntry = buildSubmissionMetadata({
         result,
         currentNumber,
         paymentMeta,
         mrfMeta,
-      )
+      })
 
       currentNumber--
       return metadataEntry
@@ -787,12 +795,17 @@ export const getMultirespondentSubmissionModel = (
   >(SubmissionType.Multirespondent)
 }
 
-const buildSubmissionMetadata = (
-  result: MetadataAggregateResult,
-  currentNumber: number,
-  paymentMeta?: PaymentAggregates,
-  mrfMeta?: MultiRespondentAggregates,
-): SubmissionMetadata => {
+const buildSubmissionMetadata = ({
+  result,
+  currentNumber,
+  paymentMeta,
+  mrfMeta,
+}: {
+  result: MetadataAggregateResult
+  currentNumber: number
+  paymentMeta?: PaymentAggregates
+  mrfMeta?: MultiRespondentAggregates
+}): SubmissionMetadata => {
   return {
     number: currentNumber,
     refNo: result._id,
