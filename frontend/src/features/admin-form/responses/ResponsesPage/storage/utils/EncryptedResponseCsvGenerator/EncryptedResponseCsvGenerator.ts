@@ -118,9 +118,12 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     if (this.hasBeenProcessed) return
 
     // Create a header row in CSV using the fieldIdToQuestion map.
+    // NOTE: de-structuring is necessary to avoid mutating the array referenced by the `headers` array below.
+    // See: https://github.com/opengovsg/FormSG/pull/7965#discussion_r1883954194.
     const headers = this.isMrf ? [...MRF_CSV_HEADERS] : [...NON_MRF_CSV_HEADERS]
     this.fieldIdToQuestion.forEach((value, fieldId) => {
       for (let i = 0; i < this.fieldIdToNumCols[fieldId]; i++) {
+        // TODO: (Code quality) Refactor to avoid mutating the `headers` array.
         headers.push(value.question)
       }
     })
