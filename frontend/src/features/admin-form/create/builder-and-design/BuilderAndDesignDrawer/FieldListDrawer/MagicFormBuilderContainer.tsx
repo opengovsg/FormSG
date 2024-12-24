@@ -29,7 +29,6 @@ import { useAssistanceMutations } from '~features/admin-form/assistance/mutation
 
 import { useDeleteFormField } from '../../mutations/useDeleteFormField'
 import {
-  isAcceptDenyOpenSelector,
   recentlyCreatedFieldIdsSelector,
   useMagicFormBuilderStore,
 } from '../../useMagicFormBuilderStore'
@@ -180,7 +179,8 @@ const MagicFormBuilderPopover = ({
     recentlyCreatedFieldIdsSelector,
   )
 
-  const isAcceptDenyOpen = useMagicFormBuilderStore(isAcceptDenyOpenSelector)
+  const isAcceptDenyOpen =
+    !!recentlyCreatedFieldIds && recentlyCreatedFieldIds.size > 0
 
   const onClickDefaults = () => {
     clearRecentlyCreatedFieldIds()
