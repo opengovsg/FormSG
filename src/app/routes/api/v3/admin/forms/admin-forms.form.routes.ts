@@ -189,6 +189,23 @@ AdminFormsFormRouter.put(
 )
 
 /**
+ * Deletes multiple form fields from the specified form.
+ * Uses POST for bulk deletion. See: https://stackoverflow.com/questions/21863326/delete-multiple-records-using-rest
+ * @security session
+ *
+ * @returns 204 when deletion is successful
+ * @returns 403 when current user does not have permissions to delete form fields
+ * @returns 404 when form cannot be found
+ * @returns 410 when deleting fields of an archived form
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs during deletion
+ */
+AdminFormsFormRouter.post(
+  '/:formId([a-fA-F0-9]{24})/fields/delete',
+  AdminFormController.handleDeleteFormFields,
+)
+
+/**
  * Duplicates the form field with the fieldId from the specified form
  * @security session
  *

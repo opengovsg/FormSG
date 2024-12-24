@@ -2158,6 +2158,43 @@ export const deleteFormField = <T extends IFormSchema>(
 }
 
 /**
+ * Deletes multiple form fields from the given form by their ids.
+ * If any of the fieldIds does not exist, it will be ignored.
+ * @param form The form to delete the specified form fields for
+ * @param fieldIds the ids of the form fields to delete
+ * @returns ok(updated form) on success
+ * @returns err(PossibleDatabaseError) if db error is thrown during the deletion of form fields
+ * @returns err(FormNotFoundError) if the form cannot be found
+ */
+export const deleteFormFields = (
+  form: IPopulatedForm,
+  fieldIds: string[],
+): ResultAsync<IFormSchema, PossibleDatabaseError | FormNotFoundError> => {
+  const logMeta = {
+    action: 'deleteFormFields',
+    formId: form._id,
+    fieldIds,
+  }
+
+  return ResultAsync.fromPromise(
+    FormModel.deleteFormFieldsByIds(form._id, fieldIds),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when deleting form fields',
+        meta: logMeta,
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync(updatedForm)
+  })
+}
+
+/**
  * Update the end page of the given form
  * @param formId the id of the form to update the end page for
  * @param newEndPage the new end page object to replace the current one

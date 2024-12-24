@@ -27,7 +27,11 @@ import { FormErrorMessage } from '~components/FormControl/FormErrorMessage/FormE
 
 import { useAssistanceMutations } from '~features/admin-form/assistance/mutations'
 
-import { useMagicFormBuilderStore } from '../../useMagicFormBuilderStore'
+import { useDeleteFormField } from '../../mutations/useDeleteFormField'
+import {
+  recentlyCreatedFieldIdsSelector,
+  useMagicFormBuilderStore,
+} from '../../useMagicFormBuilderStore'
 
 const GENERATE_FORM_PLACEHOLDER =
   'Describe form, fields and sections to create...'
@@ -176,12 +180,17 @@ const MagicFormBuilderPopover = ({
   const clearRecentlyCreatedFieldIds = useMagicFormBuilderStore(
     (state) => state.clearRecentlyCreatedFieldIds,
   )
+  const recentlyCreatedFieldIds = useMagicFormBuilderStore(
+    recentlyCreatedFieldIdsSelector,
+  )
 
   const onClickDefaults = () => {
     clearRecentlyCreatedFieldIds()
     setIsOpen(false)
     setTimeout(() => setIsAcceptDenyOpen(false), 100) // delay to allow popover to close before updating state
   }
+
+  const { deleteMultipleFormFieldsMutation } = useDeleteFormField()
 
   return (
     <Popover isLazy placement="right" isOpen={isOpen}>
@@ -200,7 +209,9 @@ const MagicFormBuilderPopover = ({
             <MagicFormBuilderAcceptDeny
               onAccept={onClickDefaults}
               onDeny={() => {
-                // trigger deletion of fields with field ids in recentlyCreatedFieldIds
+                deleteMultipleFormFieldsMutation.mutate(
+                  Array.from(recentlyCreatedFieldIds),
+                )
                 onClickDefaults()
               }}
               onClose={() => setIsOpen(false)}

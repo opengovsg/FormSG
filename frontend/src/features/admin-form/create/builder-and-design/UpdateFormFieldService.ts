@@ -127,3 +127,15 @@ export const deleteSingleFormField = async ({
 }): Promise<void> => {
   return ApiService.delete(`${ADMIN_FORM_ENDPOINT}/${formId}/fields/${fieldId}`)
 }
+
+export const deleteMultipleFormFields = async ({
+  formId,
+  fieldIds,
+}: {
+  formId: string
+  fieldIds: string[]
+}): Promise<void> => {
+  return ApiService.post(`${ADMIN_FORM_ENDPOINT}/${formId}/fields/delete`, {
+    fieldIds,
+  })
+}
