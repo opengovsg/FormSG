@@ -3,9 +3,11 @@ import { useForm } from 'react-hook-form'
 import { BiSolidMagicWand, BiTrash } from 'react-icons/bi'
 import { HiSparkles } from 'react-icons/hi2'
 import {
+  Box,
   Button,
   Flex,
   FormControl,
+  HStack,
   Icon,
   Popover,
   PopoverAnchor,
@@ -18,6 +20,7 @@ import {
   Text,
   Textarea,
   Tooltip,
+  VStack,
 } from '@chakra-ui/react'
 
 import { BxCheck } from '~/assets/icons'
@@ -32,6 +35,24 @@ import {
   recentlyCreatedFieldIdsSelector,
   useMagicFormBuilderStore,
 } from '../../useMagicFormBuilderStore'
+
+const TEXT_PROMPT_IDEAS = [
+  {
+    label: 'Employee satisfaction survey',
+    prompt:
+      'employee feedback on workplace satisfaction, including fields on overall job satisfaction, suggestions for improvement, and comments on company culture.',
+  },
+  {
+    label: 'Community issue reports',
+    prompt:
+      'community issue reports from citizens, including fields for location, description of the issue, and optional photo uploads.',
+  },
+  {
+    label: 'Government grant applications',
+    prompt:
+      'applications for government grants from business entities, incorporating sections for project details, budget breakdown, and applicant qualifications.',
+  },
+]
 
 const GENERATE_FORM_PLACEHOLDER =
   'Describe form, fields and sections to create...'
@@ -69,6 +90,42 @@ const MagicFormBuilderButton = ({
   )
 }
 
+const PromptSelectorBar = ({
+  promptIdeas,
+  onClick,
+}: {
+  promptIdeas: {
+    label: string
+    prompt: string
+  }[]
+  onClick: (prompt: string) => void
+}) => {
+  return (
+    <Flex direction="column">
+      <Text textStyle="body-2">Or, try a sample:</Text>
+      <HStack
+        overflowX="auto"
+        gap="0.25rem"
+        mt="0.25rem"
+        pt="0.25rem"
+        pb="1rem"
+      >
+        {promptIdeas.map((idea) => (
+          <Button
+            variant="clear"
+            size="xs"
+            borderRadius="3rem"
+            bgColor="secondary.200"
+            onClick={() => onClick(idea.prompt)}
+          >
+            {idea.label}
+          </Button>
+        ))}
+      </HStack>
+    </Flex>
+  )
+}
+
 const MagicFormBuilderCreateFormPrompt = ({
   onClose,
 }: {
@@ -77,6 +134,7 @@ const MagicFormBuilderCreateFormPrompt = ({
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<TextPromptInputs>()
 
@@ -93,19 +151,25 @@ const MagicFormBuilderCreateFormPrompt = ({
       </PopoverHeader>
       <PopoverCloseButton onClick={onClose} />
       <PopoverBody>
-        <FormControl isRequired isInvalid={false}>
+        <FormControl isRequired isInvalid={!!errors.prompt?.message}>
           <Textarea
             placeholder={GENERATE_FORM_PLACEHOLDER}
             {...register('prompt', {
               required: 'Please enter a prompt.',
               maxLength: {
-                value: 30,
+                value: 500,
                 message: 'Please enter at most 500 characters.',
               },
             })}
           />
           <FormErrorMessage>{errors.prompt?.message}</FormErrorMessage>
         </FormControl>
+        <Box mt="0.5rem">
+          <PromptSelectorBar
+            promptIdeas={TEXT_PROMPT_IDEAS}
+            onClick={(prompt) => setValue('prompt', prompt)}
+          />
+        </Box>
       </PopoverBody>
       <PopoverFooter>
         <Flex justifyContent="flex-end">
