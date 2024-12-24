@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { BiSolidMagicWand } from 'react-icons/bi'
+import { BiSolidMagicWand, BiTrash } from 'react-icons/bi'
 import { HiSparkles } from 'react-icons/hi2'
 import {
   Button,
@@ -20,10 +20,14 @@ import {
   Tooltip,
 } from '@chakra-ui/react'
 
+import { BxCheck } from '~/assets/icons'
+
 import { useIsMobile } from '~hooks/useIsMobile'
 import { FormErrorMessage } from '~components/FormControl/FormErrorMessage/FormErrorMessage'
 
 import { useAssistanceMutations } from '~features/admin-form/assistance/mutations'
+
+import { useMagicFormBuilderStore } from '../../useMagicFormBuilderStore'
 
 const GENERATE_FORM_PLACEHOLDER =
   'Describe form, fields and sections to create...'
@@ -61,16 +65,12 @@ const MagicFormBuilderButton = ({
   )
 }
 
-interface TextPromptInputs {
-  prompt: string
-}
-
-const MagicFormBuilderPopover = ({
-  isOpen,
-  setIsOpen,
+const MagicFormBuilderCreateFormPrompt = ({
+  onSettled,
+  onClose,
 }: {
-  isOpen: boolean
-  setIsOpen: (isOpen: boolean) => void
+  onSettled: () => void
+  onClose: () => void
 }) => {
   const {
     register,
@@ -82,50 +82,130 @@ const MagicFormBuilderPopover = ({
 
   const onSubmit = async ({ prompt }: TextPromptInputs) => {
     useMakeTextPromptMutation.mutate(prompt, {
-      onSettled: () => setIsOpen(false),
+      onSettled: onSettled,
     })
   }
 
   return (
-    <Popover placement="right" isOpen={isOpen}>
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <PopoverHeader>
+        <Text textStyle="h4">Generate form</Text>
+      </PopoverHeader>
+      <PopoverCloseButton onClick={onClose} />
+      <PopoverBody>
+        <FormControl isRequired isInvalid={false}>
+          <Textarea
+            placeholder={GENERATE_FORM_PLACEHOLDER}
+            {...register('prompt', {
+              required: 'Please enter a prompt.',
+              maxLength: {
+                value: 30,
+                message: 'Please enter at most 500 characters.',
+              },
+            })}
+          />
+          <FormErrorMessage>{errors.prompt?.message}</FormErrorMessage>
+        </FormControl>
+      </PopoverBody>
+      <PopoverFooter>
+        <Flex justifyContent="flex-end">
+          <Button
+            leftIcon={<HiSparkles fontSize="1.5rem" />}
+            type="submit"
+            isLoading={useMakeTextPromptMutation.isLoading}
+          >
+            Generate
+          </Button>
+        </Flex>
+      </PopoverFooter>
+    </form>
+  )
+}
+
+const MagicFormBuilderAcceptDeny = ({
+  onAccept,
+  onDeny,
+  onClose,
+}: {
+  onAccept: () => void
+  onDeny: () => void
+  onClose: () => void
+}) => {
+  return (
+    <>
+      <PopoverHeader>
+        <Text textStyle="h4">Keep these changes?</Text>
+      </PopoverHeader>
+      <PopoverCloseButton onClick={onClose} />
+      <PopoverBody>
+        <Flex direction="column" gap="0.25rem">
+          <Button
+            leftIcon={<BxCheck />}
+            variant="solid"
+            onClick={onAccept}
+            colorScheme="success"
+          >
+            Accept
+          </Button>
+          <Button
+            leftIcon={<BiTrash />}
+            variant="solid"
+            onClick={onDeny}
+            colorScheme="danger"
+          >
+            Deny
+          </Button>
+        </Flex>
+      </PopoverBody>
+    </>
+  )
+}
+
+interface TextPromptInputs {
+  prompt: string
+}
+
+const MagicFormBuilderPopover = ({
+  isOpen,
+  setIsOpen,
+}: {
+  isOpen: boolean
+  setIsOpen: (isOpen: boolean) => void
+}) => {
+  const [isAcceptDenyOpen, setIsAcceptDenyOpen] = useState(false)
+  const clearRecentlyCreatedFieldIds = useMagicFormBuilderStore(
+    (state) => state.clearRecentlyCreatedFieldIds,
+  )
+
+  const onClickDefaults = () => {
+    clearRecentlyCreatedFieldIds()
+    setIsOpen(false)
+    setTimeout(() => setIsAcceptDenyOpen(false), 100) // delay to allow popover to close before updating state
+  }
+
+  return (
+    <Popover isLazy placement="right" isOpen={isOpen}>
       <PopoverAnchor>
         <MagicFormBuilderButton onClick={() => setIsOpen(!isOpen)} />
       </PopoverAnchor>
       <Portal>
         {/* TODO: (MFBv1.1) Fix the position of the popover. */}
         <PopoverContent bg="white" top="15vh" left="40vw">
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <PopoverHeader>
-              <Text textStyle="h4">Generate form</Text>
-            </PopoverHeader>
-            <PopoverCloseButton onClick={() => setIsOpen(false)} />
-            <PopoverBody>
-              <FormControl isRequired isInvalid={false}>
-                <Textarea
-                  placeholder={GENERATE_FORM_PLACEHOLDER}
-                  {...register('prompt', {
-                    required: 'Please enter a prompt.',
-                    maxLength: {
-                      value: 30,
-                      message: 'Please enter at most 500 characters.',
-                    },
-                  })}
-                />
-                <FormErrorMessage>{errors.prompt?.message}</FormErrorMessage>
-              </FormControl>
-            </PopoverBody>
-            <PopoverFooter>
-              <Flex justifyContent="flex-end">
-                <Button
-                  leftIcon={<HiSparkles fontSize="1.5rem" />}
-                  type="submit"
-                  isLoading={useMakeTextPromptMutation.isLoading}
-                >
-                  Generate
-                </Button>
-              </Flex>
-            </PopoverFooter>
-          </form>
+          {!isAcceptDenyOpen ? (
+            <MagicFormBuilderCreateFormPrompt
+              onClose={() => setIsOpen(false)}
+              onSettled={() => setIsAcceptDenyOpen(true)}
+            />
+          ) : (
+            <MagicFormBuilderAcceptDeny
+              onAccept={onClickDefaults}
+              onDeny={() => {
+                // trigger deletion of fields with field ids in recentlyCreatedFieldIds
+                onClickDefaults()
+              }}
+              onClose={() => setIsOpen(false)}
+            />
+          )}
         </PopoverContent>
       </Portal>
     </Popover>

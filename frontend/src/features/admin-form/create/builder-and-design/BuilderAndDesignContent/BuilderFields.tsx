@@ -11,6 +11,10 @@ import {
   stateDataSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
+import {
+  recentlyCreatedFieldIdsSelector,
+  useMagicFormBuilderStore,
+} from '../useMagicFormBuilderStore'
 import { useDesignColorTheme } from '../utils/useDesignColorTheme'
 
 import FieldRow from './FieldRow'
@@ -44,6 +48,10 @@ export const BuilderFields = ({
 
   const isDirty = useDirtyFieldStore(isDirtySelector)
 
+  const mfbRecentlyCreatedFieldIds = useMagicFormBuilderStore(
+    recentlyCreatedFieldIdsSelector,
+  )
+
   return (
     <>
       {fieldsWithQuestionNos.map((f, i) => {
@@ -64,6 +72,7 @@ export const BuilderFields = ({
             handleBuilderClick={handleBuilderClick}
             isDirty={isDirty}
             colorTheme={colorTheme}
+            isHighlighted={mfbRecentlyCreatedFieldIds.has(f._id)}
             {...activeFieldExtraProps}
           />
         )

@@ -32,7 +32,7 @@ interface ITextPrompt {
 
 const _handleTextPrompt: ControllerHandler<
   { formId: string },
-  { message: string },
+  { message: string; createdFieldIds?: string[] },
   ITextPrompt
 > = async (req, res) => {
   const { formId } = req.params
@@ -57,9 +57,10 @@ const _handleTextPrompt: ControllerHandler<
           userPrompt: req.body.prompt,
         }),
       )
-      .map(() =>
+      .map((createdFieldIds) =>
         res.status(StatusCodes.OK).json({
           message: 'Created form fields using text prompt successfully.',
+          createdFieldIds: createdFieldIds.map((field) => field._id.toString()),
         }),
       )
       .mapErr((error) => {

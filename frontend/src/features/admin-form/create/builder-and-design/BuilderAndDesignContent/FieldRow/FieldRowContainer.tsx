@@ -5,6 +5,7 @@ import { BiCog, BiDuplicate, BiGridHorizontal, BiTrash } from 'react-icons/bi'
 import { useIsMutating } from 'react-query'
 import {
   Box,
+  BoxProps,
   ButtonGroup,
   chakra,
   Collapse,
@@ -94,6 +95,30 @@ export interface FieldRowContainerProps {
   colorTheme?: FormColorTheme
   // handleBuilderClick is passed down to prevent unnecessary re-renders from useContext
   handleBuilderClick: CreatePageSidebarContextProps['handleBuilderClick']
+  isHighlighted?: boolean
+}
+
+/**
+ * Used for highlighting fields that were created by Magic Form Builder.
+ */
+const HighlightableBox = ({
+  children,
+  isHighlighted,
+  ...props
+}: {
+  children: React.ReactNode
+  isHighlighted?: boolean
+} & BoxProps) => {
+  return (
+    <Box
+      borderColor="danger.300"
+      borderRadius="0.25rem"
+      borderWidth={isHighlighted ? '0.125rem' : '0'}
+      {...props}
+    >
+      {children}
+    </Box>
+  )
 }
 
 const FieldRowContainer = ({
@@ -106,6 +131,7 @@ const FieldRowContainer = ({
   isDirty,
   colorTheme,
   handleBuilderClick,
+  isHighlighted,
 }: FieldRowContainerProps): JSX.Element => {
   const isMobile = useIsMobile()
   const numFormFieldMutations = useIsMutating(adminFormKeys.base)
@@ -285,7 +311,8 @@ const FieldRowContainer = ({
                   )}
                 </chakra.button>
               </Fade>
-              <Box
+              <HighlightableBox
+                isHighlighted={isHighlighted}
                 px={{ base: '0.75rem', md: '1.5rem' }}
                 pb={{ base: '0.75rem', md: '1.5rem' }}
                 w="100%"
@@ -300,7 +327,7 @@ const FieldRowContainer = ({
                     showMyInfoBadge={isMyInfoField}
                   />
                 </FormProvider>
-              </Box>
+              </HighlightableBox>
               <Collapse in={isActive} style={{ width: '100%' }}>
                 {isActive && (
                   <FieldButtonGroup

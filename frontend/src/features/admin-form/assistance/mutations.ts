@@ -5,6 +5,7 @@ import { makeTextPrompt } from '~features/admin-form/assistance/AssistanceServic
 
 import { useToast } from '../../../hooks/useToast'
 import { adminFormKeys } from '../common/queries'
+import { useMagicFormBuilderStore } from '../create/builder-and-design/useMagicFormBuilderStore'
 
 export const useAssistanceMutations = () => {
   const { formId } = useParams()
@@ -19,7 +20,11 @@ export const useAssistanceMutations = () => {
   const useMakeTextPromptMutation = useMutation(
     (prompt: string) => makeTextPrompt({ formId, prompt }),
     {
-      onSuccess: () => {
+      onSuccess: (data) => {
+        const { createdFieldIds } = data
+        useMagicFormBuilderStore.setState({
+          recentlyCreatedFieldIds: new Set(createdFieldIds),
+        })
         queryClient.invalidateQueries(adminFormKeys.id(formId))
         toast.closeAll()
         toast({ description: 'Form generated successfully', status: 'success' })

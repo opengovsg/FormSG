@@ -9,7 +9,7 @@ export const makeTextPrompt = ({
   formId: string
   prompt: string
 }) => {
-  return ApiService.post<undefined>(
+  return ApiService.post<{ message: string; createdFieldIds?: string[] }>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/assistance/text-prompt`,
     { prompt },
   ).then(({ data }) => data)
