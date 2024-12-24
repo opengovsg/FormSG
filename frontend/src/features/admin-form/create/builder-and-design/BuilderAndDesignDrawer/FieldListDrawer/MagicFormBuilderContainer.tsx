@@ -29,6 +29,7 @@ import { useAssistanceMutations } from '~features/admin-form/assistance/mutation
 
 import { useDeleteFormField } from '../../mutations/useDeleteFormField'
 import {
+  isAcceptDenyOpenSelector,
   recentlyCreatedFieldIdsSelector,
   useMagicFormBuilderStore,
 } from '../../useMagicFormBuilderStore'
@@ -70,10 +71,8 @@ const MagicFormBuilderButton = ({
 }
 
 const MagicFormBuilderCreateFormPrompt = ({
-  onSettled,
   onClose,
 }: {
-  onSettled: () => void
   onClose: () => void
 }) => {
   const {
@@ -85,9 +84,7 @@ const MagicFormBuilderCreateFormPrompt = ({
   const { useMakeTextPromptMutation } = useAssistanceMutations()
 
   const onSubmit = async ({ prompt }: TextPromptInputs) => {
-    useMakeTextPromptMutation.mutate(prompt, {
-      onSettled: onSettled,
-    })
+    useMakeTextPromptMutation.mutate(prompt)
   }
 
   return (
@@ -176,7 +173,6 @@ const MagicFormBuilderPopover = ({
   isOpen: boolean
   setIsOpen: (isOpen: boolean) => void
 }) => {
-  const [isAcceptDenyOpen, setIsAcceptDenyOpen] = useState(false)
   const clearRecentlyCreatedFieldIds = useMagicFormBuilderStore(
     (state) => state.clearRecentlyCreatedFieldIds,
   )
@@ -184,10 +180,11 @@ const MagicFormBuilderPopover = ({
     recentlyCreatedFieldIdsSelector,
   )
 
+  const isAcceptDenyOpen = useMagicFormBuilderStore(isAcceptDenyOpenSelector)
+
   const onClickDefaults = () => {
     clearRecentlyCreatedFieldIds()
     setIsOpen(false)
-    setTimeout(() => setIsAcceptDenyOpen(false), 100) // delay to allow popover to close before updating state
   }
 
   const { deleteMultipleFormFieldsMutation } = useDeleteFormField()
@@ -203,7 +200,6 @@ const MagicFormBuilderPopover = ({
           {!isAcceptDenyOpen ? (
             <MagicFormBuilderCreateFormPrompt
               onClose={() => setIsOpen(false)}
-              onSettled={() => setIsAcceptDenyOpen(true)}
             />
           ) : (
             <MagicFormBuilderAcceptDeny
