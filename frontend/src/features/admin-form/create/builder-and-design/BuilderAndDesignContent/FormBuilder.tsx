@@ -40,7 +40,6 @@ import { EmptyFormPlaceholder } from './BuilderAndDesignPlaceholder/EmptyFormPla
 import { FormBuilderFieldsSkeleton } from './FormBuilder/FormBuilderFieldsSkeleton'
 import BuilderAndDesignPlaceholder from './BuilderAndDesignPlaceholder'
 import { BuilderFields } from './BuilderFields'
-import { TextPromptModal } from './MagicFormBuilderModal'
 import { PaymentView } from './PaymentView'
 import { StartPageView } from './StartPageView'
 import { useBuilderFields } from './useBuilderFields'
@@ -110,7 +109,6 @@ export const FormBuilder = ({
 
   return (
     <>
-      <TextPromptModal isOpen={isOpen} onClose={onClose} />
       <Flex
         mb={0}
         flex={1}
@@ -174,7 +172,6 @@ export const FormBuilder = ({
                         {...provided.droppableProps}
                         isDraggingOver={snapshot.isDraggingOver}
                         onClick={handlePlaceholderClick}
-                        onMagicFormButtonClick={handleMagicFormButtonClick}
                       />
                     )
                   }
