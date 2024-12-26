@@ -231,7 +231,7 @@ const transformToAddressOutput = (
   schema: AddressCompoundFieldSchema,
   input?: AddressCompoundFieldValues | AddressCompoundFieldResponseV3,
 ): AddressResponse => {
-  console.log(input?.addressSubFields)
+  // console.log(input?.addressSubFields)
   // const answerArray: AddressSubField[] = []
   const answerArray: string[][] = []
   if (input !== undefined) {

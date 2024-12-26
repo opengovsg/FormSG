@@ -783,9 +783,10 @@ export const getAnswersForChild = (
 }
 
 /**
- * Creates a response for address, with its answer formatted from the answerArray
+ * Expands child subfields into individual fields, so that they are no longer nested under
+ * 1 parent field.
  * @param response
- * @param response.answerArray is of type AddressAttributes
+ * @param response.answerArray is of string[][]
  * @returns the response with formatted answer
  */
 export const getAnswersForAddress = (
@@ -796,17 +797,14 @@ export const getAnswersForAddress = (
     return []
   }
   const subFieldResponses: ProcessedSingleAnswerResponse[] = []
-  // Object.entries(obj).forEach(([key, value]) => {
-  //   console.log(`${key}: ${value}`); // Output each key-value pair
-  // });
 
   Object.entries(subFields).forEach((subField) => {
-    const key = subField[0].split(':')[0].trim()
-    const value = subField[0].split(':')[1].trim()
+    const key = subField[1][0].split(':')[0]
+    const value = subField[1][0].split(':')[1]
     subFieldResponses.push({
-      _id: response._id + key, // check this
+      _id: response._id,
       fieldType: response.fieldType,
-      question: response.question + key,
+      question: response.question + 1 + key,
       myInfo: response.myInfo,
       isVisible: response.isVisible,
       isUserVerified: response.isUserVerified,

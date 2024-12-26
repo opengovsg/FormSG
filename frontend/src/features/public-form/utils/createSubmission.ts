@@ -187,7 +187,7 @@ export const createClearSubmissionWithVirusScanningFormData = (
       }
     })
   }
-
+  // console.log(formData.get('body'))
   return formData
 }
 

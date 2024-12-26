@@ -221,6 +221,15 @@ export const getQuestionTitleAnswerString = ({
         continue
       case BasicField.Address:
         answer = response.answer.addressSubFields.postalCode // TODO
+        questionAnswerPair.push({
+          question: `Postal Code - ${questionTitle}`,
+          answer,
+        })
+        answer = response.answer.addressSubFields.blockNumber
+        questionAnswerPair.push({
+          question: `Block Number - ${questionTitle}`,
+          answer,
+        })
         break
       case BasicField.Email:
       case BasicField.Mobile:

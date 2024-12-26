@@ -238,12 +238,12 @@ export const constructFieldResponseValidatorV3 = ({
       return constructAttachmentFieldValidatorV3(formField)
     case BasicField.Children:
       return constructChildrenValidatorV3(formField)
+    case BasicField.Address:
+      return constructAddressValidatorV3(formField)
     case BasicField.Image: // fall-through
     case BasicField.Statement:
       return () =>
         left('Unsupported field type: field should not be part of response')
-    case BasicField.Address:
-      return constructAddressValidatorV3(formField)
     default: {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const exhaustiveCheck: never = formField

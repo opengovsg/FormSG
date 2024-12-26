@@ -46,6 +46,7 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
   addRecord({ record, created, submissionId }: DecryptedSubmissionData): void {
     // First pass, create object with { [fieldId]: question } from
     // decryptedContent to get all the questions.
+    console.log(record)
     const fieldRecords = record.map((content) => {
       const fieldRecord = getDecryptedResponseInstance(content)
       if (!fieldRecord.isHeader) {
