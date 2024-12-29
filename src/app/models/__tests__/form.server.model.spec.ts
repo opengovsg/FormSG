@@ -256,6 +256,7 @@ describe('Form Model', () => {
               ],
               logicType: 'preventSubmit',
               preventSubmitMessage: '',
+              preventSubmitMessageTranslations: [],
             },
           ],
         }

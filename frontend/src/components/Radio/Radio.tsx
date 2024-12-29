@@ -283,7 +283,7 @@ const OthersRadio = forwardRef<RadioProps, 'input'>((props, ref) => {
       // Required should apply to radio group rather than individual radio.
       isRequired={false}
     >
-      {t('features.adminForm.sidebar.fields.radio.others')}
+      {t('features.publicForm.components.fields.option.others')}
     </Radio>
   )
 })

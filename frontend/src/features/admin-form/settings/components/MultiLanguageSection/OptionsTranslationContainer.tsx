@@ -1,4 +1,4 @@
-import { useFormContext } from 'react-hook-form'
+import { FieldError, useFormContext } from 'react-hook-form'
 import { Flex, FormControl, Text } from '@chakra-ui/react'
 
 import {
@@ -8,6 +8,7 @@ import {
   RadioFieldBase,
 } from '~shared/types'
 
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Textarea from '~components/Textarea'
 
 import { TranslationInput } from './TranslationSection'
@@ -16,12 +17,14 @@ interface OptionsTranslationContainerProps {
   language: string
   unicodeLocale: Language
   formFieldData: CheckboxFieldBase | DropdownFieldBase | RadioFieldBase
+  errors?: FieldError
 }
 
 export const OptionsTranslationContainer = ({
   language,
   unicodeLocale,
   formFieldData,
+  errors,
 }: OptionsTranslationContainerProps) => {
   const { register } = useFormContext<TranslationInput>()
 
@@ -59,12 +62,13 @@ export const OptionsTranslationContainer = ({
         <Text color="secondary.700" mr="7.5rem" width="6.25rem">
           {language}
         </Text>
-        <FormControl>
+        <FormControl isInvalid={!!errors}>
           <Textarea
             width="100%"
             {...register('fieldOptionsTranslations')}
             defaultValue={previousTranslations}
           />
+          <FormErrorMessage>{errors?.message}</FormErrorMessage>
         </FormControl>
       </Flex>
     </Flex>

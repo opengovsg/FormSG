@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react'
-import { UseFormGetValues } from 'react-hook-form'
+import { UseFormReturn } from 'react-hook-form'
 import { useSearchParams } from 'react-router-dom'
 import _ from 'lodash'
 
@@ -9,6 +9,8 @@ import {
   FormEndPage,
   FormFieldDto,
   FormStartPage,
+  LogicType,
+  PreventSubmitLogicDto,
 } from '~shared/types'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
@@ -17,6 +19,11 @@ import {
   updateEditStateSelector,
   useFieldBuilderStore,
 } from '~features/admin-form/create/builder-and-design/useFieldBuilderStore'
+import {
+  setToInactiveSelector,
+  useAdminLogicStore,
+} from '~features/admin-form/create/logic/adminLogicStore'
+import { useLogicMutations } from '~features/admin-form/create/logic/mutations'
 
 import { TranslationInput } from '../TranslationSection'
 import {
@@ -24,6 +31,7 @@ import {
   updateFormFieldTranslations,
   updateFormStartPageTranslations,
   updateTableTranslations,
+  updateTranslations,
 } from '../utils/translationUtils'
 
 interface UseTranslationLogicProps {
@@ -32,8 +40,9 @@ interface UseTranslationLogicProps {
   formFieldNumToBeTranslated: number
   isStartPageTranslations: boolean
   isEndPageTranslations: boolean
+  isFormLogicTranslations: boolean
   isFormField: boolean
-  getValues: UseFormGetValues<TranslationInput>
+  methods: UseFormReturn<TranslationInput>
 }
 
 export const useTranslationLogic = ({
@@ -42,13 +51,17 @@ export const useTranslationLogic = ({
   formFieldNumToBeTranslated,
   isStartPageTranslations,
   isEndPageTranslations,
+  isFormLogicTranslations,
   isFormField,
-  getValues,
+  methods,
 }: UseTranslationLogicProps) => {
+  const { getValues, setError, clearErrors } = methods
   const [, setSearchParams] = useSearchParams()
   const { editFieldMutation } = useEditFormField()
+  const { updateLogicMutation } = useLogicMutations()
   const { endPageMutation, startPageMutation } = useMutateFormPage()
   const updateEditState = useFieldBuilderStore(updateEditStateSelector)
+  const setToInactive = useAdminLogicStore(setToInactiveSelector)
 
   const formFieldData =
     formFieldNumToBeTranslated !== -1
@@ -56,6 +69,9 @@ export const useTranslationLogic = ({
       : undefined
   const formStartPage = form?.startPage
   const formEndPage = form?.endPage
+  const formLogicsPreventSubmissions = form?.form_logics.filter(
+    (formLogic) => formLogic.logicType === LogicType.PreventSubmit,
+  ) as PreventSubmitLogicDto[]
   const fieldId = formFieldData?._id
 
   useEffect(() => {
@@ -66,7 +82,22 @@ export const useTranslationLogic = ({
     setSearchParams({ unicodeLocale: language })
   }, [language, setSearchParams])
 
-  const handleOnSaveClick = useCallback(() => {
+  const handleUpdateFormLogics = (
+    updatedFormLogics: PreventSubmitLogicDto[],
+  ) => {
+    updatedFormLogics.forEach((updatedFormLogic) => {
+      updateLogicMutation.mutate(
+        { ...updatedFormLogic, _id: updatedFormLogic._id },
+        {
+          onSuccess: () => setToInactive(),
+        },
+      )
+    })
+
+    handleOnBackClick()
+  }
+
+  const handleOnSaveClick = () => {
     const updatedTitleTranslation = getValues('titleTranslation')
     const updatedDescriptionTranslation = getValues('descriptionTranslation')
     const updatedParagraphTranslation = getValues('paragraphTranslations')
@@ -77,9 +108,13 @@ export const useTranslationLogic = ({
     const updatedTableColumnDropdownTranslation = getValues(
       'tableColumnDropdownTranslations',
     )
+    const updatedPreventSubmitTranslations = getValues(
+      'preventSubmitMessageTranslations',
+    )
 
     if (isFormField && formFieldData) {
       if (formFieldData.fieldType === BasicField.Table) {
+        clearErrors('tableColumnDropdownTranslations')
         const updatedTableData = updateTableTranslations({
           data: formFieldData,
           language,
@@ -89,13 +124,62 @@ export const useTranslationLogic = ({
           updatedDescriptionTranslation,
         })
 
+        const tableColumns = updatedTableData.columns
+
+        tableColumns.forEach((column, index) => {
+          if (column.columnType !== BasicField.Dropdown) return
+
+          const translationIndex =
+            column.fieldOptionsTranslations?.findIndex(
+              (t) => t.language === language,
+            ) ?? -1
+
+          if (
+            column.fieldOptionsTranslations &&
+            translationIndex !== -1 &&
+            column.fieldOptionsTranslations[translationIndex].translation
+              .length !== column.fieldOptions.length
+          ) {
+            setError(`tableColumnDropdownTranslations.${index}`, {
+              type: 'custom',
+              message:
+                'Make sure the number of translated options match the options in the question.',
+            })
+            return
+          }
+        })
+
+        for (const [index, tableColumn] of tableColumns.entries()) {
+          if (tableColumn.columnType === BasicField.Dropdown) {
+            const translationIndex =
+              tableColumn.fieldOptionsTranslations?.findIndex(
+                (t) => t.language === language,
+              ) ?? -1
+
+            if (
+              tableColumn.fieldOptionsTranslations &&
+              translationIndex !== -1 &&
+              tableColumn.fieldOptionsTranslations[translationIndex].translation
+                .length !== tableColumn.fieldOptions.length
+            ) {
+              setError(`tableColumnDropdownTranslations.${index}`, {
+                type: 'custom',
+                message:
+                  'Make sure the number of translated options match the options in the question.',
+              })
+              return
+            }
+          }
+        }
+
         editFieldMutation.mutate(
           { ...updatedTableData, _id: fieldId } as FormFieldDto,
           { onSuccess: handleOnBackClick },
         )
       } else {
-        let updatedFieldOptionsTranslationArr =
-          updatedFieldOptionsTranslation.split('\n')
+        let updatedFieldOptionsTranslationArr = updatedFieldOptionsTranslation
+          ? updatedFieldOptionsTranslation.split('\n')
+          : []
 
         updatedFieldOptionsTranslationArr =
           updatedFieldOptionsTranslationArr.filter(
@@ -109,6 +193,33 @@ export const useTranslationLogic = ({
           updatedDescriptionTranslation,
           updatedFieldOptionsTranslation: updatedFieldOptionsTranslationArr,
         })
+
+        if (
+          updatedFormData.fieldType === BasicField.Dropdown ||
+          updatedFormData.fieldType === BasicField.Checkbox ||
+          updatedFormData.fieldType === BasicField.Radio
+        ) {
+          clearErrors('fieldOptionsTranslations')
+          const translationIndex =
+            updatedFormData.fieldOptionsTranslations?.findIndex(
+              (t) => t.language === language,
+            ) ?? -1
+          if (
+            updatedFormData.fieldOptionsTranslations &&
+            translationIndex !== -1 &&
+            updatedFormData.fieldOptionsTranslations[translationIndex]
+              .translation.length !== 0 &&
+            updatedFormData.fieldOptionsTranslations[translationIndex]
+              .translation.length !== updatedFormData.fieldOptions.length
+          ) {
+            setError('fieldOptionsTranslations', {
+              type: 'custom',
+              message:
+                'Make sure the number of translated options match the options in the question.',
+            })
+            return
+          }
+        }
 
         editFieldMutation.mutate(
           { ...updatedFormData, _id: fieldId } as FormFieldDto,
@@ -128,6 +239,26 @@ export const useTranslationLogic = ({
       })
     }
 
+    if (isFormLogicTranslations && formLogicsPreventSubmissions) {
+      const updatedFormLogics = formLogicsPreventSubmissions.map(
+        (preventSubmission, id) => {
+          const updatedTranslation = updatedPreventSubmitTranslations[id]
+          const updatedPreventSubmitMessageTranslations = updateTranslations({
+            translations: preventSubmission.preventSubmitMessageTranslations,
+            language,
+            newTranslation: updatedTranslation,
+          })
+
+          return {
+            ...preventSubmission,
+            preventSubmitMessageTranslations:
+              updatedPreventSubmitMessageTranslations,
+          }
+        },
+      )
+
+      handleUpdateFormLogics(updatedFormLogics)
+    }
     if (isEndPageTranslations && formEndPage) {
       const updatedFormEndPage = updateFormEndPageTranslations({
         data: formEndPage,
@@ -140,27 +271,14 @@ export const useTranslationLogic = ({
         onSuccess: handleOnBackClick,
       })
     }
-  }, [
-    getValues,
-    isFormField,
-    formFieldData,
-    isStartPageTranslations,
-    formStartPage,
-    isEndPageTranslations,
-    formEndPage,
-    language,
-    editFieldMutation,
-    fieldId,
-    handleOnBackClick,
-    startPageMutation,
-    endPageMutation,
-  ])
+  }
 
   return {
     handleOnSaveClick,
     formFieldData,
     formStartPage,
     formEndPage,
+    formLogicsPreventSubmissions,
     handleOnBackClick,
   }
 }

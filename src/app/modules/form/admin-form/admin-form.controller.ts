@@ -2493,6 +2493,23 @@ const joiLogicBody = {
     is: LogicType.PreventSubmit,
     then: Joi.string().required(),
   }),
+  preventSubmitMessageTranslations: Joi.alternatives().conditional(
+    'logicType',
+    {
+      is: LogicType.PreventSubmit,
+      then: Joi.array()
+        .items(
+          Joi.object({
+            language: Joi.string()
+              .valid(...Object.values(Language))
+              .required(),
+            translation: Joi.string().required(),
+          }),
+        )
+        .optional()
+        .default([]),
+    },
+  ),
 }
 
 /**

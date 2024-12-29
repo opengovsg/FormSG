@@ -1,4 +1,4 @@
-import { BasicField, FormFieldDto } from '../field'
+import { BasicField, FormFieldDto, TranslationMapping } from '../field'
 
 export enum LogicConditionState {
   Equal = 'is equals to',
@@ -38,6 +38,7 @@ export interface ShowFieldLogic extends FormLogicBase {
 export interface PreventSubmitLogic extends FormLogicBase {
   logicType: LogicType.PreventSubmit
   preventSubmitMessage: string
+  preventSubmitMessageTranslations?: TranslationMapping[]
 }
 
 export type FormLogic = ShowFieldLogic | PreventSubmitLogic

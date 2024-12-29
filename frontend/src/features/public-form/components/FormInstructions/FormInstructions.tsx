@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Box } from '@chakra-ui/react'
 
 import { FormColorTheme } from '~shared/types'
@@ -15,6 +16,7 @@ export const FormInstructions = ({
   content,
   colorTheme,
 }: FormInstructionsProps): JSX.Element => {
+  const { t } = useTranslation()
   const sectionColor = useSectionColor(colorTheme)
   const mdComponents = useMdComponents({
     styles: {
@@ -28,7 +30,7 @@ export const FormInstructions = ({
   return (
     <>
       <Box as="h2" textStyle="h2" color={sectionColor}>
-        Instructions
+        {t('features.publicForm.components.instructions.title')}
       </Box>
       <Box mt="1rem">
         <MarkdownText multilineBreaks components={mdComponents}>

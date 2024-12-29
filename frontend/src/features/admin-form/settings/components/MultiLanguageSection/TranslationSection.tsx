@@ -1,4 +1,3 @@
-import React from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { BiChevronLeft } from 'react-icons/bi'
 import { Button, Flex, Skeleton } from '@chakra-ui/react'
@@ -13,6 +12,7 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 import { useTranslationLogic } from './mutations/useTranslationLogic'
 import { EndPageTranslationsContainer } from './EndPageTranslationContainer'
 import { FormFieldTranslationContainer } from './FormFieldTranslationContainer'
+import { FormLogicTranslationContainer } from './FormLogicTranslationContainer'
 import { StartPageTranslationContainer } from './StartPageTranslationContainer'
 
 export type TranslationInput = {
@@ -22,6 +22,7 @@ export type TranslationInput = {
   fieldOptionsTranslations: string
   tableColumnTitleTranslations: string[]
   tableColumnDropdownTranslations: string[]
+  preventSubmitMessageTranslations: string[]
 }
 
 interface TranslationSectionProps {
@@ -29,6 +30,7 @@ interface TranslationSectionProps {
   formFieldNumToBeTranslated: number
   isStartPageTranslations?: boolean
   isEndPageTranslations?: boolean
+  isFormLogicTranslations?: boolean
 }
 
 export const TranslationSection = ({
@@ -36,14 +38,10 @@ export const TranslationSection = ({
   formFieldNumToBeTranslated,
   isStartPageTranslations = false,
   isEndPageTranslations = false,
+  isFormLogicTranslations = false,
 }: TranslationSectionProps) => {
   const { data: form, isLoading } = useAdminForm()
-  const methods = useForm<TranslationInput>()
-  const { getValues } = methods
   const toast = useToast({ status: 'danger' })
-  const isFormField = formFieldNumToBeTranslated !== -1
-  const unicodeLocale = language as Language
-  const capitalisedLanguage = convertUnicodeLocaleToLanguage(unicodeLocale)
 
   if (!isLoading && !form) {
     toast({
@@ -52,20 +50,28 @@ export const TranslationSection = ({
     })
   }
 
+  const methods = useForm<TranslationInput>()
+  const { formState } = methods
+  const isFormField = formFieldNumToBeTranslated !== -1
+  const unicodeLocale = language as Language
+  const capitalisedLanguage = convertUnicodeLocaleToLanguage(unicodeLocale)
+
   const {
     handleOnBackClick,
     handleOnSaveClick,
     formFieldData,
     formStartPage,
     formEndPage,
+    formLogicsPreventSubmissions,
   } = useTranslationLogic({
     form,
-    getValues,
     language,
     formFieldNumToBeTranslated,
     isStartPageTranslations,
     isEndPageTranslations,
+    isFormLogicTranslations,
     isFormField,
+    methods,
   })
 
   return (
@@ -97,6 +103,14 @@ export const TranslationSection = ({
               formFieldData={formFieldData}
               capitalisedLanguage={capitalisedLanguage}
               unicodeLocale={unicodeLocale}
+              formState={formState}
+            />
+          )}
+          {isFormLogicTranslations && formLogicsPreventSubmissions && (
+            <FormLogicTranslationContainer
+              language={capitalisedLanguage}
+              unicodeLocale={unicodeLocale}
+              formLogics={formLogicsPreventSubmissions}
             />
           )}
           {isEndPageTranslations && formEndPage && (

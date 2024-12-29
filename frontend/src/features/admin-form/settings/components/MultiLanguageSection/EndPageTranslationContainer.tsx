@@ -1,5 +1,5 @@
-import React from 'react'
 import { Divider, Flex, Text } from '@chakra-ui/react'
+import _ from 'lodash'
 
 import { FormEndPage, Language } from '~shared/types'
 
@@ -18,7 +18,7 @@ export const EndPageTranslationsContainer = ({
 }: EndPageTranslationsContainerProps) => {
   if (!endPage) return null
 
-  const hasParagraph = endPage.paragraph?.trim() !== ''
+  const hasParagraph = !_.isEmpty(endPage.paragraph?.trim())
 
   const currentTitleTranslations = endPage.titleTranslations ?? []
   const currentParagraphTranslations = endPage.paragraphTranslations ?? []
@@ -51,24 +51,26 @@ export const EndPageTranslationsContainer = ({
           previousTranslation={previousTitleTranslation}
         />
       </Flex>
-      <Divider mb="2.5rem" />
       {hasParagraph && (
-        <Flex justifyContent="flex-start" mb="2.5rem" direction="column">
-          <Text
-            color="secondary.500"
-            fontSize="1.25rem"
-            fontWeight="600"
-            mb="1rem"
-          >
-            Follow-up instructions
-          </Text>
-          <TranslationContainer
-            language={capitalisedLanguage}
-            defaultString={endPage.paragraph}
-            editingTranslation="paragraphTranslations"
-            previousTranslation={previousParagraphTranslation}
-          />
-        </Flex>
+        <>
+          <Divider mb="2.5rem" />
+          <Flex justifyContent="flex-start" mb="2.5rem" direction="column">
+            <Text
+              color="secondary.500"
+              fontSize="1.25rem"
+              fontWeight="600"
+              mb="1rem"
+            >
+              Follow-up instructions
+            </Text>
+            <TranslationContainer
+              language={capitalisedLanguage}
+              defaultString={endPage.paragraph}
+              editingTranslation="paragraphTranslations"
+              previousTranslation={previousParagraphTranslation}
+            />
+          </Flex>
+        </>
       )}
     </>
   )

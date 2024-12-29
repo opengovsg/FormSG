@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import simplur from 'simplur'
+import { useTranslation } from 'react-i18next'
 
 import { FormColorTheme, FormStartPage } from '~shared/types'
 
@@ -14,6 +14,7 @@ export const getTitleBg = (colorTheme?: FormColorTheme, hover?: boolean) =>
   colorTheme ? `theme-${colorTheme}.${hover ? 6 : 5}00` : `neutral.200`
 
 export const useFormHeader = ({ startPage, hover }: UseFormHeaderProps) => {
+  const { t } = useTranslation()
   const titleColor = useMemo(() => {
     if (startPage?.colorTheme === FormColorTheme.Orange) {
       return 'secondary.700'
@@ -27,9 +28,12 @@ export const useFormHeader = ({ startPage, hover }: UseFormHeaderProps) => {
   )
 
   const estTimeString = useMemo(() => {
-    if (!startPage?.estTimeTaken) return ''
-    return simplur`${startPage.estTimeTaken} min[|s] estimated time to complete`
-  }, [startPage])
+    return startPage?.estTimeTaken
+      ? t('features.publicForm.components.header.estTime', {
+          estTime: startPage.estTimeTaken,
+        })
+      : ''
+  }, [t, startPage?.estTimeTaken])
 
   const colorScheme: ThemeColorScheme | undefined = useMemo(() => {
     if (!startPage?.colorTheme) return

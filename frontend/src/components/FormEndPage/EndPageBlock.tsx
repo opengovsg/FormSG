@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box, Text, VisuallyHidden } from '@chakra-ui/react'
 import { format } from 'date-fns'
 
-import { FormColorTheme, FormDto } from '~shared/types/form'
+import { FormColorTheme, FormDto, Language } from '~shared/types/form'
 
 import { useMdComponents } from '~hooks/useMdComponents'
+import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import Button from '~components/Button'
 import { MarkdownText } from '~components/MarkdownText'
 
@@ -27,6 +29,7 @@ export const EndPageBlock = ({
   focusOnMount,
   isButtonHidden,
 }: EndPageBlockProps): JSX.Element => {
+  const { i18n } = useTranslation()
   const focusRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (focusOnMount) {
@@ -41,6 +44,20 @@ export const EndPageBlock = ({
         color: 'secondary.500',
       },
     },
+  })
+
+  const selectedLanguage = i18n.language as Language
+
+  const title = getValueInSelectedLanguage({
+    defaultValue: endPage.title,
+    translations: endPage.titleTranslations,
+    selectedLanguage,
+  })
+
+  const paragraph = getValueInSelectedLanguage({
+    defaultValue: endPage.paragraph ?? '',
+    translations: endPage.paragraphTranslations,
+    selectedLanguage,
   })
 
   const submissionTimestamp = useMemo(
@@ -62,13 +79,11 @@ export const EndPageBlock = ({
           {submittedAriaText}
         </VisuallyHidden>
         <Text as="h2" textStyle="h2" textColor="secondary.500">
-          {endPage.title}
+          {title}
         </Text>
-        {endPage.paragraph ? (
+        {paragraph ? (
           <Box mt="0.75rem">
-            <MarkdownText components={mdComponents}>
-              {endPage.paragraph}
-            </MarkdownText>
+            <MarkdownText components={mdComponents}>{paragraph}</MarkdownText>
           </Box>
         ) : null}
       </Box>

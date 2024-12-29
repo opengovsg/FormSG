@@ -21,6 +21,7 @@ import {
 import {
   FormAuthType,
   FormDto,
+  Language,
   PublicFormViewDto,
 } from '~shared/types/form/form'
 import {
@@ -48,6 +49,8 @@ import { filterHiddenInputs } from './utils/filterHiddenInputs'
 import { MultirespondentSubmissionDtoWithAttachments } from './types'
 
 export const PUBLIC_FORMS_ENDPOINT = '/forms'
+
+export const X_FORMSG_SELECTED_FORM_LANGUAGE = 'X-Formsg-Selected-Form-Language'
 
 /**
  * Gets public view of form, along with any
@@ -136,6 +139,7 @@ export type SubmitEmailFormArgs = {
   formLogics: FormDto['form_logics']
   formInputs: FormFieldValues
   responseMetadata?: ResponseMetadata
+  selectedFormLanguage?: Language
 }
 
 export type SubmitStorageFormArgs = SubmitEmailFormArgs & {
@@ -175,6 +179,7 @@ export const submitEmailModeForm = async ({
   captchaResponse = null,
   captchaType = '',
   responseMetadata,
+  selectedFormLanguage = Language.ENGLISH,
 }: SubmitEmailFormArgs): Promise<SubmissionResponseDto> => {
   const filteredInputs = filterHiddenInputs({
     formFields,
@@ -194,6 +199,9 @@ export const submitEmailModeForm = async ({
       params: {
         captchaResponse: String(captchaResponse),
         captchaType: captchaType,
+      },
+      headers: {
+        [X_FORMSG_SELECTED_FORM_LANGUAGE]: selectedFormLanguage,
       },
     },
   ).then(({ data }) => data)
@@ -266,6 +274,7 @@ export const submitStorageModeForm = async ({
   paymentProducts,
   payments,
   fieldIdToQuarantineKeyMap,
+  selectedFormLanguage = Language.ENGLISH,
 }: SubmitStorageFormWithVirusScanningArgs) => {
   const filteredInputs = filterHiddenInputs({
     formFields,
@@ -293,6 +302,9 @@ export const submitStorageModeForm = async ({
       params: {
         captchaResponse: String(captchaResponse),
         captchaType: captchaType,
+      },
+      headers: {
+        [X_FORMSG_SELECTED_FORM_LANGUAGE]: selectedFormLanguage,
       },
     },
   ).then(({ data }) => data)
@@ -349,6 +361,7 @@ export const submitMultirespondentForm = async ({
   captchaType = '',
   responseMetadata,
   fieldIdToQuarantineKeyMap,
+  selectedFormLanguage = Language.ENGLISH,
 }: SubmitMultirespondentFormWithVirusScanningArgs) => {
   const filteredInputs = filterHiddenInputs({
     formFields,
@@ -373,6 +386,9 @@ export const submitMultirespondentForm = async ({
       params: {
         captchaResponse: String(captchaResponse),
         captchaType: captchaType,
+      },
+      headers: {
+        [X_FORMSG_SELECTED_FORM_LANGUAGE]: selectedFormLanguage,
       },
     },
   ).then(({ data }) => data)

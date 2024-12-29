@@ -1,10 +1,10 @@
-import React from 'react'
-import { useFormContext } from 'react-hook-form'
+import { FieldError, useFormContext } from 'react-hook-form'
 import { Divider, Flex, FormControl, Text } from '@chakra-ui/react'
 
 import { Language } from '~shared/types'
 import { BasicField } from '~shared/types/field'
 
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Textarea from '~components/Textarea'
 
 import { TranslationInput } from './TranslationSection'
@@ -21,12 +21,14 @@ interface TableTranslationContainerProps {
   language: string
   columns: TableColumn[]
   unicodeLocale: Language
+  errors?: FieldError[]
 }
 
 export const TableTranslationContainer = ({
   language,
   columns,
   unicodeLocale,
+  errors,
 }: TableTranslationContainerProps) => {
   const { register } = useFormContext<TranslationInput>()
 
@@ -51,7 +53,12 @@ export const TableTranslationContainer = ({
           previousFieldOptionsTranslations.join('\n')
 
         return (
-          <Flex justifyContent="flex-start" mb="2.5rem" direction="column">
+          <Flex
+            key={index}
+            justifyContent="flex-start"
+            mb="2.5rem"
+            direction="column"
+          >
             <Text
               color="secondary.500"
               fontSize="1.25rem"
@@ -120,12 +127,15 @@ export const TableTranslationContainer = ({
                   <Text color="secondary.700" mr="7.5rem" width="6.25rem">
                     {language}
                   </Text>
-                  <FormControl>
+                  <FormControl isInvalid={!!errors?.[index]}>
                     <Textarea
                       width="100%"
                       {...register(`tableColumnDropdownTranslations.${index}`)}
                       defaultValue={previousFieldOptionsTranslationsString}
                     />
+                    <FormErrorMessage>
+                      {errors?.[index]?.message}
+                    </FormErrorMessage>
                   </FormControl>
                 </Flex>
               </Flex>
