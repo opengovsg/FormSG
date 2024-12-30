@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { forwardRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { BiSolidMagicWand, BiTrash } from 'react-icons/bi'
 import { HiSparkles } from 'react-icons/hi2'
@@ -7,6 +7,7 @@ import {
   Button,
   Flex,
   FormControl,
+  FormLabel,
   HStack,
   Icon,
   Popover,
@@ -66,29 +67,34 @@ export const MagicFormBuilderContainer = () => {
   ) : null
 }
 
-const MagicFormBuilderButton = ({
-  onClick,
-  ...styleProps
-}: { onClick: () => void } & React.ComponentProps<typeof Button>) => {
-  return (
-    <Tooltip openDelay={500} hasArrow label="Create fields with AI">
-      <Button
-        variant="outline"
-        onClick={onClick}
-        padding="0"
-        borderColor="primary.200"
-        _hover={{
-          backgroundColor: 'primary.200',
-        }}
-        borderWidth="1px"
-        {...styleProps}
-      >
-        <Icon as={BiSolidMagicWand} color="primary.500" fontSize="1.5rem" />
-      </Button>
-    </Tooltip>
-  )
-}
-
+const MagicFormBuilderButton = forwardRef(
+  (
+    {
+      onClick,
+      ...styleProps
+    }: { onClick: () => void } & React.ComponentProps<typeof Button>,
+    ref,
+  ) => {
+    return (
+      <Tooltip openDelay={500} hasArrow label="Create fields with AI">
+        <Button
+          ref={ref} // Rationale: forward ref allows the popover placement to work.
+          variant="outline"
+          onClick={onClick}
+          padding="0"
+          borderColor="primary.200"
+          _hover={{
+            backgroundColor: 'primary.200',
+          }}
+          borderWidth="1px"
+          {...styleProps}
+        >
+          <Icon as={BiSolidMagicWand} color="primary.500" fontSize="1.5rem" />
+        </Button>
+      </Tooltip>
+    )
+  },
+)
 const PromptSelectorBar = ({
   promptIdeas,
   onClick,
@@ -111,6 +117,7 @@ const PromptSelectorBar = ({
       >
         {promptIdeas.map((idea) => (
           <Button
+            key={idea.label}
             variant="clear"
             size="xs"
             borderRadius="3rem"
@@ -154,6 +161,7 @@ const MagicFormBuilderCreateFormPrompt = ({
       <PopoverCloseButton onClick={onClose} />
       <PopoverBody>
         <FormControl isRequired isInvalid={!!errors.prompt?.message}>
+          <FormLabel>I want to create a form that collects</FormLabel>
           <Textarea
             placeholder={GENERATE_FORM_PLACEHOLDER}
             {...register('prompt', {
@@ -258,13 +266,12 @@ const MagicFormBuilderPopover = ({
   const { deleteMultipleFormFieldsMutation } = useDeleteFormField()
 
   return (
-    <Popover isLazy placement="right" isOpen={isOpen}>
+    <Popover isLazy placement="right-start" isOpen={isOpen}>
       <PopoverAnchor>
         <MagicFormBuilderButton onClick={() => setIsOpen(!isOpen)} />
       </PopoverAnchor>
       <Portal>
-        {/* TODO: (MFBv1.1) Fix the position of the popover. */}
-        <PopoverContent bg="white" top="15vh" left="40vw">
+        <PopoverContent bg="white">
           {!isAcceptDenyOpen ? (
             <MagicFormBuilderCreateFormPrompt
               onClose={() => setIsOpen(false)}
