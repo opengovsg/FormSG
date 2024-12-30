@@ -70,9 +70,12 @@ export const MagicFormBuilderContainer = () => {
 const MagicFormBuilderButton = forwardRef(
   (
     {
+      isActive,
       onClick,
       ...styleProps
-    }: { onClick: () => void } & React.ComponentProps<typeof Button>,
+    }: { isActive: boolean; onClick: () => void } & React.ComponentProps<
+      typeof Button
+    >,
     ref,
   ) => {
     return (
@@ -83,6 +86,7 @@ const MagicFormBuilderButton = forwardRef(
           onClick={onClick}
           padding="0"
           borderColor="primary.200"
+          backgroundColor={isActive ? 'primary.200' : undefined}
           _hover={{
             backgroundColor: 'primary.200',
           }}
@@ -268,7 +272,10 @@ const MagicFormBuilderPopover = ({
   return (
     <Popover isLazy placement="right-start" isOpen={isOpen}>
       <PopoverAnchor>
-        <MagicFormBuilderButton onClick={() => setIsOpen(!isOpen)} />
+        <MagicFormBuilderButton
+          isActive={isOpen}
+          onClick={() => setIsOpen(!isOpen)}
+        />
       </PopoverAnchor>
       <Portal>
         <PopoverContent bg="white">
