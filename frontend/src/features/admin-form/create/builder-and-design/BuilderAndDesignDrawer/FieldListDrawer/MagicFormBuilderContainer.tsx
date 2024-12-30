@@ -2,6 +2,7 @@ import { forwardRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { BiSolidMagicWand, BiTrash } from 'react-icons/bi'
 import { HiSparkles } from 'react-icons/hi2'
+import { useParams } from 'react-router-dom'
 import {
   Box,
   Button,
@@ -57,7 +58,9 @@ const TEXT_PROMPT_IDEAS = [
 const GENERATE_FORM_PLACEHOLDER = 'Describe form, fields and sections to create'
 
 export const MagicFormBuilderContainer = () => {
+  const { formId } = useParams()
   const isMobile = useIsMobile()
+
   const [isOpen, setIsOpen] = useState(false)
 
   const clearRecentlyCreatedFieldIds = useMagicFormBuilderStore(
@@ -69,32 +72,33 @@ export const MagicFormBuilderContainer = () => {
 
   const onClickDefaults = () => {
     setIsOpen(false)
-    setTimeout(() => {
-      clearRecentlyCreatedFieldIds()
-    }, 100) // only clear after the popover is closed
+    if (formId) {
+      setTimeout(() => {
+        clearRecentlyCreatedFieldIds(formId)
+      }, 100) // only clear after the popover is closed
+    }
   }
 
   const { deleteMultipleFormFieldsMutation } = useDeleteFormField()
 
-  const isAcceptDenyOpen =
-    !!recentlyCreatedFieldIds && recentlyCreatedFieldIds.size > 0
+  const fieldIds = formId ? recentlyCreatedFieldIds[formId] : null
+  const isAcceptDenyOpen = !!fieldIds && fieldIds.size > 0
 
   return !isMobile ? (
-    <>
-      <MagicFormBuilderPopover
-        isOpen={isOpen}
-        isAcceptDenyOpen={isAcceptDenyOpen}
-        onMfbClick={() => setIsOpen(!isOpen)}
-        onClose={() => setIsOpen(false)}
-        onAccept={onClickDefaults}
-        onDeny={() => {
-          deleteMultipleFormFieldsMutation.mutate(
-            Array.from(recentlyCreatedFieldIds),
-          )
-          onClickDefaults()
-        }}
-      />
-    </>
+    <MagicFormBuilderPopover
+      isOpen={isOpen}
+      isAcceptDenyOpen={isAcceptDenyOpen}
+      onMfbClick={() => setIsOpen(!isOpen)}
+      onClose={() => setIsOpen(false)}
+      onAccept={onClickDefaults}
+      onDeny={() => {
+        onClickDefaults()
+        if (!formId) return
+        deleteMultipleFormFieldsMutation.mutate(
+          Array.from(recentlyCreatedFieldIds[formId]),
+        )
+      }}
+    />
   ) : null
 }
 

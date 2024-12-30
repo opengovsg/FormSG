@@ -1,18 +1,23 @@
 import create from 'zustand'
 
 export type MagicFormBuilderStore = {
-  recentlyCreatedFieldIds: Set<string>
-  setRecentlyCreatedFieldIds: (fieldIds: Set<string>) => void
-  clearRecentlyCreatedFieldIds: () => void
+  recentlyCreatedFieldIds: {
+    [formId: string]: Set<string>
+  }
+  clearRecentlyCreatedFieldIds: (formId: string) => void
 }
 
 export const useMagicFormBuilderStore = create<MagicFormBuilderStore>(
   (set) => ({
-    recentlyCreatedFieldIds: new Set(),
-    setRecentlyCreatedFieldIds: (fieldIds) =>
-      set({ recentlyCreatedFieldIds: fieldIds }),
-    clearRecentlyCreatedFieldIds: () =>
-      set({ recentlyCreatedFieldIds: new Set() }),
+    recentlyCreatedFieldIds: {},
+    clearRecentlyCreatedFieldIds: (formId) =>
+      set((state) => ({
+        recentlyCreatedFieldIds: Object.fromEntries(
+          Object.entries(state.recentlyCreatedFieldIds).filter(
+            ([fid]) => fid !== formId,
+          ),
+        ),
+      })),
   }),
 )
 

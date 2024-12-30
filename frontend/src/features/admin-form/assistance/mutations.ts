@@ -22,8 +22,13 @@ export const useAssistanceMutations = () => {
     {
       onSuccess: (data) => {
         const { createdFieldIds } = data
-        useMagicFormBuilderStore.setState({
-          recentlyCreatedFieldIds: new Set(createdFieldIds),
+        useMagicFormBuilderStore.setState((state) => {
+          return {
+            recentlyCreatedFieldIds: {
+              ...state.recentlyCreatedFieldIds,
+              [formId]: new Set(createdFieldIds),
+            },
+          }
         })
         queryClient.invalidateQueries(adminFormKeys.id(formId))
         toast.closeAll()

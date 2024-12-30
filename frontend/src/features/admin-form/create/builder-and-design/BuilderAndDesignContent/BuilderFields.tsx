@@ -11,10 +11,6 @@ import {
   stateDataSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
-import {
-  recentlyCreatedFieldIdsSelector,
-  useMagicFormBuilderStore,
-} from '../useMagicFormBuilderStore'
 import { useDesignColorTheme } from '../utils/useDesignColorTheme'
 
 import FieldRow from './FieldRow'
@@ -23,6 +19,7 @@ interface BuilderFieldsProps {
   responseMode: AdminFormDto['responseMode']
   fields: AdminFormDto['form_fields']
   visibleFieldIds: FieldIdSet
+  highlightFieldIds: FieldIdSet
   isDraggingOver: boolean
 }
 
@@ -30,6 +27,7 @@ export const BuilderFields = ({
   responseMode,
   fields,
   visibleFieldIds,
+  highlightFieldIds,
   isDraggingOver,
 }: BuilderFieldsProps) => {
   const fieldsWithQuestionNos = augmentWithQuestionNo(fields)
@@ -47,10 +45,6 @@ export const BuilderFields = ({
   const colorTheme = useDesignColorTheme()
 
   const isDirty = useDirtyFieldStore(isDirtySelector)
-
-  const mfbRecentlyCreatedFieldIds = useMagicFormBuilderStore(
-    recentlyCreatedFieldIdsSelector,
-  )
 
   return (
     <>
@@ -72,7 +66,7 @@ export const BuilderFields = ({
             handleBuilderClick={handleBuilderClick}
             isDirty={isDirty}
             colorTheme={colorTheme}
-            isHighlighted={mfbRecentlyCreatedFieldIds.has(f._id)}
+            isHighlighted={highlightFieldIds.has(f._id)}
             {...activeFieldExtraProps}
           />
         )

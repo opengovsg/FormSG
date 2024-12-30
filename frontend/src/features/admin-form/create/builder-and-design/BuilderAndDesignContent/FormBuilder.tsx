@@ -34,6 +34,10 @@ import {
   setToInactiveSelector as setFieldBuilderToInactiveSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
+import {
+  recentlyCreatedFieldIdsSelector,
+  useMagicFormBuilderStore,
+} from '../useMagicFormBuilderStore'
 import { useDesignColorTheme } from '../utils/useDesignColorTheme'
 
 import { EmptyFormPlaceholder } from './BuilderAndDesignPlaceholder/EmptyFormPlaceholder'
@@ -66,9 +70,13 @@ export const FormBuilder = ({
     setEditingEndPageState: setToEditingEndPageSelector(state),
   }))
 
-  const { isOpen, onClose, onOpen } = useDisclosure()
-
-  const handleMagicFormButtonClick = onOpen
+  const recentlyCreatedFieldIds = useMagicFormBuilderStore(
+    recentlyCreatedFieldIdsSelector,
+  )
+  const highlightFieldIds: Set<string> =
+    form?._id && recentlyCreatedFieldIds[String(form._id)]
+      ? recentlyCreatedFieldIds[String(form._id)]
+      : new Set()
 
   const visibleFieldIds = useMemo(
     () =>
@@ -158,6 +166,7 @@ export const FormBuilder = ({
                           responseMode={form?.responseMode}
                           fields={builderFields}
                           visibleFieldIds={visibleFieldIds}
+                          highlightFieldIds={highlightFieldIds}
                           isDraggingOver={snapshot.isDraggingOver}
                         />
                         {provided.placeholder}
