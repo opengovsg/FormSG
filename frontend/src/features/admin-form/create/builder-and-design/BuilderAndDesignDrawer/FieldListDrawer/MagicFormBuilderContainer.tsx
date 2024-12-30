@@ -20,7 +20,6 @@ import {
   Text,
   Textarea,
   Tooltip,
-  VStack,
 } from '@chakra-ui/react'
 
 import { BxCheck } from '~/assets/icons'
@@ -54,8 +53,7 @@ const TEXT_PROMPT_IDEAS = [
   },
 ]
 
-const GENERATE_FORM_PLACEHOLDER =
-  'Describe form, fields and sections to create...'
+const GENERATE_FORM_PLACEHOLDER = 'Describe form, fields and sections to create'
 
 export const MagicFormBuilderContainer = () => {
   const isMobile = useIsMobile()
@@ -75,13 +73,14 @@ const MagicFormBuilderButton = ({
   return (
     <Tooltip openDelay={500} hasArrow label="Create fields with AI">
       <Button
+        variant="outline"
         onClick={onClick}
         padding="0"
-        backgroundColor="primary.200"
+        borderColor="primary.200"
         _hover={{
-          backgroundColor: 'primary.300',
+          backgroundColor: 'primary.200',
         }}
-        borderWidth={0}
+        borderWidth="1px"
         {...styleProps}
       >
         <Icon as={BiSolidMagicWand} color="primary.500" fontSize="1.5rem" />
@@ -115,7 +114,10 @@ const PromptSelectorBar = ({
             variant="clear"
             size="xs"
             borderRadius="3rem"
-            bgColor="secondary.200"
+            bgColor="secondary.100"
+            _hover={{
+              backgroundColor: 'primary.200',
+            }}
             onClick={() => onClick(idea.prompt)}
           >
             {idea.label}
@@ -247,8 +249,10 @@ const MagicFormBuilderPopover = ({
     !!recentlyCreatedFieldIds && recentlyCreatedFieldIds.size > 0
 
   const onClickDefaults = () => {
-    clearRecentlyCreatedFieldIds()
     setIsOpen(false)
+    setTimeout(() => {
+      clearRecentlyCreatedFieldIds()
+    }, 100) // only clear after the popover is closed
   }
 
   const { deleteMultipleFormFieldsMutation } = useDeleteFormField()
