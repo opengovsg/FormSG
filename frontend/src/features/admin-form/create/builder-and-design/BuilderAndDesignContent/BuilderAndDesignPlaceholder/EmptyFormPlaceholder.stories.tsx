@@ -32,7 +32,6 @@ const Template: StoryFn = (args) => {
         {...args}
         isDraggingOver={false}
         onClick={() => {}}
-        onMagicFormButtonClick={() => {}}
       />
     </Box>
   )
