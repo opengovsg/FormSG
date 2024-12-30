@@ -48,7 +48,7 @@ describe('admin-form.assistance.service', () => {
       beforeEach(() => {
         const mockedCreateFormFields =
           AdminFormService.createFormFields as jest.Mock
-        mockedCreateFormFields.mockReturnValue(okAsync({} as FormFieldSchema[]))
+        mockedCreateFormFields.mockReturnValue(okAsync([] as FormFieldSchema[]))
       })
 
       it('should successfully invoke createNewFields with correct # of fields when model response is valid', async () => {
