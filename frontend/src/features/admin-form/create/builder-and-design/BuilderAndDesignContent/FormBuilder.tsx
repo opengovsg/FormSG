@@ -1,13 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  Box,
-  Flex,
-  FlexProps,
-  Skeleton,
-  Stack,
-  useDisclosure,
-} from '@chakra-ui/react'
+import { Box, Flex, FlexProps, Skeleton, Stack } from '@chakra-ui/react'
 import { Droppable } from '@hello-pangea/dnd'
 
 import Button from '~components/Button'
