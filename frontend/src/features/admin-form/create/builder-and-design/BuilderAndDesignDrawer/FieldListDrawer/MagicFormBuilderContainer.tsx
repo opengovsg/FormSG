@@ -60,9 +60,40 @@ export const MagicFormBuilderContainer = () => {
   const isMobile = useIsMobile()
   const [isOpen, setIsOpen] = useState(false)
 
+  const clearRecentlyCreatedFieldIds = useMagicFormBuilderStore(
+    (state) => state.clearRecentlyCreatedFieldIds,
+  )
+  const recentlyCreatedFieldIds = useMagicFormBuilderStore(
+    recentlyCreatedFieldIdsSelector,
+  )
+
+  const onClickDefaults = () => {
+    setIsOpen(false)
+    setTimeout(() => {
+      clearRecentlyCreatedFieldIds()
+    }, 100) // only clear after the popover is closed
+  }
+
+  const { deleteMultipleFormFieldsMutation } = useDeleteFormField()
+
+  const isAcceptDenyOpen =
+    !!recentlyCreatedFieldIds && recentlyCreatedFieldIds.size > 0
+
   return !isMobile ? (
     <>
-      <MagicFormBuilderPopover isOpen={isOpen} setIsOpen={setIsOpen} />
+      <MagicFormBuilderPopover
+        isOpen={isOpen}
+        isAcceptDenyOpen={isAcceptDenyOpen}
+        onMfbClick={() => setIsOpen(!isOpen)}
+        onClose={() => setIsOpen(false)}
+        onAccept={onClickDefaults}
+        onDeny={() => {
+          deleteMultipleFormFieldsMutation.mutate(
+            Array.from(recentlyCreatedFieldIds),
+          )
+          onClickDefaults()
+        }}
+      />
     </>
   ) : null
 }
@@ -243,56 +274,35 @@ interface TextPromptInputs {
   prompt: string
 }
 
-const MagicFormBuilderPopover = ({
+export const MagicFormBuilderPopover = ({
   isOpen,
-  setIsOpen,
+  onMfbClick,
+  onClose,
+  isAcceptDenyOpen,
+  onAccept,
+  onDeny,
 }: {
   isOpen: boolean
-  setIsOpen: (isOpen: boolean) => void
+  onMfbClick: () => void
+  onClose: () => void
+  isAcceptDenyOpen: boolean
+  onAccept: () => void
+  onDeny: () => void
 }) => {
-  const clearRecentlyCreatedFieldIds = useMagicFormBuilderStore(
-    (state) => state.clearRecentlyCreatedFieldIds,
-  )
-  const recentlyCreatedFieldIds = useMagicFormBuilderStore(
-    recentlyCreatedFieldIdsSelector,
-  )
-
-  const isAcceptDenyOpen =
-    !!recentlyCreatedFieldIds && recentlyCreatedFieldIds.size > 0
-
-  const onClickDefaults = () => {
-    setIsOpen(false)
-    setTimeout(() => {
-      clearRecentlyCreatedFieldIds()
-    }, 100) // only clear after the popover is closed
-  }
-
-  const { deleteMultipleFormFieldsMutation } = useDeleteFormField()
-
   return (
     <Popover isLazy placement="right-start" isOpen={isOpen}>
       <PopoverAnchor>
-        <MagicFormBuilderButton
-          isActive={isOpen}
-          onClick={() => setIsOpen(!isOpen)}
-        />
+        <MagicFormBuilderButton isActive={isOpen} onClick={onMfbClick} />
       </PopoverAnchor>
       <Portal>
         <PopoverContent bg="white">
           {!isAcceptDenyOpen ? (
-            <MagicFormBuilderCreateFormPrompt
-              onClose={() => setIsOpen(false)}
-            />
+            <MagicFormBuilderCreateFormPrompt onClose={onClose} />
           ) : (
             <MagicFormBuilderAcceptDeny
-              onAccept={onClickDefaults}
-              onDeny={() => {
-                deleteMultipleFormFieldsMutation.mutate(
-                  Array.from(recentlyCreatedFieldIds),
-                )
-                onClickDefaults()
-              }}
-              onClose={() => setIsOpen(false)}
+              onAccept={onAccept}
+              onDeny={onDeny}
+              onClose={onClose}
             />
           )}
         </PopoverContent>

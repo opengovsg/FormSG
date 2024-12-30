@@ -39,7 +39,9 @@ const FieldSearchBar = ({
   searchValue: string
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 }) => {
+  // TODO (MFB-v1.1): Remove useUser and isTest which is used for beta flag when out of beta
   const { user } = useUser()
+  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
 
   return (
     <>
@@ -53,7 +55,8 @@ const FieldSearchBar = ({
           onChange={onChange}
           placeholder="Search fields"
         />
-        {user?.betaFlags?.mfb ? <MagicFormBuilderContainer /> : null}
+        {/* TODO (MFB-v1.1): Remove this beta flag and isTest check when out of beta*/}
+        {user?.betaFlags?.mfb || isTest ? <MagicFormBuilderContainer /> : null}
       </InputGroup>
     </>
   )
