@@ -19,6 +19,7 @@ import {
 import { Tab } from '~components/Tabs'
 
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
+import { useUser } from '~features/user/queries'
 
 import { useCreateTabForm } from '../../../builder-and-design/useCreateTabForm'
 import { CreatePageDrawerCloseButton } from '../../../common'
@@ -38,6 +39,8 @@ const FieldSearchBar = ({
   searchValue: string
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 }) => {
+  const { user } = useUser()
+
   return (
     <>
       <InputGroup>
@@ -50,7 +53,7 @@ const FieldSearchBar = ({
           onChange={onChange}
           placeholder="Search fields"
         />
-        <MagicFormBuilderContainer />
+        {user?.betaFlags?.mfb ? <MagicFormBuilderContainer /> : null}
       </InputGroup>
     </>
   )
