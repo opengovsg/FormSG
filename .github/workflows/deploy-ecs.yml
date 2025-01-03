@@ -104,6 +104,9 @@ jobs:
           task-definition: ${{ env.ECS_TASK_DEFINITION }}
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          environment-variables: |
+            ENV_TYPE=${{ contains(env.CURRENT_ENV, 'staging') && 'staging' || contains(env.CURRENT_ENV, 'prod') && 'prod' || contains(env.CURRENT_ENV, 'uat') && 'uat' || env.CURRENT_ENV }}
+            ENV_SITE_NAME=${{ env.CURRENT_ENV }} 
 
       - name: Deploy Amazon ECS task definition
         env:    # For ECS deployment 

@@ -4,6 +4,7 @@
     {
       "name": "formsg-app",
       "essential": true,
+      "command": "/bin/sh -c \"./generate-env-from-ecs-params.sh && npm start\"",
       "portMappings": [
         { "containerPort": 3000 }
       ]
