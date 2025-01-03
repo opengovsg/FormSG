@@ -10,40 +10,35 @@ permissions:
   contents: read
 
 jobs:
-  # github.ref_name is the current branch name
-  # this sets the branch_name output to eg, staging-alt3 
-  # other jobs can use this output via needs.set_branch_name.outputs.branch_name
-  set_branch_name:
+  set_environment:
+    name: Set environment for deployment 
+    description: Sets the environment for the deployment, which is the same as the branch name 
     outputs:
-      branch_name: ${{ steps.set_branch_name.outputs.branch_name }}
+      current_env: ${{ steps.set_environment.outputs.current_env }}
     runs-on: ubuntu-latest
     steps:
-      - id: set_branch_name
-        # this uses github context which exists in the runner environment
-        run: echo "branch_name=${{github.ref_name}}" >> $GITHUB_OUTPUT
+      - id: set_environment
+        run: echo "current_env=${{github.ref_name}}" >> $GITHUB_OUTPUT
 
   deploy:
     name: Deploy to ECS
-    needs: set_branch_name
+    needs: set_environment
     runs-on: ubuntu-latest
-    # can be used for env rules defined in GH repo settings
-    environment: ${{ needs.set_branch_name.outputs.branch_name }}
+    environment: ${{ needs.set_environment.outputs.current_env }}
     env:
-      # this is the unique tag for the built docker image
       IMAGE_TAG: github-actions-${{ github.sha }}-${{ github.run_id }}-${{github.run_attempt}}
-    
+      CURRENT_ENV: ${{ needs.set_environment.outputs.current_env }} 
     steps:
-      # checks out the latest code from the repo branch into the runner environment
-      # dont need this as done directly by buildkit 
-      # need this for the frontend build env vars
-      - name: Checkout code
+      - name: Checkout branch source code into runner environment 
+        description: Required for the frontend build env vars 
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          
+
       - name: Setup secrets for datadog sourcemap deployment
         run: |
           echo "APP_VERSION=$(jq -r .version package.json)-$(echo ${GITHUB_REF##*/})-$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
+
       - name: Inject frontend build env vars
         env:
           VITE_APP_DD_RUM_APP_ID: ${{ secrets.DD_RUM_APP_ID }}
@@ -62,15 +57,15 @@ jobs:
           echo VITE_APP_DD_RUM_CLIENT_TOKEN=$VITE_APP_DD_RUM_CLIENT_TOKEN >> frontend/.env
           echo VITE_APP_DD_RUM_ENV=$VITE_APP_DD_RUM_ENV >> frontend/.env
 
-      # configures the runner environment with AWS credentials
       - name: Configure AWS credentials
+        description: Configures the runner environment with AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
+        env: 
+          AWS_REGION: ${{ secrets.DEFAULT_AWS_REGION }}
         with:
-          # to update later to use the new role
-          role-to-assume: arn:aws:iam::445567101234:role/Staging-Alt3-OIDC 
-          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+          role-to-assume: ${{ secrets.AWS_CI_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
 
-      # logs into the Amazon ECR repository, requires the configure AWS credentials above
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
@@ -83,34 +78,40 @@ jobs:
         env: 
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
           DD_ENV: ${{ secrets.DD_ENV }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPO }}-${{ env.CURRENT_ENV }}
         with:
-          # not needed since done by Buildkit which uses git context
           context: .  
           file: Dockerfile.production
           push: true
           tags: |
-            ${{ steps.login-ecr.outputs.registry }}/formsg/staging-alt3:${{ env.IMAGE_TAG }}
-            ${{ steps.login-ecr.outputs.registry }}/formsg/staging-alt3:latest
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
           build-args: |
             APP_VERSION=${{  env.APP_VERSION  }}
             APP_URL=${{  secrets.APP_URL  }}
             REPO_URL=${{  github.server_url  }}/${{  github.repository  }}
           secrets: |
             "dd_api_key=${{ secrets.DD_API_KEY }}"
-      # - name: Update ECS service
-      #   run: |
-      #     aws ecs update-service \
-      #       --cluster ${{ secrets.ECS_CLUSTER }} \
-      #       --service ${{ secrets.ECS_SERVICE }} \
-      #       --force-new-deployment \
-      #       --task-definition $(aws ecs register-task-definition \
-      #         --family ${{ secrets.ECS_TASK_FAMILY }} \
-      #         --execution-role-arn ${{ secrets.ECS_TASK_EXECUTION_ROLE }} \
-      #         --container-definitions '[{
-      #           "name": "${{ secrets.ECS_CONTAINER_NAME }}",
-      #           "image": "${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}",
-      #           "essential": true,
-      #           "portMappings": [{"containerPort": 8080, "protocol": "tcp"}]
-      #         }]' \
-      #         --query 'taskDefinition.taskDefinitionArn' --output text)
 
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        description: Create a new task definition file with the image to be deployed
+        id: task-def
+        env: 
+          ECS_TASK_DEFINITION: ecs-task-definition.json
+          CONTAINER_NAME: formsg-app
+        uses: aws-actions/amazon-ecs-render-task-definition@c804dfbdd57f713b6c079302a4c01db7017a36fc
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+
+      - name: Deploy Amazon ECS task definition
+        env:    # For ECS deployment 
+          ECS_SERVICE: ${{ sectets.ECS_SERVICE }} 
+          ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }} 
+        uses: aws-actions/amazon-ecs-deploy-task-definition@df9643053eda01f169e64a0e60233aacca83799a
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true

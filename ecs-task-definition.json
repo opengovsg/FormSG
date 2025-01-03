@@ -1,0 +1,16 @@
+
+{ 
+  "containerDefinitions": [
+    {
+      "name": "formsg-app",
+      "essential": true,
+      "portMappings": [
+        { "containerPort": 3000 }
+      ]
+    }
+  ], 
+  "family": "formsg-app", 
+  "requiresCompatibilities": [
+    "FARGATE"
+  ] 
+}
