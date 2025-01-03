@@ -40,13 +40,13 @@ ARG REPO_URL
 # Upload datadog source maps from secret mount, id MUST be `id=dd_api_key` in the docker build command
 # Mount creates a file inside /run/secrets/dd_api_key, and source to load the environment variables
 # For the content of the mounted file is only accessible in the RUN command where it’s referred in, use && command.
-# RUN --mount=type=secret,id=dd_api_key \
-#     export DATADOG_API_KEY=$(cat /run/secrets/dd_api_key) && \
-#     npx @datadog/datadog-ci sourcemaps upload ./dist/frontend \
-#     --service=formsg-react \
-#     --release-version=$APP_VERSION \
-#     --minified-path-prefix=$APP_URL \
-#     --repository-url=$REPO_URL
+RUN --mount=type=secret,id=dd_api_key \
+    export DATADOG_API_KEY=$(cat /run/secrets/dd_api_key) && \
+    npx @datadog/datadog-ci sourcemaps upload ./dist/frontend \
+    --service=formsg-react \
+    --release-version=$APP_VERSION \
+    --minified-path-prefix=$APP_URL \
+    --repository-url=$REPO_URL
 
 RUN npm prune --production --legacy-peer-deps
 
