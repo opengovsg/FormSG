@@ -12,7 +12,7 @@ export const validatePostalCode = (value: string) => {
 }
 
 export const validateBlockUnit = (value: string) => {
-  if (value !== '' && !/^[A-Za-z0-9]+$/.test(value)) {
+  if (!/^[A-Za-z0-9]+$/.test(value)) {
     return INVALID_BLOCK_UNIT_ERROR
   }
   return true

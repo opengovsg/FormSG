@@ -1,4 +1,4 @@
-import { left, right } from 'fp-ts/lib/Either'
+import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
 import { ProcessedAddressResponse } from 'src/app/modules/submission/submission.types'
@@ -7,13 +7,11 @@ import {
   OmitUnusedValidatorProps,
 } from 'src/types'
 
+import { AddressResponseV3, BasicField } from '../../../../../shared/types'
 import {
-  // AddressCompoundFieldBase,
-  // AddressResponse,
-  AddressResponseV3,
-  BasicField,
-} from '../../../../../shared/types'
-import { validatePostalCode } from '../../../../../shared/utils/address-validation'
+  validateBlockUnit,
+  validatePostalCode,
+} from '../../../../../shared/utils/address-validation'
 import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
 import {
   ResponseValidator,
@@ -26,29 +24,73 @@ type AddressValidatorConstructor = (
 ) => AddressValidator
 
 /**
- * Returns a validator to check if postal code format is correct
+ * Returns a validator to address field is legitimate (must have 6 subfields)
  */
-const addressValidator: AddressValidator = (response) => {
-  // const { answerArray } = response
-  // const entry = answerArray.find(({ key }) => key === 'postalCode')
-  // const postalCode = entry ? entry.value : ''
-  // return validatePostalCode(postalCode) // TODO
-  return true
+const addressAnswerValidator: AddressValidator = (response) => {
+  const { answerArray } = response
+
+  return answerArray.length === 6
     ? right(response)
-    : left(`AddressValidator:\t answer is not a valid postal code`)
+    : left(`AddressValidator:\t answer is not a address field value`)
+}
+
+/**
+ * Returns validation function to check for valid postal code
+ */
+const validPostalCode: AddressValidator = (response) => {
+  const { answerArray } = response
+  const entry = answerArray.find((subField) =>
+    subField.some((val) => val.startsWith('postalCode')),
+  )
+  const postalCode = entry ? entry[0].split('_')[1] : ''
+  return validatePostalCode(postalCode)
+    ? right(response)
+    : left(`AddressValidator:\t postal code is not valid`)
+}
+
+const validBlockNumber: AddressValidator = (response) => {
+  const { answerArray } = response
+  const entry = answerArray.find((subField) =>
+    subField.some((val) => val.startsWith('blockNumber')),
+  )
+  const blockNumber = entry ? entry[0].split('_')[1] : ''
+  return validateBlockUnit(blockNumber)
+    ? right(response)
+    : left(`AddressValidator:\t block number is not valid`)
+}
+
+const validUnitNumber: AddressValidator = (response) => {
+  const { answerArray } = response
+  const entry = answerArray.find((subField) =>
+    subField.some((val) => val.startsWith('unitNumber')),
+  )
+  const unitNumber = entry ? entry[0].split('_')[1] : ''
+  return validateBlockUnit(unitNumber)
+    ? right(response)
+    : left(`AddressValidator:\t unit number is not valid`)
+}
+
+const validLevelNumber: AddressValidator = (response) => {
+  const { answerArray } = response
+  const entry = answerArray.find((subField) =>
+    subField.some((val) => val.startsWith('levelNumber')),
+  )
+  const levelNumber = entry ? entry[0].split('_')[1] : ''
+  return validateBlockUnit(levelNumber)
+    ? right(response)
+    : left(`AddressValidator:\t level number is not valid`)
 }
 
 export const constructAddressValidator: AddressValidatorConstructor = () =>
-  flow(addressValidator) // TODO fix this
+  flow(
+    addressAnswerValidator,
+    chain(validPostalCode),
+    chain(validBlockNumber),
+    chain(validUnitNumber),
+    chain(validLevelNumber),
+  )
 
 // v3
-// interface AddressValidatorData {
-//   addressField: AddressCompoundFieldBase
-//   formId: string
-//   isVisible: boolean
-//   isDisabled: boolean
-// }
-
 const isAddressResponseV3: ResponseValidator<
   ParsedClearFormFieldResponseV3,
   AddressResponseV3
@@ -61,17 +103,41 @@ const isAddressResponseV3: ResponseValidator<
   return right(response)
 }
 
-// const addressValidatorV3: ResponseValidator<
-//   AddressValidatorData,
-//   AddressResponseV3
-// > =
-//   ({ addressField }) =>
-//   (response) => {
-//     const answerArray = response.answerArray
-//     return validatePostalCode(response.answer.postalCode)
-//       ? right(response)
-//       : left(`AddressValidatorV3:\t answer is not a valid postal code`)
-//   }
+const addressPostalCodeValidatorV3: ResponseValidator<AddressResponseV3> = (
+  response,
+) => {
+  const { addressSubFields } = response.answer
+  return validatePostalCode(addressSubFields.postalCode)
+    ? right(response)
+    : left(`AddressValidator:\t postal code is not valid`)
+}
+
+const addressBlockNumberValidatorV3: ResponseValidator<AddressResponseV3> = (
+  response,
+) => {
+  const { addressSubFields } = response.answer
+  return validateBlockUnit(addressSubFields.blockNumber)
+    ? right(response)
+    : left(`AddressValidator:\t block number is not valid`)
+}
+
+const addressUnitNumberValidatorV3: ResponseValidator<AddressResponseV3> = (
+  response,
+) => {
+  const { addressSubFields } = response.answer
+  return validateBlockUnit(addressSubFields.unitNumber)
+    ? right(response)
+    : left(`AddressValidator:\t unit number is not valid`)
+}
+
+const addressLevelNumberValidatorV3: ResponseValidator<AddressResponseV3> = (
+  response,
+) => {
+  const { addressSubFields } = response.answer
+  return validatePostalCode(addressSubFields.levelNumber)
+    ? right(response)
+    : left(`AddressValidator:\t level number is not valid`)
+}
 
 export const constructAddressValidatorV3: ResponseValidatorConstructor<
   OmitUnusedValidatorProps<IAddressCompoundFieldSchema>,
@@ -80,6 +146,8 @@ export const constructAddressValidatorV3: ResponseValidatorConstructor<
 > = () =>
   flow(
     isAddressResponseV3,
-    // chain(notEmptySingleAnswerResponseV3),
-    // chain(addressValidatorV3), // TODO fix this
+    chain(addressPostalCodeValidatorV3),
+    chain(addressBlockNumberValidatorV3),
+    chain(addressLevelNumberValidatorV3),
+    chain(addressUnitNumberValidatorV3),
   )

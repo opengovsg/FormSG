@@ -163,9 +163,8 @@ export const createClearSubmissionWithVirusScanningFormData = (
       return response
     },
   )
-
   const attachments = getAttachmentsMap(formFields, formInputs)
-
+  console.log(responses)
   // Convert content to FormData object.
   const formData = new FormData()
   formData.append(
@@ -187,7 +186,7 @@ export const createClearSubmissionWithVirusScanningFormData = (
       }
     })
   }
-  // console.log(formData.get('body'))
+
   return formData
 }
 
@@ -205,7 +204,6 @@ export const createClearSubmissionWithVirusScanningFormDataV3 = (
   // Call this to validate responses, but don't actually use the result
   // TODO: Move validation to before response array creation so it can be used for encryption v2-3
   createResponsesArray(formFields, formInputs)
-
   const responses = createResponsesV3(
     formFields,
     formInputs,
@@ -285,7 +283,11 @@ const createResponsesV3 = (
         const input = formInputs[ff._id] as
           | FormFieldValue<typeof ff.fieldType>
           | undefined
-        if (!input) break
+        if (
+          !input ||
+          Object.values(input.addressSubFields).every((value) => !value)
+        )
+          break
         returnedInputs[ff._id] = {
           fieldType: ff.fieldType,
           answer: input,

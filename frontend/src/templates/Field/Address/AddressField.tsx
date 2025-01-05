@@ -68,7 +68,7 @@ export const AddressCompoundField = ({
     [schema],
   )
 
-  const [isButtonDisabled, setIsButtonDisabled] = useState(false)
+  const [isButtonDisabled, setIsButtonDisabled] = useState(schema.disabled)
 
   const handleVerifyAddress = async () => {
     setIsButtonDisabled(true)
@@ -90,7 +90,10 @@ export const AddressCompoundField = ({
           `${schema._id}.addressSubFields.streetName`,
           result.data?.streetName,
         )
-        await trigger(['blockNumber', 'streetName']) // clear errors if first verification failed
+        await trigger([
+          `${schema._id}.addressSubFields.blockNumber`,
+          `${schema._id}.addressSubFields.streetName`,
+        ]) // clear errors if first verification failed
       } else {
         if (!result.success) {
           setError(`${schema._id}.addressSubFields.blockNumber`, {
@@ -103,7 +106,7 @@ export const AddressCompoundField = ({
           })
           setValue(`${schema._id}.addressSubFields.blockNumber`, '') // reset values if verification failure
           setValue(`${schema._id}.addressSubFields.streetName`, '')
-          await trigger(['postalCode']) // show postalCode error upon verification failure
+          await trigger([`${schema._id}.addressSubFields.postalCode`]) // show postalCode error upon verification failure
         }
       }
     }
@@ -137,7 +140,6 @@ export const AddressCompoundField = ({
         <Controller
           name={`${schema._id}.addressSubFields.postalCode`}
           control={formContext.control}
-          // defaultValue="" // error but still works?
           defaultValue=""
           rules={postalCodeValidationRules}
           render={({ field }) => {

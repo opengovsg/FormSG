@@ -263,6 +263,7 @@ const sendMrfOutcomeEmails = ({
           responses,
         })
 
+
         if (isApproval) {
           return MailService.sendMrfApprovalEmail({
             emails: destinationEmails,

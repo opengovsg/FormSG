@@ -121,18 +121,6 @@ ValidationRequired.args = {
 export const ValidationNotRequired = Template.bind({})
 ValidationNotRequired.args = {
   schema: { ...baseSchema, required: false },
-  // defaultValue: {
-  //   [baseSchema._id]: {
-  //     addressSubFields: {
-  //       postalCode: '',
-  //       blockNumber: '',
-  //       streetName: '',
-  //       buildingName: '',
-  //       levelNumber: '',
-  //       unitNumber: '',
-  //     },
-  //   },
-  // },
 }
 
 export const InvalidPostalCode = Template.bind({})

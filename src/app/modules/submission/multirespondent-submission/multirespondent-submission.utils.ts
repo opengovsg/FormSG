@@ -3,6 +3,7 @@ import { err, ok, Result } from 'neverthrow'
 
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from '../../../../../shared/constants/form'
 import {
+  AddressAttributes,
   BasicField,
   FieldResponsesV3,
   FormFieldDto,
@@ -220,17 +221,17 @@ export const getQuestionTitleAnswerString = ({
         })
         continue
       case BasicField.Address:
-        answer = response.answer.addressSubFields.postalCode // TODO
-        questionAnswerPair.push({
-          question: `Postal Code - ${questionTitle}`,
-          answer,
-        })
-        answer = response.answer.addressSubFields.blockNumber
-        questionAnswerPair.push({
-          question: `Block Number - ${questionTitle}`,
-          answer,
-        })
-        break
+        for (const key in response.answer.addressSubFields) {
+          answer =
+            response.answer.addressSubFields[key as keyof AddressAttributes]
+          if (answer !== '') {
+            questionAnswerPair.push({
+              question: `${key} - ${questionTitle}`,
+              answer,
+            })
+          }
+        }
+        continue
       case BasicField.Email:
       case BasicField.Mobile:
         answer = response.answer.value

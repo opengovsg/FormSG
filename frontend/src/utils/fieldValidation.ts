@@ -224,7 +224,7 @@ export const createPostalCodeValidationRules: ValidationRuleFn<
         disableRequiredValidation,
       ),
       validPostalCode: (value: string) => {
-        if (!schema.required && value == '') return true // if optional and empty, skip postal code validity //TODO fix
+        if (value === '') return
         return validatePostalCode(value)
       },
     },
@@ -241,7 +241,7 @@ export const createBlockNumberValidationRules: ValidationRuleFn<
         disableRequiredValidation,
       ),
       validBlock: (value: string) => {
-        // Otherwise, run the standard validation logic
+        if (value === '') return
         return validateBlockUnit(value)
       },
     },
@@ -267,6 +267,7 @@ export const createUnitLevelNumberValidationRules: ValidationRuleFn<
   return {
     validate: {
       validUnitLevel: (value: string) => {
+        if (value === '') return
         return validateBlockUnit(value)
       },
     },

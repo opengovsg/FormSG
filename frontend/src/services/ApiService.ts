@@ -109,7 +109,6 @@ export const processFetchResponse = async (response: Response) => {
       throw new Error(`Non-2XX response: ${response.status}`)
     } else {
       const data = await response.json()
-      // console.log(data)
       return data
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -231,13 +231,10 @@ const transformToAddressOutput = (
   schema: AddressCompoundFieldSchema,
   input?: AddressCompoundFieldValues | AddressCompoundFieldResponseV3,
 ): AddressResponse => {
-  // console.log(input?.addressSubFields)
-  // const answerArray: AddressSubField[] = []
   const answerArray: string[][] = []
   if (input !== undefined) {
     Object.entries(input.addressSubFields).map(([key, value]) => {
-      // answerArray.push({ key: key, value: value })
-      answerArray.push([`${key}:${value}`])
+      answerArray.push([`${key}_${value}`])
     })
   }
   return {

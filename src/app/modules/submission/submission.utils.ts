@@ -792,19 +792,19 @@ export const getAnswersForChild = (
 export const getAnswersForAddress = (
   response: ProcessedAddressResponse,
 ): ProcessedSingleAnswerResponse[] => {
-  const subFields = response.answerArray
-  if (!subFields) {
+  const fields = response.answerArray
+  if (!fields) {
     return []
   }
   const subFieldResponses: ProcessedSingleAnswerResponse[] = []
-
-  Object.entries(subFields).forEach((subField) => {
-    const key = subField[1][0].split(':')[0]
-    const value = subField[1][0].split(':')[1]
+  Object.entries(fields).forEach((subField, index) => {
+    const key = subField[1][0].split('_')[0]
+    const value = subField[1][0].split('_')[1]
+    const subFieldId = `${response._id}${index}` //add incremental index to give each subfield a uniqueID
     subFieldResponses.push({
-      _id: response._id,
+      _id: subFieldId,
       fieldType: response.fieldType,
-      question: response.question + 1 + key,
+      question: response.question + ' - ' + key,
       myInfo: response.myInfo,
       isVisible: response.isVisible,
       isUserVerified: response.isUserVerified,

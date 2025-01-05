@@ -432,6 +432,7 @@ export const validateStorageSubmission = async (
       const storageFormDataAddress = formatAddressStorageResponseData(
         parsedResponses.getAllResponses(),
       )
+
       req.body.responses = storageFormDataAddress
       return next()
     })
