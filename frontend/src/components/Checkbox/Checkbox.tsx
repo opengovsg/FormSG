@@ -113,7 +113,7 @@ const OthersCheckbox = forwardRef<CheckboxProps, 'input'>((props, ref) => {
       {...props}
       onChange={handleCheckboxChange}
     >
-      {t('features.adminForm.sidebar.fields.radio.others')}
+      {t('features.publicForm.components.fields.option.others')}
     </Checkbox>
   )
 })

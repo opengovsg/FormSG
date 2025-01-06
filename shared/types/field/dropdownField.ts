@@ -1,3 +1,4 @@
+import { TranslationOptionMapping } from '../form'
 import { BasicField, MyInfoableFieldBase } from './base'
 
 export interface DropdownFieldBase extends MyInfoableFieldBase {
@@ -8,4 +9,5 @@ export interface DropdownFieldBase extends MyInfoableFieldBase {
   // (since step might not be created yet at the point of map assignment, leading to UX issues)
   // 2. Prevent orphaned mappings if field is deleted
   optionsToRecipientsMap?: Record<string, string[]>
+  fieldOptionsTranslations?: TranslationOptionMapping[]
 }

@@ -1,6 +1,10 @@
 import { useFormState } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { FormControl } from '@chakra-ui/react'
 
+import { Language } from '~shared/types'
+
+import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import FormLabel from '~components/FormControl/FormLabel'
 
 import { TableFieldSchema } from '../types'
@@ -21,7 +25,22 @@ export const TableFieldContainer = ({
   schema,
   children,
 }: TableFieldContainerProps): JSX.Element => {
+  const { i18n } = useTranslation()
   const { isSubmitting, isValid, errors } = useFormState({ name: schema._id })
+
+  const selectedLanguage = i18n.language as Language
+
+  const title = getValueInSelectedLanguage({
+    defaultValue: schema.title,
+    translations: schema.titleTranslations,
+    selectedLanguage: selectedLanguage,
+  })
+
+  const description = getValueInSelectedLanguage({
+    defaultValue: schema.description,
+    translations: schema.descriptionTranslations,
+    selectedLanguage: selectedLanguage,
+  })
 
   return (
     <FormControl
@@ -35,9 +54,9 @@ export const TableFieldContainer = ({
         questionNumber={
           schema.questionNumber ? `${schema.questionNumber}.` : undefined
         }
-        description={schema.description}
+        description={description}
       >
-        {schema.title}
+        {title}
       </FormLabel>
       {children}
     </FormControl>

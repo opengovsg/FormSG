@@ -34,6 +34,7 @@ import {
   FormWebhookSettings,
   FormWorkflowDto,
   FormWorkflowStepDto,
+  Language,
   LogicConditionState,
   LogicDto,
   LogicIfValue,
@@ -2492,6 +2493,23 @@ const joiLogicBody = {
     is: LogicType.PreventSubmit,
     then: Joi.string().required(),
   }),
+  preventSubmitMessageTranslations: Joi.alternatives().conditional(
+    'logicType',
+    {
+      is: LogicType.PreventSubmit,
+      then: Joi.array()
+        .items(
+          Joi.object({
+            language: Joi.string()
+              .valid(...Object.values(Language))
+              .required(),
+            translation: Joi.string().required(),
+          }),
+        )
+        .optional()
+        .default([]),
+    },
+  ),
 }
 
 /**
@@ -2853,6 +2871,28 @@ export const handleUpdateEndPage = [
         .message('Please enter a valid HTTP or HTTPS URI'),
       buttonText: Joi.string().allow(''),
       // TODO(#1895): Remove when deprecated `buttons` key is removed from all forms in the database
+      titleTranslations: Joi.array()
+        .items(
+          Joi.object({
+            language: Joi.string()
+              .valid(...Object.values(Language))
+              .required(),
+            translation: Joi.string().required(),
+          }),
+        )
+        .optional()
+        .default([]),
+      paragraphTranslations: Joi.array()
+        .items(
+          Joi.object({
+            language: Joi.string()
+              .valid(...Object.values(Language))
+              .required(),
+            translation: Joi.string().required(),
+          }),
+        )
+        .optional()
+        .default([]),
     }).unknown(true),
   }),
   _handleUpdateEndPage,
@@ -3139,6 +3179,17 @@ export const handleUpdateStartPage = [
           otherwise: Joi.any().forbidden(),
         }),
       }).required(),
+      paragraphTranslations: Joi.array()
+        .items(
+          Joi.object({
+            language: Joi.string()
+              .valid(...Object.values(Language))
+              .required(),
+            translation: Joi.string().required(),
+          }),
+        )
+        .optional()
+        .default([]),
     },
   }),
   _handleUpdateStartPage,

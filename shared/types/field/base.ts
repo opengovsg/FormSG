@@ -1,3 +1,5 @@
+import { Language } from '../form'
+
 export enum BasicField {
   Section = 'section',
   Statement = 'statement',
@@ -113,6 +115,11 @@ export type VerifiableFieldBase = {
   isVerifiable: boolean
 }
 
+export type TranslationMapping = {
+  language: Language
+  translation: string
+}
+
 export type FieldBase = {
   globalId?: string
   title: string
@@ -120,6 +127,8 @@ export type FieldBase = {
   required: boolean
   disabled: boolean
   fieldType: BasicField
+  titleTranslations?: TranslationMapping[]
+  descriptionTranslations?: TranslationMapping[]
 }
 
 export type MyInfoableFieldBase = FieldBase & AllowMyInfoBase
