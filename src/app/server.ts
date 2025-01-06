@@ -24,3 +24,4 @@ const initServer = async () => {
 }
 
 void initServer()
+console.log('testing')
