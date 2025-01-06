@@ -44,6 +44,8 @@ jobs:
           node-version: 18
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
+      - name: Install openssh
+        run: sudo apt-get install -y openssl
       - name: Cache Node modules
         uses: actions/cache@v2
         with:
