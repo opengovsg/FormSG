@@ -118,7 +118,9 @@ export const FormWhitelistAttachmentField = ({
             if (isSubmitterIdEmpty) {
               return acc
             }
-            return acc + trimmedSubmitterId + ','
+            const isFirst = acc === ''
+            const delimiter = isFirst ? '' : ','
+            return acc + delimiter + trimmedSubmitterId
           }, '')
           return whitelistedSubmitterIdsString
         })
