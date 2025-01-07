@@ -119,7 +119,7 @@ const StepOneModalContent = ({
           <Stack spacing="1rem" alignItems="center">
             <Image w="466px" src={CSV_TEMPLATE_EXAMPLE_GIF} />
             <Text color="secondary.400" textStyle="caption-2">
-              Example of usage
+              How to set up your CSV
             </Text>
           </Stack>
         </Stack>
