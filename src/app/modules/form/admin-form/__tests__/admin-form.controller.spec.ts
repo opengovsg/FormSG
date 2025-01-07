@@ -4866,7 +4866,7 @@ describe('admin-form.controller', () => {
         cloneDeep(MOCK_BASE_REQ),
         {
           body: {
-            whitelistCsvString: `${MOCK_LOWERCASE_NRIC}\r\n${MOCK_VALID_FIN}\r\n${MOCK_VALID_UEN}`,
+            whitelistCsvString: `${MOCK_LOWERCASE_NRIC},${MOCK_VALID_FIN},${MOCK_VALID_UEN}`,
           },
         },
       )
@@ -4903,7 +4903,7 @@ describe('admin-form.controller', () => {
         cloneDeep(MOCK_BASE_REQ),
         {
           body: {
-            whitelistCsvString: `${MOCK_VALID_FIN}\r\n${MOCK_LOWERCASE_NRIC}\r\n${MOCK_LOWERCASE_UEN}`,
+            whitelistCsvString: `${MOCK_VALID_FIN},${MOCK_LOWERCASE_NRIC},${MOCK_LOWERCASE_UEN}`,
           },
         },
       )
@@ -4946,7 +4946,7 @@ describe('admin-form.controller', () => {
         cloneDeep(MOCK_BASE_REQ),
         {
           body: {
-            whitelistCsvString: `${MOCK_VALID_NRIC}\r\n${MOCK_VALID_FIN}\r\n${MOCK_VALID_UEN}`,
+            whitelistCsvString: `${MOCK_VALID_NRIC},${MOCK_VALID_FIN},${MOCK_VALID_UEN}`,
           },
         },
       )
