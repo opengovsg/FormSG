@@ -25,7 +25,7 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import { ModalCloseButton } from '~components/Modal'
 import { ProgressIndicator } from '~components/ProgressIndicator/ProgressIndicator'
 
-import CSV_TEMPLATE_EXAMPLE_IMAGE from './conditional-routing-example.png'
+import CSV_TEMPLATE_EXAMPLE_GIF from './conditional-routing-example.gif'
 import { ConditionalRoutingConfig } from './ConditionalRoutingOption'
 import { FieldItem } from './types'
 
@@ -117,9 +117,9 @@ const StepOneModalContent = ({
             </Stack>
           </Box>
           <Stack spacing="1rem" alignItems="center">
-            <Image w="466px" src={CSV_TEMPLATE_EXAMPLE_IMAGE} />
+            <Image w="466px" src={CSV_TEMPLATE_EXAMPLE_GIF} />
             <Text color="secondary.400" textStyle="caption-2">
-              Your CSV template should look like this
+              Example of usage
             </Text>
           </Stack>
         </Stack>
