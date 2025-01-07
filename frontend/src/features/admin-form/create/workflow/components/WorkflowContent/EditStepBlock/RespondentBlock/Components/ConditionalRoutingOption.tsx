@@ -52,7 +52,7 @@ export interface ConditionalRoutingConfig {
  * Converts a CSV file into a string, validating that it has the required csv template file headers.
  * @param csvFile - The CSV file to parse
  * @returns A promise that resolves to the CSV content as a string
- * @throws Error if CSV headers are invalid (must have 'Options' and 'Add emails in this column' columns)
+ * @throws Error if CSV headers are invalid (must have 'Options' and 'Emails' columns)
  */
 const parseCsvTemplateToString = async (csvFile: File) =>
   parseCsvFileToCsvString(csvFile, (headerRow) => {
@@ -61,9 +61,9 @@ const parseCsvTemplateToString = async (csvFile: File) =>
         headerRow &&
         headerRow.length === 2 &&
         headerRow[0] === 'Options' &&
-        headerRow[1] === 'Add emails in this column',
+        headerRow[1] === 'Emails',
       invalidReason:
-        'Your CSV file should only contain 2 columns with the headers "Options" and "Add emails in this column".',
+        'Your CSV file should only contain 2 columns with the headers "Options" and "Emails".',
     }
   })
 
@@ -151,7 +151,7 @@ export const ConditionalRoutingOption = ({
   const handleCsvDownload = () => {
     if (!selectedConditionalFieldOptionsToRecipientsMap) return
     const csvData = {
-      fields: ['Options', 'Add emails in this column'],
+      fields: ['Options', 'Emails'],
       data: Object.entries(selectedConditionalFieldOptionsToRecipientsMap).map(
         ([option, recipients]) => [option, recipients.join(',')],
       ),
@@ -181,7 +181,7 @@ export const ConditionalRoutingOption = ({
         return conditionalField?.fieldOptions
       }
       const generateCsvContent = (fieldOptions: string[] | undefined) => {
-        const headerRow = ['Options', 'Add emails in this column']
+        const headerRow = ['Options', 'Emails']
         const optionsRows = fieldOptions?.map((field) => [field, '']) ?? []
         const jsonContent = [headerRow, ...optionsRows]
         return Papa.unparse(jsonContent, {
