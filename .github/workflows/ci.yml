@@ -184,7 +184,7 @@ jobs:
   backend_lint:
     needs: [changes, install]
     if: ${{ needs.changes.outputs.backend == 'true' }}
-    runs-on: ubuntu-22.04 # TODO ubuntu-latest (24.x) no longer comes with libssl1.1 which is required by mongodb-memory-server to run ci
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -195,6 +195,10 @@ jobs:
           node-version: 18
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
+      - name: Download libsso1.1 # ubuntu-latest (24.x) no longer comes with libssl1.1 which is required by mongodb-memory-server to run ci
+        run: wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb
+      - name: Install libsso1.1
+        run: sudo dpkg -i libssl1.1_1.1.0g-2ubuntu4_amd64.deb
       # Load cached node_modules
       - name: Cache Node modules
         uses: actions/cache@v2
