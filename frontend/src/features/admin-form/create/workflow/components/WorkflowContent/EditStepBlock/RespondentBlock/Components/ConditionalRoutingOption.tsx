@@ -22,7 +22,7 @@ import {
 import { DropdownFieldBase, FormFieldDto, WorkflowType } from '~shared/types'
 import { checkIsOptionsMismatched } from '~shared/utils/options-recipients-map-validation'
 
-import { parseCsvFile } from '~utils/parseCsvFileToCsvString'
+import { parseCsvFile } from '~utils/parseCsvFile'
 import { SingleSelect } from '~components/Dropdown'
 import Attachment from '~components/Field/Attachment'
 import { downloadFile } from '~components/Field/Attachment/utils/downloadFile'

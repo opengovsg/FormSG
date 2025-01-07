@@ -12,7 +12,7 @@ import { MB } from '~shared/constants'
 import { AttachmentSize, BasicField, StorageFormSettings } from '~shared/types'
 import { VALID_WHITELIST_FILE_EXTENSIONS } from '~shared/utils/file-validation'
 
-import { parseCsvFile } from '~utils/parseCsvFileToCsvString'
+import { parseCsvFile } from '~utils/parseCsvFile'
 import Attachment from '~components/Field/Attachment'
 import { AttachmentFieldSchema } from '~templates/Field'
 import { FieldContainer } from '~templates/Field/FieldContainer'
