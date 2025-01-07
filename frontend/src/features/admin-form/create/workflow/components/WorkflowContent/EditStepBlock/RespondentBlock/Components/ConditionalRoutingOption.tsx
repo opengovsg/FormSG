@@ -22,7 +22,7 @@ import {
 import { DropdownFieldBase, FormFieldDto, WorkflowType } from '~shared/types'
 import { checkIsOptionsMismatched } from '~shared/utils/options-recipients-map-validation'
 
-import { parseCsvFileToCsvString } from '~utils/parseCsvFileToCsvString'
+import { parseCsvFile } from '~utils/parseCsvFileToCsvString'
 import { SingleSelect } from '~components/Dropdown'
 import Attachment from '~components/Field/Attachment'
 import { downloadFile } from '~components/Field/Attachment/utils/downloadFile'
@@ -49,13 +49,13 @@ export interface ConditionalRoutingConfig {
 }
 
 /**
- * Converts a CSV file into a string, validating that it has the required csv template file headers.
+ * Parses the conditional routing CSV file, validating that it has the required csv template file headers.
  * @param csvFile - The CSV file to parse
  * @returns A promise that resolves to the CSV content as a string
  * @throws Error if CSV headers are invalid (must have 'Options' and 'Emails' columns)
  */
-const parseCsvTemplateToString = async (csvFile: File) =>
-  parseCsvFileToCsvString(csvFile, (headerRow) => {
+const parseConditionalRoutingTemplateCsv = async (csvFile: File) =>
+  parseCsvFile(csvFile, (headerRow) => {
     return {
       isValid:
         headerRow &&
@@ -220,20 +220,19 @@ export const ConditionalRoutingOption = ({
         return
       }
 
-      const conditionalRoutingCsvString = await parseCsvTemplateToString(
-        data.csvFile,
-      ).catch(() => {
-        return null
-      })
+      const conditionalRoutingCsvRows =
+        await parseConditionalRoutingTemplateCsv(data.csvFile).catch(() => {
+          return null
+        })
 
-      if (!conditionalRoutingCsvString) return
-      const csvToOptionsToRecipientsMap = (csvString: string) => {
-        const csvRows = csvString.split('\r\n')
+      if (!conditionalRoutingCsvRows) return
+      const csvToOptionsToRecipientsMap = (csvRows: string[][]) => {
         return csvRows.reduce((acc, row) => {
-          const [option, ...recipients] = row.split(',')
+          const [option, recipients] = row
+          const recipientsArray = recipients.split(',')
           return {
             ...acc,
-            [option]: recipients.map((email) => email.trim()),
+            [option]: recipientsArray.map((email) => email.trim()),
           }
         }, {})
       }
@@ -242,7 +241,7 @@ export const ConditionalRoutingOption = ({
         {
           fieldId: conditionalFieldId,
           optionsToRecipientsMap: csvToOptionsToRecipientsMap(
-            conditionalRoutingCsvString,
+            conditionalRoutingCsvRows,
           ),
         },
         {
@@ -304,9 +303,9 @@ export const ConditionalRoutingOption = ({
   ): Promise<string | undefined> => {
     if (!file) return 'Please upload a CSV file'
 
-    let conditionalRoutingCsvString
+    let conditionalRoutingCsvRows
     try {
-      conditionalRoutingCsvString = await parseCsvTemplateToString(file)
+      conditionalRoutingCsvRows = await parseConditionalRoutingTemplateCsv(file)
     } catch (error) {
       if (error instanceof Error) {
         return error.message
@@ -314,15 +313,15 @@ export const ConditionalRoutingOption = ({
       return CONDITIONAL_ROUTING_CSV_PARSE_ERROR_MESSAGE
     }
 
-    const options = conditionalRoutingCsvString.split('\r\n')
     const optionsSet = new Set<string>()
 
-    for (const row of options) {
-      const [option, ...recipients] = row.split(',')
-      if (recipients.length <= 0 || !recipients[0] || !option) {
+    for (const csvRow of conditionalRoutingCsvRows) {
+      const [option, recipients] = csvRow
+      const recipientsArray = recipients.split(',')
+      if (recipientsArray.length <= 0 || !recipientsArray[0] || !option) {
         return CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE
       }
-      if (recipients.some((recipient) => !isEmail(recipient.trim()))) {
+      if (recipientsArray.some((recipient) => !isEmail(recipient.trim()))) {
         return CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE
       }
       optionsSet.add(option)
@@ -331,7 +330,7 @@ export const ConditionalRoutingOption = ({
     const selectedConditionalFieldOptions =
       selectedConditionalField?.fieldOptions
 
-    if (optionsSet.size < options.length) {
+    if (optionsSet.size < conditionalRoutingCsvRows.length) {
       return CONDITIONAL_ROUTING_DUPLICATE_OPTIONS_ERROR_MESSAGE
     }
 

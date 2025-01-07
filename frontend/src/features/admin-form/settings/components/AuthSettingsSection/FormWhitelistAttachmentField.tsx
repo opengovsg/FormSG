@@ -12,7 +12,7 @@ import { MB } from '~shared/constants'
 import { AttachmentSize, BasicField, StorageFormSettings } from '~shared/types'
 import { VALID_WHITELIST_FILE_EXTENSIONS } from '~shared/utils/file-validation'
 
-import { parseCsvFileToCsvString } from '~utils/parseCsvFileToCsvString'
+import { parseCsvFile } from '~utils/parseCsvFileToCsvString'
 import Attachment from '~components/Field/Attachment'
 import { AttachmentFieldSchema } from '~templates/Field'
 import { FieldContainer } from '~templates/Field/FieldContainer'
@@ -101,7 +101,7 @@ export const FormWhitelistAttachmentField = ({
           return
         }
 
-        const csvString = parseCsvFileToCsvString(file, (headerRow) => {
+        const csvString = parseCsvFile(file, (headerRow) => {
           return {
             isValid:
               headerRow &&
@@ -111,6 +111,16 @@ export const FormWhitelistAttachmentField = ({
             invalidReason:
               'Your CSV file should only contain a single column with the header "Respondent".',
           }
+        }).then((csvRows) => {
+          const whitelistedSubmitterIdsString = csvRows.reduce((acc, row) => {
+            const trimmedSubmitterId = row[0].trim()
+            const isSubmitterIdEmpty = !trimmedSubmitterId
+            if (isSubmitterIdEmpty) {
+              return acc
+            }
+            return acc + trimmedSubmitterId + ','
+          }, '')
+          return whitelistedSubmitterIdsString
         })
 
         mutateFormWhitelistSetting.mutate(csvString, {
