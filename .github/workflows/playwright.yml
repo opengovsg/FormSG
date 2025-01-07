@@ -26,6 +26,10 @@ jobs:
           languages: js
           service-name: ${{ secrets.DD_SERVICE }}
           api-key: ${{ secrets.DD_API_KEY }}
+      # - name: Download libsso1.1 # ubuntu-latest (24.x) no longer comes with libssl1.1 which is required by mongodb-memory-server to run ci
+      #   run: wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb
+      # - name: Install libsso1.1
+      #   run: sudo dpkg -i libssl1.1_1.1.0g-2ubuntu4_amd64.deb
       - name: Build
         env:
           NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}
