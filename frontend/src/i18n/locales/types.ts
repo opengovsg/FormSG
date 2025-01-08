@@ -1,4 +1,4 @@
-import { DeepRequired } from 'ts-essentials'
+import { RequiredDeep } from 'type-fest'
 
 import {
   Common,
@@ -40,7 +40,7 @@ interface Translation {
 
 export interface FallbackTranslation extends Translation {
   translation: {
-    features: DeepRequired<Translation['translation']['features']>
+    features: RequiredDeep<Translation['translation']['features']>
   }
 }
 

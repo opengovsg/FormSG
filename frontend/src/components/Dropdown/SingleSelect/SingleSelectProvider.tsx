@@ -51,7 +51,6 @@ export const SingleSelectProvider = ({
   onChange,
   name,
   filter = defaultFilter,
-  nothingFoundLabel = 'No matching results',
   placeholder: placeholderProp,
   clearButtonLabel = 'Clear selection',
   isClearable = true,
@@ -83,8 +82,15 @@ export const SingleSelectProvider = ({
 
   const placeholder = useMemo(() => {
     if (placeholderProp === null) return ''
-    return placeholderProp ?? t('features.common.dropdown.placeholder')
+    return (
+      placeholderProp ??
+      t('features.publicForm.components.fields.dropdown.placeholder')
+    )
   }, [placeholderProp, t])
+
+  const nothingFoundLabel = t(
+    'features.publicForm.components.fields.dropdown.nothingFound',
+  )
 
   const getFilteredItems = useCallback(
     (filterValue?: string) =>

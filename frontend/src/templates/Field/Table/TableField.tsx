@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { useFieldArray, useFormContext, useFormState } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { BiTrash } from 'react-icons/bi'
 import { useTable } from 'react-table'
 import {
@@ -15,10 +16,11 @@ import {
 import { get, head, uniq } from 'lodash'
 import simplur from 'simplur'
 
-import { FormColorTheme } from '~shared/types'
+import { FormColorTheme, Language } from '~shared/types'
 
 import { useHasChanged } from '~hooks/useHasChanged'
 import { useIsMobile } from '~hooks/useIsMobile'
+import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import IconButton from '~components/IconButton'
 
@@ -46,18 +48,29 @@ export const TableField = ({
   disableRequiredValidation,
   colorTheme = FormColorTheme.Blue,
 }: TableFieldProps): JSX.Element => {
+  const { i18n } = useTranslation()
   const hasMinRowsChanged = useHasChanged(schema.minimumRows)
   const isMobile = useIsMobile()
 
+  const selectedLanguage = i18n.language as Language
+
   const columnsData = useMemo(() => {
-    return schema.columns.map((c) => ({
-      Header: (
-        <ColumnHeader title={c.title} isRequired={c.required} id={c._id} />
-      ),
-      accessor: c._id,
-      Cell: ColumnCell,
-    }))
-  }, [schema.columns])
+    return schema.columns.map((c) => {
+      const title = getValueInSelectedLanguage({
+        defaultValue: c.title,
+        translations: c.titleTranslations ?? [],
+        selectedLanguage,
+      })
+
+      return {
+        Header: (
+          <ColumnHeader title={title} isRequired={c.required} id={c._id} />
+        ),
+        accessor: c._id,
+        Cell: ColumnCell,
+      }
+    })
+  }, [schema.columns, selectedLanguage])
 
   const formMethods = useFormContext<TableFieldInputs>()
   const { errors } = useFormState({
@@ -222,6 +235,7 @@ export const TableField = ({
                         disableRequiredValidation,
                         columnSchema: schema.columns[j],
                         colorTheme,
+                        selectedLanguage,
                       })}
                     </Td>
                   ))}

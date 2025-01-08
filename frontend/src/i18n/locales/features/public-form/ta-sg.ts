@@ -1,0 +1,20 @@
+import { taSG as fields } from './fields'
+import { taSG as table } from './table'
+
+export const taSG = {
+  components: {
+    header: {
+      estTime:
+        'இந்த படிவத்தை முடிக்க கணக்கிடப்பட்ட நேரம் {estTime} நிமிடங்கள் ஆகும்',
+    },
+    fields,
+    table,
+    instructions: {
+      title: 'வழிமுறைகள்',
+    },
+    submitButton: {
+      preventSubmission: 'சமர்பித்தல் முடக்கப்பட்டது',
+      submitNow: 'இப்போது சமர்ப்பிக்கவும்',
+    },
+  },
+}

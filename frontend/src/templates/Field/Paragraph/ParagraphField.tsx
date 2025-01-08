@@ -1,4 +1,9 @@
+import { useTranslation } from 'react-i18next'
+
+import { Language } from '~shared/types'
+
 import { useMdComponents } from '~hooks/useMdComponents'
+import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import { MarkdownText } from '~components/MarkdownText'
 
 import { BaseFieldProps } from '../FieldContainer'
@@ -15,6 +20,7 @@ export interface ParagraphFieldProps extends BaseFieldProps {
 export const ParagraphField = ({
   schema,
 }: ParagraphFieldProps): JSX.Element => {
+  const { i18n } = useTranslation()
   const mdComponents = useMdComponents({
     styles: {
       text: {
@@ -24,9 +30,15 @@ export const ParagraphField = ({
     },
   })
 
+  const description = getValueInSelectedLanguage({
+    defaultValue: schema.description,
+    translations: schema.descriptionTranslations ?? [],
+    selectedLanguage: i18n.language as Language,
+  })
+
   return (
     <MarkdownText multilineBreaks components={mdComponents}>
-      {schema.description}
+      {description}
     </MarkdownText>
   )
 }

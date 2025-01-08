@@ -5,11 +5,13 @@
  * provides.
  */
 import { FieldError, useFormState } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Box, FormControl, Grid } from '@chakra-ui/react'
 import { get } from 'lodash'
 
-import { FormColorTheme } from '~shared/types/form'
+import { FormColorTheme, Language } from '~shared/types/form'
 
+import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import Badge from '~components/Badge'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -19,7 +21,14 @@ import { FormFieldWithQuestionNo } from '~features/form/types'
 export type BaseFieldProps = {
   schema: Pick<
     FormFieldWithQuestionNo,
-    '_id' | 'required' | 'description' | 'title' | 'disabled' | 'questionNumber'
+    | '_id'
+    | 'required'
+    | 'description'
+    | 'title'
+    | 'disabled'
+    | 'questionNumber'
+    | 'titleTranslations'
+    | 'descriptionTranslations'
   >
   /**
    * Color theme of form, if available. Defaults to `FormColorTheme.Blue`
@@ -58,9 +67,22 @@ export const FieldContainer = ({
   showMyInfoBadge,
   errorVariant,
 }: FieldContainerProps): JSX.Element => {
+  const { i18n } = useTranslation()
   const { errors, isSubmitting, isValid } = useFormState({ name: schema._id })
 
   const error: FieldError | undefined = get(errors, errorKey ?? schema._id)
+  const selectedLanguage = i18n.language as Language
+
+  const title = getValueInSelectedLanguage({
+    defaultValue: schema.title,
+    translations: schema.titleTranslations,
+    selectedLanguage,
+  })
+  const description = getValueInSelectedLanguage({
+    defaultValue: schema.description,
+    translations: schema.descriptionTranslations,
+    selectedLanguage,
+  })
 
   return (
     <FormControl
@@ -80,9 +102,9 @@ export const FieldContainer = ({
           questionNumber={
             schema.questionNumber ? `${schema.questionNumber}.` : undefined
           }
-          description={schema.description}
+          description={description}
         >
-          {schema.title}
+          {title}
         </FormLabel>
         {showMyInfoBadge && (
           <Box gridArea="myinfobadge">

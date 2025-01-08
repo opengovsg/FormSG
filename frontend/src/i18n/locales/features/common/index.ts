@@ -58,9 +58,6 @@ export interface Common {
     duplicateField: string
     editField: string
   }
-  dropdown: {
-    placeholder: string
-  }
   days: {
     Mondays: string
     Tuesdays: string

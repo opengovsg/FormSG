@@ -171,11 +171,13 @@ interface StoryRouterProps {
  */
 export const StoryRouter =
   ({ path, initialEntries }: StoryRouterProps): Decorator =>
-  (storyFn) => {
+  (storyFn, { parameters }) => {
     return (
-      <MemoryRouter initialEntries={initialEntries}>
+      <MemoryRouter
+        initialEntries={parameters?.router?.initialEntries ?? initialEntries}
+      >
         <Routes>
-          <Route path={path} element={storyFn()} />
+          <Route path={parameters?.router?.path ?? path} element={storyFn()} />
         </Routes>
       </MemoryRouter>
     )

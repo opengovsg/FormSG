@@ -1,6 +1,7 @@
 import { Schema } from 'mongoose'
 
 import {
+  Language,
   LogicConditionState,
   LogicIfValue,
   LogicType,
@@ -66,6 +67,21 @@ export const ShowFieldsLogicSchema = new Schema<IShowFieldsLogicSchema>({
 
 export const PreventSubmitLogicSchema = new Schema<IPreventSubmitLogicSchema>({
   preventSubmitMessage: String,
+  preventSubmitMessageTranslations: {
+    type: [
+      {
+        language: {
+          type: String,
+          enum: Object.values(Language),
+        },
+        translation: {
+          type: String,
+        },
+      },
+    ],
+    default: [],
+    _id: false,
+  },
 })
 
 export default LogicSchema

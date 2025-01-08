@@ -88,7 +88,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           {...noProps}
           onChange={(value) => onChange(value as YesNoOptionValue)}
           leftIcon={BiX}
-          label={t('features.adminForm.sidebar.fields.yesNo.no')}
+          label={t('features.publicForm.components.fields.yesNo.no')}
           // Ref is set here for tracking current value, and also so any errors
           // can focus this input.
           ref={ref}
@@ -100,7 +100,7 @@ export const YesNo = forwardRef<YesNoProps, 'input'>(
           {...yesProps}
           onChange={(value) => onChange(value as YesNoOptionValue)}
           leftIcon={BiCheck}
-          label={t('features.adminForm.sidebar.fields.yesNo.yes')}
+          label={t('features.publicForm.components.fields.yesNo.yes')}
           title={props.title}
         />
       </HStack>

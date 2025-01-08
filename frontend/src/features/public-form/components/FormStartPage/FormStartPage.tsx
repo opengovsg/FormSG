@@ -28,7 +28,9 @@ export const FormStartPage = ({
     [submissionData],
   )
 
-  const formHeaderProps = useFormHeader({ startPage: form?.startPage })
+  const formHeaderProps = useFormHeader({
+    startPage: form?.startPage,
+  })
 
   return (
     <FormHeader

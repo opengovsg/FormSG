@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiCheck } from 'react-icons/bi'
 import { Box, Stack } from '@chakra-ui/react'
 
@@ -29,6 +30,7 @@ export const VerifiableFieldContainer = ({
   colorTheme = FormColorTheme.Blue,
   children,
 }: VerifiableFieldContainerProps): JSX.Element => {
+  const { t } = useTranslation()
   const {
     isVfnBoxOpen,
     otpPrefix,
@@ -71,8 +73,13 @@ export const VerifiableFieldContainer = ({
                 hasSignature ? <BiCheck fontSize="1.5rem" /> : undefined
               }
               aria-label={verifyButtonAriaLabel}
+              // This is to ensure that Chinese characters are not wrapped
+              // with new lines within the button.
+              whiteSpace="nowrap"
             >
-              {hasSignature ? 'Verified' : 'Verify'}
+              {t(
+                `features.publicForm.components.fields.verification.button.label.${hasSignature ? 'verified' : 'verify'}`,
+              )}
             </Button>
           </Box>
         </Stack>
