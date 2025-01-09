@@ -155,6 +155,10 @@ export const AddressCompoundField = ({
                     {...field}
                     aria-label={`${schema.questionNumber}. Postal Code`}
                     placeholder="e.g. 650161"
+                    onInput={(e: React.FormEvent<HTMLInputElement>) => {
+                      const value = e.currentTarget.value
+                      e.currentTarget.value = value.replace(/\D/g, '') // Allow only digits
+                    }}
                   />
                   <Button
                     onClick={handleVerifyAddress}
@@ -220,6 +224,10 @@ export const AddressCompoundField = ({
                 {...field}
                 aria-label={`${schema.questionNumber}. Street name`}
                 placeholder="e.g. Bukit Batok Street 11"
+                onInput={(e: React.FormEvent<HTMLInputElement>) => {
+                  const value = e.currentTarget.value
+                  e.currentTarget.value = value.replace(/,/g, '') // Prevent commas
+                }}
               />
               <FormErrorMessage>
                 {addressSubFieldErrors?.streetName?.message}
@@ -246,6 +254,10 @@ export const AddressCompoundField = ({
               <Input
                 {...field}
                 aria-label={`${schema.questionNumber}. Building name`}
+                onInput={(e: React.FormEvent<HTMLInputElement>) => {
+                  const value = e.currentTarget.value
+                  e.currentTarget.value = value.replace(/,/g, '') // Prevent commas
+                }}
               />
             </Box>
           )}

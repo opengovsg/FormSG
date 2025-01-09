@@ -796,6 +796,11 @@ export const getAnswersForAddress = (
   if (!fields) {
     return []
   }
+
+  // move postalCode to the back of array to be displayed similarly in csv
+  const firstElement = fields.shift()
+  if (firstElement !== undefined) fields.push(firstElement)
+
   const subFieldResponses: ProcessedSingleAnswerResponse[] = []
   Object.entries(fields).forEach((subField, index) => {
     const key = subField[1][0].split('_')[0]

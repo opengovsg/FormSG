@@ -272,6 +272,18 @@ export const BASICFIELD_TO_DRAWER_META: {
     label: 'Local address',
     icon: SlLocationPin,
     isSubmitted: true,
+    searchAliases: [
+      'address',
+      'location',
+      'place',
+      'destination',
+      'directions',
+      'postal code',
+      'street',
+      'building',
+      'road',
+      'venue',
+    ],
   },
 }
 

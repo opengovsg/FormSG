@@ -442,6 +442,10 @@ const isValidationRequiredV3 = ({
           response.answer.child.length > 0 ||
           response.answer.childFields.length > 0,
       )
+    case BasicField.Address: {
+      const answerObjectDefined = !!response.answer
+      return ok((formField.required && isVisible) || answerObjectDefined)
+    }
   }
   logInvalidAnswer(formId, formField, 'Invalid response shape')
   return err(new ValidateFieldErrorV3('Response has invalid shape'))
