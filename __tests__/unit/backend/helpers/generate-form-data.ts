@@ -287,7 +287,7 @@ export const generateNewSingleAnswerResponse = (
     ].includes(fieldType)
   ) {
     throw new Error(
-      'Call the custom response generator functions for attachment, table and checkbox.',
+      'Call the custom response generator functions for attachment, address, table and checkbox.',
     )
   }
   return {

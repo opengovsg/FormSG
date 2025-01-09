@@ -281,6 +281,7 @@ export const submitStorageModeForm = async ({
     formInputs,
     formLogics,
   })
+
   const formData = createClearSubmissionWithVirusScanningFormData(
     {
       formFields,
@@ -293,8 +294,7 @@ export const submitStorageModeForm = async ({
     },
     fieldIdToQuarantineKeyMap,
   )
-  // console.log(formData.get('body'))
-  // console.log(formInputs)
+
   return ApiService.post<SubmissionResponseDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/storage`,
     formData,
@@ -378,8 +378,7 @@ export const submitMultirespondentForm = async ({
     },
     fieldIdToQuarantineKeyMap,
   )
-  // console.log(formData.get('body'))
-  // console.log(formInputs)
+
   return ApiService.post<SubmissionResponseDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/multirespondent`,
     formData,

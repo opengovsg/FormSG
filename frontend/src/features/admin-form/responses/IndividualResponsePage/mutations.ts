@@ -5,11 +5,11 @@ import FileSaver from 'file-saver'
 import { useToast } from '~hooks/useToast'
 
 import { AttachmentsDownloadMap } from '../ResponsesPage/storage/types'
+import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
 import {
   downloadAndDecryptAttachment,
   downloadAndDecryptAttachmentsAsZip,
 } from '../ResponsesPage/storage/utils/downloadAndDecryptAttachment'
-import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
 
 export const useMutateDownloadAttachments = () => {
   const toast = useToast({ status: 'success', isClosable: true })

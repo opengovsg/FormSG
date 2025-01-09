@@ -30,12 +30,11 @@ export const getDecryptedResponseInstance = (
     fieldRecordData.fieldType === BasicField.Checkbox
   ) {
     return new ArrayAnswerResponse(fieldRecordData)
-    // } else if (
-    //   // isArrayResponse(fieldRecordData) &&
-    //   fieldRecordData.fieldType === BasicField.Address
-    // ) {
-    //   console.log('I MADE IT HERE')
-    //   // return new ArrayAnswerResponse(fieldRecordData)
+  } else if (
+    isArrayResponse(fieldRecordData) &&
+    fieldRecordData.fieldType === BasicField.Address
+  ) {
+    return new ArrayAnswerResponse(fieldRecordData)
   } else if (isSingleResponse(fieldRecordData)) {
     return new SingleAnswerResponse(fieldRecordData)
   } else {

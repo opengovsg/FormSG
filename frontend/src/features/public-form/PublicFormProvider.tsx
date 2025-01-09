@@ -136,6 +136,7 @@ const transformFormInputCountryRegionToUpperCase =
         .filter((field) => field.fieldType === BasicField.CountryRegion)
         .map((field) => field._id),
     )
+
     return Object.keys(formInputs).reduce(
       (newFormInputs: typeof formInputs, fieldId) => {
         const currentInput = formInputs[fieldId]
