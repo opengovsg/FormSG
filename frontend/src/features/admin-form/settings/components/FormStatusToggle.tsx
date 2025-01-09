@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Flex, Skeleton, Stack, Text, useDisclosure } from '@chakra-ui/react'
 
 import { BasicField } from '~shared/types'
@@ -19,6 +20,7 @@ import { useAdminFormSettings } from '../queries'
 import { SecretKeyActivationModal } from './SecretKeyActivationModal'
 
 export const FormStatusToggle = (): JSX.Element => {
+  const { t } = useTranslation()
   const { data: { form_fields } = {} } = useAdminForm()
   const { data: formSettings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
@@ -41,7 +43,9 @@ export const FormStatusToggle = (): JSX.Element => {
       ) &&
       !esrvcId
     ) {
-      return 'This form cannot be activated until a valid e-service ID is entered in the Singpass section.'
+      return t(
+        'features.adminForm.settings.general.status.supplySingpassEServiceId',
+      )
     }
 
     // For MRF, prevent form activation if form has an email confirmation field.
@@ -52,9 +56,9 @@ export const FormStatusToggle = (): JSX.Element => {
           ff.fieldType === BasicField.Email && ff.autoReplyOptions.hasAutoReply,
       )
     ) {
-      return 'Email confirmation is not supported in multi-respondent forms. Please remove email confirmations from email fields before activating your form.'
+      return t('features.adminForm.settings.general.status.noEmailsInMRF')
     }
-  }, [authType, esrvcId, formSettings?.responseMode, form_fields, status])
+  }, [authType, esrvcId, formSettings?.responseMode, form_fields, status, t])
 
   const { mutateFormStatus } = useMutateFormSettings()
 
@@ -81,6 +85,10 @@ export const FormStatusToggle = (): JSX.Element => {
     status,
   ])
 
+  const statusText = t(
+    `features.adminForm.settings.general.status.description.${isFormPublic ? 'open' : 'closed'}`,
+  )
+
   return (
     <Skeleton isLoaded={!isLoadingSettings && !!status}>
       <Stack>
@@ -98,12 +106,15 @@ export const FormStatusToggle = (): JSX.Element => {
           justify="space-between"
         >
           <Text textStyle="subhead-1" id="form-status">
-            Your form is <b>{isFormPublic ? 'OPEN' : 'CLOSED'}</b> to new
-            responses
+            {t('features.adminForm.settings.general.status.description.prefix')}
+            <b>{statusText}</b>
+            {t('features.adminForm.settings.general.status.description.suffix')}
           </Text>
           <Switch
             isDisabled={!!preventActivationMessage}
-            aria-label="Toggle form status"
+            aria-label={t(
+              'features.adminForm.settings.general.status.ariaLabel',
+            )}
             aria-describedby="form-status"
             isLoading={mutateFormStatus.isLoading}
             isChecked={isFormPublic}

@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { FormControl } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
@@ -61,6 +62,8 @@ export const EditCountryRegion = ({
     },
   })
 
+  const { t } = useTranslation()
+
   const requiredValidationRule = useMemo(
     () => createBaseValidationRules({ required: true }),
     [],
@@ -69,12 +72,18 @@ export const EditCountryRegion = ({
   return (
     <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
-        <FormLabel>Field Name</FormLabel>
+        <FormLabel>
+          {t('features.adminForm.sidebar.fields.commonFieldComponents.title')}
+        </FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
       <FormControl isReadOnly={isLoading} isInvalid={!!errors.description}>
-        <FormLabel>Description</FormLabel>
+        <FormLabel>
+          {t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.description',
+          )}
+        </FormLabel>
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>

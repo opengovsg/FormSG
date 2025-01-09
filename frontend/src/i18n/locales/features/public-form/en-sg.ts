@@ -1,3 +1,4 @@
+import { enSG as fields } from './fields'
 import { enSG as table } from './table'
 import { PublicForm } from '.'
 
@@ -24,7 +25,11 @@ export const enSG: PublicForm = {
       'Your verified fields have expired. Please verify those fields again.',
   },
   components: {
-    PublicFormSubmitButton: {
+    header: {
+      estTime:
+        '{estTime, plural, =1 {# min} other {# mins}} estimated time to complete',
+    },
+    submitButton: {
       loadingText: 'Submitting',
       visuallyHidden: 'End of form.',
       preventSubmission: 'Submission disabled',
@@ -32,5 +37,21 @@ export const enSG: PublicForm = {
       submitNow: 'Submit now',
     },
     table,
+    fields,
+    feedbackBlock: {
+      title: {
+        payment: 'How was your experience making payment on this form?',
+        general: 'How was your form filling experience today?',
+      },
+      rating: {
+        label: 'Form feedback rating',
+        error: 'Please select a rating',
+      },
+      commentPlaceholder: 'Tell us more about your experience',
+      submitButton: 'Submit feedback',
+    },
+    instructions: {
+      title: 'Instructions',
+    },
   },
 }

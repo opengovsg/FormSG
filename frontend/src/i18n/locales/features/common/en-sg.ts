@@ -30,6 +30,7 @@ export const enSG: Common = {
   back: 'Back',
   edit: 'Edit',
   loading: 'Loading',
+  loadingWithEllipsis: 'Loading...',
   saving: 'Saving',
   responses: 'Responses',
   feedback: 'Feedback',
@@ -56,9 +57,6 @@ export const enSG: Common = {
     deleteField: 'Delete field',
     duplicateField: 'Duplicate field',
     editField: 'Edit field',
-  },
-  dropdown: {
-    placeholder: 'Select an option',
   },
   days: {
     Mondays: 'Monday',

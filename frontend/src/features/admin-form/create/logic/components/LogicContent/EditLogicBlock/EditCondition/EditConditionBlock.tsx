@@ -156,14 +156,14 @@ export const EditConditionBlock = ({
     switch (mappedField.fieldType) {
       case BasicField.YesNo:
         return [
-          t('features.adminForm.sidebar.fields.yesNo.yes'),
-          t('features.adminForm.sidebar.fields.yesNo.no'),
+          t('features.publicForm.components.fields.yesNo.yes'),
+          t('features.publicForm.components.fields.yesNo.no'),
         ]
       case BasicField.Radio:
         if (mappedField.othersRadioButton) {
           // 'Others' does not show up in fieldOptions
           return mappedField.fieldOptions.concat(
-            t('features.adminForm.sidebar.fields.radio.others'),
+            t('features.publicForm.components.fields.option.others'),
           )
         }
         return mappedField.fieldOptions

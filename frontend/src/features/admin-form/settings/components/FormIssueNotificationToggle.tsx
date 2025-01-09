@@ -1,4 +1,5 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Skeleton } from '@chakra-ui/react'
 
 import Toggle from '~components/Toggle'
@@ -7,6 +8,7 @@ import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
 
 export const FormIssueNotificationToggle = (): JSX.Element => {
+  const { t } = useTranslation()
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
@@ -26,8 +28,9 @@ export const FormIssueNotificationToggle = (): JSX.Element => {
       <Toggle
         isLoading={mutateFormIssueNotification.isLoading}
         isChecked={hasIssueNotification}
-        label="Receive email notifications for issues reported by respondents"
-        description="You will receive a maximum of one email per form, per day if there are any issues reported."
+        {...t('features.adminForm.settings.general.issueNotifications', {
+          returnObjects: true,
+        })}
         onChange={() => handleToggleIssueNotification()}
       />
     </Skeleton>

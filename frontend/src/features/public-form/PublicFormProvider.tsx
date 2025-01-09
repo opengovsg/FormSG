@@ -29,6 +29,7 @@ import { ErrorCode } from '~shared/types/errorCodes'
 import {
   FormAuthType,
   FormResponseMode,
+  Language,
   ProductItem,
   PublicFormDto,
 } from '~shared/types/form'
@@ -186,7 +187,8 @@ export const PublicFormProvider = ({
   children,
   startTime,
 }: PublicFormProviderProps): JSX.Element => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const selectedLanguage = i18n.language as Language
 
   // Once form has been submitted, submission data will be set here.
   const [submissionData, setSubmissionData] = useState<SubmissionData>()
@@ -589,6 +591,7 @@ export const PublicFormProvider = ({
             ? numVisibleFields + 1
             : numVisibleFields,
         },
+        selectedFormLanguage: selectedLanguage,
       }
 
       const logMeta = {

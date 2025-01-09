@@ -12,4 +12,5 @@ export enum AdminEditLogicState {
 export type EditLogicInputs = FormLogic & {
   preventSubmitMessage?: PreventSubmitLogic['preventSubmitMessage']
   show?: ShowFieldLogic['show']
+  preventSubmitMessageTranslations?: PreventSubmitLogic['preventSubmitMessageTranslations']
 }

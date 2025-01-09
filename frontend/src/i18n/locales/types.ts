@@ -1,4 +1,4 @@
-import { DeepRequired } from 'ts-essentials'
+import { RequiredDeep } from 'type-fest'
 
 import {
   Common,
@@ -10,6 +10,7 @@ import {
   Modals,
   Navbar,
   PublicForm,
+  Settings,
   ThankYou,
   Toasts,
 } from './features'
@@ -28,6 +29,7 @@ interface Translation {
         meta?: Meta
         modals?: Modals
         toasts?: Toasts
+        settings?: Settings
       }
       common?: Common
       publicForm?: PublicForm
@@ -38,7 +40,7 @@ interface Translation {
 
 export interface FallbackTranslation extends Translation {
   translation: {
-    features: DeepRequired<Translation['translation']['features']>
+    features: RequiredDeep<Translation['translation']['features']>
   }
 }
 

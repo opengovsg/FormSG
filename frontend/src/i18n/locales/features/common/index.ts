@@ -30,6 +30,7 @@ export interface Common {
   back: string
   edit: string
   loading: string
+  loadingWithEllipsis: string
   saving: string
   responses: string
   feedback: string
@@ -56,9 +57,6 @@ export interface Common {
     deleteField: string
     duplicateField: string
     editField: string
-  }
-  dropdown: {
-    placeholder: string
   }
   days: {
     Mondays: string

@@ -84,18 +84,23 @@ const FORM_DEFAULTS = {
     logo: {
       state: FormLogoState.Default,
     },
+    paragraphTranslations: [],
   },
   endPage: {
     title: 'Thank you for filling out the form.',
     buttonText: 'Submit another response',
     paymentTitle: 'Thank you, your payment has been made successfully.',
     paymentParagraph: 'Your form has been submitted and payment has been made.',
+    titleTranslations: [],
+    paragraphTranslations: [],
   },
   hasCaptcha: true,
   hasIssueNotification: true,
+  hasMultiLang: false,
   form_fields: [],
   form_logics: [],
   permissionList: [],
+  supportedLanguages: [],
   webhook: {
     url: '',
     isRetryEnabled: false,
@@ -251,6 +256,7 @@ describe('Form Model', () => {
               ],
               logicType: 'preventSubmit',
               preventSubmitMessage: '',
+              preventSubmitMessageTranslations: [],
             },
           ],
         }
@@ -1868,7 +1874,11 @@ describe('Form Model', () => {
         expect(actual?.toObject()).toEqual({
           ...form,
           lastModified: expect.any(Date),
-          endPage: { ...updatedEndPage },
+          endPage: {
+            ...updatedEndPage,
+            paragraphTranslations: [],
+            titleTranslations: [],
+          },
         })
       })
 
@@ -1899,6 +1909,8 @@ describe('Form Model', () => {
             paymentParagraph:
               'Your form has been submitted and payment has been made.',
             paymentTitle: 'Thank you, your payment has been made successfully.',
+            paragraphTranslations: [],
+            titleTranslations: [],
           },
         })
       })
@@ -2162,6 +2174,7 @@ describe('Form Model', () => {
             logo: {
               state: FormLogoState.Default,
             },
+            paragraphTranslations: [],
           },
         })
       })

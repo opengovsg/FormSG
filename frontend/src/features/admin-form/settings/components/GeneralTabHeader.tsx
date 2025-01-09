@@ -13,7 +13,7 @@ export const GeneralTabHeader = (): JSX.Element => {
     useAdminFormSettings()
 
   const readableFormResponseMode = !settings
-    ? 'Loading...'
+    ? t('features.common.loadingWithEllipsis')
     : t(`features.adminForm.meta.responseModeText.${settings.responseMode}`)
 
   return (
@@ -23,7 +23,9 @@ export const GeneralTabHeader = (): JSX.Element => {
       justify="space-between"
       mb="2.5rem"
     >
-      <CategoryHeader mb={0}>General settings</CategoryHeader>
+      <CategoryHeader mb={0}>
+        {t('features.adminForm.settings.general.title')}
+      </CategoryHeader>
       <Skeleton isLoaded={!isLoadingSettings}>
         <Badge variant="subtle" colorScheme="primary" color="secondary.500">
           {readableFormResponseMode}

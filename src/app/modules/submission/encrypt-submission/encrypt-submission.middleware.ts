@@ -169,6 +169,7 @@ export const validateStorageSubmissionParams = celebrate({
  */
 const asyncVirusScanning = (
   responses: ParsedClearFormFieldResponse[],
+  formId: string,
 ): ResultAsync<
   ParsedClearFormFieldResponse,
   | VirusScanFailedError
@@ -179,6 +180,7 @@ const asyncVirusScanning = (
     if (isQuarantinedAttachmentResponse(response)) {
       return SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
         response,
+        formId,
       )
     }
 
@@ -194,6 +196,7 @@ const asyncVirusScanning = (
  */
 const devModeSyncVirusScanning = async (
   responses: ParsedClearFormFieldResponse[],
+  formId: string,
 ): Promise<
   Result<
     ParsedClearFormFieldResponse,
@@ -212,6 +215,7 @@ const devModeSyncVirusScanning = async (
       const attachmentResponse =
         await SubmissionService.triggerVirusScanThenDownloadCleanFileChain(
           response,
+          formId,
         )
       results.push(attachmentResponse)
       if (attachmentResponse.isErr()) break
@@ -249,8 +253,18 @@ export const scanAndRetrieveAttachments = async (
     // run the virus scanning asynchronously for better performance (lower latency).
     // Note on .combine: if any scans or downloads error out, it will short circuit and return the first error.
     isDev
-      ? Result.combine(await devModeSyncVirusScanning(req.body.responses))
-      : await ResultAsync.combine(asyncVirusScanning(req.body.responses))
+      ? Result.combine(
+          await devModeSyncVirusScanning(
+            req.body.responses,
+            req.formsg.formDef._id.toString(),
+          ),
+        )
+      : await ResultAsync.combine(
+          asyncVirusScanning(
+            req.body.responses,
+            req.formsg.formDef._id.toString(),
+          ),
+        )
 
   if (scanAndRetrieveFilesResult.isErr()) {
     logger.error({

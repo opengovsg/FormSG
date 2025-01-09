@@ -136,7 +136,7 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
         )
       },
     }),
-    [maxTotalSizeMb, otherAttachmentsSize],
+    [maxTotalSizeMb, otherAttachmentsSize, t],
   )
 
   const validateAttachmentSize = useCallback(() => {
@@ -154,12 +154,18 @@ export const EditAttachment = ({ field }: EditAttachmentProps): JSX.Element => {
   return (
     <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
-        <FormLabel>Field Name</FormLabel>
+        <FormLabel>
+          {t('features.adminForm.sidebar.fields.commonFieldComponents.title')}
+        </FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
       <FormControl isReadOnly={isLoading} isInvalid={!!errors.description}>
-        <FormLabel>Description</FormLabel>
+        <FormLabel>
+          {t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.description',
+          )}
+        </FormLabel>
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>

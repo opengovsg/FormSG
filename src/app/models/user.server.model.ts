@@ -79,6 +79,7 @@ const compileUserModel = (db: Mongoose) => {
         mrfAdminSubmissionKey: Boolean,
         mrfConditionalRouting: Boolean,
         mfb: Boolean,
+        multiLangTranslation: Boolean,
       },
       flags: {
         type: Schema.Types.Map, // of SeenFlags

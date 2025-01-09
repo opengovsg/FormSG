@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { BiHomeAlt } from 'react-icons/bi'
 import { Link as ReactLink } from 'react-router-dom'
 import { Icon, Skeleton, Stack, Text } from '@chakra-ui/react'
@@ -13,6 +14,7 @@ type AdminFormNavbarDetailsProps = Pick<AdminFormNavbarProps, 'formInfo'>
 export const AdminFormNavbarBreadcrumbs = ({
   formInfo,
 }: AdminFormNavbarDetailsProps): JSX.Element => {
+  const { t } = useTranslation()
   const isMobile = useIsMobile()
 
   return (
@@ -44,7 +46,7 @@ export const AdminFormNavbarBreadcrumbs = ({
           overflow="hidden"
           color="secondary.500"
         >
-          {formInfo ? formInfo.title : 'Loading...'}
+          {formInfo ? formInfo.title : t('features.common.loadingWithEllipsis')}
         </Text>
       </Skeleton>
     </Stack>

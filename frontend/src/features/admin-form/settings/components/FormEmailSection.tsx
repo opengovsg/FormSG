@@ -5,6 +5,7 @@ import {
   useForm,
   useFormContext,
 } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { FormControl } from '@chakra-ui/react'
 import { get, isEmpty, isEqual } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
@@ -85,6 +86,7 @@ export const FormEmailSection = ({
   isDisabled,
   settings,
 }: EmailFormSectionProps): JSX.Element => {
+  const { t } = useTranslation()
   const initialEmailSet = useMemo(
     () => new Set(settings.emails),
     [settings.emails],
@@ -124,7 +126,9 @@ export const FormEmailSection = ({
             useMarkdownForDescription
             description={DESCRIPTION_TEXT}
           >
-            Notifications for new responses
+            {t(
+              'features.adminForm.settings.emailNotifications.section.regular.label',
+            )}
           </FormLabel>
           <AdminEmailRecipientsInput onSubmit={handleSubmitEmails} />
           <FormErrorMessage>{get(errors, 'emails.message')}</FormErrorMessage>
@@ -134,7 +138,9 @@ export const FormEmailSection = ({
               mt="0.5rem"
               opacity={isDisabled ? '0.3' : '1'}
             >
-              Separate multiple email addresses with a comma
+              {t(
+                'features.adminForm.settings.emailNotifications.section.regular.description',
+              )}
             </FormLabel.Description>
           ) : null}
         </FormControl>

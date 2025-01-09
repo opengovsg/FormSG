@@ -13,6 +13,7 @@ import { FormFooter } from '~features/public-form/components/FormFooter'
 import FormInstructions from '~features/public-form/components/FormInstructions'
 import { PublicFormLogo } from '~features/public-form/components/FormLogo'
 import FormStartPage from '~features/public-form/components/FormStartPage'
+import LanguageControl from '~features/public-form/components/LanguageControl'
 import { PublicFormWrapper } from '~features/public-form/components/PublicFormWrapper'
 
 import { PreviewFormBannerContainer } from '../common/components/PreviewFormBanner'
@@ -31,6 +32,7 @@ export const PreviewFormPage = (): JSX.Element => {
         <FormSectionsProvider>
           <PublicFormLogo />
           <FormStartPage />
+          <LanguageControl />
           <PublicFormWrapper>
             <FormInstructions />
             <FormFields />

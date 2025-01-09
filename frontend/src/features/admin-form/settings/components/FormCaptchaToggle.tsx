@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Skeleton } from '@chakra-ui/react'
 
 import Toggle from '~components/Toggle'
@@ -7,6 +8,7 @@ import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
 
 export const FormCaptchaToggle = (): JSX.Element => {
+  const { t } = useTranslation()
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
@@ -25,8 +27,9 @@ export const FormCaptchaToggle = (): JSX.Element => {
       <Toggle
         isLoading={mutateFormCaptcha.isLoading}
         isChecked={hasCaptcha}
-        label="Enable reCAPTCHA"
-        description="If you expect non-English-speaking respondents, they may have difficulty understanding the reCAPTCHA selection instructions."
+        {...t('features.adminForm.settings.general.captcha', {
+          returnObjects: true,
+        })}
         onChange={() => handleToggleCaptcha()}
       />
     </Skeleton>

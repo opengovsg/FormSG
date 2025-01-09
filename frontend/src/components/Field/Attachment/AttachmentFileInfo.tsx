@@ -57,7 +57,7 @@ export const AttachmentFileInfo = ({
             variant="clear"
             colorScheme="danger"
             aria-label={t(
-              'features.adminForm.sidebar.fields.imageAttachment.ariaLabelRemove',
+              'features.publicForm.components.fields.attachment.ariaLabelRemove',
             )}
             icon={<BiTrash />}
             onClick={handleRemoveFile}

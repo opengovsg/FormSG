@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { Controller, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   FormControl,
@@ -42,6 +43,7 @@ const MrfEmailNotificationsForm = ({
   settings,
   isDisabled,
 }: MrfEmailNotificationsFormProps) => {
+  const { t } = useTranslation()
   const {
     isLoading,
     formWorkflow,
@@ -144,11 +146,15 @@ const MrfEmailNotificationsForm = ({
     <form onSubmit={handleSubmit(onSubmit)}>
       <Box>
         <Text textStyle="body-1" textColor="secondary.700" mb="1.5rem">
-          Select who to notify when the form and/or workflow is complete:
+          {t(
+            'features.adminForm.settings.emailNotifications.section.mrf.selectRecipient',
+          )}
         </Text>
         <Box>
           <FormLabel mb="0.75rem" textColor="secondary.700">
-            Respondent in Step 1
+            {t(
+              'features.adminForm.settings.emailNotifications.section.mrf.respondents.step1.label',
+            )}
           </FormLabel>
           <Skeleton isLoaded={!isLoading}>
             <Controller
@@ -160,7 +166,9 @@ const MrfEmailNotificationsForm = ({
               }) => (
                 <SingleSelect
                   isDisabled={isLoading || isDisabled}
-                  placeholder="Select an email field from your form"
+                  placeholder={t(
+                    'features.adminForm.settings.emailNotifications.section.mrf.respondents.step1.placeholder',
+                  )}
                   items={emailFieldItems}
                   onBlur={handleSubmit(onSubmit)}
                   isClearable
@@ -173,7 +181,9 @@ const MrfEmailNotificationsForm = ({
         </Box>
         <Box my="1.5rem">
           <FormLabel mb="0.75rem" textColor="secondary.700">
-            Other respondents in your workflow
+            {t(
+              'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.label.overall',
+            )}
           </FormLabel>
           <Skeleton isLoaded={!isLoading}>
             <Controller
@@ -186,14 +196,19 @@ const MrfEmailNotificationsForm = ({
                 <MultiSelect
                   items={formWorkflowStepsWithStepNumber
                     .filter((step) => step.stepNumber > 1)
-                    .map((step) => ({
-                      label: `Respondent(s) in Step ${step.stepNumber}`,
-                      value: step._id,
+                    .map(({ stepNumber, _id: value }) => ({
+                      label: t(
+                        'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.label.each',
+                        { stepNumber },
+                      ),
+                      value,
                     }))}
                   values={values}
                   onChange={onChange}
                   onBlur={handleSubmit(onSubmit)}
-                  placeholder="Select respondents from your form"
+                  placeholder={t(
+                    'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.placeholder',
+                  )}
                   isSelectedItemFullWidth
                   isDisabled={isLoading || isDisabled}
                   {...rest}
@@ -213,9 +228,13 @@ const MrfEmailNotificationsForm = ({
             mb="0.75rem"
             tooltipVariant="info"
             tooltipPlacement="top"
-            tooltipText="Include the admin's email to inform them whenever a workflow is completed"
+            tooltipText={t(
+              'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.tooltipText',
+            )}
           >
-            Others
+            {t(
+              'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.label',
+            )}
           </FormLabel>
           <Controller
             name={OTHER_PARTIES_EMAIL_INPUT_NAME}
@@ -233,7 +252,9 @@ const MrfEmailNotificationsForm = ({
           />
           {isEmpty(errors[OTHER_PARTIES_EMAIL_INPUT_NAME]) ? (
             <FormLabel.Description color="secondary.400" mt="0.5rem">
-              Separate multiple email addresses with a comma
+              {t(
+                'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.description',
+              )}
             </FormLabel.Description>
           ) : (
             <FormErrorMessage>

@@ -25,6 +25,7 @@ export const UserBase = z.object({
       mrfAdminSubmissionKey: z.boolean().optional(),
       mrfConditionalRouting: z.boolean().optional(),
       mfb: z.boolean().optional(),
+      multiLangTranslation: z.boolean().optional(),
     })
     .optional(),
   flags: z.record(z.nativeEnum(SeenFlags), z.number()).optional(),

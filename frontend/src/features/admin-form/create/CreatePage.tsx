@@ -1,6 +1,9 @@
 import { useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
+
+import { Language } from '~shared/types'
 
 import { FEATURE_TOUR_KEY_PREFIX } from '~constants/localStorage'
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
@@ -28,12 +31,16 @@ export const CreatePage = (): JSX.Element => {
   const { hasEditAccess, isLoading: isCollabLoading } =
     useAdminFormCollaborators(formId)
   const navigate = useNavigate()
+  const { i18n } = useTranslation()
 
   // Redirect view-only collaborators to results screen.
   useEffect(() => {
+    // Always default language key back to English
+    i18n.changeLanguage(Language.ENGLISH)
+
     if (!isCollabLoading && !hasEditAccess)
       navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_RESULTS_SUBROUTE}`)
-  }, [formId, hasEditAccess, isCollabLoading, navigate])
+  }, [formId, hasEditAccess, i18n, isCollabLoading, navigate])
 
   const { user, isLoading } = useUser()
   const localStorageFeatureTourKey = useMemo(() => {

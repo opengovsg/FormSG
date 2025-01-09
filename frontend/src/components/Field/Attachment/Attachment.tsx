@@ -148,14 +148,14 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
             case 'file-invalid-type': {
               const fileExt = getFileExtension(rejectedFiles[0].file.name)
               errorMessage = t(
-                `features.adminForm.sidebar.fields.imageAttachment.error.fileInvalidType`,
+                `features.publicForm.components.fields.attachment.error.fileInvalidType`,
                 { fileExt },
               )
               break
             }
             case 'too-many-files': {
               errorMessage = t(
-                `features.adminForm.sidebar.fields.imageAttachment.error.tooManyFiles`,
+                `features.publicForm.components.fields.attachment.error.tooManyFiles`,
               )
               break
             }
@@ -178,7 +178,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
               const stringOfInvalidExtensions = invalidFilesInZip.join(', ')
               return onError?.(
                 t(
-                  'features.adminForm.sidebar.fields.imageAttachment.error.zipFileInvalidType',
+                  'features.publicForm.components.fields.attachment.error.zipFileInvalidType',
                   { stringOfInvalidExtensions },
                 ),
               )
@@ -186,7 +186,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
           } catch {
             return onError?.(
               t(
-                'features.adminForm.sidebar.fields.imageAttachment.error.zipParsing',
+                'features.publicForm.components.fields.attachment.error.zipParsing',
               ),
             )
           }
@@ -224,7 +224,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
             return {
               code: 'file-too-large',
               message: t(
-                'features.adminForm.sidebar.fields.imageAttachment.error.fileTooLarge',
+                'features.publicForm.components.fields.attachment.error.fileTooLarge',
                 { readableMaxSize },
               ),
             }
@@ -233,7 +233,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
             return {
               code: 'file-empty',
               message: t(
-                'features.adminForm.sidebar.fields.imageAttachment.error.zipParsing',
+                'features.publicForm.components.fields.attachment.error.zipParsing',
               ),
             }
           }
@@ -336,7 +336,7 @@ export const Attachment = forwardRef<AttachmentProps, 'div'>(
               aria-hidden
             >
               {t(
-                'features.adminForm.sidebar.fields.imageAttachment.maxFileSize',
+                'features.publicForm.components.fields.attachment.maxFileSize',
                 {
                   readableMaxSize,
                 },

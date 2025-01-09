@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiLoader } from 'react-icons/bi'
 import {
   Flex,
@@ -47,10 +48,11 @@ const spin = keyframes({
 export const Spinner = ({
   speed = '2.5s',
   color = 'inherit',
-  label = 'Loading...',
+  label: userSpecifiedLabel,
   fontSize = '1rem',
   ...flexProps
 }: SpinnerProps): JSX.Element => {
+  const { t } = useTranslation()
   const prefersReducedMotion = usePrefersReducedMotion()
 
   const animation = useMemo(
@@ -58,6 +60,8 @@ export const Spinner = ({
       prefersReducedMotion ? undefined : `${spin} ${speed} linear infinite`,
     [prefersReducedMotion, speed],
   )
+
+  const label = userSpecifiedLabel ?? t('features.common.loadingWithEllipsis')
 
   return (
     <Flex color={color} align="center" {...flexProps}>

@@ -23,6 +23,10 @@ import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { getAdminEmails } from '../../modules/form/form.utils'
 import { BounceNotification } from '../../views/templates/BounceNotification'
+import {
+  EmailAddressVerificationOtp,
+  EmailAddressVerificationOtpHtmlData,
+} from '../../views/templates/EmailAddressVerificationOtp'
 import MrfWorkflowCompletionEmail, {
   QuestionAnswer,
   WorkflowOutcome,
@@ -53,7 +57,6 @@ import {
   generatePaymentConfirmationHtml,
   generatePaymentOnboardingHtml,
   generateSubmissionToAdminHtml,
-  generateVerificationOtpHtml,
   isToFieldValid,
 } from './mail.utils'
 
@@ -338,22 +341,51 @@ export class MailService {
   ): ResultAsync<true, MailSendError> => {
     const minutesToExpiry = Math.floor(HASH_EXPIRE_AFTER_SECONDS / 60)
 
-    const mail: MailOptions = {
-      to: recipient,
-      from: this.#senderFromString,
-      subject: `Your OTP for submitting a form on ${this.#appName}`,
-      html: generateVerificationOtpHtml({
-        appName: this.#appName,
-        minutesToExpiry,
-        otp,
-        otpPrefix,
-      }),
-      headers: {
-        [EMAIL_HEADERS.emailType]: EmailType.VerificationOtp,
-      },
+    const htmlData: EmailAddressVerificationOtpHtmlData = {
+      appName: this.#appName,
+      minutesToExpiry,
+      otp,
+      otpPrefix,
     }
-    // Error gets caught in getNewOtp
-    return this.#sendNodeMail(mail, { mailId: 'verify' })
+    const generatedHtml = fromPromise(
+      render(EmailAddressVerificationOtp(htmlData)),
+      (e) => {
+        logger.error({
+          message: 'Failed to render EmailAddressVerificationOtp',
+          meta: {
+            action: 'sendVerificationOtp',
+            error: e,
+          },
+        })
+
+        return new MailGenerationError(
+          'Error generating email address otp verification email',
+        )
+      },
+    )
+
+    return generatedHtml.andThen((mailHtml) => {
+      const mail: MailOptions = {
+        to: recipient,
+        from: this.#senderFromString,
+        subject: `Your OTP for submitting a form on ${this.#appName}`,
+        html: mailHtml,
+        headers: {
+          [EMAIL_HEADERS.emailType]: EmailType.VerificationOtp,
+        },
+      }
+      return this.#sendNodeMail(mail, { mailId: 'verify' }).mapErr((error) => {
+        logger.error({
+          message: 'Error sending email address otp verification email',
+          meta: {
+            action: 'sendVerificationOtp',
+            htmlData,
+          },
+          error,
+        })
+        return error
+      })
+    })
   }
 
   /**

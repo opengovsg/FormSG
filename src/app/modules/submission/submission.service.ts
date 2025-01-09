@@ -432,33 +432,55 @@ export const triggerVirusScanThenDownloadCleanFileChain = <
     | ParsedClearAttachmentFieldResponseV3,
 >(
   response: T,
+  formId: string,
 ): ResultAsync<
   T,
   | VirusScanFailedError
   | DownloadCleanFileFailedError
   | MaliciousFileDetectedError
-> =>
+> => {
+  const logMeta = {
+    action: 'triggerVirusScanThenDownloadCleanFileChain',
+    formId,
+    quarantineFileKey: response.answer,
+  }
   // Step 3: Trigger lambda to scan attachments.
-  triggerVirusScanning(response.answer)
-    .mapErr((error) => {
-      if (error instanceof MaliciousFileDetectedError)
-        return new MaliciousFileDetectedError(response.filename)
-      return error
-    })
-    .map((lambdaOutput) => lambdaOutput.body)
-    // Step 4: Retrieve attachments from the clean bucket.
-    .andThen((cleanAttachment) =>
-      // Retrieve attachment from clean bucket.
-      downloadCleanFile(
-        cleanAttachment.cleanFileKey,
-        cleanAttachment.destinationVersionId,
-      ).map((attachmentBuffer) => ({
-        ...response,
-        // Replace content with attachmentBuffer and answer with filename.
-        content: attachmentBuffer,
-        answer: response.filename,
-      })),
-    )
+  return (
+    triggerVirusScanning(response.answer)
+      .mapErr((error) => {
+        if (error instanceof MaliciousFileDetectedError) {
+          logger.error({
+            message: 'Malicious file detected during lambda virus scan',
+            meta: logMeta,
+            error,
+          })
+          return new MaliciousFileDetectedError(response.filename)
+        }
+        return error
+      })
+      .map((lambdaOutput) => {
+        logger.info({
+          message:
+            'Successfully retrieved clean file from virus scanning lambda',
+          meta: { ...logMeta, cleanFileKey: lambdaOutput.body.cleanFileKey },
+        })
+        return lambdaOutput.body
+      })
+      // Step 4: Retrieve attachments from the clean bucket.
+      .andThen((cleanAttachment) =>
+        // Retrieve attachment from clean bucket.
+        downloadCleanFile(
+          cleanAttachment.cleanFileKey,
+          cleanAttachment.destinationVersionId,
+        ).map((attachmentBuffer) => ({
+          ...response,
+          // Replace content with attachmentBuffer and answer with filename.
+          content: attachmentBuffer,
+          answer: response.filename,
+        })),
+      )
+  )
+}
 
 type AttachmentReducerData = {
   attachmentMetadata: AttachmentMetadata // type alias for Map<string, string>

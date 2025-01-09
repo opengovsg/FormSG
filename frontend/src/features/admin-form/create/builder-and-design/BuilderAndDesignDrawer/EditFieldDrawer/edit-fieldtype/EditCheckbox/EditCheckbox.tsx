@@ -213,12 +213,18 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
   return (
     <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
-        <FormLabel>Field Name</FormLabel>
+        <FormLabel>
+          {t('features.adminForm.sidebar.fields.commonFieldComponents.title')}
+        </FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
       <FormControl isReadOnly={isLoading} isInvalid={!!errors.description}>
-        <FormLabel>Description</FormLabel>
+        <FormLabel>
+          {t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.description',
+          )}
+        </FormLabel>
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
@@ -228,7 +234,7 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
       <FormControl isReadOnly={isLoading}>
         <Toggle
           {...register('othersRadioButton')}
-          label={t('features.adminForm.sidebar.fields.radio.others')}
+          label={t('features.publicForm.components.fields.option.others')}
         />
       </FormControl>
       <FormControl

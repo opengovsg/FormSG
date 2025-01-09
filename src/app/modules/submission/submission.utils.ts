@@ -91,7 +91,6 @@ import {
   MyInfoMissingLoginCookieError,
 } from '../myinfo/myinfo.errors'
 import { MyInfoKey } from '../myinfo/myinfo.types'
-import { getMyInfoChildHashKey } from '../myinfo/myinfo.util'
 import {
   InvalidPaymentProductsError,
   PaymentNotFoundError,
@@ -753,17 +752,12 @@ export const getAnswersForChild = (
     return []
   }
   return response.answerArray.flatMap((arr, childIdx) => {
-    // First array element is always child name
-    const childName = arr[0]
     return arr.map((answer, idx) => {
       const subfield = subFields[idx]
       return {
-        _id: getMyInfoChildHashKey(
-          response._id,
-          subFields[idx],
-          childIdx,
-          childName,
-        ),
+        // Recreates the individual _id of the child field based on the parent field's _id and the subfield
+        // e.g., childrenbirthrecords.67585515e1ced6d790a91e14.childname.0
+        _id: `${MyInfoAttribute.ChildrenBirthRecords}.${response._id}.${subFields[idx]}.${childIdx}`,
         fieldType: response.fieldType,
         // qnChildIdx represents the index of the MyInfo field
         // childIdx represents the index of the child in this MyInfo field

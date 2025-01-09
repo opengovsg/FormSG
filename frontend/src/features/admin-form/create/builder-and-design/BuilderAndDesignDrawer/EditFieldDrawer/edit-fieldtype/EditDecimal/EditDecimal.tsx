@@ -93,12 +93,14 @@ export const EditDecimal = ({ field }: EditDecimalProps): JSX.Element => {
         )
       },
     }
-  }, [getValues])
+  }, [getValues, t])
 
   return (
     <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
-        <FormLabel>Field Name</FormLabel>
+        <FormLabel>
+          {t('features.adminForm.sidebar.fields.commonFieldComponents.title')}
+        </FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
@@ -107,7 +109,11 @@ export const EditDecimal = ({ field }: EditDecimalProps): JSX.Element => {
         isReadOnly={isLoading}
         isInvalid={!!errors.description}
       >
-        <FormLabel>Description</FormLabel>
+        <FormLabel>
+          {t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.description',
+          )}
+        </FormLabel>
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>

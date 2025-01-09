@@ -7,3 +7,7 @@ export interface Table {
   row: string
   rowMax: string
 }
+
+export * from './ms-sg'
+export * from './ta-sg'
+export * from './zh-sg'

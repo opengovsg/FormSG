@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { FormControl, SimpleGrid } from '@chakra-ui/react'
 import { extend, isEmpty, pick } from 'lodash'
 
@@ -87,6 +88,8 @@ export const EditLongText = ({ field }: EditLongTextProps): JSX.Element => {
     },
   })
 
+  const { t } = useTranslation()
+
   const requiredValidationRule = useMemo(
     () => createBaseValidationRules({ required: true }),
     [],
@@ -130,7 +133,9 @@ export const EditLongText = ({ field }: EditLongTextProps): JSX.Element => {
   return (
     <CreatePageDrawerContentContainer>
       <FormControl isRequired isReadOnly={isLoading} isInvalid={!!errors.title}>
-        <FormLabel>Field Name</FormLabel>
+        <FormLabel>
+          {t('features.adminForm.sidebar.fields.commonFieldComponents.title')}
+        </FormLabel>
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
@@ -139,7 +144,11 @@ export const EditLongText = ({ field }: EditLongTextProps): JSX.Element => {
         isReadOnly={isLoading}
         isInvalid={!!errors.description}
       >
-        <FormLabel>Description</FormLabel>
+        <FormLabel>
+          {t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.description',
+          )}
+        </FormLabel>
         <Textarea {...register('description')} />
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
