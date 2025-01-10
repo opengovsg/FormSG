@@ -20,6 +20,7 @@ import {
 export const getDecryptedResponseInstance = (
   fieldRecordData: DisplayedResponseWithoutAnswer,
 ): Response => {
+  console.log(fieldRecordData)
   if (
     isNestedResponse(fieldRecordData) &&
     fieldRecordData.fieldType === BasicField.Table

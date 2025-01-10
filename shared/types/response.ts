@@ -140,7 +140,7 @@ export type AddressSubField = {
 
 export const AddressResponse = ResponseBase.extend({
   fieldType: z.literal(BasicField.Address),
-  answerArray: z.array(z.array(z.string())) as unknown as z.Schema<string[][]>,
+  answerArray: z.array(z.string()) as unknown as z.Schema<string[]>,
 })
 export type AddressResponse = z.infer<typeof AddressResponse>
 
