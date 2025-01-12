@@ -35,7 +35,9 @@ import {
   UenFieldBase,
 } from '~shared/types/field'
 import {
-  validateBlockUnit,
+  validateLevelUnit,
+  validateNoNonNumerical,
+  validateNoSpecialCharacters,
   validatePostalCode,
 } from '~shared/utils/address-validation'
 import { isDateAnInvalidDay } from '~shared/utils/date-validation'
@@ -246,7 +248,7 @@ export const createBlockNumberValidationRules: ValidationRuleFn<
       ),
       validBlock: (value: string) => {
         if (value === '') return
-        return validateBlockUnit(value)
+        return validateNoSpecialCharacters(value)
       },
     },
   }
@@ -265,14 +267,35 @@ export const createStreetNameValidationRules: ValidationRuleFn<
   }
 }
 
-export const createUnitLevelNumberValidationRules: ValidationRuleFn<
-  AddressCompoundFieldBase
-> = (): RegisterOptions => {
+export const createLevelNumberValidationRules = (
+  unitNumber: string,
+  levelNumber: string,
+): RegisterOptions => {
   return {
     validate: {
-      validUnitLevel: (value: string) => {
+      validLevel: (value: string) => {
         if (value === '') return
-        return validateBlockUnit(value)
+        return validateNoNonNumerical(value)
+      },
+      validInput: () => {
+        return validateLevelUnit(unitNumber, levelNumber)
+      },
+    },
+  }
+}
+
+export const createUnitNumberValidationRules = (
+  unitNumber: string,
+  levelNumber: string,
+): RegisterOptions => {
+  return {
+    validate: {
+      validUnit: (value: string) => {
+        if (value === '') return
+        return validateNoSpecialCharacters(value)
+      },
+      validInput: () => {
+        return validateLevelUnit(unitNumber, levelNumber)
       },
     },
   }

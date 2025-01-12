@@ -1,16 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import {
-  Controller,
-  FieldArrayWithId,
-  RegisterOptions,
-  useFieldArray,
-  useForm,
-  useFormContext,
-  useFormState,
-} from 'react-hook-form'
+import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { Box, Flex, FormControl, Stack } from '@chakra-ui/react'
 
-import { AddressAttributes } from '~shared/types'
 import {
   VALID_POSTAL_CODE_NO_ADDRESS_ERROR,
   validatePostalCode,
@@ -18,9 +9,10 @@ import {
 
 import {
   createBlockNumberValidationRules,
+  createLevelNumberValidationRules,
   createPostalCodeValidationRules,
   createStreetNameValidationRules,
-  createUnitLevelNumberValidationRules,
+  createUnitNumberValidationRules,
 } from '~utils/fieldValidation'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -41,12 +33,12 @@ export const AddressCompoundField = ({
   disableRequiredValidation,
 }: AddressCompoundFieldProps): JSX.Element => {
   const formContext = useFormContext<AddressCompoundFieldInput>()
-  const { getValues, setValue, trigger, setError } = formContext
+  const { getValues, setValue, trigger, setError, watch } = formContext
   const { isSubmitting, isValid, errors } =
     useFormState<AddressCompoundFieldInput>({
       name: schema._id,
     })
-  const addressSubFieldErrors = errors?.[schema._id]?.addressSubFields // only one (first) set of address values
+  const addressSubFieldErrors = errors?.[schema._id]?.addressSubFields
 
   const postalCodeValidationRules = useMemo(
     () => createPostalCodeValidationRules(schema, disableRequiredValidation),
@@ -63,10 +55,28 @@ export const AddressCompoundField = ({
     [schema, disableRequiredValidation],
   )
 
-  const unitLevelNumberValidationRules = useMemo(
-    () => createUnitLevelNumberValidationRules(schema),
-    [schema],
+  const unitNumber = watch(`${schema._id}.addressSubFields.unitNumber`)
+  const levelNumber = watch(`${schema._id}.addressSubFields.levelNumber`)
+
+  const levelNumberValidationRules = useMemo(
+    () => createLevelNumberValidationRules(unitNumber, levelNumber),
+    [unitNumber, levelNumber], // Recompute when unitNumber or levelNumber change
   )
+
+  const unitNumberValidationRules = useMemo(
+    () => createUnitNumberValidationRules(unitNumber, levelNumber),
+    [unitNumber, levelNumber],
+  )
+
+  useEffect(() => {
+    // Trigger validation for the unit number when level number changes
+    formContext.trigger(`${schema._id}.addressSubFields.unitNumber`)
+  }, [levelNumber, formContext, schema])
+
+  useEffect(() => {
+    // Trigger validation for the level number when unit number changes
+    formContext.trigger(`${schema._id}.addressSubFields.levelNumber`)
+  }, [unitNumber, formContext, schema])
 
   const [isButtonDisabled, setIsButtonDisabled] = useState(schema.disabled)
 
@@ -256,7 +266,7 @@ export const AddressCompoundField = ({
                 aria-label={`${schema.questionNumber}. Building name`}
                 onInput={(e: React.FormEvent<HTMLInputElement>) => {
                   const value = e.currentTarget.value
-                  e.currentTarget.value = value.replace(/,/g, '') // Prevent commas
+                  e.currentTarget.value = value.replace(/,/g, '') // Prevent commas in field input
                 }}
               />
             </Box>
@@ -268,7 +278,7 @@ export const AddressCompoundField = ({
       <Flex direction="row" gap={2} width="100%">
         <FormControl
           id={`${schema._id}-levelNumber`}
-          isRequired={false} // unitNumber will always be optional
+          isRequired={false} // levelNumber will always be optional
           isDisabled={schema.disabled}
           isReadOnly={isValid && isSubmitting}
           isInvalid={!!addressSubFieldErrors?.levelNumber}
@@ -277,7 +287,7 @@ export const AddressCompoundField = ({
             name={`${schema._id}.addressSubFields.levelNumber`}
             control={formContext.control}
             defaultValue=""
-            rules={unitLevelNumberValidationRules}
+            rules={levelNumberValidationRules}
             render={({ field }) => (
               <Stack direction="column" gap={0.5}>
                 <Input
@@ -303,7 +313,7 @@ export const AddressCompoundField = ({
             name={`${schema._id}.addressSubFields.unitNumber`}
             control={formContext.control}
             defaultValue=""
-            rules={unitLevelNumberValidationRules}
+            rules={unitNumberValidationRules}
             render={({ field }) => (
               <Stack direction="column" gap={0.5}>
                 <Input

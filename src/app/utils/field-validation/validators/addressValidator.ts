@@ -9,7 +9,8 @@ import {
 
 import { AddressResponseV3, BasicField } from '../../../../../shared/types'
 import {
-  validateBlockUnit,
+  validateNoNonNumerical,
+  validateNoSpecialCharacters,
   validatePostalCode,
 } from '../../../../../shared/utils/address-validation'
 import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
@@ -40,7 +41,7 @@ const addressAnswerValidator: AddressValidator = (response) => {
 const validPostalCode: AddressValidator = (response) => {
   const { answerArray } = response
   const entry = answerArray.find((subField) =>
-    subField.some((val) => val.startsWith('postalCode')),
+    subField.startsWith('postalCode'),
   )
   const postalCode = entry ? entry[0].split('_')[1] : ''
   return validatePostalCode(postalCode)
@@ -51,10 +52,10 @@ const validPostalCode: AddressValidator = (response) => {
 const validBlockNumber: AddressValidator = (response) => {
   const { answerArray } = response
   const entry = answerArray.find((subField) =>
-    subField.some((val) => val.startsWith('blockNumber')),
+    subField.startsWith('blockNumber'),
   )
   const blockNumber = entry ? entry[0].split('_')[1] : ''
-  return validateBlockUnit(blockNumber)
+  return validateNoSpecialCharacters(blockNumber)
     ? right(response)
     : left(`AddressValidator:\t block number is not valid`)
 }
@@ -62,10 +63,10 @@ const validBlockNumber: AddressValidator = (response) => {
 const validUnitNumber: AddressValidator = (response) => {
   const { answerArray } = response
   const entry = answerArray.find((subField) =>
-    subField.some((val) => val.startsWith('unitNumber')),
+    subField.startsWith('unitNumber'),
   )
   const unitNumber = entry ? entry[0].split('_')[1] : ''
-  return validateBlockUnit(unitNumber)
+  return validateNoSpecialCharacters(unitNumber)
     ? right(response)
     : left(`AddressValidator:\t unit number is not valid`)
 }
@@ -73,10 +74,10 @@ const validUnitNumber: AddressValidator = (response) => {
 const validLevelNumber: AddressValidator = (response) => {
   const { answerArray } = response
   const entry = answerArray.find((subField) =>
-    subField.some((val) => val.startsWith('levelNumber')),
+    subField.startsWith('levelNumber'),
   )
   const levelNumber = entry ? entry[0].split('_')[1] : ''
-  return validateBlockUnit(levelNumber)
+  return validateNoNonNumerical(levelNumber)
     ? right(response)
     : left(`AddressValidator:\t level number is not valid`)
 }
