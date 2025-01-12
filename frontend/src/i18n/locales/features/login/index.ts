@@ -1,5 +1,5 @@
 export * from './en-sg'
-export * from './zh-sg'
+export * from './zh-sg.example'
 
 export interface Login {
   components: {
