@@ -1659,13 +1659,13 @@ export const handleDeleteWorkflowStep: ControllerHandler<
 const TWO_HUNDRED_FIFTY = 250
 const TWO_HUNDRED_FIFTY_KB_IN_BYTES = TWO_HUNDRED_FIFTY * KB
 const _handleUpdateWhitelistSettingValidator = celebrate({
-  [Segments.PARAMS]: {
+  [Segments.PARAMS]: Joi.object({
     formId: Joi.string()
       .required()
       .pattern(/^[a-fA-F0-9]{24}$/)
       .message('Your form ID is invalid.'),
-  },
-  [Segments.BODY]: {
+  }),
+  [Segments.BODY]: Joi.object({
     whitelistCsvString: Joi.string()
       .allow(null) // for removal of whitelist
       .max(TWO_HUNDRED_FIFTY_KB_IN_BYTES)
@@ -1675,7 +1675,7 @@ const _handleUpdateWhitelistSettingValidator = celebrate({
         'string.pattern.base': 'Your csv has one or more invalid characters.',
         'string.max': `You have exceeded the file size limit, please upload a file below ${TWO_HUNDRED_FIFTY} kB.`,
       }),
-  },
+  }),
 })
 
 const _parseWhitelistCsvString = (whitelistCsvString: string | null) => {
