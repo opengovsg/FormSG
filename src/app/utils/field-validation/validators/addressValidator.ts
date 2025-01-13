@@ -117,7 +117,7 @@ const addressBlockNumberValidatorV3: ResponseValidator<AddressResponseV3> = (
   response,
 ) => {
   const { addressSubFields } = response.answer
-  return validateBlockUnit(addressSubFields.blockNumber)
+  return validateNoSpecialCharacters(addressSubFields.blockNumber)
     ? right(response)
     : left(`AddressValidator:\t block number is not valid`)
 }
@@ -126,7 +126,7 @@ const addressUnitNumberValidatorV3: ResponseValidator<AddressResponseV3> = (
   response,
 ) => {
   const { addressSubFields } = response.answer
-  return validateBlockUnit(addressSubFields.unitNumber)
+  return validateNoSpecialCharacters(addressSubFields.unitNumber)
     ? right(response)
     : left(`AddressValidator:\t unit number is not valid`)
 }
@@ -135,7 +135,7 @@ const addressLevelNumberValidatorV3: ResponseValidator<AddressResponseV3> = (
   response,
 ) => {
   const { addressSubFields } = response.answer
-  return validatePostalCode(addressSubFields.levelNumber)
+  return validateNoNonNumerical(addressSubFields.levelNumber)
     ? right(response)
     : left(`AddressValidator:\t level number is not valid`)
 }

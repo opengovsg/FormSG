@@ -22,7 +22,7 @@ export type SingleAnswerFieldResponse =
       | CheckboxResponse
       | IAttachmentResponse
       | ChildBirthRecordsResponse
-      | AddressResponse
+      // | AddressResponse
     >
   | Exclude<
       ParsedClearFormFieldResponse,
@@ -30,7 +30,7 @@ export type SingleAnswerFieldResponse =
       | CheckboxResponse
       | IAttachmentResponse
       | ChildBirthRecordsResponse
-      | AddressResponse
+      // | AddressResponse
     >
 
 export type FieldResponse =

@@ -237,6 +237,7 @@ const transformToAddressOutput = (
       answerArray.push(`${key}_${value}`)
     })
   }
+  console.log(answerArray)
   return {
     ...pickBaseOutputFromSchema(schema),
     answerArray,

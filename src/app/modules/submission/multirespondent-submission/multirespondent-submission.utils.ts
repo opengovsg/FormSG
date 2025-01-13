@@ -226,7 +226,7 @@ export const getQuestionTitleAnswerString = ({
             response.answer.addressSubFields[key as keyof AddressAttributes]
           if (answer !== '') {
             questionAnswerPair.push({
-              question: `${key} - ${questionTitle}`,
+              question: `${questionTitle} - ${key}`,
               answer,
             })
           }

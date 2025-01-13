@@ -777,10 +777,10 @@ export const getAnswersForChild = (
 }
 
 /**
- * Expands child subfields into individual fields, so that they are no longer nested under
+ * Expands addressfield into individual fields, so that they are no longer nested under
  * 1 parent field.
  * @param response
- * @param response.answerArray is of string[][]
+ * @param response.answerArray is of string[]
  * @returns the response with formatted answer
  */
 export const getAnswersForAddress = (

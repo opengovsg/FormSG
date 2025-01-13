@@ -145,7 +145,7 @@ export const AddressResponse = ResponseBase.extend({
 export type AddressResponse = z.infer<typeof AddressResponse>
 
 export const AddressSubFieldResponse = SingleAnswerResponse.extend({
-  fieldType: z.literal(BasicField.Address),
+  fieldType: z.literal(BasicField.ShortText),
 })
 export type AddressSubFieldResponse = z.infer<typeof AddressSubFieldResponse>
 
