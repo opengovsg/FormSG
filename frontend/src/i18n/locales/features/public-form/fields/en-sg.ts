@@ -22,7 +22,7 @@ export const enSG: Fields = {
       fileEmpty:
         'You have uploaded an empty file, please upload a valid attachment',
       fileTooLarge:
-        'You have exceeded the limit, please upload a file below {readableMaxSize}',
+        'You have exceeded the file size limit, please upload a file below {readableMaxSize}',
       fileInvalidType:
         "Your file's extension ending in *{fileExt} is not allowed",
       tooManyFiles: 'You can only upload a single file in this input',

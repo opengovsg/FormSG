@@ -8,6 +8,7 @@ import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
 
 import {
+  KB,
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
 } from '../../../../../shared/constants/file'
@@ -1655,7 +1656,8 @@ export const handleDeleteWorkflowStep: ControllerHandler<
   )
 }
 
-const TWENTY_MB_IN_BYTES = 20 * 1024 * 1024
+const TWO_HUNDRED_FIFTY = 250
+const TWO_HUNDRED_FIFTY_KB_IN_BYTES = TWO_HUNDRED_FIFTY * KB
 const _handleUpdateWhitelistSettingValidator = celebrate({
   [Segments.PARAMS]: Joi.object({
     formId: Joi.string()
@@ -1666,12 +1668,12 @@ const _handleUpdateWhitelistSettingValidator = celebrate({
   [Segments.BODY]: Joi.object({
     whitelistCsvString: Joi.string()
       .allow(null) // for removal of whitelist
-      .max(TWENTY_MB_IN_BYTES)
+      .max(TWO_HUNDRED_FIFTY_KB_IN_BYTES)
       .pattern(/^[a-zA-Z0-9,\r\n]+$/)
       .messages({
         'string.empty': 'Your csv is empty.',
         'string.pattern.base': 'Your csv has one or more invalid characters.',
-        'string.max': 'Your csv is too large.',
+        'string.max': `You have exceeded the file size limit, please upload a file below ${TWO_HUNDRED_FIFTY} kB.`,
       }),
   }),
 })
