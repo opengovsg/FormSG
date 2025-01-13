@@ -5,7 +5,6 @@ import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
-import multer from 'multer'
 import { ResultAsync } from 'neverthrow'
 
 import {
@@ -1657,29 +1656,24 @@ export const handleDeleteWorkflowStep: ControllerHandler<
 }
 
 const TWENTY_MB_IN_BYTES = 20 * 1024 * 1024
-const handleWhitelistSettingMultipartBody = multer({
-  limits: {
-    fieldSize: TWENTY_MB_IN_BYTES,
-    fields: 1, // only allow csv string field
-    files: 0,
-  },
-})
-
 const _handleUpdateWhitelistSettingValidator = celebrate({
-  [Segments.PARAMS]: {
+  [Segments.PARAMS]: Joi.object({
     formId: Joi.string()
       .required()
       .pattern(/^[a-fA-F0-9]{24}$/)
       .message('Your form ID is invalid.'),
-  },
-  [Segments.BODY]: {
+  }),
+  [Segments.BODY]: Joi.object({
     whitelistCsvString: Joi.string()
+      .allow(null) // for removal of whitelist
+      .max(TWENTY_MB_IN_BYTES)
       .pattern(/^[a-zA-Z0-9,\r\n]+$/)
       .messages({
         'string.empty': 'Your csv is empty.',
         'string.pattern.base': 'Your csv has one or more invalid characters.',
+        'string.max': 'Your csv is too large.',
       }),
-  },
+  }),
 })
 
 const _parseWhitelistCsvString = (whitelistCsvString: string | null) => {
@@ -1792,7 +1786,6 @@ export const _handleUpdateWhitelistSettingForTest =
   _handleUpdateWhitelistSetting
 
 export const handleUpdateWhitelistSetting = [
-  handleWhitelistSettingMultipartBody.none(), // expecting string field
   _handleUpdateWhitelistSettingValidator,
   _handleUpdateWhitelistSetting,
 ] as ControllerHandler[]
